@@ -2,7 +2,6 @@ use vize_l0::String as CompactString;
 
 pub(super) fn is_synthetic_content_mapper_identifier(text: &str) -> bool {
     text.starts_with("__vize_prop_check_")
-        || text.starts_with(crate::virtual_ts::UNCHECKED_PROP_VALUE_PREFIX)
 }
 
 /// Property navigation (`foo-bar` → `fooBar`) is an alias. A shorthand value

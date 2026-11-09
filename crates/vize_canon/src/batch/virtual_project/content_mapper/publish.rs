@@ -27,7 +27,7 @@ pub(super) fn publish_content_mapper_text(
     diagnostic_ownership: Option<&DiagnosticOwnershipCollector>,
     share_virtual_module: bool,
 ) {
-    append_unchecked_prop_value_helper(code);
+    append_unchecked_prop_value_helper(code, share_virtual_module);
     publicize_generated_diagnostic_helpers(
         code,
         mappings,
@@ -47,12 +47,12 @@ pub(super) fn publish_content_mapper_text(
     }
 }
 
-/// Companion value checks reference one module helper; appending it shifts
-/// no generated coordinate.
-fn append_unchecked_prop_value_helper(code: &mut CompactString) {
-    use crate::virtual_ts::{UNCHECKED_PROP_VALUE_DECLARATION, UNCHECKED_PROP_VALUE_REFERENCE};
+/// Owned per-prop checks reference one module helper; appending it shifts no
+/// generated coordinate.
+fn append_unchecked_prop_value_helper(code: &mut CompactString, share_virtual_module: bool) {
+    use crate::virtual_ts::{UNCHECKED_PROP_VALUE_REFERENCE, unchecked_prop_value_declaration};
     if memchr::memmem::find(code.as_bytes(), UNCHECKED_PROP_VALUE_REFERENCE.as_bytes()).is_some() {
-        code.push_str(UNCHECKED_PROP_VALUE_DECLARATION);
+        code.push_str(unchecked_prop_value_declaration(share_virtual_module).as_str());
     }
 }
 

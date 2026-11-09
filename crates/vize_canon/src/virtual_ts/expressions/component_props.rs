@@ -202,6 +202,14 @@ fn generate_component_prop_checks_inner<const LEGACY_SCALARS: bool>(
             .any(crate::virtual_ts::scope::is_inline_callback_prop);
     let grouped_guard_expr = usage.vif_guard.as_deref().filter(|_| has_inline_callback);
     let grouped_guard = grouped_guard_expr.is_some();
+    let owned_values = (!LEGACY_SCALARS).then(|| {
+        super::unchecked_prop_values::OwnedPropValues::emit(
+            ts,
+            (usage, idx, component_ref),
+            source_context,
+            (indent, ctx.hoist_shared_preamble),
+        )
+    });
     if let Some(guard) = grouped_guard_expr {
         append_ignored_vif_guard_open(ts, indent, guard, "Inference-only guard");
     }
@@ -308,8 +316,13 @@ fn generate_component_prop_checks_inner<const LEGACY_SCALARS: bool>(
             let check_name_end = ts.len();
             let inline_callback =
                 !LEGACY_SCALARS && crate::virtual_ts::scope::is_inline_callback_prop(prop);
+            let owned = owned_values
+                .as_ref()
+                .filter(|values| values.owns(prop_index));
             if LEGACY_SCALARS {
                 append!(*ts, ": __vize_legacy_prop_{idx}_{prop_index} = ");
+            } else if let Some(values) = owned {
+                values.append_type(ts, prop);
             } else {
                 super::callback_prop_resolution::append_prop_check_type(
                     ts,
@@ -328,6 +341,9 @@ fn generate_component_prop_checks_inner<const LEGACY_SCALARS: bool>(
             let value_gen_range = profile!("canon.virtual_ts.prop_check.value_emission", {
                 append_prop_value(ts, generated_value.text.as_str())
             });
+            if let Some(values) = owned {
+                values.append_tail(ts, prop);
+            }
             ts.push_str(";\n");
             let statement_end = ts.len();
             let gen_stmt_end = if generated_value.omits_tail() {
@@ -423,7 +439,7 @@ fn generate_component_prop_checks_inner<const LEGACY_SCALARS: bool>(
             source_context,
             indent,
             ctx.typed_fallthrough_values,
-            (ctx.hoist_shared_preamble, component_ref),
+            ctx.hoist_shared_preamble,
         );
     }
 }

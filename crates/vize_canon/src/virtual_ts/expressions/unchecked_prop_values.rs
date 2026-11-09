@@ -1,76 +1,78 @@
-//! Content-mapper value checks the whole-props literal cannot own.
+//! Content-mapper per-prop checks for values the props literal also carries.
 //!
 //! The upstream content-mapper host reports every virtual diagnostic, so the
-//! mapper ignores a per-prop assignment whenever the props literal repeats the
-//! same binding. The literal types undeclared attrs as `unknown`, so a wrong
-//! fallthrough value would otherwise vanish (#12458). Each companion check
-//! keeps the per-prop contract only where the literal leaves the key
-//! unchecked; native checks dedupe after mapping and never emit it.
+//! mapper ignores the rest of a per-prop assignment whose value the props
+//! literal carries. The literal types an undeclared attr as `unknown`, so such
+//! an assignment keeps only the contract the literal leaves unchecked on its
+//! name (#12458). `satisfies` keeps the value contextually typed by the full
+//! contract, and the value's own type reaches the annotation, so the message
+//! is the per-prop one. Native checks dedupe after mapping and keep the plain
+//! assignment.
 
-use super::component_props::{ComponentPropSource, is_checkable_prop};
-use super::prop_sources::{
-    append_prop_value, generated_diagnostic_prop_span, prop_name_source_range,
-    prop_value_source_range,
-};
+use super::component_props::{ComponentPropSource, has_per_prop_value_check};
+use super::props_literal::{literal_carries_value, named_entry_marks};
 use crate::virtual_ts::helpers::{
-    component_aria_prop_keys, component_prop_key, push_ts_string_literal,
-    to_safe_identifier_fragment,
+    component_prop_key, push_ts_string_literal, shared_types, to_safe_identifier_fragment,
 };
-use crate::virtual_ts::template_binding_access::TemplateBindingAccess;
-use crate::virtual_ts::types::{VizeMapping, VizeSubSpan};
-use vize_carton::{FxHashMap, String, append, cstr};
-use vize_croquis::croquis::ComponentUsage;
+use vize_carton::{String, append, cstr};
+use vize_croquis::croquis::{ComponentUsage, PassedProp};
 
-/// Statement prefix the content mapper recognises.
-pub(crate) const UNCHECKED_PROP_VALUE_PREFIX: &str = "__vize_unchecked_prop_";
-
-/// Opening of every companion annotation. The content mapper appends
-/// [`UNCHECKED_PROP_VALUE_DECLARATION`] once when it finds one.
+/// Opening of every owned per-prop annotation. The content mapper appends
+/// [`unchecked_prop_value_declaration`] once when it finds one.
 pub(crate) const UNCHECKED_PROP_VALUE_REFERENCE: &str = "$UncheckedPropValue<";
 
-/// The per-prop contract `V` unless the literal checks key `K` of its typed
-/// inputs `D` against the same type, which makes it `unknown`. An `unknown`
-/// or `any` contract never reports and skips the key lookup.
-pub(crate) const UNCHECKED_PROP_VALUE_DECLARATION: &str = "type $UncheckedPropValue<D, K extends PropertyKey, V> = unknown extends V ? unknown : $UncheckedPropContract<K extends keyof D ? D[K] : never, V>;\ntype $UncheckedPropContract<L, V> = [L] extends [V] ? [V] extends [L] ? unknown : V : V;\n";
+/// The per-prop contract `V` unless the literal's typed inputs `D` declare
+/// `K`, which leaves the value to the literal. With the shared module this is
+/// the declared lookup the per-prop contract already resolved; standalone
+/// output keeps that helper local to the template, so it is spelled out.
+pub(crate) fn unchecked_prop_value_declaration(shared_virtual_module: bool) -> String {
+    let declared = if shared_virtual_module {
+        cstr!("{}<D, K, never>", shared_types::PROP_VALUE.select(true))
+    } else {
+        String::from("D extends unknown ? (K extends keyof D ? D[K] : never) : never")
+    };
+    cstr!(
+        "type $UncheckedPropValue<D, K extends PropertyKey, V> = [{declared}] extends [never] ? V : unknown;\n"
+    )
+}
 
-pub(super) fn append_unchecked_prop_value_checks(
-    ts: &mut crate::virtual_ts::TextBuf,
-    mappings: &mut Vec<VizeMapping>,
-    (usage, idx, component_ref): (&ComponentUsage, usize, &str),
-    template_binding_access: &TemplateBindingAccess,
-    (source_context, hoist_shared_preamble): (ComponentPropSource<'_>, bool),
-    indent: &str,
-) {
-    if !source_context.unchecked_prop_values {
-        return;
-    }
-    let component = to_safe_identifier_fragment(usage.name.as_str());
-    let mut occurrences: FxHashMap<String, u32> = FxHashMap::default();
-    let mut declared_inputs = false;
-    for prop in &usage.props {
-        // ARIA entries and inline callbacks are never literal echoes. A
-        // `v-model` value and its modifiers keep their own owners.
-        if !is_checkable_prop(prop)
-            || prop.value.is_none()
-            || crate::virtual_ts::scope::is_inline_callback_prop(prop)
-            || component_aria_prop_keys(prop.name.as_str()).is_some()
-            || usage.events.iter().any(|event| {
-                event.start == prop.start
-                    && event.end == prop.end
-                    && event.name.starts_with("update:")
-            })
-        {
-            continue;
+/// The per-prop assignments of one usage whose value the literal carries.
+pub(crate) struct OwnedPropValues {
+    owned: Vec<bool>,
+    component: String,
+    idx: usize,
+}
+
+impl OwnedPropValues {
+    /// Decide the rows from the literal's own entry marks, and declare the
+    /// usage's typed inputs once when any row is owned.
+    pub(crate) fn emit(
+        ts: &mut crate::virtual_ts::TextBuf,
+        (usage, idx, component_ref): (&ComponentUsage, usize, &str),
+        source_context: ComponentPropSource<'_>,
+        (indent, hoist_shared_preamble): (&str, bool),
+    ) -> Self {
+        let component = to_safe_identifier_fragment(usage.name.as_str());
+        if !source_context.unchecked_prop_values {
+            return Self {
+                owned: Vec::new(),
+                component,
+                idx,
+            };
         }
-        let (Some(value), Some(src_range)) = (
-            generated_diagnostic_prop_span(prop, template_binding_access),
-            prop_name_source_range(source_context, prop)
-                .or_else(|| prop_value_source_range(source_context, prop)),
-        ) else {
-            continue;
-        };
-        if !declared_inputs {
-            declared_inputs = true;
+        // Merge flags only change `class`/`style` rows, which never own here.
+        let marks = named_entry_marks(usage, (false, false));
+        let owned = usage
+            .props
+            .iter()
+            .enumerate()
+            .map(|(index, prop)| {
+                has_per_prop_value_check(prop)
+                    && literal_carries_value(usage, &marks, index)
+                    && !writes_model(usage, prop)
+            })
+            .collect::<Vec<_>>();
+        if owned.contains(&true) {
             append_declared_inputs(
                 ts,
                 (component.as_str(), idx, component_ref),
@@ -78,50 +80,42 @@ pub(super) fn append_unchecked_prop_value_checks(
                 indent,
             );
         }
+        Self {
+            owned,
+            component,
+            idx,
+        }
+    }
+
+    pub(crate) fn owns(&self, index: usize) -> bool {
+        self.owned.get(index).copied().unwrap_or(false)
+    }
+
+    /// `: $UncheckedPropValue<inputs, key, contract> = `
+    pub(crate) fn append_type(&self, ts: &mut crate::virtual_ts::TextBuf, prop: &PassedProp) {
+        let (component, idx) = (self.component.as_str(), self.idx);
         let name = to_safe_identifier_fragment(prop.name.as_str());
-        let occurrence = occurrences
-            .entry(name.clone())
-            .and_modify(|count| *count += 1)
-            .or_insert(1);
-        let check = if *occurrence == 1 {
-            cstr!("{UNCHECKED_PROP_VALUE_PREFIX}{idx}_{name}")
-        } else {
-            cstr!("{UNCHECKED_PROP_VALUE_PREFIX}{idx}_{name}_{occurrence}")
-        };
-        let statement_start = ts.len();
-        append!(*ts, "{indent}const ");
-        let check_start = ts.len();
-        ts.push_str(check.as_str());
-        let check_end = ts.len();
         append!(
             *ts,
             ": {UNCHECKED_PROP_VALUE_REFERENCE}__{component}_Declared_{idx}, "
         );
         push_ts_string_literal(ts, component_prop_key(prop.name.as_str()).as_str());
         append!(*ts, ", __{component}_{idx}_prop_{name}> = ");
-        let value_range = append_prop_value(ts, value.text.as_str());
-        ts.push_str(";\n");
-        let statement_end = ts.len();
-        append!(*ts, "{indent}void {check};\n");
-
-        // Only the name is mapped. The value repeats the literal's entry and
-        // stays an inert copy, exactly like a slot host's.
-        source_context.inert().record_prop_projection(
-            usage,
-            prop,
-            value_range.start..value_range.start,
-            value_range,
-        );
-        mappings.push(VizeMapping {
-            gen_range: statement_start..statement_end,
-            src_range: (source_context.offset + prop.start) as usize
-                ..(source_context.offset + prop.end) as usize,
-            sub_spans: vec![VizeSubSpan {
-                gen_range: check_start..check_end,
-                src_range,
-            }],
-        });
     }
+
+    /// ` satisfies contract` after the value.
+    pub(crate) fn append_tail(&self, ts: &mut crate::virtual_ts::TextBuf, prop: &PassedProp) {
+        let (component, idx) = (self.component.as_str(), self.idx);
+        let name = to_safe_identifier_fragment(prop.name.as_str());
+        append!(*ts, " satisfies __{component}_{idx}_prop_{name}");
+    }
+}
+
+/// A `v-model` value and its modifiers keep their write-back owners.
+fn writes_model(usage: &ComponentUsage, prop: &PassedProp) -> bool {
+    usage.events.iter().any(|event| {
+        event.start == prop.start && event.end == prop.end && event.name.starts_with("update:")
+    })
 }
 
 /// The literal's typed inputs: own props, emitted listeners, required
@@ -135,9 +129,9 @@ fn append_declared_inputs(
     hoist_shared_preamble: bool,
     indent: &str,
 ) {
-    use crate::virtual_ts::helpers::shared_types::{EMIT_LISTENERS, REQUIRED_FALLTHROUGH_PROPS};
-    let emit_listeners = EMIT_LISTENERS.select(hoist_shared_preamble);
-    let required_fallthrough = REQUIRED_FALLTHROUGH_PROPS.select(hoist_shared_preamble);
+    let emit_listeners = shared_types::EMIT_LISTENERS.select(hoist_shared_preamble);
+    let required_fallthrough =
+        shared_types::REQUIRED_FALLTHROUGH_PROPS.select(hoist_shared_preamble);
     append!(
         *ts,
         "{indent}type __{component}_Declared_{idx} = __{component}_Props_{idx} & {emit_listeners}<typeof {component_ref}> & {required_fallthrough}<typeof {component_ref}> & $PublicComponentAttrs;\n"

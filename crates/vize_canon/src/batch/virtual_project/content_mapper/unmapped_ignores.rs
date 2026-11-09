@@ -1,19 +1,15 @@
 //! Ignore directives for virtual ranges no span maps, as Vue's mapper does.
 
-use std::ops::Range;
-
 use super::protocol::{
     ContentMapperDiagnosticDirective, ContentMapperDiagnosticDirectives, ContentMapperSpan,
     ContentMapperTransform, DIRECTIVE_POLICY_IGNORE,
 };
-use crate::virtual_ts::UNCHECKED_PROP_VALUE_PREFIX;
 
 impl ContentMapperTransform {
     /// Like Vue's mapper, ignore every virtual range no span covers:
     /// TypeScript otherwise reports scaffolding diagnostics at virtual
     /// positions. Explicit tuples keep their intervals, so expectations are
-    /// never swallowed. A companion value check whose assignment still
-    /// reports is ignored the same way.
+    /// never swallowed.
     pub(super) fn with_unmapped_ignores(mut self) -> Self {
         self.diagnostic_directives = unmapped_ignores(
             self.diagnostic_directives.take(),
@@ -47,11 +43,6 @@ pub(super) fn unmapped_ignores(
     }
     if cursor < generated_len {
         unmapped.push(cursor..generated_len);
-    }
-    let silent = silent_companions(directives.as_ref(), spans, generated);
-    if !silent.is_empty() {
-        unmapped.extend(silent);
-        unmapped.sort_unstable_by_key(|range| range.start);
     }
     let mut covered = directives
         .as_ref()
@@ -108,55 +99,6 @@ pub(super) fn unmapped_ignores(
         .directives
         .sort_by_key(|directive| directive.0[2]);
     Some(directives)
-}
-
-/// Companion names (#12458) whose per-prop assignment no ignore tuple covers.
-///
-/// Only an assignment ignored as a whole-props echo loses its own report;
-/// every other assignment, including each one in a derived template, still
-/// reports the same value diagnostic at the same attribute.
-fn silent_companions(
-    directives: Option<&ContentMapperDiagnosticDirectives>,
-    spans: &[ContentMapperSpan],
-    generated: &str,
-) -> Vec<Range<usize>> {
-    let named = |span: &ContentMapperSpan, prefix: &str| {
-        span.0[1] > 0
-            && generated
-                .get(span.0[0]..)
-                .is_some_and(|text| text.starts_with(prefix))
-    };
-    let companions = spans
-        .iter()
-        .filter(|span| named(span, UNCHECKED_PROP_VALUE_PREFIX))
-        .collect::<Vec<_>>();
-    if companions.is_empty() {
-        return Vec::new();
-    }
-    let mut ignored = directives
-        .into_iter()
-        .flat_map(|table| &table.directives)
-        .filter(|directive| directive.0[4] == DIRECTIVE_POLICY_IGNORE)
-        .map(|directive| directive.0[2]..directive.0[3])
-        .collect::<Vec<_>>();
-    ignored.sort_unstable_by_key(|range| range.start);
-    let echoed = spans
-        .iter()
-        .filter(|span| named(span, "__vize_prop_check_"))
-        .filter(|span| {
-            let at = span.0[0];
-            let next = ignored.partition_point(|range| range.start <= at);
-            next.checked_sub(1)
-                .and_then(|index| ignored.get(index))
-                .is_some_and(|range| at < range.end)
-        })
-        .map(|span| (span.0[2], span.0[3]))
-        .collect::<vize_l0::FxHashSet<_>>();
-    companions
-        .into_iter()
-        .filter(|span| !echoed.contains(&(span.0[2], span.0[3])))
-        .map(|span| span.0[0]..span.0[0] + span.0[1])
-        .collect()
 }
 
 /// Parentheses opening a mapped span belong to the authored expression they

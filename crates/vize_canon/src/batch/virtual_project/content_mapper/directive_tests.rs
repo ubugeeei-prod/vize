@@ -206,13 +206,20 @@ fn component_prop_assignments_are_ignored_only_when_the_literal_owns_them() {
     let check = result
         .text
         .find("const __vize_prop_check_0_count")
-        .expect("per-prop check");
+        .expect("per-prop check")
+        + "const ".len();
+    let tail = result
+        .text
+        .find(": $UncheckedPropValue<__Child_Declared_0, \"count\", __Child_0_prop_count> = value satisfies __Child_0_prop_count;")
+        .expect("owned per-prop check");
     let literal = result
         .text
         .find("\"count\": value")
         .expect("whole-props entry");
 
-    assert!(covered(&directives.directives, check));
+    // Its name keeps only what the literal leaves unchecked (#12458).
+    assert!(!covered(&directives.directives, check));
+    assert!(covered(&directives.directives, tail));
     assert!(!covered(&directives.directives, literal));
     assert!(directives.unused_expect_directive_diagnostics.is_empty());
 }
@@ -373,11 +380,6 @@ fn unrelated_marker_text_never_creates_owner_directives() {
             "bad"
         };
         let mut expected = static_id_echoes(source.as_str(), result.text.as_str(), id);
-        expected.push(unchecked_prop_values::companion_id_echo(
-            source.as_str(),
-            result.text.as_str(),
-            id,
-        ));
         expected.extend(baseline.directives);
         assert_eq!(
             directives.directives, expected,

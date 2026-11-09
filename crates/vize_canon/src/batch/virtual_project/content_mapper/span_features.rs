@@ -166,9 +166,7 @@ pub(super) fn content_mapper_span_features(
     start: usize,
     kind: ContentMapperSpanKind,
 ) -> usize {
-    if is_diagnostic_handler_anchor(generated, start, kind)
-        || is_unchecked_prop_value_anchor(generated, start)
-    {
+    if is_diagnostic_handler_anchor(generated, start, kind) {
         return 0;
     }
     if is_component_prop_check_anchor(generated, start, kind) {
@@ -257,13 +255,6 @@ fn is_component_prop_alias_key(generated: &str, start: usize) -> bool {
         return false;
     };
     prefix.contains("$PropValue<") && prefix.ends_with(", '")
-}
-
-/// A companion value check only carries its diagnostic to the attribute.
-fn is_unchecked_prop_value_anchor(generated: &str, start: usize) -> bool {
-    generated
-        .get(start..)
-        .is_some_and(|suffix| suffix.starts_with(crate::virtual_ts::UNCHECKED_PROP_VALUE_PREFIX))
 }
 
 fn is_component_prop_check_anchor(

@@ -29,7 +29,7 @@ pub(crate) use expressions::NAMED_PROP_DIAGNOSTIC_MARKER;
 #[cfg(feature = "native")]
 pub(crate) use expressions::key_sub_spans;
 pub(crate) use expressions::unchecked_prop_values::{
-    UNCHECKED_PROP_VALUE_DECLARATION, UNCHECKED_PROP_VALUE_PREFIX, UNCHECKED_PROP_VALUE_REFERENCE,
+    UNCHECKED_PROP_VALUE_REFERENCE, unchecked_prop_value_declaration,
 };
 mod generator;
 mod reference_paths;

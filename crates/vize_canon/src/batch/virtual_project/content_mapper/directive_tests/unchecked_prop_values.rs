@@ -1,21 +1,23 @@
-//! #12458: the companion check owns a value the props literal leaves unchecked.
+//! #12458: a per-prop check keeps what the props literal leaves unchecked.
 
 use std::path::Path;
 
 use super::super::protocol::{
     ContentMapperDiagnosticDirective, ContentMapperSpan, DIRECTIVE_POLICY_IGNORE,
 };
+use super::super::span_features::CONTENT_MAPPER_SPAN_FEATURES_NAVIGATION_TARGET;
 use super::super::{
     ContentMapperSpanKind, ContentMapperTransformOptions, generate_vue_content_mapper_transform,
     generate_vue_content_mapper_transform_with_options,
 };
 use super::DIRECTIVE_POLICY_EXPECT;
-use crate::virtual_ts::UNCHECKED_PROP_VALUE_DECLARATION;
+use crate::virtual_ts::unchecked_prop_value_declaration;
 
 const APP: &str = "<script setup lang=\"ts\">\nimport Field from './Field.vue'\n</script>\n<template>\n  <Field label=\"x\" :maxlength=\"{}\" />\n</template>\n";
 const DECLARED: &str = "  type __Field_Declared_0 = __Field_Props_0 & $EmitListeners<typeof Field> & $RequiredFallthroughProps<typeof Field> & VueTemplatePublicAttrsType;\n";
-const COMPANION: &str = "  const __vize_unchecked_prop_0_maxlength: $UncheckedPropValue<__Field_Declared_0, \"maxlength\", __Field_0_prop_maxlength> = {};\n";
-const NAME: &str = "__vize_unchecked_prop_0_maxlength";
+const OWNED: &str = "  const __vize_prop_check_0_maxlength: $UncheckedPropValue<__Field_Declared_0, \"maxlength\", __Field_0_prop_maxlength> = {} satisfies __Field_0_prop_maxlength;\n";
+const PLAIN: &str = "  const __vize_prop_check_0_maxlength: __Field_0_prop_maxlength = {};\n";
+const NAME: &str = "__vize_prop_check_0_maxlength";
 
 fn policies(directives: &[ContentMapperDiagnosticDirective], at: usize) -> Vec<usize> {
     directives
@@ -25,10 +27,10 @@ fn policies(directives: &[ContentMapperDiagnosticDirective], at: usize) -> Vec<u
         .collect()
 }
 
-/// The companion statement and its name's protocol span.
-fn companion(source: &str, text: &str) -> (usize, ContentMapperSpan) {
-    let start = text.find(COMPANION).expect("companion value check");
-    assert_eq!(text.matches(COMPANION).count(), 1);
+/// The start of `statement` and its name's protocol span.
+fn check(source: &str, text: &str, statement: &str) -> (usize, ContentMapperSpan) {
+    let start = text.find(statement).expect("per-prop check");
+    assert_eq!(text.matches(statement).count(), 1);
     let name = start + "  const ".len();
     let attribute = source.find("maxlength").expect("authored attribute name");
     let span = ContentMapperSpan([
@@ -37,17 +39,17 @@ fn companion(source: &str, text: &str) -> (usize, ContentMapperSpan) {
         attribute,
         "maxlength".len(),
         ContentMapperSpanKind::Atom as usize,
-        0,
+        CONTENT_MAPPER_SPAN_FEATURES_NAVIGATION_TARGET,
     ]);
     (start, span)
 }
 
 #[test]
-fn echoed_assignment_keeps_its_companion_diagnostic_live() {
+fn echoed_assignment_keeps_only_its_name_visible() {
     let result = generate_vue_content_mapper_transform(Path::new("/project/App.vue"), APP)
         .expect("transform");
     let text = result.text.as_str();
-    let (start, span) = companion(APP, text);
+    let (start, span) = check(APP, text, OWNED);
     assert_eq!(
         result
             .mappings
@@ -55,15 +57,9 @@ fn echoed_assignment_keeps_its_companion_diagnostic_live() {
             .filter(|row| row.0[0] == span.0[0])
             .collect::<Vec<_>>(),
         [&span],
-        "the name maps to the attribute name without editor features"
+        "the name keeps mapping to the attribute name"
     );
-    assert_eq!(
-        text.rsplit_once("\nexport default App;\n")
-            .map(|(_, tail)| tail),
-        Some(UNCHECKED_PROP_VALUE_DECLARATION),
-        "one module helper after the default export"
-    );
-    assert_eq!(text.matches("type $UncheckedPropValue<").count(), 1);
+    assert_eq!(text.matches("__vize_unchecked_prop_").count(), 0);
     assert_eq!(
         text.matches(DECLARED).count(),
         1,
@@ -71,67 +67,84 @@ fn echoed_assignment_keeps_its_companion_diagnostic_live() {
     );
     assert_eq!(
         text.find(DECLARED).map(|at| at + DECLARED.len()),
-        text.find("  const __vize_unchecked_prop_0_label:"),
-        "the input alias precedes the usage's first companion"
+        text.find("  // @vize-map: prop -> "),
+        "the input alias precedes the usage's per-prop checks"
+    );
+    assert_eq!(
+        text.rsplit_once("\nexport default App;\n")
+            .map(|(_, tail)| tail),
+        Some(unchecked_prop_value_declaration(false).as_str()),
+        "one module helper after the default export"
     );
     let directives = result
         .diagnostic_directives
         .expect("directive table")
         .directives;
-    let check = text
-        .find("__vize_prop_check_0_maxlength:")
-        .expect("per-prop check name");
-    let value = start + COMPANION.find("= {}").expect("value") + 2;
-    assert_eq!(policies(&directives, check), [DIRECTIVE_POLICY_IGNORE]);
+    let name_end = span.0[0] + span.0[1];
+    let value = start + OWNED.find("= {}").expect("value") + 2;
     assert_eq!(policies(&directives, span.0[0]), Vec::<usize>::new());
+    assert_eq!(policies(&directives, name_end), [DIRECTIVE_POLICY_IGNORE]);
     assert_eq!(policies(&directives, value), [DIRECTIVE_POLICY_IGNORE]);
+    let tail = directives
+        .iter()
+        .find(|directive| directive.0[2] == name_end)
+        .expect("tail ignore");
+    assert_eq!(tail.0[3], start + OWNED.len(), "{tail:?}");
 }
 
 #[test]
-fn companion_stays_silent_while_its_assignment_reports() {
-    // A later spread keeps the assignment as the owner (#10069), and a
-    // derived Pug template carries no echo directives at all.
-    for source in [
-        APP.replace("'./Field.vue'", "'./Field.vue'\nconst rest = {}")
-            .replace(
-                ":maxlength=\"{}\" />",
-                ":maxlength=\"{}\" v-bind=\"rest\" />",
-            ),
-        APP.replace(
-            "<template>\n  <Field label=\"x\" :maxlength=\"{}\" />\n</template>",
-            "<template lang=\"pug\">\nField(label=\"x\" :maxlength=\"{}\")\n</template>",
+fn literal_owners_alone_take_the_owned_form() {
+    // A later spread keeps the assignment as the owner (#10069), and so does
+    // an ARIA entry; neither literal entry checks the value.
+    for (source, statement) in [
+        (
+            APP.replace("'./Field.vue'", "'./Field.vue'\nconst rest = {}")
+                .replace(
+                    ":maxlength=\"{}\" />",
+                    ":maxlength=\"{}\" v-bind=\"rest\" />",
+                ),
+            PLAIN,
+        ),
+        (
+            APP.replace(":maxlength=", ":aria-busy=\"1\" :maxlength="),
+            OWNED,
         ),
     ] {
         let result = generate_vue_content_mapper_transform(Path::new("/project/App.vue"), &source)
             .expect("transform");
         let text = result.text.as_str();
-        let (_, span) = companion(&source, text);
+        let (start, span) = check(&source, text, statement);
         let directives = result
             .diagnostic_directives
             .expect("directive table")
             .directives;
-        let check = text
-            .find("__vize_prop_check_0_maxlength:")
-            .expect("per-prop check name");
         assert_eq!(
-            policies(&directives, check),
+            policies(&directives, span.0[0]),
             Vec::<usize>::new(),
             "{source}"
         );
+        let value = start + statement.find("= {}").expect("value") + 2;
+        let echoed = if statement == OWNED {
+            vec![DIRECTIVE_POLICY_IGNORE]
+        } else {
+            Vec::new()
+        };
+        assert_eq!(policies(&directives, value), echoed, "{source}");
         assert_eq!(
-            policies(&directives, span.0[0]),
-            [DIRECTIVE_POLICY_IGNORE],
-            "{source}"
+            text.matches("  const __vize_prop_check_0_aria_busy: __Field_0_prop_aria_busy = 1;\n")
+                .count(),
+            usize::from(source.contains("aria-busy")),
+            "ARIA keeps the plain owner"
         );
     }
 }
 
 #[test]
-fn authored_expectation_covers_the_live_companion() {
+fn authored_expectation_covers_the_visible_name() {
     let source = APP.replace("  <Field", "  <!-- @vue-expect-error -->\n  <Field");
     let result = generate_vue_content_mapper_transform(Path::new("/project/App.vue"), &source)
         .expect("transform");
-    let (_, span) = companion(&source, result.text.as_str());
+    let (_, span) = check(&source, result.text.as_str(), OWNED);
     let directives = result
         .diagnostic_directives
         .expect("directive table")
@@ -141,7 +154,7 @@ fn authored_expectation_covers_the_live_companion() {
 
 /// A fallthrough root checks its literal against `Partial` props, which
 /// renders the same wrong-value message as the assignment. Its declared props
-/// stay owned by the literal, so the companion never repeats that report.
+/// stay owned by the literal, so the assignment never repeats that report.
 #[test]
 fn relaxed_fallthrough_root_keeps_declared_props_with_the_literal() {
     let mut options = ContentMapperTransformOptions::default();
@@ -167,35 +180,4 @@ fn relaxed_fallthrough_root_keeps_declared_props_with_the_literal() {
             .count(),
         1
     );
-}
-
-/// The companion value check repeats a static value as an inert copy.
-pub(super) fn companion_id_echo(
-    source: &str,
-    generated: &str,
-    id: &str,
-) -> ContentMapperDiagnosticDirective {
-    let original = source
-        .find(vize_carton::cstr!("id=\"{id}\"").as_str())
-        .expect("authored id")
-        + 4;
-    let check = generated
-        .find("const __vize_unchecked_prop_0_id:")
-        .expect("companion value check");
-    let value = vize_carton::cstr!("= \"{id}\";");
-    let start = check
-        + generated
-            .get(check..)
-            .expect("companion tail")
-            .find(value.as_str())
-            .expect("companion value")
-        + 2;
-    ContentMapperDiagnosticDirective([
-        original,
-        id.len(),
-        start,
-        start + id.len() + 2,
-        DIRECTIVE_POLICY_IGNORE,
-        0,
-    ])
 }
