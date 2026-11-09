@@ -104,13 +104,12 @@ pub fn with_transformed<R>(
 
 /// The assembled DOM render module for `source` after the L2 transform.
 pub fn assembled_dom(source: &str) -> String {
-    with_transformed(
-        source,
-        |lowered, _folio, facts, _budget| match vize_l1_to_l2::emit_dom(lowered, facts) {
+    with_transformed(source, |lowered, _folio, facts, _budget| {
+        match vize_l4::targets::dom::artifact::emit_dom(lowered, facts) {
             Ok(emitted) => emitted.assembled(),
             Err(error) => panic!("emit refused {source:?}: {error:?}"),
-        },
-    )
+        }
+    })
 }
 
 /// [`with_transformed`] under an explicit Vue dialect.

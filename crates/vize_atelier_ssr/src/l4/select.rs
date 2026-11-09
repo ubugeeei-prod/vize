@@ -4,9 +4,9 @@
 use vize_l0::dump::{Dump, Mode as DumpMode};
 use vize_l0::{Allocator, String, cstr};
 use vize_l0::{dump::capture::CaptureSink, level::Level};
-use vize_l1_to_l2::TransformExpressions;
 use vize_l2::op::Region;
 use vize_l3::verify::verify;
+use vize_l4::targets::dom::artifact::TransformExpressions;
 
 use super::emit::{self, PlanFacts};
 use super::string_plan::lower_l2_to_string_plan;

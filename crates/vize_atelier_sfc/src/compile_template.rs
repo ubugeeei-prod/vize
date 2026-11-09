@@ -301,7 +301,8 @@ pub(crate) fn compile_template_block_with_capture(
         !options.dialect.is_legacy(),
         compiler_options.is_some_and(|options| options.experimental_in_tag_comments),
     );
-    let preflight_hook = Some(&mut preflight as &mut dyn vize_l1_to_l2::SurfacePreflight);
+    let preflight_hook =
+        Some(&mut preflight as &mut dyn vize_l4::targets::dom::artifact::SurfacePreflight);
     #[cfg(all(test, feature = "legacy-dom-differential"))]
     let preflight_hook = if duplicates::original_preflight_requested() {
         None

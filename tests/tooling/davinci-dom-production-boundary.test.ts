@@ -11,7 +11,7 @@ import {
   workspacePackage,
 } from "./support/davinci-stage-dependencies.ts";
 
-const domStageDeps = new Set(["vize_l0", "vize_l1_to_l2", "vize_l2"]);
+const domStageDeps = new Set(["vize_l0", "vize_l1_to_l2", "vize_l2", "vize_l4"]);
 const compilerOptionsProjectedToS2 = [
   "mode",
   "prefix_identifiers",
@@ -73,7 +73,7 @@ test("DOM compiler keeps the published L2 renderer available for profiling", () 
     .filter((dependency) => dependency.kind === null && domStageDeps.has(dependency.name))
     .map((dependency) => dependency.name)
     .sort();
-  assert.deepEqual(productionStageDeps, ["vize_l0", "vize_l1_to_l2"]);
+  assert.deepEqual(productionStageDeps, ["vize_l0", "vize_l1_to_l2", "vize_l4"]);
 
   const witnessDeps = dependencies
     .filter((dependency) => dependency.kind === "dev" && domStageDeps.has(dependency.name))
@@ -153,7 +153,7 @@ test("DOM L2 emit options stay scoped to the supported switch surface", () => {
   assert.deepEqual(
     [
       ...publicStructFieldNames(
-        readRepoFile("davinci", "vize_l1_to_l2", "src", "emit", "options.rs"),
+        readRepoFile("davinci", "vize_l4", "src", "targets", "dom", "artifact", "options.rs"),
         "DomEmitOptions",
       ),
     ].sort(),
@@ -187,7 +187,7 @@ test("DOM production selector has no live env lane override", () => {
     ["crates", "vize_atelier_dom", "src", "compile.rs"],
     ["crates", "vize_atelier_dom", "src", "compile", "sfc.rs"],
     ["crates", "vize_atelier_dom", "src", "compile", "stage_options.rs"],
-    ["davinci", "vize_l1_to_l2", "src", "emit.rs"],
+    ["davinci", "vize_l4", "src", "targets", "dom", "artifact.rs"],
     ["davinci", "vize_l1_to_l2", "src", "lib.rs"],
   ] as const;
 

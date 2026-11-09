@@ -15,7 +15,7 @@
 use crate::support;
 
 use support::with_transformed;
-use vize_l1_to_l2::{EmitError, emit_dom};
+use vize_l4::targets::dom::artifact::{EmitError, emit_dom};
 
 fn assembled(source: &str) -> String {
     with_transformed(source, |lowered, _folio, facts, _budget| {

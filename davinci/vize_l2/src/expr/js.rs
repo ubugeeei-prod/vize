@@ -34,6 +34,8 @@ use super::opaque::OpaqueReason;
 
 pub mod coordinates;
 pub use coordinates::{JsCoordinateError, JsCoordinates, JsSegment};
+pub mod module_goal;
+pub use module_goal::js_module_compatible;
 
 /// TypeScript expression dialect (superset of the template's JS) - the
 /// exact `SourceType` the armature retained-parse site uses, so both

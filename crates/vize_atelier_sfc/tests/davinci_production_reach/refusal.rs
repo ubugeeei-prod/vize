@@ -9,7 +9,7 @@
 
 use std::collections::BTreeMap;
 
-use vize_l1_to_l2::EmitError;
+use vize_l4::targets::dom::artifact::EmitError;
 
 /// L2 reported an error diagnostic and left the module to the shipped lane.
 pub const DIAGNOSTICS: &str = "diagnostics";

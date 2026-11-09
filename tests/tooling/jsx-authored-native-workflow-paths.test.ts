@@ -58,7 +58,7 @@ test("all raw-child producers, exhaustive visitors and the three registered inpu
     "crates/vize_atelier_jsx/src/lower/child.rs",
     "crates/vize_atelier_core/src/codegen/slots/detect.rs",
     "crates/vize_relief/src/relief/expressions.rs",
-    "davinci/vize_l1_to_l2/src/emit/children.rs",
+    "davinci/vize_l4/src/targets/dom/artifact/children.rs",
     "davinci/vize_l2/src/op/text.rs",
     "davinci/vize_l2_to_l3/src/lower.rs",
     "davinci/vize_l3/src/dom/build.rs",

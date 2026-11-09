@@ -13,7 +13,7 @@ use crate::support;
 
 use vize_atelier_core::options::{CodegenMode, CodegenOptions};
 use vize_atelier_dom::DomCompilerOptions;
-use vize_l1_to_l2::{DomEmitMode, DomEmitOptions};
+use vize_l4::targets::dom::artifact::{DomEmitMode, DomEmitOptions};
 
 const BATTERY: &[(&str, &str)] = &[
     ("exact", "<div><Foo /></div>"),
@@ -93,7 +93,7 @@ fn an_unrelated_component_name_changes_nothing() {
 fn the_self_reference_flag_is_pinned() {
     let allocator = vize_l0::Allocator::new();
     let emit = |src: &str, own: Option<&str>| {
-        vize_l1_to_l2::emit_dom_source_with_options(
+        vize_l4::targets::dom::artifact::emit_dom_source_with_options(
             &allocator,
             src,
             vize_l1_to_l2::LegacyCaps::VUE3,

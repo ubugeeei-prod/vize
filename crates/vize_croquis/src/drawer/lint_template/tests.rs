@@ -102,8 +102,9 @@ fn l1_l2_entity_decoding_respects_attribute_and_text_contexts() {
     let (surface, errors) = vize_l1::markup::parse(&allocator, source);
     assert!(errors.is_empty());
     let lowered = lower_preserving_comments(&allocator, &surface, &errors);
-    let expected_attribute = vize_l1_to_l2::emit::decode_html_attribute_entities("&copy=1");
-    let expected_text = vize_l1_to_l2::emit::decode_html_entities("&amp");
+    let expected_attribute =
+        vize_l4::targets::dom::artifact::decode_html_attribute_entities("&copy=1");
+    let expected_text = vize_l4::targets::dom::artifact::decode_html_entities("&amp");
 
     let root = CompatibilityRoot::new(lint_template(&surface, &lowered)).build();
     let TemplateChildNode::Element(element) = &root.children[0] else {
@@ -141,7 +142,9 @@ fn l1_l2_text_decoding_preserves_escaped_numeric_parentheses() {
     };
 
     assert_eq!(
-        vize_l1_to_l2::emit::decode_html_entities("before &amp;#40;inside&amp;#041; after"),
+        vize_l4::targets::dom::artifact::decode_html_entities(
+            "before &amp;#40;inside&amp;#041; after"
+        ),
         "before (inside) after"
     );
     assert_eq!(text.content, "before (inside) after");

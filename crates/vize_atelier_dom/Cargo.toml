@@ -31,7 +31,8 @@ vize_croquis = { workspace = true }
 # TypeScript expression erasure is part of the public DOM option surface, so
 # keep the stage library's opt-in implementation available in the production
 # graph.
-vize_l1_to_l2 = { workspace = true, features = ["typescript"] }
+vize_l1_to_l2 = { workspace = true }
+vize_l4 = { workspace = true, features = ["typescript"] }
 
 phf = { workspace = true }
 serde = { workspace = true }

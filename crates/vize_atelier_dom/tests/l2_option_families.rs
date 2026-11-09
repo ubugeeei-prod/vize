@@ -14,7 +14,7 @@ use crate::support;
 
 use vize_atelier_core::options::{BindingMetadata, BindingType, CodegenMode, CodegenOptions};
 use vize_atelier_dom::DomCompilerOptions;
-use vize_l1_to_l2::{BindingTable, DomEmitMode, DomEmitOptions};
+use vize_l4::targets::dom::artifact::{BindingTable, DomEmitMode, DomEmitOptions};
 
 const SCOPE_ID: &str = "data-v-abc123";
 

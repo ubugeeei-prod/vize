@@ -16,7 +16,7 @@ use crate::support;
 
 use support::with_transformed;
 use vize_l0::Allocator;
-use vize_l1_to_l2::{
+use vize_l4::targets::dom::artifact::{
     DomEmitOptions, UnsupportedReason as Reason, emit_dom_source, emit_dom_with_options,
 };
 

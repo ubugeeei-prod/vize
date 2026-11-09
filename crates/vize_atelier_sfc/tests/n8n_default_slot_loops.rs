@@ -33,7 +33,7 @@ fn current_module() -> String {
         vize_l1_to_l2::lower_with_caps(&allocator, &tree, &errors, vize_l1_to_l2::LegacyCaps::VUE3);
     assert!(lowered.diagnostics.is_empty(), "{:?}", lowered.diagnostics);
     let facts = vize_l1_to_l2::pass::run_transform(&mut lowered, &mut BudgetObserver::new());
-    vize_l1_to_l2::emit_dom(&lowered, &facts)
+    vize_l4::targets::dom::artifact::emit_dom(&lowered, &facts)
         .expect("complete native module")
         .assembled()
         .to_string()

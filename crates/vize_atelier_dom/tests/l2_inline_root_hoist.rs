@@ -18,7 +18,7 @@ use crate::support;
 
 use vize_atelier_core::options::{BindingMetadata, BindingType, CodegenMode, CodegenOptions};
 use vize_atelier_dom::DomCompilerOptions;
-use vize_l1_to_l2::{BindingTable, DomEmitMode, DomEmitOptions};
+use vize_l4::targets::dom::artifact::{BindingTable, DomEmitMode, DomEmitOptions};
 
 const BATTERY: &[(&str, &str)] = &[
     (
@@ -251,7 +251,7 @@ fn the_arm_is_what_moves_the_root_props_into_the_preamble() {
     let table = support::bindings::binding_table(&metadata);
     let allocator = vize_l0::Allocator::new();
     let emit = |src: &str, inline: bool| {
-        vize_l1_to_l2::emit_dom_source_with_options(
+        vize_l4::targets::dom::artifact::emit_dom_source_with_options(
             &allocator,
             src,
             vize_l1_to_l2::LegacyCaps::VUE3,

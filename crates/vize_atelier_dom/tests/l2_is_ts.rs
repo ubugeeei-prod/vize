@@ -16,7 +16,7 @@ use crate::support;
 use vize_atelier_core::options::{BindingMetadata, BindingType, CodegenMode, CodegenOptions};
 use vize_atelier_dom::DomCompilerOptions;
 use vize_l0::FxHashMap;
-use vize_l1_to_l2::{BindingKind, BindingTable, DomEmitMode, DomEmitOptions};
+use vize_l4::targets::dom::artifact::{BindingKind, BindingTable, DomEmitMode, DomEmitOptions};
 
 const BATTERY: &[(&str, &str)] = &[
     // `as` assertions, the shape the detector fast-paths.
@@ -273,7 +273,7 @@ fn is_ts_in_the_production_shape_matches_the_shipped_dom_lane() {
 fn erased_spellings_are_pinned() {
     let allocator = vize_l0::Allocator::new();
     let emit = |src: &str| {
-        vize_l1_to_l2::emit_dom_source_with_options(
+        vize_l4::targets::dom::artifact::emit_dom_source_with_options(
             &allocator,
             src,
             vize_l1_to_l2::LegacyCaps::VUE3,

@@ -61,7 +61,7 @@ pub(super) fn compile_template_inner_for_sfc_with_sections_captured<'a, C: Captu
     no_slotted: bool,
     development: bool,
     capture: &mut C,
-    mut preflight: Option<&mut dyn vize_l1_to_l2::SurfacePreflight>,
+    mut preflight: Option<&mut dyn vize_l4::targets::dom::artifact::SurfacePreflight>,
 ) -> (Vec<CompilerError>, CodegenResultWithSections) {
     let codegen_opts = stage_options::codegen_options(&options, codegen_options.clone());
     let experimental_self_component = codegen_experimental_options.self_component;

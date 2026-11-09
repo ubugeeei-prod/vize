@@ -11,7 +11,7 @@
 //!   rewrote `content` after parse (prefixing, filters, TS stripping) fails
 //!   the gate and the site falls back to its legacy parse.
 //! - [`js_module_compatible`] delegates the dialect decision to the single
-//!   level-owned gate in `vize_l1_to_l2`: the legacy sites parse with
+//!   level-owned gate in `vize_l2`: the legacy sites parse with
 //!   `SourceType::default().with_module(true)` (plain JS, module goal) while
 //!   the retained parse is TS with the unambiguous module goal. The scan
 //!   accepts an AST only when no construct is present whose parse *could*
@@ -63,7 +63,7 @@ pub fn retained_whole_expression<'a>(node: &SimpleExpressionNode<'a>) -> Option<
 /// same parse a `SourceType::default().with_module(true)` (JS, module goal)
 /// site would produce — see the module docs for the exact reject classes.
 pub fn js_module_compatible(js: &JsExpression<'_>) -> bool {
-    vize_l1_to_l2::js_module_compatible(js.ast, js.raw)
+    vize_l2::expr::js::js_module_compatible(js.ast, js.raw)
 }
 
 /// Dual-run instrumentation for the differential lane (see module docs);

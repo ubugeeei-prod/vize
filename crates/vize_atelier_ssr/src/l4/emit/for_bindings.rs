@@ -2,10 +2,10 @@
 
 use vize_atelier_core::steps::erase_typescript_params;
 use vize_l0::{FxHashSet, String, id::NodeId};
-use vize_l1_to_l2::{
+use vize_l2::op::ForOp;
+use vize_l4::targets::dom::artifact::{
     TransformScopeMark, exceptional_for_binding_names, rewrite_for_alias_expressions,
 };
-use vize_l2::op::ForOp;
 
 use super::{Emitter, Result};
 use crate::codegen::helpers::extract_destructure_params;

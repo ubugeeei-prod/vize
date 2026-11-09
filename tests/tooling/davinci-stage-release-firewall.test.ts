@@ -112,11 +112,19 @@ test("DOM production keeps the published L2 renderer available for profiling", (
       req: versionRequirement("vize_l1_to_l2"),
       rename: null,
       optional: false,
-      // TypeScript templates are part of the public DOM compiler contract, so
-      // the profiled DOM renderer enables the stage library's opt-in erasure.
-      features: ["typescript"],
+      features: [],
     },
   ]);
+
+  // The profiled DOM renderer lives in `vize_l4`. TypeScript templates are part
+  // of the public DOM compiler contract, so it enables the opt-in erasure.
+  const renderer = dom.dependencies.find(
+    (dependency) => dependency.kind === null && dependency.name === "vize_l4",
+  );
+  assert.deepEqual(
+    renderer && { req: renderer.req, optional: renderer.optional, features: renderer.features },
+    { req: versionRequirement("vize_l4"), optional: false, features: ["typescript"] },
+  );
 });
 
 test("Vapor production selects only published stages for the L3 bridge", () => {
@@ -195,8 +203,8 @@ test("SSR production selects only published stages for the L4 bridge", () => {
     .sort((left, right) => left.name.localeCompare(right.name));
 
   // P3-8 emits from the L4 plan: L2 side tables are keyed by `vize_l0`
-  // node ids, and the transform expression rewrite erases TypeScript exactly
-  // like the L2 DOM lane.
+  // node ids. The transform expression rewrite, which erases TypeScript like
+  // the L2 DOM lane, now comes from `vize_l4` with its `typescript` feature.
   assert.deepEqual(stageEdges, [
     {
       name: "vize_l0",
@@ -217,7 +225,7 @@ test("SSR production selects only published stages for the L4 bridge", () => {
       req: versionRequirement("vize_l1_to_l2"),
       rename: null,
       optional: false,
-      features: ["typescript"],
+      features: [],
     },
     {
       name: "vize_l2",

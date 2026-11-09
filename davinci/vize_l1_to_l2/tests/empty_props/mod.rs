@@ -67,8 +67,9 @@ fn retained_scope_id_prevents_the_empty_props_null_shortcut() {
     use vize_atelier_core::options::CodegenMode;
     use vize_atelier_dom::{DomCompilerOptions, compile_template_legacy_with_options};
     use vize_l0::Allocator;
-    use vize_l1_to_l2::{
-        DomEmitMode, DomEmitOptions, LegacyCaps, emit_dom_source_patch_facts_observed_with_options,
+    use vize_l1_to_l2::LegacyCaps;
+    use vize_l4::targets::dom::artifact::{
+        DomEmitMode, DomEmitOptions, emit_dom_source_patch_facts_observed_with_options,
     };
 
     let receipt: Value = serde_json::from_str(CONTROLS.first().expect("named-slot control"))

@@ -3,9 +3,11 @@
 
 use vize_atelier_core::RuntimeHelper;
 use vize_l0::{String, ToCompactString, camelize, cstr};
-use vize_l1_to_l2::{TransformContent, TransformExpressions, decode_template_entities};
 use vize_l2::expr::ExprRef;
 use vize_l2::op::{self as l2, DynamicName};
+use vize_l4::targets::dom::artifact::{
+    TransformContent, TransformExpressions, decode_template_entities,
+};
 
 use super::attrs::Attached;
 use super::{Emitter, Result, plan_source};
@@ -317,7 +319,10 @@ impl Emitter<'_, '_, '_, '_, '_, '_> {
 
     /// `event_handler_to_string`: processed handler text that is not a
     /// function or a callable reference is wrapped once more.
-    fn callable_handler(&self, processed: vize_l1_to_l2::TransformedExpr) -> Result<String> {
+    fn callable_handler(
+        &self,
+        processed: vize_l4::targets::dom::artifact::TransformedExpr,
+    ) -> Result<String> {
         let rendered = self.consume(processed)?;
         if TransformExpressions::handler_is_callable(&rendered) {
             return Ok(rendered);
