@@ -273,11 +273,12 @@ mod tests {
         let created = load_lsp_config_snapshot(Some(&path));
         assert!(created.valid, "{:?}", created.error);
         assert!(created.watch_dependencies_complete);
-        let canonical = path.canonicalize().unwrap();
+        let canonical = crate::path::canonicalize_non_verbatim(&path);
         // The JS dependency graph uses Node's native realpath spelling. On
         // Windows this expands 8.3 paths without Rust's verbatim path prefix.
         // An independent Node call owns the expected spelling; keep the exact
-        // authored and Rust-canonical aliases in the expected watch set too.
+        // authored and portable Rust-canonical aliases in the expected watch
+        // set too.
         let node_realpath = std::process::Command::new("node")
             .arg("-e")
             .arg("process.stdout.write(require('node:fs').realpathSync.native(process.argv[1]));")

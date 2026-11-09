@@ -25,10 +25,7 @@ fn native_vite_settings_use_the_same_projection_as_public_js() {
     );
     assert_eq!(
         loaded.config.type_checker.tsconfig.as_deref(),
-        project
-            .path()
-            .canonicalize()
-            .unwrap()
+        crate::path::canonicalize_non_verbatim(project.path())
             .join("tsconfig.app.json")
             .to_str()
     );
@@ -120,7 +117,7 @@ fn formatter_snapshot_retains_entry_scope_through_vite_root_projection() {
     .unwrap();
     let snapshot = try_load_formatter_snapshot(Some(project.path())).unwrap();
     let root = crate::path::canonicalize_non_verbatim(project.path()).join("app");
-    let entry_root = root.join("packages/ui");
+    let entry_root = root.join("packages").join("ui");
     assert_eq!(snapshot.project_root.as_deref(), Some(root.as_path()));
     assert_eq!(
         snapshot
