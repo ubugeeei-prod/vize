@@ -1,10 +1,15 @@
 import assert from "node:assert/strict";
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
 import { test } from "node:test";
 import { parse } from "yaml";
 
 import {
+  closureTestDirectoryName,
   providerClosureRole,
   providerClosureTests,
+  typescriptPackageDirectory,
 } from "../../tools/support/compat/content-mapper/provider-closure.ts";
 import { readRepoFile } from "./support/github-workflows.ts";
 
@@ -68,4 +73,35 @@ test("scheduled conformance always runs and retains the provider closure", () =>
   });
   assert.match(upload?.with?.path ?? "", /content-mapper-editor-stress/u);
   assert.ok(steps.indexOf(invocation ?? {}) < steps.indexOf(upload ?? {}));
+});
+
+test("the JavaScript tsc package resolves from a pnpm shell-shim launcher", (t) => {
+  const workspace = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), "provider-closure-")));
+  t.after(() => fs.rmSync(workspace, { recursive: true, force: true }));
+  const modules = path.join(workspace, "node_modules");
+  const tsc = path.join(modules, ".bin/tsc");
+  fs.mkdirSync(path.dirname(tsc), { recursive: true });
+  fs.mkdirSync(path.join(modules, "typescript"), { recursive: true });
+  fs.writeFileSync(path.join(workspace, "package.json"), '{"private":true}\n');
+  fs.writeFileSync(tsc, '#!/bin/sh\nexec node "$basedir/../typescript/bin/tsc" "$@"\n');
+  fs.writeFileSync(
+    path.join(modules, "typescript/package.json"),
+    '{"name":"typescript","version":"6.0.3"}\n',
+  );
+  assert.equal(fs.lstatSync(tsc).isSymbolicLink(), false);
+  assert.equal(typescriptPackageDirectory(tsc), path.join(modules, "typescript"));
+  assert.notEqual(typescriptPackageDirectory(tsc), path.dirname(path.dirname(tsc)));
+});
+
+test("provider-closure evidence directories are valid artifact paths", () => {
+  assert.deepEqual(
+    providerClosureTests
+      .map(closureTestDirectoryName)
+      .filter((name) => /[":<>|*?\r\n]/u.test(name)),
+    [],
+  );
+  assert.equal(
+    closureTestDirectoryName(providerClosureTests[2], 2),
+    "03-content_mapper_tsgo_cli--reported_dynamic_targets--originals_and_error_repair_restore_keep_component_target_types",
+  );
 });
