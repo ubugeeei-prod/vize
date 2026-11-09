@@ -163,12 +163,20 @@ fn walked_candidate_directories_match_realpath_through_links_and_parents() {
             "{specifier}"
         );
     }
-    let known = sources.canonical_directories.lock().unwrap();
-    for directory in [
-        root.join("src/features/a"),
-        root.join("src/kit"),
-        root.join("elsewhere/shared"),
-    ] {
-        assert!(known.contains(&directory), "{directory:?}");
-    }
+    let mut known: Vec<_> = sources
+        .canonical_directories
+        .lock()
+        .unwrap()
+        .iter()
+        .cloned()
+        .collect();
+    known.sort();
+    assert_eq!(
+        known,
+        [
+            root.join("elsewhere/shared"),
+            root.join("src/features/a"),
+            root.join("src/kit"),
+        ]
+    );
 }
