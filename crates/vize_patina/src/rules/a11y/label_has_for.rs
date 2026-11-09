@@ -26,7 +26,11 @@ use crate::markup::{
     MarkupTraversal,
 };
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use crate::rules::a11y::helpers::{canonical_component_name, matches_configured_component};
+use crate::rules::a11y::helpers::{
+    canonical_component_name, is_aria_hidden_true, matches_configured_component,
+    string_literal_value,
+};
+use crate::rules::a11y::markup_helpers;
 use vize_relief::{ElementNode, ElementType, ExpressionNode, PropNode, TemplateChildNode};
 
 static META: RuleMeta = RuleMeta {
@@ -68,16 +72,38 @@ impl LabelHasFor {
     }
 }
 
-const FORM_CONTROL_TAGS: &[&str] = &["input", "select", "textarea"];
+const FORM_CONTROL_TAGS: &[&str] = &["input", "select", "textarea", "meter", "progress"];
+
+fn nonempty_expression(value: &str) -> bool {
+    let value = value.trim();
+    if value.is_empty() || matches!(value, "null" | "undefined") {
+        return false;
+    }
+    string_literal_value(value).is_none_or(|literal| !literal.is_empty())
+}
 
 fn has_for_attribute(element: &ElementNode) -> bool {
     element.props.iter().any(|prop| match prop {
-        PropNode::Attribute(attr) => attr.name == "for" || attr.name == "htmlFor",
+        PropNode::Attribute(attr) => {
+            (attr.name == "for" || attr.name == "htmlFor")
+                && attr
+                    .value
+                    .as_ref()
+                    .is_some_and(|value| !value.content.is_empty())
+        }
         // `v-bind="attrs"` can supply `for` at runtime (#8961).
         PropNode::Directive(dir) => {
             dir.name == "bind"
+                && !dir.shorthand
                 && match &dir.arg {
-                    Some(ExpressionNode::Simple(s)) => s.content == "for" || s.content == "htmlFor",
+                    Some(ExpressionNode::Simple(s))
+                        if s.content == "for" || s.content == "htmlFor" =>
+                    {
+                        dir.exp.as_ref().is_some_and(|expression| match expression {
+                            ExpressionNode::Simple(simple) => nonempty_expression(simple.content),
+                            ExpressionNode::Compound(compound) => !compound.children.is_empty(),
+                        })
+                    }
                     Some(_) => false,
                     None => true,
                 }
@@ -92,6 +118,9 @@ fn has_nested_form_control(
     for child in children {
         match child {
             TemplateChildNode::Element(el) => {
+                if is_aria_hidden_true(el) {
+                    continue;
+                }
                 if FORM_CONTROL_TAGS.contains(&el.tag)
                     || matches_configured_component(el.tag, control_components)
                 {
@@ -119,15 +148,31 @@ fn has_nested_form_control(
     false
 }
 
-fn has_markup_for(element: &MarkupElement<'_>) -> bool {
+fn has_markup_for(element: &MarkupElement<'_>, source: &str) -> bool {
     let mut found = false;
     element.walk_bindings(&mut |binding| {
         found |= match binding.kind() {
-            MarkupBindingKind::Attribute | MarkupBindingKind::Bind => {
-                binding.is_unqualified_arg_exact("for")
+            MarkupBindingKind::Attribute => {
+                (binding.is_unqualified_arg_exact("for")
+                    || binding.is_unqualified_arg_exact("htmlFor"))
+                    && binding
+                        .static_value()
+                        .is_some_and(|value| !value.is_empty())
+            }
+            MarkupBindingKind::Bind => {
+                if binding.arg_name().is_none() {
+                    true
+                } else if binding.is_unqualified_arg_exact("for")
                     || binding.is_unqualified_arg_exact("htmlFor")
-                    // `v-bind="attrs"` can supply `for` at runtime (#8961).
-                    || (binding.kind() == MarkupBindingKind::Bind && binding.arg_name().is_none())
+                {
+                    let range = binding.range();
+                    let has_authored_value = source
+                        .get(range.start as usize..range.end as usize)
+                        .is_some_and(|authored| authored.contains('='));
+                    has_authored_value && binding.expression().is_some_and(nonempty_expression)
+                } else {
+                    false
+                }
             }
             _ => false,
         };
@@ -143,6 +188,9 @@ fn has_nested_markup_control(
     let mut found = false;
     element.walk_rendered_children(&mut |child| {
         if let MarkupNode::Element(child) = child {
+            if markup_helpers::is_aria_hidden_true_markup(&child) {
+                return;
+            }
             found = found
                 || FORM_CONTROL_TAGS
                     .iter()
@@ -166,7 +214,7 @@ impl MarkupRule for LabelHasFor {
     fn enter_element<'a>(&self, ctx: &mut MarkupContext<'_, 'a>, element: &MarkupElement<'a>) {
         if element.kind() == MarkupElementKind::Component
             || !element.is_unqualified_tag_exact("label")
-            || has_markup_for(element)
+            || has_markup_for(element, ctx.lint().source)
             || has_nested_markup_control(element, &self.control_components)
         {
             return;
@@ -277,6 +325,43 @@ mod tests {
             "test.vue",
         );
         assert_eq!(result.warning_count, 0);
+    }
+
+    #[test]
+    fn accepts_all_native_labelable_controls() {
+        let linter = create_linter();
+        for tag in ["meter", "progress"] {
+            let source = format!("<label>Level <{tag} value=\"0.5\" /></label>");
+            let result = linter.lint_template(&source, "test.vue");
+            assert_eq!(
+                result.warning_count, 0,
+                "{source}: {:?}",
+                result.diagnostics
+            );
+        }
+    }
+
+    #[test]
+    fn rejects_empty_for_and_hidden_controls() {
+        let result = create_linter().lint_template(
+            r#"<label for="">Name</label><label>Name <input aria-hidden="true" /></label>"#,
+            "test.vue",
+        );
+        assert_eq!(result.warning_count, 2, "{:?}", result.diagnostics);
+
+        for source in [
+            r#"<label :for="''">Name</label>"#,
+            r#"<label :for="null">Name</label>"#,
+            r#"<label :for>Name</label>"#,
+            r#"<label>Name <span aria-hidden="true"><input /></span></label>"#,
+        ] {
+            let result = create_linter().lint_template(source, "test.vue");
+            assert_eq!(
+                result.warning_count, 1,
+                "{source}: {:?}",
+                result.diagnostics
+            );
+        }
     }
 
     #[test]

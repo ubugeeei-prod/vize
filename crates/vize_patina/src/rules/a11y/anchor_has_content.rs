@@ -15,8 +15,10 @@ use crate::markup::{
 };
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use crate::rules::a11y::helpers::{
-    canonical_component_name, is_slot_element, matches_configured_component, string_literal_value,
+    canonical_component_name, get_static_or_bound_literal_attribute_value, is_aria_hidden_true,
+    is_slot_element, matches_configured_component, string_literal_value,
 };
+use crate::rules::a11y::markup_helpers;
 use vize_relief::{ElementNode, ExpressionNode, PropNode, TemplateChildNode};
 
 static META: RuleMeta = RuleMeta {
@@ -62,6 +64,10 @@ impl AnchorHasContent {
         for prop in &element.props {
             if let PropNode::Attribute(attr) = prop
                 && (attr.name == "aria-label" || attr.name == "aria-labelledby")
+                && attr
+                    .value
+                    .as_ref()
+                    .is_some_and(|value| !value.content.is_empty())
             {
                 return true;
             }
@@ -69,6 +75,10 @@ impl AnchorHasContent {
                 && dir.name == "bind"
                 && let Some(vize_relief::ExpressionNode::Simple(s)) = &dir.arg
                 && (s.content == "aria-label" || s.content == "aria-labelledby")
+                && dir.exp.as_ref().is_some_and(|expression| match expression {
+                    ExpressionNode::Simple(simple) => nonempty_expression(simple.content),
+                    ExpressionNode::Compound(compound) => !compound.children.is_empty(),
+                })
             {
                 return true;
             }
@@ -84,6 +94,12 @@ impl AnchorHasContent {
                     return true;
                 }
                 TemplateChildNode::Element(el) => {
+                    if is_aria_hidden_true(el) {
+                        continue;
+                    }
+                    if has_content_directive(el) {
+                        return true;
+                    }
                     if is_slot_element(el) {
                         return true;
                     }
@@ -136,9 +152,17 @@ impl AnchorHasContent {
         let mut labelled = false;
         element.walk_bindings(&mut |binding| {
             labelled |= match binding.kind() {
-                MarkupBindingKind::Attribute | MarkupBindingKind::Bind => {
-                    binding.is_unqualified_arg_exact("aria-label")
-                        || binding.is_unqualified_arg_exact("aria-labelledby")
+                MarkupBindingKind::Attribute => {
+                    (binding.is_unqualified_arg_exact("aria-label")
+                        || binding.is_unqualified_arg_exact("aria-labelledby"))
+                        && binding
+                            .static_value()
+                            .is_some_and(|value| !value.is_empty())
+                }
+                MarkupBindingKind::Bind => {
+                    (binding.is_unqualified_arg_exact("aria-label")
+                        || binding.is_unqualified_arg_exact("aria-labelledby"))
+                        && binding.expression().is_some_and(nonempty_expression)
                 }
                 _ => false,
             };
@@ -155,11 +179,14 @@ impl AnchorHasContent {
                 MarkupNode::Text(text) => text.is_significant(),
                 MarkupNode::Interpolation(_) => true,
                 MarkupNode::Element(child) => {
-                    child.kind() == MarkupElementKind::Slot
-                        || child.is_unqualified_tag_exact("slot")
-                        || matches_configured_component(child.tag(), &self.accessible_children)
-                        || (child.is_unqualified_tag_exact("img") && Self::has_markup_alt(&child))
-                        || self.has_markup_content(&child)
+                    !markup_helpers::is_aria_hidden_true_markup(&child)
+                        && (has_markup_content_directive(&child)
+                            || child.kind() == MarkupElementKind::Slot
+                            || child.is_unqualified_tag_exact("slot")
+                            || matches_configured_component(child.tag(), &self.accessible_children)
+                            || (child.is_unqualified_tag_exact("img")
+                                && Self::has_markup_alt(&child))
+                            || self.has_markup_content(&child))
                 }
                 _ => false,
             };
@@ -191,6 +218,43 @@ impl AnchorHasContent {
     }
 }
 
+fn nonempty_expression(value: &str) -> bool {
+    let value = value.trim();
+    if value.is_empty() || matches!(value, "null" | "undefined") {
+        return false;
+    }
+    string_literal_value(value).is_none_or(|literal| !literal.is_empty())
+}
+
+fn has_content_directive(element: &ElementNode<'_>) -> bool {
+    element.props.iter().any(|prop| {
+        matches!(prop, PropNode::Directive(directive) if matches!(directive.name, "text" | "html") && directive.exp.is_some())
+    })
+}
+
+fn has_markup_content_directive(element: &MarkupElement<'_>) -> bool {
+    let mut found = false;
+    element.walk_bindings(&mut |binding| {
+        found |= binding.kind() == MarkupBindingKind::Custom
+            && (binding.is_unqualified_arg_exact("text")
+                || binding.is_unqualified_arg_exact("html"))
+            && binding.expression().is_some();
+    });
+    found
+}
+
+fn is_anchor_element(element: &ElementNode<'_>) -> bool {
+    element.tag == "a"
+        || (element.tag == "component"
+            && get_static_or_bound_literal_attribute_value(element, "is") == Some("a"))
+}
+
+fn is_markup_anchor(element: &MarkupElement<'_>) -> bool {
+    element.is_unqualified_tag_exact("a")
+        || (element.is_unqualified_tag_exact("component")
+            && markup_helpers::get_static_or_bound_literal_markup_value(element, "is") == Some("a"))
+}
+
 impl MarkupRule for AnchorHasContent {
     fn name(&self) -> &'static str {
         META.name
@@ -201,7 +265,10 @@ impl MarkupRule for AnchorHasContent {
     }
 
     fn enter_element<'a>(&self, ctx: &mut MarkupContext<'_, 'a>, element: &MarkupElement<'a>) {
-        if !element.is_unqualified_tag_exact("a") || self.has_markup_content(element) {
+        if !is_markup_anchor(element)
+            || markup_helpers::is_aria_hidden_true_markup(element)
+            || self.has_markup_content(element)
+        {
             return;
         }
         let message = ctx.lint().t("a11y/anchor-has-content.message");
@@ -220,7 +287,7 @@ impl Rule for AnchorHasContent {
     }
 
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
-        if element.tag != "a" {
+        if !is_anchor_element(element) || is_aria_hidden_true(element) {
             return;
         }
 
@@ -328,5 +395,18 @@ mod tests {
                 result.diagnostics
             );
         }
+    }
+
+    #[test]
+    fn aligns_hidden_names_dynamic_content_and_component_anchors() {
+        let result = create_linter().lint_template(
+            r#"<a href="/a"><span aria-hidden="true">Settings</span></a>
+<a href="/b" aria-label=""></a>
+<component is="a" href="/c"></component>
+<a href="/d"><span v-text="label"></span></a>
+<a href="/e" aria-hidden="true"></a>"#,
+            "test.vue",
+        );
+        assert_eq!(result.warning_count, 3, "{:?}", result.diagnostics);
     }
 }
