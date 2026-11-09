@@ -7,6 +7,7 @@ use super::protocol::{DIRECTIVE_POLICY_EXPECT, DIRECTIVE_POLICY_IGNORE};
 mod directive_exact;
 mod disjoint;
 mod inference_copies;
+mod navigation_blocks;
 
 /// Explicit directives only; `disjoint.rs` covers the unmapped ignores.
 fn transform(source: &str) -> super::ContentMapperTransform {
