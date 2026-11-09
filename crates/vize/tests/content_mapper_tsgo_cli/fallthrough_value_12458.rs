@@ -9,33 +9,39 @@ use super::{
 };
 use vize_l0::{String as CompactString, cstr};
 
-const FIELD: &str = include_str!(concat!(
-    env!("CARGO_MANIFEST_DIR"),
-    "/../../tests/_fixtures/differential/typechecker/fallthrough-value-12458/Field.vue.txt"
-));
-const APP: &str = include_str!(concat!(
-    env!("CARGO_MANIFEST_DIR"),
-    "/../../tests/_fixtures/differential/typechecker/fallthrough-value-12458/App.vue.txt"
-));
-const CONFIG: &str = include_str!(concat!(
-    env!("CARGO_MANIFEST_DIR"),
-    "/../../tests/_fixtures/differential/typechecker/fallthrough-value-12458/tsconfig.json.txt"
-));
+macro_rules! fixture {
+    ($path:literal) => {
+        include_str!(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/../../tests/_fixtures/differential/typechecker/fallthrough-value-12458/",
+            $path
+        ))
+    };
+}
+
 /// One owner each: the original fallthrough value, a declared prop, a
 /// literal fallthrough value and an ARIA attr.
-const EXPECTED: [(u32, u32, &str); 4] = [
+const EXPECTED: [(&str, u32, u32, &str); 4] = [
     (
+        "App.vue",
         5,
         21,
         "Type '{}' is not assignable to type 'Numberish | undefined'.",
     ),
-    (6, 11, "Type 'number' is not assignable to type 'string'."),
     (
+        "App.vue",
+        6,
+        11,
+        "Type 'number' is not assignable to type 'string'.",
+    ),
+    (
+        "App.vue",
         6,
         22,
         "Type 'true' is not assignable to type 'Numberish | undefined'.",
     ),
     (
+        "App.vue",
         6,
         39,
         "Type '1' is not assignable to type 'Booleanish | undefined'.",
@@ -44,6 +50,64 @@ const EXPECTED: [(u32, u32, &str); 4] = [
 
 #[test]
 fn standard_tsgo_reports_fallthrough_values_like_vize_check() {
+    check_pair(
+        "fallthrough-value-12458-",
+        fixture!("tsconfig.json.txt"),
+        &[
+            ("Field.vue", fixture!("Field.vue.txt")),
+            ("App.vue", fixture!("App.vue.txt")),
+        ],
+        &EXPECTED,
+    );
+}
+
+/// A fallthrough root's `Partial` literal and the per-prop assignment render
+/// the same wrong-value message; the host must still see it once.
+#[test]
+fn relaxed_fallthrough_roots_report_wrong_values_once() {
+    check_pair(
+        "fallthrough-relaxed-root-12458-",
+        fixture!("relaxed/tsconfig.json.txt"),
+        &[
+            ("Inner.vue", fixture!("relaxed/Inner.vue.txt")),
+            ("Typed.vue", fixture!("relaxed/Typed.vue.txt")),
+        ],
+        &[(
+            "Typed.vue",
+            5,
+            11,
+            "Type 'number' is not assignable to type 'string'.",
+        )],
+    );
+}
+
+#[test]
+#[ignore = "#12491: only the ignored per-prop assignment rejects an explicit undefined at a relaxed root"]
+fn relaxed_fallthrough_roots_report_undefined_required_props() {
+    check_pair(
+        "fallthrough-relaxed-undefined-12458-",
+        fixture!("relaxed/tsconfig.json.txt"),
+        &[
+            ("Inner.vue", fixture!("relaxed/Inner.vue.txt")),
+            ("Wrapper.vue", fixture!("relaxed/Wrapper.vue.txt")),
+        ],
+        &[(
+            "Wrapper.vue",
+            5,
+            11,
+            "Type 'undefined' is not assignable to type 'string'.",
+        )],
+    );
+}
+
+/// The exact TS2322 vector through tsc and the Vize mapper, and through
+/// `vize check` whenever a Corsa executable resolves.
+fn check_pair(
+    prefix: &str,
+    config: &str,
+    files: &[(&str, &str)],
+    expected: &[(&str, u32, u32, &str)],
+) {
     let Some(tsgo) = std::env::var_os(TSGO_ENV).map(PathBuf::from) else {
         eprintln!("skipping exact Content Mapper conformance: {TSGO_ENV} is not set");
         return;
@@ -52,15 +116,16 @@ fn standard_tsgo_reports_fallthrough_values_like_vize_check() {
     let cases_root = workspace_root().join("target/vize-tests/tests");
     fs::create_dir_all(&cases_root).unwrap();
     let project = tempfile::Builder::new()
-        .prefix("fallthrough-value-12458-")
+        .prefix(prefix)
         .tempdir_in(cases_root)
         .unwrap();
     install_mapper_manifest(project.path());
     install_vue_package(project.path());
     fs::create_dir(project.path().join("src")).unwrap();
-    fs::write(project.path().join("tsconfig.json"), CONFIG).unwrap();
-    fs::write(project.path().join("src/Field.vue"), FIELD).unwrap();
-    fs::write(project.path().join("src/App.vue"), APP).unwrap();
+    fs::write(project.path().join("tsconfig.json"), config).unwrap();
+    for (name, source) in files {
+        fs::write(project.path().join("src").join(name), source).unwrap();
+    }
 
     let output = check_project(&tsgo, project.path(), "tsconfig.json");
     let stdout = std::str::from_utf8(&output.stdout).unwrap();
@@ -69,13 +134,14 @@ fn standard_tsgo_reports_fallthrough_values_like_vize_check() {
         .filter(|line| line.contains(": error TS"))
         .collect::<Vec<_>>();
     mapped.sort_unstable();
-    let expected = EXPECTED
+    let mut wanted = expected
         .iter()
-        .map(|(line, column, message)| {
-            cstr!("src/App.vue({line},{column}): error TS2322: {message}")
+        .map(|(file, line, column, message)| {
+            cstr!("src/{file}({line},{column}): error TS2322: {message}")
         })
         .collect::<Vec<_>>();
-    assert_eq!(mapped, expected, "{}", output_text(&output));
+    wanted.sort_unstable();
+    assert_eq!(mapped, wanted, "{}", output_text(&output));
 
     let Some(corsa) = crate::support::corsa_path::resolve(workspace_root()) else {
         eprintln!("skipping the vize check side: no Corsa executable resolved");
@@ -100,16 +166,26 @@ fn standard_tsgo_reports_fallthrough_values_like_vize_check() {
         .as_array()
         .unwrap()
         .iter()
-        .flat_map(|file| file["diagnostics"].as_array().unwrap())
-        .map(|diagnostic| {
-            let text = diagnostic.as_str().unwrap();
-            CompactString::from(text.split_once(" (source: ").map_or(text, |(head, _)| head))
+        .flat_map(|file| {
+            let path = file["file"].as_str().unwrap();
+            file["diagnostics"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .map(move |diagnostic| {
+                    let text = diagnostic.as_str().unwrap();
+                    let head = text.split_once(" (source: ").map_or(text, |(head, _)| head);
+                    cstr!("{path} {head}")
+                })
+        })
+        .collect::<Vec<CompactString>>();
+    checked.sort_unstable();
+    let mut wanted = expected
+        .iter()
+        .map(|(file, line, column, message)| {
+            cstr!("src/{file} error:{line}:{column} [TS2322] {message}")
         })
         .collect::<Vec<_>>();
-    checked.sort_unstable();
-    let expected = EXPECTED
-        .iter()
-        .map(|(line, column, message)| cstr!("error:{line}:{column} [TS2322] {message}"))
-        .collect::<Vec<_>>();
-    assert_eq!(checked, expected, "{}", output_text(&batch));
+    wanted.sort_unstable();
+    assert_eq!(checked, wanted, "{}", output_text(&batch));
 }

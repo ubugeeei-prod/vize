@@ -5,7 +5,10 @@ use std::path::Path;
 use super::super::protocol::{
     ContentMapperDiagnosticDirective, ContentMapperSpan, DIRECTIVE_POLICY_IGNORE,
 };
-use super::super::{ContentMapperSpanKind, generate_vue_content_mapper_transform};
+use super::super::{
+    ContentMapperSpanKind, ContentMapperTransformOptions, generate_vue_content_mapper_transform,
+    generate_vue_content_mapper_transform_with_options,
+};
 use super::DIRECTIVE_POLICY_EXPECT;
 use crate::virtual_ts::UNCHECKED_PROP_VALUE_DECLARATION;
 
@@ -134,6 +137,36 @@ fn authored_expectation_covers_the_live_companion() {
         .expect("directive table")
         .directives;
     assert_eq!(policies(&directives, span.0[0]), [DIRECTIVE_POLICY_EXPECT]);
+}
+
+/// A fallthrough root checks its literal against `Partial` props, which
+/// renders the same wrong-value message as the assignment. Its declared props
+/// stay owned by the literal, so the companion never repeats that report.
+#[test]
+fn relaxed_fallthrough_root_keeps_declared_props_with_the_literal() {
+    let mut options = ContentMapperTransformOptions::default();
+    options.checks.fallthrough_attributes = true;
+    options.checks.fallthrough_attributes_specified = true;
+    options.checks.check_required_fallthrough_attributes = true;
+    let source = "<script setup lang=\"ts\">\nimport Inner from './Inner.vue'\n</script>\n<template>\n  <Inner :label=\"1\" />\n</template>\n";
+    let result = generate_vue_content_mapper_transform_with_options(
+        Path::new("/project/Typed.vue"),
+        source,
+        options,
+    )
+    .expect("transform");
+    let text = result.text.as_str();
+    assert_eq!(
+        text.matches("  type __Inner_CheckProps_0 = Partial<__Inner_Props_0> & ")
+            .count(),
+        1,
+        "the root usage is relaxed"
+    );
+    assert_eq!(
+        text.matches("  type __Inner_Declared_0 = __Inner_Props_0 & $EmitListeners<typeof Inner> & $RequiredFallthroughProps<typeof Inner> & VueTemplatePublicAttrsType;\n")
+            .count(),
+        1
+    );
 }
 
 /// The companion value check repeats a static value as an inert copy.

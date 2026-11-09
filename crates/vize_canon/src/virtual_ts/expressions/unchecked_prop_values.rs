@@ -41,9 +41,9 @@ pub(super) fn append_unchecked_prop_value_checks(
     (source_context, hoist_shared_preamble): (ComponentPropSource<'_>, bool),
     indent: &str,
 ) {
-    let Some(relaxed_usages) = source_context.unchecked_prop_values else {
+    if !source_context.unchecked_prop_values {
         return;
-    };
+    }
     let component = to_safe_identifier_fragment(usage.name.as_str());
     let mut occurrences: FxHashMap<String, u32> = FxHashMap::default();
     let mut declared_inputs = false;
@@ -74,7 +74,6 @@ pub(super) fn append_unchecked_prop_value_checks(
             append_declared_inputs(
                 ts,
                 (component.as_str(), idx, component_ref),
-                relaxed_usages.contains(&usage.start),
                 hoist_shared_preamble,
                 indent,
             );
@@ -125,26 +124,22 @@ pub(super) fn append_unchecked_prop_value_checks(
     }
 }
 
-/// The literal's typed inputs: own props (`Partial` where a fallthrough root
-/// forwards them), emitted listeners, required fallthrough props and Vue's
-/// public attrs. Its untyped attr tail never checks a value.
+/// The literal's typed inputs: own props, emitted listeners, required
+/// fallthrough props and Vue's public attrs. Its untyped attr tail never
+/// checks a value. A fallthrough root's literal reads its own props as
+/// `Partial` and reports the same message for a wrong value, so the declared
+/// props alone decide ownership there too.
 fn append_declared_inputs(
     ts: &mut crate::virtual_ts::TextBuf,
     (component, idx, component_ref): (&str, usize, &str),
-    relaxed: bool,
     hoist_shared_preamble: bool,
     indent: &str,
 ) {
     use crate::virtual_ts::helpers::shared_types::{EMIT_LISTENERS, REQUIRED_FALLTHROUGH_PROPS};
     let emit_listeners = EMIT_LISTENERS.select(hoist_shared_preamble);
     let required_fallthrough = REQUIRED_FALLTHROUGH_PROPS.select(hoist_shared_preamble);
-    let props = if relaxed {
-        cstr!("Partial<__{component}_Props_{idx}>")
-    } else {
-        cstr!("__{component}_Props_{idx}")
-    };
     append!(
         *ts,
-        "{indent}type __{component}_Declared_{idx} = {props} & {emit_listeners}<typeof {component_ref}> & {required_fallthrough}<typeof {component_ref}> & $PublicComponentAttrs;\n"
+        "{indent}type __{component}_Declared_{idx} = __{component}_Props_{idx} & {emit_listeners}<typeof {component_ref}> & {required_fallthrough}<typeof {component_ref}> & $PublicComponentAttrs;\n"
     );
 }

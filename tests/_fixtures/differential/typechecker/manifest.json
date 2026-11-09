@@ -13494,6 +13494,50 @@
       }
     },
     {
+      "id": "typechecker/regression/fallthrough-relaxed-root-12458",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "fallthrough-value-12458/relaxed/Inner.vue.txt",
+          "sha256": "72e9d3d2be8f495cd46269f2eff3336c253d1e453db81e713b9c56836e615514",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "fallthrough-value-12458/relaxed/Typed.vue.txt",
+          "sha256": "0b74e895160d8dc44d591d3834d6f9bf0be95189b471b93939461f417f126b5f",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "fallthrough-value-12458/relaxed/Wrapper.vue.txt",
+          "sha256": "35845e50389727159b7ea5b03b3419e994e1d219c43241cc146503593f1a7bb8",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "fallthrough-value-12458/relaxed/tsconfig.json.txt",
+          "sha256": "1927c08f47e2e5748682b396326abf2922661bf323963775af64f2834220e6d8",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "content_mapper_tsgo_cli::fallthrough_value_12458::relaxed_fallthrough_roots_report_wrong_values_once; a fallthrough root under checkRequiredFallthroughAttributes checked through tsc 7.1 with the Vize mapper and vize check on the same project (the explicit undefined case is tracked by #12491)"
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/regression/fallthrough-value-12458",
       "state": "active",
       "targets": [

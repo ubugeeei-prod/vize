@@ -46,9 +46,8 @@ pub(crate) struct ComponentPropSource<'a> {
     pub(crate) diagnostic_ownership:
         Option<&'a crate::virtual_ts::diagnostic_ownership::DiagnosticOwnershipCollector>,
     pub(crate) aria_value_contract_index: Option<usize>,
-    /// Content Mapper companion checks (#12458), with the usage starts whose
-    /// own required props are relaxed.
-    pub(crate) unchecked_prop_values: Option<&'a vize_carton::FxHashSet<u32>>,
+    /// Content Mapper companion checks (#12458).
+    pub(crate) unchecked_prop_values: bool,
     inference_only: bool,
     inert: bool,
     expected_packet: bool,
@@ -68,7 +67,7 @@ impl<'a> ComponentPropSource<'a> {
             model_modifiers: None,
             diagnostic_ownership: None,
             aria_value_contract_index: None,
-            unchecked_prop_values: None,
+            unchecked_prop_values: false,
             inference_only: false,
             inert: false,
             expected_packet: false,
