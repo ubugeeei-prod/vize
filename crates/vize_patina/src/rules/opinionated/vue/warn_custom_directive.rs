@@ -60,7 +60,10 @@ pub struct WarnCustomDirective {
     ignored_directives: Vec<String>,
 }
 
-#[allow(non_upper_case_globals)]
+#[expect(
+    non_upper_case_globals,
+    reason = "the unit-like rule value intentionally shares the rule type name"
+)]
 /// Default `vue/warn-custom-directive` rule with no ignored directives.
 pub const WarnCustomDirective: WarnCustomDirective = WarnCustomDirective {
     ignored_directives: Vec::new(),

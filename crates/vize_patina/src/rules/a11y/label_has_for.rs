@@ -41,7 +41,10 @@ pub struct LabelHasFor {
     control_components: Vec<vize_l0::String>,
 }
 
-#[allow(non_upper_case_globals)]
+#[expect(
+    non_upper_case_globals,
+    reason = "the unit-like rule value intentionally shares the rule type name"
+)]
 /// Default `a11y/label-has-for` rule with no project-local controls.
 pub const LabelHasFor: LabelHasFor = LabelHasFor {
     control_components: Vec::new(),
@@ -210,7 +213,7 @@ impl Rule for LabelHasFor {
 }
 
 fn canonical_component_name(name: &str) -> vize_l0::String {
-    vize_l0::hyphenate(name).to_ascii_lowercase().into()
+    vize_l0::hyphenate(name).to_ascii_lowercase()
 }
 
 fn matches_component(tag: &str, configured: &[vize_l0::String]) -> bool {
@@ -218,7 +221,7 @@ fn matches_component(tag: &str, configured: &[vize_l0::String]) -> bool {
         return false;
     }
     let canonical = canonical_component_name(tag);
-    configured.iter().any(|name| name == &canonical)
+    configured.contains(&canonical)
 }
 
 #[cfg(test)]

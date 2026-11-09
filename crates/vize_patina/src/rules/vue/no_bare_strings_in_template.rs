@@ -46,6 +46,7 @@ use crate::markup::{
 };
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use regex::Regex;
+use vize_l0::{String, cstr};
 use vize_relief::{ElementNode, RootNode, TemplateChildNode};
 
 static META: RuleMeta = RuleMeta {
@@ -77,7 +78,10 @@ enum BareStringAllowlist {
     Custom(Option<Regex>),
 }
 
-#[allow(non_upper_case_globals)]
+#[expect(
+    non_upper_case_globals,
+    reason = "the unit-like rule value intentionally shares the rule type name"
+)]
 /// Default `vue/no-bare-strings-in-template` rule using the upstream allowlist.
 pub const NoBareStringsInTemplate: NoBareStringsInTemplate = NoBareStringsInTemplate {
     allowlist: BareStringAllowlist::Default,
@@ -245,34 +249,37 @@ fn default_has_bare_string(text: &str) -> bool {
         .any(|character| !character.is_whitespace() && !ALLOWLIST.contains(&character))
 }
 
-fn compile_allowlist(entries: &[vize_l0::String]) -> Option<Regex> {
-    let alternatives = entries
-        .iter()
-        .map(|entry| regex_alternative(entry))
-        .collect::<Vec<_>>();
-    if alternatives.is_empty() {
-        return None;
+fn compile_allowlist(entries: &[String]) -> Option<Regex> {
+    let (first, rest) = entries.split_first()?;
+    let first = regex_alternative(first);
+    let mut source = String::with_capacity(first.len() + 4);
+    source.push_str("(?:");
+    source.push_str(&first);
+    for entry in rest {
+        source.push('|');
+        source.push_str(&regex_alternative(entry));
     }
-    Regex::new(&format!("(?:{})", alternatives.join("|"))).ok()
+    source.push(')');
+    Regex::new(&source).ok()
 }
 
-fn regex_alternative(entry: &str) -> std::string::String {
+fn regex_alternative(entry: &str) -> String {
     let Some((pattern, flags)) = javascript_regex(entry) else {
-        return regex::escape(entry);
+        return regex::escape(entry).into();
     };
-    let inline_flags: std::string::String = flags
+    let inline_flags: String = flags
         .chars()
         .filter(|flag| matches!(flag, 'i' | 'm' | 's'))
         .collect();
     let candidate = if inline_flags.is_empty() {
-        format!("(?:{pattern})")
+        cstr!("(?:{pattern})")
     } else {
-        format!("(?{inline_flags}:{pattern})")
+        cstr!("(?{inline_flags}:{pattern})")
     };
     if Regex::new(&candidate).is_ok() {
         candidate
     } else {
-        regex::escape(entry)
+        regex::escape(entry).into()
     }
 }
 
