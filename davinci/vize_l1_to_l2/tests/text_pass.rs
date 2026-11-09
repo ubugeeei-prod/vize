@@ -18,6 +18,7 @@ use vize_l1_to_l2::lower::{TextPart, rebuild_source};
 use vize_l1_to_l2::lower_preserving_comments;
 use vize_l1_to_l2::pass::TextFacts;
 use vize_l2::dump::{Expr as DumpExpr, Op as DumpOp};
+use vize_l2::expr::ExprRef;
 
 use support::{assert_transformed_sound, with_transformed};
 
