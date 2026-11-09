@@ -190,8 +190,8 @@ test("Content Mapper conformance pins and runs the exact upstream project path",
   );
   assert.match(job, /vp run --filter '\.\/npm\/native' build:ci/);
   assert.match(job, /\(cd npm\/cli && vp pack\)/);
-  assert.match(job, /vp exec napi create-npm-dirs/);
-  assert.match(job, /cp "\$binary" "npm\/\$target\/"/);
+  assert.match(job, /node tools\/support\/github\/stage-built-native-packages\.ts npm\/native/);
+  assert.doesNotMatch(job, /napi pre-publish/);
   assert.match(
     job,
     /VIZE_TEST_CONTENT_MAPPER_TSGO: \$\{\{ runner\.temp \}\}\/tsgo[\s\S]*smoke-release-install\.ts --prepare-manifests --content-mapper-checks[\s\S]*npm\/native npm\/native\/npm\/\*[\s\S]*npm\/cli/,

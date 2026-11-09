@@ -61,9 +61,15 @@ test("the musl fresh install smoke cross-builds x64 and arm64 in Alpine", () => 
   );
 
   const prepare = steps.find((step) =>
-    step.run?.includes('cp "vize-vitrine.$NATIVE_PLATFORM.node"'),
+    step.run?.includes("node tools/support/github/stage-built-native-packages.ts npm/native"),
   );
   assert.ok(prepare, "musl binding must be staged in its packed platform package");
+  assert.ok(
+    prepare.run?.includes(
+      'test -f "npm/native/npm/$NATIVE_PLATFORM/vize-vitrine.$NATIVE_PLATFORM.node"',
+    ),
+    "the staged musl package must hold the cross-built binding",
+  );
 
   const alpineStep = steps.find((step) => step.run?.includes("node:24-alpine"));
   const alpine = alpineStep?.run ?? "";

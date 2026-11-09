@@ -211,8 +211,13 @@ test("native smoke workflow fresh-installs runtime tarballs across supported tar
   assert.deepEqual(parsedJob?.strategy?.matrix?.["node-version"], ["22", "24"]);
   assert.doesNotMatch(job, /\.node-version\.ci/);
   assert.equal(runtimeSetup?.with?.["node-version"], "${{ matrix.node-version }}");
-  assert.match(job, /vp exec napi create-npm-dirs/);
-  assert.match(job, /vp exec napi pre-publish -t npm --no-gh-release --skip-optional-publish/);
+  // Smoke jobs build one host binding; only release lays out and validates all.
+  assert.match(job, /node tools\/support\/github\/stage-built-native-packages\.ts npm\/native/);
+  assert.doesNotMatch(job, /napi pre-publish/);
+  assert.match(
+    readRepoFile(".github", "actions", "release-npm-artifacts", "action.yml"),
+    /vp exec napi artifacts --output-dir artifacts\n\s+vp exec napi pre-publish -t npm --no-gh-release --skip-optional-publish\n/,
+  );
   assert.match(
     job,
     /smoke-release-install\.ts --prepare-manifests --runtime-checks[\s\S]*npm\/native npm\/native\/npm\/\*[\s\S]*npm\/cli npm\/builder\/vite/,
