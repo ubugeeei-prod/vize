@@ -43,13 +43,18 @@ pub(crate) const TYPED_ROUTE_GLOBAL_MARKER: &str = "__vize_typed_route_global";
 pub(crate) const RESOLVED_RUNTIME_DEFAULT: &str = "__vize_resolved_runtime_default";
 
 impl TemplateGlobal {
+    /// Whether the template context types this global through `__Global`;
+    /// CSS-module and typed-route globals carry their own resolved type.
+    pub(crate) fn uses_context_helper(&self) -> bool {
+        self.default_value != CSS_MODULE_GLOBAL_MARKER
+            && self.default_value != TYPED_ROUTE_GLOBAL_MARKER
+    }
+
     pub(crate) fn context_type_annotation(&self) -> String {
-        if self.default_value == CSS_MODULE_GLOBAL_MARKER
-            || self.default_value == TYPED_ROUTE_GLOBAL_MARKER
-        {
-            self.type_annotation.clone()
-        } else {
+        if self.uses_context_helper() {
             cstr!("__Global<'{}', {}>", self.name, self.type_annotation)
+        } else {
+            self.type_annotation.clone()
         }
     }
 }
