@@ -6,9 +6,10 @@ under the same pinned Vue Vapor runtime. Each row mounts both components in
 Happy DOM, applies the corpus updates, and compares normalized rendered DOM,
 live form state, diagnostics, and element identity.
 
-The current bounded cohort covers twenty-eight behaviors. It is not a claim that the
-full `vue-jsx-vapor` surface is compatible; issue #6884 remains open until the
-corpus covers the complete dialect inventory.
+Every surface of the dialect listed under [Dialect surface](#dialect-surface)
+has at least one mounted row. References compile with `transformVueJsxVapor`'s
+defaults: the opt-in `macros` option and the VDOM `interop` mode are outside
+the dialect this oracle measures.
 
 ## Pinned oracle
 
@@ -52,9 +53,45 @@ a reviewed update to the executable verdict inventory.
 | `children/dynamic-value`            | equivalent | value-sensitive child values match each backend's own JSX reference             |
 | `components/scoped-default-slot`    | equivalent | component props and a scoped slot closure update independently                  |
 | `components/named-slot-updates`     | equivalent | named slot captures and component props update independently                    |
+| `elements/fragment-updates`         | equivalent | fragment children update in place without a wrapper element                     |
+| `slots/object-children`             | equivalent | object-child default and named slots update independently                       |
+| `directives/v-model-component`      | equivalent | component `modelValue` round-trips through events and patches                   |
+| `directives/v-model-component-arg`  | equivalent | an explicit model argument binds the named prop and event                       |
+| `directives/v-model-checkbox`       | equivalent | checkbox `checked` follows change events and patches                            |
+| `directives/v-model-radio`          | equivalent | radio selection follows change events and patches                               |
+| `directives/v-model-select`         | equivalent | select state patches update the selection                                       |
+| `directives/v-model-modifier-array` | equivalent | the modifier-array form trims input                                             |
+| `directives/v-model-trim`           | equivalent | the underscore `trim` modifier trims input                                      |
+| `directives/v-model-lazy`           | equivalent | the `lazy` modifier updates on change only                                      |
+| `directives/v-model-number`         | equivalent | the `number` modifier stores numbers                                            |
+| `directives/v-text`                 | equivalent | text content follows each update                                                |
+| `directives/v-if-chain`             | equivalent | `v-if` / `v-else-if` / `v-else` switch and update branches                      |
+| `directives/v-for-keyed`            | equivalent | keyed `v-for` reorders, removes and appends with reuse                          |
+| `directives/v-slot-default`         | equivalent | a `v-slot` default scoped slot updates independently                            |
+| `directives/v-slot-named`           | equivalent | a named `<template v-slot:…>` updates independently                             |
+| `directives/custom`                 | equivalent | an in-scope custom directive receives a reactive getter                         |
+| `directives/v-pre`                  | equivalent | `v-pre` is inert on JSX expressions                                             |
+| `directives/v-cloak`                | equivalent | `v-cloak` renders no attribute                                                  |
+| `props/key-replacement`             | equivalent | a key change replaces the element; content updates keep it                      |
+| `tsx/typed-expressions`             | equivalent | TSX assertions erase without changing updates                                   |
+| `control-flow/keyed-map-list`       | divergent  | only vue-jsx-vapor recreates keyed `.map` items                                 |
+| `events/capture-suffix`             | divergent  | only vue-jsx-vapor ignores the `Capture` name suffix                            |
+| `events/once-suffix`                | divergent  | only vue-jsx-vapor ignores the `Once` name suffix                               |
+| `components/dynamic-component`      | divergent  | only Vize resolves `<component is>` dynamically                                 |
+| `events/capture-modifier`           | divergent  | Vize ignores the underscore `capture` modifier                                  |
+| `events/once-modifier`              | divergent  | Vize ignores the underscore `once` modifier                                     |
+| `events/stop-modifier`              | divergent  | Vize ignores the underscore `stop` modifier                                     |
+| `events/prevent-modifier`           | divergent  | Vize ignores the underscore `prevent` modifier                                  |
+| `directives/custom-modifiers`       | divergent  | Vize passes no custom directive modifiers                                       |
+| `directives/v-once`                 | divergent  | Vize keeps updating a `v-once` subtree                                          |
+| `props/ref-callback`                | divergent  | Vize throws on a function `ref`                                                 |
 
 The JSON corpus and verdict table are checked bidirectionally, so adding or
-removing a case without a verdict fails. The runtime comparison is the source
+removing a case without a verdict fails. A `divergent` verdict names its
+tracking issue and exactly the trace fields that differ (`dom`, `text`,
+`elementIdentities`, `warnings`, `events`); the oracle fails when any other
+field differs, and `expectedReference<Field>` pins the reference side of each
+differing field. The runtime comparison is the source
 of each `equivalent` verdict; generated-code shape is not used as a substitute
 for mounted behavior.
 
@@ -139,6 +176,44 @@ differences are upstream's; Vize does not paper over either runtime.
 Every Babel row also compiles VDOM with source maps enabled. That build uses
 the Relief codegen instead of the L2 emitter, and its mounted trace must equal
 the L2 trace.
+
+Event steps wait for the clock to advance before dispatching, because Vue's
+VDOM invoker ignores an event stamped no later than the listener's attachment.
+TSX rows keep erasable type syntax in both emitted modules; the oracle strips
+it with Node's `stripTypeScriptTypes` before linking, as a bundler would.
+
+## Dialect surface
+
+Each row lists the mounted cases that exercise one surface; the oracle fails
+when a case serves no surface or a row names an unknown case.
+
+| Surface                                  | Cases                                                                                                                                                               |
+| ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Intrinsic elements and static attributes | `children/dynamic-text`, `props/dynamic-attributes`                                                                                                                 |
+| Fragments                                | `elements/fragment-updates`                                                                                                                                         |
+| Components, props and fallthrough        | `components/scoped-default-slot`, `components/named-slot-updates`, `components/class-value`, `directives/v-show-component-value`                                    |
+| Dynamic components                       | `components/dynamic-component`                                                                                                                                      |
+| Dynamic attribute values                 | `props/dynamic-value`, `props/dynamic-boolean-value`, `props/dynamic-aria-value`, `props/dynamic-xlink-value`, `props/dynamic-type-value`, `props/live-input-value` |
+| Class and style                          | `props/dynamic-class-value`, `props/dynamic-style-value`, `props/spread-class-style`                                                                                |
+| Spread props                             | `props/spread-updates`, `props/spread-before-static`, `props/spread-after-static`, `props/ordered-spread-chain`, `props/ordered-spread-reads`                       |
+| Keys and refs                            | `props/key-replacement`, `props/ref-callback`                                                                                                                       |
+| Text, interpolation and child values     | `children/dynamic-text`, `children/dynamic-value`                                                                                                                   |
+| Conditional expressions                  | `children/logical-and`, `control-flow/conditional-branch`                                                                                                           |
+| List expressions                         | `control-flow/keyed-map-list`                                                                                                                                       |
+| Conditional directives                   | `directives/v-if-chain`                                                                                                                                             |
+| List directive                           | `directives/v-for-keyed`                                                                                                                                            |
+| Visibility                               | `directives/v-show-value`, `directives/v-show-component-value`                                                                                                      |
+| Raw HTML and text content                | `directives/v-html-value`, `directives/v-text`                                                                                                                      |
+| Element models                           | `directives/v-model-text`, `directives/v-model-checkbox`, `directives/v-model-radio`, `directives/v-model-select`                                                   |
+| Model modifiers                          | `directives/v-model-modifier-array`, `directives/v-model-trim`, `directives/v-model-lazy`, `directives/v-model-number`                                              |
+| Component models                         | `directives/v-model-component`, `directives/v-model-component-arg`                                                                                                  |
+| Slots                                    | `slots/object-children`, `directives/v-slot-default`, `directives/v-slot-named`, `components/scoped-default-slot`, `components/named-slot-updates`                  |
+| Render-once and inert directives         | `directives/v-once`, `directives/v-pre`, `directives/v-cloak`                                                                                                       |
+| Custom directives                        | `directives/custom`, `directives/custom-modifiers`                                                                                                                  |
+| Listeners                                | `events/click-closure`, `events/spread-listener-order`                                                                                                              |
+| Listener name suffixes                   | `events/capture-suffix`, `events/once-suffix`                                                                                                                       |
+| Listener underscore modifiers            | `events/capture-modifier`, `events/once-modifier`, `events/stop-modifier`, `events/prevent-modifier`                                                                |
+| TSX                                      | `tsx/typed-expressions`                                                                                                                                             |
 
 Run the focused oracle with:
 

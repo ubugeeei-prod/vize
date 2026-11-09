@@ -1,19 +1,14 @@
 import assert from "node:assert/strict";
 import { readFileSync, writeFileSync } from "node:fs";
+import { stripTypeScriptTypes } from "node:module";
 import { dirname, join } from "node:path";
 import process from "node:process";
 import { fileURLToPath } from "node:url";
 import { isDeepStrictEqual } from "node:util";
 import { transformSync } from "@babel/core";
 import babelJsx from "@vue/babel-plugin-jsx";
-import {
-  Vue,
-  window,
-  installed,
-  componentFixtures,
-  linkedFunction,
-  transformVueJsxVapor,
-} from "./runtime.ts";
+import { Vue, window, installed, linkedFunction, transformVueJsxVapor } from "./runtime.ts";
+import { surfaceFixtures, materialize, observeChildren } from "./surface.ts";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const repoRoot = join(here, "..", "..", "..");
@@ -50,71 +45,14 @@ const babelVerdicts = readFileSync(
   "utf8",
 );
 
-function observeChildren(parent) {
-  const children = [];
-  for (const node of parent.childNodes) {
-    if (node.nodeType === 3) {
-      if (!node.data) continue;
-      if (typeof children.at(-1) === "string") children[children.length - 1] += node.data;
-      else children.push(node.data);
-      continue;
-    }
-    if (node.nodeType !== 1) continue;
-    const attributes = Object.fromEntries(
-      [...node.attributes]
-        .map(({ name, value }) => [name, value])
-        .sort(([left], [right]) => left.localeCompare(right)),
-    );
-    const element = { tag: node.localName, attributes, children: observeChildren(node) };
-    if (node.localName === "input") {
-      element.value = node.value;
-      element.checked = node.checked;
-    }
-    children.push(element);
-  }
-  return children;
-}
-
-function materialize(value) {
-  if (Array.isArray(value)) return value.map(materialize);
-  if (!value || typeof value !== "object") return value;
-  if (Object.hasOwn(value, "$jsxValue")) {
-    assert.deepEqual(Object.keys(value), ["$jsxValue"]);
-    switch (value.$jsxValue) {
-      case "zero":
-        return 0;
-      case "empty-string":
-        return "";
-      case "nan":
-        return Number.NaN;
-      case "null":
-        return null;
-      case "undefined":
-        return undefined;
-      case "false":
-        return false;
-      case "true":
-        return true;
-      case "array":
-        return [0, "", Number.NaN, null, undefined, false];
-      case "nested-vnode":
-        return Vue.h("i", { "data-kind": "nested" }, [
-          Vue.h("b", null, "inner"),
-          Vue.h("u", null, "leaf"),
-        ]);
-      default:
-        assert.fail(`unknown JSX value descriptor: ${value.$jsxValue}`);
-    }
-  }
-  return Object.fromEntries(Object.entries(value).map(([key, item]) => [key, materialize(item)]));
-}
-
 async function trace(code, functionName, spec, runtime = "vapor", authoredModule = false) {
   const initial = materialize(structuredClone(spec.initial));
   const state = spec.valueMatrix ? Vue.shallowReactive(initial) : Vue.reactive(initial);
   const reads = [];
   const observations = { propPublications: 0 };
-  const render = linkedFunction(code, functionName, state, reads, observations);
+  // TSX rows keep erasable type syntax in both emitted modules, as a bundler would receive them.
+  const executable = spec.lang === "tsx" ? stripTypeScriptTypes(code) : code;
+  const render = linkedFunction(executable, functionName, state, reads, observations);
   if (authoredModule) {
     assert.equal(runtime, "vapor");
     assert.equal(functionName, "App");
@@ -130,8 +68,8 @@ async function trace(code, functionName, spec, runtime = "vapor", authoredModule
   const app = runtime === "vapor" ? Vue.createVaporApp(component) : Vue.createApp(component);
   if (runtime === "vapor" && spec.componentFixtures?.length) app.use(Vue.vaporInteropPlugin);
   for (const fixture of spec.componentFixtures ?? []) {
-    assert.ok(Object.hasOwn(componentFixtures, fixture), `${spec.id}: known component fixture`);
-    app.component(fixture, componentFixtures[fixture]);
+    assert.ok(Object.hasOwn(surfaceFixtures, fixture), `${spec.id}: known component fixture`);
+    app.component(fixture, surfaceFixtures[fixture]);
   }
   const warnings = [];
   app.config.warnHandler = (message) => warnings.push(message);
@@ -143,7 +81,6 @@ async function trace(code, functionName, spec, runtime = "vapor", authoredModule
   const events = [];
 
   function snapshot() {
-    assert.deepEqual(warnings, [], `${spec.id}: runtime diagnostics`);
     const elements = [...host.querySelectorAll("*")];
     for (const element of elements) {
       if (!identities.has(element)) identities.set(element, nextIdentity++);
@@ -182,6 +119,9 @@ async function trace(code, functionName, spec, runtime = "vapor", authoredModule
             target[property] = materialize(structuredClone(value));
           }
         }
+        // Vue's VDOM invoker drops events stamped no later than its attachment;
+        // a real interaction always follows the mount by at least one tick of the clock.
+        await new Promise((resolve) => setTimeout(resolve, 2));
         const event = new window.Event(step.event.type, { bubbles: true, cancelable: true });
         const dispatchResult = target.dispatchEvent(event);
         const receipt = {
@@ -210,7 +150,10 @@ async function trace(code, functionName, spec, runtime = "vapor", authoredModule
 }
 
 function vaporReferenceCode(spec) {
-  const result = transformVueJsxVapor(spec.source, `/semantic-oracle/${spec.id}.jsx?vapor=true`);
+  const result = transformVueJsxVapor(
+    spec.source,
+    `/semantic-oracle/${spec.id}.${spec.lang ?? "jsx"}?vapor=true`,
+  );
   assert.equal(typeof result.code, "string", `${spec.id}: oracle output`);
   return result.code;
 }
@@ -248,12 +191,34 @@ function assertInventory(corpus) {
     );
   }
   for (const spec of corpus.cases) {
-    const divergent = verdicts.cases[spec.id].verdict === "divergent";
-    assert.equal(
-      "expectedReferenceElementIdentities" in spec,
-      divergent,
-      `${spec.id}: divergent rows pin reference identity`,
-    );
+    const verdict = verdicts.cases[spec.id];
+    const divergent = verdict.verdict === "divergent";
+    // A divergence names its tracking issue and exactly the trace fields that
+    // differ; the reference side of each differing field is pinned too.
+    assert.equal(Number.isInteger(verdict.issue), divergent, `${spec.id}: divergence issue`);
+    assert.equal(Array.isArray(verdict.differs), divergent, `${spec.id}: divergent fields`);
+    const pinned = divergent ? verdict.differs.filter((field) => field !== "dom") : [];
+    if (divergent) {
+      assert.ok(verdict.differs.length > 0, `${spec.id}: empty divergence`);
+      assert.deepEqual(
+        verdict.differs,
+        traceFields.filter((field) => verdict.differs.includes(field)),
+      );
+      if (verdict.differs.includes("dom")) pinned.push("dom");
+    }
+    for (const key of Object.keys(spec).filter((key) => key.startsWith("expectedReference"))) {
+      assert.ok(
+        pinned.some((field) => key === `expectedReference${capitalize(field)}`),
+        `${spec.id}: ${key}`,
+      );
+    }
+    for (const field of pinned) {
+      assert.ok(
+        `expectedReference${capitalize(field)}` in spec,
+        `${spec.id}: pinned reference ${field}`,
+      );
+    }
+    if (pinned.includes("dom")) assert.ok(spec.expectedDom, `${spec.id}: pinned DOM`);
     // Phases where Babel and vue-jsx-vapor disagree with each other; each
     // backend still matches its own reference there.
     const conflicts = verdicts.cases[spec.id].referenceConflicts;
@@ -275,14 +240,37 @@ function assertInventory(corpus) {
     .map((match) => match[1])
     .sort();
   assert.deepEqual(documented, ids);
+  // Every dialect surface row names its mounted cases, and every case serves a surface.
+  const surfaces = inventory.slice(inventory.indexOf("## Dialect surface"));
+  const surfaceRows = [...surfaces.matchAll(/^\| ([^|`]+?)\s+\| ((?:`[^`]+`(?:, )?)+)\s+\|$/gmu)];
+  assert.ok(surfaceRows.length > 0, "dialect surface table");
+  const served = new Set(
+    surfaceRows.flatMap((row) => [...row[2].matchAll(/`([^`]+)`/gu)].map((m) => m[1])),
+  );
+  for (const id of served) assert.ok(ids.includes(id), `surface names unknown case ${id}`);
+  for (const id of ids) assert.ok(served.has(id), `${id}: no dialect surface`);
 }
 
-function assertBehavior(
-  spec,
-  phases,
-  expectedElementIdentities = spec.expectedElementIdentities,
-  expectedText = spec.expectedText,
-) {
+const traceFields = ["dom", "text", "elementIdentities", "warnings", "events"];
+const capitalize = (field) => field[0].toUpperCase() + field.slice(1);
+
+// `side` selects `expected<Field>`, `expectedReference<Field>` or `expectedVdom<Field>`,
+// falling back to the shared expectation.
+function expectation(spec, side, field) {
+  const key = `expected${capitalize(field)}`;
+  const sided = side ? `expected${side}${capitalize(field)}` : key;
+  return Object.hasOwn(spec, sided) ? spec[sided] : spec[key];
+}
+
+function assertBehavior(spec, phases, side = "") {
+  const expectedElementIdentities = expectation(spec, side, "elementIdentities");
+  const expectedText = expectation(spec, side, "text");
+  const expectedWarnings = expectation(spec, side, "warnings");
+  assert.deepEqual(
+    phases.map(({ warnings }) => warnings),
+    expectedWarnings ?? phases.map(() => []),
+    `${spec.id}: runtime diagnostics`,
+  );
   assert.equal(phases.length, spec.steps.length + 1, `${spec.id}: initial render plus updates`);
   assert.deepEqual(
     phases.map(({ text }) => text),
@@ -294,10 +282,10 @@ function assertBehavior(
     expectedElementIdentities,
     `${spec.id}: element update identity trace`,
   );
-  if (spec.expectedDom) {
+  if (expectation(spec, side, "dom")) {
     assert.deepEqual(
       phases.map(({ dom }) => dom),
-      spec.expectedDom,
+      expectation(spec, side, "dom"),
       `${spec.id}: complete DOM trace`,
     );
   }
@@ -315,10 +303,10 @@ function assertBehavior(
       `${spec.id}: one prop publication per effect`,
     );
   }
-  if (spec.expectedEvents) {
+  if (expectation(spec, side, "events")) {
     assert.deepEqual(
       phases.map(({ events }) => events),
-      spec.expectedEvents,
+      expectation(spec, side, "events"),
       `${spec.id}: dispatched event trace`,
     );
   } else {
@@ -327,10 +315,6 @@ function assertBehavior(
       `${spec.id}: unexpected events`,
     );
   }
-}
-
-function semanticTrace(phases) {
-  return phases.map(({ dom, text, warnings, events }) => ({ dom, text, warnings, events }));
 }
 
 assertInventory(recordedCorpus);
@@ -397,10 +381,16 @@ if (process.argv.includes("--reference")) {
       assertBehavior(spec, actual);
       receipt.equivalent += 1;
     } else {
-      assert.deepEqual(semanticTrace(actual), semanticTrace(reference), `${spec.id}: semantics`);
-      assert.notDeepEqual(actual, reference, `${spec.id}: recorded divergence remains observable`);
+      const differs = traceFields.filter(
+        (field) =>
+          !isDeepStrictEqual(
+            actual.map((phase) => phase[field]),
+            reference.map((phase) => phase[field]),
+          ),
+      );
+      assert.deepEqual(differs, verdicts.cases[spec.id].differs, `${spec.id}: divergent fields`);
       assertBehavior(spec, actual);
-      assertBehavior(spec, reference, spec.expectedReferenceElementIdentities);
+      assertBehavior(spec, reference, "Reference");
       receipt.divergent += 1;
     }
     if (spec.babelCorpusId) {
@@ -436,12 +426,7 @@ if (process.argv.includes("--reference")) {
           `${spec.id}: reference conflict ${phase}`,
         );
       }
-      assertBehavior(
-        spec,
-        vdom,
-        spec.expectedVdomElementIdentities ?? spec.expectedElementIdentities,
-        spec.expectedVdomText ?? spec.expectedText,
-      );
+      assertBehavior(spec, vdom, "Vdom");
       receipt.babelEquivalent += 1;
     }
   }
