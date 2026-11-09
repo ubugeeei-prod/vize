@@ -255,7 +255,9 @@ fn dependency_modules_are_resolved_once_per_snapshot_and_shared_between_worlds()
     let second = resolve("Second", &sources);
 
     // Both roots see the same declarations through the shared dependencies.
-    let models_key = super::path_key(&super::source_path(&dir.path().join("models.ts")));
+    let models_key = super::path_key(&crate::script::context::source_snapshot::source_path(
+        &dir.path().join("models.ts"),
+    ));
     for world in [&first, &second] {
         assert_eq!(body(world, "Public"), "{ item: Other }");
         let TypeLookup::Found(model) = world.resolve(&world.root_module, "Model") else {
@@ -352,7 +354,7 @@ fn barrel_dependencies_are_resolved_once_however_many_worlds_import_them() {
         else {
             panic!("barrel export resolves")
         };
-        let model_key = super::path_key(&super::source_path(
+        let model_key = super::path_key(&crate::script::context::source_snapshot::source_path(
             &models.join(cstr!("m{index}.ts").as_str()),
         ));
         assert_eq!(id.module, model_key);
