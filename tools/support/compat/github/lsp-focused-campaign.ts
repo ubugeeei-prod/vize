@@ -184,7 +184,7 @@ function dependencies(): void {
     fs.mkdirSync(directory);
     const command = [
       "rust-script",
-      "tools/commands/fixtures/typecheck-dependency-prepare.rs",
+      "tools/commands/fixtures/typecheck-dependency-prepare.ts",
       "--output-dir",
       directory,
       "--shard-count",

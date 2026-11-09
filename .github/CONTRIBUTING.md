@@ -149,7 +149,7 @@ described in [Source Layout](#source-layout). `insta` keeps the recorded snapsho
 
 ## Source Layout
 
-- **500 lines per file.** `tools/commands/ci/source-file-lengths.rs --check` (`vp run source:lengths`)
+- **500 lines per file.** `node tools/commands/ci/source-file-lengths.ts --check` (`vp run source:lengths`)
   rejects new files over 500 lines and files that grow past it. Split by responsibility, not by
   size alone: do not scatter a feature across many tiny files a reader has to hop through.
 - **Ordinary Rust module discovery.** Keep a module's unit tests in its own file as

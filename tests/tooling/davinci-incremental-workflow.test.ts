@@ -29,7 +29,7 @@ const workflow = parseYaml(
 const shard = ["splitpanes", "layoutit-grid", "cssgridgenerator"];
 const fixtures =
   "--fixtures tests/_fixtures/_projects --fixtures tests/_fixtures/vue-language-tools";
-const driver = "rust-script tools/commands/davinci/incremental-equivalence.rs";
+const driver = "node tools/commands/davinci/incremental-equivalence.ts";
 
 function runs(job: Job): string[] {
   return job.steps.flatMap((step) => (step.run ? step.run.trim().split("\n") : []));
@@ -54,6 +54,15 @@ test("the incrementality workflow triggers on the resident tier and its keyers",
 
 test("TS-42 runs over the hydrated corpus shard and proves the seeded defect caught", () => {
   const job = workflow.jobs["incremental-equivalence"];
+  assert.ok(
+    job.steps.every((step) => !step.run?.includes("\n")),
+    "workflow commands belong in one named step instead of an inline script",
+  );
+  assert.equal(
+    job.steps.some((step) => step.uses === "./.github/actions/setup-rust-script"),
+    false,
+  );
+  assert.ok(job.steps.some((step) => step.uses?.startsWith("voidzero-dev/setup-vp@")));
   assert.deepEqual(runs(job), [
     `git submodule update --init --depth 1 -- ${shard.map((id) => `tests/_fixtures/_git/${id}`).join(" ")}`,
     "cargo test -p vize_incremental",
@@ -63,13 +72,11 @@ test("TS-42 runs over the hydrated corpus shard and proves the seeded defect cau
     `${driver} --corpus-shard ${fixtures} --seeded`,
   ]);
   const source = fs.readFileSync(
-    path.join(repoRoot, "tools/commands/davinci/incremental-equivalence.rs"),
+    path.join(repoRoot, "tools/commands/davinci/incremental-equivalence.ts"),
     "utf8",
   );
   assert.ok(
-    source.includes(
-      `const CORPUS_SHARD: [&str; 3] = [${shard.map((id) => `"${id}"`).join(", ")}];`,
-    ),
+    source.includes(`const CORPUS_SHARD = [${shard.map((id) => `"${id}"`).join(", ")}] as const;`),
     "the driver's shard must be the hydrated one",
   );
   const scripts = fs
@@ -87,6 +94,10 @@ test("TS-42 runs over the hydrated corpus shard and proves the seeded defect cau
 
 test("TS-43 compares the golden keys on a Linux and a macOS lane", () => {
   const job = workflow.jobs["key-stability"];
+  assert.ok(
+    job.steps.every((step) => !step.run?.includes("\n")),
+    "each golden-key command needs an independently visible step",
+  );
   assert.deepEqual(
     job.strategy?.matrix.platform.map(({ target }) => target),
     ["linux-x64-gnu", "darwin-arm64"],

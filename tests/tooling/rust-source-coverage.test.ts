@@ -12,7 +12,7 @@ const sourceCoverageScriptPath = path.join(
   "tools",
   "commands",
   "ci",
-  "source-coverage.rs",
+  "source-coverage.ts",
 );
 
 function createReport(totals: unknown): string {
@@ -24,7 +24,7 @@ function createReport(totals: unknown): string {
 }
 
 function runSourceCoverage(args: readonly string[], env: NodeJS.ProcessEnv = process.env) {
-  return spawnSync("rust-script", [sourceCoverageScriptPath, ...args], {
+  return spawnSync(process.execPath, [sourceCoverageScriptPath, ...args], {
     cwd: repoRoot,
     encoding: "utf8",
     env,
@@ -154,4 +154,16 @@ test("rust source coverage script defaults markdown output to GITHUB_STEP_SUMMAR
 
   assert.equal(result.status, 0, `${result.stderr}\n${result.stdout}`.trim());
   assert.match(fs.readFileSync(summaryPath, "utf8"), /Lines \| 2 \| 2 \| 100\.00%/);
+});
+
+test("rust source coverage script rejects thresholds outside the percentage range", () => {
+  const reportPath = createReport({ lines: { count: 2, covered: 2, percent: 100 } });
+
+  for (const minimum of ["-1", "101"]) {
+    const result = runSourceCoverage(["--json", reportPath, "--min-lines", minimum]);
+
+    assert.equal(result.status, 1);
+    assert.equal(result.stdout, `Invalid minimum for lines: ${minimum}\n`);
+    assert.equal(result.stderr, "");
+  }
 });

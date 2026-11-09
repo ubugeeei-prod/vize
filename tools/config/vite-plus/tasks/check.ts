@@ -89,7 +89,7 @@ export const checkTasks = defineTasks({
   // v1 alpha release branches keep a zero-warning budget for repo-wide JS/TS checks.
   "check:repo": noCacheTask(strictRepoCheckCommand),
   "check:iteration": noCacheTask(iterationRepoCheckCommand),
-  "source:lengths": noCacheTask(rustTool("ci/source-file-lengths")),
+  "source:lengths": noCacheTask("node tools/commands/ci/source-file-lengths.ts"),
   // Every package that exposes a `check` task takes part, including the oxlint
   // example. Its `lint` script is the one that intentionally exits non-zero, and
   // the aggregate never runs `lint`, so there is nothing here to exempt.

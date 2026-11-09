@@ -116,7 +116,7 @@ jobs:
         run: node -e "const native = require('./npm/native'); if (typeof native.compileSfc !== 'function') throw new Error('compileSfc missing')"
       - name: Package-install smoke for host native package
         if: runner.os == 'Linux'
-        run: rust-script tools/commands/release/npm/smoke-release-install.rs --prepare-manifests npm/native
+        run: node tools/commands/release/npm/smoke-release-install.ts --prepare-manifests npm/native
       - name: Capture selected native image authority
         if: github.event_name == 'workflow_dispatch' && inputs.host_only && inputs.target == 'darwin-arm64'
         run: node npm/native/scripts/native-build-receipt.mjs
@@ -239,7 +239,7 @@ jobs:
           VIZE_SMOKE_TIMING_FILE: ${{ runner.temp }}/packed-smoke-timing.jsonl
         shell: bash
         run: |
-          rust-script --force tools/commands/release/npm/smoke-release-install.rs --prepare-manifests --runtime-checks \
+          node tools/commands/release/npm/smoke-release-install.ts --prepare-manifests --runtime-checks \
             npm/native npm/native/npm/* \
             npm/cli npm/builder/vite
       - name: Fresh packed Nuxt init, check, and LSP smoke
@@ -249,7 +249,7 @@ jobs:
         shell: bash
         run: |
           read -ra js <<< "$RELEASE_JS_PACKAGES"
-          rust-script --force tools/commands/release/npm/smoke-release-install.rs --prepare-manifests --runtime-checks \
+          node tools/commands/release/npm/smoke-release-install.ts --prepare-manifests --runtime-checks \
             npm/native npm/native/npm/* "${js[@]}"
       - name: Retain packed smoke timing
         if: always()

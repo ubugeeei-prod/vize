@@ -241,7 +241,10 @@ test("real-project workflow hydrates only its shard and runs every core tool", (
       dependencyIndex < waiverAuditIndex &&
       waiverAuditIndex < runIndex,
   );
-  assert.match(dependency.run ?? "", /tools\/commands\/fixtures\/typecheck-dependency-prepare\.rs/);
+  assert.match(
+    dependency.run ?? "",
+    /node --experimental-strip-types tools\/commands\/fixtures\/typecheck-dependency-prepare\.ts/,
+  );
   assert.match(dependency.run ?? "", /--output-dir "\$FIXTURE_REPORT_DIR"/);
   assert.match(dependency.run ?? "", /--shard-index "\$FIXTURE_SHARD_INDEX"/);
   assert.match(dependency.run ?? "", /--shard-count "\$FIXTURE_SHARD_COUNT"/);
@@ -267,7 +270,7 @@ test("real-project workflow hydrates only its shard and runs every core tool", (
     /node tools\/support\/compat\/fixtures\/glyph-corpus-waiver-audit\.ts/,
   );
   assert.match(waiverAudit.run ?? "", /glyph-waiver-issues\.json/);
-  assert.match(run.run ?? "", /tools\/commands\/fixtures\/tool-matrix-report\.rs/);
+  assert.match(run.run ?? "", /tools\/support\/compat\/fixtures\/tool-matrix-report\.ts/);
   assert.match(run.run ?? "", /--vize-bin target\/ci\/vize/);
   assert.match(run.run ?? "", /--timeout-ms "\$CORE_TOOLS_TIMEOUT_MS"/);
   assert.match(run.run ?? "", /--output-dir "\$FIXTURE_REPORT_DIR"/);
@@ -377,7 +380,10 @@ test("real-project workflow hydrates only its shard and runs every core tool", (
   assert.equal(divergence.env?.BUDGET_MODE, "${{ inputs.typecheck_divergence_mode || 'enforce' }}");
 
   const surfaceVerdict = findStep(steps, "Enforce all real-project surface verdicts");
-  assert.match(surfaceVerdict.run ?? "", /real-project-surface-verdict\.rs/);
+  assert.match(
+    surfaceVerdict.run ?? "",
+    /node tools\/commands\/fixtures\/real-project-surface-verdict\.ts/,
+  );
   assert.match(surfaceVerdict.run ?? "", /--from-workflow-env/);
   assert.equal(
     surfaceVerdict.env?.TYPECHECK_DEPENDENCIES_MODE,

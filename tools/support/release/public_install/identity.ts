@@ -19,7 +19,6 @@ export const overrides = [
 ] as const;
 const observerOverrides = ["VIZE_PUBLIC_NATIVE_CUSTODY", "VIZE_OXLINT_NATIVE_CUSTODY"] as const;
 export const producerFiles: readonly string[] = [
-  "tools/commands/release/npm/collect-public-install.rs",
   "tools/support/archive/tar.ts",
   ...[
     "collect.ts",
