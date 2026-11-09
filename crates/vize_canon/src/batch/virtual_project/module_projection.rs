@@ -66,90 +66,95 @@ impl VirtualProject {
             .keys()
             .cloned()
             .collect::<FxHashSet<_>>();
-        // Files rewrite independently; each worker keeps its own manifest cache.
-        let rewrites = self
-            .virtual_files_sorted()
-            .into_par_iter()
-            .map_init(
-                crate::PackageRouteResolver::default,
-                |package_resolver, file| {
-                    let source = self.module_source(file)?;
-                    let context = settings
+        let files = self.virtual_files_sorted();
+        // One manifest cache serves every file and validates each manifest
+        // once; per-worker caches re-walked every ancestor per rayon split.
+        let contexts = {
+            let mut package_resolver = crate::PackageRouteResolver::default();
+            let _scope = package_resolver.validation_scope();
+            files
+                .iter()
+                .map(|file| {
+                    settings
                         .context(
-                            package_resolver,
+                            &mut package_resolver,
                             &file.original_path,
                             PackageResolutionMode::Contextual,
                         )
-                        .0;
-                    let resolver = |specifier: &str, mode| {
-                        let path = self.resolve_file_dependency(file, specifier, &aliases);
-                        let target = path.as_ref().and_then(|path| {
-                            self.find_by_original(&vize_carton::path::canonicalize_non_verbatim(
-                                path,
-                            ))
-                        });
-                        if target.is_some_and(is_denied_javascript_sfc) {
-                            // The project owns this edge through its authored declaration;
-                            // a generated TypeScript projection cannot admit a denied JS module.
-                            return Some(specifier.to_owned());
-                        }
-                        // Native Node ESM still owns invalid extensionless imports.
-                        // Projection must not turn an invalid authored edge valid.
-                        if requires_explicit_extension(specifier, mode, &context) {
-                            return None;
-                        }
-                        if let Some(path) = path.as_deref()
-                            && crate::batch::declaration_path::is_declaration_file(path)
-                        {
-                            let identity =
-                                target.map_or(path, |target| target.virtual_path.as_path());
-                            let path = crate::batch::declaration_module_path(identity);
-                            return Some(path.to_string_lossy().replace('\\', "/"));
-                        }
-                        let target = target?;
-                        is_lowered_jsx(target)
-                            .then(|| target.virtual_path.to_string_lossy().replace('\\', "/"))
-                    };
-                    let options = VirtualProjectRewriteOptions {
-                        preserve_relative_declarations: self
-                            .is_package_route_path(&file.original_path)
-                            || self.session_scripts,
-                        mirrorable_project_files: Some(&mirrorable),
-                        alias_rewrite_policy: Some(self.alias_rewrite_policy()),
-                        module_resolver: Some(&resolver),
-                    };
-                    let source_type = super::build::source_type_for_path(&file.virtual_path)?;
-                    let roots = (self.project_root.as_path(), self.virtual_root.as_path());
-                    let (rewritten, stars) = if file.source_map.sfc_map.is_some() {
-                        self.rewriter
-                            .rewrite_generated_for_virtual_project_with_captured_stars(
-                                &source,
-                                source_type,
-                                roots,
-                                file.original_path.parent(),
-                                options,
-                            )
-                    } else {
-                        self.rewriter
-                            .rewrite_for_virtual_project_with_captured_stars(
-                                &source,
-                                source_type,
-                                roots,
-                                file.original_path.parent(),
-                                options,
-                            )
-                    };
-                    let rewritten = apply_captured_vue_stars(
-                        &rewritten.code,
-                        &rewritten.source_map,
-                        &stars,
-                        |specifier, projected, _mode| {
-                            self.known_vue_star_target(file, specifier, projected)
-                        },
-                    );
-                    Some((file.virtual_path.clone(), rewritten))
-                },
-            )
+                        .0
+                })
+                .collect::<Vec<_>>()
+        };
+        // Files rewrite independently once their contexts are known.
+        let rewrites = files
+            .into_par_iter()
+            .zip(contexts)
+            .map(|(file, context)| {
+                let source = self.module_source(file)?;
+                let resolver = |specifier: &str, mode| {
+                    let path = self.resolve_file_dependency(file, specifier, &aliases);
+                    let target = path.as_ref().and_then(|path| {
+                        self.find_by_original(&vize_carton::path::canonicalize_non_verbatim(path))
+                    });
+                    if target.is_some_and(is_denied_javascript_sfc) {
+                        // The project owns this edge through its authored declaration;
+                        // a generated TypeScript projection cannot admit a denied JS module.
+                        return Some(specifier.to_owned());
+                    }
+                    // Native Node ESM still owns invalid extensionless imports.
+                    // Projection must not turn an invalid authored edge valid.
+                    if requires_explicit_extension(specifier, mode, &context) {
+                        return None;
+                    }
+                    if let Some(path) = path.as_deref()
+                        && crate::batch::declaration_path::is_declaration_file(path)
+                    {
+                        let identity = target.map_or(path, |target| target.virtual_path.as_path());
+                        let path = crate::batch::declaration_module_path(identity);
+                        return Some(path.to_string_lossy().replace('\\', "/"));
+                    }
+                    let target = target?;
+                    is_lowered_jsx(target)
+                        .then(|| target.virtual_path.to_string_lossy().replace('\\', "/"))
+                };
+                let options = VirtualProjectRewriteOptions {
+                    preserve_relative_declarations: self.is_package_route_path(&file.original_path)
+                        || self.session_scripts,
+                    mirrorable_project_files: Some(&mirrorable),
+                    alias_rewrite_policy: Some(self.alias_rewrite_policy()),
+                    module_resolver: Some(&resolver),
+                };
+                let source_type = super::build::source_type_for_path(&file.virtual_path)?;
+                let roots = (self.project_root.as_path(), self.virtual_root.as_path());
+                let (rewritten, stars) = if file.source_map.sfc_map.is_some() {
+                    self.rewriter
+                        .rewrite_generated_for_virtual_project_with_captured_stars(
+                            &source,
+                            source_type,
+                            roots,
+                            file.original_path.parent(),
+                            options,
+                        )
+                } else {
+                    self.rewriter
+                        .rewrite_for_virtual_project_with_captured_stars(
+                            &source,
+                            source_type,
+                            roots,
+                            file.original_path.parent(),
+                            options,
+                        )
+                };
+                let rewritten = apply_captured_vue_stars(
+                    &rewritten.code,
+                    &rewritten.source_map,
+                    &stars,
+                    |specifier, projected, _mode| {
+                        self.known_vue_star_target(file, specifier, projected)
+                    },
+                );
+                Some((file.virtual_path.clone(), rewritten))
+            })
             .collect::<Vec<_>>();
         for (path, rewritten) in rewrites.into_iter().flatten() {
             if self
