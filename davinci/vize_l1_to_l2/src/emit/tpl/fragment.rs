@@ -12,7 +12,7 @@ use super::super::js::{escape_js_string, is_valid_js_identifier};
 use super::super::prefix::Site;
 use super::super::vnode;
 use super::super::{EmitCx, EmitError, UnsupportedReason as Reason};
-use crate::lower::{WrapperAttr, WrapperClass};
+use vize_l2::analysis::fragment_facts::{FragmentAttr, FragmentClass};
 
 #[derive(Clone, Copy)]
 pub(super) enum ChildMode {
@@ -44,8 +44,8 @@ pub(super) fn emit_inner_fragment(
     cx: &mut EmitCx<'_>,
     ops: &[Op<'_>],
     key: Option<&str>,
-    attributes: &[WrapperAttr],
-    class: Option<&WrapperClass>,
+    attributes: &[FragmentAttr],
+    class: Option<&FragmentClass>,
     mode: ChildMode,
 ) -> Result<(), EmitError> {
     cx.use_open_block();
@@ -68,8 +68,8 @@ pub(super) fn emit_inner_fragment(
 fn emit_fragment_props(
     cx: &mut EmitCx<'_>,
     key: Option<&str>,
-    attributes: &[WrapperAttr],
-    class: Option<&WrapperClass>,
+    attributes: &[FragmentAttr],
+    class: Option<&FragmentClass>,
 ) -> Result<(), EmitError> {
     if key.is_none() && attributes.is_empty() && class.is_none() {
         cx.buf.push(", null, ");
@@ -124,7 +124,7 @@ fn start_fragment_prop(cx: &mut EmitCx<'_>, first: &mut bool, multiline: bool) {
     *first = false;
 }
 
-fn emit_wrapper_class(cx: &mut EmitCx<'_>, class: &WrapperClass) -> Result<(), EmitError> {
+fn emit_wrapper_class(cx: &mut EmitCx<'_>, class: &FragmentClass) -> Result<(), EmitError> {
     let prefixed;
     let dynamic_source = match &class.dynamic_source {
         Some(source) if cx.prefixing() => {

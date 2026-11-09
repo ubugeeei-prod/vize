@@ -109,7 +109,7 @@ fn is_slot_if_branch(
     branch: &IfBranch<'_>,
 ) -> bool {
     !id.and_then(|id| cx.wrappers.get(id))
-        .and_then(|keys| keys.from_template.get(branch_index).copied())
+        .and_then(|keys| keys.fragment.get(branch_index).copied())
         .unwrap_or(false)
         && is_slot_template_carrier(&branch.region)
 }

@@ -7,6 +7,7 @@
 //! attributes stay recorded drops.
 
 use alloc::vec::Vec as StdVec;
+use vize_l2::analysis::fragment_facts::{FragmentAttr, FragmentClass, FragmentKey};
 use vize_l2::provenance::ProvenanceSink;
 
 use vize_l0::id::NodeId;
@@ -16,107 +17,6 @@ use vize_l1::markup::Element;
 use super::super::cx::{Cx, attr_slice, attr_span};
 use super::super::directive::{Arg, AttrForm, Head};
 use super::super::element::{Analyzed, BranchKind, attr_text};
-
-/// One captured `<template v-if>` wrapper key (P2-9 series 5): the
-/// branch key the legacy transform lifts off the wrapper element
-/// (`extract_key_prop` runs on the branch node itself, template wrappers
-/// included). The wrapper unwraps at lowering, so its key has no op to
-/// ride — it is captured here as a fact channel the `v-if` pass folds
-/// into [`BranchKey`](crate::pass::vif::BranchKey) facts.
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum WrapperKey {
-    /// A static `key` attribute; `None` = bare (never collides).
-    Static {
-        /// The authored value.
-        value: Option<String>,
-        /// The attribute's range.
-        span: Span,
-    },
-    /// A `:key` binding: the trimmed authored value text (the parser's
-    /// same-name expansion applied — a valueless `:key` reads `key`).
-    Dynamic {
-        /// The trimmed value text.
-        source: String,
-        /// The attribute's range.
-        span: Span,
-    },
-}
-
-/// Per-`ui.if` captured wrapper keys, one slot per branch in authored
-/// order; keyed by the `ui.if` op's page-order id.
-#[derive(Debug, Clone, PartialEq, Eq, Default)]
-pub struct WrapperKeys {
-    /// `branches[i]` is branch `i`'s wrapper key, when its carrier was
-    /// an unwrapped `<template>` with one.
-    pub branches: StdVec<Option<WrapperKey>>,
-    /// `from_template[i]` is true when branch `i`'s carrier was an
-    /// unwrapped `<template>` (slot-bearing templates stay wrapped and
-    /// stay false). P2-11 emit needs this: after hoist, a static child
-    /// of `<template v-if>` is a fragment, while the same element as a
-    /// `v-if` branch root is a block.
-    pub from_template: StdVec<bool>,
-    /// The chain's `v-if` carrier was an unwrapped `<template v-once>`: the
-    /// whole chain is cached, exactly as `v-once` on a `v-if` element does.
-    pub once: bool,
-}
-
-/// A `<template v-for>` the lowering unwraps: presence of this fact on
-/// a `ui.for` is the emit signal, and `key` is the wrapper `:key` /
-/// `key` the legacy lane keeps on the template vnode.
-#[derive(Debug, Clone, PartialEq, Eq, Default)]
-pub struct ForWrapper {
-    /// The wrapper's captured key, when it authored one.
-    pub key: Option<WrapperKey>,
-    /// Static non-`class` attributes authored on the `<template v-for>` wrapper.
-    /// The shipped lane carries them on the generated fragment vnode.
-    pub attributes: StdVec<WrapperAttr>,
-    /// Static and dynamic `class` authored on the wrapper.
-    pub class: Option<WrapperClass>,
-    /// A runtime directive (`v-show`, a custom directive) authored on the
-    /// wrapper. The shipped lane applies it to the fragment vnode; L2 has no
-    /// home for it, so emission refuses the loop.
-    pub runtime_directive: Option<Span>,
-}
-
-/// One static attribute authored on a lowered `<template v-for>`.
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct WrapperAttr {
-    /// Attribute name, as authored.
-    pub name: String,
-    /// Attribute value; `None` represents a bare static attribute.
-    pub value: Option<String>,
-    /// The attribute's range.
-    pub span: Span,
-}
-
-/// `class` authored on a lowered `<template v-for>`.
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct WrapperClass {
-    /// Static class text, when authored.
-    pub static_value: Option<String>,
-    /// Dynamic class expression source, when authored.
-    pub dynamic_source: Option<String>,
-    /// Representative class attribute range.
-    pub span: Span,
-}
-
-/// Facts cross compile boundaries with their artifact (P1-11).
-const _: () = {
-    const fn assert_owned<T: 'static>() {}
-    assert_owned::<WrapperKey>();
-    assert_owned::<WrapperKeys>();
-    assert_owned::<ForWrapper>();
-    assert_owned::<WrapperAttr>();
-    assert_owned::<WrapperClass>();
-};
-
-/// 64-bit footprints, guarded like every fact-size assert.
-#[cfg(target_pointer_width = "64")]
-const _: () = {
-    assert!(core::mem::size_of::<WrapperKey>() == 40);
-    assert!(core::mem::size_of::<WrapperKeys>() == 56);
-    assert!(core::mem::size_of::<ForWrapper>() == 136);
-};
 
 /// The first key-ish attribute of a `<template v-if>` wrapper: a static
 /// `key` attribute or a static-argument `:key` binding, in authored
@@ -128,7 +28,7 @@ pub(crate) fn capture_wrapper_key<'a>(
     cx: &mut Cx<'a, impl ProvenanceSink>,
     element: &Element<'a>,
     analyzed: &Analyzed<'a>,
-) -> Option<(usize, WrapperKey)> {
+) -> Option<(usize, FragmentKey)> {
     for (index, (attr, form)) in element.open.attrs.iter().zip(&analyzed.forms).enumerate() {
         if Some(index) == analyzed.branch.map(|(idx, _)| idx) || Some(index) == analyzed.vfor {
             continue;
@@ -137,7 +37,7 @@ pub(crate) fn capture_wrapper_key<'a>(
             AttrForm::Static if attr.name.text == "key" => {
                 return Some((
                     index,
-                    WrapperKey::Static {
+                    FragmentKey::Static {
                         value: attr_text(attr).map(String::from),
                         span: attr_span(cx, attr),
                     },
@@ -154,7 +54,7 @@ pub(crate) fn capture_wrapper_key<'a>(
                 };
                 return Some((
                     index,
-                    WrapperKey::Dynamic {
+                    FragmentKey::Dynamic {
                         source,
                         span: attr_span(cx, attr),
                     },
@@ -172,7 +72,7 @@ pub(crate) fn capture_wrapper_attrs<'a>(
     element: &Element<'a>,
     analyzed: &Analyzed<'a>,
     captured_key: Option<usize>,
-) -> (StdVec<usize>, StdVec<WrapperAttr>, Option<WrapperClass>) {
+) -> (StdVec<usize>, StdVec<FragmentAttr>, Option<FragmentClass>) {
     let mut indexes = StdVec::new();
     let mut attributes = StdVec::new();
     let mut class = None;
@@ -186,7 +86,7 @@ pub(crate) fn capture_wrapper_attrs<'a>(
         match form {
             AttrForm::Static if attr.name.text == "class" => {
                 indexes.push(index);
-                let entry = class.get_or_insert_with(|| WrapperClass {
+                let entry = class.get_or_insert_with(|| FragmentClass {
                     static_value: None,
                     dynamic_source: None,
                     span: attr_span(cx, attr),
@@ -197,7 +97,7 @@ pub(crate) fn capture_wrapper_attrs<'a>(
             }
             AttrForm::Static => {
                 indexes.push(index);
-                attributes.push(WrapperAttr {
+                attributes.push(FragmentAttr {
                     name: String::from(attr.name.text),
                     value: attr
                         .value
@@ -217,7 +117,7 @@ pub(crate) fn capture_wrapper_attrs<'a>(
                     None => String::from("class"),
                 };
                 indexes.push(index);
-                let entry = class.get_or_insert_with(|| WrapperClass {
+                let entry = class.get_or_insert_with(|| FragmentClass {
                     static_value: None,
                     dynamic_source: None,
                     span: attr_span(cx, attr),
@@ -270,10 +170,10 @@ pub(crate) fn chain_once_attr(element: &Element<'_>, analyzed: &Analyzed<'_>) ->
 pub(crate) fn record_wrapper_key(
     cx: &mut Cx<'_, impl ProvenanceSink>,
     node: Option<NodeId>,
-    key: &WrapperKey,
+    key: &FragmentKey,
     branch: usize,
 ) {
-    let (WrapperKey::Static { span, .. } | WrapperKey::Dynamic { span, .. }) = key;
+    let (FragmentKey::Static { span, .. } | FragmentKey::Dynamic { span, .. }) = key;
     let spelling = cx
         .source
         .get(span.start as usize..span.end as usize)

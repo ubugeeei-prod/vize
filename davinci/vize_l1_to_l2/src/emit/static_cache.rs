@@ -11,14 +11,14 @@ use vize_l0::ensure_sufficient_stack;
 use vize_l0::side_table::SideTable;
 use vize_l2::op::{ComponentOp, ElementOp, Op, Region};
 
-use crate::lower::WrapperKeys;
 use crate::pass::walk::PageWalk;
 use crate::pass::{L2Facts, StaticFacts, StaticLevel};
+use vize_l2::analysis::fragment_facts::BranchFragments;
 
 pub(super) fn enabled(
     root: &Region<'_>,
     facts: &L2Facts,
-    wrappers: &SideTable<WrapperKeys>,
+    wrappers: &SideTable<BranchFragments>,
     allow_component_props_hoist: bool,
 ) -> bool {
     let mut walk = PageWalk::new();
@@ -40,7 +40,7 @@ fn region_has_legacy_hoist(
     walk: &mut PageWalk,
     ops: &[Op<'_>],
     facts: &L2Facts,
-    wrappers: &SideTable<WrapperKeys>,
+    wrappers: &SideTable<BranchFragments>,
     is_root: bool,
     hoist_static_vnodes: bool,
     allow_component_props_hoist: bool,
@@ -65,7 +65,7 @@ fn op_has_legacy_hoist(
     walk: &mut PageWalk,
     op: &Op<'_>,
     facts: &L2Facts,
-    wrappers: &SideTable<WrapperKeys>,
+    wrappers: &SideTable<BranchFragments>,
     is_root: bool,
     hoist_static_vnodes: bool,
     allow_component_props_hoist: bool,
@@ -146,7 +146,7 @@ fn element_has_legacy_hoist(
     element: &ElementOp<'_>,
     fact: StaticFacts,
     facts: &L2Facts,
-    wrappers: &SideTable<WrapperKeys>,
+    wrappers: &SideTable<BranchFragments>,
     context: ElementHoistContext,
 ) -> bool {
     match fact.level {
@@ -193,7 +193,7 @@ fn component_has_legacy_hoist(
     component: &ComponentOp<'_>,
     fact: Option<StaticFacts>,
     facts: &L2Facts,
-    wrappers: &SideTable<WrapperKeys>,
+    wrappers: &SideTable<BranchFragments>,
     allow_component_props_hoist: bool,
 ) -> bool {
     if allow_component_props_hoist
@@ -218,7 +218,7 @@ fn branch_roots_have_legacy_hoist(
     walk: &mut PageWalk,
     ops: &[Op<'_>],
     facts: &L2Facts,
-    wrappers: &SideTable<WrapperKeys>,
+    wrappers: &SideTable<BranchFragments>,
     allow_component_props_hoist: bool,
 ) -> bool {
     // A single child is the branch block itself, under `<template v-if>` too;
@@ -307,7 +307,7 @@ fn slot_branch_root_descendants_have_legacy_hoist(
     walk: &mut PageWalk,
     ops: &[Op<'_>],
     facts: &L2Facts,
-    wrappers: &SideTable<WrapperKeys>,
+    wrappers: &SideTable<BranchFragments>,
     allow_component_props_hoist: bool,
 ) -> bool {
     for op in ops {
@@ -355,7 +355,7 @@ fn for_children_have_legacy_hoist(
     walk: &mut PageWalk,
     ops: &[Op<'_>],
     facts: &L2Facts,
-    wrappers: &SideTable<WrapperKeys>,
+    wrappers: &SideTable<BranchFragments>,
     allow_component_props_hoist: bool,
 ) -> bool {
     match ops {

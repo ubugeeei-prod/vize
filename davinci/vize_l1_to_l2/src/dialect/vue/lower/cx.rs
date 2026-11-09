@@ -47,8 +47,8 @@ pub(crate) struct Cx<'a, P> {
     pub consumed_expressions: Vec<ExprRef<'a>>,
     pub for_facts: SideTable<super::forop::ForParts>,
     pub if_facts: SideTable<super::if_keys::IfFacts>,
-    pub wrappers: SideTable<super::structural::WrapperKeys>,
-    pub for_wrappers: SideTable<super::structural::ForWrapper>,
+    pub wrappers: SideTable<vize_l2::analysis::fragment_facts::BranchFragments>,
+    pub for_wrappers: SideTable<vize_l2::analysis::fragment_facts::LoopFragment>,
     pub caps: super::caps::LegacyCaps,
     pub foreign_dialect: Option<super::foreign::ForeignDialect<'a>>,
     /// Op families this lowering built, set where the op is minted —
@@ -189,7 +189,7 @@ impl<'a, P: ProvenanceSink> Cx<'a, P> {
     pub(crate) fn attach_wrappers(
         &mut self,
         node: Option<NodeId>,
-        keys: super::structural::WrapperKeys,
+        keys: vize_l2::analysis::fragment_facts::BranchFragments,
     ) {
         if let Some(id) = node {
             self.wrappers.insert(id, keys);
@@ -200,7 +200,7 @@ impl<'a, P: ProvenanceSink> Cx<'a, P> {
     pub(crate) fn attach_for_wrapper(
         &mut self,
         node: Option<NodeId>,
-        wrapper: super::structural::ForWrapper,
+        wrapper: vize_l2::analysis::fragment_facts::LoopFragment,
     ) {
         if let Some(id) = node {
             self.for_wrappers.insert(id, wrapper);

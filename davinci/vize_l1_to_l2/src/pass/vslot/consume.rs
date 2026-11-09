@@ -16,14 +16,14 @@ use vize_l2::scope::{ScopeFacts, ScopeTag};
 use super::super::walk::PageWalk;
 use super::spell::spelling;
 use super::{MISPLACED_MESSAGE, SlotFacts, SlotName, SlotParams, group};
-use crate::lower::{ForWrapper, WrapperKeys};
+use vize_l2::analysis::fragment_facts::{BranchFragments, LoopFragment};
 
 /// The pass's channels: the read-only scope table, the unified output
 /// channels, and the pass state.
 pub(super) struct Channels<'l, P> {
     pub scopes: &'l SideTable<ScopeFacts>,
-    pub wrappers: &'l SideTable<WrapperKeys>,
-    pub for_wrappers: &'l SideTable<ForWrapper>,
+    pub wrappers: &'l SideTable<BranchFragments>,
+    pub for_wrappers: &'l SideTable<LoopFragment>,
     pub diagnostics: &'l mut StdVec<Diagnostic>,
     pub provenance: &'l mut P,
     /// Every consumed slot-scope tag, for the freshness law.
@@ -149,14 +149,14 @@ fn region_default_slot(views: &[ChildView]) -> bool {
     })
 }
 
-fn branch_from_template(wrapper: Option<&WrapperKeys>, branch_index: usize) -> bool {
+fn branch_from_template(wrapper: Option<&BranchFragments>, branch_index: usize) -> bool {
     wrapper
-        .and_then(|keys| keys.from_template.get(branch_index).copied())
+        .and_then(|keys| keys.fragment.get(branch_index).copied())
         .unwrap_or(false)
 }
 
 fn if_branch_implicit(
-    wrapper: Option<&WrapperKeys>,
+    wrapper: Option<&BranchFragments>,
     branch_index: usize,
     views: &[ChildView],
 ) -> bool {
@@ -165,7 +165,7 @@ fn if_branch_implicit(
 }
 
 fn if_branch_default_slot(
-    wrapper: Option<&WrapperKeys>,
+    wrapper: Option<&BranchFragments>,
     branch_index: usize,
     views: &[ChildView],
 ) -> bool {

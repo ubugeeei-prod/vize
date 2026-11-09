@@ -1,7 +1,7 @@
 //! Unwrapped `<template v-if>` / `<template v-for>` fragments.
 //!
 //! The lowering unwraps the wrapper, so emit reads
-//! [`WrapperKeys::from_template`] / [`ForWrapper`] to recover the
+//! [`BranchFragments::fragment`] / [`LoopFragment`] to recover the
 //! shipped codegen split: a single element unwraps to a block (including
 //! static nodes, because a `v-for` item must keep block tracking); text /
 //! multi child stays a `STABLE_FRAGMENT`.
@@ -19,12 +19,12 @@ use super::EmitError;
 use super::UnsupportedReason as Reason;
 use super::js::escape_js_string;
 use super::prefix::Site;
-use crate::lower::{WrapperAttr, WrapperClass, WrapperKey};
+use vize_l2::analysis::fragment_facts::{FragmentAttr, FragmentClass, FragmentKey};
 
-pub(super) fn wrapper_key_js(cx: &EmitCx<'_>, key: &WrapperKey) -> Result<String, EmitError> {
+pub(super) fn wrapper_key_js(cx: &EmitCx<'_>, key: &FragmentKey) -> Result<String, EmitError> {
     match key {
-        WrapperKey::Static { value: None, .. } => Ok(String::from("\"\"")),
-        WrapperKey::Static {
+        FragmentKey::Static { value: None, .. } => Ok(String::from("\"\"")),
+        FragmentKey::Static {
             value: Some(value), ..
         } => {
             let mut out = String::from("\"");
@@ -32,13 +32,13 @@ pub(super) fn wrapper_key_js(cx: &EmitCx<'_>, key: &WrapperKey) -> Result<String
             out.push('"');
             Ok(out)
         }
-        WrapperKey::Dynamic { source, span } if source.is_empty() => Err(
+        FragmentKey::Dynamic { source, span } if source.is_empty() => Err(
             EmitError::unsupported_at(Reason::TemplateDynamicKeyEmpty, *span),
         ),
-        WrapperKey::Dynamic { source, .. } if cx.prefixing() => {
+        FragmentKey::Dynamic { source, .. } if cx.prefixing() => {
             cx.prefixed_text(source.as_str(), Site::Expression)
         }
-        WrapperKey::Dynamic { source, .. } => Ok(source.clone()),
+        FragmentKey::Dynamic { source, .. } => Ok(source.clone()),
     }
 }
 
@@ -137,8 +137,8 @@ pub(super) fn emit_for_template_item(
     ops: &[Op<'_>],
     stable: bool,
     key: Option<&str>,
-    attributes: &[WrapperAttr],
-    class: Option<&WrapperClass>,
+    attributes: &[FragmentAttr],
+    class: Option<&FragmentClass>,
 ) -> Result<(), EmitError> {
     if should_unwrap_for(ops) {
         let element = match ops.first() {

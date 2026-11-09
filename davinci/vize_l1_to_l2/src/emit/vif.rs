@@ -62,7 +62,7 @@ fn emit_chain(cx: &mut EmitCx<'_>, if_op: &IfOp<'_>, id: Option<NodeId>) -> Resu
         cx.if_branch_key = 0;
         let from_template = id
             .and_then(|id| cx.wrappers.get(id))
-            .and_then(|keys| keys.from_template.get(i).copied())
+            .and_then(|keys| keys.fragment.get(i).copied())
             .unwrap_or(false);
         if from_template {
             super::tpl::emit_if_template_branch(cx, branch, key.as_str())?;

@@ -2,6 +2,7 @@
 
 pub mod constant_expression;
 pub mod for_facts;
+pub mod fragment_facts;
 pub mod if_facts;
 pub mod model_facts;
 pub mod slot_facts;

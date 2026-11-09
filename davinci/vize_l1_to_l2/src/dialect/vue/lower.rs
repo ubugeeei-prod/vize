@@ -9,6 +9,7 @@ use vize_l0::side_table::SideTable;
 use vize_l0::{Allocator, SourceBlock, SourceRoot, Span, String};
 use vize_l1::markup::{SurfaceError, SurfaceTree};
 
+use vize_l2::analysis::fragment_facts::{BranchFragments, LoopFragment};
 use vize_l2::op::Region;
 use vize_l2::provenance::{ProvenanceRecord, ProvenanceSink};
 use vize_l2::scope::ScopeFacts;
@@ -35,9 +36,7 @@ pub use if_keys::{BranchKey, BranchKeyKind, IfFacts, SAME_KEY_MESSAGE};
 pub use css::{lower_style_block, lower_style_block_in};
 pub(crate) use expr::simple_identifier;
 pub use forop::{ForName, ForParts, v_for_value};
-pub use structural::{
-    ForWrapper, IfChain, WrapperAttr, WrapperClass, WrapperKey, WrapperKeys, if_chain,
-};
+pub use structural::{IfChain, if_chain};
 pub use vfor::split_v_for_value;
 // The one-rebuild rule (the same discipline): compound text facts and
 // their opaque display spelling share one construction rule.
@@ -120,13 +119,13 @@ pub struct Lowered<'a, P = StdVec<ProvenanceRecord>> {
     /// page-order id; validated and published by lowering.
     pub if_facts: SideTable<IfFacts>,
     /// Captured `<template v-if>` wrapper keys, keyed by the `ui.if`
-    /// op's page-order id (P2-9 series 5, [`WrapperKeys`]).
-    /// `from_template` is the P2-11 emit signal for template-fragment
+    /// op's page-order id (P2-9 series 5, [`BranchFragments`]).
+    /// `fragment` is the P2-11 emit signal for template-fragment
     /// vs branch-root blocks.
-    pub wrappers: SideTable<WrapperKeys>,
+    pub wrappers: SideTable<BranchFragments>,
     /// Captured `<template v-for>` unwrap facts, keyed by the `ui.for`
     /// op's page-order id. Presence means the carrier was a template.
-    pub for_wrappers: SideTable<ForWrapper>,
+    pub for_wrappers: SideTable<LoopFragment>,
     /// Lowering-observed feature bits used by the L2 pass planner.
     pub features: LoweringFeatures,
     /// Vue dialect sugar the lowering (and the legalizing pass) consult.
