@@ -64,6 +64,12 @@ pub(in crate::linter::engine) const RULES: &[&str] = &[
     "a11y/no-refer-to-non-existent-id",
     "a11y/no-static-element-interactions",
     "a11y/role-has-required-aria-props",
+    "vue/valid-v-cloak",
+    "vue/valid-v-once",
+    "vue/valid-v-text",
+    "vue/valid-v-html",
+    "vue/valid-v-show",
+    "vue/no-v-text",
 ];
 
 pub(in crate::linter::engine) struct Dispatch<'a> {

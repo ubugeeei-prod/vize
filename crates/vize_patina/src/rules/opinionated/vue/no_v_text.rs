@@ -25,6 +25,7 @@
 
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
+use crate::markup::{MarkupContext, MarkupDirective, MarkupElement, MarkupRule};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_relief::{DirectiveNode, ElementNode};
 
@@ -39,9 +40,40 @@ static META: RuleMeta = RuleMeta {
 /// Disallow the `v-text` directive.
 pub struct NoVText;
 
+impl NoVText {
+    fn check(ctx: &mut LintContext<'_>, directive: &MarkupDirective<'_>) {
+        if directive.name_eq("text") {
+            ctx.warn_at_with_help(
+                ctx.t("vue/no-v-text.message"),
+                directive.range(),
+                ctx.t("vue/no-v-text.help"),
+            );
+        }
+    }
+}
+
+impl MarkupRule for NoVText {
+    fn name(&self) -> &'static str {
+        META.name
+    }
+
+    fn enter_directive<'a>(
+        &self,
+        ctx: &mut MarkupContext<'_, 'a>,
+        _element: &MarkupElement<'a>,
+        directive: &MarkupDirective<'a>,
+    ) {
+        Self::check(ctx.lint(), directive);
+    }
+}
+
 impl Rule for NoVText {
     fn meta(&self) -> &'static RuleMeta {
         &META
+    }
+
+    fn as_markup_rule(&self) -> Option<&dyn MarkupRule> {
+        Some(self)
     }
 
     fn check_directive<'a>(
@@ -50,15 +82,7 @@ impl Rule for NoVText {
         _element: &ElementNode<'a>,
         directive: &DirectiveNode<'a>,
     ) {
-        if directive.name != "text" {
-            return;
-        }
-
-        ctx.warn_with_help(
-            ctx.t("vue/no-v-text.message"),
-            &directive.loc,
-            ctx.t("vue/no-v-text.help"),
-        );
+        Self::check(ctx, &MarkupDirective::from_relief(directive));
     }
 }
 
