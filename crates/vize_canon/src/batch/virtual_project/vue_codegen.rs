@@ -313,6 +313,8 @@ pub(super) fn generate_vue_virtual_ts(
         ),
         hoist_shared_preamble,
         local_component_ownership_helpers: codegen_options.local_component_ownership_helpers,
+        // Exactly the hoisted editor modules.
+        local_template_ref_unwrap: codegen_options.local_component_ownership_helpers,
         external_component_attrs_module: codegen_options.external_component_attrs_module,
         lib_references: None,
         omit_vite_client_reference: codegen_options.omit_vite_client_reference,

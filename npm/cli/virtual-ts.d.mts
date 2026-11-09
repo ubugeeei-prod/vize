@@ -25,6 +25,17 @@ export type $WidenTemplateRef<T> =
               ? boolean
               : T
             : T;
+// Template ref unwrap, shared so each instantiation is cached once per program.
+export type $TemplateRefUnwrap<T> = T extends { value: unknown }
+  ? T extends import("vue").Ref
+    ? $WidenTemplateRef<T["value"]>
+    : T
+  : T;
+export type $TemplateRefUnwrapNarrowed<T> = [T] extends [import("vue").Ref]
+  ? $TemplateRefUnwrap<T>
+  : [Extract<T, import("vue").Ref>] extends [never]
+    ? $TemplateRefUnwrap<T>
+    : (NonNullable<T> & import("vue").Ref<unknown> & { value: $TemplateRefUnwrap<T> })["value"];
 
 import type * as __vizeSlotTypes from "./virtual-ts-slots.js" with { "resolution-mode": "import" };
 export type $SlotHostSlots<C> = __vizeSlotTypes.$SlotHostSlots<C>;

@@ -132,24 +132,25 @@ fn check_template_ref_enum_comparisons_keep_declared_ref_value_type() {
         .filter_map(|file| file["virtualTs"].as_str())
         .collect::<Vec<_>>()
         .join("\n");
-    assert!(
-        virtual_ts.contains(
-            "type __U<T> = T extends { value: unknown } ? T extends import('vue').Ref ? import(\"vize:virtual-ts\").$WidenTemplateRef<T['value']> : T : T;"
-        ),
-        "template refs should unwrap through the widening helper:\n{virtual_ts}"
-    );
-    // The widening helper itself is file-independent and lives once per program
-    // in `__vize_helpers.d.ts`; re-declaring it per module is the regression
-    // this guards (see #3460).
-    assert_eq!(
-        virtual_ts.matches("type $WidenTemplateRef<T>").count(),
-        0,
-        "the widening helper must be hoisted, not re-declared per module:\n{virtual_ts}"
-    );
+    // The unwrap and widening helpers are file-independent and live once per
+    // program in `__vize_helpers.d.ts`; re-declaring them per module is the
+    // regression this guards (see #3460).
+    for declaration in ["type $WidenTemplateRef<T>", "type __U<"] {
+        assert_eq!(
+            virtual_ts.matches(declaration).count(),
+            0,
+            "`{declaration}` must be hoisted, not re-declared per module:\n{virtual_ts}"
+        );
+    }
     for name in ["modalWindowState", "shallowModalWindowState"] {
-        assert!(
-            virtual_ts.contains(&format!("var {name}: __U<__R_{name}> = (void 0) as any;")),
-            "template should shadow `{name}` with an unwrapped widened alias:\n{virtual_ts}"
+        let shadow = format!(
+            "var {name}: import(\"vize:virtual-ts\").$TemplateRefUnwrap<__R_{name}> = (void 0) as any;"
+        );
+        // Each SFC that reads the binding shadows it once.
+        assert_ne!(
+            virtual_ts.matches(&shadow).count(),
+            0,
+            "template should shadow `{name}` with the shared unwrapped widened alias:\n{virtual_ts}"
         );
     }
 
