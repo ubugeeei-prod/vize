@@ -46,7 +46,7 @@ impl TypeSourceSnapshot {
         let canonical = cell
             .get_or_init(|| std::fs::canonicalize(directory).ok())
             .as_ref()?;
-        self.indexed_identity(&canonical.join(name))
+        self.indexed_identity_in(canonical, name)
     }
 
     #[cfg(not(unix))]

@@ -28,7 +28,11 @@ pub(in crate::script::context) struct IndexedDirectory {
 
 impl IndexedDirectory {
     fn read(directory: &Path) -> Option<Self> {
-        let canonical = std::fs::canonicalize(directory).ok()?;
+        Self::list(std::fs::canonicalize(directory).ok()?)
+    }
+
+    /// List a directory whose canonical path is already known.
+    fn list(canonical: PathBuf) -> Option<Self> {
         let mut files = FxHashSet::default();
         for (index, entry) in std::fs::read_dir(&canonical).ok()?.enumerate() {
             if index >= MAX_INDEXED_ENTRIES {
@@ -68,17 +72,29 @@ impl TypeSourceSnapshot {
         if !directory.is_absolute() {
             return None;
         }
-        let cell = Arc::clone(
-            self.directories
-                .lock()
-                .ok()?
-                .entry(directory.to_path_buf())
-                .or_default(),
-        );
-        // The map lock is released before any filesystem work, so unrelated
-        // directories list in parallel and one directory lists once.
-        cell.get_or_init(|| IndexedDirectory::read(directory))
+        self.directory_cell(directory)?
+            .get_or_init(|| IndexedDirectory::read(directory))
             .as_ref()?
             .identity(name)
+    }
+
+    /// [`Self::indexed_identity`] in a directory whose canonical path the
+    /// caller already resolved, without canonicalizing it again.
+    pub(super) fn indexed_identity_in(&self, canonical: &Path, name: &OsStr) -> Option<PathBuf> {
+        self.directory_cell(canonical)?
+            .get_or_init(|| IndexedDirectory::list(canonical.to_path_buf()))
+            .as_ref()?
+            .identity(name)
+    }
+
+    /// One cell per directory spelling, with `.` components dropped: `a/./b`
+    /// and `a/b` name one directory, physically as well. The map lock is
+    /// released before any filesystem work, so unrelated directories list in
+    /// parallel and one directory lists once.
+    fn directory_cell(&self, directory: &Path) -> Option<super::DirectoryCell> {
+        let key: PathBuf = directory.components().collect();
+        Some(Arc::clone(
+            self.directories.lock().ok()?.entry(key).or_default(),
+        ))
     }
 }
