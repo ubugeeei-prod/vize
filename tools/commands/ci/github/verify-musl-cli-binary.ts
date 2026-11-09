@@ -35,7 +35,7 @@ export function verifyMuslCliBinary(arguments_: readonly string[]): number {
     process.stdout.write(readelf);
     throw new Error("musl CLI binary verification failed");
   }
-  const glibc = glibcRequirementLines(commandOutput("strings", [binary]));
+  const glibc = glibcRequirementLines(commandOutput("readelf", ["--version-info", binary]));
   if (glibc.length > 0) {
     console.error("::error ::musl CLI binary contains glibc version requirements");
     for (const line of glibc) console.log(line);
