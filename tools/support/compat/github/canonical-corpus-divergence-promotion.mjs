@@ -5,11 +5,11 @@ import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
-const fixtureRoot = "tests/_fixtures/differential/compiler/real-project-dom-reductions";
-
-function code(value) {
-  return `\`${String(value).replaceAll("`", "\\`")}\``;
-}
+import {
+  code,
+  divergenceObserver,
+  reducedFileName,
+} from "./canonical-corpus-divergence-observers.ts";
 
 function writeJson(path, value) {
   writeFileSync(path, `${JSON.stringify(value)}\n`);
@@ -41,13 +41,10 @@ export function createPromotionPlan(reductionDirectory) {
   );
   assert.equal(receipt?.version, 1, "Unknown reduction receipt version");
   if (receipt.status !== "reduced") return null;
+  const observer = divergenceObserver(receipt.observer);
   assert(/^[a-f0-9]{12}$/.test(receipt.fingerprint ?? ""), "Invalid divergence fingerprint");
   assert(/^[a-f0-9]{40}$/.test(receipt.sourceCommit ?? ""), "Invalid reduction source commit");
-  assert.equal(
-    receipt.reducedFile,
-    "canonical-dom-divergence.reduced.vue",
-    "Unexpected reduced witness name",
-  );
+  assert.equal(receipt.reducedFile, reducedFileName(observer), "Unexpected reduced witness name");
   assert(
     Number.isSafeInteger(receipt.sourceBytes) && receipt.sourceBytes > 0,
     "Invalid source size",
@@ -66,10 +63,11 @@ export function createPromotionPlan(reductionDirectory) {
     receipt.reducedSha256,
     "Reduced witness hash differs from receipt",
   );
-  const directory = `${fixtureRoot}/${receipt.fingerprint}`;
+  const directory = `${observer.fixtureRoot}/${receipt.fingerprint}`;
   const provenance = {
     schema: "vize.realProjectDivergenceFixtureProvenance",
     version: 1,
+    observer: observer.id,
     fingerprint: receipt.fingerprint,
     sourcePath: receipt.sourcePath,
     sourceCommit: receipt.sourceCommit,
@@ -82,11 +80,11 @@ export function createPromotionPlan(reductionDirectory) {
     schema: "vize.realProjectDivergenceFixturePromotionPlan",
     version: 1,
     fingerprint: receipt.fingerprint,
-    branch: `automation/davinci-dom-${receipt.fingerprint}`,
-    title: `test(davinci): preserve real-project DOM divergence ${receipt.fingerprint}`,
-    commitMessage: `test(davinci): preserve DOM divergence ${receipt.fingerprint}`,
+    branch: `automation/davinci-${observer.id}-${receipt.fingerprint}`,
+    title: `test(davinci): preserve real-project ${observer.label} divergence ${receipt.fingerprint}`,
+    commitMessage: `test(davinci): preserve ${observer.label} divergence ${receipt.fingerprint}`,
     body: [
-      "The Real Project Matrix reduced a canonical legacy-vs-Davinci DOM difference into this fixture.",
+      `The Real Project Matrix reduced a canonical legacy-vs-Davinci ${observer.label} difference into this fixture.`,
       "",
       `- Fingerprint: ${code(receipt.fingerprint)}`,
       `- Source commit: ${code(receipt.sourceCommit)}`,
@@ -94,7 +92,7 @@ export function createPromotionPlan(reductionDirectory) {
       `- Reduction: ${receipt.sourceBytes} -> ${receipt.reducedBytes} bytes`,
       `- Witness sha256: ${code(receipt.reducedSha256)}`,
       "",
-      "This draft is expected to keep the promoted-fixture parity test red until the product difference is fixed. It contains only the minimized witness, not the full third-party source file.",
+      `This draft is expected to keep ${code(observer.promotedTest)} red until the product difference is fixed. It contains only the minimized witness, not the full third-party source file.`,
     ].join("\n"),
     files: [
       { path: `${directory}/witness.vue.txt`, content: witness.toString("utf8") },

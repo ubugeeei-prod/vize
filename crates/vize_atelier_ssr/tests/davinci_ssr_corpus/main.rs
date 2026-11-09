@@ -150,6 +150,54 @@ fn original_builtin_payloads_require_exact_selected_plan_ownership() {
     assert_clean("original builtin payloads", &report);
 }
 
+fn promoted_fixture_root() -> std::path::PathBuf {
+    std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../../tests/_fixtures/differential/compiler/real-project-ssr-reductions")
+}
+
+/// Witnesses the Real Project Matrix reduced from production SSR divergences
+/// (`canonical-corpus-divergence-promotion.mjs`), compiled under their
+/// original corpus path. A generated fixture PR stays red until the product
+/// difference is fixed.
+#[test]
+fn promoted_real_project_ssr_fixtures_agree() {
+    let mut directories: Vec<_> = std::fs::read_dir(promoted_fixture_root())
+        .expect("promoted fixture root exists")
+        .filter_map(Result::ok)
+        .filter(|entry| entry.file_type().is_ok_and(|kind| kind.is_dir()))
+        .collect();
+    directories.sort_by_key(std::fs::DirEntry::file_name);
+    let mut report = production::ProductionReport::default();
+    for directory in &directories {
+        let fingerprint = directory.file_name();
+        let fingerprint = fingerprint.to_str().expect("UTF-8 fixture fingerprint");
+        assert!(
+            fingerprint.len() == 12 && fingerprint.bytes().all(|byte| byte.is_ascii_hexdigit()),
+            "invalid promoted fixture fingerprint: {fingerprint}"
+        );
+        let path = directory.path();
+        let source =
+            std::fs::read_to_string(path.join("witness.vue.txt")).expect("promoted witness reads");
+        let provenance: serde_json::Value = serde_json::from_str(
+            &std::fs::read_to_string(path.join("provenance.json"))
+                .expect("promoted provenance reads"),
+        )
+        .expect("promoted provenance is JSON");
+        assert_eq!(provenance["fingerprint"].as_str(), Some(fingerprint));
+        assert_eq!(provenance["observer"].as_str(), Some("ssr"));
+        let name = provenance["sourcePath"]
+            .as_str()
+            .expect("promoted provenance names its corpus path");
+        production::compare(name, &source, &mut report);
+    }
+    assert_eq!(
+        report.compared,
+        directories.len() as u64,
+        "every promoted witness stays inside the comparable boundary"
+    );
+    production::assert_clean("promoted real-project witnesses", &report);
+}
+
 #[derive(Default)]
 struct Report {
     files: u64,

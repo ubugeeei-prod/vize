@@ -3,9 +3,14 @@ import { test } from "node:test";
 
 import {
   createDivergenceIssue,
-  parseCorpusDivergences,
   publishDivergenceIssue,
 } from "../../tools/support/compat/github/canonical-corpus-divergence-issue.mjs";
+import {
+  divergenceObservers,
+  parseDomDivergences,
+} from "../../tools/support/compat/github/canonical-corpus-divergence-observers.ts";
+
+const { dom } = divergenceObservers;
 
 const fixtureA = "tests/_fixtures/_git/airi";
 const fixtureB = "tests/_fixtures/_git/create-vue";
@@ -35,8 +40,8 @@ function log(divergences, samples = []) {
 
 await test("clean canonical evidence creates no issue plan", () => {
   const clean = log(0);
-  assert.deepEqual(parseCorpusDivergences(clean), { divergenceCount: 0, samples: [] });
-  assert.equal(createDivergenceIssue(clean, ledger, selected, context), null);
+  assert.deepEqual(parseDomDivergences(clean), { divergenceCount: 0, samples: [] });
+  assert.equal(createDivergenceIssue(dom, clean, ledger, selected, context), null);
 });
 
 await test("canonical differences become one normalized fixture-owned issue", () => {
@@ -44,7 +49,7 @@ await test("canonical differences become one normalized fixture-owned issue", ()
     `/home/runner/work/vize/vize/${fixtureA}/src/A.vue: old_len=10 new_len=11 first_diff=4 old_window=old\\nwindow new_window=new\\nwindow`,
     `${fixtureB}/src/B.vue: old_len=20 new_len=18 first_diff=7 old_window=before new_window=after`,
   ]);
-  const plan = createDivergenceIssue(evidence, ledger, selected, context);
+  const plan = createDivergenceIssue(dom, evidence, ledger, selected, context);
   assert.match(plan.title, /^fix\(davinci\): triage canonical DOM divergence [a-f0-9]{12}$/);
   assert.equal(plan.divergenceCount, 2);
   assert.deepEqual(plan.fixtures, [fixtureA, fixtureB]);
@@ -55,17 +60,18 @@ await test("canonical differences become one normalized fixture-owned issue", ()
   assert.match(plan.body, /canonical-corpus-dom-1234-2-/);
   assert.match(plan.body, /minimize it with `vize reduce`/);
   assert.doesNotMatch(plan.body, /\/home\/runner/);
-  assert.deepEqual(plan.labels, ["priority:p0", "area:ci", "area:testing", "area:davinci"]);
+  assert.deepEqual(plan.labels, ["area:ci", "area:testing", "area:davinci"]);
 });
 
 await test("a matching automatic reduction receipt is linked without copying source", () => {
   const evidence = log(1, [
     `${fixtureA}/src/A.vue: old_len=20 new_len=21 first_diff=4 old_window=old new_window=new`,
   ]);
-  const first = createDivergenceIssue(evidence, ledger, selected, context);
+  const first = createDivergenceIssue(dom, evidence, ledger, selected, context);
   const receipt = {
     schema: "vize.realProjectDivergenceReductionReceipt",
     version: 1,
+    observer: "dom",
     status: "reduced",
     divergenceCount: 1,
     fingerprint: first.fingerprint,
@@ -86,7 +92,7 @@ await test("a matching automatic reduction receipt is linked without copying sou
     pullRequestUrl: "https://example.test/pull/93",
     sourceCommit: context.sourceCommit,
   };
-  const plan = createDivergenceIssue(evidence, ledger, selected, context, receipt, promotion);
+  const plan = createDivergenceIssue(dom, evidence, ledger, selected, context, receipt, promotion);
   assert.match(plan.body, /Automatic reduction: `reduced`/);
   assert.match(plan.body, /canonical-corpus-dom-reduction-1234-2-/);
   assert.match(plan.body, /200 -> 40 bytes/);
@@ -95,7 +101,7 @@ await test("a matching automatic reduction receipt is linked without copying sou
   assert.doesNotMatch(plan.body, /<template>/);
   assert.throws(
     () =>
-      createDivergenceIssue(evidence, ledger, selected, context, {
+      createDivergenceIssue(dom, evidence, ledger, selected, context, {
         ...receipt,
         fingerprint: "bad",
       }),
@@ -107,6 +113,7 @@ await test("divergence evidence fails closed when samples or fixture custody dif
   assert.throws(
     () =>
       createDivergenceIssue(
+        dom,
         log(2, [`${fixtureA}/A.vue: old_len=1 new_len=2 first_diff=0 old_window=a new_window=b`]),
         ledger,
         selected,
@@ -117,6 +124,7 @@ await test("divergence evidence fails closed when samples or fixture custody dif
   assert.throws(
     () =>
       createDivergenceIssue(
+        dom,
         log(1, [
           "tests/_fixtures/_git/foreign/A.vue: old_len=1 new_len=2 first_diff=0 old_window=a new_window=b",
         ]),
@@ -127,13 +135,14 @@ await test("divergence evidence fails closed when samples or fixture custody dif
     /outside the fixture ledger/,
   );
   assert.throws(
-    () => createDivergenceIssue(log(0), ledger, `${fixtureA}\n`, context),
+    () => createDivergenceIssue(dom, log(0), ledger, `${fixtureA}\n`, context),
     /Selected canonical fixture inventory is incomplete/,
   );
 });
 
 await test("publication reuses an exact open title and creates only when absent", () => {
   const plan = createDivergenceIssue(
+    dom,
     log(1, [`${fixtureA}/A.vue: old_len=1 new_len=2 first_diff=0 old_window=a new_window=b`]),
     ledger,
     selected,

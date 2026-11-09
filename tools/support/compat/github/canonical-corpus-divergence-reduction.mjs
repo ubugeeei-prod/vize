@@ -6,6 +6,7 @@ import { basename, join, normalize, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { createDivergenceIssue } from "./canonical-corpus-divergence-issue.mjs";
+import { divergenceObserver, reducedFileName } from "./canonical-corpus-divergence-observers.ts";
 
 function contextFromEnv(env) {
   assert(/^[a-f0-9]{40}$/.test(env.GITHUB_SHA ?? ""), "Expected an exact source commit");
@@ -36,12 +37,13 @@ function writeJson(path, value) {
   writeFileSync(path, `${JSON.stringify(value)}\n`);
 }
 
-export function createReductionPlan(log, ledger, selectedGitlinks, context) {
-  const issue = createDivergenceIssue(log, ledger, selectedGitlinks, context);
+export function createReductionPlan(observer, log, ledger, selectedGitlinks, context) {
+  const issue = createDivergenceIssue(observer, log, ledger, selectedGitlinks, context);
   if (issue === null) {
     return {
       schema: "vize.realProjectDivergenceReductionPlan",
       version: 1,
+      observer: observer.id,
       status: "clean",
       divergenceCount: 0,
       sourceCommit: context.sourceCommit,
@@ -52,6 +54,7 @@ export function createReductionPlan(log, ledger, selectedGitlinks, context) {
   return {
     schema: "vize.realProjectDivergenceReductionPlan",
     version: 1,
+    observer: observer.id,
     status: "required",
     divergenceCount: issue.divergenceCount,
     fingerprint: issue.fingerprint,
@@ -62,10 +65,11 @@ export function createReductionPlan(log, ledger, selectedGitlinks, context) {
   };
 }
 
-export function planFromArtifact(artifactDirectory, outputDirectory, env = process.env) {
+export function planFromArtifact(observer, artifactDirectory, outputDirectory, env = process.env) {
   const context = contextFromEnv(env);
   const plan = createReductionPlan(
-    readFileSync(join(artifactDirectory, "dom-corpus.log"), "utf8"),
+    observer,
+    readFileSync(join(artifactDirectory, observer.log), "utf8"),
     JSON.parse(readFileSync("tests/_fixtures/fixture-compatibility-ledger.json", "utf8")),
     readFileSync(join(artifactDirectory, "selected-gitlinks.txt"), "utf8"),
     context,
@@ -82,6 +86,7 @@ export function planFromArtifact(artifactDirectory, outputDirectory, env = proce
     writeJson(join(outputDirectory, "reduction.json"), {
       schema: "vize.realProjectDivergenceReductionReceipt",
       version: 1,
+      observer: observer.id,
       status: "clean",
       divergenceCount: 0,
       sourceCommit: plan.sourceCommit,
@@ -96,12 +101,21 @@ export function runReduction(planPath, outputDirectory, vizeBin) {
   assert.equal(plan?.schema, "vize.realProjectDivergenceReductionPlan", "Foreign reduction plan");
   assert.equal(plan?.version, 1, "Unknown reduction plan version");
   assert.equal(plan?.status, "required", "Reduction plan does not request a reduction");
+  const observer = divergenceObserver(plan.observer);
   const sourcePath = safeRepositoryPath(plan.sourcePath);
   const source = readFileSync(sourcePath);
-  const reducedPath = join(outputDirectory, "canonical-dom-divergence.reduced.vue");
+  const reducedPath = join(outputDirectory, reducedFileName(observer));
   const result = spawnSync(
     vizeBin,
-    ["reduce", sourcePath, "--dom-divergence", "--out", reducedPath, "--max-runs", "2000"],
+    [
+      "reduce",
+      sourcePath,
+      ...observer.reducerArguments(sourcePath, vizeBin),
+      "--out",
+      reducedPath,
+      "--max-runs",
+      "2000",
+    ],
     { encoding: "utf8" },
   );
   let status = "failed";
@@ -119,6 +133,7 @@ export function runReduction(planPath, outputDirectory, vizeBin) {
   const receipt = {
     schema: "vize.realProjectDivergenceReductionReceipt",
     version: 1,
+    observer: observer.id,
     status,
     divergenceCount: plan.divergenceCount,
     fingerprint: plan.fingerprint,
@@ -141,13 +156,13 @@ export function runReduction(planPath, outputDirectory, vizeBin) {
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const [command, ...args] = process.argv.slice(2);
-  if (command === "plan" && args.length === 2) {
-    planFromArtifact(args[0], args[1]);
+  if (command === "plan" && args.length === 3) {
+    planFromArtifact(divergenceObserver(args[0]), args[1], args[2]);
   } else if (command === "run" && args.length === 3) {
     runReduction(args[0], args[1], args[2]);
   } else {
     assert.fail(
-      "Usage: canonical-corpus-divergence-reduction.mjs plan ARTIFACT_DIRECTORY OUTPUT_DIRECTORY\n" +
+      "Usage: canonical-corpus-divergence-reduction.mjs plan OBSERVER ARTIFACT_DIRECTORY OUTPUT_DIRECTORY\n" +
         "   or: canonical-corpus-divergence-reduction.mjs run PLAN OUTPUT_DIRECTORY VIZE_BIN",
     );
   }

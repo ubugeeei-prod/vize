@@ -13,23 +13,24 @@ import {
 const sourceCommit = "a".repeat(40);
 const context = { sourceCommit };
 
-function reductionDirectory(status = "reduced") {
+function reductionDirectory(status = "reduced", observer = "dom") {
   const directory = mkdtempSync(join(tmpdir(), "vize-promotion-"));
   const witness = "<template><div/></template>";
   if (status === "reduced") {
-    writeFileSync(join(directory, "canonical-dom-divergence.reduced.vue"), witness);
+    writeFileSync(join(directory, `canonical-${observer}-divergence.reduced.vue`), witness);
   }
   writeFileSync(
     join(directory, "reduction.json"),
     JSON.stringify({
       schema: "vize.realProjectDivergenceReductionReceipt",
       version: 1,
+      observer,
       status,
       divergenceCount: status === "reduced" ? 1 : 0,
       fingerprint: status === "reduced" ? "abc123abc123" : undefined,
       sourcePath: "tests/_fixtures/_git/example/src/App.vue",
       sourceBytes: 200,
-      reducedFile: status === "reduced" ? "canonical-dom-divergence.reduced.vue" : null,
+      reducedFile: status === "reduced" ? `canonical-${observer}-divergence.reduced.vue` : null,
       reducedBytes: status === "reduced" ? Buffer.byteLength(witness) : null,
       reducedSha256:
         status === "reduced" ? createHash("sha256").update(witness).digest("hex") : null,
