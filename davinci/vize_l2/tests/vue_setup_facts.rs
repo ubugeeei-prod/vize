@@ -2,37 +2,24 @@
 //! on every `<script setup>` in the repository corpus (#6844). Croquis is
 //! only this test's oracle.
 
-use std::path::{Path, PathBuf};
+mod support {
+    pub mod vue_setup;
+}
 
+use support::vue_setup::{corpus, observe, slice, text};
 use vize_l0::{
     Allocator, String,
     config::{VueDialect, VueVersion},
     cstr,
 };
-use vize_l1::container::{
-    Vue,
-    vue::{DescriptorOptions, ScriptRole},
-};
+use vize_l1::container::{Vue, vue::DescriptorOptions};
 use vize_l1::embed::{
     EmbedSource,
     syntax::{ProgramOptions, parse_program_once},
 };
 use vize_l1::markup::SurfaceParseOptions;
-use vize_l2::framework::vue::{
-    MACROS, MacroCall, MacroKind, SetupBindingKind, SetupFacts, SetupFactsIncomplete, SetupObserver,
-};
+use vize_l2::framework::vue::{MACROS, MacroCall, MacroKind, SetupFactsIncomplete, SetupObserver};
 use vize_l2::lang::js::{FileProducer, ProgramInput, ProgramScope};
-
-/// Repository trees holding `.vue` files, relative to the workspace root.
-const CORPUS: &[&str] = &[
-    "tests/_fixtures",
-    "tests/fixtures",
-    "crates",
-    "playground",
-    "examples",
-    "npm",
-];
-const SKIPPED_DIRECTORIES: &[&str] = &["node_modules", "target", "dist", ".git"];
 
 /// Files where Croquis disagrees with Vue, which is the authority. Croquis
 /// records no macro in an object-pattern declarator except `defineProps`;
@@ -42,29 +29,6 @@ const CROQUIS_DEFECTS: &[&str] =
 
 /// `(name, start, end, runtime arguments, type arguments)`, script-relative.
 type Row = (String, u32, u32, Option<String>, Option<String>);
-
-fn collect(directory: &Path, files: &mut Vec<PathBuf>) {
-    let Ok(entries) = std::fs::read_dir(directory) else {
-        return;
-    };
-    for entry in entries.flatten() {
-        let path = entry.path();
-        let name = entry.file_name();
-        if path.is_dir() {
-            if !SKIPPED_DIRECTORIES.iter().any(|skip| name == *skip) {
-                collect(&path, files);
-            }
-        } else if path.extension().is_some_and(|extension| extension == "vue") {
-            files.push(path);
-        }
-    }
-}
-
-fn slice(source: &str, base: u32, span: vize_l0::Span) -> Option<String> {
-    source
-        .get((span.start - base) as usize..(span.end - base) as usize)
-        .map(String::from)
-}
 
 /// Croquis records Vue's macros and `defineArt` only.
 fn croquis_records(kind: MacroKind) -> bool {
@@ -108,43 +72,6 @@ fn croquis_rows(content: &str) -> Vec<Row> {
         .collect()
 }
 
-/// The native calls of the file's `<script setup>` with its content and
-/// start, or `None` when the native levels refuse the file first.
-fn observe(source: &str) -> Option<(String, u32, Result<SetupFacts, SetupFactsIncomplete>)> {
-    let arena = Allocator::default();
-    let descriptor = Vue.observe_descriptor(
-        &arena,
-        source,
-        DescriptorOptions {
-            version: VueVersion::V3,
-            dialect: VueDialect::Vue,
-            template: SurfaceParseOptions::default(),
-        },
-    );
-    let view = descriptor.admitted().ok()?;
-    let script = view.setup()?;
-    assert_eq!(script.role(), ScriptRole::Setup);
-    let block = script.block();
-    let syntax = parse_program_once(
-        &arena,
-        EmbedSource::authored(source, block.span()).ok()?,
-        ProgramOptions::module(script.lang()),
-    );
-    let admitted = syntax.admitted_program()?;
-    let mut producer = FileProducer::new(&arena, descriptor.source()).ok()?;
-    let mut observer = SetupObserver::new();
-    producer
-        .program_observed(
-            ProgramInput::checked(admitted, block, script.container_index()).ok()?,
-            ProgramScope::Nested,
-            &mut observer,
-        )
-        .ok()?;
-    let facts = observer.finish();
-    let content = source.get(block.span().start as usize..block.span().end as usize)?;
-    Some((String::from(content), block.span().start, facts))
-}
-
 fn native(source: &str) -> Option<(String, Result<Vec<Row>, SetupFactsIncomplete>)> {
     let (content, base, calls) = observe(source)?;
     let rows = calls.map(|facts| native_rows(&content, base, facts.macro_calls()));
@@ -153,12 +80,7 @@ fn native(source: &str) -> Option<(String, Result<Vec<Row>, SetupFactsIncomplete
 
 #[test]
 fn every_corpus_setup_matches_croquis() {
-    let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
-    let mut files = Vec::new();
-    for tree in CORPUS {
-        collect(&root.join(tree), &mut files);
-    }
-    files.sort();
+    let (root, files) = corpus();
     let mut compared = 0usize;
     let mut with_calls = 0usize;
     let mut mismatches = Vec::new();
@@ -205,10 +127,6 @@ fn shapes(script: &str) -> Option<Vec<(MacroKind, String, Option<String>)>> {
         })
         .collect();
     Some(rows)
-}
-
-fn text(value: &str) -> String {
-    String::from(value)
 }
 
 #[test]
@@ -309,145 +227,4 @@ fn one_observer_refuses_a_second_program() {
             .expect("unit");
     }
     assert_eq!(observer.finish(), Err(SetupFactsIncomplete::SecondProgram));
-}
-
-fn croquis_kind(kind: vize_relief::BindingType) -> Option<SetupBindingKind> {
-    use vize_relief::BindingType;
-    Some(match kind {
-        BindingType::SetupConst => SetupBindingKind::SetupConst,
-        BindingType::SetupLet => SetupBindingKind::SetupLet,
-        BindingType::SetupRef => SetupBindingKind::SetupRef,
-        BindingType::SetupMaybeRef => SetupBindingKind::SetupMaybeRef,
-        BindingType::SetupReactiveConst => SetupBindingKind::SetupReactiveConst,
-        BindingType::LiteralConst => SetupBindingKind::LiteralConst,
-        _ => return None,
-    })
-}
-
-/// Every natively classified binding has Croquis' kind, and in files with no
-/// unclassified pattern Croquis has no other non-prop binding.
-#[test]
-fn every_corpus_setup_binding_matches_croquis() {
-    let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
-    let mut files = Vec::new();
-    for tree in CORPUS {
-        collect(&root.join(tree), &mut files);
-    }
-    files.sort();
-    let (mut compared, mut bindings, mut patterns) = (0usize, 0usize, 0usize);
-    let mut mismatches = Vec::new();
-    for file in &files {
-        let Ok(source) = std::fs::read_to_string(file) else {
-            continue;
-        };
-        let Some((content, base, facts)) = observe(&source) else {
-            continue;
-        };
-        let relative = file.strip_prefix(&root).unwrap_or(file).display();
-        let facts = match facts {
-            Ok(facts) => facts,
-            Err(refusal) => {
-                mismatches.push(cstr!("{relative}: {refusal:?}"));
-                continue;
-            }
-        };
-        compared += 1;
-        let oracle = vize_croquis::script_parser::parse_script_setup(&content).bindings;
-        let mut native = Vec::new();
-        for binding in facts.bindings() {
-            let name = slice(&content, base, binding.name).unwrap_or_default();
-            let expected = oracle.get(&name).and_then(croquis_kind);
-            bindings += 1;
-            if expected != Some(binding.kind) {
-                mismatches.push(cstr!(
-                    "{relative}: {name} native {:?} croquis {:?}",
-                    binding.kind,
-                    oracle.get(&name)
-                ));
-            }
-            native.push(name);
-        }
-        patterns += usize::from(!facts.unclassified().is_empty());
-        if facts.unclassified().is_empty() {
-            for (name, kind) in oracle.iter() {
-                if croquis_kind(kind).is_some() && !native.iter().any(|known| known == name) {
-                    mismatches.push(cstr!("{relative}: {name} only croquis {kind:?}"));
-                }
-            }
-        }
-    }
-    eprintln!(
-        "compared {bindings} bindings in {compared} setup scripts ({patterns} with destructuring)"
-    );
-    assert!(compared > 1000, "corpus shrank to {compared} setup scripts");
-    assert_eq!(mismatches, Vec::<String>::new());
-}
-
-/// `(name, kind)` of each native binding, plus the unclassified patterns.
-type Kinds = (Vec<(String, SetupBindingKind)>, Vec<String>);
-
-fn kinds(script: &str) -> Option<Kinds> {
-    let source = cstr!("<script setup lang=\"ts\">{script}</script>");
-    let (content, base, facts) = observe(&source)?;
-    let facts = facts.ok()?;
-    let bindings = facts
-        .bindings()
-        .iter()
-        .map(|binding| {
-            let name = slice(&content, base, binding.name).unwrap_or_default();
-            (name, binding.kind)
-        })
-        .collect();
-    let patterns = facts
-        .unclassified()
-        .iter()
-        .map(|span| slice(&content, base, *span).unwrap_or_default())
-        .collect();
-    Some((bindings, patterns))
-}
-
-#[test]
-fn binding_kinds_follow_the_compiler_rules() {
-    use SetupBindingKind::{
-        LiteralConst, SetupConst, SetupLet, SetupMaybeRef, SetupReactiveConst, SetupRef,
-    };
-    let script = "import { ref as r, type Ref } from 'vue'\nimport Child from './Child.vue'\n\
-        import * as api from './api'\nimport type { T } from './t'\n\
-        const props = withDefaults(defineProps<{ a?: number }>(), {})\nconst model = defineModel()\n\
-        const emit = defineEmits()\nconst count = r(0)\nlet state = reactive({})\nconst c = ref\n\
-        const d = c(1)\nconst n = -1\nconst s = `x`\nconst o = {}\nconst f = () => 1\n\
-        const m = useThing()\nlet l = 1\nfunction g() {}\nclass K {}\nenum E { A }\n\
-        declare enum D { B }\nconst { x, y: [z] } = useX()\nconst [v, mods] = defineModel()\n\
-        let { w } = h\nconst { p } = defineProps<{ p: string }>()";
-    let expected = [
-        ("r", SetupMaybeRef),
-        ("Child", SetupConst),
-        ("api", SetupConst),
-        ("props", SetupReactiveConst),
-        ("model", SetupRef),
-        ("emit", SetupConst),
-        ("count", SetupRef),
-        ("state", SetupReactiveConst),
-        ("c", SetupMaybeRef),
-        ("d", SetupRef),
-        ("n", LiteralConst),
-        ("s", LiteralConst),
-        ("o", SetupConst),
-        ("f", SetupConst),
-        ("m", SetupMaybeRef),
-        ("l", SetupLet),
-        ("g", SetupConst),
-        ("K", SetupConst),
-        ("E", SetupConst),
-        ("x", SetupMaybeRef),
-        ("z", SetupMaybeRef),
-        ("v", SetupMaybeRef),
-        ("mods", SetupMaybeRef),
-        ("w", SetupLet),
-    ]
-    .map(|(name, kind)| (text(name), kind));
-    assert_eq!(
-        kinds(script),
-        Some((expected.to_vec(), vec![text("{ p }")]))
-    );
 }

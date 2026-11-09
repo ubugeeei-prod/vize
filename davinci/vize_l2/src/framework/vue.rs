@@ -173,6 +173,6 @@ pub fn artifact_macro_names() -> impl Iterator<Item = &'static str> {
 
 mod setup;
 pub use setup::{
-    MacroCall, SetupBinding, SetupBindingKind, SetupCheckpoint, SetupFacts, SetupFactsIncomplete,
-    SetupObserver,
+    MacroCall, PropsDestructure, PropsField, SetupBinding, SetupBindingKind, SetupCheckpoint,
+    SetupFacts, SetupFactsIncomplete, SetupObserver,
 };
