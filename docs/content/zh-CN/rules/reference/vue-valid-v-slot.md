@@ -60,4 +60,4 @@ export default defineConfig({}).withVue({
 - [Vue 规则](../vue.md)
 - [规则选项](/rules/options.md)
 - [全部规则](../all.md)
-- [源代码](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_slot.rs#L29)
+- [源代码](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_slot.rs#L30)

@@ -111,6 +111,8 @@ pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
     // more literal fixtures and calls over nineteen complete trace lines.
     // Keyed nested-loop and keyed-root slot fallbacks add two literal fixtures
     // and calls over twenty-seven complete trace lines.
+    // Dynamic-slot loop identity adds three helper-driven calls. Their complete
+    // focused assertions execute while this literal-only scan records skips.
     // Preserving authored table-section cells removes the four trace lines that
     // belonged only to the parser-inserted row and keeps every authored node.
     // Real-project configurable allowances add five literal fixtures over
@@ -150,7 +152,8 @@ pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
         + 6
         + 2
         + 8
-        + 4,
+        + 4
+        + 3,
     rule_fixture_skipped: 87
         + 4
         + 3
@@ -183,6 +186,7 @@ pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
         + 3
         + 1
         + 1
+        + 3
         + 3,
     matrix: 90,
     template_lines: 6316 + 233 + 5 + 10 + 25 + 7 - 49

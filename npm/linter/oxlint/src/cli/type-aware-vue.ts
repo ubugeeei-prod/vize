@@ -12,8 +12,8 @@
  * resolves any extensionless sibling, so imported types flow between files.
  * Template expressions stay with Vize's own `type/*` rules.
  */
+import { randomUUID } from "node:crypto";
 import fs from "node:fs";
-import os from "node:os";
 import path from "node:path";
 
 import { isStandaloneHtmlFile } from "../file-kinds.ts";
@@ -119,22 +119,66 @@ export function typeAwareOnlyConfig(
   printed: Record<string, unknown>,
   typeAwareRules: ReadonlySet<string>,
 ): Record<string, unknown> | null {
-  const rules: Record<string, unknown> = {};
-  for (const [name, value] of Object.entries((printed.rules ?? {}) as Record<string, unknown>)) {
-    const severity = Array.isArray(value) ? value[0] : value;
-    if (!typeAwareRules.has(name) || severity === "off" || severity === "allow" || severity === 0)
-      continue;
-    rules[name] = value;
-  }
-  if (Object.keys(rules).length === 0) return null;
+  const rules = typeAwareRuleEntries(printed.rules, typeAwareRules);
+  const overrides = Array.isArray(printed.overrides)
+    ? printed.overrides.flatMap((override) => typeAwareOverride(override, typeAwareRules))
+    : [];
+  if (!hasEnabledRule(rules) && !overrides.some((override) => hasEnabledRule(override.rules)))
+    return null;
   return {
     plugins: printed.plugins ?? [],
     categories: Object.fromEntries(CATEGORIES.map((category) => [category, "off"])),
     rules,
+    overrides,
     settings: printed.settings ?? {},
     env: printed.env ?? {},
     globals: printed.globals ?? {},
   };
+}
+
+const SCRIPT_SHIM_EXTENSIONS = [".ts", ".tsx", ".js", ".jsx"] as const;
+
+function typeAwareRuleEntries(
+  value: unknown,
+  typeAwareRules: ReadonlySet<string>,
+): Record<string, unknown> {
+  if (value == null || typeof value !== "object" || Array.isArray(value)) return {};
+  return Object.fromEntries(Object.entries(value).filter(([name]) => typeAwareRules.has(name)));
+}
+
+function typeAwareOverride(
+  value: unknown,
+  typeAwareRules: ReadonlySet<string>,
+): Array<{ files: string[]; excludeFiles?: string[]; rules: Record<string, unknown> }> {
+  if (value == null || typeof value !== "object" || Array.isArray(value)) return [];
+  const override = value as Record<string, unknown>;
+  const files = projectGlobsToScriptShims(override.files);
+  const rules = typeAwareRuleEntries(override.rules, typeAwareRules);
+  if (files.length === 0 || Object.keys(rules).length === 0) return [];
+  const excludeFiles = projectGlobsToScriptShims(override.excludeFiles);
+  return [
+    {
+      files,
+      ...(excludeFiles.length > 0 ? { excludeFiles } : {}),
+      rules,
+    },
+  ];
+}
+
+function projectGlobsToScriptShims(value: unknown): string[] {
+  if (!Array.isArray(value)) return [];
+  return value.flatMap((glob) =>
+    typeof glob === "string"
+      ? SCRIPT_SHIM_EXTENSIONS.map((extension) => `${glob}${extension}`)
+      : [],
+  );
+}
+
+function hasEnabledRule(rules: Record<string, unknown>): boolean {
+  return Object.values(rules).some((value) => {
+    const severity = Array.isArray(value) ? value[0] : value;
+    return severity !== "off" && severity !== "allow" && severity !== 0;
+  });
 }
 
 /** Lint the SFC script shims with the user's type-aware rules; undefined when nothing applies. */
@@ -166,10 +210,17 @@ export async function runVueTypeAwarePass(
 
   const created: string[] = [];
   const replacements = new Map<string, string>();
-  const configDir = fs.mkdtempSync(path.join(os.tmpdir(), "oxlint-vize-type-aware-"));
+  // Oxlint resolves override globs from the config directory. Keep this
+  // generated config beside the user's root config so authored paths retain
+  // their meaning; a config under the system temp directory silently makes
+  // every relative override miss.
+  const configPath = path.join(
+    selectedConfigDirectory(options, cwd),
+    `.oxlint-vize-type-aware-${randomUUID()}.json`,
+  );
   const cleanup = () => {
     for (const file of created) fs.rmSync(file, { force: true });
-    fs.rmSync(configDir, { force: true, recursive: true });
+    fs.rmSync(configPath, { force: true });
   };
   process.once("exit", cleanup);
   try {
@@ -183,8 +234,7 @@ export async function runVueTypeAwarePass(
       registerPathReplacementVariants(replacements, cwd, shimPath, file);
     }
     if (created.length === 0) return undefined;
-    const configPath = path.join(configDir, ".oxlintrc.json");
-    fs.writeFileSync(configPath, JSON.stringify(config));
+    fs.writeFileSync(configPath, JSON.stringify(config), { flag: "wx" });
     const result = await run([
       entrypoint,
       ...passOptions(options),
@@ -212,6 +262,16 @@ function keepConfigSelection(options: readonly string[]): string[] {
     else if (option === "--disable-nested-config") kept.push(option);
   }
   return kept;
+}
+
+function selectedConfigDirectory(options: readonly string[], cwd: string): string {
+  let configPath: string | undefined;
+  for (let index = 0; index < options.length; index += 1) {
+    const option = options[index];
+    if (option === "-c" || option === "--config") configPath = options[++index];
+    else if (option.startsWith("--config=")) configPath = option.slice("--config=".length);
+  }
+  return configPath == null ? cwd : path.dirname(path.resolve(cwd, configPath));
 }
 
 function passOptions(options: readonly string[]): string[] {

@@ -18,10 +18,17 @@ import {
 } from "./cli/html-project-output.ts";
 import { runOxlint } from "./cli/process.ts";
 import { requestsTypeAware, runVueTypeAwarePass } from "./cli/type-aware-vue.ts";
+import {
+  renderConvertedReport,
+  requestedConvertedFormat,
+  withJsonReport,
+} from "./cli/report-format.ts";
 
 async function main(): Promise<void> {
   const cwd = process.cwd();
-  const forwardedArgs = process.argv.slice(2);
+  const requestedArgs = process.argv.slice(2);
+  const convertedFormat = requestedConvertedFormat(requestedArgs);
+  const forwardedArgs = convertedFormat ? withJsonReport(requestedArgs) : requestedArgs;
   const targets = getLintTargets(forwardedArgs);
   const candidates = new Set<string>();
   const lintFiles = collectVueLikeFilesFromTargets(cwd, targets, (file) => candidates.add(file));
@@ -115,17 +122,14 @@ async function main(): Promise<void> {
       }
       throw error;
     }
-    const { stdout, stderr } = merged;
+    const { stderr } = merged;
 
-    if (stdout) {
-      await writeStream(process.stdout, merged.rawStdout ?? stdout);
-    }
-
-    if (stderr) {
-      await writeStream(process.stderr, merged.rawStderr ?? stderr);
-    }
-
-    if (merged.status === 0 && stdout === "" && stderr === "" && expectsLintReport(forwardedArgs)) {
+    if (
+      merged.status === 0 &&
+      merged.stdout === "" &&
+      stderr === "" &&
+      expectsLintReport(requestedArgs)
+    ) {
       await writeStream(
         process.stderr,
         `The oxlint run at ${oxlintEntrypoint} exited 0 but produced no report, ` +
@@ -136,9 +140,21 @@ async function main(): Promise<void> {
       return;
     }
 
+    const stdout = convertedFormat
+      ? renderConvertedReport(merged.stdout, convertedFormat, cwd)
+      : merged.stdout;
+
+    if (stdout) {
+      await writeStream(process.stdout, convertedFormat ? stdout : (merged.rawStdout ?? stdout));
+    }
+
+    if (stderr) {
+      await writeStream(process.stderr, merged.rawStderr ?? stderr);
+    }
+
     if (
       prepared.usedScriptlessWorkaround &&
-      (forwardedArgs.includes("--fix") || forwardedArgs.includes("--fix-suggestions"))
+      (requestedArgs.includes("--fix") || requestedArgs.includes("--fix-suggestions"))
     ) {
       await writeStream(
         process.stderr,
