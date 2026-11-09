@@ -1,7 +1,10 @@
 /** Authenticate the static marker interpretation before reading frozen gate history. */
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
-import { beforeProjectionTextBuffer, readBeforeProjectionTextBuffer } from "../../../tools/support/compat/content-mapper/projection-text-buffer-transition.ts";
+import {
+  beforeProjectionTextBuffer,
+  readBeforeProjectionTextBuffer,
+} from "../../../tools/support/compat/content-mapper/projection-text-buffer-transition.ts";
 export const staticListenerSource =
   "crates/vize_canon/src/virtual_ts/scope/component_events/generic_inference.rs";
 export const staticListenerRecord =

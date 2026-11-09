@@ -3,7 +3,8 @@ import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 
-export const projectionTextBufferRecord = "tests/_fixtures/tooling/projection-text-buffer-12341.json";
+export const projectionTextBufferRecord =
+  "tests/_fixtures/tooling/projection-text-buffer-12341.json";
 const recordSha256 = "0a6f7d277e335d9815d109126e2f116598c5b10f3971ab97d66f786ee198177a";
 
 type Identity = { bytes: number; sha256: string };
@@ -27,7 +28,10 @@ const identity = (text: string): Identity => ({
 let record: Transition | undefined;
 function load(): Transition {
   if (record) return record;
-  const raw = readFileSync(new URL(`../../../../${projectionTextBufferRecord}`, import.meta.url), "utf8");
+  const raw = readFileSync(
+    new URL(`../../../../${projectionTextBufferRecord}`, import.meta.url),
+    "utf8",
+  );
   assert.equal(identity(raw).sha256, recordSha256, "immutable projection text-buffer transition");
   const parsed = JSON.parse(raw) as Transition;
   assert.equal(parsed.schema, "vize.projectionTextBufferSource.v1");
@@ -43,7 +47,11 @@ function load(): Transition {
 export function beforeProjectionTextBuffer(path: string, current: string): string {
   const file = load().files.find((entry) => entry.path === path);
   if (!file || identity(current).sha256 !== file.after.sha256) return current;
-  assert.equal(Buffer.byteLength(current), file.after.bytes, `projection text-buffer producer: ${path}`);
+  assert.equal(
+    Buffer.byteLength(current),
+    file.after.bytes,
+    `projection text-buffer producer: ${path}`,
+  );
   for (const hunk of file.hunks) {
     assert.equal(current.split(hunk.after).length, 2, `projection text-buffer hunk: ${path}`);
     current = current.replace(hunk.after, () => hunk.before);
