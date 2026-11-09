@@ -81,6 +81,7 @@ pub(super) fn build_jsx_registered_file(
             content,
             context.project_root,
             context.virtual_root,
+            context.passthrough_probes(),
         ),
         diagnostics,
         // `.jsx`/`.tsx` routing through this path is the explicit

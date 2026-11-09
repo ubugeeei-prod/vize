@@ -311,6 +311,7 @@ pub(super) fn build_vue_registered_file(
             authored_content,
             context.project_root,
             context.virtual_root,
+            context.passthrough_probes(),
         ),
         diagnostics,
         unchecked_javascript: denied_javascript || descriptor_is_unchecked_javascript(&descriptor),
