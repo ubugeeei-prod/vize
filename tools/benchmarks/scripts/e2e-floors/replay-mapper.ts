@@ -1,7 +1,8 @@
 // replay-mapper.ts: answers transforms instantly from $REC_DIR (zero mapper wait floor); initialize/openProject like Vize.
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 const dir = process.env.REC_DIR!;
 const bodies = readFileSync(`${dir}/bodies.bin`);
+const init = existsSync(`${dir}/init.json`) ? JSON.parse(readFileSync(`${dir}/init.json`, "utf8")) : { positionEncoding: "utf-8", diagnosticSource: "vize" };
 const index: Record<string, [number, number]> = {}; for (const l of readFileSync(`${dir}/index.jsonl`, "utf8").trim().split("\n")) { const [f, o, n] = JSON.parse(l); index[f] = [o, n]; }
 let buf = Buffer.alloc(0);
 const out = (b: Buffer) => { process.stdout.write(`Content-Length: ${b.length}\r\n\r\n`); process.stdout.write(b); };
@@ -14,7 +15,7 @@ process.stdin.on("data", (c: Buffer) => {
     const len = Number(/Content-Length:\s*(\d+)/i.exec(buf.subarray(0, h).toString("ascii"))![1]);
     if (buf.length < h + 4 + len) return;
     const m = JSON.parse(buf.subarray(h + 4, h + 4 + len).toString("utf8")); buf = buf.subarray(h + 4 + len);
-    if (m.method === "initialize") send({ jsonrpc: "2.0", id: m.id, result: { positionEncoding: "utf-8", diagnosticSource: "vize" } });
+    if (m.method === "initialize") send({ jsonrpc: "2.0", id: m.id, result: init });
     else if (m.method === "openProject") send({ jsonrpc: "2.0", id: m.id, result: { configIdentity: "replay" } });
     else if (m.method === "closeProject") send({ jsonrpc: "2.0", id: m.id, result: null });
     else if (m.method === "transform") {

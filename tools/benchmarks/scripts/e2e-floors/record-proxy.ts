@@ -1,6 +1,6 @@
 // record-proxy.ts <exec...>: forwards host<->mapper; appends each transform response (id stripped) to $REC_DIR/bodies.bin + index.jsonl.
 import { spawn } from "node:child_process";
-import { openSync, writeSync } from "node:fs";
+import { openSync, writeFileSync, writeSync } from "node:fs";
 const [command, ...args] = process.argv.slice(2);
 const dir = process.env.REC_DIR!;
 const bfd = openSync(`${dir}/bodies.bin`, "w"); const ifd = openSync(`${dir}/index.jsonl`, "w");
@@ -18,9 +18,12 @@ function reader(on: (body: Buffer) => void) {
   };
 }
 const child = spawn(command, args, { stdio: ["pipe", "pipe", "inherit"] });
-const fromHost = reader((b) => { const m = JSON.parse(b.toString("utf8")); if (m.method === "transform") files.set(JSON.stringify(m.id), m.params.fileName); });
+let initId = "";
+const fromHost = reader((b) => { const m = JSON.parse(b.toString("utf8")); if (m.method === "transform") files.set(JSON.stringify(m.id), m.params.fileName); if (m.method === "initialize") initId = JSON.stringify(m.id); });
 const fromMapper = reader((b) => {
-  const m = JSON.parse(b.toString("utf8")); const f = files.get(JSON.stringify(m.id)); if (!f || !m.result) return;
+  const m = JSON.parse(b.toString("utf8"));
+  if (initId && JSON.stringify(m.id) === initId && m.result) writeFileSync(`${dir}/init.json`, JSON.stringify(m.result));
+  const f = files.get(JSON.stringify(m.id)); if (!f || !m.result) return;
   const body = Buffer.from(JSON.stringify({ jsonrpc: "2.0", result: m.result }).slice(1));
   writeSync(bfd, body); writeSync(ifd, JSON.stringify([f, off, body.length]) + "\n"); off += body.length;
 });
