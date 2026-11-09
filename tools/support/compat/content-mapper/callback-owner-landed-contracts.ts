@@ -1,13 +1,14 @@
 /** Certified component-contract edits that already landed, so their packets audit exactly. */
 import assert from "node:assert/strict";
 import { beforeInstanceInputKeys } from "./instance-input-keys-transition.ts";
+import { beforeUnownedOwnedKeys } from "./unowned-owned-keys-transition.ts";
 
 type Edit = { start: number; end: number; replacement: Buffer };
 
 /** Whole component-helper images the audit admits, oldest first; the current image is last. */
 export function certifiedHelperImages(path: string, current: string, older: string[]): string[] {
-  // #12446 rewrote the TSX instance input-key set.
-  const landed = [beforeInstanceInputKeys(path, current)];
+  // #12446 rewrote the TSX instance input-key set; #12467 hoisted the owned key set.
+  const landed = [beforeInstanceInputKeys(path, current), beforeUnownedOwnedKeys(path, current)];
   const known = new Set([...older, current]);
   return [...older, ...new Set(landed.filter((image) => !known.has(image))), current];
 }
