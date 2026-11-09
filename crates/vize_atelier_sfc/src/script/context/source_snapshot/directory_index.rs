@@ -27,10 +27,6 @@ pub(in crate::script::context) struct IndexedDirectory {
 }
 
 impl IndexedDirectory {
-    fn read(directory: &Path) -> Option<Self> {
-        Self::list(std::fs::canonicalize(directory).ok()?)
-    }
-
     /// List a directory whose canonical path is already known.
     fn list(canonical: PathBuf) -> Option<Self> {
         let mut files = FxHashSet::default();
@@ -73,7 +69,13 @@ impl TypeSourceSnapshot {
             return None;
         }
         self.directory_cell(directory)?
-            .get_or_init(|| IndexedDirectory::read(directory))
+            .get_or_init(|| {
+                let canonical = self
+                    .walk_canonical_directory(directory)
+                    .or_else(|| std::fs::canonicalize(directory).ok())?;
+                self.note_canonical_directory(&canonical);
+                IndexedDirectory::list(canonical)
+            })
             .as_ref()?
             .identity(name)
     }
@@ -82,7 +84,10 @@ impl TypeSourceSnapshot {
     /// caller already resolved, without canonicalizing it again.
     pub(super) fn indexed_identity_in(&self, canonical: &Path, name: &OsStr) -> Option<PathBuf> {
         self.directory_cell(canonical)?
-            .get_or_init(|| IndexedDirectory::list(canonical.to_path_buf()))
+            .get_or_init(|| {
+                self.note_canonical_directory(canonical);
+                IndexedDirectory::list(canonical.to_path_buf())
+            })
             .as_ref()?
             .identity(name)
     }

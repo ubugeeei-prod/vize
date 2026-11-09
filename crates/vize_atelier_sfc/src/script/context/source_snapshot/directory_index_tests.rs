@@ -135,3 +135,40 @@ fn caller_roots_take_their_realpath_from_the_physical_directory() {
         );
     }
 }
+
+#[cfg(unix)]
+#[test]
+fn walked_candidate_directories_match_realpath_through_links_and_parents() {
+    let dir = tempfile::tempdir().unwrap();
+    let root = dir.path().canonicalize().unwrap();
+    fs::create_dir_all(root.join("src/features/a")).unwrap();
+    fs::create_dir_all(root.join("src/kit")).unwrap();
+    fs::create_dir_all(root.join("elsewhere/shared")).unwrap();
+    fs::write(root.join("src/features/a/App.vue"), "<template />").unwrap();
+    fs::write(root.join("src/features/a/model.ts"), "export type M = 1").unwrap();
+    fs::write(root.join("src/kit/Field.vue"), "<template />").unwrap();
+    fs::write(root.join("elsewhere/shared/types.ts"), "export type T = 1").unwrap();
+    std::os::unix::fs::symlink(root.join("elsewhere/shared"), root.join("src/shared")).unwrap();
+    let sources = TypeSourceSnapshot::default();
+    let importer = root.join("src/features/a/App.vue");
+    for (specifier, expected) in [
+        ("./model", root.join("src/features/a/model.ts")),
+        ("../../kit/Field.vue", root.join("src/kit/Field.vue")),
+        // A link on the way keeps the full canonicalization.
+        ("../../shared/types", root.join("elsewhere/shared/types.ts")),
+    ] {
+        assert_eq!(
+            sources.resolve_import(&importer, specifier),
+            Some(expected),
+            "{specifier}"
+        );
+    }
+    let known = sources.canonical_directories.lock().unwrap();
+    for directory in [
+        root.join("src/features/a"),
+        root.join("src/kit"),
+        root.join("elsewhere/shared"),
+    ] {
+        assert!(known.contains(&directory), "{directory:?}");
+    }
+}
