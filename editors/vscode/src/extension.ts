@@ -242,9 +242,11 @@ async function syncClientToConfiguration(context: ExtensionContext, reason: stri
   const generation = ++configurationSyncGeneration;
   traceConfig(`sync enter generation=${generation} reason=${reason}`);
   const refreshed = workspaceLspConfig.refresh(generation);
-  if (workspaceLspConfig.hasRootConfig) {
-    // A root config already decides startup and its options. Nested configs
-    // only feed watchers, so the workspace-wide search must not delay the server.
+  // Observed now: a rejection while the nearby listing runs is not unhandled.
+  refreshed.catch(() => {});
+  if (workspaceLspConfig.hasRootConfig || (await workspaceLspConfig.findNearConfig())) {
+    // A found config already decides startup and its options. The complete
+    // list only feeds watchers, so the workspace-wide search must not delay the server.
     refreshed.catch((error: unknown) => {
       try {
         outputChannel.appendLine(`Project configuration discovery failed: ${String(error)}`);

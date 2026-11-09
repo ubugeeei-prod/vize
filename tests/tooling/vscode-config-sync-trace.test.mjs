@@ -42,6 +42,7 @@ function createSync(refresh, activeClient, refuseLogging = false, startup, polic
   class Discovery {
     hasConfig = policy.hasConfig ?? true;
     hasRootConfig = policy.hasRootConfig ?? false;
+    findNearConfig = async () => policy.nearConfig ?? false;
     refresh = refresh;
     describeCapabilities() {
       return "test capabilities";
@@ -396,6 +397,19 @@ await test("a root project config starts the client before the workspace-wide se
   search.resolve();
   await search.promise;
   assert.equal(current.control.state().generation, 1);
+});
+
+await test("a nearby config starts the client before the workspace-wide search returns", async () => {
+  const search = deferred();
+  const current = createSync(() => search.promise, undefined, false, undefined, {
+    nearConfig: true,
+  });
+  await current.control.syncClientToConfiguration({}, "initial activation");
+  assert.deepEqual(
+    current.operations.filter(([kind]) => kind === "start").map((row) => [...row]),
+    [["start", 1]],
+  );
+  search.resolve();
 });
 
 await test("a background search failure after root-config startup is reported, not thrown", async () => {
