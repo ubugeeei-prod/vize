@@ -58,11 +58,11 @@ pub(crate) fn resolve_tsconfig_program_inputs(
                 },
             )
     }) {
-        let file = normalize_input_path(file);
+        let file = cache.normalize(file);
         let owner = if is_nuxt_import_manifest_path(&file) {
             0
         } else {
-            let effective = cache.effective_config_for_source(
+            let effective = cache.effective_config_for_normalized_source(
                 tsconfig_path,
                 &file,
                 source_kind(&file, include_jsx),
@@ -130,12 +130,12 @@ pub(crate) fn partition_program_owned_sources(
     let mut owned = Vec::new();
     let mut foreign = Vec::new();
     for file in files {
-        let normalized = normalize_input_path(&file);
+        let normalized = cache.normalize(&file);
         if is_nuxt_import_manifest_path(&normalized) {
             owned.push(file);
             continue;
         }
-        let effective = cache.effective_config_for_source(
+        let effective = cache.effective_config_for_normalized_source(
             tsconfig_path,
             &normalized,
             source_kind(&normalized, include_jsx),

@@ -16,6 +16,8 @@ export type ServerCandidate = {
 export type InspectedServerCandidate = ServerCandidate & {
   version?: string;
   versionError?: string;
+  /** A cached release whose initialize result, not a probe, confirms its version. */
+  versionUnconfirmed?: boolean;
   workspaceFallbackReason?: string;
 };
 export type ReleaseServerTarget = {
