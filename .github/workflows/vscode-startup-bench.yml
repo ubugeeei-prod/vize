@@ -1,0 +1,335 @@
+name: VS Code startup bench
+run-name: "VS Code startup ${{ inputs.head }} vs ${{ inputs.base }}"
+# Two extension builds open one SFC in a generated workspace, alternating per
+# round: time to the started client and to the first Vize diagnostic on Linux,
+# native Windows, and WSL2 (ext4 and the Windows mount). Every run uses a fresh
+# profile whose release-server cache already holds the published server.
+on:
+  workflow_dispatch:
+    inputs:
+      base:
+        description: Full 40-hex commit measured first (the "before")
+        type: string
+        required: true
+      head:
+        description: Full 40-hex commit compared against it
+        type: string
+        required: true
+      server_version:
+        description: Published vize release both builds use as their cached server
+        type: string
+        default: "0.717.0"
+      rounds:
+        description: Alternating recorded runs per build and layout
+        type: string
+        default: "10"
+      layouts:
+        description: Space-separated workspace layouts (root keeps a root tsconfig; nested has only package configs)
+        type: string
+        default: "root nested"
+      sfcs:
+        description: Generated SFCs
+        type: string
+        default: "2000"
+      noise:
+        description: Generated ordinary files outside node_modules
+        type: string
+        default: "30000"
+      windows:
+        description: Also measure native Windows
+        type: boolean
+        default: true
+      wsl2:
+        description: Also measure WSL2 (ext4 and the Windows mount)
+        type: boolean
+        default: true
+  # Registers the dispatch-only workflow from its PR; only the smoke runs there.
+  pull_request:
+    paths:
+      - .github/workflows/vscode-startup-bench.yml
+      - editors/vscode/test/run-startup-latency.ts
+      - editors/vscode/test/suite/startup-latency.cjs
+permissions: { contents: read }
+concurrency:
+  group: vscode-startup-bench-${{ github.event.pull_request.number || inputs.head }}-${{ inputs.base }}
+  cancel-in-progress: true
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  VSCODE_VERSION: "1.107.1"
+jobs:
+  smoke:
+    if: github.event_name == 'pull_request'
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { persist-credentials: false }
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version-file: package.json, package-manager-cache: false }
+      - name: Generate both layouts
+        run: |
+          set -euo pipefail
+          for layout in root nested; do
+            node editors/vscode/test/run-startup-latency.ts generate --root "$RUNNER_TEMP/ws-$layout" \
+              --layout "$layout" --sfcs 20 --noise 50 --node-modules 20
+            test -f "$RUNNER_TEMP/ws-$layout/$(cat "$RUNNER_TEMP/ws-$layout/bench-target.txt")"
+          done
+          test -f "$RUNNER_TEMP/ws-root/tsconfig.json" && test ! -f "$RUNNER_TEMP/ws-nested/tsconfig.json"
+          node --check editors/vscode/test/suite/startup-latency.cjs
+
+  build:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 20
+    env:
+      BASE: ${{ inputs.base }}
+      HEAD: ${{ inputs.head }}
+      SERVER_VERSION: ${{ inputs.server_version }}
+    steps:
+      - name: Validate inputs
+        run: |
+          [[ "$BASE" =~ ^[0-9a-f]{40}$ ]] && [[ "$HEAD" =~ ^[0-9a-f]{40}$ ]]
+          [[ "$SERVER_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { persist-credentials: false }
+      - uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af # v1.21.2
+        with:
+          version: latest
+          node-version-file: package.json
+          run-install: false
+          cache: true
+      - uses: ./.github/actions/setup-rust-script
+      - name: Install locked dependencies
+        run: vp install --frozen-lockfile --prefer-offline
+      - name: Build both extension commits
+        run: |
+          set -euo pipefail
+          for side in base head; do
+            sha=$BASE; [[ $side == head ]] && sha=$HEAD
+            git fetch --no-tags --depth=1 "https://github.com/$GITHUB_REPOSITORY.git" "$sha"
+            source="$RUNNER_TEMP/src-$side"
+            mkdir -p "$source"
+            git archive "$sha" editors/vscode | tar -x -C "$source"
+            # Both commits share this checkout's locked dependencies.
+            ln -s "$PWD/node_modules" "$source/node_modules"
+            ln -s "$PWD/editors/vscode/node_modules" "$source/editors/vscode/node_modules"
+            (cd "$source/editors/vscode" && vp pack)
+            out="ext-builds/$side"
+            mkdir -p "$out"
+            (cd "$source/editors/vscode" && cp -R package.json dist icons syntaxes language-configuration.json "$GITHUB_WORKSPACE/$out/")
+            node -e 'const fs=require("fs");const f=process.argv[1];const j=JSON.parse(fs.readFileSync(f,"utf8"));j.version=process.argv[2];fs.writeFileSync(f,JSON.stringify(j,null,2))' "$out/package.json" "$SERVER_VERSION"
+            sha256sum "$out/dist/extension.cjs"
+          done
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: ext-builds
+          path: ext-builds/
+          retention-days: 7
+
+  linux:
+    needs: build
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 60
+    env:
+      SERVER_VERSION: ${{ inputs.server_version }}
+      ROUNDS: ${{ inputs.rounds }}
+      LAYOUTS: ${{ inputs.layouts }}
+      SFCS: ${{ inputs.sfcs }}
+      NOISE: ${{ inputs.noise }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { persist-credentials: false }
+      - uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af # v1.21.2
+        with:
+          version: latest
+          node-version-file: package.json
+          run-install: false
+          cache: true
+      - uses: ./.github/actions/setup-rust-script
+      - name: Install locked dependencies
+        run: vp install --frozen-lockfile --prefer-offline
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with: { name: ext-builds, path: ext-builds }
+      - name: Fetch the published server and VS Code
+        run: |
+          set -euo pipefail
+          [[ "$ROUNDS" =~ ^[1-9][0-9]?$ ]] && [[ "$SFCS" =~ ^[0-9]+$ ]] && [[ "$NOISE" =~ ^[0-9]+$ ]]
+          archive=vize-x86_64-unknown-linux-gnu.tar.gz
+          url="https://github.com/$GITHUB_REPOSITORY/releases/download/v$SERVER_VERSION/$archive"
+          mkdir -p "$RUNNER_TEMP/server"
+          curl -fsSL --retry 3 -o "$RUNNER_TEMP/server/$archive" "$url"
+          curl -fsSL --retry 3 -o "$RUNNER_TEMP/server/$archive.sha256" "$url.sha256"
+          (cd "$RUNNER_TEMP/server" && echo "$(cut -d' ' -f1 "$archive.sha256")  $archive" | sha256sum --check)
+          tar -xzf "$RUNNER_TEMP/server/$archive" -C "$RUNNER_TEMP/server"
+          "$RUNNER_TEMP/server/vize" --version
+          if ! command -v xvfb-run >/dev/null 2>&1; then
+            sudo apt-get update -qq && sudo apt-get install -y --no-install-recommends xvfb xauth
+          fi
+          code=$(cd editors/vscode && VIZE_TEST_VSCODE_VERSION="$VSCODE_VERSION" node test/download-vscode.mjs | sed -n 's/^Verified VS Code [^:]*: //p' | tail -1)
+          test -x "$code"
+          echo "CODE_EXE=$code" >> "$GITHUB_ENV"
+      - name: Measure
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/out"
+          for layout in $LAYOUTS; do
+            [[ "$layout" =~ ^(root|nested)$ ]]
+            node editors/vscode/test/run-startup-latency.ts generate --root "$RUNNER_TEMP/ws-$layout" \
+              --layout "$layout" --sfcs "$SFCS" --noise "$NOISE"
+            xvfb-run -a node editors/vscode/test/run-startup-latency.ts run --code "$CODE_EXE" \
+              --server "$RUNNER_TEMP/server/vize" --workspace "$RUNNER_TEMP/ws-$layout" \
+              --extension "base=$PWD/ext-builds/base" --extension "head=$PWD/ext-builds/head" \
+              --rounds "$ROUNDS" --profiles "$RUNNER_TEMP/profiles" --out "$RUNNER_TEMP/out/linux-$layout" \
+              --title "Linux ($(nproc) vCPUs), $layout layout, $SFCS SFCs + $NOISE files" >> "$GITHUB_STEP_SUMMARY"
+          done
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: always()
+        with: { name: startup-linux, path: "${{ runner.temp }}/out/", if-no-files-found: warn }
+
+  windows:
+    if: inputs.windows
+    needs: build
+    runs-on: blacksmith-32vcpu-windows-2025
+    timeout-minutes: 60
+    env:
+      SERVER_VERSION: ${{ inputs.server_version }}
+      ROUNDS: ${{ inputs.rounds }}
+      LAYOUTS: ${{ inputs.layouts }}
+      SFCS: ${{ inputs.sfcs }}
+      NOISE: ${{ inputs.noise }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { persist-credentials: false }
+      - uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af # v1.21.2
+        with:
+          version: latest
+          node-version-file: package.json
+          run-install: false
+          cache: true
+      - uses: ./.github/actions/setup-rust-script
+      - name: Install locked dependencies
+        run: vp install --frozen-lockfile --prefer-offline
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with: { name: ext-builds, path: ext-builds }
+      - name: Measure
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "$ROUNDS" =~ ^[1-9][0-9]?$ ]] && [[ "$SFCS" =~ ^[0-9]+$ ]] && [[ "$NOISE" =~ ^[0-9]+$ ]]
+          temp=$(cygpath -m "$RUNNER_TEMP")
+          archive=vize-x86_64-pc-windows-msvc.zip
+          url="https://github.com/$GITHUB_REPOSITORY/releases/download/v$SERVER_VERSION/$archive"
+          mkdir -p "$temp/server"
+          curl -fsSL --retry 3 -o "$temp/server/$archive" "$url"
+          curl -fsSL --retry 3 -o "$temp/server/$archive.sha256" "$url.sha256"
+          (cd "$temp/server" && echo "$(cut -d' ' -f1 "$archive.sha256")  $archive" | sha256sum --check)
+          (cd "$temp/server" && unzip -q "$archive")
+          "$temp/server/vize.exe" --version
+          code=$(cd editors/vscode && VIZE_TEST_VSCODE_VERSION="$VSCODE_VERSION" node test/download-vscode.mjs | sed -n 's/^Verified VS Code [^:]*: //p' | tail -1 | tr -d '\r')
+          test -f "$code"
+          mkdir -p "$temp/out"
+          for layout in $LAYOUTS; do
+            [[ "$layout" =~ ^(root|nested)$ ]]
+            node editors/vscode/test/run-startup-latency.ts generate --root "$temp/ws-$layout" \
+              --layout "$layout" --sfcs "$SFCS" --noise "$NOISE"
+            node editors/vscode/test/run-startup-latency.ts run --code "$code" \
+              --server "$temp/server/vize.exe" --workspace "$temp/ws-$layout" \
+              --extension "base=$(cygpath -m "$PWD")/ext-builds/base" --extension "head=$(cygpath -m "$PWD")/ext-builds/head" \
+              --rounds "$ROUNDS" --profiles "$temp/profiles" --out "$temp/out/windows-$layout" \
+              --title "Windows NTFS, $layout layout, $SFCS SFCs + $NOISE files" >> "$GITHUB_STEP_SUMMARY"
+          done
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: always()
+        with: { name: startup-windows, path: "${{ runner.temp }}/out/", if-no-files-found: warn }
+
+  wsl2:
+    if: inputs.wsl2
+    needs: build
+    # WSL2 needs nested virtualization; Blacksmith Windows runners lack it.
+    # Linux VS Code runs inside WSL2, so its extension host and file search see
+    # the same filesystems a WSL remote session does.
+    runs-on: windows-2025-vs2026
+    timeout-minutes: 120
+    env:
+      SERVER_VERSION: ${{ inputs.server_version }}
+      ROUNDS: ${{ inputs.rounds }}
+      LAYOUTS: ${{ inputs.layouts }}
+      SFCS: ${{ inputs.sfcs }}
+      NOISE: ${{ inputs.noise }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { persist-credentials: false }
+      - uses: Vampire/setup-wsl@d1da7f2c0322a5ee4f24975344f67fc0f5baf364 # v7.0.0
+        with:
+          distribution: Ubuntu-24.04
+          wsl-version: "2"
+          wsl-shell-user: root
+          additional-packages: >-
+            ca-certificates curl xz-utils xvfb xauth libnss3 libatk1.0-0t64 libatk-bridge2.0-0t64
+            libgtk-3-0t64 libgbm1 libasound2t64 libxkbfile1 libsecret-1-0 libxss1
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with: { name: ext-builds, path: ext-builds }
+      - name: Resolve the Windows mount
+        shell: pwsh
+        run: |
+          $windowsPath = [System.IO.Path]::GetFullPath($env:RUNNER_TEMP)
+          $drive = $windowsPath.Substring(0, 1).ToLowerInvariant()
+          $tail = $windowsPath.Substring(2).Replace('\', '/')
+          $mount = "/mnt/$drive$tail"
+          wsl.exe test -d $mount
+          if ($LASTEXITCODE -ne 0) { throw "WSL mount is unavailable: $mount" }
+          "WSL_MOUNT_ROOT=$mount/vize-startup" | Out-File -FilePath $env:GITHUB_ENV -Append
+      - name: Install Node, the published server and VS Code in WSL2
+        shell: wsl-bash {0}
+        env:
+          WSLENV: SERVER_VERSION/u:VSCODE_VERSION/u:GITHUB_REPOSITORY/u
+        run: |
+          set -euo pipefail
+          version=24.14.0
+          cd "$HOME"
+          curl -fsSLO "https://nodejs.org/dist/v$version/node-v$version-linux-x64.tar.xz"
+          curl -fsSLO "https://nodejs.org/dist/v$version/SHASUMS256.txt"
+          grep " node-v$version-linux-x64.tar.xz$" SHASUMS256.txt | sha256sum --check
+          tar -xJf "node-v$version-linux-x64.tar.xz" -C /usr/local --strip-components=1
+          archive=vize-x86_64-unknown-linux-gnu.tar.gz
+          url="https://github.com/$GITHUB_REPOSITORY/releases/download/v$SERVER_VERSION/$archive"
+          mkdir -p server && cd server
+          curl -fsSL --retry 3 -o "$archive" "$url" && curl -fsSL --retry 3 -o "$archive.sha256" "$url.sha256"
+          echo "$(cut -d' ' -f1 "$archive.sha256")  $archive" | sha256sum --check
+          tar -xzf "$archive" && ./vize --version
+          mkdir -p "$HOME/te" && cd "$HOME/te"
+          npm install --no-audit --no-fund --ignore-scripts @vscode/test-electron@3.1.0 > /dev/null
+          node -e 'require("@vscode/test-electron").downloadAndUnzipVSCode({ version: process.env.VSCODE_VERSION, timeout: 30000 }).then((p) => require("fs").writeFileSync(process.env.HOME + "/code-path", p))'
+          cat "$HOME/code-path"
+      - name: Measure ext4 and the Windows mount
+        shell: wsl-bash {0}
+        env:
+          WSLENV: ROUNDS/u:LAYOUTS/u:SFCS/u:NOISE/u:WSL_MOUNT_ROOT/u:GITHUB_STEP_SUMMARY/u
+        run: |
+          set -euo pipefail
+          [[ "$ROUNDS" =~ ^[1-9][0-9]?$ ]] && [[ "$SFCS" =~ ^[0-9]+$ ]] && [[ "$NOISE" =~ ^[0-9]+$ ]]
+          # Extensions and the server live on ext4, as a WSL remote installs them.
+          cp -R ext-builds "$HOME/ext-builds"
+          summary=$(wslpath "$GITHUB_STEP_SUMMARY")
+          mkdir -p "$WSL_MOUNT_ROOT/out"
+          for layout in $LAYOUTS; do
+            [[ "$layout" =~ ^(root|nested)$ ]]
+            for entry in "wsl2-ext4=$HOME/ws-$layout" "wsl2-windows-mount=$WSL_MOUNT_ROOT/ws-$layout"; do
+              label=${entry%%=*}
+              node editors/vscode/test/run-startup-latency.ts generate --root "${entry#*=}" \
+                --layout "$layout" --sfcs "$SFCS" --noise "$NOISE"
+              xvfb-run -a node editors/vscode/test/run-startup-latency.ts run --code "$(cat "$HOME/code-path")" \
+                --server "$HOME/server/vize" --workspace "${entry#*=}" \
+                --extension "base=$HOME/ext-builds/base" --extension "head=$HOME/ext-builds/head" \
+                --rounds "$ROUNDS" --profiles "$HOME/profiles" --out "$WSL_MOUNT_ROOT/out/$label-$layout" \
+                --title "WSL2 $label, $layout layout, $SFCS SFCs + $NOISE files" >> "$summary"
+            done
+          done
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: always()
+        with:
+          {
+            name: startup-wsl2,
+            path: "${{ runner.temp }}/vize-startup/out/",
+            if-no-files-found: warn,
+          }
