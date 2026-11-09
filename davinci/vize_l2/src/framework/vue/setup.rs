@@ -3,7 +3,8 @@
 //! Macro calls: Vue reads macros only in top-level expression statements and in the
 //! initializers of top-level, non-`declare` variable declarators, after
 //! removing TypeScript expression wrappers and parentheses. A `withDefaults`
-//! call also records the `defineProps` call it wraps.
+//! call also records the `defineProps` call it wraps, and each `defineProps`
+//! call records the prop keys its runtime argument declares.
 
 mod bindings;
 mod props;
@@ -39,6 +40,7 @@ pub struct MacroCall {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct SetupFacts {
     macro_calls: Vec<MacroCall>,
+    runtime_prop_keys: Vec<Span>,
     bindings: Vec<SetupBinding>,
     props_destructure: Option<PropsDestructure>,
     unclassified: Vec<Span>,
@@ -49,6 +51,14 @@ impl SetupFacts {
     #[must_use]
     pub fn macro_calls(&self) -> &[MacroCall] {
         &self.macro_calls
+    }
+
+    /// The string-named keys `defineProps` runtime arguments declare, in
+    /// source order: an identifier key, or a string literal's contents.
+    /// Type-argument props belong to the props contract.
+    #[must_use]
+    pub fn runtime_prop_keys(&self) -> &[Span] {
+        &self.runtime_prop_keys
     }
 
     /// Bindings introduced by top-level identifiers, imports, functions,
@@ -65,8 +75,9 @@ impl SetupFacts {
         self.props_destructure.as_ref()
     }
 
-    /// `defineProps` destructure patterns whose bindings are not classified:
-    /// a second destructure, or one Vue rejects. A consumer that needs every
+    /// `defineProps` destructure patterns whose bindings are not classified
+    /// (a second destructure, or one Vue rejects), and runtime prop keys
+    /// whose text is not their source text. A consumer that needs every
     /// binding refuses a non-empty list.
     #[must_use]
     pub fn unclassified(&self) -> &[Span] {
@@ -97,6 +108,7 @@ pub struct SetupObserver<'a> {
     overflow: bool,
     observed: usize,
     calls: Vec<MacroCall>,
+    runtime_prop_keys: Vec<Span>,
     bindings: bindings::Bindings<'a>,
 }
 
@@ -132,6 +144,7 @@ impl SetupObserver<'_> {
         }
         Ok(SetupFacts {
             macro_calls: self.calls,
+            runtime_prop_keys: self.runtime_prop_keys,
             bindings: self.bindings.rows,
             props_destructure: self.bindings.props,
             unclassified: self.bindings.unclassified,
@@ -179,6 +192,12 @@ impl SetupObserver<'_> {
             declarator,
         };
         self.calls.push(record);
+        if row.kind == MacroKind::DefineProps {
+            match props::runtime_keys(call.arguments.first(), |span| self.authored(base, span)) {
+                Ok(keys) => self.runtime_prop_keys.extend(keys),
+                Err(key) => self.bindings.unclassified.push(key),
+            }
+        }
         if row.kind == MacroKind::WithDefaults
             && let Some(Argument::CallExpression(inner)) = call.arguments.first()
             && matches!(&inner.callee, Expression::Identifier(id) if id.name == super::DEFINE_PROPS)
@@ -246,6 +265,7 @@ impl<'a> FileObserver<'a> for SetupObserver<'a> {
     fn checkpoint(&self) -> SetupCheckpoint {
         SetupCheckpoint {
             calls: self.calls.len(),
+            runtime_prop_keys: self.runtime_prop_keys.len(),
             observed: self.observed,
             bindings: self.bindings.rows.len(),
             props: self.bindings.props.is_some(),
@@ -260,6 +280,8 @@ impl<'a> FileObserver<'a> for SetupObserver<'a> {
     /// A rolled-back statement no longer counts as observed.
     fn rollback(&mut self, checkpoint: SetupCheckpoint) {
         self.calls.truncate(checkpoint.calls);
+        self.runtime_prop_keys
+            .truncate(checkpoint.runtime_prop_keys);
         self.observed = checkpoint.observed;
         self.bindings.rows.truncate(checkpoint.bindings);
         self.bindings.unclassified.truncate(checkpoint.unclassified);
@@ -273,6 +295,7 @@ impl<'a> FileObserver<'a> for SetupObserver<'a> {
 #[derive(Debug, Clone, Copy)]
 pub struct SetupCheckpoint {
     calls: usize,
+    runtime_prop_keys: usize,
     observed: usize,
     bindings: usize,
     props: bool,
