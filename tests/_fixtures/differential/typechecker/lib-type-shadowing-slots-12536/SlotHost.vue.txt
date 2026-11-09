@@ -7,10 +7,11 @@ export const slotLibTypePoison = true
 </script>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { inject, ref, type Ref } from 'vue'
 import SlotChild from './SlotChild.vue'
 
 const count = ref(0)
+const injected = inject<Ref<number>>('count')
 const slotName = ref('extra')
 const rows = ['a', 'b']
 </script>
@@ -22,4 +23,5 @@ const rows = ['a', 'b']
   <div v-for="row in rows" :key="row"><slot name="row" :row="row" /></div>
   <slot name="extra" v-bind="{ count }" />
   <slot :name="slotName" v-bind="{ count }" />
+  <span v-if="injected">{{ injected.toFixed() }}</span>
 </template>

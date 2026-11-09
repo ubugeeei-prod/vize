@@ -14176,7 +14176,7 @@
         },
         {
           "path": "lib-type-shadowing-slots-12536/SlotHost.vue.txt",
-          "sha256": "d905c7cefb7f8870fb97d0b7026562191ef8cfef45ac59b398bad8fbdd25a6cd",
+          "sha256": "7a117fb8c153bbef58441413631452f33604c85cdf96df9a16d40b7ec61fa443",
           "role": "regression-reproduction"
         },
         {
@@ -14196,7 +14196,7 @@
               "html-template",
               "ts"
             ],
-            "selector": "lib_type_shadowing_slots::authored_lib_types_cannot_capture_slot_helpers; Exclude, Extract, NonNullable and PropertyKey declared or imported by the SFC must not capture slot outlet, scoped slot or inferred slot helpers. Input-only batch registration for the shared Canon source change; no native parity claim."
+            "selector": "lib_type_shadowing_template_helpers::authored_lib_types_cannot_capture_template_helpers; Exclude, Extract, NonNullable and PropertyKey declared or imported by the SFC must not capture slot outlet, scoped slot, inferred slot or narrowed ref unwrap helpers. Input-only batch registration for the shared Canon source change; no native parity claim."
           }
         ]
       }

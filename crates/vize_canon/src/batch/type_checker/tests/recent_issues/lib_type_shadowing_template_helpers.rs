@@ -1,7 +1,9 @@
-//! Slot helpers reach shadowed lib types through `globalThis` (#12536).
+//! Slot and template ref helpers reach shadowed lib types through
+//! `globalThis` (#12536).
 //!
-//! The fixture has slot outlets, scoped slots and inferred slots but no
-//! component listeners, whose relations belong to the listener chain.
+//! The fixture has slot outlets, scoped and inferred slots and a narrowed
+//! maybe-ref, but no component listeners, whose relations belong to the
+//! listener chain.
 
 use super::super::{create_project_case, resolve_test_tsgo_binary, snapshot_project_diagnostics};
 use crate::batch::VirtualProject;
@@ -12,8 +14,8 @@ use std::path::Path;
 /// [content mapper, batch] projections generate.
 const SLOT_LIB_TYPES: &[(&str, &str, [usize; 2])] = &[
     ("Exclude", "type Exclude<T, U> = never", [2, 2]),
-    ("Extract", "type Extract<T, U> = never", [2, 2]),
-    ("NonNullable", "type NonNullable<T> = never", [6, 6]),
+    ("Extract", "type Extract<T, U> = never", [3, 3]),
+    ("NonNullable", "type NonNullable<T> = never", [7, 7]),
     ("PropertyKey", "type PropertyKey = never", [6, 6]),
 ];
 const MAPPER: usize = 0;
@@ -54,10 +56,11 @@ fn host_source(poison: Poison) -> std::string::String {
 </script>
 
 <script setup lang="ts">
-import {{ ref }} from 'vue'
+import {{ inject, ref, type Ref }} from 'vue'
 import SlotChild from './SlotChild.vue'
 
 const count = ref(0)
+const injected = inject<Ref<number>>('count')
 const slotName = ref('extra')
 const rows = ['a', 'b']
 </script>
@@ -69,6 +72,7 @@ const rows = ['a', 'b']
   <div v-for="row in rows" :key="row"><slot name="row" :row="row" /></div>
   <slot name="extra" v-bind="{{ count }}" />
   <slot :name="slotName" v-bind="{{ count }}" />
+  <span v-if="injected">{{{{ injected.toFixed() }}}}</span>
 </template>
 "#
     )
@@ -115,7 +119,7 @@ fn assert_only_the_poison_is_unqualified(generated: &str, lane: usize) {
 }
 
 #[test]
-fn slot_helpers_name_shadowed_lib_types_through_global_this() {
+fn template_helpers_name_shadowed_lib_types_through_global_this() {
     let options = crate::batch::ContentMapperTransformOptions::default()
         .with_external_component_attrs_module(true)
         .with_external_component_type_helpers(true)
@@ -132,7 +136,7 @@ fn slot_helpers_name_shadowed_lib_types_through_global_this() {
 }
 
 #[test]
-fn authored_lib_types_cannot_capture_slot_helpers() {
+fn authored_lib_types_cannot_capture_template_helpers() {
     if resolve_test_tsgo_binary().is_none() {
         return;
     }

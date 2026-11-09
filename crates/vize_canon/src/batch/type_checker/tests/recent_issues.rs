@@ -49,7 +49,7 @@ mod javascript_sfc_membership;
 mod large_declaration_identity;
 mod legacy_js_mixin_receiver;
 mod lexical_dollar_slots;
-mod lib_type_shadowing_slots;
+mod lib_type_shadowing_template_helpers;
 mod listener_attribute_parity;
 mod literal_dynamic_slot_names;
 mod long_prop_kebab_case;
