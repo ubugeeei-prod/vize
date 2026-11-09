@@ -267,11 +267,6 @@ function __setup() {
   const __vize_required_slots_0: $RequiredSlots<$SlotContract_0, { readonly "area-gradient": true; }> = {};
   void __vize_required_slots_0;
 
-  // Component props in v-slot scope: #area-gradient
-  void function _slot_props_area_gradient_7({ id }: $SlotPayload<typeof __vize_slot_host_7, "area-gradient", typeof TrendChart>) {
-    void id;
-  };
-
   // Mark used components as referenced
   void TrendChart;
 

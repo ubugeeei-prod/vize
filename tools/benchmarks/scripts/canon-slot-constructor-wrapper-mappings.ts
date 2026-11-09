@@ -1,4 +1,7 @@
-/** Expected-side admission for #11675 plus the named component-export successor. */
+/**
+ * Expected-side admission for #11675 plus the named component-export successor
+ * and the #12479 unchecked slot replay removal.
+ */
 import assert from "node:assert/strict";
 import { isDeepStrictEqual } from "node:util";
 import { assertWrapperMappingProducer } from "../../support/compat/content-mapper/wrapper-mapping-producer.ts";
@@ -47,6 +50,17 @@ function wrapped(image: Image, row: Tuple, previous?: Tuple, next?: Tuple) {
     (!next || start + length < next[0])
   );
 }
+// #12479: the component-props pass no longer replays a slot whose body checks
+// no component. Such a replay (with the host older releases declared for it)
+// held only `void` reads, so its rows leave with it.
+const UNCHECKED_REPLAY =
+  /\n( +)\/\/ Component props in v-slot scope: #[^\n]*\n(?:\1const __vize_slot_props_host_\d+ = (?:(?!\n\1(?:void function |\/\/ ))[^])*?\n\1void __vize_slot_props_host_\d+;\n)?\1void function _slot_props_[^\n]*\{\n(?:\1 {2}void [^\n]*;\n)*\1\};\n/gu;
+function uncheckedReplays(image: Image): Array<[number, number]> {
+  return [...image.text.matchAll(UNCHECKED_REPLAY)].map((match) => {
+    const start = Buffer.byteLength(image.text.slice(0, match.index));
+    return [start, start + Buffer.byteLength(match[0])];
+  });
+}
 export function assertConstructorWrapperMappings(
   before: Image,
   current: Image,
@@ -56,9 +70,12 @@ export function assertConstructorWrapperMappings(
   assertWrapperMappingProducer(producer);
   ordered(before);
   ordered(current);
+  assert.deepEqual(uncheckedReplays(current), [], "no unchecked slot replay remains");
+  const removed = uncheckedReplays(before);
   const expected: Contract[] = [];
   let cursor = 0;
   for (const [index, old] of before.rows.entries()) {
+    if (removed.some(([start, end]) => start <= old[0] && old[0] + old[1] <= end)) continue;
     const retained = contract(before, old, canonical);
     // Relocate an old row only by its complete existing contract and order.
     // A possible preceding atom is not itself accepted until expected comparison.

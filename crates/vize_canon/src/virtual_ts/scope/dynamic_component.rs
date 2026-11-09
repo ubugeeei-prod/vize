@@ -157,6 +157,11 @@ impl DynamicComponentAliases {
         self.scoped_starts.contains(&start)
     }
 
+    /// Whether `scope` declares an alias or a captured guard.
+    pub(super) fn declares_in(&self, scope: u32) -> bool {
+        self.scoped.contains_key(&scope) || self.scoped_guards.contains_key(&scope)
+    }
+
     pub(super) fn emit_root(&self, ts: &mut crate::virtual_ts::TextBuf) {
         for declaration in &self.root_guards {
             declaration.push(ts, "  ");

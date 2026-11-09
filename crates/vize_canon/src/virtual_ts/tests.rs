@@ -1132,13 +1132,13 @@ fn test_repeated_default_slots_use_unique_helper_names() {
         "default slot helpers must include the scope id:\n{}",
         output.code
     );
-    assert!(
+    assert_eq!(
         output
             .code
             .matches("void function _slot_props_default_")
-            .count()
-            >= 2,
-        "slot prop helper names should also include the scope id:\n{}",
+            .count(),
+        0,
+        "slots without a component check have no props replay:\n{}",
         output.code
     );
 }
