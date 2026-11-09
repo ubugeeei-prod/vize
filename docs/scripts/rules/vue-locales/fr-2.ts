@@ -40,7 +40,7 @@ export const frenchVue2 = {
     "Les deux sélecteurs restent scoped dans un seul bloc style, respectant la convention du bloc unique sans supprimer aucun style.",
   ],
   "vue/slot-name-casing": [
-    "Imposer camelCase aux noms statiques des points d’insertion de slot rendus",
+    "Imposer la casse configurée aux noms statiques des points d’insertion de slot rendus",
     "Le point d’insertion de slot rendu utilise le nom statique `my-slot`, séparé par des tirets, alors que la convention par défaut exige camelCase.",
     "Le nom statique du point d’insertion utilise camelCase. La syntaxe de fourniture `#name` côté parent est hors du champ de cette règle.",
   ],

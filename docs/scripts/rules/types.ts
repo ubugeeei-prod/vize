@@ -40,7 +40,7 @@ export interface RuleExample {
   reportUnusedDisableDirectives?: boolean;
   typeAware?: boolean;
   standaloneScript?: boolean;
-  ruleOptions?: Record<string, JsonValue>;
+  ruleOptions?: JsonValue;
   note?: string;
   noteJa?: string;
   filename?: string;

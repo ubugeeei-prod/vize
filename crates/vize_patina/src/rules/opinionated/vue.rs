@@ -66,7 +66,7 @@ pub use require_component_registration::{
     NUXT_BUILTIN_COMPONENTS, RequireComponentRegistration, VUE_ROUTER_COMPONENTS,
 };
 pub use scoped_event_names::ScopedEventNames;
-pub use slot_name_casing::{SlotNameCasing, SlotNameCasingStyle};
+pub use slot_name_casing::SlotNameCasing;
 pub use this_in_template::ThisInTemplate;
 pub use use_unique_element_ids::UseUniqueElementIds;
 pub use use_v_on_exact::UseVOnExact;
@@ -101,7 +101,7 @@ fn register_shared(registry: &mut RuleRegistry, flavor: PresetFlavor) {
     registry.register(Box::new(HtmlButtonHasType));
     registry.register(Box::new(ScopedEventNames));
     registry.register(Box::new(PreferPropsShorthand));
-    registry.register(Box::new(SlotNameCasing::default()));
+    registry.register(Box::new(SlotNameCasing));
 
     registry.register(Box::new(UseUniqueElementIds::default()));
 

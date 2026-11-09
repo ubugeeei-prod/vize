@@ -23,6 +23,7 @@
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
+use crate::rules::vue::SlotNameCasingStyle;
 use vize_relief::{ElementNode, ElementType, PropNode};
 
 static META: RuleMeta = RuleMeta {
@@ -33,46 +34,17 @@ static META: RuleMeta = RuleMeta {
     default_severity: Severity::Warning,
 };
 
-/// Casing accepted for a rendered slot outlet name.
-#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
-pub enum SlotNameCasingStyle {
-    /// Lower camel case, such as `rowActions`.
-    #[default]
-    CamelCase,
-    /// Lowercase hyphenated words, such as `row-actions`.
-    KebabCase,
-    /// One lowercase ASCII word, such as `actions`.
-    Singleword,
-}
-
-impl SlotNameCasingStyle {
-    const fn name(self) -> &'static str {
-        match self {
-            Self::CamelCase => "camelCase",
-            Self::KebabCase => "kebab-case",
-            Self::Singleword => "singleword",
-        }
-    }
-
-    fn accepts(self, name: &str) -> bool {
-        match self {
-            Self::CamelCase => is_camel_case_name(name),
-            Self::KebabCase => is_kebab_case_name(name),
-            Self::Singleword => name.bytes().all(|byte| byte.is_ascii_lowercase()),
-        }
-    }
-}
-
 /// Enforce configured casing for rendered slot names.
-#[derive(Default)]
-pub struct SlotNameCasing {
+pub struct SlotNameCasing;
+
+struct ConfiguredSlotNameCasing {
     style: SlotNameCasingStyle,
 }
 
 impl SlotNameCasing {
     /// Create the rule with the configured casing policy.
-    pub fn new(style: SlotNameCasingStyle) -> Self {
-        Self { style }
+    pub fn configured(style: SlotNameCasingStyle) -> impl Rule {
+        ConfiguredSlotNameCasing { style }
     }
 }
 
@@ -94,39 +66,60 @@ fn is_lowercase_segment(segment: &str) -> bool {
             .all(|byte| byte.is_ascii_lowercase() || byte.is_ascii_digit())
 }
 
+fn accepts(style: SlotNameCasingStyle, name: &str) -> bool {
+    match style {
+        SlotNameCasingStyle::CamelCase => is_camel_case_name(name),
+        SlotNameCasingStyle::KebabCase => is_kebab_case_name(name),
+        SlotNameCasingStyle::Singleword => name.bytes().all(|byte| byte.is_ascii_lowercase()),
+    }
+}
+
+fn lint<'a>(style: SlotNameCasingStyle, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
+    if element.tag_type != ElementType::Slot {
+        return;
+    }
+    let Some(attribute) = element.props.iter().find_map(|prop| match prop {
+        PropNode::Attribute(attribute) if attribute.name == "name" => Some(attribute),
+        _ => None,
+    }) else {
+        return;
+    };
+    let Some(value) = &attribute.value else {
+        return;
+    };
+    let name = value.content;
+    if name.is_empty() || accepts(style, name) {
+        return;
+    }
+
+    let casing = style.name();
+    ctx.warn_with_help(
+        ctx.t_fmt(
+            "vue/slot-name-casing.message",
+            &[("name", name), ("casing", casing)],
+        ),
+        &attribute.loc,
+        ctx.t_fmt("vue/slot-name-casing.help", &[("casing", casing)]),
+    );
+}
+
 impl Rule for SlotNameCasing {
     fn meta(&self) -> &'static RuleMeta {
         &META
     }
 
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
-        if element.tag_type != ElementType::Slot {
-            return;
-        }
-        let Some(attribute) = element.props.iter().find_map(|prop| match prop {
-            PropNode::Attribute(attribute) if attribute.name == "name" => Some(attribute),
-            _ => None,
-        }) else {
-            return;
-        };
-        let Some(value) = &attribute.value else {
-            return;
-        };
-        let name = value.content;
-        if name.is_empty() || self.style.accepts(name) {
-            return;
-        }
+        lint(SlotNameCasingStyle::CamelCase, ctx, element);
+    }
+}
 
-        let casing = self.style.name();
+impl Rule for ConfiguredSlotNameCasing {
+    fn meta(&self) -> &'static RuleMeta {
+        &META
+    }
 
-        ctx.warn_with_help(
-            ctx.t_fmt(
-                "vue/slot-name-casing.message",
-                &[("name", name), ("casing", casing)],
-            ),
-            &attribute.loc,
-            ctx.t_fmt("vue/slot-name-casing.help", &[("casing", casing)]),
-        );
+    fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
+        lint(self.style, ctx, element);
     }
 }
 
@@ -138,7 +131,7 @@ mod tests {
 
     fn create_linter() -> Linter {
         let mut registry = RuleRegistry::new();
-        registry.register(Box::new(SlotNameCasing::default()));
+        registry.register(Box::new(SlotNameCasing));
         Linter::with_registry(registry)
     }
 
@@ -246,7 +239,7 @@ mod tests {
             (SlotNameCasingStyle::Singleword, "actions", "row-actions"),
         ] {
             let mut registry = RuleRegistry::new();
-            registry.register(Box::new(SlotNameCasing::new(style)));
+            registry.register(Box::new(SlotNameCasing::configured(style)));
             let linter = Linter::with_registry(registry);
             let source = format!(r#"<slot name="{valid}" /><slot name="{invalid}" />"#);
             let result = linter.lint_template(&source, "test.vue");
