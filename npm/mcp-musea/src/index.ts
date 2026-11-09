@@ -26,6 +26,13 @@ import { listResources, readResource } from "./resources.js";
 import { isProjectPath } from "./musea.js";
 import { resolveConfiguredTokensPath } from "./tokens-path.js";
 
+/**
+ * Create an unconnected Musea MCP server for one project.
+ *
+ * Component discovery is limited to the resolved project root. Art files are
+ * cached for five seconds, and an omitted token path is discovered from the
+ * conventional `tokens`, `design-tokens`, or `style-dictionary` locations.
+ */
 export function createMuseaServer(config: {
   projectRoot: string;
   include?: string[];
@@ -101,6 +108,12 @@ export function createMuseaServer(config: {
   return server;
 }
 
+/**
+ * Create a Musea server and connect it to the process standard streams.
+ *
+ * @param projectRoot Project whose art files and tokens the server may expose.
+ * @param options Optional token-file override; omission enables conventional discovery.
+ */
 export async function startServer(
   projectRoot: string,
   options?: { tokensPath?: string },
