@@ -1,11 +1,13 @@
 import type { AstNode, BabelApi, FileAst, ParserOptions, Scope } from "./types.ts";
 
+/** Narrows a structurally typed value to a Babel-compatible AST node. */
 export function isNode(value: unknown): value is AstNode {
   return (
     typeof value === "object" && value !== null && "type" in value && typeof value.type === "string"
   );
 }
 
+/** Reports whether a Babel AST contains JSX syntax. */
 export function hasJsx(ast: AstNode, keys: BabelApi["types"]["VISITOR_KEYS"]): boolean {
   const pending: AstNode[] = [ast];
   while (pending.length > 0) {
@@ -21,6 +23,7 @@ export function hasJsx(ast: AstNode, keys: BabelApi["types"]["VISITOR_KEYS"]): b
   return false;
 }
 
+/** Enables parser plugins implied by a JavaScript or TypeScript filename. */
 export function enableSyntax(filename: string, parser: ParserOptions): void {
   const plugins = (parser.plugins ??= []);
   const has = (name: string) => plugins.some((p) => (Array.isArray(p) ? p[0] : p) === name);
