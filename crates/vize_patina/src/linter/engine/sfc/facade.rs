@@ -70,6 +70,11 @@ pub(in crate::linter::engine) const RULES: &[&str] = &[
     "vue/valid-v-html",
     "vue/valid-v-show",
     "vue/no-v-text",
+    "vue/no-deprecated-v-bind-sync",
+    "vue/no-deprecated-v-on-native-modifier",
+    "vue/no-deprecated-v-on-number-modifiers",
+    "vue/no-deprecated-v-is",
+    "vue/no-custom-modifiers-on-v-model",
 ];
 
 pub(in crate::linter::engine) struct Dispatch<'a> {

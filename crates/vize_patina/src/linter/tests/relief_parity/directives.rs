@@ -1,8 +1,12 @@
-//! The fixed-shape directive rules moved off the Relief visitor.
+//! The directive-spelling rules moved off the Relief visitor.
 
 use crate::rule::Rule;
 use crate::rules::opinionated::vue::NoVText;
-use crate::rules::vue::{ValidVCloak, ValidVHtml, ValidVOnce, ValidVShow, ValidVText};
+use crate::rules::vue::{
+    NoCustomModifiersOnVModel, NoDeprecatedVBindSync, NoDeprecatedVIs,
+    NoDeprecatedVOnNativeModifier, NoDeprecatedVOnNumberModifiers, ValidVCloak, ValidVHtml,
+    ValidVOnce, ValidVShow, ValidVText,
+};
 
 fn family() -> Vec<Box<dyn Rule>> {
     vec![
@@ -42,4 +46,35 @@ const JSX: &[&str] = &[
 #[test]
 fn directive_shape_rules_match_their_relief_hooks() {
     super::assert_parity(family, TEMPLATES, JSX);
+}
+
+fn deprecated_family() -> Vec<Box<dyn Rule>> {
+    vec![
+        Box::new(NoDeprecatedVBindSync),
+        Box::new(NoDeprecatedVOnNativeModifier),
+        Box::new(NoDeprecatedVOnNumberModifiers),
+        Box::new(NoDeprecatedVIs),
+        Box::new(NoCustomModifiersOnVModel),
+    ]
+}
+
+const DEPRECATED_TEMPLATES: &[&str] = &[
+    r#"<C :foo.sync="x" v-bind:bar.sync="y" :baz="z" .qux.sync="w" :[d].sync="v" v-bind.sync="o"/>"#,
+    r#"<C @click.native="f" v-on:input.stop.native.native="g" @[e].native="h" @click.native.prevent="i"/>"#,
+    r#"<input @keyup.13="a" @keydown.enter.27="b" @keyup.0.13="c" @keyup.13suffix="d" v-on:keyup.112="e">"#,
+    r#"<input @keyup.40.13="a" @keyup.-1="b" @keyup.1e3="c" @keyup.0x10="d" @keyup.9007199254740993="e">"#,
+    r#"<div v-is="'c'"></div><tr v-is:arg.mod="'row'"></tr><div v-is></div><div v-is.></div><div v-is:[x]="y"></div>"#,
+    r#"<C v-model.foo="x"/><C v-model.trim.lazy.number.bar="y"/><input v-model.foo="z"><div is="vue:c" v-model.baz="w"/>"#,
+    r#"<component :is="c" v-model:title.cap="t"/><MyInput v-model.a.b="v"/><select v-model.x="s"></select>"#,
+    r#"<div v-pre><C :a.sync="x" @b.native="y" @keyup.13="z" v-is="w"/></div><C v-if="ok" :a.sync="x"/>"#,
+];
+
+const DEPRECATED_JSX: &[&str] = &[
+    r#"const A = () => <C onClick={f} v-model={x} v-is={y} />;"#,
+    r#"const A = () => <><C v-model:foo={x} /><input onKeyup={f} /></>;"#,
+];
+
+#[test]
+fn deprecated_modifier_rules_match_their_relief_hooks() {
+    super::assert_parity(deprecated_family, DEPRECATED_TEMPLATES, DEPRECATED_JSX);
 }

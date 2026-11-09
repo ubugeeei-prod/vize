@@ -36,6 +36,7 @@
 
 use crate::context::LintContext;
 use crate::diagnostic::{Fix, LintDiagnostic, Severity, TextEdit};
+use crate::markup::{MarkupContext, MarkupDirective, MarkupElement, MarkupRule};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_l0::dialect::VueDialect;
 use vize_relief::{DirectiveNode, ElementNode};
@@ -53,30 +54,12 @@ static META: RuleMeta = RuleMeta {
 /// Disallow deprecated numeric `keyCode` modifiers on `v-on`.
 pub struct NoDeprecatedVOnNumberModifiers;
 
-impl Rule for NoDeprecatedVOnNumberModifiers {
-    fn meta(&self) -> &'static RuleMeta {
-        &META
-    }
-
-    fn as_native_template_rule(&self) -> Option<&dyn crate::native::template::NativeTemplateRule> {
-        Some(self)
-    }
-
-    fn check_directive<'a>(
-        &self,
-        ctx: &mut LintContext<'a>,
-        _element: &ElementNode<'a>,
-        directive: &DirectiveNode<'a>,
-    ) {
+impl NoDeprecatedVOnNumberModifiers {
+    fn check(ctx: &mut LintContext<'_>, directive: &MarkupDirective<'_>) {
         // Only the default Vue 3 dialect removed numeric `keyCode` modifiers.
         // petite-vue and the legacy Vue 2 dialect still understand them, so
-        // leave them alone.
-        if ctx.dialect() != VueDialect::Vue {
-            return;
-        }
-
-        // Only `v-on` / `@` carries key-filter modifiers.
-        if directive.name != "on" {
+        // leave them alone. Only `v-on` / `@` carries key-filter modifiers.
+        if ctx.dialect() != VueDialect::Vue || !directive.name_eq("on") {
             return;
         }
 
@@ -84,9 +67,13 @@ impl Rule for NoDeprecatedVOnNumberModifiers {
         // exempting 0–9. In particular, `.0.13` is clean, while `.13.27`
         // reports only `13`; scanning for every deprecated value changes that
         // contract. Numeric prefixes such as `13suffix` are included too.
-        let Some((modifier, key_code)) = directive.modifiers.iter().find_map(|modifier| {
-            decimal_key_code(modifier.content).map(|key_code| (modifier, key_code))
-        }) else {
+        let mut first = None;
+        directive.walk_modifier_ranges(&mut |modifier, range| {
+            if first.is_none() {
+                first = decimal_key_code(modifier).map(|key_code| (modifier, range, key_code));
+            }
+        });
+        let Some((modifier, range, key_code)) = first else {
             return;
         };
         if (0.0..=9.0).contains(&key_code) {
@@ -97,10 +84,10 @@ impl Rule for NoDeprecatedVOnNumberModifiers {
             META.name,
             ctx.t_fmt(
                 "vue/no-deprecated-v-on-number-modifiers.message",
-                &[("keyCode", modifier.content)],
+                &[("keyCode", modifier)],
             ),
-            modifier.loc.span.start,
-            modifier.loc.span.end,
+            range.start,
+            range.end,
         );
         if let Some(help) = ctx
             .help_level()
@@ -111,10 +98,48 @@ impl Rule for NoDeprecatedVOnNumberModifiers {
         if let Some(key) = named_key(key_code) {
             diagnostic = diagnostic.with_fix(Fix::new(
                 "Replace the numeric keyCode modifier with a named key",
-                TextEdit::replace(modifier.loc.span.start, modifier.loc.span.end, key),
+                TextEdit::replace(range.start, range.end, key),
             ));
         }
         ctx.report(diagnostic);
+    }
+}
+
+impl MarkupRule for NoDeprecatedVOnNumberModifiers {
+    fn name(&self) -> &'static str {
+        META.name
+    }
+
+    fn enter_directive<'a>(
+        &self,
+        ctx: &mut MarkupContext<'_, 'a>,
+        _element: &MarkupElement<'a>,
+        directive: &MarkupDirective<'a>,
+    ) {
+        Self::check(ctx.lint(), directive);
+    }
+}
+
+impl Rule for NoDeprecatedVOnNumberModifiers {
+    fn meta(&self) -> &'static RuleMeta {
+        &META
+    }
+
+    fn as_native_template_rule(&self) -> Option<&dyn crate::native::template::NativeTemplateRule> {
+        Some(self)
+    }
+
+    fn as_markup_rule(&self) -> Option<&dyn MarkupRule> {
+        Some(self)
+    }
+
+    fn check_directive<'a>(
+        &self,
+        ctx: &mut LintContext<'a>,
+        _element: &ElementNode<'a>,
+        directive: &DirectiveNode<'a>,
+    ) {
+        Self::check(ctx, &MarkupDirective::from_relief(directive));
     }
 }
 

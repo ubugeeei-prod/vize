@@ -190,7 +190,7 @@ impl<'a> MarkupDirective<'a> {
         match self.inner {
             MarkupDirectiveInner::Relief(node) => match node.arg.as_ref()? {
                 ExpressionNode::Simple(arg) => Some(loc_to_range(&arg.loc)),
-                ExpressionNode::Compound(_) => Some(loc_to_range(&node.loc)),
+                ExpressionNode::Compound(compound) => Some(loc_to_range(&compound.loc)),
             },
             MarkupDirectiveInner::L2(binding) => match self.authored() {
                 Some((attr, offset)) => spelling::argument_range(attr, offset),

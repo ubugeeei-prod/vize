@@ -5,9 +5,10 @@
 //! on a component. Native elements are left to `vue/valid-v-model`. The check
 //! stays opt-in and is not part of the Vue 3 presets.
 
-use super::require_v_for_key::relief_element_is_custom_component;
+use super::require_v_for_key::markup_element_is_custom_component;
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
+use crate::markup::{MarkupContext, MarkupDirective, MarkupElement, MarkupRule};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_relief::{DirectiveNode, ElementNode};
 
@@ -34,9 +35,46 @@ fn is_builtin_modifier(name: &str) -> bool {
     matches!(name, "lazy" | "number" | "trim")
 }
 
+impl NoCustomModifiersOnVModel {
+    fn check(
+        ctx: &mut LintContext<'_>,
+        element: &MarkupElement<'_>,
+        directive: &MarkupDirective<'_>,
+    ) {
+        if !directive.name_eq("model") || !markup_element_is_custom_component(element) {
+            return;
+        }
+        let range = directive.range();
+        directive.walk_modifier_ranges(&mut |modifier, _| {
+            if !is_builtin_modifier(modifier) {
+                ctx.warn_at(message(modifier), range);
+            }
+        });
+    }
+}
+
+impl MarkupRule for NoCustomModifiersOnVModel {
+    fn name(&self) -> &'static str {
+        META.name
+    }
+
+    fn enter_directive<'a>(
+        &self,
+        ctx: &mut MarkupContext<'_, 'a>,
+        element: &MarkupElement<'a>,
+        directive: &MarkupDirective<'a>,
+    ) {
+        Self::check(ctx.lint(), element, directive);
+    }
+}
+
 impl Rule for NoCustomModifiersOnVModel {
     fn meta(&self) -> &'static RuleMeta {
         &META
+    }
+
+    fn as_markup_rule(&self) -> Option<&dyn MarkupRule> {
+        Some(self)
     }
 
     fn check_directive<'a>(
@@ -45,15 +83,11 @@ impl Rule for NoCustomModifiersOnVModel {
         element: &ElementNode<'a>,
         directive: &DirectiveNode<'a>,
     ) {
-        if directive.name != "model" || !relief_element_is_custom_component(element) {
-            return;
-        }
-        for modifier in &directive.modifiers {
-            if is_builtin_modifier(modifier.content) {
-                continue;
-            }
-            ctx.warn(message(modifier.content), &directive.loc);
-        }
+        Self::check(
+            ctx,
+            &MarkupElement::new(element),
+            &MarkupDirective::from_relief(directive),
+        );
     }
 }
 
