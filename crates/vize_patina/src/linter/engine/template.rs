@@ -5,7 +5,7 @@ use super::{
 };
 use crate::context::LintContext;
 use crate::markup::L2Template;
-use vize_croquis::{Croquis, Drawer, drawer::LintTemplate};
+use vize_croquis::{Croquis, Drawer};
 use vize_l0::{ToCompactString, profile};
 use vize_relief::RootNode;
 
@@ -120,12 +120,7 @@ impl Linter {
             TemplateAnalysis::Lazy => {
                 owned_analysis = profile!("patina.template.croquis", {
                     let mut analyzer = Drawer::for_lint();
-                    let lowered = input.l2.lowered();
-                    analyzer.draw_lint_template(LintTemplate::new(
-                        input.l2.surface(),
-                        lowered.allocator,
-                        &lowered.root,
-                    ));
+                    analyzer.draw_lint_template(input.l2.lint_template());
                     analyzer.finish()
                 });
                 Some(&owned_analysis)
