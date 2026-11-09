@@ -143,13 +143,13 @@ pub(super) fn companion_id_echo(
     id: &str,
 ) -> ContentMapperDiagnosticDirective {
     let original = source
-        .find(vize_carton::cstr!("id=\"{id}\"").as_str())
+        .find(vize_l0::cstr!("id=\"{id}\"").as_str())
         .expect("authored id")
         + 4;
     let check = generated
         .find("const __vize_unchecked_prop_0_id:")
         .expect("companion value check");
-    let value = vize_carton::cstr!("= \"{id}\";");
+    let value = vize_l0::cstr!("= \"{id}\";");
     let start = check
         + generated
             .get(check..)
