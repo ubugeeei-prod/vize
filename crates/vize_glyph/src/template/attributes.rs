@@ -7,7 +7,8 @@ use vize_l0::String;
 
 #[cfg(test)]
 use super::directives::directive_head;
-use super::directives::{directive_name, should_format_expression, static_directive_argument};
+use super::directives::{should_format_expression, static_directive_argument};
+use vize_l1::dialect::vue3::DirectiveKind;
 use vize_l1::markup::{DirectiveName, DirectivePrefix};
 mod render;
 #[cfg(test)]
@@ -178,32 +179,26 @@ pub(crate) fn attribute_priority_with_head(name: &str, head: Option<&DirectiveNa
     let Some(head) = head else {
         return 8;
     };
-    match head.prefix {
-        DirectivePrefix::Bind => match static_directive_argument(name, head) {
+    match DirectiveKind::of(head, name) {
+        // Patina currently keeps property shorthand in OtherAttrs.
+        DirectiveKind::Bind if head.prefix == DirectivePrefix::Prop => 8,
+        DirectiveKind::Bind => match static_directive_argument(name, head) {
             Some("is") => 0,
             Some("id") => 4,
             Some("ref" | "key" | "slot" | "slot-scope") => 5,
             _ => 8,
         },
-        // Patina currently keeps property shorthand in OtherAttrs.
-        DirectivePrefix::Prop => 8,
-        DirectivePrefix::On => 9,
-        DirectivePrefix::Slot => 7,
-        DirectivePrefix::Full => match directive_name(name, head) {
-            Some("for") => 1,
-            Some("if" | "else-if" | "else" | "show" | "cloak") => 2,
-            Some("pre" | "once") => 3,
-            Some("model") => 6,
-            Some("html" | "text") => 10,
-            Some("on") => 9,
-            Some("bind") => match static_directive_argument(name, head) {
-                Some("is") => 0,
-                Some("id") => 4,
-                Some("ref" | "key" | "slot" | "slot-scope") => 5,
-                _ => 8,
-            },
-            Some("slot") | Some(_) | None => 7,
-        },
+        DirectiveKind::For => 1,
+        DirectiveKind::If
+        | DirectiveKind::ElseIf
+        | DirectiveKind::Else
+        | DirectiveKind::Show
+        | DirectiveKind::Cloak => 2,
+        DirectiveKind::Pre | DirectiveKind::Once => 3,
+        DirectiveKind::Model => 6,
+        DirectiveKind::Html | DirectiveKind::Text => 10,
+        DirectiveKind::On => 9,
+        DirectiveKind::Slot | DirectiveKind::Memo | DirectiveKind::Custom => 7,
     }
 }
 

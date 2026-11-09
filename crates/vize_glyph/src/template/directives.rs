@@ -6,11 +6,12 @@
 use crate::{options::FormatOptions, script};
 use vize_l0::{Allocator, Span, String, ToCompactString, is_simple_identifier};
 use vize_l1::{
+    dialect::vue3::DirectiveKind,
     embed::{
         Embed, EmbedSource, Grammar, Lang, Shape,
         syntax::{ForKeyword, parse_vue_for_head_once},
     },
-    markup::{ArgSyntax, DirectiveName, DirectivePrefix, DirectiveSyntax, VueDirectives},
+    markup::{ArgSyntax, DirectiveName, DirectiveSyntax, VueDirectives},
 };
 
 use super::literal_lines::{Representation, encode_reference_data};
@@ -28,17 +29,20 @@ pub(crate) fn should_format_expression(name: &str) -> bool {
 }
 
 pub(crate) fn should_format_expression_with_head(name: &str, head: Option<&DirectiveName>) -> bool {
-    let Some(head) = head else {
-        return false;
-    };
-    match head.prefix {
-        DirectivePrefix::Bind | DirectivePrefix::Prop | DirectivePrefix::On => true,
-        DirectivePrefix::Slot => false,
-        DirectivePrefix::Full => matches!(
-            directive_name(name, head),
-            Some("if" | "else-if" | "show" | "for" | "model" | "bind" | "on" | "html" | "text")
-        ),
-    }
+    head.is_some_and(|head| {
+        matches!(
+            DirectiveKind::of(head, name),
+            DirectiveKind::Bind
+                | DirectiveKind::On
+                | DirectiveKind::If
+                | DirectiveKind::ElseIf
+                | DirectiveKind::Show
+                | DirectiveKind::For
+                | DirectiveKind::Model
+                | DirectiveKind::Html
+                | DirectiveKind::Text
+        )
+    })
 }
 
 /// Use the same allocation-free directive grammar as the L1 Vue parser.
@@ -58,10 +62,6 @@ pub(crate) fn directive_head(name: &str) -> Option<DirectiveName> {
         return None;
     }
     VueDirectives.decompose(name, 0).ok().flatten()
-}
-
-pub(crate) fn directive_name<'a>(name: &'a str, head: &DirectiveName) -> Option<&'a str> {
-    span_text(name, head.name)
 }
 
 pub(crate) fn static_directive_argument<'a>(

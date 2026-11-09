@@ -2,11 +2,12 @@
 
 use super::super::attributes::attribute_priority_with_head;
 use super::{
-    custom_attribute_priority, directive_head, directive_name, format_directive_value,
+    custom_attribute_priority, directive_head, format_directive_value,
     should_format_expression_with_head,
 };
 use crate::options::FormatOptions;
 use vize_l0::{String, ToCompactString, cstr};
+use vize_l1::dialect::vue3::DirectiveKind;
 use vize_l1::markup::DirectivePrefix;
 
 pub(crate) fn normalize_attribute_with_vue_version(
@@ -23,11 +24,15 @@ pub(crate) fn normalize_attribute_with_vue_version(
         .filter(|head| {
             options.normalize_directive_shorthands && head.prefix == DirectivePrefix::Full
         })
-        .and_then(|head| match directive_name(name, head)? {
-            "bind" => name.strip_prefix("v-bind:").map(|rest| cstr!(":{rest}")),
-            "on" => name.strip_prefix("v-on:").map(|rest| cstr!("@{rest}")),
-            "slot" => name.strip_prefix("v-slot:").map(|rest| cstr!("#{rest}")),
-            _ => None,
+        .and_then(|head| {
+            let sigil = match DirectiveKind::of(head, name) {
+                DirectiveKind::Bind => ':',
+                DirectiveKind::On => '@',
+                DirectiveKind::Slot => '#',
+                _ => return None,
+            };
+            let rest = name.get(head.name.end as usize..)?.strip_prefix(':')?;
+            Some(cstr!("{sigil}{rest}"))
         });
     let (normalized_name, normalized_head) = match normalized_shorthand {
         Some(normalized_name) => {

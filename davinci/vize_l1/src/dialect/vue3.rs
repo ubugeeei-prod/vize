@@ -4,7 +4,7 @@ pub mod directive;
 pub(crate) mod for_head;
 pub(crate) mod operand;
 pub mod surface;
-pub use directive::VueDirectives;
+pub use directive::{DirectiveKind, VueDirectives};
 
 /// Component classification for the default Vue lint policy.
 ///
