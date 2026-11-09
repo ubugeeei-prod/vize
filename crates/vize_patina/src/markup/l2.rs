@@ -16,7 +16,7 @@ use vize_atelier_jsx::l2::JsxL2Root;
 use vize_croquis::drawer::LintTemplate;
 use vize_l0::Allocator;
 use vize_l0::side_table::SideTable;
-use vize_l1::markup::{SurfaceError, SurfaceTree};
+use vize_l1::markup::{SurfaceChild, SurfaceError, SurfaceTree};
 use vize_l1_to_l2::lower::TextParts;
 use vize_l1_to_l2::{Lowered, lower_preserving_comments};
 use vize_l2::expr::{ExprRef, OpaqueReason};
@@ -229,7 +229,7 @@ impl<'a> L2Template<'a> {
     /// Visit every authored expression that the existing L1 -> L2 admission
     /// rejected. This reads the retained expression payloads; it never parses
     /// template text a second time.
-    pub fn for_each_invalid_expression(&self, mut visit: impl FnMut(vize_l0::Span)) {
+    pub fn for_each_invalid_expression(&self, mut visit: impl FnMut(vize_l0::Span, OpaqueReason)) {
         let mut inspect = |expression: ExprRef<'a>| {
             if let ExprRef::Opaque(opaque) = expression
                 && matches!(
@@ -237,9 +237,74 @@ impl<'a> L2Template<'a> {
                     OpaqueReason::ParseRejected | OpaqueReason::NestingRefused
                 )
             {
-                visit(opaque.span);
+                visit(opaque.span, opaque.reason);
             }
         };
+        let mut walk = PageWalk::new();
+        let visited = visit_nodes(
+            &mut walk,
+            &self.lowered.artifact.root.ops,
+            &mut |_, node| node.for_each_expression(&mut inspect),
+        );
+        debug_assert!(
+            visited.is_ok(),
+            "lowered template exceeds the L2 node limit"
+        );
+        for expression in &self.lowered.consumed_expressions {
+            inspect(*expression);
+        }
+    }
+
+    /// Whether an expression-shaped refusal belongs to Vue's declaration
+    /// grammar rather than to a JavaScript expression. `v-for` aliases and
+    /// slot props are binding patterns; feeding either whole value to an
+    /// expression parser would manufacture `parser/template` errors for
+    /// valid Vue syntax such as destructuring defaults.
+    pub fn is_vue_binding_pattern_span(&self, span: vize_l0::Span) -> bool {
+        fn in_children(source: &str, children: &[SurfaceChild<'_>], span: vize_l0::Span) -> bool {
+            for child in children {
+                let SurfaceChild::Element(element) = child else {
+                    continue;
+                };
+                for attribute in &element.open.attrs {
+                    let Some(directive) = surface::SurfaceDirective::parse(attribute.name.text)
+                    else {
+                        continue;
+                    };
+                    let Some(value) = attribute.value.as_ref() else {
+                        continue;
+                    };
+                    let binding_end = match directive.name {
+                        "slot" => surface::offset_in(source, value.content.text)
+                            .saturating_add(value.content.text.len() as u32),
+                        "for" => {
+                            let Some((_, iterable)) =
+                                vize_l1_to_l2::lower::split_v_for_value(value.content.text)
+                            else {
+                                continue;
+                            };
+                            surface::offset_in(source, iterable)
+                        }
+                        _ => continue,
+                    };
+                    let binding_start = surface::offset_in(source, value.content.text);
+                    if binding_start <= span.start && span.end <= binding_end {
+                        return true;
+                    }
+                }
+                if in_children(source, &element.children, span) {
+                    return true;
+                }
+            }
+            false
+        }
+
+        in_children(self.tree.source, &self.tree.children, span)
+    }
+
+    /// Visit every authored expression range retained by lowering.
+    pub fn for_each_expression_span(&self, mut visit: impl FnMut(vize_l0::Span)) {
+        let mut inspect = |expression: ExprRef<'a>| visit(expression.span());
         let mut walk = PageWalk::new();
         let visited = visit_nodes(
             &mut walk,

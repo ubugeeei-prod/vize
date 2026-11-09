@@ -71,7 +71,7 @@ pub(in crate::linter) fn prepare_with_descriptor<'a>(
     let scripts = crate::linter::sfc_scripts::lint_scripts(&script_allocator, descriptor);
     let template_ast = descriptor.template.as_ref().map(|template| {
         let l2 = crate::markup::L2Template::lower(&allocator, &template.content);
-        let has_fatal_parse_errors = Linter::has_fatal_l1_template_parse_errors(&l2);
+        let has_fatal_parse_errors = linter.has_fatal_template_parse_errors(&l2);
         (l2, template.loc.start as u32, has_fatal_parse_errors)
     });
     let template_has_fatal_parse_errors = template_ast
@@ -131,9 +131,14 @@ pub(in crate::linter) fn prepare_with_descriptor<'a>(
             )
         );
         let mut parse_result =
-            Linter::l1_template_parse_lint_result(filename, &template.content, &l2);
+            Linter::l1_template_parse_lint_result(filename, &template.content, l2);
+        linter.append_compatibility_template_parse_diagnostics(
+            &mut parse_result,
+            &template.content,
+            l2,
+        );
         super::super::engine::offset_result(&mut parse_result, template.loc.start as u32);
-        Linter::append_style_parse_diagnostics(&mut parse_result, &allocator, &descriptor.styles);
+        linter.append_style_parse_diagnostics(&mut parse_result, &allocator, &descriptor.styles);
         let mut result = Linter::merge_lint_results(parse_result, lint_result);
         result.error_count += scripts.error_count;
         result.warning_count += scripts.warning_count;

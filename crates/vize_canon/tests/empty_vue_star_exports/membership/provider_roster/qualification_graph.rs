@@ -16,6 +16,7 @@ use docs_metadata::{
     DocsMetadataQualificationGraph, MANIFEST as DOCS_METADATA_MANIFEST,
     update as docs_metadata_update, verify as verify_docs_metadata_update,
 };
+mod eslint_vue_scorecard;
 mod js_tooling_refresh;
 mod strict_checker;
 use strict_checker::{authorize as authorize_strict_checker, update as strict_checker_update};
@@ -491,8 +492,20 @@ pub(super) fn authorize(previous: &Value, lock: &[u8], package: &[u8]) -> Checke
     }
     let predecessor_bytes = fs::read(support::corpus().join(docs_metadata::UPDATE))
         .map_err(|_| "complete JavaScript tooling refresh predecessor")?;
-    let update = js_tooling_refresh::authorize(
+    if let Ok(update) = js_tooling_refresh::authorize(
         &docs_metadata_update(),
+        &predecessor_bytes,
+        lock,
+        package,
+        &workspace,
+    ) {
+        return Ok(Some(update));
+    }
+
+    let predecessor_bytes = fs::read(support::corpus().join(js_tooling_refresh::UPDATE))
+        .map_err(|_| "complete eslint-plugin-vue scorecard predecessor")?;
+    let update = eslint_vue_scorecard::authorize(
+        &js_tooling_refresh::update(),
         &predecessor_bytes,
         lock,
         package,

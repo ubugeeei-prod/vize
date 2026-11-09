@@ -6,6 +6,7 @@ import { fileURLToPath } from "node:url";
 import {
   resolveBaselineRuntime,
   runBaseline,
+  selectAvailableRules,
   selectComparableRules,
 } from "./lint-divergence-baseline.mjs";
 import {
@@ -49,9 +50,11 @@ export async function runLintDivergenceReport(argv = process.argv.slice(2)) {
   const ledger = readLedger();
   const runtime = resolveBaselineRuntime();
   const launch = resolveVizeLaunch(args.vizeBin, false);
-  const { rules, skippedByPreset } = selectComparableRules(ruleMap, args.preset, {
+  const selection = selectComparableRules(ruleMap, args.preset, {
     includeUnimplemented: args.measureCoverageGap,
   });
+  const rules = selectAvailableRules(runtime, selection.rules);
+  const { skippedByPreset } = selection;
   const mappedRuleCount = Object.values(ruleMap.entries).filter(
     (entry) => entry.status === "mapped",
   ).length;

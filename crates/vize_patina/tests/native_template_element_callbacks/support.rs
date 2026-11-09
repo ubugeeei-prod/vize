@@ -242,6 +242,7 @@ pub fn linter(rules: Vec<Audit>, locale: Locale, help: HelpLevel) -> Linter {
         registry.register(Box::new(rule));
     }
     Linter::with_registry(registry)
+        .with_disabled_rules(vec!["parser/template".into()])
         .with_locale(locale)
         .with_help_level(help)
 }

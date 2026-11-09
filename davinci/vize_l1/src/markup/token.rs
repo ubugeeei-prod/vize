@@ -47,7 +47,6 @@ pub enum LexErrorCode {
     MissingDynamicDirectiveArgumentEnd,
     MissingEndTagName,
     MissingInterpolationEnd,
-    MissingSemicolonAfterCharacterReference,
     MissingWhitespaceBetweenAttributes,
     NestedComment,
     UnexpectedCharacterInAttributeName,
@@ -55,7 +54,6 @@ pub enum LexErrorCode {
     UnexpectedEqualsSignBeforeAttributeName,
     UnexpectedQuestionMarkInsteadOfTagName,
     UnexpectedSolidusInTag,
-    UnknownNamedCharacterReference,
 }
 
 /// Receiver of lexer events. `start..end` ranges are half-open byte ranges.

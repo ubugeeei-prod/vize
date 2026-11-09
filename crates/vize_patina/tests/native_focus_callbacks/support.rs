@@ -19,6 +19,7 @@ pub fn linter(reverse: bool, locale: Locale, help: HelpLevel) -> Linter {
         registry.register(Box::new(NoAccessKey));
     }
     Linter::with_registry(registry)
+        .with_disabled_rules(vec!["parser/template".into()])
         .with_locale(locale)
         .with_help_level(help)
         .with_vue_version(None)

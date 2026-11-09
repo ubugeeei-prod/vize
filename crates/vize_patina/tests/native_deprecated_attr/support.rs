@@ -40,6 +40,7 @@ pub fn registered(source: &str, locale: Locale) -> LintResult {
     let mut registry = RuleRegistry::new();
     registry.register(Box::new(DeprecatedAttr));
     Linter::with_registry(registry)
+        .with_disabled_rules(vec!["parser/template".into()])
         .with_locale(locale)
         .lint_sfc(source, FILENAME)
 }

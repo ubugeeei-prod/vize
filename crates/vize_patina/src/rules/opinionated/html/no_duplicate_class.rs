@@ -25,6 +25,7 @@ use crate::markup::{MarkupBindingKind, MarkupContext, MarkupElement, MarkupRule,
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use crate::rules::opinionated::class_values::possible_static_parts;
 use oxc_span::Span;
+use vize_carton::String;
 use vize_l0::{FxHashMap, FxHashSet};
 use vize_relief::ElementNode;
 
@@ -111,7 +112,7 @@ impl NoDuplicateClass {
                     if let Some(value) = binding.static_value() {
                         let candidates = value
                             .split_ascii_whitespace()
-                            .map(|name| (name.to_owned(), binding.range()))
+                            .map(|name| (String::from(name), binding.range()))
                             .collect::<Vec<_>>();
                         if static_baseline.is_none() {
                             static_baseline = Some(
@@ -137,7 +138,7 @@ impl NoDuplicateClass {
                             .unwrap_or(binding.range());
                         candidates.extend(part.text.split_ascii_whitespace().map(|name| {
                             (
-                                name.to_owned(),
+                                String::from(name),
                                 range,
                                 part.unconditional,
                                 part.shared_group,

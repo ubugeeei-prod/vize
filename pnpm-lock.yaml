@@ -728,7 +728,7 @@ importers:
         version: '@voidzero-dev/vite-plus-core@0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3)(yaml@2.9.1)'
       vite-plus:
         specifier: catalog:vite-stack
-        version: 0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(@voidzero-dev/vite-plus-core@0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3)(yaml@2.9.1))(esbuild@0.28.1)(happy-dom@21.0.4)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3)(yaml@2.9.1)
+        version: 0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(@voidzero-dev/vite-plus-core@0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3))(esbuild@0.28.1)(happy-dom@21.0.4)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3)
       vue:
         specifier: catalog:vue-stable
         version: 3.5.35(typescript@6.0.3)
@@ -983,7 +983,7 @@ importers:
         version: '@voidzero-dev/vite-plus-core@0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3)(yaml@2.9.1)'
       vite-plus:
         specifier: catalog:vite-stack
-        version: 0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(@voidzero-dev/vite-plus-core@0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3)(yaml@2.9.1))(esbuild@0.28.1)(happy-dom@21.0.4)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3)(yaml@2.9.1)
+        version: 0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(@voidzero-dev/vite-plus-core@0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3))(esbuild@0.28.1)(happy-dom@21.0.4)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3)
       vue:
         specifier: catalog:vue-stable
         version: 3.5.35(typescript@6.0.3)
@@ -1039,7 +1039,7 @@ importers:
         version: 16.0.0
       oxfmt:
         specifier: catalog:linting
-        version: 0.63.0(vite-plus@0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(@voidzero-dev/vite-plus-core@0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3)(yaml@2.9.1))(esbuild@0.28.1)(happy-dom@21.0.4)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3)(yaml@2.9.1))
+        version: 0.63.0(vite-plus@0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(@voidzero-dev/vite-plus-core@0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3))(esbuild@0.28.1)(happy-dom@21.0.4)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3))
       tsdown:
         specifier: catalog:vite-stack
         version: 0.22.14(@tsdown/css@0.22.14)(@volar/typescript@2.4.31(typescript@6.0.3))(tsx@4.23.15)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3))
@@ -1051,7 +1051,7 @@ importers:
         version: '@voidzero-dev/vite-plus-core@0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3)(yaml@2.9.1)'
       vite-plus:
         specifier: catalog:vite-stack
-        version: 0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(@voidzero-dev/vite-plus-core@0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3)(yaml@2.9.1))(esbuild@0.28.1)(happy-dom@21.0.4)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3)(yaml@2.9.1)
+        version: 0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(@voidzero-dev/vite-plus-core@0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3))(esbuild@0.28.1)(happy-dom@21.0.4)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3)
       vue:
         specifier: catalog:vue-stable
         version: 3.5.35(typescript@6.0.3)
@@ -1388,7 +1388,7 @@ importers:
     devDependencies:
       '@nuxt/eslint':
         specifier: catalog:nuxt-eslint-oracle
-        version: 1.16.0(@voidzero-dev/vite-plus-core@0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3)(yaml@2.9.1))(@vue/compiler-sfc@3.6.0-rc.11)(esbuild@0.28.1)(eslint@10.14.0(jiti@2.7.0)(supports-color@10.2.2))(jiti@2.7.0)(supports-color@10.2.2)(typescript@6.0.3)
+        version: 1.16.0(@voidzero-dev/vite-plus-core@0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3))(@vue/compiler-sfc@3.6.0-rc.11)(esbuild@0.28.1)(eslint@10.14.0(jiti@2.7.0)(supports-color@10.2.2))(jiti@2.7.0)(supports-color@10.2.2)(typescript@6.0.3)
       '@nuxt/eslint-config':
         specifier: catalog:nuxt-eslint-oracle
         version: 1.16.0(@typescript-eslint/utils@8.72.1(eslint@10.14.0(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3))(@vue/compiler-sfc@3.6.0-rc.11)(eslint@10.14.0(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3)
@@ -1415,7 +1415,7 @@ importers:
         version: 10.12.0(@stylistic/eslint-plugin@5.10.0(eslint@10.14.0(jiti@2.7.0)(supports-color@10.2.2)))(@typescript-eslint/parser@8.72.1(eslint@10.14.0(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3))(eslint@10.14.0(jiti@2.7.0)(supports-color@10.2.2))(vue-eslint-parser@10.4.2(eslint@10.14.0(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2))
       oxlint:
         specifier: catalog:linting
-        version: 1.78.0(oxlint-tsgolint@7.0.2005)(vite-plus@0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(@voidzero-dev/vite-plus-core@0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3)(yaml@2.9.1))(esbuild@0.28.1)(happy-dom@21.0.4)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3)(yaml@2.9.1))
+        version: 1.78.0(oxlint-tsgolint@7.0.2005)(vite-plus@0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(@voidzero-dev/vite-plus-core@0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3))(esbuild@0.28.1)(happy-dom@21.0.4)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3))
       tsdown:
         specifier: catalog:vite-stack
         version: 0.22.14(@tsdown/css@0.22.14)(@volar/typescript@2.4.31(typescript@6.0.3))(tsx@4.23.15)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3))
@@ -1427,7 +1427,7 @@ importers:
         version: '@voidzero-dev/vite-plus-core@0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3)(yaml@2.9.1)'
       vite-plus:
         specifier: catalog:vite-stack
-        version: 0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(@voidzero-dev/vite-plus-core@0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3)(yaml@2.9.1))(esbuild@0.28.1)(happy-dom@21.0.4)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3)(yaml@2.9.1)
+        version: 0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(@voidzero-dev/vite-plus-core@0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3))(esbuild@0.28.1)(happy-dom@21.0.4)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3)
       vue-eslint-parser:
         specifier: 10.4.2
         version: 10.4.2(eslint@10.14.0(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)
@@ -1504,7 +1504,7 @@ importers:
         version: '@voidzero-dev/vite-plus-core@0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3)(yaml@2.9.1)'
       vite-plus:
         specifier: catalog:vite-stack
-        version: 0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(@voidzero-dev/vite-plus-core@0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3)(yaml@2.9.1))(esbuild@0.28.1)(happy-dom@21.0.4)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3)(yaml@2.9.1)
+        version: 0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(@voidzero-dev/vite-plus-core@0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3))(esbuild@0.28.1)(happy-dom@21.0.4)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3)
 
   npm/native:
     devDependencies:
@@ -1589,7 +1589,7 @@ importers:
         version: '@voidzero-dev/vite-plus-core@0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3)(yaml@2.9.1)'
       vite-plus:
         specifier: catalog:vite-stack
-        version: 0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(@voidzero-dev/vite-plus-core@0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3)(yaml@2.9.1))(esbuild@0.28.1)(happy-dom@21.0.4)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3)(yaml@2.9.1)
+        version: 0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(@voidzero-dev/vite-plus-core@0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3))(esbuild@0.28.1)(happy-dom@21.0.4)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3)
       vue:
         specifier: catalog:vue-stable
         version: 3.5.35(typescript@6.0.3)
@@ -17128,7 +17128,7 @@ snapshots:
       - vite
       - webpack
 
-  '@nuxt/eslint@1.16.0(@voidzero-dev/vite-plus-core@0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3)(yaml@2.9.1))(@vue/compiler-sfc@3.6.0-rc.11)(esbuild@0.28.1)(eslint@10.14.0(jiti@2.7.0)(supports-color@10.2.2))(jiti@2.7.0)(supports-color@10.2.2)(typescript@6.0.3)':
+  '@nuxt/eslint@1.16.0(@voidzero-dev/vite-plus-core@0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3))(@vue/compiler-sfc@3.6.0-rc.11)(esbuild@0.28.1)(eslint@10.14.0(jiti@2.7.0)(supports-color@10.2.2))(jiti@2.7.0)(supports-color@10.2.2)(typescript@6.0.3)':
     dependencies:
       '@eslint/config-inspector': 3.5.0(eslint@10.14.0(jiti@2.7.0)(supports-color@10.2.2))(srvx@0.11.15)
       '@nuxt/devtools-kit': 3.4.4(@voidzero-dev/vite-plus-core@0.1.24(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3)(yaml@2.9.1))(jiti@2.7.0)(mlly@1.8.2)
@@ -17143,7 +17143,7 @@ snapshots:
       get-port-please: 3.2.0
       mlly: 1.8.2
       pathe: 2.0.3
-      unimport: 6.5.0(@voidzero-dev/vite-plus-core@0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3)(yaml@2.9.1))(esbuild@0.28.1)
+      unimport: 6.5.0(@voidzero-dev/vite-plus-core@0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3))(esbuild@0.28.1)
     transitivePeerDependencies:
       - '@farmfe/core'
       - '@nuxt/schema'
@@ -21283,6 +21283,47 @@ snapshots:
   '@voidzero-dev/vite-plus-linux-x64-musl@1.5.0':
     optional: true
 
+  '@voidzero-dev/vite-plus-test@0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(@voidzero-dev/vite-plus-core@0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3))(esbuild@0.28.1)(happy-dom@21.0.4)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3)':
+    dependencies:
+      '@standard-schema/spec': 1.1.0
+      '@types/chai': 5.2.3
+      '@voidzero-dev/vite-plus-core': 0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3)(yaml@2.9.1)
+      es-module-lexer: 1.7.0
+      obug: 2.2.1
+      pixelmatch: 7.2.0
+      pngjs: 7.0.0
+      sirv: 3.0.2
+      std-env: 4.3.0
+      tinybench: 2.9.0
+      tinyexec: 1.3.1
+      tinyglobby: 0.2.17
+      vite: '@voidzero-dev/vite-plus-core@0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3)(yaml@2.9.1)'
+      ws: 8.22.1
+    optionalDependencies:
+      '@types/node': 25.9.2
+      happy-dom: 21.0.4
+    transitivePeerDependencies:
+      - '@arethetypeswrong/core'
+      - '@tsdown/css'
+      - '@tsdown/exe'
+      - '@vitejs/devtools'
+      - bufferutil
+      - esbuild
+      - jiti
+      - less
+      - publint
+      - sass
+      - sass-embedded
+      - stylus
+      - sugarss
+      - terser
+      - tsx
+      - typescript
+      - unplugin-unused
+      - unrun
+      - utf-8-validate
+      - yaml
+
   '@voidzero-dev/vite-plus-test@0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(@voidzero-dev/vite-plus-core@0.1.24(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3)(yaml@2.9.1))(esbuild@0.28.1)(happy-dom@21.0.4)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3)(yaml@2.9.1)':
     dependencies:
       '@standard-schema/spec': 1.1.0
@@ -25247,6 +25288,7 @@ snapshots:
       lightningcss: 1.33.0
       postcss: 8.5.32
       sharp: 0.35.5(@types/node@25.9.2)
+    optional: true
 
   minimizer-webpack-plugin@5.14.0(@swc/core@1.16.22)(clean-css@5.3.3)(cssnano@9.9.0(postcss@8.5.26))(esbuild@0.28.1)(html-minifier-terser@7.2.0)(lightningcss@1.33.0)(postcss@8.5.26)(sharp@0.35.5(@types/node@25.9.2))(webpack@5.112.2(@swc/core@1.16.22)(clean-css@5.3.3)(cssnano@9.9.0(postcss@8.5.26))(esbuild@0.28.1)(html-minifier-terser@7.2.0)(lightningcss@1.33.0)(postcss@8.5.26)(sharp@0.35.5(@types/node@25.9.2))):
     dependencies:
@@ -25868,7 +25910,7 @@ snapshots:
     optionalDependencies:
       rolldown: 1.2.16
 
-  oxfmt@0.52.0(vite-plus@0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(@voidzero-dev/vite-plus-core@0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3)(yaml@2.9.1))(esbuild@0.28.1)(happy-dom@21.0.4)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3)(yaml@2.9.1)):
+  oxfmt@0.52.0(vite-plus@0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(@voidzero-dev/vite-plus-core@0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3))(esbuild@0.28.1)(happy-dom@21.0.4)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3)):
     dependencies:
       tinypool: 2.1.2
     optionalDependencies:
@@ -25891,7 +25933,7 @@ snapshots:
       '@oxfmt/binding-win32-arm64-msvc': 0.52.0
       '@oxfmt/binding-win32-ia32-msvc': 0.52.0
       '@oxfmt/binding-win32-x64-msvc': 0.52.0
-      vite-plus: 0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(@voidzero-dev/vite-plus-core@0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3)(yaml@2.9.1))(esbuild@0.28.1)(happy-dom@21.0.4)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3)(yaml@2.9.1)
+      vite-plus: 0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(@voidzero-dev/vite-plus-core@0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3))(esbuild@0.28.1)(happy-dom@21.0.4)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3)
 
   oxfmt@0.52.0(vite-plus@0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(@voidzero-dev/vite-plus-core@0.1.24(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3)(yaml@2.9.1))(esbuild@0.28.1)(happy-dom@21.0.4)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3)(yaml@2.9.1)):
     dependencies:
@@ -25968,7 +26010,7 @@ snapshots:
       '@oxfmt/binding-win32-x64-msvc': 0.62.0
       vite-plus: 0.2.9(@types/node@25.9.2)(@voidzero-dev/vite-plus-core@0.1.24(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3)(yaml@2.9.1))(esbuild@0.28.1)(happy-dom@21.0.4)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3)(yaml@2.9.1)
 
-  oxfmt@0.63.0(vite-plus@0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(@voidzero-dev/vite-plus-core@0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3)(yaml@2.9.1))(esbuild@0.28.1)(happy-dom@21.0.4)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3)(yaml@2.9.1)):
+  oxfmt@0.63.0(vite-plus@0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(@voidzero-dev/vite-plus-core@0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3))(esbuild@0.28.1)(happy-dom@21.0.4)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3)):
     dependencies:
       tinypool: 2.1.2
     optionalDependencies:
@@ -25991,7 +26033,7 @@ snapshots:
       '@oxfmt/binding-win32-arm64-msvc': 0.63.0
       '@oxfmt/binding-win32-ia32-msvc': 0.63.0
       '@oxfmt/binding-win32-x64-msvc': 0.63.0
-      vite-plus: 0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(@voidzero-dev/vite-plus-core@0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3)(yaml@2.9.1))(esbuild@0.28.1)(happy-dom@21.0.4)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3)(yaml@2.9.1)
+      vite-plus: 0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(@voidzero-dev/vite-plus-core@0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3))(esbuild@0.28.1)(happy-dom@21.0.4)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3)
 
   oxfmt@0.63.0(vite-plus@0.1.24(@types/node@25.9.2)(@voidzero-dev/vite-plus-core@0.1.24(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3)(yaml@2.9.1))(esbuild@0.28.1)(happy-dom@21.0.4)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3)(yaml@2.9.1)):
     dependencies:
@@ -26095,7 +26137,7 @@ snapshots:
       '@oxlint-tsgolint/win32-arm64': 7.0.2005
       '@oxlint-tsgolint/win32-x64': 7.0.2005
 
-  oxlint@1.67.0(oxlint-tsgolint@0.23.0)(vite-plus@0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(@voidzero-dev/vite-plus-core@0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3)(yaml@2.9.1))(esbuild@0.28.1)(happy-dom@21.0.4)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3)(yaml@2.9.1)):
+  oxlint@1.67.0(oxlint-tsgolint@0.23.0)(vite-plus@0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(@voidzero-dev/vite-plus-core@0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3))(esbuild@0.28.1)(happy-dom@21.0.4)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3)):
     optionalDependencies:
       '@oxlint/binding-android-arm-eabi': 1.67.0
       '@oxlint/binding-android-arm64': 1.67.0
@@ -26117,7 +26159,7 @@ snapshots:
       '@oxlint/binding-win32-ia32-msvc': 1.67.0
       '@oxlint/binding-win32-x64-msvc': 1.67.0
       oxlint-tsgolint: 0.23.0
-      vite-plus: 0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(@voidzero-dev/vite-plus-core@0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3)(yaml@2.9.1))(esbuild@0.28.1)(happy-dom@21.0.4)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3)(yaml@2.9.1)
+      vite-plus: 0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(@voidzero-dev/vite-plus-core@0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3))(esbuild@0.28.1)(happy-dom@21.0.4)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3)
 
   oxlint@1.67.0(oxlint-tsgolint@0.23.0)(vite-plus@0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(@voidzero-dev/vite-plus-core@0.1.24(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3)(yaml@2.9.1))(esbuild@0.28.1)(happy-dom@21.0.4)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3)(yaml@2.9.1)):
     optionalDependencies:
@@ -26215,7 +26257,7 @@ snapshots:
       oxlint-tsgolint: 0.23.0
       vite-plus: 0.1.24(@types/node@25.9.2)(@voidzero-dev/vite-plus-core@0.1.24(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3)(yaml@2.9.1))(esbuild@0.28.1)(happy-dom@21.0.4)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3)(yaml@2.9.1)
 
-  oxlint@1.78.0(oxlint-tsgolint@7.0.2005)(vite-plus@0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(@voidzero-dev/vite-plus-core@0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3)(yaml@2.9.1))(esbuild@0.28.1)(happy-dom@21.0.4)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3)(yaml@2.9.1)):
+  oxlint@1.78.0(oxlint-tsgolint@7.0.2005)(vite-plus@0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(@voidzero-dev/vite-plus-core@0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3))(esbuild@0.28.1)(happy-dom@21.0.4)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3)):
     optionalDependencies:
       '@oxlint/binding-android-arm-eabi': 1.78.0
       '@oxlint/binding-android-arm64': 1.78.0
@@ -26237,7 +26279,7 @@ snapshots:
       '@oxlint/binding-win32-ia32-msvc': 1.78.0
       '@oxlint/binding-win32-x64-msvc': 1.78.0
       oxlint-tsgolint: 7.0.2005
-      vite-plus: 0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(@voidzero-dev/vite-plus-core@0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3)(yaml@2.9.1))(esbuild@0.28.1)(happy-dom@21.0.4)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3)(yaml@2.9.1)
+      vite-plus: 0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(@voidzero-dev/vite-plus-core@0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3))(esbuild@0.28.1)(happy-dom@21.0.4)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3)
 
   oxlint@1.78.0(oxlint-tsgolint@7.0.2005)(vite-plus@0.1.24(@types/node@25.9.2)(@voidzero-dev/vite-plus-core@0.1.24(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3)(yaml@2.9.1))(esbuild@0.28.1)(happy-dom@21.0.4)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3)(yaml@2.9.1)):
     optionalDependencies:
@@ -27113,6 +27155,7 @@ snapshots:
       ajv-keywords: 5.1.0(ajv@8.20.0)
     optionalDependencies:
       webpack: 5.112.2(@swc/core@1.16.22(@swc/helpers@0.5.24))(clean-css@5.3.3)(cssnano@9.9.0(postcss@8.5.32))(esbuild@0.28.1)(html-minifier-terser@7.2.0)(lightningcss@1.33.0)(postcss@8.5.32)(sharp@0.35.5(@types/node@25.9.2))
+    optional: true
 
   schema-utils@4.8.3(webpack@5.112.2(@swc/core@1.16.22)(clean-css@5.3.3)(cssnano@9.9.0(postcss@8.5.26))(esbuild@0.28.1)(html-minifier-terser@7.2.0)(lightningcss@1.33.0)(postcss@8.5.26)(sharp@0.35.5(@types/node@25.9.2))):
     dependencies:
@@ -27767,7 +27810,7 @@ snapshots:
       - vite
       - webpack
 
-  unimport@6.5.0(@voidzero-dev/vite-plus-core@0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3)(yaml@2.9.1))(esbuild@0.28.1):
+  unimport@6.5.0(@voidzero-dev/vite-plus-core@0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3))(esbuild@0.28.1):
     dependencies:
       acorn: 8.19.0
       escape-string-regexp: 5.0.0
@@ -27781,7 +27824,7 @@ snapshots:
       scule: 1.3.0
       strip-literal: 4.0.0
       tinyglobby: 0.2.17
-      unplugin: 3.7.0(@rspack/core@2.3.1)(@voidzero-dev/vite-plus-core@0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3)(yaml@2.9.1))(esbuild@0.28.1)(rolldown@1.3.0)(rollup@4.68.0)(webpack@5.112.2(@swc/core@1.16.22)(clean-css@5.3.3)(cssnano@9.9.0(postcss@8.5.26))(esbuild@0.28.1)(html-minifier-terser@7.2.0)(lightningcss@1.33.0)(postcss@8.5.26)(sharp@0.35.5(@types/node@25.9.2)))
+      unplugin: 3.7.0(@rspack/core@2.3.1)(@voidzero-dev/vite-plus-core@0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3))(esbuild@0.28.1)(rolldown@1.3.0)(rollup@4.68.0)(webpack@5.112.2(@swc/core@1.16.22)(clean-css@5.3.3)(cssnano@9.9.0(postcss@8.5.26))(esbuild@0.28.1)(html-minifier-terser@7.2.0)(lightningcss@1.33.0)(postcss@8.5.26)(sharp@0.35.5(@types/node@25.9.2)))
       unplugin-utils: 0.3.2
     transitivePeerDependencies:
       - '@farmfe/core'
@@ -27954,7 +27997,7 @@ snapshots:
       vite: '@voidzero-dev/vite-plus-core@0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3)(yaml@2.9.1)'
       webpack: 5.112.2(@swc/core@1.16.22(@swc/helpers@0.5.24))(clean-css@5.3.3)(cssnano@9.9.0(postcss@8.5.32))(esbuild@0.28.1)(html-minifier-terser@7.2.0)(lightningcss@1.33.0)(postcss@8.5.32)(sharp@0.35.5(@types/node@25.9.2))
 
-  unplugin@3.7.0(@rspack/core@2.3.1)(@voidzero-dev/vite-plus-core@0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3)(yaml@2.9.1))(esbuild@0.28.1)(rolldown@1.3.0)(rollup@4.68.0)(webpack@5.112.2(@swc/core@1.16.22)(clean-css@5.3.3)(cssnano@9.9.0(postcss@8.5.26))(esbuild@0.28.1)(html-minifier-terser@7.2.0)(lightningcss@1.33.0)(postcss@8.5.26)(sharp@0.35.5(@types/node@25.9.2))):
+  unplugin@3.7.0(@rspack/core@2.3.1)(@voidzero-dev/vite-plus-core@0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3))(esbuild@0.28.1)(rolldown@1.3.0)(rollup@4.68.0)(webpack@5.112.2(@swc/core@1.16.22)(clean-css@5.3.3)(cssnano@9.9.0(postcss@8.5.26))(esbuild@0.28.1)(html-minifier-terser@7.2.0)(lightningcss@1.33.0)(postcss@8.5.26)(sharp@0.35.5(@types/node@25.9.2))):
     dependencies:
       '@jridgewell/remapping': 2.3.5
       '@rolldown/pluginutils': 1.0.1
@@ -28245,14 +28288,14 @@ snapshots:
       vite: '@voidzero-dev/vite-plus-core@1.5.0(@types/node@25.9.2)(@volar/typescript@2.4.31(typescript@6.0.3))(@vue/language-core@3.3.14)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.108.1)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3))'
       vue: 3.5.45(typescript@6.0.3)
 
-  vite-plus@0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(@voidzero-dev/vite-plus-core@0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3)(yaml@2.9.1))(esbuild@0.28.1)(happy-dom@21.0.4)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3)(yaml@2.9.1):
+  vite-plus@0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(@voidzero-dev/vite-plus-core@0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3))(esbuild@0.28.1)(happy-dom@21.0.4)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3):
     dependencies:
       '@oxc-project/types': 0.133.0
       '@oxlint/plugins': 1.61.0
       '@voidzero-dev/vite-plus-core': 0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3)(yaml@2.9.1)
-      '@voidzero-dev/vite-plus-test': 0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(@voidzero-dev/vite-plus-core@0.1.24(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3)(yaml@2.9.1))(esbuild@0.28.1)(happy-dom@21.0.4)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3)(yaml@2.9.1)
-      oxfmt: 0.52.0(vite-plus@0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(@voidzero-dev/vite-plus-core@0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3)(yaml@2.9.1))(esbuild@0.28.1)(happy-dom@21.0.4)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3)(yaml@2.9.1))
-      oxlint: 1.67.0(oxlint-tsgolint@0.23.0)(vite-plus@0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(@voidzero-dev/vite-plus-core@0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3)(yaml@2.9.1))(esbuild@0.28.1)(happy-dom@21.0.4)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3)(yaml@2.9.1))
+      '@voidzero-dev/vite-plus-test': 0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(@voidzero-dev/vite-plus-core@0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3))(esbuild@0.28.1)(happy-dom@21.0.4)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3)
+      oxfmt: 0.52.0(vite-plus@0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(@voidzero-dev/vite-plus-core@0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3))(esbuild@0.28.1)(happy-dom@21.0.4)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3))
+      oxlint: 1.67.0(oxlint-tsgolint@0.23.0)(vite-plus@0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(@voidzero-dev/vite-plus-core@0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3))(esbuild@0.28.1)(happy-dom@21.0.4)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3))
       oxlint-tsgolint: 0.23.0
     optionalDependencies:
       '@voidzero-dev/vite-plus-darwin-arm64': 0.1.24
@@ -29074,6 +29117,7 @@ snapshots:
       - sharp
       - svgo
       - uglify-js
+    optional: true
 
   webpack@5.112.2(@swc/core@1.16.22)(clean-css@5.3.3)(cssnano@9.9.0(postcss@8.5.26))(esbuild@0.28.1)(html-minifier-terser@7.2.0)(lightningcss@1.33.0)(postcss@8.5.26)(sharp@0.35.5(@types/node@25.9.2)):
     dependencies:

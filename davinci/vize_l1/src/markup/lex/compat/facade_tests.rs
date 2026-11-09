@@ -43,20 +43,7 @@ impl Callbacks for Probe<'_> {
         on_cdata(start: usize, end: usize);
         on_processing_instruction(start: usize, end: usize);
         on_end();
-    }
-
-    fn on_error(&mut self, code: ErrorCode, index: usize) {
-        // These diagnostics were added after the historical callback capture.
-        // Keep the frozen pre-extension stream stable while dedicated lexer and
-        // compiler tests cover the new entity diagnostics end to end.
-        if matches!(
-            code,
-            ErrorCode::MissingSemicolonAfterCharacterReference
-                | ErrorCode::UnknownNamedCharacterReference
-        ) {
-            return;
-        }
-        self.trace.push_str(&cstr!("on_error:{:?};", (code, index)));
+        on_error(code: ErrorCode, index: usize);
     }
 
     fn on_open_tag_name(&mut self, start: usize, end: usize) {

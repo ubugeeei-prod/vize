@@ -142,6 +142,22 @@ export function retainEnabledFindings(results, rules) {
 }
 
 /**
+ * Intersect a reviewed rule-map selection with the frozen reference provider.
+ *
+ * The rule map may advance ahead of the historical provider used for real-project
+ * comparisons. Keep that compatibility decision at the report boundary so
+ * `runBaseline` still asks ESLint to validate every rule supplied by direct
+ * callers instead of silently accepting misspelled or invalid configuration.
+ */
+export function selectAvailableRules(runtime, rules) {
+  return Object.fromEntries(
+    Object.entries(rules).filter(([name]) =>
+      Object.hasOwn(runtime.plugin.rules, name.replace(/^vue\//u, "")),
+    ),
+  );
+}
+
+/**
  * Lint `files` (fixture-relative) with the baseline and return ESLint's own
  * result objects, which `collectBaselineFindings` normalizes.
  *
@@ -151,20 +167,15 @@ export function retainEnabledFindings(results, rules) {
  * corpus mismatch.
  */
 export async function runBaseline(runtime, cwd, files, rules) {
-  const availableRules = Object.fromEntries(
-    Object.entries(rules).filter(([name]) =>
-      Object.hasOwn(runtime.plugin.rules, name.replace(/^vue\//u, "")),
-    ),
-  );
   const eslint = new runtime.ESLint({
     cwd,
     passOnNoPatterns: files.length === 0,
     overrideConfigFile: true,
-    overrideConfig: baselineConfig(runtime, availableRules),
+    overrideConfig: baselineConfig(runtime, rules),
     errorOnUnmatchedPattern: false,
   });
   if (files.length === 0) {
     await eslint.calculateConfigForFile("__vize_empty_vue_config__.vue");
   }
-  return retainEnabledFindings(await eslint.lintFiles(files), availableRules);
+  return retainEnabledFindings(await eslint.lintFiles(files), rules);
 }

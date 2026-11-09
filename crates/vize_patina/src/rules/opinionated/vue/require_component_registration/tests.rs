@@ -73,10 +73,9 @@ import * as Form from './form-components'
     let result = linter.lint_sfc(sfc, "Registration.vue");
 
     assert_eq!(result.warning_count, 1, "{:?}", result.diagnostics);
-    assert!(
-        result.diagnostics[0]
-            .message
-            .contains("not explicitly imported")
+    assert_eq!(
+        result.diagnostics[0].message,
+        "Component is used but not explicitly imported"
     );
 }
 
@@ -293,10 +292,9 @@ import Child from './Child.vue'
         result.diagnostics[0].rule_name,
         "vue/require-component-registration"
     );
-    assert!(
-        result.diagnostics[0]
-            .message
-            .contains("Component is used but not explicitly imported")
+    assert_eq!(
+        result.diagnostics[0].message,
+        "Component is used but not explicitly imported"
     );
 }
 

@@ -4,6 +4,7 @@ use crate::diagnostic::LintDiagnostic;
 use crate::markup::L2Template;
 use vize_atelier_sfc::{SfcError, SfcStyleBlock};
 use vize_l0::{Allocator, ErrorCode, FxHashSet, ToCompactString};
+use vize_l1::markup::entity::{EntityContext, decode_one};
 use vize_l1_to_l2::lower_style_block;
 use vize_l2::expr::{ExprRef, OpaqueReason};
 use vize_l2::op::{BindingOp, Op};
@@ -33,7 +34,113 @@ fn sfc_parse_span(parse_error: &SfcError, source_len: usize) -> (u32, u32) {
     (start, end)
 }
 
+fn append_entity_diagnostics(
+    diagnostics: &mut Vec<LintDiagnostic>,
+    error_count: &mut usize,
+    source: &str,
+    template: &L2Template<'_>,
+) {
+    let mut expression_spans = Vec::new();
+    template.for_each_expression_span(|span| expression_spans.push(span));
+    expression_spans.sort_unstable_by_key(|span| (span.start, span.end));
+
+    let bytes = source.as_bytes();
+    let mut index = 0usize;
+    let mut in_tag = false;
+    let mut quote = None;
+    while index < bytes.len() {
+        if !in_tag && bytes.get(index..index.saturating_add(4)) == Some(b"<!--") {
+            index = bytes
+                .get(index + 4..)
+                .and_then(|tail| tail.windows(3).position(|window| window == b"-->"))
+                .map_or(bytes.len(), |end| index + 4 + end + 3);
+            continue;
+        }
+        let Some(byte) = bytes.get(index).copied() else {
+            break;
+        };
+        match (in_tag, quote, byte) {
+            (false, _, b'<') => in_tag = true,
+            (true, None, b'>') => in_tag = false,
+            (true, None, byte @ (b'\'' | b'"')) => quote = Some(byte),
+            (true, Some(expected), byte) if byte == expected => quote = None,
+            _ => {}
+        }
+        if byte != b'&'
+            || expression_spans
+                .iter()
+                .any(|span| span.start as usize <= index && index < span.end as usize)
+        {
+            index += 1;
+            continue;
+        }
+
+        let context = if in_tag {
+            EntityContext::Attribute
+        } else {
+            EntityContext::Text
+        };
+        let Some(candidate) = bytes.get(index..) else {
+            break;
+        };
+        if let Some((_, consumed)) = decode_one(candidate, context) {
+            if candidate
+                .get(..consumed)
+                .is_some_and(|reference| !reference.ends_with(b";"))
+            {
+                *error_count += 1;
+                diagnostics.push(LintDiagnostic::error(
+                    TEMPLATE_PARSE_RULE,
+                    ErrorCode::MissingSemicolonAfterCharacterReference.message(),
+                    index as u32,
+                    (index + consumed) as u32,
+                ));
+            }
+            index += consumed;
+            continue;
+        }
+
+        let name_len = bytes
+            .get(index + 1..)
+            .unwrap_or_default()
+            .iter()
+            .take_while(|byte| byte.is_ascii_alphanumeric())
+            .count();
+        if name_len > 0 && bytes.get(index + name_len + 1) == Some(&b';') {
+            let end = index + name_len + 2;
+            *error_count += 1;
+            diagnostics.push(LintDiagnostic::error(
+                TEMPLATE_PARSE_RULE,
+                ErrorCode::UnknownNamedCharacterReference.message(),
+                index as u32,
+                end as u32,
+            ));
+            index = end;
+            continue;
+        }
+        index += 1;
+    }
+}
+
+fn compatibility_invalid_expression_spans(template: &L2Template<'_>) -> Vec<vize_l0::Span> {
+    let mut seen = FxHashSet::default();
+    let mut rejected = Vec::new();
+    template.for_each_invalid_expression(|span, reason| {
+        if reason == OpaqueReason::ParseRejected
+            && !template.is_vue_binding_pattern_span(span)
+            && seen.insert((span.start, span.end))
+        {
+            rejected.push(span);
+        }
+    });
+    rejected
+}
+
 impl Linter {
+    pub(super) fn compatibility_template_parse_enabled(&self) -> bool {
+        self.is_rule_enabled(TEMPLATE_PARSE_RULE)
+    }
+
     pub(crate) fn l1_template_parse_lint_result(
         filename: &str,
         source: &str,
@@ -66,19 +173,6 @@ impl Linter {
             diagnostics.push(diagnostic);
         }
 
-        let mut invalid_expressions = FxHashSet::default();
-        template.for_each_invalid_expression(|span| {
-            if invalid_expressions.insert((span.start, span.end)) {
-                error_count += 1;
-                diagnostics.push(LintDiagnostic::error(
-                    TEMPLATE_PARSE_RULE,
-                    ErrorCode::InvalidExpression.message(),
-                    span.start,
-                    span.end,
-                ));
-            }
-        });
-
         LintResult {
             filename: filename.to_compact_string(),
             diagnostics,
@@ -88,23 +182,51 @@ impl Linter {
     }
 
     pub(crate) fn has_fatal_l1_template_parse_errors(template: &L2Template<'_>) -> bool {
-        if template
+        template
             .surface_errors()
             .iter()
             .any(|error| !error.has_documented_recovery())
-        {
-            return true;
+    }
+
+    pub(crate) fn has_fatal_template_parse_errors(&self, template: &L2Template<'_>) -> bool {
+        Self::has_fatal_l1_template_parse_errors(template)
+    }
+
+    pub(crate) fn append_compatibility_template_parse_diagnostics(
+        &self,
+        result: &mut LintResult,
+        source: &str,
+        template: &L2Template<'_>,
+    ) {
+        if !self.compatibility_template_parse_enabled() {
+            return;
         }
-        let mut invalid = false;
-        template.for_each_invalid_expression(|_| invalid = true);
-        invalid
+        append_entity_diagnostics(
+            &mut result.diagnostics,
+            &mut result.error_count,
+            source,
+            template,
+        );
+        for span in compatibility_invalid_expression_spans(template) {
+            result.error_count += 1;
+            result.diagnostics.push(LintDiagnostic::error(
+                TEMPLATE_PARSE_RULE,
+                ErrorCode::InvalidExpression.message(),
+                span.start,
+                span.end,
+            ));
+        }
     }
 
     pub(crate) fn append_style_parse_diagnostics(
+        &self,
         result: &mut LintResult,
         allocator: &Allocator,
         styles: &[SfcStyleBlock<'_>],
     ) {
+        if !self.compatibility_template_parse_enabled() {
+            return;
+        }
         let mut seen: FxHashSet<(u32, u32)> = result
             .diagnostics
             .iter()
@@ -214,7 +336,9 @@ mod tests {
     fn l1(source: &str) -> Vec<Observed> {
         let allocator = Allocator::new();
         let parsed = crate::markup::L2Template::lower(&allocator, source);
-        let result = Linter::l1_template_parse_lint_result("diagnostics.vue", source, &parsed);
+        let linter = Linter::new().with_enabled_rules(Some(vec![TEMPLATE_PARSE_RULE.into()]));
+        let mut result = Linter::l1_template_parse_lint_result("diagnostics.vue", source, &parsed);
+        linter.append_compatibility_template_parse_diagnostics(&mut result, source, &parsed);
         result
             .diagnostics
             .into_iter()
@@ -336,10 +460,19 @@ mod tests {
     }
 
     #[test]
+    fn ignores_character_reference_lookalikes_in_expressions_and_comments() {
+        let source = r#"<div :title="'&unknown;'">{{ '&amp' }}</div><!-- &unknown; -->"#;
+
+        assert_eq!(l1(source), Vec::<Observed>::new());
+    }
+
+    #[test]
     fn reports_invalid_style_v_bind_expression() {
         let source = r#"<template><div /></template>
 <style>.box { color: v-bind(theme +); }</style>"#;
-        let result = Linter::default().lint_sfc(source, "StyleBind.vue");
+        let result = Linter::default()
+            .with_enabled_rules(Some(vec![TEMPLATE_PARSE_RULE.into()]))
+            .lint_sfc(source, "StyleBind.vue");
         let parser = result
             .diagnostics
             .iter()
@@ -350,6 +483,32 @@ mod tests {
         assert_eq!(
             source.get(parser[0].start as usize..parser[0].end as usize),
             Some("theme +")
+        );
+    }
+
+    #[test]
+    fn configured_incremental_rules_keep_parser_diagnostics_in_the_baseline() {
+        let source = r#"<template><p :title="a +">{{ a b }}</p></template>"#;
+        let configured = Linter::with_preset(crate::LintPreset::Incremental)
+            .with_additional_rules(vec!["html/no-duplicate-class".into()])
+            .lint_sfc(source, "Configured.vue");
+        assert_eq!(
+            configured
+                .diagnostics
+                .iter()
+                .filter(|diagnostic| diagnostic.rule_name == TEMPLATE_PARSE_RULE)
+                .count(),
+            2
+        );
+
+        let selected_only = Linter::new()
+            .with_enabled_rules(Some(vec!["html/no-duplicate-class".into()]))
+            .lint_sfc(source, "Selected.vue");
+        assert!(
+            selected_only
+                .diagnostics
+                .iter()
+                .all(|diagnostic| diagnostic.rule_name != TEMPLATE_PARSE_RULE)
         );
     }
 }
