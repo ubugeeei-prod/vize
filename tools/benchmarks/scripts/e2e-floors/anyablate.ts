@@ -12,7 +12,7 @@ function statementEnd(lines: string[], start: number): number {
   }
   return start;
 }
-const spaces = (s: string) => s.replace(/[^\n]/g, (c) => " ".repeat(Buffer.byteLength(c)));
+const spaces = (s: string) => s.replace(/[^\n]/gu, (c) => " ".repeat(Buffer.byteLength(c)));
 // Index just after `type NAME<...>` (balanced generics) or `const NAME`.
 function afterHead(text: string, re: RegExp): number {
   const m = re.exec(text)!; let i = m.index + m[0].length;
