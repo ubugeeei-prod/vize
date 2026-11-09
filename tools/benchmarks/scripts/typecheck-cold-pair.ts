@@ -377,6 +377,13 @@ async function traceOnce(
   return attribution.finish();
 }
 
+function writeReport(out: string, label: string, cells: Cell[], traces: string[]): string {
+  const report = markdown(label, cells, windows) + traces.join("\n");
+  writeFileSync(join(out, `cold-pair-${label}.json`), JSON.stringify(cells, null, 2));
+  writeFileSync(join(out, `cold-pair-${label}.md`), report);
+  return report;
+}
+
 async function main(): Promise<void> {
   const { values } = parseArgs({
     options: {
@@ -453,11 +460,10 @@ async function main(): Promise<void> {
       );
     }
     rmSync(project.dir, { recursive: true, force: true });
+    // Publish after every project, so a cell that times out keeps the rest.
+    writeReport(out, values.label, cells, traces);
   }
-  const report = markdown(values.label, cells, windows) + traces.join("\n");
-  writeFileSync(join(out, `cold-pair-${values.label}.json`), JSON.stringify(cells, null, 2));
-  writeFileSync(join(out, `cold-pair-${values.label}.md`), report);
-  process.stdout.write(report);
+  process.stdout.write(writeReport(out, values.label, cells, traces));
   if (cells.some((cell) => cell.failure)) process.exitCode = 1;
 }
 

@@ -188,7 +188,7 @@ jobs:
     if: contains(format(',{0},', inputs.platforms), ',wsl2,')
     # WSL2 needs nested virtualization; Blacksmith Windows runners lack it.
     runs-on: windows-2025
-    timeout-minutes: 180
+    timeout-minutes: 300
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with: { persist-credentials: false }
