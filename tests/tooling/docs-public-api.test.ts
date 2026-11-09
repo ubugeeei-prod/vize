@@ -50,6 +50,17 @@ const packages = [
     entrypoints: [new URL("mcp-musea/src/index.ts", npmRoot)],
   },
   {
+    name: "@vizejs/builder-shared",
+    sourceRoot: npmRoot,
+    minimumDeclarations: 15,
+    entrypoints: [
+      new URL("builder/shared/mapped-module.ts", npmRoot),
+      new URL("builder/shared/module-output.ts", npmRoot),
+      new URL("builder/shared/native-shape.ts", npmRoot),
+      new URL("builder/shared/hot-reload.ts", npmRoot),
+    ],
+  },
+  {
     name: "@vizejs/unplugin",
     sourceRoot: npmRoot,
     minimumDeclarations: 20,

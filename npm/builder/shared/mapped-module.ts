@@ -2,12 +2,19 @@ import sources from "webpack-sources";
 import { diffChars } from "diff";
 import { findSfcSrcBlock, type ParseSfc } from "./sfc-src.ts";
 
+/** JSON-serializable source map fields retained by builder adapters. */
 export interface SourceMapV3 {
+  /** Source map schema version; only version 3 is accepted. */
   version: number;
+  /** Optional generated filename. */
   file?: string;
+  /** Original source identifiers referenced by the mappings. */
   sources: string[];
+  /** Original source text aligned with `sources`. */
   sourcesContent?: (string | null)[];
+  /** Symbol names referenced by the mappings. */
   names: string[];
+  /** Base64 VLQ mapping segments. */
   mappings: string;
 }
 
