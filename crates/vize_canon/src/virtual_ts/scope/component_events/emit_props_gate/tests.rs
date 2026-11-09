@@ -1,7 +1,7 @@
 //! Where the props-independent emit-props gate applies, and where the direct
 //! call stays. `tests/tooling/canon-emit-props-gate-equivalence.test.ts`
 //! proves the two calls have the same type wherever the gate applies.
-use super::{GATE_ALIASES, is_single_line};
+use super::{GATE_ALIASES, guard_reads, is_single_line};
 use crate::virtual_ts::generic_parameters::GenericParameters;
 use crate::virtual_ts::{
     VirtualTsGenerationOptions, VirtualTsOptions, generate_virtual_ts_with_offsets_and_checks,
@@ -74,22 +74,77 @@ fn a_computed_is_listener_takes_the_gated_call_in_both_modes() {
 }
 
 #[test]
+fn static_and_named_targets_take_the_gated_call() {
+    for template in [
+        r#"<Child :value="value" @save="onSave" />"#,
+        r#"<component :is="Child" :value="value" @save="onSave"></component>"#,
+    ] {
+        let code = generate(template, VirtualTsGenerationOptions::default());
+        assert_eq!(code.matches(GATED).count(), 1, "{template}\n{code}");
+        assert_eq!(code.matches(DIRECT).count(), 0, "{template}\n{code}");
+        assert_eq!(code.matches(ALIASES).count(), 1, "{template}\n{code}");
+    }
+}
+
+#[test]
+fn a_guarded_use_calls_the_factory_before_its_guard() {
+    let code = generate(
+        r#"<Child v-if="pick" :value="value" @save="onSave" />"#,
+        VirtualTsGenerationOptions::default(),
+    );
+    let factory =
+        "const __vize_emit_factory_0 = (undefined as unknown as __vize_emit_resolver<__Child_";
+    let call = "if ((pick)) return (undefined as unknown as __vize_emit_input<__Child_";
+    assert_eq!(code.matches(factory).count(), 1, "{code}");
+    assert_eq!(code.matches(call).count(), 1, "{code}");
+    assert_eq!(code.matches(DIRECT).count(), 0, "{code}");
+    let factory_at = code.find(factory).unwrap();
+    let iife_at = code.find("const __vize_emit_props_0 = (() => {").unwrap();
+    assert!(factory_at < iife_at, "{code}");
+}
+
+#[test]
+fn a_guard_that_names_the_component_keeps_the_direct_call() {
+    let code = generate(
+        r#"<Child v-if="Child && pick" :value="value" @save="onSave" />"#,
+        VirtualTsGenerationOptions::default(),
+    );
+    assert_eq!(
+        code.matches("const __vize_emit_factory_").count(),
+        0,
+        "{code}"
+    );
+    assert_eq!(
+        code.matches("_0_emit_resolver)(Child)(").count(),
+        1,
+        "{code}"
+    );
+}
+
+#[test]
+fn guard_reads_whole_identifiers() {
+    for (guard, component, expected) in [
+        ("Child", "Child", true),
+        ("!Child.props", "Child", true),
+        ("pick && Child", "Child.Item", true),
+        ("ChildCount > 0", "Child", false),
+        ("myChild", "Child", false),
+        ("pick", "Child", false),
+        ("pick", "", false),
+    ] {
+        assert_eq!(
+            guard_reads(guard, component),
+            expected,
+            "{guard} / {component}"
+        );
+    }
+}
+
+#[test]
 fn other_usages_keep_the_direct_call() {
     let generic = GenericParameters::parse("T");
     let multi_line = "<component :is=\"pick ? Child : Other\" :value=\"[\n  value,\n]\" @save=\"onSave\"></component>";
     for (name, template, options, aliases) in [
-        (
-            "static tag",
-            r#"<Child :value="value" @save="onSave" />"#,
-            VirtualTsGenerationOptions::default(),
-            0,
-        ),
-        (
-            "named :is",
-            r#"<component :is="Child" :value="value" @save="onSave"></component>"#,
-            VirtualTsGenerationOptions::default(),
-            0,
-        ),
         (
             "generic template",
             COMPUTED,

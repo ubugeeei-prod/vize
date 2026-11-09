@@ -361,39 +361,25 @@ fn repeated_emit_resolver_is_emitted_once() {
     let mut outputs = Vec::new();
     for hoist in [false, true] {
         let output = generated(script, template, hoist);
-        let factory = if hoist {
-            "import(\"vize:virtual-ts\").$EmitPropsFactory<typeof KeyPad>"
-        } else {
-            "$EmitPropsFactory<typeof KeyPad>"
-        };
+        // Gated uses share the module's one resolver alias and declare none.
         assert_eq!(
-            output.code.matches(factory).count(),
+            output.code.matches("type __vize_emit_resolver<").count(),
             1,
-            "one component emits the emit-resolver instance alias once; hoist={hoist}: {}",
+            "one module resolver; hoist={hoist}: {}",
             output.code
         );
         assert_eq!(
-            output
-                .code
-                .matches("type __KeyPad_0_emit_resolver = ")
-                .count(),
-            1,
-            "the first visible resolver is declared once; hoist={hoist}: {}",
+            output.code.matches("_emit_resolver = ").count(),
+            0,
+            "no per-use resolver alias; hoist={hoist}: {}",
             output.code
         );
-        for idx in 1..4 {
-            let alias = cstr!("type __KeyPad_{idx}_emit_resolver = __KeyPad_0_emit_resolver;");
-            assert_eq!(
-                output
-                    .code
-                    .lines()
-                    .filter(|line| line.trim() == alias.as_str())
-                    .count(),
-                1,
-                "later use {idx} aliases the first visible resolver; hoist={hoist}: {}",
-                output.code
-            );
-        }
+        assert_eq!(
+            output.code.matches("const __vize_emit_factory_").count(),
+            4,
+            "each use calls the module resolver; hoist={hoist}: {}",
+            output.code
+        );
         assert_eq!(
             output.code.matches("const __vize_emit_props_").count(),
             4,
@@ -462,7 +448,7 @@ fn label_name_ranges(template: &str) -> Vec<std::ops::Range<usize>> {
     ranges
 }
 
-fn generated(
+pub(super) fn generated(
     script: &str,
     template: &str,
     hoist: bool,
