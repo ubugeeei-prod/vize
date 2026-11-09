@@ -202,9 +202,10 @@ pub(super) fn emit_component_constructors<'a>(
         } else {
             String::from(base.as_str())
         };
+        let no_infer = crate::virtual_ts::generated_names::lib("NoInfer");
         append!(
             *ts,
-            "type $ComponentConstructor = new <$AuthoredProps = unknown, $JsxProps = unknown>(props?: $AuthoredProps & $ComponentInput<{props_ref}, {emit_props_ref}, $AuthoredProps>, ...args: any[]) => ($IsAny<$AuthoredProps> extends true ? true : $IsUnknown<$AuthoredProps> extends true ? $UsePublicInstance<$JsxProps> : false) extends true ? $ComponentInstance : NoInfer<$ComponentInstanceFor<$ComponentInstance, {own}, {constructor_base}, {props_ref}, {emit_props_ref}, $AuthoredProps, $JsxProps>>;\n"
+            "type $ComponentConstructor = new <$AuthoredProps = unknown, $JsxProps = unknown>(props?: $AuthoredProps & $ComponentInput<{props_ref}, {emit_props_ref}, $AuthoredProps>, ...args: any[]) => ($IsAny<$AuthoredProps> extends true ? true : $IsUnknown<$AuthoredProps> extends true ? $UsePublicInstance<$JsxProps> : false) extends true ? $ComponentInstance : {no_infer}<$ComponentInstanceFor<$ComponentInstance, {own}, {constructor_base}, {props_ref}, {emit_props_ref}, $AuthoredProps, $JsxProps>>;\n"
         );
     }
 

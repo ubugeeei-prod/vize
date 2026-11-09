@@ -5,7 +5,7 @@ import { readFileSync } from "node:fs";
 
 export const constructorNoInferReturnRecord =
   "tests/_fixtures/tooling/constructor-noinfer-return.json";
-const recordSha256 = "22b856cdbe8804b9584ef85ec020d698a60d424ec61de8f2531c5dc2159a6102";
+const recordSha256 = "99d6cd2156b715533872cff628b7e8ffde2bb78c1cf0c1b534d591f6b9042c1c";
 
 type Identity = { bytes: number; sha256: string };
 interface Transition {
