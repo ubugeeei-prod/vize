@@ -71,9 +71,10 @@ project gets one case per product (`<product>/real/<project-id>`, with
 targets: compiler `dom` and `ssr`, linter `lint`, formatter `fmt`, type checker
 `batch`, LSP `stdio`. The legacy lane is the shard's source-built run, `completed` only
 when it ran and its raw output is in the shard report; a missing shard still
-yields every planned row as `missing-evidence`. The scheduled
-`real-project-differential` job uploads the bundle and appends the tables to
-the run summary. No product has a native-only real-project route yet. The
+yields every planned row as `missing-evidence`. The Real Project Matrix
+differential workflow runs after each completed full matrix run on main,
+uploads the bundle as `real-project-differential` and appends the tables to
+its run summary. No product has a native-only real-project route yet. The
 compiler `dom` native lane reads the canonical DOM corpus, and both compiler
 `ssr` lanes read the canonical SSR corpus (every template and production SFC
 sweep). Their template stages run on the levels, but the SFC script still

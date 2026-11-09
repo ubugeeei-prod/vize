@@ -413,7 +413,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
   const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
   const { outputs, markdown } = writeRealProjectResults({
     root,
-    sourceRevision: process.env.GITHUB_SHA ?? "",
+    sourceRevision: process.env.SOURCE_REVISION ?? "",
     shards: readShards(path.resolve(artifactsDir)),
     outDir: path.resolve(outDir),
     domCorpus: readDomCorpus(domCorpusDir && path.resolve(domCorpusDir)),
