@@ -266,6 +266,8 @@ Special thanks to:
   (compiler SSR and Vapor output, linter rules, Nuxt builds, the language server, the VS Code
   extension, the content mapper, and Musea) and for fixes to the VS Code extension, the install
   guide, and the development shell.
+- [FLPPPPPP](https://github.com/FLPPPPPP) for Windows `oxlint-vize` and type-aware `vize lint`
+  reports, and for precise gaps between Vize rules and eslint-plugin-vue.
 - Everyone who has mentioned, shared, tested, or amplified Vize across the community.
 
 Vize is a personal project by ubugeeei, licensed under the MIT License and maintained as a
