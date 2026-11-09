@@ -357,9 +357,9 @@ test("passive native LSP capture retains the complete original Matrix workflow",
     const normalizeRunBlock = (run: string) =>
       run
         .split("\n")
-        .map((line) => line.trim())
+        .map((line) => line.trimStart())
         .join("\n")
-        .trim();
+        .replace(/^\n+|\n+$/g, "");
     assert.equal(
       normalizeRunBlock(step.run.replace(nodeCommand, rustCommand)),
       normalizeRunBlock(oldStep.run),
