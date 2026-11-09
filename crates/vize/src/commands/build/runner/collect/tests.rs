@@ -131,7 +131,10 @@ fn collect_files_rejects_non_vue_files_before_collecting_roots() {
 
     assert_eq!(
         error.to_string(),
-        format!("Build input is not a .vue file: {}", readme.display())
+        format!(
+            "Build input is not a .vue or .tsrx file: {}",
+            readme.display()
+        )
     );
 }
 
@@ -211,4 +214,23 @@ fn unique_case_dir(name: &str) -> PathBuf {
             std::process::id(),
             case_id.to_compact_string()
         ))
+}
+
+#[test]
+fn collect_files_selects_sfcs_and_tsrx_modules_by_file_kind() {
+    let dir = tempfile::tempdir().unwrap();
+    for name in [
+        "App.vue",
+        "Counter.tsrx",
+        "main.ts",
+        "View.tsx",
+        "README.md",
+    ] {
+        std::fs::write(dir.path().join(name), "").unwrap();
+    }
+    let collected = collect_files(&[dir.path().display().to_string()]).unwrap();
+    assert_eq!(
+        collected.files,
+        vec![dir.path().join("App.vue"), dir.path().join("Counter.tsrx")]
+    );
 }

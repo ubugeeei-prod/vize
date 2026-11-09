@@ -135,7 +135,7 @@ fn build_rejects_existing_non_vue_literal_before_writing_other_inputs() {
     assert!(!output.status.success());
     assert_eq!(
         String::from_utf8_lossy(&output.stderr),
-        "Build input is not a .vue file: README.md\n"
+        "Build input is not a .vue or .tsrx file: README.md\n"
     );
     assert!(!root.join("dist").exists());
 

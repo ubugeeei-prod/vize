@@ -4331,6 +4331,7 @@ dependencies = [
  "vize_l1_to_l2",
  "vize_l2",
  "vize_l3",
+ "vize_l4",
  "vize_maestro",
  "vize_musea",
  "vize_oxc_parser",

@@ -23,7 +23,7 @@ pub(super) enum InputError<'a> {
     MissingLiteral {
         input: &'a str,
     },
-    NonVueFile {
+    NonSourceFile {
         input: &'a str,
     },
     InvalidGlob {
@@ -38,8 +38,11 @@ impl fmt::Display for InputError<'_> {
             Self::MissingLiteral { input } => {
                 write!(formatter, "Build input does not exist: {input}")
             }
-            Self::NonVueFile { input } => {
-                write!(formatter, "Build input is not a .vue file: {input}")
+            Self::NonSourceFile { input } => {
+                write!(
+                    formatter,
+                    "Build input is not a .vue or .tsrx file: {input}"
+                )
             }
             Self::InvalidGlob { input, error } => {
                 write!(formatter, "Invalid glob pattern {input}: {error}")
@@ -114,10 +117,10 @@ fn classify_input(input: &str) -> Result<BuildInput<'_>, InputError<'_>> {
     let path = Path::new(input);
     if let Ok(metadata) = path.metadata() {
         if metadata.is_file() {
-            return if is_vue_file(path) {
+            return if is_build_source(path) {
                 Ok(BuildInput::File(path))
             } else {
-                Err(InputError::NonVueFile { input })
+                Err(InputError::NonSourceFile { input })
             };
         }
         return if metadata.is_dir() {
@@ -156,7 +159,7 @@ fn collect_walked_files(root: &Path, pattern: Option<&BuildGlob>, files: &mut Ve
         let path = entry.path();
 
         if path.is_file()
-            && is_vue_file(path)
+            && is_build_source(path)
             && pattern.is_none_or(|pattern| pattern.matches(path))
         {
             files.push(path.to_path_buf());
@@ -172,9 +175,14 @@ fn contains_glob_metacharacter(input: &str) -> bool {
     input.contains(GLOB_METACHARACTERS)
 }
 
+/// The kinds `vize build` compiles: SFCs and TSRX modules.
 #[inline]
-fn is_vue_file(path: &Path) -> bool {
-    vize_l0::dialect::FileKind::of_path(path) == Some(vize_l0::dialect::FileKind::Sfc)
+fn is_build_source(path: &Path) -> bool {
+    use vize_l0::dialect::FileKind;
+    matches!(
+        FileKind::of_path(path),
+        Some(FileKind::Sfc | FileKind::Tsrx)
+    )
 }
 
 #[cfg(test)]

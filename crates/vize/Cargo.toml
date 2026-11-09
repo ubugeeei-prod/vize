@@ -52,6 +52,7 @@ vize_l1 = { workspace = true }
 vize_l1_to_l2 = { workspace = true, features = ["legacy-differential"] }
 vize_l2 = { workspace = true }
 vize_l3 = { workspace = true }
+vize_l4 = { workspace = true }
 vize_doctor = { workspace = true, features = ["application-analysis"] }
 vize_fresco = { workspace = true }
 vize_musea = { workspace = true }
