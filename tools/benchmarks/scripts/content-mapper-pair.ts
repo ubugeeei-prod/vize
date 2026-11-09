@@ -168,7 +168,9 @@ async function burstPipe(build: Build, project: string, stream: string): Promise
   let outputBytes = 0;
   let errors = 0;
   let carry: Buffer = Buffer.alloc(0);
-  child.stdout.on("data", (chunk: Buffer) => {
+  const stdout = child.stdout;
+  if (stdout === null) throw new Error("content mapper stdout is not piped");
+  stdout.on("data", (chunk: Buffer) => {
     hash.update(chunk);
     outputBytes += chunk.length;
     const window = Buffer.concat([carry, chunk]);
