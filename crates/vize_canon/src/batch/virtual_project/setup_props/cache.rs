@@ -9,6 +9,7 @@ use vize_atelier_sfc::script::TypeSourceSnapshot;
 use vize_carton::{CompactString, FxHashMap, FxHashSet};
 use vize_croquis::macros::PropDefinition;
 
+use super::super::passthrough::PassthroughProbes;
 use super::syntax::runtime_prop_shape_member_type;
 
 #[derive(Default)]
@@ -16,6 +17,8 @@ pub(crate) struct RuntimePropResolveCache {
     // One immutable dependency snapshot per register_paths batch or reachable
     // walk. Root text comes from the current descriptor; later scans start fresh.
     pub(super) type_sources: Arc<TypeSourceSnapshot>,
+    // The same batch's directory listings, shared across its roots.
+    passthrough_probes: Arc<PassthroughProbes>,
     props: Mutex<FxHashMap<CompactString, Vec<PropDefinition>>>,
     default_names: Mutex<FxHashMap<CompactString, FxHashSet<CompactString>>>,
 }
@@ -27,6 +30,7 @@ impl RuntimePropResolveCache {
     ) -> Self {
         Self {
             type_sources,
+            passthrough_probes: Arc::default(),
             props: Mutex::default(),
             default_names: Mutex::default(),
         }
@@ -37,9 +41,14 @@ impl RuntimePropResolveCache {
     pub(in crate::batch::virtual_project) fn with_shared_type_sources(&self) -> Self {
         Self {
             type_sources: self.type_sources.clone(),
+            passthrough_probes: self.passthrough_probes.clone(),
             props: Mutex::default(),
             default_names: Mutex::default(),
         }
+    }
+
+    pub(in crate::batch::virtual_project) fn passthrough_probes(&self) -> &PassthroughProbes {
+        &self.passthrough_probes
     }
 
     pub(super) fn props(
