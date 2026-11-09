@@ -24,6 +24,7 @@ import { median } from "../typecheck-corpus-pair-parse.ts";
 import { MAPPER_HOSTS, prepareMapperPackages, resolveMapperHosts, TYPECHECK_HOSTS_DIR } from "../typecheck-mapper-hosts.ts";
 import { generateScaleProject, writeProject } from "../scale-project-generator.ts";
 import { compactRecording } from "./compact-rec.ts";
+import { dropProducerIgnores, dropWhitespaceIgnores } from "./ignore-gaps.ts";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const repoRoot = resolve(here, "..", "..", "..", "..");
@@ -112,6 +113,10 @@ for (const corpus of corpora) {
   run("rec-anyab", cfg.anyabRecord, { REC_DIR: recs.anyab });
   const compacted = join(work, `rec-${corpus.id}-vize-compact`);
   notes.push(`${corpus.id}: ${compactRecording(recs.vize, compacted)}`);
+  const wsIgnores = join(work, `rec-${corpus.id}-vize-ws-ignores`);
+  notes.push(`${corpus.id} whitespace ignores: ${compactRecording(recs.vize, wsIgnores, dropWhitespaceIgnores)}`);
+  const noIgnores = join(work, `rec-${corpus.id}-vize-no-ignores`);
+  notes.push(`${corpus.id} producer ignores: ${compactRecording(recs.vize, noIgnores, dropProducerIgnores)}`);
   for (const [id, tsconfig] of [["vize", cfg.vizeTl], ["vue", cfg.vueTl]] as const) {
     const log = join(work, `tl-${corpus.id}-${id}.jsonl`);
     run(`tl-${id}`, tsconfig, { TL_LOG: log });
@@ -126,6 +131,8 @@ for (const corpus of corpora) {
     ["tsc", "stub (fixed cost)", () => run("stub", cfg.stub)],
     ["tsc", "vize replay (zero wait)", () => run("replay-vize", cfg.replay, { REC_DIR: recs.vize })],
     ["tsc", "vize replay compacted", () => run("replay-compact", cfg.replay, { REC_DIR: compacted })],
+    ["tsc", "vize replay without whitespace ignores", () => run("replay-ws", cfg.replay, { REC_DIR: wsIgnores })],
+    ["tsc", "vize replay without producer ignores (bound)", () => run("replay-noign", cfg.replay, { REC_DIR: noIgnores })],
     ["tsc", "vue replay (zero wait)", () => run("replay-vue", cfg.replay, { REC_DIR: recs.vue })],
     ["tsc", "vize expressions-only", () => run("anyab", cfg.anyab)],
     ["tsc", "vize expressions-only replay", () => run("replay-anyab", cfg.replay, { REC_DIR: recs.anyab })],
@@ -134,6 +141,8 @@ for (const corpus of corpora) {
     ["tsrs", "stub (fixed cost)", () => runTsrs("stub", cfg.stub)],
     ["tsrs", "vize replay (zero wait)", () => runTsrs("replay-vize", cfg.replay, { REC_DIR: recs.vize })],
     ["tsrs", "vize replay compacted", () => runTsrs("replay-compact", cfg.replay, { REC_DIR: compacted })],
+    ["tsrs", "vize replay without whitespace ignores", () => runTsrs("replay-ws", cfg.replay, { REC_DIR: wsIgnores })],
+    ["tsrs", "vize replay without producer ignores (bound)", () => runTsrs("replay-noign", cfg.replay, { REC_DIR: noIgnores })],
     ["tsrs", "vue replay (zero wait)", () => runTsrs("replay-vue", cfg.replay, { REC_DIR: recs.vue })],
     ["tsrs", "vize expressions-only replay", () => runTsrs("replay-anyab", cfg.replay, { REC_DIR: recs.anyab })],
   ];
