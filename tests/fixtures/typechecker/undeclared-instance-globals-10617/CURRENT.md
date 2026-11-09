@@ -1,5 +1,15 @@
 # Current instance-global packet authority
 
+The active expected population is `source-packets-current-e28630387b44.json`: all 80 whole transform results from [source Actions 42663572688](https://github.com/ubugeeei-prod/vize/actions/runs/42663572688/job/129325555943), synthetic merge producer `e28630387b44c6ef36c377793094d233c9d438dc` for PR head `faaa9d3bb43c3bcb6096d6b4a47cab4d361313f3`. The launch receipt binds the exact source CLI, and the artifact admits the reported beta, official nightly, and pinned source-built TypeScript host.
+
+The original strict comparison remains **unqualified**: 419 of 499 semantic, protocol, geometry, and whole-packet outcomes passed. All 80 whole packets changed, and only in their component constructor: it picks the public instance inline and keeps the bound instance behind `NoInfer` (#12523). Each constructor return changed by the same two exact replacements, every generated coordinate, mapping, directive and semantic link moved with them and nothing else changed. Every non-whole-packet outcome and all three real-host controls passed.
+
+`complete: true` records the complete observed successor population. It grants no public-package or performance acceptance and does not retroactively qualify the capture. `source-packets-current-e28630387b44-provenance.json` binds the producer, artifact digest, exact evidence members, previous population, failed qualification vector, and explicit credit limits.
+
+## Previous authority (historical)
+
+# Current instance-global packet authority
+
 The active expected population is `source-packets-current-d48ea4e08e0e.json`: all 80 whole transform results from [source Actions 42628370735](https://github.com/ubugeeei-prod/vize/actions/runs/42628370735/job/129198720061), synthetic merge producer `d48ea4e08e0ee0b2773d4ba3c696bc1c9235bce1` for PR head `11e4add58056f6dabc81a32ce94db94db1cdbce0`. The launch receipt binds the exact source CLI, and the artifact admits the reported beta, official nightly, and pinned source-built TypeScript host.
 
 The original strict comparison remains **unqualified**: 497 of 499 semantic, protocol, geometry, and whole-packet outcomes passed. Only the LF and CRLF/Unicode `css-module` whole packets changed: their only template global is a resolved CSS module, so the template context no longer declares `$GlobalContextIsAny`, `$GlobalContextProperty` and `__Global` (#12460). Each lost exactly those 293 bytes, every later generated coordinate moved by 293, and every diagnostic, mapping and opaque field is otherwise unchanged; the other 78 complete results remain byte-identical. Every non-whole-packet outcome and all three real-host controls passed.

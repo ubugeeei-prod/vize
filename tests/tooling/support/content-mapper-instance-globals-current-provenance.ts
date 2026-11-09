@@ -30,24 +30,70 @@ type CurrentPacketProvenance = {
   };
 };
 
+const WHOLE_PACKET_CASES = [
+  "original",
+  "valid",
+  "undeclared-only",
+  "repaired",
+  "repeated",
+  "optional",
+  "call",
+  "v-for-source",
+  "intentional-any",
+  "declared-unknown",
+  "plugin-valid",
+  "plugin-invalid",
+  "setup-shadow",
+  "loop-shadow",
+  "slot-shadow",
+  "css-module",
+  "own-props",
+  "options-own-method",
+  "expect-error-opening-child",
+  "ignore-opening-child",
+  "expect-owned-interpolation",
+  "ignore-owned-interpolation",
+  "expect-owned-attribute",
+  "ignore-owned-attribute",
+  "expect-owned-foreign-sibling",
+  "ignore-owned-foreign-sibling",
+  "shorthand-free",
+  "typeof-value-free",
+  "object-key",
+  "member-key",
+  "string-comment-role",
+  "template-literal-raw",
+  "template-literal-value",
+  "callback-shadow",
+  "callback-mixed",
+  "callback-free",
+  "computed-key-free",
+  "mixed-loop-scope",
+  "mixed-slot-scope",
+  "destructured-callback-shadow",
+];
+
 export function assertCurrentPacketProvenance(provenance: CurrentPacketProvenance): void {
   assert.deepEqual(provenance.artifact, {
     repository: "ubugeeei-prod/vize",
-    run: 42628370735,
-    job: 129198720061,
-    id: 13681080320,
-    name: "instance-globals-10617-11e4add58056f6dabc81a32ce94db94db1cdbce0-1",
-    digest: "sha256:ec4071b01f99551e15eed50ecbd46a5f7783563af188ffbe8fe3ced0a00b68b4",
-    bytes: 18672687,
+    run: 42663572688,
+    job: 129325555943,
+    id: 13695998759,
+    name: "instance-globals-10617-faaa9d3bb43c3bcb6096d6b4a47cab4d361313f3-1",
+    digest: "sha256:0a95624682cb3d35d3f6b7fab206bbe29c89f3b7990318a6449a9092b8c49cf4",
+    bytes: 18714937,
   });
   assert.deepEqual(provenance.capturedQualification, {
     totalOutcomes: 499,
-    passedOutcomes: 497,
-    gapCount: 2,
+    passedOutcomes: 419,
+    gapCount: 80,
     status: "unqualified",
     fullPacketQualification: false,
     hostMatrixQualification: false,
-    gapIds: ["whole-packet/lf/css-module", "whole-packet/crlf-unicode/css-module"],
+    // Every whole packet changed; no other outcome failed.
+    gapIds: ["lf", "crlf-unicode"].flatMap((variant) =>
+      WHOLE_PACKET_CASES.map((name) => `whole-packet/${variant}/${name}`),
+    ),
   });
   assert.deepEqual(provenance.review, {
     completePackets: 80,
@@ -57,6 +103,6 @@ export function assertCurrentPacketProvenance(provenance: CurrentPacketProvenanc
     publicPackageAcceptanceCredit: false,
     performanceCredit: false,
     reason:
-      "The template context no longer declares $GlobalContextIsAny, $GlobalContextProperty and __Global when every template global carries its own type, so the two CSS-module packets lost exactly those 293 bytes and every later generated coordinate moved by 293 while all 497 semantic, protocol, mapping-geometry, and real-host controls passed; this record retains the observed postimages without assigning acceptance credit to the stale-golden run.",
+      "Each component constructor picks the public instance inline and keeps the bound instance behind NoInfer, so every packet's constructor return changed by the same two exact replacements while every generated coordinate, mapping, directive and semantic link moved with the text and all 419 semantic, protocol, mapping-geometry, and real-host controls passed; this record retains the observed postimages without assigning acceptance credit to the stale-golden run.",
   });
 }
