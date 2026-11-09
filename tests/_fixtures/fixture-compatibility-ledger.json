@@ -10,32 +10,141 @@
     {
       "fixturePath": "tests/_fixtures/_git/airi",
       "memberships": ["ecosystem"],
-      "dialectCoverage": { "state": "unknown", "evidence": [] }
+      "dialectCoverage": {
+        "state": "partial",
+        "evidence": [
+          {
+            "kind": "pinned-package",
+            "dialects": ["vue3-sfc"],
+            "repository": "https://github.com/moeru-ai/airi",
+            "revision": "b6011381bc34a6b85ad669363513cb1a2eea6438",
+            "file": "docs/package.json",
+            "blobSha": "2a6e3c2d599506208e68ea3d3a0752f2ea6b9155",
+            "field": "dependencies.vue",
+            "value": "catalog:",
+            "catalog": {
+              "file": "pnpm-workspace.yaml",
+              "blobSha": "e0f03afd232a0ca0343f346e6c4e9f69216a1123",
+              "value": "^3.5.32"
+            }
+          }
+        ]
+      }
     },
     {
       "fixturePath": "tests/_fixtures/_git/alexandrie",
       "memberships": ["ecosystem"],
-      "dialectCoverage": { "state": "unknown", "evidence": [] }
+      "dialectCoverage": {
+        "state": "partial",
+        "evidence": [
+          {
+            "kind": "pinned-package",
+            "dialects": ["vue3-sfc"],
+            "repository": "https://github.com/Smaug6739/Alexandrie",
+            "revision": "4624adefe95c9ab19c85255c6ffff532c739a119",
+            "file": "frontend/package.json",
+            "blobSha": "034ba0bb122afac9d3454878313544503f62a834",
+            "field": "dependencies.vue",
+            "value": "^3.5.41"
+          }
+        ]
+      }
     },
     {
       "fixturePath": "tests/_fixtures/_git/ant-design-vue",
       "memberships": ["ecosystem", "app"],
-      "dialectCoverage": { "state": "unknown", "evidence": [] }
+      "dialectCoverage": {
+        "state": "partial",
+        "evidence": [
+          {
+            "kind": "pinned-package",
+            "dialects": ["jsx-babel"],
+            "repository": "https://github.com/vueComponent/ant-design-vue",
+            "revision": "7483836f0adac76516e527df893c3d84a7cd4005",
+            "file": "package.json",
+            "blobSha": "ddc7900569ac1de8c386dd534d97fc0457336199",
+            "field": "devDependencies.@vitejs/plugin-vue-jsx",
+            "value": "^2.0.0"
+          },
+          {
+            "kind": "pinned-package",
+            "dialects": ["vue3-sfc"],
+            "repository": "https://github.com/vueComponent/ant-design-vue",
+            "revision": "7483836f0adac76516e527df893c3d84a7cd4005",
+            "file": "package.json",
+            "blobSha": "ddc7900569ac1de8c386dd534d97fc0457336199",
+            "field": "devDependencies.vue",
+            "value": "^3.2.0"
+          }
+        ]
+      }
     },
     {
       "fixturePath": "tests/_fixtures/_git/antares",
       "memberships": ["ecosystem"],
-      "dialectCoverage": { "state": "unknown", "evidence": [] }
+      "dialectCoverage": {
+        "state": "partial",
+        "evidence": [
+          {
+            "kind": "pinned-package",
+            "dialects": ["vue3-sfc"],
+            "repository": "https://github.com/antares-sql/antares",
+            "revision": "954b455f612d170742c1a1065276132f2cc115ea",
+            "file": "package.json",
+            "blobSha": "6958d2201d902a49da0f91f4b54438c9d33ba348",
+            "field": "dependencies.vue",
+            "value": "~3.4.27"
+          }
+        ]
+      }
     },
     {
       "fixturePath": "tests/_fixtures/_git/arco-design-pro-vue",
       "memberships": ["ecosystem"],
-      "dialectCoverage": { "state": "unknown", "evidence": [] }
+      "dialectCoverage": {
+        "state": "partial",
+        "evidence": [
+          {
+            "kind": "pinned-package",
+            "dialects": ["vue3-sfc"],
+            "repository": "https://github.com/arco-design/arco-design-pro-vue",
+            "revision": "27020819af653243b7b1a3e8e2481d6b3d798749",
+            "file": "arco-design-pro-vite/package.json",
+            "blobSha": "10b0217e57c229c6ca6da7f6b24fd8a0e2b1b27b",
+            "field": "dependencies.vue",
+            "value": "^3.2.40"
+          },
+          {
+            "kind": "pinned-package",
+            "dialects": ["jsx-babel"],
+            "repository": "https://github.com/arco-design/arco-design-pro-vue",
+            "revision": "27020819af653243b7b1a3e8e2481d6b3d798749",
+            "file": "arco-design-pro-vite/package.json",
+            "blobSha": "10b0217e57c229c6ca6da7f6b24fd8a0e2b1b27b",
+            "field": "devDependencies.@vitejs/plugin-vue-jsx",
+            "value": "^2.0.1"
+          }
+        ]
+      }
     },
     {
       "fixturePath": "tests/_fixtures/_git/automa",
       "memberships": ["ecosystem"],
-      "dialectCoverage": { "state": "unknown", "evidence": [] }
+      "dialectCoverage": {
+        "state": "partial",
+        "evidence": [
+          {
+            "kind": "pinned-package",
+            "dialects": ["vue3-sfc"],
+            "repository": "https://github.com/AutomaApp/automa",
+            "revision": "a4cbe34a60c92873c48c2470ca8ab1d96c22c7a0",
+            "file": "package.json",
+            "blobSha": "82b5fc499683943d6ece881128b57c55b9561124",
+            "field": "dependencies.vue",
+            "value": "3.4.38"
+          }
+        ]
+      }
     },
     {
       "fixturePath": "tests/_fixtures/_git/better-scroll",
@@ -64,27 +173,107 @@
     {
       "fixturePath": "tests/_fixtures/_git/buefy",
       "memberships": ["ecosystem"],
-      "dialectCoverage": { "state": "unknown", "evidence": [] }
+      "dialectCoverage": {
+        "state": "partial",
+        "evidence": [
+          {
+            "kind": "pinned-package",
+            "dialects": ["vue3-sfc"],
+            "repository": "https://github.com/buefy/buefy",
+            "revision": "4f094cd51a229a0ac16097c77bf537ab4e94f701",
+            "file": "package.json",
+            "blobSha": "9fcde173c8c009859cf3052df90a8097770cf41f",
+            "field": "devDependencies.vue",
+            "value": "3.4.13"
+          }
+        ]
+      }
     },
     {
       "fixturePath": "tests/_fixtures/_git/bym-vue-echarts",
       "memberships": ["ecosystem"],
-      "dialectCoverage": { "state": "unknown", "evidence": [] }
+      "dialectCoverage": {
+        "state": "partial",
+        "evidence": [
+          {
+            "kind": "pinned-package",
+            "dialects": ["vue2-sfc"],
+            "repository": "https://github.com/bym110/vue-echarts",
+            "revision": "c7326b0146c21452a0ff89512d3a49a0ab6f24f6",
+            "file": "package.json",
+            "blobSha": "5aea3461697d43b096fd5542c96bdd08a598cda4",
+            "field": "dependencies.vue",
+            "value": "^2.6.11"
+          }
+        ]
+      }
     },
     {
       "fixturePath": "tests/_fixtures/_git/crater",
       "memberships": ["ecosystem"],
-      "dialectCoverage": { "state": "unknown", "evidence": [] }
+      "dialectCoverage": {
+        "state": "partial",
+        "evidence": [
+          {
+            "kind": "pinned-package",
+            "dialects": ["vue3-sfc"],
+            "repository": "https://github.com/crater-invoice-inc/crater",
+            "revision": "05d5ce26fdd8d9466009163444e944259bc0cc2a",
+            "file": "package.json",
+            "blobSha": "c8da7a6dc0f42579e596f9f9b56ba4385327e80b",
+            "field": "dependencies.vue",
+            "value": "^3.2.0-beta.5"
+          }
+        ]
+      }
     },
     {
       "fixturePath": "tests/_fixtures/_git/create-vue",
       "memberships": ["ecosystem"],
-      "dialectCoverage": { "state": "unknown", "evidence": [] }
+      "dialectCoverage": {
+        "state": "partial",
+        "evidence": [
+          {
+            "kind": "pinned-package",
+            "dialects": ["vue3-sfc"],
+            "repository": "https://github.com/vuejs/create-vue",
+            "revision": "3ee62adffdcdfa4a37b2ed4e9c30636655d5fcd1",
+            "file": "template/base/package.json",
+            "blobSha": "e5d72bc5408861747fdd289498dd7a237cc0313c",
+            "field": "dependencies.vue",
+            "value": "^3.5.39"
+          },
+          {
+            "kind": "pinned-package",
+            "dialects": ["jsx-babel"],
+            "repository": "https://github.com/vuejs/create-vue",
+            "revision": "3ee62adffdcdfa4a37b2ed4e9c30636655d5fcd1",
+            "file": "template/config/jsx/package.json",
+            "blobSha": "ad00d655b0498f6b19bd5d3575cd78cdf8a3be81",
+            "field": "devDependencies.@vitejs/plugin-vue-jsx",
+            "value": "^5.1.6"
+          }
+        ]
+      }
     },
     {
       "fixturePath": "tests/_fixtures/_git/cssgridgenerator",
       "memberships": ["ecosystem"],
-      "dialectCoverage": { "state": "unknown", "evidence": [] }
+      "dialectCoverage": {
+        "state": "partial",
+        "evidence": [
+          {
+            "kind": "pinned-package",
+            "dialects": ["vue2-sfc"],
+            "repository": "https://github.com/sdras/cssgridgenerator",
+            "revision": "be1e0a53497a7381ed5e60ba6c759bed0f271baf",
+            "file": "package.json",
+            "blobSha": "afe225f5a96369aea065d4968c3c589b697b307b",
+            "field": "dependencies.vue",
+            "value": "^2.6.10"
+          }
+        ]
+      }
     },
     {
       "fixturePath": "tests/_fixtures/_git/cube-ui",
@@ -99,7 +288,7 @@
             "revision": "77c342462be8f97c62f37e33abbe4824756bf057",
             "file": "package.json",
             "blobSha": "d1f9ce1be921bb28271145d1a1ffc60b89934e93",
-            "field": "peerDependencies.vue",
+            "field": "devDependencies.vue",
             "value": "^2.5.13"
           }
         ]
@@ -108,7 +297,21 @@
     {
       "fixturePath": "tests/_fixtures/_git/dashy",
       "memberships": ["ecosystem"],
-      "dialectCoverage": { "state": "unknown", "evidence": [] }
+      "dialectCoverage": {
+        "state": "partial",
+        "evidence": [
+          {
+            "kind": "pinned-package",
+            "dialects": ["vue3-sfc"],
+            "repository": "https://github.com/lissy93/dashy",
+            "revision": "9b72c045e6368517f1e81c42d757835f88f2c272",
+            "file": "package.json",
+            "blobSha": "ec419f8340ef9feaf3cc41be2412c36a28efca9f",
+            "field": "dependencies.vue",
+            "value": "^3.5.40"
+          }
+        ]
+      }
     },
     {
       "fixturePath": "tests/_fixtures/_git/datav",
@@ -118,7 +321,21 @@
     {
       "fixturePath": "tests/_fixtures/_git/dbx",
       "memberships": ["ecosystem"],
-      "dialectCoverage": { "state": "unknown", "evidence": [] }
+      "dialectCoverage": {
+        "state": "partial",
+        "evidence": [
+          {
+            "kind": "pinned-package",
+            "dialects": ["vue3-sfc"],
+            "repository": "https://github.com/t8y2/dbx",
+            "revision": "5173bbafd1e2dcb67a3be557c569adcc15021193",
+            "file": "package.json",
+            "blobSha": "566c704b3c67dfc6e1b00d361602412a261646b9",
+            "field": "dependencies.vue",
+            "value": "^3.5.35"
+          }
+        ]
+      }
     },
     {
       "fixturePath": "tests/_fixtures/_git/dho-web-client",
@@ -130,6 +347,16 @@
             "kind": "registry-note",
             "dialects": ["pug-template"],
             "selector": "Pug-template Quasar application (211 of 215 pinned SFCs use <template lang=\"pug\">)."
+          },
+          {
+            "kind": "pinned-package",
+            "dialects": ["vue2-sfc"],
+            "repository": "https://github.com/hypha-dao/dho-web-client",
+            "revision": "94a804ee650cb49990f6fcd4f4c54afa3a925abe",
+            "file": "package.json",
+            "blobSha": "e6ace3f6de0dc0172e340b5259e1613b6df6014c",
+            "field": "dependencies.vue",
+            "value": "^2.6.12"
           }
         ]
       }
@@ -137,17 +364,74 @@
     {
       "fixturePath": "tests/_fixtures/_git/directus",
       "memberships": ["ecosystem", "app"],
-      "dialectCoverage": { "state": "unknown", "evidence": [] }
+      "dialectCoverage": {
+        "state": "partial",
+        "evidence": [
+          {
+            "kind": "pinned-package",
+            "dialects": ["vue3-sfc"],
+            "repository": "https://github.com/directus/directus",
+            "revision": "8030b7053927e1d87b4d42575c35636738ce3d77",
+            "file": "app/package.json",
+            "blobSha": "ff11516bd31164835f2f6e916f9524846f810fd6",
+            "field": "devDependencies.vue",
+            "value": "catalog:",
+            "catalog": {
+              "file": "pnpm-workspace.yaml",
+              "blobSha": "e14888412504650811b10f041536a33f05151005",
+              "value": "3.5.24"
+            }
+          }
+        ]
+      }
     },
     {
       "fixturePath": "tests/_fixtures/_git/docsify",
       "memberships": ["ecosystem"],
-      "dialectCoverage": { "state": "unknown", "evidence": [] }
+      "dialectCoverage": {
+        "state": "partial",
+        "evidence": [
+          {
+            "kind": "pinned-package",
+            "dialects": ["vue3-sfc"],
+            "repository": "https://github.com/docsifyjs/docsify",
+            "revision": "a8f151ed79dff0ad8d857f99f073ef7969c14d80",
+            "file": "package.json",
+            "blobSha": "ee1eb75203d2eaf0fea8595469aa836881a0d951",
+            "field": "devDependencies.vue",
+            "value": "^3.4.27"
+          }
+        ]
+      }
     },
     {
       "fixturePath": "tests/_fixtures/_git/douyin",
       "memberships": ["ecosystem"],
-      "dialectCoverage": { "state": "unknown", "evidence": [] }
+      "dialectCoverage": {
+        "state": "partial",
+        "evidence": [
+          {
+            "kind": "pinned-package",
+            "dialects": ["vue3-sfc"],
+            "repository": "https://github.com/zyronon/douyin",
+            "revision": "8cc6172c737dfaf0c914a2b27cdfee4eb2306f2e",
+            "file": "package.json",
+            "blobSha": "133a8410237c8c1e7308ee1759a5cdd36f1f214e",
+            "field": "dependencies.vue",
+            "value": "^3.5.13"
+          },
+          {
+            "kind": "pinned-package",
+            "dialects": ["jsx-babel"],
+            "repository": "https://github.com/zyronon/douyin",
+            "revision": "8cc6172c737dfaf0c914a2b27cdfee4eb2306f2e",
+            "file": "package.json",
+            "blobSha": "133a8410237c8c1e7308ee1759a5cdd36f1f214e",
+            "field": "devDependencies.@vitejs/plugin-vue-jsx",
+            "value": "^3.1.0"
+          }
+        ]
+      }
     },
     {
       "fixturePath": "tests/_fixtures/_git/element",
@@ -157,13 +441,23 @@
         "evidence": [
           {
             "kind": "pinned-package",
+            "dialects": ["jsx-babel"],
+            "repository": "https://github.com/ElemeFE/element",
+            "revision": "c345bb453bf11badb4831a6a3f600c9372b3a336",
+            "file": "package.json",
+            "blobSha": "95b92a20820739047dedf9bd6ac1e32233c0be42",
+            "field": "devDependencies.babel-plugin-transform-vue-jsx",
+            "value": "^3.7.0"
+          },
+          {
+            "kind": "pinned-package",
             "dialects": ["vue2-sfc"],
             "repository": "https://github.com/ElemeFE/element",
             "revision": "c345bb453bf11badb4831a6a3f600c9372b3a336",
             "file": "package.json",
             "blobSha": "95b92a20820739047dedf9bd6ac1e32233c0be42",
-            "field": "peerDependencies.vue",
-            "value": "^2.5.17"
+            "field": "devDependencies.vue",
+            "value": "2.5.21"
           }
         ]
       }
@@ -171,97 +465,418 @@
     {
       "fixturePath": "tests/_fixtures/_git/element-plus",
       "memberships": ["ecosystem", "app"],
-      "dialectCoverage": { "state": "unknown", "evidence": [] }
+      "dialectCoverage": {
+        "state": "partial",
+        "evidence": [
+          {
+            "kind": "pinned-package",
+            "dialects": ["jsx-babel"],
+            "repository": "https://github.com/element-plus/element-plus",
+            "revision": "20298a21ae54a5417955373b80130ae7c548a6bb",
+            "file": "package.json",
+            "blobSha": "2902d8c7f9247c5fab666ec9c1359f71a6eb891b",
+            "field": "devDependencies.@vitejs/plugin-vue-jsx",
+            "value": "catalog:",
+            "catalog": {
+              "file": "pnpm-workspace.yaml",
+              "blobSha": "707b402ae1e2c5ebc7a32cd8ce86386f6af7ac53",
+              "value": "^5.1.5"
+            }
+          },
+          {
+            "kind": "pinned-package",
+            "dialects": ["vue3-sfc"],
+            "repository": "https://github.com/element-plus/element-plus",
+            "revision": "20298a21ae54a5417955373b80130ae7c548a6bb",
+            "file": "package.json",
+            "blobSha": "2902d8c7f9247c5fab666ec9c1359f71a6eb891b",
+            "field": "devDependencies.vue",
+            "value": "catalog:",
+            "catalog": {
+              "file": "pnpm-workspace.yaml",
+              "blobSha": "707b402ae1e2c5ebc7a32cd8ce86386f6af7ac53",
+              "value": "3.5.25"
+            }
+          }
+        ]
+      }
     },
     {
       "fixturePath": "tests/_fixtures/_git/element-plus-x",
       "memberships": ["ecosystem"],
-      "dialectCoverage": { "state": "unknown", "evidence": [] }
+      "dialectCoverage": {
+        "state": "partial",
+        "evidence": [
+          {
+            "kind": "pinned-package",
+            "dialects": ["vue3-sfc"],
+            "repository": "https://github.com/element-plus-x/Element-Plus-X",
+            "revision": "c3e0177d101d4dbc039b7cd668c676839f6595f1",
+            "file": "apps/docs/package.json",
+            "blobSha": "fff79c669b5a6c2d133f547c04be05e72a248668",
+            "field": "dependencies.vue",
+            "value": "^3.5.17"
+          },
+          {
+            "kind": "pinned-package",
+            "dialects": ["jsx-babel"],
+            "repository": "https://github.com/element-plus-x/Element-Plus-X",
+            "revision": "c3e0177d101d4dbc039b7cd668c676839f6595f1",
+            "file": "apps/docs/package.json",
+            "blobSha": "fff79c669b5a6c2d133f547c04be05e72a248668",
+            "field": "devDependencies.@vitejs/plugin-vue-jsx",
+            "value": "^4.2.0"
+          }
+        ]
+      }
     },
     {
       "fixturePath": "tests/_fixtures/_git/elk",
       "memberships": ["ecosystem", "app"],
-      "dialectCoverage": { "state": "unknown", "evidence": [] }
+      "dialectCoverage": {
+        "state": "partial",
+        "evidence": [
+          {
+            "kind": "pinned-package",
+            "dialects": ["vue3-sfc"],
+            "repository": "https://github.com/elk-zone/elk",
+            "revision": "8aa2b4650760eeba4ea1fdd9dc18d8a88ca5d7f0",
+            "file": "package.json",
+            "blobSha": "94477659d5cb15c73edc426f19b48219bad66d93",
+            "field": "dependencies.vue",
+            "value": "^3.5.4"
+          }
+        ]
+      }
     },
     {
       "fixturePath": "tests/_fixtures/_git/epic-spinners",
       "memberships": ["ecosystem"],
-      "dialectCoverage": { "state": "unknown", "evidence": [] }
+      "dialectCoverage": {
+        "state": "partial",
+        "evidence": [
+          {
+            "kind": "pinned-package",
+            "dialects": ["vue3-sfc"],
+            "repository": "https://github.com/epicmaxco/epic-spinners",
+            "revision": "3a4dda1d72fbeb2da9ac75bdd53df948e9c3f869",
+            "file": "packages/docs/package.json",
+            "blobSha": "9d2c8fe01e248cdc2f8140aab093677ad6f9d20f",
+            "field": "dependencies.vue",
+            "value": "^3.4.38"
+          }
+        ]
+      }
     },
     {
       "fixturePath": "tests/_fixtures/_git/filebrowser",
       "memberships": ["ecosystem"],
-      "dialectCoverage": { "state": "unknown", "evidence": [] }
+      "dialectCoverage": {
+        "state": "partial",
+        "evidence": [
+          {
+            "kind": "pinned-package",
+            "dialects": ["vue3-sfc"],
+            "repository": "https://github.com/filebrowser/filebrowser",
+            "revision": "833d908884d5c801f30f5c098d7977177eb3a36b",
+            "file": "frontend/package.json",
+            "blobSha": "8bea2d8a6d61a149375ba4a422ccd2a85a642e37",
+            "field": "dependencies.vue",
+            "value": "^3.5.17"
+          }
+        ]
+      }
     },
     {
       "fixturePath": "tests/_fixtures/_git/frappe-builder",
       "memberships": ["ecosystem"],
-      "dialectCoverage": { "state": "unknown", "evidence": [] }
+      "dialectCoverage": {
+        "state": "partial",
+        "evidence": [
+          {
+            "kind": "pinned-package",
+            "dialects": ["vue3-sfc"],
+            "repository": "https://github.com/frappe/builder",
+            "revision": "ed705f9dddc9a78867fb672c342ee025368ac6a1",
+            "file": "frontend/package.json",
+            "blobSha": "a80a1531a4abaecfb8487a0c06c1049449bbaf7c",
+            "field": "dependencies.vue",
+            "value": "3.5.15"
+          }
+        ]
+      }
     },
     {
       "fixturePath": "tests/_fixtures/_git/frappe-crm",
       "memberships": ["ecosystem"],
-      "dialectCoverage": { "state": "unknown", "evidence": [] }
+      "dialectCoverage": {
+        "state": "partial",
+        "evidence": [
+          {
+            "kind": "pinned-package",
+            "dialects": ["jsx-babel"],
+            "repository": "https://github.com/frappe/crm",
+            "revision": "2e6a6a216af7cdbd17a1468389686cd2f8452a45",
+            "file": "frontend/package.json",
+            "blobSha": "62719b98d17b7b1009924e830d8a7b7578c3ebdf",
+            "field": "dependencies.@vitejs/plugin-vue-jsx",
+            "value": "^4.2.0"
+          },
+          {
+            "kind": "pinned-package",
+            "dialects": ["vue3-sfc"],
+            "repository": "https://github.com/frappe/crm",
+            "revision": "2e6a6a216af7cdbd17a1468389686cd2f8452a45",
+            "file": "frontend/package.json",
+            "blobSha": "62719b98d17b7b1009924e830d8a7b7578c3ebdf",
+            "field": "dependencies.vue",
+            "value": "^3.5.13"
+          }
+        ]
+      }
     },
     {
       "fixturePath": "tests/_fixtures/_git/frontend-phpcon-do-website",
       "memberships": ["ecosystem", "app"],
-      "dialectCoverage": { "state": "unknown", "evidence": [] }
+      "dialectCoverage": {
+        "state": "partial",
+        "evidence": [
+          {
+            "kind": "pinned-package",
+            "dialects": ["vue3-sfc"],
+            "repository": "https://github.com/frontend-phpcon-do/frontend-phpcon-do-website.git",
+            "revision": "d5b35ab40b4c4ff5b51a94bf1efd656a3e4160a1",
+            "file": "package.json",
+            "blobSha": "f5754010521dcde8a27ba32ce1fc50b8194a6351",
+            "field": "dependencies.vue",
+            "value": "^3.5.35"
+          }
+        ]
+      }
     },
     {
       "fixturePath": "tests/_fixtures/_git/frpc-desktop",
       "memberships": ["ecosystem"],
-      "dialectCoverage": { "state": "unknown", "evidence": [] }
+      "dialectCoverage": {
+        "state": "partial",
+        "evidence": [
+          {
+            "kind": "pinned-package",
+            "dialects": ["vue3-sfc"],
+            "repository": "https://github.com/luckjiawei/frpc-desktop",
+            "revision": "2c971ba7238cdfe2d1033e4ffe2e20eb7266ef17",
+            "file": "package.json",
+            "blobSha": "fe053f71bc84857d80864b4747ef23bbe8d1ec3f",
+            "field": "dependencies.vue",
+            "value": "^3.5.22"
+          }
+        ]
+      }
     },
     {
       "fixturePath": "tests/_fixtures/_git/gogocode",
       "memberships": ["ecosystem"],
-      "dialectCoverage": { "state": "unknown", "evidence": [] }
+      "dialectCoverage": {
+        "state": "partial",
+        "evidence": [
+          {
+            "kind": "pinned-package",
+            "dialects": ["vue2-sfc"],
+            "repository": "https://github.com/thx/gogocode",
+            "revision": "6b94d4d05ee4facc935fe2c3e4965655913afd6e",
+            "file": "packages/transform-project/vue-hackernews-2.0/package.json",
+            "blobSha": "b8c7a74c8edc88cb18c3f830d3b5e449340dda6d",
+            "field": "dependencies.vue",
+            "value": "^2.5.22"
+          },
+          {
+            "kind": "pinned-package",
+            "dialects": ["vue3-sfc"],
+            "repository": "https://github.com/thx/gogocode",
+            "revision": "6b94d4d05ee4facc935fe2c3e4965655913afd6e",
+            "file": "packages/gogocode-element-playground/packages/vue3/package.json",
+            "blobSha": "911f30484678dff46a4f6f0fa8ec182abd804b2b",
+            "field": "dependencies.vue",
+            "value": "^3.2.31"
+          }
+        ]
+      }
     },
     {
       "fixturePath": "tests/_fixtures/_git/gridea",
       "memberships": ["ecosystem"],
-      "dialectCoverage": { "state": "unknown", "evidence": [] }
+      "dialectCoverage": {
+        "state": "partial",
+        "evidence": [
+          {
+            "kind": "pinned-package",
+            "dialects": ["vue2-sfc"],
+            "repository": "https://github.com/getgridea/gridea",
+            "revision": "48e4ab573bfa709816ffd688233b2f570c085e2d",
+            "file": "package.json",
+            "blobSha": "dd3a233a160092ab689bd385382a9af62f72977c",
+            "field": "dependencies.vue",
+            "value": "^2.6.10"
+          }
+        ]
+      }
     },
     {
       "fixturePath": "tests/_fixtures/_git/gui-for-singbox",
       "memberships": ["ecosystem"],
-      "dialectCoverage": { "state": "unknown", "evidence": [] }
+      "dialectCoverage": {
+        "state": "partial",
+        "evidence": [
+          {
+            "kind": "pinned-package",
+            "dialects": ["vue3-sfc"],
+            "repository": "https://github.com/GUI-for-Cores/GUI.for.SingBox",
+            "revision": "1be4816dea1e8793d8e08ae4f8f016c28101672d",
+            "file": "frontend/package.json",
+            "blobSha": "63889c69cc95caa5af6a8d1706786443fceb07fa",
+            "field": "dependencies.vue",
+            "value": "^3.5.41"
+          }
+        ]
+      }
     },
     {
       "fixturePath": "tests/_fixtures/_git/habitica",
       "memberships": ["ecosystem"],
-      "dialectCoverage": { "state": "unknown", "evidence": [] }
+      "dialectCoverage": {
+        "state": "partial",
+        "evidence": [
+          {
+            "kind": "pinned-package",
+            "dialects": ["vue2.7-sfc"],
+            "repository": "https://github.com/HabitRPG/habitica",
+            "revision": "19b2ce531c3bb1c3f95a75388b1176b345cbbca2",
+            "file": "website/client/package.json",
+            "blobSha": "ae75da2880c90b8d40526c2370dfea111dfd3086",
+            "field": "dependencies.vue",
+            "value": "^2.7.10"
+          }
+        ]
+      }
     },
     {
       "fixturePath": "tests/_fixtures/_git/heyui",
       "memberships": ["ecosystem"],
-      "dialectCoverage": { "state": "unknown", "evidence": [] }
+      "dialectCoverage": {
+        "state": "partial",
+        "evidence": [
+          {
+            "kind": "pinned-package",
+            "dialects": ["vue3-sfc"],
+            "repository": "https://github.com/heyui/heyui",
+            "revision": "dcd5fe97b7908200beda88a26700b14a41a17429",
+            "file": "package.json",
+            "blobSha": "018e9a87fcde3fa59bef2603730e2edaf9ea83be",
+            "field": "peerDependencies.vue",
+            "value": "^3.2.41"
+          }
+        ]
+      }
     },
     {
       "fixturePath": "tests/_fixtures/_git/hoppscotch",
       "memberships": ["ecosystem", "app"],
-      "dialectCoverage": { "state": "unknown", "evidence": [] }
+      "dialectCoverage": {
+        "state": "partial",
+        "evidence": [
+          {
+            "kind": "pinned-package",
+            "dialects": ["vue3-sfc"],
+            "repository": "https://github.com/hoppscotch/hoppscotch",
+            "revision": "1acb8a3a7581e4db32ba0d529170c4669a2e1053",
+            "file": "packages/hoppscotch-agent/package.json",
+            "blobSha": "f4c0e65d9d8cae6c8db60ca34e8183fa7219e9cf",
+            "field": "dependencies.vue",
+            "value": "3.5.38"
+          }
+        ]
+      }
     },
     {
       "fixturePath": "tests/_fixtures/_git/inertia",
       "memberships": ["ecosystem"],
-      "dialectCoverage": { "state": "unknown", "evidence": [] }
+      "dialectCoverage": {
+        "state": "partial",
+        "evidence": [
+          {
+            "kind": "pinned-package",
+            "dialects": ["vue3-sfc"],
+            "repository": "https://github.com/inertiajs/inertia",
+            "revision": "59bb8cbff028b9b405cf606588f1f713806f9187",
+            "file": "packages/vue3/package.json",
+            "blobSha": "10bf7f49da804697b74b4a987e8b3c6336f2144f",
+            "field": "devDependencies.vue",
+            "value": "^3.5.29"
+          }
+        ]
+      }
     },
     {
       "fixturePath": "tests/_fixtures/_git/inspira-ui",
       "memberships": ["ecosystem"],
-      "dialectCoverage": { "state": "unknown", "evidence": [] }
+      "dialectCoverage": {
+        "state": "partial",
+        "evidence": [
+          {
+            "kind": "pinned-package",
+            "dialects": ["vue3-sfc"],
+            "repository": "https://github.com/unovue/inspira-ui",
+            "revision": "5650bfd050743ffaee02a471a1406b58c98b2ef5",
+            "file": "package.json",
+            "blobSha": "2f68e2fb73e6c228f1ecdfd6532be224ddda7d49",
+            "field": "dependencies.vue",
+            "value": "^3.5.29"
+          }
+        ]
+      }
     },
     {
       "fixturePath": "tests/_fixtures/_git/jellyfin-vue",
       "memberships": ["ecosystem"],
-      "dialectCoverage": { "state": "unknown", "evidence": [] }
+      "dialectCoverage": {
+        "state": "partial",
+        "evidence": [
+          {
+            "kind": "pinned-package",
+            "dialects": ["vue3-sfc"],
+            "repository": "https://github.com/jellyfin/jellyfin-vue",
+            "revision": "6b35d977335cab224c4536d18dc22d15a63d5185",
+            "file": "packages/frontend/package.json",
+            "blobSha": "0be61427ee330b7a166ec7767ecd56beca1cbc5e",
+            "field": "dependencies.vue",
+            "value": "catalog:runtime",
+            "catalog": {
+              "file": "pnpm-workspace.yaml",
+              "blobSha": "1b541276c422c3e6a78ae6746557c18fbf1bdaee",
+              "value": "3.5.40"
+            }
+          }
+        ]
+      }
     },
     {
       "fixturePath": "tests/_fixtures/_git/koel",
       "memberships": ["ecosystem"],
-      "dialectCoverage": { "state": "unknown", "evidence": [] }
+      "dialectCoverage": {
+        "state": "partial",
+        "evidence": [
+          {
+            "kind": "pinned-package",
+            "dialects": ["vue3-sfc"],
+            "repository": "https://github.com/koel/koel",
+            "revision": "dfec91ff290509c622ff7cf392fb5e506841ee2b",
+            "file": "package.json",
+            "blobSha": "d140de54e973220ebb94a3dc0d50ca4aa02ae226",
+            "field": "dependencies.vue",
+            "value": "^3.5.29"
+          }
+        ]
+      }
     },
     {
       "fixturePath": "tests/_fixtures/_git/laravel-breeze",
@@ -271,42 +886,164 @@
     {
       "fixturePath": "tests/_fixtures/_git/layoutit-grid",
       "memberships": ["ecosystem"],
-      "dialectCoverage": { "state": "unknown", "evidence": [] }
+      "dialectCoverage": {
+        "state": "partial",
+        "evidence": [
+          {
+            "kind": "pinned-package",
+            "dialects": ["vue3-sfc"],
+            "repository": "https://github.com/layoutit/layoutit-grid",
+            "revision": "bac9964b1d23a361f3ef9e67b0fdd2d990b48a1a",
+            "file": "package.json",
+            "blobSha": "de8ed0674aae4f87680f8768e57cb7c2ec99875b",
+            "field": "dependencies.vue",
+            "value": "^3.2.21"
+          }
+        ]
+      }
     },
     {
       "fixturePath": "tests/_fixtures/_git/lew-ui",
       "memberships": ["ecosystem"],
-      "dialectCoverage": { "state": "unknown", "evidence": [] }
+      "dialectCoverage": {
+        "state": "partial",
+        "evidence": [
+          {
+            "kind": "pinned-package",
+            "dialects": ["vue3-sfc"],
+            "repository": "https://github.com/lewkamtao/lew-ui",
+            "revision": "abdcecdcdf611211b0502383a6dbfacded2c9608",
+            "file": "package.json",
+            "blobSha": "9e9ce9cf3202e7f976aa0946ddeb7628004d265c",
+            "field": "devDependencies.vue",
+            "value": "^3.5.17"
+          }
+        ]
+      }
     },
     {
       "fixturePath": "tests/_fixtures/_git/lx-music-desktop",
       "memberships": ["ecosystem"],
-      "dialectCoverage": { "state": "unknown", "evidence": [] }
+      "dialectCoverage": {
+        "state": "partial",
+        "evidence": [
+          {
+            "kind": "pinned-package",
+            "dialects": ["vue3-sfc"],
+            "repository": "https://github.com/lyswhut/lx-music-desktop",
+            "revision": "9c364b482e5621a1d38b50e8610d2fb974457e6e",
+            "file": "package.json",
+            "blobSha": "cc041c3a5e4f73a2b136a22c913675e2bef638d7",
+            "field": "dependencies.vue",
+            "value": "~3.3.13"
+          },
+          {
+            "kind": "pinned-package",
+            "dialects": ["pug-template"],
+            "repository": "https://github.com/lyswhut/lx-music-desktop",
+            "revision": "9c364b482e5621a1d38b50e8610d2fb974457e6e",
+            "file": "package.json",
+            "blobSha": "cc041c3a5e4f73a2b136a22c913675e2bef638d7",
+            "field": "devDependencies.@vue/language-plugin-pug",
+            "value": "^3.2.7"
+          }
+        ]
+      }
     },
     {
       "fixturePath": "tests/_fixtures/_git/mall-admin-web",
       "memberships": ["ecosystem"],
-      "dialectCoverage": { "state": "unknown", "evidence": [] }
+      "dialectCoverage": {
+        "state": "partial",
+        "evidence": [
+          {
+            "kind": "pinned-package",
+            "dialects": ["vue3-sfc"],
+            "repository": "https://github.com/macrozheng/mall-admin-web",
+            "revision": "81fc17e5a19f452bd854b106a9d59fa1ed5c7eac",
+            "file": "package.json",
+            "blobSha": "1ac1d3f0506b22a68c426e8094d75eb34bf3584a",
+            "field": "dependencies.vue",
+            "value": "^3.5.25"
+          }
+        ]
+      }
     },
     {
       "fixturePath": "tests/_fixtures/_git/mavon-editor",
       "memberships": ["ecosystem"],
-      "dialectCoverage": { "state": "unknown", "evidence": [] }
+      "dialectCoverage": {
+        "state": "partial",
+        "evidence": [
+          {
+            "kind": "pinned-package",
+            "dialects": ["vue2-sfc"],
+            "repository": "https://github.com/hinesboy/mavonEditor",
+            "revision": "aaaafa97c43c26aaa3da3c3fdfddb74f272e09d6",
+            "file": "package.json",
+            "blobSha": "5155c5452705220f203326d05b188ab343bae155",
+            "field": "devDependencies.vue",
+            "value": "^2.3.4"
+          }
+        ]
+      }
     },
     {
       "fixturePath": "tests/_fixtures/_git/mealie",
       "memberships": ["ecosystem"],
-      "dialectCoverage": { "state": "unknown", "evidence": [] }
+      "dialectCoverage": {
+        "state": "partial",
+        "evidence": [
+          {
+            "kind": "pinned-package",
+            "dialects": ["vue3-sfc"],
+            "repository": "https://github.com/mealie-recipes/mealie",
+            "revision": "b9b3ac9b286a61527f6cf821453933af577b628f",
+            "file": "frontend/package.json",
+            "blobSha": "1086f38b9edba472ea6880669782033bf567350d",
+            "field": "dependencies.vue",
+            "value": "^3.5.35"
+          }
+        ]
+      }
     },
     {
       "fixturePath": "tests/_fixtures/_git/mint-ui",
       "memberships": ["ecosystem"],
-      "dialectCoverage": { "state": "unknown", "evidence": [] }
+      "dialectCoverage": {
+        "state": "partial",
+        "evidence": [
+          {
+            "kind": "pinned-package",
+            "dialects": ["vue2-sfc"],
+            "repository": "https://github.com/ElemeFE/mint-ui",
+            "revision": "c875541634c15f1f2e47e69f1e857eccdbe25e23",
+            "file": "package.json",
+            "blobSha": "6b635f365b896ff89854f2655cf4e67f3531c219",
+            "field": "devDependencies.vue",
+            "value": "^2.3.2"
+          }
+        ]
+      }
     },
     {
       "fixturePath": "tests/_fixtures/_git/misskey",
       "memberships": ["ecosystem", "app"],
-      "dialectCoverage": { "state": "unknown", "evidence": [] }
+      "dialectCoverage": {
+        "state": "partial",
+        "evidence": [
+          {
+            "kind": "pinned-package",
+            "dialects": ["vue3-sfc"],
+            "repository": "https://github.com/misskey-dev/misskey",
+            "revision": "810faa8e5db4bbf9d6d408a61df148559340ee99",
+            "file": "packages/frontend/package.json",
+            "blobSha": "b3244d0737223cf1f59a94ba5acfc82a41972fd4",
+            "field": "dependencies.vue",
+            "value": "3.5.28"
+          }
+        ]
+      }
     },
     {
       "fixturePath": "tests/_fixtures/_git/mobile-web-best-practice",
@@ -326,32 +1063,151 @@
     {
       "fixturePath": "tests/_fixtures/_git/motion-vue",
       "memberships": ["ecosystem"],
-      "dialectCoverage": { "state": "unknown", "evidence": [] }
+      "dialectCoverage": {
+        "state": "partial",
+        "evidence": [
+          {
+            "kind": "pinned-package",
+            "dialects": ["vue3-sfc"],
+            "repository": "https://github.com/motiondivision/motion-vue",
+            "revision": "836a2fbcc39abf13027f25d55e4b106a037f646d",
+            "file": "package.json",
+            "blobSha": "a1fe6f2b018d6539f8d018b5552cf99c68dc43e7",
+            "field": "dependencies.vue",
+            "value": "^3.5.17"
+          },
+          {
+            "kind": "pinned-package",
+            "dialects": ["jsx-babel"],
+            "repository": "https://github.com/motiondivision/motion-vue",
+            "revision": "836a2fbcc39abf13027f25d55e4b106a037f646d",
+            "file": "package.json",
+            "blobSha": "a1fe6f2b018d6539f8d018b5552cf99c68dc43e7",
+            "field": "devDependencies.@vitejs/plugin-vue-jsx",
+            "value": "^5.1.4"
+          }
+        ]
+      }
     },
     {
       "fixturePath": "tests/_fixtures/_git/multiple-select",
       "memberships": ["ecosystem"],
-      "dialectCoverage": { "state": "unknown", "evidence": [] }
+      "dialectCoverage": {
+        "state": "partial",
+        "evidence": [
+          {
+            "kind": "pinned-package",
+            "dialects": ["vue3-sfc"],
+            "repository": "https://github.com/wenzhixin/multiple-select",
+            "revision": "47a3a3b621b1a7a07e078ad306506d4db8fd0011",
+            "file": "package.json",
+            "blobSha": "404a12aeadfed36cce9b1716339e14948323907d",
+            "field": "devDependencies.vue",
+            "value": "^3.5.39"
+          }
+        ]
+      }
     },
     {
       "fixturePath": "tests/_fixtures/_git/muse-ui",
       "memberships": ["ecosystem"],
-      "dialectCoverage": { "state": "unknown", "evidence": [] }
+      "dialectCoverage": {
+        "state": "partial",
+        "evidence": [
+          {
+            "kind": "pinned-package",
+            "dialects": ["jsx-babel"],
+            "repository": "https://github.com/museui/muse-ui",
+            "revision": "e799a4ff3854b9341e2207720c0937b1ba040bbc",
+            "file": "package.json",
+            "blobSha": "4e3ae8e73fcc3efe82037edcb9b29fe3563fe925",
+            "field": "devDependencies.babel-plugin-transform-vue-jsx",
+            "value": "^3.5.1"
+          },
+          {
+            "kind": "pinned-package",
+            "dialects": ["vue2-sfc"],
+            "repository": "https://github.com/museui/muse-ui",
+            "revision": "e799a4ff3854b9341e2207720c0937b1ba040bbc",
+            "file": "package.json",
+            "blobSha": "4e3ae8e73fcc3efe82037edcb9b29fe3563fe925",
+            "field": "devDependencies.vue",
+            "value": "^2.5.13"
+          }
+        ]
+      }
     },
     {
       "fixturePath": "tests/_fixtures/_git/music-website",
       "memberships": ["ecosystem"],
-      "dialectCoverage": { "state": "unknown", "evidence": [] }
+      "dialectCoverage": {
+        "state": "partial",
+        "evidence": [
+          {
+            "kind": "pinned-package",
+            "dialects": ["vue3-sfc"],
+            "repository": "https://github.com/Yin-Hongwei/music-website",
+            "revision": "93e78b1b42e2963b19e08a0d9258c8b32184cdca",
+            "file": "music-client/package.json",
+            "blobSha": "082d8ae17177fec621d5ed33c5cc0af4500462bb",
+            "field": "dependencies.vue",
+            "value": "^3.2.13"
+          }
+        ]
+      }
     },
     {
       "fixturePath": "tests/_fixtures/_git/n8n",
       "memberships": ["ecosystem"],
-      "dialectCoverage": { "state": "unknown", "evidence": [] }
+      "dialectCoverage": {
+        "state": "partial",
+        "evidence": [
+          {
+            "kind": "pinned-package",
+            "dialects": ["vue3-sfc"],
+            "repository": "https://github.com/n8n-io/n8n",
+            "revision": "e882e8a483f433facb47bab9b407d0ec00a81172",
+            "file": "packages/@n8n/extension-sdk/package.json",
+            "blobSha": "7711c585d5604ead8ca4ee61a0334a12771aa596",
+            "field": "devDependencies.vue",
+            "value": "catalog:frontend",
+            "catalog": {
+              "file": "pnpm-workspace.yaml",
+              "blobSha": "bc4ac8241b6665c3f6ecd525fc20bb707e1553b4",
+              "value": "^3.5.13"
+            }
+          }
+        ]
+      }
     },
     {
       "fixturePath": "tests/_fixtures/_git/naive-ui",
       "memberships": ["ecosystem", "app"],
-      "dialectCoverage": { "state": "unknown", "evidence": [] }
+      "dialectCoverage": {
+        "state": "partial",
+        "evidence": [
+          {
+            "kind": "pinned-package",
+            "dialects": ["vue3-sfc"],
+            "repository": "https://github.com/tusen-ai/naive-ui",
+            "revision": "b26496a26536918204722cb9b9e5dd9bfe31c893",
+            "file": "package.json",
+            "blobSha": "12304591d08b6cd04d116f811bc9ec6a42e4af16",
+            "field": "devDependencies.vue",
+            "value": "^3.5.21"
+          },
+          {
+            "kind": "pinned-package",
+            "dialects": ["jsx-vapor"],
+            "repository": "https://github.com/tusen-ai/naive-ui",
+            "revision": "b26496a26536918204722cb9b9e5dd9bfe31c893",
+            "file": "package.json",
+            "blobSha": "12304591d08b6cd04d116f811bc9ec6a42e4af16",
+            "field": "devDependencies.vue-jsx-vapor",
+            "value": "^3.2.19"
+          }
+        ]
+      }
     },
     {
       "fixturePath": "tests/_fixtures/_git/nativescript-vue",
@@ -376,12 +1232,50 @@
     {
       "fixturePath": "tests/_fixtures/_git/nutui",
       "memberships": ["ecosystem"],
-      "dialectCoverage": { "state": "unknown", "evidence": [] }
+      "dialectCoverage": {
+        "state": "partial",
+        "evidence": [
+          {
+            "kind": "pinned-package",
+            "dialects": ["jsx-babel"],
+            "repository": "https://github.com/jd-opensource/nutui",
+            "revision": "212c7c3af6d0c3b5bc5cdfe00c7eaf8dd86a78cf",
+            "file": "package.json",
+            "blobSha": "73b2a659165765f56eee750d7b1f55e599b838db",
+            "field": "devDependencies.@vitejs/plugin-vue-jsx",
+            "value": "^4.0.0"
+          },
+          {
+            "kind": "pinned-package",
+            "dialects": ["vue3-sfc"],
+            "repository": "https://github.com/jd-opensource/nutui",
+            "revision": "212c7c3af6d0c3b5bc5cdfe00c7eaf8dd86a78cf",
+            "file": "package.json",
+            "blobSha": "73b2a659165765f56eee750d7b1f55e599b838db",
+            "field": "devDependencies.vue",
+            "value": "^3.5.10"
+          }
+        ]
+      }
     },
     {
       "fixturePath": "tests/_fixtures/_git/nuxt-ui",
       "memberships": ["ecosystem", "app"],
-      "dialectCoverage": { "state": "unknown", "evidence": [] }
+      "dialectCoverage": {
+        "state": "partial",
+        "evidence": [
+          {
+            "kind": "pinned-package",
+            "dialects": ["vue3-sfc"],
+            "repository": "https://github.com/nuxt/ui",
+            "revision": "3dbca020969582d577c7df9698dc8cd484f76dc1",
+            "file": "package.json",
+            "blobSha": "64c7725c346916e8e83a9e8066a51b8ae00ed640",
+            "field": "devDependencies.vue",
+            "value": "^3.5.41"
+          }
+        ]
+      }
     },
     {
       "fixturePath": "tests/_fixtures/_git/openvue",
@@ -405,27 +1299,97 @@
     {
       "fixturePath": "tests/_fixtures/_git/piclist",
       "memberships": ["ecosystem"],
-      "dialectCoverage": { "state": "unknown", "evidence": [] }
+      "dialectCoverage": {
+        "state": "partial",
+        "evidence": [
+          {
+            "kind": "pinned-package",
+            "dialects": ["vue3-sfc"],
+            "repository": "https://github.com/Kuingsmile/PicList",
+            "revision": "3a26cc882983af899e97b4f492d06355c2a89077",
+            "file": "package.json",
+            "blobSha": "be7bbc52265990b6b76120a15f85dfb8bfa41c18",
+            "field": "dependencies.vue",
+            "value": "^3.5.38"
+          }
+        ]
+      }
     },
     {
       "fixturePath": "tests/_fixtures/_git/pinia",
       "memberships": ["ecosystem"],
-      "dialectCoverage": { "state": "unknown", "evidence": [] }
+      "dialectCoverage": {
+        "state": "partial",
+        "evidence": [
+          {
+            "kind": "pinned-package",
+            "dialects": ["vue3-sfc"],
+            "repository": "https://github.com/vuejs/pinia",
+            "revision": "59ec7da3f0130caa66fae6541557cf3c5b10f78b",
+            "file": "package.json",
+            "blobSha": "38a5a549fc50a4414177ae67dbab3ef68486dfa6",
+            "field": "devDependencies.vue",
+            "value": "~3.5.22"
+          }
+        ]
+      }
     },
     {
       "fixturePath": "tests/_fixtures/_git/pinry",
       "memberships": ["ecosystem"],
-      "dialectCoverage": { "state": "unknown", "evidence": [] }
+      "dialectCoverage": {
+        "state": "partial",
+        "evidence": [
+          {
+            "kind": "pinned-package",
+            "dialects": ["vue2-sfc"],
+            "repository": "https://github.com/pinry/pinry",
+            "revision": "05476b112401cf34a38bfbffc67c37f5f6c3b38f",
+            "file": "pinry-spa/package.json",
+            "blobSha": "259667a350f3adcaaeb00b05e9c8c19d281bfa6d",
+            "field": "dependencies.vue",
+            "value": "^2.6.10"
+          }
+        ]
+      }
     },
     {
       "fixturePath": "tests/_fixtures/_git/portal-vue",
       "memberships": ["ecosystem"],
-      "dialectCoverage": { "state": "unknown", "evidence": [] }
+      "dialectCoverage": {
+        "state": "partial",
+        "evidence": [
+          {
+            "kind": "pinned-package",
+            "dialects": ["vue3-sfc"],
+            "repository": "https://github.com/LinusBorg/portal-vue",
+            "revision": "024509fa1545c43ea2c306827ab718229814d2b3",
+            "file": "package.json",
+            "blobSha": "493b5ff0a1ce07ee0b8c755a1f1f37a03b7fa0c0",
+            "field": "devDependencies.vue",
+            "value": "^3.0.4"
+          }
+        ]
+      }
     },
     {
       "fixturePath": "tests/_fixtures/_git/prevue",
       "memberships": ["ecosystem"],
-      "dialectCoverage": { "state": "unknown", "evidence": [] }
+      "dialectCoverage": {
+        "state": "partial",
+        "evidence": [
+          {
+            "kind": "pinned-package",
+            "dialects": ["vue3-sfc"],
+            "repository": "https://github.com/open-source-labs/PreVue",
+            "revision": "deedda8b44e97f51b06ad6e2da17baf4997bf281",
+            "file": "package.json",
+            "blobSha": "4b6bb6a6d415f96198e9ea3756c2e1df3f073139",
+            "field": "dependencies.vue",
+            "value": "^3.2.47"
+          }
+        ]
+      }
     },
     {
       "fixturePath": "tests/_fixtures/_git/primevue",
@@ -435,57 +1399,251 @@
     {
       "fixturePath": "tests/_fixtures/_git/reka-ui",
       "memberships": ["ecosystem", "app"],
-      "dialectCoverage": { "state": "unknown", "evidence": [] }
+      "dialectCoverage": {
+        "state": "partial",
+        "evidence": [
+          {
+            "kind": "pinned-package",
+            "dialects": ["vue3-sfc"],
+            "repository": "https://github.com/unovue/reka-ui",
+            "revision": "c23e0ed8a38c66cd4f9350e7a46c6b502a8491c2",
+            "file": "packages/core/package.json",
+            "blobSha": "007d3d519b2fedcff17d8288d94888f0be9faa8c",
+            "field": "devDependencies.vue",
+            "value": "3.5.17"
+          }
+        ]
+      }
     },
     {
       "fixturePath": "tests/_fixtures/_git/scalar",
       "memberships": ["ecosystem"],
-      "dialectCoverage": { "state": "unknown", "evidence": [] }
+      "dialectCoverage": {
+        "state": "partial",
+        "evidence": [
+          {
+            "kind": "pinned-package",
+            "dialects": ["vue3-sfc"],
+            "repository": "https://github.com/scalar/scalar",
+            "revision": "62753f5528c30d7cef9cfd9461b6611bc5a2b4de",
+            "file": "examples/ssg/package.json",
+            "blobSha": "df9319f1bd73fbdd26a3a2b91f41fda0e65edbdc",
+            "field": "dependencies.vue",
+            "value": "catalog:*",
+            "catalog": {
+              "file": "pnpm-workspace.yaml",
+              "blobSha": "1caaba6825a0dd0e9b11161607d0f205c68c8881",
+              "value": "^3.5.40"
+            }
+          }
+        ]
+      }
     },
     {
       "fixturePath": "tests/_fixtures/_git/shadcn-vue",
       "memberships": ["ecosystem"],
-      "dialectCoverage": { "state": "unknown", "evidence": [] }
+      "dialectCoverage": {
+        "state": "partial",
+        "evidence": [
+          {
+            "kind": "pinned-package",
+            "dialects": ["vue3-sfc"],
+            "repository": "https://github.com/unovue/shadcn-vue",
+            "revision": "3f048dfb495703f39e191b25a69307fba72822eb",
+            "file": "apps/v4/package.json",
+            "blobSha": "7de1ac5305ac2a79f38f87dad635120a03ce6933",
+            "field": "dependencies.vue",
+            "value": "catalog:",
+            "catalog": {
+              "file": "pnpm-workspace.yaml",
+              "blobSha": "ae953161fef0f1afd976239895f6d4adc13a87fb",
+              "value": "^3.5.40"
+            }
+          },
+          {
+            "kind": "pinned-package",
+            "dialects": ["jsx-babel"],
+            "repository": "https://github.com/unovue/shadcn-vue",
+            "revision": "3f048dfb495703f39e191b25a69307fba72822eb",
+            "file": "deprecated/www/package.json",
+            "blobSha": "94ce27a16d842edf1bd410cbb30345a69117dff5",
+            "field": "devDependencies.@vitejs/plugin-vue-jsx",
+            "value": "^5.1.1"
+          }
+        ]
+      }
     },
     {
       "fixturePath": "tests/_fixtures/_git/sigma-file-manager",
       "memberships": ["ecosystem"],
-      "dialectCoverage": { "state": "unknown", "evidence": [] }
+      "dialectCoverage": {
+        "state": "partial",
+        "evidence": [
+          {
+            "kind": "pinned-package",
+            "dialects": ["vue3-sfc"],
+            "repository": "https://github.com/aleksey-hoffman/sigma-file-manager",
+            "revision": "1a9108db3719a90152243dba3e014620f9a13c63",
+            "file": "package.json",
+            "blobSha": "bb11411037000396c34acea1189645e79976c2fd",
+            "field": "dependencies.vue",
+            "value": "^3.5.39"
+          }
+        ]
+      }
     },
     {
       "fixturePath": "tests/_fixtures/_git/solidtime",
       "memberships": ["ecosystem"],
-      "dialectCoverage": { "state": "unknown", "evidence": [] }
+      "dialectCoverage": {
+        "state": "partial",
+        "evidence": [
+          {
+            "kind": "pinned-package",
+            "dialects": ["vue3-sfc"],
+            "repository": "https://github.com/solidtime-io/solidtime",
+            "revision": "de13c07855bbaacb1cced918003a0a15b5a48aba",
+            "file": "package.json",
+            "blobSha": "5bf06dd87c326b55f9bf6175deb562676d66b033",
+            "field": "devDependencies.vue",
+            "value": "^3.5.34"
+          }
+        ]
+      }
     },
     {
       "fixturePath": "tests/_fixtures/_git/soybean-admin",
       "memberships": ["ecosystem"],
-      "dialectCoverage": { "state": "unknown", "evidence": [] }
+      "dialectCoverage": {
+        "state": "partial",
+        "evidence": [
+          {
+            "kind": "pinned-package",
+            "dialects": ["vue3-sfc"],
+            "repository": "https://github.com/soybeanjs/soybean-admin",
+            "revision": "3d3613f20cd4add3cd20fd6cc884abead165c6d2",
+            "file": "package.json",
+            "blobSha": "59c060f9cd8a10795bcdc32067c2b99f19fb7583",
+            "field": "dependencies.vue",
+            "value": "3.5.34"
+          },
+          {
+            "kind": "pinned-package",
+            "dialects": ["jsx-babel"],
+            "repository": "https://github.com/soybeanjs/soybean-admin",
+            "revision": "3d3613f20cd4add3cd20fd6cc884abead165c6d2",
+            "file": "package.json",
+            "blobSha": "59c060f9cd8a10795bcdc32067c2b99f19fb7583",
+            "field": "devDependencies.@vitejs/plugin-vue-jsx",
+            "value": "5.1.5"
+          }
+        ]
+      }
     },
     {
       "fixturePath": "tests/_fixtures/_git/splayer",
       "memberships": ["ecosystem"],
-      "dialectCoverage": { "state": "unknown", "evidence": [] }
+      "dialectCoverage": {
+        "state": "partial",
+        "evidence": [
+          {
+            "kind": "pinned-package",
+            "dialects": ["vue3-sfc"],
+            "repository": "https://github.com/SPlayer-Dev/SPlayer",
+            "revision": "40d9ec606cc1e323c964ffea7bf0ab02f137e93b",
+            "file": "package.json",
+            "blobSha": "2e7167a2a439ae4da22d6c3fe8f5d0a5fa73f3f9",
+            "field": "devDependencies.vue",
+            "value": "^3.5.35"
+          }
+        ]
+      }
     },
     {
       "fixturePath": "tests/_fixtures/_git/splitpanes",
       "memberships": ["ecosystem"],
-      "dialectCoverage": { "state": "unknown", "evidence": [] }
+      "dialectCoverage": {
+        "state": "partial",
+        "evidence": [
+          {
+            "kind": "pinned-package",
+            "dialects": ["pug-template"],
+            "repository": "https://github.com/antoniandre/splitpanes",
+            "revision": "c13526b5d751ad188e19c6b6797466a7559a88d4",
+            "file": "package.json",
+            "blobSha": "4bec1ceaa8bf0dfb6bbb18d1dbba67bd7fe3297d",
+            "field": "devDependencies.pug",
+            "value": "^3.0.4"
+          },
+          {
+            "kind": "pinned-package",
+            "dialects": ["vue3-sfc"],
+            "repository": "https://github.com/antoniandre/splitpanes",
+            "revision": "c13526b5d751ad188e19c6b6797466a7559a88d4",
+            "file": "package.json",
+            "blobSha": "4bec1ceaa8bf0dfb6bbb18d1dbba67bd7fe3297d",
+            "field": "devDependencies.vue",
+            "value": "^3.5.34"
+          }
+        ]
+      }
     },
     {
       "fixturePath": "tests/_fixtures/_git/tailwind-config-viewer",
       "memberships": ["ecosystem"],
-      "dialectCoverage": { "state": "unknown", "evidence": [] }
+      "dialectCoverage": {
+        "state": "partial",
+        "evidence": [
+          {
+            "kind": "pinned-package",
+            "dialects": ["vue2-sfc"],
+            "repository": "https://github.com/rogden/tailwind-config-viewer",
+            "revision": "56d6d2e0b97efb27ffff474dcb951a5ac441a9ac",
+            "file": "package.json",
+            "blobSha": "e5973dd970a8c49f4fe6200b69687f94c83749ed",
+            "field": "devDependencies.vue",
+            "value": "^2.6.10"
+          }
+        ]
+      }
     },
     {
       "fixturePath": "tests/_fixtures/_git/tdesign",
       "memberships": ["ecosystem"],
-      "dialectCoverage": { "state": "unknown", "evidence": [] }
+      "dialectCoverage": {
+        "state": "partial",
+        "evidence": [
+          {
+            "kind": "pinned-package",
+            "dialects": ["vue2.7-sfc"],
+            "repository": "https://github.com/Tencent/tdesign",
+            "revision": "11c76ad6c632e55843f921b683f16ea3c01eecda",
+            "file": "site/package.json",
+            "blobSha": "b727baeecd77b4aac32c57f10073200e7cc51e5f",
+            "field": "dependencies.vue",
+            "value": "2.7.14"
+          }
+        ]
+      }
     },
     {
       "fixturePath": "tests/_fixtures/_git/tiny-rdm",
       "memberships": ["ecosystem"],
-      "dialectCoverage": { "state": "unknown", "evidence": [] }
+      "dialectCoverage": {
+        "state": "partial",
+        "evidence": [
+          {
+            "kind": "pinned-package",
+            "dialects": ["vue3-sfc"],
+            "repository": "https://github.com/tiny-craft/tiny-rdm",
+            "revision": "4ddb94a3c55f3401dbc66870f0d21cf0d6203cbc",
+            "file": "frontend/package.json",
+            "blobSha": "ea33e961d8616aee82596fa7522f744ede33687a",
+            "field": "dependencies.vue",
+            "value": "^3.5.39"
+          }
+        ]
+      }
     },
     {
       "fixturePath": "tests/_fixtures/_git/uni-app",
@@ -495,57 +1653,251 @@
     {
       "fixturePath": "tests/_fixtures/_git/v-charts",
       "memberships": ["ecosystem"],
-      "dialectCoverage": { "state": "unknown", "evidence": [] }
+      "dialectCoverage": {
+        "state": "partial",
+        "evidence": [
+          {
+            "kind": "pinned-package",
+            "dialects": ["vue2-sfc"],
+            "repository": "https://github.com/ElemeFE/v-charts",
+            "revision": "f3c31e0cc0bc85e2685caaaf8e2fe658030f744c",
+            "file": "package.json",
+            "blobSha": "f6d46836a102d3d23c482d442725b319b7379b6e",
+            "field": "devDependencies.vue",
+            "value": "^2.5.16"
+          }
+        ]
+      }
     },
     {
       "fixturePath": "tests/_fixtures/_git/v-viewer",
       "memberships": ["ecosystem"],
-      "dialectCoverage": { "state": "unknown", "evidence": [] }
+      "dialectCoverage": {
+        "state": "partial",
+        "evidence": [
+          {
+            "kind": "pinned-package",
+            "dialects": ["vue3-sfc"],
+            "repository": "https://github.com/mirari/v-viewer",
+            "revision": "9d51fe98f9d2b5d7c836a637cbb3b11d20bf4899",
+            "file": "package.json",
+            "blobSha": "14ff9f1238d6731d187c650e011557f4994e9321",
+            "field": "devDependencies.vue",
+            "value": "^3.2.37"
+          }
+        ]
+      }
     },
     {
       "fixturePath": "tests/_fixtures/_git/vant",
       "memberships": ["ecosystem"],
-      "dialectCoverage": { "state": "unknown", "evidence": [] }
+      "dialectCoverage": {
+        "state": "partial",
+        "evidence": [
+          {
+            "kind": "pinned-package",
+            "dialects": ["jsx-babel"],
+            "repository": "https://github.com/youzan/vant",
+            "revision": "29cd8c2119139851495550b9bf6bd5bd9f678b2f",
+            "file": "packages/vant-cli/package.json",
+            "blobSha": "beed2e7d5f9b8557998d44052e95585e4d257dfa",
+            "field": "dependencies.@vitejs/plugin-vue-jsx",
+            "value": "^4.2.0"
+          },
+          {
+            "kind": "pinned-package",
+            "dialects": ["vue3-sfc"],
+            "repository": "https://github.com/youzan/vant",
+            "revision": "29cd8c2119139851495550b9bf6bd5bd9f678b2f",
+            "file": "packages/vant-cli/package.json",
+            "blobSha": "beed2e7d5f9b8557998d44052e95585e4d257dfa",
+            "field": "devDependencies.vue",
+            "value": "^3.5.40"
+          }
+        ]
+      }
     },
     {
       "fixturePath": "tests/_fixtures/_git/vant-demo",
       "memberships": ["ecosystem"],
-      "dialectCoverage": { "state": "unknown", "evidence": [] }
+      "dialectCoverage": {
+        "state": "partial",
+        "evidence": [
+          {
+            "kind": "pinned-package",
+            "dialects": ["vue2-sfc"],
+            "repository": "https://github.com/vant-ui/vant-demo",
+            "revision": "c382aeba3cfea6ea31f6fee98a99b1c6604accc4",
+            "file": "vant-cli/base/package.json",
+            "blobSha": "8bcbcc30106b528c04ee813a35e764e5f4300cd5",
+            "field": "devDependencies.vue",
+            "value": "^2.6.11"
+          },
+          {
+            "kind": "pinned-package",
+            "dialects": ["vue3-sfc"],
+            "repository": "https://github.com/vant-ui/vant-demo",
+            "revision": "c382aeba3cfea6ea31f6fee98a99b1c6604accc4",
+            "file": "vant/nuxt3/package.json",
+            "blobSha": "0adac4ae0c42f4a27029aac92af977a852bc7d2c",
+            "field": "dependencies.vue",
+            "value": "^3.2.47"
+          }
+        ]
+      }
     },
     {
       "fixturePath": "tests/_fixtures/_git/varlet",
       "memberships": ["ecosystem"],
-      "dialectCoverage": { "state": "unknown", "evidence": [] }
+      "dialectCoverage": {
+        "state": "partial",
+        "evidence": [
+          {
+            "kind": "pinned-package",
+            "dialects": ["jsx-babel"],
+            "repository": "https://github.com/varletjs/varlet",
+            "revision": "1007097bde3f6c06326e0057ac6a7cf4ab7ff519",
+            "file": "packages/varlet-cli/package.json",
+            "blobSha": "2f06295b936e97b9739e49f5e1daa007ce595684",
+            "field": "dependencies.@vitejs/plugin-vue-jsx",
+            "value": "catalog:",
+            "catalog": {
+              "file": "pnpm-workspace.yaml",
+              "blobSha": "f5de2b7b1e03b64b9a925eae2651544683d0f92a",
+              "value": "5.1.5"
+            }
+          },
+          {
+            "kind": "pinned-package",
+            "dialects": ["vue3-sfc"],
+            "repository": "https://github.com/varletjs/varlet",
+            "revision": "1007097bde3f6c06326e0057ac6a7cf4ab7ff519",
+            "file": "packages/varlet-cli/package.json",
+            "blobSha": "2f06295b936e97b9739e49f5e1daa007ce595684",
+            "field": "dependencies.vue",
+            "value": "catalog:",
+            "catalog": {
+              "file": "pnpm-workspace.yaml",
+              "blobSha": "f5de2b7b1e03b64b9a925eae2651544683d0f92a",
+              "value": "3.5.21"
+            }
+          }
+        ]
+      }
     },
     {
       "fixturePath": "tests/_fixtures/_git/vaul-vue",
       "memberships": ["ecosystem"],
-      "dialectCoverage": { "state": "unknown", "evidence": [] }
+      "dialectCoverage": {
+        "state": "partial",
+        "evidence": [
+          {
+            "kind": "pinned-package",
+            "dialects": ["vue3-sfc"],
+            "repository": "https://github.com/unovue/vaul-vue",
+            "revision": "fafb0507c8845c34d232ebed51068428685329f1",
+            "file": "playground/package.json",
+            "blobSha": "7cb6865a539cf61ec9102aa546eddd84d70d478f",
+            "field": "dependencies.vue",
+            "value": "^3.4.5"
+          }
+        ]
+      }
     },
     {
       "fixturePath": "tests/_fixtures/_git/vee-validate",
       "memberships": ["ecosystem"],
-      "dialectCoverage": { "state": "unknown", "evidence": [] }
+      "dialectCoverage": {
+        "state": "partial",
+        "evidence": [
+          {
+            "kind": "pinned-package",
+            "dialects": ["vue3-sfc"],
+            "repository": "https://github.com/logaretm/vee-validate",
+            "revision": "7d8cc524f9204655ad00a466090738e43b44ff2a",
+            "file": "package.json",
+            "blobSha": "bda521886d11d9b49192774d6a71bb500d5ede1a",
+            "field": "devDependencies.vue",
+            "value": "^3.4.26"
+          }
+        ]
+      }
     },
     {
       "fixturePath": "tests/_fixtures/_git/vitepress",
       "memberships": ["ecosystem"],
-      "dialectCoverage": { "state": "unknown", "evidence": [] }
+      "dialectCoverage": {
+        "state": "partial",
+        "evidence": [
+          {
+            "kind": "pinned-package",
+            "dialects": ["vue3-sfc"],
+            "repository": "https://github.com/vuejs/vitepress",
+            "revision": "9ee401d7adefc39fd960990cc032be5464e4eb27",
+            "file": "package.json",
+            "blobSha": "99fd0c10090d3835b383a26cea83f4194b98fd2f",
+            "field": "dependencies.vue",
+            "value": "^3.5.39"
+          }
+        ]
+      }
     },
     {
       "fixturePath": "tests/_fixtures/_git/voicevox",
       "memberships": ["ecosystem", "app"],
-      "dialectCoverage": { "state": "unknown", "evidence": [] }
+      "dialectCoverage": {
+        "state": "partial",
+        "evidence": [
+          {
+            "kind": "pinned-package",
+            "dialects": ["vue3-sfc"],
+            "repository": "https://github.com/VOICEVOX/voicevox",
+            "revision": "0a7fcc8523410ad294b51b70a46575c4d21371ac",
+            "file": "package.json",
+            "blobSha": "2dfab349dead542620010e7771567c9bded9a812",
+            "field": "dependencies.vue",
+            "value": "3.5.34"
+          }
+        ]
+      }
     },
     {
       "fixturePath": "tests/_fixtures/_git/vonic",
       "memberships": ["ecosystem"],
-      "dialectCoverage": { "state": "unknown", "evidence": [] }
+      "dialectCoverage": {
+        "state": "partial",
+        "evidence": [
+          {
+            "kind": "pinned-package",
+            "dialects": ["vue2-sfc"],
+            "repository": "https://github.com/wangdahoo/vonic",
+            "revision": "6ed81779655796459b4e807582ed26332cbaaf25",
+            "file": "package.json",
+            "blobSha": "c5f967a3fd137a377fbcf856d885b9a4e4f195a6",
+            "field": "dependencies.vue",
+            "value": "^2.2.6"
+          }
+        ]
+      }
     },
     {
       "fixturePath": "tests/_fixtures/_git/vue-apexcharts",
       "memberships": ["ecosystem"],
-      "dialectCoverage": { "state": "unknown", "evidence": [] }
+      "dialectCoverage": {
+        "state": "partial",
+        "evidence": [
+          {
+            "kind": "pinned-package",
+            "dialects": ["vue2-sfc"],
+            "repository": "https://github.com/apexcharts/vue-apexcharts",
+            "revision": "182f8ce43d4f6e15446d39712c7a1e514aaa8627",
+            "file": "package.json",
+            "blobSha": "37064fe1e5b4d5198b5d576404f812d2b6961aad",
+            "field": "devDependencies.vue",
+            "value": "^2.5.17"
+          }
+        ]
+      }
     },
     {
       "fixturePath": "tests/_fixtures/_git/vue-benchmarks",
@@ -555,77 +1907,337 @@
     {
       "fixturePath": "tests/_fixtures/_git/vue-bits",
       "memberships": ["ecosystem"],
-      "dialectCoverage": { "state": "unknown", "evidence": [] }
+      "dialectCoverage": {
+        "state": "partial",
+        "evidence": [
+          {
+            "kind": "pinned-package",
+            "dialects": ["vue3-sfc"],
+            "repository": "https://github.com/DavidHDev/vue-bits",
+            "revision": "05668fee962070e4edc4c4fbfed53893d7987d6d",
+            "file": "package.json",
+            "blobSha": "5951c92203d35fc4d51bdd2a1567635eaf88a2df",
+            "field": "dependencies.vue",
+            "value": "^3.5.17"
+          },
+          {
+            "kind": "pinned-package",
+            "dialects": ["jsx-babel"],
+            "repository": "https://github.com/DavidHDev/vue-bits",
+            "revision": "05668fee962070e4edc4c4fbfed53893d7987d6d",
+            "file": "package.json",
+            "blobSha": "5951c92203d35fc4d51bdd2a1567635eaf88a2df",
+            "field": "devDependencies.@vitejs/plugin-vue-jsx",
+            "value": "^5.0.0"
+          }
+        ]
+      }
     },
     {
       "fixturePath": "tests/_fixtures/_git/vue-cal-v4",
       "memberships": ["ecosystem"],
-      "dialectCoverage": { "state": "unknown", "evidence": [] }
+      "dialectCoverage": {
+        "state": "partial",
+        "evidence": [
+          {
+            "kind": "pinned-package",
+            "dialects": ["pug-template"],
+            "repository": "https://github.com/antoniandre/vue-cal-v4",
+            "revision": "b88c9f840cc43e6eccda0651c1d062b0c5bd8107",
+            "file": "package.json",
+            "blobSha": "99cdcb89814d7f833459e9d3ebc8c0443c6f7f4e",
+            "field": "devDependencies.pug",
+            "value": "^3.0.3"
+          },
+          {
+            "kind": "pinned-package",
+            "dialects": ["vue3-sfc"],
+            "repository": "https://github.com/antoniandre/vue-cal-v4",
+            "revision": "b88c9f840cc43e6eccda0651c1d062b0c5bd8107",
+            "file": "package.json",
+            "blobSha": "99cdcb89814d7f833459e9d3ebc8c0443c6f7f4e",
+            "field": "devDependencies.vue",
+            "value": "^3.5.13"
+          }
+        ]
+      }
     },
     {
       "fixturePath": "tests/_fixtures/_git/vue-calendar",
       "memberships": ["ecosystem"],
-      "dialectCoverage": { "state": "unknown", "evidence": [] }
+      "dialectCoverage": {
+        "state": "partial",
+        "evidence": [
+          {
+            "kind": "pinned-package",
+            "dialects": ["vue2-sfc"],
+            "repository": "https://github.com/jinzhe/vue-calendar",
+            "revision": "e980b2f4deee02fe1b9cb4b802897a245d3daaef",
+            "file": "package.json",
+            "blobSha": "fea10103c7f07728dd08404566ecad79dcb7ca36",
+            "field": "dependencies.vue",
+            "value": "^2.3.3"
+          }
+        ]
+      }
     },
     {
       "fixturePath": "tests/_fixtures/_git/vue-chartjs",
       "memberships": ["ecosystem"],
-      "dialectCoverage": { "state": "unknown", "evidence": [] }
+      "dialectCoverage": {
+        "state": "partial",
+        "evidence": [
+          {
+            "kind": "pinned-package",
+            "dialects": ["vue3-sfc"],
+            "repository": "https://github.com/apertureless/vue-chartjs",
+            "revision": "ebf26ede933ebd3672afc0309ec24537b28eec40",
+            "file": "package.json",
+            "blobSha": "1ec96344480c5641317893b08bb28be7317ff80c",
+            "field": "devDependencies.vue",
+            "value": "^3.2.31"
+          }
+        ]
+      }
     },
     {
       "fixturePath": "tests/_fixtures/_git/vue-charts",
       "memberships": ["ecosystem"],
-      "dialectCoverage": { "state": "unknown", "evidence": [] }
+      "dialectCoverage": {
+        "state": "partial",
+        "evidence": [
+          {
+            "kind": "pinned-package",
+            "dialects": ["jsx-babel"],
+            "repository": "https://github.com/unovue/vue-charts",
+            "revision": "ecf3d2690f34d3eef75ab6dbed451088be2fad5b",
+            "file": "package.json",
+            "blobSha": "2a93b8fd64d9ab349ca35543d26b3b4637bf383f",
+            "field": "devDependencies.@vitejs/plugin-vue-jsx",
+            "value": "^5.0.0"
+          },
+          {
+            "kind": "pinned-package",
+            "dialects": ["vue3-sfc"],
+            "repository": "https://github.com/unovue/vue-charts",
+            "revision": "ecf3d2690f34d3eef75ab6dbed451088be2fad5b",
+            "file": "package.json",
+            "blobSha": "2a93b8fd64d9ab349ca35543d26b3b4637bf383f",
+            "field": "devDependencies.vue",
+            "value": "^3.5.0"
+          }
+        ]
+      }
     },
     {
       "fixturePath": "tests/_fixtures/_git/vue-core-vapor",
       "memberships": ["ecosystem"],
-      "dialectCoverage": { "state": "unknown", "evidence": [] }
+      "dialectCoverage": {
+        "state": "partial",
+        "evidence": [
+          {
+            "kind": "pinned-package",
+            "dialects": ["pug-template"],
+            "repository": "https://github.com/vuejs/core",
+            "revision": "3adb225775c9b28223a56e07f7a2f874b6fbb138",
+            "file": "package.json",
+            "blobSha": "c43eda85c45595f9e4943711d47e96d82ad1408b",
+            "field": "devDependencies.pug",
+            "value": "^3.0.4"
+          }
+        ]
+      }
     },
     {
       "fixturePath": "tests/_fixtures/_git/vue-cropper",
       "memberships": ["ecosystem"],
-      "dialectCoverage": { "state": "unknown", "evidence": [] }
+      "dialectCoverage": {
+        "state": "partial",
+        "evidence": [
+          {
+            "kind": "pinned-package",
+            "dialects": ["vue2-sfc"],
+            "repository": "https://github.com/xyxiao001/vue-cropper",
+            "revision": "29edd081e6a0293801bc2f692c93141f96532cb1",
+            "file": "package.json",
+            "blobSha": "55a4e02283138415b68afbcb1a12bf9a957f3d74",
+            "field": "devDependencies.vue",
+            "value": "^2.5.17"
+          },
+          {
+            "kind": "pinned-package",
+            "dialects": ["vue3-sfc"],
+            "repository": "https://github.com/xyxiao001/vue-cropper",
+            "revision": "29edd081e6a0293801bc2f692c93141f96532cb1",
+            "file": "next/package.json",
+            "blobSha": "bd3fcfa6ce8b9f50d48f5ab4d81a2d63a35222d5",
+            "field": "devDependencies.vue",
+            "value": "^3.3.4"
+          }
+        ]
+      }
     },
     {
       "fixturePath": "tests/_fixtures/_git/vue-data-ui",
       "memberships": ["ecosystem"],
-      "dialectCoverage": { "state": "unknown", "evidence": [] }
+      "dialectCoverage": {
+        "state": "partial",
+        "evidence": [
+          {
+            "kind": "pinned-package",
+            "dialects": ["vue3-sfc"],
+            "repository": "https://github.com/graphieros/vue-data-ui",
+            "revision": "14628946a8185252a7051b40be931e93a0b480a1",
+            "file": "package.json",
+            "blobSha": "e79d12802aa35324c24bd8bc3acc9b895d585abe",
+            "field": "devDependencies.vue",
+            "value": "^3.5.41"
+          }
+        ]
+      }
     },
     {
       "fixturePath": "tests/_fixtures/_git/vue-datepicker",
       "memberships": ["ecosystem"],
-      "dialectCoverage": { "state": "unknown", "evidence": [] }
+      "dialectCoverage": {
+        "state": "partial",
+        "evidence": [
+          {
+            "kind": "pinned-package",
+            "dialects": ["vue3-sfc"],
+            "repository": "https://github.com/Vuepic/vue-datepicker",
+            "revision": "f1a5c11028885e02e81ed379ff04107a7d99d964",
+            "file": "packages/docs/package.json",
+            "blobSha": "6a2676f357bf13c0549a16329d75be9b3f425214",
+            "field": "devDependencies.vue",
+            "value": "^3.5.34"
+          }
+        ]
+      }
     },
     {
       "fixturePath": "tests/_fixtures/_git/vue-devtools-v6",
       "memberships": ["ecosystem"],
-      "dialectCoverage": { "state": "unknown", "evidence": [] }
+      "dialectCoverage": {
+        "state": "partial",
+        "evidence": [
+          {
+            "kind": "pinned-package",
+            "dialects": ["vue2.7-sfc"],
+            "repository": "https://github.com/vuejs/devtools-v6",
+            "revision": "dd2ab5d4275187cbd81952a2a3d53c335643c1f4",
+            "file": "packages/app-backend-vue2/package.json",
+            "blobSha": "1a95fec7d7cff3cd25b8a3dd724e7eb8dd830176",
+            "field": "devDependencies.vue",
+            "value": "^2.7.10"
+          },
+          {
+            "kind": "pinned-package",
+            "dialects": ["vue3-sfc"],
+            "repository": "https://github.com/vuejs/devtools-v6",
+            "revision": "dd2ab5d4275187cbd81952a2a3d53c335643c1f4",
+            "file": "packages/app-frontend/package.json",
+            "blobSha": "971ab0682311a639348b2b6d68dd70162302fddf",
+            "field": "dependencies.vue",
+            "value": "^3.3.4"
+          }
+        ]
+      }
     },
     {
       "fixturePath": "tests/_fixtures/_git/vue-draggable-next",
       "memberships": ["ecosystem"],
-      "dialectCoverage": { "state": "unknown", "evidence": [] }
+      "dialectCoverage": {
+        "state": "partial",
+        "evidence": [
+          {
+            "kind": "pinned-package",
+            "dialects": ["vue3-sfc"],
+            "repository": "https://github.com/SortableJS/vue.draggable.next",
+            "revision": "8687d34f3182a1a0bfb138e995609f32ffe3ce6b",
+            "file": "package.json",
+            "blobSha": "17c951cb253b3fb8710aa67ed2603ff273d5ddce",
+            "field": "devDependencies.vue",
+            "value": "^3.0.1"
+          }
+        ]
+      }
     },
     {
       "fixturePath": "tests/_fixtures/_git/vue-draggable-plus",
       "memberships": ["ecosystem"],
-      "dialectCoverage": { "state": "unknown", "evidence": [] }
+      "dialectCoverage": {
+        "state": "partial",
+        "evidence": [
+          {
+            "kind": "pinned-package",
+            "dialects": ["vue3-sfc"],
+            "repository": "https://github.com/Alfred-Skyblue/vue-draggable-plus",
+            "revision": "1b82b5f115fda6c2137698d823d59be7b895868b",
+            "file": "package.json",
+            "blobSha": "f631807b242a388fc507b6d49f0fb6c8d97b00fd",
+            "field": "devDependencies.vue",
+            "value": "^3.4.27"
+          }
+        ]
+      }
     },
     {
       "fixturePath": "tests/_fixtures/_git/vue-draggable-resizable",
       "memberships": ["ecosystem"],
-      "dialectCoverage": { "state": "unknown", "evidence": [] }
+      "dialectCoverage": {
+        "state": "partial",
+        "evidence": [
+          {
+            "kind": "pinned-package",
+            "dialects": ["vue3-sfc"],
+            "repository": "https://github.com/mauricius/vue-draggable-resizable",
+            "revision": "72cda0844f765c85df7ae423de12bb54790bcc75",
+            "file": "package.json",
+            "blobSha": "83f7f892ef0a8f4763a87fc6af71f93599cefaaf",
+            "field": "devDependencies.vue",
+            "value": "^3.2.25"
+          }
+        ]
+      }
     },
     {
       "fixturePath": "tests/_fixtures/_git/vue-dropzone",
       "memberships": ["ecosystem"],
-      "dialectCoverage": { "state": "unknown", "evidence": [] }
+      "dialectCoverage": {
+        "state": "partial",
+        "evidence": [
+          {
+            "kind": "pinned-package",
+            "dialects": ["vue2-sfc"],
+            "repository": "https://github.com/rowanwins/vue-dropzone",
+            "revision": "c88b8b08922cca4743a7fde03a0213e8c7a34f0f",
+            "file": "package.json",
+            "blobSha": "658bbaea9f4a678a63db760a60ca06be725a3a88",
+            "field": "devDependencies.vue",
+            "value": "^2.6.8"
+          }
+        ]
+      }
     },
     {
       "fixturePath": "tests/_fixtures/_git/vue-echarts",
       "memberships": ["ecosystem"],
-      "dialectCoverage": { "state": "unknown", "evidence": [] }
+      "dialectCoverage": {
+        "state": "partial",
+        "evidence": [
+          {
+            "kind": "pinned-package",
+            "dialects": ["vue3-sfc"],
+            "repository": "https://github.com/ecomfe/vue-echarts",
+            "revision": "4d70d2f86d9fbf08798fc2d87f73b06621f58bfe",
+            "file": "package.json",
+            "blobSha": "abbe0dfc730eda7e1857db8dabe31b5b372dc812",
+            "field": "devDependencies.vue",
+            "value": "^3.5.40"
+          }
+        ]
+      }
     },
     {
       "fixturePath": "tests/_fixtures/_git/vue-element-admin",
@@ -645,27 +2257,107 @@
     {
       "fixturePath": "tests/_fixtures/_git/vue-fabric-editor",
       "memberships": ["ecosystem"],
-      "dialectCoverage": { "state": "unknown", "evidence": [] }
+      "dialectCoverage": {
+        "state": "partial",
+        "evidence": [
+          {
+            "kind": "pinned-package",
+            "dialects": ["vue3-sfc"],
+            "repository": "https://github.com/ikuaitu/vue-fabric-editor",
+            "revision": "b3bdcfb0bd6d8f98e7483cf561ac03ba56c0d889",
+            "file": "package.json",
+            "blobSha": "8c80ca2b4e69d8fdb1b5249a5644fe63184debdb",
+            "field": "dependencies.vue",
+            "value": "^3.2.25"
+          },
+          {
+            "kind": "pinned-package",
+            "dialects": ["jsx-babel"],
+            "repository": "https://github.com/ikuaitu/vue-fabric-editor",
+            "revision": "b3bdcfb0bd6d8f98e7483cf561ac03ba56c0d889",
+            "file": "package.json",
+            "blobSha": "8c80ca2b4e69d8fdb1b5249a5644fe63184debdb",
+            "field": "devDependencies.@vitejs/plugin-vue-jsx",
+            "value": "^3.0.1"
+          }
+        ]
+      }
     },
     {
       "fixturePath": "tests/_fixtures/_git/vue-flow",
       "memberships": ["ecosystem"],
-      "dialectCoverage": { "state": "unknown", "evidence": [] }
+      "dialectCoverage": {
+        "state": "partial",
+        "evidence": [
+          {
+            "kind": "pinned-package",
+            "dialects": ["vue3-sfc"],
+            "repository": "https://github.com/bcakmakoglu/vue-flow",
+            "revision": "17953c329db2d5dc5f5097370cbf5e1173bab520",
+            "file": "docs/package.json",
+            "blobSha": "d03c41df61eb57b87bfa101334bf06c900d2faad",
+            "field": "dependencies.vue",
+            "value": "^3.5.12"
+          }
+        ]
+      }
     },
     {
       "fixturePath": "tests/_fixtures/_git/vue-fullpage-js",
       "memberships": ["ecosystem"],
-      "dialectCoverage": { "state": "unknown", "evidence": [] }
+      "dialectCoverage": {
+        "state": "partial",
+        "evidence": [
+          {
+            "kind": "pinned-package",
+            "dialects": ["vue3-sfc"],
+            "repository": "https://github.com/alvarotrigo/vue-fullpage.js",
+            "revision": "e3ef972dad5b6b07d28bf725068182e2347b7bde",
+            "file": "package.json",
+            "blobSha": "0bcf683e46774d2678ff3505f8b8093b34ecfdfb",
+            "field": "peerDependencies.vue",
+            "value": "^3.2.26"
+          }
+        ]
+      }
     },
     {
       "fixturePath": "tests/_fixtures/_git/vue-grid-layout",
       "memberships": ["ecosystem"],
-      "dialectCoverage": { "state": "unknown", "evidence": [] }
+      "dialectCoverage": {
+        "state": "partial",
+        "evidence": [
+          {
+            "kind": "pinned-package",
+            "dialects": ["vue2.7-sfc"],
+            "repository": "https://github.com/jbaysolutions/vue-grid-layout",
+            "revision": "6e536767937fbde7f1f18435a185e2b9a00c27ef",
+            "file": "package.json",
+            "blobSha": "aeba9b74fe573054530d5cfe8e274afad8d7ac17",
+            "field": "devDependencies.vue",
+            "value": "^2.7.8"
+          }
+        ]
+      }
     },
     {
       "fixturePath": "tests/_fixtures/_git/vue-js-modal",
       "memberships": ["ecosystem"],
-      "dialectCoverage": { "state": "unknown", "evidence": [] }
+      "dialectCoverage": {
+        "state": "partial",
+        "evidence": [
+          {
+            "kind": "pinned-package",
+            "dialects": ["vue2-sfc"],
+            "repository": "https://github.com/euvl/vue-js-modal",
+            "revision": "2dcc67984a65ec6ad351f8a2b13bb84582a0800d",
+            "file": "package.json",
+            "blobSha": "a1110ae89aa166da0150877be2df2a80f9d8f663",
+            "field": "devDependencies.vue",
+            "value": "2.6.11"
+          }
+        ]
+      }
     },
     {
       "fixturePath": "tests/_fixtures/_git/vue-jsx-vapor",
@@ -677,6 +2369,16 @@
             "kind": "registry-note",
             "dialects": ["jsx-vapor"],
             "selector": "Vapor JSX corpus: playground app and docs tutorial steps hold the vapor-mode JSX sources."
+          },
+          {
+            "kind": "pinned-package",
+            "dialects": ["vue3-sfc"],
+            "repository": "https://github.com/vuejs/vue-jsx-vapor",
+            "revision": "817e137c2847c7e4cca7d283637660f176060453",
+            "file": "docs/tutorial/template/package.json",
+            "blobSha": "0a3e916a1143e779da1cee97064c2c91bea00753",
+            "field": "dependencies.vue",
+            "value": "3.6.0-rc.1"
           }
         ]
       }
@@ -684,12 +2386,40 @@
     {
       "fixturePath": "tests/_fixtures/_git/vue-lottie",
       "memberships": ["ecosystem"],
-      "dialectCoverage": { "state": "unknown", "evidence": [] }
+      "dialectCoverage": {
+        "state": "partial",
+        "evidence": [
+          {
+            "kind": "pinned-package",
+            "dialects": ["vue2-sfc"],
+            "repository": "https://github.com/chenqingspring/vue-lottie",
+            "revision": "d66265f6d31f50dab4269f5a1fef7c7e29d5299d",
+            "file": "package.json",
+            "blobSha": "fe54d89ada99407edf5653af605e6f29b71924a3",
+            "field": "peerDependencies.vue",
+            "value": "^2.5.16"
+          }
+        ]
+      }
     },
     {
       "fixturePath": "tests/_fixtures/_git/vue-manage-system",
       "memberships": ["ecosystem"],
-      "dialectCoverage": { "state": "unknown", "evidence": [] }
+      "dialectCoverage": {
+        "state": "partial",
+        "evidence": [
+          {
+            "kind": "pinned-package",
+            "dialects": ["vue3-sfc"],
+            "repository": "https://github.com/lin-xin/vue-manage-system",
+            "revision": "6a7019ec1a74cc05297d18647a5f944c242d468a",
+            "file": "package.json",
+            "blobSha": "3423e5a634b0f135a36b08d60452ee25b1994b50",
+            "field": "dependencies.vue",
+            "value": "^3.4.5"
+          }
+        ]
+      }
     },
     {
       "fixturePath": "tests/_fixtures/_git/vue-material",
@@ -704,7 +2434,7 @@
             "revision": "7b1efd058abaccc826bcf856e2a879936bf0fcd3",
             "file": "package.json",
             "blobSha": "7122aef7901ee0b7851e190fc7e28bd49d65f757",
-            "field": "peerDependencies.vue",
+            "field": "devDependencies.vue",
             "value": "^2.7.14"
           }
         ]
@@ -713,27 +2443,117 @@
     {
       "fixturePath": "tests/_fixtures/_git/vue-multiselect",
       "memberships": ["ecosystem"],
-      "dialectCoverage": { "state": "unknown", "evidence": [] }
+      "dialectCoverage": {
+        "state": "partial",
+        "evidence": [
+          {
+            "kind": "pinned-package",
+            "dialects": ["vue3-sfc"],
+            "repository": "https://github.com/shentao/vue-multiselect",
+            "revision": "8092917041f0ae02cbe4c6982deddc931c6adecd",
+            "file": "package.json",
+            "blobSha": "ebb5c4317cb126d5f98872e65073ed7e643919d9",
+            "field": "devDependencies.vue",
+            "value": "^3.2.25"
+          }
+        ]
+      }
     },
     {
       "fixturePath": "tests/_fixtures/_git/vue-native-core",
       "memberships": ["ecosystem"],
-      "dialectCoverage": { "state": "unknown", "evidence": [] }
+      "dialectCoverage": {
+        "state": "partial",
+        "evidence": [
+          {
+            "kind": "pinned-package",
+            "dialects": ["jsx-babel"],
+            "repository": "https://github.com/GeekyAnts/vue-native-core",
+            "revision": "0c705bebec66789696830f501870ec66c144240f",
+            "file": "package.json",
+            "blobSha": "d4ab01110fa99fc7688f68b98481c3e3155de43c",
+            "field": "devDependencies.babel-plugin-transform-vue-jsx",
+            "value": "^3.2.0"
+          }
+        ]
+      }
     },
     {
       "fixturePath": "tests/_fixtures/_git/vue-netcore",
       "memberships": ["ecosystem"],
-      "dialectCoverage": { "state": "unknown", "evidence": [] }
+      "dialectCoverage": {
+        "state": "partial",
+        "evidence": [
+          {
+            "kind": "pinned-package",
+            "dialects": ["vue3-sfc"],
+            "repository": "https://github.com/cq-panda/Vue.NetCore",
+            "revision": "a5512b75501bcc5f98c2b52aa498c4c07877f9ec",
+            "file": "vol.web/package.json",
+            "blobSha": "9a0501c8fb02ceb9a86f22e0f212ca4352c3dc7b",
+            "field": "dependencies.vue",
+            "value": "^3.5.13"
+          },
+          {
+            "kind": "pinned-package",
+            "dialects": ["jsx-babel"],
+            "repository": "https://github.com/cq-panda/Vue.NetCore",
+            "revision": "a5512b75501bcc5f98c2b52aa498c4c07877f9ec",
+            "file": "vol.web/package.json",
+            "blobSha": "9a0501c8fb02ceb9a86f22e0f212ca4352c3dc7b",
+            "field": "devDependencies.@vitejs/plugin-vue-jsx",
+            "value": "^4.0.0"
+          }
+        ]
+      }
     },
     {
       "fixturePath": "tests/_fixtures/_git/vue-pure-admin",
       "memberships": ["ecosystem"],
-      "dialectCoverage": { "state": "unknown", "evidence": [] }
+      "dialectCoverage": {
+        "state": "partial",
+        "evidence": [
+          {
+            "kind": "pinned-package",
+            "dialects": ["vue3-sfc"],
+            "repository": "https://github.com/pure-admin/vue-pure-admin",
+            "revision": "e40eb37d606174099906aecfa891159b2d5b434e",
+            "file": "package.json",
+            "blobSha": "ad75ce9db9aaa01ea88b08ccfd49315b61ca0f44",
+            "field": "dependencies.vue",
+            "value": "^3.5.40"
+          },
+          {
+            "kind": "pinned-package",
+            "dialects": ["jsx-babel"],
+            "repository": "https://github.com/pure-admin/vue-pure-admin",
+            "revision": "e40eb37d606174099906aecfa891159b2d5b434e",
+            "file": "package.json",
+            "blobSha": "ad75ce9db9aaa01ea88b08ccfd49315b61ca0f44",
+            "field": "devDependencies.@vitejs/plugin-vue-jsx",
+            "value": "^5.1.6"
+          }
+        ]
+      }
     },
     {
       "fixturePath": "tests/_fixtures/_git/vue-router",
       "memberships": ["ecosystem"],
-      "dialectCoverage": { "state": "unknown", "evidence": [] }
+      "dialectCoverage": {
+        "state": "partial",
+        "evidence": [
+          {
+            "kind": "pinned-package",
+            "dialects": ["vue3-sfc"],
+            "repository": "https://github.com/vuejs/router",
+            "revision": "feed382f2fbfe38b3892ea780f5aea3d5459986a",
+            "file": "packages/docs/package.json",
+            "blobSha": "5c45b47d63f2a1923fd2138d938176b22e5f1d66",
+            "field": "dependencies.vue",
+            "value": "^3.5.34"
+          }
+        ]
+      }
     },
     {
       "fixturePath": "tests/_fixtures/_git/vue-select",
@@ -748,8 +2568,8 @@
             "revision": "35897ade99e750a452e67df3b38e156d0c1fff42",
             "file": "package.json",
             "blobSha": "a2b9fc46d2d394331131e2106d83ff2ca5bf1564",
-            "field": "peerDependencies.vue",
-            "value": "2.x"
+            "field": "devDependencies.vue",
+            "value": "^2.6.10"
           }
         ]
       }
@@ -757,42 +2577,204 @@
     {
       "fixturePath": "tests/_fixtures/_git/vue-sonner",
       "memberships": ["ecosystem"],
-      "dialectCoverage": { "state": "unknown", "evidence": [] }
+      "dialectCoverage": {
+        "state": "partial",
+        "evidence": [
+          {
+            "kind": "pinned-package",
+            "dialects": ["vue3-sfc"],
+            "repository": "https://github.com/xiaoluoboding/vue-sonner",
+            "revision": "4f6e3038981d7c748048913f259470fefa204b7a",
+            "file": "package.json",
+            "blobSha": "6739714a3ac43a809c57a2d8ba35761b004c69b5",
+            "field": "devDependencies.vue",
+            "value": "^3.5.18"
+          }
+        ]
+      }
     },
     {
       "fixturePath": "tests/_fixtures/_git/vue-storefront",
       "memberships": ["ecosystem"],
-      "dialectCoverage": { "state": "unknown", "evidence": [] }
+      "dialectCoverage": {
+        "state": "partial",
+        "evidence": [
+          {
+            "kind": "pinned-package",
+            "dialects": ["vue2-sfc"],
+            "repository": "https://github.com/vuestorefront/vue-storefront",
+            "revision": "220341f4c15d9f6ddb8d5e4c2fd225f5dd4d6f76",
+            "file": "packages/core/package.json",
+            "blobSha": "6955ebc3a1ed0f0201c2acb5dae748a0401b525c",
+            "field": "dependencies.vue",
+            "value": "^2.6.11"
+          }
+        ]
+      }
     },
     {
       "fixturePath": "tests/_fixtures/_git/vue-termui",
       "memberships": ["ecosystem"],
-      "dialectCoverage": { "state": "unknown", "evidence": [] }
+      "dialectCoverage": {
+        "state": "partial",
+        "evidence": [
+          {
+            "kind": "pinned-package",
+            "dialects": ["vue3-sfc"],
+            "repository": "https://github.com/vue-terminal/vue-termui",
+            "revision": "26b9b8e402132ca440d7c80e7e8521e1a90175be",
+            "file": "package.json",
+            "blobSha": "ec6425b95a7fa75d9aad8f4c5e073a5064284692",
+            "field": "devDependencies.vue",
+            "value": "^3.5.40"
+          }
+        ]
+      }
     },
     {
       "fixturePath": "tests/_fixtures/_git/vue-tui",
       "memberships": ["ecosystem"],
-      "dialectCoverage": { "state": "unknown", "evidence": [] }
+      "dialectCoverage": {
+        "state": "partial",
+        "evidence": [
+          {
+            "kind": "pinned-package",
+            "dialects": ["vue3-sfc"],
+            "repository": "https://github.com/vuejs-ai/vue-tui",
+            "revision": "9b9d417913cdf2a568deff28ba826c6a147878bf",
+            "file": "examples/basic-jsx/package.json",
+            "blobSha": "5df2fec5cdbacf94455cdb5926037491311f170d",
+            "field": "dependencies.vue",
+            "value": "^3.5.0"
+          },
+          {
+            "kind": "pinned-package",
+            "dialects": ["jsx-babel"],
+            "repository": "https://github.com/vuejs-ai/vue-tui",
+            "revision": "9b9d417913cdf2a568deff28ba826c6a147878bf",
+            "file": "examples/basic-jsx/package.json",
+            "blobSha": "5df2fec5cdbacf94455cdb5926037491311f170d",
+            "field": "devDependencies.@vitejs/plugin-vue-jsx",
+            "value": "catalog:",
+            "catalog": {
+              "file": "pnpm-workspace.yaml",
+              "blobSha": "36664f2b4910a87e6229de95e63e89c9b977726b",
+              "value": "^5.1.5"
+            }
+          }
+        ]
+      }
     },
     {
       "fixturePath": "tests/_fixtures/_git/vue-uploader",
       "memberships": ["ecosystem"],
-      "dialectCoverage": { "state": "unknown", "evidence": [] }
+      "dialectCoverage": {
+        "state": "partial",
+        "evidence": [
+          {
+            "kind": "pinned-package",
+            "dialects": ["vue2-sfc"],
+            "repository": "https://github.com/simple-uploader/vue-uploader",
+            "revision": "0be2f9571644ac2f7d3348420baf8fb8105c5555",
+            "file": "package.json",
+            "blobSha": "8409314f91bdd7186c11e1241c414dbbf8ca7b67",
+            "field": "devDependencies.vue",
+            "value": "^2.3.3"
+          }
+        ]
+      }
     },
     {
       "fixturePath": "tests/_fixtures/_git/vue-vben-admin",
       "memberships": ["ecosystem", "app"],
-      "dialectCoverage": { "state": "unknown", "evidence": [] }
+      "dialectCoverage": {
+        "state": "partial",
+        "evidence": [
+          {
+            "kind": "pinned-package",
+            "dialects": ["jsx-babel"],
+            "repository": "https://github.com/vbenjs/vue-vben-admin",
+            "revision": "748b182e440863711dc9624924e92440f5ddc4d3",
+            "file": "package.json",
+            "blobSha": "3c0c86ffe1ad5242a3979174d790308c50a4b52a",
+            "field": "devDependencies.@vitejs/plugin-vue-jsx",
+            "value": "catalog:",
+            "catalog": {
+              "file": "pnpm-workspace.yaml",
+              "blobSha": "7af6688e7fc1ca36e40f074ec211c1fae8d7cb2e",
+              "value": "^5.1.5"
+            }
+          },
+          {
+            "kind": "pinned-package",
+            "dialects": ["vue3-sfc"],
+            "repository": "https://github.com/vbenjs/vue-vben-admin",
+            "revision": "748b182e440863711dc9624924e92440f5ddc4d3",
+            "file": "package.json",
+            "blobSha": "3c0c86ffe1ad5242a3979174d790308c50a4b52a",
+            "field": "devDependencies.vue",
+            "value": "catalog:",
+            "catalog": {
+              "file": "pnpm-workspace.yaml",
+              "blobSha": "7af6688e7fc1ca36e40f074ec211c1fae8d7cb2e",
+              "value": "^3.5.35"
+            }
+          }
+        ]
+      }
     },
     {
       "fixturePath": "tests/_fixtures/_git/vue-vine",
       "memberships": ["ecosystem"],
-      "dialectCoverage": { "state": "unknown", "evidence": [] }
+      "dialectCoverage": {
+        "state": "partial",
+        "evidence": [
+          {
+            "kind": "pinned-package",
+            "dialects": ["jsx-babel"],
+            "repository": "https://github.com/vue-vine/vue-vine",
+            "revision": "65980df127ec4b834ebd7d0ce72b19e562684fe3",
+            "file": "packages/e2e-vite/package.json",
+            "blobSha": "4bee79069e157813b772166b27f27b3ee909b2df",
+            "field": "devDependencies.@vitejs/plugin-vue-jsx",
+            "value": "catalog:vite-ecosystem",
+            "catalog": {
+              "file": "pnpm-workspace.yaml",
+              "blobSha": "280b694ead2a7f50447a48470674aba4a2fae27e",
+              "value": "^5.1.6"
+            }
+          },
+          {
+            "kind": "pinned-package",
+            "dialects": ["vue3-sfc"],
+            "repository": "https://github.com/vue-vine/vue-vine",
+            "revision": "65980df127ec4b834ebd7d0ce72b19e562684fe3",
+            "file": "packages/create-vue-vine/template/shared/base/package.json",
+            "blobSha": "117fdfce6a7ceb2dd147aa4220310c4fc8d9dc42",
+            "field": "dependencies.vue",
+            "value": "^3.5.40"
+          }
+        ]
+      }
     },
     {
       "fixturePath": "tests/_fixtures/_git/vue-virtual-scroller",
       "memberships": ["ecosystem"],
-      "dialectCoverage": { "state": "unknown", "evidence": [] }
+      "dialectCoverage": {
+        "state": "partial",
+        "evidence": [
+          {
+            "kind": "pinned-package",
+            "dialects": ["vue3-sfc"],
+            "repository": "https://github.com/Akryum/vue-virtual-scroller",
+            "revision": "bc1ada96dc3b7831d8931b9e9b84139bfac98200",
+            "file": "package.json",
+            "blobSha": "125807e4a17f418efe5470fe2b498b490a35ca29",
+            "field": "devDependencies.vue",
+            "value": "^3.5.0"
+          }
+        ]
+      }
     },
     {
       "fixturePath": "tests/_fixtures/_git/vue2-elm",
@@ -812,12 +2794,60 @@
     {
       "fixturePath": "tests/_fixtures/_git/vue3-admin-design",
       "memberships": ["ecosystem"],
-      "dialectCoverage": { "state": "unknown", "evidence": [] }
+      "dialectCoverage": {
+        "state": "partial",
+        "evidence": [
+          {
+            "kind": "pinned-package",
+            "dialects": ["vue3-sfc"],
+            "repository": "https://github.com/baimingxuan/vue3-admin-design",
+            "revision": "d368ff2f1680414ae9b9fed93ced7cfba8b76b7f",
+            "file": "package.json",
+            "blobSha": "969405c346e56ae01608630f7e4df9685f2e65f6",
+            "field": "dependencies.vue",
+            "value": "^3.4.6"
+          },
+          {
+            "kind": "pinned-package",
+            "dialects": ["jsx-babel"],
+            "repository": "https://github.com/baimingxuan/vue3-admin-design",
+            "revision": "d368ff2f1680414ae9b9fed93ced7cfba8b76b7f",
+            "file": "package.json",
+            "blobSha": "969405c346e56ae01608630f7e4df9685f2e65f6",
+            "field": "devDependencies.@vitejs/plugin-vue-jsx",
+            "value": "^3.1.0"
+          }
+        ]
+      }
     },
     {
       "fixturePath": "tests/_fixtures/_git/vue3-antd-admin",
       "memberships": ["ecosystem"],
-      "dialectCoverage": { "state": "unknown", "evidence": [] }
+      "dialectCoverage": {
+        "state": "partial",
+        "evidence": [
+          {
+            "kind": "pinned-package",
+            "dialects": ["vue3-sfc"],
+            "repository": "https://github.com/buqiyuan/vue3-antd-admin",
+            "revision": "64c03db76710e70b85aedf40a9ca87101946d70d",
+            "file": "package.json",
+            "blobSha": "fde62061419ad5a8abbb54044beb5b0871bf1d6b",
+            "field": "dependencies.vue",
+            "value": "~3.5.14"
+          },
+          {
+            "kind": "pinned-package",
+            "dialects": ["jsx-babel"],
+            "repository": "https://github.com/buqiyuan/vue3-antd-admin",
+            "revision": "64c03db76710e70b85aedf40a9ca87101946d70d",
+            "file": "package.json",
+            "blobSha": "fde62061419ad5a8abbb54044beb5b0871bf1d6b",
+            "field": "devDependencies.@vitejs/plugin-vue-jsx",
+            "value": "~4.2.0"
+          }
+        ]
+      }
     },
     {
       "fixturePath": "tests/_fixtures/_git/vuefes-2025",
@@ -827,42 +2857,179 @@
     {
       "fixturePath": "tests/_fixtures/_git/vuefes-japan-speakers",
       "memberships": ["ecosystem"],
-      "dialectCoverage": { "state": "unknown", "evidence": [] }
+      "dialectCoverage": {
+        "state": "partial",
+        "evidence": [
+          {
+            "kind": "pinned-package",
+            "dialects": ["vue3-sfc"],
+            "repository": "https://github.com/ubugeeei-forks/vuefes-japan-speakers.git",
+            "revision": "ab9367c8768c8c61977785157d03a71034ff93ad",
+            "file": "package.json",
+            "blobSha": "4967d413dca581c45c6cfd0562acbeb3c22a56a5",
+            "field": "dependencies.vue",
+            "value": "catalog:vue",
+            "catalog": {
+              "file": "pnpm-workspace.yaml",
+              "blobSha": "5aacb9928e5eef836a81f77d9c5a7d09b55cbe97",
+              "value": "3.5.35"
+            }
+          }
+        ]
+      }
     },
     {
       "fixturePath": "tests/_fixtures/_git/vuelidate",
       "memberships": ["ecosystem"],
-      "dialectCoverage": { "state": "unknown", "evidence": [] }
+      "dialectCoverage": {
+        "state": "partial",
+        "evidence": [
+          {
+            "kind": "pinned-package",
+            "dialects": ["vue3-sfc"],
+            "repository": "https://github.com/vuelidate/vuelidate",
+            "revision": "1c7bac7121060dd95ea3e1484fc2031634f667d8",
+            "file": "package.json",
+            "blobSha": "514335ccc7f3b9a528a6b554fd13db8646c26702",
+            "field": "devDependencies.vue",
+            "value": "^3.2.2"
+          },
+          {
+            "kind": "pinned-package",
+            "dialects": ["vue2-sfc"],
+            "repository": "https://github.com/vuelidate/vuelidate",
+            "revision": "1c7bac7121060dd95ea3e1484fc2031634f667d8",
+            "file": "packages/components/package.json",
+            "blobSha": "84186448a25225617d737313e75b4e7d5c520d3a",
+            "field": "peerDependencies.vue",
+            "value": "^2.0.0 || >=3.0.0"
+          }
+        ]
+      }
     },
     {
       "fixturePath": "tests/_fixtures/_git/vuepress",
       "memberships": ["ecosystem"],
-      "dialectCoverage": { "state": "unknown", "evidence": [] }
+      "dialectCoverage": {
+        "state": "partial",
+        "evidence": [
+          {
+            "kind": "pinned-package",
+            "dialects": ["vue2-sfc"],
+            "repository": "https://github.com/vuejs/vuepress",
+            "revision": "9fb4bb00925d9409e6732118e996411c6a82c85d",
+            "file": "packages/@vuepress/core/package.json",
+            "blobSha": "5be43fbad0b200e9cd6ae2397339cfd25598d2b5",
+            "field": "dependencies.vue",
+            "value": "^2.6.10"
+          }
+        ]
+      }
     },
     {
       "fixturePath": "tests/_fixtures/_git/vuesax",
       "memberships": ["ecosystem"],
-      "dialectCoverage": { "state": "unknown", "evidence": [] }
+      "dialectCoverage": {
+        "state": "partial",
+        "evidence": [
+          {
+            "kind": "pinned-package",
+            "dialects": ["vue2-sfc"],
+            "repository": "https://github.com/lusaxweb/vuesax",
+            "revision": "3f03427ca3a66110c17d78c9b12093176b8683d1",
+            "file": "package.json",
+            "blobSha": "99db128714e1da9f33a7abe925d0f6b32702c249",
+            "field": "dependencies.vue",
+            "value": "^2.6.9"
+          }
+        ]
+      }
     },
     {
       "fixturePath": "tests/_fixtures/_git/vuestic-admin",
       "memberships": ["ecosystem"],
-      "dialectCoverage": { "state": "unknown", "evidence": [] }
+      "dialectCoverage": {
+        "state": "partial",
+        "evidence": [
+          {
+            "kind": "pinned-package",
+            "dialects": ["vue3-sfc"],
+            "repository": "https://github.com/epicmaxco/vuestic-admin",
+            "revision": "9c5b44f3674d4c3e7ad01cc043d5331cee953c49",
+            "file": "package.json",
+            "blobSha": "3eb6425b526e9f9d59a6c70db02d01324f03ad8f",
+            "field": "dependencies.vue",
+            "value": "3.5.8"
+          }
+        ]
+      }
     },
     {
       "fixturePath": "tests/_fixtures/_git/vuestic-ui",
       "memberships": ["ecosystem"],
-      "dialectCoverage": { "state": "unknown", "evidence": [] }
+      "dialectCoverage": {
+        "state": "partial",
+        "evidence": [
+          {
+            "kind": "pinned-package",
+            "dialects": ["vue3-sfc"],
+            "repository": "https://github.com/epicmaxco/vuestic-ui",
+            "revision": "c5337ed8e7e24ea294221326fe2ca6af8d3b8e1b",
+            "file": "packages/compiler/package.json",
+            "blobSha": "a3dd1d918ca89b58de17b2bd52be0f1a52ab9148",
+            "field": "peerDependencies.vue",
+            "value": "^3.4.21"
+          }
+        ]
+      }
     },
     {
       "fixturePath": "tests/_fixtures/_git/vuetify",
       "memberships": ["ecosystem", "app"],
-      "dialectCoverage": { "state": "unknown", "evidence": [] }
+      "dialectCoverage": {
+        "state": "partial",
+        "evidence": [
+          {
+            "kind": "pinned-package",
+            "dialects": ["vue3-sfc"],
+            "repository": "https://github.com/vuetifyjs/vuetify",
+            "revision": "2c05206eda516e5f5236b846b7b1718802cd8e3c",
+            "file": "package.json",
+            "blobSha": "367b68610412b4cda3d454c96dafe8f16b882e13",
+            "field": "devDependencies.vue",
+            "value": "^3.5.25"
+          },
+          {
+            "kind": "pinned-package",
+            "dialects": ["jsx-babel"],
+            "repository": "https://github.com/vuetifyjs/vuetify",
+            "revision": "2c05206eda516e5f5236b846b7b1718802cd8e3c",
+            "file": "packages/vuetify/package.json",
+            "blobSha": "c9a882866afab937dac3de2e30b2e8035ffc59dc",
+            "field": "devDependencies.@vitejs/plugin-vue-jsx",
+            "value": "^5.1.2"
+          }
+        ]
+      }
     },
     {
       "fixturePath": "tests/_fixtures/_git/vuetorrent",
       "memberships": ["ecosystem"],
-      "dialectCoverage": { "state": "unknown", "evidence": [] }
+      "dialectCoverage": {
+        "state": "partial",
+        "evidence": [
+          {
+            "kind": "pinned-package",
+            "dialects": ["vue3-sfc"],
+            "repository": "https://github.com/VueTorrent/VueTorrent",
+            "revision": "e92249f36ea40e2c71c68439831143a6d9517ae9",
+            "file": "package.json",
+            "blobSha": "4be388ce881b18851f0e68c526f16a1ae1a85124",
+            "field": "dependencies.vue",
+            "value": "^3.5.41"
+          }
+        ]
+      }
     },
     {
       "fixturePath": "tests/_fixtures/_git/vux",
@@ -879,6 +3046,16 @@
             "blobSha": "c380d6511d3159c98394fe53b0d1a3f221c56355",
             "field": "devDependencies.vue",
             "value": "2.5.16"
+          },
+          {
+            "kind": "pinned-package",
+            "dialects": ["pug-template"],
+            "repository": "https://github.com/airyland/vux",
+            "revision": "881e6803832b535aff3ef90a9aee9fba6aae1a9a",
+            "file": "packages/loader/package.json",
+            "blobSha": "4b4a6e5197431a1a421f3aa60ff169eb9e95a225",
+            "field": "devDependencies.pug",
+            "value": "^2.0.0-beta6"
           }
         ]
       }
@@ -907,6 +3084,16 @@
             "kind": "registry-note",
             "dialects": ["pug-template"],
             "selector": "Pug-template SFC corpus: every pinned src SFC uses <template lang=\"pug\"> (219 files at this revision). Globs stay scoped to src/ — docs assets are heavy."
+          },
+          {
+            "kind": "pinned-package",
+            "dialects": ["vue3-sfc"],
+            "repository": "https://github.com/antoniandre/wave-ui",
+            "revision": "a95a3bb1d65369de9befed6341bdc56bb5de075a",
+            "file": "package.json",
+            "blobSha": "fd210ed866469099bf0c3e671c1b7f43d2b92c69",
+            "field": "devDependencies.vue",
+            "value": "^3.5.33"
           }
         ]
       }
@@ -914,12 +3101,40 @@
     {
       "fixturePath": "tests/_fixtures/_git/youtube-dl-gui",
       "memberships": ["ecosystem"],
-      "dialectCoverage": { "state": "unknown", "evidence": [] }
+      "dialectCoverage": {
+        "state": "partial",
+        "evidence": [
+          {
+            "kind": "pinned-package",
+            "dialects": ["vue3-sfc"],
+            "repository": "https://github.com/jely2002/youtube-dl-gui",
+            "revision": "c402ee39c0eabab68934c48f8b787ff37a1577b0",
+            "file": "package.json",
+            "blobSha": "81c41574aeef77ebaeb195746c9e87c7448a23d4",
+            "field": "dependencies.vue",
+            "value": "^3.5.39"
+          }
+        ]
+      }
     },
     {
       "fixturePath": "tests/_fixtures/_git/zy-player",
       "memberships": ["ecosystem"],
-      "dialectCoverage": { "state": "unknown", "evidence": [] }
+      "dialectCoverage": {
+        "state": "partial",
+        "evidence": [
+          {
+            "kind": "pinned-package",
+            "dialects": ["vue2-sfc"],
+            "repository": "https://github.com/Hunlongyu/ZY-Player",
+            "revision": "68fd0d0c6ae79de3d1a7400a85d704f3717e1140",
+            "file": "package.json",
+            "blobSha": "ddd4afc971cb6ab155fda99cbcec226049535ad6",
+            "field": "dependencies.vue",
+            "value": "^2.6.14"
+          }
+        ]
+      }
     }
   ],
   "capabilities": [
@@ -1047,10 +3262,7 @@
   "oracles": [
     {
       "kind": "compiler",
-      "selection": {
-        "type": "membership",
-        "membership": "ecosystem"
-      },
+      "selection": { "type": "membership", "membership": "ecosystem" },
       "evidence": {
         "file": "tools/support/compat/fixtures/tool-matrix-metrics.ts",
         "selector": "if (tool === \"compiler\") return required(payload.compilerArtifacts?.inputFileCount, tool)"
@@ -1058,10 +3270,7 @@
     },
     {
       "kind": "formatter-idempotency",
-      "selection": {
-        "type": "membership",
-        "membership": "ecosystem"
-      },
+      "selection": { "type": "membership", "membership": "ecosystem" },
       "evidence": {
         "file": "tests/tooling/glyph-corpus-idempotence.test.ts",
         "selector": "glyph corpus idempotence holds for every hydrated fixture"
@@ -1069,10 +3278,7 @@
     },
     {
       "kind": "linter",
-      "selection": {
-        "type": "membership",
-        "membership": "ecosystem"
-      },
+      "selection": { "type": "membership", "membership": "ecosystem" },
       "evidence": {
         "file": "tools/support/compat/fixtures/tool-matrix-metrics.ts",
         "selector": "if (tool === \"linter\") return required(payload.parsed?.length, tool)"
@@ -1080,10 +3286,7 @@
     },
     {
       "kind": "typechecker",
-      "selection": {
-        "type": "membership",
-        "membership": "ecosystem"
-      },
+      "selection": { "type": "membership", "membership": "ecosystem" },
       "evidence": {
         "file": "tools/support/compat/davinci/lib/corpus-baseline-contract.ts",
         "selector": "typechecker: [\"exitCode\", \"stderr\", \"stdout\", \"typecheckerCoverage\"]"
@@ -1186,10 +3389,7 @@
     },
     {
       "kind": "ssr",
-      "selection": {
-        "type": "fixtures",
-        "fixturePaths": ["tests/_fixtures/_git/elk"]
-      },
+      "selection": { "type": "fixtures", "fixturePaths": ["tests/_fixtures/_git/elk"] },
       "evidence": {
         "file": "tests/app/dev/elk.spec.ts",
         "selector": "SSR: server-rendered HTML is not empty"
@@ -1197,10 +3397,7 @@
     },
     {
       "kind": "ssr",
-      "selection": {
-        "type": "fixtures",
-        "fixturePaths": ["tests/_fixtures/_git/npmx.dev"]
-      },
+      "selection": { "type": "fixtures", "fixturePaths": ["tests/_fixtures/_git/npmx.dev"] },
       "evidence": {
         "file": "tests/app/dev/npmx.spec.ts",
         "selector": "authored head macros stay exact across SSR, hydration, and navigation"
@@ -1208,10 +3405,7 @@
     },
     {
       "kind": "ssr",
-      "selection": {
-        "type": "fixtures",
-        "fixturePaths": ["tests/_fixtures/_git/vuefes-2025"]
-      },
+      "selection": { "type": "fixtures", "fixturePaths": ["tests/_fixtures/_git/vuefes-2025"] },
       "evidence": {
         "file": "tests/app/dev/vuefes.spec.ts",
         "selector": "SSR: server-rendered HTML is not empty"
@@ -1219,10 +3413,7 @@
     },
     {
       "kind": "hydration",
-      "selection": {
-        "type": "fixtures",
-        "fixturePaths": ["tests/_fixtures/_git/elk"]
-      },
+      "selection": { "type": "fixtures", "fixturePaths": ["tests/_fixtures/_git/elk"] },
       "evidence": {
         "file": "tests/app/dev/elk.spec.ts",
         "selector": "no hydration mismatch errors"
@@ -1230,10 +3421,7 @@
     },
     {
       "kind": "hydration",
-      "selection": {
-        "type": "fixtures",
-        "fixturePaths": ["tests/_fixtures/_git/npmx.dev"]
-      },
+      "selection": { "type": "fixtures", "fixturePaths": ["tests/_fixtures/_git/npmx.dev"] },
       "evidence": {
         "file": "tests/app/dev/npmx.spec.ts",
         "selector": "no hydration mismatch errors"
@@ -1241,10 +3429,7 @@
     },
     {
       "kind": "hydration",
-      "selection": {
-        "type": "fixtures",
-        "fixturePaths": ["tests/_fixtures/_git/nuxt-ui"]
-      },
+      "selection": { "type": "fixtures", "fixturePaths": ["tests/_fixtures/_git/nuxt-ui"] },
       "evidence": {
         "file": "tests/app/dev/nuxt-ui.spec.ts",
         "selector": "authored component source hot-updates without reloading"
@@ -1252,10 +3437,7 @@
     },
     {
       "kind": "hydration",
-      "selection": {
-        "type": "fixtures",
-        "fixturePaths": ["tests/_fixtures/_git/vuefes-2025"]
-      },
+      "selection": { "type": "fixtures", "fixturePaths": ["tests/_fixtures/_git/vuefes-2025"] },
       "evidence": {
         "file": "tests/app/dev/vuefes.spec.ts",
         "selector": "no hydration mismatch errors"
@@ -1263,54 +3445,27 @@
     },
     {
       "kind": "production-build",
-      "selection": {
-        "type": "fixtures",
-        "fixturePaths": ["tests/_fixtures/_git/elk"]
-      },
-      "evidence": {
-        "file": "tests/app/preview/elk.ts",
-        "selector": "build succeeds"
-      }
+      "selection": { "type": "fixtures", "fixturePaths": ["tests/_fixtures/_git/elk"] },
+      "evidence": { "file": "tests/app/preview/elk.ts", "selector": "build succeeds" }
     },
     {
       "kind": "production-build",
-      "selection": {
-        "type": "fixtures",
-        "fixturePaths": ["tests/_fixtures/_git/misskey"]
-      },
-      "evidence": {
-        "file": "tests/app/preview/misskey.ts",
-        "selector": "build succeeds"
-      }
+      "selection": { "type": "fixtures", "fixturePaths": ["tests/_fixtures/_git/misskey"] },
+      "evidence": { "file": "tests/app/preview/misskey.ts", "selector": "build succeeds" }
     },
     {
       "kind": "production-build",
-      "selection": {
-        "type": "fixtures",
-        "fixturePaths": ["tests/_fixtures/_git/npmx.dev"]
-      },
-      "evidence": {
-        "file": "tests/app/preview/npmx.ts",
-        "selector": "build succeeds"
-      }
+      "selection": { "type": "fixtures", "fixturePaths": ["tests/_fixtures/_git/npmx.dev"] },
+      "evidence": { "file": "tests/app/preview/npmx.ts", "selector": "build succeeds" }
     },
     {
       "kind": "production-build",
-      "selection": {
-        "type": "fixtures",
-        "fixturePaths": ["tests/_fixtures/_git/vuefes-2025"]
-      },
-      "evidence": {
-        "file": "tests/app/preview/vuefes.ts",
-        "selector": "build succeeds"
-      }
+      "selection": { "type": "fixtures", "fixturePaths": ["tests/_fixtures/_git/vuefes-2025"] },
+      "evidence": { "file": "tests/app/preview/vuefes.ts", "selector": "build succeeds" }
     },
     {
       "kind": "vrt",
-      "selection": {
-        "type": "fixtures",
-        "fixturePaths": ["tests/_fixtures/_git/elk"]
-      },
+      "selection": { "type": "fixtures", "fixturePaths": ["tests/_fixtures/_git/elk"] },
       "evidence": {
         "file": "tools/support/compat/github/app-e2e-plan.ts",
         "selector": "row(\"full\", \"vrt\", \"elk\""
@@ -1329,10 +3484,7 @@
     },
     {
       "kind": "vrt",
-      "selection": {
-        "type": "fixtures",
-        "fixturePaths": ["tests/_fixtures/_git/misskey"]
-      },
+      "selection": { "type": "fixtures", "fixturePaths": ["tests/_fixtures/_git/misskey"] },
       "evidence": {
         "file": "tools/support/compat/github/app-e2e-plan.ts",
         "selector": "row(\"full\", \"vrt\", \"misskey\""
@@ -1340,10 +3492,7 @@
     },
     {
       "kind": "vrt",
-      "selection": {
-        "type": "fixtures",
-        "fixturePaths": ["tests/_fixtures/_git/npmx.dev"]
-      },
+      "selection": { "type": "fixtures", "fixturePaths": ["tests/_fixtures/_git/npmx.dev"] },
       "evidence": {
         "file": "tools/support/compat/github/app-e2e-plan.ts",
         "selector": "row(\"full\", \"vrt\", \"npmx\""
@@ -1351,10 +3500,7 @@
     },
     {
       "kind": "vrt",
-      "selection": {
-        "type": "fixtures",
-        "fixturePaths": ["tests/_fixtures/_git/vuefes-2025"]
-      },
+      "selection": { "type": "fixtures", "fixturePaths": ["tests/_fixtures/_git/vuefes-2025"] },
       "evidence": {
         "file": "tools/support/compat/github/app-e2e-plan.ts",
         "selector": "row(\"full\", \"vrt\", \"vuefes\""
@@ -1362,10 +3508,7 @@
     },
     {
       "kind": "real-vite-hmr",
-      "selection": {
-        "type": "fixtures",
-        "fixturePaths": ["tests/_fixtures/_git/nuxt-ui"]
-      },
+      "selection": { "type": "fixtures", "fixturePaths": ["tests/_fixtures/_git/nuxt-ui"] },
       "evidence": {
         "file": "tests/app/dev/nuxt-ui.spec.ts",
         "selector": "authored component source hot-updates without reloading"
@@ -1373,10 +3516,7 @@
     },
     {
       "kind": "real-vite-hmr",
-      "selection": {
-        "type": "fixtures",
-        "fixturePaths": ["tests/_fixtures/_git/misskey"]
-      },
+      "selection": { "type": "fixtures", "fixturePaths": ["tests/_fixtures/_git/misskey"] },
       "evidence": {
         "file": "tests/app/dev/misskey.spec.ts",
         "selector": "authored SFCs hot-update through pure Vite without reloading"
