@@ -35,6 +35,18 @@ impl ConfigLintRuleOptions {
         if let Some(options) = &overlay.no_mutating_props {
             self.no_mutating_props = Some(*options);
         }
+        if let Some(options) = &overlay.warn_custom_directive {
+            self.warn_custom_directive = Some(options.clone());
+        }
+        if let Some(options) = &overlay.no_bare_strings_in_template {
+            self.no_bare_strings_in_template = Some(options.clone());
+        }
+        if let Some(options) = &overlay.anchor_has_content {
+            self.anchor_has_content = Some(options.clone());
+        }
+        if let Some(options) = &overlay.label_has_for {
+            self.label_has_for = Some(options.clone());
+        }
         if let Some(options) = &overlay.sfc_element_order {
             self.sfc_element_order = Some(options.clone());
         }

@@ -10,7 +10,7 @@ use vize_l0::cstr;
 
 static NEXT_TEMP_PROJECT_ID: AtomicU64 = AtomicU64::new(0);
 
-fn temp_project_dir() -> PathBuf {
+pub(super) fn temp_project_dir() -> PathBuf {
     let nonce = std::time::SystemTime::now()
         .duration_since(std::time::UNIX_EPOCH)
         .unwrap()
@@ -25,7 +25,7 @@ fn temp_project_dir() -> PathBuf {
     )
 }
 
-fn write_project_file(root: &Path, path: &str, content: &str) {
+pub(super) fn write_project_file(root: &Path, path: &str, content: &str) {
     let file_path = root.join(path);
     if let Some(parent) = file_path.parent() {
         fs::create_dir_all(parent).unwrap();
@@ -33,7 +33,7 @@ fn write_project_file(root: &Path, path: &str, content: &str) {
     fs::write(file_path, content).unwrap();
 }
 
-fn output_details(output: &Output) -> vize_l0::String {
+pub(super) fn output_details(output: &Output) -> vize_l0::String {
     let stdout = std::str::from_utf8(&output.stdout).unwrap_or("<non-utf8 stdout>");
     let stderr = std::str::from_utf8(&output.stderr).unwrap_or("<non-utf8 stderr>");
     cstr!("stdout:\n{}\nstderr:\n{}", stdout, stderr)

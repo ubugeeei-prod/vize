@@ -20,7 +20,9 @@ pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
         + 6
         + 1
         + 5
-        + 2,
+        + 2
+        + 5
+        + 3,
     // Original 1057/87 census plus non-literal calls in valid_v_slot (3 + 1),
     // require_toggle_inside_transition (3), the v-else-if/v-is/v-pre rules (38
     // templates over 42 calls, one `v-pre` helper, #8856) and v_bind_style (one
@@ -111,6 +113,12 @@ pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
     // and calls over twenty-seven complete trace lines.
     // Preserving authored table-section cells removes the four trace lines that
     // belonged only to the parser-inserted row and keeps every authored node.
+    // Real-project configurable allowances add five literal fixtures over
+    // eight calls. Three loop-driven observations remain explicit scanner
+    // skips, and the retained facade traces add twenty-nine complete lines.
+    // Per-entry regex isolation adds three literal fixtures over four calls;
+    // the variable-driven invalid-pattern observation remains a scanner skip
+    // already counted above, while the retained traces add twelve lines.
     rule_fixture_calls: 1057 + 4 + 3 + 43 + 2 + 1 + 11 + 5 + 1 + 2 - 5
         + 3
         + 2
@@ -140,7 +148,9 @@ pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
         + 9
         + 2
         + 6
-        + 2,
+        + 2
+        + 8
+        + 4,
     rule_fixture_skipped: 87
         + 4
         + 3
@@ -172,7 +182,8 @@ pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
         + 1
         + 3
         + 1
-        + 1,
+        + 1
+        + 3,
     matrix: 90,
     template_lines: 6316 + 233 + 5 + 10 + 25 + 7 - 49
         + 31
@@ -189,7 +200,9 @@ pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
         + 12
         + 51
         + 27
-        - 4,
+        + 29
+        - 4
+        + 12,
     restructured: 0,
     jsx: JsxComparison {
         roots: 14,

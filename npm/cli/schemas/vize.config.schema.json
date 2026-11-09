@@ -615,6 +615,57 @@
           },
           "additionalProperties": false
         },
+        "vue/warn-custom-directive": {
+          "type": "object",
+          "properties": {
+            "ignore": {
+              "default": [],
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        "vue/no-bare-strings-in-template": {
+          "type": "object",
+          "properties": {
+            "allowlist": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        "a11y/anchor-has-content": {
+          "type": "object",
+          "properties": {
+            "accessibleChildren": {
+              "default": [],
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        "a11y/label-has-for": {
+          "type": "object",
+          "properties": {
+            "controlComponents": {
+              "default": [],
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "additionalProperties": false
+        },
         "vue/require-component-registration": {
           "type": "object",
           "properties": {

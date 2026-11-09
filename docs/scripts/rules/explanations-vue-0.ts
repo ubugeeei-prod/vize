@@ -87,10 +87,10 @@ export const vue0Explanations: readonly ExplanationRecord[] = [
   ],
   [
     "vue/no-bare-strings-in-template",
-    "Visible text and naming attributes embed untranslated strings directly in the template.",
-    "Translatable content calls $t; the punctuation and numeric-only examples are allowed exceptions.",
-    "表示するテキストや利用者向けの説明を指定する属性に、翻訳されない文字列を直接書いています。",
-    "翻訳する内容を $t で取得します。記号だけ、数値だけの内容は例外です。",
+    "Visible text embeds an untranslated string directly in the template.",
+    "The keyboard label comes from `$t` instead of a bare template string.",
+    "表示するテキストに、翻訳されない文字列をテンプレート内で直接書いています。",
+    "キーのラベルを裸の文字列ではなく `$t` から取得します。",
   ],
   [
     "vue/no-boolean-attr-value",

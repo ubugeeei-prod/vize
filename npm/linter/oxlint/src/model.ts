@@ -165,6 +165,10 @@ export interface VizeRuleOptions {
   };
   "script/custom-event-name-casing"?: { casing?: CustomEventNameCasingOption };
   "vue/no-mutating-props"?: NoMutatingPropsOption;
+  "vue/warn-custom-directive"?: { ignore?: string[] };
+  "vue/no-bare-strings-in-template"?: { allowlist?: string[] };
+  "a11y/anchor-has-content"?: { accessibleChildren?: string[] };
+  "a11y/label-has-for"?: { controlComponents?: string[] };
   "vue/require-component-registration"?: { globals?: string[] };
   "vue/sfc-element-order"?: SfcElementOrderOption;
   "vue/html-self-closing"?: HtmlSelfClosingOption;

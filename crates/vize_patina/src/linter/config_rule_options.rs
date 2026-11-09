@@ -71,6 +71,18 @@ impl Linter {
                 shallow_only: value.shallow_only,
             });
         }
+        if let Some(value) = options.warn_custom_directive() {
+            self = self.with_warn_custom_directive_ignore(value.ignore.clone());
+        }
+        if let Some(value) = options.no_bare_strings_in_template() {
+            self = self.with_no_bare_strings_allowlist(value.allowlist.clone());
+        }
+        if let Some(value) = options.anchor_has_content() {
+            self = self.with_anchor_accessible_children(value.accessible_children.clone());
+        }
+        if let Some(value) = options.label_has_for() {
+            self = self.with_label_control_components(value.control_components.clone());
+        }
         if let Some(value) = options.sfc_element_order() {
             self = self.with_sfc_element_order_options(SfcElementOrderOptions {
                 order: value
@@ -275,6 +287,65 @@ mod tests {
                 .diagnostics
                 .iter()
                 .all(|diagnostic| { diagnostic.rule_name == "vue/mustache-interpolation-spacing" })
+        );
+    }
+
+    #[test]
+    fn reported_real_project_options_remove_only_the_configured_findings() {
+        let source = r#"<script setup>
+const tip = "Copied";
+const version = "1.2.0";
+const count = 3;
+const alt = "Get the app";
+const label = "Name";
+const name = "";
+</script>
+<template>
+  <button type="button" v-hover-tooltip="tip">{{ tip }}</button>
+  <span>v{{ version }}</span>
+  <span>x{{ count }}</span>
+  <kbd>W</kbd>
+  <a href="https://example.com/app">
+    <RetryImage src="/badge.png" :alt="alt" />
+  </a>
+  <label>
+    {{ label }}
+    <CInputField v-model="name" />
+  </label>
+  <button v-unregistered>Other</button>
+</template>"#;
+        let enabled = Some(vec![
+            "vue/warn-custom-directive".into(),
+            "vue/no-bare-strings-in-template".into(),
+            "a11y/anchor-has-content".into(),
+            "a11y/label-has-for".into(),
+        ]);
+        let options: ConfigLintRuleOptions = serde_json::from_value(serde_json::json!({
+            "vue/warn-custom-directive": { "ignore": ["hover-tooltip"] },
+            "vue/no-bare-strings-in-template": {
+                "allowlist": ["/^[DRWXYmvx]$/u"]
+            },
+            "a11y/anchor-has-content": { "accessibleChildren": ["RetryImage"] },
+            "a11y/label-has-for": { "controlComponents": ["CInputField"] }
+        }))
+        .unwrap();
+        let result = Linter::with_preset(LintPreset::Incremental)
+            .with_enabled_rules(enabled)
+            .with_config_rule_options(&options)
+            .lint_sfc(source, "Repro.vue");
+        let rules = result
+            .diagnostics
+            .iter()
+            .map(|diagnostic| diagnostic.rule_name)
+            .collect::<Vec<_>>();
+        assert_eq!(
+            rules,
+            [
+                "vue/warn-custom-directive",
+                "vue/no-bare-strings-in-template"
+            ],
+            "{:#?}",
+            result.diagnostics
         );
     }
 }

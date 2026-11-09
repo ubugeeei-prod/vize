@@ -92,6 +92,26 @@ class NoMutatingPropsOptions {
   shallowOnly: Boolean = false
 }
 
+/// Exact custom directive names without the `v-` prefix.
+class WarnCustomDirectiveOptions {
+  ignore: Listing<String> = new Listing {}
+}
+
+/// Literal strings and `/pattern/flags` entries accepted in authored text.
+class NoBareStringsInTemplateOptions {
+  allowlist: Listing<String>? = null
+}
+
+/// Components that always provide an accessible name to their parent anchor.
+class AnchorHasContentOptions {
+  accessibleChildren: Listing<String> = new Listing {}
+}
+
+/// Components that render a native form control inside a label.
+class LabelHasForOptions {
+  controlComponents: Listing<String> = new Listing {}
+}
+
 /// Options for `vue/sfc-element-order`.
 class SfcElementOrderOptions {
   order: Listing<String | Listing<String>> = new Listing {
@@ -197,6 +217,10 @@ class LintRuleOptions {
   `script/custom-event-name-casing`: CustomEventNameCasingOptions? = null
   `vue/prop-name-casing`: PropNameCasingOptions? = null
   `vue/no-mutating-props`: NoMutatingPropsOptions? = null
+  `vue/warn-custom-directive`: WarnCustomDirectiveOptions? = null
+  `vue/no-bare-strings-in-template`: NoBareStringsInTemplateOptions? = null
+  `a11y/anchor-has-content`: AnchorHasContentOptions? = null
+  `a11y/label-has-for`: LabelHasForOptions? = null
   `vue/require-component-registration`: RequireComponentRegistrationOptions? = null
   `vue/sfc-element-order`: SfcElementOrderOptions? = null
   `vue/html-self-closing`: HtmlSelfClosingOptions? = null

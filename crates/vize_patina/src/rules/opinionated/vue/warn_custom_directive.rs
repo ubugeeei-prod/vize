@@ -38,7 +38,7 @@ use oxc_span::SourceType;
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use vize_l0::{CompactString, cstr};
+use vize_l0::{CompactString, String, cstr};
 use vize_relief::{DirectiveNode, ElementNode};
 
 static META: RuleMeta = RuleMeta {
@@ -56,8 +56,30 @@ const BUILTIN_DIRECTIVES: &[&str] = &[
 ];
 
 /// Warn about custom directives
-#[derive(Default)]
-pub struct WarnCustomDirective;
+pub struct WarnCustomDirective {
+    ignored_directives: Vec<String>,
+}
+
+#[expect(
+    non_upper_case_globals,
+    reason = "the unit-like rule value intentionally shares the rule type name"
+)]
+/// Default `vue/warn-custom-directive` rule with no ignored directives.
+pub const WarnCustomDirective: WarnCustomDirective = WarnCustomDirective {
+    ignored_directives: Vec::new(),
+};
+
+impl Default for WarnCustomDirective {
+    fn default() -> Self {
+        WarnCustomDirective
+    }
+}
+
+impl WarnCustomDirective {
+    pub(crate) fn with_ignore(ignored_directives: Vec<String>) -> Self {
+        Self { ignored_directives }
+    }
+}
 
 impl Rule for WarnCustomDirective {
     fn meta(&self) -> &'static RuleMeta {
@@ -74,7 +96,13 @@ impl Rule for WarnCustomDirective {
 
         // Check if this is a custom directive (not built-in). A `<script setup>`
         // binding `vFocus` (import or local const) registers `v-focus`.
-        if !BUILTIN_DIRECTIVES.contains(&name) && !script_setup_registers_directive(ctx, name) {
+        if !BUILTIN_DIRECTIVES.contains(&name)
+            && !self
+                .ignored_directives
+                .iter()
+                .any(|ignored| ignored.as_str() == name)
+            && !script_setup_registers_directive(ctx, name)
+        {
             ctx.warn_with_help(
                 cstr!(
                     "Custom directive 'v-{}' detected. Ensure it is properly registered.",
@@ -227,6 +255,23 @@ mod tests {
         let mut registry = RuleRegistry::new();
         registry.register(Box::new(WarnCustomDirective));
         Linter::with_registry(registry)
+    }
+
+    #[test]
+    fn configured_global_directive_is_not_reported() {
+        let mut registry = RuleRegistry::new();
+        registry.register(Box::new(WarnCustomDirective::with_ignore(vec![
+            "hover-tooltip".into(),
+        ])));
+        let result = Linter::with_registry(registry).lint_template(
+            r#"<button v-hover-tooltip="tip"></button><button v-focus></button>"#,
+            "test.vue",
+        );
+        assert_eq!(result.warning_count, 1, "{:?}", result.diagnostics);
+        assert_eq!(
+            result.diagnostics[0].message,
+            "Custom directive 'v-focus' detected. Ensure it is properly registered."
+        );
     }
 
     #[test]

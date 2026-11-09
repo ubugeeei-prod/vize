@@ -6,8 +6,8 @@ import { readFile } from "node:fs/promises";
 // runtime_source unit. Both observers execute that same dependency-free body.
 const pins = {
   validator: "e7cd857464b449579d288fd20e75549875404389200fa40a1bd9517ec4e2ab83",
-  runtime: "d908b31a92a04dc157232d1c89b419bd81f42615048369b00d4cbd7829890201",
-  assembled: "d6cfef53530e362354dd1573880249b48bddc19850277a3278387e2c656203b9",
+  runtime: "c6db410d9ec285f6844b4629c678d449b620c78d263ea7b7cfa567bc340f391d",
+  assembled: "3b66ef58146a6b2a37bca9436433088d4f416da8d51937f4a187099ae219fd62",
 } as const;
 const validatorImport =
   'import { createVueOptionValidator } from "./vite-runtime-validation.js";\n';

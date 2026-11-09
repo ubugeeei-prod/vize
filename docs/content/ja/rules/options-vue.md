@@ -464,6 +464,58 @@ export default defineConfig({}).withVue({
 <MyPanel v-slot:default="slot"><template v-slot:header>見出し</template>{{ slot.item }}</MyPanel>
 ```
 
+<span id="vue-warn-custom-directive"></span>
+
+## `vue/warn-custom-directive`：外部登録ディレクティブ
+
+現在の SFC の外で登録されるディレクティブを、`v-` なしの完全一致で指定します。既定は空です。
+
+```ts
+const ruleOptions = { "vue/warn-custom-directive": { ignore: ["hover-tooltip"] } };
+```
+
+報告される（未設定）：`<button v-focus>保存</button>`
+設定後は許可される：`<button v-hover-tooltip>保存</button>`
+
+<span id="vue-no-bare-strings-in-template"></span>
+
+## `vue/no-bare-strings-in-template`：翻訳不要の文字列
+
+`allowlist` は既定一覧をリテラル部分文字列または Rust の正規表現構文を使う `/pattern/flags` で置き換えます。コンパイルできないパターンはリテラルとして扱い、空の一覧は何も許可しません。
+
+```ts
+const ruleOptions = { "vue/no-bare-strings-in-template": { allowlist: ["Cancel", "/^[DRWXYmvx]$/u"] } };
+```
+
+報告される：`<span>Submit</span>`
+許可される：`<span>Cancel</span>`
+
+<span id="a11y-anchor-has-content"></span>
+
+## `a11y/anchor-has-content`：アクセシブルな子コンポーネント
+
+常にアクセシブルな内容を描画するコンポーネントを `accessibleChildren` に指定します。PascalCase と kebab-case は同じ名前です。
+
+```ts
+const ruleOptions = { "a11y/anchor-has-content": { accessibleChildren: ["RetryImage"] } };
+```
+
+報告される：`<a href="/retry"><UnknownImage /></a>`
+許可される：`<a href="/retry"><RetryImage /></a>`
+
+<span id="a11y-label-has-for"></span>
+
+## `a11y/label-has-for`：コントロールコンポーネント
+
+ラベルに内包されるコントロールを `controlComponents` に指定します。設定外のコンポーネントは引き続き報告します。
+
+```ts
+const ruleOptions = { "a11y/label-has-for": { controlComponents: ["CInputField"] } };
+```
+
+報告される：`<label>名前<CustomText /></label>`
+許可される：`<label>名前<CInputField /></label>`
+
 <span id="vue-attribute-hyphenation"></span>
 
 ## 属性名のオプション

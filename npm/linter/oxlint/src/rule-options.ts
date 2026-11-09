@@ -110,6 +110,10 @@ export function getRuleOptions(
     case "type/strict-boolean-expressions":
     case "script/no-restricted-globals":
     case "script/no-restricted-members":
+    case "vue/warn-custom-directive":
+    case "vue/no-bare-strings-in-template":
+    case "a11y/anchor-has-content":
+    case "a11y/label-has-for":
     case "vue/require-component-registration":
     case "vue/valid-v-on":
     case "vue/valid-v-slot":
