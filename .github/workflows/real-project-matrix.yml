@@ -390,6 +390,7 @@ jobs:
     name: per-product differential results
     if: ${{ always() && !inputs.project }}
     needs: real-project-matrix
+    permissions: { contents: read, actions: read }
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 10
     steps:

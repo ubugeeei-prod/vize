@@ -275,7 +275,7 @@ test("passive native LSP capture retains the complete original Matrix workflow",
   // The T2 differential aggregate only reads the uploaded shard reports.
   const differential = current.jobs["real-project-differential"];
   assert.equal(differential.needs, "real-project-matrix");
-  assert.equal(differential.permissions, undefined);
+  assert.deepEqual(differential.permissions, { contents: "read", actions: "read" });
   assert.equal(
     differential.steps.at(-2).run,
     "node tests/differential/real-project.ts real-project-shards real-project-differential",
