@@ -8,6 +8,7 @@ use vize_l0::directive::{
     DirectiveKind, DirectiveSeverity, parse_level_severity, parse_vize_directive,
 };
 use vize_l0::{Allocator, FxHashMap, FxHashSet};
+use vize_l1::css::lang::StyleLanguage;
 
 use super::eslint_directive::{
     EslintDisableDirective, EslintDisableKind, ExactSuppressionState, InlineSuppressionState,
@@ -153,8 +154,8 @@ impl SfcDirectiveState {
                     });
                 }
                 BlockDomain::Style(lang) => {
-                    let allow_line_comments =
-                        matches!(lang, Some("scss" | "sass" | "less" | "stylus"));
+                    let allow_line_comments = StyleLanguage::from_lang(lang)
+                        .is_some_and(StyleLanguage::has_line_comments);
                     let mut lexer = StyleDirectiveLexer::new(allow_line_comments);
                     block.scan(content, first_line, |line, _| lexer.scan_line(line));
                 }

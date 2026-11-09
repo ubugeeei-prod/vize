@@ -2,6 +2,7 @@
 
 use tower_lsp::lsp_types::FoldingRange;
 use vize_atelier_sfc::SfcStyleBlock;
+use vize_l1::css::lang::StyleLanguage;
 
 use super::region;
 
@@ -30,10 +31,8 @@ fn collect_style_regions(
     }
 
     let bytes = block.content.as_bytes();
-    let line_comments = matches!(
-        block.lang.as_deref(),
-        Some("less" | "scss" | "sass" | "stylus")
-    );
+    let line_comments = StyleLanguage::from_lang(block.lang.as_deref())
+        .is_some_and(StyleLanguage::has_line_comments);
     let mut state = ScanState::Code;
     let mut line = content_start_line;
     let mut stack = Vec::new();

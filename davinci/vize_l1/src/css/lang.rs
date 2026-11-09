@@ -47,6 +47,12 @@ impl StyleLanguage {
         .find_map(|(name, language)| lang.eq_ignore_ascii_case(name).then_some(language))
     }
 
+    /// Whether `//` starts a line comment: in every preprocessor, not in CSS.
+    #[must_use]
+    pub const fn has_line_comments(self) -> bool {
+        !matches!(self, Self::Css)
+    }
+
     /// Local class names the block's rules declare, with nesting resolved.
     ///
     /// Rules whose selector cannot be known statically (interpolation, mixin,
