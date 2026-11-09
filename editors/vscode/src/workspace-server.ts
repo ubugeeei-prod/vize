@@ -141,3 +141,17 @@ function ancestors(start: string): string[] {
     current = parent;
   }
 }
+
+/** Tests every path at once; a serial existsSync per path is one round trip each on 9P. */
+export async function existingPaths(paths: readonly string[]): Promise<(file: string) => boolean> {
+  const present = new Set<string>();
+  await Promise.all(
+    paths.map((file) =>
+      fs.promises.access(file).then(
+        () => present.add(file),
+        () => undefined,
+      ),
+    ),
+  );
+  return (file) => present.has(file);
+}

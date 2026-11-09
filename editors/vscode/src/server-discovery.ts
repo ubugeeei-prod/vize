@@ -10,7 +10,11 @@ import { extractReleaseArchive } from "./release-archive.js";
 import { pruneDownloadedServerVersions } from "./server-cache.js";
 import { trustedServerPath, workspaceDevServerPaths } from "./server-trust.js";
 import { serverInvocation } from "./server-command.js";
-import { discoverWorkspaceServers, workspaceServerProbePaths } from "./workspace-server.js";
+import {
+  discoverWorkspaceServers,
+  existingPaths,
+  workspaceServerProbePaths,
+} from "./workspace-server.js";
 import { inspectWorkspaceServerProtocol } from "./workspace-server-protocol.js";
 import type {
   ExtensionRuntimeState,
@@ -475,18 +479,4 @@ export function createServerDiscovery(
     state.outputChannel.appendLine(`Verified ${path.basename(archivePath)} (SHA-256 ${got}).`);
   }
   return { findServerPath };
-}
-
-/** Tests every path at once; a serial existsSync per path is one round trip each on 9P. */
-async function existingPaths(paths: readonly string[]): Promise<(file: string) => boolean> {
-  const present = new Set<string>();
-  await Promise.all(
-    paths.map((file) =>
-      fs.promises.access(file).then(
-        () => present.add(file),
-        () => undefined,
-      ),
-    ),
-  );
-  return (file) => present.has(file);
 }

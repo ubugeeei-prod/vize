@@ -10,6 +10,7 @@ import { fileURLToPath } from "node:url";
 import vm from "node:vm";
 import {
   discoverWorkspaceServers,
+  existingPaths,
   workspaceServerProbePaths,
 } from "../../editors/vscode/src/workspace-server.ts";
 import { serverInvocation } from "../../editors/vscode/src/server-command.ts";
@@ -121,6 +122,7 @@ function discovery(
       workspaceDevServerPaths,
       discoverWorkspaceServers,
       workspaceServerProbePaths,
+      existingPaths,
       inspectWorkspaceServerProtocol: protocol,
       serverInvocation,
     },
