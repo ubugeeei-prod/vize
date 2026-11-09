@@ -67,6 +67,12 @@ const packages = [
     entrypoints: [new URL("../../npm/fresco-native/index.d.ts", import.meta.url)],
   },
   {
+    name: "@vizejs/typescript-vue-plugin",
+    sourceRoot: new URL("../../npm/typescript-plugin/", import.meta.url),
+    minimumDeclarations: 1,
+    entrypoints: [new URL("../../npm/typescript-plugin/index.d.cts", import.meta.url)],
+  },
+  {
     name: "@vizejs/unplugin",
     sourceRoot: npmRoot,
     minimumDeclarations: 20,

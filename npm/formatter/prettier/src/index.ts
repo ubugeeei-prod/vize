@@ -1,6 +1,7 @@
 import { formatSfc } from "@vizejs/native";
 import { createPlugin } from "./plugin.ts";
 
+/** Prettier plugin that formats Vue SFCs through the Vize native formatter. */
 const plugin = createPlugin(formatSfc);
 /** Prettier language descriptors exposed by the Vize formatter plugin. */
 export const { languages, parsers, printers, options } = plugin;
