@@ -78,17 +78,9 @@ fn slot_name_casing_accepts_the_upstream_direct_style_option() {
     let messages = report[0]["messages"].as_array().unwrap();
     assert_eq!(messages.len(), 1, "{}", output_details(&output));
     assert_eq!(messages[0]["ruleId"], "vue/slot-name-casing");
-    assert!(
-        messages[0]["message"]
-            .as_str()
-            .unwrap()
-            .contains("kebab-case")
-    );
-    assert!(
-        messages[0]["message"]
-            .as_str()
-            .unwrap()
-            .contains("rowActions")
+    assert_eq!(
+        messages[0]["message"],
+        "Slot name 'rowActions' is not kebab-case"
     );
 
     let _ = fs::remove_dir_all(project_root);

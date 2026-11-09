@@ -248,12 +248,13 @@ mod tests {
                 "{style:?}: {:?}",
                 result.diagnostics
             );
-            assert!(result.diagnostics[0].message.contains(style.name()));
-            assert!(
-                result.diagnostics[0]
-                    .help
-                    .as_deref()
-                    .is_some_and(|help| help.contains(style.name()))
+            assert_eq!(
+                result.diagnostics[0].message,
+                format!("Slot name '{invalid}' is not {}", style.name())
+            );
+            assert_eq!(
+                result.diagnostics[0].help.as_deref(),
+                Some(format!("Rename the rendered slot outlet to {}.", style.name()).as_str())
             );
         }
     }
