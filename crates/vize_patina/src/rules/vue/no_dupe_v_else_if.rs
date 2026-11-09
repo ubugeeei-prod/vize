@@ -24,16 +24,14 @@
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use oxc_allocator::Allocator;
 use oxc_ast::ast::Expression;
-use oxc_parser::Parser;
-use oxc_span::{GetSpan, SourceType};
+use oxc_span::GetSpan;
 use oxc_syntax::operator::LogicalOperator;
 use vize_l0::FxHashSet;
 use vize_l0::String;
-use vize_l0::ToCompactString;
 use vize_relief::{
-    ElementNode, ExpressionNode, PropNode, RootNode, SourceLocation, TemplateChildNode,
+    ElementNode, ExpressionNode, JsExpression, PropNode, RootNode, SourceLocation,
+    TemplateChildNode,
 };
 
 static META: RuleMeta = RuleMeta {
@@ -48,11 +46,11 @@ static META: RuleMeta = RuleMeta {
 pub struct NoDupeVElseIf;
 
 /// Info about v-if directive on an element
-struct IfDirectiveInfo {
+struct IfDirectiveInfo<'a> {
     has_v_if: bool,
     has_v_else_if: bool,
     has_v_else: bool,
-    condition: Option<String>,
+    condition: Option<JsExpression<'a>>,
     loc: Option<SourceLocation>,
 }
 
@@ -85,12 +83,12 @@ fn check_element_children(ctx: &mut LintContext, children: &[TemplateChildNode])
                 // Start a new chain
                 seen_clauses.clear();
                 in_if_chain = true;
-                if let Some(clauses) = info.condition.as_deref().and_then(condition_clauses) {
+                if let Some(clauses) = info.condition.and_then(condition_clauses) {
                     seen_clauses.extend(clauses);
                 }
             } else if info.has_v_else_if && in_if_chain {
                 // Continue the chain
-                if let Some(clauses) = info.condition.as_deref().and_then(condition_clauses) {
+                if let Some(clauses) = info.condition.and_then(condition_clauses) {
                     if clauses
                         .iter()
                         .all(|clause| seen_clauses.iter().any(|seen| seen.is_subset(clause)))
@@ -121,7 +119,7 @@ fn check_element_children(ctx: &mut LintContext, children: &[TemplateChildNode])
 }
 
 /// Get v-if/v-else-if/v-else directive info from an element
-fn get_if_directive_info(el: &ElementNode) -> IfDirectiveInfo {
+fn get_if_directive_info<'a>(el: &ElementNode<'a>) -> IfDirectiveInfo<'a> {
     let mut info = IfDirectiveInfo {
         has_v_if: false,
         has_v_else_if: false,
@@ -136,14 +134,14 @@ fn get_if_directive_info(el: &ElementNode) -> IfDirectiveInfo {
                 "if" => {
                     info.has_v_if = true;
                     if let Some(ref exp) = dir.exp {
-                        info.condition = Some(get_expression_content(exp));
+                        info.condition = retained_expression(exp);
                     }
                     info.loc = Some(dir.loc.clone());
                 }
                 "else-if" => {
                     info.has_v_else_if = true;
                     if let Some(ref exp) = dir.exp {
-                        info.condition = Some(get_expression_content(exp));
+                        info.condition = retained_expression(exp);
                     }
                     info.loc = Some(dir.loc.clone());
                 }
@@ -158,22 +156,20 @@ fn get_if_directive_info(el: &ElementNode) -> IfDirectiveInfo {
     info
 }
 
-/// Get content from ExpressionNode
-fn get_expression_content(expr: &ExpressionNode) -> String {
-    match expr {
-        ExpressionNode::Simple(s) => s.content.to_compact_string(),
-        ExpressionNode::Compound(_) => "<compound>".to_compact_string(),
-    }
+fn retained_expression<'a>(expression: &ExpressionNode<'a>) -> Option<JsExpression<'a>> {
+    let ExpressionNode::Simple(simple) = expression else {
+        return None;
+    };
+    simple
+        .js_ast
+        .filter(|retained| retained.raw == simple.content)?
+        .as_expression()
 }
 
 /// Convert a condition to disjunctive clauses. Each clause is an unordered set
 /// of conjunction atoms, so an earlier subset makes a later branch unreachable.
-fn condition_clauses(condition: &str) -> Option<Vec<FxHashSet<String>>> {
-    let allocator = Allocator::default();
-    let expression = Parser::new(&allocator, condition, SourceType::ts())
-        .parse_expression()
-        .ok()?;
-    clauses(&expression, condition)
+fn condition_clauses(condition: JsExpression<'_>) -> Option<Vec<FxHashSet<String>>> {
+    clauses(condition.ast, condition.raw)
 }
 
 fn clauses(expression: &Expression<'_>, source: &str) -> Option<Vec<FxHashSet<String>>> {
