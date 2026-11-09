@@ -5,6 +5,9 @@
 //! removing TypeScript expression wrappers and parentheses. A `withDefaults`
 //! call also records the `defineProps` call it wraps.
 
+mod bindings;
+pub use bindings::{SetupBinding, SetupBindingKind};
+
 use super::{MacroKind, lookup};
 use crate::file::{ScopeId, ScriptUnit};
 use crate::lang::js::{CallEvent, DeclaredEvent, FileObserver, StatementEvent};
@@ -34,6 +37,8 @@ pub struct MacroCall {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct SetupFacts {
     macro_calls: Vec<MacroCall>,
+    bindings: Vec<SetupBinding>,
+    unclassified: Vec<Span>,
 }
 
 impl SetupFacts {
@@ -41,6 +46,20 @@ impl SetupFacts {
     #[must_use]
     pub fn macro_calls(&self) -> &[MacroCall] {
         &self.macro_calls
+    }
+
+    /// Bindings introduced by top-level identifiers, imports, functions,
+    /// classes and enums, in source order.
+    #[must_use]
+    pub fn bindings(&self) -> &[SetupBinding] {
+        &self.bindings
+    }
+
+    /// Destructuring declarator patterns whose bindings are not classified
+    /// yet. A consumer that needs every binding refuses a non-empty list.
+    #[must_use]
+    pub fn unclassified(&self) -> &[Span] {
+        &self.unclassified
     }
 }
 
@@ -61,12 +80,13 @@ pub enum SetupFactsIncomplete {
 /// statement events. Pass it to `FileProducer::program_observed`, then
 /// [`Self::finish`].
 #[derive(Debug, Default)]
-pub struct SetupObserver {
+pub struct SetupObserver<'a> {
     program: Option<Program>,
     second_program: bool,
     overflow: bool,
     observed: usize,
     calls: Vec<MacroCall>,
+    bindings: bindings::Bindings<'a>,
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -76,7 +96,7 @@ struct Program {
     statements: usize,
 }
 
-impl SetupObserver {
+impl SetupObserver<'_> {
     #[must_use]
     pub fn new() -> Self {
         Self::default()
@@ -90,7 +110,7 @@ impl SetupObserver {
         if self.second_program {
             return Err(SetupFactsIncomplete::SecondProgram);
         }
-        if self.overflow {
+        if self.overflow || self.bindings.overflow {
             return Err(SetupFactsIncomplete::SpanOverflow);
         }
         if self.observed != program.statements {
@@ -101,6 +121,8 @@ impl SetupObserver {
         }
         Ok(SetupFacts {
             macro_calls: self.calls,
+            bindings: self.bindings.rows,
+            unclassified: self.bindings.unclassified,
         })
     }
 
@@ -167,8 +189,8 @@ fn unwrap<'e, 'a>(expression: &'e Expression<'a>) -> &'e Expression<'a> {
     }
 }
 
-impl<'a> FileObserver<'a> for SetupObserver {
-    type Checkpoint = (usize, usize);
+impl<'a> FileObserver<'a> for SetupObserver<'a> {
+    type Checkpoint = SetupCheckpoint;
 
     fn unit(&mut self, unit: &ScriptUnit) {
         if self.program.is_some() {
@@ -204,12 +226,18 @@ impl<'a> FileObserver<'a> for SetupObserver {
             }
             _ => {}
         }
+        self.bindings.statement(program.base, event.statement);
     }
 
     fn declared(&mut self, _: DeclaredEvent<'_, 'a>) {}
 
-    fn checkpoint(&self) -> (usize, usize) {
-        (self.calls.len(), self.observed)
+    fn checkpoint(&self) -> SetupCheckpoint {
+        SetupCheckpoint {
+            calls: self.calls.len(),
+            observed: self.observed,
+            bindings: self.bindings.rows.len(),
+            unclassified: self.bindings.unclassified.len(),
+        }
     }
 
     fn call(&mut self, _: CallEvent<'_, 'a>) -> Result<(), ResolutionErrorKind> {
@@ -217,8 +245,19 @@ impl<'a> FileObserver<'a> for SetupObserver {
     }
 
     /// A rolled-back statement no longer counts as observed.
-    fn rollback(&mut self, (calls, observed): (usize, usize)) {
-        self.calls.truncate(calls);
-        self.observed = observed;
+    fn rollback(&mut self, checkpoint: SetupCheckpoint) {
+        self.calls.truncate(checkpoint.calls);
+        self.observed = checkpoint.observed;
+        self.bindings.rows.truncate(checkpoint.bindings);
+        self.bindings.unclassified.truncate(checkpoint.unclassified);
     }
+}
+
+/// Row counts before a walk subtree; statement facts never straddle one.
+#[derive(Debug, Clone, Copy)]
+pub struct SetupCheckpoint {
+    calls: usize,
+    observed: usize,
+    bindings: usize,
+    unclassified: usize,
 }
