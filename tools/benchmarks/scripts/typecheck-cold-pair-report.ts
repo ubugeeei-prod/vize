@@ -37,6 +37,7 @@ export type Cell = {
   builds: BuildSummary[];
   outputsIdentical: boolean;
   failure?: string;
+  samples?: Record<string, CheckSample[]>;
 };
 
 export function median(values: readonly number[]): number {

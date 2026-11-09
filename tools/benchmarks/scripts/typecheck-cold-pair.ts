@@ -444,7 +444,8 @@ async function main(): Promise<void> {
       samples,
       allowOutputChange: values["allow-output-change"],
     });
-    cells.push(cell);
+    // Keep every run beside the medians for later inspection.
+    cells.push({ ...cell, samples: Object.fromEntries(samples) });
     console.log(JSON.stringify(cell));
     if (values.strace && linux) {
       const traced: [string, Attribution][] = [];
