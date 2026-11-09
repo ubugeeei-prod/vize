@@ -7,6 +7,7 @@ export type FocusRoutingRenderer = Pick<
   "dispatchInput" | "findNodeByFocusId"
 >;
 
+/** Application fallback for a key that no focused handler prevented, if any. */
 export type DefaultInputAction = "focus-next" | "focus-previous" | "exit" | undefined;
 
 interface DefaultInputPacket {
