@@ -231,14 +231,14 @@ fn top_level_value_binding(program: &Program<'_>, name: &str) -> bool {
                     return true;
                 }
             }
-            Statement::ExportNamedDeclaration(export) if !export.export_kind.is_type() => {
-                if export
-                    .declaration
-                    .as_ref()
-                    .is_some_and(|declaration| declaration_declares(declaration, name))
-                {
-                    return true;
-                }
+            Statement::ExportNamedDeclaration(export)
+                if !export.export_kind.is_type()
+                    && export
+                        .declaration
+                        .as_ref()
+                        .is_some_and(|declaration| declaration_declares(declaration, name)) =>
+            {
+                return true;
             }
             _ => {}
         }

@@ -275,16 +275,15 @@ fn compile_allowlist(entries: &[String]) -> BareStringAllowlist {
     }
     literals
         .sort_unstable_by(|left, right| right.len().cmp(&left.len()).then_with(|| left.cmp(right)));
-    let literals = (!literals.is_empty()).then(|| {
-        Regex::new(
-            &literals
+    let literals = (!literals.is_empty())
+        .then(|| {
+            literals
                 .into_iter()
                 .map(regex::escape)
                 .collect::<Vec<_>>()
-                .join("|"),
-        )
-        .expect("escaped literal alternation must compile")
-    });
+                .join("|")
+        })
+        .and_then(|pattern| Regex::new(&pattern).ok());
     BareStringAllowlist::Custom { literals, patterns }
 }
 
