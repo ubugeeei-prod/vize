@@ -43,6 +43,25 @@ await test("exact reserved membership and groups preserve complete CLI packets",
   );
   const propsSuccessors = JSON.parse(fs.readFileSync(propsSuccessorsPath, "utf8"));
   const propsPackets = new Map(propsSuccessors.coreCases.map((entry) => [entry.id, entry]));
+  const reservedKeysSuccessorsPath = path.join(
+    fixture,
+    "no-reserved-keys-route-successors.json",
+  );
+  const reservedKeysSuccessors = JSON.parse(
+    fs.readFileSync(reservedKeysSuccessorsPath, "utf8"),
+  );
+  const reservedKeysPackets = new Map(
+    reservedKeysSuccessors.coreCases.map((entry) => [entry.id, entry]),
+  );
+  const withCurrentReservedKeys = (entry, findings) => {
+    const successor = reservedKeysPackets.get(entry.id);
+    if (!successor) return findings;
+    assert.equal(successor.filename, entry.filename);
+    assert.equal(successor.sourceSha256, entry.sourceSha256);
+    return [...findings, ...successor.diagnostics].sort(
+      (left, right) => left.start - right.start,
+    );
+  };
   const withCurrentDefault = (entry, findings) => {
     const successor = defaultPackets.get(entry.id);
     const unused = unusedPackets.get(entry.id);
@@ -74,6 +93,7 @@ await test("exact reserved membership and groups preserve complete CLI packets",
   assert.equal(defaultSuccessors.coreCases.length, 18);
   assert.equal(unusedSuccessors.coreCases.length, 1);
   assert.equal(propsSuccessors.coreCases.length, 1);
+  assert.equal(reservedKeysSuccessors.coreCases.length, 1);
   assert.equal(
     companions.targetCorpus.sha256,
     sha256(fs.readFileSync(path.join(fixture, "cases.json"))),
@@ -89,6 +109,18 @@ await test("exact reserved membership and groups preserve complete CLI packets",
   assert.equal(
     propsSuccessors.bases.core.sha256,
     sha256(fs.readFileSync(path.join(fixture, "default-route-companions.json"))),
+  );
+  assert.equal(
+    reservedKeysSuccessors.bases.core.sha256,
+    sha256(fs.readFileSync(path.join(fixture, "default-route-companions.json"))),
+  );
+  assert.equal(
+    reservedKeysSuccessors.bases.bare.sha256,
+    sha256(fs.readFileSync(path.join(fixture, "bare-parent-route-successors.json"))),
+  );
+  assert.equal(
+    reservedKeysSuccessors.bases.producer.sha256,
+    sha256(fs.readFileSync(path.join(fixture, reservedKeysSuccessors.bases.producer.path))),
   );
   assert.equal(
     companions.cases.reduce((count, entry) => count + entry.diagnostics.length, 0),
@@ -134,6 +166,7 @@ await test("exact reserved membership and groups preserve complete CLI packets",
     "require-define-component-route-successors.json",
     "no-unused-setup-bindings-route-successors.json",
     "define-props-destructuring-route-successors.json",
+    "no-reserved-keys-route-successors.json",
     "primary-sources.json",
     "observe-before.mjs",
     "original-public-before.json",
@@ -183,7 +216,10 @@ await test("exact reserved membership and groups preserve complete CLI packets",
     validateBuildReceipt(receipt, build);
     const scenarios = corpus.cases.flatMap((entry) => [
       ...[null, "recommended", "essential", "ecosystem"].map((preset) => {
-        const findings = companionPackets.get(entry.id).combinedCliDiagnostics;
+        const findings = withCurrentReservedKeys(
+          entry,
+          companionPackets.get(entry.id).combinedCliDiagnostics,
+        );
         return {
           entry,
           preset,
@@ -195,7 +231,10 @@ await test("exact reserved membership and groups preserve complete CLI packets",
       {
         entry,
         preset: null,
-        findings: withCurrentDefault(entry, companionPackets.get(entry.id).diagnostics),
+        findings: withCurrentDefault(
+          entry,
+          withCurrentReservedKeys(entry, companionPackets.get(entry.id).diagnostics),
+        ),
         config: JSON.stringify({ linter: { rules: { [corpus.rule]: "off" } } }) + "\n",
       },
       {

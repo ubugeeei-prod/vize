@@ -1,0 +1,55 @@
+{
+  "schema": "vize.lint.no-reserved-keys-route-successors",
+  "version": 1,
+  "authority": "Additive current route successor for reserved public instance keys declared through defineProps. Frozen reserved-prop, historical provider, and original route authorities remain byte-exact.",
+  "rule": "script/no-reserved-keys",
+  "bases": {
+    "core": {
+      "path": "default-route-companions.json",
+      "sha256": "694f72191c8a0d0fe70870198ab2ebc22ed17083e28c51e896c8e749783558c7"
+    },
+    "bare": {
+      "path": "bare-parent-route-successors.json",
+      "sha256": "d6f177c108ec9494f24d5dc5a7d70ea0433e0aa0c69242db53f0760f51e00a4e"
+    },
+    "producer": {
+      "path": "../../../../../crates/vize_patina/src/rules/script/no_reserved_keys.rs",
+      "sha256": "ef78ddf2f9ecd5db19ab271e8d4339727f6c67d4e9cbef7e894964e8b76bac90"
+    }
+  },
+  "routes": {
+    "default": "merge in CLI source order",
+    "recommended": "merge in CLI source order",
+    "essential": "merge in CLI source order",
+    "ecosystem": "merge in CLI source order",
+    "explicitTargetOff": "merge in CLI source order",
+    "incremental": "absent",
+    "n8nProjection": "absent"
+  },
+  "coreCases": [
+    {
+      "id": "unsupported-define-props",
+      "filename": "UnsupportedDefineProps.vue",
+      "sourceSha256": "a1d6bae2bf43c2584b63dd121acdfbf433a5e5979ee0dec15e642012be531808",
+      "diagnostics": [
+        {
+          "rule_name": "script/no-reserved-keys",
+          "severity": "error",
+          "message": "Reserved key '$props'",
+          "start": 39,
+          "end": 53,
+          "help": "Vue exposes built-in instance properties (`$el`, `$data`, `$emit`, ...); rename this prop so it does not shadow a framework internal.",
+          "labels": [
+            {
+              "message": "props key starts with reserved '$'",
+              "start": 39,
+              "end": 53
+            }
+          ],
+          "fix": null
+        }
+      ]
+    }
+  ],
+  "bareCases": []
+}
