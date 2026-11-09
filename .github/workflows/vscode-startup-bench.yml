@@ -122,6 +122,24 @@ jobs:
             node -e 'const fs=require("fs");const f=process.argv[1];const j=JSON.parse(fs.readFileSync(f,"utf8"));j.version=process.argv[2];fs.writeFileSync(f,JSON.stringify(j,null,2))' "$out/package.json" "$SERVER_VERSION"
             sha256sum "$out/dist/extension.cjs"
           done
+      - name: Fetch the published servers
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p ext-builds/server && cd ext-builds/server
+          for archive in vize-x86_64-unknown-linux-gnu.tar.gz vize-x86_64-pc-windows-msvc.zip; do
+            for attempt in 1 2 3 4 5; do
+              gh release download "v$SERVER_VERSION" --repo "$GITHUB_REPOSITORY" --clobber \
+                --pattern "$archive" --pattern "$archive.sha256" && break
+              [[ $attempt == 5 ]] && exit 1
+              sleep 15
+            done
+            echo "$(cut -d' ' -f1 "$archive.sha256")  $archive" | sha256sum --check
+          done
+          tar -xzf vize-x86_64-unknown-linux-gnu.tar.gz && unzip -q vize-x86_64-pc-windows-msvc.zip
+          rm -f ./*.tar.gz ./*.zip ./*.sha256
+          ./vize --version && ls -l
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: ext-builds
@@ -152,17 +170,12 @@ jobs:
         run: vp install --frozen-lockfile --prefer-offline
       - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with: { name: ext-builds, path: ext-builds }
-      - name: Fetch the published server and VS Code
+      - name: Stage the published server and VS Code
         run: |
           set -euo pipefail
           [[ "$ROUNDS" =~ ^[1-9][0-9]?$ ]] && [[ "$SFCS" =~ ^[0-9]+$ ]] && [[ "$NOISE" =~ ^[0-9]+$ ]]
-          archive=vize-x86_64-unknown-linux-gnu.tar.gz
-          url="https://github.com/$GITHUB_REPOSITORY/releases/download/v$SERVER_VERSION/$archive"
           mkdir -p "$RUNNER_TEMP/server"
-          curl -fsSL --retry 8 --retry-delay 5 --retry-all-errors -o "$RUNNER_TEMP/server/$archive" "$url"
-          curl -fsSL --retry 8 --retry-delay 5 --retry-all-errors -o "$RUNNER_TEMP/server/$archive.sha256" "$url.sha256"
-          (cd "$RUNNER_TEMP/server" && echo "$(cut -d' ' -f1 "$archive.sha256")  $archive" | sha256sum --check)
-          tar -xzf "$RUNNER_TEMP/server/$archive" -C "$RUNNER_TEMP/server"
+          cp ext-builds/server/vize "$RUNNER_TEMP/server/vize" && chmod +x "$RUNNER_TEMP/server/vize"
           "$RUNNER_TEMP/server/vize" --version
           if ! command -v xvfb-run >/dev/null 2>&1; then
             sudo apt-get update -qq && sudo apt-get install -y --no-install-recommends xvfb xauth
@@ -220,13 +233,8 @@ jobs:
           set -euo pipefail
           [[ "$ROUNDS" =~ ^[1-9][0-9]?$ ]] && [[ "$SFCS" =~ ^[0-9]+$ ]] && [[ "$NOISE" =~ ^[0-9]+$ ]]
           temp=$(cygpath -m "$RUNNER_TEMP")
-          archive=vize-x86_64-pc-windows-msvc.zip
-          url="https://github.com/$GITHUB_REPOSITORY/releases/download/v$SERVER_VERSION/$archive"
           mkdir -p "$temp/server"
-          curl -fsSL --retry 8 --retry-delay 5 --retry-all-errors -o "$temp/server/$archive" "$url"
-          curl -fsSL --retry 8 --retry-delay 5 --retry-all-errors -o "$temp/server/$archive.sha256" "$url.sha256"
-          (cd "$temp/server" && echo "$(cut -d' ' -f1 "$archive.sha256")  $archive" | sha256sum --check)
-          (cd "$temp/server" && unzip -q "$archive")
+          cp ext-builds/server/vize.exe "$temp/server/vize.exe"
           "$temp/server/vize.exe" --version
           VIZE_TEST_VSCODE_VERSION="$VSCODE_VERSION" vp run --workspace-root test:vscode-extension:download
           code=$(cd editors/vscode && VIZE_TEST_VSCODE_VERSION="$VSCODE_VERSION" node test/download-vscode.mjs | sed -n 's/^Verified VS Code [^:]*: //p' | tail -1 | tr -d '\r')
@@ -286,21 +294,18 @@ jobs:
       - name: Install Node, the published server and VS Code in WSL2
         shell: wsl-bash {0}
         env:
-          WSLENV: SERVER_VERSION/u:VSCODE_VERSION/u:GITHUB_REPOSITORY/u
+          WSLENV: VSCODE_VERSION/u
         run: |
           set -euo pipefail
           version=24.14.0
+          mkdir -p "$HOME/server"
+          cp ext-builds/server/vize "$HOME/server/vize" && chmod +x "$HOME/server/vize"
+          "$HOME/server/vize" --version
           cd "$HOME"
           curl -fsSLO "https://nodejs.org/dist/v$version/node-v$version-linux-x64.tar.xz"
           curl -fsSLO "https://nodejs.org/dist/v$version/SHASUMS256.txt"
           grep " node-v$version-linux-x64.tar.xz$" SHASUMS256.txt | sha256sum --check
           tar -xJf "node-v$version-linux-x64.tar.xz" -C /usr/local --strip-components=1
-          archive=vize-x86_64-unknown-linux-gnu.tar.gz
-          url="https://github.com/$GITHUB_REPOSITORY/releases/download/v$SERVER_VERSION/$archive"
-          mkdir -p server && cd server
-          curl -fsSL --retry 8 --retry-delay 5 --retry-all-errors -o "$archive" "$url" && curl -fsSL --retry 8 --retry-delay 5 --retry-all-errors -o "$archive.sha256" "$url.sha256"
-          echo "$(cut -d' ' -f1 "$archive.sha256")  $archive" | sha256sum --check
-          tar -xzf "$archive" && ./vize --version
           mkdir -p "$HOME/te" && cd "$HOME/te"
           npm install --no-audit --no-fund --ignore-scripts @vscode/test-electron@3.1.0 > /dev/null
           node -e 'require("@vscode/test-electron").downloadAndUnzipVSCode({ version: process.env.VSCODE_VERSION, timeout: 30000 }).then((p) => require("fs").writeFileSync(process.env.HOME + "/code-path", p))'
