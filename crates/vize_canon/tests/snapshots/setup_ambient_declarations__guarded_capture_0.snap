@@ -31,12 +31,12 @@ function __setup() {
   void defineProps; void defineEmits; void defineExpose; void defineModel; void defineSlots; void withDefaults; void useTemplateRef;
 
   // User setup code
-  
-  class Local<T> { value!: T; }
-  declare function label<T>(value: Local<T>): T;
-  declare const alias: typeof label;
-  
-  // @vize-map: 1081:1205 -> 0:113
+
+class Local<T> { value!: T; }
+declare function label<T>(value: Local<T>): T;
+declare const alias: typeof label;
+
+  // @vize-map: 1081:1195 -> 0:113
 
   // ========== Template Scope (inherits from setup) ==========
   ;(function __template() {

@@ -129,11 +129,11 @@ function __setup() {
   void defineProps; void defineEmits; void defineExpose; void defineModel; void defineSlots; void withDefaults; void useTemplateRef;
 
   // User setup code
-  
-  
-  const slots = useSlots()
-  
-  // @vize-map: 16022:16058 -> 0:58
+
+
+const slots = useSlots()
+
+  // @vize-map: 16022:16050 -> 0:58
 
   // ========== Template Scope (inherits from setup) ==========
   const __vize_template = (function __template() {

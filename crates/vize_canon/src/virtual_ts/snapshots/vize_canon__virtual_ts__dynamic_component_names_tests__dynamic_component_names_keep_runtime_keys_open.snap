@@ -129,13 +129,13 @@ function __setup() {
   void defineProps; void defineEmits; void defineExpose; void defineModel; void defineSlots; void withDefaults; void useTemplateRef;
 
   // User setup code
-  const staticValue = 'fixed'
-  const dynamicValue = 'runtime'
-  const propName = 'staticProp'
-  const eventName = 'save'
-  const handler = () => {}
-  
-  // @vize-map: 16023:16175 -> 0:171
+const staticValue = 'fixed'
+const dynamicValue = 'runtime'
+const propName = 'staticProp'
+const eventName = 'save'
+const handler = () => {}
+
+  // @vize-map: 16023:16163 -> 0:171
 
   // ========== Template Scope (inherits from setup) ==========
   ;(function __template() {

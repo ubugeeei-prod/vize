@@ -31,12 +31,12 @@ function __setup() {
   void defineProps; void defineEmits; void defineExpose; void defineModel; void defineSlots; void withDefaults; void useTemplateRef;
 
   // User setup code
-  
-  const local = 'fixed';
-  // @ts-ignore pending scope support
-  declare const label: typeof local;
-  
-  // @vize-map: 1081:1187 -> 0:95
+
+const local = 'fixed';
+// @ts-ignore pending scope support
+declare const label: typeof local;
+
+  // @vize-map: 1081:1177 -> 0:95
 
   // ========== Template Scope (inherits from setup) ==========
   ;(function __template() {
