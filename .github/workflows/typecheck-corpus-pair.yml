@@ -35,6 +35,10 @@ on:
         description: Attribute tsc check time and types to helpers and projection families, base vs head
         type: boolean
         default: true
+      floors:
+        description: Measure e2e floors (stub, replay, expressions-only) on the head build instead of the pair
+        type: boolean
+        default: false
 permissions: { contents: read }
 concurrency:
   group: typecheck-corpus-pair-${{ inputs.base_sha }}-${{ inputs.head_sha }}
@@ -56,6 +60,7 @@ jobs:
       OWNED_PAIR: ${{ inputs.owned_pair }}
       OWNED_WORKLOADS: ${{ inputs.workloads }}
       OWNED_LANES: ${{ inputs.lanes }}
+      FLOORS: ${{ inputs.floors }}
     steps:
       - name: Validate inputs
         run: |
@@ -109,7 +114,9 @@ jobs:
       - name: Build the native binding and the vize package for base and head
         run: |
           set -euo pipefail
-          for role in base head; do
+          roles=(base head)
+          if [[ "$FLOORS" == true ]]; then roles=(head); fi
+          for role in "${roles[@]}"; do
             (
               cd "$RUNNER_TEMP/pair-$role"
               vp install --frozen-lockfile --prefer-offline --filter './npm/cli...' --filter './npm/native...'
@@ -118,7 +125,7 @@ jobs:
             )
           done
           pids=()
-          for role in base head; do
+          for role in "${roles[@]}"; do
             (
               cd "$RUNNER_TEMP/pair-$role"
               if [[ "$OWNED_PAIR" == true ]]; then export CARGO_TARGET_DIR="$PWD/target"; fi
@@ -128,9 +135,9 @@ jobs:
           done
           status=0
           for pid in "${pids[@]}"; do wait "$pid" || status=1; done
-          for role in base head; do echo "::group::native build $role"; tail -n 40 "$RUNNER_TEMP/build-$role.log"; echo "::endgroup::"; done
+          for role in "${roles[@]}"; do echo "::group::native build $role"; tail -n 40 "$RUNNER_TEMP/build-$role.log"; echo "::endgroup::"; done
           [[ "$status" == 0 ]]
-          for role in base head; do
+          for role in "${roles[@]}"; do
             (cd "$RUNNER_TEMP/pair-$role" && vp run --filter './npm/cli' build)
             git -C "$RUNNER_TEMP/pair-$role" rev-parse HEAD
           done
@@ -140,6 +147,10 @@ jobs:
           VIZE_PAIR_RUNNER_LABEL: blacksmith-32vcpu-ubuntu-2404
         run: |
           set -euo pipefail
+          if [[ "$FLOORS" == true ]]; then
+            node tools/benchmarks/scripts/e2e-floors/run.ts --head "$RUNNER_TEMP/pair-head" --runs "$RUNS" --work "$RUNNER_TEMP/pair-work" --out "$RUNNER_TEMP/pair-out"
+            exit
+          fi
           if [[ "$OWNED_PAIR" == true ]]; then
             workload_args=()
             if [[ -n "$OWNED_WORKLOADS" ]]; then workload_args+=(--workloads "$OWNED_WORKLOADS"); fi
