@@ -114,6 +114,7 @@ void test("SSR evidence fails closed on missing shards, counters or samples", ()
 
 void test("an SSR difference becomes a fixture-owned issue without compiled output", () => {
   const plan = createDivergenceIssue(ssr, divergent, ledger, selected, context);
+  assert.ok(plan);
   assert.match(plan.title, /^fix\(davinci\): triage canonical SSR divergence [a-f0-9]{12}$/);
   assert.equal(plan.observer, "ssr");
   assert.deepEqual(plan.fixtures, [fixtureA, fixtureB]);
@@ -183,6 +184,7 @@ void test("a reduced SSR witness is promoted beside its observer's fixture test"
       }),
     );
     const plan = createPromotionPlan(directory);
+    assert.ok(plan);
     assert.equal(plan.branch, "automation/davinci-ssr-abc123abc123");
     assert.match(plan.title, /preserve real-project SSR divergence abc123abc123$/);
     assert.match(plan.body, /promoted_real_project_ssr_fixtures_agree/);

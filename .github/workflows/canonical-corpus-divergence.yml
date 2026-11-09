@@ -56,7 +56,7 @@ jobs:
         if: ${{ steps.reduction.outputs.required == 'true' }}
         uses: ./.github/actions/setup-rust-sticky-cache
         with:
-          key: canonical-${{ inputs.observer }}-divergence-reduction
+          key: canonical-corpus-divergence-reduction
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
       - name: Build source reducer
         if: ${{ steps.reduction.outputs.required == 'true' }}
