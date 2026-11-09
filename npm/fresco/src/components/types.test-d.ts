@@ -21,6 +21,7 @@ import type {
 import Link from "./FrescoLink.vue";
 import Markdown from "./FrescoMarkdown.vue";
 import Modal from "./FrescoModal.vue";
+import Popover from "./FrescoPopover.vue";
 import Alert from "./FrescoAlert.vue";
 import Avatar from "./FrescoAvatar.vue";
 import Breadcrumb from "./FrescoBreadcrumb.vue";
@@ -54,6 +55,7 @@ import Transform from "./FrescoTransform.vue";
 import Tooltip from "./FrescoTooltip.vue";
 import type { MarkdownBlockProvider, MarkdownProps } from "./markdown-types.js";
 import type { ModalProps } from "./modal-types.js";
+import type { PopoverProps } from "./popover-types.js";
 import type { TableProps, TableRow } from "./table-types.js";
 import { createCodeBuffer, type CodeProps, type CodeSyntaxProvider } from "./Code.js";
 
@@ -156,6 +158,22 @@ export const textInputRejectsBadSubmitHandler: TextInputProps = {
   // @ts-expect-error - onSubmit receives the submitted string, not a number
   onSubmit: (value: number) => value,
 };
+
+export const popoverAcceptsDocumentedProps: PopoverProps = {
+  open: true,
+  placement: "right",
+  offset: 1,
+  focusId: "actions",
+  initialFocusId: "first-action",
+  trapFocus: true,
+  restoreFocus: true,
+  closeOnEscape: true,
+  accessibilityRole: "menu",
+  accessibilityLabel: "Actions",
+};
+
+// @ts-expect-error - diagonal placement is not part of the anchored overlay contract
+export const popoverRejectsDiagonalPlacement: PopoverProps = { placement: "top-right" };
 
 export const lineNumberAcceptsDocumentedProps: LineNumberProps = {
   value: 42,
@@ -320,6 +338,7 @@ export function componentsRenderWithTypedProps() {
     h(TextInput, { modelValue: "v", focused: true, maskChar: "#" }),
     h(TextArea, { modelValue: "first\nsecond", focused: true, rows: 2 }),
     h(Modal, { visible: true, focusId: "dialog", initialFocusId: "confirm" }),
+    h(Popover, { open: true, placement: "bottom", accessibilityLabel: "Actions" }),
     h(LineNumber, { value: 42, width: 3 }),
     h(Diff, { oldText: "before", newText: "after", view: "unified" }),
     h(ScrollBox, { itemCount: 100, viewportSize: 10 }),

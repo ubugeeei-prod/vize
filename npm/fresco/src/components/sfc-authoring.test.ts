@@ -17,6 +17,7 @@ const canonicalSfcComponents = [
   { name: "Markdown", file: "FrescoMarkdown" },
   { name: "Modal", file: "FrescoModal" },
   { name: "Newline", file: "FrescoNewline" },
+  { name: "Popover", file: "FrescoPopover" },
   { name: "ScrollBar", file: "ScrollBar" },
   { name: "ScrollBox", file: "ScrollBox" },
   { name: "Slider", file: "FrescoSlider" },
