@@ -474,8 +474,8 @@ export default defineConfig({}).withVue({
 const ruleOptions = { "vue/warn-custom-directive": { ignore: ["hover-tooltip"] } };
 ```
 
-未設定では報告：`<button v-focus>保存</button>`
-設定後は許可：`<button v-hover-tooltip>保存</button>`
+報告される（未設定）：`<button v-focus>保存</button>`
+設定後は許可される：`<button v-hover-tooltip>保存</button>`
 
 <span id="vue-no-bare-strings-in-template"></span>
 
@@ -487,8 +487,8 @@ const ruleOptions = { "vue/warn-custom-directive": { ignore: ["hover-tooltip"] }
 const ruleOptions = { "vue/no-bare-strings-in-template": { allowlist: ["Cancel", "/^[DRWXYmvx]$/u"] } };
 ```
 
-報告：`<span>Submit</span>`
-許可：`<span>Cancel</span>`
+報告される：`<span>Submit</span>`
+許可される：`<span>Cancel</span>`
 
 <span id="a11y-anchor-has-content"></span>
 
@@ -500,8 +500,8 @@ const ruleOptions = { "vue/no-bare-strings-in-template": { allowlist: ["Cancel",
 const ruleOptions = { "a11y/anchor-has-content": { accessibleChildren: ["RetryImage"] } };
 ```
 
-報告：`<a href="/retry"><UnknownImage /></a>`
-許可：`<a href="/retry"><RetryImage /></a>`
+報告される：`<a href="/retry"><UnknownImage /></a>`
+許可される：`<a href="/retry"><RetryImage /></a>`
 
 <span id="a11y-label-has-for"></span>
 
@@ -513,8 +513,8 @@ const ruleOptions = { "a11y/anchor-has-content": { accessibleChildren: ["RetryIm
 const ruleOptions = { "a11y/label-has-for": { controlComponents: ["CInputField"] } };
 ```
 
-報告：`<label>名前<CustomText /></label>`
-許可：`<label>名前<CInputField /></label>`
+報告される：`<label>名前<CustomText /></label>`
+許可される：`<label>名前<CInputField /></label>`
 
 <span id="vue-attribute-hyphenation"></span>
 
