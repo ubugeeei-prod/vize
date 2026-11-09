@@ -382,6 +382,46 @@
       }
     },
     {
+      "id": "lsp/fix-history/folding-styl-line-comments-12328",
+      "state": "active",
+      "targets": [
+        "stdio"
+      ],
+      "inputs": {
+        "root": "folding-styl-line-comments-12328",
+        "files": [
+          {
+            "path": "StylLineComments.vue.txt",
+            "sha256": "ff7bef444634da93b796fb657df878a886d84396563cd3060ef1df00c498f7cb"
+          }
+        ]
+      },
+      "case": {
+        "path": "folding-styl-line-comments-12328/case.json",
+        "sha256": "95f32079f9fcf3105f0b820eafedfa1cc03bae9d2e9c184bf4c48a771c266377"
+      },
+      "requestCount": 1,
+      "initializationOptions": {
+        "editor": true,
+        "lint": false,
+        "typecheck": false
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "stylus-style"
+            ],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "lsp/fix-history/folding-unclosed-element",
       "state": "active",
       "targets": [

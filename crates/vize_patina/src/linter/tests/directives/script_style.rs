@@ -153,3 +153,25 @@ fn named_vize_forget_reports_unused_only_when_no_final_diagnostic_matches() {
     );
     assert!(used.diagnostics.is_empty(), "{:?}", used.diagnostics);
 }
+
+#[test]
+fn stylus_spellings_read_line_comment_directives_alike() {
+    let linter = Linter::new()
+        .with_enabled_rules(Some(vec![
+            "vue/comment-directive".into(),
+            "css/no-important".into(),
+        ]))
+        .with_report_unused_disable_directives(true);
+    for lang in ["stylus", "styl"] {
+        let source = vize_l0::cstr!(
+            "<template><div /></template>\n<style lang=\"{lang}\">\n// eslint-disable-next-line css/no-important\n.a\n  color red\n</style>"
+        );
+        let unused = linter
+            .lint_sfc(&source, "Card.vue")
+            .diagnostics
+            .into_iter()
+            .filter(|diagnostic| diagnostic.rule_name == "vue/comment-directive")
+            .count();
+        assert_eq!(unused, 1, "{lang}");
+    }
+}

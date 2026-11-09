@@ -4975,6 +4975,38 @@
       }
     },
     {
+      "id": "linter/styl-line-comment-directives-12328",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "styl-line-comment-directives-12328",
+        "files": [
+          {
+            "path": "StylDirectives.vue.txt",
+            "role": "regression-reproduction",
+            "sha256": "b5386f2d9a57a30a90fa869882ce494ab043f827a08c8acf599ddb6e91b0f5e5"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "stylus-style"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/symbol-owner-probes-11267",
       "state": "active",
       "targets": [

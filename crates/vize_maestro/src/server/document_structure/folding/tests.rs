@@ -182,6 +182,25 @@ fn style_scanner_ignores_braces_in_strings_and_comments() {
 }
 
 #[test]
+fn stylus_spellings_skip_braces_in_line_comments() {
+    for lang in ["stylus", "styl"] {
+        let source = vize_l0::cstr!(
+            "<style lang=\"{lang}\">\n.outer {{\n  // }}\n  .inner {{\n    color red\n  }}\n}}\n</style>\n"
+        );
+
+        assert_eq!(
+            ranges(&source),
+            vec![
+                (0, 6, Some("region"), Some("style")),
+                (1, 5, None, None),
+                (3, 4, None, None),
+            ],
+            "{lang}"
+        );
+    }
+}
+
+#[test]
 fn multiline_opening_tags_keep_script_and_style_ranges_on_authored_lines() {
     let source = "<script\n  setup\n  lang=\"ts\"\n>\nconst config = {\n  enabled: true,\n}\n</script>\n\n<style\n  lang=\"scss\"\n>\n.card {\n  color: red;\n}\n</style>\n";
 

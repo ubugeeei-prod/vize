@@ -1,0 +1,6 @@
+<template><div /></template>
+<style lang="styl">
+// eslint-disable-next-line css/no-important
+.a
+  color red
+</style>

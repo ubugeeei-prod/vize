@@ -1,0 +1,8 @@
+<style lang="styl">
+.outer {
+  // }
+  .inner {
+    color red
+  }
+}
+</style>
