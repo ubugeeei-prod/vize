@@ -38,34 +38,102 @@ pub enum SetupBindingKind {
     PropsAliased,
 }
 
+/// The reactivity API whose result initializes a binding.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ReactiveSource {
+    Ref,
+    ShallowRef,
+    CustomRef,
+    Computed,
+    ToRef,
+    ToRefs,
+    TemplateRef,
+    Reactive,
+    ShallowReactive,
+    Readonly,
+    ShallowReadonly,
+    /// `defineProps()`, or `withDefaults()` around it.
+    Props,
+    /// `defineModel()`.
+    Model,
+}
+
+impl ReactiveSource {
+    /// Whether an inline template reads the binding through `.value`.
+    #[must_use]
+    pub const fn reads_value(self) -> bool {
+        matches!(
+            self,
+            Self::Ref
+                | Self::ShallowRef
+                | Self::CustomRef
+                | Self::Computed
+                | Self::ToRef
+                | Self::TemplateRef
+                | Self::Model
+        )
+    }
+}
+
 /// One binding introduced by a top-level identifier.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct SetupBinding {
     /// The declared identifier.
     pub name: Span,
     pub kind: SetupBindingKind,
+    /// The reactivity API call that initializes it, if any.
+    pub source: Option<ReactiveSource>,
 }
 
 /// Calls whose result kind the compiler knows, by Vue API name.
-const REACTIVE_CALLS: &[(&str, SetupBindingKind)] = &[
-    ("ref", SetupBindingKind::SetupRef),
-    ("shallowRef", SetupBindingKind::SetupRef),
-    ("computed", SetupBindingKind::SetupRef),
-    ("toRef", SetupBindingKind::SetupRef),
-    ("toRefs", SetupBindingKind::SetupRef),
-    ("customRef", SetupBindingKind::SetupRef),
-    ("useTemplateRef", SetupBindingKind::SetupRef),
-    ("reactive", SetupBindingKind::SetupReactiveConst),
-    ("shallowReactive", SetupBindingKind::SetupReactiveConst),
-    ("readonly", SetupBindingKind::SetupReactiveConst),
-    ("shallowReadonly", SetupBindingKind::SetupReactiveConst),
+const REACTIVE_CALLS: &[(&str, SetupBindingKind, ReactiveSource)] = &[
+    ("ref", SetupBindingKind::SetupRef, ReactiveSource::Ref),
+    (
+        "shallowRef",
+        SetupBindingKind::SetupRef,
+        ReactiveSource::ShallowRef,
+    ),
+    (
+        "computed",
+        SetupBindingKind::SetupRef,
+        ReactiveSource::Computed,
+    ),
+    ("toRef", SetupBindingKind::SetupRef, ReactiveSource::ToRef),
+    ("toRefs", SetupBindingKind::SetupRef, ReactiveSource::ToRefs),
+    (
+        "customRef",
+        SetupBindingKind::SetupRef,
+        ReactiveSource::CustomRef,
+    ),
+    (
+        "useTemplateRef",
+        SetupBindingKind::SetupRef,
+        ReactiveSource::TemplateRef,
+    ),
+    (
+        "reactive",
+        SetupBindingKind::SetupReactiveConst,
+        ReactiveSource::Reactive,
+    ),
+    (
+        "shallowReactive",
+        SetupBindingKind::SetupReactiveConst,
+        ReactiveSource::ShallowReactive,
+    ),
+    (
+        "readonly",
+        SetupBindingKind::SetupReactiveConst,
+        ReactiveSource::Readonly,
+    ),
+    (
+        "shallowReadonly",
+        SetupBindingKind::SetupReactiveConst,
+        ReactiveSource::ShallowReadonly,
+    ),
 ];
 
-fn reactive_call(name: &str) -> Option<(&'static str, SetupBindingKind)> {
-    REACTIVE_CALLS
-        .iter()
-        .find(|(api, _)| *api == name)
-        .map(|(api, kind)| (*api, *kind))
+fn reactive_call(name: &str) -> Option<&'static (&'static str, SetupBindingKind, ReactiveSource)> {
+    REACTIVE_CALLS.iter().find(|(api, _, _)| *api == name)
 }
 
 /// Binding rows plus the local names that alias a Vue reactivity API.
@@ -91,8 +159,18 @@ impl<'a> Bindings<'a> {
     }
 
     fn push(&mut self, base: u32, name: oxc_span::Span, kind: SetupBindingKind) {
+        self.push_source(base, name, kind, None);
+    }
+
+    fn push_source(
+        &mut self,
+        base: u32,
+        name: oxc_span::Span,
+        kind: SetupBindingKind,
+        source: Option<ReactiveSource>,
+    ) {
         let name = self.authored(base, name);
-        self.rows.push(SetupBinding { name, kind });
+        self.rows.push(SetupBinding { name, kind, source });
     }
 
     pub(super) fn statement(&mut self, base: u32, statement: &Statement<'a>) {
@@ -135,7 +213,7 @@ impl<'a> Bindings<'a> {
                     let imported = named.imported.name();
                     if from_vue
                         && imported != local
-                        && let Some((api, _)) = reactive_call(imported.as_str())
+                        && let Some((api, _, _)) = reactive_call(imported.as_str())
                     {
                         self.aliases.push((local, api));
                     }
@@ -169,15 +247,15 @@ impl<'a> Bindings<'a> {
             _ => SetupBindingKind::SetupConst,
         };
         let mut alias = None;
-        let class = match declarator.init.as_ref() {
-            None => by_kind,
+        let (class, source) = match declarator.init.as_ref() {
+            None => (by_kind, None),
             Some(init) => match call(init) {
                 Some(call) => self.call_kind(call, by_kind, kind, init),
                 None => {
                     if let Expression::Identifier(api) = init {
-                        alias = reactive_call(api.name.as_str()).map(|(api, _)| api);
+                        alias = reactive_call(api.name.as_str()).map(|(api, _, _)| *api);
                     }
-                    by_initializer(kind, init)
+                    (by_initializer(kind, init), None)
                 }
             },
         };
@@ -185,11 +263,12 @@ impl<'a> Bindings<'a> {
         if let Some(api) = alias {
             self.aliases.push((name, api));
         }
-        self.push(base, id.span, class);
+        self.push_source(base, id.span, class, source);
     }
 
     /// Every identifier of a destructuring pattern shares one kind, except
-    /// in a `defineProps` destructure.
+    /// in a `defineProps` destructure. The first element of a `defineModel`
+    /// array pattern holds the model ref.
     fn pattern(
         &mut self,
         base: u32,
@@ -197,22 +276,38 @@ impl<'a> Bindings<'a> {
         declarator: &VariableDeclarator<'a>,
     ) {
         let init = declarator.init.as_ref();
+        let mut model = None;
         let class = match &declarator.id {
             BindingPattern::ObjectPattern(pattern) if init.is_some_and(destructures_props) => {
                 self.props_destructure(base, pattern);
                 return;
             }
-            BindingPattern::ArrayPattern(_)
+            BindingPattern::ArrayPattern(array)
                 if init
                     .and_then(call)
                     .is_some_and(|call| is_callee(call, super::super::DEFINE_MODEL)) =>
             {
+                model =
+                    array
+                        .elements
+                        .first()
+                        .and_then(Option::as_ref)
+                        .and_then(|first| match first {
+                            BindingPattern::BindingIdentifier(id) => Some(id.span),
+                            BindingPattern::AssignmentPattern(assignment) => match &assignment.left
+                            {
+                                BindingPattern::BindingIdentifier(id) => Some(id.span),
+                                _ => None,
+                            },
+                            _ => None,
+                        });
                 SetupBindingKind::SetupMaybeRef
             }
             _ => by_destructure(kind, init),
         };
         declarator.id.all_binding_identifiers(&mut |id| {
-            self.push(base, id.span, class);
+            let source = (Some(id.span) == model).then_some(ReactiveSource::Model);
+            self.push_source(base, id.span, class, source);
             true
         });
     }
@@ -248,9 +343,9 @@ impl<'a> Bindings<'a> {
         by_kind: SetupBindingKind,
         kind: VariableDeclarationKind,
         init: &Expression<'a>,
-    ) -> SetupBindingKind {
+    ) -> (SetupBindingKind, Option<ReactiveSource>) {
         let Expression::Identifier(callee) = &call.callee else {
-            return by_initializer(kind, init);
+            return (by_initializer(kind, init), None);
         };
         let callee = callee.name.as_str();
         // The compiler's macro set: Vue's macros and `defineArt`.
@@ -258,11 +353,12 @@ impl<'a> Bindings<'a> {
             lookup(callee).filter(|row| row.builtin || row.kind == MacroKind::DefineArt)
         {
             return match row.kind {
-                MacroKind::DefineProps | MacroKind::WithDefaults => {
-                    SetupBindingKind::SetupReactiveConst
-                }
-                MacroKind::DefineModel => SetupBindingKind::SetupRef,
-                _ => by_kind,
+                MacroKind::DefineProps | MacroKind::WithDefaults => (
+                    SetupBindingKind::SetupReactiveConst,
+                    Some(ReactiveSource::Props),
+                ),
+                MacroKind::DefineModel => (SetupBindingKind::SetupRef, Some(ReactiveSource::Model)),
+                _ => (by_kind, None),
             };
         }
         let api = self
@@ -271,7 +367,10 @@ impl<'a> Bindings<'a> {
             .rev()
             .find(|(local, _)| *local == callee)
             .map_or(callee, |(_, api)| *api);
-        reactive_call(api).map_or_else(|| by_initializer(kind, init), |(_, class)| class)
+        reactive_call(api).map_or_else(
+            || (by_initializer(kind, init), None),
+            |(_, class, source)| (*class, Some(*source)),
+        )
     }
 }
 

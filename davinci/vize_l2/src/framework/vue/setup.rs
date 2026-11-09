@@ -7,7 +7,7 @@
 
 mod bindings;
 mod props;
-pub use bindings::{SetupBinding, SetupBindingKind};
+pub use bindings::{ReactiveSource, SetupBinding, SetupBindingKind};
 pub use props::{PropsDestructure, PropsField};
 
 use super::{MacroKind, lookup};
