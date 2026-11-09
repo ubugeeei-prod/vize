@@ -9,8 +9,9 @@
 use vize_l0::String;
 use vize_l0::id::NodeId;
 use vize_l0::side_table::SideTable;
-use vize_l1_to_l2::pass::{ModelFacts, SlotFacts, TextFacts};
+use vize_l1_to_l2::pass::{ModelFacts, SlotFacts};
 use vize_l2::analysis::if_facts::{BranchKeyKind, IfFacts};
+use vize_l2::analysis::text_facts::TextParts;
 use vize_l2::dump::{Expr as DumpExpr, Op as DumpOp, Page as L2Page};
 
 use super::slots::{POutlet, PUnit, has_slot_content, l2_outlet, l2_slot_active, l2_unit};
@@ -87,7 +88,7 @@ pub struct L2Projection {
 pub struct Tables<'t> {
     pub if_facts: &'t SideTable<IfFacts>,
     pub slot_facts: &'t SideTable<SlotFacts>,
-    pub text_facts: &'t SideTable<TextFacts>,
+    pub text_facts: &'t SideTable<TextParts>,
     pub model_faults: &'t SideTable<ModelFacts>,
 }
 

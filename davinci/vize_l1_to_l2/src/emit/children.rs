@@ -98,7 +98,7 @@ fn interpolation_is_constant(
     ) {
         return cx.reads_constant_binding(&interp.expression);
     }
-    let Some(facts) = id.and_then(|id| cx.facts.text_facts.get(id)) else {
+    let Some(facts) = id.and_then(|id| cx.texts.get(id)) else {
         return false;
     };
     facts
@@ -129,15 +129,11 @@ pub(super) fn emit_interpolation(
                 Reason::WalkIdOverflow,
                 interp.span,
             ))?;
-            let facts = cx
-                .facts
-                .text_facts
-                .get(id)
-                .ok_or(EmitError::unsupported_at_node(
-                    Reason::MissingTextFacts,
-                    interp.span,
-                    id,
-                ))?;
+            let facts = cx.texts.get(id).ok_or(EmitError::unsupported_at_node(
+                Reason::MissingTextFacts,
+                interp.span,
+                id,
+            ))?;
             emit_compound_parts(cx, &facts.parts, interp.span, Site::Expression)
         }
         ExprRef::Opaque(opaque) if is_empty_interpolation(opaque) => {

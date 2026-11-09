@@ -5,8 +5,8 @@ use vize_l2::op::{IfOp, Op, Region};
 use super::{SlotPiece, capture_child, emit_template_pieces, is_slot_template};
 use crate::emit::create_slots_walk::{advance_after_op, first_slot_template};
 use crate::emit::{EmitCx, EmitError, UnsupportedReason as Reason};
-use crate::pass::walk::PageWalk;
 use vize_l2::analysis::slot_facts::{SlotCarrier, SlotFacts, SlotParams};
+use vize_l2::walk::PageWalk;
 
 pub(super) fn collect_pieces(
     cx: &mut EmitCx<'_>,

@@ -9,8 +9,8 @@ use vize_l0::diag::{Severity, Stage};
 use vize_l2::op::Namespace;
 
 use crate::lower::Lowered;
-use crate::pass::L2Facts;
-use crate::pass::walk::PageWalk;
+use vize_l2::analysis::pass_facts::L2Facts;
+use vize_l2::walk::PageWalk;
 
 use super::buf::Buf;
 use super::fragment::emit_root;
@@ -92,6 +92,8 @@ pub(super) fn emit_dom_observed<'f, P>(
         buf: Buf::new(options.inline),
         source: lowered.artifact.source,
         facts,
+        texts: &lowered.artifact.texts,
+        if_facts: &lowered.artifact.if_facts,
         scopes: &lowered.artifact.scopes,
         wrappers: &lowered.artifact.branch_fragments,
         for_wrappers: &lowered.artifact.loop_fragments,
@@ -140,14 +142,15 @@ pub(super) fn emit_dom_observed<'f, P>(
         ),
     };
     cx.scope.enable_vdom_setup_writes();
-    let filters = &facts.legacy.filters;
-    if facts.legacy.filter_helper_precedes_components {
+    let filters = &facts.filters.names;
+    if facts.filters.resolve_before_components {
         cx.buf.prefer(Helper::ResolveFilter);
     }
     let mut helper_walk = PageWalk::new();
     let prefer_cx = helper_preference::PreferCx {
         source: lowered.artifact.source,
         facts,
+        texts: &lowered.artifact.texts,
         for_wrappers: &lowered.artifact.loop_fragments,
         bindings: options.bindings,
         inline: options.inline,

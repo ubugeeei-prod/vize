@@ -42,7 +42,6 @@ pub use text::{
     RunShape, TextAction, TextLane, TextPart, TextParts, TextRun, TextSource, branch_gap_text,
     branch_gap_text_at, rebuild_source,
 };
-pub(crate) use text::{legacy_slot_filler_needs_props_placeholder, legacy_slot_filler_text};
 
 #[derive(Clone, Copy)]
 pub(crate) struct LowerPolicy {

@@ -288,8 +288,7 @@ fn emit_fallback_interp(
                 interp.span,
             ))?;
             let parts = cx
-                .facts
-                .text_facts
+                .texts
                 .get(id)
                 .ok_or(EmitError::unsupported_at_node(
                     Reason::MissingTextFacts,

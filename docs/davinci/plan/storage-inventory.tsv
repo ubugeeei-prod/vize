@@ -29,6 +29,7 @@ infra	analysis	davinci/vize_l0/src/side_table.rs	1	2	0	0	0	0	0	0
 l2	-	davinci/vize_l2/src/analysis/for_facts.rs	0	0	1	1	0	0	0	0
 l2	contract	davinci/vize_l2/src/analysis/fragment_facts.rs	1	3	1	6	0	0	0	0
 l2	contract	davinci/vize_l2/src/analysis/if_facts.rs	1	1	1	4	1	3	0	0
+l2	contract	davinci/vize_l2/src/analysis/pass_facts.rs	1	1	1	1	0	0	0	0
 l2	contract	davinci/vize_l2/src/summary.rs	1	13	1	10	0	0	0	0
 l2	-	davinci/vize_l2/src/summary/facet.rs	0	0	1	9	0	0	0	0
 l2	contract	davinci/vize_l2/src/summary/dump.rs	1	2	1	9	0	0	0	0
@@ -306,7 +307,7 @@ l1_to_l2	lower	davinci/vize_l1_to_l2/src/lower/structural/wrapper.rs	1	4	1	9	0	0
 l1_to_l2	lower	davinci/vize_l1_to_l2/src/lower/sugar.rs	1	1	1	2	0	0	0	0
 l1_to_l2	-	davinci/vize_l1_to_l2/src/lower/table.rs	0	0	0	0	1	12	0	0
 l2	contract	davinci/vize_l2/src/analysis/slot_facts.rs	1	1	1	4	0	0	0	0
-l2	analysis	davinci/vize_l2/src/analysis/text_facts.rs	1	2	1	3	0	0	0	0
+l2	analysis	davinci/vize_l2/src/analysis/text_facts.rs	1	1	1	3	0	0	0	0
 l1_to_l2	lower	davinci/vize_l1_to_l2/src/lower/text/condense.rs	1	5	1	2	0	0	0	0
 l1_to_l2	lower	davinci/vize_l1_to_l2/src/lower/text/lane.rs	1	4	1	1	0	0	0	0
 l1_to_l2	lower	davinci/vize_l1_to_l2/src/lower/text/lane/scan.rs	1	5	1	3	0	0	0	0
@@ -319,7 +320,6 @@ l2	analysis	davinci/vize_l2/src/analysis/template_complexity.rs	1	2	0	0	0	0	0	0
 l2	-	davinci/vize_l2/src/analysis/template_complexity/print.rs	0	0	1	4	0	0	0	0
 l2	-	davinci/vize_l2/src/analysis/static_facts/consts.rs	0	0	2	0	0	0	0	0
 l2	-	davinci/vize_l2/src/analysis/static_facts/lattice.rs	0	0	2	0	0	0	0	0
-l1_to_l2	pass	davinci/vize_l1_to_l2/src/dialect/legalize.rs	1	0	1	1	0	0	0	0
 l1_to_l2	pass	davinci/vize_l1_to_l2/src/dialect/legalize/filter.rs	1	4	1	11	0	0	0	0
 l1_to_l2	pass	davinci/vize_l1_to_l2/src/dialect/legalize/filter/compound.rs	1	1	1	1	0	0	0	0
 l1_to_l2	pass	davinci/vize_l1_to_l2/src/dialect/legalize/ids.rs	1	5	0	0	0	0	0	0

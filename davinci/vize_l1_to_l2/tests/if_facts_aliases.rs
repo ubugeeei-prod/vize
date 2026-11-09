@@ -19,7 +19,7 @@ fn span(source: &str, token: &str) -> Result<Span, String> {
 fn real_lowering_and_pass_aliases_borrow_the_canonical_fact_type() -> Result<(), String> {
     let source =
         "<p v-if='ready' :title='label' :key='id' key='late'>x</p><slot v-else key='fallback'/>";
-    support::with_transformed(source, |lowered, folio, facts, _| {
+    support::with_transformed(source, |lowered, folio, _, _| {
         let canonical: &SideTable<IfFacts> = &lowered.artifact.if_facts;
         let old_lower: &SideTable<lower::IfFacts> = canonical;
         let old_pass: &SideTable<pass::IfFacts> = canonical;
@@ -27,8 +27,6 @@ fn real_lowering_and_pass_aliases_borrow_the_canonical_fact_type() -> Result<(),
         assert!(core::ptr::eq(canonical, old_lower));
         assert!(core::ptr::eq(canonical, old_pass));
         assert!(core::ptr::eq(canonical, old_vif));
-        let mirrored: &SideTable<IfFacts> = &facts.if_facts;
-        assert_eq!(mirrored, canonical);
         let entries = canonical.sorted_entries();
         let [(node, row)] = entries.as_slice() else {
             return Err(String::from("one real If fact"));
