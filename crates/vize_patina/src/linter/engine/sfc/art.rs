@@ -2,7 +2,7 @@
 
 use crate::markup::L2Template;
 use vize_atelier_sfc::SfcDescriptor;
-use vize_croquis::{Croquis, drawer::LintTemplate};
+use vize_croquis::Croquis;
 use vize_l0::{Allocator, SourceRoot};
 
 use super::super::{TemplateAnalysis, TemplateRuleEnv, offset_result};
@@ -94,34 +94,33 @@ impl Linter {
             .map(|script| analysis::variant(&l2, script, self.has_unused_bindings_demand()));
         let mut parsed = Self::l1_template_parse_lint_result(filename, source, errors);
         offset_result(&mut parsed, offset);
-        let linted =
-            LintTemplate::new(l2.surface(), l2.lowered()).with_compatibility_root(|root| {
-                self.lint_template_root(
-                    super::super::template::TemplateExecution {
-                        allocator: &allocator,
-                        source,
-                        filename,
-                        root,
-                        l2: &l2,
-                        env: TemplateRuleEnv {
-                            sfc_descriptor: Some(descriptor),
-                            sfc_scripts: Some(scripts),
-                            art_script_analysis: summary.as_deref().filter(|_| !fatal),
-                            petite_document: None,
-                            defer_exact_suppressions: false,
-                            dialect: vize_l0::dialect::VueDialect::Vue,
-                            facade_rules: super::facade::RULES,
-                        },
+        let linted = l2.lint_template().with_compatibility_root(|root| {
+            self.lint_template_root(
+                super::super::template::TemplateExecution {
+                    allocator: &allocator,
+                    source,
+                    filename,
+                    root,
+                    l2: &l2,
+                    env: TemplateRuleEnv {
+                        sfc_descriptor: Some(descriptor),
+                        sfc_scripts: Some(scripts),
+                        art_script_analysis: summary.as_deref().filter(|_| !fatal),
+                        petite_document: None,
+                        defer_exact_suppressions: false,
+                        dialect: vize_l0::dialect::VueDialect::Vue,
+                        facade_rules: super::facade::RULES,
                     },
-                    if fatal {
-                        TemplateAnalysis::Disabled
-                    } else if let Some(analysis) = analysis.as_ref() {
-                        TemplateAnalysis::Precomputed(analysis)
-                    } else {
-                        TemplateAnalysis::Lazy
-                    },
-                )
-            });
+                },
+                if fatal {
+                    TemplateAnalysis::Disabled
+                } else if let Some(analysis) = analysis.as_ref() {
+                    TemplateAnalysis::Precomputed(analysis)
+                } else {
+                    TemplateAnalysis::Lazy
+                },
+            )
+        });
         if self.has_unused_bindings_demand()
             && let Some(summary) = summary
         {
