@@ -41,6 +41,7 @@ function createSync(refresh, activeClient, refuseLogging = false, startup, polic
   };
   class Discovery {
     hasConfig = policy.hasConfig ?? true;
+    hasRootConfig = policy.hasRootConfig ?? false;
     refresh = refresh;
     describeCapabilities() {
       return "test capabilities";
@@ -371,6 +372,52 @@ await test("superseded initialization cannot clear the newer startup's project a
   assert.equal(current.control.state().starting, undefined);
   assert.equal(current.operations.filter(([kind]) => kind === "real-start").length, 2);
   assert.equal(current.operations.filter(([kind]) => kind === "real-stop").length, 1);
+});
+
+await test("a root project config starts the client before the workspace-wide search returns", async () => {
+  const search = deferred();
+  let refreshes = 0;
+  const current = createSync(
+    () => {
+      refreshes++;
+      return search.promise;
+    },
+    undefined,
+    false,
+    undefined,
+    { hasRootConfig: true },
+  );
+  await current.control.syncClientToConfiguration({}, "initial activation");
+  assert.equal(refreshes, 1);
+  assert.deepEqual(
+    current.operations.filter(([kind]) => kind === "start").map((row) => [...row]),
+    [["start", 1]],
+  );
+  search.resolve();
+  await search.promise;
+  assert.equal(current.control.state().generation, 1);
+});
+
+await test("a background search failure after root-config startup is reported, not thrown", async () => {
+  const failure = new Error("search unavailable");
+  const current = createSync(
+    async () => {
+      throw failure;
+    },
+    undefined,
+    false,
+    undefined,
+    { hasRootConfig: true },
+  );
+  await current.control.syncClientToConfiguration({}, "initial activation");
+  await new Promise((resolve) => setImmediate(resolve));
+  assert.deepEqual(
+    current.operations.filter(([kind]) => kind === "start").map((row) => [...row]),
+    [["start", 1]],
+  );
+  assert.ok(
+    current.logs.includes("Project configuration discovery failed: Error: search unavailable"),
+  );
 });
 
 const manualConfiguration = {

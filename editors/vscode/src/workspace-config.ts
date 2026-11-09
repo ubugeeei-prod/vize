@@ -30,13 +30,14 @@ export class WorkspaceLspConfigDiscovery {
   ) {}
 
   get hasConfig(): boolean {
-    return (
-      this.discovered ||
-      (workspace.workspaceFolders ?? []).some((folder) =>
-        [...this.projectConfigFiles, ...WORKSPACE_PROJECT_CONFIG_FILES].some((filename) =>
-          fs.existsSync(path.join(folder.uri.fsPath, filename)),
-        ),
-      )
+    return this.discovered || this.hasRootConfig;
+  }
+
+  /** A workspace folder's own config; the workspace-wide search cannot change it. */
+  get hasRootConfig(): boolean {
+    const filenames = new Set([...this.projectConfigFiles, ...WORKSPACE_PROJECT_CONFIG_FILES]);
+    return (workspace.workspaceFolders ?? []).some((folder) =>
+      [...filenames].some((filename) => fs.existsSync(path.join(folder.uri.fsPath, filename))),
     );
   }
 

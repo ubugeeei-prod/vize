@@ -241,7 +241,16 @@ async function syncClientToConfiguration(context: ExtensionContext, reason: stri
   }
   const generation = ++configurationSyncGeneration;
   traceConfig(`sync enter generation=${generation} reason=${reason}`);
-  await workspaceLspConfig.refresh(generation);
+  const refreshed = workspaceLspConfig.refresh(generation);
+  if (workspaceLspConfig.hasRootConfig) {
+    // A root config already decides startup and its options. Nested configs
+    // only feed watchers, so the workspace-wide search must not delay the server.
+    refreshed.catch((error: unknown) => {
+      outputChannel.appendLine(`Project configuration discovery failed: ${String(error)}`);
+    });
+  } else {
+    await refreshed;
+  }
   traceConfig(`sync refreshed generation=${generation} current=${configurationSyncGeneration}`);
   if (generation !== configurationSyncGeneration) {
     traceConfig(`sync refused generation=${generation} stage=refresh`);
