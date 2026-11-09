@@ -202,15 +202,15 @@ const __vaporRender = render
 import { ref, computed, watch, onMounted, shallowRef, provide } from "vue";
 import { mdiClipboardTextOutline } from "@mdi/js";
 import { loadWasm } from "./wasm/index";
-import AtelierPlayground from "./features/atelier/AtelierPlayground.vue";
-import MuseaPlayground from "./features/musea/MuseaPlayground.vue";
-import PatinaPlayground from "./features/patina/PatinaPlayground.vue";
-import GlyphPlayground from "./features/glyph/GlyphPlayground.vue";
-import CroquisPlayground from "./features/croquis/CroquisPlayground.vue";
-import CrossFilePlayground from "./features/cross-file/CrossFilePlayground.vue";
-import TypeCheckPlayground from "./features/canon/TypeCheckPlayground.vue";
-import InspectorPlayground from "./features/inspector/InspectorPlayground.vue";
-import StagePlayground from "./features/stages/StagePlayground.vue";
+import AtelierPlayground from "./features/atelier/atelier-playground.vue";
+import MuseaPlayground from "./features/musea/musea-playground.vue";
+import PatinaPlayground from "./features/patina/patina-playground.vue";
+import GlyphPlayground from "./features/glyph/glyph-playground.vue";
+import CroquisPlayground from "./features/croquis/croquis-playground.vue";
+import CrossFilePlayground from "./features/cross-file/cross-file-playground.vue";
+import TypeCheckPlayground from "./features/canon/type-check-playground.vue";
+import InspectorPlayground from "./features/inspector/inspector-playground.vue";
+import StagePlayground from "./features/stages/stage-playground.vue";
 import { getPlaygroundEnvironmentInfo } from "./utils/environment";
 import { useClipboard } from "./utils/useClipboard";
 
@@ -1281,10 +1281,10 @@ function render(_ctx, $props, $emit, $attrs, $slots) {
 const __vaporRender = render
 
 import { computed, watch } from "vue";
-import ExperimentalFeatures from "../../shared/ExperimentalFeatures.vue";
+import ExperimentalFeatures from "../../shared/experimental-features.vue";
 import { useCompilerInit } from "../../utils/useCompilerInit";
-import MonacoEditor from "../../shared/MonacoEditor.vue";
-import CodeHighlight from "../../shared/CodeHighlight.vue";
+import MonacoEditor from "../../shared/monaco-editor.vue";
+import CodeHighlight from "../../shared/code-highlight.vue";
 import { useTheme } from "../../utils/useTheme";
 import { useClipboard } from "../../utils/useClipboard";
 import { useAtelierCompiler } from "./useAtelierCompiler";
@@ -1694,7 +1694,7 @@ const __vaporRender = render
 
 import "./PatinaPlayground.css";
 import { ref, watch, computed, onMounted, onUnmounted, inject, type ComputedRef } from "vue";
-import MonacoEditor from "../../shared/MonacoEditor.vue";
+import MonacoEditor from "../../shared/monaco-editor.vue";
 import type { WasmModule, LintResult, LintRule } from "../../wasm/index";
 import { getWasm } from "../../wasm/index";
 import { LINT_PRESET } from "../../shared/presets/patina";
