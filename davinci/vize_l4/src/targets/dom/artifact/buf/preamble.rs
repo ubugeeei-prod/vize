@@ -12,11 +12,14 @@ impl Buf {
     /// any root static-props hoist (the shipped codegen appends hoists to
     /// the helper preamble in both modes).
     #[cfg(test)]
-    pub(in crate::emit) fn preamble(&self, options: &DomEmitOptions<'_>) -> String {
+    pub(in crate::targets::dom::artifact) fn preamble(
+        &self,
+        options: &DomEmitOptions<'_>,
+    ) -> String {
         self.preamble_with_imports_len(options).0
     }
 
-    pub(in crate::emit) fn preamble_with_imports_len(
+    pub(in crate::targets::dom::artifact) fn preamble_with_imports_len(
         &self,
         options: &DomEmitOptions<'_>,
     ) -> (String, usize) {

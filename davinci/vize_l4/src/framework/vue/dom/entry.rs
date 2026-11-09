@@ -4,7 +4,7 @@
 use vize_l0::pass::NoObserver;
 use vize_l0::{Allocator, String, TemplateSyntaxMode};
 
-use crate::lower::LegacyCaps;
+use vize_l1_to_l2::lower::LegacyCaps;
 
 use super::budget::emit_dom_source_with_options_and_observer;
 use super::options::DomEmitOptions;

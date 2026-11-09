@@ -175,7 +175,7 @@ fn push_cached_create_text_call(out: &mut String, content: &str) {
     out.push(')');
 }
 
-pub(in crate::emit) fn push_spaces(out: &mut String, width: usize) {
+pub(in crate::targets::dom::artifact) fn push_spaces(out: &mut String, width: usize) {
     out.extend(core::iter::repeat_n(' ', width));
 }
 

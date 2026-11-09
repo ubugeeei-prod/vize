@@ -4,17 +4,19 @@ use vize_l0::{Span, String, ToCompactString};
 use vize_l2::expr::ExprRef;
 use vize_l2::op::{DynamicName, ElementOp, ForOp, IfOp, SlotContentOp};
 
-use crate::emit::buf::Buf;
-use crate::emit::create_slots_walk::{SlotTemplateSite, first_slot_template, skip_ops};
-use crate::emit::js::{escape_js_string, expr_source};
-use crate::emit::prefix::Site;
-use crate::emit::slots::emit_template_pieces;
-use crate::emit::vfor;
-use crate::emit::{EmitCx, EmitError, UnsupportedReason as Reason};
+use crate::targets::dom::artifact::buf::Buf;
+use crate::targets::dom::artifact::create_slots_walk::{
+    SlotTemplateSite, first_slot_template, skip_ops,
+};
+use crate::targets::dom::artifact::js::{escape_js_string, expr_source};
+use crate::targets::dom::artifact::prefix::Site;
+use crate::targets::dom::artifact::slots::emit_template_pieces;
+use crate::targets::dom::artifact::vfor;
+use crate::targets::dom::artifact::{EmitCx, EmitError, UnsupportedReason as Reason};
 
 pub(super) fn emit_if_entry(cx: &mut EmitCx<'_>, if_op: &IfOp<'_>) -> Result<(), EmitError> {
     let id = cx.walk.mint();
-    let mut keys = crate::emit::vif::keys::SlotKeys::new(cx, id, if_op);
+    let mut keys = crate::targets::dom::artifact::vif::keys::SlotKeys::new(cx, id, if_op);
     for (i, branch) in if_op.branches.iter().enumerate() {
         keys.observe(cx, id, i, branch)?;
         if i > 0 {
@@ -206,7 +208,7 @@ pub(super) fn emit_slot_object(
     // conditional slot template's lone component child is that root.
     let branch_root = key.is_some() && lone_branch_root_child(&element.children);
     let previous_branch_root = core::mem::replace(&mut cx.slot_if_branch_root, branch_root);
-    let emitted = crate::emit::outlet::with_slot_params(cx, params, |cx| {
+    let emitted = crate::targets::dom::artifact::outlet::with_slot_params(cx, params, |cx| {
         emit_template_pieces(cx, &element.children, &mut pieces)
     });
     cx.slot_if_branch_root = previous_branch_root;
@@ -267,12 +269,18 @@ fn emit_params(cx: &mut EmitCx<'_>, content: &SlotContentOp<'_>) -> Result<(), E
     match &content.params {
         Some(expr) if !expr.source().is_empty() => {
             if cx.strict_slot_params
-                && !crate::emit::prefix::slot_params_syntax_valid(expr.source(), cx.is_ts)
+                && !crate::targets::dom::artifact::prefix::slot_params_syntax_valid(
+                    expr.source(),
+                    cx.is_ts,
+                )
             {
                 return Err(EmitError::unsupported(Reason::PrefixExpressionRejected));
             }
             cx.buf.push("(");
-            let processed = crate::emit::prefix::prefix_slot_defaults(expr.source(), &cx.scope);
+            let processed = crate::targets::dom::artifact::prefix::prefix_slot_defaults(
+                expr.source(),
+                &cx.scope,
+            );
             if let Some((leading, trailing)) =
                 authored_expr_padding(cx.source, content.span, expr.source(), expr.span())
             {
@@ -305,7 +313,7 @@ fn lone_branch_root_child(region: &vize_l2::op::Region<'_>) -> bool {
     let mut children = region
         .ops
         .iter()
-        .filter(|op| !crate::emit::slots::is_whitespace_text(op));
+        .filter(|op| !crate::targets::dom::artifact::slots::is_whitespace_text(op));
     match (children.next(), children.next()) {
         (Some(Op::Component(_)), None) => true,
         (Some(Op::Element(element)), None) => element.tag != "template",

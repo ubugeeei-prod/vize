@@ -11,10 +11,10 @@ use vize_l2::analysis::if_facts::{BranchKey, BranchKeyKind, IfFacts};
 use vize_l2::expr::{ExprRef, JsExpr};
 use vize_l2::op::{BindingOp, IfBranch, IfOp, Op};
 
-use crate::emit::create_slots_walk::is_slot_if;
-use crate::emit::js::{RawJs, escape_js_string};
-use crate::emit::prefix::{self, Content, Site};
-use crate::emit::{EmitCx, EmitError, UnsupportedReason as Reason};
+use crate::targets::dom::artifact::create_slots_walk::is_slot_if;
+use crate::targets::dom::artifact::js::{RawJs, escape_js_string};
+use crate::targets::dom::artifact::prefix::{self, Content, Site};
+use crate::targets::dom::artifact::{EmitCx, EmitError, UnsupportedReason as Reason};
 
 #[derive(Default)]
 pub(super) struct BranchKeys {
@@ -170,13 +170,17 @@ fn retained_key<'a>(branch: &IfBranch<'a>, index: Option<usize>) -> Option<&'a J
     }
 }
 
-pub(in crate::emit) struct SlotKeys {
+pub(in crate::targets::dom::artifact) struct SlotKeys {
     enabled: bool,
     keys: BranchKeys,
 }
 
 impl SlotKeys {
-    pub(in crate::emit) fn new(cx: &EmitCx<'_>, id: Option<NodeId>, if_op: &IfOp<'_>) -> Self {
+    pub(in crate::targets::dom::artifact) fn new(
+        cx: &EmitCx<'_>,
+        id: Option<NodeId>,
+        if_op: &IfOp<'_>,
+    ) -> Self {
         Self {
             // Non-slot wrappers already passed through normal branch emission
             // before createSlots captures their compatibility entry.
@@ -185,7 +189,7 @@ impl SlotKeys {
         }
     }
 
-    pub(in crate::emit) fn observe(
+    pub(in crate::targets::dom::artifact) fn observe(
         &mut self,
         cx: &EmitCx<'_>,
         id: Option<NodeId>,

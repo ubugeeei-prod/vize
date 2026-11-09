@@ -1,5 +1,5 @@
 use super::PrefixScope;
-use crate::emit::options::{BindingKind, BindingTable, ReactiveRead};
+use crate::targets::dom::artifact::options::{BindingKind, BindingTable, ReactiveRead};
 
 #[test]
 fn for_and_slot_locals_shadow_ref_metadata_and_reactive_reads_until_scope_exit() {

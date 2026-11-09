@@ -1,6 +1,6 @@
 //! A downstream-style literal from v0.429.1 must remain constructible.
 
-use vize_l1_to_l2::{DomEmitMode, DomEmitOptions};
+use vize_l4::targets::dom::artifact::{DomEmitMode, DomEmitOptions};
 
 #[test]
 fn published_dom_emit_options_literal_still_compiles() {

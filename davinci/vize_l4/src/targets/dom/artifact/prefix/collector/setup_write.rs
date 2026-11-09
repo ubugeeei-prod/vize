@@ -9,7 +9,7 @@ use oxc_span::GetSpan;
 use vize_l0::{String, cstr};
 
 use super::IdentifierCollector;
-use crate::emit::options::BindingKind;
+use crate::targets::dom::artifact::options::BindingKind;
 
 impl IdentifierCollector<'_, '_> {
     fn guarded_setup_write_kind(&self, name: &str) -> Option<BindingKind> {

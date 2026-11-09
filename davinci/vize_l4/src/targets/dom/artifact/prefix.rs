@@ -15,7 +15,7 @@
 mod aliases;
 mod codegen_visitor;
 mod collector;
-pub(in crate::emit) mod globals;
+pub(in crate::targets::dom::artifact) mod globals;
 mod handler;
 mod params;
 mod rewrite;
@@ -37,17 +37,20 @@ pub(super) use rewrite::slot_params_syntax_valid;
 pub(super) use scope::{PrefixScope, ScopeMark};
 pub(super) use slot_defaults::{prefix_slot_defaults, prefix_slot_defaults_with_render_prefixes};
 #[cfg(feature = "typescript")]
-pub(in crate::emit) use typescript::{erase_typescript, erase_typescript_params};
+pub(in crate::targets::dom::artifact) use typescript::{erase_typescript, erase_typescript_params};
 
 /// Without the `typescript` feature the emit refuses an `is_ts` request up
 /// front (`emit_dom_with_options`), so nothing reaches an eraser.
 #[cfg(not(feature = "typescript"))]
-pub(in crate::emit) fn erase_typescript(content: &str, _proven_js: bool) -> String {
+pub(in crate::targets::dom::artifact) fn erase_typescript(
+    content: &str,
+    _proven_js: bool,
+) -> String {
     String::from(content)
 }
 
 #[cfg(not(feature = "typescript"))]
-pub(in crate::emit) fn erase_typescript_params(_params: &str) -> Option<String> {
+pub(in crate::targets::dom::artifact) fn erase_typescript_params(_params: &str) -> Option<String> {
     None
 }
 
@@ -86,7 +89,7 @@ pub(super) enum Site {
 
 /// Whether an existing key AST can reach the retained rewrite without a parse.
 pub(super) fn retained_expression_is_js(js: &JsExpr<'_>) -> bool {
-    crate::js_module_compatible(js.ast, js.source)
+    vize_l2::expr::js::js_module_compatible(js.ast, js.source)
 }
 
 /// The shipped node's content for one expression position: the raw
@@ -136,7 +139,7 @@ impl Erased<'_, '_, '_> {
     fn proven_js(&self) -> bool {
         self.proven_js.unwrap_or_else(|| {
             self.retained
-                .is_some_and(|js| crate::js_module_compatible(js.ast, js.source))
+                .is_some_and(|js| vize_l2::expr::js::js_module_compatible(js.ast, js.source))
         })
     }
 }
@@ -179,7 +182,7 @@ fn remember_erasure(key: (String, bool), erased: &str) {
 /// The lane's one type erasure of `content`. Later readers, including the
 /// bind constness view, take this text instead of stripping again.
 #[cfg(feature = "typescript")]
-pub(in crate::emit) fn shared_erasure(content: &str, proven_js: bool) -> String {
+pub(in crate::targets::dom::artifact) fn shared_erasure(content: &str, proven_js: bool) -> String {
     let key = (String::from(content), proven_js);
     if let Some(hit) = recall_erasure(&key) {
         return hit;
@@ -194,12 +197,12 @@ pub(in crate::emit) fn shared_erasure(content: &str, proven_js: bool) -> String 
 }
 
 #[cfg(not(feature = "typescript"))]
-pub(in crate::emit) fn shared_erasure(content: &str, proven_js: bool) -> String {
+pub(in crate::targets::dom::artifact) fn shared_erasure(content: &str, proven_js: bool) -> String {
     erase_typescript(content, proven_js)
 }
 
 #[cfg(all(test, feature = "typescript"))]
-pub(in crate::emit) fn typescript_erasure_calls() -> u32 {
+pub(in crate::targets::dom::artifact) fn typescript_erasure_calls() -> u32 {
     ERASURE_CALLS.try_with(core::cell::Cell::get).unwrap_or(0)
 }
 

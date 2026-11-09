@@ -7,7 +7,7 @@ use super::super::js::{escape_js_string, is_valid_js_identifier};
 
 /// First-occurrence static attrs as a single-line object, matching
 /// hoisted `JsChildNode::Object` emission.
-pub(in crate::emit) fn compact_props_object<'a>(
+pub(in crate::targets::dom::artifact) fn compact_props_object<'a>(
     attributes: impl Iterator<Item = &'a Attribute<'a>>,
     scope_id: Option<&str>,
 ) -> String {
@@ -39,7 +39,7 @@ fn compact_props_object_from_unique(
     out
 }
 
-pub(in crate::emit) fn unique_attrs<'a>(
+pub(in crate::targets::dom::artifact) fn unique_attrs<'a>(
     attributes: impl Iterator<Item = &'a Attribute<'a>>,
 ) -> StdVec<&'a Attribute<'a>> {
     let mut unique: StdVec<&Attribute<'_>> = StdVec::new();
@@ -52,11 +52,11 @@ pub(in crate::emit) fn unique_attrs<'a>(
     unique
 }
 
-pub(in crate::emit) fn push_attr_pair(out: &mut String, attr: &Attribute<'_>) {
+pub(in crate::targets::dom::artifact) fn push_attr_pair(out: &mut String, attr: &Attribute<'_>) {
     push_pair(out, attr.name, attr.value.unwrap_or_default());
 }
 
-pub(in crate::emit) fn push_empty_attr_pair(out: &mut String, name: &str) {
+pub(in crate::targets::dom::artifact) fn push_empty_attr_pair(out: &mut String, name: &str) {
     push_pair(out, name, "");
 }
 

@@ -5,7 +5,8 @@ use vize_l0::{
     diag::{Diagnostic, Stage},
     pass::BudgetObserver,
 };
-use vize_l1_to_l2::{DomEmitOptions, LegacyCaps, emit_dom_with_options, lower_with_caps};
+use vize_l1_to_l2::{LegacyCaps, lower_with_caps};
+use vize_l4::targets::dom::artifact::{DomEmitOptions, emit_dom_with_options};
 
 fn diagnostic(value: &Diagnostic) -> Value {
     json!({

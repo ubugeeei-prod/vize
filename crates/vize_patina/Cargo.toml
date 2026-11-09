@@ -18,6 +18,7 @@ legacy-differential = []
 davinci-differential = ["legacy-differential"]
 
 [dependencies]
+vize_l4 = { workspace = true }
 vize_carton.workspace = true
 # Internal crates
 vize_relief.workspace = true

@@ -9,7 +9,7 @@ use crate::support;
 use vize_atelier_core::options::{CodegenMode, CodegenOptions};
 use vize_atelier_dom::DomCompilerOptions;
 use vize_l0::String;
-use vize_l1_to_l2::{DomEmitMode, DomEmitOptions};
+use vize_l4::targets::dom::artifact::{DomEmitMode, DomEmitOptions};
 
 const BATTERY: &[(&str, &str)] = &[
     ("empty", ""),
@@ -181,7 +181,7 @@ fn custom_runtime_global_name_matches_the_shipped_dom_lane() {
 #[test]
 fn module_mode_preamble_assets_and_signature_take_the_module_shape() {
     let allocator = vize_l0::Allocator::new();
-    let emit = vize_l1_to_l2::emit_dom_source_with_options(
+    let emit = vize_l4::targets::dom::artifact::emit_dom_source_with_options(
         &allocator,
         r#"<Foo v-focus @click="go"><template #item="{ item }">{{ item }}</template></Foo>"#,
         vize_l1_to_l2::LegacyCaps::VUE3,

@@ -17,7 +17,7 @@ use super::emit_call;
 
 /// The template root's single component: the shipped
 /// `hoist_static(children, is_root = true)` position.
-pub(in crate::emit) fn emit_root(
+pub(in crate::targets::dom::artifact) fn emit_root(
     cx: &mut EmitCx<'_>,
     component: &ComponentOp<'_>,
     id: Option<NodeId>,
@@ -81,7 +81,7 @@ fn emit_vnode(
 }
 
 /// The vnode a `v-once` component caches: the plain nested call.
-pub(in crate::emit) fn emit_once(
+pub(in crate::targets::dom::artifact) fn emit_once(
     cx: &mut EmitCx<'_>,
     component: &ComponentOp<'_>,
     id: Option<NodeId>,
@@ -89,7 +89,7 @@ pub(in crate::emit) fn emit_once(
     emit_vnode(cx, component, None, false, id, Position::Nested)
 }
 
-pub(in crate::emit) fn emit_nested(
+pub(in crate::targets::dom::artifact) fn emit_nested(
     cx: &mut EmitCx<'_>,
     component: &ComponentOp<'_>,
     id: Option<NodeId>,
@@ -100,7 +100,7 @@ pub(in crate::emit) fn emit_nested(
 /// A component child of the root fragment. The shipped lane hoists the
 /// root children as one list, so every one of them is visited at
 /// `is_root = true` — the multi-root sibling of [`emit_root`].
-pub(in crate::emit) fn emit_fragment_root(
+pub(in crate::targets::dom::artifact) fn emit_fragment_root(
     cx: &mut EmitCx<'_>,
     component: &ComponentOp<'_>,
     id: Option<NodeId>,
@@ -131,7 +131,7 @@ fn emit_at(
     emit_vnode(cx, component, None, false, id, position)
 }
 
-pub(in crate::emit) fn emit_if_branch(
+pub(in crate::targets::dom::artifact) fn emit_if_branch(
     cx: &mut EmitCx<'_>,
     component: &ComponentOp<'_>,
     key: &str,
@@ -140,7 +140,7 @@ pub(in crate::emit) fn emit_if_branch(
     emit_block(cx, component, Some(key), false, id, Position::Nested)
 }
 
-pub(in crate::emit) fn emit_for_item(
+pub(in crate::targets::dom::artifact) fn emit_for_item(
     cx: &mut EmitCx<'_>,
     component: &ComponentOp<'_>,
     id: Option<NodeId>,

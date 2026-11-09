@@ -32,7 +32,7 @@ use super::globals::is_scope_chain_global;
 mod for_bindings;
 
 #[derive(Default)]
-pub(in crate::emit) struct PrefixScope<'b> {
+pub(in crate::targets::dom::artifact) struct PrefixScope<'b> {
     transform: StdVec<String>,
     slot_params: StdVec<String>,
     patterns: SmallVec<[String; 4]>,
@@ -45,14 +45,14 @@ pub(in crate::emit) struct PrefixScope<'b> {
 }
 
 #[derive(Clone, Copy)]
-pub(in crate::emit) struct ScopeMark {
+pub(in crate::targets::dom::artifact) struct ScopeMark {
     transform: usize,
     slot_params: usize,
     patterns: usize,
 }
 
 impl<'b> PrefixScope<'b> {
-    pub(in crate::emit) fn new(
+    pub(in crate::targets::dom::artifact) fn new(
         bindings: Option<&'b BindingTable>,
         prefix_identifiers: bool,
         is_ts: bool,
@@ -68,24 +68,24 @@ impl<'b> PrefixScope<'b> {
     }
 
     /// Whether the render function is inlined into `setup()`.
-    pub(in crate::emit) fn inline(&self) -> bool {
+    pub(in crate::targets::dom::artifact) fn inline(&self) -> bool {
         self.inline
     }
 
-    pub(in crate::emit) fn is_script_setup(&self) -> bool {
+    pub(in crate::targets::dom::artifact) fn is_script_setup(&self) -> bool {
         self.bindings.is_some_and(BindingTable::is_script_setup)
     }
 
     /// Enable source-owned mutable writes only for the actual VDOM emitter.
     /// Shared SSR/Vapor/string expression consumers retain their prior route.
-    pub(in crate::emit) fn enable_vdom_setup_writes(&mut self) {
+    pub(in crate::targets::dom::artifact) fn enable_vdom_setup_writes(&mut self) {
         self.vdom_setup_writes = true;
     }
 
     /// Select the synthesized `v-model` callback role while its expression is
     /// being rewritten. Ordinary authored handlers must not inherit the
     /// maybe-ref runtime guard.
-    pub(in crate::emit) fn set_model_maybe_ref_write(&mut self, enabled: bool) {
+    pub(in crate::targets::dom::artifact) fn set_model_maybe_ref_write(&mut self, enabled: bool) {
         self.model_maybe_ref_write = enabled;
     }
 
@@ -147,7 +147,7 @@ impl<'b> PrefixScope<'b> {
     /// Whether `name` reads a binding that cannot change at runtime, as
     /// the codegen sees it: only an inline render function leaves the
     /// name bare enough for the lookup to hit.
-    pub(in crate::emit) fn reads_constant_binding(&self, name: &str) -> bool {
+    pub(in crate::targets::dom::artifact) fn reads_constant_binding(&self, name: &str) -> bool {
         self.inline
             && self
                 .bindings
@@ -163,7 +163,7 @@ impl<'b> PrefixScope<'b> {
     /// write back into `instance.refs` — what `useTemplateRef` reads.
     /// The same three kinds as [`PrefixScope::writes_through_value`],
     /// asked of a template ref rather than of an assignment target.
-    pub(in crate::emit) fn writes_template_ref(&self, name: &str) -> bool {
+    pub(in crate::targets::dom::artifact) fn writes_template_ref(&self, name: &str) -> bool {
         self.inline
             && self
                 .bindings
@@ -214,21 +214,21 @@ impl<'b> PrefixScope<'b> {
     }
 
     /// Whether free identifiers are rewritten at all (`prefix_identifiers`).
-    pub(in crate::emit) fn prefixes_identifiers(&self) -> bool {
+    pub(in crate::targets::dom::artifact) fn prefixes_identifiers(&self) -> bool {
         self.prefix_identifiers
     }
 
     /// Whether expressions are type-erased first (`is_ts`).
-    pub(in crate::emit) fn is_ts(&self) -> bool {
+    pub(in crate::targets::dom::artifact) fn is_ts(&self) -> bool {
         self.is_ts
     }
 
     /// The binding table the emit runs under, if any.
-    pub(in crate::emit) fn bindings(&self) -> Option<&'b BindingTable> {
+    pub(in crate::targets::dom::artifact) fn bindings(&self) -> Option<&'b BindingTable> {
         self.bindings
     }
 
-    pub(in crate::emit) fn mark(&self) -> ScopeMark {
+    pub(in crate::targets::dom::artifact) fn mark(&self) -> ScopeMark {
         ScopeMark {
             transform: self.transform.len(),
             slot_params: self.slot_params.len(),
@@ -236,7 +236,7 @@ impl<'b> PrefixScope<'b> {
         }
     }
 
-    pub(in crate::emit) fn pop(&mut self, mark: ScopeMark) {
+    pub(in crate::targets::dom::artifact) fn pop(&mut self, mark: ScopeMark) {
         self.transform.truncate(mark.transform);
         self.slot_params.truncate(mark.slot_params);
         self.patterns.truncate(mark.patterns);
@@ -247,7 +247,7 @@ impl<'b> PrefixScope<'b> {
     }
 
     /// The default lane's record of a `v-for` alias or slot pattern.
-    pub(in crate::emit) fn push_pattern(&mut self, pattern: &str) {
+    pub(in crate::targets::dom::artifact) fn push_pattern(&mut self, pattern: &str) {
         let trimmed = pattern.trim();
         if !trimmed.is_empty() {
             self.patterns.push(String::from(trimmed));
@@ -255,14 +255,14 @@ impl<'b> PrefixScope<'b> {
     }
 
     /// `CodegenContext::is_slot_param` over the recorded patterns.
-    pub(in crate::emit) fn binds_in_pattern(&self, name: &str) -> bool {
+    pub(in crate::targets::dom::artifact) fn binds_in_pattern(&self, name: &str) -> bool {
         self.patterns
             .iter()
             .any(|pattern| super::params::destructure_params_contain(pattern.as_str(), name))
     }
 
     /// `TransformContext::enter_v_for_scope` + the codegen callback params.
-    pub(in crate::emit) fn push_for(&mut self, aliases: [Option<&str>; 3]) {
+    pub(in crate::targets::dom::artifact) fn push_for(&mut self, aliases: [Option<&str>; 3]) {
         for (index, alias) in aliases.into_iter().enumerate() {
             let Some(alias) = alias else { continue };
             if alias.is_empty() {
@@ -287,39 +287,39 @@ impl<'b> PrefixScope<'b> {
     }
 
     /// `enter_v_slot_scope_if_needed` + the codegen slot params.
-    pub(in crate::emit) fn push_slot(&mut self, params: &str) {
+    pub(in crate::targets::dom::artifact) fn push_slot(&mut self, params: &str) {
         self.transform
             .extend(super::params::extract_slot_prop_names(params));
         super::params::extract_destructure_params(params.trim(), &mut self.slot_params);
     }
 
-    pub(in crate::emit) fn is_in_transform_scope(&self, name: &str) -> bool {
+    pub(in crate::targets::dom::artifact) fn is_in_transform_scope(&self, name: &str) -> bool {
         self.transform.iter().any(|entry| entry.as_str() == name)
     }
 
-    pub(in crate::emit) fn is_slot_param(&self, name: &str) -> bool {
+    pub(in crate::targets::dom::artifact) fn is_slot_param(&self, name: &str) -> bool {
         self.slot_params.iter().any(|entry| entry.as_str() == name)
     }
 
     /// Whether the codegen scope binds `name` in either emission mode.
     /// Prefix-identifying lanes materialize parameter names, while the
     /// default lane retains their authored destructuring patterns.
-    pub(in crate::emit) fn is_codegen_scope_param(&self, name: &str) -> bool {
+    pub(in crate::targets::dom::artifact) fn is_codegen_scope_param(&self, name: &str) -> bool {
         self.is_slot_param(name) || self.binds_in_pattern(name)
     }
 
-    pub(in crate::emit) fn has_slot_params(&self) -> bool {
+    pub(in crate::targets::dom::artifact) fn has_slot_params(&self) -> bool {
         !self.slot_params.is_empty()
     }
 
-    pub(in crate::emit) fn has_codegen_scope_params(&self) -> bool {
+    pub(in crate::targets::dom::artifact) fn has_codegen_scope_params(&self) -> bool {
         // Typed slot patterns can bind transform names while the text-only
         // codegen scanner finds none. The temporary event scope is popped
         // before callers decide whether a handler can be cached.
         !self.transform.is_empty() || !self.slot_params.is_empty() || !self.patterns.is_empty()
     }
 
-    pub(in crate::emit) fn slot_params(&self) -> &[String] {
+    pub(in crate::targets::dom::artifact) fn slot_params(&self) -> &[String] {
         &self.slot_params
     }
 

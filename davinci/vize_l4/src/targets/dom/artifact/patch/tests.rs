@@ -153,9 +153,10 @@ fn dom_emit_observes_materialized_table_for_patch_equivalence_fixtures() {
     ];
     for (name, source, materialized_entries, patch_site) in cases {
         let allocator = vize_l0::Allocator::new();
-        let observed =
-            crate::emit::budget::emit_dom_source_patch_facts_observed(&allocator, source)
-                .unwrap_or_else(|error| panic!("{name}: L2 emit refused: {error:?}"));
+        let observed = crate::targets::dom::artifact::budget::emit_dom_source_patch_facts_observed(
+            &allocator, source,
+        )
+        .unwrap_or_else(|error| panic!("{name}: L2 emit refused: {error:?}"));
         assert_eq!(
             observed.materialized_entries, materialized_entries,
             "{name}: DOM emit must retain one owner-keyed table row per VNode owner"
@@ -221,7 +222,7 @@ fn materialized_handler_facts(kind: BindingKind) -> PatchFacts {
         &|_| false,
         &|_| false,
         &|on| {
-            crate::emit::props::handler_is_constant(handler, on, false, &|name| {
+            crate::targets::dom::artifact::props::handler_is_constant(handler, on, false, &|name| {
                 name == handler && handler_static_patch_binding(kind)
             })
         },

@@ -3,14 +3,13 @@
 use vize_l0::pass::NoObserver;
 use vize_l0::{Allocator, String};
 use vize_l1_to_l2::pass::{TransformProfile, run_transform_with_profile};
-use vize_l1_to_l2::{
-    DomEmitMode, DomEmitOptions, LegacyCaps, Lowered as L2Lowered, emit_dom_with_options,
-};
+use vize_l1_to_l2::{LegacyCaps, Lowered as L2Lowered};
 use vize_l2::artifact::ArtifactParts;
 use vize_l2::expr::ExprRef;
 use vize_l2::op::{
     BindingOp, ComponentOp, DynamicName, ElementOp, ModelOp, Op, Region, VueDirectiveOp,
 };
+use vize_l4::targets::dom::artifact::{DomEmitMode, DomEmitOptions, emit_dom_with_options};
 
 use crate::l2::{JsxL2Root, L2Refusal};
 

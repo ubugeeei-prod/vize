@@ -10,8 +10,9 @@ use vize_atelier_core::walk_probe::WalkCounts;
 use vize_l0::dump::capture::NoCapture;
 use vize_l0::profiler::{active_profiler_is_enabled, with_active_profiler};
 use vize_l0::{Allocator, profile};
-use vize_l1_to_l2::{
-    BindingKind, BindingTable, DomEmitMode, DomEmitOptions, DomEmitSections, EmitError, LegacyCaps,
+use vize_l1_to_l2::LegacyCaps;
+use vize_l4::targets::dom::artifact::{
+    BindingKind, BindingTable, DomEmitMode, DomEmitOptions, DomEmitSections, EmitError,
 };
 
 use super::pipeline::L2EmitSelection;
@@ -260,7 +261,7 @@ pub(super) fn emit_l2(
 ) -> Result<CodegenResultWithSections, EmitError> {
     let caps = dom_compat_caps(dialect, options.prefix_identifiers);
     let emit = if active_profiler_is_enabled() {
-        let observed = vize_l1_to_l2::emit_dom_source_observed_with_options_captured_slot_scope_environment_and_syntax(
+        let observed = vize_l4::targets::dom::artifact::emit_dom_source_observed_with_options_captured_slot_scope_environment_and_syntax(
             allocator,
             source,
             caps,
@@ -274,7 +275,7 @@ pub(super) fn emit_l2(
         record_l2_budget(observed.budget, pre_s2_walks);
         observed.emit
     } else {
-        vize_l1_to_l2::emit_dom_source_with_options_captured_slot_scope_environment_and_syntax(
+        vize_l4::targets::dom::artifact::emit_dom_source_with_options_captured_slot_scope_environment_and_syntax(
             allocator,
             source,
             caps,
@@ -346,7 +347,10 @@ const fn l2_binding_kind(kind: BindingType) -> BindingKind {
     }
 }
 
-fn record_l2_budget(budget: vize_l1_to_l2::DomEmitBudget, pre_s2_walks: Option<WalkCounts>) {
+fn record_l2_budget(
+    budget: vize_l4::targets::dom::artifact::DomEmitBudget,
+    pre_s2_walks: Option<WalkCounts>,
+) {
     with_active_profiler(|profiler| {
         profiler.record_counter_enabled("l2.dom.files", 1);
         profiler

@@ -26,7 +26,7 @@ use super::props::{
     bind_value_uses_legacy_patchless_runtime_expr, has_prop_modifier, is_dynamic_bind_name,
     is_emitted_key_bind, static_bind_key,
 };
-pub(in crate::emit) use storage::PatchFactsTable;
+pub(in crate::targets::dom::artifact) use storage::PatchFactsTable;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(super) struct PatchFacts {

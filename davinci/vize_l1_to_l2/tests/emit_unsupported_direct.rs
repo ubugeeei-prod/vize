@@ -11,7 +11,7 @@ use std::vec::Vec as StdVec;
 use vize_l0::id::NodeId;
 use vize_l0::{Allocator, Box as ArenaBox, Span, String as VString, Vec as ArenaVec};
 use vize_l1_to_l2::pass::{SlotCarrier, SlotFacts, SlotGroup, SlotName, SlotParams};
-use vize_l1_to_l2::{EmitError, LegacyCaps, Lowered, UnsupportedReason as Reason, emit_dom};
+use vize_l1_to_l2::{LegacyCaps, Lowered};
 use vize_l2::analysis::fragment_facts::{FragmentKey, LoopFragment};
 use vize_l2::analysis::pass_facts::L2Facts;
 use vize_l2::analysis::text_facts::TextParts;
@@ -22,6 +22,7 @@ use vize_l2::op::{
     IfOp, InterpolationOp, ModelOp, Namespace, Op, Region, TextOp,
 };
 use vize_l2::scope::ScopeOrigin;
+use vize_l4::targets::dom::artifact::{EmitError, UnsupportedReason as Reason, emit_dom};
 
 type Factory = for<'a> fn(&'a Allocator) -> (Lowered<'a>, L2Facts);
 

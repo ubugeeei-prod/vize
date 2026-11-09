@@ -6,12 +6,15 @@ use super::super::{EmitCx, options::BindingKind};
 /// `needs_von_handler_cache`: the option is on, no template-scope param
 /// is in play, the directive has an expression, and that expression is
 /// not a bare `SetupConst` reference.
-pub(in crate::emit) fn needs_handler_cache(cx: &EmitCx<'_>, on: &OnOp<'_>) -> bool {
+pub(in crate::targets::dom::artifact) fn needs_handler_cache(
+    cx: &EmitCx<'_>,
+    on: &OnOp<'_>,
+) -> bool {
     caches_owned_handler(cx, on, cx.component_props)
 }
 
 /// [`needs_handler_cache`] for an owner known to be a component or not.
-pub(in crate::emit) fn caches_owned_handler(
+pub(in crate::targets::dom::artifact) fn caches_owned_handler(
     cx: &EmitCx<'_>,
     on: &OnOp<'_>,
     is_component: bool,
@@ -29,7 +32,10 @@ pub(in crate::emit) fn caches_owned_handler(
 /// A component receives a method reference as the authored function, so a
 /// cached wrapper cannot hide its arity. Options API refs keep their
 /// live-lookup wrapper.
-pub(in crate::emit) fn bypasses_component_cache(cx: &EmitCx<'_>, expr: &ExprRef<'_>) -> bool {
+pub(in crate::targets::dom::artifact) fn bypasses_component_cache(
+    cx: &EmitCx<'_>,
+    expr: &ExprRef<'_>,
+) -> bool {
     super::super::prefix::handler_bypasses_component_cache(&cx.scope, cx.source, expr)
 }
 

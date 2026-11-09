@@ -4,4 +4,4 @@
 //! Physical policy ownership lives under `dialect/vue`; this ordinary child
 //! module preserves the existing API and type identities.
 
-include!("../dialect/vue/emit/entry.rs");
+include!("../../../framework/vue/dom/entry.rs");

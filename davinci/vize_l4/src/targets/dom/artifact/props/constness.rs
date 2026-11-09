@@ -12,7 +12,7 @@ use super::ts_view::ts_view;
 /// `is_const_handler`: the handler text the codegen reads is a lone
 /// constant binding name. A padded value is a compound expression in Vue,
 /// which is never constant.
-pub(in crate::emit) fn handler_is_constant(
+pub(in crate::targets::dom::artifact) fn handler_is_constant(
     file: &str,
     on: &vize_l2::op::OnOp<'_>,
     is_ts: bool,
@@ -42,7 +42,7 @@ pub(in crate::emit) fn handler_is_constant(
 /// under `is_ts` the transform has already erased the types, so a
 /// `{ … } as const` object is a *static* literal by the time the patch
 /// flags and the hoist decisions read it.
-pub(in crate::emit) fn bind_value_is_static_patchless(
+pub(in crate::targets::dom::artifact) fn bind_value_is_static_patchless(
     bind: &vize_l2::op::BindOp<'_>,
     is_ts: bool,
 ) -> bool {
@@ -57,7 +57,10 @@ pub(in crate::emit) fn bind_value_is_static_patchless(
 
 /// The bind value's text the way the shipped codegen writes it: the
 /// authored source, or its type-erased spelling under `is_ts`.
-pub(in crate::emit) fn bind_value_text(js: &vize_l2::expr::JsExpr<'_>, is_ts: bool) -> String {
+pub(in crate::targets::dom::artifact) fn bind_value_text(
+    js: &vize_l2::expr::JsExpr<'_>,
+    is_ts: bool,
+) -> String {
     match ts_view(js, is_ts) {
         Some(view) => view.into_text(),
         None => String::from(js_expr_source(js).as_str()),

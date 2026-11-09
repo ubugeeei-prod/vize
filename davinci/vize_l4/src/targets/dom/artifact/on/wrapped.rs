@@ -7,7 +7,7 @@ use super::super::{EmitCx, EmitError, UnsupportedReason as Reason, buf::Buf};
 use super::Classified;
 use super::cache::needs_handler_cache;
 
-pub(in crate::emit) fn emit_wrapped_handler(
+pub(in crate::targets::dom::artifact) fn emit_wrapped_handler(
     cx: &mut EmitCx<'_>,
     on: &OnOp<'_>,
     classified: &Classified<'_>,

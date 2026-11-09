@@ -46,7 +46,7 @@ pub(super) fn emit_bind_pair(
     push_ident_key(cx, key.as_str());
     cx.buf.push(": ");
     match raw_name {
-        "class" if crate::emit::props_class::is_runtime_jsx_class(cx, pieces) => {
+        "class" if crate::targets::dom::artifact::props_class::is_runtime_jsx_class(cx, pieces) => {
             value.emit_authored(cx, bind)?;
         }
         "class" => match value.js() {
@@ -54,12 +54,19 @@ pub(super) fn emit_bind_pair(
                 value.emit_authored(cx, bind)?;
             }
             Some(js) => {
-                crate::emit::props_class::emit_class_value(cx, pieces, bind, js, skip_normalize)?;
+                crate::targets::dom::artifact::props_class::emit_class_value(
+                    cx,
+                    pieces,
+                    bind,
+                    js,
+                    skip_normalize,
+                )?;
             }
             None => {
                 if !skip_normalize {
                     cx.buf.use_normalize_class();
-                    cx.buf.push(crate::emit::buf::Buf::normalize_class_alias());
+                    cx.buf
+                        .push(crate::targets::dom::artifact::buf::Buf::normalize_class_alias());
                     cx.buf.push("(");
                 }
                 value.emit(cx, bind)?;

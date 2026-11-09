@@ -18,19 +18,34 @@ description = "L4 - the Davinci emission level (codename Stesura): writer, expre
 metadata.vize.stability = "experimental"
 readme = "README.md"
 
+[features]
+# The DOM emitter's `is_ts` lane erases types with oxc's transformer, whose
+# `Transformer::new` takes a `&std::path::Path`. Off by default so portability
+# builds link no `std`; with it off an `is_ts` emit refuses
+# (`TypeScriptLaneUnavailable`) instead of emitting un-erased TypeScript.
+typescript = ["dep:oxc_codegen", "dep:oxc_transformer"]
+# Arms the DOM emitter's patch-fact observation API for the differential lanes.
+legacy-differential = ["typescript"]
+
 [dependencies]
+htmlize = { workspace = true }
+oxc_ast = { workspace = true }
+oxc_ast_visit = { workspace = true }
+oxc_codegen = { workspace = true, optional = true }
+oxc_parser = { workspace = true }
+oxc_semantic = { workspace = true }
+oxc_span = { workspace = true }
+oxc_syntax = { workspace = true, features = ["to_js_string"] }
+oxc_transformer = { workspace = true, optional = true }
 vize_l0 = { workspace = true }
+vize_l1 = { workspace = true }
 vize_l1_to_l2 = { workspace = true }
 vize_l2 = { workspace = true }
 vize_l3 = { workspace = true }
 serde_json = { workspace = true }
-oxc_syntax = { workspace = true }
 
 [dev-dependencies]
 davinci_test_support = { workspace = true, features = ["native-dom"] }
-oxc_parser = { workspace = true }
-oxc_span = { workspace = true }
-vize_l1 = { workspace = true }
 
 [lints]
 workspace = true

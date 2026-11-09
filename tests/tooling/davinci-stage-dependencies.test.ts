@@ -30,7 +30,6 @@ const aliases = new Map<string, ReadonlyArray<readonly [string, string | null]>>
     [
       ["vize_l0", null],
       ["vize_l1", null],
-      ["vize_l3", null],
       ["vize_l2", null],
     ],
   ],
@@ -99,7 +98,7 @@ test("Davinci stage dependencies are one-way and acyclic", () => {
     ["vize_l1", ["vize_l0"]],
     ["vize_l2", ["vize_l0", "vize_l1"]],
     ["vize_l3", ["vize_l0", "vize_l2"]],
-    ["vize_l1_to_l2", ["vize_l0", "vize_l1", "vize_l2", "vize_l3"]],
+    ["vize_l1_to_l2", ["vize_l0", "vize_l1", "vize_l2"]],
     ["vize_l2_to_l3", ["vize_l0", "vize_l2", "vize_l3"]],
   ]);
 
@@ -238,16 +237,20 @@ test("Davinci DOM production imports lowering through the physical L1-to-L2 pack
 });
 
 test("Atelier core L2 witnesses import lowering through the physical L1-to-L2 package", () => {
-  const lowering = dependency(metadata, "vize_atelier_core", "vize_l1_to_l2", null);
+  // Production retained-expression admission reads the L2 gate; only the L2
+  // witness tests lower.
+  const gate = dependency(metadata, "vize_atelier_core", "vize_l2", null);
+  assert.equal(gate.rename, null);
+  const lowering = dependency(metadata, "vize_atelier_core", "vize_l1_to_l2", "dev");
   assert.equal(lowering.rename, null);
   const dependencies = workspacePackage(metadata, "vize_atelier_core").dependencies;
   assert.ok(
     dependencies.every(
       (dependency) =>
         dependency.name !== "vize_l1_to_l2" ||
-        (dependency.kind === null && dependency.rename === null),
+        (dependency.kind === "dev" && dependency.rename === null),
     ),
-    "vize_atelier_core must use the physical vize_l1_to_l2 package name",
+    "vize_atelier_core must use the physical vize_l1_to_l2 package name, in tests only",
   );
 
   const testDir = path.join(repoRoot, "crates", "vize_atelier_core", "tests");

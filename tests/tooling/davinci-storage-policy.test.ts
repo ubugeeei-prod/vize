@@ -24,6 +24,7 @@ const libraryRoots = [
   "davinci/vize_l1/src",
   "davinci/vize_l2/src",
   "davinci/vize_l3/src",
+  "davinci/vize_l4/src",
   "davinci/vize_l1_to_l2/src",
   "davinci/vize_l2_to_l3/src",
 ];
@@ -49,6 +50,7 @@ function scopeFor(file: string): StorageScope {
   if (file.startsWith("davinci/vize_l1/")) return "l1";
   if (file.startsWith("davinci/vize_l2/")) return "l2";
   if (file.startsWith("davinci/vize_l3/")) return "l3";
+  if (file.startsWith("davinci/vize_l4/")) return "l4";
   if (file.startsWith("davinci/vize_l1_to_l2/")) return "l1_to_l2";
   if (file.startsWith("davinci/vize_l2_to_l3/")) return "l2_to_l3";
   throw new Error(`unknown storage scope: ${file}`);
@@ -144,7 +146,7 @@ test("all owned storage equals the reviewed per-file inventory", () => {
 
 test("production inventory excludes cfg(test) size evidence", () => {
   const byFile = new Map(expectedRows.map((row) => [row.file, row]));
-  assert.deepEqual(byFile.get("davinci/vize_l1_to_l2/src/emit/on.rs")?.storage.allocVec, {
+  assert.deepEqual(byFile.get("davinci/vize_l4/src/targets/dom/artifact/on.rs")?.storage.allocVec, {
     directPaths: 0,
     boundUses: 0,
   });

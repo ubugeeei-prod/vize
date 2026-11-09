@@ -18,14 +18,14 @@ impl StoredPatchFacts {
     }
 }
 
-pub(in crate::emit) struct PatchFactsTable {
+pub(in crate::targets::dom::artifact) struct PatchFactsTable {
     // Keep owner IDs ordered so every emitted VNode does not scan all earlier
     // facts. Small components still use the inline allocation.
     entries: SmallVec<[(NodeId, StoredPatchFacts); 16]>,
 }
 
 impl PatchFactsTable {
-    pub(in crate::emit) fn new() -> Self {
+    pub(in crate::targets::dom::artifact) fn new() -> Self {
         Self {
             entries: SmallVec::new(),
         }
@@ -48,7 +48,7 @@ impl PatchFactsTable {
     }
 
     #[cfg(any(test, feature = "legacy-differential"))]
-    pub(in crate::emit) fn materialized_len(&self) -> usize {
+    pub(in crate::targets::dom::artifact) fn materialized_len(&self) -> usize {
         self.entries.len()
     }
 

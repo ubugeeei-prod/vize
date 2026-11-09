@@ -4,7 +4,7 @@
 use oxc_ast::ast::{ChainElement, Expression};
 
 use super::rewrite::{Retained, with_whole_expression};
-use crate::js_module_compatible;
+use vize_l2::expr::js::js_module_compatible;
 
 pub(super) fn is_handler_reference_shape(expr: &Expression<'_>) -> bool {
     match expr.get_inner_expression() {

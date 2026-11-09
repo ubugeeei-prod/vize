@@ -3,4 +3,4 @@
 //! The Vue emission policy owns the implementation; this ordinary child
 //! module preserves its existing identity.
 
-include!("../../dialect/vue/emit/budget/capture.rs");
+include!("../../../../framework/vue/dom/budget/capture.rs");

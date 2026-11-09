@@ -5,7 +5,9 @@ use vize_l2::op::BindOp;
 
 use super::bind_value;
 
-pub(in crate::emit) fn bind_value_uses_legacy_patchless_runtime_expr(bind: &BindOp<'_>) -> bool {
+pub(in crate::targets::dom::artifact) fn bind_value_uses_legacy_patchless_runtime_expr(
+    bind: &BindOp<'_>,
+) -> bool {
     match bind_value(bind) {
         Ok(value) => value
             .js()

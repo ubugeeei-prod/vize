@@ -3,7 +3,7 @@ use vize_l2::op::Op;
 
 use super::super::{EmitCx, EmitError, UnsupportedReason as Reason};
 
-pub(in crate::emit) fn emit_array_child(
+pub(in crate::targets::dom::artifact) fn emit_array_child(
     cx: &mut EmitCx<'_>,
     op: &Op<'_>,
     hoist_static_children: bool,
@@ -73,7 +73,7 @@ pub(in crate::emit) fn emit_array_child(
 /// A conditional slot entry's branch-root element (`if_branch_root`): the
 /// shipped hoist walk leaves the element itself inline and hoists only its
 /// children (P3-17).
-pub(in crate::emit) fn emit_branch_root_element(
+pub(in crate::targets::dom::artifact) fn emit_branch_root_element(
     cx: &mut EmitCx<'_>,
     element: &vize_l2::op::ElementOp<'_>,
 ) -> Result<(), EmitError> {

@@ -5,8 +5,8 @@ use vize_l0::{Allocator, TemplateSyntaxMode, ensure_sufficient_stack};
 use vize_l1::markup::{SurfaceParseOptions, parse_with_options_and_caps};
 use vize_l2::provenance::NoProvenance;
 
-use crate::lower::{LegacyCaps, LowerPolicy, lower_with_caps_and_comment_policy};
-use crate::pass::{TransformProfile, run_dom_transform_with_profile};
+use vize_l1_to_l2::lower::{LegacyCaps, LowerPolicy, lower_with_caps_and_comment_policy};
+use vize_l1_to_l2::pass::{TransformProfile, run_dom_transform_with_profile};
 
 use super::run::{DomEmitObservation, emit_dom_observed};
 use super::{DomEmit, DomEmitOptions, EmitError};

@@ -3,10 +3,10 @@ use vize_l0::Span;
 use vize_l2::analysis::text_facts::TextPart;
 
 use super::{EmitCx, EmitError, Reason, emit_compound_parts};
-use crate::emit::buf::Buf;
-use crate::emit::prefix::Site;
+use crate::targets::dom::artifact::buf::Buf;
+use crate::targets::dom::artifact::prefix::Site;
 
-pub(in crate::emit) fn emit_slot_compound_parts(
+pub(in crate::targets::dom::artifact) fn emit_slot_compound_parts(
     cx: &mut EmitCx<'_>,
     parts: &[TextPart],
     span: Span,

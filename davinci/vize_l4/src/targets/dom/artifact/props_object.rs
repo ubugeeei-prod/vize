@@ -3,8 +3,8 @@ mod hoist_gap;
 mod pieces;
 
 use alloc::vec::Vec as StdVec;
-pub(in crate::emit) use hoist_gap::check as check_hoist_gap;
-pub(in crate::emit) use hoist_gap::shipped_constant;
+pub(in crate::targets::dom::artifact) use hoist_gap::check as check_hoist_gap;
+pub(in crate::targets::dom::artifact) use hoist_gap::shipped_constant;
 use vize_l2::expr::{ExprRef, OpaqueReason};
 use vize_l2::op::DynamicName;
 

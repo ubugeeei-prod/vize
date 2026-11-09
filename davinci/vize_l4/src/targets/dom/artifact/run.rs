@@ -8,7 +8,7 @@ use alloc::vec::Vec as StdVec;
 use vize_l0::diag::{Severity, Stage};
 use vize_l2::op::Namespace;
 
-use crate::lower::Lowered;
+use vize_l1_to_l2::lower::Lowered;
 use vize_l2::analysis::pass_facts::L2Facts;
 use vize_l2::walk::PageWalk;
 
@@ -69,10 +69,10 @@ pub(super) fn emit_dom_observed<'f, P>(
         diagnostic.severity() == Severity::Error
             && !(options.prefix_identifiers
                 && diagnostic.stage == Stage::Semantic
-                && diagnostic.message.as_str() == crate::lower::SAME_KEY_MESSAGE
+                && diagnostic.message.as_str() == vize_l1_to_l2::lower::SAME_KEY_MESSAGE
                 && diagnostic
                     .exemption()
-                    .is_some_and(|exemption| crate::exemptions::LOWERING.eq(exemption)))
+                    .is_some_and(|exemption| vize_l1_to_l2::exemptions::LOWERING.eq(exemption)))
     }) {
         return Err(EmitError::Diagnostics);
     }

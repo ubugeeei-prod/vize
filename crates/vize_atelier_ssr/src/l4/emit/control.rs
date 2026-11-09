@@ -2,9 +2,9 @@
 //! control flow, with the legacy lane's fragment-marker rules.
 
 use vize_atelier_core::RuntimeHelper;
-use vize_l1_to_l2::TransformContent;
 use vize_l2::expr::ExprRef;
 use vize_l2::op as l2;
+use vize_l4::targets::dom::artifact::TransformContent;
 
 use super::spans::{expression_span, quoted_value};
 use super::{Emitter, Flags, Result};

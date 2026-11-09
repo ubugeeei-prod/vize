@@ -7,7 +7,7 @@ use super::super::error::UnsupportedReason as Reason;
 use super::super::model_key::{ModelModifiersKey, ModelName, ModelUpdateKey};
 use super::super::{EmitError, model};
 
-pub(in crate::emit) enum Piece<'a> {
+pub(in crate::targets::dom::artifact) enum Piece<'a> {
     Attr(&'a Attribute<'a>),
     Bind(&'a BindOp<'a>),
     On(&'a OnOp<'a>),
@@ -31,7 +31,7 @@ pub(in crate::emit) enum Piece<'a> {
 }
 
 impl Piece<'_> {
-    pub(in crate::emit) fn span(&self) -> Span {
+    pub(in crate::targets::dom::artifact) fn span(&self) -> Span {
         match self {
             Self::Attr(attr) => attr.span,
             Self::Bind(bind) => bind.span,
@@ -45,7 +45,7 @@ impl Piece<'_> {
     }
 }
 
-pub(in crate::emit) fn pieces<'a>(
+pub(in crate::targets::dom::artifact) fn pieces<'a>(
     attributes: &'a [Attribute<'a>],
     bindings: &'a [BindingOp<'a>],
     skip_is: bool,

@@ -1,7 +1,7 @@
 use vize_atelier_dom::differential::take_emit_refusal;
 use vize_atelier_sfc::{SfcParseOptions, parse_sfc};
 use vize_l0::Span;
-use vize_l1_to_l2::{EmitError, UnsupportedReason};
+use vize_l4::targets::dom::artifact::{EmitError, UnsupportedReason};
 
 use super::refusal::{DIAGNOSTICS, RefusalCensus, SELECTOR, bucket};
 use super::tally::{EMIT_REFUSED, Lane, classify};

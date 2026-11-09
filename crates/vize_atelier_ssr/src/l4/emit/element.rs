@@ -4,8 +4,8 @@
 
 use vize_atelier_core::RuntimeHelper;
 use vize_l0::cstr;
-use vize_l1_to_l2::TransformContent;
 use vize_l2::op as l2;
+use vize_l4::targets::dom::artifact::TransformContent;
 
 use super::{Emitter, Flags, Result, attrs, merged, model, plan_source};
 use crate::l4::LegacyReason;

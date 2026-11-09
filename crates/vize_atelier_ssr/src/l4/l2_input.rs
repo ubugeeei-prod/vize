@@ -5,8 +5,8 @@
 
 use vize_l0::side_table::SideTable;
 use vize_l0::{Allocator, Span};
-use vize_l1_to_l2::TransformExpressions;
 use vize_l2::op::Region;
+use vize_l4::targets::dom::artifact::TransformExpressions;
 
 use super::emit::PlanFacts;
 use super::select::{L2Artifact, select_from_l2_plain};

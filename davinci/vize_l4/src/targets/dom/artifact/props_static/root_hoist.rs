@@ -12,7 +12,7 @@ use super::hoist_pair::{
     static_hoist_prop,
 };
 
-pub(in crate::emit) fn root_hoist_props(
+pub(in crate::targets::dom::artifact) fn root_hoist_props(
     attributes: &[Attribute<'_>],
     bindings: &[BindingOp<'_>],
     is_ts: bool,
@@ -21,7 +21,7 @@ pub(in crate::emit) fn root_hoist_props(
     root_hoist_props_with_layout(attributes, bindings, None, is_ts, scope_id)
 }
 
-pub(in crate::emit) fn cached_root_hoist_props(
+pub(in crate::targets::dom::artifact) fn cached_root_hoist_props(
     attributes: &[Attribute<'_>],
     bindings: &[BindingOp<'_>],
     line_indent: usize,
@@ -94,7 +94,7 @@ fn root_hoist_props_with_layout(
     Ok(Some(out))
 }
 
-pub(in crate::emit) fn static_vnode_surface_can_hoist(
+pub(in crate::targets::dom::artifact) fn static_vnode_surface_can_hoist(
     attributes: &[Attribute<'_>],
     bindings: &[BindingOp<'_>],
     is_ts: bool,

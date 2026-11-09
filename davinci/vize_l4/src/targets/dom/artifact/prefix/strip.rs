@@ -73,7 +73,7 @@ pub(super) fn strip_ctx_prefix_for_slot_params(scope: &PrefixScope<'_>, content:
 #[cfg(test)]
 mod tests {
     use super::{strip_ctx_prefix_for_slot_params, strip_scope_prefixes_for_slot_params};
-    use crate::emit::prefix::scope::PrefixScope;
+    use crate::targets::dom::artifact::prefix::scope::PrefixScope;
 
     #[test]
     fn preserves_utf8_when_prefixes_do_not_name_slot_params() {

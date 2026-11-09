@@ -2,10 +2,10 @@ use vize_l0::Span;
 use vize_l2::op::{BindingOp, Region, SlotContentOp};
 
 use super::is_slot_template;
-use crate::emit::create_slots_walk::{advance_after_op, slot_content};
-use crate::emit::js::{escape_js_string, is_valid_js_identifier};
-use crate::emit::prefix::Site;
-use crate::emit::{EmitCx, EmitError, UnsupportedReason as Reason};
+use crate::targets::dom::artifact::create_slots_walk::{advance_after_op, slot_content};
+use crate::targets::dom::artifact::js::{escape_js_string, is_valid_js_identifier};
+use crate::targets::dom::artifact::prefix::Site;
+use crate::targets::dom::artifact::{EmitCx, EmitError, UnsupportedReason as Reason};
 use vize_l2::analysis::slot_facts::{SlotCarrier, SlotName, SlotParams};
 use vize_l2::walk::PageWalk;
 
@@ -78,12 +78,18 @@ pub(super) fn emit_slot_params(
         SlotParams::Absent => cx.buf.push("()"),
         SlotParams::Scoped { text, .. } => {
             if cx.strict_slot_params
-                && !crate::emit::prefix::slot_params_syntax_valid(text.as_str(), cx.is_ts)
+                && !crate::targets::dom::artifact::prefix::slot_params_syntax_valid(
+                    text.as_str(),
+                    cx.is_ts,
+                )
             {
                 return Err(EmitError::unsupported(Reason::PrefixExpressionRejected));
             }
             cx.buf.push("(");
-            let processed = crate::emit::prefix::prefix_slot_defaults(text.as_str(), &cx.scope);
+            let processed = crate::targets::dom::artifact::prefix::prefix_slot_defaults(
+                text.as_str(),
+                &cx.scope,
+            );
             if let Some((leading, trailing)) = content
                 .and_then(|content| content.params.as_ref().map(|expr| (content, expr)))
                 .and_then(|(content, expr)| {

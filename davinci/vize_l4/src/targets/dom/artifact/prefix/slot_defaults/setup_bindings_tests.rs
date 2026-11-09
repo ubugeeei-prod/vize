@@ -1,6 +1,6 @@
 use super::super::scope::PrefixScope;
 use super::prefix_slot_defaults;
-use crate::emit::options::{BindingKind, BindingTable};
+use crate::targets::dom::artifact::options::{BindingKind, BindingTable};
 use serde_json::{Value, json};
 
 fn binding_kind(kind: &str) -> BindingKind {

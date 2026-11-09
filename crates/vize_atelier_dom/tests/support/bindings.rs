@@ -4,7 +4,7 @@
 
 use vize_atelier_core::options::{BindingMetadata, BindingType};
 use vize_l0::FxHashMap;
-use vize_l1_to_l2::{BindingKind, BindingTable};
+use vize_l4::targets::dom::artifact::{BindingKind, BindingTable};
 
 /// A `<script setup>` metadata block over `entries`.
 pub fn script_setup_metadata(entries: &[(&str, BindingType)]) -> BindingMetadata {

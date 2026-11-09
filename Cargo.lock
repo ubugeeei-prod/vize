@@ -4331,6 +4331,7 @@ dependencies = [
  "vize_l1_to_l2",
  "vize_l2",
  "vize_l3",
+ "vize_l4",
  "vize_maestro",
  "vize_musea",
  "vize_oxc_parser",
@@ -4411,6 +4412,7 @@ dependencies = [
  "vize_curator",
  "vize_l0",
  "vize_l1_to_l2",
+ "vize_l4",
  "vize_oxc_parser",
 ]
 
@@ -4438,6 +4440,7 @@ dependencies = [
  "vize_l0",
  "vize_l1_to_l2",
  "vize_l2",
+ "vize_l4",
  "vize_oxc_parser",
  "vize_relief",
 ]
@@ -4510,6 +4513,7 @@ dependencies = [
  "vize_l2",
  "vize_l2_to_l3",
  "vize_l3",
+ "vize_l4",
  "vize_relief",
 ]
 
@@ -4541,6 +4545,7 @@ dependencies = [
  "vize_l2",
  "vize_l2_to_l3",
  "vize_l3",
+ "vize_l4",
  "vize_oxc_parser",
 ]
 
@@ -4660,6 +4665,7 @@ dependencies = [
  "vize_l1_to_l2",
  "vize_l2",
  "vize_l3",
+ "vize_l4",
  "vize_oxc_parser",
  "vize_relief",
 ]
@@ -4861,15 +4867,12 @@ dependencies = [
  "criterion",
  "davinci_harness",
  "davinci_test_support",
- "htmlize",
  "insta",
  "oxc_ast",
  "oxc_ast_visit",
- "oxc_codegen",
  "oxc_semantic",
  "oxc_span",
  "oxc_syntax",
- "oxc_transformer",
  "serde_json",
  "sha2",
  "smallvec",
@@ -4882,7 +4885,7 @@ dependencies = [
  "vize_l0",
  "vize_l1",
  "vize_l2",
- "vize_l3",
+ "vize_l4",
  "vize_oxc_parser",
 ]
 
@@ -4939,8 +4942,14 @@ name = "vize_l4"
 version = "0.474.0"
 dependencies = [
  "davinci_test_support",
+ "htmlize",
+ "oxc_ast",
+ "oxc_ast_visit",
+ "oxc_codegen",
+ "oxc_semantic",
  "oxc_span",
  "oxc_syntax",
+ "oxc_transformer",
  "serde_json",
  "vize_l0",
  "vize_l1",
@@ -5180,6 +5189,7 @@ dependencies = [
  "vize_l1",
  "vize_l1_to_l2",
  "vize_l2",
+ "vize_l4",
  "vize_lightningcss",
  "vize_oxc_parser",
  "vize_relief",
@@ -5257,6 +5267,7 @@ dependencies = [
  "vize_l1_to_l2",
  "vize_l2",
  "vize_l3",
+ "vize_l4",
  "vize_musea",
  "vize_oxc_parser",
  "vize_patina",

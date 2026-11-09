@@ -79,7 +79,7 @@ fn replace_prefixed_alias_access(code: String, object: &str, local: &str, key: &
 #[cfg(test)]
 mod tests {
     use super::rewrite_props_aliases;
-    use crate::emit::options::{BindingKind, BindingTable};
+    use crate::targets::dom::artifact::options::{BindingKind, BindingTable};
     use vize_l0::String;
 
     #[test]

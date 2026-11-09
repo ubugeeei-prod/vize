@@ -1,10 +1,10 @@
 use vize_l2::op::{IfOp, Op, Region};
 
-use crate::emit::create_slots_walk::{
+use crate::targets::dom::artifact::create_slots_walk::{
     advance_after_op, first_slot_template, is_slot_for, is_slot_if, slot_template_content,
 };
-use crate::emit::slots::is_whitespace_text;
-use crate::emit::{EmitCx, EmitError};
+use crate::targets::dom::artifact::slots::is_whitespace_text;
+use crate::targets::dom::artifact::{EmitCx, EmitError};
 use vize_l2::walk::PageWalk;
 
 pub(super) fn peek_id(cx: &EmitCx<'_>) -> Option<vize_l0::id::NodeId> {

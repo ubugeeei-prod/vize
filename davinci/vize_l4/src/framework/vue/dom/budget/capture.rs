@@ -14,8 +14,8 @@ use vize_l0::{Allocator, String, ensure_sufficient_stack};
 use vize_l1::markup::{SurfaceParseOptions, parse_with_options_and_caps};
 use vize_l2::dump::{Page as L2Page, ProvenancePage};
 
-use crate::lower::{LegacyCaps, LowerPolicy, Lowered, lower_with_caps_and_comment_policy};
-use crate::pass::{TransformProfile, run_transform_with_pass_hook};
+use vize_l1_to_l2::lower::{LegacyCaps, LowerPolicy, Lowered, lower_with_caps_and_comment_policy};
+use vize_l1_to_l2::pass::{TransformProfile, run_transform_with_pass_hook};
 
 use super::super::EmitError;
 use super::super::run::{DomEmitObservation, emit_dom_observed};

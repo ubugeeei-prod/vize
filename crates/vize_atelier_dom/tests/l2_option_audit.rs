@@ -10,7 +10,7 @@ use crate::support;
 
 use vize_atelier_core::options::CodegenOptions;
 use vize_atelier_dom::DomCompilerOptions;
-use vize_l1_to_l2::DomEmitOptions;
+use vize_l4::targets::dom::artifact::DomEmitOptions;
 
 const SCOPE_ID: &str = "data-v-abc123";
 

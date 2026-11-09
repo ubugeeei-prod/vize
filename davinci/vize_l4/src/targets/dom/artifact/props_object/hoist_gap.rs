@@ -35,7 +35,7 @@ use super::super::error::UnsupportedReason as Reason;
 use super::super::prefix::globals::is_global_allowed;
 
 /// Refuse a props surface the shipped classifier hoists and L2's does not.
-pub(in crate::emit) fn check(
+pub(in crate::targets::dom::artifact) fn check(
     attributes: &[Attribute<'_>],
     bindings: &[BindingOp<'_>],
 ) -> Result<(), EmitError> {
@@ -82,7 +82,10 @@ pub(in crate::emit) fn check(
 
 /// `is_constant_simple_expression(exp, None)` over the supplied AST and
 /// expression bytes: `Some(reads_local)` when the shipped classifier admits it.
-pub(in crate::emit) fn shipped_constant(expr: &js::Expression<'_>, source: &str) -> Option<bool> {
+pub(in crate::targets::dom::artifact) fn shipped_constant(
+    expr: &js::Expression<'_>,
+    source: &str,
+) -> Option<bool> {
     if source.contains("_ctx.")
         || source.contains("$setup.")
         || source.contains("__props.")

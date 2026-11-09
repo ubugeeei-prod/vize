@@ -12,7 +12,7 @@ use crate::support;
 
 use vize_atelier_core::options::CodegenOptions;
 use vize_atelier_dom::DomCompilerOptions;
-use vize_l1_to_l2::DomEmitOptions;
+use vize_l4::targets::dom::artifact::DomEmitOptions;
 
 const SCOPE_ID: &str = "data-v-abc123";
 
@@ -89,7 +89,7 @@ fn scope_id_matches_the_shipped_dom_lane() {
 fn the_option_is_what_produces_the_scope_attribute() {
     let allocator = vize_l0::Allocator::new();
     let body = |src: &str, scope_id: Option<&str>| {
-        vize_l1_to_l2::emit_dom_source_with_options(
+        vize_l4::targets::dom::artifact::emit_dom_source_with_options(
             &allocator,
             src,
             vize_l1_to_l2::LegacyCaps::VUE3,

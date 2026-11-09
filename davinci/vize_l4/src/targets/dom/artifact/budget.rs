@@ -3,7 +3,7 @@
 //! Physical policy ownership lives under `dialect/vue`; child declarations
 //! remain here so every existing private and public path stays unchanged.
 
-include!("../dialect/vue/emit/budget.rs");
+include!("../../../framework/vue/dom/budget.rs");
 
 mod capture;
 mod preflight;

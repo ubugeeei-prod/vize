@@ -19,12 +19,12 @@ use vize_l0::{Allocator, String};
 
 use super::globals::is_global_allowed;
 use super::scope::PrefixScope;
-use crate::emit::js_comment::RawJs;
+use crate::targets::dom::artifact::js_comment::RawJs;
 
 /// Borrowed when nothing was rewritten: a pattern without `=` has no
 /// default to prefix, so the default lane (the allocation gate's window)
 /// never parses it.
-pub(in crate::emit) fn prefix_slot_defaults<'source>(
+pub(in crate::targets::dom::artifact) fn prefix_slot_defaults<'source>(
     source: &'source str,
     scope: &PrefixScope<'_>,
 ) -> RawJs<'source> {
@@ -33,7 +33,7 @@ pub(in crate::emit) fn prefix_slot_defaults<'source>(
 
 /// SSR render functions expose binding metadata through `$setup`, `$props`,
 /// `$data`, and `$options`. Other emitters retain the shared `_ctx` contract.
-pub(in crate::emit) fn prefix_slot_defaults_with_render_prefixes<'source>(
+pub(in crate::targets::dom::artifact) fn prefix_slot_defaults_with_render_prefixes<'source>(
     source: &'source str,
     scope: &PrefixScope<'_>,
 ) -> RawJs<'source> {
@@ -289,7 +289,7 @@ fn collect_binding_names(pattern: &BindingPattern<'_>, names: &mut StdVec<String
 mod tests {
     use super::PrefixScope;
     use super::prefix_slot_defaults as prefix_slot_defaults_in;
-    use crate::emit::js_comment::RawJs;
+    use crate::targets::dom::artifact::js_comment::RawJs;
 
     fn prefix_slot_defaults(source: &str) -> RawJs<'_> {
         prefix_slot_defaults_in(source, &PrefixScope::default())

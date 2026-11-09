@@ -24,9 +24,9 @@ fn dynamic_item_key_js(
 ) -> Result<Option<String>, EmitError> {
     for binding in bindings {
         if let BindingOp::Bind(bind) = binding
-            && crate::emit::props_bind::is_key_bind_name(bind)
+            && crate::targets::dom::artifact::props_bind::is_key_bind_name(bind)
         {
-            let js = crate::emit::props::js_value(bind)?;
+            let js = crate::targets::dom::artifact::props::js_value(bind)?;
             if cx.prefixing() {
                 return Ok(Some(cx.prefixed_js(js, Site::Expression)?));
             }
@@ -56,11 +56,11 @@ pub(super) fn item_key_js(
     Ok(None)
 }
 
-pub(in crate::emit) fn has_dynamic_item_key(bindings: &[BindingOp<'_>]) -> bool {
+pub(in crate::targets::dom::artifact) fn has_dynamic_item_key(bindings: &[BindingOp<'_>]) -> bool {
     bindings.iter().any(|binding| {
         matches!(
             binding,
-            BindingOp::Bind(bind) if crate::emit::props_bind::is_key_bind_name(bind)
+            BindingOp::Bind(bind) if crate::targets::dom::artifact::props_bind::is_key_bind_name(bind)
         )
     })
 }

@@ -12,13 +12,13 @@ use vize_l2::expr::JsExpr;
 use super::super::prefix::{retained_expression_is_js, shared_erasure};
 use super::static_expr::is_static_bound_expr;
 
-pub(in crate::emit) struct TsView {
+pub(in crate::targets::dom::artifact) struct TsView {
     text: String,
 }
 
 impl TsView {
     /// `is_static_bound_expression` over the erased text.
-    pub(in crate::emit) fn is_static(&self) -> bool {
+    pub(in crate::targets::dom::artifact) fn is_static(&self) -> bool {
         let allocator = Allocator::new();
         let mut wrapped = String::with_capacity(self.text.len() + 2);
         wrapped.push('(');
@@ -33,14 +33,14 @@ impl TsView {
         .is_ok_and(|expr| is_static_bound_expr(&expr))
     }
 
-    pub(in crate::emit) fn into_text(self) -> String {
+    pub(in crate::targets::dom::artifact) fn into_text(self) -> String {
         self.text
     }
 }
 
 /// `Some` only when `is_ts` erased something: an unchanged strip leaves
 /// every decision on the retained AST, which is the byte proof.
-pub(in crate::emit) fn ts_view(js: &JsExpr<'_>, is_ts: bool) -> Option<TsView> {
+pub(in crate::targets::dom::artifact) fn ts_view(js: &JsExpr<'_>, is_ts: bool) -> Option<TsView> {
     if !is_ts {
         return None;
     }

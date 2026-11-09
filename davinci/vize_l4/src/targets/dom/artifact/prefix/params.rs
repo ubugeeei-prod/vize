@@ -22,7 +22,10 @@ pub(super) fn extract_destructure_params(trimmed: &str, params: &mut StdVec<Stri
 /// Whether the shipped scanner would list `name` among the pattern's
 /// parameters. Allocation-free: the default lane asks this per dynamic
 /// key without materialising the list.
-pub(in crate::emit) fn destructure_params_contain(trimmed: &str, name: &str) -> bool {
+pub(in crate::targets::dom::artifact) fn destructure_params_contain(
+    trimmed: &str,
+    name: &str,
+) -> bool {
     walk_destructure_params(trimmed, &mut |param| param == name)
 }
 

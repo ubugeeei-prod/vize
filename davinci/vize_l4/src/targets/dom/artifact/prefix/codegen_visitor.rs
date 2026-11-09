@@ -18,7 +18,7 @@ use super::globals::{is_generated_filter_helper, is_global_allowed};
 use super::rewrite::Retained;
 use super::scope::PrefixScope;
 use super::splice::splice_replacements;
-use crate::js_module_compatible;
+use vize_l2::expr::js::js_module_compatible;
 
 struct IdentifierVisitor<'s> {
     scope: &'s PrefixScope<'s>,

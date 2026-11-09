@@ -11,7 +11,7 @@
 )]
 
 use vize_l0::Allocator;
-use vize_l1_to_l2::emit_dom_source;
+use vize_l4::targets::dom::artifact::emit_dom_source;
 
 fn shipped(source: &str) -> String {
     let allocator = Allocator::new();

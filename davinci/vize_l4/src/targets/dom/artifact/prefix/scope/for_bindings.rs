@@ -4,7 +4,7 @@ use super::PrefixScope;
 use vize_l0::String;
 
 impl PrefixScope<'_> {
-    pub(in crate::emit) fn push_for_bindings(
+    pub(in crate::targets::dom::artifact) fn push_for_bindings(
         &mut self,
         aliases: [Option<&str>; 3],
         spans: [Option<vize_l0::Span>; 3],
@@ -16,7 +16,9 @@ impl PrefixScope<'_> {
                 continue;
             };
             if let Some(names) = span.and_then(|span| {
-                crate::emit::for_bindings::exceptional_for_binding_names(alias, span, facts)
+                crate::targets::dom::artifact::for_bindings::exceptional_for_binding_names(
+                    alias, span, facts,
+                )
             }) {
                 for name in names {
                     self.transform.push(String::from(name));

@@ -3,8 +3,8 @@ use alloc::vec::Vec as StdVec;
 use vize_l2::op::{IfOp, Op, Region};
 
 use super::{SlotPiece, capture_child, emit_template_pieces, is_slot_template};
-use crate::emit::create_slots_walk::{advance_after_op, first_slot_template};
-use crate::emit::{EmitCx, EmitError, UnsupportedReason as Reason};
+use crate::targets::dom::artifact::create_slots_walk::{advance_after_op, first_slot_template};
+use crate::targets::dom::artifact::{EmitCx, EmitError, UnsupportedReason as Reason};
 use vize_l2::analysis::slot_facts::{SlotCarrier, SlotFacts, SlotParams};
 use vize_l2::walk::PageWalk;
 
@@ -28,7 +28,7 @@ pub(super) fn collect_pieces(
     {
         let params = scoped_params(&group.params);
         with_group_if_key(cx, &mut group_keys, idx, |cx| {
-            crate::emit::outlet::with_slot_params(cx, params, |cx| {
+            crate::targets::dom::artifact::outlet::with_slot_params(cx, params, |cx| {
                 emit_template_pieces(cx, children, bucket)
             })
         })?;
@@ -38,7 +38,7 @@ pub(super) fn collect_pieces(
         return Ok(());
     }
     for op in children.ops.iter() {
-        if crate::emit::annotations::skip(cx, op) {
+        if crate::targets::dom::artifact::annotations::skip(cx, op) {
             continue;
         }
         match op {
@@ -66,7 +66,7 @@ pub(super) fn collect_pieces(
                 };
                 let params = scoped_params(&group.params);
                 with_group_if_key(cx, &mut group_keys, idx, |cx| {
-                    crate::emit::outlet::with_slot_params(cx, params, |cx| {
+                    crate::targets::dom::artifact::outlet::with_slot_params(cx, params, |cx| {
                         emit_template_pieces(cx, &element.children, bucket)
                     })
                 })?;
@@ -88,7 +88,9 @@ pub(super) fn collect_pieces(
                 };
                 let params = scoped_params(&group.params);
                 let piece = with_group_if_key(cx, &mut group_keys, idx, |cx| {
-                    crate::emit::outlet::with_slot_params(cx, params, |cx| capture_child(cx, op))
+                    crate::targets::dom::artifact::outlet::with_slot_params(cx, params, |cx| {
+                        capture_child(cx, op)
+                    })
                 })?;
                 bucket.push(piece);
             }
@@ -135,7 +137,7 @@ fn group_branch_key_starts(
                         &mut nested,
                     ));
                 }
-                crate::emit::create_slots_walk::advance_after_op(&mut walk, op);
+                crate::targets::dom::artifact::create_slots_walk::advance_after_op(&mut walk, op);
             }
             _ => {
                 if let Some(count) = facts
@@ -153,7 +155,7 @@ fn group_branch_key_starts(
                     *count = count.saturating_add(op_branch_key_count(cx, op, &mut nested));
                 }
                 let _id = walk.mint();
-                crate::emit::create_slots_walk::advance_after_op(&mut walk, op);
+                crate::targets::dom::artifact::create_slots_walk::advance_after_op(&mut walk, op);
             }
         }
     }
@@ -203,7 +205,9 @@ fn op_branch_key_count(cx: &EmitCx<'_>, op: &Op<'_>, walk: &mut PageWalk) -> u32
             walk.skip(component.bindings.len());
             region_branch_key_count(cx, &component.children, walk)
         }
-        Op::If(if_op) if crate::emit::create_slots_walk::is_slot_if(cx, id, if_op) => {
+        Op::If(if_op)
+            if crate::targets::dom::artifact::create_slots_walk::is_slot_if(cx, id, if_op) =>
+        {
             slot_if_branch_key_count(cx, if_op, walk)
         }
         Op::If(if_op) => {

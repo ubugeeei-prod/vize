@@ -4,7 +4,7 @@
 
 use crate::support;
 
-use vize_l1_to_l2::UnsupportedReason as Reason;
+use vize_l4::targets::dom::artifact::UnsupportedReason as Reason;
 
 const BATTERY: &[(&str, &str)] = &[
     ("native_dynamic", r#"<button @[event]="handler"></button>"#),

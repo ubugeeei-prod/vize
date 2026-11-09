@@ -18,7 +18,10 @@ use sha2::{Digest, Sha256};
 use toml::Value;
 use vize_l0::Span;
 use vize_l0::diag::{Diagnostic, Stage};
-use vize_l1_to_l2::{DomEmitMode, DomEmitOptions, EmitError, emit_dom_with_options, exemptions};
+use vize_l1_to_l2::exemptions;
+use vize_l4::targets::dom::artifact::{
+    DomEmitMode, DomEmitOptions, EmitError, emit_dom_with_options,
+};
 
 const CONTROLS: &[&str] = &[
     include_str!(

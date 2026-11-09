@@ -5,10 +5,10 @@ use vize_atelier_core::RuntimeHelper;
 use vize_l0::Span;
 use vize_l0::id::NodeId;
 use vize_l0::side_table::SideTable;
-use vize_l1_to_l2::{TransformContent, decode_ssr_static_text};
 use vize_l2::analysis::text_facts::{TextPart, TextParts, rebuild_source};
 use vize_l2::expr::{ExprRef, OpaqueReason};
 use vize_l2::op as l2;
+use vize_l4::targets::dom::artifact::{TransformContent, decode_ssr_static_text};
 
 use super::{Emitter, Result, spans};
 use crate::codegen::SsrCodegenContext;
@@ -87,7 +87,7 @@ pub(super) fn emit_interpolation(
 /// character the legacy parser stored.
 pub(super) fn decode_interpolation_js(text: vize_l0::String) -> vize_l0::String {
     if text.contains('&') {
-        vize_l1_to_l2::decode_template_entities(&text)
+        vize_l4::targets::dom::artifact::decode_template_entities(&text)
     } else {
         text
     }

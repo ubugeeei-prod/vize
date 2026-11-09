@@ -3,31 +3,31 @@ use alloc::vec::Vec as StdVec;
 use vize_l0::String;
 use vize_l2::op::{BindingOp, ElementOp, Op, Region, TextOp};
 
-use crate::emit::children::{emit_slot_text_child, emit_slot_text_run};
-use crate::emit::hoist::{emit_hoisted_element, is_static_element_tree};
-use crate::emit::vnode::emit_array_child;
-use crate::emit::{EmitCx, EmitError};
+use crate::targets::dom::artifact::children::{emit_slot_text_child, emit_slot_text_run};
+use crate::targets::dom::artifact::hoist::{emit_hoisted_element, is_static_element_tree};
+use crate::targets::dom::artifact::vnode::emit_array_child;
+use crate::targets::dom::artifact::{EmitCx, EmitError};
 
 /// A slot body rendered away from where it prints, with the `_cache`
 /// slot numbers it wrote. The shipped codegen numbers a cache slot as it
 /// prints one, so the sites travel with the piece and are re-registered
 /// when it is pushed back ([`EmitCx::push_captured`]).
-pub(in crate::emit) struct SlotPiece {
+pub(in crate::targets::dom::artifact) struct SlotPiece {
     text: String,
     sites: StdVec<(usize, usize, u32)>,
 }
 
 impl SlotPiece {
-    pub(in crate::emit) fn as_str(&self) -> &str {
+    pub(in crate::targets::dom::artifact) fn as_str(&self) -> &str {
         self.text.as_str()
     }
 
-    pub(in crate::emit) fn sites(&self) -> &[(usize, usize, u32)] {
+    pub(in crate::targets::dom::artifact) fn sites(&self) -> &[(usize, usize, u32)] {
         &self.sites
     }
 }
 
-pub(in crate::emit) fn emit_template_pieces(
+pub(in crate::targets::dom::artifact) fn emit_template_pieces(
     cx: &mut EmitCx<'_>,
     children: &Region<'_>,
     bucket: &mut StdVec<SlotPiece>,
@@ -51,7 +51,7 @@ pub(in crate::emit) fn emit_template_pieces(
         return Ok(());
     }
     for op in children.ops.iter() {
-        if crate::emit::annotations::skip(cx, op) {
+        if crate::targets::dom::artifact::annotations::skip(cx, op) {
             continue;
         }
         bucket.push(capture_child(cx, op)?);
@@ -59,14 +59,14 @@ pub(in crate::emit) fn emit_template_pieces(
     Ok(())
 }
 
-pub(in crate::emit) fn capture_child(
+pub(in crate::targets::dom::artifact) fn capture_child(
     cx: &mut EmitCx<'_>,
     op: &Op<'_>,
 ) -> Result<SlotPiece, EmitError> {
     capture(cx, |cx| emit_slot_child(cx, op))
 }
 
-pub(in crate::emit) fn capture(
+pub(in crate::targets::dom::artifact) fn capture(
     cx: &mut EmitCx<'_>,
     write: impl FnOnce(&mut EmitCx<'_>) -> Result<(), EmitError>,
 ) -> Result<SlotPiece, EmitError> {
@@ -88,13 +88,13 @@ fn emit_slot_child(cx: &mut EmitCx<'_>, op: &Op<'_>) -> Result<(), EmitError> {
     // The lone root of a conditional `createSlots` entry is the shipped
     // `if_branch_root`: only its children are hoisted (P3-17).
     let branch_root = !is_whitespace_text(op) && core::mem::take(&mut cx.slot_if_branch_root);
-    if crate::emit::slot_root::emit_transition_child(cx, op)? {
+    if crate::targets::dom::artifact::slot_root::emit_transition_child(cx, op)? {
         return Ok(());
     }
     match op {
         Op::Text(_) | Op::Interpolation(_) => emit_slot_text_child(cx, op),
         Op::Element(element) if branch_root && !is_slot_template(element) => {
-            crate::emit::vnode::emit_branch_root_element(cx, element)
+            crate::targets::dom::artifact::vnode::emit_branch_root_element(cx, element)
         }
         Op::Element(element) if cx.hoist_static && is_static_element_tree(element, cx.is_ts) => {
             emit_hoisted_element(cx, element)
@@ -115,7 +115,7 @@ fn emit_slot_child(cx: &mut EmitCx<'_>, op: &Op<'_>) -> Result<(), EmitError> {
     }
 }
 
-pub(in crate::emit) fn is_slot_template(element: &ElementOp<'_>) -> bool {
+pub(in crate::targets::dom::artifact) fn is_slot_template(element: &ElementOp<'_>) -> bool {
     element.tag == "template"
         && element
             .bindings
@@ -123,7 +123,7 @@ pub(in crate::emit) fn is_slot_template(element: &ElementOp<'_>) -> bool {
             .any(|binding| matches!(binding, BindingOp::SlotContent(_)))
 }
 
-pub(in crate::emit) fn is_whitespace_text(op: &Op<'_>) -> bool {
+pub(in crate::targets::dom::artifact) fn is_whitespace_text(op: &Op<'_>) -> bool {
     matches!(op, Op::Text(text) if is_whitespace(text))
 }
 

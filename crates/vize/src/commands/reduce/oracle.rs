@@ -125,12 +125,14 @@ fn dom_diverges(source: &str) -> bool {
     old_output.push_str(&old.code);
 
     let new_allocator = Allocator::new();
-    let Ok(new_output) = vize_l1_to_l2::emit_dom_source_patch_facts_observed_with_options(
-        &new_allocator,
-        &template.content,
-        vize_l1_to_l2::LegacyCaps::VUE3,
-        &vize_l1_to_l2::DomEmitOptions::DEFAULT,
-    ) else {
+    let Ok(new_output) =
+        vize_l4::targets::dom::artifact::emit_dom_source_patch_facts_observed_with_options(
+            &new_allocator,
+            &template.content,
+            vize_l1_to_l2::LegacyCaps::VUE3,
+            &vize_l4::targets::dom::artifact::DomEmitOptions::DEFAULT,
+        )
+    else {
         return false;
     };
     let new_output = new_output.emit.assembled();

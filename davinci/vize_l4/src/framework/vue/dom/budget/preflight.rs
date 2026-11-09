@@ -1,13 +1,14 @@
 // Borrowed surface validation at the actual parse boundary.
 
 use super::{DomEmitBudget, EmitInvocation, emit_dom_source_with_options_and_observer_captured};
-use crate::{DomEmit, DomEmitOptions, EmitError, LegacyCaps};
+use crate::targets::dom::artifact::{DomEmit, DomEmitOptions, EmitError};
 use vize_l0::{
     Allocator, TemplateSyntaxMode,
     dump::capture::CaptureSink,
     pass::{BudgetObserver, NoObserver},
 };
 use vize_l1::markup::{SurfaceError, SurfaceTree};
+use vize_l1_to_l2::lower::LegacyCaps;
 
 /// Invocation-local validation owned by the consumer, not the compiler stage.
 /// A false result stops before lowering; diagnostics stay with that consumer.
@@ -158,9 +159,13 @@ mod tests {
         let arena = Allocator::default();
         let source = "<div id='x'>text</div>";
         let options = DomEmitOptions::DEFAULT;
-        let expected =
-            crate::emit_dom_source_sfc_with_options(&arena, source, LegacyCaps::VUE3, &options)
-                .unwrap();
+        let expected = crate::targets::dom::artifact::emit_dom_source_sfc_with_options(
+            &arena,
+            source,
+            LegacyCaps::VUE3,
+            &options,
+        )
+        .unwrap();
         for observe in [false, true] {
             let mut guard = Guard {
                 calls: 0,

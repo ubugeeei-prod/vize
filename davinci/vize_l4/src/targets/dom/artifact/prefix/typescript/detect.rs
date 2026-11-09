@@ -6,7 +6,7 @@
 //! even when the parse turns out to be plain JavaScript.
 
 /// Whether the expression carries syntax the TS lane has to lower.
-pub(in crate::emit) fn needs_typescript_stripping(content: &str) -> bool {
+pub(in crate::targets::dom::artifact) fn needs_typescript_stripping(content: &str) -> bool {
     // " as " is a type assertion; `: ` is skipped because object literals
     // spell it too.
     if content.contains(" as ") {

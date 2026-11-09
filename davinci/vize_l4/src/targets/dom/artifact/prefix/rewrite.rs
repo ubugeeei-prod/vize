@@ -17,7 +17,7 @@ use super::collector::IdentifierCollector;
 use super::globals::{is_generated_filter_helper, is_simple_identifier};
 use super::scope::PrefixScope;
 use super::splice::splice_insertions;
-use crate::js_module_compatible;
+use vize_l2::expr::js::js_module_compatible;
 
 mod reparse;
 use reparse::rewrite_reparsed;
@@ -178,7 +178,10 @@ fn parses_as_params(content: &str, source_type: SourceType) -> bool {
 
 /// Slot props are a binding pattern, not an arbitrary expression. Refuse a
 /// malformed pattern so the compatibility parser can report its diagnostic.
-pub(in crate::emit) fn slot_params_syntax_valid(content: &str, is_ts: bool) -> bool {
+pub(in crate::targets::dom::artifact) fn slot_params_syntax_valid(
+    content: &str,
+    is_ts: bool,
+) -> bool {
     parses_as_params(content, js_module()) || (is_ts && parses_as_params(content, ts_module()))
 }
 

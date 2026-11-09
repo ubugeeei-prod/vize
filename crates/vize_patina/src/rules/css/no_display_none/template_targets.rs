@@ -101,7 +101,7 @@ impl TemplateTargets {
         let raw = value.content.text;
         let decoded = raw
             .contains('&')
-            .then(|| vize_l1_to_l2::emit::decode_html_attribute_entities(raw));
+            .then(|| vize_l4::targets::dom::artifact::decode_html_attribute_entities(raw));
         let value = decoded.as_deref().unwrap_or(raw);
         if name.eq_ignore_ascii_case("class") {
             self.classes.extend(

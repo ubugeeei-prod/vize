@@ -12,7 +12,7 @@ use super::{
 };
 
 /// Slot default children emit one or more `_createTextVNode`s.
-pub(in crate::emit) fn emit_slot_text_child(
+pub(in crate::targets::dom::artifact) fn emit_slot_text_child(
     cx: &mut EmitCx<'_>,
     op: &Op<'_>,
 ) -> Result<(), EmitError> {
@@ -68,7 +68,7 @@ pub(in crate::emit) fn emit_slot_text_child(
     }
 }
 
-pub(in crate::emit) fn emit_slot_text_run(
+pub(in crate::targets::dom::artifact) fn emit_slot_text_run(
     cx: &mut EmitCx<'_>,
     ops: &[Op<'_>],
 ) -> Result<(), EmitError> {

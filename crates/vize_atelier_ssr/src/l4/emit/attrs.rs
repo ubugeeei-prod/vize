@@ -3,9 +3,9 @@
 
 use vize_atelier_core::RuntimeHelper;
 use vize_l0::{String, ToCompactString, cstr};
-use vize_l1_to_l2::{TransformContent, decode_template_entities};
 use vize_l2::expr::ExprRef;
 use vize_l2::op::{self as l2, DynamicName};
+use vize_l4::targets::dom::artifact::{TransformContent, decode_template_entities};
 
 use super::{Emitter, Result, model, plan_source, require_dynamic};
 use crate::codegen::element::props::{merge_prop_values, quoted_js_string};

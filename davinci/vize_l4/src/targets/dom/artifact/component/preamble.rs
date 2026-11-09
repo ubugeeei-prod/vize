@@ -8,7 +8,10 @@ use vize_l2::op::{Op, Region};
 use super::{Buf, EmitCx, builtin};
 use vize_l2::op::vue::asset_identifier;
 
-pub(in crate::emit) fn collect_names<'a>(root: &Region<'a>, source: &str) -> StdVec<&'a str> {
+pub(in crate::targets::dom::artifact) fn collect_names<'a>(
+    root: &Region<'a>,
+    source: &str,
+) -> StdVec<&'a str> {
     let mut names = StdVec::new();
     collect_from(root, source, &mut names);
     names
@@ -17,7 +20,10 @@ pub(in crate::emit) fn collect_names<'a>(root: &Region<'a>, source: &str) -> Std
 /// `generate_assets` over the components: tags that resolve to a script
 /// binding are skipped (they are pushed as `$setup["Name"]` at the call).
 /// Returns whether any `resolveComponent` line was written.
-pub(in crate::emit) fn emit_resolves(cx: &mut EmitCx<'_>, names: &[&str]) -> bool {
+pub(in crate::targets::dom::artifact) fn emit_resolves(
+    cx: &mut EmitCx<'_>,
+    names: &[&str],
+) -> bool {
     let mut resolved = false;
     for name in names {
         if super::binding::resolves(cx, name) {

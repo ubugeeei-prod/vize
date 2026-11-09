@@ -1,8 +1,8 @@
 //! The original group tag and attachments on the selected string-plan path.
 
 use vize_atelier_core::codegen::document::EmitDocument;
-use vize_l1_to_l2::{TransformContent, decode_template_entities};
 use vize_l2::op::{self as l2, DynamicName};
+use vize_l4::targets::dom::artifact::{TransformContent, decode_template_entities};
 
 use super::attrs::Attached;
 use super::spans::attribute_value_start;

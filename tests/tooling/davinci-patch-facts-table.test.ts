@@ -11,37 +11,79 @@ import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
-const emitRoot = path.join(repoRoot, "davinci", "vize_l1_to_l2", "src", "emit.rs");
-const runPath = path.join(repoRoot, "davinci", "vize_l1_to_l2", "src", "emit", "run.rs");
-const patchPath = path.join(repoRoot, "davinci", "vize_l1_to_l2", "src", "emit", "patch.rs");
+const emitRoot = path.join(repoRoot, "davinci", "vize_l4", "src", "targets", "dom", "artifact.rs");
+const runPath = path.join(
+  repoRoot,
+  "davinci",
+  "vize_l4",
+  "src",
+  "targets",
+  "dom",
+  "artifact",
+  "run.rs",
+);
+const patchPath = path.join(
+  repoRoot,
+  "davinci",
+  "vize_l4",
+  "src",
+  "targets",
+  "dom",
+  "artifact",
+  "patch.rs",
+);
 const patchStoragePath = path.join(
   repoRoot,
   "davinci",
-  "vize_l1_to_l2",
+  "vize_l4",
   "src",
-  "emit",
+  "targets",
+  "dom",
+  "artifact",
   "patch",
   "storage.rs",
 );
 const patchTestsPath = path.join(
   repoRoot,
   "davinci",
-  "vize_l1_to_l2",
+  "vize_l4",
   "src",
-  "emit",
+  "targets",
+  "dom",
+  "artifact",
   "patch",
   "tests.rs",
 );
-const vnodePath = path.join(repoRoot, "davinci", "vize_l1_to_l2", "src", "emit", "vnode.rs");
+const vnodePath = path.join(
+  repoRoot,
+  "davinci",
+  "vize_l4",
+  "src",
+  "targets",
+  "dom",
+  "artifact",
+  "vnode.rs",
+);
 const componentPath = path.join(
   repoRoot,
   "davinci",
-  "vize_l1_to_l2",
+  "vize_l4",
   "src",
-  "emit",
+  "targets",
+  "dom",
+  "artifact",
   "component.rs",
 );
-const dispatchPath = path.join(repoRoot, "davinci", "vize_l1_to_l2", "src", "emit", "dispatch.rs");
+const dispatchPath = path.join(
+  repoRoot,
+  "davinci",
+  "vize_l4",
+  "src",
+  "targets",
+  "dom",
+  "artifact",
+  "dispatch.rs",
+);
 
 function read(filePath: string): string {
   return fs.readFileSync(filePath, "utf8");

@@ -4,7 +4,7 @@
 
 use vize_atelier_core::options::{BindingMetadata, BindingType};
 use vize_atelier_sfc::{SfcCompileOptions, SfcDescriptor, compile_sfc};
-use vize_l1_to_l2::{BindingKind, BindingTable};
+use vize_l4::targets::dom::artifact::{BindingKind, BindingTable};
 
 /// `compile_sfc`'s `template_is_ts`: either script block's `lang` is
 /// TypeScript.

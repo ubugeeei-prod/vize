@@ -18,6 +18,7 @@ use crate::expr::{AccessProvider, EmitError as ExpressionError, ResolvedExpressi
 use crate::runtime::{Runtime, Vocabulary, vocabulary};
 use crate::write::{LinkSink, Writer};
 
+pub mod artifact;
 mod children;
 mod conditional;
 mod element;

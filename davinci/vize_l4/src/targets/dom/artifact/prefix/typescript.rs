@@ -18,11 +18,14 @@ use oxc_span::SourceType;
 use oxc_transformer::{TransformOptions, Transformer};
 use vize_l0::{Allocator, String, expression_guard::expression_is_safe_to_parse};
 
-pub(in crate::emit) use detect::needs_typescript_stripping;
+pub(in crate::targets::dom::artifact) use detect::needs_typescript_stripping;
 
 /// The JavaScript spelling of authored template text. `proven_js`: a
 /// retained AST passed the JS-module dialect gate for these bytes.
-pub(in crate::emit) fn erase_typescript(content: &str, proven_js: bool) -> String {
+pub(in crate::targets::dom::artifact) fn erase_typescript(
+    content: &str,
+    proven_js: bool,
+) -> String {
     let stripped = strip_typescript_from_expression(content);
     if proven_js || stripped.as_str() != content || is_javascript(content) {
         return stripped;
@@ -34,7 +37,7 @@ pub(in crate::emit) fn erase_typescript(content: &str, proven_js: bool) -> Strin
 
 /// A parameter list (slot props, a `v-for` alias) as JavaScript; `None`
 /// when it already is, or when it does not parse as TypeScript either.
-pub(in crate::emit) fn erase_typescript_params(params: &str) -> Option<String> {
+pub(in crate::targets::dom::artifact) fn erase_typescript_params(params: &str) -> Option<String> {
     if !expression_is_safe_to_parse(params) {
         return None;
     }
@@ -61,7 +64,7 @@ pub(in crate::emit) fn erase_typescript_params(params: &str) -> Option<String> {
 
 /// The shipped stripper: gated on the detection scan, identity on any
 /// refusal.
-pub(in crate::emit) fn strip_typescript_from_expression(content: &str) -> String {
+pub(in crate::targets::dom::artifact) fn strip_typescript_from_expression(content: &str) -> String {
     // Inputs that would overflow the parser stack pass through unchanged
     // so the surrounding lane emits its normal diagnostic (#956).
     if !expression_is_safe_to_parse(content) {

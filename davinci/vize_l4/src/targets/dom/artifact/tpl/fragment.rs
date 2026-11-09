@@ -23,7 +23,10 @@ pub(super) enum ChildMode {
     GenerateNode,
 }
 
-pub(in crate::emit) fn emit_inline(cx: &mut EmitCx<'_>, ops: &[Op<'_>]) -> Result<(), EmitError> {
+pub(in crate::targets::dom::artifact) fn emit_inline(
+    cx: &mut EmitCx<'_>,
+    ops: &[Op<'_>],
+) -> Result<(), EmitError> {
     match ops {
         [op] => emit_inline_child(cx, op),
         ops => {
@@ -202,12 +205,12 @@ fn emit_force_array(cx: &mut EmitCx<'_>, ops: &[Op<'_>]) -> Result<(), EmitError
     let mut rest = ops;
     let mut first = true;
     while let Some((op, tail)) = rest.split_first() {
-        if crate::emit::annotations::skip(cx, op) {
+        if crate::targets::dom::artifact::annotations::skip(cx, op) {
             rest = tail;
             continue;
         }
-        if crate::emit::vnode_children::is_text_like(op) {
-            let (run, after) = crate::emit::vnode_children::split_text_run(rest);
+        if crate::targets::dom::artifact::vnode_children::is_text_like(op) {
+            let (run, after) = crate::targets::dom::artifact::vnode_children::split_text_run(rest);
             start_item(cx, &mut first);
             emit_create_text_vnode(cx, run)?;
             rest = after;
@@ -223,7 +226,7 @@ fn emit_force_array(cx: &mut EmitCx<'_>, ops: &[Op<'_>]) -> Result<(), EmitError
 fn emit_generate_node(cx: &mut EmitCx<'_>, ops: &[Op<'_>]) -> Result<(), EmitError> {
     let mut first = true;
     for op in ops {
-        if crate::emit::annotations::skip(cx, op) {
+        if crate::targets::dom::artifact::annotations::skip(cx, op) {
             continue;
         }
         match op {

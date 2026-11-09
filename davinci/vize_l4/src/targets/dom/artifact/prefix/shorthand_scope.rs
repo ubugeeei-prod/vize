@@ -1,7 +1,7 @@
 use super::rewrite::rewrite_expression;
 use super::scope::PrefixScope;
 use super::strip::strip_scope_prefixes_for_slot_params;
-use crate::emit::options::{BindingKind, BindingTable};
+use crate::targets::dom::artifact::options::{BindingKind, BindingTable};
 
 #[test]
 fn a_destructured_for_alias_keeps_object_shorthand() {
@@ -10,7 +10,7 @@ fn a_destructured_for_alias_keeps_object_shorthand() {
     scope.push_for([Some("{ id, description }"), None, None]);
     let content = "open({\n  id,\n  description: description ?? '',\n})";
     let content = super::Content {
-        text: crate::emit::js_comment::RawJs::Borrowed(content),
+        text: crate::targets::dom::artifact::js_comment::RawJs::Borrowed(content),
         offset: None,
     };
     let rewritten = rewrite_expression(&super::erase(&scope, &content, None), &scope, false);
@@ -28,7 +28,12 @@ fn a_destructured_for_alias_keeps_object_shorthand() {
 #[test]
 fn an_ideographic_comma_inside_a_string_survives_the_rewrite() {
     let table = BindingTable::new([("rows", BindingKind::SetupConst)], [], true);
-    let mut exprs = crate::emit::TransformExpressions::new("fixture", Some(&table), true, false);
+    let mut exprs = crate::targets::dom::artifact::TransformExpressions::new(
+        "fixture",
+        Some(&table),
+        true,
+        false,
+    );
     let _mark = exprs.enter_for([Some("[name, extensions]"), None, None]);
     let content = "extensions.map((ext) => `.${ext}`).join(\"、\")";
     let rewritten = exprs.text(content).expect("rewrite");
@@ -59,7 +64,7 @@ fn assignment_shorthand_uses_the_target_write_policy() {
         let expected = vize_l0::cstr!("({{ {target} }} = {source})");
         let authored = "({ x } = source)";
         let content = super::Content {
-            text: crate::emit::js_comment::RawJs::Borrowed(authored),
+            text: crate::targets::dom::artifact::js_comment::RawJs::Borrowed(authored),
             offset: None,
         };
         let rewritten = rewrite_expression(&super::erase(&scope, &content, None), &scope, false);
@@ -71,7 +76,7 @@ fn assignment_shorthand_uses_the_target_write_policy() {
 
         let authored = "() => { let x; ({ x } = source); return x }";
         let content = super::Content {
-            text: crate::emit::js_comment::RawJs::Borrowed(authored),
+            text: crate::targets::dom::artifact::js_comment::RawJs::Borrowed(authored),
             offset: None,
         };
         let expected = vize_l0::cstr!("() => {{ let x; ({{ x }} = {source}); return x }}");

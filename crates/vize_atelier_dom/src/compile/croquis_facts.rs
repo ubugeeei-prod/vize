@@ -22,7 +22,7 @@
 use vize_atelier_core::options::{BindingMetadata, BindingType};
 use vize_croquis::Croquis;
 use vize_croquis::facts::{Bindings, BindingsTable, CroquisFacts, Demand, FactConsumer, FactGroup};
-use vize_l1_to_l2::{BindingTable, ReactiveRead};
+use vize_l4::targets::dom::artifact::{BindingTable, ReactiveRead};
 
 use crate::options::DomCompilerOptions;
 
@@ -97,7 +97,7 @@ mod tests {
     use vize_atelier_core::options::{BindingMetadata, BindingType};
     use vize_croquis::Croquis;
     use vize_croquis::reactivity::ReactiveKind;
-    use vize_l1_to_l2::{BindingTable, ReactiveRead};
+    use vize_l4::targets::dom::artifact::{BindingTable, ReactiveRead};
 
     #[test]
     fn reactive_reads_follow_the_trackers_last_registration() {
