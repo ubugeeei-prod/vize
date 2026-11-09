@@ -49,6 +49,7 @@ extern crate alloc;
 
 pub mod analysis;
 pub mod artifact;
+pub mod component;
 pub mod dialect;
 pub mod dump;
 pub mod expr;

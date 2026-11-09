@@ -30,6 +30,9 @@ use crate::diagnostics::JsxDiagnostic;
 use crate::lower::{Lowerer, ScopedStyleExpr};
 use crate::mode::{DirectiveKind, JsxOutputMode, classify_directive};
 use crate::{ComponentSetupSpan, LoweredRoot, StyleExprSpan, l2};
+use vize_l1_to_l2::framework::vue::jsx::{JsxComponent, JsxRoot};
+use vize_l2::component::Exec;
+use vize_relief::RootNode;
 
 /// Lower every outermost JSX root in `program` into a [`LoweredRoot`].
 pub(crate) fn lower_program_roots<'a>(
@@ -65,6 +68,24 @@ struct RootLowerer<'l, 'a, 'm, 's> {
     pending_name: Option<String>,
     pending_declaration_span: Option<Span>,
     default_mode: JsxOutputMode,
+}
+
+impl<'a> RootLowerer<'_, 'a, '_, '_> {
+    fn lower_l2(
+        &self,
+        mode: Option<JsxOutputMode>,
+        oxc_root: JsxRoot<'_, '_>,
+        root: &RootNode<'a>,
+    ) -> Result<l2::JsxL2Root<'a>, l2::L2Refusal> {
+        let exec = match mode.unwrap_or(self.default_mode) {
+            JsxOutputMode::Vdom => Exec::ReRender,
+            JsxOutputMode::Vapor => Exec::RunOnce,
+        };
+        let name = self
+            .current_name()
+            .map(|name| -> &'a str { self.lowerer.bump().alloc_str(&name) });
+        l2::lower_root(self.lowerer, JsxComponent { name, exec }, oxc_root, root)
+    }
 }
 
 impl RootLowerer<'_, '_, '_, '_> {
@@ -309,7 +330,7 @@ impl<'ast> Visit<'ast> for RootLowerer<'_, '_, '_, '_> {
         self.lowerer
             .set_current_output_mode(mode.unwrap_or(self.default_mode));
         let root = self.lowerer.lower_element_root(element);
-        let l2 = l2::try_lower_root(self.lowerer.bump(), self.lowerer.mapper().source(), &root);
+        let l2 = self.lower_l2(mode, JsxRoot::Element(element), &root);
         let (scoped_css, scoped_style_exprs) =
             Self::scoped_style(self.lowerer.take_scoped_styles());
         self.roots.push(LoweredRoot {
@@ -330,7 +351,7 @@ impl<'ast> Visit<'ast> for RootLowerer<'_, '_, '_, '_> {
         self.lowerer
             .set_current_output_mode(mode.unwrap_or(self.default_mode));
         let root = self.lowerer.lower_fragment_root(fragment);
-        let l2 = l2::try_lower_root(self.lowerer.bump(), self.lowerer.mapper().source(), &root);
+        let l2 = self.lower_l2(mode, JsxRoot::Fragment(fragment), &root);
         let (scoped_css, scoped_style_exprs) =
             Self::scoped_style(self.lowerer.take_scoped_styles());
         self.roots.push(LoweredRoot {

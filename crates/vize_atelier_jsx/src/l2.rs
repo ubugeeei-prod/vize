@@ -17,6 +17,8 @@ use vize_l2::op::{
 use vize_l2::scope::{ScopeFacts, ScopeTag};
 use vize_relief::{ElementType, ExpressionNode, PropNode, RootNode, TemplateChildNode};
 
+use crate::Lowerer;
+
 use self::control_flow::{lower_for, lower_if};
 use self::directives::lower_vue_directive;
 use self::element::lower_element;
@@ -36,6 +38,48 @@ pub struct JsxL2Root<'a> {
     pub scopes: SideTable<ScopeFacts>,
     /// L2 operation families observed while projecting this JSX root.
     pub features: LoweringFeatures,
+    /// Lowered from the oxc AST by the shared L1→L2 JSX lowering, rather
+    /// than projected from the Relief tree.
+    pub native: bool,
+}
+
+impl<'a> JsxL2Root<'a> {
+    fn from_component(def: vize_l2::component::ComponentDef<'a>) -> Self {
+        Self {
+            source: def.body.source,
+            root: def.body.root,
+            op_count: def.op_count,
+            scopes: def.body.scopes,
+            features: def.body.features,
+            native: true,
+        }
+    }
+}
+
+/// The L2 of one render root: the shared lowering where it admits the root,
+/// otherwise the Relief projection (#6885 moves the remaining families).
+pub(crate) fn lower_root<'a>(
+    lowerer: &Lowerer<'a, '_, '_>,
+    component: vize_l1_to_l2::framework::vue::jsx::JsxComponent<'a>,
+    oxc_root: vize_l1_to_l2::framework::vue::jsx::JsxRoot<'_, '_>,
+    root: &RootNode<'a>,
+) -> Result<JsxL2Root<'a>, L2Refusal> {
+    use vize_l1_to_l2::framework::vue::jsx::{JsxDialect, lower_component};
+    let allocator = lowerer.bump();
+    let source = lowerer.mapper().source();
+    if lowerer.admits_level_l2()
+        && let Ok(def) = lower_component(
+            allocator,
+            source,
+            lowerer.scoping(),
+            JsxDialect::for_semantics(lowerer.semantics()),
+            component,
+            oxc_root,
+        )
+    {
+        return Ok(JsxL2Root::from_component(def));
+    }
+    try_lower_root(allocator, source, root)
 }
 
 /// A construct which needs a dedicated L2 lowering and must not be silently
@@ -112,6 +156,7 @@ pub fn try_lower_root<'a>(
         op_count: cx.op_count,
         scopes: cx.scopes,
         features: cx.features,
+        native: false,
     })
 }
 
@@ -354,6 +399,8 @@ pub(super) fn simple_identifier<'a>(expr: &ExprRef<'a>) -> Option<&'a str> {
 mod child_value_tests;
 #[cfg(test)]
 mod control_flow_tests;
+#[cfg(test)]
+mod level_lowering_tests;
 #[cfg(test)]
 mod native_model_tests;
 #[cfg(test)]
