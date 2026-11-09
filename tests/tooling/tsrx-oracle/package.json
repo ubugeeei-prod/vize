@@ -1,0 +1,11 @@
+{
+  "name": "@vize/tsrx-oracle",
+  "private": true,
+  "type": "module",
+  "devDependencies": {
+    "@tsrx/core": "catalog:tsrx-oracle",
+    "@tsrx/vue": "catalog:tsrx-oracle",
+    "vue": "catalog:jsx-vapor-oracle",
+    "vue-jsx-vapor": "catalog:jsx-vapor-oracle"
+  }
+}

@@ -1,0 +1,32 @@
+export const Greeting = ({ name }: { name?: string }) => @{
+	const message = name ? `Hello, ${name}` : 'Hello, stranger'
+
+	<div class="greeting">
+		<p>{message}</p>
+	</div>
+};
+
+export function Guarded({ user }: { user: { name: string } | null }) @{
+	if (!user) {
+		return null;
+	}
+
+	<>
+		<h1>{user.name}</h1>
+		@{
+			const initial = user.name.slice(0, 1);
+			<span>{initial}</span>
+		}
+	</>
+}
+
+export function Rows({ rows }: { rows: string[] }) @{
+	<table>
+		@for (const row of rows; key row) {
+			const upper = row.toUpperCase();
+			<tr>
+				<td>{upper}</td>
+			</tr>
+		}
+	</table>
+}
