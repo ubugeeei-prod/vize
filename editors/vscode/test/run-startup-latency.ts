@@ -107,6 +107,8 @@ interface Run {
   firstDiagnostic: number;
   discoveryEnter?: number;
   discoveryReturn?: number;
+  startEnter?: number;
+  serverResolved?: number;
   clientStartEnter?: number;
   clientStartFinish?: number;
 }
@@ -130,6 +132,8 @@ function traceOffsets(log: string, epoch: number): Partial<Run> {
   const marks: Array<[keyof Run, RegExp]> = [
     ["discoveryEnter", /\] findFiles enter /],
     ["discoveryReturn", /\] findFiles (?:return|refused|error) /],
+    ["startEnter", /\] start enter /],
+    ["serverResolved", /\] start path-return /],
     ["clientStartEnter", /\] client start enter /],
     ["clientStartFinish", /\] client start finish /],
   ];
@@ -262,6 +266,13 @@ function report(runs: Run[], labels: string[], title: string): string {
     ["first Vize diagnostic", (run) => run.firstDiagnostic],
     ["config discovery returned", (run) => run.discoveryReturn],
     ["client start entered", (run) => run.clientStartEnter],
+    [
+      "server path resolution",
+      (run) =>
+        run.serverResolved !== undefined && run.startEnter !== undefined
+          ? run.serverResolved - run.startEnter
+          : undefined,
+    ],
     [
       "config discovery duration",
       (run) =>

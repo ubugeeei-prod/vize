@@ -157,8 +157,8 @@ jobs:
           archive=vize-x86_64-unknown-linux-gnu.tar.gz
           url="https://github.com/$GITHUB_REPOSITORY/releases/download/v$SERVER_VERSION/$archive"
           mkdir -p "$RUNNER_TEMP/server"
-          curl -fsSL --retry 3 -o "$RUNNER_TEMP/server/$archive" "$url"
-          curl -fsSL --retry 3 -o "$RUNNER_TEMP/server/$archive.sha256" "$url.sha256"
+          curl -fsSL --retry 8 --retry-delay 5 --retry-all-errors -o "$RUNNER_TEMP/server/$archive" "$url"
+          curl -fsSL --retry 8 --retry-delay 5 --retry-all-errors -o "$RUNNER_TEMP/server/$archive.sha256" "$url.sha256"
           (cd "$RUNNER_TEMP/server" && echo "$(cut -d' ' -f1 "$archive.sha256")  $archive" | sha256sum --check)
           tar -xzf "$RUNNER_TEMP/server/$archive" -C "$RUNNER_TEMP/server"
           "$RUNNER_TEMP/server/vize" --version
@@ -220,8 +220,8 @@ jobs:
           archive=vize-x86_64-pc-windows-msvc.zip
           url="https://github.com/$GITHUB_REPOSITORY/releases/download/v$SERVER_VERSION/$archive"
           mkdir -p "$temp/server"
-          curl -fsSL --retry 3 -o "$temp/server/$archive" "$url"
-          curl -fsSL --retry 3 -o "$temp/server/$archive.sha256" "$url.sha256"
+          curl -fsSL --retry 8 --retry-delay 5 --retry-all-errors -o "$temp/server/$archive" "$url"
+          curl -fsSL --retry 8 --retry-delay 5 --retry-all-errors -o "$temp/server/$archive.sha256" "$url.sha256"
           (cd "$temp/server" && echo "$(cut -d' ' -f1 "$archive.sha256")  $archive" | sha256sum --check)
           (cd "$temp/server" && unzip -q "$archive")
           "$temp/server/vize.exe" --version
@@ -294,7 +294,7 @@ jobs:
           archive=vize-x86_64-unknown-linux-gnu.tar.gz
           url="https://github.com/$GITHUB_REPOSITORY/releases/download/v$SERVER_VERSION/$archive"
           mkdir -p server && cd server
-          curl -fsSL --retry 3 -o "$archive" "$url" && curl -fsSL --retry 3 -o "$archive.sha256" "$url.sha256"
+          curl -fsSL --retry 8 --retry-delay 5 --retry-all-errors -o "$archive" "$url" && curl -fsSL --retry 8 --retry-delay 5 --retry-all-errors -o "$archive.sha256" "$url.sha256"
           echo "$(cut -d' ' -f1 "$archive.sha256")  $archive" | sha256sum --check
           tar -xzf "$archive" && ./vize --version
           mkdir -p "$HOME/te" && cd "$HOME/te"
