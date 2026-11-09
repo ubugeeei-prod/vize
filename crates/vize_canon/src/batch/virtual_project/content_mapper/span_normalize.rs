@@ -1,11 +1,32 @@
 //! Protocol-valid normalization for overlapping authored projections.
 
-use std::collections::BTreeSet;
+use std::collections::{BTreeMap, BTreeSet};
 use std::ops::Range;
 
 use super::{ContentMapperSpanKind, SpanCandidate, ranges_overlap};
 
-pub(super) fn normalize(mut candidates: Vec<SpanCandidate>) -> Vec<SpanCandidate> {
+pub(super) fn normalize(candidates: Vec<SpanCandidate>) -> Vec<SpanCandidate> {
+    // A split verbatim piece takes its generated length from its original. When
+    // both lengths agree, as every projected verbatim span's do, pieces stay
+    // inside their candidate and accepted ranges stay disjoint.
+    if candidates.iter().all(|candidate| {
+        candidate.kind != ContentMapperSpanKind::Verbatim
+            || candidate.generated.len() == candidate.original.len()
+    }) {
+        normalize_with::<DisjointIndex>(candidates)
+    } else {
+        normalize_with::<LengthClassIndex>(candidates)
+    }
+}
+
+trait RangeIndex: Default {
+    fn insert(&mut self, range: &Range<usize>);
+    fn overlaps(&self, probe: &Range<usize>) -> bool;
+    /// Append every indexed range overlapping `probe`, each once, unordered.
+    fn collect_overlapping(&self, probe: &Range<usize>, out: &mut Vec<Range<usize>>);
+}
+
+fn normalize_with<Index: RangeIndex>(mut candidates: Vec<SpanCandidate>) -> Vec<SpanCandidate> {
     candidates.sort_by_key(|candidate| {
         (
             candidate.generated.len(),
@@ -14,16 +35,16 @@ pub(super) fn normalize(mut candidates: Vec<SpanCandidate>) -> Vec<SpanCandidate
         )
     });
 
-    let mut accepted: Vec<SpanCandidate> = Vec::new();
-    let mut generated = RangeIndex::default();
-    let mut original = RangeIndex::default();
+    let mut accepted: Vec<SpanCandidate> = Vec::with_capacity(candidates.len());
+    let mut generated = Index::default();
+    let mut original = Index::default();
+    let mut overlaps = Vec::new();
     for candidate in candidates {
-        if generated.overlapping(&candidate.generated).next().is_some() {
+        if generated.overlaps(&candidate.generated) {
             continue;
         }
-        let overlaps = original
-            .overlapping(&candidate.original)
-            .collect::<Vec<_>>();
+        overlaps.clear();
+        original.collect_overlapping(&candidate.original, &mut overlaps);
         // An unsplit candidate already has its final shape. Keep it in the output
         // instead of allocating and immediately dropping a singleton Vec.
         if overlaps.is_empty() || overlaps.iter().all(|span| *span == candidate.original) {
@@ -41,25 +62,66 @@ pub(super) fn normalize(mut candidates: Vec<SpanCandidate>) -> Vec<SpanCandidate
     accepted
 }
 
-/// Accepted ranges bucketed by length class. A probe scans only the starts
-/// that a range of each class could reach from, not every accepted span.
+/// Accepted ranges, which are pairwise non-overlapping or equal: a generated
+/// range is accepted only when it overlaps none, and an original only when every
+/// range it overlaps is the same range (split pieces are disjoint). Distinct
+/// non-empty ranges are therefore disjoint, so their ends ascend with their
+/// starts and every overlap of a probe is one contiguous run ending at the last
+/// start before the probe's end. An empty range `p..p` still overlaps a probe
+/// that strictly contains `p` under [`ranges_overlap`], so empties are kept
+/// apart by position.
 #[derive(Default)]
-struct RangeIndex {
-    classes: Vec<BTreeSet<(usize, usize)>>,
+struct DisjointIndex {
+    ends: BTreeMap<usize, usize>,
+    empties: BTreeSet<usize>,
 }
 
-impl RangeIndex {
+impl RangeIndex for DisjointIndex {
     fn insert(&mut self, range: &Range<usize>) {
-        let class = range.len().bit_width() as usize;
-        if self.classes.len() <= class {
-            self.classes.resize_with(class + 1, BTreeSet::new);
-        }
-        if let Some(ranges) = self.classes.get_mut(class) {
-            ranges.insert((range.start, range.end));
+        if range.is_empty() {
+            self.empties.insert(range.start);
+        } else {
+            self.ends.insert(range.start, range.end);
         }
     }
 
-    /// Every indexed range overlapping `probe`, in no particular order.
+    fn overlaps(&self, probe: &Range<usize>) -> bool {
+        self.ends
+            .range(..probe.end)
+            .next_back()
+            .is_some_and(|(_, &end)| end > probe.start)
+            || self.empty_overlap(probe).next().is_some()
+    }
+
+    fn collect_overlapping(&self, probe: &Range<usize>, out: &mut Vec<Range<usize>>) {
+        for (&start, &end) in self.ends.range(..probe.end).rev() {
+            if end <= probe.start {
+                break;
+            }
+            out.push(start..end);
+        }
+        out.extend(self.empty_overlap(probe).map(|&at| at..at));
+    }
+}
+
+impl DisjointIndex {
+    fn empty_overlap<'a>(&'a self, probe: &Range<usize>) -> impl Iterator<Item = &'a usize> {
+        let low = probe.start.saturating_add(1);
+        (low < probe.end)
+            .then(|| self.empties.range(low..probe.end))
+            .into_iter()
+            .flatten()
+    }
+}
+
+/// Accepted ranges bucketed by length class, for inputs whose split pieces may
+/// overlap. A probe scans only the starts each class could reach from.
+#[derive(Default)]
+struct LengthClassIndex {
+    classes: Vec<BTreeSet<(usize, usize)>>,
+}
+
+impl LengthClassIndex {
     fn overlapping<'a>(
         &'a self,
         probe: &'a Range<usize>,
@@ -79,6 +141,26 @@ impl RangeIndex {
             })
             .map(|&(start, end)| start..end)
             .filter(|range| ranges_overlap(probe, range))
+    }
+}
+
+impl RangeIndex for LengthClassIndex {
+    fn insert(&mut self, range: &Range<usize>) {
+        let class = range.len().bit_width() as usize;
+        if self.classes.len() <= class {
+            self.classes.resize_with(class + 1, BTreeSet::new);
+        }
+        if let Some(ranges) = self.classes.get_mut(class) {
+            ranges.insert((range.start, range.end));
+        }
+    }
+
+    fn overlaps(&self, probe: &Range<usize>) -> bool {
+        self.overlapping(probe).next().is_some()
+    }
+
+    fn collect_overlapping(&self, probe: &Range<usize>, out: &mut Vec<Range<usize>>) {
+        out.extend(self.overlapping(probe));
     }
 }
 
@@ -188,6 +270,12 @@ mod tests {
 
     #[test]
     fn indexed_normalization_matches_the_quadratic_scan() {
+        oracle_rounds(false);
+        oracle_rounds(true);
+    }
+
+    // `projected` keeps verbatim spans equal in length, as projections do.
+    fn oracle_rounds(projected: bool) {
         let mut state = 0x9e37_79b9_7f4a_7c15_u64;
         let mut next = |bound: u64| {
             state ^= state << 13;
@@ -200,19 +288,26 @@ mod tests {
             ContentMapperSpanKind::Atom,
             ContentMapperSpanKind::Alias,
         ];
-        for round in 0..400 {
+        for round in 0..2000 {
             let spread = [16, 64, 400, 5000][round % 4];
             let candidates = (0..next(160) + 1)
                 .map(|_| {
                     let generated = next(spread as u64);
                     let original = next(spread as u64 / 2 + 1);
                     let scale = [3, 12, 90][next(3)];
-                    let length = 1 + next(scale);
-                    let original_length = if next(4) == 0 { 1 + next(40) } else { length };
+                    // Empty ranges overlap a probe that strictly contains them.
+                    let length = if next(9) == 0 { 0 } else { 1 + next(scale) };
+                    let kind = kinds[next(3)];
+                    let original_length = match next(9) {
+                        _ if projected && kind == ContentMapperSpanKind::Verbatim => length,
+                        0 => 0,
+                        1 | 2 => 1 + next(40),
+                        _ => length,
+                    };
                     SpanCandidate {
                         generated: generated..generated + length,
                         original: original..original + original_length,
-                        kind: kinds[next(3)],
+                        kind,
                     }
                 })
                 .collect::<Vec<_>>();
@@ -225,7 +320,7 @@ mod tests {
             assert_eq!(
                 key(normalize(candidates.clone())),
                 key(reference(candidates)),
-                "round {round}"
+                "round {round}, projected {projected}"
             );
         }
     }
