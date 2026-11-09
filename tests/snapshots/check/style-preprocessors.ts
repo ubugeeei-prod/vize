@@ -10,12 +10,14 @@ import { runVizeCheckJson, stringifyDiagnosticSnapshot } from "../../_helpers/vi
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const SNAPSHOT_DIR = path.join(__dirname, "__snapshots__");
 const app = stylePreprocessorsApp;
-const qualifiedWidenTemplateRef = 'import("vize:virtual-ts").$WidenTemplateRef';
+// Ref shadows name the shared unwrap alias directly (#12431).
+const qualifiedTemplateRefUnwrap = 'import("vize:virtual-ts").$TemplateRefUnwrap';
 const currentReceipt = {
   helperHoistProvenance: "#11049 / ac442c78c8dda5dd05ee3c30049fa2d970bd9bc1",
-  // Exact source packet successor: #11153 / Actions 41097013703, artifact 12996064001.
-  snapshotSha256: "0f560b76bb240cc46613c033043ae3ff689f627abd1a4123e5028b1d463c717d",
-  widenHelperFiles: [
+  // Regenerated at the shared-unwrap head: every diagnostic field is unchanged; only
+  // `virtualTs` moved (shared unwrap references, #12460, and the constructor shape since #12162).
+  snapshotSha256: "a893eb11a886b33bac69d7cfbe4dad4011f816fd96a04b31209311d2bf5697ae",
+  unwrapHelperFiles: [
     "src/CssModuleScss.vue",
     "src/LessStyle.vue",
     "src/ScopedScss.vue",
@@ -37,24 +39,23 @@ describe(`${app.name} check (type checker)`, () => {
     assert.equal(parsed.errorCount, 0, "errorCount should be 0 (style lang does not affect TS)");
     assert.deepEqual(
       parsed.files
-        .filter(({ virtualTs }) => virtualTs?.includes(qualifiedWidenTemplateRef) === true)
+        .filter(({ virtualTs }) => virtualTs?.includes(qualifiedTemplateRefUnwrap) === true)
         .map(({ file }) => file),
-      currentReceipt.widenHelperFiles,
-      `qualified widening helpers changed after ${currentReceipt.helperHoistProvenance}`,
+      currentReceipt.unwrapHelperFiles,
+      `qualified unwrap helpers changed after ${currentReceipt.helperHoistProvenance}`,
     );
     for (const { file, virtualTs = "" } of parsed.files) {
       assert.equal(
-        count(virtualTs, "$WidenTemplateRef"),
-        count(virtualTs, qualifiedWidenTemplateRef),
-        `${file} must not restore a file-local widening helper`,
+        count(virtualTs, "$TemplateRefUnwrap<"),
+        count(virtualTs, `${qualifiedTemplateRefUnwrap}<`),
+        `${file} must not restore a file-local unwrap helper`,
       );
     }
-    for (const file of currentReceipt.widenHelperFiles) {
+    for (const file of currentReceipt.unwrapHelperFiles) {
       const virtualTs = parsed.files.find((candidate) => candidate.file === file)?.virtualTs ?? "";
-      assert.equal(
-        count(virtualTs, qualifiedWidenTemplateRef),
-        1,
-        `${file} must use one shared helper`,
+      assert.ok(
+        count(virtualTs, qualifiedTemplateRefUnwrap) >= 1,
+        `${file} must shadow its refs through the shared unwrap helper`,
       );
     }
 

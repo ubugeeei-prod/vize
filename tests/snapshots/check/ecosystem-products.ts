@@ -17,7 +17,8 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const SNAPSHOT_DIR = path.join(__dirname, "__snapshots__");
 const app = ecosystemProductsApp;
 const qualifiedEmitProps = 'import("vize:virtual-ts").__EmitProps<';
-const qualifiedWidenTemplateRef = 'import("vize:virtual-ts").$WidenTemplateRef';
+// Ref shadows name the shared unwrap alias directly (#12431).
+const qualifiedTemplateRefUnwrap = 'import("vize:virtual-ts").$TemplateRefUnwrap';
 const currentReceipt = {
   diagnosticSha256: "a9f9ae0f2bbee8294ebd92d300895cf772c49b7f62c20d9018a3d3435d2125dc",
   emitHelperFiles: [],
@@ -47,10 +48,11 @@ const currentReceipt = {
   // was observed with 197682982b4 / CLI 73ddcc7cfc8 and remains historical.
   // Prior Linux packet e0d7fd37fead28615939040a3e13dc11b8ecd4209252f99abeb29f8e9657a5f4
   // and earlier ffd237083004fd1a5eb9b5c8b517ce16c05de9a211310f6aafdc379f1be97dc3 remain historical.
-  // Only eight native-event alias pairs change; Actions must qualify the latest head.
-  snapshotSha256: "8b36860739cc363cda440deb29464652fd37df3f09e86e0f145e7d09150eef0c",
+  // Regenerated at the shared-unwrap head: every diagnostic field is unchanged; only
+  // `virtualTs` moved (shared unwrap references and the constructor shape since #12162).
+  snapshotSha256: "ce667c11ac421faafcdfcefb22774ccb6cdd89be27dc8d01023698d786bf6b15",
   warningCount: 0,
-  widenHelperFiles: [
+  unwrapHelperFiles: [
     "src/ComposablesAndRouting.vue",
     "src/GraphAnd3D.vue",
     "src/MediaAndDataViz.vue",
@@ -172,10 +174,10 @@ describe(`${app.name} check (type checker)`, () => {
     }
     assert.deepEqual(
       parsed.files
-        .filter(({ virtualTs }) => virtualTs?.includes(qualifiedWidenTemplateRef) === true)
+        .filter(({ virtualTs }) => virtualTs?.includes(qualifiedTemplateRefUnwrap) === true)
         .map(({ file }) => file),
-      currentReceipt.widenHelperFiles,
-      `qualified widening helpers changed after ${currentReceipt.helperHoistProvenance}`,
+      currentReceipt.unwrapHelperFiles,
+      `qualified unwrap helpers changed after ${currentReceipt.helperHoistProvenance}`,
     );
     assert.deepEqual(
       parsed.files
@@ -186,9 +188,9 @@ describe(`${app.name} check (type checker)`, () => {
     );
     for (const { file, virtualTs = "" } of parsed.files) {
       assert.equal(
-        count(virtualTs, "$WidenTemplateRef"),
-        count(virtualTs, qualifiedWidenTemplateRef),
-        `${file} must not restore a file-local widening helper`,
+        count(virtualTs, "$TemplateRefUnwrap<"),
+        count(virtualTs, `${qualifiedTemplateRefUnwrap}<`),
+        `${file} must not restore a file-local unwrap helper`,
       );
       assert.equal(
         count(virtualTs, "__EmitProps<"),
@@ -206,12 +208,11 @@ describe(`${app.name} check (type checker)`, () => {
         `${file} must not restore the unused slot argument alias`,
       );
     }
-    for (const file of currentReceipt.widenHelperFiles) {
+    for (const file of currentReceipt.unwrapHelperFiles) {
       const virtualTs = parsed.files.find((candidate) => candidate.file === file)?.virtualTs ?? "";
-      assert.equal(
-        count(virtualTs, qualifiedWidenTemplateRef),
-        1,
-        `${file} must use one shared widening helper`,
+      assert.ok(
+        count(virtualTs, qualifiedTemplateRefUnwrap) >= 1,
+        `${file} must shadow its refs through the shared unwrap helper`,
       );
     }
     assert.deepEqual(

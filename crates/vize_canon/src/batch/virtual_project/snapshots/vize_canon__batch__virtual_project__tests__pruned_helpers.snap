@@ -110,6 +110,9 @@ declare module "vize:virtual-ts" {
 // template scope emits no __U, and only generated template scopes use it.
 type $IsUnion<T, __U = T> = T extends unknown ? ([__U] extends [T] ? false : true) : false;
 export type $WidenTemplateRef<T> = $IsAny<T> extends true ? T : $IsUnion<T> extends true ? T : T extends string ? string extends T ? string : T : T extends number ? number extends T ? number : T : T extends boolean ? boolean extends T ? boolean : T : T;
+// Template ref unwrap, shared so each instantiation is cached once per program.
+export type $TemplateRefUnwrap<T> = T extends { value: unknown } ? T extends import('vue').Ref ? $WidenTemplateRef<T['value']> : T : T;
+export type $TemplateRefUnwrapNarrowed<T> = [T] extends [import('vue').Ref] ? $TemplateRefUnwrap<T> : [Extract<T, import('vue').Ref>] extends [never] ? $TemplateRefUnwrap<T> : (NonNullable<T> & import('vue').Ref<unknown> & { value: $TemplateRefUnwrap<T> })['value'];
 }
 
 // Emit-overload helpers (consumed by the per-file __EmitProps alias)

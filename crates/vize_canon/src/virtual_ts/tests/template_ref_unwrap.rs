@@ -10,6 +10,15 @@ fn generate_template_code(
     template: &str,
     hoist_shared_preamble: bool,
 ) -> std::string::String {
+    generate_template_code_with(script, template, hoist_shared_preamble, false)
+}
+
+fn generate_template_code_with(
+    script: &str,
+    template: &str,
+    hoist_shared_preamble: bool,
+    local_template_ref_unwrap: bool,
+) -> std::string::String {
     let allocator = vize_carton::Allocator::new();
     let (root, _) = vize_armature::parse(&allocator, template);
 
@@ -27,6 +36,7 @@ fn generate_template_code(
         &VirtualTsOptions::default(),
         VirtualTsGenerationOptions {
             hoist_shared_preamble,
+            local_template_ref_unwrap,
             ..Default::default()
         },
     )
@@ -46,6 +56,7 @@ const direction = ref<'rtl'>('rtl')
     let template = r#"<Child :direction="direction" />"#;
     let hoisted_code = generate_template_code(script, template, true);
     let embedded_code = generate_template_code(script, template, false);
+    let editor_code = generate_template_code_with(script, template, true, true);
 
     const WIDEN_HELPER: &str = "type $WidenTemplateRef<T> = $IsAny<T> extends true ? T : $IsUnion<T> extends true ? T : T extends string ? string extends T ? string : T : T extends number ? number extends T ? number : T : T extends boolean ? boolean extends T ? boolean : T : T;";
     assert_eq!(
@@ -59,17 +70,37 @@ const direction = ref<'rtl'>('rtl')
         1,
         "the embedded template-ref helper must preserve the exact widening oracle:\n{embedded_code}",
     );
-    for code in [hoisted_code, embedded_code] {
+    // Hoisted shadows name the shared alias; embedded and editor ones keep the
+    // local one, so an editor answer never depends on the shared helpers.
+    assert_eq!(
+        exact_line_count(
+            &editor_code,
+            "    type __U<T> = T extends { value: unknown } ? T extends import('vue').Ref ? import(\"vize:virtual-ts\").$WidenTemplateRef<T['value']> : T : T;",
+        ),
+        1,
+        "editor modules keep the per-file unwrap alias:\n{editor_code}",
+    );
+    for (code, shadow) in [
+        (
+            editor_code.clone(),
+            "    var direction: __U<__R_direction> = (void 0) as any;",
+        ),
+        (
+            hoisted_code,
+            "    var direction: import(\"vize:virtual-ts\").$TemplateRefUnwrap<__R_direction> = (void 0) as any;",
+        ),
+        (
+            embedded_code,
+            "    var direction: __U<__R_direction> = (void 0) as any;",
+        ),
+    ] {
         assert_eq!(
             exact_line_count(&code, "  type __R_direction = typeof direction;"),
             1,
             "template expressions should capture the exact setup ref type:\n{code}",
         );
         assert_eq!(
-            exact_line_count(
-                &code,
-                "    var direction: __U<__R_direction> = (void 0) as any;",
-            ),
+            exact_line_count(&code, shadow),
             1,
             "template expressions should emit the exact unwrapped ref shadow:\n{code}",
         );
@@ -93,7 +124,10 @@ const { props, size } = useField()
         "the authored maybe-ref binding must retain its exact template capture:\n{code}",
     );
     assert_eq!(
-        exact_line_count(&code, "    var props: __UN<__R_props> = (void 0) as any;",),
+        exact_line_count(
+            &code,
+            "    var props: import(\"vize:virtual-ts\").$TemplateRefUnwrapNarrowed<__R_props> = (void 0) as any;",
+        ),
         1,
         "the authored binding must remain the exact template-visible `props`:\n{code}",
     );
