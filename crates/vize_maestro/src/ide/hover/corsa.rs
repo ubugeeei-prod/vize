@@ -18,8 +18,12 @@ use crate::ide::IdeContext;
 use crate::virtual_code::ArtVariantInfo;
 
 mod canonical;
+mod component_api;
+mod documentation;
 mod markdown;
 mod range;
+pub(super) use component_api::is_slot_name_query;
+pub(super) use documentation::{adopt_declaration_documentation, is_member_quick_info};
 pub(super) use range::authored_hover_token_range;
 
 impl HoverService {
@@ -123,6 +127,11 @@ impl HoverService {
             }
             if let Some(hover) = canonical::component_hover(ctx, corsa_bridge.as_ref()).await {
                 return Some(hover);
+            }
+            if component_api::is_slot_name_query(ctx) {
+                return component_api::slot_hover(ctx, corsa_bridge.as_ref())
+                    .await
+                    .or_else(|| Self::hover_template(ctx));
             }
         }
 

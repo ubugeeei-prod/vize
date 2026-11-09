@@ -239,13 +239,21 @@ fn model_contract(macros: &vize_croquis::macros::MacroTracker) -> Option<String>
 fn compact_type(source: &str) -> String {
     let mut output = String::new();
     let mut pending_space = false;
+    // A line break between type-literal members is their separator.
+    let mut pending_line = false;
+    let mut brackets = Vec::new();
     let mut cursor = 0;
     let bytes = source.as_bytes();
 
     while let Some(&byte) = bytes.get(cursor) {
         if byte.is_ascii_whitespace() {
             pending_space = !output.is_empty();
-            cursor = consume_while(source, cursor, u8::is_ascii_whitespace);
+            let end = consume_while(source, cursor, u8::is_ascii_whitespace);
+            pending_line |= pending_space
+                && source
+                    .get(cursor..end)
+                    .is_some_and(|run| run.contains('\n'));
+            cursor = end;
             continue;
         }
         if byte == b'/' && bytes.get(cursor + 1) == Some(&b'/') {
@@ -256,28 +264,44 @@ fn compact_type(source: &str) -> String {
             cursor = consume_block_comment(source, cursor);
             continue;
         }
-        if matches!(byte, b'\'' | b'"' | b'`') {
-            if pending_space {
-                output.push(' ');
-                pending_space = false;
+        if pending_space {
+            if pending_line && brackets.last() == Some(&b'{') && separates_members(&output, byte) {
+                output.push(';');
             }
+            output.push(' ');
+            pending_space = false;
+        }
+        pending_line = false;
+        if matches!(byte, b'\'' | b'"' | b'`') {
             let end = consume_quoted(source, cursor, byte);
             output.push_str(source.get(cursor..end).unwrap_or_default());
             cursor = end;
             continue;
         }
-        if pending_space {
-            output.push(' ');
-            pending_space = false;
-        }
         let Some(ch) = source.get(cursor..).and_then(|rest| rest.chars().next()) else {
             break;
         };
+        match byte {
+            b'{' | b'(' | b'[' | b'<' => brackets.push(byte),
+            b'>' if output.ends_with('=') => {}
+            b'}' | b')' | b']' | b'>' => {
+                brackets.pop();
+            }
+            _ => {}
+        }
         output.push(ch);
         cursor += ch.len_utf8();
     }
 
     output.trim().to_string()
+}
+
+/// Whether a line break between `output` and `next` ends a member.
+fn separates_members(output: &str, next: u8) -> bool {
+    let continues = |byte: u8| b"{;,|&:(<[=?".contains(&byte);
+    !output.ends_with("=>")
+        && !output.as_bytes().last().copied().is_some_and(continues)
+        && !b"};,|&)]>=.?:".contains(&next)
 }
 
 fn compact_type_argument(source: &str) -> String {
@@ -358,6 +382,16 @@ mod tests {
                 }"#,
             ),
             r#"{ label: "a /* value */"; count?: number }"#
+        );
+    }
+
+    #[test]
+    fn compact_type_separates_members_split_by_line_breaks() {
+        assert_eq!(
+            compact_type(
+                "{\n  /** The title. */\n  title: string\n  count?: number\n  item(props: {\n    row: number\n  }): any\n  (e: 'change'): void\n  kind:\n    | 'a'\n    | 'b'\n  map: Record<string,\n    number>\n  run: () =>\n    void\n}"
+            ),
+            "{ title: string; count?: number; item(props: { row: number }): any; (e: 'change'): void; kind: | 'a' | 'b'; map: Record<string, number>; run: () => void }"
         );
     }
 

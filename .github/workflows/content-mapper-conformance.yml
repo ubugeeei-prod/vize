@@ -225,6 +225,7 @@ jobs:
           VIZE_TEST_CONTENT_MAPPER_TSGO: ${{ runner.temp }}/tsgo
         run: |
           cargo test -p vize --test integration -- content_mapper_tsgo_lsp:: --nocapture
+          cargo test -p vize --test integration -- content_mapper_tsgo_lsp_hover:: --nocapture
           cargo test -p vize --test integration -- content_mapper_lsp_shutdown:: --nocapture
           cargo test -p vize --test integration -- content_mapper_tsgo_declaration_lsp:: --nocapture
           cargo test -p vize --test integration -- content_mapper_tsgo_lsp_event_forms:: --nocapture
