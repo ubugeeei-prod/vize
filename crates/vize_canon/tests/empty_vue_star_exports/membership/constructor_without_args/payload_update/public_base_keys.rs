@@ -175,7 +175,7 @@ mod tests {
     #[test]
     fn missing_duplicate_stale_and_extra_bytes_refuse() {
         for file in &FILES {
-            let body = current(file.path);
+            let body = super::super::canon_leftovers::source_before(file.path, current(file.path));
             for (before, after) in file.edits {
                 for mutated in [
                     body.replacen(after, "", 1),

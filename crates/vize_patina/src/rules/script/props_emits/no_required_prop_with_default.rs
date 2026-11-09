@@ -14,8 +14,8 @@
 //! direct literal runtime `defineProps` calls in a sole inline setup block with
 //! proven compiler-macro ownership. Sibling/external scripts, aliases, bound
 //! objects and type-only namespaces remain conservative runtime refusals.
-//! Optional fields, imported types, `required: false`, and non-literal `required`
-//! values are ignored.
+//! Optional fields, unresolved imported types, `required: false`, and
+//! non-literal `required` values are ignored.
 
 use oxc_ast::ast::{
     Argument, BindingPattern, CallExpression, ExportDefaultDeclarationKind, Expression,
@@ -80,8 +80,10 @@ impl ScriptRule for NoRequiredPropWithDefault {
     ) {
         typed::check(
             program,
+            _source,
             offset,
             sfc.sibling_program.zip(sfc.sibling_offset),
+            sfc.resolved_type_world,
             result,
         );
         let object_bindings = collect_object_bindings(program);

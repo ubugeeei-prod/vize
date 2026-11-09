@@ -75,7 +75,7 @@ jobs:
   windows:
     name: Verify the same installed VSIX with a Windows workspace engine
     needs: linux
-    runs-on: windows-latest
+    runs-on: blacksmith-32vcpu-windows-2025
     timeout-minutes: 25
     steps:
       - name: Preserve patch and source line endings

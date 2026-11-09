@@ -7,6 +7,7 @@ use std::{
     path::{Component, Path, PathBuf},
 };
 
+mod canon_leftovers_generated;
 mod constructor_without_args;
 mod controls;
 mod current_generated_constructor;
@@ -245,6 +246,7 @@ fn expected(current_providers: bool) -> (Value, Value) {
     current_updates::apply(&mut manifest, &mut members);
     current_generated_constructor::apply(&mut manifest, &mut members);
     integrated_generated_constructor::apply(&mut manifest, &mut members);
+    canon_leftovers_generated::apply(&mut manifest, &mut members);
     (manifest, json!(members))
 }
 

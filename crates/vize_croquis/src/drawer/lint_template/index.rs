@@ -2,28 +2,24 @@
 
 use vize_l2::expr::ExprRef;
 use vize_l2::op::{BindingOp, DynamicName, Op, Region};
-use vize_relief::{ElementType, Namespace};
+use vize_relief::Namespace;
 
 #[derive(Clone, Copy)]
-pub(super) struct ElementIdentity<'a> {
+pub(super) struct ElementIdentity {
     pub(super) start: u32,
-    pub(super) name: &'a str,
-    pub(super) kind: ElementType,
     pub(super) namespace: Namespace,
 }
 
 pub(super) fn collect_region<'a>(
     region: &Region<'a>,
     expressions: &mut std::vec::Vec<ExprRef<'a>>,
-    elements: &mut std::vec::Vec<ElementIdentity<'a>>,
+    elements: &mut std::vec::Vec<ElementIdentity>,
 ) {
     for op in &region.ops {
         match op {
             Op::Element(element) => {
                 elements.push(ElementIdentity {
                     start: element.span.start,
-                    name: element.tag,
-                    kind: ElementType::Element,
                     namespace: match element.namespace {
                         vize_l2::op::Namespace::Html => Namespace::Html,
                         vize_l2::op::Namespace::Svg => Namespace::Svg,
@@ -36,8 +32,6 @@ pub(super) fn collect_region<'a>(
             Op::Component(component) => {
                 elements.push(ElementIdentity {
                     start: component.span.start,
-                    name: component.name,
-                    kind: ElementType::Component,
                     namespace: Namespace::Html,
                 });
                 collect_bindings(&component.bindings, expressions);

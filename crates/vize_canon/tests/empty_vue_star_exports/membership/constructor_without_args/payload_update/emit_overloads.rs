@@ -65,6 +65,7 @@ fn previous(current: &str, before_bytes: usize, before_sha: &str, after_sha: &st
 }
 
 pub(super) fn source_before(path: &str, current: String) -> String {
+    let current = super::canon_leftovers::source_before(path, current);
     let current = super::emit_overload_stall::source_before(path, current);
     if path == PATH {
         previous(&current, 1606, ASSET_BEFORE_SHA, ASSET_AFTER_SHA)
@@ -87,6 +88,7 @@ fn previous_public(current: &str) -> String {
 }
 
 pub(super) fn preamble_before(current: &str) -> String {
+    let current = &super::canon_leftovers::preamble_before(current);
     let current = &super::emit_overload_stall::preamble_before(current);
     previous(current, 43_967, PREAMBLE_BEFORE_SHA, PREAMBLE_AFTER_SHA)
 }

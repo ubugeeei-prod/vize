@@ -53,8 +53,8 @@ impl CssRule for NoDisplayNone {
 pub(crate) struct NoDisplayNoneForTemplate(TemplateTargets);
 
 impl NoDisplayNoneForTemplate {
-    pub(crate) fn new(root: &vize_relief::RootNode<'_>) -> Self {
-        Self(TemplateTargets::from_root(root))
+    pub(crate) fn new(surface: &vize_l1::markup::SurfaceTree<'_>) -> Self {
+        Self(TemplateTargets::from_surface(surface))
     }
 }
 

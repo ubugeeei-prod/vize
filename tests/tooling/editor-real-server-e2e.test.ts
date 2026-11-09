@@ -69,8 +69,8 @@ function runVimPackageGuard(omit: string[] = []): { status: number; output: stri
     });
 
     const guard = spawnSync(
-      "rust-script",
-      [path.join(root, "tools", "commands", "editors", "vim", "assert-vim-package.rs"), archive],
+      process.execPath,
+      [path.join(root, "tools", "commands", "editors", "vim", "assert-vim-package.ts"), archive],
       { encoding: "utf8" },
     );
     return { status: guard.status ?? 1, output: `${guard.stdout ?? ""}${guard.stderr ?? ""}` };
@@ -79,17 +79,17 @@ function runVimPackageGuard(omit: string[] = []): { status: number; output: stri
   }
 }
 
-test("the Neovim real-server scenario has a task that runs its Rust Script launcher", () => {
+test("the Neovim real-server scenario has a task that runs its Node launcher", () => {
   assert.equal(
     taskCommand("test:nvim-extension:real-server"),
-    "'rust-script' 'tools/commands/editors/neovim/run-real-server.rs'",
+    "'node' 'tools/commands/editors/neovim/run-real-server.ts'",
   );
 });
 
-test("the Vim real-server scenario has a task that runs its Rust Script launcher", () => {
+test("the Vim real-server scenario has a task that runs its Node launcher", () => {
   assert.equal(
     taskCommand("test:vim-extension:real-server"),
-    "'rust-script' 'tools/commands/editors/vim/run-real-server.rs'",
+    "'node' 'tools/commands/editors/vim/run-real-server.ts'",
   );
 });
 
@@ -306,13 +306,13 @@ test("the packaged Neovim archive ships the real-server scenario", () => {
     "commands",
     "editors",
     "neovim",
-    "assert-nvim-package.rs",
+    "assert-nvim-package.ts",
   );
 
   assert.match(assertion, /"nvim\/test\/vize_e2e_expected\.lua"/);
   assert.match(assertion, /"nvim\/test\/vize_e2e_spec\.lua"/);
   assert.match(assertion, /"nvim\/test\/ref_surface_hover\.lua"/);
-  assert.match(assertion, /assert_allowed/);
+  assert.match(assertion, /allowed: \[/);
   assert.match(assertion, /"nvim\/test\/component_contract_hover\.lua"/);
 });
 

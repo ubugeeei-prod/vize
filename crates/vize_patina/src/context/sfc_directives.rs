@@ -3,7 +3,6 @@
 mod lexer;
 
 use memchr::memchr_iter;
-use vize_armature::Parser;
 use vize_atelier_sfc::SfcDescriptor;
 use vize_l0::directive::{
     DirectiveKind, DirectiveSeverity, parse_level_severity, parse_vize_directive,
@@ -14,8 +13,7 @@ use super::eslint_directive::{
     EslintDisableDirective, EslintDisableKind, ExactSuppressionState, InlineSuppressionState,
     parse_eslint_disable_comment, parse_script_disable_comment,
 };
-use super::{DisabledRange, LintContext};
-use crate::visitor::LintVisitor;
+use super::{DisabledRange, LintContext, TemplateCommentDirectives};
 use lexer::{DirectiveLexer, StyleDirectiveLexer};
 
 mod root_comments;
@@ -191,9 +189,10 @@ impl SfcDirectiveState {
                 return None;
             }
             let allocator = Allocator::with_capacity((template.content.len() * 4).max(64 * 1024));
-            let (root, _) = Parser::new(&allocator, &template.content).parse();
+            let (surface, _, _) =
+                vize_l1::markup::parse_with_authored_diagnostics(&allocator, &template.content);
             let mut context = LintContext::new(&allocator, &template.content, "<sfc-directives>");
-            LintVisitor::new(&mut context, &[], &[], false).prescan_suppression_directives(&root);
+            TemplateCommentDirectives::new(&surface).prescan(&mut context);
             let mut exact = context.exact_suppressions;
             exact.offset_markers(template.loc.start as u32);
             Some(TemplateExactSuppressions {

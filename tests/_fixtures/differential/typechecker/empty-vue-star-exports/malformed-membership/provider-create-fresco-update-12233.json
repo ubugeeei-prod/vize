@@ -1,0 +1,54 @@
+{
+  "version": 1,
+  "kind": "exact-provider-qualification-create-fresco-successor",
+  "sourceRevision": "2ac44abb641cbeda89b0c40ecb7b5103b82290ab",
+  "sourceTree": "41d36200b7b447c65d422df6c4678c5b2203f655",
+  "previousProviderQualificationRecord": {
+    "path": "tests/_fixtures/differential/typechecker/empty-vue-star-exports/malformed-membership/provider-strict-checker-update-11628.json",
+    "bytes": 2784,
+    "sha256": "24019bc545fbecb6d92ef7729ea99248f1fb514e3e0266e321331aec844f8313",
+    "gitBlob": "452ad145736378091a9f4e1652e663cb125ad3cb"
+  },
+  "previousQualificationLock": {
+    "path": "pnpm-lock.yaml",
+    "bytes": 1095263,
+    "sha256": "9c2d946dd182aa6931af4868185d1ee812a20ce1ca17409005705abedc89c66b",
+    "gitBlob": "99081858d72a16e56a2047c38d492613ae6501c8"
+  },
+  "previousQualificationPackage": {
+    "path": "package.json",
+    "bytes": 1053,
+    "sha256": "52985c3134183a70ebcf42236092cb2fd2dd815cb301b2a23ec74c4cc391de04",
+    "gitBlob": "d09b87f41fd10ff14c122a0e65e8a9d7d03e838a"
+  },
+  "finalQualificationLock": {
+    "path": "pnpm-lock.yaml",
+    "bytes": 1088594,
+    "sha256": "758cc5b9aa62088f2073d8c9c8007e5c64a026fa53f9e0a7690d660ffa55e61f",
+    "gitBlob": "ddc7657ebdf12e8c671948f43071456c674a0b74"
+  },
+  "finalQualificationPackage": {
+    "path": "package.json",
+    "bytes": 1053,
+    "sha256": "52985c3134183a70ebcf42236092cb2fd2dd815cb301b2a23ec74c4cc391de04",
+    "gitBlob": "d09b87f41fd10ff14c122a0e65e8a9d7d03e838a"
+  },
+  "workspaceManifest": {
+    "path": "pnpm-workspace.yaml",
+    "bytes": 9348,
+    "sha256": "67d2d880b1c1927cda746a43bdcc074bb58260c925c4e67e3aaaa142e94d6f76",
+    "gitBlob": "57b5c377972ca2c4abc26a2084f1075bc2aa61a1"
+  },
+  "createFrescoManifest": {
+    "path": "npm/create-fresco/package.json",
+    "bytes": 1771,
+    "sha256": "78ee0aaa3f083403f8813954188a04af325ceb5aaba0b0aac2f42a0b8dd2cb60",
+    "gitBlob": "0d2f83c6caf0a7de381088ff9322a260c3ac0732"
+  },
+  "resolver": {
+    "command": "vp install --lockfile-only --no-frozen-lockfile --ignore-scripts",
+    "fixedPointSha256": "758cc5b9aa62088f2073d8c9c8007e5c64a026fa53f9e0a7690d660ffa55e61f"
+  },
+  "nativeAcceptanceCredit": false,
+  "scope": "Add the npm-only create-fresco workspace importer, bind its complete package contract, and preserve the exact generated dependency graph. This record gives source provenance only."
+}

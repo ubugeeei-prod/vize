@@ -2,8 +2,20 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
   baselineObserver,
+  executionBaseSha,
   verifyPair,
 } from "../../tools/benchmarks/scripts/package-shadow-work-admission.ts";
+
+const sha = (digit: string) => digit.repeat(40);
+
+test("pull request qualification follows the execution merge parent after the base advances", () => {
+  assert.equal(
+    executionBaseSha("pull_request", sha("1"), [sha("2"), sha("3")], sha("3")),
+    sha("2"),
+  );
+  assert.equal(executionBaseSha("workflow_dispatch", sha("1"), [sha("2")], sha("3")), sha("1"));
+  assert.throws(() => executionBaseSha("pull_request", sha("1"), [sha("2"), sha("4")], sha("3")));
+});
 
 const original = [
   "mod install_roots;",

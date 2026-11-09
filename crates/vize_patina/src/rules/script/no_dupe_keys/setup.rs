@@ -40,8 +40,10 @@ pub(crate) fn has_candidate(program: &Program<'_>) -> bool {
 
 pub(super) fn check<'a>(
     program: &'a Program<'a>,
+    source: &str,
     offset: usize,
     module: NoDupeKeysModuleScript<'a>,
+    resolved_type_world: Option<&vize_croquis::types::ResolvedTypeWorld>,
     result: &mut ScriptLintResult,
 ) {
     if !has_candidate(program) || matches!(module, NoDupeKeysModuleScript::Unavailable) {
@@ -82,6 +84,8 @@ pub(super) fn check<'a>(
             &semantic,
             module,
             module_semantic.as_ref(),
+            source,
+            resolved_type_world,
         );
         let prop_symbols: Vec<SymbolId> = candidate
             .pattern

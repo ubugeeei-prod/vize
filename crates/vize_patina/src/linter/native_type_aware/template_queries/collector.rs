@@ -1,21 +1,20 @@
 use super::super::document::TypeAwareDocument;
 use super::{
     TemplateContext, TemplatePromiseQuery, TemplateQuery, TemplateQueryKind,
-    absolute_expression_range, calls::collect_template_call_ranges,
-    generated_offset_for_expression, generated_offset_for_text, slot_spread_callee_offset,
-    v_for_source_binding_offset,
+    calls::collect_template_call_ranges, generated_offset_for_expression,
+    generated_offset_for_text, slot_spread_callee_offset, v_for_source_binding_offset,
+};
+use crate::markup::surface_source::{
+    DecodedSource, DirectiveArgument, directive, element_verbatim,
 };
 use oxc_allocator::Allocator as OxcAllocator;
-use oxc_span::SourceType;
-use vize_l0::profile;
-use vize_relief::{
-    DirectiveNode, ExpressionNode, ForNode, IfNode, PropNode, RootNode, TemplateChildNode,
-    TextCallContent,
-};
+use oxc_span::{SourceType, Span as OxcSpan};
+use vize_l0::{CompactString, profile};
+use vize_l1::markup::{Attribute, SurfaceChild, SurfaceTree};
 
 pub(super) fn collect_template_query_sets(
     virtual_ts: &TypeAwareDocument,
-    template_ast: &RootNode<'_>,
+    template: &SurfaceTree<'_>,
     template_offset: u32,
     include_template_queries: bool,
     include_template_promise_queries: bool,
@@ -26,7 +25,6 @@ pub(super) fn collect_template_query_sets(
     let mut template_queries = Vec::new();
     let mut template_promise_queries = Vec::new();
     let mut sinks = TemplateQuerySinks {
-        source: template_ast.source,
         template_queries: include_template_queries.then_some(&mut template_queries),
         template_promise_queries: include_template_promise_queries
             .then_some(&mut template_promise_queries),
@@ -41,8 +39,10 @@ pub(super) fn collect_template_query_sets(
         "patina.type_aware.template_query_sets.walk",
         collect_children(
             virtual_ts,
-            &template_ast.children,
+            template,
+            &template.children,
             template_offset,
+            false,
             &mut allocator,
             source_type,
             &mut sinks,
@@ -65,7 +65,6 @@ pub(super) fn collect_template_query_sets(
 }
 
 struct TemplateQuerySinks<'a> {
-    source: &'a str,
     template_queries: Option<&'a mut Vec<TemplateQuery>>,
     template_promise_queries: Option<&'a mut Vec<TemplatePromiseQuery>>,
 }
@@ -113,115 +112,65 @@ fn dedupe_template_promise_queries(queries: &mut Vec<TemplatePromiseQuery>) {
     });
 }
 
+#[expect(
+    clippy::too_many_arguments,
+    reason = "explicit per-template walk state"
+)]
 fn collect_children(
     virtual_ts: &TypeAwareDocument,
-    children: &[TemplateChildNode<'_>],
+    template: &SurfaceTree<'_>,
+    children: &[SurfaceChild<'_>],
     template_offset: u32,
+    inherited_verbatim: bool,
     allocator: &mut OxcAllocator,
     source_type: SourceType,
     sinks: &mut TemplateQuerySinks<'_>,
 ) {
     for child in children {
         match child {
-            TemplateChildNode::Element(element) => {
-                for prop in &element.props {
-                    let PropNode::Directive(directive) = prop else {
-                        continue;
-                    };
-                    if sinks.has_queries() {
-                        profile!(
-                            "patina.type_aware.template_query_sets.directive",
-                            collect_directive(
-                                virtual_ts,
-                                directive,
-                                template_offset,
-                                allocator,
-                                source_type,
-                                sinks,
-                            )
-                        );
+            SurfaceChild::Element(element) => {
+                let verbatim = element_verbatim(element, inherited_verbatim);
+                if !verbatim {
+                    for attribute in &element.open.attrs {
+                        if sinks.has_queries() {
+                            profile!(
+                                "patina.type_aware.template_query_sets.directive",
+                                collect_directive(
+                                    virtual_ts,
+                                    template,
+                                    attribute,
+                                    template_offset,
+                                    allocator,
+                                    source_type,
+                                    sinks,
+                                )
+                            );
+                        }
                     }
                 }
                 profile!(
                     "patina.type_aware.template_query_sets.children",
                     collect_children(
                         virtual_ts,
+                        template,
                         &element.children,
                         template_offset,
+                        verbatim,
                         allocator,
                         source_type,
                         sinks,
                     )
                 );
             }
-            TemplateChildNode::Interpolation(interpolation) => {
-                collect_expression(
-                    virtual_ts,
-                    &interpolation.content,
-                    template_offset,
-                    TemplateContext::Interpolation,
-                    false,
-                    allocator,
-                    source_type,
-                    sinks,
-                );
-            }
-            TemplateChildNode::If(if_node) => {
-                profile!(
-                    "patina.type_aware.template_query_sets.if",
-                    collect_if(
-                        virtual_ts,
-                        if_node,
-                        template_offset,
-                        allocator,
-                        source_type,
-                        sinks
-                    )
-                )
-            }
-            TemplateChildNode::IfBranch(branch) => {
-                if let Some(condition) = &branch.condition {
+            SurfaceChild::Interpolation(interpolation) if !inherited_verbatim => {
+                if let Some(expression) =
+                    DecodedSource::interpolation(template.source, &interpolation.content)
+                        .map(SurfaceExpression::decoded)
+                    && sinks.has_queries()
+                {
                     collect_expression(
                         virtual_ts,
-                        condition,
-                        template_offset,
-                        TemplateContext::Directive,
-                        false,
-                        allocator,
-                        source_type,
-                        sinks,
-                    );
-                }
-                profile!(
-                    "patina.type_aware.template_query_sets.children",
-                    collect_children(
-                        virtual_ts,
-                        &branch.children,
-                        template_offset,
-                        allocator,
-                        source_type,
-                        sinks,
-                    )
-                );
-            }
-            TemplateChildNode::For(for_node) => {
-                profile!(
-                    "patina.type_aware.template_query_sets.for",
-                    collect_for(
-                        virtual_ts,
-                        for_node,
-                        template_offset,
-                        allocator,
-                        source_type,
-                        sinks
-                    )
-                )
-            }
-            TemplateChildNode::TextCall(text_call) => {
-                if let TextCallContent::Interpolation(interpolation) = &text_call.content {
-                    collect_expression(
-                        virtual_ts,
-                        &interpolation.content,
+                        &expression,
                         template_offset,
                         TemplateContext::Interpolation,
                         false,
@@ -236,81 +185,10 @@ fn collect_children(
     }
 }
 
-fn collect_if(
-    virtual_ts: &TypeAwareDocument,
-    if_node: &IfNode<'_>,
-    template_offset: u32,
-    allocator: &mut OxcAllocator,
-    source_type: SourceType,
-    sinks: &mut TemplateQuerySinks<'_>,
-) {
-    for branch in &if_node.branches {
-        if let Some(condition) = &branch.condition {
-            collect_expression(
-                virtual_ts,
-                condition,
-                template_offset,
-                TemplateContext::Directive,
-                false,
-                allocator,
-                source_type,
-                sinks,
-            );
-        }
-        profile!(
-            "patina.type_aware.template_query_sets.children",
-            collect_children(
-                virtual_ts,
-                &branch.children,
-                template_offset,
-                allocator,
-                source_type,
-                sinks,
-            )
-        );
-    }
-}
-
-fn collect_for(
-    virtual_ts: &TypeAwareDocument,
-    for_node: &ForNode<'_>,
-    template_offset: u32,
-    allocator: &mut OxcAllocator,
-    source_type: SourceType,
-    sinks: &mut TemplateQuerySinks<'_>,
-) {
-    let first_query = sinks
-        .template_queries
-        .as_ref()
-        .map_or(0, |queries| queries.len());
-    collect_expression(
-        virtual_ts,
-        &for_node.source,
-        template_offset,
-        TemplateContext::Directive,
-        false,
-        allocator,
-        source_type,
-        sinks,
-    );
-    retarget_v_for_source_queries(virtual_ts, sinks, first_query);
-    profile!(
-        "patina.type_aware.template_query_sets.children",
-        collect_children(
-            virtual_ts,
-            &for_node.children,
-            template_offset,
-            allocator,
-            source_type,
-            sinks,
-        )
-    );
-}
-
 #[expect(clippy::too_many_arguments, reason = "explicit per-block state")]
 fn collect_expression(
     virtual_ts: &TypeAwareDocument,
-    expression: &ExpressionNode<'_>,
+    expression: &SurfaceExpression<'_>,
     template_offset: u32,
     context: TemplateContext,
     allow_statement_fallback: bool,
@@ -339,19 +217,23 @@ fn collect_expression(
 
 fn collect_directive(
     virtual_ts: &TypeAwareDocument,
-    directive: &DirectiveNode<'_>,
+    template: &SurfaceTree<'_>,
+    attribute: &Attribute<'_>,
     template_offset: u32,
     allocator: &mut OxcAllocator,
     source_type: SourceType,
     sinks: &mut TemplateQuerySinks<'_>,
 ) {
-    let Some(expression) = &directive.exp else {
+    let Some(directive) = SurfaceDirective::new(template, attribute) else {
         return;
     };
-    let context = match directive.name {
+    let context = match directive.name.as_str() {
         "bind" => TemplateContext::Binding,
         "on" => TemplateContext::Event,
         _ => TemplateContext::Directive,
+    };
+    let Some(expression) = directive.expression else {
+        return;
     };
     let first_query = sinks
         .template_queries
@@ -359,7 +241,7 @@ fn collect_directive(
         .map_or(0, |queries| queries.len());
     collect_expression(
         virtual_ts,
-        expression,
+        &expression,
         template_offset,
         context,
         matches!(context, TemplateContext::Event),
@@ -381,14 +263,96 @@ fn collect_directive(
         }
     } else if directive.name == "for" {
         retarget_v_for_source_queries(virtual_ts, sinks, first_query);
-    } else if directive.name == "bind" && directive.arg.is_none() {
-        retarget_slot_spread_call_queries(
-            virtual_ts,
-            expression.loc().span.slice(sinks.source),
-            sinks,
-            first_query,
-        );
+    } else if directive.name == "bind" && !directive.has_argument {
+        retarget_slot_spread_call_queries(virtual_ts, expression.source_text, sinks, first_query);
     }
+}
+
+struct SurfaceExpression<'a> {
+    source_text: &'a str,
+    content: CompactString,
+    start: u32,
+}
+
+impl<'a> SurfaceExpression<'a> {
+    fn new(source: &str, authored: &'a str, content: Option<CompactString>) -> Option<Self> {
+        if authored.is_empty() {
+            return None;
+        }
+        Some(Self {
+            source_text: authored,
+            content: content.unwrap_or_else(|| CompactString::new(authored)),
+            start: source_offset(source, authored)?,
+        })
+    }
+
+    fn decoded(source: DecodedSource<'a>) -> Self {
+        Self {
+            source_text: source.authored(),
+            content: CompactString::new(source.text()),
+            start: source.start,
+        }
+    }
+}
+
+struct SurfaceDirective<'a> {
+    name: CompactString,
+    has_argument: bool,
+    expression: Option<SurfaceExpression<'a>>,
+}
+
+impl<'a> SurfaceDirective<'a> {
+    fn new(template: &SurfaceTree<'a>, attribute: &'a Attribute<'a>) -> Option<Self> {
+        let parsed = directive(template, attribute, false)?;
+        let name = CompactString::new(parsed.name);
+        let expression = if let Some(value) = parsed.value {
+            if parsed.name == "for" {
+                let (_, iterable) = vize_croquis::drawer::parse_v_for_expression(value.text());
+                let iterable = iterable.as_str();
+                let authored_value = value.authored();
+                let decoded_start = value.text().rfind(iterable)?;
+                let decoded_end = decoded_start.checked_add(iterable.len())?;
+                let authored = value.authored_span(OxcSpan::new(
+                    u32::try_from(decoded_start).ok()?,
+                    u32::try_from(decoded_end).ok()?,
+                ))?;
+                let source_text =
+                    authored_value.get(authored.start as usize..authored.end as usize)?;
+                Some(SurfaceExpression {
+                    source_text,
+                    content: CompactString::new(iterable),
+                    start: value.start.checked_add(authored.start)?,
+                })
+            } else {
+                Some(SurfaceExpression::decoded(value))
+            }
+        } else if parsed.name == "bind" {
+            match parsed.argument {
+                Some(DirectiveArgument::Static(argument)) => SurfaceExpression::new(
+                    template.source,
+                    argument,
+                    Some(vize_l0::camelize(argument)),
+                ),
+                Some(DirectiveArgument::Dynamic(_)) | None => None,
+            }
+        } else {
+            None
+        };
+        Some(Self {
+            name,
+            has_argument: parsed.argument.is_some(),
+            expression,
+        })
+    }
+}
+
+fn source_offset(source: &str, slice: &str) -> Option<u32> {
+    let source_start = source.as_ptr() as usize;
+    let source_end = source_start.checked_add(source.len())?;
+    let slice_start = slice.as_ptr() as usize;
+    let slice_end = slice_start.checked_add(slice.len())?;
+    (slice_start >= source_start && slice_end <= source_end)
+        .then(|| u32::try_from(slice_start - source_start).ok())?
 }
 
 /// A slot outlet's unargumented `v-bind` is wrapped in a generated spread
@@ -461,7 +425,7 @@ fn retarget_v_for_source_queries(
 #[expect(clippy::too_many_arguments, reason = "explicit per-block state")]
 fn collect_expression_query_sets(
     virtual_ts: &TypeAwareDocument,
-    expression: &ExpressionNode<'_>,
+    expression: &SurfaceExpression<'_>,
     template_offset: u32,
     context: TemplateContext,
     allow_statement_fallback: bool,
@@ -469,11 +433,11 @@ fn collect_expression_query_sets(
     source_type: SourceType,
     sinks: &mut TemplateQuerySinks<'_>,
 ) {
-    let Some((source_start, source_end)) = absolute_expression_range(expression, template_offset)
-    else {
+    let source_start = template_offset + expression.start;
+    let Some(source_end) = source_start.checked_add(expression.source_text.len() as u32) else {
         return;
     };
-    let source_text = expression.loc().span.slice(sinks.source);
+    let source_text = expression.source_text;
     let include_template_queries = sinks.template_queries.is_some();
     let include_template_promise_queries = sinks.template_promise_queries.is_some();
     // Resolve the full expression's generated offset once, then reuse the parsed
@@ -481,7 +445,14 @@ fn collect_expression_query_sets(
     // is the key optimization from the type-aware perf work: template expressions
     // are often short but numerous, so reparsing per rule dominated Corsa time.
     let expression_generated_offset = include_template_queries
-        .then(|| generated_offset_for_expression(virtual_ts, source_start, source_text, expression))
+        .then(|| {
+            generated_offset_for_expression(
+                virtual_ts,
+                source_start,
+                source_text,
+                &expression.content,
+            )
+        })
         .flatten();
     let include_call_callees = expression_generated_offset.is_some();
     let call_ranges = profile!(

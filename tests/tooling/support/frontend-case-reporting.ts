@@ -5,6 +5,13 @@ import fs from "node:fs";
 type Step = { name?: string; run?: string; [key: string]: unknown };
 type Job = { steps?: Step[]; [key: string]: unknown };
 
+function restoreMaximumRunner(job: Job, original: Job): void {
+  if (job["runs-on"] === original["runs-on"]) return;
+  assert.equal(original["runs-on"], "ubuntu-24.04");
+  assert.equal(job["runs-on"], "blacksmith-32vcpu-ubuntu-2404");
+  job["runs-on"] = original["runs-on"];
+}
+
 function selectedStep(job: Job, name: string): { index: number; step: Step } {
   const matches = (job.steps ?? []).flatMap((step, index) =>
     step.name === name ? [{ index, step }] : [],
@@ -125,4 +132,70 @@ export function restoreNativeRuntimeCasePacket(job: Job, original: Job) {
     steps.splice(selected.index, 1);
   }
   assert.deepEqual(job, original);
+}
+
+// #11652 posts the PR test report after the unchanged gate; invert exactly that.
+const testReportSteps = [
+  {
+    name: "Download test case reports",
+    id: "cases",
+    if: "${{ !cancelled() }}",
+    "continue-on-error": true,
+    uses: "actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c",
+    with: { pattern: "test-cases-*", path: "${{ runner.temp }}/test-cases" },
+  },
+  {
+    name: "Report test results",
+    if: "${{ !cancelled() }}",
+    "continue-on-error": true,
+    env: {
+      GITHUB_TOKEN: "${{ github.token }}",
+      TEST_REPORT_GATE: "${{ steps.gate.outcome }}",
+      TEST_REPORT_CASES: "${{ steps.cases.outcome }}",
+      TEST_REPORT_CASES_DIR: "${{ runner.temp }}/test-cases",
+      TEST_REPORT_HEAD_SHA:
+        "${{ github.event.pull_request.head.sha || github.event.merge_group.head_sha }}",
+      TEST_REPORT_PR_NUMBER:
+        "${{ github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.number || '' }}",
+    },
+    run: "node tools/support/compat/github/comment-test-report.ts",
+  },
+];
+
+export function restoreTestReportComment(
+  workflow: { jobs: Record<string, Job> },
+  original: { jobs: Record<string, Job> },
+) {
+  const before = original.jobs["test-report"];
+  restoreMaximumRunner(workflow.jobs["test-report"], before);
+  const steps = before.steps ?? [];
+  const gate = steps.at(-1);
+  assert.equal(gate?.name, "Require every needed job to succeed");
+  assert.deepEqual(workflow.jobs["test-report"], {
+    ...before,
+    permissions: { ...(before.permissions as Record<string, string>), "pull-requests": "write" },
+    steps: [...steps.slice(0, -1), { ...gate, id: "gate" }, ...testReportSteps],
+  });
+  workflow.jobs["test-report"] = structuredClone(before);
+}
+
+export function restoreToolingCasePacketJob(
+  workflow: { jobs: Record<string, Job> },
+  original: { jobs: Record<string, Job> },
+) {
+  const before = original.jobs["affected-tooling"];
+  const steps = before.steps ?? [];
+  const worker = steps.at(-1);
+  assert.equal(worker?.uses, "./.github/actions/test-affected-tooling");
+  assert.deepEqual(workflow.jobs["affected-tooling"], {
+    ...before,
+    steps: [
+      ...steps.slice(0, -1),
+      {
+        ...worker,
+        with: { ...(worker.with as Record<string, string>), job: before.name },
+      },
+    ],
+  });
+  workflow.jobs["affected-tooling"] = structuredClone(before);
 }

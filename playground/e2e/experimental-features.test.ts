@@ -1,7 +1,7 @@
 import { beforeAll, describe, expect, it } from "vite-plus/test";
 import { mount } from "@vue/test-utils";
 import { loadWasm, type WasmModule } from "../src/wasm";
-import ExperimentalFeatures from "../src/shared/ExperimentalFeatures.vue";
+import ExperimentalFeatures from "../src/shared/experimental-features.vue";
 import { mapGeneratedRange } from "../src/features/canon/sourceMappings";
 import {
   EXPERIMENTAL_FEATURES,

@@ -70,10 +70,19 @@ test("overlay custody preserves the exact source checkout, two hosts and read-on
     ref: "${{ github.event.pull_request.head.sha }}",
     "persist-credentials": false,
   });
+  const cache = steps.find((step) => step.uses === "./.github/actions/setup-rust-sticky-cache")!;
+  assert.deepEqual(cache.with, {
+    key: "lsp-overlay-custody",
+    "cache-key-suffix": "${{ runner.os }}-${{ runner.arch }}",
+  });
+  assert.ok(
+    steps.indexOf(cache) < steps.indexOf(steps.find((step) => step.run?.includes("cargo test"))!),
+  );
   for (const input of [
     "Cargo.toml",
     "Cargo.lock",
     "crates/vize_canon/Cargo.toml",
+    ".github/actions/setup-rust-sticky-cache/**",
     "tools/support/compat/github/full-rust-runtime.ts",
   ]) {
     assert.equal(workflow.on.pull_request.paths.filter((path: string) => path === input).length, 1);

@@ -56,23 +56,14 @@ test("installed Content Mapper contract accepts the production package shape", (
   withInstalledMapper((installDir) => assertInstalledMapperContract(installDir));
 });
 
-test("Rust release smoke pins the production Content Mapper contract", () => {
+test("stable Node release smoke pins the production Content Mapper contract", () => {
   const smoke = fs.readFileSync(
-    path.join(root, "tools/commands/release/npm/smoke-release-install.rs"),
+    path.join(root, "tools/support/release/smoke_release_install/runtime.ts"),
     "utf8",
   );
-  const contract = [
-    "        != Some(&json!({",
-    '            "dynamicConfig": true,',
-    '            "exec": ["node", "./bin/vize", "content-mapper"],',
-    '            "compilerOptions": ["checkJs", "noUnusedLocals", "rootDir", "module", "moduleResolution", "resolvePackageJsonExports", "customConditions", "baseUrl", "paths", "moduleSuffixes", "noDtsResolution", "preserveSymlinks"],',
-    "        }))",
-  ].join("\n");
-
-  assert.ok(
-    smoke.includes(contract),
-    "Rust release smoke must enforce the same production mapper contract as the package smoke",
-  );
+  for (const field of ["dynamicConfig", "exec", "compilerOptions"])
+    assert.match(smoke, new RegExp(`\\b${field}:`));
+  assert.match(smoke, /must expose the production typescript\.contentMapper contract/u);
 });
 
 test("installed Content Mapper contract rejects a corrupted exec entry", () => {

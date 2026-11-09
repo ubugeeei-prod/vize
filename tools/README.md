@@ -1,12 +1,12 @@
 # Tools
 
 `tools/commands` is the canonical command surface for repository automation.
-Every file there is a Rust Script entrypoint and can be run with `rust-script`.
+New commands use stable Node's native TypeScript stripping and run directly with `node`.
+The remaining Rust Script entrypoints are migration debt and cannot grow.
 
-Older JavaScript files that still carry reusable test helpers remain as
-compatibility modules, not command entrypoints. CI/package invocations should
-call the Rust Script command path, and new user-facing automation belongs in
-`tools/commands`.
+Reusable helpers belong in `tools/support`; user-facing automation belongs in
+`tools/commands`. Keep command files thin and put testable behavior in focused
+support modules.
 
 ## Layout
 
@@ -20,10 +20,9 @@ call the Rust Script command path, and new user-facing automation belongs in
 - `tools/support/github` and `tools/support/tasks`: strictly typed TypeScript commands for
   GitHub Actions job steps and root Vite+ tasks, run directly with `node`.
 
-Run `rust-script tools/commands/ci/verify-tool-layout.rs` after adding or removing tool
-entrypoints. It verifies that the canonical command surface is Rust Script,
-that compatibility modules are no longer executable legacy commands, and that
-the legacy command runner does not return.
+Run `node tools/commands/ci/verify-tool-layout.ts` after adding or removing tool
+entrypoints. It verifies the stable Node command surface, prevents the remaining
+Rust Script budget from growing, and keeps retired command runners absent.
 
 ## Typecheck comparison evidence
 

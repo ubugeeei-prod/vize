@@ -49,16 +49,16 @@ test("VS Code extension installs the guarded TypeScript Vue plugin", () => {
   assert.equal(manifest.scripts?.watch, "vp pack --watch");
   assert.equal(
     manifest.scripts?.package,
-    "rust-script ../../tools/commands/editors/vscode/sync-typescript-plugin.rs stage && vsce package --no-dependencies --out dist/vize.vsix && rust-script ../../tools/commands/editors/vscode/sync-typescript-plugin.rs inject dist/vize.vsix",
+    "node ../../tools/commands/editors/vscode/sync-typescript-plugin.ts stage && vsce package --no-dependencies --out dist/vize.vsix && node ../../tools/commands/editors/vscode/sync-typescript-plugin.ts inject dist/vize.vsix",
   );
   assert.equal(
     manifest.scripts?.["test:host"],
-    "rust-script ../../tools/commands/editors/vscode/sync-typescript-plugin.rs stage && node test/run-extension-host.mjs",
+    "node ../../tools/commands/editors/vscode/sync-typescript-plugin.ts stage && node test/run-extension-host.mjs",
   );
 
   assert.match(
     readFile("tools/config/vite-plus/tasks/build.ts"),
-    /rustToolFromVscodeExtension\(\s*"editors\/vscode\/sync-typescript-plugin"/,
+    /nodeCommandFromVscodeExtension\(\s*"editors\/vscode\/sync-typescript-plugin"/,
   );
   assert.match(
     readFile("tools/config/vite-plus/tasks/build.ts"),
@@ -66,7 +66,7 @@ test("VS Code extension installs the guarded TypeScript Vue plugin", () => {
   );
   assert.match(
     readFile("tools/config/vite-plus/tasks/test-benchmark.ts"),
-    /rustToolFromVscodeExtension\(\s*"editors\/vscode\/sync-typescript-plugin"/,
+    /nodeCommandFromVscodeExtension\(\s*"editors\/vscode\/sync-typescript-plugin"/,
   );
   assert.match(
     readFile("tools/config/vite-plus/tasks/test-benchmark.ts"),
@@ -81,12 +81,11 @@ test("VS Code extension installs the guarded TypeScript Vue plugin", () => {
 });
 
 test("VSIX plugin injection resolves relative archive paths before changing directory", () => {
-  const source = readFile("tools/commands/editors/vscode/sync-typescript-plugin.rs");
+  const source = readFile("tools/commands/editors/vscode/sync-typescript-plugin.ts");
 
-  assert.match(source, /let vsix_path = absolute_from_cwd\(vsix_path\)\?/);
-  assert.match(source, /fn absolute_from_cwd\(path: &Path\) -> Result<PathBuf, String>/);
-  assert.match(source, /\.current_dir\(&temp_dir\)/);
-  assert.match(source, /\.arg\(&vsix_path\)/);
+  assert.match(source, /const vsix = path\.resolve\(vsixInput\)/);
+  assert.match(source, /cwd: temporaryRoot/);
+  assert.match(source, /\["-X", "-q", vsix, \.\.\.entries\]/);
 });
 
 test("TypeScript Vue plugin keeps missing-provider import errors explicit", () => {

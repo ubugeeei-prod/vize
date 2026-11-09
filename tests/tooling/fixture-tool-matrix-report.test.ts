@@ -9,11 +9,11 @@ import { fileURLToPath } from "node:url";
 import { validatedFileCount } from "../../tools/support/compat/fixtures/tool-matrix-metrics.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
-const toolPath = path.join(root, "tools", "commands", "fixtures", "tool-matrix-report.rs");
+const toolPath = path.join(root, "tools", "support", "compat", "fixtures", "tool-matrix-report.ts");
 
 function run(args: string[]) {
   const outputDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-fixture-tool-matrix-"));
-  const result = spawnSync("rust-script", [toolPath, ...args, "--output-dir", outputDir], {
+  const result = spawnSync(process.execPath, [toolPath, ...args, "--output-dir", outputDir], {
     cwd: root,
     encoding: "utf8",
   });
@@ -37,8 +37,8 @@ test("fixture tool matrix plans every registered project across all four require
     assert.match(report.evidence.commitSha, /^[0-9a-f]{40}$/);
     assert.deepEqual(Object.keys(report.evidence).sort(), ["commitSha", "machine", "runtime"]);
     assert.deepEqual(Object.keys(report.evidence.runtime).sort(), ["name", "version"]);
-    assert.equal(report.evidence.runtime.name, "rust-script");
-    assert.match(report.evidence.runtime.version, /^rustc \d+\.\d+\.\d+/);
+    assert.equal(report.evidence.runtime.name, "node");
+    assert.equal(report.evidence.runtime.version, process.versions.node);
     assert.deepEqual(Object.keys(report.evidence.machine).sort(), [
       "arch",
       "cpuModel",
@@ -53,7 +53,10 @@ test("fixture tool matrix plans every registered project across all four require
     assert.ok(report.evidence.machine.totalMemoryBytes > 0);
     const markdown = fs.readFileSync(path.join(outputDir, "summary.md"), "utf8");
     assert.match(markdown, new RegExp(`Commit: ${report.evidence.commitSha}`));
-    assert.match(markdown, /Runtime: rust-script rustc \d+\.\d+\.\d+/);
+    assert.match(
+      markdown,
+      new RegExp(`Runtime: node ${process.versions.node.replaceAll(".", "\\.")}`),
+    );
     assert.match(markdown, /Machine: [^/]+\/[^,]+, \d+ logical CPUs, \d+ bytes memory/);
     assert.match(markdown, /\bRequested\b/);
     assert.match(markdown, /\bTransitive Authored\b/);
@@ -82,7 +85,7 @@ test("fixture tool matrix plans every registered project across all four require
 test("fixture tool matrix rejects malformed commit evidence", () => {
   const outputDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-fixture-tool-matrix-sha-"));
   try {
-    const result = spawnSync("rust-script", [toolPath, "--dry-run", "--output-dir", outputDir], {
+    const result = spawnSync(process.execPath, [toolPath, "--dry-run", "--output-dir", outputDir], {
       cwd: root,
       encoding: "utf8",
       env: { ...process.env, GITHUB_SHA: "not-a-full-sha" },
