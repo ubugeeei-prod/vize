@@ -233,3 +233,145 @@ fn caught_nested_unwind_cannot_report_an_outer_owner_as_complete() {
     // The independent checker observes exactly the three actually minted nodes.
     assert_eq!(Artifact::try_new(*rejected.parts).unwrap().node_count(), 3);
 }
+
+fn at(source: &str, needle: &str) -> Span {
+    let start = source.find(needle).unwrap() as u32;
+    Span::new(start, start + needle.len() as u32)
+}
+
+#[test]
+fn conditional_branches_child_values_and_spreads_seal_canonical_ops() {
+    let a = Allocator::default();
+    let source = "if(a){<p {...o}>{v}</p>}else{x}";
+    let js =
+        |text: &'static str| ExprRef::Js(JsExpr::parse_in(&a, text, at(source, text)).unwrap());
+    let mut builder = Builder::new(&a, source).unwrap();
+    let id = builder
+        .region()
+        .conditional(Span::new(0, 31), |branches, node| {
+            assert_eq!(node, NodeId::FIRST);
+            branches
+                .branch(Some(js("a")), Span::new(0, 24), |region, _| {
+                    region
+                        .element(
+                            "p",
+                            Namespace::Html,
+                            Vec::new_in(&&a),
+                            at(source, "<p {...o}>{v}</p>"),
+                            |region, _| {
+                                assert_eq!(
+                                    region
+                                        .spread(js("o"), at(source, "{...o}"))
+                                        .unwrap()
+                                        .index(),
+                                    2
+                                );
+                                assert_eq!(
+                                    region
+                                        .child_value(js("v"), at(source, "{v}"))
+                                        .unwrap()
+                                        .index(),
+                                    3
+                                );
+                            },
+                        )
+                        .unwrap();
+                })
+                .unwrap();
+            branches
+                .branch(None, Span::new(24, 31), |region, _| {
+                    assert_eq!(region.text("x", Span::new(29, 30)).unwrap().index(), 4);
+                })
+                .unwrap();
+        })
+        .unwrap();
+    assert_eq!(id, NodeId::FIRST);
+    let artifact = builder.finish().unwrap();
+    assert_eq!(artifact.node_count(), 5);
+    let [Op::If(conditional)] = artifact.root().ops.as_slice() else {
+        panic!("one conditional");
+    };
+    let [first, second] = conditional.branches.as_slice() else {
+        panic!("two branches");
+    };
+    assert!(first.condition.is_some() && second.condition.is_none());
+    let [Op::Element(element)] = first.region.ops.as_slice() else {
+        panic!("first branch element");
+    };
+    assert!(matches!(
+        element.bindings.as_slice(),
+        [crate::op::BindingOp::Bind(bind)] if bind.name.is_none()
+    ));
+    assert!(matches!(
+        element.children.ops.as_slice(),
+        [Op::JsxChildValue(_)]
+    ));
+    assert_eq!(
+        Artifact::try_new(artifact.into_parts())
+            .unwrap()
+            .node_count(),
+        5
+    );
+}
+
+#[test]
+fn conditional_shapes_and_branch_order_are_checked_as_branches_open() {
+    let a = Allocator::default();
+    let source = "if(a){x}else{y}";
+    let condition = || ExprRef::Js(JsExpr::parse_in(&a, "a", Span::new(3, 4)).unwrap());
+    let mut builder = Builder::new(&a, source).unwrap();
+    builder
+        .region()
+        .conditional(Span::new(0, 15), |branches, node| {
+            assert_eq!(
+                branches.branch(None, Span::new(0, 8), |_, _| {}),
+                Err(ArtifactError::InvalidIf {
+                    node,
+                    shape: crate::artifact::IfShape::LeadingElse
+                })
+            );
+            branches
+                .branch(Some(condition()), Span::new(0, 8), |region, _| {
+                    assert!(matches!(
+                        region.spread(condition(), Span::new(3, 4)),
+                        Err(ArtifactError::BindingWithoutOwner { .. })
+                    ));
+                })
+                .unwrap();
+            assert!(matches!(
+                branches.branch(None, Span::new(4, 15), |_, _| {}),
+                Err(ArtifactError::OutsideOwner { .. })
+            ));
+            branches.branch(None, Span::new(8, 15), |_, _| {}).unwrap();
+            assert_eq!(
+                branches.branch(Some(condition()), Span::new(8, 15), |_, _| {}),
+                Err(ArtifactError::InvalidIf {
+                    node,
+                    shape: crate::artifact::IfShape::NonTrailingElse
+                })
+            );
+        })
+        .unwrap();
+    let artifact = builder.finish().unwrap();
+    assert_eq!(
+        Artifact::try_new(artifact.into_parts())
+            .unwrap()
+            .node_count(),
+        1
+    );
+
+    let mut empty = Builder::new(&a, source).unwrap();
+    assert_eq!(
+        empty.region().conditional(Span::new(0, 15), |_, _| {}),
+        Err(ArtifactError::InvalidIf {
+            node: NodeId::FIRST,
+            shape: crate::artifact::IfShape::Empty
+        })
+    );
+    assert_eq!(
+        empty.finish().unwrap_err().error,
+        ArtifactError::UnfinishedOwner {
+            node: NodeId::FIRST
+        }
+    );
+}

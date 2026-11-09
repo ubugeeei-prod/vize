@@ -28,7 +28,7 @@ mod builder;
 mod check;
 mod features;
 pub(crate) use builder::ElementAllocation;
-pub use builder::{Builder, ComponentBody, ComponentFactory, RegionBuilder};
+pub use builder::{BranchBuilder, Builder, ComponentBody, ComponentFactory, RegionBuilder};
 pub use features::{LoweringFeatures, OpFamily};
 #[cfg(test)]
 mod tests;
