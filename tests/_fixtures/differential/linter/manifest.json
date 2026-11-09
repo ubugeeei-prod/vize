@@ -3125,6 +3125,44 @@
       }
     },
     {
+      "id": "linter/external-compat-12462-12468",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "external-compat-12462-12468",
+        "files": [
+          {
+            "path": "ExternalCompatibility.vue.txt",
+            "role": "issue-authored-regression-reproductions",
+            "sha256": "c2e19a103e087230c21a2f4cad1189706e5ee779d81512ed9451d6e7209dc4f9"
+          },
+          {
+            "path": "vite.config.mjs",
+            "role": "native-cli-config",
+            "sha256": "0aafe80bfc2d6bbfd3e2f9fa2634e5a555c018dca7852ccfb0b4c964b5708c52"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "js",
+              "ts"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/formatter-bind-style-policy-6098",
       "state": "active",
       "targets": [
