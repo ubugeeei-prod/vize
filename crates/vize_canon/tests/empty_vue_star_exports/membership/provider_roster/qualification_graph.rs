@@ -7,10 +7,16 @@ use dependency_ownership::{
     verify as verify_dependency_ownership_update,
 };
 mod create_fresco;
-use create_fresco::update as create_fresco_update;
+use create_fresco::{
+    CreateFrescoQualificationGraph, MANIFEST as CREATE_FRESCO_MANIFEST,
+    update as create_fresco_update, verify as verify_create_fresco_update,
+};
 mod docs_metadata;
-use docs_metadata::update as docs_metadata_update;
-mod integrated_graph;
+use docs_metadata::{
+    DocsMetadataQualificationGraph, MANIFEST as DOCS_METADATA_MANIFEST,
+    update as docs_metadata_update, verify as verify_docs_metadata_update,
+};
+mod js_tooling_refresh;
 mod strict_checker;
 use strict_checker::{authorize as authorize_strict_checker, update as strict_checker_update};
 mod fresco;
@@ -213,7 +219,6 @@ fn verify_lockfile_update(
     {
         return Err("exact resolver fixed point");
     }
-
     let workspace = std::str::from_utf8(graph.workspace).map_err(|_| "UTF-8 workspace manifest")?;
     if workspace
         .matches("  - \"tests/tooling/vue-setup-await-oracle\"")
@@ -484,10 +489,10 @@ pub(super) fn authorize(previous: &Value, lock: &[u8], package: &[u8]) -> Checke
     if authorize_strict_checker(&update, &predecessor_bytes, lock, package, &workspace).is_ok() {
         return Ok(Some(strict_update));
     }
-    let predecessor_bytes = fs::read(support::corpus().join(strict_checker::UPDATE))
-        .map_err(|_| "complete create-fresco qualification predecessor")?;
-    let update = integrated_graph::authorize_after_strict(
-        &strict_update,
+    let predecessor_bytes = fs::read(support::corpus().join(docs_metadata::UPDATE))
+        .map_err(|_| "complete JavaScript tooling refresh predecessor")?;
+    let update = js_tooling_refresh::authorize(
+        &docs_metadata_update(),
         &predecessor_bytes,
         lock,
         package,

@@ -13,6 +13,7 @@ use crate::support;
 
 use vize_l0::id::NodeId;
 use vize_l0::{Allocator, Span, String};
+use vize_l1::markup::parse;
 use vize_l1_to_l2::lower::{TextPart, rebuild_source};
 use vize_l1_to_l2::lower_preserving_comments;
 use vize_l1_to_l2::pass::TextFacts;
@@ -134,6 +135,21 @@ fn a_mixed_run_merges_into_one_compound_with_recorded_parts() {
             vec![("lower.text-fact", "parts=5", "fact static=3 dynamic=2")]
         );
     });
+    let allocator = Allocator::new();
+    let (tree, errors) = parse(&allocator, source);
+    let lowered = lower_preserving_comments(&allocator, &tree, &errors);
+    let [ExprRef::Js(name), ExprRef::Js(count)] = lowered.consumed_expressions.as_slice() else {
+        panic!(
+            "lint lowering did not retain compound expressions: {:?}",
+            lowered.consumed_expressions
+        );
+    };
+    assert_eq!((name.source, name.span), ("name", span_of(source, "name")));
+    let padded_count = span_of(source, " n ");
+    assert_eq!(
+        (count.source, count.span),
+        ("n", Span::new(padded_count.start + 1, padded_count.end - 1))
+    );
     assert_transformed_sound(source, "mixed-run");
 }
 

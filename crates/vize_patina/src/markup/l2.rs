@@ -13,6 +13,7 @@
 //! the view is built, so a walk does not scan that table per interpolation.
 
 use vize_atelier_jsx::l2::JsxL2Root;
+use vize_croquis::drawer::LintTemplate;
 use vize_l0::Allocator;
 use vize_l0::side_table::SideTable;
 use vize_l1::markup::{SurfaceError, SurfaceTree};
@@ -233,16 +234,14 @@ impl<'a> L2Template<'a> {
         &self.tree
     }
 
-    /// The complete L1/L2 facts consumed by Croquis lint analysis.
+    /// Borrow the complete neutral view needed by Croquis lint projection.
     #[inline]
-    pub fn lint_template(&self) -> vize_croquis::drawer::LintTemplate<'_, 'a> {
-        vize_croquis::drawer::LintTemplate::new(
-            &self.tree,
-            self.lowered.allocator,
-            &self.lowered.root,
-            &self.lowered.consumed_expressions,
-            self.lowered.caps.scoped_slot_attrs,
-        )
+    pub(crate) fn lint_template(&self) -> LintTemplate<'_, 'a> {
+        LintTemplate::new(&self.tree, self.lowered.allocator, &self.lowered.root)
+            .with_lowering_facts(
+                &self.lowered.consumed_expressions,
+                self.lowered.caps.scoped_slot_attrs,
+            )
     }
 }
 

@@ -4,7 +4,7 @@ use super::{Checked, Roots, support};
 use serde_json::{Value, json};
 use std::{fs, path::Path};
 
-mod dependency_followup;
+mod dependency_refresh;
 mod dependency_update;
 mod qualification_graph;
 
@@ -85,24 +85,20 @@ pub(super) fn apply(manifest: &mut Value, members: &mut Vec<Value>) {
         successor(members, &record).expect("only the six complete declared paths relocate");
     let (dependency_update, previous) = dependency_update::successor(&previous, &record)
         .expect("only the one complete dependency provider path relocates");
-    let (dependency_followup, current) =
-        dependency_followup::successor(&previous, &dependency_update)
-            .expect("only the six complete current provider paths relocate");
-    let provider_roles = dependency_followup::provider_roles(&record, &dependency_followup)
-        .expect("only the two current provider manifests relocate");
+    let (dependency_refresh, current, provider_record) =
+        dependency_refresh::successor(&previous, &dependency_update)
+            .expect("only the six complete dependency refresh paths relocate");
     *members = current;
-    manifest["provenance"]["currentProviderRoster"] = record;
-    manifest["provenance"]["currentProviderDependencyUpdate"] = dependency_update;
-    manifest["provenance"]["currentProviderDependencyFollowup"] = dependency_followup;
-    manifest["provenance"]["currentProviderRoles"] = provider_roles;
+    manifest["provenance"]["currentProviderRoster"] = provider_record;
+    manifest["provenance"]["currentProviderDependencyUpdate"] = dependency_refresh;
     if let Some(qualification) = qualification {
         manifest["provenance"]["currentProviderQualificationGraph"] = qualification;
     }
 }
 
-pub(super) fn validate(packet: &Value, roots: &Roots, expected: &Value) {
+pub(super) fn validate(packet: &Value, roots: &Roots, record: &Value) {
     let actual = packet["genuineQualifiedProviders"].as_array().unwrap();
-    let expected = expected.as_array().unwrap();
+    let expected = record["providerRoles"].as_array().unwrap();
     assert_eq!(actual.len(), 5);
     assert_eq!(expected.len(), 5);
     for (provider, binding) in actual.iter().zip(expected) {

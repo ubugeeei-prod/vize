@@ -328,6 +328,9 @@ test("passive native LSP capture retains the complete original Matrix workflow",
     assert.deepEqual(step, { ...oldStep, run });
     step.run = oldStep.run;
   }
+  // The matrix reader and final verdict also moved to their qualified Node
+  // successors. Authenticate the exact executable-only replacements before
+  // restoring the archived commands for the whole-workflow comparison.
   for (const [name, rustCommand, nodeCommand] of [
     [
       "Select and hydrate fixture shard",
@@ -348,12 +351,20 @@ test("passive native LSP capture retains the complete original Matrix workflow",
     const oldStep = oldSteps.find((step) => step.name === name);
     const step = steps.find((candidate) => candidate.name === name);
     assert.ok(oldStep && step);
-    const { run: oldRun, ...oldMetadata } = oldStep;
-    const { run, ...metadata } = step;
-    assert.deepEqual(metadata, oldMetadata);
-    assert.equal(run.includes(rustCommand), false);
-    const commandTokens = (command: string) => command.replaceAll("\\\n", " ").trim().split(/\s+/);
-    assert.deepEqual(commandTokens(run), commandTokens(oldRun.replace(rustCommand, nodeCommand)));
+    assert.equal(oldStep.run.split(rustCommand).length, 2);
+    assert.equal(step.run.split(nodeCommand).length, 2);
+    assert.equal(step.run.includes(rustCommand), false);
+    const normalizeRunBlock = (run: string) =>
+      run
+        .split("\n")
+        .map((line) => line.trimStart())
+        .join("\n")
+        .replace(/^\n+|\n+$/g, "");
+    assert.equal(
+      normalizeRunBlock(step.run.replace(nodeCommand, rustCommand)),
+      normalizeRunBlock(oldStep.run),
+    );
+    assert.deepEqual({ ...step, run: oldStep.run }, oldStep);
     step.run = oldStep.run;
   }
   // Retire only the unused compiler bootstrap; keep the archived workflow whole.

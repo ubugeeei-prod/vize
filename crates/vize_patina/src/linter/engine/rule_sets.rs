@@ -99,7 +99,6 @@ use crate::linter::sfc_scripts::SfcScripts;
 use crate::markup::L2Template;
 use vize_atelier_sfc::croquis::SfcCroquisOptions;
 use vize_croquis::Croquis;
-use vize_croquis::drawer::LintTemplate;
 use vize_l0::dialect::VueDialect;
 
 /// Document-level inputs shared by the template-rule passes.
@@ -150,16 +149,7 @@ pub(crate) fn analyze_descriptor_for_lint_with_template(
     } else {
         options
     };
-    let template = template.map(|template| {
-        let lowered = template.lowered();
-        LintTemplate::new(
-            template.surface(),
-            lowered.allocator,
-            &lowered.root,
-            &lowered.consumed_expressions,
-            lowered.caps.scoped_slot_attrs,
-        )
-    });
+    let template = template.map(crate::markup::L2Template::lint_template);
     match resolve_filename {
         Some(filename) => {
             vize_atelier_sfc::croquis::analyze_sfc_descriptor_with_lint_template_resolved(
@@ -211,16 +201,7 @@ pub(super) fn analyze_descriptor_for_component_reads(
     } else {
         options
     };
-    let template = template.map(|template| {
-        let lowered = template.lowered();
-        LintTemplate::new(
-            template.surface(),
-            lowered.allocator,
-            &lowered.root,
-            &lowered.consumed_expressions,
-            lowered.caps.scoped_slot_attrs,
-        )
-    });
+    let template = template.map(crate::markup::L2Template::lint_template);
     let (mut analysis, packet) = match resolve_filename {
         Some(filename) => {
             vize_atelier_sfc::croquis::analyze_sfc_descriptor_with_lint_template_and_occurrences_resolved(

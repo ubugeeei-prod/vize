@@ -39,7 +39,7 @@ test("the parse-only SFC facade excludes compiler dependencies transitively", ()
   assert.equal(
     dependencyNames.has("vize_l1_to_l2"),
     false,
-    "the parse-only graph must not retain the compiler lowering dependency",
+    "the parse-only graph must keep L1-to-L2 lowering test-only",
   );
   for (const forbidden of [
     "lightningcss",

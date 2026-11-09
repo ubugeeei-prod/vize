@@ -3,7 +3,7 @@
 use memchr::memchr;
 use oxc_allocator::CloneIn;
 use oxc_ast_visit::VisitMut;
-use vize_l0::{Box, Span};
+use vize_l0::{Box, Span, String};
 use vize_l1::markup::directive::{DirectivePrefix, DirectiveSyntax, VueDirectives};
 use vize_l1::markup::entity::{EntityContext, decode_one};
 use vize_l1::markup::{AttrValue, Attribute, Element, Token};
@@ -149,7 +149,6 @@ fn decode_html_entities(source: &str, context: EntityContext) -> vize_l0::String
             rest = after;
             continue;
         }
-
         if let Some((entity, after)) = decode_one(candidate.as_bytes(), context)
             .and_then(|(entity, consumed)| candidate.get(consumed..).map(|after| (entity, after)))
         {
@@ -157,7 +156,6 @@ fn decode_html_entities(source: &str, context: EntityContext) -> vize_l0::String
             rest = after;
             continue;
         }
-
         decoded.push('&');
         rest = candidate.strip_prefix('&').unwrap_or(candidate);
     }
@@ -276,4 +274,46 @@ pub(super) fn is_v_pre_head(name: &str) -> bool {
         .is_some_and(|directive| {
             directive.prefix == DirectivePrefix::Full && directive.name.slice(name) == "pre"
         })
+}
+
+#[cfg(test)]
+mod entity_tests {
+    use super::*;
+
+    #[test]
+    fn decodes_complete_named_and_numeric_references_in_both_contexts() {
+        for context in [EntityContext::Text, EntityContext::Attribute] {
+            assert_eq!(decode_html_entities("&fjlig;", context), "fj");
+            assert_eq!(decode_html_entities("&#128;", context), "€");
+            assert_eq!(decode_html_entities("&#55296;", context), "�");
+            assert_eq!(decode_html_entities("&#x; &#;", context), "&#x; &#;");
+        }
+    }
+
+    #[test]
+    fn applies_context_rules_to_unterminated_named_references() {
+        assert_eq!(
+            decode_html_entities("&amp=1 &timesX", EntityContext::Text),
+            "&=1 ×X"
+        );
+        assert_eq!(
+            decode_html_entities("&amp=1 &timesX", EntityContext::Attribute),
+            "&amp=1 &timesX"
+        );
+    }
+
+    #[test]
+    fn preserves_relief_escaped_parenthesis_compatibility() {
+        assert_eq!(
+            decode_html_entities(
+                "&amp;#40; &amp;#040; &amp;#41; &amp;#041; &amp;#42;",
+                EntityContext::Text,
+            ),
+            "( ( ) ) &#42;"
+        );
+        assert_eq!(
+            decode_html_entities("&amp;#40;", EntityContext::Attribute),
+            "&#40;"
+        );
+    }
 }

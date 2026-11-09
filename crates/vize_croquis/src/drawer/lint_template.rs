@@ -44,16 +44,32 @@ impl<'t, 'a> LintTemplate<'t, 'a> {
         surface: &'t SurfaceTree<'a>,
         allocator: &'a Allocator,
         root: &'t Region<'a>,
-        consumed_expressions: &'t [ExprRef<'a>],
-        legacy_slot_bindings: bool,
     ) -> Self {
         Self {
             surface,
             allocator,
             root,
-            consumed_expressions,
-            legacy_slot_bindings,
+            consumed_expressions: &[],
+            legacy_slot_bindings: false,
         }
+    }
+
+    /// Attach lowering facts that are not owned by neutral L2.
+    ///
+    /// Keeping these borrowed facts separate preserves Croquis's parse-only
+    /// dependency boundary while allowing the compatibility projection to
+    /// retain consumed expressions and dialect-specific slot syntax.
+    #[doc(hidden)]
+    #[must_use]
+    #[inline]
+    pub const fn with_lowering_facts(
+        mut self,
+        consumed_expressions: &'t [ExprRef<'a>],
+        legacy_slot_bindings: bool,
+    ) -> Self {
+        self.consumed_expressions = consumed_expressions;
+        self.legacy_slot_bindings = legacy_slot_bindings;
+        self
     }
 
     /// Original template source shared by both stages.
