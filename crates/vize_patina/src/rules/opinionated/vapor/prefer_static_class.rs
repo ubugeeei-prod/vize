@@ -294,9 +294,16 @@ mod tests {
     }
 
     #[test]
-    fn test_valid_template_literal_with_expression() {
+    fn test_valid_joined_template_literal_with_expression() {
         let linter = create_linter();
         let result = linter.lint_template(r#"<div :class="`prefix-${suffix}`"></div>"#, "test.vue");
+        assert_eq!(result.warning_count, 0);
+    }
+
+    #[test]
+    fn test_reports_standalone_template_literal_class() {
+        let linter = create_linter();
+        let result = linter.lint_template(r#"<div :class="`prefix ${suffix}`"></div>"#, "test.vue");
         assert_eq!(result.warning_count, 1);
     }
 

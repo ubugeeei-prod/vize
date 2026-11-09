@@ -23,6 +23,10 @@ export default {
       "vize/vue/prefer-true-attribute-shorthand": "off",
       "vize/vue/require-component-is": "off",
       "vize/vue/v-on-handler-style": "off",
+      // Complete static-class detection now includes movable items inside
+      // dynamic arrays and template literals. Existing authored apps have not
+      // completed that migration, so keep the repository exception local.
+      "vize/vapor/prefer-static-class": "off",
     },
   },
 };

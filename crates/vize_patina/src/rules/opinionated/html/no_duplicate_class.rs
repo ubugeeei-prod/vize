@@ -248,6 +248,16 @@ mod tests {
     }
 
     #[test]
+    fn test_dynamic_template_prefixes_are_not_complete_classes() {
+        let linter = create_linter();
+        let result = linter.lint_template(
+            r#"<div :class="[`badge--${variant}`, `badge--${size}`]" />"#,
+            "test.vue",
+        );
+        assert_eq!(result.warning_count, 0, "{:?}", result.diagnostics);
+    }
+
+    #[test]
     fn test_invalid_duplicate_class() {
         let linter = create_linter();
         let result = linter.lint_template(r#"<div class="btn btn primary">x</div>"#, "test.vue");

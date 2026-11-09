@@ -1,4 +1,4 @@
-use oxc_ast::ast::{Expression, ObjectPropertyKind, PropertyKey};
+use oxc_ast::ast::{Expression, ObjectPropertyKind, PropertyKey, TemplateElement};
 use oxc_span::{GetSpan, Span};
 use oxc_syntax::operator::BinaryOperator;
 
@@ -35,20 +35,31 @@ fn collect_possible_static_parts<'a>(
         }),
         Expression::TemplateLiteral(template) => {
             let group = Some(template.span());
-            for quasi in &template.quasis {
-                parts.push(StaticClassPart {
-                    text: quasi
-                        .value
-                        .cooked
-                        .as_ref()
-                        .map_or_else(|| quasi.value.raw.as_str(), |value| value.as_str()),
-                    span: quasi.span,
-                    unconditional,
-                    shared_group: group,
-                });
+            for (index, quasi) in template.quasis.iter().enumerate() {
+                let text = template_element_text(quasi);
+                if let Some(text) = complete_template_segment(
+                    text,
+                    index == 0 || starts_with_ascii_whitespace(text),
+                    index == template.expressions.len() || ends_with_ascii_whitespace(text),
+                ) {
+                    parts.push(StaticClassPart {
+                        text,
+                        span: quasi.span,
+                        unconditional,
+                        shared_group: group,
+                    });
+                }
             }
-            for expression in &template.expressions {
-                collect_possible_static_parts(expression, unconditional, group, parts);
+            for (index, expression) in template.expressions.iter().enumerate() {
+                let left = template_element_text(&template.quasis[index]);
+                let right = template_element_text(&template.quasis[index + 1]);
+                let left_bounded =
+                    (index == 0 && left.is_empty()) || ends_with_ascii_whitespace(left);
+                let right_bounded = (index + 1 == template.quasis.len() - 1 && right.is_empty())
+                    || starts_with_ascii_whitespace(right);
+                if left_bounded && right_bounded {
+                    collect_possible_static_parts(expression, unconditional, group, parts);
+                }
             }
         }
         Expression::ArrayExpression(array) => {
@@ -100,17 +111,20 @@ pub(crate) fn unconditional_static_parts<'a>(
             shared_group: None,
         }),
         Expression::TemplateLiteral(template) => {
-            for quasi in &template.quasis {
-                parts.push(StaticClassPart {
-                    text: quasi
-                        .value
-                        .cooked
-                        .as_ref()
-                        .map_or_else(|| quasi.value.raw.as_str(), |value| value.as_str()),
-                    span: quasi.span,
-                    unconditional: true,
-                    shared_group: None,
-                });
+            for (index, quasi) in template.quasis.iter().enumerate() {
+                let text = template_element_text(quasi);
+                if let Some(text) = complete_template_segment(
+                    text,
+                    index == 0 || starts_with_ascii_whitespace(text),
+                    index == template.expressions.len() || ends_with_ascii_whitespace(text),
+                ) {
+                    parts.push(StaticClassPart {
+                        text,
+                        span: quasi.span,
+                        unconditional: true,
+                        shared_group: None,
+                    });
+                }
             }
         }
         Expression::ArrayExpression(array) => {
@@ -139,6 +153,48 @@ pub(crate) fn unconditional_static_parts<'a>(
         }
         _ => {}
     }
+}
+
+fn template_element_text<'a>(element: &'a TemplateElement<'a>) -> &'a str {
+    element
+        .value
+        .cooked
+        .as_ref()
+        .map_or_else(|| element.value.raw.as_str(), |value| value.as_str())
+}
+
+fn starts_with_ascii_whitespace(text: &str) -> bool {
+    text.as_bytes()
+        .first()
+        .is_some_and(|byte| byte.is_ascii_whitespace())
+}
+
+fn ends_with_ascii_whitespace(text: &str) -> bool {
+    text.as_bytes()
+        .last()
+        .is_some_and(|byte| byte.is_ascii_whitespace())
+}
+
+/// Return only the class tokens whose two boundaries are authored whitespace
+/// (or the ends of the template literal). A fragment such as `badge--` in
+/// `` `badge--${variant}` `` is not a class by itself and cannot be moved to a
+/// static attribute or compared with another dynamic prefix.
+fn complete_template_segment(text: &str, left_bounded: bool, right_bounded: bool) -> Option<&str> {
+    let mut start = 0;
+    let mut end = text.len();
+    if !left_bounded {
+        start = text
+            .find(|character: char| character.is_ascii_whitespace())
+            .map(|index| index + 1)?;
+    }
+    if !right_bounded {
+        end = text[..end].rfind(|character: char| character.is_ascii_whitespace())?;
+    }
+    if start >= end {
+        return None;
+    }
+    let segment = text[start..end].trim_matches(|character: char| character.is_ascii_whitespace());
+    (!segment.is_empty()).then_some(segment)
 }
 
 fn static_property_key<'a>(
