@@ -161,11 +161,17 @@ pub(crate) fn run_direct(args: &CheckArgs) {
     let mut shared = super::shared_declarations::SharedDeclarations::default();
     // Referenced programs of one shell reach mostly the same packages.
     let mut import_session = LocalImportSession::default();
+    let program_concurrency = vize_canon::BatchTypeChecker::program_concurrency_limit(
+        candidates.len(),
+        settings.checkers,
+    );
     // Preparation shares the path and package caches, so it stays serial. Each
-    // native check owns its checker and overlaps the next preparation; programs
-    // sharing a mirror take turns, since its materialize lock wait times out.
+    // native check owns its checker and overlaps the next preparation, up to
+    // one machine checker budget. Programs sharing a mirror take turns, since
+    // its materialize lock wait times out.
     let (checked, preparation_error) = super::overlap::prepare_and_check_overlapped(
         candidates,
+        program_concurrency,
         |candidate, program_concurrency| {
             let mut settings = settings.clone();
             settings.program_concurrency = program_concurrency;

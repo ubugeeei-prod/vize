@@ -10,6 +10,7 @@ use std::thread::ScopedJoinHandle;
 /// preparation error stops preparing.
 pub(super) fn prepare_and_check_overlapped<T, P, R, E>(
     items: Vec<T>,
+    program_concurrency: usize,
     mut prepare: impl FnMut(T, usize) -> Result<Option<P>, E>,
     key: impl Fn(&P) -> PathBuf,
     check: impl Fn(P) -> R + Sync,
@@ -23,7 +24,7 @@ where
         let mut results = Vec::new();
         let mut running: Vec<(usize, PathBuf, ScopedJoinHandle<'_, R>)> = Vec::new();
         let mut error = None;
-        let program_concurrency = items.len().max(1);
+        let program_concurrency = program_concurrency.max(1);
         for item in items {
             let prepared = match prepare(item, program_concurrency) {
                 Ok(Some(prepared)) => prepared,
@@ -39,6 +40,14 @@ where
                 .partition(|(_, running_root, _)| *running_root == root);
             running = other;
             for (index, _, handle) in shared {
+                finish(&mut results, index, handle);
+            }
+            while running.len() >= program_concurrency {
+                let finished = running
+                    .iter()
+                    .position(|(_, _, handle)| handle.is_finished())
+                    .unwrap_or(0);
+                let (index, _, handle) = running.remove(finished);
                 finish(&mut results, index, handle);
             }
             running.push((results.len(), root, scope.spawn(move || check(prepared))));
@@ -64,7 +73,7 @@ fn finish<R>(results: &mut [Option<R>], index: usize, handle: ScopedJoinHandle<'
 mod tests {
     use std::path::PathBuf;
     use std::sync::Mutex;
-    use std::sync::atomic::{AtomicBool, Ordering};
+    use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
     use std::sync::mpsc;
     use std::time::Duration;
 
@@ -76,6 +85,7 @@ mod tests {
         let second_prepared = Mutex::new(second_prepared);
         let (results, error) = prepare_and_check_overlapped(
             vec![0, 1],
+            2,
             |item: usize, concurrency| {
                 assert_eq!(concurrency, 2);
                 if item == 1 {
@@ -102,6 +112,7 @@ mod tests {
         let prepared = Mutex::new(Vec::new());
         let (results, error) = prepare_and_check_overlapped(
             vec![0, 1, 2, 3],
+            4,
             |item: usize, concurrency| {
                 assert_eq!(concurrency, 4);
                 prepared.lock().unwrap().push(item);
@@ -123,5 +134,30 @@ mod tests {
         assert_eq!(results, vec![(0, true), (1, true)]);
         assert_eq!(error, Some("failed"));
         assert_eq!(*prepared.lock().unwrap(), vec![0, 1, 2, 3]);
+    }
+
+    #[test]
+    fn checks_stay_within_the_program_limit() {
+        let active = AtomicUsize::new(0);
+        let peak = AtomicUsize::new(0);
+        let (results, error) = prepare_and_check_overlapped(
+            vec![0, 1, 2, 3],
+            2,
+            |item, concurrency| {
+                assert_eq!(concurrency, 2);
+                Ok::<_, ()>(Some(item))
+            },
+            |item| PathBuf::from(item.to_string()),
+            |item| {
+                let current = active.fetch_add(1, Ordering::SeqCst) + 1;
+                peak.fetch_max(current, Ordering::SeqCst);
+                std::thread::sleep(Duration::from_millis(20));
+                active.fetch_sub(1, Ordering::SeqCst);
+                item
+            },
+        );
+        assert_eq!(results, [0, 1, 2, 3]);
+        assert_eq!(error, None);
+        assert_eq!(peak.load(Ordering::SeqCst), 2);
     }
 }
