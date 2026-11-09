@@ -32,7 +32,7 @@ export function assertVizeVueCompatShim(plugins, forbiddenHost) {
     assert.equal(descriptor.configurable, true);
   }
   assert.deepEqual(Object.getOwnPropertyDescriptor(api, "version"), {
-    value: "6.0.7",
+    value: "6.0.10",
     writable: true,
     enumerable: true,
     configurable: true,

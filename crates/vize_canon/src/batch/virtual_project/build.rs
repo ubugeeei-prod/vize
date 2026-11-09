@@ -65,6 +65,9 @@ pub(super) struct RegisteredFile {
     pub(super) empty_module_exports: bool,
     pub(super) module_exports: Option<Box<[vize_croquis::script_parser::AuthoredModuleExport]>>,
     pub(super) star_projection: Option<super::star_exports::StarProjection>,
+    /// A template that leaves `checkUnknownProps` off: vue-tsc declares its
+    /// props fallback for such a file (#11628).
+    pub(super) props_fallback: bool,
 }
 
 pub(super) fn build_registered_file(
@@ -287,6 +290,11 @@ pub(super) fn build_vue_registered_file(
     Ok(RegisteredFile {
         diagnostic_route,
         star_projection,
+        props_fallback: !super::vue_compiler_comments::apply(
+            content,
+            context.virtual_ts_check_options,
+        )
+        .check_unknown_props,
         file: VirtualFile {
             content: rewritten.code,
             source_map,

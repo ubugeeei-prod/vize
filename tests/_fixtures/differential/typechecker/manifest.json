@@ -13659,6 +13659,55 @@
       }
     },
     {
+      "id": "typechecker/regression/generic-library-unknown-props-11628",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "generic-library-unknown-props-11628/library.ts.txt",
+          "sha256": "60e43ccbb0e31c9e3cffb9a86f3d4ab49a4c5e3ebdf54d74ad5e00b2cb86445b",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "generic-library-unknown-props-11628/Pin.vue.txt",
+          "sha256": "d14602ef50254f3916afcccdc6822ad3a10f57225df109c8b168efd5e1bb0a1f",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "generic-library-unknown-props-11628/PinOptIn.vue.txt",
+          "sha256": "917bb6950b4a8092a60ac8458ac5c067401971eca2deda7906e3e2d90d7d7126",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "generic-library-unknown-props-11628/tsconfig-strict.json.txt",
+          "sha256": "5d45b6e39dd2c370e9595b9ebf646f09da266e418a74e6a361071a5aec35c4a7",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "generic-library-unknown-props-11628/tsconfig-open.json.txt",
+          "sha256": "517984e4e045aae840a5b14beada992cab8cf4e169192d89810caf01bc965b8d",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "generic_library_children::checked_unknown_props_reach_generic_library_children; exact #11628 library, SFC and strict/open configs are consumed by the batch regression, including file-comment opt-in. Input-only registration, no native diagnostic pack."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/regression/generic-parameter-generated-names-11485",
       "state": "active",
       "targets": [

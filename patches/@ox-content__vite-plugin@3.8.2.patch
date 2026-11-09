@@ -1,0 +1,144 @@
+diff --git a/dist/dev-server.cjs b/dist/dev-server.cjs
+index 169881d..07abae8 100644
+--- a/dist/dev-server.cjs
++++ b/dist/dev-server.cjs
+@@ -1068,6 +1068,34 @@ function applyHeaderLogoHref(html, homeHref) {
+ 	const escaped = homeHref.replaceAll("&", "&amp;").replaceAll("\"", "&quot;");
+ 	return html.slice(0, valueStart) + escaped + html.slice(valueEnd);
+ }
++// Vize docs integration: repair the native core before native asset hashing.
++// Remove this patch once the pinned provider ships an equivalent anchor lookup.
++function vizeRepairSsgHashTargets(html) {
++	const start = "<!-- ox-content:scripts:start -->";
++	const end = "<!-- ox-content:scripts:end -->";
++	const prefix = 'const mobileMenuBtn = document.querySelector("[data-mobile-menu]"),\n';
++	const lookup = "document.querySelector(hash)";
++	const scroll = "const scrollToHash = () => {";
++	if (html.split(start).length !== 2 || html.split(end).length !== 2 || html.split(prefix).length !== 2) throw new Error("Vize docs: unsupported Ox Content core markers");
++	const first = html.indexOf(prefix);
++	const last = html.indexOf("</script>", first);
++	if (first < html.indexOf(start) || last <= first || last > html.indexOf(end)) throw new Error("Vize docs: invalid Ox Content core section");
++	const core = html.slice(first, last);
++	if (core.includes("oxContentHashTarget")) throw new Error("Vize docs: Ox Content core hash helper collision");
++	if (core.split(scroll).length !== 2 || core.split(lookup).length !== 3) throw new Error("Vize docs: expected exactly two owned Ox Content hash lookups");
++	const anchorFirst = core.indexOf(scroll);
++	const safeLookup = `const oxContentHashTarget = (hash) => {
++  if (!hash || hash[0] !== "#") return null;
++  const raw = hash.slice(1);
++  let decoded = raw;
++  try { decoded = decodeURIComponent(raw); } catch {}
++  const target = document.getElementById(decoded) || document.getElementById(raw);
++  if (target) return target;
++  try { return document.querySelector(hash); } catch { return null; }
++};`;
++	const repaired = core.slice(0, anchorFirst) + safeLookup + "\n\n" + core.slice(anchorFirst).replaceAll(lookup, "oxContentHashTarget(hash)");
++	return html.slice(0, first) + repaired + html.slice(last);
++}
+ async function externalizeSharedPageAssets(pages, outDir, base) {
+ 	const optimized = (await require_napi.importNapiModule()).externalizeSsgAssets(pages, outDir, base);
+ 	await Promise.all(optimized.assets.map(async (asset) => {
+@@ -1564,7 +1592,7 @@ async function generateBuiltInHtmlPagesBatch(context, pageResults, errors) {
+ 	const mod = await require_napi.importNapiModule();
+ 	const generatePages = mod.generateSsgHtmlPages;
+ 	if (!generatePages) return;
+-	const generatePagesExternalized = mod.generateSsgHtmlPagesExternalized;
++	const generatePagesExternalized = void 0;
+ 	const prepared = pageResults.map((pageResult) => {
+ 		const markdownSource = pageMarkdownSourceHref(context, pageResult);
+ 		return {
+@@ -1946,8 +1974,9 @@ async function writeGeneratedPages(generatedPages, preExternalizedAssets, contex
+ 		await fs_promises.writeFile(asset.outputPath, asset.content, "utf-8");
+ 	}));
+ 	generatedFiles.push(...preExternalizedAssets.map((asset) => asset.outputPath));
+-	const optimizedOutput = context.ssgOptions.externalizeAssets !== false ? await externalizePendingPageAssets(generatedPages, context.outDir, context.base) : {
+-		pages: generatedPages,
++	const preparedPages = context.ssgOptions.bare ? generatedPages : generatedPages.map((page) => ({ ...page, html: vizeRepairSsgHashTargets(page.html) }));
++	const optimizedOutput = context.ssgOptions.externalizeAssets !== false ? await externalizePendingPageAssets(preparedPages, context.outDir, context.base) : {
++		pages: preparedPages,
+ 		assets: []
+ 	};
+ 	generatedFiles.push(...optimizedOutput.assets);
+diff --git a/dist/dev-server.mjs b/dist/dev-server.mjs
+index 4755f15..35ff713 100644
+--- a/dist/dev-server.mjs
++++ b/dist/dev-server.mjs
+@@ -1066,6 +1066,34 @@ function applyHeaderLogoHref(html, homeHref) {
+ 	const escaped = homeHref.replaceAll("&", "&amp;").replaceAll("\"", "&quot;");
+ 	return html.slice(0, valueStart) + escaped + html.slice(valueEnd);
+ }
++// Vize docs integration: repair the native core before native asset hashing.
++// Remove this patch once the pinned provider ships an equivalent anchor lookup.
++function vizeRepairSsgHashTargets(html) {
++	const start = "<!-- ox-content:scripts:start -->";
++	const end = "<!-- ox-content:scripts:end -->";
++	const prefix = 'const mobileMenuBtn = document.querySelector("[data-mobile-menu]"),\n';
++	const lookup = "document.querySelector(hash)";
++	const scroll = "const scrollToHash = () => {";
++	if (html.split(start).length !== 2 || html.split(end).length !== 2 || html.split(prefix).length !== 2) throw new Error("Vize docs: unsupported Ox Content core markers");
++	const first = html.indexOf(prefix);
++	const last = html.indexOf("</script>", first);
++	if (first < html.indexOf(start) || last <= first || last > html.indexOf(end)) throw new Error("Vize docs: invalid Ox Content core section");
++	const core = html.slice(first, last);
++	if (core.includes("oxContentHashTarget")) throw new Error("Vize docs: Ox Content core hash helper collision");
++	if (core.split(scroll).length !== 2 || core.split(lookup).length !== 3) throw new Error("Vize docs: expected exactly two owned Ox Content hash lookups");
++	const anchorFirst = core.indexOf(scroll);
++	const safeLookup = `const oxContentHashTarget = (hash) => {
++  if (!hash || hash[0] !== "#") return null;
++  const raw = hash.slice(1);
++  let decoded = raw;
++  try { decoded = decodeURIComponent(raw); } catch {}
++  const target = document.getElementById(decoded) || document.getElementById(raw);
++  if (target) return target;
++  try { return document.querySelector(hash); } catch { return null; }
++};`;
++	const repaired = core.slice(0, anchorFirst) + safeLookup + "\n\n" + core.slice(anchorFirst).replaceAll(lookup, "oxContentHashTarget(hash)");
++	return html.slice(0, first) + repaired + html.slice(last);
++}
+ async function externalizeSharedPageAssets(pages, outDir, base) {
+ 	const optimized = (await importNapiModule()).externalizeSsgAssets(pages, outDir, base);
+ 	await Promise.all(optimized.assets.map(async (asset) => {
+@@ -1562,7 +1590,7 @@ async function generateBuiltInHtmlPagesBatch(context, pageResults, errors) {
+ 	const mod = await importNapiModule();
+ 	const generatePages = mod.generateSsgHtmlPages;
+ 	if (!generatePages) return;
+-	const generatePagesExternalized = mod.generateSsgHtmlPagesExternalized;
++	const generatePagesExternalized = void 0;
+ 	const prepared = pageResults.map((pageResult) => {
+ 		const markdownSource = pageMarkdownSourceHref(context, pageResult);
+ 		return {
+@@ -1944,8 +1972,9 @@ async function writeGeneratedPages(generatedPages, preExternalizedAssets, contex
+ 		await fs$1.writeFile(asset.outputPath, asset.content, "utf-8");
+ 	}));
+ 	generatedFiles.push(...preExternalizedAssets.map((asset) => asset.outputPath));
+-	const optimizedOutput = context.ssgOptions.externalizeAssets !== false ? await externalizePendingPageAssets(generatedPages, context.outDir, context.base) : {
+-		pages: generatedPages,
++	const preparedPages = context.ssgOptions.bare ? generatedPages : generatedPages.map((page) => ({ ...page, html: vizeRepairSsgHashTargets(page.html) }));
++	const optimizedOutput = context.ssgOptions.externalizeAssets !== false ? await externalizePendingPageAssets(preparedPages, context.outDir, context.base) : {
++		pages: preparedPages,
+ 		assets: []
+ 	};
+ 	generatedFiles.push(...optimizedOutput.assets);
+diff --git a/dist/index.cjs b/dist/index.cjs
+index 9495fb0..cdcfe1e 100644
+--- a/dist/index.cjs
++++ b/dist/index.cjs
+@@ -2306,6 +2306,7 @@ function createSsgPlugin(resolvedOptions, getRoot, ssgDevCache) {
+ 				for (const error of result.errors) console.warn(`[ox-content] ${error}`);
+ 			} catch (err) {
+ 				console.error("[ox-content] SSG build failed:", err);
++				if (err instanceof Error && err.message.startsWith("Vize docs:")) throw err;
+ 				if (err instanceof require_resolve_options.PageResourceError || err instanceof require_resolve_options.BlogFeedError) throw err;
+ 			}
+ 		}
+diff --git a/dist/index.mjs b/dist/index.mjs
+index 3628887..daae3fc 100644
+--- a/dist/index.mjs
++++ b/dist/index.mjs
+@@ -2300,6 +2300,7 @@ function createSsgPlugin(resolvedOptions, getRoot, ssgDevCache) {
+ 				for (const error of result.errors) console.warn(`[ox-content] ${error}`);
+ 			} catch (err) {
+ 				console.error("[ox-content] SSG build failed:", err);
++				if (err instanceof Error && err.message.startsWith("Vize docs:")) throw err;
+ 				if (err instanceof PageResourceError || err instanceof BlogFeedError) throw err;
+ 			}
+ 		}

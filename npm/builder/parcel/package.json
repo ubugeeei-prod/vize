@@ -55,8 +55,8 @@
     "@parcel/plugin": "2.16.4",
     "@parcel/source-map": "2.1.1",
     "@vizejs/native": "workspace:*",
-    "diff": "8.0.4",
-    "magic-string": "0.30.21",
+    "diff": "9.0.0",
+    "magic-string": "1.4.5",
     "oxc-parser": "catalog:oxc"
   },
   "devDependencies": {
@@ -64,9 +64,9 @@
     "@parcel/core": "2.16.4",
     "@parcel/transformer-sass": "2.16.4",
     "@parcel/types": "2.16.4",
-    "@playwright/test": "1.56.1",
+    "@playwright/test": "1.65.0",
     "@types/node": "catalog:typescript",
-    "sass": "1.93.2",
+    "sass": "1.108.1",
     "typescript": "catalog:typescript",
     "vite-plus": "catalog:vite-stack",
     "vue": "catalog:vue-stable"

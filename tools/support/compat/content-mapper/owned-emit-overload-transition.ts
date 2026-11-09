@@ -14,7 +14,7 @@ const preamblePath = "crates/vize_canon/src/virtual_ts/helpers/preamble.rs";
 const previousOwnerHash = "ede8a64664b4f16e139b909b77ce10fd911fa11164ed5eff53ad07b4bb1d4d30";
 const currentOwnerHash = "e54377ca91f2ba56f96d735c2116744e39b7c8c1559a387065e54272c40a8b22";
 const previousPreambleHash = "38c8e437524c3983a57d089febbf49ac4898ddfc1318672ded78608728c0dde6";
-const currentPreambleHash = "15ad52d5dbc3166ba6fb5d7386515b6929064862ac530795c6a56525b539076e";
+const currentPreambleHash = "a8ef812b81fda63ef7d2f9104cccffaa5330df2ab5ea4e49360410536f0e4464";
 const stableSourceHashes = [
   [
     "crates/vize_canon/src/virtual_ts/generator/emits.rs",

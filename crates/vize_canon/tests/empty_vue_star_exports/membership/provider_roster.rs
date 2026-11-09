@@ -4,6 +4,7 @@ use super::{Checked, Roots, support};
 use serde_json::{Value, json};
 use std::{fs, path::Path};
 
+mod dependency_update;
 mod qualification_graph;
 
 fn load() -> Value {
@@ -12,7 +13,7 @@ fn load() -> Value {
             .unwrap();
     assert_eq!(
         support::hash(&bytes),
-        "ad428607e450f807b15e9301d429fcbee7fe67729b52130f2d7e63c2f0cf1e0f"
+        "9e1d29212711ee9f150050e668fc77fdb08c832af96ac80c725194c782a3a909"
     );
     let record: Value = serde_json::from_slice(&bytes).unwrap();
     assert_eq!(record["version"], 1);
@@ -79,8 +80,13 @@ pub(super) fn apply(manifest: &mut Value, members: &mut Vec<Value>) {
     let package = fs::read(support::repository().join("package.json")).unwrap();
     let qualification = qualification_graph::authorize(&record, &lock, &package)
         .expect("the captured graph is never a substitute for the reviewed final graph");
-    *members = successor(members, &record).expect("only the six complete declared paths relocate");
+    let previous =
+        successor(members, &record).expect("only the six complete declared paths relocate");
+    let (dependency_update, current) = dependency_update::successor(&previous, &record)
+        .expect("only the one complete dependency provider path relocates");
+    *members = current;
     manifest["provenance"]["currentProviderRoster"] = record;
+    manifest["provenance"]["currentProviderDependencyUpdate"] = dependency_update;
     if let Some(qualification) = qualification {
         manifest["provenance"]["currentProviderQualificationGraph"] = qualification;
     }

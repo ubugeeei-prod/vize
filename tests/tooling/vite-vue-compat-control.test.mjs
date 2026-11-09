@@ -34,7 +34,7 @@ function shim(
       set exclude(value) {
         onAccess(value);
       },
-      version: "6.0.7",
+      version: "6.0.10",
     },
   };
 }

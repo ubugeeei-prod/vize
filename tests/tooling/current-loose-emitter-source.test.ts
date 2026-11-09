@@ -114,6 +114,8 @@ void test("the complete source preamble reconstructs the unchanged runtime and h
     read,
     [
       predecessorRead(decl + "shared-header.d.ts.txt"),
+      predecessorRead(decl + "props-fallback.d.ts.txt"),
+      predecessorRead(decl + "shared-helpers-banner.d.ts.txt"),
       predecessorRead(decl + "core-types.d.ts.txt"),
       predecessorRead(decl + "vue3-types.d.ts.txt"),
       predecessorRead(decl + "prop-keys.d.ts.txt"),

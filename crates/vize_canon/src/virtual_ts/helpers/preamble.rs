@@ -94,20 +94,34 @@ pub(crate) const EMIT_PROPS_HELPER: &str = include_str!("declarations/emit-props
 
 pub const SHARED_PREAMBLE_FILE_NAME: &str = "__vize_helpers.d.ts";
 
-pub const SHARED_PREAMBLE_DTS: &str = concat!(
-    include_str!("declarations/shared-header.d.ts.txt"),
-    vue_type_helpers_text!(),
-    include_str!("declarations/shared-template-refs.d.ts.txt"),
-    include_str!("declarations/shared-slot-resolver.d.ts.txt"),
-    include_str!("declarations/shared-slot-payload.d.ts.txt"),
-    emit_overload_helpers_text!(),
-    include_str!("declarations/shared-emit-props.d.ts.txt"),
-    include_str!("declarations/shared-emit-inference.d.ts.txt"),
-    include_str!("declarations/shared-listener-args.d.ts.txt"),
-    include_str!("declarations/component-checks.d.ts.txt"),
-    include_str!("declarations/shared-macros.d.ts.txt"),
-    include_str!("pattern_matching.d.ts")
-);
+/// The program-wide checker preamble. vue-tsc declares its props fallback only
+/// for files that leave `checkUnknownProps` off, so the fallback is a segment.
+macro_rules! shared_preamble_text {
+    ($props_fallback:expr) => {
+        concat!(
+            include_str!("declarations/shared-header.d.ts.txt"),
+            $props_fallback,
+            include_str!("declarations/shared-helpers-banner.d.ts.txt"),
+            vue_type_helpers_text!(),
+            include_str!("declarations/shared-template-refs.d.ts.txt"),
+            include_str!("declarations/shared-slot-resolver.d.ts.txt"),
+            include_str!("declarations/shared-slot-payload.d.ts.txt"),
+            emit_overload_helpers_text!(),
+            include_str!("declarations/shared-emit-props.d.ts.txt"),
+            include_str!("declarations/shared-emit-inference.d.ts.txt"),
+            include_str!("declarations/shared-listener-args.d.ts.txt"),
+            include_str!("declarations/component-checks.d.ts.txt"),
+            include_str!("declarations/shared-macros.d.ts.txt"),
+            include_str!("pattern_matching.d.ts")
+        )
+    };
+}
+
+/// Preamble of a program with at least one file that leaves `checkUnknownProps` off.
+pub const SHARED_PREAMBLE_DTS: &str =
+    shared_preamble_text!(include_str!("declarations/props-fallback.d.ts.txt"));
+/// Preamble of a program whose every file checks unknown props (#11628).
+pub const SHARED_PREAMBLE_STRICT_DTS: &str = shared_preamble_text!("");
 
 pub const DECLARATION_HELPERS_DTS: &str = concat!(
     "// Shared helper types for vize-generated declaration files.\n",
