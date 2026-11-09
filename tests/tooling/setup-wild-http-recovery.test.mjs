@@ -86,7 +86,7 @@ void test("Wild delegation is complementary for every unsupported host or input"
           assert.equal(applies(steps[0].if, values), !owned);
         }
 });
-void test("Core PR gates and canonical SSR-Pug use the recovery adapter", () => {
+void test("Core PR gates and every canonical observer use the recovery adapter", () => {
   const pr = parse(fs.readFileSync(".github/workflows/pr-source-checks.yml", "utf8"));
   const local = "./.github/actions/setup-wild-http-recovery";
   assert.equal(pr.jobs["pr-playground-test"].steps.filter((s) => s.uses === local).length, 1);
@@ -112,13 +112,12 @@ void test("Core PR gates and canonical SSR-Pug use the recovery adapter", () => 
   assert.deepEqual(
     steps.find((s) => s.uses === local),
     {
-      name: "Setup Wild linker recovery (SSR-Pug)",
-      if: "${{ matrix.observer == 'ssr-pug' }}",
+      name: "Setup Wild linker recovery",
       uses: local,
       with: { "wild-version": "0.9.0" },
     },
   );
-  assert.equal(steps.find((s) => s.uses === upstream).if, "${{ matrix.observer != 'ssr-pug' }}");
+  assert.equal(steps.find((s) => s.uses === upstream), undefined);
 });
 void test("Expanded primary success equals original stdout/stderr/files/config and removes archive", () =>
   fixture(({ run }) => {
