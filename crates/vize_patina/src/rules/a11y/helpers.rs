@@ -236,7 +236,10 @@ pub fn has_event_handler(element: &ElementNode, event_name: &str) -> bool {
 }
 
 /// Elements that do not support ARIA attributes
-pub const ARIA_UNSUPPORTED_ELEMENTS: &[&str] = &["meta", "html", "script", "style"];
+pub const ARIA_UNSUPPORTED_ELEMENTS: &[&str] = &[
+    "base", "col", "colgroup", "head", "html", "link", "meta", "noembed", "noscript", "param",
+    "picture", "script", "source", "style", "title", "track",
+];
 
 /// Mapping of elements to their implicit ARIA roles
 pub fn get_implicit_role(tag: &str, element: &ElementNode) -> Option<&'static str> {

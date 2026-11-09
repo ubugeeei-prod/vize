@@ -3,7 +3,7 @@
 //! Require focus/blur events with mouseenter/mouseleave events.
 //!
 //! Mouse-only event handlers exclude keyboard and touch users.
-//! `@mouseenter`/`@mouseover` should be paired with `@focus` or `@focusin`,
+//! `@mouseenter`/`@mouseover`/`@hover` should be paired with `@focus` or `@focusin`,
 //! and `@mouseleave`/`@mouseout` should be paired with `@blur` or `@focusout`.
 //!
 //! ## Examples
@@ -22,7 +22,7 @@ use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::markup::{MarkupBindingKind, MarkupContext, MarkupElement, MarkupRule};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use vize_relief::{ElementNode, ElementType};
+use vize_relief::ElementNode;
 
 use super::helpers::{has_event_handler, is_aria_hidden_true, is_presentation_role};
 use super::markup_helpers;
@@ -92,12 +92,28 @@ impl MarkupRule for MouseEventsHaveKeyEvents {
     }
 
     fn enter_element<'a>(&self, ctx: &mut MarkupContext<'_, 'a>, element: &MarkupElement<'a>) {
-        if element.is_component() || Self::is_markup_opt_out(element) {
+        if Self::is_markup_opt_out(element) {
+            return;
+        }
+
+        let has_hover = Self::has_static_event_handler(element, "hover");
+        if element.is_component() {
+            if has_hover
+                && !Self::has_static_event_handler(element, "focus")
+                && !Self::has_static_event_handler(element, "focusin")
+            {
+                let message = ctx
+                    .lint()
+                    .t("a11y/mouse-events-have-key-events.message_hover");
+                let help = ctx.lint().t("a11y/mouse-events-have-key-events.help");
+                ctx.lint().warn_at_with_help(message, element.range(), help);
+            }
             return;
         }
 
         let has_mouse_enter = Self::has_static_event_handler(element, "mouseenter")
-            || Self::has_static_event_handler(element, "mouseover");
+            || Self::has_static_event_handler(element, "mouseover")
+            || has_hover;
         if has_mouse_enter
             && !Self::has_static_event_handler(element, "focus")
             && !Self::has_static_event_handler(element, "focusin")
@@ -138,15 +154,29 @@ impl Rule for MouseEventsHaveKeyEvents {
     }
 
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
-        if element.tag_type == ElementType::Component
-            || is_aria_hidden_true(element)
-            || is_presentation_role(element)
-        {
+        if is_aria_hidden_true(element) || is_presentation_role(element) {
             return;
         }
 
-        // mouseenter/mouseover require @focus or @focusin
-        if (has_event_handler(element, "mouseenter") || has_event_handler(element, "mouseover"))
+        let has_hover = has_event_handler(element, "hover");
+        if element.tag_type == vize_relief::ElementType::Component {
+            if has_hover
+                && !has_event_handler(element, "focus")
+                && !has_event_handler(element, "focusin")
+            {
+                ctx.warn_with_help(
+                    ctx.t("a11y/mouse-events-have-key-events.message_hover"),
+                    &element.loc,
+                    ctx.t("a11y/mouse-events-have-key-events.help"),
+                );
+            }
+            return;
+        }
+
+        // mouseenter/mouseover/hover require @focus or @focusin
+        if (has_event_handler(element, "mouseenter")
+            || has_event_handler(element, "mouseover")
+            || has_hover)
             && !has_event_handler(element, "focus")
             && !has_event_handler(element, "focusin")
         {
@@ -300,12 +330,14 @@ mod tests {
     }
 
     #[test]
-    fn test_valid_component_skipped() {
+    fn test_component_hover_requires_focus() {
         let linter = create_linter();
         let result = linter.lint_template(
-            r#"<MyTooltip @mouseenter="show">Tip</MyTooltip>"#,
+            r#"<MyTooltip @hover="show" />
+<MyTooltip @hover="() => show()" />
+<MyTooltip @hover="show" @focus="show" />"#,
             "test.vue",
         );
-        assert_eq!(result.warning_count, 0);
+        assert_eq!(result.warning_count, 2);
     }
 }
