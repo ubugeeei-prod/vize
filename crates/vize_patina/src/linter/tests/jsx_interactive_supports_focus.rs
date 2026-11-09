@@ -50,7 +50,7 @@ fn interactive_supports_focus_fires_on_jsx_and_tsx_ir() {
     assert!(diag.help.is_some(), "diagnostic should keep rule help");
 
     let tsx = linter.lint_jsx(
-        r#"const A = (): JSX.Element => <span role="link">Home</span>;"#,
+        r#"const A = (): JSX.Element => <span role="link" onClick={follow}>Home</span>;"#,
         "test.tsx",
         JsxLang::Tsx,
     );
@@ -105,15 +105,15 @@ fn interactive_supports_focus_preserves_legacy_jsx_boundaries() {
     }
 
     for source in [
-        r#"const A = () => <div role="button" />;"#,
-        r#"const A = () => <span role="link" />;"#,
-        r#"const A = () => <div role="button" role="presentation" />;"#,
-        r#"const A = () => <div role="button" tabindex="-2" />;"#,
-        r#"const A = () => <div role="button" tabIndex="0" />;"#,
-        r#"const A = () => <div role="button" contentEditable="true" />;"#,
-        r#"const A = () => <area role="button" />;"#,
-        r#"const A = () => <area ns:href={map} role="button" />;"#,
-        r#"const A = () => <ui:button role="button" />;"#,
+        r#"const A = () => <div role="button" onClick={handle} />;"#,
+        r#"const A = () => <span role="link" onClick={handle} />;"#,
+        r#"const A = () => <div role="button" role="presentation" onClick={handle} />;"#,
+        r#"const A = () => <div role="button" tabindex="-2" onClick={handle} />;"#,
+        r#"const A = () => <div role="button" tabIndex="0" onClick={handle} />;"#,
+        r#"const A = () => <div role="button" contentEditable="true" onClick={handle} />;"#,
+        r#"const A = () => <area role="button" onClick={handle} />;"#,
+        r#"const A = () => <area ns:href={map} role="button" onClick={handle} />;"#,
+        r#"const A = () => <ui:button role="button" onClick={handle} />;"#,
     ] {
         let result = linter.lint_jsx(source, "test.jsx", JsxLang::Jsx);
         assert_eq!(

@@ -102,7 +102,8 @@ pub fn run(mut args: LintArgs) {
     let collect_time = collect_start.elapsed();
     if files.is_empty() {
         patterns::write_no_files(format, &args.patterns);
-        return;
+        let _ = std::io::stdout().flush();
+        std::process::exit(2);
     }
     let help_level = match args.help_level.as_str() {
         "none" => HelpLevel::None,

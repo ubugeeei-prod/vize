@@ -66,6 +66,19 @@ impl Linter {
                 }
             });
         }
+        if let Some(value) = options.slot_name_casing() {
+            self = self.with_slot_name_casing(match value {
+                vize_l0::config::SlotNameCasingStyle::CamelCase => {
+                    crate::rules::vue::SlotNameCasingStyle::CamelCase
+                }
+                vize_l0::config::SlotNameCasingStyle::KebabCase => {
+                    crate::rules::vue::SlotNameCasingStyle::KebabCase
+                }
+                vize_l0::config::SlotNameCasingStyle::Singleword => {
+                    crate::rules::vue::SlotNameCasingStyle::Singleword
+                }
+            });
+        }
         if let Some(value) = options.no_mutating_props() {
             self = self.with_no_mutating_props_options(NoMutatingPropsOptions {
                 shallow_only: value.shallow_only,

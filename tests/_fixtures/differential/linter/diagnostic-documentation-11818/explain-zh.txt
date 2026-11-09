@@ -5899,7 +5899,7 @@ vue/single-style-block · lint 规则
 文档: docs/content/rules/reference/vue-single-style-block.md
 === vue/slot-name-casing
 vue/slot-name-casing · lint 规则
-强制通过v-slot使用的具名插槽采用短横线命名
+强制渲染的插槽名称采用配置的命名方式
 
 精度层级: exact
 适用范围: the authored text of SFC templates and declarations: casing, quoting, spacing, order and shorthand
@@ -5917,7 +5917,7 @@ vue/slot-name-casing · lint 规则
   <slot name="default" />
 
 帮助:
-  请将插槽名称改为短横线命名，例如使用 '#my-slot' 而非 '#mySlot' 或 '#my_slot'。
+  请将渲染的插槽出口名称改为 {casing}。
 === vue/this-in-template
 vue/this-in-template · lint 规则
 禁止在模板表达式中使用 `this.`
