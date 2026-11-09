@@ -6,6 +6,7 @@ import { test } from "node:test";
 import { loadProductManifest } from "../differential/harness.mjs";
 import {
   ledgerPath,
+  readDomCorpus,
   readShards,
   realProjectProducts,
   registryPath,
@@ -114,10 +115,14 @@ test("every pinned project gets one shared-format row per product target", () =>
         loaded.cases.map((fixture: { projectId: string }) => fixture.projectId),
         ["alpha", "beta", "gamma"],
       );
-      assert(report.rows.every((row: any) => row.native.state === "unsupported"));
+      const native = product === "compiler" ? "missing-evidence" : "unsupported";
+      assert(
+        report.rows.every((row: any) => row.native.state === native),
+        product,
+      );
       assert.equal(acceptance.scope, "real-projects");
       assert.equal(acceptance.total.nativeHandled, 0);
-      assert.equal(acceptance.total.unsupported, 3);
+      assert.equal(acceptance.total[product === "compiler" ? "unverified" : "unsupported"], 3);
       const expected = product === "typechecker" ? 2 : 3;
       assert.equal(report.summary.legacyCompleted, expected, product);
     }
@@ -132,8 +137,51 @@ test("every pinned project gets one shared-format row per product target", () =>
       registryRef: `${ledgerPath}#tests/_fixtures/_git/alpha`,
       evidence: [{ kind: "pinned-package", dialects: ["jsx-babel", "vue3-sfc"] }],
     });
-    assert.match(markdown, /linter \| lint \| 3 \| 3 \| 0/);
+    assert.match(markdown, /linter \| lint \| 3 \| 3 \| 0 \| 0/);
     assert.match(markdown, /Native-only acceptance \(real projects\)/);
+  });
+});
+
+function domCorpus(root: string, divergences: number) {
+  const dir = path.join(root, "dom-corpus");
+  writeJson(path.join(dir, "summary.json"), {
+    evidence: { canonicalScope: true, divergences },
+  });
+  writeJson(path.join(dir, "files.json"), [
+    ["alpha/src/App.vue", "e".repeat(64), 10, "f".repeat(40)],
+    ["alpha/src/Two.vue", "e".repeat(64), 10, "f".repeat(40)],
+    ["gamma/App.vue", "e".repeat(64), 10, "f".repeat(40)],
+  ]);
+  return readDomCorpus(dir);
+}
+
+test("the compiler DOM lane reads the canonical corpus as legacy-backed", () => {
+  withRoot((root, artifacts, out) => {
+    shard(artifacts, 0, ["alpha", "beta", "gamma"]);
+    const run = (divergences: number) =>
+      writeRealProjectResults({
+        root,
+        sourceRevision,
+        shards: readShards(artifacts),
+        outDir: out,
+        domCorpus: domCorpus(root, divergences),
+      }).outputs.find(({ product }) => product === "compiler")!;
+    const clean = run(0);
+    assert.deepEqual(
+      clean.report.rows.map((row: any) => [row.native.state, row.comparison.state]),
+      [
+        ["legacy-backed", "equal"],
+        ["unverified", "not-compared"],
+        ["legacy-backed", "equal"],
+      ],
+    );
+    assert.equal(clean.report.rows[0].native.observation.files, 2);
+    assert.equal(clean.report.summary.comparedEqual, 2);
+    assert.equal(clean.acceptance.total.legacyBacked, 2);
+    assert.equal(clean.acceptance.total.nativeHandled, 0);
+    const diverged = run(1);
+    assert.equal(diverged.report.rows[0].comparison.state, "not-attributed");
+    assert.equal(diverged.report.summary.comparedEqual, 0);
   });
 });
 

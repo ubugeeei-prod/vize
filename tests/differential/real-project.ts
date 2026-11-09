@@ -2,8 +2,9 @@
 // real project and product target, in the shared manifest/result format,
 // built from the Real Project Matrix shard reports. The legacy lane is the
 // shard's source-built CLI or LSP run. No product has a native-only route on
-// real projects yet, so every native lane is `unsupported` and earns no
-// credit; a product adapter replaces that lane when its route lands.
+// real projects yet: the compiler DOM lane reads the canonical DOM corpus
+// (legacy-backed), every other native lane is `unsupported`, and none earns
+// credit. A product adapter replaces its lane when its route lands.
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
@@ -49,6 +50,10 @@ interface Lane {
   state: string;
   observation?: Json;
 }
+export interface DomCorpus {
+  summary: Evidence;
+  files: Evidence;
+}
 
 function readEvidence(file: string): Evidence {
   const bytes = fs.readFileSync(file);
@@ -73,6 +78,47 @@ export function readShards(artifactsDir: string): Shard[] {
     shards.push({ index: Number(match[1]), directory, matrix, lsp });
   }
   return shards;
+}
+
+// The downloaded canonical DOM corpus evidence, when the corpus job uploaded it.
+export function readDomCorpus(dir: string | undefined): DomCorpus | null {
+  if (!dir) return null;
+  const summary = path.join(dir, "summary.json");
+  const files = path.join(dir, "files.json");
+  if (!fs.existsSync(summary) || !fs.existsSync(files)) return null;
+  return { summary: readEvidence(summary), files: readEvidence(files) };
+}
+
+// The corpus compares legacy and L2 DOM template bytes over every pinned
+// gitlink. Its template stages run on the levels, but the SFC script still
+// compiles through Croquis, so the lane is legacy-backed. Zero corpus
+// divergences make every gitlink's compared templates equal; otherwise the
+// divergences are not attributed to projects.
+function domLane(
+  fixturePath: string,
+  corpus: DomCorpus | null,
+): { native: Lane; comparison: Json } {
+  if (!corpus)
+    return { native: { state: "missing-evidence" }, comparison: { state: "not-compared" } };
+  const { evidence } = corpus.summary.value;
+  const gitlink = path.posix.basename(fixturePath);
+  const files = corpus.files.value.filter(([file]: [string]) => file.startsWith(`${gitlink}/`));
+  const observation = {
+    gitlink,
+    files: files.length,
+    divergences: evidence?.divergences ?? null,
+    summarySha256: corpus.summary.sha256,
+    filesSha256: corpus.files.sha256,
+  };
+  if (evidence?.canonicalScope !== true || !Number.isInteger(evidence.divergences) || !files.length)
+    return { native: { state: "unverified", observation }, comparison: { state: "not-compared" } };
+  return {
+    native: { state: "legacy-backed", observation },
+    comparison:
+      evidence.divergences === 0
+        ? { state: "equal", contract: "dom-template-bytes" }
+        : { state: "not-attributed" },
+  };
 }
 
 function dialectCoverage(ledger: Json, fixturePath: string) {
@@ -166,11 +212,13 @@ export function writeRealProjectResults({
   sourceRevision,
   shards,
   outDir,
+  domCorpus = null,
 }: {
   root: string;
   sourceRevision: string;
   shards: Shard[];
   outDir: string;
+  domCorpus?: DomCorpus | null;
 }) {
   assert.match(sourceRevision, revisionPattern, "exact source revision is required");
   const registry = readEvidence(path.join(root, registryPath));
@@ -184,6 +232,17 @@ export function writeRealProjectResults({
       matrixSha256: shard.matrix.sha256,
       lspSha256: shard.lsp?.sha256 ?? null,
     })),
+    domCorpus: domCorpus && {
+      summarySha256: domCorpus.summary.sha256,
+      filesSha256: domCorpus.files.sha256,
+    },
+  };
+  const fixturePaths = new Map<string, string>(
+    registry.value.projects.map((project: Json) => [project.id, project.fixturePath]),
+  );
+  const unsupported = {
+    native: { state: "unsupported", reason: "no native-only real-project route" },
+    comparison: { state: "not-compared" },
   };
   const outputs = [];
   for (const product of realProjectProducts) {
@@ -218,10 +277,12 @@ export function writeRealProjectResults({
       id: fixture.id,
       target: product.target,
       legacy: laneFor(product, fixture.projectId, index),
-      native: { state: "unsupported", reason: "no native-only real-project route" },
-      comparison: { state: "not-compared" },
+      ...(product.product === "compiler"
+        ? domLane(fixturePaths.get(fixture.projectId) ?? "", domCorpus)
+        : unsupported),
     }));
     const legacyCompleted = rows.filter((row: Json) => row.legacy.state === "completed").length;
+    const comparedEqual = rows.filter((row: Json) => row.comparison.state === "equal").length;
     const report = {
       schema: "vize.differential.result",
       version: 1,
@@ -235,6 +296,7 @@ export function writeRealProjectResults({
         plannedCases: cases.length,
         legacyCompleted,
         legacyIncomplete: rows.length - legacyCompleted,
+        comparedEqual,
       },
     };
     validateResultEnvelope(loaded, report, sourceRevision);
@@ -255,13 +317,13 @@ function renderRealProjectMarkdown(outputs: Json[]) {
   const lines = [
     "### Real-project differential (T2)",
     "",
-    "Product | Target | Projects | Legacy completed | Legacy incomplete",
-    "--- | --- | ---: | ---: | ---:",
+    "Product | Target | Projects | Legacy completed | Legacy incomplete | Compared equal",
+    "--- | --- | ---: | ---: | ---: | ---:",
   ];
   for (const { product, target, report } of outputs) {
-    const { plannedCases, legacyCompleted, legacyIncomplete } = report.summary;
+    const { plannedCases, legacyCompleted, legacyIncomplete, comparedEqual } = report.summary;
     lines.push(
-      `${product} | ${target} | ${plannedCases} | ${legacyCompleted} | ${legacyIncomplete}`,
+      `${product} | ${target} | ${plannedCases} | ${legacyCompleted} | ${legacyIncomplete} | ${comparedEqual}`,
     );
   }
   lines.push("", renderNativeAcceptanceMarkdown(outputs.map((output) => output.acceptance)));
@@ -269,14 +331,18 @@ function renderRealProjectMarkdown(outputs: Json[]) {
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
-  const [artifactsDir, outDir] = process.argv.slice(2);
-  assert(artifactsDir && outDir, "usage: real-project.ts SHARD_ARTIFACTS_DIR OUT_DIR");
+  const [artifactsDir, outDir, domCorpusDir] = process.argv.slice(2);
+  assert(
+    artifactsDir && outDir,
+    "usage: real-project.ts SHARD_ARTIFACTS_DIR OUT_DIR [DOM_CORPUS_DIR]",
+  );
   const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
   const { outputs, markdown } = writeRealProjectResults({
     root,
     sourceRevision: process.env.GITHUB_SHA ?? "",
     shards: readShards(path.resolve(artifactsDir)),
     outDir: path.resolve(outDir),
+    domCorpus: readDomCorpus(domCorpusDir && path.resolve(domCorpusDir)),
   });
   if (process.env.GITHUB_STEP_SUMMARY) fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, markdown);
   for (const { product, report } of outputs) {

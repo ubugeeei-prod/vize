@@ -73,6 +73,10 @@ LSP `stdio`. The legacy lane is the shard's source-built run, `completed` only
 when it ran and its raw output is in the shard report; a missing shard still
 yields every planned row as `missing-evidence`. The scheduled
 `real-project-differential` job uploads the bundle and appends the tables to
-the run summary. No product has a native-only real-project route yet, so
-every native lane is `unsupported`; compiler `ssr`/`vapor` have no T2 rows
-because the Matrix compiles the default DOM target only.
+the run summary. No product has a native-only real-project route yet. The
+compiler `dom` lane reads the canonical DOM corpus: its template stages run
+on the levels, but the SFC script still compiles through Croquis, so each
+project with compared templates is `legacy-backed`, and `equal` only while
+the corpus reports zero divergences (divergences are not attributed to
+projects). Every other native lane is `unsupported`. Compiler `ssr`/`vapor`
+have no T2 rows because the Matrix compiles the default DOM target only.
