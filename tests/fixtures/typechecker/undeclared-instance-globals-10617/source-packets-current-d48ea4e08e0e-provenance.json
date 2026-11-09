@@ -1,0 +1,88 @@
+{
+  "schema": "vize.instance-global-current-provenance",
+  "version": 1,
+  "issue": 10617,
+  "pullRequest": 12460,
+  "producer": {
+    "sourceRevision": "d48ea4e08e0ee0b2773d4ba3c696bc1c9235bce1",
+    "sourceTree": "7786ee4a5b4e749af738ae75acb0357fc0cb5ec9",
+    "pullRequestHead": "11e4add58056f6dabc81a32ce94db94db1cdbce0",
+    "binarySha256": "20a76711b968bdd69c3011b204399cf24dd5961cd2c8c6bca5dc0805e042dbc5",
+    "recipe": "cargo build --profile ci -p vize",
+    "captureRun": 42628370735,
+    "artifactId": 13681080320,
+    "runAttempt": 1,
+    "platform": "linux",
+    "arch": "x64"
+  },
+  "artifact": {
+    "repository": "ubugeeei-prod/vize",
+    "run": 42628370735,
+    "job": 129198720061,
+    "id": 13681080320,
+    "name": "instance-globals-10617-11e4add58056f6dabc81a32ce94db94db1cdbce0-1",
+    "digest": "sha256:ec4071b01f99551e15eed50ecbd46a5f7783563af188ffbe8fe3ced0a00b68b4",
+    "bytes": 18672687
+  },
+  "previousPopulation": {
+    "path": "source-packets-current-517b8abf5651.json",
+    "bytes": 501180,
+    "sha256": "a8f08a09da36dfbe2bcecd313b837cddf63d585c6dfd8dbe16efe4b9b7ab0d18"
+  },
+  "successorPopulation": {
+    "path": "source-packets-current-d48ea4e08e0e.json",
+    "bytes": 500610,
+    "sha256": "c577a50ade4d462c8f72cd5c3a02bbfcd64b28fe7c9b5a7d8f8529ab94b97409"
+  },
+  "sourceReceipt": {
+    "path": "crates/vize_canon/tests/empty_vue_star_exports/membership/constructor_without_args/payload_update/canon_leftovers_11499.json",
+    "sha256": "250e01138d163f77a5d98b20bc97f562a663ebb924c17c810b9d9cf02280128e"
+  },
+  "evidence": {
+    "source-build.json": {
+      "bytes": 326,
+      "sha256": "b5a9fbc36cd30ea2157f7c9a82a43e514584c87fec14b4ac8327f1fa0de13118"
+    },
+    "source-launch.json": {
+      "bytes": 882,
+      "sha256": "06f5545cb937f3c8b8102c70f50883f5bae15bbce4ea349619038c17991e2ab8"
+    },
+    "source-protocol.json": {
+      "bytes": 467927,
+      "sha256": "1db77435489bde15f72016d60d711159668a3ea3c6d5f84f3b0870392624a35c"
+    },
+    "outcomes.json": {
+      "bytes": 59611,
+      "sha256": "04f9735b02476fa15c0493ff90933d9207f7648445ecb93a0ba55862fec8d988"
+    },
+    "qualification.json": {
+      "bytes": 63756,
+      "sha256": "16997edff7e7160ed8231261f58c4e9ee31b81ba55682c0a80a4ed2ed3af8a0c"
+    },
+    "host-matrix.json": {
+      "bytes": 4328,
+      "sha256": "eb1804419a97447ae9589878b26a07b22940b5dc3395a10f8b6e676319250af8"
+    }
+  },
+  "capturedQualification": {
+    "status": "unqualified",
+    "fullPacketQualification": false,
+    "hostMatrixQualification": false,
+    "totalOutcomes": 499,
+    "passedOutcomes": 497,
+    "gapCount": 2,
+    "gapIds": [
+      "whole-packet/lf/css-module",
+      "whole-packet/crlf-unicode/css-module"
+    ]
+  },
+  "review": {
+    "completePackets": 80,
+    "allNonWholePacketOutcomesPassed": true,
+    "qualificationCredit": false,
+    "nativeAcceptanceCredit": false,
+    "publicPackageAcceptanceCredit": false,
+    "performanceCredit": false,
+    "reason": "The template context no longer declares $GlobalContextIsAny, $GlobalContextProperty and __Global when every template global carries its own type, so the two CSS-module packets lost exactly those 293 bytes and every later generated coordinate moved by 293 while all 497 semantic, protocol, mapping-geometry, and real-host controls passed; this record retains the observed postimages without assigning acceptance credit to the stale-golden run."
+  }
+}
