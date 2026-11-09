@@ -76,6 +76,7 @@ mod context;
 mod cursor;
 mod embedding;
 mod error_handler;
+mod markup;
 mod modifiers;
 mod module_record;
 mod observation;
@@ -122,6 +123,7 @@ pub use embedding::{
     EmbeddingInput, EmbeddingInputError, EmbeddingObservation, ExpressionObservation,
     HandlerBodyObservation, ParametersObservation,
 };
+pub use markup::{MarkupCursor, MarkupGrammar, MarkupSite};
 pub use observation::{AdmittedProgram, OriginalDefaultExport, ProgramObservation};
 
 /// Maximum length of source which can be parsed (in bytes).
@@ -561,6 +563,27 @@ mod parser_parse {
         .parse()
     }
 
+    /// Parse with a host-embedded markup grammar (see [`crate::markup`]).
+    #[inline(never)]
+    pub(crate) fn parse_with_markup<'a>(
+        allocator: &'a Allocator,
+        source_text: &'a str,
+        source_type: SourceType,
+        options: ParseOptions,
+        grammar: &'a dyn crate::MarkupGrammar<'a>,
+    ) -> ParserReturn<'a> {
+        let mut parser = ParserImpl::<crate::config::MarkupParserConfig>::new(
+            allocator,
+            source_text,
+            source_type,
+            options,
+            crate::config::MarkupParserConfig,
+            UniquePromise::new(),
+        );
+        parser.markup = Some(grammar);
+        parser.parse()
+    }
+
     #[inline(never)]
     fn parse_expression_with_no_tokens_config<'a>(
         allocator: &'a Allocator,
@@ -617,6 +640,7 @@ mod parser_parse {
     }
 }
 use parser_parse::UniquePromise;
+pub(crate) use parser_parse::parse_with_markup;
 
 /// Implementation of parser.
 /// `Parser` is just a public wrapper, the guts of the implementation is in this type.
@@ -667,6 +691,9 @@ struct ParserImpl<'a, C: ParserConfig> {
 
     /// Precomputed typescript detection
     is_ts: bool,
+
+    /// Grammar of host-embedded markup regions, if any (see [`markup`]).
+    markup: Option<&'a dyn MarkupGrammar<'a>>,
 }
 
 impl<'a, C: ParserConfig> ParserImpl<'a, C> {
@@ -699,6 +726,7 @@ impl<'a, C: ParserConfig> ParserImpl<'a, C> {
             ast: AstBuilder::new(allocator),
             module_record_builder: ModuleRecordBuilder::new(allocator, source_type),
             is_ts: source_type.is_typescript(),
+            markup: None,
         }
     }
 

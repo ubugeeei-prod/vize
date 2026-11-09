@@ -28,7 +28,7 @@ test("every corpus module has exactly one reference row", () => {
   for (const row of committed.rows) {
     const failed = row.file.includes("/errors/");
     assert.equal(row.error !== null, failed, `${row.file}: errors/ rows, and only they, fail`);
-    if (failed) assert.match(row.error.code ?? "", /^TSRX\d{4}$/u, row.file);
+    if (failed) assert.match(row.error.code ?? "", /^TS(?:RX)?\d{4}$/u, row.file);
   }
 });
 

@@ -4844,6 +4844,7 @@ dependencies = [
  "davinci_test_support",
  "htmlize",
  "memchr",
+ "oxc_allocator",
  "oxc_ast",
  "oxc_ast_visit",
  "oxc_diagnostics",

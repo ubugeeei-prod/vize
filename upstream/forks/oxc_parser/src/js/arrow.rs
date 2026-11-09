@@ -314,8 +314,11 @@ impl<'a, C: Config> ParserImpl<'a, C> {
         let has_yield = self.ctx.has_yield();
         self.ctx = self.ctx.and_await(r#async).and_yield(false);
 
-        let expression = !self.at(Kind::LCurly);
-        let body = if expression {
+        let markup_body = self.at_markup_directive(crate::MarkupSite::FunctionBody);
+        let expression = !markup_body && !self.at(Kind::LCurly);
+        let body = if markup_body {
+            self.parse_markup_function_body()
+        } else if expression {
             // Remove TopLevel context for arrow function expression body
             let span = self.start_span();
             let expr = self.context_remove(Context::TopLevel, |p| {
