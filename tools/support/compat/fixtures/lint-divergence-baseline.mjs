@@ -7,9 +7,9 @@ const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..", ".
 /**
  * The `eslint-plugin-vue` half of a lint divergence run.
  *
- * The plugin, ESLint, and both parsers are pinned in `tools/benchmarks/scripts/package.json` — the
- * same pin `tools/fixtures/patina-rule-map.mjs` validates the rule map against —
- * so the baseline can never drift from the map that routes its findings.
+ * The plugin, ESLint, and both parsers are pinned in `tools/benchmarks/scripts/package.json`.
+ * The reference corpus deliberately retains its historical provider even when the rule map grows;
+ * `runBaseline` intersects the requested rules with that provider's actual exports.
  *
  * Only rules the map calls `mapped` are enabled, and only when the preset under
  * test actually activates their patina counterpart. A rule patina has but no
@@ -151,15 +151,20 @@ export function retainEnabledFindings(results, rules) {
  * corpus mismatch.
  */
 export async function runBaseline(runtime, cwd, files, rules) {
+  const availableRules = Object.fromEntries(
+    Object.entries(rules).filter(([name]) =>
+      Object.hasOwn(runtime.plugin.rules, name.replace(/^vue\//u, "")),
+    ),
+  );
   const eslint = new runtime.ESLint({
     cwd,
     passOnNoPatterns: files.length === 0,
     overrideConfigFile: true,
-    overrideConfig: baselineConfig(runtime, rules),
+    overrideConfig: baselineConfig(runtime, availableRules),
     errorOnUnmatchedPattern: false,
   });
   if (files.length === 0) {
     await eslint.calculateConfigForFile("__vize_empty_vue_config__.vue");
   }
-  return retainEnabledFindings(await eslint.lintFiles(files), rules);
+  return retainEnabledFindings(await eslint.lintFiles(files), availableRules);
 }

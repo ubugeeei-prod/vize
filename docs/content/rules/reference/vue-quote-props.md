@@ -19,7 +19,7 @@ The identifier-safe `name` key is unnecessarily quoted.
 
 ```vue annotate="remove:2"
 <template>
-  <Widget :options="{ "name": value }" />
+  <Widget :options='{ "name": value }' />
 </template>
 ```
 
@@ -45,9 +45,7 @@ export default defineConfig({}).withVue({
       "vue/quote-props": "warn"
     },
     "ruleOptions": {
-      "vue/quote-props": {
-        "vue/quote-props": "as-needed"
-      }
+      "vue/quote-props": "as-needed"
     }
   },
 });

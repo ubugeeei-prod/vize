@@ -46,11 +46,9 @@ export default defineConfig({}).withVue({
     },
     "ruleOptions": {
       "vue/no-restricted-syntax": {
-        "vue/no-restricted-syntax": {
-          "selectors": [
-            "CallExpression"
-          ]
-        }
+        "selectors": [
+          "CallExpression"
+        ]
       }
     }
   },

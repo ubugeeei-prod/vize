@@ -44,11 +44,9 @@ export default defineConfig({}).withVue({
     },
     "ruleOptions": {
       "vue/enforce-style-attribute": {
-        "vue/enforce-style-attribute": {
-          "allow": [
-            "scoped"
-          ]
-        }
+        "allow": [
+          "scoped"
+        ]
       }
     }
   },

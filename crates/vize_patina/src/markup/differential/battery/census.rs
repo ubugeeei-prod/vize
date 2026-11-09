@@ -153,7 +153,9 @@ pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
         + 2
         + 8
         + 4
-        + 3,
+        + 3
+        // The 28-rule compatibility wave adds one loop-driven call.
+        + 1,
     rule_fixture_skipped: 87
         + 4
         + 3
@@ -187,7 +189,9 @@ pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
         + 1
         + 1
         + 3
-        + 3,
+        + 3
+        // The compatibility scorecard keeps that call scanner-owned.
+        + 1,
     matrix: 90,
     template_lines: 6316 + 233 + 5 + 10 + 25 + 7 - 49
         + 31

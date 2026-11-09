@@ -106,6 +106,13 @@ export function compareLintFindings(
   const index = indexRuleMap(ruleMap),
     patina = collectPatinaFindings(patinaFindings, cwd),
     baseline = collectBaselineFindings(eslintResults, cwd);
+  const selectedRules = object(get(context, "rules")) ?? {};
+  const selectedTargets = new Set(
+    Object.keys(selectedRules).flatMap((upstream) => {
+      const target = get(index.entries[upstream], "patinaRule");
+      return typeof target === "string" ? [target] : [];
+    }),
+  );
   const sourceFor = (file: string): string | null => {
     try {
       return readText(path.join(cwd, file));
@@ -172,7 +179,7 @@ export function compareLintFindings(
     const source = sources.get(finding.file) ?? null;
     if (source !== null && outsideBaselineSurface(finding, source))
       patinaOutsideBaselineSurface.push(recordValue(finding));
-    else if (index.targets.has(finding.ruleId)) {
+    else if (selectedTargets.has(finding.ruleId)) {
       const coverage =
         source === null
           ? null

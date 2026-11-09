@@ -79,7 +79,7 @@ void test("native content classification follows pinned Vue, with the ESLint nam
   for (const name of ["vue", "@vue/compiler-dom", "@vue/compiler-sfc"]) {
     assert.equal(fromVue(`${name}/package.json`).version, "3.5.35");
   }
-  assert.equal(fromBench("eslint-plugin-vue/package.json").version, "10.12.0");
+  assert.equal(fromBench("eslint-plugin-vue/package.json").version, "10.9.2");
   assert.equal(fromBench("vue-eslint-parser/package.json").version, "10.4.1");
   const defaultLint = reference(false);
   const nativeLint = reference(true);

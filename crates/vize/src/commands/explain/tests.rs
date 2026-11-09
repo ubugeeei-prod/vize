@@ -76,7 +76,7 @@ fn the_generated_list_covers_every_compiler_code_and_rule_once() {
         .iter()
         .filter(|subject| matches!(subject, Subject::Rule(_)))
         .count();
-    assert_eq!((all.len() - rules, rules), (56 + 22 + 10 + 60, 281));
+    assert_eq!((all.len() - rules, rules), (56 + 22 + 10 + 60, 309));
     let mut codes: Vec<&str> = all.iter().map(Subject::code).collect();
     let total = codes.len();
     codes.sort_unstable();
@@ -241,7 +241,7 @@ fn validate_documentation_successor(before: &str, current: &str, locale: Locale)
             assert_eq!(old, new, "unchanged page body for {rule}");
         }
     }
-    assert_eq!((urls, transitioned_urls), (281, 0));
+    assert_eq!((urls, transitioned_urls), (309, 0));
 }
 
 #[test]

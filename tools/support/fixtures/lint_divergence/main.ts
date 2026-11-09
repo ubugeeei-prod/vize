@@ -15,6 +15,7 @@ import {
   errorMessage,
   get,
   list,
+  object,
   projectString,
   readJson,
   relativePath,
@@ -76,12 +77,14 @@ function measureProject(
     baseline = runEslintBaseline(root, cwd, files, comparable.rules),
     duration = Math.floor(performance.now() - started),
     selectedPreset = args.preset ?? "all-mapped";
+  const baselineRules = object(baseline.rules);
+  if (!baselineRules) throw new Error("baseline must report its available rules");
   reconcileCorpus(id, files, baseline.results, cwd);
   const divergence = compareLintFindings(id, cwd, ruleMap, patina.findings, baseline.results, {
     revision: get(project, "revision"),
     preset: selectedPreset,
     runtimeVersions: baseline.runtimeVersions,
-    rules: comparable.rules,
+    rules: baselineRules,
     files,
   });
   const artifact: JsonObject = {
@@ -96,7 +99,7 @@ function measureProject(
       package: get(ruleMap, "upstream", "package"),
       version: baseline.version,
       runtimeVersions: baseline.runtimeVersions,
-      comparedRuleCount: Object.keys(comparable.rules).length,
+      comparedRuleCount: Object.keys(baselineRules).length,
       mappedRuleCount: comparable.mappedRuleCount,
       skippedByPresetCount: comparable.skippedByPresetCount,
       droppedConfigMessageCount: baseline.droppedConfigMessageCount,

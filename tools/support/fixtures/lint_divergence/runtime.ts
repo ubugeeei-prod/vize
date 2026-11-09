@@ -1,4 +1,5 @@
 import fs from "node:fs";
+import { createRequire } from "node:module";
 import path from "node:path";
 import os from "node:os";
 import { spawnSync } from "node:child_process";
@@ -132,7 +133,16 @@ export function runEslintBaseline(
   files: string[],
   rules: Record<string, BaselineRuleSetting>,
 ) {
-  if (!Object.keys(rules).length) {
+  const requireFromBench = createRequire(path.join(root, "tools/benchmarks/scripts/package.json")),
+    plugin = requireFromBench("eslint-plugin-vue") as {
+      rules: Record<string, unknown>;
+    },
+    availableRules = Object.fromEntries(
+      Object.entries(rules).filter(([name]) =>
+        Object.hasOwn(plugin.rules, name.replace(/^vue\//u, "")),
+      ),
+    );
+  if (!Object.keys(availableRules).length) {
     const version = get(
       readJson(path.join(root, "tests/_fixtures/patina-eslint-vue-rule-map.json")),
       "upstream",
@@ -143,6 +153,7 @@ export function runEslintBaseline(
     return {
       version,
       runtimeVersions: {},
+      rules: availableRules,
       rawResults: results,
       results,
       droppedConfigMessageCount: 0,
@@ -152,7 +163,7 @@ export function runEslintBaseline(
     benchPackageJson: path.join(root, "tools/benchmarks/scripts/package.json"),
     cwd,
     files,
-    rules,
+    rules: availableRules,
   };
   const output = spawnSync("node", ["--input-type=module", "--eval", baselineScript], {
     cwd: root,
@@ -178,6 +189,7 @@ export function runEslintBaseline(
   return {
     rawResults,
     results,
+    rules: availableRules,
     runtimeVersions: get(parsed, "runtimeVersions"),
     version: text(get(parsed, "version")),
     droppedConfigMessageCount: number(get(parsed, "droppedConfigMessageCount")),

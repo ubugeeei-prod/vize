@@ -1,17 +1,13 @@
 import type { JsonValue, RuleExample } from "./types.ts";
 
-const template = (
-  bad: string,
-  good: string,
-  ruleOptions?: Record<string, JsonValue>,
-): RuleExample => ({
+const template = (bad: string, good: string, ruleOptions?: JsonValue): RuleExample => ({
   bad: { language: "vue", source: `<template>\n${bad}\n</template>` },
   good: { language: "vue", source: `<template>\n${good}\n</template>` },
   evidence: "crates/vize_patina/src/rules/vue/compatibility_template.rs",
   ruleOptions,
 });
 
-const sfc = (bad: string, good: string, ruleOptions?: Record<string, JsonValue>): RuleExample => ({
+const sfc = (bad: string, good: string, ruleOptions?: JsonValue): RuleExample => ({
   bad: { language: "vue", source: bad },
   good: { language: "vue", source: good },
   evidence: "crates/vize_patina/src/rules/vue/compatibility_sfc.rs",
@@ -61,14 +57,14 @@ export const manual11: Record<string, RuleExample> = {
     "  <p>{{ `Hello ${name}` }}</p>",
   ),
   "vue/quote-props": template(
-    '  <Widget :options="{ "name": value }" />',
+    "  <Widget :options='{ \"name\": value }' />",
     '  <Widget :options="{ name: value }" />',
-    { "vue/quote-props": "as-needed" },
+    "as-needed",
   ),
   "vue/no-restricted-syntax": template(
     "  <p>{{ format(value) }}</p>",
     "  <p>{{ formattedValue }}</p>",
-    { "vue/no-restricted-syntax": { selectors: ["CallExpression"] } },
+    { selectors: ["CallExpression"] },
   ),
   "vue/no-literals-in-template": template(
     '  <Widget :options="{ eager: true }" />',
@@ -89,7 +85,7 @@ export const manual11: Record<string, RuleExample> = {
   "vue/enforce-style-attribute": sfc(
     "<template><div /></template>\n<style module>.card { color: red }</style>",
     "<template><div /></template>\n<style scoped>.card { color: red }</style>",
-    { "vue/enforce-style-attribute": { allow: ["scoped"] } },
+    { allow: ["scoped"] },
   ),
   "vue/next-tick-style": sfc(
     '<script setup>\nimport { nextTick } from "vue"\nnextTick(() => focusInput())\n</script>\n<template />',
@@ -118,6 +114,6 @@ export const manual11: Record<string, RuleExample> = {
   "vue/sort-keys": sfc(
     "<script>\nexport default { methods: { zebra() {}, alpha() {} } }\n</script>\n<template />",
     "<script>\nexport default { methods: { alpha() {}, zebra() {} } }\n</script>\n<template />",
-    { "vue/sort-keys": { order: "asc", caseSensitive: true, natural: false } },
+    { order: "asc", caseSensitive: true, natural: false },
   ),
 };

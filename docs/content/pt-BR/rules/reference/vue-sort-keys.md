@@ -48,11 +48,9 @@ export default defineConfig({}).withVue({
     },
     "ruleOptions": {
       "vue/sort-keys": {
-        "vue/sort-keys": {
-          "order": "asc",
-          "caseSensitive": true,
-          "natural": false
-        }
+        "order": "asc",
+        "caseSensitive": true,
+        "natural": false
       }
     }
   },
