@@ -271,11 +271,11 @@ pub(super) fn generate_v_slot_scope(
             }
             if data.prop_names.is_empty() {
                 // Simple identifier (no destructuring)
-                append!(*ts, "{inner_indent}void {props_pattern};\n");
+                vize_l0::emit_ts!(ts, "{inner_indent}void {props_pattern};\n");
             } else {
                 // Destructured: void each extracted prop name
                 for prop_name in data.prop_names.iter() {
-                    append!(*ts, "{inner_indent}void {prop_name};\n");
+                    vize_l0::emit_ts!(ts, "{inner_indent}void {prop_name};\n");
                 }
             }
             super::node::emit_scope_usage_bindings(ts, mappings, ctx, scope_id, inner_indent);
@@ -383,10 +383,10 @@ pub(super) fn generate_v_slot_props_scope(
             );
             // Mark slot prop variables as used
             if data.prop_names.is_empty() {
-                append!(*ts, "{inner_indent}void {props_pattern};\n");
+                vize_l0::emit_ts!(ts, "{inner_indent}void {props_pattern};\n");
             } else {
                 for prop_name in data.prop_names.iter() {
-                    append!(*ts, "{inner_indent}void {prop_name};\n");
+                    vize_l0::emit_ts!(ts, "{inner_indent}void {prop_name};\n");
                 }
             }
             super::empty_component_props::generate_scope_checks(

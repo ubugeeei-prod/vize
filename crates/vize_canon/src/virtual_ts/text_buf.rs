@@ -167,3 +167,17 @@ impl PartialEq<vize_carton::String> for TextBuf {
         self.0 == other.as_str()
     }
 }
+
+impl vize_l0::ts_emit::EmitLen for TextBuf {
+    #[inline]
+    fn hole_len(&self) -> usize {
+        self.0.len()
+    }
+}
+
+impl<B: vize_l0::ts_emit::TsBuf> vize_l0::ts_emit::EmitHole<B> for TextBuf {
+    #[inline]
+    fn emit_hole(&self, buffer: &mut B) {
+        buffer.push_ts_str(&self.0);
+    }
+}
