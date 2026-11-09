@@ -3,6 +3,7 @@ import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 
+import { instanceInputKeysHelperEdit } from "../../../tools/support/compat/content-mapper/instance-input-keys-transition.ts";
 import { repoRoot } from "../_helpers/tool-commands.ts";
 
 type CanonLeftoversReceipt = {
@@ -77,6 +78,12 @@ function outputTransition(
   constructorAfter: string,
 ): Buffer {
   let text = current.toString("utf8");
+  // #11654 rewrote one helper line after these layers; undo it first, redo it last.
+  const keys = instanceInputKeysHelperEdit();
+  if (direction === "inverse") {
+    assert.equal(text.split(encoded(keys.after)).length - 1, 1);
+    text = text.replace(encoded(keys.after), () => encoded(keys.before));
+  }
   if (direction === "inverse") {
     const from = encoded(constructorAfter),
       to = encoded(constructorBefore);
@@ -106,6 +113,8 @@ function outputTransition(
       to = encoded(constructorAfter);
     assert.ok(text.split(from).length - 1 >= 1);
     text = text.replaceAll(from, () => to);
+    assert.equal(text.split(encoded(keys.before)).length - 1, 1);
+    text = text.replace(encoded(keys.before), () => encoded(keys.after));
   }
   return Buffer.from(text);
 }

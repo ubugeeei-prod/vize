@@ -55,3 +55,27 @@ export function beforeInstanceInputKeys(path: string, current: string): string {
   assert.deepEqual(identity(current), file.before, `instance input-key predecessor: ${path}`);
   return current;
 }
+
+/** The canonical helper line edit, as generated outputs embed it. */
+export function instanceInputKeysHelperEdit(): { before: string; after: string } {
+  const file = load().files.find(
+    (entry) => entry.path === "crates/vize_canon/src/virtual_ts/component_prop_helpers.txt",
+  );
+  assert.ok(file);
+  assert.equal(file.hunks.length, 1);
+  return file.hunks[0]!;
+}
+
+/** Advance a preamble image across the helper line edit; it must hold the line once. */
+export function applyInstanceInputKeysIn(previous: string): string {
+  const edit = instanceInputKeysHelperEdit();
+  assert.equal(previous.split(edit.before).length, 2, "instance input-key predecessor line");
+  return previous.replace(edit.before, () => edit.after);
+}
+
+/** Inverse of {@link applyInstanceInputKeysIn}. */
+export function beforeInstanceInputKeysIn(current: string): string {
+  const edit = instanceInputKeysHelperEdit();
+  assert.equal(current.split(edit.after).length, 2, "instance input-key current line");
+  return current.replace(edit.after, () => edit.before);
+}

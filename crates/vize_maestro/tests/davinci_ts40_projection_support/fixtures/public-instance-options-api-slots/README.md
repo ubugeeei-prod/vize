@@ -69,3 +69,9 @@ issues #11635 and #11637: the component's type is named after its file
 58 more bytes) and the exported name maps to the SFC's start (one more mapping
 row). Canon and Maestro records are byte-identical; diagnostic and authored-hit
 counts are unchanged.
+
+`successor-instance-input-keys-11654` records #12446: `$ComponentInstanceFor`
+lists the TSX instance key set without per-DOM-key `Exclude` chains (issue
+#11654). Canon, the content mapper and Maestro each grow by the 168-byte helper
+edit; mapping, diagnostic and authored-hit counts are unchanged, so the changed
+coordinate hashes are derived relocation.
