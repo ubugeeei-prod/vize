@@ -50,9 +50,15 @@ fn collect_possible_static_parts<'a>(
                     });
                 }
             }
-            for (index, expression) in template.expressions.iter().enumerate() {
-                let left = template_element_text(&template.quasis[index]);
-                let right = template_element_text(&template.quasis[index + 1]);
+            for (index, ((left, expression), right)) in template
+                .quasis
+                .iter()
+                .zip(&template.expressions)
+                .zip(template.quasis.iter().skip(1))
+                .enumerate()
+            {
+                let left = template_element_text(left);
+                let right = template_element_text(right);
                 let left_bounded =
                     (index == 0 && left.is_empty()) || ends_with_ascii_whitespace(left);
                 let right_bounded = (index + 1 == template.quasis.len() - 1 && right.is_empty())
@@ -188,12 +194,14 @@ fn complete_template_segment(text: &str, left_bounded: bool, right_bounded: bool
             .map(|index| index + 1)?;
     }
     if !right_bounded {
-        end = text[..end].rfind(|character: char| character.is_ascii_whitespace())?;
+        end = text.rfind(|character: char| character.is_ascii_whitespace())?;
     }
     if start >= end {
         return None;
     }
-    let segment = text[start..end].trim_matches(|character: char| character.is_ascii_whitespace());
+    let segment = text
+        .get(start..end)?
+        .trim_matches(|character: char| character.is_ascii_whitespace());
     (!segment.is_empty()).then_some(segment)
 }
 
