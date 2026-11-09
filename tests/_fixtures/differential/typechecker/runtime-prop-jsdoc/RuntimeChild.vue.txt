@@ -1,0 +1,16 @@
+<script setup lang="ts">
+const props = defineProps({
+  /** The title shown above. */
+  title: { type: String, required: true },
+  /**
+   * The kind of row.
+   */
+  'item-kind': { type: String, default: 'plain' },
+  count: Number,
+})
+console.log(props.title, props.itemKind, props.count)
+</script>
+
+<template>
+  <div>{{ title }}</div>
+</template>

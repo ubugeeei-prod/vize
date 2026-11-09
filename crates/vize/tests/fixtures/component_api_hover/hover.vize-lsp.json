@@ -274,7 +274,7 @@
   "runtime prop": {
     "contents": {
       "kind": "markdown",
-      "value": "**title**\n\n_Component prop_\n\n```typescript\n(property) title: string\n```\n\n**Requirement**\n\nRequired\n\n**Example**\n\n```vue\n<RuntimeChild title=\"...\" />\n<RuntimeChild :title=\"value\" />\n```\n\n**Docs**\n\n[Vue Component Props](https://vuejs.org/guide/components/props.html)"
+      "value": "**title**\n\n_Component prop_\n\n```typescript\n(property) title: string\n```\nThe title shown above.\n\n**Requirement**\n\nRequired\n\n**Example**\n\n```vue\n<RuntimeChild title=\"...\" />\n<RuntimeChild :title=\"value\" />\n```\n\n**Docs**\n\n[Vue Component Props](https://vuejs.org/guide/components/props.html)"
     },
     "range": {
       "end": {
