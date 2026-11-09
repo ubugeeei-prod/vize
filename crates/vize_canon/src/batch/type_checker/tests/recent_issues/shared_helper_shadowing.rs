@@ -261,20 +261,23 @@ fn helper_isolation_preserves_the_authored_prop_diagnostic_anchor() {
 }
 /// Lib types the projection reaches through `globalThis` once the SFC binds
 /// the same name (#12536): a same-arity `never` poison, and how many
-/// references the parent fixture's projection generates.
-const QUALIFIED_LIB_TYPES: &[(&str, &str, usize)] = &[
-    ("Awaited", "type Awaited<T> = never", 2),
+/// references the parent fixture's [content mapper, batch] projections
+/// generate. Only the mapper keeps event navigation (`$StaticEventMap`).
+const QUALIFIED_LIB_TYPES: &[(&str, &str, [usize; 2])] = &[
+    ("Awaited", "type Awaited<T> = never", [6, 5]),
     (
         "Parameters",
         "type Parameters<T extends (...args: any) => any> = never",
-        4,
+        [4, 4],
     ),
     (
         "ReturnType",
         "type ReturnType<T extends (...args: any) => any> = never",
-        3,
+        [7, 6],
     ),
 ];
+const MAPPER: usize = 0;
+const BATCH: usize = 1;
 
 const LIB_CHILD: &str = r#"<script setup lang="ts" generic="T extends string | number">
 const props = withDefaults(defineProps<{
@@ -314,7 +317,9 @@ fn lib_module_script(poison: LibPoison) -> std::string::String {
         script.push_str(&line);
         script.push('\n');
     }
-    script.push_str("export const libTypePoison = true\n</script>\n");
+    script.push_str(
+        "export const libTypePoison = true\nexport default { name: 'LibTypeParent' }\n</script>\n",
+    );
     script
 }
 
@@ -338,7 +343,8 @@ const options = ['a', 'b'] as const
 const count = ref(0)
 const slotName = ref('extra')
 const button = useTemplateRef('button')
-function onPick(item: 'a' | 'b', index: number) {{ count.value = index; void item }}
+const emit = defineEmits(['done'])
+function onPick(item: 'a' | 'b', index: number) {{ count.value = index; void item; emit('done') }}
 export type PublicCount = typeof count
 </script>
 
@@ -379,7 +385,7 @@ fn unqualified_count(source: &str, name: &str) -> usize {
 
 /// The poison is the only unqualified spelling, and every generated reference
 /// is qualified.
-fn assert_only_the_poison_is_unqualified(generated: &str) {
+fn assert_only_the_poison_is_unqualified(generated: &str, lane: usize) {
     for (name, _, references) in QUALIFIED_LIB_TYPES {
         let qualified = format!("globalThis.{name}<");
         assert_eq!(
@@ -387,7 +393,7 @@ fn assert_only_the_poison_is_unqualified(generated: &str) {
                 unqualified_count(generated, name),
                 generated.matches(qualified.as_str()).count()
             ),
-            (1, *references),
+            (1, references[lane]),
             "{name}: (unqualified, qualified) references:\n{generated}"
         );
     }
@@ -409,7 +415,7 @@ fn the_content_mapper_projection_names_shadowed_lib_types_through_global_this() 
         )
         .expect("parent should project");
         // Listener closures plus the static and dynamic slot outlet tuples.
-        assert_only_the_poison_is_unqualified(&transform.text);
+        assert_only_the_poison_is_unqualified(&transform.text, MAPPER);
     }
 }
 
@@ -451,7 +457,7 @@ fn authored_lib_types_cannot_capture_the_projection() {
                 .find_by_original(&parent_path)
                 .expect("parent virtual file should exist")
                 .content;
-            assert_only_the_poison_is_unqualified(generated);
+            assert_only_the_poison_is_unqualified(generated, BATCH);
         }
         let _ = std::fs::remove_dir_all(&project_root);
         let Some(snapshot) = snapshot else {

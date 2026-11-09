@@ -1,0 +1,34 @@
+<script lang="ts">
+type Awaited<T> = never
+type ReturnType<T extends (...args: any) => any> = never
+export const libTypePoison = true
+export default { name: 'LibTypeParent' }
+</script>
+
+<script setup lang="ts">
+import { ref, useTemplateRef } from 'vue'
+import Child from './Child.vue'
+import Picker from './Picker.vue'
+
+const chosen = ref<'a' | 'b'>('a')
+const options = ['a', 'b'] as const
+const count = ref(0)
+const slotName = ref('extra')
+const button = useTemplateRef('button')
+const emit = defineEmits(['done'])
+function onPick(item: 'a' | 'b', index: number) { count.value = index; void item; emit('done') }
+export type PublicCount = typeof count
+</script>
+
+<template>
+  <Child value="ok" :transform="item => item.toUpperCase()" @save="item => item.toUpperCase()">
+    <template #default="{ item }">{{ item.toUpperCase() }}<slot name="inner" :item="item" /></template>
+    <template #named="{ label }">{{ label.toUpperCase() }}</template>
+  </Child>
+  <Picker v-model="chosen" :items="[...options]" label="pick" @pick="onPick">
+    <template #row="{ item, index }">{{ item.toUpperCase() }} {{ index.toFixed() }}</template>
+  </Picker>
+  <slot name="extra" v-bind="{ count }" />
+  <slot :name="slotName" v-bind="{ count }" />
+  <button ref="button" v-if="count > 0" @click="button?.focus()">{{ count }}</button>
+</template>

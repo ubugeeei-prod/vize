@@ -111,8 +111,10 @@ pub(super) fn emit_authored_component_aliases(
     if authored == AuthoredDefaultKind::None {
         return;
     }
-    ts.push_str(
-        "type $AuthoredComponent = Awaited<ReturnType<typeof __setup>>[\"__default__\"];\n",
+    append!(
+        *ts,
+        "type $AuthoredComponent = {}[\"__default__\"];\n",
+        crate::virtual_ts::generated_names::setup_return("")
     );
     if authored == AuthoredDefaultKind::Component {
         append!(
