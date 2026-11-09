@@ -11,8 +11,10 @@ use crate::batch::AUTHORED_VUE_TS_ALIAS_SENTINEL;
 
 use super::{VirtualProject, build::mirrored_virtual_path};
 
+mod probes;
 mod resolution;
-use resolution::resolve_relative_passthrough_module;
+pub(super) use probes::PassthroughProbes;
+use resolution::{is_file, resolve_relative_passthrough_module};
 
 impl VirtualProject {
     pub(super) fn javascript_passthrough_files(&self) -> impl Iterator<Item = &Path> {
@@ -28,6 +30,7 @@ pub(super) fn collect_passthrough_modules(
     content: &str,
     project_root: &Path,
     virtual_root: &Path,
+    probes: Option<&PassthroughProbes>,
 ) -> Vec<(PathBuf, PathBuf)> {
     let Some(dir) = path.parent() else {
         return Vec::new();
@@ -36,17 +39,18 @@ pub(super) fn collect_passthrough_modules(
     let mut seen = FxHashSet::default();
     let mut files = Vec::new();
     for specifier in extract_relative_module_specifiers(content) {
-        let Some(original_path) = resolve_relative_passthrough_module(dir, &specifier) else {
+        let Some(original_path) = resolve_relative_passthrough_module(dir, &specifier, probes)
+        else {
             continue;
         };
-        let declaration_path = adjacent_declaration_path(&original_path);
+        let declaration_path = adjacent_declaration_path(&original_path, probes);
         for original_path in std::iter::once(original_path).chain(declaration_path) {
             let virtual_path = authored_collision_alias(
                 dir,
                 &specifier,
                 &original_path,
-                project_root,
-                virtual_root,
+                (project_root, virtual_root),
+                probes,
             )
             .or_else(|| mirrored_virtual_path(project_root, virtual_root, &original_path).ok());
             if let Some(virtual_path) = virtual_path
@@ -91,14 +95,14 @@ fn authored_collision_alias(
     dir: &Path,
     specifier: &str,
     original: &Path,
-    project_root: &Path,
-    virtual_root: &Path,
+    (project_root, virtual_root): (&Path, &Path),
+    probes: Option<&PassthroughProbes>,
 ) -> Option<PathBuf> {
     let suffix = specifier
         .strip_suffix(".vue.tsx")
         .or_else(|| specifier.strip_suffix(".vue.ts"))?;
     let sfc = dir.join(cstr!("{suffix}.vue").as_str());
-    if !sfc.is_file() {
+    if !is_file(probes, &sfc) {
         return None;
     }
     let name = original.file_name()?.to_str()?;
@@ -189,7 +193,7 @@ fn normalize_existing_path(path: &Path) -> PathBuf {
     vize_carton::path::canonicalize_non_verbatim(path)
 }
 
-fn adjacent_declaration_path(path: &Path) -> Option<PathBuf> {
+fn adjacent_declaration_path(path: &Path, probes: Option<&PassthroughProbes>) -> Option<PathBuf> {
     let extension = path.extension().and_then(|extension| extension.to_str())?;
     let declaration_extension = match extension {
         "js" | "jsx" => "d.ts",
@@ -198,9 +202,7 @@ fn adjacent_declaration_path(path: &Path) -> Option<PathBuf> {
         _ => return None,
     };
     let candidate = path.with_extension(declaration_extension);
-    candidate
-        .is_file()
-        .then(|| normalize_existing_path(&candidate))
+    is_file(probes, &candidate).then(|| normalize_existing_path(&candidate))
 }
 
 fn is_javascript_passthrough(path: &Path) -> bool {
@@ -214,6 +216,17 @@ mod tests {
     use std::path::{Path, PathBuf};
 
     use super::collect_passthrough_modules;
+
+    /// Listing-backed probes must collect exactly what direct `stat`s do.
+    fn collect_both(entry: &Path, root: &Path, virtual_root: &Path) -> Vec<(PathBuf, PathBuf)> {
+        let content = std::fs::read_to_string(entry).unwrap();
+        let direct = collect_passthrough_modules(entry, &content, root, virtual_root, None);
+        let probes = super::PassthroughProbes::default();
+        let listed =
+            collect_passthrough_modules(entry, &content, root, virtual_root, Some(&probes));
+        assert_eq!(listed, direct);
+        direct
+    }
     use vize_carton::cstr;
 
     fn unique_case_dir(name: &str) -> PathBuf {
@@ -257,12 +270,7 @@ mod tests {
         write(&root, "tokens/colors.json", "{}\n");
         let virtual_root = crate::batch::project_virtual_root(&root);
 
-        let mut files = collect_passthrough_modules(
-            &entry,
-            &std::fs::read_to_string(&entry).unwrap(),
-            &root,
-            &virtual_root,
-        );
+        let mut files = collect_both(&entry, &root, &virtual_root);
         files.sort();
 
         assert_eq!(
@@ -353,12 +361,7 @@ mod tests {
         );
         let virtual_root = crate::batch::project_virtual_root(&root);
 
-        let mut files = collect_passthrough_modules(
-            &entry,
-            &std::fs::read_to_string(&entry).unwrap(),
-            &root,
-            &virtual_root,
-        );
+        let mut files = collect_both(&entry, &root, &virtual_root);
         files.sort();
 
         assert_eq!(
@@ -398,6 +401,17 @@ mod passthrough_tests {
 
     use super::collect_passthrough_modules;
 
+    /// Listing-backed probes must collect exactly what direct `stat`s do.
+    fn collect_both(entry: &Path, root: &Path, virtual_root: &Path) -> Vec<(PathBuf, PathBuf)> {
+        let content = std::fs::read_to_string(entry).unwrap();
+        let direct = collect_passthrough_modules(entry, &content, root, virtual_root, None);
+        let probes = super::PassthroughProbes::default();
+        let listed =
+            collect_passthrough_modules(entry, &content, root, virtual_root, Some(&probes));
+        assert_eq!(listed, direct);
+        direct
+    }
+
     fn unique_case_dir(name: &str) -> PathBuf {
         std::env::temp_dir().join(cstr!("vize-passthrough-{name}-{}", std::process::id()).as_str())
     }
@@ -429,12 +443,7 @@ mod passthrough_tests {
         );
         let virtual_root = crate::batch::project_virtual_root(&root);
 
-        let files = collect_passthrough_modules(
-            &entry,
-            &std::fs::read_to_string(&entry).unwrap(),
-            &root,
-            &virtual_root,
-        );
+        let files = collect_both(&entry, &root, &virtual_root);
 
         assert_eq!(files, Vec::new());
         assert_eq!(

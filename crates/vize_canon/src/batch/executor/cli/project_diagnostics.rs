@@ -47,10 +47,8 @@ pub(super) fn config(
 }
 
 fn is_project_config_path(path: &Path, project: &VirtualProject) -> bool {
-    if path.parent() != project.generated_tsconfig_path().parent() {
-        return false;
-    }
-
+    // Every file diagnostic asks; the name rules most out before the mirror
+    // config location costs a `realpath`.
     path.file_name()
         .and_then(|name| name.to_str())
         .is_some_and(|name| {
@@ -58,6 +56,7 @@ fn is_project_config_path(path: &Path, project: &VirtualProject) -> bool {
                 || name == "tsconfig.declaration.json"
                 || (name.starts_with("tsconfig.shard") && name.ends_with(".json"))
         })
+        && path.parent() == project.generated_tsconfig_path().parent()
 }
 
 /// TS6053 for each `extends` entry the chain skipped, at the entry itself, the
