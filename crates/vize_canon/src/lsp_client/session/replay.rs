@@ -77,10 +77,16 @@ impl CorsaProjectClient {
             "canon_document_namespace",
             paths.len(),
         );
-        if !paths.iter().all(|path| {
-            crate::lsp_client::session_paths::is_within_project_namespace(path, &self.project_root)
-                && path.is_file()
-        }) {
+        let mut namespace =
+            crate::lsp_client::physical_namespace::PhysicalNamespace::new(&self.project_root);
+        let observations = paths
+            .iter()
+            .map(|path| namespace.observe(path))
+            .collect::<Vec<_>>();
+        if !observations
+            .iter()
+            .all(|observed| observed.logical && observed.file)
+        {
             return Ok(false);
         }
         phase.finish();
@@ -89,11 +95,10 @@ impl CorsaProjectClient {
             documents.len(),
         );
         let mut private = Vec::with_capacity(paths.len());
-        for ((_, content), path) in documents.iter().zip(&paths) {
-            let owned = crate::lsp_client::session_paths::is_within_physical_project_namespace(
-                path,
-                &self.project_root,
-            );
+        for ((_, content), (path, observed)) in
+            documents.iter().zip(paths.iter().zip(&observations))
+        {
+            let owned = observed.physical;
             if !owned {
                 // Linked authored/package sources can be observed, never
                 // rewritten through Canon's logical namespace. Keep this
@@ -107,7 +112,9 @@ impl CorsaProjectClient {
             private.push(owned);
         }
         let mut summary = FileChangeSummary::default();
-        for (((uri, content), path), owned) in documents.iter().zip(paths).zip(private) {
+        for ((((uri, content), path), owned), observed) in
+            documents.iter().zip(paths).zip(private).zip(observations)
+        {
             self.clear_document_state(uri);
             if !owned {
                 self.remember_session_document_uri(uri, (*uri).into());
@@ -115,9 +122,12 @@ impl CorsaProjectClient {
             }
             if self
                 .canon_file_cache
-                .synchronize_with_digest(&path, content, || {
-                    self.document_texts.desired_digest(uri, content)
-                })
+                .synchronize_observed_with_digest(
+                    &path,
+                    content,
+                    observed.metadata.as_ref(),
+                    || self.document_texts.desired_digest(uri, content),
+                )
                 .map_err(|error| {
                     cstr!(
                         "Failed to update Canon document {}: {error}",
