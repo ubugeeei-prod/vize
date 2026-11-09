@@ -69,6 +69,7 @@ fn no_multi_spaces_preserves_jsx_clean_boundaries() {
         r#"const A = () => <div />;"#,
         r#"const A = () => <div {...props} />;"#,
         r#"const A = () => <div prop={{ spaced: true }} id="bar" />;"#,
+        r#"const A = () => <div v-if="left  right" />;"#,
         r#"const A = () => <button
   className="btn"
   disabled={isDisabled}

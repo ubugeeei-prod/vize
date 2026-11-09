@@ -7,7 +7,7 @@
 #
 # Consumers:
 #   tools/commands/davinci/matrix-gen.rs      — generates fixture stubs from this file
-#   tools/commands/davinci/corpus-coverage.rs — (P0-6) reports real-project counts
+#   tools/commands/davinci/corpus-coverage.ts — (P0-6) reports real-project counts
 #                                       against the same ids
 #
 # Every generated matrix fixture combines one value per dimension. A new

@@ -9,6 +9,7 @@ interface HtmlNode {
 
 const ignoreDirective = /^prettier-ignore(?:\b|-)/u;
 
+/** Rejects ignore directives that the native whole-file formatter cannot preserve. */
 export async function assertSupportedDirectives(
   text: string,
   options: ParserOptions,
@@ -68,7 +69,9 @@ function firstComment(text: string): string {
   return /^\s*<!--([\s\S]*?)-->/u.exec(text)?.[1] ?? "";
 }
 
+/** Reports whether the first SFC comment opts into formatting. */
 export const hasPragma = (text: string): boolean =>
   /@(?:format|prettier)\b/u.test(firstComment(text));
+/** Reports whether the first SFC comment opts out of formatting. */
 export const hasIgnorePragma = (text: string): boolean =>
   /@(?:noformat|noprettier)\b/u.test(firstComment(text));

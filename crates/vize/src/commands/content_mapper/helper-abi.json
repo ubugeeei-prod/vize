@@ -134,8 +134,56 @@
           "sha256": "0e6d163880471a51191587140ab5df0467247a253c6a951e65906737368a90aa"
         },
         {
+          "path": "virtual-ts-checker-strict.d.ts",
+          "sha256": "1536860cbc2e431cb0e5712e39a505bb73f52c780f9daa27b220b42cd3b9ac46"
+        },
+        {
           "path": "virtual-ts-checker.d.ts",
-          "sha256": "87f20250ecdad34f915982f5be52edb38a6cc740ad51a3d26ff49ae224437454"
+          "sha256": "f9ad350fdf8db8a98ec92cc93e2986114adc92ddbb2603979f6a1bc4c716c2c7"
+        },
+        {
+          "path": "virtual-ts-emit-overloads.d.ts",
+          "sha256": "a48dd34f5cbcfa8078d88d7c915d1024225e6cb2b708e843b490b131299d3cec"
+        },
+        {
+          "path": "virtual-ts-emits.d.ts",
+          "sha256": "870774cb9f53d39bc7f0165695c9c4016cc01d608964a46703a520d5e9d6d5aa"
+        },
+        {
+          "path": "virtual-ts-globals.d.ts",
+          "sha256": "f9e13dfcbbb3e719055570a6b13128720b01a29c2ffe4044a8d16613acc3b4d2"
+        },
+        {
+          "path": "virtual-ts-listeners.d.ts",
+          "sha256": "643048acce2ca1f480f541b70f25fa52baa2ed452f3860cc2bd84082fb2b81ed"
+        },
+        {
+          "path": "virtual-ts-patterns.d.ts",
+          "sha256": "e42c2c431553563663e28f75b4e68f8728d928a2867c857c76ef8cf30fe0f545"
+        },
+        {
+          "path": "virtual-ts-slots.d.ts",
+          "sha256": "3b2f3387f8e720bdffd4ed864b74af6fa19895a89ba6f2f64151fd8dd98bdf9f"
+        },
+        {
+          "path": "virtual-ts.d.ts",
+          "sha256": "d2afee78f759b85aa1b227caf4bd0b6f9fef54671e0c6e5f7c89f40c9b12cd6e"
+        }
+      ]
+    },
+    {
+      "subpath": "./virtual-ts-checker-strict",
+      "exports": {
+        "types": "./virtual-ts-checker-strict.d.ts"
+      },
+      "files": [
+        {
+          "path": "generated/content-mapper-types.d.ts",
+          "sha256": "0e6d163880471a51191587140ab5df0467247a253c6a951e65906737368a90aa"
+        },
+        {
+          "path": "virtual-ts-checker-strict.d.ts",
+          "sha256": "1536860cbc2e431cb0e5712e39a505bb73f52c780f9daa27b220b42cd3b9ac46"
         },
         {
           "path": "virtual-ts-emit-overloads.d.ts",

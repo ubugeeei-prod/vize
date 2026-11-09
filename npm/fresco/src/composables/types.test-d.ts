@@ -2,6 +2,7 @@
 
 import { createFocusManager, type FocusRegistrationOptions } from "./useFocus.js";
 import { createVirtualViewport } from "./useVirtualViewport.js";
+import { defineKeymap, type Keymap } from "./useKeymap.js";
 
 const registration: FocusRegistrationOptions = {
   parentId: "dialog",
@@ -32,3 +33,24 @@ viewport.viewportSize.value = 5;
 viewport.overscan.value = 4;
 // @ts-expect-error - public viewport state is mutated through invariant-preserving methods.
 viewport.offset.value = 0;
+
+type EditorCommand = "save" | "top";
+const editorKeymap: Keymap<EditorCommand> = defineKeymap([
+  {
+    command: "save",
+    sequence: [
+      { key: "x", ctrl: true },
+      { key: "s", ctrl: true },
+    ],
+  },
+  { command: "top", sequence: [{ key: "g" }, { key: "g" }] },
+]);
+void editorKeymap;
+
+defineKeymap<EditorCommand>([
+  {
+    // @ts-expect-error - command IDs remain inside the declared command union.
+    command: "delete",
+    sequence: [{ key: "d" }],
+  },
+]);

@@ -2,7 +2,15 @@
  * Select Component - Dropdown/menu selection
  */
 
-import { defineComponent, h, ref, type PropType, watch } from "vue";
+import { computed, defineComponent, h, ref, type PropType, watch } from "vue";
+import { useInput } from "../composables/useInput.js";
+import {
+  adjacentEnabledIndex,
+  createTypeaheadBuffer,
+  firstEnabledIndex,
+  lastEnabledIndex,
+  typeaheadIndex,
+} from "./collection-navigation.js";
 
 export interface SelectOption {
   label: string;
@@ -66,25 +74,68 @@ export const Select = defineComponent({
     selectedBg: String,
   },
   emits: ["update:modelValue", "select"],
-  setup(props, { emit: _emit }) {
-    const highlightedIndex = ref(0);
+  setup(props, { emit }) {
+    const highlightedIndex = ref(-1);
+    const typeahead = createTypeaheadBuffer();
 
     // Find initial index based on modelValue
     watch(
       () => props.modelValue,
       (value) => {
-        if (value) {
-          const index = props.options.findIndex((opt) => opt.value === value);
-          if (index !== -1) {
-            highlightedIndex.value = index;
-          }
-        }
+        const selectedIndex = props.options.findIndex(
+          (option) => option.value === value && !option.disabled,
+        );
+        highlightedIndex.value =
+          selectedIndex >= 0 ? selectedIndex : firstEnabledIndex(props.options);
       },
       { immediate: true },
     );
 
-    // Note: selectOption, moveUp, moveDown are designed for keyboard event handlers
-    // They are currently not wired up but kept for future use
+    watch(
+      () => props.options,
+      (options) => {
+        if (
+          highlightedIndex.value < 0 ||
+          highlightedIndex.value >= options.length ||
+          options[highlightedIndex.value]?.disabled
+        ) {
+          highlightedIndex.value = firstEnabledIndex(options);
+        }
+      },
+      { deep: true },
+    );
+
+    const activate = () => {
+      const option = props.options[highlightedIndex.value];
+      if (!option || option.disabled) return;
+      emit("update:modelValue", option.value);
+      emit("select", option.value);
+    };
+
+    useInput({
+      isActive: computed(() => props.focused),
+      onArrow: (direction) => {
+        if (direction !== "up" && direction !== "down") return;
+        highlightedIndex.value = adjacentEnabledIndex(
+          props.options,
+          highlightedIndex.value,
+          direction === "up" ? -1 : 1,
+        );
+      },
+      onKey: (key) => {
+        if (key === "home") highlightedIndex.value = firstEnabledIndex(props.options);
+        if (key === "end") highlightedIndex.value = lastEnabledIndex(props.options);
+      },
+      onChar: (character) => {
+        highlightedIndex.value = typeaheadIndex(
+          props.options,
+          highlightedIndex.value,
+          typeahead.push(character),
+          (option) => option.label,
+        );
+      },
+      onSubmit: activate,
+    });
 
     return () => {
       const children = props.options.map((option, index) => {

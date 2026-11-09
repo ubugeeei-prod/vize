@@ -19,7 +19,7 @@ export async function primary7502(source: string) {
   assert.equal(originalVaporCompiler.version, "3.6.0-rc.9");
   for (const name of ["@vue/compiler-dom", "@vue/compiler-ssr", "@vue/compiler-core"])
     assert.equal(compilerRequire(`${name}/package.json`).version, "3.6.0-rc.9");
-  assert.equal(ui("@vitejs/plugin-vue/package.json").version, "6.0.7");
+  assert.equal(ui("@vitejs/plugin-vue/package.json").version, "6.0.10");
   const factory = (await import(pathToFileURL(ui.resolve("@vitejs/plugin-vue")).href)).default;
   const helperId = "\0plugin-vue:export-helper";
   const context = {
@@ -66,7 +66,11 @@ export async function primary7502(source: string) {
   const vaporServer = await transform(true, vaporCompiler);
   assert.equal(vaporServer.helperCode, vaporClient.helperCode);
   return {
-    versions: { domCompiler: compiler.version, plugin: "6.0.7", vaporCompiler: "3.6.0-rc.9" },
+    versions: {
+      domCompiler: compiler.version,
+      plugin: "6.0.10",
+      vaporCompiler: "3.6.0-rc.9",
+    },
     dom: await transform(false),
     ssr: await transform(true),
     vapor: { ...vaporClient, serverCode: vaporServer.code, serverMap: vaporServer.map },

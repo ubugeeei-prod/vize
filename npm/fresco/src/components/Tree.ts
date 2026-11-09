@@ -2,7 +2,15 @@
  * Tree Component - Tree view for hierarchical data
  */
 
-import { defineComponent, h, type PropType, type VNode } from "vue";
+import { computed, defineComponent, h, ref, type PropType, watch } from "vue";
+import { useInput } from "../composables/useInput.js";
+import {
+  adjacentEnabledIndex,
+  createTypeaheadBuffer,
+  firstEnabledIndex,
+  lastEnabledIndex,
+  typeaheadIndex,
+} from "./collection-navigation.js";
 
 export interface TreeNode {
   key: string;
@@ -19,6 +27,8 @@ export interface TreeProps {
   expanded?: string[];
   /** Selected node key */
   selected?: string;
+  /** Whether the tree owns keyboard input */
+  focused?: boolean;
   /** Show lines */
   showLines?: boolean;
   /** Indent size */
@@ -47,6 +57,10 @@ export const Tree = defineComponent({
       default: () => [],
     },
     selected: String,
+    focused: {
+      type: Boolean,
+      default: false,
+    },
     showLines: {
       type: Boolean,
       default: true,
@@ -73,71 +87,194 @@ export const Tree = defineComponent({
       default: "cyan",
     },
   },
-  emits: ["select", "toggle"],
-  setup(props, { emit: _emit }) {
-    const renderNode = (
-      node: TreeNode,
-      depth: number,
-      isLast: boolean,
-      prefix: string,
-    ): VNode[] => {
-      const nodes: VNode[] = [];
-      const hasChildren = node.children && node.children.length > 0;
-      const isExpanded = props.expanded?.includes(node.key);
-      const isSelected = node.key === props.selected;
+  emits: ["select", "toggle", "update:selected", "update:expanded"],
+  setup(props, { emit }) {
+    interface VisibleTreeNode {
+      readonly node: TreeNode;
+      readonly parentKey?: string;
+      readonly prefix: string;
+      readonly icon: string;
+    }
 
-      // Build line prefix
-      let linePrefix = prefix;
-      if (props.showLines && depth > 0) {
-        linePrefix += isLast ? "└─" : "├─";
-      }
+    const visibleNodes = computed<VisibleTreeNode[]>(() => {
+      const expanded = new Set(props.expanded);
+      const visible: VisibleTreeNode[] = [];
 
-      // Icon
-      let icon = props.leafIcon;
-      if (hasChildren) {
-        icon = isExpanded ? props.expandedIcon : props.collapsedIcon;
-      }
-      if (node.icon) {
-        icon = node.icon;
-      }
+      const append = (
+        nodes: readonly TreeNode[],
+        depth: number,
+        prefix: string,
+        parentKey?: string,
+      ) => {
+        nodes.forEach((node, index) => {
+          const isLast = index === nodes.length - 1;
+          const hasChildren = (node.children?.length ?? 0) > 0;
+          const isExpanded = expanded.has(node.key);
+          const line = props.showLines && depth > 0 ? (isLast ? "└─" : "├─") : "";
+          const icon =
+            node.icon ??
+            (hasChildren
+              ? isExpanded
+                ? props.expandedIcon
+                : props.collapsedIcon
+              : props.leafIcon);
 
-      // Node line
-      nodes.push(
-        h(
-          "text",
-          {
-            key: node.key,
-            fg: isSelected ? props.selectedFg : props.fg,
-            bold: isSelected,
-            dim: node.disabled,
-          },
-          `${linePrefix}${icon} ${node.label}`,
-        ),
-      );
+          visible.push({ node, parentKey, prefix: `${prefix}${line}`, icon });
 
-      // Children
-      if (hasChildren && isExpanded) {
-        const childPrefix = prefix + (props.showLines && depth > 0 ? (isLast ? "  " : "│ ") : "");
-        node.children!.forEach((child, index) => {
-          const childIsLast = index === node.children!.length - 1;
-          nodes.push(
-            ...renderNode(child, depth + 1, childIsLast, childPrefix + " ".repeat(props.indent)),
+          if (!hasChildren || !isExpanded) return;
+          const branch = props.showLines && depth > 0 ? (isLast ? "  " : "│ ") : "";
+          append(
+            node.children ?? [],
+            depth + 1,
+            `${prefix}${branch}${" ".repeat(props.indent)}`,
+            node.key,
           );
         });
+      };
+
+      append(props.data, 0, "");
+      return visible;
+    });
+
+    const highlightedKey = ref<string>();
+    const typeahead = createTypeaheadBuffer();
+
+    const navigableNodes = computed(() =>
+      visibleNodes.value.map(({ node }) => ({ disabled: node.disabled })),
+    );
+    const highlightedIndex = computed(() =>
+      visibleNodes.value.findIndex(({ node }) => node.key === highlightedKey.value),
+    );
+
+    const syncVisibleHighlight = () => {
+      const currentIndex = highlightedIndex.value;
+      if (currentIndex >= 0 && !visibleNodes.value[currentIndex]?.node.disabled) return;
+
+      const selectedIndex = visibleNodes.value.findIndex(
+        ({ node }) => node.key === props.selected && !node.disabled,
+      );
+      const nextIndex =
+        selectedIndex >= 0 ? selectedIndex : firstEnabledIndex(navigableNodes.value);
+      highlightedKey.value = visibleNodes.value[nextIndex]?.node.key;
+    };
+
+    watch(
+      () => props.selected,
+      (selected) => {
+        const selectedIndex = visibleNodes.value.findIndex(
+          ({ node }) => node.key === selected && !node.disabled,
+        );
+        if (selectedIndex >= 0) {
+          highlightedKey.value = visibleNodes.value[selectedIndex]?.node.key;
+        } else syncVisibleHighlight();
+      },
+      { immediate: true },
+    );
+    watch(visibleNodes, syncVisibleHighlight, { deep: true });
+
+    const setHighlight = (index: number) => {
+      const entry = visibleNodes.value[index];
+      if (!entry || entry.node.disabled) return;
+      highlightedKey.value = entry.node.key;
+    };
+
+    const setExpanded = (key: string, expanded: boolean) => {
+      const next = new Set(props.expanded);
+      if (expanded) next.add(key);
+      else next.delete(key);
+      emit("update:expanded", [...next]);
+      emit("toggle", key, expanded);
+    };
+
+    const activate = () => {
+      const entry = visibleNodes.value[highlightedIndex.value];
+      if (!entry || entry.node.disabled) return;
+      emit("update:selected", entry.node.key);
+      emit("select", entry.node.key);
+    };
+
+    const moveToParent = (parentKey: string | undefined) => {
+      let key = parentKey;
+      while (key) {
+        const index = visibleNodes.value.findIndex(({ node }) => node.key === key);
+        const entry = visibleNodes.value[index];
+        if (entry && !entry.node.disabled) {
+          setHighlight(index);
+          return;
+        }
+        key = entry?.parentKey;
       }
-
-      return nodes;
     };
 
-    return () => {
-      const children: VNode[] = [];
+    useInput({
+      isActive: computed(() => props.focused),
+      onArrow: (direction) => {
+        const currentIndex = highlightedIndex.value;
+        if (direction === "up" || direction === "down") {
+          setHighlight(
+            adjacentEnabledIndex(navigableNodes.value, currentIndex, direction === "up" ? -1 : 1),
+          );
+          return;
+        }
 
-      props.data.forEach((node, index) => {
-        const isLast = index === props.data.length - 1;
-        children.push(...renderNode(node, 0, isLast, ""));
-      });
+        const entry = visibleNodes.value[currentIndex];
+        if (!entry) return;
+        const hasChildren = (entry.node.children?.length ?? 0) > 0;
+        const isExpanded = props.expanded.includes(entry.node.key);
+        if (direction === "right" && hasChildren) {
+          if (!isExpanded) {
+            setExpanded(entry.node.key, true);
+          } else {
+            const childIndex = visibleNodes.value.findIndex(
+              (candidate) => candidate.parentKey === entry.node.key && !candidate.node.disabled,
+            );
+            setHighlight(childIndex);
+          }
+        } else if (direction === "left") {
+          if (hasChildren && isExpanded) setExpanded(entry.node.key, false);
+          else moveToParent(entry.parentKey);
+        }
+      },
+      onKey: (key) => {
+        if (key === "home") setHighlight(firstEnabledIndex(navigableNodes.value));
+        if (key === "end") setHighlight(lastEnabledIndex(navigableNodes.value));
+      },
+      onChar: (character) => {
+        if (character === " ") {
+          activate();
+          return;
+        }
+        setHighlight(
+          typeaheadIndex(
+            visibleNodes.value.map(({ node }) => node),
+            highlightedIndex.value,
+            typeahead.push(character),
+            (node) => node.label,
+          ),
+        );
+      },
+      onSubmit: activate,
+    });
 
-      return h("box", { style: { flex_direction: "column" } }, children);
-    };
+    return () =>
+      h(
+        "box",
+        { style: { flex_direction: "column" } },
+        visibleNodes.value.map(({ node, prefix, icon }) => {
+          const isSelected = node.key === props.selected;
+          const isHighlighted = node.key === highlightedKey.value;
+          return h(
+            "text",
+            {
+              key: node.key,
+              fg: isSelected || isHighlighted ? props.selectedFg : props.fg,
+              bold: isSelected,
+              underline: props.focused && isHighlighted,
+              dim: node.disabled,
+            },
+            `${prefix}${icon} ${node.label}`,
+          );
+        }),
+      );
   },
 });

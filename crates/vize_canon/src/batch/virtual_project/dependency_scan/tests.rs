@@ -14,6 +14,50 @@ fn case_dir(name: &str) -> PathBuf {
 }
 
 #[test]
+fn identity_script_reuses_initial_dependency_syntax_once() {
+    let root = case_dir("identity-syntax-reuse");
+    let src = root.join("src");
+    fs::create_dir_all(&src).unwrap();
+    let entry = src.join("entry.ts");
+    let dependency = src.join("dependency.ts");
+    let reference = src.join("types.d.ts");
+    let entry_source = "/// <reference path=\"./types.d.ts\" />\nimport { value } from './dependency';\nexport { value };\n";
+    fs::write(&entry, entry_source).unwrap();
+    fs::write(&dependency, "export const value = 1;\n").unwrap();
+    fs::write(&reference, "declare const named: string;\n").unwrap();
+
+    let mut project = VirtualProject::new(&root).unwrap();
+    project.register_path(&entry).unwrap();
+    let syntax = project.source_artifacts[&entry]
+        .dependency_syntax_facts
+        .as_ref()
+        .expect("identity script keeps the initial parse facts until reachability");
+    assert_eq!(syntax.occurrences.len(), 1);
+    assert!(syntax.occurrences.iter().any(|(start, end, mode)| {
+        *mode == crate::PackageResolutionMode::Contextual
+            && entry_source.get(*start as usize..*end as usize) == Some("./dependency")
+    }));
+    assert_eq!(
+        syntax.references.as_ref(),
+        [CompactString::from("./types.d.ts")]
+    );
+
+    project.register_reachable_dependencies().unwrap();
+    assert!(
+        project.source_artifacts[&entry]
+            .dependency_syntax_facts
+            .is_none(),
+        "the one-shot facts must not become retained project memory"
+    );
+    assert_eq!(
+        project.registered_original_paths_sorted(),
+        vec![dependency, entry, reference],
+        "reachability must register the complete dependency graph exactly once",
+    );
+    let _ = fs::remove_dir_all(&root);
+}
+
+#[test]
 fn a_published_package_alias_does_not_force_a_parse() {
     // #3898: the `vue` alias every Vue tsconfig carries is wildcard-free and
     // points into `node_modules`, so the walk always rejects it. Matching it
@@ -261,8 +305,11 @@ fn an_editor_paths_declaration_is_mirrored_but_not_a_program_root() {
     project.register_path(&vue_path).unwrap();
     project.register_reachable_dependencies().unwrap();
 
-    let registered = project.registered_original_paths_sorted();
-    assert!(registered.contains(&declaration), "{registered:?}");
+    assert_eq!(
+        project.registered_original_paths_sorted(),
+        vec![vue_path, declaration.clone()],
+        "the editor mirror must include only the authored SFC and its declaration",
+    );
     assert!(!project.is_declaration_root(&declaration));
     assert_eq!(
         project

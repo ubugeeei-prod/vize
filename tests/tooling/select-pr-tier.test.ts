@@ -23,7 +23,7 @@ test("a PR runs affected checks and explicitly requests duplicate heavy qualific
     "upstream/forks/lightningcss/src/lib.rs",
     "npm/linter/oxlint/src/index.ts",
     "npm/native/index.d.ts",
-    "playground/src/App.vue",
+    "playground/src/app.vue",
     "Cargo.lock",
     "pnpm-lock.yaml",
     ".github/workflows/pr-js-checks.yml",

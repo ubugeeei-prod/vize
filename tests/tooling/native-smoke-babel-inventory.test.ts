@@ -124,7 +124,10 @@ test("smoke rollback or Babel publication rollback cannot reuse historical admis
   for (const changed of [
     currentLine.replace(" npm/cli", ""),
     currentLine.replace(" npm/cli", " npm/cli npm/cli"),
-    currentLine.replace("npm/cli npm/builder/vite", "npm/builder/vite npm/cli"),
+    currentLine.replace(
+      "npm/cli npm/create-fresco npm/builder/vite",
+      "npm/create-fresco npm/cli npm/builder/vite",
+    ),
   ])
     assert.throws(() => assertLiveInventory(workflow, release.replace(currentLine, changed)));
 });

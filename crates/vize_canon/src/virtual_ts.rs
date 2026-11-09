@@ -92,8 +92,8 @@ pub(crate) use generator::{extract_declared_name, generate_virtual_ts_with_offse
 #[cfg(feature = "native")]
 pub(crate) use helpers::ERROR_COMPONENT_STUB;
 pub use helpers::{
-    DECLARATION_HELPERS_DTS, SHARED_PREAMBLE_DTS, SHARED_PREAMBLE_FILE_NAME, VUE_SETUP_HELPERS,
-    VUE_TYPE_HELPERS,
+    DECLARATION_HELPERS_DTS, SHARED_PREAMBLE_DTS, SHARED_PREAMBLE_FILE_NAME,
+    SHARED_PREAMBLE_STRICT_DTS, VUE_SETUP_HELPERS, VUE_TYPE_HELPERS,
 };
 #[cfg(feature = "native")]
 pub(crate) use helpers::{push_ts_string_literal, to_safe_identifier};

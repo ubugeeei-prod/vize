@@ -11,7 +11,7 @@ const pluginFactory = (await import(pathToFileURL(fromUi.resolve("@vitejs/plugin
 const { transformSync } = fromUi("@babel/core");
 const { createSSRApp } = fromVue("vue");
 const { renderToString } = fromVue("vue/server-renderer");
-assert.equal(fromUi("@vitejs/plugin-vue/package.json").version, "6.0.7");
+assert.equal(fromUi("@vitejs/plugin-vue/package.json").version, "6.0.10");
 assert.equal(officialCompiler.version, "3.6.0-rc.9");
 assert.equal(fromVue("./package.json").version, officialCompiler.version);
 assert.equal(fromVue("@vue/server-renderer/package.json").version, officialCompiler.version);

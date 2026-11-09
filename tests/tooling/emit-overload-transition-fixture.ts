@@ -43,7 +43,8 @@ export function sourcePair() {
     writeFileSync(path.join(destination, emitPath), before);
   }
   const currentPreamble = readFileSync(path.join(root, preamblePath));
-  const listenerInclude = '    include_str!("declarations/shared-listener-args.d.ts.txt"),\n';
+  const listenerInclude =
+    '            include_str!("declarations/shared-listener-args.d.ts.txt"),\n';
   assert.equal(currentPreamble.toString().split(listenerInclude).length, 2);
   const previousPreamble = Buffer.from(currentPreamble.toString().replace(listenerInclude, ""));
   for (const destination of [base, head])

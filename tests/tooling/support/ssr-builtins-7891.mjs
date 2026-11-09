@@ -30,8 +30,8 @@ try {
   assert.equal(compiler.version, "3.6.0-rc.9");
   assert.equal(vue.version, compiler.version);
   assert.equal(fromVue("@vue/server-renderer/package.json").version, compiler.version);
-  assert.equal(fromUi("@vitejs/plugin-vue/package.json").version, "6.0.7");
-  evidence.versions = { vue: vue.version, plugin: "6.0.7" };
+  assert.equal(fromUi("@vitejs/plugin-vue/package.json").version, "6.0.10");
+  evidence.versions = { vue: vue.version, plugin: "6.0.10" };
   const root = new URL("../../_fixtures/differential/compiler/ssr-builtins-7891/", import.meta.url);
   const custody = JSON.parse(readFileSync(new URL("custody.json", root)));
   const manifest = JSON.parse(readFileSync(new URL("../ssr-builtins-7891.manifest.json", root)));

@@ -32,7 +32,7 @@ jobs:
           total: ${{ matrix.total }}
   test-scripts-gate:
     name: test-scripts # Release preflight requires exactly one successful job with this exact name.
-    runs-on: ubuntu-24.04
+    runs-on: blacksmith-32vcpu-ubuntu-2404
     if: ${{ always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') }}
     timeout-minutes: 5
     needs: [full-source-cli, tooling-plan, test-scripts]
@@ -120,7 +120,7 @@ jobs:
         uses: ./.github/actions/test-js-packages-with-history
         with: { partition: original-project }
   test-js-packages:
-    runs-on: ubuntu-24.04
+    runs-on: blacksmith-32vcpu-ubuntu-2404
     if: ${{ always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') }}
     timeout-minutes: 5
     needs: [full-js-package-tests, full-js-original-project]
@@ -178,7 +178,7 @@ jobs:
         if: ${{ always() }}
   full-rust-report:
     name: full-rust-report
-    runs-on: ubuntu-24.04
+    runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 5
     if: ${{ always() && !cancelled() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') }}
     needs: [full-rust-workspace, clippy-and-test]
@@ -294,7 +294,7 @@ jobs:
         if: ${{ always() }}
   clippy-and-test:
     # Keep the release gate's identity while every original producer must succeed.
-    runs-on: ubuntu-24.04
+    runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 5
     if: ${{ always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') }}
     needs: [rust-clippy-portability, rust-davinci-allocations, rust-native-differential]

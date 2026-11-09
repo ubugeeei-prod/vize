@@ -322,7 +322,7 @@ impl BatchTypeChecker {
     pub fn shared_helpers_preamble(&self) -> Option<&'static str> {
         self.project
             .uses_shared_helpers()
-            .then_some(crate::virtual_ts::SHARED_PREAMBLE_DTS)
+            .then(|| self.project.shared_helpers_preamble())
     }
 
     /// Emit declaration files for the scanned project.

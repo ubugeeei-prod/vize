@@ -11,7 +11,7 @@ use crate::batch::source_map::CompositeSourceMap;
 use super::super::VirtualFile;
 use super::super::esm_declaration_spelling::should_preserve_esm_declaration_spelling;
 use super::super::passthrough::collect_passthrough_modules;
-use super::{RegisteredFile, ScriptBuildContext, retain_source_content};
+use super::{DependencySyntaxFacts, RegisteredFile, ScriptBuildContext, retain_source_content};
 
 pub(in crate::batch::virtual_project) fn build_script_registered_file(
     path: &Path,
@@ -20,10 +20,10 @@ pub(in crate::batch::virtual_project) fn build_script_registered_file(
     context: ScriptBuildContext<'_>,
 ) -> CorsaResult<RegisteredFile> {
     let content = source.as_ref();
-    let (rewritten, stars) = profile!("canon.import.rewrite.script", {
+    let (rewritten, stars, occurrences) = profile!("canon.import.rewrite.script", {
         context
             .rewriter
-            .rewrite_for_virtual_project_with_captured_stars(
+            .rewrite_for_virtual_project_with_captured_stars_and_occurrences(
                 content,
                 source_type,
                 context.roots,
@@ -51,9 +51,19 @@ pub(in crate::batch::virtual_project) fn build_script_registered_file(
         vize_carton::micro_count!("canon.source.identity_shared.files", 1);
         vize_carton::micro_count!("canon.source.identity_shared.bytes", content.len());
     }
+    let dependency_syntax_facts = if authored_identity {
+        occurrences.map(|occurrences| DependencySyntaxFacts {
+            source_bytes: content.len(),
+            occurrences: occurrences.into_boxed_slice(),
+            references: super::super::dependency_scan::path_references(content).into_boxed_slice(),
+        })
+    } else {
+        None
+    };
 
     Ok(RegisteredFile {
         diagnostic_route: Default::default(),
+        props_fallback: false,
         star_projection: super::super::star_exports::StarProjection::from_rewrite(
             &rewritten, stars,
         ),
@@ -78,5 +88,6 @@ pub(in crate::batch::virtual_project) fn build_script_registered_file(
         empty_module_exports: false,
         module_exports: None,
         original_content: (!authored_identity).then(|| retain_source_content(source)),
+        dependency_syntax_facts,
     })
 }

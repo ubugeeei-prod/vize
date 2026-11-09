@@ -14,6 +14,7 @@ const CASES: &[&str] = &[
     "<section v-bind=attrs><button @click=\"count++; save(count)\">{{ $attrs.id }}</button></section>",
     "<div v-pre :raw=\"ignored\">{{ literal }}</div><span v-else-if=other>{{ other }}</span>",
     "<p>café 日本語</p><button :title=\"状態\" @click=\"保存(状態)\">{{ 状態 }}</button>",
+    "<p title=\"&fjlig;&amp;&#x1f642;\">entities</p>",
     "<Child :a=\"x &amp;&amp; y\" v-slot=\"{ value = &quot;fallback&quot;, ...rest }\">{{ value }} {{ rest }}</Child>",
     "<section v-pre><div :title=\"ignored\"><span v-if=\"never\">{{ raw }}</span></div></section><p :id=\"live\">{{ live }}</p>",
     "<div v-if=\"first\"></div><span v-else-if=\"second\"></span><p v-else></p>",
@@ -32,11 +33,14 @@ fn l1_l2_lint_projection_matches_relief_semantics() {
         let (surface, errors) = vize_l1::markup::parse(&allocator, source);
         assert!(errors.is_empty(), "L1 fixture must parse: {source}");
         let lowered = lower_preserving_comments(&allocator, &surface, &errors);
-
         let mut expected = Drawer::for_lint();
         expected.draw_template(&legacy);
         let mut actual = Drawer::for_lint();
-        actual.draw_lint_template(LintTemplate::new(&surface, &lowered));
+        actual.draw_lint_template(LintTemplate::new(
+            &surface,
+            lowered.allocator,
+            &lowered.root,
+        ));
 
         let actual = actual.finish().semantic_snapshot();
         let expected = expected.finish().semantic_snapshot();
@@ -61,13 +65,38 @@ fn l1_l2_lint_projection_matches_relief_semantics() {
 }
 
 #[test]
+fn l1_l2_static_attribute_entities_are_decoded() {
+    let source = "<p title=\"&fjlig;&amp;&#x1f642;\">entities</p>";
+    let allocator = Allocator::default();
+    let (surface, errors) = vize_l1::markup::parse(&allocator, source);
+    assert!(errors.is_empty());
+    let lowered = lower_preserving_comments(&allocator, &surface, &errors);
+    let root = CompatibilityRoot::new(LintTemplate::new(
+        &surface,
+        lowered.allocator,
+        &lowered.root,
+    ))
+    .build();
+    let TemplateChildNode::Element(element) = &root.children[0] else {
+        panic!("element root")
+    };
+    let PropNode::Attribute(attribute) = &element.props[0] else {
+        panic!("title attribute")
+    };
+    assert_eq!(
+        attribute.value.as_ref().expect("title value").content,
+        "fj&🙂"
+    );
+}
+
+#[test]
 fn l1_l2_slot_props_retain_decoded_authored_text() {
     let source = "<Child v-slot=\"{ value = &quot;fallback&quot;, ...rest }\">{{ value }}</Child>";
     let allocator = Allocator::default();
     let (surface, errors) = vize_l1::markup::parse(&allocator, source);
     assert!(errors.is_empty());
     let lowered = lower_preserving_comments(&allocator, &surface, &errors);
-    let template = LintTemplate::new(&surface, &lowered);
+    let template = LintTemplate::new(&surface, lowered.allocator, &lowered.root);
     let root = CompatibilityRoot::new(template).build();
     let TemplateChildNode::Element(element) = &root.children[0] else {
         panic!("component root")

@@ -1,7 +1,7 @@
 import type { VitePluginVueCustomElementOption, VizeOptions } from "../types.ts";
 import { createFilter } from "../utils/filter.ts";
 
-export const PLUGIN_VUE_COMPAT_VERSION = "6.0.7";
+export const PLUGIN_VUE_COMPAT_VERSION = "6.0.10";
 
 const DEFAULT_CUSTOM_ELEMENT_PATTERN = /\.ce\.vue$/;
 

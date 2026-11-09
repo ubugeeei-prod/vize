@@ -3,6 +3,7 @@ import { createRequire } from "node:module";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
+/** Environment variables that explicitly override bundled Corsa discovery. */
 export const publicCorsaEnvironmentVariables = [
   "CORSA_PATH",
   "CORSA_EXECUTABLE",
@@ -16,6 +17,7 @@ type RuntimeResolutionOptions = {
   platform?: NodeJS.Platform;
 };
 
+/** Configures the bundled Corsa executable unless the environment already overrides it. */
 export function configureBundledCorsaRuntime(
   environment: NodeJS.ProcessEnv = process.env,
   options: RuntimeResolutionOptions = {},
@@ -29,6 +31,7 @@ export function configureBundledCorsaRuntime(
   return executable;
 }
 
+/** Resolves a compatible Corsa executable from the CLI's optional dependencies. */
 export function resolveBundledCorsaRuntime(options: RuntimeResolutionOptions = {}): string | null {
   const packageRoot =
     options.packageRoot ?? path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");

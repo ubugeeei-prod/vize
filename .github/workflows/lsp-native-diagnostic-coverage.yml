@@ -22,7 +22,7 @@ concurrency:
 jobs:
   coverage:
     name: Every one of 129 independent native diagnostics and repairs
-    runs-on: ubuntu-24.04
+    runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 45
     env:
       CARGO_TERM_COLOR: always

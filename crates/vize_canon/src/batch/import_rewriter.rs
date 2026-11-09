@@ -15,7 +15,10 @@ mod authored_vue_ts;
 mod policy;
 
 mod collect;
-use collect::{ModuleSpecifierCollector, collect_specifier_occurrences, collect_specifier_spans};
+use collect::{
+    ModuleSpecifierCollector, collect_specifier_occurrences, collect_specifier_spans,
+    into_deduplicated_specifier_spans,
+};
 
 mod facts;
 pub(crate) use facts::ModuleSpecifierFactsCache;
@@ -41,6 +44,14 @@ pub(in crate::batch) use project_mirror::VirtualProjectRewriteOptions;
 
 mod source_map;
 pub use source_map::{ImportSourceMap, OffsetAdjustment, RewriteResult};
+
+pub(in crate::batch) type ModuleSpecifierSpan = (u32, u32, crate::PackageResolutionMode);
+pub(in crate::batch) type ModuleSpecifierSpans = Vec<ModuleSpecifierSpan>;
+pub(in crate::batch) type VirtualProjectRewriteCapture = (
+    RewriteResult,
+    Vec<EmptyVueStar>,
+    Option<ModuleSpecifierSpans>,
+);
 
 mod literal_rewrite;
 
@@ -239,7 +250,9 @@ impl ImportRewriter {
     where
         F: Fn(&str, crate::PackageResolutionMode) -> Option<String>,
     {
-        self.rewrite_with_star_capture(source, source_type, rewrite_specifier, true)
+        let (rewritten, stars, _) =
+            self.rewrite_with_star_capture(source, source_type, rewrite_specifier, true);
+        (rewritten, stars)
     }
 
     fn rewrite_with_star_capture<F>(
@@ -248,7 +261,7 @@ impl ImportRewriter {
         source_type: SourceType,
         rewrite_specifier: F,
         capture_stars: bool,
-    ) -> (RewriteResult, Vec<EmptyVueStar>)
+    ) -> (RewriteResult, Vec<EmptyVueStar>, ModuleSpecifierSpans)
     where
         F: Fn(&str, crate::PackageResolutionMode) -> Option<String>,
     {
@@ -268,14 +281,10 @@ impl ImportRewriter {
         );
 
         if result.panicked {
-            return (
-                self.rewrite_occurrences(
-                    source,
-                    &collect_specifier_spans(source, source_type),
-                    rewrite_specifier,
-                ),
-                Vec::new(),
-            );
+            let spans = collect_specifier_spans(source, source_type);
+            let rewritten = self.rewrite_occurrences(source, &spans, rewrite_specifier);
+            let specifier_spans = into_deduplicated_specifier_spans(source, spans);
+            return (rewritten, Vec::new(), specifier_spans);
         }
 
         self.rewrite_parsed(
@@ -292,7 +301,7 @@ impl ImportRewriter {
         program: &Program<'_>,
         rewrite_specifier: F,
         capture_stars: bool,
-    ) -> (RewriteResult, Vec<EmptyVueStar>)
+    ) -> (RewriteResult, Vec<EmptyVueStar>, ModuleSpecifierSpans)
     where
         F: Fn(&str, crate::PackageResolutionMode) -> Option<String>,
     {
@@ -309,10 +318,9 @@ impl ImportRewriter {
             .filter_map(|candidate| EmptyVueStar::capture(source, &program.comments, candidate))
             .collect();
 
-        (
-            self.rewrite_occurrences(source, &collector.specifiers, rewrite_specifier),
-            stars,
-        )
+        let rewritten = self.rewrite_occurrences(source, &collector.specifiers, rewrite_specifier);
+        let specifier_spans = into_deduplicated_specifier_spans(source, collector.specifiers);
+        (rewritten, stars, specifier_spans)
     }
 
     fn rewrite_occurrences<F>(

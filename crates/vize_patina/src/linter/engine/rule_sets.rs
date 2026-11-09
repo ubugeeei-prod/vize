@@ -150,8 +150,10 @@ pub(crate) fn analyze_descriptor_for_lint_with_template(
     } else {
         options
     };
-    let template =
-        template.map(|template| LintTemplate::new(template.surface(), template.lowered()));
+    let template = template.map(|template| {
+        let lowered = template.lowered();
+        LintTemplate::new(template.surface(), lowered.allocator, &lowered.root)
+    });
     match resolve_filename {
         Some(filename) => {
             vize_atelier_sfc::croquis::analyze_sfc_descriptor_with_lint_template_resolved(
@@ -203,8 +205,10 @@ pub(super) fn analyze_descriptor_for_component_reads(
     } else {
         options
     };
-    let template =
-        template.map(|template| LintTemplate::new(template.surface(), template.lowered()));
+    let template = template.map(|template| {
+        let lowered = template.lowered();
+        LintTemplate::new(template.surface(), lowered.allocator, &lowered.root)
+    });
     let (mut analysis, packet) = match resolve_filename {
         Some(filename) => {
             vize_atelier_sfc::croquis::analyze_sfc_descriptor_with_lint_template_and_occurrences_resolved(

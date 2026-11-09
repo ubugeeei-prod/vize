@@ -1,7 +1,7 @@
 <!-- GENERATED FILE — do not edit by hand.
-     Regenerate: rust-script tools/commands/davinci/corpus-coverage.rs --write
-     Verify:     rust-script tools/commands/davinci/corpus-coverage.rs --check
-     Generator:  tools/commands/davinci/corpus-coverage.rs -->
+     Regenerate: node tools/commands/davinci/corpus-coverage.ts --write
+     Verify:     node tools/commands/davinci/corpus-coverage.ts --check
+     Generator:  tools/commands/davinci/corpus-coverage.ts -->
 
 # Corpus construct coverage
 

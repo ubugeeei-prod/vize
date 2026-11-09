@@ -2,6 +2,7 @@ import remapping from "@jridgewell/remapping";
 import convertSourceMap from "convert-source-map";
 import type { SourceMapInput } from "@jridgewell/remapping";
 
+/** Composes native compiler mappings with the map already owned by Babel. */
 export function composeInputMap(nativeMap: string | null | undefined, printedMap: object | null) {
   if (!nativeMap || !printedMap) {
     throw new Error("The native JSX compiler did not provide the requested original-source map");
