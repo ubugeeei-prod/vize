@@ -22,7 +22,7 @@ export const ledgerPath = "tests/_fixtures/fixture-compatibility-ledger.json";
 const shardDirectory = /^real-project-matrix-(\d+)$/;
 const revisionPattern = /^[a-f0-9]{40}$/;
 
-// Target names follow docs/davinci/plan/deletion-readiness-policy.json.
+// Target names follow the deletion-readiness policy targets.
 // The Matrix compiles the default DOM target only, so `ssr` and `vapor`
 // have no T2 rows yet.
 export const realProjectProducts = [
