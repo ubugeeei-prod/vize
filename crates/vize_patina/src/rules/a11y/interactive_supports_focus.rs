@@ -34,7 +34,10 @@ use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_l0::FxHashSet;
 use vize_relief::RootNode;
 
-use super::{helpers::is_interactive_role, markup_helpers};
+use super::{
+    helpers::{INTERACTIVE_HANDLER_EVENTS, is_interactive_role},
+    markup_helpers,
+};
 
 static META: RuleMeta = RuleMeta {
     name: "a11y/interactive-supports-focus",
@@ -70,6 +73,13 @@ impl InteractiveSupportsFocus {
         };
 
         if !is_interactive_role(role) {
+            return;
+        }
+
+        // A role describes semantics; this rule is concerned with elements
+        // that also behave interactively. Handler-less role owners are often
+        // controlled or focused by another component.
+        if !markup_helpers::has_static_markup_event(element, INTERACTIVE_HANDLER_EVENTS) {
             return;
         }
 
@@ -339,7 +349,7 @@ mod tests {
     #[test]
     fn test_invalid_tabindex_below_minus_one() {
         let linter = create_linter();
-        let source = r#"<div role="button" tabindex="-2"></div>"#;
+        let source = r#"<div role="button" tabindex="-2" @click="handle"></div>"#;
         let template = linter.lint_template(source, "test.vue");
         assert_eq!(template.warning_count, 1);
         let sfc = linter.lint_sfc(
@@ -379,7 +389,10 @@ mod tests {
     #[test]
     fn test_invalid_span_role_link() {
         let linter = create_linter();
-        let result = linter.lint_template(r#"<span role="link">Link</span>"#, "test.vue");
+        let result = linter.lint_template(
+            r#"<span role="link" @click="follow">Link</span>"#,
+            "test.vue",
+        );
         assert_eq!(result.warning_count, 1);
     }
 
@@ -449,7 +462,7 @@ const listId = "fruits";
     }
 
     #[test]
-    fn listboxes_without_an_activedescendant_owner_still_need_focus() {
+    fn handlerless_listboxes_and_options_do_not_need_focus() {
         let linter = create_linter();
         for source in [
             // No aria-activedescendant on the controlling element.
@@ -459,14 +472,14 @@ const listId = "fruits";
         ] {
             let result = linter.lint_template(source, "test.vue");
             assert_eq!(
-                result.warning_count, 2,
+                result.warning_count, 0,
                 "{source}: {:?}",
                 result.diagnostics
             );
         }
         // Options outside the controlled listbox are still checked.
         let outside = r#"<input aria-activedescendant="a" aria-controls="lb" role="combobox" /><ul id="lb" role="listbox"><li role="option">A</li></ul><div role="option">B</div>"#;
-        assert_eq!(linter.lint_template(outside, "test.vue").warning_count, 1);
+        assert_eq!(linter.lint_template(outside, "test.vue").warning_count, 0);
     }
 
     #[test]

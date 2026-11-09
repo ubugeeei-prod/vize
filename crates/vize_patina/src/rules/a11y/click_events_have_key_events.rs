@@ -11,9 +11,12 @@ use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::markup::{MarkupBindingKind, MarkupContext, MarkupElement, MarkupRule, MarkupTraversal};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use vize_relief::{ElementNode, ExpressionNode, PropNode};
+use vize_relief::{ElementNode, PropNode};
 
-use super::helpers::{is_aria_hidden_true, is_component_like_element, is_presentation_role};
+use super::helpers::{
+    has_event_handler, is_aria_hidden_true, is_component_like_element, is_interactive_element,
+    is_interactive_role, is_presentation_role,
+};
 use super::markup_helpers::{
     has_static_markup_event, is_aria_hidden_true_markup, is_component_like_markup_element,
     is_presentation_markup_role,
@@ -32,41 +35,6 @@ static META: RuleMeta = RuleMeta {
 pub struct ClickEventsHaveKeyEvents;
 
 impl ClickEventsHaveKeyEvents {
-    /// Check if an element is natively interactive
-    fn is_interactive_element(tag: &str) -> bool {
-        matches!(
-            tag,
-            "a" | "button"
-                | "input"
-                | "select"
-                | "textarea"
-                | "details"
-                | "summary"
-                | "video"
-                | "audio"
-        )
-    }
-
-    fn is_interactive_role(role: &str) -> bool {
-        matches!(
-            role,
-            "button"
-                | "link"
-                | "checkbox"
-                | "menuitem"
-                | "menuitemcheckbox"
-                | "menuitemradio"
-                | "option"
-                | "radio"
-                | "searchbox"
-                | "switch"
-                | "textbox"
-                | "tab"
-                | "treeitem"
-                | "gridcell"
-        )
-    }
-
     /// The first valued static `role` decides, as on the template path.
     fn has_interactive_markup_role(element: &MarkupElement<'_>) -> bool {
         let mut role = None;
@@ -78,7 +46,7 @@ impl ClickEventsHaveKeyEvents {
                 role = binding.static_value();
             }
         });
-        role.is_some_and(Self::is_interactive_role)
+        role.is_some_and(is_interactive_role)
     }
 
     /// Check if element has a role that makes it interactive
@@ -88,7 +56,7 @@ impl ClickEventsHaveKeyEvents {
                 && attr.name == "role"
                 && let Some(value) = &attr.value
             {
-                return Self::is_interactive_role(value.content);
+                return is_interactive_role(value.content);
             }
         }
         false
@@ -96,32 +64,14 @@ impl ClickEventsHaveKeyEvents {
 
     /// Check if element has a click handler
     fn has_click_handler(element: &ElementNode) -> bool {
-        for prop in &element.props {
-            if let PropNode::Directive(dir) = prop
-                && dir.name == "on"
-                && let Some(ExpressionNode::Simple(arg)) = &dir.arg
-                && arg.is_static
-                && arg.content == "click"
-            {
-                return true;
-            }
-        }
-        false
+        has_event_handler(element, "click")
     }
 
     /// Check if element has a keyboard event handler
     fn has_keyboard_handler(element: &ElementNode) -> bool {
-        for prop in &element.props {
-            if let PropNode::Directive(dir) = prop
-                && dir.name == "on"
-                && let Some(ExpressionNode::Simple(arg)) = &dir.arg
-                && arg.is_static
-                && matches!(arg.content, "keydown" | "keyup" | "keypress")
-            {
-                return true;
-            }
-        }
-        false
+        ["keydown", "keyup", "keypress"]
+            .iter()
+            .any(|event| has_event_handler(element, event))
     }
 }
 
@@ -137,7 +87,7 @@ impl MarkupRule for ClickEventsHaveKeyEvents {
     fn enter_element<'a>(&self, ctx: &mut MarkupContext<'_, 'a>, element: &MarkupElement<'a>) {
         // Cheap tag checks, then the click handler, before any other binding walk.
         if is_component_like_markup_element(element)
-            || Self::is_interactive_element(element.tag())
+            || is_interactive_element(element.tag())
             || !has_static_markup_event(element, &["click"])
             || is_aria_hidden_true_markup(element)
             || is_presentation_markup_role(element)
@@ -174,7 +124,7 @@ impl Rule for ClickEventsHaveKeyEvents {
         }
 
         // Skip interactive elements - they have native keyboard support
-        if Self::is_interactive_element(element.tag) {
+        if is_interactive_element(element.tag) {
             return;
         }
 
@@ -253,6 +203,15 @@ mod tests {
         let linter = create_linter();
         let result = linter.lint_template(r#"<span @click="toggle">Toggle</span>"#, "test.vue");
         assert_eq!(result.warning_count, 1);
+    }
+
+    #[test]
+    fn modifier_only_click_is_not_a_handler() {
+        let result = create_linter().lint_template(
+            r#"<span @click.stop><button>Action</button></span>"#,
+            "test.vue",
+        );
+        assert_eq!(result.warning_count, 0, "{:?}", result.diagnostics);
     }
 
     #[test]

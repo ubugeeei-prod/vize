@@ -238,7 +238,8 @@ pub(crate) fn has_static_markup_event(element: &MarkupElement<'_>, events: &[&st
         found |= binding.kind() == MarkupBindingKind::On
             && events
                 .iter()
-                .any(|event| binding.is_static_unqualified_arg_exact(event));
+                .any(|event| binding.is_static_unqualified_arg_exact(event))
+            && (binding.expression().is_some() || binding.retained_expression().is_some());
     });
     found
 }
