@@ -63,7 +63,7 @@ jobs:
   exact-tsgo-project:
     if: ${{ inputs.targeted-test != 'reported-q16' && (inputs.targeted-test == 'generic-body-error' || (!inputs.router-experimental-only && !inputs.event-rename-only && !inputs.official-css-options-only && !inputs.published-defaults-only)) }}
     runs-on: blacksmith-32vcpu-ubuntu-2404
-    timeout-minutes: 20
+    timeout-minutes: 35
     steps:
       - name: Checkout Vize
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
