@@ -1,8 +1,9 @@
 //! Compatibility-node coordinates, expressions, and structural classification.
 
+use memchr::memchr;
 use oxc_allocator::CloneIn;
 use oxc_ast_visit::VisitMut;
-use vize_l0::{Box, Span, String};
+use vize_l0::{Box, Span};
 use vize_l1::markup::directive::{DirectivePrefix, DirectiveSyntax, VueDirectives};
 use vize_l1::markup::entity::{EntityContext, decode_one};
 use vize_l1::markup::{AttrValue, Attribute, Element, Token};
@@ -131,49 +132,51 @@ impl<'t, 'a> CompatibilityRoot<'t, 'a> {
     }
 }
 
-fn decode_html_entities(source: &str, context: EntityContext) -> String {
-    let mut decoded = String::with_capacity(source.len());
+fn decode_html_entities(source: &str, context: EntityContext) -> vize_l0::String {
+    let mut decoded = vize_l0::String::with_capacity(source.len());
     let mut rest = source;
-    while !rest.is_empty() {
-        // Relief historically treats these escaped numeric parentheses as the
-        // literal delimiters in text, before ordinary HTML entity decoding.
+    while let Some(candidate_offset) = memchr(b'&', rest.as_bytes()) {
+        let (literal, candidate) = rest.split_at(candidate_offset);
+        decoded.push_str(literal);
+
         if context == EntityContext::Text
-            && let Some((character, consumed)) = decode_escaped_numeric_parenthesis(rest.as_bytes())
-            && let Some(after) = rest.get(consumed..)
+            && let Some((character, after)) = decode_escaped_numeric_parenthesis(candidate)
+                .and_then(|(character, consumed)| {
+                    candidate.get(consumed..).map(|after| (character, after))
+                })
         {
             decoded.push(character);
             rest = after;
             continue;
         }
-        if let Some((entity, after)) = decode_one(rest.as_bytes(), context)
-            .and_then(|(entity, consumed)| rest.get(consumed..).map(|after| (entity, after)))
+        if let Some((entity, after)) = decode_one(candidate.as_bytes(), context)
+            .and_then(|(entity, consumed)| candidate.get(consumed..).map(|after| (entity, after)))
         {
             entity.for_each(|character| decoded.push(character));
             rest = after;
             continue;
         }
-        let mut characters = rest.chars();
-        let Some(character) = characters.next() else {
-            break;
-        };
-        decoded.push(character);
-        rest = characters.as_str();
+        decoded.push('&');
+        rest = candidate.strip_prefix('&').unwrap_or(candidate);
     }
+    decoded.push_str(rest);
     decoded
 }
 
-fn decode_escaped_numeric_parenthesis(input: &[u8]) -> Option<(char, usize)> {
-    for (encoded, decoded) in [
-        (b"&amp;#40;".as_slice(), '('),
-        (b"&amp;#040;".as_slice(), '('),
-        (b"&amp;#41;".as_slice(), ')'),
-        (b"&amp;#041;".as_slice(), ')'),
-    ] {
-        if input.starts_with(encoded) {
-            return Some((decoded, encoded.len()));
-        }
-    }
-    None
+fn decode_escaped_numeric_parenthesis(source: &str) -> Option<(char, usize)> {
+    const ESCAPED_PARENTHESES: [(&str, char); 4] = [
+        ("&amp;#40;", '('),
+        ("&amp;#040;", '('),
+        ("&amp;#41;", ')'),
+        ("&amp;#041;", ')'),
+    ];
+    ESCAPED_PARENTHESES
+        .into_iter()
+        .find_map(|(spelling, character)| {
+            source
+                .starts_with(spelling)
+                .then_some((character, spelling.len()))
+        })
 }
 
 struct DecodedExpressionSpans<'a> {

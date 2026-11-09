@@ -23,7 +23,7 @@ const INFERRED_SLOT_HELPERS: &str = r#"  type $InferredSlotKeys<U> = U extends a
   type $InferredSlots<S> = [$InferredSlotKeys<S>] extends [never] ? {} : $InferredSlotIntersection<{ [K in $InferredSlotKeys<S>]: { [N in K]?: (props: $InferredSlotUnify<$InferredSlotPayload<S, K>>) => any } }[$InferredSlotKeys<S>]>;
 "#;
 
-pub(super) fn emit_inferred_slot_helpers(ts: &mut String) {
+pub(super) fn emit_inferred_slot_helpers(ts: &mut crate::virtual_ts::TextBuf) {
     ts.push_str(INFERRED_SLOT_HELPERS);
 }
 
@@ -84,7 +84,7 @@ impl SlotOutletChecks {
 
     pub(in crate::virtual_ts::scope) fn emit_result(
         &self,
-        ts: &mut String,
+        ts: &mut crate::virtual_ts::TextBuf,
         summary: &Croquis,
         scope_id: Option<ScopeId>,
         indent: &str,
@@ -110,7 +110,7 @@ impl SlotOutletChecks {
     /// to the slots it infers, each under its own key.
     pub(in crate::virtual_ts::scope) fn emit_root_result(
         &self,
-        ts: &mut String,
+        ts: &mut crate::virtual_ts::TextBuf,
         summary: &Croquis,
         record: &[(&str, String)],
     ) {

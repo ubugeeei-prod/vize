@@ -43,8 +43,18 @@ struct FileIdentity;
 impl FileIdentity {
     #[cfg(unix)]
     fn capture(path: &Path) -> Option<Self> {
+        Self::from_metadata(&std::fs::symlink_metadata(path).ok()?)
+    }
+
+    #[cfg(not(unix))]
+    fn capture(_path: &Path) -> Option<Self> {
+        None
+    }
+
+    /// The identity of an `lstat` already taken for this path.
+    #[cfg(unix)]
+    fn from_metadata(metadata: &std::fs::Metadata) -> Option<Self> {
         use std::os::unix::fs::MetadataExt;
-        let metadata = std::fs::symlink_metadata(path).ok()?;
         if !metadata.file_type().is_file() || metadata.ctime() <= 0 || metadata.ino() == 0 {
             return None;
         }
@@ -58,7 +68,7 @@ impl FileIdentity {
     }
 
     #[cfg(not(unix))]
-    fn capture(_path: &Path) -> Option<Self> {
+    fn from_metadata(_metadata: &std::fs::Metadata) -> Option<Self> {
         None
     }
 
@@ -97,15 +107,18 @@ impl CanonFileCache {
 
     /// Only an unchanged immutable batch and retained-text checkpoint may
     /// supply its previously captured desired digest without scanning text.
+    /// `metadata` is this path's own `lstat` when the caller already took it.
     pub(super) fn observation_is_current(
         &self,
         path: &Path,
         desired: [u8; 32],
         now: SystemTime,
+        metadata: Option<&std::fs::Metadata>,
     ) -> bool {
         self.files.get(path).is_some_and(|old| {
             old.desired == desired
-                && FileIdentity::capture(path)
+                && metadata
+                    .map_or_else(|| FileIdentity::capture(path), FileIdentity::from_metadata)
                     .is_some_and(|identity| identity.settled(now) && old.identity == identity)
         })
     }
@@ -118,6 +131,7 @@ impl CanonFileCache {
         self.files.remove(path);
     }
 
+    #[cfg(test)]
     pub(super) fn synchronize_with_digest(
         &mut self,
         path: &Path,
@@ -127,6 +141,21 @@ impl CanonFileCache {
         self.synchronize_at_with_digest(path, expected, SystemTime::now(), desired)
     }
 
+    /// [`Self::synchronize_with_digest`] starting from this path's own
+    /// `lstat`, already taken by the caller.
+    pub(super) fn synchronize_observed_with_digest(
+        &mut self,
+        path: &Path,
+        expected: &str,
+        metadata: Option<&std::fs::Metadata>,
+        desired: impl FnOnce() -> [u8; 32],
+    ) -> std::io::Result<bool> {
+        let before =
+            metadata.map_or_else(|| FileIdentity::capture(path), FileIdentity::from_metadata);
+        self.synchronize_from(path, expected, SystemTime::now(), before, desired)
+    }
+
+    #[cfg(test)]
     fn synchronize_at_with_digest(
         &mut self,
         path: &Path,
@@ -134,7 +163,17 @@ impl CanonFileCache {
         now: SystemTime,
         desired: impl FnOnce() -> [u8; 32],
     ) -> std::io::Result<bool> {
-        let before = FileIdentity::capture(path);
+        self.synchronize_from(path, expected, now, FileIdentity::capture(path), desired)
+    }
+
+    fn synchronize_from(
+        &mut self,
+        path: &Path,
+        expected: &str,
+        now: SystemTime,
+        before: Option<FileIdentity>,
+        desired: impl FnOnce() -> [u8; 32],
+    ) -> std::io::Result<bool> {
         let desired = before
             .as_ref()
             .filter(|identity| identity.settled(now))

@@ -1,15 +1,20 @@
 //! Keep live native overlays on the same revision as their materialized files.
+#![expect(
+    clippy::disallowed_types,
+    reason = "materialized payloads are shared with the source catalog"
+)]
 
 use std::path::PathBuf;
+use std::sync::Arc;
 
-use vize_carton::{FxHashMap, FxHashSet, String};
+use vize_carton::{FxHashMap, FxHashSet};
 
-use super::{CorsaMaterializedMappingKind, CorsaMaterializedSource};
-use crate::file_uri::path_to_file_uri;
+use super::{CorsaMaterializedMappingKind, CorsaMaterializedSource, CorsaNativeDocumentBatch};
 
+/// Append each materialized leaf's own payload, so the batch shares its text.
 pub(in crate::corsa_bridge) fn append_materialized_documents(
-    documents: &mut Vec<(String, String)>,
-    sources: &[CorsaMaterializedSource],
+    documents: &mut CorsaNativeDocumentBatch,
+    sources: &[Arc<CorsaMaterializedSource>],
     overlays: &FxHashMap<PathBuf, &str>,
     full_workspace: bool,
 ) {
@@ -23,9 +28,9 @@ pub(in crate::corsa_bridge) fn append_materialized_documents(
         {
             continue;
         }
-        let uri = path_to_file_uri(&source.materialized_path);
-        if opened.insert(uri.clone()) {
-            documents.push((uri, source.code.clone()));
+        let document = source.code.native_document();
+        if opened.insert(document.0.clone()) {
+            documents.push_shared(Arc::clone(document));
         }
     }
 }

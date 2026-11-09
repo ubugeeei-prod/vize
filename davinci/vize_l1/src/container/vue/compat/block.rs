@@ -130,7 +130,7 @@ pub fn parse_block_fast<'a>(
             Cow::Borrowed(source.get(attr_start..pos).unwrap_or_default());
 
         // Skip whitespace
-        while matches!(bytes.get(pos), Some(b' ' | b'\t')) {
+        while bytes.get(pos).is_some_and(|&b| is_whitespace_fast(b)) {
             pos += 1;
         }
 
@@ -138,7 +138,7 @@ pub fn parse_block_fast<'a>(
             pos += 1;
 
             // Skip whitespace
-            while matches!(bytes.get(pos), Some(b' ' | b'\t')) {
+            while bytes.get(pos).is_some_and(|&b| is_whitespace_fast(b)) {
                 pos += 1;
             }
 
@@ -166,10 +166,10 @@ pub fn parse_block_fast<'a>(
             } else {
                 // Unquoted value
                 let value_start = pos;
-                while let Some(&c) = bytes.get(pos) {
-                    if c == b' ' || c == b'>' || c == b'/' || c == b'\t' || c == b'\n' {
-                        break;
-                    }
+                while bytes
+                    .get(pos)
+                    .is_some_and(|&c| !is_whitespace_fast(c) && c != b'>' && c != b'/')
+                {
                     pos += 1;
                 }
                 Cow::Borrowed(source.get(value_start..pos).unwrap_or_default())

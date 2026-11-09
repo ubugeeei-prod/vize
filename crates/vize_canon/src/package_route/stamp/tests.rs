@@ -207,3 +207,77 @@ fn settled_installed_stamps_compare_by_metadata_and_manifests_stay_hashed() {
     };
     assert_ne!(settled, moved);
 }
+
+/// A settled disk read is certified by its `lstat` identity: validation does
+/// not reread it, and a same-size, same-mtime rewrite still invalidates it.
+#[cfg(all(unix, feature = "native"))]
+#[test]
+fn settled_disk_reads_validate_by_identity_and_still_see_same_mtime_rewrites() {
+    let root = tempfile::tempdir().unwrap();
+    let path = root.path().join("src/Authored.vue");
+    std::fs::create_dir_all(path.parent().unwrap()).unwrap();
+    std::fs::write(&path, "<template>a</template>\n").unwrap();
+    let fresh = InputStamp::capture(&path);
+    assert!(fresh.settled.is_none(), "a just-written file is racy");
+    let metadata = std::fs::symlink_metadata(&path).unwrap();
+    let later = std::time::SystemTime::now() + std::time::Duration::from_secs(3);
+    let stamp = InputStamp {
+        settled: super::settled_identity(&metadata, later),
+        ..fresh
+    };
+    assert!(stamp.settled.is_some());
+    for _ in 0..2 {
+        let mut validation = InputStampValidation::default();
+        let mut stats = InputStampReadStats::default();
+        assert!(validation.is_current(&stamp, Some(&mut stats)));
+        assert!(validation.is_current(&stamp, Some(&mut stats)));
+        assert_eq!(stats.reads, 0);
+    }
+
+    std::thread::sleep(std::time::Duration::from_millis(20));
+    std::fs::write(&path, "<template>b</template>\n").unwrap();
+    std::fs::File::options()
+        .write(true)
+        .open(&path)
+        .unwrap()
+        .set_times(std::fs::FileTimes::new().set_modified(metadata.modified().unwrap()))
+        .unwrap();
+    let rewritten = std::fs::metadata(&path).unwrap();
+    assert_eq!(rewritten.len(), metadata.len());
+    assert_eq!(rewritten.modified().unwrap(), metadata.modified().unwrap());
+    let mut validation = InputStampValidation::default();
+    let mut stats = InputStampReadStats::default();
+    assert!(!validation.is_current(&stamp, Some(&mut stats)));
+    assert_eq!(stats.reads, 1);
+}
+
+/// Registered bytes, links and directories keep their full comparison.
+#[cfg(unix)]
+#[test]
+fn only_settled_regular_disk_reads_carry_an_identity() {
+    let root = tempfile::tempdir().unwrap();
+    let file = root.path().join("source.ts");
+    let link = root.path().join("linked.ts");
+    std::fs::write(&file, b"export {};").unwrap();
+    std::os::unix::fs::symlink(&file, &link).unwrap();
+    assert!(
+        InputStamp::capture_source(&file, b"export {};")
+            .settled
+            .is_none()
+    );
+    let later = std::time::SystemTime::now() + std::time::Duration::from_secs(3);
+    for (path, certified) in [
+        (&file, true),
+        (&link, false),
+        (&root.path().to_path_buf(), false),
+    ] {
+        let metadata = std::fs::symlink_metadata(path).unwrap();
+        assert_eq!(
+            super::settled_identity(&metadata, later).is_some(),
+            certified,
+            "{}",
+            path.display()
+        );
+        assert!(super::settled_identity(&metadata, std::time::SystemTime::now()).is_none());
+    }
+}

@@ -39,7 +39,8 @@ pub struct CorsaVueVirtualDocument {
     /// Authored files reached from this host, including closed script barrels.
     /// Unlike the shared materialized mirror, this excludes unrelated hosts.
     pub resolved_dependencies: Vec<PathBuf>,
-    pub materialized_sources: Vec<CorsaMaterializedSource>,
+    /// Leaves shared with the revision's source catalog.
+    pub materialized_sources: Vec<Arc<CorsaMaterializedSource>>,
     pub source_catalog: crate::corsa_bridge::CorsaSourceCatalog,
     /// Private Canon mirror root. Any native URI under this root that is not
     /// retained in the local sources or captured source catalog is unmappable.
@@ -51,11 +52,25 @@ pub struct CorsaMaterializedSource {
     pub materialized_path: PathBuf,
     pub source_path: PathBuf,
     pub source: String,
-    pub code: String,
+    /// Shared with the native payload of `materialized_path`.
+    pub code: super::MaterializedCode,
     /// Span links and semantic links in pre-rewrite generated TS coordinates.
     pub mapping: ProjectionMapping,
     pub import_source_map: ImportSourceMap,
     pub mapping_kind: CorsaMaterializedMappingKind,
+}
+
+impl CorsaMaterializedSource {
+    /// Equal identity and facts: a retained leaf can stand for `other`.
+    pub(crate) fn same_leaf(&self, other: &Self) -> bool {
+        self.materialized_path == other.materialized_path
+            && self.source_path == other.source_path
+            && self.source == other.source
+            && self.code == other.code
+            && self.mapping == other.mapping
+            && self.import_source_map == other.import_source_map
+            && self.mapping_kind == other.mapping_kind
+    }
 }
 
 /// How coordinates in one Canon-owned materialized file relate to authored

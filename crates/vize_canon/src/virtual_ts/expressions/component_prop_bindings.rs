@@ -41,7 +41,7 @@ pub(super) fn merged_class_binding_value(
             Some(value.clone())
         }
         _ => {
-            let mut value = String::default();
+            let mut value = crate::virtual_ts::TextBuf::default();
             value.push('[');
             for (index, (_, binding_value)) in bindings.iter().enumerate() {
                 if index > 0 {
@@ -53,7 +53,7 @@ pub(super) fn merged_class_binding_value(
                 }
             }
             value.push(']');
-            Some(value)
+            Some(value.into_compact())
         }
     }
 }

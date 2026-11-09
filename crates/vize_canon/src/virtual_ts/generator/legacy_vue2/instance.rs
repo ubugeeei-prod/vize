@@ -2,7 +2,7 @@
 
 use super::{LEGACY_COMPONENT_INSTANCE_HELPER, needs_legacy_vue2_helpers};
 use crate::virtual_ts::generated_names as names;
-use vize_carton::{String, append, config::VueVersion};
+use vize_carton::{append, config::VueVersion};
 
 pub(in crate::virtual_ts::generator) fn instance_helper(
     legacy_vue2: bool,
@@ -22,7 +22,7 @@ pub(in crate::virtual_ts::generator) fn instance_helper(
 /// `exposed_generic_args` is `None` when the alias takes no parameters, which
 /// keeps the output identical to [`instance_suffix`].
 pub(in crate::virtual_ts::generator) fn generic_instance_suffix(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     (legacy_vue2, dialect): (bool, VueVersion),
     has_exposed_type: bool,
     exposed_generic_args: Option<&str>,
@@ -48,7 +48,7 @@ pub(in crate::virtual_ts::generator) fn generic_instance_suffix(
 /// (`inferComponentDollarEl`, `inferComponentDollarRefs`) replace the ones
 /// `ComponentPublicInstance` declares.
 fn instance_suffix(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     legacy_vue2: bool,
     dialect: VueVersion,
     has_exposed_type: bool,
@@ -66,7 +66,7 @@ fn instance_suffix(
 }
 
 pub(in crate::virtual_ts::generator) fn instance_base(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     legacy_vue2: bool,
     dialect: VueVersion,
     has_exposed_type: bool,

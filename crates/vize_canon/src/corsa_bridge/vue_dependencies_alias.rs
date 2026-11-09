@@ -21,7 +21,7 @@ use super::vue_document::CorsaVueVirtualDocumentOptions;
 use crate::batch::ImportRewriter;
 
 mod context;
-pub(super) use context::{AliasContext, SessionCache, recover_lock};
+pub(super) use context::{AliasContext, PreparedAliasContext, SessionCache, recover_lock};
 
 /// Queue alias-resolved first-party dependencies of one document.
 pub(super) fn queue_alias_imports(

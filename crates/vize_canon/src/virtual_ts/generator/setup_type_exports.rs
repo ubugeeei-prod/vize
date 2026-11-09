@@ -175,7 +175,11 @@ impl SetupTypeExportsPlan {
         *line = Cow::Owned(output.into());
     }
 
-    pub(super) fn emit_setup_artifacts(&self, ts: &mut String, fields: &mut Vec<String>) {
+    pub(super) fn emit_setup_artifacts(
+        &self,
+        ts: &mut crate::virtual_ts::TextBuf,
+        fields: &mut Vec<String>,
+    ) {
         for exported in &self.exports {
             let name = &exported.name;
             let artifact = &exported.artifact;
@@ -187,7 +191,7 @@ impl SetupTypeExportsPlan {
         }
     }
 
-    pub(super) fn emit_module_exports(&self, ts: &mut String) {
+    pub(super) fn emit_module_exports(&self, ts: &mut crate::virtual_ts::TextBuf) {
         for exported in &self.exports {
             let name = &exported.name;
             let artifact = &exported.artifact;
@@ -231,7 +235,7 @@ mod tests {
 
         let plan = SetupTypeExportsPlan::new(&summary, Some(script), &ScriptBlockScopes::default());
         let mut fields = Vec::new();
-        let mut setup = vize_carton::String::default();
+        let mut setup = crate::virtual_ts::TextBuf::default();
         plan.emit_setup_artifacts(&mut setup, &mut fields);
         assert!(setup.contains("unknown as Public"));
         assert_eq!(fields, ["__vize_exported_type_Public"]);
@@ -255,7 +259,7 @@ mod tests {
         // would drop its type parameters, but its legal setup export modifier
         // is still removed from the generated function scope.
         let mut fields = Vec::new();
-        let mut setup = vize_carton::String::default();
+        let mut setup = crate::virtual_ts::TextBuf::default();
         plan.emit_setup_artifacts(&mut setup, &mut fields);
         assert!(fields.is_empty());
         assert!(setup.is_empty());
@@ -285,12 +289,12 @@ mod tests {
         assert_eq!(line, " type Public = typeof value;");
 
         let mut fields = Vec::new();
-        let mut setup = vize_carton::String::default();
+        let mut setup = crate::virtual_ts::TextBuf::default();
         plan.emit_setup_artifacts(&mut setup, &mut fields);
         assert_eq!(fields, ["__vize_exported_type_Public"]);
         assert!(setup.contains("unknown as Public"));
 
-        let mut module = vize_carton::String::default();
+        let mut module = crate::virtual_ts::TextBuf::default();
         plan.emit_module_exports(&mut module);
         assert!(module.contains("export type Public = Awaited<ReturnType<typeof __setup>>"));
 
@@ -319,12 +323,12 @@ mod tests {
 
         // Only one artifact/alias is emitted for the merged name.
         let mut fields = Vec::new();
-        let mut setup = vize_carton::String::default();
+        let mut setup = crate::virtual_ts::TextBuf::default();
         plan.emit_setup_artifacts(&mut setup, &mut fields);
         assert_eq!(fields, ["__vize_exported_type_Options"]);
         assert_eq!(setup.matches("unknown as Options").count(), 1);
 
-        let mut module = vize_carton::String::default();
+        let mut module = crate::virtual_ts::TextBuf::default();
         plan.emit_module_exports(&mut module);
         assert_eq!(module.matches("export type Options =").count(), 1);
     }

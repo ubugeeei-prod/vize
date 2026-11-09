@@ -49,6 +49,31 @@ export const dialectLabels = [
   "vue-quirks",
 ];
 
+// Dependencies whose presence proves a dialect in a pinned project. The `vue`
+// dependency proves the major its range selects.
+const dialectPackages: Readonly<Record<string, string>> = {
+  "petite-vue": "petite-vue",
+  pug: "pug-template",
+  "pug-plain-loader": "pug-template",
+  "@vue/language-plugin-pug": "pug-template",
+  "vue-pug-plugin": "pug-template",
+  "@vitejs/plugin-vue-jsx": "jsx-babel",
+  "@vue/babel-plugin-jsx": "jsx-babel",
+  "@vue/babel-preset-jsx": "jsx-babel",
+  "babel-plugin-transform-vue-jsx": "jsx-babel",
+  "vue-jsx-vapor": "jsx-vapor",
+};
+
+export function packageDialect(name: string, value: string): string | undefined {
+  if (name !== "vue") return dialectPackages[name];
+  if (/^(?:\^|~)?2\.7\./.test(value)) return "vue2.7-sfc";
+  if (/^(?:\^|~)?2(?:\.(?:[0-9]+|x)(?:\.[0-9]+)?)?(?:$|\s)/.test(value)) return "vue2-sfc";
+  if (/^(?:\^|~|>=\s*)?3(?:\.(?:[0-9]+|x)(?:\.[0-9]+)?(?:-[0-9a-z.]+)?)?(?:$|\s)/.test(value)) {
+    return "vue3-sfc";
+  }
+  return undefined;
+}
+
 export function validateDialectCoverage(
   coverage: unknown,
   fixturePath: string,
@@ -85,6 +110,7 @@ export function validateDialectCoverage(
         "blobSha",
         "field",
         "value",
+        ...(item.catalog === undefined ? [] : ["catalog"]),
       ]);
       validatePinnedPackage(item, fixturePath, context);
     } else {
@@ -116,23 +142,34 @@ function validatePinnedPackage(
   if (item.repository !== project.repository || item.revision !== project.revision) {
     invalid(`${fixturePath} pinned package receipt drifted from fixture registry`);
   }
-  if (item.file !== "package.json" || !/^[a-f0-9]{40}$/.test(String(item.blobSha))) {
+  const file = String(item.file);
+  if (
+    !/^(?:[^/]+\/)*package\.json$/.test(file) ||
+    file.split("/").some((part) => part === ".." || part === "node_modules") ||
+    !/^[a-f0-9]{40}$/.test(String(item.blobSha))
+  ) {
     invalid(`${fixturePath} pinned package receipt must name a package.json Git blob`);
   }
-  enumValue(
-    item.field,
-    ["dependencies.vue", "devDependencies.vue", "peerDependencies.vue"],
-    "Vue package field",
+  // A pnpm catalog reference names the workspace file and range it resolves to.
+  let range = value;
+  if (value.startsWith("catalog:")) {
+    const catalog = item.catalog;
+    record(catalog, `${fixturePath} catalog receipt`);
+    exactKeys(catalog, ["file", "blobSha", "value"]);
+    if (catalog.file !== "pnpm-workspace.yaml" || !/^[a-f0-9]{40}$/.test(String(catalog.blobSha))) {
+      invalid(`${fixturePath} catalog receipt must name the pnpm-workspace.yaml Git blob`);
+    }
+    string(catalog.value, `${fixturePath} catalog range`);
+    range = catalog.value;
+  } else if (item.catalog !== undefined) {
+    invalid(`${fixturePath} only a catalog reference carries a catalog receipt`);
+  }
+  const field = /^(?:dependencies|devDependencies|peerDependencies)\.(.+)$/.exec(
+    String(item.field),
   );
-  if (!/^(?:\^|~)?2(?:\.(?:[0-9]+|x)(?:\.[0-9]+)?)?(?:$|\s)/.test(value)) {
-    invalid(`${fixturePath} pinned Vue package value does not select Vue 2`);
-  }
-  if (dialects.includes("vue2.7-sfc") && !/(?:\^|~)?2\.7\./.test(value)) {
-    invalid(`${fixturePath} Vue 2.7 claim needs a Vue 2.7 package value`);
-  }
-  if (dialects.some((dialect) => dialect !== "vue2-sfc" && dialect !== "vue2.7-sfc")) {
-    invalid(`${fixturePath} package version cannot prove a template syntax dialect`);
-  }
+  const dialect = field ? packageDialect(field[1]!, range) : undefined;
+  if (dialect === undefined) invalid(`${fixturePath} ${String(item.field)} proves no dialect`);
+  deepEqual(dialects, [dialect], `${fixturePath} ${String(item.field)} proves exactly ${dialect}`);
 }
 
 export function dialectCoverageSummary(fixtures: readonly Fixture[]) {

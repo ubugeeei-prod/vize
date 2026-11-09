@@ -147,11 +147,15 @@ impl<'rule, 'ctx, 'mc, 'a, R: MarkupRule + ?Sized> MarkupDocumentVisitor<'rule, 
     fn visit_l2_region(&mut self, doc: &'a L2Markup<'a>, ops: &'a [Op<'a>]) {
         for op in ops {
             match op {
-                Op::Element(_) | Op::Component(_) | Op::Slot(_) => {
-                    let Some(element) = L2ElementOp::from_op(op) else {
-                        continue;
-                    };
-                    self.visit_element(MarkupElement::from_l2(element, doc));
+                Op::Element(element) => {
+                    self.visit_element(MarkupElement::from_l2(L2ElementOp::Element(element), doc))
+                }
+                Op::Component(component) => self.visit_element(MarkupElement::from_l2(
+                    L2ElementOp::Component(component),
+                    doc,
+                )),
+                Op::Slot(slot) => {
+                    self.visit_element(MarkupElement::from_l2(L2ElementOp::Slot(slot), doc))
                 }
                 Op::Text(text) => {
                     if matches!(

@@ -4,14 +4,11 @@ use vize_l0::ToCompactString;
 
 pub(super) fn write_style_block(
     output: &mut Vec<u8>,
-    block: &vize_atelier_sfc::SfcStyleBlock<'_>,
+    block: &super::SfcBlock<'_>,
     options: &FormatOptions,
     source: &str,
 ) -> Result<(), FormatError> {
-    let is_plain_css = block
-        .lang
-        .as_ref()
-        .is_none_or(|lang| lang.as_ref() == "css");
+    let is_plain_css = block.lang().is_none_or(|lang| lang == "css");
     let opening_tag = opening_tag::raw_templated_opening_tag(source, &block.loc);
     let content = opening_tag::content_after_opening_tag(
         source,
@@ -36,7 +33,7 @@ pub(super) fn write_style_block(
             content
         };
         style::format_style_content(source, options).unwrap_or(kept)
-    } else if scss_or_less(block.lang.as_deref()) {
+    } else if scss_or_less(block.lang()) {
         let kept = kept();
         let content = kept.as_str();
         let requoted = options
@@ -57,10 +54,10 @@ pub(super) fn write_style_block(
     } else {
         output.extend_from_slice(b"<style");
         if !write_authored_attrs(output, &block.attrs, source, &block.loc, options) {
-            if block.scoped {
+            if block.has_attr("scoped") {
                 write_attr(output, "scoped", None);
             }
-            if let Some(lang) = &block.lang {
+            if let Some(lang) = block.lang() {
                 write_attr(output, "lang", Some(lang));
             }
             write_remaining_attrs(output, &block.attrs, &["scoped", "lang"]);

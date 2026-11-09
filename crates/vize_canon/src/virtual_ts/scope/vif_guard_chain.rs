@@ -133,7 +133,7 @@ fn next_block() -> u64 {
 /// Open a guarded check block, folding it into the block closed right before
 /// it when their guards share levels.
 pub(crate) fn append_chained_vif_guard_open(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     indent: &str,
     guard: &str,
     purpose: &str,
@@ -143,7 +143,11 @@ pub(crate) fn append_chained_vif_guard_open(
 
 /// Same chain as [`append_chained_vif_guard_open`] without an `@ts-ignore` line.
 /// Prop replay guards are unmapped, so the comment would only add text.
-pub(super) fn append_bare_chained_vif_guard_open(ts: &mut String, indent: &str, guard: &str) {
+pub(super) fn append_bare_chained_vif_guard_open(
+    ts: &mut crate::virtual_ts::TextBuf,
+    indent: &str,
+    guard: &str,
+) {
     open_with(ts, indent, guard, None);
 }
 
@@ -153,7 +157,7 @@ pub(super) fn append_bare_chained_vif_guard_open(ts: &mut String, indent: &str, 
 /// `else if` line, or `None` when the guard cannot be split; the caller then
 /// writes its own block.
 pub(crate) fn append_chained_vif_condition_open(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     indent: &str,
     guard: &str,
     purpose: &str,
@@ -198,7 +202,12 @@ pub(crate) fn append_chained_vif_condition_open(
     condition
 }
 
-fn open_with(ts: &mut String, indent: &str, guard: &str, purpose: Option<&str>) {
+fn open_with(
+    ts: &mut crate::virtual_ts::TextBuf,
+    indent: &str,
+    guard: &str,
+    purpose: Option<&str>,
+) {
     let isolated = crate::virtual_ts::expressions::isolate_incomplete_expression(guard);
     let mut terms: Vec<String> = split_guard_terms(isolated.as_str())
         .into_iter()
@@ -233,7 +242,7 @@ fn open_with(ts: &mut String, indent: &str, guard: &str, purpose: Option<&str>) 
 
 /// Fold `terms` into the levels of the block that was just closed.
 fn fold(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     indent: &str,
     purpose: Option<&str>,
     terms: &[String],
@@ -339,7 +348,7 @@ fn sibling(frame: &Frame, rest: &[String]) -> Option<Sibling> {
 /// Emit `terms` as fresh levels: each run of exclusions, then each positive
 /// term on its own so later branches can continue it with `else`.
 fn open_levels(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     indent: &str,
     purpose: Option<&str>,
     terms: &[String],
@@ -398,7 +407,7 @@ fn open_levels(
 }
 
 /// Close a block opened by [`append_chained_vif_guard_open`].
-pub(crate) fn append_chained_vif_guard_close(ts: &mut String, indent: &str) {
+pub(crate) fn append_chained_vif_guard_close(ts: &mut crate::virtual_ts::TextBuf, indent: &str) {
     let skipped =
         FRAMES.with(|frames| matches!(frames.borrow_mut().pop(), Some(FrameState::Skipped)));
     if skipped {
@@ -441,7 +450,7 @@ fn strip_active_prefix(terms: &mut Vec<String>) -> bool {
     })
 }
 
-fn emit_if(ts: &mut String, indent: &str, guard: &str, purpose: Option<&str>) {
+fn emit_if(ts: &mut crate::virtual_ts::TextBuf, indent: &str, guard: &str, purpose: Option<&str>) {
     if let Some(purpose) = purpose {
         append_ignored_vif_guard_open(ts, indent, guard, purpose);
         return;
@@ -454,7 +463,7 @@ fn emit_if(ts: &mut String, indent: &str, guard: &str, purpose: Option<&str>) {
 /// nothing but comment lines. Generation of one SFC runs on one thread and
 /// writes one buffer at a time, so the thread-local record cannot describe a
 /// different buffer that happens to end the same way.
-fn follows_directly(previous: &ClosedGuard, ts: &String, indent: &str) -> bool {
+fn follows_directly(previous: &ClosedGuard, ts: &str, indent: &str) -> bool {
     let close_len = (indent.len() + 2) * previous.frames.len();
     let closing = previous
         .closed_at
@@ -477,7 +486,7 @@ fn follows_directly(previous: &ClosedGuard, ts: &String, indent: &str) -> bool {
 /// Drop the last `blocks` closing braces written by the previous close,
 /// keeping any comment lines written after them so they move into the
 /// reopened block.
-fn reopen(ts: &mut String, indent: &str, closed_at: usize, blocks: usize) {
+fn reopen(ts: &mut crate::virtual_ts::TextBuf, indent: &str, closed_at: usize, blocks: usize) {
     if blocks == 0 {
         return;
     }

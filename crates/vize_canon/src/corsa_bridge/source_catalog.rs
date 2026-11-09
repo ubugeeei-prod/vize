@@ -5,53 +5,17 @@
 )]
 
 use std::path::{Path, PathBuf};
-use std::sync::{Arc, Mutex, Weak};
+use std::sync::{Arc, Mutex};
 
 use vize_carton::FxHashMap;
 use vize_l0::FxHashSet;
+#[cfg(test)]
 use vize_l0::String;
 
 use super::CorsaMaterializedSource;
 use super::vue_dependencies_alias::recover_lock;
 
 type SourceFacts = FxHashMap<PathBuf, Arc<CorsaMaterializedSource>>;
-
-#[derive(Clone, Default)]
-struct NativePayloads(FxHashMap<PathBuf, NativePayload>);
-
-#[derive(Clone)]
-struct NativePayload {
-    source: Weak<CorsaMaterializedSource>,
-    document: Arc<(String, String)>,
-}
-
-impl NativePayloads {
-    fn document(
-        &mut self,
-        source: &Arc<CorsaMaterializedSource>,
-        uri: String,
-    ) -> Arc<(String, String)> {
-        let identity = Arc::downgrade(source);
-        if let Some(payload) = self.0.get_mut(&source.materialized_path) {
-            if payload.source.ptr_eq(&identity) {
-                return Arc::clone(&payload.document);
-            }
-            if payload.document.0 == uri && payload.document.1 == source.code {
-                payload.source = identity;
-                return Arc::clone(&payload.document);
-            }
-        }
-        let document = Arc::new((uri, source.code.clone()));
-        self.0.insert(
-            source.materialized_path.clone(),
-            NativePayload {
-                source: identity,
-                document: Arc::clone(&document),
-            },
-        );
-        document
-    }
-}
 
 /// Source facts retained by one exact editor project revision.
 ///
@@ -62,9 +26,6 @@ impl NativePayloads {
 pub struct CorsaSourceCatalog {
     sources: Arc<Mutex<SourceFacts>>,
     native_members: Arc<Vec<Arc<CorsaMaterializedSource>>>,
-    /// Only one payload per live physical path. Weak source identities cannot
-    /// keep retired mappings alive or confuse a replaced immutable leaf.
-    native_payloads: Arc<Mutex<NativePayloads>>,
 }
 
 impl CorsaSourceCatalog {
@@ -96,13 +57,9 @@ impl CorsaSourceCatalog {
             .collect::<Vec<_>>();
         members
             .sort_unstable_by(|left, right| left.materialized_path.cmp(&right.materialized_path));
-        recover_lock(&self.native_payloads)
-            .0
-            .retain(|path, _| snapshot.contains_file(path));
         Self {
             sources: Arc::clone(&self.sources),
             native_members: Arc::new(members),
-            native_payloads: Arc::clone(&self.native_payloads),
         }
     }
 
@@ -125,7 +82,7 @@ impl CorsaSourceCatalog {
         }) {
             let uri = crate::file_uri::path_to_file_uri(&source.materialized_path);
             if opened.insert(uri.clone()) {
-                documents.push((uri, source.code.clone()));
+                documents.push((uri, source.code.as_str().into()));
             }
         }
     }
@@ -141,14 +98,13 @@ impl CorsaSourceCatalog {
             .iter()
             .map(|(uri, _)| uri.clone())
             .collect::<FxHashSet<_>>();
-        let mut payloads = recover_lock(&self.native_payloads);
         for source in self.native_members.iter().filter(|source| {
             source.materialized_path.starts_with(project_root)
                 && source.mapping_kind != super::CorsaMaterializedMappingKind::Synthetic
         }) {
-            let uri = crate::file_uri::path_to_file_uri(&source.materialized_path);
-            if opened.insert(uri.clone()) {
-                documents.push_shared(payloads.document(source, uri));
+            let document = source.code.native_document();
+            if opened.insert(document.0.clone()) {
+                documents.push_shared(Arc::clone(document));
             }
         }
     }
@@ -165,41 +121,55 @@ impl CorsaSourceCatalog {
             .iter()
             .map(|(uri, _)| uri.clone())
             .collect::<FxHashSet<_>>();
-        let mut payloads = recover_lock(&self.native_payloads);
         for source in self.native_members.iter().filter(|source| {
             source.materialized_path.starts_with(root)
                 && overlays.contains_key(&source.source_path)
                 && source.mapping_kind != super::CorsaMaterializedMappingKind::Synthetic
         }) {
-            let uri = crate::file_uri::path_to_file_uri(&source.materialized_path);
-            if opened.insert(uri.clone()) {
-                documents.push_shared(payloads.document(source, uri));
+            let document = source.code.native_document();
+            if opened.insert(document.0.clone()) {
+                documents.push_shared(Arc::clone(document));
             }
         }
+    }
+
+    /// Each source as the retained leaf it equals, or as a new leaf.
+    pub(in crate::corsa_bridge) fn share(
+        &self,
+        sources: Vec<CorsaMaterializedSource>,
+    ) -> Vec<Arc<CorsaMaterializedSource>> {
+        let retained = recover_lock(&self.sources);
+        sources
+            .into_iter()
+            .map(|source| match retained.get(&source.materialized_path) {
+                Some(leaf) if leaf.same_leaf(&source) => Arc::clone(leaf),
+                _ => Arc::new(source),
+            })
+            .collect()
     }
 
     pub(in crate::corsa_bridge) fn include(&self, sources: Vec<CorsaMaterializedSource>) -> Self {
         let mut retained = recover_lock(&self.sources);
         if sources.iter().any(|source| {
-            retained.get(&source.materialized_path).is_some_and(|old| {
-                old.source_path != source.source_path
-                    || old.source != source.source
-                    || old.code != source.code
-                    || old.mapping != source.mapping
-                    || old.import_source_map != source.import_source_map
-                    || old.mapping_kind != source.mapping_kind
-            })
+            retained
+                .get(&source.materialized_path)
+                .is_some_and(|old| !old.same_leaf(source))
         }) {
             // A caller can change host text without including it in overlays.
-            // Fork only that revision; unchanged leaf data stays shared.
+            // Fork only that revision; unchanged leaves, and with them their
+            // native payload identities, stay shared.
             let mut refreshed = retained.clone();
             for source in sources {
-                refreshed.insert(source.materialized_path.clone(), Arc::new(source));
+                if refreshed
+                    .get(&source.materialized_path)
+                    .is_none_or(|old| !old.same_leaf(&source))
+                {
+                    refreshed.insert(source.materialized_path.clone(), Arc::new(source));
+                }
             }
             return Self {
                 sources: Arc::new(Mutex::new(refreshed)),
                 native_members: Arc::clone(&self.native_members),
-                native_payloads: Arc::new(Mutex::new(recover_lock(&self.native_payloads).clone())),
             };
         }
         for source in sources {
@@ -227,14 +197,9 @@ impl CorsaSourceCatalog {
             .filter(|(path, _)| current.contains(*path) || preserved.contains(*path))
             .map(|(path, source)| (path.clone(), Arc::clone(source)))
             .collect();
-        let mut payloads = recover_lock(&self.native_payloads).clone();
-        payloads
-            .0
-            .retain(|path, _| current.contains(path) || preserved.contains(path));
         Self {
             sources: Arc::new(Mutex::new(retained)),
             native_members: Arc::clone(&self.native_members),
-            native_payloads: Arc::new(Mutex::new(payloads)),
         }
     }
 

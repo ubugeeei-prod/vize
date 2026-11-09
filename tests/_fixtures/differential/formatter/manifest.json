@@ -271,6 +271,131 @@
       ]
     },
     {
+      "id": "formatter/sfc/attribute-line-terminator-whitespace",
+      "state": "active",
+      "targets": [
+        "fmt"
+      ],
+      "inputs": {
+        "root": "sfc-attribute-line-terminator-whitespace",
+        "files": [
+          {
+            "path": "App.vue.txt",
+            "sha256": "12305c9e5a8623f4871f154bf236a5be09aa1cf91a5dc22b46708a851d88df22",
+            "role": "entry",
+            "kind": "vue",
+            "runtimeFileName": "App.vue"
+          }
+        ],
+        "config": []
+      },
+      "provenance": {
+        "issues": [
+          6847
+        ],
+        "commits": [
+          {
+            "sha": "ddfd83fcea818a8bdfb95d13d2ab2efc44eebd3c",
+            "role": "pre-fix-base",
+            "paths": [
+              "davinci/vize_l1/src/container/vue/compat/block.rs",
+              "crates/vize_glyph/src/formatter/opening_tag.rs"
+            ]
+          }
+        ],
+        "sources": [
+          {
+            "kind": "issue-authored-regression",
+            "issue": 6847,
+            "path": "crates/vize_glyph/tests/sfc_block_attributes.rs",
+            "symbol": "line_terminators_around_root_attribute_values_are_whitespace"
+          }
+        ]
+      },
+      "witnesses": [
+        {
+          "path": "crates/vize_glyph/tests/sfc_block_attributes.rs",
+          "symbol": "line_terminators_around_root_attribute_values_are_whitespace",
+          "executor": "rust-test",
+          "asserts": [
+            "full-output-bytes",
+            "sortAttributes-true",
+            "sortAttributes-false"
+          ],
+          "limitations": [
+            "Form feed is not yet attribute whitespace in the compat walk (#12348)."
+          ]
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc"
+            ],
+            "selector": "root block attribute whitespace around = and after unquoted values"
+          }
+        ]
+      },
+      "adapters": {
+        "legacy": "formatter-cli-v1",
+        "native": null,
+        "reasons": {
+          "legacy": "Source-built formatter CLI compares complete output and a three-pass fixed point.",
+          "native": "No verified native formatter adapter; unsupported is nonpass."
+        }
+      },
+      "expectations": {
+        "legacy": {
+          "state": "captured",
+          "baselineRevision": "f59e69c38ecbead394ba30f0fdacb5f9c1b9fd04",
+          "artifacts": [
+            {
+              "path": "sfc-attribute-line-terminator-whitespace/reference.expected.txt",
+              "sha256": "2229069e5f117b92d5e123872f4f12f3722a57233b3510e00525e8553af02ccb",
+              "role": "issue-authored-regression-reference",
+              "provenance": {
+                "issue": 6847,
+                "path": "crates/vize_glyph/tests/sfc_block_attributes.rs",
+                "symbol": "line_terminators_around_root_attribute_values_are_whitespace",
+                "assertion": "assert_eq!(first.code, expected) with default sortAttributes"
+              },
+              "mediaType": "text/x-vue",
+              "runtimeFileName": "App.vue"
+            }
+          ],
+          "contract": "formatter-byte-output-v1",
+          "fields": [
+            "reference-full-output-bytes",
+            "candidate-cli-output-bytes",
+            "3-pass-idempotence"
+          ],
+          "missingFields": [
+            "structured FormatResult.changed is covered by the Rust witness"
+          ],
+          "referenceState": "Rust-test-authored complete output; exact-source Actions required"
+        }
+      },
+      "comparison": {
+        "contract": "formatter-byte-output-v1",
+        "requiredFacets": [
+          "full-output-bytes",
+          "idempotence"
+        ],
+        "transportMappings": []
+      },
+      "scenarios": [
+        {
+          "id": "initial",
+          "inputRef": "App.vue",
+          "operations": []
+        }
+      ]
+    },
+    {
       "id": "formatter/sfc/auto-cr",
       "state": "active",
       "targets": [

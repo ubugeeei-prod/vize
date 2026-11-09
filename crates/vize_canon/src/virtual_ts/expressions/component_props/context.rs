@@ -1,13 +1,13 @@
 //! Shared internal inputs for component prop value checks.
 use super::{
-    ComponentPropSource, FxHashSet, String, TemplateBindingAccess, VizeMapping,
-    prop_name_source_range, prop_value_source_range,
+    ComponentPropSource, FxHashSet, TemplateBindingAccess, VizeMapping, prop_name_source_range,
+    prop_value_source_range,
 };
 
 pub(crate) struct ComponentPropCheckContext<'a, 'b> {
     pub(crate) inference_prelude:
         Option<&'a std::cell::RefCell<crate::virtual_ts::scope::RootOwnerBuffer>>,
-    pub(crate) ts: &'b mut String,
+    pub(crate) ts: &'b mut crate::virtual_ts::TextBuf,
     pub(crate) mappings: &'b mut Vec<VizeMapping>,
     pub(crate) template_binding_access: &'a TemplateBindingAccess<'a>,
     pub(crate) source_context: ComponentPropSource<'a>,
@@ -21,7 +21,7 @@ pub(crate) struct ComponentPropCheckContext<'a, 'b> {
 
 impl<'a, 'b> ComponentPropCheckContext<'a, 'b> {
     pub(crate) fn new(
-        ts: &'b mut String,
+        ts: &'b mut crate::virtual_ts::TextBuf,
         mappings: &'b mut Vec<VizeMapping>,
         template_binding_access: &'a TemplateBindingAccess<'a>,
         source_context: ComponentPropSource<'a>,

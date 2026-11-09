@@ -15,7 +15,7 @@ use vize_croquis::{
 };
 
 pub(crate) fn append_ignored_vif_guard_open(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     indent: &str,
     guard: &str,
     purpose: &str,

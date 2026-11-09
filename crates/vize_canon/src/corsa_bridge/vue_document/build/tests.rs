@@ -2,6 +2,8 @@
 
 use std::path::Path;
 
+use vize_carton::String;
+
 use crate::virtual_ts::VirtualTsOptions;
 
 use super::*;
@@ -49,7 +51,7 @@ fn context(
     path: &Path,
     source: &str,
     overlays: &[(PathBuf, &str)],
-) -> impl std::ops::Deref<Target = AliasContext> {
+) -> crate::corsa_bridge::vue_dependencies_alias::PreparedAliasContext {
     let overlays = overlays.iter().map(|(p, s)| (p.clone(), *s)).collect();
     AliasContext::for_hosts_cached(
         path,
@@ -324,7 +326,7 @@ fn host_edit_reuses_dependency_documents_instead_of_copying_the_graph() {
     );
     for (index, previous) in dependency_slots {
         assert!(
-            std::ptr::eq(previous, &surface.documents[index]),
+            std::ptr::eq(previous, surface.documents.iter().nth(index).unwrap()),
             "unchanged dependency documents stay in the prepared graph"
         );
     }

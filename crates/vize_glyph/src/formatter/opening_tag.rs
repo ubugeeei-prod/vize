@@ -1,4 +1,4 @@
-use vize_atelier_sfc::BlockLocation;
+use super::BlockLocation;
 
 pub(super) struct RawOpeningTag<'a> {
     text: &'a str,
@@ -89,12 +89,12 @@ pub(super) fn authored_attr_order<'s>(
             continue;
         }
         let name = raw.get(name_start..pos)?;
-        while matches!(bytes.get(pos), Some(b' ' | b'\t')) {
+        while bytes.get(pos).is_some_and(|&b| is_space(b)) {
             pos += 1;
         }
         if bytes.get(pos) == Some(&b'=') {
             pos += 1;
-            while matches!(bytes.get(pos), Some(b' ' | b'\t')) {
+            while bytes.get(pos).is_some_and(|&b| is_space(b)) {
                 pos += 1;
             }
             if let Some(&quote) = bytes.get(pos).filter(|&&b| b == b'"' || b == b'\'') {

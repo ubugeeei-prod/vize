@@ -12,11 +12,15 @@
 use std::path::Path;
 use std::sync::Arc;
 
-use vize_carton::{FxHashMap, String};
+use vize_carton::FxHashMap;
+#[cfg(test)]
+use vize_carton::String;
 
 use super::QuerySurface;
 use crate::batch::virtual_project::VueDocumentVirtualTs;
 use crate::corsa_bridge::vue_document::CorsaMaterializedSource;
+#[cfg(test)]
+use crate::corsa_bridge::vue_document::CorsaNativeDocumentBatch;
 use crate::file_uri::path_to_file_uri;
 
 pub(in crate::corsa_bridge) fn retarget_host(
@@ -26,6 +30,7 @@ pub(in crate::corsa_bridge) fn retarget_host(
     fresh: Option<CorsaMaterializedSource>,
 ) {
     let mut replacements = FxHashMap::default();
+    let mut payloads = Vec::new();
     let code = generated.code.clone();
     let host = Arc::make_mut(&mut surface.host);
     replacements.insert(host.request_uri.clone(), code.clone());
@@ -37,8 +42,9 @@ pub(in crate::corsa_bridge) fn retarget_host(
             .iter_mut()
             .find(|source| source.materialized_path == fresh.materialized_path)
         {
-            *current = fresh;
-            replacements.insert(uri, current.code.clone());
+            *current = Arc::new(fresh);
+            replacements.insert(uri, current.code.as_str().into());
+            payloads.push(Arc::clone(current.code.native_document()));
         }
     }
     host.request_uri = path_to_file_uri(materialized_path);
@@ -48,23 +54,7 @@ pub(in crate::corsa_bridge) fn retarget_host(
     host.import_source_map = generated.import_source_map;
     host.source_type = generated.source_type;
     host.virtual_suffix = generated.virtual_suffix;
-    replace_document_texts(&mut surface.documents, &replacements);
-}
-
-/// Dissociate weak batch receipts without copying a uniquely owned dependency
-/// tail. A live strong payload still gets its own complete frozen allocation.
-fn replace_document_texts(
-    documents: &mut Arc<Vec<(String, String)>>,
-    replacements: &FxHashMap<String, String>,
-) {
-    let apply = |entries: &mut Vec<(String, String)>| {
-        for (uri, text) in entries {
-            if let Some(replacement) = replacements.get(uri.as_str()) {
-                *text = replacement.clone();
-            }
-        }
-    };
-    apply(Arc::make_mut(documents));
+    surface.documents.replace_texts(&replacements, &payloads);
 }
 
 #[cfg(test)]
@@ -75,21 +65,45 @@ mod tests {
     fn weak_batch_receipts_do_not_copy_a_uniquely_owned_dependency_tail() {
         let dependency: String = "export const child = '雪😀';\r\n".repeat(4096).into();
         let expected = dependency.clone();
-        let mut documents = Arc::new(vec![
+        let mut documents = CorsaNativeDocumentBatch::from(vec![
             ("host".into(), "before".into()),
             ("child".into(), dependency),
         ]);
-        let original_tail = documents[1].1.as_bytes().as_ptr();
-        let receipt = Arc::downgrade(&documents);
-        replace_document_texts(
-            &mut documents,
+        let original_tail = documents.to_vec()[1].1.len();
+        let tail = documents.iter().nth(1).unwrap().1.as_bytes().as_ptr();
+        let receipt = documents.payload_owner_for_test();
+        documents.replace_texts(
             &FxHashMap::from_iter([("host".into(), "after".into())]),
+            &[],
         );
         assert!(receipt.upgrade().is_none());
-        assert_eq!(documents[1].1.as_bytes().as_ptr(), original_tail);
+        assert_eq!(documents.iter().nth(1).unwrap().1.as_bytes().as_ptr(), tail);
+        assert_eq!(documents.iter().nth(1).unwrap().1.len(), original_tail);
         assert_eq!(
-            documents.as_ref(),
-            &vec![("host".into(), "after".into()), ("child".into(), expected)]
+            documents.to_vec(),
+            vec![("host".into(), "after".into()), ("child".into(), expected)]
         );
+    }
+
+    #[test]
+    fn a_replaced_shared_leaf_payload_is_shared_not_copied() {
+        let mut documents = CorsaNativeDocumentBatch::from(vec![("host".into(), "host".into())]);
+        documents.push_shared(Arc::new(("leaf".into(), "before".into())));
+        documents.push_shared(Arc::new(("other".into(), "other".into())));
+        let other = Arc::clone(&documents.shared_additions_for_test()[1]);
+        let fresh = Arc::new((String::from("leaf"), String::from("after")));
+        documents.replace_texts(
+            &FxHashMap::from_iter([("leaf".into(), "after".into())]),
+            std::slice::from_ref(&fresh),
+        );
+        assert!(Arc::ptr_eq(
+            &documents.shared_additions_for_test()[0],
+            &fresh
+        ));
+        assert!(Arc::ptr_eq(
+            &documents.shared_additions_for_test()[1],
+            &other
+        ));
+        assert_eq!(documents.iter().nth(1).unwrap().1, "after");
     }
 }

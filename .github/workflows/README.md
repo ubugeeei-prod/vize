@@ -31,7 +31,7 @@ surfaces and are not routine CI-refactor targets.
 | 01    | [Pull request orchestration](#01-pull-request-orchestration)                           | 18        |
 | 02    | [Release and public acceptance](#02-release-and-public-acceptance)                     | 32        |
 | 03    | [Benchmarks and profiling](#03-benchmarks-and-profiling)                               | 38        |
-| 04    | [Type checking and content mapping](#04-type-checking-and-content-mapping)             | 14        |
+| 04    | [Type checking and content mapping](#04-type-checking-and-content-mapping)             | 15        |
 | 05    | [Language services and editors](#05-language-services-and-editors)                     | 23        |
 | 06    | [SFC, JSX, and compiler correctness](#06-sfc-jsx-and-compiler-correctness)             | 40        |
 | 07    | [Davinci, Canon, and Level](#07-davinci-canon-and-level)                               | 21        |
@@ -160,15 +160,16 @@ Typechecker, content-mapper, Corsa, and TypeScript-provider qualification.
 | 04.03 | Component input projection packets    | [`component-input-projection-packets.yml`](./component-input-projection-packets.yml)         |
 | 04.04 | Content Mapper Conformance            | [`content-mapper-conformance.yml`](./content-mapper-conformance.yml)                         |
 | 04.05 | Consumer instance globals capture     | [`content-mapper-instance-globals.yml`](./content-mapper-instance-globals.yml)               |
-| 04.06 | Content Mapper Source Case Jobs       | [`content-mapper-reported-q16.yml`](./content-mapper-reported-q16.yml)                       |
-| 04.07 | Content Mapper worker stack           | [`content-mapper-worker-stack.yml`](./content-mapper-worker-stack.yml)                       |
-| 04.08 | Type-check corpus pair                | [`typecheck-corpus-pair.yml`](./typecheck-corpus-pair.yml)                                   |
-| 04.09 | Typecheck vs vue-tsc                  | [`typecheck-vs-vue-tsc.yml`](./typecheck-vs-vue-tsc.yml)                                     |
-| 04.10 | WSL2 type-check qualification         | [`typecheck-wsl2.yml`](./typecheck-wsl2.yml)                                                 |
-| 04.11 | Typechecker cache custody             | [`typechecker-cache-custody.yml`](./typechecker-cache-custody.yml)                           |
-| 04.12 | Type checker native backend phases    | [`typechecker-native-phases.yml`](./typechecker-native-phases.yml)                           |
-| 04.13 | Native syntax and semantic completion | [`typechecker-syntax-semantic-completion.yml`](./typechecker-syntax-semantic-completion.yml) |
-| 04.14 | Platform VSIX native projection       | [`typescript-provider-vsix.yml`](./typescript-provider-vsix.yml)                             |
+| 04.06 | Content mapper pair                   | [`content-mapper-pair.yml`](./content-mapper-pair.yml)                                       |
+| 04.07 | Content Mapper Source Case Jobs       | [`content-mapper-reported-q16.yml`](./content-mapper-reported-q16.yml)                       |
+| 04.08 | Content Mapper worker stack           | [`content-mapper-worker-stack.yml`](./content-mapper-worker-stack.yml)                       |
+| 04.09 | Type-check corpus pair                | [`typecheck-corpus-pair.yml`](./typecheck-corpus-pair.yml)                                   |
+| 04.10 | Typecheck vs vue-tsc                  | [`typecheck-vs-vue-tsc.yml`](./typecheck-vs-vue-tsc.yml)                                     |
+| 04.11 | WSL2 type-check qualification         | [`typecheck-wsl2.yml`](./typecheck-wsl2.yml)                                                 |
+| 04.12 | Typechecker cache custody             | [`typechecker-cache-custody.yml`](./typechecker-cache-custody.yml)                           |
+| 04.13 | Type checker native backend phases    | [`typechecker-native-phases.yml`](./typechecker-native-phases.yml)                           |
+| 04.14 | Native syntax and semantic completion | [`typechecker-syntax-semantic-completion.yml`](./typechecker-syntax-semantic-completion.yml) |
+| 04.15 | Platform VSIX native projection       | [`typescript-provider-vsix.yml`](./typescript-provider-vsix.yml)                             |
 
 ## 05 Language services and editors
 

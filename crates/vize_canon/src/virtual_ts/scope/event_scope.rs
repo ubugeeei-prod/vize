@@ -15,7 +15,7 @@
 //! `v-if` guard inside the closure (see `event_handler.rs`).
 
 use crate::virtual_ts::scope::ScopeMappings;
-use vize_carton::{String, append, profile};
+use vize_carton::{append, profile};
 use vize_croquis::{EventHandlerScopeData, Scope};
 
 use crate::virtual_ts::helpers::get_dom_event_type;
@@ -37,7 +37,7 @@ pub(super) struct EventVifGuards<'a> {
 }
 
 pub(super) fn generate_event_handler_scope(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     mappings: &mut ScopeMappings<'_>,
     ctx: &ScopeGenContext<'_, '_>,
     scope: &Scope,
@@ -68,9 +68,9 @@ pub(super) fn generate_event_handler_scope(
         || (unused_event && data.target_component.is_none() && !data.event_name_is_dynamic)
     {
         if unused_event {
-            append!(*ts, "{indent}void (() => {{\n");
+            vize_l0::emit_ts!(ts, "{indent}void (() => {{\n");
         } else {
-            append!(*ts, "{indent}void (({event_value}: any) => {{\n");
+            vize_l0::emit_ts!(ts, "{indent}void (({event_value}: any) => {{\n");
         }
         profile!(
             "canon.virtual_ts.event_handler_expressions",
@@ -96,7 +96,7 @@ pub(super) fn generate_event_handler_scope(
                 },
             )
         );
-        append!(*ts, "{indent}}});\n");
+        vize_l0::emit_ts!(ts, "{indent}}});\n");
         return;
     }
 
@@ -107,23 +107,23 @@ pub(super) fn generate_event_handler_scope(
         let listener_type = vize_carton::cstr!("__vize_vnode_hook_{}_listener", scope_id);
         let handler_type = vize_carton::cstr!("__vize_vnode_hook_{}_handler", scope_id);
         let needs_typed_handler_assignment = needs_typed_handler_assignment(data);
-        append!(
-            *ts,
-            "{indent}type {listener_type} = (...args: {listener_args}) => any;\n",
+        vize_l0::emit_ts!(
+            ts,
+            "{indent}type {listener_type} = (...args: {listener_args}) => any;\n"
         );
         if needs_typed_handler_assignment {
-            append!(
-                *ts,
-                "{indent}type {handler_type} = {{ bivarianceHack(...args: {listener_args}): any }}[\"bivarianceHack\"];\n",
+            vize_l0::emit_ts!(
+                ts,
+                "{indent}type {handler_type} = {{ bivarianceHack(...args: {listener_args}): any }}[\"bivarianceHack\"];\n"
             );
         }
-        append!(
-            *ts,
-            "{indent}void ((...__vize_args: Parameters<{listener_type}>) => {{\n",
+        vize_l0::emit_ts!(
+            ts,
+            "{indent}void ((...__vize_args: Parameters<{listener_type}>) => {{\n"
         );
-        append!(
-            *ts,
-            "{inner_indent}const {event_value} = __vize_args[0] as {event_type}; void {event_value};\n",
+        vize_l0::emit_ts!(
+            ts,
+            "{inner_indent}const {event_value} = __vize_args[0] as {event_type}; void {event_value};\n"
         );
 
         profile!(
@@ -157,7 +157,7 @@ pub(super) fn generate_event_handler_scope(
             )
         );
 
-        append!(*ts, "{indent}}});\n");
+        vize_l0::emit_ts!(ts, "{indent}}});\n");
     } else if data.target_component.is_some() && !data.event_name_is_dynamic {
         component_scope::generate_component_handler_scope(
             ts,
@@ -182,23 +182,23 @@ pub(super) fn generate_event_handler_scope(
         let listener_type = vize_carton::cstr!("__vize_transition_{}_listener", scope_id);
         let handler_type = vize_carton::cstr!("__vize_transition_{}_handler", scope_id);
         let needs_typed_handler_assignment = needs_typed_handler_assignment(data);
-        append!(
-            *ts,
-            "{indent}type {listener_type} = (...args: {listener_args}) => any;\n",
+        vize_l0::emit_ts!(
+            ts,
+            "{indent}type {listener_type} = (...args: {listener_args}) => any;\n"
         );
         if needs_typed_handler_assignment {
-            append!(
-                *ts,
-                "{indent}type {handler_type} = {{ bivarianceHack(...args: {listener_args}): any }}[\"bivarianceHack\"];\n",
+            vize_l0::emit_ts!(
+                ts,
+                "{indent}type {handler_type} = {{ bivarianceHack(...args: {listener_args}): any }}[\"bivarianceHack\"];\n"
             );
         }
-        append!(
-            *ts,
-            "{indent}void ((...__vize_args: Parameters<{listener_type}>) => {{\n",
+        vize_l0::emit_ts!(
+            ts,
+            "{indent}void ((...__vize_args: Parameters<{listener_type}>) => {{\n"
         );
-        append!(
-            *ts,
-            "{inner_indent}const {event_value} = __vize_args[0] as {event_type}; void {event_value};\n",
+        vize_l0::emit_ts!(
+            ts,
+            "{inner_indent}const {event_value} = __vize_args[0] as {event_type}; void {event_value};\n"
         );
 
         profile!(
@@ -232,7 +232,7 @@ pub(super) fn generate_event_handler_scope(
             )
         );
 
-        append!(*ts, "{indent}}});\n");
+        vize_l0::emit_ts!(ts, "{indent}}});\n");
     } else if data.event_name_is_dynamic
         || dynamic_component_custom_event(
             ctx.template_source,
@@ -242,17 +242,17 @@ pub(super) fn generate_event_handler_scope(
         )
     {
         let listener_type = vize_carton::cstr!("__vize_dynamic_component_{}_listener", scope_id);
-        append!(
-            *ts,
-            "{indent}type {listener_type} = (...args: any[]) => any;\n",
+        vize_l0::emit_ts!(
+            ts,
+            "{indent}type {listener_type} = (...args: any[]) => any;\n"
         );
-        append!(
-            *ts,
-            "{indent}void ((...__vize_args: Parameters<{listener_type}>) => {{\n",
+        vize_l0::emit_ts!(
+            ts,
+            "{indent}void ((...__vize_args: Parameters<{listener_type}>) => {{\n"
         );
-        append!(
-            *ts,
-            "{inner_indent}const {event_value} = __vize_args[0] as any; void {event_value};\n",
+        vize_l0::emit_ts!(
+            ts,
+            "{inner_indent}const {event_value} = __vize_args[0] as any; void {event_value};\n"
         );
 
         profile!(
@@ -285,10 +285,10 @@ pub(super) fn generate_event_handler_scope(
             )
         );
 
-        append!(*ts, "{indent}}});\n");
+        vize_l0::emit_ts!(ts, "{indent}}});\n");
     } else {
         let event_type = get_dom_event_type(data.event_name.as_str());
-        append!(*ts, "{indent}void (({event_value}: {event_type}) => {{\n");
+        vize_l0::emit_ts!(ts, "{indent}void (({event_value}: {event_type}) => {{\n");
 
         profile!(
             "canon.virtual_ts.event_handler_expressions",
@@ -317,6 +317,6 @@ pub(super) fn generate_event_handler_scope(
             )
         );
 
-        append!(*ts, "{indent}}});\n");
+        vize_l0::emit_ts!(ts, "{indent}}});\n");
     }
 }

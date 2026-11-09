@@ -18,7 +18,7 @@ pub(crate) enum PropsTypeEmission {
 /// Emit the setup-local props type artifact used when the `defineProps<T>()`
 /// type argument can only resolve inside `__setup()`.
 pub(crate) fn generate_setup_scoped_props_artifact(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     summary: &Croquis,
     generic_parameters: Option<&GenericParameters>,
 ) {

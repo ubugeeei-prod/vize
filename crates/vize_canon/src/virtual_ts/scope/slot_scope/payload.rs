@@ -1,4 +1,3 @@
-use vize_carton::String;
 use vize_croquis::{Croquis, Scope, ScopeData, analysis::ComponentUsage};
 
 /// The resolver lives at module scope so the same host type is used for
@@ -25,7 +24,11 @@ const SLOT_PAYLOAD_HELPER: &str = include_str!("../../helpers/declarations/slot-
 
 /// Emit helpers only when a component owns an authored slot scope. Keeping
 /// unused aliases out also preserves `noUnusedLocals` declaration consumers.
-pub(crate) fn emit_slot_payload_helpers(ts: &mut String, summary: &Croquis, emit_per_file: bool) {
+pub(crate) fn emit_slot_payload_helpers(
+    ts: &mut crate::virtual_ts::TextBuf,
+    summary: &Croquis,
+    emit_per_file: bool,
+) {
     if !emit_per_file {
         return;
     }

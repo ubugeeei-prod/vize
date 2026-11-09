@@ -2,6 +2,7 @@
 
 use super::super::{AliasContext, namespace::editor_namespace_identity};
 use std::path::{Path, PathBuf};
+use std::sync::Arc;
 use vize_carton::FxHashMap;
 
 use crate::batch::ModuleSpecifierFactsCache;
@@ -21,7 +22,8 @@ pub(crate) struct ContextFingerprint {
     generation_options: u64,
     /// Requested workspace sources are part of this revision.
     workspace: bool,
-    stamps: Vec<crate::package_route::stamp::InputStamp>,
+    /// Shared so revisions and background sweeps take them without copying.
+    stamps: Arc<[crate::package_route::stamp::InputStamp]>,
 }
 
 impl PartialEq for ContextFingerprint {
@@ -69,7 +71,7 @@ impl ContextFingerprint {
             overlay_inputs,
             generation_options,
             workspace: false,
-            stamps: Vec::new(),
+            stamps: Arc::default(),
         }
     }
 
@@ -261,6 +263,11 @@ impl ContextFingerprint {
         self.workspace
     }
 
+    /// The captured disk inputs validation compares.
+    pub(super) fn disk_stamps(&self) -> Arc<[crate::package_route::stamp::InputStamp]> {
+        Arc::clone(&self.stamps)
+    }
+
     pub(super) fn stamps_still_valid(
         &self,
         observed: &mut crate::package_route::stamp::InputStampValidation,
@@ -272,7 +279,7 @@ impl ContextFingerprint {
 
     #[cfg(test)]
     pub(crate) fn input_stamps(&self) -> Vec<crate::package_route::stamp::InputStamp> {
-        self.stamps.clone()
+        self.stamps.to_vec()
     }
 
     pub(crate) fn overlay_identity(&self) -> u64 {

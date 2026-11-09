@@ -300,7 +300,7 @@ pub(crate) fn to_safe_identifier_fragment(s: &str) -> String {
 }
 
 /// Append a double-quoted TypeScript string literal.
-pub(crate) fn push_ts_string_literal(out: &mut String, value: &str) {
+pub(crate) fn push_ts_string_literal(out: &mut impl crate::virtual_ts::TsText, value: &str) {
     out.push('"');
     for ch in value.chars() {
         match ch {
@@ -324,7 +324,7 @@ pub(crate) fn push_ts_string_literal(out: &mut String, value: &str) {
     out.push('"');
 }
 
-fn push_hex_digit(out: &mut String, value: u8) {
+fn push_hex_digit(out: &mut impl crate::virtual_ts::TsText, value: u8) {
     if let Some(digit) = char::from_digit(u32::from(value), 16) {
         out.push(digit);
     }

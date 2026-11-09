@@ -47,6 +47,26 @@ pub use text::{
 };
 pub(crate) use text::{legacy_slot_filler_needs_props_placeholder, legacy_slot_filler_text};
 
+#[derive(Clone, Copy)]
+pub(crate) struct LowerPolicy {
+    preserve_comments: bool,
+    retain_consumed_expressions: bool,
+}
+
+impl LowerPolicy {
+    pub(crate) const fn compile(preserve_comments: bool) -> Self {
+        Self {
+            preserve_comments,
+            retain_consumed_expressions: false,
+        }
+    }
+
+    const LINT: Self = Self {
+        preserve_comments: true,
+        retain_consumed_expressions: true,
+    };
+}
+
 /// Whether directive values carry `name: expression` clauses instead of a
 /// separate argument token. Kept in the physically Vue-owned policy module so
 /// neutral lowering modules consume a resolved fact without naming a version.
@@ -87,10 +107,11 @@ pub struct Lowered<'a, P = StdVec<ProvenanceRecord>> {
     /// by its compound `ui.interpolation` op (P2-9 installment 4,
     /// [`lower::text`](text)); validated and published by lowering.
     pub texts: SideTable<TextParts>,
-    /// Retained expressions consumed into compound text ops. The
-    /// comment-preserving lint lowering populates this compatibility channel;
-    /// ordinary compiler lowerings leave it empty so they do not parse a
-    /// compound expression twice.
+    /// Retained expressions consumed into compound text ops. They no longer
+    /// have a direct op slot, but lint/editor consumers still need their
+    /// authentic AST and authored coordinates without reparsing L1 text.
+    /// Compile-only lowerings leave this empty and avoid parsing expressions
+    /// that the emitter will parse from the compound text facts.
     pub consumed_expressions: StdVec<vize_l2::expr::ExprRef<'a>>,
     /// Consumed `ui.for` scope views, keyed by the `ui.for` op's
     /// page-order id; validated and published by lowering.
@@ -159,7 +180,15 @@ pub fn lower_preserving_comments<'a>(
     tree: &SurfaceTree<'a>,
     errors: &[SurfaceError],
 ) -> Lowered<'a> {
-    lower_with_caps_and_comment_policy(allocator, tree, errors, LegacyCaps::VUE3, true, &[], None)
+    lower_with_caps_and_comment_policy(
+        allocator,
+        tree,
+        errors,
+        LegacyCaps::VUE3,
+        LowerPolicy::LINT,
+        &[],
+        None,
+    )
 }
 
 pub(crate) fn lower_with_caps_and_comment_policy<'a, P: ProvenanceSink + Default>(
@@ -167,7 +196,7 @@ pub(crate) fn lower_with_caps_and_comment_policy<'a, P: ProvenanceSink + Default
     tree: &SurfaceTree<'a>,
     errors: &[SurfaceError],
     caps: LegacyCaps,
-    preserve_comments: bool,
+    policy: LowerPolicy,
     custom_element_patterns: &[String],
     custom_element_predicate: Option<fn(&str) -> bool>,
 ) -> Lowered<'a, P> {
@@ -184,7 +213,7 @@ pub(crate) fn lower_with_caps_and_comment_policy<'a, P: ProvenanceSink + Default
         errors,
         root.whole_block(),
         caps,
-        preserve_comments,
+        policy,
         custom_elements,
     )
 }
@@ -215,7 +244,7 @@ pub fn lower_source_block_with_caps<'a>(
         errors,
         block,
         caps,
-        false,
+        LowerPolicy::compile(false),
         LowerCustomElements::default(),
     )
 }
@@ -232,7 +261,7 @@ fn lower_source_block_with_caps_and_comment_policy<'a, P: ProvenanceSink + Defau
     errors: &[SurfaceError],
     block: SourceBlock<'a>,
     caps: LegacyCaps,
-    preserve_comments: bool,
+    policy: LowerPolicy,
     custom_elements: LowerCustomElements<'_>,
 ) -> Lowered<'a, P> {
     debug_assert!(
@@ -244,7 +273,7 @@ fn lower_source_block_with_caps_and_comment_policy<'a, P: ProvenanceSink + Defau
         allocator,
         block,
         caps,
-        preserve_comments,
+        policy,
         custom_elements.patterns,
         custom_elements.predicate,
     );

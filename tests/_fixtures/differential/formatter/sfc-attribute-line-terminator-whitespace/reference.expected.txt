@@ -1,0 +1,7 @@
+<script setup lang="ts">
+const a: number = 1;
+</script>
+
+<template lang="html" data-x="y">
+  <p>{{ a }}</p>
+</template>

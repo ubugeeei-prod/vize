@@ -39,6 +39,8 @@ impl MaestroServer {
             return;
         }
         let project = self.for_document(uri).await;
+        #[cfg(feature = "native")]
+        project.state.note_corsa_document_boundary();
         project.publish_changed_document(uri, version).await;
     }
 

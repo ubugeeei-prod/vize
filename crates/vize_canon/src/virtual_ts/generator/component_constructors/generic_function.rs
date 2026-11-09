@@ -4,10 +4,10 @@ use super::super::generics::generic_suffix;
 use super::emission::{GenericContext, GenericSignature, SignatureRole};
 use super::{ComponentInstanceAliases, alias_ref};
 use crate::virtual_ts::generated_names;
-use vize_carton::{String, append};
+use vize_carton::append;
 
 pub(super) fn emit(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     aliases: &ComponentInstanceAliases<'_>,
     authored_parameters: &str,
     alias_parameters: &str,

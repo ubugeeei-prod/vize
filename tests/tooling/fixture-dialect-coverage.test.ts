@@ -11,32 +11,42 @@ import { createCompatibilityReport } from "../../tools/support/compat/fixtures/f
 const context = createCompatibilityContext();
 const ledger = readCompatibilityLedger();
 
+// Presence floors: a fixture may gain claims without editing this test, but
+// a recorded claim never disappears silently.
+const presenceFloor: Record<string, readonly string[]> = {
+  "vue2-sfc": [
+    "bootstrap-vue",
+    "cube-ui",
+    "element",
+    "mobile-web-best-practice",
+    "vue-element-admin",
+    "vue-select",
+    "vue2-elm",
+    "vux",
+  ],
+  "vue2.7-sfc": ["vue-material"],
+  "petite-vue": ["petite-vue", "wakapi"],
+  "pug-template": ["dho-web-client", "wave-ui"],
+  "jsx-vapor": ["vue-jsx-vapor"],
+  "jsx-babel": ["ant-design-vue", "element-plus", "vuetify"],
+};
+
 test("pinned project dialect presence stays distinct from per-file coverage", () => {
   validateCompatibilityLedger(ledger, context);
   const coverage = createCompatibilityReport(ledger, context).dialectCoverage;
-  assert.equal(coverage.unknownFixtureCount, 134);
-  assert.equal(coverage.partialFixtureCount, 15);
-  assert.deepEqual(coverage.presentInFixtures["vue2-sfc"], [
-    "tests/_fixtures/_git/bootstrap-vue",
-    "tests/_fixtures/_git/cube-ui",
-    "tests/_fixtures/_git/element",
-    "tests/_fixtures/_git/mobile-web-best-practice",
-    "tests/_fixtures/_git/vue-element-admin",
-    "tests/_fixtures/_git/vue-select",
-    "tests/_fixtures/_git/vue2-elm",
-    "tests/_fixtures/_git/vux",
-  ]);
-  assert.deepEqual(coverage.presentInFixtures["vue2.7-sfc"], ["tests/_fixtures/_git/vue-material"]);
-  assert.deepEqual(coverage.presentInFixtures["petite-vue"], [
-    "tests/_fixtures/_git/petite-vue",
-    "tests/_fixtures/_git/wakapi",
-  ]);
-  assert.deepEqual(coverage.presentInFixtures["pug-template"], [
-    "tests/_fixtures/_git/dho-web-client",
-    "tests/_fixtures/_git/wave-ui",
-  ]);
-  assert.deepEqual(coverage.presentInFixtures["jsx-vapor"], ["tests/_fixtures/_git/vue-jsx-vapor"]);
-  for (const dialect of ["vue0-template", "vue1-template", "jsx-babel", "vue-quirks"]) {
+  assert.equal(coverage.unknownFixtureCount + coverage.partialFixtureCount, ledger.fixtures.length);
+  // Package scans record most registered projects; the rest stay unknown.
+  assert.ok(coverage.partialFixtureCount > coverage.unknownFixtureCount);
+  for (const [dialect, fixtures] of Object.entries(presenceFloor)) {
+    for (const fixture of fixtures) {
+      assert.ok(
+        coverage.presentInFixtures[dialect].includes(`tests/_fixtures/_git/${fixture}`),
+        `${dialect}: ${fixture}`,
+      );
+    }
+  }
+  // No pinned real project uses these; the synthetic dialect corpus covers them.
+  for (const dialect of ["vue0-template", "vue1-template", "vue-quirks"]) {
     assert.deepEqual(coverage.presentInFixtures[dialect], []);
   }
 });
@@ -44,7 +54,12 @@ test("pinned project dialect presence stays distinct from per-file coverage", ()
 test("dialect claims fail closed when evidence or unknown state drifts", () => {
   for (const mutate of [
     (value: typeof ledger) => {
-      value.fixtures[0].dialectCoverage.state = "partial";
+      value.fixtures.find((row) => row.dialectCoverage.state === "unknown").dialectCoverage.state =
+        "partial";
+    },
+    (value: typeof ledger) => {
+      value.fixtures.find((row) => row.dialectCoverage.state === "partial").dialectCoverage.state =
+        "unknown";
     },
     (value: typeof ledger) => {
       value.fixtures.find((row) =>
@@ -70,6 +85,16 @@ test("dialect claims fail closed when evidence or unknown state drifts", () => {
       value.fixtures.find((row) =>
         row.fixturePath.endsWith("/vue-material"),
       ).dialectCoverage.evidence[0].value = "^3.0.0";
+    },
+    (value: typeof ledger) => {
+      value.fixtures.find((row) =>
+        row.fixturePath.endsWith("/vue-material"),
+      ).dialectCoverage.evidence[0].field = "devDependencies.lodash";
+    },
+    (value: typeof ledger) => {
+      value.fixtures.find((row) =>
+        row.fixturePath.endsWith("/vue-material"),
+      ).dialectCoverage.evidence[0].file = "node_modules/vue/package.json";
     },
   ]) {
     const changed = structuredClone(ledger);

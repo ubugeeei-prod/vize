@@ -15,7 +15,7 @@ use super::prop_sources::append_prop_value;
 use super::spread_reserved_props::rewrite_reserved_spread_references;
 use crate::virtual_ts::template_binding_access::TemplateBindingAccess;
 use prop_entry::append_prop_entry;
-use vize_carton::{FxHashSet, String, append};
+use vize_carton::{FxHashSet, append};
 use vize_croquis::{
     ScopeChain, ScopeId,
     croquis::{ComponentUsage, SpreadProp},
@@ -31,7 +31,7 @@ pub(crate) const NAMED_PROP_DIAGNOSTIC_MARKER: &str = "@ts-ignore Named prop dia
 /// An inference-only argument uses the same authored ordering and lexical
 /// spread binding authority as the mapped prop checker and slot resolver.
 pub(crate) fn append_inference_props_literal(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     usage: &ComponentUsage,
     template_binding_access: &TemplateBindingAccess,
     source_context: ComponentPropSource<'_>,
@@ -58,7 +58,7 @@ pub(crate) fn append_inference_props_literal(
     reason = "the ts! interpolation closure gives the emitted block a named writer"
 )]
 pub(crate) fn append_props_literal(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     mappings: &mut Vec<VizeMapping>,
     usage: &ComponentUsage,
     template_binding_access: &TemplateBindingAccess,
@@ -72,7 +72,7 @@ pub(crate) fn append_props_literal(
         {
             #("\n")
             #{
-                (|ts: &mut String| {
+                (|ts: &mut crate::virtual_ts::TextBuf| {
 
     // Listeners are props at runtime. Their separately checked handlers must
     // satisfy required `onFoo` keys without treating unknown listeners as
@@ -171,7 +171,7 @@ pub(crate) fn append_props_literal(
 /// Emit one `...expr` entry of the props literal, mapped back to its own
 /// directive so an error *inside* the expression lands on the authored bytes.
 fn append_spread_entry(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     mappings: &mut Vec<VizeMapping>,
     spread: &SpreadProp,
     template_binding_access: &TemplateBindingAccess,
@@ -201,7 +201,7 @@ fn append_spread_entry(
 /// read through their template bindings, plus the sub spans that map it back
 /// to the authored expression.
 pub(crate) fn append_spread_value(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     expression: &str,
     source_expression: Option<std::ops::Range<usize>>,
     template_binding_access: &TemplateBindingAccess,

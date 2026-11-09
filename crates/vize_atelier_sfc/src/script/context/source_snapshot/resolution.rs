@@ -20,7 +20,7 @@ const INDEX_NAMES: &[&str] = &[
 
 impl TypeSourceSnapshot {
     pub fn resolve_import(&self, current_file: &Path, specifier: &str) -> Option<PathBuf> {
-        self.resolve_import_from_identity(&source_path(current_file), specifier)
+        self.resolve_import_from_identity(&self.public_identity(current_file), specifier)
     }
 
     /// Resolve from an importer identity this snapshot already produced.
@@ -104,7 +104,12 @@ impl TypeSourceSnapshot {
         {
             return Some(found.clone());
         }
-        let on_disk = candidate.is_file();
+        // A regular file its directory listed takes its identity from that
+        // listing, which is canonicalized once per snapshot, and needs no
+        // `stat`: listings freeze hits only, like `existing`. Everything else
+        // is probed again on every call.
+        let listed = self.indexed_identity(candidate);
+        let on_disk = listed.is_some() || candidate.is_file();
         // Without overlays, a probe that is no file under either its physical or
         // its lexical spelling resolves to nothing. `source_path` would spend
         // two `realpath` calls to reach the same miss.
@@ -114,9 +119,7 @@ impl TypeSourceSnapshot {
                 return None;
             }
         }
-        // A file found on disk takes its identity from its listed directory,
-        // which is canonicalized once per snapshot instead of once per file.
-        let found = match on_disk.then(|| self.indexed_identity(candidate)).flatten() {
+        let found = match listed {
             Some(path) => path,
             None => {
                 let path = source_path(candidate);

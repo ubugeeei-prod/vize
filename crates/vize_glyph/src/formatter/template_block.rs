@@ -16,7 +16,7 @@ use crate::template;
 
 pub(super) fn write_template_block(
     output: &mut Vec<u8>,
-    block: &vize_atelier_sfc::SfcTemplateBlock<'_>,
+    block: &super::SfcBlock<'_>,
     options: &FormatOptions,
     source: &str,
     vue_version: crate::VueVersion,
@@ -26,7 +26,7 @@ pub(super) fn write_template_block(
     // Haml, Markdown, or another preprocessor language through it turns
     // indentation-sensitive source into unrelated HTML text nodes and can
     // flatten the program while still reaching a formatter fixed point.
-    let language = block.lang.as_deref();
+    let language = block.lang();
     let native_html = language.is_none_or(|lang| lang.eq_ignore_ascii_case("html"));
     let authored_markdown = language.is_some_and(|lang| lang.eq_ignore_ascii_case("md"));
     let opening_tag = opening_tag::raw_templated_opening_tag(source, &block.loc);
@@ -48,7 +48,7 @@ pub(super) fn write_template_block(
         // Build the opening tag
         output.extend_from_slice(b"<template");
         if !write_authored_attrs(output, &block.attrs, source, &block.loc, options) {
-            if let Some(lang) = &block.lang {
+            if let Some(lang) = block.lang() {
                 write_attr(output, "lang", Some(lang));
             }
             write_remaining_attrs(output, &block.attrs, &["lang"]);

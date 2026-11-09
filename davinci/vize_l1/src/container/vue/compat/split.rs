@@ -229,6 +229,31 @@ mod tests {
     }
 
     #[test]
+    fn line_terminators_are_attribute_whitespace() {
+        // Vue's tokenizer and the native open-tag scanner skip every space
+        // character around `=` and end unquoted values at any of them.
+        let source = "<script setup lang\n=\r\n\"ts\">let x = 1</script>\n<template lang=html\r data-x\t=\ty><p/></template>";
+        let mut attrs = alloc::vec::Vec::new();
+        split_blocks(source, |block| {
+            attrs.push(block.attrs);
+            true
+        })
+        .unwrap();
+        let value = |index: usize, name: &str| {
+            attrs
+                .get(index)
+                .and_then(|attrs: &super::BlockAttrs<'_>| attrs.get(name))
+                .map(Cow::as_ref)
+        };
+        assert_eq!(attrs.first().map(|attrs| attrs.len()), Some(2));
+        assert_eq!(value(0, "setup"), Some(""));
+        assert_eq!(value(0, "lang"), Some("ts"));
+        assert_eq!(attrs.get(1).map(|attrs| attrs.len()), Some(2));
+        assert_eq!(value(1, "lang"), Some("html"));
+        assert_eq!(value(1, "data-x"), Some("y"));
+    }
+
+    #[test]
     fn visitor_can_stop_without_scanning_a_later_malformed_block() {
         let mut seen = 0;
         split_blocks("<template>x</template><style", |_| {

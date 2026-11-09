@@ -224,6 +224,10 @@ pub struct ServerState {
     /// editor mirror can trust captured disk inputs between notifications.
     #[cfg(feature = "native")]
     corsa_disk_watcher_registered: AtomicBool,
+    /// No client watcher: the editor mirror sweeps its disk inputs in the
+    /// background instead of validating them on every request.
+    #[cfg(feature = "native")]
+    corsa_disk_sweep: AtomicBool,
     /// Per-document diagnostic passes. Watcher refreshes and consecutive
     /// didChange notifications may be polled concurrently by tower-lsp, but
     /// they must not race the same Corsa virtual document.

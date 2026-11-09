@@ -304,7 +304,7 @@ fn named_member_exclusion_removes_only_the_exact_registry_check_and_mapping() {
     analyzer.analyze_template(&root);
     let summary = analyzer.finish();
     let emit = |ast| {
-        let mut code = vize_carton::String::default();
+        let mut code = crate::virtual_ts::TextBuf::default();
         let mut mappings = Vec::new();
         let options = VirtualTsOptions::default();
         let mut plan = super::GlobalComponentPlan::new((&summary, ast), false, true, None);

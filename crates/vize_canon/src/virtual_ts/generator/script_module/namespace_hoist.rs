@@ -38,7 +38,7 @@ use oxc_ast::ast::{Declaration, IdentifierReference, Statement, TSModuleDeclarat
 use oxc_ast_visit::Visit;
 use oxc_parser::Parser;
 use oxc_span::{GetSpan, SourceType, Span};
-use vize_carton::{CompactString, FxHashSet, String as VizeString, append};
+use vize_carton::{CompactString, FxHashSet, append};
 
 use super::plain_exports::{PlainScriptExport, collect_declaration_exports};
 
@@ -169,7 +169,11 @@ impl NamespaceHoistPlan {
 
     /// Ambient module-scope aliases for the captured setup bindings. Emitted
     /// before the hoisted declarations so the namespace bodies can read them.
-    pub(crate) fn emit_ambient_captures(&self, ts: &mut VizeString, exports: &[PlainScriptExport]) {
+    pub(crate) fn emit_ambient_captures(
+        &self,
+        ts: &mut crate::virtual_ts::TextBuf,
+        exports: &[PlainScriptExport],
+    ) {
         if self.captured.is_empty() {
             return;
         }

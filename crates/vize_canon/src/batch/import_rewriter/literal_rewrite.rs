@@ -30,7 +30,7 @@ pub(super) fn replace(
         output.replace_range(start..end, path);
         return Some(path.len() as u32);
     }
-    let mut encoded = String::with_capacity(path.len() + 2);
+    let mut encoded = crate::virtual_ts::TextBuf::with_capacity(path.len() + 2);
     crate::virtual_ts::push_ts_string_literal(&mut encoded, path);
     let content_length = encoded.len() - 2;
     output.replace_range(quote_start..end + 1, &encoded);

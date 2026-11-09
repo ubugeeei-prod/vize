@@ -96,6 +96,58 @@ fn l1_l2_static_attribute_entities_are_decoded() {
 }
 
 #[test]
+fn l1_l2_entity_decoding_respects_attribute_and_text_contexts() {
+    let source = "<p title=\"&copy=1\">&amp</p>";
+    let allocator = Allocator::default();
+    let (surface, errors) = vize_l1::markup::parse(&allocator, source);
+    assert!(errors.is_empty());
+    let lowered = lower_preserving_comments(&allocator, &surface, &errors);
+    let expected_attribute = vize_l1_to_l2::emit::decode_html_attribute_entities("&copy=1");
+    let expected_text = vize_l1_to_l2::emit::decode_html_entities("&amp");
+
+    let root = CompatibilityRoot::new(lint_template(&surface, &lowered)).build();
+    let TemplateChildNode::Element(element) = &root.children[0] else {
+        panic!("compatibility element")
+    };
+    let PropNode::Attribute(attribute) = &element.props[0] else {
+        panic!("compatibility attribute")
+    };
+    let TemplateChildNode::Text(text) = &element.children[0] else {
+        panic!("compatibility text child")
+    };
+
+    assert_eq!(expected_attribute, "&copy=1");
+    assert_eq!(expected_text, "&");
+    assert_eq!(
+        attribute.value.as_ref().map(|value| value.content),
+        Some(expected_attribute.as_str())
+    );
+    assert_eq!(text.content, expected_text);
+}
+
+#[test]
+fn l1_l2_text_decoding_preserves_escaped_numeric_parentheses() {
+    let source = "<p>before &amp;#40;inside&amp;#041; after</p>";
+    let allocator = Allocator::default();
+    let (surface, errors) = vize_l1::markup::parse(&allocator, source);
+    assert!(errors.is_empty());
+    let lowered = lower_preserving_comments(&allocator, &surface, &errors);
+    let root = CompatibilityRoot::new(lint_template(&surface, &lowered)).build();
+    let TemplateChildNode::Element(element) = &root.children[0] else {
+        panic!("compatibility element")
+    };
+    let TemplateChildNode::Text(text) = &element.children[0] else {
+        panic!("compatibility text child")
+    };
+
+    assert_eq!(
+        vize_l1_to_l2::emit::decode_html_entities("before &amp;#40;inside&amp;#041; after"),
+        "before (inside) after"
+    );
+    assert_eq!(text.content, "before (inside) after");
+}
+
+#[test]
 fn l1_l2_slot_props_retain_decoded_authored_text() {
     let source = "<Child v-slot=\"{ value = &quot;fallback&quot;, ...rest }\">{{ value }}</Child>";
     let allocator = Allocator::default();

@@ -6,7 +6,7 @@ use oxc_allocator::Allocator;
 use oxc_ast::ast::Statement;
 use oxc_parser::Parser;
 use oxc_span::{GetSpan, SourceType};
-use vize_carton::{String, append};
+use vize_carton::append;
 use vize_croquis::Croquis;
 
 use crate::virtual_ts::generic_parameters::GenericParameters;
@@ -61,7 +61,7 @@ pub(crate) fn generate(
         previous = span.end as usize;
     }
     push_chunk(&mut body, previous..script.len());
-    let mut code = String::default();
+    let mut code = crate::virtual_ts::TextBuf::default();
     let mut mapping = ProjectionMapping::new();
     emit_lib_reference_directives(
         &mut code,
@@ -121,7 +121,10 @@ pub(crate) fn generate(
         diagnostic,
     );
     mapping.sort_by_authored();
-    Some(VirtualTsOutput { code, mapping })
+    Some(VirtualTsOutput {
+        code: code.into_compact(),
+        mapping,
+    })
 }
 
 fn push_chunk(chunks: &mut Vec<Range<usize>>, range: Range<usize>) {
@@ -133,7 +136,7 @@ fn push_chunk(chunks: &mut Vec<Range<usize>>, range: Range<usize>) {
 }
 
 fn copy_script(
-    code: &mut String,
+    code: &mut crate::virtual_ts::TextBuf,
     mapping: &mut ProjectionMapping,
     script: &str,
     range: Range<usize>,

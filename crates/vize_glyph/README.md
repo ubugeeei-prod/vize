@@ -32,7 +32,7 @@ These APIs do not change the default formatter entry points above.
 
 - `vize` exposes Glyph through `vize fmt`
 - `vize_maestro` can use Glyph for LSP formatting
-- `vize_atelier_sfc` and `vize_l0` provide parsing and allocation support behind the formatter
+- `vize_l1` splits SFC blocks and owns the markup syntax; `vize_l0` provides allocation support
 
 ## License
 

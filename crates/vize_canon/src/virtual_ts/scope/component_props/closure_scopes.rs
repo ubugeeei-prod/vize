@@ -10,7 +10,7 @@ use super::super::nested_indent;
 use super::super::slot_scope::generate_v_slot_props_scope;
 
 pub(in crate::virtual_ts::scope) fn generate_closure_component_props_recursive(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     mappings: &mut Vec<VizeMapping>,
     ctx: &VForPropsContext<'_, '_>,
     scope: &Scope,
@@ -117,7 +117,7 @@ fn v_for_ancestor_owns_guard(ctx: &VForPropsContext<'_, '_>, scope: &Scope, guar
 }
 
 pub(in crate::virtual_ts::scope) fn recurse_child_closure_scopes(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     mappings: &mut Vec<VizeMapping>,
     ctx: &VForPropsContext<'_, '_>,
     scope_id: u32,

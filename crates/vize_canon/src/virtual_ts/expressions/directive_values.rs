@@ -190,7 +190,7 @@ fn directive_binding_name(name: &str) -> CompactString {
 }
 
 pub(super) fn generate_directive_value_statement(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     mappings: &mut Vec<VizeMapping>,
     expr: &TemplateExpression,
     binding: &DirectiveValueBinding,
@@ -242,15 +242,16 @@ pub(super) fn generate_directive_value_statement(
         *ts,
         "{indent}{name}(null!, {{ ...__vizeDirectiveBindingRest, "
     );
-    let mut push_mapped = |ts: &mut String, text: &str, (start, end): (u32, u32)| {
-        let gen_start = ts.len();
-        ts.push_str(text);
-        mappings.push(VizeMapping {
-            gen_range: gen_start..ts.len(),
-            src_range: (template_offset + start) as usize..(template_offset + end) as usize,
-            sub_spans: Vec::new(),
-        });
-    };
+    let mut push_mapped =
+        |ts: &mut crate::virtual_ts::TextBuf, text: &str, (start, end): (u32, u32)| {
+            let gen_start = ts.len();
+            ts.push_str(text);
+            mappings.push(VizeMapping {
+                gen_range: gen_start..ts.len(),
+                src_range: (template_offset + start) as usize..(template_offset + end) as usize,
+                sub_spans: Vec::new(),
+            });
+        };
     if let Some((arg, range)) = &binding.arg {
         push_mapped(ts, "arg", *range);
         ts.push_str(": ");
@@ -265,7 +266,7 @@ pub(super) fn generate_directive_value_statement(
                 #(" ")
                 #{
                     for (modifier, range) in &binding.modifiers {
-                        let mut key = String::default();
+                        let mut key = crate::virtual_ts::TextBuf::default();
                         crate::virtual_ts::helpers::push_ts_string_literal(&mut key, modifier.as_str());
                         push_mapped(__ts, key.as_str(), *range);
                         __ts.push_str(": true, ");
@@ -301,7 +302,7 @@ pub(super) fn generate_directive_value_statement(
 /// `__vizeRegisteredDirective` fallback stays `unknown` so a `vue` package
 /// without `GlobalDirectives` does not error on the value check itself.
 fn emit_unknown_directive_presence(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     mappings: &mut Vec<VizeMapping>,
     binding: &DirectiveValueBinding,
     template_offset: u32,
@@ -327,7 +328,7 @@ fn emit_unknown_directive_presence(
     crate::virtual_ts::helpers::push_ts_string_literal(ts, variable);
     let gen_end = ts.len();
     append!(*ts, ": {local} }} = {{}} as (");
-    let push_key = |ts: &mut String| {
+    let push_key = |ts: &mut crate::virtual_ts::TextBuf| {
         crate::virtual_ts::helpers::push_ts_string_literal(ts, variable);
     };
     push_key(ts);
