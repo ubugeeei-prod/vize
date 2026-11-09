@@ -26,6 +26,8 @@ use super::spec::{GlobSpec, RelativePathSpec, TsconfigDeclarationOptions, Tsconf
 pub(crate) struct TsconfigInputCache {
     specs: FxHashMap<PathBuf, Option<TsconfigInputSpec>>,
     ownership: TsconfigOwnershipCache,
+    /// Canonical spellings of configs and checked files, resolved once a run.
+    normalized: FxHashMap<PathBuf, PathBuf>,
 }
 
 impl TsconfigInputCache {
@@ -36,14 +38,26 @@ impl TsconfigInputCache {
         self.ownership.project_paths(tsconfig_path)
     }
 
-    pub(super) fn effective_config_for_source(
+    /// `normalize_input_path`, memoized for this run.
+    pub(super) fn normalize(&mut self, path: &Path) -> PathBuf {
+        self.normalized
+            .entry(path.to_path_buf())
+            .or_insert_with_key(|path| normalize_input_path(path))
+            .clone()
+    }
+
+    /// Ownership of a source already spelled by [`Self::normalize`].
+    pub(super) fn effective_config_for_normalized_source(
         &mut self,
         tsconfig_path: &Path,
         source_path: &Path,
         source_kind: TsconfigSourceKind,
     ) -> PathBuf {
-        self.ownership
-            .effective_config_for_source(tsconfig_path, source_path, source_kind)
+        self.ownership.effective_config_for_normalized_source(
+            tsconfig_path,
+            source_path,
+            source_kind,
+        )
     }
 
     pub(super) fn project_allows_js(&mut self, tsconfig_path: &Path) -> bool {
@@ -54,7 +68,7 @@ impl TsconfigInputCache {
     /// `None` when the tsconfig chain cannot be read, exactly like an uncached
     /// `load_tsconfig_inputs` call.
     pub(super) fn load(&mut self, tsconfig_path: &Path) -> Option<&TsconfigInputSpec> {
-        let resolved = normalize_input_path(tsconfig_path);
+        let resolved = self.normalize(tsconfig_path);
         self.specs
             .entry(resolved)
             .or_insert_with_key(|resolved| load_tsconfig_inputs(resolved))
