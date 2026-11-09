@@ -75,8 +75,8 @@ fn expected(root: &Path) -> Value {
             .unwrap(),
     )
     .unwrap();
-    serde_json::to_value(
-        generate_vue_content_mapper_transform_with_project_context(
+    super::super::dispatch::wire_value(
+        &generate_vue_content_mapper_transform_with_project_context(
             &root.join("src/pages/[id].vue"),
             PAGE,
             settings.transform_options,
@@ -84,7 +84,6 @@ fn expected(root: &Path) -> Value {
         )
         .unwrap(),
     )
-    .unwrap()
 }
 
 #[test]
