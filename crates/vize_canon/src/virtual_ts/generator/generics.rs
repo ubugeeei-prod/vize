@@ -30,7 +30,7 @@ pub(super) fn setup_signature(summary: &Croquis) -> (Option<&str>, Option<&str>,
 /// `function __setup<...>`: the authored list is written verbatim and owns
 /// the attribute's rows.
 pub(super) fn emit_setup_signature(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     mappings: &mut Vec<crate::virtual_ts::VizeMapping>,
     is_async: bool,
     plan: Option<&GenericParameters>,
@@ -186,7 +186,7 @@ impl HoistedGenericAliases {
         self.setup_declaration_spans.contains(&span)
     }
 
-    pub(super) fn emit_module_aliases(&self, ts: &mut String) {
+    pub(super) fn emit_module_aliases(&self, ts: &mut crate::virtual_ts::TextBuf) {
         for (index, type_name) in self.type_names.iter().enumerate() {
             append!(
                 *ts,
@@ -198,7 +198,7 @@ impl HoistedGenericAliases {
         }
     }
 
-    pub(super) fn emit_setup_aliases(&self, ts: &mut String) {
+    pub(super) fn emit_setup_aliases(&self, ts: &mut crate::virtual_ts::TextBuf) {
         for (index, type_name) in self.type_names.iter().enumerate() {
             append!(
                 *ts,
@@ -348,7 +348,7 @@ mod tests {
         let generic = super::GenericParameters::parse("T extends 'number' | 'text'");
         let aliases = HoistedGenericAliases::collect(&summary, Some(script), Some(&generic))
             .expect("Value captures the SFC parameter");
-        let mut setup = String::default();
+        let mut setup = crate::virtual_ts::TextBuf::default();
         aliases.emit_setup_aliases(&mut setup);
         assert_eq!(
             setup.as_str(),
@@ -378,7 +378,7 @@ mod tests {
             .map(|&(start, end)| script.get(start as usize..end as usize).unwrap())
             .collect();
         assert_eq!(declarations, vec!["type Foo = { value: T };"]);
-        let mut setup = String::default();
+        let mut setup = crate::virtual_ts::TextBuf::default();
         aliases.emit_setup_aliases(&mut setup);
         assert_eq!(setup.as_str(), "  type Foo = $HoistedGeneric0<T>;\n");
         let relocated: Vec<_> = summary
@@ -416,7 +416,7 @@ mod tests {
                 "export interface Bar { items: Baz }"
             ]
         );
-        let mut setup = String::default();
+        let mut setup = crate::virtual_ts::TextBuf::default();
         aliases.emit_setup_aliases(&mut setup);
         assert_eq!(
             setup.as_str(),

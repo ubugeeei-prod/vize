@@ -1,7 +1,7 @@
 use crate::virtual_ts::template_binding_access::TemplateBindingAccess;
 use std::ops::Range;
 
-use vize_carton::{FxHashSet, String, append, cstr};
+use vize_carton::{FxHashSet, append, cstr};
 use vize_croquis::croquis::{ComponentUsage, EventListener};
 use vize_croquis::{Croquis, ScopeKind};
 
@@ -18,7 +18,7 @@ use crate::virtual_ts::expressions::callback_parameters_on_ignored_line;
 use crate::virtual_ts::expressions::generated_prop_value;
 
 pub(super) fn emit_event_references(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     mappings: &mut Vec<VizeMapping>,
     ctx: &ComponentPropsContext<'_, '_>,
     checkable_usages: &[(usize, &ComponentUsage)],
@@ -57,7 +57,7 @@ pub(super) fn emit_event_references(
 }
 
 pub(super) fn emit_scoped_event_references(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     mappings: &mut Vec<VizeMapping>,
     ctx: &VForPropsContext<'_, '_>,
     usages: &[(usize, &ComponentUsage)],
@@ -114,7 +114,7 @@ fn is_closure_scoped(summary: &Croquis, usage: &ComponentUsage) -> bool {
 }
 
 fn emit_usage_event_references(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     mappings: &mut Vec<VizeMapping>,
     ctx: &EventNavigationContext<'_>,
     idx: usize,
@@ -267,7 +267,7 @@ fn emit_usage_event_references(
 }
 
 fn emit_event_name_checks(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     mappings: &mut Vec<VizeMapping>,
     ctx: &EventNavigationContext<'_>,
     idx: usize,
@@ -313,7 +313,7 @@ fn emit_event_name_checks(
 }
 
 fn emit_resolved_events(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     ctx: &EventNavigationContext<'_>,
     usage: &ComponentUsage,
     component_ref: &str,

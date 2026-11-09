@@ -47,7 +47,7 @@ use super::{
 mod tests;
 
 pub(in crate::virtual_ts::scope) fn generate_instance_global_refs(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     mappings: &mut Vec<VizeMapping>,
     summary: &Croquis,
     template_offset: u32,
@@ -211,7 +211,7 @@ fn instance_props_type(
 const AUTHORED_INSTANCE_RECEIVER: &str = "__vize_instance_globals";
 
 struct InstanceGlobalRefsEmitter<'a> {
-    ts: &'a mut String,
+    ts: &'a mut crate::virtual_ts::TextBuf,
     mappings: &'a mut Vec<VizeMapping>,
     summary: &'a Croquis,
     scope_options: &'a ScopeGenerationOptions<'a, 'a>,
@@ -234,7 +234,7 @@ struct InstanceGlobalRefsEmitter<'a> {
 
 impl<'a> InstanceGlobalRefsEmitter<'a> {
     fn new(
-        ts: &'a mut String,
+        ts: &'a mut crate::virtual_ts::TextBuf,
         mappings: &'a mut Vec<VizeMapping>,
         summary: &'a Croquis,
         scope_options: &'a ScopeGenerationOptions<'a, 'a>,

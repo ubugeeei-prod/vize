@@ -92,7 +92,7 @@ fn slot_member_type(binding: &str, name: &str) -> String {
 /// Emit the host binding when the slot sits on a resolvable child, and return
 /// the slot types its scope reads.
 fn slot_payload_type(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     ctx: &SlotPayloadContext<'_>,
     scope: &Scope,
     data: &VSlotScopeData,
@@ -194,7 +194,7 @@ fn dynamic_slot_name_binding(indent: &str, binding: &str, name: &str) -> String 
 /// Generate a `v-slot` scope's closure: the host binding, the slot function,
 /// the expressions authored inside it and its nested scopes.
 pub(super) fn generate_v_slot_scope(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     mappings: &mut ScopeMappings<'_>,
     ctx: &ScopeGenContext<'_, '_>,
     scope: &Scope,
@@ -313,7 +313,7 @@ pub(super) fn generate_v_slot_scope(
 
 /// Generate the component prop checks that live inside a `v-slot` scope.
 pub(super) fn generate_v_slot_props_scope(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     mappings: &mut Vec<VizeMapping>,
     ctx: &VForPropsContext<'_, '_>,
     scope: &Scope,

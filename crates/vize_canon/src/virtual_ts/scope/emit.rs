@@ -57,13 +57,13 @@ pub(super) fn split_slot_pattern_annotation(pattern: &str) -> Option<(&str, &str
 /// with the slot type inferred from the child's `$slots`; an authored
 /// annotation types the bindings instead (see [`emit_slot_annotation_check`]).
 pub(super) fn emit_slot_function_open(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     indent: &str,
     function_name: &str,
     props_pattern: &str,
     props_type: &String,
     capture: bool,
-    body: impl FnOnce(&mut String),
+    body: impl FnOnce(&mut crate::virtual_ts::TextBuf),
 ) {
     let declaration = if capture {
         cstr!("var {function_name} = function")
@@ -94,7 +94,7 @@ pub(super) fn emit_slot_function_open(
 /// slot expression's first byte, where vue-tsc reports it. The other bytes
 /// stay unmapped so the authored pattern keeps its own spans.
 pub(super) fn emit_slot_annotation_check(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     diagnostics: &mut Vec<VizeMapping>,
     indent: &str,
     slot_member_type: &str,
@@ -114,7 +114,7 @@ pub(super) fn emit_slot_annotation_check(
 }
 
 pub(super) fn append_v_for_comment(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     indent: &str,
     label: &str,
     alias: &str,
@@ -165,7 +165,7 @@ impl AsMappings for super::context::ScopeMappings<'_> {
     reason = "independent emitter inputs and a ts! interpolation writer"
 )]
 pub(super) fn emit_v_for_loop_open<M>(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     mappings: &mut M,
     template_offset: u32,
     source_offset: Option<u32>,
@@ -173,7 +173,7 @@ pub(super) fn emit_v_for_loop_open<M>(
     scope: &Scope,
     template_binding_access: &TemplateBindingAccess,
     capture: bool,
-    body: impl FnOnce(&mut String, &mut M),
+    body: impl FnOnce(&mut crate::virtual_ts::TextBuf, &mut M),
 ) where
     M: AsMappings,
 {
@@ -196,7 +196,7 @@ pub(super) fn emit_v_for_loop_open<M>(
                 if capture {
                     append!(*__ts, "{indent}var __vize_slot_scope_{scope_id} = (() => {{\n");
                 }
-                (move |ts: &mut String| {
+                (move |ts: &mut crate::virtual_ts::TextBuf| {
                     let source_name = cstr!("__vize_v_for_source_{scope_id}");
                     append!(*ts, "{indent}const {source_name} = __vForList(");
                     let source_gen_start = ts.len();

@@ -59,7 +59,7 @@ fn emit_binding(
     });
     drawer.analyze_script_setup(script);
     let summary = drawer.finish();
-    let mut code = vize_carton::String::default();
+    let mut code = crate::virtual_ts::TextBuf::default();
     let mut mappings = Vec::new();
     let mut links = Vec::new();
     let mut default_keys = Vec::new();
@@ -73,7 +73,7 @@ fn emit_binding(
         &offset,
     )
     .emit(&mut code, "props", "$ResolvedProps", name, true);
-    (code, mappings, links)
+    (code.into_compact(), mappings, links)
 }
 
 #[test]

@@ -24,7 +24,7 @@ fn emit(
     let summary = analyzer.finish();
     let mut plan =
         super::super::GlobalComponentPlan::new((&summary, Some(&root)), legacy_vue2, true, None);
-    let mut code = String::default();
+    let mut code = crate::virtual_ts::TextBuf::default();
     plan.emit(
         &mut code,
         &summary,
@@ -35,7 +35,7 @@ fn emit(
     );
     let mut owners = plan.registry_slots.into_iter().collect::<Vec<_>>();
     owners.sort_by_key(|(start, _)| *start);
-    (owners, code)
+    (owners, code.into_compact())
 }
 
 fn owners(

@@ -1,8 +1,9 @@
 use std::ops::Range;
 
-use vize_carton::String;
-
-pub(super) fn push_ts_single_quoted_literal(ts: &mut String, value: &str) -> Range<usize> {
+pub(super) fn push_ts_single_quoted_literal(
+    ts: &mut crate::virtual_ts::TextBuf,
+    value: &str,
+) -> Range<usize> {
     ts.push('\'');
     let start = ts.len();
     for ch in value.chars() {

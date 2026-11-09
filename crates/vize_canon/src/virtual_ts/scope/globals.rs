@@ -52,7 +52,7 @@ use {
 /// authored occurrence with the instance wording. Legacy Vue 2 and the strict
 /// instance-global form keep their own emission.
 pub(super) fn generate_undefined_refs(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     mappings: &mut Vec<VizeMapping>,
     summary: &Croquis,
     template_binding_access: &TemplateBindingAccess,
@@ -363,7 +363,7 @@ fn authored_binding_len(template: Option<&str>, offset: u32, name: &str) -> usiz
     }
 }
 
-pub(super) fn emit_header(ts: &mut String, emitted_header: &mut bool) {
+pub(super) fn emit_header(ts: &mut crate::virtual_ts::TextBuf, emitted_header: &mut bool) {
     if !*emitted_header {
         ts.push_str("\n  // Undefined references from template:\n");
         *emitted_header = true;

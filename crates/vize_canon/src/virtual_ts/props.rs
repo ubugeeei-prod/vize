@@ -60,7 +60,7 @@ fn inner_macro_type(type_args: &str) -> &str {
 }
 
 pub(crate) fn generate_props_type(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     summary: &Croquis,
     generic_param: Option<&GenericParameters>,
     options_api_props: Option<&OptionsApiPropsSource>,

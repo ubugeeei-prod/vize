@@ -15,7 +15,7 @@
 //! `v-if` guard inside the closure (see `event_handler.rs`).
 
 use crate::virtual_ts::scope::ScopeMappings;
-use vize_carton::{String, append, profile};
+use vize_carton::{append, profile};
 use vize_croquis::{EventHandlerScopeData, Scope};
 
 use crate::virtual_ts::helpers::get_dom_event_type;
@@ -37,7 +37,7 @@ pub(super) struct EventVifGuards<'a> {
 }
 
 pub(super) fn generate_event_handler_scope(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     mappings: &mut ScopeMappings<'_>,
     ctx: &ScopeGenContext<'_, '_>,
     scope: &Scope,

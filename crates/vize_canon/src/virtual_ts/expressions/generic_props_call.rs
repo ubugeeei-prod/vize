@@ -12,7 +12,6 @@ use super::component_props::ComponentPropSource;
 use super::constructor_instance;
 use super::props_literal::{append_inference_props_literal, append_props_literal};
 use crate::virtual_ts::template_binding_access::TemplateBindingAccess;
-use vize_carton::String;
 use vize_carton::append;
 use vize_carton::cstr;
 use vize_croquis::croquis::ComponentUsage;
@@ -35,7 +34,7 @@ use vize_croquis::croquis::ComponentUsage;
     reason = "generic prop checks share the component source context"
 )]
 pub(super) fn generate_generic_props_call(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     mappings: &mut Vec<VizeMapping>,
     usage: &ComponentUsage,
     idx: usize,
@@ -176,7 +175,7 @@ pub(super) fn generate_generic_props_call(
 /// statement so the narrowing that guard performs still applies to the props
 /// while the binding stays in the enclosing block scope.
 pub(crate) fn generate_slot_host_binding(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     usage: &ComponentUsage,
     binding_name: &str,
     component_ref: &str,

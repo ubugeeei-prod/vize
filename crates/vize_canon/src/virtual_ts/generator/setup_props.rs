@@ -16,7 +16,7 @@ pub(super) use crate::virtual_ts::props::prop_source;
 
 /// Emit the existing template context before its per-prop bindings.
 pub(super) fn emit_template_context(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     options: &crate::virtual_ts::VirtualTsOptions,
     summary: &Croquis,
     (dialect, legacy_vue2): (vize_carton::config::VueVersion, bool),
@@ -75,7 +75,7 @@ pub(super) fn emit_template_context(
 /// Keeps `generator.rs` from re-threading `options_api_props` through a second
 /// call site (and from growing past the source-length gate).
 pub(super) fn generate_setup_props(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     source: PropsSource<'_>,
     generic_param: Option<&GenericParameters>,
     options_api_props: Option<&OptionsApiPropsSource>,
@@ -193,7 +193,7 @@ impl SetupPropsPlan {
 
     pub(super) fn generate_props_type(
         &self,
-        ts: &mut String,
+        ts: &mut crate::virtual_ts::TextBuf,
         summary: &Croquis,
         generic_param: Option<&GenericParameters>,
         options_api_props: Option<&OptionsApiPropsSource>,
@@ -211,7 +211,7 @@ impl SetupPropsPlan {
 
     pub(super) fn generate_props_variables(
         &self,
-        ts: &mut String,
+        ts: &mut crate::virtual_ts::TextBuf,
         source: PropsSource<'_>,
         check_props: bool,
         semantic_links: &mut Vec<crate::virtual_ts::VizeSemanticLink>,
@@ -267,7 +267,7 @@ impl SetupPropsPlan {
 
     pub(super) fn emit_component_props_field(
         &self,
-        mut ts: &mut String,
+        mut ts: &mut crate::virtual_ts::TextBuf,
         has_emits_for_props: bool,
         generic_decl: Option<&str>,
         legacy_input_aliases: bool,
@@ -306,7 +306,7 @@ impl SetupPropsPlan {
 
     pub(super) fn emit_artifact(
         &self,
-        ts: &mut String,
+        ts: &mut crate::virtual_ts::TextBuf,
         source: PropsSource<'_>,
         generic_parameters: Option<&GenericParameters>,
     ) {
@@ -349,7 +349,7 @@ impl SetupPropsPlan {
 
     pub(super) fn emit_options_api_artifact(
         &self,
-        mut ts: &mut String,
+        mut ts: &mut crate::virtual_ts::TextBuf,
         options_api_props: Option<&OptionsApiPropsSource>,
     ) {
         let Some(source) =

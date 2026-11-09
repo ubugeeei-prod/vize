@@ -20,7 +20,7 @@
 //! input. A static tag checks one input; the module aliases would cost it more
 //! bytes than the gate saves.
 
-use vize_carton::{String, append};
+use vize_carton::append;
 use vize_croquis::{Croquis, ScopeData, drawer::dynamic_component_alias};
 
 /// `{emit_props_factory}` is the shared `$EmitPropsFactory` reference.
@@ -32,7 +32,7 @@ const GATE_ALIASES: &str = "type __vize_emit_native_input<C> = C extends new (..
 
 /// Declares the gate aliases once per module that can reach a gated call.
 pub(crate) fn emit_gate_aliases(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     summary: &Croquis,
     generic_component: bool,
     legacy_vue2: bool,
@@ -82,7 +82,7 @@ pub(super) fn is_single_line(value: &str) -> bool {
 /// The gated call: the first call infers the component's own factory, and the
 /// second reads the props only through a generic resolver.
 pub(super) fn append_gated_call(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     indent: &str,
     library: &str,
     component_ref: &str,

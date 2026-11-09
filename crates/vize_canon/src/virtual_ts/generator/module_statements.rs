@@ -8,7 +8,12 @@ use super::generics::{generic_injection_point, references_any_identifier};
 use super::glued_import::GluedImportSection;
 use crate::virtual_ts::VizeMapping;
 
-fn push_mapped(ts: &mut String, mappings: &mut Vec<VizeMapping>, text: &str, source: usize) {
+fn push_mapped(
+    ts: &mut crate::virtual_ts::TextBuf,
+    mappings: &mut Vec<VizeMapping>,
+    text: &str,
+    source: usize,
+) {
     let gen_start = ts.len();
     ts.push_str(text);
     mappings.push(VizeMapping {
@@ -21,7 +26,7 @@ fn push_mapped(ts: &mut String, mappings: &mut Vec<VizeMapping>, text: &str, sou
 /// Splice the SFC generic parameters into a hoisted type/interface declaration
 /// that references them, so the reference resolves at module scope.
 pub(super) fn emit_generic_injected(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     mappings: &mut Vec<VizeMapping>,
     text: &str,
     source: usize,
@@ -80,7 +85,7 @@ impl GluedImportSection {
     pub(super) fn emit(
         glued: Option<&Self>,
         span: (u32, u32),
-        ts: &mut String,
+        ts: &mut crate::virtual_ts::TextBuf,
         mappings: &mut Vec<VizeMapping>,
         script: &str,
         source_offset: &dyn Fn(usize) -> usize,

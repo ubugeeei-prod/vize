@@ -37,7 +37,7 @@ fn retained_line_comments_leave_delimiters_and_mappings_outside_the_comment() {
     for (raw, expected, added_tail) in cases {
         let prop = prop(raw);
         let span = generated_diagnostic_prop_span(&prop, &bindings).unwrap();
-        let mut emitted = String::from("const props = { foo: ");
+        let mut emitted = crate::virtual_ts::TextBuf::from_text("const props = { foo: ");
         let range = append_prop_value(&mut emitted, span.text.as_str());
         let mapped = range.start..span.mapped_limit(range.start);
         emitted.push_str(", bar: other };");

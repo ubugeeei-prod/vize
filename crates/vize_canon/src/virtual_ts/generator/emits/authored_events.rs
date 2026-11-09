@@ -9,7 +9,7 @@ use crate::virtual_ts::macro_type_mappings::MacroTypeMappings;
     reason = "the ts! interpolation closure gives the emitted block a named writer"
 )]
 pub(super) fn emit_authored_event_map(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     summary: &Croquis,
     mappings: &mut MacroTypeMappings<'_>,
     generic_decl: Option<&str>,
@@ -31,7 +31,7 @@ pub(super) fn emit_authored_event_map(
         {
             #("\n")
             #{
-                (|ts: &mut String| {
+                (|ts: &mut crate::virtual_ts::TextBuf| {
     let mut emitted_names = FxHashSet::default();
     for emit in events {
         if !emitted_names.insert(emit.name.as_str()) {

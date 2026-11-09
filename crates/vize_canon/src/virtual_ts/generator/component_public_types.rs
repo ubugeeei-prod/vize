@@ -15,7 +15,7 @@ use vize_l0::ts;
 /// generic component constructor can instantiate it instead of falling back to
 /// the declared defaults (#3354).
 pub(super) fn emit_slots_type(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     summary: &Croquis,
     mut mappings: MacroTypeMappings<'_>,
     generic_injection: Option<&(String, Vec<String>)>,
@@ -116,7 +116,7 @@ pub(super) fn uses_module_scoped_authored_slots_binding(summary: &Croquis) -> bo
 /// The second flag reports whether the alias re-declared those parameters, so
 /// the generic component constructor can instantiate it (#3354).
 pub(super) fn emit_exposed_type(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     summary: &Croquis,
     generic_injection: Option<&(String, Vec<String>)>,
 ) -> (bool, bool) {
@@ -128,7 +128,7 @@ pub(super) fn emit_exposed_type(
 }
 
 fn emit_exposed_alias(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     summary: &Croquis,
     generic_injection: Option<&(String, Vec<String>)>,
 ) -> (bool, bool) {
@@ -202,7 +202,7 @@ impl TemplateSlotsType {
     /// would hide the useful slot signatures behind its private name in hover.
     pub(super) fn emit(
         &self,
-        ts: &mut String,
+        ts: &mut crate::virtual_ts::TextBuf,
         mappings: &mut Vec<crate::virtual_ts::VizeMapping>,
         source_offset: &dyn Fn(usize) -> usize,
     ) {

@@ -14,7 +14,7 @@ use vize_croquis::{BindingType, Croquis};
 pub(in crate::virtual_ts::generator) fn emit_options_api_variables(
     enabled: bool,
     output: (
-        &mut String,
+        &mut crate::virtual_ts::TextBuf,
         &mut Vec<VizeSemanticLink>,
         &mut Vec<VizeMapping>,
     ),
@@ -56,7 +56,7 @@ pub(in crate::virtual_ts::generator) fn emit_options_api_variables(
 // cannot declare; a second `const` for a declared name would redeclare it
 // (`TS2451`) and win with `any`.
 fn generate_options_api_variables(
-    mut ts: &mut String,
+    mut ts: &mut crate::virtual_ts::TextBuf,
     summary: &Croquis,
     options: &VirtualTsOptions,
     script: Option<&str>,

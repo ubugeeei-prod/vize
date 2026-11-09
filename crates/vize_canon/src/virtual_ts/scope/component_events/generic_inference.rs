@@ -49,7 +49,7 @@ pub(super) struct InferredEmitArgs {
 }
 
 pub(super) fn generate_inferred_emit_args(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     mappings: &mut Vec<VizeMapping>,
     ctx: &EmitInferenceContext<'_, '_>,
 ) -> Option<InferredEmitArgs> {

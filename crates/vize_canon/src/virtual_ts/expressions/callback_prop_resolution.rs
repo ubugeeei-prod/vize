@@ -19,7 +19,7 @@ pub(super) struct CallbackPropsResolution {
 }
 
 pub(super) fn append_prop_check_type(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     (resolution, hoist_shared_preamble): (Option<&CallbackPropsResolution>, bool),
     (component_type_name, idx, safe_prop_name, prop_name): (&str, usize, &str, &str),
 ) {
@@ -57,7 +57,7 @@ pub(super) fn append_prop_check_type(
 /// discriminated-union branch after generic inference without letting an
 /// invalid callback choose a different branch or emit a coarse duplicate.
 pub(super) fn generate_callback_props_resolution(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     usage: &ComponentUsage,
     idx: usize,
     component_ref: &str,
@@ -127,7 +127,7 @@ pub(super) fn generate_callback_props_resolution(
 }
 
 fn append_props_object(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     usage: &ComponentUsage,
     template_binding_access: &TemplateBindingAccess,
     source_context: ComponentPropSource<'_>,
@@ -212,7 +212,7 @@ fn append_props_object(
 }
 
 fn append_spread_value(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     usage: &ComponentUsage,
     expression: &str,
     template_binding_access: &TemplateBindingAccess,

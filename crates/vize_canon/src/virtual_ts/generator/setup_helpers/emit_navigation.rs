@@ -153,7 +153,7 @@ impl<'a> Visit<'a> for EmitCalls<'_> {
 impl SetupHelperPlan {
     pub(crate) fn emit_event_navigation(
         &self,
-        ts: &mut String,
+        ts: &mut crate::virtual_ts::TextBuf,
         mappings: &mut Vec<VizeMapping>,
         summary: &Croquis,
         generic_param: Option<&GenericParameters>,
@@ -198,7 +198,6 @@ impl SetupHelperPlan {
 #[cfg(test)]
 mod tests {
     use super::SetupHelperPlan;
-    use vize_carton::String;
     use vize_croquis::{Analyzer, AnalyzerOptions};
 
     fn plan(source: &str) -> (SetupHelperPlan, vize_croquis::Croquis) {
@@ -225,7 +224,7 @@ const key = "change";
 fire(key, true);
 "#;
         let (plan, summary) = plan(source);
-        let mut generated = String::default();
+        let mut generated = crate::virtual_ts::TextBuf::default();
         let mut mappings = Vec::new();
         plan.emit_event_navigation(&mut generated, &mut mappings, &summary, None, &|offset| {
             offset + 23
@@ -252,7 +251,7 @@ fire(key, true);
             ]
         );
         let disabled = SetupHelperPlan::collect(&summary, Some(source), false, false);
-        let mut generated = String::default();
+        let mut generated = crate::virtual_ts::TextBuf::default();
         let mut mappings = Vec::new();
         disabled.emit_event_navigation(&mut generated, &mut mappings, &summary, None, &|offset| {
             offset
@@ -270,7 +269,7 @@ fire(key, true);
             "import { defineEmits } from './unrelated'; const emit = defineEmits<{ change: [] }>(); emit('change');",
         ] {
             let (plan, summary) = plan(source);
-            let mut generated = String::default();
+            let mut generated = crate::virtual_ts::TextBuf::default();
             let mut mappings = Vec::new();
             plan.emit_event_navigation(&mut generated, &mut mappings, &summary, None, &|offset| {
                 offset
@@ -286,7 +285,7 @@ fire(key, true);
         analyzer.analyze_script_setup_with_generic_jsx(source, Some("T"));
         let summary = analyzer.finish();
         let plan = SetupHelperPlan::collect(&summary, Some(source), true, false);
-        let mut generated = String::default();
+        let mut generated = crate::virtual_ts::TextBuf::default();
         let mut mappings = Vec::new();
         let generic = crate::virtual_ts::generic_parameters::GenericParameters::parse("T");
         plan.emit_event_navigation(

@@ -1,6 +1,6 @@
 //! Template component value declarations that preserve real imported values.
 
-use vize_carton::{CompactString, FxHashSet, String, append, camelize, capitalize};
+use vize_carton::{CompactString, FxHashSet, append, camelize, capitalize};
 use vize_croquis::Croquis;
 
 use super::global_components::GlobalComponentPlan;
@@ -13,7 +13,7 @@ use crate::virtual_ts::{
 };
 
 pub(super) fn emit_unresolved_components(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     summary: &Croquis,
     options: &VirtualTsOptions,
     global_components: &GlobalComponentPlan,

@@ -1,6 +1,6 @@
 use crate::virtual_ts::VizeMapping;
 use std::borrow::Cow;
-use vize_carton::{String, append};
+use vize_carton::append;
 
 pub(super) struct ScriptBoundaries<'a>(&'a [usize]);
 
@@ -12,7 +12,7 @@ impl<'a> ScriptBoundaries<'a> {
     pub(super) fn emit_through(
         &mut self,
         offset: usize,
-        ts: &mut String,
+        ts: &mut crate::virtual_ts::TextBuf,
         mappings: &mut Vec<VizeMapping>,
         source_offset: &dyn Fn(usize) -> usize,
     ) {
@@ -37,7 +37,7 @@ impl<'a> ScriptBoundaries<'a> {
 }
 
 pub(super) fn finish_script(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     class_alias: Option<&str>,
     close_wrapper: bool,
     emitted_default_alias: bool,

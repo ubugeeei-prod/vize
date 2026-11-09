@@ -3,7 +3,7 @@
 //! against the child's listener prop type so its return value is checked.
 
 use crate::virtual_ts::scope::ScopeMappings;
-use vize_carton::{String, append, profile};
+use vize_carton::{append, profile};
 use vize_croquis::{EventHandlerScopeData, Scope};
 
 use crate::virtual_ts::expressions::ComponentPropSource;
@@ -24,7 +24,7 @@ fn uses_fallthrough_listener_payload(
 }
 
 pub(super) fn generate_component_handler_scope(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     mappings: &mut ScopeMappings<'_>,
     ctx: &ScopeGenContext<'_, '_>,
     scope: &Scope,
@@ -42,56 +42,57 @@ pub(super) fn generate_component_handler_scope(
     let needs_typed_handler_assignment = needs_typed_handler_assignment(data);
     // Only reached for handlers with a target component; without one there is
     // no event contract to declare.
-    let generate_types =
-        |ts: &mut String, diagnostic_mappings: &mut Vec<VizeMapping>, source_context| {
-            generate_component_event_types(
-                ts,
-                diagnostic_mappings,
-                ComponentEventTypeContext {
-                    summary: ctx.summary,
-                    virtual_ts_options: ctx.virtual_ts_options,
-                    data,
-                    scope,
-                    syntactic_type_only_imported_names: ctx.syntactic_type_only_imported_names,
-                    template_binding_access: ctx.template_binding_access,
-                    template_ast: ctx.template_ast,
-                    source_context,
-                    legacy_vue2: ctx.legacy_vue2,
-                    hoist_shared_preamble: ctx.hoist_shared_preamble,
-                    share_listener_relations: ctx.share_listener_relations,
-                    needs_typed_handler_assignment,
-                    fallthrough_listeners: uses_fallthrough_listener_payload(
-                        ctx.check_options,
-                        ctx.legacy_vue2,
-                    ),
-                    native_fallthrough_only: ctx
-                        .check_options
-                        .infers_omitted_native_fallthrough_listeners(ctx.legacy_vue2),
-                    explicit_generic: data.target_component.as_ref().and_then(|component| {
-                        ctx.explicit_generics.alias_at(
-                            ctx.summary,
-                            component.as_str(),
-                            scope.span.start,
-                        )
-                    }),
-                    // Listener contracts remain owned by their authored
-                    // branch even when a bare-reference listener has no
-                    // physical outer block.
-                    enclosing_vif_guard: vif_guards.handler,
-                    // Inference may subtract only a guard that physically
-                    // wraps its generated call. Bare-reference listeners keep
-                    // their guard inside the callback instead (#12074).
-                    inference_outer_vif_guard: vif_guards.active_outer,
-                    event_inference_usages: ctx.event_inference_usages,
-                    event_contracts: ctx.event_contracts,
-                    indent,
-                    gated_inference: super::super::component_events::gates_inference(
-                        ctx.generic_component,
-                        ctx.legacy_vue2,
-                    ),
-                },
-            )
-        };
+    let generate_types = |ts: &mut crate::virtual_ts::TextBuf,
+                          diagnostic_mappings: &mut Vec<VizeMapping>,
+                          source_context| {
+        generate_component_event_types(
+            ts,
+            diagnostic_mappings,
+            ComponentEventTypeContext {
+                summary: ctx.summary,
+                virtual_ts_options: ctx.virtual_ts_options,
+                data,
+                scope,
+                syntactic_type_only_imported_names: ctx.syntactic_type_only_imported_names,
+                template_binding_access: ctx.template_binding_access,
+                template_ast: ctx.template_ast,
+                source_context,
+                legacy_vue2: ctx.legacy_vue2,
+                hoist_shared_preamble: ctx.hoist_shared_preamble,
+                share_listener_relations: ctx.share_listener_relations,
+                needs_typed_handler_assignment,
+                fallthrough_listeners: uses_fallthrough_listener_payload(
+                    ctx.check_options,
+                    ctx.legacy_vue2,
+                ),
+                native_fallthrough_only: ctx
+                    .check_options
+                    .infers_omitted_native_fallthrough_listeners(ctx.legacy_vue2),
+                explicit_generic: data.target_component.as_ref().and_then(|component| {
+                    ctx.explicit_generics.alias_at(
+                        ctx.summary,
+                        component.as_str(),
+                        scope.span.start,
+                    )
+                }),
+                // Listener contracts remain owned by their authored
+                // branch even when a bare-reference listener has no
+                // physical outer block.
+                enclosing_vif_guard: vif_guards.handler,
+                // Inference may subtract only a guard that physically
+                // wraps its generated call. Bare-reference listeners keep
+                // their guard inside the callback instead (#12074).
+                inference_outer_vif_guard: vif_guards.active_outer,
+                event_inference_usages: ctx.event_inference_usages,
+                event_contracts: ctx.event_contracts,
+                indent,
+                gated_inference: super::super::component_events::gates_inference(
+                    ctx.generic_component,
+                    ctx.legacy_vue2,
+                ),
+            },
+        )
+    };
     let source_context = ComponentPropSource::new(
         ctx.template_source,
         ctx.template_offset,

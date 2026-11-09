@@ -5,7 +5,7 @@ use vize_carton::{String, append, cstr};
 
 pub(super) fn emit_descriptor(
     emitter: &mut PatternEmitter<'_, '_>,
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     mappings: &mut Vec<VizeMapping>,
     pattern: &MatchPattern,
     offset: u32,
@@ -60,7 +60,7 @@ pub(super) fn emit_descriptor(
 
 pub(super) fn emit_bindings(
     emitter: &mut PatternEmitter<'_, '_>,
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     mappings: &mut Vec<VizeMapping>,
     pattern: &MatchPattern,
     value: &str,
@@ -135,7 +135,7 @@ pub(super) fn emit_bindings(
 
 fn declare(
     emitter: &PatternEmitter<'_, '_>,
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     mappings: &mut Vec<VizeMapping>,
     binding: &PatternBinding,
     value: &str,
@@ -149,7 +149,7 @@ fn declare(
 
 fn binding_name(
     emitter: &PatternEmitter<'_, '_>,
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     mappings: &mut Vec<VizeMapping>,
     binding: &PatternBinding,
     offset: u32,

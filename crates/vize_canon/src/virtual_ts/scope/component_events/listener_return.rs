@@ -15,7 +15,7 @@ pub(super) struct Context<'a> {
     pub(super) prop_key: &'a str,
 }
 
-pub(super) fn emit(ts: &mut String, ctx: Context<'_>) -> String {
+pub(super) fn emit(ts: &mut crate::virtual_ts::TextBuf, ctx: Context<'_>) -> String {
     let Context {
         legacy_vue2,
         first_contract,

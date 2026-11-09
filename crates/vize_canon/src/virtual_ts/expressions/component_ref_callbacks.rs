@@ -102,7 +102,7 @@ fn component_ref_callback_range(directive: &DirectiveNode<'_>) -> Option<(u32, u
 }
 
 pub(super) fn generate_component_ref_callback_statement(
-    ts: &mut vize_carton::String,
+    ts: &mut crate::virtual_ts::TextBuf,
     mappings: &mut Vec<VizeMapping>,
     expr: &TemplateExpression,
     generated_expression: &str,

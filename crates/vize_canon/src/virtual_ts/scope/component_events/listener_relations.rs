@@ -26,7 +26,7 @@ impl ListenerRelations {
         }
     }
 
-    pub(super) fn emit(&self, ts: &mut String, indent: &str) {
+    pub(super) fn emit(&self, ts: &mut crate::virtual_ts::TextBuf, indent: &str) {
         if self.hoisted {
             let shared = crate::virtual_ts::helpers::shared_types::LISTENER_ARGS.select(true);
             ts.push_str(indent);
