@@ -27,6 +27,9 @@ const approvedRunnerLabels = new Set([
   "ubuntu-22.04-arm",
   "windows-11-arm",
   "windows-2025-vs2026",
+  // WSL2 needs nested virtualization, which Blacksmith Windows runners lack
+  // (HCS ERROR_NOT_SUPPORTED when registering the distribution).
+  "windows-2025",
 ]);
 
 function isRecord(value: unknown): value is Record<string, unknown> {

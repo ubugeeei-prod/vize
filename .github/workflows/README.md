@@ -30,7 +30,7 @@ surfaces and are not routine CI-refactor targets.
 | ----- | -------------------------------------------------------------------------------------- | --------- |
 | 01    | [Pull request orchestration](#01-pull-request-orchestration)                           | 18        |
 | 02    | [Release and public acceptance](#02-release-and-public-acceptance)                     | 32        |
-| 03    | [Benchmarks and profiling](#03-benchmarks-and-profiling)                               | 36        |
+| 03    | [Benchmarks and profiling](#03-benchmarks-and-profiling)                               | 37        |
 | 04    | [Type checking and content mapping](#04-type-checking-and-content-mapping)             | 14        |
 | 05    | [Language services and editors](#05-language-services-and-editors)                     | 23        |
 | 06    | [SFC, JSX, and compiler correctness](#06-sfc-jsx-and-compiler-correctness)             | 40        |
@@ -143,9 +143,10 @@ Wall time, allocation, instruction, memory, scaling, and reproducible benchmark 
 | 03.31 | Tool Benchmark                                      | [`tool-benchmark.yml`](./tool-benchmark.yml)                                             |
 | 03.32 | Type admission scale axes                           | [`type-admission-scale.yml`](./type-admission-scale.yml)                                 |
 | 03.33 | Type source snapshot benchmark                      | [`type-snapshot-bench.yml`](./type-snapshot-bench.yml)                                   |
-| 03.34 | Type-check scaling                                  | [`typecheck-scaling.yml`](./typecheck-scaling.yml)                                       |
-| 03.35 | Vue Benchmarks Current Qualification                | [`vue-benchmarks-current-qualification.yml`](./vue-benchmarks-current-qualification.yml) |
-| 03.36 | Vue Benchmarks Replay                               | [`vue-benchmarks-replay.yml`](./vue-benchmarks-replay.yml)                               |
+| 03.34 | Type-check cold pair                                | [`typecheck-cold-pair.yml`](./typecheck-cold-pair.yml)                                   |
+| 03.35 | Type-check scaling                                  | [`typecheck-scaling.yml`](./typecheck-scaling.yml)                                       |
+| 03.36 | Vue Benchmarks Current Qualification                | [`vue-benchmarks-current-qualification.yml`](./vue-benchmarks-current-qualification.yml) |
+| 03.37 | Vue Benchmarks Replay                               | [`vue-benchmarks-replay.yml`](./vue-benchmarks-replay.yml)                               |
 
 ## 04 Type checking and content mapping
 
