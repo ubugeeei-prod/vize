@@ -196,7 +196,8 @@ function __setup() {
   // Component template navigation references
   void VDatePicker;
   const { } = undefined as unknown as $ComponentNavigationProps<__VDatePicker_Props_0>;
-  const __vize_props_nav_0 = undefined as unknown as __VDatePicker_Props_0 & Record<string, unknown>;
+  const __vize_props_nav_0 = undefined as unknown as __VDatePicker_Props_0 & globalThis.Record<string, unknown>;
+  // @ts-ignore Navigation-only references; no diagnostic owner.
   void __vize_props_nav_0.width;
 
   // Component props value checks (template scope)
@@ -416,7 +417,8 @@ function __setup() {
   // Component template navigation references
   void VDatePicker;
   const { } = undefined as unknown as $ComponentNavigationProps<__VDatePicker_Props_0>;
-  const __vize_props_nav_0 = undefined as unknown as __VDatePicker_Props_0 & Record<string, unknown>;
+  const __vize_props_nav_0 = undefined as unknown as __VDatePicker_Props_0 & globalThis.Record<string, unknown>;
+  // @ts-ignore Navigation-only references; no diagnostic owner.
   void __vize_props_nav_0.width;
 
   // Component props value checks (template scope)

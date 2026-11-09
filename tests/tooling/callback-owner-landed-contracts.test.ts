@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import { test } from "node:test";
 import {
   certifiedHelperImages,
+  navigationBlock,
   requiredFallthroughGate,
   withLandedEdits,
 } from "../../tools/support/compat/content-mapper/callback-owner-landed-contracts.ts";
@@ -78,4 +79,30 @@ test("each landed helper predecessor is certified once, before the current image
     ownedKeys,
     current,
   ]);
+});
+
+test("navigation keys move onto one ignored line around their unchanged names", () => {
+  const prefix = "  const __vize_props_nav_3 = undefined as unknown as __Child_Props_3 & ";
+  const owner = "__vize_props_nav_3";
+  const before = `x\n${prefix}Record<string, unknown>;\n  void ${owner}.title;\n  void ${owner}['data-x'];\n  void ${owner}.ünï;\ny\n`;
+  const after = `x\n${navigationBlock(prefix, owner, [".title", "['data-x']", ".ünï"])}y\n`;
+  assert.ok(after.includes("// @ts-ignore Navigation-only references; no diagnostic owner."));
+  const edits = withLandedEdits(before, after, []);
+  assert.equal(apply(before, edits), after);
+  const names = ["title", "data-x", "ünï"];
+  for (const name of names) {
+    const at = Buffer.byteLength(before.slice(0, before.indexOf(name)));
+    const end = at + Buffer.byteLength(name);
+    // The audit rejects an edit that overlaps or touches an authored span.
+    assert.ok(
+      !edits.some(
+        (edit) =>
+          (edit.start < end && at < edit.end) ||
+          [edit.start, edit.end].some((edge) => edge === at || edge === end),
+      ),
+      name,
+    );
+  }
+  assert.deepEqual(withLandedEdits(before, before, []), []);
+  assert.deepEqual(withLandedEdits(before, after.replace(".title", ".other"), []), []);
 });

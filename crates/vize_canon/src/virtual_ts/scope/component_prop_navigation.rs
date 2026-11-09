@@ -113,15 +113,22 @@ fn emit_prop_references(
         };
 
         if !emitted_props_ref {
+            // `globalThis.Record`: an authored `Record` cannot capture it, and an
+            // undeclared key still has no definition. The references only navigate,
+            // so TypeScript's own `@ts-ignore` keeps their checks
+            // (`noPropertyAccessFromIndexSignature`, #12531) off every path; it
+            // covers one line, which carries every reference statement.
             vize_l0::emit_ts!(
                 ts,
-                "  const {props_ref} = undefined as unknown as __{component_type_name}_Props_{idx} & Record<string, unknown>;\n"
+                "  const {props_ref} = undefined as unknown as __{component_type_name}_Props_{idx} & globalThis.Record<string, unknown>;\n  // @ts-ignore Navigation-only references; no diagnostic owner.\n  void "
             );
             emitted_props_ref = true;
+        } else {
+            ts.push_str(" void ");
         }
 
         let camel_prop_name = to_camel_case(prop.name.as_str());
-        vize_l0::emit_ts!(ts, "  void {props_ref}");
+        ts.push_str(&props_ref);
         let prop_gen_range = if is_ts_identifier(camel_prop_name.as_str()) {
             ts.push('.');
             let prop_gen_start = ts.len();
@@ -133,7 +140,7 @@ fn emit_prop_references(
             ts.push(']');
             range
         };
-        ts.push_str(";\n");
+        ts.push(';');
         semantic_links.push(VizeSemanticLink {
             source_range: component_gen_range.clone(),
             target_range: prop_gen_range.clone(),
@@ -145,6 +152,9 @@ fn emit_prop_references(
                 ..(ctx.template_offset as usize + source_range.end),
             sub_spans: Vec::new(),
         });
+    }
+    if emitted_props_ref {
+        ts.push('\n');
     }
 }
 

@@ -30,6 +30,7 @@ mod listener_anchor_11657;
 mod long_prop_kebab_case;
 mod memo_expression;
 mod module_default_export;
+mod nav_index_signature_access_12531;
 mod nested_callback_11361;
 mod nested_function_guard_11853;
 mod optional_prop_spacing;

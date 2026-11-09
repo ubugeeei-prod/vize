@@ -163,33 +163,6 @@
   },
   {
     "blockType": "Some(Template)",
-    "code": 2339,
-    "column": 25,
-    "file": "src/RecordShadow.vue",
-    "line": 3,
-    "message": "Property 'count' does not exist on type 'never'.\nThe intersection '{ count: number; rules?: ((value: string) => boolean)[] | undefined; config?: { format: (value: string) => boolean; } | undefined; } & { [x: string]: unknown; } & { count: \"captured\"; }' was reduced to 'never' because property 'count' has conflicting types in some constituents.",
-    "severity": 1
-  },
-  {
-    "blockType": "Some(Template)",
-    "code": 2339,
-    "column": 37,
-    "file": "src/RecordShadow.vue",
-    "line": 3,
-    "message": "Property 'rules' does not exist on type 'never'.\nThe intersection '{ count: number; rules?: ((value: string) => boolean)[] | undefined; config?: { format: (value: string) => boolean; } | undefined; } & { [x: string]: unknown; } & { count: \"captured\"; }' was reduced to 'never' because property 'count' has conflicting types in some constituents.",
-    "severity": 1
-  },
-  {
-    "blockType": "Some(Template)",
-    "code": 2339,
-    "column": 75,
-    "file": "src/RecordShadow.vue",
-    "line": 3,
-    "message": "Property 'legacyExtra' does not exist on type 'never'.\nThe intersection '{ count: number; rules?: ((value: string) => boolean)[] | undefined; config?: { format: (value: string) => boolean; } | undefined; } & { [x: string]: unknown; } & { count: \"captured\"; }' was reduced to 'never' because property 'count' has conflicting types in some constituents.",
-    "severity": 1
-  },
-  {
-    "blockType": "Some(Template)",
     "code": 7006,
     "column": 131,
     "file": "src/RecordShadow.vue",
