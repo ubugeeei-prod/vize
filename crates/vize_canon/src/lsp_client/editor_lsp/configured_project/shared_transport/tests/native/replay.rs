@@ -360,8 +360,8 @@ fn actual_memberless_vue_preparation_reattaches_same_editor_owner() {
         let texts = project
             .documents
             .iter()
-            .cloned()
-            .collect::<vize_l0::FxHashMap<_, _>>();
+            .map(|(uri, text)| (uri.clone(), text.as_str().into()))
+            .collect::<crate::lsp_client::shared_text::DocumentTexts>();
         assert_eq!(client.document_texts, texts);
         let DocumentDiagnosticReportResult::Report(DocumentDiagnosticReport::Full(report)) =
             client.diagnostics_via_editor_lsp(uri, &texts).unwrap()
