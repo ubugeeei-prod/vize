@@ -118,7 +118,7 @@ impl<'a> MacroTypeMappings<'a> {
     /// authored key a module-alias declaration for editor navigation.
     pub(crate) fn emit_slot_key_witnesses(
         &mut self,
-        ts: &mut String,
+        ts: &mut crate::virtual_ts::TextBuf,
         declarations: &vize_croquis::macros::MacroTracker,
     ) {
         let keys = declarations
@@ -166,7 +166,7 @@ impl<'a> MacroTypeMappings<'a> {
             let Some(authored) = declarations.model_declaration(model.name.as_str()) else {
                 continue;
             };
-            let mut needle = String::from("  ");
+            let mut needle = crate::virtual_ts::TextBuf::from_text("  ");
             push_ts_string_literal(&mut needle, model.name.as_str());
             let Some(start) = generated.find(needle.as_str()) else {
                 continue;

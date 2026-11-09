@@ -22,7 +22,7 @@ use vize_croquis::croquis::PassedProp;
 use vize_croquis::drawer::{strip_js_comments, strip_js_comments_with_offsets};
 use vize_l0::ts;
 
-fn push_ts_string_literal(out: &mut String, value: &str) {
+fn push_ts_string_literal(out: &mut impl crate::virtual_ts::TsText, value: &str) {
     out.push('"');
     for ch in value.chars() {
         match ch {
@@ -148,7 +148,7 @@ fn generated_prop_span_with_comment_policy<'a>(
     preserve_comments: bool,
 ) -> Option<PropSpan<'a>> {
     if !prop.is_dynamic {
-        let mut value = String::default();
+        let mut value = crate::virtual_ts::TextBuf::default();
         if let Some(static_value) = prop.value.as_ref() {
             if prop.name == "style" {
                 ts! { &mut value =>
@@ -169,7 +169,7 @@ fn generated_prop_span_with_comment_policy<'a>(
         } else {
             value.push_str("true");
         }
-        return Some(PropSpan::plain(value));
+        return Some(PropSpan::plain(value.into_compact()));
     }
 
     let raw_value = prop.value.as_ref()?.as_str();
@@ -245,7 +245,7 @@ fn ends_in_line_comment(value: &str) -> bool {
 /// element, or spread). OXC distinguishes that shape from commas nested in a
 /// call, array, object, or already-parenthesized sequence. The cheap byte check
 /// only skips parsing expressions that cannot possibly be sequences.
-pub(crate) fn append_prop_value(ts: &mut String, value: &str) -> Range<usize> {
+pub(crate) fn append_prop_value(ts: &mut crate::virtual_ts::TextBuf, value: &str) -> Range<usize> {
     let needs_grouping = value.as_bytes().contains(&b',') && is_top_level_sequence(value);
     if needs_grouping {
         ts.push('(');
@@ -381,7 +381,7 @@ mod tests {
         ];
 
         for (source, expected, expected_range) in cases {
-            let mut generated = vize_carton::String::default();
+            let mut generated = crate::virtual_ts::TextBuf::default();
             let range = append_prop_value(&mut generated, source);
             assert_eq!(generated, expected, "unexpected grouping for `{source}`");
             assert_eq!(range, expected_range, "unexpected range for `{source}`");

@@ -95,7 +95,7 @@ pub(super) struct RefInstanceContext<'a> {
 /// of another. `<Generic ref="b" :foo="a.foo" />` would otherwise make the
 /// type of `a` depend on itself through the record it is read from.
 pub(super) fn emit_ref_instance_probes(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     ctx: &RefInstanceContext<'_>,
     starts: &[u32],
 ) -> String {
@@ -130,7 +130,7 @@ pub(super) fn emit_ref_instance_probes(
 }
 
 fn emit_probe(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     ctx: &RefInstanceContext<'_>,
     usage: &ComponentUsage,
     component: &str,
@@ -159,7 +159,7 @@ fn emit_probe(
     reason = "one probe threaded through its loops"
 )]
 fn emit_ref_loops(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     ctx: &RefInstanceContext<'_>,
     usage: &ComponentUsage,
     component: &str,
@@ -198,7 +198,7 @@ fn emit_ref_loops(
     reason = "one probe threaded through its loops"
 )]
 fn emit_ref_loop(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     ctx: &RefInstanceContext<'_>,
     usage: &ComponentUsage,
     component: &str,
@@ -238,7 +238,7 @@ fn emit_ref_loop(
 }
 
 fn emit_ref_call(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     ctx: &RefInstanceContext<'_>,
     usage: &ComponentUsage,
     component: &str,
@@ -277,10 +277,10 @@ fn emit_ref_call(
 }
 
 fn with_guard(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     indent: &mut String,
     guard: &str,
-    body: impl FnOnce(&mut String, &mut String),
+    body: impl FnOnce(&mut crate::virtual_ts::TextBuf, &mut String),
 ) {
     let at = indent.clone();
     let isolated = crate::virtual_ts::expressions::isolate_incomplete_expression(guard);

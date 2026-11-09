@@ -206,7 +206,7 @@ fn generate_component_prop_checks_inner<const LEGACY_SCALARS: bool>(
     } else {
         String::from(indent)
     };
-    let resolve = |text: &mut String, source_context| {
+    let resolve = |text: &mut crate::virtual_ts::TextBuf, source_context| {
         super::callback_prop_resolution::generate_callback_props_resolution(
             text,
             usage,

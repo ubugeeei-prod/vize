@@ -3,9 +3,12 @@
 use oxc_allocator::Allocator;
 use oxc_parser::Parser;
 use oxc_span::{GetSpan, SourceType};
-use vize_carton::String;
 
-pub(super) fn emit(ts: &mut String, source: Option<&str>, setup_start: Option<usize>) {
+pub(super) fn emit(
+    ts: &mut crate::virtual_ts::TextBuf,
+    source: Option<&str>,
+    setup_start: Option<usize>,
+) {
     let Some(source) = source else {
         return;
     };

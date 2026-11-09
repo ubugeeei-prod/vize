@@ -7,7 +7,7 @@ use serde::ser::{SerializeStruct, Serializer};
 use serde_json::{Value, json};
 use vize_canon::{
     ContentMapperDiagnostic, ContentMapperDiagnosticDirectives, ContentMapperSemanticLink,
-    ContentMapperTransform, ContentMapperUnusedExpectDiagnostic,
+    ContentMapperSpan, ContentMapperTransform, ContentMapperUnusedExpectDiagnostic,
 };
 
 /// Room for `Content-Length: <u64>\r\n\r\n` ahead of the body.
@@ -39,23 +39,144 @@ pub(super) fn encode_transform(
     id: &Value,
     transform: &ContentMapperTransform,
 ) -> io::Result<Vec<u8>> {
-    #[derive(Serialize)]
-    struct Envelope<'a> {
-        id: &'a Value,
-        jsonrpc: &'static str,
-        result: Sorted<'a, ContentMapperTransform>,
-    }
+    let ContentMapperTransform {
+        text,
+        extension,
+        mappings,
+        semantic_links,
+        diagnostic_directives,
+        diagnostics,
+    } = transform;
     // Reserve the escaped text and mapping rows once instead of doubling a
     // buffer the size of a large module.
-    let capacity = transform.text.len() + transform.text.len() / 8 + transform.mappings.len() * 64;
-    encode_frame_with_capacity(
-        &Envelope {
-            id,
-            jsonrpc: "2.0",
-            result: Sorted(transform),
-        },
-        capacity,
-    )
+    let capacity = text.len() + text.len() / 8 + mappings.len() * 64;
+    let mut frame = Vec::with_capacity(HEADER_ROOM + capacity);
+    frame.resize(HEADER_ROOM, 0);
+    frame.extend_from_slice(br#"{"id":"#);
+    serde_json::to_writer(&mut frame, id).map_err(io::Error::other)?;
+    frame.extend_from_slice(br#","jsonrpc":"2.0","result":{"#);
+    if let Some(directives) = diagnostic_directives {
+        frame.extend_from_slice(br#""diagnosticDirectives":"#);
+        serde_json::to_writer(&mut frame, &Sorted(directives)).map_err(io::Error::other)?;
+        frame.push(b',');
+    }
+    frame.extend_from_slice(br#""diagnostics":"#);
+    serde_json::to_writer(&mut frame, &SortedSeq(diagnostics)).map_err(io::Error::other)?;
+    frame.extend_from_slice(br#","extension":"#);
+    push_json_str(&mut frame, extension);
+    frame.extend_from_slice(br#","mappings":"#);
+    push_spans(&mut frame, mappings);
+    if !semantic_links.is_empty() {
+        frame.extend_from_slice(br#","semanticLinks":"#);
+        serde_json::to_writer(&mut frame, &SortedSeq(semantic_links)).map_err(io::Error::other)?;
+    }
+    frame.extend_from_slice(br#","text":"#);
+    push_json_str(&mut frame, text);
+    frame.extend_from_slice(b"}}");
+    finish_frame(frame)
+}
+
+/// `serde_json`'s escaping, eight bytes per step: projections are long
+/// plain runs between newlines, which serde scans and copies byte by byte.
+fn push_json_str(out: &mut Vec<u8>, text: &str) {
+    const ONES: u64 = u64::from_ne_bytes([1; 8]);
+    const HIGHS: u64 = u64::from_ne_bytes([0x80; 8]);
+    let bytes = text.as_bytes();
+    out.reserve(bytes.len() + 2);
+    out.push(b'"');
+    let mut run = 0;
+    let mut index = 0;
+    while let Some(chunk) = bytes.get(index..).and_then(<[u8]>::first_chunk::<8>) {
+        let word = u64::from_le_bytes(*chunk);
+        let quote = word ^ (ONES * u64::from(b'"'));
+        let backslash = word ^ (ONES * u64::from(b'\\'));
+        // Exact per word, and the lowest flagged byte is the first special one.
+        let special = (word.wrapping_sub(ONES * 0x20) & !word
+            | quote.wrapping_sub(ONES) & !quote
+            | backslash.wrapping_sub(ONES) & !backslash)
+            & HIGHS;
+        if special == 0 {
+            index += 8;
+            continue;
+        }
+        index += (special.trailing_zeros() / 8) as usize;
+        push_escaped(out, bytes, &mut run, index);
+        index += 1;
+    }
+    while index < bytes.len() {
+        push_escaped(out, bytes, &mut run, index);
+        index += 1;
+    }
+    out.extend_from_slice(bytes.get(run..).unwrap_or_default());
+    out.push(b'"');
+}
+
+/// Flushes the plain run before `index` and escapes the byte there, if it
+/// needs escaping.
+fn push_escaped(out: &mut Vec<u8>, bytes: &[u8], run: &mut usize, index: usize) {
+    const HEX: &[u8; 16] = b"0123456789abcdef";
+    let Some(&byte) = bytes.get(index) else {
+        return;
+    };
+    let short: &[u8] = match byte {
+        b'"' => br#"\""#,
+        b'\\' => br"\\",
+        b'\n' => br"\n",
+        b'\r' => br"\r",
+        b'\t' => br"\t",
+        0x08 => br"\b",
+        0x0c => br"\f",
+        0x00..=0x1f => &[],
+        _ => return,
+    };
+    out.extend_from_slice(bytes.get(*run..index).unwrap_or_default());
+    *run = index + 1;
+    if short.is_empty() {
+        let digit = |nibble: u8| HEX.get(usize::from(nibble)).copied().unwrap_or(b'0');
+        out.extend_from_slice(&[
+            b'\\',
+            b'u',
+            b'0',
+            b'0',
+            digit(byte >> 4),
+            digit(byte & 0x0f),
+        ]);
+    } else {
+        out.extend_from_slice(short);
+    }
+}
+
+/// `[[a,b,c,d,e,f],...]` without a serializer call per number.
+fn push_spans(out: &mut Vec<u8>, spans: &[ContentMapperSpan]) {
+    out.push(b'[');
+    for (row, ContentMapperSpan(span)) in spans.iter().enumerate() {
+        if row > 0 {
+            out.push(b',');
+        }
+        out.push(b'[');
+        for (column, &value) in span.iter().enumerate() {
+            if column > 0 {
+                out.push(b',');
+            }
+            push_usize(out, value);
+        }
+        out.push(b']');
+    }
+    out.push(b']');
+}
+
+fn push_usize(out: &mut Vec<u8>, mut value: usize) {
+    let mut digits = [0u8; 20];
+    let mut start = digits.len();
+    for slot in digits.iter_mut().rev() {
+        *slot = b'0' + (value % 10) as u8;
+        start -= 1;
+        value /= 10;
+        if value == 0 {
+            break;
+        }
+    }
+    out.extend_from_slice(digits.get(start..).unwrap_or_default());
 }
 
 pub(super) fn encode_error(id: &Value, code: i32, message: &str) -> io::Result<Vec<u8>> {
@@ -76,6 +197,11 @@ fn encode_frame_with_capacity(value: &impl Serialize, capacity: usize) -> io::Re
     let mut frame = Vec::with_capacity(HEADER_ROOM + capacity);
     frame.resize(HEADER_ROOM, 0);
     serde_json::to_writer(&mut frame, value).map_err(io::Error::other)?;
+    finish_frame(frame)
+}
+
+/// Writes the header into the room reserved ahead of the body.
+fn finish_frame(mut frame: Vec<u8>) -> io::Result<Vec<u8>> {
     let mut header = Vec::with_capacity(HEADER_ROOM);
     write!(
         &mut header,
@@ -102,31 +228,6 @@ where
 {
     fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
         serializer.collect_seq(self.0.iter().map(Sorted))
-    }
-}
-
-impl Serialize for Sorted<'_, ContentMapperTransform> {
-    fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
-        let ContentMapperTransform {
-            text,
-            extension,
-            mappings,
-            semantic_links,
-            diagnostic_directives,
-            diagnostics,
-        } = self.0;
-        let mut out = serializer.serialize_struct("ContentMapperTransform", 6)?;
-        if let Some(directives) = diagnostic_directives {
-            out.serialize_field("diagnosticDirectives", &Sorted(directives))?;
-        }
-        out.serialize_field("diagnostics", &SortedSeq(diagnostics))?;
-        out.serialize_field("extension", extension)?;
-        out.serialize_field("mappings", mappings)?;
-        if !semantic_links.is_empty() {
-            out.serialize_field("semanticLinks", &SortedSeq(semantic_links))?;
-        }
-        out.serialize_field("text", text)?;
-        out.end()
     }
 }
 
@@ -205,7 +306,7 @@ mod tests {
 
     fn transform(full: bool) -> ContentMapperTransform {
         ContentMapperTransform {
-            text: "const a = \"雪\\n\";\u{2028}🌸".into(),
+            text: "const a = \"雪\\n\";\u{2028}🌸\t\r\u{1}\u{8}\u{c}\u{1f}\u{7f}\n".into(),
             extension: ".tsx",
             mappings: vec![ContentMapperSpan([0, 5, 10, 5, 0, 7]); 3],
             semantic_links: if full {
@@ -245,6 +346,57 @@ mod tests {
                 );
             }
         }
+    }
+
+    #[test]
+    fn json_strings_match_serde_json() {
+        let alphabet: Vec<char> = (0u8..0x20)
+            .map(char::from)
+            .chain([
+                '"', '\\', '/', '\u{7f}', 'a', ' ', 'é', '雪', '🌸', '\u{2028}',
+            ])
+            .collect();
+        let mut state = 0x9e37_79b9_7f4a_7c15_u64;
+        for length in 0..48 {
+            for _ in 0..64 {
+                let text: vize_l0::String = (0..length)
+                    .map(|_| {
+                        state ^= state << 13;
+                        state ^= state >> 7;
+                        state ^= state << 17;
+                        let plain = !state.is_multiple_of(4);
+                        if plain {
+                            'x'
+                        } else {
+                            alphabet[(state >> 8) as usize % alphabet.len()]
+                        }
+                    })
+                    .collect();
+                let mut out = Vec::new();
+                super::push_json_str(&mut out, &text);
+                assert_eq!(
+                    std::str::from_utf8(&out).unwrap(),
+                    serde_json::to_string(&text).unwrap()
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn spans_match_serde_json() {
+        let spans = vec![
+            ContentMapperSpan([0, 9, 10, 99, 100, usize::MAX]),
+            ContentMapperSpan([1, 12_345, 7, 0, 65_536, 4_294_967_296]),
+        ];
+        let mut out = Vec::new();
+        super::push_spans(&mut out, &spans);
+        assert_eq!(
+            std::str::from_utf8(&out).unwrap(),
+            serde_json::to_string(&spans).unwrap()
+        );
+        let mut empty = Vec::new();
+        super::push_spans(&mut empty, &[]);
+        assert_eq!(empty, b"[]");
     }
 
     #[test]

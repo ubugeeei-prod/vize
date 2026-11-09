@@ -87,7 +87,10 @@ impl ForwardedRoots {
     }
 
     /// Emit the helpers the probes call, and return whether there are any.
-    pub(in crate::virtual_ts::generator) fn emit_helpers(&self, ts: &mut String) -> bool {
+    pub(in crate::virtual_ts::generator) fn emit_helpers(
+        &self,
+        ts: &mut crate::virtual_ts::TextBuf,
+    ) -> bool {
         if self.any() {
             ts.push_str(FORWARDED_ROOT_HELPERS);
         }
@@ -99,7 +102,7 @@ impl ForwardedRoots {
     /// required ones; what the root binds itself is never the parent's.
     pub(in crate::virtual_ts::generator) fn push_props_tail(
         &self,
-        ts: &mut String,
+        ts: &mut crate::virtual_ts::TextBuf,
         setup: &(impl core::fmt::Display + ?Sized),
     ) {
         if !self.any() {
@@ -155,9 +158,9 @@ mod tests {
         );
         let mut fields = Vec::new();
         roots.push_return_field(&mut fields);
-        let mut tail = String::default();
+        let mut tail = crate::virtual_ts::TextBuf::default();
         roots.push_props_tail(&mut tail, "Setup<T>");
-        (roots.starts().to_vec(), fields, tail)
+        (roots.starts().to_vec(), fields, tail.into_compact())
     }
 
     #[test]

@@ -328,7 +328,7 @@ impl<'a> TemplateBindingAccess<'a> {
         }
     }
 
-    pub(crate) fn emit_instance_receiver_alias(&self, output: &mut String) {
+    pub(crate) fn emit_instance_receiver_alias(&self, output: &mut crate::virtual_ts::TextBuf) {
         if let Some(instance) = self.instance.as_ref().map(InstanceStorage::get)
             && instance.receiver != "__ctx"
         {

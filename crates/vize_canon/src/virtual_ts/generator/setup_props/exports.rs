@@ -1,11 +1,11 @@
 use super::{OptionsApiPropsSource, SetupPropsPlan, append_default_props};
 use crate::virtual_ts::generated_names as names;
-use vize_carton::{String, append, cstr};
+use vize_carton::{append, cstr};
 
 impl SetupPropsPlan {
     pub(in crate::virtual_ts::generator) fn emit_module_export(
         &self,
-        ts: &mut String,
+        ts: &mut crate::virtual_ts::TextBuf,
         options_api_props: Option<&OptionsApiPropsSource>,
         generic_param: Option<&crate::virtual_ts::generic_parameters::GenericParameters>,
         forwarded_roots: &super::super::fallthrough::ForwardedRoots,

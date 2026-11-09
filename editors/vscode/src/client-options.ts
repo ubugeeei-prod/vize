@@ -1,9 +1,18 @@
-import { workspace, type OutputChannel } from "vscode";
+import { workspace, type FileSystemWatcher, type OutputChannel } from "vscode";
 import type { LanguageClient, LanguageClientOptions } from "vscode-languageclient/node.js";
 
 import { createAutoInsertMiddleware } from "./auto-insert.js";
 import { createDocumentSelector, type LspInitializationOptions } from "./extension-core.js";
 import { withJsxRouting } from "./jsx-routing.js";
+
+// vscode-languageclient hooks listeners onto synchronize.fileEvents and disposes
+// only those on stop, never the watchers. One pair serves every restarted client.
+let fileEvents: FileSystemWatcher[] | undefined;
+
+export function disposeClientFileEvents(): void {
+  for (const watcher of fileEvents ?? []) watcher.dispose();
+  fileEvents = undefined;
+}
 
 export function createClientOptions(
   initializationOptions: LspInitializationOptions,
@@ -15,10 +24,10 @@ export function createClientOptions(
     documentSelector: createDocumentSelector(),
     synchronize: {
       configurationSection: "vize",
-      fileEvents: [
+      fileEvents: (fileEvents ??= [
         workspace.createFileSystemWatcher("**/*.vue"),
         workspace.createFileSystemWatcher("**/*.{html,htm}"),
-      ],
+      ]),
     },
     outputChannel,
     traceOutputChannel: outputChannel,

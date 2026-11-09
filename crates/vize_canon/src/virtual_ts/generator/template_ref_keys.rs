@@ -99,7 +99,7 @@ impl TemplateRefUsage {
 
     /// A rewritten call still uses its authored import. Keep only those
     /// imported bindings live for `noUnusedLocals`, never unrelated imports.
-    pub(super) fn emit_import_anchors(&self, ts: &mut String) {
+    pub(super) fn emit_import_anchors(&self, ts: &mut crate::virtual_ts::TextBuf) {
         let mut emitted = FxHashSet::default();
         for call in &self.calls {
             if call.imported && emitted.insert(call.name.as_str()) {
@@ -122,7 +122,7 @@ impl TemplateRefKeyChecks<'_> {
     /// Emit the checks of every statement that starts on the line `[start, end)`.
     pub(super) fn emit_for_line(
         &mut self,
-        ts: &mut String,
+        ts: &mut crate::virtual_ts::TextBuf,
         mappings: &mut Vec<VizeMapping>,
         (start, end): (usize, usize),
         source_offset: &dyn Fn(usize) -> usize,

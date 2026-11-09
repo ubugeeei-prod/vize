@@ -81,7 +81,7 @@ pub(super) fn collect_deferred_setup_bindings(
 
 /// Captures the declared type before template scope shadows the name.
 pub(super) fn emit_type_captures(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     names: &[String],
 ) -> FxHashMap<String, Range<usize>> {
     let mut captures = FxHashMap::default();
@@ -100,7 +100,7 @@ pub(super) fn emit_type_captures(
 
 /// Redeclares the bindings in template scope carrying their captured types.
 pub(super) fn emit_template_variables(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     names: &[String],
     captures: &FxHashMap<String, Range<usize>>,
     semantic_links: &mut Vec<VizeSemanticLink>,

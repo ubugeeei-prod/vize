@@ -40,12 +40,15 @@ pub(super) fn collect_component_imported_names<'a>(
     }
 }
 
-pub(super) fn emit_reference_path_directives(ts: &mut String, paths: &[String]) {
+pub(super) fn emit_reference_path_directives(
+    ts: &mut crate::virtual_ts::TextBuf,
+    paths: &[String],
+) {
     super::super::reference_paths::emit(ts, paths);
 }
 
 pub(super) fn emit_reference_type_directives(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     script_content: Option<&str>,
 ) -> bool {
     let Some(script) = script_content else {

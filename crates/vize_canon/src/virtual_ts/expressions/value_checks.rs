@@ -107,7 +107,7 @@ impl TemplateValueCheckTables {
 
     pub(crate) fn emit_valueless_directives(
         &self,
-        ts: &mut vize_carton::String,
+        ts: &mut crate::virtual_ts::TextBuf,
         mappings: &mut Vec<crate::virtual_ts::VizeMapping>,
         offset: u32,
     ) {

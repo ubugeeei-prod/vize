@@ -28,7 +28,7 @@ pub(super) struct PropDiagnosticRows<'p> {
 
 #[expect(clippy::too_many_arguments, reason = "independent emitter inputs")]
 pub(super) fn append_prop_entry<'p>(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     mappings: &mut Vec<VizeMapping>,
     prop: &PassedProp,
     component_name: &str,

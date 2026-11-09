@@ -5,7 +5,7 @@
 //! never runs. These buffers belong to actual direct root usages; they do not
 //! authorize moving a branch, loop, slot or an EXPECT inference packet.
 
-use vize_carton::{FxHashMap, FxHashSet, String, profile};
+use vize_carton::{FxHashMap, FxHashSet, profile};
 use vize_croquis::{BindingType, ScopeKind, TemplateExpression, croquis::ComponentUsage};
 use vize_relief::TemplateChildNode;
 
@@ -210,7 +210,7 @@ impl RootCallbackOwners {
     )]
     pub(super) fn generate_expressions(
         &mut self,
-        ts: &mut String,
+        ts: &mut crate::virtual_ts::TextBuf,
         mappings: &mut ScopeMappings<'_>,
         links: &mut Vec<VizeSemanticLink>,
         ownership: Option<&DiagnosticOwnershipCollector>,

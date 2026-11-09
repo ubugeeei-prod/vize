@@ -10,10 +10,10 @@ const componentExportSource = readFileSync(
     import.meta.url,
   ),
 );
-assert.equal(componentExportSource.length, 16052, "certified component export producer size");
+assert.equal(componentExportSource.length, 16143, "certified component export producer size");
 assert.equal(
   createHash("sha256").update(componentExportSource).digest("hex"),
-  "34f9b4d95366c5649bb3c1c53b1655ef128c3a470ce1e0dac87ad1d12bebaf03",
+  "06e5c08eb73702e39e2629fda3253c51b405d5e520cd9d2b8f1d36af01fccebf",
   "certified component export producer source",
 );
 

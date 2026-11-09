@@ -67,7 +67,7 @@ impl EmitsInfo {
 
     pub(super) fn emit(
         &self,
-        ts: &mut String,
+        ts: &mut crate::virtual_ts::TextBuf,
         summary: &Croquis,
         forwards_roots: bool,
         (legacy_vue2, hoist_shared_preamble): (bool, bool),
@@ -158,7 +158,7 @@ pub(super) fn template_model_emit_type(
 }
 
 pub(super) fn emit_emits_type(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     summary: &Croquis,
     mut mappings: MacroTypeMappings<'_>,
     preserve_event_navigation: bool,
@@ -305,7 +305,7 @@ pub(super) fn emit_emits_type(
 }
 
 fn emit_emit_props_helper(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     summary: &Croquis,
     info: &EmitsInfo,
     hoist_shared_preamble: bool,

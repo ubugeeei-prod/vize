@@ -21,6 +21,7 @@ mod jsx_exact_keys;
 mod listener_relations;
 mod loose_emit_sdk;
 mod private_emit_sdk;
+mod projection_text_buffer;
 mod props_fallback_segment;
 mod public_base_keys;
 mod public_instance;

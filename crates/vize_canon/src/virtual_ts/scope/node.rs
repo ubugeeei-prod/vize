@@ -20,7 +20,7 @@ use vize_croquis::drawer::{EventHandlerExpression, classify_event_handler};
 use vize_croquis::{Scope, ScopeData, ScopeKind};
 
 pub(super) fn generate_scope_node(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     mappings: &mut ScopeMappings<'_>,
     ctx: &ScopeGenContext<'_, '_>,
     scope: &Scope,
@@ -265,7 +265,7 @@ pub(super) fn generate_scope_node(
 }
 
 pub(super) fn generate_scope_contents(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     mappings: &mut Vec<VizeMapping>,
     ctx: &ScopeGenContext<'_, '_>,
     scope: &Scope,
@@ -295,7 +295,7 @@ pub(super) fn generate_scope_contents(
 /// Declare what the usages evaluated in `scope_id` resolve through, before
 /// anything in its body reads them.
 pub(super) fn emit_scope_usage_bindings(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     mappings: &mut Vec<VizeMapping>,
     ctx: &ScopeGenContext<'_, '_>,
     scope_id: u32,

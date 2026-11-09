@@ -56,7 +56,7 @@ impl OptionsApiPropsSource {
 
 /// Emit the public prop shape without moving runtime values into type position.
 pub(super) fn emit_options_api_props_type(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     generic_decl: &str,
     source: &OptionsApiPropsSource,
     type_name: &'static str,
@@ -121,7 +121,7 @@ pub(super) fn emit_options_api_props_type(
     }
 }
 
-fn push_default_props(ts: &mut String) {
+fn push_default_props(ts: &mut crate::virtual_ts::TextBuf) {
     append!(
         *ts,
         "{}<{}[\"__default__\"]>",
@@ -130,7 +130,10 @@ fn push_default_props(ts: &mut String) {
     );
 }
 
-pub(crate) fn append_default_props(ts: &mut String, source: &OptionsApiPropsSource) {
+pub(crate) fn append_default_props(
+    ts: &mut crate::virtual_ts::TextBuf,
+    source: &OptionsApiPropsSource,
+) {
     if source.captures_default {
         ts.push_str(" & ");
         push_default_props(ts);

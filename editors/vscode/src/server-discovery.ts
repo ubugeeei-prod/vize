@@ -10,7 +10,11 @@ import { extractReleaseArchive } from "./release-archive.js";
 import { pruneDownloadedServerVersions } from "./server-cache.js";
 import { trustedServerPath, workspaceDevServerPaths } from "./server-trust.js";
 import { serverInvocation } from "./server-command.js";
-import { discoverWorkspaceServers } from "./workspace-server.js";
+import {
+  discoverWorkspaceServers,
+  existingPaths,
+  workspaceServerProbePaths,
+} from "./workspace-server.js";
 import { inspectWorkspaceServerProtocol } from "./workspace-server-protocol.js";
 import type {
   ExtensionRuntimeState,
@@ -41,19 +45,26 @@ export function createServerDiscovery(
     config: ReturnType<typeof workspace.getConfiguration>,
     generation: number,
     workspaceFailure?: string,
+    probeRelease = false,
   ): Promise<string | undefined> {
     const exeName = process.platform === "win32" ? "vize.exe" : "vize";
     const expectedVersion = getExtensionVersion(context);
     let workspaceFallbackReason = workspaceFailure;
     state.selectedServerCandidate = undefined;
 
+    const folders = (workspace.workspaceFolders ?? []).map((folder) => folder.uri.fsPath);
     const local =
       !workspaceFailure && config.get<boolean>("server.preferWorkspace", true)
         ? discoverWorkspaceServers(
-            (workspace.workspaceFolders ?? []).map((folder) => folder.uri.fsPath),
+            folders,
             workspace.isTrusted,
+            process.platform,
+            workspace.isTrusted
+              ? await existingPaths(workspaceServerProbePaths(folders))
+              : undefined,
           )
         : undefined;
+    if (generation !== state.configurationSyncGeneration) return undefined;
     workspaceFallbackReason ??= local?.reason;
 
     function select(candidate: InspectedServerCandidate): string {
@@ -99,7 +110,9 @@ export function createServerDiscovery(
       }
     }
 
-    const candidates = await inspectServerCandidates(collectServerCandidates(context, exeName));
+    const candidates = await inspectServerCandidates(
+      await collectServerCandidates(context, exeName),
+    );
     if (generation !== state.configurationSyncGeneration) return undefined;
 
     if (expectedVersion) {
@@ -117,6 +130,7 @@ export function createServerDiscovery(
         exeName,
         expectedVersion,
         generation,
+        probeRelease,
       );
       if (generation !== state.configurationSyncGeneration) return undefined;
       if (releaseCandidate) {
@@ -135,7 +149,10 @@ export function createServerDiscovery(
     return undefined;
   }
 
-  function collectServerCandidates(context: ExtensionContext, exeName: string): ServerCandidate[] {
+  async function collectServerCandidates(
+    context: ExtensionContext,
+    exeName: string,
+  ): Promise<ServerCandidate[]> {
     const candidates: ServerCandidate[] = [];
 
     const bundledPaths = [
@@ -172,7 +189,11 @@ export function createServerDiscovery(
       }
     }
 
-    return dedupeCandidates(candidates).filter((candidate) => fs.existsSync(candidate.path));
+    // Probe every location at once: on a WSL2 remote, PATH carries the Windows
+    // directories, and each serial existence check is a 9P round trip.
+    const unique = dedupeCandidates(candidates);
+    const exists = await existingPaths(unique.map((candidate) => candidate.path));
+    return unique.filter((candidate) => exists(candidate.path));
   }
 
   function dedupeCandidates(candidates: ServerCandidate[]): ServerCandidate[] {
@@ -280,6 +301,7 @@ export function createServerDiscovery(
     exeName: string,
     expectedVersion: string,
     generation: number,
+    probe = false,
   ): Promise<InspectedServerCandidate | undefined> {
     const target = getReleaseServerTarget();
     if (!target) {
@@ -296,7 +318,7 @@ export function createServerDiscovery(
       target.targetName,
     );
     const serverPath = path.join(installDir, exeName);
-    const cachedCandidate = await inspectCachedReleaseServer(serverPath, expectedVersion);
+    const cachedCandidate = await inspectCachedReleaseServer(serverPath, expectedVersion, probe);
     if (generation !== state.configurationSyncGeneration) return undefined;
     if (cachedCandidate) {
       pruneStaleReleaseServers(context, expectedVersion);
@@ -373,9 +395,20 @@ export function createServerDiscovery(
   async function inspectCachedReleaseServer(
     serverPath: string,
     expectedVersion: string,
+    probe: boolean,
   ): Promise<InspectedServerCandidate | undefined> {
     if (!fs.existsSync(serverPath)) {
       return undefined;
+    }
+    if (!probe) {
+      // The cache directory is keyed by version. The started server's initialize
+      // result confirms it, so activation spawns no separate --version process.
+      return {
+        path: serverPath,
+        source: "release",
+        version: expectedVersion,
+        versionUnconfirmed: true,
+      };
     }
 
     const candidate = await inspectServerCandidate({

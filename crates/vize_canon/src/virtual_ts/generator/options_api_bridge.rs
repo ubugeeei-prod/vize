@@ -37,7 +37,7 @@ use vize_carton::{CompactString, String, append, profile};
 use vize_l0::ts;
 
 pub(super) fn generate_options_api_bridge(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     mappings: &mut Vec<VizeMapping>,
     summary: &Croquis,
     script: &str,
@@ -50,7 +50,7 @@ pub(super) fn generate_options_api_bridge(
 }
 
 fn emit_options_api_bridge(
-    mut ts: &mut String,
+    mut ts: &mut crate::virtual_ts::TextBuf,
     mappings: &mut Vec<VizeMapping>,
     summary: &Croquis,
     script: &str,
@@ -155,7 +155,7 @@ fn emit_options_api_bridge(
 /// generated offset, which `CompositeSourceMap` would then report as if it
 /// were an authored one.
 fn emit_inherited_aliases(
-    mut ts: &mut String,
+    mut ts: &mut crate::virtual_ts::TextBuf,
     mappings: &mut Vec<VizeMapping>,
     inherited: &[InheritedComponent],
     script_offset: usize,
@@ -180,7 +180,7 @@ fn emit_inherited_aliases(
 }
 
 fn emit_bridge_function(
-    mut ts: &mut String,
+    mut ts: &mut crate::virtual_ts::TextBuf,
     mappings: &mut Vec<VizeMapping>,
     function: &OptionsFunction,
     script_offset: usize,
