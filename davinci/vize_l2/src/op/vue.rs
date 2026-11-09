@@ -178,7 +178,6 @@ pub struct VueCloakOp {
 /// legalization spells its calls with it; emission declares the matching
 /// resolver locals.
 #[must_use]
-#[inline]
 pub fn asset_identifier(kind: &str, name: &str) -> String {
     let mut ident = String::from("_");
     ident.push_str(kind);
