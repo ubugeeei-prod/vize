@@ -2987,6 +2987,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "poc-moonbit"
+version = "0.474.0"
+dependencies = [
+ "poc-support",
+ "vize_l0",
+ "vize_l2",
+]
+
+[[package]]
 name = "poc-python"
 version = "0.474.0"
 dependencies = [
