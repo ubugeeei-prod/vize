@@ -37,12 +37,12 @@ try {
   const pinned = pinnedReleaseCandidate();
   const receipt = stageProvider(root, artifactDir, staging, head, target, pinned);
   fs.mkdirSync(path.dirname(output), { recursive: true });
-  run("rust-script", [
-    path.join(root, "tools/commands/editors/vscode/sync-typescript-plugin.rs"),
+  run(process.execPath, [
+    path.join(root, "tools/commands/editors/vscode/sync-typescript-plugin.ts"),
     "stage",
   ]);
-  run("rust-script", [
-    path.join(root, "tools/commands/editors/vscode/run-package-bin.rs"),
+  run(process.execPath, [
+    path.join(root, "tools/commands/editors/vscode/run-package-bin.ts"),
     "@vscode/vsce",
     "vsce",
     "package",
@@ -52,8 +52,8 @@ try {
     "--out",
     output,
   ]);
-  run("rust-script", [
-    path.join(root, "tools/commands/editors/vscode/sync-typescript-plugin.rs"),
+  run(process.execPath, [
+    path.join(root, "tools/commands/editors/vscode/sync-typescript-plugin.ts"),
     "inject",
     output,
   ]);

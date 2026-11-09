@@ -3,6 +3,7 @@ import { testedPackageGroups } from "../tested-package-groups.ts";
 import {
   defineTasks,
   nodeCommand,
+  nodeCommandFromVscodeExtension,
   nodeTool,
   noCacheTask,
   runInPackages,
@@ -18,11 +19,11 @@ import {
 import type { PackagePath } from "../task-helpers.ts";
 import { inTestbox } from "./testbox.ts";
 
-const stageVscodeTypeScriptPlugin = rustToolFromVscodeExtension(
+const stageVscodeTypeScriptPlugin = nodeCommandFromVscodeExtension(
   "editors/vscode/sync-typescript-plugin",
   "stage",
 );
-const injectVscodeTypeScriptPlugin = rustToolFromVscodeExtension(
+const injectVscodeTypeScriptPlugin = nodeCommandFromVscodeExtension(
   "editors/vscode/sync-typescript-plugin",
   "inject",
   "dist/vize.vsix",

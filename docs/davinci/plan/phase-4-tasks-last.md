@@ -280,7 +280,7 @@ _Slices 2026-09-22 (surface, lowering, compile lanes; corpus compile oracle; lin
 
 **Steps:**
 
-- [ ] Weekly workflow running `rust-script tools/commands/davinci/suppression-telemetry.rs` over the hydrated corpus; mapped-rule table extended for migrated rules
+- [ ] Weekly workflow running `node tools/commands/davinci/suppression-telemetry.ts` over the hydrated corpus; mapped-rule table extended for migrated rules
 
 **Acceptance:** TS-38 zero untriaged candidates with full-corpus scope proof; the workflow pinned by a tooling test.
 
