@@ -12,6 +12,8 @@ use oxc_allocator::Allocator;
 use oxc_parser::Parser;
 use oxc_span::SourceType;
 
+use super::super::macro_type_argument::macro_type_argument_span;
+
 /// A declared prop and where it is written.
 pub(super) struct Declaration {
     pub(super) name: vize_l0::CompactString,
@@ -90,24 +92,4 @@ pub(super) fn declarations(ctx: &LintContext<'_>) -> Vec<Declaration> {
         }
     }));
     declarations
-}
-
-fn macro_type_argument_span(
-    source: &str,
-    call: &vize_croquis::macros::MacroCall,
-    setup_shift: u32,
-) -> Option<(u32, u32)> {
-    let type_args = call.type_args.as_deref()?;
-    let authored_start = call.start.saturating_sub(setup_shift) as usize;
-    let authored_end = call.end.saturating_sub(setup_shift) as usize;
-    let authored_call = source.get(authored_start..authored_end)?;
-    let inner = type_args
-        .strip_prefix('<')
-        .and_then(|value| value.strip_suffix('>'))
-        .unwrap_or(type_args);
-    let relative = authored_call.find(inner)? as u32;
-    Some((
-        call.start + relative,
-        call.start + relative + inner.len() as u32,
-    ))
 }

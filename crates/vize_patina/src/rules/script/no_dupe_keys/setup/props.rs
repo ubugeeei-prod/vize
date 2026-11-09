@@ -61,13 +61,18 @@ pub(super) fn names<'s, 'a>(
         if let Some(world) = resolved_type_world
             && let Some(type_source) = source.get(ty.span().start as usize..ty.span().end as usize)
         {
-            names.extend(
-                world
-                    .resolve_properties(type_source)
-                    .properties
-                    .into_iter()
-                    .map(|property| property.name),
-            );
+            let resolved = world.resolve_properties(type_source);
+            if resolved.complete {
+                names.extend(
+                    resolved
+                        .properties
+                        .into_iter()
+                        .filter(|property| {
+                            property.module.as_str() != world.root_module.as_str()
+                        })
+                        .map(|property| property.name),
+                );
+            }
         }
     }
     // Inherited/merged/union type declarations describe one prop namespace.

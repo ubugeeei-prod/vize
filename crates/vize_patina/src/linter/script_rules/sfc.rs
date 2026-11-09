@@ -15,6 +15,13 @@ use crate::rules::script::{
 use vize_atelier_sfc::SfcDescriptor;
 use vize_l0::profile;
 
+fn descriptor_may_have_typed_macros(descriptor: &SfcDescriptor<'_>) -> bool {
+    descriptor.script_setup.as_ref().is_some_and(|block| {
+        let source = block.content.as_ref();
+        source.contains('<') && (source.contains("defineProps") || source.contains("defineEmits"))
+    })
+}
+
 /// Reuse the template pass's validated AST. A missing or fatally malformed
 /// template supplies `None`, so partial trees never become script-rule evidence.
 pub(crate) fn append_builtin_script_diagnostics<'a>(
@@ -260,16 +267,18 @@ pub(crate) fn append_builtin_script_diagnostics_with_template_context<'a>(
         .as_deref()
         .and_then(crate::context::LintContext::analysis)
         .is_some();
-    let owned_type_analysis =
-        (!has_context_analysis && super::has_resolved_macro_type_demand(linter)).then(|| {
-            crate::linter::engine::analyze_descriptor_for_lint(
-                scripts,
-                None,
-                Some(result.filename.as_str()),
-                false,
-                false,
-            )
-        });
+    let owned_type_analysis = (!has_context_analysis
+        && super::has_resolved_macro_type_demand(linter)
+        && descriptor_may_have_typed_macros(descriptor))
+    .then(|| {
+        crate::linter::engine::analyze_descriptor_for_lint(
+            scripts,
+            None,
+            Some(result.filename.as_str()),
+            false,
+            false,
+        )
+    });
     let resolved_type_world = template_context
         .as_deref()
         .and_then(crate::context::LintContext::analysis)

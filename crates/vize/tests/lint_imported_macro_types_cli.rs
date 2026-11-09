@@ -187,3 +187,63 @@ const extra = ref(1);
         ])
     );
 }
+
+#[test]
+fn imported_prop_default_rules_request_the_type_world_independently() {
+    let project = tempfile::tempdir().unwrap();
+    write(
+        project.path(),
+        "src/types.ts",
+        r#"export interface Props {
+  enabled?: boolean;
+  label?: string;
+}
+"#,
+    );
+    write(
+        project.path(),
+        "src/ImportedDefaults.vue",
+        r#"<script setup lang="ts">
+import type { Props } from "./types";
+
+withDefaults(defineProps<Props>(), { enabled: true });
+</script>
+"#,
+    );
+
+    for rule in ["script/no-boolean-default", "script/require-default-prop"] {
+        write(
+            project.path(),
+            "lint.json",
+            &format!(
+                r#"{{"vue":{{"linter":{{"preset":"incremental","rules":{{"{rule}":"error"}}}}}}}}"#,
+            ),
+        );
+        let output = Command::new(env!("CARGO_BIN_EXE_vize"))
+            .current_dir(project.path())
+            .args([
+                "lint",
+                "--config",
+                "lint.json",
+                "--format",
+                "json",
+                "--help-level",
+                "none",
+                "src/ImportedDefaults.vue",
+            ])
+            .output()
+            .unwrap();
+        assert_eq!(
+            output.status.code(),
+            Some(1),
+            "{rule}\nstdout:\n{}\nstderr:\n{}",
+            String::from_utf8_lossy(&output.stdout),
+            String::from_utf8_lossy(&output.stderr),
+        );
+        assert_eq!(output.stderr, b"");
+        let reports: Value = serde_json::from_slice(&output.stdout).unwrap();
+        let messages = reports[0]["messages"].as_array().unwrap();
+        assert_eq!(messages.len(), 1, "{rule}: {messages:?}");
+        assert_eq!(messages[0]["ruleId"], rule);
+    }
+}
