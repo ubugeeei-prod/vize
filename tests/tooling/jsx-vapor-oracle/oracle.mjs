@@ -7,16 +7,8 @@ import { fileURLToPath } from "node:url";
 import { isDeepStrictEqual } from "node:util";
 import { transformSync } from "@babel/core";
 import babelJsx from "@vue/babel-plugin-jsx";
-import {
-  Vue,
-  window,
-  installed,
-  componentFixtures,
-  linkedFunction,
-  materialize,
-  observeChildren,
-  transformVueJsxVapor,
-} from "./runtime.ts";
+import { Vue, window, installed, linkedFunction, transformVueJsxVapor } from "./runtime.ts";
+import { surfaceFixtures, materialize, observeChildren } from "./surface.ts";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const repoRoot = join(here, "..", "..", "..");
@@ -76,8 +68,8 @@ async function trace(code, functionName, spec, runtime = "vapor", authoredModule
   const app = runtime === "vapor" ? Vue.createVaporApp(component) : Vue.createApp(component);
   if (runtime === "vapor" && spec.componentFixtures?.length) app.use(Vue.vaporInteropPlugin);
   for (const fixture of spec.componentFixtures ?? []) {
-    assert.ok(Object.hasOwn(componentFixtures, fixture), `${spec.id}: known component fixture`);
-    app.component(fixture, componentFixtures[fixture]);
+    assert.ok(Object.hasOwn(surfaceFixtures, fixture), `${spec.id}: known component fixture`);
+    app.component(fixture, surfaceFixtures[fixture]);
   }
   const warnings = [];
   app.config.warnHandler = (message) => warnings.push(message);
