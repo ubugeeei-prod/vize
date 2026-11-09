@@ -36,6 +36,14 @@ pub fn record_lanes<R>(f: impl FnOnce() -> R) -> (R, std::vec::Vec<&'static str>
     (result, recorded.unwrap_or_default())
 }
 
+/// Run one production compile on the selected lane, recording its lane
+/// verdicts, and again with the legacy walker pinned.
+pub fn on_both_lanes<R>(compile: impl Fn() -> R) -> (R, std::vec::Vec<&'static str>, R) {
+    let (selected, verdicts) = record_lanes(&compile);
+    let legacy = with_legacy_lane(compile);
+    (selected, verdicts, legacy)
+}
+
 /// The lane a production compile takes on this thread.
 pub(crate) fn production_lane() -> SsrLane {
     if PINNED_LEGACY.with(Cell::get) {

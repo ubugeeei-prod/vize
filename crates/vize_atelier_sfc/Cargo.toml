@@ -28,6 +28,10 @@ davinci-differential = ["legacy-differential"]
 legacy-dom-differential = ["vize_atelier_dom/legacy-differential"]
 # Deprecated published feature spelling; keep as a compatibility alias.
 davinci-dom-differential = ["legacy-dom-differential"]
+# Exposes `ssr_differential`, the production-entry SSR lane comparison the SSR
+# corpus gate and the reducer divergence predicate share. Callers pin the lanes
+# (`vize_atelier_ssr/legacy-differential`), so this feature arms nothing.
+ssr-production-comparison = []
 # Controlled selected/retained adapter comparisons, without the retained-AST
 # differential dual-run instrumentation used by semantic corpus tests.
 davinci-production-bench = [

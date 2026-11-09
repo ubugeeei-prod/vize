@@ -56,6 +56,9 @@ pub mod native_ssr;
 mod native_ssr_setup;
 pub mod rewrite_default;
 pub mod script;
+#[cfg(feature = "ssr-production-comparison")]
+#[doc(hidden)]
+pub mod ssr_differential;
 pub mod style;
 pub mod types;
 pub mod vite_plugin;

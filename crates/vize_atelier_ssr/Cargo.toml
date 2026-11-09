@@ -38,7 +38,7 @@ davinci_harness = { workspace = true }
 davinci_test_support = { workspace = true, features = ["ssr"] }
 insta = { workspace = true }
 serde_json = { workspace = true }
-vize_atelier_sfc = { workspace = true }
+vize_atelier_sfc = { workspace = true, features = ["ssr-production-comparison"] }
 
 [lints]
 workspace = true
@@ -53,6 +53,11 @@ required-features = ["legacy-differential"]
 
 [[test]]
 name = "davinci_ssr_production_cases"
+required-features = ["legacy-differential"]
+
+# `vize reduce --script` predicate for real-project SSR divergences.
+[[example]]
+name = "ssr_lane_divergence"
 required-features = ["legacy-differential"]
 
 [package.metadata.cargo-semver-checks.lints]
