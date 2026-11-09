@@ -34,6 +34,7 @@ pub mod profile;
 pub mod render;
 pub mod surface;
 pub mod token;
+pub mod tsrx;
 
 pub use directive::{
     ArgSyntax, DirectiveName, DirectiveNameError, DirectivePrefix, DirectiveSyntax, VueDirectives,

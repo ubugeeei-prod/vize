@@ -284,6 +284,14 @@ impl<'a, C: Config> Lexer<'a, C> {
         self.finish_next(kind)
     }
 
+    /// Move to `offset` and read the ordinary token that starts there or after trivia.
+    /// Returns `None` when `offset` is out of bounds or not on a character boundary.
+    pub(crate) fn seat(&mut self, offset: u32) -> Option<Token> {
+        let position = self.source.position_at(offset)?;
+        self.source.set_position(position);
+        Some(self.next_token())
+    }
+
     /// Read the next token after `=` in a JSX attribute.
     pub(crate) fn next_jsx_attribute_value(&mut self) -> Token {
         let kind = self.read_next_jsx_attribute_value();

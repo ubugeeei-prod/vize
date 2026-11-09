@@ -1,6 +1,6 @@
 //! JavaScript Parsing Functions
 
-mod grammar;
+pub(crate) mod grammar;
 
 mod arrow;
 mod binding;

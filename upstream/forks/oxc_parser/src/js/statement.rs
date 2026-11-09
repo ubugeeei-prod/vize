@@ -170,6 +170,9 @@ impl<'a, C: Config> ParserImpl<'a, C> {
             Kind::Function => {
                 self.parse_function_declaration(self.start_span(), /* async */ false, stmt_ctx)
             }
+            Kind::At if self.at_markup_directive(crate::MarkupSite::Expression) => {
+                self.parse_expression_or_labeled_statement()
+            }
             Kind::At => self.parse_decorated_statement(stmt_ctx),
             Kind::Let if !self.cur_token().escaped() => self.parse_let(stmt_ctx),
             Kind::Async => self.parse_async_statement(self.start_span(), stmt_ctx),
