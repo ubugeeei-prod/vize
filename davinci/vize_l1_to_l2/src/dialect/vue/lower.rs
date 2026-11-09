@@ -47,6 +47,26 @@ pub use text::{
 };
 pub(crate) use text::{legacy_slot_filler_needs_props_placeholder, legacy_slot_filler_text};
 
+#[derive(Clone, Copy)]
+pub(crate) struct LowerPolicy {
+    preserve_comments: bool,
+    retain_consumed_expressions: bool,
+}
+
+impl LowerPolicy {
+    pub(crate) const fn compile(preserve_comments: bool) -> Self {
+        Self {
+            preserve_comments,
+            retain_consumed_expressions: false,
+        }
+    }
+
+    const LINT: Self = Self {
+        preserve_comments: true,
+        retain_consumed_expressions: true,
+    };
+}
+
 /// Whether directive values carry `name: expression` clauses instead of a
 /// separate argument token. Kept in the physically Vue-owned policy module so
 /// neutral lowering modules consume a resolved fact without naming a version.
@@ -165,8 +185,7 @@ pub fn lower_preserving_comments<'a>(
         tree,
         errors,
         LegacyCaps::VUE3,
-        true,
-        true,
+        LowerPolicy::LINT,
         &[],
         None,
     )
@@ -177,8 +196,7 @@ pub(crate) fn lower_with_caps_and_comment_policy<'a, P: ProvenanceSink + Default
     tree: &SurfaceTree<'a>,
     errors: &[SurfaceError],
     caps: LegacyCaps,
-    preserve_comments: bool,
-    retain_consumed_expressions: bool,
+    policy: LowerPolicy,
     custom_element_patterns: &[String],
     custom_element_predicate: Option<fn(&str) -> bool>,
 ) -> Lowered<'a, P> {
@@ -195,8 +213,7 @@ pub(crate) fn lower_with_caps_and_comment_policy<'a, P: ProvenanceSink + Default
         errors,
         root.whole_block(),
         caps,
-        preserve_comments,
-        retain_consumed_expressions,
+        policy,
         custom_elements,
     )
 }
@@ -227,8 +244,7 @@ pub fn lower_source_block_with_caps<'a>(
         errors,
         block,
         caps,
-        false,
-        false,
+        LowerPolicy::compile(false),
         LowerCustomElements::default(),
     )
 }
@@ -245,8 +261,7 @@ fn lower_source_block_with_caps_and_comment_policy<'a, P: ProvenanceSink + Defau
     errors: &[SurfaceError],
     block: SourceBlock<'a>,
     caps: LegacyCaps,
-    preserve_comments: bool,
-    retain_consumed_expressions: bool,
+    policy: LowerPolicy,
     custom_elements: LowerCustomElements<'_>,
 ) -> Lowered<'a, P> {
     debug_assert!(
@@ -258,8 +273,7 @@ fn lower_source_block_with_caps_and_comment_policy<'a, P: ProvenanceSink + Defau
         allocator,
         block,
         caps,
-        preserve_comments,
-        retain_consumed_expressions,
+        policy,
         custom_elements.patterns,
         custom_elements.predicate,
     );

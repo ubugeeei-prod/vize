@@ -14,7 +14,7 @@ use vize_l0::{Allocator, String, ensure_sufficient_stack};
 use vize_l1::markup::{SurfaceParseOptions, parse_with_options_and_caps};
 use vize_l2::dump::{Page as L2Page, ProvenancePage};
 
-use crate::lower::{LegacyCaps, Lowered, lower_with_caps_and_comment_policy};
+use crate::lower::{LegacyCaps, LowerPolicy, Lowered, lower_with_caps_and_comment_policy};
 use crate::pass::{TransformProfile, run_transform_with_pass_hook};
 
 use super::super::EmitError;
@@ -219,8 +219,7 @@ pub(super) fn emit_dom_source_captured<'a, O: PassObserver, C: CaptureSink>(
             &tree,
             &errors,
             caps,
-            options.comments,
-            false,
+            LowerPolicy::compile(options.comments),
             options.custom_element_patterns,
             options.custom_element_predicate,
         );

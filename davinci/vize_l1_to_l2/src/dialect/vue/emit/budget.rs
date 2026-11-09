@@ -5,7 +5,7 @@ use vize_l0::{Allocator, TemplateSyntaxMode, ensure_sufficient_stack};
 use vize_l1::markup::{SurfaceParseOptions, parse_with_options_and_caps};
 use vize_l2::provenance::NoProvenance;
 
-use crate::lower::{LegacyCaps, lower_with_caps_and_comment_policy};
+use crate::lower::{LegacyCaps, LowerPolicy, lower_with_caps_and_comment_policy};
 use crate::pass::{TransformProfile, run_dom_transform_with_profile};
 
 use super::run::{DomEmitObservation, emit_dom_observed};
@@ -264,8 +264,7 @@ pub(super) fn emit_dom_source_with_options_and_observer<'a, O: PassObserver>(
             &tree,
             &errors,
             caps,
-            options.comments,
-            false,
+            LowerPolicy::compile(options.comments),
             options.custom_element_patterns,
             options.custom_element_predicate,
         );

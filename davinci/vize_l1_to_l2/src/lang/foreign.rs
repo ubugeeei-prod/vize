@@ -42,8 +42,14 @@ pub fn lower_source_block_with_foreign_expressions<'a>(
             && tree.source.len() == block.source().len(),
         "L1 and L0 must describe the same block"
     );
-    let mut cx =
-        Cx::with_source_block_and_comment_policy(allocator, block, caps, false, false, &[], None);
+    let mut cx = Cx::with_source_block_and_comment_policy(
+        allocator,
+        block,
+        caps,
+        super::LowerPolicy::compile(false),
+        &[],
+        None,
+    );
     cx.foreign_dialect = Some(dialect);
     lower_in_context(cx, tree, errors, block)
 }

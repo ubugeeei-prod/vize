@@ -140,21 +140,26 @@ fn decode_html_entities(source: &str, context: EntityContext) -> vize_l0::String
         decoded.push_str(literal);
 
         if context == EntityContext::Text
-            && let Some((character, consumed)) = decode_escaped_numeric_parenthesis(candidate)
+            && let Some((character, after)) = decode_escaped_numeric_parenthesis(candidate)
+                .and_then(|(character, consumed)| {
+                    candidate.get(consumed..).map(|after| (character, after))
+                })
         {
             decoded.push(character);
-            rest = &candidate[consumed..];
+            rest = after;
             continue;
         }
 
-        if let Some((entity, consumed)) = decode_one(candidate.as_bytes(), context) {
+        if let Some((entity, after)) = decode_one(candidate.as_bytes(), context)
+            .and_then(|(entity, consumed)| candidate.get(consumed..).map(|after| (entity, after)))
+        {
             entity.for_each(|character| decoded.push(character));
-            rest = &candidate[consumed..];
+            rest = after;
             continue;
         }
 
         decoded.push('&');
-        rest = &candidate[1..];
+        rest = candidate.strip_prefix('&').unwrap_or(candidate);
     }
     decoded.push_str(rest);
     decoded
