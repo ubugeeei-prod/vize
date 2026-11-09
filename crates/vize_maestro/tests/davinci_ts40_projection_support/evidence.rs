@@ -1,6 +1,7 @@
 //! Authenticate the complete packets behind the reviewed #10933 transition.
 
 mod receipt;
+mod setup_verbatim_lines;
 mod unowned_owned_keys;
 
 use super::{capture_fixture, load_matrix, normalize::sha256};
@@ -270,7 +271,7 @@ fn public_instance_slot_packets_remain_authenticated() {
         .expect("reviewed Options API slot fixture");
     assert_eq!(
         capture_fixture(fixture).render().as_str(),
-        unowned_successor
+        setup_verbatim_lines::slots(unowned_successor)
     );
 }
 #[test]

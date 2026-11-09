@@ -1,5 +1,6 @@
 //! Module-scope facts collected from normal Vue `<script>` blocks.
 
+mod literal_lines;
 mod namespace_hoist;
 mod navigation;
 mod plain_exports;
@@ -28,10 +29,17 @@ pub(super) struct ScriptModulePlan {
     pub(super) bound_types: FxHashSet<CompactString>,
     pub(super) identifier_usage: IdentifierUsage,
     pub(super) tsx_arrows: Vec<tsx_arrows::ArrowComma>,
+    /// Multi-line authored literals; their continuation lines are copied verbatim.
+    pub(super) literal_lines: Vec<(u32, u32)>,
     complete_type_bindings: bool,
 }
 
 impl ScriptModulePlan {
+    /// Whether `offset` is inside a multi-line authored literal.
+    pub(super) fn inside_literal(&self, offset: usize) -> bool {
+        literal_lines::inside(&self.literal_lines, offset)
+    }
+
     /// A relation moved into the helper module must keep the same utility types.
     /// Reuse this projection's syntax facts; uncertain scopes retain local aliases.
     pub(super) fn shares_listener_relations(
@@ -235,6 +243,7 @@ pub(super) fn collect_script_module_plan(
         bound_types,
         identifier_usage: collect_identifier_usage(&parsed.program),
         tsx_arrows,
+        literal_lines: literal_lines::collect(&parsed.program, script),
         complete_type_bindings,
     }
 }
