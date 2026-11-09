@@ -21,9 +21,6 @@
 use crate::context::{ElementContext, LintContext};
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use oxc_allocator::Allocator;
-use oxc_parser::Parser;
-use oxc_span::{ContentEq, SourceType};
 use vize_croquis::drawer::{extract_identifier_refs_retained_only, parse_v_for_scope_expression};
 use vize_l0::{String, ToCompactString, is_native_tag};
 use vize_relief::{
@@ -265,43 +262,15 @@ fn same_loop_scope(left: &LoopScopedSlot, right: &LoopScopedSlot) -> bool {
         || left.uses_index != right.uses_index
         || (left.uses_key && left.key_alias != right.key_alias)
         || (left.uses_index && left.index_alias != right.index_alias)
-        || !expressions_content_equal(&left.source, &right.source)
+        || left.source != right.source
     {
         return false;
     }
 
-    !left.uses_value || binding_patterns_content_equal(&left.value_pattern, &right.value_pattern)
-}
-
-fn expressions_content_equal(left: &str, right: &str) -> bool {
-    let allocator = Allocator::default();
-    let source_type = SourceType::ts();
-    let (Ok(left), Ok(right)) = (
-        Parser::new(&allocator, left, source_type).parse_expression(),
-        Parser::new(&allocator, right, source_type).parse_expression(),
-    ) else {
-        return false;
-    };
-    left.content_eq(&right)
-}
-
-fn binding_patterns_content_equal(left: &str, right: &str) -> bool {
-    let wrap = |pattern: &str| {
-        let mut source = String::with_capacity("let [] = source".len() + pattern.len());
-        source.push_str("let [");
-        source.push_str(pattern);
-        source.push_str("] = source");
-        source
-    };
-    let (left_source, right_source) = (wrap(left), wrap(right));
-    let allocator = Allocator::default();
-    let source_type = SourceType::ts();
-    let left = Parser::new(&allocator, &left_source, source_type).parse();
-    let right = Parser::new(&allocator, &right_source, source_type).parse();
-    if !left.diagnostics.is_empty() || !right.diagnostics.is_empty() {
-        return false;
-    }
-    left.program.content_eq(&right.program)
+    // These strings are the centralized v-for parser's selected source and
+    // binding-pattern projections. Exact equality is intentionally
+    // conservative: uncertain spellings keep the pre-existing duplicate.
+    !left.uses_value || left.value_pattern == right.value_pattern
 }
 
 fn owner_default_slot_directive<'a>(element: &'a ElementNode<'a>) -> Option<&'a DirectiveNode<'a>> {
