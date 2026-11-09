@@ -162,10 +162,90 @@ pub(super) fn build_materialized_session_document_uri(`,
             }`,
   },
   {
+    // Shared retained texts (#12340) retype the editor document maps.
+    path: "crates/vize_canon/src/lsp_client/editor_lsp/client.rs",
+    before:
+      "use super::{CorsaProjectClient, EditorLspSession, retry::retry_transient_editor_request};\n",
+    after:
+      "use super::{CorsaProjectClient, EditorLspSession, retry::retry_transient_editor_request};\nuse crate::lsp_client::shared_text::DocumentTexts;\n",
+  },
+  {
+    path: "crates/vize_canon/src/lsp_client/editor_lsp/client.rs",
+    before:
+      "        document_uri: &str,\n        documents: &FxHashMap<String, String>,\n    ) -> Result<DocumentDiagnosticReportResult, String> {",
+    after:
+      "        document_uri: &str,\n        documents: &DocumentTexts,\n    ) -> Result<DocumentDiagnosticReportResult, String> {",
+  },
+  {
+    path: "crates/vize_canon/src/lsp_client/editor_lsp/client.rs",
+    before:
+      "                let mut documents = self.document_texts.clone();\n                documents.insert(uri.into(), text.into());\n                return self.request_with_editor_lsp_documents_recovery(&documents, |session| {",
+    after:
+      "                let mut documents = self.document_texts.clone();\n                documents.insert(uri.into(), String::from(text).into());\n                return self.request_with_editor_lsp_documents_recovery(&documents, |session| {",
+  },
+  {
+    path: "crates/vize_canon/src/lsp_client/editor_lsp/client.rs",
+    before:
+      "        &mut self,\n        documents: &FxHashMap<String, String>,\n        mut request: impl FnMut(&mut EditorLspSession) -> Result<T, String>,",
+    after:
+      "        &mut self,\n        documents: &DocumentTexts,\n        mut request: impl FnMut(&mut EditorLspSession) -> Result<T, String>,",
+  },
+  {
+    path: "crates/vize_canon/src/lsp_client/editor_lsp/client.rs",
+    before:
+      "        &mut self,\n        documents: &FxHashMap<String, String>,\n    ) -> Result<&mut EditorLspSession, String> {",
+    after:
+      "        &mut self,\n        documents: &DocumentTexts,\n    ) -> Result<&mut EditorLspSession, String> {",
+  },
+  {
+    path: "crates/vize_canon/src/lsp_client/editor_lsp/client.rs",
+    before:
+      "    /// Every retained document under the same identity used by native queries.\n    pub(in crate::lsp_client) fn editor_documents(&mut self) -> FxHashMap<String, String> {\n        let retained = self",
+    after:
+      "    /// Every retained document under the same identity used by native queries.\n    pub(in crate::lsp_client) fn editor_documents(&mut self) -> DocumentTexts {\n        let retained = self",
+  },
+  {
+    path: "crates/vize_canon/src/lsp_client/editor_lsp/client.rs",
+    before:
+      "\nfn document_maps_equal(lhs: &FxHashMap<String, String>, rhs: &FxHashMap<String, String>) -> bool {\n    lhs.len() == rhs.len()",
+    after:
+      "\nfn document_maps_equal(lhs: &DocumentTexts, rhs: &DocumentTexts) -> bool {\n    lhs.len() == rhs.len()",
+  },
+  {
     // Checked access retains the exact open-URI owner selected by binary_search.
     path: "crates/vize_maestro/src/ide/corsa_support/authored_uri.rs",
     before: "            return Some(self.open_uris[index].clone());",
     after: "            return self.open_uris.get(index).cloned();",
+  },
+  {
+    // Shared retained texts (#12340) retype this reader's document map.
+    path: "crates/vize_canon/src/lsp_client/editor_lsp/component_types.rs",
+    before:
+      '        let mut capture = capture::Capture::new();\n        let matched = self.document_texts.get(uri).map(String::as_str) == Some(source);\n        capture.record("clientSourceAdmission", || {',
+    after:
+      '        let mut capture = capture::Capture::new();\n        let matched = self\n            .document_texts\n            .get(uri)\n            .map(super::super::shared_text::RetainedText::as_str)\n            == Some(source);\n        capture.record("clientSourceAdmission", || {',
+  },
+  {
+    // Shared retained texts (#12340) retype this reader's document map.
+    path: "crates/vize_canon/src/lsp_client/materialized_refresh.rs",
+    before:
+      '                uri.clone(),\n                vize_l0::String::from("export const value = 1;"),\n            )]);',
+    after:
+      '                uri.clone(),\n                crate::lsp_client::shared_text::RetainedText::from("export const value = 1;"),\n            )]);',
+  },
+  {
+    // Shared retained texts (#12340) retype this reader's document map.
+    path: "crates/vize_canon/src/lsp_client/session/logical.rs",
+    before:
+      "use crate::file_uri::file_uri_to_path;\nuse std::path::Component;\nuse vize_l0::{FxHashMap, String, cstr};\n",
+    after:
+      "use crate::file_uri::file_uri_to_path;\nuse crate::lsp_client::shared_text::DocumentTexts;\nuse std::path::Component;\nuse vize_l0::{String, cstr};\n",
+  },
+  {
+    path: "crates/vize_canon/src/lsp_client/session/logical.rs",
+    before:
+      "        &self,\n        documents: &FxHashMap<String, String>,\n    ) -> Result<(), String> {",
+    after: "        &self,\n        documents: &DocumentTexts,\n    ) -> Result<(), String> {",
   },
 ] as const;
 
@@ -176,8 +256,9 @@ export function historicalNativeIdentityCurrentSources(read: Read): Read {
   let headImages: Record<string, unknown> | undefined;
   return (side, path) => {
     const current = read(side, path);
-    const transition = currentSourceTransitions.find((entry) => entry.path === path);
-    if (side !== "head" || !current || !transition) return current;
+    // Later reviewed edits of one source extend its first transition in order.
+    const transitions = currentSourceTransitions.filter((entry) => entry.path === path);
+    if (side !== "head" || !current || transitions.length === 0) return current;
     if (!headImages) {
       const profile = profiles[2]!;
       const archive = bytes(read, "head", profile.path);
@@ -194,19 +275,24 @@ export function historicalNativeIdentityCurrentSources(read: Read): Read {
     const encoded = headImages[path];
     assert.ok(typeof encoded === "string");
     const original = Buffer.from(encoded, "base64");
-    const before = original.toString("utf8");
-    assert.equal(before.split(transition.before).length, 2);
-    assert.equal(before.split(transition.after).length, 1);
-    const expected = Buffer.from(before.replace(transition.before, transition.after));
+    let expected = original.toString("utf8");
+    for (const transition of transitions) {
+      assert.equal(expected.split(transition.before).length, 2);
+      assert.equal(expected.split(transition.after).length, 1);
+      expected = expected.replace(transition.before, () => transition.after);
+    }
     // Unknown bytes stay actual bytes, so the unchanged source gate refuses them.
-    if (!current.equals(expected)) return current;
-    const after = current.toString("utf8");
-    assert.equal(after.split(transition.after).length, 2);
-    assert.equal(
-      after.split(transition.before).length,
-      transition.after.split(transition.before).length,
-    );
-    assert.deepEqual(Buffer.from(after.replace(transition.after, transition.before)), original);
+    if (!current.equals(Buffer.from(expected))) return current;
+    let after = current.toString("utf8");
+    for (const transition of [...transitions].reverse()) {
+      assert.equal(after.split(transition.after).length, 2);
+      assert.equal(
+        after.split(transition.before).length,
+        transition.after.split(transition.before).length,
+      );
+      after = after.replace(transition.after, () => transition.before);
+    }
+    assert.deepEqual(Buffer.from(after), original);
     return original;
   };
 }
