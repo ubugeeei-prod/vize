@@ -14,9 +14,14 @@ use super::{
     CorsaProjectClient, diagnostics_lsp::initialize_lsp_client,
     language_id::for_uri as language_id_for_uri,
 };
+use crate::lsp_client::shared_text::{DocumentTexts, RetainedText};
 use corsa::runtime::block_on;
-use corsa_lsp::{LspClient, LspOverlay, LspSpawnConfig, VirtualDocument};
-use lsp_types::{DocumentDiagnosticReportResult, Uri};
+use corsa_lsp::{LspClient, LspSpawnConfig};
+use lsp_types::notification::{DidChangeTextDocument, DidOpenTextDocument};
+use lsp_types::{
+    DidChangeTextDocumentParams, DidOpenTextDocumentParams, DocumentDiagnosticReportResult,
+    TextDocumentContentChangeEvent, TextDocumentItem, Uri, VersionedTextDocumentIdentifier,
+};
 use serde_json::Value;
 use std::{
     path::Path,
@@ -67,7 +72,6 @@ use responder::spawn_responder;
 /// requests.
 pub(super) struct EditorLspSession {
     client: LspClient,
-    overlay: LspOverlay,
     stop: Arc<AtomicBool>,
     responder: Option<std::thread::JoinHandle<()>>,
     configured_api: Option<project_configuration::DiagnosingApi>,
@@ -76,7 +80,10 @@ pub(super) struct EditorLspSession {
     /// use acknowledged Shutdown followed by EOF instead of an Exit race.
     shutdown_to_eof: bool,
     /// Last text mirrored into the server, keyed by session document URI.
-    documents: FxHashMap<String, String>,
+    documents: DocumentTexts,
+    /// Protocol version of each open document. The text lives only in
+    /// `documents`; notifications are written from it directly.
+    versions: FxHashMap<String, i32>,
     /// Exact source owner and delivered revision for mutation-owned deltas.
     tracked_documents: Option<super::tracked_documents::DocumentCheckpoint>,
     issued_completions: completion_resolve::IssuedCompletions,
@@ -117,7 +124,6 @@ impl EditorLspSession {
         crate::corsa_session_cache::note_typescript_project_init();
 
         Ok(Self {
-            overlay: client.overlay(),
             client,
             stop,
             responder: Some(responder),
@@ -125,6 +131,7 @@ impl EditorLspSession {
             closed: false,
             shutdown_to_eof,
             documents: Default::default(),
+            versions: Default::default(),
             tracked_documents: None,
             issued_completions: Default::default(),
             document_generation: 0,
@@ -136,31 +143,50 @@ impl EditorLspSession {
     }
 
     /// Mirror `text` into the server, opening the document on first sight.
-    fn mirror(&mut self, document_uri: &str, text: &str) -> Result<Uri, String> {
+    fn mirror(&mut self, document_uri: &str, text: impl Into<RetainedText>) -> Result<Uri, String> {
+        let text: RetainedText = text.into();
         let uri = Uri::from_str(document_uri)
             .map_err(|error| cstr!("Invalid LSP document URI {document_uri}: {error}"))?;
         match self.documents.get(document_uri) {
-            Some(previous) if previous.as_str() == text => return Ok(uri),
+            Some(previous) if *previous == text => return Ok(uri),
             Some(_) => {
                 self.tracked_documents = None;
-                self.overlay.replace(&uri, text).map_err(|error| {
-                    cstr!("Failed to update editor LSP overlay for {document_uri}: {error}")
-                })?;
+                let version = self
+                    .versions
+                    .get(document_uri)
+                    .map_or(1, |version| version.saturating_add(1));
+                self.client
+                    .notify::<DidChangeTextDocument>(DidChangeTextDocumentParams {
+                        text_document: VersionedTextDocumentIdentifier::new(uri.clone(), version),
+                        content_changes: vec![TextDocumentContentChangeEvent {
+                            range: None,
+                            range_length: None,
+                            text: text.as_str().into(),
+                        }],
+                    })
+                    .map_err(|error| {
+                        cstr!("Failed to update editor LSP overlay for {document_uri}: {error}")
+                    })?;
+                self.versions.insert(document_uri.into(), version);
             }
             None => {
                 self.tracked_documents = None;
-                self.overlay
-                    .open(VirtualDocument::new(
-                        uri.clone(),
-                        language_id_for_uri(document_uri),
-                        text,
-                    ))
+                self.client
+                    .notify::<DidOpenTextDocument>(DidOpenTextDocumentParams {
+                        text_document: TextDocumentItem::new(
+                            uri.clone(),
+                            language_id_for_uri(document_uri).into(),
+                            1,
+                            text.as_str().into(),
+                        ),
+                    })
                     .map_err(|error| {
                         cstr!("Failed to open editor LSP overlay for {document_uri}: {error}")
                     })?;
+                self.versions.insert(document_uri.into(), 1);
             }
         }
-        self.documents.insert(document_uri.into(), text.into());
+        self.documents.insert(document_uri.into(), text);
         self.dirty_documents.insert(document_uri.into());
         self.advance_document_generation();
         Ok(uri)

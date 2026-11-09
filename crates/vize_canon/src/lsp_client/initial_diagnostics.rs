@@ -7,6 +7,7 @@ use corsa::api::{ApiClient, CapabilitiesResponse, ManagedSnapshot, ProjectRespon
 use vize_l0::{FxHashMap, String, cstr};
 
 use super::{CorsaProjectClient, PhasedDiagnostic};
+use crate::lsp_client::shared_text::DocumentTexts;
 
 mod diagnostic_response;
 mod read_view;
@@ -24,7 +25,7 @@ pub(crate) struct InitialDiagnosticsRead {
     explicit_config: Option<PathBuf>,
     uri: String,
     document_uri: String,
-    documents: FxHashMap<String, String>,
+    documents: DocumentTexts,
     external_document_uris: FxHashMap<String, String>,
     file_supported: bool,
     project_supported: bool,

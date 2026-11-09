@@ -233,7 +233,12 @@ impl CorsaProjectClient {
                 return Ok(());
             }
         }
-        self.did_open_batch_fast(&documents)?;
+        for payload in &batch.additions {
+            self.shared_payloads.register(payload);
+        }
+        let opened = self.did_open_batch_fast(&documents);
+        self.shared_payloads.clear();
+        opened?;
         if self.canon_batches.synchronized
             && let Some(paths) = self.canon_batch_paths(&documents)
         {

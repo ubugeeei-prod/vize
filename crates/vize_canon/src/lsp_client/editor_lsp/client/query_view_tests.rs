@@ -2,9 +2,9 @@
 
 use super::{CorsaProjectClient, FxHashMap};
 use crate::file_uri::path_to_file_uri;
+use crate::lsp_client::shared_text::RetainedText;
 use serde_json::{Value, json};
 use std::{fs, os::unix::fs::PermissionsExt};
-use vize_l0::String;
 
 #[test]
 fn direct_query_mirrors_restore_the_full_retained_view_before_an_unrelated_edit() {
@@ -99,11 +99,14 @@ fn logical_query_subsets_preserve_retained_buffers_but_explicit_close_removes_th
     let virtual_uri = path_to_file_uri(&root.join("Virtual.vue.ts"));
     let transient = path_to_file_uri(&root.join("closed-query.ts"));
     let retained = FxHashMap::from_iter([
-        (main.clone(), String::from("export const main = 1;")),
-        (support.clone(), String::from("export const support = 2;")),
+        (main.clone(), RetainedText::from("export const main = 1;")),
+        (
+            support.clone(),
+            RetainedText::from("export const support = 2;"),
+        ),
         (
             virtual_uri.clone(),
-            String::from("export const virtualValue = 3;"),
+            RetainedText::from("export const virtualValue = 3;"),
         ),
     ]);
     client.document_texts = retained.clone().into();

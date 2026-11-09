@@ -70,7 +70,7 @@ fn a_foreign_owner_or_replaced_source_cannot_borrow_a_checkpoint() {
     let checkpoint = original.acknowledge();
     assert!(source().changes_since(Some(checkpoint)).is_none());
     assert!(original.clone().changes_since(Some(checkpoint)).is_none());
-    let replacement = TrackedDocumentTexts::from(FxHashMap::from_iter([(
+    let replacement = TrackedDocumentTexts::from(FxHashMap::<String, String>::from_iter([(
         "file:///a.ts".into(),
         "replacement".into(),
     )]));

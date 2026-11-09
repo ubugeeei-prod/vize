@@ -1,11 +1,15 @@
 //! Bounded editor-overlay synchronization for large project surfaces.
 
-use lsp_types::Uri;
+use lsp_types::notification::DidCloseTextDocument;
+use lsp_types::{DidCloseTextDocumentParams, TextDocumentIdentifier, Uri};
 use std::str::FromStr;
-use vize_l0::{FxHashMap, FxHashSet, String, cstr};
+use vize_l0::{FxHashSet, String, cstr};
 
 use super::EditorLspSession;
+use crate::lsp_client::shared_text::{DocumentTexts, RetainedText};
 use crate::lsp_client::tracked_documents::TrackedDocumentTexts;
+#[cfg(test)]
+use vize_l0::FxHashMap;
 
 /// Stay comfortably below the transport's bounded outbound notification queue.
 /// A response-backed symbol request drains preceding notifications.
@@ -14,10 +18,7 @@ const NOTIFICATIONS_PER_BARRIER: usize = 128;
 impl EditorLspSession {
     /// Bring the reusable editor transport to the same virtual-project view as
     /// the project-session transport, including dependency removals.
-    pub(super) fn synchronize(
-        &mut self,
-        documents: &FxHashMap<String, String>,
-    ) -> Result<(), String> {
+    pub(super) fn synchronize(&mut self, documents: &DocumentTexts) -> Result<(), String> {
         self.tracked_documents = None;
         self.synchronize_selected(documents, None)
     }
@@ -34,7 +35,7 @@ impl EditorLspSession {
 
     fn synchronize_selected(
         &mut self,
-        documents: &FxHashMap<String, String>,
+        documents: &DocumentTexts,
         changes: Option<&FxHashSet<String>>,
     ) -> Result<(), String> {
         let phase =
@@ -84,9 +85,15 @@ impl EditorLspSession {
     fn close_mirrored_document(&mut self, document_uri: &str) -> Result<(), String> {
         let uri = parse_document_uri(document_uri)?;
         self.tracked_documents = None;
-        self.overlay.close(&uri).map_err(|error| {
-            cstr!("Failed to close editor LSP overlay for {document_uri}: {error}")
-        })?;
+        if self.versions.remove(document_uri).is_some() {
+            self.client
+                .notify::<DidCloseTextDocument>(DidCloseTextDocumentParams {
+                    text_document: TextDocumentIdentifier::new(uri),
+                })
+                .map_err(|error| {
+                    cstr!("Failed to close editor LSP overlay for {document_uri}: {error}")
+                })?;
+        }
         self.documents.remove(document_uri);
         self.dirty_documents.remove(document_uri);
         self.query_barrier_required = true;
@@ -115,10 +122,10 @@ impl EditorLspSession {
 }
 
 fn selected_documents<'a>(
-    documents: &'a FxHashMap<String, String>,
-    mirrored: &FxHashMap<String, String>,
+    documents: &'a DocumentTexts,
+    mirrored: &DocumentTexts,
     changes: Option<&FxHashSet<String>>,
-) -> (Vec<(&'a String, &'a String)>, Vec<String>) {
+) -> (Vec<(&'a String, &'a RetainedText)>, Vec<String>) {
     match changes {
         Some(changes) => (
             changes
@@ -153,7 +160,7 @@ fn parse_document_uri(document_uri: &str) -> Result<Uri, String> {
 mod tests {
     use super::*;
 
-    fn rows() -> FxHashMap<String, String> {
+    fn rows() -> DocumentTexts {
         FxHashMap::from_iter([
             ("file:///a.ts".into(), "a".into()),
             ("file:///b.ts".into(), "b".into()),

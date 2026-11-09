@@ -38,6 +38,7 @@ mod retained_text_tests;
 mod session;
 mod session_paths;
 mod session_storage;
+mod shared_text;
 mod tracked_documents;
 pub use editor_lsp::snapshot_source;
 mod utils;
@@ -80,6 +81,8 @@ pub struct CorsaProjectClient {
     document_texts: tracked_documents::TrackedDocumentTexts,
     canon_file_cache: canon_file_cache::CanonFileCache,
     canon_batches: immutable_batch::CanonBatchCache,
+    /// Payloads of the immutable batch being opened, shared by retained texts.
+    shared_payloads: retained_text::SharedPayloads,
     /// Mapping from caller-facing URIs to the session-local URIs Corsa sees.
     session_document_uris: FxHashMap<String, String>,
     /// Reverse mapping used to translate API responses back to caller-facing URIs.
@@ -153,6 +156,7 @@ impl CorsaProjectClient {
             document_texts: Default::default(),
             canon_file_cache: Default::default(),
             canon_batches: Default::default(),
+            shared_payloads: Default::default(),
             session_document_uris: Default::default(),
             external_document_uris: Default::default(),
             editor_lsp: None,

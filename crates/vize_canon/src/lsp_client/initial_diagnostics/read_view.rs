@@ -7,6 +7,7 @@ use super::super::{
     session::uri_document_identifier,
 };
 use super::{InitialDiagnosticsRead, native_diagnostics};
+use crate::lsp_client::shared_text::DocumentTexts;
 use corsa::{
     CorsaError,
     api::{ApiClient, CapabilitiesResponse, ManagedSnapshot, ProjectResponse},
@@ -26,7 +27,7 @@ pub(in crate::lsp_client) struct DiagnosticReadView<'a> {
     pub(super) explicit_config: &'a Option<PathBuf>,
     pub(super) uri: &'a str,
     pub(super) document_uri: &'a str,
-    pub(super) documents: &'a FxHashMap<String, String>,
+    pub(super) documents: &'a DocumentTexts,
     pub(super) external_document_uris: &'a FxHashMap<String, String>,
     pub(super) file_supported: bool,
     pub(super) project_supported: bool,

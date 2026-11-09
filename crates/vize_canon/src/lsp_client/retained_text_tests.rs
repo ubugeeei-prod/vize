@@ -37,7 +37,10 @@ fn equal_unicode_crlf_text_keeps_the_original_owned_key_and_value() {
         let current = pointers(&client, URI);
         assert_eq!(current.0, original.0);
         assert_eq!(current.1, original.1);
-        assert_eq!(client.document_texts.get(URI), Some(&text));
+        assert_eq!(
+            client.document_texts.get(URI).map(|text| text.as_str()),
+            Some(text.as_str())
+        );
     }
     assert!(client.session.is_none());
     assert!(client.editor_lsp.is_none());
@@ -61,7 +64,10 @@ fn changed_values_keep_the_original_allocation_alive_through_the_callers_scope()
     assert_ne!(pointers(&client, URI).1, original.1);
     let second_update = client.retain_document_text(URI, &third);
     assert_eq!(second_update.previous_text(), Some(second.as_str()));
-    assert_eq!(client.document_texts.get(URI), Some(&third));
+    assert_eq!(
+        client.document_texts.get(URI).map(|text| text.as_str()),
+        Some(third.as_str())
+    );
     drop(client);
     assert_eq!(changed.previous_text(), Some(first.as_str()));
     assert_eq!(changed.previous_text().unwrap().as_ptr(), original.1);
@@ -78,7 +84,10 @@ fn duplicate_batch_entries_keep_sequential_last_writer_and_dirty_state() {
         .did_open_batch_fast(&[(URI, &first), (URI, &first), (URI, &second), (URI, &second)])
         .unwrap();
     assert_eq!(client.document_texts.len(), 1);
-    assert_eq!(client.document_texts.get(URI), Some(&second));
+    assert_eq!(
+        client.document_texts.get(URI).map(|text| text.as_str()),
+        Some(second.as_str())
+    );
     assert!(client.editor_lsp_documents_dirty);
     let original = pointers(&client, URI);
 
@@ -140,7 +149,10 @@ fn equal_logical_batches_still_retain_the_complete_revision_and_uri_mappings() {
         .did_open_batch_fast(&[(&uri, &text), (&uri, &text)])
         .unwrap();
     assert_eq!(pointers(&client, &uri), original);
-    assert_eq!(client.document_texts.get(&uri), Some(&text));
+    assert_eq!(
+        client.document_texts.get(&uri).map(|text| text.as_str()),
+        Some(text.as_str())
+    );
     assert!(client.editor_lsp_documents_dirty);
     assert!(client.diagnostics.is_empty());
     assert_eq!(client.session_document_uris.get(&uri), Some(&uri));
@@ -191,7 +203,10 @@ fn independent_clients_and_removed_membership_do_not_share_retained_storage() {
     let changed = source("changed");
     let previous = first.retain_document_text(URI, &changed);
     assert_eq!(previous.previous_text(), Some(text.as_str()));
-    assert_eq!(second.document_texts.get(URI), Some(&text));
+    assert_eq!(
+        second.document_texts.get(URI).map(|text| text.as_str()),
+        Some(text.as_str())
+    );
     assert_eq!(pointers(&second, URI), original_second);
 
     let removed = first.document_texts.remove(URI).unwrap();
@@ -200,8 +215,38 @@ fn independent_clients_and_removed_membership_do_not_share_retained_storage() {
     assert!(reopened.changed());
     assert!(!reopened.was_present());
     assert_eq!(reopened.previous_text(), None);
-    assert_eq!(first.document_texts.get(URI), Some(&text));
+    assert_eq!(
+        first.document_texts.get(URI).map(|text| text.as_str()),
+        Some(text.as_str())
+    );
     assert_eq!(pointers(&second, URI), original_second);
     assert!(first.session.is_none());
     assert!(second.session.is_none());
+}
+
+#[test]
+#[expect(clippy::disallowed_types, reason = "batch payloads are shared")]
+fn a_batch_payload_is_retained_by_sharing_its_allocation() {
+    let root = tempfile::tempdir().unwrap();
+    let mut client = CorsaProjectClient::empty_for_test(root.path().to_path_buf());
+    let payload = std::sync::Arc::new((String::from(URI), source("shared")));
+    client.shared_payloads.register(&payload);
+    assert!(client.retain_document_text(URI, &payload.1).changed());
+    assert!(client.document_texts.get(URI).unwrap().shares(&payload));
+    // Equal bytes from another allocation neither copy nor dirty the owner.
+    let owned = source("shared");
+    assert!(!client.retain_document_text(URI, &owned).changed());
+    assert!(client.document_texts.get(URI).unwrap().shares(&payload));
+    client.shared_payloads.clear();
+
+    // An owned copy retained first is replaced by an equal payload in place.
+    let other = "file:///workspace/other.vue.ts";
+    assert!(client.retain_document_text(other, &owned).changed());
+    let checkpoint = client.document_texts.checkpoint();
+    let equal = std::sync::Arc::new((String::from(other), source("shared")));
+    client.shared_payloads.register(&equal);
+    assert!(!client.retain_document_text(other, &equal.1).changed());
+    client.shared_payloads.clear();
+    assert!(client.document_texts.get(other).unwrap().shares(&equal));
+    assert_eq!(client.document_texts.checkpoint(), checkpoint);
 }

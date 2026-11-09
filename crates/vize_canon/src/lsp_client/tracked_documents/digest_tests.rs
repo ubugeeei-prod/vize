@@ -16,7 +16,7 @@ fn a_thousand_retained_inputs_hash_once_and_one_edit_hashes_only_its_new_revisio
         .collect::<Vec<_>>();
     let mut documents = TrackedDocumentTexts::default();
     for (uri, text) in &inputs {
-        documents.insert(uri.clone(), text.clone());
+        documents.insert(uri.clone(), text.into());
     }
     for _ in 0..5 {
         for (uri, text) in &inputs {
