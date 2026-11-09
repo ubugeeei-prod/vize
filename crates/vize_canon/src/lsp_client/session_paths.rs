@@ -39,11 +39,20 @@ pub(super) fn is_within_project_namespace(path: &Path, root: &Path) -> bool {
     if path.to_str().is_none() || root.to_str().is_none() {
         return false;
     }
-    let path = file_uri_to_path(&path_to_file_uri(path));
-    let root = file_uri_to_path(&path_to_file_uri(root));
+    let path = logical_namespace_path(path);
+    let root = logical_namespace_path(root);
     matches!((path, root), (Some(path), Some(root)) if path.starts_with(&root))
 }
 
+fn logical_namespace_path(path: &Path) -> Option<PathBuf> {
+    file_uri_to_path(&path_to_file_uri(path))
+}
+
+mod physical_namespace;
+pub(super) use physical_namespace::PhysicalNamespace;
+
+/// The per-path oracle for [`PhysicalNamespace::contains_physical`].
+#[cfg(test)]
 pub(super) fn is_within_physical_project_namespace(path: &Path, root: &Path) -> bool {
     path.canonicalize()
         .is_ok_and(|physical| is_within_project_namespace(&physical, root))

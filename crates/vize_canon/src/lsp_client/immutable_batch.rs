@@ -253,15 +253,13 @@ impl CorsaProjectClient {
             .iter()
             .map(|(uri, _)| crate::file_uri::file_uri_to_path(uri))
             .collect::<Option<Vec<_>>>()?;
+        let mut namespace = super::session_paths::PhysicalNamespace::new(&self.project_root);
         paths
             .iter()
             .all(|path| {
-                super::session_paths::is_within_project_namespace(path, &self.project_root)
+                namespace.contains_logical(path)
                     && path.is_file()
-                    && super::session_paths::is_within_physical_project_namespace(
-                        path,
-                        &self.project_root,
-                    )
+                    && namespace.contains_physical(path)
             })
             .then_some(paths)
     }
@@ -288,18 +286,19 @@ impl CorsaProjectClient {
         );
         // Keep the original complete namespace and existence guard. An old
         // physical observation cannot authorize a retargeted directory link.
-        if !entry.rows.iter().all(|row| {
-            super::session_paths::is_within_project_namespace(&row.path, &self.project_root)
-                && row.path.is_file()
-        }) {
+        let mut namespace = super::session_paths::PhysicalNamespace::new(&self.project_root);
+        if !entry
+            .rows
+            .iter()
+            .all(|row| namespace.contains_logical(&row.path) && row.path.is_file())
+        {
             return Ok(false);
         }
-        if !entry.rows.iter().all(|row| {
-            super::session_paths::is_within_physical_project_namespace(
-                &row.path,
-                &self.project_root,
-            )
-        }) {
+        if !entry
+            .rows
+            .iter()
+            .all(|row| namespace.contains_physical(&row.path))
+        {
             return Err(cstr!("Canon document left its private physical namespace"));
         }
         let now = SystemTime::now();

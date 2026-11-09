@@ -77,10 +77,12 @@ impl CorsaProjectClient {
             "canon_document_namespace",
             paths.len(),
         );
-        if !paths.iter().all(|path| {
-            crate::lsp_client::session_paths::is_within_project_namespace(path, &self.project_root)
-                && path.is_file()
-        }) {
+        let mut namespace =
+            crate::lsp_client::session_paths::PhysicalNamespace::new(&self.project_root);
+        if !paths
+            .iter()
+            .all(|path| namespace.contains_logical(path) && path.is_file())
+        {
             return Ok(false);
         }
         phase.finish();
@@ -90,10 +92,7 @@ impl CorsaProjectClient {
         );
         let mut private = Vec::with_capacity(paths.len());
         for ((_, content), path) in documents.iter().zip(&paths) {
-            let owned = crate::lsp_client::session_paths::is_within_physical_project_namespace(
-                path,
-                &self.project_root,
-            );
+            let owned = namespace.contains_physical(path);
             if !owned {
                 // Linked authored/package sources can be observed, never
                 // rewritten through Canon's logical namespace. Keep this
