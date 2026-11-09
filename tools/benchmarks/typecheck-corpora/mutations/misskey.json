@@ -455,6 +455,19 @@
         "code": "TS2551",
         "message": "'toLocaleStrin' does not exist on type 'number'"
       }
+    },
+    {
+      "id": "compile-error-deck-column-naked",
+      "family": "compile-error",
+      "file": "src/ui/deck/column.vue",
+      "anchor": "\tnaked: false,",
+      "replacement": "\tnaked: withWallpaper,",
+      "expect": {
+        "line": 70,
+        "column": 9,
+        "code": "vize100002",
+        "message": "[SCRIPT_SETUP_MACRO_SCOPE]: `withDefaults()` in <script setup> cannot reference locally declared variable `withWallpaper`"
+      }
     }
   ]
 }

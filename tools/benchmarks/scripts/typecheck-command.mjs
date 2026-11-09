@@ -116,7 +116,8 @@ export function normalizeTypecheckResult(result, cwd, format) {
   } else {
     let continuation = false;
     for (const line of output.split(/\r?\n/u)) {
-      const match = /^(.+?)\((\d+),(\d+)\): (error|warning) (TS\d+): (.*)$/u.exec(line);
+      // A content mapper prints its own diagnostics with its source, e.g. `vize100002`.
+      const match = /^(.+?)\((\d+),(\d+)\): (error|warning) ((?:TS|vize)\d+): (.*)$/u.exec(line);
       if (match) {
         const [, file, line, column, kind, code, message] = match;
         diagnostics.push([sourcePath(file, cwd), kind, line, column, code, message]);
