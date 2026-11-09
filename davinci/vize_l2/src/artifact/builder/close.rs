@@ -51,6 +51,18 @@ impl<'a> Builder<'a> {
                 native_if = Some(core::ptr::NonNull::from(owner.as_ref()));
                 Op::If(owner)
             }
+            Owner::Conditional { branches } => Op::If(Box::new_in(
+                crate::op::IfOp { branches, span },
+                &self.allocator,
+            )),
+            Owner::Branch { condition } => {
+                self.close_branch(condition, children, span);
+                return ClosedFrame {
+                    native_if: None,
+                    original_for: None,
+                    element: None,
+                };
+            }
             Owner::OriginalFor(id) => {
                 let owner = Box::new_in(
                     crate::op::OriginalForOp {

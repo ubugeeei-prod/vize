@@ -36,10 +36,28 @@ enum Owner<'a> {
         first_span: Span,
         else_span: Span,
     },
+    Conditional {
+        branches: vize_l0::Vec<'a, crate::op::IfBranch<'a>>,
+    },
+    Branch {
+        condition: Option<ExprRef<'a>>,
+    },
+}
+
+impl Owner<'_> {
+    /// Iterations and conditional owners never hold attached bindings.
+    fn accepts_bindings(&self) -> bool {
+        !matches!(
+            self,
+            Self::OriginalFor(_) | Self::Conditional { .. } | Self::Branch { .. }
+        )
+    }
 }
 
 mod binding;
 mod close;
+mod conditional;
+pub use conditional::BranchBuilder;
 mod element;
 pub(crate) use element::ElementAllocation;
 mod factory;
@@ -53,8 +71,10 @@ pub(crate) use text::TextAllocation;
 
 /// A restricted canonical producer, with no arbitrary region or table insertion.
 ///
-/// The first native slice supports ordinary elements/components and text,
-/// comments, retained-expression interpolations and static named bindings.
+/// It supports ordinary elements/components and text, comments,
+/// retained-expression interpolations and JSX-style child values, static
+/// named bindings and object spreads, and conditionals whose branches are
+/// checked in authored order.
 /// Attached bindings must precede children. Every constructor checks
 /// ownership and mints its page id before descending into children. Scope and
 /// control-flow factories require their own checked contracts before extension.
@@ -106,6 +126,26 @@ impl<'a> Builder<'a> {
         check::expression(self.parts.source, id, expression, span)?;
         self.mint();
         self.push(Op::Interpolation(Box::new_in(
+            InterpolationOp {
+                expression,
+                raw_html: false,
+                span,
+            },
+            &self.allocator,
+        )));
+        Ok(id)
+    }
+
+    /// A JSX-style child value: text, a node or a list, never display text.
+    pub fn child_value(
+        &mut self,
+        expression: ExprRef<'a>,
+        span: Span,
+    ) -> Result<NodeId, ArtifactError> {
+        let id = self.prepare(span)?;
+        check::expression(self.parts.source, id, expression, span)?;
+        self.mint();
+        self.push(Op::JsxChildValue(Box::new_in(
             InterpolationOp {
                 expression,
                 raw_html: false,

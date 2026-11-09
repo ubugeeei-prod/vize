@@ -95,6 +95,11 @@ impl<'a> RegionBuilder<'_, 'a> {
         self.builder.bind(name, name_span, value, span)
     }
 
+    /// Attach an object spread before this owner's children.
+    pub fn spread(&mut self, value: ExprRef<'a>, span: Span) -> Result<NodeId, ArtifactError> {
+        self.builder.spread(value, span)
+    }
+
     pub fn text(&mut self, content: &'a str, span: Span) -> Result<NodeId, ArtifactError> {
         self.builder.text(content, span)
     }
@@ -107,6 +112,21 @@ impl<'a> RegionBuilder<'_, 'a> {
         span: Span,
     ) -> Result<NodeId, ArtifactError> {
         self.builder.interpolation(expression, span)
+    }
+    pub fn child_value(
+        &mut self,
+        expression: ExprRef<'a>,
+        span: Span,
+    ) -> Result<NodeId, ArtifactError> {
+        self.builder.child_value(expression, span)
+    }
+    /// Create one `ui.if`; the callback adds its branches in authored order.
+    pub fn conditional(
+        &mut self,
+        span: Span,
+        branches: impl FnOnce(&mut super::BranchBuilder<'_, 'a>, NodeId),
+    ) -> Result<NodeId, ArtifactError> {
+        self.builder.conditional(span, branches)
     }
     pub fn element(
         &mut self,
