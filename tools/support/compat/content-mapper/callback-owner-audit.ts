@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 import { createHash } from "node:crypto";
+import { sixElementTuples } from "./wire-tuples.ts";
 import { FrameDecoder } from "../../../../tests/tooling/support/lsp/installed-alias-replay/frames.ts";
 import {
   callbackOwnerProjects,
@@ -45,6 +46,7 @@ function transforms(packet: Observation): Record<string, unknown>[] {
   const decoder = new FrameDecoder(),
     rows: Record<string, unknown>[] = [];
   decoder.push(Buffer.from(packet.stdout), (packet) => {
+    sixElementTuples(packet);
     assert.equal(packet.error, undefined);
     if (packet.id === 1)
       assert.deepEqual(packet.result, { diagnosticSource: "vize", positionEncoding: "utf-8" });
