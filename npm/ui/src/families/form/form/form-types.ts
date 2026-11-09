@@ -8,6 +8,7 @@ export interface StandardSchemaV1<Input = unknown, Output = Input> {
   readonly "~standard": StandardSchemaV1.Props<Input, Output>;
 }
 
+/** Supporting types for the Standard Schema V1 contract. */
 export namespace StandardSchemaV1 {
   /** Standard Schema metadata and validation entry point. */
   export interface Props<Input = unknown, Output = Input> {

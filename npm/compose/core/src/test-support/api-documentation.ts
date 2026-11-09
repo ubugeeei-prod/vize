@@ -51,11 +51,19 @@ function declarationNames(statement: ts.Statement): readonly string[] | undefine
     ts.isClassDeclaration(statement) ||
     ts.isInterfaceDeclaration(statement) ||
     ts.isTypeAliasDeclaration(statement) ||
-    ts.isEnumDeclaration(statement)
+    ts.isEnumDeclaration(statement) ||
+    ts.isModuleDeclaration(statement)
   ) {
     return [statement.name?.text ?? "default"];
   }
   return undefined;
+}
+
+function namespaceContainsValue(statement: ts.ModuleDeclaration): boolean {
+  const body = statement.body;
+  if (body == null) return false;
+  if (ts.isModuleDeclaration(body)) return namespaceContainsValue(body);
+  return body.statements.some(isValueDeclaration);
 }
 
 function isValueDeclaration(statement: ts.Statement): boolean {
@@ -63,7 +71,8 @@ function isValueDeclaration(statement: ts.Statement): boolean {
     ts.isVariableStatement(statement) ||
     ts.isFunctionDeclaration(statement) ||
     ts.isClassDeclaration(statement) ||
-    ts.isEnumDeclaration(statement)
+    ts.isEnumDeclaration(statement) ||
+    (ts.isModuleDeclaration(statement) && namespaceContainsValue(statement))
   );
 }
 
