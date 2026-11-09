@@ -103,10 +103,13 @@ function section(source: string, name: string): { body: string; start: number; e
 
 function stringField(source: string, sectionName: string, field: string): string | undefined {
   const { body } = section(source, sectionName);
-  const match = new RegExp(`^\\s*${escapeRegExp(field)}\\s*=\\s*"([^"]+)"\\s*(?:#.*)?$`, "mu").exec(
-    body,
-  );
-  return match?.[1];
+  const matches = [
+    ...body.matchAll(
+      new RegExp(`^\\s*${escapeRegExp(field)}\\s*=\\s*"([^"]+)"\\s*(?:#.*)?$`, "gmu"),
+    ),
+  ];
+  if (matches.length > 1) throw new Error(`duplicate TOML field ${sectionName}.${field}`);
+  return matches[0]?.[1];
 }
 
 function replaceStringField(
