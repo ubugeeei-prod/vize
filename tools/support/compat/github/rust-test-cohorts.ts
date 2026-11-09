@@ -50,6 +50,7 @@ const definitions: Record<RustTestCohortId, Definition> = {
       "poc-support",
       "poc-python",
       "poc-solid",
+      "poc-svelte",
     ],
   },
   "sfc-compiler": { name: "SFC compiler", packages: ["vize_atelier_sfc"] },

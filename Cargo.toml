@@ -46,6 +46,7 @@ members = [
   "examples/poc-support",
   "examples/poc-python",
   "examples/poc-solid",
+  "examples/poc-svelte",
 ]
 
 [workspace.package]
