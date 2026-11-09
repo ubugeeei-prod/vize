@@ -11,11 +11,17 @@ impl ContainerFormat for Astro {
         let mut errors = Vec::new_in(&allocator);
         let at = |offset: usize| u32::try_from(offset).unwrap_or(u32::MAX);
         let start = source.len() - source.trim_start().len();
-        if source
-            .get(start..)
-            .is_some_and(|rest| rest.starts_with("---\n"))
-        {
-            let content = start + 4;
+        let opening_fence_len = source.get(start..).and_then(|rest| {
+            if rest.starts_with("---\r\n") {
+                Some(5)
+            } else if rest.starts_with("---\n") {
+                Some(4)
+            } else {
+                None
+            }
+        });
+        if let Some(opening_fence_len) = opening_fence_len {
+            let content = start + opening_fence_len;
             // The search starts at the opening fence's line break: the script may be empty.
             let close = source
                 .get(content - 1..)
@@ -59,6 +65,29 @@ mod tests {
         assert_eq!(
             content.and_then(|span| source.get(span.start as usize..span.end as usize)),
             Some("const a = 1;\n")
+        );
+        let rebuilt: Vec<&str> = container
+            .segments()
+            .map(|segment| {
+                let span = segment.span();
+                source
+                    .get(span.start as usize..span.end as usize)
+                    .unwrap_or_default()
+            })
+            .collect();
+        assert_eq!(rebuilt.concat(), source);
+    }
+
+    #[test]
+    fn crlf_frontmatter_is_one_lossless_block() {
+        let source = "---\r\nconst a = 1;\r\n---\r\n\r\n<p>{a}</p>\r\n";
+        let allocator = Allocator::default();
+        let container = Astro.split(&allocator, source);
+        assert!(container.errors.is_empty());
+        let content = container.blocks.first().map(|block| block.content);
+        assert_eq!(
+            content.and_then(|span| source.get(span.start as usize..span.end as usize)),
+            Some("const a = 1;\r\n")
         );
         let rebuilt: Vec<&str> = container
             .segments()

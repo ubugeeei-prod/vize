@@ -5,7 +5,7 @@
 //! for bound attributes, a conditional nested template for `ui.if` and a
 //! `map` over nested templates for `ui.for`. `$$render` escapes hole values.
 
-use poc_support::{Error, Node, View, escape_html, js};
+use poc_support::{Error, Node, View, js};
 use vize_l0::{String, append, cstr, is_void_tag};
 use vize_l3::op::OpKind;
 use vize_l3::operand::{OperandRole, ValueKind};
@@ -37,7 +37,7 @@ fn node_template(node: Node<'_, '_>, out: &mut String) -> Result<(), Error> {
             for attribute in node.operands(OperandRole::Attribute) {
                 append!(*out, " {}", attribute.name.unwrap_or_default());
                 if attribute.value.kind == ValueKind::Literal {
-                    let value = escape_html(attribute.value.text);
+                    let value = attribute.value.text.replace('"', "&quot;");
                     append!(*out, "=\"{}\"", literal(&value));
                 }
             }

@@ -55,7 +55,7 @@ pub fn compile(source: &str) -> Result<String, Error> {
     out.push(RUNTIME);
     out.push(&imports);
     out.push("\nconst $$Astro = $$createAstro();\n");
-    out.push("const $$Component = $$createComponent(($$result, $$props, $$slots) => {\n");
+    out.push("const $$Component = $$createComponent(async ($$result, $$props, $$slots) => {\n");
     out.push("  const Astro = $$result.createAstro($$Astro, $$props, $$slots);\n");
     out.push("  Astro.self = $$Component;\n");
     if !script.is_empty() {
@@ -112,5 +112,28 @@ mod tests {
     fn other_embedded_markup_is_refused_with_its_span() {
         let refused = compile("---\n---\n<ul>{items.filter((item) => <li>{item}</li>)}</ul>");
         assert_eq!(refused.map_err(|error| error.span.start), Err(12));
+    }
+
+    #[test]
+    fn astro_slot_elements_are_refused() {
+        let refused = compile("<slot />");
+        assert!(refused.is_err());
+    }
+
+    #[test]
+    fn top_level_await_stays_inside_an_async_component() {
+        let output =
+            compile("---\nconst value = await Promise.resolve('ready');\n---\n<p>{value}</p>")
+                .unwrap_or_default();
+        assert!(output.contains("$$createComponent(async ("));
+        assert_eq!(poc_support::check_module(&output), Ok(()));
+    }
+
+    #[test]
+    fn static_attribute_entities_are_preserved() {
+        let output =
+            compile("<p title=\"a &amp; b\" data-note='say \"hi\"'>ok</p>").unwrap_or_default();
+        assert!(output.contains("title=\"a &amp; b\""));
+        assert!(output.contains("data-note=\"say &quot;hi&quot;\""));
     }
 }

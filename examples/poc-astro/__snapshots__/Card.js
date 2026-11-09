@@ -2,7 +2,7 @@ import { createAstro as $$createAstro, createComponent as $$createComponent, ren
 import { formatTitle } from "./format.js";
 
 const $$Astro = $$createAstro();
-const $$Component = $$createComponent(($$result, $$props, $$slots) => {
+const $$Component = $$createComponent(async ($$result, $$props, $$slots) => {
   const Astro = $$result.createAstro($$Astro, $$props, $$slots);
   Astro.self = $$Component;
   const { title, items } = Astro.props;

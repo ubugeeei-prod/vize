@@ -181,7 +181,8 @@ impl<'a> Lowering<'a> {
     fn element(&self, element: &Element<'a>) -> Result<Op<'a>, Error> {
         let open = span_in(self.source, element.open.lt_name.text);
         let tag = element.tag();
-        if tag.contains(':') || tag.starts_with(|ch: char| ch.is_ascii_uppercase()) {
+        if tag == "slot" || tag.contains(':') || tag.starts_with(|ch: char| ch.is_ascii_uppercase())
+        {
             return Err(Error::new(cstr!("unsupported <{tag}>"), open));
         }
         let end = match &element.close {
