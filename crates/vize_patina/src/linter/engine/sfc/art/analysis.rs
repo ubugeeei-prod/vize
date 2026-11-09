@@ -34,8 +34,14 @@ pub(super) fn script_summary(
     );
     if let Some(l2) = admitted {
         let lowered = l2.lowered();
-        let reads = LintTemplate::new(l2.surface(), lowered.allocator, &lowered.root)
-            .with_compatibility_root(v_for_source_reads);
+        let reads = LintTemplate::new(
+            l2.surface(),
+            lowered.allocator,
+            &lowered.root,
+            &lowered.consumed_expressions,
+            lowered.caps.scoped_slot_attrs,
+        )
+        .with_compatibility_root(v_for_source_reads);
         summary.unused_bindings.retain(|name| !reads.contains(name));
     }
     summary
@@ -64,11 +70,19 @@ pub(super) fn variant(
         l2.surface(),
         lowered.allocator,
         &lowered.root,
+        &lowered.consumed_expressions,
+        lowered.caps.scoped_slot_attrs,
     ));
     let mut analysis = drawer.finish();
     if unused {
-        let reads = LintTemplate::new(l2.surface(), l2.lowered())
-            .with_compatibility_root(v_for_source_reads);
+        let reads = LintTemplate::new(
+            l2.surface(),
+            lowered.allocator,
+            &lowered.root,
+            &lowered.consumed_expressions,
+            lowered.caps.scoped_slot_attrs,
+        )
+        .with_compatibility_root(v_for_source_reads);
         analysis
             .unused_bindings
             .retain(|name| !reads.contains(name));

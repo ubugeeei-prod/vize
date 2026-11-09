@@ -25,7 +25,6 @@ use planning::{
 };
 pub(in crate::linter) use prepared::PreparedSfc;
 use prepared::SfcQueryPlan;
-use vize_croquis::drawer::LintTemplate;
 use vize_croquis::script_parser;
 use vize_l0::{ToCompactString, profile};
 /// Single-file compatibility path. Batch callers publish all prepared documents
@@ -210,9 +209,9 @@ pub(in crate::linter) fn prepare_with_descriptor<'a>(
         project_type_aware(
             descriptor,
             script_content,
-            template_ast.as_ref().and_then(|(l2, _, has_fatal)| {
-                (!*has_fatal).then_some(LintTemplate::new(l2.surface(), l2.lowered()))
-            }),
+            template_ast
+                .as_ref()
+                .and_then(|(l2, _, has_fatal)| { (!*has_fatal).then_some(l2.lint_template()) }),
             script_offset,
             template_offset,
             filename,

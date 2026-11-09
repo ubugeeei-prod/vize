@@ -232,6 +232,17 @@ impl<'a> L2Template<'a> {
     pub fn surface(&self) -> &SurfaceTree<'a> {
         &self.tree
     }
+
+    /// The complete L1/L2 facts consumed by Croquis lint analysis.
+    pub fn lint_template(&self) -> vize_croquis::drawer::LintTemplate<'_, 'a> {
+        vize_croquis::drawer::LintTemplate::new(
+            &self.tree,
+            self.lowered.allocator,
+            &self.lowered.root,
+            &self.lowered.consumed_expressions,
+            self.lowered.caps.scoped_slot_attrs,
+        )
+    }
 }
 
 /// The element-shaped L2 ops the facade presents as a [`super::MarkupElement`].

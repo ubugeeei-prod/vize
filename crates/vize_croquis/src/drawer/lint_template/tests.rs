@@ -45,6 +45,8 @@ fn l1_l2_lint_projection_matches_relief_semantics() {
             &surface,
             lowered.allocator,
             &lowered.root,
+            &lowered.consumed_expressions,
+            lowered.caps.scoped_slot_attrs,
         ));
 
         let actual = actual.finish().semantic_snapshot();
@@ -80,6 +82,8 @@ fn l1_l2_static_attribute_entities_are_decoded() {
         &surface,
         lowered.allocator,
         &lowered.root,
+        &lowered.consumed_expressions,
+        lowered.caps.scoped_slot_attrs,
     ))
     .build();
     let TemplateChildNode::Element(element) = &root.children[0] else {
@@ -101,7 +105,13 @@ fn l1_l2_slot_props_retain_decoded_authored_text() {
     let (surface, errors) = vize_l1::markup::parse(&allocator, source);
     assert!(errors.is_empty());
     let lowered = lower_preserving_comments(&allocator, &surface, &errors);
-    let template = LintTemplate::new(&surface, lowered.allocator, &lowered.root);
+    let template = LintTemplate::new(
+        &surface,
+        lowered.allocator,
+        &lowered.root,
+        &lowered.consumed_expressions,
+        lowered.caps.scoped_slot_attrs,
+    );
     let root = CompatibilityRoot::new(template).build();
     let TemplateChildNode::Element(element) = &root.children[0] else {
         panic!("component root")
@@ -150,7 +160,13 @@ fn l1_l2_compatibility_retains_whitespace_wrapped_expression() {
     let allocator = Allocator::default();
     let (surface, errors) = vize_l1::markup::parse(&allocator, source);
     let lowered = lower_preserving_comments(&allocator, &surface, &errors);
-    let projection = CompatibilityRoot::new(LintTemplate::new(&surface, &lowered));
+    let projection = CompatibilityRoot::new(LintTemplate::new(
+        &surface,
+        lowered.allocator,
+        &lowered.root,
+        &lowered.consumed_expressions,
+        lowered.caps.scoped_slot_attrs,
+    ));
     let indexed = projection
         .expressions
         .iter()
@@ -187,7 +203,13 @@ fn l1_l2_projection_omits_tree_construction_ignored_start_tags() {
     let mut expected = Drawer::for_lint();
     expected.draw_template(&legacy);
     let mut actual = Drawer::for_lint();
-    actual.draw_lint_template(LintTemplate::new(&surface, &lowered));
+    actual.draw_lint_template(LintTemplate::new(
+        &surface,
+        lowered.allocator,
+        &lowered.root,
+        &lowered.consumed_expressions,
+        lowered.caps.scoped_slot_attrs,
+    ));
     assert_eq!(
         actual.finish().semantic_snapshot(),
         expected.finish().semantic_snapshot()

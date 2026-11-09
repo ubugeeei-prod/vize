@@ -33,6 +33,8 @@ pub struct LintTemplate<'t, 'a> {
     surface: &'t SurfaceTree<'a>,
     allocator: &'a Allocator,
     root: &'t Region<'a>,
+    consumed_expressions: &'t [ExprRef<'a>],
+    legacy_slot_bindings: bool,
 }
 
 impl<'t, 'a> LintTemplate<'t, 'a> {
@@ -42,11 +44,15 @@ impl<'t, 'a> LintTemplate<'t, 'a> {
         surface: &'t SurfaceTree<'a>,
         allocator: &'a Allocator,
         root: &'t Region<'a>,
+        consumed_expressions: &'t [ExprRef<'a>],
+        legacy_slot_bindings: bool,
     ) -> Self {
         Self {
             surface,
             allocator,
             root,
+            consumed_expressions,
+            legacy_slot_bindings,
         }
     }
 
@@ -113,8 +119,7 @@ impl<'t, 'a> CompatibilityRoot<'t, 'a> {
                 .entry((span.start, span.end))
                 .or_insert(expression);
         }
-        for expression in &template.lowered.consumed_expressions {
-            let expression = *expression;
+        for &expression in template.consumed_expressions {
             let span = expression.span();
             expression_index
                 .entry((span.start, span.end))
@@ -130,7 +135,7 @@ impl<'t, 'a> CompatibilityRoot<'t, 'a> {
             surface: template.surface,
             expressions: expression_index,
             elements: element_index,
-            legacy_slot_bindings: template.lowered.caps.scoped_slot_attrs,
+            legacy_slot_bindings: template.legacy_slot_bindings,
         }
     }
 
@@ -434,5 +439,4 @@ impl<'t, 'a> CompatibilityRoot<'t, 'a> {
             cursor = end.saturating_add(1);
         }
     }
-
 }

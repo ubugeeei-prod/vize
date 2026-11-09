@@ -1,4 +1,4 @@
-use super::{roster_hash, support, Checked, Value};
+use super::{Checked, Value, roster_hash, support};
 use serde_json::json;
 use std::fs;
 

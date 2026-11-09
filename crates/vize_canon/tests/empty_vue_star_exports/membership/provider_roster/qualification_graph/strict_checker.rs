@@ -1,4 +1,4 @@
-use super::{bound, fs, load, support, Checked, Value};
+use super::{Checked, Value, bound, fs, load, support};
 use serde_json::json;
 
 pub(super) const UPDATE: &str = "malformed-membership/provider-strict-checker-update-11628.json";

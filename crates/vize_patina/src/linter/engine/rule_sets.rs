@@ -152,7 +152,13 @@ pub(crate) fn analyze_descriptor_for_lint_with_template(
     };
     let template = template.map(|template| {
         let lowered = template.lowered();
-        LintTemplate::new(template.surface(), lowered.allocator, &lowered.root)
+        LintTemplate::new(
+            template.surface(),
+            lowered.allocator,
+            &lowered.root,
+            &lowered.consumed_expressions,
+            lowered.caps.scoped_slot_attrs,
+        )
     });
     match resolve_filename {
         Some(filename) => {
@@ -207,7 +213,13 @@ pub(super) fn analyze_descriptor_for_component_reads(
     };
     let template = template.map(|template| {
         let lowered = template.lowered();
-        LintTemplate::new(template.surface(), lowered.allocator, &lowered.root)
+        LintTemplate::new(
+            template.surface(),
+            lowered.allocator,
+            &lowered.root,
+            &lowered.consumed_expressions,
+            lowered.caps.scoped_slot_attrs,
+        )
     });
     let (mut analysis, packet) = match resolve_filename {
         Some(filename) => {
