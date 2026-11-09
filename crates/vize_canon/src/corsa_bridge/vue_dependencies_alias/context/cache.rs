@@ -11,6 +11,7 @@ use super::AliasContext;
 mod catalog;
 mod fingerprint;
 mod prebuilt;
+mod sweep;
 pub(super) use fingerprint::ContextFingerprint;
 
 const CONTEXT_CACHE_CAPACITY: usize = 8;
@@ -47,6 +48,8 @@ pub(in crate::corsa_bridge) struct SessionCache {
     /// The LSP owner has an active workspace watcher and invalidates this
     /// cache when any captured disk input can move.
     trust_watched_disk_inputs: bool,
+    /// Background validation standing in for a missing client watcher.
+    sweep: sweep::DiskSweep,
 }
 
 pub(super) struct ProjectMember {
@@ -142,7 +145,7 @@ impl SessionCache {
         }
         let mut observed = crate::package_route::stamp::InputStampValidation::default();
         let inputs_current =
-            self.trust_watched_disk_inputs || cached.fingerprint.stamps_still_valid(&mut observed);
+            self.disk_inputs_trusted() || cached.fingerprint.stamps_still_valid(&mut observed);
         if !inputs_current {
             self.slots.remove(&key);
             return None;
@@ -178,8 +181,7 @@ impl SessionCache {
         let cached = self.slots.remove(&key)?;
         let mut observed = crate::package_route::stamp::InputStampValidation::default();
         let revisable = fingerprint.revises(&cached.fingerprint)
-            && (self.trust_watched_disk_inputs
-                || cached.fingerprint.stamps_still_valid(&mut observed));
+            && (self.disk_inputs_trusted() || cached.fingerprint.stamps_still_valid(&mut observed));
         revisable.then_some((cached.fingerprint, cached.context))
     }
 
@@ -237,7 +239,7 @@ impl SessionCache {
         fingerprint: &ContextFingerprint,
     ) -> ProjectUnion {
         let mut retired_members = false;
-        let validate_disk = !self.trust_watched_disk_inputs
+        let validate_disk = !self.disk_inputs_trusted()
             || !self.project_overlay_identities.contains_key(virtual_root);
         if let Some(members) = self.project_members.get_mut(virtual_root) {
             members.retain(|_, member| {

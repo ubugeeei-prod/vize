@@ -187,6 +187,40 @@ fn watched_session_trusts_stamps_until_the_event_invalidates_them() {
     assert!(cache.get(&source, &request).is_none());
 }
 
+#[test]
+fn a_clean_sweep_vouches_until_a_sweep_sees_the_change() {
+    let root = tempfile::tempdir().unwrap();
+    let source = root.path().join("App.vue");
+    let config = root.path().join("tsconfig.json");
+    std::fs::write(&source, "<template />\n").unwrap();
+    std::fs::write(&config, r#"{"strict":true}"#).unwrap();
+    let overlays = FxHashMap::default();
+    let context = Arc::new(AliasContext::for_host(&source, "<template />\n", &overlays));
+    let mut cached = capture(&source, "<template />\n", &overlays);
+    cached.stamp(&context);
+    let request = cached.clone();
+    let mut cache = SessionCache::default();
+    cache.enable_disk_sweep();
+    cache.insert(source.clone(), cached, context);
+    let now = std::time::Instant::now();
+    let inputs = cache.begin_disk_sweep(now).unwrap();
+    let unchanged = inputs.unchanged();
+    assert!(unchanged);
+    cache.finish_disk_sweep(&inputs, unchanged, now);
+
+    // Like a watcher whose event has not arrived yet, a vouched window
+    // answers from the captured revision without touching the disk.
+    std::fs::write(&config, r#"{"strict":false}"#).unwrap();
+    assert!(cache.get(&source, &request).is_some());
+
+    let later = std::time::Instant::now() + std::time::Duration::from_millis(400);
+    let inputs = cache.begin_disk_sweep(later).unwrap();
+    let unchanged = inputs.unchanged();
+    assert!(!unchanged);
+    cache.finish_disk_sweep(&inputs, unchanged, later);
+    assert!(cache.get(&source, &request).is_none());
+}
+
 fn capture(
     path: &std::path::Path,
     content: &str,

@@ -43,7 +43,7 @@ impl SessionCache {
     ) -> bool {
         self.project_overlay_identities.get(root) == Some(&overlay_identity)
             && self.project_members.get(root).is_none_or(|members| {
-                self.trust_watched_disk_inputs
+                self.disk_inputs_trusted()
                     || members
                         .values()
                         .all(|member| member.fingerprint.stamps_still_valid(observed))

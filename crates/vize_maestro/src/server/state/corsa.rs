@@ -139,6 +139,8 @@ impl ServerState {
         });
         if self.corsa_disk_watcher_registered.load(Ordering::Acquire) {
             bridge.trust_watched_disk_inputs();
+        } else if self.corsa_disk_sweep.load(Ordering::Acquire) {
+            bridge.sweep_unwatched_disk_inputs();
         }
         // Keep a cancelled startup's worker/session owner. Until it drains,
         // later callers refuse rather than creating a second backend process.
@@ -207,6 +209,17 @@ impl ServerState {
         let bridge = { self.corsa_bridge.read().clone() };
         if let Some(bridge) = bridge {
             bridge.mark_disk_project_state_dirty();
+        }
+    }
+
+    /// The client cannot watch files; sweep captured disk inputs instead.
+    pub(crate) fn sweep_unwatched_corsa_disk_inputs(&self) {
+        self.corsa_disk_sweep.store(true, Ordering::Release);
+        let bridge = { self.corsa_bridge.read().clone() };
+        if let Some(bridge) = bridge
+            && !self.corsa_disk_watcher_registered.load(Ordering::Acquire)
+        {
+            bridge.sweep_unwatched_disk_inputs();
         }
     }
 

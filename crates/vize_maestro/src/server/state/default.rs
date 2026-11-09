@@ -96,6 +96,8 @@ impl ServerState {
             #[cfg(feature = "native")]
             corsa_disk_watcher_registered: AtomicBool::new(false),
             #[cfg(feature = "native")]
+            corsa_disk_sweep: AtomicBool::new(false),
+            #[cfg(feature = "native")]
             diagnostic_locks: DashMap::new(),
             #[cfg(feature = "native")]
             corsa_init_failed: std::sync::atomic::AtomicBool::new(false),
