@@ -2,8 +2,9 @@ use super::{Checked, Value, roster_hash, support};
 use serde_json::json;
 use std::fs;
 
-const UPDATE: &str = "malformed-membership/provider-dependency-update-12212.json";
-const UPDATE_HASH: &str = "94361b7ab53073c77800589b5ff1bf00b7d65b85826dee8fbe3f263e53336c78";
+pub(super) const UPDATE: &str = "malformed-membership/provider-dependency-update-12212.json";
+pub(super) const UPDATE_HASH: &str =
+    "94361b7ab53073c77800589b5ff1bf00b7d65b85826dee8fbe3f263e53336c78";
 const PREVIOUS: &str = "malformed-membership/provider-peer-update-20261031.json";
 const PREVIOUS_BINDING: &str = "tests/_fixtures/differential/typechecker/empty-vue-star-exports/malformed-membership/provider-peer-update-20261031.json";
 const QUALIFICATION: &str =
@@ -16,7 +17,7 @@ fn bound(binding: &Value, path: &str, body: &[u8]) -> bool {
         && binding["sha256"] == support::hash(body)
 }
 
-fn load() -> Value {
+pub(super) fn load() -> Value {
     let bytes = fs::read(support::corpus().join(UPDATE)).unwrap();
     assert_eq!(support::hash(&bytes), UPDATE_HASH);
     let record: Value = serde_json::from_slice(&bytes).unwrap();

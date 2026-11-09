@@ -189,7 +189,7 @@ jobs:
         env:
           VIZE_TEST_CONTENT_MAPPER_TSGO: ${{ runner.temp }}/tsgo
         run: |
-          rust-script tools/commands/release/npm/smoke-release-install.rs --prepare-manifests --content-mapper-checks \
+          node tools/commands/release/npm/smoke-release-install.ts --prepare-manifests --content-mapper-checks \
             npm/native npm/native/npm/* \
             npm/cli
       - name: Run standard project and declaration conformance

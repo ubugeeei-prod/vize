@@ -139,12 +139,12 @@ mod tests {
     }
 
     fn assert_complete_alias_change(summary: &Croquis, alias: &str) {
-        assert_eq!(VUE_TYPE_HELPERS.matches("$LiteralKeys").count(), 3);
+        assert_eq!(VUE_TYPE_HELPERS.matches("$LiteralKeys").count(), 2);
         let mut embedded = String::default();
         emit_type_helpers(&mut embedded, summary, VUE_TYPE_HELPERS, false);
-        assert_eq!(embedded.matches(alias).count(), 3);
+        assert_eq!(embedded.matches(alias).count(), 2);
         assert_eq!(
-            embedded.replacen(alias, "$LiteralKeys", 3),
+            embedded.replacen(alias, "$LiteralKeys", 2),
             VUE_TYPE_HELPERS
         );
 

@@ -41,8 +41,8 @@
 //!
 //! A diagnostic starts at the prop's written name and covers its declaration.
 //! Inline type-literal members and runtime declarations carry their exact OXC
-//! source range through Croquis; an indirect type reference falls back to the
-//! `defineProps` call because the member is declared outside the macro.
+//! source range through Croquis; imported members use the macro type argument,
+//! while another indirect type reference falls back to the `defineProps` call.
 //!
 //! ## Examples
 //!
@@ -90,6 +90,7 @@ use vize_relief::RootNode;
 use self::usage::{
     PropsAccess, classify_props_access, push_script_references, template_references,
 };
+use super::macro_type_argument::macro_type_argument_span;
 
 static META: RuleMeta = RuleMeta {
     name: "vue/no-unused-properties",
@@ -174,6 +175,7 @@ impl Rule for NoUnusedProperties {
                 return;
             };
             let call_span = unshift_span((call.start, call.end), setup_shift);
+            let type_argument_span = macro_type_argument_span(declaring_script, call, setup_shift);
             let props = analysis.macros.props();
             if props.is_empty() {
                 return;
@@ -239,6 +241,11 @@ impl Rule for NoUnusedProperties {
                     let (start, end) = analysis
                         .macros
                         .prop_declaration(prop.name.as_str())
+                        .or(imported_type_argument_span(
+                            analysis,
+                            prop.name.as_str(),
+                            type_argument_span,
+                        ))
                         .unwrap_or((call.start, call.end));
                     let (start, end) = unshift_span((start, end), setup_shift);
                     (
@@ -266,4 +273,16 @@ impl Rule for NoUnusedProperties {
 
 fn unshift_span((start, end): (u32, u32), delta: u32) -> (u32, u32) {
     (start.saturating_sub(delta), end.saturating_sub(delta))
+}
+
+fn imported_type_argument_span(
+    analysis: &vize_croquis::Croquis,
+    name: &str,
+    span: Option<(u32, u32)>,
+) -> Option<(u32, u32)> {
+    let world = analysis.types.resolved_world()?;
+    let module = analysis.types.resolved_prop_module(name)?;
+    (module != world.root_module.as_str())
+        .then_some(span)
+        .flatten()
 }

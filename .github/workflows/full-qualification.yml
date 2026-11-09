@@ -32,7 +32,7 @@ jobs:
           total: ${{ matrix.total }}
   test-scripts-gate:
     name: test-scripts # Release preflight requires exactly one successful job with this exact name.
-    runs-on: ubuntu-24.04
+    runs-on: blacksmith-32vcpu-ubuntu-2404
     if: ${{ always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') }}
     timeout-minutes: 5
     needs: [full-source-cli, tooling-plan, test-scripts]
@@ -120,7 +120,7 @@ jobs:
         uses: ./.github/actions/test-js-packages-with-history
         with: { partition: original-project }
   test-js-packages:
-    runs-on: ubuntu-24.04
+    runs-on: blacksmith-32vcpu-ubuntu-2404
     if: ${{ always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') }}
     timeout-minutes: 5
     needs: [full-js-package-tests, full-js-original-project]
@@ -178,7 +178,7 @@ jobs:
         if: ${{ always() }}
   full-rust-report:
     name: full-rust-report
-    runs-on: ubuntu-24.04
+    runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 5
     if: ${{ always() && !cancelled() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') }}
     needs: [full-rust-workspace, clippy-and-test]
@@ -230,9 +230,8 @@ jobs:
         with:
           key: clippy-test
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
-      - uses: ./.github/actions/setup-rust-script
       - name: Clippy
-        run: cargo clippy --workspace -- -D warnings -D clippy::wildcard_imports && cargo clippy -p vize_maestro --tests -- -D warnings && rust-script tools/commands/ci/github/check-maestro-feature-contract.rs && rust-script tools/commands/ci/check-workspace-lints.rs --check && rust-script tools/commands/ci/check-skeleton-todos.rs --check
+        run: cargo clippy --workspace -- -D warnings -D clippy::wildcard_imports && cargo clippy -p vize_maestro --tests -- -D warnings && node tools/commands/ci/github/check-maestro-feature-contract.ts && node tools/commands/ci/check-workspace-lints.ts --check && node tools/commands/ci/check-skeleton-todos.ts --check
       - name: Davinci no_std stage-library portability lanes (TS-24)
         run: cargo build -p vize_l0 -p vize_l1 -p vize_l2 -p vize_l3 -p vize_l1_to_l2 -p vize_l2_to_l3 --lib --target wasm32-wasip2 && cargo build -p vize_l0 -p vize_l1 -p vize_l2 -p vize_l3 -p vize_l1_to_l2 -p vize_l2_to_l3 --lib --target wasm32-wasip2 --no-default-features
   rust-davinci-allocations:
@@ -294,7 +293,7 @@ jobs:
         if: ${{ always() }}
   clippy-and-test:
     # Keep the release gate's identity while every original producer must succeed.
-    runs-on: ubuntu-24.04
+    runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 5
     if: ${{ always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') }}
     needs: [rust-clippy-portability, rust-davinci-allocations, rust-native-differential]

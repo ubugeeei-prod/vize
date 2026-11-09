@@ -4,6 +4,9 @@ use vize_croquis::{Croquis, types::TypeDefinitions};
 use vize_l0::{CompactString, FxHashSet};
 
 pub(super) fn has_unresolved_props(analysis: &Croquis) -> bool {
+    if let Some(complete) = analysis.types.resolved_props_complete() {
+        return !complete;
+    }
     let Some(type_args) = analysis
         .macros
         .define_props()
@@ -22,10 +25,7 @@ pub(super) fn has_unresolved_props(analysis: &Croquis) -> bool {
     ) {
         return true;
     }
-    analysis
-        .types
-        .resolved_props_complete()
-        .is_some_and(|complete| !complete)
+    false
 }
 
 fn imported_shape(

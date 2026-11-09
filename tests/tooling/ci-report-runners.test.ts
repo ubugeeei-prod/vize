@@ -7,6 +7,7 @@ import { test } from "node:test";
 const { parse } = createRequire(import.meta.url)("yaml") as typeof import("yaml");
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 type Job = Record<string, unknown> & { steps: Record<string, unknown>[] };
+const maximumLinuxRunner = "blacksmith-32vcpu-ubuntu-2404";
 const reports = [
   {
     file: ".github/workflows/pr-rust-products.yml",
@@ -115,12 +116,12 @@ const reports = [
   },
 ];
 for (const expected of reports) {
-  void test(expected.id + " keeps its complete failure contract on the hosted report pool", () => {
+  void test(expected.id + " keeps its complete failure contract on the maximum report pool", () => {
     const workflow = parse(readFileSync(path.join(root, expected.file), "utf8")) as {
       jobs: Record<string, Job>;
     };
     const job = workflow.jobs[expected.id];
-    assert.equal(job["runs-on"], "ubuntu-24.04");
+    assert.equal(job["runs-on"], maximumLinuxRunner);
     assert.deepEqual(job.needs, expected.needs);
     assert.deepEqual(job.permissions, expected.permissions);
     assert.equal(job.if, expected.if);

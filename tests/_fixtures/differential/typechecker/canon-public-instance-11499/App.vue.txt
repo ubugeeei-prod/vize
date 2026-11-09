@@ -1,0 +1,12 @@
+<script setup lang="ts">
+import Child from "./Child.vue";
+
+function onReady(value: number) {
+  return value.toFixed();
+}
+</script>
+
+<template>
+  <Child label="ready" @item-ready="onReady" @itemReady="onReady" />
+  <p>{{ $analytics.name }} {{ $service1.id }}</p>
+</template>

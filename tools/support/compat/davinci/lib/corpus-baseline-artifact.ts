@@ -15,6 +15,7 @@ import {
   SCHEMA_VERSION,
 } from "./corpus-baseline-contract.ts";
 import type { CorpusManifest } from "./corpus-baseline-contract.ts";
+import { asNumber, asRecord, asString } from "../../../json-value.ts";
 import { byKey } from "./ordering.ts";
 
 export interface CorpusRow {
@@ -51,6 +52,56 @@ export interface CorpusArtifactInput {
   version?: unknown;
   scope?: Partial<CorpusScope>;
   rows?: readonly CorpusRow[];
+}
+
+/** Narrow a parsed baseline before scope proof or drift comparison reads it. */
+export function parseCorpusArtifact(value: unknown, label: string): CorpusArtifactInput {
+  const record = asRecord(value, label);
+  const rows = Array.isArray(record.rows)
+    ? record.rows.map((value, index): CorpusRow => {
+        const row = asRecord(value, `${label}.rows[${index}]`);
+        return {
+          surface: asString(row.surface, `${label}.rows[${index}].surface`),
+          project: asString(row.project, `${label}.rows[${index}].project`),
+          file_count: asNumber(row.file_count, `${label}.rows[${index}].file_count`),
+          content_hash: asString(row.content_hash, `${label}.rows[${index}].content_hash`),
+        };
+      })
+    : undefined;
+  const scopeRecord =
+    typeof record.scope === "object" && record.scope !== null && !Array.isArray(record.scope)
+      ? asRecord(record.scope, `${label}.scope`)
+      : undefined;
+  const scope: Partial<CorpusScope> | undefined =
+    scopeRecord === undefined
+      ? undefined
+      : {
+          manifest_project_count: optionalNumber(scopeRecord.manifest_project_count),
+          projects_run: optionalNumber(scopeRecord.projects_run),
+          surfaces: optionalStringArray(scopeRecord.surfaces),
+          surfaces_per_project: optionalNumber(scopeRecord.surfaces_per_project),
+          row_count: optionalNumber(scopeRecord.row_count),
+          total_file_count: optionalNumber(scopeRecord.total_file_count),
+          file_count_by_surface: optionalNumberRecord(scopeRecord.file_count_by_surface),
+        };
+  return { schema: record.schema, version: record.version, scope, rows };
+}
+
+function optionalNumber(value: unknown): number | undefined {
+  return typeof value === "number" ? value : undefined;
+}
+
+function optionalStringArray(value: unknown): string[] | undefined {
+  return Array.isArray(value) && value.every((item) => typeof item === "string")
+    ? value
+    : undefined;
+}
+
+function optionalNumberRecord(value: unknown): Record<string, number> | undefined {
+  if (typeof value !== "object" || value === null || Array.isArray(value)) return undefined;
+  const entries = Object.entries(value);
+  if (!entries.every(([, item]) => typeof item === "number")) return undefined;
+  return Object.fromEntries(entries) as Record<string, number>;
 }
 
 export type CorpusDrift =

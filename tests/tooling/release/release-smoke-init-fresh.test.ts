@@ -403,22 +403,10 @@ test("release workflows run the runtime matrix with every required package", () 
       args.includes("--runtime-checks"),
     );
     for (const args of runtimeSmokeArgs) {
-      if (workflow === "release.yml")
-        assert.deepEqual(args.slice(0, 2), [
-          "node",
-          "tools/commands/release/npm/smoke-release-install.ts",
-        ]);
-      else if (args.includes('"npm/native/npm/$NATIVE_PLATFORM"'))
-        assert.deepEqual(args.slice(0, 2), [
-          "node",
-          "tools/commands/release/npm/smoke-release-install.ts",
-        ]);
-      else
-        assert.deepEqual(
-          args.slice(0, 3),
-          ["rust-script", "--force", "tools/commands/release/npm/smoke-release-install.rs"],
-          "the retained native campaign must invalidate shared Rust helper edits",
-        );
+      assert.deepEqual(args.slice(0, 2), [
+        "node",
+        "tools/commands/release/npm/smoke-release-install.ts",
+      ]);
     }
     assert.ok(
       runtimeSmokeArgs.some(
@@ -435,9 +423,7 @@ function assertRuntimeSmokePackageManagers(workflow: string, jobName: string) {
   const steps = workflowSteps(workflow, jobName);
   const setupIndex = steps.findIndex((step) => step.uses === RUNTIME_PACKAGE_MANAGER_ACTION);
   const runtimeSmokeIndex = steps.findIndex((step) =>
-    step.run?.includes(
-      `smoke-release-install.${workflow === "release.yml" ? "ts" : "rs"} --prepare-manifests --runtime-checks`,
-    ),
+    step.run?.includes("smoke-release-install.ts --prepare-manifests --runtime-checks"),
   );
   assert.notEqual(setupIndex, -1, `${workflow} ${jobName} must install runtime managers`);
   assert.notEqual(runtimeSmokeIndex, -1, `${workflow} ${jobName} must run runtime package smoke`);

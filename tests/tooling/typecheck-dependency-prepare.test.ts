@@ -332,8 +332,15 @@ test("dependency prepare requires exact SHA evidence for selected targets", () =
   try {
     writeJson(fixture.registryPath, { projects: [fixture.project] });
     const malformedSha = spawnSync(
-      "rust-script",
-      [script, "--registry", fixture.registryPath, "--output-dir", fixture.outputDir],
+      process.execPath,
+      [
+        "--experimental-strip-types",
+        script,
+        "--registry",
+        fixture.registryPath,
+        "--output-dir",
+        fixture.outputDir,
+      ],
       { cwd: root, encoding: "utf8", env: { ...process.env, GITHUB_SHA: "main" } },
     );
     assert.equal(malformedSha.status, 1);

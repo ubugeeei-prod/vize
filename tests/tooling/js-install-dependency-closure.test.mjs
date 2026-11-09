@@ -9,6 +9,7 @@ import { jsInstallFilters } from "../../tools/support/compat/github/install-js-c
 import {
   compareInstallClosure,
   currentInstallSource,
+  declaredWebpackSourcesVersion,
   historicalInstaller,
   inspectInstallRecipe,
   prepareInstallRecipe,
@@ -60,7 +61,7 @@ void test("the pinned package manager selects private transitive dependencies fo
     write(".", { name: "fixture-root", private: true, packageManager: manager });
     writeFileSync(
       join(fixture, "pnpm-workspace.yaml"),
-      "packages:\n  - 'npm/*'\n  - 'npm/builder/*'\n  - 'npm/linter/*'\n  - 'npm/builder/vite/example'\n  - 'npm/framework/*'\n  - 'npm/compose/*'\n  - 'packages/*'\n  - 'tools'\n",
+      "packages:\n  - 'npm/*'\n  - 'npm/builder/*'\n  - 'npm/builder/unplugin/example'\n  - 'npm/linter/*'\n  - 'npm/builder/vite/example'\n  - 'npm/framework/*'\n  - 'npm/compose/*'\n  - 'packages/*'\n  - 'tools'\n",
     );
     for (const [path, name] of names) {
       write(path, { name, devDependencies: { "fixture-shared": "workspace:*" } });
@@ -127,6 +128,7 @@ void test("the pinned package manager selects private transitive dependencies fo
 void test("paired install receipts are bound to the current event rather than each other's labels", () => {
   const fixture = mkdtempSync(join(tmpdir(), "vize-install-authority-"));
   const authority = currentInstallSource();
+  const expectedIssuerVersion = declaredWebpackSourcesVersion();
   const actor = authority.source.revision;
   const trigger = "b".repeat(40);
   const eventFile = join(fixture, "event.json");
@@ -153,7 +155,7 @@ void test("paired install receipts are bound to the current event rather than ea
     issuer:
       role === "before"
         ? { status: 1, code: "ERR_MODULE_NOT_FOUND" }
-        : { status: 0, version: "3.5.1" },
+        : { status: 0, version: expectedIssuerVersion },
     tests: { status: role === "before" ? 1 : 0 },
   }));
   const save = (values) => {
@@ -262,9 +264,18 @@ void test("a current source permits only the exact historical installer overlay"
       mkdirSync(dirname(join(source, file)), { recursive: true });
       writeFileSync(join(source, file), `current source ${file}\n`);
     }
+    writeFileSync(
+      join(source, "npm/builder/shared/package.json"),
+      JSON.stringify({ dependencies: { "webpack-sources": "3.3.3" } }),
+    );
     git("add", ".");
     git("commit", "--quiet", "-m", "test: current source fixture");
     const current = currentInstallSource(source);
+    const manifestPath = join(source, "npm/builder/shared/package.json");
+    const manifest = readFileSync(manifestPath);
+    writeFileSync(manifestPath, JSON.stringify({ dependencies: { "webpack-sources": "9.9.9" } }));
+    assert.equal(declaredWebpackSourcesVersion(source, current.source.revision), "3.3.3");
+    writeFileSync(manifestPath, manifest);
     assert.deepEqual(
       prepareInstallRecipe("after", source, current.source.revision).recipe,
       current.installer,

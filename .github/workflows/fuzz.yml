@@ -115,13 +115,11 @@ jobs:
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
           target-path: tests/fuzz/target
 
-      - uses: ./.github/actions/setup-rust-script
-
       - name: Install cargo-fuzz
         run: cargo install cargo-fuzz --locked --version "^0.13"
 
       # The runner image does not define this repository's Node floor, and
-      # seed_corpus.mjs uses `fs.globSync` which is Node 22+. Pin to the repo's
+      # seed-corpus.ts uses `fs.globSync` which is Node 22+. Pin to the repo's
       # `package.json#devEngines.runtime` so the script runs on the same Node
       # line as `vp` / `node-engine-compat`.
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
@@ -130,7 +128,7 @@ jobs:
           run-install: false
 
       - name: Seed fuzz corpus from repository fixtures
-        run: rust-script tools/commands/ci/fuzz/seed_corpus.rs
+        run: node tools/commands/ci/fuzz/seed-corpus.ts
 
       - name: Restore grown corpus cache
         if: ${{ github.event_name != 'merge_group' }}
@@ -246,4 +244,4 @@ jobs:
           FUZZ_EVENT_NAME: ${{ github.event_name }}
           FUZZ_OUTCOME: ${{ steps.fuzz.outcome || 'skipped' }}
           FUZZ_TARGET: ${{ matrix.target }}
-        run: rust-script tools/commands/ci/fuzz/enforce-result.rs "$FUZZ_EVENT_NAME" "$FUZZ_TARGET" "$FUZZ_OUTCOME"
+        run: node tools/commands/ci/fuzz/enforce-result.ts "$FUZZ_EVENT_NAME" "$FUZZ_TARGET" "$FUZZ_OUTCOME"

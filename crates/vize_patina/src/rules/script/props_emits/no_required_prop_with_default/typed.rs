@@ -7,11 +7,15 @@ use crate::rules::script::props_emits::typed_prop_defaults::collect_setup_props_
 
 pub(super) fn check<'a>(
     program: &'a Program<'a>,
+    source: &str,
     offset: usize,
     sibling: Option<(&'a Program<'a>, usize)>,
+    resolved_type_world: Option<&vize_croquis::types::ResolvedTypeWorld>,
     result: &mut ScriptLintResult,
 ) {
-    for declaration in collect_setup_props_with_types(program, offset, sibling) {
+    for declaration in
+        collect_setup_props_with_types(program, source, offset, sibling, resolved_type_world)
+    {
         for prop in declaration.typed.iter().filter(|prop| prop.required) {
             for (default, default_offset) in declaration.default_spans(&prop.name) {
                 let base = prop.offset as u32;

@@ -14,7 +14,6 @@ vize_carton.workspace = true
 vize_relief.workspace = true
 vize_l0.workspace = true
 vize_l1.workspace = true
-vize_l1_to_l2.workspace = true
 vize_l2.workspace = true
 vize_l3.workspace = true
 phf.workspace = true
@@ -46,6 +45,8 @@ legacy-differential = []
 davinci-differential = ["legacy-differential"]
 
 [dev-dependencies]
+vize_l1_to_l2.workspace = true
+
 # Dev-only cycle (vize_atelier_sfc depends on this crate normally); cargo
 # permits it, and the fixture harness and host bench need the descriptor-level orchestration.
 # Path-only on purpose: the workspace entry pins `version = "=x.y.z"`, which

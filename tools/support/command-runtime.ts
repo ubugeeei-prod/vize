@@ -252,15 +252,29 @@ export function isEntrypoint(moduleUrl: string): boolean {
   return entry !== undefined && path.resolve(entry) === fileURLToPath(moduleUrl);
 }
 
+type EntrypointResult = number | void | Promise<number | void>;
+
+function reportEntrypointError(error: unknown): void {
+  process.stderr.write(`${error instanceof Error ? error.message : String(error)}\n`);
+  process.exitCode = 1;
+}
+
 /**
- * Runs a command entrypoint and sets the process exit code from its result.
+ * Runs a synchronous or asynchronous command entrypoint and sets the process
+ * exit code from its result. Commands that return nothing succeed with zero.
  * An unexpected error is reported on stderr and exits with status 1.
  */
-export function runEntrypoint(main: () => number): void {
+export function runEntrypoint(main: () => EntrypointResult): void {
   try {
-    process.exitCode = main();
+    const result = main();
+    if (result instanceof Promise) {
+      void result.then((exitCode) => {
+        process.exitCode = exitCode ?? 0;
+      }, reportEntrypointError);
+      return;
+    }
+    process.exitCode = result ?? 0;
   } catch (error) {
-    process.stderr.write(`${error instanceof Error ? error.message : String(error)}\n`);
-    process.exitCode = 1;
+    reportEntrypointError(error);
   }
 }

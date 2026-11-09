@@ -9,7 +9,7 @@ import {
   inject,
   type ComputedRef,
 } from "vue";
-import type { Diagnostic } from "../../shared/MonacoEditor.vue";
+import type { Diagnostic } from "../../shared/monaco-editor.vue";
 import type { WasmModule, CroquisResult, BindingDisplay } from "../../wasm/index";
 import { ANALYSIS_PRESET } from "../../shared/presets/croquis";
 import { parseVirLines } from "./useVirTokenizer";
