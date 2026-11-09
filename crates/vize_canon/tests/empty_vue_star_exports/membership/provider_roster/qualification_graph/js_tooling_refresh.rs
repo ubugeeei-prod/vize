@@ -4,7 +4,7 @@ use serde_json::json;
 pub(super) const UPDATE: &str =
     "malformed-membership/provider-js-tooling-refresh-update-12212.json";
 pub(super) const UPDATE_HASH: &str =
-    "912ab62d53b6903d3d07c633c471d42fed27d11746265827f7785eeacd3c23b2";
+    "33ae8c1b412b57b32ca5671758f08d10cfd4389df8164dd78a9d9edda8259b24";
 const PREVIOUS_BINDING: &str = "tests/_fixtures/differential/typechecker/empty-vue-star-exports/malformed-membership/provider-docs-metadata-update-12236.json";
 const UNPLUGIN_MANIFEST: &str = "npm/builder/unplugin/package.json";
 const EXAMPLE_MANIFEST: &str = "npm/builder/unplugin/example/package.json";

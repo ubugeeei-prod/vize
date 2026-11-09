@@ -12,8 +12,8 @@
   "providerQualificationRecord": {
     "path": "tests/_fixtures/differential/typechecker/empty-vue-star-exports/malformed-membership/provider-js-tooling-refresh-update-12212.json",
     "bytes": 2624,
-    "sha256": "912ab62d53b6903d3d07c633c471d42fed27d11746265827f7785eeacd3c23b2",
-    "gitBlob": "d416f3104c3155d189690532241961bfa9002626"
+    "sha256": "33ae8c1b412b57b32ca5671758f08d10cfd4389df8164dd78a9d9edda8259b24",
+    "gitBlob": "4fac0dd0f9598354c3d476f97115a27853682792"
   },
   "wholeBeforeRosterSha256": "00fd44822530b1148837972f142fb41f351a441c0420ce3fe974c0004525e867",
   "changes": [
