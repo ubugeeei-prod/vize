@@ -330,3 +330,20 @@ fn pre_rewrite_text_restores_the_rewriter_input() {
     assert_eq!(rewritten.code.as_str(), untouched);
     assert_eq!(rewritten.source_map.pre_rewrite_text(&rewritten.code), None);
 }
+
+#[test]
+fn many_growing_rewrites_retain_no_amortized_capacity() {
+    let imports = (0..64)
+        .map(|index| format!("import a{index} from './c{index}.vue';\n"))
+        .collect::<String>();
+    let source = format!("{imports}{}", "export const body = 1;\n".repeat(4096));
+    let rewritten = ImportRewriter::new().rewrite_with_alias_resolver(
+        &source,
+        SourceType::ts(),
+        None,
+        &|specifier, _| Some(format!("/private/mirror/{specifier}.ts")),
+    );
+    let grown = rewritten.code.len() - source.len();
+    assert!(grown > 64 * 16);
+    assert!(rewritten.code.capacity() <= source.len() + grown + 64 * "./c00.vue".len());
+}
