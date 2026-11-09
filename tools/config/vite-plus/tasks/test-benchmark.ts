@@ -2,6 +2,8 @@ import { cacheInputs, testedPackages } from "../task-inputs.ts";
 import { testedPackageGroups } from "../tested-package-groups.ts";
 import {
   defineTasks,
+  nodeCommand,
+  nodeCommandFromVscodeExtension,
   nodeTool,
   noCacheTask,
   runInPackages,
@@ -17,11 +19,11 @@ import {
 import type { PackagePath } from "../task-helpers.ts";
 import { inTestbox } from "./testbox.ts";
 
-const stageVscodeTypeScriptPlugin = rustToolFromVscodeExtension(
+const stageVscodeTypeScriptPlugin = nodeCommandFromVscodeExtension(
   "editors/vscode/sync-typescript-plugin",
   "stage",
 );
-const injectVscodeTypeScriptPlugin = rustToolFromVscodeExtension(
+const injectVscodeTypeScriptPlugin = nodeCommandFromVscodeExtension(
   "editors/vscode/sync-typescript-plugin",
   "inject",
   "dist/vize.vsix",
@@ -181,11 +183,11 @@ export const testAndBenchmarkTasks = defineTasks({
   // The headless Neovim end-to-end scenario against a real `vize lsp` (#3457).
   // It needs a built server binary, so CI runs it in the same job that builds
   // one for the VS Code host smoke.
-  "test:nvim-extension:real-server": noCacheTask(rustTool("editors/neovim/run-real-server")),
+  "test:nvim-extension:real-server": noCacheTask(nodeCommand("editors/neovim/run-real-server")),
   "test:vim-extension:headless": noCacheTask(
     "vim -Nu NONE -n -es -S editors/vim/test/vize_spec.vim",
   ),
-  "test:vim-extension:real-server": noCacheTask(rustTool("editors/vim/run-real-server")),
+  "test:vim-extension:real-server": noCacheTask(nodeCommand("editors/vim/run-real-server")),
   "test:vim-extension:package": noCacheTask("vp run --workspace-root package:vim-extension"),
   "test:helix-extension:package": noCacheTask("vp run --workspace-root package:helix-extension"),
   "test:helix-extension:real-server": noCacheTask(rustTool("editors/helix/run-real-server")),

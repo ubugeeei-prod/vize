@@ -44,7 +44,7 @@ test("VSIX package policy keeps the production CJS host entrypoint shippable", (
 
 test("VSIX TypeScript plugin staging follows the runtime require closure", () => {
   const pluginDir = "npm/typescript-plugin";
-  const sync = readText("tools/commands/editors/vscode/sync-typescript-plugin.rs");
+  const sync = readText("tools/commands/editors/vscode/sync-typescript-plugin.ts");
   const smoke = readText("tools/commands/editors/vscode/assert-vsix-package.rs");
   const runtimeFiles = new Set(["package.json", "README.md", "index.d.cts"]);
   const pending = ["index.cjs"];

@@ -3,6 +3,8 @@ export {
   devApp,
   installVscodeExtensionDependencies,
   localVp,
+  nodeCommand,
+  nodeCommandFromVscodeExtension,
   nodeTool,
   runInDirectory,
   runInPackages,
