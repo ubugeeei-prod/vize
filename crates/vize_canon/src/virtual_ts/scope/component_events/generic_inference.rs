@@ -182,11 +182,11 @@ pub(super) fn generate_inferred_emit_args(
             block: super::super::open_chained_vif_guard_block(),
         };
         if let Some(canonical) = super::emit_resolver_share::alias_target(&share) {
-            vize_l0::emit_ts!(ts, "{indent}type {resolver_type} = {canonical};\n");
+            append!(*ts, "{indent}type {resolver_type} = {canonical};\n");
         } else {
-            vize_l0::emit_ts!(
-                ts,
-                "{indent}type {resolver_type} = {library} extends true ? (component: typeof {component_ref}) => typeof {component_ref} : {emit_props_factory}<typeof {component_ref}>;\n"
+            append!(
+                *ts,
+                "{indent}type {resolver_type} = {library} extends true ? (component: typeof {component_ref}) => typeof {component_ref} : {emit_props_factory}<typeof {component_ref}>;\n",
             );
             super::emit_resolver_share::record_inline(&share, resolver_type.as_str());
         }
@@ -340,9 +340,9 @@ pub(super) fn generate_inferred_emit_args(
     } else {
         "unknown[]"
     };
-    vize_l0::emit_ts!(
-        ts,
-        "{indent}type {inferred_args} = {library} extends true ? (typeof {emit_props} extends {{ __ctx?: infer __X }} ? NonNullable<__X> extends {{ props: infer __P }} ? __P : {{}} : {{}}) extends {{ {prop_key}?: (...args: infer __A) => any }} ? __A : unknown[] : typeof {emit_props} extends {{ readonly __vizeLooseListener: infer __L extends unknown[] }} ? {loose_args} : typeof {emit_props} extends {{ {prop_key}?: (...args: infer __A) => any }} ? __A : unknown[];\n"
+    append!(
+        *ts,
+        "{indent}type {inferred_args} = {library} extends true ? (typeof {emit_props} extends {{ __ctx?: infer __X }} ? NonNullable<__X> extends {{ props: infer __P }} ? __P : {{}} : {{}}) extends {{ {prop_key}?: (...args: infer __A) => any }} ? __A : unknown[] : typeof {emit_props} extends {{ readonly __vizeLooseListener: infer __L extends unknown[] }} ? {loose_args} : typeof {emit_props} extends {{ {prop_key}?: (...args: infer __A) => any }} ? __A : unknown[];\n",
     );
     let contextless_listener = (ctx.contextual_listener && dynamic_component).then(|| {
         let contextless_listener = cstr!(

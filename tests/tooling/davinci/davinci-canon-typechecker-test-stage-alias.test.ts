@@ -19,7 +19,6 @@ const typecheckerTestRows: [string, string, number][] = [
     1,
   ],
   ["crates/vize_canon/src/virtual_ts/generator/script_module/namespace_hoist/tests.rs", "test", 1],
-  ["crates/vize_canon/src/virtual_ts/generator/script_module/plain_exports/tests.rs", "test", 4],
   [
     "crates/vize_canon/src/virtual_ts/generator/setup_helpers/template_ref_registry/tests.rs",
     "test",

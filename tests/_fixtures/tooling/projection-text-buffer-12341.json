@@ -1,0 +1,250 @@
+{
+  "schema": "vize.projectionTextBufferSource.v1",
+  "pr": 12341,
+  "credit": {
+    "compiled": false,
+    "native": false,
+    "performance": false
+  },
+  "files": [
+    {
+      "path": "crates/vize_canon/src/virtual_ts/generator/component_constructors.rs",
+      "before": {
+        "bytes": 10946,
+        "sha256": "70ea8375a7bc7b9617866eefadb0d83aa074240a1c6b603d06af46ed230a2489"
+      },
+      "after": {
+        "bytes": 11021,
+        "sha256": "e0cfed345e8b961f56738eb2a2ed54fa6712d7dc218ffeb35a425cf6f973aeed"
+      },
+      "hunks": [
+        {
+          "before": "pub(super) fn emit_component_constructors<'a>(\n    ts: &mut String,\n    setup_props_plan: &'a SetupPropsPlan,\n",
+          "after": "pub(super) fn emit_component_constructors<'a>(\n    ts: &mut crate::virtual_ts::TextBuf,\n    setup_props_plan: &'a SetupPropsPlan,\n"
+        },
+        {
+          "before": "    // Reuse its four owned fields inline without a capturable utility lookup.\n    let mut own = String::default();\n    let fields = if legacy_component { &mut *ts } else { &mut own };\n",
+          "after": "    // Reuse its four owned fields inline without a capturable utility lookup.\n    let mut own = crate::virtual_ts::TextBuf::default();\n    let fields = if legacy_component { &mut *ts } else { &mut own };\n"
+        },
+        {
+          "before": "    }\n    let mut base = String::default();\n    instance_base(\n",
+          "after": "    }\n    let mut base = crate::virtual_ts::TextBuf::default();\n    instance_base(\n"
+        },
+        {
+          "before": "        } else {\n            base.clone()\n        };\n",
+          "after": "        } else {\n            String::from(base.as_str())\n        };\n"
+        }
+      ]
+    },
+    {
+      "path": "crates/vize_canon/src/virtual_ts/generator/emits.rs",
+      "before": {
+        "bytes": 13856,
+        "sha256": "17b531f50a473ef1bdadac55d311756d2193bd547cc039f8af961355a05a538a"
+      },
+      "after": {
+        "bytes": 13916,
+        "sha256": "9128c70796ac59cae49312fa441d2548d412bc90d9a0608b41beb9559e53292b"
+      },
+      "hunks": [
+        {
+          "before": "        &self,\n        ts: &mut String,\n        summary: &Croquis,\n",
+          "after": "        &self,\n        ts: &mut crate::virtual_ts::TextBuf,\n        summary: &Croquis,\n"
+        },
+        {
+          "before": "pub(super) fn emit_emits_type(\n    ts: &mut String,\n    summary: &Croquis,\n",
+          "after": "pub(super) fn emit_emits_type(\n    ts: &mut crate::virtual_ts::TextBuf,\n    summary: &Croquis,\n"
+        },
+        {
+          "before": "fn emit_emit_props_helper(\n    ts: &mut String,\n    summary: &Croquis,\n",
+          "after": "fn emit_emit_props_helper(\n    ts: &mut crate::virtual_ts::TextBuf,\n    summary: &Croquis,\n"
+        }
+      ]
+    },
+    {
+      "path": "crates/vize_canon/src/virtual_ts/scope/component_events.rs",
+      "before": {
+        "bytes": 22600,
+        "sha256": "b4e95857da9131f19273c08925849109987b6bae8af8eac01d069484ba2860d1"
+      },
+      "after": {
+        "bytes": 22805,
+        "sha256": "e884363d6e668dcd802341d67d4edadebd0b49103b1683a566959d0f6122b74d"
+      },
+      "hunks": [
+        {
+          "before": "\nuse vize_carton::{CompactString, FxHashMap, FxHashSet, String, append, cstr};\nuse vize_croquis::{Croquis, EventHandlerScopeData, Scope, naming::to_pascal_case};\n",
+          "after": "\nuse vize_carton::{CompactString, FxHashMap, FxHashSet, String, cstr};\nuse vize_croquis::{Croquis, EventHandlerScopeData, Scope, naming::to_pascal_case};\n"
+        },
+        {
+          "before": "pub(super) fn generate_component_event_types(\n    ts: &mut String,\n    mappings: &mut Vec<VizeMapping>,\n",
+          "after": "pub(super) fn generate_component_event_types(\n    ts: &mut crate::virtual_ts::TextBuf,\n    mappings: &mut Vec<VizeMapping>,\n"
+        },
+        {
+          "before": "    let on_handler = cstr!(\"on{pascal_event}\");\n    let mut owned_listener_key = String::default();\n    if fallthrough_listeners && !legacy_vue2 {\n",
+          "after": "    let on_handler = cstr!(\"on{pascal_event}\");\n    let mut owned_listener_key = crate::virtual_ts::TextBuf::default();\n    if fallthrough_listeners && !legacy_vue2 {\n"
+        },
+        {
+          "before": "    }\n    let mut listener_key = String::default();\n    push_ts_string_literal(&mut listener_key, on_handler.as_str());\n",
+          "after": "    }\n    let mut listener_key = crate::virtual_ts::TextBuf::default();\n    push_ts_string_literal(&mut listener_key, on_handler.as_str());\n"
+        },
+        {
+          "before": "        // constraints here, so its payload comes from the bound-props call below.\n        append!(\n            *ts,\n            \"{indent}type {library} = typeof {component_ref} extends {{ __vizeCheck: any }} | {{ readonly __vizeComponentMarker: true }} ? false : typeof {component_ref} extends (...args: any[]) => infer __R ? 0 extends (1 & __R) ? false : '__ctx' extends keyof __R ? true : false : false;\\n\",\n        );\n        append!(\n            *ts,\n            \"{indent}type {props_box} = typeof {component_ref} extends {{ new (...args: any[]): {{ $props: infer __P }} }} ? [__P] : typeof {component_ref} extends (props: infer __P, ...args: any[]) => any ? [__P] : [];\\n\",\n        );\n        append!(\n            *ts,\n            \"{indent}type {emit_props_box} = typeof {component_ref} extends {{ __vizeEmitProps?: infer __EP }} ? [__EP] : [];\\n\",\n",
+          "after": "        // constraints here, so its payload comes from the bound-props call below.\n        vize_l0::emit_ts!(\n            ts,\n            \"{indent}type {library} = typeof {component_ref} extends {{ __vizeCheck: any }} | {{ readonly __vizeComponentMarker: true }} ? false : typeof {component_ref} extends (...args: any[]) => infer __R ? 0 extends (1 & __R) ? false : '__ctx' extends keyof __R ? true : false : false;\\n\",\n        );\n        vize_l0::emit_ts!(\n            ts,\n            \"{indent}type {props_box} = typeof {component_ref} extends {{ new (...args: any[]): {{ $props: infer __P }} }} ? [__P] : typeof {component_ref} extends (props: infer __P, ...args: any[]) => any ? [__P] : [];\\n\",\n        );\n        vize_l0::emit_ts!(\n            ts,\n            \"{indent}type {emit_props_box} = typeof {component_ref} extends {{ __vizeEmitProps?: infer __EP }} ? [__EP] : [];\\n\",\n"
+        },
+        {
+          "before": "            // An `any` root has no typed contract, the same as no root.\n            append!(\n                *ts,\n                \"{indent}type {fallthrough_box} = typeof {component_ref} extends {{ readonly __vizeFallthroughProps?: infer __F }} ? {is_any}<__F> extends true ? [] : [__F] : [];\\n\",\n",
+          "after": "            // An `any` root has no typed contract, the same as no root.\n            vize_l0::emit_ts!(\n                ts,\n                \"{indent}type {fallthrough_box} = typeof {component_ref} extends {{ readonly __vizeFallthroughProps?: infer __F }} ? {is_any}<__F> extends true ? [] : [__F] : [];\\n\",\n"
+        },
+        {
+          "before": "        if first_component {\n            append!(\n                *ts,\n                \"{indent}type {public_props} = {props_box} extends infer __B ? __B extends [infer __P] ? __P : {{}} : never;\\n\",\n",
+          "after": "        if first_component {\n            vize_l0::emit_ts!(\n                ts,\n                \"{indent}type {public_props} = {props_box} extends infer __B ? __B extends [infer __P] ? __P : {{}} : never;\\n\",\n"
+        },
+        {
+          "before": "        if first_contract {\n            append!(\n                *ts,\n                \"{indent}type {resolved_props} = typeof {component_ref} extends {{ readonly __vizeComponentMarker: true }} ? typeof {component_ref} extends {{ __vizeCheck: unknown }} ? {public_props} : {owned_listener_key} extends {emit_owned_keys}<typeof {component_ref}> ? {public_props} : unknown[] extends {fallthrough_args} ? {public_props} : typeof {component_ref} extends {{ readonly __vizeFallthroughProps?: infer __F }} ? NonNullable<__F> : {public_props} : {public_props};\\n\",\n",
+          "after": "        if first_contract {\n            vize_l0::emit_ts!(\n                ts,\n                \"{indent}type {resolved_props} = typeof {component_ref} extends {{ readonly __vizeComponentMarker: true }} ? typeof {component_ref} extends {{ __vizeCheck: unknown }} ? {public_props} : {owned_listener_key} extends {emit_owned_keys}<typeof {component_ref}> ? {public_props} : unknown[] extends {fallthrough_args} ? {public_props} : typeof {component_ref} extends {{ readonly __vizeFallthroughProps?: infer __F }} ? NonNullable<__F> : {public_props} : {public_props};\\n\",\n"
+        },
+        {
+          "before": "        if let Some(props) = contextual_props.as_ref() {\n            append!(\n                *ts,\n                \"{indent}type {prop_args} = {library} extends true ? unknown[] : {props} extends infer __P ? {prop_listener_args} : unknown[];\\n\",\n",
+          "after": "        if let Some(props) = contextual_props.as_ref() {\n            vize_l0::emit_ts!(\n                ts,\n                \"{indent}type {prop_args} = {library} extends true ? unknown[] : {props} extends infer __P ? {prop_listener_args} : unknown[];\\n\",\n"
+        },
+        {
+          "before": "        } else {\n            append!(\n                *ts,\n                \"{indent}type {prop_args} = {library} extends true ? unknown[] : {props_box} extends infer __B ? __B extends [infer __P] ? {prop_listener_args} : unknown[] : never;\\n\",\n",
+          "after": "        } else {\n            vize_l0::emit_ts!(\n                ts,\n                \"{indent}type {prop_args} = {library} extends true ? unknown[] : {props_box} extends infer __B ? __B extends [infer __P] ? {prop_listener_args} : unknown[] : never;\\n\",\n"
+        },
+        {
+          "before": "            if legacy_vue2 {\n                append!(\n                    *ts,\n                    \"{indent}type {fallthrough_args} = {fallthrough_box} extends infer __B ? __B extends [infer __F] ? NonNullable<__F> extends {{ {prop_key}?: (...args: infer __A) => any }} ? (__A extends [] ? unknown[] : __A) : unknown[] : unknown[] : never;\\n\",\n",
+          "after": "            if legacy_vue2 {\n                vize_l0::emit_ts!(\n                    ts,\n                    \"{indent}type {fallthrough_args} = {fallthrough_box} extends infer __B ? __B extends [infer __F] ? NonNullable<__F> extends {{ {prop_key}?: (...args: infer __A) => any }} ? (__A extends [] ? unknown[] : __A) : unknown[] : unknown[] : never;\\n\",\n"
+        },
+        {
+          "before": "            } else {\n                append!(\n                    *ts,\n                    \"{indent}type {fallthrough_args} = {fallthrough_box} extends infer __B ? __B extends [infer __F] ? NonNullable<__F> extends infer __P ? ({prop_listener_args}) extends infer __A extends unknown[] ? (__A extends [] ? unknown[] : __A) : unknown[] : unknown[] : unknown[] : never;\\n\",\n",
+          "after": "            } else {\n                vize_l0::emit_ts!(\n                    ts,\n                    \"{indent}type {fallthrough_args} = {fallthrough_box} extends infer __B ? __B extends [infer __F] ? NonNullable<__F> extends infer __P ? ({prop_listener_args}) extends infer __A extends unknown[] ? (__A extends [] ? unknown[] : __A) : unknown[] : unknown[] : unknown[] : never;\\n\",\n"
+        },
+        {
+          "before": "    if first_contract {\n        append!(\n            *ts,\n            \"{indent}type {static_emit_args} = {emit_props_box} extends infer __B ? __B extends [infer __EP] ? __EP extends {{ {prop_key}?: (...args: infer __A) => any }} ? __A : unknown[] : unknown[] : never;\\n\",\n",
+          "after": "    if first_contract {\n        vize_l0::emit_ts!(\n            ts,\n            \"{indent}type {static_emit_args} = {emit_props_box} extends infer __B ? __B extends [infer __EP] ? __EP extends {{ {prop_key}?: (...args: infer __A) => any }} ? __A : unknown[] : unknown[] : never;\\n\",\n"
+        },
+        {
+          "before": "            .unwrap_or_default();\n        append!(\n            *ts,\n            \"{indent}type {emit_args} = unknown[] extends {inferred} ? {static_emit_args} : {inferred};\\n\",\n        );\n        append!(\n            *ts,\n            \"{indent}type {args_type} = {loose_runtime_args}unknown[] extends {inferred} ? (unknown[] extends {prop_args} ? (unknown[] extends {emit_args} ? {unresolved_args} : {emit_args}) : {prop_args}) : {inferred};\\n\",\n",
+          "after": "            .unwrap_or_default();\n        vize_l0::emit_ts!(\n            ts,\n            \"{indent}type {emit_args} = unknown[] extends {inferred} ? {static_emit_args} : {inferred};\\n\",\n        );\n        vize_l0::emit_ts!(\n            ts,\n            \"{indent}type {args_type} = {loose_runtime_args}unknown[] extends {inferred} ? (unknown[] extends {prop_args} ? (unknown[] extends {emit_args} ? {unresolved_args} : {emit_args}) : {prop_args}) : {inferred};\\n\",\n"
+        },
+        {
+          "before": "    } else {\n        append!(\n            *ts,\n            \"{indent}type {emit_args} = {static_emit_args};\\n{indent}type {args_type} = unknown[] extends {prop_args} ? (unknown[] extends {emit_args} ? {unresolved_args} : {emit_args}) : {prop_args};\\n\",\n",
+          "after": "    } else {\n        vize_l0::emit_ts!(\n            ts,\n            \"{indent}type {emit_args} = {static_emit_args};\\n{indent}type {args_type} = unknown[] extends {prop_args} ? (unknown[] extends {emit_args} ? {unresolved_args} : {emit_args}) : {prop_args};\\n\",\n"
+        },
+        {
+          "before": "            cstr!(\"__{component_type_name}_{scope_id}_{safe_event_name}_legacy_args\");\n        append!(\n            *ts,\n            \"{indent}type {event_type} = {args_type} extends infer __A extends unknown[] ? [__A] extends [[]] ? any : unknown[] extends __A ? any : $Vue2LooseEventArg<__A[0]> : never;\\n\",\n        );\n        append!(\n            *ts,\n            \"{indent}type {legacy_args_type} = {args_type} extends [] ? any[] : unknown[] extends {args_type} ? any[] : $Vue2LooseEmitArgs<{args_type}>;\\n\",\n",
+          "after": "            cstr!(\"__{component_type_name}_{scope_id}_{safe_event_name}_legacy_args\");\n        vize_l0::emit_ts!(\n            ts,\n            \"{indent}type {event_type} = {args_type} extends infer __A extends unknown[] ? [__A] extends [[]] ? any : unknown[] extends __A ? any : $Vue2LooseEventArg<__A[0]> : never;\\n\",\n        );\n        vize_l0::emit_ts!(\n            ts,\n            \"{indent}type {legacy_args_type} = {args_type} extends [] ? any[] : unknown[] extends {args_type} ? any[] : $Vue2LooseEmitArgs<{args_type}>;\\n\",\n"
+        },
+        {
+          "before": "    } else {\n        append!(\n            *ts,\n            \"{indent}type {event_type} = {args_type} extends infer __A extends unknown[] ? [__A] extends [[]] ? any : unknown[] extends __A ? any : __A[0] : never;\\n\",\n",
+          "after": "    } else {\n        vize_l0::emit_ts!(\n            ts,\n            \"{indent}type {event_type} = {args_type} extends infer __A extends unknown[] ? [__A] extends [[]] ? any : unknown[] extends __A ? any : __A[0] : never;\\n\",\n"
+        }
+      ]
+    },
+    {
+      "path": "crates/vize_canon/src/virtual_ts/scope/component_events/emit_props_gate.rs",
+      "before": {
+        "bytes": 5423,
+        "sha256": "d7a6f6fd66f7021a61b7040db4e6c83572b9457c2d53a2a56a4b48a8ff7e9a25"
+      },
+      "after": {
+        "bytes": 5453,
+        "sha256": "1134e2d758c64e5bbf684ce6eab8a845ff2a1f753ac7a205f6b7c4df97b303d6"
+      },
+      "hunks": [
+        {
+          "before": "\nuse vize_carton::{String, append};\nuse vize_croquis::{Croquis, ScopeData, drawer::dynamic_component_alias};\n",
+          "after": "\nuse vize_carton::append;\nuse vize_croquis::{Croquis, ScopeData, drawer::dynamic_component_alias};\n"
+        },
+        {
+          "before": "pub(crate) fn emit_gate_aliases(\n    ts: &mut String,\n    summary: &Croquis,\n",
+          "after": "pub(crate) fn emit_gate_aliases(\n    ts: &mut crate::virtual_ts::TextBuf,\n    summary: &Croquis,\n"
+        },
+        {
+          "before": "pub(super) fn append_gated_call(\n    ts: &mut String,\n    indent: &str,\n",
+          "after": "pub(super) fn append_gated_call(\n    ts: &mut crate::virtual_ts::TextBuf,\n    indent: &str,\n"
+        }
+      ]
+    },
+    {
+      "path": "crates/vize_canon/src/virtual_ts/scope/component_events/emit_resolver_share.rs",
+      "before": {
+        "bytes": 4594,
+        "sha256": "a738fbed3ed35d294175a5d74434088a47280ae144a913552fa131d305623de8"
+      },
+      "after": {
+        "bytes": 4614,
+        "sha256": "a6bcc1dc2c8c10f3a37ebcbd657b5440811aace02ede862460729bc18cdadde6"
+      },
+      "hunks": [
+        {
+          "before": "\npub(crate) fn flush(ts: &mut String) {\n    STATE.with(|state| {\n",
+          "after": "\npub(crate) fn flush(ts: &mut crate::virtual_ts::TextBuf) {\n    STATE.with(|state| {\n"
+        }
+      ]
+    },
+    {
+      "path": "crates/vize_canon/src/virtual_ts/scope/component_events/prop_array_share.rs",
+      "before": {
+        "bytes": 9064,
+        "sha256": "4e097b0e7f462a3edaf7a3b73e44be98d295691665e6f383f33ec51fa8ac7ce7"
+      },
+      "after": {
+        "bytes": 9084,
+        "sha256": "fefd1b6bced7fb23a37b615475dff7673894733e19e7d4d74c1d1d58ac3e80b9"
+      },
+      "hunks": [
+        {
+          "before": "\npub(super) fn emit(ts: &mut String, emit: Emit<'_>) {\n    let Emit {\n",
+          "after": "\npub(super) fn emit(ts: &mut crate::virtual_ts::TextBuf, emit: Emit<'_>) {\n    let Emit {\n"
+        }
+      ]
+    },
+    {
+      "path": "crates/vize_canon/src/virtual_ts/scope/component_events/generic_inference.rs",
+      "before": {
+        "bytes": 18530,
+        "sha256": "33f33f57c1d8f4bcd5d61eea09cd8b5262e62bc02b3af2f52371407d58f10d1f"
+      },
+      "after": {
+        "bytes": 18590,
+        "sha256": "4ccbe84564a67c778ad1cc82235ac1cbf97b7cc3a5392226edf5f87b1e828116"
+      },
+      "hunks": [
+        {
+          "before": "pub(super) fn generate_inferred_emit_args(\n    ts: &mut String,\n    mappings: &mut Vec<VizeMapping>,\n",
+          "after": "pub(super) fn generate_inferred_emit_args(\n    ts: &mut crate::virtual_ts::TextBuf,\n    mappings: &mut Vec<VizeMapping>,\n"
+        },
+        {
+          "before": "        append!(*ts, \"{}const {emit_props} = (() => {{\\n\", ctx.indent);\n        append!(\n            *ts,\n            \"{call_indent}// @ts-ignore Inference-only guard; authored binding checks own diagnostics.\\n\"\n",
+          "after": "        append!(*ts, \"{}const {emit_props} = (() => {{\\n\", ctx.indent);\n        vize_l0::emit_ts!(\n            ts,\n            \"{call_indent}// @ts-ignore Inference-only guard; authored binding checks own diagnostics.\\n\"\n"
+        },
+        {
+          "before": "        } else {\n            append!(\n                *ts,\n                \"{indent}const {emit_props} = (undefined as unknown as {resolver_type})({component_ref})(\",\n            );\n",
+          "after": "        } else {\n            vize_l0::emit_ts!(\n                ts,\n                \"{indent}const {emit_props} = (undefined as unknown as {resolver_type})({component_ref})(\"\n            );\n"
+        },
+        {
+          "before": "                if entry.inline_callback {\n                    append!(\n                        *ts,\n                        \"{call_indent}  // @ts-ignore Inference-only callback prop; mapped prop owner checks diagnostics.\\n\"\n",
+          "after": "                if entry.inline_callback {\n                    vize_l0::emit_ts!(\n                        ts,\n                        \"{call_indent}  // @ts-ignore Inference-only callback prop; mapped prop owner checks diagnostics.\\n\"\n"
+        },
+        {
+          "before": "                    // authored diagnostic (#10397).\n                    append!(\n                        *ts,\n                        \"{call_indent}  // @ts-ignore Inference-only prop; the canonical component-props call owns diagnostics.\\n\"\n",
+          "after": "                    // authored diagnostic (#10397).\n                    vize_l0::emit_ts!(\n                        ts,\n                        \"{call_indent}  // @ts-ignore Inference-only prop; the canonical component-props call owns diagnostics.\\n\"\n"
+        },
+        {
+          "before": "                }\n                append!(*ts, \"{call_indent}  \");\n                let entry_start = ts.len();\n",
+          "after": "                }\n                vize_l0::emit_ts!(ts, \"{call_indent}  \");\n                let entry_start = ts.len();\n"
+        },
+        {
+          "before": "            }\n            append!(*ts, \"{call_indent}}});\\n\");\n        }\n",
+          "after": "            }\n            vize_l0::emit_ts!(ts, \"{call_indent}}});\\n\");\n        }\n"
+        },
+        {
+          "before": "    );\n    append!(\n        *ts,\n        \"{indent}type {contextless_listener} = {library} extends true ? false : typeof {emit_props} extends {{ readonly __vizeLooseListener: unknown[] }} ? true : false;\\n\"\n    );\n        contextless_listener\n",
+          "after": "    );\n    vize_l0::emit_ts!(ts, \"{indent}type {contextless_listener} = {library} extends true ? false : typeof {emit_props} extends {{ readonly __vizeLooseListener: unknown[] }} ? true : false;\\n\");\n        contextless_listener\n"
+        }
+      ]
+    }
+  ]
+}

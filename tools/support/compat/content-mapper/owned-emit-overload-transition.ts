@@ -18,7 +18,7 @@ const currentPreambleHash = "a8ef812b81fda63ef7d2f9104cccffaa5330df2ab5ea4e49360
 const stableSourceHashes = [
   [
     "crates/vize_canon/src/virtual_ts/generator/emits.rs",
-    "17b531f50a473ef1bdadac55d311756d2193bd547cc039f8af961355a05a538a",
+    "9128c70796ac59cae49312fa441d2548d412bc90d9a0608b41beb9559e53292b",
   ],
   [
     "crates/vize_canon/tests/constructor_emission_projection.rs",
