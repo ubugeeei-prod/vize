@@ -2,12 +2,17 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { test } from "node:test";
+import { test, type TestContext } from "node:test";
+import { createSync, deferred } from "./support/vscode-config-sync.ts";
 import { createDiscovery } from "./support/vscode-workspace-config.mjs";
 
 const configs = ["vite.config.ts", "tsconfig.json", "jsconfig.json"];
 
-function project(t, files, links = {}) {
+function project(
+  t: TestContext,
+  files: readonly string[],
+  links: Readonly<Record<string, string>> = {},
+): string {
   const root = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), "vize-near-config-")));
   t.after(() => fs.rmSync(root, { recursive: true, force: true }));
   for (const file of files) {
@@ -21,23 +26,21 @@ function project(t, files, links = {}) {
   return root;
 }
 
-function near(root, filesExclude, findFiles) {
-  return createDiscovery(findFiles, [root], { projectConfigFiles: configs, filesExclude });
+function near(root: string, filesExclude?: unknown) {
+  return createDiscovery(undefined, [root], { projectConfigFiles: configs, filesExclude });
 }
 
 await test("a config two directory levels down decides startup until the complete search returns", async (t) => {
   const root = project(t, ["packages/app/tsconfig.json", "packages/app/src/App.vue"]);
-  let results = [];
-  const { discovery, operations } = near(root, undefined, async () => results);
+  const { discovery, operations } = near(root);
   assert.equal(discovery.hasRootConfig, false);
   assert.equal(await discovery.findNearConfig(), true);
   assert.equal(discovery.hasConfig, true);
   assert.deepEqual(
-    operations.filter(([kind]) => kind === "findFiles"),
+    operations.filter(([kind]: unknown[]) => kind === "findFiles"),
     [],
     "the nearby listing never starts a workspace search",
   );
-  results = [];
   await discovery.refresh(1);
   assert.equal(discovery.hasConfig, false, "the complete search stays authoritative");
   assert.equal(await discovery.findNearConfig(), false, "a completed search is not reopened");
@@ -83,10 +86,23 @@ await test("files.exclude basename keys hide entries; any other key keeps the co
 
 await test("a refresh that starts during the listing owns the decision", async (t) => {
   const root = project(t, ["packages/app/tsconfig.json"]);
-  const { discovery } = near(root, undefined, async () => []);
+  const { discovery } = near(root);
   const pending = discovery.findNearConfig();
   const refreshed = discovery.refresh(2);
   assert.equal(await pending, false);
   assert.equal(discovery.hasConfig, false);
   await refreshed;
+});
+
+await test("a nearby config starts the client before the workspace-wide search returns", async () => {
+  const search = deferred();
+  const current = createSync(() => search.promise, undefined, false, undefined, {
+    nearConfig: true,
+  });
+  await current.control.syncClientToConfiguration({}, "initial activation");
+  assert.deepEqual(
+    current.operations.filter(([kind]) => kind === "start").map((row) => [...row]),
+    [["start", 1]],
+  );
+  search.resolve();
 });
