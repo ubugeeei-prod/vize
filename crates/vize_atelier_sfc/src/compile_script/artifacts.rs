@@ -8,7 +8,7 @@ use oxc_allocator::Allocator;
 use oxc_ast::ast::{Argument, CallExpression, Expression, Statement};
 use oxc_span::{GetSpan, SourceType};
 use vize_carton::{String, ToCompactString};
-use vize_croquis::macros::{artifact_macro_names, macro_artifact_kind};
+use vize_l2::framework::vue::{artifact_macro_names, macro_artifact_kind};
 
 use crate::module_map::{Runs, apply_edits};
 use crate::types::SfcMacroArtifact;

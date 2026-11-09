@@ -6,11 +6,11 @@
 /// Nuxt page metadata is erased by its explicit adapter pass, not by ordinary
 /// script statement classification. Typed-router calls are erased before this pass.
 pub(crate) fn runtime_erased_macro_names() -> impl Iterator<Item = &'static str> {
-    vize_croquis::macros::runtime_erased_macro_names().filter(|name| *name != "definePageMeta")
+    vize_l2::framework::vue::runtime_erased_macro_names().filter(|name| *name != "definePageMeta")
 }
 
 pub(crate) fn is_runtime_erased_macro(name: &str) -> bool {
-    name != "definePageMeta" && vize_croquis::macros::is_runtime_erased_macro(name)
+    name != "definePageMeta" && vize_l2::framework::vue::is_runtime_erased_macro(name)
 }
 
 /// Check if a line is a compiler macro call (not just containing the macro name as a string)

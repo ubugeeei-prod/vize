@@ -13,7 +13,7 @@ use std::sync::LazyLock;
 
 use super::context::ScriptCompileContext;
 
-pub use vize_croquis::macros::DEFINE_EMITS;
+pub use vize_l2::framework::vue::DEFINE_EMITS;
 
 /// Result of processing defineEmits
 #[derive(Debug, Clone, Default)]
