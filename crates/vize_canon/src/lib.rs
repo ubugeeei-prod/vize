@@ -50,7 +50,6 @@ mod context;
 pub mod corsa_profile;
 #[cfg(feature = "native")]
 pub mod corsa_session_cache;
-pub mod css_classes;
 mod diagnostic;
 #[cfg(feature = "native")]
 mod file_uri;

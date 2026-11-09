@@ -5,10 +5,10 @@ use std::collections::{BTreeMap, BTreeSet};
 use vize_atelier_sfc::SfcDescriptor;
 use vize_carton::{String as CompactString, ToCompactString};
 
-use crate::css_classes::authored_local_css_classes as extract_authored_css_classes;
 use crate::virtual_ts::{
     CSS_MODULE_GLOBAL_MARKER, ResolveStyleClassNames, TemplateGlobal, VirtualTsOptions,
 };
+use vize_l1::css::lang::StyleLanguage;
 
 pub(crate) fn virtual_ts_options_for_descriptor(
     base: &VirtualTsOptions,
@@ -207,6 +207,10 @@ fn contains_dynamic_css_module_exports(css: &str) -> bool {
     ["@value", "composes", ":export", "#{"]
         .iter()
         .any(|marker| lower.contains(marker))
+}
+
+fn extract_authored_css_classes(css: &str) -> Option<BTreeSet<CompactString>> {
+    StyleLanguage::Css.authored_local_classes(css)
 }
 
 /// The specifiers of the block's `@import` rules, in source order: plain

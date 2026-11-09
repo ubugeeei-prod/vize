@@ -114,6 +114,15 @@ fn stylus_modules_resolve_indented_parent_references() {
 }
 
 #[test]
+fn postcss_and_styl_spellings_use_their_dialects() {
+    let source = "<template>\n  <div :class=\"$style.\" />\n</template>\n<style module lang=\"postcss\">\n.post { color: red }\n</style>\n<style module lang=\"styl\">\n.short\n  &-x\n    color red\n</style>\n";
+    assert_eq!(
+        complete(source, "$style."),
+        fields(&["post", "short", "short-x"])
+    );
+}
+
+#[test]
 fn a_named_module_lists_its_own_classes() {
     let source = r#"<template>
   <div :class="classes." />

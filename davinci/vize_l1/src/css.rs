@@ -8,7 +8,9 @@ use alloc::vec::Vec;
 use cssparser::{CowRcStr, ParseError, ParseErrorKind, Token};
 use vize_l0::{SourceBlock, Span};
 
+mod classes;
 mod empty;
+pub mod lang;
 mod list;
 mod parser;
 pub use empty::EmptyClassStyle;
