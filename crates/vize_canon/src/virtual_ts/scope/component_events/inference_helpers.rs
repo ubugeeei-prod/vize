@@ -1,4 +1,3 @@
-use vize_carton::String;
 use vize_croquis::{Croquis, ScopeData};
 
 use crate::virtual_ts::helpers::shared_types::EMIT_PROPS;
@@ -24,7 +23,7 @@ type $EmitPropsFactory<C> = $IsAny<C> extends true ? (component: C) => (props: {
 /// `forwards_roots`: a generic component instantiates the listeners its root
 /// forwards the same way, whether or not its own template listens to anything.
 pub(crate) fn emit_event_inference_helpers(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     summary: &Croquis,
     forwards_roots: bool,
     legacy_vue2: bool,
@@ -68,7 +67,7 @@ mod tests {
                 ") => __EmitProps<E>;",
             ),
         ] {
-            let mut output = String::default();
+            let mut output = crate::virtual_ts::TextBuf::default();
             assert!(emit_event_inference_helpers(
                 &mut output,
                 &Croquis::default(),

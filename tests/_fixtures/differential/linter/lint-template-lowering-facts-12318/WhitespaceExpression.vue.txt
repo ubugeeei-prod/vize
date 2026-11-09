@@ -1,0 +1,7 @@
+<script setup lang="ts">
+const ok = true
+</script>
+
+<template>
+  <div v-if="  !ok ">{{ ok }}</div>
+</template>

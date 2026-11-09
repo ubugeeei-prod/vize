@@ -70,7 +70,7 @@ impl<'a> PropBindingMappings<'a> {
 
     pub(super) fn emit(
         &mut self,
-        ts: &mut String,
+        ts: &mut crate::virtual_ts::TextBuf,
         props_object_binding: &str,
         props_type_ref: &str,
         name: &str,

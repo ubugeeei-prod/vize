@@ -1,6 +1,6 @@
 //! The DOM type of every possible single template root.
 
-use vize_carton::{CompactString, FxHashSet, String, append, cstr, is_native_tag};
+use vize_carton::{CompactString, FxHashSet, append, cstr, is_native_tag};
 use vize_croquis::Croquis;
 use vize_relief::{ElementNode, Namespace, PropNode, RootNode, TemplateChildNode};
 
@@ -11,7 +11,7 @@ use crate::virtual_ts::{
 };
 
 pub(super) fn emit_setup_type(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     summary: &Croquis,
     options: &VirtualTsOptions,
     type_only_names: &FxHashSet<CompactString>,
@@ -30,7 +30,7 @@ pub(super) fn emit_setup_type(
                 Namespace::MathMl => "MathMLElementTagNameMap",
                 _ => "HTMLElementTagNameMap",
             };
-            let mut tag = String::default();
+            let mut tag = crate::virtual_ts::TextBuf::default();
             push_ts_string_literal(&mut tag, element.tag);
             cstr!("$RootNativeElement<{tag}, {map}>")
         } else {

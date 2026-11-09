@@ -59,6 +59,7 @@ fn forward(previous: &str, transition: &Value) -> String {
 }
 
 pub(super) fn source_before(path: &str, current: String) -> String {
+    let current = super::projection_text_buffer::source_before(path, current);
     let receipt = receipt();
     receipt["files"]
         .as_array()
@@ -76,7 +77,7 @@ pub(super) fn retain_provenance(manifest: &mut Value) {
     let receipt = receipt();
     for transition in receipt["files"].as_array().unwrap() {
         let path = transition["path"].as_str().unwrap();
-        let current = std::fs::read_to_string(support::repository().join(path)).unwrap();
+        let current = super::projection_text_buffer::read_current(path);
         identity(&current, &transition["after"]);
         inverse(&current, transition);
     }
@@ -100,7 +101,7 @@ mod tests {
         let receipt = receipt();
         for transition in receipt["files"].as_array().unwrap() {
             let path = transition["path"].as_str().unwrap();
-            let current = std::fs::read_to_string(support::repository().join(path)).unwrap();
+            let current = super::super::projection_text_buffer::read_current(path);
             let previous = inverse(&current, transition);
             assert_eq!(forward(&previous, transition), current);
         }
@@ -122,10 +123,9 @@ mod tests {
             let current = if transition["path"] == "vize_canon::virtual_ts::SHARED_PREAMBLE_DTS" {
                 vize_canon::virtual_ts::SHARED_PREAMBLE_DTS.to_owned()
             } else {
-                std::fs::read_to_string(
-                    support::repository().join(transition["path"].as_str().unwrap()),
+                super::super::projection_text_buffer::read_current(
+                    transition["path"].as_str().unwrap(),
                 )
-                .unwrap()
             };
             for mutated in [
                 format!("{current}\n"),

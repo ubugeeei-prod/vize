@@ -129,7 +129,7 @@ impl SetupImportPlan {
         plan
     }
 
-    pub(super) fn emit_import_anchors(&self, ts: &mut String) {
+    pub(super) fn emit_import_anchors(&self, ts: &mut crate::virtual_ts::TextBuf) {
         for (index, import) in self.imports.iter().enumerate() {
             append!(
                 *ts,
@@ -155,7 +155,7 @@ impl SetupImportPlan {
 
     pub(super) fn emit_template_slots(
         &self,
-        ts: &mut String,
+        ts: &mut crate::virtual_ts::TextBuf,
         mappings: &mut Vec<VizeMapping>,
         source_offset: &dyn Fn(usize) -> usize,
     ) {
@@ -168,7 +168,7 @@ impl SetupImportPlan {
 
     pub(super) fn emit_setup(
         &self,
-        ts: &mut String,
+        ts: &mut crate::virtual_ts::TextBuf,
         options: &VirtualTsOptions,
         mappings: &mut Vec<VizeMapping>,
         links: &mut Vec<VizeSemanticLink>,
@@ -252,7 +252,7 @@ impl SetupImportPlan {
     }
 }
 
-fn emit_css_module_type(ts: &mut String, options: &VirtualTsOptions) {
+fn emit_css_module_type(ts: &mut crate::virtual_ts::TextBuf, options: &VirtualTsOptions) {
     let mut has_default = false;
     ts! { &mut *ts =>
         #("  type $StyleModules = ")

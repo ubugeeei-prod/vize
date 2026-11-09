@@ -48,7 +48,7 @@ pub(crate) fn reset() {
     });
 }
 
-pub(crate) fn flush(ts: &mut String) {
+pub(crate) fn flush(ts: &mut crate::virtual_ts::TextBuf) {
     STATE.with(|state| {
         let pending = std::mem::take(&mut state.borrow_mut().pending);
         for line in &pending {

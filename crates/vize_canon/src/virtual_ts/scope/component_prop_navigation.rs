@@ -1,6 +1,6 @@
 use std::ops::Range;
 
-use vize_carton::{String, append, cstr};
+use vize_carton::cstr;
 use vize_croquis::croquis::{ComponentUsage, PassedProp, SlotUsage};
 
 use crate::virtual_ts::component_reference::component_binding_reference;
@@ -13,7 +13,7 @@ use super::component_props::named_dynamic_navigation_reference;
 use super::context::ComponentPropsContext;
 
 pub(super) fn emit_references(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     mappings: &mut Vec<VizeMapping>,
     semantic_links: &mut Vec<VizeSemanticLink>,
     ctx: &ComponentPropsContext<'_, '_>,
@@ -26,7 +26,7 @@ pub(super) fn emit_references(
 }
 
 pub(super) fn emit_usage_references(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     mappings: &mut Vec<VizeMapping>,
     semantic_links: &mut Vec<VizeSemanticLink>,
     ctx: &ComponentPropsContext<'_, '_>,
@@ -78,7 +78,7 @@ pub(super) fn emit_usage_references(
 }
 
 fn emit_prop_references(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     mappings: &mut Vec<VizeMapping>,
     semantic_links: &mut Vec<VizeSemanticLink>,
     ctx: &ComponentPropsContext<'_, '_>,
@@ -93,8 +93,8 @@ fn emit_prop_references(
     let completion_offset = ts.len();
     let component_navigation_props =
         crate::virtual_ts::helpers::shared_types::COMPONENT_NAVIGATION_PROPS.select(false);
-    append!(
-        *ts,
+    vize_l0::emit_ts!(
+        ts,
         "}} = undefined as unknown as {component_navigation_props}<__{component_type_name}_Props_{idx}>;\n"
     );
     semantic_links.push(VizeSemanticLink {
@@ -113,15 +113,15 @@ fn emit_prop_references(
         };
 
         if !emitted_props_ref {
-            append!(
-                *ts,
+            vize_l0::emit_ts!(
+                ts,
                 "  const {props_ref} = undefined as unknown as __{component_type_name}_Props_{idx} & Record<string, unknown>;\n"
             );
             emitted_props_ref = true;
         }
 
         let camel_prop_name = to_camel_case(prop.name.as_str());
-        append!(*ts, "  void {props_ref}");
+        vize_l0::emit_ts!(ts, "  void {props_ref}");
         let prop_gen_range = if is_ts_identifier(camel_prop_name.as_str()) {
             ts.push('.');
             let prop_gen_start = ts.len();
@@ -178,7 +178,7 @@ fn prop_navigation_source_range(
 }
 
 fn emit_slot_references(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     mappings: &mut Vec<VizeMapping>,
     ctx: &ComponentPropsContext<'_, '_>,
     idx: usize,
@@ -204,13 +204,13 @@ fn emit_slot_references(
             if ctx.hoist_shared_preamble {
                 let navigation_slots =
                     crate::virtual_ts::helpers::shared_types::NAVIGATION_SLOTS.select(true);
-                append!(
-                    *ts,
+                vize_l0::emit_ts!(
+                    ts,
                     "  const {slots_ref} = undefined as unknown as {navigation_slots}<typeof {component_ref}>;\n"
                 );
             } else {
-                append!(
-                    *ts,
+                vize_l0::emit_ts!(
+                    ts,
                     "  const {slots_ref} = undefined as unknown as $NavigationSlots<typeof {component_ref}>;\n"
                 );
             }
@@ -223,8 +223,8 @@ fn emit_slot_references(
         } else {
             // Native quoted binding keys use string-literal search rather than
             // the owner's property identity. Indexed typeof also rejects missing keys.
-            append!(
-                *ts,
+            vize_l0::emit_ts!(
+                ts,
                 "  const __vize_slot_nav_{idx}_{slot_index} = undefined as unknown as typeof {slots_ref}["
             );
         }
@@ -238,12 +238,12 @@ fn emit_slot_references(
         };
         let access_end = ts.len();
         if identifier {
-            append!(
-                *ts,
+            vize_l0::emit_ts!(
+                ts,
                 ": __vize_slot_nav_{idx}_{slot_index} }} = {slots_ref};\n  void __vize_slot_nav_{idx}_{slot_index};\n"
             );
         } else {
-            append!(*ts, "];\n  void __vize_slot_nav_{idx}_{slot_index};\n");
+            vize_l0::emit_ts!(ts, "];\n  void __vize_slot_nav_{idx}_{slot_index};\n");
         }
         let src_range = (ctx.template_offset as usize + source_range.start)
             ..(ctx.template_offset as usize + source_range.end);

@@ -14,7 +14,7 @@ fn complete_directives_preserve_literal_target_names_and_deduplicate() {
         "./relative&types.d.ts",
     ]
     .map(String::from);
-    let mut code = String::default();
+    let mut code = crate::virtual_ts::TextBuf::default();
     emit(&mut code, &paths);
     assert_eq!(
         code,
@@ -61,7 +61,7 @@ fn unrepresentable_paths_report_the_exact_value_and_reason() {
             validate_reference_paths(&paths),
             Err(InvalidReferencePath { path, reason })
         );
-        let mut code = String::default();
+        let mut code = crate::virtual_ts::TextBuf::default();
         emit(&mut code, &paths);
         assert_eq!(code, "");
     }

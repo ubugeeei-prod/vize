@@ -66,7 +66,7 @@ const LEGACY_VUE2_COMPONENT_CONSTRUCTOR_STATICS: &str = r#"type $Vue2ComponentCo
 "#;
 
 pub(super) fn emit_component_constructors<'a>(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     setup_props_plan: &'a SetupPropsPlan,
     aliases: &ComponentInstanceAliases<'a>,
     authored_generic: Option<&'a str>,
@@ -126,7 +126,7 @@ pub(super) fn emit_component_constructors<'a>(
     }
     // Keep the public instance's anonymous object unchanged for diagnostic text.
     // Reuse its four owned fields inline without a capturable utility lookup.
-    let mut own = String::default();
+    let mut own = crate::virtual_ts::TextBuf::default();
     let fields = if legacy_component { &mut *ts } else { &mut own };
     fields.push_str("{\n");
     setup_props_plan.emit_component_props_field(
@@ -149,7 +149,7 @@ pub(super) fn emit_component_constructors<'a>(
     if !legacy_component {
         ts.push_str(&own);
     }
-    let mut base = String::default();
+    let mut base = crate::virtual_ts::TextBuf::default();
     instance_base(
         &mut base,
         legacy_vue2,
@@ -196,7 +196,7 @@ pub(super) fn emit_component_constructors<'a>(
         let constructor_base = if aliases.has_authored_default {
             cstr!("Omit<{authored_instance}, '$props' | '$emit' | '$slots'> & {base}")
         } else {
-            base.clone()
+            String::from(base.as_str())
         };
         append!(
             *ts,

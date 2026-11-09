@@ -31,6 +31,7 @@ void test("Wild adapter reverse expansion retains the whole pinned original acti
     "download-retries": "${{ inputs.download-retries }}",
   });
   const step = after.runs.steps[0];
+  delete step.env;
   step.if = before.runs.steps[0].if;
   step.run = step.run.replaceAll(
     "/0.9.0/wild-linker-0.9.0-",
@@ -86,7 +87,7 @@ void test("Wild delegation is complementary for every unsupported host or input"
           assert.equal(applies(steps[0].if, values), !owned);
         }
 });
-void test("Core PR gates and canonical SSR-Pug use the recovery adapter", () => {
+void test("Core PR and merge gates use the recovery adapter", () => {
   const pr = parse(fs.readFileSync(".github/workflows/pr-source-checks.yml", "utf8"));
   const local = "./.github/actions/setup-wild-http-recovery";
   assert.equal(pr.jobs["pr-playground-test"].steps.filter((s) => s.uses === local).length, 1);
@@ -112,13 +113,20 @@ void test("Core PR gates and canonical SSR-Pug use the recovery adapter", () => 
   assert.deepEqual(
     steps.find((s) => s.uses === local),
     {
-      name: "Setup Wild linker recovery (SSR-Pug)",
-      if: "${{ matrix.observer == 'ssr-pug' }}",
+      name: "Setup Wild linker recovery",
       uses: local,
       with: { "wild-version": "0.9.0" },
     },
   );
-  assert.equal(steps.find((s) => s.uses === upstream).if, "${{ matrix.observer != 'ssr-pug' }}");
+  assert.equal(
+    steps.find((s) => s.uses === upstream),
+    undefined,
+  );
+  const instructions = parse(
+    fs.readFileSync(".github/workflows/level-instruction-counts.yml", "utf8"),
+  );
+  assert.deepEqual(uses(instructions.jobs, local), ["instruction-counts", "sfc-parse"]);
+  assert.deepEqual(uses(instructions.jobs, upstream), []);
 });
 void test("Expanded primary success equals original stdout/stderr/files/config and removes archive", () =>
   fixture(({ run }) => {
@@ -176,12 +184,22 @@ for (const http of ["500", "502", "503", "504"])
         "--header",
         "Accept: application/octet-stream",
         "--header",
+        "Authorization: Bearer fixture-token",
+        "--header",
         "X-GitHub-Api-Version: 2022-11-28",
         "--output",
         after.calls[0][7],
         alternative,
       ]);
     }));
+void test("HTTP recovery refuses an absent Actions token before the asset API", () =>
+  fixture(({ run }) => {
+    assertBeforeExtraction(
+      run({ env: { PRIMARY_EXIT: "22", HTTP: "504", GITHUB_TOKEN: "" } }),
+      1,
+      1,
+    );
+  }));
 void test("Existing install directory retains original mkdir refusal before any download", () =>
   fixture(({ run }) => {
     const before = run({ original: true, existing: true }),
@@ -252,6 +270,7 @@ void test("Exact context refusal and API nonzero status do not depend on inherit
         PAYLOAD: path.join(root, "payload"),
         PRIMARY_BODY: "valid",
         API_BODY: "valid",
+        GITHUB_TOKEN: "fixture-token",
         PRIMARY_EXIT: "22",
         HTTP: "504",
         API_EXIT: "28",

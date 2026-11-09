@@ -14,7 +14,7 @@ use super::imports::extract_declared_name;
 /// `<script>` imports are covered too: `summary.bindings` only holds
 /// `<script setup>` bindings when both blocks exist.
 pub(super) fn emit_auto_import_stubs(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     summary: &Croquis,
     options: &VirtualTsOptions,
     imported_names: &FxHashSet<&str>,
@@ -36,7 +36,7 @@ pub(super) fn emit_auto_import_stubs(
 }
 
 fn emit_stubs(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     summary: &Croquis,
     options: &VirtualTsOptions,
     imported_names: &FxHashSet<&str>,

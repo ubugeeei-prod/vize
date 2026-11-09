@@ -71,17 +71,6 @@
       "reason": "Remove Maestro's inherited Canon-to-Relief path."
     },
     {
-      "from": "vize_glyph",
-      "to": "vize_atelier_sfc",
-      "rename": null,
-      "target": null,
-      "optional": false,
-      "workspace": true,
-      "roots": ["vize_maestro"],
-      "issue": 6851,
-      "reason": "Remove Maestro's inherited Glyph-to-Atelier SFC path."
-    },
-    {
       "from": "vize_incremental",
       "to": "vize_croquis",
       "rename": null,

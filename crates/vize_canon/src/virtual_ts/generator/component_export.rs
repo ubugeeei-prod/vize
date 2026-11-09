@@ -77,7 +77,7 @@ const VUE_COMPONENT_OPTIONS_MEMBERS_AFTER_SETUP: &str = "  render?: Function;
 /// spelling therefore carries [`COMPONENT_OPTIONS_INDEX_SIGNATURE`], which
 /// keeps generic components reporting exactly what `vue-tsc` reports.
 fn emit_vue_component_options_type(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     has_generic_params: bool,
     static_raw_props_ref: Option<&str>,
 ) {
@@ -104,7 +104,10 @@ fn emit_vue_component_options_type(
 
 /// Alias the authored default export and its instance type so the generated
 /// component keeps the declarations the SFC itself wrote.
-pub(super) fn emit_authored_component_aliases(ts: &mut String, authored: AuthoredDefaultKind) {
+pub(super) fn emit_authored_component_aliases(
+    ts: &mut crate::virtual_ts::TextBuf,
+    authored: AuthoredDefaultKind,
+) {
     if authored == AuthoredDefaultKind::None {
         return;
     }
@@ -122,7 +125,7 @@ pub(super) fn emit_authored_component_aliases(ts: &mut String, authored: Authore
 
 #[expect(clippy::too_many_arguments, reason = "independent emitter inputs")]
 pub(super) fn emit_default_export_declaration(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     emits_info: &EmitsInfo,
     generic_component_params: Option<GenericComponentContract<'_>>,
     authored_default: AuthoredDefaultKind,
@@ -358,7 +361,7 @@ fn public_name(
 /// Emit the default export. A named export returns its declared name's
 /// range, whose authored counterpart is the SFC itself.
 pub(super) fn default_export(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     names: Option<&ComponentNames>,
 ) -> Option<std::ops::Range<usize>> {
     crate::virtual_ts::generated_names::emit_forwarded_helpers(ts);

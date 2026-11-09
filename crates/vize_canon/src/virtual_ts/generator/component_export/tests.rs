@@ -45,14 +45,14 @@ fn named_export_returns_its_declared_name() {
         value: String::from("Child"),
         type_name: String::from("ChildComponent"),
     };
-    let mut output = String::from(SETUP);
+    let mut output = crate::virtual_ts::TextBuf::from_text(SETUP);
     let name = default_export(&mut output, Some(&names)).expect("named export");
     assert_eq!(output.get(name), Some("Child"));
     assert_eq!(
         output,
         "// generated setup helpers\ndeclare const Child: typeof __vize_component__;\nexport default Child;\n"
     );
-    let mut batch = String::from(SETUP);
+    let mut batch = crate::virtual_ts::TextBuf::from_text(SETUP);
     assert_eq!(default_export(&mut batch, None), None);
     assert_eq!(
         batch,

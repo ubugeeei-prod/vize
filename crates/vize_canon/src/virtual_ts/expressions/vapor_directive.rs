@@ -8,11 +8,11 @@ use std::ops::Range;
 use super::directive_values::DirectiveValueBinding;
 use crate::virtual_ts::helpers::push_ts_string_literal;
 use crate::virtual_ts::types::VizeMapping;
-use vize_carton::{String, append};
+use vize_carton::append;
 use vize_l0::ts;
 
 pub(super) fn generate(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     mappings: &mut Vec<VizeMapping>,
     (name, generated_expression, (mapped_start, mapped_len), source): (
         &str,
@@ -41,15 +41,16 @@ pub(super) fn generate(
             "{indent}const {name} = __vizeVaporDirective(__vizeRegisteredDirective<{registered}, \"{variable}\">());\n",
         );
     }
-    let mut push_mapped = |ts: &mut String, text: &str, source: Range<usize>| {
-        let gen_start = ts.len();
-        ts.push_str(text);
-        mappings.push(VizeMapping {
-            gen_range: gen_start..ts.len(),
-            src_range: source,
-            sub_spans: Vec::new(),
-        });
-    };
+    let mut push_mapped =
+        |ts: &mut crate::virtual_ts::TextBuf, text: &str, source: Range<usize>| {
+            let gen_start = ts.len();
+            ts.push_str(text);
+            mappings.push(VizeMapping {
+                gen_range: gen_start..ts.len(),
+                src_range: source,
+                sub_spans: Vec::new(),
+            });
+        };
     let in_template = |(start, end): (u32, u32)| {
         (template_offset + start) as usize..(template_offset + end) as usize
     };
@@ -62,7 +63,7 @@ pub(super) fn generate(
     ts.push_str("), ");
     match &binding.arg {
         Some((arg, range)) => {
-            let mut literal = String::default();
+            let mut literal = crate::virtual_ts::TextBuf::default();
             push_ts_string_literal(&mut literal, arg.as_str());
             push_mapped(ts, literal.as_str(), in_template(*range));
         }
@@ -77,7 +78,7 @@ pub(super) fn generate(
                 #(" ")
                 #{
                     for (modifier, range) in &binding.modifiers {
-                        let mut key = String::default();
+                        let mut key = crate::virtual_ts::TextBuf::default();
                         push_ts_string_literal(&mut key, modifier.as_str());
                         push_mapped(__ts, key.as_str(), in_template(*range));
                         __ts.push_str(": true, ");

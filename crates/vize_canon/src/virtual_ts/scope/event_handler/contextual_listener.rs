@@ -2,7 +2,7 @@
 
 use crate::virtual_ts::types::VizeMapping;
 use std::ops::Range;
-use vize_carton::{String, append, cstr};
+use vize_carton::{append, cstr};
 
 pub(super) struct Listener<'a> {
     pub(super) name: &'a str,
@@ -15,7 +15,7 @@ pub(super) struct Listener<'a> {
 }
 
 pub(super) fn emit(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     diagnostics: &mut Vec<VizeMapping>,
     listener: Listener<'_>,
 ) -> Range<usize> {

@@ -18,7 +18,7 @@ use crate::virtual_ts::{VizeMapping, VizeSemanticLink, VizeSemanticLinkKind};
 /// Setup-side template artifacts are emitted before the template closure owns
 /// any same-spelled local. Keep the caller's existing root-type phase intact.
 pub(super) fn emit_setup_artifacts(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     summary: &Croquis,
     (options, generation): (&VirtualTsOptions, VirtualTsGenerationOptions<'_>),
     type_only_names: &FxHashSet<String>,
@@ -65,7 +65,7 @@ pub(super) struct TemplateRefUnwraps {
 
 #[expect(clippy::too_many_arguments, reason = "independent emitter inputs")]
 pub(super) fn collect_and_emit_scope_preamble(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     summary: &Croquis,
     options_api: bool,
     template_referenced_names: &FxHashSet<String>,
@@ -319,7 +319,7 @@ impl TemplateRefUnwraps {
 
     pub(super) fn emit_type_captures(
         &self,
-        mut ts: &mut String,
+        mut ts: &mut crate::virtual_ts::TextBuf,
     ) -> FxHashMap<String, Range<usize>> {
         let mut captures = deferred_bindings::emit_type_captures(ts, &self.deferred_bindings);
         if !self.setup_bindings.is_empty() {
@@ -362,7 +362,7 @@ impl TemplateRefUnwraps {
     /// `legacy_vue2::MODERN_REF_UNWRAP_HELPER`.
     pub(super) fn emit_template_variables(
         &self,
-        mut ts: &mut String,
+        mut ts: &mut crate::virtual_ts::TextBuf,
         has_generic_param: bool,
         captures: &FxHashMap<String, Range<usize>>,
         semantic_links: &mut Vec<VizeSemanticLink>,
@@ -417,7 +417,7 @@ impl TemplateRefUnwraps {
 }
 
 fn record_typeof_capture(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     name: &str,
     captures: &mut FxHashMap<String, Range<usize>>,
     helper_prefix: &str,
@@ -429,7 +429,7 @@ fn record_typeof_capture(
 }
 
 fn record_template_shadow(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     name: &str,
     type_prefix: &str,
     type_suffix: &str,

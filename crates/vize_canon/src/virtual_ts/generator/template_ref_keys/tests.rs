@@ -30,7 +30,7 @@ fn generate(script: &str) -> String {
     let usage = usage(&source);
     let script = source.as_str();
     let mut checks = usage.key_checks(true);
-    let mut ts = String::default();
+    let mut ts = crate::virtual_ts::TextBuf::default();
     let mut mappings = Vec::new();
     let mut start = 0;
     for line in script.split_inclusive('\n') {
@@ -156,10 +156,10 @@ fn vue_import_aliases_keep_exact_source_positions_after_short_callees() {
 fn rewritten_aliases_keep_only_their_used_imports_live() {
     let script = "import { useTemplateRef as r, useTemplateRef as unused } from 'vue';\nconst first = r('first'); const second = r('second');\n";
     let plan = usage(script);
-    let mut anchors = String::default();
+    let mut anchors = crate::virtual_ts::TextBuf::default();
     plan.emit_import_anchors(&mut anchors);
     assert_eq!(anchors, "void r;\n");
-    let mut implicit = String::default();
+    let mut implicit = crate::virtual_ts::TextBuf::default();
     usage("const first = useTemplateRef('first');").emit_import_anchors(&mut implicit);
     assert!(implicit.is_empty());
 }
@@ -178,7 +178,7 @@ fn ambient_callees_remain_owned_and_only_real_vue_contracts_are_specialized() {
     let script = "const target = useTemplateRe\\u0066('target');\n";
     let usage = usage_with_global(script, true);
     let mut checks = usage.key_checks(true);
-    let mut generated = String::default();
+    let mut generated = crate::virtual_ts::TextBuf::default();
     let mut mappings = Vec::new();
     checks.emit_for_line(&mut generated, &mut mappings, (0, script.len()), &|n| n);
     checks.emit_line(
@@ -202,7 +202,7 @@ fn ambient_callees_remain_owned_and_only_real_vue_contracts_are_specialized() {
 
 #[test]
 fn ambient_signature_is_not_vue_ownership() {
-    let mut helpers = vize_carton::String::default();
+    let mut helpers = crate::virtual_ts::TextBuf::default();
     usage("const target = useTemplateRef('target');\n").emit_inference_helpers(&mut helpers);
     assert_eq!(helpers, "");
     let imported = generate(
@@ -235,10 +235,10 @@ fn unowned_global_calls_retain_the_complete_authored_line_and_one_mapping() {
         let usage = usage(script);
         assert_eq!(usage.needs_registry(), false);
         assert_eq!(usage.helper_name(), "");
-        let mut helpers = String::default();
+        let mut helpers = crate::virtual_ts::TextBuf::default();
         usage.emit_inference_helpers(&mut helpers);
         assert_eq!(helpers, "");
-        let mut generated = String::default();
+        let mut generated = crate::virtual_ts::TextBuf::default();
         let mut mappings = Vec::new();
         let mut checks = usage.key_checks(true);
         checks.emit_for_line(&mut generated, &mut mappings, (0, script.len()), &|n| n);
@@ -264,7 +264,7 @@ fn unowned_global_calls_retain_the_complete_authored_line_and_one_mapping() {
 #[test]
 fn admitted_globals_need_no_unmapped_source_lookup() {
     let plan = usage_with_global("const target = useTemplateRef('target');\n", true);
-    let mut helpers = String::default();
+    let mut helpers = crate::virtual_ts::TextBuf::default();
     plan.emit_inference_helpers(&mut helpers);
     assert_eq!(
         helpers,

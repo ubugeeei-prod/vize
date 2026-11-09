@@ -113,11 +113,7 @@ pub(crate) fn lower_text_run<'a>(
                     &cx.allocator,
                 )));
             } else {
-                // The compiler lanes never consume the compatibility ASTs.
-                // Retain them only for the comment-preserving lint lowering;
-                // otherwise every mixed run would parse each expression a
-                // second time after the compound representation is built.
-                if cx.preserve_comments() {
+                if cx.retain_consumed_expressions {
                     for child in children.get(start..end).unwrap_or_default() {
                         if let SurfaceChild::Interpolation(interpolation) = child {
                             let expression = filter_expr_at(cx, interpolation.content.text);

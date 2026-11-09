@@ -2,7 +2,7 @@
 use super::super::{InferredCall, TemplateRefKeyChecks};
 use crate::virtual_ts::VizeSubSpan;
 use std::{borrow::Cow, ops::Range};
-use vize_carton::{String, append};
+use vize_carton::append;
 
 enum Edit<'a> {
     Comma(usize),
@@ -68,7 +68,7 @@ impl TemplateRefKeyChecks<'_> {
             }
             checked = range.end;
         }
-        let mut output = String::with_capacity(line.len() + commas.len());
+        let mut output = crate::virtual_ts::TextBuf::with_capacity(line.len() + commas.len());
         let mut spans = Vec::new();
         let mut cursor = start;
         for edit in edits {
@@ -121,7 +121,7 @@ impl TemplateRefKeyChecks<'_> {
 }
 
 fn copy(
-    output: &mut String,
+    output: &mut crate::virtual_ts::TextBuf,
     spans: &mut Vec<VizeSubSpan>,
     line: &str,
     range: Range<usize>,

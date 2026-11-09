@@ -2,7 +2,7 @@
 
 use super::{ExpressionListEmitContext, generate_expression};
 use crate::virtual_ts::{template_binding_access::TemplateBindingAccess, types::VizeMapping};
-use vize_carton::{String, append, cstr};
+use vize_carton::{append, cstr};
 use vize_croquis::croquis::{TemplateExpression, TemplateExpressionKind};
 
 /// Keep the outer setup control-flow graph bounded even when one SFC owns
@@ -40,7 +40,7 @@ pub(super) fn should_isolate_interpolations(
 }
 
 pub(super) fn generate_isolated_interpolations(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     mappings: &mut Vec<VizeMapping>,
     exprs: &[&TemplateExpression],
     template_binding_access: &TemplateBindingAccess,

@@ -36,7 +36,11 @@ pub(crate) fn model_value_type(
     ty
 }
 
-pub(crate) fn emit_defaults_artifact(ts: &mut String, summary: &Croquis, fields: &mut Vec<String>) {
+pub(crate) fn emit_defaults_artifact(
+    ts: &mut crate::virtual_ts::TextBuf,
+    summary: &Croquis,
+    fields: &mut Vec<String>,
+) {
     if !has_inferred_defaults(summary) {
         return;
     }
@@ -64,7 +68,10 @@ pub(crate) fn emit_defaults_artifact(ts: &mut String, summary: &Croquis, fields:
     fields.push("__vize_model_defaults".into());
 }
 
-pub(crate) fn emit_defaults_type(ts: &mut String, generic_param: Option<&GenericParameters>) {
+pub(crate) fn emit_defaults_type(
+    ts: &mut crate::virtual_ts::TextBuf,
+    generic_param: Option<&GenericParameters>,
+) {
     let (declaration, arguments) = super::generator::generics::generic_injection(generic_param)
         .map(|(declaration, names)| (cstr!("<{declaration}>"), cstr!("<{}>", names.join(", "))))
         .unwrap_or_default();

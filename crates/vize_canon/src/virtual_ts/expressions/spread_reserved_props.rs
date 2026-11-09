@@ -277,7 +277,8 @@ fn apply_replacements(
     bindings: &TemplateBindingAccess,
 ) -> SpreadRewrite {
     let extra_capacity = replacements.len().saturating_mul(16);
-    let mut code = String::with_capacity(expression.len().saturating_add(extra_capacity));
+    let mut code =
+        crate::virtual_ts::TextBuf::with_capacity(expression.len().saturating_add(extra_capacity));
     let mut segments = Vec::with_capacity(replacements.len().saturating_mul(2) + 1);
     let mut diagnostic_prefixes = Vec::new();
     let mut source_cursor = 0;
@@ -380,7 +381,7 @@ fn apply_replacements(
         &mut segments,
     );
     SpreadRewrite {
-        code,
+        code: code.into_compact(),
         segments,
         diagnostic_prefixes,
     }
@@ -389,7 +390,7 @@ fn apply_replacements(
 fn push_source_segment(
     expression: &str,
     source: Range<usize>,
-    code: &mut String,
+    code: &mut crate::virtual_ts::TextBuf,
     segments: &mut Vec<SpreadRewriteSegment>,
 ) {
     let Some(text) = expression

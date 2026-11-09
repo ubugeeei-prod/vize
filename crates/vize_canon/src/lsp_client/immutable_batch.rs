@@ -4,7 +4,10 @@
     reason = "immutable URI/code payloads cross native worker boundaries"
 )]
 
-use super::{CorsaProjectClient, tracked_documents::DocumentCheckpoint};
+use super::{
+    CorsaProjectClient, physical_namespace::PhysicalNamespace,
+    tracked_documents::DocumentCheckpoint,
+};
 use corsa::api::{FileChangeSummary, FileChanges};
 use std::path::PathBuf;
 use std::sync::{Arc, Weak};
@@ -289,15 +292,12 @@ impl CorsaProjectClient {
             .iter()
             .map(|(uri, _)| crate::file_uri::file_uri_to_path(uri))
             .collect::<Option<Vec<_>>>()?;
+        let mut namespace = PhysicalNamespace::new(&self.project_root);
         paths
             .iter()
             .all(|path| {
-                super::session_paths::is_within_project_namespace(path, &self.project_root)
-                    && path.is_file()
-                    && super::session_paths::is_within_physical_project_namespace(
-                        path,
-                        &self.project_root,
-                    )
+                let observed = namespace.observe(path);
+                observed.logical && observed.file && observed.physical
             })
             .then_some(paths)
     }
@@ -324,36 +324,44 @@ impl CorsaProjectClient {
         );
         // Keep the original complete namespace and existence guard. An old
         // physical observation cannot authorize a retargeted directory link.
-        if !entry.rows.iter().all(|row| {
-            super::session_paths::is_within_project_namespace(&row.path, &self.project_root)
-                && row.path.is_file()
-        }) {
+        let mut namespace = PhysicalNamespace::new(&self.project_root);
+        let observations = entry
+            .rows
+            .iter()
+            .map(|row| namespace.observe(&row.path))
+            .collect::<Vec<_>>();
+        if !observations
+            .iter()
+            .all(|observed| observed.logical && observed.file)
+        {
             return Ok(false);
         }
-        if !entry.rows.iter().all(|row| {
-            super::session_paths::is_within_physical_project_namespace(
-                &row.path,
-                &self.project_root,
-            )
-        }) {
+        if !observations.iter().all(|observed| observed.physical) {
             return Err(cstr!("Canon document left its private physical namespace"));
         }
         let now = SystemTime::now();
         let mut summary = FileChangeSummary::default();
-        for ((uri, text), row) in documents.iter().zip(&entry.rows) {
+        for (((uri, text), row), observed) in documents.iter().zip(&entry.rows).zip(&observations) {
             self.clear_document_state(uri);
-            if !self
+            if !self.canon_file_cache.observation_is_current(
+                &row.path,
+                row.desired,
+                now,
+                observed.metadata.as_ref(),
+            ) && self
                 .canon_file_cache
-                .observation_is_current(&row.path, row.desired, now)
-                && self
-                    .canon_file_cache
-                    .synchronize_with_digest(&row.path, text, || row.desired)
-                    .map_err(|error| {
-                        cstr!(
-                            "Failed to update Canon document {}: {error}",
-                            row.path.display()
-                        )
-                    })?
+                .synchronize_observed_with_digest(
+                    &row.path,
+                    text,
+                    observed.metadata.as_ref(),
+                    || row.desired,
+                )
+                .map_err(|error| {
+                    cstr!(
+                        "Failed to update Canon document {}: {error}",
+                        row.path.display()
+                    )
+                })?
             {
                 summary
                     .changed

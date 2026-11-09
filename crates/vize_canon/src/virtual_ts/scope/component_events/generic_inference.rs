@@ -49,7 +49,7 @@ pub(super) struct InferredEmitArgs {
 }
 
 pub(super) fn generate_inferred_emit_args(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     mappings: &mut Vec<VizeMapping>,
     ctx: &EmitInferenceContext<'_, '_>,
 ) -> Option<InferredEmitArgs> {
@@ -195,8 +195,8 @@ pub(super) fn generate_inferred_emit_args(
         let isolated = crate::virtual_ts::expressions::isolate_incomplete_expression(guard);
         let guard = isolated.as_str();
         append!(*ts, "{}const {emit_props} = (() => {{\n", ctx.indent);
-        append!(
-            *ts,
+        vize_l0::emit_ts!(
+            ts,
             "{call_indent}// @ts-ignore Inference-only guard; authored binding checks own diagnostics.\n"
         );
         append!(
@@ -222,9 +222,9 @@ pub(super) fn generate_inferred_emit_args(
                 usage_idx,
             );
         } else {
-            append!(
-                *ts,
-                "{indent}const {emit_props} = (undefined as unknown as {resolver_type})({component_ref})(",
+            vize_l0::emit_ts!(
+                ts,
+                "{indent}const {emit_props} = (undefined as unknown as {resolver_type})({component_ref})("
             );
         }
     }
@@ -258,8 +258,8 @@ pub(super) fn generate_inferred_emit_args(
             for entry in &entries {
                 let prop = entry.prop;
                 if entry.inline_callback {
-                    append!(
-                        *ts,
+                    vize_l0::emit_ts!(
+                        ts,
                         "{call_indent}  // @ts-ignore Inference-only callback prop; mapped prop owner checks diagnostics.\n"
                     );
                 } else {
@@ -267,12 +267,12 @@ pub(super) fn generate_inferred_emit_args(
                     // against the public props input, which widens a required
                     // prop to `T | undefined`. The canonical prop call owns the
                     // authored diagnostic (#10397).
-                    append!(
-                        *ts,
+                    vize_l0::emit_ts!(
+                        ts,
                         "{call_indent}  // @ts-ignore Inference-only prop; the canonical component-props call owns diagnostics.\n"
                     );
                 }
-                append!(*ts, "{call_indent}  ");
+                vize_l0::emit_ts!(ts, "{call_indent}  ");
                 let entry_start = ts.len();
                 append!(*ts, "\"{}\"", entry.name);
                 let key_end = ts.len();
@@ -322,7 +322,7 @@ pub(super) fn generate_inferred_emit_args(
                     );
                 }
             }
-            append!(*ts, "{call_indent}}});\n");
+            vize_l0::emit_ts!(ts, "{call_indent}}});\n");
         }
     }
     if first_listener && guard.is_some() {
@@ -351,10 +351,7 @@ pub(super) fn generate_inferred_emit_args(
         scope_id,
         ctx.safe_event_name
     );
-    append!(
-        *ts,
-        "{indent}type {contextless_listener} = {library} extends true ? false : typeof {emit_props} extends {{ readonly __vizeLooseListener: unknown[] }} ? true : false;\n"
-    );
+    vize_l0::emit_ts!(ts, "{indent}type {contextless_listener} = {library} extends true ? false : typeof {emit_props} extends {{ readonly __vizeLooseListener: unknown[] }} ? true : false;\n");
         contextless_listener
     });
     Some(InferredEmitArgs {

@@ -104,7 +104,7 @@ impl<'a> GlobalComponentPlan<'a> {
 
     pub(super) fn emit(
         &mut self,
-        ts: &mut String,
+        ts: &mut crate::virtual_ts::TextBuf,
         summary: &Croquis,
         options: &VirtualTsOptions,
         imported_names: &FxHashSet<&str>,
@@ -253,7 +253,7 @@ impl<'a> GlobalComponentPlan<'a> {
                     "declare const {component_ref}: typeof __vize_component__;\n"
                 );
             } else if let Some(source) = art_source {
-                let mut source_literal = String::default();
+                let mut source_literal = crate::virtual_ts::TextBuf::default();
                 push_ts_string_literal(&mut source_literal, source);
                 append!(
                     *ts,
@@ -284,7 +284,11 @@ fn art_component_source<'a>(summary: &'a Croquis, usage_name: &str) -> Option<&'
     (usage_name == authored_name || usage_pascal == authored_pascal).then_some(source)
 }
 
-fn append_global_component_stub(ts: &mut String, component_ref: &str, keys: [&str; 3]) {
+fn append_global_component_stub(
+    ts: &mut crate::virtual_ts::TextBuf,
+    component_ref: &str,
+    keys: [&str; 3],
+) {
     // Keep the real callable signature last: template-ref inference reads its
     // exposed members instead of the open fallback's unconstrained argument.
     append!(

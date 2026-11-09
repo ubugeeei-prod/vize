@@ -1,6 +1,5 @@
 //! The shared type helpers every per-usage prop check resolves through.
 
-use vize_carton::String;
 use vize_croquis::croquis::ComponentUsage;
 
 use super::super::component_ref_props::append_ref_callback_helper;
@@ -11,7 +10,7 @@ use crate::virtual_ts::helpers::is_component_aria_prop_name;
 /// other component-check helper is ambient in batch projects, so TypeScript can
 /// reuse one declaration identity and its instantiation cache across all SFCs.
 fn append_hoisted_component_check_policy(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     check_unknown_props: bool,
     check_unknown_fallthrough_props: bool,
     strict_component_attrs: bool,
@@ -44,7 +43,7 @@ fn append_hoisted_component_check_policy(
 /// Vue public props are package-relative types. Keep these aliases in each
 /// generated module so workspace packages resolve their own Vue installation
 /// and `ComponentCustomProps` augmentation instead of the batch helper's.
-fn append_vue_public_component_attrs(ts: &mut String) {
+fn append_vue_public_component_attrs(ts: &mut crate::virtual_ts::TextBuf) {
     ts.push_str("  type $VueVNodeProps = import('vue').VNodeProps;\n");
     ts.push_str("  type $VueAllowedComponentProps = import('vue').AllowedComponentProps;\n");
     ts.push_str("  type $VueComponentCustomProps = import('vue').ComponentCustomProps;\n");
@@ -57,7 +56,7 @@ fn append_vue_public_component_attrs(ts: &mut String) {
 /// once per template scope that has at least one checkable component usage.
 /// Keep this set small; the child's own props type carries the contract.
 pub(in crate::virtual_ts::scope) fn append_prop_check_helpers(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     usages: &[(usize, &ComponentUsage)],
     check_unknown_props: bool,
     check_unknown_fallthrough_props: bool,

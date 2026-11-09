@@ -30,6 +30,7 @@ mod lifecycle;
 mod lifecycle_setup;
 mod materialized_refresh;
 pub(crate) mod paths;
+mod physical_namespace;
 mod queries;
 mod retained_text;
 #[cfg(test)]
