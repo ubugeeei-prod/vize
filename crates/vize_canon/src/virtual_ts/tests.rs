@@ -1825,7 +1825,7 @@ fn test_plain_options_object_default_export_is_wrapped_with_define_component() {
         output.code
     );
     assert!(
-        output.code.contains("\n  })\n"),
+        output.code.contains("\n})\n"),
         "expected the wrap to be closed after the options object:\n{}",
         output.code
     );
