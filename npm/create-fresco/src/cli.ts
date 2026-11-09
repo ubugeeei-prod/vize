@@ -9,11 +9,20 @@ import { CREATE_FRESCO_VERSION } from "./version.js";
 
 export { CREATE_FRESCO_VERSION } from "./version.js";
 
+/** Resolved command-line options for the create-fresco executable. */
 export interface CliOptions {
+  /** Project directory, relative to the current process. @default "fresco-app" */
   directory: string;
+  /** Allow replacing scaffold-owned files in a non-empty directory. @default false */
   force: boolean;
+  /**
+   * Package manager written into setup instructions.
+   * @default auto-detected from npm_config_user_agent, otherwise "pnpm"
+   */
   packageManager?: PackageManager;
+  /** Print usage without creating a project. @default false */
   help: boolean;
+  /** Print the installed create-fresco version without creating a project. @default false */
   version: boolean;
 }
 
@@ -26,6 +35,7 @@ function readPackageManager(value: string | undefined): PackageManager {
   );
 }
 
+/** Parse create-fresco arguments or throw a stable `CREATE_FRESCO_*` diagnostic. */
 export function parseCliArgs(args: readonly string[]): CliOptions {
   let directory: string | undefined;
   let force = false;
@@ -52,6 +62,7 @@ export function parseCliArgs(args: readonly string[]): CliOptions {
   return { directory: directory ?? "fresco-app", force, packageManager, help, version };
 }
 
+/** Copyable usage text printed by `--help`. */
 export const helpText = `create-fresco [directory] [options]
 
 Options:
@@ -60,6 +71,7 @@ Options:
   --help, -h                     show this help
   --version, -v                  show the package version`;
 
+/** Create a project from command-line arguments and print the next setup commands. */
 export function runCli(
   args: readonly string[],
   output: (message: string) => void = console.log,

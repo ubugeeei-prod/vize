@@ -1,8 +1,11 @@
 import type { PackageManager } from "./types.js";
 import { CREATE_FRESCO_VERSION } from "./version.js";
 
+/** Inputs that make generated project files deterministic. */
 export interface ProjectTemplateOptions {
+  /** Normalized npm package name written to the generated manifest. */
   packageName: string;
+  /** Package manager whose commands are written to generated instructions. */
   packageManager: PackageManager;
 }
 
@@ -187,6 +190,7 @@ export function projectTemplates(options: ProjectTemplateOptions): ReadonlyMap<s
   ]);
 }
 
+/** Return the install and development commands for a supported package manager. */
 export function commandsFor(packageManager: PackageManager): { install: string; dev: string } {
   const commands = packageManagerCommands[packageManager];
   return { install: commands.install, dev: commands.run("dev") };
