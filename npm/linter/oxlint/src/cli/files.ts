@@ -5,6 +5,10 @@ import { hasVueLikeExtension } from "../file-kinds.ts";
 
 const GLOB_PATTERN = /[*?[\]{}]/u;
 
+/**
+ * Resolves lint targets (files, directories or globs) to the Vue-like files among them,
+ * reporting every path it visits, including non-Vue ones, through `onCandidate`.
+ */
 export function collectVueLikeFilesFromTargets(
   cwd: string,
   targets: readonly string[],
@@ -21,6 +25,7 @@ export function collectVueLikeFilesFromTargets(
   return [...files].sort();
 }
 
+/** Resolves one lint target; directory targets are walked with dot-entries included. */
 function collectVueLikeFilesFromTarget(
   cwd: string,
   target: string,
@@ -56,6 +61,7 @@ function collectVueLikeFilesFromTarget(
   return stat.isFile() && hasVueLikeExtension(absoluteTarget) ? [absoluteTarget] : [];
 }
 
+/** Whether `filename` is an existing regular file with a Vue-like extension. */
 function isSupportedLintFile(filename: string): boolean {
   if (!hasVueLikeExtension(filename)) {
     return false;
@@ -88,7 +94,14 @@ function walkDirectory(directory: string): string[] {
     }
     if (seen.has(real)) continue;
     seen.add(real);
-    for (const entry of fs.readdirSync(current, { withFileTypes: true })) {
+    let entries: fs.Dirent[];
+    try {
+      entries = fs.readdirSync(current, { withFileTypes: true });
+    } catch {
+      // Unreadable (permissions, removed mid-walk): skip this directory, keep walking.
+      continue;
+    }
+    for (const entry of entries) {
       if (entry.name === "node_modules" || entry.name === ".git") continue;
       const full = path.join(current, entry.name);
       let isDirectory = entry.isDirectory();
