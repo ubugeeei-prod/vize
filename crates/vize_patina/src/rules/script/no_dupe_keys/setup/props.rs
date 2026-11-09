@@ -67,9 +67,7 @@ pub(super) fn names<'s, 'a>(
                     resolved
                         .properties
                         .into_iter()
-                        .filter(|property| {
-                            property.module.as_str() != world.root_module.as_str()
-                        })
+                        .filter(|property| property.module.as_str() != world.root_module.as_str())
                         .map(|property| property.name),
                 );
             }

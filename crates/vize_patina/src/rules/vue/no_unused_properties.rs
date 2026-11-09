@@ -282,5 +282,7 @@ fn imported_type_argument_span(
 ) -> Option<(u32, u32)> {
     let world = analysis.types.resolved_world()?;
     let module = analysis.types.resolved_prop_module(name)?;
-    (module != world.root_module.as_str()).then_some(span).flatten()
+    (module != world.root_module.as_str())
+        .then_some(span)
+        .flatten()
 }
