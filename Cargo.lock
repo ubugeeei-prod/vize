@@ -4362,6 +4362,7 @@ dependencies = [
  "davinci_harness",
  "davinci_test_support",
  "insta",
+ "libc",
  "memchr",
  "mimalloc",
  "oxc_allocator",

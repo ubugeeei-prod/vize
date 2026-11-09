@@ -9,7 +9,11 @@ mod canonical_walk;
 mod directory_index;
 #[cfg(test)]
 mod directory_index_tests;
+mod held;
+#[cfg(all(test, unix))]
+mod probe_tests;
 mod public_identity;
+mod realpath;
 mod resolution;
 #[cfg(test)]
 mod resolution_tests;
@@ -27,7 +31,7 @@ use super::type_world::ResolvedDependency;
 
 type ResolvedCell = Arc<OnceLock<Option<Arc<ResolvedDependency>>>>;
 type ResolutionCell = Arc<OnceLock<Option<PathBuf>>>;
-type DirectoryCell = Arc<OnceLock<Option<directory_index::IndexedDirectory>>>;
+type DirectoryCell = Arc<directory_index::ProbedDirectory>;
 type PhysicalDirectoryCell = Arc<OnceLock<Option<PathBuf>>>;
 
 #[derive(Debug, Hash, PartialEq, Eq)]
@@ -57,6 +61,12 @@ pub struct TypeSourceSnapshot {
     physical_directories: Mutex<FxHashMap<(u64, u64), PhysicalDirectoryCell>>,
     /// Directory paths known to be their own `realpath` in this snapshot.
     canonical_directories: Mutex<FxHashSet<PathBuf>>,
+    /// Handles on the roots, directories and files a request resolved.
+    #[cfg_attr(
+        not(target_os = "linux"),
+        expect(dead_code, reason = "only Linux holds O_PATH handles")
+    )]
+    held: held::HeldHandles,
     pub(super) summaries: Mutex<FxHashMap<PathBuf, FileTypeSummary>>,
     /// Dependency module facts, parsed once per snapshot with their targets
     /// resolved against it, plus the modules a world walk follows from them.
@@ -78,6 +88,16 @@ impl TypeSourceSnapshot {
         }
     }
 
+    /// A snapshot for one request: on Linux it holds the handles of the roots,
+    /// directories and files it resolves until it drops, so a mount without a
+    /// dentry cache walks each path once per request.
+    pub fn for_request() -> Self {
+        Self {
+            held: held::HeldHandles::holding(),
+            ..Self::default()
+        }
+    }
+
     /// Capture editor sources once per editor revision. Cloning an Arc shares
     /// the immutable text; subsequent analyses borrow this same snapshot.
     pub fn new(overlays: impl IntoIterator<Item = (PathBuf, Arc<str>)>) -> Self {
@@ -96,6 +116,16 @@ impl TypeSourceSnapshot {
         self.read_identity(source_path(path))
     }
 
+    /// `realpath(path)`, holding the handle that proved a canonical spelling.
+    pub(super) fn canonicalize_held(&self, path: &Path) -> Option<PathBuf> {
+        #[cfg(target_os = "linux")]
+        if let Some(handle) = realpath::canonical_handle(path) {
+            self.held.hold(handle);
+            return Some(path.to_path_buf());
+        }
+        std::fs::canonicalize(path).ok()
+    }
+
     /// Read a source through an identity this snapshot already produced,
     /// without canonicalizing it again.
     pub(super) fn read_identity(&self, path: PathBuf) -> Option<Arc<str>> {
@@ -112,12 +142,12 @@ impl TypeSourceSnapshot {
 /// Existing files use canonical identities; new unsaved files use the same
 /// canonical parent identity followed by their lexically normalized path.
 pub(super) fn source_path(path: &Path) -> PathBuf {
-    if let Ok(canonical) = path.canonicalize() {
+    if let Ok(canonical) = realpath::canonicalize(path) {
         return canonical;
     }
     let normalized = lexical_path(path);
     if let Some(parent) = normalized.parent()
-        && let Ok(canonical_parent) = parent.canonicalize()
+        && let Ok(canonical_parent) = realpath::canonicalize(parent)
         && let Some(name) = normalized.file_name()
     {
         return canonical_parent.join(name);

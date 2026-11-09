@@ -19,8 +19,16 @@ use crate::batch::error::CorsaResult;
 /// Each dependency is read, resolved and parsed once per value rather than
 /// once per transform, as a `register_paths` batch does. Root text always
 /// comes from the request. Drop the value to observe the filesystem again.
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Debug)]
 pub struct ContentMapperTypeSources(Arc<TypeSourceSnapshot>);
+
+/// A request's snapshot: it holds the handles of what it resolved until the
+/// last transform sharing it drops it.
+impl Default for ContentMapperTypeSources {
+    fn default() -> Self {
+        Self(Arc::new(TypeSourceSnapshot::for_request()))
+    }
+}
 
 /// Equal values read through one snapshot.
 impl PartialEq for ContentMapperTypeSources {
