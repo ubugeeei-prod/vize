@@ -13494,6 +13494,45 @@
       }
     },
     {
+      "id": "typechecker/regression/fallthrough-value-12458",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "fallthrough-value-12458/Field.vue.txt",
+          "sha256": "c89c470b3e564ff84ea00c3538013f3eb30a5f30f18be4174db8233803a417f7",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "fallthrough-value-12458/App.vue.txt",
+          "sha256": "7eb79cc85e963991ec0981e0fe700d68e7eda2ede5083949c5dd8aee2b83a3e7",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "fallthrough-value-12458/tsconfig.json.txt",
+          "sha256": "8deef90ced426c6a578becded36b714fb0b65a6939996a1fa89bb646a0cd3118",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "content_mapper_tsgo_cli::fallthrough_value_12458::standard_tsgo_reports_fallthrough_values_like_vize_check; the issue repro plus declared, literal fallthrough and ARIA controls, checked through tsc 7.1 with the Vize mapper and vize check on the same project"
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/regression/generic-alias-dependent-scope-11450",
       "state": "active",
       "targets": [
