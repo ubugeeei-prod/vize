@@ -159,6 +159,8 @@ impl CorsaProjectClient {
         &mut self,
         file_changes: Option<FileChanges>,
     ) -> Result<(), String> {
+        let __diag = crate::corsa_bridge::preparation_trace::Phase::start("materialized_overlay_refresh", 1);
+        let _keep = &__diag;
         if !self.has_project_session() {
             return Ok(());
         }

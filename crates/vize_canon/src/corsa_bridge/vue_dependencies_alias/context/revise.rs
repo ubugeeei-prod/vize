@@ -22,6 +22,7 @@ impl AliasContext {
         environment: CorsaProjectEnvironment<'_>,
     ) -> Result<Option<Self>, CorsaBridgeError> {
         let host = vize_carton::path::canonicalize_non_verbatim(source_path);
+        let __diag = crate::corsa_bridge::preparation_trace::Phase::start("alias_take_revisable", 1);
         let (stamped, context, refreshed) = {
             let mut cache = environment.editor_session.cache();
             let Some((stamped, context)) = cache.take_revisable(source_path, fingerprint) else {
@@ -37,6 +38,7 @@ impl AliasContext {
             });
             (stamped, context, refreshed)
         };
+        __diag.finish();
         // A revision another request still reads is never changed under it.
         let Ok(context) = std::sync::Arc::try_unwrap(context) else {
             return Ok(None);

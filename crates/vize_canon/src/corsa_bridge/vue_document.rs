@@ -224,7 +224,9 @@ impl CorsaBridge {
             materialized_changes,
         } = project;
         if let Some(project_root) = session_project_root.as_deref() {
+            let __diag = crate::corsa_bridge::preparation_trace::Phase::start("native_batch_catalog_extend", 1);
             source_catalog.extend_native_project_document_batch(project_root, &mut documents);
+            __diag.finish();
         }
         self.open_canon_project_documents(
             documents,
@@ -249,6 +251,8 @@ impl CorsaBridge {
         let cache_len = self
             .with_client(move |client| {
                 if let Some(project_root) = session_project_root {
+                    let __diag = crate::corsa_bridge::preparation_trace::Phase::start("project_activate", 1);
+                    let _keep = &__diag;
                     vize_l0::profile!("canon.editor.project_activate", {
                         client
                             .synchronize_materialized_project(

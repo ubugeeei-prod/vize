@@ -34,12 +34,14 @@ pub(super) fn materialize_cached_revision(
         .map(|mirror| cache.materialized_snapshot(mirror.virtual_root()));
     let source_path = vize_carton::path::canonicalize_non_verbatim(source_path);
     let revision = RevisionKey::new(source_path.clone(), fingerprint);
+    let __diag = crate::corsa_bridge::preparation_trace::Phase::start("alias_union_snapshot", 1);
     let mut union = context
         .mirror
         .as_ref()
         .map_or_else(Default::default, |mirror| {
             cache.project_union_snapshot(mirror.virtual_root(), &revision, fingerprint)
         });
+    __diag.finish();
     let narrow = graph_hit
         && !union.retired_members
         && previous.as_ref().is_some_and(|previous| {

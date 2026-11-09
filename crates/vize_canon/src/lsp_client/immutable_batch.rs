@@ -207,6 +207,8 @@ impl CorsaProjectClient {
             }
         }
         self.did_open_batch_fast(&documents)?;
+        let __diag = crate::corsa_bridge::preparation_trace::Phase::start("canon_batch_certificate", 1);
+        let _keep = &__diag;
         if self.canon_batches.synchronized
             && let Some(paths) = self.canon_batch_paths(&documents)
         {

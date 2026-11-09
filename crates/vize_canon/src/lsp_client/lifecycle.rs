@@ -162,6 +162,7 @@ impl CorsaProjectClient {
         }
 
         let overlay_supported = self.supports_overlay_api();
+        let __diag = crate::corsa_bridge::preparation_trace::Phase::start("native_batch_materialization_scan", 1);
         let requires_materialization = documents.iter().any(|(uri, _)| {
             build_session_document_uri(
                 uri,
@@ -170,6 +171,7 @@ impl CorsaProjectClient {
                 overlay_supported,
             ) != *uri
         });
+        __diag.finish();
         if self.materialized_project_session || !overlay_supported || requires_materialization {
             return self.synchronize_materialized_project_documents(documents);
         }
