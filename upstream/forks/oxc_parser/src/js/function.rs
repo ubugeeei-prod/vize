@@ -333,7 +333,9 @@ impl<'a, C: Config> ParserImpl<'a, C> {
         let type_parameters = self.parse_ts_type_parameters();
         let (this_param, params) = self.parse_formal_parameters(func_kind, param_kind);
         let return_type = if self.is_ts { self.parse_ts_return_type_annotation() } else { None };
-        let body = if self.at(Kind::LCurly) || func_kind == FunctionKind::Expression {
+        let body = if self.at_markup_directive(crate::MarkupSite::FunctionBody) {
+            Some(self.parse_markup_function_body())
+        } else if self.at(Kind::LCurly) || func_kind == FunctionKind::Expression {
             Some(self.parse_function_body())
         } else {
             None

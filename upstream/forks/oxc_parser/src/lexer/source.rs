@@ -112,6 +112,19 @@ impl<'a> Source<'a> {
         unsafe { self.str_between_positions_unchecked(self.start(), self.end()) }
     }
 
+    /// Get the position `offset` bytes from the start of source, if it is in bounds and on a
+    /// UTF-8 character boundary (or at EOF).
+    pub(super) fn position_at(&self, offset: u32) -> Option<SourcePosition<'a>> {
+        let whole = self.whole();
+        let offset = offset as usize;
+        if !whole.is_char_boundary(offset) {
+            return None;
+        }
+        // SAFETY: `offset` is a char boundary of the source text, so it is in bounds (or EOF)
+        // and on a UTF-8 character boundary.
+        Some(unsafe { SourcePosition::new(self.start.add(offset)) })
+    }
+
     /// Get remaining source text as `&str`.
     #[inline]
     pub(super) fn remaining(&self) -> &'a str {

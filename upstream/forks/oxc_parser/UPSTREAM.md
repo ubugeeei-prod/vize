@@ -96,3 +96,22 @@ owning probe rewinds. Private tests compare complete Program/expression packets
 with sharing disabled and count the exact original input's repeated work.
 The immutable source audit retains before/after source profiles, complete packets
 and original sanitizer resource limits. See `tests/fuzz/ISSUE-10845.md`.
+
+Vize adds a framework-neutral host-embedded markup hook (`src/markup.rs`,
+[#6858](https://github.com/ubugeeei-prod/vize/issues/6858)) for markup written
+inside JS/TS. `Parser::parse_with_markup(grammar)` registers a `MarkupGrammar`;
+the host hands it a JSX-position `<`, an `@` the grammar opens at an expression
+or statement start, or an `@` at a function or arrow body, and keeps an empty
+placeholder (fragment or body) with the region's span. `MarkupCursor` re-enters
+the same parser for embedded expressions, statements, for-of heads, bindings and
+parameters. While a grammar is registered, a line-start `<tag` ends the previous
+expression. Every hook site tests the associated constant `ParserConfig::MARKUP`,
+which is `true` only for the private `MarkupParserConfig` that `parse_with_markup`
+uses, so the hooks are compiled out of every other parse; `parse_with_markup`
+never mints `ProgramObservation` admission. The hook sites are
+`parse_jsx_expression`, `parse_update_expression`, `parse_statement_list_item`,
+`parse_function`, `parse_arrow_function_expression_body`, the binary-operator
+loop and expression type arguments, plus `Lexer::seat`, `Source::position_at`
+and the `ParserConfig::MARKUP` constant. Carry them on an upstream upgrade
+(#8987). The TSRX grammar itself lives in `vize_l1::markup::tsrx`; see
+`docs/davinci/decisions/2026-11-09-6858-tsrx-markup-hook.md`.
