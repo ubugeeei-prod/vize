@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "pullRequest": 12523,
+  "predecessor": {
+    "path": "successor-instance-input-keys-11654/projection-record.txt",
+    "bytes": 2326,
+    "sha256": "f62ee52e450abf01b34afee244c2adf6c1451b2b1612363b1fa98a187a7b24d2"
+  },
+  "successor": {
+    "path": "successor-constructor-noinfer-12431/projection-record.txt",
+    "bytes": 2326,
+    "sha256": "4c8175a49c419c4c4d2ac60a12d3bc5d724f382497a6e3ec2bd7651463d6d680"
+  },
+  "delta": {
+    "canonGeneratedTextBytes": 0,
+    "contentMapperGeneratedTextBytes": 172,
+    "maestroGeneratedTextBytes": 172,
+    "contentMapperMappings": 0,
+    "contentMapperAuthoredHits": 0
+  },
+  "nativeAcceptanceCredit": false,
+  "scope": "Local exact record for #12431: the component constructor picks the public instance inline and keeps the bound instance behind NoInfer. The content mapper and Maestro grow by the 172-byte constructor edit and Canon's Vue 2 projection is unchanged; mapping, diagnostic and authored-hit counts are unchanged, so the changed coordinate hashes are derived relocation. No native TypeScript consumer acceptance credit."
+}

@@ -90,6 +90,25 @@ pub(super) fn apply(manifest: &mut Value, members: &mut [Value]) {
     manifest["provenance"]["currentCanonLeftoversGenerated11499"] = successor;
 }
 
+/// The authenticated #11499 successor bodies of the two generated members.
+#[cfg(test)]
+pub(super) fn current_bodies() -> Vec<String> {
+    let (owned, integrated, successor) = records();
+    successor["entries"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .enumerate()
+        .map(|(index, entry)| {
+            successor_body(
+                &integrated_body(&owned, &integrated, index),
+                &successor,
+                entry,
+            )
+        })
+        .collect()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
