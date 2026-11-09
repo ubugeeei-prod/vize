@@ -60,6 +60,11 @@ pub(super) fn collect_classes_from_selector_prelude(
     let mut functions = Vec::new();
     let mut attribute_depth = 0usize;
     while let Some(&byte) = trimmed.get(index) {
+        // Only these bytes change scope, depth or start a class.
+        if !matches!(byte, b'[' | b']' | b':' | b'(' | b')' | b',' | b'.') {
+            index += 1;
+            continue;
+        }
         if byte == b'[' {
             attribute_depth += 1;
         } else if byte == b']' {

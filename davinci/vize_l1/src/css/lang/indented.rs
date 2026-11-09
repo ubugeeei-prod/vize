@@ -5,9 +5,9 @@ use alloc::collections::BTreeSet;
 use alloc::vec::Vec;
 use vize_l0::String;
 
-use super::super::AuthoredClasses;
 use super::super::classes::collect_classes_from_selector_prelude;
-use super::super::structure::{Construct, Interpolation, Lexis};
+use super::super::structure::{Construct, Interpolation, Lexis, StyleSheet};
+use super::super::{AuthoredClasses, StyleNodeKind};
 use super::nested::{self, Dialect, resolve};
 
 #[derive(Clone, Copy, PartialEq)]
@@ -84,52 +84,49 @@ fn stylus_construct(text: &str) -> Construct {
 
 /// Class names the rules declare. Stylus written with braces reads like SCSS,
 /// but its mixin calls are not modeled there, so that result is incomplete.
-pub(super) fn authored_classes(source: &str, syntax: Syntax) -> Option<AuthoredClasses> {
-    if syntax == Syntax::Stylus && is_braced_stylus(source) {
-        return nested::authored_classes(source, Dialect::Scss)
+pub(super) fn authored_classes(sheet: &StyleSheet<'_>, syntax: Syntax) -> Option<AuthoredClasses> {
+    if syntax == Syntax::Stylus && is_braced_stylus(sheet.source()) {
+        return nested::authored_classes(sheet, Dialect::Scss)
             .map(|found| AuthoredClasses::new(found.into_names(), false));
     }
-    let lines = code_lines(source)?;
     let mut classes = BTreeSet::new();
     let mut complete = true;
-    // Open blocks: their indentation and resolved selectors (`None` is unknown).
-    let mut blocks: Vec<(usize, Option<Vec<String>>)> = Vec::new();
-    let mut index = 0usize;
-    while let Some(&(indent, ref first)) = lines.get(index) {
-        // A selector list may continue over lines that end with `,`.
-        let mut text = String::from(first.as_str());
-        while text.ends_with(',')
-            && let Some((_, next)) = lines.get(index + 1)
-        {
-            text.push(' ');
-            text.push_str(next);
-            index += 1;
+    // The resolved selectors of every node that opens a block; `None` is an
+    // unknown context.
+    let mut resolved: Vec<Option<Vec<String>>> = Vec::with_capacity(sheet.nodes().len());
+    for node in sheet.nodes() {
+        // A declaration adds no rules.
+        if node.block().is_none() && matches!(sheet.kind(node), StyleNodeKind::Declaration { .. }) {
+            resolved.push(None);
+            continue;
         }
-        index += 1;
-        let opens_block = lines.get(index).is_some_and(|(next, _)| *next > indent);
-        while blocks.last().is_some_and(|(open, _)| *open >= indent) {
-            blocks.pop();
-        }
-        let known = blocks.last().is_none_or(|(_, parent)| parent.is_some());
-        if !opens_block {
+        let parent = match node.parent() {
+            Some(parent) => resolved.get(parent)?.clone(),
+            None => Some(Vec::new()),
+        };
+        let known = parent.is_some();
+        let text = sheet.code(node.prelude());
+        if node.block().is_none() {
             if known && statement_adds_rules(&text, syntax) {
                 complete = false;
             }
+            resolved.push(None);
             continue;
         }
-        let parent = match blocks.last() {
-            Some((_, parent)) => parent.clone(),
-            None => Some(Vec::new()),
-        };
-        let (resolved, hides) = match line(&text, syntax) {
-            Line::Selector(selector, interpolated) => {
-                let resolved = resolve(selector.as_bytes(), parent, interpolated, Dialect::Scss);
-                let hides = nested::block_hides_rules(
+        let (selectors, hides) = match line(&text, syntax) {
+            Line::Selector(selector) => {
+                let selectors = resolve(
                     selector.as_bytes(),
-                    resolved.is_some(),
+                    parent,
+                    node.is_interpolated(),
                     Dialect::Scss,
                 );
-                (resolved, hides)
+                let hides = nested::block_hides_rules(
+                    selector.as_bytes(),
+                    selectors.is_some(),
+                    Dialect::Scss,
+                );
+                (selectors, hides)
             }
             Line::Definition => (None, false),
             Line::Unknown => (None, true),
@@ -137,7 +134,7 @@ pub(super) fn authored_classes(source: &str, syntax: Syntax) -> Option<AuthoredC
         if known && hides {
             complete = false;
         }
-        for selector in resolved.iter().flatten() {
+        for selector in selectors.iter().flatten() {
             let mut rule = BTreeSet::new();
             if collect_classes_from_selector_prelude(selector.as_bytes(), &mut rule).is_some() {
                 classes.extend(rule);
@@ -145,15 +142,15 @@ pub(super) fn authored_classes(source: &str, syntax: Syntax) -> Option<AuthoredC
                 complete = false;
             }
         }
-        blocks.push((indent, resolved));
+        resolved.push(selectors);
     }
     Some(AuthoredClasses::new(classes, complete))
 }
 
 /// What a block-opening line spells.
 enum Line<'t> {
-    /// A selector or an at-rule, with whether it interpolates.
-    Selector(&'t str, bool),
+    /// A selector or an at-rule.
+    Selector(&'t str),
     /// A mixin or function definition: its body emits nothing here.
     Definition,
     /// A block whose rules cannot be named: control flow, a Stylus block
@@ -189,9 +186,9 @@ fn line(text: &str, syntax: Syntax) -> Line<'_> {
             }
             // `+mixin` content blocks keep the enclosing selector.
             if text.starts_with('+') {
-                return Line::Selector("@include", false);
+                return Line::Selector("@include");
             }
-            Line::Selector(text, text.contains("#{"))
+            Line::Selector(text)
         }
         Syntax::Stylus => {
             if starts_call(text) {
@@ -205,68 +202,7 @@ fn line(text: &str, syntax: Syntax) -> Line<'_> {
             {
                 return Line::Unknown;
             }
-            Line::Selector(text, text.contains('{'))
+            Line::Selector(text)
         }
     }
-}
-
-/// Non-empty lines with their indentation, comments removed.
-fn code_lines(source: &str) -> Option<Vec<(usize, String)>> {
-    let mut lines = Vec::new();
-    let mut in_block_comment = false;
-    for line in source.lines() {
-        let mut code = String::default();
-        let mut rest = line;
-        loop {
-            if in_block_comment {
-                let Some(end) = rest.find("*/") else {
-                    break;
-                };
-                rest = rest.get(end + 2..)?;
-                in_block_comment = false;
-            }
-            let Some(start) = comment_start(rest) else {
-                code.push_str(rest);
-                break;
-            };
-            code.push_str(rest.get(..start)?);
-            if rest.get(start..)?.starts_with("//") {
-                break;
-            }
-            rest = rest.get(start + 2..)?;
-            in_block_comment = true;
-        }
-        let trimmed = code.trim_end();
-        if trimmed.trim_start().is_empty() {
-            continue;
-        }
-        let indent = trimmed.len() - trimmed.trim_start().len();
-        lines.push((indent, String::from(trimmed.trim_start())));
-    }
-    Some(lines)
-}
-
-/// The first `//` or `/*` outside strings and parentheses (`url(http://…)`).
-fn comment_start(line: &str) -> Option<usize> {
-    let bytes = line.as_bytes();
-    let mut quote = None;
-    let mut parens = 0usize;
-    for (index, &byte) in bytes.iter().enumerate() {
-        if let Some(open) = quote {
-            if byte == open {
-                quote = None;
-            }
-            continue;
-        }
-        match byte {
-            b'\'' | b'"' => quote = Some(byte),
-            b'(' => parens += 1,
-            b')' => parens = parens.saturating_sub(1),
-            b'/' if parens == 0 && matches!(bytes.get(index + 1), Some(b'/' | b'*')) => {
-                return Some(index);
-            }
-            _ => {}
-        }
-    }
-    None
 }
