@@ -205,13 +205,13 @@ expression: template
   // @vize-map: component -> 0:35
   type __Panel_Props_2 = typeof Panel extends { __vizeCheck: infer __F } ? ($IsAny<__F> extends true ? $ComponentRawProps<typeof Panel> : Record<string, unknown>) : $ComponentRawProps<typeof Panel>;
   type __Panel_Component_2 = typeof Panel;
-  type __Panel_CheckProps_2 = __Panel_Props_2 & $EmitListeners<__Panel_Component_2> & $RequiredFallthroughProps<__Panel_Component_2>;
+  type __Panel_CheckProps_2 = __Panel_Props_2 & $EmitListeners<__Panel_Component_2> & ($FallthroughProps<__Panel_Component_2> extends infer __F ? [__F extends unknown ? {} extends __F ? never : __F : never] extends [never] ? $RequiredFallthroughProps<__Panel_Component_2, __F, never> : $RequiredFallthroughProps<__Panel_Component_2, __F> : never);
   type __Panel_CheckTail_2 = $ComponentCheckTail<__Panel_Component_2>;
   type __Panel_Check_2 = $PropChecker<__Panel_Component_2, __Panel_CheckProps_2, __Panel_CheckTail_2>;
   // @vize-map: component -> 274:323
   type ____vize_dynamic_is_274_Props_4 = typeof __vize_dynamic_is_274 extends { __vizeCheck: infer __F } ? ($IsAny<__F> extends true ? $ComponentRawProps<typeof __vize_dynamic_is_274> : Record<string, unknown>) : $ComponentRawProps<typeof __vize_dynamic_is_274>;
   type ____vize_dynamic_is_274_Component_4 = typeof __vize_dynamic_is_274;
-  type ____vize_dynamic_is_274_CheckProps_4 = ____vize_dynamic_is_274_Props_4 & $EmitListeners<____vize_dynamic_is_274_Component_4> & $RequiredFallthroughProps<____vize_dynamic_is_274_Component_4>;
+  type ____vize_dynamic_is_274_CheckProps_4 = ____vize_dynamic_is_274_Props_4 & $EmitListeners<____vize_dynamic_is_274_Component_4> & ($FallthroughProps<____vize_dynamic_is_274_Component_4> extends infer __F ? [__F extends unknown ? {} extends __F ? never : __F : never] extends [never] ? $RequiredFallthroughProps<____vize_dynamic_is_274_Component_4, __F, never> : $RequiredFallthroughProps<____vize_dynamic_is_274_Component_4, __F> : never);
   type ____vize_dynamic_is_274_CheckTail_4 = $ComponentCheckTail<____vize_dynamic_is_274_Component_4>;
   type ____vize_dynamic_is_274_Check_4 = $PropChecker<____vize_dynamic_is_274_Component_4, ____vize_dynamic_is_274_CheckProps_4, ____vize_dynamic_is_274_CheckTail_4>;
 
@@ -254,7 +254,7 @@ expression: template
   // @vize-map: component -> 35:92
   type ____vize_dynamic_is_35_Props_0 = typeof __vize_dynamic_is_35 extends { __vizeCheck: infer __F } ? ($IsAny<__F> extends true ? $ComponentRawProps<typeof __vize_dynamic_is_35> : Record<string, unknown>) : $ComponentRawProps<typeof __vize_dynamic_is_35>;
   type ____vize_dynamic_is_35_Component_0 = typeof __vize_dynamic_is_35;
-  type ____vize_dynamic_is_35_CheckProps_0 = ____vize_dynamic_is_35_Props_0 & $EmitListeners<____vize_dynamic_is_35_Component_0> & $RequiredFallthroughProps<____vize_dynamic_is_35_Component_0>;
+  type ____vize_dynamic_is_35_CheckProps_0 = ____vize_dynamic_is_35_Props_0 & $EmitListeners<____vize_dynamic_is_35_Component_0> & ($FallthroughProps<____vize_dynamic_is_35_Component_0> extends infer __F ? [__F extends unknown ? {} extends __F ? never : __F : never] extends [never] ? $RequiredFallthroughProps<____vize_dynamic_is_35_Component_0, __F, never> : $RequiredFallthroughProps<____vize_dynamic_is_35_Component_0, __F> : never);
   type ____vize_dynamic_is_35_CheckTail_0 = $ComponentCheckTail<____vize_dynamic_is_35_Component_0>;
   type ____vize_dynamic_is_35_ValueProps_0 = $IsLibraryGenericExport<____vize_dynamic_is_35_Component_0> extends true ? Record<string, any> : ____vize_dynamic_is_35_Props_0 & $EmitListeners<____vize_dynamic_is_35_Component_0> & $PublicComponentAttrs;
   type ____vize_dynamic_is_35_Check_0 = $PropChecker<____vize_dynamic_is_35_Component_0, ____vize_dynamic_is_35_CheckProps_0, ____vize_dynamic_is_35_CheckTail_0>;
@@ -266,7 +266,7 @@ expression: template
   // @vize-map: component -> 104:165
   type ____vize_dynamic_is_104_Props_1 = typeof __vize_dynamic_is_104 extends { __vizeCheck: infer __F } ? ($IsAny<__F> extends true ? $ComponentRawProps<typeof __vize_dynamic_is_104> : Record<string, unknown>) : $ComponentRawProps<typeof __vize_dynamic_is_104>;
   type ____vize_dynamic_is_104_Component_1 = typeof __vize_dynamic_is_104;
-  type ____vize_dynamic_is_104_CheckProps_1 = ____vize_dynamic_is_104_Props_1 & $EmitListeners<____vize_dynamic_is_104_Component_1> & $RequiredFallthroughProps<____vize_dynamic_is_104_Component_1>;
+  type ____vize_dynamic_is_104_CheckProps_1 = ____vize_dynamic_is_104_Props_1 & $EmitListeners<____vize_dynamic_is_104_Component_1> & ($FallthroughProps<____vize_dynamic_is_104_Component_1> extends infer __F ? [__F extends unknown ? {} extends __F ? never : __F : never] extends [never] ? $RequiredFallthroughProps<____vize_dynamic_is_104_Component_1, __F, never> : $RequiredFallthroughProps<____vize_dynamic_is_104_Component_1, __F> : never);
   type ____vize_dynamic_is_104_CheckTail_1 = $ComponentCheckTail<____vize_dynamic_is_104_Component_1>;
   type ____vize_dynamic_is_104_Check_1 = $PropChecker<____vize_dynamic_is_104_Component_1, ____vize_dynamic_is_104_CheckProps_1, ____vize_dynamic_is_104_CheckTail_1>;
   void __vize_dynamic_is_104;
@@ -313,7 +313,7 @@ expression: template
   // @vize-map: component -> 185:262
   type ____vize_dynamic_is_185_Props_3 = typeof __vize_dynamic_is_185 extends { __vizeCheck: infer __F } ? ($IsAny<__F> extends true ? $ComponentRawProps<typeof __vize_dynamic_is_185> : Record<string, unknown>) : $ComponentRawProps<typeof __vize_dynamic_is_185>;
   type ____vize_dynamic_is_185_Component_3 = typeof __vize_dynamic_is_185;
-  type ____vize_dynamic_is_185_CheckProps_3 = ____vize_dynamic_is_185_Props_3 & $EmitListeners<____vize_dynamic_is_185_Component_3> & $RequiredFallthroughProps<____vize_dynamic_is_185_Component_3>;
+  type ____vize_dynamic_is_185_CheckProps_3 = ____vize_dynamic_is_185_Props_3 & $EmitListeners<____vize_dynamic_is_185_Component_3> & ($FallthroughProps<____vize_dynamic_is_185_Component_3> extends infer __F ? [__F extends unknown ? {} extends __F ? never : __F : never] extends [never] ? $RequiredFallthroughProps<____vize_dynamic_is_185_Component_3, __F, never> : $RequiredFallthroughProps<____vize_dynamic_is_185_Component_3, __F> : never);
   type ____vize_dynamic_is_185_CheckTail_3 = $ComponentCheckTail<____vize_dynamic_is_185_Component_3>;
   type ____vize_dynamic_is_185_Check_3 = $PropChecker<____vize_dynamic_is_185_Component_3, ____vize_dynamic_is_185_CheckProps_3, ____vize_dynamic_is_185_CheckTail_3>;
   void __vize_dynamic_is_185;

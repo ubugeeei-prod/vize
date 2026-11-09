@@ -1,6 +1,5 @@
 ---
 source: crates/vize_canon/tests/authored_pick_inline_helpers.rs
-assertion_line: 112
 expression: virtual_ts.as_str()
 ---
 /// <reference lib="es2022" />
@@ -232,7 +231,7 @@ function __setup() {
   // @vize-map: component -> 163:204
   type __loose_Props_0 = typeof loose extends { __vizeCheck: infer __F } ? ($IsAny<__F> extends true ? $ComponentRawProps<typeof loose> : Record<string, unknown>) : $ComponentRawProps<typeof loose>;
   type __loose_Component_0 = typeof loose;
-  type __loose_CheckProps_0 = __loose_Props_0 & $EmitListeners<__loose_Component_0> & $RequiredFallthroughProps<__loose_Component_0>;
+  type __loose_CheckProps_0 = __loose_Props_0 & $EmitListeners<__loose_Component_0> & ($FallthroughProps<__loose_Component_0> extends infer __F ? [__F extends unknown ? {} extends __F ? never : __F : never] extends [never] ? $RequiredFallthroughProps<__loose_Component_0, __F, never> : $RequiredFallthroughProps<__loose_Component_0, __F> : never);
   type __loose_CheckTail_0 = $ComponentCheckTail<__loose_Component_0>;
   type __loose_Check_0 = $PropChecker<__loose_Component_0, __loose_CheckProps_0, __loose_CheckTail_0>;
 

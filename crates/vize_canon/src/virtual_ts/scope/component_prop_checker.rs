@@ -131,6 +131,11 @@ pub(super) fn append_prop_checker_alias(
     // A usage that is itself this component's fallthrough root under that
     // option forwards the child's required props to the parent, so it checks
     // the values it binds without demanding the ones it forwards.
+    //
+    // `$RequiredKeys` scans every fallthrough key, hundreds for a native root.
+    // A surface whose every member admits `{}` has no required key, so pass
+    // `never` and skip the scan; either branch is the same instantiation the
+    // default arguments produce.
     let own_props = if relax_required {
         cstr!("Partial<__{component_type_name}_Props_{idx}>")
     } else {
@@ -145,7 +150,7 @@ pub(super) fn append_prop_checker_alias(
     if !hoist_shared_preamble {
         vize_l0::emit_ts!(
             ts,
-            "  type __{component_type_name}_CheckProps_{idx} = {own_props} & $EmitListeners<__{component_type_name}_Component_{idx}> & $RequiredFallthroughProps<__{component_type_name}_Component_{idx}>;\n",
+            "  type __{component_type_name}_CheckProps_{idx} = {own_props} & $EmitListeners<__{component_type_name}_Component_{idx}> & ($FallthroughProps<__{component_type_name}_Component_{idx}> extends infer __F ? [__F extends unknown ? {{}} extends __F ? never : __F : never] extends [never] ? $RequiredFallthroughProps<__{component_type_name}_Component_{idx}, __F, never> : $RequiredFallthroughProps<__{component_type_name}_Component_{idx}, __F> : never);\n",
         );
         if loose_legacy_attrs {
             vize_l0::emit_ts!(
@@ -173,11 +178,12 @@ pub(super) fn append_prop_checker_alias(
     let emit_listeners = shared_types::EMIT_LISTENERS.select(hoist_shared_preamble);
     let required_fallthrough =
         shared_types::REQUIRED_FALLTHROUGH_PROPS.select(hoist_shared_preamble);
+    let fallthrough_props = "import(\"vize:virtual-ts\").$FallthroughProps";
     let is_library_generic = shared_types::IS_LIBRARY_GENERIC_EXPORT.select(hoist_shared_preamble);
     let prop_checker = shared_types::PROP_CHECKER.select(hoist_shared_preamble);
     vize_l0::emit_ts!(
         ts,
-        "  type __{component_type_name}_CheckProps_{idx} = {own_props} & {emit_listeners}<__{component_type_name}_Component_{idx}> & {required_fallthrough}<__{component_type_name}_Component_{idx}>;\n",
+        "  type __{component_type_name}_CheckProps_{idx} = {own_props} & {emit_listeners}<__{component_type_name}_Component_{idx}> & ({fallthrough_props}<__{component_type_name}_Component_{idx}> extends infer __F ? [__F extends unknown ? {{}} extends __F ? never : __F : never] extends [never] ? {required_fallthrough}<__{component_type_name}_Component_{idx}, __F, never> : {required_fallthrough}<__{component_type_name}_Component_{idx}, __F> : never);\n",
     );
     if loose_legacy_attrs {
         vize_l0::emit_ts!(

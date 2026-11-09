@@ -221,7 +221,7 @@ function __setup() {
   // @vize-map: component -> 0:63
   type __my_widget_Props_0 = typeof my_widget extends { __vizeCheck: infer __F } ? ($IsAny<__F> extends true ? $ComponentRawProps<typeof my_widget> : Record<string, unknown>) : $ComponentRawProps<typeof my_widget>;
   type __my_widget_Component_0 = typeof my_widget;
-  type __my_widget_CheckProps_0 = __my_widget_Props_0 & $EmitListeners<__my_widget_Component_0> & $RequiredFallthroughProps<__my_widget_Component_0>;
+  type __my_widget_CheckProps_0 = __my_widget_Props_0 & $EmitListeners<__my_widget_Component_0> & ($FallthroughProps<__my_widget_Component_0> extends infer __F ? [__F extends unknown ? {} extends __F ? never : __F : never] extends [never] ? $RequiredFallthroughProps<__my_widget_Component_0, __F, never> : $RequiredFallthroughProps<__my_widget_Component_0, __F> : never);
   type __my_widget_CheckTail_0 = $ComponentCheckTail<__my_widget_Component_0>;
   type __my_widget_ValueProps_0 = $IsLibraryGenericExport<__my_widget_Component_0> extends true ? Record<string, any> : __my_widget_Props_0 & $EmitListeners<__my_widget_Component_0> & $PublicComponentAttrs;
   type __my_widget_Check_0 = $PropChecker<__my_widget_Component_0, __my_widget_CheckProps_0, __my_widget_CheckTail_0>;
