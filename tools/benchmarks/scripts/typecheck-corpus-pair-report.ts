@@ -49,6 +49,30 @@ export type ReferenceResult = {
   diagnostics: Diagnostic[];
 };
 
+/** One untimed `--checkers 1` run of a tsc lane: counts no file-to-checker split moves. */
+export type SingleCheckerResult = {
+  corpus: string;
+  host: string;
+  variant: LaneResult["variant"];
+  types: number;
+  instantiations: number;
+  fingerprint: string;
+};
+
+export const singleCheckerResult = (
+  corpus: string,
+  host: string,
+  variant: LaneResult["variant"],
+  run: { stats: StatEntry[]; fingerprint: string },
+): SingleCheckerResult => ({
+  corpus,
+  host,
+  variant,
+  types: statValue(run.stats, "Types", "count"),
+  instantiations: statValue(run.stats, "Instantiations", "count"),
+  fingerprint: run.fingerprint,
+});
+
 export type PairResults = {
   schemaVersion: 1;
   base: { sha: string };
@@ -57,6 +81,7 @@ export type PairResults = {
   measurement: Record<string, unknown> & { runner: string; packages: Record<string, string> };
   lanes: LaneResult[];
   references: ReferenceResult[];
+  singleChecker?: SingleCheckerResult[];
 };
 
 export type LaneSummary = {
@@ -236,6 +261,48 @@ function identityLines(entry: Identity): string[] {
   return lines;
 }
 
+function singleCheckerLines(results: PairResults, summary: PairSummary): string[] {
+  const single = results.singleChecker ?? [];
+  if (single.length === 0) return [];
+  const lines = [
+    "### Partition-free counts (`tsc --checkers 1`)",
+    "",
+    "Default-checker sums move when only file sizes move (comment-only padding shifted Types by 0.6% at the default, 0 at one checker): every checker rebuilds the types its own files reach. One untimed single-checker run per side has no split; cite it for small Types and Instantiations deltas.",
+    "",
+    "| corpus | count | default base | default head | Δ | 1 checker base | 1 checker head | Δ |",
+    "| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |",
+  ];
+  const notes: string[] = [];
+  for (const corpus of new Set(single.map((entry) => entry.corpus))) {
+    const pick = <T extends { corpus: string; host: string; variant: string }>(
+      list: T[],
+      variant: LaneResult["variant"],
+    ) => list.find((e) => e.corpus === corpus && e.host === "tsc" && e.variant === variant) as T;
+    const [base, head] = [pick(single, "vize-base"), pick(single, "vize-head")];
+    const [laneBase, laneHead] = [
+      pick(summary.lanes, "vize-base"),
+      pick(summary.lanes, "vize-head"),
+    ];
+    if (!base || !head || !laneBase || !laneHead) continue;
+    for (const [label, key] of [
+      ["Types", "types"],
+      ["Instantiations", "instantiations"],
+    ] as const) {
+      lines.push(
+        `| ${corpus} | ${label} | ${integer(laneBase[key])} | ${integer(laneHead[key])} | ${percentDelta(laneBase[key], laneHead[key])} | ${integer(base[key])} | ${integer(head[key])} | ${percentDelta(base[key], head[key])} |`,
+      );
+    }
+    for (const [entry, lane] of [
+      [base, laneBase],
+      [head, laneHead],
+    ] as const) {
+      if (entry.fingerprint !== lane.fingerprint)
+        notes.push(`- ${corpus} / ${entry.variant}: diagnostics differ at one checker`);
+    }
+  }
+  return [...lines, ...(notes.length > 0 ? ["", ...notes] : []), ""];
+}
+
 export function renderPairSummary(results: PairResults, summary: PairSummary): string {
   const packages = results.measurement.packages;
   const lines = [
@@ -284,6 +351,7 @@ export function renderPairSummary(results: PairResults, summary: PairSummary): s
     }
     lines.push("");
   }
+  lines.push(...singleCheckerLines(results, summary));
   lines.push("### Diagnostic identity (Vize base vs head)", "");
   for (const entry of summary.identity) lines.push(...identityLines(entry));
   if (results.references.length > 0) {
