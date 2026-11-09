@@ -465,6 +465,18 @@ fn public_instance_mixed_vue2_packets_remain_authenticated() {
             strict_extra_keys_successor,
             canon_leftovers_successor,
         );
+        let instance_input_keys_successor = include_str!(
+            "fixtures/public-instance-mixed-vue2/successor-instance-input-keys-11654/projection-record.txt"
+        );
+        authenticate_successor_receipt(
+            include_str!(
+                "fixtures/public-instance-mixed-vue2/successor-instance-input-keys-11654/receipt.json"
+            ),
+            "14246b9544ab2efc798030e183ee666b95395ca695ea48efd31af37acfbd616e",
+            12446,
+            canon_leftovers_successor,
+            instance_input_keys_successor,
+        );
         let non_text_fields = |record: &str| {
             record
                 .lines()
@@ -478,7 +490,7 @@ fn public_instance_mixed_vue2_packets_remain_authenticated() {
         );
         assert_eq!(
             capture_fixture(fixture).render().as_str(),
-            canon_leftovers_successor
+            instance_input_keys_successor
         );
     }
 }

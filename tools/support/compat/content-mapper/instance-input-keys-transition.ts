@@ -4,7 +4,8 @@ import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 
 export const instanceInputKeysRecord = "tests/_fixtures/tooling/instance-input-keys-11654.json";
-const recordSha256 = "42f8f517d05587cc8c889813690f9bebf7887e7ccf9fe91cac056978d2cb9c5a";
+export const instanceInputKeysRecordSha256 =
+  "42f8f517d05587cc8c889813690f9bebf7887e7ccf9fe91cac056978d2cb9c5a";
 
 type Identity = { bytes: number; sha256: string };
 interface Transition {
@@ -31,7 +32,11 @@ function load(): Transition {
     new URL(`../../../../${instanceInputKeysRecord}`, import.meta.url),
     "utf8",
   );
-  assert.equal(identity(raw).sha256, recordSha256, "immutable instance input-key transition");
+  assert.equal(
+    identity(raw).sha256,
+    instanceInputKeysRecordSha256,
+    "immutable instance input-key transition",
+  );
   const parsed = JSON.parse(raw) as Transition;
   assert.equal(parsed.schema, "vize.instanceInputKeysSource.v1");
   assert.equal(parsed.issue, 11654);
@@ -78,4 +83,9 @@ export function beforeInstanceInputKeysIn(current: string): string {
   const edit = instanceInputKeysHelperEdit();
   assert.equal(current.split(edit.after).length, 2, "instance input-key current line");
   return current.replace(edit.after, () => edit.before);
+}
+
+/** The recorded current identity of a helper, if this layer owns it. */
+export function instanceInputKeysAfter(path: string): Identity | undefined {
+  return load().files.find((entry) => entry.path === path)?.after;
 }
