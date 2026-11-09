@@ -17,10 +17,6 @@ use docs_metadata::{
     update as docs_metadata_update, verify as verify_docs_metadata_update,
 };
 mod js_tooling_refresh;
-use js_tooling_refresh::{
-    JsToolingRefreshQualificationGraph, update as js_tooling_refresh_update,
-    verify as verify_js_tooling_refresh_update,
-};
 mod strict_checker;
 use strict_checker::{authorize as authorize_strict_checker, update as strict_checker_update};
 mod fresco;
@@ -223,7 +219,6 @@ fn verify_lockfile_update(
     {
         return Err("exact resolver fixed point");
     }
-
     let workspace = std::str::from_utf8(graph.workspace).map_err(|_| "UTF-8 workspace manifest")?;
     if workspace
         .matches("  - \"tests/tooling/vue-setup-await-oracle\"")

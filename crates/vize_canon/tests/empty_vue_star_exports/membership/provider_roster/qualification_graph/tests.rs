@@ -1,3 +1,7 @@
+use super::js_tooling_refresh::{
+    JsToolingRefreshQualificationGraph, update as js_tooling_refresh_update,
+    verify as verify_js_tooling_refresh_update,
+};
 use super::*;
 
 fn current_binding(path: &str, body: &[u8]) -> Value {
