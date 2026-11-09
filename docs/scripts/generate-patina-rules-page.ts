@@ -62,6 +62,7 @@ function readPatinaSourceRules() {
 
   for (const filePath of walkRustFiles(rulesRoot)) {
     const source = readFileSync(filePath, "utf8");
+    const relativePath = relative(workspaceRoot, filePath);
     let match;
     while ((match = metaPattern.exec(source))) {
       const [, metaType, block] = match;
@@ -70,7 +71,6 @@ function readPatinaSourceRules() {
         continue;
       }
 
-      const relativePath = relative(workspaceRoot, filePath);
       const line = source.slice(0, match.index).split("\n").length;
       rulesByName.set(name, {
         name,
@@ -82,6 +82,25 @@ function readPatinaSourceRules() {
         implementationPath: relativePath,
         metaType,
       });
+    }
+
+    for (const compatibilityPattern of [
+      /core_rule!\(\s*\w+,\s*\w+,\s*"([^"]+)",\s*"([^"]+)"[\s\S]*?\);/g,
+      /static\s+\w+:\s*RuleMeta\s*=\s*meta!\(\s*"([^"]+)",\s*"([^"]+)"\s*\);/g,
+    ]) {
+      while ((match = compatibilityPattern.exec(source))) {
+        const [, name, description] = match;
+        rulesByName.set(name, {
+          name,
+          category: "Recommended",
+          defaultSeverity: "warning",
+          description,
+          fixable: false,
+          implementationLine: source.slice(0, match.index).split("\n").length,
+          implementationPath: relativePath,
+          metaType: "RuleMeta",
+        });
+      }
     }
   }
 

@@ -169,6 +169,23 @@ export interface VizeRuleOptions {
   "vue/no-bare-strings-in-template"?: { allowlist?: string[] };
   "a11y/anchor-has-content"?: { accessibleChildren?: string[] };
   "a11y/label-has-for"?: { controlComponents?: string[] };
+  "vue/enforce-style-attribute"?: { allow?: Array<"plain" | "scoped" | "module"> };
+  "vue/no-restricted-syntax"?: {
+    selectors?: Array<
+      | "ArrayExpression"
+      | "BinaryExpression"
+      | "CallExpression"
+      | "ConditionalExpression"
+      | "ObjectExpression"
+      | "UnaryExpression"
+    >;
+  };
+  "vue/quote-props"?: "as-needed";
+  "vue/sort-keys"?: {
+    order?: "asc" | "desc";
+    caseSensitive?: boolean;
+    natural?: boolean;
+  };
   "vue/require-component-registration"?: { globals?: string[] };
   "vue/sfc-element-order"?: SfcElementOrderOption;
   "vue/html-self-closing"?: HtmlSelfClosingOption;

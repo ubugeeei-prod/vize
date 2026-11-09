@@ -666,6 +666,66 @@
           },
           "additionalProperties": false
         },
+        "vue/enforce-style-attribute": {
+          "type": "object",
+          "properties": {
+            "allow": {
+              "default": ["scoped"],
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": ["plain", "scoped", "module"]
+              },
+              "uniqueItems": true
+            }
+          },
+          "additionalProperties": false
+        },
+        "vue/no-restricted-syntax": {
+          "type": "object",
+          "properties": {
+            "selectors": {
+              "default": [],
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "ArrayExpression",
+                  "BinaryExpression",
+                  "CallExpression",
+                  "ConditionalExpression",
+                  "ObjectExpression",
+                  "UnaryExpression"
+                ]
+              },
+              "uniqueItems": true
+            }
+          },
+          "additionalProperties": false
+        },
+        "vue/quote-props": {
+          "type": "string",
+          "enum": ["as-needed"]
+        },
+        "vue/sort-keys": {
+          "type": "object",
+          "properties": {
+            "order": {
+              "default": "asc",
+              "type": "string",
+              "enum": ["asc", "desc"]
+            },
+            "caseSensitive": {
+              "default": true,
+              "type": "boolean"
+            },
+            "natural": {
+              "default": false,
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": false
+        },
         "vue/require-component-registration": {
           "type": "object",
           "properties": {

@@ -14,6 +14,8 @@ mod attribute_hyphenation;
 mod attribute_order;
 mod authored_closing;
 mod comment_directive;
+mod compatibility_sfc;
+mod compatibility_template;
 mod if_chain;
 mod macro_type_argument;
 mod no_bare_strings_in_template;
@@ -170,6 +172,16 @@ pub use crate::rules::opinionated::vue::{
 pub use crate::rules::opinionated::vue::{VBindStyle, VBindStyleOption};
 pub use attribute_hyphenation::{AttributeHyphenation, HyphenationStyle};
 pub use comment_directive::CommentDirective;
+pub use compatibility_sfc::{
+    EnforceStyleAttribute, NextTickStyle, NoContentOutsideBlock, NoDefineModelDefault,
+    NoPropsShadow, NoShadowNativeEvents, RequireMacroVariableName, SortKeys, StyleAttribute,
+};
+pub use compatibility_template::{
+    Camelcase, DotNotation, Eqeqeq, NoConsole, NoConstantCondition, NoEmptyPattern,
+    NoImplicitCoercion, NoIrregularWhitespace, NoLiteralsInTemplate, NoLossOfPrecision,
+    NoNegatedCondition, NoRestrictedSyntax, NoRestrictedVBind, NoSparseArrays, NoUselessConcat,
+    ObjectShorthand, PreferTemplate, PreferVModel, QuoteProps, VIfElseKey,
+};
 pub use component_definition_name_casing::ComponentDefinitionNameCasing;
 pub use html_end_tags::HtmlEndTags;
 pub use html_quotes::{HtmlQuotes, HtmlQuotesOption};
@@ -275,6 +287,16 @@ pub(crate) fn register_security(registry: &mut crate::rule::RuleRegistry) {
 /// A documented rule still has to be instantiable here: config-enabling a
 /// name that no registry entry owns is a silent false negative (#4636).
 pub(crate) fn register_opt_in(registry: &mut crate::rule::RuleRegistry) {
+    for rule in compatibility_sfc::rules() {
+        if !registry.has_rule(rule.meta().name) {
+            registry.register(rule);
+        }
+    }
+    for rule in compatibility_template::rules() {
+        if !registry.has_rule(rule.meta().name) {
+            registry.register(rule);
+        }
+    }
     if !registry.has_rule("vue/a11y-img-alt") {
         registry.register(Box::new(A11yImgAlt));
     }

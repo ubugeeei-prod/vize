@@ -308,6 +308,25 @@ export interface LintRuleOptions {
   "a11y/label-has-for"?: {
     controlComponents?: string[];
   };
+  "vue/enforce-style-attribute"?: {
+    allow?: ("plain" | "scoped" | "module")[];
+  };
+  "vue/no-restricted-syntax"?: {
+    selectors?: (
+      | "ArrayExpression"
+      | "BinaryExpression"
+      | "CallExpression"
+      | "ConditionalExpression"
+      | "ObjectExpression"
+      | "UnaryExpression"
+    )[];
+  };
+  "vue/quote-props"?: "as-needed";
+  "vue/sort-keys"?: {
+    order?: "asc" | "desc";
+    caseSensitive?: boolean;
+    natural?: boolean;
+  };
   "vue/require-component-registration"?: {
     globals?: string[];
   };

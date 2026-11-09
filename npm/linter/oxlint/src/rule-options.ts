@@ -105,6 +105,41 @@ export function getRuleOptions(
       break;
     case "vue/attribute-hyphenation":
       return getAttributeHyphenationOptions(options);
+    case "vue/no-restricted-syntax":
+      if (options.every(isSupportedRestrictedSyntaxSelector)) {
+        return {
+          ruleOptions: {
+            "vue/no-restricted-syntax": { selectors: [...options] },
+          },
+        };
+      }
+      break;
+    case "vue/quote-props":
+      if (firstOption === "as-needed") {
+        return { ruleOptions: { "vue/quote-props": firstOption } };
+      }
+      break;
+    case "vue/sort-keys": {
+      if (firstOption !== undefined && firstOption !== "asc" && firstOption !== "desc") break;
+      const secondOption = options[1];
+      if (
+        secondOption !== undefined &&
+        (!isRecord(secondOption) ||
+          !hasOnlyKeys(secondOption, ["caseSensitive", "natural"]) ||
+          !optionalBooleanField(secondOption.caseSensitive) ||
+          !optionalBooleanField(secondOption.natural))
+      ) {
+        break;
+      }
+      return {
+        ruleOptions: {
+          "vue/sort-keys": {
+            order: firstOption ?? "asc",
+            ...(isRecord(secondOption) ? structuredClone(secondOption) : {}),
+          },
+        },
+      };
+    }
     case "script/define-props-destructuring":
     case "html/no-empty-palpable-content":
     case "type/strict-boolean-expressions":
@@ -114,6 +149,7 @@ export function getRuleOptions(
     case "vue/no-bare-strings-in-template":
     case "a11y/anchor-has-content":
     case "a11y/label-has-for":
+    case "vue/enforce-style-attribute":
     case "vue/require-component-registration":
     case "vue/valid-v-on":
     case "vue/valid-v-slot":
@@ -122,6 +158,20 @@ export function getRuleOptions(
       break;
   }
   return undefined;
+}
+
+function isSupportedRestrictedSyntaxSelector(value: unknown): value is string {
+  return (
+    isString(value) &&
+    [
+      "ArrayExpression",
+      "BinaryExpression",
+      "CallExpression",
+      "ConditionalExpression",
+      "ObjectExpression",
+      "UnaryExpression",
+    ].includes(value)
+  );
 }
 
 function isDefineMacrosOrderOption(value: unknown): value is DefineMacrosOrderOption {

@@ -16,6 +16,7 @@ mod casing;
 mod component_registration;
 mod content_directives;
 mod define_macros_order;
+mod eslint_vue_compatibility;
 mod html_quotes;
 mod html_self_closing;
 mod hyphenation;
@@ -41,6 +42,10 @@ pub use casing::{
     TemplateComponentNameCasing,
 };
 pub use define_macros_order::DefineMacrosOrderOptions;
+pub use eslint_vue_compatibility::{
+    EnforceStyleAttributeOptions, NoRestrictedSyntaxOptions, QuotePropsStyle, SortKeysOptions,
+    SortKeysOrder, StyleAttributeMode,
+};
 pub use html_quotes::{HtmlQuoteStyle, HtmlQuotesConfig, HtmlQuotesOptions};
 pub use html_self_closing::{
     HtmlSelfClosingHtmlOptions, HtmlSelfClosingOptions, HtmlSelfClosingStyle,
@@ -193,6 +198,18 @@ pub struct ConfigLintRuleOptions {
     /// Custom components that render native label controls.
     #[serde(rename = "a11y/label-has-for")]
     label_has_for: Option<LabelHasForOptions>,
+    /// Style modes accepted by `vue/enforce-style-attribute`.
+    #[serde(rename = "vue/enforce-style-attribute")]
+    enforce_style_attribute: Option<EnforceStyleAttributeOptions>,
+    /// ESTree node selectors rejected by `vue/no-restricted-syntax`.
+    #[serde(rename = "vue/no-restricted-syntax")]
+    no_restricted_syntax: Option<NoRestrictedSyntaxOptions>,
+    /// Property quoting policy for `vue/quote-props`.
+    #[serde(rename = "vue/quote-props")]
+    quote_props: Option<QuotePropsStyle>,
+    /// Ordering policy for `vue/sort-keys`.
+    #[serde(rename = "vue/sort-keys")]
+    sort_keys: Option<SortKeysOptions>,
     /// Options for `vue/sfc-element-order`.
     #[serde(rename = "vue/sfc-element-order")]
     sfc_element_order: Option<SfcElementOrderOptions>,
@@ -266,6 +283,10 @@ impl ConfigLintRuleOptions {
             && self.no_bare_strings_in_template.is_none()
             && self.anchor_has_content.is_none()
             && self.label_has_for.is_none()
+            && self.enforce_style_attribute.is_none()
+            && self.no_restricted_syntax.is_none()
+            && self.quote_props.is_none()
+            && self.sort_keys.is_none()
             && self.sfc_element_order.is_none()
             && self.html_self_closing.is_none()
             && self.html_quotes.is_none()
@@ -373,6 +394,26 @@ impl ConfigLintRuleOptions {
     /// Configured custom components that count as nested label controls.
     pub fn label_has_for(&self) -> Option<&LabelHasForOptions> {
         self.label_has_for.as_ref()
+    }
+
+    /// Configured style modes accepted by `vue/enforce-style-attribute`.
+    pub fn enforce_style_attribute(&self) -> Option<&EnforceStyleAttributeOptions> {
+        self.enforce_style_attribute.as_ref()
+    }
+
+    /// Configured selectors rejected by `vue/no-restricted-syntax`.
+    pub fn no_restricted_syntax(&self) -> Option<&NoRestrictedSyntaxOptions> {
+        self.no_restricted_syntax.as_ref()
+    }
+
+    /// Configured quoting policy for `vue/quote-props`.
+    pub fn quote_props(&self) -> Option<QuotePropsStyle> {
+        self.quote_props
+    }
+
+    /// Configured key ordering for `vue/sort-keys`.
+    pub fn sort_keys(&self) -> Option<SortKeysOptions> {
+        self.sort_keys
     }
 
     /// Configured block order for `vue/sfc-element-order`.

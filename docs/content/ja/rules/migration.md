@@ -4,7 +4,7 @@ title: ESLint ルール移行対応表
 
 # ESLint ルール移行対応表
 
-コミットされた対応記録は 252 件で、対応付け 150 件、意図的な差異 3 件、未実装 99 件です。「対応」はルール名の対応を示し、オプション・検出・修正・適用範囲の完全な一致を保証しません。
+コミットされた対応記録は 256 件で、対応付け 177 件、意図的な差異 3 件、未実装 76 件です。「対応」はルール名の対応を示し、オプション・検出・修正・適用範囲の完全な一致を保証しません。
 
 ESLint を実行基盤として残す場合は、[`eslint.config.mjs` の flat config 連携](../guide/tool-integrations.md#eslint-の-flat-config)を優先してください。以下の Vite+ 設定は、ネイティブタスクを使う場合の代替です。
 
@@ -40,7 +40,7 @@ Vite+ の設定では Vize のルールを `withVue` の `linter.rules` に指�
 | `vue/block-spacing` | — | 未実装 |
 | `vue/block-tag-newline` | — | 未実装 |
 | `vue/brace-style` | — | 未実装 |
-| `vue/camelcase` | — | 未実装 |
+| `vue/camelcase` | [`vue/camelcase`](./reference/vue-camelcase.md) | 対応付け |
 | `vue/comma-dangle` | — | 未実装 |
 | `vue/comma-spacing` | — | 未実装 |
 | `vue/comma-style` | — | 未実装 |
@@ -55,9 +55,9 @@ Vite+ の設定では Vize のルールを `withVue` の `linter.rules` に指�
 | `vue/define-props-declaration` | [`script/define-props-declaration`](./reference/script-define-props-declaration.md) | 対応付け |
 | `vue/define-props-destructuring` | [`script/define-props-destructuring`](./reference/script-define-props-destructuring.md) | 対応付け |
 | `vue/dot-location` | — | 未実装 |
-| `vue/dot-notation` | — | 未実装 |
-| `vue/enforce-style-attribute` | — | 未実装 |
-| `vue/eqeqeq` | — | 未実装 |
+| `vue/dot-notation` | [`vue/dot-notation`](./reference/vue-dot-notation.md) | 対応付け |
+| `vue/enforce-style-attribute` | [`vue/enforce-style-attribute`](./reference/vue-enforce-style-attribute.md) | 対応付け |
+| `vue/eqeqeq` | [`vue/eqeqeq`](./reference/vue-eqeqeq.md) | 対応付け |
 | `vue/first-attribute-linebreak` | — | 未実装 |
 | `vue/func-call-spacing` | — | 未実装 |
 | `vue/html-button-has-type` | [`vue/html-button-has-type`](./reference/vue-html-button-has-type.md) | 対応付け |
@@ -85,16 +85,18 @@ Vite+ の設定では Vize のルールを `withVue` の `linter.rules` に指�
 | `vue/multiline-ternary` | — | 未実装 |
 | `vue/mustache-interpolation-spacing` | [`vue/mustache-interpolation-spacing`](./reference/vue-mustache-interpolation-spacing.md) | 対応付け |
 | `vue/new-line-between-multi-line-property` | — | 未実装 |
-| `vue/next-tick-style` | — | 未実装 |
+| `vue/next-tick-style` | [`vue/next-tick-style`](./reference/vue-next-tick-style.md) | 対応付け |
 | `vue/no-arrow-functions-in-watch` | [`script/no-arrow-functions-in-watch`](./reference/script-no-arrow-functions-in-watch.md) | 対応付け |
 | `vue/no-async-in-computed-properties` | [`script/no-async-in-computed`](./reference/script-no-async-in-computed.md) | 対応付け |
 | `vue/no-bare-strings-in-template` | [`vue/no-bare-strings-in-template`](./reference/vue-no-bare-strings-in-template.md) | 対応付け |
 | `vue/no-boolean-default` | [`script/no-boolean-default`](./reference/script-no-boolean-default.md) | 対応付け |
 | `vue/no-child-content` | [`vue/no-child-content`](./reference/vue-no-child-content.md) | 対応付け |
 | `vue/no-computed-properties-in-data` | [`script/no-computed-properties-in-data`](./reference/script-no-computed-properties-in-data.md) | 対応付け |
-| `vue/no-console` | — | 未実装 |
-| `vue/no-constant-condition` | — | 未実装 |
+| `vue/no-console` | [`vue/no-console`](./reference/vue-no-console.md) | 対応付け |
+| `vue/no-constant-condition` | [`vue/no-constant-condition`](./reference/vue-no-constant-condition.md) | 対応付け |
+| `vue/no-content-outside-block` | [`vue/no-content-outside-block`](./reference/vue-no-content-outside-block.md) | 対応付け |
 | `vue/no-custom-modifiers-on-v-model` | [`vue/no-custom-modifiers-on-v-model`](./reference/vue-no-custom-modifiers-on-v-model.md) | 対応付け |
+| `vue/no-define-model-default` | [`vue/no-define-model-default`](./reference/vue-no-define-model-default.md) | 対応付け |
 | `vue/no-deprecated-data-object-declaration` | [`script/no-deprecated-data-object-declaration`](./reference/script-no-deprecated-data-object-declaration.md) | 対応付け |
 | `vue/no-deprecated-delete-set` | [`script/no-deprecated-delete-set`](./reference/script-no-deprecated-delete-set.md) | 対応付け |
 | `vue/no-deprecated-destroyed-lifecycle` | [`script/no-deprecated-destroyed-lifecycle`](./reference/script-no-deprecated-destroyed-lifecycle.md) | 対応付け |
@@ -122,26 +124,27 @@ Vite+ の設定では Vize のルールを `withVue` の `linter.rules` に指�
 | `vue/no-duplicate-attributes` | [`vue/no-duplicate-attributes`](./reference/vue-no-duplicate-attributes.md) | 対応付け |
 | `vue/no-duplicate-class-names` | — | 未実装 |
 | `vue/no-empty-component-block` | [`vue/no-empty-component-block`](./reference/vue-no-empty-component-block.md) | 対応付け |
-| `vue/no-empty-pattern` | — | 未実装 |
+| `vue/no-empty-pattern` | [`vue/no-empty-pattern`](./reference/vue-no-empty-pattern.md) | 対応付け |
 | `vue/no-export-in-script-setup` | [`script/no-export-in-script-setup`](./reference/script-no-export-in-script-setup.md) | 対応付け |
 | `vue/no-expose-after-await` | [`script/no-expose-after-await`](./reference/script-no-expose-after-await.md) | 対応付け |
 | `vue/no-extra-parens` | — | 未実装 |
-| `vue/no-implicit-coercion` | — | 未実装 |
+| `vue/no-implicit-coercion` | [`vue/no-implicit-coercion`](./reference/vue-no-implicit-coercion.md) | 対応付け |
 | `vue/no-import-compiler-macros` | [`script/no-import-compiler-macros`](./reference/script-no-import-compiler-macros.md) | 対応付け |
-| `vue/no-irregular-whitespace` | — | 未実装 |
+| `vue/no-irregular-whitespace` | [`vue/no-irregular-whitespace`](./reference/vue-no-irregular-whitespace.md) | 対応付け |
 | `vue/no-lifecycle-after-await` | [`script/no-lifecycle-after-await`](./reference/script-no-lifecycle-after-await.md) | 対応付け |
-| `vue/no-literals-in-template` | — | 未実装 |
+| `vue/no-literals-in-template` | [`vue/no-literals-in-template`](./reference/vue-no-literals-in-template.md) | 対応付け |
 | `vue/no-lone-template` | [`vue/no-lone-template`](./reference/vue-no-lone-template.md) | 対応付け |
-| `vue/no-loss-of-precision` | — | 未実装 |
+| `vue/no-loss-of-precision` | [`vue/no-loss-of-precision`](./reference/vue-no-loss-of-precision.md) | 対応付け |
 | `vue/no-multi-spaces` | [`vue/no-multi-spaces`](./reference/vue-no-multi-spaces.md) | 対応付け |
 | `vue/no-multiple-objects-in-class` | [`vue/no-multiple-objects-in-class`](./reference/vue-no-multiple-objects-in-class.md) | 対応付け |
 | `vue/no-multiple-slot-args` | [`script/no-multiple-slot-args`](./reference/script-no-multiple-slot-args.md) | 対応付け |
 | `vue/no-multiple-template-root` | [`vue/no-multiple-template-root`](./reference/vue-no-multiple-template-root.md) | 対応付け |
 | `vue/no-mutating-props` | [`vue/no-mutating-props`](./reference/vue-no-mutating-props.md) | 対応付け |
-| `vue/no-negated-condition` | — | 未実装 |
+| `vue/no-negated-condition` | [`vue/no-negated-condition`](./reference/vue-no-negated-condition.md) | 対応付け |
 | `vue/no-negated-v-if-condition` | [`vue/no-negated-v-if-condition`](./reference/vue-no-negated-v-if-condition.md) | 対応付け |
 | `vue/no-parsing-error` | — | 未実装 |
 | `vue/no-potential-component-option-typo` | [`script/no-potential-component-option-typo`](./reference/script-no-potential-component-option-typo.md) | 対応付け |
+| `vue/no-props-shadow` | [`vue/no-props-shadow`](./reference/vue-no-props-shadow.md) | 対応付け |
 | `vue/no-ref-as-operand` | [`script/no-ref-as-operand`](./reference/script-no-ref-as-operand.md) | 対応付け |
 | `vue/no-ref-object-reactivity-loss` | [`vue/no-ref-object-reactivity-loss`](./reference/vue-no-ref-object-reactivity-loss.md) | 対応付け |
 | `vue/no-required-prop-with-default` | [`script/no-required-prop-with-default`](./reference/script-no-required-prop-with-default.md) | 対応付け |
@@ -157,15 +160,16 @@ Vite+ の設定では Vize のルールを `withVue` の `linter.rules` に指�
 | `vue/no-restricted-html-elements` | — | 未実装 |
 | `vue/no-restricted-props` | — | 未実装 |
 | `vue/no-restricted-static-attribute` | — | 未実装 |
-| `vue/no-restricted-syntax` | — | 未実装 |
-| `vue/no-restricted-v-bind` | — | 未実装 |
+| `vue/no-restricted-syntax` | [`vue/no-restricted-syntax`](./reference/vue-no-restricted-syntax.md) | 対応付け |
+| `vue/no-restricted-v-bind` | [`vue/no-restricted-v-bind`](./reference/vue-no-restricted-v-bind.md) | 対応付け |
 | `vue/no-restricted-v-on` | — | 未実装 |
 | `vue/no-root-v-if` | [`vue/no-root-v-if`](./reference/vue-no-root-v-if.md) | 対応付け |
 | `vue/no-setup-props-reactivity-loss` | [`vue/no-setup-props-reactivity-loss`](./reference/vue-no-setup-props-reactivity-loss.md) | 対応付け |
-| `vue/no-shared-component-data` | [`script/no-deprecated-data-object-declaration`](./reference/script-no-deprecated-data-object-declaration.md) | 対応付け |
+| `vue/no-shadow-native-events` | [`vue/no-shadow-native-events`](./reference/vue-no-shadow-native-events.md) | 対応付け |
+| `vue/no-shared-component-data` | — | 未実装 |
 | `vue/no-side-effects-in-computed-properties` | [`script/no-side-effects-in-computed-properties`](./reference/script-no-side-effects-in-computed-properties.md) | 対応付け |
 | `vue/no-spaces-around-equal-signs-in-attribute` | — | 未実装 |
-| `vue/no-sparse-arrays` | — | 未実装 |
+| `vue/no-sparse-arrays` | [`vue/no-sparse-arrays`](./reference/vue-no-sparse-arrays.md) | 対応付け |
 | `vue/no-static-inline-styles` | [`vue/no-static-inline-styles`](./reference/vue-no-static-inline-styles.md) | 対応付け |
 | `vue/no-template-key` | [`vue/no-template-key`](./reference/vue-no-template-key.md) | 対応付け |
 | `vue/no-template-shadow` | [`vue/no-template-shadow`](./reference/vue-no-template-shadow.md) | 対応付け |
@@ -184,7 +188,7 @@ Vite+ の設定では Vize のルールを `withVue` の `linter.rules` に指�
 | `vue/no-use-computed-property-like-method` | [`script/no-use-computed-property-like-method`](./reference/script-no-use-computed-property-like-method.md) | 対応付け |
 | `vue/no-use-v-else-with-v-for` | [`vue/no-use-v-else-with-v-for`](./reference/vue-no-use-v-else-with-v-for.md) | 対応付け |
 | `vue/no-use-v-if-with-v-for` | [`vue/no-use-v-if-with-v-for`](./reference/vue-no-use-v-if-with-v-for.md) | 対応付け |
-| `vue/no-useless-concat` | — | 未実装 |
+| `vue/no-useless-concat` | [`vue/no-useless-concat`](./reference/vue-no-useless-concat.md) | 対応付け |
 | `vue/no-useless-mustaches` | [`vue/no-useless-mustaches`](./reference/vue-no-useless-mustaches.md) | 対応付け |
 | `vue/no-useless-template-attributes` | [`vue/no-useless-template-attributes`](./reference/vue-no-useless-template-attributes.md) | 対応付け |
 | `vue/no-useless-v-bind` | [`vue/no-useless-v-bind`](./reference/vue-no-useless-v-bind.md) | 対応付け |
@@ -198,7 +202,7 @@ Vite+ の設定では Vize のルールを `withVue` の `linter.rules` に指�
 | `vue/object-curly-newline` | — | 未実装 |
 | `vue/object-curly-spacing` | — | 未実装 |
 | `vue/object-property-newline` | — | 未実装 |
-| `vue/object-shorthand` | — | 未実装 |
+| `vue/object-shorthand` | [`vue/object-shorthand`](./reference/vue-object-shorthand.md) | 対応付け |
 | `vue/one-component-per-file` | [`script/one-component-per-file`](./reference/script-one-component-per-file.md) | 対応付け |
 | `vue/operator-linebreak` | — | 未実装 |
 | `vue/order-in-components` | [`script/order-in-components`](./reference/script-order-in-components.md) | 対応付け |
@@ -210,12 +214,12 @@ Vite+ の設定では Vize のルールを `withVue` の `linter.rules` に指�
 | `vue/prefer-prop-type-boolean-first` | [`vue/prefer-prop-type-boolean-first`](./reference/vue-prefer-prop-type-boolean-first.md) | 対応付け |
 | `vue/prefer-separate-static-class` | — | 未実装 |
 | `vue/prefer-single-event-payload` | — | 未実装 |
-| `vue/prefer-template` | — | 未実装 |
+| `vue/prefer-template` | [`vue/prefer-template`](./reference/vue-prefer-template.md) | 対応付け |
 | `vue/prefer-true-attribute-shorthand` | [`vue/prefer-true-attribute-shorthand`](./reference/vue-prefer-true-attribute-shorthand.md) | 対応付け |
 | `vue/prefer-use-template-ref` | [`script/prefer-use-template-ref`](./reference/script-prefer-use-template-ref.md) | 対応付け |
-| `vue/prefer-v-model` | — | 未実装 |
+| `vue/prefer-v-model` | [`vue/prefer-v-model`](./reference/vue-prefer-v-model.md) | 対応付け |
 | `vue/prop-name-casing` | [`vue/prop-name-casing`](./reference/vue-prop-name-casing.md) | 対応付け |
-| `vue/quote-props` | — | 未実装 |
+| `vue/quote-props` | [`vue/quote-props`](./reference/vue-quote-props.md) | 対応付け |
 | `vue/require-component-is` | [`vue/require-component-is`](./reference/vue-require-component-is.md) | 対応付け |
 | `vue/require-default-export` | — | 未実装 |
 | `vue/require-default-prop` | [`script/require-default-prop`](./reference/script-require-default-prop.md) | 対応付け |
@@ -224,7 +228,7 @@ Vite+ の設定では Vize のルールを `withVue` の `linter.rules` に指�
 | `vue/require-explicit-emits` | [`script/require-explicit-emits`](./reference/script-require-explicit-emits.md) | 対応付け |
 | `vue/require-explicit-slots` | [`script/require-explicit-slots`](./reference/script-require-explicit-slots.md) | 対応付け |
 | `vue/require-expose` | [`vue/require-expose`](./reference/vue-require-expose.md) | 対応付け |
-| `vue/require-macro-variable-name` | — | 未実装 |
+| `vue/require-macro-variable-name` | [`vue/require-macro-variable-name`](./reference/vue-require-macro-variable-name.md) | 対応付け |
 | `vue/require-name-property` | — | 未実装 |
 | `vue/require-prop-comment` | — | 未実装 |
 | `vue/require-prop-type-constructor` | [`script/require-prop-type-constructor`](./reference/script-require-prop-type-constructor.md) | 対応付け |
@@ -242,7 +246,7 @@ Vite+ の設定では Vize のルールを `withVue` の `linter.rules` に指�
 | `vue/script-indent` | — | 未実装 |
 | `vue/singleline-html-element-content-newline` | — | 未実装 |
 | `vue/slot-name-casing` | [`vue/slot-name-casing`](./reference/vue-slot-name-casing.md) | 対応付け |
-| `vue/sort-keys` | — | 未実装 |
+| `vue/sort-keys` | [`vue/sort-keys`](./reference/vue-sort-keys.md) | 対応付け |
 | `vue/space-in-parens` | — | 未実装 |
 | `vue/space-infix-ops` | — | 未実装 |
 | `vue/space-unary-ops` | — | 未実装 |
@@ -252,7 +256,7 @@ Vite+ の設定では Vize のルールを `withVue` の `linter.rules` に指�
 | `vue/use-v-on-exact` | [`vue/use-v-on-exact`](./reference/vue-use-v-on-exact.md) | 対応付け |
 | `vue/v-bind-style` | [`vue/v-bind-style`](./reference/vue-v-bind-style.md) | 対応付け |
 | `vue/v-for-delimiter-style` | — | 未実装 |
-| `vue/v-if-else-key` | — | 未実装 |
+| `vue/v-if-else-key` | [`vue/v-if-else-key`](./reference/vue-v-if-else-key.md) | 対応付け |
 | `vue/v-on-event-hyphenation` | [`vue/v-on-event-hyphenation`](./reference/vue-v-on-event-hyphenation.md) | 対応付け |
 | `vue/v-on-handler-style` | — | 意図的な差異 |
 | `vue/v-on-style` | [`vue/v-on-style`](./reference/vue-v-on-style.md) | 対応付け |

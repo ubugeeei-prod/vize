@@ -10,6 +10,7 @@ import { vue0Explanations } from "./explanations-vue-0.ts";
 import { vue1Explanations } from "./explanations-vue-1.ts";
 import { vue2Explanations } from "./explanations-vue-2.ts";
 import { vueCatalogueAdditionExplanations } from "./explanations-vue-catalogue-additions.ts";
+import { vueCompatibilityExplanations } from "./explanations-vue-compatibility.ts";
 
 const records = [
   ...accessibilityExplanations,
@@ -23,6 +24,7 @@ const records = [
   ...vue1Explanations,
   ...vue2Explanations,
   ...vueCatalogueAdditionExplanations,
+  ...vueCompatibilityExplanations,
 ];
 export const exampleExplanations = new Map<string, RuleExplanation>();
 for (const [name, badEn, goodEn, badJa, goodJa] of records) {
