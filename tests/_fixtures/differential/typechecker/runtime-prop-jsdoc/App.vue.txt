@@ -1,0 +1,7 @@
+<script setup lang="ts">
+import RuntimeChild from './RuntimeChild.vue'
+</script>
+
+<template>
+  <RuntimeChild title="r" item-kind="wide" :count="1" />
+</template>

@@ -15354,6 +15354,45 @@
       }
     },
     {
+      "id": "typechecker/regression/runtime-prop-jsdoc",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "runtime-prop-jsdoc/App.vue.txt",
+          "sha256": "b9e6cd10962c169c8809c47fa968c767578797de8fd8e93defb0ea7db37eeb13",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "runtime-prop-jsdoc/RuntimeChild.vue.txt",
+          "sha256": "0b47ab4be9f5f038289ab3b6f2d79720c2294bd5463e83c35a0751539bf5fb63",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "runtime-prop-jsdoc/tsconfig.json.txt",
+          "sha256": "8f4cc08b465ddf6df35387e36be46136f6b6f7f5f19085ca9d6a3fcc1cda9b31",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "lsp_component_api_hover_cli::component_api_hovers_show_declared_types_and_jsdoc; runtime defineProps keys keep their JSDoc on the projected Props members. Input-only batch registration for the shared Canon source change; comments only, no batch diagnostic behavior or native parity claim."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/regression/semantic-diagnostic-provenance-11626",
       "state": "active",
       "targets": [
