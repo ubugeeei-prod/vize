@@ -58,52 +58,28 @@ jobs:
         with: { node-version-file: package.json, package-manager-cache: false }
       - run: node --test tests/tooling/typecheck-cold-pair.test.ts
 
-  build:
-    if: github.event_name == 'workflow_dispatch'
+  build-linux:
+    # Each platform builds on its own, so Linux results do not wait for Windows.
+    if: github.event_name == 'workflow_dispatch' && (contains(format(',{0},', inputs.platforms), ',linux,') || contains(format(',{0},', inputs.platforms), ',wsl2,'))
     needs: test
-    strategy:
-      fail-fast: true
-      matrix:
-        include:
-          - os: linux
-            runner: blacksmith-32vcpu-ubuntu-2404
-            exe: vize
-          - os: windows
-            runner: blacksmith-32vcpu-windows-2025
-            exe: vize.exe
-    runs-on: ${{ matrix.runner }}
+    runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 90
     env:
       BASE: ${{ inputs.base }}
       HEAD: ${{ inputs.head }}
-      PLATFORMS: ${{ inputs.platforms }}
     steps:
       - name: Validate inputs
-        id: want
         shell: bash
         run: |
           [[ "$BASE" =~ ^[0-9a-f]{40}$ ]]
           [[ "$HEAD" =~ ^[0-9a-f]{40}$ ]]
-          [[ "$PLATFORMS" =~ ^(linux|wsl2|windows)(,(linux|wsl2|windows))*$ ]]
-          want=false
-          if [[ "${{ matrix.os }}" == linux && ",$PLATFORMS," =~ ,(linux|wsl2), ]]; then want=true; fi
-          if [[ "${{ matrix.os }}" == windows && ",$PLATFORMS," == *,windows,* ]]; then want=true; fi
-          echo "build=$want" >> "$GITHUB_OUTPUT"
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        if: steps.want.outputs.build == 'true'
         with: { persist-credentials: false }
-      - name: Setup MSVC toolchain
-        if: steps.want.outputs.build == 'true' && matrix.os == 'windows'
-        uses: ilammy/msvc-dev-cmd@0b201ec74fa43914dc39ae48a89fd1d8cb592756 # v1
-        with: { arch: amd64 }
       - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
-        if: steps.want.outputs.build == 'true'
         with: { toolchain: "1.99.1" }
       - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
-        if: steps.want.outputs.build == 'true' && matrix.os == 'linux'
         with: { wild-version: "0.9.0" }
       - name: Build both commits
-        if: steps.want.outputs.build == 'true'
         shell: bash
         run: |
           set -euo pipefail
@@ -115,18 +91,60 @@ jobs:
             # One target directory: the second build recompiles only what differs.
             (cd "$RUNNER_TEMP/src-$side" && CARGO_TARGET_DIR="$target" cargo build --profile ci-opt -p vize --bin vize)
             mkdir -p "pair-bin/$side"
-            cp "$target/ci-opt/${{ matrix.exe }}" "pair-bin/$side/"
+            cp "$target/ci-opt/vize" "pair-bin/$side/"
           done
           ls -l pair-bin/*
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        if: steps.want.outputs.build == 'true'
         with:
-          name: cold-pair-bin-${{ matrix.os }}
+          name: cold-pair-bin-linux
+          path: pair-bin/
+          retention-days: 7
+
+  build-windows:
+    # Each platform builds on its own, so Linux results do not wait for Windows.
+    if: github.event_name == 'workflow_dispatch' && contains(format(',{0},', inputs.platforms), ',windows,')
+    needs: test
+    runs-on: blacksmith-32vcpu-windows-2025
+    timeout-minutes: 90
+    env:
+      BASE: ${{ inputs.base }}
+      HEAD: ${{ inputs.head }}
+    steps:
+      - name: Validate inputs
+        shell: bash
+        run: |
+          [[ "$BASE" =~ ^[0-9a-f]{40}$ ]]
+          [[ "$HEAD" =~ ^[0-9a-f]{40}$ ]]
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { persist-credentials: false }
+      - name: Setup MSVC toolchain
+        uses: ilammy/msvc-dev-cmd@0b201ec74fa43914dc39ae48a89fd1d8cb592756 # v1
+        with: { arch: amd64 }
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with: { toolchain: "1.99.1" }
+      - name: Build both commits
+        shell: bash
+        run: |
+          set -euo pipefail
+          target="$RUNNER_TEMP/pair-target"
+          for side in base head; do
+            sha=$BASE; [[ $side == head ]] && sha=$HEAD
+            git fetch --no-tags --depth=1 "https://github.com/$GITHUB_REPOSITORY.git" "$sha"
+            git worktree add --detach "$RUNNER_TEMP/src-$side" "$sha"
+            # One target directory: the second build recompiles only what differs.
+            (cd "$RUNNER_TEMP/src-$side" && CARGO_TARGET_DIR="$target" cargo build --profile ci-opt -p vize --bin vize)
+            mkdir -p "pair-bin/$side"
+            cp "$target/ci-opt/vize.exe" "pair-bin/$side/"
+          done
+          ls -l pair-bin/*
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: cold-pair-bin-windows
           path: pair-bin/
           retention-days: 7
 
   linux:
-    needs: build
+    needs: build-linux
     if: contains(format(',{0},', inputs.platforms), ',linux,')
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 120
@@ -159,7 +177,7 @@ jobs:
           { name: cold-pair-linux, path: "${{ runner.temp }}/pair-out/", if-no-files-found: warn }
 
   wsl2:
-    needs: build
+    needs: build-linux
     if: contains(format(',{0},', inputs.platforms), ',wsl2,')
     # WSL2 needs nested virtualization; Blacksmith Windows runners lack it.
     runs-on: windows-2025
@@ -231,7 +249,7 @@ jobs:
           }
 
   windows:
-    needs: build
+    needs: build-windows
     if: contains(format(',{0},', inputs.platforms), ',windows,')
     runs-on: blacksmith-32vcpu-windows-2025
     timeout-minutes: 120

@@ -25,6 +25,7 @@ import { spawn, spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import {
   type Dirent,
+  createReadStream,
   existsSync,
   mkdirSync,
   readFileSync,
@@ -34,6 +35,7 @@ import {
   writeFileSync,
 } from "node:fs";
 import { dirname, join, resolve } from "node:path";
+import { createInterface } from "node:readline";
 import { fileURLToPath } from "node:url";
 import { parseArgs } from "node:util";
 
@@ -42,7 +44,7 @@ import {
   type Cell,
   type CheckSample,
   type PathRoots,
-  attributeStrace,
+  StraceAttribution,
   attributionTable,
   markdown,
   processTotals,
@@ -58,7 +60,9 @@ const windows = process.platform === "win32";
 const linux = process.platform === "linux";
 
 /** A catalog pin from pnpm-workspace.yaml: `  <catalog>:` then `    "<name>": "<version>"`. */
-export function catalogVersion(workspace: string, catalog: string, name: string): string {
+export function catalogVersion(source: string, catalog: string, name: string): string {
+  // A Windows checkout spells the file with CRLF.
+  const workspace = source.replaceAll("\r\n", "\n");
   const block = new RegExp(`^  ${catalog}:\\n((?:    .*\\n)+)`, "mu").exec(workspace)?.[1];
   const escaped = name.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&");
   const version = block && new RegExp(`^    "?${escaped}"?:\\s*"([^"]+)"`, "mu").exec(block)?.[1];
@@ -295,18 +299,21 @@ async function runOnce(
 }
 
 /** One traced cold run: filesystem calls by process, syscall and path class. */
-function traceOnce(
+async function traceOnce(
   build: Build,
   project: Project,
   tsgo: string,
   cacheRoot: string,
   out: string,
-): Attribution {
+): Promise<Attribution> {
   const tag = `strace-${project.name}-${build.id}`;
   const cache = freshCache(cacheRoot, tag);
   const log = join(out, `${tag}.log`);
-  const calls =
-    "%file,read,pread64,write,pwrite64,getdents64,close,fsync,fdatasync,ftruncate,fchmod,flock";
+  // Process creation is traced too, so every thread joins its process.
+  const calls = [
+    "%file,read,pread64,write,pwrite64,getdents64,close,fsync,fdatasync,ftruncate,fchmod,flock",
+    "clone,clone3,fork,vfork",
+  ].join(",");
   const result = spawnSync(
     "strace",
     [
@@ -314,6 +321,8 @@ function traceOnce(
       "-y",
       "-qq",
       "--seccomp-bpf",
+      "-e",
+      "signal=none",
       "-e",
       `trace=${calls}`,
       "-o",
@@ -332,10 +341,14 @@ function traceOnce(
     project: project.dir,
     checker: dirname(dirname(dirname(dirname(tsgo)))),
   };
-  const attribution = attributeStrace(readFileSync(log, "utf8"), roots);
+  // A 5,000-SFC trace outgrows one string; stream it line by line.
+  const attribution = new StraceAttribution(roots);
+  for await (const line of createInterface({ input: createReadStream(log), crlfDelay: Infinity })) {
+    attribution.push(line);
+  }
   rmSync(log, { force: true });
   rmSync(cache.dir, { recursive: true, force: true });
-  return attribution;
+  return attribution.finish();
 }
 
 async function main(): Promise<void> {
@@ -400,10 +413,10 @@ async function main(): Promise<void> {
     cells.push(cell);
     console.log(JSON.stringify(cell));
     if (values.strace && linux) {
-      const traced = builds.map((b): [string, Attribution] => [
-        b.id,
-        traceOnce(b, project, tsgo, cacheRoot, out),
-      ]);
+      const traced: [string, Attribution][] = [];
+      for (const build of builds) {
+        traced.push([build.id, await traceOnce(build, project, tsgo, cacheRoot, out)]);
+      }
       writeFileSync(
         join(out, `strace-${values.label}-${project.name}.json`),
         JSON.stringify(Object.fromEntries(traced.map(([id, c]) => [id, Object.fromEntries(c)]))),

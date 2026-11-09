@@ -201,45 +201,89 @@ export function tracedPath(call: string, args: string): string | undefined {
 
 /**
  * Count `strace -f -y` lines by process (the executable each pid last ran),
- * syscall, path class and outcome. Threads inherit their creator's process.
+ * syscall, path class and outcome. Threads and children inherit their
+ * creator's process until they execute another program; lines of a pid seen
+ * before its creator's `clone` returns wait for that answer.
  */
-export function attributeStrace(log: string, roots: PathRoots): Attribution {
-  const counts: Attribution = new Map();
-  const owners = new Map<string, string>();
-  const pending = new Map<string, { call: string; path?: string }>();
-  const bump = (key: string) => counts.set(key, (counts.get(key) ?? 0) + 1);
-  for (const raw of log.split("\n")) {
+export class StraceAttribution {
+  readonly counts: Attribution = new Map();
+  private readonly owners = new Map<string, string>();
+  private readonly pending = new Map<string, { call: string; path?: string }>();
+  private readonly orphans = new Map<string, string[]>();
+  private readonly roots: PathRoots;
+
+  constructor(roots: PathRoots) {
+    this.roots = roots;
+  }
+
+  push(raw: string): void {
     const match = LINE.exec(raw);
-    if (!match) continue;
+    if (!match) return;
     const [, pid = "", resumed, started, rest = ""] = match;
     let call = started ?? resumed ?? "";
     let path: string | undefined;
     if (started) {
       path = tracedPath(call, rest);
       if (rest.includes("<unfinished ...>")) {
-        pending.set(pid, { call, path });
-        continue;
+        this.pending.set(pid, { call, path });
+        return;
       }
     } else {
-      const open = pending.get(pid);
-      pending.delete(pid);
+      const open = this.pending.get(pid);
+      this.pending.delete(pid);
       call = open?.call ?? call;
       path = open?.path;
     }
     const result = RESULT.exec(rest);
     const value = result?.[1] ?? "?";
     if (/^(clone|clone3|fork|vfork)$/u.test(call)) {
-      if (/^\d+$/u.test(value) && value !== "0") owners.set(value, owners.get(pid) ?? "vize");
-      continue;
+      if (/^\d+$/u.test(value) && value !== "0") this.adopt(value, this.owner(pid));
+      return;
     }
+    // The traced command's own first line names the root process.
+    if (this.owners.size === 0) this.owners.set(pid, "vize");
     if (call === "execve" && value === "0" && path) {
-      owners.set(pid, path.split("/").pop() ?? path);
+      this.adopt(pid, path.split("/").pop() ?? path);
     }
-    const owner = owners.get(pid) ?? "vize";
     const outcome = result?.[2] ?? (value.startsWith("-") ? "error" : "ok");
-    bump(`${owner}\t${call}\t${classifyPath(path, roots)}\t${outcome}`);
+    const key = `${call}\t${classifyPath(path, this.roots)}\t${outcome}`;
+    if (this.owners.has(pid)) {
+      this.bump(`${this.owner(pid)}\t${key}`);
+      return;
+    }
+    const waiting = this.orphans.get(pid) ?? [];
+    waiting.push(key);
+    this.orphans.set(pid, waiting);
   }
-  return counts;
+
+  /** Lines whose pid never met its creator count as `unknown`. */
+  finish(): Attribution {
+    for (const keys of this.orphans.values()) {
+      for (const key of keys) this.bump(`unknown\t${key}`);
+    }
+    this.orphans.clear();
+    return this.counts;
+  }
+
+  private owner(pid: string): string {
+    return this.owners.get(pid) ?? "unknown";
+  }
+
+  private adopt(pid: string, owner: string): void {
+    this.owners.set(pid, owner);
+    for (const key of this.orphans.get(pid) ?? []) this.bump(`${owner}\t${key}`);
+    this.orphans.delete(pid);
+  }
+
+  private bump(key: string): void {
+    this.counts.set(key, (this.counts.get(key) ?? 0) + 1);
+  }
+}
+
+export function attributeStrace(log: string, roots: PathRoots): Attribution {
+  const attribution = new StraceAttribution(roots);
+  for (const line of log.split("\n")) attribution.push(line);
+  return attribution.finish();
 }
 
 /** Rows (process, syscall, path class) of every build, failures split out, largest first. */

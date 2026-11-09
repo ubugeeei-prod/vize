@@ -128,3 +128,25 @@ test("strace lines attribute to the process each pid last executed", () => {
   assert.match(table, /\| vize \| newfstatat \| mirror \| 1 \(1\) \| 0 \(0\) \|/u);
   assert.match(processTotals([["base", counts]]), /\| tsc \| 2 \|/u);
 });
+
+test("a Windows checkout's CRLF workspace file still yields its pins", () => {
+  const workspace = readFileSync(new URL("../../pnpm-workspace.yaml", import.meta.url), "utf8");
+  const crlf = workspace.replaceAll("\n", "\r\n");
+  assert.equal(
+    catalogVersion(crlf, "vue-beta", "vue"),
+    catalogVersion(workspace, "vue-beta", "vue"),
+  );
+});
+
+test("a thread seen before its creator's clone returns joins that process", () => {
+  const log = [
+    '100 execve("/bin/vize", ["vize"], 0x0 /* 3 vars */) = 0',
+    "100 clone3({flags=CLONE_VM|CLONE_THREAD}, 88 <unfinished ...>",
+    '102 openat(AT_FDCWD</p>, "src/b.vue", O_RDONLY) = 4</p/src/b.vue>',
+    "100 <... clone3 resumed>) = 102",
+    '103 openat(AT_FDCWD</p>, "src/c.vue", O_RDONLY) = 5</p/src/c.vue>',
+  ].join("\n");
+  const counts = attributeStrace(log, roots);
+  assert.equal(counts.get("vize\topenat\tsource\tok"), 1);
+  assert.equal(counts.get("unknown\topenat\tsource\tok"), 1);
+});
