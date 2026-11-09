@@ -1,7 +1,24 @@
 // Surface-oracle fixtures and observers beside the pinned runtime. The public
 // JSX child-values source custody freezes runtime.ts, so additions live here.
 import assert from "node:assert/strict";
-import { Vue, componentFixtures } from "./runtime.ts";
+import { createRequire } from "node:module";
+import { pathToFileURL } from "node:url";
+import {
+  transformSync,
+  type NodePath,
+  type PluginObj,
+  type types as BabelTypes,
+} from "@babel/core";
+import { Vue, componentFixtures, linkedFunction as pinnedLinkedFunction } from "./runtime.ts";
+
+// Babel's `transformOn` option imports this helper; link the plugin's own copy.
+const require = createRequire(import.meta.url);
+const fromBabelJsx = createRequire(require.resolve("@vue/babel-plugin-jsx"));
+const TransformOn = (
+  (await import(
+    pathToFileURL(fromBabelJsx.resolve("@vue/babel-helper-vue-transform-on")).href
+  )) as { default: unknown }
+).default;
 
 const FixtureInput = Vue.defineComponent({
   props: {
@@ -19,10 +36,83 @@ const FixtureInput = Vue.defineComponent({
   },
 });
 
+// One function serves both directive shapes: Vapor passes a value getter, an
+// argument and modifiers; VDOM calls a function directive with its binding.
+function observedDirective(attribute: string) {
+  const describe = (value: unknown, argument: unknown, modifiers: unknown) =>
+    [
+      String(typeof argument === "function" ? argument() : argument),
+      modifiers && typeof modifiers === "object" ? Object.keys(modifiers).join(".") : "",
+      `${typeof value}:${String(value)}`,
+    ].join("|");
+  return (element: HTMLElement, binding: unknown, argument?: unknown, modifiers?: unknown) => {
+    if (typeof binding === "function") {
+      Vue.watchEffect(() => {
+        element.dataset[attribute] = describe(binding(), argument, modifiers);
+      });
+      return;
+    }
+    const {
+      value,
+      arg,
+      modifiers: bound,
+    } = binding as {
+      value: unknown;
+      arg?: string;
+      modifiers?: Record<string, boolean>;
+    };
+    element.dataset[attribute] = describe(value, arg, bound);
+  };
+}
+
+const directiveFixtures = {
+  custom: observedDirective("custom"),
+  "unknown-thing": observedDirective("unknownThing"),
+};
+
 // Linked fixtures resolve free identifiers in the global scope, like the DOM
 // globals runtime.ts installs; its pinned linker binds only `FixtureCard`.
-Object.assign(globalThis, { FixtureInput });
+Object.assign(globalThis, {
+  FixtureInput,
+  TransformOn,
+  vCustom: directiveFixtures.custom,
+  vUnknownThing: directiveFixtures["unknown-thing"],
+});
 const surfaceFixtures = { ...componentFixtures, FixtureInput };
+
+// The pinned linker accepts only `vue` and `vue-jsx-vapor` imports, so the
+// transform-on helper import becomes a binding to the global copy first.
+function linkedFunction(
+  code: string,
+  functionName: string,
+  state: Record<string, unknown>,
+  reads: string[],
+  observations: { propPublications: number },
+): unknown {
+  const result = transformSync(code, {
+    configFile: false,
+    babelrc: false,
+    plugins: [
+      ({ types: t }: { types: typeof BabelTypes }): PluginObj => ({
+        visitor: {
+          ImportDeclaration(path: NodePath<BabelTypes.ImportDeclaration>) {
+            const source = path.node.source.value;
+            if (source !== "@vue/babel-helper-vue-transform-on") return;
+            const [specifier] = path.node.specifiers;
+            assert.equal(specifier?.type, "ImportDefaultSpecifier", source);
+            path.replaceWith(
+              t.variableDeclaration("const", [
+                t.variableDeclarator(specifier.local, t.identifier("TransformOn")),
+              ]),
+            );
+          },
+        },
+      }),
+    ],
+  });
+  assert.ok(result && typeof result.code === "string");
+  return pinnedLinkedFunction(result.code, functionName, state, reads, observations);
+}
 
 interface ObservedNode {
   readonly nodeType: number;
@@ -111,4 +201,4 @@ function materialize(value: unknown): unknown {
   return Object.fromEntries(Object.entries(value).map(([key, item]) => [key, materialize(item)]));
 }
 
-export { surfaceFixtures, materialize, observeChildren };
+export { surfaceFixtures, directiveFixtures, linkedFunction, materialize, observeChildren };
