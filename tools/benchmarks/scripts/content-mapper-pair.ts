@@ -83,20 +83,24 @@ function burst(build: Build, project: string, stream: string, scratch: string): 
   const metrics = join(scratch, `${build.id}.metrics`);
   const start = performance.now();
   let cpuSeconds: number | undefined;
+  let processWallMs: number | undefined;
   let peakMiB: number | undefined;
   if (process.platform === "win32") {
     // Start-Process keeps the exited process object, which still answers its
-    // processor time and peak working set.
+    // processor time and peak working set. The stopwatch excludes PowerShell's
+    // own startup, which would otherwise dominate the wall time.
     const script = [
+      `$w = [System.Diagnostics.Stopwatch]::StartNew();`,
       `$p = Start-Process -FilePath '${build.bin}' -ArgumentList 'content-mapper'`,
       `-WorkingDirectory '${project}' -RedirectStandardInput '${stream}'`,
       `-RedirectStandardOutput '${output}' -NoNewWindow -PassThru -Wait;`,
-      `"$($p.ExitCode) $($p.TotalProcessorTime.TotalSeconds) $($p.PeakWorkingSet64)"`,
+      `$w.Stop(); "$($p.ExitCode) $($p.TotalProcessorTime.TotalSeconds) $($p.PeakWorkingSet64) $($w.Elapsed.TotalMilliseconds)"`,
     ].join(" ");
     const result = spawnSync("powershell.exe", ["-NoProfile", "-Command", script], {
       encoding: "utf8",
     });
-    const [code, cpu, peak] = result.stdout.trim().split(/\s+/);
+    const [code, cpu, peak, elapsed] = result.stdout.trim().split(/\s+/);
+    processWallMs = parseNumber(elapsed);
     if (result.status !== 0 || code !== "0")
       throw new Error(`${build.id} failed: ${result.stderr}`);
     cpuSeconds = parseNumber(cpu);
@@ -127,7 +131,7 @@ function burst(build: Build, project: string, stream: string, scratch: string): 
         (parseNumber(/(\d+)\s+maximum resident set size/.exec(stderr)?.[1]) ?? NaN) / 1048576;
     }
   }
-  const wallMs = performance.now() - start;
+  const wallMs = processWallMs ?? performance.now() - start;
   const bytes = readFileSync(output);
   return {
     wallMs,
