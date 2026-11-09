@@ -34,11 +34,11 @@ test("stacked pull requests retain the trusted title policy", () => {
     step.uses?.startsWith("actions/checkout@"),
   );
   assert.equal(checkout?.with?.ref, "${{ github.event.repository.default_branch }}");
-  assert.match(checkout?.with?.["sparse-checkout"], /issue-pr-title-policy\.rs/);
+  assert.match(checkout?.with?.["sparse-checkout"], /issue-pr-title-policy\.ts/);
   assert.ok(
     steps.some(
       (step: { run?: string }) =>
-        step.run === "rust-script tools/commands/ci/github/issue-pr-title-policy.rs",
+        step.run === "node tools/commands/ci/github/issue-pr-title-policy.ts",
     ),
   );
 });

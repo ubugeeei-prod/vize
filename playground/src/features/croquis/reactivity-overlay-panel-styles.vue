@@ -1,0 +1,156 @@
+<script setup lang="ts">
+defineOptions({ name: "ReactivityOverlayPanelStyles01" });
+</script>
+
+<!-- These global selectors theme generated and third-party DOM owned by the feature. -->
+<!-- eslint-disable-next-line vue/require-scoped-style -->
+<style>
+.reactivity-output {
+  padding: 1rem;
+  overflow-y: auto;
+}
+
+.reactivity-metrics {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.reactivity-metric {
+  border: 1px solid var(--border-primary);
+  border-radius: 6px;
+  padding: 0.75rem;
+  background: var(--bg-secondary);
+}
+
+.reactivity-metric {
+  & strong {
+    display: block;
+    font-size: 1.25rem;
+    line-height: 1.2;
+    color: var(--text-primary);
+  }
+}
+
+.reactivity-metric {
+  & span {
+    display: block;
+    margin-top: 0.25rem;
+    font-size: 0.7rem;
+    color: var(--text-muted);
+  }
+}
+
+.reactivity-metric.danger {
+  & strong {
+    color: var(--color-error);
+  }
+}
+
+.reactivity-section {
+  margin-top: 1rem;
+}
+
+.reactivity-source-list,
+.reactivity-loss-list,
+.reactivity-edge-list {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.reactivity-source-row,
+.reactivity-loss,
+.reactivity-edge {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 2.25rem;
+  border: 1px solid var(--border-primary);
+  border-radius: 6px;
+  padding: 0.5rem 0.625rem;
+  background: var(--bg-secondary);
+}
+
+:is(.reactivity-source-row, .reactivity-loss, .reactivity-edge, .reactivity-cycle) {
+  & code {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 0.75rem;
+    color: var(--text-primary);
+  }
+}
+
+.reactivity-kind,
+.reactivity-value,
+.reactivity-loss-kind {
+  border-radius: 4px;
+  padding: 0.125rem 0.375rem;
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.reactivity-kind.ref,
+.reactivity-value {
+  background: rgba(59, 130, 246, 0.14);
+  color: var(--color-info);
+}
+
+.reactivity-kind.reactive {
+  background: rgba(16, 185, 129, 0.14);
+  color: var(--color-success);
+}
+
+.reactivity-kind.computed {
+  background: rgba(245, 158, 11, 0.16);
+  color: var(--color-warning);
+}
+
+.reactivity-kind.readonly {
+  background: rgba(148, 163, 184, 0.16);
+  color: var(--text-muted);
+}
+
+.reactivity-loss-kind {
+  background: var(--color-error-bg);
+  color: var(--color-error);
+}
+
+.reactivity-loss-main {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+  flex: 1;
+}
+
+.reactivity-offset {
+  margin-inline-start: auto;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.68rem;
+  color: var(--text-muted);
+}
+
+:is(.reactivity-edge, .reactivity-cycle) {
+  & span {
+    color: var(--text-muted);
+  }
+}
+
+.reactivity-cycle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+  border: 1px solid var(--color-error-border);
+  border-radius: 6px;
+  padding: 0.625rem;
+  background: var(--color-error-bg);
+}
+
+@media (max-width: 760px) {
+  .reactivity-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+</style>

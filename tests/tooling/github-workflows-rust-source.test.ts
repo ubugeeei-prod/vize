@@ -182,8 +182,8 @@ void test("full repository ratchets and coverage remain scheduled or explicitly 
   assert.ok(!caller.if?.includes("pull_request"));
   const full = workflow("full-qualification.yml");
   for (const [physical, command] of [
-    [full, /check-skeleton-todos\.rs --check/],
-    [check, /write-coverage-summary\.rs/],
+    [full, /check-skeleton-todos\.ts --check/],
+    [check, /write-coverage-summary\.ts/],
   ] as const) {
     const jobs = Object.values(physical.jobs).filter((job) => command.test(commands(job)));
     assert.ok(jobs.length > 0, `${command} remains available in full checks`);

@@ -50,6 +50,7 @@ import type {
   $IsUnknown,
   $UsePublicInstance,
   $LiteralKeys,
+  $PatternSafeOmit,
   $ReplaceComponentProps,
   $PublicEmit,
   $PublicSlots,

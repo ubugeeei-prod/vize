@@ -35,7 +35,11 @@ export function assertMuslFreshInstallSuccessor(historical: string, current: str
     assert.equal(sealed.split(relocated).length, 2, `one relocated ${relocated} package path`);
     sealed = sealed.replace(relocated, historicalPath);
   }
-  for (const packagePath of ["npm/compose/router", "npm/compose/data"] as const) {
+  for (const packagePath of [
+    "npm/create-fresco",
+    "npm/compose/router",
+    "npm/compose/data",
+  ] as const) {
     assert.equal(sealed.split(packagePath).length, 2, `one admitted ${packagePath} package path`);
     sealed = sealed.replace(` ${packagePath}`, "");
   }

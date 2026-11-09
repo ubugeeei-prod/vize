@@ -59,6 +59,7 @@ function normalizeTemplateSyntax(
   return templateSyntax ?? "standard";
 }
 
+/** Resolve every public adapter option to the values consumed by compiler hooks. */
 export function normalizeOptions(
   rawOptions: VizeUnpluginOptions = {},
 ): NormalizedVizeUnpluginOptions {
@@ -123,6 +124,7 @@ function resolveWebpackDefinePlugin(
   }
 }
 
+/** Install Vue feature defines without overriding definitions already owned by the host. */
 export function injectWebpackVueDefines(
   compiler: WebpackCompiler,
   isProduction: boolean,
@@ -167,6 +169,7 @@ export function injectWebpackVueDefines(
 
 type VizeUnpluginInput = VizeUnpluginOptions | undefined;
 
+/** Cross-bundler Vize compiler plugin used to construct each host-specific adapter. */
 export const vizeUnplugin = createUnplugin<VizeUnpluginInput>((rawOptions = {}, meta) => {
   const options = normalizeOptions(rawOptions);
   const filter = createFilter(options.include, options.exclude);

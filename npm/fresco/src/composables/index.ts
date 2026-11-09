@@ -13,7 +13,13 @@ export {
 } from "./useInput.js";
 export { usePaste, type UsePasteOptions } from "./usePaste.js";
 export { useMouse, type UseMouseOptions, type UseMouseReturn } from "./useMouse.js";
-export { useFocus, useFocusManager, type UseFocusOptions, type FocusManager } from "./useFocus.js";
+export {
+  provideFocusScope,
+  useFocus,
+  useFocusManager,
+  type FocusManager,
+  type UseFocusOptions,
+} from "./useFocus.js";
 export { useApp, type UseAppReturn } from "./useApp.js";
 export { useIme, type UseImeOptions, type ImeManager } from "./useIme.js";
 export {
@@ -37,3 +43,15 @@ export {
   type VirtualViewportOptions,
   type VirtualViewportRange,
 } from "./useVirtualViewport.js";
+export {
+  createKeymapResolver,
+  defineKeymap,
+  useKeymap,
+  type Keymap,
+  type KeymapBinding,
+  type KeymapMatch,
+  type KeymapResolver,
+  type KeymapStroke,
+  type UseKeymapOptions,
+  type UseKeymapReturn,
+} from "./useKeymap.js";

@@ -20,7 +20,7 @@ import { resolveMuseaArtifacts } from "../../tools/benchmarks/scripts/musea-stag
 import { testAndBenchmarkTasks } from "../../tools/config/vite-plus/tasks/test-benchmark.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
-const dispatcherPath = path.join(root, "tools/commands/benchmarks/dispatch.rs");
+const dispatcherPath = path.join(root, "tools/commands/benchmarks/dispatch.ts");
 
 const taskShape = (value: unknown) => value as { cache: boolean; command: string };
 
@@ -61,7 +61,7 @@ function writeCompleteBuild(directory: string): void {
 }
 
 const runDispatcher = (args: string[], env: NodeJS.ProcessEnv = process.env) =>
-  spawnSync("rust-script", [dispatcherPath, ...args], { cwd: root, encoding: "utf8", env });
+  spawnSync(process.execPath, [dispatcherPath, ...args], { cwd: root, encoding: "utf8", env });
 
 function withStubbedNode(fn: (env: NodeJS.ProcessEnv, logPath: string) => void): void {
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), "vize-bench-dispatch-"));
@@ -94,7 +94,7 @@ test("bench:all runs the Musea lane alongside the other benchmark lanes", () => 
   );
 });
 
-test("the Rust Script bench dispatcher selects scripts and forwards args", () => {
+test("the Node bench dispatcher selects scripts and forwards args", () => {
   withStubbedNode((env, logPath) => {
     const result = runDispatcher(["musea", "--runs", "3", "--label", "gallery"], env);
     assert.equal(result.status, 0, result.stderr);
@@ -109,7 +109,7 @@ test("the Rust Script bench dispatcher selects scripts and forwards args", () =>
 
   const usage = runDispatcher([]);
   assert.equal(usage.status, 1);
-  assert.match(usage.stderr, /Usage: rust-script tools\/commands\/benchmarks\/dispatch\.rs/);
+  assert.match(usage.stderr, /Usage: node tools\/commands\/benchmarks\/dispatch\.ts/);
   assert.match(usage.stderr, /<run\|generate\|lint\|fmt\|check\|vite\|musea\|compare-tools>/);
 });
 

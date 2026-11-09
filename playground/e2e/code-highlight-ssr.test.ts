@@ -1,7 +1,7 @@
 import { expect, it, vi } from "vite-plus/test";
 import { createSSRApp } from "vue";
 import { renderToString } from "vue/server-renderer";
-import CodeHighlight from "../src/shared/CodeHighlight.vue";
+import CodeHighlight from "../src/shared/code-highlight.vue";
 
 it("renders on the server without creating a browser worker", async () => {
   const worker = vi.fn(() => {

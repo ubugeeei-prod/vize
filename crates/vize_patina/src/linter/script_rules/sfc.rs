@@ -15,6 +15,13 @@ use crate::rules::script::{
 use vize_atelier_sfc::SfcDescriptor;
 use vize_l0::profile;
 
+fn descriptor_may_have_typed_macros(descriptor: &SfcDescriptor<'_>) -> bool {
+    descriptor.script_setup.as_ref().is_some_and(|block| {
+        let source = block.content.as_ref();
+        source.contains('<') && (source.contains("defineProps") || source.contains("defineEmits"))
+    })
+}
+
 /// Reuse the template pass's validated AST. A missing or fatally malformed
 /// template supplies `None`, so partial trees never become script-rule evidence.
 pub(crate) fn append_builtin_script_diagnostics<'a>(
@@ -251,6 +258,32 @@ pub(crate) fn append_builtin_script_diagnostics_with_template_context<'a>(
         Default::default()
     };
     append_template(result, &component_bindings);
+    drop(append_template);
+
+    // Semantic template rules already own the resolved analysis. Script-only
+    // configurations build the same filename-aware summary here so imported
+    // macro types do not depend on an unrelated template rule being enabled.
+    let has_context_analysis = template_context
+        .as_deref()
+        .and_then(crate::context::LintContext::analysis)
+        .is_some();
+    let owned_type_analysis = (!has_context_analysis
+        && super::has_resolved_macro_type_demand(linter)
+        && descriptor_may_have_typed_macros(descriptor))
+    .then(|| {
+        crate::linter::engine::analyze_descriptor_for_lint(
+            scripts,
+            None,
+            Some(result.filename.as_str()),
+            false,
+            false,
+        )
+    });
+    let resolved_type_world = template_context
+        .as_deref()
+        .and_then(crate::context::LintContext::analysis)
+        .or(owned_type_analysis.as_ref())
+        .and_then(|analysis| analysis.types.resolved_world());
     let emits_module = match (inline_emits_blocks, script_source, script_parsed) {
         (false, _, _) => EmitsModuleScript::Unavailable,
         (true, None, _) => EmitsModuleScript::Absent,
@@ -313,6 +346,7 @@ pub(crate) fn append_builtin_script_diagnostics_with_template_context<'a>(
         sole_script_block: descriptor.script.is_some() != descriptor.script_setup.is_some(),
         sibling_program: None,
         sibling_offset: None,
+        resolved_type_world,
     };
 
     let setup_program = script_setup_parsed

@@ -19,6 +19,11 @@ export function updateLastRenderLayouts(layouts: LayoutResultNapi[]) {
   lastRenderLayouts = layouts;
 }
 
+/** Read the complete layout snapshot produced by the latest native frame. */
+export function getLastRenderLayouts(): readonly LayoutResultNapi[] {
+  return lastRenderLayouts;
+}
+
 /** Look up the latest native layout for an element or component public instance. */
 export function getLastRenderLayout(node: DOMElement | null | undefined): LayoutResultNapi | null {
   const id = node?.id ?? node?.$el?.id;

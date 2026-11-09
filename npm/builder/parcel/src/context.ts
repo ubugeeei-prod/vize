@@ -3,6 +3,7 @@ import type { MutableAsset, PluginOptions, PluginTracer } from "@parcel/types";
 import { generateSfcScopeId } from "@vizejs/native";
 import { nativeOperation } from "./trace.ts";
 
+/** Builds the native compiler context for one Parcel asset transformation. */
 export function compilationContext(
   asset: MutableAsset,
   options: PluginOptions,

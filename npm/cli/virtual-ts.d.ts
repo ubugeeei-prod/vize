@@ -90,17 +90,7 @@ export type $SlotPayload<S, N, C = $RegisteredSlotProvider<any, never>> =
         : any
       : $NamedSlotPayload<S, N>;
 
-export type __EmitProps<T> = {
-  [
-    K in keyof __EmitOptions<T> & string as
-      | ($Camelize<K> extends keyof __EmitOptions<T>
-          ? string extends keyof __EmitOptions<T>
-            ? $HandlerKey<K>
-            : never
-          : $HandlerKey<K>)
-      | `on${Capitalize<K>}`
-  ]?: __EmitOptions<T>[K];
-};
+export type __EmitProps<T> = $ResolvedEmitProps<T>;
 
 type $EmitRequiredKeys<T> = { [K in keyof T]-?: {} extends Pick<T, K> ? never : K }[keyof T];
 type $EmitRequiredFields<T> = T extends unknown

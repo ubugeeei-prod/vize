@@ -230,7 +230,7 @@ corsa_lsp = { package = "corsa_lsp", version = "=2.0.0-beta.4" }
 corsa_runtime = { package = "corsa_runtime", version = "=2.0.0-beta.4" }
 
 # Shared lint contract. A member opts in with `[lints] workspace = true` once it
-# is clean; `tools/commands/ci/check-workspace-lints.rs` tracks who is left.
+# is clean; `node tools/commands/ci/check-workspace-lints.ts` tracks who is left.
 #
 # Panic-free: shipped code (lib + bin targets) must not abort on any input, so
 # every explicit and implicit panic path is denied. Test code is exempt through

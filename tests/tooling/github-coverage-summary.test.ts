@@ -15,32 +15,35 @@ const coverageSummaryCommand = path.join(
   "commands",
   "ci",
   "github",
-  "write-coverage-summary.rs",
+  "write-coverage-summary.ts",
 );
 
 function runCoverageSummary(cwd: string, env: NodeJS.ProcessEnv) {
   const childEnv = { ...process.env, ...env };
+  childEnv.PATH = [path.dirname(process.execPath), childEnv.PATH]
+    .filter(Boolean)
+    .join(path.delimiter);
   delete childEnv.NODE_TEST_CONTEXT;
-  return spawnSync("rust-script", [coverageSummaryCommand], {
+  return spawnSync(process.execPath, ["--experimental-strip-types", coverageSummaryCommand], {
     cwd,
     env: childEnv,
     encoding: "utf8",
   });
 }
 
-test("check workflow runs coverage summary with Rust Script", () => {
+test("check workflow runs coverage summary with stable Node", () => {
   const coverageJob = workflowJobBody(
     readRepoFile(".github", "workflows", "check.yml"),
     "coverage",
   );
 
-  assert.match(coverageJob, /setup-rust-script[\s\S]*Coverage report/);
-  assert.match(coverageJob, /rust-script tools\/commands\/ci\/github\/write-coverage-summary\.rs/);
+  assert.doesNotMatch(coverageJob, /setup-rust-script/);
+  assert.match(coverageJob, /node tools\/commands\/ci\/github\/write-coverage-summary\.ts/);
   assert.doesNotMatch(coverageJob, /tools\/moon\/cmd\/github\/write_coverage_summary/);
 });
 
 test("github/write-coverage-summary appends the tail of coverage output", () => {
-  const tempDir = mkdtempSync(path.join(tmpdir(), "rust-coverage-summary-"));
+  const tempDir = mkdtempSync(path.join(tmpdir(), "node-coverage-summary-"));
   const binDir = path.join(tempDir, "bin");
   const summaryPath = path.join(tempDir, "step-summary.md");
   const cargoPath = path.join(
@@ -111,7 +114,7 @@ test("github/write-coverage-summary appends the tail of coverage output", () => 
 });
 
 test("github/write-coverage-summary preserves failing coverage output before returning non-zero", () => {
-  const tempDir = mkdtempSync(path.join(tmpdir(), "rust-coverage-summary-failure-"));
+  const tempDir = mkdtempSync(path.join(tmpdir(), "node-coverage-summary-failure-"));
   const binDir = path.join(tempDir, "bin");
   const summaryPath = path.join(tempDir, "step-summary.md");
   const cargoPath = path.join(

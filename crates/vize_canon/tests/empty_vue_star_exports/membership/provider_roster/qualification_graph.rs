@@ -6,16 +6,22 @@ use dependency_ownership::{
     OWNER_MANIFESTS, OwnershipQualificationGraph, update as dependency_ownership_update,
     verify as verify_dependency_ownership_update,
 };
-mod strict_checker;
-use strict_checker::{
-    CHECKER_DECLARATION, MANIFEST as STRICT_CHECKER_MANIFEST, STRICT_DECLARATION,
-    StrictCheckerQualificationGraph, authorize as authorize_strict_checker,
-    update as strict_checker_update, verify as verify_strict_checker_update,
+mod create_fresco;
+use create_fresco::{
+    CreateFrescoQualificationGraph, MANIFEST as CREATE_FRESCO_MANIFEST,
+    update as create_fresco_update, verify as verify_create_fresco_update,
 };
+mod docs_metadata;
+use docs_metadata::{
+    DocsMetadataQualificationGraph, MANIFEST as DOCS_METADATA_MANIFEST,
+    update as docs_metadata_update, verify as verify_docs_metadata_update,
+};
+mod strict_checker;
+use strict_checker::{authorize as authorize_strict_checker, update as strict_checker_update};
 mod fresco;
 use fresco::{
-    FRESCO_MANIFEST, FRESCO_UPDATE, FRESCO_UPDATE_HASH, FrescoQualificationGraph, TOOLING_UPDATE,
-    TOOLING_UPDATE_HASH, fresco_update, verify_fresco_update,
+    FRESCO_MANIFEST, FRESCO_UPDATE, FrescoQualificationGraph, TOOLING_UPDATE, TOOLING_UPDATE_HASH,
+    fresco_update, verify_fresco_update,
 };
 mod tooling;
 use tooling::{
@@ -479,7 +485,20 @@ pub(super) fn authorize(previous: &Value, lock: &[u8], package: &[u8]) -> Checke
 
     let predecessor_bytes = fs::read(support::corpus().join(dependency_ownership::UPDATE))
         .map_err(|_| "complete strict checker qualification predecessor")?;
-    authorize_strict_checker(&update, &predecessor_bytes, lock, package, &workspace).map(Some)
+    let strict_update = strict_checker_update();
+    if authorize_strict_checker(&update, &predecessor_bytes, lock, package, &workspace).is_ok() {
+        return Ok(Some(strict_update));
+    }
+    let predecessor_bytes = fs::read(support::corpus().join(strict_checker::UPDATE))
+        .map_err(|_| "complete create-fresco qualification predecessor")?;
+    let update = docs_metadata::authorize(
+        &strict_update,
+        &predecessor_bytes,
+        lock,
+        package,
+        &workspace,
+    )?;
+    Ok(Some(update))
 }
 
 #[cfg(test)]

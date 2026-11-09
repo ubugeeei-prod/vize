@@ -1,3 +1,5 @@
+//! Borrowed module specifiers from parsed strings or retained source spans.
+
 use vize_carton::String as CompactString;
 
 use crate::batch::import_rewriter::ModuleSpecifierSpan;

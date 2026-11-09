@@ -115,14 +115,16 @@ impl Linter {
         let owned_analysis;
         let analysis = match analysis {
             TemplateAnalysis::Disabled => None,
-            _ if !self.has_active_semantic_template_rules() => None,
             TemplateAnalysis::Precomputed(analysis) => Some(analysis),
+            _ if !self.has_active_semantic_template_rules() => None,
             TemplateAnalysis::Lazy => {
                 owned_analysis = profile!("patina.template.croquis", {
                     let mut analyzer = Drawer::for_lint();
+                    let lowered = input.l2.lowered();
                     analyzer.draw_lint_template(LintTemplate::new(
                         input.l2.surface(),
-                        input.l2.lowered(),
+                        lowered.allocator,
+                        &lowered.root,
                     ));
                     analyzer.finish()
                 });
