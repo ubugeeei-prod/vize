@@ -1,0 +1,26 @@
+<script setup lang="ts">
+import type { Emits } from "./emits"
+
+const props = defineProps<{
+  label: string
+  items: Array<{ id: string; label: string }>
+}>()
+const modelValue = defineModel<string>()
+const emit = defineEmits<Emits>()
+
+const upperLabel = computed(() => props.label.toUpperCase())
+
+function select(value: string) {
+  modelValue.value = value
+  emit("select-item", value)
+}
+</script>
+
+<template>
+  <ul v-if="items.length">
+    <li v-for="item in items" :key="item.id">
+      <button type="button" @click="select(item.id)">{{ item.label }}</button>
+    </li>
+  </ul>
+  <p v-else-if="label">{{ upperLabel }}</p>
+</template>

@@ -3346,6 +3346,49 @@
       }
     },
     {
+      "id": "linter/mapped-rule-parity-12493-12509",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "mapped-rule-parity-12493-12509",
+        "files": [
+          {
+            "path": "MappedRuleParity.vue.txt",
+            "role": "native-linter-source-control",
+            "sha256": "99ee4a341f17839e1f1e2868830a1fdfb5f373048aec25439f721d4d11a60453"
+          },
+          {
+            "path": "emits.ts.txt",
+            "role": "type-declaration-control",
+            "sha256": "12bfcf9ecabff18571d6dbc82a3ddb25cc0235696760e0a900eb953ad336eb32"
+          },
+          {
+            "path": "vite.config.mjs",
+            "role": "native-cli-config",
+            "sha256": "8bc17d59bdc12ee4e9fa505dfa628b2c984ecc1e2437b20796a6dc382124ab02"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "js",
+              "ts"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/mdi-remix-icons-10928",
       "state": "active",
       "targets": [

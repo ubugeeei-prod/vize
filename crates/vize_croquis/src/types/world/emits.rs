@@ -6,7 +6,7 @@ use oxc_ast::ast::{
 };
 use oxc_parser::Parser;
 use oxc_span::{GetSpan, SourceType};
-use vize_carton::{CompactString, FxHashSet, cstr};
+use vize_carton::{CompactString, FxHashSet, ToCompactString, cstr};
 
 use super::{ResolvedTypeWorld, TypeDeclarationId, TypeDeclarationKind, TypeLookup};
 
@@ -202,8 +202,8 @@ fn literal_event(ty: &TSType<'_>) -> Option<CompactString> {
     };
     match &literal.literal {
         TSLiteral::StringLiteral(literal) => Some(CompactString::new(literal.value.as_str())),
-        TSLiteral::NumericLiteral(literal) => Some(CompactString::new(literal.value.to_string())),
-        TSLiteral::BooleanLiteral(literal) => Some(CompactString::new(literal.value.to_string())),
+        TSLiteral::NumericLiteral(literal) => Some(literal.value.to_compact_string()),
+        TSLiteral::BooleanLiteral(literal) => Some(literal.value.to_compact_string()),
         TSLiteral::BigIntLiteral(literal) => Some(CompactString::new(literal.value.as_str())),
         _ => None,
     }

@@ -121,7 +121,9 @@ pub(super) fn check<'a>(
                 continue;
             }
             if let Some(symbol) = root_value(&semantic, &name) {
-                report(&semantic, symbol, &name, offset, &mut setup_result);
+                if !model_owns_binding(&semantic, symbol, model.span) {
+                    report(&semantic, symbol, &name, offset, &mut setup_result);
+                }
             } else if let (Some(semantic), NoDupeKeysModuleScript::Parsed { offset, .. }) =
                 (module_semantic.as_ref(), module)
                 && let Some(symbol) = root_value(semantic, &name)
@@ -136,6 +138,17 @@ pub(super) fn check<'a>(
     for diagnostic in setup_result.diagnostics {
         result.add_diagnostic(diagnostic);
     }
+}
+
+fn model_owns_binding(semantic: &Semantic<'_>, symbol: SymbolId, call: Span) -> bool {
+    let AstKind::VariableDeclarator(declaration) = semantic.symbol_declaration(symbol).kind()
+    else {
+        return false;
+    };
+    declaration
+        .init
+        .as_ref()
+        .is_some_and(|initializer| initializer.span().contains_inclusive(call))
 }
 
 fn model_candidates<'a>(program: &'a Program<'a>) -> impl Iterator<Item = &'a CallExpression<'a>> {
