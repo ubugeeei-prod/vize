@@ -2,7 +2,7 @@ import { mount } from "@vue/test-utils";
 import { defineComponent, h } from "vue";
 import { describe, expect, it } from "vite-plus/test";
 import { createEmptyCodeOutputs } from "../atelier/codeOutputs";
-import OutputView from "./OutputView.vue";
+import OutputView from "./output-view.vue";
 
 const CodeHighlightStub = defineComponent({
   props: { code: { type: String, required: true } },

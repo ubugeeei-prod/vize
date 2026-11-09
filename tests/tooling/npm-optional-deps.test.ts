@@ -8,10 +8,10 @@ import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
-const commandPath = "tools/commands/release/npm/inject-native-optional-deps.rs";
+const commandPath = "tools/support/release/inject_native_optional_deps/main.ts";
 
 function runInjectNativeOptionalDeps(args: readonly string[]) {
-  return spawnSync("rust-script", [commandPath, ...args], {
+  return spawnSync(process.execPath, [commandPath, ...args], {
     cwd: repoRoot,
     encoding: "utf8",
   });

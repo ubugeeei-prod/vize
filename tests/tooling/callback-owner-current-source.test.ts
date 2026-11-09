@@ -3,6 +3,7 @@ import fs from "node:fs";
 import { test } from "node:test";
 import { assertPreservedCallbackPacket } from "../../tools/support/compat/content-mapper/callback-owner-packet-parity.ts";
 import { guardedInferenceEdits } from "../../tools/support/compat/content-mapper/callback-owner-current-source.ts";
+import { beforeCanonLeftovers } from "../../tools/support/compat/content-mapper/strict-extra-keys-transition.ts";
 import { beforeEmitMemberInfer } from "./support/emit-member-infer-source.ts";
 import { beforeGenericEventSpecialization } from "./support/generic-event-specialization-source.ts";
 import {
@@ -12,6 +13,11 @@ import {
 const root = new URL("../../", import.meta.url);
 const read = (path: string) => fs.readFileSync(new URL(path, root), "utf8");
 const emitPath = "crates/vize_canon/src/virtual_ts/helpers/declarations/emit-inference.d.ts.txt";
+const canonLeftoversEmitPaths = [
+  "crates/vize_canon/src/virtual_ts/helpers/declarations/emit-overloads.d.ts.txt",
+  "crates/vize_canon/src/virtual_ts/helpers/declarations/emit-props.d.ts.txt",
+  "crates/vize_canon/src/virtual_ts/helpers/declarations/shared-emit-props.d.ts.txt",
+];
 function template(source: string) {
   const match = source.match(/"(\{indent\}type \{inferred_args\} = (?:[^"\\]|\\.)*;\\n)"/u);
   assert.ok(match);
@@ -75,6 +81,13 @@ function fixture(newline = "\n") {
     before: packet(template(oldGenerator), oldEmit),
     memberInferPredecessor: packet(template(currentGenerator), memberInferPredecessor),
     after: packet(template(currentGenerator), currentEmit),
+    canonLeftoversTransitions: canonLeftoversEmitPaths.map((path) => ({
+      before: packet(
+        template(currentGenerator),
+        beforeCanonLeftovers(path, read(path)) + currentEmit,
+      ),
+      after: packet(template(currentGenerator), read(path) + currentEmit),
+    })),
     source,
   };
 }
@@ -88,6 +101,13 @@ void test("callback history accepts the member-infer predecessor as one whole he
   for (const newline of ["\n", "\r\n"]) {
     const { memberInferPredecessor, after, source } = fixture(newline);
     assertPreservedCallbackPacket(memberInferPredecessor, after, source);
+  }
+});
+void test("callback history accepts the complete canon leftovers emit transition", () => {
+  for (const newline of ["\n", "\r\n"]) {
+    const { canonLeftoversTransitions, source } = fixture(newline);
+    for (const transition of canonLeftoversTransitions)
+      assertPreservedCallbackPacket(transition.before, transition.after, source);
   }
 });
 void test("guarded listener inference is certified as one exact source edit", () => {

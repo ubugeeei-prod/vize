@@ -136,45 +136,6 @@ test("initial overrides are refused before any reviewed receipt, consumer payloa
   });
 });
 
-test("the Rust entry refuses overrides before Node can execute an actual preload", (t) => {
-  const temporary = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), "html-entry-guard-")));
-  t.after(() => fs.rmSync(temporary, { recursive: true, force: true }));
-  const entry = path.join(sourceRoot, "tests/tooling/support/oxlint-installed-html-acceptance.rs");
-  const executable = path.join(temporary, process.platform === "win32" ? "guard.exe" : "guard");
-  const compiled = spawnSync("rustc", ["--edition=2024", entry, "-o", executable], {
-    encoding: "utf8",
-    timeout: 30_000,
-  });
-  assert.equal(compiled.error, undefined);
-  assert.equal(compiled.signal, null);
-  assert.equal(compiled.status, 0, compiled.stdout + compiled.stderr);
-  const marker = path.join(temporary, "node-preload-started");
-  const preload = path.join(temporary, "preload.cjs");
-  fs.writeFileSync(
-    preload,
-    `require('node:fs').writeFileSync(${JSON.stringify(marker)}, 'started')`,
-  );
-  withoutAmbientOverrides(() => {
-    for (const key of [...runtimeOverrides, "VIZE_OXLINT_PUBLIC_CUSTODY"]) {
-      const observed = spawnSync(executable, [process.execPath, "--print-campaign-authority"], {
-        env: {
-          ...process.env,
-          RUST_SCRIPT_PATH: entry,
-          [key]: key === "NODE_OPTIONS" ? `--require ${preload}` : "forbidden",
-        },
-        encoding: "utf8",
-        timeout: 10_000,
-      });
-      assert.equal(observed.error, undefined);
-      assert.equal(observed.signal, null);
-      assert.equal(observed.status, 1);
-      assert.equal(observed.stdout, "");
-      assert.equal(observed.stderr.trim(), `initial source/runtime override must be empty: ${key}`);
-      assert.equal(fs.existsSync(marker), false);
-    }
-  });
-});
-
 test("all four formats and original Standalone/mixed inputs survive the installed campaign unchanged", () => {
   assert.equal(
     fixtures.reduce((sum, fixture) => sum + (fixture.formats?.length ?? 4), 0),

@@ -7,10 +7,8 @@ import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
-const typescriptDriver = process.env.VIZE_RELEASE_SMOKE_DRIVER === "typescript";
-const command = typescriptDriver ? process.execPath : "rust-script";
-const entry = `tools/commands/release/npm/smoke-release-install.${typescriptDriver ? "ts" : "rs"}`;
-const prefix = typescriptDriver ? [] : ["--force"];
+const command = process.execPath;
+const entry = "tools/commands/release/npm/smoke-release-install.ts";
 
 test("the release command forwards all tarballs to the fresh-project oracle", () => {
   const temporary = fs.realpathSync.native(
@@ -82,7 +80,7 @@ export function runFreshProjectInitChecks(context) {
         os: [process.platform === "win32" ? "linux" : "win32"],
       }),
     );
-    const result = spawnSync(command, [...prefix, entry, "--runtime-checks", cli, platform], {
+    const result = spawnSync(command, [entry, "--runtime-checks", cli, platform], {
       cwd: root,
       encoding: "utf8",
       timeout: 180_000,
@@ -146,7 +144,7 @@ if (args[0] === "init") {
       "",
     );
     fs.writeFileSync(path.join(packageRoot, "bin/vize"), configFreeFalseCleanCli, { mode: 0o755 });
-    const result = spawnSync(command, [...prefix, entry, "--runtime-checks", packageRoot], {
+    const result = spawnSync(command, [entry, "--runtime-checks", packageRoot], {
       cwd: root,
       encoding: "utf8",
       timeout: 180_000,

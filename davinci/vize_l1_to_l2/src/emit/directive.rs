@@ -18,10 +18,11 @@ use super::buf::Buf;
 mod entry;
 
 use super::helper::Helper;
-use super::js::{RawJs, asset_ident, expr_source};
+use super::js::{RawJs, expr_source};
 use super::prefix::Site;
 use super::slots;
 use entry::{authored_value_padding, emit_argument, emit_show_entry};
+use vize_l2::op::vue::asset_identifier;
 
 pub(super) fn is_custom(binding: &BindingOp<'_>) -> bool {
     matches!(binding, BindingOp::VueDirective(_)) && !slots::is_slots_spread(binding)
@@ -58,7 +59,7 @@ pub(super) fn collect_names<'a>(root: &'a Region<'a>) -> StdVec<&'a str> {
 pub(super) fn emit_resolves(cx: &mut EmitCx<'_>, names: &[&str]) -> bool {
     for name in names {
         cx.buf.push("const ");
-        cx.buf.push(asset_ident("directive", name).as_str());
+        cx.buf.push(asset_identifier("directive", name).as_str());
         cx.buf.push(" = ");
         let binding_name = imported_directive_binding_name(name);
         match cx
@@ -191,7 +192,7 @@ fn emit_runtime_entry(
 fn emit_entry(cx: &mut EmitCx<'_>, directive: &VueDirectiveOp<'_>) -> Result<(), EmitError> {
     cx.buf.push("  [");
     cx.buf
-        .push(asset_ident("directive", directive.name).as_str());
+        .push(asset_identifier("directive", directive.name).as_str());
     let value = match directive.value {
         Some(expr) => Some((expr.span(), js_expr(expr)?)),
         None => None,

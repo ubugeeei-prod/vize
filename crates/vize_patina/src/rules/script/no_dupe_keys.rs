@@ -102,7 +102,7 @@ impl ScriptRule for NoDupeKeys {
             } else {
                 NoDupeKeysModuleScript::Unavailable
             };
-            self.check_setup_with_module(program, source, offset, module, result);
+            self.check_setup_with_module(program, source, offset, module, sfc, result);
         } else {
             self.check_program(program, source, offset, result);
         }
@@ -120,12 +120,20 @@ impl NoDupeKeys {
         source: &str,
         offset: usize,
         module: NoDupeKeysModuleScript<'a>,
+        sfc: SfcScriptContext<'_>,
         result: &mut ScriptLintResult,
     ) {
         // Preserve every pre-existing Options descriptor diagnostic in this
         // block before adding the compiler-owned setup namespace check.
         self.check_program(program, source, offset, result);
-        setup::check(program, offset, module, result);
+        setup::check(
+            program,
+            source,
+            offset,
+            module,
+            sfc.resolved_type_world,
+            result,
+        );
     }
 }
 

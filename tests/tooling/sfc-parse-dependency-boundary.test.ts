@@ -15,7 +15,7 @@ test("the parse-only SFC facade excludes compiler dependencies transitively", ()
       "--package",
       "vize_croquis",
       "--edges",
-      "normal",
+      "normal,build",
       "--no-default-features",
       "--prefix",
       "none",
@@ -32,14 +32,14 @@ test("the parse-only SFC facade excludes compiler dependencies transitively", ()
 
   const dependencyNames = new Set(
     result.stdout
-      .trim()
-      .split("\n")
-      .map((line) => line.split(" ", 1)[0]),
+      .split(/\r?\n/u)
+      .filter(Boolean)
+      .map((line) => line.split(/\s+/u, 1)[0]),
   );
   assert.equal(
     dependencyNames.has("vize_l1_to_l2"),
-    true,
-    "the isolated graph must retain the production L1-to-L2 dependency",
+    false,
+    "the parse-only graph must keep L1-to-L2 lowering test-only",
   );
   for (const forbidden of [
     "lightningcss",

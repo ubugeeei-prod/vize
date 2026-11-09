@@ -48,7 +48,7 @@ impl Rule for NoMultiSpaces {
     }
 
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
-        self.check_element(ctx, &MarkupElement::new(element));
+        self.check_element(ctx, &MarkupElement::new(element), false);
     }
 
     fn check_interpolation<'a>(
@@ -73,7 +73,8 @@ impl MarkupRule for NoMultiSpaces {
     }
 
     fn enter_element<'a>(&self, ctx: &mut MarkupContext<'_, 'a>, element: &MarkupElement<'a>) {
-        self.check_element(ctx.lint(), element);
+        let is_jsx = ctx.is_jsx() || is_jsx_filename(ctx.lint().filename);
+        self.check_element(ctx.lint(), element, is_jsx);
     }
 
     fn enter_interpolation(&self, ctx: &mut MarkupContext<'_, '_>, range: ByteRange) {
@@ -82,14 +83,14 @@ impl MarkupRule for NoMultiSpaces {
 }
 
 impl NoMultiSpaces {
-    fn check_element(&self, ctx: &mut LintContext<'_>, element: &MarkupElement<'_>) {
+    fn check_element(&self, ctx: &mut LintContext<'_>, element: &MarkupElement<'_>, is_jsx: bool) {
         let mut previous_binding_end = None;
 
         element.walk_opening_item_ranges(&mut |range| {
             let gap_start = previous_binding_end
                 .unwrap_or_else(|| tag_name_end_hint(element.range(), element.tag()));
             self.check_gap(ctx, gap_start, range.start);
-            if !self.ignore_properties {
+            if !is_jsx && !self.ignore_properties {
                 self.check_structural_directive_expression(ctx, range);
             }
             previous_binding_end = Some(range.end);
@@ -120,19 +121,10 @@ impl NoMultiSpaces {
     }
 
     fn check_gap(&self, ctx: &mut LintContext<'_>, gap_start: u32, gap_end: u32) {
-        let gap_start = gap_start as usize;
         let gap_end = gap_end as usize;
-        let gap_start = first_whitespace_offset(ctx.source, gap_start, gap_end);
-        if gap_end <= gap_start {
-            return;
-        }
-
-        let Some(gap) = ctx.source.get(gap_start..gap_end) else {
+        let Some(gap_start) = invalid_gap_start(ctx.source, gap_start as usize, gap_end) else {
             return;
         };
-        if !is_invalid_gap(gap) {
-            return;
-        }
 
         let fix = Fix::new(
             "Replace multiple spaces with single space",
@@ -335,34 +327,23 @@ fn opening_closing_start(source: &str, opening: ByteRange) -> u32 {
 
 fn tag_name_end_hint(range: ByteRange, tag: &str) -> u32 {
     // For JSX member/namespaced tags the facade tag can be shorter than the
-    // written tag. Starting early is fine because `first_whitespace_offset`
+    // written tag. Starting early is fine because `invalid_gap_start`
     // advances to the actual gap before checking it.
     range.start.saturating_add(1 + tag.len() as u32)
 }
 
-fn is_invalid_gap(gap: &str) -> bool {
-    gap.len() > 1
-        && gap
-            .as_bytes()
-            .iter()
-            .all(|byte| matches!(byte, b' ' | b'\t'))
-        && !gap
-            .as_bytes()
-            .iter()
-            .any(|byte| matches!(byte, b'\n' | b'\r'))
+fn invalid_gap_start(source: &str, start: usize, end: usize) -> Option<usize> {
+    let authored = source.as_bytes().get(start..end)?;
+    let relative_start = authored
+        .iter()
+        .position(|byte| matches!(byte, b' ' | b'\t' | b'\n' | b'\r'))?;
+    let gap = authored.get(relative_start..)?;
+    (gap.len() > 1 && gap.iter().all(|byte| matches!(byte, b' ' | b'\t')))
+        .then_some(start + relative_start)
 }
 
-fn first_whitespace_offset(source: &str, start: usize, end: usize) -> usize {
-    let mut offset = start;
-    let bytes = source.as_bytes();
-    while offset < end
-        && bytes
-            .get(offset)
-            .is_some_and(|byte| !matches!(byte, b' ' | b'\t' | b'\n' | b'\r'))
-    {
-        offset += 1;
-    }
-    offset
+fn is_jsx_filename(filename: &str) -> bool {
+    filename.ends_with(".jsx") || filename.ends_with(".tsx")
 }
 
 #[cfg(test)]

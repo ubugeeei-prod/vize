@@ -5,6 +5,7 @@ import { closeSync, mkdtempSync, openSync, readFileSync, rmSync, writeFileSync }
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { documentationReleaseNote } from "../../../docs/scripts/generate-contract-metadata.ts";
 import { cratePublicationNote } from "./release/crate_publication.ts";
 
 export interface PublishedRelease {
@@ -387,7 +388,13 @@ function main(): void {
     // Credits are cosmetic: never block the GitHub Release on them.
     process.stdout.write(`::warning::Skipped co-author credits: ${String(error)}\n`);
   }
-  const sections = [scope.trim(), crates, result.body.trim(), credits.trim()].filter(Boolean);
+  const sections = [
+    scope.trim(),
+    crates,
+    result.body.trim(),
+    documentationReleaseNote(),
+    credits.trim(),
+  ].filter(Boolean);
   writeFileSync(output, `${sections.join("\n\n")}\n`);
   process.stdout.write(`Release notes: ${result.previousTag}...${tag} @ ${expectedSha}\n`);
 }

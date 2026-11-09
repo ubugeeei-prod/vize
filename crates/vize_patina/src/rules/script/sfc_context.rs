@@ -12,7 +12,7 @@
 //! *suppresses* an "unused" report, so an over-match (a call inside an HTML
 //! comment, a coincidental attribute value) can at worst hide a finding.
 //!
-//! [`SfcScriptContext::template_root`] is the **parsed template AST**, for the
+//! [`SfcScriptContext::template_surface`] is the **parsed L1 template**, for the
 //! opposite direction: a rule that *creates* a finding from template evidence.
 //! There an over-match is a false positive — a diagnostic at a location where
 //! the user did nothing wrong — so raw text is not good enough. The AST
@@ -36,11 +36,12 @@
 //! The `Default` value (no template) is what standalone entry points (inline
 //! HTML scripts, [`crate::rules::script::ScriptLinter::lint`]) pass, so rules
 //! must treat a missing template as "no template usage observable", never as an
-//! error. `template_root` is additionally `None` unless some enabled rule asked
+//! error. `template_surface` is additionally `None` unless some enabled rule asked
 //! for it through [`crate::rules::script::ScriptRule::uses_template_ast`], and
 //! when the template failed to parse.
 
-use vize_relief::RootNode;
+use vize_croquis::types::ResolvedTypeWorld;
+use vize_l1::markup::SurfaceTree;
 
 /// Cross-block context handed to a script rule when the linted block is part of
 /// an SFC. See the module documentation for how the three channels differ.
@@ -70,7 +71,7 @@ pub struct SfcScriptContext<'a> {
     pub template_source: Option<&'a str>,
     /// Parsed `<template>` AST, when the SFC declares a template, some enabled
     /// rule requested it, and it parsed without fatal errors.
-    pub template_root: Option<&'a RootNode<'a>>,
+    pub template_surface: Option<&'a SurfaceTree<'a>>,
     /// Byte offset of the `<template>` content inside the SFC source, for
     /// reporting at a template location.
     pub template_offset: Option<u32>,
@@ -99,6 +100,12 @@ pub struct SfcScriptContext<'a> {
     /// own origin when they report at that declaration. Reusing the current
     /// block's offset silently points diagnostics at the wrong line.
     pub sibling_offset: Option<usize>,
+    /// Cross-file type world for compiler macro type arguments.
+    ///
+    /// The world is attached only for an SFC whose filename is known. Rules
+    /// retain their conservative single-file behavior when resolution is
+    /// unavailable or incomplete.
+    pub resolved_type_world: Option<&'a ResolvedTypeWorld>,
 }
 
 impl<'a> SfcScriptContext<'a> {
@@ -107,7 +114,7 @@ impl<'a> SfcScriptContext<'a> {
     /// Both are present or neither is useful, so rules that report at a
     /// template location take them as a pair rather than unwrapping twice.
     #[inline]
-    pub fn template_ast(&self) -> Option<(&'a RootNode<'a>, u32)> {
-        Some((self.template_root?, self.template_offset?))
+    pub fn template_ast(&self) -> Option<(&'a SurfaceTree<'a>, u32)> {
+        Some((self.template_surface?, self.template_offset?))
     }
 }

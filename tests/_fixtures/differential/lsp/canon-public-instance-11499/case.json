@@ -1,0 +1,39 @@
+{
+  "version": 1,
+  "id": "lsp/regression/canon-public-instance-11499",
+  "provenance": {
+    "fixCommit": "a965da2fbce931aace75d4a19d79a775f7be0d20",
+    "witnessPath": "tests/tooling/lsp-experimental-router-params.test.ts",
+    "witnessTest": "configured experimental route params own default editor diagnostics, complete lazy resolution and navigation",
+    "inputOrigin": "Exact authenticated experimental-router project with a unique #11499 successor marker",
+    "contractOrigin": "Pinned authored hover controls accompany the whole generated-document and protocol successor receipts; no independent acceptance credit"
+  },
+  "files": [
+    {
+      "source": "Page.vue.txt",
+      "runtimePath": "src/pages/products/[id=int].vue",
+      "sha256": "115748af9ca14f6012a6b230644cb89464d43ace8c5946ed469ec9176ee0c899"
+    },
+    {
+      "source": "tsconfig.json.txt",
+      "runtimePath": "tsconfig.json",
+      "sha256": "88fd4f1d6d986627d8f757cb5f7f191467d42d082c01e5425ba9fbf7a3298dbd"
+    }
+  ],
+  "entry": "src/pages/products/[id=int].vue",
+  "expected": {
+    "source": "hover.expected.json",
+    "sha256": "e3ef9df44a3b8b0f273dd89faf6c864f4a5c8fa9e365b81827669490b8843b21"
+  },
+  "method": "textDocument/hover",
+  "documentVersion": 1,
+  "initializationOptions": {
+    "completion": true,
+    "editor": true,
+    "ecosystem": true,
+    "hover": true,
+    "lint": false,
+    "typecheck": true
+  },
+  "scope": "Unique #11499 LSP input custody and explicit number-declaration hover controls; whole generated-document qualification remains in the dedicated runtime test"
+}

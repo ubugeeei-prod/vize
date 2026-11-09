@@ -1,0 +1,15 @@
+<script setup lang="ts">
+defineProps<{ label: string }>();
+
+interface Emits {
+  (event: "itemReady", value: number): void;
+  (event: "item-ready", value: number): void;
+  (event: string, ...args: any[]): void;
+}
+
+defineEmits<Emits>();
+</script>
+
+<template>
+  <button type="button">{{ label }}</button>
+</template>

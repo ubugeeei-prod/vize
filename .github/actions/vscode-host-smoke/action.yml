@@ -171,7 +171,7 @@ runs:
         set -euo pipefail
         mkdir -p "${XDG_CONFIG_HOME}/helix"
         cp editors/helix/languages.toml "${XDG_CONFIG_HOME}/helix/languages.toml"
-        rust-script tools/commands/editors/helix/assert-helix-health.rs "${RUNNER_TEMP}/helix/hx"
+        node tools/commands/editors/helix/assert-helix-health.ts "${RUNNER_TEMP}/helix/hx"
 
     - name: Stabilize Ubuntu package archive
       uses: ./.github/actions/setup-ubuntu-archive

@@ -33,7 +33,7 @@ const phaseExitGateDefinitions = [
   {
     id: "p3-16-parity",
     text: "Vapor: TS-33 behavioral parity green; SSR **and VDOM**: TS-11 byte-empty (P3-7 changes patch-flag derivation, so DOM parity re-gates here)",
-    witnesses: [".github/workflows/davinci-reference.yml", "tools/commands/davinci/corpus-diff.rs"],
+    witnesses: [".github/workflows/davinci-reference.yml", "tools/commands/davinci/corpus-diff.ts"],
   },
   {
     id: "p3-16-source-map",

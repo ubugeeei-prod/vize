@@ -1,5 +1,6 @@
 ---
 source: crates/vize_canon/tests/authored_pick_inline_helpers.rs
+assertion_line: 105
 expression: virtual_ts.as_str()
 ---
 /// <reference lib="es2022" />
@@ -72,15 +73,16 @@ type $ComponentInputFor<T, Declared, Authored, Allowed> = Allowed & $ComponentIn
 type $ComponentInput<T, Declared, Authored> = $UsePublicInstance<Authored> extends true ? $ComponentInputProps<T, Declared> : T extends unknown ? $ComponentInputFor<T, Declared, Authored, $ComponentInputProps<T, Declared>> : never;
 type $AuthoredKeyWitness<T> = { [K in keyof T]: unknown };
 // Constructor arguments (templates, `new`) bind `Authored`; TSX binds `Jsx` through `$props` (#11629).
-type $ComponentInstanceFor<I, T, Declared, Authored, Jsx> = $IsAny<Authored> extends true ? I : $IsUnknown<Authored> extends true ? $UsePublicInstance<Jsx> extends true ? I : $ReplaceComponentProps<I, __vizePick_1<$AuthoredKeyWitness<Jsx>, keyof Jsx & $ComponentMetadataKeys<$ComponentInputProps<T, Declared>>> & (T extends unknown ? $ComponentInputProps<T, Declared> & $ComponentInputGuard<T, Declared, Jsx> : never)> : $ReplaceComponentProps<I, $ComponentInputProps<T, Declared> & $ComponentMissingInputGuard<T, Authored>>;
+type $ComponentInstanceFor<I, O, B, T, Declared, Authored, Jsx> = $IsAny<Authored> extends true ? I : $IsUnknown<Authored> extends true ? $UsePublicInstance<Jsx> extends true ? I : $ReplaceComponentProps<O, __vizePick_1<$AuthoredKeyWitness<Jsx>, keyof Jsx & $ComponentMetadataKeys<$ComponentInputProps<T, Declared>>> & (T extends unknown ? $ComponentInputProps<T, Declared> & $ComponentInputGuard<T, Declared, Jsx> : never)> & B : $ReplaceComponentProps<O, $ComponentInputProps<T, Declared> & $ComponentMissingInputGuard<T, Authored>> & B;
 type $IsUnknown<T> = unknown extends T ? [keyof T] extends [never] ? true : false : false;
 type $UsePublicInstance<T> = $IsAny<T> extends true ? true : $IsUnknown<T>;
 type $LiteralKeys<T> = keyof { [K in keyof T as K extends string ? string extends K ? never : K extends `$${infer R}` ? string extends R ? never : K : K : number extends K ? never : symbol extends K ? never : K]: unknown };
-type $ReplaceComponentProps<T, P> = Omit<T, '$props'> & __vizePick_1<T, Exclude<$LiteralKeys<T>, '$props'>> & { $props: P };
+type $PatternSafeOmit<T, K extends PropertyKey, B = Omit<T, K>, L extends PropertyKey = $LiteralKeys<T>> = B & __vizePick_1<T, Extract<Exclude<L, K>, keyof T>>;
+type $ReplaceComponentProps<T, P> = $PatternSafeOmit<T, '$props'> & { $props: P };
 type $PublicEmit<T, S = __EmitShape<T>, K extends keyof S & string = keyof S & string> = S extends (...args: any[]) => any ? S : [K] extends [never] ? (event: string, ...args: any[]) => void : __EmitFn<T>;
 type $PublicSlots<T> = [keyof T] extends [never] ? import('vue').ComponentPublicInstance['$slots'] : T;
 // @ts-ignore TS2694/TS2307: a `vue` without `ComponentPublicInstance` must degrade component public extras to unchecked, never error.
-type $ComponentPublicBase<I = import('vue').ComponentPublicInstance> = Omit<I, '$props' | '$emit' | '$slots'> & __vizePick_1<I, Exclude<$LiteralKeys<I>, '$props' | '$emit' | '$slots'>>;
+type $ComponentPublicBase<I = import('vue').ComponentPublicInstance, C = import('vue').ComponentCustomProperties> = $PatternSafeOmit<I, '$props' | '$emit' | '$slots', symbol extends keyof C ? {} : C, '$' | '$data' | '$attrs' | '$refs' | '$root' | '$parent' | '$host' | '$el' | '$options' | '$forceUpdate' | '$nextTick' | '$watch'>;
 // @ts-ignore TS2694/TS2307: a `vue` without `NativeElements` must degrade native prop checks to unchecked, never error. See virtual_ts/expressions/native_props.rs.
 type $NativeElements = import('vue').NativeElements;
 type $NativeElement<Tag extends PropertyKey> = Tag extends keyof $NativeElements ? $NativeElements[Tag] : unknown;
@@ -134,7 +136,7 @@ function __setup() {
   
   const handler = (value: string) => value
   
-  // @vize-map: 15684:15733 -> 0:107
+  // @vize-map: 15963:16012 -> 0:107
 
   // ========== Template Scope (inherits from setup) ==========
   ;(function __template() {
@@ -281,11 +283,17 @@ type $OverloadUnionRecursive<TOverload, TPartialOverload = unknown, TDepth exten
 type $OverloadUnion<TOverload extends (...args: any[]) => any> = Exclude<$OverloadUnionRecursive<(() => never) & TOverload>, TOverload extends () => never ? never : () => never>;
 type $OverloadParameters<T extends (...args: any[]) => any> = Parameters<$OverloadUnion<T>>;
 type $IsStringLiteral<T> = T extends string ? string extends T ? false : true : false;
-type $ParametersToFns<T extends any[]> = string extends T[0] ? { [K in string]: (...args: T extends [e: any, ...args: infer P] ? P : any[]) => any } : { [K in T[0]]: $IsStringLiteral<K> extends true ? (...args: T extends [e: infer E, ...args: infer P] ? K extends E ? P : never : never) => any : never };
+type $LiteralParameterKeys<T extends any[]> = T extends unknown ? $IsStringLiteral<T[0]> extends true ? T[0] : never : never;
+type $ParametersForKey<T extends any[], K> = T extends [e: infer E, ...args: infer P] ? $IsStringLiteral<E> extends true ? K extends E ? P : never : never : never;
+type $LiteralParametersToFns<T extends any[]> = { [K in $LiteralParameterKeys<T>]: (...args: $ParametersForKey<T, K>) => any };
+type $ParametersToFns<T extends any[]> = $LiteralParametersToFns<T> & (string extends T[0] ? { [K in string]: (...args: T extends [e: infer E, ...args: infer P] ? string extends E ? P : never : never) => any } : {});
 type __EmitOptions<T, S = __EmitShape<T>> = { [K in keyof S as K extends string ? K : never]: (...args: __EmitArgs<S, K>) => any } & (__EmitShape<T> extends (...args: any[]) => any ? $ParametersToFns<$OverloadParameters<__EmitShape<T>>> : {});
+type $LiteralEmitOptions<T, S = __EmitShape<T>> = S extends (...args: any[]) => any ? $LiteralParametersToFns<$OverloadParameters<S>> : {};
 type $Camelize<S extends string> = S extends `${infer Head}-${infer Tail}` ? `${Head}${Capitalize<$Camelize<Tail>>}` : S;
 type $HandlerKey<K extends string> = `on${Capitalize<$Camelize<K>>}`;
-type __EmitProps<T> = { [K in keyof __EmitOptions<T> & string as ($Camelize<K> extends keyof __EmitOptions<T> ? string extends keyof __EmitOptions<T> ? $HandlerKey<K> : never : $HandlerKey<K>) | `on${Capitalize<K>}`]?: __EmitOptions<T>[K] };
+type $EmitPropsFromOptions<T> = { [K in keyof T & string as ($Camelize<K> extends keyof T ? string extends keyof T ? $HandlerKey<K> : never : $HandlerKey<K>) | `on${Capitalize<K>}`]?: T[K] };
+type $ResolvedEmitProps<T, O = __EmitOptions<T>, L = $LiteralEmitOptions<T>> = $IsAny<T> extends true ? $EmitPropsFromOptions<O> : string extends keyof O ? [keyof L] extends [never] ? $EmitPropsFromOptions<O> : $EmitPropsFromOptions<O> & $EmitPropsFromOptions<L> : $EmitPropsFromOptions<O>;
+type __EmitProps<T> = $ResolvedEmitProps<T>;
 
 // ========== Default Export ==========
 type $ComponentInstance = {
@@ -294,7 +302,12 @@ type $ComponentInstance = {
   $emit: $PublicEmit<Emits>;
   $slots: $PublicSlots<$Slots>;
 } & $ComponentPublicBase;
-type $ComponentConstructor = new <$AuthoredProps = unknown, $JsxProps = unknown>(props?: $AuthoredProps & $ComponentInput<Props, {}, $AuthoredProps>, ...args: any[]) => $ComponentInstanceFor<$ComponentInstance, Props, {}, $AuthoredProps, $JsxProps>;
+type $ComponentConstructor = new <$AuthoredProps = unknown, $JsxProps = unknown>(props?: $AuthoredProps & $ComponentInput<Props, {}, $AuthoredProps>, ...args: any[]) => $ComponentInstanceFor<$ComponentInstance, {
+  $props: Props;
+  readonly __vizeRawProps?: Props;
+  $emit: $PublicEmit<Emits>;
+  $slots: $PublicSlots<$Slots>;
+}, $ComponentPublicBase, Props, {}, $AuthoredProps, $JsxProps>;
 type $VueComponentOptions = {
   [key: string]: any;
   name?: string;

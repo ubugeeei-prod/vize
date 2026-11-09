@@ -10,11 +10,13 @@ mod project_directives;
 mod reporting;
 mod sfc_directives;
 mod state;
+mod template_directives;
 
 pub(crate) use callback_order::CallbackSite;
 pub use project_directives::ProjectLintDirectives;
 pub(crate) use reporting::{SfcSuppression, offset_diagnostic, retain_unless_source_suppressed};
 pub use state::{DisabledRange, ElementContext, SsrMode};
+pub(crate) use template_directives::{TemplateCommentDirectives, process_vize_directive};
 
 use crate::diagnostic::{HelpLevel, LintDiagnostic, Severity};
 use memchr::memchr_iter;

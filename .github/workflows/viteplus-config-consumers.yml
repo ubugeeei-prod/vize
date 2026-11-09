@@ -68,7 +68,7 @@ jobs:
           retention-days: 14
   published-contracts:
     if: github.event_name == 'pull_request' || inputs.mode == 'published-startup-75-76'
-    runs-on: blacksmith-8vcpu-ubuntu-2404
+    runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
@@ -81,7 +81,7 @@ jobs:
     if: github.event_name == 'workflow_dispatch' && inputs.mode == 'published-startup-75-76'
     needs: published-contracts
     permissions: { contents: read, actions: read }
-    runs-on: blacksmith-8vcpu-ubuntu-2404
+    runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd

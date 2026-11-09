@@ -20,7 +20,7 @@ concurrency:
 jobs:
   functional:
     name: Observed options and unchanged chain controls
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 60
     env:
       CARGO_BUILD_JOBS: "2"

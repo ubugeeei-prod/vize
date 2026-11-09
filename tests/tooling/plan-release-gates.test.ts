@@ -38,7 +38,7 @@ void test("dormant queue planner retains every path-dependent release gate decis
     ],
     [["pnpm-lock.yaml"], plan(true, true, false, false)],
     [["npm/ui/src/button.ts"], plan(true, true, false, false)],
-    [["playground/src/App.vue"], plan(false, true, false, false)],
+    [["playground/src/app.vue"], plan(false, true, false, false)],
     [[".github/workflows/check.yml"], plan(true, true, true, true)],
     [[], plan(true, true, true, true)],
   ] as const) {

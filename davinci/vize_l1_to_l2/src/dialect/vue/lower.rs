@@ -87,6 +87,11 @@ pub struct Lowered<'a, P = StdVec<ProvenanceRecord>> {
     /// by its compound `ui.interpolation` op (P2-9 installment 4,
     /// [`lower::text`](text)); validated and published by lowering.
     pub texts: SideTable<TextParts>,
+    /// Retained expressions consumed into compound text ops. The
+    /// comment-preserving lint lowering populates this compatibility channel;
+    /// ordinary compiler lowerings leave it empty so they do not parse a
+    /// compound expression twice.
+    pub consumed_expressions: StdVec<vize_l2::expr::ExprRef<'a>>,
     /// Consumed `ui.for` scope views, keyed by the `ui.for` op's
     /// page-order id; validated and published by lowering.
     pub for_facts: SideTable<ForParts>,
@@ -270,6 +275,7 @@ fn oversized_source<'a, P: Default>(
         provenance: P::default(),
         scopes: SideTable::new(),
         texts: SideTable::new(),
+        consumed_expressions: StdVec::new(),
         for_facts: SideTable::new(),
         if_facts: SideTable::new(),
         wrappers: SideTable::new(),
@@ -300,6 +306,7 @@ impl<P: fmt::Debug> fmt::Debug for Lowered<'_, P> {
             .field("provenance", &self.provenance)
             .field("scopes", &self.scopes)
             .field("texts", &self.texts)
+            .field("consumed_expressions", &self.consumed_expressions)
             .field("for_facts", &self.for_facts)
             .field("if_facts", &self.if_facts)
             .field("wrappers", &self.wrappers)

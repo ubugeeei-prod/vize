@@ -23,7 +23,7 @@ Read both complete Japanese guides and their English source documents at main
 The CLI options and comparison limit are owned by
 `crates/vize/src/commands/inspector.rs` and `inspector/compare_error.rs`.
 The inspector's actual tabs, payload and sharing controls are in
-`playground/src/features/inspector/InspectorPlayground.vue` and `share.ts`.
+`playground/src/features/inspector/inspector-playground.vue` and `share.ts`.
 The existing counter SFC preset in `playground/src/presets.ts` supplies the
 `ref(0)` state/event example. The profiling command is already documented in
 `guide/check-performance.md` and implemented by the checker command.

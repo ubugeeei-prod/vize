@@ -16,7 +16,7 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../.
 const [target, artifactInput, outputInput, ...extra] = process.argv.slice(2);
 assert(
   target && artifactInput && outputInput && extra.length === 0,
-  "Usage: package-typescript-provider.rs <rustTarget> <artifactDir> <outVsix>",
+  "Usage: node tools/support/editors/typescript-provider/package.ts <rustTarget> <artifactDir> <outVsix>",
 );
 assert(Object.hasOwn(targets, target), `Unknown Rust target: ${target}`);
 const artifactDir = path.resolve(artifactInput),
@@ -37,12 +37,12 @@ try {
   const pinned = pinnedReleaseCandidate();
   const receipt = stageProvider(root, artifactDir, staging, head, target, pinned);
   fs.mkdirSync(path.dirname(output), { recursive: true });
-  run("rust-script", [
-    path.join(root, "tools/commands/editors/vscode/sync-typescript-plugin.rs"),
+  run(process.execPath, [
+    path.join(root, "tools/commands/editors/vscode/sync-typescript-plugin.ts"),
     "stage",
   ]);
-  run("rust-script", [
-    path.join(root, "tools/commands/editors/vscode/run-package-bin.rs"),
+  run(process.execPath, [
+    path.join(root, "tools/commands/editors/vscode/run-package-bin.ts"),
     "@vscode/vsce",
     "vsce",
     "package",
@@ -52,8 +52,8 @@ try {
     "--out",
     output,
   ]);
-  run("rust-script", [
-    path.join(root, "tools/commands/editors/vscode/sync-typescript-plugin.rs"),
+  run(process.execPath, [
+    path.join(root, "tools/commands/editors/vscode/sync-typescript-plugin.ts"),
     "inject",
     output,
   ]);

@@ -66,7 +66,7 @@ export function readAndValidateDependencyPreparation({
   const performance = project.typecheckPerformance;
   assertPackageManager(artifact.packageManager, performance, project.id);
   assertLockfile(artifact.lockfile, performance, fixtureRoot, project.id);
-  assertInstall(artifact.install, performance, project.id);
+  assertInstall(artifact.install, performance, fixtureRoot, project.id);
   assertBaselinePrepare(artifact.baselinePrepare, performance, project.id);
 
   return {
@@ -287,13 +287,16 @@ function assertLockfile(lockfile, performance, fixtureRoot, projectId) {
   }
 }
 
-function assertInstall(install, performance, projectId) {
+function assertInstall(install, performance, fixtureRoot, projectId) {
   requireExactKeys(
     install,
     ["command", "durationMs", "exitCode", "stderrSha256", "stdoutSha256"],
     "typecheck install evidence",
   );
-  const expected = [performance.packageManager, ...installArguments(performance.packageManager)];
+  const expected = [
+    performance.packageManager,
+    ...installArguments(performance.packageManager, fixtureRoot),
+  ];
   if (
     JSON.stringify(install.command) !== JSON.stringify(expected) ||
     install.exitCode !== 0 ||
