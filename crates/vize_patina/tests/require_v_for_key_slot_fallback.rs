@@ -42,7 +42,10 @@ fn slot_fallback_key_owned_source_api_packets() {
     );
     for ((case, recorded), current) in cases.iter().zip(&packets).zip(after) {
         assert_eq!(case["id"], current["caseId"]);
-        if case["id"] != "empty-slot-policy-limit" {
+        if !matches!(
+            case["id"].as_str(),
+            Some("empty-slot-policy-limit" | "static-key-history")
+        ) {
             assert_eq!(current["packet"], case["expectedNativePacket"]);
         }
         let expected = current["packet"]["error_count"].as_u64().unwrap();

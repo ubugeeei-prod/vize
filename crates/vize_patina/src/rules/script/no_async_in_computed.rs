@@ -155,7 +155,11 @@ fn check_getter(getter: GetterBody<'_>, offset: usize, result: &mut ScriptLintRe
         report(span, offset, result);
         return;
     }
-    let mut visitor = AsyncActionVisitor { offset, result };
+    let mut visitor = AsyncActionVisitor {
+        offset,
+        result,
+        reported_receivers: Vec::new(),
+    };
     match getter {
         GetterBody::Function(function) => {
             if let Some(body) = &function.body {
@@ -173,6 +177,7 @@ fn check_getter(getter: GetterBody<'_>, offset: usize, result: &mut ScriptLintRe
 struct AsyncActionVisitor<'result> {
     offset: usize,
     result: &'result mut ScriptLintResult,
+    reported_receivers: Vec<Span>,
 }
 
 impl<'a> Visit<'a> for AsyncActionVisitor<'_> {
@@ -187,10 +192,25 @@ impl<'a> Visit<'a> for AsyncActionVisitor<'_> {
     }
 
     fn visit_call_expression(&mut self, call: &CallExpression<'a>) {
-        if is_async_call(call) {
+        let belongs_to_reported_chain = self
+            .reported_receivers
+            .iter()
+            .any(|receiver| receiver.start <= call.span.start && call.span.end <= receiver.end);
+        let report_call = is_async_call(call) && !belongs_to_reported_chain;
+        if report_call {
             report(call.span, self.offset, self.result);
         }
+
+        let receiver = report_call
+            .then(|| async_member_receiver_span(call))
+            .flatten();
+        if let Some(receiver) = receiver {
+            self.reported_receivers.push(receiver);
+        }
         walk_call_expression(self, call);
+        if receiver.is_some() {
+            self.reported_receivers.pop();
+        }
     }
 
     fn visit_await_expression(&mut self, expression: &oxc_ast::ast::AwaitExpression<'a>) {
@@ -202,6 +222,14 @@ impl<'a> Visit<'a> for AsyncActionVisitor<'_> {
         {
             report(expression.span, self.offset, self.result);
         }
+    }
+}
+
+fn async_member_receiver_span(call: &CallExpression<'_>) -> Option<Span> {
+    match call.callee.get_inner_expression() {
+        Expression::StaticMemberExpression(member) => Some(member.object.span()),
+        Expression::ComputedMemberExpression(member) => Some(member.object.span()),
+        _ => None,
     }
 }
 
@@ -382,7 +410,7 @@ export default {
     #[test]
     fn reports_object_getters_promise_statics_and_browser_timers() {
         let source = r#"
-const all = computed(() => Promise.all(urls.map(fetch)))
+const all = computed(() => Promise.all(urls.map(fetch)).then((values) => values))
 const value = computed({ get: () => fetch('/a'), set: () => {} })
 const size = computed(() => {
   window.setTimeout(() => {}, 0)

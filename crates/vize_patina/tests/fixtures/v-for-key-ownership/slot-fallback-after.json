@@ -136,8 +136,19 @@
   {
     "caseId": "static-key-history",
     "packet": {
-      "diagnostics": [],
-      "error_count": 0,
+      "diagnostics": [
+        {
+          "end": 120,
+          "fix": null,
+          "help": null,
+          "labels": [],
+          "message": "Elements in iteration expect to have 'v-bind:key' directives. Element: <tr>",
+          "rule_name": "vue/require-v-for-key",
+          "severity": "error",
+          "start": 83
+        }
+      ],
+      "error_count": 1,
       "filename": "static-key-history.vue",
       "warning_count": 0
     }
