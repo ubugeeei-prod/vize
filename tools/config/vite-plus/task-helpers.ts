@@ -4,6 +4,7 @@ export {
   installVscodeExtensionDependencies,
   localVp,
   nodeCommand,
+  nodeCommandFromVscodeExtension,
   nodeTool,
   runInDirectory,
   runInPackages,

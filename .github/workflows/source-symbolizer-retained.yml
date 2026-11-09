@@ -19,7 +19,7 @@ concurrency:
   cancel-in-progress: true
 jobs:
   controls:
-    runs-on: ubuntu-24.04
+    runs-on: blacksmith-32vcpu-ubuntu-2404
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
@@ -32,7 +32,7 @@ jobs:
   offline:
     if: ${{ github.event_name == 'workflow_dispatch' && inputs.metadata_artifact_id == '' }}
     needs: controls
-    runs-on: ubuntu-24.04
+    runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
@@ -96,7 +96,7 @@ jobs:
   thin-metadata:
     if: ${{ github.event_name == 'workflow_dispatch' && inputs.metadata_artifact_id != '' }}
     needs: controls
-    runs-on: ubuntu-24.04
+    runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 8
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd

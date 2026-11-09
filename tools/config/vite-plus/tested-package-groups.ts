@@ -24,9 +24,11 @@ export const testedPackageGroups = [
     name: "builders",
     packages: [
       "./npm/cli",
+      "./npm/create-fresco",
       "./npm/builder/vite",
       "./npm/builder/vite-musea",
       "./npm/builder/unplugin",
+      "./npm/builder/unplugin/example",
       "./npm/builder/rspack",
       "./npm/framework/nuxt-lint-config",
       "./npm/framework/nuxt",

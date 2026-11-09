@@ -149,14 +149,16 @@ pub(super) fn emit_component_constructors<'a>(
     if !legacy_component {
         ts.push_str(&own);
     }
-    ts.push_str(" & ");
+    let mut base = String::default();
     instance_base(
-        ts,
+        &mut base,
         legacy_vue2,
         dialect,
         aliases.has_exposed_type,
         (aliases.has_root_el, aliases.has_refs),
     );
+    ts.push_str(" & ");
+    ts.push_str(&base);
     ts.push_str(";\n");
     if legacy_component {
         ts.push_str(LEGACY_VUE2_COMPONENT_CONSTRUCTOR_STATICS);
@@ -191,9 +193,14 @@ pub(super) fn emit_component_constructors<'a>(
         // Constructor arguments (templates, `new`) bind `$AuthoredProps` and
         // leave undeclared attributes to the consumer's own excess-property
         // check; TSX binds `$JsxProps` and stays exact (#11629).
+        let constructor_base = if aliases.has_authored_default {
+            cstr!("Omit<{authored_instance}, '$props' | '$emit' | '$slots'> & {base}")
+        } else {
+            base.clone()
+        };
         append!(
             *ts,
-            "type $ComponentConstructor = new <$AuthoredProps = unknown, $JsxProps = unknown>(props?: $AuthoredProps & $ComponentInput<{props_ref}, {emit_props_ref}, $AuthoredProps>, ...args: any[]) => $ComponentInstanceFor<$ComponentInstance, {props_ref}, {emit_props_ref}, $AuthoredProps, $JsxProps>;\n"
+            "type $ComponentConstructor = new <$AuthoredProps = unknown, $JsxProps = unknown>(props?: $AuthoredProps & $ComponentInput<{props_ref}, {emit_props_ref}, $AuthoredProps>, ...args: any[]) => $ComponentInstanceFor<$ComponentInstance, {own}, {constructor_base}, {props_ref}, {emit_props_ref}, $AuthoredProps, $JsxProps>;\n"
         );
     }
 

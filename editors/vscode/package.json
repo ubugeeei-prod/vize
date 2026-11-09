@@ -24,8 +24,8 @@
     "check": "tsc --noEmit && vp check src vite.config.ts",
     "check:fix": "vp check --fix src vite.config.ts && tsc --noEmit",
     "fmt": "vp fmt --write src vite.config.ts",
-    "package": "rust-script ../../tools/commands/editors/vscode/sync-typescript-plugin.rs stage && vsce package --no-dependencies --out dist/vize.vsix && rust-script ../../tools/commands/editors/vscode/sync-typescript-plugin.rs inject dist/vize.vsix",
-    "test:host": "rust-script ../../tools/commands/editors/vscode/sync-typescript-plugin.rs stage && node test/run-extension-host.mjs",
+    "package": "node ../../tools/commands/editors/vscode/sync-typescript-plugin.ts stage && vsce package --no-dependencies --out dist/vize.vsix && node ../../tools/commands/editors/vscode/sync-typescript-plugin.ts inject dist/vize.vsix",
+    "test:host": "node ../../tools/commands/editors/vscode/sync-typescript-plugin.ts stage && node test/run-extension-host.mjs",
     "publish": "npm run package && vsce publish --packagePath dist/vize.vsix",
     "publish:pre": "npm run package && vsce publish --pre-release --packagePath dist/vize.vsix"
   },

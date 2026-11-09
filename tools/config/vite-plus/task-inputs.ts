@@ -12,6 +12,7 @@ import type { PackagePath, TaskInput } from "./task-helpers.ts";
  */
 export const checkedPackages = [
   "./npm/cli",
+  "./npm/create-fresco",
   "./npm/builder/vite",
   "./npm/linter/oxlint",
   "./npm/builder/vite-musea",
@@ -30,6 +31,7 @@ export const checkedPackages = [
   "./npm/marquette",
   "./npm/builder/vite/example",
   "./npm/builder/rspack/example",
+  "./npm/builder/unplugin/example",
   "./examples/vite-musea",
   "./examples/oxlint-vize",
   "./examples/jsx-tsx",
@@ -60,6 +62,7 @@ export const checkedPackagesBeforeNativeBuild = checkedPackagesViaVpRun.filter(
 
 export const packedPackages = [
   "./npm/cli",
+  "./npm/create-fresco",
   "./npm/builder/vite",
   "./npm/linter/oxlint",
   "./npm/builder/vite-musea",
@@ -80,11 +83,13 @@ export const packedPackages = [
 
 export const testedPackages = [
   "./npm/cli",
+  "./npm/create-fresco",
   "./npm/builder/vite",
   "./npm/linter/oxlint",
   "./npm/builder/vite-musea",
   "./npm/builder/unplugin",
   "./npm/builder/rspack",
+  "./npm/builder/unplugin/example",
   "./npm/framework/nuxt-lint-config",
   "./npm/framework/nuxt",
   "./npm/framework/musea-nuxt",
@@ -147,6 +152,8 @@ export const cacheInputs = {
     "npm/**/vite.config.ts",
     "npm/**/rspack.config.ts",
     "npm/**/src/**",
+    "npm/builder/unplugin/example/build/**",
+    "npm/builder/unplugin/example/test/**",
     "examples/**/package.json",
     "examples/**/vite.config.ts",
     "examples/**/playwright.config.ts",

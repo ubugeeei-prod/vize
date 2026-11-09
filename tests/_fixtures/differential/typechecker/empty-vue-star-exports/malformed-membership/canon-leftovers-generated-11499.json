@@ -1,0 +1,52 @@
+{
+  "version": 1,
+  "kind": "exact-canon-leftovers-generated-constructor-successor",
+  "issue": 11499,
+  "pullRequest": 12162,
+  "sourceRevision": "17d4a7e511e19f623258dcef84f357226c1c7901",
+  "testedMerge": "bb7322ebb2d08c85c18b79607a6b3eb083dcad32",
+  "observedRun": 42458808867,
+  "observedJob": 128663581942,
+  "artifact": 13608737806,
+  "nativeAcceptanceCredit": false,
+  "observedMismatchEntry": 74,
+  "observedActual": [
+    "project/A.vue.ts",
+    3990,
+    "e2d9c4862cab4db2d0217460b6b716d2c94e854ac19244864a17a211d85bb745"
+  ],
+  "edit": {
+    "before": "type $ComponentConstructor = new <$AuthoredProps = unknown, $JsxProps = unknown>(props?: $AuthoredProps & $ComponentInput<Props, {}, $AuthoredProps>, ...args: any[]) => $ComponentInstanceFor<$ComponentInstance, Props, {}, $AuthoredProps, $JsxProps>;",
+    "after": "type $ComponentConstructor = new <$AuthoredProps = unknown, $JsxProps = unknown>(props?: $AuthoredProps & $ComponentInput<Props, {}, $AuthoredProps>, ...args: any[]) => $ComponentInstanceFor<$ComponentInstance, {\n  $props: Props;\n  readonly __vizeRawProps?: Props;\n  $emit: $PublicEmit<Emits>;\n  $slots: $PublicSlots<$Slots>;\n}, $ComponentPublicBase, Props, {}, $AuthoredProps, $JsxProps>;"
+  },
+  "entries": [
+    {
+      "entry": 74,
+      "before": [
+        "project/A.vue.ts",
+        3850,
+        "658399f7fddca7c024cca85923ed8bc99478aaf8e61f0c6b42c5c7721c268114"
+      ],
+      "after": [
+        "project/A.vue.ts",
+        3990,
+        "e2d9c4862cab4db2d0217460b6b716d2c94e854ac19244864a17a211d85bb745"
+      ],
+      "deltaBytes": 140
+    },
+    {
+      "entry": 75,
+      "before": [
+        "project/B.vue.ts",
+        4070,
+        "db07a1ca180873a2a0ab805a6753da67a0e19482e283770fe1e47c860516b056"
+      ],
+      "after": [
+        "project/B.vue.ts",
+        4210,
+        "120c8de3fe9f8ccdf4b708e1f34967fec8ef4915a3816792c75e7b0d78179c86"
+      ],
+      "deltaBytes": 140
+    }
+  ]
+}

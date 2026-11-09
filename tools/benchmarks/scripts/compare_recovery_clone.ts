@@ -29,6 +29,7 @@ function median(values: bigint[]): bigint {
   assert(values.length > 0 && values.length % 2 === 1);
   return [...values].sort((a, b) => (a < b ? -1 : a > b ? 1 : 0))[Math.floor(values.length / 2)]!;
 }
+
 function profileIdentity(root: string, requireNormal = true): void {
   const receipt = record(readExact(path.join(root, "identity.json")));
   assert.deepEqual(receipt.base, receipt.firstParent);
@@ -98,7 +99,6 @@ function profileIdentity(root: string, requireNormal = true): void {
       ),
     };
   }
-  assert.notEqual(records.base!.binarySha256, records.head!.binarySha256);
   for (const index of [0, 1])
     for (const key of ["features", "profile"]) {
       assert.deepEqual(

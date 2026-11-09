@@ -139,9 +139,27 @@ type Options = {
   buildArgs: string[];
 };
 
+export function executionBaseSha(
+  eventName: string | undefined,
+  declaredBaseSha: string,
+  parents: readonly string[],
+  associatedHead: string,
+): string {
+  assert.match(declaredBaseSha, /^[a-f0-9]{40}$/u);
+  if (eventName !== "pull_request") return declaredBaseSha;
+  assert.equal(parents.length, 2);
+  assert.equal(parents[1], associatedHead);
+  return parents[0]!;
+}
+
 export function qualifyPackageShadowWork(options: Options): void {
-  const { sourceRoot, baseSha, headExecutable, compilerEnvironment, buildArgs } = options;
-  assert.match(baseSha, /^[a-f0-9]{40}$/u);
+  const {
+    sourceRoot,
+    baseSha: declaredBaseSha,
+    headExecutable,
+    compilerEnvironment,
+    buildArgs,
+  } = options;
   const out = path.resolve(options.out);
   assert.equal(fs.existsSync(out), false);
   fs.mkdirSync(out, { recursive: true });
@@ -160,11 +178,13 @@ export function qualifyPackageShadowWork(options: Options): void {
     .split("\n")
     .filter((line) => line.startsWith("parent "))
     .map((line) => line.slice(7));
-  if (process.env.GITHUB_EVENT_NAME === "pull_request") {
-    assert.deepEqual(parents, [baseSha, associatedHead]);
-  } else {
-    assert.equal(head, associatedHead);
-  }
+  const baseSha = executionBaseSha(
+    process.env.GITHUB_EVENT_NAME,
+    declaredBaseSha,
+    parents,
+    associatedHead!,
+  );
+  if (process.env.GITHUB_EVENT_NAME !== "pull_request") assert.equal(head, associatedHead);
   assert.equal(git(sourceRoot, "status", "--porcelain", "--untracked-files=all"), "");
   const fetched = spawnSync(
     "git",
@@ -183,6 +203,7 @@ export function qualifyPackageShadowWork(options: Options): void {
       headTree,
       associatedHead,
       executionParents: parents,
+      declaredBaseSha,
       baseSha,
       selected: false,
       reason: "not the introduction of cold propagation deferral",
@@ -233,6 +254,7 @@ export function qualifyPackageShadowWork(options: Options): void {
     headTree,
     associatedHead,
     executionParents: parents,
+    declaredBaseSha,
     baseSha,
     baseTree,
     originalModuleSha256: hash(original),
@@ -386,7 +408,15 @@ export function qualifyPackageShadowWork(options: Options): void {
   assert.equal(fs.readFileSync(path.join(baseRoot, modulePath), "utf8"), overlay.observed);
   for (const file of copied) assert.equal(fileHash(path.join(baseRoot, file.path)), file.sha256);
   save("acceptance.json", {
-    source: { head, headTree, associatedHead, executionParents: parents, baseSha, baseTree },
+    source: {
+      head,
+      headTree,
+      associatedHead,
+      executionParents: parents,
+      declaredBaseSha,
+      baseSha,
+      baseTree,
+    },
     images,
     packets,
     registration: {

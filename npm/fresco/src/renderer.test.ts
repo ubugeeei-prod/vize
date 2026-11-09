@@ -322,6 +322,7 @@ test("stops after the current node and reports prevented routed input", () => {
   );
   mounted.unmount();
 });
+
 test("emits every discriminated render variant with canonical payload fields", () => {
   const mounted = mountFresco(() =>
     h("box", { border: "rounded", style: { flex_direction: "row", width: 40, padding_left: 1 } }, [

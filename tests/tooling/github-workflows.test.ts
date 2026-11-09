@@ -190,9 +190,7 @@ test("title policy workflow mutates only issue and PR metadata", () => {
   };
   const steps = parsed.jobs?.["issue-pr-title-policy"]?.steps ?? [];
   const sparseCheckoutIndex = steps.findIndex((step) => step.uses?.startsWith("actions/checkout@"));
-  const rustScriptSetupIndex = steps.findIndex(
-    (step) => step.uses === "./.github/actions/setup-rust-script",
-  );
+  const nodeSetupIndex = steps.findIndex((step) => step.uses?.startsWith("actions/setup-node@"));
   const sparseCheckout = steps[sparseCheckoutIndex]?.with?.["sparse-checkout"];
   const sparseCheckoutEntries =
     sparseCheckout
@@ -206,19 +204,11 @@ test("title policy workflow mutates only issue and PR metadata", () => {
   assert.match(workflow, /pull-requests:\s*write/);
   assert.match(job, /timeout-minutes:\s*5/);
   assert.match(job, /ref:\s*\$\{\{\s*github\.event\.repository\.default_branch\s*\}\}/);
-  assert.deepEqual(sparseCheckoutEntries, [
-    ".github/actions/setup-rust-script",
-    "tools/commands/ci/github/issue-pr-title-policy.rs",
-    "tools/support/Cargo.toml",
-    "tools/support/lib.rs",
-    "tools/support/common.rs",
-    "tools/support/editors",
-    "tools/support/fixtures",
-    "tests/_fixtures/differential/lsp/template-expression-globals-8015/globals.expected.json",
-  ]);
-  assert.match(job, /uses:\s*dtolnay\/rust-toolchain@[0-9a-f]{40}/);
-  assert.match(job, /uses:\s*\.\/\.github\/actions\/setup-rust-script/);
-  assert.match(job, /rust-script tools\/commands\/ci\/github\/issue-pr-title-policy\.rs/);
+  assert.deepEqual(sparseCheckoutEntries, ["tools/commands/ci/github/issue-pr-title-policy.ts"]);
+  assert.match(job, /uses:\s*actions\/setup-node@[0-9a-f]{40}/);
+  assert.match(job, /node-version:\s*"24\.14\.0"/);
+  assert.match(job, /node tools\/commands\/ci\/github\/issue-pr-title-policy\.ts/);
+  assert.doesNotMatch(job, /setup-rust-script|rust-script|rust-toolchain/);
   assert.doesNotMatch(job, /\.github\/actions\/setup-moonbit/);
   assert.doesNotMatch(job, /tools\/moon\/cmd\/github\/issue_pr_title_policy/);
   assert.doesNotMatch(
@@ -228,8 +218,47 @@ test("title policy workflow mutates only issue and PR metadata", () => {
   assert.doesNotMatch(job, /\.github\/scripts\/issue-pr-title-policy\.mjs/);
   assert.doesNotMatch(job, /github\.event\.pull_request\.head/);
   assert.ok(sparseCheckoutIndex >= 0, "title policy must use a sparse checkout");
-  assert.ok(rustScriptSetupIndex >= 0, "title policy must install rust-script");
-  assert.ok(sparseCheckoutIndex < rustScriptSetupIndex);
+  assert.ok(nodeSetupIndex >= 0, "title policy must install stable Node");
+  assert.ok(sparseCheckoutIndex < nodeSetupIndex);
+});
+
+test("canon helper baseline builds the fixed source before checking out the exact reviewed harness", () => {
+  const workflow = parse(
+    readRepoFile(".github", "workflows", "canon-helper-native-baseline.yml"),
+  ) as {
+    jobs?: {
+      baseline?: {
+        steps?: Array<{ name?: string; uses?: string; with?: { ref?: string }; run?: string }>;
+      };
+    };
+  };
+  const steps = workflow.jobs?.baseline?.steps ?? [];
+  const fixedSourceCheckout = steps.findIndex(
+    (step) =>
+      step.uses?.startsWith("actions/checkout@") && /^[0-9a-f]{40}$/.test(step.with?.ref ?? ""),
+  );
+  const sourceBuild = steps.findIndex(
+    (step) => step.name === "Regenerate and verify the fixed normal source image",
+  );
+  const reviewedHarness = steps.findIndex(
+    (step) => step.name === "Check out the reviewed helper harness",
+  );
+
+  assert.ok(fixedSourceCheckout >= 0, "the fixed source checkout must be explicit");
+  assert.ok(fixedSourceCheckout < sourceBuild, "the fixed source must precede its rebuild");
+  assert.ok(
+    sourceBuild < reviewedHarness,
+    "the fixed source rebuild must finish before checkout cleanup",
+  );
+  assert.equal(
+    steps[reviewedHarness]?.with?.ref,
+    "${{ github.event.pull_request.head.sha || github.sha }}",
+  );
+  assert.equal(
+    steps.some((step) => step.run?.includes(".workflow-driver")),
+    false,
+    "the exact reviewed checkout must remain available for every harness command",
+  );
 });
 
 test("App E2E workflow keeps Blacksmith Testbox dispatch hydration separate", () => {

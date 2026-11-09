@@ -107,7 +107,7 @@ const count = 1;
   });
 
   it("compiles the playground app itself to Vapor output", () => {
-    const source = readFileSync(new URL("../src/App.vue", import.meta.url), "utf8");
+    const source = readFileSync(new URL("../src/app.vue", import.meta.url), "utf8");
     const result = compileSfc(source, {
       filename: "/src/App.vue",
       sourceMap: false,
@@ -144,22 +144,22 @@ function render() {
 
   it("emits Vapor template ref setters for DOM refs used by playground components", () => {
     const monacoSource = readFileSync(
-      new URL("../src/shared/MonacoEditor.vue", import.meta.url),
+      new URL("../src/shared/monaco-editor.vue", import.meta.url),
       "utf8",
     );
     const monacoResult = compileSfc(monacoSource, {
-      filename: "/src/shared/MonacoEditor.vue",
+      filename: "/src/shared/monaco-editor.vue",
       sourceMap: false,
       ssr: false,
       vapor: true,
       isTs: true,
     });
     const highlightSource = readFileSync(
-      new URL("../src/shared/CodeHighlight.vue", import.meta.url),
+      new URL("../src/shared/code-highlight.vue", import.meta.url),
       "utf8",
     );
     const highlightResult = compileSfc(highlightSource, {
-      filename: "/src/shared/CodeHighlight.vue",
+      filename: "/src/shared/code-highlight.vue",
       sourceMap: false,
       ssr: false,
       vapor: true,
@@ -174,11 +174,11 @@ function render() {
 
   it("keeps v-for aliases inside Vapor v-html expressions", () => {
     const source = readFileSync(
-      new URL("../src/features/patina/PatinaPlayground.vue", import.meta.url),
+      new URL("../src/features/patina/patina-playground.vue", import.meta.url),
       "utf8",
     );
     const result = compileSfc(source, {
-      filename: "/src/features/patina/PatinaPlayground.vue",
+      filename: "/src/features/patina/patina-playground.vue",
       sourceMap: false,
       ssr: false,
       vapor: true,
@@ -238,11 +238,11 @@ const visible = true;
 
   it("keeps Atelier output tabs reactive even when v-if siblings are present", () => {
     const source = readFileSync(
-      new URL("../src/features/atelier/AtelierPlayground.vue", import.meta.url),
+      new URL("../src/features/atelier/atelier-playground.vue", import.meta.url),
       "utf8",
     );
     const result = compileSfc(source, {
-      filename: "/src/features/atelier/AtelierPlayground.vue",
+      filename: "/src/features/atelier/atelier-playground.vue",
       sourceMap: false,
       ssr: false,
       vapor: true,

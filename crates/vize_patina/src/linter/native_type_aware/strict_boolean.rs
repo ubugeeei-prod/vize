@@ -12,7 +12,7 @@ use oxc_span::SourceType;
 use serde_json::json;
 use vize_atelier_sfc::SfcDescriptor;
 use vize_l0::{String, config::StrictBooleanExpressionsOptions};
-use vize_relief::RootNode;
+use vize_l1::markup::SurfaceTree;
 
 mod queries;
 mod template;
@@ -33,7 +33,7 @@ impl Plan {
 
 pub(super) fn plan(
     descriptor: &SfcDescriptor<'_>,
-    template: Option<(&RootNode<'_>, u32)>,
+    template: Option<(&SurfaceTree<'_>, u32)>,
     document: &mut TypeAwareDocument,
 ) -> Plan {
     let mut conditions = Vec::new();

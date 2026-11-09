@@ -7,7 +7,7 @@ use vize_l2::provenance::ProvenanceSink;
 use super::lane::{RunShape, TextRun};
 use super::{TextAction, TextParts, rebuild_source};
 use crate::lower::cx::Cx;
-use crate::lower::expr::{desc, opaque_at};
+use crate::lower::expr::{desc, filter_expr_at, opaque_at};
 
 /// Record what a run consumed without lowering it, in scan order.
 fn record_consumed(cx: &mut Cx<'_, impl ProvenanceSink>, run: &TextRun<'_>) {
@@ -34,6 +34,7 @@ pub(crate) fn lower_text_run<'a>(
     out: &mut vize_l0::Vec<'a, Op<'a>>,
 ) -> usize {
     let run = cx.text_lane().run(children, plan, start);
+    let end = run.end;
     record_consumed(cx, &run);
     match run.shape {
         RunShape::Dropped => {}
@@ -112,6 +113,18 @@ pub(crate) fn lower_text_run<'a>(
                     &cx.allocator,
                 )));
             } else {
+                // The compiler lanes never consume the compatibility ASTs.
+                // Retain them only for the comment-preserving lint lowering;
+                // otherwise every mixed run would parse each expression a
+                // second time after the compound representation is built.
+                if cx.preserve_comments() {
+                    for child in children.get(start..end).unwrap_or_default() {
+                        if let SurfaceChild::Interpolation(interpolation) = child {
+                            let expression = filter_expr_at(cx, interpolation.content.text);
+                            cx.consumed_expressions.push(expression);
+                        }
+                    }
+                }
                 // A mixed run is the compound representation: one
                 // `ui.interpolation` under the pessimal opaque laws, parts
                 // recorded beside the tree for the pass to validate and P2-11
@@ -147,5 +160,5 @@ pub(crate) fn lower_text_run<'a>(
             }
         }
     }
-    run.end
+    end
 }

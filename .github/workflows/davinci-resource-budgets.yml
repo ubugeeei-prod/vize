@@ -129,7 +129,6 @@ jobs:
         with:
           key: davinci-resident-resource
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
-      - uses: ./.github/actions/setup-rust-script
       - name: Build the isolated resident session
         run: >-
           cargo build --profile ci-opt -p vize_incremental --example resource_session
@@ -138,7 +137,7 @@ jobs:
           --config 'profile.ci-opt.codegen-units=16'
       - name: Measure and enforce the unchanged reference RSS ceilings
         run: >-
-          rust-script tools/commands/davinci/resident-resources.rs
+          node tools/commands/davinci/resident-resources.ts
           --server target/ci-opt/examples/resource_session --files 10000 --edits 32
           --runs 3 --out "${RUNNER_TEMP}/resident-resource.json"
       - name: Summarize the isolated session

@@ -3,7 +3,7 @@ import { test } from "node:test";
 
 import { readRepoFile } from "./support/github-workflows.ts";
 
-test("CI packages editor extension artifacts through Rust Script wrappers", () => {
+test("CI packages editor extension artifacts through Node guards", () => {
   const packageAction = readRepoFile(
     ".github",
     "actions",
@@ -40,7 +40,7 @@ test("CI packages editor extension artifacts through Rust Script wrappers", () =
     const escapedWrapper = wrapper.replaceAll("/", "\\/");
     assert.match(
       buildTasks,
-      new RegExp(`package:${task}-extension[\\s\\S]*rustTool\\("${escapedWrapper}`),
+      new RegExp(`package:${task}-extension[\\s\\S]*nodeCommand\\("${escapedWrapper}`),
     );
     assert.match(
       buildTasks,

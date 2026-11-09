@@ -15,6 +15,7 @@ on:
       - tests/_fixtures/differential/typechecker/windows-verbatim-overlay-11145/input.json
       - .github/workflows/lsp-overlay-custody.yml
       - .github/actions/lsp-overlay-custody/**
+      - .github/actions/setup-rust-sticky-cache/**
       - tests/tooling/lsp-overlay-custody-workflow.test.ts
       - tests/package.json
       - pnpm-workspace.yaml
@@ -75,6 +76,10 @@ jobs:
       - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
         if: runner.os == 'Linux'
         with: { wild-version: "0.9.0" }
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          key: lsp-overlay-custody
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
       - name: Select the exact locked platform native provider
         env:
           EXPECTED_SOURCE: ${{ github.event.pull_request.head.sha }}

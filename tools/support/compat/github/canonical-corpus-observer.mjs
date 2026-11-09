@@ -10,7 +10,7 @@ import {
   expectedOldErrorSkips,
   parseCorpusEvidence,
   validateCorpusEvidence,
-} from "../fixtures/davinci-dom-corpus-workflow.mjs";
+} from "../fixtures/davinci-dom-corpus-workflow.ts";
 import {
   artifactRoot,
   captureCorpus,

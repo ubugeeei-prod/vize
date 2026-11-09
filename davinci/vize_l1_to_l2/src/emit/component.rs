@@ -22,13 +22,13 @@ use super::children::children_need_text_flag;
 use super::create_slots;
 use super::directive;
 use super::flag::emit_patch_flag;
-use super::js::asset_ident;
 use super::patch::{apply_static_ref_patch, prune_legacy_patchless_dynamic_props};
 use super::props::{BindPropsOptions, emit_bind_props};
 use super::props_dynamic::emit_dynamic_props;
 use super::props_static;
 use super::props_static::PropHoistPosition as Position;
 use super::slots;
+use vize_l2::op::vue::asset_identifier;
 
 pub(super) use entry::{
     emit_for_item, emit_fragment_root, emit_if_branch, emit_nested, emit_once, emit_root,
@@ -88,7 +88,7 @@ pub(super) fn emit_call(
     } else if binding::push_tag(cx, component.name) {
     } else {
         cx.buf
-            .push(asset_ident("component", component.name).as_str());
+            .push(asset_identifier("component", component.name).as_str());
     }
     let skip_is = builtin::is_dynamic_component(component, cx.source);
     let has_binds = has_rendered_binds(component, skip_is);

@@ -24,6 +24,7 @@ pub use module_exports::{
 };
 pub use occurrences::{
     analyze_sfc_descriptor_with_lint_template_and_occurrences,
+    analyze_sfc_descriptor_with_lint_template_and_occurrences_resolved,
     analyze_sfc_descriptor_with_occurrences,
     analyze_sfc_descriptor_with_occurrences_and_template_reuse,
 };
@@ -210,6 +211,55 @@ pub fn analyze_sfc_descriptor_with_lint_template(
         DescriptorObservation::default(),
     )
     .croquis
+}
+
+/// Analyze a lint descriptor from its completed Davinci template artifact,
+/// resolving imported macro types before the template is drawn.
+#[doc(hidden)]
+pub fn analyze_sfc_descriptor_with_lint_template_resolved(
+    scripts: &SfcScriptParses<'_>,
+    template: Option<LintTemplate<'_, '_>>,
+    options: SfcCroquisOptions,
+    filename: &str,
+) -> Croquis {
+    analyze_sfc_descriptor_resolved_impl::<false>(
+        scripts,
+        template,
+        options,
+        DescriptorAnalysisMode {
+            options_api: false,
+            legacy_vue2: false,
+            include_script_content: false,
+        },
+        Some(filename),
+        None,
+        DescriptorObservation::default(),
+    )
+    .croquis
+}
+
+/// Analyze a descriptor from its completed Davinci template artifact and
+/// return matching merged-script offsets for virtual-document generation.
+#[doc(hidden)]
+pub fn analyze_sfc_descriptor_with_lint_template_context(
+    scripts: &SfcScriptParses<'_>,
+    template: Option<LintTemplate<'_, '_>>,
+    options: SfcCroquisOptions,
+    options_api: bool,
+) -> SfcCroquisAnalysis {
+    analyze_sfc_descriptor_resolved_impl::<false>(
+        scripts,
+        template,
+        options,
+        DescriptorAnalysisMode {
+            options_api,
+            legacy_vue2: false,
+            include_script_content: true,
+        },
+        None,
+        None,
+        DescriptorObservation::default(),
+    )
 }
 
 /// Analyze an SFC descriptor and return matching script content/offset metadata.
