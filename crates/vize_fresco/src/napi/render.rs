@@ -170,6 +170,7 @@ pub fn render_tree(nodes: Vec<RenderNodeNapi>) -> Result<()> {
             // Set flex style (start from existing style to preserve text/input sizes)
             if let Some(ref style) = node.style {
                 let mut flex_style = render_node.style.clone();
+                render_node.z_index = style.z_index.unwrap_or_default();
 
                 // Display
                 if let Some(ref display) = style.display {
