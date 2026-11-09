@@ -1,0 +1,98 @@
+{
+  "compiler": {
+    "@tsrx/core": "0.5.5",
+    "@tsrx/vue": "0.3.5"
+  },
+  "rows": [
+    {
+      "file": "tests/_fixtures/tsrx/code-blocks.tsrx",
+      "code": "import { defineVaporComponent } from 'vue-jsx-vapor';\n\nexport const Greeting = defineVaporComponent(({ name }: { name?: string }) => {\n\tconst message = name ? `Hello, ${name}` : 'Hello, stranger';\n\n\treturn <div class=\"greeting\"><p>{message}</p></div>;\n});\n\nexport const Guarded = defineVaporComponent(function Guarded({ user }: { user: { name: string } | null }) {\n\tif (!user) {\n\t\treturn null;\n\t}\n\n\treturn <><h1>{user.name}</h1>{(() => {\n\t\t\tconst initial = user.name.slice(0, 1);\n\n\t\t\treturn <span>{initial}</span>;\n\t\t})()}</>;\n});\n\nexport const Rows = defineVaporComponent(function Rows({ rows }: { rows: string[] }) {\n\treturn <table>{rows.map((row) => {\n\t\t\tconst upper = row.toUpperCase();\n\n\t\t\treturn <tr key={row}><td>{upper}</td></tr>;\n\t\t})}</table>;\n});",
+      "error": null
+    },
+    {
+      "file": "tests/_fixtures/tsrx/components.tsrx",
+      "code": "import { defineVaporComponent } from 'vue-jsx-vapor';\n\nconst Badge = defineVaporComponent(function Badge({ text }: { text: string }) {\n\treturn <span class=\"badge\">{text}</span>;\n});\n\nconst Section = defineVaporComponent(function Section({ as, title }: { as: 'section' | 'article'; title: string }) {\n\treturn <>{(() => {\n\t\t\tconst TsrxDynamic_1 = as;\n\n\t\t\treturn <TsrxDynamic_1 class=\"panel\"><h2>{title}</h2><Badge text={title} /></TsrxDynamic_1>;\n\t\t})()}</>;\n});\n\nexport const App = defineVaporComponent(function App({ title }: { title: string }) {\n\tconst Body = title.length > 3 ? Section : Badge;\n\n\treturn <main><Section as=\"article\" title={title} /><>{(() => {\n\t\t\t\tconst TsrxDynamic_2 = Body;\n\n\t\t\t\treturn <TsrxDynamic_2 as=\"section\" title={title} text={title} />;\n\t\t\t})()}</></main>;\n});",
+      "error": null
+    },
+    {
+      "file": "tests/_fixtures/tsrx/control-flow.tsrx",
+      "code": "import { defineVaporComponent, VaporFor } from 'vue-jsx-vapor';\n\nconst Status__static1 = <p>none</p>;\nconst Status__static2 = <p>some</p>;\nconst Status__static3 = <p>many</p>;\nconst Status__static4 = <li>empty</li>;\n\nexport const Status = defineVaporComponent(function Status(\n\t{ count, items, mode }: { \n\t\tcount: number;\n\t\titems: { id: number; text: string }[];\n\t\tmode: string\n\t }\n) {\n\treturn <section>{count > 2\n\t\t\t? Status__static3\n\t\t\t: count > 0 ? Status__static2 : Status__static1}<ul>{items.length === 0\n\t\t\t\t? (() => {\n\t\t\t\t\treturn Status__static4;\n\t\t\t\t})()\n\t\t\t\t: items.map((item, i) => {\n\t\t\t\t\treturn <li key={item.id}>{i}: {item.text}</li>;\n\t\t\t\t})}</ul><ol>{<VaporFor in={items}>{(item) => <li>{item.text}</li>}</VaporFor>}</ol>{(() => {\n\t\t\tswitch (mode) {\n\t\t\t\tcase 'a':\n\t\t\t\t\treturn <b>a</b>;\n\n\t\t\t\tcase 'b':\n\t\t\t\t\treturn <i>b</i>;\n\n\t\t\t\tdefault:\n\t\t\t\t\treturn <u>other</u>;\n\t\t\t}\n\n\t\t\treturn null;\n\t\t})()}</section>;\n});",
+      "error": null
+    },
+    {
+      "file": "tests/_fixtures/tsrx/elements.tsrx",
+      "code": "import {\n\tnormalize_spread_props_for_ref_attr as __normalize_spread_props_for_ref_attr\n} from '@tsrx/vue/ref';\n\nimport { defineVaporComponent } from 'vue-jsx-vapor';\n\nexport const Card = defineVaporComponent(function Card(\n\t{ title, id, attrs }: { title: string; id: string; attrs: Record<string, string> }\n) {\n\tconst label = title.trim();\n\tlet Card__spread_props1 = __normalize_spread_props_for_ref_attr(attrs);\n\n\treturn <article class=\"card\" data-id={id} {...Card__spread_props1} ref={Card__spread_props1?.ref}><h2 id={id}>{label}</h2><p>\n\t\t\tPlain text &amp; an entity, then {label.length} characters.\n\t\t</p><><span>one</span><span>two</span></><input type=\"text\" disabled value={label} /></article>;\n});",
+      "error": null
+    },
+    {
+      "file": "tests/_fixtures/tsrx/errors/break-in-switch.tsrx",
+      "code": null,
+      "error": {
+        "code": "TSRX2008",
+        "start": 88,
+        "end": null,
+        "message": "`break` is invalid inside `@switch` cases. (4:3)"
+      }
+    },
+    {
+      "file": "tests/_fixtures/tsrx/errors/dynamic-tag-expression.tsrx",
+      "code": null,
+      "error": {
+        "code": "TSRX2014",
+        "start": 65,
+        "end": 71,
+        "message": "A dynamic tag expression must be an identifier, a member access such as `props.as` or `registry[name]`, or a string literal. Compute anything else before the element: `const Tag = c ? Child : Fallback;`, then `<{Tag} />`."
+      }
+    },
+    {
+      "file": "tests/_fixtures/tsrx/errors/mismatched-closing-tag.tsrx",
+      "code": null,
+      "error": {
+        "code": "TSRX1002",
+        "start": 34,
+        "end": null,
+        "message": "Expected closing tag to match opening tag. Expected '</div>' but found '</span>' (2:6)"
+      }
+    },
+    {
+      "file": "tests/_fixtures/tsrx/errors/multiple-outputs.tsrx",
+      "code": null,
+      "error": {
+        "code": "TSRX2011",
+        "start": 38,
+        "end": 43,
+        "message": "A code block renders a single node; wrap multiple nodes or text in a fragment '<>…</>'."
+      }
+    },
+    {
+      "file": "tests/_fixtures/tsrx/errors/return-in-if.tsrx",
+      "code": null,
+      "error": {
+        "code": "TSRX2002",
+        "start": 83,
+        "end": 95,
+        "message": "Return statements are not allowed inside TSRX template @if blocks. Move the return before the template output or render conditionally instead."
+      }
+    },
+    {
+      "file": "tests/_fixtures/tsrx/errors/statement-after-output.tsrx",
+      "code": null,
+      "error": {
+        "code": "TSRX2012",
+        "start": 38,
+        "end": 53,
+        "message": "Code must be at the top of '@{ }'; statements cannot follow the rendered output."
+      }
+    },
+    {
+      "file": "tests/_fixtures/tsrx/errors/unclosed-tag.tsrx",
+      "code": null,
+      "error": {
+        "code": "TSRX1001",
+        "start": 35,
+        "end": null,
+        "message": "Unclosed tag '<div>'. Expected '</div>' before end of template. (3:0)"
+      }
+    }
+  ]
+}
