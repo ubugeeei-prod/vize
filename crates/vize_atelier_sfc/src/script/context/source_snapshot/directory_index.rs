@@ -9,12 +9,12 @@
 //! On Linux, `realpath(dir/name)` is `realpath(dir)/name` whenever `name` is
 //! no link, since glibc keeps every spelled name. What `lstat` reports
 //! therefore answers a candidate (a request's snapshot asks it of an
-//! `O_PATH | O_NOFOLLOW` handle it holds for the file's read). A directory
-//! is listed only once it has answered [`PROBES_BEFORE_LISTING`] probes: an
-//! editor's lone transform probes a directory two or three times, a host
-//! burst hundreds of times. macOS respells names in their on-disk case and
-//! Windows canonicalizes through a handle, so those systems list each
-//! directory's regular files on the first probe.
+//! `O_PATH | O_NOFOLLOW` handle it holds for the file's read). A request's
+//! snapshot lists a directory only once it has answered four probes: an
+//! editor's lone transform probes a directory two or three times. Other
+//! snapshots, and every snapshot on macOS (which respells names in their
+//! on-disk case) and Windows (which canonicalizes through a handle), list a
+//! directory's regular files on its first probe.
 
 use std::ffi::{OsStr, OsString};
 use std::path::{Path, PathBuf};
@@ -28,8 +28,9 @@ use super::TypeSourceSnapshot;
 /// file is cheaper than reading a large package store to answer it.
 const MAX_INDEXED_ENTRIES: usize = 4096;
 
-/// Probes a directory answers with one `O_PATH` open each before it is
-/// listed: a listing costs an open, a `fstat`, two `getdents64` and a close.
+/// Probes a request's snapshot answers in a directory with one `O_PATH` open
+/// each before it lists the directory: a listing costs an open, a `fstat`,
+/// two `getdents64` and a close.
 #[cfg(target_os = "linux")]
 const PROBES_BEFORE_LISTING: u32 = 4;
 
@@ -151,10 +152,11 @@ impl TypeSourceSnapshot {
     ///
     /// `realpath` resolves the parent spelling, `..` included, and appends the
     /// entry's on-disk name, following the entry when it is a link. An exact
-    /// listed regular-file name is that on-disk name and no link. Anything
-    /// else (a link, a case-insensitive match, a file created after the
-    /// listing, an unreadable or very large directory) is `Unknown` outside
-    /// Linux, and the caller canonicalizes the full path as before.
+    /// listed regular-file name is that on-disk name and no link, and so is a
+    /// name Linux `lstat` reports as a regular file. Anything else (a link, a
+    /// case-insensitive match, a file created after the listing outside Linux,
+    /// an unreadable or very large directory) is `Unknown`, and the caller
+    /// canonicalizes the full path as before.
     pub(super) fn probe_candidate(&self, candidate: &Path) -> Probe {
         let (Some(name), Some(directory)) = (candidate.file_name(), candidate.parent()) else {
             return Probe::Unknown;
