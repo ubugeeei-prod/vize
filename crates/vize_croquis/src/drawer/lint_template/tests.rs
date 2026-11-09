@@ -105,14 +105,7 @@ fn l1_l2_entity_decoding_respects_attribute_and_text_contexts() {
     let expected_attribute = vize_l1_to_l2::emit::decode_html_attribute_entities("&copy=1");
     let expected_text = vize_l1_to_l2::emit::decode_html_entities("&amp");
 
-    let root = CompatibilityRoot::new(LintTemplate::new(
-        &surface,
-        lowered.allocator,
-        &lowered.root,
-        &lowered.consumed_expressions,
-        lowered.caps.scoped_slot_attrs,
-    ))
-    .build();
+    let root = CompatibilityRoot::new(lint_template(&surface, &lowered)).build();
     let TemplateChildNode::Element(element) = &root.children[0] else {
         panic!("compatibility element")
     };
@@ -139,14 +132,7 @@ fn l1_l2_text_decoding_preserves_escaped_numeric_parentheses() {
     let (surface, errors) = vize_l1::markup::parse(&allocator, source);
     assert!(errors.is_empty());
     let lowered = lower_preserving_comments(&allocator, &surface, &errors);
-    let root = CompatibilityRoot::new(LintTemplate::new(
-        &surface,
-        lowered.allocator,
-        &lowered.root,
-        &lowered.consumed_expressions,
-        lowered.caps.scoped_slot_attrs,
-    ))
-    .build();
+    let root = CompatibilityRoot::new(lint_template(&surface, &lowered)).build();
     let TemplateChildNode::Element(element) = &root.children[0] else {
         panic!("compatibility element")
     };

@@ -3,7 +3,7 @@
 use memchr::memchr;
 use oxc_allocator::CloneIn;
 use oxc_ast_visit::VisitMut;
-use vize_l0::{Box, Span, String};
+use vize_l0::{Box, Span};
 use vize_l1::markup::directive::{DirectivePrefix, DirectiveSyntax, VueDirectives};
 use vize_l1::markup::entity::{EntityContext, decode_one};
 use vize_l1::markup::{AttrValue, Attribute, Element, Token};
