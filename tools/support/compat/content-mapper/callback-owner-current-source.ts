@@ -12,6 +12,7 @@ import { certifyComponentConstructorTransition } from "./component-constructor-t
 import { certifyComponentExportTransition } from "./component-export-transition.ts";
 import { beforeDiscriminatedJsxUnion } from "./discriminated-jsx-union-transition.ts";
 import { beforeCanonLeftovers, beforeStrictExtraKeys } from "./strict-extra-keys-transition.ts";
+import { certifiedHelperImages, withLandedEdits } from "./callback-owner-landed-contracts.ts";
 
 export type CallbackSourceReader = (path: string) => string;
 type Edit = { start: number; end: number; replacement: Buffer };
@@ -448,13 +449,12 @@ export function currentCallbackSourceEdits(
   }
   assert.equal(Buffer.byteLength(previousHelper), transition.file.before.bytes);
   assert.equal(digest(previousHelper), transition.file.before.sha256);
-  const helperVariants = [
+  const helperVariants = certifiedHelperImages(componentHelperSource, currentHelper, [
     previousHelper,
     integratedHelper,
     strictExtraKeysPredecessor,
     canonLeftoversPredecessor,
-    currentHelper,
-  ];
+  ]);
   assert.equal(new Set(helperVariants).size, helperVariants.length);
   const helperCounts = [before, after].map((text) =>
     helperVariants.map((helper) => text.split(helper).length - 1),
@@ -625,5 +625,5 @@ export function currentCallbackSourceEdits(
       add(match.index, match[0].length, replacements[0]!);
     }
   }
-  return { edits, addedMappings };
+  return { edits: withLandedEdits(before, after, edits), addedMappings };
 }
