@@ -63,6 +63,28 @@ test("patches props and text reactively without remounting", async () => {
   mounted.unmount();
 });
 
+test("looks up the live host associated with one logical focus ID", async () => {
+  const focusId = ref("first");
+  const mounted = mountFresco(() =>
+    h("box", [
+      h("text", { focusId: focusId.value, text: "target" }),
+      h("text", { focusId: "second", text: "sibling" }),
+    ]),
+  );
+  const root = firstChild(mounted);
+  const target = root.children[0];
+  assert.ok(target);
+
+  assert.equal(mounted.renderer.findNodeByFocusId(root, "first"), target);
+  assert.equal(mounted.renderer.findNodeByFocusId(target, "second"), undefined);
+
+  focusId.value = "renamed";
+  await nextTick();
+  assert.equal(mounted.renderer.findNodeByFocusId(root, "first"), undefined);
+  assert.equal(mounted.renderer.findNodeByFocusId(root, "renamed"), target);
+  mounted.unmount();
+});
+
 test("reports only host-tree mutations as native frame work", async () => {
   const message = ref("first");
   let mutations = 0;
