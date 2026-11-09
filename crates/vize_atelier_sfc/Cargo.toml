@@ -20,24 +20,16 @@ legacy-differential = [
   "vize_atelier_core/legacy-differential",
   "vize_atelier_vapor/legacy-differential",
 ]
-# Deprecated published feature spelling; keep as a compatibility alias.
-davinci-differential = ["legacy-differential"]
 # Arms only the DOM legacy-lane override (P3-17) so the production-reach
 # gate can compile every `compile_sfc` shape on both DOM lanes and compare
 # the complete modules, without the P1-7 retained-AST dual-run panics.
 legacy-dom-differential = ["vize_atelier_dom/legacy-differential"]
-# Deprecated published feature spelling; keep as a compatibility alias.
-davinci-dom-differential = ["legacy-dom-differential"]
 # Controlled selected/retained adapter comparisons, without the retained-AST
 # differential dual-run instrumentation used by semantic corpus tests.
 davinci-production-bench = [
   "legacy-dom-differential",
-  # Published name of the line above. cargo-semver-checks requires the alias
-  # itself to stay enabled (0.429.1 turned this feature on by that name).
-  "davinci-dom-differential",
   "vize_atelier_vapor/davinci-benchmark",
   "vize_atelier_ssr/legacy-differential",
-  "vize_atelier_ssr/davinci-differential",
 ]
 # Separate attribution executable; detailed spans are absent from timed pairs.
 davinci-production-profile = [
