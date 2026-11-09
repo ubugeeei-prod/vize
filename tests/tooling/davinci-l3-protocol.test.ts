@@ -84,7 +84,7 @@ test("all active generated formal graph fixtures use the current protocol and kn
       const opcodes = [...entry.graph.matchAll(/kind=(l3\.[a-z-]+)/gu)].map((match) => match[1]);
       assert.ok(opcodes.length > 0);
       for (const opcode of opcodes) assert.ok(names.has(opcode), opcode);
-      assert.ok(!entry.graph.includes("impeto."));
+      assert.ok(!entry.graph.includes("impeto.")); // the old codename op prefix
       cases += 1;
     }
   }

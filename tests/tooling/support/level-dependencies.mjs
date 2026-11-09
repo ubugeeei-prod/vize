@@ -6,10 +6,12 @@ import {
 } from "../../../tools/support/compat/davinci/level-dependencies.ts";
 
 const revision = "f59e69c38ecbead394ba30f0fdacb5f9c1b9fd04";
+/** The L3 package's published name before the level crates took level names. */
+export const oldL3Package = "vize_impeto"; // codename alias
 export function fixture() {
   const names = [
     "vize_carton",
-    "vize_impeto",
+    oldL3Package,
     "vize_davinci",
     "vize_l1",
     "vize_l2",
@@ -58,11 +60,11 @@ export function fixture() {
   add("vize_l1", "vize_relief");
   add("vize_armature", "vize_relief");
   add("vize_l2", "vize_davinci");
-  add("vize_impeto", "vize_carton", { rename: "vize_l0" });
+  add(oldL3Package, "vize_carton", { rename: "vize_l0" });
   add("vize_l1_to_l2", "vize_l1");
   add("vize_l1_to_l2", "vize_relief");
   add("vize_l2_to_l3", "vize_l2");
-  add("vize_l2_to_l3", "vize_impeto", { rename: "vize_l3" });
+  add("vize_l2_to_l3", oldL3Package, { rename: "vize_l3" });
   const policy = {
     schema: "vize.level-dependency-allowlist",
     version: 1,
