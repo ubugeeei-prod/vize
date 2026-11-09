@@ -103,6 +103,7 @@ export default defineConfig({
         generateOgImage: false,
         theme: defineTheme({
           extends: defaultTheme,
+          aside: true,
 
           colors: {
             primary: "#121212",

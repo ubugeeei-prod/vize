@@ -36,6 +36,11 @@ export async function verifyTocPointerLayer(page: Page, device: string, output: 
   page.on("pageerror", onError);
   const viewport = page.viewportSize();
   assert(viewport);
+  await Promise.all(
+    [".main", ".toc", ".header", ".sidebar"].map((selector) =>
+      page.locator(selector).waitFor({ state: "attached" }),
+    ),
+  );
   const original = await page.evaluate(() => ({
     url: location.href,
     x: scrollX,
@@ -142,6 +147,7 @@ export async function verifyTocPointerLayer(page: Page, device: string, output: 
       await sidebar.waitFor({ state: "visible" });
       assert.equal(await toc.isVisible(), false, "Hidden outline cannot overlay the mobile drawer");
       const link = sidebar.locator("a[href]:visible").first();
+      await link.scrollIntoViewIfNeeded();
       const geometry = await pointerGeometry(link);
       assert(
         geometry.points.every((point) => point.owned),
