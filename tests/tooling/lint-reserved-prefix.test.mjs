@@ -92,7 +92,7 @@ await test("exact reserved membership and groups preserve complete CLI packets",
   );
   assert.equal(
     companions.cases.reduce((count, entry) => count + entry.diagnostics.length, 0),
-    62,
+    63,
   );
   for (const entry of corpus.cases) {
     const companion = companionPackets.get(entry.id);

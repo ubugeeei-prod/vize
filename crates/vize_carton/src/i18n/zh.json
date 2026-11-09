@@ -274,7 +274,7 @@
   "a11y/no-role-presentation-on-focusable.help": "删除role属性或使元素不可聚焦。presentation角色在元素仍可聚焦的情况下删除了语义含义",
   "a11y/aria-unsupported-elements.description": "禁止在不支持的元素上使用ARIA属性",
   "a11y/aria-unsupported-elements.message": "<{tag}>不支持'{attr}'属性",
-  "a11y/aria-unsupported-elements.help": "删除ARIA属性或role。保留的HTML元素不在无障碍树中，不支持ARIA",
+  "a11y/aria-unsupported-elements.help": "删除ARIA属性或role。<meta>、<html>、<script>和<style>等元素不会渲染，不支持ARIA",
   "a11y/no-redundant-roles.description": "禁止冗余的ARIA角色",
   "a11y/no-redundant-roles.message": "<{tag}>具有隐式角色'{role}'。role属性是冗余的",
   "a11y/no-redundant-roles.help": "删除冗余的role属性。该元素通过HTML语义已经隐式具有此角色",

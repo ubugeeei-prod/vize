@@ -15,7 +15,7 @@ const { lines, kind, selected, linked, marks } = defineProps<{
 }>();
 
 const emit = defineEmits<{
-  hover: [number | null];
+  highlight: [number | null];
   select: [number | null];
 }>();
 
@@ -54,10 +54,10 @@ function toggle(index: number) {
         :data-line="line.index"
         :aria-pressed="selected === line.index"
         :title="spanTitle(line)"
-        @mouseenter="() => emit('hover', line.index)"
-        @focus="() => emit('hover', line.index)"
-        @mouseleave="() => emit('hover', null)"
-        @blur="() => emit('hover', null)"
+        @mouseenter="() => emit('highlight', line.index)"
+        @focus="() => emit('highlight', line.index)"
+        @mouseleave="() => emit('highlight', null)"
+        @blur="() => emit('highlight', null)"
         @click="() => toggle(line.index)"
         @keydown.enter.prevent="() => toggle(line.index)"
         @keydown.space.prevent="() => toggle(line.index)"

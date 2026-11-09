@@ -274,7 +274,7 @@
   "a11y/no-role-presentation-on-focusable.help": "Remove the role attribute or make the element non-focusable. Presentation role removes semantic meaning while the element remains focusable",
   "a11y/aria-unsupported-elements.description": "Disallow ARIA attributes on elements that do not support them",
   "a11y/aria-unsupported-elements.message": "<{tag}> does not support the '{attr}' attribute",
-  "a11y/aria-unsupported-elements.help": "Remove the ARIA attribute or role. Reserved HTML elements are outside the accessibility tree and do not support ARIA",
+  "a11y/aria-unsupported-elements.help": "Remove the ARIA attribute or role. Elements like <meta>, <html>, <script>, and <style> are not rendered and do not support ARIA",
   "a11y/no-redundant-roles.description": "Disallow redundant ARIA roles",
   "a11y/no-redundant-roles.message": "<{tag}> has an implicit role of '{role}'. The role attribute is redundant",
   "a11y/no-redundant-roles.help": "Remove the redundant role attribute. The element already has this role implicitly through its HTML semantics",
