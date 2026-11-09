@@ -81,7 +81,7 @@ describe("buildLadder", () => {
       {
         id: "l2",
         ordinal: "L2",
-        name: "Disegno",
+        name: "Semantic",
         facts: ["2 ops", "1 pass"],
         pages: [
           { key: "l2/lower", kind: "disegno", label: "Lowered" },
@@ -91,7 +91,7 @@ describe("buildLadder", () => {
       {
         id: "l3",
         ordinal: "L3",
-        name: "Impeto",
+        name: "Reactivity",
         facts: ["2 ops", "1 dynamic"],
         pages: [
           { key: "l3/lower", kind: "impeto", label: "Graph" },

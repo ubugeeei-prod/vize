@@ -3,8 +3,7 @@
 //! **Experimental:** the lowering API may change in any alpha release; record
 //! intentional breaking changes in the release notes.
 //!
-//! A *ricalco* is the tracing that transfers a drawing onto a new
-//! surface. This crate traces the lossless Vue surface tree (L1,
+//! This crate traces the lossless Vue surface tree (L1,
 //! [`vize_l1`]) into the neutral semantic op family (L2,
 //! [`vize_l2`]): [`lower`] is a **total function** — every input
 //! yields L2 ops and/or [`Diagnostic`]s, never a panic and never a
