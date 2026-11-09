@@ -96,7 +96,7 @@ fn echoed_assignment_keeps_only_its_name_visible() {
 fn literal_owners_alone_take_the_owned_form() {
     // A later spread keeps the assignment as the owner (#10069), and so does
     // an ARIA entry; neither literal entry checks the value.
-    for (source, statement) in [
+    for (source, statement, aria_plain) in [
         (
             APP.replace("'./Field.vue'", "'./Field.vue'\nconst rest = {}")
                 .replace(
@@ -104,10 +104,12 @@ fn literal_owners_alone_take_the_owned_form() {
                     ":maxlength=\"{}\" v-bind=\"rest\" />",
                 ),
             PLAIN,
+            0,
         ),
         (
             APP.replace(":maxlength=", ":aria-busy=\"1\" :maxlength="),
             OWNED,
+            1,
         ),
     ] {
         let result = generate_vue_content_mapper_transform(Path::new("/project/App.vue"), &source)
@@ -133,7 +135,7 @@ fn literal_owners_alone_take_the_owned_form() {
         assert_eq!(
             text.matches("  const __vize_prop_check_0_aria_busy: __Field_0_prop_aria_busy = 1;\n")
                 .count(),
-            usize::from(source.contains("aria-busy")),
+            aria_plain,
             "ARIA keeps the plain owner"
         );
     }
