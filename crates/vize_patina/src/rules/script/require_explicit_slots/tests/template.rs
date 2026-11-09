@@ -268,6 +268,20 @@ defineSlots<Slots>();
 }
 
 #[test]
+fn an_imported_slot_type_is_not_treated_as_an_empty_declaration() {
+    let sfc = r#"<script setup lang="ts">
+import type { CardSlots } from './slots';
+defineSlots<CardSlots>();
+</script>
+
+<template>
+  <article><slot /><slot name="footer" /></article>
+</template>
+"#;
+    assert_eq!(findings(&lint_sfc(sfc)), none());
+}
+
+#[test]
 fn an_interface_in_the_normal_script_contributes_slots_to_script_setup() {
     let sfc = r#"<script lang="ts">
 export interface Slots<T = unknown> {

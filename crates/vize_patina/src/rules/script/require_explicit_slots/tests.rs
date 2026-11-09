@@ -121,13 +121,10 @@ fn tsx_sfc_is_outside_the_upstream_rule_surface() {
 }
 
 #[test]
-fn unresolved_slot_type_contributes_no_known_names() {
+fn unresolved_slot_type_is_skipped_conservatively() {
     let sfc = "<template><slot name=\"menu\" /></template><script setup lang=\"ts\">defineSlots<ImportedSlots>()</script>";
     let result = lint_sfc(sfc);
-    assert_eq!(
-        owned(&result),
-        vec![undeclared(sfc, "<slot name=\"menu\" />", "menu")]
-    );
+    assert!(owned(&result).is_empty());
 }
 
 #[test]
