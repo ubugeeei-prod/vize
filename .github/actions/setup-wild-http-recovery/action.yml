@@ -44,4 +44,6 @@ runs:
           fi
         done
       shell: bash
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
       if: ${{ runner.os == 'Linux' && runner.arch == 'X64' && inputs.wild-version == '0.9.0' && inputs.download-retries == '5' }}
