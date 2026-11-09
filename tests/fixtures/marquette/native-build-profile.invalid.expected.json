@@ -1,0 +1,67 @@
+[
+  {
+    "code": "invalid-capability-id",
+    "path": "capabilities.1",
+    "message": "capability id must be a lowercase portable identifier"
+  },
+  {
+    "code": "duplicate-capability",
+    "path": "capabilities.2",
+    "message": "capability id must be unique within the native build profile"
+  },
+  {
+    "code": "invalid-environment-id",
+    "path": "environment",
+    "message": "environment must be a lowercase portable identifier"
+  },
+  {
+    "code": "invalid-format",
+    "path": "format",
+    "message": "unsupported native build profile format"
+  },
+  {
+    "code": "invalid-format-version",
+    "path": "formatVersion",
+    "message": "unsupported native build profile format version"
+  },
+  {
+    "code": "invalid-profile-id",
+    "path": "profile",
+    "message": "profile must be a lowercase portable identifier"
+  },
+  {
+    "code": "store-requires-production",
+    "path": "targets.0",
+    "message": "store targets require the production configuration"
+  },
+  {
+    "code": "store-requires-signing",
+    "path": "targets.0.signing",
+    "message": "store targets require automatic or manual signing"
+  },
+  {
+    "code": "duplicate-target",
+    "path": "targets.1",
+    "message": "platform and destination must be unique within the native build profile"
+  },
+  {
+    "code": "store-requires-production",
+    "path": "targets.1",
+    "message": "store targets require the production configuration"
+  },
+  {
+    "code": "store-requires-signing",
+    "path": "targets.1.signing",
+    "message": "store targets require automatic or manual signing"
+  },
+  {
+    "code": "invalid-update-channel",
+    "path": "updates.channel",
+    "message": "update channel must be a lowercase portable identifier"
+  },
+  {
+    "code": "invalid-runtime-version",
+    "path": "updates.runtimeVersion",
+    "message": "runtime version must be a portable non-empty version token"
+  }
+]

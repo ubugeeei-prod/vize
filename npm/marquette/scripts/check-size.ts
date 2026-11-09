@@ -16,6 +16,16 @@ const budgets = [
     file: "dist/validate.mjs",
     maximumGzipBytes: 3072,
   },
+  {
+    entry: "@vizejs/marquette/native-build",
+    file: "dist/native-build.mjs",
+    maximumGzipBytes: 1024,
+  },
+  {
+    entry: "@vizejs/marquette/native-build/validate",
+    file: "dist/native-build-validate.mjs",
+    maximumGzipBytes: 3072,
+  },
   { entry: "@vizejs/marquette/test-run", file: "dist/test-run.mjs", maximumGzipBytes: 1024 },
   {
     entry: "@vizejs/marquette/test-run/validate",

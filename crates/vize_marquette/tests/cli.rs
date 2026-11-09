@@ -122,6 +122,40 @@ fn schema_commands_print_the_embedded_schemas() {
         std::str::from_utf8(&output.stdout).unwrap(),
         vize_marquette::APPLICATION_CONTRACT_JSON_SCHEMA
     );
+
+    let output = cli().args(["native-build", "schema"]).output().unwrap();
+    assert!(output.status.success());
+    assert_eq!(
+        std::str::from_utf8(&output.stdout).unwrap(),
+        vize_marquette::NATIVE_BUILD_PROFILE_JSON_SCHEMA
+    );
+}
+
+#[test]
+fn native_build_validate_uses_the_shared_profile_contract() {
+    let fixture_root =
+        std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../tests/fixtures/marquette");
+    let valid = fixture_root.join("native-build-profile.valid.json");
+    let output = cli()
+        .args(["native-build", "validate"])
+        .arg(valid)
+        .output()
+        .unwrap();
+    assert!(output.status.success(), "{output:?}");
+    assert_eq!(std::str::from_utf8(&output.stdout).unwrap().trim(), "[]");
+
+    let invalid = fixture_root.join("native-build-profile.invalid.json");
+    let output = cli()
+        .args(["native-build", "validate"])
+        .arg(invalid)
+        .output()
+        .unwrap();
+    assert!(!output.status.success());
+    assert!(
+        std::str::from_utf8(&output.stdout)
+            .unwrap()
+            .contains("store-requires-signing")
+    );
 }
 
 #[test]

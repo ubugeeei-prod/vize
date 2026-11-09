@@ -147,6 +147,41 @@ The canonical identifiers use the `native.*` namespace and are emitted in a
 stable order. The helper returns fresh values so an adapter may add private
 capabilities without changing the baseline used by another consumer.
 
+## Native build profiles
+
+Local and hosted native builders consume the same versioned profile. The
+profile selects the application marquette environment, lifecycle
+configuration, platform destinations, signing strategy, capability set, and
+optional update channel without embedding an executor, credentials, or secret
+values:
+
+```ts
+import { defineNativeBuildProfile } from "@vizejs/marquette/native-build";
+
+export default defineNativeBuildProfile({
+  format: "vize.native-build-profile",
+  formatVersion: 1,
+  profile: "production",
+  configuration: "production",
+  environment: "native",
+  targets: [
+    { platform: "android", destination: "store", signing: "automatic" },
+    { platform: "ios", destination: "store", signing: "manual" },
+  ],
+  capabilities: ["native.camera", "native.notifications"],
+  updates: { channel: "stable", runtimeVersion: "1.4.0" },
+});
+```
+
+Use `parseNativeBuildProfile` at an untrusted JSON boundary and
+`validateNativeBuildProfile` before scheduling a build. Parsing rejects
+unknown fields, including executor and secret fields. Validation produces
+stable path-ordered diagnostics for portable identifiers, duplicate targets,
+store signing and production policy, update compatibility, and capabilities.
+The published profile schema is available from
+`@vizejs/marquette/native-build/schema` and is embedded by the Rust contract
+crate for native hosts.
+
 ## Test-run evidence
 
 Release-bound test-run evidence records live in their own lazy entries so
@@ -200,6 +235,8 @@ available from `@vizejs/marquette/test-run/schema`, the decision contract from
   `@vizejs/marquette/schema`.
 - The published adapter manifest schema is available from
   `@vizejs/marquette/adapter/schema`.
+- The published native build profile schema is available from
+  `@vizejs/marquette/native-build/schema`.
 - Every optional contract field documents its default in JSDoc.
 - Package builds enforce a 1 KiB gzip budget for authoring entries and 3 KiB
   or 4 KiB budgets for the validation entries.
