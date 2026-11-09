@@ -1,6 +1,10 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { readGlobalsFixture, sha } from "./support/content-mapper-instance-globals-10617.ts";
+import {
+  readGlobalsFixture,
+  sha,
+  type Transform,
+} from "./support/content-mapper-instance-globals-10617.ts";
 import { selectPacketGoldens } from "./support/content-mapper-instance-globals-packets-10617.ts";
 
 // The template context of a component whose only template global is a resolved
@@ -10,11 +14,7 @@ const HELPER = Buffer.from(
 );
 
 type Row = number[];
-type Result = {
-  text: string;
-  mappings: Row[];
-  diagnosticDirectives: { directives: Row[] };
-};
+type Result = Transform & { diagnosticDirectives: { directives: Row[] } };
 
 test("the template-global population drops only the unused helper from the CSS-module packets", () => {
   const { authority, files, cases } = readGlobalsFixture();
