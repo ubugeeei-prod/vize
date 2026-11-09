@@ -135,16 +135,23 @@ test("Header supports slot overrides and its optional border", () => {
   mounted.unmount();
 });
 
-test("Tooltip orders its content around the bubble and supports hidden mode", () => {
-  const right = mountComponent(Tooltip, { text: "Help", position: "right" }, () =>
+test("Tooltip anchors an overlay without displacing content and supports hidden mode", () => {
+  const right = mountComponent(Tooltip, { text: "Help", position: "right", offset: 1 }, () =>
     h("text", { text: "Target" }),
   );
   const rightRoot = firstChild(right);
   const boxes = rightRoot.children.filter((node) => node.type === "box");
-  assert.deepEqual(rightRoot.props.style, { flexDirection: "row" });
-  assert.equal(nodeText(boxes[0]), "Target");
-  assert.equal(nodeText(boxes[1]), "Help");
-  assert.equal(boxes[1]?.props.border, "rounded");
+  assert.deepEqual(rightRoot.props.style, { position: "relative" });
+  assert.equal(nodeText(rightRoot), "TargetHelp");
+  assert.equal(nodeText(boxes[0]!), "Help");
+  assert.equal(boxes[0]?.props.border, "rounded");
+  assert.deepEqual(boxes[0]?.props.style, {
+    position: "absolute",
+    left: "100%",
+    paddingLeft: 1,
+    paddingRight: 1,
+    marginLeft: 1,
+  });
   right.unmount();
 
   const hidden = mountComponent(Tooltip, { text: "Help", visible: false }, () =>
