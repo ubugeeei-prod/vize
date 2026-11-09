@@ -1,0 +1,39 @@
+{
+  "version": 1,
+  "id": "lsp/regression/component-api-hover",
+  "provenance": {
+    "fixCommit": "ee2adf1f0da23afdcab88dc223b96eede60fa870",
+    "inputOrigin": "A child with an aliased defineEmits<Emits>() event and a defineSlots slot, both documented with JSDoc, consumed by a parent listener and a #slot template.",
+    "contractOrigin": "The listener hover keeps the declared payload signature and appends its JSDoc; the slot-name hover shows the declared slot type and JSDoc instead of the generic v-slot directive card."
+  },
+  "documentVersion": 1,
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": true
+  },
+  "files": [
+    {
+      "source": "App.vue.txt",
+      "runtimePath": "App.vue",
+      "sha256": "14dc9415956dcef94b2e89f113b4a9a737b5c26829df1b21ac34fd098cf4ba27"
+    },
+    {
+      "source": "Child.vue.txt",
+      "runtimePath": "Child.vue",
+      "sha256": "aa4ddea4790925a9c5bf9dacfb4c6ae08c0ec0ba71d52c4fbe659572c5605c77"
+    },
+    {
+      "source": "tsconfig.json.txt",
+      "runtimePath": "tsconfig.json",
+      "sha256": "8f4cc08b465ddf6df35387e36be46136f6b6f7f5f19085ca9d6a3fcc1cda9b31"
+    }
+  ],
+  "entry": "App.vue",
+  "expected": {
+    "source": "responses.expected.json",
+    "sha256": "3e86a049b5c25c4988ab169cc0890b76874b8e9f87bc16f28deb06f448009895"
+  },
+  "method": "textDocument/hover",
+  "scope": "Whole native-backed hovers for a component event name and a slot name, both carrying the authored JSDoc."
+}
