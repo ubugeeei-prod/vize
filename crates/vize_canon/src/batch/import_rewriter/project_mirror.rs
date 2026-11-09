@@ -13,7 +13,8 @@ use super::virtual_rewrite::{
 };
 use super::{
     EmptyVueStar, ImportRewriter, ImportSourceMap, RewriteResult, VirtualAliasRewritePolicy,
-    authored_vue_ts, rewrite_relative_vue_specifier, source_may_contain_relative_specifier,
+    VirtualProjectRewriteCapture, authored_vue_ts, rewrite_relative_vue_specifier,
+    source_may_contain_relative_specifier,
 };
 
 #[derive(Clone, Copy)]
@@ -65,7 +66,7 @@ impl ImportRewriter {
         vize_carton::micro_count!("canon.source_census.producer.source_bytes", source.len());
         #[cfg(feature = "profiling")]
         crate::profiling::observe_rewrite_input(source, source_type);
-        self.rewrite_with_star_capture(
+        let (rewritten, stars, _) = self.rewrite_with_star_capture(
             source,
             source_type,
             |path, mode| {
@@ -102,7 +103,8 @@ impl ImportRewriter {
                 })
             },
             capture_stars,
-        )
+        );
+        (rewritten, stars)
     }
 
     /// Rewrite a script's module specifiers for the canon virtual project.
@@ -183,7 +185,7 @@ impl ImportRewriter {
         source_dir: Option<&Path>,
         options: VirtualProjectRewriteOptions<'_>,
         capture_stars: bool,
-    ) -> (RewriteResult, Vec<EmptyVueStar>) {
+    ) -> VirtualProjectRewriteCapture {
         let project_root = roots.0.to_string_lossy();
         let dts_candidate = source_dir.is_some() && source_may_contain_relative_specifier(source);
         let alias_candidate = options
@@ -201,10 +203,11 @@ impl ImportRewriter {
                     source_map: ImportSourceMap::empty(),
                 },
                 Vec::new(),
+                None,
             );
         }
 
-        self.rewrite_with_star_capture(
+        let (rewritten, stars, occurrences) = self.rewrite_with_star_capture(
             source,
             source_type,
             |path, mode| {
@@ -224,7 +227,8 @@ impl ImportRewriter {
                 )
             },
             capture_stars,
-        )
+        );
+        (rewritten, stars, Some(occurrences))
     }
 
     fn rewrite_virtual_project_specifier(
