@@ -23,6 +23,7 @@ import { GNU_TIME, type HostRun, hostArgs, hostRun } from "../typecheck-corpus-p
 import { median } from "../typecheck-corpus-pair-parse.ts";
 import { MAPPER_HOSTS, prepareMapperPackages, resolveMapperHosts, TYPECHECK_HOSTS_DIR } from "../typecheck-mapper-hosts.ts";
 import { generateScaleProject, writeProject } from "../scale-project-generator.ts";
+import { compactRecording } from "./compact-rec.ts";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const repoRoot = resolve(here, "..", "..", "..", "..");
@@ -70,6 +71,7 @@ const vueTscTs = JSON.parse(readFileSync(createRequire(join(vueTscDir, "package.
 type Row = { host: string; lane: string; runs: HostRun[] };
 const report: Record<string, Row[]> = {};
 const timelines: Record<string, string[]> = {};
+const notes: string[] = [];
 const only = values.only ? new Set(values.only.split(",")) : null;
 
 for (const corpus of corpora) {
@@ -108,6 +110,8 @@ for (const corpus of corpora) {
   run("rec-vize", cfg.vizeRecord, { REC_DIR: recs.vize });
   run("rec-vue", cfg.vueRecord, { REC_DIR: recs.vue });
   run("rec-anyab", cfg.anyabRecord, { REC_DIR: recs.anyab });
+  const compacted = join(work, `rec-${corpus.id}-vize-compact`);
+  notes.push(`${corpus.id}: ${compactRecording(recs.vize, compacted)}`);
   for (const [id, tsconfig] of [["vize", cfg.vizeTl], ["vue", cfg.vueTl]] as const) {
     const log = join(work, `tl-${corpus.id}-${id}.jsonl`);
     run(`tl-${id}`, tsconfig, { TL_LOG: log });
@@ -115,11 +119,13 @@ for (const corpus of corpora) {
     timelines[`${corpus.id}/${id}`] = summarize(readFileSync(log, "utf8"));
   }
 
+  const laneFilter = process.env.FLOORS_LANES ? process.env.FLOORS_LANES.split(",") : null;
   const lanes: [string, string, () => HostRun][] = [
     ["tsc", "vize", () => run("vize", cfg.vize)],
     ["tsc", "vue", () => run("vue", cfg.vue)],
     ["tsc", "stub (fixed cost)", () => run("stub", cfg.stub)],
     ["tsc", "vize replay (zero wait)", () => run("replay-vize", cfg.replay, { REC_DIR: recs.vize })],
+    ["tsc", "vize replay compacted", () => run("replay-compact", cfg.replay, { REC_DIR: compacted })],
     ["tsc", "vue replay (zero wait)", () => run("replay-vue", cfg.replay, { REC_DIR: recs.vue })],
     ["tsc", "vize expressions-only", () => run("anyab", cfg.anyab)],
     ["tsc", "vize expressions-only replay", () => run("replay-anyab", cfg.replay, { REC_DIR: recs.anyab })],
@@ -127,9 +133,11 @@ for (const corpus of corpora) {
     ["tsrs", "vue", () => runTsrs("vue", cfg.vue)],
     ["tsrs", "stub (fixed cost)", () => runTsrs("stub", cfg.stub)],
     ["tsrs", "vize replay (zero wait)", () => runTsrs("replay-vize", cfg.replay, { REC_DIR: recs.vize })],
+    ["tsrs", "vize replay compacted", () => runTsrs("replay-compact", cfg.replay, { REC_DIR: compacted })],
     ["tsrs", "vue replay (zero wait)", () => runTsrs("replay-vue", cfg.replay, { REC_DIR: recs.vue })],
     ["tsrs", "vize expressions-only replay", () => runTsrs("replay-anyab", cfg.replay, { REC_DIR: recs.anyab })],
   ];
+  if (laneFilter) lanes.splice(0, lanes.length, ...lanes.filter(([, lane]) => laneFilter.some((token) => lane.startsWith(token))));
   const rows: Row[] = lanes.map(([host, lane]) => ({ host, lane, runs: [] }));
   for (let i = 0; i < runs; i++) {
     const order = i % 2 === 0 ? lanes.map((_, k) => k) : lanes.map((_, k) => lanes.length - 1 - k);
@@ -140,8 +148,10 @@ for (const corpus of corpora) {
     }
   }
   const vt: Row = { host: "tsc", lane: `vue-tsc (typescript ${vueTscTs})`, runs: [] };
-  for (let i = 0; i < Math.min(runs, 3); i++) vt.runs.push(vueTsc());
-  rows.push(vt);
+  if (!laneFilter) {
+    for (let i = 0; i < Math.min(runs, 3); i++) vt.runs.push(vueTsc());
+    rows.push(vt);
+  }
   report[corpus.id] = rows;
   writeFileSync(join(out, `${corpus.id}.json`), JSON.stringify(rows.map((row) => ({ host: row.host, lane: row.lane, runs: row.runs.map(({ diagnostics, ...r }) => ({ ...r, diagnosticCount: diagnostics.length })) })), null, 1));
 }
@@ -169,6 +179,7 @@ for (const [corpus, all] of Object.entries(report)) for (const host of ["tsc", "
   }
   lines.push("");
 }
+lines.push("### Compacted replies", "", ...notes.map((note) => `- ${note}`), "");
 lines.push("### Request timelines (proxy-observed, ms from mapper start)", "");
 for (const [key, summary] of Object.entries(timelines)) lines.push(`- ${key}: ${summary.join("; ")}`);
 writeFileSync(join(out, "summary.md"), `${lines.join("\n")}\n`);

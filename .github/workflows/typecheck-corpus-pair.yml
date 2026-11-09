@@ -148,7 +148,7 @@ jobs:
         run: |
           set -euo pipefail
           if [[ "$FLOORS" == true ]]; then
-            node tools/benchmarks/scripts/e2e-floors/run.ts --head "$RUNNER_TEMP/pair-head" --runs "$RUNS" --work "$RUNNER_TEMP/pair-work" --out "$RUNNER_TEMP/pair-out"
+            FLOORS_LANES="$OWNED_LANES" node tools/benchmarks/scripts/e2e-floors/run.ts --head "$RUNNER_TEMP/pair-head" --runs "$RUNS" --work "$RUNNER_TEMP/pair-work" --out "$RUNNER_TEMP/pair-out"
             exit
           fi
           if [[ "$OWNED_PAIR" == true ]]; then
