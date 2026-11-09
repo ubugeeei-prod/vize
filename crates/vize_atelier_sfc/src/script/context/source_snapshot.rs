@@ -6,6 +6,8 @@
 )]
 
 mod canonical_walk;
+#[cfg(target_os = "linux")]
+mod content_stamp;
 mod directory_index;
 #[cfg(test)]
 mod directory_index_tests;
@@ -133,8 +135,18 @@ impl TypeSourceSnapshot {
         }
         let mut disk = self.disk.lock().ok()?;
         disk.entry(path.clone())
-            .or_insert_with(|| std::fs::read_to_string(path).ok().map(Arc::from))
+            .or_insert_with(|| self.read_disk(&path))
             .clone()
+    }
+
+    /// A request's snapshot reuses text an earlier request read when the
+    /// file's probe saw the same stamp.
+    fn read_disk(&self, path: &Path) -> Option<Arc<str>> {
+        #[cfg(target_os = "linux")]
+        if let Some(stamp) = self.held.stamp_of(path) {
+            return content_stamp::read(path, stamp);
+        }
+        std::fs::read_to_string(path).ok().map(Arc::from)
     }
 }
 

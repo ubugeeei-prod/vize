@@ -124,6 +124,7 @@ impl ProbedDirectory {
                 super::realpath::open_path(&path, libc::O_NOFOLLOW).and_then(|handle| {
                     let metadata = handle.metadata()?;
                     if metadata.is_file() {
+                        snapshot.held.stamp(&path, &metadata);
                         snapshot.held.hold(handle);
                     }
                     Ok(metadata)
