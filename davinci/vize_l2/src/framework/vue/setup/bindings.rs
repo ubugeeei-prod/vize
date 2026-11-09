@@ -143,6 +143,8 @@ pub(super) struct Bindings<'a> {
     pub(super) props: Option<PropsDestructure>,
     /// `defineProps` destructures the facts do not cover.
     pub(super) unclassified: Vec<Span>,
+    /// The destructure's defaults by prop key.
+    pub(super) defaults: Vec<(&'a str, Span)>,
     aliases: Vec<(&'a str, &'static str)>,
     pub(super) overflow: bool,
 }
@@ -326,9 +328,10 @@ impl<'a> Bindings<'a> {
         });
         self.overflow |= overflow;
         match observed {
-            Some((destructure, rows)) if self.props.is_none() => {
+            Some((destructure, rows, defaults)) if self.props.is_none() => {
                 self.props = Some(destructure);
                 self.rows.extend(rows);
+                self.defaults = defaults;
             }
             _ => {
                 let pattern = self.authored(base, pattern.span);

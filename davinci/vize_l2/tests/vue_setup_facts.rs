@@ -269,7 +269,7 @@ fn runtime_prop_keys_are_read_like_vue() {
     assert_eq!(keys("defineProps<{ i: string }>()"), Some(Vec::new()));
     assert_eq!(
         runtime_keys("defineProps({ 'a\\u0062': String, c: String })"),
-        Some((Vec::new(), vec![text("'a\\u0062'")]))
+        Some((vec![text("c")], vec![text("'a\\u0062'")]))
     );
 }
 
