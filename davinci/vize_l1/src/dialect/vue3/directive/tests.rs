@@ -82,3 +82,37 @@ fn frozen_plain_and_shorthand_names_keep_the_original_borrow() {
         assert!(core::ptr::eq(frozen, authored));
     }
 }
+
+#[test]
+fn directive_kind_reads_the_decomposed_head() {
+    use super::DirectiveKind;
+    for (authored, expected) in [
+        ("v-if", DirectiveKind::If),
+        ("v-else-if", DirectiveKind::ElseIf),
+        ("v-else", DirectiveKind::Else),
+        ("v-for", DirectiveKind::For),
+        ("v-model.trim", DirectiveKind::Model),
+        ("v-slot:item", DirectiveKind::Slot),
+        ("#item", DirectiveKind::Slot),
+        ("v-bind:title.camel", DirectiveKind::Bind),
+        (":title", DirectiveKind::Bind),
+        (".title", DirectiveKind::Bind),
+        ("v-on:click", DirectiveKind::On),
+        ("@click.stop", DirectiveKind::On),
+        ("v-html", DirectiveKind::Html),
+        ("v-text", DirectiveKind::Text),
+        ("v-show", DirectiveKind::Show),
+        ("v-cloak", DirectiveKind::Cloak),
+        ("v-once", DirectiveKind::Once),
+        ("v-pre", DirectiveKind::Pre),
+        ("v-memo", DirectiveKind::Memo),
+        ("v-focus:[arg].mod", DirectiveKind::Custom),
+        ("v-iffy", DirectiveKind::Custom),
+        ("v-", DirectiveKind::Custom),
+    ] {
+        // The head spans are absolute: resolve them against the whole source.
+        let source = ["<p ", authored, ">"].concat();
+        let head = VueDirectives.decompose(authored, 3).unwrap().unwrap();
+        assert_eq!(DirectiveKind::of(&head, &source), expected, "{authored}");
+    }
+}

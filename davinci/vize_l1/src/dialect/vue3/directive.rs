@@ -66,6 +66,63 @@ impl DirectiveSyntax for VueDirectives {
     }
 }
 
+/// The directive a Vue attribute name spells. L1→L2 lowering, the L1
+/// surface policies and the formatter select directives through this table.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum DirectiveKind {
+    If,
+    ElseIf,
+    Else,
+    For,
+    Model,
+    Slot,
+    Bind,
+    On,
+    Html,
+    Text,
+    Show,
+    Cloak,
+    Once,
+    Pre,
+    Memo,
+    /// A user-defined directive (`v-focus`).
+    Custom,
+}
+
+impl DirectiveKind {
+    /// The directive a full `v-` head spells, from its name without `v-`.
+    pub fn from_full_name(name: &str) -> Self {
+        match name {
+            "if" => Self::If,
+            "else-if" => Self::ElseIf,
+            "else" => Self::Else,
+            "for" => Self::For,
+            "model" => Self::Model,
+            "slot" => Self::Slot,
+            "bind" => Self::Bind,
+            "on" => Self::On,
+            "html" => Self::Html,
+            "text" => Self::Text,
+            "show" => Self::Show,
+            "cloak" => Self::Cloak,
+            "once" => Self::Once,
+            "pre" => Self::Pre,
+            "memo" => Self::Memo,
+            _ => Self::Custom,
+        }
+    }
+
+    /// The directive `head` spells; `source` is the text its spans index.
+    pub fn of(head: &DirectiveName, source: &str) -> Self {
+        match head.prefix {
+            DirectivePrefix::Bind | DirectivePrefix::Prop => Self::Bind,
+            DirectivePrefix::On => Self::On,
+            DirectivePrefix::Slot => Self::Slot,
+            DirectivePrefix::Full => Self::from_full_name(head.name.slice(source)),
+        }
+    }
+}
+
 /// Freeze the complete name after Vue's `v-pre` boundary. Only the full
 /// directive head's argument separator disappears; the argument and modifiers
 /// are opaque authored bytes, including their quotes and brackets.
