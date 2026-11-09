@@ -114,7 +114,7 @@ const delta = (value: number | undefined, base: number | undefined): string =>
 export function markdown(label: string, cells: readonly Cell[], windows = false): string {
   const lines = [`### vize check pair: ${label}`, ""];
   if (windows)
-    lines.push("CPU and peak are vize.exe alone; checker children are not included.", "");
+    lines.push("CPU is vize.exe alone; HWM columns are sampled peak working sets (250 ms).", "");
   for (const cell of cells) {
     lines.push(
       `**${cell.project}**, ${cell.runs} alternating cold runs (fresh cache root each). ` +

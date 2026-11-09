@@ -232,26 +232,43 @@ async function runOnce(
     const args = checkArgs(project, tsgo)
       .map((arg) => `"${arg}"`)
       .join(",");
-    // Start-Process keeps the exited process object, which still answers its
-    // processor time and peak working set. The stopwatch excludes PowerShell's
-    // own startup, which would otherwise dominate the wall time.
+    // The process object's own start and exit times give the wall time, so
+    // PowerShell's startup and the polling below stay outside it. An exited
+    // process no longer answers its peak working set, so vize and its checker
+    // children are sampled while they run.
     const script = [
       `$env:VIZE_CANON_CACHE_ROOT = ${quote(cache.env.VIZE_CANON_CACHE_ROOT ?? "")};`,
-      "$w = [System.Diagnostics.Stopwatch]::StartNew();",
       `$p = Start-Process -FilePath ${quote(build.bin)} -ArgumentList @(${args})`,
       `-WorkingDirectory ${quote(project.dir)} -RedirectStandardOutput ${quote(output)}`,
-      `-RedirectStandardError ${quote(`${output}.err`)} -NoNewWindow -PassThru -Wait;`,
-      `$w.Stop(); "$($p.ExitCode) $($p.TotalProcessorTime.TotalSeconds) $($p.PeakWorkingSet64) $($w.Elapsed.TotalMilliseconds)"`,
+      `-RedirectStandardError ${quote(`${output}.err`)} -NoNewWindow -PassThru;`,
+      "$vizePeak = 0; $children = @{};",
+      "while (-not $p.HasExited) {",
+      "  $p.Refresh(); if ($p.PeakWorkingSet64 -gt $vizePeak) { $vizePeak = $p.PeakWorkingSet64 };",
+      '  foreach ($c in Get-CimInstance Win32_Process -Filter "ParentProcessId=$($p.Id)") {',
+      "    $kib = [int64]$c.PeakWorkingSetSize; if (-not $children.ContainsKey($c.ProcessId) -or $children[$c.ProcessId] -lt $kib) { $children[$c.ProcessId] = $kib } };",
+      "  Start-Sleep -Milliseconds 250 };",
+      "$p.WaitForExit();",
+      "$childKiB = 0; foreach ($v in $children.Values) { $childKiB += $v };",
+      "@{ exit = $p.ExitCode; cpu = $p.TotalProcessorTime.TotalSeconds; vizePeak = $vizePeak;",
+      "   childKiB = $childKiB; wallMs = ($p.ExitTime - $p.StartTime).TotalMilliseconds } | ConvertTo-Json -Compress",
     ].join(" ");
     const result = spawnSync("powershell.exe", ["-NoProfile", "-Command", script], {
       encoding: "utf8",
       env: cache.env,
     });
-    const [code, cpu, peak, elapsed] = result.stdout.trim().split(/\s+/u);
-    processWallMs = Number(elapsed);
-    exitCode = Number(code);
-    cpuSeconds = Number(cpu);
-    peakMiB = Number(peak) / 1048576;
+    const measured = JSON.parse(result.stdout.trim().split(/\r?\n/u).pop() ?? "{}") as {
+      exit?: number;
+      cpu?: number;
+      vizePeak?: number;
+      childKiB?: number;
+      wallMs?: number;
+    };
+    processWallMs = measured.wallMs;
+    exitCode = measured.exit ?? -1;
+    cpuSeconds = measured.cpu;
+    vizeHwmMiB = (measured.vizePeak ?? NaN) / 1048576;
+    childHwmMiB = (measured.childKiB ?? NaN) / 1024;
+    peakMiB = Math.max(vizeHwmMiB, childHwmMiB);
   } else {
     const timer = linux ? ["-f", "%U %S %M", "-o", metrics] : ["-l"];
     const child = spawn("/usr/bin/time", [...timer, build.bin, ...checkArgs(project, tsgo)], {
