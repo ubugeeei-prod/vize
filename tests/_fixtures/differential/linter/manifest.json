@@ -1159,6 +1159,38 @@
       }
     },
     {
+      "id": "linter/current-api/dynamic-slot-loop-identity-12405",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "dynamic-slot-loop-identity-12405",
+        "files": [
+          {
+            "path": "DistinctLoops.vue.txt",
+            "role": "third-party-regression-reproduction",
+            "sha256": "ced242ffa88c170225501d6b2cccd049bab14f339ca0636564cacc3f2ad06ab3"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "current-api pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/current-api/dynamic-slot-v-for-component-bodies",
       "state": "active",
       "targets": [

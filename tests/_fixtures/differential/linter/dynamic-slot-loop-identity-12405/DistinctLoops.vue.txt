@@ -1,0 +1,6 @@
+<template>
+  <MyComponent>
+    <template v-for="id in first" #[`popup:${id}`]>{{ id }}</template>
+    <template v-for="id in second" #[`popup:${id}`]>{{ id }}</template>
+  </MyComponent>
+</template>
