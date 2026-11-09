@@ -22,7 +22,7 @@ function workspaceFolder(pathname, index = 0) {
 export function createDiscovery(
   findFiles = async () => [],
   initialFolders = ["/workspace"],
-  { sourceText = source, nativeWatchError } = {},
+  { sourceText = source, nativeWatchError, projectConfigFiles = [] } = {},
 ) {
   const body = stripTypeScriptTypes(sourceText, { mode: "transform" })
     .replace(/^import[\s\S]*?;\n/gm, "")
@@ -108,7 +108,7 @@ export function createDiscovery(
     workspace,
     Uri: { file: fileUri, joinPath: (uri, part) => fileUri(path.posix.join(uri.path, part)) },
     RelativePattern,
-    WORKSPACE_PROJECT_CONFIG_FILES: [],
+    WORKSPACE_PROJECT_CONFIG_FILES: projectConfigFiles,
     WORKSPACE_PROJECT_CONFIG_GLOB: CONFIG_GLOB,
     describeCapabilities: () => "original description",
     trace,

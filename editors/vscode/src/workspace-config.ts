@@ -21,6 +21,7 @@ type ParentWatch = {
 export class WorkspaceLspConfigDiscovery {
   private discovered = false;
   private refreshGeneration = 0;
+  private rootConfig: { generation: number; found: boolean } | undefined;
   private knownConfigurations: readonly Uri[] = [];
   private readonly configurationWatchers = new Set<() => void>();
 
@@ -33,12 +34,19 @@ export class WorkspaceLspConfigDiscovery {
     return this.discovered || this.hasRootConfig;
   }
 
-  /** A workspace folder's own config; the workspace-wide search cannot change it. */
+  /**
+   * A workspace folder's own config; the workspace-wide search cannot change it.
+   * Checked once per refresh: config and folder changes always start a refresh,
+   * and on a WSL2 Windows mount every check is a 9P round trip.
+   */
   get hasRootConfig(): boolean {
+    if (this.rootConfig?.generation === this.refreshGeneration) return this.rootConfig.found;
     const filenames = new Set([...this.projectConfigFiles, ...WORKSPACE_PROJECT_CONFIG_FILES]);
-    return (workspace.workspaceFolders ?? []).some((folder) =>
+    const found = (workspace.workspaceFolders ?? []).some((folder) =>
       [...filenames].some((filename) => fs.existsSync(path.join(folder.uri.fsPath, filename))),
     );
+    this.rootConfig = { generation: this.refreshGeneration, found };
+    return found;
   }
 
   async refresh(generation?: number): Promise<void> {
