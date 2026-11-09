@@ -21,6 +21,11 @@ import {
   instanceInputKeysAfter,
   instanceInputKeysRecordSha256,
 } from "./instance-input-keys-transition.ts";
+import {
+  beforeUnownedOwnedKeys,
+  unownedOwnedKeysAfter,
+  unownedOwnedKeysRecordSha256,
+} from "./unowned-owned-keys-transition.ts";
 
 const recordUrl = new URL(
   "../../../../tests/_fixtures/differential/typechecker/tsx-single-required-exact-keys/source-transition.json",
@@ -51,6 +56,30 @@ export function certifyJsxWitnessChange(
   before: Buffer,
   after: Buffer,
 ): JsxWitnessChangeProof {
+  const ownedAfter = unownedOwnedKeysAfter(file);
+  if (ownedAfter && after.length === ownedAfter.bytes && digest(after) === ownedAfter.sha256) {
+    const predecessor = Buffer.from(beforeUnownedOwnedKeys(file, after.toString("utf8")));
+    if (before.equals(predecessor))
+      return {
+        file,
+        beforeSha256: digest(before),
+        afterSha256: digest(after),
+        recordSha256: unownedOwnedKeysRecordSha256,
+        comparatorSha256: digest(readFileSync(new URL(import.meta.url))),
+        nativeAcceptanceCredit: false,
+      };
+    const historical = certifyJsxWitnessChange(file, before, predecessor);
+    const predecessorSuccessors =
+      historical.successorRecordSha256s ??
+      (historical.successorRecordSha256 ? [historical.successorRecordSha256] : []);
+    return {
+      ...historical,
+      afterSha256: digest(after),
+      successorRecordSha256: unownedOwnedKeysRecordSha256,
+      successorRecordSha256s: [...predecessorSuccessors, unownedOwnedKeysRecordSha256],
+      comparatorSha256: digest(readFileSync(new URL(import.meta.url))),
+    };
+  }
   const keysAfter = instanceInputKeysAfter(file);
   if (keysAfter && after.length === keysAfter.bytes && digest(after) === keysAfter.sha256) {
     const predecessor = Buffer.from(beforeInstanceInputKeys(file, after.toString("utf8")));

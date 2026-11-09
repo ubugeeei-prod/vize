@@ -1,0 +1,140 @@
+{
+  "schema": "vize.experimental-router-unowned-owned-keys-transition.v1",
+  "issue": 11654,
+  "qualificationCredit": false,
+  "sourceReceipt": {
+    "path": "tests/_fixtures/tooling/unowned-owned-keys-11654.json",
+    "sha256": "e33fe95745ca5a1ac4cdf0d3022d409eedc729ef77ee63b995de14f1688fa465"
+  },
+  "edit": {
+    "before": "type $UnownedComponentAttrs<F, P = {}, E = {}> = $IsAny<F> extends true ? F : unknown extends F ? F : F extends unknown ? F extends null | undefined ? F : { [K in keyof F as K extends $ComponentOwnKeys<P, E> ? never : K]: F[K] } : never;",
+    "after": "type $UnownedComponentAttrs<F, P = {}, E = {}, __O = $ComponentOwnKeys<P, E>> = $IsAny<F> extends true ? F : unknown extends F ? F : F extends unknown ? F extends null | undefined ? F : { [K in keyof F as K extends __O ? never : K]: F[K] } : never;"
+  },
+  "entries": [
+    {
+      "variant": "lf",
+      "kind": "valid",
+      "previous": {
+        "file": "lf.valid.instance-input-keys.virtual.ts.txt",
+        "sha256": "f86d2266c0dd5fddd0f6f463bead069827f4faca486207dcfc14830d9cb866c4",
+        "bytes": 15265
+      },
+      "current": {
+        "file": "lf.valid.unowned-owned-keys.virtual.ts.txt",
+        "sha256": "e9bf18f670ea640ab4c1fbd37e2be6cc8cf57b5bed7e0c1a6807c378f4eb693b",
+        "bytes": 15276
+      },
+      "mapEdit": {
+        "before": "  // @vize-map: 11484:11996 -> 0:572",
+        "after": "  // @vize-map: 11495:12007 -> 0:572"
+      }
+    },
+    {
+      "variant": "lf",
+      "kind": "invalid",
+      "previous": {
+        "file": "lf.invalid.instance-input-keys.virtual.ts.txt",
+        "sha256": "35526e12ce6057253a52840f3532b8d62250e3aabd84e72e7aef07678daaa1eb",
+        "bytes": 15269
+      },
+      "current": {
+        "file": "lf.invalid.unowned-owned-keys.virtual.ts.txt",
+        "sha256": "dd5ce5ae6ea3cbf04eb4e6e384b2023f4263e3e6e99ea018c22b200dd392dc73",
+        "bytes": 15280
+      },
+      "mapEdit": {
+        "before": "  // @vize-map: 11484:11996 -> 0:572",
+        "after": "  // @vize-map: 11495:12007 -> 0:572"
+      }
+    },
+    {
+      "variant": "crlf",
+      "kind": "valid",
+      "previous": {
+        "file": "crlf.valid.instance-input-keys.virtual.ts.txt",
+        "sha256": "98e0c70fdad703fadb8a3f5a4daa025a6958b065ee4a84dd1bef3658e84404f0",
+        "bytes": 15265
+      },
+      "current": {
+        "file": "crlf.valid.unowned-owned-keys.virtual.ts.txt",
+        "sha256": "591f12fda35e65baa33ca5debb31b9e27be0743ad93680c9e30fa887471bab3e",
+        "bytes": 15276
+      },
+      "mapEdit": {
+        "before": "  // @vize-map: 11484:11996 -> 0:588",
+        "after": "  // @vize-map: 11495:12007 -> 0:588"
+      }
+    },
+    {
+      "variant": "crlf",
+      "kind": "invalid",
+      "previous": {
+        "file": "crlf.invalid.instance-input-keys.virtual.ts.txt",
+        "sha256": "d3c8f1824b145ec25c89e48d383edcf3311113db28798b24aa8ed584703aa700",
+        "bytes": 15269
+      },
+      "current": {
+        "file": "crlf.invalid.unowned-owned-keys.virtual.ts.txt",
+        "sha256": "055db71d88b57a576a57104cfda462e77c9f893944d3bf8cdeed976d5c599246",
+        "bytes": 15280
+      },
+      "mapEdit": {
+        "before": "  // @vize-map: 11484:11996 -> 0:588",
+        "after": "  // @vize-map: 11495:12007 -> 0:588"
+      }
+    },
+    {
+      "variant": "explicit",
+      "kind": "valid",
+      "previous": {
+        "file": "explicit.valid.instance-input-keys.virtual.ts.txt",
+        "sha256": "066535c9a28b35e66f1dcd2d2562217077928b7ecf22d8d8b135ccf0487c6615",
+        "bytes": 15193
+      },
+      "current": {
+        "file": "explicit.valid.unowned-owned-keys.virtual.ts.txt",
+        "sha256": "917e96782146f0c3d61b0e17544cc9d314122d443b3175c0ba981a6e6dedb947",
+        "bytes": 15204
+      },
+      "mapEdit": {
+        "before": "  // @vize-map: 11484:12016 -> 0:592",
+        "after": "  // @vize-map: 11495:12027 -> 0:592"
+      }
+    },
+    {
+      "variant": "explicit",
+      "kind": "invalid",
+      "previous": {
+        "file": "explicit.invalid.instance-input-keys.virtual.ts.txt",
+        "sha256": "066535c9a28b35e66f1dcd2d2562217077928b7ecf22d8d8b135ccf0487c6615",
+        "bytes": 15193
+      },
+      "current": {
+        "file": "explicit.invalid.unowned-owned-keys.virtual.ts.txt",
+        "sha256": "917e96782146f0c3d61b0e17544cc9d314122d443b3175c0ba981a6e6dedb947",
+        "bytes": 15204
+      },
+      "mapEdit": {
+        "before": "  // @vize-map: 11484:12016 -> 0:592",
+        "after": "  // @vize-map: 11495:12027 -> 0:592"
+      }
+    }
+  ],
+  "completionDataPositions": {
+    "lf": {
+      "before": 11830,
+      "after": 11841,
+      "count": 10
+    },
+    "crlf": {
+      "before": 11830,
+      "after": 11841,
+      "count": 10
+    },
+    "explicit": {
+      "before": 11758,
+      "after": 11769,
+      "count": 10
+    }
+  }
+}

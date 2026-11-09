@@ -65,7 +65,7 @@
         },
         {
           "path": "generated/content-mapper-types.d.ts",
-          "sha256": "3b7b803952199611e63b6f2a200d49bc0e9fb21cd826b4cefc217798c94bc790"
+          "sha256": "6ca30ff161868951fce4151a1ff072646a98c11b45667b09f00fab3c2dce081b"
         }
       ]
     },
@@ -83,7 +83,7 @@
       "files": [
         {
           "path": "generated/content-mapper-types.d.ts",
-          "sha256": "3b7b803952199611e63b6f2a200d49bc0e9fb21cd826b4cefc217798c94bc790"
+          "sha256": "6ca30ff161868951fce4151a1ff072646a98c11b45667b09f00fab3c2dce081b"
         },
         {
           "path": "virtual-ts-emit-overloads.d.ts",
@@ -95,7 +95,7 @@
         },
         {
           "path": "virtual-ts-globals.d.ts",
-          "sha256": "88442da38f5ecece9486a765b343d4f3ba92213ded2fc804da89e23179a52749"
+          "sha256": "2a5c1fa16a59f9f27e360ca70a7fbdbd301911dd390f9e21aa62b636bb6b7fc7"
         },
         {
           "path": "virtual-ts-listeners.d.ts",
@@ -131,7 +131,7 @@
       "files": [
         {
           "path": "generated/content-mapper-types.d.ts",
-          "sha256": "3b7b803952199611e63b6f2a200d49bc0e9fb21cd826b4cefc217798c94bc790"
+          "sha256": "6ca30ff161868951fce4151a1ff072646a98c11b45667b09f00fab3c2dce081b"
         },
         {
           "path": "virtual-ts-checker-strict.d.ts",
@@ -151,7 +151,7 @@
         },
         {
           "path": "virtual-ts-globals.d.ts",
-          "sha256": "88442da38f5ecece9486a765b343d4f3ba92213ded2fc804da89e23179a52749"
+          "sha256": "2a5c1fa16a59f9f27e360ca70a7fbdbd301911dd390f9e21aa62b636bb6b7fc7"
         },
         {
           "path": "virtual-ts-listeners.d.ts",
@@ -179,7 +179,7 @@
       "files": [
         {
           "path": "generated/content-mapper-types.d.ts",
-          "sha256": "3b7b803952199611e63b6f2a200d49bc0e9fb21cd826b4cefc217798c94bc790"
+          "sha256": "6ca30ff161868951fce4151a1ff072646a98c11b45667b09f00fab3c2dce081b"
         },
         {
           "path": "virtual-ts-checker-strict.d.ts",
@@ -195,7 +195,7 @@
         },
         {
           "path": "virtual-ts-globals.d.ts",
-          "sha256": "88442da38f5ecece9486a765b343d4f3ba92213ded2fc804da89e23179a52749"
+          "sha256": "2a5c1fa16a59f9f27e360ca70a7fbdbd301911dd390f9e21aa62b636bb6b7fc7"
         },
         {
           "path": "virtual-ts-listeners.d.ts",

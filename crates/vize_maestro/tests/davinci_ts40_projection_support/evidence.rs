@@ -245,6 +245,18 @@ fn public_instance_slot_packets_remain_authenticated() {
         canon_leftovers_successor,
         instance_input_keys_successor,
     );
+    let unowned_owned_keys_successor = include_str!(
+        "fixtures/public-instance-options-api-slots/successor-unowned-owned-keys-11654/projection-record.txt"
+    );
+    authenticate_successor_receipt(
+        include_str!(
+            "fixtures/public-instance-options-api-slots/successor-unowned-owned-keys-11654/receipt.json"
+        ),
+        "b727422eef7660b2530778e0fad2311fa62e9ae71ec9b1a46ade805c6f3ecd80",
+        12467,
+        instance_input_keys_successor,
+        unowned_owned_keys_successor,
+    );
     let non_text_fields = |record: &str| {
         record
             .lines()
@@ -268,7 +280,7 @@ fn public_instance_slot_packets_remain_authenticated() {
         .expect("reviewed Options API slot fixture");
     assert_eq!(
         capture_fixture(fixture).render().as_str(),
-        instance_input_keys_successor
+        unowned_owned_keys_successor
     );
 }
 #[test]
