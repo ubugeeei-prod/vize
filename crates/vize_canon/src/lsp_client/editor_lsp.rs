@@ -61,19 +61,23 @@ mod synchronize;
 #[cfg(test)]
 mod tests;
 mod type_definition;
+#[cfg(all(test, unix))]
+mod watch_settle_tests;
 pub(super) use original_program::OriginalDiagnosingSession;
 use requests::{
     RawDefinitionRequest, RawHoverRequest, RawPrepareRenameRequest, RawReferencesRequest,
     RawRenameRequest, RawSignatureHelpRequest, RawWillRenameFilesRequest,
     signature_help_request_params, will_rename_files_request_params,
 };
-use responder::spawn_responder;
+use responder::{Inbound, spawn_responder};
 /// A reusable `--lsp --stdio` session for standard diagnostics and editor
 /// requests.
 pub(super) struct EditorLspSession {
     client: LspClient,
     stop: Arc<AtomicBool>,
     responder: Option<std::thread::JoinHandle<()>>,
+    /// Server-initiated events, including the log of background watch work.
+    inbound: Arc<Inbound>,
     configured_api: Option<project_configuration::DiagnosingApi>,
     closed: bool,
     /// Only a full known native image and its actual initialize contract may
@@ -109,7 +113,8 @@ impl EditorLspSession {
         ))
         .map_err(|error| cstr!("Failed to start Corsa editor LSP session: {error}"))?;
         let stop = Arc::new(AtomicBool::new(false));
-        let responder = spawn_responder(client.clone(), stop.clone());
+        let inbound = Arc::new(Inbound::new(client.clone()));
+        let responder = spawn_responder(inbound.clone(), stop.clone());
 
         let initialized = match initialize_lsp_client(&client, project_root) {
             Ok(initialized) => initialized,
@@ -127,6 +132,7 @@ impl EditorLspSession {
             client,
             stop,
             responder: Some(responder),
+            inbound,
             configured_api: None,
             closed: false,
             shutdown_to_eof,
@@ -321,6 +327,9 @@ impl EditorLspSession {
         }
 
         let mut first_error = None;
+        // tsgo's shutdown does not wait for background snapshot work. Let every
+        // adopted snapshot finish registering its watches before the close.
+        self.inbound.settle(responder::WATCH_SETTLE_TIMEOUT);
         if let Err(error) = block_on(native_shutdown::close(&self.client, self.shutdown_to_eof)) {
             first_error = Some(cstr!(
                 "Failed to gracefully close editor LSP process: {error}"
