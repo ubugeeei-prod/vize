@@ -82,6 +82,7 @@ pub(super) fn generate_scope_node(
                 mappings,
                 ctx.template_offset,
                 ctx.summary.scopes.v_for_source_offset(scope.id),
+                true,
                 &loop_indent,
                 scope,
                 ctx.template_binding_access,

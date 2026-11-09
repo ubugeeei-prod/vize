@@ -286,17 +286,6 @@ function __setup() {
   const __vize_required_slots_0: $RequiredSlots<$SlotContract_0, { readonly "default": true; readonly "header": true; }> = {};
   void __vize_required_slots_0;
 
-  // Component props in v-slot scope: #default
-  void function _slot_props_default_8({ item, index }: $SlotPayload<typeof __vize_slot_host_8, "default", typeof MyList>) {
-    void item;
-    void index;
-  };
-
-  // Component props in v-slot scope: #header
-  void function _slot_props_header_9({ title }: $SlotPayload<typeof __vize_slot_host_9, "header", typeof MyList>) {
-    void title;
-  };
-
   // Mark used components as referenced
   void MyList;
 

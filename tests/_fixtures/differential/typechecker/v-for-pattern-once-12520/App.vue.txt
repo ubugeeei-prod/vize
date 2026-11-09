@@ -1,0 +1,8 @@
+<script setup lang="ts">
+import Child from "./Child.vue";
+const items = [{ id: 1, name: "a" }];
+</script>
+<template>
+  <div v-for="{ nme } in items">{{ nme }}</div>
+  <Child label="a" />
+</template>

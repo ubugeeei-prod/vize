@@ -121,9 +121,10 @@ async function main() {
       ),
     );
     // The default typed registry policy now admits PascalCase and authored kebab
-    // spellings. Both retain template and props slot scopes; provider identity
-    // and every original diagnostic contract below remain independently checked.
-    const expectedScopes = ["template", "props"];
+    // spellings. An unchecked slot is emitted once, by the template pass
+    // (#12479); provider identity and every original diagnostic contract below
+    // remain independently checked.
+    const expectedScopes = ["template"];
     const actualScopes = bindings.map((row) => {
       const owner = /^_slot_(props_)?default_([0-9]+)$/u.exec(row.ownerFunction ?? "");
       assert.ok(owner, `${stage.id}: each item binding must belong to an actual slot function`);

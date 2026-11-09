@@ -174,3 +174,34 @@ void test("the actual constructor audit refuses missing, reordered, foreign and 
     /unqualified #11675/u,
   );
 });
+void test("the wrapper admission drops only the rows of a removed unchecked slot replay", () => {
+  const replay =
+    "\n  // Component props in v-slot scope: #default\n  void function _slot_props_default_7({ item }: Payload) {\n    void item;\n  };\n";
+  const head = 'const q = "name";\n';
+  const tail = "void item;\n";
+  const rows = (text: string) => {
+    const at = (needle: string, from = 0) => Buffer.from(text).indexOf(needle, from);
+    const binding = at("{ item }") + 2;
+    return [
+      [at("name"), 4, 20, 4, 0, 1048575],
+      ...(binding > 1 ? [[binding, 4, 40, 4, 0, 1048575]] : []),
+      [text.lastIndexOf("item"), 4, 60, 4, 0, 1048575],
+    ] as Array<[number, number, number, number, number, number]>;
+  };
+  const before = { text: head + replay + tail, rows: rows(head + replay + tail) };
+  const current = { text: head + "\n" + tail, rows: rows(head + "\n" + tail) };
+  const producer = fs.readFileSync(
+    new URL("../../crates/vize_canon/src/batch/virtual_project/content_mapper.rs", import.meta.url),
+  );
+  assertConstructorWrapperMappings(before, current, (value) => value, producer);
+  // The replay must be gone, and every row outside it must stay.
+  assert.throws(
+    () => assertConstructorWrapperMappings(before, before, (value) => value, producer),
+    /no unchecked slot replay remains/u,
+  );
+  const missing = clone(current);
+  missing.rows.pop();
+  assert.throws(() =>
+    assertConstructorWrapperMappings(before, missing, (value) => value, producer),
+  );
+});

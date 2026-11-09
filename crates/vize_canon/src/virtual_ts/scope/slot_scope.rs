@@ -363,7 +363,8 @@ pub(super) fn generate_v_slot_props_scope(
         )
         .payload
     };
-    let function_gen_start = ts.len();
+    // The pattern stays unmapped: the template pass maps the same pattern,
+    // and a second mapped copy would report each of its diagnostics twice.
     emit_slot_function_open(
         ts,
         indent,
@@ -372,15 +373,6 @@ pub(super) fn generate_v_slot_props_scope(
         &props_type,
         false,
         |ts| {
-            map_slot_props_pattern(
-                mappings,
-                scope,
-                ctx.summary.scopes.v_slot_pattern_offset(scope.id),
-                ctx.source_context.offset,
-                props_pattern.as_str(),
-                function_gen_start,
-                ts,
-            );
             // Mark slot prop variables as used
             if data.prop_names.is_empty() {
                 vize_l0::emit_ts!(ts, "{inner_indent}void {props_pattern};\n");

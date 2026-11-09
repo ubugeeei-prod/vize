@@ -55,9 +55,10 @@ pub(in crate::virtual_ts::scope) fn generate_closure_component_props_recursive(
                 ts,
                 mappings,
                 ctx.source_context.offset,
-                // The template body already maps this source; a second mapped
-                // copy would report each of its diagnostics twice.
+                // The template body already maps this source and its aliases;
+                // a second mapped copy would report each of their diagnostics twice.
                 None,
+                false,
                 &loop_indent,
                 scope,
                 ctx.template_binding_access,
@@ -87,11 +88,31 @@ pub(in crate::virtual_ts::scope) fn generate_closure_component_props_recursive(
                 super::super::append_chained_vif_guard_close(ts, indent);
             }
         }
-        ScopeData::VSlot(data) => {
+        // Without a check below it, a slot replay would only re-evaluate the
+        // template pass's pattern. Loops stay replayed: skipping them was
+        // measured to create more types on misskey and n8n (#12520).
+        ScopeData::VSlot(data) if replays_checks(ctx, scope_id) => {
             generate_v_slot_props_scope(ts, mappings, ctx, scope, data, indent, &inner_indent);
         }
         _ => {}
     }
+}
+
+/// Whether replaying `scope_id` emits anything: a component usage or a
+/// dynamic component alias in it or in a closure scope nested in it.
+fn replays_checks(ctx: &VForPropsContext<'_, '_>, scope_id: u32) -> bool {
+    ctx.components_by_scope.contains_key(&scope_id)
+        || ctx.dynamic_aliases.declares_in(scope_id)
+        || ctx.children_map.get(&scope_id).is_some_and(|children| {
+            children.iter().any(|&child| {
+                ctx.summary.scopes.get_scope(child).is_some_and(|scope| {
+                    matches!(
+                        scope.kind,
+                        ScopeKind::VFor | ScopeKind::VSlot | ScopeKind::VMatch | ScopeKind::VWhen
+                    ) && replays_checks(ctx, child.as_u32())
+                })
+            })
+        })
 }
 
 /// A replayed child loop stays lexically inside every ancestor loop. Reopening
