@@ -17,7 +17,7 @@ pub(crate) use emit_resolver_share::{
 };
 pub(crate) use inference_helpers::emit_event_inference_helpers;
 
-use vize_carton::{CompactString, FxHashMap, FxHashSet, String, append, cstr};
+use vize_carton::{CompactString, FxHashMap, FxHashSet, String, cstr};
 use vize_croquis::{Croquis, EventHandlerScopeData, Scope, naming::to_pascal_case};
 
 use super::context::{ComponentContractKey, EventContract, EventContractKey};
@@ -212,16 +212,16 @@ pub(super) fn generate_component_event_types(
         relations.emit(ts, indent);
         // A vue-tsc generic library export instantiates its generics with their
         // constraints here, so its payload comes from the bound-props call below.
-        append!(
-            *ts,
+        vize_l0::emit_ts!(
+            ts,
             "{indent}type {library} = typeof {component_ref} extends {{ __vizeCheck: any }} | {{ readonly __vizeComponentMarker: true }} ? false : typeof {component_ref} extends (...args: any[]) => infer __R ? 0 extends (1 & __R) ? false : '__ctx' extends keyof __R ? true : false : false;\n",
         );
-        append!(
-            *ts,
+        vize_l0::emit_ts!(
+            ts,
             "{indent}type {props_box} = typeof {component_ref} extends {{ new (...args: any[]): {{ $props: infer __P }} }} ? [__P] : typeof {component_ref} extends (props: infer __P, ...args: any[]) => any ? [__P] : [];\n",
         );
-        append!(
-            *ts,
+        vize_l0::emit_ts!(
+            ts,
             "{indent}type {emit_props_box} = typeof {component_ref} extends {{ __vizeEmitProps?: infer __EP }} ? [__EP] : [];\n",
         );
         if native_fallthrough_only {
@@ -234,8 +234,8 @@ pub(super) fn generate_component_event_types(
             );
         } else if fallthrough_listeners {
             // An `any` root has no typed contract, the same as no root.
-            append!(
-                *ts,
+            vize_l0::emit_ts!(
+                ts,
                 "{indent}type {fallthrough_box} = typeof {component_ref} extends {{ readonly __vizeFallthroughProps?: infer __F }} ? {is_any}<__F> extends true ? [] : [__F] : [];\n",
             );
         }
@@ -248,14 +248,14 @@ pub(super) fn generate_component_event_types(
         let public_props = cstr!("{component_aliases}_public_props");
         let resolved_props = cstr!("{prop_args}_resolved_props");
         if first_component {
-            append!(
-                *ts,
+            vize_l0::emit_ts!(
+                ts,
                 "{indent}type {public_props} = {props_box} extends infer __B ? __B extends [infer __P] ? __P : {{}} : never;\n",
             );
         }
         if first_contract {
-            append!(
-                *ts,
+            vize_l0::emit_ts!(
+                ts,
                 "{indent}type {resolved_props} = typeof {component_ref} extends {{ readonly __vizeComponentMarker: true }} ? typeof {component_ref} extends {{ __vizeCheck: unknown }} ? {public_props} : {owned_listener_key} extends {emit_owned_keys}<typeof {component_ref}> ? {public_props} : unknown[] extends {fallthrough_args} ? {public_props} : typeof {component_ref} extends {{ readonly __vizeFallthroughProps?: infer __F }} ? NonNullable<__F> : {public_props} : {public_props};\n",
             );
         }
@@ -270,13 +270,13 @@ pub(super) fn generate_component_event_types(
     );
     if first_contract {
         if let Some(props) = contextual_props.as_ref() {
-            append!(
-                *ts,
+            vize_l0::emit_ts!(
+                ts,
                 "{indent}type {prop_args} = {library} extends true ? unknown[] : {props} extends infer __P ? {prop_listener_args} : unknown[];\n",
             );
         } else {
-            append!(
-                *ts,
+            vize_l0::emit_ts!(
+                ts,
                 "{indent}type {prop_args} = {library} extends true ? unknown[] : {props_box} extends infer __B ? __B extends [infer __P] ? {prop_listener_args} : unknown[] : never;\n",
             );
         }
@@ -303,13 +303,13 @@ pub(super) fn generate_component_event_types(
     } else if fallthrough_listeners {
         if first_contract {
             if legacy_vue2 {
-                append!(
-                    *ts,
+                vize_l0::emit_ts!(
+                    ts,
                     "{indent}type {fallthrough_args} = {fallthrough_box} extends infer __B ? __B extends [infer __F] ? NonNullable<__F> extends {{ {prop_key}?: (...args: infer __A) => any }} ? (__A extends [] ? unknown[] : __A) : unknown[] : unknown[] : never;\n",
                 );
             } else {
-                append!(
-                    *ts,
+                vize_l0::emit_ts!(
+                    ts,
                     "{indent}type {fallthrough_args} = {fallthrough_box} extends infer __B ? __B extends [infer __F] ? NonNullable<__F> extends infer __P ? ({prop_listener_args}) extends infer __A extends unknown[] ? (__A extends [] ? unknown[] : __A) : unknown[] : unknown[] : unknown[] : never;\n",
                 );
             }
@@ -345,8 +345,8 @@ pub(super) fn generate_component_event_types(
     );
 
     if first_contract {
-        append!(
-            *ts,
+        vize_l0::emit_ts!(
+            ts,
             "{indent}type {static_emit_args} = {emit_props_box} extends infer __B ? __B extends [infer __EP] ? __EP extends {{ {prop_key}?: (...args: infer __A) => any }} ? __A : unknown[] : unknown[] : never;\n",
         );
     }
@@ -360,17 +360,17 @@ pub(super) fn generate_component_event_types(
             .as_ref()
             .map(|loose| cstr!("{loose} extends true ? unknown[] : "))
             .unwrap_or_default();
-        append!(
-            *ts,
+        vize_l0::emit_ts!(
+            ts,
             "{indent}type {emit_args} = unknown[] extends {inferred} ? {static_emit_args} : {inferred};\n",
         );
-        append!(
-            *ts,
+        vize_l0::emit_ts!(
+            ts,
             "{indent}type {args_type} = {loose_runtime_args}unknown[] extends {inferred} ? (unknown[] extends {prop_args} ? (unknown[] extends {emit_args} ? {unresolved_args} : {emit_args}) : {prop_args}) : {inferred};\n",
         );
     } else {
-        append!(
-            *ts,
+        vize_l0::emit_ts!(
+            ts,
             "{indent}type {emit_args} = {static_emit_args};\n{indent}type {args_type} = unknown[] extends {prop_args} ? (unknown[] extends {emit_args} ? {unresolved_args} : {emit_args}) : {prop_args};\n",
         );
     }
@@ -381,18 +381,18 @@ pub(super) fn generate_component_event_types(
     let listener_args_type = if legacy_vue2 {
         let legacy_args_type =
             cstr!("__{component_type_name}_{scope_id}_{safe_event_name}_legacy_args");
-        append!(
-            *ts,
+        vize_l0::emit_ts!(
+            ts,
             "{indent}type {event_type} = {args_type} extends infer __A extends unknown[] ? [__A] extends [[]] ? any : unknown[] extends __A ? any : $Vue2LooseEventArg<__A[0]> : never;\n",
         );
-        append!(
-            *ts,
+        vize_l0::emit_ts!(
+            ts,
             "{indent}type {legacy_args_type} = {args_type} extends [] ? any[] : unknown[] extends {args_type} ? any[] : $Vue2LooseEmitArgs<{args_type}>;\n",
         );
         legacy_args_type
     } else {
-        append!(
-            *ts,
+        vize_l0::emit_ts!(
+            ts,
             "{indent}type {event_type} = {args_type} extends infer __A extends unknown[] ? [__A] extends [[]] ? any : unknown[] extends __A ? any : __A[0] : never;\n",
         );
         args_type.clone()

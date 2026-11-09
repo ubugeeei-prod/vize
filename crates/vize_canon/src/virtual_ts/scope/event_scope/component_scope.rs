@@ -3,7 +3,7 @@
 //! against the child's listener prop type so its return value is checked.
 
 use crate::virtual_ts::scope::ScopeMappings;
-use vize_carton::{append, profile};
+use vize_carton::profile;
 use vize_croquis::{EventHandlerScopeData, Scope};
 
 use crate::virtual_ts::expressions::ComponentPropSource;
@@ -135,12 +135,9 @@ pub(super) fn generate_component_handler_scope(
     let listener_type_expr = event_types.listener_type_expr;
     // Type the listener against the FULL emit tuple so multi-arg emits
     // keep every parameter (#1512); unresolved sigs stay variadic.
-    append!(
-        *ts,
-        "{indent}type {listener_type} = {listener_type_expr};\n",
-    );
+    vize_l0::emit_ts!(ts, "{indent}type {listener_type} = {listener_type_expr};\n",);
     if let (Some(handler_type), Some(handler_type_expr)) = (&handler_type, &handler_type_expr) {
-        append!(*ts, "{indent}type {handler_type} = {handler_type_expr};\n",);
+        vize_l0::emit_ts!(ts, "{indent}type {handler_type} = {handler_type_expr};\n",);
     }
     let event_name_src_range = event_name_source_range(
         ctx.template_source,
@@ -161,22 +158,22 @@ pub(super) fn generate_component_handler_scope(
     let mut inline_name_range = None;
     if inline_statement_handler {
         let handler_name = vize_carton::cstr!("__vize_inline_handler_{}", scope_id);
-        append!(*ts, "{indent}const ");
+        vize_l0::emit_ts!(ts, "{indent}const ");
         let name_start = ts.len();
         ts.push_str(handler_name.as_str());
         inline_name_range = Some(name_start..ts.len());
-        append!(
-            *ts,
+        vize_l0::emit_ts!(
+            ts,
             ": {listener_type} = (...__vize_args: Parameters<{listener_type}>) => {{\n",
         );
     } else {
-        append!(
-            *ts,
+        vize_l0::emit_ts!(
+            ts,
             "{indent}void ((...__vize_args: Parameters<{listener_type}>) => {{\n",
         );
     }
-    append!(
-        *ts,
+    vize_l0::emit_ts!(
+        ts,
         "{inner_indent}const {event_value} = (__vize_args as unknown[])[0] as {event_type}; void {event_value};\n",
     );
 
@@ -206,8 +203,8 @@ pub(super) fn generate_component_handler_scope(
     );
 
     if let Some(name_range) = inline_name_range {
-        append!(
-            *ts,
+        vize_l0::emit_ts!(
+            ts,
             "{indent}}};\n{indent}void __vize_inline_handler_{scope_id};\n"
         );
         let src_range = event_name_src_range.unwrap_or(
@@ -220,7 +217,7 @@ pub(super) fn generate_component_handler_scope(
             sub_spans: Vec::new(),
         });
     } else {
-        append!(*ts, "{indent}}});\n");
+        vize_l0::emit_ts!(ts, "{indent}}});\n");
     }
 }
 

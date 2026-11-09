@@ -370,10 +370,10 @@ fn generate_usage_declarations(
 
     let src_start = (ctx.template_offset + usage.start) as usize;
     let src_end = (ctx.template_offset + usage.end) as usize;
-    append!(*ts, "  // @vize-map: component -> {src_start}:{src_end}\n",);
+    vize_l0::emit_ts!(ts, "  // @vize-map: component -> {src_start}:{src_end}\n",);
     // Prefer the modern static raw-props identity while retaining the
     // instance marker for declarations emitted before #4034.
-    append!(*ts, "  type __{component_type_name}_Props_{idx} = ",);
+    vize_l0::emit_ts!(ts, "  type __{component_type_name}_Props_{idx} = ",);
     let shared = shared_contracts.get(&idx);
     if let Some(shared) = shared.filter(|shared| shared.canonical_idx != idx) {
         append!(

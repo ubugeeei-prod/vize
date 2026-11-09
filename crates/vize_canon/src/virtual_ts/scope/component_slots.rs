@@ -7,7 +7,7 @@ mod strict_children;
 
 pub(crate) use contract_share::{flush as flush_slot_contracts, reset as reset_slot_contracts};
 
-use vize_carton::{CompactString, FxHashSet, String, append};
+use vize_carton::{CompactString, FxHashSet, String};
 use vize_croquis::{Croquis, analysis::ComponentUsage};
 use vize_l0::ts;
 use vize_relief::RootNode;
@@ -101,7 +101,7 @@ pub(super) fn generate_component_slot_checks(
             meta.template_ast,
             ctx.hoist_shared_preamble,
         );
-        append!(*ts, "{expr_indent}type {contract_name} = {rhs};\n");
+        vize_l0::emit_ts!(ts, "{expr_indent}type {contract_name} = {rhs};\n");
 
         let provided_slots = provided_slots_type(usage);
         let check_name = vize_carton::cstr!("__vize_required_slots_{idx}");
@@ -109,17 +109,17 @@ pub(super) fn generate_component_slot_checks(
         if ctx.hoist_shared_preamble {
             let required_slots =
                 crate::virtual_ts::helpers::shared_types::REQUIRED_SLOTS.select(true);
-            append!(
-                *ts,
+            vize_l0::emit_ts!(
+                ts,
                 "{expr_indent}const {check_name}: {required_slots}<{contract_name}, {provided_slots}> = {{}};\n"
             );
         } else {
-            append!(
-                *ts,
+            vize_l0::emit_ts!(
+                ts,
                 "{expr_indent}const {check_name}: $RequiredSlots<{contract_name}, {provided_slots}> = {{}};\n"
             );
         }
-        append!(*ts, "{expr_indent}void {check_name};\n");
+        vize_l0::emit_ts!(ts, "{expr_indent}void {check_name};\n");
         let gen_end = ts.len();
         if let Some(src_range) = crate::virtual_ts::component_tag::source_range(
             ctx.source_context.template,

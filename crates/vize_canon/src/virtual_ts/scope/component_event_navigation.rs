@@ -1,7 +1,7 @@
 use crate::virtual_ts::template_binding_access::TemplateBindingAccess;
 use std::ops::Range;
 
-use vize_carton::{FxHashSet, append, cstr};
+use vize_carton::{FxHashSet, cstr};
 use vize_croquis::croquis::{ComponentUsage, EventListener};
 use vize_croquis::{Croquis, ScopeKind};
 
@@ -193,13 +193,13 @@ fn emit_usage_event_references(
         }
         if is_model_event {
             if !emitted_model_completion_ref {
-                append!(
-                    *ts,
+                vize_l0::emit_ts!(
+                    ts,
                     "{event_indent}const {model_completion_ref}: typeof {resolved_events} & Record<string, unknown> = {resolved_events};\n"
                 );
                 emitted_model_completion_ref = true;
             }
-            append!(*ts, "{event_indent}void {model_completion_ref}[");
+            vize_l0::emit_ts!(ts, "{event_indent}void {model_completion_ref}[");
             let generated = push_ts_single_quoted_literal(ts, event.name.as_str());
             ts.push_str("];\n");
             mappings.push(VizeMapping {
@@ -217,20 +217,20 @@ fn emit_usage_event_references(
         };
         if !*emitted_ref {
             if ctx.preserve_event_navigation {
-                append!(
-                    *ts,
+                vize_l0::emit_ts!(
+                    ts,
                     "{event_indent}const {events_ref}: typeof {resolved_events} & Record<string, unknown> = {resolved_events};\n"
                 );
             } else {
-                append!(
-                    *ts,
+                vize_l0::emit_ts!(
+                    ts,
                     "{event_indent}const {events_ref} = undefined as unknown as {component_events}<typeof {component_ref}> & Record<string, unknown>;\n"
                 );
             }
             *emitted_ref = true;
         }
 
-        append!(*ts, "{event_indent}void {events_ref}");
+        vize_l0::emit_ts!(ts, "{event_indent}void {events_ref}");
         let event_gen_range = if is_complete_kebab {
             if is_ts_identifier(camel_event_name.as_str()) {
                 ts.push('.');
@@ -282,8 +282,8 @@ fn emit_event_name_checks(
         .select(ctx.hoist_shared_preamble);
     // Handler values are checked separately. Use the canonical event map so
     // raw emits, listener props and kebab aliases all share the same names.
-    append!(
-        *ts,
+    vize_l0::emit_ts!(
+        ts,
         "{indent}const __vize_event_keys_{idx}: {{ [K in keyof {component_events}<typeof {component_ref}> & string as `on${{Capitalize<$ComponentAttrCamel<K>>}}`]?: unknown }} = {{\n"
     );
     let mut emitted_names = FxHashSet::default();
@@ -298,7 +298,7 @@ fn emit_event_name_checks(
         if !emitted_names.insert(name.clone()) {
             continue;
         }
-        append!(*ts, "{indent}  ");
+        vize_l0::emit_ts!(ts, "{indent}  ");
         let start = ts.len();
         crate::virtual_ts::helpers::push_ts_string_literal(ts, name.as_str());
         let end = ts.len();
@@ -309,7 +309,7 @@ fn emit_event_name_checks(
             sub_spans: Vec::new(),
         });
     }
-    append!(*ts, "{indent}}};\n{indent}void __vize_event_keys_{idx};\n");
+    vize_l0::emit_ts!(ts, "{indent}}};\n{indent}void __vize_event_keys_{idx};\n");
 }
 
 fn emit_resolved_events(
@@ -323,8 +323,8 @@ fn emit_resolved_events(
 ) {
     let component_events = crate::virtual_ts::helpers::shared_types::COMPONENT_EVENTS
         .select(ctx.hoist_shared_preamble);
-    append!(
-        *ts,
+    vize_l0::emit_ts!(
+        ts,
         "{indent}type __vize_events_resolver_{idx} = typeof {component_ref} extends {{ __vizeResolveEvents?: infer __F }} ? (__F extends (...args: any[]) => any ? __F : (props: any) => {component_events}<typeof {component_ref}>) : (props: any) => {component_events}<typeof {component_ref}>;\n{indent}// @ts-ignore Inference-only call; the authored prop checker owns diagnostics.\n{indent}const {resolved_events} = (undefined as unknown as __vize_events_resolver_{idx})("
     );
     if !usage.spread_props.is_empty() {
@@ -359,14 +359,14 @@ fn emit_resolved_events(
         }
         let inline_callback = super::is_inline_callback_prop(prop);
         if inline_callback {
-            append!(
-                *ts,
+            vize_l0::emit_ts!(
+                ts,
                 "{indent}  // @ts-ignore Inference-only callback prop; mapped prop owner checks diagnostics.\n"
             );
         }
-        append!(*ts, "{indent}  ");
+        vize_l0::emit_ts!(ts, "{indent}  ");
         let key_start = ts.len();
-        append!(*ts, "\"{name}\"");
+        vize_l0::emit_ts!(ts, "\"{name}\"");
         let key_end = ts.len();
         ts.push_str(": ");
         let value_start = ts.len();
@@ -391,7 +391,7 @@ fn emit_resolved_events(
         .record_prop_projection(usage, prop, key_start..key_end, value_start..value_end);
         ts.push_str(",\n");
     }
-    append!(*ts, "{indent}}});\n");
+    vize_l0::emit_ts!(ts, "{indent}}});\n");
 }
 
 fn event_navigation_source_range(
