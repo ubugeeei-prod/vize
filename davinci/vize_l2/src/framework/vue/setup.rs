@@ -4,13 +4,15 @@
 //! initializers of top-level, non-`declare` variable declarators, after
 //! removing TypeScript expression wrappers and parentheses. A `withDefaults`
 //! call also records the `defineProps` call it wraps, and each `defineProps`
-//! call records the prop keys its runtime argument declares.
+//! call records the prop keys its runtime argument declares. The first
+//! `defineProps` call declares the component's props contract.
 
 mod bindings;
 mod props;
 pub use bindings::{ReactiveSource, SetupBinding, SetupBindingKind};
 pub use props::{PropsDestructure, PropsField};
 
+use super::contract::{self, ComponentContract, LocalTypes, PropsDraft};
 use super::{MacroKind, lookup};
 use crate::file::{ScopeId, ScriptUnit};
 use crate::lang::js::{CallEvent, DeclaredEvent, FileObserver, StatementEvent};
@@ -44,6 +46,7 @@ pub struct SetupFacts {
     bindings: Vec<SetupBinding>,
     props_destructure: Option<PropsDestructure>,
     unclassified: Vec<Span>,
+    contract: ComponentContract,
 }
 
 impl SetupFacts {
@@ -73,6 +76,12 @@ impl SetupFacts {
     #[must_use]
     pub fn props_destructure(&self) -> Option<&PropsDestructure> {
         self.props_destructure.as_ref()
+    }
+
+    /// The component contract the macros declare.
+    #[must_use]
+    pub fn contract(&self) -> &ComponentContract {
+        &self.contract
     }
 
     /// `defineProps` destructure patterns whose bindings are not classified
@@ -110,6 +119,9 @@ pub struct SetupObserver<'a> {
     calls: Vec<MacroCall>,
     runtime_prop_keys: Vec<Span>,
     bindings: bindings::Bindings<'a>,
+    types: LocalTypes<'a>,
+    props_contract: Option<PropsDraft<'a>>,
+    duplicates: Vec<Span>,
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -119,7 +131,7 @@ struct Program {
     statements: usize,
 }
 
-impl SetupObserver<'_> {
+impl<'a> SetupObserver<'a> {
     #[must_use]
     pub fn new() -> Self {
         Self::default()
@@ -142,32 +154,36 @@ impl SetupObserver<'_> {
                 expected: program.statements,
             });
         }
+        let props = self.props_contract.map(|mut props| {
+            for (key, value) in self.bindings.defaults {
+                props.destructure_default(key, value);
+            }
+            props.finish(&self.types)
+        });
         Ok(SetupFacts {
             macro_calls: self.calls,
             runtime_prop_keys: self.runtime_prop_keys,
             bindings: self.bindings.rows,
             props_destructure: self.bindings.props,
             unclassified: self.bindings.unclassified,
+            contract: ComponentContract {
+                props,
+                duplicates: self.duplicates,
+            },
         })
     }
 
     fn authored(&mut self, base: u32, span: oxc_span::Span) -> Span {
-        match (base.checked_add(span.start), base.checked_add(span.end)) {
-            (Some(start), Some(end)) => Span::new(start, end),
-            _ => {
-                self.overflow = true;
-                Span::new(0, 0)
-            }
-        }
+        authored(base, span, &mut self.overflow)
     }
 
-    fn expression(&mut self, base: u32, expression: &Expression<'_>, declarator: Option<Span>) {
+    fn expression(&mut self, base: u32, expression: &Expression<'a>, declarator: Option<Span>) {
         if let Expression::CallExpression(call) = unwrap(expression) {
             self.call(base, call, declarator);
         }
     }
 
-    fn call(&mut self, base: u32, call: &CallExpression<'_>, declarator: Option<Span>) {
+    fn call(&mut self, base: u32, call: &CallExpression<'a>, declarator: Option<Span>) {
         let Expression::Identifier(callee) = &call.callee else {
             return;
         };
@@ -193,16 +209,59 @@ impl SetupObserver<'_> {
         };
         self.calls.push(record);
         if row.kind == MacroKind::DefineProps {
-            match props::runtime_keys(call.arguments.first(), |span| self.authored(base, span)) {
-                Ok(keys) => self.runtime_prop_keys.extend(keys),
-                Err(key) => self.bindings.unclassified.push(key),
-            }
+            self.define_props(base, record.span, call);
         }
         if row.kind == MacroKind::WithDefaults
             && let Some(Argument::CallExpression(inner)) = call.arguments.first()
             && matches!(&inner.callee, Expression::Identifier(id) if id.name == super::DEFINE_PROPS)
         {
             self.call(base, inner, declarator);
+            let inner = self.authored(base, inner.span);
+            let overflow = &mut self.overflow;
+            if let Some(defaults) = call.arguments.get(1)
+                && let Some(props) = self
+                    .props_contract
+                    .as_mut()
+                    .filter(|props| props.declaration() == inner)
+            {
+                props.defaults(defaults, &mut |span| authored(base, span, overflow));
+            }
+        }
+    }
+
+    /// The runtime keys every call declares; the first call's contract.
+    fn define_props(&mut self, base: u32, span: Span, call: &CallExpression<'a>) {
+        let overflow = &mut self.overflow;
+        let authored = &mut |span| authored(base, span, overflow);
+        let runtime = call.arguments.first().map(|argument| {
+            let read = contract::runtime_props(argument, &mut *authored);
+            (authored(argument.span()), read)
+        });
+        if let Some((_, read)) = &runtime {
+            self.runtime_prop_keys
+                .extend(read.props.iter().map(|named| named.prop.name));
+            self.bindings
+                .unclassified
+                .extend(read.escaped.iter().copied());
+        }
+        if self.props_contract.is_some() {
+            self.duplicates.push(span);
+            return;
+        }
+        let type_argument = call
+            .type_arguments
+            .as_ref()
+            .and_then(|arguments| arguments.params.first());
+        self.props_contract = Some(PropsDraft::new(span, type_argument, runtime, authored));
+    }
+}
+
+fn authored(base: u32, span: oxc_span::Span, overflow: &mut bool) -> Span {
+    match (base.checked_add(span.start), base.checked_add(span.end)) {
+        (Some(start), Some(end)) => Span::new(start, end),
+        _ => {
+            *overflow = true;
+            Span::new(0, 0)
         }
     }
 }
@@ -258,6 +317,10 @@ impl<'a> FileObserver<'a> for SetupObserver<'a> {
             _ => {}
         }
         self.bindings.statement(program.base, event.statement);
+        let overflow = &mut self.overflow;
+        self.types.statement(event.statement, &mut |span| {
+            authored(program.base, span, overflow)
+        });
     }
 
     fn declared(&mut self, _: DeclaredEvent<'_, 'a>) {}
@@ -270,6 +333,10 @@ impl<'a> FileObserver<'a> for SetupObserver<'a> {
             bindings: self.bindings.rows.len(),
             props: self.bindings.props.is_some(),
             unclassified: self.bindings.unclassified.len(),
+            defaults: self.bindings.defaults.len(),
+            types: self.types.len(),
+            contract: self.props_contract.is_some(),
+            duplicates: self.duplicates.len(),
         }
     }
 
@@ -288,6 +355,12 @@ impl<'a> FileObserver<'a> for SetupObserver<'a> {
         if !checkpoint.props {
             self.bindings.props = None;
         }
+        self.bindings.defaults.truncate(checkpoint.defaults);
+        self.types.truncate(checkpoint.types);
+        if !checkpoint.contract {
+            self.props_contract = None;
+        }
+        self.duplicates.truncate(checkpoint.duplicates);
     }
 }
 
@@ -300,4 +373,8 @@ pub struct SetupCheckpoint {
     bindings: usize,
     props: bool,
     unclassified: usize,
+    defaults: usize,
+    types: usize,
+    contract: bool,
+    duplicates: usize,
 }
