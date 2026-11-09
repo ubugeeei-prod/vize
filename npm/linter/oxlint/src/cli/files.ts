@@ -48,13 +48,8 @@ function collectVueLikeFilesFromTarget(
 
   const stat = fs.statSync(absoluteTarget);
   if (stat.isDirectory()) {
-    return fs
-      .globSync("**/*", {
-        cwd: absoluteTarget,
-        withFileTypes: false,
-        exclude: ["**/node_modules/**", "**/.git/**"],
-      })
-      .map((entry) => observe(path.resolve(absoluteTarget, entry)))
+    return walkDirectory(absoluteTarget)
+      .map((entry) => observe(entry))
       .filter(isSupportedLintFile);
   }
 
@@ -71,4 +66,43 @@ function isSupportedLintFile(filename: string): boolean {
   } catch {
     return false;
   }
+}
+
+/**
+ * Lists every entry (files and directories) below `directory`, dot-files and dot-directories included.
+ * `fs.globSync("**\/*")` skips them, but Oxlint lints files such as
+ * `.lintstagedrc.cjs`; leaving them out made the selected set larger than the
+ * candidate set and aborted the whole Vue transport for a `.` target.
+ */
+function walkDirectory(directory: string): string[] {
+  const files: string[] = [];
+  const pending = [directory];
+  const seen = new Set<string>();
+  while (pending.length > 0) {
+    const current = pending.pop() as string;
+    let real: string;
+    try {
+      real = fs.realpathSync(current);
+    } catch {
+      continue;
+    }
+    if (seen.has(real)) continue;
+    seen.add(real);
+    for (const entry of fs.readdirSync(current, { withFileTypes: true })) {
+      if (entry.name === "node_modules" || entry.name === ".git") continue;
+      const full = path.join(current, entry.name);
+      let isDirectory = entry.isDirectory();
+      if (entry.isSymbolicLink()) {
+        try {
+          isDirectory = fs.statSync(full).isDirectory();
+        } catch {
+          continue;
+        }
+      }
+      // Directories are listed too: `fs.globSync` did, and callers bind them as candidates.
+      files.push(full);
+      if (isDirectory) pending.push(full);
+    }
+  }
+  return files;
 }
