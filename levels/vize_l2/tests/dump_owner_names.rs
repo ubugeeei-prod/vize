@@ -6,6 +6,9 @@ use vize_l0::{Span, String};
 use vize_l2::dump::{Attribute, Component, Element, Op, Page};
 use vize_l2::op::Namespace;
 
+/// The historical v1 page header, kept as a wire identity.
+const V1: &str = "disegno"; // codename: the v1 page header
+
 fn pages(name: &str) -> Vec<Page> {
     let mut result = vec![Page {
         ops: vec![Op::Component(Component {
@@ -78,7 +81,14 @@ fn ordinary_names_keep_the_existing_current_and_historical_bytes() {
     let printed = historical.print_to_string(Mode::Full);
     assert_eq!(
         printed.as_str(),
-        "[l2]\nops=1\n\n[l2.ops]\nui.component \"Quoted\" @0:99\n\n"
+        [
+            "[",
+            V1,
+            "]\nops=1\n\n[",
+            V1,
+            ".ops]\nui.component \"Quoted\" @0:99\n\n"
+        ]
+        .concat()
     );
     assert_eq!(
         vize_l2::dump::historical::v1::Page::parse(&printed).unwrap(),

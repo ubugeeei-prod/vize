@@ -9,30 +9,38 @@ use vize_l2::dump::{Attribute, Comment, Element, Expr, Interpolation, Op, Page, 
 use vize_l2::expr::OpaqueReason;
 use vize_l2::op::Namespace;
 
+/// The historical v1 page header, kept as a wire identity.
+const V1: &str = "disegno"; // codename: the v1 page header
+
+/// Spell the v1 header into a fixture written with `@V1@`.
+fn v1(text: &str) -> String {
+    String::from(text.replace("@V1@", V1))
+}
+
 const CURRENT: &str = r#"[l2-dump-v2]
 ops=6
 
 [l2-dump-v2.ops]
 ui.element div @0:120
-  attr title="[l2]" @1:12
-  ui.text "[l2.ops]" @12:27
+  attr title="[@V1@]" @1:12
+  ui.text "[@V1@.ops]" @12:27
   ui.interpolation js("[l2-dump-v2]" @27:42) @27:42
   ui.comment "[l2-dump-v2.ops]" @42:60
-  ui.interpolation foreign(md "[l2]" @60:78) @60:78
+  ui.interpolation foreign(md "[@V1@]" @60:78) @60:78
   ui.interpolation opaque(multi-statement "[s2-provenance-dump]" @78:100) @78:100
 
 "#;
 
-const HISTORICAL: &str = r#"[l2]
+const HISTORICAL: &str = r#"[@V1@]
 ops=6
 
-[l2.ops]
+[@V1@.ops]
 ui.element div @0:120
-  attr title="[l2]" @1:12
-  ui.text "[l2.ops]" @12:27
+  attr title="[@V1@]" @1:12
+  ui.text "[@V1@.ops]" @12:27
   ui.interpolation js("[l2-dump-v2]" @27:42) @27:42
   ui.comment "[l2-dump-v2.ops]" @42:60
-  ui.interpolation foreign(md "[l2]" @60:78) @60:78
+  ui.interpolation foreign(md "[@V1@]" @60:78) @60:78
   ui.interpolation opaque(multi-statement "[s2-provenance-dump]" @78:100) @78:100
 
 "#;
@@ -45,13 +53,13 @@ fn tree(base: u32) -> Page {
             namespace: Namespace::Html,
             attributes: vec![Attribute {
                 name: String::from("title"),
-                value: Some(String::from("[l2]")),
+                value: Some(v1("[@V1@]")),
                 span: span(1, 12),
             }],
             bindings: vec![],
             children: vec![
                 Op::Text(Text {
-                    content: String::from("[l2.ops]"),
+                    content: v1("[@V1@.ops]"),
                     span: span(12, 27),
                 }),
                 Op::Interpolation(Interpolation {
@@ -69,7 +77,7 @@ fn tree(base: u32) -> Page {
                 Op::Interpolation(Interpolation {
                     expression: Expr::Foreign {
                         dialect: String::from("md"),
-                        source: String::from("[l2]"),
+                        source: v1("[@V1@]"),
                         span: span(60, 78),
                     },
                     raw_html: false,
@@ -93,29 +101,29 @@ fn tree(base: u32) -> Page {
 #[test]
 fn both_explicit_codecs_preserve_header_looking_payloads_and_spans() {
     let page = tree(0);
-    assert_eq!(page.print_to_string(Mode::Full).as_str(), CURRENT);
-    assert_eq!(Page::parse(CURRENT), Ok(page.clone()));
+    assert_eq!(page.print_to_string(Mode::Full), v1(CURRENT));
+    assert_eq!(Page::parse(&v1(CURRENT)), Ok(page.clone()));
     let old = HistoricalPage::from_current(page.clone());
-    assert_eq!(old.print_to_string(Mode::Full).as_str(), HISTORICAL);
-    assert_eq!(HistoricalPage::parse(HISTORICAL), Ok(old.clone()));
+    assert_eq!(old.print_to_string(Mode::Full), v1(HISTORICAL));
+    assert_eq!(HistoricalPage::parse(&v1(HISTORICAL)), Ok(old.clone()));
     assert_eq!(old.into_current(), page);
 }
 
 #[test]
 fn current_and_historical_headers_never_select_each_other() {
     assert_eq!(
-        Page::parse(HISTORICAL),
+        Page::parse(&v1(HISTORICAL)),
         Err(Error::new(1, cstr!("first section must be [l2-dump-v2]")))
     );
     assert_eq!(
-        HistoricalPage::parse(CURRENT),
-        Err(Error::new(1, cstr!("first section must be [l2]")))
+        HistoricalPage::parse(&v1(CURRENT)),
+        Err(Error::new(1, cstr!("first section must be [{V1}]")))
     );
     for (input, line, message) in [
         (
-            "[l2-dump-v2]\nops=0\n[l2.ops]\n",
+            "[l2-dump-v2]\nops=0\n[@V1@.ops]\n",
             3,
-            "unknown section [l2.ops]",
+            "unknown section [@V1@.ops]",
         ),
         (
             "[l2-dump-v2]\nops=0\n[l2-dump-v2]\n",
@@ -129,13 +137,10 @@ fn current_and_historical_headers_never_select_each_other() {
         ),
         ("", 0, "missing [l2-dump-v2] header"),
     ] {
-        assert_eq!(
-            Page::parse(input),
-            Err(Error::new(line, String::from(message)))
-        );
+        assert_eq!(Page::parse(&v1(input)), Err(Error::new(line, v1(message))));
     }
     assert_eq!(
-        HistoricalPage::parse("[l2]\nops=0\n[l2-dump-v2.ops]\n"),
+        HistoricalPage::parse(&v1("[@V1@]\nops=0\n[l2-dump-v2.ops]\n")),
         Err(Error::new(3, cstr!("unknown section [l2-dump-v2.ops]")))
     );
 }
@@ -146,20 +151,20 @@ fn provenance_v2_preserves_quoted_headers_and_record_spans() {
         records: vec![Record {
             rule: String::from("lower.text"),
             node: Some(7),
-            before: String::from("[s2-provenance-dump]\n[l2]"),
+            before: v1("[s2-provenance-dump]\n[@V1@]"),
             after: String::from("[l2-provenance-dump-v2]"),
             span: Span::new(3, 42),
         }],
     };
-    let expected = r#"[l2-provenance-dump-v2]
+    let expected = v1(r#"[l2-provenance-dump-v2]
 
 [l2-provenance-dump-v2.records]
-rule=lower.text node=7 before="[s2-provenance-dump]\n[l2]" after="[l2-provenance-dump-v2]" @3:42
+rule=lower.text node=7 before="[s2-provenance-dump]\n[@V1@]" after="[l2-provenance-dump-v2]" @3:42
 
-"#;
-    assert_eq!(page.print_to_string(Mode::Full).as_str(), expected);
-    assert_eq!(page.print_to_string(Mode::Display).as_str(), expected);
-    assert_eq!(ProvenancePage::parse(expected), Ok(page));
+"#);
+    assert_eq!(page.print_to_string(Mode::Full), expected);
+    assert_eq!(page.print_to_string(Mode::Display), expected);
+    assert_eq!(ProvenancePage::parse(&expected), Ok(page));
     assert!(ProvenancePage::parse("[s2-provenance-dump]\n").is_err());
 }
 
@@ -221,14 +226,14 @@ fn typed_slots_project_only_to_the_identical_frozen_legacy_wire_record() {
         value: Some(value),
         span,
     }));
-    let old = r#"[l2]
+    let old = v1(r#"[@V1@]
 ops=2
 
-[l2.ops]
+[@V1@.ops]
 ui.component B @0:32
   vue.directive "slots" value=js("pick(\"猫&\")" @9:21) @0:31
 
-"#;
+"#);
     let current = r#"[l2-dump-v2]
 ops=2
 
@@ -243,16 +248,16 @@ ui.component B @0:32
         HistoricalPage::from_current(typed)
             .print_to_string(Mode::Full)
             .as_str(),
-        old
+        old.as_str()
     );
     assert_eq!(
         HistoricalPage::from_current(legacy.clone())
             .print_to_string(Mode::Full)
             .as_str(),
-        old
+        old.as_str()
     );
     assert_eq!(
-        HistoricalPage::parse(old)
+        HistoricalPage::parse(&old)
             .expect("old grammar")
             .into_current(),
         legacy
