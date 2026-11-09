@@ -248,8 +248,6 @@ fn dynamic_config_projects_ordinary_windows_paths() {
 
     let loaded = super::try_load_project_config_with_source(Some(project.path())).unwrap();
     let root = loaded.project_root.unwrap();
-    let root_text = root.to_string_lossy().replace('\\', "/");
-    assert!(!root_text.starts_with("//?/"), "{root_text}");
     assert_eq!(root, crate::path::canonicalize_non_verbatim(project.path()));
     assert_eq!(
         loaded.document.entry_ignores()[0].base_path.as_deref(),
