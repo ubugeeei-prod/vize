@@ -3,6 +3,7 @@
 //! Uses arena allocation and zero-copy techniques for maximum performance.
 
 mod block_indent;
+mod blocks;
 mod custom_block;
 mod opening_tag;
 mod raw_mask;
@@ -15,8 +16,7 @@ mod template_indent;
 use crate::VueVersion;
 use crate::error::FormatError;
 use crate::options::FormatOptions;
-use std::borrow::Cow;
-use vize_atelier_sfc::{SfcParseOptions, parse_sfc};
+use blocks::{BlockAttrs, BlockKind, BlockLocation, SfcBlock};
 use vize_l0::{Allocator, FxHashMap, String};
 
 /// Result of formatting a Vue SFC
@@ -38,24 +38,6 @@ pub struct GlyphFormatter<'a> {
     vue_version: VueVersion,
     sort_imports: Option<&'a crate::ImportSortOptions>,
     preserve_template_whitespace: bool,
-}
-
-enum Block<'b> {
-    Script(&'b vize_atelier_sfc::SfcScriptBlock<'b>),
-    Template(&'b vize_atelier_sfc::SfcTemplateBlock<'b>),
-    Style(&'b vize_atelier_sfc::SfcStyleBlock<'b>),
-    Custom(&'b vize_atelier_sfc::SfcCustomBlock<'b>),
-}
-
-impl Block<'_> {
-    fn location(&self) -> &vize_atelier_sfc::BlockLocation {
-        match self {
-            Self::Script(block) => &block.loc,
-            Self::Template(block) => &block.loc,
-            Self::Style(block) => &block.loc,
-            Self::Custom(block) => &block.loc,
-        }
-    }
 }
 
 impl<'a> GlyphFormatter<'a> {
@@ -117,70 +99,20 @@ impl<'a> GlyphFormatter<'a> {
                     .format_document(source)
                 });
         }
-        // Parse the SFC
-        let descriptor = parse_sfc(source, SfcParseOptions::default())?;
+        let blocks = blocks::split(source)?;
         let newline = self.options.newline_bytes();
 
         // Pre-calculate output size for efficient allocation
-        let estimated_size = self.estimate_output_size(source, &descriptor);
+        let estimated_size = estimate_output_size(source, &blocks);
         let mut output = Vec::with_capacity(estimated_size);
 
-        // Collect all blocks with their sort keys
-        let mut blocks: Vec<(usize, Block<'_>)> = Vec::new();
-
-        if let Some(script) = &descriptor.script {
-            let order = if self.options.sort_blocks {
-                0
-            } else {
-                script.loc.tag_start
-            };
-            blocks.push((order, Block::Script(script)));
-        }
-        if let Some(script_setup) = &descriptor.script_setup {
-            let order = if self.options.sort_blocks {
-                1
-            } else {
-                script_setup.loc.tag_start
-            };
-            blocks.push((order, Block::Script(script_setup)));
-        }
-        if let Some(template) = &descriptor.template {
-            let order = if self.options.sort_blocks {
-                2
-            } else {
-                template.loc.tag_start
-            };
-            blocks.push((order, Block::Template(template)));
-        }
-        for style in &descriptor.styles {
-            let order = if self.options.sort_blocks {
-                // CSS cascade order is semantic. Canonicalize the style group
-                // after template, but let stable sorting retain authored order
-                // across scoped/module/plain style blocks.
-                3
-            } else {
-                style.loc.tag_start
-            };
-            blocks.push((order, Block::Style(style)));
-        }
-        for block in &descriptor.custom_blocks {
-            let order = if self.options.sort_blocks {
-                4
-            } else {
-                block.loc.tag_start
-            };
-            blocks.push((order, Block::Custom(block)));
-        }
-
-        // The SFC descriptor contains blocks but not the top-level content
-        // between them. Attach each gap to the following block before block
-        // sorting, so comments stay with the block they document. The document
-        // prologue is separate and remains at the start after sorting.
-        let mut source_order: Vec<_> = blocks.iter().map(|(_, block)| block.location()).collect();
-        source_order.sort_by_key(|loc| loc.tag_start);
-        let first_tag_start = source_order
+        // Blocks do not own the top-level content between them. Attach each
+        // gap to the following block before block sorting, so comments stay
+        // with the block they document. The document prologue is separate and
+        // remains at the start after sorting.
+        let first_tag_start = blocks
             .first()
-            .map_or(source.len(), |loc| loc.tag_start);
+            .map_or(source.len(), |block| block.loc.tag_start);
         let original_prologue = source.get(..first_tag_start).unwrap_or_default();
         let (prologue, first_attachment) = if blocks.is_empty() {
             (original_prologue.trim(), None)
@@ -192,7 +124,7 @@ impl<'a> GlyphFormatter<'a> {
             leading_content.insert(first_tag_start, (content, true));
         }
         let mut previous_end = first_tag_start;
-        for loc in source_order {
+        for loc in blocks.iter().map(|block| &block.loc) {
             if let Some(content) = source
                 .get(previous_end..loc.tag_start)
                 .map(|gap| (gap.trim(), root_content::is_attached_comment(gap)))
@@ -204,6 +136,25 @@ impl<'a> GlyphFormatter<'a> {
         }
         let trailing_content = source.get(previous_end..).unwrap_or_default().trim();
 
+        // Sorting is stable: style and custom blocks keep their authored order
+        // within their group. CSS cascade order is semantic.
+        let mut blocks: Vec<_> = blocks
+            .iter()
+            .map(|block| {
+                let order = if self.options.sort_blocks {
+                    match block.kind {
+                        BlockKind::Script => 0,
+                        BlockKind::ScriptSetup => 1,
+                        BlockKind::Template => 2,
+                        BlockKind::Style => 3,
+                        BlockKind::Custom => 4,
+                    }
+                } else {
+                    block.loc.tag_start
+                };
+                (order, block)
+            })
+            .collect();
         blocks.sort_by_key(|(order, _)| *order);
 
         if !prologue.is_empty() {
@@ -220,34 +171,34 @@ impl<'a> GlyphFormatter<'a> {
                 output.extend_from_slice(newline);
                 output.extend_from_slice(newline);
             }
-            if let Some((content, attached)) = leading_content.get(&block.location().tag_start) {
+            if let Some((content, attached)) = leading_content.get(&block.loc.tag_start) {
                 output.extend_from_slice(content.as_bytes());
                 output.extend_from_slice(newline);
                 if !attached {
                     output.extend_from_slice(newline);
                 }
             }
-            match block {
-                Block::Script(script) => script_block::write_script_block(
+            match block.kind {
+                BlockKind::Script | BlockKind::ScriptSetup => script_block::write_script_block(
                     &mut output,
-                    script,
+                    block,
                     self.options,
                     self.allocator,
                     source,
                     self.sort_imports,
                 )?,
-                Block::Template(template) => template_block::write_template_block(
+                BlockKind::Template => template_block::write_template_block(
                     &mut output,
-                    template,
+                    block,
                     self.options,
                     source,
                     self.vue_version,
                     self.preserve_template_whitespace,
                 )?,
-                Block::Style(style) => {
-                    style_block::write_style_block(&mut output, style, self.options, source)?
+                BlockKind::Style => {
+                    style_block::write_style_block(&mut output, block, self.options, source)?
                 }
-                Block::Custom(block) => custom_block::format(
+                BlockKind::Custom => custom_block::format(
                     &mut output,
                     block,
                     self.options,
@@ -297,26 +248,25 @@ impl<'a> GlyphFormatter<'a> {
         let changed = code.as_str() != source;
         Ok(FormatResult { code, changed })
     }
+}
 
-    /// Estimate output size for pre-allocation
-    #[inline]
-    fn estimate_output_size(
-        &self,
-        source: &str,
-        descriptor: &vize_atelier_sfc::SfcDescriptor<'_>,
-    ) -> usize {
-        let mut size = source.len();
+/// Estimate output size for pre-allocation
+#[inline]
+fn estimate_output_size(source: &str, blocks: &[SfcBlock<'_>]) -> usize {
+    let mut size = source.len();
 
-        // Add extra space for potential formatting changes
-        if descriptor.script_setup.is_some() || descriptor.script.is_some() {
-            size += 256; // Extra space for script formatting
-        }
-        if descriptor.template.is_some() {
-            size += 128; // Extra space for template indentation
-        }
-
-        size
+    // Add extra space for potential formatting changes
+    if blocks
+        .iter()
+        .any(|block| matches!(block.kind, BlockKind::Script | BlockKind::ScriptSetup))
+    {
+        size += 256; // Extra space for script formatting
     }
+    if blocks.iter().any(|block| block.kind == BlockKind::Template) {
+        size += 128; // Extra space for template indentation
+    }
+
+    size
 }
 
 /// Write block attributes in authored order when attribute sorting is off,
@@ -324,9 +274,9 @@ impl<'a> GlyphFormatter<'a> {
 /// should print its canonical order instead.
 fn write_authored_attrs(
     output: &mut Vec<u8>,
-    attrs: &FxHashMap<Cow<'_, str>, Cow<'_, str>>,
+    attrs: &BlockAttrs<'_>,
     source: &str,
-    loc: &vize_atelier_sfc::BlockLocation,
+    loc: &BlockLocation,
     options: &FormatOptions,
 ) -> bool {
     if options.sort_attributes {
@@ -347,11 +297,7 @@ fn write_authored_attrs(
     true
 }
 
-fn write_remaining_attrs(
-    output: &mut Vec<u8>,
-    attrs: &FxHashMap<Cow<'_, str>, Cow<'_, str>>,
-    handled: &[&str],
-) {
+fn write_remaining_attrs(output: &mut Vec<u8>, attrs: &BlockAttrs<'_>, handled: &[&str]) {
     let mut remaining_attrs: Vec<_> = attrs
         .iter()
         .filter(|(name, _)| !handled.contains(&name.as_ref()))

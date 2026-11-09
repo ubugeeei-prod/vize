@@ -2,7 +2,7 @@ use crate::{error::FormatError, options::FormatOptions};
 
 pub(super) fn format(
     output: &mut Vec<u8>,
-    block: &vize_atelier_sfc::SfcCustomBlock<'_>,
+    block: &super::SfcBlock<'_>,
     options: &FormatOptions,
     source: &str,
     vue_version: crate::VueVersion,
@@ -12,7 +12,7 @@ pub(super) fn format(
         super::opening_tag::write_raw(output, opening_tag);
     } else {
         output.push(b'<');
-        output.extend_from_slice(block.block_type.as_bytes());
+        output.extend_from_slice(block.name.as_bytes());
         if !super::write_authored_attrs(output, &block.attrs, source, &block.loc, options) {
             super::write_remaining_attrs(output, &block.attrs, &[]);
         }
@@ -26,7 +26,7 @@ pub(super) fn format(
         block.content.as_ref(),
         opening_tag.as_ref(),
     );
-    if block.block_type.as_ref() == "art" {
+    if block.name == "art" {
         write_art_content(output, content, options, vue_version)?;
     } else {
         output.extend_from_slice(content.trim().as_bytes());
@@ -34,7 +34,7 @@ pub(super) fn format(
     }
 
     output.extend_from_slice(b"</");
-    output.extend_from_slice(block.block_type.as_bytes());
+    output.extend_from_slice(block.name.as_bytes());
     output.push(b'>');
     Ok(())
 }

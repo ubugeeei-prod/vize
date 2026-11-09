@@ -38,9 +38,3 @@ pub enum FormatError {
     #[error("IO error: {0}")]
     IoError(#[from] std::io::Error),
 }
-
-impl From<vize_atelier_sfc::SfcError> for FormatError {
-    fn from(err: vize_atelier_sfc::SfcError) -> Self {
-        FormatError::ParseError(err.message)
-    }
-}

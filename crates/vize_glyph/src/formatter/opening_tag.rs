@@ -1,4 +1,4 @@
-use vize_atelier_sfc::BlockLocation;
+use super::BlockLocation;
 
 pub(super) struct RawOpeningTag<'a> {
     text: &'a str,
