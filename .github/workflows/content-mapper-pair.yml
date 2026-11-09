@@ -246,26 +246,32 @@ jobs:
           $stream = Join-Path $root "stream-$size.bin"
           $out = Join-Path $root 'probe.out'
           $exe = "$PWD\pair-bin\head\vize.exe"
-          Get-MpComputerStatus | Select-Object RealTimeProtectionEnabled, AMRunningMode, IsTamperProtected | Format-List | Out-String | Write-Output
-          function Burst([string]$label, [string]$target) {
-            $samples = @()
-            foreach ($i in 1..5) {
-              $w = [System.Diagnostics.Stopwatch]::StartNew()
-              $p = Start-Process -FilePath $exe -ArgumentList 'content-mapper' -WorkingDirectory $project `
-                -RedirectStandardInput $stream -RedirectStandardOutput $target -NoNewWindow -PassThru -Wait
-              $w.Stop()
-              $samples += [pscustomobject]@{ ms = $w.Elapsed.TotalMilliseconds; cpu = $p.TotalProcessorTime.TotalSeconds }
+          $defender = $null -ne (Get-Command Get-MpComputerStatus -ErrorAction SilentlyContinue) -and
+            $null -ne (Get-MpComputerStatus -ErrorAction SilentlyContinue)
+          "Defender available: $defender" | Write-Output
+          function Median([scriptblock]$run) {
+            $samples = foreach ($i in 1..5) {
+              $w = [System.Diagnostics.Stopwatch]::StartNew(); & $run; $w.Stop(); $w.Elapsed.TotalMilliseconds
             }
-            $ms = ($samples.ms | Sort-Object)[2]; $cpu = ($samples.cpu | Sort-Object)[2]
-            "| $label | $([math]::Round($ms)) | $([math]::Round($cpu, 2)) |"
+            [math]::Round(($samples | Sort-Object)[2])
           }
-          $rows = @("### Windows burst probe ($size SFCs, head, median of 5)", '', '| variant | wall ms | CPU s |', '|---|---|---|')
-          $rows += Burst 'stdout file, Defender on' $out
-          $rows += Burst 'stdout NUL, Defender on' 'NUL'
-          Add-MpPreference -ExclusionPath $root, (Split-Path $exe)
-          Start-Sleep -Seconds 2
-          $rows += Burst 'stdout file, project excluded' $out
-          $rows += Burst 'stdout NUL, project excluded' 'NUL'
+          function StartProcess([string]$target) {
+            Start-Process -FilePath $exe -ArgumentList 'content-mapper' -WorkingDirectory $project `
+              -RedirectStandardInput $stream -RedirectStandardOutput $target -NoNewWindow -Wait
+          }
+          function Cmd([string]$target) {
+            Push-Location $project; cmd.exe /d /c "`"$exe`" content-mapper < `"$stream`" > $target"; Pop-Location
+          }
+          $rows = @("### Windows burst probe ($size SFCs, head, median of 5)", '', '| launch | stdout | wall ms |', '|---|---|---|')
+          $rows += "| Start-Process redirect | file | $(Median { StartProcess $out }) |"
+          $rows += "| Start-Process redirect | NUL | $(Median { StartProcess 'NUL' }) |"
+          $rows += "| cmd.exe handles | file | $(Median { Cmd "`"$out`"" }) |"
+          $rows += "| cmd.exe handles | NUL | $(Median { Cmd 'NUL' }) |"
+          if ($defender) {
+            Add-MpPreference -ExclusionPath $root, (Split-Path $exe)
+            Start-Sleep -Seconds 2
+            $rows += "| cmd.exe handles, Defender exclusion | file | $(Median { Cmd "`"$out`"" }) |"
+          }
           $rows | Write-Output
           $rows + '' | Add-Content $env:GITHUB_STEP_SUMMARY
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
