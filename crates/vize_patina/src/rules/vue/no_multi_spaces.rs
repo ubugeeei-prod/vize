@@ -326,7 +326,7 @@ fn opening_closing_start(source: &str, opening: ByteRange) -> u32 {
 
 fn tag_name_end_hint(range: ByteRange, tag: &str) -> u32 {
     // For JSX member/namespaced tags the facade tag can be shorter than the
-    // written tag. Starting early is fine because `first_whitespace_offset`
+    // written tag. Starting early is fine because `invalid_gap_start`
     // advances to the actual gap before checking it.
     range.start.saturating_add(1 + tag.len() as u32)
 }
@@ -336,7 +336,7 @@ fn invalid_gap_start(source: &str, start: usize, end: usize) -> Option<usize> {
     let relative_start = authored
         .iter()
         .position(|byte| matches!(byte, b' ' | b'\t' | b'\n' | b'\r'))?;
-    let gap = &authored[relative_start..];
+    let gap = authored.get(relative_start..)?;
     (gap.len() > 1 && gap.iter().all(|byte| matches!(byte, b' ' | b'\t')))
         .then_some(start + relative_start)
 }
