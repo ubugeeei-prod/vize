@@ -13,7 +13,7 @@
 //! display-toggle / content-prop rendering / DOM cloak removal is Vue's,
 //! not a fair `ui.*` core op.
 
-use vize_l0::{Span, Vec};
+use vize_l0::{Span, String, ToCompactString, Vec};
 
 use super::DynamicName;
 use crate::expr::ExprRef;
@@ -171,6 +171,29 @@ pub struct VueCloakOp {
     pub span: Span,
 }
 
+/// The local a resolved Vue asset binds to (`_component_my_card`,
+/// `_directive_pin`, `_filter_currency`), mirroring Vue's
+/// `toValidAssetId`: word characters pass through, `-` becomes `_`, and
+/// any other character becomes its decimal char code. Vue 2 filter
+/// legalization spells its calls with it; emission declares the matching
+/// resolver locals.
+#[must_use]
+pub fn asset_identifier(kind: &str, name: &str) -> String {
+    let mut ident = String::from("_");
+    ident.push_str(kind);
+    ident.push('_');
+    for c in name.chars() {
+        if c.is_ascii_alphanumeric() || c == '_' {
+            ident.push(c);
+        } else if c == '-' {
+            ident.push('_');
+        } else {
+            ident.push_str((c as u32).to_compact_string().as_str());
+        }
+    }
+    ident
+}
+
 /// See [`crate::op`] for the guard rationale.
 #[cfg(target_pointer_width = "64")]
 const _: () = {
@@ -185,3 +208,19 @@ const _: () = {
     assert!(core::mem::size_of::<VueTextOp<'_>>() == 24);
     assert!(core::mem::size_of::<VueCloakOp>() == 8);
 };
+
+#[cfg(test)]
+mod tests {
+    use super::asset_identifier;
+
+    #[test]
+    fn asset_identifiers_follow_the_valid_asset_id_rule() {
+        assert_eq!(
+            asset_identifier("component", "my-card"),
+            "_component_my_card"
+        );
+        assert_eq!(asset_identifier("directive", "pin_2"), "_directive_pin_2");
+        assert_eq!(asset_identifier("filter", "$cash"), "_filter_36cash");
+        assert_eq!(asset_identifier("component", "a.b"), "_component_a46b");
+    }
+}
