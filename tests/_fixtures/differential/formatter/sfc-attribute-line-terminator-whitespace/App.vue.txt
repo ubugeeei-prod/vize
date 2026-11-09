@@ -1,0 +1,11 @@
+<script lang
+=
+"ts" setup>
+const a: number = 1
+</script>
+
+<template data-x
+=
+y lang=html>
+<p>{{ a }}</p>
+</template>
