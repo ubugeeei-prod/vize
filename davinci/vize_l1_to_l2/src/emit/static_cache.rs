@@ -11,9 +11,10 @@ use vize_l0::ensure_sufficient_stack;
 use vize_l0::side_table::SideTable;
 use vize_l2::op::{ComponentOp, ElementOp, Op, Region};
 
-use crate::pass::walk::PageWalk;
-use crate::pass::{L2Facts, StaticFacts, StaticLevel};
 use vize_l2::analysis::fragment_facts::BranchFragments;
+use vize_l2::analysis::pass_facts::L2Facts;
+use vize_l2::analysis::static_facts::{StaticFacts, StaticLevel};
+use vize_l2::walk::PageWalk;
 
 pub(super) fn enabled(
     root: &Region<'_>,

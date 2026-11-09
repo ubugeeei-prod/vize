@@ -31,7 +31,7 @@ fn fixture(name: &str) -> vize_l0::String {
 #[test]
 fn the_chain_fixture_snapshots_the_post_pass_folio() {
     let source = fixture("chain-keys.vue");
-    with_transformed(&source, |lowered, folio, facts, budget| {
+    with_transformed(&source, |lowered, folio, _, budget| {
         // The oracle: the full normalized folio after the pipeline ran.
         // The `story` and `fallback` keys have left the attribute
         // surface; the iterated `img` keeps its `key` (the branch root
@@ -49,7 +49,7 @@ fn the_chain_fixture_snapshots_the_post_pass_folio() {
             "[budget-observer]\nwalks=1\npasses=2\nanalyses=0\npipelines=1\nfailures=0\n\n"
         );
         // One fact entry (the chain's `ui.if`), keys on branches 0 and 2.
-        let entries = facts.if_facts.sorted_entries();
+        let entries = lowered.artifact.if_facts.sorted_entries();
         assert_eq!(entries.len(), 1);
         let branches = &entries[0].1.branches;
         assert_eq!(branches.len(), 3);

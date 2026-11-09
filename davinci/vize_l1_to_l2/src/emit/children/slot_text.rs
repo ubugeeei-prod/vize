@@ -35,8 +35,7 @@ pub(in crate::emit) fn emit_slot_text_child(
                 interp.span,
             ))?;
             let parts = cx
-                .facts
-                .text_facts
+                .texts
                 .get(id)
                 .ok_or(EmitError::unsupported_at_node(
                     Reason::MissingTextFacts,
@@ -146,15 +145,11 @@ fn emit_slot_interpolation(
                 Reason::WalkIdOverflow,
                 interp.span,
             ))?;
-            let facts = cx
-                .facts
-                .text_facts
-                .get(id)
-                .ok_or(EmitError::unsupported_at_node(
-                    Reason::MissingTextFacts,
-                    interp.span,
-                    id,
-                ))?;
+            let facts = cx.texts.get(id).ok_or(EmitError::unsupported_at_node(
+                Reason::MissingTextFacts,
+                interp.span,
+                id,
+            ))?;
             emit_compound_parts(cx, &facts.parts, interp.span, Site::SlotText)
         }
         ExprRef::Opaque(opaque) if is_empty_interpolation(opaque) => {

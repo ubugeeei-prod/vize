@@ -86,10 +86,11 @@ pub(super) fn filler_default_needs_props_placeholder(children: &Region<'_>) -> b
         let Op::Text(text) = op else {
             return false;
         };
-        if !crate::lower::legacy_slot_filler_text(text.content) {
+        if !vize_l2::analysis::slot_facts::legacy_slot_filler_text(text.content) {
             return false;
         }
-        needs_placeholder |= crate::lower::legacy_slot_filler_needs_props_placeholder(text.content);
+        needs_placeholder |=
+            vize_l2::analysis::slot_facts::legacy_slot_filler_needs_props_placeholder(text.content);
     }
     needs_placeholder
 }

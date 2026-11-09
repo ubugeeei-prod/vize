@@ -10,11 +10,11 @@ use std::vec::Vec as StdVec;
 
 use vize_l0::id::NodeId;
 use vize_l0::{Allocator, Box as ArenaBox, Span, String as VString, Vec as ArenaVec};
-use vize_l1_to_l2::pass::{
-    L2Facts, SlotCarrier, SlotFacts, SlotGroup, SlotName, SlotParams, TextFacts,
-};
+use vize_l1_to_l2::pass::{SlotCarrier, SlotFacts, SlotGroup, SlotName, SlotParams};
 use vize_l1_to_l2::{EmitError, LegacyCaps, Lowered, UnsupportedReason as Reason, emit_dom};
 use vize_l2::analysis::fragment_facts::{FragmentKey, LoopFragment};
+use vize_l2::analysis::pass_facts::L2Facts;
+use vize_l2::analysis::text_facts::TextParts;
 use vize_l2::artifact::ArtifactParts;
 use vize_l2::expr::{ExprRef, ForeignExpr, OpaqueExpr, OpaqueReason};
 use vize_l2::op::{
@@ -55,14 +55,14 @@ fn reason(error: EmitError) -> Reason {
 }
 
 fn empty_compound_text<'a>(a: &'a Allocator) -> (Lowered<'a>, L2Facts) {
-    let mut facts = L2Facts::default();
-    facts.text_facts.insert(
+    let mut lowered = lowered(a, root_with_compound_child(a));
+    lowered.artifact.texts.insert(
         id(1),
-        TextFacts {
+        TextParts {
             parts: StdVec::new(),
         },
     );
-    (lowered(a, root_with_compound_child(a)), facts)
+    (lowered, L2Facts::default())
 }
 
 fn missing_text_facts<'a>(a: &'a Allocator) -> (Lowered<'a>, L2Facts) {

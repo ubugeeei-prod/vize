@@ -55,9 +55,9 @@ fn a_template_wrapper_key_folds_into_the_branch_fact() {
     // closed it — the lowering captures the wrapper's key before the
     // unwrap drops the rest, and this pass folds it into the fact.
     let source = r#"<template v-if="a" key="k"><p>x</p><p>y</p></template>"#;
-    with_transformed(source, |lowered, _, facts, _| {
+    with_transformed(source, |lowered, _, _, _| {
         assert_eq!(
-            facts.if_facts.sorted_entries(),
+            lowered.artifact.if_facts.sorted_entries(),
             vec![(
                 NodeId::from_index(0).expect("op 0 has an id"),
                 &vif::IfFacts {
@@ -99,9 +99,9 @@ fn a_dynamic_key_extracts_without_leaving_the_surface() {
     // records the value text and the binding's index; the op itself
     // stays (a pass removing a binding would shift every later id).
     let source = r#"<p v-if="a" :key="ka">1</p><p v-else :key="kb">2</p>"#;
-    with_transformed(source, |lowered, folio, facts, _| {
+    with_transformed(source, |lowered, folio, _, _| {
         assert_eq!(lowered.diagnostics, vec![]);
-        let entries = facts.if_facts.sorted_entries();
+        let entries = lowered.artifact.if_facts.sorted_entries();
         assert_eq!(entries.len(), 1);
         let branches = &entries[0].1.branches;
         assert_eq!(
@@ -142,8 +142,8 @@ fn the_first_key_spelling_in_authored_order_wins() {
     // re-derived from spans. `:key` first: the static `key` attribute
     // stays on the surface.
     let source = r#"<p v-if="a" :key="ka" key="s">1</p><p v-else>2</p>"#;
-    with_transformed(source, |_, folio, facts, _| {
-        let entries = facts.if_facts.sorted_entries();
+    with_transformed(source, |lowered, folio, _, _| {
+        let entries = lowered.artifact.if_facts.sorted_entries();
         assert_eq!(
             entries[0].1.branches[0]
                 .as_ref()
@@ -172,8 +172,8 @@ fn a_slot_outlet_branch_key_extracts_from_the_outlet_surface() {
     // attribute surface; series 5 gave it one, and the extraction now
     // runs exactly as on elements.
     let source = r#"<slot v-if="a" key="s"></slot><p v-else>f</p>"#;
-    with_transformed(source, |_, folio, facts, _| {
-        let entries = facts.if_facts.sorted_entries();
+    with_transformed(source, |lowered, folio, _, _| {
+        let entries = lowered.artifact.if_facts.sorted_entries();
         assert_eq!(
             entries[0].1.branches[0]
                 .as_ref()

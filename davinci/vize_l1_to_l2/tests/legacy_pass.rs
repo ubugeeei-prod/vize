@@ -101,8 +101,8 @@ fn vue2_rewrites_a_pipe_filter_to_the_asset_call() {
         );
         assert_eq!(
             facts
-                .legacy
                 .filters
+                .names
                 .iter()
                 .map(|name| name.as_str())
                 .collect::<std::vec::Vec<_>>(),
@@ -127,8 +127,8 @@ fn vue2_rewrites_a_filter_with_args() {
         );
         assert_eq!(
             facts
-                .legacy
                 .filters
+                .names
                 .iter()
                 .map(|name| name.as_str())
                 .collect::<std::vec::Vec<_>>(),

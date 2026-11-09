@@ -95,7 +95,7 @@ pub fn with_transformed<R>(
     f: impl FnOnce(
         &Lowered<'_>,
         &L2Page,
-        &vize_l1_to_l2::pass::L2Facts,
+        &vize_l2::analysis::pass_facts::L2Facts,
         &vize_l0::pass::BudgetObserver,
     ) -> R,
 ) -> R {
@@ -120,7 +120,7 @@ pub fn with_transformed_caps<R>(
     f: impl FnOnce(
         &Lowered<'_>,
         &L2Page,
-        &vize_l1_to_l2::pass::L2Facts,
+        &vize_l2::analysis::pass_facts::L2Facts,
         &vize_l0::pass::BudgetObserver,
     ) -> R,
 ) -> R {
@@ -161,12 +161,12 @@ pub fn assert_transformed_sound_caps(source: &str, caps: LegacyCaps, context: &s
             "a scope key dangles post-pass: {context}"
         );
         assert_eq!(
-            verify_table(folio, &facts.if_facts),
+            verify_table(folio, &lowered.artifact.if_facts),
             Vec::<Violation>::new(),
             "an if-facts key dangles: {context}"
         );
         assert_eq!(
-            verify_table(folio, &facts.for_facts),
+            verify_table(folio, &lowered.artifact.for_facts),
             Vec::<Violation>::new(),
             "a for-facts key dangles: {context}"
         );
@@ -179,11 +179,6 @@ pub fn assert_transformed_sound_caps(source: &str, caps: LegacyCaps, context: &s
             verify_table(folio, &lowered.artifact.texts),
             Vec::<Violation>::new(),
             "a recorded text-run key dangles: {context}"
-        );
-        assert_eq!(
-            verify_table(folio, &facts.text_facts),
-            Vec::<Violation>::new(),
-            "a text-facts key dangles: {context}"
         );
         assert_eq!(
             verify_table(folio, &facts.model_faults),

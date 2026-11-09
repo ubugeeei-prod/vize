@@ -8,9 +8,10 @@ use vize_l0::side_table::SideTable;
 use vize_l2::expr::{ExprRef, OpaqueReason};
 use vize_l2::op::{Op, Region};
 
-use crate::pass::L2Facts;
-use crate::pass::walk::PageWalk;
 use vize_l2::analysis::fragment_facts::LoopFragment;
+use vize_l2::analysis::pass_facts::L2Facts;
+use vize_l2::analysis::text_facts::TextParts;
+use vize_l2::walk::PageWalk;
 
 use super::buf::Buf;
 use super::helper::Helper;
@@ -26,6 +27,7 @@ use slot_order::{
 pub(super) struct PreferCx<'a> {
     pub(super) source: &'a str,
     pub(super) facts: &'a L2Facts,
+    pub(super) texts: &'a SideTable<TextParts>,
     pub(super) for_wrappers: &'a SideTable<LoopFragment>,
     /// The script bindings, when the emit carries them: a component tag
     /// named there resolves to `$setup` and never marks `resolveComponent`
@@ -206,7 +208,7 @@ fn prefer_op_helpers(
         Op::Text(_) => buf.prefer(Helper::CreateText),
         Op::Comment(_) => buf.prefer(Helper::CreateComment),
         Op::Interpolation(interpolation) => {
-            let compound = id.and_then(|id| cx.facts.text_facts.get(id));
+            let compound = id.and_then(|id| cx.texts.get(id));
             let needs_display_string = if matches!(
                 interpolation.expression,
                 ExprRef::Opaque(opaque) if opaque.reason == OpaqueReason::Compound

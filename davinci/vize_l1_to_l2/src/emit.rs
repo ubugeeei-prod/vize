@@ -123,9 +123,11 @@ use vize_l0::side_table::SideTable;
 use vize_l2::op::Namespace;
 use vize_l2::scope::ScopeFacts;
 
-use crate::pass::L2Facts;
-use crate::pass::walk::PageWalk;
 use vize_l2::analysis::fragment_facts::{BranchFragments, LoopFragment};
+use vize_l2::analysis::if_facts::IfFacts;
+use vize_l2::analysis::pass_facts::L2Facts;
+use vize_l2::analysis::text_facts::TextParts;
+use vize_l2::walk::PageWalk;
 
 pub use self::budget::{
     DomEmitBudget, ObservedDomEmit, emit_dom_source_observed,
@@ -169,6 +171,8 @@ struct EmitCx<'facts> {
     buf: Buf,
     source: &'facts str,
     facts: &'facts L2Facts,
+    texts: &'facts SideTable<TextParts>,
+    if_facts: &'facts SideTable<IfFacts>,
     scopes: &'facts SideTable<ScopeFacts>,
     wrappers: &'facts SideTable<BranchFragments>,
     for_wrappers: &'facts SideTable<LoopFragment>,

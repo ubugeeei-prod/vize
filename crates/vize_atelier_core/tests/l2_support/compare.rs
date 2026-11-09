@@ -144,9 +144,9 @@ pub fn compare_with(name: &str, source: &str, counters: &mut Counters, dialect: 
     let s2 = l2_lane::collect(
         &folio,
         &l2_lane::Tables {
-            if_facts: &facts.if_facts,
+            if_facts: &lowered.artifact.if_facts,
             slot_facts: &facts.slot_facts,
-            text_facts: &facts.text_facts,
+            text_facts: &lowered.artifact.texts,
             model_faults: &facts.model_faults,
         },
     );

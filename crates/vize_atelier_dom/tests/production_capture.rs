@@ -93,20 +93,11 @@ fn accepted_dom_capture_is_from_the_emitting_run() {
     assert_eq!(
         capture.pages[6].text.as_str(),
         r#"L2Facts {
-    legacy: LegacyFacts {
-        filters: [],
-        filter_helper_precedes_components: false,
-    },
-    if_facts: SideTable {
-        entries: {},
-    },
-    for_facts: SideTable {
-        entries: {},
+    filters: FilterAssets {
+        names: [],
+        resolve_before_components: false,
     },
     slot_facts: SideTable {
-        entries: {},
-    },
-    text_facts: SideTable {
         entries: {},
     },
     model_faults: SideTable {

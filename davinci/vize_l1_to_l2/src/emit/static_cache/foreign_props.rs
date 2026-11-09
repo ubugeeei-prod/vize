@@ -1,8 +1,9 @@
 use vize_l0::ensure_sufficient_stack;
 use vize_l2::op::Op;
 
-use crate::pass::walk::PageWalk;
-use crate::pass::{L2Facts, StaticLevel};
+use vize_l2::analysis::pass_facts::L2Facts;
+use vize_l2::analysis::static_facts::StaticLevel;
+use vize_l2::walk::PageWalk;
 
 pub(super) fn region_has_non_branch_foreign_props_hoist(
     walk: &mut PageWalk,

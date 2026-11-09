@@ -257,11 +257,13 @@ fn visit<'a>(
                 },
             }
         }
-        Op::Text(text) if crate::lower::legacy_slot_filler_text(text.content) => ChildView {
-            id,
-            span: text.span,
-            kind: ChildKind::Filler,
-        },
+        Op::Text(text) if vize_l2::analysis::slot_facts::legacy_slot_filler_text(text.content) => {
+            ChildView {
+                id,
+                span: text.span,
+                kind: ChildKind::Filler,
+            }
+        }
         Op::Text(text) => implicit_default_content(id, text.span),
         Op::Interpolation(interpolation) | Op::JsxChildValue(interpolation) => {
             implicit_default_content(id, interpolation.span)

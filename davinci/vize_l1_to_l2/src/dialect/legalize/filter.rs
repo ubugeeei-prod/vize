@@ -11,7 +11,7 @@ use crate::lower::TextParts;
 use crate::pass::walk::PageWalk;
 use vize_l2::op::vue::asset_identifier;
 
-use super::LegacyFacts;
+use vize_l2::analysis::pass_facts::FilterAssets;
 
 mod compound;
 
@@ -25,7 +25,7 @@ pub(super) fn rewrite<'a>(
     source: &'a str,
     ops: &mut [Op<'a>],
     texts: &mut SideTable<TextParts>,
-    facts: &mut LegacyFacts,
+    facts: &mut FilterAssets,
 ) {
     let mut walk = PageWalk::new();
     rewrite_ops(allocator, source, &mut walk, ops, texts, facts);
@@ -37,13 +37,13 @@ fn rewrite_ops<'a>(
     walk: &mut PageWalk,
     ops: &mut [Op<'a>],
     texts: &mut SideTable<TextParts>,
-    facts: &mut LegacyFacts,
+    facts: &mut FilterAssets,
 ) {
     for op in ops.iter_mut() {
         let id = walk.mint();
         match op {
             Op::Element(element) => {
-                rewrite_bindings(allocator, &mut element.bindings, &mut facts.filters);
+                rewrite_bindings(allocator, &mut element.bindings, &mut facts.names);
                 walk.skip(element.bindings.len());
                 rewrite_ops(
                     allocator,
@@ -56,9 +56,9 @@ fn rewrite_ops<'a>(
             }
             Op::Component(component) => {
                 if bindings_contain_filter(&component.bindings) {
-                    facts.filter_helper_precedes_components = true;
+                    facts.resolve_before_components = true;
                 }
-                rewrite_bindings(allocator, &mut component.bindings, &mut facts.filters);
+                rewrite_bindings(allocator, &mut component.bindings, &mut facts.names);
                 walk.skip(component.bindings.len());
                 rewrite_ops(
                     allocator,
@@ -70,8 +70,8 @@ fn rewrite_ops<'a>(
                 );
             }
             Op::Slot(slot) => {
-                rewrite_name(allocator, &mut slot.name, &mut facts.filters);
-                rewrite_bindings(allocator, &mut slot.bindings, &mut facts.filters);
+                rewrite_name(allocator, &mut slot.name, &mut facts.names);
+                rewrite_bindings(allocator, &mut slot.bindings, &mut facts.names);
                 walk.skip(slot.bindings.len());
                 rewrite_ops(
                     allocator,
@@ -83,16 +83,16 @@ fn rewrite_ops<'a>(
                 );
             }
             Op::JsxChildValue(child) => {
-                rewrite_expr(allocator, &mut child.expression, &mut facts.filters);
+                rewrite_expr(allocator, &mut child.expression, &mut facts.names);
             }
             Op::Interpolation(interp) => {
-                rewrite_expr(allocator, &mut interp.expression, &mut facts.filters);
-                compound::rewrite(allocator, source, id, interp, texts, &mut facts.filters);
+                rewrite_expr(allocator, &mut interp.expression, &mut facts.names);
+                compound::rewrite(allocator, source, id, interp, texts, &mut facts.names);
             }
             Op::If(if_op) => {
                 for branch in if_op.branches.iter_mut() {
                     if let Some(condition) = &mut branch.condition {
-                        rewrite_expr(allocator, condition, &mut facts.filters);
+                        rewrite_expr(allocator, condition, &mut facts.names);
                     }
                     rewrite_ops(
                         allocator,
@@ -105,13 +105,13 @@ fn rewrite_ops<'a>(
                 }
             }
             Op::For(for_op) => {
-                rewrite_expr(allocator, &mut for_op.binding.source, &mut facts.filters);
-                rewrite_expr(allocator, &mut for_op.binding.value, &mut facts.filters);
+                rewrite_expr(allocator, &mut for_op.binding.source, &mut facts.names);
+                rewrite_expr(allocator, &mut for_op.binding.value, &mut facts.names);
                 if let Some(key) = &mut for_op.binding.key {
-                    rewrite_expr(allocator, key, &mut facts.filters);
+                    rewrite_expr(allocator, key, &mut facts.names);
                 }
                 if let Some(index) = &mut for_op.binding.index {
-                    rewrite_expr(allocator, index, &mut facts.filters);
+                    rewrite_expr(allocator, index, &mut facts.names);
                 }
                 rewrite_ops(
                     allocator,

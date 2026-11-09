@@ -5,7 +5,7 @@ use vize_l0::id::NodeId;
 use vize_l2::op::{ElementOp, Namespace, Op};
 
 use super::EmitCx;
-use crate::pass::StaticLevel;
+use vize_l2::analysis::static_facts::StaticLevel;
 
 pub(super) fn should_hoist_static_children(
     cx: &EmitCx<'_>,

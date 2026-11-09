@@ -183,7 +183,7 @@ fn a_slot_prop_never_captures_an_outer_authored_binding() {
     let source = r#"<li v-for="item in items"><Card v-slot="item"><i>{{ item }}</i></Card></li>"#;
     with_transformed(source, |lowered, _, facts, _| {
         assert_eq!(lowered.diagnostics, vec![]);
-        let for_entries = facts.for_facts.sorted_entries();
+        let for_entries = lowered.artifact.for_facts.sorted_entries();
         let slot_entries = facts.slot_facts.sorted_entries();
         assert_eq!(for_entries.len(), 1);
         assert_eq!(slot_entries.len(), 1);

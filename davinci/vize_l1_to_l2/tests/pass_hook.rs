@@ -87,7 +87,7 @@ fn the_hook_only_observes() {
     assert_eq!(hooked_facts.slot_facts, plain_facts.slot_facts);
     assert_eq!(hooked_facts.model_faults, plain_facts.model_faults);
     assert_eq!(hooked_facts.static_facts, plain_facts.static_facts);
-    assert_eq!(hooked_facts.if_facts, plain_facts.if_facts);
-    assert_eq!(hooked_facts.for_facts, plain_facts.for_facts);
-    assert_eq!(hooked_facts.text_facts, plain_facts.text_facts);
+    assert_eq!(hooked.artifact.if_facts, plain.artifact.if_facts);
+    assert_eq!(hooked.artifact.for_facts, plain.artifact.for_facts);
+    assert_eq!(hooked.artifact.texts, plain.artifact.texts);
 }
