@@ -33,21 +33,26 @@ type CurrentPacketProvenance = {
 export function assertCurrentPacketProvenance(provenance: CurrentPacketProvenance): void {
   assert.deepEqual(provenance.artifact, {
     repository: "ubugeeei-prod/vize",
-    run: 42628370735,
-    job: 129198720061,
-    id: 13681080320,
-    name: "instance-globals-10617-11e4add58056f6dabc81a32ce94db94db1cdbce0-1",
-    digest: "sha256:ec4071b01f99551e15eed50ecbd46a5f7783563af188ffbe8fe3ced0a00b68b4",
-    bytes: 18672687,
+    run: 42646667936,
+    job: 129264778908,
+    id: 13690100504,
+    name: "instance-globals-10617-8827c3de910036ad616a4ebbf441a2b4f14a7684-1",
+    digest: "sha256:e350807b134e8c1b2a4d440170e6b29ab969cb83d58bb7f548adaf9d1c333cbf",
+    bytes: 18676246,
   });
   assert.deepEqual(provenance.capturedQualification, {
     totalOutcomes: 499,
-    passedOutcomes: 497,
-    gapCount: 2,
+    passedOutcomes: 495,
+    gapCount: 4,
     status: "unqualified",
     fullPacketQualification: false,
     hostMatrixQualification: false,
-    gapIds: ["whole-packet/lf/css-module", "whole-packet/crlf-unicode/css-module"],
+    gapIds: [
+      "whole-packet/lf/slot-shadow",
+      "whole-packet/lf/mixed-slot-scope",
+      "whole-packet/crlf-unicode/slot-shadow",
+      "whole-packet/crlf-unicode/mixed-slot-scope",
+    ],
   });
   assert.deepEqual(provenance.review, {
     completePackets: 80,
@@ -57,6 +62,6 @@ export function assertCurrentPacketProvenance(provenance: CurrentPacketProvenanc
     publicPackageAcceptanceCredit: false,
     performanceCredit: false,
     reason:
-      "The template context no longer declares $GlobalContextIsAny, $GlobalContextProperty and __Global when every template global carries its own type, so the two CSS-module packets lost exactly those 293 bytes and every later generated coordinate moved by 293 while all 497 semantic, protocol, mapping-geometry, and real-host controls passed; this record retains the observed postimages without assigning acceptance credit to the stale-golden run.",
+      "The component contract now passes never as the required-key set when every fallthrough member admits {}, so the four slot-shadow and mixed-slot-scope packets carry the gated $RequiredFallthroughProps reference on their one __Child_CheckProps_0 line and every later generated coordinate moved by that growth while all 495 semantic, protocol, mapping-geometry, and real-host controls passed; this record retains the observed postimages without assigning acceptance credit to the stale-golden run.",
   });
 }
