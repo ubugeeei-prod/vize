@@ -1,6 +1,7 @@
 use std::path::{Path, PathBuf};
 use vize_carton::ToCompactString;
 
+use super::directory_index::Probe;
 use super::{ResolutionScope, TypeSourceSnapshot, lexical_path, source_path};
 use crate::script::context::external_types::resolution::resolve_import_path_with_project;
 
@@ -104,12 +105,24 @@ impl TypeSourceSnapshot {
         {
             return Some(found.clone());
         }
-        // A regular file its directory listed takes its identity from that
-        // listing, which is canonicalized once per snapshot, and needs no
-        // `stat`: listings freeze hits only, like `existing`. Everything else
-        // is probed again on every call.
-        let listed = self.indexed_identity(candidate);
-        let on_disk = listed.is_some() || candidate.is_file();
+        // A regular file its directory proves is no link takes its identity
+        // from that directory, which is canonicalized once per snapshot, and
+        // needs no `realpath`: probes freeze hits only, like `existing`.
+        // Everything else is probed again on every call.
+        let (listed, absent) = match self.probe_candidate(candidate) {
+            Probe::Found(path) => (Some(path), false),
+            Probe::Absent(physical) => {
+                // The lexical spelling names the same missing path, so the
+                // lexical fallback below would probe it a second time.
+                if self.overlays.is_empty() && lexical_path(candidate) == physical {
+                    return None;
+                }
+                (None, true)
+            }
+            Probe::Unknown => (None, false),
+        };
+        let on_disk = listed.is_some() || (!absent && candidate.is_file());
+
         // Without overlays, a probe that is no file under either its physical or
         // its lexical spelling resolves to nothing. `source_path` would spend
         // two `realpath` calls to reach the same miss.

@@ -36,6 +36,13 @@ marquette.environments.push(Environment::new(
 assert!(marquette.validate().is_empty());
 ```
 
+Native build profiles use the same serialized contract for local and hosted
+executors. They select the marquette environment, lifecycle configuration,
+platform destinations, signing strategy, capabilities, and update channel
+without retaining credentials or secret values. Native hosts can consume the
+`NativeBuildProfile` API directly or call
+`vize-marquette native-build schema|validate` at a process boundary.
+
 ## License
 
 MIT

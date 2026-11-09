@@ -13,13 +13,14 @@ use vize_l2::provenance::ProvenanceSink;
 use vize_l2::scope::{ScopeBinding, ScopeFacts, ScopeOrigin, ScopeTag};
 
 pub use vize_l2::analysis::for_facts::{ForName, ForParts};
+use vize_l2::analysis::fragment_facts::LoopFragment;
 
 use super::cx::{Cx, attr_slice, attr_span, element_span};
 use super::element::{Analyzed, attr_text, element_core, template_unwraps};
 use super::expr::{desc, expr_at, opaque_at, trimmed};
 use super::structural::{
-    ForWrapper, capture_wrapper_attrs, capture_wrapper_key, lower_children,
-    record_template_drops_except, runtime_directive,
+    capture_wrapper_attrs, capture_wrapper_key, lower_children, record_template_drops_except,
+    runtime_directive,
 };
 use super::vfor::{split_aliases, split_for};
 
@@ -175,7 +176,7 @@ pub(crate) fn lower_for<'a>(
             record_template_drops_except(cx, element, analyzed, skip, &attr_indexes);
             cx.attach_for_wrapper(
                 node,
-                ForWrapper {
+                LoopFragment {
                     key,
                     attributes,
                     class,

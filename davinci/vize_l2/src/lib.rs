@@ -37,6 +37,8 @@
 //!   over L2 control and retained expressions. Dialect lowering crates may
 //!   adapt their transitional owners to these analyses without owning the
 //!   product vocabulary.
+//! - [`framework`] — framework meaning of script code (Vue macros), read by
+//!   L1→L2, L3, L4 and the products; core modules never import it.
 //!
 //! The crate is `no_std + alloc` from birth so L2 artifacts print and parse
 //! on any target (wasm32-wasip2 included; P2-14 makes that lane required).
@@ -51,6 +53,7 @@ pub mod dialect;
 pub mod dump;
 pub mod expr;
 pub mod file;
+pub mod framework;
 pub mod lang;
 pub mod op;
 pub mod provenance;

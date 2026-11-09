@@ -48,6 +48,7 @@ mod compatibility;
 pub mod contracts;
 mod hex;
 mod model;
+mod native_build;
 mod test_run;
 mod validate;
 
@@ -78,6 +79,12 @@ pub use model::{
     Environment, EnvironmentConsumer, Protocol, ProtocolFamily, RenderingMode, Route,
     RuntimeFamily, Target,
 };
+pub use native_build::{
+    NATIVE_BUILD_PROFILE_FORMAT, NATIVE_BUILD_PROFILE_FORMAT_VERSION, NativeBuildConfiguration,
+    NativeBuildDestination, NativeBuildPlatform, NativeBuildProfile, NativeBuildProfileDiagnostic,
+    NativeBuildProfileDiagnosticCode, NativeBuildSigning, NativeBuildTarget,
+    NativeBuildUpdateSelection, validate_native_build_profile,
+};
 pub use test_run::{
     CanonicalTestRunError, CanonicalTransitionError, TEST_RUN_ADMISSION_PREFIX,
     TEST_RUN_CHECK_FORMAT, TEST_RUN_CHECK_FORMAT_VERSION, TEST_RUN_DENIAL_CODES,
@@ -106,6 +113,10 @@ pub const APPLICATION_CONTRACT_JSON_SCHEMA: &str =
 /// Canonical JSON Schema for serialized adapter capability manifests.
 pub const ADAPTER_CAPABILITY_MANIFEST_JSON_SCHEMA: &str =
     include_str!("../schema/adapter-capability-manifest.schema.json");
+
+/// Canonical JSON Schema for native build profiles consumed by local and hosted executors.
+pub const NATIVE_BUILD_PROFILE_JSON_SCHEMA: &str =
+    include_str!("../schema/native-build-profile.schema.json");
 
 /// Canonical JSON Schema for serialized test-run evidence records.
 ///
@@ -152,6 +163,21 @@ mod schema_tests {
         assert_eq!(
             schema["$defs"]["manifest"]["properties"]["formatVersion"]["const"],
             super::ADAPTER_CAPABILITY_FORMAT_VERSION
+        );
+    }
+
+    #[test]
+    fn embedded_native_build_schema_tracks_the_current_format() {
+        let schema: serde_json::Value =
+            serde_json::from_str(super::NATIVE_BUILD_PROFILE_JSON_SCHEMA).unwrap();
+        let profile = &schema["$defs"]["profile"]["properties"];
+        assert_eq!(
+            profile["format"]["const"],
+            super::NATIVE_BUILD_PROFILE_FORMAT
+        );
+        assert_eq!(
+            profile["formatVersion"]["const"],
+            super::NATIVE_BUILD_PROFILE_FORMAT_VERSION
         );
     }
 

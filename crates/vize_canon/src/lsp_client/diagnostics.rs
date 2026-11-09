@@ -5,12 +5,13 @@ use super::{
     utils::convert_diagnostics,
 };
 use crate::file_uri::file_uri_to_path;
+use crate::lsp_client::shared_text::DocumentTexts;
 use corsa::{CorsaError, runtime::block_on};
 use std::time::Duration;
 use vize_l0::{FxHashMap, String, cstr};
 
 type DiagnosticBatch = Vec<(String, Vec<LspDiagnostic>)>;
-type EditorLspDiagnosticDocuments = FxHashMap<String, String>;
+type EditorLspDiagnosticDocuments = DocumentTexts;
 type EditorLspDiagnosticPairs = Vec<(String, String)>;
 const LSP_DIAGNOSTICS_BATCH_CHUNK_SIZE: usize = 128;
 const LSP_DIAGNOSTICS_BATCH_TRANSIENT_RETRIES: usize = 1;
@@ -428,8 +429,8 @@ impl CorsaProjectClient {
                 .get(document_uri.as_str())
                 .cloned()
                 .or_else(|| self.document_texts.get(uri.as_str()).cloned())
-                .or_else(|| lsp_report::read_file_uri(document_uri.as_str()))
-                .or_else(|| lsp_report::read_file_uri(uri.as_str()))
+                .or_else(|| lsp_report::read_file_uri(document_uri.as_str()).map(Into::into))
+                .or_else(|| lsp_report::read_file_uri(uri.as_str()).map(Into::into))
                 .ok_or_else(|| cstr!("Failed to load document text for {uri}"))?;
             documents.entry(document_uri.clone()).or_insert(text);
             pairs.push((uri.clone(), document_uri));

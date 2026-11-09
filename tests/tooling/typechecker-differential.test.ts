@@ -95,8 +95,13 @@ test("registered original-history fixtures stay admitted in the requirement ledg
   assert.equal(rows.size, 271);
 
   const registered = loaded.cases.filter((fixture) => rows.has(fixture.regressionCommit));
-  assert.equal(new Set(registered.map((fixture) => fixture.regressionCommit)).size, 13);
-  assert.equal(registered.length, 34);
+  const registeredCommits = new Set(registered.map((fixture) => fixture.regressionCommit));
+  const admitted = [...rows.values()]
+    .filter((fields) => fields[3] === "batch-start-actions-verified")
+    .map((fields) => fields[0]);
+  // Counts derive from the registry and ledger; the floors only stop shrinkage.
+  assert(registeredCommits.size >= 13);
+  assert(registered.length >= 34);
   for (const fixture of registered) {
     assert.equal(
       rows.get(fixture.regressionCommit)?.[3],
@@ -104,6 +109,10 @@ test("registered original-history fixtures stay admitted in the requirement ledg
       `${fixture.pack} is registered but absent from the historical admission ledger`,
     );
   }
+  for (const commit of admitted) {
+    assert(registeredCommits.has(commit), `${commit} is admitted without a registered fixture`);
+  }
+  assert.equal(admitted.length, registeredCommits.size);
 });
 
 test("missing, duplicated and reordered projects cannot confer legacy coverage", () => {

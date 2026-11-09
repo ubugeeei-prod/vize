@@ -54,7 +54,7 @@ jobs:
           toolchain: 1.99.1
           components: clippy,rust-src,rustfmt
           targets: wasm32-unknown-unknown,wasm32-wasip2
-      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+      - uses: ./.github/actions/setup-wild-http-recovery
         with: { wild-version: "0.9.0" }
       - uses: ./.github/actions/setup-rust-sticky-cache
         with: { key: nextest-ci, cache-key-suffix: Linux-X64-1.99.1 }
@@ -98,7 +98,7 @@ jobs:
           toolchain: 1.99.1
           components: clippy,rust-src,rustfmt
           targets: wasm32-unknown-unknown,wasm32-wasip2
-      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+      - uses: ./.github/actions/setup-wild-http-recovery
         with: { wild-version: "0.9.0" }
       - uses: ./.github/actions/setup-rust-sticky-cache
         with: { key: nextest-ci, cache-key-suffix: Linux-X64-1.99.1 }
@@ -125,7 +125,7 @@ jobs:
         with: { persist-credentials: false }
       - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
         with: { toolchain: "1.99.1" }
-      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+      - uses: ./.github/actions/setup-wild-http-recovery
         with: { wild-version: "0.9.0" }
       - uses: ./.github/actions/setup-rust-sticky-cache
         with: { key: nextest-ci, cache-key-suffix: Linux-X64-1.99.1 }

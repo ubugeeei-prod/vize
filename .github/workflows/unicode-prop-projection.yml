@@ -68,7 +68,7 @@ jobs:
           cache-dependency-path: typescript-content-mapper/tsc/go.sum
       - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
         with: { toolchain: stable }
-      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+      - uses: ./.github/actions/setup-wild-http-recovery
         with: { wild-version: "0.9.0" }
       - uses: ./.github/actions/setup-rust-sticky-cache
         with:
@@ -134,7 +134,7 @@ jobs:
         with: { node-version-file: package.json, package-manager-cache: false }
       - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
         with: { toolchain: stable }
-      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+      - uses: ./.github/actions/setup-wild-http-recovery
         with: { wild-version: "0.9.0" }
       - name: Validate the shared certificate and Unicode custody refusal controls
         run: node --test tests/tooling/constructor-projection-parity.test.ts tests/tooling/unicode-prop-projection-custody.test.ts tests/tooling/runtime-prop-projection-certificate.test.ts tests/tooling/constructor-projection-emit-overload.test.ts

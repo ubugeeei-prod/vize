@@ -28,12 +28,37 @@ const dialectOrder = [
   "jsx-babel",
   "jsx-vapor",
   "html-template",
+  "scss-style",
+  "sass-style",
+  "less-style",
+  "stylus-style",
   "js",
   "ts",
   "jsx",
   "tsx",
   "vue-quirks",
 ];
+
+const styleDialectByLang = new Map([
+  ["scss", "scss-style"],
+  ["sass", "sass-style"],
+  ["less", "less-style"],
+  ["stylus", "stylus-style"],
+  ["styl", "stylus-style"],
+]);
+
+/** The style dialects an SFC's `<style lang>` blocks name. */
+export function styleDialects(source: string): string[] {
+  const dialects = new Set<string>();
+  for (const match of source.matchAll(/<style\b([^>]*)>/gi)) {
+    const lang = /\blang\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+))/i.exec(match[1]);
+    const dialect = styleDialectByLang.get(
+      (lang?.[1] ?? lang?.[2] ?? lang?.[3] ?? "").toLowerCase(),
+    );
+    if (dialect) dialects.add(dialect);
+  }
+  return [...dialects];
+}
 
 function runtimeExtension(filename: string) {
   const withoutReceiptSuffix = filename.toLowerCase().replace(/\.txt$/, "");
@@ -66,6 +91,7 @@ export function sourceInspectedDialectCoverage(
       } else if (/<template(?:\s|>)/i.test(source)) {
         dialects.add("html-template");
       }
+      for (const dialect of styleDialects(source)) dialects.add(dialect);
       for (const match of source.matchAll(/<script\b([^>]*)>/gi)) {
         const attributes = match[1];
         if (/\blang\s*=\s*["']tsx["']/i.test(attributes)) dialects.add("tsx");

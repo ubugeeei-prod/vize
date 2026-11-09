@@ -188,9 +188,9 @@ test("fresco Rust lane tests vize_fresco with per-platform toolchain and caches"
   assert.equal(msvc.if, "runner.os == 'Windows'");
   assert.match(msvc.uses ?? "", /^ilammy\/msvc-dev-cmd@[0-9a-f]{40}$/);
 
-  const wild = workflowUsesStep(job, "wild-linker/action@");
+  const wild = workflowUsesStep(job, "./.github/actions/setup-wild-http-recovery");
   assert.equal(wild.if, "runner.os == 'Linux'");
-  assert.match(wild.uses ?? "", /^wild-linker\/action@[0-9a-f]{40}$/);
+  assert.equal(wild.uses, "./.github/actions/setup-wild-http-recovery");
   assert.equal(wild.with?.["wild-version"], "0.9.0");
 
   // Linux mounts Blacksmith sticky disks; macOS and Windows fall back to the

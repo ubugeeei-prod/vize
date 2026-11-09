@@ -10,6 +10,7 @@ import { defineConfig } from "vite-plus";
 const contractSchemas = [
   "adapter-capability-manifest.schema.json",
   "application-contract.schema.json",
+  "native-build-profile.schema.json",
   "test-run-evidence.schema.json",
   "test-run-admission.schema.json",
   "test-run-check.schema.json",
@@ -30,6 +31,8 @@ export default defineConfig({
     entry: [
       "src/index.ts",
       "src/adapter.ts",
+      "src/native-build.ts",
+      "src/native-build-validate.ts",
       "src/validate.ts",
       "src/test-run.ts",
       "src/test-run-validate.ts",

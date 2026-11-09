@@ -35,6 +35,12 @@ not as an equality assertion — Vize is not trying to be byte-identical (see
 _Global divergences_). The verdict column is where the semantic judgement lives,
 and it is asserted to cover the corpus exactly in both directions.
 
+**Execution.** Every `equivalent` row with a runtime value position is
+mounted with value-sensitive inputs by the vue-jsx-vapor oracle (see its
+[value coverage](./VUE_JSX_VAPOR_COMPAT_INVENTORY.md#value-coverage), #6890),
+which records each divergence it finds with an issue. The note below predates
+that harness.
+
 **The `equivalent` verdicts are review-checked, not executed.** Upgrading them to
 executed means mounting both outputs against a real Vue runtime and comparing
 rendered DOM plus patch behavior on update. The repo has no harness that does

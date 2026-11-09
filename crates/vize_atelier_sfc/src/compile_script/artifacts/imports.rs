@@ -3,7 +3,7 @@
 use oxc_ast::ast::{ImportDeclarationSpecifier, Statement};
 use oxc_span::GetSpan;
 use vize_carton::{FxHashSet, String};
-use vize_croquis::macros::macro_artifact_kind;
+use vize_l2::framework::vue::macro_artifact_kind;
 
 pub(super) fn collect_static_imports<'a>(
     statements: impl Iterator<Item = &'a Statement<'a>>,

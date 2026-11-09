@@ -1,6 +1,6 @@
 //! Conditional operand selection belongs to the Vue dialect.
 
-use super::VueDirectives;
+use super::{DirectiveKind, VueDirectives};
 use crate::markup::{
     ArgSyntax, DirectiveName, DirectiveNameError, DirectivePrefix, DirectiveSyntax,
 };
@@ -41,9 +41,9 @@ pub(crate) fn conditional_parts(
     {
         return None;
     }
-    match head.name.slice(source) {
-        "if" => Some(NativeConditionKind::If),
-        "else-if" => Some(NativeConditionKind::ElseIf),
+    match DirectiveKind::of(&head, source) {
+        DirectiveKind::If => Some(NativeConditionKind::If),
+        DirectiveKind::ElseIf => Some(NativeConditionKind::ElseIf),
         _ => None,
     }
 }
@@ -57,7 +57,7 @@ pub(crate) fn for_head(raw: &str, offset: u32, source: &str) -> Result<bool, Dir
         && head.arg.is_none()
         && head.modifiers.start == head.modifiers.end
         && head.name.end == offset + raw.len() as u32
-        && head.name.slice(source) == "for")
+        && DirectiveKind::of(&head, source) == DirectiveKind::For)
 }
 
 /// First event head family: explicit complete static names with no modifiers.
@@ -71,7 +71,9 @@ pub(crate) fn static_event_head(
     };
     let expected = match head.prefix {
         DirectivePrefix::On => offset.checked_add(1),
-        DirectivePrefix::Full if head.name.slice(source) == "on" => head.name.end.checked_add(1),
+        DirectivePrefix::Full if DirectiveKind::of(&head, source) == DirectiveKind::On => {
+            head.name.end.checked_add(1)
+        }
         _ => return Ok(None),
     };
     let Some(ArgSyntax::Static(argument)) = head.arg else {

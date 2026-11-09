@@ -28,7 +28,7 @@ surfaces and are not routine CI-refactor targets.
 
 | Group | Area                                                                                   | Workflows |
 | ----- | -------------------------------------------------------------------------------------- | --------- |
-| 01    | [Pull request orchestration](#01-pull-request-orchestration)                           | 18        |
+| 01    | [Pull request orchestration](#01-pull-request-orchestration)                           | 19        |
 | 02    | [Release and public acceptance](#02-release-and-public-acceptance)                     | 32        |
 | 03    | [Benchmarks and profiling](#03-benchmarks-and-profiling)                               | 38        |
 | 04    | [Type checking and content mapping](#04-type-checking-and-content-mapping)             | 15        |
@@ -44,26 +44,27 @@ surfaces and are not routine CI-refactor targets.
 
 Start here for required checks, change planning, merge queues, and full qualification.
 
-| ID    | Workflow                           | File                                                                 |
-| ----- | ---------------------------------- | -------------------------------------------------------------------- |
-| 01.01 | Canonical corpus objects           | [`canonical-corpus-objects.yml`](./canonical-corpus-objects.yml)     |
-| 01.02 | Check Benchmark Gate               | [`check-bench.yml`](./check-bench.yml)                               |
-| 01.03 | Check                              | [`check.yml`](./check.yml)                                           |
-| 01.04 | App E2E                            | [`e2e.yml`](./e2e.yml)                                               |
-| 01.05 | Full qualification                 | [`full-qualification.yml`](./full-qualification.yml)                 |
-| 01.06 | Full source CLI producer           | [`full-source-cli.yml`](./full-source-cli.yml)                       |
-| 01.07 | Full tooling plan                  | [`full-tooling-plan.yml`](./full-tooling-plan.yml)                   |
-| 01.08 | Full worker cancellation contracts | [`full-worker-contracts.yml`](./full-worker-contracts.yml)           |
-| 01.09 | PR JS package checks               | [`pr-js-checks.yml`](./pr-js-checks.yml)                             |
-| 01.10 | PR performance observation         | [`pr-performance-observation.yml`](./pr-performance-observation.yml) |
-| 01.11 | Rust source checks                 | [`pr-rust-checks.yml`](./pr-rust-checks.yml)                         |
-| 01.12 | Required Rust differential checks  | [`pr-rust-differential.yml`](./pr-rust-differential.yml)             |
-| 01.13 | Rust product checks                | [`pr-rust-products.yml`](./pr-rust-products.yml)                     |
-| 01.14 | PR source checks                   | [`pr-source-checks.yml`](./pr-source-checks.yml)                     |
-| 01.15 | PR source CLI producer             | [`pr-source-cli.yml`](./pr-source-cli.yml)                           |
-| 01.16 | Real Project Matrix                | [`real-project-matrix.yml`](./real-project-matrix.yml)               |
-| 01.17 | Seed PR Rust target                | [`rust-pr-target-seed.yml`](./rust-pr-target-seed.yml)               |
-| 01.18 | Title Policy                       | [`title-policy.yml`](./title-policy.yml)                             |
+| ID    | Workflow                           | File                                                                             |
+| ----- | ---------------------------------- | -------------------------------------------------------------------------------- |
+| 01.01 | Canonical corpus objects           | [`canonical-corpus-objects.yml`](./canonical-corpus-objects.yml)                 |
+| 01.02 | Check Benchmark Gate               | [`check-bench.yml`](./check-bench.yml)                                           |
+| 01.03 | Check                              | [`check.yml`](./check.yml)                                                       |
+| 01.04 | App E2E                            | [`e2e.yml`](./e2e.yml)                                                           |
+| 01.05 | Full qualification                 | [`full-qualification.yml`](./full-qualification.yml)                             |
+| 01.06 | Full source CLI producer           | [`full-source-cli.yml`](./full-source-cli.yml)                                   |
+| 01.07 | Full tooling plan                  | [`full-tooling-plan.yml`](./full-tooling-plan.yml)                               |
+| 01.08 | Full worker cancellation contracts | [`full-worker-contracts.yml`](./full-worker-contracts.yml)                       |
+| 01.09 | PR JS package checks               | [`pr-js-checks.yml`](./pr-js-checks.yml)                                         |
+| 01.10 | PR performance observation         | [`pr-performance-observation.yml`](./pr-performance-observation.yml)             |
+| 01.11 | Rust source checks                 | [`pr-rust-checks.yml`](./pr-rust-checks.yml)                                     |
+| 01.12 | Required Rust differential checks  | [`pr-rust-differential.yml`](./pr-rust-differential.yml)                         |
+| 01.13 | Rust product checks                | [`pr-rust-products.yml`](./pr-rust-products.yml)                                 |
+| 01.14 | PR source checks                   | [`pr-source-checks.yml`](./pr-source-checks.yml)                                 |
+| 01.15 | PR source CLI producer             | [`pr-source-cli.yml`](./pr-source-cli.yml)                                       |
+| 01.16 | Real Project Matrix differential   | [`real-project-matrix-differential.yml`](./real-project-matrix-differential.yml) |
+| 01.17 | Real Project Matrix                | [`real-project-matrix.yml`](./real-project-matrix.yml)                           |
+| 01.18 | Seed PR Rust target                | [`rust-pr-target-seed.yml`](./rust-pr-target-seed.yml)                           |
+| 01.19 | Title Policy                       | [`title-policy.yml`](./title-policy.yml)                                         |
 
 ## 02 Release and public acceptance
 

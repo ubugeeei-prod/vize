@@ -1,0 +1,24 @@
+{
+  "format": "vize.native-build-profile",
+  "formatVersion": 1,
+  "profile": "production",
+  "configuration": "production",
+  "environment": "native",
+  "targets": [
+    {
+      "platform": "android",
+      "destination": "store",
+      "signing": "automatic"
+    },
+    {
+      "platform": "ios",
+      "destination": "store",
+      "signing": "manual"
+    }
+  ],
+  "capabilities": ["native.camera", "native.notifications"],
+  "updates": {
+    "channel": "stable",
+    "runtimeVersion": "1.4.0"
+  }
+}

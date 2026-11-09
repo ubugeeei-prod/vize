@@ -26,15 +26,26 @@ impl GenericCopies {
         covered.sort_by_key(|range| range.start);
         // Match complete, already-rendered lists. Quoted commas, nested types,
         // arrows and comments remain opaque here; OXC prepared their ranges.
-        let declarations = parameters.declaration_variants().into_iter();
         // Only a repeated authored constraint can carry an echoed diagnostic.
         // Bare names or unconstrained `unknown`/`any` arguments can occur in
         // unrelated generated helpers and do not establish that ownership.
         let fallback = parameters
             .has_repeated_fallback_constraint()
             .then_some(parameters.fallback.as_str());
-        let mut copies: Vec<_> = declarations
+        // Spellings usually coincide; an identical spelling finds identical
+        // lists, which the nesting pass below drops anyway. Scan each once.
+        let mut spellings: Vec<&str> = Vec::with_capacity(5);
+        for rendered in parameters
+            .declaration_variants()
+            .into_iter()
             .chain(fallback)
+        {
+            if !spellings.contains(&rendered) {
+                spellings.push(rendered);
+            }
+        }
+        let mut copies: Vec<_> = spellings
+            .into_iter()
             .flat_map(|rendered| exact_lists(code, rendered))
             .filter(|list| !overlaps_mapped(&covered, list.clone()))
             .map(|list| instantiation(code, list.start)..list.end)
@@ -93,13 +104,25 @@ fn shift_generated_range(range: &mut Range<usize>, start: usize, old_end: usize,
     }
 }
 
-fn exact_lists<'a>(code: &'a str, rendered: &'a str) -> impl Iterator<Item = Range<usize>> + 'a {
-    code.match_indices(rendered).filter_map(move |(start, _)| {
+fn exact_lists(code: &str, rendered: &str) -> Vec<Range<usize>> {
+    let bracketed = |start: usize| {
         let open = start.checked_sub(1)?;
         let end = start + rendered.len();
         (code.as_bytes().get(open) == Some(&b'<') && code.as_bytes().get(end) == Some(&b'>'))
             .then_some(open..end + 1)
-    })
+    };
+    if rendered.is_empty() {
+        // An empty spelling matches every char boundary; only `<>` brackets one.
+        return code
+            .match_indices(rendered)
+            .filter_map(|(start, _)| bracketed(start))
+            .collect();
+    }
+    // memmem reports the same leftmost non-overlapping matches as
+    // `str::match_indices`, with a vectorized scan.
+    memchr::memmem::find_iter(code.as_bytes(), rendered.as_bytes())
+        .filter_map(bracketed)
+        .collect()
 }
 
 fn overlaps_mapped(covered: &[Range<usize>], list: Range<usize>) -> bool {

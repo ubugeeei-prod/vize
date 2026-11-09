@@ -1,0 +1,23 @@
+{
+  "format": "native-profile",
+  "formatVersion": 2,
+  "profile": "Production Build",
+  "configuration": "preview",
+  "environment": "Native App",
+  "targets": [
+    {
+      "platform": "ios",
+      "destination": "store"
+    },
+    {
+      "platform": "ios",
+      "destination": "store",
+      "signing": "none"
+    }
+  ],
+  "capabilities": ["native.camera", "Native Camera", "native.camera"],
+  "updates": {
+    "channel": "Stable Channel",
+    "runtimeVersion": ""
+  }
+}

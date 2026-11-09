@@ -2946,6 +2946,37 @@ dependencies = [
 ]
 
 [[package]]
+name = "poc-solid"
+version = "0.474.0"
+dependencies = [
+ "oxc_ast",
+ "oxc_ast_visit",
+ "oxc_span",
+ "poc-support",
+ "vize_l0",
+ "vize_l2",
+ "vize_l3",
+ "vize_l4",
+ "vize_oxc_parser",
+]
+
+[[package]]
+name = "poc-support"
+version = "0.474.0"
+dependencies = [
+ "oxc_ast",
+ "oxc_ast_visit",
+ "oxc_span",
+ "vize_l0",
+ "vize_l1",
+ "vize_l1_to_l2",
+ "vize_l2",
+ "vize_l2_to_l3",
+ "vize_l3",
+ "vize_oxc_parser",
+]
+
+[[package]]
 name = "portable-atomic"
 version = "1.15.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4362,6 +4393,7 @@ dependencies = [
  "davinci_harness",
  "davinci_test_support",
  "insta",
+ "libc",
  "memchr",
  "mimalloc",
  "oxc_allocator",
@@ -4807,6 +4839,7 @@ dependencies = [
  "oxc_syntax",
  "serde_json",
  "vize_armature",
+ "vize_croquis",
  "vize_l0",
  "vize_l1",
  "vize_oxc_parser",

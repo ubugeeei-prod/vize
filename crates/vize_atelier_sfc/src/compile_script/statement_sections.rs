@@ -9,7 +9,7 @@ use oxc_span::{GetSpan, SourceType};
 
 use super::macros::is_runtime_erased_macro;
 use vize_carton::{FxHashSet, String, ToCompactString};
-use vize_croquis::macros::is_builtin_macro;
+use vize_l2::framework::vue::is_builtin_macro;
 
 use crate::module_map::Runs;
 use crate::script::is_static_enum;

@@ -7,9 +7,9 @@ use crate::markup::parse::{SurfaceError, SurfaceParseOptions, construct_with_lin
 use crate::markup::surface::{LintTagFact, SurfaceTree};
 use crate::markup::{Component, DirectiveNameError, LexOptions, Lexer};
 
-use super::{VueDirectives, is_lint_component};
+use super::{DirectiveKind, VueDirectives, is_lint_component};
 use crate::dialect::vue::surface::{HeaderPolicy, LexicalScope, SurfacePolicy, sink::VueSink};
-use crate::markup::directive::{DirectivePrefix, DirectiveSyntax};
+use crate::markup::directive::DirectiveSyntax;
 
 struct Vue3Policy<const LINT: bool>;
 
@@ -22,9 +22,7 @@ impl<const LINT: bool> SurfacePolicy for Vue3Policy<LINT> {
         VueDirectives
             .decompose(raw, offset)
             .map(|head| {
-                head.is_some_and(|head| {
-                    head.prefix == DirectivePrefix::Full && head.name.slice(source) == "pre"
-                })
+                head.is_some_and(|head| DirectiveKind::of(&head, source) == DirectiveKind::Pre)
             })
             .map_err(|error| DirectiveAdmission {
                 span: Span::new(offset, offset.saturating_add(raw.len() as u32)),
@@ -39,12 +37,17 @@ impl<const LINT: bool> SurfacePolicy for Vue3Policy<LINT> {
                 let Some(head) = head else {
                     return HeaderPolicy::default();
                 };
-                let name = head.name.slice(source);
+                let kind = DirectiveKind::of(&head, source);
                 HeaderPolicy {
-                    pre: head.prefix == DirectivePrefix::Full && name == "pre",
-                    structural_template: head.prefix == DirectivePrefix::Slot
-                        || head.prefix == DirectivePrefix::Full
-                            && matches!(name, "if" | "else-if" | "else" | "for" | "slot"),
+                    pre: kind == DirectiveKind::Pre,
+                    structural_template: matches!(
+                        kind,
+                        DirectiveKind::If
+                            | DirectiveKind::ElseIf
+                            | DirectiveKind::Else
+                            | DirectiveKind::For
+                            | DirectiveKind::Slot
+                    ),
                 }
             })
             .map_err(|error| DirectiveAdmission {

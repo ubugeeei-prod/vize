@@ -233,6 +233,7 @@ mod tests {
             "<table><div>fostered</div></table>",
             "<table><center>fostered</center></table>",
             "<table>fostered<tr><td>cell</td></tr></table>",
+            "<table><thead><th>Name</th><th>Grade</th></thead></table>",
             "<math><annotation-xml><table><html></html></table></annotation-xml></math>",
             "<table><tbody><template v-for=x><div></div></template></tbody></table>",
             "<table><tbody><template><div></div></template></tbody></table>",

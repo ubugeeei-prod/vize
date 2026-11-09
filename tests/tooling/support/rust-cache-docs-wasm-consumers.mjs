@@ -8,6 +8,7 @@ const cacheAction = "./.github/actions/setup-rust-sticky-cache";
 const headCacheAction = "./head/.github/actions/setup-rust-sticky-cache";
 const headScriptAction = "./head/.github/actions/setup-rust-script";
 const qualificationWorkflows = new Set([
+  ".github/workflows/async-component-ancestry.yml",
   ".github/workflows/native-sfc-runtime-options.yml",
   ".github/workflows/plain-script-import-ref.yml",
 ]);
@@ -167,7 +168,7 @@ function verifyRecipes(root, docs, e2e) {
   // generated-WASM cache. Do not freeze the other Docs job or product libraries.
   assert.equal(
     hash(JSON.stringify(docs.jobs["build-playground"])),
-    "9fb6e8300bea6cbcaae07e8b019d78c4ebeba9d39e7caa9ecd3e6171f65b7023",
+    "8039a8eba4e5a56c1a668ada91829b33f27c9a94450b34cc4a608a6762a330f0",
     "reviewed whole Docs WASM producer changed",
   );
   for (const [file, expected] of Object.entries(producerHashes))

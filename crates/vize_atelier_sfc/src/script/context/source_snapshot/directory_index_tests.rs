@@ -77,6 +77,16 @@ fn case_mismatched_specifiers_keep_the_filesystem_spelling() {
 #[cfg(unix)]
 #[test]
 fn links_keep_their_physical_identity() {
+    for sources in [
+        TypeSourceSnapshot::default(),
+        TypeSourceSnapshot::for_request(),
+    ] {
+        physical_identities(sources);
+    }
+}
+
+#[cfg(unix)]
+fn physical_identities(sources: TypeSourceSnapshot) {
     let dir = tempfile::tempdir().unwrap();
     let root = dir.path().canonicalize().unwrap();
     fs::create_dir_all(root.join("real/sub")).unwrap();
@@ -86,7 +96,6 @@ fn links_keep_their_physical_identity() {
     std::os::unix::fs::symlink(root.join("real/target.ts"), root.join("app/alias.ts")).unwrap();
     std::os::unix::fs::symlink(root.join("real/sub"), root.join("app/linked")).unwrap();
     let importer = root.join("app/App.vue");
-    let sources = TypeSourceSnapshot::default();
     let expect = |specifier: &str, physical: &Path| {
         assert_eq!(
             sources.resolve_import(&importer, specifier),
@@ -139,6 +148,16 @@ fn caller_roots_take_their_realpath_from_the_physical_directory() {
 #[cfg(unix)]
 #[test]
 fn walked_candidate_directories_match_realpath_through_links_and_parents() {
+    for sources in [
+        TypeSourceSnapshot::default(),
+        TypeSourceSnapshot::for_request(),
+    ] {
+        walked_directories(sources);
+    }
+}
+
+#[cfg(unix)]
+fn walked_directories(sources: TypeSourceSnapshot) {
     let dir = tempfile::tempdir().unwrap();
     let root = dir.path().canonicalize().unwrap();
     fs::create_dir_all(root.join("src/features/a")).unwrap();
@@ -149,7 +168,6 @@ fn walked_candidate_directories_match_realpath_through_links_and_parents() {
     fs::write(root.join("src/kit/Field.vue"), "<template />").unwrap();
     fs::write(root.join("elsewhere/shared/types.ts"), "export type T = 1").unwrap();
     std::os::unix::fs::symlink(root.join("elsewhere/shared"), root.join("src/shared")).unwrap();
-    let sources = TypeSourceSnapshot::default();
     let importer = root.join("src/features/a/App.vue");
     for (specifier, expected) in [
         ("./model", root.join("src/features/a/model.ts")),

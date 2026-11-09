@@ -60,3 +60,26 @@ dialect coverage.
 Extending this one SSR fixture to every compiler target, dialect and T1/T2
 source is still open. The source-built CLI test belongs in Actions after the
 build receipt step; until that run finishes, the reference match is unverified.
+
+## Real-project rows (T2, #6891)
+
+`tests/differential/real-project.ts` writes one `vize.differential.manifest`,
+`vize.differential.result` and acceptance summary per product
+(`T2/<product>/`) from the Real Project Matrix shard reports. Every pinned
+project gets one case per product (`<product>/real/<project-id>`, with
+`projectId` and the fixture ledger's dialect claims) at the deletion-policy
+targets: compiler `dom` and `ssr`, linter `lint`, formatter `fmt`, type checker
+`batch`, LSP `stdio`. The legacy lane is the shard's source-built run, `completed` only
+when it ran and its raw output is in the shard report; a missing shard still
+yields every planned row as `missing-evidence`. The Real Project Matrix
+differential workflow runs after each completed full matrix run on main,
+uploads the bundle as `real-project-differential` and appends the tables to
+its run summary. No product has a native-only real-project route yet. The
+compiler `dom` native lane reads the canonical DOM corpus, and both compiler
+`ssr` lanes read the canonical SSR corpus (every template and production SFC
+sweep). Their template stages run on the levels, but the SFC script still
+compiles through Croquis and SSR may select a legacy route, so each project
+with compared templates is `legacy-backed`, and `equal` only while the corpus
+reports zero divergences (divergences are not attributed to projects). Every
+other native lane is `unsupported`. Compiler `vapor` has no real-project
+lane, so it has no T2 rows.

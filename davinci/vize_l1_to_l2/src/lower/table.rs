@@ -1,9 +1,10 @@
 //! HTML table tree-construction normalizations needed before L2 ids are minted.
 //!
-//! Vue's DOM compiler rides the HTML parser shape: direct rows under a table
-//! gain an implicit `tbody`, and direct cells under a row group gain an
-//! implicit `tr`. L2 inserts those owners during lowering so synthesized op ids
-//! stay in folio page order.
+//! Direct rows under a table gain an implicit `tbody`, and direct cells under
+//! that synthesized section gain an implicit `tr`. Cells under an authored row
+//! group remain direct children, matching Vue's component compiler rather than
+//! the browser's document parser. L2 inserts only the required owners during
+//! lowering so synthesized op ids stay in folio page order.
 
 use vize_l0::{Box, Span, Vec, cstr};
 use vize_l1::markup::{Interpolation, SurfaceChild};
@@ -33,12 +34,20 @@ fn lower_table_children<'a>(
 ) -> Vec<'a, Op<'a>> {
     lower_grouped_children(cx, children, ns, starts_implicit_tbody, |cx, segment| {
         implicit_element(cx, "tbody", "lower.table.implicit-tbody", segment, |cx| {
-            lower_row_group_children(cx, segment, ns)
+            lower_implicit_section_children(cx, segment, ns)
         })
     })
 }
 
 fn lower_row_group_children<'a>(
+    cx: &mut Cx<'a, impl ProvenanceSink>,
+    children: &[SurfaceChild<'a>],
+    ns: Namespace,
+) -> Vec<'a, Op<'a>> {
+    lower_children(cx, children, ns)
+}
+
+fn lower_implicit_section_children<'a>(
     cx: &mut Cx<'a, impl ProvenanceSink>,
     children: &[SurfaceChild<'a>],
     ns: Namespace,

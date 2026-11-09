@@ -1,19 +1,21 @@
 import assert from "node:assert/strict";
 import { readFileSync, writeFileSync } from "node:fs";
+import { stripTypeScriptTypes } from "node:module";
 import { dirname, join } from "node:path";
 import process from "node:process";
 import { fileURLToPath } from "node:url";
 import { isDeepStrictEqual } from "node:util";
 import { transformSync } from "@babel/core";
 import babelJsx from "@vue/babel-plugin-jsx";
+import { Vue, window, installed, transformVueJsxVapor } from "./runtime.ts";
 import {
-  Vue,
-  window,
-  installed,
-  componentFixtures,
+  surfaceFixtures,
+  directiveFixtures,
   linkedFunction,
-  transformVueJsxVapor,
-} from "./runtime.ts";
+  materialize,
+  observeChildren,
+} from "./surface.ts";
+import { assertInventory, expectation, traceFields } from "./inventory.ts";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const repoRoot = join(here, "..", "..", "..");
@@ -50,71 +52,14 @@ const babelVerdicts = readFileSync(
   "utf8",
 );
 
-function observeChildren(parent) {
-  const children = [];
-  for (const node of parent.childNodes) {
-    if (node.nodeType === 3) {
-      if (!node.data) continue;
-      if (typeof children.at(-1) === "string") children[children.length - 1] += node.data;
-      else children.push(node.data);
-      continue;
-    }
-    if (node.nodeType !== 1) continue;
-    const attributes = Object.fromEntries(
-      [...node.attributes]
-        .map(({ name, value }) => [name, value])
-        .sort(([left], [right]) => left.localeCompare(right)),
-    );
-    const element = { tag: node.localName, attributes, children: observeChildren(node) };
-    if (node.localName === "input") {
-      element.value = node.value;
-      element.checked = node.checked;
-    }
-    children.push(element);
-  }
-  return children;
-}
-
-function materialize(value) {
-  if (Array.isArray(value)) return value.map(materialize);
-  if (!value || typeof value !== "object") return value;
-  if (Object.hasOwn(value, "$jsxValue")) {
-    assert.deepEqual(Object.keys(value), ["$jsxValue"]);
-    switch (value.$jsxValue) {
-      case "zero":
-        return 0;
-      case "empty-string":
-        return "";
-      case "nan":
-        return Number.NaN;
-      case "null":
-        return null;
-      case "undefined":
-        return undefined;
-      case "false":
-        return false;
-      case "true":
-        return true;
-      case "array":
-        return [0, "", Number.NaN, null, undefined, false];
-      case "nested-vnode":
-        return Vue.h("i", { "data-kind": "nested" }, [
-          Vue.h("b", null, "inner"),
-          Vue.h("u", null, "leaf"),
-        ]);
-      default:
-        assert.fail(`unknown JSX value descriptor: ${value.$jsxValue}`);
-    }
-  }
-  return Object.fromEntries(Object.entries(value).map(([key, item]) => [key, materialize(item)]));
-}
-
 async function trace(code, functionName, spec, runtime = "vapor", authoredModule = false) {
   const initial = materialize(structuredClone(spec.initial));
   const state = spec.valueMatrix ? Vue.shallowReactive(initial) : Vue.reactive(initial);
   const reads = [];
   const observations = { propPublications: 0 };
-  const render = linkedFunction(code, functionName, state, reads, observations);
+  // TSX rows keep erasable type syntax in both emitted modules, as a bundler would receive them.
+  const executable = spec.lang === "tsx" ? stripTypeScriptTypes(code) : code;
+  const render = linkedFunction(executable, functionName, state, reads, observations);
   if (authoredModule) {
     assert.equal(runtime, "vapor");
     assert.equal(functionName, "App");
@@ -130,9 +75,11 @@ async function trace(code, functionName, spec, runtime = "vapor", authoredModule
   const app = runtime === "vapor" ? Vue.createVaporApp(component) : Vue.createApp(component);
   if (runtime === "vapor" && spec.componentFixtures?.length) app.use(Vue.vaporInteropPlugin);
   for (const fixture of spec.componentFixtures ?? []) {
-    assert.ok(Object.hasOwn(componentFixtures, fixture), `${spec.id}: known component fixture`);
-    app.component(fixture, componentFixtures[fixture]);
+    assert.ok(Object.hasOwn(surfaceFixtures, fixture), `${spec.id}: known component fixture`);
+    app.component(fixture, surfaceFixtures[fixture]);
   }
+  // VDOM resolves directives by registered name; Vapor reads the in-scope binding.
+  for (const [name, directive] of Object.entries(directiveFixtures)) app.directive(name, directive);
   const warnings = [];
   app.config.warnHandler = (message) => warnings.push(message);
   app.config.errorHandler = (error) => warnings.push(String(error));
@@ -143,7 +90,6 @@ async function trace(code, functionName, spec, runtime = "vapor", authoredModule
   const events = [];
 
   function snapshot() {
-    assert.deepEqual(warnings, [], `${spec.id}: runtime diagnostics`);
     const elements = [...host.querySelectorAll("*")];
     for (const element of elements) {
       if (!identities.has(element)) identities.set(element, nextIdentity++);
@@ -159,14 +105,24 @@ async function trace(code, functionName, spec, runtime = "vapor", authoredModule
     };
   }
 
+  // An error escaping the runtime is an observation like an error-handler report.
+  // Actions stay synchronous so receipts read the DOM right after them.
+  const uncaught = (error) => warnings.push(`uncaught: ${String(error)}`);
+  const observe = (action) => {
+    try {
+      action();
+    } catch (error) {
+      uncaught(error);
+    }
+  };
   try {
-    app.mount(host);
+    observe(() => app.mount(host));
     await Vue.nextTick();
     const phases = [snapshot()];
     for (const step of spec.steps) {
       if (Object.hasOwn(step, "patch")) {
         assert.deepEqual(Object.keys(step), ["patch"], `${spec.id}: update shape`);
-        Object.assign(state, materialize(structuredClone(step.patch)));
+        observe(() => Object.assign(state, materialize(structuredClone(step.patch))));
       } else {
         assert.deepEqual(Object.keys(step), ["event"], `${spec.id}: event shape`);
         assert.deepEqual(
@@ -182,8 +138,12 @@ async function trace(code, functionName, spec, runtime = "vapor", authoredModule
             target[property] = materialize(structuredClone(value));
           }
         }
+        // Vue's VDOM invoker drops events stamped no later than its attachment;
+        // a real interaction always follows the mount by at least one tick of the clock.
+        await new Promise((resolve) => setTimeout(resolve, 2));
         const event = new window.Event(step.event.type, { bubbles: true, cancelable: true });
-        const dispatchResult = target.dispatchEvent(event);
+        let dispatchResult;
+        observe(() => (dispatchResult = target.dispatchEvent(event)));
         const receipt = {
           selector: step.event.selector,
           type: step.event.type,
@@ -196,93 +156,61 @@ async function trace(code, functionName, spec, runtime = "vapor", authoredModule
         }
         events.push(receipt);
       }
-      await Vue.nextTick();
+      await Vue.nextTick().catch(uncaught);
       phases.push(snapshot());
     }
-    app.unmount();
+    observe(() => app.unmount());
     await Vue.nextTick();
-    assert.equal(host.childNodes.length, 0, `${spec.id}: complete unmount`);
+    if (host.childNodes.length) phases.at(-1).warnings.push("uncaught: incomplete unmount");
     return phases;
   } finally {
-    if (host.childNodes.length) app.unmount();
     host.remove();
   }
 }
 
 function vaporReferenceCode(spec) {
-  const result = transformVueJsxVapor(spec.source, `/semantic-oracle/${spec.id}.jsx?vapor=true`);
+  const result = transformVueJsxVapor(
+    spec.source,
+    `/semantic-oracle/${spec.id}.${spec.lang ?? "jsx"}?vapor=true`,
+  );
   assert.equal(typeof result.code, "string", `${spec.id}: oracle output`);
   return result.code;
 }
 
+// The linked Babel row's plugin options apply; TSX keeps its types for the linker to erase.
 function babelReferenceCode(spec) {
+  const row = babelCorpus.cases.find(({ id }) => id === spec.babelCorpusId);
   const result = transformSync(spec.source, {
     configFile: false,
     babelrc: false,
-    filename: `/semantic-oracle/${spec.id}.jsx`,
-    plugins: [babelJsx],
+    filename: `/semantic-oracle/${spec.id}.${spec.lang ?? "jsx"}`,
+    // syntax-jsx stands aside when TypeScript is enabled, so TSX names both.
+    parserOpts: spec.lang === "tsx" ? { plugins: ["typescript", "jsx"] } : {},
+    plugins: [[babelJsx, row.babelOptions ?? {}]],
   });
   assert.equal(typeof result?.code, "string", `${spec.id}: Babel oracle output`);
   return result.code;
 }
 
-function assertInventory(corpus) {
-  assert.deepEqual(installed, {
-    packageVersion: corpus.oracle.packageVersion,
-    vueVersion: corpus.oracle.vueVersion,
-  });
-  assert.equal(verdicts.oraclePackageVersion, installed.packageVersion);
-  assert.equal(verdicts.vueVersion, installed.vueVersion);
-  const ids = corpus.cases.map(({ id }) => id).sort();
-  assert.deepEqual(Object.keys(verdicts.cases).sort(), ids);
-  for (const id of ids) {
-    assert.ok(["equivalent", "divergent"].includes(verdicts.cases[id].verdict), id);
-    assert.equal(typeof verdicts.cases[id].basis, "string", id);
-  }
-  const babelIds = new Set(babelCorpus.cases.map(({ id }) => id));
-  for (const spec of corpus.cases.filter(({ babelCorpusId }) => babelCorpusId)) {
-    assert.ok(babelIds.has(spec.babelCorpusId), `${spec.id}: registered Babel corpus row`);
-    assert.ok(
-      babelVerdicts.includes(`("${spec.babelCorpusId}", Same)`),
-      `${spec.id}: equivalent Babel verdict`,
-    );
-  }
-  for (const spec of corpus.cases) {
-    const divergent = verdicts.cases[spec.id].verdict === "divergent";
-    assert.equal(
-      "expectedReferenceElementIdentities" in spec,
-      divergent,
-      `${spec.id}: divergent rows pin reference identity`,
-    );
-    // Phases where Babel and vue-jsx-vapor disagree with each other; each
-    // backend still matches its own reference there.
-    const conflicts = verdicts.cases[spec.id].referenceConflicts;
-    if (conflicts !== undefined) {
-      assert.ok(spec.babelCorpusId, `${spec.id}: reference conflicts need both references`);
-      assert.ok(conflicts.length > 0, `${spec.id}: empty reference conflict list`);
-      conflicts.forEach((phase, index) => {
-        assert.ok(Number.isInteger(phase) && phase >= 0 && phase <= spec.steps.length, spec.id);
-        assert.ok(index === 0 || conflicts[index - 1] < phase, `${spec.id}: ordered conflicts`);
-      });
-    }
-    for (const key of ["expectedVdomText", "expectedVdomElementIdentities"]) {
-      assert.ok(!(key in spec) || conflicts, `${spec.id}: ${key} needs reference conflicts`);
-    }
-  }
-  const documented = [
-    ...inventory.matchAll(/^\| `([^`]+)`\s+\| (?:equivalent|divergent|deferred)\s+\|/gmu),
-  ]
-    .map((match) => match[1])
-    .sort();
-  assert.deepEqual(documented, ids);
+function changedFields(left, right) {
+  return traceFields.filter(
+    (field) =>
+      !isDeepStrictEqual(
+        left.map((phase) => phase[field]),
+        right.map((phase) => phase[field]),
+      ),
+  );
 }
 
-function assertBehavior(
-  spec,
-  phases,
-  expectedElementIdentities = spec.expectedElementIdentities,
-  expectedText = spec.expectedText,
-) {
+function assertBehavior(spec, phases, side = "") {
+  const expectedElementIdentities = expectation(spec, side, "elementIdentities");
+  const expectedText = expectation(spec, side, "text");
+  const expectedWarnings = expectation(spec, side, "warnings");
+  assert.deepEqual(
+    phases.map(({ warnings }) => warnings),
+    expectedWarnings ?? phases.map(() => []),
+    `${spec.id}: runtime diagnostics`,
+  );
   assert.equal(phases.length, spec.steps.length + 1, `${spec.id}: initial render plus updates`);
   assert.deepEqual(
     phases.map(({ text }) => text),
@@ -294,10 +222,10 @@ function assertBehavior(
     expectedElementIdentities,
     `${spec.id}: element update identity trace`,
   );
-  if (spec.expectedDom) {
+  if (expectation(spec, side, "dom")) {
     assert.deepEqual(
       phases.map(({ dom }) => dom),
-      spec.expectedDom,
+      expectation(spec, side, "dom"),
       `${spec.id}: complete DOM trace`,
     );
   }
@@ -315,10 +243,10 @@ function assertBehavior(
       `${spec.id}: one prop publication per effect`,
     );
   }
-  if (spec.expectedEvents) {
+  if (expectation(spec, side, "events")) {
     assert.deepEqual(
       phases.map(({ events }) => events),
-      spec.expectedEvents,
+      expectation(spec, side, "events"),
       `${spec.id}: dispatched event trace`,
     );
   } else {
@@ -329,11 +257,15 @@ function assertBehavior(
   }
 }
 
-function semanticTrace(phases) {
-  return phases.map(({ dom, text, warnings, events }) => ({ dom, text, warnings, events }));
-}
-
-assertInventory(recordedCorpus);
+assertInventory({
+  corpus: recordedCorpus,
+  verdicts,
+  inventory,
+  babelCorpus,
+  babelVerdicts,
+  coverage: JSON.parse(readFileSync(join(fixtureDir, "value-coverage.json"), "utf8")),
+  installed,
+});
 
 // Keep the unmodified emitted references and every runtime phase, including a
 // partial failure, beside the separately captured complete compiler payload.
@@ -378,30 +310,30 @@ if (process.argv.includes("--reference")) {
     divergent: 0,
     babelCases: recordedCorpus.cases.filter(({ babelCorpusId }) => babelCorpusId).length,
     babelEquivalent: 0,
+    babelDivergent: 0,
+    vaporRejected: 0,
     failures: 0,
   };
   for (const [index, spec] of recordedCorpus.cases.entries()) {
     const compiled = input.compiled[index];
     const row = (evidence.cases[spec.id] = {});
-    row.referenceCode = vaporReferenceCode(spec);
-    const reference = (row.reference = await trace(row.referenceCode, "App", spec));
-    const actual = (row.actual = await trace(
-      compiled.code,
-      compiled.functionName,
-      spec,
-      "vapor",
-      true,
-    ));
-    if (verdicts.cases[spec.id].verdict === "equivalent") {
-      assert.deepEqual(actual, reference, spec.id);
-      assertBehavior(spec, actual);
-      receipt.equivalent += 1;
+    const verdict = verdicts.cases[spec.id];
+    receipt[verdict.verdict] += 1;
+    // A pinned Vapor rejection leaves only the VDOM/Babel pair to compare.
+    let actual = null;
+    if (spec.vaporRejected) {
+      assert.ok(spec.babelCorpusId && !verdict.differs, `${spec.id}: VDOM-only row`);
+      assert.equal(compiled.code, null, `${spec.id}: rejected Vapor build`);
+      receipt.vaporRejected += 1;
     } else {
-      assert.deepEqual(semanticTrace(actual), semanticTrace(reference), `${spec.id}: semantics`);
-      assert.notDeepEqual(actual, reference, `${spec.id}: recorded divergence remains observable`);
+      row.referenceCode = vaporReferenceCode(spec);
+      const reference = (row.reference = await trace(row.referenceCode, "App", spec));
+      actual = row.actual = await trace(compiled.code, compiled.functionName, spec, "vapor", true);
+      const differs = changedFields(actual, reference);
+      assert.deepEqual(differs, verdict.differs ?? [], `${spec.id}: Vapor/vue-jsx-vapor fields`);
+      if (differs.length === 0) assert.deepEqual(actual, reference, spec.id);
+      else assertBehavior(spec, reference, "Reference");
       assertBehavior(spec, actual);
-      assertBehavior(spec, reference, spec.expectedReferenceElementIdentities);
-      receipt.divergent += 1;
     }
     if (spec.babelCorpusId) {
       assert.deepEqual(Object.keys(compiled.vdom), ["code", "functionName"]);
@@ -413,7 +345,10 @@ if (process.argv.includes("--reference")) {
         spec,
         "vdom",
       ));
-      assert.deepEqual(vdom, babel, `${spec.id}: VDOM/Babel`);
+      const vdomDiffers = changedFields(vdom, babel);
+      assert.deepEqual(vdomDiffers, verdict.vdomDiffers ?? [], `${spec.id}: VDOM/Babel fields`);
+      if (vdomDiffers.length === 0) assert.deepEqual(vdom, babel, `${spec.id}: VDOM/Babel`);
+      else assertBehavior(spec, babel, "Babel");
       // Source maps route VDOM through the Relief codegen; both must agree.
       assert.deepEqual(Object.keys(compiled.vdomSourceMapped), ["code", "functionName"]);
       row.vdomSourceMapped = await trace(
@@ -423,26 +358,23 @@ if (process.argv.includes("--reference")) {
         "vdom",
       );
       assert.deepEqual(row.vdomSourceMapped, vdom, `${spec.id}: source-mapped VDOM`);
-      const conflicts = verdicts.cases[spec.id].referenceConflicts ?? [];
-      assert.deepEqual(
-        vdom.flatMap((phase, index) => (isDeepStrictEqual(phase, actual[index]) ? [] : [index])),
-        conflicts,
-        `${spec.id}: VDOM/Vapor outside recorded reference conflicts`,
-      );
+      const conflicts = verdict.referenceConflicts ?? [];
+      if (actual && verdict.verdict === "equivalent") {
+        assert.deepEqual(
+          vdom.flatMap((phase, index) => (isDeepStrictEqual(phase, actual[index]) ? [] : [index])),
+          conflicts,
+          `${spec.id}: VDOM/Vapor outside recorded reference conflicts`,
+        );
+      }
       for (const phase of conflicts) {
         assert.notDeepEqual(
           babel[phase],
-          reference[phase],
+          row.reference[phase],
           `${spec.id}: reference conflict ${phase}`,
         );
       }
-      assertBehavior(
-        spec,
-        vdom,
-        spec.expectedVdomElementIdentities ?? spec.expectedElementIdentities,
-        spec.expectedVdomText ?? spec.expectedText,
-      );
-      receipt.babelEquivalent += 1;
+      assertBehavior(spec, vdom, "Vdom");
+      receipt[vdomDiffers.length ? "babelDivergent" : "babelEquivalent"] += 1;
     }
   }
   await window.happyDOM.close();

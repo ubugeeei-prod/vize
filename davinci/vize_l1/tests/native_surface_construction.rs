@@ -6,7 +6,7 @@ use davinci_test_support::surface_fixture as common;
 use vize_l0::{Allocator, ErrorCode, cstr};
 use vize_l1::markup::{
     HoleCounts, SurfaceChild, SurfaceParseOptions, check_fidelity, hole_counts, parse,
-    parse_with_authored, parse_with_options,
+    parse_with_authored, parse_with_authored_diagnostics, parse_with_options,
 };
 use vize_l1::markup::{
     parse_component, parse_component_with_authored, parse_component_with_options,
@@ -109,6 +109,29 @@ fn native_authored_projection_shares_normal_recovery_and_diagnostics() {
         let (normal, errors) = parse(&allocator, source);
         assert_eq!(cstr!("{:?}", native.tree), cstr!("{normal:?}"));
         assert_eq!(cstr!("{:?}", native.errors), cstr!("{errors:?}"));
+    }
+}
+
+#[test]
+fn direct_table_section_cells_are_component_structure_not_fostered_content() {
+    for (section, cell) in [("thead", "th"), ("tbody", "td"), ("tfoot", "td")] {
+        let allocator = Allocator::new();
+        let source = cstr!("<table><{section}><{cell}>value</{cell}></{section}></table>");
+        let (tree, authored, errors) = parse_with_authored_diagnostics(&allocator, source.as_str());
+
+        assert!(errors.is_empty(), "{source}: {errors:?}");
+        assert!(authored.is_none(), "no recovery is needed: {source}");
+        let SurfaceChild::Element(table) = &tree.children[0] else {
+            panic!("table root: {source}");
+        };
+        let SurfaceChild::Element(section_node) = &table.children[0] else {
+            panic!("section child: {source}");
+        };
+        assert_eq!(section_node.open.lt_name.text, cstr!("<{section}"));
+        let SurfaceChild::Element(cell_node) = &section_node.children[0] else {
+            panic!("direct cell child: {source}");
+        };
+        assert_eq!(cell_node.open.lt_name.text, cstr!("<{cell}"));
     }
 }
 

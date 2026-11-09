@@ -109,6 +109,8 @@ pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
     // more literal fixtures and calls over nineteen complete trace lines.
     // Keyed nested-loop and keyed-root slot fallbacks add two literal fixtures
     // and calls over twenty-seven complete trace lines.
+    // Preserving authored table-section cells removes the four trace lines that
+    // belonged only to the parser-inserted row and keeps every authored node.
     rule_fixture_calls: 1057 + 4 + 3 + 43 + 2 + 1 + 11 + 5 + 1 + 2 - 5
         + 3
         + 2
@@ -186,7 +188,8 @@ pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
         + 51
         + 12
         + 51
-        + 27,
+        + 27
+        - 4,
     restructured: 0,
     jsx: JsxComparison {
         roots: 14,

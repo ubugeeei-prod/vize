@@ -2,9 +2,12 @@
 
 use lsp_types::Uri;
 use std::str::FromStr;
-use vize_l0::{FxHashMap, FxHashSet, String, cstr};
+use vize_l0::{FxHashSet, String, cstr};
 
 use super::EditorLspSession;
+use crate::lsp_client::shared_text::DocumentTexts;
+#[cfg(test)]
+use vize_l0::FxHashMap;
 
 impl EditorLspSession {
     pub(super) fn ready_document_uri(&mut self, document_uri: &str) -> Result<Uri, String> {
@@ -80,7 +83,7 @@ impl EditorLspSession {
             .map_err(|error| cstr!("Invalid LSP document URI {document_uri}: {error}"))
     }
 
-    pub(super) fn has_documents(&self, documents: &FxHashMap<String, String>) -> bool {
+    pub(super) fn has_documents(&self, documents: &DocumentTexts) -> bool {
         self.documents.len() == documents.len()
             && documents.iter().all(|(uri, text)| {
                 self.documents
@@ -94,7 +97,7 @@ fn readiness_documents(
     dirty_documents: &FxHashSet<String>,
     query_barrier_required: bool,
     query_document: Option<&str>,
-    live_documents: &FxHashMap<String, String>,
+    live_documents: &DocumentTexts,
 ) -> Vec<String> {
     let mut documents = dirty_documents.iter().cloned().collect::<Vec<_>>();
     if query_barrier_required {

@@ -9,6 +9,8 @@ import {
 } from "./extension-core.js";
 
 const EXCLUDED_DIRECTORIES = ["node_modules", ".git", "target", "dist", "build"];
+/** Directories one startup decision may list before it waits for the complete search. */
+const NEAR_DIRECTORY_BUDGET = 32;
 
 type ParentWatch = {
   owner: string;
@@ -20,8 +22,10 @@ type ParentWatch = {
 
 export class WorkspaceLspConfigDiscovery {
   private discovered = false;
+  private nearMatch = false;
   private refreshGeneration = 0;
   private rootConfig: { generation: number; found: boolean } | undefined;
+  private completedGeneration = -1;
   private knownConfigurations: readonly Uri[] = [];
   private readonly configurationWatchers = new Set<() => void>();
 
@@ -31,7 +35,29 @@ export class WorkspaceLspConfigDiscovery {
   ) {}
 
   get hasConfig(): boolean {
-    return this.discovered || this.hasRootConfig;
+    return this.discovered || this.nearMatch || this.hasRootConfig;
+  }
+
+  /**
+   * Lists a few directories within two levels of each folder. Any config found
+   * there is one the workspace-wide search also returns, so until that search
+   * completes it decides startup.
+   */
+  async findNearConfig(): Promise<boolean> {
+    const refreshGeneration = this.refreshGeneration;
+    for (const folder of workspace.workspaceFolders ?? []) {
+      const hidden = basenameExcludes(
+        workspace.getConfiguration("files", folder.uri).get("exclude"),
+      );
+      if (folder.uri.scheme !== "file" || !hidden || !(await nearConfig(folder.uri.fsPath, hidden)))
+        continue;
+      // A newer search owns the decision once this one is superseded.
+      this.nearMatch =
+        refreshGeneration === this.refreshGeneration &&
+        refreshGeneration !== this.completedGeneration;
+      return this.nearMatch;
+    }
+    return false;
   }
 
   /**
@@ -51,6 +77,7 @@ export class WorkspaceLspConfigDiscovery {
 
   async refresh(generation?: number): Promise<void> {
     const refreshGeneration = ++this.refreshGeneration;
+    this.nearMatch = false;
     this.trace(`findFiles enter generation=${generation}`);
     try {
       const configurations = await workspace.findFiles(
@@ -64,6 +91,8 @@ export class WorkspaceLspConfigDiscovery {
       this.knownConfigurations = configurations;
       for (const reconcile of this.configurationWatchers) reconcile();
       this.discovered = configurations.length > 0;
+      this.nearMatch = false;
+      this.completedGeneration = refreshGeneration;
       this.trace(`findFiles return generation=${generation} discovered=${this.discovered}`);
     } catch (error) {
       this.trace(`findFiles error generation=${generation}`);
@@ -229,4 +258,50 @@ export class WorkspaceLspConfigDiscovery {
       },
     ];
   }
+}
+
+const isProjectConfigName = (name: string) =>
+  (WORKSPACE_PROJECT_CONFIG_FILES as readonly string[]).includes(name) ||
+  /^tsconfig\..*\.json$/.test(name);
+
+/** `files.exclude` also hides results of the complete search; only `**\/name` keys are mirrored. */
+function basenameExcludes(setting: unknown): Set<string> | undefined {
+  const names = new Set(EXCLUDED_DIRECTORIES.map((name) => name.toLowerCase()));
+  if (setting === undefined || setting === null) return names;
+  if (typeof setting !== "object") return undefined;
+  for (const [pattern, enabled] of Object.entries(setting)) {
+    if (enabled === false) continue;
+    const name = /^\*\*\/([^*?[\]{}/\\!]+)$/.exec(pattern)?.[1];
+    if (enabled !== true || !name) return undefined;
+    names.add(name.toLowerCase());
+  }
+  return names;
+}
+
+/** Breadth-first over the folder and two directory levels, skipping links and dot directories. */
+async function nearConfig(root: string, hidden: ReadonlySet<string>): Promise<boolean> {
+  let level = [root];
+  let budget = NEAR_DIRECTORY_BUDGET;
+  for (let depth = 0; depth <= 2 && level.length > 0; depth++) {
+    const next: string[] = [];
+    for (const directory of level) {
+      if (budget-- <= 0) return false;
+      let entries: fs.Dirent[];
+      try {
+        entries = await fs.promises.readdir(directory, { withFileTypes: true });
+      } catch {
+        continue;
+      }
+      for (const entry of entries) {
+        // Case-folded: a glob that matches case-insensitively hides no less.
+        if (hidden.has(entry.name.toLowerCase())) continue;
+        if (entry.isFile() && isProjectConfigName(entry.name)) return true;
+        if (entry.isDirectory() && !entry.name.startsWith(".")) {
+          next.push(path.join(directory, entry.name));
+        }
+      }
+    }
+    level = next;
+  }
+  return false;
 }

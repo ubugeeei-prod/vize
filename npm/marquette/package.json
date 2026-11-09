@@ -41,6 +41,16 @@
       "import": "./dist/adapter.mjs",
       "default": "./dist/adapter.mjs"
     },
+    "./native-build": {
+      "types": "./dist/native-build.d.mts",
+      "import": "./dist/native-build.mjs",
+      "default": "./dist/native-build.mjs"
+    },
+    "./native-build/validate": {
+      "types": "./dist/native-build-validate.d.mts",
+      "import": "./dist/native-build-validate.mjs",
+      "default": "./dist/native-build-validate.mjs"
+    },
     "./test-run": {
       "types": "./dist/test-run.d.mts",
       "import": "./dist/test-run.mjs",
@@ -73,6 +83,7 @@
     },
     "./schema": "./dist/application-contract.schema.json",
     "./adapter/schema": "./dist/adapter-capability-manifest.schema.json",
+    "./native-build/schema": "./dist/native-build-profile.schema.json",
     "./test-run/schema": "./dist/test-run-evidence.schema.json",
     "./test-run/admission/schema": "./dist/test-run-admission.schema.json",
     "./test-run/check/schema": "./dist/test-run-check.schema.json",

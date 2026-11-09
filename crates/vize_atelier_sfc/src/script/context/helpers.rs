@@ -8,7 +8,7 @@ use oxc_ast::ast::{
 use oxc_span::GetSpan;
 
 use crate::types::{BindingMetadata, BindingType};
-use vize_croquis::macros::is_builtin_macro;
+use vize_l2::framework::vue::is_builtin_macro;
 
 use super::super::MacroCall;
 use vize_carton::{String, ToCompactString};

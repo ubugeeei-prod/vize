@@ -2,7 +2,7 @@
 #![expect(clippy::disallowed_macros, reason = "fixtures are built with format!")]
 
 mod document_tail;
-
+mod table_section_cells;
 use super::{
     parse, parse_document, parse_document_with_options, parse_with_options,
     parse_with_options_and_template_syntax,

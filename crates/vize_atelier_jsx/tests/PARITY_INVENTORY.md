@@ -15,6 +15,11 @@ codegen, so hoisting and block-tree details are intentionally Vize-shaped.
 > 94-case corpus through the actual `@vue/babel-plugin-jsx` and records, per row,
 > whether Vize's semantics match. Use that file to answer "does Vize behave like
 > babel here?"; use this one to answer "is this case covered by a test at all?".
+>
+> **Semantic parity against the real `vue-jsx-vapor`** is tracked in
+> [`VUE_JSX_VAPOR_COMPAT_INVENTORY.md`](./VUE_JSX_VAPOR_COMPAT_INVENTORY.md)
+> (#6884), which mounts Vize and `vue-jsx-vapor` output under Vue Vapor and
+> records a per-row verdict for every surface of the dialect.
 
 ## Backend separation
 

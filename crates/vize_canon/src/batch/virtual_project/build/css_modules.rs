@@ -5,10 +5,10 @@ use std::collections::{BTreeMap, BTreeSet};
 use vize_atelier_sfc::SfcDescriptor;
 use vize_carton::{String as CompactString, ToCompactString};
 
-use crate::css_classes::authored_local_css_classes as extract_authored_css_classes;
 use crate::virtual_ts::{
     CSS_MODULE_GLOBAL_MARKER, ResolveStyleClassNames, TemplateGlobal, VirtualTsOptions,
 };
+use vize_l1::css::{AuthoredClasses, lang::StyleLanguage};
 
 pub(crate) fn virtual_ts_options_for_descriptor(
     base: &VirtualTsOptions,
@@ -56,8 +56,9 @@ pub(crate) fn virtual_ts_options_for_descriptor(
 
 /// Class names the SFC's `<style>` blocks declare, deduplicated in source
 /// order, for the `__VLS_StyleScopedClasses` type: every block under
-/// `resolveStyleClassNames: true`, the scoped ones by default. A block whose
-/// selectors cannot be read statically contributes nothing.
+/// `resolveStyleClassNames: true`, the scoped ones by default, read in each
+/// block's own language. A block whose selectors cannot be read statically
+/// contributes nothing.
 pub(crate) fn style_scoped_class_names(
     descriptor: &SfcDescriptor<'_>,
     mode: ResolveStyleClassNames,
@@ -72,7 +73,10 @@ pub(crate) fn style_scoped_class_names(
         if !included || style.src.is_some() {
             continue;
         }
-        for class_name in extract_authored_css_classes(&style.content).unwrap_or_default() {
+        let classes = StyleLanguage::from_lang(style.lang.as_deref())
+            .and_then(|language| language.authored_classes(&style.content))
+            .map(AuthoredClasses::into_names);
+        for class_name in classes.unwrap_or_default() {
             if !names.contains(&class_name) {
                 names.push(class_name);
             }
@@ -123,19 +127,21 @@ fn css_module_types(
 }
 
 /// One `<style module>` block's shape, or `None` when its names cannot be
-/// known statically (a preprocessor, CSS Modules composition, or an imported
-/// stylesheet the project has not asked to resolve).
+/// known statically (a language without a dialect, a preprocessor construct
+/// that adds rules, CSS Modules composition, or an imported stylesheet the
+/// project has not asked to resolve).
 fn css_module_block_shape(
     style: &vize_atelier_sfc::SfcStyleBlock<'_>,
     resolve_style_imports: bool,
 ) -> Option<CssModuleShape> {
-    let is_plain_css = style
-        .lang
-        .as_deref()
-        .is_none_or(|language| language.eq_ignore_ascii_case("css"));
-    if !is_plain_css || contains_dynamic_css_module_exports(&style.content) {
+    let language = StyleLanguage::from_lang(style.lang.as_deref())?;
+    if contains_dynamic_css_module_exports(&style.content) {
         return None;
     }
+    let classes = language
+        .authored_classes(&style.content)
+        .filter(AuthoredClasses::is_complete)?
+        .into_names();
     let mut imports = Vec::new();
     if let Some(src) = style.src.as_deref() {
         if !resolve_style_imports {
@@ -150,10 +156,7 @@ fn css_module_block_shape(
         }
         imports.extend(css_imports);
     }
-    Some(CssModuleShape {
-        classes: extract_authored_css_classes(&style.content)?,
-        imports,
-    })
+    Some(CssModuleShape { classes, imports })
 }
 
 /// The type one `<style module>` block declares on its own, for the
@@ -204,7 +207,7 @@ fn css_module_type(shape: &CssModuleShape, strict: bool) -> CompactString {
 
 fn contains_dynamic_css_module_exports(css: &str) -> bool {
     let lower = css.to_ascii_lowercase();
-    ["@value", "composes", ":export", "#{"]
+    ["@value", "composes", ":export"]
         .iter()
         .any(|marker| lower.contains(marker))
 }
@@ -249,11 +252,29 @@ fn css_module_type_annotation(classes: &BTreeSet<CompactString>) -> CompactStrin
 
 #[cfg(test)]
 mod tests {
+    use std::collections::BTreeSet;
+
+    use vize_carton::String as CompactString;
+    use vize_l1::css::{AuthoredClasses, lang::StyleLanguage};
+
     use super::{
         contains_dynamic_css_module_exports, css_import_targets, css_module_block_shape,
         css_module_block_type, css_module_type, css_module_type_annotation,
-        extract_authored_css_classes,
+        style_scoped_class_names,
     };
+    use crate::virtual_ts::ResolveStyleClassNames;
+
+    fn extract_authored_css_classes(css: &str) -> Option<BTreeSet<CompactString>> {
+        StyleLanguage::Css
+            .authored_classes(css)
+            .map(AuthoredClasses::into_names)
+    }
+
+    fn module_type(source: &str) -> CompactString {
+        let descriptor =
+            vize_atelier_sfc::parse_sfc(source, Default::default()).expect("SFC parses");
+        css_module_block_type(&descriptor.styles[0], true)
+    }
 
     #[test]
     fn import_targets_follow_source_order_in_both_forms() {
@@ -293,12 +314,13 @@ mod tests {
 
     #[test]
     fn rejects_selectors_that_cannot_form_a_closed_export_shape() {
-        for source in [
-            r#".root { composes : shared from "./base.css"; }"#,
-            r#".#{dynamic} {}"#,
-        ] {
-            assert!(contains_dynamic_css_module_exports(source), "{source}");
-        }
+        assert!(contains_dynamic_css_module_exports(
+            r#".root { composes : shared from "./base.css"; }"#
+        ));
+        assert_eq!(
+            module_type("<style module>.#{dynamic} {}</style>"),
+            "Record<string, string>"
+        );
         assert!(extract_authored_css_classes(r#".café {}"#).is_none());
         assert!(extract_authored_css_classes(r#".escaped\:name {}"#).is_none());
     }
@@ -398,6 +420,59 @@ mod tests {
         assert_eq!(
             css_module_block_type(&descriptor.styles[0], true),
             "Record<string, string>"
+        );
+    }
+
+    // Each language's dialect closes the module shape when every rule is
+    // known, so `$style.card__title` is typed in SCSS, Sass, Less and Stylus.
+    #[test]
+    fn preprocessor_modules_are_typed_from_their_dialects() {
+        for (lang, body) in [
+            ("scss", ".card { &__title { color: red; } }"),
+            ("sass", ".card\n  &__title\n    color: red\n"),
+            ("less", ".card { &__title { color: red; } }"),
+            ("stylus", ".card\n  &__title\n    color red\n"),
+            ("styl", ".card\n  &__title\n    color red\n"),
+        ] {
+            assert_eq!(
+                module_type(&vize_carton::cstr!(
+                    "<style module lang=\"{lang}\">\n{body}</style>"
+                )),
+                r#"{ "card": string; "card__title": string; }"#,
+                "{lang}"
+            );
+        }
+    }
+
+    // A construct that can add rules no scan sees keeps the open fallback.
+    #[test]
+    fn preprocessor_modules_stay_open_when_rules_can_hide() {
+        for (lang, body) in [
+            ("scss", ".card { @include modifiers; }"),
+            ("scss", "@use './theme';\n.card {}"),
+            ("sass", ".card\n  +modifiers\n"),
+            ("less", ".card { .modifiers(); }"),
+            ("stylus", ".card\n  modifiers()\n"),
+            ("postcss-unknown", ".card {}"),
+        ] {
+            assert_eq!(
+                module_type(&vize_carton::cstr!(
+                    "<style module lang=\"{lang}\">\n{body}</style>"
+                )),
+                "Record<string, string>",
+                "{lang}: {body}"
+            );
+        }
+    }
+
+    #[test]
+    fn scoped_class_names_read_each_block_in_its_language() {
+        let source = "<style scoped lang=\"scss\">\n.card { &__title {} }\n</style>\n<style scoped lang=\"sass\">\n.list\n  &-item\n    color: red\n</style>\n<style scoped lang=\"unknown\">\n.opaque {}\n</style>\n";
+        let descriptor =
+            vize_atelier_sfc::parse_sfc(source, Default::default()).expect("SFC parses");
+        assert_eq!(
+            style_scoped_class_names(&descriptor, ResolveStyleClassNames::Scoped),
+            ["card", "card__title", "list", "list-item"]
         );
     }
 }
