@@ -20,7 +20,8 @@
 //!
 //! A dynamic `:name` is skipped because it cannot be compared statically, but
 //! does not hide other static outlets. A type form that cannot be enumerated
-//! contributes no known declarations, matching eslint-plugin-vue.
+//! is skipped conservatively because the declaration may come from another
+//! module and contain the rendered slots.
 //!
 //! ## Examples
 //!
@@ -116,11 +117,9 @@ impl ScriptRule for RequireExplicitSlots {
             DeclaredSlots::Absent => {
                 check_template(&vize_l0::FxHashSet::default(), sfc, result);
             }
-            // eslint-plugin-vue cannot resolve imported types here; such a
-            // declaration contributes no statically known slot names.
-            DeclaredSlots::Unknown => {
-                check_template(&vize_l0::FxHashSet::default(), sfc, result);
-            }
+            // An unresolved declaration may be imported. Treating it as an
+            // empty declaration manufactures a finding for every outlet.
+            DeclaredSlots::Unknown => {}
             DeclaredSlots::Known(names) => {
                 check_template(names, sfc, result);
             }

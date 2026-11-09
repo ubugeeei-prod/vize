@@ -61,8 +61,9 @@ fn current_documentation_oracle_rejects_invalid_frozen_urls_and_foreign_rules() 
         .iter()
         .find(|case| case["id"] == "empty-listbox")
         .expect("the authored single-warning control");
-    let route = &case["routes"]["vue"];
-    let expected = current_expected_packet(route);
+    let mut route = case["routes"]["vue"].clone();
+    route["afterPacket"] = route["beforePacket"].clone();
+    let expected = current_expected_packet(&route);
     assert_eq!(expected[0]["messages"].as_array().unwrap().len(), 1);
     for page in [
         "docs/content/rules/vue.md",
@@ -74,7 +75,7 @@ fn current_documentation_oracle_rejects_invalid_frozen_urls_and_foreign_rules() 
         std::panic::catch_unwind(|| current_expected_packet(&invalid))
             .expect_err("invalid frozen documentation must fail the owned projection");
     }
-    let mut foreign = route.clone();
+    let mut foreign = route;
     foreign["afterPacket"][0]["messages"][0]["ruleId"] = "a11y/alt-text".into();
     std::panic::catch_unwind(|| current_expected_packet(&foreign))
         .expect_err("the pinned consumer owns exactly its declared rule");

@@ -54,4 +54,4 @@ Then run `vp run lint`.
 
 - [Accessibility rules](../accessibility.md)
 - [All rules](../all.md)
-- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/interactive_supports_focus.rs#L39)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/interactive_supports_focus.rs#L42)

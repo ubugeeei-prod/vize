@@ -283,7 +283,7 @@ export const purposeJa: Readonly<Record<string, string>> = {
   "vue/scoped-event-names": "イベント名を context:event の形式に揃えます。",
   "vue/sfc-element-order": "SFC のトップレベルブロックを設定した順に並べます。",
   "vue/single-style-block": "SFC の style を一つのブロックにまとめます。",
-  "vue/slot-name-casing": "描画する slot outlet の静的な名前を camelCase に揃えます。",
+  "vue/slot-name-casing": "描画する slot outlet の静的な名前を設定した形式に揃えます。",
   "vue/this-in-template": "テンプレートで不要な this. 参照を検出します。",
   "vue/use-unique-element-ids": "静的 ID の代わりに useId() で一意な ID を生成します。",
   "vue/use-v-on-exact": "修飾子付きのイベント操作と競合するハンドラーに .exact を指定します。",

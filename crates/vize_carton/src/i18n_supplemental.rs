@@ -233,21 +233,21 @@ static ENTRIES: &[(&str, &str, &str, &str)] = &[
     // vue/slot-name-casing
     (
         "vue/slot-name-casing.description",
-        "Enforce kebab-case for named slots used via v-slot",
-        "v-slotで使用する名前付きスロットにケバブケースを強制する",
-        "强制通过v-slot使用的具名插槽采用短横线命名",
+        "Enforce configured casing for rendered slot names",
+        "描画するスロット名に設定されたケースを強制する",
+        "强制渲染的插槽名称采用配置的命名方式",
     ),
     (
         "vue/slot-name-casing.message",
-        "Slot name '{name}' should be kebab-case",
-        "スロット名 '{name}' はケバブケースにしてください",
-        "插槽名称 '{name}' 应使用短横线命名",
+        "Slot name '{name}' is not {casing}",
+        "スロット名 '{name}' は {casing} ではありません",
+        "插槽名称 '{name}' 不是 {casing}",
     ),
     (
         "vue/slot-name-casing.help",
-        "Rename the slot to kebab-case, e.g. '#my-slot' instead of '#mySlot' or '#my_slot'.",
-        "スロット名をケバブケースに変更してください。例: '#mySlot' や '#my_slot' ではなく '#my-slot'。",
-        "请将插槽名称改为短横线命名，例如使用 '#my-slot' 而非 '#mySlot' 或 '#my_slot'。",
+        "Rename the rendered slot outlet to {casing}.",
+        "描画するスロット outlet の名前を {casing} に変更してください。",
+        "请将渲染的插槽出口名称改为 {casing}。",
     ),
     // vue/no-deprecated-router-link-tag-prop
     (

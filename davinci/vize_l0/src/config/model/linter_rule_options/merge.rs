@@ -32,6 +32,9 @@ impl ConfigLintRuleOptions {
         if let Some(options) = overlay.prop_name_casing {
             self.prop_name_casing = Some(options);
         }
+        if let Some(style) = overlay.slot_name_casing {
+            self.slot_name_casing = Some(style);
+        }
         if let Some(options) = &overlay.no_mutating_props {
             self.no_mutating_props = Some(*options);
         }

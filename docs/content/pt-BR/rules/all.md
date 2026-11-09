@@ -103,7 +103,7 @@ A coluna Predefinição indica a menor predefinição que ativa a regra; a pági
 | <span id="vue-scoped-event-names"></span>[`vue/scoped-event-names`](./reference/vue-scoped-event-names.md) | Recomendar nomes de eventos com escopo no formato context:event. | `nuxt`, `opinionated` |  |
 | <span id="vue-sfc-element-order"></span>[`vue/sfc-element-order`](./reference/vue-sfc-element-order.md) | Aplicar uma ordem consistente aos elementos de nível superior dos SFCs. | `happy-path` |  |
 | <span id="vue-single-style-block"></span>[`vue/single-style-block`](./reference/vue-single-style-block.md) | Recomendar um único bloco style. | `happy-path` |  |
-| <span id="vue-slot-name-casing"></span>[`vue/slot-name-casing`](./reference/vue-slot-name-casing.md) | Exigir camelCase nos nomes estáticos de pontos de inserção de slot renderizados. | `nuxt`, `opinionated` |  |
+| <span id="vue-slot-name-casing"></span>[`vue/slot-name-casing`](./reference/vue-slot-name-casing.md) | Exigir a capitalização configurada nos nomes estáticos de pontos de inserção de slot renderizados. | `nuxt`, `opinionated` |  |
 | <span id="vue-this-in-template"></span>[`vue/this-in-template`](./reference/vue-this-in-template.md) | Proibir `this.` nas expressões do template. | `happy-path` |  |
 | <span id="vue-use-unique-element-ids"></span>[`vue/use-unique-element-ids`](./reference/vue-use-unique-element-ids.md) | Exigir IDs de elementos únicos por meio de useId(), em vez de literais estáticos. | `nuxt`, `opinionated` |  |
 | <span id="vue-use-v-on-exact"></span>[`vue/use-v-on-exact`](./reference/vue-use-v-on-exact.md) | Exigir o modificador `.exact` em `v-on` quando houver manipuladores baseados em modificadores. | `essential` |  |

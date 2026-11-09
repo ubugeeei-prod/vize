@@ -1,15 +1,15 @@
 ---
 title: "vue/slot-name-casing"
-description: "描画する slot outlet の静的な名前を camelCase に揃えます。"
+description: "描画する slot outlet の静的な名前を設定した形式に揃えます。"
 ---
 
 # `vue/slot-name-casing`
 
-描画する slot outlet の静的な名前を camelCase に揃えます。
+描画する slot outlet の静的な名前を設定した形式に揃えます。
 
 | 既定の重大度 | プリセット | 自動修正 | オプション |
 | --- | --- | --- | --- |
-| `warning` | `nuxt`, `opinionated` | なし | なし |
+| `warning` | `nuxt`, `opinionated` | なし | [ルールのオプション](../options.md) |
 
 適用範囲：Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。
 
@@ -45,6 +45,9 @@ export default defineConfig({}).withVue({
     "preset": "incremental",
     "rules": {
       "vue/slot-name-casing": "warn"
+    },
+    "ruleOptions": {
+      "vue/slot-name-casing": "camelCase"
     }
   },
 });
@@ -55,5 +58,6 @@ export default defineConfig({}).withVue({
 ## 関連ページ
 
 - [Vue ルール](../vue.md)
+- [ルールのオプション](../options.md)
 - [全ルール](../all.md)
-- [ソースコード](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/slot_name_casing.rs#L28)
+- [ソースコード](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/slot_name_casing.rs#L29)

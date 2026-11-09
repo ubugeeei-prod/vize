@@ -45,6 +45,7 @@ use crate::markup::{
     MarkupText, MarkupTraversal,
 };
 use crate::rule::{Rule, RuleCategory, RuleMeta};
+use crate::rules::a11y::helpers::string_literal_value;
 use regex::Regex;
 use vize_l0::{String, cstr};
 use vize_relief::{ElementNode, RootNode, TemplateChildNode};
@@ -75,12 +76,10 @@ pub struct NoBareStringsInTemplate {
 
 enum BareStringAllowlist {
     Default,
-    Custom(Vec<AllowlistEntry>),
-}
-
-enum AllowlistEntry {
-    Literal(String),
-    Pattern(Regex),
+    Custom {
+        literals: Option<Regex>,
+        patterns: Vec<Regex>,
+    },
 }
 
 #[expect(
@@ -104,7 +103,7 @@ impl NoBareStringsInTemplate {
             return Self::default();
         };
         Self {
-            allowlist: BareStringAllowlist::Custom(compile_allowlist(&allowlist)),
+            allowlist: compile_allowlist(&allowlist),
         }
     }
 
@@ -124,7 +123,11 @@ impl NoBareStringsInTemplate {
                 );
             } else if binding.kind() == MarkupBindingKind::Custom
                 && binding.is_unqualified_arg_exact("text")
-                && let Some(value) = binding.literal_string_value()
+                && let Some(value) = binding.literal_string_value().or_else(|| {
+                    binding
+                        .expression()
+                        .and_then(parenthesized_string_literal_value)
+                })
                 && self.has_bare_string(value)
             {
                 ctx.warn_at_with_help(
@@ -158,28 +161,18 @@ impl NoBareStringsInTemplate {
     }
 
     fn has_bare_string(&self, text: &str) -> bool {
-        let text = text.trim();
+        let text = trim_javascript(text);
         match &self.allowlist {
             BareStringAllowlist::Default => default_has_bare_string(text),
-            BareStringAllowlist::Custom(allowlist) => {
-                let mut remaining: String = text.into();
-                for entry in allowlist {
-                    match entry {
-                        AllowlistEntry::Literal(literal)
-                            if remaining.contains(literal.as_str()) =>
-                        {
-                            remaining = remaining.replace(literal.as_str(), "").into();
-                        }
-                        AllowlistEntry::Pattern(pattern) if pattern.is_match(&remaining) => {
-                            remaining = pattern.replace_all(&remaining, "").into_owned().into();
-                        }
-                        AllowlistEntry::Literal(_) | AllowlistEntry::Pattern(_) => {}
-                    }
-                    if remaining.trim().is_empty() {
-                        return false;
-                    }
+            BareStringAllowlist::Custom { literals, patterns } => {
+                let mut remaining: String = literals.as_ref().map_or_else(
+                    || text.into(),
+                    |literals| literals.replace_all(text, "").into_owned().into(),
+                );
+                for pattern in patterns {
+                    remaining = pattern.replace_all(&remaining, "").into_owned().into();
                 }
-                !remaining.trim().is_empty()
+                !trim_javascript(&remaining).is_empty()
             }
         }
     }
@@ -267,14 +260,34 @@ fn default_has_bare_string(text: &str) -> bool {
         '}', '<', '>', '·', '•', '‐', '–', '—', '−', '|',
     ];
     text.chars()
-        .any(|character| !character.is_whitespace() && !ALLOWLIST.contains(&character))
+        .any(|character| !is_javascript_whitespace(character) && !ALLOWLIST.contains(&character))
 }
 
-fn compile_allowlist(entries: &[String]) -> Vec<AllowlistEntry> {
-    entries.iter().map(|entry| compile_entry(entry)).collect()
+fn compile_allowlist(entries: &[String]) -> BareStringAllowlist {
+    let mut literals = Vec::new();
+    let mut patterns = Vec::new();
+    for entry in entries {
+        if let Some(pattern) = compile_pattern(entry) {
+            patterns.push(pattern);
+        } else if !entry.is_empty() {
+            literals.push(entry.as_str());
+        }
+    }
+    literals
+        .sort_unstable_by(|left, right| right.len().cmp(&left.len()).then_with(|| left.cmp(right)));
+    let literals = (!literals.is_empty())
+        .then(|| {
+            literals
+                .into_iter()
+                .map(regex::escape)
+                .collect::<Vec<_>>()
+                .join("|")
+        })
+        .and_then(|pattern| Regex::new(&pattern).ok());
+    BareStringAllowlist::Custom { literals, patterns }
 }
 
-fn compile_entry(entry: &str) -> AllowlistEntry {
+fn compile_pattern(entry: &str) -> Option<Regex> {
     if let Some((pattern, flags)) = javascript_regex(entry) {
         let inline_flags: String = flags
             .chars()
@@ -286,10 +299,39 @@ fn compile_entry(entry: &str) -> AllowlistEntry {
             cstr!("(?{inline_flags}:{pattern})")
         };
         if let Ok(pattern) = Regex::new(&candidate) {
-            return AllowlistEntry::Pattern(pattern);
+            return Some(pattern);
         }
     }
-    AllowlistEntry::Literal(entry.into())
+    None
+}
+
+fn trim_javascript(value: &str) -> &str {
+    value.trim_matches(is_javascript_whitespace)
+}
+
+fn is_javascript_whitespace(character: char) -> bool {
+    matches!(
+        character,
+        '\u{0009}'..='\u{000d}'
+            | '\u{0020}'
+            | '\u{00a0}'
+            | '\u{1680}'
+            | '\u{2000}'..='\u{200a}'
+            | '\u{2028}'
+            | '\u{2029}'
+            | '\u{202f}'
+            | '\u{205f}'
+            | '\u{3000}'
+            | '\u{feff}'
+    )
+}
+
+fn parenthesized_string_literal_value(mut value: &str) -> Option<&str> {
+    value = value.trim();
+    while value.starts_with('(') && value.ends_with(')') {
+        value = value.get(1..value.len() - 1)?.trim();
+    }
+    string_literal_value(value)
 }
 
 fn javascript_regex(value: &str) -> Option<(&str, &str)> {

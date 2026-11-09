@@ -157,7 +157,7 @@
           {
             "path": "cases.json",
             "role": "whole-packet-host-controls",
-            "sha256": "32d2271b3a748f1eeb06adc3755c791bf625a2b10202fde6bad9ae4528d20e73"
+            "sha256": "027b5a77def35f689334bbc1c4ab0119e4b426204318f85b8132a7b3643e9cf1"
           },
           {
             "path": "empty-listbox.vue.txt",
@@ -3074,6 +3074,87 @@
             "kind": "source-inspection",
             "dialects": [
               "vue3-sfc",
+              "ts"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "linter/external-compat-12447-12452",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "external-compat-12447-12452",
+        "files": [
+          {
+            "path": "ExternalCompatibility.vue.txt",
+            "role": "issue-authored-regression-reproductions",
+            "sha256": "55eb44d94391220dadd95043a5dbabbc036bd79f48808c9d2cfd338d6eb4d80c"
+          },
+          {
+            "path": "types.ts.txt",
+            "role": "imported-slot-type",
+            "sha256": "5795a04b0f0bf9b77a9428416a44dc88badb2562535a97d45c8dd54c2aae3a39"
+          },
+          {
+            "path": "vite.config.mjs",
+            "role": "native-cli-config",
+            "sha256": "3d9d5a92a51a8366a66a6e544704979f5a9bc6ca70136938f108cd7e5e916347"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "js",
+              "ts"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "linter/external-compat-12462-12468",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "external-compat-12462-12468",
+        "files": [
+          {
+            "path": "ExternalCompatibility.vue.txt",
+            "role": "issue-authored-regression-reproductions",
+            "sha256": "c2e19a103e087230c21a2f4cad1189706e5ee779d81512ed9451d6e7209dc4f9"
+          },
+          {
+            "path": "vite.config.mjs",
+            "role": "native-cli-config",
+            "sha256": "0aafe80bfc2d6bbfd3e2f9fa2634e5a555c018dca7852ccfb0b4c964b5708c52"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "js",
               "ts"
             ],
             "selector": "linter manifest pinned authored sources"

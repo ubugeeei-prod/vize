@@ -238,7 +238,20 @@ pub(crate) fn has_static_markup_event(element: &MarkupElement<'_>, events: &[&st
         found |= binding.kind() == MarkupBindingKind::On
             && events
                 .iter()
-                .any(|event| binding.is_static_unqualified_arg_exact(event));
+                .any(|event| binding.is_static_unqualified_arg_exact(event))
+            && (binding.expression().is_some() || binding.retained_expression().is_some());
+    });
+    found
+}
+
+/// Whether a real handler is present across direct JSX and lowered projections.
+pub(crate) fn has_static_markup_handler(element: &MarkupElement<'_>, events: &[&str]) -> bool {
+    let mut found = false;
+    element.walk_bindings(&mut |binding| {
+        found |= events
+            .iter()
+            .any(|event| binding.is_static_event_handler_for(event))
+            && (binding.expression().is_some() || binding.retained_expression().is_some());
     });
     found
 }

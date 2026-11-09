@@ -41,7 +41,7 @@ export const portugueseVue2: Record<string, readonly [purpose: string, bad: stri
       "Os dois seletores mantêm o escopo em um único bloco style, atendendo à convenção de bloco único sem remover nenhum estilo.",
     ],
     "vue/slot-name-casing": [
-      "Exigir camelCase nos nomes estáticos de pontos de inserção de slot renderizados",
+      "Exigir a capitalização configurada nos nomes estáticos de pontos de inserção de slot renderizados",
       "O ponto de inserção de slot renderizado usa o nome estático com hífen `my-slot`, enquanto a convenção padrão exige camelCase.",
       "O nome estático do ponto de inserção usa camelCase. A sintaxe de provedor `#name` no componente pai fica fora desta regra.",
     ],
