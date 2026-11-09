@@ -261,6 +261,11 @@ impl ContextFingerprint {
         self.workspace
     }
 
+    /// The captured disk inputs validation compares.
+    pub(super) fn disk_stamps(&self) -> &[crate::package_route::stamp::InputStamp] {
+        &self.stamps
+    }
+
     pub(super) fn stamps_still_valid(
         &self,
         observed: &mut crate::package_route::stamp::InputStampValidation,
