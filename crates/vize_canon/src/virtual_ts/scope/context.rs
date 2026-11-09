@@ -342,7 +342,9 @@ impl<'a> ComponentPropsContext<'a, '_> {
         .with_model_modifiers(self.model_modifiers)
         .with_diagnostic_ownership(self.diagnostic_ownership)
         .with_expected_packet(self.inference_prelude.is_some());
-        source.unchecked_prop_values = self.unchecked_prop_values;
+        if self.unchecked_prop_values {
+            source.unchecked_prop_values = Some(self.relaxed_required_usage_starts);
+        }
         source
     }
 }

@@ -28,24 +28,25 @@ pub(crate) const UNCHECKED_PROP_VALUE_PREFIX: &str = "__vize_unchecked_prop_";
 /// [`UNCHECKED_PROP_VALUE_DECLARATION`] once when it finds one.
 pub(crate) const UNCHECKED_PROP_VALUE_REFERENCE: &str = "$UncheckedPropValue<";
 
-/// The per-prop contract `V` where the whole-props check `C` leaves key `K`
-/// unchecked or checks another type; `unknown` where the literal reports the
-/// same diagnostic.
-pub(crate) const UNCHECKED_PROP_VALUE_DECLARATION: &str = "type $UncheckedPropValue<C, K extends PropertyKey, V, __L = C extends (props: infer __P, ...args: any) => any ? K extends keyof __P ? __P[K] : never : never> = 0 extends 1 & __L ? V : [__L] extends [V] ? [V] extends [__L] ? unknown : V : V;\n";
+/// The per-prop contract `V` unless the literal checks key `K` of its typed
+/// inputs `D` against the same type, which makes it `unknown`. An `unknown`
+/// or `any` contract never reports and skips the key lookup.
+pub(crate) const UNCHECKED_PROP_VALUE_DECLARATION: &str = "type $UncheckedPropValue<D, K extends PropertyKey, V> = unknown extends V ? unknown : $UncheckedPropContract<K extends keyof D ? D[K] : never, V>;\ntype $UncheckedPropContract<L, V> = [L] extends [V] ? [V] extends [L] ? unknown : V : V;\n";
 
 pub(super) fn append_unchecked_prop_value_checks(
     ts: &mut crate::virtual_ts::TextBuf,
     mappings: &mut Vec<VizeMapping>,
-    (usage, idx): (&ComponentUsage, usize),
+    (usage, idx, component_ref): (&ComponentUsage, usize, &str),
     template_binding_access: &TemplateBindingAccess,
-    source_context: ComponentPropSource<'_>,
+    (source_context, hoist_shared_preamble): (ComponentPropSource<'_>, bool),
     indent: &str,
 ) {
-    if !source_context.unchecked_prop_values {
+    let Some(relaxed_usages) = source_context.unchecked_prop_values else {
         return;
-    }
+    };
     let component = to_safe_identifier_fragment(usage.name.as_str());
     let mut occurrences: FxHashMap<String, u32> = FxHashMap::default();
+    let mut declared_inputs = false;
     for prop in &usage.props {
         // ARIA entries and inline callbacks are never literal echoes. A
         // `v-model` value and its modifiers keep their own owners.
@@ -68,6 +69,16 @@ pub(super) fn append_unchecked_prop_value_checks(
         ) else {
             continue;
         };
+        if !declared_inputs {
+            declared_inputs = true;
+            append_declared_inputs(
+                ts,
+                (component.as_str(), idx, component_ref),
+                relaxed_usages.contains(&usage.start),
+                hoist_shared_preamble,
+                indent,
+            );
+        }
         let name = to_safe_identifier_fragment(prop.name.as_str());
         let occurrence = occurrences
             .entry(name.clone())
@@ -85,7 +96,7 @@ pub(super) fn append_unchecked_prop_value_checks(
         let check_end = ts.len();
         append!(
             *ts,
-            ": {UNCHECKED_PROP_VALUE_REFERENCE}__{component}_Check_{idx}, "
+            ": {UNCHECKED_PROP_VALUE_REFERENCE}__{component}_Declared_{idx}, "
         );
         push_ts_string_literal(ts, component_prop_key(prop.name.as_str()).as_str());
         append!(*ts, ", __{component}_{idx}_prop_{name}> = ");
@@ -112,4 +123,28 @@ pub(super) fn append_unchecked_prop_value_checks(
             }],
         });
     }
+}
+
+/// The literal's typed inputs: own props (`Partial` where a fallthrough root
+/// forwards them), emitted listeners, required fallthrough props and Vue's
+/// public attrs. Its untyped attr tail never checks a value.
+fn append_declared_inputs(
+    ts: &mut crate::virtual_ts::TextBuf,
+    (component, idx, component_ref): (&str, usize, &str),
+    relaxed: bool,
+    hoist_shared_preamble: bool,
+    indent: &str,
+) {
+    use crate::virtual_ts::helpers::shared_types::{EMIT_LISTENERS, REQUIRED_FALLTHROUGH_PROPS};
+    let emit_listeners = EMIT_LISTENERS.select(hoist_shared_preamble);
+    let required_fallthrough = REQUIRED_FALLTHROUGH_PROPS.select(hoist_shared_preamble);
+    let props = if relaxed {
+        cstr!("Partial<__{component}_Props_{idx}>")
+    } else {
+        cstr!("__{component}_Props_{idx}")
+    };
+    append!(
+        *ts,
+        "{indent}type __{component}_Declared_{idx} = {props} & {emit_listeners}<typeof {component_ref}> & {required_fallthrough}<typeof {component_ref}> & $PublicComponentAttrs;\n"
+    );
 }

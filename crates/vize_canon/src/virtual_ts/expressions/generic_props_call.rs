@@ -41,7 +41,7 @@ pub(super) fn generate_generic_props_call(
     source_context: ComponentPropSource<'_>,
     indent: &str,
     typed_fallthrough_values: bool,
-    hoist_shared_preamble: bool,
+    (hoist_shared_preamble, component_ref): (bool, &str),
 ) {
     let component_type_name = to_safe_identifier_fragment(usage.name.as_str());
     let expr_indent = if usage.vif_guard.is_some() {
@@ -83,9 +83,9 @@ pub(super) fn generate_generic_props_call(
     super::unchecked_prop_values::append_unchecked_prop_value_checks(
         ts,
         mappings,
-        (usage, idx),
+        (usage, idx, component_ref),
         template_binding_access,
-        source_context,
+        (source_context, hoist_shared_preamble),
         expr_indent.as_str(),
     );
     let fallthrough_argument_range = check_spread_values.then(|| {

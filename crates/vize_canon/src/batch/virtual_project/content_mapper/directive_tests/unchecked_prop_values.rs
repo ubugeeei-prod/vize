@@ -10,7 +10,8 @@ use super::DIRECTIVE_POLICY_EXPECT;
 use crate::virtual_ts::UNCHECKED_PROP_VALUE_DECLARATION;
 
 const APP: &str = "<script setup lang=\"ts\">\nimport Field from './Field.vue'\n</script>\n<template>\n  <Field label=\"x\" :maxlength=\"{}\" />\n</template>\n";
-const COMPANION: &str = "  const __vize_unchecked_prop_0_maxlength: $UncheckedPropValue<__Field_Check_0, \"maxlength\", __Field_0_prop_maxlength> = {};\n";
+const DECLARED: &str = "  type __Field_Declared_0 = __Field_Props_0 & $EmitListeners<typeof Field> & $RequiredFallthroughProps<typeof Field> & VueTemplatePublicAttrsType;\n";
+const COMPANION: &str = "  const __vize_unchecked_prop_0_maxlength: $UncheckedPropValue<__Field_Declared_0, \"maxlength\", __Field_0_prop_maxlength> = {};\n";
 const NAME: &str = "__vize_unchecked_prop_0_maxlength";
 
 fn policies(directives: &[ContentMapperDiagnosticDirective], at: usize) -> Vec<usize> {
@@ -60,6 +61,16 @@ fn echoed_assignment_keeps_its_companion_diagnostic_live() {
         "one module helper after the default export"
     );
     assert_eq!(text.matches("type $UncheckedPropValue<").count(), 1);
+    assert_eq!(
+        text.matches(DECLARED).count(),
+        1,
+        "one input alias per usage"
+    );
+    assert_eq!(
+        text.find(DECLARED).map(|at| at + DECLARED.len()),
+        text.find("  const __vize_unchecked_prop_0_label:"),
+        "the input alias precedes the usage's first companion"
+    );
     let directives = result
         .diagnostic_directives
         .expect("directive table")
@@ -131,12 +142,21 @@ pub(super) fn companion_id_echo(
     generated: &str,
     id: &str,
 ) -> ContentMapperDiagnosticDirective {
-    let original = source.find(&format!("id=\"{id}\"")).expect("authored id") + 4;
+    let original = source
+        .find(vize_carton::cstr!("id=\"{id}\"").as_str())
+        .expect("authored id")
+        + 4;
     let check = generated
         .find("const __vize_unchecked_prop_0_id:")
         .expect("companion value check");
-    let value = format!("= \"{id}\";");
-    let start = check + generated[check..].find(&value).expect("companion value") + 2;
+    let value = vize_carton::cstr!("= \"{id}\";");
+    let start = check
+        + generated
+            .get(check..)
+            .expect("companion tail")
+            .find(value.as_str())
+            .expect("companion value")
+        + 2;
     ContentMapperDiagnosticDirective([
         original,
         id.len(),
