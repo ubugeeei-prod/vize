@@ -1,5 +1,13 @@
 use super::*;
 
+fn current_binding(path: &str, body: &[u8]) -> Value {
+    json!({
+        "path": path,
+        "bytes": body.len(),
+        "sha256": support::hash(body),
+    })
+}
+
 #[test]
 fn historical_tooling_successor_remains_an_exact_predecessor() {
     let predecessor = tooling_update();
@@ -86,14 +94,24 @@ mod docs_metadata_successor {
         verify_docs_metadata_update(predecessor, &input.predecessor_bytes, update, &graph)
     }
 
+    fn bind_current_graph(input: &Inputs, update: &mut Value) {
+        update["finalQualificationLock"] = current_binding("pnpm-lock.yaml", &input.lock);
+        update["finalQualificationPackage"] = current_binding("package.json", &input.package);
+        update["workspaceManifest"] = current_binding("pnpm-workspace.yaml", &input.workspace);
+        update["docsManifest"] = current_binding(DOCS_METADATA_MANIFEST, &input.manifest);
+        update["resolver"]["fixedPointSha256"] = json!(support::hash(&input.lock));
+    }
+
     #[test]
     fn exact_docs_metadata_successor_binds_the_whole_current_graph() {
         let input = inputs();
+        let mut update = input.update.clone();
+        bind_current_graph(&input, &mut update);
         assert_eq!(
             verify(
                 &input,
                 &input.predecessor,
-                &input.update,
+                &update,
                 &input.lock,
                 &input.manifest,
             ),
@@ -101,13 +119,15 @@ mod docs_metadata_successor {
         );
         assert_eq!(
             authorize(&input.previous, &input.lock, &input.package),
-            Ok(Some(input.update.clone()))
+            Ok(Some(js_tooling_refresh_update()))
         );
     }
 
     #[test]
     fn changed_graph_predecessor_and_fixed_point_are_refused() {
         let input = inputs();
+        let mut update = input.update.clone();
+        bind_current_graph(&input, &mut update);
         for changed in [
             b"foreign lock".as_slice(),
             input.lock.get(..input.lock.len() - 1).unwrap(),
@@ -116,7 +136,7 @@ mod docs_metadata_successor {
                 verify(
                     &input,
                     &input.predecessor,
-                    &input.update,
+                    &update,
                     changed,
                     &input.manifest,
                 ),
@@ -127,17 +147,11 @@ mod docs_metadata_successor {
         let mut predecessor = input.predecessor.clone();
         predecessor["finalQualificationLock"]["sha256"] = json!(support::hash(b"foreign"));
         assert_eq!(
-            verify(
-                &input,
-                &predecessor,
-                &input.update,
-                &input.lock,
-                &input.manifest,
-            ),
+            verify(&input, &predecessor, &update, &input.lock, &input.manifest,),
             Err("exact frozen docs metadata qualification predecessor")
         );
 
-        let mut resolver = input.update.clone();
+        let mut resolver = update;
         resolver["resolver"]["fixedPointSha256"] = json!(support::hash(b"foreign"));
         assert_eq!(
             verify(
@@ -155,6 +169,7 @@ mod docs_metadata_successor {
     fn foreign_manifest_and_unreviewed_bytes_are_refused() {
         let input = inputs();
         let mut changed = input.update.clone();
+        bind_current_graph(&input, &mut changed);
         changed["docsManifest"]["sha256"] = json!(support::hash(b"foreign"));
         assert_eq!(
             verify(
@@ -169,11 +184,13 @@ mod docs_metadata_successor {
 
         let mut manifest = input.manifest.clone();
         manifest.push(b' ');
+        let mut manifest_update = input.update.clone();
+        bind_current_graph(&input, &mut manifest_update);
         assert_eq!(
             verify(
                 &input,
                 &input.predecessor,
-                &input.update,
+                &manifest_update,
                 &input.lock,
                 &manifest,
             ),
@@ -246,14 +263,24 @@ mod create_fresco_successor {
         verify_create_fresco_update(predecessor, &input.predecessor_bytes, update, &graph)
     }
 
+    fn bind_current_graph(input: &Inputs, update: &mut Value) {
+        update["finalQualificationLock"] = current_binding("pnpm-lock.yaml", &input.lock);
+        update["finalQualificationPackage"] = current_binding("package.json", &input.package);
+        update["workspaceManifest"] = current_binding("pnpm-workspace.yaml", &input.workspace);
+        update["createFrescoManifest"] = current_binding(CREATE_FRESCO_MANIFEST, &input.manifest);
+        update["resolver"]["fixedPointSha256"] = json!(support::hash(&input.lock));
+    }
+
     #[test]
     fn exact_create_fresco_successor_binds_the_whole_current_graph() {
         let input = inputs();
+        let mut update = input.update.clone();
+        bind_current_graph(&input, &mut update);
         assert_eq!(
             verify(
                 &input,
                 &input.predecessor,
-                &input.update,
+                &update,
                 &input.lock,
                 &input.manifest,
             ),
@@ -264,6 +291,8 @@ mod create_fresco_successor {
     #[test]
     fn changed_graph_predecessor_and_fixed_point_are_refused() {
         let input = inputs();
+        let mut update = input.update.clone();
+        bind_current_graph(&input, &mut update);
         for changed in [
             b"foreign lock".as_slice(),
             input.lock.get(..input.lock.len() - 1).unwrap(),
@@ -272,7 +301,7 @@ mod create_fresco_successor {
                 verify(
                     &input,
                     &input.predecessor,
-                    &input.update,
+                    &update,
                     changed,
                     &input.manifest,
                 ),
@@ -283,17 +312,11 @@ mod create_fresco_successor {
         let mut predecessor = input.predecessor.clone();
         predecessor["finalQualificationLock"]["sha256"] = json!(support::hash(b"foreign"));
         assert_eq!(
-            verify(
-                &input,
-                &predecessor,
-                &input.update,
-                &input.lock,
-                &input.manifest,
-            ),
+            verify(&input, &predecessor, &update, &input.lock, &input.manifest,),
             Err("exact frozen create-fresco qualification predecessor")
         );
 
-        let mut resolver = input.update.clone();
+        let mut resolver = update;
         resolver["resolver"]["fixedPointSha256"] = json!(support::hash(b"foreign"));
         assert_eq!(
             verify(
@@ -311,6 +334,7 @@ mod create_fresco_successor {
     fn foreign_manifest_and_unreviewed_bytes_are_refused() {
         let input = inputs();
         let mut changed = input.update.clone();
+        bind_current_graph(&input, &mut changed);
         changed["createFrescoManifest"]["sha256"] = json!(support::hash(b"foreign"));
         assert_eq!(
             verify(
@@ -325,15 +349,104 @@ mod create_fresco_successor {
 
         let mut manifest = input.manifest.clone();
         manifest.push(b' ');
+        let mut manifest_update = input.update.clone();
+        bind_current_graph(&input, &mut manifest_update);
         assert_eq!(
             verify(
                 &input,
                 &input.predecessor,
-                &input.update,
+                &manifest_update,
                 &input.lock,
                 &manifest,
             ),
             Err("exact current create-fresco qualification graph bytes")
+        );
+    }
+}
+
+mod js_tooling_refresh_successor {
+    use super::*;
+
+    struct Inputs {
+        previous: Value,
+        predecessor: Value,
+        predecessor_bytes: Vec<u8>,
+        update: Value,
+        lock: Vec<u8>,
+        package: Vec<u8>,
+        workspace: Vec<u8>,
+        unplugin_manifest: Vec<u8>,
+        example_manifest: Vec<u8>,
+    }
+
+    fn inputs() -> Inputs {
+        Inputs {
+            previous: super::super::super::load(),
+            predecessor: docs_metadata_update(),
+            predecessor_bytes: fs::read(support::corpus().join(docs_metadata::UPDATE)).unwrap(),
+            update: js_tooling_refresh_update(),
+            lock: fs::read(support::repository().join("pnpm-lock.yaml")).unwrap(),
+            package: fs::read(support::repository().join("package.json")).unwrap(),
+            workspace: fs::read(support::repository().join(WORKSPACE)).unwrap(),
+            unplugin_manifest: fs::read(
+                support::repository().join("npm/builder/unplugin/package.json"),
+            )
+            .unwrap(),
+            example_manifest: fs::read(
+                support::repository().join("npm/builder/unplugin/example/package.json"),
+            )
+            .unwrap(),
+        }
+    }
+
+    fn verify(input: &Inputs, predecessor: &Value, update: &Value, lock: &[u8]) -> Checked<()> {
+        let graph = JsToolingRefreshQualificationGraph {
+            lock,
+            package: &input.package,
+            workspace: &input.workspace,
+            unplugin_manifest: &input.unplugin_manifest,
+            example_manifest: &input.example_manifest,
+        };
+        verify_js_tooling_refresh_update(predecessor, &input.predecessor_bytes, update, &graph)
+    }
+
+    #[test]
+    fn exact_refresh_successor_binds_the_whole_current_graph() {
+        let input = inputs();
+        assert_eq!(
+            support::hash(&input.predecessor_bytes),
+            docs_metadata::UPDATE_HASH
+        );
+        assert_eq!(
+            verify(&input, &input.predecessor, &input.update, &input.lock),
+            Ok(())
+        );
+        assert_eq!(
+            authorize(&input.previous, &input.lock, &input.package),
+            Ok(Some(input.update.clone()))
+        );
+    }
+
+    #[test]
+    fn changed_graph_predecessor_and_fixed_point_are_refused() {
+        let input = inputs();
+        assert_eq!(
+            verify(&input, &input.predecessor, &input.update, b"foreign lock",),
+            Err("exact current JavaScript tooling refresh graph bytes")
+        );
+
+        let mut predecessor = input.predecessor.clone();
+        predecessor["finalQualificationLock"]["sha256"] = json!(support::hash(b"foreign"));
+        assert_eq!(
+            verify(&input, &predecessor, &input.update, &input.lock),
+            Err("exact frozen JavaScript tooling refresh predecessor")
+        );
+
+        let mut resolver = input.update.clone();
+        resolver["resolver"]["fixedPointSha256"] = json!(support::hash(b"foreign"));
+        assert_eq!(
+            verify(&input, &input.predecessor, &resolver, &input.lock),
+            Err("exact JavaScript tooling refresh resolver fixed point")
         );
     }
 }

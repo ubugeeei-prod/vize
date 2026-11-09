@@ -16,6 +16,11 @@ use docs_metadata::{
     DocsMetadataQualificationGraph, MANIFEST as DOCS_METADATA_MANIFEST,
     update as docs_metadata_update, verify as verify_docs_metadata_update,
 };
+mod js_tooling_refresh;
+use js_tooling_refresh::{
+    JsToolingRefreshQualificationGraph, update as js_tooling_refresh_update,
+    verify as verify_js_tooling_refresh_update,
+};
 mod strict_checker;
 use strict_checker::{authorize as authorize_strict_checker, update as strict_checker_update};
 mod fresco;
@@ -489,10 +494,10 @@ pub(super) fn authorize(previous: &Value, lock: &[u8], package: &[u8]) -> Checke
     if authorize_strict_checker(&update, &predecessor_bytes, lock, package, &workspace).is_ok() {
         return Ok(Some(strict_update));
     }
-    let predecessor_bytes = fs::read(support::corpus().join(strict_checker::UPDATE))
-        .map_err(|_| "complete create-fresco qualification predecessor")?;
-    let update = docs_metadata::authorize(
-        &strict_update,
+    let predecessor_bytes = fs::read(support::corpus().join(docs_metadata::UPDATE))
+        .map_err(|_| "complete JavaScript tooling refresh predecessor")?;
+    let update = js_tooling_refresh::authorize(
+        &docs_metadata_update(),
         &predecessor_bytes,
         lock,
         package,
