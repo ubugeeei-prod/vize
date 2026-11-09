@@ -25,6 +25,10 @@ on:
         description: Publish timing even when the builds answer differently
         type: boolean
         default: false
+      reference_mapper:
+        description: Also time @vue/content-mapper (pinned in tools/benchmarks/typecheck-hosts) as a reference row
+        type: boolean
+        default: false
       syscall_census:
         description: Also count the Linux filesystem syscalls per transform for both builds (strace)
         type: boolean
@@ -136,6 +140,7 @@ jobs:
           SIZES: ${{ inputs.sizes }}
           RUNS: ${{ inputs.runs }}
           ALLOW: ${{ inputs.allow_output_change && '--allow-output-change' || '' }}
+          REFERENCE: ${{ inputs.reference_mapper }}
         run: |
           set -euo pipefail
           [[ "$SIZES" =~ ^[0-9]+(,[0-9]+)*$ ]] && [[ "$RUNS" =~ ^[1-9][0-9]?$ ]]
@@ -143,8 +148,14 @@ jobs:
             sudo apt-get update -qq && sudo apt-get install -y --no-install-recommends time
           fi
           chmod +x pair-bin/*/vize
+          reference=()
+          if [[ "$REFERENCE" == "true" ]]; then
+            npm ci --prefix tools/benchmarks/typecheck-hosts --ignore-scripts --no-audit --no-fund > /dev/null
+            hosts=tools/benchmarks/typecheck-hosts/node_modules
+            reference=(--reference "vue-mapper=$hosts/@vue/content-mapper/server.js" --typescript "$hosts/typescript")
+          fi
           node tools/benchmarks/scripts/content-mapper-pair.ts \
-            --bin base=pair-bin/base/vize --bin head=pair-bin/head/vize \
+            --bin base=pair-bin/base/vize --bin head=pair-bin/head/vize "${reference[@]}" \
             --root "$RUNNER_TEMP/pair" --sizes "$SIZES" --runs "$RUNS" $ALLOW \
             --label linux-ext4 --out "$RUNNER_TEMP/pair-out" > /dev/null
           cat "$RUNNER_TEMP/pair-out/pair-linux-ext4.md" >> "$GITHUB_STEP_SUMMARY"
@@ -208,7 +219,8 @@ jobs:
           SIZES: ${{ inputs.sizes }}
           RUNS: ${{ inputs.runs }}
           ALLOW: ${{ inputs.allow_output_change && '--allow-output-change' || '' }}
-          WSLENV: SIZES/u:RUNS/u:ALLOW/u:WSL_MOUNT_ROOT/u:GITHUB_STEP_SUMMARY/u
+          REFERENCE: ${{ inputs.reference_mapper }}
+          WSLENV: SIZES/u:RUNS/u:ALLOW/u:REFERENCE/u:WSL_MOUNT_ROOT/u:GITHUB_STEP_SUMMARY/u
         run: |
           set -euo pipefail
           [[ "$SIZES" =~ ^[0-9]+(,[0-9]+)*$ ]] && [[ "$RUNS" =~ ^[1-9][0-9]?$ ]]
@@ -218,10 +230,18 @@ jobs:
           cp pair-bin/base/vize "$bin/base/vize" && cp pair-bin/head/vize "$bin/head/vize"
           chmod +x "$bin"/*/vize
           summary_path=$(wslpath "$GITHUB_STEP_SUMMARY")
+          reference=()
+          if [[ "$REFERENCE" == "true" ]]; then
+            # Install on ext4: a node_modules on the Windows mount would also time 9P module loading.
+            mkdir -p "$HOME/hosts"
+            cp tools/benchmarks/typecheck-hosts/package.json tools/benchmarks/typecheck-hosts/package-lock.json "$HOME/hosts/"
+            npm ci --prefix "$HOME/hosts" --ignore-scripts --no-audit --no-fund > /dev/null
+            reference=(--reference "vue-mapper=$HOME/hosts/node_modules/@vue/content-mapper/server.js" --typescript "$HOME/hosts/node_modules/typescript")
+          fi
           for entry in "wsl2-ext4=$HOME/vize-pair" "wsl2-windows-mount=$WSL_MOUNT_ROOT/projects"; do
             label=${entry%%=*}
             node tools/benchmarks/scripts/content-mapper-pair.ts \
-              --bin "base=$bin/base/vize" --bin "head=$bin/head/vize" \
+              --bin "base=$bin/base/vize" --bin "head=$bin/head/vize" "${reference[@]}" \
               --root "${entry#*=}" --sizes "$SIZES" --runs "$RUNS" $ALLOW \
               --label "$label" --out "$WSL_MOUNT_ROOT/out" > /dev/null
             cat "$WSL_MOUNT_ROOT/out/pair-$label.md" >> "$summary_path"
@@ -247,10 +267,17 @@ jobs:
           SIZES: ${{ inputs.sizes }}
           RUNS: ${{ inputs.runs }}
           ALLOW: ${{ inputs.allow_output_change && '--allow-output-change' || '' }}
+          REFERENCE: ${{ inputs.reference_mapper }}
         run: |
           if ($env:SIZES -notmatch '^[0-9]+(,[0-9]+)*$' -or $env:RUNS -notmatch '^[1-9][0-9]?$') { throw "invalid inputs" }
           $out = Join-Path $env:RUNNER_TEMP 'pair-out'
           $extra = @(); if ($env:ALLOW) { $extra += $env:ALLOW }
+          if ($env:REFERENCE -eq 'true') {
+            npm ci --prefix tools/benchmarks/typecheck-hosts --ignore-scripts --no-audit --no-fund | Out-Null
+            if ($LASTEXITCODE -ne 0) { throw "hosts install failed" }
+            $hosts = "$PWD\tools\benchmarks\typecheck-hosts\node_modules"
+            $extra += @('--reference', "vue-mapper=$hosts\@vue\content-mapper\server.js", '--typescript', "$hosts\typescript")
+          }
           node tools/benchmarks/scripts/content-mapper-pair.ts `
             --bin "base=$PWD\pair-bin\base\vize.exe" --bin "head=$PWD\pair-bin\head\vize.exe" `
             --root (Join-Path $env:RUNNER_TEMP 'pair') --sizes $env:SIZES --runs $env:RUNS @extra `

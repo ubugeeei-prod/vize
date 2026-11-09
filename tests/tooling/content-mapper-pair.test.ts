@@ -99,7 +99,7 @@ test("the workflow measures every filesystem from one build per platform", () =>
   }
   assert.match(
     workflow,
-    /WSLENV: SIZES\/u:RUNS\/u:ALLOW\/u:WSL_MOUNT_ROOT\/u:GITHUB_STEP_SUMMARY\/u/,
+    /WSLENV: SIZES\/u:RUNS\/u:ALLOW\/u:REFERENCE\/u:WSL_MOUNT_ROOT\/u:GITHUB_STEP_SUMMARY\/u/,
   );
   assert.match(workflow, /cargo build --profile ci-opt -p vize --bin vize/);
 });

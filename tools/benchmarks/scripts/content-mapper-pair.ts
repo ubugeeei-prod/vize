@@ -21,7 +21,15 @@
 
 import { spawn, spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import { closeSync, mkdirSync, openSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
+import {
+  closeSync,
+  mkdirSync,
+  openSync,
+  readFileSync,
+  readdirSync,
+  symlinkSync,
+  writeFileSync,
+} from "node:fs";
 import { join, resolve } from "node:path";
 import { parseArgs } from "node:util";
 
@@ -35,7 +43,8 @@ import {
   summarizeCell,
 } from "./content-mapper-pair-report.ts";
 
-type Build = { id: string; bin: string };
+/** A mapper process: a `vize` build, or a reference mapper timed beside them. */
+type Build = { id: string; bin: string; argv: string[]; reference: boolean };
 
 function sfcFiles(dir: string): string[] {
   const out: string[] = [];
@@ -91,7 +100,7 @@ function burst(build: Build, project: string, stream: string, scratch: string): 
     // own startup, which would otherwise dominate the wall time.
     const script = [
       `$w = [System.Diagnostics.Stopwatch]::StartNew();`,
-      `$p = Start-Process -FilePath '${build.bin}' -ArgumentList 'content-mapper'`,
+      `$p = Start-Process -FilePath '${build.bin}' -ArgumentList '${build.argv.join(" ")}'`,
       `-WorkingDirectory '${project}' -RedirectStandardInput '${stream}'`,
       `-RedirectStandardOutput '${output}' -NoNewWindow -PassThru -Wait;`,
       `$w.Stop(); "$($p.ExitCode) $($p.TotalProcessorTime.TotalSeconds) $($p.PeakWorkingSet64) $($w.Elapsed.TotalMilliseconds)"`,
@@ -110,7 +119,7 @@ function burst(build: Build, project: string, stream: string, scratch: string): 
     const timer = gnu ? ["-f", "%U %S %M", "-o", metrics] : ["-l"];
     const input = openSync(stream, "r");
     const out = openSync(output, "w");
-    const result = spawnSync("/usr/bin/time", [...timer, build.bin, "content-mapper"], {
+    const result = spawnSync("/usr/bin/time", [...timer, build.bin, ...build.argv], {
       cwd: project,
       stdio: [input, out, "pipe"],
       encoding: "utf8",
@@ -137,6 +146,7 @@ function burst(build: Build, project: string, stream: string, scratch: string): 
     wallMs,
     cpuSeconds,
     peakMiB: Number.isFinite(peakMiB) ? peakMiB : undefined,
+    errors: errorReplies(bytes),
     outputBytes: bytes.length,
     outputSha: createHash("sha256").update(bytes).digest("hex"),
   };
@@ -150,26 +160,41 @@ function burst(build: Build, project: string, stream: string, scratch: string): 
 async function burstPipe(build: Build, project: string, stream: string): Promise<BurstSample> {
   const input = openSync(stream, "r");
   const start = performance.now();
-  const child = spawn(build.bin, ["content-mapper"], {
+  const child = spawn(build.bin, build.argv, {
     cwd: project,
     stdio: [input, "pipe", "inherit"],
   });
   const hash = createHash("sha256");
   let outputBytes = 0;
+  let errors = 0;
+  let carry: Buffer = Buffer.alloc(0);
   child.stdout.on("data", (chunk: Buffer) => {
     hash.update(chunk);
     outputBytes += chunk.length;
+    const window = Buffer.concat([carry, chunk]);
+    errors += errorReplies(window);
+    carry = window.subarray(Math.max(0, window.length - (ERROR_REPLY.length - 1)));
   });
   const code = await new Promise<number | null>((done) => child.on("close", done));
   const wallMs = performance.now() - start;
   closeSync(input);
   if (code !== 0) throw new Error(`${build.id} burst exited with ${code}`);
-  return { wallMs, outputBytes, outputSha: hash.digest("hex") };
+  return { wallMs, errors, outputBytes, outputSha: hash.digest("hex") };
+}
+
+const ERROR_REPLY = Buffer.from('"error":{');
+
+/** JSON-RPC error replies in a run of response bytes. */
+function errorReplies(bytes: Buffer): number {
+  let count = 0;
+  for (let at = bytes.indexOf(ERROR_REPLY); at >= 0; at = bytes.indexOf(ERROR_REPLY, at + 1))
+    count++;
+  return count;
 }
 
 /** Drive one transform at a time and time each reply. */
 async function serial(build: Build, project: string, messages: Message[]): Promise<SerialSample> {
-  const child = spawn(build.bin, ["content-mapper"], {
+  const child = spawn(build.bin, build.argv, {
     cwd: project,
     stdio: ["pipe", "pipe", "inherit"],
   });
@@ -218,12 +243,32 @@ async function main(): Promise<void> {
       label: { type: "string", default: process.platform },
       out: { type: "string" },
       "allow-output-change": { type: "boolean", default: false },
+      // id=<server.js>: a Node content mapper timed beside the builds, whose
+      // answers differ by design and only have to be error-free.
+      reference: { type: "string", multiple: true },
+      // The TypeScript package a reference mapper resolves from the project.
+      typescript: { type: "string" },
     },
   });
   const builds: Build[] = (values.bin ?? []).map((spec) => {
     const at = spec.indexOf("=");
     if (at <= 0) throw new Error(`--bin wants id=path, got ${spec}`);
-    return { id: spec.slice(0, at), bin: resolve(spec.slice(at + 1)) };
+    return {
+      id: spec.slice(0, at),
+      bin: resolve(spec.slice(at + 1)),
+      argv: ["content-mapper"],
+      reference: false,
+    };
+  });
+  const references: Build[] = (values.reference ?? []).map((spec) => {
+    const at = spec.indexOf("=");
+    if (at <= 0) throw new Error(`--reference wants id=server.js, got ${spec}`);
+    return {
+      id: spec.slice(0, at),
+      bin: process.execPath,
+      argv: [resolve(spec.slice(at + 1))],
+      reference: true,
+    };
   });
   if (builds.length < 1 || !values.root || !values.out) {
     throw new Error("usage: --bin id=path [--bin id=path] --root <dir> --out <dir>");
@@ -237,6 +282,14 @@ async function main(): Promise<void> {
   for (const sfcs of values.sizes.split(",").map(Number)) {
     const project = join(root, `vue-${sfcs}`);
     writeProject(project, generateScaleProject({ kind: "vue", sfcs }).files);
+    if (values.typescript) {
+      mkdirSync(join(project, "node_modules"), { recursive: true });
+      symlinkSync(
+        resolve(values.typescript),
+        join(project, "node_modules", "typescript"),
+        "junction",
+      );
+    }
     const files = sfcFiles(project);
     const messages = sessionMessages(project, files);
     const stream = join(root, `stream-${sfcs}.bin`);
@@ -246,17 +299,18 @@ async function main(): Promise<void> {
     );
     const scratch = join(root, `scratch-${sfcs}`);
     mkdirSync(scratch, { recursive: true });
-    const bursts = new Map<string, BurstSample[]>(builds.map((b) => [b.id, []]));
-    const serials = new Map<string, SerialSample[]>(builds.map((b) => [b.id, []]));
+    const all = [...builds, ...references];
+    const bursts = new Map<string, BurstSample[]>(all.map((b) => [b.id, []]));
+    const serials = new Map<string, SerialSample[]>(all.map((b) => [b.id, []]));
     // One unrecorded warm-up per build fills the page cache for every build.
     const measure = (build: Build) =>
       process.platform === "win32"
         ? burstPipe(build, project, stream)
         : Promise.resolve(burst(build, project, stream, scratch));
-    for (const build of builds) await measure(build);
+    for (const build of all) await measure(build);
     const serialMessages = messages.slice(0, 2 + Math.min(serialFiles, files.length));
     for (let run = 0; run < runs; run++) {
-      const order = run % 2 === 0 ? builds : [...builds].reverse();
+      const order = run % 2 === 0 ? all : [...all].reverse();
       for (const build of order) bursts.get(build.id)?.push(await measure(build));
       for (const build of order)
         serials.get(build.id)?.push(await serial(build, project, serialMessages));
@@ -266,6 +320,7 @@ async function main(): Promise<void> {
       sfcs,
       serialFiles: serialMessages.length - 2,
       builds: builds.map((b) => b.id),
+      references: references.map((b) => b.id),
       bursts,
       serials,
       allowOutputChange: values["allow-output-change"],

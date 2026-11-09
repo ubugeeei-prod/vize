@@ -2,6 +2,8 @@
 
 export type BurstSample = {
   wallMs: number;
+  /** JSON-RPC error replies in the burst. */
+  errors?: number;
   cpuSeconds?: number;
   peakMiB?: number;
   outputBytes: number;
@@ -12,6 +14,9 @@ export type SerialSample = { latencies: number[]; outputSha: string };
 
 export type BuildSummary = {
   id: string;
+  /** Timed beside the builds; its answers are not compared. */
+  reference?: boolean;
+  errors?: number;
   burstWallMs: number;
   burstWallMin: number;
   burstWallMax: number;
@@ -62,6 +67,7 @@ export function summarizeCell(input: {
   sfcs: number;
   serialFiles: number;
   builds: string[];
+  references?: string[];
   bursts: Map<string, BurstSample[]>;
   serials: Map<string, SerialSample[]>;
   allowOutputChange: boolean;
@@ -83,7 +89,8 @@ export function summarizeCell(input: {
     : !outputsIdentical && !input.allowOutputChange
       ? "builds answered differently"
       : undefined;
-  const builds = input.builds.map((id): BuildSummary => {
+  const references = input.references ?? [];
+  const builds = [...input.builds, ...references].map((id): BuildSummary => {
     const bursts = input.bursts.get(id) ?? [];
     const serials = input.serials.get(id) ?? [];
     const walls = bursts.map((sample) => sample.wallMs);
@@ -92,6 +99,9 @@ export function summarizeCell(input: {
     const latencies = serials.flatMap((sample) => sample.latencies);
     return {
       id,
+      ...(references.includes(id)
+        ? { reference: true, errors: Math.max(0, ...bursts.map((sample) => sample.errors ?? 0)) }
+        : {}),
       burstWallMs: median(walls),
       burstWallMin: Math.min(...walls),
       burstWallMax: Math.max(...walls),
@@ -144,7 +154,7 @@ export function markdown(label: string, cells: readonly Cell[]): string {
     for (const build of cell.builds) {
       const base = build === first ? undefined : first;
       lines.push(
-        `| ${build.id} | ${fixed(build.burstWallMs, 0)}${delta(build.burstWallMs, base?.burstWallMs)} (${fixed(build.burstWallMin, 0)}–${fixed(build.burstWallMax, 0)}) ` +
+        `| ${build.reference ? `${build.id} (reference${build.errors ? `, ${build.errors} errors` : ""})` : build.id} | ${fixed(build.burstWallMs, 0)}${delta(build.burstWallMs, base?.burstWallMs)} (${fixed(build.burstWallMin, 0)}–${fixed(build.burstWallMax, 0)}) ` +
           `| ${fixed(build.burstCpuSeconds, 2)}${delta(build.burstCpuSeconds, base?.burstCpuSeconds)} ` +
           `| ${fixed(build.burstPeakMiB, 1)}${delta(build.burstPeakMiB, base?.burstPeakMiB)} ` +
           `| ${fixed(build.serialP50Ms, 2)}${delta(build.serialP50Ms, base?.serialP50Ms)} ` +
