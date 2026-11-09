@@ -156,3 +156,31 @@ test("List keeps keyboard navigation visible and selects by stable key", async (
   assert.deepEqual(textLines(mounted), ["> Alpha", "  Beta", "  ..."]);
   mounted.unmount();
 });
+
+test("List preserves object values through keyed equality and activation", async () => {
+  const ada = { id: 1, name: "Ada" };
+  const grace = { id: 2, name: "Grace" };
+  const modelValue = shallowRef({ id: 2, name: "Grace copy" });
+  const selected: (typeof ada)[] = [];
+  const mounted = mountFresco(() =>
+    h(List, {
+      items: [
+        { key: "ada", label: "Ada", value: ada },
+        { key: "grace", label: "Grace", value: grace },
+      ],
+      modelValue: modelValue.value,
+      by: "id",
+      focused: true,
+      "onUpdate:modelValue": (next: typeof ada) => {
+        modelValue.value = next;
+      },
+      onSelect: (next: typeof ada) => selected.push(next),
+    }),
+  );
+
+  await dispatchKey({ key: "home" });
+  await dispatchKey({ key: "enter" });
+  assert.equal(modelValue.value, ada);
+  assert.deepEqual(selected, [ada]);
+  mounted.unmount();
+});
