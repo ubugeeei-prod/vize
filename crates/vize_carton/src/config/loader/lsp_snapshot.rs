@@ -277,8 +277,8 @@ mod tests {
         // The JS dependency graph uses Node's native realpath spelling. On
         // Windows this expands 8.3 paths without Rust's verbatim path prefix.
         // An independent Node call owns the expected spelling; keep the
-        // portable Rust-canonical alias in the expected watch set too. The
-        // authored verbatim spelling must not leak back into editor watches.
+        // authored and portable Rust-canonical aliases in the expected watch
+        // set too. A Windows verbatim spelling must not leak into watches.
         let node_realpath = std::process::Command::new("node")
             .arg("-e")
             .arg("process.stdout.write(require('node:fs').realpathSync.native(process.argv[1]));")
@@ -289,7 +289,8 @@ mod tests {
         assert_eq!(node_realpath.status.code(), Some(0));
         assert_eq!(node_realpath.stderr.as_slice(), b"");
         let node_canonical = PathBuf::from(std::str::from_utf8(&node_realpath.stdout).unwrap());
-        let mut expected = vec![canonical.clone(), node_canonical.clone()];
+        let authored = crate::path::normalize_windows_verbatim_path(path.clone());
+        let mut expected = vec![authored, canonical.clone(), node_canonical.clone()];
         expected.extend(
             node_canonical
                 .parent()
@@ -302,7 +303,7 @@ mod tests {
         expected.sort();
         expected.dedup();
         assert_eq!(created.watch_dependencies, expected);
-        assert_eq!(created.source_path, Some(canonical));
+        assert_eq!(created.source_path, Some(path));
     }
 
     #[test]
