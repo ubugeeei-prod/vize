@@ -25,6 +25,10 @@ on:
         description: Publish timing even when the builds answer differently
         type: boolean
         default: false
+      windows_probe:
+        description: Also time the head build on Windows with stdout to NUL and with a Defender exclusion
+        type: boolean
+        default: false
   # Registers the dispatch-only workflow from its PR; only the tests run there.
   pull_request:
     paths:
@@ -230,6 +234,40 @@ jobs:
             --label windows-ntfs --out $out | Out-Null
           if ($LASTEXITCODE -ne 0) { throw "pair failed" }
           Get-Content (Join-Path $out 'pair-windows-ntfs.md') | Add-Content $env:GITHUB_STEP_SUMMARY
+      - name: Probe Windows burst costs
+        if: inputs.windows_probe
+        shell: pwsh
+        env:
+          SIZES: ${{ inputs.sizes }}
+        run: |
+          $size = ($env:SIZES -split ',' | ForEach-Object { [int]$_ } | Measure-Object -Maximum).Maximum
+          $root = Join-Path $env:RUNNER_TEMP 'pair'
+          $project = Join-Path $root "vue-$size"
+          $stream = Join-Path $root "stream-$size.bin"
+          $out = Join-Path $root 'probe.out'
+          $exe = "$PWD\pair-bin\head\vize.exe"
+          Get-MpComputerStatus | Select-Object RealTimeProtectionEnabled, AMRunningMode, IsTamperProtected | Format-List | Out-String | Write-Output
+          function Burst([string]$label, [string]$target) {
+            $samples = @()
+            foreach ($i in 1..5) {
+              $w = [System.Diagnostics.Stopwatch]::StartNew()
+              $p = Start-Process -FilePath $exe -ArgumentList 'content-mapper' -WorkingDirectory $project `
+                -RedirectStandardInput $stream -RedirectStandardOutput $target -NoNewWindow -PassThru -Wait
+              $w.Stop()
+              $samples += [pscustomobject]@{ ms = $w.Elapsed.TotalMilliseconds; cpu = $p.TotalProcessorTime.TotalSeconds }
+            }
+            $ms = ($samples.ms | Sort-Object)[2]; $cpu = ($samples.cpu | Sort-Object)[2]
+            "| $label | $([math]::Round($ms)) | $([math]::Round($cpu, 2)) |"
+          }
+          $rows = @("### Windows burst probe ($size SFCs, head, median of 5)", '', '| variant | wall ms | CPU s |', '|---|---|---|')
+          $rows += Burst 'stdout file, Defender on' $out
+          $rows += Burst 'stdout NUL, Defender on' 'NUL'
+          Add-MpPreference -ExclusionPath $root, (Split-Path $exe)
+          Start-Sleep -Seconds 2
+          $rows += Burst 'stdout file, project excluded' $out
+          $rows += Burst 'stdout NUL, project excluded' 'NUL'
+          $rows | Write-Output
+          $rows + '' | Add-Content $env:GITHUB_STEP_SUMMARY
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always()
         with: { name: pair-windows, path: "${{ runner.temp }}/pair-out/", if-no-files-found: warn }
