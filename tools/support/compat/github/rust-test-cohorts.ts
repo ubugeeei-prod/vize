@@ -47,6 +47,8 @@ const definitions: Record<RustTestCohortId, Definition> = {
       "vize_lightningcss",
       "vize_parcel_sourcemap",
       "vize_incremental",
+      "poc-support",
+      "solid-poc",
     ],
   },
   "sfc-compiler": { name: "SFC compiler", packages: ["vize_atelier_sfc"] },

@@ -43,6 +43,7 @@ export const TEST_AREAS: ReadonlyArray<{
   { area: "Marquette", paths: ["crates/vize_marquette", "npm/marquette"] },
   { area: "UI", paths: ["npm/ui", "npm/compose"] },
   { area: "Playground", paths: ["playground"] },
+  { area: "Examples", paths: ["examples"] },
   { area: "Docs", paths: ["docs"] },
   {
     area: "Tooling",
