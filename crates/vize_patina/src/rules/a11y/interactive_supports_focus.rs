@@ -79,7 +79,7 @@ impl InteractiveSupportsFocus {
         // A role describes semantics; this rule is concerned with elements
         // that also behave interactively. Handler-less role owners are often
         // controlled or focused by another component.
-        if !markup_helpers::has_static_markup_event(element, INTERACTIVE_HANDLER_EVENTS) {
+        if !markup_helpers::has_static_markup_handler(element, INTERACTIVE_HANDLER_EVENTS) {
             return;
         }
 
