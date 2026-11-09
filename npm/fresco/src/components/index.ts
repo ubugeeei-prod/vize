@@ -115,7 +115,8 @@ export {
 export { Tree, type TreeProps, type TreeNode } from "./Tree.js";
 
 // Navigation
-export { Menu, type MenuProps, type MenuItem } from "./Menu.js";
+export { default as Menu } from "./FrescoMenu.vue";
+export type { MenuItem, MenuProps } from "./Menu.js";
 export { Tabs, type TabsProps, type Tab } from "./Tabs.js";
 export { default as Breadcrumb } from "./FrescoBreadcrumb.vue";
 export type { BreadcrumbItem, BreadcrumbProps } from "./presentational-primitive-types.js";

@@ -75,6 +75,38 @@ test("Menu skips separators and disabled commands during navigation and typeahea
   mounted.unmount();
 });
 
+test("Menu preserves object values while keeping the active command visible", async () => {
+  const alpha = { id: 1, name: "Alpha" };
+  const charlie = { id: 3, name: "Charlie" };
+  const delta = { id: 4, name: "Delta" };
+  const selected: (typeof alpha)[] = [];
+  const mounted = mountFresco(() =>
+    h(Menu, {
+      items: [
+        { key: "alpha", label: "Alpha", value: alpha },
+        { key: "bravo", label: "Bravo", disabled: true, value: { id: 2, name: "Bravo" } },
+        { key: "charlie", label: "Charlie", value: charlie },
+        { key: "delta", label: "Delta", value: delta },
+      ],
+      focused: true,
+      maxHeight: 2,
+      onSelect: (value: typeof alpha) => selected.push(value),
+    }),
+  );
+
+  assert.deepEqual(textLines(mounted), ["Alpha", "Bravo", "  ..."]);
+  await dispatchKey({ key: "down" });
+  assert.deepEqual(textLines(mounted), ["  ...", "Bravo", "Charlie", "  ..."]);
+  await dispatchKey({ key: "enter" });
+  assert.equal(selected[0], charlie);
+
+  await typeChars("d");
+  assert.deepEqual(textLines(mounted), ["  ...", "Charlie", "Delta"]);
+  await dispatchKey({ key: "enter" });
+  assert.equal(selected[1], delta);
+  mounted.unmount();
+});
+
 test("Tabs does not paint a pending highlight as active after focus leaves", async () => {
   const focused = ref(true);
   const mounted = mountFresco(() =>
