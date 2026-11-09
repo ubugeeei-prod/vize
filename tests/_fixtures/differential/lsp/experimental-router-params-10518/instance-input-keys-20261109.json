@@ -1,0 +1,140 @@
+{
+  "schema": "vize.experimental-router-instance-input-keys-transition.v1",
+  "issue": 11654,
+  "qualificationCredit": false,
+  "sourceReceipt": {
+    "path": "tests/_fixtures/tooling/instance-input-keys-11654.json",
+    "sha256": "42f8f517d05587cc8c889813690f9bebf7887e7ccf9fe91cac056978d2cb9c5a"
+  },
+  "edit": {
+    "before": "type $ComponentInstanceFor<I, O, B, T, Declared, Authored, Jsx> = $IsAny<Authored> extends true ? I : $IsUnknown<Authored> extends true ? $UsePublicInstance<Jsx> extends true ? I : $ReplaceComponentProps<O, Pick<$AuthoredKeyWitness<Jsx>, keyof Jsx & $ComponentMetadataKeys<$ComponentInputProps<T, Declared>>> & (T extends unknown ? $ComponentInputProps<T, Declared> & $ComponentInputGuard<T, Declared, Jsx> : never)> & B : $ReplaceComponentProps<O, $ComponentInputProps<T, Declared> & $ComponentMissingInputGuard<T, Authored>> & B;",
+    "after": "type $ComponentInstanceFor<I, O, B, T, Declared, Authored, Jsx> = $IsAny<Authored> extends true ? I : $IsUnknown<Authored> extends true ? $UsePublicInstance<Jsx> extends true ? I : $ReplaceComponentProps<O, Pick<$AuthoredKeyWitness<Jsx>, keyof Jsx & ($IsAny<Declared & $PublicComponentInputProps> extends true ? never : T extends unknown ? keyof Partial<T> | keyof Partial<$KebabProps<T>> | keyof Declared | keyof $FallthroughAttrs | keyof $PublicComponentInputProps : never)> & (T extends unknown ? $ComponentInputProps<T, Declared> & $ComponentInputGuard<T, Declared, Jsx> : never)> & B : $ReplaceComponentProps<O, $ComponentInputProps<T, Declared> & $ComponentMissingInputGuard<T, Authored>> & B;"
+  },
+  "entries": [
+    {
+      "variant": "lf",
+      "kind": "valid",
+      "previous": {
+        "file": "lf.valid.canon-leftovers.virtual.ts.txt",
+        "sha256": "311ed67a1ae14c33a9c582c35ef6f52efa0d6581dc0759917bd370752415dcaa",
+        "bytes": 15097
+      },
+      "current": {
+        "file": "lf.valid.instance-input-keys.virtual.ts.txt",
+        "sha256": "f86d2266c0dd5fddd0f6f463bead069827f4faca486207dcfc14830d9cb866c4",
+        "bytes": 15265
+      },
+      "mapEdit": {
+        "before": "  // @vize-map: 11316:11828 -> 0:572",
+        "after": "  // @vize-map: 11484:11996 -> 0:572"
+      }
+    },
+    {
+      "variant": "lf",
+      "kind": "invalid",
+      "previous": {
+        "file": "lf.invalid.canon-leftovers.virtual.ts.txt",
+        "sha256": "563f595fe1ce9acbe29efa64380637de604c12b99bd920484fdd73efeb0a7c20",
+        "bytes": 15101
+      },
+      "current": {
+        "file": "lf.invalid.instance-input-keys.virtual.ts.txt",
+        "sha256": "35526e12ce6057253a52840f3532b8d62250e3aabd84e72e7aef07678daaa1eb",
+        "bytes": 15269
+      },
+      "mapEdit": {
+        "before": "  // @vize-map: 11316:11828 -> 0:572",
+        "after": "  // @vize-map: 11484:11996 -> 0:572"
+      }
+    },
+    {
+      "variant": "crlf",
+      "kind": "valid",
+      "previous": {
+        "file": "crlf.valid.canon-leftovers.virtual.ts.txt",
+        "sha256": "4db1f53dc51e5045cffc72eece0fb4a74a218619812391e8b1a5ec98e6ffd70d",
+        "bytes": 15097
+      },
+      "current": {
+        "file": "crlf.valid.instance-input-keys.virtual.ts.txt",
+        "sha256": "98e0c70fdad703fadb8a3f5a4daa025a6958b065ee4a84dd1bef3658e84404f0",
+        "bytes": 15265
+      },
+      "mapEdit": {
+        "before": "  // @vize-map: 11316:11828 -> 0:588",
+        "after": "  // @vize-map: 11484:11996 -> 0:588"
+      }
+    },
+    {
+      "variant": "crlf",
+      "kind": "invalid",
+      "previous": {
+        "file": "crlf.invalid.canon-leftovers.virtual.ts.txt",
+        "sha256": "fa17dbdf6a81bd06da87d8728b59437b53b06c20f464b78f9676f1b408b01756",
+        "bytes": 15101
+      },
+      "current": {
+        "file": "crlf.invalid.instance-input-keys.virtual.ts.txt",
+        "sha256": "d3c8f1824b145ec25c89e48d383edcf3311113db28798b24aa8ed584703aa700",
+        "bytes": 15269
+      },
+      "mapEdit": {
+        "before": "  // @vize-map: 11316:11828 -> 0:588",
+        "after": "  // @vize-map: 11484:11996 -> 0:588"
+      }
+    },
+    {
+      "variant": "explicit",
+      "kind": "valid",
+      "previous": {
+        "file": "explicit.valid.canon-leftovers.virtual.ts.txt",
+        "sha256": "39eb7940d79964f200a5e62588ad13f2fe3efbdc1eba053ef93329c85bef5d9b",
+        "bytes": 15025
+      },
+      "current": {
+        "file": "explicit.valid.instance-input-keys.virtual.ts.txt",
+        "sha256": "066535c9a28b35e66f1dcd2d2562217077928b7ecf22d8d8b135ccf0487c6615",
+        "bytes": 15193
+      },
+      "mapEdit": {
+        "before": "  // @vize-map: 11316:11848 -> 0:592",
+        "after": "  // @vize-map: 11484:12016 -> 0:592"
+      }
+    },
+    {
+      "variant": "explicit",
+      "kind": "invalid",
+      "previous": {
+        "file": "explicit.invalid.canon-leftovers.virtual.ts.txt",
+        "sha256": "39eb7940d79964f200a5e62588ad13f2fe3efbdc1eba053ef93329c85bef5d9b",
+        "bytes": 15025
+      },
+      "current": {
+        "file": "explicit.invalid.instance-input-keys.virtual.ts.txt",
+        "sha256": "066535c9a28b35e66f1dcd2d2562217077928b7ecf22d8d8b135ccf0487c6615",
+        "bytes": 15193
+      },
+      "mapEdit": {
+        "before": "  // @vize-map: 11316:11848 -> 0:592",
+        "after": "  // @vize-map: 11484:12016 -> 0:592"
+      }
+    }
+  ],
+  "completionDataPositions": {
+    "lf": {
+      "before": 11662,
+      "after": 11830,
+      "count": 10
+    },
+    "crlf": {
+      "before": 11662,
+      "after": 11830,
+      "count": 10
+    },
+    "explicit": {
+      "before": 11590,
+      "after": 11758,
+      "count": 10
+    }
+  }
+}

@@ -44,6 +44,7 @@ mod guarded_listener_nested_callback;
 mod import_meta;
 mod imported_component_ref_expose;
 mod imported_runtime_props;
+mod instance_input_keys;
 mod javascript_sfc_membership;
 mod large_declaration_identity;
 mod legacy_js_mixin_receiver;
