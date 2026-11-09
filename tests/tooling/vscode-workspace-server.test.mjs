@@ -8,7 +8,10 @@ import { test } from "node:test";
 import { promisify } from "node:util";
 import { fileURLToPath } from "node:url";
 import vm from "node:vm";
-import { discoverWorkspaceServers } from "../../editors/vscode/src/workspace-server.ts";
+import {
+  discoverWorkspaceServers,
+  workspaceServerProbePaths,
+} from "../../editors/vscode/src/workspace-server.ts";
 import { serverInvocation } from "../../editors/vscode/src/server-command.ts";
 import {
   parseVizeVersion,
@@ -117,6 +120,7 @@ function discovery(
       trustedServerPath,
       workspaceDevServerPaths,
       discoverWorkspaceServers,
+      workspaceServerProbePaths,
       inspectWorkspaceServerProtocol: protocol,
       serverInvocation,
     },
@@ -268,6 +272,14 @@ await test("nearest package, hidden exports, pnpm symlinks and Windows cmd wrapp
   assert.deepEqual(discoverWorkspaceServers([nested, f.folder], true, "win32").candidates, [
     { path: expected, source: "workspace" },
   ]);
+  // The concurrent existence oracle sees every path the serial checks would.
+  const probed = new Set(
+    workspaceServerProbePaths(aliases, "win32").filter((file) => fs.existsSync(file)),
+  );
+  assert.deepEqual(
+    discoverWorkspaceServers(aliases, true, "win32", (file) => probed.has(file)),
+    discovered,
+  );
   const invocation = serverInvocation(expected, { PATH: "/example" });
   assert.equal(invocation.command, process.execPath);
   assert.deepEqual(invocation.args, [expected]);

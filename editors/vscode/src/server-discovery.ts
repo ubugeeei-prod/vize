@@ -10,7 +10,7 @@ import { extractReleaseArchive } from "./release-archive.js";
 import { pruneDownloadedServerVersions } from "./server-cache.js";
 import { trustedServerPath, workspaceDevServerPaths } from "./server-trust.js";
 import { serverInvocation } from "./server-command.js";
-import { discoverWorkspaceServers } from "./workspace-server.js";
+import { discoverWorkspaceServers, workspaceServerProbePaths } from "./workspace-server.js";
 import { inspectWorkspaceServerProtocol } from "./workspace-server-protocol.js";
 import type {
   ExtensionRuntimeState,
@@ -47,13 +47,19 @@ export function createServerDiscovery(
     let workspaceFallbackReason = workspaceFailure;
     state.selectedServerCandidate = undefined;
 
+    const folders = (workspace.workspaceFolders ?? []).map((folder) => folder.uri.fsPath);
     const local =
       !workspaceFailure && config.get<boolean>("server.preferWorkspace", true)
         ? discoverWorkspaceServers(
-            (workspace.workspaceFolders ?? []).map((folder) => folder.uri.fsPath),
+            folders,
             workspace.isTrusted,
+            process.platform,
+            workspace.isTrusted
+              ? await existingPaths(workspaceServerProbePaths(folders))
+              : undefined,
           )
         : undefined;
+    if (generation !== state.configurationSyncGeneration) return undefined;
     workspaceFallbackReason ??= local?.reason;
 
     function select(candidate: InspectedServerCandidate): string {
@@ -180,15 +186,8 @@ export function createServerDiscovery(
     // Probe every location at once: on a WSL2 remote, PATH carries the Windows
     // directories, and each serial existence check is a 9P round trip.
     const unique = dedupeCandidates(candidates);
-    const present = await Promise.all(
-      unique.map((candidate) =>
-        fs.promises.access(candidate.path).then(
-          () => true,
-          () => false,
-        ),
-      ),
-    );
-    return unique.filter((_, index) => present[index]);
+    const exists = await existingPaths(unique.map((candidate) => candidate.path));
+    return unique.filter((candidate) => exists(candidate.path));
   }
 
   function dedupeCandidates(candidates: ServerCandidate[]): ServerCandidate[] {
@@ -476,4 +475,18 @@ export function createServerDiscovery(
     state.outputChannel.appendLine(`Verified ${path.basename(archivePath)} (SHA-256 ${got}).`);
   }
   return { findServerPath };
+}
+
+/** Tests every path at once; a serial existsSync per path is one round trip each on 9P. */
+async function existingPaths(paths: readonly string[]): Promise<(file: string) => boolean> {
+  const present = new Set<string>();
+  await Promise.all(
+    paths.map((file) =>
+      fs.promises.access(file).then(
+        () => present.add(file),
+        () => undefined,
+      ),
+    ),
+  );
+  return (file) => present.has(file);
 }

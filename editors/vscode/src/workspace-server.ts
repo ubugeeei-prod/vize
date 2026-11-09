@@ -11,10 +11,32 @@ export const RESTRICTED_MODE_WORKSPACE_SERVER_REASON =
   "Workspace servers skipped in Restricted Mode.";
 
 /** Resolve package manifests by filename; npm's exports may hide package.json. */
+type Exists = (file: string) => boolean;
+
+/** Every path discovery may check, so a caller can test them all at once. */
+export function workspaceServerProbePaths(
+  folders: readonly string[],
+  platform: NodeJS.Platform = process.platform,
+): string[] {
+  const bin = platform === "win32" ? "vize.exe" : "vize";
+  return [
+    ...new Set(
+      folders.flatMap((folder) =>
+        ancestors(folder).flatMap((directory) => [
+          path.join(directory, "package.json"),
+          path.join(directory, "node_modules", "vize", "package.json"),
+          path.join(directory, "node_modules", ".bin", bin),
+        ]),
+      ),
+    ),
+  ];
+}
+
 export function discoverWorkspaceServers(
   folders: readonly string[],
   isTrusted: boolean,
   platform: NodeJS.Platform = process.platform,
+  exists: Exists = fs.existsSync,
 ): WorkspaceServerDiscovery {
   if (!isTrusted) {
     return { candidates: [], reason: RESTRICTED_MODE_WORKSPACE_SERVER_REASON };
@@ -22,9 +44,10 @@ export function discoverWorkspaceServers(
   const servers = new Map<string, ServerCandidate>();
   try {
     for (const folder of folders) {
-      const packageRoot = nearestPackageRoot(folder);
+      const packageRoot = nearestPackageRoot(folder, exists);
       if (!packageRoot) continue;
-      const serverPath = packageServer(packageRoot) ?? binServer(packageRoot, platform);
+      const serverPath =
+        packageServer(packageRoot, exists) ?? binServer(packageRoot, platform, exists);
       if (serverPath) {
         const realPath = fs.realpathSync(serverPath);
         // realpath resolves links, but its drive-letter casing may follow the
@@ -50,15 +73,15 @@ export function discoverWorkspaceServers(
   return { candidates: [...servers.values()] };
 }
 
-function nearestPackageRoot(folder: string): string | undefined {
-  return ancestors(folder).find((directory) => fs.existsSync(path.join(directory, "package.json")));
+function nearestPackageRoot(folder: string, exists: Exists): string | undefined {
+  return ancestors(folder).find((directory) => exists(path.join(directory, "package.json")));
 }
 
-function packageServer(packageRoot: string): string | undefined {
+function packageServer(packageRoot: string, exists: Exists): string | undefined {
   for (const directory of ancestors(packageRoot)) {
     const root = path.join(directory, "node_modules", "vize");
     const manifestPath = path.join(root, "package.json");
-    if (!fs.existsSync(manifestPath)) continue;
+    if (!exists(manifestPath)) continue;
     const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf8")) as {
       name?: unknown;
       bin?: string | { vize?: unknown };
@@ -74,7 +97,11 @@ function packageServer(packageRoot: string): string | undefined {
   return undefined;
 }
 
-function binServer(packageRoot: string, platform: NodeJS.Platform): string | undefined {
+function binServer(
+  packageRoot: string,
+  platform: NodeJS.Platform,
+  exists: Exists,
+): string | undefined {
   for (const directory of ancestors(packageRoot)) {
     const bin = path.join(
       directory,
@@ -82,7 +109,7 @@ function binServer(packageRoot: string, platform: NodeJS.Platform): string | und
       ".bin",
       platform === "win32" ? "vize.exe" : "vize",
     );
-    if (!fs.existsSync(bin)) continue;
+    if (!exists(bin)) continue;
     const resolved = fs.realpathSync(bin);
     const descriptor = fs.openSync(resolved, "r");
     const prefix = Buffer.alloc(160);
