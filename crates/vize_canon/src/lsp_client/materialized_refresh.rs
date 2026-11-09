@@ -270,7 +270,7 @@ mod tests {
             let uri = path_to_file_uri(&root.join("probe.ts"));
             let documents = vize_l0::FxHashMap::from_iter([(
                 uri.clone(),
-                vize_l0::String::from("export const value = 1;"),
+                crate::lsp_client::shared_text::RetainedText::from("export const value = 1;"),
             )]);
             assert_eq!(
                 serde_json::to_value(client.diagnostics_via_editor_lsp(&uri, &documents).unwrap())

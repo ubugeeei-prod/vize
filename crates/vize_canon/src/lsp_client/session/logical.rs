@@ -2,8 +2,9 @@
 
 use super::CorsaProjectClient;
 use crate::file_uri::file_uri_to_path;
+use crate::lsp_client::shared_text::DocumentTexts;
 use std::path::Component;
-use vize_l0::{FxHashMap, String, cstr};
+use vize_l0::{String, cstr};
 
 impl CorsaProjectClient {
     pub(in crate::lsp_client) fn try_logical_workspace_overlays(&mut self) -> Result<bool, String> {
@@ -56,7 +57,7 @@ impl CorsaProjectClient {
 
     pub(in crate::lsp_client) fn validate_logical_workspace_documents(
         &self,
-        documents: &FxHashMap<String, String>,
+        documents: &DocumentTexts,
     ) -> Result<(), String> {
         if !self.logical_workspace_overlays {
             return Ok(());

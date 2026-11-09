@@ -207,7 +207,11 @@ impl CorsaProjectClient {
         positions: &[u32],
     ) -> Result<Option<Vec<Option<bool>>>, String> {
         let mut capture = capture::Capture::new();
-        let matched = self.document_texts.get(uri).map(String::as_str) == Some(source);
+        let matched = self
+            .document_texts
+            .get(uri)
+            .map(super::super::shared_text::RetainedText::as_str)
+            == Some(source);
         capture.record("clientSourceAdmission", || {
             json!({
                 "uri":uri,"requestedSource":source,"retainedSource":self.document_texts.get(uri),

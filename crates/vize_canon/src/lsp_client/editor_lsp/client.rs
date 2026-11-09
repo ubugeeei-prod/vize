@@ -8,6 +8,7 @@ use std::path::PathBuf;
 use vize_l0::{FxHashMap, String, cstr};
 
 use super::{CorsaProjectClient, EditorLspSession, retry::retry_transient_editor_request};
+use crate::lsp_client::shared_text::DocumentTexts;
 
 #[cfg(all(test, unix))]
 mod query_view_tests;
@@ -221,7 +222,7 @@ impl CorsaProjectClient {
     pub(in crate::lsp_client) fn diagnostics_via_editor_lsp(
         &mut self,
         document_uri: &str,
-        documents: &FxHashMap<String, String>,
+        documents: &DocumentTexts,
     ) -> Result<DocumentDiagnosticReportResult, String> {
         if !documents.contains_key(document_uri) {
             return Err(cstr!(
@@ -262,7 +263,7 @@ impl CorsaProjectClient {
                     }
                 };
                 let mut documents = self.document_texts.clone();
-                documents.insert(uri.into(), text.into());
+                documents.insert(uri.into(), String::from(text).into());
                 return self.request_with_editor_lsp_documents_recovery(&documents, |session| {
                     request(session, &document_uri)
                 });
@@ -298,7 +299,7 @@ impl CorsaProjectClient {
 
     fn request_with_editor_lsp_documents_recovery<T>(
         &mut self,
-        documents: &FxHashMap<String, String>,
+        documents: &DocumentTexts,
         mut request: impl FnMut(&mut EditorLspSession) -> Result<T, String>,
     ) -> Result<T, String> {
         crate::corsa_bridge::native_operation::checkpoint()?;
@@ -347,7 +348,7 @@ impl CorsaProjectClient {
     /// project under each other's identities (#11548).
     fn editor_lsp_session_for_documents(
         &mut self,
-        documents: &FxHashMap<String, String>,
+        documents: &DocumentTexts,
     ) -> Result<&mut EditorLspSession, String> {
         self.validate_logical_workspace_documents(documents)?;
         let retained = self.editor_documents();
@@ -390,7 +391,7 @@ impl CorsaProjectClient {
     }
 
     /// Every retained document under the same identity used by native queries.
-    pub(in crate::lsp_client) fn editor_documents(&mut self) -> FxHashMap<String, String> {
+    pub(in crate::lsp_client) fn editor_documents(&mut self) -> DocumentTexts {
         let retained = self
             .document_texts
             .iter()
@@ -459,7 +460,7 @@ impl CorsaProjectClient {
     }
 }
 
-fn document_maps_equal(lhs: &FxHashMap<String, String>, rhs: &FxHashMap<String, String>) -> bool {
+fn document_maps_equal(lhs: &DocumentTexts, rhs: &DocumentTexts) -> bool {
     lhs.len() == rhs.len()
         && lhs
             .iter()

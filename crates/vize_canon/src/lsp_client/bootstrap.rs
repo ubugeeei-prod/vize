@@ -118,6 +118,7 @@ impl CorsaProjectClient {
             document_texts: Default::default(),
             canon_file_cache: Default::default(),
             canon_batches: Default::default(),
+            shared_payloads: Default::default(),
             session_document_uris: Default::default(),
             external_document_uris: Default::default(),
             overlay_storage,
@@ -172,7 +173,7 @@ impl CorsaProjectClient {
                     path.display()
                 )
             })?;
-            if written != *content {
+            if written.as_str() != content.as_str() {
                 return Err(cstr!(
                     "Materialized Corsa document did not preserve contents for {uri}"
                 ));

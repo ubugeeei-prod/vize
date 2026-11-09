@@ -14,6 +14,7 @@ use super::{
     CorsaProjectClient, diagnostics_lsp::initialize_lsp_client,
     language_id::for_uri as language_id_for_uri,
 };
+use crate::lsp_client::shared_text::{DocumentTexts, RetainedText};
 use corsa::runtime::block_on;
 use corsa_lsp::{LspClient, LspOverlay, LspSpawnConfig, VirtualDocument};
 use lsp_types::{DocumentDiagnosticReportResult, Uri};
@@ -26,7 +27,9 @@ use std::{
         atomic::{AtomicBool, Ordering},
     },
 };
-use vize_l0::{FxHashMap, FxHashSet, String, cstr};
+#[cfg(test)]
+use vize_l0::FxHashMap;
+use vize_l0::{FxHashSet, String, cstr};
 #[cfg(test)]
 mod batch_test_receipt;
 mod call_hierarchy;
@@ -76,7 +79,7 @@ pub(super) struct EditorLspSession {
     /// use acknowledged Shutdown followed by EOF instead of an Exit race.
     shutdown_to_eof: bool,
     /// Last text mirrored into the server, keyed by session document URI.
-    documents: FxHashMap<String, String>,
+    documents: DocumentTexts,
     /// Exact source owner and delivered revision for mutation-owned deltas.
     tracked_documents: Option<super::tracked_documents::DocumentCheckpoint>,
     issued_completions: completion_resolve::IssuedCompletions,
@@ -136,14 +139,15 @@ impl EditorLspSession {
     }
 
     /// Mirror `text` into the server, opening the document on first sight.
-    fn mirror(&mut self, document_uri: &str, text: &str) -> Result<Uri, String> {
+    fn mirror(&mut self, document_uri: &str, text: impl Into<RetainedText>) -> Result<Uri, String> {
+        let text: RetainedText = text.into();
         let uri = Uri::from_str(document_uri)
             .map_err(|error| cstr!("Invalid LSP document URI {document_uri}: {error}"))?;
         match self.documents.get(document_uri) {
-            Some(previous) if previous.as_str() == text => return Ok(uri),
+            Some(previous) if *previous == text => return Ok(uri),
             Some(_) => {
                 self.tracked_documents = None;
-                self.overlay.replace(&uri, text).map_err(|error| {
+                self.overlay.replace(&uri, text.as_str()).map_err(|error| {
                     cstr!("Failed to update editor LSP overlay for {document_uri}: {error}")
                 })?;
             }
@@ -153,14 +157,14 @@ impl EditorLspSession {
                     .open(VirtualDocument::new(
                         uri.clone(),
                         language_id_for_uri(document_uri),
-                        text,
+                        text.as_str(),
                     ))
                     .map_err(|error| {
                         cstr!("Failed to open editor LSP overlay for {document_uri}: {error}")
                     })?;
             }
         }
-        self.documents.insert(document_uri.into(), text.into());
+        self.documents.insert(document_uri.into(), text);
         self.dirty_documents.insert(document_uri.into());
         self.advance_document_generation();
         Ok(uri)

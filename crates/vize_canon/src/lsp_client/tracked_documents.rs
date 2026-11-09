@@ -7,6 +7,8 @@ use serde::{Serialize, Serializer};
 use sha2::{Digest, Sha256};
 use vize_l0::{FxHashMap, FxHashSet, String};
 
+use super::shared_text::RetainedText;
+
 static NEXT_OWNER: AtomicU64 = AtomicU64::new(1);
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -17,7 +19,7 @@ pub(super) struct DocumentCheckpoint {
 
 #[derive(Debug)]
 pub(super) struct TrackedDocumentTexts {
-    documents: FxHashMap<String, String>,
+    documents: FxHashMap<String, RetainedText>,
     desired_digests: FxHashMap<String, [u8; 32]>,
     #[cfg(test)]
     digest_computations: usize,
@@ -31,12 +33,23 @@ pub(super) struct TrackedDocumentTexts {
 
 impl Default for TrackedDocumentTexts {
     fn default() -> Self {
-        Self::from(FxHashMap::default())
+        Self::from(FxHashMap::<String, RetainedText>::default())
     }
 }
 
 impl From<FxHashMap<String, String>> for TrackedDocumentTexts {
     fn from(documents: FxHashMap<String, String>) -> Self {
+        Self::from(
+            documents
+                .into_iter()
+                .map(|(uri, text)| (uri, RetainedText::from(text)))
+                .collect::<FxHashMap<_, _>>(),
+        )
+    }
+}
+
+impl From<FxHashMap<String, RetainedText>> for TrackedDocumentTexts {
+    fn from(documents: FxHashMap<String, RetainedText>) -> Self {
         Self {
             documents,
             desired_digests: FxHashMap::default(),
@@ -65,7 +78,7 @@ impl TrackedDocumentTexts {
             .is_none_or(|pending| !pending.is_empty())
     }
 
-    pub(super) fn insert(&mut self, uri: String, text: String) -> Option<String> {
+    pub(super) fn insert(&mut self, uri: String, text: RetainedText) -> Option<RetainedText> {
         let changed = self.documents.get(uri.as_str()) != Some(&text);
         if changed {
             self.desired_digests.remove(uri.as_str());
@@ -77,7 +90,16 @@ impl TrackedDocumentTexts {
         previous
     }
 
-    pub(super) fn remove(&mut self, uri: &str) -> Option<String> {
+    /// Hold `text` in place of equal retained bytes; nothing changes for readers.
+    pub(super) fn share_equal(&mut self, uri: &str, text: RetainedText) {
+        if let Some(current) = self.documents.get_mut(uri)
+            && *current == text
+        {
+            *current = text;
+        }
+    }
+
+    pub(super) fn remove(&mut self, uri: &str) -> Option<RetainedText> {
         self.desired_digests.remove(uri);
         let previous = self.documents.remove(uri);
         if previous.is_some() {
@@ -98,7 +120,7 @@ impl TrackedDocumentTexts {
         self.advance_revision();
     }
 
-    pub(super) fn insert_if_absent(&mut self, uri: String, text: String) {
+    pub(super) fn insert_if_absent(&mut self, uri: String, text: RetainedText) {
         if !self.documents.contains_key(uri.as_str()) {
             self.insert(uri, text);
         }
@@ -108,7 +130,7 @@ impl TrackedDocumentTexts {
     /// its digest. The expected row can precede another row for the same URI
     /// in a batch; that earlier text must never borrow the final row's digest.
     pub(super) fn desired_digest(&mut self, uri: &str, expected: &str) -> [u8; 32] {
-        let retained = self.documents.get(uri).map(String::as_str) == Some(expected);
+        let retained = self.documents.get(uri).map(RetainedText::as_str) == Some(expected);
         if retained && let Some(digest) = self.desired_digests.get(uri) {
             return *digest;
         }
@@ -167,7 +189,7 @@ impl TrackedDocumentTexts {
 }
 
 impl Deref for TrackedDocumentTexts {
-    type Target = FxHashMap<String, String>;
+    type Target = FxHashMap<String, RetainedText>;
 
     fn deref(&self) -> &Self::Target {
         &self.documents
@@ -188,6 +210,17 @@ impl PartialEq for TrackedDocumentTexts {
 
 impl PartialEq<FxHashMap<String, String>> for TrackedDocumentTexts {
     fn eq(&self, other: &FxHashMap<String, String>) -> bool {
+        self.documents.len() == other.len()
+            && other.iter().all(|(uri, text)| {
+                self.documents
+                    .get(uri.as_str())
+                    .is_some_and(|retained| retained == text)
+            })
+    }
+}
+
+impl PartialEq<FxHashMap<String, RetainedText>> for TrackedDocumentTexts {
+    fn eq(&self, other: &FxHashMap<String, RetainedText>) -> bool {
         &self.documents == other
     }
 }
@@ -199,8 +232,8 @@ impl Serialize for TrackedDocumentTexts {
 }
 
 impl IntoIterator for TrackedDocumentTexts {
-    type Item = (String, String);
-    type IntoIter = std::collections::hash_map::IntoIter<String, String>;
+    type Item = (String, RetainedText);
+    type IntoIter = std::collections::hash_map::IntoIter<String, RetainedText>;
 
     fn into_iter(self) -> Self::IntoIter {
         self.documents.into_iter()
