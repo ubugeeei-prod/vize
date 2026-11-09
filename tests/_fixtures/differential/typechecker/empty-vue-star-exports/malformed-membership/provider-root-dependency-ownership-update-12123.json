@@ -23,9 +23,9 @@
   },
   "finalQualificationLock": {
     "path": "pnpm-lock.yaml",
-    "bytes": 1096392,
-    "sha256": "f5ec3ebdba5b24c0f392b99a405994036500fceca394805b7859260fafa82382",
-    "gitBlob": "8387787da67a22feb8a1664a8c5816aa85cd518e"
+    "bytes": 1095263,
+    "sha256": "9c2d946dd182aa6931af4868185d1ee812a20ce1ca17409005705abedc89c66b",
+    "gitBlob": "99081858d72a16e56a2047c38d492613ae6501c8"
   },
   "finalQualificationPackage": {
     "path": "package.json",
@@ -35,14 +35,14 @@
   },
   "workspaceManifest": {
     "path": "pnpm-workspace.yaml",
-    "bytes": 9383,
-    "sha256": "06c87c57386897704293c9c4b2ca8c8965e00c33d76d24041890e67a6742ecde",
-    "gitBlob": "4c2f815ad9b6433377e1198777c265021fe7d90f"
+    "bytes": 9348,
+    "sha256": "67d2d880b1c1927cda746a43bdcc074bb58260c925c4e67e3aaaa142e94d6f76",
+    "gitBlob": "57b5c377972ca2c4abc26a2084f1075bc2aa61a1"
   },
   "ownerManifests": [
     { "path": "docs/package.json", "bytes": 1231, "sha256": "ca9ae32d0463b90a4e47363e69fe341a3f4e697c811b4dcf67471594dbc31f53", "gitBlob": "edb47d4729d17f5f88df12216f3543952916e3f0" },
     { "path": "editors/package.json", "bytes": 174, "sha256": "764e69b4547464b0e94070c0dd46ee2d9ae5a49974870d29fb1d2bdbe561a2f2", "gitBlob": "029e91724d6e845e2c1e115e687a5532e9281b51" },
-    { "path": "npm/builder/unplugin/package.json", "bytes": 3077, "sha256": "d1663b75cc91684f2f1f67f90c52be6ddea1f0174338bf34435657aa8b13debf", "gitBlob": "753092e434de913e4ce476a9b64ec2961102c076" },
+    { "path": "npm/builder/unplugin/package.json", "bytes": 3066, "sha256": "bf2e7daf15a4c56436a8d6855165963a99ecf2a488fb755b7ce6e5277ad9db9f", "gitBlob": "8b1442eff4606452c0f91447c95bb910dfac0e2f" },
     { "path": "npm/builder/vite/package.json", "bytes": 2742, "sha256": "ee5ca8a2bb33e34eeaf52ebb160aa6f589754ba4cf7aa80b536f97752dfbda86", "gitBlob": "935e43ae84287f7cb66fbd18af374b8b7bbc3871" },
     { "path": "npm/cli/package.json", "bytes": 4362, "sha256": "11abb0e379b919dcff38cc4aed99e1a8934aab4a55d9000115cf54dc1608f5c9", "gitBlob": "dad46ee29384cc40f38cda5a425d90f102424d41" },
     { "path": "npm/framework/nuxt-lint-config/package.json", "bytes": 1691, "sha256": "96a247a24b95b6af7a97275679fb7cd552a6e86ee8941f3411ea549db2e58c84", "gitBlob": "4a0a24564c7f2599d4e7a6192aa28b68f5a65ef1" },
@@ -55,7 +55,7 @@
   ],
   "resolver": {
     "command": "vp install --lockfile-only --no-frozen-lockfile --ignore-scripts",
-    "fixedPointSha256": "f5ec3ebdba5b24c0f392b99a405994036500fceca394805b7859260fafa82382"
+    "fixedPointSha256": "9c2d946dd182aa6931af4868185d1ee812a20ce1ca17409005705abedc89c66b"
   },
   "nativeAcceptanceCredit": false,
   "scope": "Move root-only development dependencies to the workspaces that execute them, retain the six root execution entry points, provide shared editor type resolution outside the extension package, and bind the complete generated resolver graph and every affected owner manifest. This record gives source provenance only."
