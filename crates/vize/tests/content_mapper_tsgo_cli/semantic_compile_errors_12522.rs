@@ -230,3 +230,36 @@ fn a_compile_error_reports_beside_every_type_error_of_the_project() {
         }
     }
 }
+
+#[test]
+fn the_reported_project_shows_the_compile_error_and_the_other_files_type_error() {
+    let hosts = hosts();
+    if hosts.is_empty() {
+        eprintln!("skipping #12522 Content Mapper hosts: neither {TSGO_ENV} nor {TSRS_ENV} is set");
+        return;
+    }
+    let fixture = super::workspace_root()
+        .join("tests/_fixtures/differential/typechecker/semantic-compile-errors-12522");
+    let project = tempfile::tempdir().unwrap();
+    std::fs::create_dir(project.path().join("src")).unwrap();
+    for (input, output) in [
+        ("A.vue.txt", "src/A.vue"),
+        ("B.vue.txt", "src/B.vue"),
+        ("tsconfig.json.txt", "tsconfig.json"),
+    ] {
+        std::fs::copy(fixture.join(input), project.path().join(output)).unwrap();
+    }
+    install_mapper_manifest(project.path());
+    install_vue_package(project.path());
+    for host in &hosts {
+        assert_eq!(
+            mapper_lines(host, project.path()),
+            [
+                "src/A.vue(2,7): error TS2322: Type 'string' is not assignable to type 'number'.",
+                "src/B.vue(2,16): error vize100002: Vue compile error [DEFINE_PROPS_DESTRUCTURE_DEFAULT_TYPE]: Default value of prop \"size\" does not match declared type.",
+            ],
+            "{}",
+            host.display()
+        );
+    }
+}
