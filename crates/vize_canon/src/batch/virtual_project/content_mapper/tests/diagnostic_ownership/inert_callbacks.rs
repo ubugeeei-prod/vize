@@ -60,11 +60,22 @@ pub(super) fn form_events_and_callback_inference_keep_one_binding_ownership_role
                     expected.extend(field);
                     expected.extend(field);
                     expected.extend([value, schema]);
+                    // The companion value checks repeat both values inertly
+                    // inside the packet (#12458).
+                    expected.extend([value, schema]);
                 }
             }
             // The event-handler emit-argument inference phase follows the
             // authored root stream, still retaining every sibling binding.
             expected.extend(fields.iter().flatten().copied());
+            if callback.is_empty() {
+                // Then each usage's companion value checks (#12458).
+                expected.extend(
+                    fields
+                        .iter()
+                        .flat_map(|[_, value, _, schema]| [*value, *schema]),
+                );
+            }
             let actual = echoes
                 .into_iter()
                 .map(|[original, length, _, _, _, _]| {

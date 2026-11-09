@@ -7,6 +7,7 @@ use super::protocol::{DIRECTIVE_POLICY_EXPECT, DIRECTIVE_POLICY_IGNORE};
 mod directive_exact;
 mod disjoint;
 mod inference_copies;
+mod unchecked_prop_values;
 
 /// Explicit directives only; `disjoint.rs` covers the unmapped ignores.
 fn transform(source: &str) -> super::ContentMapperTransform {
@@ -372,6 +373,11 @@ fn unrelated_marker_text_never_creates_owner_directives() {
             "bad"
         };
         let mut expected = static_id_echoes(source.as_str(), result.text.as_str(), id);
+        expected.push(unchecked_prop_values::companion_id_echo(
+            source.as_str(),
+            result.text.as_str(),
+            id,
+        ));
         expected.extend(baseline.directives);
         assert_eq!(
             directives.directives, expected,

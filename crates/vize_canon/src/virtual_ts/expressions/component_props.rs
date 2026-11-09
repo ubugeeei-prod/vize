@@ -46,6 +46,7 @@ pub(crate) struct ComponentPropSource<'a> {
     pub(crate) diagnostic_ownership:
         Option<&'a crate::virtual_ts::diagnostic_ownership::DiagnosticOwnershipCollector>,
     pub(crate) aria_value_contract_index: Option<usize>,
+    pub(crate) unchecked_prop_values: bool,
     inference_only: bool,
     inert: bool,
     expected_packet: bool,
@@ -65,6 +66,7 @@ impl<'a> ComponentPropSource<'a> {
             model_modifiers: None,
             diagnostic_ownership: None,
             aria_value_contract_index: None,
+            unchecked_prop_values: false,
             inference_only: false,
             inert: false,
             expected_packet: false,
@@ -96,6 +98,7 @@ impl<'a> ComponentPropSource<'a> {
             model_modifiers: self.model_modifiers,
             diagnostic_ownership: ownership,
             aria_value_contract_index: self.aria_value_contract_index,
+            unchecked_prop_values: self.unchecked_prop_values,
             inference_only: self.inference_only,
             inert: self.inert,
             expected_packet: self.expected_packet,

@@ -80,6 +80,14 @@ pub(super) fn generate_generic_props_call(
         expr_indent.as_str(),
     );
     ts.push_str(");\n");
+    super::unchecked_prop_values::append_unchecked_prop_value_checks(
+        ts,
+        mappings,
+        (usage, idx),
+        template_binding_access,
+        source_context,
+        expr_indent.as_str(),
+    );
     let fallthrough_argument_range = check_spread_values.then(|| {
         vize_l0::emit_ts!(ts, "{expr_indent}const $FallthroughProps_{idx} = ");
         append_inference_props_literal(

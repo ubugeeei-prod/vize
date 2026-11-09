@@ -96,11 +96,12 @@ fn each_slot_inference_copy_has_an_expression_owner_without_changing_navigation(
                 let echoes = added_echoes(&before, &after);
                 // Each slot's template pass copies both fields twice; the props
                 // pass annotates a bound slot from that host instead of
-                // inferring a second one, so it adds no copies.
+                // inferring a second one, so it adds no copies. The companion
+                // value check repeats `count`'s value once (#12458).
                 assert_eq!(
                     echoes.len(),
-                    1 + 4 * slots,
-                    "one bare navigation echo and the per-field slot host copies (bound: {bound})"
+                    2 + 4 * slots,
+                    "one bare navigation echo, one companion copy and the per-field slot host copies (bound: {bound})"
                 );
                 for [original, length, generated, end, policy, _] in echoes {
                     assert_eq!(policy, 0);
