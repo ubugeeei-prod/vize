@@ -17,6 +17,10 @@ use docs_metadata::{
     update as docs_metadata_update, verify as verify_docs_metadata_update,
 };
 mod eslint_vue_scorecard;
+mod fixture_updates;
+use fixture_updates::{
+    LOCKFILE_UPDATE, ORACLE_UPDATE, PARCEL_UPDATE, lockfile_update, oracle_update, parcel_update,
+};
 mod js_tooling_refresh;
 mod strict_checker;
 use strict_checker::{authorize as authorize_strict_checker, update as strict_checker_update};
@@ -32,15 +36,7 @@ use tooling::{
 };
 
 const PREVIOUS_PROVIDER: &str = "ad428607e450f807b15e9301d429fcbee7fe67729b52130f2d7e63c2f0cf1e0f";
-const ORACLE_UPDATE: &str = "malformed-membership/provider-oracle-importer-update-11172.json";
 const ORACLE_UPDATE_BINDING: &str = "tests/_fixtures/differential/typechecker/empty-vue-star-exports/malformed-membership/provider-oracle-importer-update-11172.json";
-const ORACLE_UPDATE_HASH: &str = "d8e7a42a623f261eecd89b349224058993fd7ff2c008932d16c46dad29eae6a7";
-const LOCKFILE_UPDATE: &str =
-    "malformed-membership/provider-qualification-lockfile-update-11542.json";
-const LOCKFILE_UPDATE_HASH: &str =
-    "1191a1ee7876f54a25cc10aeaa46cf8c8cc61643ebaf7a8562a5d7c98ff107af";
-const PARCEL_UPDATE: &str = "malformed-membership/provider-parcel-native-update-12011.json";
-const PARCEL_UPDATE_HASH: &str = "e48ee44b774800a5b0624ca168280f15541f9348fea25e2a6d3a422d6bec438a";
 const LOCKFILE_UPDATE_BINDING: &str = "tests/_fixtures/differential/typechecker/empty-vue-star-exports/malformed-membership/provider-qualification-lockfile-update-11542.json";
 const PARCEL_MANIFEST: &str = "npm/builder/parcel-native/package.json";
 const CARGO_WORKSPACE: &str = "Cargo.toml";
@@ -54,40 +50,6 @@ const ADDED: &str =
     "      '@playwright/test':\n        specifier: catalog:testing\n        version: 1.62.1\n";
 const PREFIX: &str = "  tests/tooling/jsx-vapor-oracle:\n    devDependencies:\n      '@babel/core':\n        specifier: catalog:babel-jsx-oracle\n        version: 7.29.0(supports-color@10.2.2)\n";
 const SETUP_AWAIT_IMPORTER: &str = "  tests/tooling/vue-setup-await-oracle:\n    devDependencies:\n      '@vue/server-renderer':\n        specifier: 3.5.38\n        version: 3.5.38(vue@3.5.38(typescript@6.0.3))\n      vue:\n        specifier: 3.5.38\n        version: 3.5.38(typescript@6.0.3)\n";
-
-fn load(path: &str, hash: &str, kind: &str) -> Value {
-    let bytes = fs::read(support::corpus().join(path)).unwrap();
-    assert_eq!(support::hash(&bytes), hash);
-    let record: Value = serde_json::from_slice(&bytes).unwrap();
-    assert_eq!(record["version"], 1);
-    assert_eq!(record["kind"], kind);
-    assert_eq!(record["nativeAcceptanceCredit"], false);
-    record
-}
-
-fn oracle_update() -> Value {
-    load(
-        ORACLE_UPDATE,
-        ORACLE_UPDATE_HASH,
-        "exact-provider-qualification-oracle-importer-successor",
-    )
-}
-
-fn lockfile_update() -> Value {
-    load(
-        LOCKFILE_UPDATE,
-        LOCKFILE_UPDATE_HASH,
-        "exact-provider-qualification-lockfile-successor",
-    )
-}
-
-fn parcel_update() -> Value {
-    load(
-        PARCEL_UPDATE,
-        PARCEL_UPDATE_HASH,
-        "exact-provider-qualification-parcel-native-successor",
-    )
-}
 
 fn bound(binding: &Value, path: &str, body: &[u8]) -> bool {
     binding["path"] == path
@@ -502,16 +464,7 @@ pub(super) fn authorize(previous: &Value, lock: &[u8], package: &[u8]) -> Checke
         return Ok(Some(update));
     }
 
-    let predecessor_bytes = fs::read(support::corpus().join(js_tooling_refresh::UPDATE))
-        .map_err(|_| "complete eslint-plugin-vue scorecard predecessor")?;
-    let update = eslint_vue_scorecard::authorize(
-        &js_tooling_refresh::update(),
-        &predecessor_bytes,
-        lock,
-        package,
-        &workspace,
-    )?;
-    Ok(Some(update))
+    eslint_vue_scorecard::authorize_successor(lock, package, &workspace).map(Some)
 }
 
 #[cfg(test)]

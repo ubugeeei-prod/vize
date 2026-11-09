@@ -3,10 +3,12 @@
 mod content;
 mod events;
 mod options;
+mod sort_keys;
 
 pub use content::NoContentOutsideBlock;
 pub use events::NoShadowNativeEvents;
-pub use options::{NoPropsShadow, SortKeys};
+pub use options::NoPropsShadow;
+pub use sort_keys::SortKeys;
 
 use crate::context::LintContext;
 use crate::diagnostic::{LintDiagnostic, Severity};

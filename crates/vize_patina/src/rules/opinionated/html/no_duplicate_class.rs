@@ -21,12 +21,12 @@
 
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
+use crate::ir::ByteRange;
 use crate::markup::{MarkupBindingKind, MarkupContext, MarkupElement, MarkupRule, MarkupTraversal};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use crate::rules::opinionated::class_values::possible_static_parts;
 use oxc_span::Span;
-use vize_carton::String;
-use vize_l0::{FxHashMap, FxHashSet};
+use vize_l0::{FxHashMap, FxHashSet, String};
 use vize_relief::ElementNode;
 
 static META: RuleMeta = RuleMeta {
@@ -41,6 +41,43 @@ static META: RuleMeta = RuleMeta {
 pub struct NoDuplicateClass;
 
 impl NoDuplicateClass {
+    fn check_static_class_value(ctx: &mut LintContext<'_>, class_value: &str, range: ByteRange) {
+        let mut classes = class_value.split_ascii_whitespace();
+        let Some(first) = classes.next() else { return };
+        let Some(second) = classes.next() else { return };
+        let mut seen = FxHashSet::default();
+        let mut reported = FxHashSet::default();
+        seen.insert(first);
+
+        for class_name in std::iter::once(second).chain(classes) {
+            if !seen.insert(class_name) && reported.insert(class_name) {
+                let message = ctx.t_fmt("html/no-duplicate-class.message", &[("name", class_name)]);
+                let help = ctx.t("html/no-duplicate-class.help");
+                ctx.warn_at_with_help(message, range, help);
+            }
+        }
+    }
+
+    fn has_dynamic_class_binding(element: &MarkupElement<'_>) -> bool {
+        let mut found = false;
+        element.walk_bindings(&mut |binding| {
+            found |= binding.kind() == MarkupBindingKind::Bind
+                && binding.is_unqualified_arg_exact("class");
+        });
+        found
+    }
+
+    fn check_static_class_bindings(ctx: &mut LintContext<'_>, element: &MarkupElement<'_>) {
+        element.walk_bindings(&mut |binding| {
+            if binding.kind() == MarkupBindingKind::Attribute
+                && binding.is_unqualified_arg_exact("class")
+                && let Some(value) = binding.static_value()
+            {
+                Self::check_static_class_value(ctx, value, binding.range());
+            }
+        });
+    }
+
     fn report_duplicates(
         ctx: &mut LintContext<'_>,
         candidates: impl IntoIterator<Item = (String, crate::ir::ByteRange)>,
@@ -100,6 +137,11 @@ impl NoDuplicateClass {
         element: &MarkupElement<'_>,
         inspect_dynamic: bool,
     ) {
+        if !inspect_dynamic || !Self::has_dynamic_class_binding(element) {
+            Self::check_static_class_bindings(ctx, element);
+            return;
+        }
+
         let mut static_baseline = None;
         let mut static_groups = Vec::new();
         let mut dynamic_groups = Vec::new();

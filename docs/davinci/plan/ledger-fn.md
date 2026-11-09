@@ -242,6 +242,7 @@ This is triage of a class-registration gap, not a zero-FN claim.
 - `vue/comment-directive`
 - `vue/component-definition-name-casing`
 - `vue/component-name-in-template-casing`
+- `vue/enforce-style-attribute`
 - `vue/html-button-has-type`
 - `vue/html-self-closing`
 - `vue/match-component-file-name`
@@ -249,6 +250,7 @@ This is triage of a class-registration gap, not a zero-FN claim.
 - `vue/mustache-interpolation-spacing`
 - `vue/no-array-index-key`
 - `vue/no-boolean-attr-value`
+- `vue/no-content-outside-block`
 - `vue/no-custom-modifiers-on-v-model`
 - `vue/no-deprecated-filter`
 - `vue/no-deprecated-functional-template`

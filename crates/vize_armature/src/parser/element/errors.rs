@@ -103,6 +103,14 @@ impl<'a> Parser<'a> {
             ErrorCode::IncorrectlyOpenedComment => Some(
                 "Declaration or comment syntax is malformed; skipping it until the next `>`.".into(),
             ),
+            ErrorCode::MissingSemicolonAfterCharacterReference => Some(
+                "Named character reference is missing its trailing `;`; decoded it and continued."
+                    .into(),
+            ),
+            ErrorCode::UnknownNamedCharacterReference => Some(
+                "Named character reference is unknown; preserved its authored text and continued."
+                    .into(),
+            ),
             // Unreachable in practice: the guard above admits only
             // `RECOVERED_PARSE_CODES`, and every entry there has an arm above
             // (pinned by `recovery_messages_and_recovered_parse_classification_agree`).

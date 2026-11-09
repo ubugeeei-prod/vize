@@ -43,6 +43,18 @@ pub(super) fn authorize(
     Ok(update)
 }
 
+pub(super) fn authorize_successor(lock: &[u8], package: &[u8], workspace: &[u8]) -> Checked<Value> {
+    let predecessor_bytes = fs::read(support::corpus().join(super::js_tooling_refresh::UPDATE))
+        .map_err(|_| "complete eslint-plugin-vue scorecard predecessor")?;
+    authorize(
+        &super::js_tooling_refresh::update(),
+        &predecessor_bytes,
+        lock,
+        package,
+        workspace,
+    )
+}
+
 fn unique_offset(haystack: &[u8], needle: &[u8]) -> Checked<usize> {
     if needle.is_empty() {
         return Err("non-empty scorecard lock insertion");

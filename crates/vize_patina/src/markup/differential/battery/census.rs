@@ -27,6 +27,8 @@ pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
         + 1
         // Conditional class branches add one non-colliding control fixture.
         + 1
+        // Compatibility template rules add two focused literal fixtures.
+        + 2
         + 3
         + 7,
     // Original 1057/87 census plus non-literal calls in valid_v_slot (3 + 1),
@@ -172,6 +174,8 @@ pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
         + 1
         // Conditional class branches add one non-colliding control call.
         + 1
+        // Compatibility template rules add two focused literal calls.
+        + 2
         + 5
         + 9,
     rule_fixture_skipped: 87
@@ -235,6 +239,8 @@ pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
         + 13
         // The conditional branch control contributes nine retained trace lines.
         + 9
+        // Compatibility template rules contribute ten retained trace lines.
+        + 10
         + 32
         + 59,
     restructured: 0,
