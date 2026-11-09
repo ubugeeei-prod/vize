@@ -1,6 +1,8 @@
 //! Compatibility wrappers over the same initial module-rewrite parse.
 
-use super::{ImportRewriter, RewriteResult, VirtualProjectRewriteOptions};
+use super::{
+    ImportRewriter, RewriteResult, VirtualProjectRewriteCapture, VirtualProjectRewriteOptions,
+};
 use oxc_span::SourceType;
 use std::path::Path;
 #[cfg(test)]
@@ -71,6 +73,25 @@ impl ImportRewriter {
         source_dir: Option<&Path>,
         options: VirtualProjectRewriteOptions<'_>,
     ) -> (RewriteResult, Vec<super::EmptyVueStar>) {
+        let (rewritten, stars, _) = self.rewrite_for_virtual_project_with_star_capture(
+            source,
+            source_type,
+            roots,
+            source_dir,
+            options,
+            true,
+        );
+        (rewritten, stars)
+    }
+
+    pub(in crate::batch) fn rewrite_for_virtual_project_with_captured_stars_and_occurrences(
+        &self,
+        source: &str,
+        source_type: SourceType,
+        roots: (&Path, &Path),
+        source_dir: Option<&Path>,
+        options: VirtualProjectRewriteOptions<'_>,
+    ) -> VirtualProjectRewriteCapture {
         self.rewrite_for_virtual_project_with_star_capture(
             source,
             source_type,

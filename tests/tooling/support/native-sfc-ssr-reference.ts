@@ -23,7 +23,7 @@ export function checkVersions() {
   for (const name of ["vue", "@vue/compiler-sfc", "@vue/compiler-ssr", "@vue/server-renderer"]) {
     assert.equal(fromVue(`${name}/package.json`).version, "3.5.35", name);
   }
-  assert.equal(fromPlugin("@vitejs/plugin-vue/package.json").version, "6.0.7");
+  assert.equal(fromPlugin("@vitejs/plugin-vue/package.json").version, "6.0.10");
 }
 
 // The official whole-SFC transform supplies both the component and attachment.

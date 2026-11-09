@@ -11,25 +11,84 @@ use oxc_ast::ast::{
 use oxc_ast_visit::{Visit, walk};
 use oxc_parser::Parser;
 use oxc_span::SourceType;
-use vize_carton::String;
+use vize_carton::{FxHashSet, String};
 
-pub(super) fn collect_specifier_occurrences(
-    source: &str,
-    source_type: SourceType,
+pub(super) type SpanOccurrence = (u32, u32, String, crate::PackageResolutionMode);
+
+pub(super) fn deduplicate_specifier_occurrences(
+    spans: &[SpanOccurrence],
 ) -> Vec<(String, crate::PackageResolutionMode)> {
-    let mut occurrences = Vec::new();
-    for (_, _, path, mode) in collect_specifier_spans(source, source_type) {
-        if !occurrences.contains(&(path.clone(), mode)) {
-            occurrences.push((path, mode));
+    if spans.len() <= 8 {
+        let mut occurrences = Vec::with_capacity(spans.len());
+        for (_, _, path, mode) in spans {
+            if !occurrences
+                .iter()
+                .any(|(known, known_mode)| known == path && known_mode == mode)
+            {
+                occurrences.push((path.clone(), *mode));
+            }
+        }
+        return occurrences;
+    }
+    let mut seen = FxHashSet::default();
+    let mut occurrences = Vec::with_capacity(spans.len());
+    for (_, _, path, mode) in spans {
+        if seen.insert((path.as_str(), *mode)) {
+            occurrences.push((path.clone(), *mode));
         }
     }
     occurrences
 }
 
+pub(super) fn into_deduplicated_specifier_spans(
+    source: &str,
+    spans: Vec<SpanOccurrence>,
+) -> Vec<(u32, u32, crate::PackageResolutionMode)> {
+    let mut occurrences = Vec::with_capacity(spans.len());
+    if spans.len() <= 8 {
+        for (start, end, path, mode) in spans {
+            if !occurrences
+                .iter()
+                .any(|(known_start, known_end, known_mode)| {
+                    *known_mode == mode
+                        && source.get(*known_start as usize..*known_end as usize)
+                            == Some(path.as_str())
+                })
+            {
+                occurrences.push((start, end, mode));
+            }
+        }
+        return occurrences;
+    }
+    let mut seen = FxHashSet::default();
+    for (start, end, path, mode) in spans {
+        let fingerprint = (xxhash_rust::xxh3::xxh3_128(path.as_bytes()), mode);
+        if seen.insert(fingerprint)
+            || !occurrences
+                .iter()
+                .any(|(known_start, known_end, known_mode)| {
+                    *known_mode == mode
+                        && source.get(*known_start as usize..*known_end as usize)
+                            == Some(path.as_str())
+                })
+        {
+            occurrences.push((start, end, mode));
+        }
+    }
+    occurrences
+}
+
+pub(super) fn collect_specifier_occurrences(
+    source: &str,
+    source_type: SourceType,
+) -> Vec<(String, crate::PackageResolutionMode)> {
+    deduplicate_specifier_occurrences(&collect_specifier_spans(source, source_type))
+}
+
 pub(super) fn collect_specifier_spans(
     source: &str,
     source_type: SourceType,
-) -> Vec<(u32, u32, String, crate::PackageResolutionMode)> {
+) -> Vec<SpanOccurrence> {
     vize_carton::micro_count!("canon.import_facts.collect_spans.calls", 1);
     vize_carton::micro_count!(
         "canon.import_facts.collect_spans.source_bytes",

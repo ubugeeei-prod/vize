@@ -21,28 +21,38 @@ export const headingCases = [
 export const missingHashes = ["#not-found", "#missing%ZZ", "#%E0%A4%A", "#"];
 
 function removeHeadingHashRepair(directory: string) {
-  for (const name of ["index.mjs", "index.cjs"]) {
-    const entry = path.join(directory, "dist", name);
-    let source = fs.readFileSync(entry, "utf8");
+  for (const extension of ["mjs", "cjs"]) {
+    const serverEntry = path.join(directory, "dist", `dev-server.${extension}`);
+    let source = fs.readFileSync(serverEntry, "utf8");
     const repairStart = source.indexOf(
       "// Vize docs integration: repair the native core before native asset hashing.",
     );
     const repairEnd = source.indexOf("async function externalizeSharedPageAssets(", repairStart);
-    assert.ok(repairStart >= 0 && repairEnd > repairStart, `${name}: heading repair function`);
+    assert.ok(repairStart >= 0 && repairEnd > repairStart, `${extension}: heading repair function`);
     source = source.slice(0, repairStart) + source.slice(repairEnd);
     source = replaceExactly(
       source,
-      "\tconst preparedPages = context.ssgOptions.bare ? generatedPages : generatedPages.map((page) => ({ ...page, html: vizeRepairSsgHashTargets(page.html) }));\n\tconst optimizedOutput = await externalizeSharedPageAssets(preparedPages, context.outDir, context.base);",
-      "\tconst optimizedOutput = await externalizeSharedPageAssets(generatedPages, context.outDir, context.base);",
-      `${name}: heading repair call`,
+      "\tconst generatePagesExternalized = void 0;",
+      "\tconst generatePagesExternalized = mod.generateSsgHtmlPagesExternalized;",
+      `${extension}: native pre-externalization`,
     );
+    source = replaceExactly(
+      source,
+      "\tconst preparedPages = context.ssgOptions.bare ? generatedPages : generatedPages.map((page) => ({ ...page, html: vizeRepairSsgHashTargets(page.html) }));\n\tconst optimizedOutput = context.ssgOptions.externalizeAssets !== false ? await externalizePendingPageAssets(preparedPages, context.outDir, context.base) : {\n\t\tpages: preparedPages,",
+      "\tconst optimizedOutput = context.ssgOptions.externalizeAssets !== false ? await externalizePendingPageAssets(generatedPages, context.outDir, context.base) : {\n\t\tpages: generatedPages,",
+      `${extension}: heading repair call`,
+    );
+    fs.writeFileSync(serverEntry, source);
+
+    const indexEntry = path.join(directory, "dist", `index.${extension}`);
+    source = fs.readFileSync(indexEntry, "utf8");
     source = replaceExactly(
       source,
       '\t\t\t\tif (err instanceof Error && err.message.startsWith("Vize docs:")) throw err;\n',
       "",
-      `${name}: heading repair failure propagation`,
+      `${extension}: heading repair failure propagation`,
     );
-    fs.writeFileSync(entry, source);
+    fs.writeFileSync(indexEntry, source);
   }
 }
 
@@ -79,9 +89,9 @@ export async function buildHeadingHashFixture(output: string) {
   );
   assert.equal(
     JSON.parse(fs.readFileSync(path.join(originalRoot, "package.json"), "utf8"))?.version,
-    "2.88.0",
+    "3.8.2",
   );
-  const installed = fs.readFileSync(path.join(originalRoot, "dist/index.mjs"), "utf8");
+  const installed = fs.readFileSync(path.join(originalRoot, "dist/dev-server.mjs"), "utf8");
   assert(
     installed.includes("function vizeRepairSsgHashTargets"),
     "the authenticated dependency patch must be installed",
@@ -91,7 +101,12 @@ export async function buildHeadingHashFixture(output: string) {
   fs.cpSync(path.join(originalRoot, "dist"), path.join(provider, "dist"), { recursive: true });
   fs.copyFileSync(path.join(originalRoot, "package.json"), path.join(provider, "package.json"));
   fs.symlinkSync(path.resolve(originalRoot, "../.."), path.join(provider, "node_modules"), "dir");
-  removeHeadingHashRepair(provider);
+  // Ox Content now splits its SSG implementation into dev-server.{mjs,cjs}.
+  // Keep the unpatched control at a distinct module URL so Node cannot retain
+  // it when the repaired build is loaded later in this qualification process.
+  const controlProvider = path.join(output, "provider-control");
+  fs.cpSync(provider, controlProvider, { recursive: true });
+  removeHeadingHashRepair(controlProvider);
   const root = path.join(output, "fixture");
   fs.mkdirSync(path.join(root, "content"), { recursive: true });
   fs.writeFileSync(path.join(root, "index.html"), "<!doctype html><title>SSG input</title>");
@@ -108,8 +123,8 @@ export async function buildHeadingHashFixture(output: string) {
   const { build } = (await import(
     pathToFileURL(require.resolve("vite")).href
   )) as typeof import("vite");
-  async function compile(name: string, commonJs = false, bare = false) {
-    const entry = path.join(provider, "dist", commonJs ? "index.cjs" : "index.mjs");
+  async function compile(name: string, commonJs = false, bare = false, packageRoot = provider) {
+    const entry = path.join(packageRoot, "dist", commonJs ? "index.cjs" : "index.mjs");
     const plugin = commonJs
       ? (require(entry) as typeof import("@ox-content/vite-plugin"))
       : ((await import(
@@ -132,14 +147,10 @@ export async function buildHeadingHashFixture(output: string) {
     });
     return directory;
   }
-  const before = await compile("before");
+  const before = await compile("before", false, false, controlProvider);
   const originalCore = verifyCoreAsset(before, false);
-  fs.cpSync(path.join(originalRoot, "dist"), path.join(provider, "dist"), {
-    force: true,
-    recursive: true,
-  });
-  const esm = fs.readFileSync(path.join(provider, "dist/index.mjs"), "utf8");
-  const cjs = fs.readFileSync(path.join(provider, "dist/index.cjs"), "utf8");
+  const esm = fs.readFileSync(path.join(provider, "dist/dev-server.mjs"), "utf8");
+  const cjs = fs.readFileSync(path.join(provider, "dist/dev-server.cjs"), "utf8");
   const extract = (source: string) =>
     source.slice(
       source.indexOf("function vizeRepairSsgHashTargets("),

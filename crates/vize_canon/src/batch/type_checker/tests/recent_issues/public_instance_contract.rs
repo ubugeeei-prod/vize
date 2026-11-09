@@ -366,7 +366,7 @@ fn public_instance_contract_survives_source_and_declaration_consumers() {
         nested_dts
             .matches("import(\"../__vize_helpers.js\").__EmitProps")
             .count(),
-        4,
+        5,
         "a nested retained SFC must resolve the helper from its final published depth:\n{nested_dts}"
     );
     assert_eq!(nested_dts.matches("vize:virtual-ts").count(), 0);

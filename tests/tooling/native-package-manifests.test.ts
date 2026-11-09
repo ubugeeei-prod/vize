@@ -31,7 +31,8 @@ test("fresco-native publishes bundled binaries directly from the root package", 
     path.join(root, "npm/fresco-native/index.js"),
     "utf-8",
   );
-  assert.match(frescoNativeLoader, /spawnSync\("ldd", \["--version"\]/);
-  assert.doesNotMatch(frescoNativeLoader, /execSync\("which ldd"\)/);
+  assert.match(frescoNativeLoader, /readFileSync\("\/usr\/bin\/ldd", "utf-8"\)/);
+  assert.match(frescoNativeLoader, /execSync\("ldd --version"/);
+  assert.doesNotMatch(frescoNativeLoader, /execSync\(['"]which ldd/);
   assert.doesNotMatch(frescoNativeLoader, /readFileSync\(lddPath/);
 });

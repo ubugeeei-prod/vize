@@ -97,7 +97,9 @@ const rustBranchCoverageMinimums = [
   "--min-branches",
   "40",
 ];
-const benchmarkDispatcher = (...args: string[]) => rustTool("benchmarks/dispatch", ...args);
+const benchmarkDispatcher = (...args: string[]) => nodeCommand("benchmarks/dispatch", ...args);
+const sourceCoverage = (...args: string[]) =>
+  ["node", "tools/commands/ci/source-coverage.ts", ...args].join(" ");
 const rustSourceCoverageCommand = [
   "mkdir -p target/llvm-cov",
   [
@@ -107,7 +109,7 @@ const rustSourceCoverageCommand = [
     "cargo llvm-cov nextest --workspace --profile full --test-threads 8 --json --summary-only",
     `--output-path ${rustSourceCoverageJson}`,
   ].join(" "),
-  rustTool("ci/source-coverage", "--json", rustSourceCoverageJson, ...rustSourceCoverageMinimums),
+  sourceCoverage("--json", rustSourceCoverageJson, ...rustSourceCoverageMinimums),
 ].join(" && ");
 const rustBranchCoverageCommand = [
   "mkdir -p target/llvm-cov",
@@ -119,7 +121,7 @@ const rustBranchCoverageCommand = [
   ].join(" "),
   // Keep threshold enforcement in one place so failures still render the
   // complete metric table instead of stopping at cargo-llvm-cov's exit code.
-  rustTool("ci/source-coverage", "--json", rustBranchCoverageJson, ...rustBranchCoverageMinimums),
+  sourceCoverage("--json", rustBranchCoverageJson, ...rustBranchCoverageMinimums),
 ].join(" && ");
 
 /**
@@ -228,8 +230,12 @@ export const testAndBenchmarkTasks = defineTasks({
   "coverage:diff": task("cargo run -p vize_test_runner --bin coverage -- -vv", {
     input: cacheInputs.rust,
   }),
-  "generate:rule-types": task(rustTool("generate/rule-types"), {
-    input: cacheInputs.rust,
+  "generate:rule-types": task(nodeCommand("generate/rule-types"), {
+    input: [
+      "tools/commands/generate/rule-types.ts",
+      "tools/support/command-runtime.ts",
+      "crates/vize_patina/src/preset/snapshots/vize_patina__preset__tests__lint_preset_rule_membership.snap",
+    ],
   }),
   "expected:generate": task(nodeTool("tasks/generate-expected")),
   "expected:generate:sfc": task(nodeTool("tasks/generate-expected", "--mode", "sfc")),

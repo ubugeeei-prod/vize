@@ -17,7 +17,9 @@ import {
   discriminatedJsxUnionBeforeSha256,
 } from "../../tools/support/compat/content-mapper/discriminated-jsx-union-transition.ts";
 import {
+  beforeCanonLeftovers,
   beforeStrictExtraKeys,
+  canonLeftoversSha256,
   strictExtraKeysAfterSha256,
 } from "../../tools/support/compat/content-mapper/strict-extra-keys-transition.ts";
 
@@ -168,10 +170,21 @@ test("only the complete reviewed JSX witness source transition can change canoni
   assert.ok(edit);
   const proof = certifyJsxWitnessChange(file, before, after);
   assert.equal(proof.beforeSha256, record.before.sha256);
-  assert.equal(proof.afterSha256, strictExtraKeysAfterSha256);
-  assert.equal(proof.successorRecordSha256s?.length, 2);
-  assert.equal(proof.successorRecordSha256s?.at(-1), proof.successorRecordSha256);
+  assert.equal(
+    proof.afterSha256,
+    "78d6af92022c9779819704cfb63b91955101396c4929bde5e6dddc308e546b2a",
+  );
+  assert.equal(proof.successorRecordSha256s?.length, 3);
+  assert.equal(proof.successorRecordSha256, canonLeftoversSha256);
+  assert.equal(proof.successorRecordSha256s?.at(-1), canonLeftoversSha256);
   assert.equal(proof.nativeAcceptanceCredit, false);
+  const directBefore = Buffer.from(beforeCanonLeftovers(file, after.toString()));
+  const directProof = certifyJsxWitnessChange(file, directBefore, after);
+  assert.equal(directProof.beforeSha256, strictExtraKeysAfterSha256);
+  assert.equal(directProof.afterSha256, proof.afterSha256);
+  assert.equal(directProof.recordSha256, canonLeftoversSha256);
+  assert.equal(directProof.successorRecordSha256, undefined);
+  assert.equal(directProof.nativeAcceptanceCredit, false);
   for (const mutated of [
     after.subarray(0, after.length - 1),
     Buffer.concat([after, Buffer.from(edit.after)]),

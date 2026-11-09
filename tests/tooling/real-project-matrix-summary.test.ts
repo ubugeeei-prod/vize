@@ -52,7 +52,7 @@ test("real-project workflow publishes and uploads the shard evidence it produced
   assert.ok(steps.indexOf(summary) < steps.indexOf(upload));
   assert.equal(summary.if, "${{ always() }}");
   assert.equal(summary.shell, "bash");
-  assert.equal(summary.run, `rust-script ${shardSummaryCommandPath}`);
+  assert.equal(summary.run, `node ${shardSummaryCommandPath}`);
   assert.equal(upload.if, "${{ always() }}");
   assert.match(upload.uses ?? "", /^actions\/upload-artifact@[0-9a-f]{40}$/);
   assert.deepEqual(upload.with, {
@@ -80,17 +80,17 @@ test("shard summary script records every surface, present or missing", () => {
     /patinaOnlyRuleFindingCount/,
     /-lint-divergence\.md/,
     /No lint divergence report was produced/,
-    /append_file_or_line/,
+    /appendFileOrLine/,
     /-typecheck-divergence\.md/,
-    /append_unique_typecheck_divergence/,
+    /typecheckReports/,
     /glyph-waiver-issues\.json/,
     /surface-verdict\.json/,
-    /dehydrate_selected_fixture_shard/,
+    /dehydrateSelectedFixtureShard/,
     /selected-fixtures\.txt/,
     /"submodule", "deinit", "--force", "--"/,
   ]) {
     assert.match(script, pattern);
   }
   assert.doesNotMatch(script, /\bjq\b/);
-  assert.match(script, /serde_json/);
+  assert.match(script, /JSON\.parse/);
 });

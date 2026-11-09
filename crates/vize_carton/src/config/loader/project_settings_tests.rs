@@ -25,10 +25,7 @@ fn native_vite_settings_use_the_same_projection_as_public_js() {
     );
     assert_eq!(
         loaded.config.type_checker.tsconfig.as_deref(),
-        project
-            .path()
-            .canonicalize()
-            .unwrap()
+        crate::path::canonicalize_non_verbatim(project.path())
             .join("tsconfig.app.json")
             .to_str()
     );
@@ -119,8 +116,8 @@ fn formatter_snapshot_retains_entry_scope_through_vite_root_projection() {
     )
     .unwrap();
     let snapshot = try_load_formatter_snapshot(Some(project.path())).unwrap();
-    let root = project.path().canonicalize().unwrap().join("app");
-    let entry_root = root.join("packages/ui");
+    let root = crate::path::canonicalize_non_verbatim(project.path()).join("app");
+    let entry_root = root.join("packages").join("ui");
     assert_eq!(snapshot.project_root.as_deref(), Some(root.as_path()));
     assert_eq!(
         snapshot
@@ -178,7 +175,7 @@ fn project_snapshot_resolves_vite_root_paths_from_one_evaluation() {
     )
     .unwrap();
     let loaded = super::try_load_project_config_with_source(Some(project.path())).unwrap();
-    let root = project.path().canonicalize().unwrap().join("app");
+    let root = crate::path::canonicalize_non_verbatim(project.path()).join("app");
     assert_eq!(loaded.project_root.as_deref(), Some(root.as_path()));
     assert_eq!(
         std::fs::read_to_string(project.path().join(".evaluations")).unwrap(),
@@ -236,12 +233,40 @@ fn project_snapshot_resolves_vite_root_paths_from_one_evaluation() {
     );
 }
 
+#[cfg(windows)]
+#[test]
+fn dynamic_config_projects_ordinary_windows_paths() {
+    let project = tempfile::tempdir().unwrap();
+    std::fs::write(
+        project.path().join("vite.config.mjs"),
+        r#"export default () => ({vue:{
+            ignores:['src/ignored/**'],
+            entries:[{files:['src/trusted/**/*.vue'],linter:{rules:{'vue/no-v-html':'off'}}}]
+        }});"#,
+    )
+    .unwrap();
+
+    let loaded = super::try_load_project_config_with_source(Some(project.path())).unwrap();
+    let root = loaded.project_root.unwrap();
+    assert_eq!(root, crate::path::canonicalize_non_verbatim(project.path()));
+    assert_eq!(
+        loaded.document.entry_ignores()[0].base_path.as_deref(),
+        root.to_str()
+    );
+    assert_eq!(
+        loaded.document.linter_plan().entries[0]
+            .base_path
+            .as_deref(),
+        root.to_str()
+    );
+}
+
 #[test]
 fn native_projection_retains_global_settings_and_ordered_root_scopes() {
     let project = tempfile::tempdir().unwrap();
     std::fs::write(project.path().join("vite.config.mjs"), "export default {root:'app',vue:{formatter:{singleQuote:true},linter:{preset:'essential'},entries:[{basePath:'ui',files:['*.vue'],linter:{rules:{'a11y/alt-text':'error'}}}]}};").unwrap();
     let loaded = super::try_load_project_config_with_source(Some(project.path())).unwrap();
-    let root = project.path().canonicalize().unwrap().join("app");
+    let root = crate::path::canonicalize_non_verbatim(project.path()).join("app");
     assert_eq!(loaded.project_root.as_deref(), Some(root.as_path()));
     let plan = loaded.document.linter_plan();
     assert_eq!(plan.base.preset.as_deref(), Some("essential"));
@@ -269,7 +294,7 @@ fn editor_snapshot_keeps_lint_scopes_and_paths_from_one_host_evaluation() {
     )
     .unwrap();
     let loaded = load_lsp_config_snapshot(Some(project.path()));
-    let root = project.path().canonicalize().unwrap().join("app");
+    let root = crate::path::canonicalize_non_verbatim(project.path()).join("app");
     let plan = loaded.project.document.linter_plan();
     assert_eq!(
         (

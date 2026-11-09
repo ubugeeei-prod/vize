@@ -3,6 +3,10 @@ import fs from "node:fs";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
 import ts from "typescript";
+import {
+  assertEmitGateRejectionPaths,
+  emitGateRejections,
+} from "./support/canon-emit-props-gate-rejections.ts";
 import { emitGateOracle } from "./support/emit-props-gate-oracle.ts";
 import { beforeGenericEventSpecialization } from "./support/generic-event-specialization-source.ts";
 
@@ -456,17 +460,15 @@ void test("the immutable pre-marker oracle retains its original routes and union
 });
 
 void test("a successor refuses unknown producer bytes and altered historical context", () => {
-  for (const path of [
-    "tests/_fixtures/tooling/emit-props-gate-11697.json",
-    ...Object.keys(oracle.current.sourceHashes),
-  ]) {
+  assertEmitGateRejectionPaths(oracle.current.sourceHashes);
+  for (const [path, reason] of emitGateRejections) {
     assert.throws(
       () => emitGateOracle((selected) => read(selected) + (selected === path ? " " : "")),
-      /oracle context|selected emit gate producer/u,
+      reason,
     );
     assert.throws(
       () => emitGateOracle((selected) => (selected === path ? "" : read(selected))),
-      /oracle context|selected emit gate producer/u,
+      reason,
     );
   }
 });

@@ -70,10 +70,10 @@
   },
   "dependencies": {
     "@vizejs/native": "workspace:*",
-    "diff": "8.0.4",
+    "diff": "9.0.0",
     "oxc-parser": "catalog:oxc",
     "oxc-transform": "catalog:oxc",
-    "webpack-sources": "3.5.1"
+    "webpack-sources": "3.7.0"
   },
   "devDependencies": {
     "@jridgewell/trace-mapping": "0.3.31",
@@ -81,7 +81,7 @@
     "@tsdown/css": "catalog:content",
     "@types/node": "catalog:typescript",
     "@vizejs/builder-shared": "workspace:*",
-    "css-loader": "7.1.2",
+    "css-loader": "7.1.5",
     "tsdown": "catalog:vite-stack",
     "typescript": "catalog:typescript",
     "vite": "catalog:vite-stack",

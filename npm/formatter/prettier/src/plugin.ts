@@ -3,6 +3,7 @@ import { doc, type Plugin } from "prettier";
 import { assertSupportedDirectives, hasIgnorePragma, hasPragma } from "./directives.ts";
 import { nativeOptions, type VizeOptions } from "./options.ts";
 
+/** Minimal document node returned to Prettier after native SFC formatting. */
 export interface VizeDocument {
   type: "VizeDocument";
   code: string;
@@ -12,6 +13,7 @@ export interface VizeDocument {
 
 type NativeFormat = (source: string, options: FormatOptionsNapi) => FormatResultNapi;
 
+/** Creates a Prettier plugin backed by the supplied native formatting function. */
 export function createPlugin(format: NativeFormat): Plugin<VizeDocument> {
   const parser = {
     astFormat: "vize-document",

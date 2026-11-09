@@ -164,7 +164,7 @@ test("real-project workflow schedules every balanced fixture shard nightly", () 
     actions: "read",
     issues: "write",
   });
-  assert.equal(publisher["runs-on"], "ubuntu-latest");
+  assert.equal(publisher["runs-on"], "blacksmith-32vcpu-ubuntu-2404");
   assert.equal(publisher["timeout-minutes"], 5);
   const publisherSteps = publisher.steps ?? [];
   const download = findStep(publisherSteps, "Download canonical DOM evidence");

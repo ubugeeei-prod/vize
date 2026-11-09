@@ -239,7 +239,7 @@ test("paired marker evidence rejects wrong binaries, missing files and changed d
     identicalProfileCapture.server_sha256 = identicalHeadProfile.binary.sha256;
     write("head-profile.json", identicalProfileCapture);
     const unchanged = compareLspMarkerScans(directory);
-    assert.equal(unchanged.production.comparisonMode, "unchanged native per-invocation parity");
+    assert.equal(unchanged.production.comparisonMode, "unchanged native observation");
     assert.deepEqual(unchanged.production.totalDrift, {
       invocations: 0,
       self_calls: 0,

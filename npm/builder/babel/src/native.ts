@@ -1,6 +1,7 @@
 import { createRequire } from "node:module";
 import type { compileJsx, compileSfc, generateSfcScopeId } from "@vizejs/native";
 
+/** Native compiler operations required by the Babel adapter. */
 export interface NativeCompiler {
   compileJsx: typeof compileJsx;
   compileSfc: typeof compileSfc;

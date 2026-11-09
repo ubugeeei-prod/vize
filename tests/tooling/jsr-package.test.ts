@@ -19,7 +19,11 @@ import {
   publishedAt,
   waitForPublishedVersion,
 } from "../../tools/support/release/jsr/package.ts";
-import { jsrPackageDirectory, jsrPackages } from "../../tools/support/release/jsr/packages.ts";
+import {
+  jsrPackageDirectory,
+  jsrPackages,
+  npmOnlyReleasePackageDirectories,
+} from "../../tools/support/release/jsr/packages.ts";
 
 const root = fileURLToPath(new URL("../../", import.meta.url));
 
@@ -63,13 +67,19 @@ await test("every JSR entry point re-exports one npm package at the release vers
   );
 });
 
-await test("JSR mirrors every JavaScript package shipped by the npm release", () => {
+await test("JSR mirrors every eligible JavaScript package shipped by the npm release", () => {
   const release = readFileSync(resolve(root, ".github/workflows/release.yml"), "utf8");
   const value = /^  RELEASE_JS_PACKAGES: (.+)$/mu.exec(release)?.[1];
   assert.ok(value, "release workflow declares the JavaScript package inventory");
+  const releasePackages = value.split(" ");
+  for (const directory of npmOnlyReleasePackageDirectories) {
+    assert.ok(releasePackages.includes(directory), `${directory} is an npm release package`);
+  }
   assert.deepEqual(
     jsrPackages.map(({ directory }) => directory),
-    value.split(" "),
+    releasePackages.filter(
+      (directory) => !(npmOnlyReleasePackageDirectories as readonly string[]).includes(directory),
+    ),
   );
   assert.equal(new Set(jsrPackages.map(({ directory }) => directory)).size, jsrPackages.length);
   assert.equal(new Set(jsrPackages.map(({ jsrName }) => jsrName)).size, jsrPackages.length);

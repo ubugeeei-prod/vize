@@ -8,7 +8,7 @@ import { writeFakeCommand } from "./fake-command.ts";
 
 export const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
 export const repository = "ubugeeei/vize";
-const commandPath = "tools/commands/ci/github/issue-pr-title-policy.rs";
+const commandPath = "tools/commands/ci/github/issue-pr-title-policy.ts";
 
 export type PolicyRun = {
   result: SpawnSyncReturns<string>;
@@ -16,14 +16,14 @@ export type PolicyRun = {
 };
 
 /**
- * Runs the issue/PR title policy Rust Script command against a real event payload
+ * Runs the issue/PR title policy Node command against a real event payload
  * with `gh` stubbed out. The stub records the exact argv of every invocation so
  * tests can assert the complete API call list, including "no call at all".
  */
 export function runPolicy(
   payload: unknown,
   eventName: string,
-  options: { cwd?: string; force?: boolean } = {},
+  options: { cwd?: string } = {},
 ): PolicyRun {
   const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-title-policy-"));
   const binDir = path.join(tempDir, "bin");
@@ -43,7 +43,7 @@ export function runPolicy(
 
   const env: NodeJS.ProcessEnv = {
     ...process.env,
-    PATH: `${binDir}${path.delimiter}${process.env.PATH ?? ""}`,
+    PATH: `${binDir}${path.delimiter}${path.dirname(process.execPath)}${path.delimiter}${process.env.PATH ?? ""}`,
     FAKE_GH_LOG: ghLogPath,
     GITHUB_EVENT_NAME: eventName,
     GITHUB_EVENT_PATH: eventPath,
@@ -51,7 +51,7 @@ export function runPolicy(
   };
   delete env.NODE_TEST_CONTEXT;
 
-  const result = spawnSync("rust-script", [...(options.force ? ["--force"] : []), commandPath], {
+  const result = spawnSync(process.execPath, [commandPath], {
     cwd: options.cwd ?? repoRoot,
     env,
     encoding: "utf8",

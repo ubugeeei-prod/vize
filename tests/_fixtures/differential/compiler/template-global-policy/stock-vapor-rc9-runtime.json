@@ -1,6 +1,6 @@
 {
   "compiler": "3.6.0-rc.9",
-  "plugin": "6.0.7",
+  "plugin": "6.0.10",
   "classification": "Independent upstream observation; native Vapor follows the explicit Vue 3.5.41 global policy, so this is not a native parity oracle.",
   "observations": [
     {

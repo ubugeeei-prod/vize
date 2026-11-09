@@ -320,7 +320,6 @@
     "tests/formal/kani/l3_lattice_classify.rs": "davinci/vize_l3/src/lattice/classify_proofs.rs",
     "tests/support/formatter_continuation_reference.rs": "tests/davinci_test_support/src/formatter_continuation_reference.rs",
     "tests/support/formatter_expression_width_reference.rs": "tests/davinci_test_support/src/formatter_expression_width_reference.rs",
-    "tools/support/artifacts.rs": "tools/commands/davinci/artifact_command.rs",
     "tools/support/bench-source-harness.rs": "tools/commands/davinci/source_harness.rs",
     "tools/support/davinci/assertion_lint_ratchet.rs": "tools/commands/davinci/ratchet.rs",
     "tools/support/davinci/assertion_lint_test_modules.rs": "tools/commands/davinci/test_modules.rs",

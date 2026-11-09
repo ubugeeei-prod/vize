@@ -48,7 +48,7 @@ export const dataUrl = (code: string): string =>
 export const stableProvider = fromStable;
 export const vaporProvider = fromVapor;
 export const pluginVersion = fromUi("@vitejs/plugin-vue/package.json").version;
-assert.equal(pluginVersion, "6.0.7");
+assert.equal(pluginVersion, "6.0.10");
 
 export function resolveModuleOwners(code: string, owners: ReadonlyMap<string, string>): string {
   const edits = declarations(code)
@@ -144,7 +144,7 @@ export async function stockSfc(
     },
     addWatchFile() {},
   };
-  // In stock 6.0.7, devToolsEnabled disables inline setup; no compiler result is rewritten.
+  // In stock 6.0.10, devToolsEnabled disables inline setup; no compiler result is rewritten.
   plugin.configResolved({
     root: "/template-global-policy",
     command: "build",

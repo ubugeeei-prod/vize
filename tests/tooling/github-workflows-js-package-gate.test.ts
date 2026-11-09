@@ -22,11 +22,11 @@ test("check workflow runs JS package unit tests and production dependency audit"
   const workspace = parse(pnpmWorkspace);
   assert.deepEqual(workspace.allowBuilds, {
     "@parcel/watcher": false,
-    "@swc/core@1.16.20": false,
+    "@swc/core": false,
     "core-js": false,
     esbuild: true,
     "lmdb@2.8.5": false,
-    "msgpackr-extract@3.0.4": false,
+    "msgpackr-extract": false,
     puppeteer: false,
     "unrs-resolver": false,
     "vue-demi": false,

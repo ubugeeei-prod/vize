@@ -81,9 +81,9 @@ try {
   const officialPlugin: unknown = oracle("eslint-plugin-vue");
   const providers = Object.fromEntries(
     Object.entries({
-      eslint: "10.13.0",
-      "eslint-plugin-vue": "10.9.2",
-      "vue-eslint-parser": "10.4.1",
+      eslint: "10.14.0",
+      "eslint-plugin-vue": "10.12.0",
+      "vue-eslint-parser": "10.4.2",
     }).map(([name, version]) => {
       const packagePath = realpathSync(oracle.resolve(name + "/package.json"));
       assert.equal(asRecord(parseJson(readFileSync(packagePath, "utf8"))).version, version);
@@ -95,11 +95,11 @@ try {
   const casingPath = join(officialDirectory, "dist/utils/casing.js");
   assert.equal(
     hash(readFileSync(rulePath)),
-    "f91e547b8e0275dac03081fab804190e619fe87ee376302b50814f929c503849",
+    "47ab97cf6f773894d7f4a7512825a53459a1307e6a1ace6761de9e223398a5a0",
   );
   assert.equal(
     hash(readFileSync(casingPath)),
-    "911df4eed3c7d75afac7c6df4a13527d104afdbbd43821993c2b4ece6108f44c",
+    "08b8a9bb3b8204ece19572bd0a71dcfa0d439f523887a859ea218d32f72e1e5e",
   );
   const converter = asRecord(oracle(casingPath)).kebabCase;
   assert.equal(typeof converter, "function");

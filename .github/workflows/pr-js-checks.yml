@@ -209,7 +209,7 @@ jobs:
   pr-oxlint-windows-json-config:
     name: PR Oxlint Windows JSON config
     if: ${{ inputs.run-js && contains(fromJSON(inputs.js-plan).matrix.group, 'oxlint') }}
-    runs-on: windows-2025
+    runs-on: blacksmith-32vcpu-windows-2025
     timeout-minutes: 25
     defaults:
       run: { shell: bash }

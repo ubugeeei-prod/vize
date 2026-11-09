@@ -10,6 +10,8 @@ import {
   restoreHistoryToolchainSelection,
   restoreNativeRuntimeCasePacket,
   restoreNodeEngineCasePacket,
+  restoreTestReportComment,
+  restoreToolingCasePacketJob,
 } from "./support/frontend-case-reporting.ts";
 import { restorePlaygroundCaseReporting } from "./support/frontend-playground-reporting.ts";
 import { helperAbiStep, restoreContentMapperHelperAbi } from "./support/frontend-helper-abi.ts";
@@ -21,7 +23,7 @@ type Step = { name?: string; uses?: string; if?: string; with?: Record<string, u
 >;
 type Job = { "runs-on"?: string; if?: string; steps?: Step[] } & Record<string, unknown>;
 type Workflow = { jobs: Record<string, Job> };
-const oldRunner = "blacksmith-32vcpu-ubuntu-2404";
+const maximumRunner = "blacksmith-32vcpu-ubuntu-2404";
 const hosted = "ubuntu-24.04";
 const fastEvents = ["pull_request", "merge_group", "push"];
 const selectors = [
@@ -76,6 +78,14 @@ function context(event: string, dependencies: string, cancelled: boolean) {
   };
 }
 
+function restoreMaximumRunner(job: Job, original: Job) {
+  if (job["runs-on"] === original["runs-on"]) return false;
+  assert.equal(original["runs-on"], hosted);
+  assert.equal(job["runs-on"], maximumRunner);
+  job["runs-on"] = original["runs-on"];
+  return true;
+}
+
 const providerStep = {
   name: "Provision the locked Full Rust native runtime",
   run: "node tools/support/compat/github/full-rust-runtime.ts",
@@ -115,6 +125,33 @@ function restoreCoverageBeforeRuntimeProvisioning(job: Job) {
   }
 }
 
+function restoreCoverageSummaryPublisher(job: Job, original: Job) {
+  const steps = job.steps;
+  const originalSteps = original.steps;
+  assert(steps && originalSteps);
+
+  const originalSetupIndex = originalSteps.findIndex(
+    (step) => step.uses === "./.github/actions/setup-rust-script",
+  );
+  assert.equal(originalSetupIndex >= 0, true);
+  assert.equal(
+    steps.some((step) => step.uses === "./.github/actions/setup-rust-script"),
+    false,
+  );
+  steps.splice(originalSetupIndex, 0, structuredClone(originalSteps[originalSetupIndex]));
+
+  const publisher = steps.find((step) => step.name === "Coverage report");
+  const originalPublisher = originalSteps.find((step) => step.name === "Coverage report");
+  assert(publisher && originalPublisher);
+  assert(typeof originalPublisher.run === "string");
+  const originalPublisherRun = originalPublisher.run;
+  assert.deepEqual(publisher, {
+    ...originalPublisher,
+    run: "node tools/commands/ci/github/write-coverage-summary.ts",
+  });
+  publisher.run = originalPublisherRun;
+}
+
 function restoreEmptyPrToolingBuild(workflow: Workflow, original: Workflow) {
   const producer = "affected-tooling-cli";
   assert.deepEqual(workflow.jobs[producer], {
@@ -125,6 +162,7 @@ function restoreEmptyPrToolingBuild(workflow: Workflow, original: Workflow) {
   workflow.jobs[producer] = structuredClone(original.jobs[producer]);
   const report = workflow.jobs["affected-tooling-report"];
   const before = original.jobs["affected-tooling-report"];
+  restoreMaximumRunner(report, before);
   assert(report.steps && report.steps.length === 1);
   const step = report.steps[0];
   const previous = before.steps?.[0];
@@ -143,70 +181,17 @@ function restoreEmptyPrToolingBuild(workflow: Workflow, original: Workflow) {
   assert.deepEqual(report, before);
 }
 
-// #11652 posts the PR test report after the unchanged gate; invert exactly that.
-const testReportSteps = [
-  {
-    name: "Download test case reports",
-    id: "cases",
-    if: "${{ !cancelled() }}",
-    "continue-on-error": true,
-    uses: "actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c",
-    with: { pattern: "test-cases-*", path: "${{ runner.temp }}/test-cases" },
-  },
-  {
-    name: "Report test results",
-    if: "${{ !cancelled() }}",
-    "continue-on-error": true,
-    env: {
-      GITHUB_TOKEN: "${{ github.token }}",
-      TEST_REPORT_GATE: "${{ steps.gate.outcome }}",
-      TEST_REPORT_CASES: "${{ steps.cases.outcome }}",
-      TEST_REPORT_CASES_DIR: "${{ runner.temp }}/test-cases",
-      TEST_REPORT_HEAD_SHA:
-        "${{ github.event.pull_request.head.sha || github.event.merge_group.head_sha }}",
-      TEST_REPORT_PR_NUMBER:
-        "${{ github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.number || '' }}",
-    },
-    run: "node tools/support/compat/github/comment-test-report.ts",
-  },
-];
-
-function restoreTestReportComment(workflow: Workflow, original: Workflow) {
-  const before = original.jobs["test-report"];
-  const steps = before.steps ?? [];
-  const gate = steps.at(-1);
-  assert.equal(gate?.name, "Require every needed job to succeed");
-  assert.deepEqual(workflow.jobs["test-report"], {
-    ...before,
-    permissions: { ...(before.permissions as Record<string, string>), "pull-requests": "write" },
-    steps: [...steps.slice(0, -1), { ...gate, id: "gate" }, ...testReportSteps],
-  });
-  workflow.jobs["test-report"] = structuredClone(before);
-}
-
-function restoreToolingCasePacketJob(workflow: Workflow, original: Workflow) {
-  const before = original.jobs["affected-tooling"];
-  const steps = before.steps ?? [];
-  const worker = steps.at(-1);
-  assert.equal(worker?.uses, "./.github/actions/test-affected-tooling");
-  assert.deepEqual(workflow.jobs["affected-tooling"], {
-    ...before,
-    steps: [
-      ...steps.slice(0, -1),
-      {
-        ...worker,
-        with: { ...(worker.with as Record<string, string>), job: before.name },
-      },
-    ],
-  });
-  workflow.jobs["affected-tooling"] = structuredClone(before);
-}
-
-test("the seven runner selectors and exact runtime steps preserve every original job", () => {
-  let changed = 0,
-    protectedJobs = 0;
+test("maximum non-release runners preserve every original job contract", () => {
+  let selectedJobs = 0,
+    protectedJobs = 0,
+    restoredHostedJobs = 0;
   for (const { specification, before, after } of workflows) {
     const restored = structuredClone(after);
+    for (const [id, original] of Object.entries(before.jobs)) {
+      const current = restored.jobs[id];
+      assert(current, id);
+      restoredHostedJobs += Number(restoreMaximumRunner(current, original));
+    }
     let restoredWildSteps = 0;
     if (specification.name === "check") {
       restoredWildSteps += Object.values(restored.jobs).reduce(
@@ -216,6 +201,7 @@ test("the seven runner selectors and exact runtime steps preserve every original
       for (const site of ["iteration-plan", "test-report"] as const)
         restoreReviewedCheckout(restored.jobs[site], before.jobs[site], site);
       restoreCoverageBeforeRuntimeProvisioning(restored.jobs["source-coverage"]);
+      restoreCoverageSummaryPublisher(restored.jobs.coverage, before.jobs.coverage);
       restoreTestReportComment(restored, before);
       restoreCheckJsCasePacket(restored.jobs["check-js"], before.jobs["check-js"]);
       restoreNodeEngineCasePacket(
@@ -244,11 +230,9 @@ test("the seven runner selectors and exact runtime steps preserve every original
         updated = after.jobs[id],
         target = restored.jobs[id];
       assert(original && updated && target, id);
-      assert.equal(original["runs-on"], oldRunner);
-      assert.equal(typeof updated["runs-on"], "string");
-      if (id !== "check-js") assert.equal(updated["runs-on"], hosted);
-      target["runs-on"] = oldRunner;
-      changed += 1;
+      assert.equal(original["runs-on"], maximumRunner);
+      assert.equal(updated["runs-on"], maximumRunner);
+      selectedJobs += 1;
     }
     for (const [id, job] of Object.entries(before.jobs)) {
       if (!specification.jobs.some((selected) => selected === id)) {
@@ -265,8 +249,9 @@ test("the seven runner selectors and exact runtime steps preserve every original
       "all original job commands, toolchains, needs, predicates, outputs and budgets",
     );
   }
-  assert.equal(changed, 7);
+  assert.equal(selectedJobs, 7);
   assert.equal(protectedJobs, 25);
+  assert.equal(restoredHostedJobs, 4);
 });
 
 test("empty PR tooling inversion rejects unknown producer and report changes", () => {
@@ -307,7 +292,7 @@ test("history selection refuses missing, duplicate, moved and unknown command ch
   assert(original && current);
   const restored = structuredClone(current);
   restoreHistoryToolchainSelection(restored, original);
-  restored["runs-on"] = oldRunner;
+  restored["runs-on"] = maximumRunner;
   assert.deepEqual(restored, original);
   const added = "tests/tooling/native-history-toolchain.test.ts";
   const previous = "tests/tooling/native-history-profile.test.ts";
@@ -451,14 +436,11 @@ test("helper ABI inversion rejects missing, duplicate, moved and unknown step ch
   }
 });
 
-test("full scheduled and manual native producers keep their original runner", () => {
+test("all check-js event classes use the maximum non-release runner", () => {
   const check = workflows.find((entry) => entry.specification.name === "check");
   const selector = check?.after.jobs["check-js"]?.["runs-on"];
   assert(selector);
-  for (const event of [...fastEvents, "schedule", "workflow_dispatch"]) {
-    const expected = fastEvents.includes(event) ? hosted : oldRunner;
-    assert.equal(evaluate(selector, context(event, "true", false)), expected, event);
-  }
+  assert.equal(selector, maximumRunner);
 });
 
 test("test report inversions reject any other change to the report or tooling jobs", () => {

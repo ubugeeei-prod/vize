@@ -81,6 +81,19 @@ pub(crate) fn has_active_builtin_script_rules(linter: &Linter) -> bool {
         .is_some()
 }
 
+/// Whether an active script rule needs the SFC's cross-file macro type world.
+pub(crate) fn has_resolved_macro_type_demand(linter: &Linter) -> bool {
+    const RULES: &[&str] = &[
+        RULE_NO_DUPE_KEYS,
+        RULE_NO_REQUIRED_PROP_WITH_DEFAULT,
+        "script/no-boolean-default",
+        "script/require-default-prop",
+        "script/no-unused-emit-declarations",
+        "script/require-explicit-emits",
+    ];
+    active_builtin_script_rule_entries(linter, true).any(|entry| RULES.contains(&entry.rule_name))
+}
+
 /// Select original producer roles once, before template parsing. Ordinary
 /// compiles and configurations without a template capability allocate no packet.
 pub(crate) fn parse_template_for_script_rules<'a>(
@@ -237,6 +250,7 @@ fn run_builtin_script_rule(
                     source,
                     offset,
                     module,
+                    sfc,
                     &mut lint
                 )
             );

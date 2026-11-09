@@ -38,7 +38,7 @@ export interface NuxtLintImportOptions {
 export interface NuxtLintTypeScriptOptions {
   /** @default true */
   strict?: boolean;
-  /** Enables type-aware rules when set. */
+  /** Enables type-aware rules when set. @default undefined */
   tsconfigPath?: string;
 }
 

@@ -2,7 +2,8 @@
  * Confirm Component - Confirmation dialog
  */
 
-import { defineComponent, h, ref } from "vue";
+import { computed, defineComponent, h, ref } from "vue";
+import { useInput } from "../composables/useInput.js";
 
 export interface ConfirmProps {
   /** Confirmation message */
@@ -13,6 +14,8 @@ export interface ConfirmProps {
   cancelText?: string;
   /** Whether confirm is initially selected */
   defaultConfirm?: boolean;
+  /** Whether the confirmation owns keyboard input */
+  focused?: boolean;
   /** Confirm button foreground color */
   confirmFg?: string;
   /** Cancel button foreground color */
@@ -40,6 +43,10 @@ export const Confirm = defineComponent({
       type: Boolean,
       default: true,
     },
+    focused: {
+      type: Boolean,
+      default: false,
+    },
     confirmFg: {
       type: String,
       default: "green",
@@ -54,13 +61,29 @@ export const Confirm = defineComponent({
     },
   },
   emits: ["confirm", "cancel", "select"],
-  setup(props, { emit: _emit }) {
+  setup(props, { emit }) {
     const isConfirmSelected = ref(props.defaultConfirm);
 
-    // Note: toggle and confirm are designed for keyboard event handlers
-    // They are currently not wired up but kept for future use
-    // const toggle = () => { isConfirmSelected.value = !isConfirmSelected.value; };
-    // const confirm = () => { ... };
+    const toggle = () => {
+      isConfirmSelected.value = !isConfirmSelected.value;
+    };
+    const activate = () => {
+      emit("select", isConfirmSelected.value);
+      emit(isConfirmSelected.value ? "confirm" : "cancel");
+    };
+
+    useInput({
+      isActive: computed(() => props.focused),
+      onArrow: toggle,
+      onKey: (key) => {
+        if (key === "tab" || key === "backtab") toggle();
+      },
+      onChar: (character) => {
+        if (character === " ") activate();
+      },
+      onSubmit: activate,
+      onEscape: () => emit("cancel"),
+    });
 
     return () => {
       return h(

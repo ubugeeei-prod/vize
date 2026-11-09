@@ -7,6 +7,6 @@
     "chokidar-braces-oracle": "npm:chokidar@3.6.0",
     "oxlint": "catalog:linting",
     "semver": "catalog:repo-tooling",
-    "yaml": "2.9.0"
+    "yaml": "2.9.1"
   }
 }

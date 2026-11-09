@@ -40,6 +40,7 @@
 //! for it through [`crate::rules::script::ScriptRule::uses_template_ast`], and
 //! when the template failed to parse.
 
+use vize_croquis::types::ResolvedTypeWorld;
 use vize_relief::RootNode;
 
 /// Cross-block context handed to a script rule when the linted block is part of
@@ -99,6 +100,12 @@ pub struct SfcScriptContext<'a> {
     /// own origin when they report at that declaration. Reusing the current
     /// block's offset silently points diagnostics at the wrong line.
     pub sibling_offset: Option<usize>,
+    /// Cross-file type world for compiler macro type arguments.
+    ///
+    /// The world is attached only for an SFC whose filename is known. Rules
+    /// retain their conservative single-file behavior when resolution is
+    /// unavailable or incomplete.
+    pub resolved_type_world: Option<&'a ResolvedTypeWorld>,
 }
 
 impl<'a> SfcScriptContext<'a> {
