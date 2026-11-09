@@ -40,6 +40,10 @@ const packages = [
     source: new URL("../../npm/devtools/src/", import.meta.url),
   },
   {
+    name: "@vizejs/create-fresco",
+    source: new URL("../../npm/create-fresco/src/", import.meta.url),
+  },
+  {
     name: "@vizejs/unplugin",
     sourceRoot: npmRoot,
     minimumDeclarations: 20,
