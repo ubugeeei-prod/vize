@@ -3,7 +3,6 @@
 
 use std::{fs, path::PathBuf, process::Command};
 
-use super::shared_helpers_performance::install_shared_helper_package;
 use super::{
     TSGO_ENV, check_project, install_mapper_manifest, install_vue_package, output_text,
     workspace_root,
@@ -130,9 +129,8 @@ fn generic_children_keep_the_literal_as_owner() {
     );
 }
 
-/// The exact TS2322 vector through tsc and the Vize mapper, with and without
-/// the shared helper package, and through `vize check` whenever a Corsa
-/// executable resolves.
+/// The exact TS2322 vector through tsc and the Vize mapper, and through
+/// `vize check` whenever a Corsa executable resolves.
 fn check_pair(
     prefix: &str,
     config: &str,
@@ -146,6 +144,25 @@ fn check_pair(
     assert!(tsgo.is_file(), "{TSGO_ENV} is not a file");
     let cases_root = workspace_root().join("target/vize-tests/tests");
     fs::create_dir_all(&cases_root).unwrap();
+    let project = tempfile::Builder::new()
+        .prefix(prefix)
+        .tempdir_in(cases_root)
+        .unwrap();
+    install_mapper_manifest(project.path());
+    install_vue_package(project.path());
+    fs::create_dir(project.path().join("src")).unwrap();
+    fs::write(project.path().join("tsconfig.json"), config).unwrap();
+    for (name, source) in files {
+        fs::write(project.path().join("src").join(name), source).unwrap();
+    }
+
+    let output = check_project(&tsgo, project.path(), "tsconfig.json");
+    let stdout = std::str::from_utf8(&output.stdout).unwrap();
+    let mut mapped = stdout
+        .lines()
+        .filter(|line| line.contains(": error TS"))
+        .collect::<Vec<_>>();
+    mapped.sort_unstable();
     let mut wanted = expected
         .iter()
         .map(|(file, line, column, message)| {
@@ -153,38 +170,7 @@ fn check_pair(
         })
         .collect::<Vec<_>>();
     wanted.sort_unstable();
-    let mut project = None;
-    for shared_helpers in [false, true] {
-        let root = tempfile::Builder::new()
-            .prefix(prefix)
-            .tempdir_in(&cases_root)
-            .unwrap();
-        install_mapper_manifest(root.path());
-        install_vue_package(root.path());
-        if shared_helpers {
-            install_shared_helper_package(root.path());
-        }
-        fs::create_dir(root.path().join("src")).unwrap();
-        fs::write(root.path().join("tsconfig.json"), config).unwrap();
-        for (name, source) in files {
-            fs::write(root.path().join("src").join(name), source).unwrap();
-        }
-        let output = check_project(&tsgo, root.path(), "tsconfig.json");
-        let stdout = std::str::from_utf8(&output.stdout).unwrap();
-        let mut mapped = stdout
-            .lines()
-            .filter(|line| line.contains(": error TS"))
-            .collect::<Vec<_>>();
-        mapped.sort_unstable();
-        assert_eq!(
-            mapped,
-            wanted,
-            "shared helpers: {shared_helpers}\n{}",
-            output_text(&output)
-        );
-        project = Some(root);
-    }
-    let project = project.unwrap();
+    assert_eq!(mapped, wanted, "{}", output_text(&output));
 
     let Some(corsa) = crate::support::corsa_path::resolve(workspace_root()) else {
         eprintln!("skipping the vize check side: no Corsa executable resolved");

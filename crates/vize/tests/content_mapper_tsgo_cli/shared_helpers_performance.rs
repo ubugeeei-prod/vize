@@ -58,7 +58,7 @@ fn standard_tsgo_reports_each_component_prop_problem_once_with_shared_helpers_re
     );
 }
 
-pub(super) fn install_shared_helper_package(project: &Path) {
+fn install_shared_helper_package(project: &Path) {
     let package_root = project.join("node_modules/vize");
     let manifest_path = package_root.join("package.json");
     let mut manifest: serde_json::Value =

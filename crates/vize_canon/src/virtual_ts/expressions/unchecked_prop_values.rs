@@ -28,23 +28,37 @@ macro_rules! public_attr_keys {
     };
 }
 
-const SHARED_ATTR_VALUE: &str = concat!(
-    "type $AttrKeys<P, C> = (P extends unknown ? keyof P : never) | keyof import(\"vize:virtual-ts\").$EmitListeners<C> | keyof import(\"vize:virtual-ts\").$RequiredFallthroughProps<C> | ",
-    public_attr_keys!(),
-    ";\ntype $AttrValue<P, C, K, V> = K extends $AttrKeys<P, C> ? unknown : V;\n"
+/// Only a required fallthrough prop is typed by the literal; testing the one
+/// key avoids resolving every required key of the root's attrs per prop.
+macro_rules! attr_value {
+    ($listener_keys:literal, $fallthrough:literal) => {
+        concat!(
+            "type $AttrValue<P, C, K, V> = K extends (P extends unknown ? keyof P : never) | ",
+            $listener_keys,
+            " | ",
+            public_attr_keys!(),
+            " ? unknown : ",
+            $fallthrough,
+            " extends infer F ? K extends keyof F ? {} extends Pick<F, K> ? V : unknown : V : V;\n"
+        )
+    };
+}
+
+const SHARED_ATTR_VALUE: &str = attr_value!(
+    "keyof import(\"vize:virtual-ts\").$EmitListeners<C>",
+    "import(\"vize:virtual-ts\").$FallthroughProps<C>"
 );
 
 /// Standalone output keeps the listener and fallthrough helpers local to the
-/// template, so their keys are spelled out here.
-const STANDALONE_ATTR_VALUE: &str = concat!(
-    "type $AttrKeys<P, C> = (P extends unknown ? keyof P : never) | (C extends { __vizeEmitProps?: infer E } ? 0 extends (1 & E) ? never : keyof NonNullable<E> : never) | (C extends { readonly __vizeComponentMarker: true; readonly __vizeHasFallthroughProps: true; readonly __vizeFallthroughProps?: infer F } ? 0 extends (1 & F) ? never : { [K in keyof NonNullable<F>]-?: {} extends Pick<NonNullable<F>, K> ? never : K }[keyof NonNullable<F>] : never) | ",
-    public_attr_keys!(),
-    ";\ntype $AttrValue<P, C, K, V> = K extends $AttrKeys<P, C> ? unknown : V;\n"
+/// template, so they are spelled out here.
+const STANDALONE_ATTR_VALUE: &str = attr_value!(
+    "(C extends { __vizeEmitProps?: infer E } ? 0 extends (1 & E) ? never : keyof NonNullable<E> : never)",
+    "(C extends { readonly __vizeComponentMarker: true; readonly __vizeHasFallthroughProps: true; readonly __vizeFallthroughProps?: infer A } ? 0 extends (1 & A) ? {} : NonNullable<A> : {})"
 );
 
 /// `$AttrValue<P, C, K, V>` is the per-prop contract `V` unless the literal
-/// types `K`: one of child `C`'s props `P`, its emitted listeners, its
-/// required fallthrough props or Vue's public attrs.
+/// types `K`: one of child `C`'s props `P`, its emitted listeners, Vue's
+/// public attrs or its required fallthrough props.
 pub(crate) const fn attr_value_declaration(shared_virtual_module: bool) -> &'static str {
     if shared_virtual_module {
         SHARED_ATTR_VALUE
