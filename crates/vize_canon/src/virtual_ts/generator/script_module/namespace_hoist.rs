@@ -178,13 +178,14 @@ impl NamespaceHoistPlan {
             return;
         }
         ts.push_str("// Setup-scope bindings a hoisted namespace body reads\n");
+        let return_type = crate::virtual_ts::generated_names::lib("ReturnType");
         for capture in &self.captured {
             let name = &capture.name;
             let exported = exports.iter().any(|export| export.name == *name);
             let visibility = if exported { "export " } else { "" };
             append!(
                 *ts,
-                "{visibility}declare const {name}: ReturnType<typeof __setup>[\"{name}\"];\n"
+                "{visibility}declare const {name}: {return_type}<typeof __setup>[\"{name}\"];\n"
             );
             // An exported capture already gets its type side from the bridge;
             // emitting the alias twice would be a duplicate identifier.

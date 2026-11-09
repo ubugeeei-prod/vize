@@ -257,7 +257,8 @@ pub(in crate::virtual_ts::scope) fn append_prop_check_helpers(
         ts.push_str(
             "  type $FallthroughSpreadGuard<C, P, A, __K = $InvalidFallthroughSpreadKeys<P, $FallthroughProps<C>, A>> = [__K] extends [never] ? unknown : { readonly __vizeInvalidFallthroughSpreadValues: __K };\n",
         );
-        ts.push_str(
+        crate::virtual_ts::generated_names::push_lib_text(
+            ts,
             "  type $FallthroughSpreadChecker<C, P> = <A>(props: A & $FallthroughSpreadGuard<C, P, NoInfer<A>>) => A;\n",
         );
     }

@@ -44,7 +44,10 @@ impl PlainScriptExportKind {
         match self {
             Self::Value => None,
             Self::Enum => Some(vize_carton::cstr!("(typeof {name})[keyof typeof {name}]")),
-            Self::Class => Some(vize_carton::cstr!("InstanceType<typeof {name}>")),
+            Self::Class => Some(vize_carton::cstr!(
+                "{}<typeof {name}>",
+                crate::virtual_ts::generated_names::lib("InstanceType")
+            )),
         }
     }
 }

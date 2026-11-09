@@ -30,13 +30,14 @@ impl AmbientProjection {
         {
             return false;
         }
+        let setup = crate::virtual_ts::generated_names::setup_return("");
         for (relative, capture) in captures.clone() {
             if capture.value {
                 let index = first + relative;
                 let prefix = &self.prefix;
                 append!(
                     *ts,
-                    "declare const {prefix}base_{index}: Awaited<ReturnType<typeof __setup>>[\"{prefix}capture_{index}\"];\n"
+                    "declare const {prefix}base_{index}: {setup}[\"{prefix}capture_{index}\"];\n"
                 );
             }
         }
@@ -61,10 +62,7 @@ impl AmbientProjection {
                     sub_spans: Vec::new(),
                 });
             } else {
-                append!(
-                    *ts,
-                    "Awaited<ReturnType<typeof __setup>>[\"{prefix}capture_{index}\"]"
-                );
+                append!(*ts, "{setup}[\"{prefix}capture_{index}\"]");
             }
             start = capture.expression.end;
         }
