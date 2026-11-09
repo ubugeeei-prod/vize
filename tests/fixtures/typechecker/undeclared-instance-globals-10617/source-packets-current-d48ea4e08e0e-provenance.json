@@ -31,8 +31,8 @@
   },
   "successorPopulation": {
     "path": "source-packets-current-d48ea4e08e0e.json",
-    "bytes": 500610,
-    "sha256": "c577a50ade4d462c8f72cd5c3a02bbfcd64b28fe7c9b5a7d8f8529ab94b97409"
+    "bytes": 406334,
+    "sha256": "975c4ce1e683f3e305d7fbb3668e756bc05b60c81fb91f159e40abdfef686c01"
   },
   "sourceReceipt": {
     "path": "crates/vize_canon/tests/empty_vue_star_exports/membership/constructor_without_args/payload_update/canon_leftovers_11499.json",
@@ -71,10 +71,7 @@
     "totalOutcomes": 499,
     "passedOutcomes": 497,
     "gapCount": 2,
-    "gapIds": [
-      "whole-packet/lf/css-module",
-      "whole-packet/crlf-unicode/css-module"
-    ]
+    "gapIds": ["whole-packet/lf/css-module", "whole-packet/crlf-unicode/css-module"]
   },
   "review": {
     "completePackets": 80,

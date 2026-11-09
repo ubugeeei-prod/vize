@@ -226,13 +226,13 @@
     },
     {
       "path": "source-packets-current-d48ea4e08e0e.json",
-      "bytes": 500610,
-      "sha256": "c577a50ade4d462c8f72cd5c3a02bbfcd64b28fe7c9b5a7d8f8529ab94b97409"
+      "bytes": 406334,
+      "sha256": "975c4ce1e683f3e305d7fbb3668e756bc05b60c81fb91f159e40abdfef686c01"
     },
     {
       "path": "source-packets-current-d48ea4e08e0e-provenance.json",
-      "bytes": 3408,
-      "sha256": "df47815846d2a61876320ad741c7fa28515ecf8314a2ed81553c92d7da96846d"
+      "bytes": 3390,
+      "sha256": "92c82bda61b181dce985844487cb2c52f7e2d670ad02b28583c10d8bfc2bca81"
     }
   ],
   "currentSourcePackets": "source-packets-current-d48ea4e08e0e.json"
