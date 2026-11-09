@@ -82,12 +82,17 @@ function createLazySfcScripts({
   readFile,
   resolveImport,
   changed,
+  projectVersion,
+  scriptVersion,
   openFiles,
   project,
 }) {
   const eager = new Set();
   const imports = new Map();
   let updating = false;
+  // One walk per project snapshot: it promoted every SFC its files reach.
+  // Script versions also cover hosts that keep one project version across edits.
+  let walked;
   const configuration = () => {
     options();
     return settings().project.configuration;
@@ -121,12 +126,24 @@ function createLazySfcScripts({
     version: (name) => prepared(name)?.version,
     ensure(fileName) {
       if (typeof fileName !== "string" || updating) return;
+      const version = projectVersion?.();
+      const roots = [fileName, ...openFiles()];
+      if (
+        version !== undefined &&
+        walked?.version === version &&
+        roots.every((name) => {
+          const key = path.normalize(name);
+          return walked.files.has(key) && walked.files.get(key) === scriptVersion?.(name);
+        })
+      )
+        return;
       updating = true;
       try {
         // References in an ordinary TS file also need the SFCs imported by
         // open entrypoints. Unrequested external SFC roots remain excluded.
-        const pending = [fileName, ...openFiles()],
-          seen = new Set();
+        const pending = [...roots],
+          seen = new Set(),
+          files = new Map();
         let promoted = false,
           stale = false;
         while (pending.length) {
@@ -136,6 +153,7 @@ function createLazySfcScripts({
           // one is not a request to generate every declared component.
           if (seen.has(key) || /\.d\.[cm]?ts$/i.test(name)) continue;
           seen.add(key);
+          files.set(key, scriptVersion?.(name));
           let source;
           if (isSfc(name)) {
             if (mark(name)) {
@@ -174,6 +192,8 @@ function createLazySfcScripts({
         // when no authored source or tsserver project version changed.
         if (promoted) changed();
         if (stale) project?.updateGraph?.();
+        for (const name of roots) files.set(path.normalize(name), scriptVersion?.(name));
+        walked = version === undefined ? undefined : { version: projectVersion(), files };
       } finally {
         updating = false;
       }
