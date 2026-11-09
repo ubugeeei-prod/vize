@@ -7,15 +7,9 @@ use dependency_ownership::{
     verify as verify_dependency_ownership_update,
 };
 mod create_fresco;
-use create_fresco::{
-    CreateFrescoQualificationGraph, MANIFEST as CREATE_FRESCO_MANIFEST,
-    update as create_fresco_update, verify as verify_create_fresco_update,
-};
+use create_fresco::update as create_fresco_update;
 mod docs_metadata;
-use docs_metadata::{
-    DocsMetadataQualificationGraph, MANIFEST as DOCS_METADATA_MANIFEST,
-    update as docs_metadata_update, verify as verify_docs_metadata_update,
-};
+use docs_metadata::update as docs_metadata_update;
 mod integrated_graph;
 mod strict_checker;
 use strict_checker::{authorize as authorize_strict_checker, update as strict_checker_update};

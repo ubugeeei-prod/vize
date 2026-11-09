@@ -43,157 +43,37 @@ fn historical_root_dependency_successor_remains_the_exact_predecessor() {
     );
 }
 
-mod docs_metadata_successor {
-    use super::*;
-
-    struct Inputs {
-        previous: Value,
-        predecessor: Value,
-        predecessor_bytes: Vec<u8>,
-        update: Value,
-        lock: Vec<u8>,
-        package: Vec<u8>,
-        workspace: Vec<u8>,
-        manifest: Vec<u8>,
-    }
-
-    fn inputs() -> Inputs {
-        Inputs {
-            previous: super::super::super::load(),
-            predecessor: create_fresco_update(),
-            predecessor_bytes: fs::read(support::corpus().join(create_fresco::UPDATE)).unwrap(),
-            update: docs_metadata_update(),
-            lock: fs::read(support::repository().join("pnpm-lock.yaml")).unwrap(),
-            package: fs::read(support::repository().join("package.json")).unwrap(),
-            workspace: fs::read(support::repository().join(WORKSPACE)).unwrap(),
-            manifest: fs::read(support::repository().join(DOCS_METADATA_MANIFEST)).unwrap(),
-        }
-    }
-
-    fn verify(
-        input: &Inputs,
-        predecessor: &Value,
-        update: &Value,
-        lock: &[u8],
-        manifest: &[u8],
-    ) -> Checked<()> {
-        let graph = DocsMetadataQualificationGraph {
-            lock,
-            package: &input.package,
-            workspace: &input.workspace,
-            manifest,
-        };
-        verify_docs_metadata_update(predecessor, &input.predecessor_bytes, update, &graph)
-    }
-
-    #[test]
-    fn exact_docs_metadata_successor_binds_the_whole_current_graph() {
-        let input = inputs();
-        assert_eq!(
-            verify(
-                &input,
-                &input.predecessor,
-                &input.update,
-                &input.lock,
-                &input.manifest,
-            ),
-            Ok(())
-        );
-        assert_eq!(
-            authorize(&input.previous, &input.lock, &input.package),
-            Ok(Some(input.update.clone()))
-        );
-    }
-
-    #[test]
-    fn changed_graph_predecessor_and_fixed_point_are_refused() {
-        let input = inputs();
-        for changed in [
-            b"foreign lock".as_slice(),
-            input.lock.get(..input.lock.len() - 1).unwrap(),
-        ] {
-            assert_eq!(
-                verify(
-                    &input,
-                    &input.predecessor,
-                    &input.update,
-                    changed,
-                    &input.manifest,
-                ),
-                Err("exact current docs metadata qualification graph bytes")
-            );
-        }
-
-        let mut predecessor = input.predecessor.clone();
-        predecessor["finalQualificationLock"]["sha256"] = json!(support::hash(b"foreign"));
-        assert_eq!(
-            verify(
-                &input,
-                &predecessor,
-                &input.update,
-                &input.lock,
-                &input.manifest,
-            ),
-            Err("exact frozen docs metadata qualification predecessor")
-        );
-
-        let mut resolver = input.update.clone();
-        resolver["resolver"]["fixedPointSha256"] = json!(support::hash(b"foreign"));
-        assert_eq!(
-            verify(
-                &input,
-                &input.predecessor,
-                &resolver,
-                &input.lock,
-                &input.manifest,
-            ),
-            Err("exact docs metadata resolver fixed point")
-        );
-    }
-
-    #[test]
-    fn foreign_manifest_and_unreviewed_bytes_are_refused() {
-        let input = inputs();
-        let mut changed = input.update.clone();
-        changed["docsManifest"]["sha256"] = json!(support::hash(b"foreign"));
-        assert_eq!(
-            verify(
-                &input,
-                &input.predecessor,
-                &changed,
-                &input.lock,
-                &input.manifest,
-            ),
-            Err("exact current docs metadata qualification graph bytes")
-        );
-
-        let mut manifest = input.manifest.clone();
-        manifest.push(b' ');
-        assert_eq!(
-            verify(
-                &input,
-                &input.predecessor,
-                &input.update,
-                &input.lock,
-                &manifest,
-            ),
-            Err("exact current docs metadata qualification graph bytes")
-        );
-    }
+#[test]
+fn historical_create_fresco_successor_retains_its_frozen_predecessor() {
+    let current_predecessor = strict_checker_update();
+    let update = create_fresco_update();
+    assert_eq!(
+        update["previousProviderQualificationRecord"]["sha256"],
+        "24019bc545fbecb6d92ef7729ea99248f1fb514e3e0266e321331aec844f8313"
+    );
+    assert_ne!(
+        update["previousProviderQualificationRecord"]["sha256"],
+        strict_checker::UPDATE_HASH
+    );
+    assert_ne!(
+        update["previousQualificationLock"],
+        current_predecessor["finalQualificationLock"]
+    );
+    assert_eq!(update["nativeAcceptanceCredit"], false);
 }
 
 #[test]
-fn historical_strict_checker_successor_remains_the_exact_predecessor() {
-    let predecessor = strict_checker_update();
-    let predecessor_bytes = fs::read(support::corpus().join(strict_checker::UPDATE)).unwrap();
-    let update = create_fresco_update();
+fn historical_docs_successor_closes_the_create_fresco_chain() {
+    let predecessor = create_fresco_update();
+    let predecessor_bytes = fs::read(support::corpus().join(create_fresco::UPDATE)).unwrap();
+    let update = docs_metadata_update();
     assert_eq!(
         support::hash(&predecessor_bytes),
-        strict_checker::UPDATE_HASH
+        create_fresco::UPDATE_HASH
     );
     assert_eq!(
         update["previousProviderQualificationRecord"]["sha256"],
-        strict_checker::UPDATE_HASH
+        create_fresco::UPDATE_HASH
     );
     assert_eq!(
         update["previousQualificationLock"],
@@ -203,137 +83,25 @@ fn historical_strict_checker_successor_remains_the_exact_predecessor() {
         update["previousQualificationPackage"],
         predecessor["finalQualificationPackage"]
     );
+    assert_eq!(
+        predecessor["resolver"]["fixedPointSha256"],
+        predecessor["finalQualificationLock"]["sha256"]
+    );
+    assert_eq!(
+        update["resolver"]["fixedPointSha256"],
+        update["finalQualificationLock"]["sha256"]
+    );
+    assert_eq!(update["nativeAcceptanceCredit"], false);
 }
 
-mod create_fresco_successor {
-    use super::*;
-
-    struct Inputs {
-        predecessor: Value,
-        predecessor_bytes: Vec<u8>,
-        update: Value,
-        lock: Vec<u8>,
-        package: Vec<u8>,
-        workspace: Vec<u8>,
-        manifest: Vec<u8>,
-    }
-
-    fn inputs() -> Inputs {
-        Inputs {
-            predecessor: strict_checker_update(),
-            predecessor_bytes: fs::read(support::corpus().join(strict_checker::UPDATE)).unwrap(),
-            update: create_fresco_update(),
-            lock: fs::read(support::repository().join("pnpm-lock.yaml")).unwrap(),
-            package: fs::read(support::repository().join("package.json")).unwrap(),
-            workspace: fs::read(support::repository().join(WORKSPACE)).unwrap(),
-            manifest: fs::read(support::repository().join(CREATE_FRESCO_MANIFEST)).unwrap(),
-        }
-    }
-
-    fn verify(
-        input: &Inputs,
-        predecessor: &Value,
-        update: &Value,
-        lock: &[u8],
-        manifest: &[u8],
-    ) -> Checked<()> {
-        let graph = CreateFrescoQualificationGraph {
-            lock,
-            package: &input.package,
-            workspace: &input.workspace,
-            manifest,
-        };
-        verify_create_fresco_update(predecessor, &input.predecessor_bytes, update, &graph)
-    }
-
-    #[test]
-    fn exact_create_fresco_successor_binds_the_whole_current_graph() {
-        let input = inputs();
-        assert_eq!(
-            verify(
-                &input,
-                &input.predecessor,
-                &input.update,
-                &input.lock,
-                &input.manifest,
-            ),
-            Ok(())
-        );
-    }
-
-    #[test]
-    fn changed_graph_predecessor_and_fixed_point_are_refused() {
-        let input = inputs();
-        for changed in [
-            b"foreign lock".as_slice(),
-            input.lock.get(..input.lock.len() - 1).unwrap(),
-        ] {
-            assert_eq!(
-                verify(
-                    &input,
-                    &input.predecessor,
-                    &input.update,
-                    changed,
-                    &input.manifest,
-                ),
-                Err("exact current create-fresco qualification graph bytes")
-            );
-        }
-
-        let mut predecessor = input.predecessor.clone();
-        predecessor["finalQualificationLock"]["sha256"] = json!(support::hash(b"foreign"));
-        assert_eq!(
-            verify(
-                &input,
-                &predecessor,
-                &input.update,
-                &input.lock,
-                &input.manifest,
-            ),
-            Err("exact frozen create-fresco qualification predecessor")
-        );
-
-        let mut resolver = input.update.clone();
-        resolver["resolver"]["fixedPointSha256"] = json!(support::hash(b"foreign"));
-        assert_eq!(
-            verify(
-                &input,
-                &input.predecessor,
-                &resolver,
-                &input.lock,
-                &input.manifest,
-            ),
-            Err("exact create-fresco resolver fixed point")
-        );
-    }
-
-    #[test]
-    fn foreign_manifest_and_unreviewed_bytes_are_refused() {
-        let input = inputs();
-        let mut changed = input.update.clone();
-        changed["createFrescoManifest"]["sha256"] = json!(support::hash(b"foreign"));
-        assert_eq!(
-            verify(
-                &input,
-                &input.predecessor,
-                &changed,
-                &input.lock,
-                &input.manifest,
-            ),
-            Err("exact current create-fresco qualification graph bytes")
-        );
-
-        let mut manifest = input.manifest.clone();
-        manifest.push(b' ');
-        assert_eq!(
-            verify(
-                &input,
-                &input.predecessor,
-                &input.update,
-                &input.lock,
-                &manifest,
-            ),
-            Err("exact current create-fresco qualification graph bytes")
-        );
-    }
+#[test]
+fn current_graph_falls_through_to_the_integrated_successor() {
+    let previous = super::super::load();
+    let lock = fs::read(support::repository().join("pnpm-lock.yaml")).unwrap();
+    let package = fs::read(support::repository().join("package.json")).unwrap();
+    let update = authorize(&previous, &lock, &package).unwrap().unwrap();
+    assert_eq!(
+        update["kind"],
+        "exact-provider-qualification-integrated-graph-successor"
+    );
 }
