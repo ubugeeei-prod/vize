@@ -166,7 +166,7 @@ fn partition_listing<'a>(packet: &Value, listing: &'a Value) -> (&'a str, Value)
         );
         return (stdout, json!({"kind":"ordinary-path-only-listing"}));
     }
-    const SYNTAX: &str = "A.vue.ts(30,18): error TS1109: Expression expected.\n";
+    const SYNTAX: &str = "A.vue.ts(30,16): error TS1109: Expression expected.\n";
     let native = &packet["wholeSameConfigNativeCli"];
     assert_eq!(
         packet["case"]["nativeContract"],
