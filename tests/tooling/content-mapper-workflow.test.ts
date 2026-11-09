@@ -206,8 +206,7 @@ test("Content Mapper conformance pins and runs the exact upstream project path",
   assert.equal(packageRouteStep.env?.CORSA_PATH, "${{ runner.temp }}/tsgo");
   assert.equal(packageRouteStep.env?.VIZE_TEST_REQUIRE_TSGO, "1");
   const editorCommands = [
-    "cargo test -p vize --test integration -- content_mapper_tsgo_lsp:: --nocapture",
-    "cargo test -p vize --test integration -- content_mapper_tsgo_lsp_hover:: --nocapture",
+    "cargo test -p vize --test integration -- content_mapper_tsgo_lsp:: --nocapture content_mapper_tsgo_lsp_hover::",
     "cargo test -p vize --test integration -- content_mapper_lsp_shutdown:: --nocapture",
     "cargo test -p vize --test integration -- content_mapper_tsgo_declaration_lsp:: --nocapture",
     "cargo test -p vize --test integration -- content_mapper_tsgo_lsp_event_forms:: --nocapture",
