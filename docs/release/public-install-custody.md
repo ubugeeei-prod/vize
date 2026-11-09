@@ -157,7 +157,7 @@ successful authority receipt.
 ```sh
 node --test tests/tooling/public-install-custody.test.ts tests/tooling/public-install-controls.test.ts tests/tooling/public-install-source-controls.test.ts
 rust-script tools/commands/ci/verify-tool-layout.rs
-rust-script tools/commands/ci/source-file-lengths.rs --check --base-ref origin/main
+node tools/commands/ci/source-file-lengths.ts --check --base-ref origin/main
 node tools/benchmarks/scripts/test-inventory.ts --json /tmp/public-install-test-inventory.json
 ```
 

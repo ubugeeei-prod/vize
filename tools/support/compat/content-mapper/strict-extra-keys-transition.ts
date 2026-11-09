@@ -13,7 +13,13 @@ const recordUrl = new URL(
   "../../../../crates/vize_canon/tests/empty_vue_star_exports/membership/constructor_without_args/payload_update/strict_extra_keys.rs",
   import.meta.url,
 );
-const recordSha256 = "c588d4167349291f69d405d7f396055950186085354a6042f243fac4c0a7c46a";
+const recordSha256 = "479c505218ce0adf9efd475433e3ec8f45cfdc341ba6516ec7b98b01d4bd74bc";
+const canonLeftoversUrl = new URL(
+  "../../../../crates/vize_canon/tests/empty_vue_star_exports/membership/constructor_without_args/payload_update/canon_leftovers_11499.json",
+  import.meta.url,
+);
+export const canonLeftoversSha256 =
+  "250e01138d163f77a5d98b20bc97f562a663ebb924c17c810b9d9cf02280128e";
 const before =
   "type $ExtraInputKeys<T, Declared, Authored, Allowed, K extends keyof Authored = Exclude<keyof Authored, keyof Allowed>> = K extends unknown ? $RelaxedDynamicUnionExtra<T, Declared, Authored, K> extends true ? never : K : never;";
 const after =
@@ -23,6 +29,86 @@ const identity = (value: string | Buffer) => ({
   bytes: Buffer.byteLength(value),
   sha256: sha256(value),
 });
+
+function canonLeftoversTransition(path: string) {
+  const receiptBytes = readFileSync(canonLeftoversUrl);
+  assert.equal(sha256(receiptBytes), canonLeftoversSha256, "canon leftovers source record");
+  const receipt = JSON.parse(receiptBytes.toString("utf8")) as {
+    version: number;
+    kind: string;
+    issue: number;
+    files: Array<{
+      path: string;
+      before: { bytes: number; sha256: string };
+      after: { bytes: number; sha256: string };
+      edits: Array<{ before: string; after: string }>;
+    }>;
+  };
+  assert.equal(receipt.version, 1);
+  assert.equal(receipt.kind, "exact-canon-leftovers-source-inverse");
+  assert.equal(receipt.issue, 11499);
+  return receipt.files.find((transition) => transition.path === path);
+}
+
+export function beforeCanonLeftovers(path: string, current: string): string {
+  const transition = canonLeftoversTransition(path);
+  if (!transition) return current;
+  const currentIdentity = identity(current);
+  if (
+    currentIdentity.bytes === transition.before.bytes &&
+    currentIdentity.sha256 === transition.before.sha256
+  )
+    return current;
+  assert.deepEqual(currentIdentity, transition.after, "canon leftovers source identity");
+  let previous = current;
+  for (const edit of transition.edits) {
+    assert.equal(previous.split(edit.after).length - 1, 1);
+    previous = previous.replace(edit.after, () => edit.before);
+  }
+  assert.deepEqual(identity(previous), transition.before);
+  return previous;
+}
+
+export function applyCanonLeftovers(path: string, previous: string): string {
+  const transition = canonLeftoversTransition(path);
+  if (!transition) return previous;
+  const previousIdentity = identity(previous);
+  if (
+    previousIdentity.bytes === transition.after.bytes &&
+    previousIdentity.sha256 === transition.after.sha256
+  )
+    return previous;
+  assert.deepEqual(previousIdentity, transition.before, "canon leftovers predecessor identity");
+  let current = previous;
+  for (const edit of [...transition.edits].reverse()) {
+    assert.equal(current.split(edit.before).length - 1, 1);
+    current = current.replace(edit.before, () => edit.after);
+  }
+  assert.deepEqual(identity(current), transition.after);
+  return current;
+}
+
+export function beforeCanonLeftoversIn(path: string, current: string): string {
+  const transition = canonLeftoversTransition(path);
+  if (!transition) return current;
+  let previous = current;
+  for (const edit of transition.edits) {
+    assert.equal(previous.split(edit.after).length - 1, 1);
+    previous = previous.replace(edit.after, () => edit.before);
+  }
+  return previous;
+}
+
+export function applyCanonLeftoversIn(path: string, previous: string): string {
+  const transition = canonLeftoversTransition(path);
+  if (!transition) return previous;
+  let current = previous;
+  for (const edit of [...transition.edits].reverse()) {
+    assert.equal(current.split(edit.before).length - 1, 1);
+    current = current.replace(edit.before, () => edit.after);
+  }
+  return current;
+}
 
 function authenticateRecord() {
   assert.equal(sha256(readFileSync(recordUrl)), recordSha256, "strict extra-key source record");
@@ -62,8 +148,12 @@ export function strictOutputTransition(current: Buffer, direction: "forward" | "
 
 export function beforeStrictExtraKeys(current: string): string {
   authenticateRecord();
-  assert.deepEqual(identity(current), { bytes: 5739, sha256: strictExtraKeysAfterSha256 });
-  const previous = beforeStrictExtraKeysIn(current);
+  const canonPredecessor = beforeCanonLeftovers(strictExtraKeysPath, current);
+  assert.deepEqual(identity(canonPredecessor), {
+    bytes: 5739,
+    sha256: strictExtraKeysAfterSha256,
+  });
+  const previous = beforeStrictExtraKeysIn(canonPredecessor);
   assert.deepEqual(identity(previous), { bytes: 5870, sha256: strictExtraKeysBeforeSha256 });
   return previous;
 }

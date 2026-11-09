@@ -12,6 +12,8 @@ use oxc_allocator::Allocator;
 use oxc_parser::Parser;
 use oxc_span::SourceType;
 
+use super::super::macro_type_argument::macro_type_argument_span;
+
 /// A declared prop and where it is written.
 pub(super) struct Declaration {
     pub(super) name: vize_l0::CompactString,
@@ -72,16 +74,22 @@ pub(super) fn declarations(ctx: &LintContext<'_>) -> Vec<Declaration> {
     let Some(analysis) = ctx.analysis() else {
         return declarations;
     };
-    let Some(_) = analysis.macros.define_props() else {
+    let Some(call) = analysis.macros.define_props() else {
         return declarations;
     };
-    declarations.extend(analysis.macros.props().iter().filter_map(|prop| {
-        let (start, end) = analysis.macros.prop_declaration(prop.name.as_str())?;
-        Some(Declaration {
+    let type_argument_span =
+        macro_type_argument_span(declaring_block.content.as_ref(), call, setup_shift);
+    declarations.extend(analysis.macros.props().iter().map(|prop| {
+        let (start, end) = analysis
+            .macros
+            .prop_declaration(prop.name.as_str())
+            .or(type_argument_span)
+            .unwrap_or((call.start, call.end));
+        Declaration {
             name: prop.name.clone(),
             start: declaring_offset + start.saturating_sub(setup_shift),
             end: declaring_offset + end.saturating_sub(setup_shift),
-        })
+        }
     }));
     declarations
 }

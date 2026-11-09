@@ -4,7 +4,6 @@ use crate::diagnostic::LintDiagnostic;
 use vize_atelier_sfc::SfcError;
 use vize_l0::ToCompactString;
 use vize_l1::markup::SurfaceError;
-use vize_relief::CompilerError;
 
 use super::super::config::{LintResult, Linter};
 
@@ -75,16 +74,6 @@ impl Linter {
         parse_errors
             .iter()
             .any(|error| !error.has_documented_recovery())
-    }
-
-    /// A parse error is fatal for semantic analysis only when the parser did
-    /// not document a recovery for it. Recovered parses still yield a
-    /// complete tree, and skipping analysis there silently disabled every
-    /// `has_analysis`-guarded rule on exactly the files that most need them
-    /// (#3294). Diagnostic severity intentionally stays keyed on
-    /// `is_recoverable`, so these defects still lint as errors.
-    pub(crate) fn has_fatal_template_parse_errors(parse_errors: &[CompilerError]) -> bool {
-        parse_errors.iter().any(|error| !error.is_recovered_parse())
     }
 
     pub(super) fn sfc_parse_lint_result(

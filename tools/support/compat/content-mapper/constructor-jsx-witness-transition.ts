@@ -9,7 +9,9 @@ import {
   discriminatedJsxUnionPath,
 } from "./discriminated-jsx-union-transition.ts";
 import {
+  beforeCanonLeftovers,
   beforeStrictExtraKeys,
+  canonLeftoversSha256,
   certifyStrictExtraKeysTransition,
   strictExtraKeysAfterSha256,
   strictExtraKeysPath,
@@ -44,6 +46,35 @@ export function certifyJsxWitnessChange(
   before: Buffer,
   after: Buffer,
 ): JsxWitnessChangeProof {
+  if (
+    file === strictExtraKeysPath &&
+    after.length === 6026 &&
+    digest(after) === "78d6af92022c9779819704cfb63b91955101396c4929bde5e6dddc308e546b2a"
+  ) {
+    const predecessor = Buffer.from(beforeCanonLeftovers(file, after.toString("utf8")));
+    if (!predecessor.equals(after)) {
+      if (before.equals(predecessor))
+        return {
+          file,
+          beforeSha256: digest(before),
+          afterSha256: digest(after),
+          recordSha256: canonLeftoversSha256,
+          comparatorSha256: digest(readFileSync(new URL(import.meta.url))),
+          nativeAcceptanceCredit: false,
+        };
+      const historical = certifyJsxWitnessChange(file, before, predecessor);
+      const predecessorSuccessors =
+        historical.successorRecordSha256s ??
+        (historical.successorRecordSha256 ? [historical.successorRecordSha256] : []);
+      return {
+        ...historical,
+        afterSha256: digest(after),
+        successorRecordSha256: canonLeftoversSha256,
+        successorRecordSha256s: [...predecessorSuccessors, canonLeftoversSha256],
+        comparatorSha256: digest(readFileSync(new URL(import.meta.url))),
+      };
+    }
+  }
   const strict = certifyStrictExtraKeysTransition(file, before, after);
   if (strict)
     return {

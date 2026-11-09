@@ -134,11 +134,10 @@ fn check_template(
     sfc: SfcScriptContext<'_>,
     result: &mut ScriptLintResult,
 ) {
-    let (Some((root, template_offset)), Some(source)) = (sfc.template_ast(), sfc.template_source)
-    else {
+    let Some((root, template_offset)) = sfc.template_ast() else {
         return;
     };
-    let RenderedSlots::Known(rendered) = template::collect_rendered_slots(root, source);
+    let RenderedSlots::Known(rendered) = template::collect_rendered_slots(root);
     for slot in rendered {
         if !declared.contains(&slot.name) {
             report_undeclared_slot(&slot, template_offset, result);

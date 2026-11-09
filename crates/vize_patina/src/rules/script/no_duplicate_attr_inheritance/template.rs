@@ -10,8 +10,10 @@ use oxc_parser::Parser;
 use oxc_semantic::SemanticBuilder;
 use oxc_span::SourceType;
 use vize_l0::cstr;
-use vize_relief::{
-    DirectiveNode, ElementNode, ExpressionNode, PropNode, RootNode, TemplateChildNode,
+use vize_l1::markup::{Element, SurfaceChild, SurfaceTree};
+
+use crate::markup::surface_source::{
+    directive, element_verbatim, has_directive as element_has_directive,
 };
 
 pub(super) struct AttrsSpread {
@@ -19,12 +21,12 @@ pub(super) struct AttrsSpread {
     pub(super) end: u32,
 }
 
-pub(super) fn attrs_spreads(root: &RootNode<'_>) -> Vec<AttrsSpread> {
+pub(super) fn attrs_spreads(root: &SurfaceTree<'_>) -> Vec<AttrsSpread> {
     let elements: Vec<_> = root
         .children
         .iter()
         .filter_map(|child| match child {
-            TemplateChildNode::Element(element) => Some(&**element),
+            SurfaceChild::Element(element) => Some(&**element),
             _ => None,
         })
         .collect();
@@ -32,11 +34,11 @@ pub(super) fn attrs_spreads(root: &RootNode<'_>) -> Vec<AttrsSpread> {
         return Vec::new();
     }
     let mut findings = Vec::new();
-    collect(&root.children, root.source, false, &mut findings);
+    collect(root, &root.children, false, false, &mut findings);
     findings
 }
 
-fn conditional_group(elements: &[&ElementNode<'_>]) -> bool {
+fn conditional_group(elements: &[&Element<'_>]) -> bool {
     elements.len() > 1
         && elements
             .first()
@@ -51,120 +53,76 @@ fn conditional_group(elements: &[&ElementNode<'_>]) -> bool {
             .all(|element| has_directive(element, "else-if"))
 }
 
-fn has_directive(element: &ElementNode<'_>, name: &str) -> bool {
-    element
-        .props
-        .iter()
-        .any(|prop| matches!(prop, PropNode::Directive(dir) if dir.name == name))
+fn has_directive(element: &Element<'_>, name: &str) -> bool {
+    element_has_directive(element, name, element_verbatim(element, false))
 }
 
 fn collect(
-    children: &[TemplateChildNode<'_>],
-    source: &str,
+    root: &SurfaceTree<'_>,
+    children: &[SurfaceChild<'_>],
+    inherited_verbatim: bool,
     shadowed: bool,
     out: &mut Vec<AttrsSpread>,
 ) {
     for child in children {
-        match child {
-            TemplateChildNode::Element(element) => {
-                let shadowed = shadowed
-                    || element.props.iter().any(|prop| match prop {
-                        PropNode::Directive(dir) if dir.name == "for" => {
-                            for_shadows_attrs(dir, source)
-                        }
-                        PropNode::Directive(dir) if dir.name == "slot" => {
-                            dir.exp.as_ref().is_some_and(|exp| {
-                                binding_shadows_attrs(expression_source(exp, source))
-                            })
-                        }
+        if let SurfaceChild::Element(element) = child {
+            let verbatim = element_verbatim(element, inherited_verbatim);
+            let shadowed = shadowed
+                || element.open.attrs.iter().any(|attribute| {
+                    let Some(directive) = directive(root, attribute, verbatim) else {
+                        return false;
+                    };
+                    let Some(value) = directive.value else {
+                        return false;
+                    };
+                    match directive.name {
+                        "for" => for_shadows_attrs(value.text()),
+                        "slot" => binding_shadows_attrs(value.text()),
                         _ => false,
-                    });
-                if !shadowed {
-                    for prop in &element.props {
-                        let PropNode::Directive(dir) = prop else {
-                            continue;
-                        };
-                        if dir.name != "bind" || dir.arg.is_some() {
-                            continue;
-                        }
-                        let Some(exp) = dir.exp.as_ref() else {
-                            continue;
-                        };
-                        let Some(text) =
-                            source.get(exp.loc().span.start as usize..exp.loc().span.end as usize)
-                        else {
-                            continue;
-                        };
-                        if let Some((start, end)) = first_attrs_reference(text) {
-                            out.push(AttrsSpread {
-                                start: exp.loc().span.start + start,
-                                end: exp.loc().span.start + end,
-                            });
-                        }
+                    }
+                });
+            if !shadowed {
+                for attribute in &element.open.attrs {
+                    let Some(directive) = directive(root, attribute, verbatim) else {
+                        continue;
+                    };
+                    if directive.name != "bind" || directive.argument.is_some() {
+                        continue;
+                    }
+                    let Some(value) = directive.value else {
+                        continue;
+                    };
+                    if let Some((start, end)) = first_attrs_reference(value.authored()) {
+                        out.push(AttrsSpread {
+                            start: value.start + start,
+                            end: value.start + end,
+                        });
                     }
                 }
-                collect(&element.children, source, shadowed, out);
             }
-            TemplateChildNode::If(node) => {
-                for branch in &node.branches {
-                    collect(&branch.children, source, shadowed, out);
-                }
-            }
-            TemplateChildNode::For(node) => {
-                let shadowed = shadowed
-                    || [
-                        node.value_alias.as_ref(),
-                        node.key_alias.as_ref(),
-                        node.object_index_alias.as_ref(),
-                    ]
-                    .into_iter()
-                    .flatten()
-                    .any(|alias| binding_shadows_attrs(expression_source(alias, source)));
-                collect(&node.children, source, shadowed, out);
-            }
-            _ => {}
+            collect(root, &element.children, verbatim, shadowed, out);
         }
     }
 }
 
-fn for_shadows_attrs(directive: &DirectiveNode<'_>, source: &str) -> bool {
-    if let Some(parsed) = directive.for_parse_result.as_ref() {
-        return [
-            parsed.value.as_ref(),
-            parsed.key.as_ref(),
-            parsed.index.as_ref(),
-        ]
-        .into_iter()
-        .flatten()
-        .any(|alias| binding_shadows_attrs(expression_source(alias, source)));
-    }
+fn for_shadows_attrs(source: &str) -> bool {
     // The cached raw template may not carry structural for aliases yet.
     // Reuse the shared scope parser so escaped names are bindings while the
     // iterable source remains a read; unknown bindings stay conservative.
-    directive.exp.as_ref().is_some_and(|exp| {
-        vize_croquis::drawer::parse_v_for_scope_expression(expression_source(exp, source))
-            .is_none_or(|aliases| {
-                aliases
-                    .value_bindings
-                    .iter()
-                    .any(|name| name.as_str() == "$attrs")
-                    || aliases
-                        .key_alias
-                        .as_ref()
-                        .is_some_and(|name| name.as_str() == "$attrs")
-                    || aliases
-                        .index_alias
-                        .as_ref()
-                        .is_some_and(|name| name.as_str() == "$attrs")
-            })
+    vize_croquis::drawer::parse_v_for_scope_expression(source).is_none_or(|aliases| {
+        aliases
+            .value_bindings
+            .iter()
+            .any(|name| name.as_str() == "$attrs")
+            || aliases
+                .key_alias
+                .as_ref()
+                .is_some_and(|name| name.as_str() == "$attrs")
+            || aliases
+                .index_alias
+                .as_ref()
+                .is_some_and(|name| name.as_str() == "$attrs")
     })
-}
-
-fn expression_source<'a>(exp: &'a ExpressionNode<'a>, source: &'a str) -> &'a str {
-    match exp {
-        ExpressionNode::Simple(simple) => simple.content,
-        ExpressionNode::Compound(compound) => compound.loc.span.slice(source),
-    }
 }
 
 fn binding_shadows_attrs(pattern: &str) -> bool {

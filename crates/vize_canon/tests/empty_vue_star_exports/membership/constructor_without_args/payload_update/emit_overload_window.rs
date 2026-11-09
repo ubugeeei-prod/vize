@@ -104,6 +104,7 @@ fn authenticate_published(current: &str) {
 
 fn authenticate_current_module() {
     let body = std::fs::read_to_string(support::repository().join(PUBLISHED_PATH)).unwrap();
+    let body = super::canon_leftovers::source_before(PUBLISHED_PATH, body);
     authenticate_published(&body);
 }
 
@@ -253,7 +254,8 @@ mod tests {
     }
 
     fn current(path: &str) -> String {
-        std::fs::read_to_string(super::support::repository().join(path)).unwrap()
+        let current = std::fs::read_to_string(super::support::repository().join(path)).unwrap();
+        super::super::canon_leftovers::source_before(path, current)
     }
 
     #[test]

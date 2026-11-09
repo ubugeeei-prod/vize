@@ -72,14 +72,17 @@ export async function main(args: string[]): Promise<void> {
     sources[name] = bytes.toString("utf8");
   }
   const source = sources["Probe.vue.txt"],
-    expectedImport = sources["core-import.txt"],
+    historicalImport = sources["core-import-historical.txt"],
+    expectedImport = sources["core-import-successor.txt"],
     mts = sources["Witness.mts.txt"],
     cts = sources["Witness.cts.txt"];
-  assert.ok(source && expectedImport && mts && cts);
-  assert.equal([...expectedImport.matchAll(/^\s+__[A-Za-z_0-9]+,$/gmu)].length, 53);
+  assert.ok(source && historicalImport && expectedImport && mts && cts);
+  assert.equal([...historicalImport.matchAll(/^\s+__[A-Za-z_0-9]+,$/gmu)].length, 53);
+  assert.equal([...expectedImport.matchAll(/^\s+(?:__|\$)[A-Za-z_0-9]+,$/gmu)].length, 55);
+  assert.equal(expectedImport.match(/^\s+\$PatternSafeOmit,$/gmu)?.length, 1);
   assert.equal(
     image(path.join(installed.root, "generated/content-mapper-types.d.ts")).sha256,
-    manifest.publicCoreSha256,
+    manifest.successorPublicCoreSha256,
   );
   assert.equal(
     image(path.join(installed.root, "content-mapper-helpers.d.ts")).sha256,

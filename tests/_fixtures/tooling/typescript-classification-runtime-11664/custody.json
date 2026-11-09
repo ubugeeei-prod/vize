@@ -100,8 +100,8 @@
       },
       "after": {
         "path": ".github/workflows/typescript-provider-vsix.yml",
-        "sha256": "5f6b68695723127774813abc5ed1aca2b5245dd6c76e80b834fafd68b1259a13",
-        "bytes": 10576
+        "sha256": "a34cfe030a65676b818589ae92861c28af64a0937febefc5368d15a84fefd9b0",
+        "bytes": 10477
       },
       "gzip": {
         "path": "tests/_fixtures/tooling/typescript-classification-runtime-11664/typescript-provider-vsix.before.yml.gz",

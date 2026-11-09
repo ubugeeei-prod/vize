@@ -7,13 +7,13 @@ import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
-const toolPath = path.join(root, "tools", "commands", "fixtures", "tool-matrix-report.rs");
+const toolPath = path.join(root, "tools", "support", "compat", "fixtures", "tool-matrix-report.ts");
 
 test("fixture tool matrix pins no-tsconfig typecheck projects to a fixture-local config", () => {
   const outputDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-fixture-tool-matrix-tsconfig-"));
   try {
     const result = spawnSync(
-      "rust-script",
+      process.execPath,
       [
         toolPath,
         "--dry-run",

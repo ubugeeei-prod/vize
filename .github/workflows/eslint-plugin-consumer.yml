@@ -171,7 +171,7 @@ jobs:
   supported-consumer:
     name: ESLint packed consumer (Node ${{ matrix.node }}, TS ${{ matrix.typescript }})
     needs: consumer
-    runs-on: blacksmith-8vcpu-ubuntu-2404
+    runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 10
     strategy:
       fail-fast: false

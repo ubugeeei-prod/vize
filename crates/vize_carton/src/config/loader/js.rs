@@ -108,7 +108,7 @@ fn evaluate_js_config_with_dependencies(
     if let Some(observe) = before_read.as_deref_mut() {
         observe(std::slice::from_ref(&config_path));
     }
-    let config_path = config_path.canonicalize().unwrap_or(config_path);
+    let config_path = crate::path::canonicalize_non_verbatim(&config_path);
     if let Some(observe) = before_read.as_deref_mut() {
         observe(std::slice::from_ref(&config_path));
     }

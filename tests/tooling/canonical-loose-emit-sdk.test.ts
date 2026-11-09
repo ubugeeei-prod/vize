@@ -7,6 +7,7 @@ import { test } from "node:test";
 import { emitInferenceExports } from "../../npm/cli/scripts/emit-inference-exports.ts";
 import { beforeGenericEventSpecialization } from "./support/generic-event-specialization-source.ts";
 import { beforeSharedListenerRelationSource } from "./support/listener-relation-source-transition.ts";
+import { beforeCanonLeftoversSource } from "./support/canon-leftovers-output-transition.ts";
 
 const root = fileURLToPath(new URL("../../", import.meta.url));
 const files = ["ts", "mts", "cts"].map((extension) => `npm/cli/virtual-ts.d.${extension}`);
@@ -140,7 +141,10 @@ void test("the private module repair exactly restores the authenticated SDK sync
       entry.path,
       beforeOverloadSuccessor(
         entry.path,
-        beforeSharedListenerRelationSource(entry.path, read(entry.path)),
+        beforeSharedListenerRelationSource(
+          entry.path,
+          beforeCanonLeftoversSource(entry.path, read(entry.path)),
+        ),
       ),
     );
     const previous = inverse(current);
@@ -165,7 +169,10 @@ void test("the private module repair exactly restores the authenticated SDK sync
         beforeGenericEventSpecialization(
           read,
           asset.path,
-          beforeSharedListenerRelationSource(asset.path, read(asset.path)),
+          beforeSharedListenerRelationSource(
+            asset.path,
+            beforeCanonLeftoversSource(asset.path, read(asset.path)),
+          ),
         ),
       ),
       {

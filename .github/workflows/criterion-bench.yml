@@ -306,7 +306,7 @@ jobs:
   production-summary:
     if: ${{ !inputs.sfc_optional_lifecycle_only && inputs.production_only && !inputs.historical_sfc_parse && !inputs.level_memory_only && !inputs.sfc_member_only }}
     needs: production-pairs
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-32vcpu-ubuntu-2404
     permissions:
       contents: read
     steps:

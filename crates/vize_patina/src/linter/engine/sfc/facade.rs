@@ -3,7 +3,7 @@
 //! The admitted rules share one L2 lowering and one traversal. All other
 //! template rules stay on the Relief visitor until their parity is proven.
 
-use crate::context::LintContext;
+use crate::context::{LintContext, TemplateCommentDirectives};
 use crate::ir::TemplateSyntax;
 use crate::linter::config::Linter;
 use crate::markup::{MarkupContext, MarkupDocument};
@@ -90,6 +90,7 @@ pub(in crate::linter::engine) fn dispatch_template_rules<'a>(
     let all_names = linter.rule_names();
     let names = all_names.get(..input.rule_count).unwrap_or(all_names);
     let exit = linter.registry.has_exit_element_rules();
+    let directives = TemplateCommentDirectives::new(input.l2.surface());
     let selected: Vec<_> = rules
         .iter()
         .zip(names.iter().copied())
@@ -102,7 +103,8 @@ pub(in crate::linter::engine) fn dispatch_template_rules<'a>(
         .collect();
 
     if selected.is_empty() {
-        let mut visitor = LintVisitor::new(ctx, rules, names, exit);
+        let mut visitor =
+            LintVisitor::new(ctx, rules, names, exit).with_template_directives(&directives);
         profile!("patina.template.visit", visitor.visit_root(input.root));
         return;
     }
@@ -123,7 +125,8 @@ pub(in crate::linter::engine) fn dispatch_template_rules<'a>(
         .iter()
         .find(|(_, name, _)| *name == TEMPLATE_DOCUMENT_RULE);
     {
-        let mut visitor = LintVisitor::with_rule_filter(ctx, rules, names, exit, &keep);
+        let mut visitor = LintVisitor::with_rule_filter(ctx, rules, names, exit, &keep)
+            .with_template_directives(&directives);
         profile!("patina.template.visit", {
             visitor.visit_root_with_template_hook(input.root, &mut |index, ctx| {
                 let Some((selected_index, _, rule)) = document_rule else {

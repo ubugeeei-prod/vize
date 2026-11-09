@@ -30,11 +30,12 @@ export const bad: string = instance.$forceUpdate;
 fn check(
     name: &str,
     vue_options: &str,
+    augment: &str,
 ) -> Option<Vec<(vize_carton::String, Option<u32>, vize_carton::String)>> {
     let root = super::real_vue::create_project_case(
         name,
         &[
-            ("src/augment.d.ts", AUGMENT),
+            ("src/augment.d.ts", augment),
             ("src/Foo.vue", FOO),
             ("src/Probe.ts", PROBE),
         ],
@@ -73,7 +74,7 @@ fn pattern_custom_properties_keep_literal_public_instance_members() {
         ),
     ] {
         assert_eq!(
-            check(name, vue_options),
+            check(name, vue_options, AUGMENT),
             Some(vec![(
                 "src/Probe.ts".into(),
                 Some(2322),
@@ -82,4 +83,34 @@ fn pattern_custom_properties_keep_literal_public_instance_members() {
             "{name}"
         );
     }
+}
+
+#[test]
+fn large_custom_properties_do_not_explode_the_public_instance_union() {
+    if resolve_test_tsgo_binary().is_none() {
+        return;
+    }
+    let members = (0..300)
+        .map(|index| format!("    prop{index}: string;"))
+        .collect::<Vec<_>>()
+        .join("\n");
+    let augment = format!(
+        r#"import "vue";
+
+declare module "vue" {{
+  interface ComponentCustomProperties {{
+{members}
+  }}
+}}
+"#
+    );
+
+    assert_eq!(
+        check("public-base-large-custom-properties", "", &augment),
+        Some(vec![(
+            "src/Probe.ts".into(),
+            Some(2322),
+            "8:14:error Type '() => void' is not assignable to type 'string'.".into(),
+        )])
+    );
 }

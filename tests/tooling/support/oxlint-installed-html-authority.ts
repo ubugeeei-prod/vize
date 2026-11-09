@@ -23,7 +23,6 @@ const campaignPaths = [
   "tests/tooling/support/oxlint-installed-html-plugin.ts",
   "tests/tooling/support/oxlint-installed-html-qualification.ts",
   "tests/tooling/support/oxlint-installed-html-acceptance.ts",
-  "tests/tooling/support/oxlint-installed-html-acceptance.rs",
   "npm/linter/oxlint/src/test-support/html-cli-oracles.mjs",
   "npm/linter/oxlint/src/test-support/html-cli-oracles.d.mts",
   "npm/linter/oxlint/src/format.ts",

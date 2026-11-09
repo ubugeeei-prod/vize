@@ -109,7 +109,7 @@ test("explicit profile refuses nonrelease and malformed release refs through its
   assert.equal(condition(step.if, "workflow_dispatch", "refs/heads/main", false), false);
 });
 
-test("parallel Rust jobs preserve every original step, command byte and runtime setting", () => {
+test("parallel Rust jobs preserve their setup and migrate only the Clippy helper commands", () => {
   const original = (
     parse(
       readRepoFile("tests", "_fixtures", "ci", "check-clippy-and-test.original.yml.txt"),
@@ -118,15 +118,43 @@ test("parallel Rust jobs preserve every original step, command byte and runtime 
   const firstCommand = original.steps.findIndex((step) => step.name === "Clippy");
   assert.ok(firstCommand > 0);
   const setup = original.steps.slice(0, firstCommand);
+  const taskNames = new Set(
+    original.steps
+      .slice(firstCommand)
+      .map((step) => step.name)
+      .filter((name): name is string => name !== undefined),
+  );
   const tasks: Step[] = [];
   for (const id of producers) {
     assert.deepEqual(jobs[id].env, original.env, `${id} changed runtime settings`);
-    const currentSetup = structuredClone(jobs[id].steps.slice(0, firstCommand));
+    const currentTask = jobs[id].steps.findIndex((step) => step.name && taskNames.has(step.name));
+    assert.ok(currentTask > 0, `${id} is missing its retained task`);
+    const currentSetup = structuredClone(jobs[id].steps.slice(0, currentTask));
     assert.equal(restorePinnedWildAction(currentSetup), 1, `${id} recovery adapter`);
-    assert.deepEqual(currentSetup, setup, `${id} changed setup`);
-    tasks.push(...jobs[id].steps.slice(firstCommand));
+    const expectedSetup =
+      id === "rust-clippy-portability"
+        ? setup.filter((step) => step.uses !== "./.github/actions/setup-rust-script")
+        : setup;
+    assert.deepEqual(currentSetup, expectedSetup, `${id} changed setup`);
+    tasks.push(...jobs[id].steps.slice(currentTask));
   }
-  assert.deepEqual(tasks, original.steps.slice(firstCommand));
+  const expectedTasks = structuredClone(original.steps.slice(firstCommand));
+  const clippy = expectedTasks.find((step) => step.name === "Clippy");
+  assert.ok(clippy?.run);
+  clippy.run = clippy.run
+    .replace(
+      "rust-script tools/commands/ci/github/check-maestro-feature-contract.rs",
+      "node tools/commands/ci/github/check-maestro-feature-contract.ts",
+    )
+    .replace(
+      "rust-script tools/commands/ci/check-workspace-lints.rs",
+      "node tools/commands/ci/check-workspace-lints.ts",
+    )
+    .replace(
+      "rust-script tools/commands/ci/check-skeleton-todos.rs",
+      "node tools/commands/ci/check-skeleton-todos.ts",
+    );
+  assert.deepEqual(tasks, expectedTasks);
   const aggregate = jobs["clippy-and-test"];
   assert.deepEqual(aggregate.needs, producers);
   assert.equal(

@@ -32,7 +32,7 @@ export function realProjectMatrix(
     // A count equal to the complete registry length selects this one original row.
     return [{ shard, name: `scoped diagnostic: ${projectId}`, shardCount: ids.length }];
   }
-  // Match tool-matrix-report.rs: registry order, partitioned by index modulo 22.
+  // Match tool-matrix-report.ts: registry order, partitioned by index modulo 22.
   return Array.from({ length: realProjectShardCount }, (_, shard) => ({
     shard,
     name: ids.filter((_, index) => index % realProjectShardCount === shard).join(", "),

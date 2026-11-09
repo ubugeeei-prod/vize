@@ -15,6 +15,7 @@ mod attribute_order;
 mod authored_closing;
 mod comment_directive;
 mod if_chain;
+mod macro_type_argument;
 mod no_bare_strings_in_template;
 mod no_child_content;
 mod no_custom_modifiers_on_v_model;

@@ -233,14 +233,14 @@ type $ComponentInput<T, Declared, Authored> =
       : never;
 type $AuthoredKeyWitness<T> = { [K in keyof T]: unknown };
 // Constructor arguments (templates, `new`) bind `Authored`; TSX binds `Jsx` through `$props` (#11629).
-type $ComponentInstanceFor<I, T, Declared, Authored, Jsx> =
+type $ComponentInstanceFor<I, O, B, T, Declared, Authored, Jsx> =
   $IsAny<Authored> extends true
     ? I
     : $IsUnknown<Authored> extends true
       ? $UsePublicInstance<Jsx> extends true
         ? I
         : $ReplaceComponentProps<
-            I,
+            O,
             Pick<
               $AuthoredKeyWitness<Jsx>,
               keyof Jsx & $ComponentMetadataKeys<$ComponentInputProps<T, Declared>>
@@ -248,11 +248,13 @@ type $ComponentInstanceFor<I, T, Declared, Authored, Jsx> =
               (T extends unknown
                 ? $ComponentInputProps<T, Declared> & $ComponentInputGuard<T, Declared, Jsx>
                 : never)
-          >
+          > &
+            B
       : $ReplaceComponentProps<
-          I,
+          O,
           $ComponentInputProps<T, Declared> & $ComponentMissingInputGuard<T, Authored>
-        >;
+        > &
+          B;
 type $IsUnknown<T> = unknown extends T ? ([keyof T] extends [never] ? true : false) : false;
 type $UsePublicInstance<T> = $IsAny<T> extends true ? true : $IsUnknown<T>;
 type $LiteralKeys<T> = keyof {
@@ -272,8 +274,13 @@ type $LiteralKeys<T> = keyof {
           : K
   ]: unknown;
 };
-type $ReplaceComponentProps<T, P> = Omit<T, "$props"> &
-  Pick<T, Exclude<$LiteralKeys<T>, "$props">> & { $props: P };
+type $PatternSafeOmit<
+  T,
+  K extends PropertyKey,
+  B = Omit<T, K>,
+  L extends PropertyKey = $LiteralKeys<T>,
+> = B & Pick<T, Extract<Exclude<L, K>, keyof T>>;
+type $ReplaceComponentProps<T, P> = $PatternSafeOmit<T, "$props"> & { $props: P };
 type $PublicEmit<T, S = __EmitShape<T>, K extends keyof S & string = keyof S & string> = S extends (
   ...args: any[]
 ) => any
@@ -287,8 +294,25 @@ type $PublicSlots<T> = [keyof T] extends [never]
 type $ComponentPublicBase<
   // @ts-ignore TS2694/TS2307: a `vue` without `ComponentPublicInstance` must degrade component public extras to unchecked, never error.
   I = import("vue").ComponentPublicInstance,
-> = Omit<I, "$props" | "$emit" | "$slots"> &
-  Pick<I, Exclude<$LiteralKeys<I>, "$props" | "$emit" | "$slots">>;
+  // @ts-ignore TS2694/TS2307: a `vue` without `ComponentCustomProperties` must degrade component public extras to unchecked, never error.
+  C = import("vue").ComponentCustomProperties,
+> = $PatternSafeOmit<
+  I,
+  "$props" | "$emit" | "$slots",
+  symbol extends keyof C ? {} : C,
+  | "$"
+  | "$data"
+  | "$attrs"
+  | "$refs"
+  | "$root"
+  | "$parent"
+  | "$host"
+  | "$el"
+  | "$options"
+  | "$forceUpdate"
+  | "$nextTick"
+  | "$watch"
+>;
 
 export type {
   __EmitShape,
@@ -341,6 +365,7 @@ export type {
   $IsUnknown,
   $UsePublicInstance,
   $LiteralKeys,
+  $PatternSafeOmit,
   $ReplaceComponentProps,
   $PublicEmit,
   $PublicSlots,

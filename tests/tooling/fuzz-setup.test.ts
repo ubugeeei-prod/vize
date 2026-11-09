@@ -8,6 +8,8 @@ import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import { parse } from "yaml";
 
+import { corpusTargets } from "../../tools/commands/ci/fuzz/seed-corpus.ts";
+
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const fuzzWorkspace = "tests/fuzz";
 const fuzzManifestPath = `${fuzzWorkspace}/Cargo.toml`;
@@ -135,7 +137,7 @@ test("fuzz CI workflow runs strict nightly and dispatched campaigns", () => {
     FUZZ_MODE: "${{ inputs.mode || 'campaign' }}",
   });
   const enforceStep = fuzzJob.steps.find((step) => step.id === "enforce");
-  assert.match(enforceStep?.run ?? "", /tools\/commands\/ci\/fuzz\/enforce-result\.rs/);
+  assert.match(enforceStep?.run ?? "", /node tools\/commands\/ci\/fuzz\/enforce-result\.ts/);
   assert.deepEqual(enforceStep?.env, {
     FUZZ_EVENT_NAME: "${{ github.event_name }}",
     FUZZ_OUTCOME: "${{ steps.fuzz.outcome || 'skipped' }}",
@@ -180,19 +182,11 @@ test("fuzz workspace covers parser, lexer, and compiler harnesses", () => {
   assert.match(manifest, /features = \[\s*"native",?\s*\]/);
 });
 
-test("seed_corpus.rs writes seeds for every declared fuzz target", () => {
-  const script = readRepoFile("tools/commands/ci/fuzz/seed_corpus.rs");
+test("seed-corpus.ts writes seeds for every declared fuzz target", () => {
   const manifest = readRepoFile(fuzzManifestPath);
   const targets = [...manifest.matchAll(/\[\[bin\]\]\s+name = "([^"]+)"/g)].map(([, name]) => name);
 
-  assert.match(script, /tests\/fuzz\/corpus/);
-  for (const target of targets) {
-    assert.match(
-      script,
-      new RegExp(`reset_corpus\\(&corpus_root, "${target}"\\)`),
-      `seed_corpus.rs must seed corpus/${target}/`,
-    );
-  }
+  assert.deepEqual([...corpusTargets].sort(), targets.sort());
 });
 
 test("SFC crash regressions survive corpus regeneration byte-for-byte", () => {
@@ -209,8 +203,8 @@ test("SFC crash regressions survive corpus regeneration byte-for-byte", () => {
     const corpus = path.join(root, "tests/fuzz/corpus/sfc_parse");
     const seed = () => {
       const result = spawnSync(
-        "rust-script",
-        [path.join(repoRoot, "tools/commands/ci/fuzz/seed_corpus.rs")],
+        process.execPath,
+        [path.join(repoRoot, "tools/commands/ci/fuzz/seed-corpus.ts")],
         { encoding: "utf8", env: { ...process.env, VIZE_REPO_ROOT: root } },
       );
       assert.equal(result.status, 0, `${result.stdout}\n${result.stderr}`);
@@ -287,8 +281,8 @@ test("opaque native Program regressions seed all eight profiles with exact sourc
       "bd961cb21aa8b9541f088cb3ae29cbbab15700b2c5f3734adafbb07c37340c8d",
     );
     const result = spawnSync(
-      "rust-script",
-      [path.join(repoRoot, "tools/commands/ci/fuzz/seed_corpus.rs")],
+      process.execPath,
+      [path.join(repoRoot, "tools/commands/ci/fuzz/seed-corpus.ts")],
       { encoding: "utf8", env: { ...process.env, VIZE_REPO_ROOT: root } },
     );
     assert.equal(result.status, 0, `${result.stdout}\n${result.stderr}`);

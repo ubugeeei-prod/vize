@@ -13,7 +13,7 @@ const syncCommand = path.join(
   "commands",
   "editors",
   "vscode",
-  "sync-typescript-plugin.rs",
+  "sync-typescript-plugin.ts",
 );
 const pluginFiles = [
   "README.md",
@@ -97,7 +97,7 @@ function createFixture(): { root: string } {
 }
 
 function runStage(repoRoot: string): ReturnType<typeof spawnSync> {
-  return spawnSync("rust-script", [syncCommand, "stage"], {
+  return spawnSync(process.execPath, [syncCommand, "stage"], {
     cwd: repoRoot,
     encoding: "utf8",
     env: { ...process.env, VIZE_REPO_ROOT: repoRoot },

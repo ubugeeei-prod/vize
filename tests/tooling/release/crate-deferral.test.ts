@@ -7,6 +7,7 @@ import path from "node:path";
 import { test } from "node:test";
 import { compileFunction } from "node:vm";
 import { parse } from "yaml";
+import { documentationReleaseNote } from "../../../docs/scripts/generate-contract-metadata.ts";
 
 import {
   cratePublicationDecision,
@@ -244,7 +245,7 @@ test("the real notes command prints the deferral and refuses an unknown decision
     assert.equal(deferred.status, 0, deferred.stderr);
     assert.equal(
       readFileSync(output, "utf8"),
-      `${scope}\n\n${cratePublicationNote("v0.458.0", "defer", reason)}\n\n${generated.trim()}\n`,
+      `${scope}\n\n${cratePublicationNote("v0.458.0", "defer", reason)}\n\n${generated.trim()}\n\n${documentationReleaseNote()}\n`,
     );
     rmSync(output);
     rmSync(path.join(root, "api.jsonl"));

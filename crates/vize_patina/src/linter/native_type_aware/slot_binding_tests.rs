@@ -63,7 +63,11 @@ fn complete_slot_query_and_promise_vectors_preserve_evaluated_values() {
         }
         assert_eq!(&historical, case, "all original case fields remain exact");
         let allocator = vize_l0::Allocator::new();
-        let (root, errors) = vize_armature::parse(
+        let (_, errors) = vize_armature::parse(
+            &allocator,
+            case["templateSource"].as_str().expect("whole template"),
+        );
+        let l2 = crate::markup::L2Template::lower(
             &allocator,
             case["templateSource"].as_str().expect("whole template"),
         );
@@ -97,7 +101,7 @@ fn complete_slot_query_and_promise_vectors_preserve_evaluated_values() {
         };
         let (queries, promises) = collect_template_query_sets(
             &document,
-            &root,
+            l2.surface(),
             case["templateOffset"].as_u64().expect("template offset") as u32,
             case["includeTemplateQueries"]
                 .as_bool()
