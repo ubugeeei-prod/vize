@@ -69,6 +69,7 @@ impl<'t, 'a> LintTemplate<'t, 'a> {
     /// template parser again. Keeping the root inside the callback also makes
     /// its intentionally short lifetime explicit.
     #[doc(hidden)]
+    #[inline]
     pub fn with_compatibility_root<R>(self, use_root: impl FnOnce(&RootNode<'a>) -> R) -> R {
         let root = CompatibilityRoot::new(self).build();
         use_root(&root)

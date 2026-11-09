@@ -234,6 +234,7 @@ impl<'a> L2Template<'a> {
     }
 
     /// The complete L1/L2 facts consumed by Croquis lint analysis.
+    #[inline]
     pub fn lint_template(&self) -> vize_croquis::drawer::LintTemplate<'_, 'a> {
         vize_croquis::drawer::LintTemplate::new(
             &self.tree,

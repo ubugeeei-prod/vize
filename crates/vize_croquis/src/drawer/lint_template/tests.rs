@@ -136,6 +136,35 @@ fn l1_l2_entity_decoding_respects_attribute_and_text_contexts() {
 }
 
 #[test]
+fn l1_l2_text_decoding_preserves_escaped_numeric_parentheses() {
+    let source = "<p>before &amp;#40;inside&amp;#041; after</p>";
+    let allocator = Allocator::default();
+    let (surface, errors) = vize_l1::markup::parse(&allocator, source);
+    assert!(errors.is_empty());
+    let lowered = lower_preserving_comments(&allocator, &surface, &errors);
+    let root = CompatibilityRoot::new(LintTemplate::new(
+        &surface,
+        lowered.allocator,
+        &lowered.root,
+        &lowered.consumed_expressions,
+        lowered.caps.scoped_slot_attrs,
+    ))
+    .build();
+    let TemplateChildNode::Element(element) = &root.children[0] else {
+        panic!("compatibility element")
+    };
+    let TemplateChildNode::Text(text) = &element.children[0] else {
+        panic!("compatibility text child")
+    };
+
+    assert_eq!(
+        vize_l1_to_l2::emit::decode_html_entities("before &amp;#40;inside&amp;#041; after"),
+        "before (inside) after"
+    );
+    assert_eq!(text.content, "before (inside) after");
+}
+
+#[test]
 fn l1_l2_slot_props_retain_decoded_authored_text() {
     let source = "<Child v-slot=\"{ value = &quot;fallback&quot;, ...rest }\">{{ value }}</Child>";
     let allocator = Allocator::default();

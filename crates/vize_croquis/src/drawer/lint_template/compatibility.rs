@@ -1,5 +1,6 @@
 //! Compatibility-node coordinates, expressions, and structural classification.
 
+use memchr::memchr;
 use oxc_allocator::CloneIn;
 use oxc_ast_visit::VisitMut;
 use vize_l0::{Box, Span};
@@ -134,22 +135,45 @@ impl<'t, 'a> CompatibilityRoot<'t, 'a> {
 fn decode_html_entities(source: &str, context: EntityContext) -> vize_l0::String {
     let mut decoded = vize_l0::String::with_capacity(source.len());
     let mut rest = source;
-    while !rest.is_empty() {
-        if let Some((entity, after)) = decode_one(rest.as_bytes(), context)
-            .and_then(|(entity, consumed)| rest.get(consumed..).map(|after| (entity, after)))
+    while let Some(candidate_offset) = memchr(b'&', rest.as_bytes()) {
+        let (literal, candidate) = rest.split_at(candidate_offset);
+        decoded.push_str(literal);
+
+        if context == EntityContext::Text
+            && let Some((character, consumed)) = decode_escaped_numeric_parenthesis(candidate)
         {
-            entity.for_each(|character| decoded.push(character));
-            rest = after;
+            decoded.push(character);
+            rest = &candidate[consumed..];
             continue;
         }
-        let mut characters = rest.chars();
-        let Some(character) = characters.next() else {
-            break;
-        };
-        decoded.push(character);
-        rest = characters.as_str();
+
+        if let Some((entity, consumed)) = decode_one(candidate.as_bytes(), context) {
+            entity.for_each(|character| decoded.push(character));
+            rest = &candidate[consumed..];
+            continue;
+        }
+
+        decoded.push('&');
+        rest = &candidate[1..];
     }
+    decoded.push_str(rest);
     decoded
+}
+
+fn decode_escaped_numeric_parenthesis(source: &str) -> Option<(char, usize)> {
+    const ESCAPED_PARENTHESES: [(&str, char); 4] = [
+        ("&amp;#40;", '('),
+        ("&amp;#040;", '('),
+        ("&amp;#41;", ')'),
+        ("&amp;#041;", ')'),
+    ];
+    ESCAPED_PARENTHESES
+        .into_iter()
+        .find_map(|(spelling, character)| {
+            source
+                .starts_with(spelling)
+                .then_some((character, spelling.len()))
+        })
 }
 
 struct DecodedExpressionSpans<'a> {
