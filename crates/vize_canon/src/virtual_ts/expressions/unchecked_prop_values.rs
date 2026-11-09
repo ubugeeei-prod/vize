@@ -12,77 +12,81 @@
 use super::component_props::{ComponentPropSource, has_per_prop_value_check};
 use super::props_literal::{literal_carries_value, named_entry_marks};
 use crate::virtual_ts::helpers::{
-    component_prop_key, push_ts_string_literal, shared_types, to_safe_identifier_fragment,
+    component_prop_key, push_ts_string_literal, to_safe_identifier_fragment,
 };
-use vize_carton::{String, append, cstr};
+use vize_carton::{String, append};
 use vize_croquis::croquis::{ComponentUsage, PassedProp};
 
 /// Opening of every owned per-prop annotation. The content mapper appends
-/// [`unchecked_prop_value_declaration`] once when it finds one.
-pub(crate) const UNCHECKED_PROP_VALUE_REFERENCE: &str = "$UncheckedPropValue<";
+/// [`attr_value_declaration`] once when it finds one.
+pub(crate) const ATTR_VALUE_REFERENCE: &str = "$AttrValue<";
 
-/// The per-prop contract `V` unless the literal's typed inputs `D` declare
-/// `K`, which leaves the value to the literal. With the shared module this is
-/// the declared lookup the per-prop contract already resolved; standalone
-/// output keeps that helper local to the template, so it is spelled out.
-pub(crate) fn unchecked_prop_value_declaration(shared_virtual_module: bool) -> String {
-    let declared = if shared_virtual_module {
-        cstr!("{}<D, K, never>", shared_types::PROP_VALUE.select(true))
-    } else {
-        String::from("D extends unknown ? (K extends keyof D ? D[K] : never) : never")
+/// Vue's public attrs, which the literal's tail types for every child.
+macro_rules! public_attr_keys {
+    () => {
+        "keyof import(\"vue\").VNodeProps | keyof import(\"vue\").AllowedComponentProps | keyof import(\"vue\").ComponentCustomProps"
     };
-    cstr!(
-        "type $UncheckedPropValue<D, K extends PropertyKey, V> = [{declared}] extends [never] ? V : unknown;\n"
-    )
+}
+
+const SHARED_ATTR_VALUE: &str = concat!(
+    "type $AttrKeys<P, C> = (P extends unknown ? keyof P : never) | keyof import(\"vize:virtual-ts\").$EmitListeners<C> | keyof import(\"vize:virtual-ts\").$RequiredFallthroughProps<C> | ",
+    public_attr_keys!(),
+    ";\ntype $AttrValue<P, C, K, V> = K extends $AttrKeys<P, C> ? unknown : V;\n"
+);
+
+/// Standalone output keeps the listener and fallthrough helpers local to the
+/// template, so their keys are spelled out here.
+const STANDALONE_ATTR_VALUE: &str = concat!(
+    "type $AttrKeys<P, C> = (P extends unknown ? keyof P : never) | (C extends { __vizeEmitProps?: infer E } ? 0 extends (1 & E) ? never : keyof NonNullable<E> : never) | (C extends { readonly __vizeComponentMarker: true; readonly __vizeHasFallthroughProps: true; readonly __vizeFallthroughProps?: infer F } ? 0 extends (1 & F) ? never : { [K in keyof NonNullable<F>]-?: {} extends Pick<NonNullable<F>, K> ? never : K }[keyof NonNullable<F>] : never) | ",
+    public_attr_keys!(),
+    ";\ntype $AttrValue<P, C, K, V> = K extends $AttrKeys<P, C> ? unknown : V;\n"
+);
+
+/// `$AttrValue<P, C, K, V>` is the per-prop contract `V` unless the literal
+/// types `K`: one of child `C`'s props `P`, its emitted listeners, its
+/// required fallthrough props or Vue's public attrs.
+pub(crate) const fn attr_value_declaration(shared_virtual_module: bool) -> &'static str {
+    if shared_virtual_module {
+        SHARED_ATTR_VALUE
+    } else {
+        STANDALONE_ATTR_VALUE
+    }
 }
 
 /// The per-prop assignments of one usage whose value the literal carries.
-pub(crate) struct OwnedPropValues {
+pub(crate) struct OwnedPropValues<'a> {
     owned: Vec<bool>,
     component: String,
+    component_ref: &'a str,
     idx: usize,
 }
 
-impl OwnedPropValues {
-    /// Decide the rows from the literal's own entry marks, and declare the
-    /// usage's typed inputs once when any row is owned.
-    pub(crate) fn emit(
-        ts: &mut crate::virtual_ts::TextBuf,
-        (usage, idx, component_ref): (&ComponentUsage, usize, &str),
+impl<'a> OwnedPropValues<'a> {
+    /// Decide the rows from the literal's own entry marks.
+    pub(crate) fn new(
+        (usage, idx, component_ref): (&ComponentUsage, usize, &'a str),
         source_context: ComponentPropSource<'_>,
-        (indent, hoist_shared_preamble): (&str, bool),
     ) -> Self {
-        let component = to_safe_identifier_fragment(usage.name.as_str());
-        if !source_context.unchecked_prop_values {
-            return Self {
-                owned: Vec::new(),
-                component,
-                idx,
-            };
-        }
-        // Merge flags only change `class`/`style` rows, which never own here.
-        let marks = named_entry_marks(usage, (false, false));
-        let owned = usage
-            .props
-            .iter()
-            .enumerate()
-            .map(|(index, prop)| {
-                has_per_prop_value_check(prop)
-                    && literal_carries_value(usage, &marks, index)
-                    && !writes_model(usage, prop)
-            })
-            .collect::<Vec<_>>();
-        if owned.contains(&true) {
-            append_declared_inputs(
-                ts,
-                (component.as_str(), idx, component_ref),
-                hoist_shared_preamble,
-                indent,
-            );
-        }
+        let owned = if source_context.unchecked_prop_values {
+            // Merge flags only change `class`/`style` rows, which never own here.
+            let marks = named_entry_marks(usage, (false, false));
+            usage
+                .props
+                .iter()
+                .enumerate()
+                .map(|(index, prop)| {
+                    has_per_prop_value_check(prop)
+                        && literal_carries_value(usage, &marks, index)
+                        && !writes_model(usage, prop)
+                })
+                .collect()
+        } else {
+            Vec::new()
+        };
         Self {
             owned,
-            component,
+            component: to_safe_identifier_fragment(usage.name.as_str()),
+            component_ref,
             idx,
         }
     }
@@ -91,25 +95,87 @@ impl OwnedPropValues {
         self.owned.get(index).copied().unwrap_or(false)
     }
 
-    /// `: $UncheckedPropValue<inputs, key, contract> = (`
-    pub(crate) fn append_type(&self, ts: &mut crate::virtual_ts::TextBuf, prop: &PassedProp) {
-        let (component, idx) = (self.component.as_str(), self.idx);
+    /// `: $AttrValue<props, typeof child, key, contract> = `
+    pub(crate) fn append_type(
+        &self,
+        ts: &mut crate::virtual_ts::TextBuf,
+        prop: &PassedProp,
+        value: &str,
+    ) {
+        let (component, idx, component_ref) =
+            (self.component.as_str(), self.idx, self.component_ref);
         let name = to_safe_identifier_fragment(prop.name.as_str());
         append!(
             *ts,
-            ": {UNCHECKED_PROP_VALUE_REFERENCE}__{component}_Declared_{idx}, "
+            ": {ATTR_VALUE_REFERENCE}__{component}_Props_{idx}, typeof {component_ref}, "
         );
         push_ts_string_literal(ts, component_prop_key(prop.name.as_str()).as_str());
-        append!(*ts, ", __{component}_{idx}_prop_{name}> = (");
+        append!(*ts, ", __{component}_{idx}_prop_{name}> = ");
+        if needs_parentheses(value) {
+            ts.push('(');
+        }
     }
 
-    /// `) satisfies contract` after the value. The parentheses keep a
-    /// multi-line value from ending the statement before `satisfies`.
-    pub(crate) fn append_tail(&self, ts: &mut crate::virtual_ts::TextBuf, prop: &PassedProp) {
+    /// ` satisfies contract` after the value.
+    pub(crate) fn append_tail(
+        &self,
+        ts: &mut crate::virtual_ts::TextBuf,
+        prop: &PassedProp,
+        value: &str,
+    ) {
         let (component, idx) = (self.component.as_str(), self.idx);
         let name = to_safe_identifier_fragment(prop.name.as_str());
-        append!(*ts, ") satisfies __{component}_{idx}_prop_{name}");
+        if needs_parentheses(value) {
+            ts.push(')');
+        }
+        append!(*ts, " satisfies __{component}_{idx}_prop_{name}");
     }
+}
+
+/// Whether `satisfies` written after `value` could bind to less than all of
+/// it: a line break ends the declaration first (ASI, TS1434), and a top-level
+/// operator weaker than `satisfies` keeps only its right operand. Anything
+/// this scan cannot classify, such as a regex or a template, is wrapped.
+fn needs_parentheses(value: &str) -> bool {
+    let bytes = value.as_bytes();
+    let mut depth = 0usize;
+    let mut quote = None;
+    let mut index = 0;
+    while let Some(&byte) = bytes.get(index) {
+        index += 1;
+        if let Some(open) = quote {
+            match byte {
+                b'\\' => index += 1,
+                b'\n' | b'\r' => return true,
+                _ if byte == open => quote = None,
+                _ => {}
+            }
+            continue;
+        }
+        match byte {
+            b'"' | b'\'' => quote = Some(byte),
+            b'(' | b'[' | b'{' => depth += 1,
+            b')' | b']' | b'}' => match depth.checked_sub(1) {
+                Some(outer) => depth = outer,
+                None => return true,
+            },
+            // `?.` is a member access unless a digit follows (`a ?.5 : b`).
+            b'?' if bytes.get(index) == Some(&b'.')
+                && !bytes.get(index + 1).is_some_and(u8::is_ascii_digit) =>
+            {
+                index += 1;
+            }
+            b'\n' | b'\r' | b'`' | b'/' => return true,
+            b'=' | b'&' | b'|' | b'^' | b'?' | b',' if depth == 0 => return true,
+            _ => {}
+        }
+    }
+    depth != 0
+        || quote.is_some()
+        || !bytes.last().is_some_and(|last| {
+            last.is_ascii_alphanumeric()
+                || matches!(last, b'_' | b'$' | b')' | b']' | b'}' | b'"' | b'\'' | b'!')
+        })
 }
 
 /// A `v-model` value and its modifiers keep their write-back owners.
@@ -119,22 +185,60 @@ fn writes_model(usage: &ComponentUsage, prop: &PassedProp) -> bool {
     })
 }
 
-/// The literal's typed inputs: own props, emitted listeners, required
-/// fallthrough props and Vue's public attrs. Its untyped attr tail never
-/// checks a value. A fallthrough root's literal reads its own props as
-/// `Partial` and reports the same message for a wrong value, so the declared
-/// props alone decide ownership there too.
-fn append_declared_inputs(
-    ts: &mut crate::virtual_ts::TextBuf,
-    (component, idx, component_ref): (&str, usize, &str),
-    hoist_shared_preamble: bool,
-    indent: &str,
-) {
-    let emit_listeners = shared_types::EMIT_LISTENERS.select(hoist_shared_preamble);
-    let required_fallthrough =
-        shared_types::REQUIRED_FALLTHROUGH_PROPS.select(hoist_shared_preamble);
-    append!(
-        *ts,
-        "{indent}type __{component}_Declared_{idx} = __{component}_Props_{idx} & {emit_listeners}<typeof {component_ref}> & {required_fallthrough}<typeof {component_ref}> & $PublicComponentAttrs;\n"
-    );
+#[cfg(test)]
+mod tests {
+    use super::needs_parentheses;
+
+    #[test]
+    fn only_values_satisfies_could_split_are_wrapped() {
+        let plain = [
+            "{}",
+            "1",
+            "-1",
+            "'a, b'",
+            "\"x ? y\"",
+            "foo",
+            "foo.bar?.baz",
+            "list?.[0]",
+            "call(a, b ? c : d)",
+            "{ a: 1, b: c ?? d }",
+            "[a, b]",
+            "a + b * c",
+            "a < b",
+            "!flag",
+            "value!",
+            "typeof x",
+        ];
+        for value in plain {
+            assert!(!needs_parentheses(value), "{value}");
+        }
+        let wrapped = [
+            "a ? b : c",
+            "a ?.5 : b",
+            "a ?? b",
+            "a || b",
+            "a && b",
+            "a | b",
+            "a & b",
+            "a ^ b",
+            "a == b",
+            "a !== b",
+            "x = 1",
+            "() => 1",
+            "a, b",
+            "a / b",
+            "/x/.test(a)",
+            "`t`",
+            "{}\n",
+            "\n  cond\n    ? 1\n    : {}\n",
+            "foo.",
+            "'open",
+            "(a",
+            "a)",
+            "",
+        ];
+        for value in wrapped {
+            assert!(needs_parentheses(value), "{value:?}");
+        }
+    }
 }

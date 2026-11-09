@@ -20,9 +20,7 @@ use super::protocol::{
     ContentMapperDiagnosticDirective, ContentMapperDiagnosticDirectives, ContentMapperSpan,
     ContentMapperUnusedExpectDiagnostic, DIRECTIVE_POLICY_EXPECT, DIRECTIVE_POLICY_IGNORE,
 };
-use crate::virtual_ts::{
-    NAMED_PROP_DIAGNOSTIC_MARKER, UNCHECKED_PROP_VALUE_REFERENCE, VizeMapping,
-};
+use crate::virtual_ts::{ATTR_VALUE_REFERENCE, NAMED_PROP_DIAGNOSTIC_MARKER, VizeMapping};
 
 /// Mapper diagnostic code for an unused `@vue-expect-error` directive.
 const UNUSED_EXPECT_CODE: i32 = 4;
@@ -211,7 +209,7 @@ pub(super) fn with_component_prop_echoes(
         // the value. Only its name, which reports what the literal leaves
         // unchecked, stays visible.
         if let Some(name_end) = text
-            .find(UNCHECKED_PROP_VALUE_REFERENCE)
+            .find(ATTR_VALUE_REFERENCE)
             .and_then(|at| at.checked_sub(": ".len()))
             .filter(|at| text.get(*at..).is_some_and(|tail| tail.starts_with(": ")))
         {

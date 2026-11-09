@@ -11,11 +11,10 @@ use super::super::{
     generate_vue_content_mapper_transform_with_options,
 };
 use super::DIRECTIVE_POLICY_EXPECT;
-use crate::virtual_ts::unchecked_prop_value_declaration;
+use crate::virtual_ts::attr_value_declaration;
 
 const APP: &str = "<script setup lang=\"ts\">\nimport Field from './Field.vue'\n</script>\n<template>\n  <Field label=\"x\" :maxlength=\"{}\" />\n</template>\n";
-const DECLARED: &str = "  type __Field_Declared_0 = __Field_Props_0 & $EmitListeners<typeof Field> & $RequiredFallthroughProps<typeof Field> & VueTemplatePublicAttrsType;\n";
-const OWNED: &str = "  const __vize_prop_check_0_maxlength: $UncheckedPropValue<__Field_Declared_0, \"maxlength\", __Field_0_prop_maxlength> = ({}) satisfies __Field_0_prop_maxlength;\n";
+const OWNED: &str = "  const __vize_prop_check_0_maxlength: $AttrValue<__Field_Props_0, typeof Field, \"maxlength\", __Field_0_prop_maxlength> = {} satisfies __Field_0_prop_maxlength;\n";
 const PLAIN: &str = "  const __vize_prop_check_0_maxlength: __Field_0_prop_maxlength = {};\n";
 const NAME: &str = "__vize_prop_check_0_maxlength";
 
@@ -61,19 +60,14 @@ fn echoed_assignment_keeps_only_its_name_visible() {
     );
     assert_eq!(text.matches("__vize_unchecked_prop_").count(), 0);
     assert_eq!(
-        text.matches(DECLARED).count(),
-        1,
-        "one input alias per usage"
-    );
-    assert_eq!(
-        text.find(DECLARED).map(|at| at + DECLARED.len()),
-        text.find("  // @vize-map: prop -> "),
-        "the input alias precedes the usage's per-prop checks"
+        text.matches("_Declared_").count(),
+        0,
+        "no per-usage input alias"
     );
     assert_eq!(
         text.rsplit_once("\nexport default App;\n")
             .map(|(_, tail)| tail),
-        Some(unchecked_prop_value_declaration(false).as_str()),
+        Some(attr_value_declaration(false)),
         "one module helper after the default export"
     );
     let directives = result
@@ -81,7 +75,7 @@ fn echoed_assignment_keeps_only_its_name_visible() {
         .expect("directive table")
         .directives;
     let name_end = span.0[0] + span.0[1];
-    let value = start + OWNED.find("({})").expect("value") + 1;
+    let value = start + OWNED.find("{}").expect("value");
     assert_eq!(policies(&directives, span.0[0]), Vec::<usize>::new());
     assert_eq!(policies(&directives, name_end), [DIRECTIVE_POLICY_IGNORE]);
     assert_eq!(policies(&directives, value), [DIRECTIVE_POLICY_IGNORE]);
@@ -141,34 +135,34 @@ fn literal_owners_alone_take_the_owned_form() {
     }
 }
 
-/// A value that ends on its own line still reaches `satisfies`: without the
-/// parentheses, ASI ends the declaration before it (TS1434).
+/// `satisfies` must bind to the whole value. A value that ends on its own
+/// line would let ASI end the declaration first (TS1434), and a top-level
+/// operator weaker than `satisfies` would keep only its right operand.
 #[test]
-fn multi_line_values_stay_one_owned_expression() {
-    let source = APP
-        .replace(
-            ":maxlength=\"{}\"",
-            ":maxlength=\"\n    cond\n      ? 1\n      : {}\n  \"",
-        )
-        .replace("'./Field.vue'", "'./Field.vue'\nconst cond = true");
-    let result = generate_vue_content_mapper_transform(Path::new("/project/App.vue"), &source)
-        .expect("transform");
-    let text = result.text.as_str();
-    let start = text
-        .find("  const __vize_prop_check_0_maxlength: $UncheckedPropValue<__Field_Declared_0, \"maxlength\", __Field_0_prop_maxlength> = (")
-        .expect("owned per-prop check");
-    let statement = text
-        .get(start..)
-        .and_then(|tail| tail.split_once(";\n"))
-        .map(|(statement, _)| statement)
-        .expect("statement end");
-    assert_eq!(
-        statement
-            .rsplit_once(") satisfies ")
-            .map(|(_, contract)| contract),
-        Some("__Field_0_prop_maxlength"),
-        "{statement}"
-    );
+fn split_values_stay_one_owned_expression() {
+    for value in ["\n    cond\n      ? 1\n      : {}\n  ", "cond ? 1 : {}"] {
+        let source = APP
+            .replace(
+                ":maxlength=\"{}\"",
+                vize_l0::cstr!(":maxlength=\"{value}\"").as_str(),
+            )
+            .replace("'./Field.vue'", "'./Field.vue'\nconst cond = true");
+        let result = generate_vue_content_mapper_transform(Path::new("/project/App.vue"), &source)
+            .expect("transform");
+        let text = result.text.as_str();
+        let opening = "  const __vize_prop_check_0_maxlength: $AttrValue<__Field_Props_0, typeof Field, \"maxlength\", __Field_0_prop_maxlength> = (";
+        let start = text.find(opening).expect("owned per-prop check");
+        let statement = text
+            .get(start..)
+            .and_then(|tail| tail.split_once(";\n"))
+            .map(|(statement, _)| statement)
+            .expect("statement end");
+        assert_eq!(
+            statement.get(opening.len()..),
+            Some(vize_l0::cstr!("{value}) satisfies __Field_0_prop_maxlength").as_str()),
+            "{statement}"
+        );
+    }
 }
 
 #[test]
@@ -208,8 +202,9 @@ fn relaxed_fallthrough_root_keeps_declared_props_with_the_literal() {
         "the root usage is relaxed"
     );
     assert_eq!(
-        text.matches("  type __Inner_Declared_0 = __Inner_Props_0 & $EmitListeners<typeof Inner> & $RequiredFallthroughProps<typeof Inner> & VueTemplatePublicAttrsType;\n")
+        text.matches("  const __vize_prop_check_0_label: $AttrValue<__Inner_Props_0, typeof Inner, \"label\", __Inner_0_prop_label> = 1 satisfies __Inner_0_prop_label;\n")
             .count(),
-        1
+        1,
+        "the declared key, not its `Partial`, decides the owner"
     );
 }

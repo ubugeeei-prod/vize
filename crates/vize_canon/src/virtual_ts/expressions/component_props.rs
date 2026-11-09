@@ -203,11 +203,9 @@ fn generate_component_prop_checks_inner<const LEGACY_SCALARS: bool>(
     let grouped_guard_expr = usage.vif_guard.as_deref().filter(|_| has_inline_callback);
     let grouped_guard = grouped_guard_expr.is_some();
     let owned_values = (!LEGACY_SCALARS).then(|| {
-        super::unchecked_prop_values::OwnedPropValues::emit(
-            ts,
+        super::unchecked_prop_values::OwnedPropValues::new(
             (usage, idx, component_ref),
             source_context,
-            (indent, ctx.hoist_shared_preamble),
         )
     });
     if let Some(guard) = grouped_guard_expr {
@@ -322,7 +320,7 @@ fn generate_component_prop_checks_inner<const LEGACY_SCALARS: bool>(
             if LEGACY_SCALARS {
                 append!(*ts, ": __vize_legacy_prop_{idx}_{prop_index} = ");
             } else if let Some(values) = owned {
-                values.append_type(ts, prop);
+                values.append_type(ts, prop, generated_value.text.as_str());
             } else {
                 super::callback_prop_resolution::append_prop_check_type(
                     ts,
@@ -342,7 +340,7 @@ fn generate_component_prop_checks_inner<const LEGACY_SCALARS: bool>(
                 append_prop_value(ts, generated_value.text.as_str())
             });
             if let Some(values) = owned {
-                values.append_tail(ts, prop);
+                values.append_tail(ts, prop, generated_value.text.as_str());
             }
             ts.push_str(";\n");
             let statement_end = ts.len();
