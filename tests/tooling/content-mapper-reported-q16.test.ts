@@ -49,7 +49,12 @@ const staticRefCommand = modelEventsCommand.replace(
   " content_mapper_tsgo_cli::dynamic_template_refs::standard_tsgo_static_template_refs_read_runtime_bindings_and_keep_true_unused --nocapture",
 );
 const receiverFilter = " content_mapper_tsgo_cli::reported_expression_duplicates_11374::";
-const receiverAdjustedWorkflow = stripProviderClosure(actualWorkflow).replace(receiverFilter, "");
+// #12445 appended the component hover suite to the LSP command.
+const hoverFilter = " content_mapper_tsgo_lsp_hover::";
+assert.equal(actualWorkflow.split(hoverFilter).length, 2);
+const receiverAdjustedWorkflow = stripProviderClosure(actualWorkflow)
+  .replace(receiverFilter, "")
+  .replace(hoverFilter, "");
 const workflow = receiverAdjustedWorkflow
   .replace(standardRoleCommand, standardCommand)
   .replace(staticRefCommand, modelEventsCommand)

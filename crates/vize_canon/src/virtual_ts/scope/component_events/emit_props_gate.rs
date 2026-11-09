@@ -15,13 +15,13 @@
 //! `@vue-generic` bindings keep the direct call. So do literals that span
 //! lines, whose later lines no `@ts-ignore` covers, and spread literals.
 //!
-//! Only a computed `<component :is>` target takes the gate. Its type is often a
-//! union, and a direct union call checks the literal against every member's
-//! input. A static tag checks one input; the module aliases would cost it more
-//! bytes than the gate saves.
+//! Static tags and `<component :is>` targets both take the gate: a direct call
+//! instantiates the factory's props input once per use, which the cheap call
+//! skips. Under `v-if`, the factory is called before the guard, so a guard that
+//! names the component's binding (and could narrow it) keeps the direct call.
 
 use vize_carton::append;
-use vize_croquis::{Croquis, ScopeData, drawer::dynamic_component_alias};
+use vize_croquis::{Croquis, ScopeData};
 
 /// `{emit_props_factory}` is the shared `$EmitPropsFactory` reference.
 /// `__vize_emit_input` mirrors that factory's branches: `true` marks a route
@@ -51,8 +51,8 @@ pub(crate) const fn gates_inference(generic_component: bool, legacy_vue2: bool) 
     !generic_component && !legacy_vue2
 }
 
-/// A computed `:is` usage whose listener can reach the gated call: it has a
-/// static event, at least one valued static prop, and no spread props.
+/// A usage whose listener can reach the gated call: it has a static event, at
+/// least one valued static prop, and no spread props.
 fn has_gated_candidate(summary: &Croquis) -> bool {
     let has_component_listener = summary.scopes.iter().any(
         |scope| matches!(scope.data(), ScopeData::EventHandler(data) if data.target_component.is_some()),
@@ -61,8 +61,7 @@ fn has_gated_candidate(summary: &Croquis) -> bool {
         && vize_croquis::facts::component_usage_slice(summary)
             .iter()
             .any(|usage| {
-                usage.name == dynamic_component_alias(usage.start)
-                    && usage.spread_props.is_empty()
+                usage.spread_props.is_empty()
                     && usage.events.iter().any(|event| !event.name_is_dynamic)
                     && usage.props.iter().any(|prop| {
                         !prop.name_is_dynamic
@@ -93,6 +92,53 @@ pub(super) fn append_gated_call(
         *ts,
         "{indent}const __vize_emit_factory_{usage_idx} = (undefined as unknown as __vize_emit_resolver<{library}, typeof {component_ref}>)({component_ref}); const {emit_props} = (undefined as unknown as __vize_emit_input<{library}, typeof {component_ref}, typeof __vize_emit_factory_{usage_idx}>)(",
     );
+}
+
+/// A `v-if` use calls the factory before its guard, under its own ignore, as
+/// the direct call's factory sits on the ignored guard line.
+pub(super) fn append_guarded_factory(
+    ts: &mut crate::virtual_ts::TextBuf,
+    indent: &str,
+    library: &str,
+    component_ref: &str,
+    usage_idx: usize,
+) {
+    append!(
+        *ts,
+        "{indent}// @ts-ignore Inference-only factory; called before the guard below.\n{indent}const __vize_emit_factory_{usage_idx} = (undefined as unknown as __vize_emit_resolver<{library}, typeof {component_ref}>)({component_ref});\n",
+    );
+}
+
+/// The guarded call reads the props only through a generic resolver.
+pub(super) fn append_guarded_input(
+    ts: &mut crate::virtual_ts::TextBuf,
+    indent: &str,
+    guard: &str,
+    library: &str,
+    component_ref: &str,
+    usage_idx: usize,
+) {
+    append!(
+        *ts,
+        "{indent}if ({guard}) return (undefined as unknown as __vize_emit_input<{library}, typeof {component_ref}, typeof __vize_emit_factory_{usage_idx}>)(",
+    );
+}
+
+/// Whether `guard` names the root binding of `component_ref`, so it may narrow
+/// the component's type inside the guarded branch.
+pub(super) fn guard_reads(guard: &str, component_ref: &str) -> bool {
+    let is_ident = |c: char| c == '_' || c == '$' || c.is_alphanumeric();
+    let root = component_ref
+        .split(|c: char| !is_ident(c))
+        .next()
+        .unwrap_or_default();
+    !root.is_empty()
+        && guard.match_indices(root).any(|(start, _)| {
+            let end = start + root.len();
+            let before = guard.get(..start).unwrap_or_default();
+            let after = guard.get(end..).unwrap_or_default();
+            !before.ends_with(is_ident) && !after.starts_with(is_ident)
+        })
 }
 
 #[cfg(test)]
