@@ -68,7 +68,9 @@
     },
     "children/logical-and": {
       "verdict": "divergent",
-      "basis": "DOM, text and diagnostics match; Vize and Babel retain the truthy branch while vue-jsx-vapor replaces it across truthy value changes"
+      "basis": "DOM, text and diagnostics match; Vize and Babel retain the truthy branch while vue-jsx-vapor replaces it across truthy value changes",
+      "issue": 6885,
+      "differs": ["elementIdentities"]
     },
     "control-flow/conditional-branch": {
       "verdict": "equivalent",
@@ -117,6 +119,156 @@
     "props/ordered-spread-reads": {
       "verdict": "equivalent",
       "basis": "each reactive publication evaluates the three sources exactly once in authored order, with complete DOM and identity pinned"
+    },
+    "elements/fragment-updates": {
+      "verdict": "equivalent",
+      "basis": "both fragment children update in place under each runtime"
+    },
+    "slots/object-children": {
+      "verdict": "equivalent",
+      "basis": "object-child default and named slots update independently of the component prop"
+    },
+    "directives/v-model-component": {
+      "verdict": "equivalent",
+      "basis": "component modelValue and update:modelValue round-trip through input events and state patches"
+    },
+    "directives/v-model-component-arg": {
+      "verdict": "equivalent",
+      "basis": "an explicit model argument binds the same component prop and update event"
+    },
+    "directives/v-model-checkbox": {
+      "verdict": "equivalent",
+      "basis": "checkbox change events and state patches keep the live checked state in sync"
+    },
+    "directives/v-model-radio": {
+      "verdict": "equivalent",
+      "basis": "radio change events and state patches select the matching input"
+    },
+    "directives/v-model-select": {
+      "verdict": "equivalent",
+      "basis": "select state patches update the rendered selection"
+    },
+    "directives/v-model-modifier-array": {
+      "verdict": "equivalent",
+      "basis": "the modifier-array form trims input before updating state"
+    },
+    "directives/v-model-trim": {
+      "verdict": "equivalent",
+      "basis": "the underscore trim modifier trims input before updating state"
+    },
+    "directives/v-model-lazy": {
+      "verdict": "equivalent",
+      "basis": "the lazy modifier ignores input events and updates on change"
+    },
+    "directives/v-model-number": {
+      "verdict": "equivalent",
+      "basis": "the number modifier stores numeric input values"
+    },
+    "directives/v-text": {
+      "verdict": "equivalent",
+      "basis": "text content follows each state update"
+    },
+    "directives/v-if-chain": {
+      "verdict": "equivalent",
+      "basis": "v-if, v-else-if and v-else switch branches and update the live branch"
+    },
+    "directives/v-for-keyed": {
+      "verdict": "equivalent",
+      "basis": "keyed v-for reorders, removes and appends items while reusing keyed elements"
+    },
+    "directives/v-slot-default": {
+      "verdict": "equivalent",
+      "basis": "the v-slot default scoped slot and component prop update independently"
+    },
+    "directives/v-slot-named": {
+      "verdict": "equivalent",
+      "basis": "a named template v-slot and the component prop update independently"
+    },
+    "directives/custom": {
+      "verdict": "equivalent",
+      "basis": "an in-scope custom directive receives the same reactive value getter"
+    },
+    "directives/v-pre": {
+      "verdict": "equivalent",
+      "basis": "v-pre is inert on JSX expressions in both compilers"
+    },
+    "directives/v-cloak": {
+      "verdict": "equivalent",
+      "basis": "v-cloak renders no attribute and does not affect updates"
+    },
+    "props/key-replacement": {
+      "verdict": "equivalent",
+      "basis": "a content update keeps the keyed element and a key change replaces it"
+    },
+    "tsx/typed-expressions": {
+      "verdict": "equivalent",
+      "basis": "type assertions and non-null assertions erase without changing updates"
+    },
+    "control-flow/keyed-map-list": {
+      "verdict": "divergent",
+      "basis": "Vize and Babel reuse keyed list elements; vue-jsx-vapor recreates every item and leaves a whitespace anchor text",
+      "differs": ["dom", "text", "elementIdentities"],
+      "issue": 6885
+    },
+    "events/capture-suffix": {
+      "verdict": "divergent",
+      "basis": "Vize and Babel treat the Capture suffix as a capture listener; vue-jsx-vapor binds an event named clickCapture",
+      "differs": ["dom", "text"],
+      "issue": 6885
+    },
+    "events/once-suffix": {
+      "verdict": "divergent",
+      "basis": "Vize and Babel run the Once suffix listener once; vue-jsx-vapor binds an event named clickOnce",
+      "differs": ["dom", "text"],
+      "issue": 6885
+    },
+    "components/dynamic-component": {
+      "verdict": "divergent",
+      "basis": "Vize resolves <component is> as a dynamic component; vue-jsx-vapor renders a literal component element",
+      "differs": ["dom", "elementIdentities"],
+      "issue": 6885
+    },
+    "events/capture-modifier": {
+      "verdict": "divergent",
+      "basis": "vue-jsx-vapor applies the underscore capture modifier; Vize binds an event named click_capture",
+      "differs": ["dom", "text"],
+      "issue": 12313
+    },
+    "events/once-modifier": {
+      "verdict": "divergent",
+      "basis": "vue-jsx-vapor applies the underscore once modifier; Vize binds an event named click_once",
+      "differs": ["dom", "text"],
+      "issue": 12313
+    },
+    "events/stop-modifier": {
+      "verdict": "divergent",
+      "basis": "vue-jsx-vapor applies the underscore stop modifier; Vize binds an event named click_stop",
+      "differs": ["dom", "text"],
+      "issue": 12313
+    },
+    "events/prevent-modifier": {
+      "verdict": "divergent",
+      "basis": "vue-jsx-vapor applies the underscore prevent modifier; Vize binds an event named click_prevent",
+      "differs": ["dom", "text", "events"],
+      "issue": 12313
+    },
+    "directives/custom-modifiers": {
+      "verdict": "divergent",
+      "basis": "vue-jsx-vapor splits underscore directive modifiers; Vize passes left_a_b as the argument and no modifiers",
+      "differs": ["dom", "warnings"],
+      "issue": 12313
+    },
+    "directives/v-once": {
+      "verdict": "divergent",
+      "basis": "vue-jsx-vapor renders the v-once subtree once; Vize keeps updating it",
+      "differs": ["dom", "text"],
+      "issue": 12312
+    },
+    "props/ref-callback": {
+      "verdict": "divergent",
+      "basis": "vue-jsx-vapor calls the function ref; Vize reads a template-ref setter from an undefined render context and throws",
+      "differs": ["dom", "text", "elementIdentities", "warnings"],
+      "issue": 12311
     }
   }
 }

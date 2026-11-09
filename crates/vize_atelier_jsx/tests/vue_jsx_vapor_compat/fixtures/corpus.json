@@ -1277,6 +1277,1202 @@
           }
         ]
       ]
+    },
+    {
+      "id": "elements/fragment-updates",
+      "babelCorpusId": "elements/fragment",
+      "source": "const App = () => <><span data-kind=\"left\">{state.left}</span><span data-kind=\"right\">{state.right}</span></>;",
+      "initial": { "left": "I", "right": "F" },
+      "steps": [
+        { "patch": { "left": "J" } },
+        { "patch": { "right": "G" } },
+        { "patch": { "left": "K", "right": "H" } }
+      ],
+      "expectedText": ["IF", "JF", "JG", "KH"],
+      "expectedElementIdentities": [
+        [0, 1],
+        [0, 1],
+        [0, 1],
+        [0, 1]
+      ]
+    },
+    {
+      "id": "slots/object-children",
+      "babelCorpusId": "slots/object_children",
+      "source": "const App = () => <FixtureCard title={state.title}>{{ default: () => <i>{state.label}</i>, header: () => <b>{state.head}</b> }}</FixtureCard>;",
+      "componentFixtures": ["FixtureCard"],
+      "initial": { "title": "Alpha", "label": "one", "head": "top" },
+      "steps": [
+        { "patch": { "label": "two" } },
+        { "patch": { "head": "mid" } },
+        { "patch": { "title": "Beta" } }
+      ],
+      "expectedText": [
+        "top|Title:Alpha|one",
+        "top|Title:Alpha|two",
+        "mid|Title:Alpha|two",
+        "mid|Title:Beta|two"
+      ],
+      "expectedElementIdentities": [
+        [0, 1, 2, 3, 4, 5],
+        [0, 1, 2, 3, 4, 5],
+        [0, 1, 2, 3, 4, 5],
+        [0, 1, 2, 3, 4, 5]
+      ]
+    },
+    {
+      "id": "directives/v-model-component",
+      "babelCorpusId": "directives/v_model_component",
+      "source": "const App = () => <section><FixtureInput v-model={state.text}/><output>{state.text}</output></section>;",
+      "componentFixtures": ["FixtureInput"],
+      "initial": { "text": "alpha" },
+      "steps": [
+        { "event": { "selector": "input", "type": "input", "assign": { "value": "beta" } } },
+        { "patch": { "text": "gamma" } },
+        { "event": { "selector": "input", "type": "input", "assign": { "value": "delta" } } }
+      ],
+      "expectedText": ["alpha", "beta", "gamma", "delta"],
+      "expectedElementIdentities": [
+        [0, 1, 2],
+        [0, 1, 2],
+        [0, 1, 2],
+        [0, 1, 2]
+      ],
+      "expectedEvents": [
+        [],
+        [
+          {
+            "selector": "input",
+            "type": "input",
+            "defaultPrevented": false,
+            "dispatchResult": true,
+            "assigned": { "value": "beta" },
+            "input": { "value": "beta", "checked": false }
+          }
+        ],
+        [
+          {
+            "selector": "input",
+            "type": "input",
+            "defaultPrevented": false,
+            "dispatchResult": true,
+            "assigned": { "value": "beta" },
+            "input": { "value": "beta", "checked": false }
+          }
+        ],
+        [
+          {
+            "selector": "input",
+            "type": "input",
+            "defaultPrevented": false,
+            "dispatchResult": true,
+            "assigned": { "value": "beta" },
+            "input": { "value": "beta", "checked": false }
+          },
+          {
+            "selector": "input",
+            "type": "input",
+            "defaultPrevented": false,
+            "dispatchResult": true,
+            "assigned": { "value": "delta" },
+            "input": { "value": "delta", "checked": false }
+          }
+        ]
+      ]
+    },
+    {
+      "id": "directives/v-model-component-arg",
+      "source": "const App = () => <section><FixtureInput v-model:modelValue={state.text}/><output>{state.text}</output></section>;",
+      "componentFixtures": ["FixtureInput"],
+      "initial": { "text": "alpha" },
+      "steps": [
+        { "event": { "selector": "input", "type": "input", "assign": { "value": "beta" } } },
+        { "patch": { "text": "gamma" } }
+      ],
+      "expectedText": ["alpha", "beta", "gamma"],
+      "expectedElementIdentities": [
+        [0, 1, 2],
+        [0, 1, 2],
+        [0, 1, 2]
+      ],
+      "expectedEvents": [
+        [],
+        [
+          {
+            "selector": "input",
+            "type": "input",
+            "defaultPrevented": false,
+            "dispatchResult": true,
+            "assigned": { "value": "beta" },
+            "input": { "value": "beta", "checked": false }
+          }
+        ],
+        [
+          {
+            "selector": "input",
+            "type": "input",
+            "defaultPrevented": false,
+            "dispatchResult": true,
+            "assigned": { "value": "beta" },
+            "input": { "value": "beta", "checked": false }
+          }
+        ]
+      ]
+    },
+    {
+      "id": "directives/v-model-checkbox",
+      "source": "const App = () => <label><input type=\"checkbox\" v-model={state.checked}/><output>{String(state.checked)}</output></label>;",
+      "initial": { "checked": false },
+      "steps": [
+        { "event": { "selector": "input", "type": "change", "assign": { "checked": true } } },
+        { "patch": { "checked": false } },
+        { "event": { "selector": "input", "type": "change", "assign": { "checked": true } } }
+      ],
+      "expectedText": ["false", "true", "false", "true"],
+      "expectedElementIdentities": [
+        [0, 1, 2],
+        [0, 1, 2],
+        [0, 1, 2],
+        [0, 1, 2]
+      ],
+      "expectedEvents": [
+        [],
+        [
+          {
+            "selector": "input",
+            "type": "change",
+            "defaultPrevented": false,
+            "dispatchResult": true,
+            "assigned": { "checked": true },
+            "input": { "value": "on", "checked": true }
+          }
+        ],
+        [
+          {
+            "selector": "input",
+            "type": "change",
+            "defaultPrevented": false,
+            "dispatchResult": true,
+            "assigned": { "checked": true },
+            "input": { "value": "on", "checked": true }
+          }
+        ],
+        [
+          {
+            "selector": "input",
+            "type": "change",
+            "defaultPrevented": false,
+            "dispatchResult": true,
+            "assigned": { "checked": true },
+            "input": { "value": "on", "checked": true }
+          },
+          {
+            "selector": "input",
+            "type": "change",
+            "defaultPrevented": false,
+            "dispatchResult": true,
+            "assigned": { "checked": true },
+            "input": { "value": "on", "checked": true }
+          }
+        ]
+      ]
+    },
+    {
+      "id": "directives/v-model-radio",
+      "source": "const App = () => <label><input type=\"radio\" value=\"a\" v-model={state.value}/><input type=\"radio\" value=\"b\" v-model={state.value}/><output>{state.value}</output></label>;",
+      "initial": { "value": "a" },
+      "steps": [
+        {
+          "event": { "selector": "input[value=b]", "type": "change", "assign": { "checked": true } }
+        },
+        { "patch": { "value": "a" } }
+      ],
+      "expectedText": ["a", "b", "a"],
+      "expectedElementIdentities": [
+        [0, 1, 2, 3],
+        [0, 1, 2, 3],
+        [0, 1, 2, 3]
+      ],
+      "expectedEvents": [
+        [],
+        [
+          {
+            "selector": "input[value=b]",
+            "type": "change",
+            "defaultPrevented": false,
+            "dispatchResult": true,
+            "assigned": { "checked": true },
+            "input": { "value": "b", "checked": true }
+          }
+        ],
+        [
+          {
+            "selector": "input[value=b]",
+            "type": "change",
+            "defaultPrevented": false,
+            "dispatchResult": true,
+            "assigned": { "checked": true },
+            "input": { "value": "b", "checked": true }
+          }
+        ]
+      ]
+    },
+    {
+      "id": "directives/v-model-select",
+      "source": "const App = () => <label><select v-model={state.value}><option value=\"a\">A</option><option value=\"b\">B</option></select><output>{state.value}</output></label>;",
+      "initial": { "value": "a" },
+      "steps": [{ "patch": { "value": "b" } }, { "patch": { "value": "a" } }],
+      "expectedText": ["ABa", "ABb", "ABa"],
+      "expectedElementIdentities": [
+        [0, 1, 2, 3, 4],
+        [0, 1, 2, 3, 4],
+        [0, 1, 2, 3, 4]
+      ]
+    },
+    {
+      "id": "directives/v-model-modifier-array",
+      "babelCorpusId": "directives/v_model_modifier_array",
+      "source": "const App = () => <label><input v-model={[state.value, ['trim']]}/><output>[{state.value}]</output></label>;",
+      "initial": { "value": "a" },
+      "steps": [
+        { "event": { "selector": "input", "type": "input", "assign": { "value": "  b  " } } },
+        { "patch": { "value": "c" } }
+      ],
+      "expectedText": ["[a]", "[b]", "[c]"],
+      "expectedElementIdentities": [
+        [0, 1, 2],
+        [0, 1, 2],
+        [0, 1, 2]
+      ],
+      "expectedEvents": [
+        [],
+        [
+          {
+            "selector": "input",
+            "type": "input",
+            "defaultPrevented": false,
+            "dispatchResult": true,
+            "assigned": { "value": "  b  " },
+            "input": { "value": "  b  ", "checked": false }
+          }
+        ],
+        [
+          {
+            "selector": "input",
+            "type": "input",
+            "defaultPrevented": false,
+            "dispatchResult": true,
+            "assigned": { "value": "  b  " },
+            "input": { "value": "  b  ", "checked": false }
+          }
+        ]
+      ]
+    },
+    {
+      "id": "directives/v-model-trim",
+      "source": "const App = () => <label><input v-model_trim={state.value}/><output>[{state.value}]</output></label>;",
+      "initial": { "value": "a" },
+      "steps": [
+        { "event": { "selector": "input", "type": "input", "assign": { "value": "  b  " } } },
+        { "patch": { "value": "c" } }
+      ],
+      "expectedText": ["[a]", "[b]", "[c]"],
+      "expectedElementIdentities": [
+        [0, 1, 2],
+        [0, 1, 2],
+        [0, 1, 2]
+      ],
+      "expectedEvents": [
+        [],
+        [
+          {
+            "selector": "input",
+            "type": "input",
+            "defaultPrevented": false,
+            "dispatchResult": true,
+            "assigned": { "value": "  b  " },
+            "input": { "value": "  b  ", "checked": false }
+          }
+        ],
+        [
+          {
+            "selector": "input",
+            "type": "input",
+            "defaultPrevented": false,
+            "dispatchResult": true,
+            "assigned": { "value": "  b  " },
+            "input": { "value": "  b  ", "checked": false }
+          }
+        ]
+      ]
+    },
+    {
+      "id": "directives/v-model-lazy",
+      "babelCorpusId": "directives/v_model_underscore",
+      "source": "const App = () => <label><input v-model_lazy={state.value}/><output>[{state.value}]</output></label>;",
+      "initial": { "value": "a" },
+      "steps": [
+        { "event": { "selector": "input", "type": "input", "assign": { "value": "b" } } },
+        { "event": { "selector": "input", "type": "change", "assign": { "value": "c" } } }
+      ],
+      "expectedText": ["[a]", "[a]", "[c]"],
+      "expectedElementIdentities": [
+        [0, 1, 2],
+        [0, 1, 2],
+        [0, 1, 2]
+      ],
+      "expectedEvents": [
+        [],
+        [
+          {
+            "selector": "input",
+            "type": "input",
+            "defaultPrevented": false,
+            "dispatchResult": true,
+            "assigned": { "value": "b" },
+            "input": { "value": "b", "checked": false }
+          }
+        ],
+        [
+          {
+            "selector": "input",
+            "type": "input",
+            "defaultPrevented": false,
+            "dispatchResult": true,
+            "assigned": { "value": "b" },
+            "input": { "value": "b", "checked": false }
+          },
+          {
+            "selector": "input",
+            "type": "change",
+            "defaultPrevented": false,
+            "dispatchResult": true,
+            "assigned": { "value": "c" },
+            "input": { "value": "c", "checked": false }
+          }
+        ]
+      ]
+    },
+    {
+      "id": "directives/v-model-number",
+      "source": "const App = () => <label><input v-model_number={state.value}/><output>{typeof state.value}:{String(state.value)}</output></label>;",
+      "initial": { "value": 1 },
+      "steps": [
+        { "event": { "selector": "input", "type": "input", "assign": { "value": "42" } } },
+        { "patch": { "value": 7 } }
+      ],
+      "expectedText": ["number:1", "number:42", "number:7"],
+      "expectedElementIdentities": [
+        [0, 1, 2],
+        [0, 1, 2],
+        [0, 1, 2]
+      ],
+      "expectedEvents": [
+        [],
+        [
+          {
+            "selector": "input",
+            "type": "input",
+            "defaultPrevented": false,
+            "dispatchResult": true,
+            "assigned": { "value": "42" },
+            "input": { "value": "42", "checked": false }
+          }
+        ],
+        [
+          {
+            "selector": "input",
+            "type": "input",
+            "defaultPrevented": false,
+            "dispatchResult": true,
+            "assigned": { "value": "42" },
+            "input": { "value": "42", "checked": false }
+          }
+        ]
+      ]
+    },
+    {
+      "id": "directives/v-text",
+      "babelCorpusId": "directives/v_text",
+      "source": "const App = () => <div v-text={state.text}/>;",
+      "initial": { "text": "alpha" },
+      "steps": [
+        { "patch": { "text": "beta" } },
+        { "patch": { "text": "" } },
+        { "patch": { "text": "gamma" } }
+      ],
+      "expectedText": ["alpha", "beta", "", "gamma"],
+      "expectedElementIdentities": [[0], [0], [0], [0]]
+    },
+    {
+      "id": "directives/v-if-chain",
+      "source": "const App = () => <main><p v-if={state.mode === \"a\"}>A:{state.label}</p><p v-else-if={state.mode === \"b\"}>B:{state.label}</p><p v-else>C:{state.label}</p></main>;",
+      "initial": { "mode": "a", "label": "x" },
+      "steps": [
+        { "patch": { "label": "y" } },
+        { "patch": { "mode": "b" } },
+        { "patch": { "mode": "c" } },
+        { "patch": { "mode": "a", "label": "z" } }
+      ],
+      "expectedText": ["A:x", "A:y", "B:y", "C:y", "A:z"],
+      "expectedElementIdentities": [
+        [0, 1],
+        [0, 1],
+        [0, 2],
+        [0, 3],
+        [0, 4]
+      ]
+    },
+    {
+      "id": "directives/v-for-keyed",
+      "source": "const App = () => <ul><li v-for={(item) in state.items} key={item.id}>{item.label}</li></ul>;",
+      "initial": {
+        "items": [
+          { "id": 1, "label": "a" },
+          { "id": 2, "label": "b" }
+        ]
+      },
+      "steps": [
+        {
+          "patch": {
+            "items": [
+              { "id": 2, "label": "b" },
+              { "id": 1, "label": "a" }
+            ]
+          }
+        },
+        { "patch": { "items": [{ "id": 2, "label": "b" }] } },
+        {
+          "patch": {
+            "items": [
+              { "id": 2, "label": "b" },
+              { "id": 3, "label": "c" }
+            ]
+          }
+        }
+      ],
+      "expectedText": ["ab", "ba", "b", "bc"],
+      "expectedElementIdentities": [
+        [0, 1, 2],
+        [0, 2, 1],
+        [0, 2],
+        [0, 2, 3]
+      ]
+    },
+    {
+      "id": "directives/v-slot-default",
+      "source": "const App = () => <FixtureCard title={state.title} v-slot={({ suffix }) => <em>{state.label}:{suffix}</em>} />;",
+      "componentFixtures": ["FixtureCard"],
+      "initial": { "title": "Alpha", "label": "one" },
+      "steps": [{ "patch": { "label": "two" } }, { "patch": { "title": "Beta" } }],
+      "expectedText": ["Title:Alpha|", "Title:Alpha|", "Title:Beta|"],
+      "expectedElementIdentities": [
+        [0, 1, 2],
+        [0, 1, 2],
+        [0, 1, 2]
+      ]
+    },
+    {
+      "id": "directives/v-slot-named",
+      "source": "const App = () => <FixtureCard title={state.title}><template v-slot:header={({ suffix }) => <b>{state.label}:{suffix}</b>} /></FixtureCard>;",
+      "componentFixtures": ["FixtureCard"],
+      "initial": { "title": "Alpha", "label": "one" },
+      "steps": [{ "patch": { "label": "two" } }, { "patch": { "title": "Beta" } }],
+      "expectedText": ["|Title:Alpha|", "|Title:Alpha|", "|Title:Beta|"],
+      "expectedElementIdentities": [
+        [0, 1, 2, 3],
+        [0, 1, 2, 3],
+        [0, 1, 2, 3]
+      ]
+    },
+    {
+      "id": "directives/custom",
+      "source": "const vColor = (el, value) => { Vue.watchEffect(() => { el.dataset.color = value(); }); }; const App = () => <p v-color={state.color}>c</p>;",
+      "initial": { "color": "red" },
+      "steps": [{ "patch": { "color": "blue" } }],
+      "expectedText": ["c", "c"],
+      "expectedElementIdentities": [[0], [0]]
+    },
+    {
+      "id": "directives/v-pre",
+      "source": "const App = () => <main><p v-pre>{state.label}</p></main>;",
+      "initial": { "label": "a" },
+      "steps": [{ "patch": { "label": "b" } }],
+      "expectedText": ["a", "b"],
+      "expectedElementIdentities": [
+        [0, 1],
+        [0, 1]
+      ]
+    },
+    {
+      "id": "directives/v-cloak",
+      "source": "const App = () => <p v-cloak>{state.label}</p>;",
+      "initial": { "label": "a" },
+      "steps": [{ "patch": { "label": "b" } }],
+      "expectedText": ["a", "b"],
+      "expectedElementIdentities": [[0], [0]]
+    },
+    {
+      "id": "props/key-replacement",
+      "babelCorpusId": "props/key",
+      "source": "const App = () => <main><p key={state.key}>{state.label}</p></main>;",
+      "initial": { "key": "a", "label": "x" },
+      "steps": [{ "patch": { "label": "y" } }, { "patch": { "key": "b" } }],
+      "expectedText": ["x", "y", "y"],
+      "expectedElementIdentities": [
+        [0, 1],
+        [0, 1],
+        [0, 2]
+      ]
+    },
+    {
+      "id": "tsx/typed-expressions",
+      "lang": "tsx",
+      "source": "const App = () => <p data-kind=\"tsx\">{(state.label as string).toUpperCase()}:{state.count!}</p>;",
+      "initial": { "label": "alpha", "count": 1 },
+      "steps": [{ "patch": { "label": "beta" } }, { "patch": { "count": 2 } }],
+      "expectedText": ["ALPHA:1", "BETA:1", "BETA:2"],
+      "expectedElementIdentities": [[0], [0], [0]]
+    },
+    {
+      "id": "control-flow/keyed-map-list",
+      "babelCorpusId": "children/map_list",
+      "source": "const App = () => <ul>{state.items.map((item) => <li key={item.id}>{item.label}</li>)}</ul>;",
+      "initial": {
+        "items": [
+          { "id": 1, "label": "a" },
+          { "id": 2, "label": "b" },
+          { "id": 3, "label": "c" }
+        ]
+      },
+      "steps": [
+        {
+          "patch": {
+            "items": [
+              { "id": 1, "label": "a" },
+              { "id": 2, "label": "b" },
+              { "id": 3, "label": "c" },
+              { "id": 4, "label": "d" }
+            ]
+          }
+        },
+        {
+          "patch": {
+            "items": [
+              { "id": 1, "label": "a" },
+              { "id": 3, "label": "c" },
+              { "id": 4, "label": "d" }
+            ]
+          }
+        },
+        {
+          "patch": {
+            "items": [
+              { "id": 4, "label": "d" },
+              { "id": 3, "label": "c" },
+              { "id": 1, "label": "a" }
+            ]
+          }
+        },
+        { "patch": { "items": [] } },
+        {
+          "patch": {
+            "items": [
+              { "id": 2, "label": "b" },
+              { "id": 1, "label": "a2" }
+            ]
+          }
+        }
+      ],
+      "expectedText": ["abc", "abcd", "acd", "dca", "", "ba2"],
+      "expectedElementIdentities": [
+        [0, 1, 2, 3],
+        [0, 1, 2, 3, 4],
+        [0, 1, 3, 4],
+        [0, 4, 3, 1],
+        [0],
+        [0, 5, 6]
+      ],
+      "expectedDom": [
+        [
+          {
+            "tag": "ul",
+            "attributes": {},
+            "children": [
+              { "tag": "li", "attributes": {}, "children": ["a"] },
+              { "tag": "li", "attributes": {}, "children": ["b"] },
+              { "tag": "li", "attributes": {}, "children": ["c"] }
+            ]
+          }
+        ],
+        [
+          {
+            "tag": "ul",
+            "attributes": {},
+            "children": [
+              { "tag": "li", "attributes": {}, "children": ["a"] },
+              { "tag": "li", "attributes": {}, "children": ["b"] },
+              { "tag": "li", "attributes": {}, "children": ["c"] },
+              { "tag": "li", "attributes": {}, "children": ["d"] }
+            ]
+          }
+        ],
+        [
+          {
+            "tag": "ul",
+            "attributes": {},
+            "children": [
+              { "tag": "li", "attributes": {}, "children": ["a"] },
+              { "tag": "li", "attributes": {}, "children": ["c"] },
+              { "tag": "li", "attributes": {}, "children": ["d"] }
+            ]
+          }
+        ],
+        [
+          {
+            "tag": "ul",
+            "attributes": {},
+            "children": [
+              { "tag": "li", "attributes": {}, "children": ["d"] },
+              { "tag": "li", "attributes": {}, "children": ["c"] },
+              { "tag": "li", "attributes": {}, "children": ["a"] }
+            ]
+          }
+        ],
+        [{ "tag": "ul", "attributes": {}, "children": [] }],
+        [
+          {
+            "tag": "ul",
+            "attributes": {},
+            "children": [
+              { "tag": "li", "attributes": {}, "children": ["b"] },
+              { "tag": "li", "attributes": {}, "children": ["a2"] }
+            ]
+          }
+        ]
+      ],
+      "expectedReferenceDom": [
+        [
+          {
+            "tag": "ul",
+            "attributes": {},
+            "children": [
+              { "tag": "li", "attributes": {}, "children": ["a"] },
+              { "tag": "li", "attributes": {}, "children": ["b"] },
+              { "tag": "li", "attributes": {}, "children": ["c"] },
+              " "
+            ]
+          }
+        ],
+        [
+          {
+            "tag": "ul",
+            "attributes": {},
+            "children": [
+              { "tag": "li", "attributes": {}, "children": ["a"] },
+              { "tag": "li", "attributes": {}, "children": ["b"] },
+              { "tag": "li", "attributes": {}, "children": ["c"] },
+              { "tag": "li", "attributes": {}, "children": ["d"] },
+              " "
+            ]
+          }
+        ],
+        [
+          {
+            "tag": "ul",
+            "attributes": {},
+            "children": [
+              { "tag": "li", "attributes": {}, "children": ["a"] },
+              { "tag": "li", "attributes": {}, "children": ["c"] },
+              { "tag": "li", "attributes": {}, "children": ["d"] },
+              " "
+            ]
+          }
+        ],
+        [
+          {
+            "tag": "ul",
+            "attributes": {},
+            "children": [
+              { "tag": "li", "attributes": {}, "children": ["d"] },
+              { "tag": "li", "attributes": {}, "children": ["c"] },
+              { "tag": "li", "attributes": {}, "children": ["a"] },
+              " "
+            ]
+          }
+        ],
+        [{ "tag": "ul", "attributes": {}, "children": [" "] }],
+        [
+          {
+            "tag": "ul",
+            "attributes": {},
+            "children": [
+              { "tag": "li", "attributes": {}, "children": ["b"] },
+              { "tag": "li", "attributes": {}, "children": ["a2"] },
+              " "
+            ]
+          }
+        ]
+      ],
+      "expectedReferenceText": ["abc ", "abcd ", "acd ", "dca ", " ", "ba2 "],
+      "expectedReferenceElementIdentities": [
+        [0, 1, 2, 3],
+        [0, 4, 5, 6, 7],
+        [0, 8, 9, 10],
+        [0, 11, 12, 13],
+        [0],
+        [0, 14, 15]
+      ]
+    },
+    {
+      "id": "events/capture-suffix",
+      "babelCorpusId": "events/capture",
+      "source": "const App = () => <div onClickCapture={() => state.log += \"capture;\"}><button onClick={() => state.log += \"bubble;\"}>{state.log}</button></div>;",
+      "initial": { "log": "" },
+      "steps": [
+        { "event": { "selector": "button", "type": "click" } },
+        { "event": { "selector": "button", "type": "click" } }
+      ],
+      "expectedText": ["", "capture;bubble;", "capture;bubble;capture;bubble;"],
+      "expectedElementIdentities": [
+        [0, 1],
+        [0, 1],
+        [0, 1]
+      ],
+      "expectedEvents": [
+        [],
+        [
+          {
+            "selector": "button",
+            "type": "click",
+            "defaultPrevented": false,
+            "dispatchResult": true
+          }
+        ],
+        [
+          {
+            "selector": "button",
+            "type": "click",
+            "defaultPrevented": false,
+            "dispatchResult": true
+          },
+          {
+            "selector": "button",
+            "type": "click",
+            "defaultPrevented": false,
+            "dispatchResult": true
+          }
+        ]
+      ],
+      "expectedDom": [
+        [
+          {
+            "tag": "div",
+            "attributes": {},
+            "children": [{ "tag": "button", "attributes": {}, "children": [] }]
+          }
+        ],
+        [
+          {
+            "tag": "div",
+            "attributes": {},
+            "children": [{ "tag": "button", "attributes": {}, "children": ["capture;bubble;"] }]
+          }
+        ],
+        [
+          {
+            "tag": "div",
+            "attributes": {},
+            "children": [
+              { "tag": "button", "attributes": {}, "children": ["capture;bubble;capture;bubble;"] }
+            ]
+          }
+        ]
+      ],
+      "expectedReferenceDom": [
+        [
+          {
+            "tag": "div",
+            "attributes": {},
+            "children": [{ "tag": "button", "attributes": {}, "children": [] }]
+          }
+        ],
+        [
+          {
+            "tag": "div",
+            "attributes": {},
+            "children": [{ "tag": "button", "attributes": {}, "children": ["bubble;"] }]
+          }
+        ],
+        [
+          {
+            "tag": "div",
+            "attributes": {},
+            "children": [{ "tag": "button", "attributes": {}, "children": ["bubble;bubble;"] }]
+          }
+        ]
+      ],
+      "expectedReferenceText": ["", "bubble;", "bubble;bubble;"]
+    },
+    {
+      "id": "events/once-suffix",
+      "babelCorpusId": "events/once",
+      "source": "const App = () => <button onClickOnce={() => state.count += 1}>count:{state.count}</button>;",
+      "initial": { "count": 0 },
+      "steps": [
+        { "event": { "selector": "button", "type": "click" } },
+        { "event": { "selector": "button", "type": "click" } }
+      ],
+      "expectedText": ["count:0", "count:1", "count:1"],
+      "expectedElementIdentities": [[0], [0], [0]],
+      "expectedEvents": [
+        [],
+        [
+          {
+            "selector": "button",
+            "type": "click",
+            "defaultPrevented": false,
+            "dispatchResult": true
+          }
+        ],
+        [
+          {
+            "selector": "button",
+            "type": "click",
+            "defaultPrevented": false,
+            "dispatchResult": true
+          },
+          {
+            "selector": "button",
+            "type": "click",
+            "defaultPrevented": false,
+            "dispatchResult": true
+          }
+        ]
+      ],
+      "expectedDom": [
+        [{ "tag": "button", "attributes": {}, "children": ["count:0"] }],
+        [{ "tag": "button", "attributes": {}, "children": ["count:1"] }],
+        [{ "tag": "button", "attributes": {}, "children": ["count:1"] }]
+      ],
+      "expectedReferenceDom": [
+        [{ "tag": "button", "attributes": {}, "children": ["count:0"] }],
+        [{ "tag": "button", "attributes": {}, "children": ["count:0"] }],
+        [{ "tag": "button", "attributes": {}, "children": ["count:0"] }]
+      ],
+      "expectedReferenceText": ["count:0", "count:0", "count:0"]
+    },
+    {
+      "id": "components/dynamic-component",
+      "source": "const App = () => <component is={state.tag}>{state.label}</component>;",
+      "initial": { "tag": "p", "label": "x" },
+      "steps": [{ "patch": { "tag": "span" } }, { "patch": { "label": "y" } }],
+      "expectedText": ["x", "x", "y"],
+      "expectedElementIdentities": [[0], [1], [1]],
+      "expectedDom": [
+        [{ "tag": "p", "attributes": {}, "children": ["x"] }],
+        [{ "tag": "span", "attributes": {}, "children": ["x"] }],
+        [{ "tag": "span", "attributes": {}, "children": ["y"] }]
+      ],
+      "expectedReferenceDom": [
+        [{ "tag": "component", "attributes": { "is": "p" }, "children": ["x"] }],
+        [{ "tag": "component", "attributes": { "is": "span" }, "children": ["x"] }],
+        [{ "tag": "component", "attributes": { "is": "span" }, "children": ["y"] }]
+      ],
+      "expectedReferenceElementIdentities": [[0], [0], [0]]
+    },
+    {
+      "id": "events/capture-modifier",
+      "source": "const App = () => <div onClick_capture={() => state.log += \"capture;\"}><button onClick={() => state.log += \"bubble;\"}>{state.log}</button></div>;",
+      "initial": { "log": "" },
+      "steps": [{ "event": { "selector": "button", "type": "click" } }],
+      "expectedText": ["", "bubble;"],
+      "expectedElementIdentities": [
+        [0, 1],
+        [0, 1]
+      ],
+      "expectedEvents": [
+        [],
+        [
+          {
+            "selector": "button",
+            "type": "click",
+            "defaultPrevented": false,
+            "dispatchResult": true
+          }
+        ]
+      ],
+      "expectedDom": [
+        [
+          {
+            "tag": "div",
+            "attributes": {},
+            "children": [{ "tag": "button", "attributes": {}, "children": [] }]
+          }
+        ],
+        [
+          {
+            "tag": "div",
+            "attributes": {},
+            "children": [{ "tag": "button", "attributes": {}, "children": ["bubble;"] }]
+          }
+        ]
+      ],
+      "expectedReferenceDom": [
+        [
+          {
+            "tag": "div",
+            "attributes": {},
+            "children": [{ "tag": "button", "attributes": {}, "children": [] }]
+          }
+        ],
+        [
+          {
+            "tag": "div",
+            "attributes": {},
+            "children": [{ "tag": "button", "attributes": {}, "children": ["capture;bubble;"] }]
+          }
+        ]
+      ],
+      "expectedReferenceText": ["", "capture;bubble;"]
+    },
+    {
+      "id": "events/once-modifier",
+      "source": "const App = () => <button onClick_once={() => state.count += 1}>count:{state.count}</button>;",
+      "initial": { "count": 0 },
+      "steps": [
+        { "event": { "selector": "button", "type": "click" } },
+        { "event": { "selector": "button", "type": "click" } }
+      ],
+      "expectedText": ["count:0", "count:0", "count:0"],
+      "expectedElementIdentities": [[0], [0], [0]],
+      "expectedEvents": [
+        [],
+        [
+          {
+            "selector": "button",
+            "type": "click",
+            "defaultPrevented": false,
+            "dispatchResult": true
+          }
+        ],
+        [
+          {
+            "selector": "button",
+            "type": "click",
+            "defaultPrevented": false,
+            "dispatchResult": true
+          },
+          {
+            "selector": "button",
+            "type": "click",
+            "defaultPrevented": false,
+            "dispatchResult": true
+          }
+        ]
+      ],
+      "expectedDom": [
+        [{ "tag": "button", "attributes": {}, "children": ["count:0"] }],
+        [{ "tag": "button", "attributes": {}, "children": ["count:0"] }],
+        [{ "tag": "button", "attributes": {}, "children": ["count:0"] }]
+      ],
+      "expectedReferenceDom": [
+        [{ "tag": "button", "attributes": {}, "children": ["count:0"] }],
+        [{ "tag": "button", "attributes": {}, "children": ["count:1"] }],
+        [{ "tag": "button", "attributes": {}, "children": ["count:1"] }]
+      ],
+      "expectedReferenceText": ["count:0", "count:1", "count:1"]
+    },
+    {
+      "id": "events/stop-modifier",
+      "source": "const App = () => <div onClick={() => state.log += \"outer;\"}><button onClick_stop={() => state.log += \"inner;\"}>{state.log}</button></div>;",
+      "initial": { "log": "" },
+      "steps": [{ "event": { "selector": "button", "type": "click" } }],
+      "expectedText": ["", "outer;"],
+      "expectedElementIdentities": [
+        [0, 1],
+        [0, 1]
+      ],
+      "expectedEvents": [
+        [],
+        [
+          {
+            "selector": "button",
+            "type": "click",
+            "defaultPrevented": false,
+            "dispatchResult": true
+          }
+        ]
+      ],
+      "expectedDom": [
+        [
+          {
+            "tag": "div",
+            "attributes": {},
+            "children": [{ "tag": "button", "attributes": {}, "children": [] }]
+          }
+        ],
+        [
+          {
+            "tag": "div",
+            "attributes": {},
+            "children": [{ "tag": "button", "attributes": {}, "children": ["outer;"] }]
+          }
+        ]
+      ],
+      "expectedReferenceDom": [
+        [
+          {
+            "tag": "div",
+            "attributes": {},
+            "children": [{ "tag": "button", "attributes": {}, "children": [] }]
+          }
+        ],
+        [
+          {
+            "tag": "div",
+            "attributes": {},
+            "children": [{ "tag": "button", "attributes": {}, "children": ["inner;"] }]
+          }
+        ]
+      ],
+      "expectedReferenceText": ["", "inner;"]
+    },
+    {
+      "id": "events/prevent-modifier",
+      "source": "const App = () => <button onClick_prevent={() => state.count += 1}>count:{state.count}</button>;",
+      "initial": { "count": 0 },
+      "steps": [{ "event": { "selector": "button", "type": "click" } }],
+      "expectedText": ["count:0", "count:0"],
+      "expectedElementIdentities": [[0], [0]],
+      "expectedEvents": [
+        [],
+        [
+          {
+            "selector": "button",
+            "type": "click",
+            "defaultPrevented": false,
+            "dispatchResult": true
+          }
+        ]
+      ],
+      "expectedDom": [
+        [{ "tag": "button", "attributes": {}, "children": ["count:0"] }],
+        [{ "tag": "button", "attributes": {}, "children": ["count:0"] }]
+      ],
+      "expectedReferenceDom": [
+        [{ "tag": "button", "attributes": {}, "children": ["count:0"] }],
+        [{ "tag": "button", "attributes": {}, "children": ["count:1"] }]
+      ],
+      "expectedReferenceText": ["count:0", "count:1"],
+      "expectedReferenceEvents": [
+        [],
+        [
+          {
+            "selector": "button",
+            "type": "click",
+            "defaultPrevented": true,
+            "dispatchResult": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "directives/custom-modifiers",
+      "source": "const vMark = (el, value, arg, modifiers) => { Vue.watchEffect(() => { el.dataset.mark = `${Object.keys(modifiers).join('.')}:${value()}`; }); }; const App = () => <p v-mark:left_a_b={state.mark}>m</p>;",
+      "initial": { "mark": "x" },
+      "steps": [{ "patch": { "mark": "y" } }],
+      "expectedText": ["m", "m"],
+      "expectedElementIdentities": [[0], [0]],
+      "expectedWarnings": [
+        ["TypeError: Cannot convert undefined or null to object"],
+        ["TypeError: Cannot convert undefined or null to object"]
+      ],
+      "expectedDom": [
+        [{ "tag": "p", "attributes": {}, "children": ["m"] }],
+        [{ "tag": "p", "attributes": {}, "children": ["m"] }]
+      ],
+      "expectedReferenceDom": [
+        [{ "tag": "p", "attributes": { "data-mark": "a.b:x" }, "children": ["m"] }],
+        [{ "tag": "p", "attributes": { "data-mark": "a.b:y" }, "children": ["m"] }]
+      ],
+      "expectedReferenceWarnings": [[], []]
+    },
+    {
+      "id": "directives/v-once",
+      "source": "const App = () => <main><p v-once>{state.label}</p><p>{state.label}</p></main>;",
+      "initial": { "label": "a" },
+      "steps": [{ "patch": { "label": "b" } }],
+      "expectedText": ["aa", "bb"],
+      "expectedElementIdentities": [
+        [0, 1, 2],
+        [0, 1, 2]
+      ],
+      "expectedDom": [
+        [
+          {
+            "tag": "main",
+            "attributes": {},
+            "children": [
+              { "tag": "p", "attributes": {}, "children": ["a"] },
+              { "tag": "p", "attributes": {}, "children": ["a"] }
+            ]
+          }
+        ],
+        [
+          {
+            "tag": "main",
+            "attributes": {},
+            "children": [
+              { "tag": "p", "attributes": {}, "children": ["b"] },
+              { "tag": "p", "attributes": {}, "children": ["b"] }
+            ]
+          }
+        ]
+      ],
+      "expectedReferenceDom": [
+        [
+          {
+            "tag": "main",
+            "attributes": {},
+            "children": [
+              { "tag": "p", "attributes": {}, "children": ["a"] },
+              { "tag": "p", "attributes": {}, "children": ["a"] }
+            ]
+          }
+        ],
+        [
+          {
+            "tag": "main",
+            "attributes": {},
+            "children": [
+              { "tag": "p", "attributes": {}, "children": ["a"] },
+              { "tag": "p", "attributes": {}, "children": ["b"] }
+            ]
+          }
+        ]
+      ],
+      "expectedReferenceText": ["aa", "ab"]
+    },
+    {
+      "id": "props/ref-callback",
+      "source": "const App = () => <p ref={(el) => { if (el) el.dataset.ref = 'set'; }}>{state.label}</p>;",
+      "initial": { "label": "a" },
+      "steps": [{ "patch": { "label": "b" } }],
+      "expectedText": ["", ""],
+      "expectedElementIdentities": [[], []],
+      "expectedWarnings": [
+        ["TypeError: Cannot read properties of undefined (reading 'vaporTemplateRefSetter')"],
+        ["TypeError: Cannot read properties of undefined (reading 'vaporTemplateRefSetter')"]
+      ],
+      "expectedDom": [[], []],
+      "expectedReferenceDom": [
+        [{ "tag": "p", "attributes": { "data-ref": "set" }, "children": ["a"] }],
+        [{ "tag": "p", "attributes": { "data-ref": "set" }, "children": ["b"] }]
+      ],
+      "expectedReferenceText": ["a", "b"],
+      "expectedReferenceElementIdentities": [[0], [0]],
+      "expectedReferenceWarnings": [[], []]
     }
   ]
 }
