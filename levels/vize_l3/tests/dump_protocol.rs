@@ -49,8 +49,8 @@ fn old_graph_protocol_is_rejected() {
 
 #[test]
 fn old_and_unknown_opcode_vocabularies_are_rejected() {
-    for kind in ["impeto.set-text", "l3.unknown", "l2.set-text"] {
-        // codename: historical op name
+    let historical = "impeto.set-text"; // codename: historical op name
+    for kind in [historical, "l3.unknown", "l2.set-text"] {
         assert_eq!(OpKind::from_mnemonic(kind), None);
         assert!(Page::parse(&GRAPH.replace("l3.set-text", kind)).is_err());
     }

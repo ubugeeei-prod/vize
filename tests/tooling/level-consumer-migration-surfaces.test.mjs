@@ -111,8 +111,8 @@ void test("consumer migration TSV exposes matched names and name kind", () => {
     assert.equal(row.surface_group, "stage");
     assert.equal(row.surface, physicalLabels.get(row.surface_id));
   }
-  for (const legacyLabel of ["L0/carton", "L1/sinopia", "L2/disegno", "L1->L2/ricalco"]) {
-    // codename: published package name
+  const legacyLabels = ["L0/carton", "L1/sinopia", "L2/disegno", "L1->L2/ricalco"]; // codename: published package names
+  for (const legacyLabel of legacyLabels) {
     assert.ok(!rows.some((row) => row.surface === legacyLabel), legacyLabel);
   }
 });
