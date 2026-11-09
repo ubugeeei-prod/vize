@@ -208,3 +208,38 @@ test("each level has one registry and policy consumers do not rematch variants",
       `missing Vue version table ${version}`,
     );
 });
+
+// #6829: each proof-of-concept framework or input language is an `examples/` crate
+// on public level APIs. No level crate names one or depends on one.
+const proofOfConceptInputs =
+  /\b(?:solid|svelte|astro|angular|coffee(?:script)?|moonbit|python|poc_support)\b/iu;
+const publicLevelDependency = /^(?:vize_l[0-4](?:_to_l[0-4])?|oxc_\w+|poc-support)$/u;
+
+function workspaceMembers(): string[] {
+  const workspace = fs.readFileSync(path.join(repoRoot, "Cargo.toml"), "utf8");
+  const members = /^members = \[([\s\S]*?)\]/mu.exec(workspace)?.[1] ?? "";
+  return [...members.matchAll(/"([^"]+)"/gu)].map((match) => match[1]);
+}
+
+test("proof-of-concept inputs stay in examples on public level APIs", () => {
+  const examples = workspaceMembers().filter((member) => member.startsWith("examples/"));
+  assert.ok(examples.includes("examples/poc-support"), "the examples are workspace members");
+  for (const crate of examples) {
+    const manifest = fs.readFileSync(path.join(repoRoot, crate, "Cargo.toml"), "utf8");
+    const section = manifest.split(/^\[dependencies\]$/mu)[1]?.split(/^\[/mu)[0] ?? "";
+    const dependencies = [...section.matchAll(/^([\w-]+)\s*=/gmu)].map((match) => match[1]);
+    assert.ok(dependencies.length > 0, `${crate} declares its dependencies`);
+    assert.deepEqual(
+      dependencies.filter((dependency) => !publicLevelDependency.test(dependency)),
+      [],
+      `${crate} reaches past the level crates`,
+    );
+  }
+  const levels = workspaceMembers().filter((member) => /\/vize_l\d/u.test(member));
+  assert.ok(levels.length >= 8, "the workspace lists the level crates");
+  const named = levels
+    .flatMap((crate) => rustFiles(path.join(repoRoot, crate, "src")))
+    .filter((file) => proofOfConceptInputs.test(maskRustSource(fs.readFileSync(file, "utf8"))))
+    .map((file) => path.relative(repoRoot, file));
+  assert.deepEqual(named, [], "a level crate names a proof-of-concept input");
+});
