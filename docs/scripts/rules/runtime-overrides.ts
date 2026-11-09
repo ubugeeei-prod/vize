@@ -54,9 +54,9 @@ export const runtimeOverrides: Record<string, RuleExample> = {
     "crates/vize_patina/src/rules/vue/no_bare_strings_in_template.rs",
     {
       ruleOptions: { allowlist: ["/^[DRWXYmvx]$/u"] },
-      note: "The allowlist replaces eslint-plugin-vue's punctuation defaults when present. Entries are literal substrings or /pattern/flags values and are removed before the remaining text is checked. Omit allowlist to retain the defaults; [] clears them. Options do not enable the rule.",
+      note: "The allowlist replaces eslint-plugin-vue's punctuation defaults when present. Entries are literal substrings or `/pattern/flags` values using Rust regex syntax and are removed before the remaining text is checked; patterns that do not compile remain literals. Omit allowlist to retain the defaults; [] clears them. Options do not enable the rule.",
       noteJa:
-        "allowlist を指定すると、eslint-plugin-vue の既定の記号一覧を置き換えます。各項目はリテラルな部分文字列または /pattern/flags 形式で、残りのテキストを検査する前に除外します。既定値を保つには allowlist を省略し、[] で既定値を消します。オプションだけではルールを有効にしません。",
+        "allowlist を指定すると、eslint-plugin-vue の既定の記号一覧を置き換えます。各項目はリテラルな部分文字列または Rust の正規表現構文を使う `/pattern/flags` 形式で、残りのテキストを検査する前に除外します。コンパイルできないパターンはリテラルとして扱います。既定値を保つには allowlist を省略し、[] で既定値を消します。オプションだけではルールを有効にしません。",
     },
   ),
   "vue/warn-custom-directive": pair(
