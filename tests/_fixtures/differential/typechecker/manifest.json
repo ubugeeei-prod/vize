@@ -12702,6 +12702,40 @@
       }
     },
     {
+      "id": "typechecker/project-session-retirement-11168/watch-settle-stop-budget",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "test": "lsp_client::editor_lsp::watch_settle_tests::an_unfinished_watch_update_never_holds_shutdown_past_the_client_budget",
+      "sourceRevision": "680dfd088f5979a7131911124845e68cc7beb67c",
+      "inputs": [
+        {
+          "file": "reference/probe.ts",
+          "path": "project-session-retirement-11168/probe.ts.txt",
+          "sha256": "ad35bcc06b1b2018c4c5a215eb3dda57934260a777415d64ba79513beabd6d29"
+        },
+        {
+          "file": "reference/tsconfig.json",
+          "path": "project-session-retirement-11168/tsconfig.json.txt",
+          "sha256": "81075be1182e35f06d3fac2f7fcaee5a5f650b044d52bb804b51d5488fac9eee"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "ts"
+            ],
+            "selector": "lsp_client::editor_lsp::watch_settle_tests::an_unfinished_watch_update_never_holds_shutdown_past_the_client_budget; an editor session's watch settling stays within VS Code's 2 s stop budget, not a new semantic program"
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/project-session-retirement-11168/watch-teardown-12526",
       "state": "active",
       "targets": [

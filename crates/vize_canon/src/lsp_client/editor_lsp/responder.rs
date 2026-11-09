@@ -12,8 +12,10 @@ use std::{
     time::{Duration, Instant},
 };
 
-/// Bound on [`Inbound::settle`], the pinned SDK's shutdown bound.
-pub(super) const WATCH_SETTLE_TIMEOUT: Duration = Duration::from_secs(2);
+/// Bound on [`Inbound::settle`]. An editor's `shutdown` reply waits for this
+/// close, and VS Code gives its whole `stop` 2 s. A watch update still queued
+/// behind other background work is left to cancel, as before #12526.
+pub(super) const WATCH_SETTLE_TIMEOUT: Duration = Duration::from_millis(250);
 
 /// tsgo's background watch work, observed from its log by the responder
 /// thread and, while a shutdown settles, by the closing thread.
