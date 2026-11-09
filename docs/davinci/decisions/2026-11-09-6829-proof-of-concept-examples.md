@@ -11,7 +11,7 @@ and none of them can leak framework code into the levels.
 
 ## Shape
 
-Each proof of concept is a Rust crate `examples/<name>-poc/`, a workspace member with
+Each proof of concept is a Rust crate `examples/poc-<name>/`, a workspace member with
 `publish = false`:
 
 - `input/` holds the authored component in the framework's or language's own syntax.
@@ -21,7 +21,7 @@ Each proof of concept is a Rust crate `examples/<name>-poc/`, a workspace member
 - The shared L2 to L3 lowering decides what is reactive and the L3 verifier checks it.
 - `src/target.rs` is the example's L4 target. It walks the L3 program and writes the module
   with the L4 writer.
-- `src/main.rs` runs the example: `cargo run -p <name>-poc -- examples/<name>-poc/input/<file>`.
+- `src/main.rs` runs the example: `cargo run -p poc-<name> -- examples/poc-<name>/input/<file>`.
 - `README.md` names the input and the syntax the example covers and refuses.
 - `__snapshots__/` holds the compiled output. A unit test compiles the input, parses the output
   as an ES module and compares it byte for byte with the snapshot (`VIZE_POC_UPDATE=1` rewrites it).
