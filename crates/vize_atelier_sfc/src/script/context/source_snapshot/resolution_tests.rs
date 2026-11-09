@@ -234,6 +234,17 @@ fn concurrent_siblings_publish_one_resolution_per_directory_and_specifier() {
 #[cfg(unix)]
 #[test]
 fn public_importers_refresh_retargeted_symlinks_for_saved_and_unsaved_roots() {
+    // A request's snapshot holds handles on what it resolved; links still refresh.
+    for sources in [
+        TypeSourceSnapshot::default(),
+        TypeSourceSnapshot::for_request(),
+    ] {
+        refresh_retargeted_symlinks(sources);
+    }
+}
+
+#[cfg(unix)]
+fn refresh_retargeted_symlinks(sources: TypeSourceSnapshot) {
     let dir = tempfile::tempdir().unwrap();
     let root = dir.path().canonicalize().unwrap();
     let targets: Vec<_> = ["first", "second"]
@@ -247,7 +258,6 @@ fn public_importers_refresh_retargeted_symlinks_for_saved_and_unsaved_roots() {
         })
         .collect();
     let link = root.join("selected");
-    let sources = TypeSourceSnapshot::default();
     for target in targets {
         std::os::unix::fs::symlink(&target, &link).unwrap();
         for filename in ["App.vue", "Unsaved.vue"] {
