@@ -117,7 +117,10 @@ void test("Core PR gates and every canonical observer use the recovery adapter",
       with: { "wild-version": "0.9.0" },
     },
   );
-  assert.equal(steps.find((s) => s.uses === upstream), undefined);
+  assert.equal(
+    steps.find((s) => s.uses === upstream),
+    undefined,
+  );
 });
 void test("Expanded primary success equals original stdout/stderr/files/config and removes archive", () =>
   fixture(({ run }) => {
