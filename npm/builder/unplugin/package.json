@@ -79,7 +79,7 @@
     "check": "vp check src vite.config.ts",
     "check:fix": "vp check --fix src vite.config.ts",
     "fmt": "vp fmt --write src vite.config.ts",
-    "test": "node --test src/*.test.ts src/**/*.test.ts",
+    "test": "vp pack && node --test src/*.test.ts src/**/*.test.ts",
     "test:update": "node --test --test-update-snapshots src/*.test.ts src/**/*.test.ts"
   },
   "dependencies": {

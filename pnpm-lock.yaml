@@ -859,6 +859,31 @@ importers:
         specifier: catalog:bundlers
         version: 5.112.2(@swc/core@1.16.22(@swc/helpers@0.5.23))(clean-css@5.3.3)(esbuild@0.28.1)(html-minifier-terser@7.2.0)(lightningcss@1.33.0)(postcss@8.5.26)(sharp@0.35.5(@types/node@25.9.2))
 
+  npm/builder/unplugin/example:
+    dependencies:
+      vue:
+        specifier: catalog:vue-production
+        version: 3.5.42(typescript@6.0.3)
+    devDependencies:
+      '@types/node':
+        specifier: catalog:typescript
+        version: 25.9.2
+      '@vizejs/unplugin':
+        specifier: workspace:*
+        version: link:..
+      esbuild:
+        specifier: 0.28.1
+        version: 0.28.1
+      typescript:
+        specifier: catalog:typescript
+        version: 6.0.3
+      vite-plus:
+        specifier: catalog:vite-stack
+        version: 0.1.24(@types/node@25.9.2)(@voidzero-dev/vite-plus-core@0.1.24(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3)(yaml@2.9.1))(esbuild@0.28.1)(happy-dom@21.0.4)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3)(yaml@2.9.1)
+      webpack:
+        specifier: catalog:bundlers
+        version: 5.112.2(@swc/core@1.16.22(@swc/helpers@0.5.24))(clean-css@5.3.3)(cssnano@9.9.0(postcss@8.5.32))(esbuild@0.28.1)(html-minifier-terser@7.2.0)(lightningcss@1.33.0)(postcss@8.5.32)(sharp@0.35.5(@types/node@25.9.2))
+
   npm/builder/vite:
     dependencies:
       '@vizejs/native':

@@ -1,9 +1,9 @@
-use super::{Checked, Value, bound, fs, load, support};
+use super::{bound, fs, load, support, Checked, Value};
 use serde_json::json;
 
 pub(super) const UPDATE: &str = "malformed-membership/provider-strict-checker-update-11628.json";
 pub(super) const UPDATE_HASH: &str =
-    "24019bc545fbecb6d92ef7729ea99248f1fb514e3e0266e321331aec844f8313";
+    "3ab54c4b2afd814feb7464369d2c66b891e6b986a1ad5cb003250a423c8732ab";
 const PREVIOUS_BINDING: &str = "tests/_fixtures/differential/typechecker/empty-vue-star-exports/malformed-membership/provider-root-dependency-ownership-update-12123.json";
 pub(super) const MANIFEST: &str = "npm/cli/package.json";
 pub(super) const CHECKER_DECLARATION: &str = "npm/cli/virtual-ts-checker.d.ts";
