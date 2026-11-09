@@ -27,11 +27,11 @@ O link `/app` não tem texto nem outro conteúdo que lhe dê um nome, então seu
 
 ## Correto
 
-`RetryImage` fornece conteúdo acessível por meio do texto `alt` para o link com o mesmo destino.
+O texto `alt` da imagem nativa fornece conteúdo acessível ao link com o mesmo destino.
 
 ```vue annotate="add:2"
 <template>
-<a href="/app"><RetryImage src="/badge.png" alt="Get the app" /></a>
+<a href="/app"><img src="/badge.png" alt="Get the app" /></a>
 </template>
 ```
 
@@ -64,4 +64,4 @@ Depois, execute `vp run lint`.
 - [Regras de acessibilidade](../accessibility.md)
 - [Opções das regras](/rules/options.md)
 - [Todas as regras](../all.md)
-- [Código-fonte](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/anchor_has_content.rs#L20)
+- [Código-fonte](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/anchor_has_content.rs#L22)

@@ -17,7 +17,7 @@ Listez les noms exacts des directives enregistrées globalement, sans le préfix
 
 ## Mauvais
 
-`v-focus` nécessite une implémentation de directive propre au projet, cette convention facultative la signale donc.
+`v-focus` nécessite une implémentation propre au projet ; cette convention facultative le signale.
 
 ```vue annotate="remove:2"
 <template>
@@ -27,11 +27,11 @@ Listez les noms exacts des directives enregistrées globalement, sans le préfix
 
 ## Bon
 
-La liste ignore configurée accepte la directive de projet `v-hover-tooltip`.
+`v-show` est une directive Vue intégrée qui ne nécessite aucun enregistrement dans le projet.
 
 ```vue annotate="add:2"
 <template>
-<button type="button" v-hover-tooltip="tip">Copy</button>
+<button type="button" v-show="visible">Copy</button>
 </template>
 ```
 

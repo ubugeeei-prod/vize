@@ -17,7 +17,7 @@ allowlist を指定すると、eslint-plugin-vue の既定の記号一覧を置�
 
 ## 悪い例
 
-表示するテキストに、翻訳されない文字列を直接書いています。
+表示するテキストに、翻訳されない文字列をテンプレート内で直接書いています。
 
 ```vue annotate="remove:2"
 <template>
@@ -27,11 +27,11 @@ allowlist を指定すると、eslint-plugin-vue の既定の記号一覧を置�
 
 ## 良い例
 
-設定した allowlist により、1 文字のキーラベル `W` を許可します。
+キーのラベルを裸の文字列ではなく `$t` から取得します。
 
 ```vue annotate="add:2"
 <template>
-<kbd>W</kbd>
+<kbd>{{ $t("keyboard.forward") }}</kbd>
 </template>
 ```
 
@@ -64,4 +64,4 @@ export default defineConfig({}).withVue({
 - [Vue ルール](../vue.md)
 - [ルールのオプション](../options.md)
 - [全ルール](../all.md)
-- [ソースコード](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_bare_strings_in_template.rs#L51)
+- [ソースコード](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_bare_strings_in_template.rs#L52)

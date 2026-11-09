@@ -17,7 +17,7 @@ Liste os nomes exatos das diretivas registradas globalmente, sem o prefixo v-. B
 
 ## Incorreto
 
-`v-focus` exige uma implementação de diretiva específica do projeto, por isso esta convenção opcional a sinaliza.
+`v-focus` exige uma implementação de diretiva específica do projeto, que esta convenção opcional reporta.
 
 ```vue annotate="remove:2"
 <template>
@@ -27,11 +27,11 @@ Liste os nomes exatos das diretivas registradas globalmente, sem o prefixo v-. B
 
 ## Correto
 
-A lista ignore configurada aceita a diretiva de projeto `v-hover-tooltip`.
+`v-show` é uma diretiva nativa do Vue e não precisa de registro no projeto.
 
 ```vue annotate="add:2"
 <template>
-<button type="button" v-hover-tooltip="tip">Copy</button>
+<button type="button" v-show="visible">Copy</button>
 </template>
 ```
 

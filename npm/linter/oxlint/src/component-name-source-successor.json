@@ -19,10 +19,10 @@
     "gitBlob": "2f2780ba34b1731212ce111edde94fa12ed89fbc"
   },
   "latest": {
-    "source": "be4d51dc8a00495858d18ae9cddd3714811c55cb",
-    "bytes": 16838,
-    "sha256": "0bfb38a074d3f8fe4b22aa7a27dde16ba6fcb65ef351fb49be93942584009abf",
-    "gitBlob": "af68aadd5541c04fcace279218ad54b05df2d662"
+    "source": "098df062ee6f4b4d1eb777d1004c34ccd2917360",
+    "bytes": 19157,
+    "sha256": "ca97f932187aaba036c32ed4e1ffffa8bb7d5386dcc18c48948d55442184662d",
+    "gitBlob": "47c832b24ad7a2909f32016cce5e391214eb55d6"
   },
   "changes": [
     {
@@ -43,6 +43,12 @@
       "ruleId": "vue/component-name-in-template-casing",
       "before": "\"endColumn\": 15,\n                        \"help\": \"Use kebab-case for component names\"",
       "after": "\"endColumn\": 12,\n                        \"help\": \"Use kebab-case for component names\"",
+      "occurrences": 1
+    },
+    {
+      "ruleId": "real-project-rule-allowances",
+      "before": "    assert_eq!(\n        no_mutating_props_messages,\n        [\n            \"[vize:vue/no-mutating-props] Unexpected mutation of prop 'props.count' in <script setup>\"\n        ],\n        \"{stdout}\"\n    );\n\n    let _ = fs::remove_dir_all(project_root);\n}\n",
+      "after": "    assert_eq!(\n        no_mutating_props_messages,\n        [\n            \"[vize:vue/no-mutating-props] Unexpected mutation of prop 'props.count' in <script setup>\"\n        ],\n        \"{stdout}\"\n    );\n\n    let _ = fs::remove_dir_all(project_root);\n}\n\n#[test]\nfn lint_rule_options_accept_real_project_directives_strings_and_components() {\n    let project_root = temp_project_dir();\n    write_project_file(\n        &project_root,\n        \"src/Allowances.vue\",\n        r#\"<script setup>\nconst tip = \"Copied\";\nconst alt = \"Get the app\";\nconst label = \"Name\";\nconst name = \"\";\n</script>\n<template>\n  <button type=\"button\" v-hover-tooltip=\"tip\">{{ tip }}</button>\n  <kbd>W</kbd>\n  <a href=\"/retry\"><RetryImage src=\"/retry.png\" :alt=\"alt\" /></a>\n  <label>{{ label }}<CInputField v-model=\"name\" /></label>\n  <button v-unregistered>Translate me</button>\n</template>\n\"#,\n    );\n    write_project_file(\n        &project_root,\n        \"vite.config.mjs\",\n        &vite_config::source(\n            r#\"{\n  \"linter\": {\n    \"preset\": \"incremental\",\n    \"rules\": {\n      \"vue/warn-custom-directive\": \"error\",\n      \"vue/no-bare-strings-in-template\": \"error\",\n      \"a11y/anchor-has-content\": \"error\",\n      \"a11y/label-has-for\": \"error\"\n    },\n    \"ruleOptions\": {\n      \"vue/warn-custom-directive\": { \"ignore\": [\"hover-tooltip\"] },\n      \"vue/no-bare-strings-in-template\": { \"allowlist\": [\"/^[DRWXYmvx]$/u\"] },\n      \"a11y/anchor-has-content\": { \"accessibleChildren\": [\"RetryImage\"] },\n      \"a11y/label-has-for\": { \"controlComponents\": [\"CInputField\"] }\n    }\n  }\n}\"#,\n        ),\n    );\n\n    let output = Command::new(env!(\"CARGO_BIN_EXE_vize\"))\n        .current_dir(&project_root)\n        .args([\n            \"lint\",\n            \"--config\",\n            \"vite.config.mjs\",\n            \"--format\",\n            \"json\",\n            \"src/Allowances.vue\",\n        ])\n        .output()\n        .unwrap();\n    assert_eq!(output.status.code(), Some(1), \"{}\", output_details(&output));\n    assert_eq!(output.stderr, b\"\", \"{}\", output_details(&output));\n\n    let stdout = std::str::from_utf8(&output.stdout).unwrap();\n    let report: serde_json::Value = serde_json::from_str(stdout).unwrap();\n    let rule_ids = report[0][\"messages\"]\n        .as_array()\n        .unwrap()\n        .iter()\n        .map(|message| message[\"ruleId\"].as_str().unwrap())\n        .collect::<Vec<_>>();\n    assert_eq!(\n        rule_ids,\n        [\n            \"vue/warn-custom-directive\",\n            \"vue/no-bare-strings-in-template\"\n        ],\n        \"{stdout}\"\n    );\n\n    let _ = fs::remove_dir_all(project_root);\n}\n",
       "occurrences": 1
     }
   ]

@@ -27,11 +27,11 @@ description: "リンクに支援技術で読める内容を用意します。"
 
 ## 良い例
 
-`RetryImage` の `alt` テキストが、同じ移動先へのリンクにアクセシブルな内容を提供します。
+標準の画像の `alt` テキストが、同じ移動先へのリンクにアクセシブルな内容を提供します。
 
 ```vue annotate="add:2"
 <template>
-<a href="/app"><RetryImage src="/badge.png" alt="Get the app" /></a>
+<a href="/app"><img src="/badge.png" alt="Get the app" /></a>
 </template>
 ```
 
@@ -64,4 +64,4 @@ export default defineConfig({}).withVue({
 - [アクセシビリティのルール](../accessibility.md)
 - [ルールのオプション](../options.md)
 - [全ルール](../all.md)
-- [ソースコード](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/anchor_has_content.rs#L20)
+- [ソースコード](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/anchor_has_content.rs#L22)

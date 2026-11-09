@@ -27,11 +27,11 @@ label を対象のフォーム部品と関連付けます。
 
 ## 良い例
 
-`for="email"` を入力欄の ID と一致させて関連付けます。
+標準の input を label の内側に置き、暗黙的に関連付けます。
 
 ```vue annotate="add:2"
 <template>
-<label>Name <CInputField v-model="name" /></label>
+<label>Name <input v-model="name" /></label>
 </template>
 ```
 
@@ -64,4 +64,4 @@ export default defineConfig({}).withVue({
 - [アクセシビリティのルール](../accessibility.md)
 - [ルールのオプション](../options.md)
 - [全ルール](../all.md)
-- [ソースコード](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/label_has_for.rs#L31)
+- [ソースコード](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/label_has_for.rs#L32)

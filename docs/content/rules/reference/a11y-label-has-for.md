@@ -27,11 +27,11 @@ The separate label is neither associated through `for` nor wrapped around the in
 
 ## Good
 
-`for="email"` matches the input ID and explicitly associates the two elements.
+The nested native input is implicitly associated with its wrapping label.
 
 ```vue annotate="add:2"
 <template>
-<label>Name <CInputField v-model="name" /></label>
+<label>Name <input v-model="name" /></label>
 </template>
 ```
 
@@ -64,4 +64,4 @@ Then run `vp run lint`.
 - [Accessibility rules](../accessibility.md)
 - [Rule options](../options.md)
 - [All rules](../all.md)
-- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/label_has_for.rs#L31)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/label_has_for.rs#L32)

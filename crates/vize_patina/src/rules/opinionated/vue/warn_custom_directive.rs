@@ -268,7 +268,10 @@ mod tests {
             "test.vue",
         );
         assert_eq!(result.warning_count, 1, "{:?}", result.diagnostics);
-        assert!(result.diagnostics[0].message.contains("v-focus"));
+        assert_eq!(
+            result.diagnostics[0].message,
+            "Custom directive 'v-focus' detected. Ensure it is properly registered."
+        );
     }
 
     #[test]

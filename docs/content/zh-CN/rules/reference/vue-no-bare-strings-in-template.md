@@ -27,11 +27,11 @@ description: "禁止在模板中直接写入应当国际化的用户可读文本
 
 ## 正确示例
 
-配置的 allowlist 接受单个键盘标签 `W`。
+键盘标签来自 `$t`，而不是模板中的裸字符串。
 
 ```vue annotate="add:2"
 <template>
-<kbd>W</kbd>
+<kbd>{{ $t("keyboard.forward") }}</kbd>
 </template>
 ```
 
@@ -64,4 +64,4 @@ export default defineConfig({}).withVue({
 - [Vue 规则](../vue.md)
 - [规则选项](/rules/options.md)
 - [全部规则](../all.md)
-- [源代码](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_bare_strings_in_template.rs#L51)
+- [源代码](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_bare_strings_in_template.rs#L52)

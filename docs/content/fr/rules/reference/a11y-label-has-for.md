@@ -27,11 +27,11 @@ Le label séparé n’est ni associé au moyen de `for` ni placé autour du cham
 
 ## Bon
 
-`for="email"` correspond à l’identifiant du champ et associe explicitement les deux éléments.
+Le champ input natif imbriqué est implicitement associé au label qui l’entoure.
 
 ```vue annotate="add:2"
 <template>
-<label>Name <CInputField v-model="name" /></label>
+<label>Name <input v-model="name" /></label>
 </template>
 ```
 
@@ -64,4 +64,4 @@ Lancez ensuite `vp run lint`.
 - [Règles d’accessibilité](../accessibility.md)
 - [Options des règles](/rules/options.md)
 - [Toutes les règles](../all.md)
-- [Code source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/label_has_for.rs#L31)
+- [Code source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/label_has_for.rs#L32)

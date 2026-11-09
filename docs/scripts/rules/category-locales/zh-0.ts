@@ -6,8 +6,8 @@ export const chineseRules0: Record<string, readonly [string, string, string]> = 
   ],
   "a11y/anchor-has-content": [
     "要求锚点元素具有可访问的内容",
-    "`/settings` 链接没有文本或其他命名内容，因此其目标没有可访问的描述。",
-    "可见的 `Settings` 文本为同一目标链接提供内容。",
+    "`/app` 链接没有文本或其他命名内容，因此其目标没有可访问的描述。",
+    "原生图像的 `alt` 文本为同一目标链接提供可访问内容。",
   ],
   "a11y/anchor-is-valid": [
     "要求锚点元素具有有效的 href",
@@ -67,7 +67,7 @@ export const chineseRules0: Record<string, readonly [string, string, string]> = 
   "a11y/label-has-for": [
     "要求标签具有相关联的表单控件",
     "独立的 label 既没有通过 `for` 关联输入框，也没有包住输入框。",
-    '`for="email"` 与输入框 ID 一致，显式关联两个元素。',
+    "嵌套的原生 input 与包裹它的 label 隐式关联。",
   ],
   "a11y/landmark-roles": [
     "验证地标角色的位置及唯一性",

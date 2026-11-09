@@ -26,6 +26,7 @@ use crate::markup::{
     MarkupTraversal,
 };
 use crate::rule::{Rule, RuleCategory, RuleMeta};
+use crate::rules::a11y::helpers::{canonical_component_name, matches_configured_component};
 use vize_relief::{ElementNode, ElementType, ExpressionNode, PropNode, TemplateChildNode};
 
 static META: RuleMeta = RuleMeta {
@@ -92,7 +93,7 @@ fn has_nested_form_control(
         match child {
             TemplateChildNode::Element(el) => {
                 if FORM_CONTROL_TAGS.contains(&el.tag)
-                    || matches_component(el.tag, control_components)
+                    || matches_configured_component(el.tag, control_components)
                 {
                     return true;
                 }
@@ -146,7 +147,7 @@ fn has_nested_markup_control(
                 || FORM_CONTROL_TAGS
                     .iter()
                     .any(|tag| child.is_unqualified_tag_exact(tag))
-                || matches_component(child.tag(), control_components)
+                || matches_configured_component(child.tag(), control_components)
                 || has_nested_markup_control(&child, control_components);
         }
     });
@@ -210,18 +211,6 @@ impl Rule for LabelHasFor {
             ctx.t("a11y/label-has-for.help"),
         );
     }
-}
-
-fn canonical_component_name(name: &str) -> vize_l0::String {
-    vize_l0::hyphenate(name).to_ascii_lowercase()
-}
-
-fn matches_component(tag: &str, configured: &[vize_l0::String]) -> bool {
-    if configured.is_empty() {
-        return false;
-    }
-    let canonical = canonical_component_name(tag);
-    configured.contains(&canonical)
 }
 
 #[cfg(test)]

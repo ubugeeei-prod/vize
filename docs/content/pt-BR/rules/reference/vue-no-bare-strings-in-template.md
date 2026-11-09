@@ -27,11 +27,11 @@ O texto visível incorpora uma string sem tradução diretamente no template.
 
 ## Correto
 
-A allowlist configurada aceita o rótulo de tecla único `W`.
+O rótulo da tecla vem de `$t`, em vez de uma string literal no template.
 
 ```vue annotate="add:2"
 <template>
-<kbd>W</kbd>
+<kbd>{{ $t("keyboard.forward") }}</kbd>
 </template>
 ```
 
@@ -64,4 +64,4 @@ Depois, execute `vp run lint`.
 - [Regras Vue](../vue.md)
 - [Opções das regras](/rules/options.md)
 - [Todas as regras](../all.md)
-- [Código-fonte](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_bare_strings_in_template.rs#L51)
+- [Código-fonte](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_bare_strings_in_template.rs#L52)

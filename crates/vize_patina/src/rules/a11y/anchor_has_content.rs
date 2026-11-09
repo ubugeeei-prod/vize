@@ -14,7 +14,9 @@ use crate::markup::{
     MarkupTraversal,
 };
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use crate::rules::a11y::helpers::{is_slot_element, string_literal_value};
+use crate::rules::a11y::helpers::{
+    canonical_component_name, is_slot_element, matches_configured_component, string_literal_value,
+};
 use vize_relief::{ElementNode, ExpressionNode, PropNode, TemplateChildNode};
 
 static META: RuleMeta = RuleMeta {
@@ -85,7 +87,7 @@ impl AnchorHasContent {
                     if is_slot_element(el) {
                         return true;
                     }
-                    if matches_component(el.tag, &self.accessible_children) {
+                    if matches_configured_component(el.tag, &self.accessible_children) {
                         return true;
                     }
                     // Check for img with alt
@@ -155,7 +157,7 @@ impl AnchorHasContent {
                 MarkupNode::Element(child) => {
                     child.kind() == MarkupElementKind::Slot
                         || child.is_unqualified_tag_exact("slot")
-                        || matches_component(child.tag(), &self.accessible_children)
+                        || matches_configured_component(child.tag(), &self.accessible_children)
                         || (child.is_unqualified_tag_exact("img") && Self::has_markup_alt(&child))
                         || self.has_markup_content(&child)
                 }
@@ -230,18 +232,6 @@ impl Rule for AnchorHasContent {
             );
         }
     }
-}
-
-fn canonical_component_name(name: &str) -> vize_l0::String {
-    vize_l0::hyphenate(name).to_ascii_lowercase()
-}
-
-fn matches_component(tag: &str, configured: &[vize_l0::String]) -> bool {
-    if configured.is_empty() {
-        return false;
-    }
-    let canonical = canonical_component_name(tag);
-    configured.contains(&canonical)
 }
 
 #[cfg(test)]

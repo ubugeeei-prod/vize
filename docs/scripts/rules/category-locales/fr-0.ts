@@ -6,8 +6,8 @@ export const frenchRules0 = {
   ],
   "a11y/anchor-has-content": [
     "Exiger un contenu accessible pour les éléments de lien",
-    "Le lien `/settings` n’a ni texte ni autre contenu servant à le nommer ; sa destination n’a donc aucune description accessible.",
-    "Le texte visible `Settings` fournit le contenu du lien vers la même destination.",
+    "Le lien `/app` n’a ni texte ni autre contenu servant à le nommer ; sa destination n’a donc aucune description accessible.",
+    "Le texte `alt` de l’image native fournit un contenu accessible au lien vers la même destination.",
   ],
   "a11y/anchor-is-valid": [
     "Imposer un href valide sur les éléments de lien",
@@ -67,7 +67,7 @@ export const frenchRules0 = {
   "a11y/label-has-for": [
     "Exiger des contrôles de formulaire associés aux libellés",
     "Le label séparé n’est ni associé au moyen de `for` ni placé autour du champ.",
-    '`for="email"` correspond à l’identifiant du champ et associe explicitement les deux éléments.',
+    "Le champ input natif imbriqué est implicitement associé au label qui l’entoure.",
   ],
   "a11y/landmark-roles": [
     "Valider l’emplacement et l’unicité des rôles de zones de repère",

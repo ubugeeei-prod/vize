@@ -27,11 +27,11 @@ Visible text embeds an untranslated string directly in the template.
 
 ## Good
 
-The configured allowlist accepts the single keyboard label `W`.
+The keyboard label comes from `$t` instead of a bare template string.
 
 ```vue annotate="add:2"
 <template>
-<kbd>W</kbd>
+<kbd>{{ $t("keyboard.forward") }}</kbd>
 </template>
 ```
 
@@ -64,4 +64,4 @@ Then run `vp run lint`.
 - [Vue rules](../vue.md)
 - [Rule options](../options.md)
 - [All rules](../all.md)
-- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_bare_strings_in_template.rs#L51)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_bare_strings_in_template.rs#L52)

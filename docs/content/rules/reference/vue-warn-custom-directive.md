@@ -27,11 +27,11 @@ List exact globally registered directive names without the v- prefix. Local scri
 
 ## Good
 
-The configured ignore list accepts the project’s `v-hover-tooltip` directive.
+`v-show` is a built-in Vue directive and needs no project registration.
 
 ```vue annotate="add:2"
 <template>
-<button type="button" v-hover-tooltip="tip">Copy</button>
+<button type="button" v-show="visible">Copy</button>
 </template>
 ```
 

@@ -62,8 +62,8 @@ export const portugueseVue0: Record<string, readonly [purpose: string, bad: stri
     ],
     "vue/no-bare-strings-in-template": [
       "Proibir texto legível por pessoas diretamente no template quando ele deve ser internacionalizado",
-      "O texto visível e os atributos de identificação incorporam strings sem tradução diretamente no template.",
-      "O conteúdo traduzível chama $t; os exemplos com pontuação e apenas números são exceções permitidas.",
+      "O texto visível incorpora uma string sem tradução diretamente no template.",
+      "O rótulo da tecla vem de `$t`, em vez de uma string literal no template.",
     ],
     "vue/no-boolean-attr-value": [
       "Proibir valores explícitos em atributos HTML booleanos",

@@ -27,11 +27,11 @@ description: "要求锚点元素具有可访问的内容。"
 
 ## 正确示例
 
-`RetryImage` 通过 `alt` 文本为同一目标链接提供可访问内容。
+原生图像的 `alt` 文本为同一目标链接提供可访问内容。
 
 ```vue annotate="add:2"
 <template>
-<a href="/app"><RetryImage src="/badge.png" alt="Get the app" /></a>
+<a href="/app"><img src="/badge.png" alt="Get the app" /></a>
 </template>
 ```
 
@@ -64,4 +64,4 @@ export default defineConfig({}).withVue({
 - [无障碍规则](../accessibility.md)
 - [规则选项](/rules/options.md)
 - [全部规则](../all.md)
-- [源代码](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/anchor_has_content.rs#L20)
+- [源代码](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/anchor_has_content.rs#L22)

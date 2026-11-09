@@ -119,3 +119,15 @@ test("every claimed mapped option is present in the public typed config schema",
     assert.ok(properties[patinaRule], `${patinaRule} must expose typed options`);
   }
 });
+
+test("real-project allowance arrays accept the same duplicate values as native config", () => {
+  const properties = schema.definitions.LintRuleOptions.properties;
+  for (const [rule, field] of [
+    ["vue/warn-custom-directive", "ignore"],
+    ["vue/no-bare-strings-in-template", "allowlist"],
+    ["a11y/anchor-has-content", "accessibleChildren"],
+    ["a11y/label-has-for", "controlComponents"],
+  ]) {
+    assert.equal(properties[rule].properties[field].uniqueItems, undefined, `${rule}.${field}`);
+  }
+});

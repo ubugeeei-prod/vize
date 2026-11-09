@@ -17,7 +17,7 @@ description: "警告需要注册的自定义指令。"
 
 ## 错误示例
 
-`v-focus` 需要项目特定的指令实现，因此被此可选规范标记。
+`v-focus` 需要项目特定的指令实现，因此被此可选规范报告。
 
 ```vue annotate="remove:2"
 <template>
@@ -27,11 +27,11 @@ description: "警告需要注册的自定义指令。"
 
 ## 正确示例
 
-配置的 ignore 列表接受项目的 `v-hover-tooltip` 指令。
+`v-show` 是 Vue 内置指令，不需要项目注册。
 
 ```vue annotate="add:2"
 <template>
-<button type="button" v-hover-tooltip="tip">Copy</button>
+<button type="button" v-show="visible">Copy</button>
 </template>
 ```
 

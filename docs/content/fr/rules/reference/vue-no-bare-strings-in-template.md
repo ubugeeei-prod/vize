@@ -27,11 +27,11 @@ Le texte visible contient une chaîne non traduite directement dans le template.
 
 ## Bon
 
-L’allowlist configurée accepte l’étiquette de clavier unique `W`.
+Le libellé de la touche provient de `$t` au lieu d’une chaîne brute dans le template.
 
 ```vue annotate="add:2"
 <template>
-<kbd>W</kbd>
+<kbd>{{ $t("keyboard.forward") }}</kbd>
 </template>
 ```
 
@@ -64,4 +64,4 @@ Lancez ensuite `vp run lint`.
 - [Règles Vue](../vue.md)
 - [Options des règles](/rules/options.md)
 - [Toutes les règles](../all.md)
-- [Code source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_bare_strings_in_template.rs#L51)
+- [Code source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_bare_strings_in_template.rs#L52)

@@ -17,7 +17,7 @@ const noSfcFinding = {
 export const runtimeOverrides: Record<string, RuleExample> = {
   "a11y/anchor-has-content": pair(
     template('<a href="/app"></a>'),
-    template('<a href="/app"><RetryImage src="/badge.png" alt="Get the app" /></a>'),
+    template('<a href="/app"><img src="/badge.png" alt="Get the app" /></a>'),
     "crates/vize_patina/src/rules/a11y/anchor_has_content.rs",
     {
       ruleOptions: { accessibleChildren: ["RetryImage"] },
@@ -28,7 +28,7 @@ export const runtimeOverrides: Record<string, RuleExample> = {
   ),
   "a11y/label-has-for": pair(
     template("<label>Name</label>"),
-    template('<label>Name <CInputField v-model="name" /></label>'),
+    template('<label>Name <input v-model="name" /></label>'),
     "crates/vize_patina/src/rules/a11y/label_has_for.rs",
     {
       ruleOptions: { controlComponents: ["CInputField"] },
@@ -50,7 +50,7 @@ export const runtimeOverrides: Record<string, RuleExample> = {
   ),
   "vue/no-bare-strings-in-template": pair(
     template("<p>Translate me</p>"),
-    template("<kbd>W</kbd>"),
+    template('<kbd>{{ $t("keyboard.forward") }}</kbd>'),
     "crates/vize_patina/src/rules/vue/no_bare_strings_in_template.rs",
     {
       ruleOptions: { allowlist: ["/^[DRWXYmvx]$/u"] },
@@ -61,7 +61,7 @@ export const runtimeOverrides: Record<string, RuleExample> = {
   ),
   "vue/warn-custom-directive": pair(
     template('<button type="button" v-focus>Focus</button>'),
-    template('<button type="button" v-hover-tooltip="tip">Copy</button>'),
+    template('<button type="button" v-show="visible">Copy</button>'),
     "crates/vize_patina/src/rules/opinionated/vue/warn_custom_directive.rs",
     {
       ruleOptions: { ignore: ["hover-tooltip"] },

@@ -61,8 +61,8 @@ export const chineseVue0: Record<string, readonly [purpose: string, bad: string,
   ],
   "vue/no-bare-strings-in-template": [
     "禁止在模板中直接写入应当国际化的用户可读文本",
-    "可见文本和提供名称的属性直接在模板中嵌入了未翻译的字符串。",
-    "可翻译内容调用 $t；示例中的标点和纯数字属于允许的例外。",
+    "可见文本直接在模板中嵌入了未翻译的字符串。",
+    "键盘标签来自 `$t`，而不是模板中的裸字符串。",
   ],
   "vue/no-boolean-attr-value": [
     "禁止为 HTML 布尔属性显式指定值",

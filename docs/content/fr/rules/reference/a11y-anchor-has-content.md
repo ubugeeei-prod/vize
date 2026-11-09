@@ -27,11 +27,11 @@ Le lien `/app` n’a ni texte ni autre contenu servant à le nommer ; sa destina
 
 ## Bon
 
-`RetryImage` fournit un contenu accessible grâce à son texte `alt` pour le lien vers la même destination.
+Le texte `alt` de l’image native fournit un contenu accessible au lien vers la même destination.
 
 ```vue annotate="add:2"
 <template>
-<a href="/app"><RetryImage src="/badge.png" alt="Get the app" /></a>
+<a href="/app"><img src="/badge.png" alt="Get the app" /></a>
 </template>
 ```
 
@@ -64,4 +64,4 @@ Lancez ensuite `vp run lint`.
 - [Règles d’accessibilité](../accessibility.md)
 - [Options des règles](/rules/options.md)
 - [Toutes les règles](../all.md)
-- [Code source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/anchor_has_content.rs#L20)
+- [Code source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/anchor_has_content.rs#L22)

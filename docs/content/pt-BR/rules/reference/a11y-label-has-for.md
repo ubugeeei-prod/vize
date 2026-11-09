@@ -27,11 +27,11 @@ O rótulo separado não está associado por meio de `for` nem envolve o campo.
 
 ## Correto
 
-`for="email"` corresponde ao ID do campo e associa explicitamente os dois elementos.
+O input nativo aninhado fica implicitamente associado ao label que o envolve.
 
 ```vue annotate="add:2"
 <template>
-<label>Name <CInputField v-model="name" /></label>
+<label>Name <input v-model="name" /></label>
 </template>
 ```
 
@@ -64,4 +64,4 @@ Depois, execute `vp run lint`.
 - [Regras de acessibilidade](../accessibility.md)
 - [Opções das regras](/rules/options.md)
 - [Todas as regras](../all.md)
-- [Código-fonte](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/label_has_for.rs#L31)
+- [Código-fonte](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/label_has_for.rs#L32)

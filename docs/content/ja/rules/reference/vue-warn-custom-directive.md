@@ -17,7 +17,7 @@ description: "登録が必要なカスタムディレクティブを検出しま
 
 ## 悪い例
 
-`v-focus` はプロジェクト固有のディレクティブ実装を必要とするため、この任意の規約で警告されます。
+`v-focus` はプロジェクト固有のディレクティブ実装を必要とするため、この任意の規約で報告されます。
 
 ```vue annotate="remove:2"
 <template>
@@ -27,11 +27,11 @@ description: "登録が必要なカスタムディレクティブを検出しま
 
 ## 良い例
 
-設定した ignore リストにより、プロジェクトの `v-hover-tooltip` ディレクティブを許可します。
+`v-show` は Vue の組み込みディレクティブなので、プロジェクトでの登録は不要です。
 
 ```vue annotate="add:2"
 <template>
-<button type="button" v-hover-tooltip="tip">Copy</button>
+<button type="button" v-show="visible">Copy</button>
 </template>
 ```
 

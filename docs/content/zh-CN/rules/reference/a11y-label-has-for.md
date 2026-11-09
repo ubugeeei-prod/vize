@@ -27,11 +27,11 @@ description: "要求标签具有相关联的表单控件。"
 
 ## 正确示例
 
-`for="email"` 与输入框 ID 一致，显式关联两个元素。
+嵌套的原生 input 与包裹它的 label 隐式关联。
 
 ```vue annotate="add:2"
 <template>
-<label>Name <CInputField v-model="name" /></label>
+<label>Name <input v-model="name" /></label>
 </template>
 ```
 
@@ -64,4 +64,4 @@ export default defineConfig({}).withVue({
 - [无障碍规则](../accessibility.md)
 - [规则选项](/rules/options.md)
 - [全部规则](../all.md)
-- [源代码](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/label_has_for.rs#L31)
+- [源代码](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/label_has_for.rs#L32)
