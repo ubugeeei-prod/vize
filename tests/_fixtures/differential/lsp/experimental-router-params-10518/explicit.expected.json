@@ -447,12 +447,12 @@
   },
   "generated": {
     "valid": {
-      "file": "explicit.valid.instance-input-keys.virtual.ts.txt",
-      "sha256": "066535c9a28b35e66f1dcd2d2562217077928b7ecf22d8d8b135ccf0487c6615"
+      "file": "explicit.valid.constructor-noinfer.virtual.ts.txt",
+      "sha256": "c8d3674e242a530ced76dbb54f7ffbacd5485d2cb492091157e7252b74a8bb2c"
     },
     "invalid": {
-      "file": "explicit.invalid.instance-input-keys.virtual.ts.txt",
-      "sha256": "066535c9a28b35e66f1dcd2d2562217077928b7ecf22d8d8b135ccf0487c6615"
+      "file": "explicit.invalid.constructor-noinfer.virtual.ts.txt",
+      "sha256": "c8d3674e242a530ced76dbb54f7ffbacd5485d2cb492091157e7252b74a8bb2c"
     }
   }
 }
