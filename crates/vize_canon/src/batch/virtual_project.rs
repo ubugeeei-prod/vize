@@ -426,6 +426,8 @@ pub struct VirtualProject {
 
 #[derive(Default)]
 struct SourceArtifacts {
+    /// The registration-time `realpath` of the source.
+    canonical_original: PathBuf,
     diagnostic_route: DiagnosticRoute,
     virtual_paths: Vec<PathBuf>,
     passthrough_paths: Vec<PathBuf>,
