@@ -2,7 +2,7 @@
  * Select Component - Dropdown/menu selection
  */
 
-import { computed, defineComponent, h, ref, type PropType, type VNode, watch } from "vue";
+import { computed, defineComponent, h, ref, toRaw, type PropType, type VNode, watch } from "vue";
 import { useInput } from "../composables/useInput.js";
 import {
   adjacentEnabledIndex,
@@ -13,17 +13,27 @@ import {
   visibleCollectionOffset,
 } from "./collection-navigation.js";
 
-export interface SelectOption {
+export interface SelectOption<Value = string> {
+  /** Stable render identity when the value is not a Vue vnode key. */
+  key?: string | number | symbol;
   label: string;
-  value: string;
+  value: Value;
   disabled?: boolean;
 }
 
-export interface SelectProps {
+export type SelectValueKey<Value> = Value extends object
+  ? Extract<keyof Value, string | number | symbol>
+  : never;
+
+export type SelectBy<Value> = SelectValueKey<Value> | ((left: Value, right: Value) => boolean);
+
+export interface SelectProps<Value = string> {
   /** Options to display */
-  options: SelectOption[];
+  options: readonly SelectOption<Value>[];
   /** Currently selected value */
-  modelValue?: string;
+  modelValue?: Value;
+  /** Compare values by an object key or a custom equality function */
+  by?: SelectBy<Value>;
   /** Placeholder text */
   placeholder?: string;
   /** Maximum visible options before the selection window scrolls */
@@ -44,14 +54,43 @@ export interface SelectProps {
   selectedBg?: string;
 }
 
+type RuntimeSelectBy = string | number | symbol | ((left: unknown, right: unknown) => boolean);
+
+function selectValuesEqual(
+  left: unknown,
+  right: unknown,
+  by: RuntimeSelectBy | undefined,
+): boolean {
+  if (typeof by === "function") return by(left, right);
+  if (
+    by !== undefined &&
+    typeof left === "object" &&
+    left !== null &&
+    typeof right === "object" &&
+    right !== null
+  ) {
+    return Object.is(Reflect.get(left, by), Reflect.get(right, by));
+  }
+  return Object.is(left, right);
+}
+
+function optionKey(option: SelectOption<unknown>, index: number): string | number | symbol {
+  if (option.key !== undefined) return option.key;
+  const value = option.value;
+  return typeof value === "string" || typeof value === "number" || typeof value === "symbol"
+    ? value
+    : index;
+}
+
 export const Select = defineComponent({
   name: "Select",
   props: {
     options: {
-      type: Array as PropType<SelectOption[]>,
+      type: Array as PropType<readonly SelectOption<unknown>[]>,
       required: true,
     },
-    modelValue: String,
+    modelValue: null as unknown as PropType<unknown>,
+    by: [String, Number, Symbol, Function] as PropType<RuntimeSelectBy>,
     placeholder: {
       type: String,
       default: "Select an option",
@@ -89,10 +128,10 @@ export const Select = defineComponent({
 
     // Find initial index based on modelValue
     watch(
-      () => props.modelValue,
+      [() => props.modelValue, () => props.by],
       (value) => {
         const selectedIndex = props.options.findIndex(
-          (option) => option.value === value && !option.disabled,
+          (option) => selectValuesEqual(option.value, value[0], value[1]) && !option.disabled,
         );
         highlightedIndex.value =
           selectedIndex >= 0 ? selectedIndex : firstEnabledIndex(props.options);
@@ -130,8 +169,9 @@ export const Select = defineComponent({
     const activate = () => {
       const option = props.options[highlightedIndex.value];
       if (!option || option.disabled) return;
-      emit("update:modelValue", option.value);
-      emit("select", option.value);
+      const value = toRaw(option.value);
+      emit("update:modelValue", value);
+      emit("select", value);
     };
 
     useInput({
@@ -188,14 +228,14 @@ export const Select = defineComponent({
 
       for (const { option, index } of visibleOptions.value) {
         const isHighlighted = index === highlightedIndex.value;
-        const isSelected = option.value === props.modelValue;
+        const isSelected = selectValuesEqual(option.value, props.modelValue, props.by);
         const indicator = isHighlighted ? props.indicator : props.indicatorEmpty;
 
         children.push(
           h(
             "box",
             {
-              key: option.value,
+              key: optionKey(option, index),
               style: { flex_direction: "row" },
             },
             [

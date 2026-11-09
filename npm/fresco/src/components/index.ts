@@ -71,7 +71,8 @@ export type { LinkProps } from "./display-primitive-types.js";
 // Input
 export { TextInput, type TextInputProps } from "./TextInput.js";
 export { TextArea, type TextAreaProps } from "./TextArea.js";
-export { Select, type SelectProps, type SelectOption } from "./Select.js";
+export { default as Select } from "./FrescoSelect.vue";
+export type { SelectBy, SelectOption, SelectProps, SelectValueKey } from "./Select.js";
 export { Checkbox, type CheckboxProps } from "./Checkbox.js";
 export { RadioGroup, type RadioGroupProps, type RadioOption } from "./RadioGroup.js";
 export { Confirm, type ConfirmProps } from "./Confirm.js";

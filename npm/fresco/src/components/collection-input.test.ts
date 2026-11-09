@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "vitest";
-import { h, ref } from "vue";
+import { h, ref, shallowRef } from "vue";
 
 import { dispatchKey, findNodes, mountFresco, typeChars } from "../testing/mount.js";
 import { List } from "./List.js";
@@ -90,6 +90,35 @@ test("Select keeps keyboard and typeahead targets inside a bounded viewport", as
   assert.deepEqual(textLines(mounted), ["  ...", "  Charlie", "> Delta"]);
   await dispatchKey({ key: "home" });
   assert.deepEqual(textLines(mounted), ["> Alpha", "  Beta", "  ..."]);
+  mounted.unmount();
+});
+
+test("Select preserves object values through keyed equality and activation", async () => {
+  const ada = { id: 1, name: "Ada" };
+  const grace = { id: 2, name: "Grace" };
+  const modelValue = shallowRef({ id: 2, name: "Grace copy" });
+  const selected: (typeof ada)[] = [];
+  const mounted = mountFresco(() =>
+    h(Select, {
+      options: [
+        { label: "Ada", value: ada },
+        { label: "Grace", value: grace },
+      ],
+      modelValue: modelValue.value,
+      by: "id",
+      focused: true,
+      "onUpdate:modelValue": (next: typeof ada) => {
+        modelValue.value = next;
+      },
+      onSelect: (next: typeof ada) => selected.push(next),
+    }),
+  );
+
+  assert.equal(textLines(mounted).at(1), "> Grace (selected)");
+  await dispatchKey({ key: "home" });
+  await dispatchKey({ key: "enter" });
+  assert.equal(modelValue.value, ada);
+  assert.deepEqual(selected, [ada]);
   mounted.unmount();
 });
 
