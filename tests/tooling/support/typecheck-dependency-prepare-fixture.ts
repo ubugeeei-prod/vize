@@ -11,7 +11,7 @@ export const script = path.join(
   "tools",
   "commands",
   "fixtures",
-  "typecheck-dependency-prepare.rs",
+  "typecheck-dependency-prepare.ts",
 );
 export const commitSha = "a".repeat(40);
 export const packageManagers = [
@@ -166,8 +166,16 @@ export function run(
   options: { timeoutMs?: number } = {},
 ) {
   return spawnSync(
-    "rust-script",
-    [script, "--registry", fixture.registryPath, "--output-dir", fixture.outputDir, ...extraArgs],
+    process.execPath,
+    [
+      "--experimental-strip-types",
+      script,
+      "--registry",
+      fixture.registryPath,
+      "--output-dir",
+      fixture.outputDir,
+      ...extraArgs,
+    ],
     {
       cwd: root,
       encoding: "utf8",

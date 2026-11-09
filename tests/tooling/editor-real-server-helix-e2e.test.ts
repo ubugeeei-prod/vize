@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
+import { linesBetween, stripAnsi } from "../../tools/commands/editors/helix/assert-helix-health.ts";
 import { testAndBenchmarkTasks } from "../../tools/config/vite-plus/tasks/test-benchmark.ts";
 import { readRepoFile } from "./support/github-workflows.ts";
 
@@ -36,7 +37,7 @@ test("CI checks the package with a pinned official Helix before the server scena
   assert.match(health, /XDG_CONFIG_HOME: \$\{\{ runner\.temp \}\}\/helix-config/);
   assert.match(health, /HELIX_RUNTIME: \$\{\{ runner\.temp \}\}\/helix\/runtime/);
   assert.match(health, /VIZE_SERVER_PATH: \$\{\{ github\.workspace \}\}\/target\/ci\/vize/);
-  assert.match(health, /rust-script tools\/commands\/editors\/helix\/assert-helix-health\.rs/);
+  assert.match(health, /node tools\/commands\/editors\/helix\/assert-helix-health\.ts/);
 
   const scenario = action.slice(scenarioAt);
   assert.match(scenario, /VIZE_SERVER_PATH: \$\{\{ github\.workspace \}\}\/target\/ci\/vize/);
@@ -44,13 +45,25 @@ test("CI checks the package with a pinned official Helix before the server scena
 });
 
 test("the official Helix health guard checks both packaged language entries exactly", () => {
-  const health = readRepoFile("tools", "commands", "editors", "helix", "assert-helix-health.rs");
+  const health = readRepoFile("tools", "commands", "editors", "helix", "assert-helix-health.ts");
 
   assert.match(health, /\["--health", language\]/);
-  assert.match(health, /for language in \["vue", "art-vue"\]/);
-  assert.match(health, /configured != vec!\[expected_server\.clone\(\)\]/);
-  assert.match(health, /if !output\.status\.success\(\)/);
-  assert.doesNotMatch(health, /configured\.contains\(/);
+  assert.match(health, /for \(const language of \["vue", "art-vue"\]\)/);
+  assert.match(health, /configured\.length !== 1 \|\| configured\[0\] !== expectedServer/);
+  assert.match(health, /result\.status !== 0/);
+  assert.doesNotMatch(health, /configured\.includes\(/);
+});
+
+test("the Helix health parser preserves UTF-8 and isolates configured servers", () => {
+  const output = [
+    "Configured language servers:",
+    "\u001B[32m✓\u001B[0m vize: /tmp/vize",
+    "Configured debug adapter: None",
+  ].join("\n");
+  assert.deepEqual(
+    linesBetween(stripAnsi(output), "Configured language servers:", "Configured debug adapter:"),
+    ["✓ vize: /tmp/vize"],
+  );
 });
 
 test("the Helix scenario pins complete responses for every advertised feature", () => {

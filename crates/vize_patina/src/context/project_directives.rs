@@ -1,17 +1,16 @@
 //! Source-owned directives for diagnostics produced after a file lint pass.
 
 use memchr::memchr_iter;
-use vize_armature::Parser;
 use vize_atelier_sfc::{SfcParseOptions, parse_sfc};
 use vize_l0::directive::DirectiveSeverity;
 use vize_l0::{Allocator, FxHashMap, FxHashSet, cstr};
 
+use super::TemplateCommentDirectives;
 use super::eslint_directive::{
     ExactSuppressionState, InlineSuppressionState, SuppressionSource, UnusedDirective,
 };
 use super::{DisabledRange, LintContext, SfcDirectiveState};
 use crate::LintDiagnostic;
-use crate::visitor::LintVisitor;
 
 const UNUSED_RULE: &str = "vue/comment-directive";
 
@@ -63,9 +62,10 @@ impl ProjectLintDirectives {
                 return None;
             }
             let allocator = Allocator::with_capacity((template.content.len() * 4).max(64 * 1024));
-            let (root, _) = Parser::new(&allocator, &template.content).parse();
+            let (surface, _, _) =
+                vize_l1::markup::parse_with_authored_diagnostics(&allocator, &template.content);
             let mut context = LintContext::new(&allocator, &template.content, filename);
-            LintVisitor::new(&mut context, &[], &[], false).prescan_suppression_directives(&root);
+            TemplateCommentDirectives::new(&surface).prescan(&mut context);
             let mut suppressions = context.inline_suppressions;
             suppressions.offset_markers(template.loc.start as u32);
             let mut exact_suppressions = context.exact_suppressions;

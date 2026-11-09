@@ -61,6 +61,7 @@ fn materialize<'a, P: ProvenanceSink>(
         provenance: cx.provenance,
         scopes: cx.scopes,
         texts: cx.texts,
+        consumed_expressions: cx.consumed_expressions,
         for_facts: cx.for_facts,
         if_facts: cx.if_facts,
         wrappers: cx.wrappers,

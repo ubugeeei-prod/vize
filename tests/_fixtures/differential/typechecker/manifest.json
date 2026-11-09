@@ -2066,7 +2066,7 @@
       "sourceRevision": "f15ca234a4bdd73bde9caea07e652f3a345eb342",
       "packReference": {
         "path": "component-render-h-props-9855/cases.json",
-        "sha256": "b2873a6f8700a149814a980af4acc346359fd9d7212e333f92a1cd0d319423dd"
+        "sha256": "9e5bb91fd64abba40ee30ad3555af02d3b06c521f5ae09eee780f67f0caa4819"
       },
       "inputs": [
         {
@@ -12807,6 +12807,50 @@
               "ts"
             ],
             "selector": "cache_gc::maintenance_escapes_a_saturated_recent_window and identity::configured_cache_root_is_exact_and_stays_outside_the_checked_tree; #12135 pins an isolated batch project input without assigning native qualification credit."
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/regression/canon-public-instance-11499",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "canon-public-instance-11499/App.vue.txt",
+          "sha256": "3c3e7d43724f6b845464ab9d313f43ccc01ad0f9935cb662a594996fd02421a1",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "canon-public-instance-11499/Child.vue.txt",
+          "sha256": "c0166a862bba7fd5651790bab69c1c77a2bf9e95fe5607b314c0947c9ec6eb5d",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "canon-public-instance-11499/vue-augmentation.d.ts.txt",
+          "sha256": "3d2ac04fc43eb6de5acef1cd85477d768b94b9ebe62acc317675c2fac1477a17",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "canon-public-instance-11499/tsconfig.json.txt",
+          "sha256": "7a252e7cc4494e59b84246e0d32e525e787ef78eb2108b64724e07e2a5c11500",
+          "role": "project-configuration"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "recent_issues::public_base_pattern_keys::large_custom_properties_do_not_explode_the_public_instance_union and recent_issues::emit_camel_kebab_twins::camel_and_kebab_event_twins_keep_one_handler_tuple; authored ComponentCustomProperties pattern and catch-all emit inputs. Input-only registration, no batch or native qualification claim."
           }
         ]
       }

@@ -1,6 +1,6 @@
 import { expect, it } from "vite-plus/test";
 import { createVaporApp, nextTick, reactive } from "vue";
-import ScopedNamespaces from "./fixtures/ScopedNamespaces.vue";
+import ScopedNamespaces from "./fixtures/scoped-namespaces.vue";
 
 it("preserves scoped HTML, SVG and MathML namespaces in Chromium", async () => {
   // Happy DOM's template parser assigns HTML namespaces to MathML elements.

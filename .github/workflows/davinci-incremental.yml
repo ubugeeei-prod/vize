@@ -73,10 +73,10 @@ jobs:
         with:
           shared-key: davinci-incremental-${{ matrix.platform.target }}
           cache-workspace-crates: "true"
-      - name: Print and compare the TS-43 golden keys
-        run: |
-          cargo test -p vize_l0 --test artifact_keys --test key_manifests --test hash_domains -- --nocapture
-          cargo test -p vize_l2 --test sfc_summary --test global_summary -- --nocapture
+      - name: Compare the L0 TS-43 golden keys
+        run: cargo test -p vize_l0 --test artifact_keys --test key_manifests --test hash_domains -- --nocapture
+      - name: Compare the L2 TS-43 golden keys
+        run: cargo test -p vize_l2 --test sfc_summary --test global_summary -- --nocapture
 
   incremental-equivalence:
     name: Incremental ≡ clean (TS-42)
@@ -97,14 +97,18 @@ jobs:
         with:
           key: davinci-incremental-equivalence
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
-      - uses: ./.github/actions/setup-rust-script
+      - name: Setup stable Node
+        uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with:
+          node-version-file: "package.json"
+          run-install: false
       - name: Resident tier tests (firewall accounting, committed plane)
         run: cargo test -p vize_incremental
       - name: TS-42 production alpha interfaces over the corpus shard
         run: cargo test -p vize_maestro production_alpha_corpus_edits_match_clean -- --ignored --nocapture
       - name: TS-42 over the corpus shard and the committed fixtures
-        run: rust-script tools/commands/davinci/incremental-equivalence.rs --corpus-shard --fixtures tests/_fixtures/_projects --fixtures tests/_fixtures/vue-language-tools
-      - name: TS-42 catches the seeded stale-cache defect
-        run: |
-          cargo test -p vize_incremental --features seeded-stale-cache --test equivalence
-          rust-script tools/commands/davinci/incremental-equivalence.rs --corpus-shard --fixtures tests/_fixtures/_projects --fixtures tests/_fixtures/vue-language-tools --seeded
+        run: node tools/commands/davinci/incremental-equivalence.ts --corpus-shard --fixtures tests/_fixtures/_projects --fixtures tests/_fixtures/vue-language-tools
+      - name: Verify the seeded stale-cache defect fixture
+        run: cargo test -p vize_incremental --features seeded-stale-cache --test equivalence
+      - name: Prove TS-42 catches the seeded stale-cache defect
+        run: node tools/commands/davinci/incremental-equivalence.ts --corpus-shard --fixtures tests/_fixtures/_projects --fixtures tests/_fixtures/vue-language-tools --seeded

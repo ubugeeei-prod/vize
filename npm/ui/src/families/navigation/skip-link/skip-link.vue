@@ -67,7 +67,7 @@ function onClick(event: MouseEvent): void {
   }
 
   const result = shouldFocusTarget
-    ? focusTarget()
+    ? focusResolvedTarget()
     : ({ target: getTarget(), focused: false } satisfies SkipLinkFocusResult);
 
   emit("activate", event, {
@@ -107,7 +107,7 @@ function focus(options?: FocusOptions): void {
   element.value?.focus(options);
 }
 
-function focusTarget(options?: FocusOptions): SkipLinkFocusResult {
+function focusResolvedTarget(options?: FocusOptions): SkipLinkFocusResult {
   const target = getTarget();
   if (target === null) return { target: null, focused: false };
 
@@ -141,7 +141,7 @@ const exposed = {
   element,
   focus,
   focused,
-  focusTarget,
+  focusTarget: focusResolvedTarget,
   getTarget,
   href: renderedHref,
   state,

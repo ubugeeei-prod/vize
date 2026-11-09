@@ -99,7 +99,6 @@ use crate::linter::sfc_scripts::SfcScripts;
 use crate::markup::L2Template;
 use vize_atelier_sfc::croquis::SfcCroquisOptions;
 use vize_croquis::Croquis;
-use vize_croquis::drawer::LintTemplate;
 use vize_l0::dialect::VueDialect;
 
 /// Document-level inputs shared by the template-rule passes.
@@ -125,15 +124,17 @@ pub(crate) struct TemplateRuleEnv<'a> {
 pub(crate) fn analyze_descriptor_for_lint(
     scripts: &SfcScripts<'_>,
     template: Option<&L2Template<'_>>,
+    resolve_filename: Option<&str>,
     unused: bool,
     derived: bool,
 ) -> Croquis {
-    analyze_descriptor_for_lint_with_template(scripts, template, unused, derived)
+    analyze_descriptor_for_lint_with_template(scripts, template, resolve_filename, unused, derived)
 }
 
 pub(crate) fn analyze_descriptor_for_lint_with_template(
     scripts: &SfcScripts<'_>,
     template: Option<&L2Template<'_>>,
+    resolve_filename: Option<&str>,
     unused: bool,
     derived: bool,
 ) -> Croquis {
@@ -148,17 +149,24 @@ pub(crate) fn analyze_descriptor_for_lint_with_template(
     } else {
         options
     };
-    vize_atelier_sfc::croquis::analyze_sfc_descriptor_with_lint_template(
-        scripts,
-        template.map(|template| LintTemplate::new(template.surface(), template.lowered())),
-        options,
-    )
+    let template = template.map(crate::markup::L2Template::lint_template);
+    match resolve_filename {
+        Some(filename) => {
+            vize_atelier_sfc::croquis::analyze_sfc_descriptor_with_lint_template_resolved(
+                scripts, template, options, filename,
+            )
+        }
+        None => vize_atelier_sfc::croquis::analyze_sfc_descriptor_with_lint_template(
+            scripts, template, options,
+        ),
+    }
 }
 
 /// Request positive authored reads within the existing single descriptor draw.
 pub(super) fn analyze_descriptor_for_component_reads(
     scripts: &SfcScripts<'_>,
     template: Option<&L2Template<'_>>,
+    resolve_filename: Option<&str>,
     unused: bool,
     derived: bool,
 ) -> Croquis {
@@ -174,7 +182,13 @@ pub(super) fn analyze_descriptor_for_component_reads(
                     .is_some_and(|lang| !matches!(lang, "js" | "ts" | "jsx" | "tsx"))
         })
     {
-        return analyze_descriptor_for_lint_with_template(scripts, template, unused, derived);
+        return analyze_descriptor_for_lint_with_template(
+            scripts,
+            template,
+            resolve_filename,
+            unused,
+            derived,
+        );
     }
     let options = SfcCroquisOptions::lint_demand();
     let options = if unused {
@@ -187,12 +201,19 @@ pub(super) fn analyze_descriptor_for_component_reads(
     } else {
         options
     };
-    let (mut analysis, packet) =
-        vize_atelier_sfc::croquis::analyze_sfc_descriptor_with_lint_template_and_occurrences(
-            scripts,
-            template.map(|template| LintTemplate::new(template.surface(), template.lowered())),
-            options,
-        );
+    let template = template.map(crate::markup::L2Template::lint_template);
+    let (mut analysis, packet) = match resolve_filename {
+        Some(filename) => {
+            vize_atelier_sfc::croquis::analyze_sfc_descriptor_with_lint_template_and_occurrences_resolved(
+                scripts, template, options, filename,
+            )
+        }
+        None => {
+            vize_atelier_sfc::croquis::analyze_sfc_descriptor_with_lint_template_and_occurrences(
+                scripts, template, options,
+            )
+        }
+    };
     let component_reads = analysis.croquis.authored_component_reads_are_qualified();
     // Preserve the complete editor refusal separately from independently
     // source-witnessed positive reads admitted by the original SFC wrapper.

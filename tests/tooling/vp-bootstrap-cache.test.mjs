@@ -173,12 +173,9 @@ const dependencyConsumers = [
 ];
 
 const frontendConsumerRunners = new Map([
-  [
-    "check.yml/check-js",
-    "${{ (github.event_name == 'pull_request' || github.event_name == 'merge_group' || github.event_name == 'push') && 'ubuntu-24.04' || 'blacksmith-32vcpu-ubuntu-2404' }}",
-  ],
-  ["check.yml/security-audit", "ubuntu-24.04"],
-  ["check.yml/node-engine-compat", "ubuntu-24.04"],
+  ["check.yml/check-js", "blacksmith-32vcpu-ubuntu-2404"],
+  ["check.yml/security-audit", "blacksmith-32vcpu-ubuntu-2404"],
+  ["check.yml/node-engine-compat", "blacksmith-32vcpu-ubuntu-2404"],
 ]);
 
 function assertDependencyConsumer(
@@ -247,19 +244,10 @@ void test("Linux source consumers retain the same dependency identity without ca
   }
 });
 
-void test("frontend consumers keep exact resources for all five event modes", () => {
+void test("frontend consumers use maximum Linux resources for all event modes", () => {
   assert.equal(frontendConsumerRunners.size, 3);
   const job = workflow(".github/workflows/check.yml").jobs["check-js"];
-  const selector = frontendConsumerRunners.get("check.yml/check-js");
-  assert.equal(job["runs-on"], selector);
-  for (const [event_name, expected] of [
-    ["pull_request", "ubuntu-24.04"],
-    ["merge_group", "ubuntu-24.04"],
-    ["push", "ubuntu-24.04"],
-    ["schedule", "blacksmith-32vcpu-ubuntu-2404"],
-    ["workflow_dispatch", "blacksmith-32vcpu-ubuntu-2404"],
-  ])
-    assert.equal(runInNewContext(selector.slice(3, -2), { github: { event_name } }), expected);
+  assert.equal(job["runs-on"], "blacksmith-32vcpu-ubuntu-2404");
 });
 
 void test("one trusted main producer owns the selected Linux source dependency-store writes", () => {

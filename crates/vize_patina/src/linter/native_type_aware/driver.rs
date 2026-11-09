@@ -25,7 +25,6 @@ use planning::{
 };
 pub(in crate::linter) use prepared::PreparedSfc;
 use prepared::SfcQueryPlan;
-use vize_armature::Parser as TemplateParser;
 use vize_croquis::script_parser;
 use vize_l0::{ToCompactString, profile};
 /// Single-file compatibility path. Batch callers publish all prepared documents
@@ -70,22 +69,15 @@ pub(in crate::linter) fn prepare_with_descriptor<'a>(
         vize_l0::Allocator::with_capacity((source.len() * 4).max(linter.initial_capacity));
     let script_allocator = oxc_allocator::Allocator::default();
     let scripts = crate::linter::sfc_scripts::lint_scripts(&script_allocator, descriptor);
-    let mut template_syntax = None;
     let template_ast = descriptor.template.as_ref().map(|template| {
         let l2 = crate::markup::L2Template::lower(&allocator, &template.content);
-        let parser = TemplateParser::new(&allocator, &template.content);
-        let (root, _legacy_parse_errors, syntax) = profile!(
-            "patina.type_aware.template_parse",
-            super::super::script_rules::parse_template_for_script_rules(linter, parser)
-        );
-        template_syntax = syntax;
         let has_fatal_parse_errors =
             Linter::has_fatal_l1_template_parse_errors(l2.surface_errors());
-        (root, l2, template.loc.start as u32, has_fatal_parse_errors)
+        (l2, template.loc.start as u32, has_fatal_parse_errors)
     });
     let template_has_fatal_parse_errors = template_ast
         .as_ref()
-        .is_some_and(|(_, _, _, has_fatal)| *has_fatal);
+        .is_some_and(|(_, _, has_fatal)| *has_fatal);
     // Materialize CSS while the template is alive, but retain its position after
     // all type findings when the owned plan is evaluated later.
     let finish = |result, plan| {
@@ -103,7 +95,7 @@ pub(in crate::linter) fn prepare_with_descriptor<'a>(
                 },
                 template_ast
                     .as_ref()
-                    .and_then(|(root, _, _, fatal)| (!*fatal).then_some(root)),
+                    .and_then(|(l2, _, fatal)| (!*fatal).then_some(l2.surface())),
             ),
         )
     };
@@ -112,12 +104,13 @@ pub(in crate::linter) fn prepare_with_descriptor<'a>(
             &scripts,
             template_ast
                 .as_ref()
-                .and_then(|(_, l2, _, has_fatal)| (!*has_fatal).then_some(l2)),
+                .and_then(|(l2, _, has_fatal)| (!*has_fatal).then_some(l2)),
+            linter.has_resolved_macro_type_demand().then_some(filename),
             linter.has_unused_bindings_demand(),
             derived,
         )
     });
-    let mut result = if let (Some((root, l2, _, has_fatal)), Some(template)) =
+    let mut result = if let (Some((l2, _, has_fatal)), Some(template)) =
         (template_ast.as_ref(), descriptor.template.as_ref())
     {
         let (lint_result, scripts) = profile!(
@@ -127,7 +120,6 @@ pub(in crate::linter) fn prepare_with_descriptor<'a>(
                     filename,
                     template,
                     allocator: &allocator,
-                    root,
                     l2,
                     descriptor,
                     analysis: if *has_fatal {
@@ -135,7 +127,6 @@ pub(in crate::linter) fn prepare_with_descriptor<'a>(
                     } else {
                         TemplateAnalysis::Precomputed(&analysis)
                     },
-                    template_syntax: template_syntax.as_ref(),
                 },
                 &scripts,
             )
@@ -160,7 +151,6 @@ pub(in crate::linter) fn prepare_with_descriptor<'a>(
             descriptor,
             &scripts,
             &mut result,
-            None,
             None,
         );
         result
@@ -199,7 +189,7 @@ pub(in crate::linter) fn prepare_with_descriptor<'a>(
 
     let template_offset = template_ast
         .as_ref()
-        .map(|(_, _, offset, _)| *offset)
+        .map(|(_, offset, _)| *offset)
         .unwrap_or(0);
     let parse_result = profile!("patina.type_aware.script_parse", {
         if let Some(script_setup) = descriptor.script_setup.as_ref() {
@@ -221,7 +211,7 @@ pub(in crate::linter) fn prepare_with_descriptor<'a>(
             script_content,
             template_ast
                 .as_ref()
-                .and_then(|(root, _, _, has_fatal)| (!*has_fatal).then_some(root)),
+                .and_then(|(l2, _, has_fatal)| { (!*has_fatal).then_some(l2.lint_template()) }),
             script_offset,
             template_offset,
             filename,
@@ -291,13 +281,13 @@ pub(in crate::linter) fn prepare_with_descriptor<'a>(
             if include_template_queries || include_template_promise_queries {
                 template_ast.as_ref().map_or_else(
                     || (Vec::new(), Vec::new()),
-                    |(root, _, _, has_fatal)| {
+                    |(l2, _, has_fatal)| {
                         if *has_fatal {
                             (Vec::new(), Vec::new())
                         } else {
                             collect_template_query_sets(
                                 &virtual_ts,
-                                root,
+                                l2.surface(),
                                 template_offset,
                                 include_template_queries,
                                 include_template_promise_queries,
@@ -315,7 +305,7 @@ pub(in crate::linter) fn prepare_with_descriptor<'a>(
             descriptor,
             template_ast
                 .as_ref()
-                .and_then(|(root, _, offset, fatal)| (!*fatal).then_some((root, *offset))),
+                .and_then(|(l2, offset, fatal)| (!*fatal).then_some((l2.surface(), *offset))),
             &mut virtual_ts,
         )
     });

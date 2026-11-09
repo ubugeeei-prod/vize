@@ -3,7 +3,11 @@ import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
-import { slotCliPacket } from "../../tools/benchmarks/scripts/canon-slot-provider-cli.ts";
+import {
+  applyCanonLeftoverPreamble,
+  canonLeftoverPreamblePaths,
+  slotCliPacket,
+} from "../../tools/benchmarks/scripts/canon-slot-provider-cli.ts";
 import {
   AUTHENTICATED_PREAMBLE_BYTES,
   AUTHENTICATED_PREAMBLE_SHA256,
@@ -26,6 +30,7 @@ import {
   beforeDiscriminatedJsxUnionIn,
 } from "../../tools/support/compat/content-mapper/discriminated-jsx-union-transition.ts";
 import {
+  beforeCanonLeftoversIn,
   applyStrictExtraKeysIn,
   beforeStrictExtraKeysIn,
 } from "../../tools/support/compat/content-mapper/strict-extra-keys-transition.ts";
@@ -150,8 +155,13 @@ test("quiet CLI debug output retains exact helper/file bytes and refuses unrelat
   }
   const discriminatedSourcePreamble = applyDiscriminatedJsxUnionIn(integratedSourcePreamble);
   const strictSourcePreamble = applyStrictExtraKeysIn(discriminatedSourcePreamble);
-  const currentSourcePreamble = applyEmitMemberInferIn(strictSourcePreamble);
-  assert.equal(beforeEmitMemberInferIn(currentSourcePreamble), strictSourcePreamble);
+  const emitMemberSourcePreamble = applyEmitMemberInferIn(strictSourcePreamble);
+  const currentSourcePreamble = applyCanonLeftoverPreamble(emitMemberSourcePreamble);
+  const canonPredecessor = [...canonLeftoverPreamblePaths]
+    .reverse()
+    .reduce((current, file) => beforeCanonLeftoversIn(file, current), currentSourcePreamble);
+  assert.equal(canonPredecessor, emitMemberSourcePreamble);
+  assert.equal(beforeEmitMemberInferIn(canonPredecessor), strictSourcePreamble);
   assert.equal(beforeStrictExtraKeysIn(strictSourcePreamble), discriminatedSourcePreamble);
   assert.equal(
     beforeDiscriminatedJsxUnionIn(discriminatedSourcePreamble),

@@ -5,10 +5,10 @@ import { fileURLToPath } from "node:url";
 import { test } from "node:test";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
-const commandPath = "tools/commands/release/npm/tag.rs";
+const commandPath = "tools/commands/release/npm/tag.ts";
 
 function runNpmTag(args: readonly string[]) {
-  return spawnSync("rust-script", [commandPath, ...args], { cwd: repoRoot, encoding: "utf8" });
+  return spawnSync(process.execPath, [commandPath, ...args], { cwd: repoRoot, encoding: "utf8" });
 }
 
 test("npm tag script maps prerelease versions to npm dist-tags", () => {
@@ -30,8 +30,5 @@ test("npm tag script prints usage when the version is missing", () => {
   const result = runNpmTag([]);
 
   assert.equal(result.status, 1, result.stderr);
-  assert.match(
-    result.stdout,
-    /Usage: rust-script tools\/commands\/release\/npm\/tag\.rs <version>/,
-  );
+  assert.match(result.stdout, /Usage: node tools\/commands\/release\/npm\/tag\.ts <version>/);
 });

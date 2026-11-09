@@ -339,7 +339,7 @@ void test("full-only extraction preserves all seventeen complete original job ob
   }
   assert.equal(
     createHash("sha256").update(JSON.stringify(original)).digest("hex"),
-    "4de63c3d229c90269a69631d840c4b31cdc27290eedb5a11fc9775755c91cd1e",
+    "f9791086ebe654f600908fdef213a710d68778e8f93d19935ce115af0e32cbd9",
   );
 });
 

@@ -69,15 +69,7 @@ export function toolArgs(
     ];
   }
   if (tool === "linter") {
-    return [
-      "lint",
-      ...project.vueGlobs,
-      "--format",
-      "json",
-      "--preset",
-      "ecosystem",
-      "--no-config",
-    ];
+    return ["lint", ...project.vueGlobs, "--format", "json", "--preset", "all", "--no-config"];
   }
   if (tool === "typechecker") {
     // One `--tsconfig` cannot answer for sibling apps that `vueGlobs` still

@@ -8,6 +8,8 @@ import {
   type RendererNode,
   type RendererElement,
 } from "vue";
+import type { LayoutResultNapi } from "@vizejs/fresco-native";
+import { hitTest as hitTestHostTree } from "./hitTesting.js";
 import type { FrescoInputEvent, FrescoRenderNode, FrescoRenderNodeKind } from "./protocol.js";
 import { frescoNodeToRenderNode } from "./renderPayload.js";
 
@@ -384,6 +386,18 @@ export function createRenderer(options: FrescoRendererOptions | (() => void) = {
       disposeNode(tree, node);
       tree.onMutation();
       return true;
+    },
+    /**
+     * Return the deepest topmost node under one native-layout coordinate.
+     * Hidden and scroll overflow constrain descendant targeting on each axis.
+     */
+    hitTest(
+      root: FrescoHostNode,
+      x: number,
+      y: number,
+      layouts: readonly LayoutResultNapi[],
+    ): FrescoHostNode | undefined {
+      return hitTestHostTree(tree.nodes, root, x, y, layouts);
     },
     /** Route normalized input through capture, target, and bubble handlers. */
     dispatchInput<Event extends FrescoInputEvent>(

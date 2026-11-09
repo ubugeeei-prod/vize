@@ -45,7 +45,7 @@ export type RealProjectMatrixWorkflow = {
 };
 
 export const shardSummaryCommandPath =
-  "tools/commands/ci/github/publish-real-project-shard-summary.rs";
+  "tools/commands/ci/github/publish-real-project-shard-summary.ts";
 
 export function readRealProjectMatrixWorkflow(): RealProjectMatrixWorkflow {
   return parse(

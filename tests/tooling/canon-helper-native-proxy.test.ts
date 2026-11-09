@@ -1,6 +1,14 @@
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
-import { chmodSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import {
+  chmodSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  symlinkSync,
+  writeFileSync,
+} from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
@@ -16,6 +24,7 @@ import {
   admitSourceRegeneration,
   historicalBinarySha256,
   sourceImageBuildRecipe,
+  sourceMapperSdk,
   sourceRevision,
   sourceTree,
 } from "../../tools/benchmarks/scripts/canon-helper-baseline-provider.ts";
@@ -157,6 +166,64 @@ void test("source regeneration receipt binds producer bytes, toolchain and recip
     writeFileSync(linker, "tampered linker");
     assert.throws(() => admitSourceRegeneration(binary, regenerationFile));
   } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+void test("source mapper shadows only the helper SDK needed by the fixed source image", () => {
+  const root = mkdtempSync(join(tmpdir(), "canon source sdk "));
+  const previousSourceSdk = process.env.VIZE_SOURCE_SDK_ROOT;
+  try {
+    const provider = join(root, "provider");
+    const modules = join(provider, "node_modules");
+    const publishedVize = join(modules, "vize");
+    const publishedGenerated = join(publishedVize, "generated");
+    const sourceSdk = join(root, "source-sdk");
+    const sourceGenerated = join(sourceSdk, "generated");
+    const project = join(root, "project");
+    mkdirSync(join(modules, "vue"), { recursive: true });
+    mkdirSync(publishedGenerated, { recursive: true });
+    mkdirSync(sourceGenerated, { recursive: true });
+    mkdirSync(project);
+    writeFileSync(join(modules, "vue", "package.json"), '{"name":"vue"}\n');
+    writeFileSync(
+      join(publishedVize, "package.json"),
+      JSON.stringify({ typescript: { contentMapper: { exec: ["published", "content-mapper"] } } }),
+    );
+    for (const declaration of [
+      "content-mapper-helpers.d.cts",
+      "content-mapper-helpers.d.mts",
+      "content-mapper-helpers.d.ts",
+    ]) {
+      writeFileSync(join(publishedVize, declaration), "published helper\n");
+      writeFileSync(join(sourceSdk, declaration), `source ${declaration}\n`);
+    }
+    writeFileSync(join(publishedGenerated, "content-mapper-types.d.ts"), "published types\n");
+    writeFileSync(join(sourceGenerated, "content-mapper-types.d.ts"), "source types\n");
+    symlinkSync(modules, join(project, "node_modules"), "dir");
+    process.env.VIZE_SOURCE_SDK_ROOT = sourceSdk;
+
+    const receipt = sourceMapperSdk(project, provider, ["source-vize", "content-mapper"]);
+    const shadow = join(project, "node_modules", "vize");
+    assert.equal(
+      readFileSync(join(shadow, "content-mapper-helpers.d.ts"), "utf8"),
+      "source content-mapper-helpers.d.ts\n",
+    );
+    assert.equal(
+      readFileSync(join(shadow, "generated", "content-mapper-types.d.ts"), "utf8"),
+      "source types\n",
+    );
+    assert.deepEqual(
+      JSON.parse(readFileSync(join(shadow, "package.json"), "utf8")).typescript.contentMapper.exec,
+      ["source-vize", "content-mapper"],
+    );
+    assert.equal(
+      readFileSync(join(publishedGenerated, "content-mapper-types.d.ts"), "utf8"),
+      "published types\n",
+    );
+    assert.ok(receipt.sourceSdk);
+  } finally {
+    if (previousSourceSdk === undefined) delete process.env.VIZE_SOURCE_SDK_ROOT;
+    else process.env.VIZE_SOURCE_SDK_ROOT = previousSourceSdk;
     rmSync(root, { recursive: true, force: true });
   }
 });

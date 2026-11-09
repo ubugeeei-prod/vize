@@ -100,7 +100,7 @@ export function transform(
   assert.equal(extension, ".tsx");
   assert.ok(
     text.includes(expectedImport),
-    "the actual public mapper must select all 53 shared aliases",
+    "the actual public mapper must select every successor shared alias",
   );
   assert.ok(
     !text.includes("type __EmitShape<"),
