@@ -4,7 +4,8 @@ import path from "node:path";
 import { isEntrypoint, runEntrypoint } from "../../../support/command-runtime.ts";
 
 function commandOutput(command: string, arguments_: readonly string[]): string {
-  const result = spawnSync(command, [...arguments_], { encoding: "utf8" });
+  // `strings` over the release binary prints tens of MB.
+  const result = spawnSync(command, [...arguments_], { encoding: "utf8", maxBuffer: 1024 ** 3 });
   if (result.error !== undefined) throw new Error(`failed to run ${command}: ${result.error}`);
   if (result.status !== 0) {
     throw new Error(

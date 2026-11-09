@@ -305,7 +305,20 @@ impl VirtualProject {
     /// In-project roots, diagnosed scripts, and out-of-root `.d.ts` roots join
     /// `include` (#7217, #5629). An out-of-root script stays out (`TS2451`).
     pub(crate) fn virtual_file_is_program_member(&self, file: &super::VirtualFile) -> bool {
-        let original = vize_carton::path::canonicalize_non_verbatim(&file.original_path);
+        // Registration already resolved the source; include lists and shard
+        // plans ask again for every file.
+        let original = self
+            .source_artifacts
+            .get(&file.original_path)
+            .filter(|artifacts| !artifacts.canonical_original.as_os_str().is_empty())
+            .map_or_else(
+                || {
+                    std::borrow::Cow::Owned(vize_carton::path::canonicalize_non_verbatim(
+                        &file.original_path,
+                    ))
+                },
+                |artifacts| std::borrow::Cow::Borrowed(artifacts.canonical_original.as_path()),
+            );
         let declaration = crate::batch::declaration_path::is_declaration_file(&original);
         if !declaration && !original.starts_with(&self.project_root) {
             return false;

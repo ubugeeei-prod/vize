@@ -484,6 +484,7 @@ impl VirtualProject {
                 preserve_declaration_spelling: self.session_scripts,
                 mirrorable_project_files: None,
                 alias_rewrite_policy: Some(self.alias_rewrite_policy()),
+                passthrough_probes: None,
             },
         )?;
         self.absorb_registered_file(registered)?;
