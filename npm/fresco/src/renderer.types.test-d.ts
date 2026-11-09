@@ -59,6 +59,9 @@ export const lookedUpHostNode: FrescoHostNode | undefined = hostRenderer.getNode
 export const descendantHostNode: FrescoHostNode | undefined = lookedUpHostNode
   ? hostRenderer.findDescendantById(lookedUpHostNode, 2)
   : undefined;
+export const focusedHostNode: FrescoHostNode | undefined = lookedUpHostNode
+  ? hostRenderer.findNodeByFocusId(lookedUpHostNode, "editor")
+  : undefined;
 export const destroyedHostNode: boolean = hostRenderer.destroyRecursively(1);
 
 // @ts-expect-error - stable host ids are numeric.

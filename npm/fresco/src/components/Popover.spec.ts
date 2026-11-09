@@ -66,6 +66,7 @@ test("Popover anchors an overlay, traps initial focus, and restores the previous
   assert.equal((panel.props.style as Record<string, unknown>).position, "absolute");
   assert.equal((panel.props.style as Record<string, unknown>).left, "100%");
   assert.equal((panel.props.style as Record<string, unknown>).marginLeft, 2);
+  assert.equal(panel.props.focusId, "actions-popover");
 
   await dispatchKey({ key: "escape" });
   await nextTick();

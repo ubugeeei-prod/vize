@@ -260,6 +260,8 @@ export type FrescoMouseEventKind =
   | "up"
   | "drag"
   | "moved"
+  | "enter"
+  | "leave"
   | "scroll-up"
   | "scroll-down"
   | "scroll-left"
