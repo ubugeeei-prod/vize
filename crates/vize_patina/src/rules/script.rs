@@ -262,10 +262,10 @@ pub trait ScriptRule: Send + Sync {
         false
     }
 
-    /// Whether this rule reads [`SfcScriptContext::template_root`].
+    /// Whether this rule reads [`SfcScriptContext::template_surface`].
     ///
     /// The template parses at most once, only if an enabled rule returns true.
-    /// Otherwise this rule receives template_root: None and no unused parse runs.
+    /// Otherwise this rule receives `template_surface: None` and no unused scan runs.
     #[inline]
     fn uses_template_ast(&self) -> bool {
         false

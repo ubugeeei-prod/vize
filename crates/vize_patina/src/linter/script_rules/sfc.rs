@@ -13,6 +13,7 @@ use crate::rules::script::{
     ReturnInEmitsValidator, ScriptLintResult, SfcScriptContext,
 };
 use vize_atelier_sfc::SfcDescriptor;
+use vize_croquis::drawer::LintTemplate;
 use vize_l0::profile;
 
 fn descriptor_may_have_typed_macros(descriptor: &SfcDescriptor<'_>) -> bool {
@@ -29,8 +30,7 @@ pub(crate) fn append_builtin_script_diagnostics<'a>(
     descriptor: &SfcDescriptor<'a>,
     scripts: &SfcScripts<'_>,
     result: &mut LintResult,
-    template_ast: Option<(&vize_relief::RootNode<'_>, u32)>,
-    template_syntax: Option<&vize_armature::parser::TemplateSyntaxFacts<'_>>,
+    template_ast: Option<(&crate::markup::L2Template<'_>, u32)>,
 ) {
     append_builtin_script_diagnostics_with_template_context(
         linter,
@@ -38,7 +38,6 @@ pub(crate) fn append_builtin_script_diagnostics<'a>(
         scripts,
         result,
         template_ast,
-        template_syntax,
         None,
     );
 }
@@ -48,8 +47,7 @@ pub(crate) fn append_builtin_script_diagnostics_with_template_context<'a>(
     descriptor: &SfcDescriptor<'a>,
     scripts: &SfcScripts<'_>,
     result: &mut LintResult,
-    template_ast: Option<(&vize_relief::RootNode<'_>, u32)>,
-    template_syntax: Option<&vize_armature::parser::TemplateSyntaxFacts<'_>>,
+    template_ast: Option<(&crate::markup::L2Template<'_>, u32)>,
     mut template_context: Option<&mut crate::context::LintContext<'_>>,
 ) {
     let registered_scripts = registered_sfc::has_active(linter);
@@ -59,16 +57,18 @@ pub(crate) fn append_builtin_script_diagnostics_with_template_context<'a>(
         return;
     }
     let template_references = template_ast
-        .zip(template_syntax)
-        .filter(|((root, offset), _)| {
-            descriptor.template.as_ref().is_some_and(|template| {
-                *offset == template.loc.start as u32
-                    && core::ptr::eq(root.source, template.content.as_ref())
+        .filter(|(artifact, offset)| {
+            descriptor.template.as_ref().is_some_and(|block| {
+                *offset == block.loc.start as u32
+                    && core::ptr::eq(artifact.surface().source, block.content.as_ref())
             })
         })
-        .map(|((root, offset), syntax)| {
+        .map(|(artifact, offset)| {
             (
-                vize_croquis::drawer::collect_template_references(root, syntax),
+                vize_croquis::drawer::collect_lint_template_references(LintTemplate::new(
+                    artifact.surface(),
+                    artifact.lowered(),
+                )),
                 offset,
             )
         });
@@ -106,15 +106,16 @@ pub(crate) fn append_builtin_script_diagnostics_with_template_context<'a>(
             linter,
             descriptor,
             result.filename.as_str(),
-        ) && let Some((root, offset)) = template_ast
+        ) && let Some((artifact, offset)) = template_ast
         {
+            let surface = artifact.surface();
             let context = SfcScriptContext {
                 is_sfc: true,
                 template_source: descriptor
                     .template
                     .as_ref()
                     .map(|block| block.content.as_ref()),
-                template_root: Some(root),
+                template_surface: Some(surface),
                 template_offset: Some(offset),
                 sole_script_block: true,
                 ..Default::default()
@@ -127,7 +128,7 @@ pub(crate) fn append_builtin_script_diagnostics_with_template_context<'a>(
             let mut lint = ScriptLintResult::default();
             profile!(
                 "patina.script_rule.no_duplicate_attr_inheritance",
-                NoDuplicateAttrInheritance::check_scriptless_template(root, offset, &mut lint)
+                NoDuplicateAttrInheritance::check_scriptless_template(surface, offset, &mut lint)
             );
             merge_script_result(linter, result, lint);
         }
@@ -330,7 +331,7 @@ pub(crate) fn append_builtin_script_diagnostics_with_template_context<'a>(
             .template
             .as_ref()
             .map(|block| block.content.as_ref()),
-        template_root: template_ast.map(|(root, _)| root),
+        template_surface: template_ast.map(|(artifact, _)| artifact.surface()),
         // Raw-template fallbacks still need authored SFC coordinates when the
         // compiler refuses to produce a trustworthy AST (for example after
         // HTML table foster parenting). The descriptor location is available

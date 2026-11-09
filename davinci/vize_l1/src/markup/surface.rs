@@ -43,6 +43,7 @@ pub struct Token<'a> {
     lint_header_literal: bool,
     lint_table_context: bool,
     lint_recovery_context: bool,
+    ignored_start: bool,
 }
 
 // Keep public diagnostics and dumps independent of private construction facts.
@@ -71,6 +72,7 @@ impl<'a> Token<'a> {
             lint_header_literal: false,
             lint_table_context: false,
             lint_recovery_context: false,
+            ignored_start: false,
         }
     }
 
@@ -86,6 +88,7 @@ impl<'a> Token<'a> {
             lint_header_literal: false,
             lint_table_context: false,
             lint_recovery_context: false,
+            ignored_start: false,
         }
     }
 
@@ -95,6 +98,10 @@ impl<'a> Token<'a> {
 
     pub(crate) fn mark_raw_interpolation(&mut self) {
         self.raw_interpolation = true;
+    }
+
+    pub(crate) fn mark_ignored_start(&mut self) {
+        self.ignored_start = true;
     }
 
     pub(crate) fn mark_lint_tag(
@@ -210,6 +217,11 @@ impl OpenTag<'_> {
     /// defaults to false. This fact does not admit L2 control semantics.
     pub fn is_verbatim(&self) -> bool {
         self.lt_name.verbatim_opening
+    }
+
+    /// Whether HTML tree construction ignored this authored opening tag.
+    pub fn is_ignored_start(&self) -> bool {
+        self.lt_name.ignored_start
     }
 }
 

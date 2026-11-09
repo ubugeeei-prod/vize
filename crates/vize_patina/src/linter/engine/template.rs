@@ -1,13 +1,13 @@
 //! Template execution and finalization share one directive context.
 
 use super::{
-    Allocator, LintResult, Linter, RootNode, TemplateAnalysis, TemplateRuleEnv, sfc,
-    unused_directives,
+    Allocator, LintResult, Linter, TemplateAnalysis, TemplateRuleEnv, sfc, unused_directives,
 };
 use crate::context::LintContext;
 use crate::markup::L2Template;
 use vize_croquis::{Croquis, Drawer, drawer::LintTemplate};
 use vize_l0::{ToCompactString, profile};
+use vize_relief::RootNode;
 
 pub(super) struct TemplateExecution<'a> {
     pub allocator: &'a Allocator,

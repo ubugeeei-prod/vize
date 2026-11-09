@@ -5,13 +5,13 @@
 
 use vize_atelier_sfc::SfcDescriptor;
 use vize_atelier_sfc::croquis::{
-    SfcCroquisOptions, analyze_sfc_descriptor_with_context,
-    analyze_sfc_descriptor_with_context_options_api,
+    SfcCroquisOptions, analyze_sfc_descriptor_with_lint_template_context,
 };
 use vize_canon::virtual_ts::{
-    ProjectionMapping, VirtualTsOptions, generate_virtual_ts_with_offsets,
+    ProjectionMapping, VirtualTsOptions, VirtualTsOutput, generate_virtual_ts_with_offsets,
     generate_virtual_ts_with_offsets_options_api, generate_virtual_ts_with_split_offsets,
 };
+use vize_croquis::drawer::LintTemplate;
 use vize_l0::String;
 use vize_relief::RootNode;
 
@@ -32,7 +32,7 @@ impl TypeAwareDocument {
 pub(super) fn project_type_aware<'a>(
     descriptor: &SfcDescriptor<'a>,
     script_content: &str,
-    template: Option<&RootNode<'a>>,
+    template: Option<LintTemplate<'_, 'a>>,
     script_offset: u32,
     template_offset: u32,
     filename: &str,
@@ -50,7 +50,7 @@ pub(super) fn project_type_aware<'a>(
 
 pub(in crate::linter) fn project_component<'a>(
     descriptor: &SfcDescriptor<'a>,
-    template: Option<&RootNode<'a>>,
+    template: Option<LintTemplate<'_, 'a>>,
     filename: &str,
 ) -> String {
     let script = descriptor
@@ -75,7 +75,7 @@ pub(in crate::linter) fn project_component<'a>(
 fn project<'a>(
     descriptor: &SfcDescriptor<'a>,
     script_content: &str,
-    template: Option<&RootNode<'a>>,
+    template: Option<LintTemplate<'_, 'a>>,
     script_offset: u32,
     template_offset: u32,
     filename: &str,
@@ -90,11 +90,18 @@ fn project<'a>(
     let mut options = SfcCroquisOptions::lint_demand();
     options.analyzer_options.collect_template_expressions = true;
     let use_options_api = descriptor.script_setup.is_none() && descriptor.script.is_some();
-    let analysis = if use_options_api {
-        analyze_sfc_descriptor_with_context_options_api(descriptor, template, options)
-    } else {
-        analyze_sfc_descriptor_with_context(descriptor, template, options)
-    };
+    let allocator = oxc_allocator::Allocator::default();
+    let scripts = vize_atelier_sfc::croquis::SfcScriptParses::new(
+        &allocator,
+        descriptor,
+        vize_atelier_sfc::croquis::SfcScriptParses::compile_language,
+    );
+    let analysis = analyze_sfc_descriptor_with_lint_template_context(
+        &scripts,
+        template,
+        options,
+        use_options_api,
+    );
     let owned_script = analysis.script_content.clone();
     let script_origin = if owned_script.is_some() {
         analysis.script_offset
@@ -106,35 +113,34 @@ fn project<'a>(
     let ts_options = VirtualTsOptions::default();
     // The editor-document facade disables preserve_authored_component. Its
     // synthetic constructor would hide an authored `any` dependency default.
-    let output = if use_options_api || component_only {
-        generate_virtual_ts_with_offsets_options_api(
-            &analysis.croquis,
-            Some(script_text),
-            template,
-            script_origin,
-            template_offset,
-            &ts_options,
-        )
-    } else if let Some(split) = split {
-        generate_virtual_ts_with_split_offsets(
-            &analysis.croquis,
-            Some(script_text),
-            template,
-            script_origin,
-            template_offset,
-            &ts_options,
-            Some(split),
-        )
-    } else {
-        generate_virtual_ts_with_offsets(
-            &analysis.croquis,
-            Some(script_text),
-            template,
-            script_origin,
-            template_offset,
-            &ts_options,
-        )
-    };
+    let output = template.map_or_else(
+        || {
+            generate_document(
+                &analysis.croquis,
+                script_text,
+                None,
+                script_origin,
+                template_offset,
+                &ts_options,
+                split,
+                use_options_api || component_only,
+            )
+        },
+        |template| {
+            template.with_compatibility_root(|root| {
+                generate_document(
+                    &analysis.croquis,
+                    script_text,
+                    Some(root),
+                    script_origin,
+                    template_offset,
+                    &ts_options,
+                    split,
+                    use_options_api || component_only,
+                )
+            })
+        },
+    );
     let mut document = TypeAwareDocument {
         content: output.code,
         mapping: output.mapping,
@@ -152,6 +158,51 @@ fn project<'a>(
     // pinned in Canon snapshots, so only this checker document changes.
     keep_any_out_of_boolean_keys(&mut document);
     document
+}
+
+#[expect(
+    clippy::too_many_arguments,
+    reason = "virtual document generation inputs"
+)]
+fn generate_document(
+    croquis: &vize_croquis::Croquis,
+    script_text: &str,
+    template: Option<&RootNode<'_>>,
+    script_origin: u32,
+    template_offset: u32,
+    options: &VirtualTsOptions,
+    split: Option<(usize, usize)>,
+    options_api: bool,
+) -> VirtualTsOutput {
+    if options_api {
+        generate_virtual_ts_with_offsets_options_api(
+            croquis,
+            Some(script_text),
+            template,
+            script_origin,
+            template_offset,
+            options,
+        )
+    } else if let Some(split) = split {
+        generate_virtual_ts_with_split_offsets(
+            croquis,
+            Some(script_text),
+            template,
+            script_origin,
+            template_offset,
+            options,
+            Some(split),
+        )
+    } else {
+        generate_virtual_ts_with_offsets(
+            croquis,
+            Some(script_text),
+            template,
+            script_origin,
+            template_offset,
+            options,
+        )
+    }
 }
 
 const BOOLEAN_KEY_ALIAS: &str = "type $BooleanKey<T, K extends keyof T = keyof T> = K extends any ? [Exclude<T[K], undefined>] extends [never] ? never : [Exclude<T[K], undefined>] extends [boolean] ? K : never : never;";
@@ -194,12 +245,15 @@ mod tests {
                 .expect("sfc");
         let template = descriptor.template.as_ref().expect("template");
         let allocator = vize_l0::Allocator::new();
-        let (root, _) = vize_armature::parse(&allocator, template.content.as_ref());
+        let l2 = crate::markup::L2Template::lower(&allocator, template.content.as_ref());
         let script = descriptor.script_setup.as_ref().expect("script");
         let document = project_type_aware(
             &descriptor,
             script.content.as_ref(),
-            Some(&root),
+            Some(vize_croquis::drawer::LintTemplate::new(
+                l2.surface(),
+                l2.lowered(),
+            )),
             script.loc.start as u32,
             template.loc.start as u32,
             "Fixture.vue",
@@ -217,12 +271,15 @@ mod tests {
                 .expect("sfc");
         let template = descriptor.template.as_ref().expect("template");
         let allocator = vize_l0::Allocator::new();
-        let (root, _) = vize_armature::parse(&allocator, template.content.as_ref());
+        let l2 = crate::markup::L2Template::lower(&allocator, template.content.as_ref());
         let script = descriptor.script_setup.as_ref().expect("script");
         let document = project_type_aware(
             &descriptor,
             script.content.as_ref(),
-            Some(&root),
+            Some(vize_croquis::drawer::LintTemplate::new(
+                l2.surface(),
+                l2.lowered(),
+            )),
             script.loc.start as u32,
             template.loc.start as u32,
             "Fixture.vue",
@@ -272,12 +329,15 @@ mod tests {
                 .expect("sfc");
         let template = descriptor.template.as_ref().expect("template");
         let allocator = vize_l0::Allocator::new();
-        let (root, _) = vize_armature::parse(&allocator, template.content.as_ref());
+        let l2 = crate::markup::L2Template::lower(&allocator, template.content.as_ref());
         let script = descriptor.script_setup.as_ref().expect("script setup");
         let document = project_type_aware(
             &descriptor,
             script.content.as_ref(),
-            Some(&root),
+            Some(vize_croquis::drawer::LintTemplate::new(
+                l2.surface(),
+                l2.lowered(),
+            )),
             script.loc.start as u32,
             template.loc.start as u32,
             "Fixture.vue",

@@ -114,6 +114,9 @@ impl<'a, const RAW: bool, const LINT: bool, const STRUCTURAL_DIAGNOSTICS: bool>
         }
         let ignored_start =
             STRUCTURAL_DIAGNOSTICS && self.recovery.is_repeated_form(&self.stack, tag);
+        if ignored_start {
+            lt_name.mark_ignored_start();
+        }
         let (ns, implicit_depth) = self.recovery.open(&self.stack, tag, self_closing);
         let table_tree_element =
             !STRUCTURAL_DIAGNOSTICS || is_table_tree_element(tag, in_v_pre, &attrs);
