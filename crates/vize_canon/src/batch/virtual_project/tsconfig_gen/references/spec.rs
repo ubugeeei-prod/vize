@@ -98,6 +98,8 @@ impl OwnershipSpec {
 pub(super) struct SpecCache {
     active: FxHashSet<PathBuf>,
     completed: FxHashMap<PathBuf, Option<OwnershipSpec>>,
+    /// Config spellings resolved once: the cache already freezes the configs.
+    normalized: FxHashMap<PathBuf, PathBuf>,
 }
 
 impl SpecCache {
@@ -110,7 +112,7 @@ impl SpecCache {
         config_path: &Path,
         inputs: Option<&CompilerInputs>,
     ) -> Option<OwnershipSpec> {
-        let normalized = graph::normalize_path(config_path);
+        let normalized = self.normalize(config_path);
         if let Some(inputs) = inputs {
             inputs.record_config_alias(config_path, &normalized);
         }
@@ -124,6 +126,13 @@ impl SpecCache {
         self.active.remove(&normalized);
         self.completed.insert(normalized, loaded.clone());
         loaded
+    }
+
+    pub(super) fn normalize(&mut self, config_path: &Path) -> PathBuf {
+        self.normalized
+            .entry(config_path.to_path_buf())
+            .or_insert_with_key(|path| graph::normalize_path(path))
+            .clone()
     }
 
     fn load_uncached(
