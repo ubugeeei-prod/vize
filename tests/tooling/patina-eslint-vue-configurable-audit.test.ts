@@ -58,20 +58,28 @@ test("the current eslint-plugin-vue configurable surface stays explicit", () => 
   });
 });
 
-test("the current release delta does not silently move the frozen parity provider", () => {
-  assert.equal(ruleMap.upstream.version, audit.pinnedCompatibilityProvider.version);
-  assert.equal(ruleMap.upstream.ruleCount, audit.pinnedCompatibilityProvider.ruleCount);
+test("the scorecard can advance without silently moving the frozen parity provider", () => {
+  assert.deepEqual(audit.pinnedCompatibilityProvider, {
+    version: "10.9.2",
+    ruleCount: 252,
+    currentAdditions: [
+      {
+        rule: "vue/no-shadow-native-events",
+        configurable: false,
+        status: "unimplemented",
+      },
+    ],
+  });
+  assert.deepEqual(ruleMap.upstream, {
+    package: "eslint-plugin-vue",
+    version: "10.12.0",
+    ruleCount: 256,
+  });
   assert.equal(
-    ruleMap.upstream.ruleCount + audit.pinnedCompatibilityProvider.currentAdditions.length,
+    audit.pinnedCompatibilityProvider.ruleCount +
+      audit.pinnedCompatibilityProvider.currentAdditions.length,
     audit.upstream.ruleCount,
   );
-  assert.deepEqual(audit.pinnedCompatibilityProvider.currentAdditions, [
-    {
-      rule: "vue/no-shadow-native-events",
-      configurable: false,
-      status: "unimplemented",
-    },
-  ]);
 });
 
 test("new configurable mappings retain their exact presets without claiming typed options", () => {
