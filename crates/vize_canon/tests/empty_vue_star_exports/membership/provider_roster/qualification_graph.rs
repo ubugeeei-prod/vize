@@ -16,6 +16,7 @@ use docs_metadata::{
     DocsMetadataQualificationGraph, MANIFEST as DOCS_METADATA_MANIFEST,
     update as docs_metadata_update, verify as verify_docs_metadata_update,
 };
+mod integrated_graph;
 mod strict_checker;
 use strict_checker::{authorize as authorize_strict_checker, update as strict_checker_update};
 mod fresco;
@@ -491,7 +492,16 @@ pub(super) fn authorize(previous: &Value, lock: &[u8], package: &[u8]) -> Checke
     }
     let predecessor_bytes = fs::read(support::corpus().join(strict_checker::UPDATE))
         .map_err(|_| "complete create-fresco qualification predecessor")?;
-    let update = docs_metadata::authorize(
+    if let Ok(update) = docs_metadata::authorize(
+        &strict_update,
+        &predecessor_bytes,
+        lock,
+        package,
+        &workspace,
+    ) {
+        return Ok(Some(update));
+    }
+    let update = integrated_graph::authorize(
         &strict_update,
         &predecessor_bytes,
         lock,

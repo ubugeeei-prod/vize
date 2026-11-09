@@ -415,7 +415,7 @@ pub(super) fn validate(packet: &Value, files: &Value) -> Value {
     provider_roster::validate(
         packet,
         &roots,
-        &manifest["provenance"]["currentProviderRoster"],
+        &manifest["provenance"]["currentProviderRoles"],
     );
     let members =
         captured(files).expect("every actual captured body must have matching length and SHA256");
