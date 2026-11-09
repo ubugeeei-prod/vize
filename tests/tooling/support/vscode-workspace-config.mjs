@@ -22,7 +22,7 @@ function workspaceFolder(pathname, index = 0) {
 export function createDiscovery(
   findFiles = async () => [],
   initialFolders = ["/workspace"],
-  { sourceText = source, nativeWatchError, projectConfigFiles = [] } = {},
+  { sourceText = source, nativeWatchError, projectConfigFiles = /** @type {string[]} */ ([]) } = {},
 ) {
   const body = stripTypeScriptTypes(sourceText, { mode: "transform" })
     .replace(/^import[\s\S]*?;\n/gm, "")

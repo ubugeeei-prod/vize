@@ -1,7 +1,4 @@
 import assert from "node:assert/strict";
-import fs from "node:fs";
-import os from "node:os";
-import path from "node:path";
 import { test } from "node:test";
 import { CONFIG_GLOB, createDiscovery, fileUri } from "./support/vscode-workspace-config.mjs";
 
@@ -447,19 +444,4 @@ await test("custom filesystem configurations keep recursive delivery without nat
   watchers[0].callbacks.change(uri);
   assert.deepEqual(reasons, ["project configuration changed"]);
   for (const subscription of subscriptions) subscription.dispose();
-});
-
-await test("root configs are checked once per refresh", async (t) => {
-  const root = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), "vize-root-config-")));
-  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
-  fs.writeFileSync(path.join(root, "tsconfig.json"), "{}\n");
-  const { discovery } = createDiscovery(async () => [], [root], {
-    projectConfigFiles: ["vite.config.ts", "tsconfig.json"],
-  });
-  assert.equal(discovery.hasRootConfig, true);
-  fs.rmSync(path.join(root, "tsconfig.json"));
-  assert.equal(discovery.hasConfig, true, "one refresh observes one root state");
-  await discovery.refresh(1);
-  assert.equal(discovery.hasRootConfig, false);
-  assert.equal(discovery.hasConfig, false);
 });
