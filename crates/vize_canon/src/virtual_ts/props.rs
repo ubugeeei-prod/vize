@@ -2,6 +2,7 @@ mod keyed_template_names;
 mod mappings;
 mod model_props;
 mod options_api;
+mod runtime_docs;
 mod setup_scoped;
 mod template_bindings;
 mod template_model;
