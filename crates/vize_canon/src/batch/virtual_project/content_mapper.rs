@@ -402,7 +402,13 @@ fn protocol_spans(
             .get(index + 1)
             .map_or(generated.len(), |next| next.generated.start);
         let delimiters = synthetic_delimiters(generated, &candidate.generated)
-            .filter(|(open, close)| previous_end <= *open && *close < next_start);
+            .filter(|(open, close)| previous_end <= *open && *close < next_start)
+            .filter(|(open, _)| {
+                !generated
+                    .as_bytes()
+                    .get(..*open)
+                    .is_some_and(|p| p.ends_with(b"void "))
+            });
         let target = &candidate.original;
         let delimiter = |at: usize| {
             ContentMapperSpan([
