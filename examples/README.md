@@ -320,14 +320,14 @@ Current observed behavior in this repository: that probe reports `0` findings on
 
 ## Level Proof-of-Concept Examples
 
-Each `*-poc` crate compiles one component written for another framework or script language
+Each `poc-*` crate compiles one component written for another framework or script language
 through the compiler levels and prints the generated module. They are proofs of concept, not
 supported inputs; #6829 records their shared shape. Each crate's `README.md` names its input and
 the syntax it covers; `__snapshots__/` holds its expected output.
 
 ```bash
-cargo run -p solid-poc -- examples/solid-poc/input/Counter.jsx
-cargo test -p solid-poc
+cargo run -p poc-solid -- examples/poc-solid/input/Counter.jsx
+cargo test -p poc-solid
 ```
 
 ---

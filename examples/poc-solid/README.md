@@ -3,8 +3,8 @@
 Compiles a Solid component through the compiler levels. Not a supported input.
 
 ```bash
-cargo run -p solid-poc -- examples/solid-poc/input/Counter.jsx
-cargo test -p solid-poc
+cargo run -p poc-solid -- examples/poc-solid/input/Counter.jsx
+cargo test -p poc-solid
 ```
 
 - Input: `input/Counter.jsx`. Output: `__snapshots__/Counter.js`, a `solid-js/web` DOM module.
