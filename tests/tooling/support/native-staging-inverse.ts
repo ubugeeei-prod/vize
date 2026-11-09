@@ -2,7 +2,8 @@ import assert from "node:assert/strict";
 
 // CI jobs stage only the native binaries they built through one script, since
 // @napi-rs/cli 3.10 `pre-publish` rejects every empty foreign platform package.
-// Sealed workflow chains invert each staging step to its former text.
+// Packed smoke installs also add @vize/tools, which owns the init oracles'
+// semver since #12123. Sealed workflow chains invert each change.
 const stage = "node tools/support/github/stage-built-native-packages.ts npm/native";
 const createDirs = "vp exec napi create-npm-dirs";
 const prePublish = "vp exec napi pre-publish -t npm --no-gh-release --skip-optional-publish";
@@ -31,7 +32,7 @@ const inNative = (commands: readonly string[]) =>
   `        working-directory: npm/native\n        run: |\n${lines(commands)}`;
 const stagedRun = `        run: ${stage}\n`;
 
-type Step = readonly [current: string, former: string];
+type Step = readonly [current: string, former: string, count?: number];
 
 const conformanceSteps: readonly Step[] = [
   [stagedRun, inNative([createDirs, prePublish, ...copyHostBinary])],
@@ -46,6 +47,11 @@ const conformanceSteps: readonly Step[] = [
 ];
 
 const nativeSmokeSteps: readonly Step[] = [
+  [
+    "            --filter . \\\n            --filter '@vize/tools' \\\n",
+    "            --filter . \\\n",
+    2,
+  ],
   [stagedRun, inNative([createDirs, prePublish, ...smokeCopyNote, ...copyHostBinary])],
   [
     `${muslEnv}        run: |\n${lines([
@@ -62,9 +68,13 @@ const nativeSmokeSteps: readonly Step[] = [
 ];
 
 function invert(workflow: string, steps: readonly Step[]): string {
-  for (const [current, former] of steps) {
-    assert.equal(workflow.split(current).length, 2, `one staged native step: ${current.trim()}`);
-    workflow = workflow.replace(current, () => former);
+  for (const [current, former, count = 1] of steps) {
+    assert.equal(
+      workflow.split(current).length,
+      count + 1,
+      `staged native step: ${current.trim()}`,
+    );
+    workflow = workflow.replaceAll(current, () => former);
   }
   return workflow;
 }
