@@ -40,6 +40,7 @@ import {
   projectionReport,
   renderProjection,
 } from "./typecheck-corpus-pair-projection.ts";
+import { familyShapes, renderReplyShape } from "./typecheck-reply-shape.ts";
 import {
   CONTENT_MAPPERS,
   MAPPER_HOSTS,
@@ -315,6 +316,11 @@ function main(): void {
     join(out, "projection.md"),
     projections.map((report) => renderProjection(report)).join("\n"),
   );
+  const shapes = CORPORA.map((corpus) => {
+    const dir = (role: string) => join(out, "generated", `${corpus.id}-tsc-vize-${role}`);
+    return renderReplyShape(corpus.id, familyShapes(dir("base")), familyShapes(dir("head")));
+  });
+  writeFileSync(join(out, "reply-shape.md"), `### Reply shape\n\n${shapes.join("\n")}`);
 
   const timed = new Map<string, HostRun[]>();
   for (let run = 0; run < runs; run++) {

@@ -6,7 +6,8 @@
  * record per transform response to $VIZE_MAPPER_PROBE_RECORD, so the bytes
  * counted are exactly the virtual TS the host received. With
  * $VIZE_MAPPER_PROBE_DUMP set, each response's text is also written there at
- * its path relative to $VIZE_MAPPER_PROBE_ROOT, with a `.tsx` suffix.
+ * its path relative to $VIZE_MAPPER_PROBE_ROOT, with a `.tsx` suffix, and the
+ * starts of its spans and directives beside it in `<file>.tsx.shape.json`.
  */
 
 import { spawn } from "node:child_process";
@@ -14,6 +15,7 @@ import { appendFileSync, mkdirSync, writeFileSync } from "node:fs";
 import { dirname, isAbsolute, join, relative } from "node:path";
 
 import { frameReader, probeRecord } from "./typecheck-corpus-pair-parse.ts";
+import { shapeSidecar } from "./typecheck-reply-shape.ts";
 
 const [mapperDir, separator, command, ...args] = process.argv.slice(2);
 const recordPath = process.env.VIZE_MAPPER_PROBE_RECORD;
@@ -27,6 +29,8 @@ function dump(fileName: string, response: Record<string, unknown>): void {
   const target = join(dumpDir, `${path}.tsx`);
   mkdirSync(dirname(target), { recursive: true });
   writeFileSync(target, text);
+  const result = response.result as Record<string, unknown>;
+  writeFileSync(`${target}.shape.json`, JSON.stringify(shapeSidecar(result)));
 }
 if (!mapperDir || separator !== "--" || !command || !recordPath) {
   process.stderr.write(

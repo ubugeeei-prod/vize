@@ -40,5 +40,5 @@ void test("the corpus pair workflow builds both SHAs and measures on the 32-vCPU
     script,
     /node tools\/benchmarks\/scripts\/typecheck-cost-attribution\.ts --pair "\$RUNNER_TEMP\/pair-work" --out "\$RUNNER_TEMP\/pair-out"/u,
   );
-  assert.match(script, /for report in summary projection attribution batch-vs-mapper/u);
+  assert.match(script, /for report in summary projection reply-shape attribution batch-vs-mapper/u);
 });
