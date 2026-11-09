@@ -322,10 +322,18 @@ impl VirtualProject {
             for (specifier, mode, is_reference) in specifiers {
                 // Path references are always relative to the containing file,
                 // even without `./`; import aliases and packages do not apply.
+                // The walk's probes answer from the batch's directory listings.
+                let probes = runtime_prop_resolve_cache.passthrough_probes();
                 let native_target = if is_reference {
-                    resolution::probe_candidates(&importer_dir.join(specifier))
+                    resolution::probe_candidates_listed(&importer_dir.join(specifier), probes)
                 } else {
-                    self.resolve_source_dependency(&importer, generated_vue, specifier, &aliases)
+                    self.resolve_source_dependency_listed(
+                        &importer,
+                        generated_vue,
+                        specifier,
+                        &aliases,
+                        probes,
+                    )
                 };
                 let Some(target) = native_target else {
                     if !is_reference && let Some(resolve) = package_resolver.as_deref_mut() {
