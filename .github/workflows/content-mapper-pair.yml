@@ -25,6 +25,10 @@ on:
         description: Publish timing even when the builds answer differently
         type: boolean
         default: false
+      syscall_census:
+        description: Also count the Linux filesystem syscalls per transform for both builds (strace)
+        type: boolean
+        default: false
       windows_probe:
         description: Also time the head build on Windows with stdout to NUL and with a Defender exclusion
         type: boolean
@@ -138,6 +142,19 @@ jobs:
             --root "$RUNNER_TEMP/pair" --sizes "$SIZES" --runs "$RUNS" $ALLOW \
             --label linux-ext4 --out "$RUNNER_TEMP/pair-out" > /dev/null
           cat "$RUNNER_TEMP/pair-out/pair-linux-ext4.md" >> "$GITHUB_STEP_SUMMARY"
+      - name: Syscall census
+        if: inputs.syscall_census
+        env:
+          SIZES: ${{ inputs.sizes }}
+        run: |
+          set -euo pipefail
+          sudo apt-get install -y --no-install-recommends strace > /dev/null
+          size=$(echo "$SIZES" | tr "," "\n" | sort -n | head -1)
+          node tools/benchmarks/scripts/content-mapper-census.ts \
+            --bin base=pair-bin/base/vize --bin head=pair-bin/head/vize \
+            --project "$RUNNER_TEMP/pair/vue-$size" --stream "$RUNNER_TEMP/pair/stream-$size.bin" \
+            --label "linux-ext4, $size SFCs" --out "$RUNNER_TEMP/pair-out/census.md" > /dev/null
+          cat "$RUNNER_TEMP/pair-out/census.md" >> "$GITHUB_STEP_SUMMARY"
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always()
         with: { name: pair-linux, path: "${{ runner.temp }}/pair-out/", if-no-files-found: warn }

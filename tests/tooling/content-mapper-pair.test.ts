@@ -103,3 +103,21 @@ test("the workflow measures every filesystem from one build per platform", () =>
   );
   assert.match(workflow, /cargo build --profile ci-opt -p vize --bin vize/);
 });
+
+test("the syscall census reads strace lines and collapses generated spellings", async () => {
+  const { parseStraceLine, pathShape } =
+    await import("../../tools/benchmarks/scripts/content-mapper-census.ts");
+  assert.deepEqual(parseStraceLine('openat(AT_FDCWD, "/p/src/a.ts", O_RDONLY|O_CLOEXEC) = 3'), {
+    call: "openat",
+    path: "/p/src/a.ts",
+  });
+  assert.deepEqual(parseStraceLine('[pid  42] readlink("/p/src", 0x7ff, 4095) = -1 EINVAL'), {
+    call: "readlink",
+    path: "/p/src",
+  });
+  assert.equal(parseStraceLine("+++ exited with 0 +++"), undefined);
+  assert.equal(
+    pathShape("/p/src/features/f0024/Widget09.vue", "/p"),
+    "<project>/src/features/fNNNN/Name.vue",
+  );
+});
