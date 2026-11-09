@@ -1,0 +1,6 @@
+<script setup lang="ts">
+defineProps<{ label: string }>()
+defineExpose({ focus: (): void => {} })
+</script>
+
+<template><span /></template>
