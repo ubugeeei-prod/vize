@@ -17,8 +17,6 @@ metadata.vize.stability = "experimental"
 # the P1-6/P1-7 differential-lane shape: committed battery with pinned
 # counts, plus `VIZE_DAVINCI_DIFFERENTIAL_CORPUS=<dir>` widening.
 legacy-differential = []
-# Deprecated published feature spelling; keep as a compatibility alias.
-davinci-differential = ["legacy-differential"]
 # Retain the published opt-in spelling for native lexer differential tests.
 # The lexer, entity decoder and callback adapter are available by default.
 native-markup-lex = []
