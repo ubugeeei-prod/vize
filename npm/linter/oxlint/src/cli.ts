@@ -17,11 +17,19 @@ import {
   qualifyHtmlHost,
 } from "./cli/html-project-output.ts";
 import { runOxlint } from "./cli/process.ts";
+import {
+  renderConvertedReportOrPassThrough,
+  requestedConvertedFormat,
+  withJsonFormat,
+} from "./cli/report-format.ts";
 import { requestsTypeAware, runVueTypeAwarePass } from "./cli/type-aware-vue.ts";
 
 async function main(): Promise<void> {
   const cwd = process.cwd();
-  const forwardedArgs = process.argv.slice(2);
+  const requestedArgs = process.argv.slice(2);
+  // `gitlab` and `github` reports are rendered from the merged JSON report at the end.
+  const convertedFormat = requestedConvertedFormat(requestedArgs);
+  const forwardedArgs = convertedFormat ? withJsonFormat(requestedArgs) : requestedArgs;
   const targets = getLintTargets(forwardedArgs);
   const candidates = new Set<string>();
   const lintFiles = collectVueLikeFilesFromTargets(cwd, targets, (file) => candidates.add(file));
@@ -115,7 +123,12 @@ async function main(): Promise<void> {
       }
       throw error;
     }
-    const { stdout, stderr } = merged;
+    let { stdout } = merged;
+    const { stderr } = merged;
+    if (convertedFormat && stdout) {
+      stdout = renderConvertedReportOrPassThrough(stdout, convertedFormat);
+      merged = { ...merged, stdout, rawStdout: undefined };
+    }
 
     if (stdout) {
       await writeStream(process.stdout, merged.rawStdout ?? stdout);
@@ -125,7 +138,7 @@ async function main(): Promise<void> {
       await writeStream(process.stderr, merged.rawStderr ?? stderr);
     }
 
-    if (merged.status === 0 && stdout === "" && stderr === "" && expectsLintReport(forwardedArgs)) {
+    if (merged.status === 0 && stdout === "" && stderr === "" && expectsLintReport(requestedArgs)) {
       await writeStream(
         process.stderr,
         `The oxlint run at ${oxlintEntrypoint} exited 0 but produced no report, ` +
