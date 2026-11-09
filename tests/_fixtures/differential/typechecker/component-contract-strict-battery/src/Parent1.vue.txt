@@ -1,0 +1,48 @@
+<script setup lang="ts">
+import { ref } from 'vue'
+import ChildA from './ChildA.vue'
+import ChildB from './ChildB.vue'
+import Opts from './Opts.vue'
+const text = ref('a')
+const num = ref(1)
+const list = ref(['a', 'b'])
+const nums = ref([1, 2])
+const onPickNum = (id: number) => { void id }
+const onPickStr = (id: string) => { void id }
+const obj = { title: 't', items: ['x'] }
+const bad = { title: 1 }
+</script>
+<template>
+  <ChildA title="ok" :items="list" />
+  <ChildA :title="num" :items="list" />
+  <ChildA title="ok" :items="nums" />
+  <ChildA title="ok" />
+  <ChildA title="ok" :items="list" :count="text" />
+  <ChildA title="ok" :items="list" count="3" />
+  <ChildA title="ok" :items="list" :unknown-prop="1" />
+  <ChildA title="ok" :items="list" depressed="x" />
+  <ChildA title="ok" :items="list" aria-label="lbl" data-owned="yes" data-free="z" />
+  <ChildA title="ok" :items="list" :aria-label="num" />
+  <ChildA title="ok" :items="list" :data-owned="num" />
+  <ChildA title="ok" :items="list" :on-pick="onPickNum" />
+  <ChildA title="ok" :items="list" :on-pick="onPickStr" />
+  <ChildA title="ok" :items="list" :on-pick="(id) => id.toFixed()" />
+  <ChildA title="ok" :items="list" :on-pick="(id: string) => id" />
+  <ChildA title="ok" :items="list" v-model="text" />
+  <ChildA title="ok" :items="list" v-model="num" />
+  <ChildA title="ok" :items="list" tone="hot" />
+  <ChildA title="ok" :items="list" :tone="text" />
+  <ChildA v-bind="obj" />
+  <ChildA v-bind="bad" :items="list" />
+  <ChildA title="ok" :items="list" class="a" :class="{ b: true }" style="color: red" :style="{ color: num }" />
+  <ChildA title="ok" :items="list" :key="num" ref="childRef" />
+  <ChildA title="ok" :items="list" @close="(v) => v.toFixed()" @select="(id, index) => id.repeat(index)" />
+  <ChildB />
+  <ChildB label="x" :size="text" />
+  <ChildB :open="1" :list="list" :maybe="null" />
+  <ChildB :nope="1" @toggle="(o) => o.valueOf()" />
+  <Opts :level="1" />
+  <Opts />
+  <Opts :level="text" mode="c" />
+  <Opts :level="2" mode="b" flag :unknown="1" />
+</template>

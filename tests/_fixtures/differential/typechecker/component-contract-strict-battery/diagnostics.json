@@ -1,0 +1,370 @@
+[
+  {
+    "code": 2322,
+    "column": 12,
+    "file": "src/Parent1.vue",
+    "line": 17,
+    "message": "Type 'number' is not assignable to type 'string'.",
+    "severity": 1
+  },
+  {
+    "code": 2322,
+    "column": 12,
+    "file": "src/Parent1.vue",
+    "line": 42,
+    "message": "Type 'number' is not assignable to type 'boolean | undefined'.",
+    "severity": 1
+  },
+  {
+    "code": 2322,
+    "column": 14,
+    "file": "src/Parent2.vue",
+    "line": 16,
+    "message": "Type 'number' is not assignable to type 'string'.",
+    "severity": 1
+  },
+  {
+    "code": 2322,
+    "column": 15,
+    "file": "src/Parent2.vue",
+    "line": 30,
+    "message": "Type '{ id: number; label: string; }[]' is not assignable to type '{ id: number; name: string; }[]'.\nProperty 'name' is missing in type '{ id: number; label: string; }' but required in type '{ id: number; name: string; }'.",
+    "severity": 1
+  },
+  {
+    "code": 2322,
+    "column": 16,
+    "file": "src/Parent2.vue",
+    "line": 26,
+    "message": "Type 'number' is not assignable to type 'string'.",
+    "severity": 1
+  },
+  {
+    "code": 2322,
+    "column": 16,
+    "file": "src/Parent2.vue",
+    "line": 27,
+    "message": "Type 'string' is not assignable to type 'number'.",
+    "severity": 1
+  },
+  {
+    "code": 2322,
+    "column": 22,
+    "file": "src/Parent1.vue",
+    "line": 41,
+    "message": "Type 'string' is not assignable to type 'number'.",
+    "severity": 1
+  },
+  {
+    "code": 2322,
+    "column": 22,
+    "file": "src/Parent1.vue",
+    "line": 42,
+    "message": "Type 'string[]' is not assignable to type 'number[]'.\nType 'string' is not assignable to type 'number'.",
+    "severity": 1
+  },
+  {
+    "code": 2322,
+    "column": 22,
+    "file": "src/Parent2.vue",
+    "line": 40,
+    "message": "Type 'string' is not assignable to type 'number'.",
+    "severity": 1
+  },
+  {
+    "code": 2322,
+    "column": 22,
+    "file": "src/Parent3.vue",
+    "line": 11,
+    "message": "Type '\"yes\"' is not assignable to type 'Booleanish | undefined'.",
+    "severity": 1
+  },
+  {
+    "code": 2322,
+    "column": 22,
+    "file": "src/Parent3.vue",
+    "line": 12,
+    "message": "Type 'number' is not assignable to type 'string'.",
+    "severity": 1
+  },
+  {
+    "code": 2322,
+    "column": 22,
+    "file": "src/Parent3.vue",
+    "line": 13,
+    "message": "Type 'string' is not assignable to type 'number'.",
+    "severity": 1
+  },
+  {
+    "code": 2322,
+    "column": 22,
+    "file": "src/Parent3.vue",
+    "line": 14,
+    "message": "Type 'number' is not assignable to type 'string'.",
+    "severity": 1
+  },
+  {
+    "code": 2322,
+    "column": 22,
+    "file": "src/Parent3.vue",
+    "line": 16,
+    "message": "Type '(e: number) => number' is not assignable to type '(payload: InputEvent) => void'.\nTypes of parameters 'e' and 'payload' are incompatible.\nType 'InputEvent' is not assignable to type 'number'.",
+    "severity": 1
+  },
+  {
+    "code": 2322,
+    "column": 22,
+    "file": "src/Parent3.vue",
+    "line": 19,
+    "message": "Type '{}' is not assignable to type 'Numberish | undefined'.",
+    "severity": 1
+  },
+  {
+    "code": 2322,
+    "column": 22,
+    "file": "src/Parent3.vue",
+    "line": 8,
+    "message": "Type '{}' is not assignable to type 'Numberish | undefined'.",
+    "severity": 1
+  },
+  {
+    "code": 2322,
+    "column": 23,
+    "file": "src/Parent1.vue",
+    "line": 18,
+    "message": "Type 'number[]' is not assignable to type 'string[]'.\nType 'number' is not assignable to type 'string'.",
+    "severity": 1
+  },
+  {
+    "code": 2322,
+    "column": 33,
+    "file": "src/Parent3.vue",
+    "line": 14,
+    "message": "Type 'number' is not assignable to type 'string'.",
+    "severity": 1
+  },
+  {
+    "code": 2322,
+    "column": 36,
+    "file": "src/Parent1.vue",
+    "line": 21,
+    "message": "Type 'string' is not assignable to type 'number'.",
+    "severity": 1
+  },
+  {
+    "code": 2322,
+    "column": 36,
+    "file": "src/Parent1.vue",
+    "line": 32,
+    "message": "Type 'number' is not assignable to type 'string'.",
+    "severity": 1
+  },
+  {
+    "code": 2322,
+    "column": 36,
+    "file": "src/Parent1.vue",
+    "line": 33,
+    "message": "Type '\"hot\"' is not assignable to type '\"cold\" | \"warm\" | undefined'.",
+    "severity": 1
+  },
+  {
+    "code": 2322,
+    "column": 37,
+    "file": "src/Parent1.vue",
+    "line": 20,
+    "message": "Type 'string' is not assignable to type 'number'.",
+    "severity": 1
+  },
+  {
+    "code": 2322,
+    "column": 37,
+    "file": "src/Parent1.vue",
+    "line": 25,
+    "message": "Type 'number' is not assignable to type 'string'.",
+    "severity": 1
+  },
+  {
+    "code": 2322,
+    "column": 37,
+    "file": "src/Parent1.vue",
+    "line": 26,
+    "message": "Type 'number' is not assignable to type 'string'.",
+    "severity": 1
+  },
+  {
+    "code": 2322,
+    "column": 37,
+    "file": "src/Parent1.vue",
+    "line": 28,
+    "message": "Type '(id: string) => void' is not assignable to type '(id: number) => void'.\nTypes of parameters 'id' and 'id' are incompatible.\nType 'number' is not assignable to type 'string'.",
+    "severity": 1
+  },
+  {
+    "code": 2322,
+    "column": 37,
+    "file": "src/Parent1.vue",
+    "line": 30,
+    "message": "Type '(id: string) => string' is not assignable to type '(id: number) => void'.\nTypes of parameters 'id' and 'id' are incompatible.\nType 'number' is not assignable to type 'string'.",
+    "severity": 1
+  },
+  {
+    "code": 2322,
+    "column": 37,
+    "file": "src/Parent1.vue",
+    "line": 34,
+    "message": "Type 'string' is not assignable to type '\"cold\" | \"warm\" | undefined'.",
+    "severity": 1
+  },
+  {
+    "code": 2322,
+    "column": 40,
+    "file": "src/Parent2.vue",
+    "line": 34,
+    "message": "Type 'string' is not assignable to type 'number'.",
+    "severity": 1
+  },
+  {
+    "code": 2322,
+    "column": 41,
+    "file": "src/Parent2.vue",
+    "line": 19,
+    "message": "Type 'number' is not assignable to type 'string'.",
+    "severity": 1
+  },
+  {
+    "code": 2322,
+    "column": 44,
+    "file": "src/Parent2.vue",
+    "line": 38,
+    "message": "Type 'string' is not assignable to type 'number'.",
+    "severity": 1
+  },
+  {
+    "code": 2322,
+    "column": 45,
+    "file": "src/Parent1.vue",
+    "line": 32,
+    "message": "Type 'string' is not assignable to type 'number'.",
+    "severity": 1
+  },
+  {
+    "code": 2322,
+    "column": 47,
+    "file": "src/Parent2.vue",
+    "line": 41,
+    "message": "Type 'number' is not assignable to type 'string'.",
+    "severity": 1
+  },
+  {
+    "code": 2322,
+    "column": 49,
+    "file": "src/Parent2.vue",
+    "line": 40,
+    "message": "Type 'number' is not assignable to type 'string'.",
+    "severity": 1
+  },
+  {
+    "code": 2322,
+    "column": 50,
+    "file": "src/Parent2.vue",
+    "line": 21,
+    "message": "Type '\"bogus\"' is not assignable to type '\"id\" | \"label\" | undefined'.",
+    "severity": 1
+  },
+  {
+    "code": 2322,
+    "column": 63,
+    "file": "src/Parent2.vue",
+    "line": 36,
+    "message": "Type '\"a\"' is not assignable to type '\"cold\" | \"warm\" | undefined'.",
+    "severity": 1
+  },
+  {
+    "code": 2322,
+    "column": 64,
+    "file": "src/Parent3.vue",
+    "line": 18,
+    "message": "Type '1' is not assignable to type 'Booleanish | undefined'.",
+    "severity": 1
+  },
+  {
+    "code": 2339,
+    "column": 106,
+    "file": "src/Parent2.vue",
+    "line": 41,
+    "message": "Property 'nope' does not exist on type '{ id: number; }'.",
+    "severity": 1
+  },
+  {
+    "code": 2339,
+    "column": 17,
+    "file": "src/Opts.vue",
+    "line": 8,
+    "message": "Property 'level' does not exist on the component instance.",
+    "severity": 1
+  },
+  {
+    "code": 2339,
+    "column": 176,
+    "file": "src/ChildB.vue",
+    "line": 6,
+    "message": "Property 'nope' does not exist on type 'string'.",
+    "severity": 1
+  },
+  {
+    "code": 2339,
+    "column": 198,
+    "file": "src/ChildB.vue",
+    "line": 6,
+    "message": "Property 'toUpperCase' does not exist on type 'number'.",
+    "severity": 1
+  },
+  {
+    "code": 2339,
+    "column": 29,
+    "file": "src/Opts.vue",
+    "line": 8,
+    "message": "Property 'mode' does not exist on the component instance.",
+    "severity": 1
+  },
+  {
+    "code": 2339,
+    "column": 43,
+    "file": "src/Parent2.vue",
+    "line": 18,
+    "message": "Property 'nope' does not exist on type '{ id: number; label: string; }'.",
+    "severity": 1
+  },
+  {
+    "code": 2345,
+    "column": 4,
+    "file": "src/Parent1.vue",
+    "line": 19,
+    "message": "Argument of type '{ title: string; }' is not assignable to parameter of type '$ComponentCheckProps<__ChildA_CheckProps_0, $PublicComponentAttrs & { abbr?: unknown; about?: unknown; \"accent-height\"?: unknown; accentHeight?: unknown; accept?: unknown; acceptcharset?: unknown; accesskey?: unknown; ... 675 more ...; zoomAndPan?: unknown; } & { ...; } & Record<...>>'.\nProperty 'items' is missing in type '{ title: string; }' but required in type '{ readonly title: string; readonly count?: number | undefined; readonly items: string[]; readonly ariaLabel?: string | undefined; readonly 'data-owned'?: string | undefined; readonly onPick?: ((id: number) => void) | undefined; ... 4 more ...; readonly \"onUpdate:modelValue\"?: ((v: string) => any) | undefined; }'.",
+    "severity": 1
+  },
+  {
+    "code": 2345,
+    "column": 4,
+    "file": "src/Parent1.vue",
+    "line": 36,
+    "message": "Argument of type '{ title: number; items: string[]; }' is not assignable to parameter of type '$ComponentCheckProps<__ChildA_CheckProps_0, $PublicComponentAttrs & { abbr?: unknown; about?: unknown; \"accent-height\"?: unknown; accentHeight?: unknown; accept?: unknown; acceptcharset?: unknown; accesskey?: unknown; ... 675 more ...; zoomAndPan?: unknown; } & { ...; } & Record<...>>'.\nType '{ title: number; items: string[]; }' is not assignable to type '{ readonly title: string; readonly count?: number | undefined; readonly items: string[]; readonly ariaLabel?: string | undefined; readonly 'data-owned'?: string | undefined; readonly onPick?: ((id: number) => void) | undefined; ... 4 more ...; readonly \"onUpdate:modelValue\"?: ((v: string) => any) | undefined; }'.\nTypes of property 'title' are incompatible.\nType 'number' is not assignable to type 'string'.",
+    "severity": 1
+  },
+  {
+    "code": 2345,
+    "column": 4,
+    "file": "src/Parent2.vue",
+    "line": 31,
+    "message": "Argument of type '{}' is not assignable to parameter of type '$ComponentCheckProps<Props, $PublicComponentAttrs & { abbr?: unknown; about?: unknown; \"accent-height\"?: unknown; accentHeight?: unknown; accept?: unknown; acceptcharset?: unknown; accesskey?: unknown; accumulate?: unknown; action?: unknown; additive?: unknown; align?: unknown; ... 671 more ...; zoomAndPan?: unknown...'.\nProperty 'rows' is missing in type '{}' but required in type '{ readonly rows: { id: number; name: string; }[]; readonly dense?: boolean | undefined; }'.",
+    "severity": 1
+  },
+  {
+    "code": 2345,
+    "column": 4,
+    "file": "src/Parent2.vue",
+    "line": 38,
+    "message": "Argument of type '{ size: string; }' is not assignable to parameter of type '$ComponentCheckProps<____vize_dynamic_is_1060_CheckProps_17, $PublicComponentAttrs & { abbr?: unknown; about?: unknown; \"accent-height\"?: unknown; accentHeight?: unknown; ... 678 more ...; zoomAndPan?: unknown; } & { ...; } & Record<...>>'.\nType '{ size: string; }' is not assignable to type '{ readonly label?: string | undefined; readonly size?: number | undefined; readonly open?: boolean | undefined; readonly list?: number[] | undefined; readonly maybe?: string | null | undefined; readonly onClose?: ((value: number) => any) | undefined; readonly onSelect?: ((id: string, index: number) => any) | undefin...'.\nType '{ size: string; }' is not assignable to type '{ readonly label?: string | undefined; readonly size?: number | undefined; readonly open?: boolean | undefined; readonly list?: number[] | undefined; readonly maybe?: string | null | undefined; readonly onClose?: ((value: number) => any) | undefined; readonly onSelect?: ((id: string, index: number) => any) | undefin...'.\nTypes of property 'size' are incompatible.\nType 'string' is not assignable to type 'number'.",
+    "severity": 1
+  }
+]

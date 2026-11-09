@@ -1,6 +1,5 @@
 ---
 source: crates/vize_canon/src/virtual_ts/legacy_vue2_vuetify_tests.rs
-assertion_line: 201
 expression: "format!(\"=== standard ===\\n{standard}\\n=== legacy ===\\n{legacy}\")"
 ---
 === standard ===
@@ -191,9 +190,8 @@ function __setup() {
   type __VDatePicker_CheckProps_0 = __VDatePicker_Props_0 & $EmitListeners<__VDatePicker_Component_0> & $RequiredFallthroughProps<__VDatePicker_Component_0>;
   type __VDatePicker_CheckTail_0 = $ComponentCheckTail<__VDatePicker_Component_0>;
   type __VDatePicker_ValueProps_0 = $IsLibraryGenericExport<__VDatePicker_Component_0> extends true ? Record<string, any> : __VDatePicker_Props_0 & $EmitListeners<__VDatePicker_Component_0> & $PublicComponentAttrs;
-  type __VDatePicker_FallthroughValue_0<K extends PropertyKey> = $FallthroughValue<__VDatePicker_Component_0, K>;
   type __VDatePicker_Check_0 = $PropChecker<__VDatePicker_Component_0, __VDatePicker_CheckProps_0, __VDatePicker_CheckTail_0>;
-  type __VDatePicker_0_prop_width = $PropValue<__VDatePicker_ValueProps_0, 'width', __VDatePicker_FallthroughValue_0<'width'>>;
+  type __VDatePicker_0_prop_width = $PropValue<__VDatePicker_ValueProps_0, 'width', $FallthroughValue<__VDatePicker_Component_0, 'width'>>;
 
   // Component template navigation references
   void VDatePicker;
@@ -412,9 +410,8 @@ function __setup() {
   type __VDatePicker_CheckProps_0 = __VDatePicker_Props_0 & $EmitListeners<__VDatePicker_Component_0> & $RequiredFallthroughProps<__VDatePicker_Component_0>;
   type __VDatePicker_CheckTail_0 = { [__K in string]: unknown };
   type __VDatePicker_ValueProps_0 = $IsLibraryGenericExport<__VDatePicker_Component_0> extends true ? Record<string, any> : __VDatePicker_Props_0 & $EmitListeners<__VDatePicker_Component_0> & $PublicComponentAttrs;
-  type __VDatePicker_FallthroughValue_0<K extends PropertyKey> = $FallthroughValue<__VDatePicker_Component_0, K>;
   type __VDatePicker_Check_0 = $PropChecker<__VDatePicker_Component_0, __VDatePicker_CheckProps_0, __VDatePicker_CheckTail_0>;
-  type __VDatePicker_0_prop_width = $PropValue<__VDatePicker_ValueProps_0, 'width', __VDatePicker_FallthroughValue_0<'width'>>;
+  type __VDatePicker_0_prop_width = $PropValue<__VDatePicker_ValueProps_0, 'width', $FallthroughValue<__VDatePicker_Component_0, 'width'>>;
 
   // Component template navigation references
   void VDatePicker;

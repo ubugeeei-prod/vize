@@ -163,10 +163,6 @@ pub(super) fn append_prop_checker_alias(
                 ts,
                 "  type __{component_type_name}_ValueProps_{idx} = $IsLibraryGenericExport<__{component_type_name}_Component_{idx}> extends true ? Record<string, any> : __{component_type_name}_Props_{idx} & $EmitListeners<__{component_type_name}_Component_{idx}> & $PublicComponentAttrs;\n",
             );
-            vize_l0::emit_ts!(
-                ts,
-                "  type __{component_type_name}_FallthroughValue_{idx}<K extends PropertyKey> = $FallthroughValue<__{component_type_name}_Component_{idx}, K>;\n",
-            );
         }
         vize_l0::emit_ts!(
             ts,
@@ -178,7 +174,6 @@ pub(super) fn append_prop_checker_alias(
     let required_fallthrough =
         shared_types::REQUIRED_FALLTHROUGH_PROPS.select(hoist_shared_preamble);
     let is_library_generic = shared_types::IS_LIBRARY_GENERIC_EXPORT.select(hoist_shared_preamble);
-    let fallthrough_value = shared_types::FALLTHROUGH_VALUE.select(hoist_shared_preamble);
     let prop_checker = shared_types::PROP_CHECKER.select(hoist_shared_preamble);
     vize_l0::emit_ts!(
         ts,
@@ -200,10 +195,6 @@ pub(super) fn append_prop_checker_alias(
             ts,
             "  type __{component_type_name}_ValueProps_{idx} = {is_library_generic}<__{component_type_name}_Component_{idx}> extends true ? Record<string, any> : __{component_type_name}_Props_{idx} & {emit_listeners}<__{component_type_name}_Component_{idx}> & $PublicComponentAttrs;\n",
         );
-        vize_l0::emit_ts!(
-            ts,
-            "  type __{component_type_name}_FallthroughValue_{idx}<K extends PropertyKey> = {fallthrough_value}<__{component_type_name}_Component_{idx}, K>;\n",
-        );
     }
     vize_l0::emit_ts!(
         ts,
@@ -223,6 +214,10 @@ pub(super) fn usage_needs_per_prop_aliases(usage: &ComponentUsage) -> bool {
 /// without `__vizeResolveProps`. Vize generic children replace it at the value
 /// check with their instantiated resolver result. Every other prop keeps the
 /// statically extracted type.
+///
+/// The fallthrough fallback names `$FallthroughValue<C, 'key'>` directly:
+/// TypeScript caches that instantiation per component and key, while a
+/// per-usage generic alias re-instantiates it in every module.
 pub(super) fn prop_alias_type(
     prop: &PassedProp,
     component_type_name: &str,
@@ -236,7 +231,7 @@ pub(super) fn prop_alias_type(
             return String::from("$ComponentRefCallback");
         }
         let normalized = cstr!(
-            "$PropValue<__{component_type_name}_ValueProps_{idx}, '{camel_prop_name}', __{component_type_name}_FallthroughValue_{idx}<'{fallthrough_prop_name}'>>"
+            "$PropValue<__{component_type_name}_ValueProps_{idx}, '{camel_prop_name}', $FallthroughValue<__{component_type_name}_Component_{idx}, '{fallthrough_prop_name}'>>"
         );
         let raw_aria_prop_name =
             component_aria_prop_keys(fallthrough_prop_name).map(|(raw, _)| raw);
@@ -260,11 +255,12 @@ pub(super) fn prop_alias_type(
     let component_ref_callback = shared_types::COMPONENT_REF_CALLBACK.select(hoist_shared_preamble);
     let prop_value = shared_types::PROP_VALUE.select(hoist_shared_preamble);
     let callable_prop = shared_types::CALLABLE_PROP.select(hoist_shared_preamble);
+    let fallthrough_value = shared_types::FALLTHROUGH_VALUE.select(hoist_shared_preamble);
     if prop.name.as_str() == "ref" && is_inline_ref_callback_prop(prop) {
         return String::from(component_ref_callback);
     }
     let normalized = cstr!(
-        "{prop_value}<__{component_type_name}_ValueProps_{idx}, '{camel_prop_name}', __{component_type_name}_FallthroughValue_{idx}<'{fallthrough_prop_name}'>>"
+        "{prop_value}<__{component_type_name}_ValueProps_{idx}, '{camel_prop_name}', {fallthrough_value}<__{component_type_name}_Component_{idx}, '{fallthrough_prop_name}'>>"
     );
     // A declared raw ARIA key is authoritative even when Vue authored the
     // camel alias. Resolve it before the whole-object presence witness removes

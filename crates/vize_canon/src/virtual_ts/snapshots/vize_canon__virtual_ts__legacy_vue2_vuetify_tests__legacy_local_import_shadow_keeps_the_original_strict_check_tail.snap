@@ -1,6 +1,5 @@
 ---
 source: crates/vize_canon/src/virtual_ts/legacy_vue2_vuetify_tests.rs
-assertion_line: 302
 expression: legacy
 ---
 /// <reference lib="es2022" />
@@ -142,9 +141,8 @@ function __setup() {
   type __ExternalInput_CheckProps_0 = __ExternalInput_Props_0 & $EmitListeners<__ExternalInput_Component_0> & $RequiredFallthroughProps<__ExternalInput_Component_0>;
   type __ExternalInput_CheckTail_0 = $ComponentCheckTail<__ExternalInput_Component_0>;
   type __ExternalInput_ValueProps_0 = $IsLibraryGenericExport<__ExternalInput_Component_0> extends true ? Record<string, any> : __ExternalInput_Props_0 & $EmitListeners<__ExternalInput_Component_0> & $PublicComponentAttrs;
-  type __ExternalInput_FallthroughValue_0<K extends PropertyKey> = $FallthroughValue<__ExternalInput_Component_0, K>;
   type __ExternalInput_Check_0 = $PropChecker<__ExternalInput_Component_0, __ExternalInput_CheckProps_0, __ExternalInput_CheckTail_0>;
-  type __ExternalInput_0_prop_count = $PropValue<__ExternalInput_ValueProps_0, 'count', __ExternalInput_FallthroughValue_0<'count'>>;
+  type __ExternalInput_0_prop_count = $PropValue<__ExternalInput_ValueProps_0, 'count', $FallthroughValue<__ExternalInput_Component_0, 'count'>>;
 
   // Component template navigation references
   void ExternalInput;

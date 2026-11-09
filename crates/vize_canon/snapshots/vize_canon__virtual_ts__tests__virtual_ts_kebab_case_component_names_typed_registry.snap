@@ -225,9 +225,8 @@ function __setup() {
   type __my_widget_CheckProps_0 = __my_widget_Props_0 & $EmitListeners<__my_widget_Component_0> & $RequiredFallthroughProps<__my_widget_Component_0>;
   type __my_widget_CheckTail_0 = $ComponentCheckTail<__my_widget_Component_0>;
   type __my_widget_ValueProps_0 = $IsLibraryGenericExport<__my_widget_Component_0> extends true ? Record<string, any> : __my_widget_Props_0 & $EmitListeners<__my_widget_Component_0> & $PublicComponentAttrs;
-  type __my_widget_FallthroughValue_0<K extends PropertyKey> = $FallthroughValue<__my_widget_Component_0, K>;
   type __my_widget_Check_0 = $PropChecker<__my_widget_Component_0, __my_widget_CheckProps_0, __my_widget_CheckTail_0>;
-  type __my_widget_0_prop_label = $PropValue<__my_widget_ValueProps_0, 'label', __my_widget_FallthroughValue_0<'label'>>;
+  type __my_widget_0_prop_label = $PropValue<__my_widget_ValueProps_0, 'label', $FallthroughValue<__my_widget_Component_0, 'label'>>;
 
   // Component template navigation references
   void my_widget;
