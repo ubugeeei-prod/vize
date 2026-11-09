@@ -481,7 +481,7 @@ const ruleOptions = { "vue/warn-custom-directive": { ignore: ["hover-tooltip"] }
 
 ## `vue/no-bare-strings-in-template`：翻訳不要の文字列
 
-`allowlist` は既定一覧をリテラル部分文字列または JavaScript 正規表現で置き換えます。空の一覧は何も許可しません。
+`allowlist` は既定一覧をリテラル部分文字列または Rust の正規表現構文を使う `/pattern/flags` で置き換えます。コンパイルできないパターンはリテラルとして扱い、空の一覧は何も許可しません。
 
 ```ts
 const ruleOptions = { "vue/no-bare-strings-in-template": { allowlist: ["Cancel", "/^[DRWXYmvx]$/u"] } };

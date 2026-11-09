@@ -74,7 +74,7 @@ export default defineConfig({}).withVue({
 | `script/define-props-destructuring` | `{ destructure?: "only-when-assigned" \| "always" \| "never" }` | Defaults to `always`, checking assigned and bare typed calls. `only-when-assigned` skips bare calls; `never` requires props-object access. Vue 3.5 destructuring preserves reactivity. |
 | `vue/no-mutating-props` | `{ shallowOnly?: boolean }` | Defaults to `false`; `true` allows nested mutation while still disallowing direct prop reassignment. |
 | `vue/warn-custom-directive` | `{ ignore?: string[] }` | Defaults to an empty list. Exact directive names in `ignore` are treated as registered. |
-| `vue/no-bare-strings-in-template` | `{ allowlist?: string[] }` | Omitted uses the upstream default allowlist; an explicit list replaces it. Entries are literals or JavaScript regex strings. |
+| `vue/no-bare-strings-in-template` | `{ allowlist?: string[] }` | Omitted uses the upstream default allowlist; an explicit list replaces it. Entries are literals or `/pattern/flags` values using Rust regex syntax; invalid patterns remain literals. |
 | `a11y/anchor-has-content` | `{ accessibleChildren?: string[] }` | Defaults to an empty list. Named components count as accessible anchor content. |
 | `a11y/label-has-for` | `{ controlComponents?: string[] }` | Defaults to an empty list. Named components count as label controls. |
 | `vue/require-component-registration` | `{ globals?: string[] }` | Explicit application/preview component names; accepts PascalCase and kebab-case spellings. Options do not enable the rule. |

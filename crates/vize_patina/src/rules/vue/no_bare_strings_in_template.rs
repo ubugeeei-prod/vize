@@ -75,7 +75,12 @@ pub struct NoBareStringsInTemplate {
 
 enum BareStringAllowlist {
     Default,
-    Custom(Option<Regex>),
+    Custom(Vec<AllowlistEntry>),
+}
+
+enum AllowlistEntry {
+    Literal(String),
+    Pattern(Regex),
 }
 
 #[expect(
@@ -156,9 +161,25 @@ impl NoBareStringsInTemplate {
         let text = text.trim();
         match &self.allowlist {
             BareStringAllowlist::Default => default_has_bare_string(text),
-            BareStringAllowlist::Custom(None) => !text.is_empty(),
-            BareStringAllowlist::Custom(Some(allowlist)) => {
-                !allowlist.replace_all(text, "").trim().is_empty()
+            BareStringAllowlist::Custom(allowlist) => {
+                let mut remaining: String = text.into();
+                for entry in allowlist {
+                    match entry {
+                        AllowlistEntry::Literal(literal)
+                            if remaining.contains(literal.as_str()) =>
+                        {
+                            remaining = remaining.replace(literal.as_str(), "").into();
+                        }
+                        AllowlistEntry::Pattern(pattern) if pattern.is_match(&remaining) => {
+                            remaining = pattern.replace_all(&remaining, "").into_owned().into();
+                        }
+                        AllowlistEntry::Literal(_) | AllowlistEntry::Pattern(_) => {}
+                    }
+                    if remaining.trim().is_empty() {
+                        return false;
+                    }
+                }
+                !remaining.trim().is_empty()
             }
         }
     }
@@ -249,38 +270,26 @@ fn default_has_bare_string(text: &str) -> bool {
         .any(|character| !character.is_whitespace() && !ALLOWLIST.contains(&character))
 }
 
-fn compile_allowlist(entries: &[String]) -> Option<Regex> {
-    let (first, rest) = entries.split_first()?;
-    let first = regex_alternative(first);
-    let mut source = String::with_capacity(first.len() + 4);
-    source.push_str("(?:");
-    source.push_str(&first);
-    for entry in rest {
-        source.push('|');
-        source.push_str(&regex_alternative(entry));
-    }
-    source.push(')');
-    Regex::new(&source).ok()
+fn compile_allowlist(entries: &[String]) -> Vec<AllowlistEntry> {
+    entries.iter().map(|entry| compile_entry(entry)).collect()
 }
 
-fn regex_alternative(entry: &str) -> String {
-    let Some((pattern, flags)) = javascript_regex(entry) else {
-        return regex::escape(entry).into();
-    };
-    let inline_flags: String = flags
-        .chars()
-        .filter(|flag| matches!(flag, 'i' | 'm' | 's'))
-        .collect();
-    let candidate = if inline_flags.is_empty() {
-        cstr!("(?:{pattern})")
-    } else {
-        cstr!("(?{inline_flags}:{pattern})")
-    };
-    if Regex::new(&candidate).is_ok() {
-        candidate
-    } else {
-        regex::escape(entry).into()
+fn compile_entry(entry: &str) -> AllowlistEntry {
+    if let Some((pattern, flags)) = javascript_regex(entry) {
+        let inline_flags: String = flags
+            .chars()
+            .filter(|flag| matches!(flag, 'i' | 'm' | 's'))
+            .collect();
+        let candidate = if inline_flags.is_empty() {
+            cstr!("(?:{pattern})")
+        } else {
+            cstr!("(?{inline_flags}:{pattern})")
+        };
+        if let Ok(pattern) = Regex::new(&candidate) {
+            return AllowlistEntry::Pattern(pattern);
+        }
     }
+    AllowlistEntry::Literal(entry.into())
 }
 
 fn javascript_regex(value: &str) -> Option<(&str, &str)> {

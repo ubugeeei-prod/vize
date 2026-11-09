@@ -446,7 +446,7 @@ Good with configuration: `<button v-hover-tooltip>Save</button>`
 
 ## `vue/no-bare-strings-in-template`
 
-`allowlist` replaces the upstream defaults with literal substrings or JavaScript regex strings; an empty list allows nothing.
+`allowlist` replaces the upstream defaults with literal substrings or `/pattern/flags` values using Rust regex syntax. Patterns that do not compile are treated as literals; an empty list allows nothing.
 
 ```ts
 const ruleOptions = { "vue/no-bare-strings-in-template": { allowlist: ["Cancel", "/^[DRWXYmvx]$/u"] } };

@@ -13,7 +13,7 @@ description: "禁止在模板中直接写入应当国际化的用户可读文本
 
 适用范围：Vue SFC 模板和代码块，包括规则所需的脚本上下文。
 
-指定 allowlist 时，它会替换 eslint-plugin-vue 默认的标点列表。各项是字面子字符串或 /pattern/flags 值，并在检查剩余文本前移除。省略 allowlist 可保留默认值；[] 会清空它们。选项不会启用规则。
+指定 allowlist 时，它会替换 eslint-plugin-vue 默认的标点列表。各项是字面子字符串或使用 Rust 正则表达式语法的 `/pattern/flags` 值，并在检查剩余文本前移除；无法编译的模式会按字面量处理。省略 allowlist 可保留默认值；[] 会清空它们。选项不会启用规则。
 
 ## 错误示例
 

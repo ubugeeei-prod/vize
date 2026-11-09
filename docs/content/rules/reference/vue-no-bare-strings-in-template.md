@@ -13,7 +13,7 @@ Disallow raw human-readable text in the template that should be internationalize
 
 Applies to: Vue SFC templates and blocks, with script context where the rule requires it.
 
-The allowlist replaces eslint-plugin-vue's punctuation defaults when present. Entries are literal substrings or /pattern/flags values and are removed before the remaining text is checked. Omit allowlist to retain the defaults; [] clears them. Options do not enable the rule.
+The allowlist replaces eslint-plugin-vue's punctuation defaults when present. Entries are literal substrings or `/pattern/flags` values using Rust regex syntax and are removed before the remaining text is checked; patterns that do not compile remain literals. Omit allowlist to retain the defaults; [] clears them. Options do not enable the rule.
 
 ## Bad
 

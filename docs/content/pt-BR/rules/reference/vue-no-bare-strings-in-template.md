@@ -13,7 +13,7 @@ Proibir texto legível por pessoas diretamente no template quando ele deve ser i
 
 Aplicável a: Templates e blocos de SFC Vue, com o contexto do script quando exigido pela regra.
 
-Quando presente, allowlist substitui os padrões de pontuação do eslint-plugin-vue. As entradas são substrings literais ou valores /pattern/flags, removidos antes da verificação do texto restante. Omita allowlist para manter os padrões; [] os remove. As opções não ativam a regra.
+Quando presente, allowlist substitui os padrões de pontuação do eslint-plugin-vue. As entradas são substrings literais ou valores `/pattern/flags` na sintaxe de regex do Rust, removidos antes da verificação do texto restante; padrões que não compilam permanecem literais. Omita allowlist para manter os padrões; [] os remove. As opções não ativam a regra.
 
 ## Incorreto
 

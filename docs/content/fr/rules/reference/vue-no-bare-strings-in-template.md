@@ -13,7 +13,7 @@ Interdire le texte brut destiné aux utilisateurs dans les templates lorsqu’il
 
 Champ d’application : Templates et blocs des SFC Vue, avec le contexte du script requis par la règle.
 
-Lorsqu'elle est présente, allowlist remplace les valeurs de ponctuation par défaut d'eslint-plugin-vue. Les entrées sont des sous-chaînes littérales ou des valeurs /pattern/flags retirées avant la vérification du texte restant. Omettez allowlist pour conserver les valeurs par défaut ; [] les efface. Les options n'activent pas la règle.
+Lorsqu'elle est présente, allowlist remplace les valeurs de ponctuation par défaut d'eslint-plugin-vue. Les entrées sont des sous-chaînes littérales ou des valeurs `/pattern/flags` utilisant la syntaxe regex de Rust, retirées avant la vérification du texte restant ; les motifs qui ne se compilent pas restent littéraux. Omettez allowlist pour conserver les valeurs par défaut ; [] les efface. Les options n'activent pas la règle.
 
 ## Mauvais
 
