@@ -43,6 +43,7 @@ export const MUTATION_FAMILIES = {
   "with-defaults": "withDefaults default type mismatch",
   "define-model": "defineModel misuse",
   "template-literal": "error inside a multi-line template literal in script setup",
+  "compile-error": "Vue compile error beside every other plant (#12522)",
 } as const;
 export type Family = keyof typeof MUTATION_FAMILIES;
 
@@ -84,7 +85,9 @@ export function loadMutationSet(corpus: string, dir = MUTATIONS_DIR): MutationSe
     if (!Object.hasOwn(MUTATION_FAMILIES, mutation.family)) {
       throw new Error(`${mutation.id}: unknown family ${mutation.family}`);
     }
-    if (!/^TS\d+$/u.test(mutation.expect.code)) throw new Error(`${mutation.id}: bad code`);
+    if (!/^(?:TS|vize)\d+$/u.test(mutation.expect.code)) {
+      throw new Error(`${mutation.id}: bad code`);
+    }
     const lines = (text: string) => text.split("\n").length;
     if (lines(mutation.anchor) !== lines(mutation.replacement)) {
       throw new Error(`${mutation.id}: the replacement changes the line count`);
