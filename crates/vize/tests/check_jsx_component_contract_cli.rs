@@ -209,3 +209,86 @@ export const view = <Counter count={1} />;
     );
     assert_clean(project.check());
 }
+
+#[test]
+fn check_sfc_constructor_assignability_reads_the_public_instance() {
+    let Some(corsa_path) = corsa_requirement::required_or_skip(resolve_test_corsa_path()) else {
+        return;
+    };
+    let project = JsxCheckProject::new("ctor", corsa_path, false);
+    project.write(
+        "src/Child.vue",
+        r#"<script setup lang="ts">
+defineProps<{ label: string }>();
+</script>
+<template><span>{{ label }}</span></template>
+"#,
+    );
+    let parent = |annotation: &str| {
+        format!(
+            r#"<script setup lang="ts">
+import {{ useTemplateRef }} from 'vue';
+import Child from './Child.vue';
+const child = useTemplateRef<InstanceType<typeof Child>>('child');
+const read: {annotation} | null = child.value;
+void read;
+</script>
+<template><Child ref="child" label="x" /></template>
+"#
+        )
+    };
+    // A wrong or missing public prop still fails through every route.
+    for (source, expected) in [
+        (
+            "import Child from './Child.vue';\nexport const ctor: new () => { $props: { label: number } } = Child;\n",
+            "not assignable",
+        ),
+        (
+            "import Child from './Child.vue';\nexport const ctor: new () => { $props: { label: string; missing: string } } = Child;\n",
+            "not assignable",
+        ),
+        (
+            "import Child from './Child.vue';\nexport const read = (child: InstanceType<typeof Child>): { $props: { label: number } } => child;\n",
+            "not assignable",
+        ),
+        (
+            "import Child from './Child.vue';\nexport const read = (child: InstanceType<typeof Child>) => child.$props.label satisfies number;\n",
+            "does not satisfy",
+        ),
+    ] {
+        assert_broken(&project, source, expected);
+    }
+    project.write(
+        "src/Consumer.tsx",
+        "import Child from './Child.vue';\nexport const ctor: new () => { $props: { label: string } } = Child;\n",
+    );
+    for annotation in [
+        "{ $props: { label: number } }",
+        "{ $props: { label: string; missing: string } }",
+    ] {
+        project.write("src/Parent.vue", &parent(annotation));
+        let output = project.check();
+        assert!(
+            !output.success
+                && output.stdout.contains("src/Parent.vue")
+                && (output.stdout.contains("not assignable")
+                    || output.stdout.contains("'missing'")),
+            "stdout:\n{}\nstderr:\n{}",
+            output.stdout,
+            output.stderr
+        );
+    }
+
+    // The no-argument constructor sees the instance's own `$props` (no
+    // inference from the target's instance type), as Vue's `DefineComponent` does.
+    project.write("src/Parent.vue", &parent("{ $props: { label: string } }"));
+    project.write(
+        "src/Consumer.tsx",
+        r#"import Child from './Child.vue';
+export const ctor: new () => { $props: { label: string } } = Child;
+export const read = (child: InstanceType<typeof Child>): { $props: { label: string } } => child;
+export const label = (child: InstanceType<typeof Child>) => child.$props.label satisfies string;
+"#,
+    );
+    assert_clean(project.check());
+}

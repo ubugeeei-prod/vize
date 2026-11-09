@@ -52,7 +52,10 @@ pub(super) fn source_before(path: &str, current: String) -> String {
 pub(super) fn read_current(path: &str) -> String {
     source_before(
         path,
-        fs::read_to_string(support::repository().join(path)).unwrap(),
+        super::constructor_noinfer_return::source_before(
+            path,
+            fs::read_to_string(support::repository().join(path)).unwrap(),
+        ),
     )
 }
 

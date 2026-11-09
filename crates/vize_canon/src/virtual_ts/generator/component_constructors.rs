@@ -193,6 +193,10 @@ pub(super) fn emit_component_constructors<'a>(
         // Constructor arguments (templates, `new`) bind `$AuthoredProps` and
         // leave undeclared attributes to the consumer's own excess-property
         // check; TSX binds `$JsxProps` and stays exact (#11629).
+        // The public instance is chosen inline and the bound instance sits in
+        // `NoInfer`: relations and `new` would otherwise infer both
+        // parameters from the instance, instantiating every
+        // `$ComponentInstanceFor` branch per relation (~7% of all types).
         let constructor_base = if aliases.has_authored_default {
             cstr!("Omit<{authored_instance}, '$props' | '$emit' | '$slots'> & {base}")
         } else {
@@ -200,7 +204,7 @@ pub(super) fn emit_component_constructors<'a>(
         };
         append!(
             *ts,
-            "type $ComponentConstructor = new <$AuthoredProps = unknown, $JsxProps = unknown>(props?: $AuthoredProps & $ComponentInput<{props_ref}, {emit_props_ref}, $AuthoredProps>, ...args: any[]) => $ComponentInstanceFor<$ComponentInstance, {own}, {constructor_base}, {props_ref}, {emit_props_ref}, $AuthoredProps, $JsxProps>;\n"
+            "type $ComponentConstructor = new <$AuthoredProps = unknown, $JsxProps = unknown>(props?: $AuthoredProps & $ComponentInput<{props_ref}, {emit_props_ref}, $AuthoredProps>, ...args: any[]) => ($IsAny<$AuthoredProps> extends true ? true : $IsUnknown<$AuthoredProps> extends true ? $UsePublicInstance<$JsxProps> : false) extends true ? $ComponentInstance : NoInfer<$ComponentInstanceFor<$ComponentInstance, {own}, {constructor_base}, {props_ref}, {emit_props_ref}, $AuthoredProps, $JsxProps>>;\n"
         );
     }
 

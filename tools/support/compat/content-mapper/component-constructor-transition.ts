@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { certifiedTransition } from "./canonical-helper-transition.ts";
+import { beforeConstructorNoInferReturn } from "./constructor-noinfer-return-transition.ts";
 
 const constructorSources = [
   [
@@ -22,7 +23,12 @@ const constructorSources = [
   ],
 ] as const;
 for (const [file, bytes, sha256] of constructorSources) {
-  const source = readFileSync(new URL(file, import.meta.url));
+  const source = Buffer.from(
+    beforeConstructorNoInferReturn(
+      file.replace("../../../../", ""),
+      readFileSync(new URL(file, import.meta.url), "utf8"),
+    ),
+  );
   assert.equal(source.length, bytes, `certified component constructor producer size: ${file}`);
   assert.equal(
     createHash("sha256").update(source).digest("hex"),
