@@ -152,7 +152,7 @@ function writeProbePackage(project: string, mapper: Mapper): void {
 }
 
 /** Corpus sources and pinned packages as real files; mappers as typecheck-mapper-hosts installs them. */
-function prepareProject(dir: string, corpus: Corpus, hosts: MapperHosts): void {
+export function prepareProject(dir: string, corpus: Corpus, hosts: MapperHosts): void {
   rmSync(dir, { recursive: true, force: true });
   mkdirSync(dir, { recursive: true });
   for (const entry of corpus.copy) {
@@ -179,7 +179,7 @@ function packageVersion(dir: string, name: string): string {
 }
 
 /** vue-tsc and the TypeScript it resolves; a missing install is an error. */
-function resolveVueTsc(): { bin: string; vueTsc: string; typescript: string } {
+export function resolveVueTsc(): { bin: string; vueTsc: string; typescript: string } {
   const dir = realpathSync(VUE_TSC_DIR);
   const manifest = JSON.parse(readFileSync(join(dir, "package.json"), "utf8")) as {
     version: string;

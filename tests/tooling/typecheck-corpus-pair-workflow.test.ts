@@ -11,7 +11,10 @@ void test("the corpus pair workflow builds both SHAs and measures on the 32-vCPU
         inputs: Record<string, { default?: string | boolean; required?: boolean }>;
       };
     };
-    jobs: Record<string, { "runs-on": string; steps: Array<{ run?: string }> }>;
+    jobs: Record<
+      string,
+      { "runs-on": string; steps: Array<{ name?: string; if?: string; run?: string }> }
+    >;
   };
   const inputs = workflow.on.workflow_dispatch.inputs;
   assert.equal(inputs.base_sha?.required, true);
@@ -41,4 +44,17 @@ void test("the corpus pair workflow builds both SHAs and measures on the 32-vCPU
     /node tools\/benchmarks\/scripts\/typecheck-cost-attribution\.ts --pair "\$RUNNER_TEMP\/pair-work" --out "\$RUNNER_TEMP\/pair-out"/u,
   );
   assert.match(script, /for report in summary projection reply-shape attribution batch-vs-mapper/u);
+  // Planted diagnostics run by default for misskey and n8n and append their table to summary.md.
+  const planted = job?.steps.find(
+    (step) => step.name === "Check planted diagnostics in both corpora",
+  );
+  assert.equal(
+    planted?.if,
+    "${{ !cancelled() && !inputs.owned_pair && steps.measure.outcome != 'skipped' }}",
+  );
+  assert.equal(
+    planted?.run,
+    'node tools/benchmarks/scripts/typecheck-corpus-mutations-run.ts --base "$RUNNER_TEMP/pair-base" --head "$RUNNER_TEMP/pair-head" --work "$RUNNER_TEMP/pair-work" --out "$RUNNER_TEMP/pair-out"',
+  );
+  assert.match(script, /tests\/tooling\/typecheck-corpus-mutations\.test\.ts/u);
 });
