@@ -7,10 +7,9 @@
 
 use oxc_span::GetSpan;
 use vize_l0::{Allocator, Box, SourceBlock, Span, Vec};
+use vize_l1::css::bind::v_bind_calls;
 use vize_l2::expr::{ExprRef, JsExpr, OpaqueExpr, OpaqueReason};
 use vize_l2::op::{BindingOp, ElementOp, Namespace, Op, Region, VueCssBindOp};
-
-mod scan;
 
 /// Lower one style block's `v-bind()` calls onto a carrier `ui.element style`.
 ///
@@ -29,18 +28,17 @@ pub fn lower_style_block_in<'a>(allocator: &'a Allocator, block: SourceBlock<'a>
 
 fn lower_style_block_impl<'a>(allocator: &'a Allocator, css: &'a str, block_start: u32) -> Op<'a> {
     let mut bindings = Vec::new_in(&allocator);
-    let mut pos = 0;
-    while let Some(hit) = scan::next(css, pos) {
+    for hit in v_bind_calls(css) {
         let call = authored_span(block_start, hit.call_start, hit.call_end);
-        let expr = authored_slice_span(css, hit.expr, block_start);
+        let range = hit.expression_range();
+        let expr = authored_span(block_start, range.start, range.end);
         bindings.push(BindingOp::VueCssBind(Box::new_in(
             VueCssBindOp {
-                value: css_bind_expr(allocator, hit.expr, expr),
+                value: css_bind_expr(allocator, hit.expression, expr),
                 span: call,
             },
             &allocator,
         )));
-        pos = hit.call_end;
     }
     let block = authored_span(block_start, 0, css.len());
     Op::Element(Box::new_in(
@@ -91,17 +89,6 @@ fn authored_span(block_start: u32, start: usize, end: usize) -> Span {
         block_start.saturating_add(start as u32),
         block_start.saturating_add(end as u32),
     )
-}
-
-fn authored_slice_span(css: &str, slice: &str, block_start: u32) -> Span {
-    let base = css.as_ptr() as usize;
-    let ptr = slice.as_ptr() as usize;
-    let start = if ptr >= base && ptr + slice.len() <= base + css.len() {
-        ptr - base
-    } else {
-        0
-    };
-    authored_span(block_start, start, start + slice.len())
 }
 
 impl<'a> super::Lowered<'a> {

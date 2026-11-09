@@ -1,31 +1,54 @@
-//! Locate CSS `v-bind()` calls the way the shipped extractor does
-//! (`vize_atelier_sfc::css::transform`): strings and comments are not
-//! calls, `my-v-bind(` / `-webkit-v-bind(` need a left boundary, and an
-//! unmatched `(` stops the scan. Kept as a conversion-local copy so
-//! ricalco never grows an atelier_sfc edge (that crate is published;
-//! this one is not).
+//! CSS `v-bind()` calls in a style block, found the way Vue's compiler finds
+//! them in every style language: strings and comments (`/* */` and `//`) are
+//! not calls, `my-v-bind(` / `-webkit-v-bind(` need a left boundary, and an
+//! unmatched `(` stops the scan.
 
-/// One `v-bind(...)` whose argument survived trim + outer-quote strip.
-pub(super) struct Hit<'a> {
-    /// Byte offset of the `v` in `v-bind`.
+use core::ops::Range;
+
+/// One `v-bind(...)` call. Offsets are bytes into the scanned source.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct VBindCall<'a> {
+    /// Offset of the `v` in `v-bind`.
     pub call_start: usize,
-    /// Byte offset after the matching `)`.
+    /// Offset after the matching `)`.
     pub call_end: usize,
-    /// Argument text, a slice of the CSS (quotes stripped).
-    pub expr: &'a str,
+    /// Offset of the argument after whitespace and an outer quote.
+    pub expression_start: usize,
+    /// The argument, trimmed and without outer quotes: a slice of the source.
+    pub expression: &'a str,
 }
 
-pub(super) fn next<'a>(css: &'a str, from: usize) -> Option<Hit<'a>> {
+impl VBindCall<'_> {
+    #[must_use]
+    pub const fn expression_range(&self) -> Range<usize> {
+        self.expression_start..self.expression_start + self.expression.len()
+    }
+}
+
+/// Every call in source order, up to an unmatched `(`.
+pub fn v_bind_calls(css: &str) -> impl Iterator<Item = VBindCall<'_>> {
+    let mut from = 0;
+    core::iter::from_fn(move || {
+        let call = next(css, from)?;
+        from = call.call_end;
+        Some(call)
+    })
+}
+
+fn next(css: &str, from: usize) -> Option<VBindCall<'_>> {
     let start = find_next_v_bind(css, from)?;
     let inner = start + 7;
     let after_open = css.get(inner..)?;
     let end = find_matching_paren(after_open)?;
     let inside = after_open.get(..end)?;
-    let expr = trim_outer_quotes(inside.trim());
-    Some(Hit {
+    let trimmed = inside.trim();
+    let expression = trim_outer_quotes(trimmed);
+    let quote = usize::from(expression.len() != trimmed.len());
+    Some(VBindCall {
         call_start: start,
         call_end: inner + end + 1,
-        expr,
+        expression_start: inner + inside.len() - inside.trim_start().len() + quote,
+        expression,
     })
 }
 
@@ -171,4 +194,44 @@ fn has_v_bind_left_boundary(bytes: &[u8], pos: usize) -> bool {
 
 fn is_css_identifier_byte(byte: u8) -> bool {
     byte.is_ascii_alphanumeric() || matches!(byte, b'_' | b'-')
+}
+
+#[cfg(test)]
+mod tests {
+    use super::v_bind_calls;
+    use alloc::vec::Vec;
+
+    fn expressions(css: &str) -> Vec<(&str, &str)> {
+        v_bind_calls(css)
+            .map(|call| {
+                let range = call.expression_range();
+                (
+                    css.get(call.call_start..call.call_end).unwrap_or_default(),
+                    css.get(range).unwrap_or_default(),
+                )
+            })
+            .collect()
+    }
+
+    #[test]
+    fn calls_skip_strings_comments_and_unbounded_names() {
+        assert_eq!(
+            expressions(
+                ".a { color: v-bind(color); }\n/* v-bind(block) */\n// v-bind(line)\n.b { content: 'v-bind(text)'; width: my-v-bind(x); height: v-bind( 'size.h' ); }\n.c { margin: v-bind(fn(a, (b))) }"
+            ),
+            [
+                ("v-bind(color)", "color"),
+                ("v-bind( 'size.h' )", "size.h"),
+                ("v-bind(fn(a, (b)))", "fn(a, (b))"),
+            ]
+        );
+    }
+
+    #[test]
+    fn an_unmatched_paren_ends_the_scan() {
+        assert_eq!(
+            expressions(".a { color: v-bind(a); width: v-bind(b; } .c { top: v-bind(c) }"),
+            [("v-bind(a)", "a")]
+        );
+    }
 }
