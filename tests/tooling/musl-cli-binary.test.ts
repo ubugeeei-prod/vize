@@ -19,13 +19,7 @@ test("musl verifier deduplicates and sorts glibc requirements", () => {
 });
 
 test("musl verifier reads compact ELF version metadata", () => {
-  const verifier = readRepoFile(
-    "tools",
-    "commands",
-    "ci",
-    "github",
-    "verify-musl-cli-binary.ts",
-  );
+  const verifier = readRepoFile("tools", "commands", "ci", "github", "verify-musl-cli-binary.ts");
 
   assert.match(verifier, /commandOutput\("readelf", \["--version-info", binary\]\)/u);
   assert.doesNotMatch(verifier, /commandOutput\("strings"/u);
