@@ -246,7 +246,11 @@ async function syncClientToConfiguration(context: ExtensionContext, reason: stri
     // A root config already decides startup and its options. Nested configs
     // only feed watchers, so the workspace-wide search must not delay the server.
     refreshed.catch((error: unknown) => {
-      outputChannel.appendLine(`Project configuration discovery failed: ${String(error)}`);
+      try {
+        outputChannel.appendLine(`Project configuration discovery failed: ${String(error)}`);
+      } catch {
+        // A search that settles after deactivation has no channel left to report to.
+      }
     });
   } else {
     await refreshed;
