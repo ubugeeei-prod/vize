@@ -317,10 +317,7 @@ fn original_if_projections_keep_the_complete_authored_probe_owner() {
         let document = super::super::document::project_type_aware(
             &descriptor,
             script.content.as_ref(),
-            Some(vize_croquis::drawer::LintTemplate::new(
-                l2.surface(),
-                l2.lowered(),
-            )),
+            Some(l2.lint_template()),
             script.loc.start as u32,
             template.loc.start as u32,
             "OriginalCondition.vue",
