@@ -165,16 +165,21 @@ struct CanonBatch {
 pub(super) struct CanonBatchCache {
     entries: Vec<CanonBatch>,
     synchronized: bool,
+    /// Paths of that synchronization when it proved every document a private
+    /// regular file inside the logical and physical namespace.
+    observed_paths: Option<Vec<PathBuf>>,
 }
 
 impl CanonBatchCache {
     pub(super) fn clear(&mut self) {
         self.entries.clear();
         self.synchronized = false;
+        self.observed_paths = None;
     }
 
-    pub(super) fn observed_canonical_sync(&mut self) {
+    pub(super) fn observed_canonical_sync(&mut self, private_paths: Option<Vec<PathBuf>>) {
         self.synchronized = true;
+        self.observed_paths = private_paths;
     }
 }
 
@@ -187,6 +192,7 @@ impl CorsaProjectClient {
         batch: &CorsaNativeDocumentBatch,
     ) -> Result<(), String> {
         self.canon_batches.synchronized = false;
+        self.canon_batches.observed_paths = None;
         let texts = self.document_texts.checkpoint();
         self.canon_batches
             .entries
@@ -208,8 +214,14 @@ impl CorsaProjectClient {
             }
         }
         self.did_open_batch_fast(&documents)?;
+        // The synchronization just observed these exact documents; a batch it
+        // proved private needs no second namespace pass.
+        let observed = self.canon_batches.observed_paths.take();
         if self.canon_batches.synchronized
-            && let Some(paths) = self.canon_batch_paths(&documents)
+            && let Some(paths) = match observed {
+                Some(paths) => self.can_reuse_canon_batch().then_some(paths),
+                None => self.canon_batch_paths(&documents),
+            }
         {
             self.remember_canon_batch(batch, &documents, paths);
         }

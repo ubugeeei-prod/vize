@@ -121,7 +121,7 @@ fn a_different_alias_observation_cannot_certify_this_unchanged_batchs_desired_by
 fn retained_mutation_close_reopen_and_a_new_payload_retire_the_previous_batch_certificate() {
     let (_root, path, uri, mut client) = fixture();
     let batch = input(&uri, ORIGINAL);
-    client.canon_batches.observed_canonical_sync();
+    client.canon_batches.observed_canonical_sync(None);
     client.did_open_immutable_batch(&batch).unwrap();
     assert!(
         client.canon_batches.entries.is_empty(),

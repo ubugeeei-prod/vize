@@ -111,9 +111,10 @@ impl CorsaProjectClient {
             }
             private.push(owned);
         }
+        let all_private = private.iter().all(|owned| *owned);
         let mut summary = FileChangeSummary::default();
         for ((((uri, content), path), owned), observed) in
-            documents.iter().zip(paths).zip(private).zip(observations)
+            documents.iter().zip(&paths).zip(private).zip(observations)
         {
             self.clear_document_state(uri);
             if !owned {
@@ -122,12 +123,9 @@ impl CorsaProjectClient {
             }
             if self
                 .canon_file_cache
-                .synchronize_observed_with_digest(
-                    &path,
-                    content,
-                    observed.metadata.as_ref(),
-                    || self.document_texts.desired_digest(uri, content),
-                )
+                .synchronize_observed_with_digest(path, content, observed.metadata.as_ref(), || {
+                    self.document_texts.desired_digest(uri, content)
+                })
                 .map_err(|error| {
                     cstr!(
                         "Failed to update Canon document {}: {error}",
@@ -143,7 +141,8 @@ impl CorsaProjectClient {
         if !summary.changed.is_empty() {
             self.refresh_materialized_overlay_snapshot(Some(FileChanges::Summary(summary)))?;
         }
-        self.canon_batches.observed_canonical_sync();
+        self.canon_batches
+            .observed_canonical_sync(all_private.then_some(paths));
         Ok(true)
     }
 
