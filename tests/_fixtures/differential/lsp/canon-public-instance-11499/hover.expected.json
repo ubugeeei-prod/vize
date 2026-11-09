@@ -1,0 +1,46 @@
+[
+  {
+    "position": {
+      "line": 11,
+      "character": 6
+    },
+    "result": {
+      "contents": {
+        "kind": "markdown",
+        "value": "```typescript\nconst id: number\n```"
+      },
+      "range": {
+        "end": {
+          "character": 8,
+          "line": 11
+        },
+        "start": {
+          "character": 6,
+          "line": 11
+        }
+      }
+    }
+  },
+  {
+    "position": {
+      "line": 12,
+      "character": 6
+    },
+    "result": {
+      "contents": {
+        "kind": "markdown",
+        "value": "```typescript\nconst page: number\n```"
+      },
+      "range": {
+        "end": {
+          "character": 10,
+          "line": 12
+        },
+        "start": {
+          "character": 6,
+          "line": 12
+        }
+      }
+    }
+  }
+]

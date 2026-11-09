@@ -2,6 +2,45 @@
 
 use super::super::normalize::sha256;
 
+pub(super) fn authenticate_packets(
+    directory: &str,
+    manifest_text: &str,
+    expected_files: usize,
+    expected_changed: &[&str],
+    expected_retained: usize,
+) {
+    let manifest: serde_json::Value =
+        serde_json::from_str(manifest_text).expect("fixed packet manifest");
+    assert_eq!(manifest["version"], 1);
+    let files = manifest["files"]
+        .as_array()
+        .expect("complete packet census");
+    assert_eq!(files.len(), expected_files);
+    let changed: Vec<_> = files
+        .iter()
+        .filter(|file| file["before"] != file["after"])
+        .map(|file| file["path"].as_str().expect("packet relative path"))
+        .collect();
+    assert_eq!(changed, expected_changed);
+    let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("tests/davinci_ts40_projection_support/fixtures")
+        .join(directory);
+    let retained = manifest["retainedFiles"]
+        .as_array()
+        .expect("retained packets");
+    assert_eq!(retained.len(), expected_retained);
+    for entry in retained {
+        let path = entry["path"].as_str().expect("retained relative path");
+        let text = std::fs::read_to_string(root.join(path)).expect("complete retained packet");
+        assert_eq!(Some(text.len() as u64), entry["bytes"].as_u64(), "{path}");
+        assert_eq!(
+            Some(sha256(&text).as_str()),
+            entry["sha256"].as_str(),
+            "{path}"
+        );
+    }
+}
+
 pub(super) fn authenticate_join_receipt(
     receipt_text: &str,
     expected_receipt_sha: &str,

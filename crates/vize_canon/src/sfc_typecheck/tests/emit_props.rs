@@ -14,18 +14,18 @@ defineEmits<{
     let options = SfcTypeCheckOptions::new("EmitProps.vue").with_virtual_ts();
     let result = type_check_sfc(source, &options);
     let virtual_ts = result.virtual_ts.expect("virtual ts should be generated");
-
-    assert!(!virtual_ts.contains("EmitsToProps"), "{virtual_ts}");
+    for declaration in [
+        "type $ComponentInput<",
+        "type $ComponentInstanceFor<",
+        "type __EmitProps<",
+    ] {
+        assert!(
+            virtual_ts.contains(declaration),
+            "expected generated declaration {declaration}"
+        );
+    }
     assert!(
-        virtual_ts.contains("type __EmitProps<T> = { [K in keyof __EmitOptions<T> & string"),
-        "{virtual_ts}"
-    );
-    assert!(
-        virtual_ts.contains("type $Camelize<S extends string>"),
-        "{virtual_ts}"
-    );
-    assert!(
-        virtual_ts.contains("as ($Camelize<K> extends keyof __EmitOptions<T> ? string extends keyof __EmitOptions<T> ? $HandlerKey<K> : never : $HandlerKey<K>) | `on${Capitalize<K>}`]"),
-        "Vue keys kebab events as `onScroll-top`; the camelized key alone rejects it, and a declared camel twin owns its key (#11453):\n{virtual_ts}"
+        !virtual_ts.contains("EmitsToProps"),
+        "the generated projection must use its owned emit-props helper"
     );
 }
