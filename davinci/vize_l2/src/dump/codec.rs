@@ -10,14 +10,14 @@ impl Grammar {
     pub(super) const fn header(self) -> &'static str {
         match self {
             Self::CurrentV2 => "l2-dump-v2",
-            Self::HistoricalV1 => "disegno",
+            Self::HistoricalV1 => "disegno", // codename header of v1 pages
         }
     }
 
     pub(super) const fn ops_header(self) -> &'static str {
         match self {
             Self::CurrentV2 => "l2-dump-v2.ops",
-            Self::HistoricalV1 => "disegno.ops",
+            Self::HistoricalV1 => "disegno.ops", // codename header of v1 pages
         }
     }
 }

@@ -3,10 +3,7 @@
 //! **Experimental:** the stage API may change in any alpha release; record
 //! intentional breaking changes in the release notes.
 //!
-//! A *sinopia* is the preparatory underdrawing beneath a fresco. When the
-//! finished layer is detached from the wall, the sinopia survives as the
-//! byte-faithful record of what was actually drawn — which is this crate's
-//! contract for Vue templates: [`parse`](markup::parse) builds a typed tree
+//! The crate's contract for Vue templates: [`parse`](markup::parse) builds a typed tree
 //! whose in-order render is the **exact source bytes**, malformed input
 //! included, and a debug verifier asserts that on every construction
 //! (`render(tree) == source`, the SwiftSyntax import recorded in

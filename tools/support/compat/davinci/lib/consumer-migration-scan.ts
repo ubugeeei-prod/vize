@@ -35,9 +35,9 @@ export const SURFACES: Scan.Surface[] = [
     group: "old",
     names: ["vize_carton"],
   },
-  stageSurface("l1", "L1", "vize_l1", ["vize_sinopia"]),
-  stageSurface("l2", "L2", "vize_l2", ["vize_disegno"]),
-  stageSurface("l1_to_l2", "L1->L2", "vize_l1_to_l2", ["vize_ricalco"]),
+  stageSurface("l1", "L1", "vize_l1", ["vize_sinopia"]), // codename: published package name
+  stageSurface("l2", "L2", "vize_l2", ["vize_disegno"]), // codename: published package name
+  stageSurface("l1_to_l2", "L1->L2", "vize_l1_to_l2", ["vize_ricalco"]), // codename: published package name
   {
     id: "old_ast",
     label: "old AST/parser",

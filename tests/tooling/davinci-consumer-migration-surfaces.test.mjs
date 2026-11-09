@@ -111,16 +111,16 @@ void test("consumer migration TSV exposes matched names and name kind", () => {
     assert.equal(row.surface_group, "stage");
     assert.equal(row.surface, physicalLabels.get(row.surface_id));
   }
-  for (const legacyLabel of ["L0/carton", "L1/sinopia", "L2/disegno", "L1->L2/ricalco"]) {
+  for (const legacyLabel of ["L0/carton", "L1/sinopia", "L2/disegno", "L1->L2/ricalco"]) { // codename: published package name
     assert.ok(!rows.some((row) => row.surface === legacyLabel), legacyLabel);
   }
 });
 
 void test("consumer migration TSV serializes retained compatibility stage names", () => {
   const stages = [
-    { id: "l1", label: "L1", preferred: "vize_l1", compat: "vize_sinopia" },
-    { id: "l2", label: "L2", preferred: "vize_l2", compat: "vize_disegno" },
-    { id: "l1_to_l2", label: "L1->L2", preferred: "vize_l1_to_l2", compat: "vize_ricalco" },
+    { id: "l1", label: "L1", preferred: "vize_l1", compat: "vize_sinopia" }, // codename: published package name
+    { id: "l2", label: "L2", preferred: "vize_l2", compat: "vize_disegno" }, // codename: published package name
+    { id: "l1_to_l2", label: "L1->L2", preferred: "vize_l1_to_l2", compat: "vize_ricalco" }, // codename: published package name
   ];
   const surfaceNameCounts = Object.fromEntries(SURFACES.map((surface) => [surface.id, {}]));
   for (const stage of stages) {

@@ -8,8 +8,8 @@ import type { Rung, TimelineStep } from "./ladder";
 
 const rungs: Rung[] = [
   { id: "l1", ordinal: "L1", name: "Surface", facts: ["2 lines"], pages: [] },
-  { id: "l2", ordinal: "L2", name: "Disegno", facts: ["2 ops", "1 pass"], pages: [] },
-  { id: "l3", ordinal: "L3", name: "Impeto", facts: [], pages: [] },
+  { id: "l2", ordinal: "L2", name: "Semantic", facts: ["2 ops", "1 pass"], pages: [] },
+  { id: "l3", ordinal: "L3", name: "Reactivity", facts: [], pages: [] },
 ];
 
 describe("StageRail", () => {
@@ -24,8 +24,8 @@ describe("StageRail", () => {
     ]);
     expect(stations.map((station) => station.text())).toEqual([
       "L1Surface2 lines",
-      "L2Disegno2 ops, 1 pass",
-      "L3Impetono page",
+      "L2Semantic2 ops, 1 pass",
+      "L3Reactivityno page",
       "L4EmitBackend + SFC module",
     ]);
     expect(stations[1].attributes("aria-pressed")).toBe("true");

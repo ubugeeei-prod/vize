@@ -151,7 +151,7 @@ test("Davinci fuzz harness imports stage packages through aliases", () => {
   assert.match(manifest, /^vize_l2 = \{ path = "\.\.\/\.\.\/davinci\/vize_l2" \}$/m);
   assert.match(manifest, /^vize_l2_to_l3 = \{ path = "\.\.\/\.\.\/davinci\/vize_l2_to_l3" \}$/m);
   assert.match(manifest, /^vize_l3 = \{ path = "\.\.\/\.\.\/davinci\/vize_l3" \}$/m);
-  assert.doesNotMatch(manifest, /^vize_(?:carton|disegno|ricalco) = /m);
+  assert.doesNotMatch(manifest, /^vize_(?:carton|disegno|ricalco) = /m); // codename: published package name
 
   for (const target of [
     "folio_parse.rs",
@@ -160,7 +160,7 @@ test("Davinci fuzz harness imports stage packages through aliases", () => {
     "template_compile.rs",
   ]) {
     const source = readRepoFile("tests", "fuzz", "fuzz_targets", target);
-    assert.doesNotMatch(source, /\bvize_(?:carton|disegno|ricalco)::/u);
+    assert.doesNotMatch(source, /\bvize_(?:carton|disegno|ricalco)::/u); // codename: published package name
   }
 });
 
@@ -171,7 +171,7 @@ test("Davinci L2 uses the physical crate directory", () => {
     path: "davinci/vize_l2",
     version: `=${workspacePackage(metadata, "vize_l2").version}`,
   });
-  assert.doesNotMatch(workspaceManifest, /crates\/vize_disegno/u);
+  assert.doesNotMatch(workspaceManifest, /crates\/vize_disegno/u); // codename: published package name
 });
 
 test("Davinci L1-to-L2 uses the physical crate package and directory", () => {
@@ -181,16 +181,16 @@ test("Davinci L1-to-L2 uses the physical crate package and directory", () => {
     path: "davinci/vize_l1_to_l2",
     version: `=${workspacePackage(metadata, "vize_l1_to_l2").version}`,
   });
-  assert.doesNotMatch(workspaceManifest, /crates\/vize_ricalco/u);
-  assert.doesNotMatch(workspaceManifest, /^vize_ricalco = /m);
-  assert.doesNotMatch(workspaceManifest, /package = "vize_ricalco"/u);
+  assert.doesNotMatch(workspaceManifest, /crates\/vize_ricalco/u); // codename: published package name
+  assert.doesNotMatch(workspaceManifest, /^vize_ricalco = /m); // codename: published package name
+  assert.doesNotMatch(workspaceManifest, /package = "vize_ricalco"/u); // codename: published package name
 
   const loweringManifest = readRepoFile("davinci", "vize_l1_to_l2", "Cargo.toml");
   assert.match(loweringManifest, /^name = "vize_l1_to_l2"$/m);
 
   const lockfile = readRepoFile("Cargo.lock");
   assert.match(lockfile, /^name = "vize_l1_to_l2"$/m);
-  assert.doesNotMatch(lockfile, /\bvize_ricalco\b/u);
+  assert.doesNotMatch(lockfile, /\bvize_ricalco\b/u); // codename: published package name
 });
 
 test("Davinci L3 uses the physical crate package and directory", () => {
@@ -212,7 +212,7 @@ test("Davinci L1-to-L2 source paths use the physical L2 folio type", () => {
     const source = fs.readFileSync(fullPath, "utf8");
     assert.doesNotMatch(
       source,
-      /\b(?:DisegnoFolio|L2Folio)\b/u,
+      /\b(?:DisegnoFolio|L2Folio)\b/u, // codename: published package name
       `${path.relative(sourceDir, fullPath)} must use vize_l2::dump::Page`,
     );
   }
@@ -233,7 +233,7 @@ test("Davinci DOM production imports lowering through the physical L1-to-L2 pack
 
   for (const file of s2DomWitnessFiles()) {
     const source = readRepoFile("crates", "vize_atelier_dom", "tests", file);
-    assert.doesNotMatch(source, /\bvize_ricalco::/u, `${file} must use vize_l1_to_l2`);
+    assert.doesNotMatch(source, /\bvize_ricalco::/u, `${file} must use vize_l1_to_l2`); // codename: published package name
   }
 });
 
@@ -255,7 +255,7 @@ test("Atelier core L2 witnesses import lowering through the physical L1-to-L2 pa
     const source = fs.readFileSync(fullPath, "utf8");
     assert.doesNotMatch(
       source,
-      /\bvize_ricalco::/u,
+      /\bvize_ricalco::/u, // codename: published package name
       `${path.relative(testDir, fullPath)} must use vize_l1_to_l2`,
     );
   }
