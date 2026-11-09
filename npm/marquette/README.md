@@ -182,6 +182,26 @@ The published profile schema is available from
 `@vizejs/marquette/native-build/schema` and is embedded by the Rust contract
 crate for native hosts.
 
+## Typed navigation
+
+`@vizejs/marquette/navigation` derives programmatic navigation directly from
+the route literals in an application marquette. Full `:name` path segments
+accept one string or finite number. A `*name` segment preserves path separators
+while encoding each segment. The host adapter receives only a resolved route,
+environment, and encoded path.
+
+```ts
+import { createMarquetteNavigator } from "@vizejs/marquette/navigation";
+
+const navigation = createMarquetteNavigator(app, (target) => nativeHost.open(target));
+
+navigation.navigate("profile", { userId: "a user" });
+```
+
+Unknown routes and missing, extra, empty, or non-finite parameters are rejected
+before the target-specific adapter runs. Route identifiers, required parameter
+names, and the owning environment remain inferred from `app`.
+
 ## Test-run evidence
 
 Release-bound test-run evidence records live in their own lazy entries so
