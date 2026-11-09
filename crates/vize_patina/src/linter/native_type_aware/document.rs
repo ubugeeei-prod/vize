@@ -250,10 +250,7 @@ mod tests {
         let document = project_type_aware(
             &descriptor,
             script.content.as_ref(),
-            Some(vize_croquis::drawer::LintTemplate::new(
-                l2.surface(),
-                l2.lowered(),
-            )),
+            Some(l2.lint_template()),
             script.loc.start as u32,
             template.loc.start as u32,
             "Fixture.vue",
@@ -276,10 +273,7 @@ mod tests {
         let document = project_type_aware(
             &descriptor,
             script.content.as_ref(),
-            Some(vize_croquis::drawer::LintTemplate::new(
-                l2.surface(),
-                l2.lowered(),
-            )),
+            Some(l2.lint_template()),
             script.loc.start as u32,
             template.loc.start as u32,
             "Fixture.vue",
@@ -334,10 +328,7 @@ mod tests {
         let document = project_type_aware(
             &descriptor,
             script.content.as_ref(),
-            Some(vize_croquis::drawer::LintTemplate::new(
-                l2.surface(),
-                l2.lowered(),
-            )),
+            Some(l2.lint_template()),
             script.loc.start as u32,
             template.loc.start as u32,
             "Fixture.vue",

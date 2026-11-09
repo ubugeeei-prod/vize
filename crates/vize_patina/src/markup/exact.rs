@@ -15,6 +15,7 @@ impl<'a> MarkupElement<'a> {
     ///
     /// This deliberately does not match JSX member or namespaced tags, even when
     /// their local/property name equals `expected`.
+    #[inline]
     pub fn is_unqualified_tag_exact(&self, expected: &str) -> bool {
         match self.inner {
             MarkupElementInner::Relief(node) => node.tag == expected,
@@ -86,6 +87,7 @@ impl<'a> MarkupBinding<'a> {
         self.unqualified_arg_matches(expected, ArgMatch::StaticExact)
     }
 
+    #[inline]
     fn unqualified_arg_matches(&self, expected: &str, mode: ArgMatch) -> bool {
         match self.inner {
             MarkupBindingInner::ReliefAttribute(node) => mode.matches(node.name, true, expected),
