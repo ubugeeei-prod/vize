@@ -264,9 +264,18 @@ void test("a current source permits only the exact historical installer overlay"
       mkdirSync(dirname(join(source, file)), { recursive: true });
       writeFileSync(join(source, file), `current source ${file}\n`);
     }
+    writeFileSync(
+      join(source, "npm/builder/shared/package.json"),
+      JSON.stringify({ dependencies: { "webpack-sources": "3.3.3" } }),
+    );
     git("add", ".");
     git("commit", "--quiet", "-m", "test: current source fixture");
     const current = currentInstallSource(source);
+    const manifestPath = join(source, "npm/builder/shared/package.json");
+    const manifest = readFileSync(manifestPath);
+    writeFileSync(manifestPath, JSON.stringify({ dependencies: { "webpack-sources": "9.9.9" } }));
+    assert.equal(declaredWebpackSourcesVersion(source, current.source.revision), "3.3.3");
+    writeFileSync(manifestPath, manifest);
     assert.deepEqual(
       prepareInstallRecipe("after", source, current.source.revision).recipe,
       current.installer,

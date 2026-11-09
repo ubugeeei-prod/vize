@@ -34,13 +34,6 @@ const digest = (value) => createHash("sha256").update(value).digest("hex");
 const hashes = (root) =>
   Object.fromEntries(inputs.map((file) => [file, digest(readFileSync(resolve(root, file)))]));
 
-export function declaredWebpackSourcesVersion(root = observer) {
-  const manifest = JSON.parse(readFileSync(resolve(root, "npm/builder/shared/package.json")));
-  const version = manifest.dependencies?.["webpack-sources"];
-  assert.match(version ?? "", /^\d+\.\d+\.\d+$/, "exact webpack-sources dependency");
-  return version;
-}
-
 const git = (root, args) =>
   execFileSync("git", args, {
     cwd: root,
@@ -48,6 +41,16 @@ const git = (root, args) =>
     env: Object.fromEntries(Object.entries(process.env).filter(([key]) => !key.startsWith("GIT_"))),
   });
 const gitText = (root, args) => git(root, args).toString("utf8").trim();
+
+export function declaredWebpackSourcesVersion(root = observer, revision = "HEAD") {
+  const manifest = JSON.parse(
+    git(root, ["show", `${revision}:npm/builder/shared/package.json`]).toString("utf8"),
+  );
+  const version = manifest.dependencies?.["webpack-sources"];
+  assert.match(version ?? "", /^\d+\.\d+\.\d+$/, "exact webpack-sources dependency");
+  return version;
+}
+
 const recipeIdentity = (body, revision) => ({
   revision,
   path: installerPath,
@@ -157,7 +160,10 @@ async function capture(role, directory, destination) {
   }
   assert.equal(existsSync(resolve(root, "npm/builder/shared/node_modules")), false);
   const originalInputs = hashes(root);
-  const expectedIssuerVersion = declaredWebpackSourcesVersion(root);
+  const expectedIssuerVersion = declaredWebpackSourcesVersion(
+    root,
+    prepared.authority.source.revision,
+  );
   const manager = run("package-manager", "vp", ["env", "exec", "pnpm", "--version"]);
   assert.equal(manager.status, 0, manager.stderr);
   assert.equal(manager.stdout.trim(), "12.1.0");
@@ -265,7 +271,7 @@ async function capture(role, directory, destination) {
 export function compareInstallClosure(directory, environment = process.env) {
   const context = githubContext(environment);
   const authority = currentInstallSource();
-  const expectedIssuerVersion = declaredWebpackSourcesVersion();
+  const expectedIssuerVersion = declaredWebpackSourcesVersion(observer, authority.source.revision);
   assert.equal(authority.source.revision, context.githubSha, "current observer source");
   const packets = ["before", "after"].map((role) => {
     const packet = JSON.parse(readFileSync(resolve(directory, role, "qualification.json")));
