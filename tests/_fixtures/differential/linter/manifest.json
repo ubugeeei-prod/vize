@@ -157,7 +157,7 @@
           {
             "path": "cases.json",
             "role": "whole-packet-host-controls",
-            "sha256": "027b5a77def35f689334bbc1c4ab0119e4b426204318f85b8132a7b3643e9cf1"
+            "sha256": "259c740cf69f55db8f0764a3c3d803a7fb3056b6b82ff3de9482ef7a00a1f986"
           },
           {
             "path": "empty-listbox.vue.txt",
@@ -2921,17 +2921,17 @@
           {
             "path": "explain-en.txt",
             "role": "whole-current-explain-oracle",
-            "sha256": "93031d8450ef896dde48b54b512fe7b60bd7d8bfbd6f321eabeddd462f953383"
+            "sha256": "2ea1aac6634c3e403f6bf95a1a2881fa2c804bb1b6497828d8db8c331215bd01"
           },
           {
             "path": "explain-ja.txt",
             "role": "whole-current-explain-oracle",
-            "sha256": "781350e1452de862389893441c083249ba54633aa14f9b07f44588d66ee6d2a2"
+            "sha256": "bd9ca9702790a2de40317918359382e76f6c59ba4fcd3ed89b7d1bad0a11a23c"
           },
           {
             "path": "explain-zh.txt",
             "role": "whole-current-explain-oracle",
-            "sha256": "436f98395dd7a2b4966c0180ef2e6414e7693939fb81aa58bbc6dc239a07ed3f"
+            "sha256": "6f270200c9497cae8d19fad9db3d540f42b042c2446533d5f1eeb9cde0a5c1dc"
           }
         ]
       },

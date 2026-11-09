@@ -297,7 +297,7 @@
   },
   "linter/current-api/combobox-mismatched-bound-id-reports-9750": {
     "path": "crates/vize_patina/tests/snapshots/integration__lint_history__combobox-mismatched-bound-id-reports-9750.snap",
-    "sha256": "2c325a9cb6a998d3c8f68d80fdca5d6d8537ee219ea01de286f92aea84b432e5"
+    "sha256": "b204289e84526db0af731f7ca41f9a878a10490e5c04101db9b8230804b7ccfb"
   },
   "linter/current-api/placeholder-label-unrequired-empty-control": {
     "path": "crates/vize_patina/tests/snapshots/integration__lint_history__placeholder-label-unrequired-empty-control.snap",

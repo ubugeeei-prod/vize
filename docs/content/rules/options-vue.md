@@ -157,6 +157,35 @@ import PrimaryButton from "./PrimaryButton.vue";
 </template>
 ```
 
+## `vue/slot-name-casing`
+
+Choose `"camelCase"`, `"kebab-case"`, or `"singleword"` for static names on rendered
+`<slot>` outlets. The default is `"camelCase"`. Dynamic `:name` bindings and provider-side
+`v-slot` or `#name` syntax are outside this rule.
+
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({}).withVue({
+  linter: {
+    rules: { "vue/slot-name-casing": "warn" },
+    ruleOptions: { "vue/slot-name-casing": "kebab-case" },
+  },
+});
+```
+
+Bad with this config:
+
+```vue
+<slot name="itemContent" />
+```
+
+Good with this config:
+
+```vue
+<slot name="item-content" />
+```
+
 ## `vue/no-mutating-props`
 
 Use `shallowOnly` when a migration allows nested prop mutation for now but still forbids replacing

@@ -43,7 +43,19 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": [
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
+              "line": 2,
+              "column": 1,
+              "endLine": 2,
+              "endColumn": 32,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            }
+          ]
         },
         "html": {
           "filename": "Case.html",
@@ -80,7 +92,19 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": [
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 1,
+              "endLine": 1,
+              "endColumn": 32,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            }
+          ]
         },
         "jsx": {
           "filename": "Case.jsx",
@@ -117,7 +141,19 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": [
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 22,
+              "endLine": 1,
+              "endColumn": 95,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            }
+          ]
         },
         "tsx": {
           "filename": "Case.tsx",
@@ -154,7 +190,19 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": [
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 22,
+              "endLine": 1,
+              "endColumn": 95,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            }
+          ]
         }
       }
     },
@@ -196,7 +244,19 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": [
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
+              "line": 2,
+              "column": 1,
+              "endLine": 2,
+              "endColumn": 32,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            }
+          ]
         },
         "html": {
           "filename": "Case.html",
@@ -233,7 +293,19 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": [
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 1,
+              "endLine": 1,
+              "endColumn": 32,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            }
+          ]
         },
         "jsx": {
           "filename": "Case.jsx",
@@ -270,7 +342,19 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": [
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 22,
+              "endLine": 1,
+              "endColumn": 96,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            }
+          ]
         },
         "tsx": {
           "filename": "Case.tsx",
@@ -307,7 +391,19 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": [
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 22,
+              "endLine": 1,
+              "endColumn": 96,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            }
+          ]
         }
       }
     },
@@ -349,7 +445,19 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": [
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
+              "line": 2,
+              "column": 1,
+              "endLine": 2,
+              "endColumn": 32,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            }
+          ]
         },
         "html": {
           "filename": "Case.html",
@@ -386,7 +494,19 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": [
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 1,
+              "endLine": 1,
+              "endColumn": 32,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            }
+          ]
         },
         "jsx": {
           "filename": "Case.jsx",
@@ -423,7 +543,19 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": [
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 22,
+              "endLine": 1,
+              "endColumn": 146,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            }
+          ]
         },
         "tsx": {
           "filename": "Case.tsx",
@@ -460,7 +592,19 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": [
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 22,
+              "endLine": 1,
+              "endColumn": 146,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            }
+          ]
         }
       }
     },
@@ -502,7 +646,19 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": [
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
+              "line": 2,
+              "column": 1,
+              "endLine": 2,
+              "endColumn": 32,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            }
+          ]
         },
         "html": {
           "filename": "Case.html",
@@ -539,7 +695,19 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": [
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 1,
+              "endLine": 1,
+              "endColumn": 32,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            }
+          ]
         },
         "jsx": {
           "filename": "Case.jsx",
@@ -576,7 +744,19 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": [
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 22,
+              "endLine": 1,
+              "endColumn": 106,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            }
+          ]
         },
         "tsx": {
           "filename": "Case.tsx",
@@ -613,7 +793,19 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": [
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 22,
+              "endLine": 1,
+              "endColumn": 106,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            }
+          ]
         }
       }
     },
@@ -655,7 +847,19 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": [
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
+              "line": 2,
+              "column": 1,
+              "endLine": 2,
+              "endColumn": 32,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            }
+          ]
         },
         "html": {
           "filename": "Case.html",
@@ -692,7 +896,19 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": [
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 1,
+              "endLine": 1,
+              "endColumn": 32,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            }
+          ]
         },
         "jsx": {
           "filename": "Case.jsx",
@@ -729,7 +945,19 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": [
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 22,
+              "endLine": 1,
+              "endColumn": 111,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            }
+          ]
         },
         "tsx": {
           "filename": "Case.tsx",
@@ -766,7 +994,19 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": [
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 22,
+              "endLine": 1,
+              "endColumn": 111,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            }
+          ]
         }
       }
     },
@@ -808,7 +1048,19 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": [
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
+              "line": 2,
+              "column": 1,
+              "endLine": 2,
+              "endColumn": 32,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            }
+          ]
         },
         "html": {
           "filename": "Case.html",
@@ -845,7 +1097,19 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": [
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 1,
+              "endLine": 1,
+              "endColumn": 32,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            }
+          ]
         },
         "jsx": {
           "filename": "Case.jsx",
@@ -882,7 +1146,19 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": [
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 22,
+              "endLine": 1,
+              "endColumn": 111,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            }
+          ]
         },
         "tsx": {
           "filename": "Case.tsx",
@@ -919,7 +1195,19 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": [
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 22,
+              "endLine": 1,
+              "endColumn": 111,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            }
+          ]
         }
       }
     },
@@ -961,7 +1249,19 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": [
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
+              "line": 2,
+              "column": 1,
+              "endLine": 2,
+              "endColumn": 32,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            }
+          ]
         },
         "html": {
           "filename": "Case.html",
@@ -998,7 +1298,19 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": [
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 1,
+              "endLine": 1,
+              "endColumn": 32,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            }
+          ]
         },
         "jsx": {
           "filename": "Case.jsx",
@@ -1035,7 +1347,19 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": [
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 22,
+              "endLine": 1,
+              "endColumn": 104,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            }
+          ]
         },
         "tsx": {
           "filename": "Case.tsx",
@@ -1072,7 +1396,19 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": [
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 22,
+              "endLine": 1,
+              "endColumn": 104,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            }
+          ]
         }
       }
     },
@@ -1114,7 +1450,19 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": [
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
+              "line": 2,
+              "column": 1,
+              "endLine": 2,
+              "endColumn": 32,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            }
+          ]
         },
         "html": {
           "filename": "Case.html",
@@ -1151,7 +1499,19 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": [
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 1,
+              "endLine": 1,
+              "endColumn": 32,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            }
+          ]
         },
         "jsx": {
           "filename": "Case.jsx",
@@ -1188,7 +1548,19 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": [
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 22,
+              "endLine": 1,
+              "endColumn": 116,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            }
+          ]
         },
         "tsx": {
           "filename": "Case.tsx",
@@ -1225,7 +1597,19 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": [
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 22,
+              "endLine": 1,
+              "endColumn": 116,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            }
+          ]
         }
       }
     },
@@ -1267,7 +1651,19 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": [
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
+              "line": 2,
+              "column": 1,
+              "endLine": 2,
+              "endColumn": 32,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            }
+          ]
         },
         "html": {
           "filename": "Case.html",
@@ -1304,7 +1700,19 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": [
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 1,
+              "endLine": 1,
+              "endColumn": 32,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            }
+          ]
         },
         "jsx": {
           "filename": "Case.jsx",
@@ -1341,7 +1749,19 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": [
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 22,
+              "endLine": 1,
+              "endColumn": 58,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            }
+          ]
         },
         "tsx": {
           "filename": "Case.tsx",
@@ -1378,7 +1798,19 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": [
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 22,
+              "endLine": 1,
+              "endColumn": 58,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            }
+          ]
         }
       }
     },
@@ -1431,7 +1863,30 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": [
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
+              "line": 2,
+              "column": 1,
+              "endLine": 2,
+              "endColumn": 32,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            },
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"option\" must be focusable (add tabindex=\"0\")",
+              "line": 2,
+              "column": 32,
+              "endLine": 2,
+              "endColumn": 51,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            }
+          ]
         },
         "html": {
           "filename": "Case.html",
@@ -1479,7 +1934,30 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": [
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 1,
+              "endLine": 1,
+              "endColumn": 32,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            },
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"option\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 32,
+              "endLine": 1,
+              "endColumn": 51,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            }
+          ]
         },
         "jsx": {
           "filename": "Case.jsx",
@@ -1527,7 +2005,30 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": [
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 22,
+              "endLine": 1,
+              "endColumn": 83,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            },
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"option\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 53,
+              "endLine": 1,
+              "endColumn": 78,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            }
+          ]
         },
         "tsx": {
           "filename": "Case.tsx",
@@ -1575,7 +2076,30 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": [
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 22,
+              "endLine": 1,
+              "endColumn": 83,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            },
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"option\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 53,
+              "endLine": 1,
+              "endColumn": 78,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            }
+          ]
         }
       }
     },
@@ -1628,7 +2152,30 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": [
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
+              "line": 2,
+              "column": 1,
+              "endLine": 2,
+              "endColumn": 32,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            },
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"option\" must be focusable (add tabindex=\"0\")",
+              "line": 2,
+              "column": 32,
+              "endLine": 2,
+              "endColumn": 64,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            }
+          ]
         },
         "html": {
           "filename": "Case.html",
@@ -1676,7 +2223,30 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": [
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 1,
+              "endLine": 1,
+              "endColumn": 32,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            },
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"option\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 32,
+              "endLine": 1,
+              "endColumn": 64,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            }
+          ]
         },
         "jsx": {
           "filename": "Case.jsx",
@@ -1724,7 +2294,30 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": [
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 22,
+              "endLine": 1,
+              "endColumn": 96,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            },
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"option\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 53,
+              "endLine": 1,
+              "endColumn": 91,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            }
+          ]
         },
         "tsx": {
           "filename": "Case.tsx",
@@ -1772,7 +2365,30 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": [
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 22,
+              "endLine": 1,
+              "endColumn": 96,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            },
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"option\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 53,
+              "endLine": 1,
+              "endColumn": 91,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            }
+          ]
         }
       }
     },
@@ -1814,7 +2430,19 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": [
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
+              "line": 2,
+              "column": 1,
+              "endLine": 2,
+              "endColumn": 32,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            }
+          ]
         },
         "html": {
           "filename": "Case.html",
@@ -1851,7 +2479,19 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": [
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 1,
+              "endLine": 1,
+              "endColumn": 32,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            }
+          ]
         },
         "jsx": {
           "filename": "Case.jsx",
@@ -1888,7 +2528,19 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": [
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 22,
+              "endLine": 1,
+              "endColumn": 94,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            }
+          ]
         },
         "tsx": {
           "filename": "Case.tsx",
@@ -1925,7 +2577,19 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": [
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 22,
+              "endLine": 1,
+              "endColumn": 94,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            }
+          ]
         }
       }
     },
@@ -1967,7 +2631,19 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": [
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
+              "line": 2,
+              "column": 1,
+              "endLine": 2,
+              "endColumn": 32,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            }
+          ]
         },
         "html": {
           "filename": "Case.html",
@@ -2004,7 +2680,19 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": [
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 1,
+              "endLine": 1,
+              "endColumn": 32,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            }
+          ]
         },
         "jsx": {
           "filename": "Case.jsx",
@@ -2041,7 +2729,19 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": [
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 22,
+              "endLine": 1,
+              "endColumn": 58,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            }
+          ]
         },
         "tsx": {
           "filename": "Case.tsx",
@@ -2078,7 +2778,19 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": [
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 22,
+              "endLine": 1,
+              "endColumn": 58,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            }
+          ]
         }
       }
     },
@@ -2120,7 +2832,19 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": [
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
+              "line": 2,
+              "column": 1,
+              "endLine": 2,
+              "endColumn": 32,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            }
+          ]
         },
         "html": {
           "filename": "Case.html",
@@ -2157,7 +2881,19 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": [
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 1,
+              "endLine": 1,
+              "endColumn": 32,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            }
+          ]
         },
         "jsx": {
           "filename": "Case.jsx",
@@ -2194,7 +2930,19 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": [
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 22,
+              "endLine": 1,
+              "endColumn": 122,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            }
+          ]
         },
         "tsx": {
           "filename": "Case.tsx",
@@ -2231,7 +2979,19 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": [
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 22,
+              "endLine": 1,
+              "endColumn": 122,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            }
+          ]
         }
       }
     },
@@ -2273,7 +3033,19 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": [
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
+              "line": 2,
+              "column": 1,
+              "endLine": 2,
+              "endColumn": 32,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            }
+          ]
         },
         "html": {
           "filename": "Case.html",
@@ -2310,7 +3082,19 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": [
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 1,
+              "endLine": 1,
+              "endColumn": 32,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            }
+          ]
         },
         "jsx": {
           "filename": "Case.jsx",
@@ -2347,7 +3131,19 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": [
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 22,
+              "endLine": 1,
+              "endColumn": 95,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            }
+          ]
         },
         "tsx": {
           "filename": "Case.tsx",
@@ -2384,7 +3180,19 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": [
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 22,
+              "endLine": 1,
+              "endColumn": 95,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            }
+          ]
         }
       }
     },
@@ -2426,7 +3234,19 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": [
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
+              "line": 2,
+              "column": 1,
+              "endLine": 2,
+              "endColumn": 32,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            }
+          ]
         },
         "html": {
           "filename": "Case.html",
@@ -2463,7 +3283,19 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": [
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 1,
+              "endLine": 1,
+              "endColumn": 32,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            }
+          ]
         },
         "jsx": {
           "filename": "Case.jsx",
@@ -2500,7 +3332,19 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": [
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 22,
+              "endLine": 1,
+              "endColumn": 108,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            }
+          ]
         },
         "tsx": {
           "filename": "Case.tsx",
@@ -2537,7 +3381,19 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": [
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 22,
+              "endLine": 1,
+              "endColumn": 108,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            }
+          ]
         }
       }
     },
@@ -2579,7 +3435,19 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": [
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
+              "line": 2,
+              "column": 1,
+              "endLine": 2,
+              "endColumn": 32,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            }
+          ]
         },
         "html": {
           "filename": "Case.html",
@@ -2616,7 +3484,19 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": [
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 1,
+              "endLine": 1,
+              "endColumn": 32,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            }
+          ]
         },
         "jsx": {
           "filename": "Case.jsx",
@@ -2653,7 +3533,19 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": [
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 22,
+              "endLine": 1,
+              "endColumn": 121,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            }
+          ]
         },
         "tsx": {
           "filename": "Case.tsx",
@@ -2690,7 +3582,19 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": [
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 22,
+              "endLine": 1,
+              "endColumn": 121,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            }
+          ]
         }
       }
     },
@@ -2732,7 +3636,19 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": [
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
+              "line": 2,
+              "column": 1,
+              "endLine": 2,
+              "endColumn": 32,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            }
+          ]
         },
         "html": {
           "filename": "Case.html",
@@ -2769,7 +3685,19 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": [
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 1,
+              "endLine": 1,
+              "endColumn": 32,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            }
+          ]
         },
         "jsx": {
           "filename": "Case.jsx",
@@ -2806,7 +3734,19 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": [
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 22,
+              "endLine": 1,
+              "endColumn": 95,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            }
+          ]
         },
         "tsx": {
           "filename": "Case.tsx",
@@ -2843,7 +3783,19 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": [
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 22,
+              "endLine": 1,
+              "endColumn": 95,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            }
+          ]
         }
       }
     },
@@ -2896,7 +3848,30 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": [
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
+              "line": 2,
+              "column": 1,
+              "endLine": 2,
+              "endColumn": 32,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            },
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"option\" must be focusable (add tabindex=\"0\")",
+              "line": 2,
+              "column": 32,
+              "endLine": 2,
+              "endColumn": 63,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            }
+          ]
         },
         "html": {
           "filename": "Case.html",
@@ -2944,7 +3919,30 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": [
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 1,
+              "endLine": 1,
+              "endColumn": 32,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            },
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"option\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 32,
+              "endLine": 1,
+              "endColumn": 63,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            }
+          ]
         },
         "jsx": {
           "filename": "Case.jsx",
@@ -2992,7 +3990,30 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": [
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 22,
+              "endLine": 1,
+              "endColumn": 95,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            },
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"option\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 53,
+              "endLine": 1,
+              "endColumn": 90,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            }
+          ]
         },
         "tsx": {
           "filename": "Case.tsx",
@@ -3040,7 +4061,30 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": [
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 22,
+              "endLine": 1,
+              "endColumn": 95,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            },
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"option\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 53,
+              "endLine": 1,
+              "endColumn": 90,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            }
+          ]
         }
       }
     },
@@ -3082,7 +4126,19 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": [
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
+              "line": 2,
+              "column": 1,
+              "endLine": 2,
+              "endColumn": 32,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            }
+          ]
         },
         "html": {
           "filename": "Case.html",
@@ -3119,7 +4175,19 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": [
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 1,
+              "endLine": 1,
+              "endColumn": 32,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            }
+          ]
         },
         "jsx": {
           "filename": "Case.jsx",
@@ -3156,7 +4224,19 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": [
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 22,
+              "endLine": 1,
+              "endColumn": 113,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            }
+          ]
         },
         "tsx": {
           "filename": "Case.tsx",
@@ -3193,7 +4273,19 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": [
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 22,
+              "endLine": 1,
+              "endColumn": 113,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            }
+          ]
         }
       }
     },
@@ -3235,7 +4327,19 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": [
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
+              "line": 2,
+              "column": 1,
+              "endLine": 2,
+              "endColumn": 32,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            }
+          ]
         },
         "html": {
           "filename": "Case.html",
@@ -3272,7 +4376,19 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": [
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 1,
+              "endLine": 1,
+              "endColumn": 32,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            }
+          ]
         },
         "jsx": {
           "filename": "Case.jsx",
@@ -3309,7 +4425,19 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": [
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 22,
+              "endLine": 1,
+              "endColumn": 102,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            }
+          ]
         },
         "tsx": {
           "filename": "Case.tsx",
@@ -3346,7 +4474,19 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": [
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 22,
+              "endLine": 1,
+              "endColumn": 102,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            }
+          ]
         }
       }
     },
@@ -3388,7 +4528,19 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": [
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
+              "line": 2,
+              "column": 1,
+              "endLine": 2,
+              "endColumn": 32,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            }
+          ]
         },
         "html": {
           "filename": "Case.html",
@@ -3425,7 +4577,19 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": [
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 1,
+              "endLine": 1,
+              "endColumn": 32,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            }
+          ]
         },
         "jsx": {
           "filename": "Case.jsx",
@@ -3462,7 +4626,19 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": [
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 22,
+              "endLine": 1,
+              "endColumn": 112,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            }
+          ]
         },
         "tsx": {
           "filename": "Case.tsx",
@@ -3499,7 +4675,19 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": [
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 22,
+              "endLine": 1,
+              "endColumn": 112,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            }
+          ]
         }
       }
     },
@@ -3541,7 +4729,19 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": [
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"option\" must be focusable (add tabindex=\"0\")",
+              "line": 2,
+              "column": 1,
+              "endLine": 2,
+              "endColumn": 20,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            }
+          ]
         },
         "html": {
           "filename": "Case.html",
@@ -3578,7 +4778,19 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": [
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"option\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 1,
+              "endLine": 1,
+              "endColumn": 20,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            }
+          ]
         },
         "jsx": {
           "filename": "Case.jsx",
@@ -3615,7 +4827,19 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": [
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"option\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 22,
+              "endLine": 1,
+              "endColumn": 47,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            }
+          ]
         },
         "tsx": {
           "filename": "Case.tsx",
@@ -3652,7 +4876,19 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": [
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"option\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 22,
+              "endLine": 1,
+              "endColumn": 47,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            }
+          ]
         }
       }
     },
@@ -3705,7 +4941,30 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": [
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
+              "line": 2,
+              "column": 1,
+              "endLine": 2,
+              "endColumn": 62,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            },
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"option\" must be focusable (add tabindex=\"0\")",
+              "line": 2,
+              "column": 62,
+              "endLine": 2,
+              "endColumn": 92,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            }
+          ]
         },
         "html": {
           "filename": "Case.html",
@@ -3753,7 +5012,30 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": [
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 1,
+              "endLine": 1,
+              "endColumn": 62,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            },
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"option\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 62,
+              "endLine": 1,
+              "endColumn": 92,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            }
+          ]
         },
         "jsx": {
           "filename": "Case.jsx",
@@ -3801,7 +5083,30 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": [
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 22,
+              "endLine": 1,
+              "endColumn": 124,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            },
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"option\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 83,
+              "endLine": 1,
+              "endColumn": 119,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            }
+          ]
         },
         "tsx": {
           "filename": "Case.tsx",
@@ -3849,7 +5154,30 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": [
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 22,
+              "endLine": 1,
+              "endColumn": 124,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            },
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"option\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 83,
+              "endLine": 1,
+              "endColumn": 119,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            }
+          ]
         }
       }
     },
@@ -3891,7 +5219,19 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": [
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"option\" must be focusable (add tabindex=\"0\")",
+              "line": 2,
+              "column": 75,
+              "endLine": 2,
+              "endColumn": 105,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            }
+          ]
         },
         "html": {
           "filename": "Case.html",
@@ -3928,7 +5268,19 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": [
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"option\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 75,
+              "endLine": 1,
+              "endColumn": 105,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            }
+          ]
         },
         "jsx": {
           "filename": "Case.jsx",
@@ -3965,7 +5317,19 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": [
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"option\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 96,
+              "endLine": 1,
+              "endColumn": 132,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            }
+          ]
         },
         "tsx": {
           "filename": "Case.tsx",
@@ -4002,7 +5366,19 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": [
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"option\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 96,
+              "endLine": 1,
+              "endColumn": 132,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            }
+          ]
         }
       }
     },
@@ -4055,7 +5431,30 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": [
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
+              "line": 2,
+              "column": 1,
+              "endLine": 2,
+              "endColumn": 32,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            },
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
+              "line": 2,
+              "column": 32,
+              "endLine": 2,
+              "endColumn": 62,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            }
+          ]
         },
         "html": {
           "filename": "Case.html",
@@ -4103,7 +5502,30 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": [
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 1,
+              "endLine": 1,
+              "endColumn": 32,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            },
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 32,
+              "endLine": 1,
+              "endColumn": 62,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            }
+          ]
         },
         "jsx": {
           "filename": "Case.jsx",
@@ -4151,7 +5573,30 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": [
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 22,
+              "endLine": 1,
+              "endColumn": 130,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            },
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 53,
+              "endLine": 1,
+              "endColumn": 125,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            }
+          ]
         },
         "tsx": {
           "filename": "Case.tsx",
@@ -4199,7 +5644,30 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": [
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 22,
+              "endLine": 1,
+              "endColumn": 130,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            },
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 53,
+              "endLine": 1,
+              "endColumn": 125,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            }
+          ]
         }
       }
     },
@@ -4241,7 +5709,19 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": [
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
+              "line": 2,
+              "column": 1,
+              "endLine": 2,
+              "endColumn": 32,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            }
+          ]
         },
         "html": {
           "filename": "Case.html",
@@ -4278,7 +5758,19 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": [
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 1,
+              "endLine": 1,
+              "endColumn": 32,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            }
+          ]
         },
         "jsx": {
           "filename": "Case.jsx",
@@ -4315,7 +5807,19 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": [
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 22,
+              "endLine": 1,
+              "endColumn": 93,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            }
+          ]
         },
         "tsx": {
           "filename": "Case.tsx",
@@ -4352,7 +5856,19 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": [
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 22,
+              "endLine": 1,
+              "endColumn": 93,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            }
+          ]
         }
       }
     },
@@ -4405,7 +5921,30 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": [
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
+              "line": 2,
+              "column": 1,
+              "endLine": 2,
+              "endColumn": 32,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            },
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"option\" must be focusable (add tabindex=\"0\")",
+              "line": 2,
+              "column": 32,
+              "endLine": 2,
+              "endColumn": 62,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            }
+          ]
         },
         "html": {
           "filename": "Case.html",
@@ -4453,7 +5992,30 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": [
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 1,
+              "endLine": 1,
+              "endColumn": 32,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            },
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"option\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 32,
+              "endLine": 1,
+              "endColumn": 62,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            }
+          ]
         },
         "jsx": {
           "filename": "Case.jsx",
@@ -4501,7 +6063,30 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": [
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 22,
+              "endLine": 1,
+              "endColumn": 93,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            },
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"option\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 53,
+              "endLine": 1,
+              "endColumn": 88,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            }
+          ]
         },
         "tsx": {
           "filename": "Case.tsx",
@@ -4549,7 +6134,30 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": [
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 22,
+              "endLine": 1,
+              "endColumn": 93,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            },
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"option\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 53,
+              "endLine": 1,
+              "endColumn": 88,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            }
+          ]
         }
       }
     },
@@ -4579,7 +6187,7 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": []
         },
         "html": {
           "filename": "Case.html",
@@ -4604,7 +6212,7 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": []
         },
         "jsx": {
           "filename": "Case.jsx",
@@ -4629,7 +6237,7 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": []
         },
         "tsx": {
           "filename": "Case.tsx",
@@ -4654,7 +6262,7 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": []
         }
       }
     },
@@ -4684,7 +6292,7 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": []
         },
         "html": {
           "filename": "Case.html",
@@ -4709,7 +6317,7 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": []
         },
         "jsx": {
           "filename": "Case.jsx",
@@ -4768,7 +6376,41 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": [
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 92,
+              "endLine": 1,
+              "endColumn": 179,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            },
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"option\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 119,
+              "endLine": 1,
+              "endColumn": 150,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            },
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"option\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 150,
+              "endLine": 1,
+              "endColumn": 174,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            }
+          ]
         },
         "tsx": {
           "filename": "Case.tsx",
@@ -4827,7 +6469,41 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": [
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 92,
+              "endLine": 1,
+              "endColumn": 179,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            },
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"option\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 119,
+              "endLine": 1,
+              "endColumn": 150,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            },
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"option\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 150,
+              "endLine": 1,
+              "endColumn": 174,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            }
+          ]
         }
       }
     },
@@ -4857,7 +6533,7 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": []
         },
         "html": {
           "filename": "Case.html",
@@ -4882,7 +6558,7 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": []
         },
         "jsx": {
           "filename": "Case.jsx",
@@ -4941,7 +6617,41 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": [
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 96,
+              "endLine": 1,
+              "endColumn": 187,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            },
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"option\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 127,
+              "endLine": 1,
+              "endColumn": 158,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            },
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"option\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 158,
+              "endLine": 1,
+              "endColumn": 182,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            }
+          ]
         },
         "tsx": {
           "filename": "Case.tsx",
@@ -5000,7 +6710,41 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": [
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 96,
+              "endLine": 1,
+              "endColumn": 187,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            },
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"option\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 127,
+              "endLine": 1,
+              "endColumn": 158,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            },
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"option\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 158,
+              "endLine": 1,
+              "endColumn": 182,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            }
+          ]
         }
       }
     },
@@ -5030,7 +6774,7 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": []
         },
         "html": {
           "filename": "Case.html",
@@ -5055,7 +6799,7 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": []
         },
         "jsx": {
           "filename": "Case.jsx",
@@ -5114,7 +6858,41 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": [
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 94,
+              "endLine": 1,
+              "endColumn": 181,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            },
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"option\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 121,
+              "endLine": 1,
+              "endColumn": 152,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            },
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"option\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 152,
+              "endLine": 1,
+              "endColumn": 176,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            }
+          ]
         },
         "tsx": {
           "filename": "Case.tsx",
@@ -5173,7 +6951,41 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": [
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 94,
+              "endLine": 1,
+              "endColumn": 181,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            },
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"option\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 121,
+              "endLine": 1,
+              "endColumn": 152,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            },
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"option\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 152,
+              "endLine": 1,
+              "endColumn": 176,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            }
+          ]
         }
       }
     },
@@ -5203,7 +7015,7 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": []
         },
         "html": {
           "filename": "Case.html",
@@ -5228,7 +7040,7 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": []
         },
         "jsx": {
           "filename": "Case.jsx",
@@ -5287,7 +7099,41 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": [
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 98,
+              "endLine": 1,
+              "endColumn": 187,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            },
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"option\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 127,
+              "endLine": 1,
+              "endColumn": 158,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            },
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"option\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 158,
+              "endLine": 1,
+              "endColumn": 182,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            }
+          ]
         },
         "tsx": {
           "filename": "Case.tsx",
@@ -5346,7 +7192,41 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": [
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 98,
+              "endLine": 1,
+              "endColumn": 187,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            },
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"option\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 127,
+              "endLine": 1,
+              "endColumn": 158,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            },
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"option\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 158,
+              "endLine": 1,
+              "endColumn": 182,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            }
+          ]
         }
       }
     },
@@ -5399,7 +7279,30 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": [
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
+              "line": 2,
+              "column": 45,
+              "endLine": 2,
+              "endColumn": 72,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            },
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"option\" must be focusable (add tabindex=\"0\")",
+              "line": 2,
+              "column": 72,
+              "endLine": 2,
+              "endColumn": 90,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            }
+          ]
         },
         "html": {
           "filename": "Case.html",
@@ -5447,7 +7350,30 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": [
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 45,
+              "endLine": 1,
+              "endColumn": 72,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            },
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"option\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 72,
+              "endLine": 1,
+              "endColumn": 90,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            }
+          ]
         },
         "jsx": {
           "filename": "Case.jsx",
@@ -5495,7 +7421,30 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": [
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 66,
+              "endLine": 1,
+              "endColumn": 122,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            },
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"option\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 93,
+              "endLine": 1,
+              "endColumn": 117,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            }
+          ]
         },
         "tsx": {
           "filename": "Case.tsx",
@@ -5543,7 +7492,30 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": [
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 66,
+              "endLine": 1,
+              "endColumn": 122,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            },
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"option\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 93,
+              "endLine": 1,
+              "endColumn": 117,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            }
+          ]
         }
       }
     },
@@ -5596,7 +7568,30 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": [
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
+              "line": 2,
+              "column": 76,
+              "endLine": 2,
+              "endColumn": 109,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            },
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"option\" must be focusable (add tabindex=\"0\")",
+              "line": 2,
+              "column": 109,
+              "endLine": 2,
+              "endColumn": 127,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            }
+          ]
         },
         "html": {
           "filename": "Case.html",
@@ -5644,7 +7639,30 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": [
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 76,
+              "endLine": 1,
+              "endColumn": 109,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            },
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"option\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 109,
+              "endLine": 1,
+              "endColumn": 127,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            }
+          ]
         },
         "jsx": {
           "filename": "Case.jsx",
@@ -5692,7 +7710,30 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": [
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 96,
+              "endLine": 1,
+              "endColumn": 157,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            },
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"option\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 128,
+              "endLine": 1,
+              "endColumn": 152,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            }
+          ]
         },
         "tsx": {
           "filename": "Case.tsx",
@@ -5740,7 +7781,30 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": [
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 96,
+              "endLine": 1,
+              "endColumn": 157,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            },
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"option\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 128,
+              "endLine": 1,
+              "endColumn": 152,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            }
+          ]
         }
       }
     },
@@ -5782,7 +7846,19 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": [
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
+              "line": 2,
+              "column": 1,
+              "endLine": 2,
+              "endColumn": 32,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            }
+          ]
         },
         "html": {
           "filename": "Case.html",
@@ -5819,7 +7895,19 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": [
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 1,
+              "endLine": 1,
+              "endColumn": 32,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            }
+          ]
         },
         "jsx": {
           "filename": "Case.jsx",
@@ -5856,7 +7944,19 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": [
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 22,
+              "endLine": 1,
+              "endColumn": 120,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            }
+          ]
         },
         "tsx": {
           "filename": "Case.tsx",
@@ -5893,7 +7993,19 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": [
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 22,
+              "endLine": 1,
+              "endColumn": 120,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            }
+          ]
         }
       }
     },
@@ -5935,7 +8047,19 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": [
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
+              "line": 2,
+              "column": 1,
+              "endLine": 2,
+              "endColumn": 32,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            }
+          ]
         },
         "html": {
           "filename": "Case.html",
@@ -5972,7 +8096,19 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": [
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 1,
+              "endLine": 1,
+              "endColumn": 32,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            }
+          ]
         },
         "jsx": {
           "filename": "Case.jsx",
@@ -6009,7 +8145,19 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": [
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 22,
+              "endLine": 1,
+              "endColumn": 125,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            }
+          ]
         },
         "tsx": {
           "filename": "Case.tsx",
@@ -6046,7 +8194,19 @@
             }
           ],
           "afterStatus": 0,
-          "removedWholeMessages": null
+          "removedWholeMessages": [
+            {
+              "ruleId": "a11y/interactive-supports-focus",
+              "ruleDocsPath": "docs/content/rules/accessibility.md",
+              "severity": 1,
+              "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
+              "line": 1,
+              "column": 22,
+              "endLine": 1,
+              "endColumn": 125,
+              "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+            }
+          ]
         }
       }
     }

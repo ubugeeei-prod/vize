@@ -5625,7 +5625,7 @@ style ブロックを 1 つにまとめることを推奨する
 ドキュメント: docs/content/rules/reference/vue-single-style-block.md
 === vue/slot-name-casing
 vue/slot-name-casing · lint ルール
-v-slotで使用する名前付きスロットにケバブケースを強制する
+描画するスロット名に設定されたケースを強制する
 
 精度: exact
 対象: the authored text of SFC templates and declarations: casing, quoting, spacing, order and shorthand
@@ -5643,7 +5643,7 @@ v-slotで使用する名前付きスロットにケバブケースを強制す�
   <slot name="default" />
 
 ヒント:
-  スロット名をケバブケースに変更してください。例: '#mySlot' や '#my_slot' ではなく '#my-slot'。
+  描画するスロット outlet の名前を {casing} に変更してください。
 === vue/this-in-template
 vue/this-in-template · lint ルール
 テンプレート式での `this.` を禁止する
