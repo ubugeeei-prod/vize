@@ -43,19 +43,19 @@ pub(super) fn deduplicate_specifier_occurrences(
 pub(super) fn into_deduplicated_specifier_spans(
     source: &str,
     spans: Vec<SpanOccurrence>,
-) -> Vec<(u32, u32, crate::PackageResolutionMode)> {
+) -> super::ModuleSpecifierSpans {
     let mut occurrences = Vec::with_capacity(spans.len());
     if spans.len() <= 8 {
         for (start, end, path, mode) in spans {
             if !occurrences
                 .iter()
-                .any(|(known_start, known_end, known_mode)| {
-                    *known_mode == mode
-                        && source.get(*known_start as usize..*known_end as usize)
-                            == Some(path.as_str())
+                .any(|known: &super::ModuleSpecifierSpan| {
+                    known.mode() == mode && known.specifier(source) == Some(path.as_str())
                 })
             {
-                occurrences.push((start, end, mode));
+                occurrences.push(super::ModuleSpecifierSpan::new(
+                    source, start, end, path, mode,
+                ));
             }
         }
         return occurrences;
@@ -66,13 +66,13 @@ pub(super) fn into_deduplicated_specifier_spans(
         if seen.insert(fingerprint)
             || !occurrences
                 .iter()
-                .any(|(known_start, known_end, known_mode)| {
-                    *known_mode == mode
-                        && source.get(*known_start as usize..*known_end as usize)
-                            == Some(path.as_str())
+                .any(|known: &super::ModuleSpecifierSpan| {
+                    known.mode() == mode && known.specifier(source) == Some(path.as_str())
                 })
         {
-            occurrences.push((start, end, mode));
+            occurrences.push(super::ModuleSpecifierSpan::new(
+                source, start, end, path, mode,
+            ));
         }
     }
     occurrences

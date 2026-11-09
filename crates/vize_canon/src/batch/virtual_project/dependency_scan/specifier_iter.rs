@@ -21,9 +21,9 @@ impl<'a> Iterator for DependencySpecifierIter<'a> {
                 .next()
                 .map(|(specifier, mode)| (specifier.as_str(), *mode)),
             Self::Reused { source, spans } => loop {
-                let (start, end, mode) = spans.next()?;
-                if let Some(specifier) = source.get(*start as usize..*end as usize) {
-                    return Some((specifier, *mode));
+                let occurrence = spans.next()?;
+                if let Some(specifier) = occurrence.specifier(source) {
+                    return Some((specifier, occurrence.mode()));
                 }
             },
         }

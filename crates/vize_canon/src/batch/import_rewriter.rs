@@ -45,13 +45,10 @@ pub(in crate::batch) use project_mirror::VirtualProjectRewriteOptions;
 mod source_map;
 pub use source_map::{ImportSourceMap, OffsetAdjustment, RewriteResult};
 
-pub(in crate::batch) type ModuleSpecifierSpan = (u32, u32, crate::PackageResolutionMode);
-pub(in crate::batch) type ModuleSpecifierSpans = Vec<ModuleSpecifierSpan>;
-pub(in crate::batch) type VirtualProjectRewriteCapture = (
-    RewriteResult,
-    Vec<EmptyVueStar>,
-    Option<ModuleSpecifierSpans>,
-);
+mod specifier_span;
+pub(in crate::batch) use specifier_span::{
+    ModuleSpecifierSpan, ModuleSpecifierSpans, VirtualProjectRewriteCapture,
+};
 
 mod literal_rewrite;
 
