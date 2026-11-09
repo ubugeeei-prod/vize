@@ -12,14 +12,27 @@ pub(super) async fn component_hover(
     bridge: Option<&Arc<CorsaBridge>>,
 ) -> Option<Hover> {
     use super::super::component_prop;
-    let mut result =
-        component_prop::hover_attribute(ctx).or_else(|| component_prop::hover_event(ctx))?;
-    if let Some(Answer::Hover(native)) = hover(ctx, bridge, true).await {
-        result = component_prop::hover_attribute_documented(ctx, Some(&native))
-            .or_else(|| component_prop::hover_event_documented(ctx, Some(&native)))
-            .unwrap_or_else(|| native.clone());
-        result.range = native.range;
+    let card = component_prop::hover_attribute(ctx).or_else(|| component_prop::hover_event(ctx));
+    // A listener whose contract resident metadata cannot read (an aliased
+    // `defineEmits<Emits>()`, an Options API child) still has a typed answer.
+    if card.is_none() && !super::component_api::is_component_event_query(ctx) {
+        return None;
     }
+    let native = match hover(ctx, bridge, true).await {
+        Some(Answer::Hover(native)) => Some(native),
+        _ => None,
+    };
+    let mut result = match (card, native) {
+        (Some(card), None) => card,
+        (_, Some(native)) => {
+            let mut documented = component_prop::hover_attribute_documented(ctx, Some(&native))
+                .or_else(|| component_prop::hover_event_documented(ctx, Some(&native)))
+                .unwrap_or_else(|| native.clone());
+            documented.range = native.range;
+            documented
+        }
+        (None, None) => return None,
+    };
     if result.range.is_none() {
         result.range = authored_hover_token_range(ctx);
     }
@@ -154,37 +167,20 @@ pub(super) async fn hover(
         && !is_unknown_prop_hover(&instantiated)
     {
         hover = instantiated;
-        normalize_instantiated_prop_hover(&mut hover);
         query_position = position;
     }
-    // Native quick info can omit JSDoc after a mapped type. Follow the
-    // checker's declaration identities for documentation while retaining the
-    // instantiated signature and the authored hover range from this use.
-    if follow_declaration
-        && documentation(&hover).is_none()
-        && let Ok(definitions) = bridge
-            .definition(document.request_uri(), query_position.0, query_position.1)
-            .await
-    {
-        for definition in definitions.into_iter().take(8) {
-            let Ok(Some(origin)) = bridge
-                .hover(
-                    &definition.uri,
-                    definition.range.start.line,
-                    definition.range.start.character,
-                )
-                .await
-            else {
-                continue;
-            };
-            if let Some(documentation) = documentation(&origin)
-                && let LspHoverContents::Markup(content) = &mut hover.contents
-            {
-                content.value.push_str("\n\n");
-                content.value.push_str(documentation);
-                break;
-            }
-        }
+    if follow_declaration {
+        normalize_instantiated_prop_hover(&mut hover);
+    }
+    // Retain the instantiated signature and authored range from this use.
+    if follow_declaration || super::documentation::is_member_quick_info(&hover) {
+        super::documentation::adopt_declaration_documentation(
+            bridge,
+            document.request_uri(),
+            query_position,
+            &mut hover,
+        )
+        .await;
     }
     vize_l0::profile!("maestro.hover.canonical.present", {
         let mapped_range = hover
@@ -233,15 +229,22 @@ fn normalize_instantiated_prop_hover(hover: &mut LspHover) {
     let Some(signature) = content.value.strip_prefix(prefix) else {
         return;
     };
-    let Some(quoted) = signature.strip_prefix('"') else {
+    let Some(quote) = signature
+        .chars()
+        .next()
+        .filter(|quote| matches!(quote, '"' | '\''))
+    else {
         return;
     };
-    let Some(name_end) = quoted.find("\":") else {
+    let Some((name, after)) = signature
+        .get(1..)
+        .and_then(|quoted| quoted.split_once(quote))
+    else {
         return;
     };
-    let Some(name) = quoted.get(..name_end) else {
+    if !after.starts_with(':') && !after.starts_with("?:") {
         return;
-    };
+    }
     let mut characters = name.chars();
     if !characters.next().is_some_and(|character| {
         character == '_' || character == '$' || character.is_ascii_alphabetic()
@@ -254,21 +257,6 @@ fn normalize_instantiated_prop_hover(hover: &mut LspHover) {
     let quote_end = quote_start + 1 + name.len();
     content.value.remove(quote_end);
     content.value.remove(quote_start);
-}
-
-fn documentation(hover: &LspHover) -> Option<&str> {
-    let LspHoverContents::Markup(content) = &hover.contents else {
-        return None;
-    };
-    if content.kind != "markdown" {
-        return None;
-    }
-    let (_, documentation) = content
-        .value
-        .strip_prefix("```typescript\n")?
-        .split_once("\n```")?;
-    let documentation = documentation.trim();
-    (!documentation.is_empty()).then_some(documentation)
 }
 
 #[cfg(test)]
@@ -327,6 +315,27 @@ mod tests {
         assert_eq!(
             content.value,
             "```typescript\n(property) items: number[]\n```\n\nDocumentation"
+        );
+
+        let mut optional = markup_hover("```typescript\n(property) \"item\"?: number\n```");
+        normalize_instantiated_prop_hover(&mut optional);
+        let LspHoverContents::Markup(content) = optional.contents else {
+            panic!("markup hover");
+        };
+        assert_eq!(
+            content.value,
+            "```typescript\n(property) item?: number\n```"
+        );
+
+        let mut single =
+            markup_hover("```typescript\n(property) 'change': (value: string) => any\n```");
+        normalize_instantiated_prop_hover(&mut single);
+        let LspHoverContents::Markup(content) = single.contents else {
+            panic!("markup hover");
+        };
+        assert_eq!(
+            content.value,
+            "```typescript\n(property) change: (value: string) => any\n```"
         );
 
         let mut literal = markup_hover("```typescript\n(property) \"item-kind\": string\n```");

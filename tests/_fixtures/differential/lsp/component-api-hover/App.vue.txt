@@ -1,0 +1,10 @@
+<script setup lang="ts">
+import Child from './Child.vue'
+function onChange(value: string) {
+  return value
+}
+</script>
+
+<template>
+  <Child @change="onChange"><template #item="{ row }">{{ row }}</template></Child>
+</template>

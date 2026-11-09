@@ -1,0 +1,482 @@
+{
+  "array event": {
+    "contents": {
+      "kind": "markdown",
+      "value": "**@change**\n\n_Component event_\n\n```typescript\n(property) change: (...args: any[]) => any\n```\n\n**Payload**\n\n`unknown[]`\n\n**Example**\n\n```vue\n@change=\"handler\"\n```\n\n**Docs**\n\n[Vue Component Events](https://vuejs.org/guide/components/events.html)"
+    },
+    "range": {
+      "end": {
+        "character": 31,
+        "line": 22
+      },
+      "start": {
+        "character": 25,
+        "line": 22
+      }
+    }
+  },
+  "array prop": {
+    "contents": {
+      "kind": "markdown",
+      "value": "**title**\n\n_Component prop_\n\n```typescript\ntitle?: unknown\n```\n\n**Requirement**\n\nOptional\n\n**Example**\n\n```vue\n<ArrayChild title=\"...\" />\n<ArrayChild :title=\"value\" />\n```\n\n**Docs**\n\n[Vue Component Props](https://vuejs.org/guide/components/props.html)"
+    },
+    "range": {
+      "end": {
+        "character": 19,
+        "line": 22
+      },
+      "start": {
+        "character": 14,
+        "line": 22
+      }
+    }
+  },
+  "bound prop": {
+    "contents": {
+      "kind": "markdown",
+      "value": "**title**\n\n_Component prop_\n\n```typescript\n(property) title: string\n```\nThe title shown above.\n\n**Requirement**\n\nRequired\n\n**Example**\n\n```vue\n<Child title=\"...\" />\n<Child :title=\"value\" />\n```\n\n**Docs**\n\n[Vue Component Props](https://vuejs.org/guide/components/props.html)"
+    },
+    "range": {
+      "end": {
+        "character": 15,
+        "line": 18
+      },
+      "start": {
+        "character": 10,
+        "line": 18
+      }
+    }
+  },
+  "event": {
+    "contents": {
+      "kind": "markdown",
+      "value": "**@change**\n\n_Component event_\n\n```typescript\n(property) change: (value: string) => any\n```\n\nFired on change.\n\n**Payload**\n\n`[value: string]`\n\n**Example**\n\n```vue\n@change=\"handler\"\n```\n\n**Docs**\n\n[Vue Component Events](https://vuejs.org/guide/components/events.html)"
+    },
+    "range": {
+      "end": {
+        "character": 27,
+        "line": 18
+      },
+      "start": {
+        "character": 21,
+        "line": 18
+      }
+    }
+  },
+  "interface aliased event": {
+    "contents": {
+      "kind": "markdown",
+      "value": "```typescript\n(property) change: (value: string) => any\n```\n\nFired on change."
+    },
+    "range": {
+      "end": {
+        "character": 76,
+        "line": 24
+      },
+      "start": {
+        "character": 70,
+        "line": 24
+      }
+    }
+  },
+  "interface boolean prop": {
+    "contents": {
+      "kind": "markdown",
+      "value": "**active**\n\n_Component prop_\n\n```typescript\n(property) Props.active?: boolean | undefined\n```\nWhether the row is active.\n\n**Requirement**\n\nOptional\n\n**Example**\n\n```vue\n<InterfaceChild active=\"...\" />\n<InterfaceChild :active=\"value\" />\n```\n\n**Docs**\n\n[Vue Component Props](https://vuejs.org/guide/components/props.html)"
+    },
+    "range": {
+      "end": {
+        "character": 50,
+        "line": 24
+      },
+      "start": {
+        "character": 44,
+        "line": 24
+      }
+    }
+  },
+  "interface kebab prop": {
+    "contents": {
+      "kind": "markdown",
+      "value": "**itemCount**\n\n_Component prop_\n\n```typescript\n(property) SharedProps.itemCount?: number | undefined\n```\nHow many rows.\n\n**Requirement**\n\nOptional\n\n**Example**\n\n```vue\n<InterfaceChild item-count=\"...\" />\n<InterfaceChild :item-count=\"value\" />\n```\n\n**Docs**\n\n[Vue Component Props](https://vuejs.org/guide/components/props.html)"
+    },
+    "range": {
+      "end": {
+        "character": 39,
+        "line": 24
+      },
+      "start": {
+        "character": 29,
+        "line": 24
+      }
+    }
+  },
+  "interface model": {
+    "contents": {
+      "kind": "markdown",
+      "value": "**name**\n\n_Component prop_\n\n```typescript\n(property) name?: string | undefined\n```\n\n**Requirement**\n\nOptional\n\n**Example**\n\n```vue\n<InterfaceChild name=\"...\" />\n<InterfaceChild :name=\"value\" />\n```\n\n**Docs**\n\n[Vue Component Props](https://vuejs.org/guide/components/props.html)"
+    },
+    "range": {
+      "end": {
+        "character": 63,
+        "line": 24
+      },
+      "start": {
+        "character": 59,
+        "line": 24
+      }
+    }
+  },
+  "interface prop": {
+    "contents": {
+      "kind": "markdown",
+      "value": "**title**\n\n_Component prop_\n\n```typescript\n(property) SharedProps.title: string\n```\nThe title shown above.\n\n**Requirement**\n\nRequired\n\n**Example**\n\n```vue\n<InterfaceChild title=\"...\" />\n<InterfaceChild :title=\"value\" />\n```\n\n**Docs**\n\n[Vue Component Props](https://vuejs.org/guide/components/props.html)"
+    },
+    "range": {
+      "end": {
+        "character": 23,
+        "line": 24
+      },
+      "start": {
+        "character": 18,
+        "line": 24
+      }
+    }
+  },
+  "interface script model": {
+    "contents": {
+      "kind": "markdown",
+      "value": "```typescript\nconst name: ModelRef<string | undefined, string, string | undefined, string | undefined>\n```\nThe edited name."
+    },
+    "range": {
+      "end": {
+        "character": 33,
+        "line": 23
+      },
+      "start": {
+        "character": 29,
+        "line": 23
+      }
+    }
+  },
+  "interface script prop": {
+    "contents": {
+      "kind": "markdown",
+      "value": "```typescript\n(property) itemCount: number | undefined\n```\n\nHow many rows."
+    },
+    "range": {
+      "end": {
+        "character": 27,
+        "line": 23
+      },
+      "start": {
+        "character": 18,
+        "line": 23
+      }
+    }
+  },
+  "interface slot name": {
+    "contents": {
+      "kind": "markdown",
+      "value": "```typescript\n(property) item?: ((props: {\n    row: number;\n}) => any) | undefined\n```\n\nRow slot."
+    },
+    "range": {
+      "end": {
+        "character": 109,
+        "line": 24
+      },
+      "start": {
+        "character": 105,
+        "line": 24
+      }
+    }
+  },
+  "interface tag": {
+    "contents": {
+      "kind": "markdown",
+      "value": "```typescript\nconst InterfaceChild: VueComponent &\n{\n  props: Props;\n  emits: Emits;\n  slots: { item(props: { row: number }): any };\n  model: { \"name\": string };\n}\n```\n\nVue component: InterfaceChild.vue"
+    },
+    "range": {
+      "end": {
+        "character": 17,
+        "line": 24
+      },
+      "start": {
+        "character": 3,
+        "line": 24
+      }
+    }
+  },
+  "options event": {
+    "contents": {
+      "kind": "markdown",
+      "value": "```typescript\n(property) change: (value: string) => any\n```"
+    },
+    "range": {
+      "end": {
+        "character": 33,
+        "line": 23
+      },
+      "start": {
+        "character": 27,
+        "line": 23
+      }
+    }
+  },
+  "options prop": {
+    "contents": {
+      "kind": "markdown",
+      "value": "**title**\n\n_Component prop_\n\n```typescript\n(property) title: string\n```\n\nThe title shown above.\n\n**Requirement**\n\nRequired\n\n**Example**\n\n```vue\n<OptionsChild title=\"...\" />\n<OptionsChild :title=\"value\" />\n```\n\n**Docs**\n\n[Vue Component Props](https://vuejs.org/guide/components/props.html)"
+    },
+    "range": {
+      "end": {
+        "character": 21,
+        "line": 23
+      },
+      "start": {
+        "character": 16,
+        "line": 23
+      }
+    }
+  },
+  "options slot name": {
+    "contents": {
+      "kind": "markdown",
+      "value": "```typescript\n(property) item?: ((props: {\n    row: number;\n}) => any) | undefined\n```"
+    },
+    "range": {
+      "end": {
+        "character": 60,
+        "line": 23
+      },
+      "start": {
+        "character": 56,
+        "line": 23
+      }
+    }
+  },
+  "runtime event": {
+    "contents": {
+      "kind": "markdown",
+      "value": "**@change**\n\n_Component event_\n\n```typescript\n(property) change: (value: string) => any\n```\n\n**Payload**\n\n`[value: string]`\n\n**Example**\n\n```vue\n@change=\"handler\"\n```\n\n**Docs**\n\n[Vue Component Events](https://vuejs.org/guide/components/events.html)"
+    },
+    "range": {
+      "end": {
+        "character": 33,
+        "line": 21
+      },
+      "start": {
+        "character": 27,
+        "line": 21
+      }
+    }
+  },
+  "runtime prop": {
+    "contents": {
+      "kind": "markdown",
+      "value": "**title**\n\n_Component prop_\n\n```typescript\n(property) title: string\n```\n\n**Requirement**\n\nRequired\n\n**Example**\n\n```vue\n<RuntimeChild title=\"...\" />\n<RuntimeChild :title=\"value\" />\n```\n\n**Docs**\n\n[Vue Component Props](https://vuejs.org/guide/components/props.html)"
+    },
+    "range": {
+      "end": {
+        "character": 21,
+        "line": 21
+      },
+      "start": {
+        "character": 16,
+        "line": 21
+      }
+    }
+  },
+  "runtime script prop": {
+    "contents": {
+      "kind": "markdown",
+      "value": "```typescript\n(property) title: string\n```\n\nThe title shown above."
+    },
+    "range": {
+      "end": {
+        "character": 23,
+        "line": 12
+      },
+      "start": {
+        "character": 18,
+        "line": 12
+      }
+    }
+  },
+  "script emit": {
+    "contents": {
+      "kind": "markdown",
+      "value": "```typescript\n(property) change: (value: string) => any\n```\n\nFired on change."
+    },
+    "range": {
+      "end": {
+        "character": 12,
+        "line": 21
+      },
+      "start": {
+        "character": 6,
+        "line": 21
+      }
+    }
+  },
+  "script prop": {
+    "contents": {
+      "kind": "markdown",
+      "value": "```typescript\n(property) title: string\n```\n\nThe title shown above."
+    },
+    "range": {
+      "end": {
+        "character": 23,
+        "line": 20
+      },
+      "start": {
+        "character": 18,
+        "line": 20
+      }
+    }
+  },
+  "slot name": {
+    "contents": {
+      "kind": "markdown",
+      "value": "```typescript\n(property) item?: ((props: {\n    row: number;\n}) => any) | undefined\n```\n\nRow slot."
+    },
+    "range": {
+      "end": {
+        "character": 72,
+        "line": 18
+      },
+      "start": {
+        "character": 68,
+        "line": 18
+      }
+    }
+  },
+  "slot prop pattern": {
+    "contents": {
+      "kind": "markdown",
+      "value": "```typescript\n(parameter) row: number\n```"
+    },
+    "range": {
+      "end": {
+        "character": 79,
+        "line": 18
+      },
+      "start": {
+        "character": 76,
+        "line": 18
+      }
+    }
+  },
+  "slot prop use": {
+    "contents": {
+      "kind": "markdown",
+      "value": "```typescript\n(parameter) row: number\n```"
+    },
+    "range": {
+      "end": {
+        "character": 89,
+        "line": 18
+      },
+      "start": {
+        "character": 86,
+        "line": 18
+      }
+    }
+  },
+  "static prop": {
+    "contents": {
+      "kind": "markdown",
+      "value": "**title**\n\n_Component prop_\n\n```typescript\n(property) title: string\n```\nThe title shown above.\n\n**Requirement**\n\nRequired\n\n**Example**\n\n```vue\n<Child title=\"...\" />\n<Child :title=\"value\" />\n```\n\n**Docs**\n\n[Vue Component Props](https://vuejs.org/guide/components/props.html)"
+    },
+    "range": {
+      "end": {
+        "character": 14,
+        "line": 19
+      },
+      "start": {
+        "character": 9,
+        "line": 19
+      }
+    }
+  },
+  "tag": {
+    "contents": {
+      "kind": "markdown",
+      "value": "```typescript\nconst Child: VueComponent &\n{\n  props: { title: string; count?: number };\n  emits: { change: [value: string]; 'update:count': [value: number] };\n  slots: { item(props: { row: number }): any };\n}\n```\n\nVue component: Child.vue"
+    },
+    "range": {
+      "end": {
+        "character": 8,
+        "line": 18
+      },
+      "start": {
+        "character": 3,
+        "line": 18
+      }
+    }
+  },
+  "v-model prop": {
+    "contents": {
+      "kind": "markdown",
+      "value": "**count**\n\n_Component prop_\n\n```typescript\n(property) count?: number | undefined\n```\nHow many rows.\n\n**Requirement**\n\nOptional\n\n**Example**\n\n```vue\n<Child count=\"...\" />\n<Child :count=\"value\" />\n```\n\n**Docs**\n\n[Vue Component Props](https://vuejs.org/guide/components/props.html)"
+    },
+    "range": {
+      "end": {
+        "character": 52,
+        "line": 18
+      },
+      "start": {
+        "character": 47,
+        "line": 18
+      }
+    }
+  },
+  "withDefaults call-signature event": {
+    "contents": {
+      "kind": "markdown",
+      "value": "**@change**\n\n_Component event_\n\n```typescript\n(property) change: (value: string) => any\n```\n\n**Payload**\n\n`[value: string]`\n\n**Example**\n\n```vue\n@change=\"handler\"\n```\n\n**Docs**\n\n[Vue Component Events](https://vuejs.org/guide/components/events.html)"
+    },
+    "range": {
+      "end": {
+        "character": 34,
+        "line": 20
+      },
+      "start": {
+        "character": 28,
+        "line": 20
+      }
+    }
+  },
+  "withDefaults prop": {
+    "contents": {
+      "kind": "markdown",
+      "value": "**title**\n\n_Component prop_\n\n```typescript\n(property) title?: string | undefined\n```\nThe title shown above.\n\n**Requirement**\n\nOptional\n\n**Example**\n\n```vue\n<DefaultsChild title=\"...\" />\n<DefaultsChild :title=\"value\" />\n```\n\n**Docs**\n\n[Vue Component Props](https://vuejs.org/guide/components/props.html)\n\n**Default**\n\n`'none'`"
+    },
+    "range": {
+      "end": {
+        "character": 22,
+        "line": 20
+      },
+      "start": {
+        "character": 17,
+        "line": 20
+      }
+    }
+  },
+  "withDefaults script prop": {
+    "contents": {
+      "kind": "markdown",
+      "value": "```typescript\n(property) title: string\n```"
+    },
+    "range": {
+      "end": {
+        "character": 23,
+        "line": 12
+      },
+      "start": {
+        "character": 18,
+        "line": 12
+      }
+    }
+  }
+}
