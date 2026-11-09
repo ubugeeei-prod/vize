@@ -2913,6 +2913,7 @@
             "dialects": [
               "vue3-sfc",
               "html-template",
+              "scss-style",
               "js",
               "ts"
             ],
@@ -4006,6 +4007,7 @@
               "vue3-sfc",
               "pug-template",
               "html-template",
+              "scss-style",
               "ts"
             ],
             "selector": "linter manifest pinned authored sources"
@@ -5089,6 +5091,7 @@
             "dialects": [
               "vue3-sfc",
               "html-template",
+              "scss-style",
               "ts"
             ],
             "selector": "linter manifest pinned authored sources"

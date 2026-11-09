@@ -348,6 +348,7 @@ void test("linter and LSP coverage record every pinned authored source dialect",
       js: 11,
       jsx: 2,
       "pug-template": 4,
+      "scss-style": 3,
       ts: 43,
       tsx: 2,
       "vue2-sfc": 2,
@@ -365,6 +366,7 @@ void test("linter and LSP coverage record every pinned authored source dialect",
       js: 10,
       jsx: 4,
       "pug-template": 4,
+      "stylus-style": 2,
       ts: 48,
       tsx: 4,
       "vue3-sfc": 65,
@@ -381,6 +383,31 @@ void test("Pug and Jade spellings record the same authored preprocessor dialect"
       );
       assert.deepEqual(coverage.evidence[0].dialects, ["vue3-sfc", "pug-template"]);
     }
+  }
+});
+
+void test("style blocks record their authored preprocessor dialect", () => {
+  for (const [lang, dialect] of [
+    ["scss", "scss-style"],
+    ["SASS", "sass-style"],
+    ["less", "less-style"],
+    ["stylus", "stylus-style"],
+    ["styl", "stylus-style"],
+  ]) {
+    for (const value of [`"${lang}"`, `'${lang}'`, lang]) {
+      const coverage = sourceInspectedDialectCoverage(
+        [{ filename: "Original.vue.txt", source: `<style scoped lang=${value}>a{}</style>` }],
+        "style preprocessors",
+      );
+      assert.deepEqual(coverage.evidence[0].dialects, ["vue3-sfc", dialect]);
+    }
+  }
+  for (const lang of ["css", "postcss", "constructor"]) {
+    const coverage = sourceInspectedDialectCoverage(
+      [{ filename: "Original.vue.txt", source: `<style lang="${lang}">a{}</style>` }],
+      "plain styles",
+    );
+    assert.deepEqual(coverage.evidence[0].dialects, ["vue3-sfc"]);
   }
 });
 
