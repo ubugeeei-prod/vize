@@ -13,7 +13,6 @@
  * Template expressions stay with Vize's own `type/*` rules.
  */
 import fs from "node:fs";
-import os from "node:os";
 import path from "node:path";
 
 import { isStandaloneHtmlFile } from "../file-kinds.ts";
@@ -114,17 +113,32 @@ export function buildScriptShim(source: string): ScriptShim | null {
   return { text: chars.join(""), extension };
 }
 
-/** The shim path of a `.vue` glob: `Foo.vue` is linted as `Foo.vue.ts` (or .tsx/.js/.jsx). */
-function shimGlobs(files: unknown): string[] {
-  if (!Array.isArray(files)) return [];
-  const globs: string[] = [];
-  for (const glob of files) {
-    if (typeof glob !== "string") continue;
-    globs.push(glob);
-    if (glob.endsWith(".vue"))
-      for (const ext of [".ts", ".tsx", ".js", ".jsx"]) globs.push(glob + ext);
-  }
-  return globs;
+/** Where the pass configuration is evaluated: the user's config directory and each SFC's shim. */
+export interface ShimContext {
+  /** Directory override globs are relative to (the directory of the user's config). */
+  readonly baseDir: string;
+  /** Absolute path of each linted `.vue` file mapped to the absolute path of its script shim. */
+  readonly shims: ReadonlyMap<string, string>;
+}
+
+/** Escapes glob metacharacters so a literal relative path can be used as an override glob. */
+function literalGlob(relativePath: string): string {
+  return relativePath.replace(/[\\*?[\]{}()!]/gu, "\\$&");
+}
+
+/** Whether a config glob matches `relativePath`; slash-less globs also match the basename. */
+function matchesConfigGlob(relativePath: string, glob: string): boolean {
+  if (typeof path.matchesGlob !== "function") return false;
+  return (
+    path.matchesGlob(relativePath, glob) ||
+    (!glob.includes("/") && path.matchesGlob(path.basename(relativePath), glob))
+  );
+}
+
+function stringList(value: unknown): string[] {
+  return Array.isArray(value)
+    ? value.filter((item): item is string => typeof item === "string")
+    : [];
 }
 
 /**
@@ -132,12 +146,21 @@ function shimGlobs(files: unknown): string[] {
  * set. Unlike the root rules, `off`/`allow` entries are kept: they are exactly
  * the carve-outs (for example "no floating promises in tests") that must still
  * apply to the shim of a matching `.vue` file.
+ *
+ * Globs are evaluated here against the original `.vue` path, relative to the
+ * user's config directory, and each override is re-targeted to the exact shims
+ * of the files it matched. Rewriting the globs instead would let a TypeScript
+ * override such as `**\/*.ts` leak onto `Foo.vue.ts`, and would lose
+ * `excludeFiles`.
  */
 function typeAwareOverrides(
   overrides: unknown,
   typeAwareRules: ReadonlySet<string>,
+  context: ShimContext | undefined,
 ): Record<string, unknown>[] {
-  if (!Array.isArray(overrides)) return [];
+  if (!Array.isArray(overrides) || context == null) return [];
+  const toRelative = (file: string) =>
+    path.relative(context.baseDir, file).split(path.sep).join("/");
   const kept: Record<string, unknown>[] = [];
   for (const override of overrides as Record<string, unknown>[]) {
     const rules = Object.fromEntries(
@@ -145,9 +168,18 @@ function typeAwareOverrides(
         typeAwareRules.has(name),
       ),
     );
-    const files = shimGlobs(override.files);
-    if (Object.keys(rules).length === 0 || files.length === 0) continue;
-    kept.push({ files, rules });
+    if (Object.keys(rules).length === 0) continue;
+    const include = stringList(override.files);
+    const exclude = stringList(override.excludeFiles);
+    const files: string[] = [];
+    for (const [original, shim] of context.shims) {
+      const relative = toRelative(original);
+      if (relative.startsWith("../")) continue;
+      if (!include.some((glob) => matchesConfigGlob(relative, glob))) continue;
+      if (exclude.some((glob) => matchesConfigGlob(relative, glob))) continue;
+      files.push(literalGlob(toRelative(shim)));
+    }
+    if (files.length > 0) kept.push({ files, rules });
   }
   return kept;
 }
@@ -156,6 +188,7 @@ function typeAwareOverrides(
 export function typeAwareOnlyConfig(
   printed: Record<string, unknown>,
   typeAwareRules: ReadonlySet<string>,
+  context?: ShimContext,
 ): Record<string, unknown> | null {
   const rules: Record<string, unknown> = {};
   for (const [name, value] of Object.entries((printed.rules ?? {}) as Record<string, unknown>)) {
@@ -164,7 +197,7 @@ export function typeAwareOnlyConfig(
       continue;
     rules[name] = value;
   }
-  const overrides = typeAwareOverrides(printed.overrides, typeAwareRules);
+  const overrides = typeAwareOverrides(printed.overrides, typeAwareRules, context);
   // Overrides may switch rules on for some files only, so they count as well.
   const overridesEnable = overrides.some((override) =>
     Object.values(override.rules as Record<string, unknown>).some((value) => {
@@ -205,18 +238,19 @@ export async function runVueTypeAwarePass(
       .filter((rule) => rule.type_aware === true)
       .map((rule) => `${rule.scope}/${rule.value}`),
   );
-  const config = typeAwareOnlyConfig(
-    JSON.parse(printed.stdout) as Record<string, unknown>,
-    typeAwareRules,
-  );
-  if (config == null) return undefined;
+  const printedConfig = JSON.parse(printed.stdout) as Record<string, unknown>;
+  if (!enablesTypeAwareRule(printedConfig, typeAwareRules)) return undefined;
 
   const created: string[] = [];
+  const shims = new Map<string, string>();
   const replacements = new Map<string, string>();
-  const configDir = fs.mkdtempSync(path.join(os.tmpdir(), "oxlint-vize-type-aware-"));
+  // Override globs are relative to the user's config, so the pass configuration is
+  // written next to it (under a unique name) instead of in the system temp directory.
+  const baseDir = configBaseDir(configOptions, cwd);
+  const configPath = path.join(baseDir, `.oxlintrc.vize-type-aware-${process.pid}.json`);
   const cleanup = () => {
     for (const file of created) fs.rmSync(file, { force: true });
-    fs.rmSync(configDir, { force: true, recursive: true });
+    fs.rmSync(configPath, { force: true });
   };
   process.once("exit", cleanup);
   try {
@@ -227,10 +261,12 @@ export async function runVueTypeAwarePass(
       if (fs.existsSync(shimPath)) continue;
       fs.writeFileSync(shimPath, shim.text, { flag: "wx" });
       created.push(shimPath);
+      shims.set(file, shimPath);
       registerPathReplacementVariants(replacements, cwd, shimPath, file);
     }
     if (created.length === 0) return undefined;
-    const configPath = path.join(configDir, ".oxlintrc.json");
+    const config = typeAwareOnlyConfig(printedConfig, typeAwareRules, { baseDir, shims });
+    if (config == null) return undefined;
     fs.writeFileSync(configPath, JSON.stringify(config));
     const result = await run([
       entrypoint,
@@ -247,6 +283,34 @@ export async function runVueTypeAwarePass(
     cleanup();
     process.removeListener("exit", cleanup);
   }
+}
+
+/** Whether any root rule or override turns a type-aware rule on. */
+function enablesTypeAwareRule(
+  printed: Record<string, unknown>,
+  typeAwareRules: ReadonlySet<string>,
+): boolean {
+  const enabled = (rules: unknown) =>
+    Object.entries((rules ?? {}) as Record<string, unknown>).some(([name, value]) => {
+      const severity = Array.isArray(value) ? value[0] : value;
+      return typeAwareRules.has(name) && !["off", "allow", 0].includes(severity as string | number);
+    });
+  const overrides = Array.isArray(printed.overrides)
+    ? (printed.overrides as { rules?: unknown }[])
+    : [];
+  return enabled(printed.rules) || overrides.some((override) => enabled(override.rules));
+}
+
+/** Directory of the user's `-c` config, or the working directory for the discovered one. */
+function configBaseDir(configOptions: readonly string[], cwd: string): string {
+  for (let index = 0; index < configOptions.length; index += 1) {
+    const option = configOptions[index];
+    if (option === "-c" || option === "--config")
+      return path.dirname(path.resolve(cwd, configOptions[index + 1] ?? ""));
+    if (option.startsWith("--config="))
+      return path.dirname(path.resolve(cwd, option.slice("--config=".length)));
+  }
+  return cwd;
 }
 
 function keepConfigSelection(options: readonly string[]): string[] {

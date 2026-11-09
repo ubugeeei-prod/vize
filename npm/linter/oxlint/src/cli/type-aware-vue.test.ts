@@ -165,65 +165,61 @@ function findTsgolint(): string | undefined {
     .find((candidate) => fs.existsSync(candidate));
 }
 
-void test("per-file overrides of type-aware rules follow the shim of a matching .vue file", () => {
-  const typeAware = new Set(["typescript/no-floating-promises", "typescript/await-thenable"]);
+const PROJECT = path.resolve("/project");
+const shimContext = {
+  baseDir: PROJECT,
+  shims: new Map([
+    [path.join(PROJECT, "src/legacy/Old.vue"), path.join(PROJECT, "src/legacy/Old.vue.ts")],
+    [path.join(PROJECT, "src/legacy/Skip.vue"), path.join(PROJECT, "src/legacy/Skip.vue.ts")],
+    [path.join(PROJECT, "src/new/[id].vue"), path.join(PROJECT, "src/new/[id].vue.ts")],
+  ]),
+};
+const TYPE_AWARE = new Set(["typescript/no-floating-promises", "typescript/await-thenable"]);
+
+void test("overrides are matched on the .vue path and re-targeted to the exact shims", () => {
   const config = typeAwareOnlyConfig(
     {
       rules: { "typescript/no-floating-promises": "deny", "no-debugger": "deny" },
       overrides: [
         {
-          files: ["**/legacy/**/*.vue", "**/*.spec.ts"],
+          files: ["src/legacy/**/*.vue"],
+          excludeFiles: ["**/Skip.vue"],
           rules: { "typescript/no-floating-promises": "allow", "no-debugger": "allow" },
         },
-        { files: ["**/strict/*.vue"], rules: { "typescript/await-thenable": "deny" } },
-        { files: ["**/x.ts"], rules: { "no-debugger": "allow" } },
+        { files: ["src/new/*.vue"], rules: { "typescript/await-thenable": "deny" } },
+        { files: ["**/*.ts"], rules: { "typescript/no-floating-promises": "allow" } },
+        { files: ["other/**/*.vue"], rules: { "typescript/no-floating-promises": "allow" } },
       ],
     },
-    typeAware,
+    TYPE_AWARE,
+    shimContext,
   );
   assert.deepEqual(config?.overrides, [
-    {
-      files: [
-        "**/legacy/**/*.vue",
-        "**/legacy/**/*.vue.ts",
-        "**/legacy/**/*.vue.tsx",
-        "**/legacy/**/*.vue.js",
-        "**/legacy/**/*.vue.jsx",
-        "**/*.spec.ts",
-      ],
-      rules: { "typescript/no-floating-promises": "allow" },
-    },
-    {
-      files: [
-        "**/strict/*.vue",
-        "**/strict/*.vue.ts",
-        "**/strict/*.vue.tsx",
-        "**/strict/*.vue.js",
-        "**/strict/*.vue.jsx",
-      ],
-      rules: { "typescript/await-thenable": "deny" },
-    },
+    { files: ["src/legacy/Old.vue.ts"], rules: { "typescript/no-floating-promises": "allow" } },
+    { files: ["src/new/\\[id\\].vue.ts"], rules: { "typescript/await-thenable": "deny" } },
   ]);
 });
 
 void test("a rule enabled only by an override still produces a pass configuration", () => {
-  const typeAware = new Set(["typescript/await-thenable"]);
+  const enabling = {
+    rules: {},
+    overrides: [{ files: ["src/**/*.vue"], rules: { "typescript/await-thenable": "deny" } }],
+  };
+  assert.ok(typeAwareOnlyConfig(enabling, TYPE_AWARE, shimContext));
+  const disabling = {
+    rules: {},
+    overrides: [{ files: ["src/**/*.vue"], rules: { "typescript/await-thenable": "allow" } }],
+  };
+  assert.equal(typeAwareOnlyConfig(disabling, TYPE_AWARE, shimContext), null);
+});
+
+void test("without a shim context no overrides are carried", () => {
   const config = typeAwareOnlyConfig(
     {
-      rules: {},
-      overrides: [{ files: ["**/*.vue"], rules: { "typescript/await-thenable": "deny" } }],
+      rules: { "typescript/no-floating-promises": "deny" },
+      overrides: [{ files: ["**/*.vue"], rules: { "typescript/no-floating-promises": "allow" } }],
     },
-    typeAware,
+    TYPE_AWARE,
   );
-  assert.ok(config);
-  assert.equal(
-    typeAwareOnlyConfig(
-      {
-        rules: {},
-        overrides: [{ files: ["**/*.vue"], rules: { "typescript/await-thenable": "allow" } }],
-      },
-      typeAware,
-    ),
-    null,
-  );
+  assert.equal(config?.overrides, undefined);
 });
