@@ -22,6 +22,7 @@
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
+use oxc_ast::ast::Expression;
 use vize_relief::{DirectiveNode, ElementNode, ExpressionNode};
 
 static META: RuleMeta = RuleMeta {
@@ -111,25 +112,65 @@ fn is_definitely_non_array_expression(exp: &ExpressionNode) -> bool {
     let ExpressionNode::Simple(simple) = exp else {
         return false;
     };
-    let expr = simple.content.trim();
-    if expr.starts_with('[') {
+    let Some(expression) = simple
+        .js_ast
+        .filter(|retained| retained.raw == simple.content)
+        .and_then(|retained| retained.as_expression())
+    else {
         return false;
-    }
-    expr.starts_with('"')
-        || expr.starts_with('\'')
-        || expr.starts_with('`')
-        || expr.starts_with('{')
-        || expr.starts_with("function")
-        || expr.starts_with("class")
-        || expr.ends_with("++")
-        || expr.ends_with("--")
-        || contains_binary_operator(expr)
+    };
+    expression_is_definitely_non_array(expression.ast)
 }
 
-fn contains_binary_operator(expr: &str) -> bool {
-    ["+", "-", "*", "/", "%"]
-        .iter()
-        .any(|operator| expr.contains(operator))
+fn expression_is_definitely_non_array(expression: &Expression<'_>) -> bool {
+    match expression {
+        Expression::BooleanLiteral(_)
+        | Expression::NullLiteral(_)
+        | Expression::NumericLiteral(_)
+        | Expression::BigIntLiteral(_)
+        | Expression::RegExpLiteral(_)
+        | Expression::StringLiteral(_)
+        | Expression::TemplateLiteral(_)
+        | Expression::ArrowFunctionExpression(_)
+        | Expression::BinaryExpression(_)
+        | Expression::ClassExpression(_)
+        | Expression::FunctionExpression(_)
+        | Expression::LogicalExpression(_)
+        | Expression::ObjectExpression(_)
+        | Expression::PrivateInExpression(_)
+        | Expression::UnaryExpression(_)
+        | Expression::UpdateExpression(_) => true,
+        Expression::AssignmentExpression(assignment) => {
+            expression_is_definitely_non_array(&assignment.right)
+        }
+        Expression::ConditionalExpression(conditional) => {
+            expression_is_definitely_non_array(&conditional.consequent)
+                || expression_is_definitely_non_array(&conditional.alternate)
+        }
+        Expression::ParenthesizedExpression(parenthesized) => {
+            expression_is_definitely_non_array(&parenthesized.expression)
+        }
+        Expression::SequenceExpression(sequence) => sequence
+            .expressions
+            .last()
+            .is_some_and(expression_is_definitely_non_array),
+        Expression::TSAsExpression(wrapper) => {
+            expression_is_definitely_non_array(&wrapper.expression)
+        }
+        Expression::TSSatisfiesExpression(wrapper) => {
+            expression_is_definitely_non_array(&wrapper.expression)
+        }
+        Expression::TSTypeAssertion(wrapper) => {
+            expression_is_definitely_non_array(&wrapper.expression)
+        }
+        Expression::TSNonNullExpression(wrapper) => {
+            expression_is_definitely_non_array(&wrapper.expression)
+        }
+        Expression::TSInstantiationExpression(wrapper) => {
+            expression_is_definitely_non_array(&wrapper.expression)
+        }
+        _ => false,
+    }
 }
 
 #[cfg(test)]
@@ -173,6 +214,35 @@ mod tests {
         let linter = create_linter();
         let result = linter.lint_template(r#"<div v-memo="count++">content</div>"#, "test.vue");
         assert_eq!(result.error_count, 1);
+    }
+
+    #[test]
+    fn rejects_non_array_ast_shapes_without_scanning_nested_expressions() {
+        let linter = create_linter();
+        for expression in [
+            "item.id === selected",
+            "!open",
+            "1",
+            "null",
+            "true",
+            "() => [selected]",
+            "cache = 42",
+        ] {
+            let source = format!(r#"<div v-memo="{expression}" />"#);
+            let result = linter.lint_template(&source, "test.vue");
+            assert_eq!(result.error_count, 1, "{expression}");
+        }
+
+        for expression in [
+            "getDeps(page - 1)",
+            "rows.map((row) => row.id * 2)",
+            "ok ? [a] : [b - 1]",
+            "deps['data-id']",
+        ] {
+            let source = format!(r#"<div v-memo="{expression}" />"#);
+            let result = linter.lint_template(&source, "test.vue");
+            assert_eq!(result.error_count, 0, "{expression}");
+        }
     }
 
     #[test]

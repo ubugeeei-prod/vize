@@ -22,7 +22,9 @@ pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
         + 5
         + 2
         + 5
-        + 3,
+        + 3
+        // Mapped-rule parity regressions add nine distinct literal fixtures.
+        + 9,
     // Original 1057/87 census plus non-literal calls in valid_v_slot (3 + 1),
     // require_toggle_inside_transition (3), the v-else-if/v-is/v-pre rules (38
     // templates over 42 calls, one `v-pre` helper, #8856) and v_bind_style (one
@@ -153,7 +155,9 @@ pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
         + 2
         + 8
         + 4
-        + 3,
+        + 3
+        // Mapped-rule parity regressions add thirteen fixture calls.
+        + 13,
     rule_fixture_skipped: 87
         + 4
         + 3
@@ -187,7 +191,9 @@ pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
         + 1
         + 1
         + 3
-        + 3,
+        + 3
+        // Four helper-driven mapped-rule inputs remain explicit scanner skips.
+        + 4,
     matrix: 90,
     template_lines: 6316 + 233 + 5 + 10 + 25 + 7 - 49
         + 31
@@ -206,7 +212,9 @@ pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
         + 27
         + 29
         - 4
-        + 12,
+        + 12
+        // Complete mapped-rule parity traces add eighty-four retained lines.
+        + 84,
     restructured: 0,
     jsx: JsxComparison {
         roots: 14,

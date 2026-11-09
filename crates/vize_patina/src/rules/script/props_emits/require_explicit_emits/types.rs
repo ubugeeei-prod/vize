@@ -103,10 +103,11 @@ impl Resolver<'_, '_, '_> {
                 .source
                 .get(ty.span().start as usize..ty.span().end as usize)
         {
+            let resolved_events = world.resolve_events(type_source);
+            if resolved_events.complete {
+                return Emits::Known(resolved_events.events.into_iter().collect());
+            }
             let resolved = world.resolve_properties(type_source);
-            // An imported call-signature-only type is not represented by the
-            // property resolver. Keep that shape unknown rather than treating
-            // it as an empty declaration and creating false positives.
             if resolved.complete && !resolved.properties.is_empty() {
                 return Emits::Known(
                     resolved

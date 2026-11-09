@@ -42,7 +42,7 @@
 //! }
 //! ```
 
-mod setup;
+pub(crate) mod setup;
 pub use setup::NoDupeKeysModuleScript;
 
 use super::{ScriptLintResult, ScriptRule, ScriptRuleMeta, SfcScriptContext};

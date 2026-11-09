@@ -72,10 +72,10 @@ fn keeps_export_default_with_trivia_for_component_options_rules() {
 }
 
 #[test]
-fn setup_dupe_candidates_do_not_widen_other_options_rule_prefilters() {
+fn setup_macro_candidates_only_widen_relevant_rule_prefilters() {
     let source = "const props = defineProps<{ foo: string }>(); const foo = 1;";
     assert!(script_rule_may_match(super::RULE_NO_DUPE_KEYS, source));
-    assert!(!script_rule_may_match(super::RULE_NO_RESERVED_KEYS, source));
+    assert!(script_rule_may_match(super::RULE_NO_RESERVED_KEYS, source));
     assert!(!script_rule_may_match(
         super::RULE_NO_POTENTIAL_COMPONENT_OPTION_TYPO,
         source

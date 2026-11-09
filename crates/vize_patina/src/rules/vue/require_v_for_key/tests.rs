@@ -30,14 +30,19 @@ fn test_invalid_v_for_without_key() {
 }
 
 #[test]
-fn test_valid_v_for_with_static_key() {
+fn test_static_key_does_not_satisfy_v_for() {
     let linter = create_linter();
-    // Static key is unusual but technically valid.
     let result = linter.lint_template(
         r#"<div v-for="item in items" key="static"></div>"#,
         "test.vue",
     );
-    assert_eq!(result.error_count, 0);
+    assert_eq!(result.error_count, 1);
+
+    let transparent = linter.lint_template(
+        r#"<template v-for="item in items" key="item.id"><div /></template>"#,
+        "test.vue",
+    );
+    assert_eq!(transparent.error_count, 1);
 }
 
 #[test]

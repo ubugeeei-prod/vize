@@ -89,11 +89,25 @@ fn static_string_literal_inner(raw: &str) -> Option<&str> {
     }
     let inner = s.get(1..s.len() - 1)?;
     let is_literal = match first {
-        b'\'' | b'"' => first == last && !inner.contains(first as char),
+        b'\'' | b'"' => first == last && is_single_quoted_literal_body(inner, first),
         b'`' => last == b'`' && !s.contains("${"),
         _ => false,
     };
     is_literal.then_some(inner)
+}
+
+fn is_single_quoted_literal_body(inner: &str, quote: u8) -> bool {
+    let mut escaped = false;
+    for byte in inner.bytes() {
+        if escaped {
+            escaped = false;
+        } else if byte == b'\\' {
+            escaped = true;
+        } else if byte == quote {
+            return false;
+        }
+    }
+    !escaped
 }
 
 /// Whether the (non-empty) literal content renders as whitespace only,
@@ -207,5 +221,18 @@ mod tests {
         let linter = create_linter();
         let result = linter.lint_template(r#"<div>{{ 'a' + 'b' }}</div>"#, "App.vue");
         assert_eq!(result.warning_count, 0);
+    }
+
+    #[test]
+    fn reports_literals_with_escaped_quotes_but_not_unterminated_literals() {
+        let linter = create_linter();
+        let result = linter.lint_template(
+            r#"<div>{{ 'Don\'t panic' }}{{ "Say \"hi\"" }}</div>"#,
+            "App.vue",
+        );
+        assert_eq!(result.warning_count, 2);
+
+        let unterminated = linter.lint_template(r#"<div>{{ '\' }}</div>"#, "App.vue");
+        assert_eq!(unterminated.warning_count, 0);
     }
 }

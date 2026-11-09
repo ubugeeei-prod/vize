@@ -58,13 +58,14 @@ use super::{ScriptLintResult, ScriptRule, ScriptRuleMeta, SfcScriptContext};
 use crate::diagnostic::{LintDiagnostic, Severity};
 use oxc_ast::ast::{
     Argument, BindingPattern, CallExpression, Expression, IdentifierReference, ObjectExpression,
-    Program, Statement, StringLiteral,
+    Program, Statement,
 };
 use oxc_ast_visit::{
     Visit,
     walk::{walk_call_expression, walk_object_expression},
 };
 use oxc_semantic::{Semantic, SemanticBuilder};
+use oxc_span::Span;
 use oxc_syntax::symbol::SymbolId;
 use vize_l0::CompactString;
 
@@ -239,9 +240,9 @@ impl<'a> Visit<'a> for CustomEventNameCasingVisitor<'a, '_> {
 
     fn visit_call_expression(&mut self, it: &CallExpression<'a>) {
         if self.is_emit_call(it)
-            && let Some(Argument::StringLiteral(literal)) = it.arguments.first()
+            && let Some((value, span)) = it.arguments.first().and_then(static_event_name)
         {
-            self.check_event_name(literal);
+            self.check_event_name(value, span);
         }
         walk_call_expression(self, it);
     }
@@ -296,18 +297,27 @@ impl<'a> CustomEventNameCasingVisitor<'a, '_> {
             .symbol_id()
     }
 
-    fn check_event_name(&mut self, literal: &StringLiteral<'_>) {
-        let value = literal.value.as_str();
+    fn check_event_name(&mut self, value: &str, span: Span) {
         if is_valid_event_name(value, self.casing) {
             return;
         }
         report(
             value,
             self.casing,
-            self.offset as u32 + literal.span.start,
-            self.offset as u32 + literal.span.end,
+            self.offset as u32 + span.start,
+            self.offset as u32 + span.end,
             self.result,
         );
+    }
+}
+
+fn static_event_name<'a>(argument: &'a Argument<'a>) -> Option<(&'a str, Span)> {
+    match argument {
+        Argument::StringLiteral(literal) => Some((literal.value.as_str(), literal.span)),
+        Argument::TemplateLiteral(literal) if literal.expressions.is_empty() => {
+            Some((literal.single_quasi()?.as_str(), literal.span))
+        }
+        _ => None,
     }
 }
 

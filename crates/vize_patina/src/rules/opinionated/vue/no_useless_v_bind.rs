@@ -91,11 +91,25 @@ fn is_static_string_literal(raw: &str) -> bool {
         b'\'' | b'"' => {
             first == last
                 && s.get(1..s.len() - 1)
-                    .is_some_and(|inner| !inner.contains(first as char))
+                    .is_some_and(|inner| is_single_quoted_literal_body(inner, first))
         }
         b'`' => last == b'`' && !s.contains("${"),
         _ => false,
     }
+}
+
+fn is_single_quoted_literal_body(inner: &str, quote: u8) -> bool {
+    let mut escaped = false;
+    for byte in inner.bytes() {
+        if escaped {
+            escaped = false;
+        } else if byte == b'\\' {
+            escaped = true;
+        } else if byte == quote {
+            return false;
+        }
+    }
+    !escaped
 }
 
 #[cfg(test)]
@@ -146,5 +160,18 @@ mod tests {
         let linter = create_linter();
         let result = linter.lint_template(r#"<div :foo="`pre-${bar}`"></div>"#, "App.vue");
         assert_eq!(result.warning_count, 0);
+    }
+
+    #[test]
+    fn reports_literals_with_escaped_quotes_but_not_unterminated_literals() {
+        let linter = create_linter();
+        let result = linter.lint_template(
+            r#"<input :placeholder="'Don\'t panic'" :title='"Say \"hi\""' />"#,
+            "App.vue",
+        );
+        assert_eq!(result.warning_count, 2);
+
+        let unterminated = linter.lint_template(r#"<div :id="'\'" />"#, "App.vue");
+        assert_eq!(unterminated.warning_count, 0);
     }
 }

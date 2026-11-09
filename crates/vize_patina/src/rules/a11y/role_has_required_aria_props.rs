@@ -281,6 +281,20 @@ mod tests {
     }
 
     #[test]
+    fn wai_aria_12_role_requirements_are_complete() {
+        let linter = create_linter();
+        for source in [
+            r#"<input role="combobox" aria-expanded="false" />"#,
+            r#"<div role="menuitemcheckbox" tabindex="-1">Bold</div>"#,
+            r#"<div role="menuitemradio" tabindex="-1">Left</div>"#,
+            r#"<li role="treeitem">Node</li>"#,
+        ] {
+            let result = linter.lint_template(source, "test.vue");
+            assert_eq!(result.warning_count, 1, "{source}");
+        }
+    }
+
+    #[test]
     fn test_invalid_checkbox_missing_checked() {
         let linter = create_linter();
         let result = linter.lint_template(r#"<div role="checkbox">Check</div>"#, "test.vue");

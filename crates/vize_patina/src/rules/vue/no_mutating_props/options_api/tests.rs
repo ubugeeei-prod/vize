@@ -294,6 +294,33 @@ fn one_existing_rule_owns_activation_severity_and_all_configured_options() {
 }
 
 #[test]
+fn setup_props_and_imported_define_component_are_checked() {
+    let setup = r#"<script>
+export default {
+  props: ["items"],
+  setup(props) { props.items.push(1); },
+  methods: { add() { this.items.push(2); } }
+}
+</script>"#;
+    assert_eq!(
+        configured(false).lint_sfc(setup, "Probe.vue").error_count,
+        2
+    );
+
+    let wrapped = r#"<script lang="ts">
+import { defineComponent } from "vue";
+export default defineComponent({
+  props: ["items"],
+  methods: { add() { this.items.push(1); } }
+});
+</script>"#;
+    assert_eq!(
+        configured(false).lint_sfc(wrapped, "Probe.vue").error_count,
+        1
+    );
+}
+
+#[test]
 fn configured_namesake_cannot_inherit_the_private_instance_callback() {
     struct Namesake;
     impl crate::Rule for Namesake {

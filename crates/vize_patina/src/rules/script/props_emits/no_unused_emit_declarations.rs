@@ -275,6 +275,17 @@ fn collect_declared_events(
             {
                 events.extend(
                     world
+                        .resolve_events(type_source)
+                        .events
+                        .into_iter()
+                        .map(|name| DeclaredEvent {
+                            name,
+                            span: type_param.span(),
+                            origin_offset: None,
+                        }),
+                );
+                events.extend(
+                    world
                         .resolve_properties(type_source)
                         .properties
                         .into_iter()

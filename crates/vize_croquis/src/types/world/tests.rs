@@ -150,3 +150,36 @@ fn reexport_cycles_are_bounded_and_explicit() {
     };
     assert_eq!(reference.reason, UnknownTypeReason::ResolutionCycle);
 }
+
+#[test]
+fn imported_call_signatures_resolve_event_names() {
+    let mut world = world();
+    let api = Arc::make_mut(world.modules.get_mut("api").unwrap());
+    api.declarations.insert(
+        CompactString::new("CallSignatureEmits"),
+        TypeDeclaration {
+            kind: TypeDeclarationKind::Interface,
+            body: CompactString::new(
+                "{ (e: 'navigate', value: string): void; (e: 'close'): void }",
+            ),
+            extends: Vec::new(),
+            type_parameters: None,
+            declaration_source: CompactString::new("interface CallSignatureEmits {}"),
+        },
+    );
+    api.exports.insert(
+        CompactString::new("CallSignatureEmits"),
+        TypeExportBinding::Local(CompactString::new("CallSignatureEmits")),
+    );
+    let root = Arc::make_mut(world.modules.get_mut("root").unwrap());
+    root.imports.insert(
+        CompactString::new("CallSignatureEmits"),
+        TypeImport {
+            target: target("api"),
+            exported: Some(CompactString::new("CallSignatureEmits")),
+        },
+    );
+    let resolved = world.resolve_events("CallSignatureEmits");
+    assert!(resolved.complete);
+    assert_eq!(resolved.events, ["navigate", "close"]);
+}

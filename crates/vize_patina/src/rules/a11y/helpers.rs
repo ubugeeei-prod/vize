@@ -322,15 +322,17 @@ pub(super) fn get_implicit_role_by_attr<'a>(
 pub fn get_required_aria_props(role: &str) -> &'static [&'static str] {
     match role {
         "checkbox" => &["aria-checked"],
-        "combobox" => &["aria-expanded"],
+        "combobox" => &["aria-controls", "aria-expanded"],
         "heading" => &["aria-level"],
         "meter" => &["aria-valuenow"],
+        "menuitemcheckbox" | "menuitemradio" => &["aria-checked"],
         "option" => &["aria-selected"],
         "radio" => &["aria-checked"],
         "scrollbar" => &["aria-controls", "aria-valuenow"],
         "separator" => &["aria-valuenow"],
         "slider" => &["aria-valuenow"],
         "switch" => &["aria-checked"],
+        "treeitem" => &["aria-selected"],
         _ => &[],
     }
 }

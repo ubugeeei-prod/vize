@@ -3,8 +3,10 @@
 //! This store supplements the compatibility resolver's flat name maps. A name
 //! resolves only through its declaring module's bindings and actual exports.
 
+mod emits;
 mod props;
 mod resolve;
+pub use emits::ScopedTypeEvents;
 pub use props::{ScopedTypeProperties, ScopedTypeProperty};
 #[cfg(test)]
 mod tests;

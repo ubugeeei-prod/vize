@@ -42,7 +42,8 @@ use oxc_ast_visit::{Visit, walk::walk_call_expression};
 use oxc_span::{GetSpan, Span};
 
 use super::no_side_effects_in_computed::{
-    GetterBody, computed_getter_body, find_component_options, find_computed_object,
+    GetterBody, accessor_object_getter, computed_getter_body, find_component_options,
+    find_computed_object,
 };
 use super::{ScriptLintResult, ScriptRule, ScriptRuleMeta};
 
@@ -140,6 +141,7 @@ fn getter_body<'a>(expression: &'a Expression<'a>) -> Option<GetterBody<'a>> {
     match expression.get_inner_expression() {
         Expression::FunctionExpression(function) => Some(GetterBody::Function(function)),
         Expression::ArrowFunctionExpression(arrow) => Some(GetterBody::Arrow(arrow)),
+        Expression::ObjectExpression(object) => accessor_object_getter(object),
         _ => None,
     }
 }
@@ -185,24 +187,7 @@ impl<'a> Visit<'a> for AsyncActionVisitor<'_> {
     }
 
     fn visit_call_expression(&mut self, call: &CallExpression<'a>) {
-        let asynchronous = match call.callee.get_inner_expression() {
-            Expression::Identifier(identifier) => matches!(
-                identifier.name.as_str(),
-                "fetch" | "setInterval" | "setTimeout" | "queueMicrotask"
-            ),
-            Expression::StaticMemberExpression(member) => {
-                matches!(
-                    member.property.name.as_str(),
-                    "$nextTick" | "then" | "catch" | "finally"
-                )
-            }
-            Expression::ComputedMemberExpression(member) => matches!(
-                member.static_property_name().as_deref(),
-                Some("$nextTick" | "then" | "catch" | "finally")
-            ),
-            _ => false,
-        };
-        if asynchronous {
+        if is_async_call(call) {
             report(call.span, self.offset, self.result);
         }
         walk_call_expression(self, call);
@@ -217,6 +202,52 @@ impl<'a> Visit<'a> for AsyncActionVisitor<'_> {
         {
             report(expression.span, self.offset, self.result);
         }
+    }
+}
+
+fn is_async_call(call: &CallExpression<'_>) -> bool {
+    const TIMERS: &[&str] = &[
+        "setInterval",
+        "setTimeout",
+        "requestAnimationFrame",
+        "setImmediate",
+    ];
+    const PROMISE_STATICS: &[&str] = &[
+        "all",
+        "allSettled",
+        "any",
+        "race",
+        "reject",
+        "resolve",
+        "try",
+        "withResolvers",
+    ];
+    match call.callee.get_inner_expression() {
+        Expression::Identifier(identifier) => {
+            identifier.name == "fetch"
+                || identifier.name == "queueMicrotask"
+                || TIMERS.contains(&identifier.name.as_str())
+        }
+        Expression::StaticMemberExpression(member) => {
+            let property = member.property.name.as_str();
+            matches!(property, "$nextTick" | "then" | "catch" | "finally")
+                || (TIMERS.contains(&property)
+                    && matches!(member.object.get_inner_expression(), Expression::Identifier(identifier) if identifier.name == "window"))
+                || (PROMISE_STATICS.contains(&property)
+                    && matches!(member.object.get_inner_expression(), Expression::Identifier(identifier) if identifier.name == "Promise"))
+        }
+        Expression::ComputedMemberExpression(member) => {
+            let Some(property) = member.static_property_name() else {
+                return false;
+            };
+            let property = property.as_ref();
+            matches!(property, "$nextTick" | "then" | "catch" | "finally")
+                || (TIMERS.contains(&property)
+                    && matches!(member.object.get_inner_expression(), Expression::Identifier(identifier) if identifier.name == "window"))
+                || (PROMISE_STATICS.contains(&property)
+                    && matches!(member.object.get_inner_expression(), Expression::Identifier(identifier) if identifier.name == "Promise"))
+        }
+        _ => false,
     }
 }
 
@@ -346,5 +377,21 @@ export default {
 "#;
         let result = create_linter().lint(source, 0);
         assert_eq!(result.error_count, 1, "{:?}", result.diagnostics);
+    }
+
+    #[test]
+    fn reports_object_getters_promise_statics_and_browser_timers() {
+        let source = r#"
+const all = computed(() => Promise.all(urls.map(fetch)))
+const value = computed({ get: () => fetch('/a'), set: () => {} })
+const size = computed(() => {
+  window.setTimeout(() => {}, 0)
+  requestAnimationFrame(() => {})
+  setImmediate(() => {})
+  return 1
+})
+"#;
+        let result = create_linter().lint(source, 0);
+        assert_eq!(result.error_count, 5, "{:?}", result.diagnostics);
     }
 }

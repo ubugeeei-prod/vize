@@ -20,9 +20,11 @@
 //! }
 //! ```
 
-use super::{ScriptLintResult, ScriptRule, ScriptRuleMeta};
+use super::{ScriptLintResult, ScriptRule, ScriptRuleMeta, SfcScriptContext, no_dupe_keys};
 use crate::diagnostic::{LintDiagnostic, Severity};
 use oxc_ast::ast::Program;
+use oxc_semantic::SemanticBuilder;
+use oxc_span::Span;
 use vize_croquis::script_parser::collect_options_descriptor;
 use vize_croquis::{OptionGroup, OptionMember};
 use vize_l0::CompactString;
@@ -59,6 +61,44 @@ impl ScriptRule for NoReservedKeys {
         };
         for member in &descriptor.members {
             check_member(member, offset, result);
+        }
+    }
+
+    fn check_program_with_sfc<'a>(
+        &self,
+        program: &'a Program<'a>,
+        source: &str,
+        offset: usize,
+        sfc: SfcScriptContext<'_>,
+        result: &mut ScriptLintResult,
+    ) {
+        self.check_program(program, source, offset, result);
+        if !sfc.is_script_setup {
+            return;
+        }
+        let built = SemanticBuilder::new().with_build_nodes(true).build(program);
+        if !built.diagnostics.is_empty()
+            || no_dupe_keys::setup::macro_shadowed(program, &built.semantic, "defineProps")
+        {
+            return;
+        }
+        for candidate in no_dupe_keys::setup::candidates(program) {
+            for name in no_dupe_keys::setup::props::names(
+                candidate.call,
+                program,
+                &built.semantic,
+                no_dupe_keys::NoDupeKeysModuleScript::Absent,
+                None,
+                source,
+                sfc.resolved_type_world,
+            ) {
+                if !RESERVED_PUBLIC_KEYS.contains(&name.as_str()) {
+                    continue;
+                }
+                let span = no_dupe_keys::setup::props::declaration_span(candidate.call, &name)
+                    .unwrap_or(candidate.call.span);
+                check_reserved_prop(&name, span, offset, result);
+            }
         }
     }
 }
@@ -141,9 +181,24 @@ fn check_member(member: &OptionMember, offset: usize, result: &mut ScriptLintRes
     result.add_diagnostic(diagnostic);
 }
 
+fn check_reserved_prop(name: &str, span: Span, offset: usize, result: &mut ScriptLintResult) {
+    let start = offset as u32 + span.start;
+    let end = offset as u32 + span.end;
+    let mut message = CompactString::with_capacity(name.len() + 24);
+    message.push_str("Reserved key '");
+    message.push_str(name);
+    message.push('\'');
+    result.add_diagnostic(
+        LintDiagnostic::error(META.name, message, start, end)
+            .with_label("props key starts with reserved '$'", start, end)
+            .with_help("Vue exposes built-in instance properties (`$el`, `$data`, `$emit`, ...); rename this prop so it does not shadow a framework internal."),
+    );
+}
+
 #[cfg(test)]
 mod tests {
     use super::NoReservedKeys;
+    use crate::linter::Linter;
     use crate::rules::script::ScriptLinter;
 
     fn create_linter() -> ScriptLinter {
@@ -332,5 +387,19 @@ export default {
 "#;
         let result = create_linter().lint(source, 0);
         assert_eq!(result.error_count, 0);
+    }
+
+    #[test]
+    fn setup_runtime_and_type_props_are_checked() {
+        for sfc in [
+            "<script setup>defineProps({ $el: String })</script>",
+            "<script setup lang=\"ts\">defineProps<{ $el: string }>()</script>",
+            "<script setup lang=\"ts\">interface Props { $el: string }; defineProps<Props>()</script>",
+        ] {
+            let result = Linter::new()
+                .with_enabled_rules(Some(vec!["script/no-reserved-keys".into()]))
+                .lint_sfc(sfc, "Reserved.vue");
+            assert_eq!(result.error_count, 1, "{sfc}: {:?}", result.diagnostics);
+        }
     }
 }

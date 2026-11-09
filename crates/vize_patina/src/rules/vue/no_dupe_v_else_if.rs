@@ -24,6 +24,11 @@
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
+use oxc_allocator::Allocator;
+use oxc_ast::ast::Expression;
+use oxc_parser::Parser;
+use oxc_span::{GetSpan, SourceType};
+use oxc_syntax::operator::LogicalOperator;
 use vize_l0::FxHashSet;
 use vize_l0::String;
 use vize_l0::ToCompactString;
@@ -69,7 +74,7 @@ impl Rule for NoDupeVElseIf {
 
 /// Check children for duplicate v-else-if conditions
 fn check_element_children(ctx: &mut LintContext, children: &[TemplateChildNode]) {
-    let mut seen_conditions: FxHashSet<String> = FxHashSet::default();
+    let mut seen_clauses: Vec<FxHashSet<String>> = Vec::new();
     let mut in_if_chain = false;
 
     for child in children.iter() {
@@ -78,17 +83,18 @@ fn check_element_children(ctx: &mut LintContext, children: &[TemplateChildNode])
 
             if info.has_v_if {
                 // Start a new chain
-                seen_conditions.clear();
+                seen_clauses.clear();
                 in_if_chain = true;
-                if let Some(cond) = info.condition {
-                    let normalized = normalize_condition(&cond);
-                    seen_conditions.insert(normalized);
+                if let Some(clauses) = info.condition.as_deref().and_then(condition_clauses) {
+                    seen_clauses.extend(clauses);
                 }
             } else if info.has_v_else_if && in_if_chain {
                 // Continue the chain
-                if let Some(cond) = info.condition {
-                    let normalized = normalize_condition(&cond);
-                    if seen_conditions.contains(&normalized) {
+                if let Some(clauses) = info.condition.as_deref().and_then(condition_clauses) {
+                    if clauses
+                        .iter()
+                        .all(|clause| seen_clauses.iter().any(|seen| seen.is_subset(clause)))
+                    {
                         // Report the error
                         if let Some(loc) = info.loc {
                             ctx.error_with_help(
@@ -97,18 +103,17 @@ fn check_element_children(ctx: &mut LintContext, children: &[TemplateChildNode])
                                 ctx.t("vue/no-dupe-v-else-if.help"),
                             );
                         }
-                    } else {
-                        seen_conditions.insert(normalized);
                     }
+                    seen_clauses.extend(clauses);
                 }
             } else if info.has_v_else && in_if_chain {
                 // End the chain
                 in_if_chain = false;
-                seen_conditions.clear();
+                seen_clauses.clear();
             } else {
                 // Not part of an if chain, reset
                 in_if_chain = false;
-                seen_conditions.clear();
+                seen_clauses.clear();
             }
         }
         // Non-element nodes (text, comment, etc.) are ignored but chain continues
@@ -161,13 +166,93 @@ fn get_expression_content(expr: &ExpressionNode) -> String {
     }
 }
 
-/// Normalize a condition for comparison (remove whitespace differences)
-fn normalize_condition(condition: &str) -> String {
-    condition
-        .split_whitespace()
-        .collect::<Vec<_>>()
-        .join(" ")
-        .into()
+/// Convert a condition to disjunctive clauses. Each clause is an unordered set
+/// of conjunction atoms, so an earlier subset makes a later branch unreachable.
+fn condition_clauses(condition: &str) -> Option<Vec<FxHashSet<String>>> {
+    let allocator = Allocator::default();
+    let expression = Parser::new(&allocator, condition, SourceType::ts())
+        .parse_expression()
+        .ok()?;
+    clauses(&expression, condition)
+}
+
+fn clauses(expression: &Expression<'_>, source: &str) -> Option<Vec<FxHashSet<String>>> {
+    match expression.get_inner_expression() {
+        Expression::LogicalExpression(logical) if logical.operator == LogicalOperator::Or => {
+            let mut left = clauses(&logical.left, source)?;
+            left.extend(clauses(&logical.right, source)?);
+            Some(left)
+        }
+        Expression::LogicalExpression(logical) if logical.operator == LogicalOperator::And => {
+            let left = clauses(&logical.left, source)?;
+            let right = clauses(&logical.right, source)?;
+            let mut product = Vec::with_capacity(left.len().saturating_mul(right.len()));
+            for left_clause in left {
+                for right_clause in &right {
+                    let mut clause = left_clause.clone();
+                    clause.extend(right_clause.iter().cloned());
+                    product.push(clause);
+                }
+            }
+            Some(product)
+        }
+        atom => {
+            let span = atom.span();
+            let raw = source.get(span.start as usize..span.end as usize)?;
+            let key = strip_trivia(raw)?;
+            let mut clause = FxHashSet::default();
+            clause.insert(key);
+            Some(vec![clause])
+        }
+    }
+}
+
+fn strip_trivia(source: &str) -> Option<String> {
+    let bytes = source.as_bytes();
+    let mut output = Vec::with_capacity(bytes.len());
+    let mut index = 0;
+    let mut quote = None;
+    let mut escaped = false;
+    while index < bytes.len() {
+        let byte = bytes[index];
+        if let Some(delimiter) = quote {
+            output.push(byte);
+            if escaped {
+                escaped = false;
+            } else if byte == b'\\' {
+                escaped = true;
+            } else if byte == delimiter {
+                quote = None;
+            }
+            index += 1;
+            continue;
+        }
+        if matches!(byte, b'\'' | b'"' | b'`') {
+            quote = Some(byte);
+            output.push(byte);
+            index += 1;
+        } else if bytes.get(index..index + 2) == Some(b"//") {
+            index += 2;
+            while index < bytes.len() && !matches!(bytes[index], b'\n' | b'\r') {
+                index += 1;
+            }
+        } else if bytes.get(index..index + 2) == Some(b"/*") {
+            index += 2;
+            while index + 1 < bytes.len() && bytes.get(index..index + 2) != Some(b"*/") {
+                index += 1;
+            }
+            if index + 1 >= bytes.len() {
+                return None;
+            }
+            index += 2;
+        } else {
+            if !byte.is_ascii_whitespace() {
+                output.push(byte);
+            }
+            index += 1;
+        }
+    }
+    std::string::String::from_utf8(output).ok().map(Into::into)
 }
 
 #[cfg(test)]
@@ -210,5 +295,17 @@ mod tests {
             "test.vue",
         );
         assert_eq!(result.error_count, 1);
+    }
+
+    #[test]
+    fn reports_respaced_reordered_and_covered_conditions() {
+        let result = create_linter().lint_template(
+            r#"<p v-if="status === 'ready'"/><p v-else-if="status==='ready'"/>
+<p v-if="isOpen && isPinned"/><p v-else-if="isPinned && isOpen"/>
+<p v-if="loading || failed"/><p v-else-if="failed"/>
+<p v-if="isOpen"/><p v-else-if="isOpen && isPinned"/>"#,
+            "test.vue",
+        );
+        assert_eq!(result.error_count, 4, "{:?}", result.diagnostics);
     }
 }

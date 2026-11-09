@@ -93,6 +93,25 @@ fn test_valid_multiple_named_slots() {
 }
 
 #[test]
+fn v_for_slot_name_must_use_an_iteration_binding() {
+    let linter = create_linter();
+    let invalid = linter.lint_template(
+        r#"<MyTabs>
+            <template v-for="tab in tabs" :key="tab.id" #panel>{{ tab.label }}</template>
+            <template v-for="column in columns" :key="column.key" #[slotName]>{{ column.label }}</template>
+        </MyTabs>"#,
+        "test.vue",
+    );
+    assert_eq!(invalid.error_count, 2, "{:?}", invalid.diagnostics);
+
+    let valid = linter.lint_template(
+        r#"<MyTabs><template v-for="tab in tabs" :key="tab.id" #[tab.id] /></MyTabs>"#,
+        "test.vue",
+    );
+    assert_eq!(valid.error_count, 0, "{:?}", valid.diagnostics);
+}
+
+#[test]
 fn test_valid_dotted_vuetify_data_table_slots_when_modifiers_are_allowed() {
     let linter = create_linter().with_valid_v_slot_allow_modifiers(true);
     let result = linter.lint_template(
@@ -188,6 +207,6 @@ fn property_names_and_literals_do_not_impersonate_iteration_bindings() {
         </MyComponent>"#,
     ] {
         let result = linter.lint_template(source, "test.vue");
-        assert_eq!(result.error_count, 1, "{source}");
+        assert_eq!(result.error_count, 3, "{source}");
     }
 }

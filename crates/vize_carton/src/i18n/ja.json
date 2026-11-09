@@ -57,6 +57,7 @@
   "vue/valid-v-show.help": "v-showディレクティブに式を追加してください",
   "vue/valid-v-slot.description": "有効なv-slotディレクティブを強制する",
   "vue/valid-v-slot.invalid_location": "v-slotはコンポーネントまたはtemplate要素でのみ使用できます",
+  "vue/valid-v-slot.duplicate_distribution": "v-for のスロット名は反復変数を使用し、各反復で異なるスロットを作成する必要があります",
   "vue/valid-v-slot.mixed_default_and_child_slots": "子のスロットtemplateがある場合、デフォルトスロットはtemplate要素で指定する必要があります",
   "vue/valid-v-slot.missing_value": "コンポーネントのデフォルトv-slotにはスロット引数の値が必要です",
   "vue/valid-v-slot.value_help": "スロット引数の値を指定するか、値を持たない子要素の<template #default>を使用してください",

@@ -194,6 +194,21 @@ const assign = 'assign';
     assert_eq!(findings(&lint_sfc(sfc)), none());
 }
 
+#[test]
+fn reports_mutations_in_every_template_expression_kind() {
+    let sfc = r#"<script setup lang="ts">
+defineProps<{ rows: string[] }>();
+</script>
+<template>
+  <ul><li v-for="row in rows.sort()" :key="row">{{ row }}</li></ul>
+  <p>{{ rows.reverse().join(", ") }}</p>
+  <MyList :items="rows.splice(0, 3)" />
+  <p v-if="rows.fill('x')">filled</p>
+</template>"#;
+    let result = lint_sfc(sfc);
+    assert_eq!(result.error_count, 4, "{:?}", result.diagnostics);
+}
+
 // --- The template does not mutate a prop: exactly zero findings ------------
 
 #[test]

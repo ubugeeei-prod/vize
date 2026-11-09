@@ -185,3 +185,18 @@ const selected = computed(() => item).value
         .collect();
     assert_eq!(diagnostics.len(), 2, "{diagnostics:?}");
 }
+
+#[test]
+fn tracks_template_refs_and_synchronous_iife_reads() {
+    assert_copies(
+        r#"
+import { ref, useTemplateRef } from 'vue'
+const count = ref(0)
+const panel = useTemplateRef('panel')
+const width = panel.value?.clientWidth
+;(() => { const start = count.value })()
+;(function () { const end = count.value })()
+"#,
+        3,
+    );
+}

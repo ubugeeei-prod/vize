@@ -108,3 +108,45 @@ fn setup_extension_keeps_every_legacy_options_diagnostic_field() {
     assert_eq!(before.error_count, 1);
     assert_eq!(format!("{before:?}"), format!("{after:?}"));
 }
+
+#[test]
+fn models_and_only_same_prop_derivations_share_the_setup_namespace() {
+    let setup = r#"
+const props = defineProps<{
+  modelValue?: string
+  open?: boolean
+  value: number
+  fallback: number
+  label: string
+}>()
+const model = defineModel<string>()
+const isOpen = defineModel<boolean>("open")
+const value = props.fallback
+const label = "Name"
+"#;
+    let actual = collisions(setup, None);
+    assert_eq!(
+        actual,
+        [
+            "Duplicated key 'modelValue'",
+            "Duplicated key 'open'",
+            "Duplicated key 'value'",
+            "Duplicated key 'label'",
+        ]
+    );
+
+    assert_eq!(
+        collisions(
+            "const isOpen = defineModel<boolean>('open'); function open() {}",
+            None,
+        ),
+        ["Duplicated key 'open'"]
+    );
+    assert!(
+        collisions(
+            "const props = defineProps<{value: number}>(); const value = props.value;",
+            None,
+        )
+        .is_empty()
+    );
+}

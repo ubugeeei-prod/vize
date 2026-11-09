@@ -51,7 +51,8 @@ pub(crate) enum PropsSource<'a> {
 
 impl<'a> PropsSource<'a> {
     /// The object-form prop entries, or an empty iterator for the array form.
-    /// Computed and spread members are skipped.
+    /// Spread and dynamically computed members are skipped. Computed literals
+    /// are ordinary static prop names and retain their written key span.
     pub(crate) fn object_props(&self) -> impl Iterator<Item = PropDescriptor<'a>> + '_ {
         let object = match self {
             PropsSource::Object(object) => Some(*object),
@@ -64,9 +65,6 @@ impl<'a> PropsSource<'a> {
                 let ObjectPropertyKind::ObjectProperty(property) = property else {
                     return None;
                 };
-                if property.computed {
-                    return None;
-                }
                 let name = property_key_name(&property.key)?;
                 Some(PropDescriptor {
                     name,
@@ -359,6 +357,22 @@ pub(super) fn property_key_name<'a>(key: &'a PropertyKey<'a>) -> Option<&'a str>
     match key {
         PropertyKey::StaticIdentifier(identifier) => Some(identifier.name.as_str()),
         PropertyKey::StringLiteral(string) => Some(string.value.as_str()),
+        PropertyKey::TemplateLiteral(template) => {
+            template.single_quasi().map(|value| value.as_str())
+        }
+        PropertyKey::ParenthesizedExpression(parenthesized) => {
+            static_expression_name(&parenthesized.expression)
+        }
+        _ => None,
+    }
+}
+
+fn static_expression_name<'a>(expression: &'a Expression<'a>) -> Option<&'a str> {
+    match expression.get_inner_expression() {
+        Expression::StringLiteral(literal) => Some(literal.value.as_str()),
+        Expression::TemplateLiteral(template) => {
+            template.single_quasi().map(|value| value.as_str())
+        }
         _ => None,
     }
 }
