@@ -10,6 +10,7 @@ use vize_l0::String;
 
 use super::super::AuthoredClasses;
 use super::super::classes::collect_classes_from_selector_prelude;
+use super::super::structure::{Interpolation, Lexis, shared};
 
 /// A resolved selector list grows multiplicatively with nested comma lists.
 const MAX_SELECTORS: usize = 256;
@@ -19,6 +20,20 @@ pub(super) enum Dialect {
     Scss,
     Less,
 }
+
+pub(super) const SCSS: Lexis = Lexis {
+    line_comments: true,
+    interpolation: Interpolation::Hash,
+    indented: false,
+    indented_comments: false,
+    colonless_declarations: false,
+    construct: shared,
+};
+
+pub(super) const LESS: Lexis = Lexis {
+    interpolation: Interpolation::At,
+    ..SCSS
+};
 
 /// Class names the rules declare, or `None` when the source is unbalanced.
 /// Less mixin definitions (`.m() {}`) emit no rules and add no names.
