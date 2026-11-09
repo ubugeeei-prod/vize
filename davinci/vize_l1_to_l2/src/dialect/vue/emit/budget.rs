@@ -265,6 +265,7 @@ pub(super) fn emit_dom_source_with_options_and_observer<'a, O: PassObserver>(
             &errors,
             caps,
             options.comments,
+            false,
             options.custom_element_patterns,
             options.custom_element_predicate,
         );

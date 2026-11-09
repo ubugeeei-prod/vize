@@ -12,6 +12,7 @@ fn detached_and_inconsistent_encoded_sources_have_an_explicit_coordinate_refusal
         SourceRoot::new(source).unwrap().whole_block(),
         LegacyCaps::VUE3,
         true,
+        false,
         &[],
         None,
     );
@@ -40,6 +41,7 @@ fn decoded_parse_failures_keep_the_existing_parser_classification_and_text() {
         SourceRoot::new(source).unwrap().whole_block(),
         LegacyCaps::VUE3,
         true,
+        false,
         &[],
         None,
     );

@@ -12,11 +12,11 @@
 use crate::support;
 
 use vize_l0::id::NodeId;
-use vize_l0::{Span, String};
+use vize_l0::{Allocator, Span, String};
 use vize_l1_to_l2::lower::{TextPart, rebuild_source};
+use vize_l1_to_l2::lower_preserving_comments;
 use vize_l1_to_l2::pass::TextFacts;
 use vize_l2::dump::{Expr as DumpExpr, Op as DumpOp};
-use vize_l2::expr::ExprRef;
 
 use support::{assert_transformed_sound, with_transformed};
 
@@ -107,18 +107,9 @@ fn a_mixed_run_merges_into_one_compound_with_recorded_parts() {
                 }
             )]
         );
-        let [ExprRef::Js(name), ExprRef::Js(count)] = lowered.consumed_expressions.as_slice()
-        else {
-            panic!(
-                "compound expressions were not retained: {:?}",
-                lowered.consumed_expressions
-            );
-        };
-        assert_eq!((name.source, name.span), ("name", span_of(source, "name")));
-        let padded_count = span_of(source, " n ");
-        assert_eq!(
-            (count.source, count.span),
-            ("n", Span::new(padded_count.start + 1, padded_count.end - 1))
+        assert!(
+            lowered.consumed_expressions.is_empty(),
+            "compile lowering must not parse compound expressions before the emitter"
         );
         // The one rebuild rule, exercised from test space too.
         assert_eq!(
@@ -144,6 +135,31 @@ fn a_mixed_run_merges_into_one_compound_with_recorded_parts() {
         );
     });
     assert_transformed_sound(source, "mixed-run");
+}
+
+#[test]
+fn lint_lowering_retains_consumed_expressions() {
+    let source = "<p>Hi {{ name }}! You have {{ n }} new mails.</p>";
+    let allocator = Allocator::new();
+    let (tree, errors) = vize_l1::markup::parse(&allocator, source);
+    let lowered = lower_preserving_comments(&allocator, &tree, &errors);
+
+    let [
+        vize_l2::expr::ExprRef::Js(name),
+        vize_l2::expr::ExprRef::Js(count),
+    ] = lowered.consumed_expressions.as_slice()
+    else {
+        panic!(
+            "lint lowering did not retain compound expressions: {:?}",
+            lowered.consumed_expressions
+        );
+    };
+    assert_eq!((name.source, name.span), ("name", span_of(source, "name")));
+    let padded_count = span_of(source, " n ");
+    assert_eq!(
+        (count.source, count.span),
+        ("n", Span::new(padded_count.start + 1, padded_count.end - 1))
+    );
 }
 
 #[test]

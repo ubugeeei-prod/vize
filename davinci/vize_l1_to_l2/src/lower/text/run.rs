@@ -113,10 +113,12 @@ pub(crate) fn lower_text_run<'a>(
                     &cx.allocator,
                 )));
             } else {
-                for child in children.get(start..end).unwrap_or_default() {
-                    if let SurfaceChild::Interpolation(interpolation) = child {
-                        let expression = filter_expr_at(cx, interpolation.content.text);
-                        cx.consumed_expressions.push(expression);
+                if cx.retain_consumed_expressions {
+                    for child in children.get(start..end).unwrap_or_default() {
+                        if let SurfaceChild::Interpolation(interpolation) = child {
+                            let expression = filter_expr_at(cx, interpolation.content.text);
+                            cx.consumed_expressions.push(expression);
+                        }
                     }
                 }
                 // A mixed run is the compound representation: one

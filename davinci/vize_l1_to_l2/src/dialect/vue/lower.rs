@@ -90,6 +90,8 @@ pub struct Lowered<'a, P = StdVec<ProvenanceRecord>> {
     /// Retained expressions consumed into compound text ops. They no longer
     /// have a direct op slot, but lint/editor consumers still need their
     /// authentic AST and authored coordinates without reparsing L1 text.
+    /// Compile-only lowerings leave this empty and avoid parsing expressions
+    /// that the emitter will parse from the compound text facts.
     pub consumed_expressions: StdVec<vize_l2::expr::ExprRef<'a>>,
     /// Consumed `ui.for` scope views, keyed by the `ui.for` op's
     /// page-order id; validated and published by lowering.
@@ -158,7 +160,16 @@ pub fn lower_preserving_comments<'a>(
     tree: &SurfaceTree<'a>,
     errors: &[SurfaceError],
 ) -> Lowered<'a> {
-    lower_with_caps_and_comment_policy(allocator, tree, errors, LegacyCaps::VUE3, true, &[], None)
+    lower_with_caps_and_comment_policy(
+        allocator,
+        tree,
+        errors,
+        LegacyCaps::VUE3,
+        true,
+        true,
+        &[],
+        None,
+    )
 }
 
 pub(crate) fn lower_with_caps_and_comment_policy<'a, P: ProvenanceSink + Default>(
@@ -167,6 +178,7 @@ pub(crate) fn lower_with_caps_and_comment_policy<'a, P: ProvenanceSink + Default
     errors: &[SurfaceError],
     caps: LegacyCaps,
     preserve_comments: bool,
+    retain_consumed_expressions: bool,
     custom_element_patterns: &[String],
     custom_element_predicate: Option<fn(&str) -> bool>,
 ) -> Lowered<'a, P> {
@@ -184,6 +196,7 @@ pub(crate) fn lower_with_caps_and_comment_policy<'a, P: ProvenanceSink + Default
         root.whole_block(),
         caps,
         preserve_comments,
+        retain_consumed_expressions,
         custom_elements,
     )
 }
@@ -215,6 +228,7 @@ pub fn lower_source_block_with_caps<'a>(
         block,
         caps,
         false,
+        false,
         LowerCustomElements::default(),
     )
 }
@@ -232,6 +246,7 @@ fn lower_source_block_with_caps_and_comment_policy<'a, P: ProvenanceSink + Defau
     block: SourceBlock<'a>,
     caps: LegacyCaps,
     preserve_comments: bool,
+    retain_consumed_expressions: bool,
     custom_elements: LowerCustomElements<'_>,
 ) -> Lowered<'a, P> {
     debug_assert!(
@@ -244,6 +259,7 @@ fn lower_source_block_with_caps_and_comment_policy<'a, P: ProvenanceSink + Defau
         block,
         caps,
         preserve_comments,
+        retain_consumed_expressions,
         custom_elements.patterns,
         custom_elements.predicate,
     );

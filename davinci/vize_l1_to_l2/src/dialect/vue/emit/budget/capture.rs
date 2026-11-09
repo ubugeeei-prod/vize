@@ -220,6 +220,7 @@ pub(super) fn emit_dom_source_captured<'a, O: PassObserver, C: CaptureSink>(
             &errors,
             caps,
             options.comments,
+            false,
             options.custom_element_patterns,
             options.custom_element_predicate,
         );

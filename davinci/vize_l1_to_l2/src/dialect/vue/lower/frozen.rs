@@ -116,6 +116,7 @@ pub fn lower_with_frozen_element_spans<'a>(
         block,
         LegacyCaps::VUE3,
         false,
+        false,
         &[],
         None,
     );

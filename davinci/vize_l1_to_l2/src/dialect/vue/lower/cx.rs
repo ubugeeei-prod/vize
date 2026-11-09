@@ -35,6 +35,10 @@ pub(crate) struct Cx<'a, P> {
     v_pre_depth: u32,
     /// Whether ordinary comments lower to `ui.comment`.
     preserve_comments: bool,
+    /// Whether lint/editor consumers need ASTs for expressions folded into
+    /// compound text ops. Compile-only paths reparse those parts in the
+    /// emitter and must not pay for an earlier duplicate parse.
+    pub(crate) retain_consumed_expressions: bool,
     pub diagnostics: Vec<Diagnostic>,
     /// Decisions, kept only when the consumer chose a recording sink.
     pub provenance: P,
@@ -60,6 +64,7 @@ impl<'a, P: ProvenanceSink> Cx<'a, P> {
         block: SourceBlock<'a>,
         caps: super::caps::LegacyCaps,
         preserve_comments: bool,
+        retain_consumed_expressions: bool,
         custom_element_patterns: &[String],
         custom_element_predicate: Option<fn(&str) -> bool>,
     ) -> Self
@@ -79,6 +84,7 @@ impl<'a, P: ProvenanceSink> Cx<'a, P> {
             ignore_newline_at: None,
             v_pre_depth: 0,
             preserve_comments,
+            retain_consumed_expressions,
             diagnostics: Vec::new(),
             provenance: P::default(),
             scopes: SideTable::new(),
