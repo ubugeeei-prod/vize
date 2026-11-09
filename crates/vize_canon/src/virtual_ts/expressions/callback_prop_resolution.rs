@@ -10,7 +10,7 @@ use super::ts_suppression_comments::inference_callback_parameters_on_ignored_lin
 use crate::virtual_ts::helpers::to_safe_identifier_fragment;
 use crate::virtual_ts::scope::is_inline_callback_prop;
 use crate::virtual_ts::template_binding_access::TemplateBindingAccess;
-use vize_carton::{String, append, cstr};
+use vize_carton::{String, cstr};
 use vize_croquis::croquis::ComponentUsage;
 
 pub(super) struct CallbackPropsResolution {
@@ -24,9 +24,9 @@ pub(super) fn append_prop_check_type(
     (component_type_name, idx, safe_prop_name, prop_name): (&str, usize, &str, &str),
 ) {
     let Some(resolution) = resolution else {
-        append!(
-            *ts,
-            ": __{component_type_name}_{idx}_prop_{safe_prop_name} = ",
+        vize_l0::emit_ts!(
+            ts,
+            ": __{component_type_name}_{idx}_prop_{safe_prop_name} = "
         );
         return;
     };
@@ -35,14 +35,14 @@ pub(super) fn append_prop_check_type(
     let selected_props = resolution.selected_props.as_str();
     if hoist_shared_preamble {
         let resolved_prop = crate::virtual_ts::helpers::shared_types::RESOLVED_PROP.select(true);
-        append!(
-            *ts,
-            ": {resolved_prop}<typeof {resolved_props}, typeof {selected_props}, '{camel_prop_name}', __{component_type_name}_{idx}_prop_{safe_prop_name}> = ",
+        vize_l0::emit_ts!(
+            ts,
+            ": {resolved_prop}<typeof {resolved_props}, typeof {selected_props}, '{camel_prop_name}', __{component_type_name}_{idx}_prop_{safe_prop_name}> = "
         );
     } else {
-        append!(
-            *ts,
-            ": $ResolvedProp<typeof {resolved_props}, typeof {selected_props}, '{camel_prop_name}', __{component_type_name}_{idx}_prop_{safe_prop_name}> = ",
+        vize_l0::emit_ts!(
+            ts,
+            ": $ResolvedProp<typeof {resolved_props}, typeof {selected_props}, '{camel_prop_name}', __{component_type_name}_{idx}_prop_{safe_prop_name}> = "
         );
     }
 }
@@ -79,14 +79,14 @@ pub(super) fn generate_callback_props_resolution(
         let resolved_context_props =
             crate::virtual_ts::helpers::shared_types::RESOLVED_CONTEXT_PROPS.select(true);
         let props_resolver = crate::virtual_ts::helpers::shared_types::PROPS_RESOLVER.select(true);
-        append!(
-            *ts,
-            "{expr_indent}const {resolved_props} = (undefined as unknown as {resolved_context_props})((undefined as unknown as {props_resolver}<typeof {component_ref}>)({{\n",
+        vize_l0::emit_ts!(
+            ts,
+            "{expr_indent}const {resolved_props} = (undefined as unknown as {resolved_context_props})((undefined as unknown as {props_resolver}<typeof {component_ref}>)({{\n"
         );
     } else {
-        append!(
-            *ts,
-            "{expr_indent}const {resolved_props} = (undefined as unknown as $ResolvedContextProps)((undefined as unknown as $PropsResolver<typeof {component_ref}>)({{\n",
+        vize_l0::emit_ts!(
+            ts,
+            "{expr_indent}const {resolved_props} = (undefined as unknown as $ResolvedContextProps)((undefined as unknown as $PropsResolver<typeof {component_ref}>)({{\n"
         );
     }
 
@@ -98,17 +98,17 @@ pub(super) fn generate_callback_props_resolution(
         expr_indent.as_str(),
         false,
     );
-    append!(*ts, "{expr_indent}}}));\n");
+    vize_l0::emit_ts!(ts, "{expr_indent}}}));\n");
     if hoist_shared_preamble {
         let props_selector = crate::virtual_ts::helpers::shared_types::PROPS_SELECTOR.select(true);
-        append!(
-            *ts,
-            "{expr_indent}const {selected_props} = (undefined as unknown as {props_selector}<typeof {resolved_props}>)({{\n",
+        vize_l0::emit_ts!(
+            ts,
+            "{expr_indent}const {selected_props} = (undefined as unknown as {props_selector}<typeof {resolved_props}>)({{\n"
         );
     } else {
-        append!(
-            *ts,
-            "{expr_indent}const {selected_props} = (undefined as unknown as $PropsSelector<typeof {resolved_props}>)({{\n",
+        vize_l0::emit_ts!(
+            ts,
+            "{expr_indent}const {selected_props} = (undefined as unknown as $PropsSelector<typeof {resolved_props}>)({{\n"
         );
     }
     append_props_object(
@@ -119,7 +119,7 @@ pub(super) fn generate_callback_props_resolution(
         expr_indent.as_str(),
         true,
     );
-    append!(*ts, "{expr_indent}}});\n");
+    vize_l0::emit_ts!(ts, "{expr_indent}}});\n");
     Some(CallbackPropsResolution {
         resolved_props,
         selected_props,
@@ -143,7 +143,7 @@ fn append_props_object(
             continue;
         }
         while let Some(spread) = spreads.next_if(|spread| spread.start < prop.start) {
-            append!(*ts, "{expr_indent}  ...");
+            vize_l0::emit_ts!(ts, "{expr_indent}  ...");
             append_spread_value(
                 ts,
                 usage,
@@ -167,15 +167,15 @@ fn append_props_object(
         if erase_callbacks && inline_callback {
             value = String::from("undefined as any");
         } else if inline_callback {
-            append!(
-                *ts,
+            vize_l0::emit_ts!(
+                ts,
                 "{expr_indent}  // @ts-ignore Inference-only callback prop; mapped prop owner checks diagnostics.\n"
             );
         }
         let name = super::super::helpers::to_camel_case(prop.name.as_str());
-        append!(*ts, "{expr_indent}  ");
+        vize_l0::emit_ts!(ts, "{expr_indent}  ");
         let key_start = ts.len();
-        append!(*ts, "\"{name}\"");
+        vize_l0::emit_ts!(ts, "\"{name}\"");
         let key_end = ts.len();
         ts.push_str(": ");
         // This copy is intentionally unmapped. `@ts-ignore` covers only the
@@ -199,7 +199,7 @@ fn append_props_object(
         ts.push_str(",\n");
     }
     for spread in spreads {
-        append!(*ts, "{expr_indent}  ...");
+        vize_l0::emit_ts!(ts, "{expr_indent}  ...");
         append_spread_value(
             ts,
             usage,
