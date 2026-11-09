@@ -38,8 +38,8 @@ test("the P3-17 production-reach gate is wired, budgeted and recorded", () => {
   const shapesSource = readRepoFile(
     "crates",
     "vize_atelier_sfc",
-    "tests",
-    "davinci_production_reach",
+    "src",
+    "dom_differential",
     "shapes.rs",
   );
 

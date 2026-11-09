@@ -405,3 +405,10 @@ jobs:
     permissions: { contents: write, actions: read, issues: write, pull-requests: write }
     uses: ./.github/workflows/canonical-corpus-divergence.yml
     with: { observer: ssr, evidence: canonical-corpus-ssr-pug }
+
+  reach-divergence:
+    if: ${{ always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') }}
+    needs: davinci-dom-corpus
+    permissions: { contents: write, actions: read, issues: write, pull-requests: write }
+    uses: ./.github/workflows/canonical-corpus-divergence.yml
+    with: { observer: reach, evidence: canonical-corpus-reach }

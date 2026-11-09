@@ -29,6 +29,7 @@ function reductionDirectory(status = "reduced", observer = "dom") {
       divergenceCount: status === "reduced" ? 1 : 0,
       fingerprint: status === "reduced" ? "abc123abc123" : undefined,
       sourcePath: "tests/_fixtures/_git/example/src/App.vue",
+      oracle: {},
       sourceBytes: 200,
       reducedFile: status === "reduced" ? `canonical-${observer}-divergence.reduced.vue` : null,
       reducedBytes: status === "reduced" ? Buffer.byteLength(witness) : null,

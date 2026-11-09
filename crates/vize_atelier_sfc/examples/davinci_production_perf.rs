@@ -5,7 +5,7 @@ mod davinci_production_perf {
     pub mod attribution;
     pub mod corpus;
     pub mod measure;
-    pub mod shapes;
+    pub use vize_atelier_sfc::dom_differential::shapes;
 }
 
 use davinci_production_perf::{attribution, corpus, measure, shapes::Shape};

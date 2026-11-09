@@ -1,12 +1,12 @@
 //! The production compile shapes the reach gate measures, each built the way
 //! its shipping adapter builds it.
 
-use vize_atelier_core::{CodegenOptions, TemplateSyntaxMode, options::CustomElementMatcher};
-use vize_atelier_sfc::{
+use crate::{
     ScriptCompileOptions, SfcCompileOptions, SfcCompileResult, SfcDescriptor, SfcError,
     SfcParseOptions, SfcScriptOutputMode, StyleCompileOptions, TemplateCompileOptions,
     compile_sfc_for_adapter,
 };
+use vize_atelier_core::{CodegenOptions, TemplateSyntaxMode, options::CustomElementMatcher};
 
 /// One production compile shape.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -34,6 +34,16 @@ impl Shape {
             Self::DomModule => "dom_module",
             Self::Ssr => "ssr",
             Self::Vapor => "vapor",
+        }
+    }
+
+    /// The Davinci stage a template reaches on this shape when its lane
+    /// accepts it.
+    pub const fn stage(self) -> &'static str {
+        match self {
+            Self::DomInline | Self::DomModule => "L2",
+            Self::Ssr => "L4 plan",
+            Self::Vapor => "native L3",
         }
     }
 
@@ -75,7 +85,7 @@ pub fn compile(
     shape: Shape,
 ) -> Result<SfcCompileResult, SfcError> {
     let has_scoped = descriptor.styles.iter().any(|style| style.scoped);
-    let filename = vize_l0::String::from(filename);
+    let filename = vize_carton::String::from(filename);
     let options = SfcCompileOptions {
         parse: SfcParseOptions {
             filename: filename.clone(),

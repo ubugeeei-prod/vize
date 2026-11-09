@@ -35,12 +35,10 @@
 
 #![expect(clippy::disallowed_macros, reason = "reports are built with format!")]
 #![expect(clippy::disallowed_types, reason = "fixture I/O uses std strings")]
-#![expect(clippy::disallowed_methods, reason = "fixture I/O uses std strings")]
 #![expect(clippy::indexing_slicing, reason = "tests assert by panicking")]
 
 mod davinci_production_reach {
     pub mod acceptance;
-    pub mod diff;
     pub mod fixtures;
     #[cfg(test)]
     mod inline_parity_regressions;
@@ -52,7 +50,6 @@ mod davinci_production_reach {
     mod refusal_tests;
     #[cfg(test)]
     mod selection_tests;
-    pub mod shapes;
     #[cfg(test)]
     mod source_io_tests;
     pub mod tally;
@@ -68,14 +65,14 @@ use std::path::{Path, PathBuf};
 use std::sync::Mutex;
 
 use davinci_production_reach::acceptance::report;
-use davinci_production_reach::diff::{divergence, error_divergence};
 use davinci_production_reach::fixtures::collect_committed_fixtures;
 use davinci_production_reach::parity::{
     absorb_prebackend, compare_with_legacy, measure_projection, parity_failures,
 };
-use davinci_production_reach::shapes::{Shape, compile, explicit_vapor_source};
 use davinci_production_reach::tally::{Lane, Tally, classify, classify_route, floors};
 use davinci_test_support::corpus::read_corpus_source;
+use vize_atelier_sfc::dom_differential::diff::{divergence, error_divergence};
+use vize_atelier_sfc::dom_differential::shapes::{Shape, compile, explicit_vapor_source};
 use vize_atelier_sfc::{SfcParseOptions, parse_sfc};
 use vize_l0::profiler::global_profiler;
 
