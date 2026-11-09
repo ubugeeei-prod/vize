@@ -12,8 +12,8 @@
   "providerQualificationRecord": {
     "path": "tests/_fixtures/differential/typechecker/empty-vue-star-exports/malformed-membership/provider-root-dependency-ownership-update-12123.json",
     "bytes": 4614,
-    "sha256": "456ca868c0bd994620d31306c6a66f3d1d19fc36e5da47e00c08601009bf7ed2",
-    "gitBlob": "45459f1671223f9418449226e7ff38e777f727ae"
+    "sha256": "41c699ad911cd224fd01e43fec982ef3b705e26d28f9c033f9cbbc26bf123e06",
+    "gitBlob": "d7f8c32f5ac67e5f9ab8acfe5b9024798e36423b"
   },
   "wholeBeforeRosterSha256": "be8c7cca5e5861c07a7563d49c13ac2517fc1772f5a757c6e2d7064ab663f227",
   "changes": [
