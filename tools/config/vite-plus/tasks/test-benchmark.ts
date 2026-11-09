@@ -96,6 +96,8 @@ const rustBranchCoverageMinimums = [
   "40",
 ];
 const benchmarkDispatcher = (...args: string[]) => rustTool("benchmarks/dispatch", ...args);
+const sourceCoverage = (...args: string[]) =>
+  ["node", "tools/commands/ci/source-coverage.ts", ...args].join(" ");
 const rustSourceCoverageCommand = [
   "mkdir -p target/llvm-cov",
   [
@@ -105,7 +107,7 @@ const rustSourceCoverageCommand = [
     "cargo llvm-cov nextest --workspace --profile full --test-threads 8 --json --summary-only",
     `--output-path ${rustSourceCoverageJson}`,
   ].join(" "),
-  rustTool("ci/source-coverage", "--json", rustSourceCoverageJson, ...rustSourceCoverageMinimums),
+  sourceCoverage("--json", rustSourceCoverageJson, ...rustSourceCoverageMinimums),
 ].join(" && ");
 const rustBranchCoverageCommand = [
   "mkdir -p target/llvm-cov",
@@ -117,7 +119,7 @@ const rustBranchCoverageCommand = [
   ].join(" "),
   // Keep threshold enforcement in one place so failures still render the
   // complete metric table instead of stopping at cargo-llvm-cov's exit code.
-  rustTool("ci/source-coverage", "--json", rustBranchCoverageJson, ...rustBranchCoverageMinimums),
+  sourceCoverage("--json", rustBranchCoverageJson, ...rustBranchCoverageMinimums),
 ].join(" && ");
 
 /**
