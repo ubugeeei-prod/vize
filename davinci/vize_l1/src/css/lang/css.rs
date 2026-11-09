@@ -2,14 +2,15 @@
 
 use alloc::collections::BTreeSet;
 use alloc::vec::Vec;
-use vize_l0::String;
 
+use super::super::AuthoredClasses;
 use super::super::classes::collect_classes_from_selector_prelude;
 
 /// Extract simple authored class selectors from selector preludes. Declarations
 /// are never scanned, so values such as `url(./asset.png)` cannot become fake
 /// module keys. Comments and string contents are blanked before inspection.
-pub(super) fn authored_local_classes(css: &str) -> Option<BTreeSet<String>> {
+/// Interpolation syntax left in a CSS block names classes no scan can see.
+pub(super) fn authored_classes(css: &str) -> Option<AuthoredClasses> {
     let bytes = css.as_bytes();
     let mut classes = BTreeSet::new();
     let mut prelude = Vec::new();
@@ -48,5 +49,7 @@ pub(super) fn authored_local_classes(css: &str) -> Option<BTreeSet<String>> {
         }
         index += 1;
     }
-    quote.is_none().then_some(classes)
+    quote
+        .is_none()
+        .then(|| AuthoredClasses::new(classes, !css.contains("#{")))
 }

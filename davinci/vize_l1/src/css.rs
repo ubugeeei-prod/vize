@@ -13,6 +13,7 @@ mod empty;
 pub mod lang;
 mod list;
 mod parser;
+pub use classes::AuthoredClasses;
 pub use empty::EmptyClassStyle;
 pub use list::SimpleClassListStyle;
 

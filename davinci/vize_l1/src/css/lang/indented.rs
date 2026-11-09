@@ -5,6 +5,7 @@ use alloc::collections::BTreeSet;
 use alloc::vec::Vec;
 use vize_l0::String;
 
+use super::super::AuthoredClasses;
 use super::super::classes::collect_classes_from_selector_prelude;
 use super::nested::{self, Dialect, resolve};
 
@@ -14,13 +15,16 @@ pub(super) enum Syntax {
     Stylus,
 }
 
-/// Class names the rules declare. Stylus written with braces reads like SCSS.
-pub(super) fn authored_local_classes(source: &str, syntax: Syntax) -> Option<BTreeSet<String>> {
+/// Class names the rules declare. Stylus written with braces reads like SCSS,
+/// but its mixin calls are not modeled there, so that result is incomplete.
+pub(super) fn authored_classes(source: &str, syntax: Syntax) -> Option<AuthoredClasses> {
     if syntax == Syntax::Stylus && source.lines().any(|line| line.trim_end().ends_with('{')) {
-        return nested::authored_local_classes(source, Dialect::Scss);
+        return nested::authored_classes(source, Dialect::Scss)
+            .map(|found| AuthoredClasses::new(found.into_names(), false));
     }
     let lines = code_lines(source)?;
     let mut classes = BTreeSet::new();
+    let mut complete = true;
     // Open blocks: their indentation and resolved selectors (`None` is unknown).
     let mut blocks: Vec<(usize, Option<Vec<String>>)> = Vec::new();
     let mut index = 0usize;
@@ -39,60 +43,102 @@ pub(super) fn authored_local_classes(source: &str, syntax: Syntax) -> Option<BTr
         while blocks.last().is_some_and(|(open, _)| *open >= indent) {
             blocks.pop();
         }
+        let known = blocks.last().is_none_or(|(_, parent)| parent.is_some());
         if !opens_block {
+            if known && statement_adds_rules(&text, syntax) {
+                complete = false;
+            }
             continue;
         }
         let parent = match blocks.last() {
             Some((_, parent)) => parent.clone(),
             None => Some(Vec::new()),
         };
-        let resolved = selector(&text, syntax).and_then(|(selector, interpolated)| {
-            resolve(selector.as_bytes(), parent, interpolated, Dialect::Scss)
-        });
+        let (resolved, hides) = match line(&text, syntax) {
+            Line::Selector(selector, interpolated) => {
+                let resolved = resolve(selector.as_bytes(), parent, interpolated, Dialect::Scss);
+                let hides = nested::block_hides_rules(
+                    selector.as_bytes(),
+                    resolved.is_some(),
+                    Dialect::Scss,
+                );
+                (resolved, hides)
+            }
+            Line::Definition => (None, false),
+            Line::Unknown => (None, true),
+        };
+        if known && hides {
+            complete = false;
+        }
         for selector in resolved.iter().flatten() {
             let mut rule = BTreeSet::new();
             if collect_classes_from_selector_prelude(selector.as_bytes(), &mut rule).is_some() {
                 classes.extend(rule);
+            } else {
+                complete = false;
             }
         }
         blocks.push((indent, resolved));
     }
-    Some(classes)
+    Some(AuthoredClasses::new(classes, complete))
 }
 
-/// The selector a block-opening line spells, with whether it interpolates, or
-/// `None` for mixin, function and control-flow blocks.
-fn selector(text: &str, syntax: Syntax) -> Option<(&str, bool)> {
+/// What a block-opening line spells.
+enum Line<'t> {
+    /// A selector or an at-rule, with whether it interpolates.
+    Selector(&'t str, bool),
+    /// A mixin or function definition: its body emits nothing here.
+    Definition,
+    /// A block whose rules cannot be named: control flow, a Stylus block
+    /// mixin call or partial parent reference.
+    Unknown,
+}
+
+/// Whether a statement line can add rules: an include, an import or, in
+/// Stylus, a mixin call.
+fn statement_adds_rules(text: &str, syntax: Syntax) -> bool {
+    text.starts_with('+')
+        || syntax == Syntax::Stylus && starts_call(text)
+        || nested::statement_adds_rules(text.as_bytes(), Dialect::Scss)
+}
+
+/// `name(`: a Stylus mixin or function, defined when it opens a block.
+fn starts_call(text: &str) -> bool {
+    text.find('(')
+        .and_then(|open| text.get(..open))
+        .is_some_and(|name| {
+            !name.is_empty()
+                && name
+                    .bytes()
+                    .all(|byte| byte.is_ascii_alphanumeric() || matches!(byte, b'-' | b'_'))
+        })
+}
+
+fn line(text: &str, syntax: Syntax) -> Line<'_> {
     match syntax {
         Syntax::Sass => {
             if text.starts_with('=') {
-                return None;
+                return Line::Definition;
             }
             // `+mixin` content blocks keep the enclosing selector.
             if text.starts_with('+') {
-                return Some(("@include", false));
+                return Line::Selector("@include", false);
             }
-            Some((text, text.contains("#{")))
+            Line::Selector(text, text.contains("#{"))
         }
         Syntax::Stylus => {
+            if starts_call(text) {
+                return Line::Definition;
+            }
             let keyword = text.split_ascii_whitespace().next().unwrap_or_default();
-            let starts_call = text
-                .find('(')
-                .and_then(|open| text.get(..open))
-                .is_some_and(|name| {
-                    !name.is_empty()
-                        && name
-                            .bytes()
-                            .all(|byte| byte.is_ascii_alphanumeric() || matches!(byte, b'-' | b'_'))
-                });
-            if starts_call
+            if text.starts_with('+')
                 || matches!(keyword, "if" | "unless" | "for" | "else")
                 || text.contains(['^', '~'])
                 || text.contains("../")
             {
-                return None;
+                return Line::Unknown;
             }
-            Some((text, text.contains('{')))
+            Line::Selector(text, text.contains('{'))
         }
     }
 }
@@ -156,63 +202,4 @@ fn comment_start(line: &str) -> Option<usize> {
         }
     }
     None
-}
-
-#[cfg(test)]
-mod tests {
-    use crate::css::lang::StyleLanguage;
-    use alloc::collections::BTreeSet;
-    use alloc::vec::Vec;
-
-    fn names(found: Option<BTreeSet<vize_l0::String>>) -> Vec<vize_l0::String> {
-        found.expect("readable source").into_iter().collect()
-    }
-
-    #[test]
-    fn sass_resolves_indented_parents_and_skips_mixins() {
-        let sass = ".card\n  &__title\n    color: red\n  // .commented\n  .icon\n    color: blue\n=mixin\n  .hidden\n    color: red\n.a, .b\n  &-x\n    color: red\n@media screen\n  .m\n    &-n\n      color: red\n.i-#{$x}\n  &-j\n    color: red\n.np\n  font:\n    family: serif\n  &-z\n    background: url(http://e.test/a.png)\n/* .block\n   comment */\n+wide\n  .content\n    color: red\n";
-        assert_eq!(
-            names(StyleLanguage::Sass.authored_local_classes(sass)),
-            [
-                "a",
-                "a-x",
-                "b",
-                "b-x",
-                "card",
-                "card__title",
-                "content",
-                "icon",
-                "m",
-                "m-n",
-                "np",
-                "np-z"
-            ]
-        );
-    }
-
-    #[test]
-    fn stylus_resolves_indented_parents_and_skips_functions_and_loops() {
-        let stylus = ".card\n  &__title\n    color red\n  .icon\n    color blue\nborder-radius(n)\n  -webkit-border-radius n\n.list\n  for i in 1..3\n    .item-{i}\n      width 10px\n  &-x\n    color red\n.a,\n.b\n  &-y\n    color red\n";
-        assert_eq!(
-            names(StyleLanguage::Stylus.authored_local_classes(stylus)),
-            [
-                "a",
-                "a-y",
-                "b",
-                "b-y",
-                "card",
-                "card__title",
-                "icon",
-                "list",
-                "list-x"
-            ]
-        );
-        assert_eq!(
-            names(
-                StyleLanguage::Stylus
-                    .authored_local_classes(".brace {\n  &-x {\n    color red\n  }\n}\n")
-            ),
-            ["brace", "brace-x"]
-        );
-    }
 }

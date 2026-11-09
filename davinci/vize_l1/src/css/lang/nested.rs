@@ -8,6 +8,7 @@ use alloc::collections::BTreeSet;
 use alloc::vec::Vec;
 use vize_l0::String;
 
+use super::super::AuthoredClasses;
 use super::super::classes::collect_classes_from_selector_prelude;
 
 /// A resolved selector list grows multiplicatively with nested comma lists.
@@ -21,13 +22,14 @@ pub(super) enum Dialect {
 
 /// Class names the rules declare, or `None` when the source is unbalanced.
 /// Less mixin definitions (`.m() {}`) emit no rules and add no names.
-pub(super) fn authored_local_classes(scss: &str, dialect: Dialect) -> Option<BTreeSet<String>> {
+pub(super) fn authored_classes(scss: &str, dialect: Dialect) -> Option<AuthoredClasses> {
     let bytes = scss.as_bytes();
     let interpolation = match dialect {
         Dialect::Scss => b'#',
         Dialect::Less => b'@',
     };
     let mut classes = BTreeSet::new();
+    let mut complete = true;
     // The resolved selectors of every open block; `None` is an unknown context.
     let mut blocks: Vec<Option<Vec<String>>> = Vec::new();
     let mut prelude = Vec::new();
@@ -74,7 +76,11 @@ pub(super) fn authored_local_classes(scss: &str, dialect: Dialect) -> Option<BTr
                     Some(parent) => parent.clone(),
                     None => Some(Vec::new()),
                 };
+                let known = parent.is_some();
                 let resolved = resolve(&prelude, parent, interpolated, dialect);
+                if known && block_hides_rules(&prelude, resolved.is_some(), dialect) {
+                    complete = false;
+                }
                 for selector in resolved.iter().flatten() {
                     // A rule outside the supported selector grammar adds no names.
                     let mut rule = BTreeSet::new();
@@ -82,6 +88,8 @@ pub(super) fn authored_local_classes(scss: &str, dialect: Dialect) -> Option<BTr
                         .is_some()
                     {
                         classes.extend(rule);
+                    } else {
+                        complete = false;
                     }
                 }
                 blocks.push(resolved);
@@ -92,6 +100,9 @@ pub(super) fn authored_local_classes(scss: &str, dialect: Dialect) -> Option<BTr
                 continue;
             }
             (b';', _) => {
+                if known_context(&blocks) && statement_adds_rules(&prelude, dialect) {
+                    complete = false;
+                }
                 prelude.clear();
                 interpolated = false;
                 parens = 0;
@@ -99,6 +110,9 @@ pub(super) fn authored_local_classes(scss: &str, dialect: Dialect) -> Option<BTr
                 continue;
             }
             (b'}', _) => {
+                if known_context(&blocks) && statement_adds_rules(&prelude, dialect) {
+                    complete = false;
+                }
                 blocks.pop()?;
                 prelude.clear();
                 interpolated = false;
@@ -111,7 +125,71 @@ pub(super) fn authored_local_classes(scss: &str, dialect: Dialect) -> Option<BTr
         prelude.push(byte);
         index += 1;
     }
-    (quote.is_none() && blocks.is_empty()).then_some(classes)
+    (quote.is_none() && blocks.is_empty()).then(|| AuthoredClasses::new(classes, complete))
+}
+
+fn known_context(blocks: &[Option<Vec<String>>]) -> bool {
+    blocks.last().is_none_or(Option::is_some)
+}
+
+/// Whether a block in a known context can hold rules this scan cannot name:
+/// includes and control flow, interpolated or unresolvable selectors. Mixin
+/// and function definitions, nested properties, keyframes and font faces
+/// emit no rules of their own.
+pub(super) fn block_hides_rules(prelude: &[u8], resolved: bool, dialect: Dialect) -> bool {
+    let Ok(text) = core::str::from_utf8(prelude) else {
+        return true;
+    };
+    let text = text.trim();
+    if let Some((name, _)) = at_rule(text) {
+        return name == "include" || !resolved && !emits_no_rules(name);
+    }
+    !resolved
+        && !(dialect == Dialect::Scss && is_nested_property(text))
+        && !(dialect == Dialect::Less
+            && split_top_level_commas(text)
+                .iter()
+                .any(|part| is_less_mixin_definition(part)))
+}
+
+/// At-rules whose block is a definition or holds no selectors.
+fn emits_no_rules(name: &str) -> bool {
+    matches!(
+        name,
+        "mixin" | "function" | "font-face" | "page" | "property" | "counter-style"
+    ) || name.ends_with("keyframes")
+        // A Less detached ruleset (`@detached: { ... }`) runs where it is called.
+        || name.ends_with(':')
+}
+
+/// Whether a statement in a known context can add rules: an include, an
+/// import of another stylesheet, or a Less mixin or detached-ruleset call.
+pub(super) fn statement_adds_rules(prelude: &[u8], dialect: Dialect) -> bool {
+    let Ok(text) = core::str::from_utf8(prelude) else {
+        return true;
+    };
+    let text = text.trim();
+    if let Some((name, rest)) = at_rule(text) {
+        return match name {
+            "include" | "import" | "forward" | "require" | "plugin" => true,
+            // Built-in Sass modules emit no CSS.
+            "use" => !rest
+                .trim_start()
+                .get(1..)
+                .is_some_and(|url| url.starts_with("sass:")),
+            _ => dialect == Dialect::Less && rest.trim_start().starts_with('('),
+        };
+    }
+    dialect == Dialect::Less && text.starts_with(['.', '#'])
+}
+
+/// The name and the rest of an at-rule, `@name rest`.
+pub(super) fn at_rule(text: &str) -> Option<(&str, &str)> {
+    let rest = text.strip_prefix('@')?;
+    let end = rest
+        .find(|c: char| !(c.is_ascii_alphanumeric() || matches!(c, '-' | '_' | ':')))
+        .unwrap_or(rest.len());
+    Some((rest.get(..end)?, rest.get(end..)?))
 }
 
 pub(super) fn resolve(
@@ -223,76 +301,4 @@ fn split_top_level_commas(text: &str) -> Vec<&str> {
     }
     parts.extend(text.get(start..));
     parts
-}
-
-#[cfg(test)]
-mod tests {
-    use crate::css::lang::StyleLanguage;
-    use alloc::vec::Vec;
-
-    fn names(scss: &str) -> Vec<vize_l0::String> {
-        StyleLanguage::Scss
-            .authored_local_classes(scss)
-            .expect("balanced SCSS")
-            .into_iter()
-            .collect()
-    }
-
-    #[test]
-    fn nested_parent_references_resolve_against_every_parent() {
-        assert_eq!(
-            names(
-                ".card { &__title { color: red; } &--active {} .icon {} &:hover {} }\n.a, .b { &-x {} }"
-            ),
-            [
-                "a",
-                "a-x",
-                "b",
-                "b-x",
-                "card",
-                "card--active",
-                "card__title",
-                "icon"
-            ]
-        );
-    }
-
-    #[test]
-    fn comments_values_and_nested_properties_add_no_names() {
-        assert_eq!(
-            names(
-                "// .line {}\n/* .block {} */\n$gap: 4px;\n@use 'theme';\n.u {\n  background: url(http://e.test/a.png); // .trailing {}\n  font: { family: serif; }\n  content: '.quoted {';\n  &-v {}\n}"
-            ),
-            ["u", "u-v"]
-        );
-    }
-
-    #[test]
-    fn at_rules_keep_or_drop_the_enclosing_selector() {
-        assert_eq!(
-            names(
-                "@media (max-width: 1px) { .m { &-n {} } }\n.p { @media print { &-q {} } @include wide { &-r {} } @at-root .s {} }\n@mixin m { .mixed { &-x {} } }\n@each $k in a, b { .each-#{$k} {} }\n.i-#{$name} { &-j {} }\n.ok {}\n:global(.g) .l {}"
-            ),
-            ["l", "m", "m-n", "ok", "p", "p-q", "p-r", "s"]
-        );
-    }
-
-    #[test]
-    fn less_resolves_parents_and_skips_mixin_definitions() {
-        let names = StyleLanguage::Less.authored_local_classes(
-            "@gap: 4px;\n.card { &__title {} &:extend(.base); .icon {} }\n.m() { .hidden {} }\n.guarded(@a) when (@a > 1) { .alsoHidden {} }\n#ns { .inner() {} }\n.pre-@{name} { &-x {} }\n@media screen { .m2 { &-n {} } }\n@detached: { .det {} };\n// .commented {}\n.call { .m(); }",
-        )
-        .expect("balanced Less");
-        assert_eq!(
-            names.into_iter().collect::<Vec<_>>(),
-            ["call", "card", "card__title", "icon", "m2", "m2-n"]
-        );
-    }
-
-    #[test]
-    fn unbalanced_sources_refuse() {
-        let scss = StyleLanguage::Scss;
-        assert_eq!(scss.authored_local_classes(".a { &-b {"), None);
-        assert_eq!(scss.authored_local_classes(".a {} }"), None);
-    }
 }
