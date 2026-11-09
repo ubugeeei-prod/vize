@@ -136,8 +136,7 @@ impl<'t, 'a> CompatibilityRoot<'t, 'a> {
                 .entry((span.start, span.end))
                 .or_insert(expression);
         }
-        for expression in template.consumed_expressions {
-            let expression = *expression;
+        for &expression in template.consumed_expressions {
             let span = expression.span();
             expression_index
                 .entry((span.start, span.end))

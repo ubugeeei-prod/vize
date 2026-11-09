@@ -62,7 +62,7 @@ pub(crate) fn instance_pair_name(binding: &str, scopes: &ScopeChain) -> String {
 
 /// The values come from the unchanged native `new` calls. Return inference has
 /// no component or props constraint which could select another overload.
-pub(crate) fn append_capture_open(ts: &mut String, pair: &str, indent: &str) {
+pub(crate) fn append_capture_open(ts: &mut crate::virtual_ts::TextBuf, pair: &str, indent: &str) {
     append!(
         *ts,
         "{indent}const {pair} = (undefined as unknown as <__Z, __P>(withoutArguments: __Z, withArguments: __P) => {{ readonly withoutArguments: __Z; readonly withArguments: __P }})(",
@@ -70,7 +70,7 @@ pub(crate) fn append_capture_open(ts: &mut String, pair: &str, indent: &str) {
 }
 
 pub(crate) fn append_slot_selection(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     pair: &str,
     binding: &str,
     component: &str,
@@ -105,7 +105,7 @@ fn usage_raw_props(component: &str, pair: &str, hoisted: bool) -> String {
 }
 
 pub(crate) fn append_usage_props(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     component: &str,
     pair: Option<&str>,
     hoisted: bool,

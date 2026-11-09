@@ -111,7 +111,7 @@ fn a_mixed_run_merges_into_one_compound_with_recorded_parts() {
         );
         assert!(
             lowered.consumed_expressions.is_empty(),
-            "compiler lowering must not parse consumed expressions twice"
+            "compile lowering must not parse compound expressions before the emitter"
         );
         // The one rebuild rule, exercised from test space too.
         assert_eq!(
@@ -152,6 +152,31 @@ fn a_mixed_run_merges_into_one_compound_with_recorded_parts() {
         ("n", Span::new(padded_count.start + 1, padded_count.end - 1))
     );
     assert_transformed_sound(source, "mixed-run");
+}
+
+#[test]
+fn lint_lowering_retains_consumed_expressions() {
+    let source = "<p>Hi {{ name }}! You have {{ n }} new mails.</p>";
+    let allocator = Allocator::new();
+    let (tree, errors) = vize_l1::markup::parse(&allocator, source);
+    let lowered = lower_preserving_comments(&allocator, &tree, &errors);
+
+    let [
+        vize_l2::expr::ExprRef::Js(name),
+        vize_l2::expr::ExprRef::Js(count),
+    ] = lowered.consumed_expressions.as_slice()
+    else {
+        panic!(
+            "lint lowering did not retain compound expressions: {:?}",
+            lowered.consumed_expressions
+        );
+    };
+    assert_eq!((name.source, name.span), ("name", span_of(source, "name")));
+    let padded_count = span_of(source, " n ");
+    assert_eq!(
+        (count.source, count.span),
+        ("n", Span::new(padded_count.start + 1, padded_count.end - 1))
+    );
 }
 
 #[test]

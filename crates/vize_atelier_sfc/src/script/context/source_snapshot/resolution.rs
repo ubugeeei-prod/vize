@@ -104,17 +104,25 @@ impl TypeSourceSnapshot {
         {
             return Some(found.clone());
         }
+        let on_disk = candidate.is_file();
         // Without overlays, a probe that is no file under either its physical or
         // its lexical spelling resolves to nothing. `source_path` would spend
         // two `realpath` calls to reach the same miss.
-        if self.overlays.is_empty() && !candidate.is_file() {
+        if self.overlays.is_empty() && !on_disk {
             let lexical = lexical_path(candidate);
             if lexical == candidate || !lexical.is_file() {
                 return None;
             }
         }
-        let path = source_path(candidate);
-        let found = (self.overlays.contains_key(&path) || path.is_file()).then_some(path)?;
+        // A file found on disk takes its identity from its listed directory,
+        // which is canonicalized once per snapshot instead of once per file.
+        let found = match on_disk.then(|| self.indexed_identity(candidate)).flatten() {
+            Some(path) => path,
+            None => {
+                let path = source_path(candidate);
+                (self.overlays.contains_key(&path) || path.is_file()).then_some(path)?
+            }
+        };
         if let Ok(mut existing) = self.existing.lock() {
             existing.insert(candidate.to_path_buf(), found.clone());
         }

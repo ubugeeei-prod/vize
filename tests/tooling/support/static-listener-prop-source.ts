@@ -1,6 +1,10 @@
 /** Authenticate the static marker interpretation before reading frozen gate history. */
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
+import {
+  beforeProjectionTextBuffer,
+  readBeforeProjectionTextBuffer,
+} from "../../../tools/support/compat/content-mapper/projection-text-buffer-transition.ts";
 export const staticListenerSource =
   "crates/vize_canon/src/virtual_ts/scope/component_events/generic_inference.rs";
 export const staticListenerRecord =
@@ -35,11 +39,13 @@ const identity = (value: string): Identity => ({
   sha256: hash(value),
 });
 export function beforeStaticListenerSource(
-  read: (path: string) => string,
+  readCurrent: (path: string) => string,
   path: string,
   current: string,
 ): string {
   if (path !== staticListenerSource) return current;
+  const read = readBeforeProjectionTextBuffer(readCurrent);
+  current = beforeProjectionTextBuffer(path, current);
   const raw = read(staticListenerRecord);
   assert.equal(
     hash(raw),
@@ -109,6 +115,7 @@ export function beforeIntegratedStaticListenerSource(
   current: string,
 ): string {
   if (path !== staticListenerSource) return current;
+  current = beforeProjectionTextBuffer(path, current);
   assert.deepEqual(
     identity(current),
     {

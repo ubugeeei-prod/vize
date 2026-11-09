@@ -44,7 +44,7 @@ use super::vif_guard::common_vif_guard_prefix_for_guards_outside_v_for;
 /// Generate component props type checks (scope-aware).
 /// Type declarations are at template level, value checks are in their scope.
 pub(super) fn generate_component_props(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     mappings: &mut Vec<VizeMapping>,
     diagnostic_mappings: &mut Vec<VizeMapping>,
     semantic_links: &mut Vec<VizeSemanticLink>,
@@ -308,7 +308,7 @@ pub(in crate::virtual_ts::scope) struct ScopedUsageDeclarations<'a, 'template> {
 /// Declare the contracts of `usages` whose component only this scope can
 /// see, where their checks run.
 pub(in crate::virtual_ts::scope) fn emit_scoped_usage_declarations(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     mappings: &mut Vec<VizeMapping>,
     ctx: &VForPropsContext<'_, '_>,
     usages: &[(usize, &ComponentUsage)],
@@ -338,7 +338,7 @@ pub(in crate::virtual_ts::scope) fn emit_scoped_usage_declarations(
 }
 
 fn generate_usage_declarations(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     mappings: &mut Vec<VizeMapping>,
     ctx: &ComponentPropsContext<'_, '_>,
     shared_contracts: &FxHashMap<usize, SharedComponentContract>,
@@ -370,10 +370,10 @@ fn generate_usage_declarations(
 
     let src_start = (ctx.template_offset + usage.start) as usize;
     let src_end = (ctx.template_offset + usage.end) as usize;
-    append!(*ts, "  // @vize-map: component -> {src_start}:{src_end}\n",);
+    vize_l0::emit_ts!(ts, "  // @vize-map: component -> {src_start}:{src_end}\n",);
     // Prefer the modern static raw-props identity while retaining the
     // instance marker for declarations emitted before #4034.
-    append!(*ts, "  type __{component_type_name}_Props_{idx} = ",);
+    vize_l0::emit_ts!(ts, "  type __{component_type_name}_Props_{idx} = ",);
     let shared = shared_contracts.get(&idx);
     if let Some(shared) = shared.filter(|shared| shared.canonical_idx != idx) {
         append!(
@@ -440,7 +440,7 @@ fn generate_usage_declarations(
 }
 
 pub(super) fn generate_root_usage_checks(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     mappings: &mut Vec<VizeMapping>,
     ctx: &ComponentPropsContext<'_, '_>,
     idx: usize,

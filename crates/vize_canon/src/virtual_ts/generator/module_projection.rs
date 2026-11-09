@@ -1,14 +1,12 @@
 //! Emit an authored module statement with its default-export rewrite and mapping.
 
-use vize_carton::String;
-
 use super::options_api::OptionsApiScriptFacts;
 use super::spans::rewrite_export_default_for_module_scope;
 use crate::virtual_ts::VizeMapping;
 
 /// Return whether the statement rewrite declared the default-export alias.
 pub(super) fn emit(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     mappings: &mut Vec<VizeMapping>,
     text: &str,
     span: (u32, u32),
@@ -115,7 +113,7 @@ fn unchanged_edges(text: &str, rewritten: &str) -> (usize, usize) {
 
 #[cfg(test)]
 mod tests {
-    use super::{String, VizeMapping, emit};
+    use super::{VizeMapping, emit};
     use crate::virtual_ts::generator::options_api::analyze_options_api_script;
 
     /// `segments` are `(generated, authored)` ranges relative to the statement.
@@ -128,7 +126,7 @@ mod tests {
         let prefix = "// 日本 🧭\n";
         let script = format!("{prefix}{text}");
         let facts = analyze_options_api_script(&script, true, false);
-        let mut ts = String::from("header\n");
+        let mut ts = crate::virtual_ts::TextBuf::from_text("header\n");
         let mut mappings = Vec::new();
         let span = (prefix.len() as u32, script.len() as u32);
         assert_eq!(

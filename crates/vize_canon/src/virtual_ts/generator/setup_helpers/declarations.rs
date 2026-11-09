@@ -37,19 +37,19 @@ impl SetupHelperPlan {
     #[cfg(feature = "native")]
     pub(in crate::virtual_ts::generator) fn emit_error_recovery(
         &self,
-        ts: &mut String,
+        ts: &mut crate::virtual_ts::TextBuf,
         hoisted: bool,
     ) {
         emit(ts, self, hoisted, false, false);
     }
 
-    pub(crate) fn emit_import_anchors(&self, ts: &mut String) {
+    pub(crate) fn emit_import_anchors(&self, ts: &mut crate::virtual_ts::TextBuf) {
         self.template_refs.emit_import_anchors(ts);
     }
 
     pub(crate) fn template_emit_initializer(
         &self,
-        ts: &mut String,
+        ts: &mut crate::virtual_ts::TextBuf,
         summary: &Croquis,
         generic_parameters: Option<&crate::virtual_ts::generic_parameters::GenericParameters>,
     ) -> Option<String> {
@@ -84,7 +84,7 @@ impl SetupHelperPlan {
 }
 
 pub(super) fn emit(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     plan: &SetupHelperPlan,
     hoisted: bool,
     generic_props: bool,
@@ -235,7 +235,6 @@ mod template_ref_fallback_tests {
     use super::{
         SETUP_MACRO_HELPERS, SetupHelperPlan, VUE_SETUP_HELPERS, VUE_SETUP_HELPERS_HOISTED, emit,
     };
-    use vize_carton::String;
 
     #[test]
     fn possible_global_ref_calls_never_receive_an_invented_runtime_contract() {
@@ -252,7 +251,7 @@ mod template_ref_fallback_tests {
                 false,
             );
             for hoisted in [false, true] {
-                let mut generated = String::default();
+                let mut generated = crate::virtual_ts::TextBuf::default();
                 emit(&mut generated, &plan, hoisted, false, false);
                 let helper = SETUP_MACRO_HELPERS
                     .iter()
@@ -285,7 +284,7 @@ mod template_ref_fallback_tests {
             false,
             false,
         );
-        let mut generated = String::default();
+        let mut generated = crate::virtual_ts::TextBuf::default();
         emit(&mut generated, &plan, false, false, false);
         assert_eq!(generated, VUE_SETUP_HELPERS);
     }

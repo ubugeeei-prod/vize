@@ -107,7 +107,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     let _ = generation_options.template_syntax_quirks;
     let options_api = generation_options.options_api || legacy_vue2;
     let hoist_shared_preamble = generation_options.hoist_shared_preamble;
-    let mut ts = String::default();
+    let mut ts = crate::virtual_ts::TextBuf::with_capacity(32 * 1024);
     file_directives::emit(
         &mut ts,
         script_content,
@@ -369,7 +369,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         #("() ") {
             #("\n")
             #{
-                (|mut ts: &mut String| {
+                (|mut ts: &mut crate::virtual_ts::TextBuf| {
     if let Some(aliases) = &hoisted_generic_aliases {
         aliases.emit_setup_aliases(&mut ts);
     }
@@ -856,7 +856,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     );
     let export = component_export::default_export(&mut ts, public_names.as_ref());
     binding_output::publish(
-        ts,
+        ts.into_compact(),
         mappings,
         diagnostic_mappings,
         semantic_links,

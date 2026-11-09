@@ -157,7 +157,7 @@ impl DynamicComponentAliases {
         self.scoped_starts.contains(&start)
     }
 
-    pub(super) fn emit_root(&self, ts: &mut String) {
+    pub(super) fn emit_root(&self, ts: &mut crate::virtual_ts::TextBuf) {
         for declaration in &self.root_guards {
             declaration.push(ts, "  ");
         }
@@ -170,10 +170,10 @@ impl DynamicComponentAliases {
     /// usage start.
     pub(super) fn emit_scope(
         &self,
-        ts: &mut String,
+        ts: &mut crate::virtual_ts::TextBuf,
         scope: u32,
         indent: &str,
-        mut then: impl FnMut(&mut String, u32),
+        mut then: impl FnMut(&mut crate::virtual_ts::TextBuf, u32),
     ) {
         for declaration in self.scoped_guards.get(&scope).into_iter().flatten() {
             declaration.push(ts, indent);
@@ -247,7 +247,7 @@ impl DynamicComponentAliases {
 }
 
 impl GuardDeclaration {
-    fn push(&self, ts: &mut String, indent: &str) {
+    fn push(&self, ts: &mut crate::virtual_ts::TextBuf, indent: &str) {
         append!(
             *ts,
             "{indent}// @ts-ignore Inference-only guard; the authored v-if statement owns diagnostics.\n{indent}const {} = ({});\n",
@@ -258,7 +258,7 @@ impl GuardDeclaration {
 }
 
 impl AliasDeclaration {
-    fn push(&self, ts: &mut String, indent: &str) {
+    fn push(&self, ts: &mut crate::virtual_ts::TextBuf, indent: &str) {
         append!(
             *ts,
             "{indent}{}\n{indent}{}\n",

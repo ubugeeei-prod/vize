@@ -3,6 +3,7 @@ import { createHash } from "node:crypto";
 import { beforeStaticListenerSource } from "./static-listener-prop-source.ts";
 import { beforeGenericEventSpecialization } from "./generic-event-specialization-source.ts";
 import { beforeSharedListenerRelationSource } from "./listener-relation-source-transition.ts";
+import { readBeforeProjectionTextBuffer } from "../../../tools/support/compat/content-mapper/projection-text-buffer-transition.ts";
 import {
   beforeDiscriminatedJsxUnion,
   discriminatedJsxUnionAfterSha256,
@@ -221,7 +222,8 @@ function historicalProducer(
 }
 
 /** Select the authored successor only for its complete, physical producer image. */
-export function emitGateOracle(read: (path: string) => string): EmitGateOracle {
+export function emitGateOracle(readCurrent: (path: string) => string): EmitGateOracle {
+  const read = readBeforeProjectionTextBuffer(readCurrent);
   const raw = read(fixture);
   assert.equal(sha256(raw), fixtureSha256, "immutable emit gate oracle context");
   const oracle = JSON.parse(raw) as EmitGateOracle;

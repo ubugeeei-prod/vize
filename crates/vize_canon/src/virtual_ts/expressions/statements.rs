@@ -63,7 +63,7 @@ pub(crate) fn guarded_callback_reads(expr: &TemplateExpression) -> Vec<CompactSt
 /// Generate template expressions, compacting recognized v-if chains into
 /// TypeScript control-flow blocks.
 pub(crate) fn generate_expressions(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     mappings: &mut Vec<VizeMapping>,
     exprs: &[&TemplateExpression],
     template_binding_access: &TemplateBindingAccess,
@@ -115,7 +115,7 @@ pub(crate) fn generate_expressions(
 /// Generate expressions inside control flow that already enforces a common
 /// v-if guard, removing only that exact top-level guard prefix first.
 pub(crate) fn generate_expressions_in_enclosing_guard(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     mappings: &mut Vec<VizeMapping>,
     exprs: &[&TemplateExpression],
     template_binding_access: &TemplateBindingAccess,
@@ -174,7 +174,7 @@ impl<'a> ExpressionListEmitContext<'a> {
 /// Generate a template expression, wrapping guarded expressions so TypeScript
 /// can narrow them.
 pub(crate) fn generate_expression(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     mappings: &mut Vec<VizeMapping>,
     expr: &vize_croquis::TemplateExpression,
     template_binding_access: &TemplateBindingAccess,
@@ -232,7 +232,7 @@ pub(crate) fn generate_expression(
 }
 
 pub(super) fn generate_expression_statement(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     mappings: &mut Vec<VizeMapping>,
     expr: &TemplateExpression,
     template_binding_access: &TemplateBindingAccess,
@@ -292,7 +292,7 @@ pub(super) fn generate_expression_statement(
 }
 
 fn emit_expression_statement(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     mappings: &mut Vec<VizeMapping>,
     expr: &TemplateExpression,
     template_binding_access: &TemplateBindingAccess,

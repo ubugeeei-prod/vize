@@ -20,7 +20,7 @@ use super::slot_outlet_props::{SlotOutletChecks, generate_scope_slot_outlet_chec
 use super::vif_guard::common_vif_guard_prefix_outside_v_for_scope;
 
 pub(crate) fn generate_scope_closures(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     mappings: &mut ScopeMappings<'_>,
     semantic_links: &mut Vec<VizeSemanticLink>,
     summary: &Croquis,
@@ -40,7 +40,7 @@ pub(crate) fn generate_scope_closures(
 }
 
 pub(super) fn emit_scope_closures(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     mappings: &mut ScopeMappings<'_>,
     semantic_links: &mut Vec<VizeSemanticLink>,
     summary: &Croquis,

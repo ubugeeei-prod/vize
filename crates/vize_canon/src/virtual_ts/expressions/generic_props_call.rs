@@ -12,8 +12,6 @@ use super::component_props::ComponentPropSource;
 use super::constructor_instance;
 use super::props_literal::{append_inference_props_literal, append_props_literal};
 use crate::virtual_ts::template_binding_access::TemplateBindingAccess;
-use vize_carton::String;
-use vize_carton::append;
 use vize_carton::cstr;
 use vize_croquis::croquis::ComponentUsage;
 
@@ -35,7 +33,7 @@ use vize_croquis::croquis::ComponentUsage;
     reason = "generic prop checks share the component source context"
 )]
 pub(super) fn generate_generic_props_call(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     mappings: &mut Vec<VizeMapping>,
     usage: &ComponentUsage,
     idx: usize,
@@ -56,9 +54,9 @@ pub(super) fn generate_generic_props_call(
         append_chained_vif_guard_open(ts, indent, guard, "Inference-only guard");
     }
 
-    append!(
-        *ts,
-        "{expr_indent}(undefined as unknown as __{component_type_name}_Check_{idx})(",
+    vize_l0::emit_ts!(
+        ts,
+        "{expr_indent}(undefined as unknown as __{component_type_name}_Check_{idx})("
     );
     let check_spread_values = typed_fallthrough_values && !usage.spread_props.is_empty();
     // TypeScript anchors an *argument* assignability failure — `TS2345` — at the
@@ -83,10 +81,7 @@ pub(super) fn generate_generic_props_call(
     );
     ts.push_str(");\n");
     let fallthrough_argument_range = check_spread_values.then(|| {
-        append!(
-            *ts,
-            "{expr_indent}const $FallthroughProps_{idx} = ",
-        );
+        vize_l0::emit_ts!(ts, "{expr_indent}const $FallthroughProps_{idx} = ");
         append_inference_props_literal(
             ts,
             usage,
@@ -98,18 +93,12 @@ pub(super) fn generate_generic_props_call(
         if hoist_shared_preamble {
             let fallthrough_spread_checker =
                 crate::virtual_ts::helpers::shared_types::FALLTHROUGH_SPREAD_CHECKER.select(true);
-            append!(
-                *ts,
-                "{expr_indent}(undefined as unknown as {fallthrough_spread_checker}<__{component_type_name}_Component_{idx}, __{component_type_name}_Props_{idx}>)(",
-            );
+            vize_l0::emit_ts!(ts, "{expr_indent}(undefined as unknown as {fallthrough_spread_checker}<__{component_type_name}_Component_{idx}, __{component_type_name}_Props_{idx}>)(");
         } else {
-            append!(
-                *ts,
-                "{expr_indent}(undefined as unknown as $FallthroughSpreadChecker<__{component_type_name}_Component_{idx}, __{component_type_name}_Props_{idx}>)(",
-            );
+            vize_l0::emit_ts!(ts, "{expr_indent}(undefined as unknown as $FallthroughSpreadChecker<__{component_type_name}_Component_{idx}, __{component_type_name}_Props_{idx}>)(");
         }
         let start = ts.len();
-        append!(*ts, "$FallthroughProps_{idx}");
+        vize_l0::emit_ts!(ts, "$FallthroughProps_{idx}");
         let range = start..ts.len();
         ts.push_str(");\n");
         range
@@ -176,7 +165,7 @@ pub(super) fn generate_generic_props_call(
 /// statement so the narrowing that guard performs still applies to the props
 /// while the binding stays in the enclosing block scope.
 pub(crate) fn generate_slot_host_binding(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     usage: &ComponentUsage,
     binding_name: &str,
     component_ref: &str,
@@ -191,13 +180,13 @@ pub(crate) fn generate_slot_host_binding(
     if captured.is_some() {
         // Private constructor inputs are not Vue's public $props. The mapped
         // props check owns diagnostics; this line only captures real results.
-        append!(
-            *ts,
+        vize_l0::emit_ts!(
+            ts,
             "{indent}// @ts-ignore Inference-only constructor; authored props checks own diagnostics.\n"
         );
     } else if usage.vif_guard.is_some() {
-        append!(
-            *ts,
+        vize_l0::emit_ts!(
+            ts,
             "{indent}// @ts-ignore Inference-only guard; authored v-if checks own diagnostics.\n"
         );
     }
@@ -211,9 +200,9 @@ pub(crate) fn generate_slot_host_binding(
         let with_arguments =
             crate::virtual_ts::helpers::shared_types::SLOT_CONSTRUCTOR_WITH_ARGUMENTS
                 .select(hoist_shared_preamble);
-        append!(
-            *ts,
-            "new (undefined as unknown as {without_arguments}<{constructor}<typeof {component_ref}>>)(), new (undefined as unknown as {with_arguments}<{constructor}<typeof {component_ref}>>)(",
+        vize_l0::emit_ts!(
+            ts,
+            "new (undefined as unknown as {without_arguments}<{constructor}<typeof {component_ref}>>)(), new (undefined as unknown as {with_arguments}<{constructor}<typeof {component_ref}>>)("
         );
     } else if hoist_shared_preamble {
         let slot_host_selector =
@@ -227,14 +216,14 @@ pub(crate) fn generate_slot_host_binding(
             crate::virtual_ts::helpers::shared_types::SLOT_CONSTRUCTOR_WITH_ARGUMENTS.select(true);
         let slot_constructor_instance =
             crate::virtual_ts::helpers::shared_types::SLOT_CONSTRUCTOR_INSTANCE.select(true);
-        append!(
-            *ts,
-            "{indent}const {binding_name} = (undefined as unknown as {slot_host_selector}<typeof {component_ref}>)((undefined as unknown as <__Z, __P>(withoutArguments: __Z, withArguments: __P) => {slot_constructor_instance}<{slot_constructor}<typeof {component_ref}>, __Z, __P>)(new (undefined as unknown as {slot_constructor_without_arguments}<{slot_constructor}<typeof {component_ref}>>)(), new (undefined as unknown as {slot_constructor_with_arguments}<{slot_constructor}<typeof {component_ref}>>)(",
+        vize_l0::emit_ts!(
+            ts,
+            "{indent}const {binding_name} = (undefined as unknown as {slot_host_selector}<typeof {component_ref}>)((undefined as unknown as <__Z, __P>(withoutArguments: __Z, withArguments: __P) => {slot_constructor_instance}<{slot_constructor}<typeof {component_ref}>, __Z, __P>)(new (undefined as unknown as {slot_constructor_without_arguments}<{slot_constructor}<typeof {component_ref}>>)(), new (undefined as unknown as {slot_constructor_with_arguments}<{slot_constructor}<typeof {component_ref}>>)("
         );
     } else {
-        append!(
-            *ts,
-            "{indent}const {binding_name} = (undefined as unknown as $SlotHostSelector<typeof {component_ref}>)(__vizeSlotConstructorInstance<$SlotConstructor<typeof {component_ref}>>()(new (undefined as unknown as $SlotConstructorWithoutArguments<$SlotConstructor<typeof {component_ref}>>)(), new (undefined as unknown as $SlotConstructorWithArguments<$SlotConstructor<typeof {component_ref}>>)(",
+        vize_l0::emit_ts!(
+            ts,
+            "{indent}const {binding_name} = (undefined as unknown as $SlotHostSelector<typeof {component_ref}>)(__vizeSlotConstructorInstance<$SlotConstructor<typeof {component_ref}>>()(new (undefined as unknown as $SlotConstructorWithoutArguments<$SlotConstructor<typeof {component_ref}>>)(), new (undefined as unknown as $SlotConstructorWithArguments<$SlotConstructor<typeof {component_ref}>>)("
         );
     }
     // A `v-else-if` guard restates every earlier branch; only the exclusions
@@ -248,7 +237,7 @@ pub(crate) fn generate_slot_host_binding(
         .map(|guard| super::incomplete::isolate_incomplete_expression(guard.as_str()));
     if let Some(guard) = isolated_guard.as_ref() {
         let guard = guard.as_str();
-        append!(*ts, "({guard}) ? ");
+        vize_l0::emit_ts!(ts, "({guard}) ? ");
     }
     append_props_literal(
         ts,
@@ -266,9 +255,9 @@ pub(crate) fn generate_slot_host_binding(
             .select(hoist_shared_preamble);
         let args = crate::virtual_ts::helpers::shared_types::SLOT_CONSTRUCTOR_ARGS
             .select(hoist_shared_preamble);
-        append!(
-            *ts,
-            ", ...([] as unknown as {args}<{constructor}<typeof {component_ref}>>))",
+        vize_l0::emit_ts!(
+            ts,
+            ", ...([] as unknown as {args}<{constructor}<typeof {component_ref}>>))"
         );
         constructor_instance::append_slot_selection(
             ts,
@@ -284,26 +273,26 @@ pub(crate) fn generate_slot_host_binding(
         let slot_constructor_args =
             crate::virtual_ts::helpers::shared_types::SLOT_CONSTRUCTOR_ARGS.select(true);
         let slots_factory = crate::virtual_ts::helpers::shared_types::SLOTS_FACTORY.select(true);
-        append!(
-            *ts,
-            ", ...([] as unknown as {slot_constructor_args}<{slot_constructor}<typeof {component_ref}>>))), (undefined as unknown as {slots_factory}<typeof {component_ref}>)({component_ref})(",
+        vize_l0::emit_ts!(
+            ts,
+            ", ...([] as unknown as {slot_constructor_args}<{slot_constructor}<typeof {component_ref}>>))), (undefined as unknown as {slots_factory}<typeof {component_ref}>)({component_ref})("
         );
     } else {
-        append!(
-            *ts,
-            ", ...([] as unknown as $SlotConstructorArgs<$SlotConstructor<typeof {component_ref}>>))), (undefined as unknown as $SlotsFactory<typeof {component_ref}>)({component_ref})(",
+        vize_l0::emit_ts!(
+            ts,
+            ", ...([] as unknown as $SlotConstructorArgs<$SlotConstructor<typeof {component_ref}>>))), (undefined as unknown as $SlotsFactory<typeof {component_ref}>)({component_ref})("
         );
     }
     if let Some(guard) = isolated_guard.as_ref() {
         // The constructor's props literal inserts a newline. The factory's
         // repeated guard needs its own physical-line suppression: it can be
         // impossible in the already narrowed outer branch (#10660).
-        append!(
-            *ts,
+        vize_l0::emit_ts!(
+            ts,
             "\n{indent}// @ts-ignore Inference-only guard; authored v-if checks own diagnostics.\n{indent}"
         );
         let guard = guard.as_str();
-        append!(*ts, "({guard}) ? ");
+        vize_l0::emit_ts!(ts, "({guard}) ? ");
     }
     append_props_literal(
         ts,
@@ -317,5 +306,5 @@ pub(crate) fn generate_slot_host_binding(
         ts.push_str(" : (undefined as unknown as never)");
     }
     ts.push_str("));\n");
-    append!(*ts, "{indent}void {binding_name};\n");
+    vize_l0::emit_ts!(ts, "{indent}void {binding_name};\n");
 }

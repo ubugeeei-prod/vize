@@ -23,7 +23,11 @@ fn render(script: &str, template: &str, packets: bool, navigation: bool) -> Outp
     let options = VirtualTsOptions::default();
     let names = FxHashSet::default();
     let access = TemplateBindingAccess::collect(&summary, false);
-    let mut result = (String::default(), Vec::new(), Vec::new());
+    let mut result = (
+        crate::virtual_ts::TextBuf::default(),
+        Vec::new(),
+        Vec::new(),
+    );
     let mut diagnostics = Vec::new();
     emit_scope_closures(
         &mut result.0,
@@ -66,7 +70,7 @@ fn render(script: &str, template: &str, packets: bool, navigation: bool) -> Outp
         ),
     );
     result.1.extend(diagnostics);
-    result
+    (result.0.into_compact(), result.1, result.2)
 }
 
 // Preserve every full mapped payload and semantic edge under the relocation;

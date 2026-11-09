@@ -60,7 +60,7 @@ fn pinned_import_facts_keep_whole_sets_and_both_anchor_modes() {
             "\n  // Reference setup bindings (used in template/CSS v-bind)\n  void (null as unknown as keyof typeof DefaultValue); void (null as unknown as keyof typeof aliased); void local; void (null as unknown as keyof typeof namespace);\n",
         ),
     ] {
-        let mut output = String::default();
+        let mut output = crate::virtual_ts::TextBuf::default();
         SetupBindingAnchors {
             summary: &summary,
             imports: &imports,
@@ -72,7 +72,7 @@ fn pinned_import_facts_keep_whole_sets_and_both_anchor_modes() {
         .emit(&mut output, "test.value_import_names");
         assert_eq!(output.as_str(), expected);
     }
-    let mut type_only_output = String::default();
+    let mut type_only_output = crate::virtual_ts::TextBuf::default();
     emit_setup_binding_anchors(
         &mut type_only_output,
         &summary,
@@ -120,7 +120,7 @@ fn import_facts_own_their_generation_and_preserve_the_binding_filter() {
             .collect::<Vec<_>>(),
         ["second"]
     );
-    let mut output = String::default();
+    let mut output = crate::virtual_ts::TextBuf::default();
     emit_setup_binding_anchors(
         &mut output,
         &first_summary,

@@ -1,10 +1,9 @@
 //! Presence checks for directives without a value use the existing collected table.
 use super::{DirectiveValueBindings, emit_unknown_directive_presence};
 use crate::virtual_ts::VizeMapping;
-use vize_carton::String;
 
 pub(crate) fn generate_valueless_directive_presence(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     mappings: &mut Vec<VizeMapping>,
     bindings: &DirectiveValueBindings,
     offset: u32,
