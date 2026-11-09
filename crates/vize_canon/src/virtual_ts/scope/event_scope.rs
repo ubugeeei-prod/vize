@@ -117,9 +117,10 @@ pub(super) fn generate_event_handler_scope(
                 "{indent}type {handler_type} = {{ bivarianceHack(...args: {listener_args}): any }}[\"bivarianceHack\"];\n"
             );
         }
+        let parameters = crate::virtual_ts::generated_names::lib("Parameters");
         vize_l0::emit_ts!(
             ts,
-            "{indent}void ((...__vize_args: Parameters<{listener_type}>) => {{\n"
+            "{indent}void ((...__vize_args: {parameters}<{listener_type}>) => {{\n"
         );
         vize_l0::emit_ts!(
             ts,
@@ -192,9 +193,10 @@ pub(super) fn generate_event_handler_scope(
                 "{indent}type {handler_type} = {{ bivarianceHack(...args: {listener_args}): any }}[\"bivarianceHack\"];\n"
             );
         }
+        let parameters = crate::virtual_ts::generated_names::lib("Parameters");
         vize_l0::emit_ts!(
             ts,
-            "{indent}void ((...__vize_args: Parameters<{listener_type}>) => {{\n"
+            "{indent}void ((...__vize_args: {parameters}<{listener_type}>) => {{\n"
         );
         vize_l0::emit_ts!(
             ts,
@@ -246,9 +248,10 @@ pub(super) fn generate_event_handler_scope(
             ts,
             "{indent}type {listener_type} = (...args: any[]) => any;\n"
         );
+        let parameters = crate::virtual_ts::generated_names::lib("Parameters");
         vize_l0::emit_ts!(
             ts,
-            "{indent}void ((...__vize_args: Parameters<{listener_type}>) => {{\n"
+            "{indent}void ((...__vize_args: {parameters}<{listener_type}>) => {{\n"
         );
         vize_l0::emit_ts!(
             ts,

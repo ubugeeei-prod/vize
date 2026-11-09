@@ -8,6 +8,7 @@
 use super::super::{create_project_case, resolve_test_tsgo_binary, snapshot_project_diagnostics};
 use crate::batch::VirtualProject;
 use oxc_syntax::identifier::is_identifier_part;
+use std::path::Path;
 
 const CHILD: &str = r#"<script setup lang="ts">
 const props = defineProps<{
@@ -256,5 +257,202 @@ fn helper_isolation_preserves_the_authored_prop_diagnostic_anchor() {
                 "{expected_line}:11:error Type 'number' is not assignable to type 'string'."
             ),
         )]
+    );
+}
+/// Lib types the projection reaches through `globalThis` once the SFC binds
+/// the same name (#12536): a same-arity `never` poison, and how many
+/// references the parent fixture's projection generates.
+const QUALIFIED_LIB_TYPES: &[(&str, &str, usize)] = &[(
+    "Parameters",
+    "type Parameters<T extends (...args: any) => any> = never",
+    4,
+)];
+
+const LIB_CHILD: &str = r#"<script setup lang="ts" generic="T extends string | number">
+const props = withDefaults(defineProps<{
+  items: T[]
+  modelValue: T
+  label?: string
+}>(), { label: 'none' })
+const emit = defineEmits<{ pick: [item: T, index: number]; 'update:modelValue': [value: T] }>()
+defineSlots<{ row(props: { item: T; index: number }): any }>()
+</script>
+
+<template>
+  <ul :aria-label="props.label">
+    <li v-for="(item, index) in props.items" :key="index" @click="emit('pick', item, index); emit('update:modelValue', item)">
+      <slot name="row" :item="item" :index="index" />
+    </li>
+  </ul>
+</template>
+"#;
+
+#[derive(Clone, Copy, PartialEq)]
+enum LibPoison {
+    /// The poison lines under names nothing references.
+    None,
+    Declared,
+    Imported,
+}
+
+fn lib_module_script(poison: LibPoison) -> std::string::String {
+    let mut script = std::string::String::from("<script lang=\"ts\">\n");
+    for (name, declaration, _) in QUALIFIED_LIB_TYPES {
+        let line = match poison {
+            LibPoison::None => declaration.replacen(name, &format!("Unshadowed{name}"), 1),
+            LibPoison::Declared => std::string::String::from(*declaration),
+            LibPoison::Imported => format!("import type {{ {name} }} from './lib-types'"),
+        };
+        script.push_str(&line);
+        script.push('\n');
+    }
+    script.push_str("export const libTypePoison = true\n</script>\n");
+    script
+}
+
+fn lib_types_module() -> std::string::String {
+    QUALIFIED_LIB_TYPES
+        .iter()
+        .map(|(_, declaration, _)| format!("export {declaration}\n"))
+        .collect()
+}
+
+fn lib_parent_source(poison: LibPoison) -> std::string::String {
+    format!(
+        r#"{}
+<script setup lang="ts">
+import {{ ref, useTemplateRef }} from 'vue'
+import Child from './Child.vue'
+import Picker from './Picker.vue'
+
+const chosen = ref<'a' | 'b'>('a')
+const options = ['a', 'b'] as const
+const count = ref(0)
+const slotName = ref('extra')
+const button = useTemplateRef('button')
+function onPick(item: 'a' | 'b', index: number) {{ count.value = index; void item }}
+</script>
+
+<template>
+  <Child value="ok" :transform="item => item.toUpperCase()" @save="item => item.toUpperCase()">
+    <template #default="{{ item }}">{{{{ item.toUpperCase() }}}}</template>
+    <template #named="{{ label }}">{{{{ label.toUpperCase() }}}}</template>
+  </Child>
+  <Picker v-model="chosen" :items="[...options]" label="pick" @pick="onPick">
+    <template #row="{{ item, index }}">{{{{ item.toUpperCase() }}}} {{{{ index.toFixed() }}}}</template>
+  </Picker>
+  <slot name="extra" v-bind="{{ count }}" />
+  <slot :name="slotName" v-bind="{{ count }}" />
+  <button ref="button" v-if="count > 0" @click="button?.focus()">{{{{ count }}}}</button>
+</template>
+"#,
+        lib_module_script(poison)
+    )
+}
+
+/// References to `name` that are neither qualified (`globalThis.name`) nor
+/// part of a longer identifier.
+fn unqualified_count(source: &str, name: &str) -> usize {
+    source
+        .match_indices(name)
+        .filter(|&(start, matched)| {
+            let before = source
+                .get(..start)
+                .and_then(|head| head.chars().next_back());
+            let after = source
+                .get(start + matched.len()..)
+                .and_then(|tail| tail.chars().next());
+            before.is_none_or(|c| c != '.' && c != '$' && !is_identifier_part(c))
+                && after.is_none_or(|c| c != '$' && !is_identifier_part(c))
+        })
+        .count()
+}
+
+/// The poison is the only unqualified spelling, and every generated reference
+/// is qualified.
+fn assert_only_the_poison_is_unqualified(generated: &str) {
+    for (name, _, references) in QUALIFIED_LIB_TYPES {
+        let qualified = format!("globalThis.{name}<");
+        assert_eq!(
+            (
+                unqualified_count(generated, name),
+                generated.matches(qualified.as_str()).count()
+            ),
+            (1, *references),
+            "{name}: (unqualified, qualified) references:\n{generated}"
+        );
+    }
+}
+
+#[test]
+fn the_content_mapper_projection_names_shadowed_lib_types_through_global_this() {
+    // The installed SDK's shared module holds the helpers; inline helpers are
+    // the fallback for an unqualified install.
+    let options = crate::batch::ContentMapperTransformOptions::default()
+        .with_external_component_attrs_module(true)
+        .with_external_component_type_helpers(true)
+        .with_shared_virtual_module(true);
+    for poison in [LibPoison::Declared, LibPoison::Imported] {
+        let transform = crate::batch::generate_vue_content_mapper_transform_with_options(
+            Path::new("/project/src/Parent.vue"),
+            &lib_parent_source(poison),
+            options,
+        )
+        .expect("parent should project");
+        // Listener closures plus the static and dynamic slot outlet tuples.
+        assert_only_the_poison_is_unqualified(&transform.text);
+    }
+}
+
+#[test]
+fn authored_lib_types_cannot_capture_the_projection() {
+    if resolve_test_tsgo_binary().is_none() {
+        return;
+    }
+    let lib_types = lib_types_module();
+    let mut snapshots = Vec::new();
+    for (case, poison) in [
+        ("lib-type-shadowing-clean", LibPoison::None),
+        ("lib-type-shadowing-declared", LibPoison::Declared),
+        ("lib-type-shadowing-imported", LibPoison::Imported),
+    ] {
+        let parent = lib_parent_source(poison);
+        let project_root = create_project_case(
+            case,
+            &[
+                ("src/Child.vue", CHILD),
+                ("src/Picker.vue", LIB_CHILD),
+                ("src/lib-types.ts", &lib_types),
+                ("src/Parent.vue", &parent),
+            ],
+        );
+        let snapshot = snapshot_project_diagnostics(&project_root);
+        if poison != LibPoison::None {
+            let parent_path = project_root.join("src/Parent.vue");
+            let mut project =
+                VirtualProject::new(&project_root).expect("virtual project should open");
+            project
+                .register_paths(&[
+                    project_root.join("src/Child.vue"),
+                    project_root.join("src/Picker.vue"),
+                    parent_path.clone(),
+                ])
+                .expect("fixture should register");
+            let generated = &project
+                .find_by_original(&parent_path)
+                .expect("parent virtual file should exist")
+                .content;
+            assert_only_the_poison_is_unqualified(generated);
+        }
+        let _ = std::fs::remove_dir_all(&project_root);
+        let Some(snapshot) = snapshot else {
+            return;
+        };
+        snapshots.push(snapshot);
+    }
+    assert_eq!(snapshots[0], [], "the clean fixture is valid");
+    assert!(
+        snapshots.iter().all(|snapshot| *snapshot == snapshots[0]),
+        "shadowing a lib type must not change any diagnostic: {snapshots:#?}"
     );
 }

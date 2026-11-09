@@ -156,6 +156,7 @@ pub(super) fn generate_component_handler_scope(
     // name anchors that rejection at the authored event name (#3462).
     let inline_statement_handler = data.has_implicit_event && !ctx.legacy_vue2;
     let mut inline_name_range = None;
+    let parameters = crate::virtual_ts::generated_names::lib("Parameters");
     if inline_statement_handler {
         let handler_name = vize_carton::cstr!("__vize_inline_handler_{}", scope_id);
         vize_l0::emit_ts!(ts, "{indent}const ");
@@ -164,12 +165,12 @@ pub(super) fn generate_component_handler_scope(
         inline_name_range = Some(name_start..ts.len());
         vize_l0::emit_ts!(
             ts,
-            ": {listener_type} = (...__vize_args: Parameters<{listener_type}>) => {{\n",
+            ": {listener_type} = (...__vize_args: {parameters}<{listener_type}>) => {{\n",
         );
     } else {
         vize_l0::emit_ts!(
             ts,
-            "{indent}void ((...__vize_args: Parameters<{listener_type}>) => {{\n",
+            "{indent}void ((...__vize_args: {parameters}<{listener_type}>) => {{\n",
         );
     }
     vize_l0::emit_ts!(
