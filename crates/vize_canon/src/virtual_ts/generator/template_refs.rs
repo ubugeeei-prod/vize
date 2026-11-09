@@ -13,6 +13,7 @@ use vize_l0::{FxHashMap, FxHashSet, String, append};
 use super::super::types::{VirtualTsGenerationOptions, VirtualTsOptions};
 use super::anchors::emit_props_shadow_anchor;
 use super::legacy_vue2::{needs_legacy_vue2_helpers, ref_unwrap_helper_for_template};
+use crate::virtual_ts::helpers::shared_types::{TEMPLATE_REF_UNWRAP, TEMPLATE_REF_UNWRAP_NARROWED};
 use crate::virtual_ts::{VizeMapping, VizeSemanticLink, VizeSemanticLinkKind};
 
 /// Setup-side template artifacts are emitted before the template closure owns
@@ -60,6 +61,10 @@ pub(super) struct TemplateRefUnwraps {
     legacy_helpers: bool,
     dialect: VueVersion,
     hoist_shared_preamble: bool,
+    /// Modern non-generic shadows name the shared unwrap aliases directly: a
+    /// per-file alias, even one forwarding to them, keeps TypeScript from
+    /// reusing their instantiations across files.
+    shared_unwrap: bool,
     props_shadow_anchor: Option<Range<usize>>,
 }
 
@@ -96,6 +101,10 @@ pub(super) fn collect_and_emit_scope_preamble(
         options,
         generation_options,
     );
+    unwraps.shared_unwrap = unwraps.hoist_shared_preamble
+        && !unwraps.legacy_helpers
+        && !has_generic_param
+        && !generation_options.local_template_ref_unwrap;
     let captures = unwraps.emit_type_captures(ts);
     unwraps.props_shadow_anchor = if unwraps.props_object_binding() == "props" {
         emit_props_shadow_anchor(ts, summary, template_referenced_names)
@@ -181,7 +190,7 @@ impl TemplateRefUnwraps {
             .iter()
             .any(|binding| binding == name)
         {
-            append!(annotation, "__U<__R_{name}>");
+            append!(annotation, "{}<__R_{name}>", self.unwrap_alias());
         } else if self.deferred_bindings.iter().any(|binding| binding == name) {
             append!(annotation, "__D_{name}");
         } else {
@@ -286,6 +295,7 @@ impl TemplateRefUnwraps {
             legacy_helpers,
             dialect: generation_options.dialect,
             hoist_shared_preamble: generation_options.hoist_shared_preamble,
+            shared_unwrap: false,
             props_shadow_anchor: None,
         }
     }
@@ -381,41 +391,1007 @@ impl TemplateRefUnwraps {
         }
 
         ts.push_str("    // Auto-unwrap Vue refs in template scope\n");
-        ts.push_str(ref_unwrap_helper_for_template(
-            self.legacy_helpers,
-            self.dialect,
-            has_generic_param,
-            self.hoist_shared_preamble,
-        ));
-        if !self.narrowed_bindings.is_empty() {
-            crate::virtual_ts::generated_names::push_lib_text(
-                ts,
-                if has_generic_param && !self.legacy_helpers {
-                    GENERIC_NARROWED_REF_UNWRAP_HELPER
-                } else {
-                    NARROWED_REF_UNWRAP_HELPER
-                },
-            );
+        if !self.shared_unwrap {
+            ts.push_str(ref_unwrap_helper_for_template(
+                self.legacy_helpers,
+                self.dialect,
+                has_generic_param,
+                self.hoist_shared_preamble,
+            ));
+            if !self.narrowed_bindings.is_empty() {
+                crate::virtual_ts::generated_names::push_lib_text(
+                    ts,
+                    if has_generic_param && !self.legacy_helpers {
+                        GENERIC_NARROWED_REF_UNWRAP_HELPER
+                    } else {
+                        NARROWED_REF_UNWRAP_HELPER
+                    },
+                );
+            }
         }
         for name in &self.setup_bindings {
             let unwrap = self.unwrap_prefix(name);
-            record_template_shadow(ts, name, unwrap, ">", captures, semantic_links);
+            record_template_shadow(ts, name, &unwrap, ">", captures, semantic_links);
         }
         for name in &self.options_api_setup_bindings {
-            append!(ts, "    var {name}: __U<__R_{name}> = (void 0) as any;\n");
+            append!(
+                ts,
+                "    var {name}: {}<__R_{name}> = (void 0) as any;\n",
+                self.unwrap_alias()
+            );
         }
         for name in &self.auto_import_bindings {
             let unwrap = self.unwrap_prefix(name);
-            record_template_shadow(ts, name, unwrap, ">", captures, semantic_links);
+            record_template_shadow(ts, name, &unwrap, ">", captures, semantic_links);
         }
     }
 
-    fn unwrap_prefix(&self, name: &str) -> &'static str {
-        if self.narrowed_bindings.contains(name) {
-            "__UN<__R_"
+    fn unwrap_alias(&self) -> &'static str {
+        TEMPLATE_REF_UNWRAP.select(self.shared_unwrap)
+    }
+
+    fn unwrap_prefix(&self, name: &str) -> String {
+        let alias = if self.narrowed_bindings.contains(name) {
+            TEMPLATE_REF_UNWRAP_NARROWED.select(self.shared_unwrap)
         } else {
-            "__U<__R_"
+            self.unwrap_alias()
+        };
+        let mut prefix = String::from(alias);
+        prefix.push_str("<__R_");
+        prefix
+    }
+}
+
+fn record_typeof_capture(
+    ts: &mut crate::virtual_ts::TextBuf,
+    name: &str,
+    captures: &mut FxHashMap<String, Range<usize>>,
+    helper_prefix: &str,
+) {
+    append!(*ts, "  type {helper_prefix}_{name} = typeof ");
+    let start = ts.len();
+    append!(*ts, "{name};\n");
+    captures.insert(String::from(name), start..start + name.len());
+}
+
+fn record_template_shadow(
+    ts: &mut crate::virtual_ts::TextBuf,
+    name: &str,
+    type_prefix: &str,
+    type_suffix: &str,
+    captures: &FxHashMap<String, Range<usize>>,
+    semantic_links: &mut Vec<VizeSemanticLink>,
+) {
+    ts.push_str("    var ");
+    let start = ts.len();
+    append!(
+        *ts,
+        "{name}: {type_prefix}{name}{type_suffix} = (void 0) as any;\n"
+    );
+    if let Some(source_range) = captures.get(name) {
+        semantic_links.push(VizeSemanticLink {
+            source_range: source_range.clone(),
+            target_range: start..start + name.len(),
+            kind: VizeSemanticLinkKind::VueSetupTemplateRefUnwrap,
+        });
+    }
+}o_imports;
+mod deferred_bindings;
+mod narrowed_bindings;
+mod static_runtime_reads;
+mod template_uses;
+
+use std::ops::Range;
+
+use vize_croquis::{BindingType, Croquis};
+use vize_l0::config::VueVersion;
+use vize_l0::{FxHashMap, FxHashSet, String, append};
+
+use super::super::types::{VirtualTsGenerationOptions, VirtualTsOptions};
+use super::anchors::emit_props_shadow_anchor;
+use super::legacy_vue2::{needs_legacy_vue2_helpers, ref_unwrap_helper_for_template};
+use crate::virtual_ts::helpers::shared_types::{TEMPLATE_REF_UNWRAP, TEMPLATE_REF_UNWRAP_NARROWED};
+use crate::virtual_ts::{VizeMapping, VizeSemanticLink, VizeSemanticLinkKind};
+
+/// Setup-side template artifacts are emitted before the template closure owns
+/// any same-spelled local. Keep the caller's existing root-type phase intact.
+pub(super) fn emit_setup_artifacts(
+    ts: &mut crate::virtual_ts::TextBuf,
+    summary: &Croquis,
+    (options, generation): (&VirtualTsOptions, VirtualTsGenerationOptions<'_>),
+    type_only_names: &FxHashSet<String>,
+    root: Option<&vize_relief::RootNode<'_>>,
+    checks: super::super::types::VirtualTsCheckOptions,
+) -> bool {
+    static_runtime_reads::emit(ts, summary, root, generation);
+    super::root_element::emit_setup_type(ts, summary, options, type_only_names, root, checks)
+}
+
+/// `__U` for a binding the template narrows: `vue-tsc` asserts it as
+/// `NonNullable<T> & Ref & { value: Unwrapped<T> }` and reads `.value`, so a
+/// ref's own `value` absorbs the nullish members of a `Ref | undefined` union.
+/// A wholly-ref type and a type without any ref member resolve exactly as
+/// `__U` does; the latter keeps a plain `{ value }` object free of the
+/// assertion's intersection.
+const NARROWED_REF_UNWRAP_HELPER: &str = "    type __UN<T> = [T] extends [import('vue').Ref] ? __U<T> : [Extract<T, import('vue').Ref>] extends [never] ? __U<T> : (NonNullable<T> & import('vue').Ref<unknown> & { value: __U<T> })['value'];\n";
+/// Vue's generic template locals use the distributive `DistributeRef<T>`
+/// contract once an authored expression narrows them. Applying that contract
+/// to every generic setup binding leaves unrelated conditional-object locals
+/// unresolved, so keep it on the `__UN` path only (#11589).
+///
+/// The defaulted `__R` protects projects whose missing or temporary Vue
+/// declarations resolve `Ref` to `any`; those projects must retain `T`.
+const GENERIC_NARROWED_REF_UNWRAP_HELPER: &str = "    type __UN<T, __R = import('vue').Ref<any>> = 0 extends (1 & __R) ? T : T extends import('vue').Ref<infer __V> ? __V : T;\n";
+
+pub(super) struct TemplateRefUnwraps {
+    setup_bindings: Vec<String>,
+    options_api_setup_bindings: Vec<String>,
+    auto_import_bindings: Vec<String>,
+    /// Setup bindings whose assignment is deferred past their declaration. See
+    /// `deferred_bindings` for why they need the same shadowing treatment.
+    deferred_bindings: Vec<String>,
+    /// Maybe-ref setup bindings the template narrows somewhere, which
+    /// `vue-tsc` reads through `.value` everywhere. See `narrowed_bindings`.
+    narrowed_bindings: FxHashSet<String>,
+    /// Dialect and preamble decisions resolved once at collection time; they
+    /// also select the `__U` helper this shadow set is emitted against.
+    legacy_helpers: bool,
+    dialect: VueVersion,
+    hoist_shared_preamble: bool,
+    /// Modern non-generic shadows name the shared unwrap aliases directly: a
+    /// per-file alias, even one forwarding to them, keeps TypeScript from
+    /// reusing their instantiations across files.
+    shared_unwrap: bool,
+    props_shadow_anchor: Option<Range<usize>>,
+}
+
+#[expect(clippy::too_many_arguments, reason = "independent emitter inputs")]
+pub(super) fn collect_and_emit_scope_preamble(
+    ts: &mut crate::virtual_ts::TextBuf,
+    summary: &Croquis,
+    options_api: bool,
+    template_referenced_names: &FxHashSet<String>,
+    template_value_names: &FxHashSet<String>,
+    imported_names_without_script_value_use: &FxHashSet<String>,
+    script_content: Option<&str>,
+    imported_names: &FxHashSet<&str>,
+    options: &VirtualTsOptions,
+    generation_options: VirtualTsGenerationOptions<'_>,
+    has_generic_param: bool,
+    capture_template: bool,
+    template_source: &str,
+    script_source_offset: &dyn Fn(usize) -> usize,
+    (semantic_links, mappings, template_offset): (
+        &mut Vec<VizeSemanticLink>,
+        &mut Vec<VizeMapping>,
+        u32,
+    ),
+) -> TemplateRefUnwraps {
+    let mut unwraps = TemplateRefUnwraps::collect(
+        summary,
+        options_api,
+        Some(template_referenced_names),
+        template_value_names,
+        imported_names_without_script_value_use,
+        script_content,
+        imported_names,
+        options,
+        generation_options,
+    );
+    unwraps.shared_unwrap = unwraps.hoist_shared_preamble
+        && !unwraps.legacy_helpers
+        && !has_generic_param
+        && !generation_options.local_template_ref_unwrap;
+    let captures = unwraps.emit_type_captures(ts);
+    unwraps.props_shadow_anchor = if unwraps.props_object_binding() == "props" {
+        emit_props_shadow_anchor(ts, summary, template_referenced_names)
+    } else {
+        None
+    };
+    if generation_options.template_use_navigation {
+        let lexical = unwraps.lexical_template_shadowed_bindings();
+        template_uses::emit_navigation(
+            ts,
+            mappings,
+            summary,
+            &lexical,
+            template_source,
+            template_offset,
+        );
+        template_uses::emit_options_api_navigation(
+            ts,
+            mappings,
+            semantic_links,
+            summary,
+            &unwraps.options_api_setup_bindings,
+            template_source,
+            template_offset,
+            script_content,
+            script_source_offset,
+        );
+    }
+    // Semicolon prevents ASI issues when user script doesn't end with `;`
+    // (e.g., `console.log(x)\n(function...)` would be parsed as a call)
+    ts.push_str(if capture_template {
+        "  const __vize_template = (function __template() {\n"
+    } else {
+        "  ;(function __template() {\n"
+    });
+    unwraps.emit_template_variables(ts, has_generic_param, &captures, semantic_links);
+    if generation_options.template_use_navigation {
+        let shadowed = unwraps.template_shadowed_bindings();
+        template_uses::emit_hover(
+            ts,
+            mappings,
+            summary,
+            &shadowed,
+            template_source,
+            template_offset,
+            |name| unwraps.template_hover_type(name),
+        );
+    }
+    unwraps
+}
+
+impl TemplateRefUnwraps {
+    fn lexical_template_shadowed_bindings(&self) -> Vec<&str> {
+        self.setup_bindings
+            .iter()
+            .chain(&self.auto_import_bindings)
+            .chain(&self.deferred_bindings)
+            .map(String::as_str)
+            .collect()
+    }
+
+    fn template_shadowed_bindings(&self) -> Vec<&str> {
+        self.setup_bindings
+            .iter()
+            .chain(&self.options_api_setup_bindings)
+            .chain(&self.auto_import_bindings)
+            .chain(&self.deferred_bindings)
+            .map(String::as_str)
+            .collect()
+    }
+
+    fn template_hover_type(&self, name: &str) -> Option<String> {
+        let mut annotation = String::default();
+        if self
+            .setup_bindings
+            .iter()
+            .chain(&self.auto_import_bindings)
+            .any(|binding| binding == name)
+        {
+            append!(annotation, "{}{name}>", self.unwrap_prefix(name));
+        } else if self
+            .options_api_setup_bindings
+            .iter()
+            .any(|binding| binding == name)
+        {
+            append!(annotation, "{}<__R_{name}>", self.unwrap_alias());
+        } else if self.deferred_bindings.iter().any(|binding| binding == name) {
+            append!(annotation, "__D_{name}");
+        } else {
+            return None;
         }
+        Some(annotation)
+    }
+
+    #[expect(clippy::too_many_arguments, reason = "independent collection inputs")]
+    pub(super) fn collect(
+        summary: &Croquis,
+        options_api: bool,
+        template_referenced_names: Option<&FxHashSet<String>>,
+        template_value_names: &FxHashSet<String>,
+        imported_names_without_script_value_use: &FxHashSet<String>,
+        script_content: Option<&str>,
+        imported_names: &FxHashSet<&str>,
+        options: &VirtualTsOptions,
+        generation_options: VirtualTsGenerationOptions<'_>,
+    ) -> Self {
+        let legacy_helpers =
+            needs_legacy_vue2_helpers(generation_options.legacy_vue2, generation_options.dialect);
+        let options_api_setup_bindings =
+            crate::options_api_setup_spread::collect_template_setup_bindings(
+                summary,
+                options_api,
+                template_referenced_names,
+                script_content,
+            );
+        let options_api_setup_binding_names: FxHashSet<&str> = options_api_setup_bindings
+            .iter()
+            .map(|name| name.as_str())
+            .collect();
+
+        let mut setup_bindings: Vec<String> =
+            crate::virtual_ts::script_facts::with_bindings(summary, |bindings| {
+                bindings
+                    .typed()
+                    .filter(|(name, _)| {
+                        template_referenced_names
+                            .is_none_or(|referenced| referenced.contains(*name))
+                    })
+                    .filter(|(name, _)| {
+                        !imported_names_without_script_value_use.contains(*name)
+                            || template_value_names.contains(*name)
+                    })
+                    .filter(|(name, _)| !options_api_setup_binding_names.contains(name))
+                    .filter(|(name, binding_type)| {
+                        summary.reactivity.needs_value_access(name)
+                            || matches!(binding_type, BindingType::SetupMaybeRef)
+                    })
+                    .map(|(name, _)| String::from(name))
+                    .collect()
+            });
+        setup_bindings.sort_unstable();
+        let auto_import_bindings = template_referenced_names
+            .map(|referenced| {
+                auto_imports::collect(
+                    summary,
+                    options,
+                    imported_names,
+                    &options_api_setup_binding_names,
+                    referenced,
+                    legacy_helpers,
+                )
+            })
+            .unwrap_or_default();
+
+        // Authored and auto-imported bindings unwrap identically, so both
+        // provenances are narrowing candidates.
+        let maybe_ref_bindings: Vec<&str> = if legacy_helpers {
+            Vec::new()
+        } else {
+            setup_bindings
+                .iter()
+                .chain(&auto_import_bindings)
+                .map(String::as_str)
+                .filter(|name| !summary.reactivity.needs_value_access(name))
+                .collect()
+        };
+        let narrowed_bindings = narrowed_bindings::collect(summary, &maybe_ref_bindings);
+
+        // Shadowing a name twice would redeclare it with a conflicting type,
+        // so the deferred set excludes everything already shadowed above.
+        let deferred_bindings = deferred_bindings::collect_deferred_setup_bindings(
+            summary,
+            script_content,
+            template_referenced_names,
+            |name| {
+                setup_bindings.iter().any(|shadowed| shadowed == name)
+                    || auto_import_bindings.iter().any(|shadowed| shadowed == name)
+                    || options_api_setup_binding_names.contains(name)
+            },
+        );
+
+        Self {
+            setup_bindings,
+            options_api_setup_bindings,
+            auto_import_bindings,
+            deferred_bindings,
+            narrowed_bindings,
+            legacy_helpers,
+            dialect: generation_options.dialect,
+            hoist_shared_preamble: generation_options.hoist_shared_preamble,
+            shared_unwrap: false,
+            props_shadow_anchor: None,
+        }
+    }
+
+    pub(super) fn props_shadow_anchor(&self) -> Option<&Range<usize>> {
+        self.props_shadow_anchor.as_ref()
+    }
+
+    /// The mapper's resolved props object normally owns `props` in the
+    /// template closure. An authored maybe-ref with that name already emits a
+    /// template-local shadow, so the generated object must move aside while
+    /// template expressions keep resolving to the authored binding.
+    pub(super) fn props_object_binding(&self) -> &'static str {
+        let shadows_props = self
+            .setup_bindings
+            .iter()
+            .chain(&self.options_api_setup_bindings)
+            .chain(&self.auto_import_bindings)
+            .chain(&self.deferred_bindings)
+            .any(|name| name.as_str() == "props");
+        if shadows_props {
+            "__vize_props"
+        } else {
+            "props"
+        }
+    }
+
+    pub(super) fn setup_spread_bindings(&self) -> &[String] {
+        &self.options_api_setup_bindings
+    }
+
+    pub(super) fn emit_type_captures(
+        &self,
+        mut ts: &mut crate::virtual_ts::TextBuf,
+    ) -> FxHashMap<String, Range<usize>> {
+        let mut captures = deferred_bindings::emit_type_captures(ts, &self.deferred_bindings);
+        if !self.setup_bindings.is_empty() {
+            ts.push_str("  // Ref type captures (before template scope shadows them)\n");
+            for name in &self.setup_bindings {
+                record_typeof_capture(ts, name, &mut captures, "__R");
+            }
+        }
+        if !self.options_api_setup_bindings.is_empty() {
+            ts.push_str(
+                "  // Options API setup return type captures (before template scope shadows them)\n",
+            );
+            ts.push_str(
+                "  type $OptionsSetupBinding<K extends string> = typeof __default__ extends abstract new (...args: any) => infer __I ? K extends keyof __I ? __I[K] : any : any;\n",
+            );
+            for name in &self.options_api_setup_bindings {
+                append!(
+                    ts,
+                    "  type __R_{name} = $OptionsSetupBinding<\"{name}\">;\n"
+                );
+            }
+        }
+        if !self.auto_import_bindings.is_empty() {
+            ts.push_str(
+                "  // Auto-import ref type captures (before template scope shadows them)\n",
+            );
+            for name in &self.auto_import_bindings {
+                record_typeof_capture(ts, name, &mut captures, "__R");
+            }
+        }
+        captures
+    }
+
+    /// Shadow ref bindings with their unwrapped types. `var` allows
+    /// reassignment, which Vue templates do to refs.
+    ///
+    /// Emits nothing at all when template scope has no setup binding to
+    /// shadow, which is why the conditional types `__U` delegates to are
+    /// declared alongside it rather than at module scope — see
+    /// `legacy_vue2::MODERN_REF_UNWRAP_HELPER`.
+    pub(super) fn emit_template_variables(
+        &self,
+        mut ts: &mut crate::virtual_ts::TextBuf,
+        has_generic_param: bool,
+        captures: &FxHashMap<String, Range<usize>>,
+        semantic_links: &mut Vec<VizeSemanticLink>,
+    ) {
+        deferred_bindings::emit_template_variables(
+            ts,
+            &self.deferred_bindings,
+            captures,
+            semantic_links,
+        );
+        if self.setup_bindings.is_empty()
+            && self.options_api_setup_bindings.is_empty()
+            && self.auto_import_bindings.is_empty()
+        {
+            return;
+        }
+
+        ts.push_str("    // Auto-unwrap Vue refs in template scope\n");
+        if !self.shared_unwrap {
+            ts.push_str(ref_unwrap_helper_for_template(
+                self.legacy_helpers,
+                self.dialect,
+                has_generic_param,
+                self.hoist_shared_preamble,
+            ));
+            if !self.narrowed_bindings.is_empty() {
+                crate::virtual_ts::generated_names::push_lib_text(
+                    ts,
+                    if has_generic_param && !self.legacy_helpers {
+                        GENERIC_NARROWED_REF_UNWRAP_HELPER
+                    } else {
+                        NARROWED_REF_UNWRAP_HELPER
+                    },
+                );
+            }
+        }
+        for name in &self.setup_bindings {
+            let unwrap = self.unwrap_prefix(name);
+            record_template_shadow(ts, name, &unwrap, ">", captures, semantic_links);
+        }
+        for name in &self.options_api_setup_bindings {
+            append!(
+                ts,
+                "    var {name}: {}<__R_{name}> = (void 0) as any;\n",
+                self.unwrap_alias()
+            );
+        }
+        for name in &self.auto_import_bindings {
+            let unwrap = self.unwrap_prefix(name);
+            record_template_shadow(ts, name, &unwrap, ">", captures, semantic_links);
+        }
+    }
+
+    fn unwrap_alias(&self) -> &'static str {
+        TEMPLATE_REF_UNWRAP.select(self.shared_unwrap)
+    }
+
+    fn unwrap_prefix(&self, name: &str) -> String {
+        let alias = if self.narrowed_bindings.contains(name) {
+            TEMPLATE_REF_UNWRAP_NARROWED.select(self.shared_unwrap)
+        } else {
+            self.unwrap_alias()
+        };
+        let mut prefix = String::from(alias);
+        prefix.push_str("<__R_");
+        prefix
+    }
+}
+
+fn record_typeof_capture(
+    ts: &mut crate::virtual_ts::TextBuf,
+    name: &str,
+    captures: &mut FxHashMap<String, Range<usize>>,
+    helper_prefix: &str,
+) {
+    append!(*ts, "  type {helper_prefix}_{name} = typeof ");
+    let start = ts.len();
+    append!(*ts, "{name};\n");
+    captures.insert(String::from(name), start..start + name.len());
+}
+
+fn record_template_shadow(
+    ts: &mut crate::virtual_ts::TextBuf,
+    name: &str,
+    type_prefix: &str,
+    type_suffix: &str,
+    captures: &FxHashMap<String, Range<usize>>,
+    semantic_links: &mut Vec<VizeSemanticLink>,
+) {
+    ts.push_str("    var ");
+    let start = ts.len();
+    append!(
+        *ts,
+        "{name}: {type_prefix}{name}{type_suffix} = (void 0) as any;\n"
+    );
+    if let Some(source_range) = captures.get(name) {
+        semantic_links.push(VizeSemanticLink {
+            source_range: source_range.clone(),
+            target_range: start..start + name.len(),
+            kind: VizeSemanticLinkKind::VueSetupTemplateRefUnwrap,
+        });
+    }
+}mod deferred_bindings;
+mod narrowed_bindings;
+mod static_runtime_reads;
+mod template_uses;
+
+use std::ops::Range;
+
+use vize_croquis::{BindingType, Croquis};
+use vize_l0::config::VueVersion;
+use vize_l0::{FxHashMap, FxHashSet, String, append};
+
+use super::super::types::{VirtualTsGenerationOptions, VirtualTsOptions};
+use super::anchors::emit_props_shadow_anchor;
+use super::legacy_vue2::{needs_legacy_vue2_helpers, ref_unwrap_helper_for_template};
+use crate::virtual_ts::helpers::shared_types::{TEMPLATE_REF_UNWRAP, TEMPLATE_REF_UNWRAP_NARROWED};
+use crate::virtual_ts::{VizeMapping, VizeSemanticLink, VizeSemanticLinkKind};
+
+/// Setup-side template artifacts are emitted before the template closure owns
+/// any same-spelled local. Keep the caller's existing root-type phase intact.
+pub(super) fn emit_setup_artifacts(
+    ts: &mut crate::virtual_ts::TextBuf,
+    summary: &Croquis,
+    (options, generation): (&VirtualTsOptions, VirtualTsGenerationOptions<'_>),
+    type_only_names: &FxHashSet<String>,
+    root: Option<&vize_relief::RootNode<'_>>,
+    checks: super::super::types::VirtualTsCheckOptions,
+) -> bool {
+    static_runtime_reads::emit(ts, summary, root, generation);
+    super::root_element::emit_setup_type(ts, summary, options, type_only_names, root, checks)
+}
+
+/// `__U` for a binding the template narrows: `vue-tsc` asserts it as
+/// `NonNullable<T> & Ref & { value: Unwrapped<T> }` and reads `.value`, so a
+/// ref's own `value` absorbs the nullish members of a `Ref | undefined` union.
+/// A wholly-ref type and a type without any ref member resolve exactly as
+/// `__U` does; the latter keeps a plain `{ value }` object free of the
+/// assertion's intersection.
+const NARROWED_REF_UNWRAP_HELPER: &str = "    type __UN<T> = [T] extends [import('vue').Ref] ? __U<T> : [Extract<T, import('vue').Ref>] extends [never] ? __U<T> : (NonNullable<T> & import('vue').Ref<unknown> & { value: __U<T> })['value'];\n";
+/// Vue's generic template locals use the distributive `DistributeRef<T>`
+/// contract once an authored expression narrows them. Applying that contract
+/// to every generic setup binding leaves unrelated conditional-object locals
+/// unresolved, so keep it on the `__UN` path only (#11589).
+///
+/// The defaulted `__R` protects projects whose missing or temporary Vue
+/// declarations resolve `Ref` to `any`; those projects must retain `T`.
+const GENERIC_NARROWED_REF_UNWRAP_HELPER: &str = "    type __UN<T, __R = import('vue').Ref<any>> = 0 extends (1 & __R) ? T : T extends import('vue').Ref<infer __V> ? __V : T;\n";
+
+pub(super) struct TemplateRefUnwraps {
+    setup_bindings: Vec<String>,
+    options_api_setup_bindings: Vec<String>,
+    auto_import_bindings: Vec<String>,
+    /// Setup bindings whose assignment is deferred past their declaration. See
+    /// `deferred_bindings` for why they need the same shadowing treatment.
+    deferred_bindings: Vec<String>,
+    /// Maybe-ref setup bindings the template narrows somewhere, which
+    /// `vue-tsc` reads through `.value` everywhere. See `narrowed_bindings`.
+    narrowed_bindings: FxHashSet<String>,
+    /// Dialect and preamble decisions resolved once at collection time; they
+    /// also select the `__U` helper this shadow set is emitted against.
+    legacy_helpers: bool,
+    dialect: VueVersion,
+    hoist_shared_preamble: bool,
+    /// Modern non-generic shadows name the shared unwrap aliases directly: a
+    /// per-file alias, even one forwarding to them, keeps TypeScript from
+    /// reusing their instantiations across files.
+    shared_unwrap: bool,
+    props_shadow_anchor: Option<Range<usize>>,
+}
+
+#[expect(clippy::too_many_arguments, reason = "independent emitter inputs")]
+pub(super) fn collect_and_emit_scope_preamble(
+    ts: &mut crate::virtual_ts::TextBuf,
+    summary: &Croquis,
+    options_api: bool,
+    template_referenced_names: &FxHashSet<String>,
+    template_value_names: &FxHashSet<String>,
+    imported_names_without_script_value_use: &FxHashSet<String>,
+    script_content: Option<&str>,
+    imported_names: &FxHashSet<&str>,
+    options: &VirtualTsOptions,
+    generation_options: VirtualTsGenerationOptions<'_>,
+    has_generic_param: bool,
+    capture_template: bool,
+    template_source: &str,
+    script_source_offset: &dyn Fn(usize) -> usize,
+    (semantic_links, mappings, template_offset): (
+        &mut Vec<VizeSemanticLink>,
+        &mut Vec<VizeMapping>,
+        u32,
+    ),
+) -> TemplateRefUnwraps {
+    let mut unwraps = TemplateRefUnwraps::collect(
+        summary,
+        options_api,
+        Some(template_referenced_names),
+        template_value_names,
+        imported_names_without_script_value_use,
+        script_content,
+        imported_names,
+        options,
+        generation_options,
+    );
+    unwraps.shared_unwrap = unwraps.hoist_shared_preamble
+        && !unwraps.legacy_helpers
+        && !has_generic_param
+        && !generation_options.local_template_ref_unwrap;
+    let captures = unwraps.emit_type_captures(ts);
+    unwraps.props_shadow_anchor = if unwraps.props_object_binding() == "props" {
+        emit_props_shadow_anchor(ts, summary, template_referenced_names)
+    } else {
+        None
+    };
+    if generation_options.template_use_navigation {
+        let lexical = unwraps.lexical_template_shadowed_bindings();
+        template_uses::emit_navigation(
+            ts,
+            mappings,
+            summary,
+            &lexical,
+            template_source,
+            template_offset,
+        );
+        template_uses::emit_options_api_navigation(
+            ts,
+            mappings,
+            semantic_links,
+            summary,
+            &unwraps.options_api_setup_bindings,
+            template_source,
+            template_offset,
+            script_content,
+            script_source_offset,
+        );
+    }
+    // Semicolon prevents ASI issues when user script doesn't end with `;`
+    // (e.g., `console.log(x)\n(function...)` would be parsed as a call)
+    ts.push_str(if capture_template {
+        "  const __vize_template = (function __template() {\n"
+    } else {
+        "  ;(function __template() {\n"
+    });
+    unwraps.emit_template_variables(ts, has_generic_param, &captures, semantic_links);
+    if generation_options.template_use_navigation {
+        let shadowed = unwraps.template_shadowed_bindings();
+        template_uses::emit_hover(
+            ts,
+            mappings,
+            summary,
+            &shadowed,
+            template_source,
+            template_offset,
+            |name| unwraps.template_hover_type(name),
+        );
+    }
+    unwraps
+}
+
+impl TemplateRefUnwraps {
+    fn lexical_template_shadowed_bindings(&self) -> Vec<&str> {
+        self.setup_bindings
+            .iter()
+            .chain(&self.auto_import_bindings)
+            .chain(&self.deferred_bindings)
+            .map(String::as_str)
+            .collect()
+    }
+
+    fn template_shadowed_bindings(&self) -> Vec<&str> {
+        self.setup_bindings
+            .iter()
+            .chain(&self.options_api_setup_bindings)
+            .chain(&self.auto_import_bindings)
+            .chain(&self.deferred_bindings)
+            .map(String::as_str)
+            .collect()
+    }
+
+    fn template_hover_type(&self, name: &str) -> Option<String> {
+        let mut annotation = String::default();
+        if self
+            .setup_bindings
+            .iter()
+            .chain(&self.auto_import_bindings)
+            .any(|binding| binding == name)
+        {
+            append!(annotation, "{}{name}>", self.unwrap_prefix(name));
+        } else if self
+            .options_api_setup_bindings
+            .iter()
+            .any(|binding| binding == name)
+        {
+            append!(annotation, "{}<__R_{name}>", self.unwrap_alias());
+        } else if self.deferred_bindings.iter().any(|binding| binding == name) {
+            append!(annotation, "__D_{name}");
+        } else {
+            return None;
+        }
+        Some(annotation)
+    }
+
+    #[expect(clippy::too_many_arguments, reason = "independent collection inputs")]
+    pub(super) fn collect(
+        summary: &Croquis,
+        options_api: bool,
+        template_referenced_names: Option<&FxHashSet<String>>,
+        template_value_names: &FxHashSet<String>,
+        imported_names_without_script_value_use: &FxHashSet<String>,
+        script_content: Option<&str>,
+        imported_names: &FxHashSet<&str>,
+        options: &VirtualTsOptions,
+        generation_options: VirtualTsGenerationOptions<'_>,
+    ) -> Self {
+        let legacy_helpers =
+            needs_legacy_vue2_helpers(generation_options.legacy_vue2, generation_options.dialect);
+        let options_api_setup_bindings =
+            crate::options_api_setup_spread::collect_template_setup_bindings(
+                summary,
+                options_api,
+                template_referenced_names,
+                script_content,
+            );
+        let options_api_setup_binding_names: FxHashSet<&str> = options_api_setup_bindings
+            .iter()
+            .map(|name| name.as_str())
+            .collect();
+
+        let mut setup_bindings: Vec<String> =
+            crate::virtual_ts::script_facts::with_bindings(summary, |bindings| {
+                bindings
+                    .typed()
+                    .filter(|(name, _)| {
+                        template_referenced_names
+                            .is_none_or(|referenced| referenced.contains(*name))
+                    })
+                    .filter(|(name, _)| {
+                        !imported_names_without_script_value_use.contains(*name)
+                            || template_value_names.contains(*name)
+                    })
+                    .filter(|(name, _)| !options_api_setup_binding_names.contains(name))
+                    .filter(|(name, binding_type)| {
+                        summary.reactivity.needs_value_access(name)
+                            || matches!(binding_type, BindingType::SetupMaybeRef)
+                    })
+                    .map(|(name, _)| String::from(name))
+                    .collect()
+            });
+        setup_bindings.sort_unstable();
+        let auto_import_bindings = template_referenced_names
+            .map(|referenced| {
+                auto_imports::collect(
+                    summary,
+                    options,
+                    imported_names,
+                    &options_api_setup_binding_names,
+                    referenced,
+                    legacy_helpers,
+                )
+            })
+            .unwrap_or_default();
+
+        // Authored and auto-imported bindings unwrap identically, so both
+        // provenances are narrowing candidates.
+        let maybe_ref_bindings: Vec<&str> = if legacy_helpers {
+            Vec::new()
+        } else {
+            setup_bindings
+                .iter()
+                .chain(&auto_import_bindings)
+                .map(String::as_str)
+                .filter(|name| !summary.reactivity.needs_value_access(name))
+                .collect()
+        };
+        let narrowed_bindings = narrowed_bindings::collect(summary, &maybe_ref_bindings);
+
+        // Shadowing a name twice would redeclare it with a conflicting type,
+        // so the deferred set excludes everything already shadowed above.
+        let deferred_bindings = deferred_bindings::collect_deferred_setup_bindings(
+            summary,
+            script_content,
+            template_referenced_names,
+            |name| {
+                setup_bindings.iter().any(|shadowed| shadowed == name)
+                    || auto_import_bindings.iter().any(|shadowed| shadowed == name)
+                    || options_api_setup_binding_names.contains(name)
+            },
+        );
+
+        Self {
+            setup_bindings,
+            options_api_setup_bindings,
+            auto_import_bindings,
+            deferred_bindings,
+            narrowed_bindings,
+            legacy_helpers,
+            dialect: generation_options.dialect,
+            hoist_shared_preamble: generation_options.hoist_shared_preamble,
+            shared_unwrap: false,
+            props_shadow_anchor: None,
+        }
+    }
+
+    pub(super) fn props_shadow_anchor(&self) -> Option<&Range<usize>> {
+        self.props_shadow_anchor.as_ref()
+    }
+
+    /// The mapper's resolved props object normally owns `props` in the
+    /// template closure. An authored maybe-ref with that name already emits a
+    /// template-local shadow, so the generated object must move aside while
+    /// template expressions keep resolving to the authored binding.
+    pub(super) fn props_object_binding(&self) -> &'static str {
+        let shadows_props = self
+            .setup_bindings
+            .iter()
+            .chain(&self.options_api_setup_bindings)
+            .chain(&self.auto_import_bindings)
+            .chain(&self.deferred_bindings)
+            .any(|name| name.as_str() == "props");
+        if shadows_props {
+            "__vize_props"
+        } else {
+            "props"
+        }
+    }
+
+    pub(super) fn setup_spread_bindings(&self) -> &[String] {
+        &self.options_api_setup_bindings
+    }
+
+    pub(super) fn emit_type_captures(
+        &self,
+        mut ts: &mut crate::virtual_ts::TextBuf,
+    ) -> FxHashMap<String, Range<usize>> {
+        let mut captures = deferred_bindings::emit_type_captures(ts, &self.deferred_bindings);
+        if !self.setup_bindings.is_empty() {
+            ts.push_str("  // Ref type captures (before template scope shadows them)\n");
+            for name in &self.setup_bindings {
+                record_typeof_capture(ts, name, &mut captures, "__R");
+            }
+        }
+        if !self.options_api_setup_bindings.is_empty() {
+            ts.push_str(
+                "  // Options API setup return type captures (before template scope shadows them)\n",
+            );
+            ts.push_str(
+                "  type $OptionsSetupBinding<K extends string> = typeof __default__ extends abstract new (...args: any) => infer __I ? K extends keyof __I ? __I[K] : any : any;\n",
+            );
+            for name in &self.options_api_setup_bindings {
+                append!(
+                    ts,
+                    "  type __R_{name} = $OptionsSetupBinding<\"{name}\">;\n"
+                );
+            }
+        }
+        if !self.auto_import_bindings.is_empty() {
+            ts.push_str(
+                "  // Auto-import ref type captures (before template scope shadows them)\n",
+            );
+            for name in &self.auto_import_bindings {
+                record_typeof_capture(ts, name, &mut captures, "__R");
+            }
+        }
+        captures
+    }
+
+    /// Shadow ref bindings with their unwrapped types. `var` allows
+    /// reassignment, which Vue templates do to refs.
+    ///
+    /// Emits nothing at all when template scope has no setup binding to
+    /// shadow, which is why the conditional types `__U` delegates to are
+    /// declared alongside it rather than at module scope — see
+    /// `legacy_vue2::MODERN_REF_UNWRAP_HELPER`.
+    pub(super) fn emit_template_variables(
+        &self,
+        mut ts: &mut crate::virtual_ts::TextBuf,
+        has_generic_param: bool,
+        captures: &FxHashMap<String, Range<usize>>,
+        semantic_links: &mut Vec<VizeSemanticLink>,
+    ) {
+        deferred_bindings::emit_template_variables(
+            ts,
+            &self.deferred_bindings,
+            captures,
+            semantic_links,
+        );
+        if self.setup_bindings.is_empty()
+            && self.options_api_setup_bindings.is_empty()
+            && self.auto_import_bindings.is_empty()
+        {
+            return;
+        }
+
+        ts.push_str("    // Auto-unwrap Vue refs in template scope\n");
+        if !self.shared_unwrap {
+            ts.push_str(ref_unwrap_helper_for_template(
+                self.legacy_helpers,
+                self.dialect,
+                has_generic_param,
+                self.hoist_shared_preamble,
+            ));
+            if !self.narrowed_bindings.is_empty() {
+                crate::virtual_ts::generated_names::push_lib_text(
+                    ts,
+                    if has_generic_param && !self.legacy_helpers {
+                        GENERIC_NARROWED_REF_UNWRAP_HELPER
+                    } else {
+                        NARROWED_REF_UNWRAP_HELPER
+                    },
+                );
+            }
+        }
+        for name in &self.setup_bindings {
+            let unwrap = self.unwrap_prefix(name);
+            record_template_shadow(ts, name, &unwrap, ">", captures, semantic_links);
+        }
+        for name in &self.options_api_setup_bindings {
+            append!(
+                ts,
+                "    var {name}: {}<__R_{name}> = (void 0) as any;\n",
+                self.unwrap_alias()
+            );
+        }
+        for name in &self.auto_import_bindings {
+            let unwrap = self.unwrap_prefix(name);
+            record_template_shadow(ts, name, &unwrap, ">", captures, semantic_links);
+        }
+    }
+
+    fn unwrap_alias(&self) -> &'static str {
+        TEMPLATE_REF_UNWRAP.select(self.shared_unwrap)
+    }
+
+    fn unwrap_prefix(&self, name: &str) -> String {
+        let alias = if self.narrowed_bindings.contains(name) {
+            TEMPLATE_REF_UNWRAP_NARROWED.select(self.shared_unwrap)
+        } else {
+            self.unwrap_alias()
+        };
+        let mut prefix = String::from(alias);
+        prefix.push_str("<__R_");
+        prefix
     }
 }
 

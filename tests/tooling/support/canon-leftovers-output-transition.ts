@@ -8,6 +8,7 @@ import { unownedOwnedKeysHelperEdit } from "../../../tools/support/compat/conten
 import { beforePropValueOr } from "../../../tools/support/compat/content-mapper/prop-value-or-transition.ts";
 import { beforeListenerContract } from "../../../tools/support/compat/content-mapper/listener-contract-transition.ts";
 import { repoRoot } from "../_helpers/tool-commands.ts";
+import { beforeSharedTemplateRefUnwrapSource } from "../../../tools/support/compat/content-mapper/shared-template-ref-unwrap-transition.ts";
 
 type CanonLeftoversReceipt = {
   compiledPreamble: { edits: Array<{ before: string; after: string }> };
@@ -40,7 +41,10 @@ const identity = (text: string): Identity => ({
 });
 
 export function beforeCanonLeftoversSource(file: string, current: string): string {
-  current = beforePropValueOr(file, beforeListenerContract(file, current));
+  current = beforePropValueOr(
+    file,
+    beforeListenerContract(file, beforeSharedTemplateRefUnwrapSource(file, current)),
+  );
   const transition = receipt.files.find((candidate) => candidate.path === file);
   if (!transition) return current;
   assert.deepEqual(identity(current), transition.after);
