@@ -4,7 +4,7 @@ use crate::context::LintContext;
 use crate::linter::config::{LintResult, Linter};
 use crate::rules::facts::{NoUnusedSetupBindings, v_for_source_reads};
 use vize_atelier_sfc::SfcDescriptor;
-use vize_croquis::{Croquis, Drawer, DrawerOptions, drawer::LintTemplate};
+use vize_croquis::{Croquis, Drawer, DrawerOptions};
 use vize_l0::Allocator;
 
 pub(super) fn script_summary(
@@ -33,15 +33,9 @@ pub(super) fn script_summary(
         false,
     );
     if let Some(l2) = admitted {
-        let lowered = l2.lowered();
-        let reads = LintTemplate::new(
-            l2.surface(),
-            lowered.allocator,
-            &lowered.root,
-            &lowered.consumed_expressions,
-            lowered.caps.scoped_slot_attrs,
-        )
-        .with_compatibility_root(v_for_source_reads);
+        let reads = l2
+            .lint_template()
+            .with_compatibility_root(v_for_source_reads);
         summary.unused_bindings.retain(|name| !reads.contains(name));
     }
     summary
@@ -65,24 +59,12 @@ pub(super) fn variant(
     if unused {
         drawer = drawer.with_unused_bindings();
     }
-    let lowered = l2.lowered();
-    drawer.draw_lint_template(LintTemplate::new(
-        l2.surface(),
-        lowered.allocator,
-        &lowered.root,
-        &lowered.consumed_expressions,
-        lowered.caps.scoped_slot_attrs,
-    ));
+    drawer.draw_lint_template(l2.lint_template());
     let mut analysis = drawer.finish();
     if unused {
-        let reads = LintTemplate::new(
-            l2.surface(),
-            lowered.allocator,
-            &lowered.root,
-            &lowered.consumed_expressions,
-            lowered.caps.scoped_slot_attrs,
-        )
-        .with_compatibility_root(v_for_source_reads);
+        let reads = l2
+            .lint_template()
+            .with_compatibility_root(v_for_source_reads);
         analysis
             .unused_bindings
             .retain(|name| !reads.contains(name));
