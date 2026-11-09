@@ -30,7 +30,8 @@ pub(super) fn analyze(ctx: &IdeContext<'_>, semantic: &Semantic<'_>) -> Analysis
     };
     let mut result = Analysis::default();
     for style in &descriptor.styles {
-        for range in vize_croquis::sfc::__internal::v_bind_expression_ranges(&style.content) {
+        for call in vize_l1::css::bind::v_bind_calls(&style.content) {
+            let range = call.expression_range();
             let Some(expression) = style.content.get(range.clone()) else {
                 continue;
             };

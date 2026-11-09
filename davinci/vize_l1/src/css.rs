@@ -8,6 +8,7 @@ use alloc::vec::Vec;
 use cssparser::{CowRcStr, ParseError, ParseErrorKind, Token};
 use vize_l0::{SourceBlock, Span};
 
+pub mod bind;
 mod classes;
 mod empty;
 pub mod lang;
