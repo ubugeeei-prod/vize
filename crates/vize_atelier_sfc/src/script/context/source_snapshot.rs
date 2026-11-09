@@ -5,6 +5,9 @@
     reason = "immutable editor snapshots share Arc source text without copying open documents"
 )]
 
+mod directory_index;
+#[cfg(test)]
+mod directory_index_tests;
 mod resolution;
 #[cfg(test)]
 mod resolution_tests;
@@ -22,6 +25,7 @@ use super::type_world::ResolvedDependency;
 
 type ResolvedCell = Arc<OnceLock<Option<Arc<ResolvedDependency>>>>;
 type ResolutionCell = Arc<OnceLock<Option<PathBuf>>>;
+type DirectoryCell = Arc<OnceLock<Option<directory_index::IndexedDirectory>>>;
 
 #[derive(Debug, Hash, PartialEq, Eq)]
 enum ResolutionScope {
@@ -38,6 +42,9 @@ pub struct TypeSourceSnapshot {
     /// Candidate paths found to exist, with their identity. Importers in
     /// different directories probe the same modules. Misses are probed again.
     existing: Mutex<FxHashMap<PathBuf, PathBuf>>,
+    /// Physical directories a probe hit, by the spelling it was reached
+    /// through: their canonical path and the regular files listed once.
+    directories: Mutex<FxHashMap<PathBuf, DirectoryCell>>,
     pub(super) summaries: Mutex<FxHashMap<PathBuf, FileTypeSummary>>,
     /// Dependency module facts, parsed once per snapshot with their targets
     /// resolved against it, plus the modules a world walk follows from them.
