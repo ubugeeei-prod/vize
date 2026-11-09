@@ -61,6 +61,12 @@ const packages = [
     ],
   },
   {
+    name: "@vizejs/fresco-native",
+    sourceRoot: new URL("../../npm/fresco-native/", import.meta.url),
+    minimumDeclarations: 49,
+    entrypoints: [new URL("../../npm/fresco-native/index.d.ts", import.meta.url)],
+  },
+  {
     name: "@vizejs/unplugin",
     sourceRoot: npmRoot,
     minimumDeclarations: 20,
