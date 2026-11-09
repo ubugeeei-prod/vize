@@ -9,6 +9,7 @@ import {
   type RendererElement,
 } from "vue";
 import type { LayoutResultNapi } from "@vizejs/fresco-native";
+import { findHostNodeByFocusId } from "./focusRouting.js";
 import { hitTest as hitTestHostTree } from "./hitTesting.js";
 import type { FrescoInputEvent, FrescoRenderNode, FrescoRenderNodeKind } from "./protocol.js";
 import { frescoNodeToRenderNode } from "./renderPayload.js";
@@ -377,6 +378,10 @@ export function createRenderer(options: FrescoRendererOptions | (() => void) = {
         if (parent === root) return registered;
       }
       return undefined;
+    },
+    /** Find the live host node registered for one logical focus target. */
+    findNodeByFocusId(root: FrescoHostNode, focusId: string): FrescoHostNode | undefined {
+      return findHostNodeByFocusId(root, focusId);
     },
     /** Detach and dispose a registered node and every descendant exactly once. */
     destroyRecursively(id: number): boolean {

@@ -1,7 +1,11 @@
 import assert from "node:assert/strict";
 import { PassThrough } from "node:stream";
-import { h, ref } from "vue";
+import type { InputEventNapi } from "@vizejs/fresco-native";
+import { defineComponent, h, ref, type Ref } from "vue";
 import { test, vi } from "vitest";
+
+import { useFocus } from "./composables/useFocus.js";
+import type { FrescoRoutedInputEvent } from "./renderer.js";
 
 const nativeFixture = vi.hoisted(() => {
   let release: (native: object) => void = () => {};
@@ -17,7 +21,7 @@ const nativeFixture = vi.hoisted(() => {
     getTerminalInfo: vi.fn(() => ({ height: 24, width: 80 })),
     initLayout: vi.fn(),
     initTerminalWithOptions: vi.fn(),
-    pollEvent: vi.fn(() => null),
+    pollEvent: vi.fn<() => InputEventNapi | null>(() => null),
     renderTree,
     restoreTerminal: vi.fn(),
   };
@@ -74,5 +78,70 @@ test("waitUntilRenderFlush waits for an interactive mount before resolving", asy
   nativeFixture.release(nativeFixture.module);
   await Promise.all([mountPromise, flushPromise]);
   assert.equal(nativeFixture.renderTree.mock.calls.length, 1);
+  await app.unmount();
+});
+
+test("interactive input targets the active focus host and can retain Tab ownership", async () => {
+  const stdout = new PassThrough();
+  Object.assign(stdout, { columns: 80, rows: 24, isTTY: true });
+  const calls: string[] = [];
+  let firstFocused: Ref<boolean> | undefined;
+  let secondFocused: Ref<boolean> | undefined;
+  const Root = defineComponent({
+    name: "FocusedInputProbe",
+    setup() {
+      const first = useFocus({ id: "first", autoFocus: true });
+      const second = useFocus({ id: "second" });
+      firstFocused = first.isFocused;
+      secondFocused = second.isFocused;
+      return () =>
+        h("box", [
+          h("input", {
+            focusId: first.id,
+            onFocus: () => calls.push("focus"),
+            onKey: (event: FrescoRoutedInputEvent) => {
+              calls.push("key");
+              event.preventDefault();
+            },
+          }),
+          h("input", { focusId: second.id }),
+        ]);
+    },
+  });
+
+  nativeFixture.release(nativeFixture.module);
+  nativeFixture.module.pollEvent.mockReset();
+  nativeFixture.module.pollEvent
+    .mockReturnValueOnce({ eventType: "focus", key: "gained" })
+    .mockReturnValueOnce({
+      eventType: "key",
+      key: "tab",
+      modifiers: {
+        ctrl: false,
+        alt: false,
+        shift: false,
+        meta: false,
+        super: false,
+        hyper: false,
+        capsLock: false,
+        numLock: false,
+      },
+    })
+    .mockReturnValue(null);
+
+  const app = createApp(Root, {
+    interactive: true,
+    maxFps: 1_000,
+    patchConsole: false,
+    stdout: stdout as unknown as NodeJS.WriteStream,
+  });
+  await app.mount();
+  for (let attempt = 0; calls.length < 2 && attempt < 50; attempt += 1) {
+    await new Promise((resolve) => setTimeout(resolve, 2));
+  }
+
+  assert.deepEqual(calls, ["focus", "key"]);
+  assert.equal(firstFocused?.value, true);
+  assert.equal(secondFocused?.value, false);
   await app.unmount();
 });

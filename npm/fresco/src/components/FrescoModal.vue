@@ -97,6 +97,7 @@ const accessibilityProps = computed(() => ({
     align-items="center"
     width="100%"
     height="100%"
+    :focus-id="modalFocus.id"
     v-bind="accessibilityProps"
   >
     <Box

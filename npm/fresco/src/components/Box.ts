@@ -16,6 +16,8 @@ export type DimensionValue = FrescoDimension;
 export type BorderStyleName = FrescoBorderStyle | "round" | "bold";
 
 export interface BoxProps extends FrescoCanonicalStyle {
+  /** Logical useFocus target routed to this host node. */
+  focusId?: string;
   /** Padding X (left and right) */
   paddingX?: number;
   /** Padding Y (top and bottom) */
@@ -118,6 +120,7 @@ export const Box = defineComponent({
     overflow: String as PropType<BoxProps["overflow"]>,
     overflowX: String as PropType<BoxProps["overflowX"]>,
     overflowY: String as PropType<BoxProps["overflowY"]>,
+    focusId: String,
     border: String as PropType<BoxProps["border"]>,
     borderStyle: String as PropType<BoxProps["borderStyle"]>,
     borderTop: Boolean,
@@ -241,6 +244,7 @@ export const Box = defineComponent({
           "aria-hidden": props.ariaHidden,
           "aria-role": props.ariaRole,
           "aria-state": props.ariaState,
+          focusId: props.focusId,
         },
         children,
       );

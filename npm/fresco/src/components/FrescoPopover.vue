@@ -136,6 +136,7 @@ const accessibilityProps = computed(() => ({
       :fg
       :bg
       :padding="1"
+      :focus-id="popoverFocus.id"
       v-bind="accessibilityProps"
     >
       <slot />
