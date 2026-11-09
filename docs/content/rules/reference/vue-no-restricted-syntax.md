@@ -64,4 +64,4 @@ Then run `vp run lint`.
 - [Vue rules](../vue.md)
 - [Rule options](../options.md)
 - [All rules](../all.md)
-- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/compatibility_template.rs#L182)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/compatibility_template/restricted.rs#L16)

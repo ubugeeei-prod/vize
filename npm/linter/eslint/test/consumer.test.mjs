@@ -119,6 +119,21 @@ void test("the standalone public plugin shares rules and complete flat presets",
           },
         ],
       },
+      "vue/no-restricted-syntax": {
+        type: "array",
+        items: {
+          type: "string",
+          enum: [
+            "ArrayExpression",
+            "BinaryExpression",
+            "CallExpression",
+            "ConditionalExpression",
+            "ObjectExpression",
+            "UnaryExpression",
+          ],
+        },
+        uniqueItems: true,
+      },
       "vue/v-on-event-hyphenation": {
         type: "array",
         oneOf: [

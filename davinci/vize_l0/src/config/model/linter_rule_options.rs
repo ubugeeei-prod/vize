@@ -396,26 +396,6 @@ impl ConfigLintRuleOptions {
         self.label_has_for.as_ref()
     }
 
-    /// Configured style modes accepted by `vue/enforce-style-attribute`.
-    pub fn enforce_style_attribute(&self) -> Option<&EnforceStyleAttributeOptions> {
-        self.enforce_style_attribute.as_ref()
-    }
-
-    /// Configured selectors rejected by `vue/no-restricted-syntax`.
-    pub fn no_restricted_syntax(&self) -> Option<&NoRestrictedSyntaxOptions> {
-        self.no_restricted_syntax.as_ref()
-    }
-
-    /// Configured quoting policy for `vue/quote-props`.
-    pub fn quote_props(&self) -> Option<QuotePropsStyle> {
-        self.quote_props
-    }
-
-    /// Configured key ordering for `vue/sort-keys`.
-    pub fn sort_keys(&self) -> Option<SortKeysOptions> {
-        self.sort_keys
-    }
-
     /// Configured block order for `vue/sfc-element-order`.
     #[inline]
     pub fn sfc_element_order(&self) -> Option<SfcElementOrderOptions> {

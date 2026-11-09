@@ -349,7 +349,8 @@ export const purposeJa: Readonly<Record<string, string>> = {
   "vue/no-props-shadow": "script setup で prop と同名の宣言を検出します。",
   "vue/no-restricted-syntax": "設定した構文をテンプレート式で使う箇所を検出します。",
   "vue/no-restricted-v-bind": "制限対象の v-bind 引数を検出します。",
-  "vue/no-shadow-native-events": "ネイティブイベントと衝突するコンポーネントイベント名を検出します。",
+  "vue/no-shadow-native-events":
+    "ネイティブイベントと衝突するコンポーネントイベント名を検出します。",
   "vue/no-sparse-arrays": "テンプレート式の疎な配列を検出します。",
   "vue/no-useless-concat": "文字列リテラル同士の不要な連結を検出します。",
   "vue/object-shorthand": "テンプレート式のオブジェクトに短縮プロパティ記法を使います。",

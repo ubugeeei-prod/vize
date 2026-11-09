@@ -2,6 +2,7 @@
 
 use serde::{Deserialize, Serialize};
 
+use super::ConfigLintRuleOptions;
 use crate::String;
 
 /// Style-block modes accepted by `vue/enforce-style-attribute`.
@@ -113,6 +114,28 @@ impl Default for SortKeysOptions {
 
 const fn default_true() -> bool {
     true
+}
+
+impl ConfigLintRuleOptions {
+    /// Configured style modes accepted by `vue/enforce-style-attribute`.
+    pub fn enforce_style_attribute(&self) -> Option<&EnforceStyleAttributeOptions> {
+        self.enforce_style_attribute.as_ref()
+    }
+
+    /// Configured selectors rejected by `vue/no-restricted-syntax`.
+    pub fn no_restricted_syntax(&self) -> Option<&NoRestrictedSyntaxOptions> {
+        self.no_restricted_syntax.as_ref()
+    }
+
+    /// Configured quoting policy for `vue/quote-props`.
+    pub fn quote_props(&self) -> Option<QuotePropsStyle> {
+        self.quote_props
+    }
+
+    /// Configured key ordering for `vue/sort-keys`.
+    pub fn sort_keys(&self) -> Option<SortKeysOptions> {
+        self.sort_keys
+    }
 }
 
 #[cfg(test)]

@@ -19,7 +19,13 @@ export type TranslatedLocale = Exclude<RuleLocale, "en" | "ja">;
 type Packet = readonly [purpose: string, bad: string, good: string];
 
 const vuePackets: Record<TranslatedLocale, Record<string, Packet>> = {
-  "zh-CN": { ...chineseVue0, ...chineseVue1, ...chineseVue2, ...catalogueAdditionPackets["zh-CN"], ...compatibilityPackets["zh-CN"] },
+  "zh-CN": {
+    ...chineseVue0,
+    ...chineseVue1,
+    ...chineseVue2,
+    ...catalogueAdditionPackets["zh-CN"],
+    ...compatibilityPackets["zh-CN"],
+  },
   "pt-BR": {
     ...portugueseVue0,
     ...portugueseVue1,
@@ -27,7 +33,13 @@ const vuePackets: Record<TranslatedLocale, Record<string, Packet>> = {
     ...catalogueAdditionPackets["pt-BR"],
     ...compatibilityPackets["pt-BR"],
   },
-  fr: { ...frenchVue0, ...frenchVue1, ...frenchVue2, ...catalogueAdditionPackets.fr, ...compatibilityPackets.fr },
+  fr: {
+    ...frenchVue0,
+    ...frenchVue1,
+    ...frenchVue2,
+    ...catalogueAdditionPackets.fr,
+    ...compatibilityPackets.fr,
+  },
 };
 const otherPackets: Record<TranslatedLocale, Record<string, Packet>> = {
   "zh-CN": chinesePackets,

@@ -23,7 +23,7 @@ export const manual11: Record<string, RuleExample> = {
   "vue/dot-notation": template('  <p>{{ user["name"] }}</p>', "  <p>{{ user.name }}</p>"),
   "vue/eqeqeq": template("  <p>{{ value == null }}</p>", "  <p>{{ value === null }}</p>"),
   "vue/no-console": template(
-    "  <button @click=\"console.log(value)\">Save</button>",
+    '  <button @click="console.log(value)">Save</button>',
     '  <button @click="logValue">Save</button>',
   ),
   "vue/no-constant-condition": template(
@@ -48,9 +48,12 @@ export const manual11: Record<string, RuleExample> = {
     "  <p>{{ ready ? primary : fallback }}</p>",
   ),
   "vue/no-sparse-arrays": template("  <p>{{ [1,, 3] }}</p>", "  <p>{{ [1, 2, 3] }}</p>"),
-  "vue/no-useless-concat": template('  <p>{{ "hello" + " world" }}</p>', '  <p>{{ "hello world" }}</p>'),
+  "vue/no-useless-concat": template(
+    '  <p>{{ "hello" + " world" }}</p>',
+    '  <p>{{ "hello world" }}</p>',
+  ),
   "vue/object-shorthand": template(
-    "  <Widget :options=\"{ value: value }\" />",
+    '  <Widget :options="{ value: value }" />',
     '  <Widget :options="{ value }" />',
   ),
   "vue/prefer-template": template(
@@ -58,7 +61,7 @@ export const manual11: Record<string, RuleExample> = {
     "  <p>{{ `Hello ${name}` }}</p>",
   ),
   "vue/quote-props": template(
-    '  <Widget :options=\"{ "name": value }\" />',
+    '  <Widget :options="{ "name": value }" />',
     '  <Widget :options="{ name: value }" />',
     { "vue/quote-props": "as-needed" },
   ),

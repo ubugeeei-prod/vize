@@ -4,11 +4,14 @@ import { it } from "vite-plus/test";
 import { getRuleOptions } from "./rule-options.ts";
 
 it("projects eslint-plugin-vue compatibility options into typed Patina options", () => {
-  assert.deepEqual(getRuleOptions("vue/enforce-style-attribute", [{ allow: ["plain", "scoped"] }]), {
-    ruleOptions: {
-      "vue/enforce-style-attribute": { allow: ["plain", "scoped"] },
+  assert.deepEqual(
+    getRuleOptions("vue/enforce-style-attribute", [{ allow: ["plain", "scoped"] }]),
+    {
+      ruleOptions: {
+        "vue/enforce-style-attribute": { allow: ["plain", "scoped"] },
+      },
     },
-  });
+  );
   assert.deepEqual(getRuleOptions("vue/no-restricted-syntax", ["CallExpression"]), {
     ruleOptions: {
       "vue/no-restricted-syntax": { selectors: ["CallExpression"] },
