@@ -1,7 +1,7 @@
 //! JS-string escaping and raw expression helpers copied because this crate
 //! cannot depend on `vize_atelier_core`; byte-identical output is the P2-11 bar.
 
-use vize_l0::{Span, String};
+use vize_l0::{Span, String, ToCompactString};
 use vize_l2::expr::{ExprRef, JsExpr, OpaqueExpr, OpaqueReason};
 
 use super::entity::decode_html_entities;
@@ -146,6 +146,25 @@ pub(super) fn escape_js_string(s: &str) -> String {
         }
     }
     result
+}
+
+/// Mirror Vue's `toValidAssetId` (compiler-core utils, issue #4422):
+/// word characters pass through, `-` becomes `_`, every other character
+/// is replaced by its char code as a decimal string.
+pub(crate) fn asset_ident(kind: &str, name: &str) -> String {
+    let mut ident = String::from("_");
+    ident.push_str(kind);
+    ident.push('_');
+    for c in name.chars() {
+        if c.is_ascii_alphanumeric() || c == '_' {
+            ident.push(c);
+        } else if c == '-' {
+            ident.push('_');
+        } else {
+            ident.push_str((c as u32).to_compact_string().as_str());
+        }
+    }
+    ident
 }
 
 pub(super) fn push_ident_key(cx: &mut super::EmitCx<'_>, name: &str) {

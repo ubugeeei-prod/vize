@@ -5,8 +5,7 @@ use alloc::vec::Vec as StdVec;
 use vize_l0::ensure_sufficient_stack;
 use vize_l2::op::{Op, Region};
 
-use super::{Buf, EmitCx, builtin};
-use vize_l2::op::vue::asset_identifier;
+use super::{Buf, EmitCx, asset_ident, builtin};
 
 pub(in crate::emit) fn collect_names<'a>(root: &Region<'a>, source: &str) -> StdVec<&'a str> {
     let mut names = StdVec::new();
@@ -28,7 +27,7 @@ pub(in crate::emit) fn emit_resolves(cx: &mut EmitCx<'_>, names: &[&str]) -> boo
             resolved = true;
         }
         cx.buf.push("const ");
-        cx.buf.push(asset_identifier("component", name).as_str());
+        cx.buf.push(asset_ident("component", name).as_str());
         cx.buf.push(" = ");
         cx.buf.push(Buf::resolve_component_alias());
         cx.buf.push("(\"");
