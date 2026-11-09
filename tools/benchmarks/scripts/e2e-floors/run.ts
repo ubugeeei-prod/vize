@@ -62,11 +62,12 @@ mkdirSync(join(work, "time"), { recursive: true });
 mkdirSync(out, { recursive: true });
 const hosts = resolveMapperHosts(TYPECHECK_HOSTS_DIR, join(resolve(values.head!), "npm", "cli"));
 const tsc = MAPPER_HOSTS.find((host) => host.id === "tsc")!;
+const tsrs = MAPPER_HOSTS.find((host) => host.id === "tsrs")!;
 const vueTscDir = realpathSync(join(here, "..", "node_modules", "vue-tsc"));
 const vueTscBin = join(vueTscDir, JSON.parse(readFileSync(join(vueTscDir, "package.json"), "utf8")).bin["vue-tsc"]);
 const vueTscTs = JSON.parse(readFileSync(createRequire(join(vueTscDir, "package.json")).resolve("typescript/package.json"), "utf8")).version;
 
-type Row = { lane: string; runs: HostRun[] };
+type Row = { host: string; lane: string; runs: HostRun[] };
 const report: Record<string, Row[]> = {};
 const timelines: Record<string, string[]> = {};
 const only = values.only ? new Set(values.only.split(",")) : null;
@@ -96,6 +97,8 @@ for (const corpus of corpora) {
   };
   const run = (key: string, tsconfig: string, env: Record<string, string> = {}): HostRun =>
     hostRun([hosts.tsc, ...hostArgs(tsc, dir, tsconfig)], dir, tsconfig, join(work, "time", `${corpus.id}-${key}.time`), env);
+  const runTsrs = (key: string, tsconfig: string, env: Record<string, string> = {}): HostRun =>
+    hostRun([hosts.tsrs, ...hostArgs(tsrs, dir, tsconfig)], dir, tsconfig, join(work, "time", `${corpus.id}-tsrs-${key}.time`), env);
   const vueTsc = (): HostRun =>
     hostRun([process.execPath, "--max-old-space-size=16384", vueTscBin, "--noEmit", "--extendedDiagnostics", "--pretty", "false", "-p", join(dir, "tsconfig.json")], dir, "tsconfig.json", join(work, "time", `${corpus.id}-vue-tsc.time`));
 
@@ -112,29 +115,35 @@ for (const corpus of corpora) {
     timelines[`${corpus.id}/${id}`] = summarize(readFileSync(log, "utf8"));
   }
 
-  const lanes: [string, () => HostRun][] = [
-    ["vize", () => run("vize", cfg.vize)],
-    ["vue", () => run("vue", cfg.vue)],
-    ["stub (fixed cost)", () => run("stub", cfg.stub)],
-    ["vize replay (zero wait)", () => run("replay-vize", cfg.replay, { REC_DIR: recs.vize })],
-    ["vue replay (zero wait)", () => run("replay-vue", cfg.replay, { REC_DIR: recs.vue })],
-    ["vize expressions-only", () => run("anyab", cfg.anyab)],
-    ["vize expressions-only replay", () => run("replay-anyab", cfg.replay, { REC_DIR: recs.anyab })],
+  const lanes: [string, string, () => HostRun][] = [
+    ["tsc", "vize", () => run("vize", cfg.vize)],
+    ["tsc", "vue", () => run("vue", cfg.vue)],
+    ["tsc", "stub (fixed cost)", () => run("stub", cfg.stub)],
+    ["tsc", "vize replay (zero wait)", () => run("replay-vize", cfg.replay, { REC_DIR: recs.vize })],
+    ["tsc", "vue replay (zero wait)", () => run("replay-vue", cfg.replay, { REC_DIR: recs.vue })],
+    ["tsc", "vize expressions-only", () => run("anyab", cfg.anyab)],
+    ["tsc", "vize expressions-only replay", () => run("replay-anyab", cfg.replay, { REC_DIR: recs.anyab })],
+    ["tsrs", "vize", () => runTsrs("vize", cfg.vize)],
+    ["tsrs", "vue", () => runTsrs("vue", cfg.vue)],
+    ["tsrs", "stub (fixed cost)", () => runTsrs("stub", cfg.stub)],
+    ["tsrs", "vize replay (zero wait)", () => runTsrs("replay-vize", cfg.replay, { REC_DIR: recs.vize })],
+    ["tsrs", "vue replay (zero wait)", () => runTsrs("replay-vue", cfg.replay, { REC_DIR: recs.vue })],
+    ["tsrs", "vize expressions-only replay", () => runTsrs("replay-anyab", cfg.replay, { REC_DIR: recs.anyab })],
   ];
-  const rows: Row[] = lanes.map(([lane]) => ({ lane, runs: [] }));
+  const rows: Row[] = lanes.map(([host, lane]) => ({ host, lane, runs: [] }));
   for (let i = 0; i < runs; i++) {
     const order = i % 2 === 0 ? lanes.map((_, k) => k) : lanes.map((_, k) => lanes.length - 1 - k);
     for (const k of order) {
-      const result = lanes[k]![1]();
+      const result = lanes[k]![2]();
       rows[k]!.runs.push(result);
-      console.log(`${corpus.id} ${lanes[k]![0]} run ${i + 1}: wall ${(result.wallMs / 1000).toFixed(2)}s, ${result.diagnostics.length} diagnostics`);
+      console.log(`${corpus.id} ${lanes[k]![0]} ${lanes[k]![1]} run ${i + 1}: wall ${(result.wallMs / 1000).toFixed(2)}s, ${result.diagnostics.length} diagnostics`);
     }
   }
-  const vt: Row = { lane: `vue-tsc (typescript ${vueTscTs})`, runs: [] };
+  const vt: Row = { host: "tsc", lane: `vue-tsc (typescript ${vueTscTs})`, runs: [] };
   for (let i = 0; i < Math.min(runs, 3); i++) vt.runs.push(vueTsc());
   rows.push(vt);
   report[corpus.id] = rows;
-  writeFileSync(join(out, `${corpus.id}.json`), JSON.stringify(rows.map((row) => ({ lane: row.lane, runs: row.runs.map(({ diagnostics, ...r }) => ({ ...r, diagnosticCount: diagnostics.length })) })), null, 1));
+  writeFileSync(join(out, `${corpus.id}.json`), JSON.stringify(rows.map((row) => ({ host: row.host, lane: row.lane, runs: row.runs.map(({ diagnostics, ...r }) => ({ ...r, diagnosticCount: diagnostics.length })) })), null, 1));
 }
 
 const stat = (run: HostRun, pattern: RegExp): number | null => {
@@ -147,13 +156,14 @@ const med = (row: Row, pick: (run: HostRun) => number | null): string => {
 };
 const fmt = (s: string, digits: number) => (s === "–" ? s : Number(s).toFixed(digits));
 const lines = [
-  "## E2E floors (tsc 7.1 `--runExternalCode --noEmit`)",
+  "## E2E floors (`--runExternalCode --noEmit` on tsc 7.1 and tsrs --fast)",
   "",
   `Median of ${runs} runs per lane (vue-tsc: ${Math.min(runs, 3)}), on \`${process.env.VIZE_PAIR_RUNNER_LABEL ?? "local"}\`, GNU time at ${GNU_TIME}. Wall is process start to exit; parts are tsc's \`--extendedDiagnostics\`.`,
   "",
 ];
-for (const [corpus, rows] of Object.entries(report)) {
-  lines.push(`### ${corpus}`, "", "| lane | wall s | Total s | parse s | mapper wait s | bind s | check s | types | instantiations | memory MB | CPU s | diagnostics |", "| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |");
+for (const [corpus, all] of Object.entries(report)) for (const host of ["tsc", "tsrs"]) {
+  const rows = all.filter((row) => row.host === host);
+  lines.push(`### ${corpus}, ${host === "tsc" ? "tsc 7.1" : "tsrs --fast"}`, "", "| lane | wall s | Total s | parse s | mapper wait s | bind s | check s | types | instantiations | memory MB | CPU s | diagnostics |", "| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |");
   for (const row of rows) {
     lines.push(`| ${row.lane} | ${fmt(med(row, (r) => r.wallMs / 1000), 2)} | ${fmt(med(row, (r) => stat(r, /^Total time$/)), 3)} | ${fmt(med(row, (r) => stat(r, /^Parse time$/) ?? stat(r, /^I\/O read$/)), 3)} | ${fmt(med(row, (r) => stat(r, /request wait time$/)), 3)} | ${fmt(med(row, (r) => stat(r, /^Bind time$/)), 3)} | ${fmt(med(row, (r) => stat(r, /^Check time$/)), 3)} | ${fmt(med(row, (r) => stat(r, /^Types$/)), 0)} | ${fmt(med(row, (r) => stat(r, /^Instantiations$/)), 0)} | ${fmt(med(row, (r) => (stat(r, /^Memory used$/) ?? 0) / 1024), 0)} | ${fmt(med(row, (r) => r.cpuMs / 1000), 2)} | ${row.runs[0]?.diagnostics.length ?? "–"} |`);
   }
