@@ -27,7 +27,6 @@ use vize_croquis::types::ResolvedTypeWorld;
 use vize_croquis::types::world::{TypeExportBinding, TypeModule, TypeModuleReference};
 
 use super::external_types::resolution::path_key;
-use super::source_snapshot::source_path;
 use super::{ScriptCompileContext, TypeSourceSnapshot};
 
 const MAX_MODULES: usize = 512;
@@ -77,7 +76,7 @@ impl ScriptCompileContext {
         is_tsx: bool,
         sources: &TypeSourceSnapshot,
     ) -> ResolvedTypeWorld {
-        let path = source_path(Path::new(filename));
+        let path = sources.public_identity(Path::new(filename));
         let root_module = path_key(&path);
         let source = normal_script.map_or_else(
             || self.source.clone(),

@@ -8,6 +8,7 @@
 mod directory_index;
 #[cfg(test)]
 mod directory_index_tests;
+mod public_identity;
 mod resolution;
 #[cfg(test)]
 mod resolution_tests;
@@ -26,6 +27,7 @@ use super::type_world::ResolvedDependency;
 type ResolvedCell = Arc<OnceLock<Option<Arc<ResolvedDependency>>>>;
 type ResolutionCell = Arc<OnceLock<Option<PathBuf>>>;
 type DirectoryCell = Arc<OnceLock<Option<directory_index::IndexedDirectory>>>;
+type PhysicalDirectoryCell = Arc<OnceLock<Option<PathBuf>>>;
 
 #[derive(Debug, Hash, PartialEq, Eq)]
 enum ResolutionScope {
@@ -45,6 +47,13 @@ pub struct TypeSourceSnapshot {
     /// Physical directories a probe hit, by the spelling it was reached
     /// through: their canonical path and the regular files listed once.
     directories: Mutex<FxHashMap<PathBuf, DirectoryCell>>,
+    /// Canonical paths of the physical directories caller-supplied roots
+    /// reached, by device and inode.
+    #[cfg_attr(
+        not(unix),
+        expect(dead_code, reason = "Unix keys directories by inode")
+    )]
+    physical_directories: Mutex<FxHashMap<(u64, u64), PhysicalDirectoryCell>>,
     pub(super) summaries: Mutex<FxHashMap<PathBuf, FileTypeSummary>>,
     /// Dependency module facts, parsed once per snapshot with their targets
     /// resolved against it, plus the modules a world walk follows from them.

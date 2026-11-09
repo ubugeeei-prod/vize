@@ -20,7 +20,7 @@ const INDEX_NAMES: &[&str] = &[
 
 impl TypeSourceSnapshot {
     pub fn resolve_import(&self, current_file: &Path, specifier: &str) -> Option<PathBuf> {
-        self.resolve_import_from_identity(&source_path(current_file), specifier)
+        self.resolve_import_from_identity(&self.public_identity(current_file), specifier)
     }
 
     /// Resolve from an importer identity this snapshot already produced.

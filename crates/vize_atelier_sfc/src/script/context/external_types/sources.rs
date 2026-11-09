@@ -19,7 +19,7 @@ impl ScriptCompileContext {
         }
         let mut root = FileTypeSummary::default();
         extract_script_summary(source, &mut root, false);
-        let base = super::super::source_snapshot::source_path(Path::new(filename));
+        let base = sources.public_identity(Path::new(filename));
         let mut visited = FxHashSet::default();
         for specifier in root.specifiers {
             self.collect_types_with_sources(&specifier, &base, &mut visited, sources);
