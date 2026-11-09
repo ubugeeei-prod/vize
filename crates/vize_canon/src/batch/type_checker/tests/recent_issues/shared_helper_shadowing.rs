@@ -68,6 +68,8 @@ type $SlotConstructor\u0041 = never
 type $SlotsFactory = never
 type $EmitPropsFactory = never
 type $WidenTemplateRef = never
+type $TemplateRefUnwrap = never
+type $TemplateRefUnwrapNarrowed = never
 type $NotUndefined = never
 type __EmitProps = never
 export const moduleTypePoison = true
@@ -189,7 +191,7 @@ fn authored_module_types_cannot_capture_batch_helpers() {
         "$SlotConstructorArgs",
         "$SlotsFactory",
         "$SlotPayload",
-        "$WidenTemplateRef",
+        "$TemplateRefUnwrap",
         "__EmitProps",
     ];
     let mut activated = Vec::with_capacity(members.len());

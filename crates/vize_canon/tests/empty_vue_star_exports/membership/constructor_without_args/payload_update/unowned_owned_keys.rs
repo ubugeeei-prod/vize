@@ -67,7 +67,9 @@ mod tests {
     #[test]
     fn recorded_helpers_and_compiled_preamble_restore_their_exact_predecessors() {
         let record = record();
-        let physical = vize_canon::virtual_ts::SHARED_PREAMBLE_DTS.to_owned();
+        let physical = super::super::template_ref_unwrap::preamble_before(
+            vize_canon::virtual_ts::SHARED_PREAMBLE_DTS,
+        );
         let mut images: Vec<(&Value, String)> = record["files"]
             .as_array()
             .unwrap()

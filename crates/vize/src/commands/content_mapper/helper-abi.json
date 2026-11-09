@@ -35,6 +35,8 @@
     "$SlotPayload",
     "$SlotsFactory",
     "$StructuralSlots",
+    "$TemplateRefUnwrap",
+    "$TemplateRefUnwrapNarrowed",
     "IsAny",
     "__EmitProps"
   ],
@@ -111,15 +113,15 @@
         },
         {
           "path": "virtual-ts.d.cts",
-          "sha256": "77e6e079f845e76ae1694ab142deb2bd4b253599d21c0ecd36038f5142775f05"
+          "sha256": "a4f314c88d85ba24d6e0e2ec06c4bc32b3a6b1cddd3f3c509de073d87ed02210"
         },
         {
           "path": "virtual-ts.d.mts",
-          "sha256": "77e6e079f845e76ae1694ab142deb2bd4b253599d21c0ecd36038f5142775f05"
+          "sha256": "a4f314c88d85ba24d6e0e2ec06c4bc32b3a6b1cddd3f3c509de073d87ed02210"
         },
         {
           "path": "virtual-ts.d.ts",
-          "sha256": "77e6e079f845e76ae1694ab142deb2bd4b253599d21c0ecd36038f5142775f05"
+          "sha256": "a4f314c88d85ba24d6e0e2ec06c4bc32b3a6b1cddd3f3c509de073d87ed02210"
         }
       ]
     },
@@ -167,7 +169,7 @@
         },
         {
           "path": "virtual-ts.d.ts",
-          "sha256": "77e6e079f845e76ae1694ab142deb2bd4b253599d21c0ecd36038f5142775f05"
+          "sha256": "a4f314c88d85ba24d6e0e2ec06c4bc32b3a6b1cddd3f3c509de073d87ed02210"
         }
       ]
     },
@@ -211,7 +213,7 @@
         },
         {
           "path": "virtual-ts.d.ts",
-          "sha256": "77e6e079f845e76ae1694ab142deb2bd4b253599d21c0ecd36038f5142775f05"
+          "sha256": "a4f314c88d85ba24d6e0e2ec06c4bc32b3a6b1cddd3f3c509de073d87ed02210"
         }
       ]
     }

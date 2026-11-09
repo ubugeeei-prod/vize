@@ -34,6 +34,7 @@ fn restore(current: String, file: &Value) -> String {
 /// The pre-refactor bytes of a recorded producer's current image. Older
 /// images pass through; the layers below authenticate them.
 pub(super) fn source_before(path: &str, current: String) -> String {
+    let current = super::template_ref_unwrap::source_before(path, current);
     let current = super::static_emit_gate::source_before(path, current);
     let record = record();
     match record["files"]

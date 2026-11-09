@@ -70,7 +70,9 @@ mod tests {
     fn recorded_helpers_and_compiled_preamble_restore_their_exact_predecessors() {
         let record = record();
         let physical = super::super::unowned_owned_keys::preamble_before(
-            vize_canon::virtual_ts::SHARED_PREAMBLE_DTS,
+            &super::super::template_ref_unwrap::preamble_before(
+                vize_canon::virtual_ts::SHARED_PREAMBLE_DTS,
+            ),
         );
         let mut images: Vec<(&Value, String)> = record["files"]
             .as_array()

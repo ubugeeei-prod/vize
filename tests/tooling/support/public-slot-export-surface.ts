@@ -140,6 +140,38 @@ function withProvenListenerAdditionRemoved(
   return { ...actual, exports };
 }
 
+/** The shared template ref unwrap aliases (#12470) are additions with one type parameter each. */
+function withProvenTemplateRefUnwrapAdditionsRemoved(
+  actual: ExportSurface,
+  expected: ExportSurface,
+): ExportSurface {
+  const exports = structuredClone(actual.exports);
+  const oracle = new URL(
+    "crates/vize_canon/src/virtual_ts/tests/template_ref_unwrap.rs",
+    repositoryRoot,
+  );
+  for (const name of ["$TemplateRefUnwrap", "$TemplateRefUnwrapNarrowed"]) {
+    const index = exports.findIndex((entry) => entry.name === name);
+    if (expected.exports.some((entry) => entry.name === name) || index < 0) continue;
+    assert.ok(fs.existsSync(oracle) && fs.readFileSync(oracle, "utf8").includes(name));
+    assert.deepEqual(exports[index], {
+      name,
+      type: true,
+      value: false,
+      namespace: false,
+      declarations: [
+        {
+          kind: "TypeAliasDeclaration",
+          parameters: [{ name: "T", constraint: null, default: null }],
+          signatures: [],
+        },
+      ],
+    });
+    exports.splice(index, 1);
+  }
+  return { ...actual, exports };
+}
+
 export function assertPublicSlotExportSurface(
   actual: ExportSurface,
   expected: ExportSurface,
@@ -151,7 +183,10 @@ export function assertPublicSlotExportSurface(
   assert.deepEqual(
     Object.fromEntries(
       withProvenDefaultsRestored(
-        withProvenListenerAdditionRemoved(actual, expected),
+        withProvenTemplateRefUnwrapAdditionsRemoved(
+          withProvenListenerAdditionRemoved(actual, expected),
+          expected,
+        ),
         changes,
       ).exports.map((entry) => [entry.name, entry]),
     ),

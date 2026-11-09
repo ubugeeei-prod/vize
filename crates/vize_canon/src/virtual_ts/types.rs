@@ -277,6 +277,11 @@ pub(crate) struct VirtualTsGenerationOptions<'a> {
     /// aliases in the shared preamble; editor projects need module ownership
     /// so references and rename do not join unrelated SFC props.
     pub(crate) local_component_ownership_helpers: bool,
+    /// Keep per-file template ref unwrap aliases in editor modules. An editor
+    /// project can answer later requests without the shared ambient helpers
+    /// (after cross-project navigation), where a shared alias reference would
+    /// turn every template binding into `any`.
+    pub(crate) local_template_ref_unwrap: bool,
     /// Type-only module that owns expensive component-attribute aliases for
     /// standalone Content Mapper output.
     pub(crate) external_component_attrs_module: Option<ComponentHelperModule>,

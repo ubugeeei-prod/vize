@@ -20,6 +20,7 @@ import {
 import { applyEmitMemberInferIn } from "../../support/compat/content-mapper/emit-member-infer-transition.ts";
 import { applyInstanceInputKeysIn } from "../../support/compat/content-mapper/instance-input-keys-transition.ts";
 import { applyUnownedOwnedKeysIn } from "../../support/compat/content-mapper/unowned-owned-keys-transition.ts";
+import { applySharedTemplateRefUnwrapIn } from "../../support/compat/content-mapper/shared-template-ref-unwrap-transition.ts";
 
 export const canonLeftoverPreamblePaths = [
   "crates/vize_canon/src/virtual_ts/component_prop_helpers.txt",
@@ -74,14 +75,16 @@ export function slotCliPacket(
   const certifiedPreamble = applyCurrentSlotPreamble(
     applySourceOwnedPreambleTransitions(applyPreviousOverloadPreamble(text)),
   );
-  const currentPreamble = applyUnownedOwnedKeysIn(
-    applyInstanceInputKeysIn(
-      applyCanonLeftoverPreamble(
-        applyEmitMemberInferIn(
-          applyStrictExtraKeysIn(
-            applyDiscriminatedJsxUnionIn(
-              applyIntegratedSourcePreambleTransitions(
-                applyCurrentOverloadPreamble(certifiedPreamble),
+  const currentPreamble = applySharedTemplateRefUnwrapIn(
+    applyUnownedOwnedKeysIn(
+      applyInstanceInputKeysIn(
+        applyCanonLeftoverPreamble(
+          applyEmitMemberInferIn(
+            applyStrictExtraKeysIn(
+              applyDiscriminatedJsxUnionIn(
+                applyIntegratedSourcePreambleTransitions(
+                  applyCurrentOverloadPreamble(certifiedPreamble),
+                ),
               ),
             ),
           ),

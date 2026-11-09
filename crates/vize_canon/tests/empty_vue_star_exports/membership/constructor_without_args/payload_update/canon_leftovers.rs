@@ -71,8 +71,9 @@ pub(super) fn source_before(path: &str, current: String) -> String {
 }
 
 pub(super) fn preamble_before(current: &str) -> String {
+    let current = super::template_ref_unwrap::preamble_before(current);
     inverse(
-        &super::instance_input_keys::preamble_before(current),
+        &super::instance_input_keys::preamble_before(&current),
         &receipt()["compiledPreamble"],
     )
 }
@@ -88,8 +89,9 @@ pub(super) fn retain_provenance(manifest: &mut Value) {
         identity(&current, &transition["after"]);
         inverse(&current, transition);
     }
-    let preamble =
-        super::instance_input_keys::preamble_before(vize_canon::virtual_ts::SHARED_PREAMBLE_DTS);
+    let preamble = super::instance_input_keys::preamble_before(
+        &super::template_ref_unwrap::preamble_before(vize_canon::virtual_ts::SHARED_PREAMBLE_DTS),
+    );
     identity(&preamble, &receipt["compiledPreamble"]["after"]);
     inverse(&preamble, &receipt["compiledPreamble"]);
     manifest["provenance"]["currentCanonLeftovers11499"] = receipt;
@@ -112,7 +114,9 @@ mod tests {
             assert_eq!(forward(&previous, transition), current);
         }
         let current = super::super::instance_input_keys::preamble_before(
-            vize_canon::virtual_ts::SHARED_PREAMBLE_DTS,
+            &super::super::template_ref_unwrap::preamble_before(
+                vize_canon::virtual_ts::SHARED_PREAMBLE_DTS,
+            ),
         );
         let transition = &receipt["compiledPreamble"];
         let previous = inverse(&current, transition);
@@ -130,7 +134,9 @@ mod tests {
         {
             let current = if transition["path"] == "vize_canon::virtual_ts::SHARED_PREAMBLE_DTS" {
                 super::super::instance_input_keys::preamble_before(
-                    vize_canon::virtual_ts::SHARED_PREAMBLE_DTS,
+                    &super::super::template_ref_unwrap::preamble_before(
+                        vize_canon::virtual_ts::SHARED_PREAMBLE_DTS,
+                    ),
                 )
             } else {
                 let path = transition["path"].as_str().unwrap();

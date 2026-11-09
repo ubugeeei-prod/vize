@@ -170,7 +170,7 @@ crates/vize_canon/src/batch/virtual_project/tests/macro_scope.rs	2
 crates/vize_canon/src/batch/virtual_project/tests/materialization_namespace.rs	3
 crates/vize_canon/src/batch/virtual_project/tests/module_augmentations.rs	6
 crates/vize_canon/src/batch/virtual_project/tests/project_isolation.rs	4
-crates/vize_canon/src/batch/virtual_project/tests/ref_arity.rs	24
+crates/vize_canon/src/batch/virtual_project/tests/ref_arity.rs	23
 crates/vize_canon/src/batch/virtual_project/tests/setup_props.rs	6
 crates/vize_canon/src/batch/virtual_project/tests/tsconfig_extends.rs	1
 crates/vize_canon/src/batch/virtual_project/tests/tsconfig_native_options.rs	1

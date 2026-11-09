@@ -1,6 +1,5 @@
 ---
 source: crates/vize_canon/src/batch/virtual_project/tests/ref_arity.rs
-assertion_line: 58
 expression: snapshot_text(default_content.as_str())
 ---
 /// <reference lib="es2022" />
@@ -49,8 +48,7 @@ function __setup() {
   type __R_count = typeof count;
   ;(function __template() {
     // Auto-unwrap Vue refs in template scope
-    type __U<T> = T extends { value: unknown } ? T extends import('vue').Ref ? import("vize:virtual-ts").$WidenTemplateRef<T['value']> : T : T;
-    var count: __U<__R_count> = (void 0) as any;
+    var count: import("vize:virtual-ts").$TemplateRefUnwrap<__R_count> = (void 0) as any;
     // Vue template context (delegates to ComponentPublicInstance)
     // @ts-ignore TS2694/TS2307: a `vue` without `ComponentPublicInstance` must degrade template context extras to unchecked, never error.
     type __Ctx = import('vue').ComponentPublicInstance;

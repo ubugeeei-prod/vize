@@ -6,6 +6,7 @@ import path from "node:path";
 import { instanceInputKeysHelperEdit } from "../../../tools/support/compat/content-mapper/instance-input-keys-transition.ts";
 import { unownedOwnedKeysHelperEdit } from "../../../tools/support/compat/content-mapper/unowned-owned-keys-transition.ts";
 import { repoRoot } from "../_helpers/tool-commands.ts";
+import { beforeSharedTemplateRefUnwrapSource } from "../../../tools/support/compat/content-mapper/shared-template-ref-unwrap-transition.ts";
 
 type CanonLeftoversReceipt = {
   compiledPreamble: { edits: Array<{ before: string; after: string }> };
@@ -37,7 +38,8 @@ const identity = (text: string): Identity => ({
   sha256: createHash("sha256").update(text).digest("hex"),
 });
 
-export function beforeCanonLeftoversSource(file: string, current: string): string {
+export function beforeCanonLeftoversSource(file: string, newest: string): string {
+  const current = beforeSharedTemplateRefUnwrapSource(file, newest);
   const transition = receipt.files.find((candidate) => candidate.path === file);
   if (!transition) return current;
   assert.deepEqual(identity(current), transition.after);
