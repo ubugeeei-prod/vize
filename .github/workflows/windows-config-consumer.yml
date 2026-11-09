@@ -41,8 +41,8 @@ jobs:
       matrix:
         include:
           - { os: Windows, runner: windows-2025-vs2026 }
-          - { os: Linux, runner: blacksmith-8vcpu-ubuntu-2404 }
-          - { os: macOS, runner: macos-15 }
+          - { os: Linux, runner: blacksmith-32vcpu-ubuntu-2404 }
+          - { os: macOS, runner: blacksmith-12vcpu-macos-15 }
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 20
     steps:
@@ -87,7 +87,7 @@ jobs:
       matrix:
         include:
           - { os: Windows, runner: windows-2025-vs2026, target: win32-x64-msvc }
-          - { os: Linux, runner: blacksmith-8vcpu-ubuntu-2404, target: linux-x64-gnu }
+          - { os: Linux, runner: blacksmith-32vcpu-ubuntu-2404, target: linux-x64-gnu }
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 60
     steps:
@@ -143,7 +143,7 @@ jobs:
   mac-source-protocol:
     if: github.event_name != 'workflow_dispatch' || inputs.phase == 'source'
     name: Required macOS source protocol smoke
-    runs-on: macos-15
+    runs-on: blacksmith-12vcpu-macos-15
     timeout-minutes: 25
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
@@ -171,8 +171,8 @@ jobs:
       matrix:
         include:
           - { os: Windows, runner: windows-2025-vs2026 }
-          - { os: Linux, runner: blacksmith-8vcpu-ubuntu-2404 }
-          - { os: macOS, runner: macos-15 }
+          - { os: Linux, runner: blacksmith-32vcpu-ubuntu-2404 }
+          - { os: macOS, runner: blacksmith-12vcpu-macos-15 }
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 25
     env:

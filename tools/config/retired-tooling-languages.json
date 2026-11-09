@@ -715,7 +715,6 @@
       "tools/support/compat/github/prepare-pkl-schema.mjs",
       "tools/support/compat/github/release-preflight-github.mjs",
       "tools/support/compat/github/run-tooling-tests.mjs",
-      "tools/support/compat/github/semver-change-marker.mjs",
       "tools/support/compat/github/source-counterpart-snapshot.mjs",
       "tools/support/compat/github/unicode-prop-projection-custody.mjs",
       "tools/support/compat/n8n-official-compiler-custody.mjs",

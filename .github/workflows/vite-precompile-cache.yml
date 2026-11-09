@@ -33,7 +33,7 @@ env:
 jobs:
   windows-cache-identities:
     name: Windows cache and SSR identities
-    runs-on: windows-2025
+    runs-on: blacksmith-32vcpu-windows-2025
     timeout-minutes: 20
     defaults:
       run: { shell: bash }
