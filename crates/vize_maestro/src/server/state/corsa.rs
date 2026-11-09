@@ -223,6 +223,18 @@ impl ServerState {
         }
     }
 
+    /// An editor document event: without a client watcher, the next Corsa
+    /// preparation validates captured disk inputs before any sweep vouches.
+    pub(crate) fn note_corsa_document_boundary(&self) {
+        if !self.corsa_disk_sweep.load(Ordering::Acquire) {
+            return;
+        }
+        let bridge = { self.corsa_bridge.read().clone() };
+        if let Some(bridge) = bridge {
+            bridge.note_editor_document_boundary();
+        }
+    }
+
     pub(crate) fn set_corsa_disk_watcher_registered(&self) {
         self.corsa_disk_watcher_registered
             .store(true, Ordering::Release);

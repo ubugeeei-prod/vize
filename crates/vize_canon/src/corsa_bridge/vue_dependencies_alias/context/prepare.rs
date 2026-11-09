@@ -33,6 +33,9 @@ impl AliasContext {
         options: super::super::super::vue_document::CorsaVueVirtualDocumentOptions,
         environment: super::super::super::vue_document::CorsaProjectEnvironment<'_>,
     ) -> Result<PreparedAliasContext, super::super::super::types::CorsaBridgeError> {
+        environment
+            .editor_session
+            .validate_disk_inputs_at_boundary();
         environment.editor_session.request_disk_sweep();
         let capture_phase = crate::corsa_bridge::preparation_trace::Phase::start(
             "alias_fingerprint",

@@ -9,7 +9,10 @@
 //! ask for the next sweep once a third of the window has passed, so an active
 //! session stays vouched and an idle one costs nothing. A changed input, or no
 //! clean sweep within the window, leaves requests on their full validation,
-//! which retires the stale revisions exactly as before.
+//! which retires the stale revisions exactly as before. An editor document
+//! event (open, change, save, close) is a freshness boundary: the next
+//! preparation validates every captured input itself before any vouch
+//! applies, so a disk edit made before typing is seen by that request.
 
 use std::sync::Arc;
 use std::time::{Duration, Instant};
@@ -33,11 +36,15 @@ pub(in crate::corsa_bridge) struct DiskSweep {
     clean_since: Option<Instant>,
     /// The last sweep's duration times `SWEEPS_PER_WINDOW`.
     window: Duration,
+    /// Editor document events seen, and the count a clean sweep started at.
+    boundary: u64,
+    clean_boundary: u64,
 }
 
 /// Captured disk inputs at one instant, validated without the cache lock.
 pub(in crate::corsa_bridge) struct SweepInputs {
     started: Instant,
+    boundary: u64,
     stamps: Vec<Arc<[InputStamp]>>,
 }
 
@@ -61,10 +68,37 @@ impl SessionCache {
         self.sweep.window.max(MIN_VOUCH_WINDOW)
     }
 
+    /// Age of the vouch, if one covers every document event so far.
     fn vouch_age(&self, now: Instant) -> Option<Duration> {
         self.sweep
             .clean_since
+            .filter(|_| self.sweep.clean_boundary == self.sweep.boundary)
             .map(|start| now.saturating_duration_since(start))
+    }
+
+    /// An editor document event: no vouch from before it applies.
+    pub(in crate::corsa_bridge) fn note_document_boundary(&mut self) {
+        self.sweep.boundary = self.sweep.boundary.wrapping_add(1);
+    }
+
+    /// Every captured input when a document event has passed since the last
+    /// clean sweep; the caller validates them before its own lookup.
+    pub(in crate::corsa_bridge) fn begin_boundary_validation(
+        &mut self,
+        now: Instant,
+    ) -> Option<SweepInputs> {
+        (self.sweep.enabled
+            && !self.trust_watched_disk_inputs
+            && self.sweep.clean_boundary != self.sweep.boundary)
+            .then(|| self.sweep_inputs(now))
+    }
+
+    fn sweep_inputs(&self, now: Instant) -> SweepInputs {
+        SweepInputs {
+            started: now,
+            boundary: self.sweep.boundary,
+            stamps: self.captured_disk_inputs(),
+        }
     }
 
     /// Whether disk inputs need no per-request validation at `now`.
@@ -99,10 +133,7 @@ impl SessionCache {
         }
         self.sweep.running = true;
         self.sweep.last_started = Some(now);
-        Some(SweepInputs {
-            started: now,
-            stamps: self.captured_disk_inputs(),
-        })
+        Some(self.sweep_inputs(now))
     }
 
     pub(in crate::corsa_bridge) fn finish_disk_sweep(
@@ -113,7 +144,34 @@ impl SessionCache {
     ) {
         self.sweep.running = false;
         self.sweep.window = now.saturating_duration_since(inputs.started) * SWEEPS_PER_WINDOW;
-        self.sweep.clean_since = unchanged.then_some(inputs.started);
+        self.record_validation(inputs, unchanged);
+    }
+
+    /// Record a boundary validation; it never ends a running sweep.
+    pub(in crate::corsa_bridge) fn finish_boundary_validation(
+        &mut self,
+        inputs: &SweepInputs,
+        unchanged: bool,
+    ) {
+        self.record_validation(inputs, unchanged);
+    }
+
+    fn record_validation(&mut self, inputs: &SweepInputs, unchanged: bool) {
+        // A newer vouch, or one at a newer boundary, is never replaced.
+        let newer = self
+            .sweep
+            .clean_since
+            .is_some_and(|start| start > inputs.started)
+            && self.sweep.clean_boundary == self.sweep.boundary;
+        if newer {
+            return;
+        }
+        if unchanged {
+            self.sweep.clean_since = Some(inputs.started);
+            self.sweep.clean_boundary = inputs.boundary;
+        } else {
+            self.sweep.clean_since = None;
+        }
     }
 
     /// Inputs that later capture, adopt or extend a revision are captured
@@ -183,12 +241,40 @@ mod tests {
     }
 
     #[test]
+    fn a_document_event_ends_the_vouch_until_a_validation_covers_it() {
+        let mut cache = SessionCache::default();
+        cache.enable_disk_sweep();
+        let now = Instant::now();
+        assert!(
+            cache.begin_boundary_validation(now).is_none(),
+            "nothing passed yet"
+        );
+        let inputs = cache.begin_disk_sweep(now).unwrap();
+        cache.note_document_boundary();
+        cache.finish_disk_sweep(&inputs, true, now);
+        assert!(
+            !cache.disk_inputs_trusted_at(now),
+            "a sweep that started before the event cannot cover it"
+        );
+        let inputs = cache.begin_boundary_validation(now).unwrap();
+        cache.finish_boundary_validation(&inputs, false);
+        assert!(!cache.disk_inputs_trusted_at(now));
+        let inputs = cache.begin_boundary_validation(now).unwrap();
+        cache.finish_boundary_validation(&inputs, true);
+        assert!(cache.disk_inputs_trusted_at(now));
+        assert!(cache.begin_boundary_validation(now).is_none(), "covered");
+        cache.note_document_boundary();
+        assert!(!cache.disk_inputs_trusted_at(now));
+    }
+
+    #[test]
     fn a_changed_input_fails_the_sweep() {
         let root = tempfile::tempdir().unwrap();
         let path = root.path().join("Child.vue");
         std::fs::write(&path, "<template>a</template>").unwrap();
         let inputs = SweepInputs {
             started: Instant::now(),
+            boundary: 0,
             stamps: vec![Arc::from([InputStamp::capture(&path)])],
         };
         assert!(inputs.unchanged());

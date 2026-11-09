@@ -221,6 +221,39 @@ fn a_clean_sweep_vouches_until_a_sweep_sees_the_change() {
     assert!(cache.get(&source, &request).is_none());
 }
 
+#[test]
+fn an_editor_event_makes_the_next_preparation_see_a_disk_edit() {
+    let root = tempfile::tempdir().unwrap();
+    let source = root.path().join("App.vue");
+    let config = root.path().join("tsconfig.json");
+    std::fs::write(&source, "<template />\n").unwrap();
+    std::fs::write(&config, r#"{"strict":true}"#).unwrap();
+    let overlays = FxHashMap::default();
+    let context = Arc::new(AliasContext::for_host(&source, "<template />\n", &overlays));
+    let mut cached = capture(&source, "<template />\n", &overlays);
+    cached.stamp(&context);
+    let request = cached.clone();
+    let mut cache = SessionCache::default();
+    cache.enable_disk_sweep();
+    cache.insert(source.clone(), cached, context);
+    let now = std::time::Instant::now();
+    let inputs = cache.begin_disk_sweep(now).unwrap();
+    assert!(inputs.unchanged());
+    cache.finish_disk_sweep(&inputs, true, now);
+
+    // A disk edit, then the editor changes a document: the vouch from
+    // before the event never answers its next preparation.
+    std::fs::write(&config, r#"{"strict":false}"#).unwrap();
+    cache.note_document_boundary();
+    let inputs = cache
+        .begin_boundary_validation(std::time::Instant::now())
+        .unwrap();
+    let unchanged = inputs.unchanged();
+    assert!(!unchanged);
+    cache.finish_boundary_validation(&inputs, unchanged);
+    assert!(cache.get(&source, &request).is_none());
+}
+
 fn capture(
     path: &std::path::Path,
     content: &str,

@@ -31,6 +31,16 @@ impl EditorMirrorSession {
         }
     }
 
+    /// After an editor document event, validate every captured input before
+    /// this preparation reads the cache; a clean result vouches as a sweep does.
+    pub(in crate::corsa_bridge) fn validate_disk_inputs_at_boundary(&self) {
+        let Some(inputs) = self.cache().begin_boundary_validation(Instant::now()) else {
+            return;
+        };
+        let unchanged = inputs.unchanged();
+        self.cache().finish_boundary_validation(&inputs, unchanged);
+    }
+
     /// Ask for the next sweep; a running or recent one absorbs the request.
     pub(in crate::corsa_bridge) fn request_disk_sweep(&self) {
         if let Some(sender) = recover_lock(&self.sweeper).as_ref() {
