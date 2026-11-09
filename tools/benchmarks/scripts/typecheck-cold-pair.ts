@@ -165,13 +165,20 @@ const kib = (status: string, field: string): number | undefined => {
 /** Poll /proc for the high-water marks of vize and of every checker it spawned. */
 function sampleTree(rootPid: number): { stop: () => { vize?: number; children?: number } } {
   const peaks = new Map<number, { name: string; hwm: number }>();
+  // Each thread lists the children it spawned, and vize spawns from workers.
   const children = (pid: number): number[] => {
     try {
-      return readFileSync(`/proc/${pid}/task/${pid}/children`, "utf8")
-        .trim()
-        .split(/\s+/u)
-        .filter(Boolean)
-        .map(Number);
+      return readdirSync(`/proc/${pid}/task`).flatMap((task) => {
+        try {
+          return readFileSync(`/proc/${pid}/task/${task}/children`, "utf8")
+            .trim()
+            .split(/\s+/u)
+            .filter(Boolean)
+            .map(Number);
+        } catch {
+          return [];
+        }
+      });
     } catch {
       return [];
     }
@@ -287,7 +294,9 @@ async function runOnce(
     childHwmMiB = peaks?.children;
     writeFileSync(output, Buffer.concat(chunks));
     if (linux) {
-      const [user, system, maxKiB] = readFileSync(metrics, "utf8").trim().split(/\s+/u).map(Number);
+      // GNU time first notes a non-zero exit (vize reports diagnostics with 1).
+      const last = readFileSync(metrics, "utf8").trim().split("\n").pop() ?? "";
+      const [user, system, maxKiB] = last.trim().split(/\s+/u).map(Number);
       cpuSeconds = (user ?? NaN) + (system ?? NaN);
       peakMiB = (maxKiB ?? NaN) / 1024;
     } else {
