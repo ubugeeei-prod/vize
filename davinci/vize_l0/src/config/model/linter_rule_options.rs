@@ -472,4 +472,6 @@ impl ConfigLintRuleOptions {
 }
 
 #[cfg(test)]
+mod real_project_allowances_tests;
+#[cfg(test)]
 mod tests;

@@ -468,93 +468,53 @@ export default defineConfig({}).withVue({
 
 ## `vue/warn-custom-directive`：外部登録ディレクティブ
 
-現在の SFC の外で登録されるアプリケーションのディレクティブを指定します。
-名前は `v-` を付けず、完全一致で指定します。既定は空の一覧です。
+現在の SFC の外で登録されるディレクティブを、`v-` なしの完全一致で指定します。既定は空です。
 
 ```ts
-ruleOptions: { "vue/warn-custom-directive": { ignore: ["hover-tooltip"] } }
+const ruleOptions = { "vue/warn-custom-directive": { ignore: ["hover-tooltip"] } };
 ```
 
-報告される例（未設定）：
-
-```vue
-<button v-focus>保存</button>
-```
-
-許可される例（設定済み）：
-
-```vue
-<button v-hover-tooltip>保存</button>
-```
+未設定では報告：`<button v-focus>保存</button>`
+設定後は許可：`<button v-hover-tooltip>保存</button>`
 
 <span id="vue-no-bare-strings-in-template"></span>
 
 ## `vue/no-bare-strings-in-template`：翻訳不要の文字列
 
-`allowlist` を指定すると上流の既定一覧を置き換えます。リテラル部分文字列、または
-`/^[DRWXYmvx]$/u` のような JavaScript 正規表現文字列を指定できます。空の一覧は何も許可しません。
+`allowlist` は既定一覧をリテラル部分文字列または JavaScript 正規表現で置き換えます。空の一覧は何も許可しません。
 
 ```ts
-ruleOptions: { "vue/no-bare-strings-in-template": { allowlist: ["Cancel", "/^[DRWXYmvx]$/u"] } }
+const ruleOptions = { "vue/no-bare-strings-in-template": { allowlist: ["Cancel", "/^[DRWXYmvx]$/u"] } };
 ```
 
-報告される例：
-
-```vue
-<span>Submit</span>
-```
-
-許可される例：
-
-```vue
-<span>Cancel</span>
-```
+報告：`<span>Submit</span>`
+許可：`<span>Cancel</span>`
 
 <span id="a11y-anchor-has-content"></span>
 
 ## `a11y/anchor-has-content`：アクセシブルな子コンポーネント
 
-常にアクセシブルな内容を描画するデザインシステムのコンポーネントを
-`accessibleChildren` に指定します。PascalCase と kebab-case の表記は同じ名前として扱います。
+常にアクセシブルな内容を描画するコンポーネントを `accessibleChildren` に指定します。PascalCase と kebab-case は同じ名前です。
 
 ```ts
-ruleOptions: { "a11y/anchor-has-content": { accessibleChildren: ["RetryImage"] } }
+const ruleOptions = { "a11y/anchor-has-content": { accessibleChildren: ["RetryImage"] } };
 ```
 
-報告される例：
-
-```vue
-<a href="/retry"><UnknownImage /></a>
-```
-
-許可される例：
-
-```vue
-<a href="/retry"><RetryImage /></a>
-```
+報告：`<a href="/retry"><UnknownImage /></a>`
+許可：`<a href="/retry"><RetryImage /></a>`
 
 <span id="a11y-label-has-for"></span>
 
 ## `a11y/label-has-for`：コントロールコンポーネント
 
-ラベルに内包されるデザインシステムのコントロールを `controlComponents` に指定します。
-設定にないカスタムコンポーネントは引き続き報告します。
+ラベルに内包されるコントロールを `controlComponents` に指定します。設定外のコンポーネントは引き続き報告します。
 
 ```ts
-ruleOptions: { "a11y/label-has-for": { controlComponents: ["CInputField"] } }
+const ruleOptions = { "a11y/label-has-for": { controlComponents: ["CInputField"] } };
 ```
 
-報告される例：
-
-```vue
-<label>名前<CustomText /></label>
-```
-
-許可される例：
-
-```vue
-<label>名前<CInputField /></label>
-```
+報告：`<label>名前<CustomText /></label>`
+許可：`<label>名前<CInputField /></label>`
 
 <span id="vue-attribute-hyphenation"></span>
 

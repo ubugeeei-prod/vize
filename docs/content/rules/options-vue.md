@@ -435,87 +435,47 @@ Good:
 
 ## `vue/warn-custom-directive`
 
-List application directives that are registered outside the current SFC. Names are exact and omit
-the `v-` prefix. The default list is empty.
+List application directives registered outside the current SFC. Names are exact, omit `v-`, and default to an empty list.
 
 ```ts
-ruleOptions: { "vue/warn-custom-directive": { ignore: ["hover-tooltip"] } }
+const ruleOptions = { "vue/warn-custom-directive": { ignore: ["hover-tooltip"] } };
 ```
 
-Bad (not configured):
-
-```vue
-<button v-focus>Save</button>
-```
-
-Good (configured):
-
-```vue
-<button v-hover-tooltip>Save</button>
-```
+Bad without configuration: `<button v-focus>Save</button>`
+Good with configuration: `<button v-hover-tooltip>Save</button>`
 
 ## `vue/no-bare-strings-in-template`
 
-`allowlist` replaces the upstream default list when present. Entries are literal substrings or
-JavaScript regex strings such as `/^[DRWXYmvx]$/u`; an explicit empty list allows nothing.
+`allowlist` replaces the upstream defaults with literal substrings or JavaScript regex strings; an empty list allows nothing.
 
 ```ts
-ruleOptions: { "vue/no-bare-strings-in-template": { allowlist: ["Cancel", "/^[DRWXYmvx]$/u"] } }
+const ruleOptions = { "vue/no-bare-strings-in-template": { allowlist: ["Cancel", "/^[DRWXYmvx]$/u"] } };
 ```
 
-Bad:
-
-```vue
-<span>Submit</span>
-```
-
-Good:
-
-```vue
-<span>Cancel</span>
-```
+Bad: `<span>Submit</span>`
+Good: `<span>Cancel</span>`
 
 ## `a11y/anchor-has-content`
 
-Use `accessibleChildren` for design-system components that always render accessible content.
-PascalCase and kebab-case template spellings are treated as the same component.
+Use `accessibleChildren` for design-system components that always render accessible content; PascalCase and kebab-case are equivalent.
 
 ```ts
-ruleOptions: { "a11y/anchor-has-content": { accessibleChildren: ["RetryImage"] } }
+const ruleOptions = { "a11y/anchor-has-content": { accessibleChildren: ["RetryImage"] } };
 ```
 
-Bad:
-
-```vue
-<a href="/retry"><UnknownImage /></a>
-```
-
-Good:
-
-```vue
-<a href="/retry"><RetryImage /></a>
-```
+Bad: `<a href="/retry"><UnknownImage /></a>`
+Good: `<a href="/retry"><RetryImage /></a>`
 
 ## `a11y/label-has-for`
 
-Use `controlComponents` for design-system controls nested by a label. This allowance does not
-make unrelated custom components satisfy the rule.
+Use `controlComponents` for design-system controls nested by a label; unrelated custom components remain invalid.
 
 ```ts
-ruleOptions: { "a11y/label-has-for": { controlComponents: ["CInputField"] } }
+const ruleOptions = { "a11y/label-has-for": { controlComponents: ["CInputField"] } };
 ```
 
-Bad:
-
-```vue
-<label>Name<CustomText /></label>
-```
-
-Good:
-
-```vue
-<label>Name<CInputField /></label>
-```
+Bad: `<label>Name<CustomText /></label>`
+Good: `<label>Name<CInputField /></label>`
 
 ## Attribute naming options {#vue-attribute-hyphenation}
 
