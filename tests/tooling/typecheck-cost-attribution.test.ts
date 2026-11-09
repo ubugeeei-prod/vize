@@ -204,7 +204,10 @@ void test("1 ms samples take every frame spanning a tick, B/E pairs per thread",
       args: { checkerId: 1, path: "/b.vue" },
     },
   ]);
-  assert.deepEqual([...frames.keys()].sort((a, b) => a - b), [0, 1]);
+  assert.deepEqual(
+    [...frames.keys()].sort((a, b) => a - b),
+    [0, 1],
+  );
   const stacks = tickStacks(frames.get(0) ?? []);
   assert.deepEqual(
     [...stacks].map(([tick, stack]) => [tick, stack.map((frame) => frame.name)]),
