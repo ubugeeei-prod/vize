@@ -37,9 +37,27 @@ export function touchedRatchetCrates(
   return ratchet.filter((name) => changed.includes(name));
 }
 
-/** Entries a change drops; the ratchet only grows. */
-export function droppedRatchetCrates(base: readonly string[], head: readonly string[]): string[] {
-  return base.filter((name) => !head.includes(name));
+/** Entries a change drops while their crate still exists; the ratchet only grows. A deleted or
+ renamed crate has nothing left to lint. */
+export function droppedRatchetCrates(
+  base: readonly string[],
+  head: readonly string[],
+  workspace: ReadonlySet<string>,
+): string[] {
+  return base.filter((name) => !head.includes(name) && workspace.has(name));
+}
+
+/** Package names of the checked-out workspace members. */
+export function workspacePackages(root = "."): Set<string> {
+  const manifest = readFileSync(resolve(root, "Cargo.toml"), "utf8");
+  const members = /^members = \[([\s\S]*?)\]/m.exec(manifest)?.[1] ?? "";
+  const names = new Set<string>();
+  for (const [, member] of members.matchAll(/"([^"]+)"/g)) {
+    const crate = readFileSync(resolve(root, member, "Cargo.toml"), "utf8");
+    const name = /^name = "([^"]+)"/m.exec(crate)?.[1];
+    if (name) names.add(name);
+  }
+  return names;
 }
 
 export function clippyArgs(crates: readonly string[]): string[] {
@@ -88,7 +106,7 @@ export function main(argv = process.argv.slice(2)): number {
     // The change that introduces the list has nothing to hold either.
     if (!hasObject(`${argument}:${ratchetPath}`)) return 0;
     const base = execFileSync("git", ["show", `${argument}:${ratchetPath}`], { encoding: "utf8" });
-    const dropped = droppedRatchetCrates(parseRatchet(base), readHead());
+    const dropped = droppedRatchetCrates(parseRatchet(base), readHead(), workspacePackages());
     if (!dropped.length) return 0;
     process.stderr.write(
       `${ratchetPath} only grows; restore ${dropped.join(", ")} and fix their test-target Clippy findings.\n`,
