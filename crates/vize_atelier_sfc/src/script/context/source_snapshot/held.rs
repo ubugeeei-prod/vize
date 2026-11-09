@@ -52,11 +52,21 @@ impl HeldHandles {
         self.handles.is_some() && !self.shared.load(Ordering::Relaxed)
     }
 
-    /// Record a root this snapshot resolves.
-    pub(super) fn note_root(&self, root: &Path) {
-        if self.handles.is_some() && self.first_root.get_or_init(|| root.to_path_buf()) != root {
+    /// Record a root this snapshot resolves; `true` the first time, when its
+    /// handle is worth holding.
+    pub(super) fn note_root(&self, root: &Path) -> bool {
+        if self.handles.is_none() {
+            return false;
+        }
+        let mut first = false;
+        let held = self.first_root.get_or_init(|| {
+            first = true;
+            root.to_path_buf()
+        });
+        if held != root {
             self.shared.store(true, Ordering::Relaxed);
         }
+        first
     }
 
     /// Keep `file` open until the snapshot drops, within both limits;

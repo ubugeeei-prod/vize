@@ -43,13 +43,16 @@ impl TypeSourceSnapshot {
         let directory = path.parent()?;
         #[cfg(target_os = "linux")]
         {
-            self.held.note_root(path);
+            let first = self.held.note_root(path);
             if self.held.enabled()
                 && let Some(handle) = super::realpath::canonical_handle(path)
             {
                 // The root and every directory above it are their own `realpath`.
                 self.note_canonical_directory(directory);
-                self.held.hold(handle);
+                // Later calls for the same root re-resolve it but hold nothing more.
+                if first {
+                    self.held.hold(handle);
+                }
                 return Some(path.to_path_buf());
             }
         }

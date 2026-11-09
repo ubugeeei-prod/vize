@@ -34,16 +34,13 @@ fn proc_names_match_realpath_for_every_spelling() {
 #[cfg(target_os = "linux")]
 #[test]
 fn probes_answer_like_lstat_until_a_directory_earns_a_listing() {
-    for sources in [
-        TypeSourceSnapshot::default(),
-        TypeSourceSnapshot::for_request(),
-    ] {
-        probe_like_lstat(sources);
-    }
+    // Long-lived snapshots list on the first probe, a request's on the fifth.
+    probe_like_lstat(TypeSourceSnapshot::default(), false);
+    probe_like_lstat(TypeSourceSnapshot::for_request(), true);
 }
 
 #[cfg(target_os = "linux")]
-fn probe_like_lstat(sources: TypeSourceSnapshot) {
+fn probe_like_lstat(sources: TypeSourceSnapshot, defers: bool) {
     let dir = tempfile::tempdir().unwrap();
     let root = dir.path().canonicalize().unwrap();
     fs::write(root.join("file.ts"), "").unwrap();
@@ -55,7 +52,7 @@ fn probe_like_lstat(sources: TypeSourceSnapshot) {
     assert_eq!(probe("link.ts"), Probe::Unknown);
     assert_eq!(probe("dir.ts"), Probe::Unknown);
     assert_eq!(probe("missing.ts"), Probe::Absent(root.join("missing.ts")));
-    assert!(!listed());
+    assert_eq!(listed(), !defers);
     assert_eq!(probe("file.ts"), Probe::Found(root.join("file.ts")));
     assert!(listed());
     // A listing freezes hits only: later files and links still probe.
