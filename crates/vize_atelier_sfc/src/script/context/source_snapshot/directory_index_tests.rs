@@ -26,7 +26,14 @@ fn listed_files_resolve_to_their_realpath_and_each_directory_lists_once() {
         }
     }
     // Each importer directory spells `kit` differently, and lists it once.
-    assert_eq!(sources.directories.lock().unwrap().len(), 2);
+    let kit_spellings = sources
+        .directories
+        .lock()
+        .unwrap()
+        .keys()
+        .filter(|directory| directory.ends_with("kit"))
+        .count();
+    assert_eq!(kit_spellings, 2);
 }
 
 #[test]
@@ -92,4 +99,39 @@ fn links_keep_their_physical_identity() {
     expect("./alias", &root.join("real/target.ts"));
     expect("./linked/inner", &root.join("real/sub/inner.ts"));
     expect("./linked/../target", &root.join("real/target.ts"));
+}
+
+#[cfg(unix)]
+#[test]
+fn caller_roots_take_their_realpath_from_the_physical_directory() {
+    let dir = tempfile::tempdir().unwrap();
+    let root = dir.path().canonicalize().unwrap();
+    fs::create_dir_all(root.join("real/app")).unwrap();
+    for name in ["First.vue", "Second.vue"] {
+        fs::write(root.join("real/app").join(name), "<template />").unwrap();
+    }
+    std::os::unix::fs::symlink(root.join("real/app"), root.join("linked")).unwrap();
+    let sources = TypeSourceSnapshot::default();
+    for spelling in [root.join("linked"), root.join("real/app")] {
+        for name in ["First.vue", "Second.vue"] {
+            assert_eq!(
+                sources.public_identity(&spelling.join(name)),
+                root.join("real/app").join(name)
+            );
+        }
+    }
+    // Both spellings reach one physical directory.
+    assert_eq!(sources.physical_directories.lock().unwrap().len(), 1);
+    // Unsaved, lexical `..` and relative roots keep `source_path` exactly.
+    for path in [
+        root.join("linked/Unsaved.vue"),
+        root.join("linked/../real/app/First.vue"),
+        Path::new("Relative.vue").to_path_buf(),
+    ] {
+        assert_eq!(
+            sources.public_identity(&path),
+            super::source_path(&path),
+            "{path:?}"
+        );
+    }
 }
