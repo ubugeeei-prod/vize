@@ -6,7 +6,9 @@
 //! call also records the `defineProps` call it wraps.
 
 mod bindings;
+mod props;
 pub use bindings::{SetupBinding, SetupBindingKind};
+pub use props::{PropsDestructure, PropsField};
 
 use super::{MacroKind, lookup};
 use crate::file::{ScopeId, ScriptUnit};
@@ -38,6 +40,7 @@ pub struct MacroCall {
 pub struct SetupFacts {
     macro_calls: Vec<MacroCall>,
     bindings: Vec<SetupBinding>,
+    props_destructure: Option<PropsDestructure>,
     unclassified: Vec<Span>,
 }
 
@@ -49,14 +52,22 @@ impl SetupFacts {
     }
 
     /// Bindings introduced by top-level identifiers, imports, functions,
-    /// classes and enums, in source order.
+    /// classes, enums and `defineProps` destructure locals, in source order.
+    /// Props read without a local belong to the props contract.
     #[must_use]
     pub fn bindings(&self) -> &[SetupBinding] {
         &self.bindings
     }
 
-    /// Destructuring declarator patterns whose bindings are not classified
-    /// yet. A consumer that needs every binding refuses a non-empty list.
+    /// The `defineProps` destructure, when there is one.
+    #[must_use]
+    pub fn props_destructure(&self) -> Option<&PropsDestructure> {
+        self.props_destructure.as_ref()
+    }
+
+    /// `defineProps` destructure patterns whose bindings are not classified:
+    /// a second destructure, or one Vue rejects. A consumer that needs every
+    /// binding refuses a non-empty list.
     #[must_use]
     pub fn unclassified(&self) -> &[Span] {
         &self.unclassified
@@ -122,6 +133,7 @@ impl SetupObserver<'_> {
         Ok(SetupFacts {
             macro_calls: self.calls,
             bindings: self.bindings.rows,
+            props_destructure: self.bindings.props,
             unclassified: self.bindings.unclassified,
         })
     }
@@ -236,6 +248,7 @@ impl<'a> FileObserver<'a> for SetupObserver<'a> {
             calls: self.calls.len(),
             observed: self.observed,
             bindings: self.bindings.rows.len(),
+            props: self.bindings.props.is_some(),
             unclassified: self.bindings.unclassified.len(),
         }
     }
@@ -250,6 +263,9 @@ impl<'a> FileObserver<'a> for SetupObserver<'a> {
         self.observed = checkpoint.observed;
         self.bindings.rows.truncate(checkpoint.bindings);
         self.bindings.unclassified.truncate(checkpoint.unclassified);
+        if !checkpoint.props {
+            self.bindings.props = None;
+        }
     }
 }
 
@@ -259,5 +275,6 @@ pub struct SetupCheckpoint {
     calls: usize,
     observed: usize,
     bindings: usize,
+    props: bool,
     unclassified: usize,
 }

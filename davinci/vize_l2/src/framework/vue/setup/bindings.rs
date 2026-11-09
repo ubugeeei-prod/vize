@@ -5,16 +5,16 @@
 //! differs from Vue's `walkDeclaration` (#12404): named imports from `vue`
 //! may hold refs here, the ref family needs no `vue` import, `let x =
 //! reactive()` stays reactive, `readonly`/`toRefs` results are classified,
-//! every literal `const` is a literal constant, and `declare const` counts.
-//! A `defineProps` destructure is left unclassified.
+//! every literal `const` is a literal constant, `declare const` counts, and a
+//! destructure of a TypeScript-wrapped `defineProps` call is an ordinary one.
 
 use super::super::{MacroKind, lookup};
+use super::props::{self, PropsDestructure};
 use alloc::vec::Vec;
 use oxc_ast::ast::{
     BindingPattern, CallExpression, Expression, ImportDeclaration, ImportDeclarationSpecifier,
     Statement, VariableDeclarationKind, VariableDeclarator,
 };
-use oxc_span::GetSpan;
 use vize_l0::Span;
 
 /// How a template reads a `<script setup>` binding.
@@ -32,6 +32,10 @@ pub enum SetupBindingKind {
     SetupReactiveConst,
     /// A `const` initialized by a literal.
     LiteralConst,
+    /// A destructured prop whose local has the prop's name.
+    Props,
+    /// A destructured prop read through a renamed local.
+    PropsAliased,
 }
 
 /// One binding introduced by a top-level identifier.
@@ -68,7 +72,8 @@ fn reactive_call(name: &str) -> Option<(&'static str, SetupBindingKind)> {
 #[derive(Debug, Default)]
 pub(super) struct Bindings<'a> {
     pub(super) rows: Vec<SetupBinding>,
-    /// Destructuring declarators, which are not classified yet.
+    pub(super) props: Option<PropsDestructure>,
+    /// `defineProps` destructures the facts do not cover.
     pub(super) unclassified: Vec<Span>,
     aliases: Vec<(&'a str, &'static str)>,
     pub(super) overflow: bool,
@@ -183,8 +188,8 @@ impl<'a> Bindings<'a> {
         self.push(base, id.span, class);
     }
 
-    /// Every identifier of a destructuring pattern shares one kind. A
-    /// `defineProps` destructure declares props and stays unclassified.
+    /// Every identifier of a destructuring pattern shares one kind, except
+    /// in a `defineProps` destructure.
     fn pattern(
         &mut self,
         base: u32,
@@ -193,9 +198,8 @@ impl<'a> Bindings<'a> {
     ) {
         let init = declarator.init.as_ref();
         let class = match &declarator.id {
-            BindingPattern::ObjectPattern(_) if init.is_some_and(destructures_props) => {
-                let pattern = self.authored(base, declarator.id.span());
-                self.unclassified.push(pattern);
+            BindingPattern::ObjectPattern(pattern) if init.is_some_and(destructures_props) => {
+                self.props_destructure(base, pattern);
                 return;
             }
             BindingPattern::ArrayPattern(_)
@@ -211,6 +215,31 @@ impl<'a> Bindings<'a> {
             self.push(base, id.span, class);
             true
         });
+    }
+
+    /// A second destructure, like a pattern Vue rejects, stays unclassified.
+    fn props_destructure(&mut self, base: u32, pattern: &oxc_ast::ast::ObjectPattern<'a>) {
+        let mut overflow = false;
+        let observed = props::destructure(pattern, |span| {
+            match (base.checked_add(span.start), base.checked_add(span.end)) {
+                (Some(start), Some(end)) => Span::new(start, end),
+                _ => {
+                    overflow = true;
+                    Span::new(0, 0)
+                }
+            }
+        });
+        self.overflow |= overflow;
+        match observed {
+            Some((destructure, rows)) if self.props.is_none() => {
+                self.props = Some(destructure);
+                self.rows.extend(rows);
+            }
+            _ => {
+                let pattern = self.authored(base, pattern.span);
+                self.unclassified.push(pattern);
+            }
+        }
     }
 
     fn call_kind(
