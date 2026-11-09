@@ -181,12 +181,16 @@ pub(crate) fn reexport(ts: &mut crate::virtual_ts::TextBuf, public: &'static str
 /// the SFC's bindings once per projection.
 const LIB_TYPES: &[&str] = &[
     "Awaited",
+    "Exclude",
+    "Extract",
     "InstanceType",
     "NoInfer",
+    "NonNullable",
     "Omit",
     "Parameters",
     "Partial",
     "Pick",
+    "PropertyKey",
     "Record",
     "ReturnType",
 ];

@@ -1,0 +1,25 @@
+<script lang="ts">
+type Exclude<T, U> = never
+type Extract<T, U> = never
+type NonNullable<T> = never
+type PropertyKey = never
+export const slotLibTypePoison = true
+</script>
+
+<script setup lang="ts">
+import { ref } from 'vue'
+import SlotChild from './SlotChild.vue'
+
+const count = ref(0)
+const slotName = ref('extra')
+const rows = ['a', 'b']
+</script>
+
+<template>
+  <SlotChild :items="rows">
+    <template #default="{ item, index }">{{ item.toUpperCase() }}<slot name="inner" :item="item" :index="index" /></template>
+  </SlotChild>
+  <div v-for="row in rows" :key="row"><slot name="row" :row="row" /></div>
+  <slot name="extra" v-bind="{ count }" />
+  <slot :name="slotName" v-bind="{ count }" />
+</template>

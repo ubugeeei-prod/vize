@@ -14163,6 +14163,45 @@
       }
     },
     {
+      "id": "typechecker/regression/lib-type-shadowing-slots-12536",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "lib-type-shadowing-slots-12536/SlotChild.vue.txt",
+          "sha256": "dad1390679fce7cf7c46c79be5297f0245ec04feb1f0ae1e26f696719a91b7e6",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "lib-type-shadowing-slots-12536/SlotHost.vue.txt",
+          "sha256": "d905c7cefb7f8870fb97d0b7026562191ef8cfef45ac59b398bad8fbdd25a6cd",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "lib-type-shadowing-slots-12536/tsconfig.json.txt",
+          "sha256": "8f4cc08b465ddf6df35387e36be46136f6b6f7f5f19085ca9d6a3fcc1cda9b31",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "lib_type_shadowing_slots::authored_lib_types_cannot_capture_slot_helpers; Exclude, Extract, NonNullable and PropertyKey declared or imported by the SFC must not capture slot outlet, scoped slot or inferred slot helpers. Input-only batch registration for the shared Canon source change; no native parity claim."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/regression/library-generic-event-payload-11447",
       "state": "active",
       "targets": [
