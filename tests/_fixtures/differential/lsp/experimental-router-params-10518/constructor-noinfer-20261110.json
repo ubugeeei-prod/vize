@@ -1,0 +1,98 @@
+{
+  "schema": "vize.experimental-router-constructor-noinfer-transition.v1",
+  "qualificationCredit": false,
+  "sourceReceipt": {
+    "path": "tests/_fixtures/tooling/constructor-noinfer-return.json",
+    "sha256": "22b856cdbe8804b9584ef85ec020d698a60d424ec61de8f2531c5dc2159a6102"
+  },
+  "edit": {
+    "before": "type $ComponentConstructor = new <$AuthoredProps = unknown, $JsxProps = unknown>(props?: $AuthoredProps & $ComponentInput<Props, {}, $AuthoredProps>, ...args: any[]) => $ComponentInstanceFor<$ComponentInstance, {\n  $props: Props;\n  readonly __vizeRawProps?: Props;\n  $emit: $PublicEmit<Emits>;\n  $slots: $PublicSlots<$Slots>;\n}, $ComponentPublicBase, Props, {}, $AuthoredProps, $JsxProps>;\n",
+    "after": "type $ComponentConstructor = new <$AuthoredProps = unknown, $JsxProps = unknown>(props?: $AuthoredProps & $ComponentInput<Props, {}, $AuthoredProps>, ...args: any[]) => ($IsAny<$AuthoredProps> extends true ? true : $IsUnknown<$AuthoredProps> extends true ? $UsePublicInstance<$JsxProps> : false) extends true ? $ComponentInstance : NoInfer<$ComponentInstanceFor<$ComponentInstance, {\n  $props: Props;\n  readonly __vizeRawProps?: Props;\n  $emit: $PublicEmit<Emits>;\n  $slots: $PublicSlots<$Slots>;\n}, $ComponentPublicBase, Props, {}, $AuthoredProps, $JsxProps>>;\n"
+  },
+  "entries": [
+    {
+      "variant": "lf",
+      "kind": "valid",
+      "previous": {
+        "file": "lf.valid.instance-input-keys.virtual.ts.txt",
+        "sha256": "f86d2266c0dd5fddd0f6f463bead069827f4faca486207dcfc14830d9cb866c4",
+        "bytes": 15265
+      },
+      "current": {
+        "file": "lf.valid.constructor-noinfer.virtual.ts.txt",
+        "sha256": "27c9f16f754bc0eef1554c977d697bb4e0e1c611d445b45e1aaf99a2b00b769c",
+        "bytes": 15437
+      }
+    },
+    {
+      "variant": "lf",
+      "kind": "invalid",
+      "previous": {
+        "file": "lf.invalid.instance-input-keys.virtual.ts.txt",
+        "sha256": "35526e12ce6057253a52840f3532b8d62250e3aabd84e72e7aef07678daaa1eb",
+        "bytes": 15269
+      },
+      "current": {
+        "file": "lf.invalid.constructor-noinfer.virtual.ts.txt",
+        "sha256": "fd58ca995d4948022a89b9bfb88bff1822bf3ba16adf992482449762569e1c01",
+        "bytes": 15441
+      }
+    },
+    {
+      "variant": "crlf",
+      "kind": "valid",
+      "previous": {
+        "file": "crlf.valid.instance-input-keys.virtual.ts.txt",
+        "sha256": "98e0c70fdad703fadb8a3f5a4daa025a6958b065ee4a84dd1bef3658e84404f0",
+        "bytes": 15265
+      },
+      "current": {
+        "file": "crlf.valid.constructor-noinfer.virtual.ts.txt",
+        "sha256": "cbab17390c755bba88c75fc720450374772a17e2ec2afb3d4f46cf941cf17ddc",
+        "bytes": 15437
+      }
+    },
+    {
+      "variant": "crlf",
+      "kind": "invalid",
+      "previous": {
+        "file": "crlf.invalid.instance-input-keys.virtual.ts.txt",
+        "sha256": "d3c8f1824b145ec25c89e48d383edcf3311113db28798b24aa8ed584703aa700",
+        "bytes": 15269
+      },
+      "current": {
+        "file": "crlf.invalid.constructor-noinfer.virtual.ts.txt",
+        "sha256": "21e5479bee6275afd1005f1e9cbbbeeb4f338a44f21482c331d3bd3ab77ba8b0",
+        "bytes": 15441
+      }
+    },
+    {
+      "variant": "explicit",
+      "kind": "valid",
+      "previous": {
+        "file": "explicit.valid.instance-input-keys.virtual.ts.txt",
+        "sha256": "066535c9a28b35e66f1dcd2d2562217077928b7ecf22d8d8b135ccf0487c6615",
+        "bytes": 15193
+      },
+      "current": {
+        "file": "explicit.valid.constructor-noinfer.virtual.ts.txt",
+        "sha256": "c8d3674e242a530ced76dbb54f7ffbacd5485d2cb492091157e7252b74a8bb2c",
+        "bytes": 15365
+      }
+    },
+    {
+      "variant": "explicit",
+      "kind": "invalid",
+      "previous": {
+        "file": "explicit.invalid.instance-input-keys.virtual.ts.txt",
+        "sha256": "066535c9a28b35e66f1dcd2d2562217077928b7ecf22d8d8b135ccf0487c6615",
+        "bytes": 15193
+      },
+      "current": {
+        "file": "explicit.invalid.constructor-noinfer.virtual.ts.txt",
+        "sha256": "c8d3674e242a530ced76dbb54f7ffbacd5485d2cb492091157e7252b74a8bb2c",
+        "bytes": 15365
+      }
+    }
+  ]
+}
