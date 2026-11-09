@@ -90,6 +90,15 @@ export function auditDocumentation(file: string, sourceText: string): Documentat
   let declarations = 0;
   let optionalMembers = 0;
 
+  const declarationsByName = new Map<string, ts.Statement>();
+  for (const statement of source.statements) {
+    for (const name of declarationNames(statement) ?? []) {
+      if (name !== "default" && !declarationsByName.has(name)) {
+        declarationsByName.set(name, statement);
+      }
+    }
+  }
+
   for (const statement of source.statements) {
     if (!hasExportModifier(statement)) continue;
 
@@ -125,6 +134,19 @@ export function auditDocumentation(file: string, sourceText: string): Documentat
           `${file}:${lineNumber(source, member)} optional option "${propertyName(member, source)}" must document @default`,
         );
       }
+    }
+  }
+
+  for (const statement of source.statements) {
+    if (!ts.isExportAssignment(statement) || !ts.isIdentifier(statement.expression)) continue;
+    const declaration = declarationsByName.get(statement.expression.text);
+    if (declaration == null || hasExportModifier(declaration)) continue;
+
+    declarations += 1;
+    if (directDocumentation(declaration, source) === undefined) {
+      problems.push(
+        `${file}:${lineNumber(source, declaration)} export "${statement.expression.text}" has no JSDoc block directly above`,
+      );
     }
   }
 
