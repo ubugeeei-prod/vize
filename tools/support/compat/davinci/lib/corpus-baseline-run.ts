@@ -1,6 +1,6 @@
 // Corpus sweep + reduction (Davinci P0-5, TS-11). `corpus-baseline` and
 // `corpus-diff` both run the existing real-project harness
-// (`tools/support/compat/fixtures/tool-matrix-report.mjs`) across all shards through
+// (`tools/support/compat/fixtures/tool-matrix-report.ts`) across all shards through
 // `runMatrix`, then reduce every per-project per-surface payload to a
 // `{surface, project, file_count, content_hash}` row through `reduceShards`.
 //
@@ -29,7 +29,7 @@ export const MATRIX_SCRIPT = path.join(
   "support",
   "compat",
   "fixtures",
-  "tool-matrix-report.mjs",
+  "tool-matrix-report.ts",
 );
 
 const PAYLOAD_FAILURE_FIELDS = ["spawnError", "parseError", "validationError"];

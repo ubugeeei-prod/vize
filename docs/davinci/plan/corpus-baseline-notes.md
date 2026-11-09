@@ -29,7 +29,7 @@ baseline. Drifted submodules are never auto-repaired — the tool prints the
 `git submodule update` line and stops, because silently re-hydrating a
 fixture would change what the corpus measures.
 
-Both tools spawn `tools/commands/fixtures/tool-matrix-report.rs` across all shards
+Both tools spawn `tools/support/compat/fixtures/tool-matrix-report.ts` across all shards
 (4 parallel shard processes by default; the harness is serial inside a
 shard) and reduce each project's per-surface payload to a
 `{surface, project, file_count, content_hash}` row.
@@ -71,9 +71,9 @@ recursively) of the following fields of the harness run payload
 - The compiled artifacts themselves are covered byte-for-byte by
   `compilerArtifacts.sha256` — the path + content digest the harness
   computes over every emitted compile artifact
-  (`tools/commands/fixtures/tool-matrix-report.rs`, `inspectCompilerArtifacts`),
+  (`tools/support/compat/fixtures/tool-matrix-report.ts`, `inspectCompilerArtifacts`),
   taken before the temporary output directory is deleted.
-- `file_count` mirrors `tools/commands/fixtures/tool-matrix-report.rs`:
+- `file_count` mirrors `tools/support/compat/fixtures/tool-matrix-report.ts`:
   compiler `inputFileCount`, typechecker `fileCount` (requested +
   transitive authored + dependency files), linter file-entry count, formatter
   `checkedFileCount`.

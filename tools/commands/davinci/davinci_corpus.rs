@@ -424,7 +424,7 @@ pub fn run_matrix(
     for index in 0..shards {
         let output_dir = scratch_dir.join(format!("shard-{index}"));
         let mut args = vec![
-            "tools/commands/fixtures/tool-matrix-report.rs".to_string(),
+            "tools/support/compat/fixtures/tool-matrix-report.ts".to_string(),
             "--shard-index".to_string(),
             index.to_string(),
             "--shard-count".to_string(),
@@ -760,7 +760,7 @@ fn list_matrix_fixture_paths(root: &Path, shards: usize) -> Result<Vec<String>, 
     let mut fixture_paths = Vec::new();
     for index in 0..shards {
         let args = vec![
-            "tools/commands/fixtures/tool-matrix-report.rs".to_string(),
+            "tools/support/compat/fixtures/tool-matrix-report.ts".to_string(),
             "--list-fixture-paths".to_string(),
             "--shard-index".to_string(),
             index.to_string(),

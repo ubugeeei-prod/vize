@@ -9,17 +9,17 @@
 
 ## Existing suites (inherited, stay green throughout)
 
-| ID   | Suite                      | Command                                                                                                                    | Oracle                                                                            |
-| ---- | -------------------------- | -------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
-| TS-1 | Crate unit/fixture tests   | `cargo test -p <crate>` (workspace: `cargo test`)                                                                          | exact fixture/insta snapshots                                                     |
-| TS-2 | Expected-output runner     | `cargo test -p vize_test_runner` (+ `node tests/tooling/support/generate-expected.ts <fixture>` to regen)                  | committed expected files, byte-exact                                              |
-| TS-3 | Repo invariants            | `vp run --workspace-root test:scripts`                                                                                     | per-invariant asserts (incl. snapshot-baselines, readme-benchmark-rows)           |
-| TS-4 | Real-project corpus matrix | `rust-script tools/commands/fixtures/tool-matrix-report.rs --shard-index N --shard-count M --vize-bin target/release/vize` | per-surface success + output hashes                                               |
-| TS-5 | Glyph corpus properties    | formatter lane of TS-4 with `VIZE_TEST_BIN` + `FIXTURE_REPORT_DIR`                                                         | idempotence, parse-preservation, lint-agreement, pug — exact, empty waiver ledger |
-| TS-6 | JSX babel-compat oracle    | `cargo test -p vize_atelier_jsx` (`babel_compat_oracle`)                                                                   | exact parity vs `@vue/babel-plugin-jsx` fixtures                                  |
-| TS-7 | LSP smoke                  | `node --test tests/tooling/lsp-smoke.test.ts`                                                                              | protocol-level exact expectations                                                 |
-| TS-8 | Fuzz targets               | `cargo +nightly fuzz run <target>` (`tests/fuzz`)                                                                          | no crash; fixed crashes carry deterministic reproducers                           |
-| TS-9 | Lint/check fixtures        | `vp run --filter './tests' test:lint`, `test:check:fixtures`                                                               | exact diagnostic snapshots                                                        |
+| ID   | Suite                      | Command                                                                                                                   | Oracle                                                                            |
+| ---- | -------------------------- | ------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| TS-1 | Crate unit/fixture tests   | `cargo test -p <crate>` (workspace: `cargo test`)                                                                         | exact fixture/insta snapshots                                                     |
+| TS-2 | Expected-output runner     | `cargo test -p vize_test_runner` (+ `node tests/tooling/support/generate-expected.ts <fixture>` to regen)                 | committed expected files, byte-exact                                              |
+| TS-3 | Repo invariants            | `vp run --workspace-root test:scripts`                                                                                    | per-invariant asserts (incl. snapshot-baselines, readme-benchmark-rows)           |
+| TS-4 | Real-project corpus matrix | `node tools/support/compat/fixtures/tool-matrix-report.ts --shard-index N --shard-count M --vize-bin target/release/vize` | per-surface success + output hashes                                               |
+| TS-5 | Glyph corpus properties    | formatter lane of TS-4 with `VIZE_TEST_BIN` + `FIXTURE_REPORT_DIR`                                                        | idempotence, parse-preservation, lint-agreement, pug — exact, empty waiver ledger |
+| TS-6 | JSX babel-compat oracle    | `cargo test -p vize_atelier_jsx` (`babel_compat_oracle`)                                                                  | exact parity vs `@vue/babel-plugin-jsx` fixtures                                  |
+| TS-7 | LSP smoke                  | `node --test tests/tooling/lsp-smoke.test.ts`                                                                             | protocol-level exact expectations                                                 |
+| TS-8 | Fuzz targets               | `cargo +nightly fuzz run <target>` (`tests/fuzz`)                                                                         | no crash; fixed crashes carry deterministic reproducers                           |
+| TS-9 | Lint/check fixtures        | `vp run --filter './tests' test:lint`, `test:check:fixtures`                                                              | exact diagnostic snapshots                                                        |
 
 ## Davinci suites (new; the phase that creates each is noted)
 

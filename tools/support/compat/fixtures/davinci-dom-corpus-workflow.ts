@@ -1,4 +1,4 @@
-import { spawn, spawnSync } from "node:child_process";
+import { spawn, spawnSync, type SpawnSyncOptionsWithStringEncoding } from "node:child_process";
 import { createWriteStream, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { appendFile } from "node:fs/promises";
 import { resolve } from "node:path";
@@ -12,6 +12,39 @@ export const corpusRoot = "tests/_fixtures/_git";
 export const expectedGitlinks = 149;
 export const expectedDomOutputComparisons = 150;
 export const expectedOldErrorSkips = 16;
+type ReasonCounts = Record<string, number>;
+type RunCommand = (command: string, args: readonly string[]) => string;
+type RunOptions = Omit<SpawnSyncOptionsWithStringEncoding, "encoding">;
+
+interface CorpusCommandOptions {
+  readonly artifact?: string;
+  readonly runCommand?: RunCommand;
+}
+
+interface CorpusEvidence {
+  canonicalScope: boolean;
+  closureEvidence: boolean;
+  submodules: number;
+  files: number;
+  unreadable: number;
+  parsed: number;
+  templates: number;
+  compared: number;
+  patchFactEntries: number;
+  oldErrorSkips: number;
+  oldErrorReasons: ReasonCounts;
+  s2Refusals: number;
+  divergences: number;
+}
+
+interface CorpusValidation {
+  readonly manifestDomOutputComparisons: number;
+  readonly selectedGitlinks: number;
+  readonly submoduleStatusRows: number;
+  readonly evidence: CorpusEvidence;
+  readonly failures: string[];
+}
+
 export const expectedOldErrorReasons = {
   ExtendPoint: 1,
   InvalidEndTag: 20,
@@ -20,15 +53,15 @@ export const expectedOldErrorReasons = {
   VElseNoAdjacentIf: 1,
   VIfSameKey: 4,
   VSlotDuplicateSlotNames: 1,
-};
+} satisfies ReasonCounts;
 
 const ansiEscapePattern = new RegExp(`${String.fromCharCode(27)}\\[[0-?]*[ -/]*[@-~]`, "g");
 
-function stripAnsi(value) {
+function stripAnsi(value: string): string {
   return value.replace(ansiEscapePattern, "");
 }
 
-function run(command, args, options = {}) {
+function run(command: string, args: readonly string[], options: RunOptions = {}): string {
   const result = spawnSync(command, args, {
     encoding: "utf8",
     maxBuffer: 64 * 1024 * 1024,
@@ -41,12 +74,12 @@ function run(command, args, options = {}) {
   return result.stdout ?? "";
 }
 
-function errorMessage(error) {
+function errorMessage(error: unknown): string {
   const message = error instanceof Error ? error.message : String(error);
   return message.replace(/\s+/g, " ").trim();
 }
 
-export function parseFixtureGitlinks(indexOutput) {
+export function parseFixtureGitlinks(indexOutput: string): string[] {
   return indexOutput
     .split(/\r?\n/)
     .flatMap((line) => {
@@ -56,15 +89,15 @@ export function parseFixtureGitlinks(indexOutput) {
     .sort((left, right) => left.localeCompare(right));
 }
 
-function selectedGitlinks(runCommand) {
+function selectedGitlinks(runCommand: RunCommand): string[] {
   return parseFixtureGitlinks(runCommand("git", ["ls-files", "--stage", "--", corpusRoot]));
 }
 
-export function verdictFor(outcome, mode) {
+export function verdictFor(outcome: string, mode: string): string {
   return mode === "record-only" && outcome === "failure" ? "success" : outcome;
 }
 
-export function corpusEvidenceLines(logText) {
+export function corpusEvidenceLines(logText: string): string[] {
   return logText
     .split(/\r?\n/)
     .filter((line) =>
@@ -74,7 +107,7 @@ export function corpusEvidenceLines(logText) {
     );
 }
 
-export function parseOldErrorReasons(logText) {
+export function parseOldErrorReasons(logText: string): ReasonCounts {
   for (const line of corpusEvidenceLines(logText).map(stripAnsi)) {
     const match = /old-lane error reasons: (\{.*\})/.exec(line);
     if (!match) continue;
@@ -89,15 +122,15 @@ export function parseOldErrorReasons(logText) {
       stripAnsi(logText),
     );
   if (!block) return {};
-  const reasons = {};
+  const reasons: ReasonCounts = {};
   for (const code of block[1].matchAll(/code: ([A-Za-z0-9_]+)/g)) {
     reasons[code[1]] = (reasons[code[1]] ?? 0) + 1;
   }
   return sortReasonCounts(reasons);
 }
 
-export function parseCorpusEvidence(logText) {
-  const evidence = {
+export function parseCorpusEvidence(logText: string): CorpusEvidence {
+  const evidence: CorpusEvidence = {
     canonicalScope: false,
     closureEvidence: false,
     submodules: 0,
@@ -151,7 +184,7 @@ export function parseCorpusEvidence(logText) {
   return evidence;
 }
 
-export function validateCorpusEvidence(artifact = artifactDir) {
+export function validateCorpusEvidence(artifact = artifactDir): CorpusValidation {
   const manifestDomOutputComparisons = expectedComparisonCount(loadManifest(), ["compiler"]);
   const selected = readOptional(`${artifact}/selected-gitlinks.txt`)
     .trim()
@@ -162,7 +195,7 @@ export function validateCorpusEvidence(artifact = artifactDir) {
     .split(/\r?\n/)
     .filter(Boolean);
   const evidence = parseCorpusEvidence(readOptional(`${artifact}/dom-corpus.log`));
-  const failures = [];
+  const failures: string[] = [];
   if (manifestDomOutputComparisons !== expectedDomOutputComparisons) {
     failures.push(
       `manifest DOM-output comparisons ${manifestDomOutputComparisons} != ${expectedDomOutputComparisons}`,
@@ -211,7 +244,7 @@ export function validateCorpusEvidence(artifact = artifactDir) {
   };
 }
 
-function hydrateFixtureSerially(fixturePath, runCommand) {
+function hydrateFixtureSerially(fixturePath: string, runCommand: RunCommand): void {
   try {
     runCommand("git", [
       "submodule",
@@ -243,7 +276,10 @@ function hydrateFixtureSerially(fixturePath, runCommand) {
   }
 }
 
-export function hydrateCorpus({ artifact = artifactDir, runCommand = run } = {}) {
+export function hydrateCorpus({
+  artifact = artifactDir,
+  runCommand = run,
+}: CorpusCommandOptions = {}): number {
   mkdirSync(artifact, { recursive: true });
   const fixturePaths = selectedGitlinks(runCommand);
   if (fixturePaths.length !== expectedGitlinks) {
@@ -277,7 +313,10 @@ export function hydrateCorpus({ artifact = artifactDir, runCommand = run } = {})
   return 0;
 }
 
-export function dehydrateCorpus({ artifact = artifactDir, runCommand = run } = {}) {
+export function dehydrateCorpus({
+  artifact = artifactDir,
+  runCommand = run,
+}: CorpusCommandOptions = {}): number {
   const fixturePaths = readOptional(`${artifact}/selected-gitlinks.txt`)
     .split(/\r?\n/)
     .map((line) => line.trim())
@@ -287,7 +326,9 @@ export function dehydrateCorpus({ artifact = artifactDir, runCommand = run } = {
   return 0;
 }
 
-export async function finalizeAndDehydrateCorpus(environment = process.env) {
+export async function finalizeAndDehydrateCorpus(
+  environment: NodeJS.ProcessEnv = process.env,
+): Promise<number> {
   const finalizeStatus = await finalizeCorpus(environment);
   try {
     const dehydrateStatus = dehydrateCorpus();
@@ -298,7 +339,7 @@ export async function finalizeAndDehydrateCorpus(environment = process.env) {
   }
 }
 
-export async function runCorpus() {
+export async function runCorpus(): Promise<number> {
   mkdirSync(artifactDir, { recursive: true });
   const log = createWriteStream(`${artifactDir}/dom-corpus.log`, { flags: "w" });
   const child = spawn(
@@ -330,7 +371,7 @@ export async function runCorpus() {
     process.stderr.write(chunk);
     log.write(chunk);
   });
-  return await new Promise((resolvePromise) => {
+  return await new Promise<number>((resolvePromise) => {
     child.on("close", (code) => {
       log.end();
       resolvePromise(code ?? 1);
@@ -343,7 +384,9 @@ export async function runCorpus() {
   });
 }
 
-export async function finalizeCorpus(environment = process.env) {
+export async function finalizeCorpus(
+  environment: NodeJS.ProcessEnv = process.env,
+): Promise<number> {
   mkdirSync(artifactDir, { recursive: true });
   const mode = environment.VIZE_DAVINCI_DOM_CORPUS_MODE ?? "enforce";
   const outcome = environment.VIZE_DAVINCI_DOM_CORPUS_OUTCOME ?? "failure";
@@ -367,7 +410,12 @@ export async function finalizeCorpus(environment = process.env) {
   return 0;
 }
 
-async function appendCorpusSummary(mode, outcome, verdict, summaryPath) {
+async function appendCorpusSummary(
+  mode: string,
+  outcome: string,
+  verdict: string,
+  summaryPath: string | undefined,
+): Promise<void> {
   if (!summaryPath) return;
   const validation = validateCorpusEvidence();
   const logText = readOptional(`${artifactDir}/dom-corpus.log`);
@@ -393,7 +441,7 @@ async function appendCorpusSummary(mode, outcome, verdict, summaryPath) {
   );
 }
 
-function readOptional(path) {
+function readOptional(path: string): string {
   try {
     return readFileSync(path, "utf8");
   } catch {
@@ -401,25 +449,29 @@ function readOptional(path) {
   }
 }
 
-function sortReasonCounts(reasons) {
+function sortReasonCounts(reasons: unknown): ReasonCounts {
+  if (reasons === null || typeof reasons !== "object" || Array.isArray(reasons)) return {};
   return Object.fromEntries(
     Object.entries(reasons)
-      .filter(([, count]) => Number.isFinite(count) && count > 0)
+      .filter((entry): entry is [string, number] => {
+        const count = entry[1];
+        return typeof count === "number" && Number.isFinite(count) && count > 0;
+      })
       .sort(([left], [right]) => left.localeCompare(right)),
   );
 }
 
-function formatReasonCounts(reasons) {
+function formatReasonCounts(reasons: unknown): string {
   return Object.entries(sortReasonCounts(reasons))
     .map(([reason, count]) => `${reason}=${count}`)
     .join(",");
 }
 
-function sameReasonCounts(left, right) {
+function sameReasonCounts(left: unknown, right: unknown): boolean {
   return JSON.stringify(sortReasonCounts(left)) === JSON.stringify(sortReasonCounts(right));
 }
 
-async function main() {
+async function main(): Promise<number> {
   const command = process.argv[2];
   if (command === "hydrate") return hydrateCorpus();
   if (command === "run") return await runCorpus();
@@ -427,7 +479,7 @@ async function main() {
   if (command === "finalize-and-dehydrate") return await finalizeAndDehydrateCorpus();
   if (command === "dehydrate") return dehydrateCorpus();
   console.error(
-    "usage: davinci-dom-corpus-workflow.mjs hydrate|run|finalize|finalize-and-dehydrate|dehydrate",
+    "usage: davinci-dom-corpus-workflow.ts hydrate|run|finalize|finalize-and-dehydrate|dehydrate",
   );
   return 1;
 }

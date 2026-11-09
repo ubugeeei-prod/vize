@@ -1052,8 +1052,8 @@
         "membership": "ecosystem"
       },
       "evidence": {
-        "file": "tools/commands/fixtures/tool-matrix-report.rs",
-        "selector": "\"compiler\" => payload[\"compilerArtifacts\"][\"inputFileCount\"].clone()"
+        "file": "tools/support/compat/fixtures/tool-matrix-metrics.ts",
+        "selector": "if (tool === \"compiler\") return required(payload.compilerArtifacts?.inputFileCount, tool)"
       }
     },
     {
@@ -1074,8 +1074,8 @@
         "membership": "ecosystem"
       },
       "evidence": {
-        "file": "tools/commands/fixtures/tool-matrix-report.rs",
-        "selector": "\"linter\" => payload[\"parsed\"]"
+        "file": "tools/support/compat/fixtures/tool-matrix-metrics.ts",
+        "selector": "if (tool === \"linter\") return required(payload.parsed?.length, tool)"
       }
     },
     {

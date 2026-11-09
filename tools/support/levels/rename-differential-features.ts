@@ -9,8 +9,7 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 const root = fileURLToPath(new URL("../../../", import.meta.url));
 const suffixes = new Set([".rs", ".toml", ".ts", ".mjs", ".yml", ".yaml"]);
 const extraPaths = [
-  "tools/commands/fixtures/davinci-dom-corpus-workflow.rs",
-  "tools/support/compat/fixtures/davinci-dom-corpus-workflow.mjs",
+  "tools/support/compat/fixtures/davinci-dom-corpus-workflow.ts",
   "docs/davinci/plan/test-suites.md",
 ];
 const renames = [
