@@ -67,6 +67,7 @@ shared_type_refs! {
     REGISTERED_SLOT_PROVIDER => ("$RegisteredSlotProvider", "$RegisteredSlotProvider"),
     EMIT_OWNED_KEYS => ("$EmitOwnedKeys", "$EmitOwnedKeys"),
     LISTENER_ARGS => ("$ListenerArgs", "$ListenerArgs"),
+    LISTENER_CONTRACT => ("$ListenerContract", "$ListenerContract"),
     EMIT_PROPS_FACTORY => ("$EmitPropsFactory", "$EmitPropsFactory"),
     EMIT_PROPS => ("__EmitProps", "__EmitProps"),
 }

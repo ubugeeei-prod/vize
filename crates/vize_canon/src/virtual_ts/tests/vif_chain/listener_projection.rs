@@ -54,9 +54,10 @@ fn hoisted_listeners_use_the_program_argument_relation() {
             ..Default::default()
         },
     );
+    // Each event is one shared contract reference; no local relation remains.
     assert_eq!(
-        output.code.matches("_listener_args<__P, __K extends string | number | symbol, __Raw extends string | number | symbol = never>").count(),
-        1,
+        output.code.matches("_listener_args<").count(),
+        0,
         "{}",
         output.code
     );
@@ -69,12 +70,28 @@ fn hoisted_listeners_use_the_program_argument_relation() {
     assert_eq!(
         output
             .code
-            .matches("import(\"vize:virtual-ts\").$ListenerArgs<")
+            .matches("import(\"vize:virtual-ts\").$ListenerContract<")
             .count(),
-        1,
+        2,
         "{}",
         output.code
     );
+    for alias in [
+        "select_prop_args",
+        "select_static_emit_args",
+        "select_emit_args =",
+        "select_args =",
+        "select_event =",
+        "select_return =",
+        "select_prop_arrays",
+    ] {
+        assert_eq!(
+            output.code.matches(alias).count(),
+            0,
+            "{alias}: {}",
+            output.code
+        );
+    }
     assert_eq!(
         output
             .code

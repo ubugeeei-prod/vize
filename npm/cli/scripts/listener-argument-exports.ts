@@ -63,10 +63,26 @@ export async function listenerArgumentExports(
   );
   assert.deepEqual(formatted.errors, []);
   const outputs = new Map([["npm/cli/virtual-ts-listeners.d.ts", formatted.code]]);
-  const helper = shared.found[1]!;
-  const parameters = helper.typeParameters!.map((node) => node.getText(shared.source));
-  const arguments_ = helper.typeParameters!.map((node) => node.name.text);
-  const forward = `import type * as ${namespace} from "./virtual-ts-listeners.js" with { "resolution-mode": "import" };\nexport type $ListenerArgs<${parameters.join(", ")}> = ${namespace}.$ListenerArgs<${arguments_.join(", ")}>;\n`;
+  // Every exported shared relation is forwarded under its own name.
+  const exported: ts.TypeAliasDeclaration[] = [];
+  shared.source.forEachChild(function visit(node) {
+    if (
+      ts.isTypeAliasDeclaration(node) &&
+      node.modifiers?.some((modifier) => modifier.kind === ts.SyntaxKind.ExportKeyword)
+    )
+      exported.push(node);
+    ts.forEachChild(node, visit);
+  });
+  const forward =
+    `import type * as ${namespace} from "./virtual-ts-listeners.js" with { "resolution-mode": "import" };\n` +
+    exported
+      .map((helper) => {
+        const parameters = helper.typeParameters!.map((node) => node.getText(shared.source));
+        const arguments_ = helper.typeParameters!.map((node) => node.name.text);
+        return `export type ${helper.name.text}<${parameters.join(", ")}> = ${namespace}.${helper.name.text}<${arguments_.join(", ")}>;\n`;
+      })
+      .join("");
+  const forwarded = exported.map((helper) => helper.name.text);
   const forwarding = await format("virtual-ts.d.ts", forward, { printWidth: 100 });
   assert.deepEqual(forwarding.errors, []);
   for (const extension of ["ts", "mts", "cts"]) {
@@ -81,7 +97,7 @@ export async function listenerArgumentExports(
     assert.deepEqual(parsed.parseDiagnostics, []);
     assert.equal(parsed.statements.some(ts.isExportDeclaration), false, `${file} implicit exports`);
     const bindings = parsed.statements.filter(
-      (node) => ts.isTypeAliasDeclaration(node) && node.name.text === "$ListenerArgs",
+      (node) => ts.isTypeAliasDeclaration(node) && forwarded.includes(node.name.text),
     );
     const imports = parsed.statements.filter(
       (node) =>
@@ -93,11 +109,16 @@ export async function listenerArgumentExports(
       assert.equal(source.includes(namespace), false, `${file} namespace collision`);
       outputs.set(file, source.trimEnd() + "\n\n" + forwarding.code);
     } else {
-      assert.equal(bindings.length, 1, `${file} listener export count`);
       assert.equal(imports.length, 1, `${file} listener import count`);
-      const block = source.slice(imports[0]!.getStart(parsed), bindings[0]!.end).trimEnd() + "\n";
-      assert.equal(block, forwarding.code, `${file} refuses unknown listener forwarding`);
-      outputs.set(file, source);
+      const start = imports[0]!.getStart(parsed);
+      const block = source.slice(start, bindings.at(-1)!.end).trimEnd() + "\n";
+      // Only the current forwarding, or the `$ListenerArgs`-only one it extends.
+      assert.ok(
+        block === forwarding.code || forwarding.code.startsWith(block),
+        `${file} refuses unknown listener forwarding`,
+      );
+      assert.equal(source.slice(start + block.length).trim(), "", `${file} forwarding last`);
+      outputs.set(file, source.slice(0, start) + forwarding.code);
     }
   }
   return outputs;
