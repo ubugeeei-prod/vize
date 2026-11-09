@@ -21,6 +21,7 @@
 use crate::context::{ElementContext, LintContext};
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
+use vize_croquis::drawer::{extract_identifiers_oxc, parse_v_for_scope_expression};
 use vize_l0::{FxHashSet, String, ToCompactString, is_native_tag};
 use vize_relief::{
     DirectiveNode, ElementNode, ElementType, ExpressionNode, PropNode, TemplateChildNode,
@@ -174,8 +175,16 @@ fn check_child_slot_templates(ctx: &mut LintContext, owner: &ElementNode) {
     }
 }
 
-/// The normalized `v-for` expression of `element` when the slot argument of
-/// `slot` uses one of that loop's variables.
+/// The normalized `v-for` of `element` when the slot argument of `slot` reads one
+/// of that loop's aliases.
+///
+/// The loop is parsed with croquis' `v-for` parser (the one the unused-binding
+/// facts use), so `in`/`of`, any whitespace around them, aliases that merely
+/// contain those words and destructured aliases are handled there rather than
+/// by splitting text here. The argument's reads come from croquis' AST-based
+/// identifier extraction, which skips property names (`x.id` reads `x`). The
+/// signature joins the aliases and the source, so two loops only collide when
+/// they bind the same aliases over the same source.
 fn loop_signature(element: &ElementNode, slot: &DirectiveNode) -> Option<String> {
     let Some(ExpressionNode::Simple(arg)) = &slot.arg else {
         return None;
@@ -190,27 +199,34 @@ fn loop_signature(element: &ElementNode, slot: &DirectiveNode) -> Option<String>
         },
         _ => None,
     })?;
-    let (left, _) = for_exp
-        .split_once(" in ")
-        .or_else(|| for_exp.split_once(" of "))?;
-    let variables = identifiers(left);
-    let uses_loop_variable = identifiers(arg.content)
+    let aliases = parse_v_for_scope_expression(for_exp)?;
+    let reads = extract_identifiers_oxc(arg.content);
+    let reads_alias = aliases
+        .value_bindings
         .iter()
-        .any(|name| variables.contains(name));
-    uses_loop_variable.then(|| {
-        for_exp
-            .split_whitespace()
-            .collect::<std::vec::Vec<_>>()
-            .join(" ")
-            .to_compact_string()
-    })
-}
-
-fn identifiers(source: &str) -> std::vec::Vec<&str> {
-    source
-        .split(|c: char| !(c.is_alphanumeric() || c == '_' || c == '$'))
-        .filter(|token| !token.is_empty() && !token.starts_with(|c: char| c.is_ascii_digit()))
-        .collect()
+        .chain(aliases.key_alias.iter())
+        .chain(aliases.index_alias.iter())
+        .any(|alias| reads.contains(alias));
+    if !reads_alias {
+        return None;
+    }
+    let mut signature = String::default();
+    for part in [
+        Some(&aliases.value_pattern),
+        aliases.key_alias.as_ref(),
+        aliases.index_alias.as_ref(),
+        Some(&aliases.source),
+    ]
+    .into_iter()
+    .flatten()
+    {
+        for word in part.split_whitespace() {
+            signature.push_str(word);
+            signature.push(' ');
+        }
+        signature.push('\u{1}');
+    }
+    Some(signature)
 }
 
 fn finish_slot_group(seen_slots: &mut FxHashSet<String>, group_slots: &mut FxHashSet<String>) {

@@ -138,6 +138,7 @@ fn explicit_false_restores_the_unit_rule_after_true_without_enabling_a_missing_r
     assert_eq!(core::mem::size_of_val(&ValidVSlot::allowing_modifiers()), 0);
 }
 
+/// The same dynamic name built from the loop alias is fine in loops over different sources.
 #[test]
 fn test_valid_same_dynamic_slot_expression_in_separate_loops() {
     let linter = create_linter();
@@ -151,6 +152,7 @@ fn test_valid_same_dynamic_slot_expression_in_separate_loops() {
     assert_eq!(result.error_count, 0);
 }
 
+/// Plain static duplicates are still reported.
 #[test]
 fn test_invalid_duplicate_static_slot_is_still_reported() {
     let linter = create_linter();
@@ -164,6 +166,7 @@ fn test_invalid_duplicate_static_slot_is_still_reported() {
     assert_eq!(result.error_count, 1);
 }
 
+/// Identical loops produce the same slot names, so the second slot is a duplicate.
 #[test]
 fn test_invalid_same_dynamic_slot_in_identical_loops() {
     let linter = create_linter();
@@ -175,4 +178,96 @@ fn test_invalid_same_dynamic_slot_in_identical_loops() {
         "test.vue",
     );
     assert_eq!(result.error_count, 1);
+}
+
+/// Number of errors `vue/valid-v-slot` reports for `template`.
+fn error_count(template: &str) -> usize {
+    create_linter()
+        .lint_template(template, "test.vue")
+        .error_count
+}
+
+/// `of` loops behave like `in` loops.
+#[test]
+fn test_valid_same_dynamic_slot_in_separate_of_loops() {
+    assert_eq!(
+        error_count(
+            r#"<MyComponent>
+            <template v-for="id of first" :key="id" #[`p:${id}`]="{ item }">{{ item }}</template>
+            <template v-for="id of second" :key="id" #[`p:${id}`]="{ item }">{{ item }}</template>
+        </MyComponent>"#
+        ),
+        0
+    );
+}
+
+/// Destructured aliases count as loop aliases.
+#[test]
+fn test_valid_same_dynamic_slot_with_destructured_aliases_in_separate_loops() {
+    assert_eq!(
+        error_count(
+            r#"<MyComponent>
+            <template v-for="{ id } in first" :key="id" #[`p:${id}`]="{ item }">{{ item }}</template>
+            <template v-for="{ id } in second" :key="id" #[`p:${id}`]="{ item }">{{ item }}</template>
+        </MyComponent>"#
+        ),
+        0
+    );
+}
+
+/// Tabs, newlines and extra spaces around `in` do not make a loop different.
+#[test]
+fn test_invalid_identical_loops_with_different_spacing_are_duplicates() {
+    assert_eq!(
+        error_count(
+            "<MyComponent>\n\
+             <template v-for=\"id in ids\" :key=\"id\" #[`p:${id}`]=\"{ a }\">{{ a }}</template>\n\
+             <template v-for=\"id\tin\n  ids\" :key=\"id\" #[`p:${id}`]=\"{ a }\">{{ a }}</template>\n\
+             </MyComponent>"
+        ),
+        1
+    );
+}
+
+/// An alias like `inner` is not split at the `in` inside it.
+#[test]
+fn test_loop_aliases_containing_in_or_of_are_not_split() {
+    let template = |second: &str| {
+        format!(
+            r#"<MyComponent>
+            <template v-for="inner of items" :key="inner" #[`p:${{inner}}`]="{{ a }}">{{{{ a }}}}</template>
+            <template v-for="inner of {second}" :key="inner" #[`p:${{inner}}`]="{{ a }}">{{{{ a }}}}</template>
+        </MyComponent>"#
+        )
+    };
+    assert_eq!(error_count(&template("items")), 1);
+    assert_eq!(error_count(&template("other")), 0);
+}
+
+/// A dynamic name that reads no loop alias is still a duplicate across loops.
+#[test]
+fn test_invalid_dynamic_slot_without_loop_alias_is_duplicate_across_loops() {
+    assert_eq!(
+        error_count(
+            r#"<MyComponent>
+            <template v-for="id in first" :key="id" #[name]="{ a }">{{ a }}</template>
+            <template v-for="id in second" :key="id" #[name]="{ a }">{{ a }}</template>
+        </MyComponent>"#
+        ),
+        1
+    );
+}
+
+/// `x.id` reads `x`, not the loop alias `id`, so sibling slots are duplicates.
+#[test]
+fn test_invalid_property_named_like_loop_alias_is_not_a_loop_read() {
+    assert_eq!(
+        error_count(
+            r#"<MyComponent>
+            <template v-for="id in first" :key="id" #[x.id]="{ a }">{{ a }}</template>
+            <template v-for="id in second" :key="id" #[x.id]="{ a }">{{ a }}</template>
+        </MyComponent>"#
+        ),
+        1
+    );
 }
