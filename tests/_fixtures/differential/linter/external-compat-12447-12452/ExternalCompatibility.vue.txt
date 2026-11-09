@@ -1,0 +1,18 @@
+<script setup lang="ts">
+import type { CardSlots } from "./types";
+
+defineSlots<CardSlots>();
+
+const on = true;
+function onKeydown(): void {}
+</script>
+
+<template>
+  <slot name="row-actions" />
+  <template v-if="on" class="useless"><div /></template>
+  <div role="tree" tabindex="0" aria-label="Files" @keydown="onKeydown" />
+  <span @click.stop><button type="button">Action</button></span>
+  <div role="listbox" aria-label="Colors">
+    <div role="option" aria-selected="true">Red</div>
+  </div>
+</template>
