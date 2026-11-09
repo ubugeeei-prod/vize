@@ -49,6 +49,37 @@ impl CorsaNativeDocumentBatch {
         self.additions.push(document);
     }
 
+    /// Point each entry with a replacement at its new text. A listed payload
+    /// for that URI is shared as is; the base is copied only when it changes,
+    /// which also dissociates weak receipts of the old base.
+    pub(crate) fn replace_texts(
+        &mut self,
+        replacements: &vize_l0::FxHashMap<String, String>,
+        payloads: &[std::sync::Arc<(String, String)>],
+    ) {
+        if self
+            .shared
+            .iter()
+            .any(|(uri, _)| replacements.contains_key(uri.as_str()))
+        {
+            for (uri, text) in std::sync::Arc::make_mut(&mut self.shared) {
+                if let Some(replacement) = replacements.get(uri.as_str()) {
+                    text.clone_from(replacement);
+                }
+            }
+        }
+        for document in &mut self.additions {
+            let Some(replacement) = replacements.get(document.0.as_str()) else {
+                continue;
+            };
+            *document = payloads
+                .iter()
+                .find(|payload| payload.0 == document.0 && payload.1 == *replacement)
+                .map(std::sync::Arc::clone)
+                .unwrap_or_else(|| std::sync::Arc::new((document.0.clone(), replacement.clone())));
+        }
+    }
+
     #[cfg(test)]
     pub(crate) fn push(&mut self, document: (String, String)) {
         self.push_shared(std::sync::Arc::new(document));

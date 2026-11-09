@@ -44,7 +44,7 @@ fn source_packet(source: &CorsaMaterializedSource) -> serde_json::Value {
         "source_path": source.source_path,
         "materialized_path": source.materialized_path,
         "source": source.source,
-        "code": source.code,
+        "code": source.code.as_str(),
         "mapping": format!("{:?}", source.mapping),
         "import_source_map": format!("{:?}", source.import_source_map),
         "mapping_kind": format!("{:?}", source.mapping_kind),
@@ -157,7 +157,7 @@ fn profile_unrelated_overlays() {
                 .collect::<Vec<_>>();
             expected_native.push((
                 crate::file_uri::path_to_file_uri(&b_path),
-                current_b.code.clone(),
+                current_b.code.as_str().into(),
             ));
             expected_native.sort();
             assert_eq!(native, expected_native);

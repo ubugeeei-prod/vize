@@ -195,19 +195,25 @@ pub(super) async fn open_canonical_virtual_document_with_sources_strict(
 
 pub(super) fn map_materialized_sources(
     ctx: &IdeContext<'_>,
-    sources: Vec<vize_canon::CorsaMaterializedSource>,
+    sources: Vec<MaterializedLeaf>,
 ) -> Vec<CanonicalMaterializedSource> {
     let authored_uris = AuthoredUriResolver::new(ctx);
     map_materialized_sources_with_resolver(ctx, &authored_uris, sources)
 }
 
+#[expect(
+    clippy::disallowed_types,
+    reason = "Canon shares materialized leaves with its source catalog"
+)]
+type MaterializedLeaf = std::sync::Arc<vize_canon::CorsaMaterializedSource>;
+
 fn map_materialized_sources_with_resolver(
     ctx: &IdeContext<'_>,
     authored_uris: &AuthoredUriResolver,
-    sources: Vec<vize_canon::CorsaMaterializedSource>,
+    sources: Vec<MaterializedLeaf>,
 ) -> Vec<CanonicalMaterializedSource> {
     sources
-        .into_iter()
+        .iter()
         .filter_map(|materialized| {
             let source_uri = authored_uris.resolve(ctx, &materialized.source_path)?;
             let request_uri = Url::from_file_path(&materialized.materialized_path)
@@ -215,12 +221,12 @@ fn map_materialized_sources_with_resolver(
                 .to_string();
             Some(CanonicalMaterializedSource {
                 source_uri,
-                source: materialized.source,
+                source: materialized.source.clone(),
                 request_uri: request_uri.into(),
                 virtual_result: VirtualTsResult::from_projection(
-                    materialized.code,
-                    materialized.mapping,
-                    materialized.import_source_map,
+                    materialized.code.as_str().into(),
+                    materialized.mapping.clone(),
+                    materialized.import_source_map.clone(),
                 ),
                 mapping_kind: materialized.mapping_kind,
             })

@@ -24,13 +24,16 @@ pub struct CorsaScriptVirtualDocumentRequest<'a> {
 
 struct BuiltScriptVirtualProject {
     host: CorsaScriptVirtualDocument,
-    documents: Vec<(String, String)>,
+    documents: super::vue_document::CorsaNativeDocumentBatch,
     session_project_root: Option<PathBuf>,
     session_config_path: Option<PathBuf>,
     materialized_changes: crate::batch::virtual_project::MaterializedFileDelta,
-    materialized_sources: Vec<super::CorsaMaterializedSource>,
+    materialized_sources: Vec<SharedSource>,
     source_catalog: super::CorsaSourceCatalog,
 }
+
+#[expect(clippy::disallowed_types, reason = "catalog leaves are shared")]
+type SharedSource = std::sync::Arc<super::CorsaMaterializedSource>;
 
 /// The exact native script overlay and its import-coordinate transform.
 pub struct CorsaScriptVirtualDocument {
@@ -45,7 +48,8 @@ pub struct CorsaScriptVirtualDocument {
 /// Script projection and all source identities retained by the same project revision.
 pub struct CorsaScriptVirtualProject {
     pub document: CorsaScriptVirtualDocument,
-    pub materialized_sources: Vec<super::CorsaMaterializedSource>,
+    /// Leaves shared with the revision's source catalog.
+    pub materialized_sources: Vec<SharedSource>,
     pub source_catalog: super::CorsaSourceCatalog,
     pub session_project_root: Option<PathBuf>,
 }
@@ -132,7 +136,7 @@ pub(super) fn build_script_virtual_project(
     .expect("script virtual project");
     (
         project.host.request_uri,
-        project.documents,
+        project.documents.to_vec(),
         project.session_project_root,
         project.materialized_changes,
     )
@@ -167,7 +171,7 @@ fn build_script_virtual_project_with_package_routes(
             ))
         })?;
     let request_uri = crate::file_uri::path_to_file_uri(&path);
-    let materialized_sources = alias_context.materialized_sources();
+    let materialized_sources = alias_context.shared_materialized_sources();
     let mappings = materialized_sources
         .iter()
         .find(|source| source.materialized_path == path)
@@ -185,6 +189,7 @@ fn build_script_virtual_project_with_package_routes(
         &overlays,
     );
     let session_project_root = alias_context.mirror_project_root_for_source(request.source_path);
+    let mut documents = super::vue_document::CorsaNativeDocumentBatch::from(documents);
     super::vue_document::materialized_documents::append_materialized_documents(
         &mut documents,
         &materialized_sources,

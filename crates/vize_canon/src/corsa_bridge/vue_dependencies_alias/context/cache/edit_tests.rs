@@ -117,7 +117,10 @@ fn snapshot(context: &AliasContext) -> Snapshot {
     let mut documents = context
         .materialized_sources()
         .into_iter()
-        .map(|document| (document.materialized_path, document.source, document.code))
+        .map(|document| {
+            let code = document.code.as_str().into();
+            (document.materialized_path, document.source, code)
+        })
         .collect::<Vec<_>>();
     documents.sort();
     let mut files = context

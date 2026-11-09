@@ -7,7 +7,7 @@
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 
-use vize_carton::{FxHashMap, String};
+use vize_carton::FxHashMap;
 
 use super::{
     CorsaBridgeError, CorsaNativeDocumentBatch, CorsaProjectEnvironment, CorsaVueVirtualDocument,
@@ -23,7 +23,8 @@ pub(in crate::corsa_bridge) use host_edit::retarget_host;
 /// Native session synchronization is intentionally performed on every open.
 pub(in crate::corsa_bridge) struct QuerySurface {
     host: Arc<CorsaVueVirtualDocument>,
-    documents: std::sync::Arc<Vec<(String, String)>>,
+    /// Host and dependency documents, then the catalog leaves' own payloads.
+    documents: CorsaNativeDocumentBatch,
     session_config_path: Option<PathBuf>,
 }
 
@@ -74,7 +75,7 @@ pub(super) fn build_vue_virtual_workspace_project(
     // Other hosts can extend the live catalog without replacing this context.
     // Retain the catalog captured by this exact preparation, not the first open.
     let source_catalog = alias_context.source_catalog.clone();
-    let mut documents = CorsaNativeDocumentBatch::shared(surface.documents.clone());
+    let mut documents = surface.documents.clone();
     if alias_context.refresh_live_overlays
         && let Some(root) = host.session_project_root.as_deref()
     {
@@ -113,7 +114,7 @@ fn build_surface(
     requested_sources: &[(PathBuf, &str)],
     environment: CorsaProjectEnvironment<'_>,
     rewriter: &ImportRewriter,
-    alias_context: &crate::corsa_bridge::vue_dependencies_alias::AliasContext,
+    alias_context: &crate::corsa_bridge::vue_dependencies_alias::PreparedAliasContext,
 ) -> Result<QuerySurface, CorsaBridgeError> {
     let surface_phase = crate::corsa_bridge::preparation_trace::Phase::start("query_surface", 1);
     let host = generate_vue_document_with_options(
@@ -144,7 +145,8 @@ fn build_surface(
     let sources_phase =
         crate::corsa_bridge::preparation_trace::Phase::start("surface_materialized_sources", 1);
     let generated = host.generated;
-    let materialized_sources = alias_context.materialized_sources();
+    let materialized_sources = alias_context.shared_materialized_sources();
+    let mut documents = CorsaNativeDocumentBatch::from(documents);
     if !requested_sources.is_empty() || !overlays.is_empty() {
         materialized_documents::append_materialized_documents(
             &mut documents,
@@ -171,7 +173,7 @@ fn build_surface(
             source_catalog: Default::default(),
             session_project_root: session_project_root.clone(),
         }),
-        documents: documents.into(),
+        documents,
         session_config_path: alias_context.mirror_project_config_path(),
     })
 }

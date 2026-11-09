@@ -113,7 +113,7 @@ fn implementation_reverse_importers_keep_the_tsx_root_after_two_unsaved_vue_edit
         last_native = native_documents(&importer);
         assert!(last_native.iter().any(|(uri, code)| uri
             == &crate::file_uri::path_to_file_uri(&beta_path)
-            && code == &previous_beta.code));
+            && previous_beta.code == *code));
         assert_eq!(native_documents(&primary), last_native);
     }
     session.clear();

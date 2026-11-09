@@ -20,7 +20,7 @@ pub(super) fn map_location(
         return None;
     }
     let result = VirtualTsResult::from_projection(
-        source.code.clone(),
+        source.code.as_str().into(),
         source.mapping.clone(),
         source.import_source_map.clone(),
     );
