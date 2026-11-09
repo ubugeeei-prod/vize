@@ -118,7 +118,7 @@ fn actual_ca_default_complete_public_and_lowering_observations() {
             "rootDebug":format!("{root:#?}"),"parserErrorsDebug":format!("{parser_errors:#?}"),
             "surfaceTreeDebug":format!("{tree:#?}"),"surfaceErrorsDebug":format!("{surface_errors:#?}"),
             "loweredDebug":format!("{lowered:#?}"),
-            "page":vize_l2::dump::Page::of(&lowered.root.ops).print_to_string(vize_l0::dump::Mode::Full)}));
+            "page":vize_l2::dump::Page::of(&lowered.artifact.root.ops).print_to_string(vize_l0::dump::Mode::Full)}));
     }
     println!(
         "ACTUAL_CA_DEFAULT_PACKET={}",

@@ -16,7 +16,7 @@ fn lowered_values_outlive_both_source_text_and_the_l2_arena() {
         let (tree, errors) = vize_l1::markup::parse(&l2_arena, &source);
         assert!(errors.is_empty(), "{errors:?}");
         let s2 = vize_l1_to_l2::lower(&l2_arena, &tree, &errors);
-        lower(&l3_arena, &s2.root)
+        lower(&l3_arena, &s2.artifact.root)
     };
     assert_eq!(verify(&lowered.program), []);
     let operands = &lowered.program.operands;

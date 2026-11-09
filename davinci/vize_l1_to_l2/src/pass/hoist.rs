@@ -90,7 +90,11 @@ pub use vize_l2::analysis::static_facts::{
 /// Panics only on mismatched page accounting, which is a producer invariant.
 #[must_use]
 pub fn run(lowered: &mut Lowered<'_, impl ProvenanceSink>) -> SideTable<StaticFacts> {
-    vize_l2::analysis::static_facts::run(&lowered.root, lowered.op_count, &mut lowered.provenance)
+    vize_l2::analysis::static_facts::run(
+        &lowered.artifact.root,
+        lowered.op_count,
+        &mut lowered.artifact.provenance,
+    )
 }
 
 /// [`run`] with the unchanged static-subtree and static-props remarks.
@@ -104,9 +108,9 @@ pub fn run_remarked<R: RemarkSink>(
     remarks: &mut R,
 ) -> SideTable<StaticFacts> {
     vize_l2::analysis::static_facts::run_remarked(
-        &lowered.root,
+        &lowered.artifact.root,
         lowered.op_count,
-        &mut lowered.provenance,
+        &mut lowered.artifact.provenance,
         remarks,
     )
 }

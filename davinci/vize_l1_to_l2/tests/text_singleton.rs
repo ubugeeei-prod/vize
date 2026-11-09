@@ -26,9 +26,10 @@ fn final_text_keeps_condensing_provenance_and_authored_spans() {
             };
             assert!(matches!(element.children.last(), Some(DumpOp::Text(text))
                 if text.content == rendered && text.span == span));
-            assert!(lowered.texts.is_empty());
+            assert!(lowered.artifact.texts.is_empty());
             assert!(facts.text_facts.is_empty());
             let mut records = lowered
+                .artifact
                 .provenance
                 .iter()
                 .filter(|record| record.span == span);
@@ -61,10 +62,11 @@ fn final_interpolation_keeps_its_retained_expression_and_authored_span() {
         assert!(matches!(&interpolation.expression,
             DumpExpr::Js { source, span, .. }
                 if source == "日本語 + 1" && *span == Span::new(10, 23)));
-        assert!(lowered.texts.is_empty());
+        assert!(lowered.artifact.texts.is_empty());
         assert!(facts.text_facts.is_empty());
         assert_eq!(
             lowered
+                .artifact
                 .provenance
                 .iter()
                 .filter(|record| record.rule == "lower.interpolation"

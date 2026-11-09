@@ -96,8 +96,8 @@ fn transition_payload_owns_wrapper_identity_and_checks_css_mutation() {
     let scratch = Allocator::new();
     let (tree, errors) = vize_l1::markup::parse(&scratch, source);
     let s2 = vize_l1_to_l2::lower(&scratch, &tree, &errors);
-    let retained = crate::l3::retained::Retained::collect(&allocator, &s2.root);
-    let mut s3 = vize_l2_to_l3::lower(&allocator, &s2.root);
+    let retained = crate::l3::retained::Retained::collect(&allocator, &s2.artifact.root);
+    let mut s3 = vize_l2_to_l3::lower(&allocator, &s2.artifact.root);
     let tag = s3
         .program
         .operands
@@ -107,7 +107,7 @@ fn transition_payload_owns_wrapper_identity_and_checks_css_mutation() {
     tag.value.text = "div";
     let code = super::generated(crate::l3::admit(s3, &retained), &allocator);
     assert!(code.contains("tag: () => (\"div\")"), "{code}");
-    let mut s3 = vize_l2_to_l3::lower(&allocator, &s2.root);
+    let mut s3 = vize_l2_to_l3::lower(&allocator, &s2.artifact.root);
     let css = s3
         .program
         .operands

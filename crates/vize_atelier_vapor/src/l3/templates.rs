@@ -21,24 +21,27 @@ pub(super) fn collect<'a>(
     retained: &mut Retained<'_, 'a>,
 ) -> Result<std::vec::Vec<TemplateLoop<'a>>, LegacyReason> {
     if s2
-        .wrappers
+        .artifact
+        .branch_fragments
         .iter()
         .any(|(_, keys)| keys.once || keys.branches.iter().any(Option::is_some))
         || s2
+            .artifact
             .if_facts
             .iter()
             .any(|(_, facts)| facts.branches.iter().any(Option::is_some))
     {
         return Err(LegacyReason::ControlFlow);
     }
-    let mut loops = std::vec::Vec::with_capacity(s2.for_wrappers.len());
-    for (node, wrapper) in s2.for_wrappers.iter() {
+    let mut loops = std::vec::Vec::with_capacity(s2.artifact.loop_fragments.len());
+    for (node, wrapper) in s2.artifact.loop_fragments.iter() {
         if !wrapper.attributes.is_empty() || wrapper.class.is_some() {
             return Err(LegacyReason::ControlFlow);
         }
         // The loop's directive value locates its L3 op: the innermost loop
         // spanning it.
         let value = s2
+            .artifact
             .provenance
             .iter()
             .find(|record| record.rule == "lower.for" && record.node == Some(node))

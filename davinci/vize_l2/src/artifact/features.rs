@@ -1,16 +1,15 @@
-//! The lowering's observed feature bits.
+//! The op-family feature bits a producer observed while building L2.
 //!
 //! # Why the bits exist
 //!
 //! Most remaining mandatory L2 passes are the consumer of one op family:
-//! [`pass::vif`](crate::pass::vif) reads `ui.if`,
-//! [`pass::vslot`](crate::pass::vslot) reads the slot carriers, and
-//! [`pass::vmodel`](crate::pass::vmodel) reads `ui.model`. Run against an
-//! artifact whose family the lowering never built, such a pass walks the
-//! whole tree to publish an empty fact table and raise no diagnostic — a
-//! walk the build path can decline without declining any product.
-//! Compound text and `ui.for` remain observed here, but P2-12b publishes
-//! their facts at lowering time, so neither selects a transform pass.
+//! `v-if` facts read `ui.if`, `v-slot` grouping reads the slot carriers,
+//! and `v-model` validation reads `ui.model`. Run against an artifact whose
+//! family the producer never built, such a pass walks the whole tree to
+//! publish an empty fact table and raise no diagnostic — a walk the build
+//! path can decline without declining any product. Compound text and
+//! `ui.for` remain observed here, but their facts are published at lowering
+//! time, so neither selects a transform pass.
 //!
 //! # Why the bit is set at the op, not read off provenance
 //!
@@ -18,21 +17,21 @@
 //! names (`lower.for`, `lower.if`, …), which is one scan of a stream the
 //! lowering already wrote and costs no traversal. It is also **wrong**,
 //! and a committed test says so: `<p v-for="items">` cannot split under
-//! Vue's grammar, so `lower/forop.rs` takes the escape arm, records
+//! Vue's grammar, so the Vue lowering takes the escape arm, records
 //! `error.v-for-malformed` instead of `lower.for` — and still leaves a
 //! `ui.for` op in the tree. Provenance records *decisions*; the planner
 //! is asking about *ops*, and a failed decision is exactly the case where
 //! the two diverge.
 //!
-//! So [`Cx::observe`](super::cx::Cx::observe) sets the bit where the op is
-//! minted. There is no second scan and no name to keep in sync: the type
-//! system asks for an [`OpFamily`] at every construction site.
+//! So a producer sets the bit where it mints the op. There is no second
+//! scan and no name to keep in sync: the Vue lowering asks for an
+//! [`OpFamily`] at every construction site.
 //!
 //! # The one assumption left
 //!
-//! A family that gains a *new* construction site needs `observe` there
-//! too. `davinci/vize_l1_to_l2/tests/lowering_features.rs` is the pin: it
-//! lowers a template per family — malformed spellings included — and
+//! A family that gains a *new* construction site needs the observation
+//! there too. `davinci/vize_l1_to_l2/tests/lowering_features.rs` is the pin:
+//! it lowers a template per family — malformed spellings included — and
 //! fails if the bit is missing, then proves the planned run and the full
 //! four-pass table agree on every product an artifact has.
 
@@ -43,7 +42,7 @@ pub enum OpFamily {
     If,
     /// A `ui.for`, the undecomposable escape included.
     For,
-    /// Anything [`pass::vslot`](crate::pass::vslot) can produce a fact or
+    /// Anything the `v-slot` grouping can produce a fact or
     /// a diagnostic at: a `ui.component` (the canonical grouping, the
     /// implicit-default synthesis and three diagnostics), a `ui.slot`
     /// outlet or a `ui.slot-content` binding (the two `VSlotMisplaced`

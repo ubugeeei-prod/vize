@@ -105,6 +105,7 @@ impl<'a> JsExpr<'a> {
     }
 
     /// Exact authored projection. Partial entity expansions cannot select edits.
+    #[inline]
     #[must_use]
     pub fn authored_span(&self, span: Span) -> Option<Span> {
         if let Some(coordinates) = self.coordinates {

@@ -34,6 +34,7 @@ fn v_pre_drops_only_the_authored_planned_gaps() {
         assert!(lowered.diagnostics.is_empty());
         assert_eq!(lowered.op_count, 3);
         let drops: Vec<_> = lowered
+            .artifact
             .provenance
             .iter()
             .filter(|record| record.rule == "condense.drop-whitespace")
@@ -76,6 +77,7 @@ fn inline_spaces_and_unicode_whitespace_remain_authored_text() {
             assert!(lowered.diagnostics.is_empty());
             assert!(
                 !lowered
+                    .artifact
                     .provenance
                     .iter()
                     .any(|record| record.rule == "condense.drop-whitespace")

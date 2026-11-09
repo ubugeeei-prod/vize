@@ -1,8 +1,8 @@
 // Building `ui.for`: language-owned sub-slice admission with the existing
 // lowering module identity retained by the compatibility owner.
 
-use super::features::OpFamily;
 use alloc::vec::Vec as StdVec;
+use vize_l2::artifact::OpFamily;
 
 use vize_l0::{Box, String, Vec, cstr};
 use vize_l1::markup::Element;

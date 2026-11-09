@@ -101,7 +101,7 @@ fn a_mixed_run_merges_into_one_compound_with_recorded_parts() {
         );
         // The consumed view is the recorded view, validated.
         assert_eq!(
-            lowered.texts.sorted_entries(),
+            lowered.artifact.texts.sorted_entries(),
             vec![(
                 id(1),
                 &vize_l1_to_l2::lower::TextParts {
@@ -120,6 +120,7 @@ fn a_mixed_run_merges_into_one_compound_with_recorded_parts() {
         );
         // The lowering-published fact left its record.
         let rules: Vec<(&str, &str, &str)> = lowered
+            .artifact
             .provenance
             .iter()
             .filter(|record| record.rule.as_str() == "lower.text-fact")
@@ -186,7 +187,7 @@ fn lone_nodes_never_compound() {
     let source = "<p>{{ a }}</p><q>b</q>";
     with_transformed(source, |lowered, folio, facts, _| {
         assert!(facts.text_facts.is_empty());
-        assert!(lowered.texts.is_empty());
+        assert!(lowered.artifact.texts.is_empty());
         let DumpOp::Element(p) = &folio.ops[0] else {
             panic!("no p element");
         };
@@ -343,7 +344,7 @@ fn entities_stay_undecoded_the_l1_scope() {
     // comparing it.
     let source = "<p>a &amp; b {{ x }}</p>";
     with_transformed(source, |lowered, _, _, _| {
-        let entry = lowered.texts.sorted_entries();
+        let entry = lowered.artifact.texts.sorted_entries();
         assert_eq!(entry.len(), 1);
         assert_eq!(entry[0].1.parts[0].text.as_str(), "a &amp; b ");
     });

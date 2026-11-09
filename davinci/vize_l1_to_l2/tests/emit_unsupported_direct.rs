@@ -9,14 +9,13 @@
 use std::vec::Vec as StdVec;
 
 use vize_l0::id::NodeId;
-use vize_l0::side_table::SideTable;
 use vize_l0::{Allocator, Box as ArenaBox, Span, String as VString, Vec as ArenaVec};
-use vize_l1_to_l2::lower::LoweringFeatures;
 use vize_l1_to_l2::pass::{
     L2Facts, SlotCarrier, SlotFacts, SlotGroup, SlotName, SlotParams, TextFacts,
 };
 use vize_l1_to_l2::{EmitError, LegacyCaps, Lowered, UnsupportedReason as Reason, emit_dom};
 use vize_l2::analysis::fragment_facts::{FragmentKey, LoopFragment};
+use vize_l2::artifact::ArtifactParts;
 use vize_l2::expr::{ExprRef, ForeignExpr, OpaqueExpr, OpaqueReason};
 use vize_l2::op::{
     Attribute, BindingContract, BindingOp, ComponentOp, ElementOp, ForBinding, ForOp, IfBranch,
@@ -162,7 +161,7 @@ fn slot_facts_missing_group<'a>(a: &'a Allocator) -> (Lowered<'a>, L2Facts) {
 fn template_dynamic_key_empty<'a>(a: &'a Allocator) -> (Lowered<'a>, L2Facts) {
     let body = region(a, [el(a, "div", av(a), empty_region(a))]);
     let mut lowered = lowered(a, region(a, [for_op(a, js(a, "item"), body)]));
-    lowered.for_wrappers.insert(
+    lowered.artifact.loop_fragments.insert(
         NodeId::FIRST,
         LoopFragment {
             key: Some(FragmentKey::Dynamic {
@@ -201,19 +200,10 @@ fn for_op<'a>(a: &'a Allocator, value: ExprRef<'a>, body: Region<'a>) -> Op<'a> 
 fn lowered<'a>(a: &'a Allocator, root: Region<'a>) -> Lowered<'a> {
     Lowered {
         allocator: a,
-        source: "",
-        root,
+        artifact: ArtifactParts::new("", root),
         op_count: 0,
         diagnostics: StdVec::new(),
-        provenance: StdVec::new(),
-        scopes: SideTable::new(),
-        texts: SideTable::new(),
         consumed_expressions: StdVec::new(),
-        if_facts: SideTable::new(),
-        for_facts: SideTable::new(),
-        wrappers: SideTable::new(),
-        for_wrappers: SideTable::new(),
-        features: LoweringFeatures::EMPTY,
         caps: LegacyCaps::VUE3,
     }
 }

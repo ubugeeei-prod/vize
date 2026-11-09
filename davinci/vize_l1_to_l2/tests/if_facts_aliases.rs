@@ -20,7 +20,7 @@ fn real_lowering_and_pass_aliases_borrow_the_canonical_fact_type() -> Result<(),
     let source =
         "<p v-if='ready' :title='label' :key='id' key='late'>x</p><slot v-else key='fallback'/>";
     support::with_transformed(source, |lowered, folio, facts, _| {
-        let canonical: &SideTable<IfFacts> = &lowered.if_facts;
+        let canonical: &SideTable<IfFacts> = &lowered.artifact.if_facts;
         let old_lower: &SideTable<lower::IfFacts> = canonical;
         let old_pass: &SideTable<pass::IfFacts> = canonical;
         let old_vif: &SideTable<pass::vif::IfFacts> = canonical;

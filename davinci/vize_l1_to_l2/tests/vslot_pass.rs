@@ -195,7 +195,7 @@ fn a_slot_prop_never_captures_an_outer_authored_binding() {
         assert_eq!(name, &SlotBound::Named("item".into()));
         assert_ne!(for_tag, *tag, "one spelling, two introduction sites");
         // Both names are authored — the pass synthesized no binding.
-        for (_, scope) in lowered.scopes.sorted_entries() {
+        for (_, scope) in lowered.artifact.scopes.sorted_entries() {
             for binding in &scope.bindings {
                 assert!(matches!(binding.origin, ScopeOrigin::Authored { .. }));
             }
@@ -221,7 +221,7 @@ fn two_spellings_on_one_carrier_are_two_introduction_sites() {
             })
             .collect();
         assert_eq!(tags, vec![0, 1], "fresh tag per spelling");
-        assert_eq!(lowered.scopes.len(), 2);
+        assert_eq!(lowered.artifact.scopes.len(), 2);
     });
     assert_transformed_sound(source, "shared-carrier");
 }
@@ -238,7 +238,7 @@ fn a_destructuring_params_position_is_pending_with_its_scope_standing() {
         };
         assert_eq!(text.as_str(), "{ a, b }");
         assert_eq!(name, &SlotBound::Pending);
-        let (_, scope) = lowered.scopes.sorted_entries()[0];
+        let (_, scope) = lowered.artifact.scopes.sorted_entries()[0];
         assert_eq!(scope.bindings.len(), 0, "pattern names wait for #4365");
     });
     assert_transformed_sound(source, "pattern-params");
@@ -287,8 +287,9 @@ fn a_template_carrier_outside_a_component_neither_groups_nor_errors() {
     with_transformed(source, |lowered, _, facts, _| {
         assert_eq!(lowered.diagnostics, vec![]);
         assert!(facts.slot_facts.is_empty());
-        assert_eq!(lowered.scopes.len(), 1);
+        assert_eq!(lowered.artifact.scopes.len(), 1);
         let scope_records: Vec<&str> = lowered
+            .artifact
             .provenance
             .iter()
             .filter(|record| record.rule.as_str() == "pass.v-slot.scope")

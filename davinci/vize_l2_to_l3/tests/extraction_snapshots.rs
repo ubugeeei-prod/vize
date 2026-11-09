@@ -31,11 +31,11 @@ fn decisions(source: &str, tier: OptTier) -> String {
     let allocator = Allocator::default();
     let (tree, errors) = vize_l1::markup::parse(&allocator, source);
     let s2 = vize_l1_to_l2::lower(&allocator, &tree, &errors);
-    let mut lowered = lower(&allocator, &s2.root);
+    let mut lowered = lower(&allocator, &s2.artifact.root);
     let graph = L3Page::of(&lowered.program).print_to_string(DumpMode::Full);
 
     let detached = {
-        let mut copy = lower(&allocator, &s2.root);
+        let mut copy = lower(&allocator, &s2.artifact.root);
         optimize(&mut copy.program, tier, &mut NoObserver).expect("closed pipeline")
     };
     let mut collector = RemarkCollector::new();

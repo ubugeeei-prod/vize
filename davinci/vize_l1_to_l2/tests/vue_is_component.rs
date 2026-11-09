@@ -23,7 +23,7 @@ const PLAIN: &str = include_str!(
 fn original_native_element_is_a_component_in_public_semantic_ir() {
     with_lowered(ORIGINAL, |lowered, _| {
         assert!(lowered.diagnostics.is_empty());
-        let [Op::Element(outer)] = lowered.root.ops.as_slice() else {
+        let [Op::Element(outer)] = lowered.artifact.root.ops.as_slice() else {
             panic!("native outer div")
         };
         let [Op::Component(component)] = outer.children.ops.as_slice() else {
@@ -42,7 +42,7 @@ fn original_native_element_is_a_component_in_public_semantic_ir() {
 fn props_bindings_slots_and_source_spans_remain_on_the_component() {
     with_lowered(PROPS, |lowered, _| {
         assert!(lowered.diagnostics.is_empty());
-        let [Op::Element(outer)] = lowered.root.ops.as_slice() else {
+        let [Op::Element(outer)] = lowered.artifact.root.ops.as_slice() else {
             panic!("outer div")
         };
         let [Op::Component(component)] = outer.children.ops.as_slice() else {
@@ -57,6 +57,7 @@ fn props_bindings_slots_and_source_spans_remain_on_the_component() {
         assert_eq!(component.span, Span::new(5, (PROPS.len() - 6) as u32));
         assert!(
             lowered
+                .artifact
                 .provenance
                 .iter()
                 .any(|record| record.rule.as_str() == "drop.vue-is"
@@ -68,7 +69,7 @@ fn props_bindings_slots_and_source_spans_remain_on_the_component() {
 #[test]
 fn encoded_static_component_names_are_decoded_once() {
     with_lowered(ENCODED, |lowered, _| {
-        let [Op::Component(component)] = lowered.root.ops.as_slice() else {
+        let [Op::Component(component)] = lowered.artifact.root.ops.as_slice() else {
             panic!("decoded vue prefix")
         };
         assert_eq!(component.name, "my-thing");
@@ -77,7 +78,7 @@ fn encoded_static_component_names_are_decoded_once() {
         assert_eq!(component.attributes[0].value, Some("a&amp;b"));
     });
     with_lowered("<div is=\"vue:my&amp;amp;thing\"></div>", |lowered, _| {
-        let [Op::Component(component)] = lowered.root.ops.as_slice() else {
+        let [Op::Component(component)] = lowered.artifact.root.ops.as_slice() else {
             panic!("encoded component name")
         };
         assert_eq!(component.name, "my&amp;thing");
@@ -94,7 +95,7 @@ fn plain_bound_and_verbatim_is_keep_the_native_element() {
         "<div v-pre><span is=\"vue:my-thing\">x</span></div>",
     ] {
         with_lowered(source, |lowered, _| {
-            let [Op::Element(element)] = lowered.root.ops.as_slice() else {
+            let [Op::Element(element)] = lowered.artifact.root.ops.as_slice() else {
                 panic!("native control {source}")
             };
             assert_eq!(element.tag, "div");
@@ -151,7 +152,7 @@ fn native_construction_casts_from_once_prepared_attributes() {
 #[test]
 fn empty_rest_is_a_component_name_and_plain_native_attributes_are_retained() {
     with_lowered("<div is=\"vue:\"></div>", |lowered, _| {
-        let [Op::Component(component)] = lowered.root.ops.as_slice() else {
+        let [Op::Component(component)] = lowered.artifact.root.ops.as_slice() else {
             panic!("prefix alone still selects a component")
         };
         assert_eq!(component.name, "");
@@ -193,7 +194,7 @@ fn reserved_static_casts_keep_authored_identity_in_both_semantic_paths() {
         ),
     ] {
         with_lowered(source, |lowered, _| {
-            let [Op::Component(component)] = lowered.root.ops.as_slice() else {
+            let [Op::Component(component)] = lowered.artifact.root.ops.as_slice() else {
                 panic!("static component {name}")
             };
             assert_eq!(component.name, name);
@@ -230,7 +231,7 @@ fn verbatim_table_rows_keep_the_native_implicit_wrapper() {
         "<table><tr is=\"vue:my-row\" v-pre><td>x</td></tr></table>",
     ] {
         with_lowered(source, |lowered, _| {
-            let [Op::Element(table)] = lowered.root.ops.as_slice() else {
+            let [Op::Element(table)] = lowered.artifact.root.ops.as_slice() else {
                 panic!("table")
             };
             assert_eq!(table.tag, "table");
@@ -272,7 +273,7 @@ fn cast_text_policy_belongs_to_the_authored_tag() {
         ),
     ] {
         with_lowered(source, |lowered, _| {
-            let [Op::Component(component)] = lowered.root.ops.as_slice() else {
+            let [Op::Component(component)] = lowered.artifact.root.ops.as_slice() else {
                 panic!("static cast")
             };
             assert_eq!(component.name, name);
@@ -290,7 +291,7 @@ fn ordinary_template_casts_and_special_authored_tags_keep_distinct_kinds() {
         "../../../tests/_fixtures/differential/compiler/vue-is-component-8328/ordinary-template.template.txt"
     );
     with_lowered(source, |lowered, _| {
-        let [Op::Component(component)] = lowered.root.ops.as_slice() else {
+        let [Op::Component(component)] = lowered.artifact.root.ops.as_slice() else {
             panic!("ordinary template cast")
         };
         assert_eq!(component.name, "my-thing");
@@ -313,7 +314,7 @@ fn ordinary_template_casts_and_special_authored_tags_keep_distinct_kinds() {
         "<template is=\"vue:my-thing\" v-if=\"ok\">x</template>",
     ] {
         with_lowered(source, |lowered, _| {
-            let [Op::If(branches)] = lowered.root.ops.as_slice() else {
+            let [Op::If(branches)] = lowered.artifact.root.ops.as_slice() else {
                 panic!("template branch")
             };
             let [Op::Text(text)] = branches.branches[0].region.ops.as_slice() else {
@@ -323,7 +324,10 @@ fn ordinary_template_casts_and_special_authored_tags_keep_distinct_kinds() {
         });
     }
     with_lowered("<slot is=\"vue:my-thing\">x</slot>", |lowered, _| {
-        assert!(matches!(lowered.root.ops.as_slice(), [Op::Slot(_)]));
+        assert!(matches!(
+            lowered.artifact.root.ops.as_slice(),
+            [Op::Slot(_)]
+        ));
     });
     for source in [
         "<template>x</template>",

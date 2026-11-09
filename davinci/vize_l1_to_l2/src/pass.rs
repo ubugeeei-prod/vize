@@ -172,7 +172,7 @@ where
     #[cfg(debug_assertions)]
     let mut verify = vize_l2::verify::VerifyObserver::new();
 
-    let pipeline = plan::pipeline_for_profile(lowered.caps, lowered.features, profile);
+    let pipeline = plan::pipeline_for_profile(lowered.caps, lowered.artifact.features, profile);
     let outcome = run_pipeline_remarked(&pipeline, observer, |event, remarks| {
         let name = event.desc().name;
         if name == legacy::DESC.name {
@@ -198,14 +198,14 @@ where
         #[cfg(debug_assertions)]
         {
             verify.note(event);
-            let folio = vize_l2::dump::Page::of(&lowered.root.ops);
+            let folio = vize_l2::dump::Page::of(&lowered.artifact.root.ops);
             verify.check(event, &folio);
-            verify.check_table(event, &folio, &lowered.scopes);
-            verify.check_table(event, &folio, &lowered.texts);
-            verify.check_table(event, &folio, &lowered.if_facts);
-            verify.check_table(event, &folio, &lowered.for_facts);
-            verify.check_table(event, &folio, &lowered.wrappers);
-            verify.check_table(event, &folio, &lowered.for_wrappers);
+            verify.check_table(event, &folio, &lowered.artifact.scopes);
+            verify.check_table(event, &folio, &lowered.artifact.texts);
+            verify.check_table(event, &folio, &lowered.artifact.if_facts);
+            verify.check_table(event, &folio, &lowered.artifact.for_facts);
+            verify.check_table(event, &folio, &lowered.artifact.branch_fragments);
+            verify.check_table(event, &folio, &lowered.artifact.loop_fragments);
             verify.check_table(event, &folio, &facts.if_facts);
             verify.check_table(event, &folio, &facts.for_facts);
             verify.check_table(event, &folio, &facts.slot_facts);

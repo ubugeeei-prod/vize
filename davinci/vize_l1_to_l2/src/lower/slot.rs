@@ -15,9 +15,9 @@
 //! still-deferred built-ins keep their counted `defer.slot-directive`
 //! records with realization (P2-11) as the named owner.
 
-use super::features::OpFamily;
 use vize_l0::{Box, String, Vec, cstr};
 use vize_l1::markup::Element;
+use vize_l2::artifact::OpFamily;
 
 use vize_l2::op::{Attribute, BindingOp, DynamicName, Namespace, Op, Region, SlotOp};
 use vize_l2::provenance::ProvenanceSink;

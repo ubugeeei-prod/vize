@@ -29,17 +29,24 @@ fn recorded_attribute_input_retains_all_lowering_and_roundtrip_laws() {
     for diagnostic in &lowered.diagnostics {
         assert!(authored.contains_span(diagnostic.span));
     }
-    for record in &lowered.provenance {
+    for record in &lowered.artifact.provenance {
         assert!(authored.contains_span(record.span));
     }
-    let page = Page::of(&lowered.root.ops);
+    let page = Page::of(&lowered.artifact.root.ops);
     assert_eq!(u64::from(lowered.op_count), page.op_count());
     assert_eq!(verify(&page, Rigor::Canonical), vec![]);
-    assert_eq!(verify_table(&page, &lowered.scopes), vec![]);
-    assert_eq!(verify_table(&page, &lowered.texts), vec![]);
-    assert_eq!(verify_table(&page, &lowered.wrappers), vec![]);
-    assert_eq!(verify_table(&page, &lowered.for_wrappers), vec![]);
+    assert_eq!(verify_table(&page, &lowered.artifact.scopes), vec![]);
+    assert_eq!(verify_table(&page, &lowered.artifact.texts), vec![]);
+    assert_eq!(
+        verify_table(&page, &lowered.artifact.branch_fragments),
+        vec![]
+    );
+    assert_eq!(
+        verify_table(&page, &lowered.artifact.loop_fragments),
+        vec![]
+    );
     let provenance_ids: SideTable<()> = lowered
+        .artifact
         .provenance
         .iter()
         .filter_map(|record| record.node.map(|node| (node, ())))

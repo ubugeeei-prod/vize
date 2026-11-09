@@ -133,7 +133,7 @@ fn after_pass<C: CaptureSink>(
     }
     drop(timing);
     capture.borrow_mut().page(Level::L2, event.desc().name, || {
-        L2Page::of(&lowered.root.ops).print_to_string(DumpMode::Full)
+        L2Page::of(&lowered.artifact.root.ops).print_to_string(DumpMode::Full)
     });
 }
 
@@ -225,7 +225,7 @@ pub(super) fn emit_dom_source_captured<'a, O: PassObserver, C: CaptureSink>(
         );
         timing_complete &= record_step(capture, Level::L2, "lower", started);
         capture.page(Level::L2, "lower", || {
-            L2Page::of(&lowered.root.ops).print_to_string(DumpMode::Full)
+            L2Page::of(&lowered.artifact.root.ops).print_to_string(DumpMode::Full)
         });
 
         let mut profile = TransformProfile::DEFAULT;
@@ -252,7 +252,7 @@ pub(super) fn emit_dom_source_captured<'a, O: PassObserver, C: CaptureSink>(
         };
         let capture = capture_cell.into_inner();
         capture.page(Level::L2, "provenance", || {
-            ProvenancePage::of(&lowered.provenance).print_to_string(DumpMode::Full)
+            ProvenancePage::of(&lowered.artifact.provenance).print_to_string(DumpMode::Full)
         });
         capture.page(Level::L2, "facts", || vize_l0::cstr!("{facts:#?}"));
         let emitted = emit_dom_observed(

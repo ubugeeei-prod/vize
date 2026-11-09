@@ -69,6 +69,7 @@ fn a_template_wrapper_key_folds_into_the_branch_fact() {
             )]
         );
         let template_drops: Vec<&str> = lowered
+            .artifact
             .provenance
             .iter()
             .filter(|record| record.rule.as_str() == "drop.template-attribute")
@@ -81,6 +82,7 @@ fn a_template_wrapper_key_folds_into_the_branch_fact() {
         );
         assert!(
             lowered
+                .artifact
                 .provenance
                 .iter()
                 .any(|record| record.rule.as_str() == "lower.branch-wrapper-key"),

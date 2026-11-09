@@ -103,7 +103,7 @@ mod tests {
         let mut plain = 0;
         walk_interpolations(&markup.root.ops, &mut |span| {
             let indexed = markup.text_parts(span);
-            let scanned = brute(&lowered.lowered().texts, span);
+            let scanned = brute(&lowered.lowered().artifact.texts, span);
             assert_eq!(
                 indexed.map(|parts| parts as *const TextParts),
                 scanned.map(|parts| parts as *const TextParts),

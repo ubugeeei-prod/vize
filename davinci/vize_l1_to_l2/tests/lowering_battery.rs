@@ -41,9 +41,9 @@ fn plain_lowering_soundness_covers_every_lowering_side_table() {
     with_lowered(source, |lowered, _folio| {
         assert_eq!(
             (
-                lowered.texts.len(),
-                lowered.wrappers.len(),
-                lowered.for_wrappers.len()
+                lowered.artifact.texts.len(),
+                lowered.artifact.branch_fragments.len(),
+                lowered.artifact.loop_fragments.len()
             ),
             (1, 1, 1),
             "the canary must exercise every lowering-owned side table"
@@ -83,7 +83,7 @@ fn a_source_block_lowering_keeps_file_absolute_spans() {
     let allocator = Allocator::new();
     let (tree, errors) = parse(&allocator, template);
     let lowered = vize_l1_to_l2::lower_source_block(&allocator, &tree, &errors, block);
-    let folio = L2Page::of(&lowered.root.ops);
+    let folio = L2Page::of(&lowered.artifact.root.ops);
 
     assert_authored_artifact(source, &lowered);
     assert_eq!(u64::from(lowered.op_count), folio.op_count());
@@ -130,7 +130,7 @@ fn source_block_tokenizer_errors_are_file_absolute() {
     assert_eq!(errors[0].code.message(), "Unexpected solidus in tag.");
 
     let lowered = vize_l1_to_l2::lower_source_block(&allocator, &tree, &errors, block);
-    let folio = L2Page::of(&lowered.root.ops);
+    let folio = L2Page::of(&lowered.artifact.root.ops);
 
     assert_authored_artifact(source, &lowered);
     assert_eq!(u64::from(lowered.op_count), folio.op_count());
@@ -199,8 +199,8 @@ fn the_battery_aggregates_are_pinned() {
         with_lowered(fixture.source, |lowered, _folio| {
             ops += u64::from(lowered.op_count);
             diagnostics += lowered.diagnostics.len();
-            provenance += lowered.provenance.len();
-            scopes += lowered.scopes.len();
+            provenance += lowered.artifact.provenance.len();
+            scopes += lowered.artifact.scopes.len();
         });
     }
     // Re-pinned at the element/binding-family installment (P2-9 series

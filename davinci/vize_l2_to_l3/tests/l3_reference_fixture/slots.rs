@@ -113,7 +113,7 @@ fn lowered(source: &str) -> (String, String) {
     assert!(errors.is_empty(), "{errors:?}");
     let s2 = vize_l1_to_l2::lower(&allocator, &tree, &errors);
     assert!(s2.diagnostics.is_empty(), "{:?}", s2.diagnostics);
-    let lowered = vize_l2_to_l3::lower(&allocator, &s2.root);
+    let lowered = vize_l2_to_l3::lower(&allocator, &s2.artifact.root);
     assert_eq!(verify(&lowered.program), [], "{source}");
     (
         L3Page::of(&lowered.program)

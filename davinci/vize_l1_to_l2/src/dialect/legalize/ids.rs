@@ -62,13 +62,13 @@ pub(super) fn rekey(lowered: &mut Lowered<'_, impl ProvenanceSink>, sync_ids: &[
     if sync_ids.is_empty() {
         return;
     }
-    rekey_table(&mut lowered.scopes, sync_ids);
-    rekey_table(&mut lowered.texts, sync_ids);
-    rekey_table(&mut lowered.if_facts, sync_ids);
-    rekey_table(&mut lowered.for_facts, sync_ids);
-    rekey_table(&mut lowered.wrappers, sync_ids);
-    rekey_table(&mut lowered.for_wrappers, sync_ids);
-    if let Some(records) = lowered.provenance.kept() {
+    rekey_table(&mut lowered.artifact.scopes, sync_ids);
+    rekey_table(&mut lowered.artifact.texts, sync_ids);
+    rekey_table(&mut lowered.artifact.if_facts, sync_ids);
+    rekey_table(&mut lowered.artifact.for_facts, sync_ids);
+    rekey_table(&mut lowered.artifact.branch_fragments, sync_ids);
+    rekey_table(&mut lowered.artifact.loop_fragments, sync_ids);
+    if let Some(records) = lowered.artifact.provenance.kept() {
         for record in records {
             if let Some(id) = record.node {
                 record.node = Some(shift(id, sync_ids));
@@ -101,6 +101,6 @@ fn shift(old: NodeId, sync_ids: &[NodeId]) -> NodeId {
 /// Re-derive `op_count` from the rewritten tree (bindings inserted).
 pub(super) fn recount<P>(lowered: &mut Lowered<'_, P>) {
     let mut walk = PageWalk::new();
-    visit_ops(&mut walk, &mut lowered.root.ops, &mut |_, _| {});
+    visit_ops(&mut walk, &mut lowered.artifact.root.ops, &mut |_, _| {});
     lowered.op_count = walk.minted();
 }

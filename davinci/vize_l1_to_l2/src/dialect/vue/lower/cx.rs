@@ -53,7 +53,7 @@ pub(crate) struct Cx<'a, P> {
     pub foreign_dialect: Option<super::foreign::ForeignDialect<'a>>,
     /// Op families this lowering built, set where the op is minted —
     /// see `lower::features`.
-    pub features: super::features::LoweringFeatures,
+    pub features: vize_l2::artifact::LoweringFeatures,
     custom_element_patterns: Vec<String>,
     custom_element_predicate: Option<fn(&str) -> bool>,
 }
@@ -95,7 +95,7 @@ impl<'a, P: ProvenanceSink> Cx<'a, P> {
             for_wrappers: SideTable::new(),
             caps,
             foreign_dialect: None,
-            features: super::features::LoweringFeatures::EMPTY,
+            features: vize_l2::artifact::LoweringFeatures::EMPTY,
             custom_element_patterns: custom_element_patterns.to_vec(),
             custom_element_predicate,
         }
@@ -110,7 +110,7 @@ impl<'a, P: ProvenanceSink> Cx<'a, P> {
     /// Called where the op is minted, never from a rule name: a decision
     /// that *failed* still leaves an op behind (a malformed `v-for` keeps
     /// its `ui.for` under the escape), and the planner must see it.
-    pub(crate) fn observe(&mut self, family: super::features::OpFamily) {
+    pub(crate) fn observe(&mut self, family: vize_l2::artifact::OpFamily) {
         self.features = self.features.observing(family);
     }
 
@@ -164,7 +164,7 @@ impl<'a, P: ProvenanceSink> Cx<'a, P> {
         span: Span,
         source: &str,
     ) {
-        self.observe(super::features::OpFamily::TextCompound);
+        self.observe(vize_l2::artifact::OpFamily::TextCompound);
         if let Some(id) = node {
             parts.assert_compound_laws(id, span, source);
             self.record_text(

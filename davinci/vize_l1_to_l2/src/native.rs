@@ -124,14 +124,12 @@ fn empty_rejection<'a>(
 ) -> RejectedArtifact<'a> {
     RejectedArtifact {
         error,
-        parts: Box::new(ArtifactParts {
+        parts: Box::new(ArtifactParts::new(
             source,
-            root: Region {
+            Region {
                 ops: vize_l0::Vec::new_in(&allocator),
             },
-            provenance: Vec::new(),
-            scopes: vize_l0::side_table::SideTable::new(),
-        }),
+        )),
     }
 }
 

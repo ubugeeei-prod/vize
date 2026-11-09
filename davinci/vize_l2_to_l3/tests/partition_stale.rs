@@ -14,7 +14,7 @@ fn with_lowered(check: impl FnOnce(Lowered<'_>)) {
     let allocator = Allocator::default();
     let (tree, errors) = vize_l1::markup::parse(&allocator, SOURCE);
     let s2 = vize_l1_to_l2::lower(&allocator, &tree, &errors);
-    check(lower(&allocator, &s2.root));
+    check(lower(&allocator, &s2.artifact.root));
 }
 
 #[test]

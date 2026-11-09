@@ -11,7 +11,7 @@ fn prelowered_region_emits_the_same_document_and_mapping() {
     let allocator = vize_carton::Allocator::new();
     let (tree, errors) = vize_l1::markup::parse(&allocator, source);
     let lowered = vize_l1_to_l2::lower(&allocator, &tree, &errors);
-    let document = project_template_expression_document(&lowered.root);
+    let document = project_template_expression_document(&lowered.artifact.root);
 
     assert_eq!(document.as_str(), "状態\nfield\nvalue\ncount\nslotName");
     assert_eq!(document.links().len(), 5);

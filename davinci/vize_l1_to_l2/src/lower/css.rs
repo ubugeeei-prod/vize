@@ -126,7 +126,7 @@ impl<'a> super::Lowered<'a> {
             Op::Element(element) => 1 + element.bindings.len() as u32,
             _ => 1,
         };
-        self.root.ops.push(op);
+        self.artifact.root.ops.push(op);
         self.op_count = self.op_count.saturating_add(extra);
     }
 }

@@ -44,7 +44,7 @@ fn rust_lowered_values_match_stateful_reference_input() {
         let (tree, errors) = vize_l1::markup::parse(&allocator, source.trim_end());
         assert!(errors.is_empty(), "{errors:?}");
         let s2 = vize_l1_to_l2::lower(&allocator, &tree, &errors);
-        let lowered = lower(&allocator, &s2.root);
+        let lowered = lower(&allocator, &s2.artifact.root);
         assert_eq!(verify(&lowered.program), []);
         let actual = ValuesPage::of(&lowered.program).print_to_string(DumpMode::Full);
         assert_eq!(
@@ -107,7 +107,7 @@ fn assert_rust_lowered_fixture(
     let (tree, errors) = vize_l1::markup::parse(&allocator, source.trim_end());
     assert!(errors.is_empty(), "{errors:?}");
     let s2 = vize_l1_to_l2::lower(&allocator, &tree, &errors);
-    let lowered = lower(&allocator, &s2.root);
+    let lowered = lower(&allocator, &s2.artifact.root);
     assert_eq!(verify(&lowered.program), []);
 
     let actual = L3Page::of(&lowered.program).print_to_string(DumpMode::Full);

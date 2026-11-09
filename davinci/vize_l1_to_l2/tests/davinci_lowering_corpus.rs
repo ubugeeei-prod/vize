@@ -48,8 +48,8 @@ fn lowering_corpus_is_total() {
         with_lowered(fixture.source, |lowered, _folio| {
             ops += u64::from(lowered.op_count);
             diagnostics += lowered.diagnostics.len();
-            provenance += lowered.provenance.len();
-            scopes += lowered.scopes.len();
+            provenance += lowered.artifact.provenance.len();
+            scopes += lowered.artifact.scopes.len();
         });
     }
     // Re-pinned when compound text and v-for facts became

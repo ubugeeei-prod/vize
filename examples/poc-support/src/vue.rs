@@ -383,7 +383,7 @@ pub fn compile<D: ExprDialect + Default>(
     if let Some(diagnostic) = lowered.diagnostics.first() {
         return Err(Error::new(cstr!("{diagnostic:?}"), template.content));
     }
-    let program = crate::lower(&allocator, &lowered.root)?;
+    let program = crate::lower(&allocator, &lowered.artifact.root)?;
     Target::new(&D::default(), &bindings).module(View::new(&program.program), &imports, &body)
 }
 

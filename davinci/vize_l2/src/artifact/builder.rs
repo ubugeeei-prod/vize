@@ -1,7 +1,7 @@
 //! Checked construction seals the native tree during its producer's own walk.
 
 use alloc::vec::Vec;
-use vize_l0::{Allocator, Box, Span, id::NodeId, side_table::SideTable};
+use vize_l0::{Allocator, Box, Span, id::NodeId};
 
 use super::{Artifact, ArtifactError, ArtifactParts, RejectedArtifact, check};
 use crate::expr::ExprRef;
@@ -76,14 +76,12 @@ impl<'a> Builder<'a> {
         u32::try_from(source.len()).map_err(|_| ArtifactError::SourceLimit)?;
         Ok(Self {
             allocator,
-            parts: ArtifactParts {
+            parts: ArtifactParts::new(
                 source,
-                root: Region {
+                Region {
                     ops: vize_l0::Vec::new_in(&allocator),
                 },
-                provenance: Vec::new(),
-                scopes: SideTable::new(),
-            },
+            ),
             frames: Vec::new(),
             walk: PageWalk::new(),
         })

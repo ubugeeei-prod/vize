@@ -22,7 +22,7 @@ fn loop_reference_graph_and_values_are_rust_lowered() {
         assert!(errors.is_empty(), "{errors:?}");
         let s2 = vize_l1_to_l2::lower(&allocator, &tree, &errors);
         assert!(s2.diagnostics.is_empty(), "{:?}", s2.diagnostics);
-        let lowered = vize_l2_to_l3::lower(&allocator, &s2.root);
+        let lowered = vize_l2_to_l3::lower(&allocator, &s2.artifact.root);
         assert_eq!(verify(&lowered.program), []);
         for (extension, actual) in [
             (

@@ -1,8 +1,10 @@
 use alloc::vec;
 use alloc::vec::Vec as OwnedVec;
-use vize_l0::{Allocator, Box, Span, String, Vec, id::NodeId, side_table::SideTable};
+use vize_l0::{Allocator, Box, Span, String, Vec, id::NodeId};
 
 use super::{Artifact, ArtifactError, ArtifactParts, IfShape};
+use crate::analysis::for_facts::{ForName, ForParts};
+use crate::analysis::fragment_facts::LoopFragment;
 use crate::expr::{ExprRef, JsExpr, OpaqueExpr, OpaqueReason};
 use crate::op::{
     BindingOp, ComponentOp, DynamicName, ElementOp, ForBinding, ForOp, IfBranch, IfOp,
@@ -35,12 +37,7 @@ fn opaque<'a>(a: &'a Allocator, span: Span) -> ExprRef<'a> {
 }
 
 fn parts<'a>(source: &'a str, root: Region<'a>) -> ArtifactParts<'a> {
-    ArtifactParts {
-        source,
-        root,
-        provenance: OwnedVec::new(),
-        scopes: SideTable::new(),
-    }
+    ArtifactParts::new(source, root)
 }
 
 fn scope(tag: u32) -> ScopeFacts {
@@ -297,4 +294,62 @@ fn empty_artifact_has_no_numbered_nodes_and_preserves_source_identity() {
     assert_eq!(calls, 0);
     assert_eq!(artifact.source(), "source");
     assert!(artifact.root().ops.is_empty());
+}
+
+#[test]
+fn every_side_table_fact_must_key_a_numbered_node() {
+    let a = Allocator::default();
+    let source = "x";
+    let mut input = parts(source, region(&a, [text(&a, Span::new(0, 1))]));
+    let row = ForParts {
+        tag: ScopeTag::from_index(0),
+        value: ForName::Absent,
+        key: ForName::Absent,
+        index: ForName::Absent,
+    };
+    input.for_facts.insert(NodeId::FIRST, row.clone());
+    let artifact = Artifact::try_new(input).unwrap();
+    assert_eq!(artifact.parts().for_facts.get(NodeId::FIRST), Some(&row));
+
+    let dangling = NodeId::from_index(1).unwrap();
+    let mut changed = artifact.into_parts();
+    changed
+        .loop_fragments
+        .insert(dangling, LoopFragment::default());
+    let rejected = Artifact::try_new(changed).unwrap_err();
+    assert_eq!(
+        rejected.error,
+        ArtifactError::DanglingFact { node: dangling }
+    );
+    assert_eq!(
+        rejected.parts.loop_fragments.get(dangling),
+        Some(&LoopFragment::default())
+    );
+}
+
+#[test]
+fn debug_prints_only_populated_side_tables() {
+    let a = Allocator::default();
+    let mut input = parts("x", region(&a, []));
+    let owned = alloc::format!(
+        "ArtifactParts {{ source: {:?}, root: {:?}, provenance: {:?}, scopes: {:?} }}",
+        input.source,
+        input.root,
+        input.provenance,
+        input.scopes
+    );
+    assert_eq!(alloc::format!("{input:?}"), owned);
+    input
+        .loop_fragments
+        .insert(NodeId::FIRST, LoopFragment::default());
+    let populated = alloc::format!(
+        "ArtifactParts {{ source: {:?}, root: {:?}, provenance: {:?}, scopes: {:?}, \
+         loop_fragments: {:?} }}",
+        input.source,
+        input.root,
+        input.provenance,
+        input.scopes,
+        input.loop_fragments
+    );
+    assert_eq!(alloc::format!("{input:?}"), populated);
 }
