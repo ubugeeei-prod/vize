@@ -13,6 +13,9 @@ use oxc_span::{GetSpan, Span};
 use vize_l0::{CompactString, FxHashSet};
 
 use super::{compiler_macro_is_shadowed, props_source::property_key_name};
+use resolved::append_resolved_properties;
+
+mod resolved;
 
 #[derive(Clone)]
 pub(crate) struct PropDefault {
@@ -157,26 +160,7 @@ fn declaration_from_expression<'a>(
             &mut FxHashSet::default(),
             &mut typed,
         );
-        if let Some(world) = resolved_type_world
-            && let Some(type_source) = source.get(ty.span().start as usize..ty.span().end as usize)
-        {
-            typed.extend(
-                world
-                    .resolve_properties(type_source)
-                    .properties
-                    .into_iter()
-                    .map(|property| TypedProp {
-                        name: property.name,
-                        span: ty.span(),
-                        key_span: ty.span(),
-                        required: !property.optional,
-                        boolean: property.prop_type.as_deref().is_some_and(|ty| {
-                            matches!(ty.trim(), "boolean" | "Boolean" | "true" | "false")
-                        }),
-                        offset,
-                    }),
-            );
-        }
+        append_resolved_properties(&mut typed, source, ty, offset, resolved_type_world);
         let mut names = FxHashSet::default();
         typed.retain(|prop| names.insert(prop.name.clone()));
     }

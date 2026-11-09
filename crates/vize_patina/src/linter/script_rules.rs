@@ -34,10 +34,9 @@ use prefilter::{
 };
 pub use registry::BuiltinScriptRuleMeta;
 use registry::{
-    ALL_BUILTIN_SCRIPT_RULE_NAMES, BUILTIN_SCRIPT_RULES, BuiltinScriptRuleEntry,
-    RULE_NO_BOOLEAN_DEFAULT, RULE_NO_DUPE_KEYS, RULE_NO_DUPLICATE_ATTR_INHERITANCE,
-    RULE_NO_GET_CURRENT_INSTANCE, RULE_NO_NEXT_TICK, RULE_NO_REQUIRED_PROP_WITH_DEFAULT,
-    RULE_REQUIRE_DEFAULT_PROP, RULE_RETURN_IN_EMITS_VALIDATOR,
+    ALL_BUILTIN_SCRIPT_RULE_NAMES, BUILTIN_SCRIPT_RULES, BuiltinScriptRuleEntry, RULE_NO_DUPE_KEYS,
+    RULE_NO_DUPLICATE_ATTR_INHERITANCE, RULE_NO_GET_CURRENT_INSTANCE, RULE_NO_NEXT_TICK,
+    RULE_NO_REQUIRED_PROP_WITH_DEFAULT, RULE_RETURN_IN_EMITS_VALIDATOR,
 };
 
 #[cfg(test)]
@@ -87,8 +86,8 @@ pub(crate) fn has_resolved_macro_type_demand(linter: &Linter) -> bool {
     const RULES: &[&str] = &[
         RULE_NO_DUPE_KEYS,
         RULE_NO_REQUIRED_PROP_WITH_DEFAULT,
-        RULE_NO_BOOLEAN_DEFAULT,
-        RULE_REQUIRE_DEFAULT_PROP,
+        "script/no-boolean-default",
+        "script/require-default-prop",
         "script/no-unused-emit-declarations",
         "script/require-explicit-emits",
     ];
