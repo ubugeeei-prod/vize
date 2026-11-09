@@ -13,7 +13,6 @@ use crate::rules::script::{
     ReturnInEmitsValidator, ScriptLintResult, SfcScriptContext,
 };
 use vize_atelier_sfc::SfcDescriptor;
-use vize_croquis::drawer::LintTemplate;
 use vize_l0::profile;
 
 fn descriptor_may_have_typed_macros(descriptor: &SfcDescriptor<'_>) -> bool {
@@ -65,10 +64,7 @@ pub(crate) fn append_builtin_script_diagnostics_with_template_context<'a>(
         })
         .map(|(artifact, offset)| {
             (
-                vize_croquis::drawer::collect_lint_template_references(LintTemplate::new(
-                    artifact.surface(),
-                    artifact.lowered(),
-                )),
+                vize_croquis::drawer::collect_lint_template_references(artifact.lint_template()),
                 offset,
             )
         });
