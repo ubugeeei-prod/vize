@@ -15,6 +15,28 @@ const noSfcFinding = {
     "このカタログ項目は現在の SFC lint では固有の診断を出しません。悪い例・良い例は意図した規約の説明であり、実行時にこのルールの診断が出る例ではありません。ID を設定しても未対応の SFC 検査は追加されません。",
 };
 export const runtimeOverrides: Record<string, RuleExample> = {
+  "a11y/anchor-has-content": pair(
+    template('<a href="/app"></a>'),
+    template('<a href="/app"><RetryImage src="/badge.png" alt="Get the app" /></a>'),
+    "crates/vize_patina/src/rules/a11y/anchor_has_content.rs",
+    {
+      ruleOptions: { accessibleChildren: ["RetryImage"] },
+      note: "List component names whose rendered subtree always supplies accessible anchor content. PascalCase and kebab-case spellings are equivalent. Options do not enable the rule; later config layers replace the complete list, and [] clears inherited names.",
+      noteJa:
+        "描画結果がリンクのアクセシブルな内容を必ず提供するコンポーネント名を指定します。PascalCase と kebab-case は同じ名前として扱います。オプションだけではルールを有効にしません。後の設定レイヤーは一覧全体を置き換え、[] で継承した名前を消します。",
+    },
+  ),
+  "a11y/label-has-for": pair(
+    template("<label>Name</label>"),
+    template('<label>Name <CInputField v-model="name" /></label>'),
+    "crates/vize_patina/src/rules/a11y/label_has_for.rs",
+    {
+      ruleOptions: { controlComponents: ["CInputField"] },
+      note: "List component names that render a native form control and therefore satisfy label nesting. PascalCase and kebab-case spellings are equivalent. Options do not enable the rule; later config layers replace the complete list, and [] clears inherited names.",
+      noteJa:
+        "ネイティブのフォーム部品を描画し、label の入れ子条件を満たすコンポーネント名を指定します。PascalCase と kebab-case は同じ名前として扱います。オプションだけではルールを有効にしません。後の設定レイヤーは一覧全体を置き換え、[] で継承した名前を消します。",
+    },
+  ),
   "vue/require-component-registration": pair(
     template("<MissingWidget />"),
     template("<MyButton />"),
@@ -24,6 +46,28 @@ export const runtimeOverrides: Record<string, RuleExample> = {
       note: "List explicit component names supplied by application plugins or Musea previewSetup. PascalCase and kebab-case spellings are accepted; regular expressions are not interpreted. Options do not enable the rule. Later layers replace the list; an empty list clears inherited names.",
       noteJa:
         "アプリケーションのプラグインや Musea の previewSetup が登録するコンポーネント名を明示します。PascalCase と kebab-case を許可し、正規表現は解釈しません。オプションだけではルールは有効になりません。後の設定は一覧全体を置き換え、空の一覧は継承した名前を消します。",
+    },
+  ),
+  "vue/no-bare-strings-in-template": pair(
+    template("<p>Translate me</p>"),
+    template("<kbd>W</kbd>"),
+    "crates/vize_patina/src/rules/vue/no_bare_strings_in_template.rs",
+    {
+      ruleOptions: { allowlist: ["/^[DRWXYmvx]$/u"] },
+      note: "The allowlist replaces eslint-plugin-vue's punctuation defaults when present. Entries are literal substrings or /pattern/flags values and are removed before the remaining text is checked. Omit allowlist to retain the defaults; [] clears them. Options do not enable the rule.",
+      noteJa:
+        "allowlist を指定すると、eslint-plugin-vue の既定の記号一覧を置き換えます。各項目はリテラルな部分文字列または /pattern/flags 形式で、残りのテキストを検査する前に除外します。既定値を保つには allowlist を省略し、[] で既定値を消します。オプションだけではルールを有効にしません。",
+    },
+  ),
+  "vue/warn-custom-directive": pair(
+    template('<button type="button" v-focus>Focus</button>'),
+    template('<button type="button" v-hover-tooltip="tip">Copy</button>'),
+    "crates/vize_patina/src/rules/opinionated/vue/warn_custom_directive.rs",
+    {
+      ruleOptions: { ignore: ["hover-tooltip"] },
+      note: "List exact globally registered directive names without the v- prefix. Local script-setup vName bindings are still discovered automatically. Options do not enable the rule; later config layers replace the complete list, and [] clears inherited names.",
+      noteJa:
+        "グローバル登録したディレクティブ名を v- 接頭辞なしの完全一致で指定します。script setup のローカルな vName 束縛は引き続き自動検出します。オプションだけではルールを有効にしません。後の設定レイヤーは一覧全体を置き換え、[] で継承した名前を消します。",
     },
   ),
   "a11y/click-events-have-key-events": pair(

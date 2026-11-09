@@ -9,9 +9,11 @@ Require anchor elements to have accessible content.
 
 | Default severity | Presets | Automatic fix | Options |
 | --- | --- | --- | --- |
-| `warning` | `happy-path`, `nuxt`, `ecosystem`, `opinionated` | No | None |
+| `warning` | `happy-path`, `nuxt`, `ecosystem`, `opinionated` | No | [Rule options](../options.md) |
 
 Applies to: Vue SFC templates and blocks, with script context where the rule requires it.
+
+List component names whose rendered subtree always supplies accessible anchor content. PascalCase and kebab-case spellings are equivalent. Options do not enable the rule; later config layers replace the complete list, and [] clears inherited names.
 
 ## Bad
 
@@ -19,7 +21,7 @@ The `/settings` link has no text or other naming content, so its destination has
 
 ```vue annotate="remove:2"
 <template>
-  <a href="/settings"></a>
+<a href="/app"></a>
 </template>
 ```
 
@@ -29,7 +31,7 @@ The visible `Settings` text supplies content for the same destination link.
 
 ```vue annotate="add:2"
 <template>
-  <a href="/settings">Settings</a>
+<a href="/app"><RetryImage src="/badge.png" alt="Get the app" /></a>
 </template>
 ```
 
@@ -43,6 +45,13 @@ export default defineConfig({}).withVue({
     "preset": "incremental",
     "rules": {
       "a11y/anchor-has-content": "warn"
+    },
+    "ruleOptions": {
+      "a11y/anchor-has-content": {
+        "accessibleChildren": [
+          "RetryImage"
+        ]
+      }
     }
   },
 });
@@ -53,5 +62,6 @@ Then run `vp run lint`.
 ## Related
 
 - [Accessibility rules](../accessibility.md)
+- [Rule options](../options.md)
 - [All rules](../all.md)
 - [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/anchor_has_content.rs#L20)

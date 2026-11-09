@@ -131,6 +131,22 @@ class NoMutatingPropsOptions {
   shallowOnly: Boolean = false
 }
 
+class WarnCustomDirectiveOptions {
+  ignore: Listing<String> = new Listing {}
+}
+
+class NoBareStringsInTemplateOptions {
+  allowlist: Listing<String>? = null
+}
+
+class AnchorHasContentOptions {
+  accessibleChildren: Listing<String> = new Listing {}
+}
+
+class LabelHasForOptions {
+  controlComponents: Listing<String> = new Listing {}
+}
+
 class SfcElementOrderOptions {
   order: Listing<String | Listing<String>> = new Listing {
     new Listing { "script"; "template" }
@@ -219,6 +235,10 @@ class LintRuleOptions {
   `script/custom-event-name-casing`: CustomEventNameCasingOptions? = null
   `vue/prop-name-casing`: PropNameCasingOptions? = null
   `vue/no-mutating-props`: NoMutatingPropsOptions? = null
+  `vue/warn-custom-directive`: WarnCustomDirectiveOptions? = null
+  `vue/no-bare-strings-in-template`: NoBareStringsInTemplateOptions? = null
+  `a11y/anchor-has-content`: AnchorHasContentOptions? = null
+  `a11y/label-has-for`: LabelHasForOptions? = null
   `vue/require-component-registration`: RequireComponentRegistrationOptions? = null
   `vue/sfc-element-order`: SfcElementOrderOptions? = null
   `vue/html-self-closing`: HtmlSelfClosingOptions? = null

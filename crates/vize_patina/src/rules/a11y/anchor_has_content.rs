@@ -26,11 +26,33 @@ static META: RuleMeta = RuleMeta {
 };
 
 /// Require anchor elements to have accessible content
-#[derive(Default)]
-pub struct AnchorHasContent;
+pub struct AnchorHasContent {
+    accessible_children: Vec<vize_l0::String>,
+}
+
+#[allow(non_upper_case_globals)]
+/// Default `a11y/anchor-has-content` rule with no project-local components.
+pub const AnchorHasContent: AnchorHasContent = AnchorHasContent {
+    accessible_children: Vec::new(),
+};
+
+impl Default for AnchorHasContent {
+    fn default() -> Self {
+        AnchorHasContent
+    }
+}
 
 impl AnchorHasContent {
-    fn has_accessible_content(element: &ElementNode) -> bool {
+    pub(crate) fn with_accessible_children(children: Vec<vize_l0::String>) -> Self {
+        Self {
+            accessible_children: children
+                .into_iter()
+                .map(|name| canonical_component_name(&name))
+                .collect(),
+        }
+    }
+
+    fn has_accessible_content(&self, element: &ElementNode) -> bool {
         // Check for aria-label or aria-labelledby
         for prop in &element.props {
             if let PropNode::Attribute(attr) = prop
@@ -58,6 +80,9 @@ impl AnchorHasContent {
                 }
                 TemplateChildNode::Element(el) => {
                     if is_slot_element(el) {
+                        return true;
+                    }
+                    if matches_component(el.tag, &self.accessible_children) {
                         return true;
                     }
                     // Check for img with alt
@@ -89,7 +114,7 @@ impl AnchorHasContent {
                         }
                     }
                     // Recursively check other elements
-                    if Self::has_accessible_content(el) {
+                    if self.has_accessible_content(el) {
                         return true;
                     }
                 }
@@ -102,7 +127,7 @@ impl AnchorHasContent {
 }
 
 impl AnchorHasContent {
-    fn has_markup_content(element: &MarkupElement<'_>) -> bool {
+    fn has_markup_content(&self, element: &MarkupElement<'_>) -> bool {
         let mut labelled = false;
         element.walk_bindings(&mut |binding| {
             labelled |= match binding.kind() {
@@ -127,8 +152,9 @@ impl AnchorHasContent {
                 MarkupNode::Element(child) => {
                     child.kind() == MarkupElementKind::Slot
                         || child.is_unqualified_tag_exact("slot")
+                        || matches_component(child.tag(), &self.accessible_children)
                         || (child.is_unqualified_tag_exact("img") && Self::has_markup_alt(&child))
-                        || Self::has_markup_content(&child)
+                        || self.has_markup_content(&child)
                 }
                 _ => false,
             };
@@ -170,7 +196,7 @@ impl MarkupRule for AnchorHasContent {
     }
 
     fn enter_element<'a>(&self, ctx: &mut MarkupContext<'_, 'a>, element: &MarkupElement<'a>) {
-        if !element.is_unqualified_tag_exact("a") || Self::has_markup_content(element) {
+        if !element.is_unqualified_tag_exact("a") || self.has_markup_content(element) {
             return;
         }
         let message = ctx.lint().t("a11y/anchor-has-content.message");
@@ -193,7 +219,7 @@ impl Rule for AnchorHasContent {
             return;
         }
 
-        if !Self::has_accessible_content(element) {
+        if !self.has_accessible_content(element) {
             ctx.warn_with_help(
                 ctx.t("a11y/anchor-has-content.message"),
                 &element.loc,
@@ -201,6 +227,18 @@ impl Rule for AnchorHasContent {
             );
         }
     }
+}
+
+fn canonical_component_name(name: &str) -> vize_l0::String {
+    vize_l0::hyphenate(name).to_ascii_lowercase().into()
+}
+
+fn matches_component(tag: &str, configured: &[vize_l0::String]) -> bool {
+    if configured.is_empty() {
+        return false;
+    }
+    let canonical = canonical_component_name(tag);
+    configured.iter().any(|name| name == &canonical)
 }
 
 #[cfg(test)]
@@ -213,6 +251,28 @@ mod tests {
         let mut registry = RuleRegistry::new();
         registry.register(Box::new(AnchorHasContent));
         Linter::with_registry(registry)
+    }
+
+    #[test]
+    fn configured_accessible_child_accepts_pascal_and_kebab_component_spellings() {
+        let mut registry = RuleRegistry::new();
+        registry.register(Box::new(AnchorHasContent::with_accessible_children(vec![
+            "RetryImage".into(),
+        ])));
+        let linter = Linter::with_registry(registry);
+        for source in [
+            r#"<a href="/"><RetryImage /></a>"#,
+            r#"<a href="/"><retry-image /></a>"#,
+        ] {
+            let result = linter.lint_template(source, "test.vue");
+            assert_eq!(
+                result.warning_count, 0,
+                "{source}: {:?}",
+                result.diagnostics
+            );
+        }
+        let result = linter.lint_template(r#"<a href="/"><OtherImage /></a>"#, "test.vue");
+        assert_eq!(result.warning_count, 1, "{:?}", result.diagnostics);
     }
 
     #[test]

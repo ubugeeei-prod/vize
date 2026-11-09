@@ -24,6 +24,7 @@ mod mustache_spacing;
 mod no_mutating_props;
 mod prop_name_casing;
 mod props_destructuring;
+mod real_project_allowances;
 mod restrictions;
 mod sfc_element_order;
 mod strict_boolean;
@@ -49,6 +50,10 @@ pub use mustache_spacing::MustacheInterpolationSpacingStyle;
 pub use no_mutating_props::NoMutatingPropsOptions;
 pub use prop_name_casing::{PropNameCasingOptions, PropNameCasingStyle};
 pub use props_destructuring::{DefinePropsDestructuringOptions, PropsDestructureMode};
+pub use real_project_allowances::{
+    AnchorHasContentOptions, LabelHasForOptions, NoBareStringsInTemplateOptions,
+    WarnCustomDirectiveOptions,
+};
 pub use restrictions::{
     MuseaDesignToken, MuseaPreferDesignTokensOptions, NoRestrictedGlobalsOptions,
     NoRestrictedMembersOptions, RestrictedGlobal, RestrictedMember,
@@ -176,6 +181,18 @@ pub struct ConfigLintRuleOptions {
     /// Options for `vue/no-mutating-props`.
     #[serde(rename = "vue/no-mutating-props")]
     no_mutating_props: Option<NoMutatingPropsOptions>,
+    /// Exact custom directives known to be registered by the application.
+    #[serde(rename = "vue/warn-custom-directive")]
+    warn_custom_directive: Option<WarnCustomDirectiveOptions>,
+    /// Project-local translated literals and patterns.
+    #[serde(rename = "vue/no-bare-strings-in-template")]
+    no_bare_strings_in_template: Option<NoBareStringsInTemplateOptions>,
+    /// Custom components that always expose accessible anchor content.
+    #[serde(rename = "a11y/anchor-has-content")]
+    anchor_has_content: Option<AnchorHasContentOptions>,
+    /// Custom components that render native label controls.
+    #[serde(rename = "a11y/label-has-for")]
+    label_has_for: Option<LabelHasForOptions>,
     /// Options for `vue/sfc-element-order`.
     #[serde(rename = "vue/sfc-element-order")]
     sfc_element_order: Option<SfcElementOrderOptions>,
@@ -245,6 +262,10 @@ impl ConfigLintRuleOptions {
             && self.custom_event_name_casing.is_none()
             && self.prop_name_casing.is_none()
             && self.no_mutating_props.is_none()
+            && self.warn_custom_directive.is_none()
+            && self.no_bare_strings_in_template.is_none()
+            && self.anchor_has_content.is_none()
+            && self.label_has_for.is_none()
             && self.sfc_element_order.is_none()
             && self.html_self_closing.is_none()
             && self.html_quotes.is_none()
@@ -331,6 +352,27 @@ impl ConfigLintRuleOptions {
     #[inline]
     pub fn no_mutating_props(&self) -> Option<NoMutatingPropsOptions> {
         self.no_mutating_props
+    }
+
+    /// Configured custom-directive exemptions.
+    pub fn warn_custom_directive(&self) -> Option<&WarnCustomDirectiveOptions> {
+        self.warn_custom_directive.as_ref()
+    }
+
+    /// Configured bare-string allowlist. An omitted `allowlist` retains the
+    /// upstream punctuation defaults; an authored empty list clears them.
+    pub fn no_bare_strings_in_template(&self) -> Option<&NoBareStringsInTemplateOptions> {
+        self.no_bare_strings_in_template.as_ref()
+    }
+
+    /// Configured custom components that provide accessible anchor content.
+    pub fn anchor_has_content(&self) -> Option<&AnchorHasContentOptions> {
+        self.anchor_has_content.as_ref()
+    }
+
+    /// Configured custom components that count as nested label controls.
+    pub fn label_has_for(&self) -> Option<&LabelHasForOptions> {
+        self.label_has_for.as_ref()
     }
 
     /// Configured block order for `vue/sfc-element-order`.

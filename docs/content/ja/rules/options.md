@@ -76,6 +76,10 @@ export default defineConfig({}).withVue({
 | `vue/prop-name-casing` | `{ casing?: "camelCase" \| "snake_case" }` | 既定は `camelCase` です。宣言した props 名を検査します。ルールは別に有効にし、公開 API の名前は手動で変更してください。 |
 | `script/define-props-destructuring` | `{ destructure?: "only-when-assigned" \| "always" \| "never" }` | 既定は `always` で、代入した呼び出しと型付きの単独呼び出しを検査します。`only-when-assigned` は単独呼び出しを除外し、`never` は props オブジェクトでの参照を要求します。Vue 3.5 の分割代入はリアクティビティを保ちます。 |
 | `vue/no-mutating-props` | `{ shallowOnly?: boolean }` | 既定は `false` です。`true` では、プロパティ自体の再代入を禁止したまま、入れ子のプロパティの変更を許可します。 |
+| `vue/warn-custom-directive` | `{ ignore?: string[] }` | 既定は空のリストです。`ignore` の正確なディレクティブ名を登録済みとして扱います。 |
+| `vue/no-bare-strings-in-template` | `{ allowlist?: string[] }` | 省略時は上流の既定 allowlist を使い、明示したリストはそれを置き換えます。リテラルまたは JavaScript 正規表現文字列を指定できます。 |
+| `a11y/anchor-has-content` | `{ accessibleChildren?: string[] }` | 既定は空のリストです。指定したコンポーネントをアクセシブルなリンク内容として扱います。 |
+| `a11y/label-has-for` | `{ controlComponents?: string[] }` | 既定は空のリストです。指定したコンポーネントをラベルのコントロールとして扱います。 |
 | `vue/require-component-registration` | `{ globals?: string[] }` | アプリケーションのプラグインやプレビューのセットアップで登録するコンポーネント名を指定します。PascalCase と kebab-case の表記を許可します。ルールは別に有効にしてください。 |
 | `vue/sfc-element-order` | `{ order?: Array<string \| string[]> }` | 既定は `[["script", "template"], "style"]` です。入れ子の配列は、その位置に配列内のどのブロックが現れてもよいことを表します。 |
 | `vue/html-self-closing` | `{ html?: { void?: Style; normal?: Style; component?: Style }; svg?: Style; math?: Style }`。`Style` は `"always"`、`"never"`、`"any"` のいずれか | 既定は eslint-plugin-vue と同じ `html.void: "never"`、`html.normal: "always"`、`html.component: "always"`、`svg: "always"`、`math: "always"` です。 |

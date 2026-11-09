@@ -433,6 +433,90 @@ Good:
 <MyPanel v-slot:default="slot"><template v-slot:header>Header</template>{{ slot.item }}</MyPanel>
 ```
 
+## `vue/warn-custom-directive`
+
+List application directives that are registered outside the current SFC. Names are exact and omit
+the `v-` prefix. The default list is empty.
+
+```ts
+ruleOptions: { "vue/warn-custom-directive": { ignore: ["hover-tooltip"] } }
+```
+
+Bad (not configured):
+
+```vue
+<button v-focus>Save</button>
+```
+
+Good (configured):
+
+```vue
+<button v-hover-tooltip>Save</button>
+```
+
+## `vue/no-bare-strings-in-template`
+
+`allowlist` replaces the upstream default list when present. Entries are literal substrings or
+JavaScript regex strings such as `/^[DRWXYmvx]$/u`; an explicit empty list allows nothing.
+
+```ts
+ruleOptions: { "vue/no-bare-strings-in-template": { allowlist: ["Cancel", "/^[DRWXYmvx]$/u"] } }
+```
+
+Bad:
+
+```vue
+<span>Submit</span>
+```
+
+Good:
+
+```vue
+<span>Cancel</span>
+```
+
+## `a11y/anchor-has-content`
+
+Use `accessibleChildren` for design-system components that always render accessible content.
+PascalCase and kebab-case template spellings are treated as the same component.
+
+```ts
+ruleOptions: { "a11y/anchor-has-content": { accessibleChildren: ["RetryImage"] } }
+```
+
+Bad:
+
+```vue
+<a href="/retry"><UnknownImage /></a>
+```
+
+Good:
+
+```vue
+<a href="/retry"><RetryImage /></a>
+```
+
+## `a11y/label-has-for`
+
+Use `controlComponents` for design-system controls nested by a label. This allowance does not
+make unrelated custom components satisfy the rule.
+
+```ts
+ruleOptions: { "a11y/label-has-for": { controlComponents: ["CInputField"] } }
+```
+
+Bad:
+
+```vue
+<label>Name<CustomText /></label>
+```
+
+Good:
+
+```vue
+<label>Name<CInputField /></label>
+```
+
 ## Attribute naming options {#vue-attribute-hyphenation}
 
 See [attribute styles and literal exemptions](./options-attributes.md).

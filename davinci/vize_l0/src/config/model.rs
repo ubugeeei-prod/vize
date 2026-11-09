@@ -47,17 +47,19 @@ pub use linter::{LintRuleSeverity, LinterConfig};
 pub use linter_execution::LinterExecutionOptions;
 pub use linter_feature_flags::LinterFeatureFlags;
 pub use linter_rule_options::{
-    AttributeHyphenationConfig, AttributeHyphenationOptions, ComponentNameInTemplateCasingOptions,
-    ConfigLintRuleOptions, CustomEventNameCasing, CustomEventNameCasingOptions,
-    DefineMacrosOrderOptions, DefinePropsDestructuringOptions, HtmlQuoteStyle, HtmlQuotesConfig,
-    HtmlQuotesOptions, HtmlSelfClosingHtmlOptions, HtmlSelfClosingOptions, HtmlSelfClosingStyle,
-    HyphenationStyle, LintRuleOptions, MuseaDesignToken, MuseaPreferDesignTokensOptions,
-    MustacheInterpolationSpacingStyle, NoMutatingPropsOptions, NoRestrictedGlobalsOptions,
-    NoRestrictedMembersOptions, PropNameCasingOptions, PropNameCasingStyle, PropsDestructureMode,
-    RestrictedGlobal, RestrictedMember, SfcElementOrderGroup, SfcElementOrderOptions,
-    StrictBooleanExpressionsOptions, TemplateComponentNameCasing, VBindStyle,
-    VOnEventHyphenationConfig, VOnEventHyphenationOptions, VOnStyle, VSlotNamedStyle, VSlotStyle,
-    VSlotStyleOptions, VSlotStyleValue, VSlotUniformStyle,
+    AnchorHasContentOptions, AttributeHyphenationConfig, AttributeHyphenationOptions,
+    ComponentNameInTemplateCasingOptions, ConfigLintRuleOptions, CustomEventNameCasing,
+    CustomEventNameCasingOptions, DefineMacrosOrderOptions, DefinePropsDestructuringOptions,
+    HtmlQuoteStyle, HtmlQuotesConfig, HtmlQuotesOptions, HtmlSelfClosingHtmlOptions,
+    HtmlSelfClosingOptions, HtmlSelfClosingStyle, HyphenationStyle, LabelHasForOptions,
+    LintRuleOptions, MuseaDesignToken, MuseaPreferDesignTokensOptions,
+    MustacheInterpolationSpacingStyle, NoBareStringsInTemplateOptions, NoMutatingPropsOptions,
+    NoRestrictedGlobalsOptions, NoRestrictedMembersOptions, PropNameCasingOptions,
+    PropNameCasingStyle, PropsDestructureMode, RestrictedGlobal, RestrictedMember,
+    SfcElementOrderGroup, SfcElementOrderOptions, StrictBooleanExpressionsOptions,
+    TemplateComponentNameCasing, VBindStyle, VOnEventHyphenationConfig, VOnEventHyphenationOptions,
+    VOnStyle, VSlotNamedStyle, VSlotStyle, VSlotStyleOptions, VSlotStyleValue, VSlotUniformStyle,
+    WarnCustomDirectiveOptions,
 };
 pub use type_checker::TypeCheckerConfig;
 pub use vue::{ParseVueVersionError, VueVersion};

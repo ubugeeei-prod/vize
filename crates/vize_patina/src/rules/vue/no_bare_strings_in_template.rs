@@ -45,6 +45,7 @@ use crate::markup::{
     MarkupText, MarkupTraversal,
 };
 use crate::rule::{Rule, RuleCategory, RuleMeta};
+use regex::Regex;
 use vize_relief::{ElementNode, RootNode, TemplateChildNode};
 
 static META: RuleMeta = RuleMeta {
@@ -67,17 +68,45 @@ const COMMON_TARGET_ATTRIBUTES: &[&str] = &[
 ];
 
 /// Disallow raw human-readable text directly in the template.
-pub struct NoBareStringsInTemplate;
+pub struct NoBareStringsInTemplate {
+    allowlist: BareStringAllowlist,
+}
+
+enum BareStringAllowlist {
+    Default,
+    Custom(Option<Regex>),
+}
+
+#[allow(non_upper_case_globals)]
+/// Default `vue/no-bare-strings-in-template` rule using the upstream allowlist.
+pub const NoBareStringsInTemplate: NoBareStringsInTemplate = NoBareStringsInTemplate {
+    allowlist: BareStringAllowlist::Default,
+};
+
+impl Default for NoBareStringsInTemplate {
+    fn default() -> Self {
+        NoBareStringsInTemplate
+    }
+}
 
 impl NoBareStringsInTemplate {
-    fn check_bindings(ctx: &mut LintContext<'_>, element: &MarkupElement<'_>) {
+    pub(crate) fn with_allowlist(allowlist: Option<Vec<vize_l0::String>>) -> Self {
+        let Some(allowlist) = allowlist else {
+            return Self::default();
+        };
+        Self {
+            allowlist: BareStringAllowlist::Custom(compile_allowlist(&allowlist)),
+        }
+    }
+
+    fn check_bindings(&self, ctx: &mut LintContext<'_>, element: &MarkupElement<'_>) {
         // Bare string in a user-facing static attribute. Bound attributes
         // (`:title="..."`) are directives, so they are skipped here.
         element.walk_bindings(&mut |binding| {
             if binding.kind() == MarkupBindingKind::Attribute
                 && is_target_attribute(element.tag(), &binding)
                 && let Some(value) = binding.static_value()
-                && has_bare_string(value)
+                && self.has_bare_string(value)
             {
                 ctx.warn_at_with_help(
                     ctx.t("vue/no-bare-strings-in-template.message"),
@@ -87,7 +116,7 @@ impl NoBareStringsInTemplate {
             } else if binding.kind() == MarkupBindingKind::Custom
                 && binding.is_unqualified_arg_exact("text")
                 && let Some(value) = binding.literal_string_value()
-                && has_bare_string(value)
+                && self.has_bare_string(value)
             {
                 ctx.warn_at_with_help(
                     ctx.t("vue/no-bare-strings-in-template.message"),
@@ -98,8 +127,8 @@ impl NoBareStringsInTemplate {
         });
     }
 
-    fn check_text(ctx: &mut LintContext<'_>, text: &MarkupText<'_>) {
-        if has_bare_string(text.content()) {
+    fn check_text(&self, ctx: &mut LintContext<'_>, text: &MarkupText<'_>) {
+        if self.has_bare_string(text.content()) {
             ctx.warn_at_with_help(
                 ctx.t("vue/no-bare-strings-in-template.message"),
                 text.range(),
@@ -108,15 +137,26 @@ impl NoBareStringsInTemplate {
         }
     }
 
-    fn check_element_legacy(ctx: &mut LintContext<'_>, element: &MarkupElement<'_>) {
+    fn check_element_legacy(&self, ctx: &mut LintContext<'_>, element: &MarkupElement<'_>) {
         // The legacy Relief visitor has no text callback. Keep its direct-child
         // projection here while the unified markup lane uses `enter_text`.
         element.walk_children(&mut |child| {
             if let MarkupNode::Text(text) = child {
-                Self::check_text(ctx, &text);
+                self.check_text(ctx, &text);
             }
         });
-        Self::check_bindings(ctx, element);
+        self.check_bindings(ctx, element);
+    }
+
+    fn has_bare_string(&self, text: &str) -> bool {
+        let text = text.trim();
+        match &self.allowlist {
+            BareStringAllowlist::Default => default_has_bare_string(text),
+            BareStringAllowlist::Custom(None) => !text.is_empty(),
+            BareStringAllowlist::Custom(Some(allowlist)) => {
+                !allowlist.replace_all(text, "").trim().is_empty()
+            }
+        }
     }
 }
 
@@ -133,19 +173,19 @@ impl MarkupRule for NoBareStringsInTemplate {
         // JSX diagnostics follow authored source order: attributes precede
         // children. Vue keeps the legacy visitor's element-exit ordering below.
         if ctx.is_jsx() {
-            Self::check_bindings(ctx.lint(), element);
+            self.check_bindings(ctx.lint(), element);
         }
     }
 
     fn exit_element<'a>(&self, ctx: &mut MarkupContext<'_, 'a>, element: &MarkupElement<'a>) {
         if ctx.is_template() {
-            Self::check_element_legacy(ctx.lint(), element);
+            self.check_element_legacy(ctx.lint(), element);
         }
     }
 
     fn enter_text<'a>(&self, ctx: &mut MarkupContext<'_, 'a>, text: &MarkupText<'a>) {
         if ctx.is_jsx() || ctx.current_element().is_none() {
-            Self::check_text(ctx.lint(), text);
+            self.check_text(ctx.lint(), text);
         }
     }
 }
@@ -167,7 +207,7 @@ impl Rule for NoBareStringsInTemplate {
     }
 
     fn exit_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
-        Self::check_element_legacy(ctx, &MarkupElement::new(element));
+        self.check_element_legacy(ctx, &MarkupElement::new(element));
     }
 
     fn run_on_template<'a>(&self, ctx: &mut LintContext<'a>, root: &RootNode<'a>) {
@@ -177,7 +217,7 @@ impl Rule for NoBareStringsInTemplate {
             let TemplateChildNode::Text(text) = child else {
                 continue;
             };
-            if has_bare_string(text.content) {
+            if self.has_bare_string(text.content) {
                 ctx.warn_at_with_help(
                     ctx.t("vue/no-bare-strings-in-template.message"),
                     ByteRange::new(text.loc.span.start, text.loc.span.end),
@@ -196,14 +236,62 @@ fn is_target_attribute(tag: &str, binding: &MarkupBinding<'_>) -> bool {
         || (tag == "img" && binding.is_unqualified_arg_exact("alt"))
 }
 
-fn has_bare_string(text: &str) -> bool {
+fn default_has_bare_string(text: &str) -> bool {
     const ALLOWLIST: &[char] = &[
         '(', ')', ',', '.', '&', '+', '-', '=', '*', '/', '#', '%', '!', '?', ':', '[', ']', '{',
         '}', '<', '>', '·', '•', '‐', '–', '—', '−', '|',
     ];
-    text.trim()
-        .chars()
+    text.chars()
         .any(|character| !character.is_whitespace() && !ALLOWLIST.contains(&character))
+}
+
+fn compile_allowlist(entries: &[vize_l0::String]) -> Option<Regex> {
+    let alternatives = entries
+        .iter()
+        .map(|entry| regex_alternative(entry))
+        .collect::<Vec<_>>();
+    if alternatives.is_empty() {
+        return None;
+    }
+    Regex::new(&format!("(?:{})", alternatives.join("|"))).ok()
+}
+
+fn regex_alternative(entry: &str) -> std::string::String {
+    let Some((pattern, flags)) = javascript_regex(entry) else {
+        return regex::escape(entry);
+    };
+    let inline_flags: std::string::String = flags
+        .chars()
+        .filter(|flag| matches!(flag, 'i' | 'm' | 's'))
+        .collect();
+    let candidate = if inline_flags.is_empty() {
+        format!("(?:{pattern})")
+    } else {
+        format!("(?{inline_flags}:{pattern})")
+    };
+    if Regex::new(&candidate).is_ok() {
+        candidate
+    } else {
+        regex::escape(entry)
+    }
+}
+
+fn javascript_regex(value: &str) -> Option<(&str, &str)> {
+    if !value.starts_with('/') {
+        return None;
+    }
+    let end = value.rfind('/')?;
+    if end == 0 {
+        return None;
+    }
+    let flags = value.get(end + 1..)?;
+    if !flags
+        .chars()
+        .all(|flag| matches!(flag, 'd' | 'g' | 'i' | 'm' | 's' | 'u' | 'y'))
+    {
+        return None;
+    }
+    Some((value.get(1..end)?, flags))
 }
 
 fn value_range(source: &str, binding: MarkupBinding<'_>) -> ByteRange {
@@ -231,6 +319,42 @@ mod tests {
         let mut registry = RuleRegistry::new();
         registry.register(Box::new(NoBareStringsInTemplate));
         Linter::with_registry(registry)
+    }
+
+    fn configured(allowlist: Vec<&str>) -> Linter {
+        let mut registry = RuleRegistry::new();
+        registry.register(Box::new(NoBareStringsInTemplate::with_allowlist(Some(
+            allowlist.into_iter().map(Into::into).collect(),
+        ))));
+        Linter::with_registry(registry)
+    }
+
+    #[test]
+    fn configured_literals_and_regex_patterns_remove_real_project_false_positives() {
+        let linter = configured(vec!["Ctrl+K", "/^[DRWXYmvx]$/u", "→", "°"]);
+        for source in [
+            "<kbd>Ctrl+K</kbd>",
+            "<kbd>W</kbd>",
+            "<span>x</span>",
+            "<span>→</span>",
+            "<span>°</span>",
+        ] {
+            let result = linter.lint_template(source, "App.vue");
+            assert_eq!(
+                result.warning_count, 0,
+                "{source}: {:?}",
+                result.diagnostics
+            );
+        }
+        let result = linter.lint_template("<span>Translate me</span>", "App.vue");
+        assert_eq!(result.warning_count, 1, "{:?}", result.diagnostics);
+    }
+
+    #[test]
+    fn authored_empty_allowlist_clears_default_punctuation() {
+        let linter = configured(Vec::new());
+        let result = linter.lint_template("<span>-</span>", "App.vue");
+        assert_eq!(result.warning_count, 1, "{:?}", result.diagnostics);
     }
 
     #[test]

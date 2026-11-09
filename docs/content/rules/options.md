@@ -73,6 +73,10 @@ export default defineConfig({}).withVue({
 | `vue/prop-name-casing` | `{ casing?: "camelCase" \| "snake_case" }` | Defaults to `camelCase`. Checks declared prop names; options do not enable the rule or rename its public API. |
 | `script/define-props-destructuring` | `{ destructure?: "only-when-assigned" \| "always" \| "never" }` | Defaults to `always`, checking assigned and bare typed calls. `only-when-assigned` skips bare calls; `never` requires props-object access. Vue 3.5 destructuring preserves reactivity. |
 | `vue/no-mutating-props` | `{ shallowOnly?: boolean }` | Defaults to `false`; `true` allows nested mutation while still disallowing direct prop reassignment. |
+| `vue/warn-custom-directive` | `{ ignore?: string[] }` | Defaults to an empty list. Exact directive names in `ignore` are treated as registered. |
+| `vue/no-bare-strings-in-template` | `{ allowlist?: string[] }` | Omitted uses the upstream default allowlist; an explicit list replaces it. Entries are literals or JavaScript regex strings. |
+| `a11y/anchor-has-content` | `{ accessibleChildren?: string[] }` | Defaults to an empty list. Named components count as accessible anchor content. |
+| `a11y/label-has-for` | `{ controlComponents?: string[] }` | Defaults to an empty list. Named components count as label controls. |
 | `vue/require-component-registration` | `{ globals?: string[] }` | Explicit application/preview component names; accepts PascalCase and kebab-case spellings. Options do not enable the rule. |
 | `vue/sfc-element-order` | `{ order?: Array<string \| string[]> }` | Defaults to `[["script", "template"], "style"]`. A nested array means any of those block selectors may appear at that rank. |
 | `vue/html-self-closing` | `{ html?: { void?: Style; normal?: Style; component?: Style }; svg?: Style; math?: Style }`, where `Style` is `"always"`, `"never"`, or `"any"` | Defaults match eslint-plugin-vue: `html.void: "never"`, `html.normal: "always"`, `html.component: "always"`, `svg: "always"`, and `math: "always"`. |

@@ -268,6 +268,21 @@ it("projects mustache interpolation spacing into the typed option map", () => {
   assert.equal(getRuleOptions("vue/mustache-interpolation-spacing", ["sometimes"]), undefined);
 });
 
+it("projects real-project allowance options into the typed option map", () => {
+  const authored = {
+    "vue/warn-custom-directive": { ignore: ["hover-tooltip"] },
+    "vue/no-bare-strings-in-template": { allowlist: ["Cancel", "/^[DRWXYmvx]$/u"] },
+    "a11y/anchor-has-content": { accessibleChildren: ["RetryImage"] },
+    "a11y/label-has-for": { controlComponents: ["CInputField"] },
+  };
+
+  for (const [rule, option] of Object.entries(authored)) {
+    assert.deepEqual(getRuleOptions(rule, [option]), {
+      ruleOptions: { [rule]: option },
+    });
+  }
+});
+
 it("projects v-bind style into the typed CLI-compatible option map", () => {
   assert.deepEqual(getRuleOptions("vue/v-bind-style", ["longform"]), {
     ruleOptions: { "vue/v-bind-style": "longform" },

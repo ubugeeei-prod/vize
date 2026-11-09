@@ -9,19 +9,19 @@ Alertar sobre diretivas personalizadas que precisam de registro.
 
 | Severidade padrão | Predefinições | Correção automática | Opções |
 | --- | --- | --- | --- |
-| `warning` | `nuxt`, `opinionated` | Não | Nenhuma |
+| `warning` | `nuxt`, `opinionated` | Não | [Opções das regras](/rules/options.md) |
 
 Aplicável a: Templates e blocos de SFC Vue, com o contexto do script quando exigido pela regra.
+
+Liste os nomes exatos das diretivas registradas globalmente, sem o prefixo v-. Bindings vName locais de script-setup continuam sendo descobertos automaticamente. As opções não ativam a regra; camadas posteriores substituem a lista inteira, e [] remove os nomes herdados.
 
 ## Incorreto
 
 `v-focus`, `v-mask` e `v-click-outside` exigem implementações de diretivas específicas do projeto, que esta convenção opcional sinaliza.
 
-```vue annotate="remove:2,3,4"
+```vue annotate="remove:2"
 <template>
-  <input v-focus />
-  <input v-mask="'###-####'" />
-  <div v-click-outside="handleClose"></div>
+<button type="button" v-focus>Focus</button>
 </template>
 ```
 
@@ -29,11 +29,9 @@ Aplicável a: Templates e blocos de SFC Vue, com o contexto do script quando exi
 
 O exemplo usa as diretivas nativas `v-if`, `v-model` e `v-on`. Uma diretiva personalizada registrada corretamente ainda pode ser válida no Vue quando esta política estiver desativada.
 
-```vue annotate="add:2,3,4"
+```vue annotate="add:2"
 <template>
-  <div v-if="ready"></div>
-  <input v-model="value" />
-  <button type="button" @click="onClick">Save</button>
+<button type="button" v-hover-tooltip="tip">Copy</button>
 </template>
 ```
 
@@ -47,6 +45,13 @@ export default defineConfig({}).withVue({
     "preset": "incremental",
     "rules": {
       "vue/warn-custom-directive": "warn"
+    },
+    "ruleOptions": {
+      "vue/warn-custom-directive": {
+        "ignore": [
+          "hover-tooltip"
+        ]
+      }
     }
   },
 });
@@ -57,5 +62,6 @@ Depois, execute `vp run lint`.
 ## Páginas relacionadas
 
 - [Regras Vue](../vue.md)
+- [Opções das regras](/rules/options.md)
 - [Todas as regras](../all.md)
 - [Código-fonte](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/warn_custom_directive.rs#L44)

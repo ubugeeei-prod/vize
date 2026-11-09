@@ -37,8 +37,32 @@ static META: RuleMeta = RuleMeta {
 };
 
 /// Require labels to have associated form controls
-#[derive(Default)]
-pub struct LabelHasFor;
+pub struct LabelHasFor {
+    control_components: Vec<vize_l0::String>,
+}
+
+#[allow(non_upper_case_globals)]
+/// Default `a11y/label-has-for` rule with no project-local controls.
+pub const LabelHasFor: LabelHasFor = LabelHasFor {
+    control_components: Vec::new(),
+};
+
+impl Default for LabelHasFor {
+    fn default() -> Self {
+        LabelHasFor
+    }
+}
+
+impl LabelHasFor {
+    pub(crate) fn with_control_components(components: Vec<vize_l0::String>) -> Self {
+        Self {
+            control_components: components
+                .into_iter()
+                .map(|name| canonical_component_name(&name))
+                .collect(),
+        }
+    }
+}
 
 const FORM_CONTROL_TAGS: &[&str] = &["input", "select", "textarea"];
 
@@ -57,25 +81,32 @@ fn has_for_attribute(element: &ElementNode) -> bool {
     })
 }
 
-fn has_nested_form_control(children: &[TemplateChildNode]) -> bool {
+fn has_nested_form_control(
+    children: &[TemplateChildNode],
+    control_components: &[vize_l0::String],
+) -> bool {
     for child in children {
         match child {
             TemplateChildNode::Element(el) => {
-                if FORM_CONTROL_TAGS.contains(&el.tag) {
+                if FORM_CONTROL_TAGS.contains(&el.tag)
+                    || matches_component(el.tag, control_components)
+                {
                     return true;
                 }
-                if has_nested_form_control(&el.children) {
+                if has_nested_form_control(&el.children, control_components) {
                     return true;
                 }
             }
             TemplateChildNode::If(if_node) => {
                 for branch in &if_node.branches {
-                    if has_nested_form_control(&branch.children) {
+                    if has_nested_form_control(&branch.children, control_components) {
                         return true;
                     }
                 }
             }
-            TemplateChildNode::For(for_node) if has_nested_form_control(&for_node.children) => {
+            TemplateChildNode::For(for_node)
+                if has_nested_form_control(&for_node.children, control_components) =>
+            {
                 return true;
             }
             _ => {}
@@ -101,7 +132,10 @@ fn has_markup_for(element: &MarkupElement<'_>) -> bool {
 }
 
 /// JSX conditionals and lists count by what they render, as on the lowered path.
-fn has_nested_markup_control(element: &MarkupElement<'_>) -> bool {
+fn has_nested_markup_control(
+    element: &MarkupElement<'_>,
+    control_components: &[vize_l0::String],
+) -> bool {
     let mut found = false;
     element.walk_rendered_children(&mut |child| {
         if let MarkupNode::Element(child) = child {
@@ -109,7 +143,8 @@ fn has_nested_markup_control(element: &MarkupElement<'_>) -> bool {
                 || FORM_CONTROL_TAGS
                     .iter()
                     .any(|tag| child.is_unqualified_tag_exact(tag))
-                || has_nested_markup_control(&child);
+                || matches_component(child.tag(), control_components)
+                || has_nested_markup_control(&child, control_components);
         }
     });
     found
@@ -128,7 +163,7 @@ impl MarkupRule for LabelHasFor {
         if element.kind() == MarkupElementKind::Component
             || !element.is_unqualified_tag_exact("label")
             || has_markup_for(element)
-            || has_nested_markup_control(element)
+            || has_nested_markup_control(element, &self.control_components)
         {
             return;
         }
@@ -162,7 +197,7 @@ impl Rule for LabelHasFor {
         }
 
         // Has nested form control
-        if has_nested_form_control(&element.children) {
+        if has_nested_form_control(&element.children, &self.control_components) {
             return;
         }
 
@@ -172,6 +207,18 @@ impl Rule for LabelHasFor {
             ctx.t("a11y/label-has-for.help"),
         );
     }
+}
+
+fn canonical_component_name(name: &str) -> vize_l0::String {
+    vize_l0::hyphenate(name).to_ascii_lowercase().into()
+}
+
+fn matches_component(tag: &str, configured: &[vize_l0::String]) -> bool {
+    if configured.is_empty() {
+        return false;
+    }
+    let canonical = canonical_component_name(tag);
+    configured.iter().any(|name| name == &canonical)
 }
 
 #[cfg(test)]
@@ -184,6 +231,28 @@ mod tests {
         let mut registry = RuleRegistry::new();
         registry.register(Box::new(LabelHasFor));
         Linter::with_registry(registry)
+    }
+
+    #[test]
+    fn configured_control_component_counts_as_nested_control() {
+        let mut registry = RuleRegistry::new();
+        registry.register(Box::new(LabelHasFor::with_control_components(vec![
+            "CInputField".into(),
+        ])));
+        let linter = Linter::with_registry(registry);
+        for source in [
+            "<label>Name <CInputField /></label>",
+            "<label>Name <c-input-field /></label>",
+        ] {
+            let result = linter.lint_template(source, "test.vue");
+            assert_eq!(
+                result.warning_count, 0,
+                "{source}: {:?}",
+                result.diagnostics
+            );
+        }
+        let result = linter.lint_template("<label>Name <OtherInput /></label>", "test.vue");
+        assert_eq!(result.warning_count, 1, "{:?}", result.diagnostics);
     }
 
     #[test]

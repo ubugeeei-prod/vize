@@ -161,6 +161,20 @@ impl ResolvedLinterRuleGroups {
                     linter =
                         linter.with_no_mutating_props_options(no_mutating_props_options(options));
                 }
+                if let Some(options) = rule_options.warn_custom_directive() {
+                    linter = linter.with_warn_custom_directive_ignore(options.ignore.clone());
+                }
+                if let Some(options) = rule_options.no_bare_strings_in_template() {
+                    linter = linter.with_no_bare_strings_allowlist(options.allowlist.clone());
+                }
+                if let Some(options) = rule_options.anchor_has_content() {
+                    linter =
+                        linter.with_anchor_accessible_children(options.accessible_children.clone());
+                }
+                if let Some(options) = rule_options.label_has_for() {
+                    linter =
+                        linter.with_label_control_components(options.control_components.clone());
+                }
                 if let Some(options) = rule_options.sfc_element_order() {
                     linter =
                         linter.with_sfc_element_order_options(sfc_element_order_options(options));

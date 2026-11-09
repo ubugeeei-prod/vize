@@ -62,6 +62,53 @@ lintRuleOptionsDef: JsonSchema = new JsonSchema {
       additionalProperties = false
     }
     ["vue/no-mutating-props"] = ConfigArtifactDefinitions.noMutatingPropsOptionsDef
+    ["vue/warn-custom-directive"] = new JsonSchema {
+      type = "object"
+      properties {
+        ["ignore"] = new JsonSchema {
+          type = "array"
+          items = new JsonSchema { type = "string" }
+          uniqueItems = true
+          default = new Listing {}
+        }
+      }
+      additionalProperties = false
+    }
+    ["vue/no-bare-strings-in-template"] = new JsonSchema {
+      type = "object"
+      properties {
+        ["allowlist"] = new JsonSchema {
+          type = "array"
+          items = new JsonSchema { type = "string" }
+          uniqueItems = true
+        }
+      }
+      additionalProperties = false
+    }
+    ["a11y/anchor-has-content"] = new JsonSchema {
+      type = "object"
+      properties {
+        ["accessibleChildren"] = new JsonSchema {
+          type = "array"
+          items = new JsonSchema { type = "string" }
+          uniqueItems = true
+          default = new Listing {}
+        }
+      }
+      additionalProperties = false
+    }
+    ["a11y/label-has-for"] = new JsonSchema {
+      type = "object"
+      properties {
+        ["controlComponents"] = new JsonSchema {
+          type = "array"
+          items = new JsonSchema { type = "string" }
+          uniqueItems = true
+          default = new Listing {}
+        }
+      }
+      additionalProperties = false
+    }
     ["vue/require-component-registration"] = new JsonSchema {
       type = "object"
       properties {

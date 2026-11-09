@@ -9,20 +9,19 @@ Interdire le texte brut destiné aux utilisateurs dans les templates lorsqu’il
 
 | Gravité par défaut | Préréglages | Correction automatique | Options |
 | --- | --- | --- | --- |
-| `warning` | Aucune | Non | Aucune |
+| `warning` | Aucune | Non | [Options des règles](/rules/options.md) |
 
 Champ d’application : Templates et blocs des SFC Vue, avec le contexte du script requis par la règle.
+
+Lorsqu'elle est présente, allowlist remplace les valeurs de ponctuation par défaut d'eslint-plugin-vue. Les entrées sont des sous-chaînes littérales ou des valeurs /pattern/flags retirées avant la vérification du texte restant. Omettez allowlist pour conserver les valeurs par défaut ; [] les efface. Les options n'activent pas la règle.
 
 ## Mauvais
 
 Le texte visible et les attributs de nommage contiennent des chaînes non traduites directement dans le template.
 
-```vue annotate="remove:2,3,4,5"
+```vue annotate="remove:2"
 <template>
-<div>hello</div>
-<img alt="a cat" />
-<input placeholder="Search" />
-<button title="Close">x</button>
+<p>Translate me</p>
 </template>
 ```
 
@@ -30,12 +29,9 @@ Le texte visible et les attributs de nommage contiennent des chaînes non tradui
 
 Le contenu traduisible appelle $t ; les exemples de ponctuation et de valeurs uniquement numériques sont des exceptions autorisées.
 
-```vue annotate="add:2,3,4,5"
+```vue annotate="add:2"
 <template>
-<div>{{ $t('hello') }}</div>
-<img :alt="$t('cat')" />
-<div>-</div>
-<button :title="$t('close')">{{ $t('x') }}</button>
+<kbd>W</kbd>
 </template>
 ```
 
@@ -49,6 +45,13 @@ export default defineConfig({}).withVue({
     "preset": "incremental",
     "rules": {
       "vue/no-bare-strings-in-template": "warn"
+    },
+    "ruleOptions": {
+      "vue/no-bare-strings-in-template": {
+        "allowlist": [
+          "/^[DRWXYmvx]$/u"
+        ]
+      }
     }
   },
 });
@@ -59,5 +62,6 @@ Lancez ensuite `vp run lint`.
 ## Voir aussi
 
 - [Règles Vue](../vue.md)
+- [Options des règles](/rules/options.md)
 - [Toutes les règles](../all.md)
-- [Code source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_bare_strings_in_template.rs#L50)
+- [Code source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_bare_strings_in_template.rs#L51)

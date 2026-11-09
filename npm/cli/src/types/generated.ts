@@ -296,6 +296,18 @@ export interface LintRuleOptions {
   "vue/no-mutating-props"?: {
     shallowOnly?: boolean;
   };
+  "vue/warn-custom-directive"?: {
+    ignore?: string[];
+  };
+  "vue/no-bare-strings-in-template"?: {
+    allowlist?: string[];
+  };
+  "a11y/anchor-has-content"?: {
+    accessibleChildren?: string[];
+  };
+  "a11y/label-has-for"?: {
+    controlComponents?: string[];
+  };
   "vue/require-component-registration"?: {
     globals?: string[];
   };

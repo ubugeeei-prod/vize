@@ -9,19 +9,19 @@ Warn about custom directives that need registration.
 
 | Default severity | Presets | Automatic fix | Options |
 | --- | --- | --- | --- |
-| `warning` | `nuxt`, `opinionated` | No | None |
+| `warning` | `nuxt`, `opinionated` | No | [Rule options](../options.md) |
 
 Applies to: Vue SFC templates and blocks, with script context where the rule requires it.
+
+List exact globally registered directive names without the v- prefix. Local script-setup vName bindings are still discovered automatically. Options do not enable the rule; later config layers replace the complete list, and [] clears inherited names.
 
 ## Bad
 
 `v-focus`, `v-mask`, and `v-click-outside` require project-specific directive implementations that this optional convention flags.
 
-```vue annotate="remove:2,3,4"
+```vue annotate="remove:2"
 <template>
-  <input v-focus />
-  <input v-mask="'###-####'" />
-  <div v-click-outside="handleClose"></div>
+<button type="button" v-focus>Focus</button>
 </template>
 ```
 
@@ -29,11 +29,9 @@ Applies to: Vue SFC templates and blocks, with script context where the rule req
 
 The example uses built-in `v-if`, `v-model`, and `v-on`. A correctly registered custom directive can still be valid Vue when this policy is disabled.
 
-```vue annotate="add:2,3,4"
+```vue annotate="add:2"
 <template>
-  <div v-if="ready"></div>
-  <input v-model="value" />
-  <button type="button" @click="onClick">Save</button>
+<button type="button" v-hover-tooltip="tip">Copy</button>
 </template>
 ```
 
@@ -47,6 +45,13 @@ export default defineConfig({}).withVue({
     "preset": "incremental",
     "rules": {
       "vue/warn-custom-directive": "warn"
+    },
+    "ruleOptions": {
+      "vue/warn-custom-directive": {
+        "ignore": [
+          "hover-tooltip"
+        ]
+      }
     }
   },
 });
@@ -57,5 +62,6 @@ Then run `vp run lint`.
 ## Related
 
 - [Vue rules](../vue.md)
+- [Rule options](../options.md)
 - [All rules](../all.md)
 - [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/warn_custom_directive.rs#L44)
