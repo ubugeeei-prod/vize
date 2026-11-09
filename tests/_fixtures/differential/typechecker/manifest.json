@@ -14119,6 +14119,50 @@
       }
     },
     {
+      "id": "typechecker/regression/lib-type-shadowing-emits-12536",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "lib-type-shadowing-emits-12536/Child.vue.txt",
+          "sha256": "5140653d8a1bc8609ea117633c1785eaede9f865a0125acb548f4f17a6697bf2",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "lib-type-shadowing-emits-12536/Parent.vue.txt",
+          "sha256": "65a5cea70df74276d7bb76d6cef32e6b43691696c77fcfd70acade6cc93c0816",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "lib-type-shadowing-emits-12536/Picker.vue.txt",
+          "sha256": "65863801b031d678c640416a462f75b34c27308db4db3df82b01f02752981b6f",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "lib-type-shadowing-emits-12536/tsconfig.json.txt",
+          "sha256": "8f4cc08b465ddf6df35387e36be46136f6b6f7f5f19085ca9d6a3fcc1cda9b31",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "shared_helper_shadowing::authored_lib_types_cannot_capture_the_projection; authored Awaited and ReturnType must not capture the runtime-emit props and event map or the authored default component alias. Input-only batch registration for the shared Canon source change; no native parity claim."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/regression/lib-type-shadowing-setup-return-12536",
       "state": "active",
       "targets": [

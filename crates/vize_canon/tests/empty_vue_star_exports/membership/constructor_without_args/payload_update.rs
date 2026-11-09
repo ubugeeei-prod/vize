@@ -19,6 +19,7 @@ mod input_channels;
 mod instance_input_keys;
 mod integrated_source;
 mod jsx_exact_keys;
+mod lib_type_qualification;
 mod listener_relations;
 mod loose_emit_sdk;
 mod private_emit_sdk;
