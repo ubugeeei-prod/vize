@@ -68,15 +68,17 @@ build receipt step; until that run finishes, the reference match is unverified.
 (`T2/<product>/`) from the Real Project Matrix shard reports. Every pinned
 project gets one case per product (`<product>/real/<project-id>`, with
 `projectId` and the fixture ledger's dialect claims) at the deletion-policy
-target: compiler `dom`, linter `lint`, formatter `fmt`, type checker `batch`,
-LSP `stdio`. The legacy lane is the shard's source-built run, `completed` only
+targets: compiler `dom` and `ssr`, linter `lint`, formatter `fmt`, type checker
+`batch`, LSP `stdio`. The legacy lane is the shard's source-built run, `completed` only
 when it ran and its raw output is in the shard report; a missing shard still
 yields every planned row as `missing-evidence`. The scheduled
 `real-project-differential` job uploads the bundle and appends the tables to
 the run summary. No product has a native-only real-project route yet. The
-compiler `dom` lane reads the canonical DOM corpus: its template stages run
-on the levels, but the SFC script still compiles through Croquis, so each
-project with compared templates is `legacy-backed`, and `equal` only while
-the corpus reports zero divergences (divergences are not attributed to
-projects). Every other native lane is `unsupported`. Compiler `ssr`/`vapor`
-have no T2 rows because the Matrix compiles the default DOM target only.
+compiler `dom` native lane reads the canonical DOM corpus, and both compiler
+`ssr` lanes read the canonical SSR corpus (every template and production SFC
+sweep). Their template stages run on the levels, but the SFC script still
+compiles through Croquis and SSR may select a legacy route, so each project
+with compared templates is `legacy-backed`, and `equal` only while the corpus
+reports zero divergences (divergences are not attributed to projects). Every
+other native lane is `unsupported`. Compiler `vapor` has no real-project
+lane, so it has no T2 rows.

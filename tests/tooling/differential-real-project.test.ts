@@ -7,6 +7,7 @@ import { loadProductManifest } from "../differential/harness.mjs";
 import {
   ledgerPath,
   readDomCorpus,
+  readSsrCorpus,
   readShards,
   realProjectProducts,
   registryPath,
@@ -105,8 +106,8 @@ test("every pinned project gets one shared-format row per product target", () =>
       outDir: out,
     });
     assert.deepEqual(
-      outputs.map(({ product, target }) => `${product}/${target}`),
-      realProjectProducts.map(({ product, target }) => `${product}/${target}`),
+      outputs.map(({ product, report }) => [product, Object.keys(report.summary.targets)]),
+      realProjectProducts.map(({ product, targets }) => [product, [...targets]]),
     );
     for (const { product, report, acceptance } of outputs) {
       const loaded = loadProductManifest(path.join(out, "T2", product, "manifest.json"), product);
@@ -122,9 +123,14 @@ test("every pinned project gets one shared-format row per product target", () =>
       );
       assert.equal(acceptance.scope, "real-projects");
       assert.equal(acceptance.total.nativeHandled, 0);
-      assert.equal(acceptance.total[product === "compiler" ? "unverified" : "unsupported"], 3);
-      const expected = product === "typechecker" ? 2 : 3;
-      assert.equal(report.summary.legacyCompleted, expected, product);
+      assert.equal(
+        acceptance.total[product === "compiler" ? "unverified" : "unsupported"],
+        3 * Object.keys(report.summary.targets).length,
+      );
+      const [first, ...rest] = Object.values<any>(report.summary.targets);
+      assert.equal(first.legacyCompleted, product === "typechecker" ? 2 : 3, product);
+      // Without corpus evidence the SSR legacy lane is missing too.
+      for (const counts of rest) assert.equal(counts.legacyCompleted, 0, product);
     }
     const typechecker = outputs.find(({ product }) => product === "typechecker")!.report;
     assert.equal(typechecker.rows[1].legacy.state, "configuration");
@@ -167,21 +173,78 @@ test("the compiler DOM lane reads the canonical corpus as legacy-backed", () => 
         domCorpus: domCorpus(root, divergences),
       }).outputs.find(({ product }) => product === "compiler")!;
     const clean = run(0);
+    const dom = (report: any) => report.rows.filter((row: any) => row.target === "dom");
     assert.deepEqual(
-      clean.report.rows.map((row: any) => [row.native.state, row.comparison.state]),
+      dom(clean.report).map((row: any) => [
+        row.legacy.state,
+        row.native.state,
+        row.comparison.state,
+      ]),
       [
-        ["legacy-backed", "equal"],
-        ["unverified", "not-compared"],
-        ["legacy-backed", "equal"],
+        ["completed", "legacy-backed", "equal"],
+        ["completed", "unverified", "not-compared"],
+        ["completed", "legacy-backed", "equal"],
       ],
     );
-    assert.equal(clean.report.rows[0].native.observation.files, 2);
-    assert.equal(clean.report.summary.comparedEqual, 2);
-    assert.equal(clean.acceptance.total.legacyBacked, 2);
+    assert.equal(dom(clean.report)[0].native.observation.files, 2);
+    assert.equal(clean.report.summary.targets.dom.comparedEqual, 2);
+    assert.equal(clean.acceptance.targets.dom.legacyBacked, 2);
     assert.equal(clean.acceptance.total.nativeHandled, 0);
     const diverged = run(1);
-    assert.equal(diverged.report.rows[0].comparison.state, "not-attributed");
-    assert.equal(diverged.report.summary.comparedEqual, 0);
+    assert.equal(dom(diverged.report)[0].comparison.state, "not-attributed");
+    assert.equal(diverged.report.summary.targets.dom.comparedEqual, 0);
+  });
+});
+
+function ssrCorpus(root: string, lines: string[], outcome = "success") {
+  const dir = path.join(root, "ssr-corpus");
+  fs.mkdirSync(dir, { recursive: true });
+  fs.writeFileSync(path.join(dir, "ssr-pug.log"), `noise\n${lines.join("\nnoise\n")}\n`);
+  writeJson(path.join(dir, "observer.json"), { outcome });
+  writeJson(path.join(dir, "files.json"), [["alpha/App.vue", "e".repeat(64), 10, "f".repeat(40)]]);
+  return readSsrCorpus(dir);
+}
+
+test("both SSR lanes come from every SSR corpus sweep", () => {
+  withRoot((root, artifacts, out) => {
+    shard(artifacts, 0, ["alpha", "beta", "gamma"]);
+    const sweep = (kind: string, divergences: number, scope = "canonical") =>
+      `x SSR ${kind} sweep: scope=${scope} templates=9 compared=8 divergences=${divergences}`;
+    const ssr = (corpus: ReturnType<typeof readSsrCorpus>) =>
+      writeRealProjectResults({
+        root,
+        sourceRevision,
+        shards: readShards(artifacts),
+        outDir: out,
+        ssrCorpus: corpus,
+      })
+        .outputs.find(({ product }) => product === "compiler")!
+        .report.rows.filter((row: any) => row.target === "ssr")
+        .map((row: any) => [row.legacy.state, row.native.state, row.comparison.state]);
+    const shards = [
+      sweep("corpus", 0),
+      sweep("production", 0),
+      sweep("corpus", 0),
+      sweep("production", 0),
+    ];
+    assert.deepEqual(ssr(ssrCorpus(root, shards)), [
+      ["completed", "legacy-backed", "equal"],
+      ["unverified", "unverified", "not-compared"],
+      ["unverified", "unverified", "not-compared"],
+    ]);
+    assert.deepEqual(ssr(ssrCorpus(root, [...shards, sweep("production", 2)]))[0], [
+      "completed",
+      "legacy-backed",
+      "not-attributed",
+    ]);
+    const unverified = ["unverified", "unverified", "not-compared"];
+    for (const corpus of [
+      ssrCorpus(root, [sweep("corpus", 0)]),
+      ssrCorpus(root, [...shards, sweep("corpus", 0, "committed")]),
+      ssrCorpus(root, shards, "failure"),
+    ]) {
+      assert.deepEqual(ssr(corpus)[0], unverified);
+    }
   });
 });
 
@@ -196,12 +259,17 @@ test("a missing shard or raw output still yields every planned row", () => {
       outDir: out,
     });
     for (const { product, report } of outputs) {
-      assert.equal(report.rows.length, 3);
-      assert.equal(report.rows[1].legacy.state, "missing-evidence", product);
+      const targets = Object.keys(report.summary.targets);
+      assert.equal(report.rows.length, 3 * targets.length);
+      const beta = report.rows.filter((row: any) => row.id.endsWith("/beta"));
+      assert(
+        beta.every((row: any) => row.legacy.state === "missing-evidence"),
+        product,
+      );
     }
     const formatter = outputs.find(({ product }) => product === "formatter")!.report;
     assert.equal(formatter.rows[2].legacy.state, "missing-evidence");
-    assert.equal(formatter.summary.legacyCompleted, 1);
+    assert.equal(formatter.summary.targets.fmt.legacyCompleted, 1);
   });
 });
 

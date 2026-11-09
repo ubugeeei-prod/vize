@@ -278,7 +278,7 @@ test("passive native LSP capture retains the complete original Matrix workflow",
   assert.deepEqual(differential.permissions, { contents: "read", actions: "read" });
   assert.equal(
     differential.steps.at(-2).run,
-    "node tests/differential/real-project.ts real-project-shards real-project-differential dom-corpus",
+    "node tests/differential/real-project.ts real-project-shards real-project-differential dom-corpus ssr-corpus",
   );
   delete current.jobs["real-project-differential"];
   assert.deepEqual(current.permissions, { contents: "read" });
