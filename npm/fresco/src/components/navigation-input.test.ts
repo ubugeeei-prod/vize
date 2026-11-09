@@ -12,6 +12,12 @@ function textLines(mounted: ReturnType<typeof mountFresco>): string[] {
     .filter((text): text is string => text !== undefined);
 }
 
+function tabLabels(mounted: ReturnType<typeof mountFresco>): string[] {
+  return findNodes(mounted.root, (node) => node.props["data-tab-index"] !== undefined)
+    .map((node) => node.text)
+    .filter((text): text is string => text !== undefined);
+}
+
 test("Tabs navigates enabled labels and activates with Enter or Space", async () => {
   const value = ref("overview");
   const changes: string[] = [];
@@ -40,6 +46,47 @@ test("Tabs navigates enabled labels and activates with Enter or Space", async ()
   await dispatchKey({ char: " " });
   assert.equal(value.value, "overview");
   assert.deepEqual(changes, ["settings", "overview"]);
+  mounted.unmount();
+});
+
+test("Tabs preserves object values while keeping the active tab visible", async () => {
+  const alpha = { id: 1, name: "Alpha" };
+  const charlie = { id: 3, name: "Charlie" };
+  const delta = { id: 4, name: "Delta" };
+  const value = ref({ id: 1, name: "Copy" });
+  const changes: (typeof alpha)[] = [];
+  const mounted = mountFresco(() =>
+    h(Tabs, {
+      tabs: [
+        { key: "alpha", label: "Alpha", value: alpha },
+        { key: "bravo", label: "Bravo", disabled: true, value: { id: 2, name: "Bravo" } },
+        { key: "charlie", label: "Charlie", value: charlie },
+        { key: "delta", label: "Delta", value: delta },
+      ],
+      modelValue: value.value,
+      by: "id",
+      focused: true,
+      maxItems: 2,
+      "onUpdate:modelValue": (next: typeof alpha) => {
+        value.value = next;
+      },
+      onChange: (next: typeof alpha) => changes.push(next),
+    }),
+  );
+
+  assert.deepEqual(tabLabels(mounted), ["Alpha", "Bravo"]);
+  await dispatchKey({ key: "right" });
+  assert.deepEqual(tabLabels(mounted), ["Bravo", "Charlie"]);
+  await dispatchKey({ key: "enter" });
+  assert.deepEqual(value.value, charlie);
+  assert.equal(changes[0], charlie);
+
+  await typeChars("d");
+  assert.deepEqual(tabLabels(mounted), ["Charlie", "Delta"]);
+  await dispatchKey({ key: "enter" });
+  assert.deepEqual(value.value, delta);
+  assert.equal(changes[1], delta);
+  assert.deepEqual(changes, [charlie, delta]);
   mounted.unmount();
 });
 
