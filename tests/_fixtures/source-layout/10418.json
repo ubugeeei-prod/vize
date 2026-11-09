@@ -344,7 +344,7 @@
     "tools/support/editors/zed_workspace_profile.rs": "tools/commands/editors/zed/workspace_profile.rs",
     "tools/support/fixture_inputs.rs": "tools/support/compat/fixtures/tool-matrix-inputs.ts",
     "tools/support/fixture_programs.rs": "tools/support/compat/fixtures/tool-matrix-typechecker.ts",
-    "tools/support/release/semver_git_baseline.rs": "tools/commands/ci/github/git_baseline.rs",
+    "tools/support/release/semver_git_baseline.rs": "tools/commands/ci/github/semver-baseline.ts",
     "tools/support/typecheck_baseline_usability.rs": "tools/commands/fixtures/baseline_usability.rs",
     "tools/support/typecheck_mutation_recovery.rs": "tools/commands/fixtures/project_deadline/recovery.rs",
     "tools/support/typecheck_process_session.rs": "tools/commands/fixtures/project_deadline/process_session.rs",
