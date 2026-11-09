@@ -159,32 +159,15 @@ import PrimaryButton from "./PrimaryButton.vue";
 
 ## `vue/slot-name-casing`
 
-Choose `"camelCase"`, `"kebab-case"`, or `"singleword"` for static names on rendered
-`<slot>` outlets. The default is `"camelCase"`. Dynamic `:name` bindings and provider-side
-`v-slot` or `#name` syntax are outside this rule.
+Choose `"camelCase"`, `"kebab-case"`, or `"singleword"` for static names on rendered `<slot>`
+outlets. The default is `"camelCase"`; dynamic names and provider-side syntax are outside the rule.
 
 ```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-
-export default defineConfig({}).withVue({
-  linter: {
-    rules: { "vue/slot-name-casing": "warn" },
-    ruleOptions: { "vue/slot-name-casing": "kebab-case" },
-  },
-});
+const ruleOptions = { "vue/slot-name-casing": "kebab-case" };
 ```
 
-Bad with this config:
-
-```vue
-<slot name="itemContent" />
-```
-
-Good with this config:
-
-```vue
-<slot name="item-content" />
-```
+Bad with this config: `<slot name="itemContent" />`
+Good with this config: `<slot name="item-content" />`
 
 ## `vue/no-mutating-props`
 
