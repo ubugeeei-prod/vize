@@ -18,6 +18,7 @@ import {
   beforeCanonLeftovers,
 } from "../../support/compat/content-mapper/strict-extra-keys-transition.ts";
 import { applyEmitMemberInferIn } from "../../support/compat/content-mapper/emit-member-infer-transition.ts";
+import { applyInstanceInputKeysIn } from "../../support/compat/content-mapper/instance-input-keys-transition.ts";
 
 export const canonLeftoverPreamblePaths = [
   "crates/vize_canon/src/virtual_ts/component_prop_helpers.txt",
@@ -72,11 +73,15 @@ export function slotCliPacket(
   const certifiedPreamble = applyCurrentSlotPreamble(
     applySourceOwnedPreambleTransitions(applyPreviousOverloadPreamble(text)),
   );
-  const currentPreamble = applyCanonLeftoverPreamble(
-    applyEmitMemberInferIn(
-      applyStrictExtraKeysIn(
-        applyDiscriminatedJsxUnionIn(
-          applyIntegratedSourcePreambleTransitions(applyCurrentOverloadPreamble(certifiedPreamble)),
+  const currentPreamble = applyInstanceInputKeysIn(
+    applyCanonLeftoverPreamble(
+      applyEmitMemberInferIn(
+        applyStrictExtraKeysIn(
+          applyDiscriminatedJsxUnionIn(
+            applyIntegratedSourcePreambleTransitions(
+              applyCurrentOverloadPreamble(certifiedPreamble),
+            ),
+          ),
         ),
       ),
     ),

@@ -30,8 +30,8 @@ fn expected(config: &Path, root: &Path, file: &Path, source: &str) -> Value {
             compiler.as_object().unwrap(),
         )
         .unwrap();
-    serde_json::to_value(
-        generate_vue_content_mapper_transform_with_project_options(
+    super::dispatch::wire_value(
+        &generate_vue_content_mapper_transform_with_project_options(
             file,
             source,
             settings.transform_options,
@@ -39,7 +39,6 @@ fn expected(config: &Path, root: &Path, file: &Path, source: &str) -> Value {
         )
         .unwrap(),
     )
-    .unwrap()
 }
 
 #[test]

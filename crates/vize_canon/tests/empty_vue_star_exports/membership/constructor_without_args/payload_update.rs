@@ -16,6 +16,7 @@ mod emit_props_twins;
 mod extra_keys_policy;
 mod generic_event_specialization;
 mod input_channels;
+mod instance_input_keys;
 mod integrated_source;
 mod jsx_exact_keys;
 mod listener_relations;
@@ -27,6 +28,7 @@ mod public_base_keys;
 mod public_instance;
 mod required_keys_short_circuit;
 mod runtime_prop_call;
+mod static_emit_gate;
 mod strict_extra_keys;
 
 const RECORD: &str = "malformed-membership/slot-provider-payload-update-11027.json";

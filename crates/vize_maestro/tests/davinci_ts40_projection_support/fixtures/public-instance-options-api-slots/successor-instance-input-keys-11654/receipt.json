@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "pullRequest": 12446,
+  "predecessor": {
+    "path": "successor-canon-leftovers-11499/projection-record.txt",
+    "bytes": 2234,
+    "sha256": "9c9e8db26c67dd0620f64843e7e3557b7df16a5e2f00447c8f401701c06aac3b"
+  },
+  "successor": {
+    "path": "successor-instance-input-keys-11654/projection-record.txt",
+    "bytes": 2234,
+    "sha256": "f04110150222566f9a11abdebb75b477add133bae135ef0d2ce148081c7a6632"
+  },
+  "delta": {
+    "canonGeneratedTextBytes": 168,
+    "contentMapperGeneratedTextBytes": 168,
+    "maestroGeneratedTextBytes": 168,
+    "contentMapperMappings": 0,
+    "contentMapperAuthoredHits": 0
+  },
+  "nativeAcceptanceCredit": false,
+  "scope": "Local exact record for #11654: the TSX instance key set is listed without per-DOM-key Exclude chains. Every projection grows by the 168-byte helper edit; mapping, diagnostic and authored-hit counts are unchanged, so the changed coordinate hashes are derived relocation. No native TypeScript consumer acceptance credit."
+}

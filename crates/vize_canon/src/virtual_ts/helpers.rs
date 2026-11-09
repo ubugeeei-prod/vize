@@ -26,7 +26,7 @@ pub(crate) use preamble::{EMIT_OVERLOAD_HELPERS, EMIT_PROPS_HELPER, SETUP_SCOPE_
 use vue2_members::VUE2_INSTANCE_MEMBERS;
 pub(crate) use vue2_members::is_vue2_instance_member;
 
-use super::types::VirtualTsOptions;
+use super::types::{TemplateGlobal, VirtualTsOptions};
 use vize_carton::config::VueVersion;
 use vize_carton::{String, append};
 
@@ -46,8 +46,13 @@ pub(crate) fn generate_template_context(
 ) -> String {
     let mut ctx = String::default();
 
-    let needs_global_helper =
-        !options.template_globals.is_empty() || !options.css_modules.is_empty();
+    // Declared only when referenced: every file would otherwise declare and
+    // check the three aliases, which TypeScript cannot share across files.
+    let needs_global_helper = options
+        .template_globals
+        .iter()
+        .any(TemplateGlobal::uses_context_helper)
+        || !options.css_modules.is_empty();
 
     // Instance type + conditional accessor helper
     let vue2_dialect = legacy_vue2 || matches!(dialect, VueVersion::V2 | VueVersion::V2_7);

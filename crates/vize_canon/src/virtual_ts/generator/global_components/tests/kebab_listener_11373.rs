@@ -82,7 +82,7 @@ fn original_mapper_outputs_keep_typed_global_declarations_before_values() {
             "{id}: {}",
             transform.text
         );
-        let call = format!("_emit_resolver)({reference})");
+        let call = format!(", typeof {reference}>)({reference}); const __vize_emit_props_");
         if id == "src/GlobalComponentListener.vue" {
             let call_start = transform
                 .text

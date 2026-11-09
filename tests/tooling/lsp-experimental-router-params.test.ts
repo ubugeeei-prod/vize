@@ -15,6 +15,7 @@ import {
 import { root } from "./support/lsp/paths.ts";
 import { LspSession } from "./support/lsp/session.ts";
 import { assertCanonLeftoversGolden } from "./support/lsp/experimental-router-canon-leftovers.ts";
+import { instanceInputKeysPredecessor } from "./support/lsp/experimental-router-instance-input-keys.ts";
 import { resolveTypecheckRuntime } from "./support/typecheck-dependency.ts";
 import { writeVueConfigFixture } from "./support/vue-config-fixture.ts";
 
@@ -63,14 +64,17 @@ function normalize(
 }
 
 function generatedGolden(expected: Golden, kind: "valid" | "invalid"): string {
-  const entry = expected.generated[kind];
-  const transitionFile = entry.file.replace(".canon-leftovers", "");
+  const golden = expected.generated[kind];
   assert.match(
-    entry.file,
-    /^(?:lf|crlf|explicit)\.(?:valid|invalid)(?:\.canon-leftovers)?\.virtual\.ts\.txt$/u,
+    golden.file,
+    /^(?:lf|crlf|explicit)\.(?:valid|invalid)(?:\.canon-leftovers|\.instance-input-keys)?\.virtual\.ts\.txt$/u,
   );
-  const bytes = fs.readFileSync(path.join(custody, entry.file));
-  assert.equal(createHash("sha256").update(bytes).digest("hex"), entry.sha256);
+  const goldenBytes = fs.readFileSync(path.join(custody, golden.file));
+  assert.equal(createHash("sha256").update(goldenBytes).digest("hex"), golden.sha256);
+  const predecessor = instanceInputKeysPredecessor(custody, root, golden, goldenBytes);
+  const entry = predecessor?.entry ?? golden;
+  const bytes = predecessor?.bytes ?? goldenBytes;
+  const transitionFile = entry.file.replace(".canon-leftovers", "");
   const historicalReceipt = fs.readFileSync(path.join(custody, "integrated-current-11964.json"));
   assert.equal(
     createHash("sha256").update(historicalReceipt).digest("hex"),
@@ -146,7 +150,7 @@ function generatedGolden(expected: Golden, kind: "valid" | "invalid"): string {
     createHash("sha256").update(integratedSource).digest("hex"),
     successor.integratedSource.sha256,
   );
-  const current = bytes.toString("utf8");
+  const current = goldenBytes.toString("utf8");
   const strictExtraSource = canonLeftovers
     ? fs.readFileSync(path.join(custody, transitionFile), "utf8")
     : current;

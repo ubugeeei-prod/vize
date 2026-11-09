@@ -33,12 +33,12 @@ type CurrentPacketProvenance = {
 export function assertCurrentPacketProvenance(provenance: CurrentPacketProvenance): void {
   assert.deepEqual(provenance.artifact, {
     repository: "ubugeeei-prod/vize",
-    run: 42480778738,
-    job: 128734903108,
-    id: 13617534399,
-    name: "instance-globals-10617-dbc3ab84a7799535d6489d715ac252c7453324bc-1",
-    digest: "sha256:5f44a68c1627cef54f381bafaf632a745c72dc461309e9aba597c714d69b2fc2",
-    bytes: 18669937,
+    run: 42628370735,
+    job: 129198720061,
+    id: 13681080320,
+    name: "instance-globals-10617-11e4add58056f6dabc81a32ce94db94db1cdbce0-1",
+    digest: "sha256:ec4071b01f99551e15eed50ecbd46a5f7783563af188ffbe8fe3ced0a00b68b4",
+    bytes: 18672687,
   });
   assert.deepEqual(provenance.capturedQualification, {
     totalOutcomes: 499,
@@ -47,7 +47,7 @@ export function assertCurrentPacketProvenance(provenance: CurrentPacketProvenanc
     status: "unqualified",
     fullPacketQualification: false,
     hostMatrixQualification: false,
-    gapIds: ["whole-packet/lf/options-own-method", "whole-packet/crlf-unicode/options-own-method"],
+    gapIds: ["whole-packet/lf/css-module", "whole-packet/crlf-unicode/css-module"],
   });
   assert.deepEqual(provenance.review, {
     completePackets: 80,
@@ -57,6 +57,6 @@ export function assertCurrentPacketProvenance(provenance: CurrentPacketProvenanc
     publicPackageAcceptanceCredit: false,
     performanceCredit: false,
     reason:
-      "The exact #11499 constructor base shifted the two Options API packets while all 497 semantic, protocol, mapping-geometry, and real-host controls passed; this record retains the observed postimages without assigning acceptance credit to the stale-golden run.",
+      "The template context no longer declares $GlobalContextIsAny, $GlobalContextProperty and __Global when every template global carries its own type, so the two CSS-module packets lost exactly those 293 bytes and every later generated coordinate moved by 293 while all 497 semantic, protocol, mapping-geometry, and real-host controls passed; this record retains the observed postimages without assigning acceptance credit to the stale-golden run.",
   });
 }

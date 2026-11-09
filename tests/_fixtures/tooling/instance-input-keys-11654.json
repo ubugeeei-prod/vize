@@ -1,0 +1,79 @@
+{
+  "schema": "vize.instanceInputKeysSource.v1",
+  "issue": 11654,
+  "credit": {
+    "compiled": false,
+    "native": false,
+    "performance": false
+  },
+  "files": [
+    {
+      "path": "crates/vize_canon/src/virtual_ts/component_prop_helpers.txt",
+      "before": {
+        "bytes": 6026,
+        "sha256": "78d6af92022c9779819704cfb63b91955101396c4929bde5e6dddc308e546b2a"
+      },
+      "after": {
+        "bytes": 6194,
+        "sha256": "f5c64fa32e5781b4db723f00a7a4832339c83da755b47016fa58fe62eeda76cd"
+      },
+      "hunks": [
+        {
+          "before": "type $ComponentInstanceFor<I, O, B, T, Declared, Authored, Jsx> = $IsAny<Authored> extends true ? I : $IsUnknown<Authored> extends true ? $UsePublicInstance<Jsx> extends true ? I : $ReplaceComponentProps<O, Pick<$AuthoredKeyWitness<Jsx>, keyof Jsx & $ComponentMetadataKeys<$ComponentInputProps<T, Declared>>> & (T extends unknown ? $ComponentInputProps<T, Declared> & $ComponentInputGuard<T, Declared, Jsx> : never)> & B : $ReplaceComponentProps<O, $ComponentInputProps<T, Declared> & $ComponentMissingInputGuard<T, Authored>> & B;",
+          "after": "type $ComponentInstanceFor<I, O, B, T, Declared, Authored, Jsx> = $IsAny<Authored> extends true ? I : $IsUnknown<Authored> extends true ? $UsePublicInstance<Jsx> extends true ? I : $ReplaceComponentProps<O, Pick<$AuthoredKeyWitness<Jsx>, keyof Jsx & ($IsAny<Declared & $PublicComponentInputProps> extends true ? never : T extends unknown ? keyof Partial<T> | keyof Partial<$KebabProps<T>> | keyof Declared | keyof $FallthroughAttrs | keyof $PublicComponentInputProps : never)> & (T extends unknown ? $ComponentInputProps<T, Declared> & $ComponentInputGuard<T, Declared, Jsx> : never)> & B : $ReplaceComponentProps<O, $ComponentInputProps<T, Declared> & $ComponentMissingInputGuard<T, Authored>> & B;"
+        }
+      ]
+    },
+    {
+      "path": "npm/cli/virtual-ts-globals.d.ts",
+      "before": {
+        "bytes": 17539,
+        "sha256": "f478b29b50fa585df10ae616e6f1f996434c570f332feabbc47200e87fa70d1a"
+      },
+      "after": {
+        "bytes": 17941,
+        "sha256": "88442da38f5ecece9486a765b343d4f3ba92213ded2fc804da89e23179a52749"
+      },
+      "hunks": [
+        {
+          "before": "                keyof Jsx & $ComponentMetadataKeys<$ComponentInputProps<T, Declared>>",
+          "after": "                keyof Jsx &\n                  ($IsAny<Declared & $PublicComponentInputProps> extends true\n                    ? never\n                    : T extends unknown\n                      ?\n                          | keyof Partial<T>\n                          | keyof Partial<$KebabProps<T>>\n                          | keyof Declared\n                          | keyof $FallthroughAttrs\n                          | keyof $PublicComponentInputProps\n                      : never)"
+        }
+      ]
+    },
+    {
+      "path": "npm/cli/generated/content-mapper-types.d.ts",
+      "before": {
+        "bytes": 12471,
+        "sha256": "46249a8d8376f1cce15ceca1f226cc6fbb577bfe6cc078cf7182e552931b7dbe"
+      },
+      "after": {
+        "bytes": 12853,
+        "sha256": "3b7b803952199611e63b6f2a200d49bc0e9fb21cd826b4cefc217798c94bc790"
+      },
+      "hunks": [
+        {
+          "before": "              keyof Jsx & $ComponentMetadataKeys<$ComponentInputProps<T, Declared>>",
+          "after": "              keyof Jsx &\n                ($IsAny<Declared & $PublicComponentInputProps> extends true\n                  ? never\n                  : T extends unknown\n                    ?\n                        | keyof Partial<T>\n                        | keyof Partial<$KebabProps<T>>\n                        | keyof Declared\n                        | keyof $FallthroughAttrs\n                        | keyof $PublicComponentInputProps\n                    : never)"
+        }
+      ]
+    }
+  ],
+  "compiledPreamble": {
+    "path": "vize_canon::virtual_ts::SHARED_PREAMBLE_DTS",
+    "before": {
+      "bytes": 48765,
+      "sha256": "6736ed0e3285ff4fb0e10994442a45c2d4d2fcbfdbb3df5d88532d91cd6bf8e7"
+    },
+    "after": {
+      "bytes": 48933,
+      "sha256": "4ac5a2792ccf21f8bf82a1548e6cf2386814ab41fcf3f62c2f173ac2bfe08c25"
+    },
+    "hunks": [
+      {
+        "before": "type $ComponentInstanceFor<I, O, B, T, Declared, Authored, Jsx> = $IsAny<Authored> extends true ? I : $IsUnknown<Authored> extends true ? $UsePublicInstance<Jsx> extends true ? I : $ReplaceComponentProps<O, Pick<$AuthoredKeyWitness<Jsx>, keyof Jsx & $ComponentMetadataKeys<$ComponentInputProps<T, Declared>>> & (T extends unknown ? $ComponentInputProps<T, Declared> & $ComponentInputGuard<T, Declared, Jsx> : never)> & B : $ReplaceComponentProps<O, $ComponentInputProps<T, Declared> & $ComponentMissingInputGuard<T, Authored>> & B;",
+        "after": "type $ComponentInstanceFor<I, O, B, T, Declared, Authored, Jsx> = $IsAny<Authored> extends true ? I : $IsUnknown<Authored> extends true ? $UsePublicInstance<Jsx> extends true ? I : $ReplaceComponentProps<O, Pick<$AuthoredKeyWitness<Jsx>, keyof Jsx & ($IsAny<Declared & $PublicComponentInputProps> extends true ? never : T extends unknown ? keyof Partial<T> | keyof Partial<$KebabProps<T>> | keyof Declared | keyof $FallthroughAttrs | keyof $PublicComponentInputProps : never)> & (T extends unknown ? $ComponentInputProps<T, Declared> & $ComponentInputGuard<T, Declared, Jsx> : never)> & B : $ReplaceComponentProps<O, $ComponentInputProps<T, Declared> & $ComponentMissingInputGuard<T, Authored>> & B;"
+      }
+    ]
+  }
+}

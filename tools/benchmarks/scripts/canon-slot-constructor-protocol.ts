@@ -13,6 +13,7 @@ import {
   writeFileSync,
 } from "node:fs";
 import { join, resolve } from "node:path";
+import { sixElementTuples } from "../../support/compat/content-mapper/wire-tuples.ts";
 
 const record = (value: unknown): value is Record<string, unknown> =>
   value !== null && typeof value === "object" && !Array.isArray(value);
@@ -85,7 +86,9 @@ export function slotResponses(bytes: Buffer) {
       Number.isSafeInteger(length) && length > 0 && length <= bytes.length - start,
       "response byte length exceeds complete payload",
     );
-    const value: unknown = JSON.parse(utf8.decode(bytes.subarray(start, start + length)));
+    const value: unknown = sixElementTuples(
+      JSON.parse(utf8.decode(bytes.subarray(start, start + length))),
+    );
     assert.ok(record(value), "response must be an object");
     assert.equal(value.jsonrpc, "2.0");
     assert.equal(value.id, responses.length + 1, "all four IDs must occur once in order");
