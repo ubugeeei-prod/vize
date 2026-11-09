@@ -60,3 +60,48 @@ fn unsupported_regex_syntax_falls_back_to_a_literal() {
         unsupported.diagnostics
     );
 }
+
+#[test]
+fn literal_removal_is_order_independent_and_does_not_join_new_matches() {
+    for allowlist in [
+        vec!["+", "-", "&", "Ctrl+K", "xxxxx-xxxxx-xxxxx-xxxxx-xxxxx"],
+        vec!["xxxxx-xxxxx-xxxxx-xxxxx-xxxxx", "Ctrl+K", "+", "-", "&"],
+    ] {
+        let linter = configured(allowlist);
+        assert_eq!(
+            linter
+                .lint_template("<p>Ctrl+K</p>", "App.vue")
+                .warning_count,
+            0
+        );
+        assert_eq!(
+            linter
+                .lint_template("<p>Ctrlxxxxx-xxxxx-xxxxx-xxxxx-xxxxx+K</p>", "App.vue",)
+                .warning_count,
+            1
+        );
+    }
+}
+
+#[test]
+fn uses_the_javascript_trim_set_and_reads_parenthesized_v_text_literals() {
+    let linter = configured(vec![]);
+    assert_eq!(
+        linter
+            .lint_template("<p>\u{feff}</p>", "App.vue")
+            .warning_count,
+        0
+    );
+    assert_eq!(
+        linter
+            .lint_template("<p>\u{0085}</p>", "App.vue")
+            .warning_count,
+        1
+    );
+    assert_eq!(
+        linter
+            .lint_template(r#"<p v-text="('Save')" />"#, "App.vue")
+            .warning_count,
+        1
+    );
+}
