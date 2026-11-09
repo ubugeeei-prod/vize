@@ -6,14 +6,14 @@
   "previousProviderQualificationRecord": {
     "path": "tests/_fixtures/differential/typechecker/empty-vue-star-exports/malformed-membership/provider-create-fresco-update-12233.json",
     "bytes": 2354,
-    "sha256": "46b46aa009af8ce08751a9ba83f3940adfb6b2c71424bdc7accbf1740e2838cb",
-    "gitBlob": "9c409923a7b4de3acaf1740c20b0c4714ddab408"
+    "sha256": "204af49ff268ee250bf328796c6e5abccc034cd116d94dac0439475568a536a6",
+    "gitBlob": "48104e3cc8f2359c658625fbf6751f6ff1c859b8"
   },
   "previousQualificationLock": {
     "path": "pnpm-lock.yaml",
-    "bytes": 1095942,
-    "sha256": "003ad210d2b173d268ea193c4953b590d29cd18155fbd640dab24ee052115cd5",
-    "gitBlob": "d6933ba830e9211e68071451ba03f37a2d50556c"
+    "bytes": 1088594,
+    "sha256": "758cc5b9aa62088f2073d8c9c8007e5c64a026fa53f9e0a7690d660ffa55e61f",
+    "gitBlob": "ddc7657ebdf12e8c671948f43071456c674a0b74"
   },
   "previousQualificationPackage": {
     "path": "package.json",
@@ -23,9 +23,9 @@
   },
   "finalQualificationLock": {
     "path": "pnpm-lock.yaml",
-    "bytes": 1095942,
-    "sha256": "003ad210d2b173d268ea193c4953b590d29cd18155fbd640dab24ee052115cd5",
-    "gitBlob": "d6933ba830e9211e68071451ba03f37a2d50556c"
+    "bytes": 1088594,
+    "sha256": "758cc5b9aa62088f2073d8c9c8007e5c64a026fa53f9e0a7690d660ffa55e61f",
+    "gitBlob": "ddc7657ebdf12e8c671948f43071456c674a0b74"
   },
   "finalQualificationPackage": {
     "path": "package.json",
@@ -47,7 +47,7 @@
   },
   "resolver": {
     "command": "vp install --lockfile-only --no-frozen-lockfile --ignore-scripts",
-    "fixedPointSha256": "003ad210d2b173d268ea193c4953b590d29cd18155fbd640dab24ee052115cd5"
+    "fixedPointSha256": "758cc5b9aa62088f2073d8c9c8007e5c64a026fa53f9e0a7690d660ffa55e61f"
   },
   "nativeAcceptanceCredit": false,
   "scope": "Bind the executable documentation metadata generator to the complete docs manifest while preserving the exact generated dependency graph. This record gives source provenance only."

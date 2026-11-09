@@ -23,9 +23,9 @@
   },
   "finalQualificationLock": {
     "path": "pnpm-lock.yaml",
-    "bytes": 1095942,
-    "sha256": "003ad210d2b173d268ea193c4953b590d29cd18155fbd640dab24ee052115cd5",
-    "gitBlob": "d6933ba830e9211e68071451ba03f37a2d50556c"
+    "bytes": 1088594,
+    "sha256": "758cc5b9aa62088f2073d8c9c8007e5c64a026fa53f9e0a7690d660ffa55e61f",
+    "gitBlob": "ddc7657ebdf12e8c671948f43071456c674a0b74"
   },
   "finalQualificationPackage": {
     "path": "package.json",
@@ -47,7 +47,7 @@
   },
   "resolver": {
     "command": "vp install --lockfile-only --no-frozen-lockfile --ignore-scripts",
-    "fixedPointSha256": "003ad210d2b173d268ea193c4953b590d29cd18155fbd640dab24ee052115cd5"
+    "fixedPointSha256": "758cc5b9aa62088f2073d8c9c8007e5c64a026fa53f9e0a7690d660ffa55e61f"
   },
   "nativeAcceptanceCredit": false,
   "scope": "Add the npm-only create-fresco workspace importer, bind its complete package contract, and preserve the exact generated dependency graph. This record gives source provenance only."

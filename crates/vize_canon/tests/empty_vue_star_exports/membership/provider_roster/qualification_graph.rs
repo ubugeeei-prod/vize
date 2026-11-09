@@ -17,15 +17,11 @@ use docs_metadata::{
     update as docs_metadata_update, verify as verify_docs_metadata_update,
 };
 mod strict_checker;
-use strict_checker::{
-    CHECKER_DECLARATION, MANIFEST as STRICT_CHECKER_MANIFEST, STRICT_DECLARATION,
-    StrictCheckerQualificationGraph, authorize as authorize_strict_checker,
-    update as strict_checker_update, verify as verify_strict_checker_update,
-};
+use strict_checker::{authorize as authorize_strict_checker, update as strict_checker_update};
 mod fresco;
 use fresco::{
-    FRESCO_MANIFEST, FRESCO_UPDATE, FRESCO_UPDATE_HASH, FrescoQualificationGraph, TOOLING_UPDATE,
-    TOOLING_UPDATE_HASH, fresco_update, verify_fresco_update,
+    FRESCO_MANIFEST, FRESCO_UPDATE, FrescoQualificationGraph, TOOLING_UPDATE, TOOLING_UPDATE_HASH,
+    fresco_update, verify_fresco_update,
 };
 mod tooling;
 use tooling::{
