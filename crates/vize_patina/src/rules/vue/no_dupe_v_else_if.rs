@@ -213,8 +213,7 @@ fn strip_trivia(source: &str) -> Option<String> {
     let mut index = 0;
     let mut quote = None;
     let mut escaped = false;
-    while index < bytes.len() {
-        let byte = bytes[index];
+    while let Some(&byte) = bytes.get(index) {
         if let Some(delimiter) = quote {
             output.push(byte);
             if escaped {
@@ -233,7 +232,10 @@ fn strip_trivia(source: &str) -> Option<String> {
             index += 1;
         } else if bytes.get(index..index + 2) == Some(b"//") {
             index += 2;
-            while index < bytes.len() && !matches!(bytes[index], b'\n' | b'\r') {
+            while bytes
+                .get(index)
+                .is_some_and(|byte| !matches!(*byte, b'\n' | b'\r'))
+            {
                 index += 1;
             }
         } else if bytes.get(index..index + 2) == Some(b"/*") {
@@ -252,7 +254,7 @@ fn strip_trivia(source: &str) -> Option<String> {
             index += 1;
         }
     }
-    std::string::String::from_utf8(output).ok().map(Into::into)
+    std::str::from_utf8(&output).ok().map(Into::into)
 }
 
 #[cfg(test)]

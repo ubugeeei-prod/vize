@@ -4,6 +4,7 @@
 //! packet. Unknown siblings do not prove macro ownership. Semantic references
 //! distinguish prop-derived initializers from same-spelled nested locals.
 
+mod derivation;
 pub(crate) mod props;
 
 use oxc_ast::{
@@ -307,7 +308,8 @@ fn derived_from_props(
     if span.contains_inclusive(call) {
         return true;
     }
-    if member_reads_prop(initializer, semantic, props, name)
+    if derivation::initializer_reads_prop(initializer, semantic, props, name)
+        || member_reads_prop(initializer, semantic, props, name)
         || to_ref_reads_prop(initializer, semantic, props, name)
     {
         return true;
@@ -327,7 +329,7 @@ fn member_reads_prop(
     let Some(member) = expression.as_member_expression() else {
         return false;
     };
-    member.static_property_name().as_deref() == Some(name)
+    member.static_property_name() == Some(name)
         && identifier_is_props(member.object(), semantic, props)
 }
 
@@ -401,9 +403,12 @@ fn renamed(pattern: Option<&BindingPattern<'_>>, name: &str) -> bool {
         return false;
     };
     pattern.properties.iter().any(|property| {
-        matches!((&property.key, &property.value),
-            (oxc_ast::ast::PropertyKey::StaticIdentifier(key), BindingPattern::BindingIdentifier(value))
-                if key.name == name && value.name != key.name)
+        property.key.static_name().as_deref() == Some(name)
+            && property
+                .value
+                .get_binding_identifiers()
+                .into_iter()
+                .any(|identifier| identifier.name != name)
     })
 }
 

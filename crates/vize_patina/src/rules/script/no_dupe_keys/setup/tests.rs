@@ -156,4 +156,18 @@ const label = "Name"
         )
         .is_empty()
     );
+    assert!(
+        collisions(
+            "const props = defineProps<{id: string; locale: string}>(); const { id } = useField(props); const locale = computed(() => props.locale);",
+            None,
+        )
+        .is_empty()
+    );
+    assert!(
+        collisions(
+            "const { targetId: explicitTargetId = undefined } = defineProps<{targetId?: string}>(); const targetId = computed(() => explicitTargetId);",
+            None,
+        )
+        .is_empty()
+    );
 }

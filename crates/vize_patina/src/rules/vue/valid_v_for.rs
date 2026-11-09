@@ -215,8 +215,11 @@ fn has_empty_alias_position(raw: &str, parameters: &oxc_ast::ast::FormalParamete
         return true;
     }
     for pair in parameters.items.windows(2) {
-        let left = pair[0].span().end as usize;
-        let right = pair[1].span().start as usize;
+        let [left_item, right_item] = pair else {
+            continue;
+        };
+        let left = left_item.span().end as usize;
+        let right = right_item.span().start as usize;
         if separator_count(raw.get(left..right).unwrap_or_default()) > 1 {
             return true;
         }
@@ -239,7 +242,10 @@ fn separator_count(gap: &str) -> usize {
     while index < bytes.len() {
         if bytes.get(index..index + 2) == Some(b"//") {
             index += 2;
-            while index < bytes.len() && !matches!(bytes[index], b'\n' | b'\r') {
+            while bytes
+                .get(index)
+                .is_some_and(|byte| !matches!(*byte, b'\n' | b'\r'))
+            {
                 index += 1;
             }
         } else if bytes.get(index..index + 2) == Some(b"/*") {
@@ -249,7 +255,7 @@ fn separator_count(gap: &str) -> usize {
             }
             index = (index + 2).min(bytes.len());
         } else {
-            count += usize::from(bytes[index] == b',');
+            count += usize::from(bytes.get(index) == Some(&b','));
             index += 1;
         }
     }
