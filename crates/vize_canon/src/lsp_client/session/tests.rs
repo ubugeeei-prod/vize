@@ -311,3 +311,36 @@ fn canon_batch_preserves_physical_identity_only_for_a_complete_existing_project(
         assert!(client.editor_lsp.is_none());
     }
 }
+
+#[test]
+fn retaining_a_self_mapped_uri_matches_remembering_it_for_every_owner() {
+    let directory = tempfile::tempdir().unwrap();
+    let root = directory.path().canonicalize().unwrap();
+    let uri = path_to_file_uri(&root.join("A.vue.ts"));
+    let alias: vize_l0::String = uri.replace("A.vue.ts", "%41.vue.ts").into();
+    let identity = crate::file_uri::file_uri_identity(&uri);
+    assert_eq!(crate::file_uri::file_uri_identity(&alias), identity);
+    let mut retained = super::CorsaProjectClient::empty_for_test(root.clone());
+    let mut remembered = super::CorsaProjectClient::empty_for_test(root);
+    for client in [&mut retained, &mut remembered] {
+        client.remember_session_document_uri(&uri, uri.clone());
+        client.remember_session_document_uri(&alias, alias.clone());
+    }
+    // The alias owns the shared identity, so retaining must take it back.
+    for _ in 0..2 {
+        retained.retain_self_mapped_document_uri(&uri, &identity);
+        remembered.remember_session_document_uri(&uri, uri.clone());
+        assert_eq!(
+            retained.session_document_uris,
+            remembered.session_document_uris
+        );
+        assert_eq!(
+            retained.external_document_uris,
+            remembered.external_document_uris
+        );
+    }
+    assert_eq!(
+        retained.external_document_uris.get(identity.as_str()),
+        Some(&uri)
+    );
+}

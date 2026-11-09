@@ -148,11 +148,16 @@ impl PayloadIdentity {
 struct CanonRow {
     path: PathBuf,
     desired: [u8; 32],
+    /// `file_uri_identity` of the row's URI, which maps to itself; built by
+    /// the first reuse so certifying an edit's batch never pays for it.
+    uri_identity: std::cell::OnceCell<String>,
 }
 
 struct CanonBatch {
     identity: PayloadIdentity,
     texts: DocumentCheckpoint,
+    /// The root every row was certified inside of.
+    root: PathBuf,
     rows: Vec<CanonRow>,
 }
 
@@ -223,6 +228,7 @@ impl CorsaProjectClient {
             .map(|((uri, text), path)| CanonRow {
                 path,
                 desired: self.document_texts.desired_digest(uri, text),
+                uri_identity: std::cell::OnceCell::new(),
             })
             .collect();
         let texts = self.document_texts.checkpoint();
@@ -235,6 +241,7 @@ impl CorsaProjectClient {
         self.canon_batches.entries.push(CanonBatch {
             identity: PayloadIdentity::capture(batch),
             texts,
+            root: self.project_root.clone(),
             rows,
         });
     }
@@ -289,10 +296,13 @@ impl CorsaProjectClient {
         // Keep the original complete namespace and existence guard. An old
         // physical observation cannot authorize a retargeted directory link.
         let mut namespace = PhysicalNamespace::new(&self.project_root);
+        // Rows were certified inside this lexical namespace; that answer is a
+        // pure function of the path and root.
+        let certified = (entry.root == self.project_root).then_some(true);
         let observations = entry
             .rows
             .iter()
-            .map(|row| namespace.observe(&row.path))
+            .map(|row| namespace.observe_with(&row.path, certified))
             .collect::<Vec<_>>();
         if !observations
             .iter()
@@ -331,7 +341,10 @@ impl CorsaProjectClient {
                     .changed
                     .push(super::session::uri_document_identifier(uri));
             }
-            self.remember_session_document_uri(uri, (*uri).into());
+            let identity = row
+                .uri_identity
+                .get_or_init(|| crate::file_uri::file_uri_identity(uri));
+            self.retain_self_mapped_document_uri(uri, identity);
         }
         if !summary.changed.is_empty() {
             self.refresh_materialized_overlay_snapshot(Some(FileChanges::Summary(summary)))?;

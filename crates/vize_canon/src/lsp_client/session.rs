@@ -273,6 +273,24 @@ impl CorsaProjectClient {
         mapped
     }
 
+    /// `remember_session_document_uri(uri, uri)` for a URI whose
+    /// `file_uri_identity` is `identity`. An unchanged self-mapping and owner
+    /// make that call a no-op, so they are checked without building strings.
+    pub(super) fn retain_self_mapped_document_uri(&mut self, uri: &str, identity: &str) {
+        if self
+            .session_document_uris
+            .get(uri)
+            .is_some_and(|mapped| mapped == uri)
+            && self
+                .external_document_uris
+                .get(identity)
+                .is_some_and(|owner| owner == uri)
+        {
+            return;
+        }
+        self.remember_session_document_uri(uri, uri.into());
+    }
+
     pub(super) fn forget_session_document_uri(&mut self, uri: &str) -> Option<String> {
         let native = self.session_document_uris.remove(uri)?;
         self.release_external_document_owner(uri, &native);
