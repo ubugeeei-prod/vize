@@ -309,7 +309,7 @@ await test("historical raw observers are parser controls and all full counters r
   const capture = JSON.parse(readFileSync(join(root, "capture.json"), "utf8"));
   assert.equal(
     sha256(readFileSync(join(root, "capture.json"))),
-    "a3a3e72c48cf66f7935eaff1817fb26ef5a056dd6f483c3f06cc17f8b8f72cbc",
+    "ad2f1bbbeafa3f8271fe4bf302e0e2b6ad6544856127a066c3c5af037efaac12",
   );
   assert.equal(capture.runId, 37612234749);
   assert.equal(capture.sha, "538370a5db8f4443538145c8ae891e5e84008328");
@@ -320,7 +320,7 @@ await test("historical raw observers are parser controls and all full counters r
   const incomplete = JSON.parse(readFileSync(join(root, "incomplete-capture.json"), "utf8"));
   assert.equal(
     sha256(readFileSync(join(root, "incomplete-capture.json"))),
-    "001313a57cf595012fd507caa8e0bf0408a85119deb1f22a15628bc85defae31",
+    "f3b068d1fb2fffa9743bf7e0e99c4151bc4296ffcccf57b49f06de2b6c8ccaae",
   );
   const incompleteLog = readFileSync(join(root, "incomplete-dom.log"));
   assert.equal(incomplete.runId, 37617991549);

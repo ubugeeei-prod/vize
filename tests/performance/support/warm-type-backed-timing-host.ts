@@ -16,7 +16,7 @@ const manifest = JSON.parse(
   fs.readFileSync(new URL("./warm-type-backed-timing-host-manifest.json", import.meta.url), "utf8"),
 ) as Manifest;
 const manifestSHA256 = createHash("sha256").update(JSON.stringify(manifest)).digest("hex");
-assert.equal(manifestSHA256, "534d1d12244a4bff9c6ed4fff487e1f601ef52ea975c4dab080030266f5a4062");
+assert.equal(manifestSHA256, "e936f56f29d0f505a0cde5c8fceadd075bc78868f0d1f1d41fb99456fc6f1f0f");
 assert.equal(manifest.version, 1);
 assert.equal(manifest.originalSource, "b41811e3b33676f68a0843a693c9ed4898f2e86a");
 assert.match(manifest.transformedSource, /^[a-f0-9]{40}$/u);

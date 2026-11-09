@@ -17,7 +17,7 @@ const manifest = JSON.parse(
   fs.readFileSync(new URL("./warm-type-backed-path-host-manifest.json", import.meta.url), "utf8"),
 ) as Manifest;
 const manifestSHA256 = createHash("sha256").update(JSON.stringify(manifest)).digest("hex");
-assert.equal(manifestSHA256, "50274f0ff7b1def1ab1d25e401bb2ad1cd823e4a6adae3ed707fa4cf62144b8f");
+assert.equal(manifestSHA256, "d398b17b222fb741454023179e663b41268ef026742351d1b429015c19b43d40");
 assert.equal(manifest.version, 1);
 for (const source of [manifest.originalSource, manifest.transformedSource])
   assert.match(source, /^[a-f0-9]{40}$/u);

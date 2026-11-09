@@ -5288,7 +5288,7 @@
     },
     {
       "path": "component-slot-text-7970.manifest.json",
-      "sha256": "d5b92bea8b64f88b27aaac9f215daa439e126b4f64c2cae7fe5166e6a4768957",
+      "sha256": "481bb19641a7c985fa80285e1e8c5fa43214960b50e3c717147f7f80612e1165",
       "adapter": "compiler-rust-whole-source-runtime-v1",
       "workflow": ".github/workflows/check.yml"
     },
@@ -5336,13 +5336,13 @@
     },
     {
       "path": "vapor-svg-title-8624.manifest.json",
-      "sha256": "58ffa04961106339bfdf1ac3f76a7cdf2b16623c682fdb26e4c2a0844a3a80c6",
+      "sha256": "1c66245c66b62a946a5bddfd82d2c52a5824310eccd5c3992a549494bedf2a37",
       "adapter": "compiler-rust-whole-source-parser-v1",
       "workflow": ".github/workflows/check.yml"
     },
     {
       "path": "vapor-svg-title-scope-8624.manifest.json",
-      "sha256": "59a85ffc56dab9b67a7e3f658d12e58531877401f2972dd2125efc2fc6bb5a08",
+      "sha256": "39e61cbfe48bc2671b273053619b368a567af4094fac72ce161f15928efd489b",
       "adapter": "compiler-rust-whole-source-parser-v1",
       "workflow": ".github/workflows/check.yml"
     }
