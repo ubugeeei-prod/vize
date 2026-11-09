@@ -13,7 +13,7 @@ pub(super) const PARCEL_UPDATE: &str =
     "malformed-membership/provider-parcel-native-update-12011.json";
 const PARCEL_UPDATE_HASH: &str = "e48ee44b774800a5b0624ca168280f15541f9348fea25e2a6d3a422d6bec438a";
 
-fn load(path: &str, hash: &str, kind: &str) -> Value {
+pub(super) fn load(path: &str, hash: &str, kind: &str) -> Value {
     let bytes = fs::read(support::corpus().join(path)).unwrap();
     assert_eq!(support::hash(&bytes), hash);
     let record: Value = serde_json::from_slice(&bytes).unwrap();

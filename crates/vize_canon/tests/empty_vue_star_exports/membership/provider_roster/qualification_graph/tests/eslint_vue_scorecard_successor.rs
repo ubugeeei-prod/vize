@@ -16,7 +16,7 @@ struct Inputs {
 
 fn inputs() -> Inputs {
     Inputs {
-        predecessor: js_tooling_refresh_update(),
+        predecessor: js_tooling_refresh::update(),
         predecessor_bytes: fs::read(support::corpus().join(js_tooling_refresh::UPDATE)).unwrap(),
         update: eslint_vue_scorecard_update(),
         lock: fs::read(support::repository().join("pnpm-lock.yaml")).unwrap(),

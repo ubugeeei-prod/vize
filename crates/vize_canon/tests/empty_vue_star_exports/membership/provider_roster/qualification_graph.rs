@@ -19,7 +19,8 @@ use docs_metadata::{
 mod eslint_vue_scorecard;
 mod fixture_updates;
 use fixture_updates::{
-    LOCKFILE_UPDATE, ORACLE_UPDATE, PARCEL_UPDATE, lockfile_update, oracle_update, parcel_update,
+    LOCKFILE_UPDATE, ORACLE_UPDATE, PARCEL_UPDATE, load, lockfile_update, oracle_update,
+    parcel_update,
 };
 mod js_tooling_refresh;
 mod strict_checker;
