@@ -19,10 +19,10 @@
     "gitBlob": "2f2780ba34b1731212ce111edde94fa12ed89fbc"
   },
   "latest": {
-    "source": "592ab1da10fc2fa5c921b93c4f446484aa18b08d",
+    "source": "be4d51dc8a00495858d18ae9cddd3714811c55cb",
     "bytes": 16838,
-    "sha256": "bad0adb1aa50fe79125f97ae1646997a18bd2726c1edc97eecbd53d7e7934d6e",
-    "gitBlob": "2f2780ba34b1731212ce111edde94fa12ed89fbc"
+    "sha256": "0bfb38a074d3f8fe4b22aa7a27dde16ba6fcb65ef351fb49be93942584009abf",
+    "gitBlob": "af68aadd5541c04fcace279218ad54b05df2d662"
   },
   "changes": [
     {
@@ -38,5 +38,12 @@
       "occurrences": 1
     }
   ],
-  "latestChanges": []
+  "latestChanges": [
+    {
+      "ruleId": "vue/component-name-in-template-casing",
+      "before": "\"endColumn\": 15,\n                        \"help\": \"Use kebab-case for component names\"",
+      "after": "\"endColumn\": 12,\n                        \"help\": \"Use kebab-case for component names\"",
+      "occurrences": 1
+    }
+  ]
 }

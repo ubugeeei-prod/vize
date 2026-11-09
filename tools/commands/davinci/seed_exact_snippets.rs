@@ -27,7 +27,7 @@ pub const SNIPPETS: &[Snippet] = &[
     snippet(
         "valid-v-else",
         "vue/valid-v-else",
-        "<template>\n<div v-if=\"foo\"></div><div [[v-else=\"bar\"]]></div>\n</template>\n",
+        "<template>\n<div v-if=\"foo\"></div><div v-else=[[\"bar\"]]></div>\n</template>\n",
     ),
     snippet(
         "no-duplicate-attributes",
@@ -92,7 +92,7 @@ pub const SNIPPETS: &[Snippet] = &[
     snippet(
         "no-template-key",
         "vue/no-template-key",
-        "<template>\n<template [[:key=\"section\"]]><div></div></template>\n</template>\n",
+        "<template>\n<template v-if=\"ok\" [[:key=\"section\"]]><div></div></template>\n</template>\n",
     ),
     snippet(
         "no-lone-template",
@@ -112,6 +112,6 @@ pub const SNIPPETS: &[Snippet] = &[
     snippet(
         "no-child-content",
         "vue/no-child-content",
-        "<template>\n[[<div v-text=\"content\">]]child</div>\n</template>\n",
+        "<template>\n<div v-text=\"content\">[[child]]</div>\n</template>\n",
     ),
 ];

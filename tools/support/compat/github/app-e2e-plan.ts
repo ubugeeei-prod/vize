@@ -318,7 +318,7 @@ function parseArgs(argv: readonly string[]): Args & { profile: string } {
   return { ...args, profile };
 }
 
-function main(argv: readonly string[]): void {
+export function main(argv: readonly string[]): void {
   const args = parseArgs(argv);
   if (args.targetSha != null) {
     if (args.runHeadSha == null)

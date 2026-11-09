@@ -173,14 +173,14 @@ try {
   const ansi = String.raw`\u001B\[[0-9;]*m`;
   assert.match(
     graphical,
-    new RegExp(String.raw`╭─\[(?:${ansi})*Static\.vue(?:${ansi})*:1:11\]`, "u"),
+    new RegExp(String.raw`╭─\[(?:${ansi})*Static\.vue(?:${ansi})*:1:1\]`, "u"),
   );
   const plain = run(["-f", "unix", "Static.vue"]);
-  assert.match(plain, /^Static\.vue:1:11: Component name "Static" should be multi-word/mu);
+  assert.match(plain, /^Static\.vue:1:1: Component name "Static" should be multi-word/mu);
   const stylish = run(["-f", "stylish", "Unicode.vue"]);
   const stylishText = stylish.replace(new RegExp(ansi, "gu"), "");
   assert.match(stylishText, /^\s+1:28\s+warning\s+v-html can lead to XSS attacks\./mu);
-  assert.match(stylishText, /^\s+1:11\s+error\s+Component name "Unicode" should be multi-word/mu);
+  assert.match(stylishText, /^\s+1:1\s+error\s+Component name "Unicode" should be multi-word/mu);
   // The real scoped-config transport must bind the same four original diagnostics.
   config.overrides = [{ files: ["*.vue"], rules: {} }];
   fs.writeFileSync(path.join(fixture, ".oxlintrc.json"), JSON.stringify(config));

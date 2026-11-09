@@ -66,6 +66,15 @@ fn test_valid_v_html_on_dynamic_component_bound_to_tag_name_identifier() {
 }
 
 #[test]
+fn test_invalid_v_html_on_dynamic_component_bound_to_text_tag() {
+    let result = create_linter().lint_template(
+        r#"<component :is="textTag" v-html="content" />"#,
+        "test.vue",
+    );
+    assert_eq!(result.error_count, 1, "{:?}", result.diagnostics);
+}
+
+#[test]
 fn test_valid_v_html_on_dynamic_component_with_native_string_literal_binding() {
     let linter = create_linter();
     let result = linter.lint_template(

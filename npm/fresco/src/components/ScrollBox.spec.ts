@@ -3,6 +3,7 @@ import { h, nextTick, ref } from "vue";
 import { test } from "vitest";
 import { treeToScreenReaderString } from "../accessibility.js";
 import { createVirtualViewport } from "../composables/useVirtualViewport.js";
+import { updateLastRenderLayouts } from "../layoutMetrics.js";
 import { findNodes, firstChild, mountComponent, renderTui } from "../testing/index.js";
 import ScrollBar from "./ScrollBar.vue";
 import ScrollBox from "./ScrollBox.vue";
@@ -23,6 +24,7 @@ test("scrollbar maps a bounded offset onto its track", () => {
     valueMin: 0,
     valueMax: 90,
     valueNow: 45,
+    disabled: false,
   });
   const glyphNodes = root.children.filter((node) => typeof node.props.text === "string");
   assert.deepEqual(
@@ -49,6 +51,7 @@ test("scrollbar normalizes invalid offsets and fractional bounds", () => {
       valueMin: 0,
       valueMax: 8,
       valueNow: 0,
+      disabled: false,
     });
     assert.deepEqual(
       root.children.flatMap((node) =>
@@ -57,6 +60,102 @@ test("scrollbar normalizes invalid offsets and fractional bounds", () => {
       ["█", "│", "│", "│"],
     );
     mounted.unmount();
+  }
+});
+
+test("scrollbar drags its thumb through the latest native layout", async () => {
+  const offset = ref(20);
+  const updates: number[] = [];
+  const rendered = renderTui(() =>
+    h(ScrollBar, {
+      itemCount: 100,
+      viewportSize: 10,
+      offset: offset.value,
+      length: 10,
+      "onUpdate:offset": (value: number) => {
+        updates.push(value);
+        offset.value = value;
+      },
+    }),
+  );
+  const scrollbar = firstChild(rendered);
+  updateLastRenderLayouts([{ id: scrollbar.id, x: 5, y: 2, width: 1, height: 10 }]);
+
+  try {
+    await rendered.input.mouse({ kind: "down", button: "left", x: 5, y: 4 });
+    await rendered.input.mouse({ kind: "drag", button: "left", x: 5, y: 10 });
+    await rendered.input.mouse({ kind: "up", button: "left", x: 5, y: 10 });
+
+    assert.equal(offset.value, 80);
+    assert.deepEqual(updates, [80]);
+
+    await rendered.input.mouse({ kind: "drag", button: "left", x: 5, y: 2 });
+    assert.equal(offset.value, 80, "releasing the thumb ends pointer capture");
+  } finally {
+    updateLastRenderLayouts([]);
+    rendered.unmount();
+  }
+});
+
+test("scrollbar keeps its offset when the thumb is pressed without moving", async () => {
+  const updates: number[] = [];
+  const rendered = renderTui(() =>
+    h(ScrollBar, {
+      itemCount: 100,
+      viewportSize: 10,
+      offset: 25,
+      length: 10,
+      "onUpdate:offset": (value: number) => updates.push(value),
+    }),
+  );
+  const scrollbar = firstChild(rendered);
+  updateLastRenderLayouts([{ id: scrollbar.id, x: 5, y: 2, width: 1, height: 10 }]);
+
+  try {
+    await rendered.input.mouse({ kind: "down", button: "left", x: 5, y: 5 });
+    await rendered.input.mouse({ kind: "up", x: 5, y: 5 });
+    assert.deepEqual(updates, []);
+  } finally {
+    updateLastRenderLayouts([]);
+    rendered.unmount();
+  }
+});
+
+test("scroll box accepts track clicks but ignores disabled pointer input", async () => {
+  const offset = ref(0);
+  const disabled = ref(false);
+  const rendered = renderTui(() =>
+    h(
+      ScrollBox,
+      {
+        itemCount: 100,
+        viewportSize: 10,
+        modelValue: offset.value,
+        disabled: disabled.value,
+        "onUpdate:modelValue": (value: number) => {
+          offset.value = value;
+        },
+      },
+      {
+        default: ({ index }: { index: number }) => h("text", { text: `row-${index}` }),
+      },
+    ),
+  );
+  const scrollbar = findNodes(rendered.root, (node) => node.props["aria-role"] === "scrollbar")[0];
+  assert.ok(scrollbar);
+  updateLastRenderLayouts([{ id: scrollbar.id, x: 9, y: 3, width: 1, height: 10 }]);
+
+  try {
+    await rendered.input.mouse({ kind: "down", button: "left", x: 9, y: 12 });
+    assert.equal(offset.value, 90, "a track click moves the thumb without requiring focus");
+
+    disabled.value = true;
+    await nextTick();
+    await rendered.input.mouse({ kind: "down", button: "left", x: 9, y: 3 });
+    assert.equal(offset.value, 90);
+  } finally {
+    updateLastRenderLayouts([]);
+    rendered.unmount();
   }
 });
 

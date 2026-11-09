@@ -194,7 +194,7 @@ writeFileSync(
     {
       schema: "vize.native-vapor.primitive-setup-sfc",
       version: "3.6.0-rc.9",
-      pluginVersion: "6.0.7",
+      pluginVersion: "6.0.10",
       filename,
       declarationPlacement:
         "Original pure declarations stay inside native setup; independent native expectations, no stock const-hoisting/code equality claim.",

@@ -59,7 +59,10 @@ pub use parse::{
 #[cfg(test)]
 pub(crate) use parse::{parse_script_setup_for_unused, parse_script_setup_for_value_origins};
 pub(crate) use parse_plain::{analyze_repaired_script_plain, with_parsed_script_plain};
-pub use parse_plain::{parse_script, parse_script_with_options, parse_script_with_options_and_jsx};
+pub use parse_plain::{
+    analyze_script_program, parse_script, parse_script_with_options,
+    parse_script_with_options_and_jsx,
+};
 pub use process::{collect_options_descriptor, collect_options_object, process_statement};
 pub use recovery::{
     parse_original_for_analysis, parse_program_for_analysis, recover_program_for_analysis,

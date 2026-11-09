@@ -1,0 +1,65 @@
+{
+  "version": 1,
+  "id": "lsp/regression/real-project-rule-accuracy-12069",
+  "provenance": {
+    "fixCommit": "be4d51dc8a00495858d18ae9cddd3714811c55cb",
+    "witness": {
+      "path": "code-action-diagnostics/references.json",
+      "sha256": "28013efd08e0386a6a34ac94f718e29ec1d7d4196f0d8b63a7dd93bc703d13d0"
+    },
+    "inputOrigin": "Pinned real-project lint code-action source after the opinionated void-element policy correction.",
+    "contractOrigin": "The style diagnostic owns both its exact fix and its template suppression action."
+  },
+  "documentVersion": 1,
+  "initializationOptions": {
+    "editor": true,
+    "lint": true,
+    "codeActions": true,
+    "typecheck": false
+  },
+  "files": [
+    {
+      "source": "App.vue.txt",
+      "runtimePath": "App.vue",
+      "sha256": "62fd7e6ed65c106e226a01f03cc24af84e6eddeef29c25d85a25cacf45939051"
+    },
+    {
+      "source": "vize.config.json",
+      "runtimePath": "vize.config.json",
+      "sha256": "1d297caf631fad17f18d5ba9577567b7ccb77db5f299df777c88469ae604f75a"
+    }
+  ],
+  "entry": "App.vue",
+  "method": "textDocument/codeAction",
+  "request": {
+    "params": {
+      "range": {
+        "start": { "line": 1, "character": 2 },
+        "end": { "line": 1, "character": 25 }
+      },
+      "context": {
+        "diagnostics": [
+          {
+            "range": {
+              "start": { "line": 1, "character": 2 },
+              "end": { "line": 1, "character": 25 }
+            },
+            "severity": 2,
+            "code": "vue/html-self-closing",
+            "codeDescription": {
+              "href": "https://eslint.vuejs.org/rules/html-self-closing.html"
+            },
+            "source": "vize/lint",
+            "message": "Element must not use self-closing syntax\n\nHelp: Use separate start and end tags"
+          }
+        ],
+        "only": ["quickfix"]
+      }
+    }
+  },
+  "expected": {
+    "source": "response.expected.json",
+    "sha256": "d85758512d1fea63f35527d77154d5ca54a07782bb13f95e81eb554e8f2a7233"
+  },
+  "scope": "Opinionated void-element lint diagnostics keep exact CLI, LSP, fix, and suppression ownership."
+}

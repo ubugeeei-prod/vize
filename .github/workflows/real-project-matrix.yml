@@ -178,7 +178,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
         run: |
-          rust-script tools/commands/fixtures/glyph-corpus-waiver-audit.rs \
+          node tools/support/compat/fixtures/glyph-corpus-waiver-audit.ts \
             --output "$FIXTURE_REPORT_DIR/glyph-waiver-issues.json"
 
       - name: Setup Wild linker
@@ -267,7 +267,7 @@ jobs:
         run: |
           node tools/commands/fixtures/lint-divergence-report.ts \
             --shard-index "$FIXTURE_SHARD_INDEX" --shard-count "$FIXTURE_SHARD_COUNT" \
-            --measure-coverage-gap --budget-mode "$LINT_DIVERGENCE_MODE" \
+            --all-mapped-rules --measure-coverage-gap --budget-mode "$LINT_DIVERGENCE_MODE" \
             --vize-bin target/ci/vize --timeout-ms 600000 \
             --output-dir "$FIXTURE_REPORT_DIR"
           test -s "$FIXTURE_REPORT_DIR/lint-divergence-summary.json"

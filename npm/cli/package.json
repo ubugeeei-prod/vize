@@ -32,6 +32,7 @@
     "content-mapper-helpers.d.ts",
     "generated/content-mapper-types.d.ts",
     "virtual-ts-checker.d.ts",
+    "virtual-ts-checker-strict.d.ts",
     "virtual-ts-emit-overloads.d.ts",
     "virtual-ts-globals.d.ts",
     "virtual-ts-listeners.d.ts",
@@ -71,6 +72,9 @@
     },
     "./virtual-ts-checker": {
       "types": "./virtual-ts-checker.d.ts"
+    },
+    "./virtual-ts-checker-strict": {
+      "types": "./virtual-ts-checker-strict.d.ts"
     },
     "./content-mapper-helpers": {
       "import": {

@@ -1,6 +1,6 @@
 //! The relief-AST form of the rule, used where the markup facade is not.
 
-use super::components::{relief_element_is_custom_component, relief_template_has_slot_directive};
+use super::components::relief_element_is_custom_component;
 use super::object_has_static_key;
 use crate::context::LintContext;
 use crate::markup::MarkupElement;
@@ -43,15 +43,13 @@ pub(super) fn relief_check(ctx: &mut LintContext<'_>, element: &ElementNode<'_>,
         return;
     }
     if matches!(element.tag, "template" | "slot") {
-        if !relief_template_has_slot_directive(element) {
-            for child in &element.children {
-                if let TemplateChildNode::Element(child) = child
-                    && !child.props.iter().any(|prop| {
-                        matches!(prop, PropNode::Directive(directive) if directive.name == "for")
-                    })
-                {
-                    ensure_sufficient_stack(|| relief_check(ctx, child, false));
-                }
+        for child in &element.children {
+            if let TemplateChildNode::Element(child) = child
+                && !child.props.iter().any(|prop| {
+                    matches!(prop, PropNode::Directive(directive) if directive.name == "for")
+                })
+            {
+                ensure_sufficient_stack(|| relief_check(ctx, child, false));
             }
         }
         return;

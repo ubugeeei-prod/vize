@@ -1,12 +1,14 @@
 //! Demand-only editor facts carried through the existing descriptor analysis.
 
 use super::analysis::{
-    DescriptorAnalysisMode, DescriptorObservation, analyze_sfc_descriptor_resolved_impl,
+    DescriptorAnalysisMode, DescriptorObservation, DescriptorTemplate,
+    analyze_sfc_descriptor_resolved_impl,
 };
 use super::{SfcCroquisAnalysis, SfcCroquisOptions, SfcScriptParses};
 use crate::SfcDescriptor;
 use vize_atelier_core::RootNode;
 use vize_croquis::binding_occurrences::BindingOccurrences;
+use vize_croquis::drawer::LintTemplate;
 
 /// Analyze once and return a separate owned occurrence packet. Existing options,
 /// Croquis public fields, snapshots, and diagnostics are unchanged.
@@ -30,11 +32,30 @@ pub fn analyze_sfc_descriptor_with_occurrences_and_template_reuse(
     options: SfcCroquisOptions,
     reuse: Option<vize_croquis::drawer::TemplateSemanticReuse>,
 ) -> (SfcCroquisAnalysis, Option<BindingOccurrences>) {
+    analyze_sfc_descriptor_with_occurrences_impl(scripts, root, options, reuse)
+}
+
+/// Capture authored reads while drawing the completed Davinci artifact.
+#[doc(hidden)]
+pub fn analyze_sfc_descriptor_with_lint_template_and_occurrences(
+    scripts: &SfcScriptParses<'_>,
+    template: Option<LintTemplate<'_, '_>>,
+    options: SfcCroquisOptions,
+) -> (SfcCroquisAnalysis, Option<BindingOccurrences>) {
+    analyze_sfc_descriptor_with_occurrences_impl(scripts, template, options, None)
+}
+
+fn analyze_sfc_descriptor_with_occurrences_impl(
+    scripts: &SfcScriptParses<'_>,
+    template: Option<impl DescriptorTemplate>,
+    options: SfcCroquisOptions,
+    reuse: Option<vize_croquis::drawer::TemplateSemanticReuse>,
+) -> (SfcCroquisAnalysis, Option<BindingOccurrences>) {
     let descriptor = scripts.descriptor();
     let mut packet = None;
     let mut analysis = analyze_sfc_descriptor_resolved_impl::<true>(
         scripts,
-        root,
+        template,
         options,
         DescriptorAnalysisMode {
             options_api: false,
@@ -54,11 +75,11 @@ pub fn analyze_sfc_descriptor_with_occurrences_and_template_reuse(
             .script_setup
             .as_ref()
             .is_some_and(|block| block.attrs.contains_key("generic"))
-        || root.is_some_and(|root| {
+        || template.is_some_and(|template| {
             descriptor
                 .template
                 .as_ref()
-                .is_none_or(|template| root.source != template.content.as_ref())
+                .is_none_or(|block| template.source() != block.content.as_ref())
         })
         || descriptor.script.as_ref().is_some_and(|block| {
             block.src.is_some()
@@ -90,11 +111,11 @@ pub fn analyze_sfc_descriptor_with_occurrences_and_template_reuse(
                     .as_deref()
                     .is_none_or(|lang| matches!(lang, "js" | "ts" | "jsx" | "tsx"))
         })
-        && root.is_some_and(|root| {
+        && template.is_some_and(|template| {
             descriptor.template.as_ref().is_some_and(|block| {
                 block.src.is_none()
                     && block.lang.as_deref().is_none_or(|lang| lang == "html")
-                    && root.source == block.content.as_ref()
+                    && template.source() == block.content.as_ref()
             })
         });
     analysis

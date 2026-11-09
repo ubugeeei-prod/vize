@@ -31,6 +31,24 @@ fn historical_docs_manifest() -> Vec<u8> {
         .into_bytes()
 }
 
+fn historical_owner(path: &str) -> Vec<u8> {
+    if path == "docs/package.json" {
+        return historical_docs_manifest();
+    }
+    let bytes = fs::read(support::repository().join(path)).unwrap();
+    if path != "npm/cli/package.json" {
+        return bytes;
+    }
+    String::from_utf8(bytes)
+        .unwrap()
+        .replace("    \"virtual-ts-checker-strict.d.ts\",\n", "")
+        .replace(
+            "    \"./virtual-ts-checker-strict\": {\n      \"types\": \"./virtual-ts-checker-strict.d.ts\"\n    },\n",
+            "",
+        )
+        .into_bytes()
+}
+
 fn inputs() -> Inputs {
     Inputs {
         predecessor: fresco_update(),
@@ -41,13 +59,7 @@ fn inputs() -> Inputs {
         workspace: fs::read(support::repository().join(WORKSPACE)).unwrap(),
         owner_bytes: OWNER_MANIFESTS
             .iter()
-            .map(|path| {
-                if *path == "docs/package.json" {
-                    historical_docs_manifest()
-                } else {
-                    fs::read(support::repository().join(path)).unwrap()
-                }
-            })
+            .map(|path| historical_owner(path))
             .collect(),
     }
 }

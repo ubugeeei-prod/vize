@@ -6,7 +6,7 @@ import {
   highestGlibcVersion,
   parseGlibcVersion,
   parseGlibcVersions,
-} from "../../tools/support/compat/github/verify-glibc-symbols.mjs";
+} from "../../tools/commands/ci/github/verify-glibc-symbols.ts";
 import { readRepoFile, workflowJobBody } from "./support/github-workflows.ts";
 
 test("glibc symbol parser deduplicates and sorts required versions", () => {
@@ -52,6 +52,6 @@ test("release workflow gates GNU native binaries against the Debian bookworm gli
   assert.match(job, /cross-compile: \$\{\{ matrix\.settings\.cross_compile \}\}/);
   assert.match(
     readRepoFile(".github", "actions", "build-release-native", "action.yml"),
-    /verify-glibc-symbols\.rs --max 2\.36 npm\/native\/\*\.linux-\*-gnu\.node[\s\S]*verify-glibc-symbols\.rs --max 2\.36 npm\/fresco-native\/\*\.linux-\*-gnu\.node/,
+    /verify-glibc-symbols\.ts --max 2\.36 npm\/native\/\*\.linux-\*-gnu\.node[\s\S]*verify-glibc-symbols\.ts --max 2\.36 npm\/fresco-native\/\*\.linux-\*-gnu\.node/,
   );
 });

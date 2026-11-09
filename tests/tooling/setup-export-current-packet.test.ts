@@ -18,7 +18,7 @@ const controls = JSON.parse(
   cases: { id: string; sourceSha256: string; routes: { id: string; afterCliPacket: unknown }[] }[];
 };
 
-test("the full setup-export successor adds only the authored require-expose warning", () => {
+test("the full setup-export successor excludes follow-on component warnings", () => {
   const changed: string[] = [];
   for (const entry of controls.cases)
     for (const route of entry.routes) {
@@ -31,22 +31,10 @@ test("the full setup-export successor adds only the authored require-expose warn
       const row = asRecord(current[0]);
       assert.equal(row.file, prior[0].file);
       assert.equal(row.errorCount, prior[0].errorCount);
-      assert.equal(row.warningCount, 1);
+      assert.equal(row.warningCount, 0);
       assert.ok(Array.isArray(row.messages));
-      assert.deepEqual(row.messages.slice(0, 3), prior[0].messages);
-      assert.deepEqual(row.messages.slice(3), [
-        {
-          ruleId: "vue/require-expose",
-          ruleDocsPath: "docs/content/rules/reference/vue-require-expose.md",
-          severity: 1,
-          message:
-            "[vize:vue/require-expose] The public properties of the component must be explicitly declared using `expose`. If the component does not have public properties, declare it empty.",
-          line: 4,
-          column: 16,
-          endLine: 4,
-          endColumn: 18,
-        },
-      ]);
+      assert.deepEqual(row.messages, prior[0].messages);
+      assert.deepEqual(current, prior);
     }
   assert.deepEqual(changed, ["runtime-two-utf8-crlf/all"]);
 });

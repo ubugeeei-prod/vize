@@ -223,6 +223,15 @@ impl VirtualProject {
         self.dialect = dialect;
     }
 
+    /// The program-wide preamble this project materializes.
+    pub(crate) fn shared_helpers_preamble(&self) -> &'static str {
+        if self.uses_props_fallback() {
+            crate::virtual_ts::SHARED_PREAMBLE_DTS
+        } else {
+            crate::virtual_ts::SHARED_PREAMBLE_STRICT_DTS
+        }
+    }
+
     pub(crate) fn uses_shared_helpers(&self) -> bool {
         // Plain authored scripts and declarations need no Vue preamble. It
         // references vite/client and would add ambient asset types even when

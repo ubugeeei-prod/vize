@@ -9,6 +9,15 @@ fn intact_sdk_keeps_the_shared_lowering() {
 }
 
 #[test]
+fn both_checker_policies_are_required_for_shared_lowering() {
+    for entry in ["virtual-ts-checker.d.ts", "virtual-ts-checker-strict.d.ts"] {
+        let sdk = InstalledSdk::new();
+        std::fs::remove_file(sdk.package.join(entry)).unwrap();
+        sdk.assert_projection(Mode::Core);
+    }
+}
+
+#[test]
 fn every_conditional_type_entry_must_supply_the_consumed_helper() {
     for entry in ["virtual-ts.d.ts", "virtual-ts.d.mts", "virtual-ts.d.cts"] {
         let sdk = InstalledSdk::new();

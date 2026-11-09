@@ -132,6 +132,21 @@ const { change } = defineEmits<{ change: [] }>()
 }
 
 #[test]
+fn exported_types_and_declare_global_may_precede_the_macros() {
+    let source = r#"
+export type Captcha = { render(): string }
+export type CaptchaProvider = 'one' | 'two'
+type CaptchaContainer = { readonly [_ in CaptchaProvider]?: Captcha }
+declare global {
+  interface Window extends CaptchaContainer {}
+}
+const props = defineProps<{ provider: CaptchaProvider }>()
+const emit = defineEmits<{ change: [] }>()
+"#;
+    assert!(lint(source).is_empty(), "{:?}", lint(source));
+}
+
+#[test]
 fn no_macros() {
     assert!(lint("import { ref } from 'vue'\nconst count = ref(0)\n").is_empty());
     assert!(lint("const label = 'defineProps then defineEmits'\n").is_empty());

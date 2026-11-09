@@ -45,7 +45,7 @@ fn reserved_names_obey_exact_membership_and_group_policy_with_complete_packets()
     .unwrap();
     let api_cases = api_order["coreCases"].as_array().unwrap();
     assert_eq!(api_cases.len(), 20);
-    assert_eq!(api_order["summary"]["coreDiagnosticCount"], 211);
+    assert_eq!(api_order["summary"]["coreDiagnosticCount"], 214);
     let projection: Value = serde_json::from_str(include_str!(
         "../../../tests/_fixtures/n8n-cli-adoption.json"
     ))
@@ -61,7 +61,7 @@ fn reserved_names_obey_exact_membership_and_group_policy_with_complete_packets()
             .iter()
             .map(|case| case["diagnostics"].as_array().unwrap().len())
             .sum::<usize>(),
-        59
+        62
     );
     assert_eq!(corpus["reservedDollarNames"].as_array().unwrap().len(), 24);
     assert_eq!(projected_rules.len(), 51);
@@ -96,6 +96,16 @@ fn reserved_names_obey_exact_membership_and_group_policy_with_complete_packets()
         assert_eq!(api_case["filename"], case["filename"]);
         assert_eq!(api_case["sourceSha256"], case["sourceSha256"]);
         let diagnostics = api_case["diagnostics"].as_array().unwrap();
+        let mut essential_diagnostics: Vec<_> = diagnostics
+            .iter()
+            .filter(|diagnostic| diagnostic["rule_name"] != "vue/prop-name-casing")
+            .cloned()
+            .collect();
+        essential_diagnostics.sort_by_key(|diagnostic| match diagnostic["rule_name"].as_str() {
+            Some("script/no-reserved-keys") => 0,
+            Some("script/no-reserved-props") => 1,
+            _ => 2,
+        });
         let off_diagnostics = companion["diagnostics"].as_array().unwrap();
         let projected = projected_rules
             .keys()
@@ -115,7 +125,7 @@ fn reserved_names_obey_exact_membership_and_group_policy_with_complete_packets()
             (
                 "essential",
                 crate::historical_linter(LintPreset::Essential),
-                diagnostics.as_slice(),
+                essential_diagnostics.as_slice(),
             ),
             (
                 "ecosystem",

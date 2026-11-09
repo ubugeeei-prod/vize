@@ -49,14 +49,10 @@ impl RuleRegistry {
         registry.register(Box::new(crate::rules::vue::UseVOnExact));
         registry.register(Box::new(crate::rules::vue::NoTemplateShadow));
         registry.register(Box::new(crate::rules::vue::ThisInTemplate));
-        // Vue's parser records dots in static slot names as directive
-        // modifiers. Component libraries intentionally use names such as
-        // `item.name`, so the default preset keeps the historical behavior
-        // of accepting them. Projects that need the stricter eslint-plugin-vue
-        // policy can still set `allowModifiers: false` explicitly.
-        registry.register(Box::new(
-            crate::rules::vue::ValidVSlot::allowing_static_name_dots(),
-        ));
+        // Match eslint-plugin-vue's strict default. Component libraries which
+        // intentionally encode dots in slot names can opt into
+        // `allowModifiers: true`.
+        registry.register(Box::new(crate::rules::vue::ValidVSlot));
         registry.register(Box::new(crate::rules::vue::NoChildContent));
         registry.register(Box::new(crate::rules::vue::ValidAttributeName));
         registry.register(Box::new(crate::rules::vue::AttributeHyphenation::default()));

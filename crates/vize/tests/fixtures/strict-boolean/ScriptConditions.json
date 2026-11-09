@@ -128,9 +128,9 @@
         "severity": 2,
         "message": "[vize:type/strict-boolean-expressions] Unexpected string value in conditional. A string can be falsy (empty string) or truthy.",
         "line": 15,
-        "column": 26,
+        "column": 27,
         "endLine": 15,
-        "endColumn": 31
+        "endColumn": 32
       }
     ],
     "errorCount": 13,

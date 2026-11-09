@@ -1,11 +1,11 @@
 ---
 title: "vue/slot-name-casing"
-description: "Enforce kebab-case for named slots used via v-slot."
+description: "Enforce camelCase for rendered slot names."
 ---
 
 # `vue/slot-name-casing`
 
-Enforce kebab-case for named slots used via v-slot.
+Enforce camelCase for rendered slot names.
 
 | Default severity | Presets | Automatic fix | Options |
 | --- | --- | --- | --- |
@@ -13,23 +13,25 @@ Enforce kebab-case for named slots used via v-slot.
 
 Applies to: Vue SFC templates and blocks, with script context where the rule requires it.
 
+Checks the static name of a rendered slot outlet. The parent-side v-slot and #name provider syntax is outside this rule.
+
 ## Bad
 
-The named slot `mySlot` uses camelCase where the rule requires a hyphenated name.
+The rendered slot outlet uses the hyphenated static name `my-slot`, while the default convention requires camelCase.
 
 ```vue annotate="remove:2"
 <template>
-<MyCard><template #mySlot>Content</template></MyCard>
+<MyCard><slot name="my-slot" /></MyCard>
 </template>
 ```
 
 ## Good
 
-`#my-slot` uses kebab-case. Rename the corresponding slot outlet to the same name.
+The outlet's static name uses camelCase. Parent-side `#name` provider syntax is outside this rule.
 
 ```vue annotate="add:2"
 <template>
-<MyCard><template #my-slot>Content</template></MyCard>
+<MyCard><slot name="mySlot" /></MyCard>
 </template>
 ```
 
@@ -54,4 +56,4 @@ Then run `vp run lint`.
 
 - [Vue rules](../vue.md)
 - [All rules](../all.md)
-- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/slot_name_casing.rs#L34)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/slot_name_casing.rs#L28)

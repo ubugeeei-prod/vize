@@ -10,8 +10,8 @@
     "file": "app/src/Ignored.vue",
     "messages": [
       {
-        "column": 11,
-        "endColumn": 11,
+        "column": 1,
+        "endColumn": 1,
         "endLine": 1,
         "help": "Rename the component to use multiple words (e.g., \"TodoItem\" instead of \"Item\")",
         "line": 1,
@@ -28,8 +28,8 @@
     "file": "app/src/Image.vue",
     "messages": [
       {
-        "column": 11,
-        "endColumn": 11,
+        "column": 1,
+        "endColumn": 1,
         "endLine": 1,
         "help": "Rename the component to use multiple words (e.g., \"TodoItem\" instead of \"Item\")",
         "line": 1,
@@ -52,8 +52,8 @@
     "file": "src/Decoy.vue",
     "messages": [
       {
-        "column": 11,
-        "endColumn": 11,
+        "column": 1,
+        "endColumn": 1,
         "endLine": 1,
         "help": "Rename the component to use multiple words (e.g., \"TodoItem\" instead of \"Item\")",
         "line": 1,

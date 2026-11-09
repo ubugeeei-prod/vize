@@ -93,7 +93,7 @@ impl Linter {
         let analysis = summary
             .as_deref()
             .filter(|_| !fatal)
-            .map(|script| analysis::variant(&root, script, self.has_unused_bindings_demand()));
+            .map(|script| analysis::variant(&root, &l2, script, self.has_unused_bindings_demand()));
         let mut parsed = Self::l1_template_parse_lint_result(filename, source, errors);
         offset_result(&mut parsed, offset);
         let linted = self.lint_template_root(

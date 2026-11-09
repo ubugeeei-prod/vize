@@ -190,12 +190,11 @@ fn builtin_script_comment_remains_typed_refusal_beside_complete_original_empty_o
 }
 
 #[test]
-fn actual_setup_method_candidate_keeps_original_warning_and_full_unsupported_method_refusal() {
+fn actual_setup_method_candidate_keeps_full_unsupported_method_refusal_without_a_false_positive() {
     let declaration =
         "import { ref } from 'vue'; const options = { setup() { const text = ref(null) } }";
     let source = SOURCE.replace("const text = \"ref(null)\"", declaration);
     let method = span(&source, "setup() { const text = ref(null) }");
-    let call = span(&source, "ref(null)");
     for locale in LOCALES {
         let configured = original(locale, HelpLevel::Full);
         let error = configured
@@ -210,17 +209,7 @@ fn actual_setup_method_candidate_keeps_original_warning_and_full_unsupported_met
         );
         assert_eq!(
             complete(&configured.lint_sfc(&source, "History.vue")),
-            expected(
-                "History.vue",
-                vec![serde_json::json!({
-                    "rule_name": RULE, "severity": "warning",
-                    "message": "Template ref 'text' is declared with ref(); use useTemplateRef() instead (Vue 3.5+).",
-                    "start": call.start, "end": call.end,
-                    "help": "Replace with: `const text = useTemplateRef('text')`",
-                    "labels": [{ "message": "declared as a template ref", "start": call.start, "end": call.end }],
-                    "fix": null,
-                })]
-            )
+            empty("History.vue")
         );
     }
 }

@@ -34,8 +34,8 @@
     "file": "<project>/app/src/Ignored.vue",
     "messages": [
       {
-        "column": 11,
-        "endColumn": 11,
+        "column": 1,
+        "endColumn": 1,
         "endLine": 1,
         "help": "Rename the component to use multiple words (e.g., \"TodoItem\" instead of \"Item\")",
         "line": 1,
@@ -63,8 +63,8 @@
     "file": "<project>/app/src/Image.vue",
     "messages": [
       {
-        "column": 11,
-        "endColumn": 11,
+        "column": 1,
+        "endColumn": 1,
         "endLine": 1,
         "help": "Rename the component to use multiple words (e.g., \"TodoItem\" instead of \"Item\")",
         "line": 1,
@@ -94,9 +94,21 @@
     "warningCount": 0
   },
   {
-    "errorCount": 0,
+    "errorCount": 1,
     "file": "<project>/app/src/id.vue",
-    "messages": [],
+    "messages": [
+      {
+        "column": 1,
+        "endColumn": 1,
+        "endLine": 1,
+        "help": "Rename the component to use multiple words (e.g., \"TodoItem\" instead of \"Item\")",
+        "line": 1,
+        "message": "[vize:vue/multi-word-component-names] Component name \"id\" should be multi-word to avoid conflicts with HTML elements",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleId": "vue/multi-word-component-names",
+        "severity": 2
+      }
+    ],
     "warningCount": 0
   },
   {

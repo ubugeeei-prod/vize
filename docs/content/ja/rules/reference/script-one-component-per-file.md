@@ -17,14 +17,10 @@ description: "1 ファイルにコンポーネント定義が複数あること�
 
 ファイルが `Parent` を export し、`components` の中にもう一つの `Child` を定義しています。
 
-```vue annotate="remove:3,4,5,6"
-<script lang="ts">
-export default {
-  name: 'Parent',
-  components: {
-    Child: { name: 'Child' }
-  }
-}
+```vue annotate="remove:1,2,3"
+<script setup lang="ts">
+const First = defineComponent({ name: 'First' })
+const Second = defineComponent({ name: 'Second' })
 </script>
 ```
 
@@ -32,7 +28,7 @@ export default {
 
 ファイルが定義するのは `Parent` だけです。
 
-```vue annotate="add:3"
+```vue annotate="add:1,2,3,4"
 <script lang="ts">
 export default {
   name: 'Parent'
@@ -61,4 +57,4 @@ export default defineConfig({}).withVue({
 
 - [型と script のルール](../type-and-script.md)
 - [全ルール](../all.md)
-- [ソースコード](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/one_component_per_file.rs#L30)
+- [ソースコード](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/one_component_per_file.rs#L26)

@@ -16,6 +16,12 @@ use docs_metadata::{
     DocsMetadataQualificationGraph, MANIFEST as DOCS_METADATA_MANIFEST,
     update as docs_metadata_update, verify as verify_docs_metadata_update,
 };
+mod strict_checker;
+use strict_checker::{
+    CHECKER_DECLARATION, MANIFEST as STRICT_CHECKER_MANIFEST, STRICT_DECLARATION,
+    StrictCheckerQualificationGraph, authorize as authorize_strict_checker,
+    update as strict_checker_update, verify as verify_strict_checker_update,
+};
 mod fresco;
 use fresco::{
     FRESCO_MANIFEST, FRESCO_UPDATE, FRESCO_UPDATE_HASH, FrescoQualificationGraph, TOOLING_UPDATE,
@@ -482,8 +488,20 @@ pub(super) fn authorize(previous: &Value, lock: &[u8], package: &[u8]) -> Checke
     }
 
     let predecessor_bytes = fs::read(support::corpus().join(dependency_ownership::UPDATE))
+        .map_err(|_| "complete strict checker qualification predecessor")?;
+    let strict_update = strict_checker_update();
+    if authorize_strict_checker(&update, &predecessor_bytes, lock, package, &workspace).is_ok() {
+        return Ok(Some(strict_update));
+    }
+    let predecessor_bytes = fs::read(support::corpus().join(strict_checker::UPDATE))
         .map_err(|_| "complete create-fresco qualification predecessor")?;
-    let update = docs_metadata::authorize(&update, &predecessor_bytes, lock, package, &workspace)?;
+    let update = docs_metadata::authorize(
+        &strict_update,
+        &predecessor_bytes,
+        lock,
+        package,
+        &workspace,
+    )?;
     Ok(Some(update))
 }
 

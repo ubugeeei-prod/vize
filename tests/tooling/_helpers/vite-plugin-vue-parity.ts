@@ -59,7 +59,9 @@ export function catalogVersion(): string {
   const workspaceYaml = fs.readFileSync(path.join(repoRoot, "pnpm-workspace.yaml"), "utf8");
   const pin = workspaceYaml
     .split("\n")
-    .map((line) => line.match(/^\s{4}"?(?<name>[^":]+)"?:\s*"(?<version>[^"]+)"\s*$/))
+    .map((line) =>
+      line.match(/^\s{4}"?(?<name>[^":]+)"?:\s*(?<quote>")?(?<version>\d+\.\d+\.\d+)\k<quote>\s*$/),
+    )
     .find((match) => match?.groups?.name === upstreamPackage)?.groups?.version;
   assert.ok(pin, `${upstreamPackage} must stay pinned in the pnpm catalog`);
   assert.match(pin, /^\d+\.\d+\.\d+$/u, `${upstreamPackage} must be pinned to an exact version`);

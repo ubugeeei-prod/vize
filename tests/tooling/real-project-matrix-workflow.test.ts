@@ -262,7 +262,10 @@ test("real-project workflow hydrates only its shard and runs every core tool", (
   assert.equal(waiverAudit.if, "${{ !cancelled() }}");
   assert.equal(waiverAudit["continue-on-error"], true);
   assert.deepEqual(waiverAudit.env, { GITHUB_TOKEN: "${{ github.token }}" });
-  assert.match(waiverAudit.run ?? "", /glyph-corpus-waiver-audit\.rs/);
+  assert.match(
+    waiverAudit.run ?? "",
+    /node tools\/support\/compat\/fixtures\/glyph-corpus-waiver-audit\.ts/,
+  );
   assert.match(waiverAudit.run ?? "", /glyph-waiver-issues\.json/);
   assert.match(run.run ?? "", /tools\/commands\/fixtures\/tool-matrix-report\.rs/);
   assert.match(run.run ?? "", /--vize-bin target\/ci\/vize/);
@@ -312,6 +315,7 @@ test("real-project workflow hydrates only its shard and runs every core tool", (
     /^node tools\/commands\/fixtures\/lint-divergence-report\.ts \\\n/,
     /--shard-index "\$FIXTURE_SHARD_INDEX"/,
     /--shard-count "\$FIXTURE_SHARD_COUNT"/,
+    /--all-mapped-rules/,
     /--measure-coverage-gap/,
     /--budget-mode "\$LINT_DIVERGENCE_MODE"/,
     /--vize-bin target\/ci\/vize/,

@@ -5,15 +5,15 @@
   "sourceTree": "32778a3d618a81a6e68ffb1ca910d6fb78581d71",
   "previousProviderQualificationRecord": {
     "path": "tests/_fixtures/differential/typechecker/empty-vue-star-exports/malformed-membership/provider-create-fresco-update-12233.json",
-    "bytes": 2365,
-    "sha256": "3dafd04f6e306e5a5edde93b95e77c8ecb2ddf08e6525a3fe9fa3a9f356bb802",
-    "gitBlob": "dd75232d483a136f936ce05068e87b46afe1749c"
+    "bytes": 2354,
+    "sha256": "46b46aa009af8ce08751a9ba83f3940adfb6b2c71424bdc7accbf1740e2838cb",
+    "gitBlob": "9c409923a7b4de3acaf1740c20b0c4714ddab408"
   },
   "previousQualificationLock": {
     "path": "pnpm-lock.yaml",
-    "bytes": 1170285,
-    "sha256": "91573fb166468ad64cfb3343835f9613722d00a92b8ffb3507e30e9b22bb45a4",
-    "gitBlob": "c51e52f5c872511a93e794fb91cb6ed07c7f8b0d"
+    "bytes": 1095942,
+    "sha256": "003ad210d2b173d268ea193c4953b590d29cd18155fbd640dab24ee052115cd5",
+    "gitBlob": "d6933ba830e9211e68071451ba03f37a2d50556c"
   },
   "previousQualificationPackage": {
     "path": "package.json",
@@ -23,9 +23,9 @@
   },
   "finalQualificationLock": {
     "path": "pnpm-lock.yaml",
-    "bytes": 1170285,
-    "sha256": "91573fb166468ad64cfb3343835f9613722d00a92b8ffb3507e30e9b22bb45a4",
-    "gitBlob": "c51e52f5c872511a93e794fb91cb6ed07c7f8b0d"
+    "bytes": 1095942,
+    "sha256": "003ad210d2b173d268ea193c4953b590d29cd18155fbd640dab24ee052115cd5",
+    "gitBlob": "d6933ba830e9211e68071451ba03f37a2d50556c"
   },
   "finalQualificationPackage": {
     "path": "package.json",
@@ -35,19 +35,19 @@
   },
   "workspaceManifest": {
     "path": "pnpm-workspace.yaml",
-    "bytes": 9501,
-    "sha256": "5560a48e7c354af330e2d856db1394ee041d7d1d2b99862a8d9770d5c2432aa2",
-    "gitBlob": "24c28c3b03164b735d7b2caf9a4ffe4de228c8ae"
+    "bytes": 9348,
+    "sha256": "67d2d880b1c1927cda746a43bdcc074bb58260c925c4e67e3aaaa142e94d6f76",
+    "gitBlob": "57b5c377972ca2c4abc26a2084f1075bc2aa61a1"
   },
   "docsManifest": {
     "path": "docs/package.json",
     "bytes": 1356,
-    "sha256": "3a14dd57a3115b73c5ac1c32fb79250b8bfd2da8ae87066e058b8fc252c164c6",
-    "gitBlob": "a17f43519b5eeb4e6009048763ff7d7a8fc7ee7c"
+    "sha256": "d0fde98a1c1b819ea6d1aa88da09ed06816d88e255d7a4b93a9a77386a075138",
+    "gitBlob": "7059da67ee3eb11a5d308e74557f69c15d5b99e9"
   },
   "resolver": {
     "command": "vp install --lockfile-only --no-frozen-lockfile --ignore-scripts",
-    "fixedPointSha256": "91573fb166468ad64cfb3343835f9613722d00a92b8ffb3507e30e9b22bb45a4"
+    "fixedPointSha256": "003ad210d2b173d268ea193c4953b590d29cd18155fbd640dab24ee052115cd5"
   },
   "nativeAcceptanceCredit": false,
   "scope": "Bind the executable documentation metadata generator to the complete docs manifest while preserving the exact generated dependency graph. This record gives source provenance only."

@@ -27,12 +27,3 @@ pub(in crate::rules::vue) fn relief_element_is_custom_component(element: &Elemen
                     && matches!(directive.arg.as_ref(), Some(ExpressionNode::Simple(arg)) if arg.content == "is")),
         })
 }
-
-pub(super) fn relief_template_has_slot_directive(element: &ElementNode<'_>) -> bool {
-    element.props.iter().any(|prop| {
-        matches!(
-            prop,
-            PropNode::Directive(directive) if directive.name == "slot"
-        )
-    })
-}

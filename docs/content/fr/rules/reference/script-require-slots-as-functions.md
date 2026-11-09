@@ -21,7 +21,7 @@ Champ d’application : Scripts JS/TS des SFC Vue ; les exemples montrent la for
 <script lang="ts">
 export default {
   render() {
-    return this.$slots.default
+    return [this.$slots.default]
   }
 }
 </script>
@@ -62,4 +62,4 @@ Lancez ensuite `vp run lint`.
 
 - [Règles de type et de script](../type-and-script.md)
 - [Toutes les règles](../all.md)
-- [Code source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/require_slots_as_functions.rs#L44)
+- [Code source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/require_slots_as_functions.rs#L43)

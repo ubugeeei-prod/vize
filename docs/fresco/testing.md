@@ -41,6 +41,13 @@ rendered.unmount();
 `Static` output is retained above later live frames, matching non-interactive and CI rendering.
 Always call `unmount()` so component watchers and focus registrations are released.
 
+## Tree and layout inspection
+
+Use [`inspectFrescoTree`](./devtools.md#layout-assertions-without-a-terminal) to join a mounted host
+tree with recorded or fixture native layout rectangles. The flat immutable result exposes stable
+ids, parent/child ids, depth, props, text, and an optional layout for every node. Unmatched layout ids
+are reported explicitly instead of being discarded.
+
 ## Semantic queries
 
 Use `getByRole`, `getByText`, `getByDescription`, and `getByTestId` when one result is required. The

@@ -17,7 +17,7 @@ prop の default / validator 内で使えなくなった this を検出します
 
 prop の既定値関数とバリデーターが `this` を参照していますが、Vue 3 ではこれらの関数の `this` からコンポーネントインスタンスを参照できません。
 
-```vue annotate="remove:6,7,8,13,14"
+```vue annotate="remove:6,7,8"
 <script lang="ts">
 export default {
   props: {
@@ -28,12 +28,6 @@ export default {
         return this.defaultSize
       }
     },
-    value: {
-      type: Number,
-      validator() {
-        return this.value > 0
-      }
-    }
   }
 }
 </script>
@@ -43,7 +37,7 @@ export default {
 
 既定値関数は引数の `props.baseSize` を使い、validator は引数の `value` を検査します。どちらも利用できないインスタンスの `this` に依存しなくなります。
 
-```vue annotate="add:6,7,8,13,14"
+```vue annotate="add:6,7,8,11,12,13,14,15,16"
 <script lang="ts">
 export default {
   props: {
@@ -86,4 +80,4 @@ export default defineConfig({}).withVue({
 
 - [型と script のルール](../type-and-script.md)
 - [全ルール](../all.md)
-- [ソースコード](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deprecated_props_default_this.rs#L71)
+- [ソースコード](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deprecated_props_default_this.rs#L66)

@@ -1,0 +1,4 @@
+<script setup lang="ts">
+import { PinRoot } from './library'
+</script>
+<template><PinRoot type="text" custom-attr="x" /></template>

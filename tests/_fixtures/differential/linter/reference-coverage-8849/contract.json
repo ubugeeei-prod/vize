@@ -7,6 +7,7 @@
       "project": "gui-for-singbox",
       "revision": "1be4816dea1e8793d8e08ae4f8f016c28101672d",
       "preset": "ecosystem",
+      "compatiblePresets": ["ecosystem", "all-mapped"],
       "source": "AppShell.vue.txt",
       "sourceSha256": "4b7c77d382e1d3e46eeb6765eb6ab6cfaebb7c1d2b7a2a65a06871289b734c6e",
       "finding": {
@@ -39,6 +40,7 @@
       "project": "mobile-web-best-practice",
       "revision": "34a793b13492405f75c97b46253df5ee142014cc",
       "preset": "ecosystem",
+      "compatiblePresets": ["ecosystem", "all-mapped"],
       "source": "card.vue.txt",
       "sourceSha256": "0e8ca44978bf438cf9ff9df7bb2adf315af226efc32b511d12a10c75dc22f6e1",
       "finding": {

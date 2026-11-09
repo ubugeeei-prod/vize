@@ -35,7 +35,9 @@ log-style view that stays at the tail only while the user is already at the tail
 
 When `focused` is true, Up/Down, Page Up/Page Down, and Home/End update the offset. Mouse-wheel
 events also update it when the app is created with `mouse: true`. `v-model` exposes the controlled
-offset and the `scroll` event emits the new `VirtualViewportRange`.
+offset and the `scroll` event emits the new `VirtualViewportRange`. The visible scrollbar accepts
+bounded track clicks and preserves the pointer-to-thumb grab point while dragging; `disabled`
+blocks wheel, track, and drag updates.
 
 Template refs expose:
 
@@ -55,8 +57,9 @@ overscan, and verifies that no more than nine item nodes are retained after scro
 
 This is Vue-layer virtualization, not yet a general native clipping primitive. Content created by
 the default slot is culled before it reaches the native render tree, while arbitrary translated or
-overlapping native content still awaits the M1 clipping and routed-input work. Mouse input is also
-focus-gated and global until native hit-testing and capture/bubble routing land.
+overlapping native content still awaits the M1 clipping and routed-input work. Wheel input remains
+focus-gated, and pointer delivery remains global until native hit-testing and capture/bubble
+routing land; the scrollbar bounds its own pointer start against the latest native layout.
 
 See [`npm/fresco/examples/virtual-list.vue`](../../npm/fresco/examples/virtual-list.vue) for the
 canonical SFC example and `virtual-list-main.ts` for its executable entry.

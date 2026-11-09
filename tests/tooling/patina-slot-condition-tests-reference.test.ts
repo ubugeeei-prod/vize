@@ -65,10 +65,10 @@ test("the pinned Vue rule retains complete direct-condition originals and bounda
   const require = createRequire(join(root, "npm/linter/oxlint/package.json"));
   const providers = Object.fromEntries(
     Object.entries({
-      eslint: "10.13.0",
-      "eslint-plugin-vue": "10.9.2",
-      "vue-eslint-parser": "10.4.1",
-      "@typescript-eslint/parser": "8.65.0",
+      eslint: "10.14.0",
+      "eslint-plugin-vue": "10.12.0",
+      "vue-eslint-parser": "10.4.2",
+      "@typescript-eslint/parser": "8.72.1",
     }).map(([name, version]) => {
       const path = realpathSync(require.resolve(name + "/package.json"));
       assert.equal(asRecord(parseJson(readFileSync(path, "utf8"))).version, version);
@@ -80,11 +80,11 @@ test("the pinned Vue rule retains complete direct-condition originals and bounda
   const helperPath = join(pluginDirectory, "dist/utils/index.js");
   assert.equal(
     hash(readFileSync(rulePath)),
-    "94857af48a201bc454f37630d1176a373a60d8fd0f6dc9d22a758a3243d76575",
+    "a6ed6267da102771909cf3a51ced3417ed771e7668a9198a274b15ea46e73607",
   );
   assert.equal(
     hash(readFileSync(helperPath)),
-    "4727c10651f789ee6308b4311f3694dd302faae9e5b821ae4b31432c3b105925",
+    "f4cfe19d7a05b1f2597adc822f466a3b57ea69ce4f0797194593bda3e1fc562e",
   );
   const Linter = asRecord(require("eslint")).Linter as new () => Host;
   const plugin: unknown = require("eslint-plugin-vue"),
@@ -105,7 +105,7 @@ test("the pinned Vue rule retains complete direct-condition originals and bounda
       readFileSync(join(root, "crates/vize_patina/src/rules/script/require_slots_as_functions.rs")),
     ),
     scope:
-      "Historical matrix ESLint10.4.1 is distinct from current explicit-rule ESLint10.13.0. Other logical/arithmetic/comparison/unary/value-use differences remain outside this two-parent correction.",
+      "Historical matrix ESLint10.4.1 is distinct from current explicit-rule ESLint10.14.0. Other logical/arithmetic/comparison/unary/value-use differences remain outside this two-parent correction.",
   };
   console.log("vize-slot-condition-reference-source " + JSON.stringify(source));
   const inputs = [

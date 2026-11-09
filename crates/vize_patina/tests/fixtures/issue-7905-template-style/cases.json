@@ -64,18 +64,18 @@
     "rule": "html",
     "policy": "default",
     "entry": "template",
-    "source": "<img alt=\"資料\" src=\"logo\">",
-    "fixed": "<img alt=\"資料\" src=\"logo\" />",
-    "target": "<img alt=\"資料\" src=\"logo\">",
+    "source": "<img alt=\"資料\" src=\"logo\" />",
+    "fixed": "<img alt=\"資料\" src=\"logo\">",
+    "target": "<img alt=\"資料\" src=\"logo\" />",
     "start": 0,
-    "end": 29,
-    "message": "Void element should be self-closing",
-    "help": "Use self-closing syntax",
+    "end": 31,
+    "message": "Element must not use self-closing syntax",
+    "help": "Use separate start and end tags",
     "edits": [
       {
-        "start": 0,
-        "end": 29,
-        "newText": "<img alt=\"資料\" src=\"logo\" />"
+        "start": 28,
+        "end": 30,
+        "newText": ""
       }
     ]
   },
@@ -133,9 +133,14 @@
     "help": "Use separate start and end tags",
     "edits": [
       {
-        "start": 0,
+        "start": 22,
+        "end": 24,
+        "newText": ""
+      },
+      {
+        "start": 25,
         "end": 25,
-        "newText": "<MyCard title=\"資料\"></MyCard>"
+        "newText": "</MyCard>"
       }
     ]
   },
@@ -153,9 +158,9 @@
     "help": "Use separate start and end tags",
     "edits": [
       {
-        "start": 0,
-        "end": 18,
-        "newText": "<input disabled>"
+        "start": 15,
+        "end": 17,
+        "newText": ""
       }
     ]
   },
@@ -194,9 +199,9 @@
     "entry": "template",
     "source": "<my-card />",
     "fixed": "<MyCard />",
-    "target": "<my-card />",
+    "target": "<my-card",
     "start": 0,
-    "end": 11,
+    "end": 8,
     "message": "Component should use PascalCase",
     "help": "Use PascalCase for component names",
     "edits": [
@@ -214,9 +219,9 @@
     "entry": "template",
     "source": "<myCard>hello</myCard>",
     "fixed": "<MyCard>hello</MyCard>",
-    "target": "<myCard>",
+    "target": "<myCard",
     "start": 0,
-    "end": 8,
+    "end": 7,
     "message": "Component should use PascalCase",
     "help": "Use PascalCase for component names",
     "edits": [
@@ -239,9 +244,9 @@
     "entry": "template",
     "source": "<my-card><span>text</span></my-card>",
     "fixed": "<MyCard><span>text</span></MyCard>",
-    "target": "<my-card>",
+    "target": "<my-card",
     "start": 0,
-    "end": 9,
+    "end": 8,
     "message": "Component should use PascalCase",
     "help": "Use PascalCase for component names",
     "edits": [
@@ -264,9 +269,9 @@
     "entry": "template",
     "source": "<my-card><!-- </my-card> --><span /></my-card>",
     "fixed": "<MyCard><!-- </my-card> --><span /></MyCard>",
-    "target": "<my-card>",
+    "target": "<my-card",
     "start": 0,
-    "end": 9,
+    "end": 8,
     "message": "Component should use PascalCase",
     "help": "Use PascalCase for component names",
     "edits": [
@@ -289,9 +294,9 @@
     "entry": "template",
     "source": "<my-card>{{ \"</my-card>\" }}</my-card>",
     "fixed": "<MyCard>{{ \"</my-card>\" }}</MyCard>",
-    "target": "<my-card>",
+    "target": "<my-card",
     "start": 0,
-    "end": 9,
+    "end": 8,
     "message": "Component should use PascalCase",
     "help": "Use PascalCase for component names",
     "edits": [
@@ -314,9 +319,9 @@
     "entry": "template",
     "source": "<my-card><script>const text = \"</my-card>\";</script></my-card>",
     "fixed": "<MyCard><script>const text = \"</my-card>\";</script></MyCard>",
-    "target": "<my-card>",
+    "target": "<my-card",
     "start": 0,
-    "end": 9,
+    "end": 8,
     "message": "Component should use PascalCase",
     "help": "Use PascalCase for component names",
     "edits": [
@@ -339,9 +344,9 @@
     "entry": "template",
     "source": "資料😀\r\n<my-card title=\"資料😀\">x</my-card>",
     "fixed": "資料😀\r\n<MyCard title=\"資料😀\">x</MyCard>",
-    "target": "<my-card title=\"資料😀\">",
+    "target": "<my-card",
     "start": 12,
-    "end": 40,
+    "end": 20,
     "message": "Component should use PascalCase",
     "help": "Use PascalCase for component names",
     "edits": [
@@ -364,9 +369,9 @@
     "entry": "template",
     "source": "<XMLParser></XMLParser>",
     "fixed": "<x-m-l-parser></x-m-l-parser>",
-    "target": "<XMLParser>",
+    "target": "<XMLParser",
     "start": 0,
-    "end": 11,
+    "end": 10,
     "message": "Component should use kebab-case",
     "help": "Use kebab-case for component names",
     "edits": [
@@ -389,9 +394,9 @@
     "entry": "template",
     "source": "<foo.bar />",
     "fixed": "<foo.bar />",
-    "target": "<foo.bar />",
+    "target": "<foo.bar",
     "start": 0,
-    "end": 11,
+    "end": 8,
     "message": "Component should use PascalCase",
     "help": "Use PascalCase for component names",
     "edits": []
@@ -403,9 +408,9 @@
     "entry": "template",
     "source": "<my--card />",
     "fixed": "<my--card />",
-    "target": "<my--card />",
+    "target": "<my--card",
     "start": 0,
-    "end": 12,
+    "end": 9,
     "message": "Component should use PascalCase",
     "help": "Use PascalCase for component names",
     "edits": []
@@ -417,9 +422,9 @@
     "entry": "template",
     "source": "<my-card>",
     "fixed": "<my-card>",
-    "target": "<my-card>",
+    "target": "<my-card",
     "start": 0,
-    "end": 9,
+    "end": 8,
     "message": "Component should use PascalCase",
     "help": "Use PascalCase for component names",
     "edits": []
@@ -431,9 +436,9 @@
     "entry": "jsx",
     "source": "export const card = <my-card />;",
     "fixed": "export const card = <my-card />;",
-    "target": "<my-card />",
+    "target": "<my-card",
     "start": 20,
-    "end": 31,
+    "end": 28,
     "message": "Component should use PascalCase",
     "help": "Use PascalCase for component names",
     "edits": []
@@ -445,9 +450,9 @@
     "entry": "template",
     "source": "<svg><my-card></my-card></svg>",
     "fixed": "<svg><my-card></my-card></svg>",
-    "target": "<my-card>",
+    "target": "<my-card",
     "start": 5,
-    "end": 14,
+    "end": 13,
     "message": "Component should use PascalCase",
     "help": "Use PascalCase for component names",
     "edits": []

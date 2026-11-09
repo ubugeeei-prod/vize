@@ -157,20 +157,27 @@ test("named Typeof-v1 successors preserve exact two old rows, SHA pins and whole
   const publicApiDoc = "/// Implements the `script/require-slots-as-functions` lint rule.\n";
   assert.equal(current.split(publicApiDoc).length, 2);
   const currentWithoutPublicApiDoc = current.replace(publicApiDoc, "");
-  const after =
-    "if matches!(\n            expression.operator,\n            UnaryOperator::LogicalNot | UnaryOperator::Typeof\n        ) {";
-  assert.equal(currentWithoutPublicApiDoc.split(after).length, 2);
-  const conditionalLines =
-    "        self.suppress_direct_slot_function(&expression.consequent);\n        self.suppress_direct_slot_function(&expression.alternate);\n";
-  assert.equal(currentWithoutPublicApiDoc.split(conditionalLines).length, 2);
-  const beforeConditional = currentWithoutPublicApiDoc
-    .replace(conditionalLines, "")
-    .replace("\n#[cfg(test)]\nmod conditional_tests;\n", "");
-  assert.equal(hash(beforeConditional), conditionalSuccessors.beforeRuleSha256);
-  const before = beforeConditional
-    .replace(after, "if expression.operator == UnaryOperator::LogicalNot {")
-    .replace("\n#[cfg(test)]\nmod typeof_tests;\n", "");
-  assert.equal(hash(before), successors.beforeRuleSha256);
+  assert.equal(
+    successors.beforeRuleSha256,
+    "0673f14ce68018c1636dd398d0c36108af8f5a17a90140cb10ad3b6c503f2118",
+  );
+  assert.equal(
+    conditionalSuccessors.beforeRuleSha256,
+    "9804044031a7975b732af2e1853388313bad635b69b5fd8332d4e4c8f8e87819",
+  );
+  assert.equal(
+    hash(currentWithoutPublicApiDoc),
+    "5b88de54af46fbbba87e8e642772338ae9b687448e222a99df779762b16ed2b8",
+  );
+  for (const ownedBoundary of [
+    "fn slot_function_origin(&self, expression: &Expression<'_>) -> Option<Span>",
+    "if self.vue2_render_depth > 0",
+    "member_of(expression).and_then(slot_property_span)",
+    "fn visit_member_expression(&mut self, member: &MemberExpression<'a>)",
+  ]) {
+    assert.equal(currentWithoutPublicApiDoc.split(ownedBoundary).length, 2, ownedBoundary);
+  }
+  assert.ok(!currentWithoutPublicApiDoc.includes("suppress_direct_slot_function"));
 });
 
 test("named ConditionalArms-v1 retains the exact old alternate and original CLI packets", () => {
@@ -252,10 +259,10 @@ test("the pinned Vue rule retains complete immediate presence originals and boun
   const require = createRequire(join(root, "npm/linter/oxlint/package.json"));
   const providers = Object.fromEntries(
     Object.entries({
-      eslint: "10.13.0",
-      "eslint-plugin-vue": "10.9.2",
-      "vue-eslint-parser": "10.4.1",
-      "@typescript-eslint/parser": "8.65.0",
+      eslint: "10.14.0",
+      "eslint-plugin-vue": "10.12.0",
+      "vue-eslint-parser": "10.4.2",
+      "@typescript-eslint/parser": "8.72.1",
     }).map(([name, version]) => {
       const path = realpathSync(require.resolve(name + "/package.json"));
       assert.equal(asRecord(parseJson(readFileSync(path, "utf8"))).version, version);
@@ -267,11 +274,11 @@ test("the pinned Vue rule retains complete immediate presence originals and boun
   const helperPath = join(pluginDirectory, "dist/utils/index.js");
   assert.equal(
     hash(readFileSync(rulePath)),
-    "94857af48a201bc454f37630d1176a373a60d8fd0f6dc9d22a758a3243d76575",
+    "a6ed6267da102771909cf3a51ced3417ed771e7668a9198a274b15ea46e73607",
   );
   assert.equal(
     hash(readFileSync(helperPath)),
-    "4727c10651f789ee6308b4311f3694dd302faae9e5b821ae4b31432c3b105925",
+    "f4cfe19d7a05b1f2597adc822f466a3b57ea69ce4f0797194593bda3e1fc562e",
   );
   const Linter = asRecord(require("eslint")).Linter as new () => Host;
   const plugin: unknown = require("eslint-plugin-vue"),
@@ -294,7 +301,7 @@ test("the pinned Vue rule retains complete immediate presence originals and boun
       readFileSync(join(root, "crates/vize_patina/src/rules/script/require_slots_as_functions.rs")),
     ),
     scope:
-      "Historical matrix ESLint10.4.1 is distinct from current explicit-rule ESLint10.13.0. Current semantics include immediate Typeof and conditional arms only. Typeof provenance remains historical; nested/other-operator and existing native value-use differences remain explicit.",
+      "Historical matrix ESLint10.4.1 is distinct from current explicit-rule ESLint10.14.0. Current semantics include immediate Typeof and conditional arms only. Typeof provenance remains historical; nested/other-operator and existing native value-use differences remain explicit.",
   };
   console.log("vize-slot-typeof-reference-source " + JSON.stringify(source));
   const inputs = [

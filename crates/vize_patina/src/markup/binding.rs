@@ -10,7 +10,8 @@ use super::l2::bound::L2Bound;
 use super::l2::surface::{SurfaceDirective, attr_span, attr_value};
 use super::{l2_range, loc_to_range, span_to_range};
 use crate::ir::ByteRange;
-use oxc_ast::ast::JSXAttribute;
+use oxc_ast::ast::{Expression, JSXAttribute, JSXAttributeValue, JSXExpression};
+use oxc_span::Span;
 use std::marker::PhantomData;
 use vize_l2::op::Attribute;
 use vize_relief::{AttributeNode, DirectiveNode, ExpressionNode};
@@ -77,6 +78,32 @@ pub(super) enum MarkupBindingInner<'a> {
 pub struct MarkupBinding<'a> {
     pub(super) inner: MarkupBindingInner<'a>,
     _marker: PhantomData<&'a ()>,
+}
+
+pub(crate) struct RetainedMarkupExpression<'a> {
+    pub(crate) ast: &'a Expression<'a>,
+    coordinates: RetainedExpressionCoordinates<'a>,
+}
+
+enum RetainedExpressionCoordinates<'a> {
+    Relative(u32),
+    L2(&'a vize_l2::expr::JsExpr<'a>),
+}
+
+impl RetainedMarkupExpression<'_> {
+    pub(crate) fn authored_range(&self, span: Span) -> Option<ByteRange> {
+        match self.coordinates {
+            RetainedExpressionCoordinates::Relative(offset) => Some(ByteRange::new(
+                offset.checked_add(span.start)?,
+                offset.checked_add(span.end)?,
+            )),
+            RetainedExpressionCoordinates::L2(expression) => {
+                let decoded = expression.ast_span_to_source(span)?;
+                let authored = expression.authored_span(decoded)?;
+                Some(ByteRange::new(authored.start, authored.end))
+            }
+        }
+    }
 }
 
 impl<'a> MarkupBinding<'a> {
@@ -264,6 +291,53 @@ impl<'a> MarkupBinding<'a> {
                 attr, static_name, ..
             } => surface_directive(attr, static_name)
                 .and_then(|directive| surface_expression(attr, &directive)),
+        }
+    }
+
+    /// The retained JavaScript expression and its exact range in the authored
+    /// source. Backends without a retained expression return `None` instead of
+    /// asking rules to parse the same binding again.
+    pub(crate) fn retained_expression(&self) -> Option<RetainedMarkupExpression<'a>> {
+        match self.inner {
+            MarkupBindingInner::ReliefDirective(node) => {
+                let ExpressionNode::Simple(simple) = node.exp.as_ref()? else {
+                    return None;
+                };
+                let retained = simple.js_ast?.as_expression()?;
+                if retained.raw != simple.content {
+                    return None;
+                }
+                let loc = loc_to_range(&simple.loc);
+                Some(RetainedMarkupExpression {
+                    ast: retained.ast,
+                    coordinates: RetainedExpressionCoordinates::Relative(loc.start),
+                })
+            }
+            MarkupBindingInner::Jsx { node, offset } => {
+                let JSXAttributeValue::ExpressionContainer(container) =
+                    jsx_attribute_ref(node).value.as_ref()?
+                else {
+                    return None;
+                };
+                let expression = match &container.expression {
+                    JSXExpression::EmptyExpression(_) => return None,
+                    other => other.as_expression()?,
+                };
+                Some(RetainedMarkupExpression {
+                    ast: expression,
+                    coordinates: RetainedExpressionCoordinates::Relative(offset),
+                })
+            }
+            MarkupBindingInner::L2Binding(binding) => {
+                let expression = binding.retained_expression()?;
+                Some(RetainedMarkupExpression {
+                    ast: expression.ast,
+                    coordinates: RetainedExpressionCoordinates::L2(expression),
+                })
+            }
+            MarkupBindingInner::ReliefAttribute(_)
+            | MarkupBindingInner::L2Attribute { .. }
+            | MarkupBindingInner::Surface { .. } => None,
         }
     }
 
