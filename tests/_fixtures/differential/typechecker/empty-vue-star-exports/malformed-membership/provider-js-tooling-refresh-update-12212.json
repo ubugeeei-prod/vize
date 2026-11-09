@@ -1,0 +1,60 @@
+{
+  "version": 1,
+  "kind": "exact-provider-qualification-js-tooling-refresh-successor",
+  "sourceRevision": "4aa4a9125c68a4dc63f4d4924dd4d509aca73d58",
+  "sourceTree": "893046543ae70e36c82b859e3759ef22da3a5adb",
+  "previousProviderQualificationRecord": {
+    "path": "tests/_fixtures/differential/typechecker/empty-vue-star-exports/malformed-membership/provider-docs-metadata-update-12236.json",
+    "bytes": 2332,
+    "sha256": "c9d285b11ff54429e241ea58d212b204d90950ee78d5c5958c37b9a14226871e",
+    "gitBlob": "4a61ae01cc93d2f3a4446065cd45ada44994d501"
+  },
+  "previousQualificationLock": {
+    "path": "pnpm-lock.yaml",
+    "bytes": 1088594,
+    "sha256": "758cc5b9aa62088f2073d8c9c8007e5c64a026fa53f9e0a7690d660ffa55e61f",
+    "gitBlob": "ddc7657ebdf12e8c671948f43071456c674a0b74"
+  },
+  "previousQualificationPackage": {
+    "path": "package.json",
+    "bytes": 1053,
+    "sha256": "52985c3134183a70ebcf42236092cb2fd2dd815cb301b2a23ec74c4cc391de04",
+    "gitBlob": "d09b87f41fd10ff14c122a0e65e8a9d7d03e838a"
+  },
+  "finalQualificationLock": {
+    "path": "pnpm-lock.yaml",
+    "bytes": 1089723,
+    "sha256": "cb8542699cbaaad1f5457513d574ef01add5644982683115beae1e140bfc61d7",
+    "gitBlob": "846feaad2a263de2bc6a9bb1aab8a9a342320957"
+  },
+  "finalQualificationPackage": {
+    "path": "package.json",
+    "bytes": 1053,
+    "sha256": "52985c3134183a70ebcf42236092cb2fd2dd815cb301b2a23ec74c4cc391de04",
+    "gitBlob": "d09b87f41fd10ff14c122a0e65e8a9d7d03e838a"
+  },
+  "workspaceManifest": {
+    "path": "pnpm-workspace.yaml",
+    "bytes": 9383,
+    "sha256": "06c87c57386897704293c9c4b2ca8c8965e00c33d76d24041890e67a6742ecde",
+    "gitBlob": "4c2f815ad9b6433377e1198777c265021fe7d90f"
+  },
+  "unpluginManifest": {
+    "path": "npm/builder/unplugin/package.json",
+    "bytes": 3077,
+    "sha256": "d1663b75cc91684f2f1f67f90c52be6ddea1f0174338bf34435657aa8b13debf",
+    "gitBlob": "753092e434de913e4ce476a9b64ec2961102c076"
+  },
+  "exampleManifest": {
+    "path": "npm/builder/unplugin/example/package.json",
+    "bytes": 812,
+    "sha256": "b476d3f91323fc97dc3da3e122f1599e39ea8c734cba8ca8b68564585d32f554",
+    "gitBlob": "39b231350e34b82704127597d4348873a98230b7"
+  },
+  "resolver": {
+    "command": "vp install --lockfile-only --no-frozen-lockfile --ignore-scripts",
+    "fixedPointSha256": "cb8542699cbaaad1f5457513d574ef01add5644982683115beae1e140bfc61d7"
+  },
+  "nativeAcceptanceCredit": false,
+  "scope": "Bind the executable unplugin example workspace and the complete refreshed JavaScript dependency graph without rewriting any historical qualification predecessor. This record gives source provenance only."
+}

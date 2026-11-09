@@ -29,7 +29,6 @@ interface PayloadManifest {
   packages: PayloadPackage[];
 }
 const collectorPaths = [
-  "tools/commands/release/npm/collect-public-install.rs",
   "tools/support/archive/tar.ts",
   ...[
     "collect.ts",

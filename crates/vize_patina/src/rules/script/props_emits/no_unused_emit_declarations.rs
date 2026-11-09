@@ -118,7 +118,7 @@ impl ScriptRule for NoUnusedEmitDeclarations {
         sfc: SfcScriptContext<'_>,
         result: &mut ScriptLintResult,
     ) {
-        if let Some(declaration) = find_emit_declaration(program, sfc)
+        if let Some(declaration) = find_emit_declaration(program, source, sfc)
             && !declaration.events.is_empty()
         {
             // Collect every event name emitted through the captured function.
@@ -215,6 +215,7 @@ struct EmitDeclaration<'a> {
 /// template-only `$emit` helper.
 fn find_emit_declaration<'a>(
     program: &'a Program<'a>,
+    source: &str,
     sfc: SfcScriptContext<'_>,
 ) -> Option<EmitDeclaration<'a>> {
     for statement in &program.body {
@@ -232,14 +233,14 @@ fn find_emit_declaration<'a>(
                 return Some(EmitDeclaration {
                     binding: Some(id.name.as_str()),
                     start: call.span.start,
-                    events: collect_declared_events(call, program, sfc),
+                    events: collect_declared_events(call, program, source, sfc),
                 });
             }
         } else if let Statement::ExpressionStatement(expression) = statement
             && let Some(call) = unwrap_call(&expression.expression)
             && is_define_emits(call)
         {
-            let events = collect_declared_events(call, program, sfc);
+            let events = collect_declared_events(call, program, source, sfc);
             return Some(EmitDeclaration {
                 binding: None,
                 start: call.span.start,
@@ -255,6 +256,7 @@ fn find_emit_declaration<'a>(
 fn collect_declared_events(
     call: &CallExpression<'_>,
     program: &Program<'_>,
+    source: &str,
     sfc: SfcScriptContext<'_>,
 ) -> Vec<DeclaredEvent> {
     let mut events = Vec::new();
@@ -267,7 +269,25 @@ fn collect_declared_events(
         };
         for type_param in &type_arguments.params {
             resolver.collect(type_param, TypeBlock::Own, &mut Vec::new(), &mut events);
+            if let Some(world) = sfc.resolved_type_world
+                && let Some(type_source) =
+                    source.get(type_param.span().start as usize..type_param.span().end as usize)
+            {
+                events.extend(
+                    world
+                        .resolve_properties(type_source)
+                        .properties
+                        .into_iter()
+                        .map(|property| DeclaredEvent {
+                            name: property.name,
+                            span: type_param.span(),
+                            origin_offset: None,
+                        }),
+                );
+            }
         }
+        let mut names = FxHashSet::default();
+        events.retain(|event| names.insert(event.name.clone()));
         return events;
     }
 

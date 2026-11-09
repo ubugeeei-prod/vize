@@ -50,7 +50,7 @@ env:
   # Release binaries report the plain version; every other build says <version>-dev.
   VIZE_RELEASE_BUILD: "1"
   # JS packages built by ./.github/actions/release-build-packages.
-  RELEASE_JS_PACKAGES: npm/cli npm/builder/vite npm/linter/oxlint npm/builder/unplugin npm/fresco npm/mcp-musea npm/builder/vite-musea npm/builder/rspack npm/framework/musea-nuxt npm/framework/nuxt-lint-config npm/framework/nuxt npm/marquette npm/compose/core npm/compose/router npm/compose/data npm/ui npm/plugin-sdk npm/builder/babel
+  RELEASE_JS_PACKAGES: npm/cli npm/create-fresco npm/builder/vite npm/linter/oxlint npm/builder/unplugin npm/fresco npm/mcp-musea npm/builder/vite-musea npm/builder/rspack npm/framework/musea-nuxt npm/framework/nuxt-lint-config npm/framework/nuxt npm/marquette npm/compose/core npm/compose/router npm/compose/data npm/ui npm/plugin-sdk npm/builder/babel
 jobs:
   version:
     if: github.repository == 'ubugeeei-prod/vize' && github.ref == 'refs/heads/main'
@@ -216,7 +216,7 @@ jobs:
         with: { node-version-file: "package.json", run-install: true }
       - name: Smoke @vizejs/wasm
         run: |
-          rust-script tools/commands/release/npm/smoke-wasm-package.rs npm/wasm
+          node tools/commands/release/npm/smoke-wasm-package.ts npm/wasm
           node tools/commands/release/npm/smoke-release-install.ts npm/wasm
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
@@ -513,7 +513,7 @@ jobs:
           # receipt must match the attempt SHA the native artifacts were built for.
           VIZE_RELEASE_CANDIDATE_SHA: ${{ needs.version.outputs.sha }}
         run: >-
-          rust-script tools/commands/editors/vscode/package-typescript-provider.rs
+          node tools/support/editors/typescript-provider/package.ts
           "$RUST_TARGET" "$RUNNER_TEMP/native-provider"
           "$GITHUB_WORKSPACE/.artifacts/vscode/$VSIX_ARCHIVE"
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

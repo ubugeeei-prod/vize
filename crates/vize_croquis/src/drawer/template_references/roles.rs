@@ -1,21 +1,17 @@
 use super::{
-    Capture, Local, TemplateReference, TemplateReferenceGapKind, TemplateReferenceOwner,
-    source_span,
+    Capture, Local, SyntaxFacts, SyntaxKind, SyntaxRecord, TemplateReference,
+    TemplateReferenceGapKind, TemplateReferenceOwner, source_span,
 };
 use crate::drawer::helpers::{
     EventHandlerExpression, RetainedIdentifierRef, RetainedParameterRefs,
     classify_retained_event_handler, retained_expression_refs, retained_handler_refs,
     retained_parameter_refs,
 };
-use vize_armature::parser::{TemplateSyntax, TemplateSyntaxRecord};
 use vize_l0::Span;
 use vize_relief::{ExpressionNode, JsExpression};
 
-impl<'facts, 'source> Capture<'facts, 'source> {
-    pub(super) fn record(
-        &self,
-        expression: &ExpressionNode<'_>,
-    ) -> Option<&'facts TemplateSyntaxRecord<'source>> {
+impl<'facts, 'source, F: SyntaxFacts<'source>> Capture<'facts, 'source, F> {
+    pub(super) fn record(&self, expression: &ExpressionNode<'_>) -> Option<&'facts F::Record> {
         let ExpressionNode::Simple(node) = expression else {
             return None;
         };
@@ -35,22 +31,22 @@ impl<'facts, 'source> Capture<'facts, 'source> {
             return;
         };
         let (references, handler) = match record.syntax() {
-            TemplateSyntax::Expression(Some(expression)) => {
-                (retained_expression_refs(expression), false)
+            SyntaxKind::Expression(Some(expression)) => {
+                (retained_expression_refs(&expression), false)
             }
-            TemplateSyntax::HandlerExpression(expression) => {
-                let references = retained_expression_refs(expression);
+            SyntaxKind::HandlerExpression(expression) => {
+                let references = retained_expression_refs(&expression);
                 // The shared legacy classifier also collects callback binding
                 // names. Only enter it after the complete bounded token walk
                 // admits the expression, including every parameter pattern.
                 let handler = references.is_some()
                     && matches!(
-                        classify_retained_event_handler(expression),
+                        classify_retained_event_handler(&expression),
                         EventHandlerExpression::Inline
                     );
                 (references, handler)
             }
-            TemplateSyntax::Handler(owner) => (owner.body().and_then(retained_handler_refs), true),
+            SyntaxKind::Handler(owner) => (owner.body().and_then(retained_handler_refs), true),
             _ => (None, false),
         };
         let Some(references) = references else {
@@ -68,13 +64,13 @@ impl<'facts, 'source> Capture<'facts, 'source> {
         );
     }
 
-    pub(super) fn slot_scope(&mut self, record: &TemplateSyntaxRecord<'_>) {
+    pub(super) fn slot_scope(&mut self, record: &F::Record) {
         let references = match record.syntax() {
-            TemplateSyntax::Slot(Some(retained)) => retained
+            SyntaxKind::SlotRetained(Some(retained)) => retained
                 .as_slot_parameters()
                 .and_then(Result::ok)
                 .and_then(retained_parameter_refs),
-            TemplateSyntax::LegacySlot(owner) => owner
+            SyntaxKind::SlotNative(Some(owner)) | SyntaxKind::LegacySlot(owner) => owner
                 .admitted_parameters()
                 .and_then(|admitted| retained_parameter_refs(admitted.parameters())),
             _ => None,
@@ -92,8 +88,8 @@ impl<'facts, 'source> Capture<'facts, 'source> {
         }
     }
 
-    pub(super) fn for_scope(&mut self, record: &TemplateSyntaxRecord<'_>) {
-        let TemplateSyntax::For(head) = record.syntax() else {
+    pub(super) fn for_scope(&mut self, record: &F::Record) {
+        let SyntaxKind::For(head) = record.syntax() else {
             self.gap(
                 source_span(record.span()),
                 TemplateReferenceGapKind::RefusedSyntax,
@@ -142,10 +138,10 @@ impl<'facts, 'source> Capture<'facts, 'source> {
 
     pub(super) fn is_original_for_collection(
         &self,
-        record: &TemplateSyntaxRecord<'_>,
+        record: &F::Record,
         expression: &ExpressionNode<'_>,
     ) -> bool {
-        let (TemplateSyntax::For(head), ExpressionNode::Simple(expression)) =
+        let (SyntaxKind::For(head), ExpressionNode::Simple(expression)) =
             (record.syntax(), expression)
         else {
             return false;

@@ -1,5 +1,4 @@
 import assert from "node:assert/strict";
-import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import fs from "node:fs";
 import os from "node:os";
@@ -189,16 +188,6 @@ void test("matrix execution preserves full configuration packets and coverage", 
     fs.rmSync(fixture, { recursive: true, force: true });
     fs.rmSync(scratch, { recursive: true, force: true });
   }
-});
-
-void test("Rust matrix execution qualifies the actual producer route", () => {
-  const tool = new URL("../../tools/commands/fixtures/tool-matrix-report.rs", import.meta.url);
-  const result = spawnSync("rust-script", ["--test", fileURLToPath(tool)], { encoding: "utf8" });
-  assert.equal(
-    result.status,
-    0,
-    String(result.error ?? "") + String(result.stderr ?? "") + String(result.stdout ?? ""),
-  );
 });
 
 void test("a clean packet stays ok only at exit zero", () => {

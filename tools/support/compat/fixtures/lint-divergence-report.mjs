@@ -30,7 +30,7 @@ import { resolveVizeLaunch } from "./tool-matrix-run.mjs";
  * for want of a measurement rather than for want of divergences.
  *
  * Both linters read the same file list — the registry's `vueGlobs`, the same
- * input set `tool-matrix-report.mjs` feeds `vize lint` — so a file count
+ * input set `tool-matrix-report.ts` feeds `vize lint` — so a file count
  * mismatch is reported rather than silently compared. Findings are classified by
  * rule-map status, so an unimplemented upstream rule lands in its own bucket and
  * never inflates the false-negative count.

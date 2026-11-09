@@ -1,0 +1,88 @@
+{
+  "schema": "vize.instance-global-current-provenance",
+  "version": 1,
+  "issue": 10617,
+  "pullRequest": 12162,
+  "producer": {
+    "sourceRevision": "517b8abf5651bf270eba0a44c1c09b393085c8cb",
+    "sourceTree": "1aa3d7f0632eb8ec9e64ccb05f99d4cda0d7f84c",
+    "pullRequestHead": "dbc3ab84a7799535d6489d715ac252c7453324bc",
+    "binarySha256": "a49749596fc045a6cac76864398ff59afd42fa4b76333b51dd44708a549aac82",
+    "recipe": "cargo build --profile ci -p vize",
+    "captureRun": 42480778738,
+    "artifactId": 13617534399,
+    "runAttempt": 1,
+    "platform": "linux",
+    "arch": "x64"
+  },
+  "artifact": {
+    "repository": "ubugeeei-prod/vize",
+    "run": 42480778738,
+    "job": 128734903108,
+    "id": 13617534399,
+    "name": "instance-globals-10617-dbc3ab84a7799535d6489d715ac252c7453324bc-1",
+    "digest": "sha256:5f44a68c1627cef54f381bafaf632a745c72dc461309e9aba597c714d69b2fc2",
+    "bytes": 18669937
+  },
+  "previousPopulation": {
+    "path": "source-packets-current-807a8508f344.json",
+    "bytes": 395298,
+    "sha256": "6fada7a16b5bdd6cca8d6fa1931f8468cc3e69ecbc101ed206c7cea305f4e6b8"
+  },
+  "successorPopulation": {
+    "path": "source-packets-current-517b8abf5651.json",
+    "bytes": 501180,
+    "sha256": "a8f08a09da36dfbe2bcecd313b837cddf63d585c6dfd8dbe16efe4b9b7ab0d18"
+  },
+  "sourceReceipt": {
+    "path": "crates/vize_canon/tests/empty_vue_star_exports/membership/constructor_without_args/payload_update/canon_leftovers_11499.json",
+    "sha256": "250e01138d163f77a5d98b20bc97f562a663ebb924c17c810b9d9cf02280128e"
+  },
+  "evidence": {
+    "source-build.json": {
+      "bytes": 326,
+      "sha256": "ca0cf7f4d1877913e7c7673360d8695813bcd2cdde1a284fc5b6f516aa3fd57e"
+    },
+    "source-launch.json": {
+      "bytes": 882,
+      "sha256": "e4f3736b324c17a08b45012ad1bb31c358d4473e9b91d7125c32ebcb0cddff17"
+    },
+    "source-protocol.json": {
+      "bytes": 468395,
+      "sha256": "c4d4be3fbe8e18654eebf83e5d08ebc85e465a8a2efc84638b73a163596db7c9"
+    },
+    "outcomes.json": {
+      "bytes": 64445,
+      "sha256": "63bead8479c7ea84fb597d362c0b107365315166f5862eb3392f19eefb524be6"
+    },
+    "qualification.json": {
+      "bytes": 68590,
+      "sha256": "b709d8fe6613076261ece2698b72b0c1295702656bf902a2041fdb732c5c7b0a"
+    },
+    "host-matrix.json": {
+      "bytes": 4327,
+      "sha256": "67a37fa40daa6738126f09a1efb24b2512175e5da5e09707d7ee598ad275c55d"
+    }
+  },
+  "capturedQualification": {
+    "status": "unqualified",
+    "fullPacketQualification": false,
+    "hostMatrixQualification": false,
+    "totalOutcomes": 499,
+    "passedOutcomes": 497,
+    "gapCount": 2,
+    "gapIds": [
+      "whole-packet/lf/options-own-method",
+      "whole-packet/crlf-unicode/options-own-method"
+    ]
+  },
+  "review": {
+    "completePackets": 80,
+    "allNonWholePacketOutcomesPassed": true,
+    "qualificationCredit": false,
+    "nativeAcceptanceCredit": false,
+    "publicPackageAcceptanceCredit": false,
+    "performanceCredit": false,
+    "reason": "The exact #11499 constructor base shifted the two Options API packets while all 497 semantic, protocol, mapping-geometry, and real-host controls passed; this record retains the observed postimages without assigning acceptance credit to the stale-golden run."
+  }
+}

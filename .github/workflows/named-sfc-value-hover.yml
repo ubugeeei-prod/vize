@@ -23,7 +23,7 @@ jobs:
     with: { run-cli: true }
   native-packets:
     needs: [source-cli]
-    runs-on: blacksmith-8vcpu-ubuntu-2404
+    runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 15
     env:
       GOMAXPROCS: "4"

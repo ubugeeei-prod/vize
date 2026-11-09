@@ -1,0 +1,8 @@
+export {};
+
+declare module "vue" {
+  interface ComponentCustomProperties {
+    $analytics: { readonly name: string };
+    [key: `$service${number}`]: { readonly id: number };
+  }
+}

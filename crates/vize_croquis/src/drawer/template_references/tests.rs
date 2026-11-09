@@ -3,6 +3,16 @@ use serde_json::Value;
 use vize_armature::Parser;
 use vize_l0::Allocator;
 
+fn lint_template<'t, 'a>(
+    surface: &'t vize_l1::markup::SurfaceTree<'a>,
+    lowered: &'t vize_l1_to_l2::Lowered<'a>,
+) -> LintTemplate<'t, 'a> {
+    LintTemplate::new(surface, lowered.allocator, &lowered.root).with_lowering_facts(
+        &lowered.consumed_expressions,
+        lowered.caps.scoped_slot_attrs,
+    )
+}
+
 fn component_tokens(source: &str) -> (Vec<(String, u32, u32)>, Vec<TemplateReferenceGap>) {
     let allocator = Allocator::default();
     let (root, errors, syntax) = Parser::new(&allocator, source).parse_with_template_syntax_facts();
@@ -27,6 +37,61 @@ fn component_tokens(source: &str) -> (Vec<(String, u32, u32)>, Vec<TemplateRefer
         })
         .collect();
     (tokens, packet.gaps)
+}
+
+fn assert_lint_packet_parity(source: &str) {
+    let allocator = Allocator::default();
+    let (root, errors, syntax) = Parser::new(&allocator, source).parse_with_template_syntax_facts();
+    assert!(
+        errors.iter().all(|error| error.is_compatibility_notice()),
+        "unexpected non-compatibility parser diagnostics: {errors:?}: {source}"
+    );
+    let expected = collect_template_references(&root, &syntax);
+    let (surface, _, surface_errors) =
+        vize_l1::markup::parse_with_authored_diagnostics(&allocator, source);
+    let lowered = vize_l1_to_l2::lower_preserving_comments(&allocator, &surface, &surface_errors);
+    let actual = collect_lint_template_references(lint_template(&surface, &lowered));
+    assert_eq!(
+        actual.references, expected.references,
+        "references: {source}; actual gaps={:?}",
+        actual.gaps
+    );
+    assert_eq!(actual.gaps, expected.gaps, "gaps: {source}");
+}
+
+#[test]
+fn l1_l2_syntax_packet_matches_armature_packet() {
+    for source in [
+        "{{ $listeners }}",
+        "<button @[event]=\"$listeners\" @click=\"$listeners\" />",
+        "<button @click=\"first($event); second($listeners)\" />",
+        "<div v-for=\"({ value = $listeners }, key) in rows[$listeners]\">{{ value }}{{ key }}{{ $listeners }}</div>",
+        "<Child v-slot=\"{ value = $listeners }\" :value=\"value\">{{ $listeners }}</Child>",
+        "<Child v-slot:[$listeners]=\"{ value }\" />",
+        "<div :data-value=\"$listeners &amp;&amp; ready\" />",
+        "<div v-pre @click=\"$listeners\">{{ $listeners }}</div>{{ $listeners }}",
+        "<X :same-name />",
+    ] {
+        assert_lint_packet_parity(source);
+    }
+
+    for fixture in [
+        include_str!(
+            "../../../../../tests/_fixtures/differential/lint/legacy-instance-apis-9217/independent.json"
+        ),
+        include_str!(
+            "../../../../../tests/_fixtures/differential/lint/legacy-instance-apis-9217/template-boundaries.json"
+        ),
+    ] {
+        let fixture: Value = serde_json::from_str(fixture).unwrap();
+        for case in fixture["records"].as_array().unwrap() {
+            let source = case["source"].as_str().unwrap();
+            let descriptor = vize_atelier_sfc::parse_sfc(source, Default::default()).unwrap();
+            if let Some(template) = descriptor.template {
+                assert_lint_packet_parity(&template.content);
+            }
+        }
+    }
 }
 
 #[test]

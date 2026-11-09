@@ -3,6 +3,7 @@
   "sourceVersion": "0.602.0",
   "sourceRevision": "3fa403f8cf4edbd851f7ca91c0f0648200f5777f",
   "publicCoreSha256": "eb11e7d6783f8d0a4b64ddb9ba8d4c7a10d08771306bcc9a7a220d4b861ce6e8",
+  "successorPublicCoreSha256": "46249a8d8376f1cce15ceca1f226cc6fbb577bfe6cc078cf7182e552931b7dbe",
   "publicEntrySha256": "561fd0ad08013b3d2e80eb8255e7a55bfea529ec3f9e4c460b8fd5cbbcec24b0",
   "files": [
     {
@@ -12,18 +13,28 @@
     },
     {
       "file": "Witness.mts.txt",
-      "bytes": 2130,
-      "sha256": "d92455804d376f11a95e55ba9e2a280af1b957906c49ddd81dd08bdb9350a42a"
+      "bytes": 2075,
+      "sha256": "a3db72e22efc376bb717e69e4fe58e5530f24b069562c0fabf01b22f7065977c"
     },
     {
       "file": "Witness.cts.txt",
-      "bytes": 2130,
-      "sha256": "d92455804d376f11a95e55ba9e2a280af1b957906c49ddd81dd08bdb9350a42a"
+      "bytes": 2075,
+      "sha256": "a3db72e22efc376bb717e69e4fe58e5530f24b069562c0fabf01b22f7065977c"
     },
     {
       "file": "core-import.txt",
+      "bytes": 1213,
+      "sha256": "142da5fca98318c5bd0511022bedccaa4166a2e8d626c92f20dd105d89e942c1"
+    },
+    {
+      "file": "core-import-historical.txt",
       "bytes": 1403,
       "sha256": "3013f8412ac2a46c5fb98e5e7cf6b618d5f03bd6db51a00972e1836a455f471c"
+    },
+    {
+      "file": "core-import-successor.txt",
+      "bytes": 1258,
+      "sha256": "94c3b988a029e1b88eaff2a31860ab5dfc3682e30c985e8fbe3e2c8a5fbd7a05"
     }
   ]
 }

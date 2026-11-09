@@ -14,7 +14,7 @@
 // that prints identically (normalization by the first print).
 //
 // The corpus is seeded from the committed .folio fixtures by
-// `tools/commands/ci/fuzz/seed_corpus.rs`.
+// `tools/commands/ci/fuzz/seed-corpus.ts`.
 use libfuzzer_sys::fuzz_target;
 use vize_croquis::dump::Page as CroquisPage;
 use vize_curator::repro::Page as ReproPage;

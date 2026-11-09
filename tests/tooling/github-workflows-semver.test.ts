@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { parse } from "yaml";
 
-import { resolveSemverChangeMarker } from "../../tools/support/compat/github/semver-change-marker.mjs";
+import { resolveSemverChangeMarker } from "../../tools/commands/ci/github/semver-change-marker.ts";
 import { readRepoFile, workflowJobBody } from "./support/github-workflows.ts";
 
 test("release SemVer checks classify the exact candidate without push metadata", () => {

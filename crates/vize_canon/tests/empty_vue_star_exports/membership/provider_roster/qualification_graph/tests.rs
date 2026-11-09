@@ -1,4 +1,16 @@
+use super::js_tooling_refresh::{
+    JsToolingRefreshQualificationGraph, update as js_tooling_refresh_update,
+    verify as verify_js_tooling_refresh_update,
+};
 use super::*;
+
+fn current_binding(path: &str, body: &[u8]) -> Value {
+    json!({
+        "path": path,
+        "bytes": body.len(),
+        "sha256": support::hash(body),
+    })
+}
 
 #[test]
 fn historical_tooling_successor_remains_an_exact_predecessor() {
@@ -43,7 +55,7 @@ fn historical_root_dependency_successor_remains_the_exact_predecessor() {
     );
 }
 
-mod dependency_ownership_successor {
+mod docs_metadata_successor {
     use super::*;
 
     struct Inputs {
@@ -53,36 +65,18 @@ mod dependency_ownership_successor {
         lock: Vec<u8>,
         package: Vec<u8>,
         workspace: Vec<u8>,
-        owner_bytes: Vec<Vec<u8>>,
-    }
-
-    fn historical_owner(path: &str) -> Vec<u8> {
-        let bytes = fs::read(support::repository().join(path)).unwrap();
-        if path != "npm/cli/package.json" {
-            return bytes;
-        }
-        let current = String::from_utf8(bytes).unwrap();
-        current
-            .replace("    \"virtual-ts-checker-strict.d.ts\",\n", "")
-            .replace(
-                "    \"./virtual-ts-checker-strict\": {\n      \"types\": \"./virtual-ts-checker-strict.d.ts\"\n    },\n",
-                "",
-            )
-            .into_bytes()
+        manifest: Vec<u8>,
     }
 
     fn inputs() -> Inputs {
         Inputs {
-            predecessor: fresco_update(),
-            predecessor_bytes: fs::read(support::corpus().join(FRESCO_UPDATE)).unwrap(),
-            update: dependency_ownership_update(),
+            predecessor: create_fresco_update(),
+            predecessor_bytes: fs::read(support::corpus().join(create_fresco::UPDATE)).unwrap(),
+            update: docs_metadata_update(),
             lock: fs::read(support::repository().join("pnpm-lock.yaml")).unwrap(),
             package: fs::read(support::repository().join("package.json")).unwrap(),
             workspace: fs::read(support::repository().join(WORKSPACE)).unwrap(),
-            owner_bytes: OWNER_MANIFESTS
-                .iter()
-                .map(|path| historical_owner(path))
-                .collect(),
+            manifest: fs::read(support::repository().join(DOCS_METADATA_MANIFEST)).unwrap(),
         }
     }
 
@@ -91,58 +85,47 @@ mod dependency_ownership_successor {
         predecessor: &Value,
         update: &Value,
         lock: &[u8],
-        owners: &[Vec<u8>],
+        manifest: &[u8],
     ) -> Checked<()> {
-        let owners = OWNER_MANIFESTS
-            .iter()
-            .zip(owners)
-            .map(|(path, bytes)| (*path, bytes.as_slice()))
-            .collect::<Vec<_>>();
-        let graph = OwnershipQualificationGraph {
+        let graph = DocsMetadataQualificationGraph {
             lock,
             package: &input.package,
             workspace: &input.workspace,
-            owners: &owners,
+            manifest,
         };
-        verify_dependency_ownership_update(predecessor, &input.predecessor_bytes, update, &graph)
+        verify_docs_metadata_update(predecessor, &input.predecessor_bytes, update, &graph)
+    }
+
+    fn bind_current_graph(input: &Inputs, update: &mut Value) {
+        update["finalQualificationLock"] = current_binding("pnpm-lock.yaml", &input.lock);
+        update["finalQualificationPackage"] = current_binding("package.json", &input.package);
+        update["workspaceManifest"] = current_binding("pnpm-workspace.yaml", &input.workspace);
+        update["docsManifest"] = current_binding(DOCS_METADATA_MANIFEST, &input.manifest);
+        update["resolver"]["fixedPointSha256"] = json!(support::hash(&input.lock));
     }
 
     #[test]
-    fn exact_root_dependency_successor_binds_the_whole_current_graph() {
+    fn rebound_docs_metadata_successor_satisfies_structural_rules() {
         let input = inputs();
+        let mut update = input.update.clone();
+        bind_current_graph(&input, &mut update);
         assert_eq!(
             verify(
                 &input,
                 &input.predecessor,
-                &input.update,
+                &update,
                 &input.lock,
-                &input.owner_bytes,
+                &input.manifest,
             ),
             Ok(())
         );
     }
 
     #[test]
-    fn historical_fresco_successor_remains_the_exact_predecessor() {
-        let input = inputs();
-        assert_eq!(support::hash(&input.predecessor_bytes), FRESCO_UPDATE_HASH);
-        assert_eq!(
-            input.update["previousProviderQualificationRecord"]["sha256"],
-            FRESCO_UPDATE_HASH
-        );
-        assert_eq!(
-            input.update["previousQualificationLock"],
-            input.predecessor["finalQualificationLock"]
-        );
-        assert_eq!(
-            input.update["previousQualificationPackage"],
-            input.predecessor["finalQualificationPackage"]
-        );
-    }
-
-    #[test]
     fn changed_graph_predecessor_and_fixed_point_are_refused() {
         let input = inputs();
+        let mut update = input.update.clone();
+        bind_current_graph(&input, &mut update);
         for changed in [
             b"foreign lock".as_slice(),
             input.lock.get(..input.lock.len() - 1).unwrap(),
@@ -151,28 +134,22 @@ mod dependency_ownership_successor {
                 verify(
                     &input,
                     &input.predecessor,
-                    &input.update,
+                    &update,
                     changed,
-                    &input.owner_bytes,
+                    &input.manifest,
                 ),
-                Err("exact current root dependency qualification graph bytes")
+                Err("exact current docs metadata qualification graph bytes")
             );
         }
 
         let mut predecessor = input.predecessor.clone();
         predecessor["finalQualificationLock"]["sha256"] = json!(support::hash(b"foreign"));
         assert_eq!(
-            verify(
-                &input,
-                &predecessor,
-                &input.update,
-                &input.lock,
-                &input.owner_bytes,
-            ),
-            Err("exact frozen root dependency ownership predecessor")
+            verify(&input, &predecessor, &update, &input.lock, &input.manifest,),
+            Err("exact frozen docs metadata qualification predecessor")
         );
 
-        let mut resolver = input.update.clone();
+        let mut resolver = update;
         resolver["resolver"]["fixedPointSha256"] = json!(support::hash(b"foreign"));
         assert_eq!(
             verify(
@@ -180,44 +157,212 @@ mod dependency_ownership_successor {
                 &input.predecessor,
                 &resolver,
                 &input.lock,
-                &input.owner_bytes,
+                &input.manifest,
             ),
-            Err("exact root dependency resolver fixed point")
+            Err("exact docs metadata resolver fixed point")
         );
     }
 
     #[test]
-    fn foreign_owner_manifests_and_unreviewed_bytes_are_refused() {
+    fn foreign_manifest_and_unreviewed_bytes_are_refused() {
         let input = inputs();
         let mut changed = input.update.clone();
-        changed["ownerManifests"][6]["sha256"] = json!(support::hash(b"foreign"));
+        bind_current_graph(&input, &mut changed);
+        changed["docsManifest"]["sha256"] = json!(support::hash(b"foreign"));
         assert_eq!(
             verify(
                 &input,
                 &input.predecessor,
                 &changed,
                 &input.lock,
-                &input.owner_bytes,
+                &input.manifest,
             ),
-            Err("exact current owner manifest bytes")
+            Err("exact current docs metadata qualification graph bytes")
         );
 
-        let mut owners = input.owner_bytes.clone();
-        owners[10].push(b' ');
+        let mut manifest = input.manifest.clone();
+        manifest.push(b' ');
+        let mut manifest_update = input.update.clone();
+        bind_current_graph(&input, &mut manifest_update);
         assert_eq!(
             verify(
                 &input,
                 &input.predecessor,
-                &input.update,
+                &manifest_update,
                 &input.lock,
-                &owners,
+                &manifest,
             ),
-            Err("exact current owner manifest bytes")
+            Err("exact current docs metadata qualification graph bytes")
         );
     }
 }
 
-mod strict_checker_successor {
+#[test]
+fn historical_strict_checker_successor_remains_the_exact_predecessor() {
+    let predecessor = strict_checker_update();
+    let predecessor_bytes = fs::read(support::corpus().join(strict_checker::UPDATE)).unwrap();
+    let update = create_fresco_update();
+    assert_eq!(
+        support::hash(&predecessor_bytes),
+        strict_checker::UPDATE_HASH
+    );
+    assert_eq!(
+        update["previousProviderQualificationRecord"]["sha256"],
+        strict_checker::UPDATE_HASH
+    );
+    assert_eq!(
+        update["previousQualificationLock"],
+        predecessor["finalQualificationLock"]
+    );
+    assert_eq!(
+        update["previousQualificationPackage"],
+        predecessor["finalQualificationPackage"]
+    );
+}
+
+mod create_fresco_successor {
+    use super::*;
+
+    struct Inputs {
+        predecessor: Value,
+        predecessor_bytes: Vec<u8>,
+        update: Value,
+        lock: Vec<u8>,
+        package: Vec<u8>,
+        workspace: Vec<u8>,
+        manifest: Vec<u8>,
+    }
+
+    fn inputs() -> Inputs {
+        Inputs {
+            predecessor: strict_checker_update(),
+            predecessor_bytes: fs::read(support::corpus().join(strict_checker::UPDATE)).unwrap(),
+            update: create_fresco_update(),
+            lock: fs::read(support::repository().join("pnpm-lock.yaml")).unwrap(),
+            package: fs::read(support::repository().join("package.json")).unwrap(),
+            workspace: fs::read(support::repository().join(WORKSPACE)).unwrap(),
+            manifest: fs::read(support::repository().join(CREATE_FRESCO_MANIFEST)).unwrap(),
+        }
+    }
+
+    fn verify(
+        input: &Inputs,
+        predecessor: &Value,
+        update: &Value,
+        lock: &[u8],
+        manifest: &[u8],
+    ) -> Checked<()> {
+        let graph = CreateFrescoQualificationGraph {
+            lock,
+            package: &input.package,
+            workspace: &input.workspace,
+            manifest,
+        };
+        verify_create_fresco_update(predecessor, &input.predecessor_bytes, update, &graph)
+    }
+
+    fn bind_current_graph(input: &Inputs, update: &mut Value) {
+        update["finalQualificationLock"] = current_binding("pnpm-lock.yaml", &input.lock);
+        update["finalQualificationPackage"] = current_binding("package.json", &input.package);
+        update["workspaceManifest"] = current_binding("pnpm-workspace.yaml", &input.workspace);
+        update["createFrescoManifest"] = current_binding(CREATE_FRESCO_MANIFEST, &input.manifest);
+        update["resolver"]["fixedPointSha256"] = json!(support::hash(&input.lock));
+    }
+
+    #[test]
+    fn exact_create_fresco_successor_binds_the_whole_current_graph() {
+        let input = inputs();
+        let mut update = input.update.clone();
+        bind_current_graph(&input, &mut update);
+        assert_eq!(
+            verify(
+                &input,
+                &input.predecessor,
+                &update,
+                &input.lock,
+                &input.manifest,
+            ),
+            Ok(())
+        );
+    }
+
+    #[test]
+    fn changed_graph_predecessor_and_fixed_point_are_refused() {
+        let input = inputs();
+        let mut update = input.update.clone();
+        bind_current_graph(&input, &mut update);
+        for changed in [
+            b"foreign lock".as_slice(),
+            input.lock.get(..input.lock.len() - 1).unwrap(),
+        ] {
+            assert_eq!(
+                verify(
+                    &input,
+                    &input.predecessor,
+                    &update,
+                    changed,
+                    &input.manifest,
+                ),
+                Err("exact current create-fresco qualification graph bytes")
+            );
+        }
+
+        let mut predecessor = input.predecessor.clone();
+        predecessor["finalQualificationLock"]["sha256"] = json!(support::hash(b"foreign"));
+        assert_eq!(
+            verify(&input, &predecessor, &update, &input.lock, &input.manifest,),
+            Err("exact frozen create-fresco qualification predecessor")
+        );
+
+        let mut resolver = update;
+        resolver["resolver"]["fixedPointSha256"] = json!(support::hash(b"foreign"));
+        assert_eq!(
+            verify(
+                &input,
+                &input.predecessor,
+                &resolver,
+                &input.lock,
+                &input.manifest,
+            ),
+            Err("exact create-fresco resolver fixed point")
+        );
+    }
+
+    #[test]
+    fn foreign_manifest_and_unreviewed_bytes_are_refused() {
+        let input = inputs();
+        let mut changed = input.update.clone();
+        bind_current_graph(&input, &mut changed);
+        changed["createFrescoManifest"]["sha256"] = json!(support::hash(b"foreign"));
+        assert_eq!(
+            verify(
+                &input,
+                &input.predecessor,
+                &changed,
+                &input.lock,
+                &input.manifest,
+            ),
+            Err("exact current create-fresco qualification graph bytes")
+        );
+
+        let mut manifest = input.manifest.clone();
+        manifest.push(b' ');
+        let mut manifest_update = input.update.clone();
+        bind_current_graph(&input, &mut manifest_update);
+        assert_eq!(
+            verify(
+                &input,
+                &input.predecessor,
+                &manifest_update,
+                &input.lock,
+                &manifest,
+            ),
+            Err("exact current create-fresco qualification graph bytes")
+        );
+    }
+}
+
+mod js_tooling_refresh_successor {
     use super::*;
 
     struct Inputs {
@@ -228,58 +373,50 @@ mod strict_checker_successor {
         lock: Vec<u8>,
         package: Vec<u8>,
         workspace: Vec<u8>,
-        manifest: Vec<u8>,
-        checker_declaration: Vec<u8>,
-        strict_declaration: Vec<u8>,
+        unplugin_manifest: Vec<u8>,
+        example_manifest: Vec<u8>,
     }
 
     fn inputs() -> Inputs {
         Inputs {
             previous: super::super::super::load(),
-            predecessor: dependency_ownership_update(),
-            predecessor_bytes: fs::read(support::corpus().join(dependency_ownership::UPDATE))
-                .unwrap(),
-            update: strict_checker_update(),
+            predecessor: docs_metadata_update(),
+            predecessor_bytes: fs::read(support::corpus().join(docs_metadata::UPDATE)).unwrap(),
+            update: js_tooling_refresh_update(),
             lock: fs::read(support::repository().join("pnpm-lock.yaml")).unwrap(),
             package: fs::read(support::repository().join("package.json")).unwrap(),
             workspace: fs::read(support::repository().join(WORKSPACE)).unwrap(),
-            manifest: fs::read(support::repository().join(STRICT_CHECKER_MANIFEST)).unwrap(),
-            checker_declaration: fs::read(support::repository().join(CHECKER_DECLARATION)).unwrap(),
-            strict_declaration: fs::read(support::repository().join(STRICT_DECLARATION)).unwrap(),
+            unplugin_manifest: fs::read(
+                support::repository().join("npm/builder/unplugin/package.json"),
+            )
+            .unwrap(),
+            example_manifest: fs::read(
+                support::repository().join("npm/builder/unplugin/example/package.json"),
+            )
+            .unwrap(),
         }
     }
 
-    fn verify(
-        input: &Inputs,
-        predecessor: &Value,
-        update: &Value,
-        manifest: &[u8],
-        checker_declaration: &[u8],
-        strict_declaration: &[u8],
-    ) -> Checked<()> {
-        let graph = StrictCheckerQualificationGraph {
-            lock: &input.lock,
+    fn verify(input: &Inputs, predecessor: &Value, update: &Value, lock: &[u8]) -> Checked<()> {
+        let graph = JsToolingRefreshQualificationGraph {
+            lock,
             package: &input.package,
             workspace: &input.workspace,
-            manifest,
-            checker_declaration,
-            strict_declaration,
+            unplugin_manifest: &input.unplugin_manifest,
+            example_manifest: &input.example_manifest,
         };
-        verify_strict_checker_update(predecessor, &input.predecessor_bytes, update, &graph)
+        verify_js_tooling_refresh_update(predecessor, &input.predecessor_bytes, update, &graph)
     }
 
     #[test]
-    fn exact_strict_checker_successor_binds_the_whole_current_graph() {
+    fn exact_refresh_successor_binds_the_whole_current_graph() {
         let input = inputs();
         assert_eq!(
-            verify(
-                &input,
-                &input.predecessor,
-                &input.update,
-                &input.manifest,
-                &input.checker_declaration,
-                &input.strict_declaration,
-            ),
+            support::hash(&input.predecessor_bytes),
+            docs_metadata::UPDATE_HASH
+        );
+        assert_eq!(
+            verify(&input, &input.predecessor, &input.update, &input.lock),
             Ok(())
         );
         assert_eq!(
@@ -289,68 +426,25 @@ mod strict_checker_successor {
     }
 
     #[test]
-    fn changed_predecessor_and_fixed_point_are_refused() {
+    fn changed_graph_predecessor_and_fixed_point_are_refused() {
         let input = inputs();
+        assert_eq!(
+            verify(&input, &input.predecessor, &input.update, b"foreign lock",),
+            Err("exact current JavaScript tooling refresh graph bytes")
+        );
+
         let mut predecessor = input.predecessor.clone();
         predecessor["finalQualificationLock"]["sha256"] = json!(support::hash(b"foreign"));
         assert_eq!(
-            verify(
-                &input,
-                &predecessor,
-                &input.update,
-                &input.manifest,
-                &input.checker_declaration,
-                &input.strict_declaration,
-            ),
-            Err("exact frozen strict checker qualification predecessor")
+            verify(&input, &predecessor, &input.update, &input.lock),
+            Err("exact frozen JavaScript tooling refresh predecessor")
         );
 
         let mut resolver = input.update.clone();
         resolver["resolver"]["fixedPointSha256"] = json!(support::hash(b"foreign"));
         assert_eq!(
-            verify(
-                &input,
-                &input.predecessor,
-                &resolver,
-                &input.manifest,
-                &input.checker_declaration,
-                &input.strict_declaration,
-            ),
-            Err("exact strict checker resolver fixed point")
+            verify(&input, &input.predecessor, &resolver, &input.lock),
+            Err("exact JavaScript tooling refresh resolver fixed point")
         );
-    }
-
-    #[test]
-    fn foreign_manifest_and_policy_declarations_are_refused() {
-        let input = inputs();
-        for (manifest, checker, strict) in [
-            (
-                b"foreign".as_slice(),
-                input.checker_declaration.as_slice(),
-                input.strict_declaration.as_slice(),
-            ),
-            (
-                input.manifest.as_slice(),
-                b"foreign".as_slice(),
-                input.strict_declaration.as_slice(),
-            ),
-            (
-                input.manifest.as_slice(),
-                input.checker_declaration.as_slice(),
-                b"foreign".as_slice(),
-            ),
-        ] {
-            assert_eq!(
-                verify(
-                    &input,
-                    &input.predecessor,
-                    &input.update,
-                    manifest,
-                    checker,
-                    strict,
-                ),
-                Err("exact current strict checker qualification graph bytes")
-            );
-        }
     }
 }

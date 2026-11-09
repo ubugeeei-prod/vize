@@ -15,7 +15,7 @@
 // re-parses to the same document) must hold on every input.
 //
 // The corpus is seeded from the `<template>` blocks of repository .vue
-// fixtures by `tools/commands/ci/fuzz/seed_corpus.rs`.
+// fixtures by `tools/commands/ci/fuzz/seed-corpus.ts`.
 use libfuzzer_sys::fuzz_target;
 use vize_l0::dump::{Dump, Mode as DumpMode};
 use vize_l0::side_table::SideTable;

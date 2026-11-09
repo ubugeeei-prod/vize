@@ -58,7 +58,7 @@ A high-durability tsconfig update must reject all stale exports. After refreshin
 all fixture exports it revisits every cold file and declaration name, comparing
 against clean results after LRU eviction and intern revision collection.
 
-`resident-resources.rs` samples three fresh optimized processes through the same
+`resident-resources.ts` samples three fresh optimized processes through the same
 Linux process-tree RSS sampler as TS-44 (50 ms). It preserves the existing
 337 MiB peak and 316 MiB idle reference caps. Each process holds its populated
 database for ten seconds; idle RSS is the maximum of its final 100 nonzero
@@ -75,7 +75,7 @@ cargo build --profile ci-opt -p vize_incremental --example resource_session \
   --config 'profile.ci-opt.inherits="release"' \
   --config 'profile.ci-opt.lto="thin"' \
   --config 'profile.ci-opt.codegen-units=16'
-rust-script tools/commands/davinci/resident-resources.rs \
+node tools/commands/davinci/resident-resources.ts \
   --server target/ci-opt/examples/resource_session --files 10000 --edits 32 \
   --runs 3 --out /tmp/resident-resource.json
 ```
