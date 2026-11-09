@@ -32,11 +32,13 @@ fn certificate(client: &mut CorsaProjectClient, batch: &CorsaNativeDocumentBatch
     CanonBatch {
         identity: PayloadIdentity::capture(batch),
         texts: client.document_texts.checkpoint(),
+        root: client.project_root.clone(),
         rows: documents
             .iter()
             .map(|(uri, text)| CanonRow {
                 path: crate::file_uri::file_uri_to_path(uri).unwrap(),
                 desired: client.document_texts.desired_digest(uri, text),
+                uri_identity: std::cell::OnceCell::new(),
             })
             .collect(),
     }
@@ -217,4 +219,34 @@ fn a_retargeted_directory_link_is_never_authority_for_a_reused_batch_write() {
         Ok(true)
     );
     assert_eq!(std::fs::read(&outside).unwrap(), CHANGED.as_bytes());
+}
+
+#[test]
+fn retaining_a_self_mapped_uri_matches_remembering_it_for_every_owner() {
+    let (_root, _path, uri, mut retained) = fixture();
+    let mut remembered = CorsaProjectClient::empty_for_test(retained.project_root.clone());
+    let alias: String = uri.replace("A.vue.ts", "%41.vue.ts").into();
+    let identity = crate::file_uri::file_uri_identity(&uri);
+    assert_eq!(crate::file_uri::file_uri_identity(&alias), identity);
+    for client in [&mut retained, &mut remembered] {
+        client.remember_session_document_uri(&uri, uri.clone());
+        client.remember_session_document_uri(&alias, alias.clone());
+    }
+    // The alias owns the shared identity, so retaining must take it back.
+    for _ in 0..2 {
+        retained.retain_self_mapped_document_uri(&uri, &identity);
+        remembered.remember_session_document_uri(&uri, uri.clone());
+        assert_eq!(
+            retained.session_document_uris,
+            remembered.session_document_uris
+        );
+        assert_eq!(
+            retained.external_document_uris,
+            remembered.external_document_uris
+        );
+    }
+    assert_eq!(
+        retained.external_document_uris.get(identity.as_str()),
+        Some(&uri)
+    );
 }
