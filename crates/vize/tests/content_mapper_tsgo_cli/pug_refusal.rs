@@ -80,9 +80,9 @@ fn real_mapper_retains_preprocessor_errors_and_independent_script_checks_through
                 "src/Invalid.vue(3,1): error vize100001: {REFUSAL}"
             ));
         }
-        // This host treats mapper diagnostics as syntax errors and stops the
-        // semantic pass. The next edit must reveal the retained script error.
-        if script_error && !refused {
+        // The refusal travels on the semantic pass (#12522), so the retained
+        // script error shows beside it.
+        if script_error {
             expected.push("src/Invalid.vue(6,7): error TS2322: Type 'string' is not assignable to type 'number'.".into());
         }
         expected.sort();

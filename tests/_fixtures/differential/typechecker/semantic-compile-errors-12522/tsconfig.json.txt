@@ -1,0 +1,5 @@
+{
+  "compilerOptions": { "strict": true, "target": "ES2022", "module": "ESNext", "moduleResolution": "Bundler", "skipLibCheck": true, "noEmit": true, "types": [] },
+  "include": ["src/**/*.vue"],
+  "contentMappers": [{ "package": "vize", "extensions": [".vue"] }]
+}

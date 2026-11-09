@@ -72,13 +72,30 @@ fn parse_errors_are_successful_transform_results() {
     let responses = exchange(&input);
 
     assert!(responses[2].get("error").is_none());
-    assert!(
-        !responses[2]["result"]["diagnostics"]
-            .as_array()
-            .unwrap()
-            .is_empty()
-    );
-    assert_eq!(responses[2]["result"]["diagnostics"][0]["code"], 100_002);
+    // The host files `diagnostics` as parse errors and then skips every
+    // semantic diagnostic of the program (#12522). Each one rides an empty
+    // expect directive at the end of the text instead.
+    let result = &responses[2]["result"];
+    assert_eq!(result["diagnostics"], json!([]));
+    let end = result["text"].as_str().unwrap().len();
+    let table = &result["diagnosticDirectives"];
+    let unused = table["unusedExpectDirectiveDiagnostics"]
+        .as_array()
+        .unwrap();
+    let carriers = table["directives"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .filter(|directive| directive[2] == end && directive[3] == end)
+        .map(|directive| {
+            (
+                directive[4].clone(),
+                unused[directive[5].as_u64().unwrap() as usize]["code"].clone(),
+            )
+        })
+        .collect::<Vec<_>>();
+    assert_eq!(carriers.first(), Some(&(json!(1), json!(100_002))));
+    assert_eq!(carriers.len(), unused.len());
 }
 
 #[test]

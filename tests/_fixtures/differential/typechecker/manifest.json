@@ -15393,6 +15393,45 @@
       }
     },
     {
+      "id": "typechecker/regression/semantic-compile-errors-12522",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "semantic-compile-errors-12522/A.vue.txt",
+          "sha256": "266a3158492976782291d7b6a264744f94dcf507cfea8cc91ef4d508c0e68a0b",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "semantic-compile-errors-12522/B.vue.txt",
+          "sha256": "3c805b308c0db28da8e3dd1b682136b8152d6510c0bba114fd5287f2b3c65d2f",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "semantic-compile-errors-12522/tsconfig.json.txt",
+          "sha256": "d897f603dbc27ad9882b96af8afe37304bf4a16950fd76b8ccf632184f83fb2f",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "content_mapper_tsgo_cli::semantic_compile_errors_12522; the reported A.vue type error beside the B.vue props destructure default compile error, plus template parse recovery, unchecked JavaScript, ts-nocheck and repaired controls over LF/CRLF on every set host, compared with vize check. Input-only batch registration; vize check diagnostics are unchanged."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/regression/semantic-diagnostic-provenance-11626",
       "state": "active",
       "targets": [
