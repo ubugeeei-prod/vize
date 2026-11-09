@@ -10,6 +10,7 @@ import {
   experimentalRouterPage,
   prepareExperimentalRouterProject,
 } from "./support/router-experimental-provider.ts";
+import { sixElementTuples } from "../../tools/support/compat/content-mapper/wire-tuples.ts";
 
 type Packet = {
   status: number | null;
@@ -75,37 +76,72 @@ function decodeFrames(bytes: Buffer): Response[] {
     const length = Number(match[1]),
       start = end + 4;
     assert.ok(bytes.length >= start + length, "complete frame body");
-    responses.push(JSON.parse(bytes.subarray(start, start + length).toString()) as Response);
+    // Compare the full form; the mapper writes all-feature spans as five elements (#12466).
+    responses.push(
+      sixElementTuples(JSON.parse(bytes.subarray(start, start + length).toString()) as Response),
+    );
     bytes = bytes.subarray(start + length);
   }
   return responses;
 }
+// #12147 projects each template use of a setup binding onto the authored
+// binding for navigation and rename and gives hover a separate const-preserving
+// proxy; the expression keeps every other feature.
+const allFeatures = 1_048_575;
+const templateUseFeatures = 456;
+const templateHoverFeatures = 1;
 function assertRouteMappings(source: string, result: Transform) {
   assert.equal(result.extension, ".tsx");
   assert.deepEqual(result.diagnostics, []);
   const authored = Buffer.from(source),
     generated = Buffer.from(result.text);
-  const snippets = [
-    "const id: number = route.params.id",
-    "const page: number = route.params.page",
-    "const tags: string[] | undefined = route.params.tags",
-    "const at: Date | undefined = route.params.at",
-    "const heading: string | undefined = route.params.heading",
-    "route.params.id.toFixed()",
-    "route.params.page.toFixed()",
-  ];
-  const expected = snippets.map((snippet) => {
+  const locate = (snippet: string) => {
     const bytes = Buffer.from(snippet),
       originalStart = authored.indexOf(bytes),
       generatedStart = generated.indexOf(bytes);
     assert.notEqual(originalStart, -1, snippet);
     assert.notEqual(generatedStart, -1, snippet);
-    return [generatedStart, bytes.length, originalStart, bytes.length, 0, 1_048_575];
-  });
-  const originalStarts = new Set(expected.map((span) => span[2]));
+    return { length: bytes.length, originalStart, generatedStart };
+  };
+  const scriptAccesses = [
+    "const id: number = route.params.id",
+    "const page: number = route.params.page",
+    "const tags: string[] | undefined = route.params.tags",
+    "const at: Date | undefined = route.params.at",
+    "const heading: string | undefined = route.params.heading",
+  ].map(locate);
+  const templateAccesses = ["route.params.id.toFixed()", "route.params.page.toFixed()"].map(locate);
+  const binding = Buffer.byteLength("route");
+  const span = (generatedStart: number, originalStart: number, length: number, features: number) =>
+    [generatedStart, length, originalStart, length, 0, features] as Span;
+  const projection = (originalStart: number, features: number) => {
+    const found = result.mappings.find((it) => it[2] === originalStart && it[5] === features);
+    assert.ok(found, `template binding projection with features ${features}`);
+    assert.equal(generated.subarray(found[0], found[0] + binding).toString(), "route");
+    return found[0];
+  };
+  const expected = [
+    ...scriptAccesses.map((it) =>
+      span(it.generatedStart, it.originalStart, it.length, allFeatures),
+    ),
+    ...templateAccesses.flatMap(({ length, originalStart: at, generatedStart }) => [
+      span(projection(at, templateUseFeatures), at, binding, templateUseFeatures),
+      span(projection(at, templateHoverFeatures), at, binding, templateHoverFeatures),
+      span(generatedStart, at, binding, allFeatures & ~templateHoverFeatures),
+      span(generatedStart + binding, at + binding, length - binding, allFeatures),
+    ]),
+  ];
+  const accesses = [...scriptAccesses, ...templateAccesses];
+  const byGenerated = (left: Span, right: Span) => left[0] - right[0];
   assert.deepEqual(
-    result.mappings.filter((span) => originalStarts.has(span[2])),
-    expected,
+    result.mappings
+      .filter((it) =>
+        accesses.some(
+          ({ length, originalStart }) => it[2] >= originalStart && it[2] < originalStart + length,
+        ),
+      )
+      .sort(byGenerated),
+    expected.sort(byGenerated),
     "all seven route accesses retain exact UTF-8 protocol spans",
   );
 }
