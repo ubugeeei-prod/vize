@@ -349,7 +349,16 @@ impl ImportRewriter {
         }
         rewrites.sort_by_key(|rewrite| std::cmp::Reverse(rewrite.0));
 
-        let mut output = source.to_compact_string();
+        // Reserve every replacement up front: growing per literal leaves the
+        // retained projection with up to twice its length in capacity.
+        let mut output = String::with_capacity(
+            rewrites
+                .iter()
+                .map(|(_, _, path)| path.len())
+                .sum::<usize>()
+                .saturating_add(source.len()),
+        );
+        output.push_str(source);
         let mut source_map = ImportSourceMap::for_rewrites(rewrites.len());
 
         for (start, end, new_path) in rewrites {
