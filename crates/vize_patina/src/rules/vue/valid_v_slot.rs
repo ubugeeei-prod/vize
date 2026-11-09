@@ -21,7 +21,11 @@
 use crate::context::{ElementContext, LintContext};
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use vize_l0::{FxHashSet, String, ToCompactString, is_native_tag};
+use oxc_allocator::Allocator;
+use oxc_parser::Parser;
+use oxc_span::{ContentEq, SourceType};
+use vize_croquis::drawer::{extract_identifier_refs_retained_only, parse_v_for_scope_expression};
+use vize_l0::{String, ToCompactString, is_native_tag};
 use vize_relief::{
     DirectiveNode, ElementNode, ElementType, ExpressionNode, PropNode, TemplateChildNode,
 };
@@ -109,11 +113,26 @@ impl Rule for ValidVSlot {
     }
 }
 
+struct ChildSlot {
+    loop_scope: Option<LoopScopedSlot>,
+    name: String,
+}
+
+struct LoopScopedSlot {
+    source: String,
+    value_pattern: String,
+    key_alias: Option<String>,
+    index_alias: Option<String>,
+    uses_value: bool,
+    uses_key: bool,
+    uses_index: bool,
+}
+
 fn check_child_slot_templates(ctx: &mut LintContext, owner: &ElementNode) {
     let owner_default_slot = owner_default_slot_directive(owner);
     let mut has_child_slot_template = false;
-    let mut seen_slots: FxHashSet<String> = FxHashSet::default();
-    let mut current_group_slots: FxHashSet<String> = FxHashSet::default();
+    let mut seen_slots = Vec::new();
+    let mut current_group_slots = Vec::new();
     let mut in_if_chain = false;
 
     for child in owner.children.iter() {
@@ -138,14 +157,24 @@ fn check_child_slot_templates(ctx: &mut LintContext, owner: &ElementNode) {
         }
 
         if let Some(name) = static_slot_name(slot) {
-            if !current_group_slots.contains(&name) && seen_slots.contains(&name) {
+            let occurrence = ChildSlot {
+                loop_scope: loop_scoped_slot(child, slot),
+                name,
+            };
+            if !current_group_slots
+                .iter()
+                .any(|existing| same_distributed_slot(existing, &occurrence))
+                && seen_slots
+                    .iter()
+                    .any(|existing| same_distributed_slot(existing, &occurrence))
+            {
                 ctx.error_with_help(
                     ctx.t("vue/valid-v-slot.invalid_location"),
                     &slot.loc,
                     ctx.t("vue/valid-v-slot.help"),
                 );
             }
-            current_group_slots.insert(name);
+            current_group_slots.push(occurrence);
         }
 
         if !starts_chain && !continues_chain {
@@ -167,8 +196,112 @@ fn check_child_slot_templates(ctx: &mut LintContext, owner: &ElementNode) {
     }
 }
 
-fn finish_slot_group(seen_slots: &mut FxHashSet<String>, group_slots: &mut FxHashSet<String>) {
-    seen_slots.extend(group_slots.drain());
+fn finish_slot_group(seen_slots: &mut Vec<ChildSlot>, group_slots: &mut Vec<ChildSlot>) {
+    seen_slots.append(group_slots);
+}
+
+fn same_distributed_slot(left: &ChildSlot, right: &ChildSlot) -> bool {
+    if left.name != right.name {
+        return false;
+    }
+
+    match (&left.loop_scope, &right.loop_scope) {
+        (Some(left), Some(right)) => same_loop_scope(left, right),
+        // Suppress an existing duplicate only when both slot names are proven
+        // to depend on their own loops. An incomplete parse, a property name,
+        // or an outer binding must retain the conservative duplicate finding.
+        _ => true,
+    }
+}
+
+fn loop_scoped_slot(element: &ElementNode<'_>, slot: &DirectiveNode<'_>) -> Option<LoopScopedSlot> {
+    let ExpressionNode::Simple(argument) = slot.arg.as_ref()? else {
+        return None;
+    };
+    if argument.is_static {
+        return None;
+    }
+    let argument_ast = argument.js_ast?.as_expression()?;
+    let reads = extract_identifier_refs_retained_only(argument.content, &argument_ast)?;
+    let for_expression = element.props.iter().find_map(|prop| match prop {
+        PropNode::Directive(directive) if directive.name == "for" => match directive.exp.as_ref() {
+            Some(ExpressionNode::Simple(expression)) => Some(expression.content),
+            _ => None,
+        },
+        _ => None,
+    })?;
+    let aliases = parse_v_for_scope_expression(for_expression)?;
+    let uses = |name: &str| reads.iter().any(|read| read.name == name);
+    let uses_value = aliases
+        .value_bindings
+        .iter()
+        .any(|binding| uses(binding.as_str()));
+    let uses_key = aliases
+        .key_alias
+        .as_ref()
+        .is_some_and(|binding| uses(binding.as_str()));
+    let uses_index = aliases
+        .index_alias
+        .as_ref()
+        .is_some_and(|binding| uses(binding.as_str()));
+    if !uses_value && !uses_key && !uses_index {
+        return None;
+    }
+
+    Some(LoopScopedSlot {
+        source: aliases.source,
+        value_pattern: aliases.value_pattern,
+        key_alias: aliases.key_alias,
+        index_alias: aliases.index_alias,
+        uses_value,
+        uses_key,
+        uses_index,
+    })
+}
+
+fn same_loop_scope(left: &LoopScopedSlot, right: &LoopScopedSlot) -> bool {
+    if left.uses_value != right.uses_value
+        || left.uses_key != right.uses_key
+        || left.uses_index != right.uses_index
+        || (left.uses_key && left.key_alias != right.key_alias)
+        || (left.uses_index && left.index_alias != right.index_alias)
+        || !expressions_content_equal(&left.source, &right.source)
+    {
+        return false;
+    }
+
+    !left.uses_value || binding_patterns_content_equal(&left.value_pattern, &right.value_pattern)
+}
+
+fn expressions_content_equal(left: &str, right: &str) -> bool {
+    let allocator = Allocator::default();
+    let source_type = SourceType::ts();
+    let (Ok(left), Ok(right)) = (
+        Parser::new(&allocator, left, source_type).parse_expression(),
+        Parser::new(&allocator, right, source_type).parse_expression(),
+    ) else {
+        return false;
+    };
+    left.content_eq(&right)
+}
+
+fn binding_patterns_content_equal(left: &str, right: &str) -> bool {
+    let wrap = |pattern: &str| {
+        let mut source = String::with_capacity("let [] = source".len() + pattern.len());
+        source.push_str("let [");
+        source.push_str(pattern);
+        source.push_str("] = source");
+        source
+    };
+    let (left_source, right_source) = (wrap(left), wrap(right));
+    let allocator = Allocator::default();
+    let source_type = SourceType::ts();
+    let left = Parser::new(&allocator, &left_source, source_type).parse();
+    let right = Parser::new(&allocator, &right_source, source_type).parse();
+    if !left.diagnostics.is_empty() || !right.diagnostics.is_empty() {
+        return false;
+    }
+    left.program.content_eq(&right.program)
 }
 
 fn owner_default_slot_directive<'a>(element: &'a ElementNode<'a>) -> Option<&'a DirectiveNode<'a>> {

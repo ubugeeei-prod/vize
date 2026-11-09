@@ -137,3 +137,57 @@ fn explicit_false_restores_the_unit_rule_after_true_without_enabling_a_missing_r
     assert_eq!(core::mem::size_of_val(&ValidVSlot), 0);
     assert_eq!(core::mem::size_of_val(&ValidVSlot::allowing_modifiers()), 0);
 }
+
+#[test]
+fn dynamic_slot_names_from_distinct_iteration_scopes_do_not_collide() {
+    let linter = create_linter();
+    for source in [
+        r#"<MyComponent>
+            <template v-for="id in first" #[`popup:${id}`]>{{ id }}</template>
+            <template v-for="id in second" #[`popup:${id}`]>{{ id }}</template>
+        </MyComponent>"#,
+        r#"<MyComponent>
+            <template v-for="({ id }) of first" #[`popup:${id}`]>{{ id }}</template>
+            <template v-for="({ id }) of second" #[`popup:${id}`]>{{ id }}</template>
+        </MyComponent>"#,
+    ] {
+        let result = linter.lint_template(source, "test.vue");
+        assert_eq!(result.error_count, 0, "{source}");
+    }
+}
+
+#[test]
+fn equivalent_iteration_scopes_still_collide_across_siblings() {
+    let linter = create_linter();
+    for source in [
+        r#"<MyComponent>
+            <template v-for="id in items" #[`popup:${id}`]>{{ id }}</template>
+            <template v-for="id of items" #[`popup:${id}`]>{{ id }}</template>
+        </MyComponent>"#,
+        "<MyComponent>\n\
+            <template v-for=\"({ id }, index) in items\" #[`${index}:${id}`] />\n\
+            <template v-for=\"( { id }, index)\tin\titems\" #[`${index}:${id}`] />\n\
+        </MyComponent>",
+    ] {
+        let result = linter.lint_template(source, "test.vue");
+        assert_eq!(result.error_count, 1, "{source}");
+    }
+}
+
+#[test]
+fn property_names_and_literals_do_not_impersonate_iteration_bindings() {
+    let linter = create_linter();
+    for source in [
+        r#"<MyComponent>
+            <template v-for="id in first" #[owner.id] />
+            <template v-for="id in second" #[owner.id] />
+        </MyComponent>"#,
+        r#"<MyComponent>
+            <template v-for="id in first" #[`literal:id`] />
+            <template v-for="id in second" #[`literal:id`] />
+        </MyComponent>"#,
+    ] {
+        let result = linter.lint_template(source, "test.vue");
+        assert_eq!(result.error_count, 1, "{source}");
+    }
+}
