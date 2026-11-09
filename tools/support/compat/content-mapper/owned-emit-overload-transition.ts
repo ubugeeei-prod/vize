@@ -13,7 +13,7 @@ const ownerPath = "crates/vize_canon/src/virtual_ts/helpers/declarations/emit-pr
 const preamblePath = "crates/vize_canon/src/virtual_ts/helpers/preamble.rs";
 const previousOwnerHash = "ede8a64664b4f16e139b909b77ce10fd911fa11164ed5eff53ad07b4bb1d4d30";
 const currentOwnerHash = "e54377ca91f2ba56f96d735c2116744e39b7c8c1559a387065e54272c40a8b22";
-const previousPreambleHash = "38c8e437524c3983a57d089febbf49ac4898ddfc1318672ded78608728c0dde6";
+const previousPreambleHash = "20b1de72b81b75038e4b4272ecf8843a3b3a1e2ebc96b0c343c0356008beb5d1";
 const currentPreambleHash = "a8ef812b81fda63ef7d2f9104cccffaa5330df2ab5ea4e49360410536f0e4464";
 const stableSourceHashes = [
   [
@@ -130,8 +130,10 @@ export function certifyEmitOverloadAssets(
       stdio: ["ignore", "pipe", "pipe"],
     });
   const previousPreamble = selected(sources.base, preamblePath);
-  const listenerAnchor = '    include_str!("declarations/shared-emit-inference.d.ts.txt"),\n';
-  const listenerAddition = '    include_str!("declarations/shared-listener-args.d.ts.txt"),\n';
+  const listenerAnchor =
+    '            include_str!("declarations/shared-emit-inference.d.ts.txt"),\n';
+  const listenerAddition =
+    '            include_str!("declarations/shared-listener-args.d.ts.txt"),\n';
   const currentPreamble = selected(sources.head, preamblePath);
   if (composedHistory) {
     assert.equal(previousPreamble.toString().split(listenerAnchor).length, 2);
