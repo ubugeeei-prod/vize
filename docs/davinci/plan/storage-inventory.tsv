@@ -41,6 +41,9 @@ l1	analysis	davinci/vize_l1/src/css/lang/css.rs	1	1	0	0	0	0	0	0
 l1	analysis	davinci/vize_l1/src/css/lang/indented.rs	1	6	1	5	0	0	0	0
 l1	analysis	davinci/vize_l1/src/css/lang/nested.rs	1	13	1	7	0	0	0	0
 l1	analysis	davinci/vize_l1/src/css/lang/tests.rs	1	1	1	0	0	0	0	0
+l1	analysis	davinci/vize_l1/src/css/structure.rs	1	4	1	2	0	0	0	0
+l1	analysis	davinci/vize_l1/src/css/structure/indented.rs	1	4	0	0	0	0	0	0
+l1	analysis	davinci/vize_l1/src/css/structure/tests.rs	1	4	1	2	0	0	0	0
 l1	-	davinci/vize_l1/src/build.rs	0	0	0	0	1	7	0	0
 l1	-	davinci/vize_l1/src/build/scope.rs	0	0	0	0	1	6	0	0
 l1	-	davinci/vize_l1/src/build/tag.rs	0	0	0	0	1	4	0	0

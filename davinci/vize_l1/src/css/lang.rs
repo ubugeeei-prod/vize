@@ -5,6 +5,7 @@
 //! names the rules declare.
 
 use super::AuthoredClasses;
+use super::structure::{Lexis, StyleSheet};
 
 mod css;
 mod indented;
@@ -60,6 +61,23 @@ impl StyleLanguage {
             Self::Less => nested::authored_classes(source, nested::Dialect::Less),
             Self::Sass => indented::authored_classes(source, indented::Syntax::Sass),
             Self::Stylus => indented::authored_classes(source, indented::Syntax::Stylus),
+        }
+    }
+
+    /// The block's rules, declarations and comments. `source` starts at file
+    /// offset `base`, so every span is file-absolute.
+    #[must_use]
+    pub fn structure(self, source: &str, base: u32) -> StyleSheet<'_> {
+        StyleSheet::read(source, base, &self.lexis(source))
+    }
+
+    fn lexis(self, source: &str) -> Lexis {
+        match self {
+            Self::Css => css::LEXIS,
+            Self::Scss => nested::SCSS,
+            Self::Less => nested::LESS,
+            Self::Sass => indented::SASS,
+            Self::Stylus => indented::stylus(source),
         }
     }
 }

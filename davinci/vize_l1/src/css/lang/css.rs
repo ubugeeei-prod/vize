@@ -1,10 +1,20 @@
-//! CSS (and PostCSS): rules close with braces and nothing nests.
+//! CSS (and PostCSS): braced rules, `/* */` comments, no interpolation.
 
 use alloc::collections::BTreeSet;
 use alloc::vec::Vec;
 
 use super::super::AuthoredClasses;
 use super::super::classes::collect_classes_from_selector_prelude;
+use super::super::structure::{Interpolation, Lexis, shared};
+
+pub(super) const LEXIS: Lexis = Lexis {
+    line_comments: false,
+    interpolation: Interpolation::None,
+    indented: false,
+    indented_comments: false,
+    colonless_declarations: false,
+    construct: shared,
+};
 
 /// Extract simple authored class selectors from selector preludes. Declarations
 /// are never scanned, so values such as `url(./asset.png)` cannot become fake

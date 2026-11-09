@@ -7,6 +7,7 @@ use vize_l0::String;
 
 use super::super::AuthoredClasses;
 use super::super::classes::collect_classes_from_selector_prelude;
+use super::super::structure::{Construct, Interpolation, Lexis};
 use super::nested::{self, Dialect, resolve};
 
 #[derive(Clone, Copy, PartialEq)]
@@ -15,10 +16,76 @@ pub(super) enum Syntax {
     Stylus,
 }
 
+pub(super) const SASS: Lexis = Lexis {
+    line_comments: true,
+    interpolation: Interpolation::Hash,
+    indented: true,
+    indented_comments: true,
+    colonless_declarations: false,
+    construct: sass_construct,
+};
+
+/// Stylus reads braces when any line opens one, indentation otherwise.
+pub(super) fn stylus(source: &str) -> Lexis {
+    Lexis {
+        line_comments: true,
+        interpolation: Interpolation::Brace,
+        indented: !is_braced_stylus(source),
+        indented_comments: false,
+        colonless_declarations: true,
+        construct: stylus_construct,
+    }
+}
+
+fn is_braced_stylus(source: &str) -> bool {
+    source.lines().any(|line| line.trim_end().ends_with('{'))
+}
+
+/// `=name` and `+name` spell `@mixin` and `@include`.
+fn sass_construct(text: &str) -> Construct {
+    let bytes = text.as_bytes();
+    if matches!(bytes.first(), Some(b'=' | b'+'))
+        && bytes
+            .get(1)
+            .is_some_and(|&byte| byte.is_ascii_alphabetic() || matches!(byte, b'-' | b'_'))
+    {
+        Construct::Sigil
+    } else {
+        Construct::Shared
+    }
+}
+
+/// Control flow, block mixins (`+name()`), calls and function definitions
+/// (`name(…)`) and assignments (`name = value`) are Stylus, not CSS.
+fn stylus_construct(text: &str) -> Construct {
+    let keyword = text
+        .split(|c: char| c.is_ascii_whitespace() || c == '(')
+        .next()
+        .unwrap_or_default();
+    let name_end = text
+        .find(|c: char| !(c.is_ascii_alphanumeric() || matches!(c, '-' | '_' | '$')))
+        .unwrap_or(text.len());
+    let rest = text.get(name_end..).unwrap_or_default().trim_start();
+    let assigns = name_end > 0
+        && (rest.starts_with('=') && !rest.starts_with("==")
+            || ["?=", ":=", "+=", "-=", "*=", "/="]
+                .iter()
+                .any(|operator| rest.starts_with(operator)));
+    if text.starts_with('+')
+        || matches!(keyword, "if" | "unless" | "for" | "else" | "return")
+        || starts_call(text)
+        || assigns
+    {
+        Construct::Other
+    } else {
+        Construct::Shared
+    }
+}
+
 /// Class names the rules declare. Stylus written with braces reads like SCSS,
 /// but its mixin calls are not modeled there, so that result is incomplete.
 pub(super) fn authored_classes(source: &str, syntax: Syntax) -> Option<AuthoredClasses> {
-    if syntax == Syntax::Stylus && source.lines().any(|line| line.trim_end().ends_with('{')) {
+    if syntax == Syntax::Stylus && is_braced_stylus(source) {
         return nested::authored_classes(source, Dialect::Scss)
             .map(|found| AuthoredClasses::new(found.into_names(), false));
     }

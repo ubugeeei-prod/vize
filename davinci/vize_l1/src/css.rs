@@ -13,9 +13,11 @@ mod empty;
 pub mod lang;
 mod list;
 mod parser;
+mod structure;
 pub use classes::AuthoredClasses;
 pub use empty::EmptyClassStyle;
 pub use list::SimpleClassListStyle;
+pub use structure::{StyleCode, StyleComment, StyleNode, StyleNodeKind, StyleSheet};
 
 /// Why this original syntax cannot lend the simple-class scoped family.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
