@@ -78,7 +78,7 @@ test("language engineering practices document upstream-derived compiler workflow
     ".github/workflows/check.yml",
     ".github/workflows/fuzz.yml",
     "tests/fuzz/Cargo.toml",
-    "tools/commands/ci/fuzz/seed_corpus.rs",
+    "tools/commands/ci/fuzz/seed-corpus.ts",
     "tools/benchmarks/scripts/enforce-pr-budget.ts",
     "security-audit",
     "vp exec pnpm audit --prod --audit-level moderate",
