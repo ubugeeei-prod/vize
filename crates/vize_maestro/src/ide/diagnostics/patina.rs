@@ -30,8 +30,7 @@ pub(in crate::ide) fn linter_for_uri(
     .with_rule_severity_overrides(lint_options.rule_severity_overrides)
     .with_restricted_globals(lint_options.restricted_globals)
     .with_restricted_members(lint_options.restricted_members)
-    .with_musea_design_tokens(lint_options.musea_design_tokens)
-    .with_editor_callback_order();
+    .with_musea_design_tokens(lint_options.musea_design_tokens);
     linter = linter.with_vue_version(features.vue_version);
     linter = linter_options::apply_rule_options(
         linter,

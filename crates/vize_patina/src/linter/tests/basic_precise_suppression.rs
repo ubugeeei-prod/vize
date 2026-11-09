@@ -34,13 +34,11 @@ fn rule_selector_keeps_peer_diagnostics_on_the_same_node() {
 
 #[test]
 fn rule_selector_matches_the_lsp_generated_shape() {
-    let result = Linter::with_preset(LintPreset::Opinionated)
-        .with_editor_callback_order()
-        .lint_template(
-            r#"<!-- @vize:forget a11y/alt-text -->
+    let result = Linter::with_preset(LintPreset::Opinionated).lint_template(
+        r#"<!-- @vize:forget a11y/alt-text -->
 <img src="/logo.png">"#,
-            "test.vue",
-        );
+        "test.vue",
+    );
 
     assert_eq!(
         sorted_rules(&result),
