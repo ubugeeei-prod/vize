@@ -1,10 +1,10 @@
-use super::{bound, load, Checked, Value};
+use super::{Checked, Value, bound, load};
 use serde_json::json;
 
 pub(super) const UPDATE: &str =
     "malformed-membership/provider-root-dependency-ownership-update-12123.json";
 pub(super) const UPDATE_HASH: &str =
-    "41c699ad911cd224fd01e43fec982ef3b705e26d28f9c033f9cbbc26bf123e06";
+    "6c7317e017de5981da2e6a97451de6f1f7d62167b8cb54d3401a0f8b13f8eeca";
 const PREVIOUS_BINDING: &str = "tests/_fixtures/differential/typechecker/empty-vue-star-exports/malformed-membership/provider-fresco-sfc-update-12130.json";
 
 pub(super) const OWNER_MANIFESTS: &[&str] = &[

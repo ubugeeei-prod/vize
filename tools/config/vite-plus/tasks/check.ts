@@ -14,7 +14,6 @@ import {
   runInPackages,
   runInVscodeExtension,
   runPackageScriptDirectly,
-  rustTool,
   runTask,
   runTasks,
   shellQuote,

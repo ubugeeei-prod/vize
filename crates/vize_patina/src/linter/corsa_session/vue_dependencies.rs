@@ -249,9 +249,7 @@ fn generate(path: &Path, source: &str) -> Option<CachedDocument> {
     };
     let generated = project_component(
         &descriptor,
-        template.as_ref().map(|template| {
-            vize_croquis::drawer::LintTemplate::new(template.surface(), template.lowered())
-        }),
+        template.as_ref().map(|template| template.lint_template()),
         &path.to_string_lossy(),
     );
     Some(CachedDocument {
