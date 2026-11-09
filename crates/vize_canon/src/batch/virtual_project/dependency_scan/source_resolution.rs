@@ -1,9 +1,11 @@
 use std::path::{Path, PathBuf};
 
+use super::resolution::resolve_dependency_listed;
 use super::{
     resolve_dependency, resolve_dependency_with_inputs, resolve_generated_dependency,
     resolve_generated_dependency_with_inputs,
 };
+use crate::batch::virtual_project::passthrough::PassthroughProbes;
 use crate::batch::virtual_project::{VirtualFile, VirtualProject};
 
 #[expect(clippy::disallowed_types, reason = "dependency API uses std String")]
@@ -33,6 +35,25 @@ impl VirtualProject {
             );
         }
         resolve_dependency(specifier, source.parent()?, &self.project_root, aliases)
+    }
+
+    /// [`Self::resolve_source_dependency`] through a walk's directory listings.
+    pub(super) fn resolve_source_dependency_listed(
+        &self,
+        source: &Path,
+        generated_vue: bool,
+        specifier: &str,
+        aliases: &[(std::string::String, std::string::String)],
+        probes: &PassthroughProbes,
+    ) -> Option<PathBuf> {
+        let generated = generated_vue && !self.source_authored_vue_ts_specifier(source, specifier);
+        resolve_dependency_listed(
+            specifier,
+            source.parent()?,
+            &self.project_root,
+            aliases,
+            (generated, probes),
+        )
     }
 
     pub(in crate::batch::virtual_project) fn resolve_file_dependency(
