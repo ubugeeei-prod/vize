@@ -45,6 +45,7 @@ members = [
   "tests/vize_test_runner",
   "examples/poc-support",
   "examples/poc-solid",
+  "examples/poc-svelte",
 ]
 
 [workspace.package]
