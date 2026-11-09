@@ -149,7 +149,7 @@ pub(super) fn emit_component_constructors<'a>(
     if !legacy_component {
         ts.push_str(&own);
     }
-    let mut base = String::default();
+    let mut base = crate::virtual_ts::TextBuf::default();
     instance_base(
         &mut base,
         legacy_vue2,
@@ -196,7 +196,7 @@ pub(super) fn emit_component_constructors<'a>(
         let constructor_base = if aliases.has_authored_default {
             cstr!("Omit<{authored_instance}, '$props' | '$emit' | '$slots'> & {base}")
         } else {
-            base.clone()
+            String::from(base.as_str())
         };
         append!(
             *ts,
