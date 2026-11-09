@@ -104,7 +104,13 @@ test("musl CLI verifier rejects dynamic interpreters and glibc symbol requiremen
       path.join(binDir, "readelf"),
       [
         "#!/usr/bin/env bash",
-        'if [[ "${VERIFY_MODE:-ok}" == "interpreter" ]]; then',
+        'if [[ "$1" == "--version-info" ]]; then',
+        '  if [[ "${VERIFY_MODE:-ok}" == "glibc" ]]; then',
+        "    printf 'GLIBC_2.39\\n'",
+        "  else",
+        "    printf 'No version information found in this file.\\n'",
+        "  fi",
+        'elif [[ "${VERIFY_MODE:-ok}" == "interpreter" ]]; then',
         "  printf '[Requesting program interpreter: /lib64/ld-linux-x86-64.so.2]\\n'",
         "else",
         "  printf 'Program Headers:\\n'",
@@ -112,19 +118,7 @@ test("musl CLI verifier rejects dynamic interpreters and glibc symbol requiremen
         "",
       ].join("\n"),
     );
-    fs.writeFileSync(
-      path.join(binDir, "strings"),
-      [
-        "#!/usr/bin/env bash",
-        'if [[ "${VERIFY_MODE:-ok}" == "glibc" ]]; then',
-        "  printf 'GLIBC_2.39\\n'",
-        "else",
-        "  printf 'musl\\n'",
-        "fi",
-        "",
-      ].join("\n"),
-    );
-    for (const command of ["file", "readelf", "strings"]) {
+    for (const command of ["file", "readelf"]) {
       fs.chmodSync(path.join(binDir, command), 0o755);
     }
 
