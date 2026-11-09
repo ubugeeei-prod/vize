@@ -3,7 +3,8 @@
 use crate::{runtime::block_on, server::MaestroServer};
 use futures::{FutureExt, SinkExt, StreamExt};
 use serde_json::{Value, json};
-use std::time::{Duration, Instant};
+use std::cell::Cell;
+use std::time::Duration;
 use tower::Service;
 use tower_lsp::{
     LanguageServer, LspService,
@@ -45,6 +46,11 @@ fn held_external_watch_ack_does_not_delay_real_document_hover() {
             let (release, released) = futures::channel::oneshot::channel();
             let (acknowledged, ack) = futures::channel::oneshot::channel();
             let (diagnostic, received_diagnostic) = futures::channel::oneshot::channel();
+            // Set while the client withholds the registration ACK. The client
+            // only releases it after the server has its hover reply, so a hover
+            // that awaited the ACK could never answer within the budget below.
+            let ack_withheld = Cell::new(false);
+            let client_ack_withheld = &ack_withheld;
             // Drain the real bounded ClientSocket throughout the operation.
             // Only the configuration registration ACK is intentionally held.
             let client = async move {
@@ -59,6 +65,7 @@ fn held_external_watch_ack_does_not_delay_real_document_hover() {
                         _ = released => {
                             assert_eq!(held.is_some(), supported);
                             if let Some(request) = held {
+                                client_ack_withheld.set(false);
                                 socket
                                     .send(Response::from_ok(
                                         request.id().unwrap().clone(),
@@ -80,6 +87,7 @@ fn held_external_watch_ack_does_not_delay_real_document_hover() {
                                 {
                                     assert!(supported);
                                     held = Some(request);
+                                    client_ack_withheld.set(true);
                                     observed.take().unwrap().send(()).unwrap();
                                 } else {
                                     assert!(
@@ -144,7 +152,6 @@ fn held_external_watch_ack_does_not_delay_real_document_hover() {
                     .await,
                     None
                 );
-                let started = Instant::now();
                 let hover = protocol_send(
                     &mut service,
                     json!({"jsonrpc":"2.0","id":20,"method":"textDocument/hover","params":{
@@ -153,9 +160,10 @@ fn held_external_watch_ack_does_not_delay_real_document_hover() {
                 )
                 .await
                 .unwrap();
-                assert!(
-                    started.elapsed() < Duration::from_millis(100),
-                    "local hover must not await watch registration"
+                assert_eq!(
+                    ack_withheld.get(),
+                    supported,
+                    "local hover must answer while its watch registration ACK is withheld"
                 );
                 assert!(hover["result"].is_object());
                 if let Some(expected) = &expected {

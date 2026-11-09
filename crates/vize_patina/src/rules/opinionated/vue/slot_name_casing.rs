@@ -1,6 +1,6 @@
 //! vue/slot-name-casing
 //!
-//! Enforce camelCase for names on rendered `<slot>` outlets.
+//! Enforce configured casing for names on rendered `<slot>` outlets.
 //!
 //! This follows the default behavior of `vue/slot-name-casing`: it checks the
 //! static `name` attribute of `<slot>`, not the `v-slot`/`#` syntax used by a
@@ -23,25 +23,84 @@
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
+use crate::rules::vue::SlotNameCasingStyle;
 use vize_relief::{ElementNode, ElementType, PropNode};
 
 static META: RuleMeta = RuleMeta {
     name: "vue/slot-name-casing",
-    description: "Enforce camelCase for rendered slot names",
+    description: "Enforce configured casing for rendered slot names",
     category: RuleCategory::Recommended,
     fixable: false,
     default_severity: Severity::Warning,
 };
 
-/// Enforce camelCase for rendered slot names.
+/// Enforce configured casing for rendered slot names.
 pub struct SlotNameCasing;
 
+struct ConfiguredSlotNameCasing {
+    style: SlotNameCasingStyle,
+}
+
 impl SlotNameCasing {
-    fn is_camel_case_name(name: &str) -> bool {
-        let mut chars = name.chars();
-        matches!(chars.next(), Some(first) if first.is_ascii_lowercase())
-            && chars.all(|character| character.is_ascii_alphanumeric())
+    /// Create the rule with the configured casing policy.
+    pub fn configured(style: SlotNameCasingStyle) -> impl Rule {
+        ConfiguredSlotNameCasing { style }
     }
+}
+
+fn is_camel_case_name(name: &str) -> bool {
+    let mut bytes = name.bytes();
+    bytes.next().is_some_and(|byte| byte.is_ascii_lowercase())
+        && bytes.all(|byte| byte.is_ascii_alphanumeric())
+}
+
+fn is_kebab_case_name(name: &str) -> bool {
+    let mut segments = name.split('-');
+    segments.next().is_some_and(is_lowercase_segment) && segments.all(is_lowercase_segment)
+}
+
+fn is_lowercase_segment(segment: &str) -> bool {
+    !segment.is_empty()
+        && segment
+            .bytes()
+            .all(|byte| byte.is_ascii_lowercase() || byte.is_ascii_digit())
+}
+
+fn accepts(style: SlotNameCasingStyle, name: &str) -> bool {
+    match style {
+        SlotNameCasingStyle::CamelCase => is_camel_case_name(name),
+        SlotNameCasingStyle::KebabCase => is_kebab_case_name(name),
+        SlotNameCasingStyle::Singleword => name.bytes().all(|byte| byte.is_ascii_lowercase()),
+    }
+}
+
+fn lint<'a>(style: SlotNameCasingStyle, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
+    if element.tag_type != ElementType::Slot {
+        return;
+    }
+    let Some(attribute) = element.props.iter().find_map(|prop| match prop {
+        PropNode::Attribute(attribute) if attribute.name == "name" => Some(attribute),
+        _ => None,
+    }) else {
+        return;
+    };
+    let Some(value) = &attribute.value else {
+        return;
+    };
+    let name = value.content;
+    if name.is_empty() || accepts(style, name) {
+        return;
+    }
+
+    let casing = style.name();
+    ctx.warn_with_help(
+        ctx.t_fmt(
+            "vue/slot-name-casing.message",
+            &[("name", name), ("casing", casing)],
+        ),
+        &attribute.loc,
+        ctx.t_fmt("vue/slot-name-casing.help", &[("casing", casing)]),
+    );
 }
 
 impl Rule for SlotNameCasing {
@@ -50,34 +109,23 @@ impl Rule for SlotNameCasing {
     }
 
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
-        if element.tag_type != ElementType::Slot {
-            return;
-        }
-        let Some(attribute) = element.props.iter().find_map(|prop| match prop {
-            PropNode::Attribute(attribute) if attribute.name == "name" => Some(attribute),
-            _ => None,
-        }) else {
-            return;
-        };
-        let Some(value) = &attribute.value else {
-            return;
-        };
-        let name = value.content;
-        if name.is_empty() || Self::is_camel_case_name(name) {
-            return;
-        }
+        lint(SlotNameCasingStyle::CamelCase, ctx, element);
+    }
+}
 
-        ctx.warn_with_help(
-            ctx.t_fmt("vue/slot-name-casing.message", &[("name", name)]),
-            &attribute.loc,
-            ctx.t("vue/slot-name-casing.help"),
-        );
+impl Rule for ConfiguredSlotNameCasing {
+    fn meta(&self) -> &'static RuleMeta {
+        &META
+    }
+
+    fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
+        lint(self.style, ctx, element);
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use super::SlotNameCasing;
+    use super::{SlotNameCasing, SlotNameCasingStyle};
     use crate::linter::Linter;
     use crate::rule::RuleRegistry;
 
@@ -182,5 +230,32 @@ mod tests {
     fn ignores_dynamic_slot_outlet_names() {
         let result = create_linter().lint_template(r#"<slot :name="dynamicName" />"#, "test.vue");
         assert_eq!(result.warning_count, 0);
+    }
+
+    #[test]
+    fn supports_kebab_case_and_singleword_options() {
+        for (style, valid, invalid) in [
+            (SlotNameCasingStyle::KebabCase, "row-actions", "rowActions"),
+            (SlotNameCasingStyle::Singleword, "actions", "row-actions"),
+        ] {
+            let mut registry = RuleRegistry::new();
+            registry.register(Box::new(SlotNameCasing::configured(style)));
+            let linter = Linter::with_registry(registry);
+            let source = format!(r#"<slot name="{valid}" /><slot name="{invalid}" />"#);
+            let result = linter.lint_template(&source, "test.vue");
+            assert_eq!(
+                result.warning_count, 1,
+                "{style:?}: {:?}",
+                result.diagnostics
+            );
+            assert_eq!(
+                result.diagnostics[0].message,
+                format!("Slot name '{invalid}' is not {}", style.name())
+            );
+            assert_eq!(
+                result.diagnostics[0].help.as_deref(),
+                Some(format!("Rename the rendered slot outlet to {}.", style.name()).as_str())
+            );
+        }
     }
 }

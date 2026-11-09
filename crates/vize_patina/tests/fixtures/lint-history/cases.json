@@ -524,7 +524,7 @@
     "rule": "a11y/interactive-supports-focus",
     "vue_version": null,
     "vapor": null,
-    "diagnostics": 2,
+    "diagnostics": 0,
     "fixes": 0
   },
   {

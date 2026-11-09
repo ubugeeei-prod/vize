@@ -109,11 +109,6 @@ impl Rule for NoUselessTemplateAttributes {
             return;
         }
 
-        // Root template is the SFC wrapper, skip it
-        if ctx.parent_element().is_none() {
-            return;
-        }
-
         // Only report if the template has a structural directive
         // (templates without structural directives are handled by no-lone-template)
         if !Self::has_structural_directive(element) {
@@ -232,5 +227,27 @@ mod tests {
             "test.vue",
         );
         assert_eq!(result.error_count, 1);
+    }
+
+    #[test]
+    fn reports_attributes_on_a_top_level_template_element() {
+        let result = create_linter().lint_template(
+            r#"<template v-if="show" class="foo"><span /></template>"#,
+            "test.vue",
+        );
+        assert_eq!(result.error_count, 1, "{:?}", result.diagnostics);
+    }
+
+    #[test]
+    fn reports_both_direct_and_nested_template_attributes_in_an_sfc() {
+        let result = create_linter().lint_sfc(
+            r#"<script setup>const on = true</script>
+<template>
+  <template v-if="on" class="direct"><div /></template>
+  <section><template v-if="on" id="nested"><p /></template></section>
+</template>"#,
+            "test.vue",
+        );
+        assert_eq!(result.error_count, 2, "{:?}", result.diagnostics);
     }
 }

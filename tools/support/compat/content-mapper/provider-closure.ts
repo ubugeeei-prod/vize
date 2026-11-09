@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { mkdirSync, readFileSync, realpathSync, writeFileSync } from "node:fs";
+import { createRequire } from "node:module";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -55,6 +56,15 @@ function packageIdentity(directory: string, expected: string) {
   };
 }
 
+/**
+ * The TypeScript package a `node_modules/.bin/tsc` launcher runs. pnpm writes
+ * that launcher as a shell shim, not a link into the package, so resolve the
+ * package from the launcher's own workspace instead of its parent directories.
+ */
+export function typescriptPackageDirectory(tsc: string): string {
+  return path.dirname(createRequire(tsc).resolve("typescript/package.json"));
+}
+
 function commandText(command: string, args: readonly string[]): string {
   const result = spawnSync(command, args, {
     cwd: root,
@@ -75,8 +85,13 @@ function errorPacket(error: unknown) {
   };
 }
 
+/** Evidence directory for one check; artifact paths may not contain `:`. */
+export function closureTestDirectoryName(test: string, index: number): string {
+  return `${String(index + 1).padStart(2, "0")}-${test.replaceAll(":", "-")}`;
+}
+
 function runTest(test: string, index: number, destination: string) {
-  const directory = path.join(destination, `${String(index + 1).padStart(2, "0")}-${test}`);
+  const directory = path.join(destination, closureTestDirectoryName(test, index));
   mkdirSync(directory, { recursive: true });
   const args = [
     "test",
@@ -159,9 +174,12 @@ function main(): void {
     const vue = realpathSync(required("VIZE_TEST_CONTENT_MAPPER_VUE"));
     const dynamicTargets = path.resolve(required("VIZE_TEST_REPORTED_DYNAMIC_TARGETS_CAPTURE_DIR"));
     mkdirSync(dynamicTargets, { recursive: true });
-    const typescriptDirectory = path.dirname(path.dirname(javascriptTsc));
+    const typescriptDirectory = typescriptPackageDirectory(javascriptTsc);
     const mapperVersion = commandText(tsgo, ["--version"]);
     assert.equal(mapperVersion, "Version 7.1.0-dev");
+    const javascriptTscPackage = packageIdentity(typescriptDirectory, "typescript");
+    const javascriptTscVersion = commandText(javascriptTsc, ["--version"]);
+    assert.equal(javascriptTscVersion, `Version ${javascriptTscPackage.version}`);
     const vueIdentity = packageIdentity(vue, "vue");
     assert.equal(vueIdentity.version, "3.5.35");
     assert.equal(required("VIZE_TEST_REPORTED_DYNAMIC_TARGETS_REQUIRED"), "1");
@@ -173,8 +191,8 @@ function main(): void {
       },
       javascriptTsc: {
         ...fileIdentity(javascriptTsc),
-        version: commandText(javascriptTsc, ["--version"]),
-        package: packageIdentity(typescriptDirectory, "typescript"),
+        version: javascriptTscVersion,
+        package: javascriptTscPackage,
       },
       vue: vueIdentity,
       node: { path: process.execPath, version: process.version },

@@ -1,15 +1,15 @@
 ---
 title: "vue/slot-name-casing"
-description: "Exigir camelCase nos nomes estáticos de pontos de inserção de slot renderizados."
+description: "Exigir a capitalização configurada nos nomes estáticos de pontos de inserção de slot renderizados."
 ---
 
 # `vue/slot-name-casing`
 
-Exigir camelCase nos nomes estáticos de pontos de inserção de slot renderizados.
+Exigir a capitalização configurada nos nomes estáticos de pontos de inserção de slot renderizados.
 
 | Severidade padrão | Predefinições | Correção automática | Opções |
 | --- | --- | --- | --- |
-| `warning` | `nuxt`, `opinionated` | Não | Nenhuma |
+| `warning` | `nuxt`, `opinionated` | Não | [Opções das regras](/rules/options.md) |
 
 Aplicável a: Templates e blocos de SFC Vue, com o contexto do script quando exigido pela regra.
 
@@ -45,6 +45,9 @@ export default defineConfig({}).withVue({
     "preset": "incremental",
     "rules": {
       "vue/slot-name-casing": "warn"
+    },
+    "ruleOptions": {
+      "vue/slot-name-casing": "camelCase"
     }
   },
 });
@@ -55,5 +58,6 @@ Depois, execute `vp run lint`.
 ## Páginas relacionadas
 
 - [Regras Vue](../vue.md)
+- [Opções das regras](/rules/options.md)
 - [Todas as regras](../all.md)
-- [Código-fonte](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/slot_name_casing.rs#L28)
+- [Código-fonte](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/slot_name_casing.rs#L29)

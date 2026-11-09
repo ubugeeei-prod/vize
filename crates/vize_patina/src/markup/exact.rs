@@ -47,6 +47,8 @@ enum ArgMatch {
     IgnoreAsciiCase,
     /// Case-sensitive, static arguments only.
     StaticExact,
+    /// ASCII case-insensitive, static arguments only.
+    StaticIgnoreAsciiCase,
 }
 
 impl ArgMatch {
@@ -55,6 +57,7 @@ impl ArgMatch {
             Self::Exact => actual == expected,
             Self::IgnoreAsciiCase => actual.eq_ignore_ascii_case(expected),
             Self::StaticExact => is_static && actual == expected,
+            Self::StaticIgnoreAsciiCase => is_static && actual.eq_ignore_ascii_case(expected),
         }
     }
 }
@@ -85,6 +88,42 @@ impl<'a> MarkupBinding<'a> {
     /// must not match legacy event rules that only saw `arg.is_static`.
     pub fn is_static_unqualified_arg_exact(&self, expected: &str) -> bool {
         self.unqualified_arg_matches(expected, ArgMatch::StaticExact)
+    }
+
+    /// Whether this binding has a static, unqualified prop/directive argument
+    /// matching case-insensitively.
+    ///
+    /// This keeps Vue dynamic arguments out while normalizing JSX event names
+    /// such as `onClick`, whose projected argument is `Click`.
+    pub fn is_static_unqualified_arg_eq_ignore_ascii_case(&self, expected: &str) -> bool {
+        self.unqualified_arg_matches(expected, ArgMatch::StaticIgnoreAsciiCase)
+    }
+
+    /// Whether this binding is a statically named handler for `expected`.
+    ///
+    /// Plain JSX `onClick={...}` remains a bind in lowered contracts, while
+    /// the direct JSX facade classifies it as an event. Vue can express the
+    /// same listener prop as `:onClick`, so recognize a static `onX` bind in
+    /// either projection.
+    pub(crate) fn is_static_event_handler_for(&self, expected: &str) -> bool {
+        if self.kind() == MarkupBindingKind::On {
+            return self.is_static_unqualified_arg_eq_ignore_ascii_case(expected);
+        }
+
+        if self.kind() != MarkupBindingKind::Bind {
+            return false;
+        }
+        let Some(arg) = self.arg_name() else {
+            return false;
+        };
+        self.is_static_unqualified_arg_exact(arg)
+            && arg.strip_prefix("on").is_some_and(|event| {
+                event
+                    .chars()
+                    .next()
+                    .is_some_and(|character| character.is_ascii_uppercase())
+                    && event.eq_ignore_ascii_case(expected)
+            })
     }
 
     #[inline]

@@ -1,0 +1,473 @@
+{
+  "corpus": "misskey",
+  "submodule": "tests/_fixtures/_git/misskey",
+  "revision": "810faa8e5db4bbf9d6d408a61df148559340ee99",
+  "absent": {
+    "prop-unknown": "the corpus tsconfigs leave vueCompilerOptions.strictTemplates off, so Vize, like vue-tsc, accepts undeclared attributes on every component (inheritAttrs: false and multi-root components included)."
+  },
+  "mutations": [
+    {
+      "id": "interp-sound-label",
+      "family": "interpolation-identifier",
+      "file": "src/pages/settings/sounds.sound.vue",
+      "anchor": "<template #label>{{ i18n.ts.volume }}</template>",
+      "replacement": "<template #label>{{ i18m.ts.volume }}</template>",
+      "expect": {
+        "line": 22,
+        "column": 23,
+        "code": "TS2339",
+        "message": "'i18m'"
+      }
+    },
+    {
+      "id": "member-prefer-clip-button",
+      "family": "typed-member",
+      "file": "src/components/MkNote.vue",
+      "anchor": "<button v-if=\"prefer.s.showClipButtonInNoteFooter\"",
+      "replacement": "<button v-if=\"prefer.s.showClipButtonInNoteFootr\"",
+      "expect": {
+        "line": 154,
+        "column": 28,
+        "code": "TS2551",
+        "message": "'showClipButtonInNoteFootr'"
+      }
+    },
+    {
+      "id": "member-prefer-upload-folder",
+      "family": "typed-member",
+      "file": "src/components/MkDrive.folder.vue",
+      "anchor": "<div v-if=\"prefer.s.uploadFolder == folder.id\"",
+      "replacement": "<div v-if=\"prefer.s.uploadFoldr == folder.id\"",
+      "expect": {
+        "line": 25,
+        "column": 22,
+        "code": "TS2551",
+        "message": "'uploadFoldr'"
+      }
+    },
+    {
+      "id": "member-store-dark-mode",
+      "family": "typed-member",
+      "file": "src/pages/drop-and-fusion.game.vue",
+      "anchor": "<img v-if=\"store.s.darkMode\"",
+      "replacement": "<img v-if=\"store.s.darkMod\"",
+      "expect": {
+        "line": 59,
+        "column": 24,
+        "code": "TS2551",
+        "message": "'darkMod'"
+      }
+    },
+    {
+      "id": "prop-static-avatar-bool",
+      "family": "prop-static",
+      "file": "src/pages/settings/avatar-decoration.dialog.vue",
+      "anchor": "<MkRange v-model=\"offsetX\" continuousUpdate",
+      "replacement": "<MkRange v-model=\"offsetX\" continuousUpdate=\"yes\"",
+      "expect": {
+        "line": 26,
+        "column": 32,
+        "code": "TS2322",
+        "message": "Type 'string' is not assignable to type 'boolean | undefined'"
+      }
+    },
+    {
+      "id": "prop-static-forgot-type",
+      "family": "prop-static",
+      "file": "src/components/MkForgotPassword.vue",
+      "anchor": "<MkButton type=\"submit\" rounded",
+      "replacement": "<MkButton type=\"submut\" rounded",
+      "expect": {
+        "line": 29,
+        "column": 15,
+        "code": "TS2820",
+        "message": "Type '\"submut\"' is not assignable"
+      }
+    },
+    {
+      "id": "prop-bound-avatar-min",
+      "family": "prop-bound",
+      "file": "src/pages/settings/avatar-decoration.dialog.vue",
+      "anchor": "<MkRange v-model=\"angle\" continuousUpdate :min=\"-0.5\"",
+      "replacement": "<MkRange v-model=\"angle\" continuousUpdate :min=\"'-0.5'\"",
+      "expect": {
+        "line": 23,
+        "column": 48,
+        "code": "TS2322",
+        "message": "Type 'string' is not assignable to type 'number'"
+      }
+    },
+    {
+      "id": "prop-bound-fx-seed-max",
+      "family": "prop-bound",
+      "file": "src/components/MkImageEffectorFxForm.vue",
+      "anchor": ":min=\"0\" :max=\"10000\"",
+      "replacement": ":min=\"0\" :max=\"'10000'\"",
+      "expect": {
+        "line": 36,
+        "column": 74,
+        "code": "TS2322",
+        "message": "Type 'string' is not assignable to type 'number'"
+      }
+    },
+    {
+      "id": "prop-missing-file-switch",
+      "family": "prop-missing",
+      "file": "src/pages/admin-file.root.vue",
+      "anchor": "<MkSwitch :modelValue=\"isSensitive\" @update:modelValue=\"toggleSensitive\">",
+      "replacement": "<MkSwitch @update:modelValue=\"toggleSensitive\">",
+      "expect": {
+        "line": 40,
+        "column": 6,
+        "code": "TS2345",
+        "message": "Property 'modelValue' is missing"
+      }
+    },
+    {
+      "id": "prop-missing-sounds-max",
+      "family": "prop-missing",
+      "file": "src/pages/settings/sounds.vue",
+      "anchor": "<MkRange v-model=\"masterVolume\" :min=\"0\" :max=\"1\" ",
+      "replacement": "<MkRange v-model=\"masterVolume\" :min=\"0\" ",
+      "expect": {
+        "line": 31,
+        "column": 6,
+        "code": "TS2345",
+        "message": "Property 'max' is missing"
+      }
+    },
+    {
+      "id": "listener-handler-performance",
+      "family": "listener-handler",
+      "file": "src/pages/admin/performance.vue",
+      "anchor": "<MkSwitch v-model=\"enableServerMachineStats\" @change=\"onChange_enableServerMachineStats\">",
+      "replacement": "<MkSwitch v-model=\"enableServerMachineStats\" @change=\"(value: string) => value\">",
+      "expect": {
+        "line": 13,
+        "column": 53,
+        "code": "TS2322",
+        "message": "Type 'boolean' is not assignable to type 'string'"
+      }
+    },
+    {
+      "id": "listener-inline-plugin",
+      "family": "listener-inline",
+      "file": "src/pages/settings/plugin.vue",
+      "anchor": "@update:modelValue=\"changeActive(plugin, $event)\"",
+      "replacement": "@update:modelValue=\"changeActive($event, plugin)\"",
+      "expect": {
+        "line": 45,
+        "column": 79,
+        "code": "TS2345",
+        "message": "Argument of type 'boolean' is not assignable to parameter of type 'Plugin'"
+      }
+    },
+    {
+      "id": "emit-call-button-template",
+      "family": "emit-call",
+      "file": "src/components/MkButton.vue",
+      "anchor": "@click=\"emit('click', $event)\"",
+      "replacement": "@click=\"emit('click', 1)\"",
+      "expect": {
+        "line": 15,
+        "column": 24,
+        "code": "TS2345",
+        "message": "parameter of type 'PointerEvent'"
+      }
+    },
+    {
+      "id": "emit-call-switch",
+      "family": "emit-call",
+      "file": "src/components/MkSwitch.vue",
+      "anchor": "emit('update:modelValue', !checked.value);",
+      "replacement": "emit('update:modelValue', 'on');",
+      "expect": {
+        "line": 50,
+        "column": 7,
+        "code": "TS2769",
+        "message": "No overload matches this call"
+      }
+    },
+    {
+      "id": "slot-missing-navbar",
+      "family": "slot-prop-missing",
+      "file": "src/pages/settings/navbar.vue",
+      "anchor": "<template #default=\"{ item }\">",
+      "replacement": "<template #default=\"{ item, itme }\">",
+      "expect": {
+        "line": 16,
+        "column": 34,
+        "code": "TS2339",
+        "message": "'itme'"
+      },
+      "known": {
+        "issue": 12479,
+        "count": 2
+      }
+    },
+    {
+      "id": "slot-type-navbar",
+      "family": "slot-prop-type",
+      "file": "src/pages/settings/navbar.vue",
+      "anchor": "@click=\"removeItem(item.id)\"",
+      "replacement": "@click=\"removeItem(item)\"",
+      "expect": {
+        "line": 23,
+        "column": 78,
+        "code": "TS2345",
+        "message": "parameter of type 'string'"
+      }
+    },
+    {
+      "id": "vmodel-list-public",
+      "family": "v-model",
+      "file": "src/pages/my-lists/list.vue",
+      "anchor": "<MkSwitch v-model=\"isPublic\">",
+      "replacement": "<MkSwitch v-model=\"name\">",
+      "expect": {
+        "line": 17,
+        "column": 16,
+        "code": "TS2322",
+        "message": "Type 'string' is not assignable to type 'boolean"
+      }
+    },
+    {
+      "id": "vfor-aiscript-log",
+      "family": "v-for-member",
+      "file": "src/widgets/WidgetAiscript.vue",
+      "anchor": "{{ log.text }}",
+      "replacement": "{{ log.txet }}",
+      "expect": {
+        "line": 15,
+        "column": 92,
+        "code": "TS2339",
+        "message": "'txet'"
+      }
+    },
+    {
+      "id": "vfor-autocomplete-emoji",
+      "family": "v-for-member",
+      "file": "src/components/MkAutocomplete.vue",
+      "anchor": "<li v-for=\"emoji in emojis\" :key=\"emoji.emoji\"",
+      "replacement": "<li v-for=\"emoji in emojis\" :key=\"emoji.emojj\"",
+      "expect": {
+        "line": 24,
+        "column": 43,
+        "code": "TS2551",
+        "message": "'emojj'"
+      }
+    },
+    {
+      "id": "vif-autocomplete-query",
+      "family": "v-if-narrowing",
+      "file": "src/components/MkAutocomplete.vue",
+      "anchor": "<span v-else v-text=\"emoji.name\"></span>",
+      "replacement": "<span v-else v-text=\"q.tag\"></span>",
+      "expect": {
+        "line": 29,
+        "column": 25,
+        "code": "TS18047",
+        "message": "'q' is possibly 'null'"
+      }
+    },
+    {
+      "id": "vif-fx-boolean",
+      "family": "v-if-narrowing",
+      "file": "src/components/MkImageEffectorFxForm.vue",
+      "anchor": "v-if=\"v.type === 'boolean'\"",
+      "replacement": "v-if=\"v.type === 'boolean' && v.min > 0\"",
+      "expect": {
+        "line": 10,
+        "column": 36,
+        "code": "TS2339",
+        "message": "'min' does not exist on type 'BooleanParamDef'"
+      }
+    },
+    {
+      "id": "template-ref-button-focus",
+      "family": "template-ref",
+      "file": "src/components/MkButton.vue",
+      "anchor": "el.value!.focus();",
+      "replacement": "el.value!.focuss();",
+      "expect": {
+        "line": 75,
+        "column": 14,
+        "code": "TS2551",
+        "message": "'focuss' does not exist on type 'HTMLButtonElement'"
+      }
+    },
+    {
+      "id": "tref-range-thumb",
+      "family": "template-ref",
+      "file": "src/components/MkRange.vue",
+      "anchor": "return thumbEl.value!.offsetWidth;",
+      "replacement": "return thumbEl.value!.offsetWidht;",
+      "expect": {
+        "line": 113,
+        "column": 24,
+        "code": "TS2551",
+        "message": "'offsetWidht' does not exist on type 'HTMLDivElement'"
+      }
+    },
+    {
+      "id": "fallthrough-account-aria",
+      "family": "fallthrough",
+      "file": "src/pages/settings/account-data.vue",
+      "anchor": "<MkSwitch v-model=\"excludeMutingUsers\">",
+      "replacement": "<MkSwitch v-model=\"excludeMutingUsers\" :aria-busy=\"1\">",
+      "expect": {
+        "line": 59,
+        "column": 49,
+        "code": "TS2322",
+        "message": "Type '1' is not assignable to type 'Booleanish | undefined'"
+      }
+    },
+    {
+      "id": "fallthrough-account-tabindex",
+      "family": "fallthrough",
+      "file": "src/pages/settings/account-data.vue",
+      "anchor": "<MkSwitch v-model=\"withReplies\">",
+      "replacement": "<MkSwitch v-model=\"withReplies\" :tabindex=\"{}\">",
+      "expect": {
+        "line": 71,
+        "column": 41,
+        "code": "TS2322",
+        "message": "Type '{}' is not assignable to type 'Numberish | undefined'"
+      },
+      "known": {
+        "issue": 12458,
+        "count": 0
+      }
+    },
+    {
+      "id": "generic-input-type",
+      "family": "generic",
+      "file": "src/pages/admin/performance.vue",
+      "anchor": "<MkInput v-model=\"fttForm.state.perUserHomeTimelineCacheMax\" type=\"number\">",
+      "replacement": "<MkInput v-model=\"fttForm.state.perUserHomeTimelineCacheMax\" type=\"nmber\">",
+      "expect": {
+        "line": 107,
+        "column": 71,
+        "code": "TS2820",
+        "message": "Type '\"nmber\"' is not assignable"
+      }
+    },
+    {
+      "id": "generic-select-model",
+      "family": "generic",
+      "file": "src/pages/settings/preferences.vue",
+      "anchor": "\t\t\t\t\t\t\t\t\tv-model=\"menuStyle\"",
+      "replacement": "\t\t\t\t\t\t\t\t\tv-model=\"contextMenu\"",
+      "expect": {
+        "line": 577,
+        "column": 10,
+        "code": "TS2322",
+        "message": "is not assignable to type 'never'"
+      }
+    },
+    {
+      "id": "script-button-distance",
+      "family": "script-setup",
+      "file": "src/components/MkButton.vue",
+      "anchor": "return Math.hypot(p.x - q.x, p.y - q.y);",
+      "replacement": "return String(Math.hypot(p.x - q.x, p.y - q.y));",
+      "expect": {
+        "line": 81,
+        "column": 2,
+        "code": "TS2322",
+        "message": "Type 'string' is not assignable to type 'number'"
+      }
+    },
+    {
+      "id": "with-defaults-draggable-group",
+      "family": "with-defaults",
+      "file": "src/components/MkDraggable.vue",
+      "anchor": "\tgroup: null,",
+      "replacement": "\tgroup: 1,",
+      "expect": {
+        "line": 79,
+        "column": 2,
+        "code": "TS2322",
+        "message": "Type 'number' is not assignable to type"
+      }
+    },
+    {
+      "id": "with-defaults-range-step",
+      "family": "with-defaults",
+      "file": "src/components/MkRange.vue",
+      "anchor": "\tstep: 1,",
+      "replacement": "\tstep: '1',",
+      "expect": {
+        "line": 60,
+        "column": 2,
+        "code": "TS2322",
+        "message": "Type 'string' is not assignable to type"
+      }
+    },
+    {
+      "id": "define-model-media-range",
+      "family": "define-model",
+      "file": "src/components/MkMediaRange.vue",
+      "anchor": "set: v => { model.value = v; },",
+      "replacement": "set: v => { model.value = v > 0; },",
+      "expect": {
+        "line": 34,
+        "column": 14,
+        "code": "TS2322",
+        "message": "Type 'boolean' is not assignable to type 'string | number'"
+      }
+    },
+    {
+      "id": "define-model-radios",
+      "family": "define-model",
+      "file": "src/components/MkRadios.vue",
+      "anchor": "model.value = o.value;",
+      "replacement": "model.value = o;",
+      "expect": {
+        "line": 90,
+        "column": 2,
+        "code": "TS2322",
+        "message": "is not assignable to type 'T[\"value\"]'"
+      }
+    },
+    {
+      "id": "position-selector-model",
+      "family": "define-model",
+      "file": "src/components/MkPositionSelector.vue",
+      "anchor": "@click=\"() => { x = 'left'; y = 'top'; }\"",
+      "replacement": "@click=\"() => { x = 1; y = 'top'; }\"",
+      "expect": {
+        "line": 9,
+        "column": 126,
+        "code": "TS2322",
+        "message": "Type 'number' is not assignable to type 'string'"
+      }
+    },
+    {
+      "id": "tpl-literal-bubble-score",
+      "family": "template-literal",
+      "file": "src/pages/drop-and-fusion.game.vue",
+      "anchor": "\nSCORE: ${score.value.toLocaleString()}",
+      "replacement": "\nSCORE: ${score.value.toLocaleStrin()}",
+      "expect": {
+        "line": 937,
+        "column": 22,
+        "code": "TS2551",
+        "message": "'toLocaleStrin' does not exist on type 'number'"
+      }
+    },
+    {
+      "id": "compile-error-deck-column-naked",
+      "family": "compile-error",
+      "file": "src/ui/deck/column.vue",
+      "anchor": "\tnaked: false,",
+      "replacement": "\tnaked: withWallpaper,",
+      "expect": {
+        "line": 70,
+        "column": 9,
+        "code": "vize100002",
+        "message": "[SCRIPT_SETUP_MACRO_SCOPE]: `withDefaults()` in <script setup> cannot reference locally declared variable `withWallpaper`"
+      }
+    }
+  ]
+}

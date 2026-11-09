@@ -129,7 +129,7 @@ Vize のリンターに含まれるすべてのルールを、カテゴリごと
 | <span id="vue-scoped-event-names"></span>[`vue/scoped-event-names`](./reference/vue-scoped-event-names.md) | イベント名を context:event の形式に揃えます。 | `nuxt`, `opinionated` |  |
 | <span id="vue-sfc-element-order"></span>[`vue/sfc-element-order`](./reference/vue-sfc-element-order.md) | SFC のトップレベルブロックを設定した順に並べます。 | `happy-path` |  |
 | <span id="vue-single-style-block"></span>[`vue/single-style-block`](./reference/vue-single-style-block.md) | SFC の style を一つのブロックにまとめます。 | `happy-path` |  |
-| <span id="vue-slot-name-casing"></span>[`vue/slot-name-casing`](./reference/vue-slot-name-casing.md) | 描画する slot outlet の静的な名前を camelCase に揃えます。 | `nuxt`, `opinionated` |  |
+| <span id="vue-slot-name-casing"></span>[`vue/slot-name-casing`](./reference/vue-slot-name-casing.md) | 描画する slot outlet の静的な名前を設定した形式に揃えます。 | `nuxt`, `opinionated` |  |
 | <span id="vue-sort-keys"></span>[`vue/sort-keys`](./reference/vue-sort-keys.md) | コンポーネントオプション内のキーを設定した順序に並べます。 | — |  |
 | <span id="vue-this-in-template"></span>[`vue/this-in-template`](./reference/vue-this-in-template.md) | テンプレートで不要な this. 参照を検出します。 | `happy-path` |  |
 | <span id="vue-use-unique-element-ids"></span>[`vue/use-unique-element-ids`](./reference/vue-use-unique-element-ids.md) | 静的 ID の代わりに useId() で一意な ID を生成します。 | `nuxt`, `opinionated` |  |

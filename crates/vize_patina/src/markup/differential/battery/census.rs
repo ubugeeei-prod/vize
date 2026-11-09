@@ -26,7 +26,9 @@ pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
         // Dynamic class counterpart coverage adds one literal fixture.
         + 1
         // Conditional class branches add one non-colliding control fixture.
-        + 1,
+        + 1
+        + 3
+        + 7,
     // Original 1057/87 census plus non-literal calls in valid_v_slot (3 + 1),
     // require_toggle_inside_transition (3), the v-else-if/v-is/v-pre rules (38
     // templates over 42 calls, one `v-pre` helper, #8856) and v_bind_style (one
@@ -125,6 +127,12 @@ pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
     // Per-entry regex isolation adds three literal fixtures over four calls;
     // the variable-driven invalid-pattern observation remains a scanner skip
     // already counted above, while the retained traces add twelve lines.
+    // External linter compatibility adds three literal fixtures over five
+    // calls. Two helper-driven observations remain explicit scanner skips,
+    // while the retained facade traces add thirty-two complete lines.
+    // Third-party directive, label, anchor and bare-string regressions add
+    // seven literal fixtures over nine calls. Two loop-driven observations
+    // remain explicit scanner skips, and complete traces add fifty-nine lines.
     rule_fixture_calls: 1057 + 4 + 3 + 43 + 2 + 1 + 11 + 5 + 1 + 2 - 5
         + 3
         + 2
@@ -163,7 +171,9 @@ pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
         // Dynamic class counterpart coverage adds one literal call.
         + 1
         // Conditional class branches add one non-colliding control call.
-        + 1,
+        + 1
+        + 5
+        + 9,
     rule_fixture_skipped: 87
         + 4
         + 3
@@ -199,7 +209,9 @@ pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
         + 3
         + 3
         // The compatibility scorecard keeps that call scanner-owned.
-        + 1,
+        + 1
+        + 2
+        + 2,
     matrix: 90,
     template_lines: 6316 + 233 + 5 + 10 + 25 + 7 - 49
         + 31
@@ -222,7 +234,9 @@ pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
         // The dynamic class fixture contributes thirteen retained trace lines.
         + 13
         // The conditional branch control contributes nine retained trace lines.
-        + 9,
+        + 9
+        + 32
+        + 59,
     restructured: 0,
     jsx: JsxComparison {
         roots: 14,

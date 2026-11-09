@@ -129,7 +129,7 @@ Vize linter 提供的全部规则，按类别分组。打开规则页面即可�
 | <span id="vue-scoped-event-names"></span>[`vue/scoped-event-names`](./reference/vue-scoped-event-names.md) | 建议使用 context:event 格式的作用域事件名称。 | `nuxt`, `opinionated` |  |
 | <span id="vue-sfc-element-order"></span>[`vue/sfc-element-order`](./reference/vue-sfc-element-order.md) | 要求 SFC 顶层元素保持一致的顺序。 | `happy-path` |  |
 | <span id="vue-single-style-block"></span>[`vue/single-style-block`](./reference/vue-single-style-block.md) | 建议只使用一个 style 块。 | `happy-path` |  |
-| <span id="vue-slot-name-casing"></span>[`vue/slot-name-casing`](./reference/vue-slot-name-casing.md) | 要求渲染的插槽出口静态名称采用 camelCase。 | `nuxt`, `opinionated` |  |
+| <span id="vue-slot-name-casing"></span>[`vue/slot-name-casing`](./reference/vue-slot-name-casing.md) | 要求渲染的插槽出口静态名称采用配置的大小写格式。 | `nuxt`, `opinionated` |  |
 | <span id="vue-sort-keys"></span>[`vue/sort-keys`](./reference/vue-sort-keys.md) | 按配置顺序排列组件选项中的键。 | — |  |
 | <span id="vue-this-in-template"></span>[`vue/this-in-template`](./reference/vue-this-in-template.md) | 禁止在模板表达式中使用 `this.`。 | `happy-path` |  |
 | <span id="vue-use-unique-element-ids"></span>[`vue/use-unique-element-ids`](./reference/vue-use-unique-element-ids.md) | 要求使用 useId() 生成唯一元素 ID，而不是静态字面量。 | `nuxt`, `opinionated` |  |

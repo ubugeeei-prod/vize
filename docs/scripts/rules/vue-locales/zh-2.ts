@@ -40,7 +40,7 @@ export const chineseVue2: Record<string, readonly [purpose: string, bad: string,
     "两个选择器都保留在同一个带作用域的 style 块中，满足单块规范，也没有丢弃任何样式。",
   ],
   "vue/slot-name-casing": [
-    "要求渲染的插槽出口静态名称采用 camelCase",
+    "要求渲染的插槽出口静态名称采用配置的大小写格式",
     "渲染的插槽出口使用连字符静态名称 `my-slot`，而默认规范要求 camelCase。",
     "出口的静态名称使用 camelCase。父组件侧的 `#name` 提供语法不在此规则范围内。",
   ],

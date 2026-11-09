@@ -81,6 +81,7 @@ mod no_multi_spaces;
 mod no_multiple_template_root;
 mod no_non_component_keep_alive_child;
 mod sfc_element_order;
+mod slot_name_casing_option;
 mod v_on_style;
 mod v_slot_style;
 // Most implementations live under rules::opinionated::vue and are re-exported here.
@@ -165,6 +166,7 @@ pub use valid_v_text::ValidVText;
 
 // Strongly recommended rules exports
 pub use crate::rules::opinionated::vue::NoTemplateShadow;
+pub use crate::rules::opinionated::vue::SlotNameCasing;
 pub use crate::rules::opinionated::vue::ThisInTemplate;
 pub use crate::rules::opinionated::vue::{
     HtmlSelfClosing, HtmlSelfClosingHtmlOptions, HtmlSelfClosingOptions, HtmlSelfClosingStyle,
@@ -192,6 +194,7 @@ pub use no_multi_spaces::NoMultiSpaces;
 pub use no_multiple_template_root::NoMultipleTemplateRoot;
 pub use no_static_inline_styles::NoStaticInlineStyles;
 pub use prop_name_casing::{PropNameCasing, PropNameCasingOption};
+pub use slot_name_casing_option::SlotNameCasingStyle;
 pub use v_on_style::{VOnStyle, VOnStyleOption};
 pub use v_slot_style::{VSlotStyle, VSlotStyleOption};
 

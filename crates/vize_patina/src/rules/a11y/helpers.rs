@@ -95,8 +95,24 @@ pub fn is_interactive_role(role: &str) -> bool {
             | "slider"
             | "spinbutton"
             | "scrollbar"
+            | "tree"
+            | "tablist"
+            | "menu"
+            | "row"
+            | "columnheader"
     )
 }
+
+/// Events that make an otherwise static element behave interactively.
+pub(crate) const INTERACTIVE_HANDLER_EVENTS: &[&str] = &[
+    "click",
+    "dblclick",
+    "mousedown",
+    "mouseup",
+    "keydown",
+    "keyup",
+    "keypress",
+];
 
 /// Get the static (non-dynamic) value of an attribute on an element.
 /// Returns None if the attribute is not found or is dynamically bound.
@@ -228,11 +244,20 @@ pub fn has_event_handler(element: &ElementNode, event_name: &str) -> bool {
             && let Some(ExpressionNode::Simple(arg)) = &dir.arg
             && arg.is_static
             && arg.content == event_name
+            && dir.exp.as_ref().is_some_and(|expression| match expression {
+                ExpressionNode::Simple(simple) => !simple.content.trim().is_empty(),
+                ExpressionNode::Compound(compound) => !compound.children.is_empty(),
+            })
         {
             return true;
         }
     }
     false
+}
+
+/// Check if an element has a real handler for any of the supplied events.
+pub(crate) fn has_any_event_handler(element: &ElementNode, events: &[&str]) -> bool {
+    events.iter().any(|event| has_event_handler(element, event))
 }
 
 /// Elements that do not support ARIA attributes

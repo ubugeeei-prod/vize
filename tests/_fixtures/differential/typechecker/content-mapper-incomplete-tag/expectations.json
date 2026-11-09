@@ -5,8 +5,8 @@
   "positions": "authored UTF-16, one-based",
   "states": ["complete", "unfinished-tag", "template-repaired", "script-repaired"],
   "scriptMessage": "Type 'string' is not assignable to type 'number'.",
-  "nativeCliSemanticDiagnosticsOnTemplateError": false,
-  "nativeCliGate": "Official tsgo appends mapper diagnostics to syntactic diagnostics and suppresses semantic checking for the entire project; combined CLI diagnostics remain unfinished under #8158 and #3984.",
+  "nativeCliSemanticDiagnosticsOnTemplateError": true,
+  "nativeCliGate": "Official tsgo appends mapper diagnostics to syntactic diagnostics and suppresses semantic checking for the entire project, so Vize reports them through empty expect directives on the semantic pass (#12522).",
   "scriptHover": { "kind": "plaintext", "value": "const café: number" },
   "templateDiagnostics": [
     {

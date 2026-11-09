@@ -57,6 +57,7 @@ pub(super) const SHARED_SFC_DESCRIPTOR_RULES: &[&str] = &[
     "vue/no-preprocessor-lang",
     "vue/no-template-lang",
     "vue/warn-custom-block",
+    "vue/warn-custom-directive",
     "a11y/no-redundant-roles",
     "ecosystem/void-link-require-href",
     "ecosystem/void-link-valid-method",

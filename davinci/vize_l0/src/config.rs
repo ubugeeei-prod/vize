@@ -24,7 +24,7 @@ pub use model::{
     ParseVueVersionError, PropNameCasingOptions, PropNameCasingStyle, PropsDestructureMode,
     QuoteProps, QuotePropsStyle, ResolvedLinterConfig, ResolvedLinterConfigWithConfigRuleOptions,
     RestrictedGlobal, RestrictedMember, SfcElementOrderGroup, SfcElementOrderOptions,
-    SortImportsConfig, SortImportsSetting, SortKeysOptions, SortKeysOrder,
+    SlotNameCasingStyle, SortImportsConfig, SortImportsSetting, SortKeysOptions, SortKeysOrder,
     StrictBooleanExpressionsOptions, StyleAttributeMode, TemplateComponentNameCasing,
     TrailingComma, TypeCheckerConfig, VBindStyle, VOnEventHyphenationConfig,
     VOnEventHyphenationOptions, VOnStyle, VSlotNamedStyle, VSlotStyle, VSlotStyleOptions,

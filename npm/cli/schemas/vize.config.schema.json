@@ -605,6 +605,11 @@
           },
           "additionalProperties": false
         },
+        "vue/slot-name-casing": {
+          "default": "camelCase",
+          "type": "string",
+          "enum": ["camelCase", "kebab-case", "singleword"]
+        },
         "vue/no-mutating-props": {
           "type": "object",
           "properties": {

@@ -3887,7 +3887,7 @@ vue/attribute-order · lint ルール
   推奨される順序に属性を並び替えてください
 === vue/camelcase
 vue/camelcase · lint ルール
-Require camelCase identifiers in template expressions
+テンプレート式の識別子に camelCase を必須にする
 
 精度: complete
 対象: simple interpolation and directive expressions with a retained JavaScript AST, using default rule behavior or the typed options Patina exposes; compound expressions and unsupported selector syntax are outside
@@ -3952,7 +3952,7 @@ vue/component-name-in-template-casing · lint ルール
   <slot />
 === vue/dot-notation
 vue/dot-notation · lint ルール
-Prefer dot notation in template expressions
+テンプレート式の静的プロパティ参照にドット記法を推奨する
 
 精度: complete
 対象: simple interpolation and directive expressions with a retained JavaScript AST, using default rule behavior or the typed options Patina exposes; compound expressions and unsupported selector syntax are outside
@@ -3962,7 +3962,7 @@ Prefer dot notation in template expressions
 ドキュメント: docs/content/rules/reference/vue-dot-notation.md
 === vue/enforce-style-attribute
 vue/enforce-style-attribute · lint ルール
-Enforce allowed style-block attributes
+style ブロックを許可された属性モードに揃えることを必須にする
 
 精度: exact
 対象: the SFC's top-level blocks, their order and their attributes
@@ -3972,7 +3972,7 @@ Enforce allowed style-block attributes
 ドキュメント: docs/content/rules/reference/vue-enforce-style-attribute.md
 === vue/eqeqeq
 vue/eqeqeq · lint ルール
-Require strict equality in template expressions
+テンプレート式に厳密等価演算子を必須にする
 
 精度: complete
 対象: simple interpolation and directive expressions with a retained JavaScript AST, using default rule behavior or the typed options Patina exposes; compound expressions and unsupported selector syntax are outside
@@ -4170,7 +4170,7 @@ vue/mustache-interpolation-spacing · lint ルール
   <div>{{ foo + bar }}</div>
 === vue/next-tick-style
 vue/next-tick-style · lint ルール
-Enforce Promise-style nextTick usage
+nextTick を Promise 形式で使うことを必須にする
 
 精度: complete
 対象: inline SFC scripts and descriptors with lexically unshadowed Vue macros and APIs and structurally recognizable component option objects; external blocks and unresolved aliases are outside
@@ -4276,7 +4276,7 @@ v-htmlまたはv-text使用時に子コンテンツを禁止する
   v-htmlまたはv-textを使用する場合、子コンテンツは無視されます。子コンテンツを削除してください
 === vue/no-console
 vue/no-console · lint ルール
-Disallow console access in template expressions
+テンプレート式からの console アクセスを禁止する
 
 精度: complete
 対象: simple interpolation and directive expressions with a retained JavaScript AST, using default rule behavior or the typed options Patina exposes; compound expressions and unsupported selector syntax are outside
@@ -4286,7 +4286,7 @@ Disallow console access in template expressions
 ドキュメント: docs/content/rules/reference/vue-no-console.md
 === vue/no-constant-condition
 vue/no-constant-condition · lint ルール
-Disallow constant conditions in template expressions
+テンプレート式の定数条件を禁止する
 
 精度: complete
 対象: simple interpolation and directive expressions with a retained JavaScript AST, using default rule behavior or the typed options Patina exposes; compound expressions and unsupported selector syntax are outside
@@ -4316,7 +4316,7 @@ vue/no-custom-modifiers-on-v-model · lint ルール
 ドキュメント: docs/content/rules/reference/vue-no-custom-modifiers-on-v-model.md
 === vue/no-define-model-default
 vue/no-define-model-default · lint ルール
-Disallow default values in defineModel
+defineModel の既定値を禁止する
 
 精度: complete
 対象: inline SFC scripts and descriptors with lexically unshadowed Vue macros and APIs and structurally recognizable component option objects; external blocks and unresolved aliases are outside
@@ -4677,7 +4677,7 @@ vue/no-empty-component-block · lint ルール
   ブロックに意味のある内容を追加するか、ブロックごと削除してください。
 === vue/no-empty-pattern
 vue/no-empty-pattern · lint ルール
-Disallow empty destructuring patterns in template expressions
+テンプレート式の空の分割代入パターンを禁止する
 
 精度: complete
 対象: simple interpolation and directive expressions with a retained JavaScript AST, using default rule behavior or the typed options Patina exposes; compound expressions and unsupported selector syntax are outside
@@ -4687,7 +4687,7 @@ Disallow empty destructuring patterns in template expressions
 ドキュメント: docs/content/rules/reference/vue-no-empty-pattern.md
 === vue/no-implicit-coercion
 vue/no-implicit-coercion · lint ルール
-Disallow implicit coercion in template expressions
+テンプレート式の暗黙的な型変換を禁止する
 
 精度: complete
 対象: simple interpolation and directive expressions with a retained JavaScript AST, using default rule behavior or the typed options Patina exposes; compound expressions and unsupported selector syntax are outside
@@ -4731,7 +4731,7 @@ HTML属性の無効な静的値を禁止する
   この要素で許可されている標準のrelトークンだけを使ってください。例: リンクのnoopener noreferrer、link要素のstylesheet。
 === vue/no-irregular-whitespace
 vue/no-irregular-whitespace · lint ルール
-Disallow irregular whitespace in template expressions
+テンプレート式の不規則な空白文字を禁止する
 
 精度: heuristic
 対象: simple interpolation and directive expressions with a retained JavaScript AST, using default rule behavior or the typed options Patina exposes; compound expressions and unsupported selector syntax are outside
@@ -4741,7 +4741,7 @@ Disallow irregular whitespace in template expressions
 ドキュメント: docs/content/rules/reference/vue-no-irregular-whitespace.md
 === vue/no-literals-in-template
 vue/no-literals-in-template · lint ルール
-Disallow object, array and function literals in v-bind
+v-bind のオブジェクト・配列・関数リテラルを禁止する
 
 精度: heuristic
 対象: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
@@ -4780,7 +4780,7 @@ vue/no-lone-template · lint ルール
   <template>ラッパーを削除するか、ディレクティブ（v-if、v-for、v-slot）を追加してください
 === vue/no-loss-of-precision
 vue/no-loss-of-precision · lint ルール
-Disallow numeric literals that lose precision
+精度を失う数値リテラルを禁止する
 
 精度: heuristic
 対象: simple interpolation and directive expressions with a retained JavaScript AST, using default rule behavior or the typed options Patina exposes; compound expressions and unsupported selector syntax are outside
@@ -4856,7 +4856,7 @@ vue/no-mutating-props · lint ルール
 ドキュメント: docs/content/rules/reference/vue-no-mutating-props.md
 === vue/no-negated-condition
 vue/no-negated-condition · lint ルール
-Disallow negated ternary conditions in template expressions
+テンプレート式で否定から始まる三項条件を禁止する
 
 精度: complete
 対象: simple interpolation and directive expressions with a retained JavaScript AST, using default rule behavior or the typed options Patina exposes; compound expressions and unsupported selector syntax are outside
@@ -4968,7 +4968,7 @@ vue/no-restricted-syntax · lint ルール
 ドキュメント: docs/content/rules/reference/vue-no-restricted-syntax.md
 === vue/no-restricted-v-bind
 vue/no-restricted-v-bind · lint ルール
-Disallow restricted v-bind arguments
+制限対象の v-bind 引数を禁止する
 
 精度: complete
 対象: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
@@ -5033,7 +5033,7 @@ vue/no-shadow-native-events · lint ルール
 ドキュメント: docs/content/rules/reference/vue-no-shadow-native-events.md
 === vue/no-sparse-arrays
 vue/no-sparse-arrays · lint ルール
-Disallow sparse arrays in template expressions
+テンプレート式の疎な配列を禁止する
 
 精度: complete
 対象: simple interpolation and directive expressions with a retained JavaScript AST, using default rule behavior or the typed options Patina exposes; compound expressions and unsupported selector syntax are outside
@@ -5377,7 +5377,7 @@ v-forと同じ要素でのv-ifの使用を禁止する
   v-ifをラッパー要素に移動するか、computedプロパティを使用してください
 === vue/no-useless-concat
 vue/no-useless-concat · lint ルール
-Disallow useless string concatenation in template expressions
+テンプレート式の不要な文字列連結を禁止する
 
 精度: complete
 対象: simple interpolation and directive expressions with a retained JavaScript AST, using default rule behavior or the typed options Patina exposes; compound expressions and unsupported selector syntax are outside
@@ -5568,7 +5568,7 @@ vue/no-v-text-v-html-on-component · lint ルール
   コンポーネントは独自のレンダリングロジックを持っています。propsまたはスロット経由でコンテンツを渡してください
 === vue/object-shorthand
 vue/object-shorthand · lint ルール
-Require object shorthand in template expressions
+テンプレート式のオブジェクトに短縮プロパティ記法を必須にする
 
 精度: complete
 対象: simple interpolation and directive expressions with a retained JavaScript AST, using default rule behavior or the typed options Patina exposes; compound expressions and unsupported selector syntax are outside
@@ -5653,7 +5653,7 @@ vue/prefer-props-shorthand · lint ルール
   propsの省略構文を使用してください
 === vue/prefer-template
 vue/prefer-template · lint ルール
-Prefer template literals in template expressions
+テンプレート式でテンプレートリテラルを推奨する
 
 精度: complete
 対象: simple interpolation and directive expressions with a retained JavaScript AST, using default rule behavior or the typed options Patina exposes; compound expressions and unsupported selector syntax are outside
@@ -5684,7 +5684,7 @@ trueをバインドする真偽値属性は省略形を推奨する
   ='true' のバインディングを削除し、属性名だけを記述してください。
 === vue/prefer-v-model
 vue/prefer-v-model · lint ルール
-Prefer v-model over matching bind and update listeners
+対応する bind と update リスナーより v-model を推奨する
 
 精度: complete
 対象: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
@@ -5722,7 +5722,7 @@ vue/prop-name-casing · lint ルール
     defineProps({ myProp: String })
 === vue/quote-props
 vue/quote-props · lint ルール
-Disallow unnecessary quoted object properties in template expressions
+テンプレート式の不要な引用符付きオブジェクトプロパティを禁止する
 
 精度: complete
 対象: simple interpolation and directive expressions with a retained JavaScript AST, using default rule behavior or the typed options Patina exposes; compound expressions and unsupported selector syntax are outside
@@ -5773,7 +5773,7 @@ vue/require-expose · lint ルール
 ドキュメント: docs/content/rules/reference/vue-require-expose.md
 === vue/require-macro-variable-name
 vue/require-macro-variable-name · lint ルール
-Require conventional macro variable names
+コンパイラーマクロに規約どおりの変数名を必須にする
 
 精度: complete
 対象: inline SFC scripts and descriptors with lexically unshadowed Vue macros and APIs and structurally recognizable component option objects; external blocks and unresolved aliases are outside
@@ -5903,7 +5903,7 @@ style ブロックを 1 つにまとめることを推奨する
 ドキュメント: docs/content/rules/reference/vue-single-style-block.md
 === vue/slot-name-casing
 vue/slot-name-casing · lint ルール
-v-slotで使用する名前付きスロットにケバブケースを強制する
+描画するスロット名に設定されたケースを強制する
 
 精度: exact
 対象: the authored text of SFC templates and declarations: casing, quoting, spacing, order and shorthand
@@ -5921,7 +5921,7 @@ v-slotで使用する名前付きスロットにケバブケースを強制す�
   <slot name="default" />
 
 ヒント:
-  スロット名をケバブケースに変更してください。例: '#mySlot' や '#my_slot' ではなく '#my-slot'。
+  描画するスロット outlet の名前を {casing} に変更してください。
 === vue/sort-keys
 vue/sort-keys · lint ルール
 コンポーネントオプションオブジェクトのキーを並べ替える
@@ -6043,7 +6043,7 @@ v-bindディレクティブのスタイルを強制する
   推奨されるスタイルに置き換えてください
 === vue/v-if-else-key
 vue/v-if-else-key · lint ルール
-Require keys on repeated conditional components
+条件分岐で繰り返すコンポーネントに key を必須にする
 
 精度: complete
 対象: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement

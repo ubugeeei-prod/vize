@@ -293,6 +293,7 @@ export interface LintRuleOptions {
   "vue/prop-name-casing"?: {
     casing?: "camelCase" | "snake_case";
   };
+  "vue/slot-name-casing"?: "camelCase" | "kebab-case" | "singleword";
   "vue/no-mutating-props"?: {
     shallowOnly?: boolean;
   };

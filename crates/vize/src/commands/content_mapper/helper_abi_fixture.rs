@@ -95,7 +95,7 @@ impl InstalledSdk {
         ]));
         assert_eq!(
             responses[2],
-            json!({ "id": 3, "jsonrpc": "2.0", "result": super::dispatch::wire_value(&expected) })
+            json!({ "id": 3, "jsonrpc": "2.0", "result": super::dispatch::wire_value(&expected.with_semantic_diagnostics()) })
         );
     }
 

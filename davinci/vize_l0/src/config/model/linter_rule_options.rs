@@ -28,6 +28,7 @@ mod props_destructuring;
 mod real_project_allowances;
 mod restrictions;
 mod sfc_element_order;
+mod slot_name_casing;
 mod strict_boolean;
 mod v_bind_style;
 mod v_on_event_hyphenation;
@@ -64,6 +65,7 @@ pub use restrictions::{
     NoRestrictedMembersOptions, RestrictedGlobal, RestrictedMember,
 };
 pub use sfc_element_order::{SfcElementOrderGroup, SfcElementOrderOptions};
+pub use slot_name_casing::SlotNameCasingStyle;
 pub use strict_boolean::StrictBooleanExpressionsOptions;
 pub use v_bind_style::VBindStyle;
 pub use v_on_event_hyphenation::{VOnEventHyphenationConfig, VOnEventHyphenationOptions};
@@ -183,6 +185,12 @@ pub struct ConfigLintRuleOptions {
         skip_serializing_if = "Option::is_none"
     )]
     prop_name_casing: Option<PropNameCasingOptions>,
+    /// Casing of rendered `<slot name>` outlet names.
+    #[serde(
+        rename = "vue/slot-name-casing",
+        skip_serializing_if = "Option::is_none"
+    )]
+    slot_name_casing: Option<SlotNameCasingStyle>,
     /// Options for `vue/no-mutating-props`.
     #[serde(rename = "vue/no-mutating-props")]
     no_mutating_props: Option<NoMutatingPropsOptions>,
@@ -278,6 +286,7 @@ impl ConfigLintRuleOptions {
             && self.component_name_in_template_casing.is_none()
             && self.custom_event_name_casing.is_none()
             && self.prop_name_casing.is_none()
+            && self.slot_name_casing.is_none()
             && self.no_mutating_props.is_none()
             && self.warn_custom_directive.is_none()
             && self.no_bare_strings_in_template.is_none()
@@ -367,6 +376,11 @@ impl ConfigLintRuleOptions {
     /// Configured casing for the component's own prop declarations.
     pub fn prop_name_casing(&self) -> Option<PropNameCasingStyle> {
         self.prop_name_casing.map(|options| options.casing)
+    }
+
+    /// Configured casing for rendered slot outlet names.
+    pub fn slot_name_casing(&self) -> Option<SlotNameCasingStyle> {
+        self.slot_name_casing
     }
 
     /// Configured options for `vue/no-mutating-props`.

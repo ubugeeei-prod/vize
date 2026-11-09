@@ -39,7 +39,7 @@ fn lint_reports_all_supported_extensions_when_patterns_match_no_files() {
         .output()
         .unwrap();
 
-    assert!(output.status.success(), "{}", output_details(&output));
+    assert_eq!(output.status.code(), Some(2), "{}", output_details(&output));
     let stderr = String::from_utf8_lossy(&output.stderr);
     assert!(
         stderr.contains(
@@ -62,7 +62,7 @@ fn lint_json_emits_an_empty_array_when_patterns_match_no_files() {
         .output()
         .unwrap();
 
-    assert!(output.status.success(), "{}", output_details(&output));
+    assert_eq!(output.status.code(), Some(2), "{}", output_details(&output));
     let stdout: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
     assert_eq!(stdout, serde_json::json!([]));
     let stderr = String::from_utf8_lossy(&output.stderr);

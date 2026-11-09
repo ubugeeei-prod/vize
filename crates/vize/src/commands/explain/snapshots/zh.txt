@@ -4047,7 +4047,7 @@ vue/attribute-order · lint 规则
   按推荐顺序重新排列属性
 === vue/camelcase
 vue/camelcase · lint 规则
-Require camelCase identifiers in template expressions
+要求模板表达式中的标识符使用 camelCase
 
 精度层级: complete
 适用范围: simple interpolation and directive expressions with a retained JavaScript AST, using default rule behavior or the typed options Patina exposes; compound expressions and unsupported selector syntax are outside
@@ -4112,7 +4112,7 @@ vue/component-name-in-template-casing · lint 规则
   <slot />
 === vue/dot-notation
 vue/dot-notation · lint 规则
-Prefer dot notation in template expressions
+推荐模板表达式中的静态属性访问使用点号
 
 精度层级: complete
 适用范围: simple interpolation and directive expressions with a retained JavaScript AST, using default rule behavior or the typed options Patina exposes; compound expressions and unsupported selector syntax are outside
@@ -4122,7 +4122,7 @@ Prefer dot notation in template expressions
 文档: docs/content/rules/reference/vue-dot-notation.md
 === vue/enforce-style-attribute
 vue/enforce-style-attribute · lint 规则
-Enforce allowed style-block attributes
+要求 style 块使用允许的属性模式
 
 精度层级: exact
 适用范围: the SFC's top-level blocks, their order and their attributes
@@ -4132,7 +4132,7 @@ Enforce allowed style-block attributes
 文档: docs/content/rules/reference/vue-enforce-style-attribute.md
 === vue/eqeqeq
 vue/eqeqeq · lint 规则
-Require strict equality in template expressions
+要求模板表达式使用严格相等运算符
 
 精度层级: complete
 适用范围: simple interpolation and directive expressions with a retained JavaScript AST, using default rule behavior or the typed options Patina exposes; compound expressions and unsupported selector syntax are outside
@@ -4340,7 +4340,7 @@ vue/mustache-interpolation-spacing · lint 规则
   <div>{{ foo + bar }}</div>
 === vue/next-tick-style
 vue/next-tick-style · lint 规则
-Enforce Promise-style nextTick usage
+要求以 Promise 形式使用 nextTick
 
 精度层级: complete
 适用范围: inline SFC scripts and descriptors with lexically unshadowed Vue macros and APIs and structurally recognizable component option objects; external blocks and unresolved aliases are outside
@@ -4446,7 +4446,7 @@ vue/no-child-content · lint 规则
   使用v-html或v-text时，子内容会被忽略。请删除子内容
 === vue/no-console
 vue/no-console · lint 规则
-Disallow console access in template expressions
+禁止模板表达式访问 console
 
 精度层级: complete
 适用范围: simple interpolation and directive expressions with a retained JavaScript AST, using default rule behavior or the typed options Patina exposes; compound expressions and unsupported selector syntax are outside
@@ -4456,7 +4456,7 @@ Disallow console access in template expressions
 文档: docs/content/rules/reference/vue-no-console.md
 === vue/no-constant-condition
 vue/no-constant-condition · lint 规则
-Disallow constant conditions in template expressions
+禁止模板表达式中的常量条件
 
 精度层级: complete
 适用范围: simple interpolation and directive expressions with a retained JavaScript AST, using default rule behavior or the typed options Patina exposes; compound expressions and unsupported selector syntax are outside
@@ -4486,7 +4486,7 @@ vue/no-custom-modifiers-on-v-model · lint 规则
 文档: docs/content/rules/reference/vue-no-custom-modifiers-on-v-model.md
 === vue/no-define-model-default
 vue/no-define-model-default · lint 规则
-Disallow default values in defineModel
+禁止在 defineModel 中指定默认值
 
 精度层级: complete
 适用范围: inline SFC scripts and descriptors with lexically unshadowed Vue macros and APIs and structurally recognizable component option objects; external blocks and unresolved aliases are outside
@@ -4861,7 +4861,7 @@ vue/no-empty-component-block · lint 规则
   请为该块添加有意义的内容，或将其整体删除。
 === vue/no-empty-pattern
 vue/no-empty-pattern · lint 规则
-Disallow empty destructuring patterns in template expressions
+禁止模板表达式中的空解构模式
 
 精度层级: complete
 适用范围: simple interpolation and directive expressions with a retained JavaScript AST, using default rule behavior or the typed options Patina exposes; compound expressions and unsupported selector syntax are outside
@@ -4871,7 +4871,7 @@ Disallow empty destructuring patterns in template expressions
 文档: docs/content/rules/reference/vue-no-empty-pattern.md
 === vue/no-implicit-coercion
 vue/no-implicit-coercion · lint 规则
-Disallow implicit coercion in template expressions
+禁止模板表达式中的隐式类型转换
 
 精度层级: complete
 适用范围: simple interpolation and directive expressions with a retained JavaScript AST, using default rule behavior or the typed options Patina exposes; compound expressions and unsupported selector syntax are outside
@@ -4925,7 +4925,7 @@ vue/no-invalid-html-attribute · lint 规则
   请只使用此元素允许的标准rel标记，例如链接上的noopener noreferrer或link元素上的stylesheet。
 === vue/no-irregular-whitespace
 vue/no-irregular-whitespace · lint 规则
-Disallow irregular whitespace in template expressions
+禁止模板表达式中的异常空白字符
 
 精度层级: heuristic
 适用范围: simple interpolation and directive expressions with a retained JavaScript AST, using default rule behavior or the typed options Patina exposes; compound expressions and unsupported selector syntax are outside
@@ -4935,7 +4935,7 @@ Disallow irregular whitespace in template expressions
 文档: docs/content/rules/reference/vue-no-irregular-whitespace.md
 === vue/no-literals-in-template
 vue/no-literals-in-template · lint 规则
-Disallow object, array and function literals in v-bind
+禁止在 v-bind 中使用对象、数组和函数字面量
 
 精度层级: heuristic
 适用范围: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
@@ -4974,7 +4974,7 @@ vue/no-lone-template · lint 规则
   删除<template>包装器或添加指令（v-if、v-for、v-slot）
 === vue/no-loss-of-precision
 vue/no-loss-of-precision · lint 规则
-Disallow numeric literals that lose precision
+禁止会丢失精度的数字字面量
 
 精度层级: heuristic
 适用范围: simple interpolation and directive expressions with a retained JavaScript AST, using default rule behavior or the typed options Patina exposes; compound expressions and unsupported selector syntax are outside
@@ -5055,7 +5055,7 @@ vue/no-mutating-props · lint 规则
 文档: docs/content/rules/reference/vue-no-mutating-props.md
 === vue/no-negated-condition
 vue/no-negated-condition · lint 规则
-Disallow negated ternary conditions in template expressions
+禁止模板表达式中以否定条件开始的三元表达式
 
 精度层级: complete
 适用范围: simple interpolation and directive expressions with a retained JavaScript AST, using default rule behavior or the typed options Patina exposes; compound expressions and unsupported selector syntax are outside
@@ -5177,7 +5177,7 @@ vue/no-restricted-syntax · lint 规则
 文档: docs/content/rules/reference/vue-no-restricted-syntax.md
 === vue/no-restricted-v-bind
 vue/no-restricted-v-bind · lint 规则
-Disallow restricted v-bind arguments
+禁止受限的 v-bind 参数
 
 精度层级: complete
 适用范围: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
@@ -5242,7 +5242,7 @@ vue/no-shadow-native-events · lint 规则
 文档: docs/content/rules/reference/vue-no-shadow-native-events.md
 === vue/no-sparse-arrays
 vue/no-sparse-arrays · lint 规则
-Disallow sparse arrays in template expressions
+禁止模板表达式中的稀疏数组
 
 精度层级: complete
 适用范围: simple interpolation and directive expressions with a retained JavaScript AST, using default rule behavior or the typed options Patina exposes; compound expressions and unsupported selector syntax are outside
@@ -5633,7 +5633,7 @@ vue/no-use-v-if-with-v-for · lint 规则
     </template>
 === vue/no-useless-concat
 vue/no-useless-concat · lint 规则
-Disallow useless string concatenation in template expressions
+禁止模板表达式中无意义的字符串拼接
 
 精度层级: complete
 适用范围: simple interpolation and directive expressions with a retained JavaScript AST, using default rule behavior or the typed options Patina exposes; compound expressions and unsupported selector syntax are outside
@@ -5834,7 +5834,7 @@ vue/no-v-text-v-html-on-component · lint 规则
   组件有自己的渲染逻辑。请通过props或插槽传递内容
 === vue/object-shorthand
 vue/object-shorthand · lint 规则
-Require object shorthand in template expressions
+要求模板表达式中的对象使用属性简写
 
 精度层级: complete
 适用范围: simple interpolation and directive expressions with a retained JavaScript AST, using default rule behavior or the typed options Patina exposes; compound expressions and unsupported selector syntax are outside
@@ -5919,7 +5919,7 @@ vue/prefer-props-shorthand · lint 规则
   使用prop简写语法
 === vue/prefer-template
 vue/prefer-template · lint 规则
-Prefer template literals in template expressions
+推荐模板表达式使用模板字符串
 
 精度层级: complete
 适用范围: simple interpolation and directive expressions with a retained JavaScript AST, using default rule behavior or the typed options Patina exposes; compound expressions and unsupported selector syntax are outside
@@ -5950,7 +5950,7 @@ vue/prefer-true-attribute-shorthand · lint 规则
   去掉 ='true' 绑定，仅写属性名即可。
 === vue/prefer-v-model
 vue/prefer-v-model · lint 规则
-Prefer v-model over matching bind and update listeners
+推荐使用 v-model 代替匹配的 bind 与 update 监听器
 
 精度层级: complete
 适用范围: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
@@ -5988,7 +5988,7 @@ vue/prop-name-casing · lint 规则
     defineProps({ myProp: String })
 === vue/quote-props
 vue/quote-props · lint 规则
-Disallow unnecessary quoted object properties in template expressions
+禁止模板表达式中不必要的带引号对象属性
 
 精度层级: complete
 适用范围: simple interpolation and directive expressions with a retained JavaScript AST, using default rule behavior or the typed options Patina exposes; compound expressions and unsupported selector syntax are outside
@@ -6039,7 +6039,7 @@ vue/require-expose · lint 规则
 文档: docs/content/rules/reference/vue-require-expose.md
 === vue/require-macro-variable-name
 vue/require-macro-variable-name · lint 规则
-Require conventional macro variable names
+要求编译器宏使用约定的变量名
 
 精度层级: complete
 适用范围: inline SFC scripts and descriptors with lexically unshadowed Vue macros and APIs and structurally recognizable component option objects; external blocks and unresolved aliases are outside
@@ -6177,7 +6177,7 @@ vue/single-style-block · lint 规则
 文档: docs/content/rules/reference/vue-single-style-block.md
 === vue/slot-name-casing
 vue/slot-name-casing · lint 规则
-强制通过v-slot使用的具名插槽采用短横线命名
+强制渲染的插槽名称采用配置的命名方式
 
 精度层级: exact
 适用范围: the authored text of SFC templates and declarations: casing, quoting, spacing, order and shorthand
@@ -6195,7 +6195,7 @@ vue/slot-name-casing · lint 规则
   <slot name="default" />
 
 帮助:
-  请将插槽名称改为短横线命名，例如使用 '#my-slot' 而非 '#mySlot' 或 '#my_slot'。
+  请将渲染的插槽出口名称改为 {casing}。
 === vue/sort-keys
 vue/sort-keys · lint 规则
 要求组件选项对象中的键保持排序
@@ -6320,7 +6320,7 @@ vue/v-bind-style · lint 规则
     <img v-bind:src="url">
 === vue/v-if-else-key
 vue/v-if-else-key · lint 规则
-Require keys on repeated conditional components
+要求重复的条件组件具有 key
 
 精度层级: complete
 适用范围: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement

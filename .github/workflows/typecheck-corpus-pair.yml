@@ -97,7 +97,7 @@ jobs:
           fi
           /usr/bin/time --version
       - name: Test the pair parsers and the byte probe
-        run: node --test tests/tooling/typecheck-corpus-pair.test.ts tests/tooling/typecheck-owned-pair.test.ts
+        run: node --test tests/tooling/typecheck-corpus-pair.test.ts tests/tooling/typecheck-owned-pair.test.ts tests/tooling/typecheck-corpus-mutations.test.ts
       - name: Test the opt-in Linux raw runner
         if: inputs.owned_pair
         env:
@@ -135,6 +135,7 @@ jobs:
             git -C "$RUNNER_TEMP/pair-$role" rev-parse HEAD
           done
       - name: Measure both corpora
+        id: measure
         env:
           VIZE_PAIR_RUNNER_LABEL: blacksmith-32vcpu-ubuntu-2404
         run: |
@@ -160,6 +161,10 @@ jobs:
       - name: Attribute check cost to helpers and projection families
         if: always() && !inputs.owned_pair && inputs.attribution
         run: node tools/benchmarks/scripts/typecheck-cost-attribution.ts --pair "$RUNNER_TEMP/pair-work" --out "$RUNNER_TEMP/pair-out"
+      # Real components edited to plant one diagnostic per family; the head must report each exactly once.
+      - name: Check planted diagnostics in both corpora
+        if: ${{ !cancelled() && !inputs.owned_pair && steps.measure.outcome != 'skipped' }}
+        run: node tools/benchmarks/scripts/typecheck-corpus-mutations-run.ts --base "$RUNNER_TEMP/pair-base" --head "$RUNNER_TEMP/pair-head" --work "$RUNNER_TEMP/pair-work" --out "$RUNNER_TEMP/pair-out"
       - name: Write job summary
         if: always()
         run: |
