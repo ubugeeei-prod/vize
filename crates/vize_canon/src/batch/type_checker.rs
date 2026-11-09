@@ -88,6 +88,13 @@ pub struct BatchTypeChecker {
 }
 
 impl BatchTypeChecker {
+    /// Maximum number of programs that may check at the default width while
+    /// their checker pools remain inside one machine budget. An explicit
+    /// checker width leaves program concurrency under caller control.
+    pub fn program_concurrency_limit(programs: usize, checker_count: Option<usize>) -> usize {
+        CorsaExecutor::program_concurrency_limit(programs, checker_count)
+    }
+
     #[cfg(test)]
     pub(crate) fn native_project_paths_for_test(&self) -> (PathBuf, PathBuf) {
         (

@@ -157,7 +157,8 @@ fn independent_programs_share_the_default_machine_checker_budget() {
         .unwrap();
     assert!(output.status.success(), "{output:?}");
     let threads = std::thread::available_parallelism().map_or(1, usize::from);
-    let expected = 8.min((threads / 2).max(1)).to_string();
+    let program_concurrency = 2.min((threads / 8).max(1));
+    let expected = 8.min((threads / program_concurrency).max(1)).to_string();
     assert_eq!(
         fs::read_to_string(log).unwrap().lines().collect::<Vec<_>>(),
         vec![expected.as_str(), expected.as_str()]
