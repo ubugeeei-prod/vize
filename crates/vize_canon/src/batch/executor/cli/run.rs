@@ -121,6 +121,7 @@ pub(in crate::batch::executor) fn check_with_cli_sharded(
 pub(in crate::batch::executor) fn auto_server_count(
     project: &VirtualProject,
     checkers: usize,
+    concurrent_programs: usize,
 ) -> usize {
     let vue_files = project
         .virtual_files_sorted()
@@ -130,5 +131,26 @@ pub(in crate::batch::executor) fn auto_server_count(
     let threads = std::thread::available_parallelism()
         .map(std::num::NonZero::get)
         .unwrap_or(1);
-    shard_count(threads, checkers, vue_files)
+    shard_count(
+        threads_per_program(threads, concurrent_programs),
+        checkers,
+        vue_files,
+    )
+}
+
+fn threads_per_program(threads: usize, concurrent_programs: usize) -> usize {
+    (threads.max(1) / concurrent_programs.max(1)).max(1)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::threads_per_program;
+
+    #[test]
+    fn concurrent_programs_share_the_outer_process_budget() {
+        assert_eq!(threads_per_program(32, 1), 32);
+        assert_eq!(threads_per_program(32, 8), 4);
+        assert_eq!(threads_per_program(4, 8), 1);
+        assert_eq!(threads_per_program(0, 0), 1);
+    }
 }

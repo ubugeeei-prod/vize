@@ -3,12 +3,14 @@
 use std::path::PathBuf;
 use std::thread::ScopedJoinHandle;
 
-/// Prepare `items` in order and run each prepared check on its own thread
-/// while the next item prepares. Checks with the same key take turns, in
-/// order. Results keep item order; a preparation error stops preparing.
+/// Prepare `items` in order and run each prepared check on its own thread while
+/// the next item prepares. `program_concurrency` is the upper bound on checks
+/// this run may overlap, so every program shares one machine budget.
+/// Checks with the same key take turns, in order. Results keep item order; a
+/// preparation error stops preparing.
 pub(super) fn prepare_and_check_overlapped<T, P, R, E>(
-    items: impl IntoIterator<Item = T>,
-    mut prepare: impl FnMut(T) -> Result<Option<P>, E>,
+    items: Vec<T>,
+    mut prepare: impl FnMut(T, usize) -> Result<Option<P>, E>,
     key: impl Fn(&P) -> PathBuf,
     check: impl Fn(P) -> R + Sync,
 ) -> (Vec<R>, Option<E>)
@@ -21,8 +23,9 @@ where
         let mut results = Vec::new();
         let mut running: Vec<(usize, PathBuf, ScopedJoinHandle<'_, R>)> = Vec::new();
         let mut error = None;
+        let program_concurrency = items.len().max(1);
         for item in items {
-            let prepared = match prepare(item) {
+            let prepared = match prepare(item, program_concurrency) {
                 Ok(Some(prepared)) => prepared,
                 Ok(None) => continue,
                 Err(failure) => {
@@ -72,8 +75,9 @@ mod tests {
         let (prepared_second, second_prepared) = mpsc::channel();
         let second_prepared = Mutex::new(second_prepared);
         let (results, error) = prepare_and_check_overlapped(
-            [0, 1],
-            |item: usize| {
+            vec![0, 1],
+            |item: usize, concurrency| {
+                assert_eq!(concurrency, 2);
                 if item == 1 {
                     prepared_second.send(()).unwrap();
                 }
@@ -97,8 +101,9 @@ mod tests {
         let first_done = AtomicBool::new(false);
         let prepared = Mutex::new(Vec::new());
         let (results, error) = prepare_and_check_overlapped(
-            [0, 1, 2, 3],
-            |item: usize| {
+            vec![0, 1, 2, 3],
+            |item: usize, concurrency| {
+                assert_eq!(concurrency, 4);
                 prepared.lock().unwrap().push(item);
                 match item {
                     2 => Ok(None),

@@ -50,6 +50,7 @@ pub struct CorsaExecutor {
     /// Path to the resolved Corsa executable.
     corsa_path: PathBuf,
     checker_count: Option<usize>,
+    program_concurrency: usize,
     incremental_session: Mutex<IncrementalSessionState>,
 }
 
@@ -72,6 +73,7 @@ impl CorsaExecutor {
             Ok(corsa_path) => Ok(Self {
                 corsa_path,
                 checker_count: None,
+                program_concurrency: 1,
                 incremental_session: Mutex::new(IncrementalSessionState::default()),
             }),
             Err(CorsaResolveError::ExplicitNotFound { path, .. }) => {
@@ -89,13 +91,19 @@ impl CorsaExecutor {
         self.checker_count = count.filter(|count| *count > 0);
     }
 
+    /// Share the machine checker budget across concurrently checked programs.
+    /// Explicit CLI or environment widths remain exact overrides.
+    pub fn set_program_concurrency(&mut self, count: usize) {
+        self.program_concurrency = count.max(1);
+    }
+
     fn checkers(&self) -> usize {
         self.checker_count.unwrap_or_else(cli::checker_count)
     }
 
     /// Width for a program that is checked unsharded (see `unsharded_checker_count`).
     fn unsharded_checkers(&self) -> usize {
-        cli::unsharded_checker_count(self.checker_count)
+        cli::unsharded_checker_count(self.checker_count, self.program_concurrency)
     }
 
     pub fn corsa_path(&self) -> &Path {
@@ -159,7 +167,9 @@ impl CorsaExecutor {
         ) {
             return self.check_with_project_session(project);
         }
-        let servers = servers.unwrap_or_else(|| auto_server_count(project, self.checkers()));
+        let servers = servers.unwrap_or_else(|| {
+            auto_server_count(project, self.checkers(), self.program_concurrency)
+        });
         if servers > 1 {
             match profile!(
                 "canon.corsa.cli",

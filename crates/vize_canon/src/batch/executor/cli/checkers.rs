@@ -21,12 +21,16 @@ pub(in crate::batch::executor) fn checker_count() -> usize {
 /// a program gets the measured width below, capped by the machine; an
 /// explicit `--checkers` or `VIZE_CHECKERS` still wins. The checker-width
 /// identity gate (1 vs N) guards #3905's divergence.
-pub(in crate::batch::executor) fn unsharded_checker_count(explicit: Option<usize>) -> usize {
+pub(in crate::batch::executor) fn unsharded_checker_count(
+    explicit: Option<usize>,
+    concurrent_programs: usize,
+) -> usize {
     let threads = std::thread::available_parallelism().map_or(1, std::num::NonZero::get);
     resolve_unsharded_checker_count(
         explicit,
         std::env::var("VIZE_CHECKERS").ok().as_deref(),
         threads,
+        concurrent_programs,
     )
 }
 
@@ -35,10 +39,14 @@ fn resolve_unsharded_checker_count(
     explicit: Option<usize>,
     env: Option<&str>,
     threads: usize,
+    concurrent_programs: usize,
 ) -> usize {
     explicit
         .or_else(|| explicit_checker_count(env))
-        .unwrap_or_else(|| UNSHARDED_CHECKER_WIDTH.min(threads.max(1)))
+        .unwrap_or_else(|| {
+            let shared_width = threads.max(1) / concurrent_programs.max(1);
+            UNSHARDED_CHECKER_WIDTH.min(shared_width.max(1))
+        })
 }
 
 /// The knee of a 1/2/4/8/16/32 sweep at 2.5k/10k/20k SFCs (#11673): doubling
@@ -86,17 +94,25 @@ mod tests {
     #[test]
     fn unsharded_programs_take_the_default_width_unless_a_width_is_explicit() {
         assert_eq!(
-            resolve_unsharded_checker_count(None, None, 32),
+            resolve_unsharded_checker_count(None, None, 32, 1),
             super::UNSHARDED_CHECKER_WIDTH
         );
         // Never more workers than the machine has.
-        assert_eq!(resolve_unsharded_checker_count(None, None, 2), 2);
-        assert_eq!(resolve_unsharded_checker_count(None, None, 0), 1);
+        assert_eq!(resolve_unsharded_checker_count(None, None, 2, 1), 2);
+        assert_eq!(resolve_unsharded_checker_count(None, None, 0, 1), 1);
+        // Concurrent programs share the machine budget without exceeding the
+        // measured single-program knee.
+        assert_eq!(resolve_unsharded_checker_count(None, None, 32, 2), 8);
+        assert_eq!(resolve_unsharded_checker_count(None, None, 32, 8), 4);
+        assert_eq!(resolve_unsharded_checker_count(None, None, 4, 8), 1);
         // `--checkers` and `VIZE_CHECKERS` both pin it, `--checkers` first.
-        assert_eq!(resolve_unsharded_checker_count(Some(1), Some("8"), 32), 1);
-        assert_eq!(resolve_unsharded_checker_count(None, Some("1"), 32), 1);
         assert_eq!(
-            resolve_unsharded_checker_count(None, Some("wide"), 32),
+            resolve_unsharded_checker_count(Some(1), Some("8"), 32, 8),
+            1
+        );
+        assert_eq!(resolve_unsharded_checker_count(None, Some("1"), 32, 8), 1);
+        assert_eq!(
+            resolve_unsharded_checker_count(None, Some("wide"), 32, 1),
             super::UNSHARDED_CHECKER_WIDTH
         );
     }
