@@ -19,6 +19,7 @@ use alloc::vec::Vec as StdVec;
 use vize_l0::{Box, Span, String, Vec, cstr, ensure_sufficient_stack};
 use vize_l1::markup::{Attribute, Element, SurfaceChild};
 
+use vize_l2::analysis::fragment_facts::{BranchFragments, FragmentKey};
 use vize_l2::op::{IfBranch, IfOp, Namespace, Op, Region};
 use vize_l2::provenance::ProvenanceSink;
 
@@ -34,7 +35,6 @@ use super::text;
 
 mod wrapper;
 
-pub use wrapper::{ForWrapper, WrapperAttr, WrapperClass, WrapperKey, WrapperKeys};
 pub(crate) use wrapper::{
     capture_wrapper_attrs, capture_wrapper_key, record_template_drops_except, runtime_directive,
 };
@@ -250,7 +250,7 @@ fn lower_if_group<'a, 't>(
     );
 
     let mut lowered: Vec<'a, IfBranch<'a>> = Vec::new_in(&cx.allocator);
-    let mut wrapper_keys: StdVec<Option<WrapperKey>> = StdVec::new();
+    let mut wrapper_keys: StdVec<Option<FragmentKey>> = StdVec::new();
     let mut branch_keys: StdVec<Option<if_keys::BranchKey>> = StdVec::new();
     let mut from_template: StdVec<bool> = StdVec::new();
     let mut once = false;
@@ -317,9 +317,9 @@ fn lower_if_group<'a, 't>(
     if wrapper_keys.iter().any(Option::is_some) || from_template.iter().any(|flag| *flag) {
         cx.attach_wrappers(
             node,
-            WrapperKeys {
+            BranchFragments {
                 branches: wrapper_keys,
-                from_template,
+                fragment: from_template,
                 once,
             },
         );
@@ -344,7 +344,7 @@ fn branch_body<'a>(
     element: &Element<'a>,
     analyzed: &Analyzed<'a>,
     ns: Namespace,
-) -> (Vec<'a, Op<'a>>, Option<WrapperKey>, bool) {
+) -> (Vec<'a, Op<'a>>, Option<FragmentKey>, bool) {
     if analyzed.vfor.is_some() {
         // Vue 3 precedence: the key belongs to `v-for`, so no wrapper
         // capture — exactly the legacy `has_v_for` guard.

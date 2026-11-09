@@ -14,7 +14,7 @@ pub(crate) use vize_l2::analysis::if_facts::take_carrier_key;
 pub use vize_l2::analysis::if_facts::{BranchKey, BranchKeyKind, IfFacts};
 
 use super::cx::Cx;
-use super::structural::WrapperKey;
+use vize_l2::analysis::fragment_facts::FragmentKey;
 
 /// The duplicate-key message, byte-identical to relief's
 /// `ErrorCode::VIfSameKey` text so the two channels never drift on
@@ -24,13 +24,13 @@ pub const SAME_KEY_MESSAGE: &str = "v-if/v-else-if branches must use unique keys
 /// Convert a captured `<template v-if>` wrapper key into the branch-key
 /// fact that emit and parity consumers read.
 #[must_use]
-pub(crate) fn from_wrapper_key(key: &WrapperKey) -> BranchKey {
+pub(crate) fn from_wrapper_key(key: &FragmentKey) -> BranchKey {
     match key {
-        WrapperKey::Static { value, span } => BranchKey {
+        FragmentKey::Static { value, span } => BranchKey {
             kind: BranchKeyKind::Static(value.clone()),
             span: *span,
         },
-        WrapperKey::Dynamic { source, span } => BranchKey {
+        FragmentKey::Dynamic { source, span } => BranchKey {
             kind: BranchKeyKind::Dynamic {
                 source: source.clone(),
                 bind_index: None,

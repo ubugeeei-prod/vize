@@ -4,8 +4,8 @@
 use vize_atelier_core::RuntimeHelper;
 use vize_l0::id::NodeId;
 use vize_l0::{String, ToCompactString, cstr};
-use vize_l1_to_l2::lower::WrapperKey;
 use vize_l1_to_l2::{TransformContent, decode_template_entities};
+use vize_l2::analysis::fragment_facts::FragmentKey;
 use vize_l2::expr::ExprRef;
 use vize_l2::op::{self as l2, DynamicName};
 
@@ -37,7 +37,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
             .facts
             .wrappers
             .get(node(fact)?)
-            .map(|wrappers| wrappers.from_template.clone())
+            .map(|wrappers| wrappers.fragment.clone())
             .unwrap_or_default();
         self.pos += 1;
         self.ctx.use_core_helper(RuntimeHelper::CreateComment);
@@ -168,11 +168,11 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
         let key = match wrapper {
             Some(wrapper) => match &wrapper.key {
                 None => None,
-                Some(WrapperKey::Static { value, .. }) => Some(match value {
+                Some(FragmentKey::Static { value, .. }) => Some(match value {
                     Some(value) => quoted_js_string(&decode_template_entities(value)),
                     None => "\"\"".to_compact_string(),
                 }),
-                Some(WrapperKey::Dynamic { source, .. }) => Some(self.text_expr(source)?),
+                Some(FragmentKey::Dynamic { source, .. }) => Some(self.text_expr(source)?),
             },
             None => match ops {
                 [l2::Op::Element(element)] => {

@@ -11,11 +11,12 @@ use std::vec::Vec as StdVec;
 use vize_l0::id::NodeId;
 use vize_l0::side_table::SideTable;
 use vize_l0::{Allocator, Box as ArenaBox, Span, String as VString, Vec as ArenaVec};
-use vize_l1_to_l2::lower::{ForWrapper, LoweringFeatures, WrapperKey};
+use vize_l1_to_l2::lower::LoweringFeatures;
 use vize_l1_to_l2::pass::{
     L2Facts, SlotCarrier, SlotFacts, SlotGroup, SlotName, SlotParams, TextFacts,
 };
 use vize_l1_to_l2::{EmitError, LegacyCaps, Lowered, UnsupportedReason as Reason, emit_dom};
+use vize_l2::analysis::fragment_facts::{FragmentKey, LoopFragment};
 use vize_l2::expr::{ExprRef, ForeignExpr, OpaqueExpr, OpaqueReason};
 use vize_l2::op::{
     Attribute, BindingContract, BindingOp, ComponentOp, ElementOp, ForBinding, ForOp, IfBranch,
@@ -163,8 +164,8 @@ fn template_dynamic_key_empty<'a>(a: &'a Allocator) -> (Lowered<'a>, L2Facts) {
     let mut lowered = lowered(a, region(a, [for_op(a, js(a, "item"), body)]));
     lowered.for_wrappers.insert(
         NodeId::FIRST,
-        ForWrapper {
-            key: Some(WrapperKey::Dynamic {
+        LoopFragment {
+            key: Some(FragmentKey::Dynamic {
                 source: VString::default(),
                 span: sp(),
             }),

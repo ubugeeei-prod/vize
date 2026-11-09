@@ -5,7 +5,7 @@
 //! stay legacy.
 
 use vize_carton::{Allocator, Span};
-use vize_l1_to_l2::lower::WrapperKey;
+use vize_l2::analysis::fragment_facts::FragmentKey;
 use vize_l3::op::{OpId, OpKind, Program};
 
 use super::{LegacyReason, native::validate::reference, retained::Retained};
@@ -54,10 +54,10 @@ pub(super) fn collect<'a>(
             .ok_or(LegacyReason::ControlFlow)?;
         let key = match &wrapper.key {
             None => None,
-            Some(WrapperKey::Dynamic { source: text, span }) => {
+            Some(FragmentKey::Dynamic { source: text, span }) => {
                 Some(key(allocator, source, text, *span, retained)?)
             }
-            Some(WrapperKey::Static { .. }) => return Err(LegacyReason::ControlFlow),
+            Some(FragmentKey::Static { .. }) => return Err(LegacyReason::ControlFlow),
         };
         loops.push((op.id, key));
     }

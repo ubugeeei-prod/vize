@@ -22,7 +22,7 @@ pub(super) fn is_once(binding: &BindingOp<'_>) -> bool {
 /// not the chain's carrier: its condition stays live.
 pub(super) fn chain_is_once(cx: &EmitCx<'_>, if_op: &IfOp<'_>, id: Option<NodeId>) -> bool {
     let wrapper = id.and_then(|id| cx.wrappers.get(id));
-    if wrapper.is_some_and(|keys| keys.from_template.first() == Some(&true)) {
+    if wrapper.is_some_and(|keys| keys.fragment.first() == Some(&true)) {
         return wrapper.is_some_and(|keys| keys.once);
     }
     match if_op
