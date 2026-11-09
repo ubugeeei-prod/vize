@@ -12,6 +12,12 @@ import {
   typeaheadIndex,
   visibleCollectionOffset,
 } from "./collection-navigation.js";
+import {
+  collectionValuesEqual,
+  type CollectionBy,
+  type CollectionValueKey,
+  type RuntimeCollectionBy,
+} from "./collection-values.js";
 
 export interface SelectOption<Value = string> {
   /** Stable render identity when the value is not a Vue vnode key. */
@@ -21,11 +27,8 @@ export interface SelectOption<Value = string> {
   disabled?: boolean;
 }
 
-export type SelectValueKey<Value> = Value extends object
-  ? Extract<keyof Value, string | number | symbol>
-  : never;
-
-export type SelectBy<Value> = SelectValueKey<Value> | ((left: Value, right: Value) => boolean);
+export type SelectValueKey<Value> = CollectionValueKey<Value>;
+export type SelectBy<Value> = CollectionBy<Value>;
 
 export interface SelectProps<Value = string> {
   /** Options to display */
@@ -54,26 +57,6 @@ export interface SelectProps<Value = string> {
   selectedBg?: string;
 }
 
-type RuntimeSelectBy = string | number | symbol | ((left: unknown, right: unknown) => boolean);
-
-function selectValuesEqual(
-  left: unknown,
-  right: unknown,
-  by: RuntimeSelectBy | undefined,
-): boolean {
-  if (typeof by === "function") return by(left, right);
-  if (
-    by !== undefined &&
-    typeof left === "object" &&
-    left !== null &&
-    typeof right === "object" &&
-    right !== null
-  ) {
-    return Object.is(Reflect.get(left, by), Reflect.get(right, by));
-  }
-  return Object.is(left, right);
-}
-
 function optionKey(option: SelectOption<unknown>, index: number): string | number | symbol {
   if (option.key !== undefined) return option.key;
   const value = option.value;
@@ -90,7 +73,7 @@ export const Select = defineComponent({
       required: true,
     },
     modelValue: null as unknown as PropType<unknown>,
-    by: [String, Number, Symbol, Function] as PropType<RuntimeSelectBy>,
+    by: [String, Number, Symbol, Function] as PropType<RuntimeCollectionBy>,
     placeholder: {
       type: String,
       default: "Select an option",
@@ -131,7 +114,7 @@ export const Select = defineComponent({
       [() => props.modelValue, () => props.by],
       (value) => {
         const selectedIndex = props.options.findIndex(
-          (option) => selectValuesEqual(option.value, value[0], value[1]) && !option.disabled,
+          (option) => collectionValuesEqual(option.value, value[0], value[1]) && !option.disabled,
         );
         highlightedIndex.value =
           selectedIndex >= 0 ? selectedIndex : firstEnabledIndex(props.options);
@@ -228,7 +211,7 @@ export const Select = defineComponent({
 
       for (const { option, index } of visibleOptions.value) {
         const isHighlighted = index === highlightedIndex.value;
-        const isSelected = selectValuesEqual(option.value, props.modelValue, props.by);
+        const isSelected = collectionValuesEqual(option.value, props.modelValue, props.by);
         const indicator = isHighlighted ? props.indicator : props.indicatorEmpty;
 
         children.push(

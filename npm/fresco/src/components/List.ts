@@ -2,7 +2,7 @@
  * List Component - Scrollable list of items
  */
 
-import { computed, defineComponent, h, ref, type PropType, type VNode, watch } from "vue";
+import { computed, defineComponent, h, ref, toRaw, type PropType, type VNode, watch } from "vue";
 import { useInput } from "../composables/useInput.js";
 import {
   adjacentEnabledIndex,
@@ -12,18 +12,32 @@ import {
   typeaheadIndex,
   visibleCollectionOffset,
 } from "./collection-navigation.js";
+import {
+  collectionValuesEqual,
+  type CollectionBy,
+  type CollectionValueKey,
+  type RuntimeCollectionBy,
+} from "./collection-values.js";
 
-export interface ListItem {
+interface ListItemBase {
   key: string;
   label: string;
   disabled?: boolean;
 }
 
-export interface ListProps {
+export type ListItem<Value = string> = ListItemBase &
+  ([Value] extends [string] ? { value?: Value } : { value: Value });
+
+export type ListValueKey<Value> = CollectionValueKey<Value>;
+export type ListBy<Value> = CollectionBy<Value>;
+
+export interface ListProps<Value = string> {
   /** List items */
-  items: ListItem[];
-  /** Currently selected key */
-  modelValue?: string;
+  items: readonly ListItem<Value>[];
+  /** Currently selected value */
+  modelValue?: Value;
+  /** Compare values by an object key or a custom equality function */
+  by?: ListBy<Value>;
   /** Maximum visible items (enables scrolling) */
   maxHeight?: number;
   /** Whether the list is focused */
@@ -40,14 +54,23 @@ export interface ListProps {
   selectedBg?: string;
 }
 
+export interface RuntimeListItem extends ListItemBase {
+  value?: unknown;
+}
+
+function listItemValue(item: RuntimeListItem): unknown {
+  return Object.hasOwn(item, "value") ? item.value : item.key;
+}
+
 export const List = defineComponent({
   name: "List",
   props: {
     items: {
-      type: Array as PropType<ListItem[]>,
+      type: Array as PropType<readonly RuntimeListItem[]>,
       required: true,
     },
-    modelValue: String,
+    modelValue: null as unknown as PropType<unknown>,
+    by: [String, Number, Symbol, Function] as PropType<RuntimeCollectionBy>,
     maxHeight: Number,
     focused: {
       type: Boolean,
@@ -76,7 +99,8 @@ export const List = defineComponent({
 
     const syncHighlight = () => {
       const selectedIndex = props.items.findIndex(
-        (item) => item.key === props.modelValue && !item.disabled,
+        (item) =>
+          collectionValuesEqual(listItemValue(item), props.modelValue, props.by) && !item.disabled,
       );
       if (selectedIndex >= 0) {
         highlightedIndex.value = selectedIndex;
@@ -89,7 +113,7 @@ export const List = defineComponent({
       }
     };
 
-    watch([() => props.modelValue, () => props.items], syncHighlight, {
+    watch([() => props.modelValue, () => props.items, () => props.by], syncHighlight, {
       deep: true,
       immediate: true,
     });
@@ -121,8 +145,9 @@ export const List = defineComponent({
     const activate = () => {
       const item = props.items[highlightedIndex.value];
       if (!item || item.disabled) return;
-      emit("update:modelValue", item.key);
-      emit("select", item.key);
+      const value = toRaw(listItemValue(item));
+      emit("update:modelValue", value);
+      emit("select", value);
     };
 
     useInput({
@@ -179,7 +204,7 @@ export const List = defineComponent({
       visibleItems.value.forEach((item, visibleIndex) => {
         const actualIndex = scrollOffset.value + visibleIndex;
         const isHighlighted = actualIndex === highlightedIndex.value;
-        const isSelected = item.key === props.modelValue;
+        const isSelected = collectionValuesEqual(listItemValue(item), props.modelValue, props.by);
         const indicator = isHighlighted ? props.indicator : props.indicatorEmpty;
 
         children.push(

@@ -100,7 +100,8 @@ export { default as Tooltip } from "./FrescoTooltip.vue";
 export type { TooltipPosition, TooltipProps } from "./presentational-primitive-types.js";
 
 // Data Display
-export { List, type ListProps, type ListItem } from "./List.js";
+export { default as List } from "./FrescoList.vue";
+export type { ListBy, ListItem, ListProps, ListValueKey } from "./List.js";
 export {
   Table,
   type TableAlignment,
