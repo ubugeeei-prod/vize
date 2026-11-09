@@ -248,7 +248,8 @@ async function runOnce(
       `$p = Start-Process -FilePath ${quote(build.bin)} -ArgumentList @(${args})`,
       `-WorkingDirectory ${quote(project.dir)} -RedirectStandardOutput ${quote(output)}`,
       `-RedirectStandardError ${quote(`${output}.err`)} -NoNewWindow -PassThru;`,
-      "$vizePeak = 0; $children = @{};",
+      // Holding the handle keeps exit code and processor time readable after exit.
+      "$null = $p.Handle; $vizePeak = 0; $children = @{};",
       "while (-not $p.HasExited) {",
       "  $p.Refresh(); if ($p.PeakWorkingSet64 -gt $vizePeak) { $vizePeak = $p.PeakWorkingSet64 };",
       '  foreach ($c in Get-CimInstance Win32_Process -Filter "ParentProcessId=$($p.Id)") {',
