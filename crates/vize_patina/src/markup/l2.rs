@@ -235,6 +235,7 @@ impl<'a> L2Template<'a> {
     }
 
     /// Borrow the complete neutral view needed by Croquis lint projection.
+    #[inline]
     pub(crate) fn lint_template(&self) -> LintTemplate<'_, 'a> {
         LintTemplate::new(&self.tree, self.lowered.allocator, &self.lowered.root)
             .with_lowering_facts(
