@@ -359,7 +359,7 @@ mod tests {
         let mut state = 0x9e37_79b9_7f4a_7c15_u64;
         for length in 0..48 {
             for _ in 0..64 {
-                let text: vize_carton::String = (0..length)
+                let text: vize_l0::String = (0..length)
                     .map(|_| {
                         state ^= state << 13;
                         state ^= state >> 7;
