@@ -32,11 +32,13 @@ fn certificate(client: &mut CorsaProjectClient, batch: &CorsaNativeDocumentBatch
     CanonBatch {
         identity: PayloadIdentity::capture(batch),
         texts: client.document_texts.checkpoint(),
+        root: client.project_root.clone(),
         rows: documents
             .iter()
             .map(|(uri, text)| CanonRow {
                 path: crate::file_uri::file_uri_to_path(uri).unwrap(),
                 desired: client.document_texts.desired_digest(uri, text),
+                uri_identity: crate::file_uri::file_uri_identity(uri),
             })
             .collect(),
     }
