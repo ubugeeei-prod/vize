@@ -32,6 +32,40 @@ fn snapshot_bytes(name: &str, output: &str) {
 }
 
 #[test]
+fn line_terminators_around_root_attribute_values_are_whitespace() {
+    // `lang\n="ts"` once printed as `lang="" "ts"`, `lang=html\r` kept the
+    // CR in the value and turned the template opaque, and authored attribute
+    // order fell back to the canonical order.
+    let source = "<script lang\n=\n\"ts\" setup>\nconst a: number = 1\n</script>\n\n<template data-x\n=\ny lang=html\r>\n<p>{{ a }}</p>\n</template>\n";
+    for (sort_attributes, script, template) in [
+        (
+            true,
+            "<script setup lang=\"ts\">",
+            "<template lang=\"html\" data-x=\"y\">",
+        ),
+        (
+            false,
+            "<script lang=\"ts\" setup>",
+            "<template data-x=\"y\" lang=\"html\">",
+        ),
+    ] {
+        let options = FormatOptions {
+            sort_attributes,
+            ..FormatOptions::default()
+        };
+        let first = format_sfc(source, &options).expect("source SFC must format");
+        let expected = [
+            script,
+            "\nconst a: number = 1;\n</script>\n\n",
+            template,
+            "\n  <p>{{ a }}</p>\n</template>\n",
+        ]
+        .concat();
+        assert_eq!(first.code, expected, "sort_attributes: {sort_attributes}");
+    }
+}
+
+#[test]
 fn root_block_attributes_escape_quotes_and_preserve_parse_results() {
     let source = r#"<script data-single="a'b" data-double='a"b' data-both="a'b &quot;c&quot;">
 const classic = 1
