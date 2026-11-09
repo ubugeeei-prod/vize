@@ -1,0 +1,7 @@
+---
+source: crates/vize_glyph/tests/tsrx_modules.rs
+expression: formatted.as_str()
+---
+export function A({ a, b }: { a: string; b: string }) @{
+	<p>{a}{b}&nbsp;&#47;</p>
+}

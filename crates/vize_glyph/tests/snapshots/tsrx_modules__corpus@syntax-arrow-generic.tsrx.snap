@@ -1,0 +1,8 @@
+---
+source: crates/vize_glyph/tests/tsrx_modules.rs
+expression: formatted.as_str()
+---
+const id = <T,>(x: T) => x;
+export function A() @{
+	<p>{id(1)}</p>
+}

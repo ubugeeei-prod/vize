@@ -14,6 +14,7 @@ use crate::{
     print::{
         arrow_function_expression::FormatMaybeCachedFunctionBody, semicolon::OptionalSemicolon,
     },
+    utils::suppressed::FormatSuppressedNode,
     write,
 };
 
@@ -152,6 +153,10 @@ impl<'a> FormatWrite<'a> for AstNode<'a, FunctionBody<'a>> {
     fn write(&self, f: &mut JsFormatter<'_, 'a>) {
         let comments = f.context().comments().block_comments_before(self.span.start);
         write!(f, [space(), FormatLeadingComments::Comments(comments)]);
+
+        if f.context().external_callbacks().is_verbatim(self.span) {
+            return FormatSuppressedNode(self.span).fmt(f);
+        }
 
         let statements = self.statements();
         let directives = self.directives();

@@ -246,7 +246,13 @@ pub fn parse_for_format<'a>(
     let source_type =
         if source_type.is_javascript() { source_type.with_jsx(true) } else { source_type };
 
-    let options = ParseOptions {
+    Parser::new(allocator, source_text, source_type).with_options(format_parse_options()).parse()
+}
+
+/// The parse options a program fed to [`format_program`] must be parsed with, for callers that
+/// drive the parser themselves (for example with a markup grammar registered).
+pub const fn format_parse_options() -> ParseOptions {
+    ParseOptions {
         parse_regular_expression: false, // the formatter doesn't need regexes parsed
         allow_return_outside_function: true, // accept all syntax the formatter may be handed
         allow_v8_intrinsics: true,
@@ -254,8 +260,7 @@ pub fn parse_for_format<'a>(
         // The formatter does not use `Ident` hashes, but `detect_code_removal` runs semantic
         // analysis on this AST, and semantic requires hashed `Ident`s.
         enable_ident_hashes: cfg!(feature = "detect_code_removal"),
-    };
-    Parser::new(allocator, source_text, source_type).with_options(options).parse()
+    }
 }
 
 /// Parse `source_text` and promote the `Program` to the arena lifetime.

@@ -2,6 +2,7 @@ use std::sync::Arc;
 
 use oxc_allocator::Allocator;
 use oxc_formatter_core::{DispatchResult, EmbeddedContext, FormatDispatcher};
+use oxc_span::Span;
 
 use super::formatter::UniqueGroupIdBuilder;
 
@@ -39,12 +40,13 @@ pub struct ExternalCallbacks {
     embedded_formatter: Option<EmbeddedFormatterCallback>,
     dispatcher: Option<FormatDispatcher>,
     tailwind: Option<TailwindCallback>,
+    verbatim: Vec<Span>,
 }
 
 impl ExternalCallbacks {
     /// Create a new `ExternalCallbacks` with no callbacks set.
     pub fn new() -> Self {
-        Self { embedded_formatter: None, dispatcher: None, tailwind: None }
+        Self { embedded_formatter: None, dispatcher: None, tailwind: None, verbatim: Vec::new() }
     }
 
     /// Set the embedded formatter callback.
@@ -66,6 +68,24 @@ impl ExternalCallbacks {
     pub fn with_tailwind(mut self, callback: Option<TailwindCallback>) -> Self {
         self.tailwind = callback;
         self
+    }
+
+    /// Set the spans of host nodes printed with their source text: an empty JSX fragment or
+    /// function body whose span is listed stands for markup an embedding grammar owns.
+    #[must_use]
+    pub fn with_verbatim_spans(mut self, mut spans: Vec<Span>) -> Self {
+        spans.sort_unstable_by_key(|span| span.start);
+        self.verbatim = spans;
+        self
+    }
+
+    /// Whether `span` is one of the [verbatim spans](Self::with_verbatim_spans).
+    pub fn is_verbatim(&self, span: Span) -> bool {
+        !self.verbatim.is_empty()
+            && self
+                .verbatim
+                .binary_search_by_key(&span.start, |verbatim| verbatim.start)
+                .is_ok_and(|index| self.verbatim.get(index) == Some(&span))
     }
 
     /// Format embedded code with the given language name.

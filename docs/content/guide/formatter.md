@@ -18,7 +18,7 @@ vp run fmt
 
 `vp run fmt:check` reports the files that would change and fails if there are any; use it in CI. `vp run fmt` writes the result. Pass paths after `--` to format part of the project.
 
-Without Vite+, call the [CLI](./cli.md#format) directly. It formats Vue, JavaScript, TypeScript, JSX, TSX, JSON and JSONC files. YAML and Markdown are not formatted.
+Without Vite+, call the [CLI](./cli.md#format) directly. It formats Vue, JavaScript, TypeScript, JSX, TSX, TSRX, JSON and JSONC files. YAML and Markdown are not formatted. In a `.tsrx` module Vize formats the TypeScript and keeps every markup region exactly as written; a module with a syntax error is reported and left unchanged.
 
 ```bash
 vize fmt --check src

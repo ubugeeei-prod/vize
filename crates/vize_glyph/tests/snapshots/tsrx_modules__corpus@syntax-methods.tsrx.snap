@@ -1,0 +1,15 @@
+---
+source: crates/vize_glyph/tests/tsrx_modules.rs
+expression: formatted.as_str()
+---
+class K {
+  render() @{
+		<p />
+	}
+}
+const o = {
+  render() @{
+		<i />
+	},
+};
+export { K, o };

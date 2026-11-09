@@ -8,9 +8,9 @@ Usage: fmt [OPTIONS] [PATTERNS]...
 
 Arguments:
   [PATTERNS]...
-          Vue/JS/TS/JSON/JSONC globs; YAML/Markdown formatting is not implemented
+          Vue/JS/TS/TSRX/JSON/JSONC globs; YAML/Markdown formatting is not implemented
 
-          [default: ./**/*.vue ./**/*.js ./**/*.mjs ./**/*.cjs ./**/*.ts ./**/*.mts ./**/*.cts ./**/*.jsx ./**/*.tsx ./**/*.json ./**/*.jsonc]
+          [default: ./**/*.vue ./**/*.js ./**/*.mjs ./**/*.cjs ./**/*.ts ./**/*.mts ./**/*.cts ./**/*.jsx ./**/*.tsx ./**/*.tsrx ./**/*.json ./**/*.jsonc]
 
 Options:
       --check

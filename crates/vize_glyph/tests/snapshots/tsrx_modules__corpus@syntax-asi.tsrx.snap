@@ -1,0 +1,8 @@
+---
+source: crates/vize_glyph/tests/tsrx_modules.rs
+expression: formatted.as_str()
+---
+export function A({ b }: { b: string }) @{
+	const a = b
+	<div>{a}</div>
+}
