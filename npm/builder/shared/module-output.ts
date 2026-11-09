@@ -66,14 +66,21 @@ export function createGeneratedNameAllocator(code: string, onSemanticParse?: () 
   };
 }
 
+/** One native-reported import binding that can participate in HMR snapshots. */
 export type ModuleImportInfo = {
+  /** Module specifier used by the emitted import. */
   source: string;
+  /** Local binding name in the emitted module. */
   local: string;
+  /** Whether the binding represents an import namespace. */
   namespace: boolean;
 };
 
+/** Native module-shape facts needed to decide whether state can be preserved. */
 export type HmrModuleShape = {
+  /** Imported bindings whose current values are snapshotted before replacement. */
   imports?: ModuleImportInfo[];
+  /** Whether a bare side-effect import makes preservation unsafe. */
   hasSideEffectImport?: boolean;
 };
 
