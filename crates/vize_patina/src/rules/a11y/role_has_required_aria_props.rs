@@ -51,10 +51,11 @@ fn has_aria_attribute_or_binding(element: &ElementNode, name: &str) -> bool {
         PropNode::Attribute(attr) => attr.name == name,
         PropNode::Directive(dir) => {
             if dir.name == "bind" {
-                matches!(
-                    &dir.arg,
-                    Some(ExpressionNode::Simple(s)) if s.content == name
-                )
+                dir.arg.is_none()
+                    || matches!(
+                        &dir.arg,
+                        Some(ExpressionNode::Simple(s)) if s.content == name
+                    )
             } else {
                 false
             }
@@ -89,7 +90,9 @@ fn has_markup_attribute_or_binding(element: &MarkupElement<'_>, name: &str) -> b
         found |= matches!(
             binding.kind(),
             MarkupBindingKind::Attribute | MarkupBindingKind::Bind
-        ) && binding.is_unqualified_arg_exact(name);
+        ) && (binding.is_unqualified_arg_exact(name)
+            // `v-bind="attrs"` may provide any required ARIA state at runtime.
+            || (binding.kind() == MarkupBindingKind::Bind && binding.arg_name().is_none()));
     });
     found
 }
@@ -248,6 +251,16 @@ mod tests {
         let linter = create_linter();
         let result = linter.lint_template(
             r#"<div role="checkbox" :aria-checked="checked">Check</div>"#,
+            "test.vue",
+        );
+        assert_eq!(result.warning_count, 0);
+    }
+
+    #[test]
+    fn object_binding_can_supply_required_aria_properties() {
+        let linter = create_linter();
+        let result = linter.lint_template(
+            r#"<input role="combobox" aria-expanded="false" v-bind="fieldProps" />"#,
             "test.vue",
         );
         assert_eq!(result.warning_count, 0);
