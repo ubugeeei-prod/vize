@@ -14,6 +14,7 @@ mod attribute_hyphenation;
 mod attribute_order;
 mod authored_closing;
 mod comment_directive;
+mod directive_shape;
 mod if_chain;
 mod macro_type_argument;
 mod no_bare_strings_in_template;

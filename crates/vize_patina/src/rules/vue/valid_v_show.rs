@@ -22,8 +22,9 @@
 
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
+use crate::markup::{MarkupContext, MarkupDirective, MarkupElement, MarkupRule};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use vize_relief::{DirectiveNode, ElementNode, ExpressionNode};
+use vize_relief::{DirectiveNode, ElementNode};
 
 static META: RuleMeta = RuleMeta {
     name: "vue/valid-v-show",
@@ -36,9 +37,66 @@ static META: RuleMeta = RuleMeta {
 /// Enforce valid v-show directives
 pub struct ValidVShow;
 
+impl ValidVShow {
+    fn check(ctx: &mut LintContext<'_>, tag: &str, directive: &MarkupDirective<'_>) {
+        if !directive.name_eq("show") {
+            return;
+        }
+        let help = ctx.t("vue/valid-v-show.help");
+        if !directive.has_value() {
+            ctx.error_at_with_help(
+                ctx.t("vue/valid-v-show.missing_expression"),
+                directive.range(),
+                help,
+            );
+            return;
+        }
+        if let Some(argument) = directive.argument_range() {
+            ctx.error_at_with_help(
+                ctx.t("vue/valid-v-show.unexpected_argument"),
+                argument,
+                help.clone(),
+            );
+        }
+        directive.walk_modifier_ranges(&mut |_, modifier| {
+            ctx.error_at_with_help(
+                ctx.t("vue/valid-v-show.unexpected_modifier"),
+                modifier,
+                help.clone(),
+            );
+        });
+        if tag == "template" {
+            ctx.error_at_with_help(
+                ctx.t("vue/valid-v-show.on_template"),
+                directive.range(),
+                help,
+            );
+        }
+    }
+}
+
+impl MarkupRule for ValidVShow {
+    fn name(&self) -> &'static str {
+        META.name
+    }
+
+    fn enter_directive<'a>(
+        &self,
+        ctx: &mut MarkupContext<'_, 'a>,
+        element: &MarkupElement<'a>,
+        directive: &MarkupDirective<'a>,
+    ) {
+        Self::check(ctx.lint(), element.tag(), directive);
+    }
+}
+
 impl Rule for ValidVShow {
     fn meta(&self) -> &'static RuleMeta {
         &META
+    }
+
+    fn as_markup_rule(&self) -> Option<&dyn MarkupRule> {
+        Some(self)
     }
 
     fn check_directive<'a>(
@@ -47,63 +105,7 @@ impl Rule for ValidVShow {
         element: &ElementNode<'a>,
         directive: &DirectiveNode<'a>,
     ) {
-        if directive.name != "show" {
-            return;
-        }
-
-        // Check 1: v-show must have an expression
-        let has_expression = match &directive.exp {
-            Some(exp) => !is_empty_expression(exp),
-            None => false,
-        };
-
-        if !has_expression {
-            ctx.error_with_help(
-                ctx.t("vue/valid-v-show.missing_expression"),
-                &directive.loc,
-                ctx.t("vue/valid-v-show.help"),
-            );
-            return;
-        }
-
-        // Check 2: v-show does not support arguments
-        if let Some(arg) = &directive.arg {
-            let loc = match arg {
-                ExpressionNode::Simple(simple) => &simple.loc,
-                ExpressionNode::Compound(_) => &directive.loc,
-            };
-            ctx.error_with_help(
-                ctx.t("vue/valid-v-show.unexpected_argument"),
-                loc,
-                ctx.t("vue/valid-v-show.help"),
-            );
-        }
-
-        // Check 3: v-show does not support modifiers
-        for modifier in directive.modifiers.iter() {
-            ctx.error_with_help(
-                ctx.t("vue/valid-v-show.unexpected_modifier"),
-                &modifier.loc,
-                ctx.t("vue/valid-v-show.help"),
-            );
-        }
-
-        // Check 4: v-show cannot be used on <template>
-        if element.tag == "template" {
-            ctx.error_with_help(
-                ctx.t("vue/valid-v-show.on_template"),
-                &directive.loc,
-                ctx.t("vue/valid-v-show.help"),
-            );
-        }
-    }
-}
-
-/// Check if expression is empty
-fn is_empty_expression(exp: &ExpressionNode) -> bool {
-    match exp {
-        ExpressionNode::Simple(s) => s.content.trim().is_empty(),
-        ExpressionNode::Compound(c) => c.children.is_empty(),
+        Self::check(ctx, element.tag, &MarkupDirective::from_relief(directive));
     }
 }
 
