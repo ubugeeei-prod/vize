@@ -74,7 +74,6 @@ impl Linter {
                     &scripts,
                     &mut result,
                     None,
-                    None,
                 );
                 super::super::super::css_rules::append_builtin_css_diagnostics(
                     self,

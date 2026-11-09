@@ -54,6 +54,7 @@ fn entry<'a>(record: &'a Value, path: &str) -> Option<&'a Value> {
         .find(|entry| entry["path"] == path)
 }
 pub(super) fn source_before(path: &str, current: String) -> String {
+    let current = super::canon_leftovers::source_before(path, current);
     let record = load();
     match entry(&record, path) {
         Some(entry) => edits_before(current, &entry["edits"]),
@@ -61,7 +62,17 @@ pub(super) fn source_before(path: &str, current: String) -> String {
     }
 }
 pub(super) fn preamble_before(current: &str) -> String {
-    edits_before(current.to_owned(), &load()["preamble"]["edits"])
+    let edits = &load()["preamble"]["edits"];
+    let has_successor = edits
+        .as_array()
+        .unwrap()
+        .iter()
+        .any(|edit| current.contains(edit["after"].as_str().unwrap()));
+    if !has_successor {
+        return current.to_owned();
+    }
+    let current = super::canon_leftovers::preamble_before(current);
+    edits_before(current, edits)
 }
 pub(super) fn retain_provenance(manifest: &mut Value) {
     manifest["provenance"]["currentEmitMemberInferUpdate"] = load();
@@ -89,12 +100,15 @@ mod tests {
             }
         }
         let physical = vize_canon::virtual_ts::SHARED_PREAMBLE_DTS;
-        let previous = inverse(physical, &record["preamble"]);
+        let canon_predecessor = super::super::canon_leftovers::preamble_before(physical);
+        let previous = inverse(&canon_predecessor, &record["preamble"]);
         assert_eq!(preamble_before(physical), previous);
         assert_eq!(preamble_before(&previous), previous);
         assert!(
-            std::panic::catch_unwind(|| inverse(&format!("{physical}\n"), &record["preamble"]))
-                .is_err()
+            std::panic::catch_unwind(|| {
+                inverse(&format!("{canon_predecessor}\n"), &record["preamble"])
+            })
+            .is_err()
         );
         let other = "crates/vize_canon/src/virtual_ts/helpers/declarations/vue3-types.d.ts.txt";
         let body = fs::read_to_string(support::repository().join(other)).unwrap();

@@ -21,10 +21,12 @@ const helperLine = (relative: string, name: string): string => {
 };
 const helpers = [
   helperLine("component_prop_helpers.txt", "$LiteralKeys"),
+  helperLine("component_prop_helpers.txt", "$PatternSafeOmit"),
   helperLine("component_prop_helpers.txt", "$ReplaceComponentProps"),
   helperLine("component_prop_helpers.txt", "$ComponentPublicBase"),
   helperLine("helpers/declarations/vue3-types.d.ts.txt", "$MappedOmit"),
   helperLine("helpers/declarations/exposed-unwrap.d.ts.txt", "$ShallowUnwrapRef"),
+  "type $PreviousComponentPublicBase<I = import('vue').ComponentPublicInstance> = Omit<I, '$props' | '$emit' | '$slots'> & Pick<I, Exclude<$LiteralKeys<I>, '$props' | '$emit' | '$slots'>>;",
 ].join("\n");
 
 function check(files: Record<string, string>): { diagnostics: string[]; instantiations: number } {
@@ -132,15 +134,20 @@ void test("each component use costs instantiations independent of the custom pro
     return [(counts[1]! - counts[0]!) / 300, `${form}: ${counts.join(" -> ")} instantiations`];
   };
   // 100 -> 400 SFCs: about 0.08M -> 0.12M against 2.1M -> 8.2M for the old form.
-  for (const form of ["new", "new with a base alias", "picked own", "inline own"] as const) {
+  for (const form of [
+    "new",
+    "new with a base alias",
+    "renamed base",
+    "picked own",
+    "inline own",
+  ] as const) {
     const [perComponent, detail] = marginal(form);
     t.diagnostic(detail);
     assert.ok(perComponent < members / 10, detail);
   }
-  // Negative controls. The full-instance remap pays for every member per
-  // component. So does an alias that only renames `$ComponentPublicBase`:
-  // TypeScript instantiates the helper again under each new alias name.
-  for (const form of ["old", "renamed base"] as const) {
+  // Negative control. The full-instance remap still pays for every member per
+  // component; the bounded public base itself is now cheap even behind an alias.
+  for (const form of ["old"] as const) {
     const [perComponent, detail] = marginal(form);
     t.diagnostic(detail);
     assert.ok(perComponent > members, detail);
@@ -233,26 +240,34 @@ const keys = [
 ].map((key) => `'${key}'`);
 const indexKeys = ["string", "number", "`$${string}`", "`$x${string}`", "'$unknown'", "'unknown'"];
 
-function equalities(pattern: boolean, pickOwn = false): string {
+function equalities(broadIndex: boolean, pickOwn = false): string {
   return [
     ...prelude,
     ...shapes.flatMap(([name, own, base, previous = `${own} & ${base}`], index) => {
       // The generated own part has exactly four keys; an arbitrary indexed
       // own type is covered separately by the direct-intersection oracle.
-      if (pickOwn && name === "indexed own") return [];
+      if ((pickOwn || broadIndex) && name === "indexed own") return [];
       const [oldInstance, newInstance] = [`Old${index}`, `New${index}`];
+      const previousInstance = previous.replaceAll(
+        "$ComponentPublicBase",
+        "$PreviousComponentPublicBase",
+      );
       // An index-signature own type makes the full-instance `Omit` collapse to
       // `string`, which dropped the base's `$${string}` signature; intersecting
       // the base unmapped keeps it. Generated own parts have no index signature.
-      const whole = !(pattern && name === "indexed own");
+      const whole = !(broadIndex && name === "indexed own");
       return [
-        `type ${oldInstance} = ${previous};`,
+        `type ${oldInstance} = ${previousInstance};`,
         `type ${newInstance} = ${own} & (${base});`,
         `type OldUse${index} = $ReplaceComponentProps<${oldInstance}, Props>;`,
         `type NewUse${index} = $ReplaceComponentProps<${pickOwn ? `Pick<${oldInstance}, '$props' | '__vizeRawProps' | '$emit' | '$slots'>` : own}, Props> & (${base});`,
-        `type _instance${index} = Expect<Equal<Flat<${newInstance}>, Flat<${oldInstance}>>>;`,
-        ...(whole
-          ? [`type _use${index} = Expect<Equal<Flat<NewUse${index}>, Flat<OldUse${index}>>>;`]
+        ...(!broadIndex
+          ? [
+              `type _instance${index} = Expect<Equal<Flat<${newInstance}>, Flat<${oldInstance}>>>;`,
+              ...(whole
+                ? [`type _use${index} = Expect<Equal<Flat<NewUse${index}>, Flat<OldUse${index}>>>;`]
+                : []),
+            ]
           : []),
         `type _keys${index} = Expect<Equal<keyof NewUse${index}, keyof OldUse${index}>>;`,
         ...[...keys, ...indexKeys].map(
@@ -281,7 +296,7 @@ void test("own-part replacement types every instance member as the full-instance
   for (const [name, members] of customProperties) {
     const { diagnostics } = check({
       "members.ts": augment(members),
-      "oracle.ts": equalities(name.includes("pattern")),
+      "oracle.ts": equalities(name !== "plain members"),
     });
     assert.deepEqual(diagnostics, [], name);
   }
@@ -291,7 +306,7 @@ void test("selecting the generated instance's four owned members preserves every
   for (const [name, members] of customProperties) {
     const { diagnostics } = check({
       "members.ts": augment(members),
-      "oracle.ts": equalities(name.includes("pattern"), true),
+      "oracle.ts": equalities(name !== "plain members", true),
     });
     assert.deepEqual(diagnostics, [], name);
   }
@@ -370,4 +385,32 @@ void test("the current generator never remaps a whole component instance", () =>
       .includes("$ReplaceComponentProps<$ComponentInstance,"),
   );
   assert.deepEqual(stale, []);
+});
+
+void test("the published ambient constructor helper matches the canonical ABI", () => {
+  const signature = (relative: string): string => {
+    const source = fs.readFileSync(`${repo}${relative}`, "utf8");
+    const parsed = ts.createSourceFile(relative, source, ts.ScriptTarget.Latest, true);
+    const matches: ts.TypeAliasDeclaration[] = [];
+    const visit = (node: ts.Node): void => {
+      if (ts.isTypeAliasDeclaration(node) && node.name.text === "$ComponentInstanceFor") {
+        matches.push(node);
+      }
+      ts.forEachChild(node, visit);
+    };
+    visit(parsed);
+    assert.equal(matches.length, 1, relative);
+    const declaration = matches[0]!;
+    const parameters =
+      declaration.typeParameters?.map((parameter) => parameter.getText(parsed)) ?? [];
+    const type = ts
+      .createPrinter({ removeComments: true })
+      .printNode(ts.EmitHint.Unspecified, declaration.type, parsed);
+    return `<${parameters.join(", ")}> = ${type}`;
+  };
+
+  assert.equal(
+    signature("npm/cli/virtual-ts-globals.d.ts"),
+    signature("crates/vize_canon/src/virtual_ts/component_prop_helpers.txt"),
+  );
 });

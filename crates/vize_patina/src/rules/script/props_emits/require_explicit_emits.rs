@@ -19,8 +19,8 @@
 //! * The template's `$emit('x')` (and a call of the `defineEmits` binding) is
 //!   checked against `<script setup>` when the SFC has one, and otherwise
 //!   against the exported (or last defined) component object.
-//! * A declaration that cannot be fully enumerated — a spread, a computed key, a
-//!   type imported from elsewhere, an untyped `defineEmits()` — declares every
+//! * A declaration that cannot be fully enumerated — a spread, a computed key,
+//!   an unresolved imported type, an untyped `defineEmits()` — declares every
 //!   event. Only literal event names are checked.
 //!
 //! ```ts
@@ -114,6 +114,8 @@ impl ScriptRule for RequireExplicitEmits {
             semantic,
             program,
             sibling: sfc.sibling_program,
+            source,
+            resolved_type_world: sfc.resolved_type_world,
         };
         let setup = sfc
             .is_script_setup

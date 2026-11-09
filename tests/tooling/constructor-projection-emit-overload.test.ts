@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 import { readFileSync, rmSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
@@ -24,7 +25,6 @@ test("the owned overload asset relocates the complete Unicode virtual packet", (
   context.after(() => rmSync(pair.directory, { recursive: true, force: true }));
   const assets = readAssets(pair.base, pair.head, pair.sources);
   const packet = virtualPair(pair);
-  assert.equal(pair.after.length - pair.before.length, 652);
   const proof = relocateVirtualPacket(
     packet.base,
     packet.head,
@@ -33,8 +33,12 @@ test("the owned overload asset relocates the complete Unicode virtual packet", (
     assets.headEmbedded,
   );
   assert.equal(proof.edits.length, 1);
-  assert.equal(proof.edits[0].end - proof.edits[0].start, 1883);
-  assert.equal(proof.edits[0].replacementBytes, 2535);
+  assert.equal(
+    proof.edits[0].replacementSha256,
+    createHash("sha256")
+      .update(Buffer.concat([pair.after, pair.afterOwner]))
+      .digest("hex"),
+  );
 });
 
 test("owned emit inventory rejects every unauthenticated helper state", async (context) => {
@@ -44,7 +48,7 @@ test("owned emit inventory rejects every unauthenticated helper state", async (c
   const original = virtualPair(pair);
   const old = pair.before.toString(),
     next = pair.after.toString(),
-    owner = pair.owner.toString();
+    currentOwner = pair.afterOwner.toString();
   const mutations = {
     "missing current asset": (packet) => {
       packet.head.virtual_ts = packet.head.virtual_ts.replace(next, "");
@@ -69,10 +73,13 @@ test("owned emit inventory rejects every unauthenticated helper state", async (c
       packet.head.virtual_ts = packet.head.virtual_ts.replace("TDepth", "UnknownDepth");
     },
     "moved owner boundary": (packet) => {
-      packet.head.virtual_ts = packet.head.virtual_ts.replace(next + owner, next + "\n" + owner);
+      packet.head.virtual_ts = packet.head.virtual_ts.replace(
+        next + currentOwner,
+        next + "\n" + currentOwner,
+      );
     },
     "missing owner context": (packet) => {
-      packet.head.virtual_ts = packet.head.virtual_ts.replace(owner, "");
+      packet.head.virtual_ts = packet.head.virtual_ts.replace(currentOwner, "");
     },
   } satisfies Record<string, (packet: typeof original) => void>;
   for (const [name, mutate] of Object.entries(mutations))

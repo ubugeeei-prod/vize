@@ -43,8 +43,7 @@ const handler = ref(named)
 
 const CAPTURED_HELPERS: &[&str] = &[
     "type $RequiredKeys<T> = { [K in keyof T]-?: {} extends Pick<T, K> ? never : K }[keyof T];",
-    "type $ReplaceComponentProps<T, P> = Omit<T, '$props'> & Pick<T, Exclude<$LiteralKeys<T>, '$props'>> & { $props: P };",
-    "type $ComponentPublicBase<I = import('vue').ComponentPublicInstance> = Omit<I, '$props' | '$emit' | '$slots'> & Pick<I, Exclude<$LiteralKeys<I>, '$props' | '$emit' | '$slots'>>;",
+    "type $PatternSafeOmit<T, K extends PropertyKey, B = Omit<T, K>, L extends PropertyKey = $LiteralKeys<T>> = B & Pick<T, Extract<Exclude<L, K>, keyof T>>;",
     "type $EmitRequiredKeys<T> = { [K in keyof T]-?: {} extends Pick<T, K> ? never : K }[keyof T];",
     "type $EmitRequiredFields<T> = T extends unknown ? {} extends T ? Pick<T, never> : Pick<T, $EmitRequiredKeys<T>> : never;",
     "type $OverloadProps<TOverload> = Pick<TOverload, keyof TOverload>;",
@@ -59,16 +58,13 @@ fn virtual_ts(source: &str) -> String {
     .expect("virtual TypeScript")
 }
 
-fn owned_helpers(alias: &str) -> [String; 6] {
+fn owned_helpers(alias: &str) -> [String; 5] {
     [
         cstr!(
             "type $RequiredKeys<T> = {{ [K in keyof T]-?: {{}} extends {alias}<T, K> ? never : K }}[keyof T];"
         ),
         cstr!(
-            "type $ReplaceComponentProps<T, P> = Omit<T, '$props'> & {alias}<T, Exclude<$LiteralKeys<T>, '$props'>> & {{ $props: P }};"
-        ),
-        cstr!(
-            "type $ComponentPublicBase<I = import('vue').ComponentPublicInstance> = Omit<I, '$props' | '$emit' | '$slots'> & {alias}<I, Exclude<$LiteralKeys<I>, '$props' | '$emit' | '$slots'>>;"
+            "type $PatternSafeOmit<T, K extends PropertyKey, B = Omit<T, K>, L extends PropertyKey = $LiteralKeys<T>> = B & {alias}<T, Extract<Exclude<L, K>, keyof T>>;"
         ),
         cstr!(
             "type $EmitRequiredKeys<T> = {{ [K in keyof T]-?: {{}} extends {alias}<T, K> ? never : K }}[keyof T];"

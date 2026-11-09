@@ -145,7 +145,7 @@ export function smokeReleaseInstall(argv: readonly string[]): number {
       try {
         fs.rmSync(temporary, { recursive: true, force: true });
       } catch {
-        /* Rust's cleanup is best effort. */
+        /* Temporary cleanup is best effort. */
       }
   }
 }

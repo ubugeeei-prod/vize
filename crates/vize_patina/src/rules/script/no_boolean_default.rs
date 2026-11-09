@@ -77,23 +77,17 @@ impl ScriptRule for NoBooleanDefault {
     fn check_program<'a>(
         &self,
         program: &'a Program<'a>,
-        _source: &str,
+        source: &str,
         offset: usize,
         result: &mut ScriptLintResult,
     ) {
-        self.check_program_with_sfc(
-            program,
-            _source,
-            offset,
-            SfcScriptContext::default(),
-            result,
-        );
+        self.check_program_with_sfc(program, source, offset, SfcScriptContext::default(), result);
     }
 
     fn check_program_with_sfc<'a>(
         &self,
         program: &'a Program<'a>,
-        _source: &str,
+        source: &str,
         offset: usize,
         sfc: SfcScriptContext<'_>,
         result: &mut ScriptLintResult,
@@ -110,7 +104,13 @@ impl ScriptRule for NoBooleanDefault {
         };
         visitor.visit_program(program);
         let sibling = sfc.sibling_program.zip(sfc.sibling_offset);
-        for declaration in collect_setup_props_with_types(program, offset, sibling) {
+        for declaration in collect_setup_props_with_types(
+            program,
+            source,
+            offset,
+            sibling,
+            sfc.resolved_type_world,
+        ) {
             if let Some(props) = declaration.runtime {
                 check_setup_props_object(props, &declaration, offset, result);
             }

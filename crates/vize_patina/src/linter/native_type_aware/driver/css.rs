@@ -3,13 +3,13 @@
 use super::super::super::css_rules;
 use super::{LintResult, Linter};
 use vize_atelier_sfc::SfcDescriptor;
-use vize_relief::RootNode;
+use vize_l1::markup::SurfaceTree;
 
 pub(super) fn finish(
     linter: &Linter,
     descriptor: &SfcDescriptor<'_>,
     mut result: LintResult,
-    template_root: Option<&RootNode<'_>>,
+    template_surface: Option<&SurfaceTree<'_>>,
 ) -> LintResult {
     if css_rules::has_active_builtin_css_rules(linter) {
         let owned_template = descriptor.template.as_ref().is_some_and(|template| {
@@ -19,7 +19,7 @@ pub(super) fn finish(
             linter,
             descriptor,
             &mut result,
-            template_root.filter(|_| owned_template),
+            template_surface.filter(|_| owned_template),
         );
     }
     result

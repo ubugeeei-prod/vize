@@ -59,7 +59,6 @@ mod component;
 mod constant_expr;
 mod create_slots;
 mod create_slots_walk;
-mod custom_element;
 mod cx;
 mod directive;
 mod dispatch;
@@ -145,7 +144,6 @@ pub use self::budget::{
     emit_dom_source_patch_facts_observed_with_options,
 };
 use self::buf::Buf;
-pub(crate) use self::custom_element::tag_pattern_matches;
 use self::dispatch::{emit_for_item_call, emit_for_op, emit_if_branch_call, emit_if_op};
 pub use self::entity::{
     decode_html_attribute_entities, decode_html_entities, decode_ssr_static_text,

@@ -4,7 +4,12 @@
 use super::super::{resolve_test_tsgo_binary, snapshot_project_diagnostics};
 
 const FOO: &str = r#"<script setup lang="ts">
-defineEmits<{ barBaz: [value: number]; "bar-baz": [value: number] }>();
+interface Emits {
+  (event: "barBaz", value: number): void;
+  (event: "bar-baz", value: number): void;
+  (event: string, ...args: any[]): void;
+}
+defineEmits<Emits>();
 </script>
 
 <template>

@@ -29,8 +29,8 @@ test("expression regression corpus retains the complete issue 7808 input after r
       fs.mkdirSync(corpus, { recursive: true });
       fs.writeFileSync(path.join(corpus, "stale-seed"), "discard me");
       const result = spawnSync(
-        "rust-script",
-        [path.join(repoRoot, "tools/commands/ci/fuzz/seed_corpus.rs")],
+        process.execPath,
+        [path.join(repoRoot, "tools/commands/ci/fuzz/seed-corpus.ts")],
         { encoding: "utf8", env: { ...process.env, VIZE_REPO_ROOT: root } },
       );
       assert.equal(result.status, 0, `${result.stdout}\n${result.stderr}`);
@@ -145,8 +145,8 @@ test("expression regression corpus seeds every retained campaign artifact byte-f
     }
     assert.equal(seeds.size, retained.length, "every artifact must seed its own corpus entry");
     const result = spawnSync(
-      "rust-script",
-      [path.join(repoRoot, "tools/commands/ci/fuzz/seed_corpus.rs")],
+      process.execPath,
+      [path.join(repoRoot, "tools/commands/ci/fuzz/seed-corpus.ts")],
       { encoding: "utf8", env: { ...process.env, VIZE_REPO_ROOT: root } },
     );
     assert.equal(result.status, 0, `${result.stdout}\n${result.stderr}`);

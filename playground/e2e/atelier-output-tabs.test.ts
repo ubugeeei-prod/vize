@@ -10,7 +10,7 @@ vi.mock("../src/wasm/index", () => ({
   loadWasm: vi.fn(),
 }));
 
-vi.mock("../src/shared/MonacoEditor.vue", () => ({
+vi.mock("../src/shared/monaco-editor.vue", () => ({
   default: defineComponent({
     props: {
       modelValue: {
@@ -32,7 +32,7 @@ vi.mock("../src/shared/MonacoEditor.vue", () => ({
   }),
 }));
 
-vi.mock("../src/shared/CodeHighlight.vue", () => ({
+vi.mock("../src/shared/code-highlight.vue", () => ({
   default: defineComponent({
     props: {
       code: {
@@ -52,7 +52,7 @@ vi.mock("../src/features/atelier/formatters", () => ({
   transpileToJs: vi.fn(async (code: string) => `js:${code}`),
 }));
 
-import AtelierPlayground from "../src/features/atelier/AtelierPlayground.vue";
+import AtelierPlayground from "../src/features/atelier/atelier-playground.vue";
 
 function createSfcResult(
   scriptCode: string,

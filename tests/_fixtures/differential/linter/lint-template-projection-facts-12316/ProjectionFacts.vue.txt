@@ -1,0 +1,11 @@
+<script setup lang="ts">
+const title = "ready";
+const items = [{ label: "one" }];
+</script>
+
+<template>
+  <section title="&fjlig;&amp;&#x1f642;">
+    before &amp;#40; {{ title }} after &amp;#41;
+    <MyList v-slot="{ item = items[0] }">{{ item.label }}</MyList>
+  </section>
+</template>

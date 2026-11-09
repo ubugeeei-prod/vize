@@ -1,0 +1,100 @@
+{
+  "schema": "vize.experimental-router-canon-leftovers-transition.v1",
+  "issue": 11499,
+  "pullRequest": 12162,
+  "qualificationCredit": false,
+  "sourceReceipt": {
+    "path": "crates/vize_canon/tests/empty_vue_star_exports/membership/constructor_without_args/payload_update/canon_leftovers_11499.json",
+    "sha256": "250e01138d163f77a5d98b20bc97f562a663ebb924c17c810b9d9cf02280128e"
+  },
+  "observation": {
+    "run": 42492156662,
+    "artifact": 13623390603
+  },
+  "entries": [
+    {
+      "variant": "lf",
+      "kind": "valid",
+      "previous": {
+        "file": "lf.valid.virtual.ts.txt",
+        "sha256": "11db1054da1457701cfaba910f17866631e1092462450442a28ab721da38dabd",
+        "bytes": 14670
+      },
+      "current": {
+        "file": "lf.valid.canon-leftovers.virtual.ts.txt",
+        "sha256": "311ed67a1ae14c33a9c582c35ef6f52efa0d6581dc0759917bd370752415dcaa",
+        "bytes": 15097
+      }
+    },
+    {
+      "variant": "lf",
+      "kind": "invalid",
+      "previous": {
+        "file": "lf.invalid.virtual.ts.txt",
+        "sha256": "5de216bb01727a840d9bad3cf623a3db258f1d18c2727ba17b4d2bf68f91b8d5",
+        "bytes": 14674
+      },
+      "current": {
+        "file": "lf.invalid.canon-leftovers.virtual.ts.txt",
+        "sha256": "563f595fe1ce9acbe29efa64380637de604c12b99bd920484fdd73efeb0a7c20",
+        "bytes": 15101
+      }
+    },
+    {
+      "variant": "crlf",
+      "kind": "valid",
+      "previous": {
+        "file": "crlf.valid.virtual.ts.txt",
+        "sha256": "2fdc664eac8a835d5849eed8a82c6e3bdc5cb232953db6f1586febca8f610379",
+        "bytes": 14670
+      },
+      "current": {
+        "file": "crlf.valid.canon-leftovers.virtual.ts.txt",
+        "sha256": "4db1f53dc51e5045cffc72eece0fb4a74a218619812391e8b1a5ec98e6ffd70d",
+        "bytes": 15097
+      }
+    },
+    {
+      "variant": "crlf",
+      "kind": "invalid",
+      "previous": {
+        "file": "crlf.invalid.virtual.ts.txt",
+        "sha256": "26a3a8333a660dea1320b3cff86864787caf8f9aad63a579a6af91ec0d3c7de6",
+        "bytes": 14674
+      },
+      "current": {
+        "file": "crlf.invalid.canon-leftovers.virtual.ts.txt",
+        "sha256": "fa17dbdf6a81bd06da87d8728b59437b53b06c20f464b78f9676f1b408b01756",
+        "bytes": 15101
+      }
+    },
+    {
+      "variant": "explicit",
+      "kind": "valid",
+      "previous": {
+        "file": "explicit.valid.virtual.ts.txt",
+        "sha256": "7ff0d27eec12c2161595916a37b286012c77b29dc5b80cdb161455e09a80259e",
+        "bytes": 14598
+      },
+      "current": {
+        "file": "explicit.valid.canon-leftovers.virtual.ts.txt",
+        "sha256": "39eb7940d79964f200a5e62588ad13f2fe3efbdc1eba053ef93329c85bef5d9b",
+        "bytes": 15025
+      }
+    },
+    {
+      "variant": "explicit",
+      "kind": "invalid",
+      "previous": {
+        "file": "explicit.invalid.virtual.ts.txt",
+        "sha256": "7ff0d27eec12c2161595916a37b286012c77b29dc5b80cdb161455e09a80259e",
+        "bytes": 14598
+      },
+      "current": {
+        "file": "explicit.invalid.canon-leftovers.virtual.ts.txt",
+        "sha256": "39eb7940d79964f200a5e62588ad13f2fe3efbdc1eba053ef93329c85bef5d9b",
+        "bytes": 15025
+      }
+    }
+  ]
+}

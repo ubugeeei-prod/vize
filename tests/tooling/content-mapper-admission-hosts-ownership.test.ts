@@ -25,6 +25,25 @@ void test("only exact pre-spawn protected identities can be excluded from owners
     scope: "preexisting-unrelated",
     excluded: true,
   });
+  if (typeof process.geteuid === "function" && process.geteuid() !== 0) {
+    const uid = process.geteuid();
+    assert.deepEqual(
+      observationDisposition({ ...identity, pid: 43, uid: uid + 1 }, baseline, owned, "EACCES"),
+      { scope: "foreign-user-unrelated", excluded: true },
+      "a stable foreign-UID process cannot descend from this nonprivileged observer",
+    );
+    assert.equal(
+      observationDisposition({ ...identity, pid: 43, uid }, baseline, owned, "EACCES").excluded,
+      false,
+      "a same-UID post-spawn process still requires an owner marker",
+    );
+    assert.equal(
+      observationDisposition({ ...identity, pid: 43, uid: uid + 1 }, baseline, owned, "EIO")
+        .excluded,
+      false,
+      "foreign ownership excuses only permission barriers",
+    );
+  }
   assert.equal(
     observationDisposition({ ...identity, startTicks: "101" }, baseline, owned, "EACCES").excluded,
     false,

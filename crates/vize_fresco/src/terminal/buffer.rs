@@ -164,6 +164,55 @@ impl Buffer {
         col.saturating_sub(x)
     }
 
+    /// Set a string without writing any partial grapheme outside `clip`.
+    ///
+    /// Coordinates remain relative to the full buffer. Graphemes before the
+    /// clipped left edge are skipped rather than shifted, and a wide grapheme
+    /// crossing either horizontal edge is omitted atomically.
+    pub(crate) fn set_string_clipped(
+        &mut self,
+        x: u16,
+        y: u16,
+        text: &str,
+        style: Style,
+        clip: Rect,
+    ) -> u16 {
+        let clip = clip.intersection(&self.area());
+        if clip.is_empty() || y < clip.top() || y >= clip.bottom() || x >= clip.right() {
+            return 0;
+        }
+        if clip == self.area() {
+            return self.set_string(x, y, text, style);
+        }
+
+        let mut column = x;
+        let mut written = 0_u16;
+        let skip_ascii_controls = text.is_ascii();
+        for grapheme in text.graphemes(true) {
+            if skip_ascii_controls && grapheme.bytes().all(|byte| byte.is_ascii_control()) {
+                continue;
+            }
+            let Ok(width) = u16::try_from(TextWidth::width(grapheme)) else {
+                break;
+            };
+            if width == 0 {
+                continue;
+            }
+            let end = column.saturating_add(width);
+            if column >= clip.right() {
+                break;
+            }
+            if column >= clip.left() && end <= clip.right() {
+                if !self.write_grapheme(column, y, grapheme, width, style) {
+                    break;
+                }
+                written = written.saturating_add(width);
+            }
+            column = end;
+        }
+        written
+    }
+
     fn write_grapheme(&mut self, x: u16, y: u16, grapheme: &str, width: u16, style: Style) -> bool {
         if width == 0 || y >= self.height || width > self.width.saturating_sub(x) {
             return false;

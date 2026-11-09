@@ -266,28 +266,21 @@ test("disabled mapper checks start no compiler and require no installed package"
     assert.equal(fs.existsSync(f.log), false);
   }));
 
-test("runtime writer preserves every Rust text literal and the complete TypeScript configuration", () =>
+test("runtime writer preserves the complete stable Node project fixture", () =>
   fixture((f) => {
     writeRuntimeSmokeProject(f.install);
-    const rust = fs.readFileSync(
-      path.join(root, "tools/commands/release/npm/smoke-release-install.rs"),
-      "utf8",
-    );
-    const section = rust.slice(
-      rust.indexOf("fn write_runtime_smoke_project"),
-      rust.indexOf("fn run_installed_content_mapper_checks"),
-    );
-    for (const filename of ["index.html", "vite.config.mjs", "App.vue", "main.ts"]) {
-      const escaped = filename.replaceAll(".", "\\.");
-      const literal = new RegExp(`\\.join\\("${escaped}"\\),\\s*("(?:[^"\\\\]|\\\\.)*")`).exec(
-        section,
-      )?.[1];
-      assert.ok(literal, filename);
+    const expectedSources = {
+      "index.html": '<div id="app"></div><script type="module" src="/src/main.ts"></script>\n',
+      "vite.config.mjs":
+        'import { defineConfig } from "vite";\nimport vize from "@vizejs/vite-plugin";\n\nexport default defineConfig({\n  plugins: [vize()],\n  build: { outDir: "dist", emptyOutDir: true },\n});\n',
+      "App.vue":
+        '<template>\n  <button class="smoke" @click="count++">{{ label }} {{ count }}</button>\n</template>\n\n<script setup lang="ts">\nimport { ref } from "vue";\n\nconst label: string = "vize smoke";\nconst count = ref(0);\n</script>\n\n<style scoped>\n.smoke {\n  color: #0f766e;\n}\n</style>\n',
+      "main.ts":
+        'import { createApp } from "vue";\nimport App from "./App.vue";\n\ncreateApp(App).mount("#app");\n',
+    } as const;
+    for (const [filename, expected] of Object.entries(expectedSources)) {
       const directory = filename === "App.vue" || filename === "main.ts" ? "src" : "";
-      assert.equal(
-        fs.readFileSync(path.join(f.install, directory, filename), "utf8"),
-        JSON.parse(literal) as string,
-      );
+      assert.equal(fs.readFileSync(path.join(f.install, directory, filename), "utf8"), expected);
     }
     assert.equal(
       fs.readFileSync(path.join(f.install, "tsconfig.json"), "utf8"),

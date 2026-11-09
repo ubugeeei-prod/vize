@@ -3,6 +3,7 @@ import { testedPackageGroups } from "../tested-package-groups.ts";
 import {
   defineTasks,
   nodeCommand,
+  nodeCommandFromVscodeExtension,
   nodeTool,
   noCacheTask,
   runInPackages,
@@ -18,11 +19,11 @@ import {
 import type { PackagePath } from "../task-helpers.ts";
 import { inTestbox } from "./testbox.ts";
 
-const stageVscodeTypeScriptPlugin = rustToolFromVscodeExtension(
+const stageVscodeTypeScriptPlugin = nodeCommandFromVscodeExtension(
   "editors/vscode/sync-typescript-plugin",
   "stage",
 );
-const injectVscodeTypeScriptPlugin = rustToolFromVscodeExtension(
+const injectVscodeTypeScriptPlugin = nodeCommandFromVscodeExtension(
   "editors/vscode/sync-typescript-plugin",
   "inject",
   "dist/vize.vsix",
@@ -97,6 +98,8 @@ const rustBranchCoverageMinimums = [
   "40",
 ];
 const benchmarkDispatcher = (...args: string[]) => nodeCommand("benchmarks/dispatch", ...args);
+const sourceCoverage = (...args: string[]) =>
+  ["node", "tools/commands/ci/source-coverage.ts", ...args].join(" ");
 const rustSourceCoverageCommand = [
   "mkdir -p target/llvm-cov",
   [
@@ -106,7 +109,7 @@ const rustSourceCoverageCommand = [
     "cargo llvm-cov nextest --workspace --profile full --test-threads 8 --json --summary-only",
     `--output-path ${rustSourceCoverageJson}`,
   ].join(" "),
-  rustTool("ci/source-coverage", "--json", rustSourceCoverageJson, ...rustSourceCoverageMinimums),
+  sourceCoverage("--json", rustSourceCoverageJson, ...rustSourceCoverageMinimums),
 ].join(" && ");
 const rustBranchCoverageCommand = [
   "mkdir -p target/llvm-cov",
@@ -118,7 +121,7 @@ const rustBranchCoverageCommand = [
   ].join(" "),
   // Keep threshold enforcement in one place so failures still render the
   // complete metric table instead of stopping at cargo-llvm-cov's exit code.
-  rustTool("ci/source-coverage", "--json", rustBranchCoverageJson, ...rustBranchCoverageMinimums),
+  sourceCoverage("--json", rustBranchCoverageJson, ...rustBranchCoverageMinimums),
 ].join(" && ");
 
 /**
@@ -142,13 +145,13 @@ export const testAndBenchmarkTasks = defineTasks({
     `${runTask("build:native:test")} && ${runPackageScriptDirectly("build", ["./npm/linter/oxlint"])}`,
   ),
   "test:scripts": noCacheTask(
-    `${runTask("build:native:test")} && rust-script tools/commands/ci/verify-tool-layout.rs && VIZE_TEST_REQUIRE_TSGO=1 node --test --test-concurrency=1 ${toolingTestFiles}`,
+    `${runTask("build:native:test")} && node tools/commands/ci/verify-tool-layout.ts && VIZE_TEST_REQUIRE_TSGO=1 node --test --test-concurrency=1 ${toolingTestFiles}`,
   ),
   "test:scripts:pr": noCacheTask(
-    `${runTask("build:native:test")} && rust-script tools/commands/ci/verify-tool-layout.rs && node tools/support/compat/github/run-tooling-tests.mjs`,
+    `${runTask("build:native:test")} && node tools/commands/ci/verify-tool-layout.ts && node tools/support/compat/github/run-tooling-tests.mjs`,
   ),
   "test:scripts:planned": noCacheTask(
-    `${runTask("build:native:test")} && rust-script tools/commands/ci/verify-tool-layout.rs && node tools/support/compat/github/run-tooling-tests.mjs`,
+    `${runTask("build:native:test")} && node tools/commands/ci/verify-tool-layout.ts && node tools/support/compat/github/run-tooling-tests.mjs`,
   ),
   "test:vscode-extension:vsix": noCacheTask(
     runInVscodeExtension(packageVscodeExtension, assertVscodePackage),
@@ -182,11 +185,11 @@ export const testAndBenchmarkTasks = defineTasks({
   // The headless Neovim end-to-end scenario against a real `vize lsp` (#3457).
   // It needs a built server binary, so CI runs it in the same job that builds
   // one for the VS Code host smoke.
-  "test:nvim-extension:real-server": noCacheTask(rustTool("editors/neovim/run-real-server")),
+  "test:nvim-extension:real-server": noCacheTask(nodeCommand("editors/neovim/run-real-server")),
   "test:vim-extension:headless": noCacheTask(
     "vim -Nu NONE -n -es -S editors/vim/test/vize_spec.vim",
   ),
-  "test:vim-extension:real-server": noCacheTask(rustTool("editors/vim/run-real-server")),
+  "test:vim-extension:real-server": noCacheTask(nodeCommand("editors/vim/run-real-server")),
   "test:vim-extension:package": noCacheTask("vp run --workspace-root package:vim-extension"),
   "test:helix-extension:package": noCacheTask("vp run --workspace-root package:helix-extension"),
   "test:helix-extension:real-server": noCacheTask(rustTool("editors/helix/run-real-server")),

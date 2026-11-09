@@ -7,11 +7,11 @@ import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
-const toolPath = path.join(root, "tools", "commands", "fixtures", "tool-matrix-report.rs");
+const toolPath = path.join(root, "tools", "support", "compat", "fixtures", "tool-matrix-report.ts");
 
 function runToolMatrix(args: string[]) {
   const outputDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-fixture-tool-matrix-"));
-  const result = spawnSync("rust-script", [toolPath, ...args, "--output-dir", outputDir], {
+  const result = spawnSync(process.execPath, [toolPath, ...args, "--output-dir", outputDir], {
     cwd: root,
     encoding: "utf8",
   });
@@ -19,7 +19,7 @@ function runToolMatrix(args: string[]) {
     console.error(
       JSON.stringify({
         phase: "fixture-tool-matrix-child",
-        command: "rust-script",
+        command: process.execPath,
         args: [toolPath, ...args, "--output-dir", outputDir],
         cwd: root,
         status: result.status,

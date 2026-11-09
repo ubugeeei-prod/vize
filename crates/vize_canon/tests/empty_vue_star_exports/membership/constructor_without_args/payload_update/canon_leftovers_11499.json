@@ -1,0 +1,290 @@
+{
+  "version": 1,
+  "kind": "exact-canon-leftovers-source-inverse",
+  "issue": 11499,
+  "nativeAcceptanceCredit": false,
+  "files": [
+    {
+      "path": "crates/vize_canon/src/virtual_ts/component_prop_helpers.txt",
+      "before": {
+        "bytes": 5739,
+        "sha256": "3eca9ffe508f656bf244960c7c9a2da73993dc073e6a5262778fbc4e99c10c6d"
+      },
+      "after": {
+        "bytes": 6026,
+        "sha256": "78d6af92022c9779819704cfb63b91955101396c4929bde5e6dddc308e546b2a"
+      },
+      "edits": [
+        {
+          "before": "ComponentCustomProperties> = $PatternSafeOmit<I, '$props' | '$emit' | '$slots', C, '$' | '$data' | '$attrs' | '$refs' | '$root' | '$parent' | '$host' | '$el' | ",
+          "after": "ComponentCustomProperties> = $PatternSafeOmit<I, '$props' | '$emit' | '$slots', symbol extends keyof C ? {} : C, '$' | '$data' | '$attrs' | '$refs' | '$root' | '$parent' | '$host' | '$el' | "
+        },
+        {
+          "before": "T, Declared, Authored, Jsx> = $IsAny<Authored> extends true ? I : $IsUnknown<Authored> extends true ? $UsePublicInstance<Jsx> extends true ? I : $ReplaceComponentProps<I, Pick<$AuthoredKeyWitness<Jsx>, keyof Jsx & $ComponentMetadataKeys<$ComponentInputProps<T, Declared>>> & (T extends unknown ? $ComponentInputProps<T, Declared> & $ComponentInputGuard<T, Declared, Jsx> : never)> : $ReplaceComponentProps<I, $ComponentInputProps<T, Declared> & $ComponentMissingInputGuard<T, Authored>>;\ntype $IsUnknown<T> = unknown extends T ? [keyof T] extends [never] ? true : false : false;\ntype $UsePublicInstance<T> = $IsAny<T> extends true ? true : $IsUnknown<T>;\ntype $LiteralKeys<T> = keyof { [K in keyof T as K extends string ? string extends K ? never : K extends `$${infer R}` ? string extends R ? never : K : K : number extends K ? never : symbol extends K ? never : K]: unknown };\ntype $ReplaceComponentProps<T, P> = Omit<T, '$props'> & Pick<T, Exclude<$LiteralKeys<T>, '$props'>> & { $props: P };\ntype $PublicEmit<T, S = __EmitShape<T>, K extends keyof S & string = keyof S & string> = S extends (...args: any[]) => any ? S : [K] extends [never] ? (event: string, ...args: any[]) => void : __EmitFn<T>;\ntype $PublicSlots<T> = [keyof T] extends [never] ? import('vue').ComponentPublicInstance['$slots'] : T;\n// @ts-ignore TS2694/TS2307: a `vue` without `ComponentPublicInstance` must degrade component public extras to unchecked, never error.\ntype $ComponentPublicBase<I = import('vue').ComponentPublicInstance> = Omit<I, '$props' | '$emit' | '$slots'> & Pick<I, Exclude<$LiteralKeys<I>, '$props' | '$emit' | '$slots'>",
+          "after": "O, B, T, Declared, Authored, Jsx> = $IsAny<Authored> extends true ? I : $IsUnknown<Authored> extends true ? $UsePublicInstance<Jsx> extends true ? I : $ReplaceComponentProps<O, Pick<$AuthoredKeyWitness<Jsx>, keyof Jsx & $ComponentMetadataKeys<$ComponentInputProps<T, Declared>>> & (T extends unknown ? $ComponentInputProps<T, Declared> & $ComponentInputGuard<T, Declared, Jsx> : never)> & B : $ReplaceComponentProps<O, $ComponentInputProps<T, Declared> & $ComponentMissingInputGuard<T, Authored>> & B;\ntype $IsUnknown<T> = unknown extends T ? [keyof T] extends [never] ? true : false : false;\ntype $UsePublicInstance<T> = $IsAny<T> extends true ? true : $IsUnknown<T>;\ntype $LiteralKeys<T> = keyof { [K in keyof T as K extends string ? string extends K ? never : K extends `$${infer R}` ? string extends R ? never : K : K : number extends K ? never : symbol extends K ? never : K]: unknown };\ntype $PatternSafeOmit<T, K extends PropertyKey, B = Omit<T, K>, L extends PropertyKey = $LiteralKeys<T>> = B & Pick<T, Extract<Exclude<L, K>, keyof T>>;\ntype $ReplaceComponentProps<T, P> = $PatternSafeOmit<T, '$props'> & { $props: P };\ntype $PublicEmit<T, S = __EmitShape<T>, K extends keyof S & string = keyof S & string> = S extends (...args: any[]) => any ? S : [K] extends [never] ? (event: string, ...args: any[]) => void : __EmitFn<T>;\ntype $PublicSlots<T> = [keyof T] extends [never] ? import('vue').ComponentPublicInstance['$slots'] : T;\n// @ts-ignore TS2694/TS2307: a `vue` without `ComponentPublicInstance` must degrade component public extras to unchecked, never error.\ntype $ComponentPublicBase<I = import('vue').ComponentPublicInstance, C = import('vue').ComponentCustomProperties> = $PatternSafeOmit<I, '$props' | '$emit' | '$slots', C, '$' | '$data' | '$attrs' | '$refs' | '$root' | '$parent' | '$host' | '$el' | '$options' | '$forceUpdate' | '$nextTick' | '$watch'"
+        }
+      ]
+    },
+    {
+      "path": "crates/vize_canon/src/virtual_ts/generator/component_constructors.rs",
+      "before": {
+        "bytes": 10645,
+        "sha256": "94e915b4968a2d7d4b0d1b4292b74aa24cbc7434e4b7d8f191213b59cfdbb853"
+      },
+      "after": {
+        "bytes": 10946,
+        "sha256": "70ea8375a7bc7b9617866eefadb0d83aa074240a1c6b603d06af46ed230a2489"
+      },
+      "edits": [
+        {
+          "before": "        // Constructor arguments (templates, `new`) bind `$AuthoredProps` and\n        // leave undeclared attributes to the consumer's own excess-property\n        // check; TSX binds `$JsxProps` and stays exact (#11629).\n        append!(\n            *ts,\n            \"type $ComponentConstructor = new <$AuthoredProps = unknown, $JsxProps = unknown>(props?: $AuthoredProps & $ComponentInput<{props_ref}, {emit_props_ref}, $AuthoredProps>, ...args: any[]) => $ComponentInstanceFor<$ComponentInstance, {own}, {base}, {props_ref}, {emit_props_ref}, $AuthoredProps, $JsxProps>;\\n\"\n        );\n",
+          "after": "        // Constructor arguments (templates, `new`) bind `$AuthoredProps` and\n        // leave undeclared attributes to the consumer's own excess-property\n        // check; TSX binds `$JsxProps` and stays exact (#11629).\n        let constructor_base = if aliases.has_authored_default {\n            cstr!(\"Omit<{authored_instance}, '$props' | '$emit' | '$slots'> & {base}\")\n        } else {\n            base.clone()\n        };\n        append!(\n            *ts,\n            \"type $ComponentConstructor = new <$AuthoredProps = unknown, $JsxProps = unknown>(props?: $AuthoredProps & $ComponentInput<{props_ref}, {emit_props_ref}, $AuthoredProps>, ...args: any[]) => $ComponentInstanceFor<$ComponentInstance, {own}, {constructor_base}, {props_ref}, {emit_props_ref}, $AuthoredProps, $JsxProps>;\\n\"\n        );\n"
+        },
+        {
+          "before": "ts.push_str(\" & \");\n    instance_base(\n        ts,\n        legacy_vue2,\n        dialect,\n        aliases.has_exposed_type,\n        (aliases.has_root_el, aliases.has_refs),\n    );\n    ts.push_str(\";\\n\");\n    if legacy_component {\n        ts.push_str(LEGACY_VUE2_COMPONENT_CONSTRUCTOR_STATICS);\n        ts.push_str(\n            \"type $ComponentConstructor = {\\n  new (...args: any[]): any;\\n  new (...args: any[]): $ComponentInstance;\\n} & $Vue2ComponentConstructorStatics;\\n\",\n        );\n    } else {\n        let mut props_ref = aliases\n            .generic_params\n            .map(|_| setup_props_plan.generic_fallback_component_props_type_ref())\n            .unwrap_or_else(|| setup_props_plan.component_props_type_ref().into());\n        if aliases.jsx_slots {\n            props_ref = cstr!(\"{props_ref} & {}<{slots}>\", declared(\"$JsxSlotProps\"));\n        }\n        let emit_props_ref = if aliases.has_emits_for_props {\n            let emit_props = crate::virtual_ts::helpers::shared_types::EMIT_PROPS\n                .select(aliases.hoist_shared_preamble);\n            cstr!(\"{emit_props}<{emits}>\")\n        } else {\n            String::from(\"{}\")\n        };\n        // `$ComponentInput` is a conditional on the authored type\n        // parameter, so the checker defers it instead of resolving the input\n        // shape while it checks the alias declaration. That matters because\n        // `$ComponentInputProps` reaches `$FallthroughAttrs`, whose\n        // `Omit<$DomListenerProps, ...>` distributes over the whole DOM\n        // event map: eagerly resolving it once per component made `vize check`\n        // ~6% slower on a 1000-file corpus, and every file that never\n        // instantiates the component paid it for nothing. Call sites still\n        // resolve the exact same intersection once `$AuthoredProps` is\n        // inferred, so the authored contract is unchanged.\n        // Constructor arguments (templates, `new`) bind `$AuthoredProps` and\n        // leave undeclared attributes to the consumer's own excess-property\n        // check; TSX binds `$JsxProps` and stays exact (#11629).\n        append!(\n            *ts,\n            \"type $ComponentConstructor = new <$AuthoredProps = unknown, $JsxProps = unknown>(props?: $AuthoredProps & $ComponentInput<{props_ref}, {emit_props_ref}, $AuthoredProps>, ...args: any[]) => $ComponentInstanceFor<$ComponentInstance",
+          "after": "let mut base = String::default();\n    instance_base(\n        &mut base,\n        legacy_vue2,\n        dialect,\n        aliases.has_exposed_type,\n        (aliases.has_root_el, aliases.has_refs),\n    );\n    ts.push_str(\" & \");\n    ts.push_str(&base);\n    ts.push_str(\";\\n\");\n    if legacy_component {\n        ts.push_str(LEGACY_VUE2_COMPONENT_CONSTRUCTOR_STATICS);\n        ts.push_str(\n            \"type $ComponentConstructor = {\\n  new (...args: any[]): any;\\n  new (...args: any[]): $ComponentInstance;\\n} & $Vue2ComponentConstructorStatics;\\n\",\n        );\n    } else {\n        let mut props_ref = aliases\n            .generic_params\n            .map(|_| setup_props_plan.generic_fallback_component_props_type_ref())\n            .unwrap_or_else(|| setup_props_plan.component_props_type_ref().into());\n        if aliases.jsx_slots {\n            props_ref = cstr!(\"{props_ref} & {}<{slots}>\", declared(\"$JsxSlotProps\"));\n        }\n        let emit_props_ref = if aliases.has_emits_for_props {\n            let emit_props = crate::virtual_ts::helpers::shared_types::EMIT_PROPS\n                .select(aliases.hoist_shared_preamble);\n            cstr!(\"{emit_props}<{emits}>\")\n        } else {\n            String::from(\"{}\")\n        };\n        // `$ComponentInput` is a conditional on the authored type\n        // parameter, so the checker defers it instead of resolving the input\n        // shape while it checks the alias declaration. That matters because\n        // `$ComponentInputProps` reaches `$FallthroughAttrs`, whose\n        // `Omit<$DomListenerProps, ...>` distributes over the whole DOM\n        // event map: eagerly resolving it once per component made `vize check`\n        // ~6% slower on a 1000-file corpus, and every file that never\n        // instantiates the component paid it for nothing. Call sites still\n        // resolve the exact same intersection once `$AuthoredProps` is\n        // inferred, so the authored contract is unchanged.\n        // Constructor arguments (templates, `new`) bind `$AuthoredProps` and\n        // leave undeclared attributes to the consumer's own excess-property\n        // check; TSX binds `$JsxProps` and stays exact (#11629).\n        append!(\n            *ts,\n            \"type $ComponentConstructor = new <$AuthoredProps = unknown, $JsxProps = unknown>(props?: $AuthoredProps & $ComponentInput<{props_ref}, {emit_props_ref}, $AuthoredProps>, ...args: any[]) => $ComponentInstanceFor<$ComponentInstance, {own}, {base}"
+        }
+      ]
+    },
+    {
+      "path": "crates/vize_canon/src/virtual_ts/helpers/declarations/content-mapper-type-imports.d.ts.txt",
+      "before": {
+        "bytes": 1238,
+        "sha256": "24d7be5cadd447d3a8935e213258dd10161ccd112f585b9b3790bffdd77e646d"
+      },
+      "after": {
+        "bytes": 1258,
+        "sha256": "94c3b988a029e1b88eaff2a31860ab5dfc3682e30c985e8fbe3e2c8a5fbd7a05"
+      },
+      "edits": [
+        {
+          "before": "lKeys,\n  $",
+          "after": "lKeys,\n  $PatternSafeOmit,\n  $"
+        }
+      ]
+    },
+    {
+      "path": "crates/vize_canon/src/virtual_ts/helpers/declarations/emit-overloads.d.ts.txt",
+      "before": {
+        "bytes": 2535,
+        "sha256": "924bb683376f6c2ab3b9225cd6eff73328f8dfe4e87529a1c1a8068c03923e74"
+      },
+      "after": {
+        "bytes": 3488,
+        "sha256": "e49c7a2b6603230adcfa42ae7a27cd81265c25b5b62b678f374e5c3642e0bbc4"
+      },
+      "edits": [
+        {
+          "before": " `on${Capitalize<K>}`]?: T[K] };\ntype $ResolvedEmitProps<T, O = __EmitOptions<T>> = $EmitPropsFromOptions<O> & (string extends keyof O ? $EmitPropsFromOptions<$LiteralEmitOptions<T>> : {});\n",
+          "after": " `on${Capitalize<K>}`]?: T[K] };\ntype $ResolvedEmitProps<T, O = __EmitOptions<T>, L = $LiteralEmitOptions<T>> = $IsAny<T> extends true ? $EmitPropsFromOptions<O> : string extends keyof O ? [keyof L] extends [never] ? $EmitPropsFromOptions<O> : $EmitPropsFromOptions<O> & $EmitPropsFromOptions<L> : $EmitPropsFromOptions<O>;\n"
+        },
+        {
+          "before": "ParametersToFns<T extends any[]> = string extends T[0] ? { [K in string]: (...args: T extends [e: any, ...args: infer P] ? P : any[]) => any } : { [K in T[0]]: $IsStringLiteral<K> extends true ? (...args: T extends [e: infer E, ...args: infer P] ? K extends E ? P : never : never) => any : never };\ntype __EmitOptions<T, S = __EmitShape<T>> = { [K in keyof S as K extends string ? K : never]: (...args: __EmitArgs<S, K>) => any } & (__EmitShape<T> extends (...args: any[]) => any ? $ParametersToFns<$OverloadParameters<__EmitShape<T>>> : {});\ntype $Camelize<S extends string> = S extends `${infer Head}-${infer Tail}` ? `${Head}${Capitalize<$Camelize<Tail>>}` : S;\ntype $HandlerKey<K extends string> = `on${Capitalize<$Camelize<K>>}`",
+          "after": "LiteralParameterKeys<T extends any[]> = T extends unknown ? $IsStringLiteral<T[0]> extends true ? T[0] : never : never;\ntype $ParametersForKey<T extends any[], K> = T extends [e: infer E, ...args: infer P] ? $IsStringLiteral<E> extends true ? K extends E ? P : never : never : never;\ntype $LiteralParametersToFns<T extends any[]> = { [K in $LiteralParameterKeys<T>]: (...args: $ParametersForKey<T, K>) => any };\ntype $ParametersToFns<T extends any[]> = $LiteralParametersToFns<T> & (string extends T[0] ? { [K in string]: (...args: T extends [e: infer E, ...args: infer P] ? string extends E ? P : never : never) => any } : {});\ntype __EmitOptions<T, S = __EmitShape<T>> = { [K in keyof S as K extends string ? K : never]: (...args: __EmitArgs<S, K>) => any } & (__EmitShape<T> extends (...args: any[]) => any ? $ParametersToFns<$OverloadParameters<__EmitShape<T>>> : {});\ntype $LiteralEmitOptions<T, S = __EmitShape<T>> = S extends (...args: any[]) => any ? $LiteralParametersToFns<$OverloadParameters<S>> : {};\ntype $Camelize<S extends string> = S extends `${infer Head}-${infer Tail}` ? `${Head}${Capitalize<$Camelize<Tail>>}` : S;\ntype $HandlerKey<K extends string> = `on${Capitalize<$Camelize<K>>}`;\ntype $EmitPropsFromOptions<T> = { [K in keyof T & string as ($Camelize<K> extends keyof T ? string extends keyof T ? $HandlerKey<K> : never : $HandlerKey<K>) | `on${Capitalize<K>}`]?: T[K] };\ntype $ResolvedEmitProps<T, O = __EmitOptions<T>> = $EmitPropsFromOptions<O> & (string extends keyof O ? $EmitPropsFromOptions<$LiteralEmitOptions<T>> : {})"
+        }
+      ]
+    },
+    {
+      "path": "crates/vize_canon/src/virtual_ts/helpers/declarations/emit-props.d.ts.txt",
+      "before": {
+        "bytes": 242,
+        "sha256": "ede8a64664b4f16e139b909b77ce10fd911fa11164ed5eff53ad07b4bb1d4d30"
+      },
+      "after": {
+        "bytes": 45,
+        "sha256": "e54377ca91f2ba56f96d735c2116744e39b7c8c1559a387065e54272c40a8b22"
+      },
+      "edits": [
+        {
+          "before": "{ [K in keyof __EmitOptions<T> & string as ($Camelize<K> extends keyof __EmitOptions<T> ? string extends keyof __EmitOptions<T> ? $HandlerKey<K> : never : $HandlerKey<K>) | `on${Capitalize<K>}`]?: __EmitOptions<T>[K] }",
+          "after": "$ResolvedEmitProps<T>"
+        }
+      ]
+    },
+    {
+      "path": "crates/vize_canon/src/virtual_ts/helpers/declarations/shared-emit-props.d.ts.txt",
+      "before": {
+        "bytes": 288,
+        "sha256": "0be7660bf70badeb69a5f854649c752845f62153b6d58e5d286912119bbb6e4d"
+      },
+      "after": {
+        "bytes": 91,
+        "sha256": "c83105a95b0388668a8dfc7cddf628732a2ca610105b6862c0fc6d6667fd6c33"
+      },
+      "edits": [
+        {
+          "before": "{ [K in keyof __EmitOptions<T> & string as ($Camelize<K> extends keyof __EmitOptions<T> ? string extends keyof __EmitOptions<T> ? $HandlerKey<K> : never : $HandlerKey<K>) | `on${Capitalize<K>}`]?: __EmitOptions<T>[K] }",
+          "after": "$ResolvedEmitProps<T>"
+        }
+      ]
+    },
+    {
+      "path": "npm/cli/scripts/generate-content-mapper-types.ts",
+      "before": {
+        "bytes": 18736,
+        "sha256": "ffabac531fe547766e1e5913292b048c5478b831ad2bec8f84713b060c8987f5"
+      },
+      "after": {
+        "bytes": 19518,
+        "sha256": "3816091bdfc175db35e85f570095f792bfcf4c4decec9881d3440b429a63d1ce"
+      },
+      "edits": [
+        {
+          "before": "PublicBaseDeclaration = \"type $ComponentPublicBase<\";\nconst rawDeclarations = contents.join(\"\\n\").replaceAll(\"\\r\\n\", \"\\n\");\nassert.ok(\n  rawDeclarations.includes(`${componentPublicBaseIgnore}\\n${componentPublicBaseDeclaration}`),\n  \"component public fallback suppression must remain attached to its declaration\",\n);\nconst declarations = rawDeclarations.replace(\n  `${componentPublicBaseIgnore}\\n${componentPublicBaseDeclaration}`,\n  `${componentPublicBaseDeclaration}\\n${componentPublicBaseIgnore}\\n`",
+          "after": "CustomPropertiesIgnore =\n  \"// @ts-ignore TS2694/TS2307: a `vue` without `ComponentCustomProperties` must degrade component public extras to unchecked, never error.\";\nconst componentPublicBaseDeclaration = \"type $ComponentPublicBase<\";\nconst componentCustomPropertiesDefault = \"C = import('vue').ComponentCustomProperties\";\nconst rawDeclarations = contents.join(\"\\n\").replaceAll(\"\\r\\n\", \"\\n\");\nassert.ok(\n  rawDeclarations.includes(`${componentPublicBaseIgnore}\\n${componentPublicBaseDeclaration}`),\n  \"component public fallback suppression must remain attached to its declaration\",\n);\nassert.ok(\n  rawDeclarations.includes(componentCustomPropertiesDefault),\n  \"component custom properties fallback must remain part of the public base\",\n);\nconst declarations = rawDeclarations\n  .replace(\n    `${componentPublicBaseIgnore}\\n${componentPublicBaseDeclaration}`,\n    `${componentPublicBaseDeclaration}\\n${componentPublicBaseIgnore}\\n`,\n  )\n  .replace(\n    `, ${componentCustomPropertiesDefault}>`,\n    `,\\n${componentCustomPropertiesIgnore}\\n${componentCustomPropertiesDefault}>`,\n  );\nassert.ok(\n  declarations.includes(`${componentCustomPropertiesIgnore}\\n${componentCustomPropertiesDefault}`),\n  \"component custom properties fallback suppression must remain attached to its default\""
+        }
+      ]
+    },
+    {
+      "path": "npm/cli/generated/content-mapper-types.d.ts",
+      "before": {
+        "bytes": 11960,
+        "sha256": "0e6d163880471a51191587140ab5df0467247a253c6a951e65906737368a90aa"
+      },
+      "after": {
+        "bytes": 12471,
+        "sha256": "46249a8d8376f1cce15ceca1f226cc6fbb577bfe6cc078cf7182e552931b7dbe"
+      },
+      "edits": [
+        {
+          "before": "CustomProperties,\n> = $PatternSafeOmit<\n  I,\n  \"$props\" | \"$emit\" | \"$slots\",\n  C,\n  | \"$\"\n  | \"$data\"\n  | \"$attrs\"\n  | \"$refs\"\n  | \"$root\"\n  | \"$parent\"\n  | \"$",
+          "after": "CustomProperties,\n> = $PatternSafeOmit<\n  I,\n  \"$props\" | \"$emit\" | \"$slots\",\n  symbol extends keyof C ? {} : C,\n  | \"$\"\n  | \"$data\"\n  | \"$attrs\"\n  | \"$refs\"\n  | \"$root\"\n  | \"$parent\"\n  | \"$"
+        },
+        {
+          "before": "T, Declared, Authored, Jsx> =\n  $IsAny<Authored> extends true\n    ? I\n    : $IsUnknown<Authored> extends true\n      ? $UsePublicInstance<Jsx> extends true\n        ? I\n        : $ReplaceComponentProps<\n            I,\n            Pick<\n              $AuthoredKeyWitness<Jsx>,\n              keyof Jsx & $ComponentMetadataKeys<$ComponentInputProps<T, Declared>>\n            > &\n              (T extends unknown\n                ? $ComponentInputProps<T, Declared> & $ComponentInputGuard<T, Declared, Jsx>\n                : never)\n          >\n      : $ReplaceComponentProps<\n          I,\n          $ComponentInputProps<T, Declared> & $ComponentMissingInputGuard<T, Authored>\n        >;\ntype $IsUnknown<T> = unknown extends T ? ([keyof T] extends [never] ? true : false) : false;\ntype $UsePublicInstance<T> = $IsAny<T> extends true ? true : $IsUnknown<T>;\ntype $LiteralKeys<T> = keyof {\n  [\n    K in keyof T as K extends string\n      ? string extends K\n        ? never\n        : K extends `$${infer R}`\n          ? string extends R\n            ? never\n            : K\n          : K\n      : number extends K\n        ? never\n        : symbol extends K\n          ? never\n          : K\n  ]: unknown;\n};\ntype $ReplaceComponentProps<T, P> = Omit<T, \"$props\"> &\n  Pick<T, Exclude<$LiteralKeys<T>, \"$props\">> & { $props: P };\ntype $PublicEmit<T, S = __EmitShape<T>, K extends keyof S & string = keyof S & string> = S extends (\n  ...args: any[]\n) => any\n  ? S\n  : [K] extends [never]\n    ? (event: string, ...args: any[]) => void\n    : __EmitFn<T>;\ntype $PublicSlots<T> = [keyof T] extends [never]\n  ? import(\"vue\").ComponentPublicInstance[\"$slots\"]\n  : T;\ntype $ComponentPublicBase<\n  // @ts-ignore TS2694/TS2307: a `vue` without `ComponentPublicInstance` must degrade component public extras to unchecked, never error.\n  I = import(\"vue\").ComponentPublicInstance,\n> = Omit<I, \"$props\" | \"$emit\" | \"$slots\"> &\n  Pick<I, Exclude<$LiteralKeys<I>, \"$props\" | \"$emit\" | \"$slots\">>;\n\nexport type {\n  __EmitShape,\n  __EmitArgs,\n  __EmitFn,\n  __RuntimePropValue,\n  __RuntimePropCtorInner,\n  __RuntimePropCtor,\n  __RuntimePropHasBoolean,\n  __RuntimePropResolved,\n  __RuntimePropShape,\n  $IsAny,\n  __LooseRequired,\n  $BooleanKey,\n  __DefineProps,\n  $IfAny,\n  $NotUndefined,\n  $MappedOmit,\n  $DefaultNativeType,\n  $InferDefault,\n  __WithDefaultsArgs,\n  __WithDefaultsResult,\n  __Ref,\n  __ShallowRef,\n  $KebabCase,\n  $KebabProps,\n  $RequiredKeys,\n  $DomListenerProps,\n  $FallthroughAttrs,\n  $PublicComponentInputProps,\n  $ComponentMetadataKeys,\n  $ComponentOwnKeys,\n  $UnownedComponentAttrs,\n  $Prettify,\n  $ComponentFallthroughSurface,\n  $ComponentFallthroughProps,\n  $ComponentInputProps,\n  $MissingRequiredInputKeys,\n  $IsPropKeyUnion,\n  $IsSinglePropKey,\n  $RelaxedDynamicUnionExtra,\n  $ExtraInputKeys,\n  $ComponentMissingInputGuard,\n  $ComponentInputGuardFor,\n  $ComponentInputGuard,\n  $ComponentInputFor,\n  $ComponentInput,\n  $AuthoredKeyWitness,\n  $ComponentInstanceFor,\n  $IsUnknown,\n  $UsePublicInstance,\n  $LiteralKeys",
+          "after": "O, B, T, Declared, Authored, Jsx> =\n  $IsAny<Authored> extends true\n    ? I\n    : $IsUnknown<Authored> extends true\n      ? $UsePublicInstance<Jsx> extends true\n        ? I\n        : $ReplaceComponentProps<\n            O,\n            Pick<\n              $AuthoredKeyWitness<Jsx>,\n              keyof Jsx & $ComponentMetadataKeys<$ComponentInputProps<T, Declared>>\n            > &\n              (T extends unknown\n                ? $ComponentInputProps<T, Declared> & $ComponentInputGuard<T, Declared, Jsx>\n                : never)\n          > &\n            B\n      : $ReplaceComponentProps<\n          O,\n          $ComponentInputProps<T, Declared> & $ComponentMissingInputGuard<T, Authored>\n        > &\n          B;\ntype $IsUnknown<T> = unknown extends T ? ([keyof T] extends [never] ? true : false) : false;\ntype $UsePublicInstance<T> = $IsAny<T> extends true ? true : $IsUnknown<T>;\ntype $LiteralKeys<T> = keyof {\n  [\n    K in keyof T as K extends string\n      ? string extends K\n        ? never\n        : K extends `$${infer R}`\n          ? string extends R\n            ? never\n            : K\n          : K\n      : number extends K\n        ? never\n        : symbol extends K\n          ? never\n          : K\n  ]: unknown;\n};\ntype $PatternSafeOmit<\n  T,\n  K extends PropertyKey,\n  B = Omit<T, K>,\n  L extends PropertyKey = $LiteralKeys<T>,\n> = B & Pick<T, Extract<Exclude<L, K>, keyof T>>;\ntype $ReplaceComponentProps<T, P> = $PatternSafeOmit<T, \"$props\"> & { $props: P };\ntype $PublicEmit<T, S = __EmitShape<T>, K extends keyof S & string = keyof S & string> = S extends (\n  ...args: any[]\n) => any\n  ? S\n  : [K] extends [never]\n    ? (event: string, ...args: any[]) => void\n    : __EmitFn<T>;\ntype $PublicSlots<T> = [keyof T] extends [never]\n  ? import(\"vue\").ComponentPublicInstance[\"$slots\"]\n  : T;\ntype $ComponentPublicBase<\n  // @ts-ignore TS2694/TS2307: a `vue` without `ComponentPublicInstance` must degrade component public extras to unchecked, never error.\n  I = import(\"vue\").ComponentPublicInstance,\n  // @ts-ignore TS2694/TS2307: a `vue` without `ComponentCustomProperties` must degrade component public extras to unchecked, never error.\n  C = import(\"vue\").ComponentCustomProperties,\n> = $PatternSafeOmit<\n  I,\n  \"$props\" | \"$emit\" | \"$slots\",\n  C,\n  | \"$\"\n  | \"$data\"\n  | \"$attrs\"\n  | \"$refs\"\n  | \"$root\"\n  | \"$parent\"\n  | \"$host\"\n  | \"$el\"\n  | \"$options\"\n  | \"$forceUpdate\"\n  | \"$nextTick\"\n  | \"$watch\"\n>;\n\nexport type {\n  __EmitShape,\n  __EmitArgs,\n  __EmitFn,\n  __RuntimePropValue,\n  __RuntimePropCtorInner,\n  __RuntimePropCtor,\n  __RuntimePropHasBoolean,\n  __RuntimePropResolved,\n  __RuntimePropShape,\n  $IsAny,\n  __LooseRequired,\n  $BooleanKey,\n  __DefineProps,\n  $IfAny,\n  $NotUndefined,\n  $MappedOmit,\n  $DefaultNativeType,\n  $InferDefault,\n  __WithDefaultsArgs,\n  __WithDefaultsResult,\n  __Ref,\n  __ShallowRef,\n  $KebabCase,\n  $KebabProps,\n  $RequiredKeys,\n  $DomListenerProps,\n  $FallthroughAttrs,\n  $PublicComponentInputProps,\n  $ComponentMetadataKeys,\n  $ComponentOwnKeys,\n  $UnownedComponentAttrs,\n  $Prettify,\n  $ComponentFallthroughSurface,\n  $ComponentFallthroughProps,\n  $ComponentInputProps,\n  $MissingRequiredInputKeys,\n  $IsPropKeyUnion,\n  $IsSinglePropKey,\n  $RelaxedDynamicUnionExtra,\n  $ExtraInputKeys,\n  $ComponentMissingInputGuard,\n  $ComponentInputGuardFor,\n  $ComponentInputGuard,\n  $ComponentInputFor,\n  $ComponentInput,\n  $AuthoredKeyWitness,\n  $ComponentInstanceFor,\n  $IsUnknown,\n  $UsePublicInstance,\n  $LiteralKeys,\n  $PatternSafeOmit"
+        }
+      ]
+    },
+    {
+      "path": "npm/cli/virtual-ts-emit-overloads.d.ts",
+      "before": {
+        "bytes": 3511,
+        "sha256": "a48dd34f5cbcfa8078d88d7c915d1024225e6cb2b708e843b490b131299d3cec"
+      },
+      "after": {
+        "bytes": 4734,
+        "sha256": "0b669c394a0d5c58d90090749321cf650594d6a5be74e72ed7a2797840e49268"
+      },
+      "edits": [
+        {
+          "before": "talize<K>}`\n    ]?: T[K];\n  };\n  type $ResolvedEmitProps<T, O = __EmitOptions<T>> = $EmitPropsFromOptions<O> &\n    (string extends keyof O ? $EmitPropsFromOptions<$LiteralEmitOptions<T>> : {});\n}\n\nexport {};\n",
+          "after": "talize<K>}`\n    ]?: T[K];\n  };\n  type $ResolvedEmitProps<T, O = __EmitOptions<T>, L = $LiteralEmitOptions<T>> =\n    $IsAny<T> extends true\n      ? $EmitPropsFromOptions<O>\n      : string extends keyof O\n        ? [keyof L] extends [never]\n          ? $EmitPropsFromOptions<O>\n          : $EmitPropsFromOptions<O> & $EmitPropsFromOptions<L>\n        : $EmitPropsFromOptions<O>;\n}\n\nexport {};\n"
+        },
+        {
+          "before": "ParametersToFns<T extends any[]> = string extends T[0]\n    ? { [K in string]: (...args: T extends [e: any, ...args: infer P] ? P : any[]) => any }\n    : {\n        [K in T[0]]: $IsStringLiteral<K> extends true\n          ? (\n              ...args: T extends [e: infer E, ...args: infer P] ? (K extends E ? P : never) : never\n            ) => any\n          : never;\n      };\n  type __EmitOptions<T, S = __EmitShape<T>> = {\n    [K in keyof S as K extends string ? K : never]: (...args: __EmitArgs<S, K>) => any;\n  } & (__EmitShape<T> extends (...args: any[]) => any\n    ? $ParametersToFns<$OverloadParameters<__EmitShape<T>>>\n    : {});\n  type $Camelize<S extends string> = S extends `${infer Head}-${infer Tail}`\n    ? `${Head}${Capitalize<$Camelize<Tail>>}`\n    : S;\n  type $HandlerKey<K extends string> = `on${Capitalize<$Camelize<K>>}`",
+          "after": "LiteralParameterKeys<T extends any[]> = T extends unknown\n    ? $IsStringLiteral<T[0]> extends true\n      ? T[0]\n      : never\n    : never;\n  type $ParametersForKey<T extends any[], K> = T extends [e: infer E, ...args: infer P]\n    ? $IsStringLiteral<E> extends true\n      ? K extends E\n        ? P\n        : never\n      : never\n    : never;\n  type $LiteralParametersToFns<T extends any[]> = {\n    [K in $LiteralParameterKeys<T>]: (...args: $ParametersForKey<T, K>) => any;\n  };\n  type $ParametersToFns<T extends any[]> = $LiteralParametersToFns<T> &\n    (string extends T[0]\n      ? {\n          [K in string]: (\n            ...args: T extends [e: infer E, ...args: infer P]\n              ? string extends E\n                ? P\n                : never\n              : never\n          ) => any;\n        }\n      : {});\n  type __EmitOptions<T, S = __EmitShape<T>> = {\n    [K in keyof S as K extends string ? K : never]: (...args: __EmitArgs<S, K>) => any;\n  } & (__EmitShape<T> extends (...args: any[]) => any\n    ? $ParametersToFns<$OverloadParameters<__EmitShape<T>>>\n    : {});\n  type $LiteralEmitOptions<T, S = __EmitShape<T>> = S extends (...args: any[]) => any\n    ? $LiteralParametersToFns<$OverloadParameters<S>>\n    : {};\n  type $Camelize<S extends string> = S extends `${infer Head}-${infer Tail}`\n    ? `${Head}${Capitalize<$Camelize<Tail>>}`\n    : S;\n  type $HandlerKey<K extends string> = `on${Capitalize<$Camelize<K>>}`;\n  type $EmitPropsFromOptions<T> = {\n    [\n      K in keyof T & string as\n        | ($Camelize<K> extends keyof T\n            ? string extends keyof T\n              ? $HandlerKey<K>\n              : never\n            : $HandlerKey<K>)\n        | `on${Capitalize<K>}`\n    ]?: T[K];\n  };\n  type $ResolvedEmitProps<T, O = __EmitOptions<T>> = $EmitPropsFromOptions<O> &\n    (string extends keyof O ? $EmitPropsFromOptions<$LiteralEmitOptions<T>> : {})"
+        }
+      ]
+    },
+    {
+      "path": "npm/cli/virtual-ts-globals.d.ts",
+      "before": {
+        "bytes": 17000,
+        "sha256": "f9e13dfcbbb3e719055570a6b13128720b01a29c2ffe4044a8d16613acc3b4d2"
+      },
+      "after": {
+        "bytes": 17539,
+        "sha256": "f478b29b50fa585df10ae616e6f1f996434c570f332feabbc47200e87fa70d1a"
+      },
+      "edits": [
+        {
+          "before": "operties,\n  > = $PatternSafeOmit<\n    I,\n    \"$props\" | \"$emit\" | \"$slots\",\n    C,\n    | \"$\"\n    | \"$data\"\n    | \"$attrs\"\n    | \"$refs\"\n    | \"$root\"\n    | \"$pa",
+          "after": "operties,\n  > = $PatternSafeOmit<\n    I,\n    \"$props\" | \"$emit\" | \"$slots\",\n    symbol extends keyof C ? {} : C,\n    | \"$\"\n    | \"$data\"\n    | \"$attrs\"\n    | \"$refs\"\n    | \"$root\"\n    | \"$pa"
+        },
+        {
+          "before": "ReplaceComponentProps<T, P> = Omit<T, \"$props\"> &\n    Pick<T, Exclude<$LiteralKeys<T>, \"$props\">> & { $props: P };\n  type $PublicEmit<\n    T,\n    S = __EmitShape<T>,\n    K extends keyof S & string = keyof S & string,\n  > = S extends (...args: any[]) => any\n    ? S\n    : [K] extends [never]\n      ? (event: string, ...args: any[]) => void\n      : __EmitFn<T>;\n  type $PublicSlots<T> = [keyof T] extends [never]\n    ? import(\"vue\").ComponentPublicInstance[\"$slots\"]\n    : T;\n  type $ComponentPublicBase<\n    // @ts-ignore TS2694/TS2307: a `vue` without `ComponentPublicInstance` must degrade component public extras to unchecked, never error.\n    I = import(\"vue\").ComponentPublicInstance,\n  > = Omit<I, \"$props\" | \"$emit\" | \"$slots\"> &\n    Pick<I, Exclude<$LiteralKeys<I>, \"$props\" | \"$emit\" | \"$slots\">",
+          "after": "PatternSafeOmit<\n    T,\n    K extends PropertyKey,\n    B = Omit<T, K>,\n    L extends PropertyKey = $LiteralKeys<T>,\n  > = B & Pick<T, Extract<Exclude<L, K>, keyof T>>;\n  type $ReplaceComponentProps<T, P> = $PatternSafeOmit<T, \"$props\"> & { $props: P };\n  type $PublicEmit<\n    T,\n    S = __EmitShape<T>,\n    K extends keyof S & string = keyof S & string,\n  > = S extends (...args: any[]) => any\n    ? S\n    : [K] extends [never]\n      ? (event: string, ...args: any[]) => void\n      : __EmitFn<T>;\n  type $PublicSlots<T> = [keyof T] extends [never]\n    ? import(\"vue\").ComponentPublicInstance[\"$slots\"]\n    : T;\n  type $ComponentPublicBase<\n    // @ts-ignore TS2694/TS2307: a `vue` without `ComponentPublicInstance` must degrade component public extras to unchecked, never error.\n    I = import(\"vue\").ComponentPublicInstance,\n    // @ts-ignore TS2694/TS2307: a `vue` without `ComponentCustomProperties` must degrade component public extras to unchecked, never error.\n    C = import(\"vue\").ComponentCustomProperties,\n  > = $PatternSafeOmit<\n    I,\n    \"$props\" | \"$emit\" | \"$slots\",\n    C,\n    | \"$\"\n    | \"$data\"\n    | \"$attrs\"\n    | \"$refs\"\n    | \"$root\"\n    | \"$parent\"\n    | \"$host\"\n    | \"$el\"\n    | \"$options\"\n    | \"$forceUpdate\"\n    | \"$nextTick\"\n    | \"$watch\"\n  "
+        },
+        {
+          "before": "type $ComponentInstanceFor<I, T, Declared, Authored, Jsx> =\n    $IsAny<Authored> extends true\n      ? I\n      : $IsUnknown<Authored> extends true\n        ? $UsePublicInstance<Jsx> extends true\n          ? I\n          : $ReplaceComponentProps<\n              I,\n              Pick<\n                $AuthoredKeyWitness<Jsx>,\n                keyof Jsx & $ComponentMetadataKeys<$ComponentInputProps<T, Declared>>\n              > &\n                (T extends unknown\n                  ? $ComponentInputProps<T, Declared> & $ComponentInputGuard<T, Declared, Jsx>\n                  : never)\n            >\n        : $ReplaceComponentProps<\n            I,\n            $ComponentInputProps<T, Declared> & $ComponentMissingInputGuard<T, Authored>\n          >;\n",
+          "after": "type $ComponentInstanceFor<I, O, B, T, Declared, Authored, Jsx> =\n    $IsAny<Authored> extends true\n      ? I\n      : $IsUnknown<Authored> extends true\n        ? $UsePublicInstance<Jsx> extends true\n          ? I\n          : $ReplaceComponentProps<\n              O,\n              Pick<\n                $AuthoredKeyWitness<Jsx>,\n                keyof Jsx & $ComponentMetadataKeys<$ComponentInputProps<T, Declared>>\n              > &\n                (T extends unknown\n                  ? $ComponentInputProps<T, Declared> & $ComponentInputGuard<T, Declared, Jsx>\n                  : never)\n            > &\n              B\n        : $ReplaceComponentProps<\n            O,\n            $ComponentInputProps<T, Declared> & $ComponentMissingInputGuard<T, Authored>\n          > &\n            B;\n"
+        }
+      ]
+    },
+    {
+      "path": "npm/cli/virtual-ts.d.cts",
+      "before": {
+        "bytes": 15357,
+        "sha256": "d2afee78f759b85aa1b227caf4bd0b6f9fef54671e0c6e5f7c89f40c9b12cd6e"
+      },
+      "after": {
+        "bytes": 15091,
+        "sha256": "77e6e079f845e76ae1694ab142deb2bd4b253599d21c0ecd36038f5142775f05"
+      },
+      "edits": [
+        {
+          "before": "{\n  [\n    K in keyof __EmitOptions<T> & string as\n      | ($Camelize<K> extends keyof __EmitOptions<T>\n          ? string extends keyof __EmitOptions<T>\n            ? $HandlerKey<K>\n            : never\n          : $HandlerKey<K>)\n      | `on${Capitalize<K>}`\n  ]?: __EmitOptions<T>[K];\n}",
+          "after": "$ResolvedEmitProps<T>"
+        }
+      ]
+    },
+    {
+      "path": "npm/cli/virtual-ts.d.mts",
+      "before": {
+        "bytes": 15357,
+        "sha256": "d2afee78f759b85aa1b227caf4bd0b6f9fef54671e0c6e5f7c89f40c9b12cd6e"
+      },
+      "after": {
+        "bytes": 15091,
+        "sha256": "77e6e079f845e76ae1694ab142deb2bd4b253599d21c0ecd36038f5142775f05"
+      },
+      "edits": [
+        {
+          "before": "{\n  [\n    K in keyof __EmitOptions<T> & string as\n      | ($Camelize<K> extends keyof __EmitOptions<T>\n          ? string extends keyof __EmitOptions<T>\n            ? $HandlerKey<K>\n            : never\n          : $HandlerKey<K>)\n      | `on${Capitalize<K>}`\n  ]?: __EmitOptions<T>[K];\n}",
+          "after": "$ResolvedEmitProps<T>"
+        }
+      ]
+    },
+    {
+      "path": "npm/cli/virtual-ts.d.ts",
+      "before": {
+        "bytes": 15357,
+        "sha256": "d2afee78f759b85aa1b227caf4bd0b6f9fef54671e0c6e5f7c89f40c9b12cd6e"
+      },
+      "after": {
+        "bytes": 15091,
+        "sha256": "77e6e079f845e76ae1694ab142deb2bd4b253599d21c0ecd36038f5142775f05"
+      },
+      "edits": [
+        {
+          "before": "{\n  [\n    K in keyof __EmitOptions<T> & string as\n      | ($Camelize<K> extends keyof __EmitOptions<T>\n          ? string extends keyof __EmitOptions<T>\n            ? $HandlerKey<K>\n            : never\n          : $HandlerKey<K>)\n      | `on${Capitalize<K>}`\n  ]?: __EmitOptions<T>[K];\n}",
+          "after": "$ResolvedEmitProps<T>"
+        }
+      ]
+    }
+  ],
+  "compiledPreamble": {
+    "path": "vize_canon::virtual_ts::SHARED_PREAMBLE_DTS",
+    "before": {
+      "bytes": 47722,
+      "sha256": "34d04a1c79037c2bfdc6a43d6d005f33dc11abb4ff5237d086c332dc2e506ec6"
+    },
+    "after": {
+      "bytes": 48765,
+      "sha256": "6736ed0e3285ff4fb0e10994442a45c2d4d2fcbfdbb3df5d88532d91cd6bf8e7"
+    },
+    "edits": [
+      {
+        "before": "ComponentCustomProperties> = $PatternSafeOmit<I, '$props' | '$emit' | '$slots', C, '$' | '$data' | '$attrs' | '$refs' | '$root' | '$parent' | '$host' | '$el' | ",
+        "after": "ComponentCustomProperties> = $PatternSafeOmit<I, '$props' | '$emit' | '$slots', symbol extends keyof C ? {} : C, '$' | '$data' | '$attrs' | '$refs' | '$root' | '$parent' | '$host' | '$el' | "
+      },
+      {
+        "before": "T, Declared, Authored, Jsx> = $IsAny<Authored> extends true ? I : $IsUnknown<Authored> extends true ? $UsePublicInstance<Jsx> extends true ? I : $ReplaceComponentProps<I, Pick<$AuthoredKeyWitness<Jsx>, keyof Jsx & $ComponentMetadataKeys<$ComponentInputProps<T, Declared>>> & (T extends unknown ? $ComponentInputProps<T, Declared> & $ComponentInputGuard<T, Declared, Jsx> : never)> : $ReplaceComponentProps<I, $ComponentInputProps<T, Declared> & $ComponentMissingInputGuard<T, Authored>>;\ntype $IsUnknown<T> = unknown extends T ? [keyof T] extends [never] ? true : false : false;\ntype $UsePublicInstance<T> = $IsAny<T> extends true ? true : $IsUnknown<T>;\ntype $LiteralKeys<T> = keyof { [K in keyof T as K extends string ? string extends K ? never : K extends `$${infer R}` ? string extends R ? never : K : K : number extends K ? never : symbol extends K ? never : K]: unknown };\ntype $ReplaceComponentProps<T, P> = Omit<T, '$props'> & Pick<T, Exclude<$LiteralKeys<T>, '$props'>> & { $props: P };\ntype $PublicEmit<T, S = __EmitShape<T>, K extends keyof S & string = keyof S & string> = S extends (...args: any[]) => any ? S : [K] extends [never] ? (event: string, ...args: any[]) => void : __EmitFn<T>;\ntype $PublicSlots<T> = [keyof T] extends [never] ? import('vue').ComponentPublicInstance['$slots'] : T;\n// @ts-ignore TS2694/TS2307: a `vue` without `ComponentPublicInstance` must degrade component public extras to unchecked, never error.\ntype $ComponentPublicBase<I = import('vue').ComponentPublicInstance> = Omit<I, '$props' | '$emit' | '$slots'> & Pick<I, Exclude<$LiteralKeys<I>, '$props' | '$emit' | '$slots'>",
+        "after": "O, B, T, Declared, Authored, Jsx> = $IsAny<Authored> extends true ? I : $IsUnknown<Authored> extends true ? $UsePublicInstance<Jsx> extends true ? I : $ReplaceComponentProps<O, Pick<$AuthoredKeyWitness<Jsx>, keyof Jsx & $ComponentMetadataKeys<$ComponentInputProps<T, Declared>>> & (T extends unknown ? $ComponentInputProps<T, Declared> & $ComponentInputGuard<T, Declared, Jsx> : never)> & B : $ReplaceComponentProps<O, $ComponentInputProps<T, Declared> & $ComponentMissingInputGuard<T, Authored>> & B;\ntype $IsUnknown<T> = unknown extends T ? [keyof T] extends [never] ? true : false : false;\ntype $UsePublicInstance<T> = $IsAny<T> extends true ? true : $IsUnknown<T>;\ntype $LiteralKeys<T> = keyof { [K in keyof T as K extends string ? string extends K ? never : K extends `$${infer R}` ? string extends R ? never : K : K : number extends K ? never : symbol extends K ? never : K]: unknown };\ntype $PatternSafeOmit<T, K extends PropertyKey, B = Omit<T, K>, L extends PropertyKey = $LiteralKeys<T>> = B & Pick<T, Extract<Exclude<L, K>, keyof T>>;\ntype $ReplaceComponentProps<T, P> = $PatternSafeOmit<T, '$props'> & { $props: P };\ntype $PublicEmit<T, S = __EmitShape<T>, K extends keyof S & string = keyof S & string> = S extends (...args: any[]) => any ? S : [K] extends [never] ? (event: string, ...args: any[]) => void : __EmitFn<T>;\ntype $PublicSlots<T> = [keyof T] extends [never] ? import('vue').ComponentPublicInstance['$slots'] : T;\n// @ts-ignore TS2694/TS2307: a `vue` without `ComponentPublicInstance` must degrade component public extras to unchecked, never error.\ntype $ComponentPublicBase<I = import('vue').ComponentPublicInstance, C = import('vue').ComponentCustomProperties> = $PatternSafeOmit<I, '$props' | '$emit' | '$slots', C, '$' | '$data' | '$attrs' | '$refs' | '$root' | '$parent' | '$host' | '$el' | '$options' | '$forceUpdate' | '$nextTick' | '$watch'"
+      },
+      {
+        "before": " `on${Capitalize<K>}`]?: T[K] };\ntype $ResolvedEmitProps<T, O = __EmitOptions<T>> = $EmitPropsFromOptions<O> & (string extends keyof O ? $EmitPropsFromOptions<$LiteralEmitOptions<T>> : {});\n",
+        "after": " `on${Capitalize<K>}`]?: T[K] };\ntype $ResolvedEmitProps<T, O = __EmitOptions<T>, L = $LiteralEmitOptions<T>> = $IsAny<T> extends true ? $EmitPropsFromOptions<O> : string extends keyof O ? [keyof L] extends [never] ? $EmitPropsFromOptions<O> : $EmitPropsFromOptions<O> & $EmitPropsFromOptions<L> : $EmitPropsFromOptions<O>;\n"
+      },
+      {
+        "before": "ParametersToFns<T extends any[]> = string extends T[0] ? { [K in string]: (...args: T extends [e: any, ...args: infer P] ? P : any[]) => any } : { [K in T[0]]: $IsStringLiteral<K> extends true ? (...args: T extends [e: infer E, ...args: infer P] ? K extends E ? P : never : never) => any : never };\ntype __EmitOptions<T, S = __EmitShape<T>> = { [K in keyof S as K extends string ? K : never]: (...args: __EmitArgs<S, K>) => any } & (__EmitShape<T> extends (...args: any[]) => any ? $ParametersToFns<$OverloadParameters<__EmitShape<T>>> : {});\ntype $Camelize<S extends string> = S extends `${infer Head}-${infer Tail}` ? `${Head}${Capitalize<$Camelize<Tail>>}` : S;\ntype $HandlerKey<K extends string> = `on${Capitalize<$Camelize<K>>}`",
+        "after": "LiteralParameterKeys<T extends any[]> = T extends unknown ? $IsStringLiteral<T[0]> extends true ? T[0] : never : never;\ntype $ParametersForKey<T extends any[], K> = T extends [e: infer E, ...args: infer P] ? $IsStringLiteral<E> extends true ? K extends E ? P : never : never : never;\ntype $LiteralParametersToFns<T extends any[]> = { [K in $LiteralParameterKeys<T>]: (...args: $ParametersForKey<T, K>) => any };\ntype $ParametersToFns<T extends any[]> = $LiteralParametersToFns<T> & (string extends T[0] ? { [K in string]: (...args: T extends [e: infer E, ...args: infer P] ? string extends E ? P : never : never) => any } : {});\ntype __EmitOptions<T, S = __EmitShape<T>> = { [K in keyof S as K extends string ? K : never]: (...args: __EmitArgs<S, K>) => any } & (__EmitShape<T> extends (...args: any[]) => any ? $ParametersToFns<$OverloadParameters<__EmitShape<T>>> : {});\ntype $LiteralEmitOptions<T, S = __EmitShape<T>> = S extends (...args: any[]) => any ? $LiteralParametersToFns<$OverloadParameters<S>> : {};\ntype $Camelize<S extends string> = S extends `${infer Head}-${infer Tail}` ? `${Head}${Capitalize<$Camelize<Tail>>}` : S;\ntype $HandlerKey<K extends string> = `on${Capitalize<$Camelize<K>>}`;\ntype $EmitPropsFromOptions<T> = { [K in keyof T & string as ($Camelize<K> extends keyof T ? string extends keyof T ? $HandlerKey<K> : never : $HandlerKey<K>) | `on${Capitalize<K>}`]?: T[K] };\ntype $ResolvedEmitProps<T, O = __EmitOptions<T>> = $EmitPropsFromOptions<O> & (string extends keyof O ? $EmitPropsFromOptions<$LiteralEmitOptions<T>> : {})"
+      },
+      {
+        "before": "{ [K in keyof __EmitOptions<T> & string as ($Camelize<K> extends keyof __EmitOptions<T> ? string extends keyof __EmitOptions<T> ? $HandlerKey<K> : never : $HandlerKey<K>) | `on${Capitalize<K>}`]?: __EmitOptions<T>[K] }",
+        "after": "$ResolvedEmitProps<T>"
+      }
+    ]
+  }
+}

@@ -95,8 +95,9 @@ function generate(scan: WorkspaceScan): string {
   );
 
   // Group 1 citations: content reads, anchored on the current consumer
-  // expression. Codegen uses the node's existing content; the other named
-  // consumers still slice their source through Span.
+  // expression. Codegen uses the node's existing content, Patina consumes the
+  // L1 decoded template projection, and the remaining named consumers still
+  // slice their source through Span.
   const g1Codegen = citeAnchor(
     "crates/vize_atelier_core/src/codegen/expression/generate.rs",
     /^\s*let content = &simple\.content;$/,
@@ -107,7 +108,7 @@ function generate(scan: WorkspaceScan): string {
   );
   const g1Patina = citeAnchor(
     "crates/vize_patina/src/rules/script/template_scan.rs",
-    /span\.slice\(source\)/,
+    /DecodedSource::interpolation\(self\.root\.source, &interpolation\.content\)/,
   );
   const g1Vapor = citeAnchor(
     "crates/vize_atelier_vapor/src/steps/v_on.rs",

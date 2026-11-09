@@ -38,8 +38,11 @@ function semverArgs(crate: string, runnerTemp: string, baselineDir: string): str
   const baselineRev = baselineRevision();
   const marker = fs.readFileSync(path.join(runnerTemp, "semver-change-marker.txt"), "utf8");
   const args = breakingMarker.test(marker) ? ["--release-type", "major"] : [];
-  const helper = ["tools/commands/ci/github/semver-baseline.rs", crate, baselineDir];
-  const baseline = capture("rust-script", baselineRev ? [...helper, baselineRev] : helper);
+  const helper = ["tools/commands/ci/github/semver-baseline.ts", crate, baselineDir];
+  const baseline = capture(
+    process.env.VIZE_SEMVER_NODE ?? "node",
+    baselineRev ? [...helper, baselineRev] : helper,
+  );
   if (baseline.status !== 0) return baseline.status;
   if (baseline.stdout) args.push("--baseline-root", baseline.stdout);
   else if (baselineRev) args.push("--baseline-rev", baselineRev);

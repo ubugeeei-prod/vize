@@ -1,14 +1,15 @@
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
-import { readFileSync, readdirSync } from "node:fs";
+import { readFileSync, readdirSync, statSync } from "node:fs";
 export const ownerVariable = "ADMISSION_PROCESS_OWNER";
-export type KernelIdentity = { pid: number; startTicks: string; state: string };
+export type KernelIdentity = { pid: number; startTicks: string; state: string; uid?: number };
 export type ProcessIdentity = {
   pid: number;
   ppid: number;
   group: number;
   startTicks: string;
   state: string;
+  uid?: number;
   ownerMarker: boolean;
   kernelBefore?: KernelIdentity;
   kernelAfter?: KernelIdentity;
@@ -38,6 +39,7 @@ export function observationDisposition(
   before?: KernelIdentity,
   after?: KernelIdentity,
 ) {
+  const currentUid = typeof process.geteuid === "function" ? process.geteuid() : undefined;
   const scope = !identity
     ? "identity-unverified"
     : identity.ownerMarker || owned.has(key(identity))
@@ -46,11 +48,16 @@ export function observationDisposition(
         : "known-owned"
       : baseline.has(key(identity))
         ? "preexisting-unrelated"
-        : "ownership-unclassified";
+        : identity.uid !== undefined &&
+            currentUid !== undefined &&
+            currentUid !== 0 &&
+            identity.uid !== currentUid
+          ? "foreign-user-unrelated"
+          : "ownership-unclassified";
   return {
     scope,
     excluded:
-      ["preexisting-unrelated", "known-terminal"].includes(scope) &&
+      ["preexisting-unrelated", "foreign-user-unrelated", "known-terminal"].includes(scope) &&
       ["EACCES", "EPERM"].includes(code ?? ""),
   };
 }
@@ -67,6 +74,7 @@ export function linuxIdentity(name: string) {
     group: Number(fields[2]),
     startTicks: fields[19],
     state: fields[0],
+    uid: statSync("/proc/" + name).uid,
     ownerMarker: false,
   };
 }

@@ -33,7 +33,11 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
         // `vue/no-dupe-v-else-if`, `vue/no-mutating-props`, etc. — can't be
         // suppressed. (#968, #1196)
         self.ctx.record_callback_site(CallbackSite::Prescan);
-        self.prescan_suppression_directives(root);
+        if let Some(directives) = self.template_directives {
+            directives.prescan(self.ctx);
+        } else {
+            self.prescan_suppression_directives(root);
+        }
 
         // Run template-level checks under one profiling span. Rule dispatch
         // happens for every file, so profiling once around the callback batch is
