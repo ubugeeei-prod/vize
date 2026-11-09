@@ -2,7 +2,7 @@
  * Tree Component - Tree view for hierarchical data
  */
 
-import { computed, defineComponent, h, ref, type PropType, watch } from "vue";
+import { computed, defineComponent, h, ref, toRaw, type PropType, type VNode, watch } from "vue";
 import { useInput } from "../composables/useInput.js";
 import {
   adjacentEnabledIndex,
@@ -10,25 +10,42 @@ import {
   firstEnabledIndex,
   lastEnabledIndex,
   typeaheadIndex,
+  visibleCollectionOffset,
 } from "./collection-navigation.js";
+import {
+  collectionValuesEqual,
+  type CollectionBy,
+  type CollectionValueKey,
+  type RuntimeCollectionBy,
+} from "./collection-values.js";
 
-export interface TreeNode {
+interface TreeNodeBase<Value> {
   key: string;
   label: string;
-  children?: TreeNode[];
+  children?: readonly TreeNode<Value>[];
   icon?: string;
   disabled?: boolean;
 }
 
-export interface TreeProps {
+export type TreeNode<Value = string> = TreeNodeBase<Value> &
+  ([Value] extends [string] ? { value?: Value } : { value: Value });
+
+export type TreeValueKey<Value> = CollectionValueKey<Value>;
+export type TreeBy<Value> = CollectionBy<Value>;
+
+export interface TreeProps<Value = string> {
   /** Tree data */
-  data: TreeNode[];
+  data: readonly TreeNode<Value>[];
   /** Expanded node keys */
-  expanded?: string[];
-  /** Selected node key */
-  selected?: string;
+  expanded?: readonly string[];
+  /** Selected node value */
+  selected?: Value;
+  /** Compare selected values by an object key or a custom equality function */
+  by?: TreeBy<Value>;
   /** Whether the tree owns keyboard input */
   focused?: boolean;
+  /** Maximum visible flattened nodes before the tree window scrolls */
+  maxHeight?: number;
   /** Show lines */
   showLines?: boolean;
   /** Indent size */
@@ -45,22 +62,37 @@ export interface TreeProps {
   selectedFg?: string;
 }
 
+export interface RuntimeTreeNode {
+  key: string;
+  label: string;
+  value?: unknown;
+  children?: readonly RuntimeTreeNode[];
+  icon?: string;
+  disabled?: boolean;
+}
+
+function treeNodeValue(node: RuntimeTreeNode): unknown {
+  return Object.hasOwn(node, "value") ? node.value : node.key;
+}
+
 export const Tree = defineComponent({
   name: "Tree",
   props: {
     data: {
-      type: Array as PropType<TreeNode[]>,
+      type: Array as PropType<readonly RuntimeTreeNode[]>,
       required: true,
     },
     expanded: {
-      type: Array as PropType<string[]>,
+      type: Array as PropType<readonly string[]>,
       default: () => [],
     },
-    selected: String,
+    selected: null as unknown as PropType<unknown>,
+    by: [String, Number, Symbol, Function] as PropType<RuntimeCollectionBy>,
     focused: {
       type: Boolean,
       default: false,
     },
+    maxHeight: Number,
     showLines: {
       type: Boolean,
       default: true,
@@ -90,7 +122,7 @@ export const Tree = defineComponent({
   emits: ["select", "toggle", "update:selected", "update:expanded"],
   setup(props, { emit }) {
     interface VisibleTreeNode {
-      readonly node: TreeNode;
+      readonly node: RuntimeTreeNode;
       readonly parentKey?: string;
       readonly prefix: string;
       readonly icon: string;
@@ -101,7 +133,7 @@ export const Tree = defineComponent({
       const visible: VisibleTreeNode[] = [];
 
       const append = (
-        nodes: readonly TreeNode[],
+        nodes: readonly RuntimeTreeNode[],
         depth: number,
         prefix: string,
         parentKey?: string,
@@ -137,7 +169,12 @@ export const Tree = defineComponent({
     });
 
     const highlightedKey = ref<string>();
+    const scrollOffset = ref(0);
     const typeahead = createTypeaheadBuffer();
+    const viewportSize = computed(() => {
+      if (props.maxHeight === undefined || !Number.isFinite(props.maxHeight)) return undefined;
+      return props.maxHeight > 0 ? Math.max(1, Math.floor(props.maxHeight)) : undefined;
+    });
 
     const navigableNodes = computed(() =>
       visibleNodes.value.map(({ node }) => ({ disabled: node.disabled })),
@@ -151,7 +188,8 @@ export const Tree = defineComponent({
       if (currentIndex >= 0 && !visibleNodes.value[currentIndex]?.node.disabled) return;
 
       const selectedIndex = visibleNodes.value.findIndex(
-        ({ node }) => node.key === props.selected && !node.disabled,
+        ({ node }) =>
+          collectionValuesEqual(treeNodeValue(node), props.selected, props.by) && !node.disabled,
       );
       const nextIndex =
         selectedIndex >= 0 ? selectedIndex : firstEnabledIndex(navigableNodes.value);
@@ -159,10 +197,10 @@ export const Tree = defineComponent({
     };
 
     watch(
-      () => props.selected,
-      (selected) => {
+      [() => props.selected, () => props.by],
+      ([selected, by]) => {
         const selectedIndex = visibleNodes.value.findIndex(
-          ({ node }) => node.key === selected && !node.disabled,
+          ({ node }) => collectionValuesEqual(treeNodeValue(node), selected, by) && !node.disabled,
         );
         if (selectedIndex >= 0) {
           highlightedKey.value = visibleNodes.value[selectedIndex]?.node.key;
@@ -171,6 +209,18 @@ export const Tree = defineComponent({
       { immediate: true },
     );
     watch(visibleNodes, syncVisibleHighlight, { deep: true });
+    watch(
+      [highlightedIndex, viewportSize, () => visibleNodes.value.length],
+      ([index, windowSize]) => {
+        scrollOffset.value = visibleCollectionOffset(
+          index,
+          scrollOffset.value,
+          windowSize,
+          visibleNodes.value.length,
+        );
+      },
+      { immediate: true },
+    );
 
     const setHighlight = (index: number) => {
       const entry = visibleNodes.value[index];
@@ -189,8 +239,9 @@ export const Tree = defineComponent({
     const activate = () => {
       const entry = visibleNodes.value[highlightedIndex.value];
       if (!entry || entry.node.disabled) return;
-      emit("update:selected", entry.node.key);
-      emit("select", entry.node.key);
+      const value = toRaw(treeNodeValue(entry.node));
+      emit("update:selected", value);
+      emit("select", value);
     };
 
     const moveToParent = (parentKey: string | undefined) => {
@@ -256,14 +307,35 @@ export const Tree = defineComponent({
       onSubmit: activate,
     });
 
-    return () =>
-      h(
-        "box",
-        { style: { flex_direction: "column" } },
-        visibleNodes.value.map(({ node, prefix, icon }) => {
-          const isSelected = node.key === props.selected;
-          const isHighlighted = node.key === highlightedKey.value;
-          return h(
+    const viewportNodes = computed(() => {
+      const windowSize = viewportSize.value;
+      const start = windowSize === undefined ? 0 : scrollOffset.value;
+      const end = windowSize === undefined ? visibleNodes.value.length : start + windowSize;
+      return visibleNodes.value.slice(start, end);
+    });
+
+    const scrollIndicator = computed(() => {
+      const windowSize = viewportSize.value;
+      if (windowSize === undefined || visibleNodes.value.length <= windowSize) {
+        return { showUp: false, showDown: false };
+      }
+      return {
+        showUp: scrollOffset.value > 0,
+        showDown: scrollOffset.value + windowSize < visibleNodes.value.length,
+      };
+    });
+
+    return () => {
+      const children: VNode[] = [];
+      if (scrollIndicator.value.showUp) {
+        children.push(h("text", { key: "scroll-up", dim: true }, "  ..."));
+      }
+
+      for (const { node, prefix, icon } of viewportNodes.value) {
+        const isSelected = collectionValuesEqual(treeNodeValue(node), props.selected, props.by);
+        const isHighlighted = node.key === highlightedKey.value;
+        children.push(
+          h(
             "text",
             {
               key: node.key,
@@ -273,8 +345,15 @@ export const Tree = defineComponent({
               dim: node.disabled,
             },
             `${prefix}${icon} ${node.label}`,
-          );
-        }),
-      );
+          ),
+        );
+      }
+
+      if (scrollIndicator.value.showDown) {
+        children.push(h("text", { key: "scroll-down", dim: true }, "  ..."));
+      }
+
+      return h("box", { style: { flex_direction: "column" } }, children);
+    };
   },
 });

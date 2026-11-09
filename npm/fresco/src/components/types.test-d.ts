@@ -35,6 +35,7 @@ import Spacer from "./FrescoSpacer.vue";
 import Spinner from "./FrescoSpinner.vue";
 import Stack from "./FrescoStack.vue";
 import Static from "./FrescoStatic.vue";
+import Tabs from "./FrescoTabs.vue";
 import VStack from "./FrescoVStack.vue";
 import type { DividerProps, StackProps } from "./layout-primitive-types.js";
 import type {
@@ -49,7 +50,8 @@ import type { ScrollBoxItemSlot, ScrollBoxProps } from "./scroll-types.js";
 import { Text, type TextProps, type TextWrap } from "./Text.js";
 import { TextArea, type TextAreaProps } from "./TextArea.js";
 import { TextInput, type TextInputProps } from "./TextInput.js";
-import { Select, type SelectProps } from "./Select.js";
+import Select from "./FrescoSelect.vue";
+import type { SelectProps } from "./Select.js";
 import { Diff, type DiffProps } from "./Diff.js";
 import { LineNumber, type LineNumberProps } from "./LineNumber.js";
 import Transform from "./FrescoTransform.vue";
@@ -58,6 +60,7 @@ import type { MarkdownBlockProvider, MarkdownProps } from "./markdown-types.js";
 import type { ModalProps } from "./modal-types.js";
 import type { PopoverProps } from "./popover-types.js";
 import type { TableProps, TableRow } from "./table-types.js";
+import type { TabsProps } from "./Tabs.js";
 import { createCodeBuffer, type CodeProps, type CodeSyntaxProvider } from "./Code.js";
 
 // --- Public prop interfaces ------------------------------------------------
@@ -340,6 +343,43 @@ export const selectRejectsStringViewport: SelectProps = {
   // @ts-expect-error - viewport sizes are numeric option counts.
   maxHeight: "4",
 };
+
+interface TabUser {
+  readonly id: number;
+  readonly name: string;
+}
+
+export const tabsAcceptsLegacyStringKeys: TabsProps = {
+  tabs: [{ key: "overview", label: "Overview" }],
+  modelValue: "overview",
+  maxItems: 4,
+};
+
+Tabs<TabUser>({
+  tabs: [{ key: "ada", label: "Ada", value: { id: 1, name: "Ada" } }],
+  modelValue: { id: 1, name: "Copy" },
+  by: "id",
+  maxItems: 4,
+  "onUpdate:modelValue": (value) => value.name,
+  onChange: (value) => value.id,
+});
+
+Tabs<TabUser>({
+  // @ts-expect-error - non-string tab values require an explicit value.
+  tabs: [{ key: "ada", label: "Ada" }],
+});
+
+Tabs<TabUser>({
+  tabs: [],
+  // @ts-expect-error - comparison keys must exist on the tab value type.
+  by: "email",
+});
+
+Tabs<TabUser>({
+  tabs: [],
+  // @ts-expect-error - viewport sizes are numeric item counts.
+  maxItems: "4",
+});
 
 // --- Component prop contracts through h() ----------------------------------
 
