@@ -7,7 +7,12 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { history, renamePath, rewriteText } from "../../support/levels/rename-program-codename.ts";
+import {
+  keepsBytes,
+  levelHits,
+  renamePath,
+  rewriteText,
+} from "../../support/levels/rename-codenames.ts";
 
 export type Tier = 0 | 1 | 2 | 3 | 4 | 5 | 6;
 export type Status = "pass" | "fail" | "unknown";
@@ -64,10 +69,10 @@ export const codenames = [
   "davinci",
 ] as const;
 
-// The program name is ruled by its rename script (pinned links, kept-docs prose); the level
-// codenames by name alone.
+// The rename script rules both: the program name keeps pinned links and kept-docs prose; a level
+// codename counts where a word part starts.
 const program = "davinci";
-const levelPattern = new RegExp(codenames.filter((name) => name !== program).join("|"), "gi");
+const programOnly = { program: true, levels: false } as const;
 // The gate's definition must spell the names it bans.
 const toolRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
 export const gateFiles: ReadonlySet<string> = new Set([
@@ -75,7 +80,7 @@ export const gateFiles: ReadonlySet<string> = new Set([
     .relative(toolRoot, fileURLToPath(import.meta.url))
     .split(path.sep)
     .join("/"),
-  "tools/support/levels/rename-program-codename.ts",
+  "tools/support/levels/rename-codenames.ts",
 ]);
 
 export interface CodenameReport {
@@ -93,25 +98,25 @@ export const scanCodenames = (repo: Repo): CodenameReport => {
   let paths = 0,
     lines = 0;
   for (const file of repo.paths) {
-    if (gateFiles.has(file) || history.test(file)) continue;
-    // Docs may keep the level codenames as aliases.
-    const levels = !file.startsWith("docs/");
+    if (gateFiles.has(file)) continue;
+    // Markdown under docs/ may keep the level codenames as aliases; every path moves.
+    const levels = !(file.startsWith("docs/") && file.endsWith(".md"));
     const named = [
-      ...(levels ? (file.match(levelPattern) ?? []) : []),
-      ...(renamePath(file) === file ? [] : [program]),
+      ...levelHits(file),
+      ...(renamePath(file, programOnly) === file ? [] : [program]),
     ];
     if (named.length) {
       paths++;
       named.forEach(hit);
     }
-    const text = repo.read(file);
+    // Captured output keeps its bytes; only its path follows the rename.
+    const text = keepsBytes(file) ? null : repo.read(file);
     if (text === null) continue;
     const before = text.split("\n");
-    const after = rewriteText(file, text).split("\n");
+    const after = rewriteText(file, text, programOnly).split("\n");
     before.forEach((line, index) => {
       // `//! L3 - reactivity IR (codename: Impeto)` is the alias form for level codenames.
-      const found: string[] =
-        levels && !/codename/i.test(line) ? [...(line.match(levelPattern) ?? [])] : [];
+      const found: string[] = levels && !/codename/i.test(line) ? levelHits(line) : [];
       if (after[index] !== line) found.push(program);
       if (found.length) {
         lines++;
