@@ -50,10 +50,7 @@ fn real_shorthand_projection_queries_camelized_expression_values() {
     let document = super::super::document::project_type_aware(
         &descriptor,
         &script.content,
-        Some(vize_croquis::drawer::LintTemplate::new(
-            l2.surface(),
-            l2.lowered(),
-        )),
+        Some(l2.lint_template()),
         script.loc.start as u32,
         template.loc.start as u32,
         "CamelizedShorthand.vue",
@@ -105,10 +102,7 @@ function pick(index: number): string[] { return pages[index] ?? [] }
     let document = super::super::document::project_type_aware(
         &descriptor,
         &script.content,
-        Some(vize_croquis::drawer::LintTemplate::new(
-            l2.surface(),
-            l2.lowered(),
-        )),
+        Some(l2.lint_template()),
         script.loc.start as u32,
         template.loc.start as u32,
         "MultilineForSources.vue",
@@ -225,10 +219,7 @@ const ids: number[] = [1]
     let document = super::super::document::project_type_aware(
         &descriptor,
         &script.content,
-        Some(vize_croquis::drawer::LintTemplate::new(
-            l2.surface(),
-            l2.lowered(),
-        )),
+        Some(l2.lint_template()),
         script.loc.start as u32,
         template.loc.start as u32,
         "UnicodeCommentBinding.vue",
@@ -296,10 +287,7 @@ const selected: number[] = [1]
     let document = super::super::document::project_type_aware(
         &descriptor,
         &script.content,
-        Some(vize_croquis::drawer::LintTemplate::new(
-            l2.surface(),
-            l2.lowered(),
-        )),
+        Some(l2.lint_template()),
         script.loc.start as u32,
         template.loc.start as u32,
         "CommentedBinding.vue",
@@ -348,10 +336,7 @@ const cardProps = { topConfig: { distance: 1 } }
     let document = super::super::document::project_type_aware(
         &descriptor,
         &script.content,
-        Some(vize_croquis::drawer::LintTemplate::new(
-            l2.surface(),
-            l2.lowered(),
-        )),
+        Some(l2.lint_template()),
         script.loc.start as u32,
         template.loc.start as u32,
         "ComponentSpread.vue",
