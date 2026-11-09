@@ -247,7 +247,9 @@ async function main() {
   ) => {
     const run = all[spec.id];
     // On the fixtures' disk, not /tmp: a RAM-backed /tmp would hold server caches in memory.
-    const home = mkdtempSync(join(fixturesDir, ".lsp-bench-home-"));
+    const homeRoot = process.env.LSP_BENCH_HOME_DIR ?? fixturesDir;
+    mkdirSync(homeRoot, { recursive: true });
+    const home = mkdtempSync(join(homeRoot, ".lsp-bench-home-"));
     const env = { HOME: home, XDG_CACHE_HOME: join(home, ".cache") };
     let restore: (() => void) | undefined;
     try {
