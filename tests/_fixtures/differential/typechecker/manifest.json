@@ -14520,6 +14520,45 @@
       }
     },
     {
+      "id": "typechecker/regression/nav-index-signature-access-12531",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "nav-index-signature-access-12531/Child.vue.txt",
+          "sha256": "80e104125b7b45cdde8e9c25c54e9e6da7e6ca644750747d1f9d9ae2b24a852f",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "nav-index-signature-access-12531/App.vue.txt",
+          "sha256": "37bae2ee5352367dd83953821fc77e8054a045e69303b61975030082012033fd",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "nav-index-signature-access-12531/tsconfig.json.txt",
+          "sha256": "9a54dc4959496a733a898e9b2a6be98e9eccb0503da71b83177425b5bf280c9f",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "content_mapper_tsgo_cli::nav_index_signature_access_12531::undeclared_attributes_stay_clean_under_no_property_access_from_index_signature; the issue repro with noPropertyAccessFromIndexSignature plus a wrong declared prop value control, checked through tsc 7.1 with the Vize mapper and vize check on the same project"
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/regression/nested-dynamic-vfor-11728",
       "state": "active",
       "targets": [

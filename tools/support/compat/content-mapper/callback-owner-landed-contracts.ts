@@ -27,9 +27,78 @@ export function requiredFallthroughGate(prefix: string, component: string): stri
   return ` & (${fallthrough} extends infer __F ? [__F extends unknown ? {} extends __F ? never : __F : never] extends [never] ? ${required}, never> : ${required}> : never);\n`;
 }
 
-/** Appends the gate edits for every ungated contract line `after` replaces with its gated form. */
+const navKey = String.raw`\.[^\s;,.\[\]]+|\['(?:[^'\\]|\\.)*'\]`;
+const navBlock = new RegExp(
+  String.raw`(  const (__vize_props_nav_\d+) = undefined as unknown as \S+ & )Record<string, unknown>;\n((?:  void \2(?:${navKey});\n)+)`,
+  "gu",
+);
+
+/** #12531: every navigation statement on one ignored line, on the global `Record`. */
+export function navigationBlock(prefix: string, owner: string, keys: string[]): string {
+  const references = keys.map((key) => `void ${owner}${key};`).join(" ");
+  return `${prefix}globalThis.Record<string, unknown>;\n  // @ts-ignore Navigation-only references; no diagnostic owner.\n  ${references}\n`;
+}
+
+/** The smallest edit turning `before` into `after`, as offsets inside them. */
+function gapEdit(before: string, after: string): [number, number, string] | undefined {
+  if (before === after) return undefined;
+  let prefix = 0;
+  while (prefix < before.length && before[prefix] === after[prefix]) prefix++;
+  let suffix = 0;
+  while (
+    suffix < before.length - prefix &&
+    suffix < after.length - prefix &&
+    before[before.length - 1 - suffix] === after[after.length - 1 - suffix]
+  )
+    suffix++;
+  return [prefix, before.length - suffix, after.slice(prefix, after.length - suffix)];
+}
+
+/** Edits between the unchanged key names, so each mapped span relocates. */
+function navigationEdits(before: string, after: string): Edit[] {
+  const edits: Edit[] = [];
+  for (const match of before.matchAll(navBlock)) {
+    const owner = match[2]!;
+    const keys = [...match[3]!.matchAll(new RegExp(`void ${owner}(${navKey});`, "gu"))].map(
+      (key) => key[1]!,
+    );
+    const replacement = navigationBlock(match[1]!, owner, keys);
+    if (after.split(replacement).length !== 2) continue;
+    const blockStart = match.index + match[1]!.length;
+    const blockEnd = match.index + match[0].length;
+    const target = after.indexOf(replacement) + match[1]!.length;
+    const targetEnd = after.indexOf(replacement) + replacement.length;
+    // Key name offsets in each text, in order.
+    const names = (text: string, from: number) =>
+      keys.map((key) => {
+        const name = key.startsWith(".") ? key.slice(1) : key.slice(2, -2);
+        const reference = `${owner}${key}`;
+        const index = text.indexOf(reference, from) + owner.length + (key.startsWith(".") ? 1 : 2);
+        from = index + name.length;
+        return [index, index + name.length] as const;
+      });
+    const old = [blockStart, ...names(before, blockStart).flat(), blockEnd];
+    const current = [target, ...names(after, target).flat(), targetEnd];
+    for (let index = 0; index < old.length; index += 2) {
+      const edit = gapEdit(
+        before.slice(old[index], old[index + 1]),
+        after.slice(current[index], current[index + 1]),
+      );
+      if (!edit) continue;
+      const [start, end, text] = edit;
+      edits.push({
+        start: Buffer.byteLength(before.slice(0, old[index]! + start)),
+        end: Buffer.byteLength(before.slice(0, old[index]! + end)),
+        replacement: Buffer.from(text),
+      });
+    }
+  }
+  return edits;
+}
+
+/** Appends the gate and navigation edits for every line `after` replaces with its current form. */
 export function withLandedEdits(before: string, after: string, edits: Edit[]): Edit[] {
-  const gates: Edit[] = [];
+  const gates: Edit[] = [...navigationEdits(before, after)];
   for (const match of before.matchAll(ungated)) {
     const replacement = requiredFallthroughGate(match[1]!, match[2]!);
     if (after.split(match[0]).length > 1 || after.split(replacement).length === 1) continue;

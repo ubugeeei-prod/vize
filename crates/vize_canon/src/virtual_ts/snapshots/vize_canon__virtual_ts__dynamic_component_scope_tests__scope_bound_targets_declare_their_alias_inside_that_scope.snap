@@ -261,7 +261,8 @@ expression: template
   type ____vize_dynamic_is_35_0_prop_x = $PropValue<____vize_dynamic_is_35_ValueProps_0, 'x', $FallthroughValue<____vize_dynamic_is_35_Component_0, 'x'>>;
   void __vize_dynamic_is_35;
   const { } = undefined as unknown as $ComponentNavigationProps<____vize_dynamic_is_35_Props_0>;
-  const __vize_props_nav_0 = undefined as unknown as ____vize_dynamic_is_35_Props_0 & Record<string, unknown>;
+  const __vize_props_nav_0 = undefined as unknown as ____vize_dynamic_is_35_Props_0 & globalThis.Record<string, unknown>;
+  // @ts-ignore Navigation-only references; no diagnostic owner.
   void __vize_props_nav_0.x;
   // @vize-map: component -> 104:165
   type ____vize_dynamic_is_104_Props_1 = typeof __vize_dynamic_is_104 extends { __vizeCheck: infer __F } ? ($IsAny<__F> extends true ? $ComponentRawProps<typeof __vize_dynamic_is_104> : Record<string, unknown>) : $ComponentRawProps<typeof __vize_dynamic_is_104>;
