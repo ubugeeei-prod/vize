@@ -43,6 +43,7 @@ members = [
   "tools/benchmarks/crates/vize",
   "tests/davinci_test_support",
   "tests/vize_test_runner",
+  "examples/poc-coffeescript",
   "examples/poc-astro",
   "examples/poc-angular",
   "examples/poc-support",
