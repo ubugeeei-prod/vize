@@ -474,7 +474,7 @@ if (phase !== "before" && process.platform === "win32") {
       .map(() => asString(entry.file).replaceAll("\\", "/")),
   );
   assert.equal(findings.length, 1, scoped.stdout);
-  assert.equal(findings[0].endsWith("/src/vize-12291/App.vue"), true, findings[0]);
+  assert.equal(findings[0], "src/vize-12291/App.vue");
   assert.equal(
     entries.some((entry) => asString(entry.file).startsWith("//?/")),
     false,
