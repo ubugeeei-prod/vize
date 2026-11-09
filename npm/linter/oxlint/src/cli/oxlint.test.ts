@@ -124,7 +124,8 @@ void test("expectsLintReport recognizes the formats that always produce output",
   assert.equal(expectsLintReport(["src"]), false);
   assert.equal(expectsLintReport(["-f", "json", "src"]), true);
   assert.equal(expectsLintReport(["--format", "junit"]), true);
-  assert.equal(expectsLintReport(["--format=github"]), false);
+  assert.equal(expectsLintReport(["--format=github"]), true);
+  assert.equal(expectsLintReport(["--format=gitlab"]), true);
   assert.equal(expectsLintReport(["-f", "stylish", "src"]), false);
   assert.equal(expectsLintReport(["-f", "unix"]), false);
   // After `--` everything is a lint target, not an option.
@@ -184,8 +185,10 @@ void test("a child that answers the handshake but swallows the report fails clos
     const autoRun = runOxlintVize(root, ["App.vue"]);
     assert.equal(autoRun.exitCode, 0);
 
-    const githubRun = runOxlintVize(root, ["--format=github", "App.vue"]);
-    assert.equal(githubRun.exitCode, 0);
-    assert.equal(githubRun.stderr, "");
+    for (const format of ["github", "gitlab"]) {
+      const reportingRun = runOxlintVize(root, [`--format=${format}`, "App.vue"]);
+      assert.notEqual(reportingRun.exitCode, 0);
+      assert.match(reportingRun.stderr, /no report|produced no/iu);
+    }
   });
 });

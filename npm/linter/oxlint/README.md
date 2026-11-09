@@ -6,7 +6,7 @@ This package lets Oxlint execute Patina through Vize's native binding while stil
 
 > [!IMPORTANT]
 > `oxlint-plugin-vize` is a terminal-first Vue SFC linting package.
-> Until upstream Vue support in Oxlint matures, use `oxlint-vize` for original SFC locations in terminal and JSON output. Direct `oxlint` still has JS plugin location limits.
+> Until upstream Vue support in Oxlint matures, use `oxlint-vize` for original SFC locations in terminal, JSON, GitHub, and GitLab output. Direct `oxlint` still has JS plugin location limits.
 
 ## Main Features
 
@@ -261,6 +261,8 @@ vp exec oxlint-vize -c .oxlintrc.json -f stylish src
 
 `oxlint-vize` appends a temporary `<script setup>` location bridge for Vue and HTML files, including files with existing scripts. This lets Patina report the original SFC line and column through Oxlint's JS plugin pipeline. The wrapper rewrites temporary paths back to the original files; `-f json` retains those original positions for machine-readable diagnostics.
 
+For CI annotations and code-quality artifacts, `-f github` and `-f gitlab` are generated from that same merged JSON report. This keeps one summary and preserves original Vue paths and ranges even when a lint run uses multiple internal phases.
+
 ### Oxlint type-aware rules in Vue files
 
 Oxlint's own type-aware rules (`typescript/no-floating-promises`, `typescript/no-misused-promises` and the rest of the tsgolint set) do not look inside `.vue` files. When you run `oxlint-vize --type-aware`, or your `.oxlintrc.json` sets `options.typeAware: true`, the wrapper runs those rules on each SFC's `<script>` and `<script setup>` blocks too, with the severities from your resolved configuration, and reports them at the original `.vue` lines and columns. Imports between `.vue` and `.ts` files resolve as they do for TypeScript. Template expressions are not part of this pass; Vize's `vize/type/*` rules cover them.
@@ -279,5 +281,5 @@ Oxlint's own type-aware rules (`typescript/no-floating-promises`, `typescript/no
 ## Current expectations
 
 - This release is meant for terminal-first workflows.
-- The `oxlint-vize` wrapper reports original Patina positions in `stylish` and `json`; direct `oxlint` remains limited by its extracted-script JS plugin input.
+- The `oxlint-vize` wrapper reports original Patina positions in `stylish`, `json`, `github`, and `gitlab`; direct `oxlint` remains limited by its extracted-script JS plugin input.
 - Once Oxlint preserves original Vue positions for JS plugins, the temporary location bridge can be removed.

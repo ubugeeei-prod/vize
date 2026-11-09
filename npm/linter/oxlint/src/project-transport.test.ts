@@ -156,6 +156,20 @@ void test("import and custom script rules retain whole stock diagnostics on orig
     assert.match(text, /v-html/u);
     assert.doesNotMatch(text, /oxlint-vize-original-|oxlint-vize-[^\s/]+\/inside/u);
   }
+  const github = run(cli, ["-f", "github", "src/Panel.vue"], 1).stdout;
+  assert.match(github, /::error file=src\/Panel\.vue,line=8,endLine=8,col=8,endColumn=/u);
+  assert.match(github, /Found \d+ warnings? and \d+ errors?\./u);
+  assert.match(github, /Finished in .* on 1 file with \d+ rules using \d+ threads\./u);
+  assert.doesNotMatch(github, /oxlint-vize-original-|oxlint-vize-[^\s/]+\/inside/u);
+  const gitlab = JSON.parse(run(cli, ["-f", "gitlab", "src/Panel.vue"], 1).stdout);
+  assert.ok(
+    gitlab.some(
+      (finding: { check_name: string; severity: string; location: { path: string } }) =>
+        finding.check_name === "vize(vue/no-v-html)" &&
+        finding.severity === "critical" &&
+        finding.location.path === "src/Panel.vue",
+    ),
+  );
   const fix = run(cli, ["--fix", "src"], 1);
   assert.match(fix.stderr, /remove CLI severity\/limit overrides and fix flags/u);
   for (const [file, bytes] of files)
