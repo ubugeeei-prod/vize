@@ -3196,6 +3196,49 @@
       }
     },
     {
+      "id": "linter/lint-template-lowering-facts-12318",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "lint-template-lowering-facts-12318",
+        "files": [
+          {
+            "path": "LegacyScopedSlot.vue.txt",
+            "role": "legacy-scoped-slot-capability-regression-reproduction",
+            "sha256": "d59428689ac85654452d0eb79abbaed7387abdab87ed1afbd3495f512dd25033"
+          },
+          {
+            "path": "WhitespaceExpression.vue.txt",
+            "role": "consumed-expression-retention-regression-reproduction",
+            "sha256": "a9c710e495eac91ec24d1409680e9a5199c7f87cc369aba33e6e5dcef3fce3d6"
+          },
+          {
+            "path": "vize.config.json.txt",
+            "role": "explicit-vue2-lint-dialect",
+            "sha256": "546209a184c233f923e67fbfd36112c80516c2f9412eefcf358e18c1b5103005"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "js",
+              "ts"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/macro-order-config-6097",
       "state": "active",
       "targets": [

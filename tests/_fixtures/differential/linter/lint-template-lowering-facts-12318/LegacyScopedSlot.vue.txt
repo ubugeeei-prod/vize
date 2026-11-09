@@ -1,0 +1,17 @@
+<script>
+export default {
+  data() {
+    return {
+      rows: [{ label: "ready" }],
+    }
+  },
+}
+</script>
+
+<template>
+  <LegacyTable :rows="rows">
+    <template slot-scope="{ row }">
+      before {{ row.label }} after
+    </template>
+  </LegacyTable>
+</template>
