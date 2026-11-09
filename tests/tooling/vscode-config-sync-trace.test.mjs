@@ -78,6 +78,7 @@ function createSync(refresh, activeClient, refuseLogging = false, startup, polic
     resolveCorsaServerEnv: async () => ({ PATH: "/usr/bin" }),
     createServerOptions: (serverPath) => ({ serverPath }),
     createClientOptions: (initializationOptions) => ({ initializationOptions }),
+    disposeClientFileEvents: () => operations.push(["dispose-file-events"]),
     Trace: { Off: "off" },
     LanguageClient: class {
       constructor(_id, _name, _server, options) {

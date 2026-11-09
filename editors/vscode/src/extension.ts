@@ -18,7 +18,7 @@ import {
 } from "./extension-core.js";
 import { registerHostTestCommands } from "./host-test-commands.js";
 import { registerTypeScriptContentMapperDiscovery } from "./content-mapper-discovery.js";
-import { createClientOptions } from "./client-options.js";
+import { createClientOptions, disposeClientFileEvents } from "./client-options.js";
 import { WorkspaceLspConfigDiscovery } from "./workspace-config.js";
 import { createExtensionSetup } from "./extension-setup.js";
 import { createServerDiscovery, getExtensionVersion } from "./server-discovery.js";
@@ -408,4 +408,5 @@ export async function deactivate(): Promise<void> {
   if (configurationSyncTimer) clearTimeout(configurationSyncTimer);
   configurationSyncTimer = undefined;
   await stopClient();
+  disposeClientFileEvents();
 }
