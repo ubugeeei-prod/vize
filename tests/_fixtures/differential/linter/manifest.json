@@ -1182,10 +1182,9 @@
             "kind": "source-inspection",
             "dialects": [
               "vue3-sfc",
-              "html-template",
-              "ts"
+              "html-template"
             ],
-            "selector": "current-api pinned authored sources"
+            "selector": "linter manifest pinned authored sources"
           }
         ]
       }

@@ -97,6 +97,7 @@ function walkDirectoryFiles(directory: string, visit: (file: string) => void): v
       if (entry.name === ".git" || entry.name === "node_modules") continue;
       const file = path.join(current, entry.name);
       if (entry.isDirectory()) {
+        visit(file);
         pending.push(file);
         continue;
       }
@@ -106,8 +107,10 @@ function walkDirectoryFiles(directory: string, visit: (file: string) => void): v
       }
       try {
         const target = fs.statSync(file);
-        if (target.isDirectory()) pending.push(file);
-        else if (target.isFile()) visit(file);
+        if (target.isDirectory()) {
+          visit(file);
+          pending.push(file);
+        } else if (target.isFile()) visit(file);
       } catch {
         // A dangling or concurrently removed link is not an Oxlint candidate.
       }
