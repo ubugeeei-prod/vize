@@ -1,10 +1,13 @@
 //! Refine real Vue globals without replacing authored ambient signatures.
 
 use super::TemplateRefUsage;
-use vize_carton::{String, append};
+use vize_carton::append;
 
 impl TemplateRefUsage {
-    pub(in crate::virtual_ts::generator) fn emit_inference_helpers(&self, ts: &mut String) {
+    pub(in crate::virtual_ts::generator) fn emit_inference_helpers(
+        &self,
+        ts: &mut crate::virtual_ts::TextBuf,
+    ) {
         let name = self.helper_name();
         if self.calls.iter().any(|call| call.imported) {
             append!(

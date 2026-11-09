@@ -89,7 +89,7 @@ pub(super) fn has_inference_props(usage: &ComponentUsage) -> bool {
 /// `vue-tsc`'s own. It is a compiler-version difference, not something the
 /// generated code can steer.
 pub(super) fn append_prop_checker_alias(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     usage: &ComponentUsage,
     component_type_name: &str,
     component_ref: &str,
@@ -102,22 +102,22 @@ pub(super) fn append_prop_checker_alias(
         // The shared checker already owns its props and tail. Only model
         // writeback and typed spread checks read a per-usage component alias.
         if needs_component_alias {
-            append!(
-                *ts,
+            vize_l0::emit_ts!(
+                ts,
                 "  type __{component_type_name}_Component_{idx} = __{component_type_name}_Component_{shared_idx};\n",
             );
         }
         // Per-prop aliases either reuse the canonical prop alias or read its
         // value-props contract directly. Intermediate aliases would be unused
         // whenever every prop was already shared (TS6196 under noUnusedLocals).
-        append!(
-            *ts,
+        vize_l0::emit_ts!(
+            ts,
             "  type __{component_type_name}_Check_{idx} = __{component_type_name}_Check_{shared_idx};\n",
         );
         return;
     }
-    append!(
-        *ts,
+    vize_l0::emit_ts!(
+        ts,
         "  type __{component_type_name}_Component_{idx} = typeof {component_ref};\n",
     );
     // The listener props synthesized from the child's `emits` join the check
@@ -143,33 +143,33 @@ pub(super) fn append_prop_checker_alias(
     // those requested bytes, so this deliberately duplicated branch is the
     // allocation-free fast path.
     if !hoist_shared_preamble {
-        append!(
-            *ts,
+        vize_l0::emit_ts!(
+            ts,
             "  type __{component_type_name}_CheckProps_{idx} = {own_props} & $EmitListeners<__{component_type_name}_Component_{idx}> & $RequiredFallthroughProps<__{component_type_name}_Component_{idx}>;\n",
         );
         if loose_legacy_attrs {
-            append!(
-                *ts,
+            vize_l0::emit_ts!(
+                ts,
                 "  type __{component_type_name}_CheckTail_{idx} = {{ [__K in string]: unknown }};\n"
             );
         } else {
-            append!(
-                *ts,
+            vize_l0::emit_ts!(
+                ts,
                 "  type __{component_type_name}_CheckTail_{idx} = $ComponentCheckTail<__{component_type_name}_Component_{idx}>;\n",
             );
         }
         if force_value_props || usage_needs_per_prop_aliases(usage) {
-            append!(
-                *ts,
+            vize_l0::emit_ts!(
+                ts,
                 "  type __{component_type_name}_ValueProps_{idx} = $IsLibraryGenericExport<__{component_type_name}_Component_{idx}> extends true ? Record<string, any> : __{component_type_name}_Props_{idx} & $EmitListeners<__{component_type_name}_Component_{idx}> & $PublicComponentAttrs;\n",
             );
-            append!(
-                *ts,
+            vize_l0::emit_ts!(
+                ts,
                 "  type __{component_type_name}_FallthroughValue_{idx}<K extends PropertyKey> = $FallthroughValue<__{component_type_name}_Component_{idx}, K>;\n",
             );
         }
-        append!(
-            *ts,
+        vize_l0::emit_ts!(
+            ts,
             "  type __{component_type_name}_Check_{idx} = $PropChecker<__{component_type_name}_Component_{idx}, __{component_type_name}_CheckProps_{idx}, __{component_type_name}_CheckTail_{idx}>;\n",
         );
         return;
@@ -180,33 +180,33 @@ pub(super) fn append_prop_checker_alias(
     let is_library_generic = shared_types::IS_LIBRARY_GENERIC_EXPORT.select(hoist_shared_preamble);
     let fallthrough_value = shared_types::FALLTHROUGH_VALUE.select(hoist_shared_preamble);
     let prop_checker = shared_types::PROP_CHECKER.select(hoist_shared_preamble);
-    append!(
-        *ts,
+    vize_l0::emit_ts!(
+        ts,
         "  type __{component_type_name}_CheckProps_{idx} = {own_props} & {emit_listeners}<__{component_type_name}_Component_{idx}> & {required_fallthrough}<__{component_type_name}_Component_{idx}>;\n",
     );
     if loose_legacy_attrs {
-        append!(
-            *ts,
+        vize_l0::emit_ts!(
+            ts,
             "  type __{component_type_name}_CheckTail_{idx} = {{ [__K in string]: unknown }};\n"
         );
     } else {
-        append!(
-            *ts,
+        vize_l0::emit_ts!(
+            ts,
             "  type __{component_type_name}_CheckTail_{idx} = $ComponentCheckTail<__{component_type_name}_Component_{idx}>;\n",
         );
     }
     if force_value_props || usage_needs_per_prop_aliases(usage) {
-        append!(
-            *ts,
+        vize_l0::emit_ts!(
+            ts,
             "  type __{component_type_name}_ValueProps_{idx} = {is_library_generic}<__{component_type_name}_Component_{idx}> extends true ? Record<string, any> : __{component_type_name}_Props_{idx} & {emit_listeners}<__{component_type_name}_Component_{idx}> & $PublicComponentAttrs;\n",
         );
-        append!(
-            *ts,
+        vize_l0::emit_ts!(
+            ts,
             "  type __{component_type_name}_FallthroughValue_{idx}<K extends PropertyKey> = {fallthrough_value}<__{component_type_name}_Component_{idx}, K>;\n",
         );
     }
-    append!(
-        *ts,
+    vize_l0::emit_ts!(
+        ts,
         "  type __{component_type_name}_Check_{idx} = {prop_checker}<__{component_type_name}_Component_{idx}, __{component_type_name}_CheckProps_{idx}, __{component_type_name}_CheckTail_{idx}>;\n",
     );
 }
@@ -297,7 +297,7 @@ pub(super) fn prop_alias_type(
 /// contract points at the canonical usage's alias when the prop shape matches,
 /// so the `$PropValue` type is emitted once.
 pub(super) fn append_per_prop_aliases(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     usage: &ComponentUsage,
     component_type_name: &str,
     idx: usize,
@@ -317,8 +317,8 @@ pub(super) fn append_per_prop_aliases(
                 first_emitted_prop_alias(canonical, safe_prop_name.as_str())
         {
             if same_prop_alias_shape(canonical_prop, prop) {
-                append!(
-                    *ts,
+                vize_l0::emit_ts!(
+                    ts,
                     "  type __{component_type_name}_{idx}_prop_{safe_prop_name} = __{component_type_name}_{shared_idx}_prop_{safe_prop_name};\n",
                 );
                 continue;
@@ -329,8 +329,8 @@ pub(super) fn append_per_prop_aliases(
                 && !is_inline_ref_callback_prop(prop)
             {
                 let callable = shared_types::CALLABLE_PROP.select(hoist_shared_preamble);
-                append!(
-                    *ts,
+                vize_l0::emit_ts!(
+                    ts,
                     "  type __{component_type_name}_{idx}_prop_{safe_prop_name} = {callable}<__{component_type_name}_{shared_idx}_prop_{safe_prop_name}>;\n",
                 );
                 continue;

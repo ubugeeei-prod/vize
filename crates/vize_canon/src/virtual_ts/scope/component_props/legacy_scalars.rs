@@ -1,6 +1,6 @@
 //! Supplemental known scalar checks for the selected legacy external route.
 //! Ordinary eligibility, callback emission, and callback owners stay intact.
-use vize_carton::{FxHashMap, FxHashSet, String, append, camelize, capitalize, cstr};
+use vize_carton::{FxHashMap, FxHashSet, append, camelize, capitalize, cstr};
 use vize_croquis::{ScopeKind, analysis::ComponentUsage};
 
 use super::super::context::ComponentPropsContext;
@@ -122,7 +122,7 @@ pub(super) fn collect(
 }
 
 pub(super) fn append_aliases(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     ctx: &ComponentPropsContext<'_, '_>,
     idx: usize,
     usage: &ComponentUsage,
@@ -170,7 +170,7 @@ pub(super) fn append_aliases(
 }
 
 pub(super) fn generate_root_checks(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     mappings: &mut Vec<VizeMapping>,
     ctx: &ComponentPropsContext<'_, '_>,
     idx: usize,

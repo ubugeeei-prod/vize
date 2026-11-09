@@ -17,7 +17,7 @@ fn inserted_comma_has_no_authored_subspan_and_original_bytes_stay_exact() {
         next: 0,
         tsx_arrows: &plan.tsx_arrows,
     };
-    let mut code = String::from("header\n");
+    let mut code = crate::virtual_ts::TextBuf::from_text("header\n");
     let mut mappings = Vec::new();
     checks.emit_line(
         &mut code,
@@ -70,7 +70,7 @@ fn template_ref_callee_and_arrow_share_original_coordinates() {
             next: 0,
             tsx_arrows: &plan.tsx_arrows,
         };
-        let mut code = String::default();
+        let mut code = crate::virtual_ts::TextBuf::default();
         let mut mappings = Vec::new();
         checks.emit_line(
             &mut code,
@@ -148,7 +148,7 @@ fn already_unambiguous_or_recovered_source_keeps_its_whole_line() {
             next: 0,
             tsx_arrows: &plan.tsx_arrows,
         };
-        let mut code = String::default();
+        let mut code = crate::virtual_ts::TextBuf::default();
         let mut mappings = Vec::new();
         checks.emit_line(
             &mut code,

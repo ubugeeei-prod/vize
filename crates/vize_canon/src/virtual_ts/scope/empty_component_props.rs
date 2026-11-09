@@ -3,7 +3,6 @@
 use crate::virtual_ts::template_binding_access::TemplateBindingAccess;
 use vize_carton::CompactString;
 use vize_carton::FxHashSet;
-use vize_carton::String;
 use vize_carton::append;
 use vize_carton::cstr;
 use vize_carton::profile;
@@ -30,7 +29,7 @@ pub(super) fn is_empty_props_usage(usage: &ComponentUsage) -> bool {
 /// TS2345 diagnostic and source mapping, while TypeScript analyzes every usage
 /// in its own tiny control-flow graph instead of hitting TS2563 (#3527).
 pub(super) fn generate_empty_root_checks(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     mappings: &mut Vec<VizeMapping>,
     ctx: &ComponentPropsContext<'_, '_>,
     usages: &[(usize, &ComponentUsage)],
@@ -66,7 +65,7 @@ pub(super) fn generate_empty_root_checks(
 }
 
 struct EmptyChecksContext<'a, 'template, 'b> {
-    ts: &'b mut String,
+    ts: &'b mut crate::virtual_ts::TextBuf,
     mappings: &'b mut Vec<VizeMapping>,
     summary: &'a Croquis,
     options: &'a VirtualTsOptions,
@@ -139,7 +138,7 @@ fn generate_empty_checks(
 /// Emit ordinary checks directly in their closure and isolate only the empty
 /// checks that would otherwise inflate that closure's control-flow graph.
 pub(super) fn generate_scope_checks(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     mappings: &mut Vec<VizeMapping>,
     ctx: &VForPropsContext<'_, '_>,
     scope_id: u32,

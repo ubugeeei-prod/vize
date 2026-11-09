@@ -38,7 +38,7 @@ fn is_define_props_destructure_local(
 }
 
 pub(super) fn emit_macro_template_prop_bindings(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     binding_mappings: &mut PropBindingMappings<'_>,
     props_object_binding: &str,
     props_type_ref: &str,

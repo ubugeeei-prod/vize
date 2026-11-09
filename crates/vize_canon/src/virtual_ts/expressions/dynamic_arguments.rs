@@ -1,11 +1,11 @@
 //! Dynamic directive names use JavaScript's computed property-key contract.
 
 use crate::virtual_ts::{VizeMapping, VizeSubSpan};
-use vize_carton::{String, append};
+use vize_carton::append;
 use vize_croquis::TemplateExpression;
 
 pub(super) fn generate(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     mappings: &mut Vec<VizeMapping>,
     expression: &TemplateExpression,
     (generated, mapped_start, mapped_len): (&str, usize, usize),
@@ -98,7 +98,7 @@ fn directive_start(source: &str, bracket: usize) -> Option<usize> {
 #[cfg(test)]
 mod tests {
     use super::{directive_start, generate};
-    use vize_carton::{CompactString, String};
+    use vize_carton::CompactString;
     use vize_croquis::{ScopeId, TemplateExpression, TemplateExpressionKind};
 
     #[test]
@@ -133,7 +133,7 @@ mod tests {
                 scope_id: ScopeId::ROOT,
                 vif_guard: None,
             };
-            let mut generated = String::new("");
+            let mut generated = crate::virtual_ts::TextBuf::default();
             let mut mappings = Vec::new();
 
             generate(

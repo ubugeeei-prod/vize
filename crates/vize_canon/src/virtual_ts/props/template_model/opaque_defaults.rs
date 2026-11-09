@@ -53,7 +53,7 @@ pub(super) fn opaque_defaults_props_type_ref(summary: &Croquis) -> Option<String
 /// The argument may only reference module-scope bindings, so repeating the
 /// macro call after the setup body resolves exactly as the authored one does.
 pub(super) fn generate_opaque_defaults_capture(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     summary: &Croquis,
     authored_type_ref: &str,
 ) {

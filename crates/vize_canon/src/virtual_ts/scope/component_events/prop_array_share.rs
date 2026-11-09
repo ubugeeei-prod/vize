@@ -30,7 +30,7 @@ pub(super) struct Emit<'a> {
     pub(super) props_members: &'a str,
 }
 
-pub(super) fn emit(ts: &mut String, emit: Emit<'_>) {
+pub(super) fn emit(ts: &mut crate::virtual_ts::TextBuf, emit: Emit<'_>) {
     let Emit {
         contracts,
         component,

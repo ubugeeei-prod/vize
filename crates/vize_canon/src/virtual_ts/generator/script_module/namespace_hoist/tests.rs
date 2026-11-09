@@ -1,7 +1,7 @@
 #![expect(clippy::string_slice, reason = "tests assert by panicking")]
 use super::super::plain_exports::{PlainScriptExport, PlainScriptExportKind};
 use super::NamespaceHoistPlan;
-use vize_l0::{CompactString, String as VizeString};
+use vize_l0::CompactString;
 
 fn plan(script: &str) -> NamespaceHoistPlan {
     NamespaceHoistPlan::collect(Some(script), false, true)
@@ -165,7 +165,7 @@ fn captured_setup_bindings_become_ambient_aliases_of_the_setup_return() {
         }]
     );
 
-    let mut ts = VizeString::default();
+    let mut ts = crate::virtual_ts::TextBuf::default();
     plan.emit_ambient_captures(&mut ts, &exports);
     assert_eq!(
         ts.as_str(),
@@ -185,7 +185,7 @@ fn a_member_property_matching_a_setup_binding_is_not_captured() {
     let script = "const total = 1;\nconst counts = { total: 2 };\nnamespace Sums {\n  export const value = counts.total;\n}\n";
 
     let plan = plan(script);
-    let mut ts = VizeString::default();
+    let mut ts = crate::virtual_ts::TextBuf::default();
     plan.emit_ambient_captures(&mut ts, &[]);
     assert_eq!(
         ts.as_str(),
@@ -200,7 +200,7 @@ fn a_merge_partner_body_capture_is_aliased_too() {
     let script = "const seed = 1;\nexport function build() {\n  return seed;\n}\nexport namespace build {\n  export const v = 2;\n}\n";
 
     let plan = plan(script);
-    let mut ts = VizeString::default();
+    let mut ts = crate::virtual_ts::TextBuf::default();
     plan.emit_ambient_captures(&mut ts, &[]);
     assert_eq!(
         ts.as_str(),
@@ -217,7 +217,7 @@ fn a_script_setup_block_keeps_the_plan_empty() {
     let plan = NamespaceHoistPlan::collect(Some(script), true, true);
     assert_eq!(plan.spans(), &[] as &[(u32, u32)]);
 
-    let mut ts = VizeString::default();
+    let mut ts = crate::virtual_ts::TextBuf::default();
     plan.emit_ambient_captures(&mut ts, &[]);
     assert_eq!(ts.as_str(), "");
 }

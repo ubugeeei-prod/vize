@@ -2,6 +2,7 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import fs from "node:fs";
+import { beforeProjectionTextBuffer } from "../../../tools/support/compat/content-mapper/projection-text-buffer-transition.ts";
 
 type Identity = { bytes: number; sha256: string };
 type Edit = { before: string; after: string };
@@ -56,6 +57,8 @@ export function emitMemberInferEditsBefore(
   path: string,
   current: string,
 ): string {
+  // The newer projection text-buffer layer comes off first.
+  current = beforeProjectionTextBuffer(path, current);
   const entry = record(read).files.find((entry) => entry.path === path);
   return entry ? editsBefore(current, entry.edits) : current;
 }

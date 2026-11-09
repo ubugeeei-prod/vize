@@ -13,7 +13,7 @@ use crate::virtual_ts::generic_parameters::GenericParameters;
 
 use super::template_model_modifiers::{model_modifier_prop_name, model_modifier_type};
 
-fn emit_type_member(ts: &mut String, name: &str, optional: &str, ty: &str) {
+fn emit_type_member(ts: &mut crate::virtual_ts::TextBuf, name: &str, optional: &str, ty: &str) {
     ts.push_str("  ");
     push_ts_string_literal(ts, name);
     append!(*ts, "{optional}: {ty};\n");
@@ -44,7 +44,7 @@ fn parent_requires_prop(prop: &PropDefinition) -> bool {
 }
 
 fn emit_model_prop_members(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     summary: &Croquis,
     model: &ModelDefinition,
     generic_parameters: Option<&GenericParameters>,
@@ -91,7 +91,7 @@ pub(crate) fn emitted_model_prop_names(
 }
 
 pub(super) fn append_model_props_type_literal(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     summary: &Croquis,
     models: &[ModelDefinition],
     generic_parameters: Option<&GenericParameters>,
@@ -116,7 +116,7 @@ pub(super) fn append_model_props_type_literal(
 }
 
 pub(super) fn append_macro_props_type_literal(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     summary: &Croquis,
     models: &[ModelDefinition],
     generic_parameters: Option<&GenericParameters>,

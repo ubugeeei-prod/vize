@@ -11,7 +11,7 @@ impl TemplateRefKeyChecks<'_> {
     /// Append one authored script line with exact spans for specialized callees.
     pub(in crate::virtual_ts::generator) fn emit_line(
         &self,
-        ts: &mut String,
+        ts: &mut crate::virtual_ts::TextBuf,
         mappings: &mut Vec<VizeMapping>,
         mut line: Cow<'_, str>,
         (start, original_length): (usize, usize),

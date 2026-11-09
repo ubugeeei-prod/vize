@@ -78,7 +78,7 @@ impl ExplicitGenerics {
     /// declares its own with [`Self::emit_usage`] in that scope.
     pub(crate) fn emit(
         &self,
-        ts: &mut String,
+        ts: &mut crate::virtual_ts::TextBuf,
         mappings: &mut Vec<VizeMapping>,
         summary: &Croquis,
         template_source: Option<&str>,
@@ -111,7 +111,7 @@ impl ExplicitGenerics {
     /// each of their diagnostics twice.
     pub(crate) fn emit_usage(
         &self,
-        ts: &mut String,
+        ts: &mut crate::virtual_ts::TextBuf,
         mappings: Option<&mut Vec<VizeMapping>>,
         (source, template_offset): (&str, u32),
         usage_start: u32,

@@ -7,8 +7,8 @@ import { certifiedTransition } from "./canonical-helper-transition.ts";
 const constructorSources = [
   [
     "../../../../crates/vize_canon/src/virtual_ts/generator/component_constructors.rs",
-    10946,
-    "70ea8375a7bc7b9617866eefadb0d83aa074240a1c6b603d06af46ed230a2489",
+    11021,
+    "e0cfed345e8b961f56738eb2a2ed54fa6712d7dc218ffeb35a425cf6f973aeed",
   ],
   [
     "../../../../crates/vize_canon/src/virtual_ts/generator/component_constructors/emission.rs",
@@ -17,8 +17,8 @@ const constructorSources = [
   ],
   [
     "../../../../crates/vize_canon/src/virtual_ts/generator/component_constructors/generic_function.rs",
-    2839,
-    "7c7451a47f01d61f75bac6af903ca1236c7bdf41b59ab278361898b02351db9e",
+    2849,
+    "8a1efd07936035204b2f557b9d86cd55f0926c80e60f55e1d49eb44e1a48cdd1",
   ],
 ] as const;
 for (const [file, bytes, sha256] of constructorSources) {

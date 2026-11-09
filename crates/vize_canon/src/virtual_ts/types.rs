@@ -173,7 +173,10 @@ fn is_plain_identifier(name: &str) -> bool {
 
 pub(crate) const DEFAULT_LIB_REFERENCES: &[&str] = &["es2022", "dom", "dom.iterable"];
 
-pub(crate) fn emit_lib_reference_directives(output: &mut String, lib_references: &[&str]) {
+pub(crate) fn emit_lib_reference_directives(
+    output: &mut crate::virtual_ts::TextBuf,
+    lib_references: &[&str],
+) {
     for lib in lib_references {
         let lib = lib.trim();
         if lib.is_empty() || !is_safe_ts_lib_reference(lib) {
@@ -342,11 +345,10 @@ pub struct VirtualTsOutput {
 #[cfg(test)]
 mod tests {
     use super::emit_lib_reference_directives;
-    use vize_carton::String;
 
     #[test]
     fn virtual_ts_lib_references_are_pluggable() {
-        let mut output = String::default();
+        let mut output = crate::virtual_ts::TextBuf::default();
         emit_lib_reference_directives(&mut output, &["es2021", "webworker", "bad\" />"]);
 
         assert_eq!(

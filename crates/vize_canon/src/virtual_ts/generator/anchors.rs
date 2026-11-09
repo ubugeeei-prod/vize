@@ -37,7 +37,7 @@ pub(super) fn setup_binding_anchor_comment(preserve_unused_diagnostics: bool) ->
 /// yet still surfaces TS6133 as a hint, so anchoring on binding kind alone
 /// would suppress true positives there.
 pub(super) fn emit_props_shadow_anchor(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     summary: &Croquis,
     template_referenced_names: &FxHashSet<String>,
 ) -> Option<Range<usize>> {
@@ -92,7 +92,7 @@ pub(super) struct SetupBindingAnchors<'a> {
 impl SetupBindingAnchors<'_> {
     pub(super) fn emit_with_components(
         &self,
-        ts: &mut String,
+        ts: &mut crate::virtual_ts::TextBuf,
         options: &VirtualTsOptions,
         global_components: &GlobalComponentPlan<'_>,
         type_only_imports: &FxHashSet<CompactString>,
@@ -111,13 +111,13 @@ impl SetupBindingAnchors<'_> {
         );
     }
 
-    pub(super) fn emit(&self, ts: &mut String, label: &'static str) {
+    pub(super) fn emit(&self, ts: &mut crate::virtual_ts::TextBuf, label: &'static str) {
         self.emit_with_value_reads(ts, label, &[]);
     }
 
     fn emit_with_value_reads(
         &self,
-        ts: &mut String,
+        ts: &mut crate::virtual_ts::TextBuf,
         label: &'static str,
         value_reads: &[CompactString],
     ) {
@@ -141,7 +141,7 @@ impl SetupBindingAnchors<'_> {
 }
 
 fn emit_setup_binding_anchors(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     summary: &Croquis,
     imports: &ValueImportNames,
     usage: &IdentifierUsage,
@@ -272,7 +272,6 @@ mod tests {
     use oxc_parser::Parser;
     use oxc_span::SourceType;
     use vize_atelier_sfc::{SfcParseOptions, parse_sfc};
-    use vize_carton::String;
     use vize_croquis::{Analyzer, AnalyzerOptions};
 
     use crate::batch::{ImportRewriter, generate_vue_document_virtual_ts};
@@ -321,7 +320,7 @@ mod tests {
         let usage = super::super::imports::collect_identifier_usage(&parsed.program);
         let imports =
             super::super::imports::ImportNames::collect(&summary, Some(script), &usage).values;
-        let mut anchors = String::default();
+        let mut anchors = crate::virtual_ts::TextBuf::default();
         super::emit_setup_binding_anchors(
             &mut anchors,
             &summary,
@@ -380,7 +379,7 @@ const state = ref(State.Idle);"#;
         let usage = super::super::imports::collect_identifier_usage(&parsed.program);
         let imports =
             super::super::imports::ImportNames::collect(&summary, Some(script), &usage).values;
-        let mut anchors = String::default();
+        let mut anchors = crate::virtual_ts::TextBuf::default();
         super::emit_setup_binding_anchors(
             &mut anchors,
             &summary,
@@ -418,7 +417,7 @@ onMounted(() => { stop = () => {}; count++; });"#;
         let usage = super::super::imports::collect_identifier_usage(&parsed.program);
         let imports =
             super::super::imports::ImportNames::collect(&summary, Some(script), &usage).values;
-        let mut anchors = String::default();
+        let mut anchors = crate::virtual_ts::TextBuf::default();
         super::emit_setup_binding_anchors(
             &mut anchors,
             &summary,

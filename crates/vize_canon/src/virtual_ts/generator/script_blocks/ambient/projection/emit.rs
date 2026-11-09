@@ -1,5 +1,5 @@
 use oxc_span::Span;
-use vize_carton::{String, append};
+use vize_carton::append;
 
 use super::AmbientProjection;
 use crate::virtual_ts::VizeMapping;
@@ -7,7 +7,7 @@ use crate::virtual_ts::VizeMapping;
 impl AmbientProjection {
     pub(in crate::virtual_ts::generator) fn emit_module_statement(
         &mut self,
-        ts: &mut String,
+        ts: &mut crate::virtual_ts::TextBuf,
         mappings: &mut Vec<VizeMapping>,
         script: &str,
         span: (u32, u32),
@@ -81,7 +81,7 @@ impl AmbientProjection {
 }
 
 pub(super) fn mapped(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     mappings: &mut Vec<VizeMapping>,
     script: &str,
     span: Span,

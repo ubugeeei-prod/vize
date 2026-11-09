@@ -3,7 +3,7 @@
 //! Reuse Croquis usage indices and event spans; these buffers are not another template/scope graph.
 //! Dynamic expressions keep the old order because moving a closure changes TS narrowing.
 
-use vize_carton::{FxHashMap, FxHashSet, String};
+use vize_carton::{FxHashMap, FxHashSet};
 use vize_croquis::{BindingType, Scope, ScopeData, analysis::ComponentUsage};
 use vize_relief::{ExpressionNode, PropNode, TemplateChildNode};
 
@@ -21,7 +21,7 @@ pub(super) fn callback_input_facts(element: &vize_relief::ElementNode<'_>) -> Op
 pub(crate) struct RootOwnerBuffer {
     pub(crate) diagnostic_ownership:
         crate::virtual_ts::diagnostic_ownership::DiagnosticOwnershipCollector,
-    pub(crate) text: String,
+    pub(crate) text: crate::virtual_ts::TextBuf,
     pub(crate) mappings: Vec<VizeMapping>,
     pub(crate) diagnostic_mappings: Vec<VizeMapping>,
     pub(crate) semantic_links: Vec<VizeSemanticLink>,
@@ -30,7 +30,7 @@ pub(crate) struct RootOwnerBuffer {
 impl RootOwnerBuffer {
     pub(super) fn append_to(
         self,
-        text: &mut String,
+        text: &mut crate::virtual_ts::TextBuf,
         mappings: &mut Vec<VizeMapping>,
         diagnostic_mappings: &mut Vec<VizeMapping>,
         links: &mut Vec<VizeSemanticLink>,
@@ -80,7 +80,7 @@ pub(super) struct RootOwnerPacket {
 impl RootOwnerPacket {
     pub(super) fn append_to(
         self,
-        text: &mut String,
+        text: &mut crate::virtual_ts::TextBuf,
         mappings: &mut Vec<VizeMapping>,
         diagnostic_mappings: &mut Vec<VizeMapping>,
         links: &mut Vec<VizeSemanticLink>,
