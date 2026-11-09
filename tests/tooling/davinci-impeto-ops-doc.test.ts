@@ -82,6 +82,6 @@ test("P3-5 Impeto op reference is cross-linked from Folio docs and rustdoc", () 
 
   assert.match(folio, /\[`impeto-ops\.md`\]\(\.\/impeto-ops\.md\)/u);
   assert.match(lib, /\[`docs\/davinci\/plan\/impeto-ops\.md`\]/u);
-  assert.match(phase, /P3-5 Impeto op reference doc/u);
+  assert.match(phase, /P3-5 Impeto op reference doc/u); // the plan keeps the codename alias
   assert.match(phase, /\[P3-5 record\]\(\.\/phase-3-records\/p3-5\.md\)/u);
 });
