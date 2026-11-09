@@ -10,8 +10,8 @@ use std::collections::BTreeMap;
 use vize_l0::profiler::CounterSummary;
 
 use super::refusal::RefusalCensus;
-use super::shapes::Shape;
 use super::vapor_surface;
+use vize_atelier_sfc::dom_differential::shapes::Shape;
 use vize_atelier_sfc::{SfcDescriptor, SfcError};
 use vize_l1_to_l2::EmitError;
 

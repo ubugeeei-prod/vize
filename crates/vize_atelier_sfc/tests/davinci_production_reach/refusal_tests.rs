@@ -3,10 +3,10 @@ use vize_atelier_sfc::{SfcParseOptions, parse_sfc};
 use vize_l0::Span;
 use vize_l1_to_l2::{EmitError, UnsupportedReason};
 
-use super::diff::divergence;
 use super::refusal::{DIAGNOSTICS, RefusalCensus, SELECTOR, bucket};
-use super::shapes::{Shape, compile};
 use super::tally::{EMIT_REFUSED, Lane, classify};
+use vize_atelier_sfc::dom_differential::diff::divergence;
+use vize_atelier_sfc::dom_differential::shapes::{Shape, compile};
 
 #[test]
 fn census_groups_refusals_by_stable_bucket_largest_first() {

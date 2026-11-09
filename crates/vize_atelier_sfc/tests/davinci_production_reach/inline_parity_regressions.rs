@@ -1,7 +1,7 @@
 //! Inline production compiles must retain transform-time scope and helper order.
 
-use super::shapes::{Shape, compile};
 use sha2::{Digest, Sha256};
+use vize_atelier_sfc::dom_differential::shapes::{Shape, compile};
 use vize_atelier_sfc::{SfcParseOptions, parse_sfc};
 use vize_l0::profiler::global_profiler;
 

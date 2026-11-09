@@ -1,7 +1,13 @@
 //! Whole-module byte comparison for the production-parity oracle.
-#![expect(clippy::string_slice, reason = "tests assert by panicking")]
+#![expect(
+    clippy::disallowed_macros,
+    clippy::disallowed_methods,
+    clippy::disallowed_types,
+    clippy::string_slice,
+    reason = "differential reports are std strings; windows slice at char boundaries"
+)]
 
-use vize_atelier_sfc::{SfcCompileResult, SfcError};
+use crate::{SfcCompileResult, SfcError};
 
 /// The first field on which the L2-selected and forced-legacy modules differ.
 pub fn divergence(
@@ -92,7 +98,7 @@ fn window(source: &str, other: &str) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use vize_atelier_sfc::BlockLocation;
+    use crate::BlockLocation;
 
     fn error(code: &str, message: &str) -> SfcError {
         SfcError {
