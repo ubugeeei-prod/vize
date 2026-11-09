@@ -15,6 +15,8 @@ impl MaestroServer {
             .documents
             .open(uri.clone(), content, version, language_id);
         let project = self.for_document(&uri).await;
+        #[cfg(feature = "native")]
+        project.state.note_corsa_document_boundary();
         project.finish_open_document(uri, version).await;
     }
 
@@ -65,6 +67,8 @@ impl MaestroServer {
             scheduler.discard_closed(&uri, &self.state.documents);
         }
         let project = self.for_document(&uri).await;
+        #[cfg(feature = "native")]
+        project.state.note_corsa_document_boundary();
         project.finish_close_document(uri).await;
         #[cfg(feature = "native")]
         self.state.release_closed_child_contexts();

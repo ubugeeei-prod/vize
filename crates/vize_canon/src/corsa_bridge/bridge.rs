@@ -66,6 +66,18 @@ impl CorsaBridge {
         self.editor_session.trust_watched_disk_inputs();
     }
 
+    /// Without a client watcher, validate captured disk inputs in the
+    /// background instead of on every request.
+    pub fn sweep_unwatched_disk_inputs(&self) {
+        self.editor_session.sweep_unwatched_disk_inputs();
+    }
+
+    /// An editor opened, changed, saved or closed a document: the next
+    /// preparation validates the captured disk inputs before answering.
+    pub fn note_editor_document_boundary(&self) {
+        self.editor_session.cache().note_document_boundary();
+    }
+
     /// Create a new Corsa bridge with default configuration.
     pub fn new() -> Self {
         Self::with_config(CorsaBridgeConfig::default())

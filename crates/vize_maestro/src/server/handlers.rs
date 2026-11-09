@@ -138,6 +138,8 @@ impl LanguageServer for MaestroServer {
         #[cfg(feature = "native")]
         self.state.observe_configuration_retry_trigger();
         let server = self.for_document(&params.text_document.uri).await;
+        #[cfg(feature = "native")]
+        server.state.note_corsa_document_boundary();
         let uri = params.text_document.uri;
         server.publish_saved_diagnostics(&uri).await;
     }

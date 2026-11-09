@@ -26,6 +26,10 @@ impl SessionCache {
         self.generation
     }
 
+    pub(super) fn prebuilt_fingerprint(&self) -> Option<&ContextFingerprint> {
+        self.prebuilt.as_ref().map(|prebuilt| &prebuilt.fingerprint)
+    }
+
     pub(super) fn reset_prebuilt(&mut self) {
         self.prebuilt = None;
         self.generation = self.generation.wrapping_add(1);
@@ -59,7 +63,7 @@ impl SessionCache {
             .flat_map(|members| members.values())
             .filter(|member| {
                 !member.fingerprint.dependency_overlays_current(overlays)
-                    || (!self.trust_watched_disk_inputs
+                    || (!self.disk_inputs_trusted()
                         && !member.fingerprint.stamps_still_valid(&mut observed))
             })
             .flat_map(|member| member.source_paths.iter().cloned())
