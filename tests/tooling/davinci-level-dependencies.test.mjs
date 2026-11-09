@@ -21,7 +21,7 @@ import {
   validateProductAllowlist,
 } from "../../tools/support/compat/davinci/level-dependencies.ts";
 
-import { fixture, rejectsPath } from "./support/level-dependencies.mjs";
+import { fixture, oldL3Package, rejectsPath } from "./support/level-dependencies.mjs";
 
 void test("three actual entries produce five witnesses and include both alias owners", () => {
   const value = fixture(),
@@ -31,14 +31,14 @@ void test("three actual entries produce five witnesses and include both alias ow
   assert.equal(report.witnesses.length, 5);
   assert.deepEqual(
     report.roots.map(({ name }) => name),
-    ["vize_carton", "vize_impeto", "vize_l1", "vize_l1_to_l2", "vize_l2", "vize_l2_to_l3"],
+    ["vize_carton", oldL3Package, "vize_l1", "vize_l1_to_l2", "vize_l2", "vize_l2_to_l3"],
   );
   assert.equal(report.aliases.vize_l0, "vize_carton");
-  assert.equal(report.aliases.vize_l3, "vize_impeto");
+  assert.equal(report.aliases.vize_l3, oldL3Package);
   assert.ok(report.unknown.some((entry) => entry.includes("physical L4")));
 });
 
-for (const owner of ["vize_carton", "vize_impeto"]) {
+for (const owner of ["vize_carton", oldL3Package]) {
   void test("legacy normal dependency of alias owner " + owner + " is rejected", () => {
     rejectsPath(
       ({ add }) => add(owner, "vize_relief"),
@@ -49,15 +49,15 @@ for (const owner of ["vize_carton", "vize_impeto"]) {
 
 void test("canonical L3 package replaces its old alias owner without expanding debt", () => {
   const value = fixture(),
-    old = value.pkg("vize_impeto");
+    old = value.pkg(oldL3Package);
   old.name = "vize_l3";
   old.manifest_path = "/fixtures/crates/vize_l3/Cargo.toml";
-  const dep = value.pkg("vize_l2_to_l3").dependencies.find((entry) => entry.name === "vize_impeto");
+  const dep = value.pkg("vize_l2_to_l3").dependencies.find((entry) => entry.name === oldL3Package);
   Object.assign(dep, { name: "vize_l3", rename: null, path: "/fixtures/crates/vize_l3" });
   const report = value.report();
   assertDependencyReport(report);
   assert.ok(report.roots.some(({ name }) => name === "vize_l3"));
-  assert.ok(!report.roots.some(({ name }) => name === "vize_impeto"));
+  assert.ok(!report.roots.some(({ name }) => name === oldL3Package));
   assert.equal(report.exceptions, 3);
 });
 
