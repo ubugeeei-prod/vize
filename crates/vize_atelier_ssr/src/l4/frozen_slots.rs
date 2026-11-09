@@ -179,11 +179,12 @@ mod tests {
             FrozenTemplate::new(&root, &source, &frozen).expect("original parser bundle");
         let owned = lower(&arena, &source);
         let equivalent = lower(&arena, &source);
-        let facts = FrozenSlotFacts::new(template, &source, &owned.root).expect("owned lowering");
-        assert!(facts.validate(&source, &owned.root).is_ok());
+        let facts =
+            FrozenSlotFacts::new(template, &source, &owned.artifact.root).expect("owned lowering");
+        assert!(facts.validate(&source, &owned.artifact.root).is_ok());
         for (caller, region) in [
-            (source.as_str(), &equivalent.root),
-            (copy.as_str(), &owned.root),
+            (source.as_str(), &equivalent.artifact.root),
+            (copy.as_str(), &owned.artifact.root),
         ] {
             let before = vize_l0::cstr!("{region:?}");
             assert_eq!(
@@ -193,10 +194,10 @@ mod tests {
             assert_eq!(vize_l0::cstr!("{region:?}"), before);
         }
         assert_eq!(
-            FrozenSlotFacts::new(template, &copy, &owned.root).err(),
+            FrozenSlotFacts::new(template, &copy, &owned.artifact.root).err(),
             Some("Frozen literal slot provenance belongs to a different template source.")
         );
-        let Op::Element(slot) = &owned.root.ops[0] else {
+        let Op::Element(slot) = &owned.artifact.root.ops[0] else {
             panic!("frozen literal is ElementOp")
         };
         assert!(facts.permits(slot));
@@ -230,12 +231,12 @@ mod tests {
             assert!(crate::compile_l2_to_ssr(&arena, source, &root, &options).is_none());
         }
         let normal = lower(&arena, "<slot></slot>");
-        assert!(matches!(&normal.root.ops[0], Op::Slot(_)));
+        assert!(matches!(&normal.artifact.root.ops[0], Op::Slot(_)));
         assert!(matches!(
             l2_input::select_l2_lane(
                 &arena,
                 "<slot></slot>",
-                &normal.root,
+                &normal.artifact.root,
                 &SsrCompilerOptions::default()
             ),
             SsrL4Selection::Emitted(_)

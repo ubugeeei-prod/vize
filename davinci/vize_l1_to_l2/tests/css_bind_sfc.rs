@@ -55,11 +55,12 @@ fn the_sfc_fixture_folio_pins_template_and_css_bind() {
     let (tree, errors) = parse(&allocator, template);
     let mut lowered = lower_source_block(&allocator, &tree, &errors, template_block);
     lowered.push_style_block_in(&allocator, css_block);
-    let folio = L2Page::of(&lowered.root.ops);
+    let folio = L2Page::of(&lowered.artifact.root.ops);
     assert_eq!(u64::from(lowered.op_count), folio.op_count());
     assert_eq!(folio.print_to_string(DumpMode::Full).as_str(), CANONICAL);
     assert_eq!(verify(&folio, Rigor::Raw), Vec::<Violation>::new());
     let provenance: Vec<(&str, u32, u32, &str)> = lowered
+        .artifact
         .provenance
         .iter()
         .map(|record| {
@@ -101,10 +102,10 @@ fn unicode_prefix_does_not_shift_authored_spans() {
     let mut lowered = lower_source_block(&allocator, &tree, &errors, template_block);
     lowered.push_style_block_in(&allocator, css_block);
 
-    let folio = L2Page::of(&lowered.root.ops);
+    let folio = L2Page::of(&lowered.artifact.root.ops);
     assert_eq!(verify(&folio, Rigor::Raw), Vec::<Violation>::new());
     assert_authored_artifact(source, &lowered);
-    assert!(lowered.root.ops.iter().any(|op| match op {
+    assert!(lowered.artifact.root.ops.iter().any(|op| match op {
         Op::Element(element) if element.tag == "style" => {
             element.span.start == css_start && element.span.end == css_start + css.len() as u32
         }
@@ -132,6 +133,7 @@ fn duplicate_style_blocks_keep_their_source_identity() {
     lowered.push_style_block_in(&allocator, second_block);
 
     let style = lowered
+        .artifact
         .root
         .ops
         .iter()

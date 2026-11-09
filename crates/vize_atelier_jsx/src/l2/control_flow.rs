@@ -2,7 +2,7 @@ use std::vec::Vec as StdVec;
 
 use vize_l0::id::NodeId;
 use vize_l0::{Allocator, Box, Span, String, Vec};
-use vize_l1_to_l2::lower::OpFamily;
+use vize_l2::artifact::OpFamily;
 use vize_l2::expr::ExprRef;
 use vize_l2::op::{ForBinding, ForOp, IfBranch, IfOp, Op, Region};
 use vize_l2::scope::{ScopeBinding, ScopeFacts, ScopeOrigin};

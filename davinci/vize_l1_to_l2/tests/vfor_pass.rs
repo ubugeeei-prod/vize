@@ -43,7 +43,11 @@ fn consumption_publishes_the_scope_view_per_position() {
     with_transformed(source, |lowered, _, facts, _| {
         assert_eq!(lowered.diagnostics, vec![]);
         let id = NodeId::from_index(0).expect("op 0 has an id");
-        let recorded = lowered.scopes.get(id).expect("the lowering scoped it");
+        let recorded = lowered
+            .artifact
+            .scopes
+            .get(id)
+            .expect("the lowering scoped it");
         assert_eq!(
             facts.for_facts.sorted_entries(),
             vec![(
@@ -61,6 +65,7 @@ fn consumption_publishes_the_scope_view_per_position() {
         // record behind it (the iterated element: dynamic text, no
         // hoistable props).
         let records: Vec<(&str, &str, &str)> = lowered
+            .artifact
             .provenance
             .iter()
             .filter(|record| {
@@ -106,7 +111,7 @@ fn a_destructuring_alias_is_pending_and_named_positions_still_enumerate() {
         assert_eq!(fact.value, ForName::Pending);
         assert_eq!(fact.key, ForName::Named("i".into()));
         assert_eq!(fact.index, ForName::Absent);
-        let recorded = lowered.scopes.get(entries[0].0).expect("scoped");
+        let recorded = lowered.artifact.scopes.get(entries[0].0).expect("scoped");
         assert_eq!(recorded.bindings.len(), 1, "only `i` is enumerated");
     });
     assert_transformed_sound(source, "destructure");
@@ -127,7 +132,7 @@ fn an_absent_alias_consumes_as_absent_never_synthesized() {
         assert_eq!(entries[0].1.value, ForName::Absent);
         assert_eq!(entries[0].1.key, ForName::Absent);
         assert_eq!(entries[0].1.index, ForName::Absent);
-        for (_, scope) in lowered.scopes.sorted_entries() {
+        for (_, scope) in lowered.artifact.scopes.sorted_entries() {
             for binding in &scope.bindings {
                 assert!(
                     matches!(binding.origin, ScopeOrigin::Authored { .. }),

@@ -129,7 +129,7 @@ fn schedule_contract_codes_match_the_independent_reference() {
             let (tree, errors) = vize_l1::markup::parse(&allocator, source.trim_end());
             assert!(errors.is_empty(), "{errors:?}");
             let s2 = vize_l1_to_l2::lower(&allocator, &tree, &errors);
-            let mut program = vize_l2_to_l3::lower(&allocator, &s2.root).program;
+            let mut program = vize_l2_to_l3::lower(&allocator, &s2.artifact.root).program;
             assert_eq!(verify(&program), [], "{stem} must lower to valid L3");
             if !mutate(&mut program, scenario) {
                 continue;

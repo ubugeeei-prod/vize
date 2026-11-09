@@ -155,8 +155,8 @@ fn rendering_omits_annotations_while_surface_lowering_retains_their_custody() {
         let (tree, errors) = vize_l1::markup::parse(&allocator, &source);
         assert!(errors.is_empty(), "{errors:?}");
         let lowered = vize_l1_to_l2::lower_preserving_comments(&allocator, &tree, &errors);
-        assert!(matches!(lowered.root.ops.first(),
+        assert!(matches!(lowered.artifact.root.ops.first(),
             Some(vize_l2::op::Op::Comment(comment)) if comment.content == annotation));
-        assert_eq!(lowered.root.ops.len(), 2);
+        assert_eq!(lowered.artifact.root.ops.len(), 2);
     }
 }

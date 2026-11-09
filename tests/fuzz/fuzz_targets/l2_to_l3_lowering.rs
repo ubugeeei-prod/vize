@@ -36,7 +36,7 @@ fuzz_target!(|data: &[u8]| {
     let root = SourceRoot::new(source).expect("the fuzz target rejects u32-overflowing sources");
     let (tree, errors) = parse(&allocator, source);
     let s2 = lower_l1_to_l2(&allocator, &tree, &errors);
-    let mut lowered = lower_l2_to_l3(&allocator, &s2.root);
+    let mut lowered = lower_l2_to_l3(&allocator, &s2.artifact.root);
 
     assert_eq!(verify(&lowered.program), vec![]);
     assert_spans_resolve(root, &lowered);

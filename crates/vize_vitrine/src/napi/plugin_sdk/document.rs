@@ -74,7 +74,7 @@ pub struct PluginDocument {
     pub source: String,
     pub production: super::production::ProductionDocument,
     pub nodes: Vec<PluginNode>,
-    /// `lowered.scopes` names per binding-introducing op, in id order.
+    /// `lowered.artifact.scopes` names per binding-introducing op, in id order.
     pub scopes: Vec<(u32, Vec<String>)>,
 }
 
@@ -116,10 +116,10 @@ impl PluginDocument {
         let (tree, errors) = vize_l1::markup::parse(&allocator, content);
         let lowered = lower_source_block(&allocator, &tree, &errors, block);
         let mut walk = Walk::default();
-        walk.region(&lowered.root, None);
+        walk.region(&lowered.artifact.root, None);
         document.nodes = walk.nodes;
         for id in 0..lowered.op_count {
-            let facts = NodeId::from_index(id).and_then(|node| lowered.scopes.get(node));
+            let facts = NodeId::from_index(id).and_then(|node| lowered.artifact.scopes.get(node));
             if let Some(facts) = facts {
                 let names = facts.bindings.iter().map(|b| b.name.to_string()).collect();
                 document.scopes.push((id, names));

@@ -85,6 +85,7 @@ use vize_l2::provenance::ProvenanceSink;
 
 use super::walk::{PageWalk, assert_accounting};
 use crate::lower::Lowered;
+use vize_l2::artifact::ArtifactParts;
 
 mod check;
 use check::check_model;
@@ -123,10 +124,11 @@ pub const DESC: PassDesc = PassDesc::new(
 #[must_use]
 pub fn run(lowered: &mut Lowered<'_, impl ProvenanceSink>) -> SideTable<ModelFacts> {
     let Lowered {
-        root,
+        artifact: ArtifactParts {
+            root, provenance, ..
+        },
         op_count,
         diagnostics,
-        provenance,
         ..
     } = lowered;
     let mut channels = Channels {

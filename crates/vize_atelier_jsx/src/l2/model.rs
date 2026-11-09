@@ -1,5 +1,5 @@
 use vize_l0::{Allocator, Box, Vec};
-use vize_l1_to_l2::lower::{LoweringFeatures, OpFamily};
+use vize_l2::artifact::{LoweringFeatures, OpFamily};
 use vize_l2::{
     expr::ExprRef,
     op::{Attribute, BindingContract, BindingOp, DynamicName, ModelOp},

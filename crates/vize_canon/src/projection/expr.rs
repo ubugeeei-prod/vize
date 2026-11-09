@@ -26,7 +26,7 @@ pub fn project_template_expressions(source: &str) -> ProjectionMapping {
     let allocator = Allocator::new();
     let (tree, errors) = vize_l1::markup::parse(&allocator, source);
     let lowered = lower(&allocator, &tree, &errors);
-    let document = project_template_expression_document(&lowered.root);
+    let document = project_template_expression_document(&lowered.artifact.root);
     ProjectionMapping::from_emit_document(&document)
 }
 

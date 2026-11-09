@@ -38,14 +38,15 @@ fuzz_target!(|data: &[u8]| {
     let (tree, errors) = parse(&allocator, source);
     let lowered = lower(&allocator, &tree, &errors);
     assert_fact_spans_resolve(source, &lowered);
-    let folio = L2Page::of(&lowered.root.ops);
+    let folio = L2Page::of(&lowered.artifact.root.ops);
     assert_eq!(u64::from(lowered.op_count), folio.op_count());
     assert_eq!(verify(&folio, Rigor::Canonical), vec![]);
-    assert_eq!(verify_table(&folio, &lowered.scopes), vec![]);
-    assert_eq!(verify_table(&folio, &lowered.texts), vec![]);
-    assert_eq!(verify_table(&folio, &lowered.wrappers), vec![]);
-    assert_eq!(verify_table(&folio, &lowered.for_wrappers), vec![]);
+    assert_eq!(verify_table(&folio, &lowered.artifact.scopes), vec![]);
+    assert_eq!(verify_table(&folio, &lowered.artifact.texts), vec![]);
+    assert_eq!(verify_table(&folio, &lowered.artifact.branch_fragments), vec![]);
+    assert_eq!(verify_table(&folio, &lowered.artifact.loop_fragments), vec![]);
     let provenance_ids: SideTable<()> = lowered
+        .artifact
         .provenance
         .iter()
         .filter_map(|record| record.node.map(|node| (node, ())))
@@ -61,7 +62,7 @@ fn assert_fact_spans_resolve(source: &str, lowered: &Lowered<'_>) {
     for diagnostic in &lowered.diagnostics {
         assert_span_resolves(root, diagnostic.span, "diagnostic");
     }
-    for record in &lowered.provenance {
+    for record in &lowered.artifact.provenance {
         assert_span_resolves(root, record.span, "provenance");
     }
 }

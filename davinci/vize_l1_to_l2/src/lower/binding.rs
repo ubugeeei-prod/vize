@@ -18,8 +18,8 @@
 //! ops; only ill-formed spellings still defer. The remaining set is still
 //! DOM realization (P2-11).
 
-use super::features::OpFamily;
 use alloc::vec::Vec as StdVec;
+use vize_l2::artifact::OpFamily;
 
 use vize_l0::{Box, Span, String, Vec, cstr};
 

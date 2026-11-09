@@ -94,6 +94,7 @@ fn extraction_moves_the_key_from_the_attribute_surface_to_a_fact() {
         // series-6 analysis pass records its per-owner facts behind them
         // (both carriers fully static once their keys moved to facts).
         let rules: Vec<(&str, &str)> = lowered
+            .artifact
             .provenance
             .iter()
             .filter(|record| {
@@ -153,6 +154,7 @@ fn duplicate_authored_keys_flag_every_later_branch_exactly() {
             assert_eq!(diagnostic.span, span_of(source, r#"key="dup""#, occurrence));
         }
         let errors: Vec<&str> = lowered
+            .artifact
             .provenance
             .iter()
             .filter(|record| record.rule.as_str() == "error.v-if-same-key")
@@ -236,7 +238,7 @@ fn lowering_publishes_vif_facts_before_transform() {
     let source = r#"<p v-if="a" key="x">1</p><p v-else>2</p>"#;
     with_lowered(source, |lowered, folio| {
         assert!(!folio.ops.is_empty(), "the chain lowered to an op");
-        let entries = lowered.if_facts.sorted_entries();
+        let entries = lowered.artifact.if_facts.sorted_entries();
         assert_eq!(entries.len(), 1);
         assert_eq!(
             entries[0].1.branches[0]

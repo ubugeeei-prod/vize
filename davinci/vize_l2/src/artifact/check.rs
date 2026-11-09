@@ -52,6 +52,16 @@ pub(super) fn check(parts: &ArtifactParts<'_>) -> Result<u32, ArtifactError> {
             });
         }
     }
+    let fact_nodes = (parts.texts.iter().map(|(node, _)| node))
+        .chain(parts.for_facts.iter().map(|(node, _)| node))
+        .chain(parts.if_facts.iter().map(|(node, _)| node))
+        .chain(parts.branch_fragments.iter().map(|(node, _)| node))
+        .chain(parts.loop_fragments.iter().map(|(node, _)| node));
+    for node in fact_nodes {
+        if node.index() >= count {
+            return Err(ArtifactError::DanglingFact { node });
+        }
+    }
     Ok(count)
 }
 

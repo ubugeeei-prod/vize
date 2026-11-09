@@ -51,9 +51,10 @@ fn the_merge_fixture_snapshots_the_post_pass_folio() {
         assert_eq!(entries.len(), 2);
         assert_eq!(entries[0].1.parts.len(), 5);
         assert_eq!(entries[1].1.parts.len(), 2);
-        assert_eq!(lowered.texts.len(), 2);
+        assert_eq!(lowered.artifact.texts.len(), 2);
         // The fact publication trail, in page order.
         let records: Vec<&str> = lowered
+            .artifact
             .provenance
             .iter()
             .filter(|record| record.rule.as_str() == "lower.text-fact")
@@ -86,12 +87,14 @@ fn the_condense_fixture_snapshots_the_post_pass_folio() {
         // The condense decisions left their records.
         assert!(
             lowered
+                .artifact
                 .provenance
                 .iter()
                 .any(|record| record.rule.as_str() == "condense.drop-whitespace")
         );
         assert!(
             lowered
+                .artifact
                 .provenance
                 .iter()
                 .any(|record| record.rule.as_str() == "condense.whitespace")

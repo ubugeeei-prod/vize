@@ -27,13 +27,7 @@ pub fn region<'a>(allocator: &'a Allocator, ops: impl IntoIterator<Item = Op<'a>
 }
 
 pub fn seal(root: Region<'_>) -> Result<Artifact<'_>, &'static str> {
-    Artifact::try_new(ArtifactParts {
-        source: SOURCE,
-        root,
-        scopes: Default::default(),
-        provenance: Default::default(),
-    })
-    .map_err(|_| "canonical DOM fixture")
+    Artifact::try_new(ArtifactParts::new(SOURCE, root)).map_err(|_| "canonical DOM fixture")
 }
 
 pub fn element<'a>(

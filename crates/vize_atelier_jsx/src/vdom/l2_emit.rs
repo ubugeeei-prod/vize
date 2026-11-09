@@ -6,6 +6,7 @@ use vize_l1_to_l2::pass::{TransformProfile, run_transform_with_profile};
 use vize_l1_to_l2::{
     DomEmitMode, DomEmitOptions, LegacyCaps, Lowered as L2Lowered, emit_dom_with_options,
 };
+use vize_l2::artifact::ArtifactParts;
 use vize_l2::expr::ExprRef;
 use vize_l2::op::{
     BindingOp, ComponentOp, DynamicName, ElementOp, ModelOp, Op, Region, VueDirectiveOp,
@@ -45,19 +46,14 @@ pub(super) fn try_emit_l2_vdom<'a>(
 
     let mut lowered = L2Lowered {
         allocator,
-        source: l2.source,
-        root: l2.root,
+        artifact: ArtifactParts {
+            scopes: l2.scopes,
+            features: l2.features,
+            ..ArtifactParts::new(l2.source, l2.root)
+        },
         op_count: l2.op_count,
         diagnostics: Default::default(),
-        provenance: Default::default(),
-        scopes: l2.scopes,
-        texts: Default::default(),
         consumed_expressions: Default::default(),
-        if_facts: Default::default(),
-        for_facts: Default::default(),
-        wrappers: Default::default(),
-        for_wrappers: Default::default(),
-        features: l2.features,
         caps: LegacyCaps::VUE3,
     };
     let mut observer = NoObserver;

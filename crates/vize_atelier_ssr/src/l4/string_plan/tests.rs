@@ -10,8 +10,12 @@ fn with_plan(source: &str, check: impl FnOnce(super::SsrStringPlanLowering<'_, '
     let allocator = Allocator::new();
     let (tree, errors) = parse(&allocator, source);
     let s2 = vize_l1_to_l2::lower(&allocator, &tree, &errors);
-    let s3 = lower(&allocator, &s2.root);
-    check(lower_l2_to_string_plan(&allocator, &s2.root, &s3.partition));
+    let s3 = lower(&allocator, &s2.artifact.root);
+    check(lower_l2_to_string_plan(
+        &allocator,
+        &s2.artifact.root,
+        &s3.partition,
+    ));
 }
 
 #[test]
@@ -120,11 +124,11 @@ fn stale_partition_facts_are_rejected() {
     let allocator = Allocator::new();
     let (tree, errors) = parse(&allocator, "<p>{{ msg }}</p>");
     let s2 = vize_l1_to_l2::lower(&allocator, &tree, &errors);
-    let s3 = lower(&allocator, &s2.root);
+    let s3 = lower(&allocator, &s2.artifact.root);
     let mut truncated = vize_l2_to_l3::PartitionFacts::new(&allocator);
     truncated.push(s3.partition.ops[0]);
 
-    let lowered = lower_l2_to_string_plan(&allocator, &s2.root, &truncated);
+    let lowered = lower_l2_to_string_plan(&allocator, &s2.artifact.root, &truncated);
 
     assert!(
         lowered

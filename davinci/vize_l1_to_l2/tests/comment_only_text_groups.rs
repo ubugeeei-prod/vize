@@ -11,6 +11,7 @@ use vize_l2::dump::{Expr as DumpExpr, Op as DumpOp, Page as L2Page};
 
 fn assert_comments(lowered: &Lowered<'_>, source: &str, comments: &[&str], preserved: bool) {
     let mut records = lowered
+        .artifact
         .provenance
         .iter()
         .filter(|record| matches!(record.rule.as_str(), "drop.comment" | "lower.comment"));
@@ -55,8 +56,8 @@ fn comment_only_runs_keep_one_authored_decision_per_comment() {
         assert!(element.children.is_empty());
         assert_eq!(lowered.op_count, 1);
         assert!(lowered.diagnostics.is_empty());
-        assert_eq!(lowered.provenance.len(), count + 1);
-        for (index, record) in lowered.provenance[1..].iter().enumerate() {
+        assert_eq!(lowered.artifact.provenance.len(), count + 1);
+        for (index, record) in lowered.artifact.provenance[1..].iter().enumerate() {
             let start = ("<div>".len() + index * comment.len()) as u32;
             assert_eq!(record.rule.as_str(), "drop.comment");
             assert_eq!(record.before.as_str(), comment);
@@ -122,7 +123,7 @@ fn preserved_comments_remain_distinct_children_in_authored_order() {
     let (tree, errors) = vize_l1::markup::parse(&allocator, source);
     assert!(errors.is_empty());
     let lowered = lower_preserving_comments(&allocator, &tree, &errors);
-    let folio = L2Page::of(&lowered.root.ops);
+    let folio = L2Page::of(&lowered.artifact.root.ops);
     let [DumpOp::Element(root)] = folio.ops.as_slice() else {
         panic!("expected the div root");
     };
@@ -177,7 +178,7 @@ fn recovered_leading_bytes_still_break_comment_text_groups() {
     comment.leading = gap.text;
     assert_eq!(vize_l1::markup::check_fidelity(&tree), Ok(()));
     let lowered = lower(&allocator, &tree, &errors);
-    let folio = L2Page::of(&lowered.root.ops);
+    let folio = L2Page::of(&lowered.artifact.root.ops);
     let [DumpOp::Element(root)] = folio.ops.as_slice() else {
         panic!("expected the div root");
     };
@@ -188,7 +189,7 @@ fn recovered_leading_bytes_still_break_comment_text_groups() {
     assert_eq!(first.span, Span::new(5, 6));
     let last_start = source.find(" b").expect("last text exists") as u32;
     assert_eq!(last.span, Span::new(last_start, last_start + 2));
-    assert!(lowered.texts.is_empty());
+    assert!(lowered.artifact.texts.is_empty());
     assert_comments(&lowered, source, &["<!--a-->", "<!--b-->"], false);
     support::assert_authored_artifact(source, &lowered);
 }

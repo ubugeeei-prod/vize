@@ -16,10 +16,11 @@ pub(super) fn capture<'a>(
 ) -> Result<(), AdmissionFailure> {
     let mut facts: HashMap<'_, (u32, u32), _> = HashMap::new_in(allocator.as_oxc());
     facts.extend(
-        (s2.provenance.iter())
+        (s2.artifact.provenance.iter())
             .filter(|record| record.rule == "lower.compound")
             .filter_map(|record| {
-                s2.texts
+                s2.artifact
+                    .texts
                     .get(record.node?)
                     .map(|parts| ((record.span.start, record.span.end), parts))
             }),
@@ -133,7 +134,7 @@ mod tests {
             let scratch = Allocator::new();
             let (tree, errors) = vize_l1::markup::parse(&scratch, SOURCE);
             let s2 = vize_l1_to_l2::lower(&scratch, &tree, &errors);
-            let mut s3 = vize_l2_to_l3::lower(&allocator, &s2.root);
+            let mut s3 = vize_l2_to_l3::lower(&allocator, &s2.artifact.root);
             capture(&allocator, &s2, &mut s3, &mut Retained::new(&allocator)).unwrap();
             s3
         };
@@ -172,14 +173,15 @@ mod tests {
             let allocator = Allocator::new();
             let (tree, errors) = vize_l1::markup::parse(&scratch, SOURCE);
             let mut s2 = vize_l1_to_l2::lower(&scratch, &tree, &errors);
-            let mut s3 = vize_l2_to_l3::lower(&allocator, &s2.root);
-            let (_, parts) = s2.texts.iter_mut().next().unwrap();
+            let mut s3 = vize_l2_to_l3::lower(&allocator, &s2.artifact.root);
+            let (_, parts) = s2.artifact.texts.iter_mut().next().unwrap();
             match mutation {
                 0 => parts.parts[0].text = "stale".into(),
                 1 => parts.parts[0].span.start += 1,
                 2 => parts.parts[1].span.start += 1,
                 3 => parts.parts.last_mut().unwrap().span.end -= 1,
                 _ => s2
+                    .artifact
                     .provenance
                     .retain(|record| record.rule != "lower.compound"),
             }

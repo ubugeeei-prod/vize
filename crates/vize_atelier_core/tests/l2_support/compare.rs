@@ -140,7 +140,7 @@ pub fn compare_with(name: &str, source: &str, counters: &mut Counters, dialect: 
         return;
     }
     let facts = run_transform(&mut lowered, &mut NoObserver);
-    let folio = L2Page::of(&lowered.root.ops);
+    let folio = L2Page::of(&lowered.artifact.root.ops);
     let s2 = l2_lane::collect(
         &folio,
         &l2_lane::Tables {
@@ -184,6 +184,7 @@ pub fn compare_with(name: &str, source: &str, counters: &mut Counters, dialect: 
     // its tree, so the deterministic detector is the L2 lowering's own
     // deferral record.
     let has_vpre = lowered
+        .artifact
         .provenance
         .iter()
         .any(|record| record.rule.as_str() == "defer.v-pre");

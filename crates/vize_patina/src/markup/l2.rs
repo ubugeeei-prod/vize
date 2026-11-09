@@ -58,12 +58,12 @@ impl<'a> L2Markup<'a> {
     /// View a lowered Vue template and the L1 tree it was lowered from.
     pub fn from_lowered(lowered: &'a Lowered<'a>, surface: &'a SurfaceTree<'a>) -> Self {
         Self {
-            root: &lowered.root,
-            source: lowered.source,
+            root: &lowered.artifact.root,
+            source: lowered.artifact.source,
             op_count: lowered.op_count,
             origin: L2Origin::Template,
-            texts: Some(&lowered.texts),
-            text_index: texts::index(lowered.allocator, &lowered.texts),
+            texts: Some(&lowered.artifact.texts),
+            text_index: texts::index(lowered.allocator, &lowered.artifact.texts),
             allocator: Some(lowered.allocator),
             surface: Some(surface),
             authored: None,
@@ -237,11 +237,15 @@ impl<'a> L2Template<'a> {
     /// Borrow the complete neutral view needed by Croquis lint projection.
     #[inline]
     pub(crate) fn lint_template(&self) -> LintTemplate<'_, 'a> {
-        LintTemplate::new(&self.tree, self.lowered.allocator, &self.lowered.root)
-            .with_lowering_facts(
-                &self.lowered.consumed_expressions,
-                self.lowered.caps.scoped_slot_attrs,
-            )
+        LintTemplate::new(
+            &self.tree,
+            self.lowered.allocator,
+            &self.lowered.artifact.root,
+        )
+        .with_lowering_facts(
+            &self.lowered.consumed_expressions,
+            self.lowered.caps.scoped_slot_attrs,
+        )
     }
 }
 

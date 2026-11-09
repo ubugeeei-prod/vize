@@ -139,7 +139,7 @@ mod tests {
         let source = "<slot v-pre></slot>";
         let (tree, errors) = vize_l1::markup::parse(&arena, source);
         let original = lower(&arena, &tree, &errors);
-        assert!(matches!(&original.root.ops[0], Op::Slot(_)));
+        assert!(matches!(&original.artifact.root.ops[0], Op::Slot(_)));
         let block = SourceRoot::new(source).unwrap().whole_block();
         assert_eq!(
             lower_with_frozen_element_spans(&arena, &tree, &errors, block, &[]).err(),
@@ -163,10 +163,10 @@ mod tests {
         let explicit =
             lower_with_frozen_element_spans(&arena, &tree, &errors, block, &spans).unwrap();
         assert!(
-            matches!(&explicit.root.ops[0], Op::Element(element) if element.tag == "slot" && element.children.ops.is_empty())
+            matches!(&explicit.artifact.root.ops[0], Op::Element(element) if element.tag == "slot" && element.children.ops.is_empty())
         );
         assert!(matches!(
-            &lower(&arena, &tree, &errors).root.ops[0],
+            &lower(&arena, &tree, &errors).artifact.root.ops[0],
             Op::Slot(_)
         ));
     }
@@ -236,7 +236,7 @@ mod tests {
             Some(EXTRA)
         );
         assert!(matches!(
-            &lower(&arena, &tree, &errors).root.ops[0],
+            &lower(&arena, &tree, &errors).artifact.root.ops[0],
             Op::Component(_)
         ));
     }

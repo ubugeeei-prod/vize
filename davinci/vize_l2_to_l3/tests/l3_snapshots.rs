@@ -24,7 +24,7 @@ fn snapshot(source: &str) -> String {
     let allocator = Allocator::default();
     let (tree, errors) = vize_l1::markup::parse(&allocator, source);
     let s2 = vize_l1_to_l2::lower(&allocator, &tree, &errors);
-    let lowered = lower(&allocator, &s2.root);
+    let lowered = lower(&allocator, &s2.artifact.root);
     assert_eq!(verify(&lowered.program), []);
 
     let mut output = L3Page::of(&lowered.program).print_to_string(DumpMode::Full);

@@ -80,6 +80,7 @@ fn the_groups_fixture_snapshots_the_post_pass_folio() {
         // the pattern position enumerates no names (#4365), the rest
         // one each.
         let consumed: Vec<(&str, &str)> = lowered
+            .artifact
             .provenance
             .iter()
             .filter(|record| record.rule.as_str() == "pass.v-slot.scope")

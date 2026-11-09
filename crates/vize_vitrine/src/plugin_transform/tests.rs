@@ -237,10 +237,10 @@ fn invalid_late_edit_does_not_mutate_the_native_artifact() {
         vize_l1::markup::parse(&allocator, "<button class=\"legacy-btn\"></button>");
     let mut lowered = vize_l1_to_l2::lower(&allocator, &tree, &errors);
     let reply = edits::decode(r#"{"schema":1,"edits":[{"kind":"replace-static-attribute","node":0,"name":"class","value":"changed"},{"kind":"replace-static-attribute","node":0,"name":"missing","value":"x"}]}"#).expect("typed reply");
-    let nodes = walk::nodes(&mut lowered.root);
+    let nodes = walk::nodes(&mut lowered.artifact.root);
     assert!(edits::validate(&reply, &nodes).is_err());
     assert_eq!(
-        walk::nodes(&mut lowered.root)
+        walk::nodes(&mut lowered.artifact.root)
             .first()
             .expect("node")
             .attrs

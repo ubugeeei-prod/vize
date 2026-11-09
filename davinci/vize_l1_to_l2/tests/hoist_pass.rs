@@ -332,6 +332,7 @@ fn every_owner_gets_exactly_one_fact() {
             let owners = rows(&facts.static_facts).len();
             assert_eq!(owners, 4, "div, Card, template, p");
             let recorded = lowered
+                .artifact
                 .provenance
                 .iter()
                 .filter(|record| record.rule.as_str() == "pass.hoist-static.fact")

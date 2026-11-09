@@ -11,11 +11,20 @@ fn with_for(source: &str, check: impl FnOnce(&Lowered<'_>, &ForOp<'_>, &ScopeFac
     let (tree, errors) = vize_l1::markup::parse(&arena, source);
     assert!(errors.is_empty(), "{errors:?}");
     let lowered = lower(&arena, &tree, &errors);
-    let Some(Op::For(for_op)) = lowered.root.ops.first() else {
+    let Some(Op::For(for_op)) = lowered.artifact.root.ops.first() else {
         panic!("original source owns a native ForOp");
     };
-    let (id, scope) = lowered.scopes.iter().next().expect("iteration scope");
-    let parts = lowered.for_facts.get(id).expect("matching ForParts");
+    let (id, scope) = lowered
+        .artifact
+        .scopes
+        .iter()
+        .next()
+        .expect("iteration scope");
+    let parts = lowered
+        .artifact
+        .for_facts
+        .get(id)
+        .expect("matching ForParts");
     assert_eq!(parts.tag, scope.tag);
     check(&lowered, for_op, scope, parts);
 }
@@ -176,10 +185,10 @@ fn source_block_origins_stay_file_absolute_after_unicode_and_crlf() {
     let (tree, errors) = vize_l1::markup::parse(&arena, actual);
     assert!(errors.is_empty());
     let lowered = lower_source_block(&arena, &tree, &errors, block);
-    let (id, scope) = lowered.scopes.iter().next().unwrap();
+    let (id, scope) = lowered.artifact.scopes.iter().next().unwrap();
     assert_eq!(declarations(&source, scope), [("_row", r"\u005frow")]);
     assert_eq!(
-        lowered.for_facts.get(id).unwrap().value,
+        lowered.artifact.for_facts.get(id).unwrap().value,
         ForName::Named("_row".into())
     );
     let start = (prefix.len() + template.find(r"\u005frow").unwrap()) as u32;

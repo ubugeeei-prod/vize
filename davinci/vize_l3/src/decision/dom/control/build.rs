@@ -133,7 +133,7 @@ mod tests {
     use super::ConditionalFrame;
     use crate::decision::DecisionBuildError;
     use alloc::vec::Vec as Owned;
-    use vize_l0::{Allocator, Box, Span, Vec, id::NodeId, side_table::SideTable};
+    use vize_l0::{Allocator, Box, Span, Vec, id::NodeId};
     use vize_l2::{
         artifact::{Artifact, ArtifactParts},
         expr::{ExprRef, JsExpr},
@@ -172,13 +172,7 @@ mod tests {
         let mut ops = Vec::new_in(&a);
         ops.push(Op::If(Box::new_in(IfOp { branches, span }, &a)));
         // This checks canonical event ownership, not native directive admission.
-        Artifact::try_new(ArtifactParts {
-            source,
-            root: Region { ops },
-            provenance: Owned::new(),
-            scopes: SideTable::new(),
-        })
-        .unwrap()
+        Artifact::try_new(ArtifactParts::new(source, Region { ops })).unwrap()
     }
 
     #[test]

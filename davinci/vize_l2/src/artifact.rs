@@ -1,18 +1,24 @@
-//! Native canonical L2 ownership, independent of a dialect legalizer.
+//! The canonical L2 artifact, independent of any input lowering.
+//!
+//! [`ArtifactParts`] is the one artifact every producer hands to L2
+//! consumers: ops plus semantic side tables. The transitional Vue lowering
+//! holds it unsealed beside its conversion bookkeeping; native producers
+//! seal it into an [`Artifact`].
 //!
 //! Construction consumes the existing region and retained `ExprRef`
 //! payloads: it neither parses expressions nor materializes a dump. The
 //! immutable owner seals page order, so scopes and provenance cannot be
 //! silently detached by mutation. Consuming it with `into_parts` ends
 //! that seal; a producer must check its changed parts again.
-//!
-//! This is the native provider boundary, not proof that the transitional
-//! Vue lowering, L1 parsed-embed handoff, or product routes use it yet.
 
 use alloc::boxed::Box;
 use alloc::vec::Vec;
 use vize_l0::{Span, id::NodeId, side_table::SideTable};
 
+use crate::analysis::for_facts::ForParts;
+use crate::analysis::fragment_facts::{BranchFragments, LoopFragment};
+use crate::analysis::if_facts::IfFacts;
+use crate::analysis::text_facts::TextParts;
 use crate::op::Region;
 use crate::provenance::ProvenanceRecord;
 use crate::scope::{ScopeFacts, ScopeTag};
@@ -20,27 +26,94 @@ use crate::walk::{NodeEvent, NodeLimit, NodeRef, PageWalk};
 
 mod builder;
 mod check;
+mod features;
 pub(crate) use builder::ElementAllocation;
 pub use builder::{Builder, ComponentBody, ComponentFactory, RegionBuilder};
+pub use features::{LoweringFeatures, OpFamily};
 #[cfg(test)]
 mod tests;
 
-/// The native fields a producer transfers into L2 ownership.
+/// The canonical L2 artifact: ops plus the semantic side tables every
+/// consumer reads.
 ///
 /// Source coordinates are file-absolute UTF-8 bytes. Decoded or synthesized
 /// expression text may live in the arena; it need not equal its authored
-/// source slice. Dialect wrappers, target choices and legacy capabilities
-/// have no fields here.
-#[derive(Debug)]
-pub struct ArtifactParts<'a> {
+/// source slice. Side tables are keyed by exact page-local node ids. Target
+/// choices, input capabilities and conversion bookkeeping have no fields
+/// here. `P` is the provenance sink the producer chose; only the default,
+/// record-keeping sink can be sealed into an [`Artifact`].
+pub struct ArtifactParts<'a, P = Vec<ProvenanceRecord>> {
     /// The complete authored source, borrowed for this compile.
     pub source: &'a str,
     /// The normalized, arena-resident owned region.
     pub root: Region<'a>,
     /// Decisions in producer order, including failed decisions with no node.
-    pub provenance: Vec<ProvenanceRecord>,
+    pub provenance: P,
     /// Binding introduction facts keyed by exact page-local node ids.
     pub scopes: SideTable<ScopeFacts>,
+    /// The recorded parts of every merged text/interpolation run, keyed by
+    /// its compound `ui.interpolation` op.
+    pub texts: SideTable<TextParts>,
+    /// Consumed `ui.for` scope views, keyed by the `ui.for` op.
+    pub for_facts: SideTable<ForParts>,
+    /// Branch-key facts, keyed by the `ui.if` op.
+    pub if_facts: SideTable<IfFacts>,
+    /// Unwrapped branch carriers, keyed by the `ui.if` op.
+    pub branch_fragments: SideTable<BranchFragments>,
+    /// Unwrapped loop-body carriers, keyed by the `ui.for` op.
+    pub loop_fragments: SideTable<LoopFragment>,
+    /// The op families the producer built, for pass planning.
+    pub features: LoweringFeatures,
+}
+
+/// Prints the ownership fields, then only the populated side tables, so a
+/// native artifact with no derived facts prints exactly its owned parts.
+impl<P: core::fmt::Debug> core::fmt::Debug for ArtifactParts<'_, P> {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        let mut out = f.debug_struct("ArtifactParts");
+        out.field("source", &self.source)
+            .field("root", &self.root)
+            .field("provenance", &self.provenance)
+            .field("scopes", &self.scopes);
+        if !self.texts.is_empty() {
+            out.field("texts", &self.texts);
+        }
+        if !self.for_facts.is_empty() {
+            out.field("for_facts", &self.for_facts);
+        }
+        if !self.if_facts.is_empty() {
+            out.field("if_facts", &self.if_facts);
+        }
+        if !self.branch_fragments.is_empty() {
+            out.field("branch_fragments", &self.branch_fragments);
+        }
+        if !self.loop_fragments.is_empty() {
+            out.field("loop_fragments", &self.loop_fragments);
+        }
+        if self.features != LoweringFeatures::EMPTY {
+            out.field("features", &self.features);
+        }
+        out.finish()
+    }
+}
+
+impl<'a, P: Default> ArtifactParts<'a, P> {
+    /// An artifact over `root` with no decisions and empty side tables.
+    #[must_use]
+    pub fn new(source: &'a str, root: Region<'a>) -> Self {
+        Self {
+            source,
+            root,
+            provenance: P::default(),
+            scopes: SideTable::new(),
+            texts: SideTable::new(),
+            for_facts: SideTable::new(),
+            if_facts: SideTable::new(),
+            branch_fragments: SideTable::new(),
+            loop_fragments: SideTable::new(),
+            features: LoweringFeatures::EMPTY,
+        }
+    }
 }
 
 /// A sealed native L2 artifact. It exposes no mutable tree or side tables.
@@ -106,6 +179,9 @@ pub enum ArtifactError {
     DanglingProvenance { record: usize, node: NodeId },
     /// A scope fact refers to a node absent from this artifact.
     DanglingScope { node: NodeId },
+    /// A text, control-flow or fragment fact refers to a node absent from
+    /// this artifact.
+    DanglingFact { node: NodeId },
     /// A scope fact is attached to a node with no binding introduction site.
     InvalidScopeSite { node: NodeId },
     /// A binding introduction site lacks its scope identity.
@@ -172,6 +248,12 @@ impl<'a> Artifact<'a> {
     #[must_use]
     pub fn provenance(&self) -> &[ProvenanceRecord] {
         &self.parts.provenance
+    }
+
+    /// The sealed parts, side tables included.
+    #[must_use]
+    pub fn parts(&self) -> &ArtifactParts<'a> {
+        &self.parts
     }
 
     /// Visit each exact numbered node once in page preorder.

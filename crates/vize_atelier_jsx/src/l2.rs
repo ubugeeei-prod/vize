@@ -9,7 +9,7 @@
 use vize_l0::id::NodeId;
 use vize_l0::side_table::SideTable;
 use vize_l0::{Allocator, Box, Vec};
-use vize_l1_to_l2::lower::{LoweringFeatures, OpFamily};
+use vize_l2::artifact::{LoweringFeatures, OpFamily};
 use vize_l2::expr::ExprRef;
 use vize_l2::op::{
     Attribute, BindOp, BindingOp, DynamicName, InterpolationOp, OnOp, Op, Region, TextOp,

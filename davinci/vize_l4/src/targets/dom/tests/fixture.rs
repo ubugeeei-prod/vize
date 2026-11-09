@@ -1,7 +1,7 @@
 //! Native arena owners for the independently captured Vue reference inputs.
 
 use alloc::vec::Vec as OwnedVec;
-use vize_l0::{Allocator, Box, Span, String, Vec, id::NodeId, side_table::SideTable};
+use vize_l0::{Allocator, Box, Span, String, Vec, id::NodeId};
 use vize_l2::artifact::{Artifact, ArtifactParts};
 use vize_l2::expr::{ExprRef, JsExpr};
 use vize_l2::op::{
@@ -235,13 +235,7 @@ pub(super) fn build<'a>(arena: &'a Allocator, id: &str, source: &'a str) -> Arti
         _ => extra::build(arena, id, source)
             .unwrap_or_else(|| panic!("unknown native DOM reference {id}")),
     };
-    Artifact::try_new(ArtifactParts {
-        source,
-        root,
-        provenance: OwnedVec::new(),
-        scopes: SideTable::new(),
-    })
-    .unwrap()
+    Artifact::try_new(ArtifactParts::new(source, root)).unwrap()
 }
 
 pub(super) fn property_value<'a>(
@@ -249,24 +243,19 @@ pub(super) fn property_value<'a>(
     source: &'a str,
     value: &'a str,
 ) -> Artifact<'a> {
-    Artifact::try_new(ArtifactParts {
-        source,
-        root: region(
+    let root = region(
+        arena,
+        [element(
             arena,
-            [element(
-                arena,
-                source,
-                source,
-                "p",
-                [],
-                [bind(arena, source, source, "title", value)],
-                [],
-            )],
-        ),
-        provenance: OwnedVec::new(),
-        scopes: SideTable::new(),
-    })
-    .unwrap()
+            source,
+            source,
+            "p",
+            [],
+            [bind(arena, source, source, "title", value)],
+            [],
+        )],
+    );
+    Artifact::try_new(ArtifactParts::new(source, root)).unwrap()
 }
 
 pub(super) fn rejected_event(arena: &Allocator) -> Artifact<'_> {
@@ -288,14 +277,13 @@ pub(super) fn rejected_event(arena: &Allocator) -> Artifact<'_> {
         after: String::from("unsupported-event"),
         span: at,
     }]);
+    let root = region(
+        arena,
+        [element(arena, source, source, "button", [], [binding], [])],
+    );
     Artifact::try_new(ArtifactParts {
-        source,
-        root: region(
-            arena,
-            [element(arena, source, source, "button", [], [binding], [])],
-        ),
         provenance,
-        scopes: SideTable::new(),
+        ..ArtifactParts::new(source, root)
     })
     .unwrap()
 }

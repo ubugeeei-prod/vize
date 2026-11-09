@@ -73,7 +73,7 @@ pub(crate) fn compile(
         if options.cache && plugin.cache_inputs.is_none() {
             return Err("transform caching requires explicit cacheInputs".into());
         }
-        let nodes = walk::nodes(&mut lowered.root);
+        let nodes = walk::nodes(&mut lowered.artifact.root);
         let count = nodes.len() as u32;
         let batch = serde_json::to_string(&Batch {
             schema: SCHEMA,
@@ -95,7 +95,9 @@ pub(crate) fn compile(
             .cache
             .then(|| cache::get(&key, options.cache_dir))
             .flatten()
-            .filter(|reply| edits::validate(reply, &walk::nodes(&mut lowered.root)).is_ok());
+            .filter(|reply| {
+                edits::validate(reply, &walk::nodes(&mut lowered.artifact.root)).is_ok()
+            });
         let cached = found.is_some();
         let mut js_ns = 0.0;
         let reply = match found {
@@ -119,7 +121,7 @@ pub(crate) fn compile(
             }
         };
         // Cache hits still validate against the exact current artifact.
-        edits::validate(&reply, &walk::nodes(&mut lowered.root))?;
+        edits::validate(&reply, &walk::nodes(&mut lowered.artifact.root))?;
         let applied = edits::apply(&mut lowered, &reply, &plugin.name);
         mirror(&allocator, &mut compat.children, &applied);
         if options.cache && !cached {

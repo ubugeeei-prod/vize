@@ -76,8 +76,8 @@ pub fn run(lowered: &mut Lowered<'_, impl ProvenanceSink>) -> LegacyFacts {
     let mut facts = LegacyFacts::default();
     let allocator = lowered.allocator;
     let patterns = crate::registry::legalization_patterns(lowered.caps);
-    let sync_ids = ids::collect_sync_ids(&lowered.root.ops);
-    tree::map_binding_lists(&mut lowered.root.ops, &mut |bindings| {
+    let sync_ids = ids::collect_sync_ids(&lowered.artifact.root.ops);
+    tree::map_binding_lists(&mut lowered.artifact.root.ops, &mut |bindings| {
         sync::expand(allocator, bindings);
         slot::convert(allocator, bindings);
         if patterns.vue2_events() {
@@ -88,9 +88,9 @@ pub fn run(lowered: &mut Lowered<'_, impl ProvenanceSink>) -> LegacyFacts {
     if patterns.filters() {
         filter::rewrite(
             allocator,
-            lowered.source,
-            &mut lowered.root.ops,
-            &mut lowered.texts,
+            lowered.artifact.source,
+            &mut lowered.artifact.root.ops,
+            &mut lowered.artifact.texts,
             &mut facts,
         );
     }

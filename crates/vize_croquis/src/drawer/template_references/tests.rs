@@ -7,7 +7,7 @@ fn lint_template<'t, 'a>(
     surface: &'t vize_l1::markup::SurfaceTree<'a>,
     lowered: &'t vize_l1_to_l2::Lowered<'a>,
 ) -> LintTemplate<'t, 'a> {
-    LintTemplate::new(surface, lowered.allocator, &lowered.root).with_lowering_facts(
+    LintTemplate::new(surface, lowered.allocator, &lowered.artifact.root).with_lowering_facts(
         &lowered.consumed_expressions,
         lowered.caps.scoped_slot_attrs,
     )

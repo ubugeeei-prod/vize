@@ -147,9 +147,9 @@ mod tests {
             let (tree, errors) = vize_l1::markup::parse(&allocator, source);
             assert_eq!(errors.len(), 0);
             let lowered = vize_l1_to_l2::lower(&allocator, &tree, &errors);
-            let partitioned = vize_l2_to_l3::lower(&allocator, &lowered.root);
+            let partitioned = vize_l2_to_l3::lower(&allocator, &lowered.artifact.root);
             let planned =
-                lower_l2_to_string_plan(&allocator, &lowered.root, &partitioned.partition);
+                lower_l2_to_string_plan(&allocator, &lowered.artifact.root, &partitioned.partition);
             assert_eq!(planned.errors.len(), 0);
             let original = planned
                 .plan
