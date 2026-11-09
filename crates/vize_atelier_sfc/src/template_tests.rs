@@ -187,8 +187,6 @@ fn scoped_vue2_line_breaks_keep_issue_7046_static_text_before_element() {
 
 #[test]
 fn test_compile_sfc_ts_ref_condition_and_handler_keep_value_access() {
-    use vize_carton::ToCompactString;
-
     let source = r#"
 <template>
   <div>
@@ -219,21 +217,14 @@ const isRootSelected = ref(false)
     let descriptor = parse_sfc(source, Default::default()).unwrap();
     let script_setup = descriptor.script_setup.as_ref().unwrap();
     let template = descriptor.template.as_ref().unwrap();
-    let croquis = crate::script::analyze_script_setup_to_summary(&script_setup.content);
-    let mut binding_metadata = crate::BindingMetadata {
-        is_script_setup: croquis.bindings.is_script_setup,
-        ..Default::default()
-    };
-    for (name, binding_type) in croquis.bindings.iter() {
-        binding_metadata
-            .bindings
-            .insert(name.to_compact_string(), binding_type);
-    }
-    for (local, key) in &croquis.bindings.props_aliases {
-        binding_metadata
-            .props_aliases
-            .insert(local.to_compact_string(), key.to_compact_string());
-    }
+    let arena = vize_l0::Allocator::default();
+    let setup = crate::compile::setup_facts::SetupAnalysis::new(
+        &arena,
+        script_setup.content.as_ref(),
+        &descriptor,
+    )
+    .unwrap();
+    let (binding_metadata, script_tables) = setup.tables().unwrap();
 
     let template_allocator = vize_carton::Allocator::new();
     let template_output = crate::compile_template::compile_template_block(
@@ -251,9 +242,7 @@ const isRootSelected = ref(false)
             component_name: None,
             experimental_self_component: false,
             bindings: Some(&binding_metadata),
-            script_tables: Some(vize_atelier_core::lane::ScriptTables::from_croquis(
-                &croquis,
-            )),
+            script_tables: Some(script_tables),
             collect_map: false,
             authored_source: None,
             pug_source_map: None,

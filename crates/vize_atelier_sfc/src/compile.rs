@@ -13,6 +13,9 @@ pub(crate) mod output_module;
 mod props_rest;
 mod script_context;
 mod setup_exports;
+pub(crate) mod setup_facts;
+#[cfg(test)]
+mod setup_syntax_tests;
 mod stage_capture;
 #[cfg(test)]
 mod stage_capture_tests;
@@ -36,7 +39,7 @@ use crate::types::{
 use vize_atelier_core::{CodegenOptions, TemplateSyntaxMode, options::CustomElementMatcher};
 
 use self::bindings::{
-    collect_normal_script_bindings, croquis_to_legacy_bindings, merge_normal_script_bindings,
+    collect_normal_script_bindings, merge_normal_script_bindings, register_setup_enum_bindings,
 };
 use self::diagnostics::create_v_model_reactive_const_warning;
 pub(crate) use self::helpers::is_ts_lang;
@@ -382,33 +385,18 @@ fn compile_sfc_inner(
             codegen_options.runtime_module_name.as_str(),
         );
 
-    // Parse the script setup once. Croquis binding analysis, the macro
-    // context analysis, and (unless v-model demotion rewrites the content
-    // below) the inline compiler's statement sectioning all reuse this AST
-    // instead of independently re-parsing identical content. `None` means the
-    // parser panicked; each stage then falls back to its legacy parse path,
-    // which reproduces the historical panicked behavior.
-    let setup_ast_allocator = oxc_allocator::Allocator::default();
-    let setup_program =
-        crate::script::parse_script_setup_program(&setup_ast_allocator, &script_setup_content);
-    setup_exports::validate(setup_program.as_ref(), &script_setup_content, descriptor)?;
+    // Parse the script setup once and observe its facts natively. The macro
+    // context analysis and (unless v-model demotion rewrites the content
+    // below) the inline compiler's statement sectioning reuse this Program.
+    let setup_arena = vize_l0::Allocator::default();
+    let setup = profile!(
+        "atelier.sfc.script_setup.facts",
+        setup_facts::SetupAnalysis::new(&setup_arena, &script_setup_content, descriptor)
+    )?;
+    let setup_program = setup.program();
+    setup_exports::validate(setup_program, &script_setup_content, descriptor)?;
 
-    // 1. Croquis parser: rich analysis with ReactivityTracker
-    let croquis = profile!(
-        "atelier.sfc.script_setup.croquis",
-        match setup_program.as_ref() {
-            Some(program) => crate::script::analyze_script_setup_program_to_summary(
-                program,
-                &script_setup_content,
-            ),
-            None => crate::script::analyze_script_setup_to_summary(&script_setup_content),
-        }
-    );
-    let mut script_bindings = croquis_to_legacy_bindings(&croquis.bindings, setup_program.as_ref());
-    let script_tables = vize_atelier_core::lane::ScriptTables::from_croquis(&croquis);
-
-    // 2. ScriptCompileContext: needed for macro span info and TypeScript type resolution
-    //    (Croquis doesn't resolve type references like `defineProps<Props>()`)
+    // ScriptCompileContext: macro span info and TypeScript type resolution.
     let source_is_ts = is_ts_lang(script_setup.lang.as_deref());
     let script_context::CollectedContext {
         context: mut ctx,
@@ -422,11 +410,15 @@ fn compile_sfc_inner(
     )?;
     profile!(
         "atelier.sfc.script_context.analyze",
-        ctx.analyze_for_target(setup_program.as_ref(), &script_setup_content, is_vapor)
+        ctx.analyze_for_target(setup_program, &script_setup_content, is_vapor)
     );
-    validate_macro_scope_for_descriptor(&ctx, setup_program.as_ref(), descriptor)?;
+    validate_macro_scope_for_descriptor(&ctx, setup_program, descriptor)?;
     script_context::validate(&ctx, &imported_types, descriptor)?;
 
+    let (mut script_bindings, script_tables) = setup.tables()?;
+    if let Some(program) = setup_program {
+        register_setup_enum_bindings(&mut script_bindings, program);
+    }
     props_rest::merge_props_bindings(&mut script_bindings, &ctx);
 
     // Register defineEmits bindings visible to the template's render scope.
@@ -520,7 +512,7 @@ fn compile_sfc_inner(
                     &custom_elements,
                     template_context.block(
                         false,
-                        Some(&bindings::for_vapor(&script_bindings, &setup_program)),
+                        Some(&bindings::for_vapor(&script_bindings, setup_program)),
                         None,
                     ),
                     template_syntax,
@@ -654,7 +646,7 @@ fn compile_sfc_inner(
     let (setup_content_for_inline, setup_program_for_inline) = match demoted_setup_content.as_ref()
     {
         Some(content) => (content.as_str(), None),
-        None => (script_setup_content.as_str(), setup_program.as_ref()),
+        None => (script_setup_content.as_str(), setup_program),
     };
 
     // Assemble script setup with either an inline render (`inline_template`) or

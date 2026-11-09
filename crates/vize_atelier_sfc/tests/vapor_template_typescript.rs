@@ -10,7 +10,7 @@ use vize_carton::{String, cstr};
 
 fn render(lang: &str, template: &str, is_ts: bool) -> String {
     let source = cstr!(
-        "<script setup{lang} vapor>\nconst pick = (value: unknown) => value\nconst a = 1, b = 2, c = 3\n</script>\n\n<template>\n  {template}\n</template>\n"
+        "<script setup{lang} vapor>\nconst pick = (value) => value\nconst a = 1, b = 2, c = 3\n</script>\n\n<template>\n  {template}\n</template>\n"
     );
     let descriptor = parse_sfc(&source, SfcParseOptions::default()).expect("parse");
     let result = compile_sfc(
