@@ -66,3 +66,8 @@ and
 issues #11635 and #11637: the component's type is named after its file and the
 exported name maps to the SFC's start. The content-mapper projection grows by
 58 bytes and one mapping row; canon and Maestro projections are byte-identical.
+
+`successor-instance-input-keys-11654` records #12446 (issue #11654): the TSX
+instance key set is listed without per-DOM-key `Exclude` chains. The content
+mapper and Maestro grow by the 168-byte helper edit; canon is byte-identical;
+mapping, diagnostic and authored-hit counts are unchanged.

@@ -12,6 +12,7 @@ import {
 } from "../../tools/support/compat/content-mapper/component-constructor-transition.ts";
 import { certifyComponentExportTransition } from "../../tools/support/compat/content-mapper/component-export-transition.ts";
 import { certifyJsxWitnessChange } from "../../tools/support/compat/content-mapper/constructor-jsx-witness-transition.ts";
+import { beforeInstanceInputKeys } from "../../tools/support/compat/content-mapper/instance-input-keys-transition.ts";
 import {
   beforeDiscriminatedJsxUnion,
   discriminatedJsxUnionBeforeSha256,
@@ -158,7 +159,9 @@ test("only the complete reviewed JSX witness source transition can change canoni
   );
   const record = image.file;
   assert.equal(record.path, file);
-  const after = readFileSync(path.join(root, file));
+  const after = Buffer.from(
+    beforeInstanceInputKeys(file, readFileSync(path.join(root, file), "utf8")),
+  );
   const relaxedAfter = beforeStrictExtraKeys(after.toString());
   const integratedAfter = beforeDiscriminatedJsxUnion(relaxedAfter);
   assert.equal(record.after.sha256, discriminatedJsxUnionBeforeSha256);

@@ -16,6 +16,7 @@ mod emit_props_twins;
 mod extra_keys_policy;
 mod generic_event_specialization;
 mod input_channels;
+mod instance_input_keys;
 mod integrated_source;
 mod jsx_exact_keys;
 mod listener_relations;
