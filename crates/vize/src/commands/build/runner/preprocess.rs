@@ -14,8 +14,9 @@ use std::{
 
 use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
 use serde::{Deserialize, Serialize};
-use vize_atelier_sfc::{SfcDescriptor, SfcParseOptions, parse_sfc};
+use vize_atelier_sfc::SfcDescriptor;
 use vize_l0::{FxHashMap, String, cstr};
+use vize_l1::container::vue::compat::{CompatBlock, split_blocks, tag_name_eq};
 
 const PREPROCESSOR_LANGS: [&str; 5] = ["scss", "sass", "less", "stylus", "styl"];
 
@@ -136,27 +137,36 @@ fn pending_blocks(path: &PathBuf) -> Vec<Pending> {
     {
         return Vec::new();
     }
-    let Ok(descriptor) = parse_sfc(&source, SfcParseOptions::default()) else {
-        return Vec::new();
-    };
-    descriptor
-        .styles
-        .iter()
-        .enumerate()
-        .filter_map(|(index, style)| {
-            let lang = style.lang.as_deref()?;
-            (style.src.is_none() && PREPROCESSOR_LANGS.contains(&lang)).then(|| Pending {
+    // The L1 block walk is the one the compile's descriptor is built from, so
+    // style indices line up with `SfcDescriptor::styles`.
+    let mut pending = Vec::new();
+    let mut index = 0;
+    let walked = split_blocks(&source, |block: CompatBlock<'_>| {
+        if !tag_name_eq(block.tag_name, b"style") {
+            return true;
+        }
+        let lang = block.attrs.get("lang").map(|lang| lang.as_ref());
+        if let Some(lang) = lang.filter(|lang| PREPROCESSOR_LANGS.contains(lang))
+            && !block.attrs.contains_key("src")
+        {
+            pending.push(Pending {
                 file: path.clone(),
                 absolute: std::path::absolute(path).unwrap_or_else(|_| path.clone()),
                 index,
                 lang: String::from(lang),
-                source: String::from(style.content.as_ref()),
+                source: String::from(block.content.as_ref()),
                 first_line: source
-                    .get(..style.loc.start)
+                    .get(..block.location.start)
                     .map_or(1, |head| head.matches('\n').count() + 1),
-            })
-        })
-        .collect()
+            });
+        }
+        index += 1;
+        true
+    });
+    if walked.is_err() {
+        return Vec::new();
+    }
+    pending
 }
 
 fn run_node(pending: &[Pending]) -> Result<Vec<JobResult>, String> {
