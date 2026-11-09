@@ -8,7 +8,7 @@ mod support {
 
 use support::vue_setup::{corpus, observe, slice, text};
 use vize_l0::{String, cstr};
-use vize_l2::framework::vue::{SetupBindingKind, SetupFacts};
+use vize_l2::framework::vue::{ReactiveSource, SetupBindingKind, SetupFacts};
 
 fn croquis_kind(kind: vize_relief::BindingType) -> Option<SetupBindingKind> {
     use vize_relief::BindingType;
@@ -306,4 +306,103 @@ fn unsupported_props_destructures_stay_unclassified() {
             Vec::new()
         ))
     );
+}
+
+fn croquis_reactive(source: ReactiveSource) -> vize_croquis::reactivity::ReactiveKind {
+    use vize_croquis::reactivity::ReactiveKind;
+    match source {
+        ReactiveSource::Ref | ReactiveSource::CustomRef | ReactiveSource::Model => {
+            ReactiveKind::Ref
+        }
+        ReactiveSource::ShallowRef | ReactiveSource::TemplateRef => ReactiveKind::ShallowRef,
+        ReactiveSource::Computed => ReactiveKind::Computed,
+        ReactiveSource::ToRef => ReactiveKind::ToRef,
+        ReactiveSource::ToRefs => ReactiveKind::ToRefs,
+        ReactiveSource::Reactive => ReactiveKind::Reactive,
+        ReactiveSource::ShallowReactive => ReactiveKind::ShallowReactive,
+        ReactiveSource::Readonly | ReactiveSource::Props => ReactiveKind::Readonly,
+        ReactiveSource::ShallowReadonly => ReactiveKind::ShallowReadonly,
+    }
+}
+
+/// Each name's last reactive source equals Croquis' last reactivity
+/// registration, which the template lanes read as `.value` or direct reads.
+#[test]
+fn every_corpus_reactive_source_matches_croquis() {
+    let (root, files) = corpus();
+    let (mut compared, mut sources) = (0usize, 0usize);
+    let mut mismatches = Vec::new();
+    for file in &files {
+        let Ok(source) = std::fs::read_to_string(file) else {
+            continue;
+        };
+        let Some((content, base, Ok(facts))) = observe(&source) else {
+            continue;
+        };
+        compared += 1;
+        let mut native: Vec<(String, Option<_>)> = Vec::new();
+        for binding in facts.bindings() {
+            let name = slice(&content, base, binding.name).unwrap_or_default();
+            native.retain(|(known, _)| *known != name);
+            native.push((name, binding.source.map(croquis_reactive)));
+        }
+        native.retain(|(_, kind)| kind.is_some());
+        native.sort_by(|a, b| a.0.cmp(&b.0));
+        let tracker = vize_croquis::script_parser::parse_script_setup(&content).reactivity;
+        let mut oracle: Vec<(String, Option<_>)> = Vec::new();
+        for registered in tracker.sources() {
+            let name = String::from(registered.name.as_str());
+            oracle.retain(|(known, _)| *known != name);
+            oracle.push((name, Some(registered.kind)));
+        }
+        oracle.sort_by(|a, b| a.0.cmp(&b.0));
+        sources += native.len();
+        if native != oracle {
+            let relative = file.strip_prefix(&root).unwrap_or(file).display();
+            mismatches.push(cstr!(
+                "{relative}\n  native:  {native:?}\n  croquis: {oracle:?}"
+            ));
+        }
+    }
+    eprintln!("compared {sources} reactive sources in {compared} setup scripts");
+    assert!(
+        sources > 1000,
+        "corpus shrank to {sources} reactive sources"
+    );
+    assert_eq!(mismatches, Vec::<String>::new());
+}
+
+#[test]
+fn reactive_sources_follow_the_initializing_call() {
+    use ReactiveSource::{Model, Props, Readonly, Ref, TemplateRef, ToRefs};
+    let script = "import { ref as r } from 'vue'\nconst props = defineProps()\n\
+        const [model, mods] = defineModel()\nconst a = r(0)\nconst b = (toRefs(props))!\n\
+        const c = readonly({})\nconst d = useTemplateRef('d')\nconst e = useX()\nconst f = ref";
+    let source = cstr!("<script setup lang=\"ts\">{script}</script>");
+    let (content, base, facts) = observe(&source).expect("setup");
+    let sources = facts
+        .expect("facts")
+        .bindings()
+        .iter()
+        .map(|binding| {
+            let name = slice(&content, base, binding.name).unwrap_or_default();
+            (name, binding.source)
+        })
+        .collect::<Vec<_>>();
+    let expected = [
+        ("r", None),
+        ("props", Some(Props)),
+        ("model", Some(Model)),
+        ("mods", None),
+        ("a", Some(Ref)),
+        ("b", Some(ToRefs)),
+        ("c", Some(Readonly)),
+        ("d", Some(TemplateRef)),
+        ("e", None),
+        ("f", None),
+    ]
+    .map(|(name, source)| (text(name), source));
+    assert_eq!(sources, expected.to_vec());
+    assert!(Model.reads_value() && TemplateRef.reads_value());
+    assert!(!Props.reads_value() && !ToRefs.reads_value() && !Readonly.reads_value());
 }

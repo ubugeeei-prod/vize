@@ -75,6 +75,7 @@ pub(super) fn destructure(
         bindings.push(SetupBinding {
             name: local_span,
             kind,
+            source: None,
         });
     }
     let rest = match pattern.rest.as_deref().map(|rest| &rest.argument) {
@@ -84,6 +85,7 @@ pub(super) fn destructure(
             bindings.push(SetupBinding {
                 name,
                 kind: SetupBindingKind::SetupReactiveConst,
+                source: None,
             });
             Some(name)
         }
