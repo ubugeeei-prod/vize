@@ -21,20 +21,18 @@ const CAPTURE: &str = "VIZE_TEST_REPORTED_DYNAMIC_TARGETS_CAPTURE_DIR";
 const PROVIDER_ROLE: &str = "VIZE_TEST_REPORTED_DYNAMIC_TARGETS_PROVIDER_ROLE";
 const FIXTURES: &str = "tests/_fixtures/differential/typechecker/reported-dynamic-targets-11362";
 
-// Complete pinned report-provider representation of the separate invalid-key
-// control, in addition to its independently authored missing-key/code/location law.
-const INDEX_KEY_MESSAGE: &str = r#"Type 'TKey' cannot be used to index type '{ a: { __vizeEmitProps?: $StaticEmitProps | undefined; __vizeRawEmits?: $AuthoredEventMap | undefined; __vizeEventMap?: { "update:modelValue": ...; } | undefined; ... 4 more ...; readonly __vizeFallthroughProps?: ... | undefined; } & $ComponentConstructor & $VueComponentOptions; }'."#;
-
-// The supplementary invalid-key law is identical; these two known hosts print
-// its nested constructor type differently. Select the full golden from a
-// declared role before running cases, and validate the captured host afterward.
-const STANDARD_INDEX_KEY_MESSAGE: &str = r#"Type 'TKey' cannot be used to index type '{ a: { __vizeEmitProps?: $StaticEmitProps | undefined; __vizeRawEmits?: $AuthoredEventMap | undefined; __vizeEventMap?: { "update:modelValue": (value: string) => any; } | undefined; ... 4 more ...; readonly __vizeFallthroughProps?: { ...; } | undefined; } & $ComponentConstructor & $VueComponentOptions; }'."#;
+// Complete pinned provider representation of the separate invalid-key control,
+// in addition to its independently authored missing-key/code/location law.
+// Since 2fb13a1f97 (#11635/#11637) the component type is an alias named after
+// its file, so both known hosts print `ChildComponent` instead of its nested
+// generated constructor type. A declared role still selects the provider before
+// running cases, and the captured host is validated afterward.
+const INDEX_KEY_MESSAGE: &str =
+    "Type 'TKey' cannot be used to index type '{ a: ChildComponent; }'.";
 
 fn provider_contract(role: &std::ffi::OsStr) -> Option<(&'static str, &'static str, &'static str)> {
     match role.to_str()? {
-        "standard-go-d6-vue35" => {
-            Some((STANDARD_INDEX_KEY_MESSAGE, "Version 7.1.0-dev\n", "3.5.35"))
-        }
+        "standard-go-d6-vue35" => Some((INDEX_KEY_MESSAGE, "Version 7.1.0-dev\n", "3.5.35")),
         "reported-tsrs-vue44" => Some((
             INDEX_KEY_MESSAGE,
             "Version 7.1.0-beta (tsrs 0.20.1-ts7.1.0-beta, microsoft/TypeScript@3e9236361fa9)\n",
