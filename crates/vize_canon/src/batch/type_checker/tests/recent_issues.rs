@@ -87,6 +87,7 @@ mod slot_key;
 mod split_script_diagnostic_anchors;
 mod spread_props;
 mod spread_scope_bindings;
+mod static_listener_emit_gate;
 mod strict_route_instance_global;
 mod template_handler_block_globals;
 mod template_handler_ts7006;

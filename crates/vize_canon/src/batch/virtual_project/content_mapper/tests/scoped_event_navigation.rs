@@ -47,7 +47,7 @@ const handleConfirm = (value: "conditional") => value;
         .find("const __vize_emit_props_")
         .expect("handler inference");
     let guarded_inference = result.text[handler_inference..]
-        .find("if ((conditionalValue)) return (undefined as unknown as __ConditionalGenericChild_")
+        .find("if ((conditionalValue)) return (undefined as unknown as __vize_emit_input<__ConditionalGenericChild_")
         .expect("guarded handler inference");
     let inferred_value = result.text[handler_inference..]
         .find("\"value\": conditionalValue")

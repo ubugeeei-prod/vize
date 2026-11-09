@@ -28,6 +28,7 @@ mod public_base_keys;
 mod public_instance;
 mod required_keys_short_circuit;
 mod runtime_prop_call;
+mod static_emit_gate;
 mod strict_extra_keys;
 
 const RECORD: &str = "malformed-membership/slot-provider-payload-update-11027.json";

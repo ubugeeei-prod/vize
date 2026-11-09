@@ -163,8 +163,9 @@ pub(super) fn generate_inferred_emit_args(
     // only when a valued prop exists, and a loose `:is` must keep the marker.
     let gated = has_inference_prop
         && ctx.gated_inference
-        && dynamic_alias
-        && guard.is_none()
+        && guard
+            .as_deref()
+            .is_none_or(|guard| !super::emit_props_gate::guard_reads(guard, ctx.component_ref))
         && usage.spread_props.is_empty()
         && entries
             .iter()
@@ -194,16 +195,36 @@ pub(super) fn generate_inferred_emit_args(
     if first_listener && let Some(guard) = guard.as_deref() {
         let isolated = crate::virtual_ts::expressions::isolate_incomplete_expression(guard);
         let guard = isolated.as_str();
+        if gated {
+            super::emit_props_gate::append_guarded_factory(
+                ts,
+                indent,
+                library,
+                component_ref,
+                usage_idx,
+            );
+        }
         append!(*ts, "{}const {emit_props} = (() => {{\n", ctx.indent);
         vize_l0::emit_ts!(
             ts,
             "{call_indent}// @ts-ignore Inference-only guard; authored binding checks own diagnostics.\n"
         );
-        append!(
-            *ts,
-            "{call_indent}if ({guard}) return (undefined as unknown as {resolver_type})({})(",
-            ctx.component_ref,
-        );
+        if gated {
+            super::emit_props_gate::append_guarded_input(
+                ts,
+                call_indent,
+                guard,
+                library,
+                component_ref,
+                usage_idx,
+            );
+        } else {
+            append!(
+                *ts,
+                "{call_indent}if ({guard}) return (undefined as unknown as {resolver_type})({})(",
+                ctx.component_ref,
+            );
+        }
     } else if first_listener {
         if dynamic_component || !usage.spread_props.is_empty() {
             append!(
