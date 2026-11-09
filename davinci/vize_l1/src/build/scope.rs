@@ -203,7 +203,7 @@ impl<'a> Recovery<'a> {
         let current = stack.last().map(Frame::tag);
         let allowed = match current {
             Some("tbody" | "thead" | "tfoot") => {
-                matches!(tag, "tr" | "script" | "style" | "template")
+                matches!(tag, "tr" | "td" | "th" | "script" | "style" | "template")
             }
             Some("tr") => matches!(tag, "td" | "th" | "script" | "style" | "template"),
             _ => matches!(

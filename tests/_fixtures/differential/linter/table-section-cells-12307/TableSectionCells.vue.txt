@@ -1,0 +1,8 @@
+<template>
+  <table>
+    <thead>
+      <th>Name</th>
+      <th>Grade</th>
+    </thead>
+  </table>
+</template>
