@@ -1,14 +1,14 @@
-//! Authored class names in SCSS and Less, with nested selectors resolved
-//! against their parents (`.card { &__title {} }` declares `card__title`).
+//! SCSS and Less: braced rules that nest, with selectors resolved against
+//! their parents (`.card { &__title {} }` declares `card__title`).
 //!
 //! Rules whose selector cannot be known statically (interpolation, mixin and
 //! control-flow bodies) contribute nothing; their siblings still do.
 
-use std::collections::BTreeSet;
+use alloc::collections::BTreeSet;
+use alloc::vec::Vec;
+use vize_l0::String;
 
-use vize_carton::String as CompactString;
-
-use super::collect_classes_from_selector_prelude;
+use super::super::classes::collect_classes_from_selector_prelude;
 
 /// A resolved selector list grows multiplicatively with nested comma lists.
 const MAX_SELECTORS: usize = 256;
@@ -19,21 +19,9 @@ pub(super) enum Dialect {
     Less,
 }
 
-/// Class names SCSS rules declare, or `None` when the source is unbalanced.
-pub fn authored_local_scss_classes(scss: &str) -> Option<BTreeSet<CompactString>> {
-    authored_local_nested_classes(scss, Dialect::Scss)
-}
-
-/// Class names Less rules declare, or `None` when the source is unbalanced.
-/// Mixin definitions (`.m() {}`) emit no rules and add no names.
-pub fn authored_local_less_classes(less: &str) -> Option<BTreeSet<CompactString>> {
-    authored_local_nested_classes(less, Dialect::Less)
-}
-
-pub(super) fn authored_local_nested_classes(
-    scss: &str,
-    dialect: Dialect,
-) -> Option<BTreeSet<CompactString>> {
+/// Class names the rules declare, or `None` when the source is unbalanced.
+/// Less mixin definitions (`.m() {}`) emit no rules and add no names.
+pub(super) fn authored_local_classes(scss: &str, dialect: Dialect) -> Option<BTreeSet<String>> {
     let bytes = scss.as_bytes();
     let interpolation = match dialect {
         Dialect::Scss => b'#',
@@ -41,7 +29,7 @@ pub(super) fn authored_local_nested_classes(
     };
     let mut classes = BTreeSet::new();
     // The resolved selectors of every open block; `None` is an unknown context.
-    let mut blocks: Vec<Option<Vec<CompactString>>> = Vec::new();
+    let mut blocks: Vec<Option<Vec<String>>> = Vec::new();
     let mut prelude = Vec::new();
     let mut interpolated = false;
     let mut parens = 0usize;
@@ -128,11 +116,11 @@ pub(super) fn authored_local_nested_classes(
 
 pub(super) fn resolve(
     prelude: &[u8],
-    parent: Option<Vec<CompactString>>,
+    parent: Option<Vec<String>>,
     interpolated: bool,
     dialect: Dialect,
-) -> Option<Vec<CompactString>> {
-    let text = std::str::from_utf8(prelude).ok()?.trim();
+) -> Option<Vec<String>> {
+    let text = core::str::from_utf8(prelude).ok()?.trim();
     if let Some(at_rule) = text.strip_prefix('@') {
         let (name, rest) = at_rule
             .split_once(|c: char| c.is_ascii_whitespace() || c == '(')
@@ -163,7 +151,7 @@ pub(super) fn resolve(
         }
         if parent.is_empty() {
             if !part.contains('&') {
-                resolved.push(CompactString::from(part));
+                resolved.push(String::from(part));
             }
             continue;
         }
@@ -175,8 +163,8 @@ pub(super) fn resolve(
 }
 
 /// `&` names the parent; a selector without one descends from it.
-fn nest(part: &str, outer: &str) -> CompactString {
-    let mut selector = CompactString::default();
+fn nest(part: &str, outer: &str) -> String {
+    let mut selector = String::default();
     if part.contains('&') {
         for (index, piece) in part.split('&').enumerate() {
             if index > 0 {
@@ -239,10 +227,12 @@ fn split_top_level_commas(text: &str) -> Vec<&str> {
 
 #[cfg(test)]
 mod tests {
-    use super::{authored_local_less_classes, authored_local_scss_classes};
+    use crate::css::lang::StyleLanguage;
+    use alloc::vec::Vec;
 
-    fn names(scss: &str) -> Vec<vize_carton::String> {
-        authored_local_scss_classes(scss)
+    fn names(scss: &str) -> Vec<vize_l0::String> {
+        StyleLanguage::Scss
+            .authored_local_classes(scss)
             .expect("balanced SCSS")
             .into_iter()
             .collect()
@@ -289,7 +279,7 @@ mod tests {
 
     #[test]
     fn less_resolves_parents_and_skips_mixin_definitions() {
-        let names = authored_local_less_classes(
+        let names = StyleLanguage::Less.authored_local_classes(
             "@gap: 4px;\n.card { &__title {} &:extend(.base); .icon {} }\n.m() { .hidden {} }\n.guarded(@a) when (@a > 1) { .alsoHidden {} }\n#ns { .inner() {} }\n.pre-@{name} { &-x {} }\n@media screen { .m2 { &-n {} } }\n@detached: { .det {} };\n// .commented {}\n.call { .m(); }",
         )
         .expect("balanced Less");
@@ -301,7 +291,8 @@ mod tests {
 
     #[test]
     fn unbalanced_sources_refuse() {
-        assert_eq!(authored_local_scss_classes(".a { &-b {"), None);
-        assert_eq!(authored_local_scss_classes(".a {} }"), None);
+        let scss = StyleLanguage::Scss;
+        assert_eq!(scss.authored_local_classes(".a { &-b {"), None);
+        assert_eq!(scss.authored_local_classes(".a {} }"), None);
     }
 }

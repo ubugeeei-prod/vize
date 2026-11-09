@@ -1,44 +1,32 @@
-//! Authored class names in the indented syntaxes (`lang="sass"`, `"stylus"`),
-//! where a selector opens a block by indenting the lines after it.
+//! Sass (indented syntax) and Stylus, where a selector opens a block by
+//! indenting the lines after it.
 
-use std::collections::BTreeSet;
+use alloc::collections::BTreeSet;
+use alloc::vec::Vec;
+use vize_l0::String;
 
-use vize_carton::String as CompactString;
-
-use super::collect_classes_from_selector_prelude;
-use super::nested::{Dialect, authored_local_nested_classes, resolve};
+use super::super::classes::collect_classes_from_selector_prelude;
+use super::nested::{self, Dialect, resolve};
 
 #[derive(Clone, Copy, PartialEq)]
-enum Syntax {
+pub(super) enum Syntax {
     Sass,
     Stylus,
 }
 
-/// Class names indented Sass rules declare.
-pub fn authored_local_sass_classes(sass: &str) -> Option<BTreeSet<CompactString>> {
-    authored_local_indented_classes(sass, Syntax::Sass)
-}
-
-/// Class names Stylus rules declare. Stylus written with braces reads like SCSS.
-pub fn authored_local_stylus_classes(stylus: &str) -> Option<BTreeSet<CompactString>> {
-    if stylus.lines().any(|line| line.trim_end().ends_with('{')) {
-        return authored_local_nested_classes(stylus, Dialect::Scss);
+/// Class names the rules declare. Stylus written with braces reads like SCSS.
+pub(super) fn authored_local_classes(source: &str, syntax: Syntax) -> Option<BTreeSet<String>> {
+    if syntax == Syntax::Stylus && source.lines().any(|line| line.trim_end().ends_with('{')) {
+        return nested::authored_local_classes(source, Dialect::Scss);
     }
-    authored_local_indented_classes(stylus, Syntax::Stylus)
-}
-
-fn authored_local_indented_classes(
-    source: &str,
-    syntax: Syntax,
-) -> Option<BTreeSet<CompactString>> {
     let lines = code_lines(source)?;
     let mut classes = BTreeSet::new();
     // Open blocks: their indentation and resolved selectors (`None` is unknown).
-    let mut blocks: Vec<(usize, Option<Vec<CompactString>>)> = Vec::new();
+    let mut blocks: Vec<(usize, Option<Vec<String>>)> = Vec::new();
     let mut index = 0usize;
     while let Some(&(indent, ref first)) = lines.get(index) {
         // A selector list may continue over lines that end with `,`.
-        let mut text = CompactString::from(first.as_str());
+        let mut text = String::from(first.as_str());
         while text.ends_with(',')
             && let Some((_, next)) = lines.get(index + 1)
         {
@@ -110,11 +98,11 @@ fn selector(text: &str, syntax: Syntax) -> Option<(&str, bool)> {
 }
 
 /// Non-empty lines with their indentation, comments removed.
-fn code_lines(source: &str) -> Option<Vec<(usize, CompactString)>> {
+fn code_lines(source: &str) -> Option<Vec<(usize, String)>> {
     let mut lines = Vec::new();
     let mut in_block_comment = false;
     for line in source.lines() {
-        let mut code = CompactString::default();
+        let mut code = String::default();
         let mut rest = line;
         loop {
             if in_block_comment {
@@ -140,7 +128,7 @@ fn code_lines(source: &str) -> Option<Vec<(usize, CompactString)>> {
             continue;
         }
         let indent = trimmed.len() - trimmed.trim_start().len();
-        lines.push((indent, CompactString::from(trimmed.trim_start())));
+        lines.push((indent, String::from(trimmed.trim_start())));
     }
     Some(lines)
 }
@@ -172,11 +160,11 @@ fn comment_start(line: &str) -> Option<usize> {
 
 #[cfg(test)]
 mod tests {
-    use super::{authored_local_sass_classes, authored_local_stylus_classes};
+    use crate::css::lang::StyleLanguage;
+    use alloc::collections::BTreeSet;
+    use alloc::vec::Vec;
 
-    fn names(
-        found: Option<std::collections::BTreeSet<vize_carton::String>>,
-    ) -> Vec<vize_carton::String> {
+    fn names(found: Option<BTreeSet<vize_l0::String>>) -> Vec<vize_l0::String> {
         found.expect("readable source").into_iter().collect()
     }
 
@@ -184,7 +172,7 @@ mod tests {
     fn sass_resolves_indented_parents_and_skips_mixins() {
         let sass = ".card\n  &__title\n    color: red\n  // .commented\n  .icon\n    color: blue\n=mixin\n  .hidden\n    color: red\n.a, .b\n  &-x\n    color: red\n@media screen\n  .m\n    &-n\n      color: red\n.i-#{$x}\n  &-j\n    color: red\n.np\n  font:\n    family: serif\n  &-z\n    background: url(http://e.test/a.png)\n/* .block\n   comment */\n+wide\n  .content\n    color: red\n";
         assert_eq!(
-            names(authored_local_sass_classes(sass)),
+            names(StyleLanguage::Sass.authored_local_classes(sass)),
             [
                 "a",
                 "a-x",
@@ -206,7 +194,7 @@ mod tests {
     fn stylus_resolves_indented_parents_and_skips_functions_and_loops() {
         let stylus = ".card\n  &__title\n    color red\n  .icon\n    color blue\nborder-radius(n)\n  -webkit-border-radius n\n.list\n  for i in 1..3\n    .item-{i}\n      width 10px\n  &-x\n    color red\n.a,\n.b\n  &-y\n    color red\n";
         assert_eq!(
-            names(authored_local_stylus_classes(stylus)),
+            names(StyleLanguage::Stylus.authored_local_classes(stylus)),
             [
                 "a",
                 "a-y",
@@ -220,9 +208,10 @@ mod tests {
             ]
         );
         assert_eq!(
-            names(authored_local_stylus_classes(
-                ".brace {\n  &-x {\n    color red\n  }\n}\n"
-            )),
+            names(
+                StyleLanguage::Stylus
+                    .authored_local_classes(".brace {\n  &-x {\n    color red\n  }\n}\n")
+            ),
             ["brace", "brace-x"]
         );
     }

@@ -5,10 +5,7 @@ use std::collections::BTreeSet;
 use tower_lsp::lsp_types::{
     CompletionItem, CompletionItemKind, Documentation, MarkupContent, MarkupKind,
 };
-use vize_canon::css_classes::{
-    authored_local_css_classes, authored_local_less_classes, authored_local_sass_classes,
-    authored_local_scss_classes, authored_local_stylus_classes,
-};
+use vize_l1::css::lang::StyleLanguage;
 
 use crate::ide::IdeContext;
 
@@ -38,28 +35,8 @@ pub(crate) fn css_module_class_completions(ctx: &IdeContext) -> Option<Vec<Compl
         if style.module.as_deref() != Some(module) || style.src.is_some() {
             continue;
         }
-        let names = match style.lang.as_deref() {
-            None => authored_local_css_classes(&style.content),
-            Some(language) if language.eq_ignore_ascii_case("css") => {
-                authored_local_css_classes(&style.content)
-            }
-            Some(language) if language.eq_ignore_ascii_case("scss") => {
-                authored_local_scss_classes(&style.content)
-            }
-            Some(language) if language.eq_ignore_ascii_case("less") => {
-                authored_local_less_classes(&style.content)
-            }
-            Some(language) if language.eq_ignore_ascii_case("sass") => {
-                authored_local_sass_classes(&style.content)
-            }
-            Some(language)
-                if language.eq_ignore_ascii_case("stylus")
-                    || language.eq_ignore_ascii_case("styl") =>
-            {
-                authored_local_stylus_classes(&style.content)
-            }
-            Some(_) => None,
-        };
+        let names = StyleLanguage::from_lang(style.lang.as_deref())
+            .and_then(|language| language.authored_local_classes(&style.content));
         classes.extend(names.into_iter().flatten());
     }
     Some(

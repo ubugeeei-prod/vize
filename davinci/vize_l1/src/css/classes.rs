@@ -1,65 +1,17 @@
-//! Authored local CSS selector names shared by typechecking and completion.
+//! Authored local class names in one resolved selector prelude.
 //!
-//! This bounded query does not resolve imports or claim a closed module shape.
-//! Unsupported selector syntax refuses instead of guessing names.
+//! The selector grammar and CSS Modules scope (`:global`, `:local`) are the
+//! same for every style language once its dialect module has found the
+//! prelude and resolved nesting. Unsupported selector syntax refuses instead
+//! of guessing names.
 
-use std::collections::BTreeSet;
+use alloc::collections::BTreeSet;
+use alloc::vec::Vec;
+use vize_l0::{String, ToCompactString};
 
-use vize_carton::{String as CompactString, ToCompactString};
-
-mod indented;
-mod nested;
-pub use indented::{authored_local_sass_classes, authored_local_stylus_classes};
-pub use nested::{authored_local_less_classes, authored_local_scss_classes};
-
-/// Extract simple authored class selectors from selector preludes. Declarations
-/// are never scanned, so values such as `url(./asset.png)` cannot become fake
-/// module keys. Comments and string contents are blanked before inspection.
-pub fn authored_local_css_classes(css: &str) -> Option<BTreeSet<CompactString>> {
-    let bytes = css.as_bytes();
-    let mut classes = BTreeSet::new();
-    let mut prelude = Vec::new();
-    let mut index = 0usize;
-    let mut quote = None;
-
-    while let Some(&byte) = bytes.get(index) {
-        if let Some(open_quote) = quote {
-            if byte == b'\\' {
-                index = (index + 2).min(bytes.len());
-                continue;
-            }
-            if byte == open_quote {
-                quote = None;
-            }
-            index += 1;
-            continue;
-        }
-        if byte == b'/' && bytes.get(index + 1) == Some(&b'*') {
-            let relative_end = css.get(index + 2..)?.find("*/")?;
-            index += relative_end + 4;
-            continue;
-        }
-        if matches!(byte, b'\'' | b'"') {
-            quote = Some(byte);
-            index += 1;
-            continue;
-        }
-        match byte {
-            b'{' => {
-                collect_classes_from_selector_prelude(&prelude, &mut classes)?;
-                prelude.clear();
-            }
-            b';' | b'}' => prelude.clear(),
-            _ => prelude.push(byte),
-        }
-        index += 1;
-    }
-    quote.is_none().then_some(classes)
-}
-
-fn collect_classes_from_selector_prelude(
+pub(super) fn collect_classes_from_selector_prelude(
     prelude: &[u8],
-    classes: &mut BTreeSet<CompactString>,
+    classes: &mut BTreeSet<String>,
 ) -> Option<()> {
     let trimmed = prelude.trim_ascii_start();
     if trimmed.starts_with(b"@") {
@@ -115,7 +67,7 @@ fn collect_classes_from_selector_prelude(
                     while trimmed.get(end).is_some_and(|&b| is_css_class_continue(b)) {
                         end += 1;
                     }
-                    let class_name = std::str::from_utf8(trimmed.get(start..end)?).ok()?;
+                    let class_name = core::str::from_utf8(trimmed.get(start..end)?).ok()?;
                     classes.insert(class_name.to_compact_string());
                     index = end;
                     continue;
