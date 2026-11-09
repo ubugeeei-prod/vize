@@ -125,16 +125,17 @@ pub(super) fn split_program_candidates(
         .collect()
 }
 
-/// Order programs so every referenced project comes before its importers,
-/// keeping the collection order among independent programs, and return the
-/// configs other programs reference. A reference cycle keeps its collection
-/// order; its members share nothing with each other.
+/// Group programs into topological batches so every referenced project checks
+/// before its importers. Programs within one batch have no reference path
+/// between them and may check concurrently. Collection order is stable within
+/// each batch. A reference cycle becomes singleton batches in collection order;
+/// its members share nothing with each other.
 pub(super) fn order_by_references(
     candidates: Vec<ProgramCandidate>,
     cache: &mut TsconfigInputCache,
-) -> (Vec<ProgramCandidate>, FxHashSet<PathBuf>) {
+) -> (Vec<Vec<ProgramCandidate>>, FxHashSet<PathBuf>) {
     if candidates.len() < 2 {
-        return (candidates, FxHashSet::default());
+        return (vec![candidates], FxHashSet::default());
     }
     let configs: Vec<Option<PathBuf>> = candidates
         .iter()
@@ -153,36 +154,45 @@ pub(super) fn order_by_references(
         })
         .collect();
     let referenced: FxHashSet<PathBuf> = dependencies.iter().flatten().cloned().collect();
-    let mut placed = Vec::with_capacity(candidates.len());
+    let mut batches = Vec::new();
     let mut done: FxHashSet<PathBuf> = FxHashSet::default();
     let mut remaining: Vec<usize> = (0..candidates.len()).collect();
     loop {
-        let before = placed.len();
-        remaining.retain(|&index| {
-            let ready = dependencies.get(index).is_some_and(|dependencies| {
-                dependencies
-                    .iter()
-                    .all(|dependency| done.contains(dependency))
-            });
-            if ready {
-                placed.push(index);
-                if let Some(config) = configs.get(index).and_then(Option::as_ref) {
-                    done.insert(config.clone());
-                }
-            }
-            !ready
-        });
-        if placed.len() == before {
+        let ready: Vec<usize> = remaining
+            .iter()
+            .copied()
+            .filter(|&index| {
+                dependencies.get(index).is_some_and(|dependencies| {
+                    dependencies
+                        .iter()
+                        .all(|dependency| done.contains(dependency))
+                })
+            })
+            .collect();
+        if ready.is_empty() {
             break;
         }
+        let ready_set: FxHashSet<usize> = ready.iter().copied().collect();
+        remaining.retain(|index| !ready_set.contains(index));
+        for &index in &ready {
+            if let Some(config) = configs.get(index).and_then(Option::as_ref) {
+                done.insert(config.clone());
+            }
+        }
+        batches.push(ready);
     }
-    placed.extend(remaining);
+    batches.extend(remaining.into_iter().map(|index| vec![index]));
     let mut slots: Vec<Option<ProgramCandidate>> = candidates.into_iter().map(Some).collect();
-    let ordered = placed
+    let batches = batches
         .into_iter()
-        .filter_map(|index| slots.get_mut(index).and_then(Option::take))
+        .map(|batch| {
+            batch
+                .into_iter()
+                .filter_map(|index| slots.get_mut(index).and_then(Option::take))
+                .collect()
+        })
         .collect();
-    (ordered, referenced)
+    (batches, referenced)
 }
 
 /// Whether the invocation config stays the only program. Otherwise each
@@ -290,7 +300,7 @@ mod tests {
             )
         };
         let mut cache = TsconfigInputCache::default();
-        let (ordered, referenced) = order_by_references(
+        let (batches, referenced) = order_by_references(
             vec![
                 candidate(Some(config("feat"))),
                 candidate(Some(config("lone"))),
@@ -300,19 +310,27 @@ mod tests {
             ],
             &mut cache,
         );
-        let order: Vec<_> = ordered
+        let order: Vec<Vec<_>> = batches
             .iter()
-            .map(|candidate| {
-                candidate
-                    .tsconfig_path
-                    .as_deref()
-                    .and_then(|path| path.parent())
-                    .and_then(|dir| dir.file_name())
-                    .map(|name| name.to_string_lossy().into_owned())
-                    .unwrap_or_default()
+            .map(|batch| {
+                batch
+                    .iter()
+                    .map(|candidate| {
+                        candidate
+                            .tsconfig_path
+                            .as_deref()
+                            .and_then(|path| path.parent())
+                            .and_then(|dir| dir.file_name())
+                            .map(|name| name.to_string_lossy().into_owned())
+                            .unwrap_or_default()
+                    })
+                    .collect()
             })
             .collect();
-        assert_eq!(order, ["lone", "", "kit", "app", "feat"]);
+        assert_eq!(
+            order,
+            vec![vec!["lone", "", "kit"], vec!["app"], vec!["feat"]]
+        );
         assert_eq!(
             referenced,
             FxHashSet::from_iter([config("kit"), config("app")])
@@ -339,15 +357,20 @@ mod tests {
             )
         };
         let mut cache = TsconfigInputCache::default();
-        let (ordered, referenced) = order_by_references(
+        let (batches, referenced) = order_by_references(
             vec![candidate(Some(config("b"))), candidate(Some(config("a")))],
             &mut cache,
         );
-        let order: Vec<_> = ordered
+        let order: Vec<Vec<_>> = batches
             .iter()
-            .map(|candidate| candidate.tsconfig_path.clone().unwrap())
+            .map(|batch| {
+                batch
+                    .iter()
+                    .map(|candidate| candidate.tsconfig_path.clone().unwrap())
+                    .collect()
+            })
             .collect();
-        assert_eq!(order, [config("b"), config("a")]);
+        assert_eq!(order, [[config("b")], [config("a")]]);
         assert_eq!(referenced.len(), 2);
     }
 }
