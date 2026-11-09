@@ -1,9 +1,9 @@
-use super::{Checked, Value, roster_hash, support};
+use super::{roster_hash, support, Checked, Value};
 use serde_json::json;
 use std::fs;
 
 const UPDATE: &str = "malformed-membership/provider-dependency-update-12212.json";
-const UPDATE_HASH: &str = "a8a161a5f75fe2ee26e1266d5c8cf6cb71fc2d836937df9e48a65ab337be65d9";
+const UPDATE_HASH: &str = "0e3ac80352a5420b0de9af78efb64bf258f3d9dc97bbde0703500d4a7639b3d2";
 const PREVIOUS: &str = "malformed-membership/provider-peer-update-20261031.json";
 const PREVIOUS_BINDING: &str = "tests/_fixtures/differential/typechecker/empty-vue-star-exports/malformed-membership/provider-peer-update-20261031.json";
 const QUALIFICATION: &str =

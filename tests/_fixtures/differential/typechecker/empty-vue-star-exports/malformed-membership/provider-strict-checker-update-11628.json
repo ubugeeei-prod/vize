@@ -6,14 +6,14 @@
   "previousProviderQualificationRecord": {
     "path": "tests/_fixtures/differential/typechecker/empty-vue-star-exports/malformed-membership/provider-root-dependency-ownership-update-12123.json",
     "bytes": 4614,
-    "sha256": "456ca868c0bd994620d31306c6a66f3d1d19fc36e5da47e00c08601009bf7ed2",
-    "gitBlob": "45459f1671223f9418449226e7ff38e777f727ae"
+    "sha256": "41c699ad911cd224fd01e43fec982ef3b705e26d28f9c033f9cbbc26bf123e06",
+    "gitBlob": "d7f8c32f5ac67e5f9ab8acfe5b9024798e36423b"
   },
   "previousQualificationLock": {
     "path": "pnpm-lock.yaml",
-    "bytes": 1089013,
-    "sha256": "0521d12a43d9d7945784a06628c0cf56acc9915713c30e1d9c99b493af352760",
-    "gitBlob": "68c91ac139dec9fc0544e94321ac55f651352a81"
+    "bytes": 1096392,
+    "sha256": "f5ec3ebdba5b24c0f392b99a405994036500fceca394805b7859260fafa82382",
+    "gitBlob": "8387787da67a22feb8a1664a8c5816aa85cd518e"
   },
   "previousQualificationPackage": {
     "path": "package.json",
@@ -23,9 +23,9 @@
   },
   "finalQualificationLock": {
     "path": "pnpm-lock.yaml",
-    "bytes": 1089013,
-    "sha256": "0521d12a43d9d7945784a06628c0cf56acc9915713c30e1d9c99b493af352760",
-    "gitBlob": "68c91ac139dec9fc0544e94321ac55f651352a81"
+    "bytes": 1096392,
+    "sha256": "f5ec3ebdba5b24c0f392b99a405994036500fceca394805b7859260fafa82382",
+    "gitBlob": "8387787da67a22feb8a1664a8c5816aa85cd518e"
   },
   "finalQualificationPackage": {
     "path": "package.json",
@@ -59,7 +59,7 @@
   },
   "resolver": {
     "command": "vp install --lockfile-only --no-frozen-lockfile --ignore-scripts",
-    "fixedPointSha256": "0521d12a43d9d7945784a06628c0cf56acc9915713c30e1d9c99b493af352760"
+    "fixedPointSha256": "f5ec3ebdba5b24c0f392b99a405994036500fceca394805b7859260fafa82382"
   },
   "nativeAcceptanceCredit": false,
   "scope": "Bind the strict checker export, its open-policy predecessor, and the unchanged dependency graph. This record gives source provenance only."
