@@ -260,10 +260,12 @@ fn helper_isolation_preserves_the_authored_prop_diagnostic_anchor() {
     );
 }
 /// Lib types the projection reaches through `globalThis` once the SFC binds
-/// the same name (#12536). Each carries a same-arity `never` poison.
-const QUALIFIED_LIB_TYPES: &[(&str, &str)] = &[(
+/// the same name (#12536): a same-arity `never` poison, and how many
+/// references the parent fixture's projection generates.
+const QUALIFIED_LIB_TYPES: &[(&str, &str, usize)] = &[(
     "Parameters",
     "type Parameters<T extends (...args: any) => any> = never",
+    4,
 )];
 
 const LIB_CHILD: &str = r#"<script setup lang="ts" generic="T extends string | number">
@@ -295,7 +297,7 @@ enum LibPoison {
 
 fn lib_module_script(poison: LibPoison) -> std::string::String {
     let mut script = std::string::String::from("<script lang=\"ts\">\n");
-    for (name, declaration) in QUALIFIED_LIB_TYPES {
+    for (name, declaration, _) in QUALIFIED_LIB_TYPES {
         let line = match poison {
             LibPoison::None => declaration.replacen(name, &format!("Unshadowed{name}"), 1),
             LibPoison::Declared => std::string::String::from(*declaration),
@@ -311,7 +313,7 @@ fn lib_module_script(poison: LibPoison) -> std::string::String {
 fn lib_types_module() -> std::string::String {
     QUALIFIED_LIB_TYPES
         .iter()
-        .map(|(_, declaration)| format!("export {declaration}\n"))
+        .map(|(_, declaration, _)| format!("export {declaration}\n"))
         .collect()
 }
 
@@ -366,12 +368,18 @@ fn unqualified_count(source: &str, name: &str) -> usize {
         .count()
 }
 
+/// The poison is the only unqualified spelling, and every generated reference
+/// is qualified.
 fn assert_only_the_poison_is_unqualified(generated: &str) {
-    for (name, _) in QUALIFIED_LIB_TYPES {
+    for (name, _, references) in QUALIFIED_LIB_TYPES {
+        let qualified = format!("globalThis.{name}<");
         assert_eq!(
-            unqualified_count(generated, name),
-            1,
-            "only the authored poison may name {name} unqualified:\n{generated}"
+            (
+                unqualified_count(generated, name),
+                generated.matches(qualified.as_str()).count()
+            ),
+            (1, *references),
+            "{name}: (unqualified, qualified) references:\n{generated}"
         );
     }
 }
@@ -391,13 +399,7 @@ fn the_content_mapper_projection_names_shadowed_lib_types_through_global_this() 
             options,
         )
         .expect("parent should project");
-        assert!(
-            ["__vize_args: ", "$SlotOutletArgs<", "$AnySlotOutletArgs<"]
-                .iter()
-                .all(|site| transform.text.contains(site)),
-            "the fixture must reach every qualified site:\n{}",
-            transform.text
-        );
+        // Listener closures plus the static and dynamic slot outlet tuples.
         assert_only_the_poison_is_unqualified(&transform.text);
     }
 }
