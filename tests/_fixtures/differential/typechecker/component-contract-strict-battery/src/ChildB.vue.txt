@@ -1,0 +1,6 @@
+<script setup lang="ts">
+const props = withDefaults(defineProps<{ label?: string; size?: number; open?: boolean; list?: number[]; maybe?: string | null }>(), { label: 'x', size: 1, list: () => [] })
+const emit = defineEmits<{ toggle: [open: boolean] }>()
+void props; void emit
+</script>
+<template><section :data-size="size"><span>{{ label.toUpperCase() }} {{ size.toFixed(1) }} {{ list.map(n => n + 1) }} {{ maybe?.length }} {{ open ? 1 : 0 }}</span><p>{{ label.nope }}</p><p>{{ size.toUpperCase() }}</p></section></template>

@@ -1,0 +1,21 @@
+<script setup lang="ts">
+import ChildC from './ChildC.vue'
+import ChildA from './ChildA.vue'
+const n = 1
+const s = 'x'
+</script>
+<template>
+  <ChildC label="x" :maxlength="{}" />
+  <ChildC label="x" maxlength="3" />
+  <ChildC label="x" :maxlength="n" />
+  <ChildC label="x" :disabled="'yes'" />
+  <ChildC label="x" :placeholder="n" />
+  <ChildC label="x" :size="s" />
+  <ChildC label="x" :title="n" :id="n" />
+  <ChildC label="x" :tabindex="s" />
+  <ChildC label="x" :onInput="(e: number) => e" />
+  <ChildC label="x" @focus="(e: string) => e" />
+  <ChildC label="x" data-x="1" :data-y="n" aria-hidden="true" :aria-busy="n" />
+  <ChildC label="x" :maxlength="{}" />
+  <ChildA title="t" :items="[]" :maxlength="{}" :tabindex="s" />
+</template>

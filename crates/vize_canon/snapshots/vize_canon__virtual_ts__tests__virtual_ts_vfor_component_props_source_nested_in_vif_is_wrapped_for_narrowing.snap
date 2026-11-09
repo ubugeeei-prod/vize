@@ -1,6 +1,5 @@
 ---
 source: crates/vize_canon/src/virtual_ts/tests.rs
-assertion_line: 39
 expression: value
 ---
 /// <reference lib="es2022" />
@@ -72,7 +71,7 @@ type $ComponentInputFor<T, Declared, Authored, Allowed> = Allowed & $ComponentIn
 type $ComponentInput<T, Declared, Authored> = $UsePublicInstance<Authored> extends true ? $ComponentInputProps<T, Declared> : T extends unknown ? $ComponentInputFor<T, Declared, Authored, $ComponentInputProps<T, Declared>> : never;
 type $AuthoredKeyWitness<T> = { [K in keyof T]: unknown };
 // Constructor arguments (templates, `new`) bind `Authored`; TSX binds `Jsx` through `$props` (#11629).
-type $ComponentInstanceFor<I, O, B, T, Declared, Authored, Jsx> = $IsAny<Authored> extends true ? I : $IsUnknown<Authored> extends true ? $UsePublicInstance<Jsx> extends true ? I : $ReplaceComponentProps<O, Pick<$AuthoredKeyWitness<Jsx>, keyof Jsx & $ComponentMetadataKeys<$ComponentInputProps<T, Declared>>> & (T extends unknown ? $ComponentInputProps<T, Declared> & $ComponentInputGuard<T, Declared, Jsx> : never)> & B : $ReplaceComponentProps<O, $ComponentInputProps<T, Declared> & $ComponentMissingInputGuard<T, Authored>> & B;
+type $ComponentInstanceFor<I, O, B, T, Declared, Authored, Jsx> = $IsAny<Authored> extends true ? I : $IsUnknown<Authored> extends true ? $UsePublicInstance<Jsx> extends true ? I : $ReplaceComponentProps<O, Pick<$AuthoredKeyWitness<Jsx>, keyof Jsx & ($IsAny<Declared & $PublicComponentInputProps> extends true ? never : T extends unknown ? keyof Partial<T> | keyof Partial<$KebabProps<T>> | keyof Declared | keyof $FallthroughAttrs | keyof $PublicComponentInputProps : never)> & (T extends unknown ? $ComponentInputProps<T, Declared> & $ComponentInputGuard<T, Declared, Jsx> : never)> & B : $ReplaceComponentProps<O, $ComponentInputProps<T, Declared> & $ComponentMissingInputGuard<T, Authored>> & B;
 type $IsUnknown<T> = unknown extends T ? [keyof T] extends [never] ? true : false : false;
 type $UsePublicInstance<T> = $IsAny<T> extends true ? true : $IsUnknown<T>;
 type $LiteralKeys<T> = keyof { [K in keyof T as K extends string ? string extends K ? never : K extends `$${infer R}` ? string extends R ? never : K : K : number extends K ? never : symbol extends K ? never : K]: unknown };
@@ -132,7 +131,7 @@ function __setup() {
   // User setup code
   const elems = { a: [1], b: ["a"] } as const;
   const key = "a" as "a" | "b";
-  // @vize-map: 15843:15922 -> 0:105
+  // @vize-map: 16011:16090 -> 0:105
 
   // ========== Template Scope (inherits from setup) ==========
   ;(function __template() {
@@ -203,9 +202,8 @@ function __setup() {
   type __Test_CheckProps_0 = __Test_Props_0 & $EmitListeners<__Test_Component_0> & $RequiredFallthroughProps<__Test_Component_0>;
   type __Test_CheckTail_0 = $ComponentCheckTail<__Test_Component_0>;
   type __Test_ValueProps_0 = $IsLibraryGenericExport<__Test_Component_0> extends true ? Record<string, any> : __Test_Props_0 & $EmitListeners<__Test_Component_0> & $PublicComponentAttrs;
-  type __Test_FallthroughValue_0<K extends PropertyKey> = $FallthroughValue<__Test_Component_0, K>;
   type __Test_Check_0 = $PropChecker<__Test_Component_0, __Test_CheckProps_0, __Test_CheckTail_0>;
-  type __Test_0_prop_value1 = $PropValue<__Test_ValueProps_0, 'value1', __Test_FallthroughValue_0<'value1'>>;
+  type __Test_0_prop_value1 = $PropValue<__Test_ValueProps_0, 'value1', $FallthroughValue<__Test_Component_0, 'value1'>>;
 
   // Component template navigation references
   void Test;

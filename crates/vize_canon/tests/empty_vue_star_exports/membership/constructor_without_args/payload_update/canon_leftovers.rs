@@ -59,6 +59,7 @@ fn forward(previous: &str, transition: &Value) -> String {
 }
 
 pub(super) fn source_before(path: &str, current: String) -> String {
+    let current = super::instance_input_keys::source_before(path, current);
     let current = super::projection_text_buffer::source_before(path, current);
     let receipt = receipt();
     receipt["files"]
@@ -70,25 +71,27 @@ pub(super) fn source_before(path: &str, current: String) -> String {
 }
 
 pub(super) fn preamble_before(current: &str) -> String {
-    inverse(current, &receipt()["compiledPreamble"])
+    inverse(
+        &super::instance_input_keys::preamble_before(current),
+        &receipt()["compiledPreamble"],
+    )
 }
 
 pub(super) fn retain_provenance(manifest: &mut Value) {
     let receipt = receipt();
     for transition in receipt["files"].as_array().unwrap() {
         let path = transition["path"].as_str().unwrap();
-        let current = super::projection_text_buffer::read_current(path);
+        let current = super::instance_input_keys::source_before(
+            path,
+            super::projection_text_buffer::read_current(path),
+        );
         identity(&current, &transition["after"]);
         inverse(&current, transition);
     }
-    identity(
-        vize_canon::virtual_ts::SHARED_PREAMBLE_DTS,
-        &receipt["compiledPreamble"]["after"],
-    );
-    inverse(
-        vize_canon::virtual_ts::SHARED_PREAMBLE_DTS,
-        &receipt["compiledPreamble"],
-    );
+    let preamble =
+        super::instance_input_keys::preamble_before(vize_canon::virtual_ts::SHARED_PREAMBLE_DTS);
+    identity(&preamble, &receipt["compiledPreamble"]["after"]);
+    inverse(&preamble, &receipt["compiledPreamble"]);
     manifest["provenance"]["currentCanonLeftovers11499"] = receipt;
 }
 
@@ -101,13 +104,18 @@ mod tests {
         let receipt = receipt();
         for transition in receipt["files"].as_array().unwrap() {
             let path = transition["path"].as_str().unwrap();
-            let current = super::super::projection_text_buffer::read_current(path);
+            let current = super::super::instance_input_keys::source_before(
+                path,
+                super::super::projection_text_buffer::read_current(path),
+            );
             let previous = inverse(&current, transition);
             assert_eq!(forward(&previous, transition), current);
         }
-        let current = vize_canon::virtual_ts::SHARED_PREAMBLE_DTS;
+        let current = super::super::instance_input_keys::preamble_before(
+            vize_canon::virtual_ts::SHARED_PREAMBLE_DTS,
+        );
         let transition = &receipt["compiledPreamble"];
-        let previous = inverse(current, transition);
+        let previous = inverse(&current, transition);
         assert_eq!(forward(&previous, transition), current);
     }
 
@@ -121,10 +129,14 @@ mod tests {
             .chain(std::iter::once(&receipt["compiledPreamble"]))
         {
             let current = if transition["path"] == "vize_canon::virtual_ts::SHARED_PREAMBLE_DTS" {
-                vize_canon::virtual_ts::SHARED_PREAMBLE_DTS.to_owned()
+                super::super::instance_input_keys::preamble_before(
+                    vize_canon::virtual_ts::SHARED_PREAMBLE_DTS,
+                )
             } else {
-                super::super::projection_text_buffer::read_current(
-                    transition["path"].as_str().unwrap(),
+                let path = transition["path"].as_str().unwrap();
+                super::super::instance_input_keys::source_before(
+                    path,
+                    super::super::projection_text_buffer::read_current(path),
                 )
             };
             for mutated in [

@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { relative, sep } from "node:path";
+import { sixElementTuples } from "./wire-tuples.ts";
 
 export type Packet = Record<string, unknown>;
 export function hostConfig(compilerOptions: Packet) {
@@ -41,7 +42,7 @@ export function frames(bytes: Buffer): { packet: Packet; bytes: number }[] {
     const text = new TextDecoder("utf-8", { fatal: true }).decode(
       bytes.subarray(end + 4, end + 4 + length),
     );
-    rows.push({ packet: object(JSON.parse(text)), bytes: length });
+    rows.push({ packet: object(sixElementTuples(JSON.parse(text))), bytes: length });
     offset = end + 4 + length;
   }
   return rows;

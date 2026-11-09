@@ -71,7 +71,7 @@ type $ComponentInputFor<T, Declared, Authored, Allowed> = Allowed & $ComponentIn
 type $ComponentInput<T, Declared, Authored> = $UsePublicInstance<Authored> extends true ? $ComponentInputProps<T, Declared> : T extends unknown ? $ComponentInputFor<T, Declared, Authored, $ComponentInputProps<T, Declared>> : never;
 type $AuthoredKeyWitness<T> = { [K in keyof T]: unknown };
 // Constructor arguments (templates, `new`) bind `Authored`; TSX binds `Jsx` through `$props` (#11629).
-type $ComponentInstanceFor<I, O, B, T, Declared, Authored, Jsx> = $IsAny<Authored> extends true ? I : $IsUnknown<Authored> extends true ? $UsePublicInstance<Jsx> extends true ? I : $ReplaceComponentProps<O, Pick<$AuthoredKeyWitness<Jsx>, keyof Jsx & $ComponentMetadataKeys<$ComponentInputProps<T, Declared>>> & (T extends unknown ? $ComponentInputProps<T, Declared> & $ComponentInputGuard<T, Declared, Jsx> : never)> & B : $ReplaceComponentProps<O, $ComponentInputProps<T, Declared> & $ComponentMissingInputGuard<T, Authored>> & B;
+type $ComponentInstanceFor<I, O, B, T, Declared, Authored, Jsx> = $IsAny<Authored> extends true ? I : $IsUnknown<Authored> extends true ? $UsePublicInstance<Jsx> extends true ? I : $ReplaceComponentProps<O, Pick<$AuthoredKeyWitness<Jsx>, keyof Jsx & ($IsAny<Declared & $PublicComponentInputProps> extends true ? never : T extends unknown ? keyof Partial<T> | keyof Partial<$KebabProps<T>> | keyof Declared | keyof $FallthroughAttrs | keyof $PublicComponentInputProps : never)> & (T extends unknown ? $ComponentInputProps<T, Declared> & $ComponentInputGuard<T, Declared, Jsx> : never)> & B : $ReplaceComponentProps<O, $ComponentInputProps<T, Declared> & $ComponentMissingInputGuard<T, Authored>> & B;
 type $IsUnknown<T> = unknown extends T ? [keyof T] extends [never] ? true : false : false;
 type $UsePublicInstance<T> = $IsAny<T> extends true ? true : $IsUnknown<T>;
 type $LiteralKeys<T> = keyof { [K in keyof T as K extends string ? string extends K ? never : K extends `$${infer R}` ? string extends R ? never : K : K : number extends K ? never : symbol extends K ? never : K]: unknown };
@@ -165,7 +165,7 @@ function __setup() {
   
   const items = ref(['a', 'b', 'c'])
   
-  // @vize-map: 21073:21119 -> 0:97
+  // @vize-map: 21241:21287 -> 0:97
 
   // ========== Template Scope (inherits from setup) ==========
   // Ref type captures (before template scope shadows them)
@@ -261,9 +261,8 @@ function __setup() {
   type __MyList_CheckProps_0 = __MyList_Props_0 & $EmitListeners<__MyList_Component_0> & $RequiredFallthroughProps<__MyList_Component_0>;
   type __MyList_CheckTail_0 = $ComponentCheckTail<__MyList_Component_0>;
   type __MyList_ValueProps_0 = $IsLibraryGenericExport<__MyList_Component_0> extends true ? Record<string, any> : __MyList_Props_0 & $EmitListeners<__MyList_Component_0> & $PublicComponentAttrs;
-  type __MyList_FallthroughValue_0<K extends PropertyKey> = $FallthroughValue<__MyList_Component_0, K>;
   type __MyList_Check_0 = $PropChecker<__MyList_Component_0, __MyList_CheckProps_0, __MyList_CheckTail_0>;
-  type __MyList_0_prop_items = $PropValue<__MyList_ValueProps_0, 'items', __MyList_FallthroughValue_0<'items'>>;
+  type __MyList_0_prop_items = $PropValue<__MyList_ValueProps_0, 'items', $FallthroughValue<__MyList_Component_0, 'items'>>;
 
   // Component template navigation references
   void MyList;

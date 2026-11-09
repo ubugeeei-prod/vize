@@ -1,0 +1,15 @@
+<script setup lang="ts">
+type Emits = {
+  /** Fired on change. */
+  change: [value: string]
+}
+defineEmits<Emits>()
+defineSlots<{
+  /** Row slot. */
+  item(props: { row: number }): any
+}>()
+</script>
+
+<template>
+  <div><slot name="item" :row="1" /></div>
+</template>

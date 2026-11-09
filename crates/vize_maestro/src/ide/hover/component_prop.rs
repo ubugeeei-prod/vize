@@ -24,13 +24,10 @@ pub(super) fn hover_attribute_documented(
     if let Some(metadata) = component_metadata(ctx, &component_name) {
         let prop = metadata.props.iter().find(|prop| prop.name == prop_name)?;
         let type_detail = prop.type_detail.as_deref().unwrap_or("unknown");
-        let optional = if prop.required { "" } else { "?" };
+        let required = native_signature::native_requirement(native).unwrap_or(prop.required);
+        let optional = if required { "" } else { "?" };
         let signature = format!("{}{}: {}", prop.name, optional, type_detail);
-        let requirement = if prop.required {
-            "Required"
-        } else {
-            "Optional"
-        };
+        let requirement = if required { "Required" } else { "Optional" };
         let builder = HoverBuilder::new().title(&prop.name).meta("Component prop");
         let mut builder = native_signature::documented_prop_signature(builder, &signature, native)
             .section("Requirement", requirement)

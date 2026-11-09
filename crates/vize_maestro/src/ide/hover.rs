@@ -72,7 +72,10 @@ impl HoverService {
                     return None;
                 }
                 if ctx.state.is_lsp_typecheck_enabled()
-                    && (crate::ide::definition::helpers::get_attribute_and_component_at_offset(ctx)
+                    && (corsa::is_slot_name_query(ctx)
+                        || crate::ide::definition::helpers::get_attribute_and_component_at_offset(
+                            ctx,
+                        )
                         .is_some_and(|(attribute, tag)| {
                             crate::ide::corsa_support::native_dom_attribute_info(&tag, &attribute)
                                 .is_some()

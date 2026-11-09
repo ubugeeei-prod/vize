@@ -4,6 +4,7 @@ import fs from "node:fs";
 import { createRequire } from "node:module";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { sixElementTuples } from "../../../tools/support/compat/content-mapper/wire-tuples.ts";
 import { captureCurrentSdkDeclarations } from "../../../tools/support/compat/content-mapper/current-sdk-declarations.ts";
 
 export type GlobalCase = {
@@ -116,7 +117,7 @@ export function decodeFrames(text: string): Response[] {
     const start = end + 4,
       length = Number(header[1]);
     assert.ok(bytes.length >= start + length);
-    result.push(JSON.parse(bytes.subarray(start, start + length).toString()));
+    result.push(sixElementTuples(JSON.parse(bytes.subarray(start, start + length).toString())));
     bytes = bytes.subarray(start + length);
   }
   return result;

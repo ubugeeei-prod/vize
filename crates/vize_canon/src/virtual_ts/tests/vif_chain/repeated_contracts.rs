@@ -225,13 +225,16 @@ fn repeated_prop_value_type_is_emitted_once() {
     let mut outputs = Vec::new();
     for hoist in [false, true] {
         let output = generated(script, template, hoist);
-        let prop_value = if hoist {
-            "import(\"vize:virtual-ts\").$PropValue"
+        let (prop_value, fallthrough_value) = if hoist {
+            (
+                "import(\"vize:virtual-ts\").$PropValue",
+                "import(\"vize:virtual-ts\").$FallthroughValue",
+            )
         } else {
-            "$PropValue"
+            ("$PropValue", "$FallthroughValue")
         };
         let shared_type = cstr!(
-            "{prop_value}<__MyChild_ValueProps_0, 'label', __MyChild_FallthroughValue_0<'label'>>"
+            "{prop_value}<__MyChild_ValueProps_0, 'label', {fallthrough_value}<__MyChild_Component_0, 'label'>>"
         );
         assert_eq!(
             output.code.matches(shared_type.as_str()).count(),

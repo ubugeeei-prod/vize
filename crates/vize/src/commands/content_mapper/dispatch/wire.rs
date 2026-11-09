@@ -6,12 +6,19 @@ use serde::Serialize;
 use serde::ser::{SerializeStruct, Serializer};
 use serde_json::{Value, json};
 use vize_canon::{
-    ContentMapperDiagnostic, ContentMapperDiagnosticDirectives, ContentMapperSemanticLink,
-    ContentMapperSpan, ContentMapperTransform, ContentMapperUnusedExpectDiagnostic,
+    ContentMapperDiagnostic, ContentMapperDiagnosticDirective, ContentMapperDiagnosticDirectives,
+    ContentMapperSemanticLink, ContentMapperSpan, ContentMapperTransform,
+    ContentMapperUnusedExpectDiagnostic,
 };
 
 /// Room for `Content-Length: <u64>\r\n\r\n` ahead of the body.
 const HEADER_ROOM: usize = 40;
+
+/// TypeScript `spanmap.FeatureAll`; a five-element span tuple decodes to it.
+const SPAN_FEATURES_ALL: usize = (1 << 20) - 1;
+
+/// Ignore directive policy; the host reads a tuple's sixth element only for expect.
+const DIRECTIVE_POLICY_IGNORE: usize = 0;
 
 pub(super) fn encode_result(id: &Value, result: impl Serialize) -> io::Result<Vec<u8>> {
     // The original server's json! envelope recursively ordered every object
@@ -57,7 +64,7 @@ pub(super) fn encode_transform(
     frame.extend_from_slice(br#","jsonrpc":"2.0","result":{"#);
     if let Some(directives) = diagnostic_directives {
         frame.extend_from_slice(br#""diagnosticDirectives":"#);
-        serde_json::to_writer(&mut frame, &Sorted(directives)).map_err(io::Error::other)?;
+        push_directives(&mut frame, directives)?;
         frame.push(b',');
     }
     frame.extend_from_slice(br#""diagnostics":"#);
@@ -146,21 +153,56 @@ fn push_escaped(out: &mut Vec<u8>, bytes: &[u8], run: &mut usize, index: usize) 
     }
 }
 
-/// `[[a,b,c,d,e,f],...]` without a serializer call per number.
+/// `[[a,b,c,d,e,f],...]` without a serializer call per number. A span with
+/// every feature drops its mask, as `spanmap.Marshal` writes it.
 fn push_spans(out: &mut Vec<u8>, spans: &[ContentMapperSpan]) {
     out.push(b'[');
     for (row, ContentMapperSpan(span)) in spans.iter().enumerate() {
         if row > 0 {
             out.push(b',');
         }
-        out.push(b'[');
-        for (column, &value) in span.iter().enumerate() {
-            if column > 0 {
-                out.push(b',');
-            }
-            push_usize(out, value);
+        let width = if span[5] == SPAN_FEATURES_ALL { 5 } else { 6 };
+        push_row(out, span.get(..width).unwrap_or(span));
+    }
+    out.push(b']');
+}
+
+/// Directive table with sorted keys. An ignore tuple drops its unused-expect
+/// index, which the host never reads for that policy.
+fn push_directives(
+    out: &mut Vec<u8>,
+    directives: &ContentMapperDiagnosticDirectives,
+) -> io::Result<()> {
+    let ContentMapperDiagnosticDirectives {
+        unused_expect_directive_diagnostics,
+        directives,
+    } = directives;
+    out.extend_from_slice(br#"{"directives":["#);
+    for (row, ContentMapperDiagnosticDirective(tuple)) in directives.iter().enumerate() {
+        if row > 0 {
+            out.push(b',');
         }
-        out.push(b']');
+        let width = if tuple[4] == DIRECTIVE_POLICY_IGNORE {
+            5
+        } else {
+            6
+        };
+        push_row(out, tuple.get(..width).unwrap_or(tuple));
+    }
+    out.extend_from_slice(br#"],"unusedExpectDirectiveDiagnostics":"#);
+    serde_json::to_writer(&mut *out, &SortedSeq(unused_expect_directive_diagnostics))
+        .map_err(io::Error::other)?;
+    out.push(b'}');
+    Ok(())
+}
+
+fn push_row(out: &mut Vec<u8>, row: &[usize]) {
+    out.push(b'[');
+    for (column, &value) in row.iter().enumerate() {
+        if column > 0 {
+            out.push(b',');
+        }
+        push_usize(out, value);
     }
     out.push(b']');
 }
@@ -267,22 +309,6 @@ impl Serialize for Sorted<'_, ContentMapperSemanticLink> {
     }
 }
 
-impl Serialize for Sorted<'_, ContentMapperDiagnosticDirectives> {
-    fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
-        let ContentMapperDiagnosticDirectives {
-            unused_expect_directive_diagnostics,
-            directives,
-        } = self.0;
-        let mut out = serializer.serialize_struct("ContentMapperDiagnosticDirectives", 2)?;
-        out.serialize_field("directives", directives)?;
-        out.serialize_field(
-            "unusedExpectDirectiveDiagnostics",
-            &SortedSeq(unused_expect_directive_diagnostics),
-        )?;
-        out.end()
-    }
-}
-
 impl Serialize for Sorted<'_, ContentMapperUnusedExpectDiagnostic> {
     fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
         let ContentMapperUnusedExpectDiagnostic { code, message_text } = self.0;
@@ -291,6 +317,36 @@ impl Serialize for Sorted<'_, ContentMapperUnusedExpectDiagnostic> {
         out.serialize_field("messageText", message_text)?;
         out.end()
     }
+}
+
+/// A transform as its reply decodes: serde's value with the five-element
+/// tuples TypeScript reads as `FeatureAll` spans and ignore directives.
+#[cfg(test)]
+pub(in crate::commands::content_mapper) fn wire_value(transform: &ContentMapperTransform) -> Value {
+    let mut value = serde_json::to_value(transform).unwrap_or_default();
+    let narrow = |rows: Option<&mut Vec<Value>>, column: usize, compact: usize| {
+        for row in rows.into_iter().flatten() {
+            if let Some(tuple) = row.as_array_mut()
+                && tuple.get(column) == Some(&json!(compact))
+            {
+                tuple.truncate(5);
+            }
+        }
+    };
+    narrow(
+        value.get_mut("mappings").and_then(Value::as_array_mut),
+        5,
+        SPAN_FEATURES_ALL,
+    );
+    narrow(
+        value
+            .get_mut("diagnosticDirectives")
+            .and_then(|table| table.get_mut("directives"))
+            .and_then(Value::as_array_mut),
+        4,
+        DIRECTIVE_POLICY_IGNORE,
+    );
+    value
 }
 
 #[cfg(test)]
@@ -308,7 +364,11 @@ mod tests {
         ContentMapperTransform {
             text: "const a = \"雪\\n\";\u{2028}🌸\t\r\u{1}\u{8}\u{c}\u{1f}\u{7f}\n".into(),
             extension: ".tsx",
-            mappings: vec![ContentMapperSpan([0, 5, 10, 5, 0, 7]); 3],
+            mappings: vec![
+                ContentMapperSpan([0, 5, 10, 5, 0, 7]),
+                ContentMapperSpan([5, 1, 15, 1, 1, super::SPAN_FEATURES_ALL]),
+                ContentMapperSpan([6, 2, 16, 2, 0, 0]),
+            ],
             semantic_links: if full {
                 vec![ContentMapperSemanticLink {
                     source_start: 1,
@@ -325,7 +385,10 @@ mod tests {
                     code: 2578,
                     message_text: "Unused '@ts-expect-error' directive.".into(),
                 }],
-                directives: vec![ContentMapperDiagnosticDirective([1, 2, 3, 4, 1, 0])],
+                directives: vec![
+                    ContentMapperDiagnosticDirective([0, 0, 0, 1, 0, 0]),
+                    ContentMapperDiagnosticDirective([1, 2, 3, 4, 1, 0]),
+                ],
             }),
             diagnostics: vec![ContentMapperDiagnostic {
                 message_text: "bad \"value\"".into(),
@@ -342,10 +405,26 @@ mod tests {
             for id in [json!(7), json!("req-1"), json!(null)] {
                 assert_eq!(
                     encode_transform(&id, &transform(full)).unwrap(),
-                    encode_result(&id, transform(full)).unwrap(),
+                    encode_result(&id, super::wire_value(&transform(full))).unwrap(),
                 );
             }
         }
+    }
+
+    #[test]
+    fn every_feature_spans_and_ignore_directives_drop_their_sixth_element() {
+        let frame = encode_transform(&json!(1), &transform(true)).unwrap();
+        let text = std::str::from_utf8(&frame).unwrap();
+        let (_, body) = text.split_once("\r\n\r\n").unwrap();
+        let value: serde_json::Value = serde_json::from_str(body).unwrap();
+        assert_eq!(
+            value["result"]["mappings"],
+            json!([[0, 5, 10, 5, 0, 7], [5, 1, 15, 1, 1], [6, 2, 16, 2, 0, 0]])
+        );
+        assert_eq!(
+            value["result"]["diagnosticDirectives"]["directives"],
+            json!([[0, 0, 0, 1, 0], [1, 2, 3, 4, 1, 0]])
+        );
     }
 
     #[test]

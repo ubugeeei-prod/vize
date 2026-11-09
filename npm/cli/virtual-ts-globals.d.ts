@@ -250,7 +250,17 @@ declare global {
               O,
               Pick<
                 $AuthoredKeyWitness<Jsx>,
-                keyof Jsx & $ComponentMetadataKeys<$ComponentInputProps<T, Declared>>
+                keyof Jsx &
+                  ($IsAny<Declared & $PublicComponentInputProps> extends true
+                    ? never
+                    : T extends unknown
+                      ?
+                          | keyof Partial<T>
+                          | keyof Partial<$KebabProps<T>>
+                          | keyof Declared
+                          | keyof $FallthroughAttrs
+                          | keyof $PublicComponentInputProps
+                      : never)
               > &
                 (T extends unknown
                   ? $ComponentInputProps<T, Declared> & $ComponentInputGuard<T, Declared, Jsx>

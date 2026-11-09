@@ -16,6 +16,7 @@ import {
   canonLeftoversBuildOutputTransition,
   canonLeftoversOutputTransition,
 } from "./support/canon-leftovers-output-transition.ts";
+import { beforeProjectionTextBuffer } from "../../tools/support/compat/content-mapper/projection-text-buffer-transition.ts";
 import { constructorSourceTransition } from "./support/declaration-slot-constructor-source-transition.ts";
 
 const originals = [
@@ -217,7 +218,13 @@ function overloadOutputTransition(current: Buffer, direction: "forward" | "inver
 
 test("the declaration constructor successor authenticates the whole source and both complete outputs", () => {
   const { source, output, edit } = constructorSuccessor;
-  const sourceBytes = fs.readFileSync(path.join(repoRoot, source.path));
+  // #12341 rewrote the producer after this successor; restore its pre-buffer bytes.
+  const sourceBytes = Buffer.from(
+    beforeProjectionTextBuffer(
+      source.path,
+      fs.readFileSync(path.join(repoRoot, source.path), "utf8"),
+    ),
+  );
   const previousSource = constructorSourceTransition(sourceBytes, "inverse", source);
   assert.deepEqual(constructorSourceTransition(previousSource, "forward", source), sourceBytes);
   const current = fs.readFileSync(path.join(repoRoot, output.path));
@@ -272,7 +279,13 @@ test("the declaration constructor successor authenticates the whole source and b
 
 test("the build declaration constructor adds a reversible receipt without changing older packets", () => {
   const { source, output, edit } = buildConstructorSuccessor;
-  const sourceBytes = fs.readFileSync(path.join(repoRoot, source.path));
+  // #12341 rewrote the producer after this successor; restore its pre-buffer bytes.
+  const sourceBytes = Buffer.from(
+    beforeProjectionTextBuffer(
+      source.path,
+      fs.readFileSync(path.join(repoRoot, source.path), "utf8"),
+    ),
+  );
   const previousSource = constructorSourceTransition(sourceBytes, "inverse", source);
   assert.deepEqual(constructorSourceTransition(previousSource, "forward", source), sourceBytes);
   const current = fs.readFileSync(path.join(repoRoot, output.path));

@@ -6,7 +6,11 @@ import { readRepoFile } from "./support/github-workflows.ts";
 
 void test("the corpus pair workflow builds both SHAs and measures on the 32-vCPU runner", () => {
   const workflow = parse(readRepoFile(".github", "workflows", "typecheck-corpus-pair.yml")) as {
-    on: { workflow_dispatch: { inputs: Record<string, { default?: string; required?: boolean }> } };
+    on: {
+      workflow_dispatch: {
+        inputs: Record<string, { default?: string | boolean; required?: boolean }>;
+      };
+    };
     jobs: Record<string, { "runs-on": string; steps: Array<{ run?: string }> }>;
   };
   const inputs = workflow.on.workflow_dispatch.inputs;
@@ -31,4 +35,10 @@ void test("the corpus pair workflow builds both SHAs and measures on the 32-vCPU
   assert.match(script, /build:native/u);
   assert.match(script, /node tools\/benchmarks\/scripts\/typecheck-corpus-pair\.ts/u);
   assert.match(script, /--workloads "\$OWNED_WORKLOADS"/u);
+  assert.equal(inputs.attribution?.default, true);
+  assert.match(
+    script,
+    /node tools\/benchmarks\/scripts\/typecheck-cost-attribution\.ts --pair "\$RUNNER_TEMP\/pair-work" --out "\$RUNNER_TEMP\/pair-out"/u,
+  );
+  assert.match(script, /for report in summary projection attribution batch-vs-mapper/u);
 });

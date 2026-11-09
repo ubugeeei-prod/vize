@@ -1,0 +1,4 @@
+<script setup lang="ts">
+defineProps<{ label: string; size?: number }>()
+</script>
+<template><input :aria-label="label" /></template>

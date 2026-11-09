@@ -31,6 +31,10 @@ on:
         description: Also diff the head build's vize check against its mapper under tsc
         type: boolean
         default: false
+      attribution:
+        description: Attribute tsc check time and types to helpers and projection families, base vs head
+        type: boolean
+        default: true
 permissions: { contents: read }
 concurrency:
   group: typecheck-corpus-pair-${{ inputs.base_sha }}-${{ inputs.head_sha }}
@@ -152,10 +156,14 @@ jobs:
             --base "$RUNNER_TEMP/pair-base" --head "$RUNNER_TEMP/pair-head" \
             --base-sha "$BASE_SHA" --head-sha "$HEAD_SHA" --runs "$RUNS" \
             --work "$RUNNER_TEMP/pair-work" --out "$RUNNER_TEMP/pair-out" "${extra[@]}"
+      # Reads the traced probe runs the measure step left behind.
+      - name: Attribute check cost to helpers and projection families
+        if: always() && !inputs.owned_pair && inputs.attribution
+        run: node tools/benchmarks/scripts/typecheck-cost-attribution.ts --pair "$RUNNER_TEMP/pair-work" --out "$RUNNER_TEMP/pair-out"
       - name: Write job summary
         if: always()
         run: |
-          for report in summary projection batch-vs-mapper; do
+          for report in summary projection attribution batch-vs-mapper; do
             if [[ -f "$RUNNER_TEMP/pair-out/$report.md" ]]; then cat "$RUNNER_TEMP/pair-out/$report.md" >> "$GITHUB_STEP_SUMMARY"; fi
           done
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

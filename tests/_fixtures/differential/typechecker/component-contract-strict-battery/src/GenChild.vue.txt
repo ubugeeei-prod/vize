@@ -1,0 +1,6 @@
+<script setup lang="ts" generic="T extends { id: number }">
+defineProps<{ item: T; render: (value: T) => string; extra?: keyof T }>()
+defineEmits<{ chosen: [value: T] }>()
+defineSlots<{ default(props: { value: T }): any }>()
+</script>
+<template><div><slot :value="item" /></div></template>

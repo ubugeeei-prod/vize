@@ -126,9 +126,24 @@ pub(super) fn append_macro_props_type_literal(
             #("\n")
             #{
                 let mut emitted_names: FxHashSet<String> = FxHashSet::default();
+                let docs = summary
+                    .macros
+                    .define_props()
+                    .filter(|call| call.type_args.is_none())
+                    .and_then(|call| call.runtime_args.as_deref())
+                    .map(super::runtime_docs::runtime_prop_docs)
+                    .unwrap_or_default();
                 for prop in summary.macros.props() {
                     let prop_type = prop.prop_type.as_deref().unwrap_or("unknown");
                     let optional = if parent_requires_prop(prop) { "" } else { "?" };
+                    if let Some((_, doc)) = docs
+                        .iter()
+                        .find(|(key, _)| super::runtime_docs::names_prop(key, &prop.name))
+                    {
+                        __ts.push_str("  ");
+                        __ts.push_str(doc);
+                        __ts.push('\n');
+                    }
                     emit_type_member(__ts, prop.name.as_str(), optional, prop_type);
                     emitted_names.insert(prop.name.as_str().into());
                 }
