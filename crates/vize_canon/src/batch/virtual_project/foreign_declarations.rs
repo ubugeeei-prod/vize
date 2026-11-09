@@ -4,7 +4,7 @@
 
 use std::path::{Path, PathBuf};
 
-use super::{VirtualProject, build::mirrored_virtual_path};
+use super::{VirtualProject, build::mirrored_canonical_virtual_path};
 use crate::batch::CorsaResult;
 
 /// The declaration file TypeScript emits for one mirrored source: an SFC
@@ -24,9 +24,9 @@ fn emitted_declaration_name(name: &str) -> Option<vize_carton::String> {
 fn foreign_declaration_path(
     project_root: &Path,
     virtual_root: &Path,
-    source: &Path,
+    canonical_source: &Path,
 ) -> CorsaResult<Option<PathBuf>> {
-    let mirrored = mirrored_virtual_path(project_root, virtual_root, source)?;
+    let mirrored = mirrored_canonical_virtual_path(project_root, virtual_root, canonical_source)?;
     let Some(name) = mirrored.file_name().and_then(|name| name.to_str()) else {
         return Ok(None);
     };
@@ -51,13 +51,14 @@ impl VirtualProject {
         declarations: &[(PathBuf, PathBuf)],
     ) -> CorsaResult<()> {
         for (source, declaration) in declarations {
+            // One `realpath` serves both the mirror path and the ownership set.
+            let canonical = vize_carton::path::canonicalize_non_verbatim(source);
             let Some(virtual_path) =
-                foreign_declaration_path(&self.project_root, &self.virtual_root, source)?
+                foreign_declaration_path(&self.project_root, &self.virtual_root, &canonical)?
             else {
                 continue;
             };
-            self.foreign_sources
-                .insert(vize_carton::path::canonicalize_non_verbatim(source));
+            self.foreign_sources.insert(canonical);
             self.foreign_declaration_files.insert(virtual_path.clone());
             self.passthrough_files
                 .insert(virtual_path, declaration.clone());
