@@ -170,3 +170,6 @@ pub fn artifact_macro_names() -> impl Iterator<Item = &'static str> {
         .filter(|row| row.lifecycle.produces_artifact())
         .map(|row| row.name)
 }
+
+mod setup;
+pub use setup::{MacroCall, SetupFacts, SetupFactsIncomplete, SetupObserver};
