@@ -1,0 +1,17 @@
+[package]
+name = "poc-coffeescript"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Proof of concept: a Vue component scripted in CoffeeScript, compiled through the level crates"
+publish = false
+
+[dependencies]
+poc-support = { path = "../poc-support" }
+vize_l0 = { workspace = true }
+vize_l2 = { workspace = true }
+
+[lints]
+workspace = true
