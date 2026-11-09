@@ -1,66 +1,25 @@
 name: LSP vs Vue language tools
 
-# `vize lsp` against @vue/language-server + tsserver with @vue/typescript-plugin
-# (what VS Code runs for "Vue (Official)"), driven over stdio by one scripted
-# editing session on pinned real projects and generated ones. Reports cold
-# start, process-tree CPU and PSS/RSS, CPU per edit and p50/p99 latency of
-# correct answers; the scale-<n>k fixtures add each metric against SFC count.
-# Report only: it gates nothing. Pinned to `cpus` cores so the numbers resemble
-# a developer laptop; `compare_ref` adds a second vize row for before/after.
-# The tsserver row is Vize's backend for TypeScript 5.7-6.x: the project's
-# tsserver with this commit's @vizejs/typescript-vue-plugin, the like-for-like
-# counterpart of the Volar row.
-
+# Bench-only variant: the same scripted LSP session for two vize builds inside
+# WSL2, with the project on ext4 and on the Windows mount (9P).
 on:
   workflow_dispatch:
     inputs:
       fixtures:
-        description: Space-separated fixture ids (scale-1k, scale-5k, scale-20k, scale-giant-sfc, scale-monorepo)
+        description: Space-separated fixture ids
         required: true
-        default: "scale-1k scale-giant-sfc scale-monorepo"
+        default: "scale-1k"
       compare_ref:
-        description: Optional branch or SHA built as a second vize row (the "before" of a perf change)
-        required: false
-        default: ""
+        description: Full SHA built as the "before" row
+        required: true
       rounds:
         description: Recorded sessions per editor
         required: true
-        default: "3"
+        default: "2"
       cycles:
         description: Edit/request cycles per session
         required: true
-        default: "5"
-      cpus:
-        description: Cores the benchmark may use
-        required: true
-        default: "8"
-      tsgo_mapper:
-        description: Optional TypeScript native version (e.g. 7.1.0-beta) for a third row, its own LSP checking .vue through the Vize content mapper
-        required: false
-        default: ""
-      mapper_vize:
-        description: npm spec of the vize package whose content mapper the tsgo row loads
-        required: false
-        default: "latest"
-      tsserver_plugin:
-        description: Add the project-TypeScript row, tsserver with this commit's @vizejs/typescript-vue-plugin
-        type: boolean
-        default: true
-      vize_env:
-        description: Optional space-separated KEY=VALUE pairs for every vize row (diagnosis runs, e.g. VIZE_TRACE_EDITOR_PREPARATION=1)
-        required: false
-        default: ""
-  # Changes to the benchmark itself measure once before they merge.
-  pull_request:
-    paths:
-      - .github/workflows/lsp-vs-volar.yml
-      - tools/benchmarks/scripts/lsp-vs-volar*.ts
-      - tests/tooling/lsp-vs-volar-*.test.ts
-      - tests/tooling/support/lsp-vs-volar-*.ts
-
-concurrency:
-  group: lsp-vs-volar-${{ github.event.pull_request.number || github.ref }}-${{ inputs.compare_ref || '' }}
-  cancel-in-progress: true
+        default: "3"
 
 permissions:
   contents: read
@@ -68,58 +27,17 @@ permissions:
 env:
   CARGO_TERM_COLOR: always
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-  COMPARE_REF: ${{ inputs.compare_ref || '' }}
-  ROUNDS: ${{ inputs.rounds || '3' }}
-  CYCLES: ${{ inputs.cycles || '5' }}
-  CPUS: ${{ inputs.cpus || '8' }}
-  VIZE_ENV: ${{ inputs.vize_env || '' }}
-  TSGO_MAPPER: ${{ inputs.tsgo_mapper || '' }}
-  MAPPER_VIZE: ${{ inputs.mapper_vize || 'latest' }}
-  # Pull requests measure it too; only a dispatch can turn it off.
-  TSSERVER_PLUGIN: ${{ github.event_name == 'pull_request' || inputs.tsserver_plugin }}
 
 jobs:
-  plan:
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    outputs:
-      jobs: ${{ steps.plan.outputs.jobs }}
-    steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        with:
-          persist-credentials: false
-          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
-          sparse-checkout: tools/benchmarks/scripts
-      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
-        with: { node-version-file: "package.json", package-manager-cache: false }
-      # One job per fixture, except that the fixtures of one size curve run
-      # sequentially in one job: every point of the curve is then measured on the
-      # same machine with the same build, and rounds interleave the sizes.
-      - id: plan
-        env:
-          FIXTURES: ${{ inputs.fixtures || 'scale-1k scale-giant-sfc scale-monorepo' }}
-        run: |
-          args=()
-          for id in $FIXTURES; do args+=(--fixture "$id"); done
-          # Assigned first, so an unknown fixture fails this step instead of planning nothing.
-          jobs=$(node tools/benchmarks/scripts/lsp-vs-volar.ts --plan "${args[@]}")
-          echo "jobs=$jobs" >> "$GITHUB_OUTPUT"
-
-  bench:
-    name: lsp-vs-volar (${{ matrix.job.name }})
-    needs: plan
+  build:
     runs-on: blacksmith-32vcpu-ubuntu-2404
-    # A size curve runs every size in one job; 20k SFCs alone take hours across three editors.
-    timeout-minutes: 720
-    strategy:
-      fail-fast: false
-      matrix:
-        job: ${{ fromJSON(needs.plan.outputs.jobs) }}
+    timeout-minutes: 90
+    env:
+      COMPARE_REF: ${{ inputs.compare_ref }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           persist-credentials: false
-          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
       - name: Install repository Rust toolchain
         run: |
           rustup toolchain install || rustup show active-toolchain
@@ -131,129 +49,104 @@ jobs:
         with:
           key: lsp-vs-volar
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
-      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
-        with: { node-version-file: "package.json", package-manager-cache: false }
-
-      - name: Validate measurement evidence contracts
-        run: node --test tests/tooling/lsp-vs-volar-evidence.test.ts tests/tooling/lsp-vs-volar-scale.test.ts
-
-      - name: Build this commit
+      - name: Build head and compare
         run: |
+          set -euo pipefail
+          [[ "$COMPARE_REF" =~ ^[0-9a-f]{40}$ ]]
           cargo build --profile ci-opt -p vize
-          cp target/ci-opt/vize "$RUNNER_TEMP/vize-head"
-
-      - name: Build the compare ref
-        if: ${{ env.COMPARE_REF != '' }}
-        run: |
+          mkdir -p wsl-bin/head wsl-bin/compare
+          cp target/ci-opt/vize wsl-bin/head/vize
           git fetch --no-tags --depth 1 "https://github.com/${GITHUB_REPOSITORY}.git" "$COMPARE_REF"
           git worktree add "$RUNNER_TEMP/compare" FETCH_HEAD
           (cd "$RUNNER_TEMP/compare" && CARGO_TARGET_DIR="$GITHUB_WORKSPACE/target" cargo build --profile ci-opt -p vize)
-          cp target/ci-opt/vize "$RUNNER_TEMP/vize-compare"
+          cp target/ci-opt/vize wsl-bin/compare/vize
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: lsp-wsl2-bin
+          path: wsl-bin/
+          retention-days: 3
 
-      - name: Install the repository's pinned Vue language tools and Corsa
+  wsl2:
+    needs: build
+    # WSL2 needs nested virtualization; Blacksmith Windows runners lack it.
+    runs-on: windows-2025
+    timeout-minutes: 240
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          persist-credentials: false
+      - uses: Vampire/setup-wsl@d1da7f2c0322a5ee4f24975344f67fc0f5baf364 # v7.0.0
+        with:
+          distribution: Ubuntu-24.04
+          wsl-version: "2"
+          wsl-shell-user: root
+          additional-packages: ca-certificates curl procps xz-utils
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: lsp-wsl2-bin
+          path: wsl-bin
+      - name: Resolve the Windows mount
+        shell: pwsh
         run: |
-          # One source of truth: the workspace catalog pins vue-tsc (same release
-          # train as @vue/language-server), TypeScript and the Corsa runtime.
-          # The typecheck-host manifest owns the experimental tsrs pin.
-          pin() { sed -n "s|^    \"\{0,1\}$1\"\{0,1\}: \"\(.*\)\"$|\1|p" pnpm-workspace.yaml | head -1; }
-          vue=$(pin vue-tsc); ts=$(pin typescript); corsa=$(pin @typescript/typescript-linux-x64)
-          tsrs=$(node -p 'require("./tools/benchmarks/typecheck-hosts/package.json").dependencies.tsrs')
-          test -n "$vue" && test -n "$ts" && test -n "$corsa" && test -n "$tsrs"
-          mkdir "$RUNNER_TEMP/tools" && cd "$RUNNER_TEMP/tools"
+          $windowsPath = [System.IO.Path]::GetFullPath($env:RUNNER_TEMP)
+          $drive = $windowsPath.Substring(0, 1).ToLowerInvariant()
+          $tail = $windowsPath.Substring(2).Replace('\', '/')
+          $mount = "/mnt/$drive$tail"
+          wsl.exe test -d $mount
+          if ($LASTEXITCODE -ne 0) { throw "WSL mount is unavailable: $mount" }
+          "WSL_MOUNT_ROOT=$mount/vize-lsp" | Out-File -FilePath $env:GITHUB_ENV -Append
+      - name: Install Node 24 and the pinned TypeScript native host in WSL2
+        shell: wsl-bash {0}
+        run: |
+          set -euo pipefail
+          version=24.14.0
+          curl -fsSLO "https://nodejs.org/dist/v$version/node-v$version-linux-x64.tar.xz"
+          curl -fsSLO "https://nodejs.org/dist/v$version/SHASUMS256.txt"
+          grep " node-v$version-linux-x64.tar.xz$" SHASUMS256.txt | sha256sum --check
+          tar -xJf "node-v$version-linux-x64.tar.xz" -C /usr/local --strip-components=1
+          corsa=$(tr -d "\r" < pnpm-workspace.yaml | sed -n 's|^    "\{0,1\}@typescript/typescript-linux-x64"\{0,1\}: "\(.*\)"$|\1|p' | head -1)
+          test -n "$corsa"
+          mkdir -p "$HOME/tools" && cd "$HOME/tools"
           echo '{"private":true}' > package.json
-          npm install --no-audit --no-fund "@vue/language-server@$vue" "@vue/typescript-plugin@$vue" \
-            "typescript@$ts" "@typescript/typescript-linux-x64@$corsa" "tsrs@$tsrs"
-          node -e 'for (const name of ["@vue/language-server", "@vue/typescript-plugin", "@vue/language-core", "@volar/language-server", "typescript", "@typescript/typescript-linux-x64", "tsrs"]) console.log(name, require(`./node_modules/${name}/package.json`).version)' | tee versions.txt
-
-      - name: Stage the tsserver plugin row (this commit's plugin and native addon)
-        if: ${{ env.TSSERVER_PLUGIN == 'true' }}
-        run: |
-          # Same profile as the vize rows; published addons use `release`.
-          cargo build --profile ci-opt -p vize_vitrine --features napi,legacy
-          root="$RUNNER_TEMP/tsserver-plugin/node_modules"
-          mkdir -p "$root/@vizejs"
-          cp -R npm/native "$root/@vizejs/native"
-          cp target/ci-opt/libvize_vitrine.so "$root/@vizejs/native/vize-vitrine.linux-x64-gnu.node"
-          cp -R npm/typescript-plugin "$root/@vizejs/typescript-vue-plugin"
-          rm -rf "$root/@vizejs/native/node_modules" "$root/@vizejs/typescript-vue-plugin/node_modules"
-          # The project's TypeScript: the same tsserver the Volar row runs.
-          ln -s "$RUNNER_TEMP/tools/node_modules/typescript" "$root/typescript"
-
-      - name: Install the content-mapper row (TypeScript native LSP + published vize mapper)
-        if: ${{ env.TSGO_MAPPER != '' }}
-        run: |
-          mkdir "$RUNNER_TEMP/mapper" && cd "$RUNNER_TEMP/mapper"
-          echo '{"private":true}' > package.json
-          npm install --no-audit --no-fund "@typescript/typescript-linux-x64@$TSGO_MAPPER" "vize@$MAPPER_VIZE"
-          node -e 'for (const name of ["@typescript/typescript-linux-x64", "vize"]) console.log("mapper:" + name, require(`./node_modules/${name}/package.json`).version)' | tee versions.txt
-
-      - name: Measure
+          npm install --no-audit --no-fund "@typescript/typescript-linux-x64@$corsa"
+          node --version
+          uname -a
+      - name: Measure ext4 and the Windows mount
+        shell: wsl-bash {0}
         env:
-          JOB: ${{ matrix.job.name }}
-          FIXTURE_IDS: ${{ matrix.job.ids }}
+          FIXTURE_IDS: ${{ inputs.fixtures }}
+          ROUNDS: ${{ inputs.rounds }}
+          CYCLES: ${{ inputs.cycles }}
+          COMPARE_REF: ${{ inputs.compare_ref }}
+          HEAD_SHA: ${{ github.sha }}
+          WSLENV: FIXTURE_IDS/u:ROUNDS/u:CYCLES/u:COMPARE_REF/u:HEAD_SHA/u:WSL_MOUNT_ROOT/u:GITHUB_STEP_SUMMARY/u
         run: |
-          tools="$RUNNER_TEMP/tools/node_modules"
-          rounds="$ROUNDS"
-          cycles="$CYCLES"
-          # Keep the 10,000-block SFC in PR correctness coverage without making
-          # every benchmark change repeat its full dispatch-only sample budget.
-          if [ "$GITHUB_EVENT_NAME" = pull_request ] && [ "$JOB" = scale-giant-sfc ]; then
-            rounds=1
-            cycles=1
-          fi
-          tsrs_fast="$RUNNER_TEMP/tsrs-fast"
-          printf '#!/bin/sh\nexport TSRS_FAST=1\nexec "%s" "$@"\n' "$tools/.bin/tsrs" > "$tsrs_fast"
-          chmod +x "$tsrs_fast"
-          args=(
-            --vize "head=$RUNNER_TEMP/vize-head"
-            --vize "head-tsrs-fast=$RUNNER_TEMP/vize-head"
-            --vize-env "head-tsrs-fast:CORSA_PATH=$tsrs_fast"
-          )
+          set -euo pipefail
+          bin="$HOME/wsl-bin"
+          mkdir -p "$bin/head" "$bin/compare" "$WSL_MOUNT_ROOT/out"
+          cp wsl-bin/head/vize "$bin/head/vize" && cp wsl-bin/compare/vize "$bin/compare/vize"
+          chmod +x "$bin"/*/vize
+          # Editor homes and caches stay on ext4, as a WSL user's HOME does.
+          export LSP_BENCH_HOME_DIR="$HOME/lsp-home"
+          args=()
           for id in $FIXTURE_IDS; do args+=(--fixture "$id"); done
-          if [ -n "$COMPARE_REF" ]; then
-            args+=(
-              --vize "compare=$RUNNER_TEMP/vize-compare"
-              --vize "compare-tsrs-fast=$RUNNER_TEMP/vize-compare"
-              --vize-env "compare-tsrs-fast:CORSA_PATH=$tsrs_fast"
-              --meta "compare=$COMPARE_REF"
-            )
-          fi
-          if [ -n "$TSGO_MAPPER" ]; then
-            # The mapper row reads the project's own TypeScript native host, not vize's pin.
-            args+=(--tsgo-mapper "$RUNNER_TEMP/mapper/node_modules/@typescript/typescript-linux-x64/lib/tsc")
-            args+=(--tsgo-mapper-version "$TSGO_MAPPER" --mapper-modules "$RUNNER_TEMP/mapper/node_modules")
-            while read -r name version; do args+=(--meta "$name=$version"); done < "$RUNNER_TEMP/mapper/versions.txt"
-          fi
-          for assignment in $VIZE_ENV; do
-            args+=(--vize-env "head:$assignment" --meta "env=$assignment")
-            args+=(--vize-env "head-tsrs-fast:$assignment")
-            if [ -n "$COMPARE_REF" ]; then
-              args+=(--vize-env "compare:$assignment" --vize-env "compare-tsrs-fast:$assignment")
-            fi
+          summary_path=$(wslpath "$GITHUB_STEP_SUMMARY")
+          for entry in "wsl2-ext4=$HOME/vize-lsp/projects" "wsl2-windows-mount=$WSL_MOUNT_ROOT/projects"; do
+            label=${entry%%=*}
+            mkdir -p "${entry#*=}"
+            node tools/benchmarks/scripts/lsp-vs-volar.ts "${args[@]}" \
+              --vize "head=$bin/head/vize" --vize "compare=$bin/compare/vize" \
+              --tsgo "$HOME/tools/node_modules/@typescript/typescript-linux-x64/lib/tsc" \
+              --fixtures-dir "${entry#*=}" --rounds "$ROUNDS" --cycles "$CYCLES" \
+              --meta "cell=$label" --meta "head=$HEAD_SHA" --meta "compare=$COMPARE_REF" \
+              --out "$WSL_MOUNT_ROOT/out/lsp-$label.md" --json "$WSL_MOUNT_ROOT/out/lsp-$label.json" \
+              --logs "$WSL_MOUNT_ROOT/out/logs-$label" || echo "$label session failed: $?"
+            echo "## $label" >> "$summary_path"
+            cat "$WSL_MOUNT_ROOT/out/lsp-$label.md" >> "$summary_path" || true
           done
-          if [ "$TSSERVER_PLUGIN" = true ]; then
-            args+=(--tsserver-plugin "$RUNNER_TEMP/tsserver-plugin" --tsserver-plugin-version "head")
-          fi
-          while read -r name version; do args+=(--meta "$name=$version"); done < "$RUNNER_TEMP/tools/versions.txt"
-          # Below 16 GiB available the session is killed and reported, so no server takes the runner down.
-          args+=(--memory-reserve-gib 16 --meta "memory-reserve=16GiB")
-          free -g; df -h /tmp "$RUNNER_TEMP"
-          taskset -c "0-$((CPUS - 1))" node tools/benchmarks/scripts/lsp-vs-volar.ts "${args[@]}" \
-            --tsgo "$tools/@typescript/typescript-linux-x64/lib/tsc" --volar-root "$RUNNER_TEMP/tools" \
-            --fixtures-dir "$RUNNER_TEMP/projects" --rounds "$rounds" --cycles "$cycles" \
-            --meta "head=$(git rev-parse HEAD)" --meta "cpus=$CPUS" \
-            --meta "rounds=$rounds" --meta "cycles=$cycles" \
-            --out "lsp-vs-volar-$JOB.md" --json "lsp-vs-volar-$JOB.json" --logs "lsp-vs-volar-logs-$JOB"
-          cat "lsp-vs-volar-$JOB.md" >> "$GITHUB_STEP_SUMMARY"
-
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always()
         with:
-          name: lsp-vs-volar-${{ matrix.job.name }}
-          path: |
-            lsp-vs-volar-${{ matrix.job.name }}.md
-            lsp-vs-volar-${{ matrix.job.name }}.json
-            lsp-vs-volar-logs-${{ matrix.job.name }}/
-          # Sessions write their JSON as they finish; a failed run keeps what it measured.
+          name: lsp-wsl2
+          path: ${{ runner.temp }}/vize-lsp/out/
           if-no-files-found: warn
-          retention-days: 30
