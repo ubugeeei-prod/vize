@@ -4,7 +4,7 @@ use vize_l0::{Allocator, ToCompactString};
 
 pub(super) fn write_script_block(
     output: &mut Vec<u8>,
-    block: &vize_atelier_sfc::SfcScriptBlock<'_>,
+    block: &super::SfcBlock<'_>,
     options: &FormatOptions,
     allocator: &Allocator,
     source: &str,
@@ -18,8 +18,7 @@ pub(super) fn write_script_block(
         opening_tag.as_ref(),
     );
     let trimmed = content.trim();
-    let source_type =
-        script::source_type_for_script_lang(block.lang.as_ref().map(|lang| lang.as_ref()));
+    let source_type = script::source_type_for_script_lang(block.lang());
     let formatted_content = script::format_sfc_script_content_stable(
         trimmed,
         options,
@@ -40,10 +39,10 @@ pub(super) fn write_script_block(
     } else {
         output.extend_from_slice(b"<script");
         if !write_authored_attrs(output, &block.attrs, source, &block.loc, options) {
-            if block.setup {
+            if block.has_attr("setup") {
                 write_attr(output, "setup", None);
             }
-            if let Some(lang) = &block.lang {
+            if let Some(lang) = block.lang() {
                 write_attr(output, "lang", Some(lang));
             }
             write_remaining_attrs(output, &block.attrs, &["setup", "lang"]);

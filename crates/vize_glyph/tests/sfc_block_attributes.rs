@@ -1,9 +1,9 @@
 #![expect(clippy::expect_used, reason = "tests assert by panicking")]
 use std::borrow::Cow;
 
-use vize_atelier_sfc::{SfcParseOptions, parse_sfc};
 use vize_glyph::{FormatOptions, format_sfc};
 use vize_l0::{FxHashMap, String};
+use vize_l1::container::vue::compat::split_blocks;
 
 type BlockAttrs<'a> = FxHashMap<Cow<'a, str>, Cow<'a, str>>;
 
@@ -23,6 +23,23 @@ fn assert_quote_values_preserved(before: &BlockAttrs<'_>, after: &BlockAttrs<'_>
             "attribute value changed for {name}"
         );
     }
+}
+
+/// Root block roles and attributes in source order, from the L1 container walk.
+fn root_block_attrs(source: &str) -> Vec<(String, BlockAttrs<'_>)> {
+    let mut blocks = Vec::new();
+    split_blocks(source, |block| {
+        let name = core::str::from_utf8(block.tag_name).expect("tag names are ASCII");
+        let role = if block.attrs.contains_key("setup") {
+            String::from("script setup")
+        } else {
+            String::from(name)
+        };
+        blocks.push((role, block.attrs));
+        true
+    })
+    .expect("SFC must split");
+    blocks
 }
 
 fn snapshot_bytes(name: &str, output: &str) {
@@ -68,34 +85,26 @@ const setup = 1
         "script, script setup, template, style, and custom roots must share safe serialization"
     );
 
-    let before = parse_sfc(source, SfcParseOptions::default()).expect("source SFC must parse");
-    let after = parse_sfc(&first.code, SfcParseOptions::default())
-        .expect("formatted SFC must remain parseable");
+    let before = root_block_attrs(source);
+    let after = root_block_attrs(&first.code);
+    let roles = ["script", "script setup", "template", "style", "i18n"];
+    assert_eq!(
+        before
+            .iter()
+            .map(|(role, _)| role.as_str())
+            .collect::<Vec<_>>(),
+        roles
+    );
+    assert_eq!(
+        after
+            .iter()
+            .map(|(role, _)| role.as_str())
+            .collect::<Vec<_>>(),
+        roles,
+        "formatted SFC must keep every root block"
+    );
 
-    let before_attrs = [
-        &before.script.as_ref().expect("script block").attrs,
-        &before
-            .script_setup
-            .as_ref()
-            .expect("script setup block")
-            .attrs,
-        &before.template.as_ref().expect("template block").attrs,
-        &before.styles.first().expect("style block").attrs,
-        &before.custom_blocks.first().expect("custom block").attrs,
-    ];
-    let after_attrs = [
-        &after.script.as_ref().expect("script block").attrs,
-        &after
-            .script_setup
-            .as_ref()
-            .expect("script setup block")
-            .attrs,
-        &after.template.as_ref().expect("template block").attrs,
-        &after.styles.first().expect("style block").attrs,
-        &after.custom_blocks.first().expect("custom block").attrs,
-    ];
-
-    for (before, after) in before_attrs.into_iter().zip(after_attrs) {
+    for ((_, before), (_, after)) in before.iter().zip(&after) {
         assert_quote_values_preserved(before, after);
     }
 }
