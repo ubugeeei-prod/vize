@@ -269,6 +269,344 @@
       "basis": "vue-jsx-vapor calls the function ref; Vize reads a template-ref setter from an undefined render context and throws",
       "differs": ["dom", "text", "elementIdentities", "warnings"],
       "issue": 12311
+    },
+    "options/on-object-value": {
+      "verdict": "equivalent",
+      "basis": "both Vize/reference pairs agree across the falsy, array and nested-VNode phases"
+    },
+    "options/transform-on-value": {
+      "verdict": "equivalent",
+      "basis": "both Vize/reference pairs agree across the falsy, array and nested-VNode phases; the references disagree at the recorded phases",
+      "referenceConflicts": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
+    },
+    "options/merge-props-class-value": {
+      "verdict": "equivalent",
+      "basis": "both Vize/reference pairs agree across the falsy, array and nested-VNode phases"
+    },
+    "options/merge-props-false-value": {
+      "verdict": "divergent",
+      "basis": "VDOM differs from Babel in dom across the falsy, array and nested-VNode phases",
+      "vdomDiffers": ["dom"],
+      "vdomIssue": 12324
+    },
+    "options/object-slots-value": {
+      "verdict": "divergent",
+      "basis": "Vapor differs from vue-jsx-vapor in dom, text across the falsy, array and nested-VNode phases",
+      "differs": ["dom", "text"],
+      "issue": 12322
+    },
+    "options/object-slots-false-value": {
+      "verdict": "divergent",
+      "basis": "Vapor differs from vue-jsx-vapor in dom, text across the falsy, array and nested-VNode phases",
+      "differs": ["dom", "text"],
+      "issue": 12322
+    },
+    "tsx/child-value": {
+      "verdict": "equivalent",
+      "basis": "both Vize/reference pairs agree across the falsy, array and nested-VNode phases; the references disagree at the recorded phases",
+      "referenceConflicts": [8]
+    },
+    "props/class-static-and-dynamic-value": {
+      "verdict": "equivalent",
+      "basis": "both Vize/reference pairs agree across the falsy, array and nested-VNode phases"
+    },
+    "props/style-merge-value": {
+      "verdict": "equivalent",
+      "basis": "both Vize/reference pairs agree across the falsy, array and nested-VNode phases"
+    },
+    "props/spread-only-value": {
+      "verdict": "divergent",
+      "basis": "VDOM differs from Babel in dom, elementIdentities, warnings across the falsy, array and nested-VNode phases",
+      "vdomDiffers": ["dom", "elementIdentities", "warnings"],
+      "vdomIssue": 12324
+    },
+    "props/spread-then-static-value": {
+      "verdict": "equivalent",
+      "basis": "both Vize/reference pairs agree across the falsy, array and nested-VNode phases"
+    },
+    "props/on-merge-value": {
+      "verdict": "equivalent",
+      "basis": "both Vize/reference pairs agree across the falsy, array and nested-VNode phases"
+    },
+    "props/key-value": {
+      "verdict": "equivalent",
+      "basis": "both Vize/reference pairs agree across the falsy, array and nested-VNode phases; the references disagree at the recorded phases",
+      "referenceConflicts": [4, 5, 6, 7, 8, 9]
+    },
+    "props/ref-value": {
+      "verdict": "divergent",
+      "basis": "Vapor differs from vue-jsx-vapor in dom, text, elementIdentities, warnings across the falsy, array and nested-VNode phases",
+      "differs": ["dom", "text", "elementIdentities", "warnings"],
+      "issue": 12311
+    },
+    "props/ref-in-for-value": {
+      "verdict": "divergent",
+      "basis": "Vapor differs from vue-jsx-vapor in dom, text, elementIdentities, warnings across the falsy, array and nested-VNode phases",
+      "differs": ["dom", "text", "elementIdentities", "warnings"],
+      "issue": 12311
+    },
+    "events/plain-value": {
+      "verdict": "equivalent",
+      "basis": "both Vize/reference pairs agree across the falsy, array and nested-VNode phases"
+    },
+    "events/capture-value": {
+      "verdict": "divergent",
+      "basis": "Vapor differs from vue-jsx-vapor in warnings across the falsy, array and nested-VNode phases",
+      "differs": ["warnings"],
+      "issue": 12323
+    },
+    "events/once-value": {
+      "verdict": "divergent",
+      "basis": "Vapor differs from vue-jsx-vapor in warnings across the falsy, array and nested-VNode phases",
+      "differs": ["warnings"],
+      "issue": 12323
+    },
+    "events/capture-passive-value": {
+      "verdict": "divergent",
+      "basis": "Vapor differs from vue-jsx-vapor in warnings across the falsy, array and nested-VNode phases",
+      "differs": ["warnings"],
+      "issue": 12323
+    },
+    "directives/v-model-input-value": {
+      "verdict": "equivalent",
+      "basis": "both Vize/reference pairs agree across the falsy, array and nested-VNode phases"
+    },
+    "directives/v-model-arg-value": {
+      "verdict": "equivalent",
+      "basis": "both Vize/reference pairs agree across the falsy, array and nested-VNode phases"
+    },
+    "directives/v-model-modifier-array-value": {
+      "verdict": "equivalent",
+      "basis": "both Vize/reference pairs agree across the falsy, array and nested-VNode phases"
+    },
+    "directives/v-model-lazy-value": {
+      "verdict": "equivalent",
+      "basis": "both Vize/reference pairs agree across the falsy, array and nested-VNode phases"
+    },
+    "directives/v-model-arg-trim-value": {
+      "verdict": "equivalent",
+      "basis": "both Vize/reference pairs agree across the falsy, array and nested-VNode phases"
+    },
+    "directives/v-model-component-value": {
+      "verdict": "equivalent",
+      "basis": "both Vize/reference pairs agree across the falsy, array and nested-VNode phases"
+    },
+    "directives/v-model-component-arg-mods-value": {
+      "verdict": "divergent",
+      "basis": "VDOM differs from Babel in dom across the falsy, array and nested-VNode phases",
+      "vdomDiffers": ["dom"],
+      "vdomIssue": 12324
+    },
+    "directives/v-model-component-dynamic-arg-value": {
+      "verdict": "equivalent",
+      "basis": "the VDOM/Babel pair agree across the falsy, array and nested-VNode phases"
+    },
+    "directives/v-models-value": {
+      "verdict": "divergent",
+      "basis": "Vapor differs from vue-jsx-vapor in dom across the falsy, array and nested-VNode phases",
+      "differs": ["dom"],
+      "issue": 6885
+    },
+    "directives/v-models-mods-value": {
+      "verdict": "divergent",
+      "basis": "Vapor differs from vue-jsx-vapor in dom across the falsy, array and nested-VNode phases",
+      "differs": ["dom"],
+      "issue": 6885
+    },
+    "directives/v-html-children-value": {
+      "verdict": "equivalent",
+      "basis": "both Vize/reference pairs agree across the falsy, array and nested-VNode phases; the references disagree at the recorded phases",
+      "referenceConflicts": [3, 4]
+    },
+    "directives/v-text-value": {
+      "verdict": "equivalent",
+      "basis": "both Vize/reference pairs agree across the falsy, array and nested-VNode phases; the references disagree at the recorded phases",
+      "referenceConflicts": [0, 2, 5, 7, 8, 9]
+    },
+    "directives/custom-arg-value": {
+      "verdict": "equivalent",
+      "basis": "both Vize/reference pairs agree across the falsy, array and nested-VNode phases"
+    },
+    "directives/custom-array-value": {
+      "verdict": "equivalent",
+      "basis": "both Vize/reference pairs agree across the falsy, array and nested-VNode phases"
+    },
+    "directives/dashed-custom-value": {
+      "verdict": "equivalent",
+      "basis": "both Vize/reference pairs agree across the falsy, array and nested-VNode phases"
+    },
+    "slots/object-children-value": {
+      "verdict": "divergent",
+      "basis": "Vapor differs from vue-jsx-vapor in dom, text; VDOM differs from Babel in dom, text, elementIdentities across the falsy, array and nested-VNode phases",
+      "differs": ["dom", "text"],
+      "issue": 12322,
+      "vdomDiffers": ["dom", "text", "elementIdentities"],
+      "vdomIssue": 12322
+    },
+    "slots/render-prop-value": {
+      "verdict": "divergent",
+      "basis": "Vapor differs from vue-jsx-vapor in dom, text; VDOM differs from Babel in dom, text, elementIdentities across the falsy, array and nested-VNode phases",
+      "differs": ["dom", "text"],
+      "issue": 12322,
+      "vdomDiffers": ["dom", "text", "elementIdentities"],
+      "vdomIssue": 12322
+    },
+    "slots/scoped-param-value": {
+      "verdict": "divergent",
+      "basis": "VDOM differs from Babel in dom, text, elementIdentities across the falsy, array and nested-VNode phases",
+      "vdomDiffers": ["dom", "text", "elementIdentities"],
+      "vdomIssue": 12322
+    },
+    "slots/v-slots-with-children-value": {
+      "verdict": "divergent",
+      "basis": "Vapor differs from vue-jsx-vapor in dom, text, elementIdentities across the falsy, array and nested-VNode phases",
+      "differs": ["dom", "text", "elementIdentities"],
+      "issue": 12322
+    },
+    "slots/v-slots-only-value": {
+      "verdict": "divergent",
+      "basis": "Vapor differs from vue-jsx-vapor in dom, text across the falsy, array and nested-VNode phases",
+      "differs": ["dom", "text"],
+      "issue": 12322
+    },
+    "slots/v-slots-object-literal-value": {
+      "verdict": "divergent",
+      "basis": "Vapor differs from vue-jsx-vapor in dom, text; VDOM differs from Babel in dom, text, elementIdentities across the falsy, array and nested-VNode phases",
+      "differs": ["dom", "text"],
+      "issue": 12322,
+      "vdomDiffers": ["dom", "text", "elementIdentities"],
+      "vdomIssue": 12322
+    },
+    "slots/v-slots-object-with-children-value": {
+      "verdict": "divergent",
+      "basis": "Vapor differs from vue-jsx-vapor in dom, text; VDOM differs from Babel in dom, text, elementIdentities across the falsy, array and nested-VNode phases",
+      "differs": ["dom", "text"],
+      "issue": 12322,
+      "vdomDiffers": ["dom", "text", "elementIdentities"],
+      "vdomIssue": 12322
+    },
+    "slots/element-children-value": {
+      "verdict": "equivalent",
+      "basis": "both Vize/reference pairs agree across the falsy, array and nested-VNode phases; the references disagree at the recorded phases",
+      "referenceConflicts": [8]
+    },
+    "slots/dynamic-slot-name-value": {
+      "verdict": "equivalent",
+      "basis": "both Vize/reference pairs agree across the falsy, array and nested-VNode phases"
+    },
+    "children/text-mix-value": {
+      "verdict": "divergent",
+      "basis": "VDOM differs from Babel in dom, text, elementIdentities across the falsy, array and nested-VNode phases",
+      "vdomDiffers": ["dom", "text", "elementIdentities"],
+      "vdomIssue": 12322
+    },
+    "children/spread-child-value": {
+      "verdict": "equivalent",
+      "basis": "the VDOM/Babel pair agree across the falsy, array and nested-VNode phases"
+    },
+    "children/map-list-value": {
+      "verdict": "divergent",
+      "basis": "Vapor differs from vue-jsx-vapor in dom, text across the falsy, array and nested-VNode phases",
+      "differs": ["dom", "text"],
+      "issue": 6885
+    },
+    "optimize/class-only-value": {
+      "verdict": "equivalent",
+      "basis": "both Vize/reference pairs agree across the falsy, array and nested-VNode phases; the references disagree at the recorded phases",
+      "referenceConflicts": [0, 1, 2, 5, 6, 7, 9]
+    },
+    "optimize/style-only-value": {
+      "verdict": "equivalent",
+      "basis": "both Vize/reference pairs agree across the falsy, array and nested-VNode phases; the references disagree at the recorded phases",
+      "referenceConflicts": [1, 2, 3, 4, 5, 6, 7]
+    },
+    "optimize/class-and-props-value": {
+      "verdict": "equivalent",
+      "basis": "both Vize/reference pairs agree across the falsy, array and nested-VNode phases; the references disagree at the recorded phases",
+      "referenceConflicts": [0, 1, 2, 5, 6, 7, 8, 9]
+    },
+    "optimize/spread-value": {
+      "verdict": "divergent",
+      "basis": "VDOM differs from Babel in dom, elementIdentities, warnings across the falsy, array and nested-VNode phases",
+      "vdomDiffers": ["dom", "elementIdentities", "warnings"],
+      "vdomIssue": 12324
+    },
+    "optimize/ref-value": {
+      "verdict": "divergent",
+      "basis": "Vapor differs from vue-jsx-vapor in dom, text, elementIdentities, warnings across the falsy, array and nested-VNode phases",
+      "differs": ["dom", "text", "elementIdentities", "warnings"],
+      "issue": 12311
+    },
+    "optimize/key-value": {
+      "verdict": "equivalent",
+      "basis": "both Vize/reference pairs agree across the falsy, array and nested-VNode phases; the references disagree at the recorded phases",
+      "referenceConflicts": [4, 5, 6, 7, 8, 9]
+    },
+    "optimize/event-value": {
+      "verdict": "equivalent",
+      "basis": "both Vize/reference pairs agree across the falsy, array and nested-VNode phases"
+    },
+    "optimize/v-model-input-value": {
+      "verdict": "equivalent",
+      "basis": "both Vize/reference pairs agree across the falsy, array and nested-VNode phases"
+    },
+    "optimize/slots-stability-value": {
+      "verdict": "divergent",
+      "basis": "Vapor differs from vue-jsx-vapor in dom, text; VDOM differs from Babel in dom, text, elementIdentities across the falsy, array and nested-VNode phases",
+      "differs": ["dom", "text"],
+      "issue": 12322,
+      "vdomDiffers": ["dom", "text", "elementIdentities"],
+      "vdomIssue": 12322
+    },
+    "optimize/scoped-slot-stability-value": {
+      "verdict": "divergent",
+      "basis": "VDOM differs from Babel in dom, text, elementIdentities across the falsy, array and nested-VNode phases",
+      "vdomDiffers": ["dom", "text", "elementIdentities"],
+      "vdomIssue": 12322
+    },
+    "optimize/v-slots-stability-value": {
+      "verdict": "divergent",
+      "basis": "Vapor differs from vue-jsx-vapor in dom, text across the falsy, array and nested-VNode phases",
+      "differs": ["dom", "text"],
+      "issue": 12322
+    },
+    "optimize/map-list-value": {
+      "verdict": "divergent",
+      "basis": "Vapor differs from vue-jsx-vapor in dom, text across the falsy, array and nested-VNode phases",
+      "differs": ["dom", "text"],
+      "issue": 6885
+    },
+    "directives/v-model-checkbox-value": {
+      "verdict": "equivalent",
+      "basis": "Vize and vue-jsx-vapor agree across the falsy, array and nested-VNode phases"
+    },
+    "directives/v-model-radio-value": {
+      "verdict": "equivalent",
+      "basis": "Vize and vue-jsx-vapor agree across the falsy, array and nested-VNode phases"
+    },
+    "directives/v-model-select-value": {
+      "verdict": "equivalent",
+      "basis": "Vize and vue-jsx-vapor agree across the falsy, array and nested-VNode phases"
+    },
+    "directives/v-model-trim-value": {
+      "verdict": "equivalent",
+      "basis": "Vize and vue-jsx-vapor agree across the falsy, array and nested-VNode phases"
+    },
+    "directives/v-model-number-value": {
+      "verdict": "equivalent",
+      "basis": "Vize and vue-jsx-vapor agree across the falsy, array and nested-VNode phases"
+    },
+    "directives/v-if-value": {
+      "verdict": "equivalent",
+      "basis": "Vize and vue-jsx-vapor agree across the falsy, array and nested-VNode phases"
+    },
+    "directives/v-for-value": {
+      "verdict": "equivalent",
+      "basis": "Vize and vue-jsx-vapor agree across the falsy, array and nested-VNode phases"
+    },
+    "directives/v-slot-value": {
+      "verdict": "equivalent",
+      "basis": "Vize and vue-jsx-vapor agree across the falsy, array and nested-VNode phases"
     }
   }
 }
