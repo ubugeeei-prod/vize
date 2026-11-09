@@ -5,9 +5,30 @@ use super::frozen_slots::{FrozenSlotFacts, FrozenTemplate};
 use super::{
     Allocator, CaptureSink, Dump, DumpMode, LegacyReason, Level, SsrL4Request, SsrL4Selection,
     String, SurfaceParseOptions, TransformExpressions, admitted_rule, blocks_surface,
-    bridge_supported, croquis, drops_directive, emission_supported, emit, profile,
-    record_selection, select, surface_gate,
+    bridge_supported, drops_directive, emission_supported, emit, profile, record_selection, select,
+    surface_gate,
 };
+
+/// Whether attached script tables register a component the metadata binding
+/// table lacks. The legacy transform reads the tables in two places
+/// (`vize_atelier_core::lane::context`): reactive sources, which change
+/// `.value` / `_unref` only for an inline render closure, and component
+/// registration. Non-inline SSR refuses inline up front, so the plan keeps
+/// the metadata binding table and admits the tables only when registration
+/// adds nothing that table lacks, the check the DOM lane makes too.
+fn unprojectable_tables(request: &SsrL4Request<'_>) -> bool {
+    request
+        .options
+        .script_tables
+        .as_ref()
+        .is_some_and(|tables| {
+            !request
+                .options
+                .binding_metadata
+                .as_ref()
+                .is_some_and(|metadata| tables.components_bound_in(metadata))
+        })
+}
 
 /// Lower `source` through L1->L2->L3, build the SSR string plan from the
 /// shared partition facts, and emit from it when the surface is admitted.
@@ -97,9 +118,7 @@ fn lower_and_emit_plain(
         request.context,
         request.runtime_module_name,
         || {
-            if let Some(summary) = request.options.croquis.as_deref()
-                && !croquis::projectable(summary, request.options.binding_metadata.as_ref())
-            {
+            if unprojectable_tables(request) {
                 return Err(LegacyReason::Croquis);
             }
             if !emission_supported(request) {
@@ -228,9 +247,7 @@ fn lower_and_emit<C: CaptureSink>(
         request.runtime_module_name,
         capture,
         || {
-            if let Some(summary) = request.options.croquis.as_deref()
-                && !croquis::projectable(summary, request.options.binding_metadata.as_ref())
-            {
+            if unprojectable_tables(request) {
                 return Err(LegacyReason::Croquis);
             }
             if !emission_supported(request) {

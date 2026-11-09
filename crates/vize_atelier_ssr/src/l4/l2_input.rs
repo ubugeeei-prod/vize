@@ -176,7 +176,7 @@ fn select_l2_lane_with_experimental_options<'a>(
         context,
         "vue",
         || {
-            if options.croquis.is_some()
+            if options.script_tables.is_some()
                 || (options.binding_metadata.is_some() && !context.jsx_closure)
                 || options.inline
             {

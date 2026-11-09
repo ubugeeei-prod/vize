@@ -104,5 +104,5 @@ pub(super) fn record_dom_options(
         capture.option("props-aliases", "none");
         capture.option("script-setup", "none");
     }
-    capture.option("croquis", bool_id(options.croquis.is_some()));
+    capture.option("croquis", bool_id(options.script_tables.is_some()));
 }

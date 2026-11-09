@@ -31,7 +31,7 @@ const compilerOptionsHeldAtDefault = [
   "experimental_patterned_template",
   "custom_renderer",
   "dialect",
-  "croquis",
+  "script_tables",
 ];
 const s2EmitOptionFields = [
   "mode",
@@ -135,7 +135,7 @@ test("DOM L2 production switch classifies every compiler option", () => {
       "binding_metadata",
       "is_ts",
       "dialect",
-      "croquis",
+      "script_tables",
     ].sort(),
   );
 

@@ -11,6 +11,7 @@ mod render_exports;
 #[cfg(test)]
 mod tests;
 
+use vize_atelier_core::lane::ScriptTables;
 use vize_croquis::Croquis;
 use vize_l0::{Allocator, String};
 
@@ -182,6 +183,7 @@ pub(crate) fn compile_jsx_with_babel_customizations_inner(
 
     // Park the analysis on the allocator so the transforms can borrow it.
     let analysis: &Croquis = allocator.alloc_owned(lowered.analysis);
+    let script_tables: &ScriptTables = allocator.alloc_owned(ScriptTables::from_croquis(analysis));
 
     let mut bindings = (config.ssr
         || lowered
@@ -223,7 +225,7 @@ pub(crate) fn compile_jsx_with_babel_customizations_inner(
             let (component, map) = compile_root_with_origins(
                 allocator,
                 lowered_root,
-                analysis,
+                script_tables,
                 config.default_mode,
                 source,
                 SsrLane::Plan,
@@ -250,7 +252,7 @@ pub(crate) fn compile_jsx_with_babel_customizations_inner(
                 JsxOutputMode::Vdom => JsxComponent::Vdom(compile_root_to_vdom(
                     allocator,
                     lowered_root,
-                    analysis,
+                    script_tables,
                     is_ts,
                     &config.vdom,
                     VdomCompatOptions {
@@ -270,7 +272,7 @@ pub(crate) fn compile_jsx_with_babel_customizations_inner(
                     let (component, map) = compile_root_to_vapor_with_origins(
                         allocator,
                         lowered_root,
-                        analysis,
+                        script_tables,
                         &config.vapor,
                         source,
                         &mut diagnostics,

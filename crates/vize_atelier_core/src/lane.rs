@@ -8,11 +8,12 @@ mod extensions;
 mod frozen;
 mod options;
 pub mod patterned_template;
+mod script_tables;
 pub mod structural;
 mod structural_keys;
 pub(crate) mod traverse;
 
-use vize_croquis::{Croquis, ScopeChain};
+use vize_croquis::ScopeChain;
 use vize_l0::{Allocator, Box, SmallVec, Span, String, Vec, interner::Interner, profile};
 
 use crate::errors::CompilerError;
@@ -26,6 +27,7 @@ use crate::{
 #[doc(hidden)]
 pub use frozen::transform_with_frozen_elements;
 pub(crate) use options::{JsxTransformCompat, TransformLaneOptions};
+pub use script_tables::{ReactiveSource, ScriptTables};
 use traverse::traverse_children;
 
 #[expect(deprecated, reason = "kept exported until removal")]
@@ -175,8 +177,8 @@ pub struct TransformContext<'a> {
     pub(crate) jsx_compat: JsxTransformCompat,
     /// Deferred node removal, including branch whitespace from this index.
     pub(crate) node_removed_from: Option<usize>,
-    /// Semantic analysis summary (optional, for enhanced transforms)
-    pub(crate) analysis: Option<&'a Croquis>,
+    /// The `<script setup>` facts the transform reads beyond binding metadata.
+    pub(crate) script_tables: Option<&'a ScriptTables>,
     /// Scope ID to bake into static VNodes hoisted outside render scope.
     pub(crate) hoisted_scope_id: Option<String>,
     /// Validated compiler opt-in provenance; ordinary transform entries leave it empty.
@@ -237,13 +239,13 @@ pub fn transform<'a>(
     allocator: &'a Allocator,
     root: &mut RootNode<'a>,
     options: TransformOptions,
-    analysis: Option<&'a Croquis>,
+    script_tables: Option<&'a ScriptTables>,
 ) -> std::vec::Vec<CompilerError> {
     transform_inner(
         allocator,
         root,
         options,
-        analysis,
+        script_tables,
         TransformLaneOptions::default(),
         None,
     )
@@ -254,13 +256,13 @@ pub fn transform_with_template_syntax_quirks<'a>(
     allocator: &'a Allocator,
     root: &mut RootNode<'a>,
     options: TransformOptions,
-    analysis: Option<&'a Croquis>,
+    script_tables: Option<&'a ScriptTables>,
 ) -> std::vec::Vec<CompilerError> {
     transform_inner(
         allocator,
         root,
         options,
-        analysis,
+        script_tables,
         TransformLaneOptions {
             template_syntax_quirks: true,
             ..Default::default()
@@ -275,16 +277,16 @@ pub fn transform_with_vue_parser_quirks<'a>(
     allocator: &'a Allocator,
     root: &mut RootNode<'a>,
     options: TransformOptions,
-    analysis: Option<&'a Croquis>,
+    script_tables: Option<&'a ScriptTables>,
 ) -> std::vec::Vec<CompilerError> {
-    transform_with_template_syntax_quirks(allocator, root, options, analysis)
+    transform_with_template_syntax_quirks(allocator, root, options, script_tables)
 }
 
 pub(crate) fn transform_inner<'a>(
     allocator: &'a Allocator,
     root: &mut RootNode<'a>,
     options: TransformOptions,
-    analysis: Option<&'a Croquis>,
+    script_tables: Option<&'a ScriptTables>,
     lane_options: TransformLaneOptions<'a>,
     source_text: Option<&'a str>,
 ) -> std::vec::Vec<CompilerError> {
@@ -296,22 +298,13 @@ pub(crate) fn transform_inner<'a>(
         frozen_elements,
     } = lane_options;
     let source = source_text.unwrap_or(root.source);
-    let mut ctx = if let Some(analysis) = analysis {
-        TransformContext::with_analysis_and_template_syntax_quirks(
-            allocator,
-            source,
-            options,
-            analysis,
-            template_syntax_quirks,
-        )
-    } else {
-        TransformContext::new_with_template_syntax_quirks(
-            allocator,
-            source,
-            options,
-            template_syntax_quirks,
-        )
-    };
+    let mut ctx = TransformContext::new_with_template_syntax_quirks(
+        allocator,
+        source,
+        options,
+        template_syntax_quirks,
+    );
+    ctx.script_tables = script_tables;
     ctx.jsx_compat = jsx_compat;
     ctx.hoisted_scope_id = hoisted_scope_id;
     ctx.custom_elements = custom_elements;

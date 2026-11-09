@@ -1,5 +1,6 @@
 //! Shared context for compiling an SFC template through each script shape.
 
+use vize_atelier_core::lane::ScriptTables;
 use vize_l1_to_l2::lower::pug::PugSourceMap;
 
 use crate::compile_template::TemplateBlockCompileContext;
@@ -21,7 +22,7 @@ impl<'a> SfcTemplateContext<'a> {
         &'b self,
         inline: bool,
         bindings: Option<&'b BindingMetadata>,
-        croquis: Option<vize_croquis::croquis::Croquis>,
+        script_tables: Option<ScriptTables>,
     ) -> TemplateBlockCompileContext<'b>
     where
         'a: 'b,
@@ -36,7 +37,7 @@ impl<'a> SfcTemplateContext<'a> {
             component_name: Some(self.component_name),
             experimental_self_component: self.experimental_self_component,
             bindings,
-            croquis,
+            script_tables,
             collect_map: false,
             authored_source: Some(self.authored_source),
             pug_source_map: self.pug_source_map,

@@ -2,6 +2,7 @@
 //! the plan lane and with the legacy walker pinned, and the output must be
 //! byte-identical; admitted cases must actually be emitted from the plan.
 
+use vize_atelier_core::lane::ScriptTables;
 use vize_l0::{Allocator, String};
 
 use super::{SsrLane, compile_root_on_lane};
@@ -186,7 +187,8 @@ const OBSERVED: &[(&str, &str, JsxLang)] = &[
 fn compile(source: &str, lang: JsxLang, lane: SsrLane) -> std::vec::Vec<String> {
     let allocator = Allocator::new();
     let lowered = lower_source(&allocator, allocator.as_oxc(), source, lang);
-    let analysis = allocator.alloc_owned(lowered.analysis);
+    let script_tables: &ScriptTables =
+        allocator.alloc_owned(ScriptTables::from_croquis(&lowered.analysis));
     lowered
         .roots
         .into_iter()
@@ -194,7 +196,7 @@ fn compile(source: &str, lang: JsxLang, lane: SsrLane) -> std::vec::Vec<String> 
             compile_root_on_lane(
                 &allocator,
                 root,
-                analysis,
+                script_tables,
                 JsxOutputMode::Vdom,
                 source,
                 lane,

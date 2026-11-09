@@ -3,6 +3,7 @@ use super::{LegacyReason, SsrL4Request, SsrL4Selection, select_ssr_lane};
 use crate::compile::{SsrLane, compile_ssr_on_lane};
 use crate::options::{SsrCompilerExperimentalOptions, SsrCompilerOptions};
 use vize_atelier_core::TemplateSyntaxMode;
+use vize_atelier_core::lane::ScriptTables;
 use vize_atelier_core::options::{BindingMetadata, BindingType, CustomElementMatcher};
 use vize_l0::Allocator;
 
@@ -77,20 +78,21 @@ fn metadata_with(names: &[(&str, BindingType)]) -> BindingMetadata {
     metadata
 }
 
-fn croquis_with(names: &[(&str, BindingType)]) -> vize_croquis::Croquis {
-    let mut summary = vize_croquis::Croquis::default();
-    for (name, kind) in names {
-        summary.bindings.add(*name, *kind);
-    }
-    summary
+/// The tables of `names`: every `SetupConst` registers a component.
+fn tables_with(names: &[(&str, BindingType)]) -> ScriptTables {
+    let components = names
+        .iter()
+        .filter(|(_, kind)| *kind == BindingType::SetupConst)
+        .map(|(name, _)| *name);
+    ScriptTables::new([], components)
 }
 
 #[test]
-fn a_croquis_summary_without_metadata_names_its_own_legacy_reason() {
+fn script_tables_without_metadata_name_their_own_legacy_reason() {
     let selection = select(
         r#"<div>{{ msg }}</div>"#,
         &SsrCompilerOptions {
-            croquis: Some(Box::default()),
+            script_tables: Some(ScriptTables::default()),
             ..SsrCompilerOptions::default()
         },
     );
@@ -101,14 +103,13 @@ fn a_croquis_summary_without_metadata_names_its_own_legacy_reason() {
 }
 
 #[test]
-fn a_croquis_registration_the_metadata_lacks_stays_legacy() {
-    let mut summary = croquis_with(&[("Child", BindingType::SetupConst)]);
-    summary.note_used_component("Child");
+fn a_registration_the_metadata_lacks_stays_legacy() {
+    let drawn = ScriptTables::new([], ["child"]);
     let selection = select(
         r#"<Child />"#,
         &SsrCompilerOptions {
             binding_metadata: Some(metadata_with(&[("Child", BindingType::SetupConst)])),
-            croquis: Some(Box::new(summary)),
+            script_tables: Some(drawn),
             ..SsrCompilerOptions::default()
         },
     );
@@ -117,7 +118,7 @@ fn a_croquis_registration_the_metadata_lacks_stays_legacy() {
         "got {selection:?}"
     );
 
-    let hidden = croquis_with(&[
+    let hidden = tables_with(&[
         ("Child", BindingType::SetupConst),
         ("Hidden", BindingType::SetupConst),
     ]);
@@ -125,7 +126,7 @@ fn a_croquis_registration_the_metadata_lacks_stays_legacy() {
         r#"<Child />"#,
         &SsrCompilerOptions {
             binding_metadata: Some(metadata_with(&[("Child", BindingType::SetupConst)])),
-            croquis: Some(Box::new(hidden)),
+            script_tables: Some(hidden),
             ..SsrCompilerOptions::default()
         },
     );
@@ -136,7 +137,7 @@ fn a_croquis_registration_the_metadata_lacks_stays_legacy() {
 }
 
 #[test]
-fn a_projectable_croquis_summary_matches_the_walker() {
+fn projectable_script_tables_match_the_walker() {
     let names = [
         ("count", BindingType::SetupRef),
         ("Child", BindingType::SetupConst),
@@ -144,7 +145,7 @@ fn a_projectable_croquis_summary_matches_the_walker() {
     let source = "<Child>{{ count }}</Child>";
     let options = || SsrCompilerOptions {
         binding_metadata: Some(metadata_with(&names)),
-        croquis: Some(Box::new(croquis_with(&names))),
+        script_tables: Some(tables_with(&names)),
         ..SsrCompilerOptions::default()
     };
     let selected = select(source, &options());

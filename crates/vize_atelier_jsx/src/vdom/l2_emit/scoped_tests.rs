@@ -1,5 +1,5 @@
 #![expect(clippy::disallowed_macros, reason = "insta and fixtures use format!")]
-use vize_croquis::Croquis;
+use vize_atelier_core::lane::ScriptTables;
 use vize_l0::Allocator;
 
 use crate::{JsxLang, lower_source};
@@ -11,7 +11,8 @@ fn scoped_style_scope_id_emits_from_l2_vdom() {
     let allocator = Allocator::new();
     let source = r#"const A = () => <><section class="box" /><style scoped>{`.box { color: red; }`}</style></>;"#;
     let mut lowered = lower_source(&allocator, allocator.as_oxc(), source, JsxLang::Jsx);
-    let analysis: &Croquis = allocator.alloc_owned(lowered.analysis);
+    let script_tables: &ScriptTables =
+        allocator.alloc_owned(ScriptTables::from_croquis(&lowered.analysis));
     let mut root = lowered.roots.pop().expect("one JSX root");
     let l2 = root.l2.as_ref().expect("scoped style root projects to L2");
 
@@ -22,7 +23,7 @@ fn scoped_style_scope_id_emits_from_l2_vdom() {
     let component = compile_root_to_vdom(
         &allocator,
         root,
-        analysis,
+        script_tables,
         false,
         &VdomCompileOptions::default(),
         VdomCompatOptions::default(),

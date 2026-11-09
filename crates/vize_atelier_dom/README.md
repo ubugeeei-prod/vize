@@ -23,7 +23,6 @@ Support and deprecation guarantees are defined in the
 ## Related Crates
 
 - `vize_atelier_core` provides shared steps and codegen
-- `vize_croquis` can be passed in through compiler options for semantic context
 - `vize_atelier_sfc` uses this crate for standard template compilation
 
 ## License
