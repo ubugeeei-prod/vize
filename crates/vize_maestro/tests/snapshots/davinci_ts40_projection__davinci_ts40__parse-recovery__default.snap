@@ -1,6 +1,5 @@
 ---
 source: crates/vize_maestro/tests/davinci_ts40_projection.rs
-assertion_line: 47
 expression: record.render()
 ---
 fixture=parse-recovery
@@ -29,7 +28,7 @@ authored-hits=0:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
 authored-hit-anchors=[]
 [maestro]
 status=ok
-text=18635:7674d2f091afc731ec1baee30df8bc755b9792d05867ab90ddbeade809729fdd
+text=18807:cf5567a284cee2b254b661a69cae17ebba9cbf868984230cbd91e6a7942592f0
 pre-rewrite-text=0:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
 import-source-map=0:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
 import-source-map-probes=0:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855

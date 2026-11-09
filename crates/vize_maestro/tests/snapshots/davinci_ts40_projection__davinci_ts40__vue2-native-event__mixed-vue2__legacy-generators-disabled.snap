@@ -1,6 +1,5 @@
 ---
 source: crates/vize_maestro/tests/davinci_ts40_projection.rs
-assertion_line: 47
 expression: record.render()
 ---
 fixture=vue2-native-event
@@ -18,11 +17,11 @@ authored-hits=0:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
 authored-hit-anchors=[]
 [content-mapper]
 status=ok:vue3-fixed-production
-text=19574:eeee91a300dd5dc73a185ff13a1d057a54ece63ff5c11bfa8057bf56099aeeae
+text=19746:34989d6c089ff74835ab46d5c4d8e8cc8160cee2604a391583d507354616e16d
 pre-rewrite-text=0:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
 import-source-map=0:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
 import-source-map-probes=0:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
-mappings=12:49096354b7572932c060ddaf23ffe3897b1b8080a384aba07331805906a949d2
+mappings=12:ee2bfb8ce11f93b3c93c715ac9e54fed2336b49f7a1373d87b810abb5e663c38
 semantic-links=0:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
 diagnostics=0:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
 authored-hits=7:c7b3acfd57ff44c6bd4d062c0515f440fee49dd1b4ad7aa22391d6104c9bfba5

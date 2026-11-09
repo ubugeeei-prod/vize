@@ -1,5 +1,6 @@
 //! Authenticate the complete packets behind the reviewed #10933 transition.
 
+mod constructor_noinfer_return;
 mod receipt;
 
 use super::{capture_fixture, load_matrix, normalize::sha256};
@@ -245,6 +246,7 @@ fn public_instance_slot_packets_remain_authenticated() {
         canon_leftovers_successor,
         instance_input_keys_successor,
     );
+    let noinfer_successor = constructor_noinfer_return::slots(instance_input_keys_successor);
     let non_text_fields = |record: &str| {
         record
             .lines()
@@ -268,7 +270,7 @@ fn public_instance_slot_packets_remain_authenticated() {
         .expect("reviewed Options API slot fixture");
     assert_eq!(
         capture_fixture(fixture).render().as_str(),
-        instance_input_keys_successor
+        noinfer_successor
     );
 }
 #[test]
@@ -477,6 +479,8 @@ fn public_instance_mixed_vue2_packets_remain_authenticated() {
             canon_leftovers_successor,
             instance_input_keys_successor,
         );
+        let noinfer_successor =
+            constructor_noinfer_return::mixed_vue2(instance_input_keys_successor);
         let non_text_fields = |record: &str| {
             record
                 .lines()
@@ -490,7 +494,7 @@ fn public_instance_mixed_vue2_packets_remain_authenticated() {
         );
         assert_eq!(
             capture_fixture(fixture).render().as_str(),
-            instance_input_keys_successor
+            noinfer_successor
         );
     }
 }

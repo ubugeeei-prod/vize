@@ -75,3 +75,9 @@ lists the TSX instance key set without per-DOM-key `Exclude` chains (issue
 #11654). Canon, the content mapper and Maestro each grow by the 168-byte helper
 edit; mapping, diagnostic and authored-hit counts are unchanged, so the changed
 coordinate hashes are derived relocation.
+
+`successor-constructor-noinfer-12431` records #12523: the component constructor
+picks the public instance inline and keeps the bound instance behind `NoInfer`
+(issue #12431). Canon, the content mapper and Maestro each grow by the 172-byte
+constructor edit; mapping, diagnostic and authored-hit counts are unchanged, so
+the changed coordinate hashes are derived relocation.

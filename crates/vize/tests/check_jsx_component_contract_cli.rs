@@ -215,6 +215,10 @@ fn check_sfc_constructor_assignability_reads_the_public_instance() {
     let Some(corsa_path) = corsa_requirement::required_or_skip(resolve_test_corsa_path()) else {
         return;
     };
+    let expected: serde_json::Value = serde_json::from_str(include_str!(
+        "fixtures/constructor_assignability/check.expected.json"
+    ))
+    .unwrap();
     let project = JsxCheckProject::new("ctor", corsa_path, false);
     project.write(
         "src/Child.vue",
@@ -237,58 +241,68 @@ void read;
 "#
         )
     };
-    // A wrong or missing public prop still fails through every route.
-    for (source, expected) in [
-        (
-            "import Child from './Child.vue';\nexport const ctor: new () => { $props: { label: number } } = Child;\n",
-            "not assignable",
-        ),
-        (
-            "import Child from './Child.vue';\nexport const ctor: new () => { $props: { label: string; missing: string } } = Child;\n",
-            "not assignable",
-        ),
-        (
-            "import Child from './Child.vue';\nexport const read = (child: InstanceType<typeof Child>): { $props: { label: number } } => child;\n",
-            "not assignable",
-        ),
-        (
-            "import Child from './Child.vue';\nexport const read = (child: InstanceType<typeof Child>) => child.$props.label satisfies number;\n",
-            "does not satisfy",
-        ),
-    ] {
-        assert_broken(&project, source, expected);
-    }
-    project.write(
-        "src/Consumer.tsx",
-        "import Child from './Child.vue';\nexport const ctor: new () => { $props: { label: string } } = Child;\n",
-    );
-    for annotation in [
-        "{ $props: { label: number } }",
-        "{ $props: { label: string; missing: string } }",
-    ] {
-        project.write("src/Parent.vue", &parent(annotation));
-        let output = project.check();
-        assert!(
-            !output.success
-                && output.stdout.contains("src/Parent.vue")
-                && (output.stdout.contains("not assignable")
-                    || output.stdout.contains("'missing'")),
-            "stdout:\n{}\nstderr:\n{}",
-            output.stdout,
-            output.stderr
-        );
-    }
-
-    // The no-argument constructor sees the instance's own `$props` (no
-    // inference from the target's instance type), as Vue's `DefineComponent` does.
-    project.write("src/Parent.vue", &parent("{ $props: { label: string } }"));
-    project.write(
-        "src/Consumer.tsx",
-        r#"import Child from './Child.vue';
+    let clean = r#"import Child from './Child.vue';
 export const ctor: new () => { $props: { label: string } } = Child;
 export const read = (child: InstanceType<typeof Child>): { $props: { label: string } } => child;
 export const label = (child: InstanceType<typeof Child>) => child.$props.label satisfies string;
-"#,
-    );
-    assert_clean(project.check());
+"#;
+    // A wrong or missing public prop still fails through every route; the
+    // no-argument constructor sees the instance's own `$props`, as Vue's
+    // `DefineComponent` does, so the clean consumer reports nothing.
+    let cases = [
+        (
+            "ctor wrong prop",
+            "import Child from './Child.vue';\nexport const ctor: new () => { $props: { label: number } } = Child;\n",
+            "{ $props: { label: string } }",
+        ),
+        (
+            "ctor missing prop",
+            "import Child from './Child.vue';\nexport const ctor: new () => { $props: { label: string; missing: string } } = Child;\n",
+            "{ $props: { label: string } }",
+        ),
+        (
+            "InstanceType wrong prop",
+            "import Child from './Child.vue';\nexport const read = (child: InstanceType<typeof Child>): { $props: { label: number } } => child;\n",
+            "{ $props: { label: string } }",
+        ),
+        (
+            "InstanceType member",
+            "import Child from './Child.vue';\nexport const read = (child: InstanceType<typeof Child>) => child.$props.label satisfies number;\n",
+            "{ $props: { label: string } }",
+        ),
+        (
+            "template ref wrong prop",
+            clean,
+            "{ $props: { label: number } }",
+        ),
+        (
+            "template ref missing prop",
+            clean,
+            "{ $props: { label: string; missing: string } }",
+        ),
+        ("clean", clean, "{ $props: { label: string } }"),
+    ];
+    let mut actual = serde_json::Map::new();
+    for (case, consumer, annotation) in cases {
+        project.write("src/Consumer.tsx", consumer);
+        project.write("src/Parent.vue", &parent(annotation));
+        let output = project.check();
+        let report: serde_json::Value =
+            serde_json::from_str(&output.stdout).unwrap_or_else(|error| {
+                panic!(
+                    "{case}: invalid JSON ({error}):\n{}\n{}",
+                    output.stdout, output.stderr
+                )
+            });
+        actual.insert(
+            case.into(),
+            serde_json::json!({ "success": output.success, "files": report["files"] }),
+        );
+    }
+    let actual = serde_json::Value::Object(actual);
+    if actual != expected {
+        // The whole packet, so it can be reviewed and pinned at once.
+        eprintln!("{}", serde_json::to_string_pretty(&actual).unwrap());
+    }
+    assert_eq!(actual, expected);
 }

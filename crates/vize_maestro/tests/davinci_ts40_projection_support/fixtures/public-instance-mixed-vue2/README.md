@@ -71,3 +71,10 @@ exported name maps to the SFC's start. The content-mapper projection grows by
 instance key set is listed without per-DOM-key `Exclude` chains. The content
 mapper and Maestro grow by the 168-byte helper edit; canon is byte-identical;
 mapping, diagnostic and authored-hit counts are unchanged.
+
+`successor-constructor-noinfer-12431` records #12523: the component constructor
+picks the public instance inline and keeps the bound instance behind `NoInfer`
+(issue #12431). The content mapper and Maestro grow by the 172-byte constructor
+edit and Canon's Vue 2 projection is unchanged; mapping, diagnostic and
+authored-hit counts are unchanged, so the changed coordinate hashes are derived
+relocation.
