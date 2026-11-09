@@ -289,6 +289,7 @@ mod lsp_directive_value_hover_cli;
 mod lsp_document_links_cli;
 mod lsp_dotted_basename_cli;
 mod lsp_generic_prop_hover_cli;
+mod lsp_instance_hover_cli;
 mod lsp_kebab_prop_rename_cli;
 mod lsp_local_references_cli;
 mod lsp_mixed_prop_rename_cli;

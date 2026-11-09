@@ -1,0 +1,50 @@
+{
+  "version": 1,
+  "kind": "exact-constructor-noinfer-generated-successor",
+  "issue": 12431,
+  "pullRequest": 12523,
+  "sourceRevision": "faaa9d3bb43c3bcb6096d6b4a47cab4d361313f3",
+  "observedRun": 42663572515,
+  "observedJob": 129323540869,
+  "nativeAcceptanceCredit": false,
+  "observedMismatchEntry": 74,
+  "observedActual": [
+    "project/A.vue.ts",
+    4162,
+    "cd51d87928e166f44ac8577ed93f85cddb5f3c6630d6c285ca7c76e6194bdcc5"
+  ],
+  "edit": {
+    "before": "type $ComponentConstructor = new <$AuthoredProps = unknown, $JsxProps = unknown>(props?: $AuthoredProps & $ComponentInput<Props, {}, $AuthoredProps>, ...args: any[]) => $ComponentInstanceFor<$ComponentInstance, {\n  $props: Props;\n  readonly __vizeRawProps?: Props;\n  $emit: $PublicEmit<Emits>;\n  $slots: $PublicSlots<$Slots>;\n}, $ComponentPublicBase, Props, {}, $AuthoredProps, $JsxProps>;",
+    "after": "type $ComponentConstructor = new <$AuthoredProps = unknown, $JsxProps = unknown>(props?: $AuthoredProps & $ComponentInput<Props, {}, $AuthoredProps>, ...args: any[]) => ($IsAny<$AuthoredProps> extends true ? true : $IsUnknown<$AuthoredProps> extends true ? $UsePublicInstance<$JsxProps> : false) extends true ? $ComponentInstance : NoInfer<$ComponentInstanceFor<$ComponentInstance, {\n  $props: Props;\n  readonly __vizeRawProps?: Props;\n  $emit: $PublicEmit<Emits>;\n  $slots: $PublicSlots<$Slots>;\n}, $ComponentPublicBase, Props, {}, $AuthoredProps, $JsxProps>>;"
+  },
+  "entries": [
+    {
+      "entry": 74,
+      "before": [
+        "project/A.vue.ts",
+        3990,
+        "e2d9c4862cab4db2d0217460b6b716d2c94e854ac19244864a17a211d85bb745"
+      ],
+      "after": [
+        "project/A.vue.ts",
+        4162,
+        "cd51d87928e166f44ac8577ed93f85cddb5f3c6630d6c285ca7c76e6194bdcc5"
+      ],
+      "deltaBytes": 172
+    },
+    {
+      "entry": 75,
+      "before": [
+        "project/B.vue.ts",
+        4210,
+        "120c8de3fe9f8ccdf4b708e1f34967fec8ef4915a3816792c75e7b0d78179c86"
+      ],
+      "after": [
+        "project/B.vue.ts",
+        4382,
+        "2e547c9d6106b3ebe0f799ad41f621c0afbfccef331b17020713315219e4053e"
+      ],
+      "deltaBytes": 172
+    }
+  ]
+}

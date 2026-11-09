@@ -18,6 +18,7 @@ import {
 } from "./support/canon-leftovers-output-transition.ts";
 import { beforeProjectionTextBuffer } from "../../tools/support/compat/content-mapper/projection-text-buffer-transition.ts";
 import { constructorSourceTransition } from "./support/declaration-slot-constructor-source-transition.ts";
+import { noinferOutputTransition } from "./support/declaration-noinfer-output-transition.ts";
 
 const originals = [
   [
@@ -228,7 +229,11 @@ test("the declaration constructor successor authenticates the whole source and b
   const previousSource = constructorSourceTransition(sourceBytes, "inverse", source);
   assert.deepEqual(constructorSourceTransition(previousSource, "forward", source), sourceBytes);
   const current = fs.readFileSync(path.join(repoRoot, output.path));
-  const canonEnvelope = canonLeftoversOutputTransition(current, "inverse");
+  // #12523 is the newest layer: invert it first.
+  const canonEnvelope = canonLeftoversOutputTransition(
+    noinferOutputTransition(current, "inverse"),
+    "inverse",
+  );
   const strictEnvelope = overloadOutputTransition(canonEnvelope, "inverse");
   const integratedEnvelope = strictOutputTransition(strictEnvelope, "inverse");
   const discriminatedEnvelope = discriminatedOutputTransition(integratedEnvelope, "inverse");
@@ -236,11 +241,14 @@ test("the declaration constructor successor authenticates the whole source and b
   const previous = constructorTransition(ownedEnvelope, "inverse");
   assert.deepEqual(constructorTransition(previous, "forward"), ownedEnvelope);
   assert.deepEqual(
-    canonLeftoversOutputTransition(
-      overloadOutputTransition(
-        strictOutputTransition(
-          discriminatedOutputTransition(
-            integratedOutputTransition(ownedEnvelope, "forward"),
+    noinferOutputTransition(
+      canonLeftoversOutputTransition(
+        overloadOutputTransition(
+          strictOutputTransition(
+            discriminatedOutputTransition(
+              integratedOutputTransition(ownedEnvelope, "forward"),
+              "forward",
+            ),
             "forward",
           ),
           "forward",
@@ -289,7 +297,10 @@ test("the build declaration constructor adds a reversible receipt without changi
   const previousSource = constructorSourceTransition(sourceBytes, "inverse", source);
   assert.deepEqual(constructorSourceTransition(previousSource, "forward", source), sourceBytes);
   const current = fs.readFileSync(path.join(repoRoot, output.path));
-  const canonEnvelope = canonLeftoversBuildOutputTransition(current, "inverse");
+  const canonEnvelope = canonLeftoversBuildOutputTransition(
+    noinferOutputTransition(current, "inverse"),
+    "inverse",
+  );
   const integratedEnvelope = overloadOutputTransition(canonEnvelope, "inverse");
   const ownedEnvelope = buildIntegratedOutputTransition(integratedEnvelope, "inverse");
   const previous = constructorTransition(ownedEnvelope, "inverse", buildConstructorSuccessor);
@@ -298,9 +309,12 @@ test("the build declaration constructor adds a reversible receipt without changi
     ownedEnvelope,
   );
   assert.deepEqual(
-    canonLeftoversBuildOutputTransition(
-      overloadOutputTransition(
-        buildIntegratedOutputTransition(ownedEnvelope, "forward"),
+    noinferOutputTransition(
+      canonLeftoversBuildOutputTransition(
+        overloadOutputTransition(
+          buildIntegratedOutputTransition(ownedEnvelope, "forward"),
+          "forward",
+        ),
         "forward",
       ),
       "forward",
@@ -424,11 +438,14 @@ for (const [name, digest, successorDigest] of originals) {
     const constructor = constructorSuccessors.find(
       (successor) => `${name}_slot_reexport.snap` === path.basename(successor.output.path),
     );
+    const slotEnvelope = constructor
+      ? noinferOutputTransition(currentSlot, "inverse")
+      : currentSlot;
     const canonEnvelope =
       constructor === constructorSuccessor
-        ? canonLeftoversOutputTransition(currentSlot, "inverse")
+        ? canonLeftoversOutputTransition(slotEnvelope, "inverse")
         : constructor === buildConstructorSuccessor
-          ? canonLeftoversBuildOutputTransition(currentSlot, "inverse")
+          ? canonLeftoversBuildOutputTransition(slotEnvelope, "inverse")
           : currentSlot;
     const integratedEnvelope = constructor
       ? overloadOutputTransition(canonEnvelope, "inverse")
