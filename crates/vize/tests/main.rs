@@ -230,6 +230,7 @@ mod lint_function_return_type_cli;
 mod lint_generic_type_reads_cli;
 mod lint_global_components_cli;
 mod lint_html_script_cli;
+mod lint_imported_macro_types_cli;
 mod lint_incomplete_type_project_cli;
 mod lint_legacy_instance_api_cli;
 mod lint_musea_cli;

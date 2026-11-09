@@ -22,7 +22,14 @@ fn collisions(setup: &str, module: Option<&str>) -> Vec<vize_l0::CompactString> 
             }
         });
     let mut result = ScriptLintResult::default();
-    NoDupeKeys.check_setup_with_module(&parsed.program, setup, 0, module, &mut result);
+    NoDupeKeys.check_setup_with_module(
+        &parsed.program,
+        setup,
+        0,
+        module,
+        Default::default(),
+        &mut result,
+    );
     result
         .diagnostics
         .into_iter()
