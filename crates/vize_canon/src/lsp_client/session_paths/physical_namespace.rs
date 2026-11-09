@@ -10,18 +10,16 @@ use std::path::{Path, PathBuf};
 
 use vize_l0::FxHashMap;
 
-use super::{is_within_project_namespace, logical_namespace_path};
+use super::logical_namespace_path;
 
-pub(in crate::lsp_client) struct PhysicalNamespace<'a> {
-    root: &'a Path,
+pub(in crate::lsp_client) struct PhysicalNamespace {
     logical_root: Option<PathBuf>,
     parents: FxHashMap<PathBuf, Option<PathBuf>>,
 }
 
-impl<'a> PhysicalNamespace<'a> {
-    pub(in crate::lsp_client) fn new(root: &'a Path) -> Self {
+impl PhysicalNamespace {
+    pub(in crate::lsp_client) fn new(root: &Path) -> Self {
         Self {
-            root,
             logical_root: root.to_str().and_then(|_| logical_namespace_path(root)),
             parents: FxHashMap::default(),
         }
@@ -49,14 +47,16 @@ impl<'a> PhysicalNamespace<'a> {
                 .map(|parent| parent.join(name)),
             _ => path.canonicalize().ok(),
         };
-        physical.is_some_and(|physical| is_within_project_namespace(&physical, self.root))
+        physical.is_some_and(|physical| self.contains_logical(&physical))
     }
 }
 
 #[cfg(all(test, unix))]
 mod tests {
     use super::*;
-    use crate::lsp_client::session_paths::is_within_physical_project_namespace;
+    use crate::lsp_client::session_paths::{
+        is_within_physical_project_namespace, is_within_project_namespace,
+    };
 
     #[test]
     fn batch_containment_matches_per_path_resolution() {
