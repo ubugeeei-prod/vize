@@ -18,6 +18,8 @@ pub(crate) struct EditorMirrorSession {
     cache: Mutex<SessionCache>,
     /// The workspace preparation in flight, shared by equal requests.
     preparing: Mutex<Option<Preparation>>,
+    /// Wakes the disk sweep thread when the client cannot watch files.
+    pub(super) sweeper: Mutex<Option<std::sync::mpsc::SyncSender<()>>>,
     #[expect(
         clippy::disallowed_types,
         reason = "immutable snapshots are shared by editor owners"
@@ -58,6 +60,7 @@ impl EditorMirrorSession {
             storage,
             cache: Mutex::new(SessionCache::default()),
             preparing: Mutex::new(None),
+            sweeper: Mutex::new(None),
             compiler_configuration,
         }
     }

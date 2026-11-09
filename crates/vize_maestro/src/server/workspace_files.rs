@@ -74,6 +74,7 @@ async fn register_typecheck_dependency_watcher(server: &MaestroServer) {
     #[cfg(feature = "native")]
     {
         if !server.state.global_component_watcher_supported() {
+            server.state.sweep_unwatched_corsa_disk_inputs();
             return;
         }
         if let Err(error) = server
@@ -82,6 +83,7 @@ async fn register_typecheck_dependency_watcher(server: &MaestroServer) {
             .await
         {
             tracing::warn!("failed to register typecheck dependency watcher: {error}");
+            server.state.sweep_unwatched_corsa_disk_inputs();
         } else {
             server.state.set_corsa_disk_watcher_registered();
         }
