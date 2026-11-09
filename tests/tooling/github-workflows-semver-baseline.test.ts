@@ -5,16 +5,55 @@ import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 
+import {
+  adaptPublishedManifest,
+  adaptWorkspaceDependency,
+  compareVersions,
+  hasRegistryBaseline,
+  renamedPackages,
+  verifyChecksum,
+} from "../../tools/commands/ci/github/semver-baseline.ts";
 import { repoRoot } from "./_helpers/tool-commands.ts";
 import { writeFakeCommand } from "./support/fake-command.ts";
 
 test("immutable renamed-package baseline rejects corruption and preserves old manifest API", () => {
-  const result = spawnSync(
-    "rust-script",
-    ["--test", path.join(repoRoot, "tools/commands/ci/github/semver-baseline.rs")],
-    { encoding: "utf8" },
+  const source =
+    '[package]\nname = "vize_s1_to_s2"\nversion = "0.428.1"\n[lib]\nname = "vize_s1_to_s2"\npath = "src/lib.rs"\n[dependencies.vize_s0]\npackage = "vize_carton"\nversion = "=0.428.1"\n';
+  const adapted = adaptPublishedManifest(source, "vize_s1_to_s2", "vize_l1_to_l2", "0.428.1");
+  assert.equal(adapted.replaceAll("vize_l1_to_l2", "vize_s1_to_s2"), source);
+  assert.match(
+    adaptWorkspaceDependency(
+      '[workspace.dependencies]\nvize_s1_to_s2 = { path = "crates/vize_s1_to_s2", version = "=0.427.99" }\n',
+      "vize_s1_to_s2",
+      "vize_l1_to_l2",
+    ),
+    /vize_s1_to_s2 = \{ path = "crates\/vize_s1_to_s2", version = "=0\.427\.99", package = "vize_l1_to_l2" \}/u,
   );
-  assert.equal(result.status, 0, `${result.stderr}\n${result.stdout}`);
+  assert.throws(
+    () =>
+      adaptPublishedManifest(
+        source.replaceAll("0.428.1", "0.429.0"),
+        "vize_s1_to_s2",
+        "vize_l1_to_l2",
+        "0.428.1",
+      ),
+    /identity mismatch/u,
+  );
+  assert.equal(compareVersions("0.429.0", "0.428.1") > 0, true);
+  assert.equal(compareVersions("0.429.0-beta.1", "0.429.0") < 0, true);
+  assert.equal(renamedPackages.at(-1)?.[2], "0.429.0");
+  assert.throws(() => verifyChecksum(Buffer.from("changed API"), renamedPackages[2][3]));
+  assert.doesNotThrow(() =>
+    verifyChecksum(
+      Buffer.alloc(0),
+      "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    ),
+  );
+  assert.throws(() => hasRegistryBaseline("", "vize_l1", "0.429.0"), /empty/u);
+  assert.equal(
+    hasRegistryBaseline('{"name":"vize_l1","vers":"0.429.0","yanked":false}', "vize_l1", "0.429.0"),
+    true,
+  );
 });
 
 test("registry failures cannot turn the first-publish baseline into a skipped check", () => {
@@ -50,9 +89,9 @@ test("registry failures cannot turn the first-publish baseline into a skipped ch
     ] as const) {
       const output = fs.mkdtempSync(path.join(root, "baseline-"));
       const result = spawnSync(
-        "rust-script",
+        process.execPath,
         [
-          path.join(repoRoot, "tools/commands/ci/github/semver-baseline.rs"),
+          path.join(repoRoot, "tools/commands/ci/github/semver-baseline.ts"),
           "vize_l1_to_l2",
           output,
         ],
@@ -122,9 +161,9 @@ test("a renamed package uses the exact Git parent source and version before regi
   fs.writeFileSync(path.join(newCrate, "src/lib.rs"), "pub fn changed_current_api() {}\n");
   const run = (revision: string) =>
     spawnSync(
-      "rust-script",
+      process.execPath,
       [
-        path.join(repoRoot, "tools/commands/ci/github/semver-baseline.rs"),
+        path.join(repoRoot, "tools/commands/ci/github/semver-baseline.ts"),
         "vize_l1_to_l2",
         fs.mkdtempSync(path.join(root, "baseline-")),
         revision,
@@ -187,7 +226,7 @@ test("release SemVer invokes the required check with the immutable baseline and 
   );
   writeFakeCommand(
     bin,
-    "rust-script",
+    "semver-node",
     [
       "const fs = require('node:fs');",
       "fs.appendFileSync(process.env.SEMVER_HELPER_LOG, JSON.stringify(process.argv.slice(2)) + '\\n');",
@@ -211,6 +250,7 @@ test("release SemVer invokes the required check with the immutable baseline and 
         BASELINE_REV: "",
         SEMVER_TEST_LOG: log,
         SEMVER_HELPER_LOG: helperLog,
+        VIZE_SEMVER_NODE: path.join(bin, "semver-node"),
         SEMVER_TEST_ROOT: "",
         SEMVER_TEST_FAIL: "",
         ...extra,

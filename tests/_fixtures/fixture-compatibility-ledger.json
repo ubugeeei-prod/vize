@@ -1085,8 +1085,8 @@
         "membership": "ecosystem"
       },
       "evidence": {
-        "file": "tools/commands/davinci/davinci_corpus.rs",
-        "selector": "\"typechecker\": [\"exitCode\", \"stderr\", \"stdout\", \"typecheckerCoverage\"]"
+        "file": "tools/support/compat/davinci/lib/corpus-baseline-contract.ts",
+        "selector": "typechecker: [\"exitCode\", \"stderr\", \"stdout\", \"typecheckerCoverage\"]"
       }
     },
     {
