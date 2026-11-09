@@ -13,7 +13,7 @@ import {
 
 export const componentNameSuccessorPath =
   "npm/linter/oxlint/src/component-name-source-successor.json";
-const successorSha256 = "384e1699ba8f83233fc410ad6c52255d8394cf01ab5d658fe51c29a6a4c2bc79";
+const successorSha256 = "4370a7472aa136dbf9718505036c28bc1ee2d4f0d328dd71178c618fc5a1602d";
 const hash = (bytes: Buffer) => createHash("sha256").update(bytes).digest("hex");
 
 export function componentNameSource(
