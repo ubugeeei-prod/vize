@@ -153,10 +153,10 @@ pub(crate) fn run_direct(args: &CheckArgs) {
     let mut only_excluded_explicit_inputs = !candidates.is_empty();
     // A referenced project checks first and hands its importers emitted
     // declarations instead of its sources (#12102).
-    let (batches, referenced) = if super::shared_declarations::sharing_enabled() {
+    let (candidates, referenced) = if super::shared_declarations::sharing_enabled() {
         super::programs::order_by_references(candidates, &mut tsconfig_input_cache)
     } else {
-        (vec![candidates], Default::default())
+        (candidates, Default::default())
     };
     let mut shared = super::shared_declarations::SharedDeclarations::default();
     // Referenced programs of one shell reach mostly the same packages.
@@ -165,7 +165,7 @@ pub(crate) fn run_direct(args: &CheckArgs) {
     // native check owns its checker and overlaps the next preparation; programs
     // sharing a mirror take turns, since its materialize lock wait times out.
     let (checked, preparation_error) = super::overlap::prepare_and_check_overlapped(
-        batches,
+        candidates,
         |candidate, program_concurrency| {
             let mut settings = settings.clone();
             settings.program_concurrency = program_concurrency;
