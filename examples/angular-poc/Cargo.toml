@@ -1,0 +1,24 @@
+[package]
+name = "angular-poc"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Proof of concept: an Angular component compiled through the level crates"
+publish = false
+
+[dependencies]
+oxc_ast = { workspace = true }
+oxc_ast_visit = { workspace = true }
+oxc_parser = { workspace = true }
+oxc_span = { workspace = true }
+poc-support = { path = "../poc-support" }
+vize_l0 = { workspace = true }
+vize_l1 = { workspace = true }
+vize_l2 = { workspace = true }
+vize_l3 = { workspace = true }
+vize_l4 = { workspace = true }
+
+[lints]
+workspace = true

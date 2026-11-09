@@ -47,6 +47,7 @@ const definitions: Record<RustTestCohortId, Definition> = {
       "vize_lightningcss",
       "vize_parcel_sourcemap",
       "vize_incremental",
+      "angular-poc",
       "poc-support",
       "solid-poc",
     ],

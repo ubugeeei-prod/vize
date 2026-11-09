@@ -1,6 +1,7 @@
 {
   "$comment": "Crates whose test, bench and example targets stay clean under `cargo clippy --all-targets -- -D warnings`. PR CI lints the listed crates a PR touches; `node tools/support/compat/github/clippy-test-targets.ts all` lints all of them. The list only grows: add a crate in the change that makes it clean.",
   "crates": [
+    "angular-poc",
     "davinci_harness",
     "poc-support",
     "solid-poc",
