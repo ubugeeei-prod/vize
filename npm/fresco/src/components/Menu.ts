@@ -2,7 +2,7 @@
  * Menu Component - Command menu/palette
  */
 
-import { computed, defineComponent, h, ref, type PropType, type VNode, watch } from "vue";
+import { computed, defineComponent, h, ref, toRaw, type PropType, type VNode, watch } from "vue";
 import { useInput } from "../composables/useInput.js";
 import {
   adjacentEnabledIndex,
@@ -10,9 +10,10 @@ import {
   firstEnabledIndex,
   lastEnabledIndex,
   typeaheadIndex,
+  visibleCollectionOffset,
 } from "./collection-navigation.js";
 
-export interface MenuItem {
+interface MenuItemBase {
   key: string;
   label: string;
   shortcut?: string;
@@ -21,13 +22,18 @@ export interface MenuItem {
   separator?: boolean;
 }
 
-export interface MenuProps {
+export type MenuItem<Value = string> = MenuItemBase &
+  ([Value] extends [string] ? { value?: Value } : { value: Value });
+
+export interface MenuProps<Value = string> {
   /** Menu items */
-  items: MenuItem[];
+  items: readonly MenuItem<Value>[];
   /** Focused item index */
   focusedIndex?: number;
   /** Whether the menu owns keyboard input */
   focused?: boolean;
+  /** Maximum visible items before the command window scrolls */
+  maxHeight?: number;
   /** Show border */
   border?: "single" | "double" | "rounded" | "none";
   /** Width */
@@ -42,11 +48,19 @@ export interface MenuProps {
   shortcutFg?: string;
 }
 
+export interface RuntimeMenuItem extends MenuItemBase {
+  value?: unknown;
+}
+
+function menuItemValue(item: RuntimeMenuItem): unknown {
+  return Object.hasOwn(item, "value") ? item.value : item.key;
+}
+
 export const Menu = defineComponent({
   name: "Menu",
   props: {
     items: {
-      type: Array as PropType<MenuItem[]>,
+      type: Array as PropType<readonly RuntimeMenuItem[]>,
       required: true,
     },
     focusedIndex: {
@@ -57,6 +71,7 @@ export const Menu = defineComponent({
       type: Boolean,
       default: false,
     },
+    maxHeight: Number,
     border: {
       type: String as PropType<MenuProps["border"]>,
       default: "single",
@@ -78,8 +93,13 @@ export const Menu = defineComponent({
   },
   emits: ["select", "update:focusedIndex"],
   setup(props, { emit }) {
+    const scrollOffset = ref(0);
     const highlightedIndex = ref(-1);
     const typeahead = createTypeaheadBuffer();
+    const viewportSize = computed(() => {
+      if (props.maxHeight === undefined || !Number.isFinite(props.maxHeight)) return undefined;
+      return props.maxHeight > 0 ? Math.max(1, Math.floor(props.maxHeight)) : undefined;
+    });
 
     const syncHighlight = () => {
       const requested = props.focusedIndex;
@@ -97,6 +117,19 @@ export const Menu = defineComponent({
       immediate: true,
     });
 
+    watch(
+      [highlightedIndex, viewportSize, () => props.items.length],
+      ([index, windowSize]) => {
+        scrollOffset.value = visibleCollectionOffset(
+          index,
+          scrollOffset.value,
+          windowSize,
+          props.items.length,
+        );
+      },
+      { immediate: true },
+    );
+
     const setHighlight = (index: number) => {
       if (index < 0 || index === highlightedIndex.value) return;
       highlightedIndex.value = index;
@@ -106,7 +139,7 @@ export const Menu = defineComponent({
     const activate = () => {
       const item = props.items[highlightedIndex.value];
       if (!item || item.disabled || item.separator) return;
-      emit("select", item.key);
+      emit("select", toRaw(menuItemValue(item)));
     };
 
     useInput({
@@ -143,10 +176,36 @@ export const Menu = defineComponent({
       },
       onSubmit: activate,
     });
+
+    const visibleItems = computed(() => {
+      const windowSize = viewportSize.value;
+      const start = windowSize === undefined ? 0 : scrollOffset.value;
+      const end = windowSize === undefined ? props.items.length : start + windowSize;
+      return props.items.slice(start, end).map((item, visibleIndex) => ({
+        item,
+        index: start + visibleIndex,
+      }));
+    });
+
+    const scrollIndicator = computed(() => {
+      const windowSize = viewportSize.value;
+      if (windowSize === undefined || props.items.length <= windowSize) {
+        return { showUp: false, showDown: false };
+      }
+      return {
+        showUp: scrollOffset.value > 0,
+        showDown: scrollOffset.value + windowSize < props.items.length,
+      };
+    });
+
     return () => {
       const children: VNode[] = [];
 
-      props.items.forEach((item, index) => {
+      if (scrollIndicator.value.showUp) {
+        children.push(h("text", { key: "scroll-up", dim: true }, "  ..."));
+      }
+
+      visibleItems.value.forEach(({ item, index }) => {
         if (item.separator) {
           children.push(
             h("text", { key: `sep-${index}`, dim: true }, "─".repeat(props.width ?? 20)),
@@ -208,6 +267,10 @@ export const Menu = defineComponent({
           ),
         );
       });
+
+      if (scrollIndicator.value.showDown) {
+        children.push(h("text", { key: "scroll-down", dim: true }, "  ..."));
+      }
 
       return h(
         "box",

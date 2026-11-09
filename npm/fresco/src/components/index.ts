@@ -112,11 +112,14 @@ export {
   type TableSortDirection,
   type TableViewportRange,
 } from "./Table.js";
-export { Tree, type TreeProps, type TreeNode } from "./Tree.js";
+export { default as Tree } from "./FrescoTree.vue";
+export type { TreeBy, TreeNode, TreeProps, TreeValueKey } from "./Tree.js";
 
 // Navigation
-export { Menu, type MenuProps, type MenuItem } from "./Menu.js";
-export { Tabs, type TabsProps, type Tab } from "./Tabs.js";
+export { default as Menu } from "./FrescoMenu.vue";
+export type { MenuItem, MenuProps } from "./Menu.js";
+export { default as Tabs } from "./FrescoTabs.vue";
+export type { Tab, TabsBy, TabsProps, TabsValueKey } from "./Tabs.js";
 export { default as Breadcrumb } from "./FrescoBreadcrumb.vue";
 export type { BreadcrumbItem, BreadcrumbProps } from "./presentational-primitive-types.js";
 export { Stepper, type StepperProps, type Step, type StepStatus } from "./Stepper.js";
