@@ -10,11 +10,11 @@ export interface HmrMetadata {
   template?: string;
   /** Fingerprint of compiler options that affect module behavior. */
   options: string;
-  /** Whether the compiler proved that a template-only rerender is safe. */
+  /** Adapter-supplied eligibility flag; the HMR consumer applies further preservation checks. */
   canRerender: boolean;
-  /** Fingerprint of the emitted JavaScript module. */
+  /** Adapter-supplied module identity used by the HMR consumer's equality checks. */
   module: string;
-  /** Fingerprint of emitted style modules. */
+  /** Adapter-supplied style-structure identity; emitted style content may be tracked separately. */
   styles: string;
 }
 

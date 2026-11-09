@@ -58,6 +58,15 @@ function declarationNames(statement: ts.Statement): readonly string[] | undefine
   return undefined;
 }
 
+function isValueDeclaration(statement: ts.Statement): boolean {
+  return (
+    ts.isVariableStatement(statement) ||
+    ts.isFunctionDeclaration(statement) ||
+    ts.isClassDeclaration(statement) ||
+    ts.isEnumDeclaration(statement)
+  );
+}
+
 function propertyName(member: ts.TypeElement, source: ts.SourceFile): string {
   if (!("name" in member) || !member.name) return "unknown";
   return member.name.getText(source);
@@ -90,11 +99,12 @@ export function auditDocumentation(file: string, sourceText: string): Documentat
   let declarations = 0;
   let optionalMembers = 0;
 
-  const declarationsByName = new Map<string, ts.Statement>();
+  const valueDeclarationsByName = new Map<string, ts.Statement>();
   for (const statement of source.statements) {
+    if (!isValueDeclaration(statement)) continue;
     for (const name of declarationNames(statement) ?? []) {
-      if (name !== "default" && !declarationsByName.has(name)) {
-        declarationsByName.set(name, statement);
+      if (name !== "default" && !valueDeclarationsByName.has(name)) {
+        valueDeclarationsByName.set(name, statement);
       }
     }
   }
@@ -139,7 +149,7 @@ export function auditDocumentation(file: string, sourceText: string): Documentat
 
   for (const statement of source.statements) {
     if (!ts.isExportAssignment(statement) || !ts.isIdentifier(statement.expression)) continue;
-    const declaration = declarationsByName.get(statement.expression.text);
+    const declaration = valueDeclarationsByName.get(statement.expression.text);
     if (declaration == null || hasExportModifier(declaration)) continue;
 
     declarations += 1;

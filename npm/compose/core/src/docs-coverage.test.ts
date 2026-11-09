@@ -100,6 +100,20 @@ void test("identifier export assignments audit their referenced declaration", ()
   assert.deepEqual(undocumented.problems, [
     'plugin.d.cts:1 export "init" has no JSDoc block directly above',
   ]);
+
+  const sameNamedTypeAndValue = auditDocumentation(
+    "plugin.ts",
+    [
+      "/** Public plugin type. */",
+      "interface plugin {}",
+      "const plugin = {};",
+      "export default plugin;",
+    ].join("\n"),
+  );
+  assert.equal(sameNamedTypeAndValue.declarations, 1);
+  assert.deepEqual(sameNamedTypeAndValue.problems, [
+    'plugin.ts:3 export "plugin" has no JSDoc block directly above',
+  ]);
 });
 
 void test("public source graphs follow relative re-exports once", () => {
