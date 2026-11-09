@@ -326,7 +326,7 @@ fn condition_is_literal_true(condition: &ExpressionNode<'_>) -> bool {
     matches!(condition, ExpressionNode::Simple(simple) if simple.content.trim() == "true")
 }
 
-fn push_ts_string_literal(output: &mut String, value: &str) {
+fn push_ts_string_literal(output: &mut impl crate::virtual_ts::TsText, value: &str) {
     output.push('"');
     for character in value.chars() {
         match character {

@@ -1,6 +1,6 @@
 use std::ops::Range;
 
-use vize_carton::{String, append, cstr};
+use vize_carton::{append, cstr};
 use vize_croquis::croquis::{ComponentUsage, PassedProp, SlotUsage};
 
 use crate::virtual_ts::component_reference::component_binding_reference;
@@ -13,7 +13,7 @@ use super::component_props::named_dynamic_navigation_reference;
 use super::context::ComponentPropsContext;
 
 pub(super) fn emit_references(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     mappings: &mut Vec<VizeMapping>,
     semantic_links: &mut Vec<VizeSemanticLink>,
     ctx: &ComponentPropsContext<'_, '_>,
@@ -26,7 +26,7 @@ pub(super) fn emit_references(
 }
 
 pub(super) fn emit_usage_references(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     mappings: &mut Vec<VizeMapping>,
     semantic_links: &mut Vec<VizeSemanticLink>,
     ctx: &ComponentPropsContext<'_, '_>,
@@ -78,7 +78,7 @@ pub(super) fn emit_usage_references(
 }
 
 fn emit_prop_references(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     mappings: &mut Vec<VizeMapping>,
     semantic_links: &mut Vec<VizeSemanticLink>,
     ctx: &ComponentPropsContext<'_, '_>,
@@ -178,7 +178,7 @@ fn prop_navigation_source_range(
 }
 
 fn emit_slot_references(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     mappings: &mut Vec<VizeMapping>,
     ctx: &ComponentPropsContext<'_, '_>,
     idx: usize,

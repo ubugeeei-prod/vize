@@ -42,7 +42,7 @@
 //! push vize's Vue-version floor onto every consumer of the emitted `.d.ts`.
 
 use super::super::types::{VizeMapping, VizeSubSpan};
-use vize_carton::{CompactString, FxHashMap, String, append, is_native_tag};
+use vize_carton::{CompactString, FxHashMap, append, is_native_tag};
 use vize_croquis::TemplateExpression;
 use vize_relief::{
     DirectiveNode, ElementNode, ExpressionNode, PropNode, RootNode, TemplateChildNode,
@@ -215,7 +215,7 @@ fn native_prop_binding(
 }
 
 pub(super) fn generate_native_prop_statement(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     mappings: &mut Vec<VizeMapping>,
     expr: &TemplateExpression,
     native_prop: &NativePropBinding,
@@ -304,7 +304,7 @@ pub(super) fn generate_native_prop_statement(
     });
 }
 
-fn push_ts_string_literal(output: &mut String, value: &str) {
+fn push_ts_string_literal(output: &mut impl crate::virtual_ts::TsText, value: &str) {
     output.push('"');
     for character in value.chars() {
         match character {

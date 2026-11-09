@@ -6,7 +6,7 @@ mod descriptor;
 mod source;
 
 use vize_armature::patterns::{MatchPattern, PatternKind};
-use vize_carton::{FxHashMap, FxHashSet, String, append, cstr};
+use vize_carton::{FxHashMap, FxHashSet, append, cstr};
 use vize_croquis::{Croquis, Scope, ScopeData, ScopeId};
 
 use crate::virtual_ts::types::VizeMapping;
@@ -14,7 +14,7 @@ use descriptor::{emit_bindings, emit_descriptor};
 use source::{PatternEmitter, map_range};
 
 pub(super) fn generate_expression_match(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     mappings: &mut ScopeMappings<'_>,
     ctx: &super::context::ScopeGenContext<'_, '_>,
     scope: &Scope,
@@ -55,7 +55,7 @@ pub(super) fn generate_expression_match(
 }
 
 pub(super) fn generate_props_match(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     mappings: &mut Vec<VizeMapping>,
     ctx: &super::context::VForPropsContext<'_, '_>,
     scope: &Scope,
@@ -104,12 +104,12 @@ pub(super) struct PatternContext<'a> {
 
 /// Replay exactly the same arm environment for both code-generation passes.
 pub(super) fn emit_match(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     mappings: &mut Vec<VizeMapping>,
     ctx: &PatternContext<'_>,
     scope: &Scope,
     indent: &str,
-    mut body: impl FnMut(&mut String, &mut Vec<VizeMapping>, &Scope, &str),
+    mut body: impl FnMut(&mut crate::virtual_ts::TextBuf, &mut Vec<VizeMapping>, &Scope, &str),
 ) {
     let ScopeData::VMatch(subject) = scope.data() else {
         return;

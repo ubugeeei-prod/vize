@@ -31,7 +31,7 @@ pub(crate) fn validate_reference_paths(paths: &[String]) -> Result<(), InvalidRe
     Ok(())
 }
 
-pub(super) fn emit(ts: &mut String, paths: &[String]) {
+pub(super) fn emit(ts: &mut crate::virtual_ts::TextBuf, paths: &[String]) {
     let mut seen = FxHashSet::default();
     for path in paths {
         if path.is_empty() || !seen.insert(path.as_str()) {

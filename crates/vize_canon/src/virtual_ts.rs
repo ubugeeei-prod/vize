@@ -77,7 +77,9 @@ mod template_binding_access;
 #[expect(clippy::disallowed_types, reason = "fixtures use std strings")]
 #[cfg(test)]
 mod tests;
+mod text_buf;
 mod type_dependencies;
+pub(crate) use text_buf::{TextBuf, TsText};
 mod types;
 #[cfg(test)]
 mod unknown_props_tests;

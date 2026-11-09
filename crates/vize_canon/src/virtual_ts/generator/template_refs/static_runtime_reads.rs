@@ -13,7 +13,7 @@ use super::super::legacy_vue2::needs_legacy_vue2_helpers;
 use crate::virtual_ts::script_facts::{ScriptBindings, with_bindings};
 
 pub(super) fn emit(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     summary: &Croquis,
     root: Option<&RootNode<'_>>,
     generation: VirtualTsGenerationOptions<'_>,

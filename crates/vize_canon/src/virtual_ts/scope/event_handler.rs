@@ -18,7 +18,7 @@ use super::vif_guard::callback_vif_guard;
 
 /// Generate event handler expressions inside a closure.
 pub(super) fn generate_event_handler_expressions(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     mappings: &mut ScopeMappings<'_>,
     scope_id: u32,
     ctx: &EventHandlerExprContext<'_>,

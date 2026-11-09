@@ -43,7 +43,7 @@ pub(super) struct ForwardedRootContext<'a> {
 /// Emit one probe pair per forwarded root and return the type of everything
 /// they forward, or `None` when no root resolves to a component binding.
 pub(super) fn emit_forwarded_root_probes(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     ctx: &ForwardedRootContext<'_>,
     root_starts: &[u32],
 ) -> Option<String> {
@@ -84,7 +84,7 @@ pub(super) fn emit_forwarded_root_probes(
 }
 
 fn emit_probe(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     ctx: &ForwardedRootContext<'_>,
     usage: &ComponentUsage,
     component: &str,

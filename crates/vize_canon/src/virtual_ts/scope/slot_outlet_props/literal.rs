@@ -11,7 +11,7 @@ use crate::virtual_ts::{
     types::{VizeMapping, VizeSubSpan},
 };
 use std::ops::Range;
-use vize_carton::{String, append};
+use vize_carton::append;
 use vize_croquis::ScopeId;
 use vize_croquis::croquis::{PassedProp, SpreadProp};
 use vize_l0::ts;
@@ -35,7 +35,7 @@ impl SlotOutletLiteralEntry<'_> {
     reason = "the ts! interpolation closure gives the emitted block a named writer"
 )]
 pub(super) fn append_slot_outlet_literal(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     mappings: &mut Vec<VizeMapping>,
     outlet: &SlotOutlet,
     payload_type: &str,
@@ -48,7 +48,7 @@ pub(super) fn append_slot_outlet_literal(
         {
             #("\n")
             #{
-                (|ts: &mut String| {
+                (|ts: &mut crate::virtual_ts::TextBuf| {
 
     let mut entries = Vec::with_capacity(outlet.props.len() + outlet.spread_props.len());
     entries.extend(outlet.props.iter().map(SlotOutletLiteralEntry::Prop));

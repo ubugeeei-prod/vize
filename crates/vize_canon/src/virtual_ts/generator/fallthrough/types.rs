@@ -135,7 +135,7 @@ fn targets_type_ref(
     scope: Option<&FallthroughComponentScope<'_>>,
 ) -> String {
     let check_required = scope.is_some_and(|scope| scope.check_required);
-    let mut ty = String::default();
+    let mut ty = crate::virtual_ts::TextBuf::default();
     for (index, target) in targets.iter().enumerate() {
         let (root, surface) = match target {
             FallthroughRootTarget::Native(root) => {
@@ -211,11 +211,11 @@ fn targets_type_ref(
             ty.push('>');
         }
     }
-    ty
+    ty.into_compact()
 }
 
 /// The union of string literal keys an `Omit` removes.
-pub(super) fn push_omitted_keys(ty: &mut String, keys: &[String]) {
+pub(super) fn push_omitted_keys(ty: &mut crate::virtual_ts::TextBuf, keys: &[String]) {
     for (index, key) in keys.iter().enumerate() {
         if index > 0 {
             ty.push_str(" | ");

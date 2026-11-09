@@ -1,8 +1,8 @@
-use vize_carton::{String, append};
+use vize_carton::append;
 
 /// The native root's fallthrough props as a one-tuple, or `[]` when none apply.
 pub(super) fn emit_box(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     indent: &str,
     fallthrough_box: &str,
     component_ref: &str,
@@ -19,7 +19,7 @@ pub(super) fn emit_box(
 }
 
 pub(super) fn emit_args(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     indent: &str,
     fallthrough_args: &str,
     fallthrough_box: &str,
@@ -32,7 +32,7 @@ pub(super) fn emit_args(
 }
 
 pub(super) fn emit_return(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     indent: &str,
     native_return: &str,
     fallthrough_box: &str,

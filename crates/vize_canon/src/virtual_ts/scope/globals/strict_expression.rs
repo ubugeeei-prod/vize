@@ -18,7 +18,7 @@ use super::{
 
 #[expect(clippy::too_many_arguments, reason = "independent emitter inputs")]
 pub(super) fn generate_strict_expression_refs(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     mappings: &mut Vec<VizeMapping>,
     summary: &Croquis,
     template_offset: u32,

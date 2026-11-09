@@ -21,12 +21,12 @@ pub(super) fn value(root: &RootNode<'_>, usage: &ComponentUsage) -> Option<Strin
     if js.raw != expression.content {
         return None;
     }
-    let mut out = String::default();
-    write(js.raw, js.ast, &mut out)?.then_some(out)
+    let mut out = crate::virtual_ts::TextBuf::default();
+    write(js.raw, js.ast, &mut out)?.then_some(out.into_compact())
 }
 
 /// Writes `ast`, returning whether any member was boxed.
-fn write(raw: &str, ast: &Expression<'_>, out: &mut String) -> Option<bool> {
+fn write(raw: &str, ast: &Expression<'_>, out: &mut crate::virtual_ts::TextBuf) -> Option<bool> {
     Some(match ast {
         Expression::ComputedMemberExpression(member) if !member.optional => {
             out.push_str(BOX);

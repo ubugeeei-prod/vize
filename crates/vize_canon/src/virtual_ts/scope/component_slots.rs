@@ -28,7 +28,7 @@ pub(super) struct ComponentSlotCheckMeta<'a, 'template> {
 }
 
 pub(super) fn append_component_slot_check_helpers(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     strict_children: bool,
     hoist_shared_preamble: bool,
 ) {
@@ -171,7 +171,7 @@ fn provided_slots_type(usage: &ComponentUsage) -> String {
     output
 }
 
-pub(super) fn push_ts_string_literal(output: &mut String, value: &str) {
+pub(super) fn push_ts_string_literal(output: &mut impl crate::virtual_ts::TsText, value: &str) {
     output.push('"');
     for character in value.chars() {
         match character {

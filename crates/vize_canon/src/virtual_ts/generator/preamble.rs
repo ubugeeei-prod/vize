@@ -1,4 +1,4 @@
-use vize_carton::{String, config::VueVersion};
+use vize_carton::config::VueVersion;
 use vize_croquis::{Croquis, ScopeKind};
 
 use crate::virtual_ts::{
@@ -22,7 +22,7 @@ const OWNER_SENSITIVE_COMPONENT_INSTANCE_HELPER_EXPORTS: &str = concat!(
 
 /// Keep helpers outside setup so public component aliases can refer to them.
 pub(super) fn emit_module_preamble(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     summary: &Croquis,
     options: VirtualTsGenerationOptions<'_>,
     legacy_vue2: bool,
@@ -83,7 +83,7 @@ pub(super) fn emit_module_preamble(
 
 /// Standalone native documents cannot rely on the program-wide ambient file.
 fn emit_embedded_helpers(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     summary: &Croquis,
     legacy_vue2: bool,
     dialect: VueVersion,

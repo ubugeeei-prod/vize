@@ -78,7 +78,7 @@ pub(super) struct ComponentEventTypeContext<'a, 'template> {
 }
 
 pub(super) fn generate_component_event_types(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     mappings: &mut Vec<VizeMapping>,
     ctx: ComponentEventTypeContext<'_, '_>,
 ) -> Option<ComponentEventTypes> {
@@ -128,11 +128,11 @@ pub(super) fn generate_component_event_types(
         fallthrough_listeners && (!requested_native_fallthrough || native_fallthrough_only);
     let pascal_event = to_pascal_case(data.event_name.as_str());
     let on_handler = cstr!("on{pascal_event}");
-    let mut owned_listener_key = String::default();
+    let mut owned_listener_key = crate::virtual_ts::TextBuf::default();
     if fallthrough_listeners && !legacy_vue2 {
         push_ts_string_literal(&mut owned_listener_key, on_handler.as_str());
     }
-    let mut listener_key = String::default();
+    let mut listener_key = crate::virtual_ts::TextBuf::default();
     push_ts_string_literal(&mut listener_key, on_handler.as_str());
     let prop_key = if on_handler.contains(':') {
         cstr!("\"{}\"", on_handler.as_str())

@@ -7,7 +7,7 @@
 
 use std::ops::Range;
 
-use vize_carton::{String, append, camelize};
+use vize_carton::{append, camelize};
 use vize_croquis::croquis::{ComponentUsage, PassedProp};
 
 use crate::virtual_ts::helpers::{push_ts_string_literal, to_safe_identifier_fragment};
@@ -28,7 +28,7 @@ pub(in crate::virtual_ts) fn is_model_prop(usage: &ComponentUsage, prop: &Passed
 
 /// Emit `type … = <payload>; void ((value: …) => { <target> = value; });`.
 pub(super) fn append_model_update_check(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     mappings: &mut Vec<VizeMapping>,
     (component_type_name, idx): (&str, usize),
     (usage, prop, source_context): (

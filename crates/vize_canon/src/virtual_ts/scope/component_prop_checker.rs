@@ -89,7 +89,7 @@ pub(super) fn has_inference_props(usage: &ComponentUsage) -> bool {
 /// `vue-tsc`'s own. It is a compiler-version difference, not something the
 /// generated code can steer.
 pub(super) fn append_prop_checker_alias(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     usage: &ComponentUsage,
     component_type_name: &str,
     component_ref: &str,
@@ -297,7 +297,7 @@ pub(super) fn prop_alias_type(
 /// contract points at the canonical usage's alias when the prop shape matches,
 /// so the `$PropValue` type is emitted once.
 pub(super) fn append_per_prop_aliases(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     usage: &ComponentUsage,
     component_type_name: &str,
     idx: usize,
