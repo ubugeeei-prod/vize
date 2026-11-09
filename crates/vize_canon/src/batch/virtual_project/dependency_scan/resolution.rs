@@ -5,6 +5,7 @@ use std::path::{Component, Path, PathBuf};
 use vize_carton::{String as CompactString, cstr};
 
 use crate::batch::AUTHORED_VUE_TS_ALIAS_SENTINEL;
+use crate::batch::virtual_project::passthrough::PassthroughProbes;
 
 /// First-party classification key: workspace symlinks use physical identity.
 pub(super) fn canonical_key(path: &Path) -> Option<PathBuf> {
@@ -69,7 +70,7 @@ pub(crate) fn resolve_dependency(
     project_root: &Path,
     aliases: &[(std::string::String, std::string::String)],
 ) -> Option<PathBuf> {
-    resolve_dependency_inner::<false, false>(specifier, importer_dir, project_root, aliases).0
+    resolve_dependency_inner::<false, false>(specifier, importer_dir, project_root, aliases, None).0
 }
 
 /// Resolve a specifier from generated Vue TypeScript, where `.vue.ts` names
@@ -82,7 +83,7 @@ pub(crate) fn resolve_generated_dependency(
     project_root: &Path,
     aliases: &[(std::string::String, std::string::String)],
 ) -> Option<PathBuf> {
-    resolve_dependency_inner::<false, true>(specifier, importer_dir, project_root, aliases).0
+    resolve_dependency_inner::<false, true>(specifier, importer_dir, project_root, aliases, None).0
 }
 
 #[expect(clippy::disallowed_types, reason = "dependency API uses std String")]
@@ -92,7 +93,7 @@ pub(crate) fn resolve_dependency_with_inputs(
     project_root: &Path,
     aliases: &[(std::string::String, std::string::String)],
 ) -> (Option<PathBuf>, Vec<PathBuf>) {
-    resolve_dependency_inner::<true, false>(specifier, importer_dir, project_root, aliases)
+    resolve_dependency_inner::<true, false>(specifier, importer_dir, project_root, aliases, None)
 }
 
 #[expect(clippy::disallowed_types, reason = "dependency API uses std String")]
@@ -102,7 +103,39 @@ pub(crate) fn resolve_generated_dependency_with_inputs(
     project_root: &Path,
     aliases: &[(std::string::String, std::string::String)],
 ) -> (Option<PathBuf>, Vec<PathBuf>) {
-    resolve_dependency_inner::<true, true>(specifier, importer_dir, project_root, aliases)
+    resolve_dependency_inner::<true, true>(specifier, importer_dir, project_root, aliases, None)
+}
+
+/// [`resolve_dependency`] or [`resolve_generated_dependency`], probing
+/// through a batch's directory listings.
+#[expect(clippy::disallowed_types, reason = "dependency API uses std String")]
+pub(in crate::batch::virtual_project) fn resolve_dependency_listed(
+    specifier: &str,
+    importer_dir: &Path,
+    project_root: &Path,
+    aliases: &[(std::string::String, std::string::String)],
+    (generated_vue, probes): (bool, &PassthroughProbes),
+) -> Option<PathBuf> {
+    let probes = Some(probes);
+    if generated_vue {
+        resolve_dependency_inner::<false, true>(
+            specifier,
+            importer_dir,
+            project_root,
+            aliases,
+            probes,
+        )
+        .0
+    } else {
+        resolve_dependency_inner::<false, false>(
+            specifier,
+            importer_dir,
+            project_root,
+            aliases,
+            probes,
+        )
+        .0
+    }
 }
 
 #[expect(clippy::disallowed_types, reason = "dependency API uses std String")]
@@ -111,6 +144,7 @@ fn resolve_dependency_inner<const RECORD_INPUTS: bool, const GENERATED_VUE: bool
     importer_dir: &Path,
     project_root: &Path,
     aliases: &[(std::string::String, std::string::String)],
+    probes: Option<&PassthroughProbes>,
 ) -> (Option<PathBuf>, Vec<PathBuf>) {
     let authored = specifier.strip_suffix(AUTHORED_VUE_TS_ALIAS_SENTINEL);
     let specifier = if let Some(authored) = authored {
@@ -128,7 +162,7 @@ fn resolve_dependency_inner<const RECORD_INPUTS: bool, const GENERATED_VUE: bool
         || specifier.starts_with("../")
         || Path::new(specifier).is_absolute()
     {
-        return probe_candidates_inner::<RECORD_INPUTS>(&importer_dir.join(specifier));
+        return probe_candidates_inner::<RECORD_INPUTS>(&importer_dir.join(specifier), probes);
     }
 
     // Select the authored pattern before probing its targets. An exact key
@@ -185,7 +219,7 @@ fn resolve_dependency_inner<const RECORD_INPUTS: bool, const GENERATED_VUE: bool
         } else {
             project_root.join(&substituted)
         };
-        let (resolved, consulted) = probe_candidates_inner::<RECORD_INPUTS>(&absolute);
+        let (resolved, consulted) = probe_candidates_inner::<RECORD_INPUTS>(&absolute, probes);
         inputs.extend(consulted);
         if resolved.is_some() {
             return (resolved, inputs);
@@ -195,13 +229,26 @@ fn resolve_dependency_inner<const RECORD_INPUTS: bool, const GENERATED_VUE: bool
 }
 
 pub(crate) fn probe_candidates(base: &Path) -> Option<PathBuf> {
-    probe_candidates_inner::<false>(base).0
+    probe_candidates_inner::<false>(base, None).0
+}
+
+/// [`probe_candidates`] through a batch's directory listings.
+pub(in crate::batch::virtual_project) fn probe_candidates_listed(
+    base: &Path,
+    probes: &PassthroughProbes,
+) -> Option<PathBuf> {
+    probe_candidates_inner::<false>(base, Some(probes)).0
+}
+
+fn is_file(probes: Option<&PassthroughProbes>, path: &Path) -> bool {
+    probes.map_or_else(|| path.is_file(), |probes| probes.is_file(path))
 }
 
 // Only freshness-aware callers own consulted candidates. Reachability only
 // needs the selected module and must not allocate a discarded path history.
 fn probe_candidates_inner<const RECORD_INPUTS: bool>(
     base: &Path,
+    probes: Option<&PassthroughProbes>,
 ) -> (Option<PathBuf>, Vec<PathBuf>) {
     let mut inputs = Vec::new();
     if RECORD_INPUTS {
@@ -216,7 +263,7 @@ fn probe_candidates_inner<const RECORD_INPUTS: bool>(
         Some("js" | "jsx") => (true, &["ts", "tsx", "d.ts", "js", "jsx"]),
         Some("mjs") => (true, &["mts", "d.mts", "mjs"]),
         Some("cjs") => (true, &["cts", "d.cts", "cjs"]),
-        _ if base.is_file() => return (Some(base.to_path_buf()), inputs),
+        _ if is_file(probes, base) => return (Some(base.to_path_buf()), inputs),
         Some("ts") => (true, &["tsx", "d.ts"]),
         Some("tsx") => (true, &["ts", "d.ts"]),
         Some("mts") => (true, &["d.mts"]),
@@ -242,7 +289,7 @@ fn probe_candidates_inner<const RECORD_INPUTS: bool>(
         if RECORD_INPUTS {
             inputs.push(candidate.clone());
         }
-        if candidate.is_file() {
+        if is_file(probes, &candidate) {
             return (Some(candidate), inputs);
         }
     }
@@ -267,7 +314,7 @@ fn probe_candidates_inner<const RECORD_INPUTS: bool>(
         if RECORD_INPUTS {
             inputs.push(candidate.clone());
         }
-        if candidate.is_file() {
+        if is_file(probes, &candidate) {
             return (Some(candidate), inputs);
         }
     }

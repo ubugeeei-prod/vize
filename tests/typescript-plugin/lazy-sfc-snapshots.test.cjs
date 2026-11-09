@@ -324,3 +324,71 @@ void test("external file discovery skips dependency and build directories", () =
     fs.rmSync(project, { recursive: true, force: true });
   }
 });
+
+void test("requests within one project version reuse its import walk and resolutions", (t) => {
+  const project = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), "vize-walk-once-")));
+  t.after(() => fs.rmSync(project, { recursive: true, force: true }));
+  const files = {
+    "src/main.ts": 'import Parent from "./Parent.vue";\nimport { kit } from "ui";\nParent;\nkit;\n',
+    "src/other.ts": 'import { kit } from "ui";\nexport const again = kit;\n',
+    "src/Parent.vue": "<template />\n",
+    "src/Added.vue": "<template />\n",
+    "node_modules/ui/package.json": JSON.stringify({ name: "ui", types: "index.ts" }),
+    "node_modules/ui/index.ts": "export const kit = 1;\n",
+  };
+  write(project, files);
+  const abs = (name) => path.join(project, name);
+  const native = fakeNative(path.join(project, "native"));
+  const generated = [];
+  native.generateVueLanguageCode = (_source, request) => {
+    generated.push(request.filename);
+    return JSON.stringify({ text: "export default 1;\n", extension: ".tsx", mappings: [] });
+  };
+  let main = files["src/main.ts"],
+    mainVersion = 1,
+    projectVersion = 1,
+    probes = 0;
+  const host = {
+    getCompilationSettings: () => ({
+      noLib: true,
+      module: ts.ModuleKind.ESNext,
+      moduleResolution: ts.ModuleResolutionKind.Bundler,
+    }),
+    getScriptFileNames: () => ["src/main.ts", "src/other.ts", "src/Parent.vue"].map(abs),
+    getProjectVersion: () => String(projectVersion),
+    getScriptVersion: (name) => (name === abs("src/main.ts") ? String(mainVersion) : "1"),
+    getScriptSnapshot: (name) => {
+      const source = name === abs("src/main.ts") ? main : ts.sys.readFile(name);
+      return source === undefined ? undefined : ts.ScriptSnapshot.fromString(source);
+    },
+    fileExists: (name) => {
+      probes++;
+      return ts.sys.fileExists(name);
+    },
+    readFile: (name) => ts.sys.readFile(name),
+    directoryExists: ts.sys.directoryExists.bind(ts.sys),
+    getCurrentDirectory: () => project,
+    getDefaultLibFileName: () => "/lib.d.ts",
+  };
+  const { installVueVirtualModules } = require(path.join(pluginSource, "virtual-modules.cjs"));
+  const { createMappedLanguageService } = require(path.join(pluginSource, "language-service.cjs"));
+  const support = installVueVirtualModules(ts, {
+    languageServiceHost: host,
+    serverHost: ts.sys,
+    config: { nativePath: path.join(project, "native") },
+  });
+  const service = createMappedLanguageService(ts, ts.createLanguageService(host), support);
+  t.after(() => service.dispose());
+  const hover = () => service.getQuickInfoAtPosition(abs("src/main.ts"), main.indexOf("kit;"));
+  assert.equal(hover()?.kind, "alias");
+  assert.deepEqual(generated, [abs("src/Parent.vue")]);
+  const settled = probes;
+  for (let request = 0; request < 3; request++) assert.equal(hover()?.kind, "alias");
+  assert.equal(probes, settled, "an unchanged project version resolves nothing again");
+  main = `import Added from "./Added.vue";\nAdded;\n${main}`;
+  mainVersion++;
+  projectVersion++;
+  assert.equal(hover()?.kind, "alias");
+  assert.deepEqual(generated, [abs("src/Parent.vue"), abs("src/Added.vue")]);
+  assert.ok(probes > settled, "a new project version walks its imports again");
+});

@@ -4,34 +4,45 @@ use std::path::{Path, PathBuf};
 
 use vize_carton::cstr;
 
+use super::PassthroughProbes;
+
 const PASSTHROUGH_EXTENSIONS: &[&str] = &["js", "jsx", "mjs", "cjs", "json"];
 const TYPESCRIPT_EXTENSIONS: &[&str] = &["ts", "tsx", "d.ts", "js", "jsx"];
 const PACKAGE_ENTRY_FIELDS: &[&str] = &["types", "typings", "main"];
 
-pub(super) fn resolve_relative_passthrough_module(dir: &Path, specifier: &str) -> Option<PathBuf> {
+pub(super) fn resolve_relative_passthrough_module(
+    dir: &Path,
+    specifier: &str,
+    probes: Option<&PassthroughProbes>,
+) -> Option<PathBuf> {
     let base = dir.join(specifier);
     // Without its SFC, a .vue import names a declaration; it keeps its
     // authored identity so its own relative imports still resolve.
-    if specifier.ends_with(".vue") && !base.is_file() {
+    if specifier.ends_with(".vue") && !is_file(probes, &base) {
         return None;
     }
     if let Some((stripped, extensions)) = explicit_typescript_substitution(&base, specifier) {
-        if let Some(path) = first_existing_with_extensions(&stripped, extensions) {
+        if let Some(path) = first_existing_with_extensions(&stripped, extensions, probes) {
             if is_declaration(&path) {
                 return None;
             }
             return Some(path);
         }
-        if let Some(path) = first_existing_with_extensions(&base, TYPESCRIPT_EXTENSIONS) {
+        if let Some(path) = first_existing_with_extensions(&base, TYPESCRIPT_EXTENSIONS, probes) {
             return Some(path);
         }
-        return first_existing_directory_module(&base, TYPESCRIPT_EXTENSIONS);
+        return first_existing_directory_module(&base, TYPESCRIPT_EXTENSIONS, probes);
     }
-    if specifier_has_passthrough_extension(specifier) && base.is_file() {
+    if specifier_has_passthrough_extension(specifier) && is_file(probes, &base) {
         return Some(normalize_existing_path(&base));
     }
-    first_existing_with_extensions(&base, PASSTHROUGH_EXTENSIONS)
-        .or_else(|| first_existing_directory_module(&base, PASSTHROUGH_EXTENSIONS))
+    first_existing_with_extensions(&base, PASSTHROUGH_EXTENSIONS, probes)
+        .or_else(|| first_existing_directory_module(&base, PASSTHROUGH_EXTENSIONS, probes))
+}
+
+/// `path.is_file()`, through the build's shared listings when it has them.
+pub(super) fn is_file(probes: Option<&PassthroughProbes>, path: &Path) -> bool {
+    probes.map_or_else(|| path.is_file(), |probes| probes.is_file(path))
 }
 
 fn is_declaration(path: &Path) -> bool {
@@ -57,42 +68,67 @@ fn explicit_typescript_substitution<'a>(
     Some((base.with_file_name(name.strip_suffix(suffix)?), extensions))
 }
 
-fn first_existing_with_extensions(base: &Path, extensions: &[&str]) -> Option<PathBuf> {
+fn first_existing_with_extensions(
+    base: &Path,
+    extensions: &[&str],
+    probes: Option<&PassthroughProbes>,
+) -> Option<PathBuf> {
     extensions
         .iter()
         .map(|extension| append_extension(base, extension))
-        .find(|candidate| candidate.is_file())
+        .find(|candidate| is_file(probes, candidate))
         .map(|candidate| normalize_existing_path(&candidate))
 }
 
-fn first_existing_index(base: &Path, extensions: &[&str]) -> Option<PathBuf> {
+fn first_existing_index(
+    base: &Path,
+    extensions: &[&str],
+    probes: Option<&PassthroughProbes>,
+) -> Option<PathBuf> {
     extensions
         .iter()
         .map(|extension| base.join(cstr!("index.{extension}").as_str()))
-        .find(|candidate| candidate.is_file())
+        .find(|candidate| is_file(probes, candidate))
         .map(|candidate| normalize_existing_path(&candidate))
 }
 
-fn first_existing_directory_module(base: &Path, extensions: &[&str]) -> Option<PathBuf> {
-    package_entry(base, extensions).or_else(|| first_existing_index(base, extensions))
+fn first_existing_directory_module(
+    base: &Path,
+    extensions: &[&str],
+    probes: Option<&PassthroughProbes>,
+) -> Option<PathBuf> {
+    package_entry(base, extensions, probes)
+        .or_else(|| first_existing_index(base, extensions, probes))
 }
 
-fn package_entry(base: &Path, extensions: &[&str]) -> Option<PathBuf> {
-    let manifest = std::fs::read_to_string(base.join("package.json")).ok()?;
+fn package_entry(
+    base: &Path,
+    extensions: &[&str],
+    probes: Option<&PassthroughProbes>,
+) -> Option<PathBuf> {
+    let manifest_path = base.join("package.json");
+    if probes.is_some_and(|probes| !probes.may_exist(&manifest_path)) {
+        return None;
+    }
+    let manifest = std::fs::read_to_string(manifest_path).ok()?;
     let package: serde_json::Value = serde_json::from_str(&manifest).ok()?;
     for field in PACKAGE_ENTRY_FIELDS {
         let Some(relative) = package.get(field).and_then(serde_json::Value::as_str) else {
             continue;
         };
         let target = base.join(relative);
-        if let Some(resolved) = resolve_package_target(&target, extensions) {
+        if let Some(resolved) = resolve_package_target(&target, extensions, probes) {
             return Some(resolved);
         }
     }
     None
 }
 
-fn resolve_package_target(target: &Path, extensions: &[&str]) -> Option<PathBuf> {
+fn resolve_package_target(
+    target: &Path,
+    extensions: &[&str],
+    probes: Option<&PassthroughProbes>,
+) -> Option<PathBuf> {
     let substituted = target
         .file_name()
         .and_then(|name| name.to_str())
@@ -102,11 +138,11 @@ fn resolve_package_target(target: &Path, extensions: &[&str]) -> Option<PathBuf>
                 .find_map(|suffix| name.strip_suffix(suffix))
         })
         .map(|name| target.with_file_name(name))
-        .and_then(|base| first_existing_with_extensions(&base, extensions));
+        .and_then(|base| first_existing_with_extensions(&base, extensions, probes));
     substituted
-        .or_else(|| target.is_file().then(|| normalize_existing_path(target)))
-        .or_else(|| first_existing_with_extensions(target, extensions))
-        .or_else(|| first_existing_index(target, extensions))
+        .or_else(|| is_file(probes, target).then(|| normalize_existing_path(target)))
+        .or_else(|| first_existing_with_extensions(target, extensions, probes))
+        .or_else(|| first_existing_index(target, extensions, probes))
 }
 
 fn append_extension(base: &Path, extension: &str) -> PathBuf {
@@ -130,7 +166,16 @@ fn normalize_existing_path(path: &Path) -> PathBuf {
 mod tests {
     use std::path::Path;
 
-    use super::resolve_relative_passthrough_module;
+    use super::{PassthroughProbes, resolve_relative_passthrough_module};
+
+    /// Listing-backed probes must resolve exactly what direct `stat`s do.
+    fn resolve_both(root: &Path, specifier: &str) -> Option<std::path::PathBuf> {
+        let direct = resolve_relative_passthrough_module(root, specifier, None);
+        let probes = PassthroughProbes::default();
+        let listed = resolve_relative_passthrough_module(root, specifier, Some(&probes));
+        assert_eq!(listed, direct, "{specifier}");
+        direct
+    }
 
     #[test]
     fn explicit_vue_ts_uses_typescript_candidate_order() {
@@ -165,17 +210,14 @@ mod tests {
         .unwrap();
 
         let resolve = |specifier| {
-            resolve_relative_passthrough_module(root, specifier)
+            resolve_both(root, specifier)
                 .unwrap()
                 .strip_prefix(root)
                 .unwrap()
                 .to_path_buf()
         };
         assert_eq!(resolve("./Direct.vue.ts"), Path::new("Direct.vue.ts"));
-        assert_eq!(
-            resolve_relative_passthrough_module(root, "./Typed.vue.ts"),
-            None
-        );
+        assert_eq!(resolve_both(root, "./Typed.vue.ts"), None);
         assert_eq!(resolve("./Full.vue.ts"), Path::new("Full.vue.ts.d.ts"));
         assert_eq!(
             resolve("./Directory.vue.ts"),
@@ -198,7 +240,7 @@ mod tests {
         std::fs::write(root.join("Component.vue.ts"), "export {}\n").unwrap();
         std::fs::write(root.join("Component.vue.tsx"), "export {}\n").unwrap();
 
-        let resolved = resolve_relative_passthrough_module(root, "./Component.vue.tsx").unwrap();
+        let resolved = resolve_both(root, "./Component.vue.tsx").unwrap();
         assert!(resolved.ends_with("Component.vue.tsx"));
     }
 
@@ -227,11 +269,7 @@ mod tests {
             "./runtime/common.cts",
             "./runtime/Foo.vue",
         ] {
-            assert_eq!(
-                resolve_relative_passthrough_module(root, specifier),
-                None,
-                "{specifier}"
-            );
+            assert_eq!(resolve_both(root, specifier), None, "{specifier}");
         }
     }
 }
