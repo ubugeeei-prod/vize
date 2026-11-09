@@ -22,6 +22,7 @@ export function byteOffset(source: string, offset: number): number {
   return bytes.toString("utf8", 0, offset).length;
 }
 
+/** Deserializes a native compiler source map for Parcel. */
 export function nativeMap(json: string | undefined, projectRoot: string): SourceMap | undefined {
   if (!json) return undefined;
   const map = new SourceMap(projectRoot);
@@ -56,6 +57,7 @@ export function editMap(
   return result;
 }
 
+/** Creates a source map for a byte-delimited SFC block. */
 export function blockMap(
   source: string,
   start: number,

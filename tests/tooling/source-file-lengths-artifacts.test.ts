@@ -6,7 +6,7 @@ import path from "node:path";
 import { test } from "node:test";
 import { repoRoot } from "./_helpers/tool-commands.ts";
 
-const command = path.join(repoRoot, "tools/commands/ci/source-file-lengths.rs");
+const command = path.join(repoRoot, "tools/commands/ci/source-file-lengths.ts");
 
 function git(cwd: string, ...args: string[]) {
   const result = spawnSync("git", args, { cwd, encoding: "utf8" });
@@ -31,7 +31,7 @@ test("retired contract artifacts have no source length exemption", () => {
       git(cwd, "add", relative);
     };
     const run = () =>
-      spawnSync("rust-script", [command, "--check", "--base-ref", base, "--limit", "0"], {
+      spawnSync(process.execPath, [command, "--check", "--base-ref", base, "--limit", "0"], {
         cwd,
         encoding: "utf8",
       });

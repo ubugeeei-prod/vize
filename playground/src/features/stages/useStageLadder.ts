@@ -12,7 +12,7 @@ import type { SfcCompileResult, WasmModule } from "../../wasm/index";
 import { negotiateProductCapture } from "../../wasm/types/productCapture";
 import type { InspectorDiff } from "../../wasm/types/inspector";
 import { DAVINCI_PRESET } from "../../shared/presets/davinci";
-import type { EditorHighlight } from "../../shared/MonacoEditor.vue";
+import type { EditorHighlight } from "../../shared/monaco-editor.vue";
 import {
   compileCodeOutputs,
   createEmptyCodeOutputs,

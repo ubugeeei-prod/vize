@@ -450,6 +450,8 @@ export function auditCallbackOwners(directory: string) {
       "../../../../tests/_fixtures/tooling/static-listener-prop-update-11815.json",
       "../../../../crates/vize_canon/src/virtual_ts/helpers/declarations/emit-inference.d.ts.txt",
       "../../../../crates/vize_canon/src/virtual_ts/helpers/declarations/emit-overloads.d.ts.txt",
+      "../../../../crates/vize_canon/src/virtual_ts/helpers/declarations/emit-props.d.ts.txt",
+      "../../../../crates/vize_canon/src/virtual_ts/helpers/declarations/shared-emit-props.d.ts.txt",
       "../../../../crates/vize_canon/src/virtual_ts/component_prop_helpers.txt",
       "../../../../crates/vize_canon/src/virtual_ts/generator/component_constructors.rs",
       "../../../../crates/vize_canon/src/virtual_ts/generator/component_constructors/emission.rs",

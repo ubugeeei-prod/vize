@@ -22,7 +22,7 @@ export const RUNTIME_PEER_DEPENDENCIES = {
   vue: "3.5.34",
 };
 
-// These complete scripts retain the original Rust command's child-process bytes.
+// These complete scripts retain the reviewed child-process bytes.
 export const NATIVE_RUNTIME_SCRIPT = `
 const required = require("@vizejs/native");
 (async () => {

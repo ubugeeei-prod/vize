@@ -8,6 +8,7 @@ use vize_l0::id::NodeId;
 use vize_l0::side_table::SideTable;
 use vize_l0::{Allocator, SourceBlock, Span, String};
 use vize_l1::markup::{Element, ElementClose, Token};
+use vize_l2::expr::ExprRef;
 use vize_l2::provenance::{ProvenanceRecord, ProvenanceSink};
 use vize_l2::scope::{ScopeFacts, ScopeTag};
 
@@ -39,6 +40,7 @@ pub(crate) struct Cx<'a, P> {
     pub provenance: P,
     pub scopes: SideTable<ScopeFacts>,
     pub texts: SideTable<super::text::TextParts>,
+    pub consumed_expressions: Vec<ExprRef<'a>>,
     pub for_facts: SideTable<super::forop::ForParts>,
     pub if_facts: SideTable<super::if_keys::IfFacts>,
     pub wrappers: SideTable<super::structural::WrapperKeys>,
@@ -81,6 +83,7 @@ impl<'a, P: ProvenanceSink> Cx<'a, P> {
             provenance: P::default(),
             scopes: SideTable::new(),
             texts: SideTable::new(),
+            consumed_expressions: Vec::new(),
             for_facts: SideTable::new(),
             if_facts: SideTable::new(),
             wrappers: SideTable::new(),

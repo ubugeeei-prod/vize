@@ -45,7 +45,7 @@ type $NotUndefined<T> = never;
             0
         );
         assert_eq!(
-            text.matches("import type {} from \"vize/virtual-ts-checker\";")
+            text.matches("import type {} from \"vize/virtual-ts-checker-strict\";")
                 .count(),
             usize::from(shared_virtual_module),
             "the requested embedded or installed declaration route must execute"

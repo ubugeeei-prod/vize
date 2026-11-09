@@ -92,7 +92,7 @@ creed credible here. The mechanisms:
   diagnostics — each is an FP candidate triaged to `fixed` or
   `justified-with-witness`, never left ambient. Candidates land in the FP
   ledger ([plan/ledger-fp.md](plan/ledger-fp.md); pilot oracle:
-  `tools/commands/davinci/suppression-telemetry.rs`, P0-13).
+  `tools/commands/davinci/suppression-telemetry.ts`, P0-13).
 - **Divergence is justified or it is a bug.** Charter #23 already bans silent
   divergence from vue-tsc/eslint behavior; under this creed, an unjustified
   divergence is _classified_ — it is either our FP/FN or theirs, and the

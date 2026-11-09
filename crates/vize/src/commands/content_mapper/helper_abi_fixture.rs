@@ -113,7 +113,12 @@ impl InstalledSdk {
             let config = std::fs::canonicalize(&self.config).unwrap();
             let base = config.parent().unwrap().join(".");
             for prefix in ["types/vize", "vize"] {
-                for module in ["content-mapper-helpers", "virtual-ts", "virtual-ts-checker"] {
+                for module in [
+                    "content-mapper-helpers",
+                    "virtual-ts",
+                    "virtual-ts-checker",
+                    "virtual-ts-checker-strict",
+                ] {
                     let candidate = base.join(prefix).join(module);
                     paths.insert(candidate.parent().unwrap().to_path_buf());
                     paths.insert(candidate);

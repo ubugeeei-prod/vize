@@ -52,7 +52,7 @@ const producerHashes = {
   "tools/support/tasks/build-vitrine-wasm.ts":
     "ca6d0627ce29ca69b46f5189fd2a42055e4733dd0e416e3370348d22c8c869a2",
   "tools/support/command-runtime.ts":
-    "256b427af28975329f8c51b7043407801a78b12e4b75e4c6178d92c5a7938f54",
+    "d92427dbdd6a892734532745828d90c8f378a143a9fc0e85ef1693fc76466921",
   "npm/native/scripts/build-ci.mjs":
     "5e9bf50544adbd1e225f7864bb76ebf73f477eeae19000c74de15edcf3e0ada4",
 };

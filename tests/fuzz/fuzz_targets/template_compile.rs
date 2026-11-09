@@ -8,7 +8,7 @@
 // invariants on adversarial input.
 //
 // The corpus is seeded from the `<template>` blocks of repository .vue
-// fixtures by `tools/commands/ci/fuzz/seed_corpus.rs`.
+// fixtures by `tools/commands/ci/fuzz/seed-corpus.ts`.
 use libfuzzer_sys::fuzz_target;
 use vize_atelier_dom::compile_template;
 use vize_l0::Allocator;

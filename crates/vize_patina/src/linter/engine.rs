@@ -31,15 +31,13 @@ mod unused_directives;
 pub(crate) use template_extract::extract_template_fast;
 
 use crate::{context::LintContext, diagnostic::LintSummary, preset::LintPreset};
-use vize_armature::Parser;
 use vize_atelier_sfc::{SfcParseOptions, parse_sfc};
-use vize_croquis::Croquis;
+use vize_croquis::{Croquis, drawer::LintTemplate};
 use vize_l0::Allocator;
 use vize_l0::String;
 use vize_l0::ToCompactString;
 use vize_l0::dialect::VueDialect;
 use vize_l0::profile;
-use vize_relief::RootNode;
 
 use super::config::{LintResult, Linter};
 
@@ -57,11 +55,9 @@ pub(crate) struct SfcTemplateLintInput<'a> {
     pub filename: &'a str,
     pub template: &'a vize_atelier_sfc::SfcTemplateBlock<'a>,
     pub allocator: &'a Allocator,
-    pub root: &'a RootNode<'a>,
     pub l2: &'a crate::markup::L2Template<'a>,
     pub descriptor: &'a vize_atelier_sfc::SfcDescriptor<'a>,
     pub analysis: TemplateAnalysis<'a>,
-    pub template_syntax: Option<&'a vize_armature::parser::TemplateSyntaxFacts<'a>>,
 }
 
 impl<'a> TemplateRuleEnv<'a> {
@@ -215,6 +211,20 @@ impl Linter {
             .iter()
             .copied()
             .any(|rule_name| self.registry.has_rule(rule_name) && self.is_rule_enabled(rule_name))
+    }
+
+    pub(crate) fn has_resolved_macro_type_demand(&self) -> bool {
+        const TEMPLATE_RULES: &[&str] = &[
+            "vue/no-unused-properties",
+            "vue/prop-name-casing",
+            "vue/no-mutating-props",
+            "vue/no-undefined-refs",
+            "vue/no-template-shadow",
+        ];
+        super::script_rules::has_resolved_macro_type_demand(self)
+            || TEMPLATE_RULES.iter().copied().any(|rule_name| {
+                self.registry.has_rule(rule_name) && self.is_rule_enabled(rule_name)
+            })
     }
 
     fn has_active_shared_sfc_descriptor_rules(&self) -> bool {
@@ -422,28 +432,28 @@ impl Linter {
             "patina.template.l1_parse_lower",
             crate::markup::L2Template::lower(allocator, source)
         );
-        // Keep the legacy tree only for rules not yet migrated by #6848.
-        let parser = Parser::new(allocator, source);
-        let (root, _legacy_parse_errors) = profile!("patina.template.parse", parser.parse());
         let parse_errors = l2.surface_errors();
         let has_fatal_parse_errors = Self::has_fatal_l1_template_parse_errors(parse_errors);
 
         let parse_result = Self::l1_template_parse_lint_result(filename, source, parse_errors);
-        let lint_result = self.lint_template_root(
-            template::TemplateExecution {
-                allocator,
-                source,
-                filename,
-                root: &root,
-                l2: &l2,
-                env,
-            },
-            if gate_semantic_on_fatal_parse && has_fatal_parse_errors {
-                TemplateAnalysis::Disabled
-            } else {
-                TemplateAnalysis::Lazy
-            },
-        );
+        let lint_result =
+            LintTemplate::new(l2.surface(), l2.lowered()).with_compatibility_root(|root| {
+                self.lint_template_root(
+                    template::TemplateExecution {
+                        allocator,
+                        source,
+                        filename,
+                        root,
+                        l2: &l2,
+                        env,
+                    },
+                    if gate_semantic_on_fatal_parse && has_fatal_parse_errors {
+                        TemplateAnalysis::Disabled
+                    } else {
+                        TemplateAnalysis::Lazy
+                    },
+                )
+            });
 
         if report_parse_errors {
             Self::merge_lint_results(parse_result, lint_result)

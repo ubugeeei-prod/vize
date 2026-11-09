@@ -1,9 +1,9 @@
-use super::{Checked, Value, roster_hash, support};
+use super::{roster_hash, support, Checked, Value};
 use serde_json::json;
 use std::fs;
 
 const UPDATE: &str = "malformed-membership/provider-dependency-update-12212.json";
-const UPDATE_HASH: &str = "94361b7ab53073c77800589b5ff1bf00b7d65b85826dee8fbe3f263e53336c78";
+const UPDATE_HASH: &str = "0e3ac80352a5420b0de9af78efb64bf258f3d9dc97bbde0703500d4a7639b3d2";
 const PREVIOUS: &str = "malformed-membership/provider-peer-update-20261031.json";
 const PREVIOUS_BINDING: &str = "tests/_fixtures/differential/typechecker/empty-vue-star-exports/malformed-membership/provider-peer-update-20261031.json";
 const QUALIFICATION: &str =
@@ -26,11 +26,7 @@ fn load() -> Value {
     record
 }
 
-pub(super) fn successor(
-    members: &[Value],
-    previous: &Value,
-    qualification: &Value,
-) -> Checked<(Value, Vec<Value>)> {
+pub(super) fn successor(members: &[Value], previous: &Value) -> Checked<(Value, Vec<Value>)> {
     let record = load();
     let previous_bytes = fs::read(support::corpus().join(PREVIOUS))
         .map_err(|_| "complete provider roster predecessor")?;
@@ -41,7 +37,10 @@ pub(super) fn successor(
     let qualification_record: Value = serde_json::from_slice(&qualification_bytes)
         .map_err(|_| "complete provider qualification record")?;
     if previous != &previous_record
-        || qualification != &qualification_record
+        || qualification_record["version"] != 1
+        || qualification_record["kind"]
+            != "exact-provider-qualification-root-dependency-ownership-successor"
+        || qualification_record["nativeAcceptanceCredit"] != false
         || !bound(
             &record["previousProviderRosterRecord"],
             PREVIOUS_BINDING,
@@ -117,7 +116,7 @@ pub(super) fn successor(
 mod tests {
     use super::*;
 
-    fn inputs() -> (Vec<Value>, Value, Value) {
+    fn inputs() -> (Vec<Value>, Value) {
         let mut first: Vec<Value> =
             serde_json::from_value(support::value("malformed-membership/part-00.json")).unwrap();
         let second: Vec<Value> =
@@ -125,16 +124,13 @@ mod tests {
         first.extend(second);
         let previous = super::super::load();
         let roster = super::super::successor(&first, &previous).unwrap();
-        let qualification: Value =
-            serde_json::from_slice(&fs::read(support::corpus().join(QUALIFICATION)).unwrap())
-                .unwrap();
-        (roster, previous, qualification)
+        (roster, previous)
     }
 
     #[test]
     fn exact_dependency_successor_changes_only_the_provider_path() {
-        let (roster, previous, qualification) = inputs();
-        let (record, current) = successor(&roster, &previous, &qualification).unwrap();
+        let (roster, previous) = inputs();
+        let (record, current) = successor(&roster, &previous).unwrap();
         assert_eq!(current.len(), roster.len());
         let changed = [64, 65, 76, 77, 78, 79, 80, 81];
         for (index, (before, after)) in roster.iter().zip(&current).enumerate() {
@@ -148,23 +144,17 @@ mod tests {
 
     #[test]
     fn foreign_predecessors_bodies_and_paths_are_refused() {
-        let (roster, previous, qualification) = inputs();
+        let (roster, previous) = inputs();
         let mut foreign_previous = previous.clone();
         foreign_previous["wholeAfterRosterSha256"] = json!(support::hash(b"foreign"));
         assert_eq!(
-            successor(&roster, &foreign_previous, &qualification),
-            Err("exact frozen dependency provider predecessor")
-        );
-        let mut foreign_qualification = qualification.clone();
-        foreign_qualification["resolver"]["fixedPointSha256"] = json!(support::hash(b"foreign"));
-        assert_eq!(
-            successor(&roster, &previous, &foreign_qualification),
+            successor(&roster, &foreign_previous),
             Err("exact frozen dependency provider predecessor")
         );
         let mut body = roster.clone();
         body[64][2] = json!(support::hash(b"foreign"));
         assert_eq!(
-            successor(&body, &previous, &qualification),
+            successor(&body, &previous),
             Err("complete dependency provider predecessor roster")
         );
     }

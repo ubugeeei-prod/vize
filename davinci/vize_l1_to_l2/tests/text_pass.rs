@@ -16,6 +16,7 @@ use vize_l0::{Span, String};
 use vize_l1_to_l2::lower::{TextPart, rebuild_source};
 use vize_l1_to_l2::pass::TextFacts;
 use vize_l2::dump::{Expr as DumpExpr, Op as DumpOp};
+use vize_l2::expr::ExprRef;
 
 use support::{assert_transformed_sound, with_transformed};
 
@@ -105,6 +106,19 @@ fn a_mixed_run_merges_into_one_compound_with_recorded_parts() {
                     parts: expected.clone()
                 }
             )]
+        );
+        let [ExprRef::Js(name), ExprRef::Js(count)] = lowered.consumed_expressions.as_slice()
+        else {
+            panic!(
+                "compound expressions were not retained: {:?}",
+                lowered.consumed_expressions
+            );
+        };
+        assert_eq!((name.source, name.span), ("name", span_of(source, "name")));
+        let padded_count = span_of(source, " n ");
+        assert_eq!(
+            (count.source, count.span),
+            ("n", Span::new(padded_count.start + 1, padded_count.end - 1))
         );
         // The one rebuild rule, exercised from test space too.
         assert_eq!(

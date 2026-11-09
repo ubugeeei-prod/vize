@@ -1,0 +1,3 @@
+// vue-tsc generic library components accept unknown attrs through this
+// fallback, which vue-tsc itself declares unless `checkUnknownProps` is set.
+declare var __VLS_PROPS_FALLBACK: Record<string, unknown>;

@@ -65,6 +65,7 @@ pub(super) fn build_jsx_registered_file(
 
     Ok(RegisteredFile {
         diagnostic_route: Default::default(),
+        props_fallback: false,
         star_projection: None,
         file: VirtualFile {
             content: rewritten.code,
@@ -90,6 +91,7 @@ pub(super) fn build_jsx_registered_file(
         empty_module_exports: false,
         module_exports: None,
         original_content: Some(retain_source_content(source)),
+        dependency_syntax_facts: None,
     })
 }
 

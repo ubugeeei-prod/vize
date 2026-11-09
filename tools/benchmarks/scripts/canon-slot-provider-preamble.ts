@@ -2,6 +2,7 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import fs from "node:fs";
+import { beforeCanonLeftovers } from "../../support/compat/content-mapper/strict-extra-keys-transition.ts";
 import { emitMemberInferAssetBefore } from "../../support/compat/content-mapper/emit-member-infer-transition.ts";
 
 // Chronological source-owned pairs. Each historical snippet occurs once.
@@ -142,9 +143,20 @@ function authenticatedOverloadAliases(read: (file: string) => string) {
     assert.equal(lines.length, 1, `one recursive overload alias: ${file}`);
     return lines[0]!;
   };
+  const currentSource = read(currentOverloadPath);
+  const currentPredecessor = beforeCanonLeftovers(currentOverloadPath, currentSource);
+  assert.equal(
+    identity(currentPredecessor).sha256,
+    currentOverloadSha256,
+    `authenticated overload predecessor: ${currentOverloadPath}`,
+  );
+  const currentAliases = currentSource
+    .split("\n")
+    .filter((line) => line.startsWith(overloadPrefix));
+  assert.equal(currentAliases.length, 1, `one recursive overload alias: ${currentOverloadPath}`);
   return {
     previous: selected(previousOverloadPath, previousOverloadSha256),
-    current: selected(currentOverloadPath, currentOverloadSha256),
+    current: currentAliases[0]!,
   };
 }
 

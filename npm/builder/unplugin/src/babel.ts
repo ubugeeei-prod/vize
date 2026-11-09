@@ -14,6 +14,7 @@ type BabelParserOptions = Record<string, unknown> & {
 
 type BabelParse = (code: string, options?: BabelParserOptions) => unknown;
 
+/** Create the Babel parser adapter that compiles matched Vue SFCs through Vize. */
 export default function vizeBabelPlugin(
   _api: unknown,
   rawOptions: VizeUnpluginOptions = {},

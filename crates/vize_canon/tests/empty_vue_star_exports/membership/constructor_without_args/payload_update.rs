@@ -3,6 +3,7 @@ use super::support;
 use serde_json::{Value, json};
 use std::fs;
 
+mod canon_leftovers;
 mod checker_augmentations;
 mod constructor_emit_export;
 mod current_loose_emit;
@@ -20,6 +21,7 @@ mod jsx_exact_keys;
 mod listener_relations;
 mod loose_emit_sdk;
 mod private_emit_sdk;
+mod props_fallback_segment;
 mod public_base_keys;
 mod public_instance;
 mod required_keys_short_circuit;
@@ -164,6 +166,7 @@ pub(super) fn retain_current(manifest: &mut Value, members: &mut [Value], curren
         support::hash(current.as_bytes())
     ]);
     manifest["provenance"]["currentSlotProviderPayloadUpdate"] = update;
+    canon_leftovers::retain_provenance(manifest);
     public_instance::retain_provenance(manifest);
     emit_overloads::retain_provenance(manifest);
     emit_overload_stall::retain_provenance(manifest);
@@ -185,6 +188,7 @@ pub(super) fn retain_current(manifest: &mut Value, members: &mut [Value], curren
     listener_relations::retain_provenance(manifest);
     dependency_ownership::retain_provenance(manifest);
     emit_member_infer::retain_provenance(manifest);
+    props_fallback_segment::retain_provenance(manifest);
 }
 
 #[cfg(test)]

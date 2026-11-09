@@ -1,13 +1,13 @@
 //! Template execution and finalization share one directive context.
 
 use super::{
-    Allocator, LintResult, Linter, RootNode, TemplateAnalysis, TemplateRuleEnv, sfc,
-    unused_directives,
+    Allocator, LintResult, Linter, TemplateAnalysis, TemplateRuleEnv, sfc, unused_directives,
 };
 use crate::context::LintContext;
 use crate::markup::L2Template;
 use vize_croquis::{Croquis, Drawer, drawer::LintTemplate};
 use vize_l0::{ToCompactString, profile};
+use vize_relief::RootNode;
 
 pub(super) struct TemplateExecution<'a> {
     pub allocator: &'a Allocator,
@@ -115,14 +115,16 @@ impl Linter {
         let owned_analysis;
         let analysis = match analysis {
             TemplateAnalysis::Disabled => None,
-            _ if !self.has_active_semantic_template_rules() => None,
             TemplateAnalysis::Precomputed(analysis) => Some(analysis),
+            _ if !self.has_active_semantic_template_rules() => None,
             TemplateAnalysis::Lazy => {
                 owned_analysis = profile!("patina.template.croquis", {
                     let mut analyzer = Drawer::for_lint();
+                    let lowered = input.l2.lowered();
                     analyzer.draw_lint_template(LintTemplate::new(
                         input.l2.surface(),
-                        input.l2.lowered(),
+                        lowered.allocator,
+                        &lowered.root,
                     ));
                     analyzer.finish()
                 });

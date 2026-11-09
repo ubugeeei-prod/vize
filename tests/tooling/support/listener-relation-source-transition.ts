@@ -38,6 +38,136 @@ const cliDependencyOwnershipTransition: Transition = {
   ],
 };
 
+const propsFallbackHeaderBefore =
+  "declare namespace JSX { interface IntrinsicAttributes { class?: unknown; style?: unknown; } }\n" +
+  "// vue-tsc generic library components accept unknown attrs through this\n" +
+  "// fallback, which vue-tsc itself declares unless `checkUnknownProps` is set.\n" +
+  "declare var __VLS_PROPS_FALLBACK: Record<string, unknown>;\n\n" +
+  "// Shared type helpers used by generated virtual modules\n";
+const propsFallbackHeaderAfter =
+  "declare namespace JSX { interface IntrinsicAttributes { class?: unknown; style?: unknown; } }\n";
+const propsFallbackManifestBeforeFiles =
+  '    "generated/content-mapper-types.d.ts",\n' +
+  '    "virtual-ts-checker.d.ts",\n' +
+  '    "virtual-ts-emit-overloads.d.ts",\n' +
+  '    "virtual-ts-globals.d.ts",\n' +
+  '    "virtual-ts-listeners.d.ts",\n' +
+  '    "virtual-ts-patterns.d.ts",\n';
+const propsFallbackManifestAfterFiles = propsFallbackManifestBeforeFiles.replace(
+  '    "virtual-ts-checker.d.ts",\n',
+  '    "virtual-ts-checker.d.ts",\n    "virtual-ts-checker-strict.d.ts",\n',
+);
+const propsFallbackManifestBeforeExport =
+  '      "types": "./virtual-ts-checker.d.ts"\n' +
+  "    },\n" +
+  '    "./content-mapper-helpers": {\n' +
+  '      "import": {\n';
+const propsFallbackManifestAfterExport =
+  '      "types": "./virtual-ts-checker.d.ts"\n' +
+  "    },\n" +
+  '    "./virtual-ts-checker-strict": {\n' +
+  '      "types": "./virtual-ts-checker-strict.d.ts"\n' +
+  "    },\n" +
+  '    "./content-mapper-helpers": {\n' +
+  '      "import": {\n';
+const propsFallbackPreambleBefore = [
+  "",
+  "pub const SHARED_PREAMBLE_DTS: &str = concat!(",
+  '    include_str!("declarations/shared-header.d.ts.txt"),',
+  "    vue_type_helpers_text!(),",
+  '    include_str!("declarations/shared-template-refs.d.ts.txt"),',
+  '    include_str!("declarations/shared-slot-resolver.d.ts.txt"),',
+  '    include_str!("declarations/shared-slot-payload.d.ts.txt"),',
+  "    emit_overload_helpers_text!(),",
+  '    include_str!("declarations/shared-emit-props.d.ts.txt"),',
+  '    include_str!("declarations/shared-emit-inference.d.ts.txt"),',
+  '    include_str!("declarations/shared-listener-args.d.ts.txt"),',
+  '    include_str!("declarations/component-checks.d.ts.txt"),',
+  '    include_str!("declarations/shared-macros.d.ts.txt"),',
+  '    include_str!("pattern_matching.d.ts")',
+  ");",
+  "",
+  "",
+].join("\n");
+const propsFallbackPreambleAfter = [
+  "",
+  "/// The program-wide checker preamble. vue-tsc declares its props fallback only",
+  "/// for files that leave `checkUnknownProps` off, so the fallback is a segment.",
+  "macro_rules! shared_preamble_text {",
+  "    ($props_fallback:expr) => {",
+  "        concat!(",
+  '            include_str!("declarations/shared-header.d.ts.txt"),',
+  "            $props_fallback,",
+  '            include_str!("declarations/shared-helpers-banner.d.ts.txt"),',
+  "            vue_type_helpers_text!(),",
+  '            include_str!("declarations/shared-template-refs.d.ts.txt"),',
+  '            include_str!("declarations/shared-slot-resolver.d.ts.txt"),',
+  '            include_str!("declarations/shared-slot-payload.d.ts.txt"),',
+  "            emit_overload_helpers_text!(),",
+  '            include_str!("declarations/shared-emit-props.d.ts.txt"),',
+  '            include_str!("declarations/shared-emit-inference.d.ts.txt"),',
+  '            include_str!("declarations/shared-listener-args.d.ts.txt"),',
+  '            include_str!("declarations/component-checks.d.ts.txt"),',
+  '            include_str!("declarations/shared-macros.d.ts.txt"),',
+  '            include_str!("pattern_matching.d.ts")',
+  "        )",
+  "    };",
+  "}",
+  "",
+  "/// Preamble of a program with at least one file that leaves `checkUnknownProps` off.",
+  "pub const SHARED_PREAMBLE_DTS: &str =",
+  '    shared_preamble_text!(include_str!("declarations/props-fallback.d.ts.txt"));',
+  "/// Preamble of a program whose every file checks unknown props (#11628).",
+  'pub const SHARED_PREAMBLE_STRICT_DTS: &str = shared_preamble_text!("");',
+  "",
+  "",
+].join("\n");
+const propsFallbackPreambleTransition: Transition = {
+  before: {
+    bytes: 5_052,
+    sha256: "15ad52d5dbc3166ba6fb5d7386515b6929064862ac530795c6a56525b539076e",
+  },
+  after: {
+    bytes: 5_816,
+    sha256: "a8ef812b81fda63ef7d2f9104cccffaa5330df2ab5ea4e49360410536f0e4464",
+  },
+  edits: [{ before: propsFallbackPreambleBefore, after: propsFallbackPreambleAfter }],
+};
+const propsFallbackSourceTransitions = new Map<string, Transition>([
+  [
+    "crates/vize_canon/src/virtual_ts/helpers/declarations/shared-header.d.ts.txt",
+    {
+      before: {
+        bytes: 967,
+        sha256: "1c0fc02eb692116e0b06156b95cfc5e7d1b6e6d023d24bb21ab09c993937bbba",
+      },
+      after: {
+        bytes: 700,
+        sha256: "f08b5f2e153ff1de311598a9549b9b8a2b541067148a97f0b2f3211cf65413cf",
+      },
+      edits: [{ before: propsFallbackHeaderBefore, after: propsFallbackHeaderAfter }],
+    },
+  ],
+  [
+    "npm/cli/package.json",
+    {
+      before: {
+        bytes: 4_362,
+        sha256: "11abb0e379b919dcff38cc4aed99e1a8934aab4a55d9000115cf54dc1608f5c9",
+      },
+      after: {
+        bytes: 4_494,
+        sha256: "e4fa0c743fbc3fe1efec08f09ee72c38b2faa476e831f0233ea05efea63644a1",
+      },
+      edits: [
+        { before: propsFallbackManifestBeforeFiles, after: propsFallbackManifestAfterFiles },
+        { before: propsFallbackManifestBeforeExport, after: propsFallbackManifestAfterExport },
+      ],
+    },
+  ],
+  ["crates/vize_canon/src/virtual_ts/helpers/preamble.rs", propsFallbackPreambleTransition],
+]);
+
 const sourceTransitions = new Map<string, Transition>([
   [
     "crates/vize_canon/src/virtual_ts/helpers/preamble.rs",
@@ -226,6 +356,17 @@ function inverse(current: string, transition: Transition, context: string): stri
 /** Restore only the authenticated pre-listener-relation source image. */
 export function beforeSharedListenerRelationSource(path: string, current: string): string {
   current = emitMemberInferEditsBefore(readRepository, path, current);
+  const propsFallbackTransition = propsFallbackSourceTransitions.get(path);
+  if (
+    propsFallbackTransition &&
+    identity(current).sha256 === propsFallbackTransition.after.sha256
+  ) {
+    current = inverse(
+      current,
+      propsFallbackTransition,
+      `selected emit gate producer: props fallback source ${path}`,
+    );
+  }
   if (
     path === "npm/cli/package.json" &&
     identity(current).sha256 === cliDependencyOwnershipTransition.after.sha256

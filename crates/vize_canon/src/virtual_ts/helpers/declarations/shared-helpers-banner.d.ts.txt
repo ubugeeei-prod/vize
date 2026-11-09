@@ -1,0 +1,2 @@
+
+// Shared type helpers used by generated virtual modules

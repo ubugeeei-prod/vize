@@ -11,7 +11,7 @@ import { beforeEmitMemberInfer } from "../../../../tests/tooling/support/emit-me
 import { certifyComponentConstructorTransition } from "./component-constructor-transition.ts";
 import { certifyComponentExportTransition } from "./component-export-transition.ts";
 import { beforeDiscriminatedJsxUnion } from "./discriminated-jsx-union-transition.ts";
-import { beforeStrictExtraKeys } from "./strict-extra-keys-transition.ts";
+import { beforeCanonLeftovers, beforeStrictExtraKeys } from "./strict-extra-keys-transition.ts";
 
 export type CallbackSourceReader = (path: string) => string;
 type Edit = { start: number; end: number; replacement: Buffer };
@@ -19,6 +19,9 @@ const emitSource = "crates/vize_canon/src/virtual_ts/helpers/declarations/emit-i
 const componentHelperSource = "crates/vize_canon/src/virtual_ts/component_prop_helpers.txt";
 const emitOverloadsSource =
   "crates/vize_canon/src/virtual_ts/helpers/declarations/emit-overloads.d.ts.txt";
+const emitPropsSource = "crates/vize_canon/src/virtual_ts/helpers/declarations/emit-props.d.ts.txt";
+const sharedEmitPropsSource =
+  "crates/vize_canon/src/virtual_ts/helpers/declarations/shared-emit-props.d.ts.txt";
 const emitOverloadTransitionSource =
   "crates/vize_canon/tests/empty_vue_star_exports/membership/constructor_without_args/payload_update/emit_overload_window.rs";
 const integratedSourceTransition =
@@ -387,6 +390,35 @@ export function currentCallbackSourceEdits(
       replacement: Buffer.from(replacement),
     });
   };
+  const certifyCanonLeftoversSource = (path: string): string => {
+    const current = readSource(path);
+    const predecessor = beforeCanonLeftovers(path, current);
+    assert.notEqual(predecessor, current, `canon leftovers transition for ${path}`);
+    const counts = [before, after].map((text) =>
+      [predecessor, current].map((source) => text.split(source).length - 1),
+    );
+    if (counts[0]![0] !== counts[1]![0] || counts[0]![1] !== counts[1]![1]) {
+      assert.deepEqual(
+        counts,
+        [
+          [1, 0],
+          [0, 1],
+        ],
+        `only the certified canon leftovers source ${path} may migrate`,
+      );
+      const start = before.indexOf(predecessor);
+      const byteStart = Buffer.byteLength(before.slice(0, start));
+      const byteEnd = byteStart + Buffer.byteLength(predecessor);
+      if (!edits.some((edit) => edit.start <= byteStart && byteEnd <= edit.end))
+        add(start, predecessor.length, current);
+    } else {
+      assert.ok(
+        counts.every((pair) => pair.every((count) => count <= 1) && pair[0]! + pair[1]! <= 1),
+        `canonical canon leftovers source ${path} is unique`,
+      );
+    }
+    return predecessor;
+  };
   const transitionRaw = readSource(integratedSourceTransition);
   const digest = (text: string) => createHash("sha256").update(text).digest("hex");
   assert.equal(
@@ -404,6 +436,7 @@ export function currentCallbackSourceEdits(
   };
   assert.equal(transition.file.path, componentHelperSource);
   const currentHelper = readSource(componentHelperSource);
+  const canonLeftoversPredecessor = beforeCanonLeftovers(componentHelperSource, currentHelper);
   const strictExtraKeysPredecessor = beforeStrictExtraKeys(currentHelper);
   const integratedHelper = beforeDiscriminatedJsxUnion(strictExtraKeysPredecessor);
   assert.equal(Buffer.byteLength(integratedHelper), transition.file.after.bytes);
@@ -419,6 +452,7 @@ export function currentCallbackSourceEdits(
     previousHelper,
     integratedHelper,
     strictExtraKeysPredecessor,
+    canonLeftoversPredecessor,
     currentHelper,
   ];
   assert.equal(new Set(helperVariants).size, helperVariants.length);
@@ -457,7 +491,7 @@ export function currentCallbackSourceEdits(
   const overloadTransition = readSource(emitOverloadTransitionSource);
   assert.equal(
     digest(overloadTransition),
-    "d34d9c30d9c270ac5a9f515b40378556c7a2d9b5a231cd8413c0440bcbd4d557",
+    "62d8b5eec112d39005a234ac4c819a8c9de4668e1d94149d16fdfc5b010d6e95",
     "certified emit-overload window transition",
   );
   const overloadAsset = (name: string): string => {
@@ -478,7 +512,9 @@ export function currentCallbackSourceEdits(
     digest(currentOverloads),
     "bbd7d2f184d1f9c5aff57d781ae6ccd393985a0ac4f01981282eb715cfc81ee0",
   );
-  const currentOverloadAsset = readSource(emitOverloadsSource);
+  const currentOverloadAsset = certifyCanonLeftoversSource(emitOverloadsSource);
+  certifyCanonLeftoversSource(sharedEmitPropsSource);
+  certifyCanonLeftoversSource(emitPropsSource);
   assert.equal(Buffer.byteLength(currentOverloadAsset), 2535);
   assert.equal(
     digest(currentOverloadAsset),

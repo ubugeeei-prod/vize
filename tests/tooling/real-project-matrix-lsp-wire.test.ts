@@ -78,6 +78,14 @@ test("passive native LSP capture retains the complete original Matrix workflow",
   assert.ok([oldLint.run, nodeRun].includes(lint.run));
   assert.deepEqual(lint, { ...oldLint, run: lint.run });
   lint.run = oldLint.run;
+  const publisher = steps.find((step) => step.name === "Publish shard summary");
+  const oldPublisher = oldSteps.find((step) => step.name === "Publish shard summary");
+  assert.ok(publisher && oldPublisher);
+  assert.deepEqual(publisher, {
+    ...oldPublisher,
+    run: "node tools/commands/ci/github/publish-real-project-shard-summary.ts",
+  });
+  publisher.run = oldPublisher.run;
   const linterReadiness = steps.findIndex(
     (step) => step.name === "Record linter deletion-readiness evidence",
   );
@@ -189,7 +197,7 @@ test("passive native LSP capture retains the complete original Matrix workflow",
       "davinci-dom-divergence-promotion",
     ],
     permissions: { contents: "read", actions: "read", issues: "write" },
-    "runs-on": "ubuntu-latest",
+    "runs-on": "blacksmith-32vcpu-ubuntu-2404",
     "timeout-minutes": 5,
     steps: [
       {
@@ -296,20 +304,30 @@ test("passive native LSP capture retains the complete original Matrix workflow",
     uses: "./.github/actions/setup-wild-http-recovery",
   });
   wild.uses = oldWild.uses;
-  // The formatter waiver audit moved from the archived Rust script to its
-  // qualified Node successor. Authenticate the exact command before restoring
-  // the archived step for the whole-workflow comparison.
-  const waiverStepName = "Audit formatter waiver owners";
-  const oldWaiver = oldSteps.find((step) => step.name === waiverStepName);
-  const waiver = steps.find((step) => step.name === waiverStepName);
-  assert.ok(oldWaiver && waiver);
-  assert.deepEqual(waiver, {
-    ...oldWaiver,
-    run:
+  // These fixture commands moved from the archived Rust scripts to their
+  // qualified Node successors. Authenticate each complete command before
+  // restoring the archived steps for the whole-workflow comparison.
+  for (const [name, run] of [
+    [
+      "Install pinned typecheck baseline dependencies",
+      "node --experimental-strip-types tools/commands/fixtures/typecheck-dependency-prepare.ts \\\n" +
+        '  --output-dir "$FIXTURE_REPORT_DIR" \\\n' +
+        '  --shard-index "$FIXTURE_SHARD_INDEX" \\\n' +
+        '  --shard-count "$FIXTURE_SHARD_COUNT" \\\n' +
+        "  --timeout-ms 600000\n",
+    ],
+    [
+      "Audit formatter waiver owners",
       "node tools/support/compat/fixtures/glyph-corpus-waiver-audit.ts \\\n" +
-      '  --output "$FIXTURE_REPORT_DIR/glyph-waiver-issues.json"\n',
-  });
-  waiver.run = oldWaiver.run;
+        '  --output "$FIXTURE_REPORT_DIR/glyph-waiver-issues.json"\n',
+    ],
+  ] as const) {
+    const oldStep = oldSteps.find((step) => step.name === name);
+    const step = steps.find((candidate) => candidate.name === name);
+    assert.ok(oldStep && step);
+    assert.deepEqual(step, { ...oldStep, run });
+    step.run = oldStep.run;
+  }
   // Retire only the unused compiler bootstrap; keep the archived workflow whole.
   const moon = "./.github/actions/setup-moonbit";
   const moonIndex = oldSteps.findIndex((step) => step.uses === moon);

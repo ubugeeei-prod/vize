@@ -82,14 +82,8 @@ pub(super) fn apply(manifest: &mut Value, members: &mut Vec<Value>) {
         .expect("the captured graph is never a substitute for the reviewed final graph");
     let previous =
         successor(members, &record).expect("only the six complete declared paths relocate");
-    let (dependency_update, current) = dependency_update::successor(
-        &previous,
-        &record,
-        qualification
-            .as_ref()
-            .expect("the dependency provider path requires its qualification graph"),
-    )
-    .expect("only the one complete dependency provider path relocates");
+    let (dependency_update, current) = dependency_update::successor(&previous, &record)
+        .expect("only the one complete dependency provider path relocates");
     *members = current;
     manifest["provenance"]["currentProviderRoster"] = record;
     manifest["provenance"]["currentProviderDependencyUpdate"] = dependency_update;

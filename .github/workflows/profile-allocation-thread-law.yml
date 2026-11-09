@@ -16,7 +16,7 @@ concurrency:
   cancel-in-progress: true
 jobs:
   laws:
-    runs-on: ubuntu-24.04
+    runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 40
     env:
       CARGO_BUILD_JOBS: "4"

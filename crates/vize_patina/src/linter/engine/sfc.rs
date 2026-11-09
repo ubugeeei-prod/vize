@@ -8,7 +8,7 @@ use super::{
 use crate::linter::config::{LintResult, Linter};
 use crate::linter::sfc_scripts::{ScriptParses, SfcScripts, lint_scripts};
 use crate::markup::L2Template;
-use vize_armature::Parser;
+use vize_croquis::drawer::LintTemplate;
 use vize_l0::dialect::VueDialect;
 use vize_l0::{Allocator, ToCompactString, profile};
 
@@ -20,36 +20,38 @@ impl Linter {
     ) -> (LintResult, LintResult) {
         let mut script_result = empty_lint_result(input.filename);
         let valid_template = !matches!(&input.analysis, TemplateAnalysis::Disabled);
-        let lint = self.lint_template_root_with_finish(
-            super::template::TemplateExecution {
-                allocator: input.allocator,
-                source: &input.template.content,
-                filename: input.filename,
-                root: input.root,
-                l2: input.l2,
-                env: TemplateRuleEnv {
-                    sfc_descriptor: Some(input.descriptor),
-                    sfc_scripts: Some(scripts),
-                    art_script_analysis: None,
-                    petite_document: None,
-                    defer_exact_suppressions: true,
-                    dialect: VueDialect::Vue,
-                    facade_rules: facade::RULES,
-                },
-            },
-            input.analysis,
-            |ctx| {
-                super::super::script_rules::append_builtin_script_diagnostics_with_template_context(
-                    self,
-                    input.descriptor,
-                    scripts,
-                    &mut script_result,
-                    valid_template.then_some((input.root, input.template.loc.start as u32)),
-                    input.template_syntax,
-                    Some(ctx),
-                );
-            },
-        );
+        let lint = LintTemplate::new(input.l2.surface(), input.l2.lowered())
+            .with_compatibility_root(|root| {
+                self.lint_template_root_with_finish(
+                    super::template::TemplateExecution {
+                        allocator: input.allocator,
+                        source: &input.template.content,
+                        filename: input.filename,
+                        root,
+                        l2: input.l2,
+                        env: TemplateRuleEnv {
+                            sfc_descriptor: Some(input.descriptor),
+                            sfc_scripts: Some(scripts),
+                            art_script_analysis: None,
+                            petite_document: None,
+                            defer_exact_suppressions: true,
+                            dialect: VueDialect::Vue,
+                            facade_rules: facade::RULES,
+                        },
+                    },
+                    input.analysis,
+                    |ctx| {
+                        super::super::script_rules::append_builtin_script_diagnostics_with_template_context(
+                            self,
+                            input.descriptor,
+                            scripts,
+                            &mut script_result,
+                            valid_template.then_some((input.l2, input.template.loc.start as u32)),
+                            Some(ctx),
+                        );
+                    },
+                )
+            });
         (lint, script_result)
     }
 
@@ -67,7 +69,6 @@ impl Linter {
                 descriptor,
                 scripts,
                 &mut result,
-                None,
                 None,
             );
             if super::super::css_rules::has_active_builtin_css_rules(self) {
@@ -91,14 +92,11 @@ impl Linter {
             "patina.sfc.descriptor.template_l1_parse_lower",
             L2Template::lower(&allocator, &template.content)
         );
-        let parser = Parser::new(&allocator, &template.content);
-        let (root, _legacy_parse_errors, template_syntax) = profile!(
-            "patina.sfc.descriptor.template_parse",
-            super::super::script_rules::parse_template_for_script_rules(self, parser)
-        );
         let parse_errors = l2.surface_errors();
         let has_fatal_parse_errors = Self::has_fatal_l1_template_parse_errors(parse_errors);
-        let analysis = if !has_fatal_parse_errors && self.has_active_semantic_template_rules() {
+        let analysis = if !has_fatal_parse_errors
+            && (self.has_active_semantic_template_rules() || self.has_resolved_macro_type_demand())
+        {
             Some(profile!(
                 "patina.sfc.descriptor.croquis",
                 if descriptor.script_setup.is_some()
@@ -116,6 +114,7 @@ impl Linter {
                     super::rule_sets::analyze_descriptor_for_component_reads(
                         scripts,
                         Some(&l2),
+                        self.has_resolved_macro_type_demand().then_some(filename),
                         self.has_unused_bindings_demand(),
                         derived,
                     )
@@ -123,6 +122,7 @@ impl Linter {
                     super::rule_sets::analyze_descriptor_for_lint_with_template(
                         scripts,
                         Some(&l2),
+                        self.has_resolved_macro_type_demand().then_some(filename),
                         self.has_unused_bindings_demand(),
                         derived,
                     )
@@ -140,7 +140,6 @@ impl Linter {
                 filename,
                 template,
                 allocator: &allocator,
-                root: &root,
                 l2: &l2,
                 descriptor,
                 analysis: if has_fatal_parse_errors {
@@ -150,7 +149,6 @@ impl Linter {
                 } else {
                     TemplateAnalysis::Lazy
                 },
-                template_syntax: template_syntax.as_ref(),
             },
             scripts,
         );
@@ -168,7 +166,7 @@ impl Linter {
                 (!has_fatal_parse_errors
                     && template.src.is_none()
                     && template.lang.as_deref().is_none_or(|lang| lang == "html"))
-                .then_some(&root),
+                .then_some(l2.surface()),
             );
         }
         result

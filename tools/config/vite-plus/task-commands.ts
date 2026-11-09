@@ -11,11 +11,9 @@ export const vscodeExtensionPackageBin = (
   binName: string,
   ...args: string[]
 ) =>
-  rustScript("../../tools/commands/editors/vscode/run-package-bin.rs", [
-    packageName,
-    binName,
-    ...args,
-  ]);
+  ["node", "../../tools/commands/editors/vscode/run-package-bin.ts", packageName, binName, ...args]
+    .map(shellQuote)
+    .join(" ");
 
 /**
  * Runs a command after changing into a package directory.
@@ -80,6 +78,14 @@ export const rustTool = (command: string, ...args: string[]) =>
 
 export const rustToolFromVscodeExtension = (command: string, ...args: string[]) =>
   rustScript(`../../tools/commands/${command}.rs`, args);
+
+/** Runs a TypeScript command from the isolated VS Code extension package. */
+export const nodeCommandFromVscodeExtension = (command: string, ...args: string[]) =>
+  ["node", `../../tools/commands/${command}.ts`, ...args].map(shellQuote).join(" ");
+
+/** Runs a TypeScript command under `tools/commands` with stable type stripping. */
+export const nodeCommand = (command: string, ...args: string[]) =>
+  ["node", `tools/commands/${command}.ts`, ...args].map(shellQuote).join(" ");
 
 /** Runs a TypeScript command under `tools/support` with Node's type stripping. */
 export const nodeTool = (command: string, ...args: string[]) =>

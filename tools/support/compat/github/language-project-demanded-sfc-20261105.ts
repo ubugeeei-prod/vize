@@ -20,7 +20,7 @@ type Custody = {
 
 export const DEMANDED_SFC_CUSTODY =
   "tests/_fixtures/tooling/language-project-demanded-sfc-20261105/custody.json";
-const recordHash = "004b381c39a02d896eb6e385c8c84673f31e3e2be8312ce37acb277c6144ddf2";
+const recordHash = "bbde8603220e9129436c2999eff4f184034663a652b59a2d950cfd5b066a8a6a";
 const currentSources = [
   [
     "npm/typescript-plugin/language-service.cjs",

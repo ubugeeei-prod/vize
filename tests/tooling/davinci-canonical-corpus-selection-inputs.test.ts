@@ -146,8 +146,8 @@ function scriptClosure(roots: string[]) {
     if (moduleRoots.has(script)) {
       const modules = JSON.parse(
         execFileSync(
-          "rust-script",
-          [join(root, "tools/commands/ci/verify-tool-layout.rs"), "--module-closure", script],
+          process.execPath,
+          [join(root, "tools/commands/ci/verify-tool-layout.ts"), "--module-closure", script],
           { cwd: root, encoding: "utf8" },
         ),
       ) as string[];
@@ -231,7 +231,6 @@ await test("every script, import and literal fixture read of the canonical jobs 
     "tools/support/compat/github/canonical-corpus-batch.ts",
     "tools/support/compat/github/release-preflight-github.mjs",
     "tools/support/compat/davinci/lib/corpus-baseline-contract.ts",
-    "tools/support/common.rs",
     ".github/actions/setup-rust-sticky-cache/cache-policy.ts",
   ])
     assert(scripts.has(expected), `${expected} left the derived script closure`);

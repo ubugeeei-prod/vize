@@ -240,14 +240,14 @@ declare global {
         : never;
   type $AuthoredKeyWitness<T> = { [K in keyof T]: unknown };
   // Constructor arguments (templates, `new`) bind `Authored`; TSX binds `Jsx` through `$props` (#11629).
-  type $ComponentInstanceFor<I, T, Declared, Authored, Jsx> =
+  type $ComponentInstanceFor<I, O, B, T, Declared, Authored, Jsx> =
     $IsAny<Authored> extends true
       ? I
       : $IsUnknown<Authored> extends true
         ? $UsePublicInstance<Jsx> extends true
           ? I
           : $ReplaceComponentProps<
-              I,
+              O,
               Pick<
                 $AuthoredKeyWitness<Jsx>,
                 keyof Jsx & $ComponentMetadataKeys<$ComponentInputProps<T, Declared>>
@@ -255,11 +255,13 @@ declare global {
                 (T extends unknown
                   ? $ComponentInputProps<T, Declared> & $ComponentInputGuard<T, Declared, Jsx>
                   : never)
-            >
+            > &
+              B
         : $ReplaceComponentProps<
-            I,
+            O,
             $ComponentInputProps<T, Declared> & $ComponentMissingInputGuard<T, Authored>
-          >;
+          > &
+            B;
   type $IsUnknown<T> = unknown extends T ? ([keyof T] extends [never] ? true : false) : false;
   type $UsePublicInstance<T> = $IsAny<T> extends true ? true : $IsUnknown<T>;
   type $LiteralKeys<T> = keyof {
@@ -279,8 +281,13 @@ declare global {
             : K
     ]: unknown;
   };
-  type $ReplaceComponentProps<T, P> = Omit<T, "$props"> &
-    Pick<T, Exclude<$LiteralKeys<T>, "$props">> & { $props: P };
+  type $PatternSafeOmit<
+    T,
+    K extends PropertyKey,
+    B = Omit<T, K>,
+    L extends PropertyKey = $LiteralKeys<T>,
+  > = B & Pick<T, Extract<Exclude<L, K>, keyof T>>;
+  type $ReplaceComponentProps<T, P> = $PatternSafeOmit<T, "$props"> & { $props: P };
   type $PublicEmit<
     T,
     S = __EmitShape<T>,
@@ -296,8 +303,25 @@ declare global {
   type $ComponentPublicBase<
     // @ts-ignore TS2694/TS2307: a `vue` without `ComponentPublicInstance` must degrade component public extras to unchecked, never error.
     I = import("vue").ComponentPublicInstance,
-  > = Omit<I, "$props" | "$emit" | "$slots"> &
-    Pick<I, Exclude<$LiteralKeys<I>, "$props" | "$emit" | "$slots">>;
+    // @ts-ignore TS2694/TS2307: a `vue` without `ComponentCustomProperties` must degrade component public extras to unchecked, never error.
+    C = import("vue").ComponentCustomProperties,
+  > = $PatternSafeOmit<
+    I,
+    "$props" | "$emit" | "$slots",
+    symbol extends keyof C ? {} : C,
+    | "$"
+    | "$data"
+    | "$attrs"
+    | "$refs"
+    | "$root"
+    | "$parent"
+    | "$host"
+    | "$el"
+    | "$options"
+    | "$forceUpdate"
+    | "$nextTick"
+    | "$watch"
+  >;
   // @ts-ignore TS2694/TS2307: a `vue` without `NativeElements` must degrade native prop checks to unchecked, never error. See virtual_ts/expressions/native_props.rs.
   type $NativeElements = import("vue").NativeElements;
   type $NativeElement<Tag extends PropertyKey> = Tag extends keyof $NativeElements

@@ -3,14 +3,13 @@
 use crate::context::LintContext;
 use crate::linter::config::{LintResult, Linter};
 use crate::rules::facts::{NoUnusedSetupBindings, v_for_source_reads};
-use vize_armature::Parser;
 use vize_atelier_sfc::SfcDescriptor;
 use vize_croquis::{Croquis, Drawer, DrawerOptions, drawer::LintTemplate};
 use vize_l0::Allocator;
-use vize_relief::RootNode;
 
 pub(super) fn script_summary(
     linter: &Linter,
+    filename: &str,
     descriptor: &SfcDescriptor<'_>,
     scripts: &crate::linter::sfc_scripts::SfcScripts<'_>,
 ) -> Croquis {
@@ -22,30 +21,27 @@ pub(super) fn script_summary(
         .template
         .as_ref()
         .filter(|_| unused)
-        .map(|template| {
-            let l2 = crate::markup::L2Template::lower(&allocator, &template.content);
-            let parsed = Parser::new(&allocator, &template.content).parse();
-            (l2, parsed)
-        });
-    let admitted = parsed.as_ref().filter(|(l2, (_, errors))| {
-        !Linter::has_fatal_l1_template_parse_errors(l2.surface_errors())
-            && !Linter::has_fatal_template_parse_errors(errors)
-    });
+        .map(|template| crate::markup::L2Template::lower(&allocator, &template.content));
+    let admitted = parsed
+        .as_ref()
+        .filter(|l2| !Linter::has_fatal_l1_template_parse_errors(l2.surface_errors()));
     let mut summary = super::super::super::analyze_descriptor_for_lint(
         scripts,
-        admitted.map(|(l2, _)| l2),
+        admitted,
+        linter.has_resolved_macro_type_demand().then_some(filename),
         unused,
         false,
     );
-    if let Some((_, (root, _))) = admitted {
-        let reads = v_for_source_reads(root);
+    if let Some(l2) = admitted {
+        let lowered = l2.lowered();
+        let reads = LintTemplate::new(l2.surface(), lowered.allocator, &lowered.root)
+            .with_compatibility_root(v_for_source_reads);
         summary.unused_bindings.retain(|name| !reads.contains(name));
     }
     summary
 }
 
 pub(super) fn variant(
-    root: &RootNode<'_>,
     l2: &crate::markup::L2Template<'_>,
     script: &Croquis,
     unused: bool,
@@ -63,10 +59,16 @@ pub(super) fn variant(
     if unused {
         drawer = drawer.with_unused_bindings();
     }
-    drawer.draw_lint_template(LintTemplate::new(l2.surface(), l2.lowered()));
+    let lowered = l2.lowered();
+    drawer.draw_lint_template(LintTemplate::new(
+        l2.surface(),
+        lowered.allocator,
+        &lowered.root,
+    ));
     let mut analysis = drawer.finish();
     if unused {
-        let reads = v_for_source_reads(root);
+        let reads = LintTemplate::new(l2.surface(), l2.lowered())
+            .with_compatibility_root(v_for_source_reads);
         analysis
             .unused_bindings
             .retain(|name| !reads.contains(name));

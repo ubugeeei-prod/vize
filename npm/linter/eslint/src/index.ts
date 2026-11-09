@@ -4,6 +4,7 @@ import * as vueParser from "vue-eslint-parser";
 import bridge, { configs as ruleConfigs, createVizeRuleConfig } from "oxlint-plugin-vize/eslint";
 import packageJson from "../package.json" with { type: "json" };
 
+/** Options passed through to the shared native rule-config factory. */
 export type VizeConfigOptions = NonNullable<Parameters<typeof createVizeRuleConfig>[0]>;
 
 // Keep the actual rule objects: collection, options, diagnostics and UTF-8 edits
