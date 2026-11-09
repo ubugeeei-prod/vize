@@ -2,8 +2,9 @@
 
 use oxc_allocator::CloneIn;
 use oxc_ast_visit::VisitMut;
-use vize_l0::{Box, Span};
+use vize_l0::{Box, Span, String};
 use vize_l1::markup::directive::{DirectivePrefix, DirectiveSyntax, VueDirectives};
+use vize_l1::markup::entity::{EntityContext, decode_one};
 use vize_l1::markup::{AttrValue, Attribute, Element, Token};
 use vize_l2::expr::ExprRef;
 use vize_relief::{
@@ -79,7 +80,7 @@ impl<'t, 'a> CompatibilityRoot<'t, 'a> {
         let raw = value.content.text;
         if raw.contains('&') {
             self.allocator
-                .alloc_str(vize_l1_to_l2::emit::decode_html_attribute_entities(raw).as_str())
+                .alloc_str(decode_html_entities(raw, EntityContext::Attribute).as_str())
         } else {
             raw
         }
@@ -88,7 +89,7 @@ impl<'t, 'a> CompatibilityRoot<'t, 'a> {
     pub(super) fn decoded_text(&self, raw: &'a str) -> &'a str {
         if raw.contains('&') {
             self.allocator
-                .alloc_str(vize_l1_to_l2::emit::decode_html_entities(raw).as_str())
+                .alloc_str(decode_html_entities(raw, EntityContext::Text).as_str())
         } else {
             raw
         }
@@ -128,6 +129,51 @@ impl<'t, 'a> CompatibilityRoot<'t, 'a> {
         );
         offset as u32
     }
+}
+
+fn decode_html_entities(source: &str, context: EntityContext) -> String {
+    let mut decoded = String::with_capacity(source.len());
+    let mut rest = source;
+    while !rest.is_empty() {
+        // Relief historically treats these escaped numeric parentheses as the
+        // literal delimiters in text, before ordinary HTML entity decoding.
+        if context == EntityContext::Text
+            && let Some((character, consumed)) = decode_escaped_numeric_parenthesis(rest.as_bytes())
+            && let Some(after) = rest.get(consumed..)
+        {
+            decoded.push(character);
+            rest = after;
+            continue;
+        }
+        if let Some((entity, after)) = decode_one(rest.as_bytes(), context)
+            .and_then(|(entity, consumed)| rest.get(consumed..).map(|after| (entity, after)))
+        {
+            entity.for_each(|character| decoded.push(character));
+            rest = after;
+            continue;
+        }
+        let mut characters = rest.chars();
+        let Some(character) = characters.next() else {
+            break;
+        };
+        decoded.push(character);
+        rest = characters.as_str();
+    }
+    decoded
+}
+
+fn decode_escaped_numeric_parenthesis(input: &[u8]) -> Option<(char, usize)> {
+    for (encoded, decoded) in [
+        (b"&amp;#40;".as_slice(), '('),
+        (b"&amp;#040;".as_slice(), '('),
+        (b"&amp;#41;".as_slice(), ')'),
+        (b"&amp;#041;".as_slice(), ')'),
+    ] {
+        if input.starts_with(encoded) {
+            return Some((decoded, encoded.len()));
+        }
+    }
+    None
 }
 
 struct DecodedExpressionSpans<'a> {
@@ -225,4 +271,46 @@ pub(super) fn is_v_pre_head(name: &str) -> bool {
         .is_some_and(|directive| {
             directive.prefix == DirectivePrefix::Full && directive.name.slice(name) == "pre"
         })
+}
+
+#[cfg(test)]
+mod entity_tests {
+    use super::*;
+
+    #[test]
+    fn decodes_complete_named_and_numeric_references_in_both_contexts() {
+        for context in [EntityContext::Text, EntityContext::Attribute] {
+            assert_eq!(decode_html_entities("&fjlig;", context), "fj");
+            assert_eq!(decode_html_entities("&#128;", context), "€");
+            assert_eq!(decode_html_entities("&#55296;", context), "�");
+            assert_eq!(decode_html_entities("&#x; &#;", context), "&#x; &#;");
+        }
+    }
+
+    #[test]
+    fn applies_context_rules_to_unterminated_named_references() {
+        assert_eq!(
+            decode_html_entities("&amp=1 &timesX", EntityContext::Text),
+            "&=1 ×X"
+        );
+        assert_eq!(
+            decode_html_entities("&amp=1 &timesX", EntityContext::Attribute),
+            "&amp=1 &timesX"
+        );
+    }
+
+    #[test]
+    fn preserves_relief_escaped_parenthesis_compatibility() {
+        assert_eq!(
+            decode_html_entities(
+                "&amp;#40; &amp;#040; &amp;#41; &amp;#041; &amp;#42;",
+                EntityContext::Text,
+            ),
+            "( ( ) ) &#42;"
+        );
+        assert_eq!(
+            decode_html_entities("&amp;#40;", EntityContext::Attribute),
+            "&#40;"
+        );
+    }
 }
