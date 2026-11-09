@@ -10,9 +10,8 @@ use std::fs::Metadata;
 use std::path::{Component, Path, PathBuf};
 use vize_l0::FxHashMap;
 
-use super::session_paths::{
-    is_within_namespace_root, is_within_physical_project_namespace, namespace_root,
-};
+use super::session_paths::is_within_physical_project_namespace;
+use crate::file_uri::{file_uri_to_path, path_to_file_uri};
 
 pub(super) struct PhysicalNamespace<'a> {
     root: &'a Path,
@@ -117,6 +116,18 @@ impl<'a> PhysicalNamespace<'a> {
         }
         known
     }
+}
+
+/// The root spelling `is_within_project_namespace` compares against.
+fn namespace_root(root: &Path) -> Option<PathBuf> {
+    root.to_str()?;
+    file_uri_to_path(&path_to_file_uri(root))
+}
+
+/// `is_within_project_namespace` against a root from [`namespace_root`].
+fn is_within_namespace_root(path: &Path, root: &Path) -> bool {
+    path.to_str().is_some()
+        && file_uri_to_path(&path_to_file_uri(path)).is_some_and(|path| path.starts_with(root))
 }
 
 #[cfg(all(test, unix))]

@@ -36,19 +36,12 @@ pub(super) fn build_session_document_uri(
 /// canonical roots may use a verbatim prefix while their file URIs do not.
 /// This does not resolve another file or change the authored cwd/config path.
 pub(super) fn is_within_project_namespace(path: &Path, root: &Path) -> bool {
-    namespace_root(root).is_some_and(|root| is_within_namespace_root(path, &root))
-}
-
-/// The root spelling [`is_within_project_namespace`] compares against.
-pub(super) fn namespace_root(root: &Path) -> Option<PathBuf> {
-    root.to_str()?;
-    file_uri_to_path(&path_to_file_uri(root))
-}
-
-/// [`is_within_project_namespace`] against a root from [`namespace_root`].
-pub(super) fn is_within_namespace_root(path: &Path, root: &Path) -> bool {
-    path.to_str().is_some()
-        && file_uri_to_path(&path_to_file_uri(path)).is_some_and(|path| path.starts_with(root))
+    if path.to_str().is_none() || root.to_str().is_none() {
+        return false;
+    }
+    let path = file_uri_to_path(&path_to_file_uri(path));
+    let root = file_uri_to_path(&path_to_file_uri(root));
+    matches!((path, root), (Some(path), Some(root)) if path.starts_with(&root))
 }
 
 pub(super) fn is_within_physical_project_namespace(path: &Path, root: &Path) -> bool {
