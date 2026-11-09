@@ -7,6 +7,7 @@ import { format } from "node:util";
 import {
   defineComponent,
   h,
+  nextTick,
   ref,
   shallowRef,
   type App as VueApp,
@@ -30,8 +31,9 @@ import {
 } from "./composables/useStreams.js";
 import { createCursorContext, CURSOR_KEY, type CursorPosition } from "./composables/useCursor.js";
 import type { FrescoDevtools } from "./devtools.js";
-import { updateLastRenderLayouts } from "./layoutMetrics.js";
+import { getLastRenderLayouts, updateLastRenderLayouts } from "./layoutMetrics.js";
 import type { KittyKeyboardOptions } from "./kittyKeyboard.js";
+import { routeAndPublishMouseInput as routeMouseEvent } from "./mouseRouting.js";
 import { normalizeInputEvent } from "./nativeInput.js";
 import type {
   CompositionEvent,
@@ -410,11 +412,10 @@ export function createApp(rootComponent: AppRoot, options: AppOptions = {}): App
     writeToStdout,
     writeToStderr,
   });
-
   let vueApp: VueApp | null = null;
   let rootElement: FrescoElement | null = null;
   let mounted = false;
-  let mounting = false;
+  let pendingMount: Promise<void> | null = null;
   let hasMountedSuccessfully = false;
   let running = false;
   let needsRender = true;
@@ -429,7 +430,6 @@ export function createApp(rootComponent: AppRoot, options: AppOptions = {}): App
   let hasCursorOverride = false;
   let instance: App;
   const pluginInstallers: Array<(app: VueApp) => void> = [];
-
   let exitSettled = false;
   let resolveExit: ((value?: unknown) => void) | null = null;
   let rejectExit: ((reason?: unknown) => void) | null = null;
@@ -437,14 +437,12 @@ export function createApp(rootComponent: AppRoot, options: AppOptions = {}): App
     resolveExit = resolve;
     rejectExit = reject;
   });
-
-  const { createApp: createVueApp } = createRenderer({
+  const renderer = createRenderer({
     lifecycle: options.devtools?.lifecycle,
     onMutation() {
       needsRender = true;
     },
   });
-
   function publishRenderMetrics(
     root: FrescoElement,
     layouts: readonly LayoutResultNapi[],
@@ -460,75 +458,74 @@ export function createApp(rootComponent: AppRoot, options: AppOptions = {}): App
     options.onRender?.(metrics);
   }
 
-  async function mount() {
-    if (mounted || mounting) return;
-    mounting = true;
-
-    try {
-      // Plugins run before terminal initialization so installation failures
-      // cannot leave raw mode, IME, or cursor state enabled.
-      const app = createVueApp(componentFromRoot(rootComponent));
-      for (const install of pluginInstallers) install(app);
-
-      const n = interactive ? await loadNative() : null;
-
-      if (n) initializeTerminal(n, { alternateScreen: options.alternateScreen === true, mouse });
-
-      const info = n?.getTerminalInfo() ?? {
-        width: streamsContext.stdout.columns ?? 80,
-        height: streamsContext.stdout.rows ?? 24,
-      };
-      appContext = createAppContext({
-        width: info.width,
-        height: info.height,
-        exit: (value) => {
-          void unmount(value);
-        },
-        render,
-        clear,
-        waitUntilRenderFlush,
-        stdout: streamsContext.stdout,
+  function mount(): Promise<void> {
+    if (mounted) return Promise.resolve();
+    if (pendingMount) return pendingMount;
+    pendingMount = Promise.resolve()
+      .then(performMount)
+      .finally(() => {
+        pendingMount = null;
       });
-      focusManager = createFocusManager();
-      app.provide(APP_KEY, appContext);
-      app.provide(FOCUS_KEY, focusManager);
-      app.provide(SCREEN_READER_KEY, screenReaderEnabled);
-      app.provide(STREAMS_KEY, streamsContext);
-      app.provide(
-        CURSOR_KEY,
-        createCursorContext((position) => {
-          hasCursorOverride = true;
-          cursorPosition = position;
-          needsRender = true;
-        }),
-      );
+    return pendingMount;
+  }
 
-      // Create a root element for mounting
-      rootElement = createRootElement();
+  async function performMount(): Promise<void> {
+    // Plugins run before terminal initialization so installation failures
+    // cannot leave raw mode, IME, or cursor state enabled.
+    const app = renderer.createApp(componentFromRoot(rootComponent));
+    for (const install of pluginInstallers) install(app);
 
-      patchConsoleMethods();
-      try {
-        app.mount(rootElement);
-      } catch (error) {
-        restoreConsoleMethods();
-        throw error;
-      }
-      vueApp = app;
+    const n = interactive ? await loadNative() : null;
 
-      mounted = true;
-      hasMountedSuccessfully = true;
-      running = true;
-      needsRender = true;
+    if (n) initializeTerminal(n, { alternateScreen: options.alternateScreen === true, mouse });
 
-      // Start event loop
-      void eventLoop();
-    } finally {
-      mounting = false;
+    const info = n?.getTerminalInfo() ?? {
+      width: streamsContext.stdout.columns ?? 80,
+      height: streamsContext.stdout.rows ?? 24,
+    };
+    appContext = createAppContext({
+      width: info.width,
+      height: info.height,
+      exit: (value) => void unmount(value),
+      render,
+      clear,
+      waitUntilRenderFlush,
+      stdout: streamsContext.stdout,
+    });
+    focusManager = createFocusManager();
+    app.provide(APP_KEY, appContext);
+    app.provide(FOCUS_KEY, focusManager);
+    app.provide(SCREEN_READER_KEY, screenReaderEnabled);
+    app.provide(STREAMS_KEY, streamsContext);
+    app.provide(
+      CURSOR_KEY,
+      createCursorContext((position) => {
+        hasCursorOverride = true;
+        cursorPosition = position;
+        needsRender = true;
+      }),
+    );
+
+    rootElement = createRootElement();
+    patchConsoleMethods();
+    try {
+      app.mount(rootElement);
+    } catch (error) {
+      restoreConsoleMethods();
+      throw error;
     }
+    vueApp = app;
+
+    mounted = true;
+    hasMountedSuccessfully = true;
+    running = true;
+    needsRender = true;
+
+    void eventLoop();
   }
 
   function use<Options extends unknown[]>(plugin: Plugin<Options>, ...pluginOptions: Options): App {
-    if (mounting || hasMountedSuccessfully) {
+    if (pendingMount || hasMountedSuccessfully) {
       throw new Error("Fresco plugins must be installed before the first successful mount");
     }
     pluginInstallers.push((app) => {
@@ -591,7 +588,11 @@ export function createApp(rootComponent: AppRoot, options: AppOptions = {}): App
   }
 
   async function waitUntilRenderFlush(): Promise<void> {
-    return Promise.resolve();
+    if (pendingMount) await pendingMount;
+    await nextTick();
+    if (!needsRender) return;
+    needsRender = false;
+    render();
   }
 
   function clear() {
@@ -705,11 +706,9 @@ export function createApp(rootComponent: AppRoot, options: AppOptions = {}): App
 
         // Use renderTree which handles layout and painting
         native.renderTree(renderNodes);
-        let layouts: LayoutResultNapi[] = [];
-        if ("getLastRenderLayouts" in native) {
-          layouts = native.getLastRenderLayouts();
-          updateLastRenderLayouts(layouts);
-        }
+        const layouts: LayoutResultNapi[] =
+          "getLastRenderLayouts" in native ? native.getLastRenderLayouts() : [];
+        updateLastRenderLayouts(layouts);
 
         applyCursorOverride();
 
@@ -744,7 +743,7 @@ export function createApp(rootComponent: AppRoot, options: AppOptions = {}): App
         lastPasteEvent.value = normalized;
         break;
       case "mouse":
-        lastMouseEvent.value = normalized;
+        routeMouseEvent(renderer, rootElement, normalized, getLastRenderLayouts(), lastMouseEvent);
         break;
       case "focus":
         lastFocusEvent.value = normalized;

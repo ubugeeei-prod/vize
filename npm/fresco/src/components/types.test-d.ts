@@ -20,6 +20,7 @@ import type {
 } from "./display-primitive-types.js";
 import Link from "./FrescoLink.vue";
 import Markdown from "./FrescoMarkdown.vue";
+import Modal from "./FrescoModal.vue";
 import Alert from "./FrescoAlert.vue";
 import Avatar from "./FrescoAvatar.vue";
 import Breadcrumb from "./FrescoBreadcrumb.vue";
@@ -45,12 +46,16 @@ import type {
 } from "./presentational-primitive-types.js";
 import type { ScrollBoxItemSlot, ScrollBoxProps } from "./scroll-types.js";
 import { Text, type TextProps, type TextWrap } from "./Text.js";
+import { TextArea, type TextAreaProps } from "./TextArea.js";
 import { TextInput, type TextInputProps } from "./TextInput.js";
 import { Diff, type DiffProps } from "./Diff.js";
 import { LineNumber, type LineNumberProps } from "./LineNumber.js";
 import Transform from "./FrescoTransform.vue";
 import Tooltip from "./FrescoTooltip.vue";
 import type { MarkdownBlockProvider, MarkdownProps } from "./markdown-types.js";
+import type { ModalProps } from "./modal-types.js";
+import type { TableProps, TableRow } from "./table-types.js";
+import { createCodeBuffer, type CodeProps, type CodeSyntaxProvider } from "./Code.js";
 
 // --- Public prop interfaces ------------------------------------------------
 
@@ -229,6 +234,56 @@ export const breadcrumbAcceptsDocumentedProps: BreadcrumbProps = {
 export const cardAcceptsDocumentedProps: CardProps = { title: "Summary", border: "rounded" };
 export const headerAcceptsDocumentedProps: HeaderProps = { title: "Dashboard", borderBottom: true };
 export const tooltipAcceptsDocumentedProps: TooltipProps = { text: "Help", position: "right" };
+export const textAreaAcceptsEditingProps: TextAreaProps = {
+  defaultValue: "first\nsecond",
+  rows: 2,
+  focused: true,
+  cursorLine: 1,
+  cursorColumn: 3,
+  validate: (value) => value.length > 0 || "required",
+};
+export const modalAcceptsFocusPolicyProps: ModalProps = {
+  visible: true,
+  focusId: "dialog",
+  initialFocusId: "confirm",
+  trapFocus: true,
+  restoreFocus: true,
+  closeOnEscape: true,
+};
+export const codeSyntaxProvider: CodeSyntaxProvider = {
+  tokenize: (line, { language }) => [{ text: line, fg: language === "ts" ? "cyan" : undefined }],
+};
+export const codeAcceptsRichDisplayProps: CodeProps = {
+  buffer: createCodeBuffer("const answer = 42", { maxLines: 1_000 }),
+  language: "ts",
+  syntaxProvider: codeSyntaxProvider,
+  diagnostics: [{ line: 0, startColumn: 6, endColumn: 12, message: "example" }],
+  selection: { anchor: { line: 0, column: 0 }, focus: { line: 0, column: 5 } },
+  viewportSize: 40,
+  overscan: 4,
+};
+
+type ScoreRow = TableRow & { readonly name: string; readonly score: number };
+export const tableAcceptsInteractiveProps: TableProps<ScoreRow> = {
+  columns: [
+    { key: "name", header: "Name", width: 12, sortable: true },
+    { key: "score", header: "Score", align: "right", minWidth: 3, maxWidth: 8 },
+  ],
+  data: [{ name: "Ada", score: 10 }],
+  sortKey: "score",
+  sortDirection: "descending",
+  viewportSize: 20,
+  overscan: 2,
+  focused: true,
+  columnWidths: { score: 6 },
+};
+
+export const tableRejectsUnknownSortDirection: TableProps = {
+  columns: [],
+  data: [],
+  // @ts-expect-error - sort direction is a controlled ascending/descending state.
+  sortDirection: "reverse",
+};
 
 export const scrollBoxAcceptsBoundedViewportProps: ScrollBoxProps = {
   itemCount: 100_000,
@@ -263,6 +318,8 @@ export function componentsRenderWithTypedProps() {
     h(Box, { flexDirection: "column", borderStyle: "round", ariaRole: "list" }),
     h(Text, { content: "hi", wrap: "truncate-middle", bold: true }),
     h(TextInput, { modelValue: "v", focused: true, maskChar: "#" }),
+    h(TextArea, { modelValue: "first\nsecond", focused: true, rows: 2 }),
+    h(Modal, { visible: true, focusId: "dialog", initialFocusId: "confirm" }),
     h(LineNumber, { value: 42, width: 3 }),
     h(Diff, { oldText: "before", newText: "after", view: "unified" }),
     h(ScrollBox, { itemCount: 100, viewportSize: 10 }),

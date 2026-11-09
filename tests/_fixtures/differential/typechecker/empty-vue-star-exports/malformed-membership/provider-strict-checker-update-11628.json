@@ -1,0 +1,66 @@
+{
+  "version": 1,
+  "kind": "exact-provider-qualification-strict-checker-successor",
+  "sourceRevision": "56a241e84dea114af6bb43c3f6bd1a2d6cffa55e",
+  "sourceTree": "28c5674313e79cd6dd55e643acd836472db70cb1",
+  "previousProviderQualificationRecord": {
+    "path": "tests/_fixtures/differential/typechecker/empty-vue-star-exports/malformed-membership/provider-root-dependency-ownership-update-12123.json",
+    "bytes": 4614,
+    "sha256": "6c7317e017de5981da2e6a97451de6f1f7d62167b8cb54d3401a0f8b13f8eeca",
+    "gitBlob": "e2639f5f79a7610dacf27f0462c9a4365b23f928"
+  },
+  "previousQualificationLock": {
+    "path": "pnpm-lock.yaml",
+    "bytes": 1095263,
+    "sha256": "9c2d946dd182aa6931af4868185d1ee812a20ce1ca17409005705abedc89c66b",
+    "gitBlob": "99081858d72a16e56a2047c38d492613ae6501c8"
+  },
+  "previousQualificationPackage": {
+    "path": "package.json",
+    "bytes": 1053,
+    "sha256": "52985c3134183a70ebcf42236092cb2fd2dd815cb301b2a23ec74c4cc391de04",
+    "gitBlob": "d09b87f41fd10ff14c122a0e65e8a9d7d03e838a"
+  },
+  "finalQualificationLock": {
+    "path": "pnpm-lock.yaml",
+    "bytes": 1095263,
+    "sha256": "9c2d946dd182aa6931af4868185d1ee812a20ce1ca17409005705abedc89c66b",
+    "gitBlob": "99081858d72a16e56a2047c38d492613ae6501c8"
+  },
+  "finalQualificationPackage": {
+    "path": "package.json",
+    "bytes": 1053,
+    "sha256": "52985c3134183a70ebcf42236092cb2fd2dd815cb301b2a23ec74c4cc391de04",
+    "gitBlob": "d09b87f41fd10ff14c122a0e65e8a9d7d03e838a"
+  },
+  "workspaceManifest": {
+    "path": "pnpm-workspace.yaml",
+    "bytes": 9348,
+    "sha256": "67d2d880b1c1927cda746a43bdcc074bb58260c925c4e67e3aaaa142e94d6f76",
+    "gitBlob": "57b5c377972ca2c4abc26a2084f1075bc2aa61a1"
+  },
+  "cliManifest": {
+    "path": "npm/cli/package.json",
+    "bytes": 4494,
+    "sha256": "e4fa0c743fbc3fe1efec08f09ee72c38b2faa476e831f0233ea05efea63644a1",
+    "gitBlob": "9850b88692c01b64e99b7e3ba5209163c4ee4041"
+  },
+  "checkerDeclaration": {
+    "path": "npm/cli/virtual-ts-checker.d.ts",
+    "bytes": 564,
+    "sha256": "f9ad350fdf8db8a98ec92cc93e2986114adc92ddbb2603979f6a1bc4c716c2c7",
+    "gitBlob": "7d995995f741e4b4cf21081e22f1d6da2a92af04"
+  },
+  "strictDeclaration": {
+    "path": "npm/cli/virtual-ts-checker-strict.d.ts",
+    "bytes": 651,
+    "sha256": "1536860cbc2e431cb0e5712e39a505bb73f52c780f9daa27b220b42cd3b9ac46",
+    "gitBlob": "22f30c5977da3da2c55a77065bcc90ce5dd6a36c"
+  },
+  "resolver": {
+    "command": "vp install --lockfile-only --no-frozen-lockfile --ignore-scripts",
+    "fixedPointSha256": "9c2d946dd182aa6931af4868185d1ee812a20ce1ca17409005705abedc89c66b"
+  },
+  "nativeAcceptanceCredit": false,
+  "scope": "Bind the strict checker export, its open-policy predecessor, and the unchanged dependency graph. This record gives source provenance only."
+}

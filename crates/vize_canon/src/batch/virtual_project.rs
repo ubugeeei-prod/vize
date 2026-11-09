@@ -410,6 +410,9 @@ pub struct VirtualProject {
     /// TypeScript diagnostics mapped back into these files are dropped unless
     /// the project enables `checkJs` (see [`javascript_sfc`], #3322).
     unchecked_javascript_files: FxHashSet<PathBuf>,
+    /// Templates that leave `checkUnknownProps` off; any one of them declares
+    /// vue-tsc's props fallback for the whole program (#11628).
+    props_fallback_files: FxHashSet<PathBuf>,
 
     /// Parser diagnostics collected before Corsa runs.
     diagnostics: Vec<Diagnostic>,
@@ -430,6 +433,7 @@ struct SourceArtifacts {
     module_exports: Option<Box<[vize_croquis::script_parser::AuthoredModuleExport]>>,
     star_projection: Option<star_exports::StarProjection>,
     authored_vue_ts_specifiers: FxHashSet<CompactString>,
+    dependency_syntax_facts: Option<build::DependencySyntaxFacts>,
 }
 
 #[cfg(test)]

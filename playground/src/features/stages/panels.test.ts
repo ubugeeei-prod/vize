@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vite-plus/test";
 import { mount } from "@vue/test-utils";
-import PassTimeline from "./PassTimeline.vue";
-import RemarksPanel from "./RemarksPanel.vue";
-import DumpDiffView from "./DumpDiffView.vue";
+import PassTimeline from "./pass-timeline.vue";
+import RemarksPanel from "./remarks-panel.vue";
+import DumpDiffView from "./dump-diff-view.vue";
 import type { TimelineStep } from "./ladder";
 import type { StageRemark } from "./remarks";
 

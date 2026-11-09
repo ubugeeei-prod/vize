@@ -47,7 +47,7 @@ concurrency:
 jobs:
   admission:
     if: github.event_name == 'pull_request'
-    runs-on: ubuntu-24.04
+    runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 45
     env:
       CARGO_BUILD_JOBS: "4"
@@ -191,7 +191,7 @@ jobs:
 
   original27-current:
     if: github.event_name == 'workflow_dispatch' && github.repository == 'ubugeeei-prod/vize'
-    runs-on: ubuntu-24.04
+    runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 45
     env:
       CAPTURE_SOURCE: ${{ inputs.original27_source }}

@@ -32,7 +32,7 @@ pub fn analyze_sfc_descriptor_with_occurrences_and_template_reuse(
     options: SfcCroquisOptions,
     reuse: Option<vize_croquis::drawer::TemplateSemanticReuse>,
 ) -> (SfcCroquisAnalysis, Option<BindingOccurrences>) {
-    analyze_sfc_descriptor_with_occurrences_impl(scripts, root, options, reuse)
+    analyze_sfc_descriptor_with_occurrences_impl(scripts, root, options, reuse, None)
 }
 
 /// Capture authored reads while drawing the completed Davinci artifact.
@@ -42,7 +42,18 @@ pub fn analyze_sfc_descriptor_with_lint_template_and_occurrences(
     template: Option<LintTemplate<'_, '_>>,
     options: SfcCroquisOptions,
 ) -> (SfcCroquisAnalysis, Option<BindingOccurrences>) {
-    analyze_sfc_descriptor_with_occurrences_impl(scripts, template, options, None)
+    analyze_sfc_descriptor_with_occurrences_impl(scripts, template, options, None, None)
+}
+
+/// Capture authored reads after imported macro types have been resolved.
+#[doc(hidden)]
+pub fn analyze_sfc_descriptor_with_lint_template_and_occurrences_resolved(
+    scripts: &SfcScriptParses<'_>,
+    template: Option<LintTemplate<'_, '_>>,
+    options: SfcCroquisOptions,
+    filename: &str,
+) -> (SfcCroquisAnalysis, Option<BindingOccurrences>) {
+    analyze_sfc_descriptor_with_occurrences_impl(scripts, template, options, None, Some(filename))
 }
 
 fn analyze_sfc_descriptor_with_occurrences_impl(
@@ -50,6 +61,7 @@ fn analyze_sfc_descriptor_with_occurrences_impl(
     template: Option<impl DescriptorTemplate>,
     options: SfcCroquisOptions,
     reuse: Option<vize_croquis::drawer::TemplateSemanticReuse>,
+    resolve_filename: Option<&str>,
 ) -> (SfcCroquisAnalysis, Option<BindingOccurrences>) {
     let descriptor = scripts.descriptor();
     let mut packet = None;
@@ -62,7 +74,7 @@ fn analyze_sfc_descriptor_with_occurrences_impl(
             legacy_vue2: false,
             include_script_content: true,
         },
-        None,
+        resolve_filename,
         None,
         DescriptorObservation {
             occurrences: Some(&mut packet),

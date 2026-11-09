@@ -4,7 +4,7 @@ use serde_json::json;
 pub(super) const UPDATE: &str =
     "malformed-membership/provider-root-dependency-ownership-update-12123.json";
 pub(super) const UPDATE_HASH: &str =
-    "b2afd8741085c57f608b45aac75b0cb3189c5107d97854f4cf3516c9e05d8320";
+    "6c7317e017de5981da2e6a97451de6f1f7d62167b8cb54d3401a0f8b13f8eeca";
 const PREVIOUS_BINDING: &str = "tests/_fixtures/differential/typechecker/empty-vue-star-exports/malformed-membership/provider-fresco-sfc-update-12130.json";
 
 pub(super) const OWNER_MANIFESTS: &[&str] = &[

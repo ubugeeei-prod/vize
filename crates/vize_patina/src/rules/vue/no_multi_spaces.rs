@@ -48,7 +48,7 @@ impl Rule for NoMultiSpaces {
     }
 
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
-        self.check_element(ctx, &MarkupElement::new(element));
+        self.check_element(ctx, &MarkupElement::new(element), false);
     }
 
     fn check_interpolation<'a>(
@@ -73,7 +73,8 @@ impl MarkupRule for NoMultiSpaces {
     }
 
     fn enter_element<'a>(&self, ctx: &mut MarkupContext<'_, 'a>, element: &MarkupElement<'a>) {
-        self.check_element(ctx.lint(), element);
+        let is_jsx = ctx.is_jsx() || is_jsx_filename(ctx.lint().filename);
+        self.check_element(ctx.lint(), element, is_jsx);
     }
 
     fn enter_interpolation(&self, ctx: &mut MarkupContext<'_, '_>, range: ByteRange) {
@@ -82,14 +83,14 @@ impl MarkupRule for NoMultiSpaces {
 }
 
 impl NoMultiSpaces {
-    fn check_element(&self, ctx: &mut LintContext<'_>, element: &MarkupElement<'_>) {
+    fn check_element(&self, ctx: &mut LintContext<'_>, element: &MarkupElement<'_>, is_jsx: bool) {
         let mut previous_binding_end = None;
 
         element.walk_opening_item_ranges(&mut |range| {
             let gap_start = previous_binding_end
                 .unwrap_or_else(|| tag_name_end_hint(element.range(), element.tag()));
             self.check_gap(ctx, gap_start, range.start);
-            if !self.ignore_properties {
+            if !is_jsx && !self.ignore_properties {
                 self.check_structural_directive_expression(ctx, range);
             }
             previous_binding_end = Some(range.end);
@@ -363,6 +364,10 @@ fn first_whitespace_offset(source: &str, start: usize, end: usize) -> usize {
         offset += 1;
     }
     offset
+}
+
+fn is_jsx_filename(filename: &str) -> bool {
+    filename.ends_with(".jsx") || filename.ends_with(".tsx")
 }
 
 #[cfg(test)]

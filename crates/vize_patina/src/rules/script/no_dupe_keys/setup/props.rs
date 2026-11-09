@@ -9,6 +9,7 @@ use oxc_ast::{
     },
 };
 use oxc_semantic::Semantic;
+use oxc_span::GetSpan;
 use vize_l0::{CompactString, FxHashSet};
 
 #[derive(Clone, Copy)]
@@ -29,6 +30,8 @@ pub(super) fn names<'s, 'a>(
     semantic: &'s Semantic<'a>,
     module: NoDupeKeysModuleScript<'a>,
     module_semantic: Option<&'s Semantic<'a>>,
+    source: &str,
+    resolved_type_world: Option<&vize_croquis::types::ResolvedTypeWorld>,
 ) -> Vec<CompactString> {
     let inputs = Inputs {
         current: Scope {
@@ -55,6 +58,20 @@ pub(super) fn names<'s, 'a>(
         .and_then(|arguments| arguments.params.first())
     {
         type_names(ty, inputs, 0, &mut names);
+        if let Some(world) = resolved_type_world
+            && let Some(type_source) = source.get(ty.span().start as usize..ty.span().end as usize)
+        {
+            let resolved = world.resolve_properties(type_source);
+            if resolved.complete {
+                names.extend(
+                    resolved
+                        .properties
+                        .into_iter()
+                        .filter(|property| property.module.as_str() != world.root_module.as_str())
+                        .map(|property| property.name),
+                );
+            }
+        }
     }
     // Inherited/merged/union type declarations describe one prop namespace.
     // An override of the same prop cannot create another colliding binding.

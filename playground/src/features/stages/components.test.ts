@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vite-plus/test";
 import { mount } from "@vue/test-utils";
-import StageRail from "./StageRail.vue";
-import PassTimeline from "./PassTimeline.vue";
-import DumpView from "./DumpView.vue";
+import StageRail from "./stage-rail.vue";
+import PassTimeline from "./pass-timeline.vue";
+import DumpView from "./dump-view.vue";
 import { dumpLines } from "./dumpLines";
 import type { Rung, TimelineStep } from "./ladder";
 

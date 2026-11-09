@@ -139,7 +139,7 @@ fn imported_mark_raw_getter_reads_keep_direct_callback_and_authored_error_contro
     capture::save(
         &evidence.join("scope.json"),
         &json!({"derivedFixture":true,"historical118Resolved":false,"timingUsable":false,
-        "workspaceRole":"Linux x64 observed image4f2de/7.0.2, tests Vuebeta10/TS6/vue-tsc3.3.11",
+        "workspaceRole":"Linux x64 observed image4f2de/7.0.2, tests Vuebeta10/TS6/vue-tsc3.3.14",
         "historicalRole":"Rc13/provider3.3.13 plus MisskeyVue3.5.28 is separate","phases":7,"compilerOuterCommands":14,"metadataAstNodeHelpers":2,
         "nativeClean":false,"nativeKnownDebt":{"code":5097,"status":1,"file":"src/Parent.vue.ts","line":11,"column":23,"sourceReceipt":"f45/41346587952/artifact13099392298"},
         "debtPolicy":"assert the whole current buffer; removal is a future correctness change, not a permanent public contract or an error filter",
@@ -149,8 +149,8 @@ fn imported_mark_raw_getter_reads_keep_direct_callback_and_authored_error_contro
     assert_eq!(providers["vue"]["version"], "3.6.0-beta.10");
     assert_eq!(providers["reactivity"]["version"], "3.6.0-beta.10");
     assert_eq!(providers["typescript"]["version"], "6.0.3");
-    assert_eq!(providers["vueTsc"]["version"], "3.3.11");
-    assert_eq!(providers["languageCore"]["version"], "3.3.11");
+    assert_eq!(providers["vueTsc"]["version"], "3.3.14");
+    assert_eq!(providers["languageCore"]["version"], "3.3.14");
     assert_eq!(providers["native"]["sha256"], NATIVE_IMAGE);
     assert_eq!(
         providers["native"]["manifest"]["package"]["version"],

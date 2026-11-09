@@ -183,6 +183,8 @@ defineExpose(exposed);
         :offset="viewport.offset.value"
         :track="scrollbarTrack"
         :thumb="scrollbarThumb"
+        :disabled
+        @update:offset="scrollTo"
       />
     </Box>
     <slot name="end" />

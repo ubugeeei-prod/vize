@@ -21,7 +21,7 @@ export function useRuleManagement(rules: Ref<LintRule[]>, lint: () => void) {
 
   const categories = computed(() => {
     const cats = new Set(rules.value.map((r) => r.category));
-    return ["all", ...Array.from(cats).sort()];
+    return ["all", ...Array.from(cats).sort((left, right) => left.localeCompare(right))];
   });
 
   const filteredRules = computed(() => {

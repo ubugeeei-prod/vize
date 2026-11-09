@@ -110,6 +110,7 @@ export async function prepareConsumer() {
   );
   const nativeTar = path.join(packs, JSON.parse(nativePack.stdout.toString())[0].filename);
   const tarballs = { "@vizejs/native": nativeTar };
+  const packedWebpackSources = {};
   for (const [name, directory] of [
     ["turbopack", packageRoot],
     ["rspack", path.join(packageRoot, "../rspack")],
@@ -139,6 +140,9 @@ export async function prepareConsumer() {
       ).stdout.toString(),
     );
     assert.equal(packedManifest.dependencies["@vizejs/builder-shared"], undefined);
+    const webpackSources = packedManifest.dependencies["webpack-sources"];
+    assert.match(webpackSources, /^\d+\.\d+\.\d+$/u);
+    packedWebpackSources[name] = webpackSources;
     for (const section of ["dependencies", "optionalDependencies", "peerDependencies"]) {
       assert.ok(
         Object.values(packedManifest[section] ?? {}).every(
@@ -265,13 +269,13 @@ export async function prepareConsumer() {
   const strictRequire = createRequire(path.join(strictConsumer, "package.json"));
   const strictNative = strictRequire.resolve("@vizejs/native");
   const strictEntries = {};
-  for (const [entry, exported] of [
-    ["@vizejs/turbopack-plugin", "withVize"],
-    ["@vizejs/turbopack-plugin/loader", "default"],
-    ["@vizejs/turbopack-plugin/style-loader", "default"],
-    ["@vizejs/turbopack-plugin/scope-loader", "default"],
-    ["@vizejs/rspack-plugin", "VizePlugin"],
-    ["@vizejs/rspack-plugin/loader", "default"],
+  for (const [entry, exported, builder] of [
+    ["@vizejs/turbopack-plugin", "withVize", "turbopack"],
+    ["@vizejs/turbopack-plugin/loader", "default", "turbopack"],
+    ["@vizejs/turbopack-plugin/style-loader", "default", "turbopack"],
+    ["@vizejs/turbopack-plugin/scope-loader", "default", "turbopack"],
+    ["@vizejs/rspack-plugin", "VizePlugin", "rspack"],
+    ["@vizejs/rspack-plugin/loader", "default", "rspack"],
   ]) {
     const resolved = strictRequire.resolve(entry);
     assert.ok(resolved.startsWith(strictConsumer + path.sep));
@@ -282,13 +286,14 @@ export async function prepareConsumer() {
       `${entry} exposes its public callable`,
     );
     const issuer = createRequire(resolved);
-    assert.equal(issuer("webpack-sources/package.json").version, "3.5.1");
+    const webpackSources = issuer("webpack-sources/package.json").version;
+    assert.equal(webpackSources, packedWebpackSources[builder]);
     assert.equal(issuer.resolve("@vizejs/native"), strictNative);
     assert.equal(issuer("@vizejs/native").getNativeBuildToken(), sourceReceipt.identity.token);
     assert.throws(() => issuer.resolve("@vizejs/builder-shared"));
     strictEntries[entry] = {
       file: path.relative(strictConsumer, resolved),
-      webpackSources: issuer("webpack-sources/package.json").version,
+      webpackSources,
     };
   }
   assert.equal(

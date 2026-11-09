@@ -11,6 +11,7 @@ use vize_relief::RootNode;
 
 pub(super) fn script_summary(
     linter: &Linter,
+    filename: &str,
     descriptor: &SfcDescriptor<'_>,
     scripts: &crate::linter::sfc_scripts::SfcScripts<'_>,
 ) -> Croquis {
@@ -34,6 +35,7 @@ pub(super) fn script_summary(
     let mut summary = super::super::super::analyze_descriptor_for_lint(
         scripts,
         admitted.map(|(l2, _)| l2),
+        linter.has_resolved_macro_type_demand().then_some(filename),
         unused,
         false,
     );
@@ -63,7 +65,12 @@ pub(super) fn variant(
     if unused {
         drawer = drawer.with_unused_bindings();
     }
-    drawer.draw_lint_template(LintTemplate::new(l2.surface(), l2.lowered()));
+    let lowered = l2.lowered();
+    drawer.draw_lint_template(LintTemplate::new(
+        l2.surface(),
+        lowered.allocator,
+        &lowered.root,
+    ));
     let mut analysis = drawer.finish();
     if unused {
         let reads = v_for_source_reads(root);

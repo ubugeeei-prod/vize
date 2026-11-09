@@ -40,7 +40,7 @@ impl Linter {
         let scripts = crate::linter::sfc_scripts::lint_scripts(&script_allocator, descriptor);
         let mut summary = self
             .has_active_semantic_template_rules()
-            .then(|| analysis::script_summary(self, descriptor, &scripts));
+            .then(|| analysis::script_summary(self, filename, descriptor, &scripts));
         let mut extra = empty_lint_result(filename);
         for (start, end) in art_variant_ranges(source, descriptor) {
             let Some(inner) = source.get(start..end) else {

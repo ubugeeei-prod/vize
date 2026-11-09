@@ -8,6 +8,7 @@ import {
   discriminatedJsxUnionAfterSha256,
 } from "../../../tools/support/compat/content-mapper/discriminated-jsx-union-transition.ts";
 import {
+  beforeCanonLeftovers,
   beforeStrictExtraKeys,
   strictExtraKeysAfterSha256,
 } from "../../../tools/support/compat/content-mapper/strict-extra-keys-transition.ts";
@@ -74,9 +75,13 @@ function historicalProducer(
   current: string,
   expected: string,
 ): string {
+  current = beforeCanonLeftovers(path, current);
   if (
     path === "crates/vize_canon/src/virtual_ts/component_prop_helpers.txt" &&
-    sha256(current) === strictExtraKeysAfterSha256
+    [
+      strictExtraKeysAfterSha256,
+      "5925942220f43800ee52f81973df33a429af4b77060990f7b03b435e617a40b8",
+    ].includes(sha256(current))
   )
     current = beforeStrictExtraKeys(current);
   if (
@@ -114,12 +119,16 @@ function historicalProducer(
   }
   if (
     path === overloadAsset &&
-    sha256(current) === "924bb683376f6c2ab3b9225cd6eff73328f8dfe4e87529a1c1a8068c03923e74"
+    [
+      "924bb683376f6c2ab3b9225cd6eff73328f8dfe4e87529a1c1a8068c03923e74",
+      "3325a0120f682f9d93fb58c09d0effff1935ce6cf0118f34c0c5428197d3cc6a",
+    ].includes(sha256(current))
   ) {
+    current = beforeCanonLeftovers(overloadAsset, current);
     const source = read(overloadTransition);
     assert.equal(
       sha256(source),
-      "d34d9c30d9c270ac5a9f515b40378556c7a2d9b5a231cd8413c0440bcbd4d557",
+      "62d8b5eec112d39005a234ac4c819a8c9de4668e1d94149d16fdfc5b010d6e95",
       "selected emit overload source transition",
     );
     const value = (name: string): string => {

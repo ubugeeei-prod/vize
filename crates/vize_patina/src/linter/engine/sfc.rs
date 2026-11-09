@@ -98,7 +98,9 @@ impl Linter {
         );
         let parse_errors = l2.surface_errors();
         let has_fatal_parse_errors = Self::has_fatal_l1_template_parse_errors(parse_errors);
-        let analysis = if !has_fatal_parse_errors && self.has_active_semantic_template_rules() {
+        let analysis = if !has_fatal_parse_errors
+            && (self.has_active_semantic_template_rules() || self.has_resolved_macro_type_demand())
+        {
             Some(profile!(
                 "patina.sfc.descriptor.croquis",
                 if descriptor.script_setup.is_some()
@@ -116,6 +118,7 @@ impl Linter {
                     super::rule_sets::analyze_descriptor_for_component_reads(
                         scripts,
                         Some(&l2),
+                        self.has_resolved_macro_type_demand().then_some(filename),
                         self.has_unused_bindings_demand(),
                         derived,
                     )
@@ -123,6 +126,7 @@ impl Linter {
                     super::rule_sets::analyze_descriptor_for_lint_with_template(
                         scripts,
                         Some(&l2),
+                        self.has_resolved_macro_type_demand().then_some(filename),
                         self.has_unused_bindings_demand(),
                         derived,
                     )

@@ -5,11 +5,11 @@ import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
-const command = path.join(root, "tools/commands/ci/fuzz/enforce-result.rs");
+const command = path.join(root, "tools/commands/ci/fuzz/enforce-result.ts");
 
 test("fuzz result policy keeps PRs advisory and release evidence strict", () => {
   const status = (eventName: string, outcome: string): number | null =>
-    spawnSync("rust-script", [command, eventName, "sfc_parse", outcome], { encoding: "utf8" })
+    spawnSync(process.execPath, [command, eventName, "sfc_parse", outcome], { encoding: "utf8" })
       .status;
   for (const outcome of ["failure", "cancelled", "skipped"]) {
     assert.equal(status("pull_request", outcome), 0, `advisory ${outcome}`);
@@ -22,14 +22,14 @@ test("fuzz result policy keeps PRs advisory and release evidence strict", () => 
 });
 
 test("fuzz result command reports the target, event, outcome, and gate decision", () => {
-  const advisory = spawnSync("rust-script", [command, "pull_request", "sfc_parse", "failure"], {
+  const advisory = spawnSync(process.execPath, [command, "pull_request", "sfc_parse", "failure"], {
     encoding: "utf8",
   });
   assert.equal(advisory.status, 0);
   assert.match(advisory.stderr, /warning.*sfc_parse.*failure.*pull_request/i);
 
   const blocking = spawnSync(
-    "rust-script",
+    process.execPath,
     [command, "workflow_dispatch", "template_lexer", "failure"],
     { encoding: "utf8" },
   );
@@ -38,10 +38,10 @@ test("fuzz result command reports the target, event, outcome, and gate decision"
 });
 
 test("fuzz result command rejects malformed invocation", () => {
-  const result = spawnSync("rust-script", [command, "pull_request", "sfc_parse"], {
+  const result = spawnSync(process.execPath, [command, "pull_request", "sfc_parse"], {
     encoding: "utf8",
   });
 
   assert.equal(result.status, 1);
-  assert.match(result.stderr, /Usage: rust-script tools\/commands\/ci\/fuzz\/enforce-result\.rs/);
+  assert.match(result.stderr, /Usage: node tools\/commands\/ci\/fuzz\/enforce-result\.ts/);
 });

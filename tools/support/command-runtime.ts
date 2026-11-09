@@ -78,6 +78,42 @@ export function isRegularFile(target: string): boolean {
   }
 }
 
+function isVizeRepositoryRoot(directory: string): boolean {
+  return (
+    isRegularFile(path.join(directory, "Cargo.toml")) &&
+    isRegularFile(path.join(directory, "pnpm-workspace.yaml"))
+  );
+}
+
+/** Locates and canonicalizes the repository root for a Node command. */
+export function repositoryRoot(moduleUrl?: string): string {
+  const configured = process.env.VIZE_REPO_ROOT;
+  if (configured !== undefined) {
+    if (!isVizeRepositoryRoot(configured)) {
+      throw new Error(`VIZE_REPO_ROOT=${configured} is not a Vize repository root`);
+    }
+    return fs.realpathSync.native(configured);
+  }
+
+  const candidates = [
+    moduleUrl === undefined ? undefined : fileURLToPath(moduleUrl),
+    process.cwd(),
+  ];
+  for (const candidate of candidates) {
+    if (candidate === undefined) continue;
+    let directory = isRegularFile(candidate) ? path.dirname(candidate) : path.resolve(candidate);
+    for (;;) {
+      if (isVizeRepositoryRoot(directory)) return fs.realpathSync.native(directory);
+      const parent = path.dirname(directory);
+      if (parent === directory) break;
+      directory = parent;
+    }
+  }
+  throw new Error(
+    `cannot find Vize repository root from ${process.cwd()}; run inside the repository or set VIZE_REPO_ROOT`,
+  );
+}
+
 /** Reads directory entry names, returning an empty list when enumeration fails. */
 export function readDirectoryNames(target: string): string[] {
   try {

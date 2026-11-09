@@ -1,7 +1,7 @@
 import { describe, it, expect, afterEach } from "vite-plus/test";
 import { mount, VueWrapper } from "@vue/test-utils";
 import { h, defineComponent, ref, onMounted, onUnmounted, Suspense } from "vue";
-import Button from "../src/shared/AppButton.vue";
+import Button from "../src/shared/app-button.vue";
 
 describe("Vue Components", () => {
   describe("Button Component", () => {

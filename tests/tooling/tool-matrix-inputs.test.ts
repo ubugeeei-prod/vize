@@ -36,13 +36,13 @@ test("fixture Vue input collection includes hidden recursive directories", () =>
 test("fixture Vue input collection expands hidden dirs under scoped globs", () => {
   const fixtureDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-fixture-inputs-"));
   try {
-    writeFile(fixtureDir, "playground/src/App.vue");
+    writeFile(fixtureDir, "playground/src/app.vue");
     writeFile(fixtureDir, "playground/src/.vitepress/Doc.vue");
     writeFile(fixtureDir, "docs/.vitepress/components/Page.vue");
 
     assert.deepEqual(collectVueInputPaths(fixtureDir, ["playground/src/**/*.vue"]), [
       "playground/src/.vitepress/Doc.vue",
-      "playground/src/App.vue",
+      "playground/src/app.vue",
     ]);
   } finally {
     fs.rmSync(fixtureDir, { recursive: true, force: true });

@@ -1,16 +1,19 @@
 import { createHash } from "node:crypto";
 
+/** Cache evidence retained between successive development bundle writes. */
 export interface DevCacheRecord {
   hash: string;
   servedMtimeMs: number;
 }
 
+/** File-system operations required to adjust a development bundle timestamp. */
 export interface DevOutputFile {
   readFile(filePath: string): Promise<Buffer | Uint8Array | string>;
   stat(filePath: string): Promise<{ mtime: Date; mtimeMs?: number }>;
   utimes(filePath: string, atime: Date, mtime: Date): Promise<void>;
 }
 
+/** Returns the SHA-256 digest for emitted bundle bytes. */
 export function digestBytes(bytes: Buffer | Uint8Array | string): string {
   return createHash("sha256").update(bytes).digest("hex");
 }
@@ -38,6 +41,7 @@ export function parcelRespondsNotModified(ifModifiedSince: string, mtimeMs: numb
   return Date.parse(lastModified) <= Date.parse(ifModifiedSince);
 }
 
+/** Advances a changed bundle's served timestamp enough to defeat a stale 304 response. */
 export async function advanceDevBundleMtime(
   fs: DevOutputFile,
   filePath: string,

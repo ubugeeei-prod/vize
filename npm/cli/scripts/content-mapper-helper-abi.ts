@@ -4,7 +4,12 @@ import { readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import ts from "typescript";
 
-const subpaths = ["./content-mapper-helpers", "./virtual-ts", "./virtual-ts-checker"];
+const subpaths = [
+  "./content-mapper-helpers",
+  "./virtual-ts",
+  "./virtual-ts-checker",
+  "./virtual-ts-checker-strict",
+];
 const nativeReferences = "crates/vize_canon/src/virtual_ts/helpers/shared_types.rs";
 const output = "crates/vize/src/commands/content_mapper/helper-abi.json";
 

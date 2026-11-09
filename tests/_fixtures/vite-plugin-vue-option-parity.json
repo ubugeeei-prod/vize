@@ -3,13 +3,13 @@
   "upstream": {
     "apiCount": 4,
     "hookCount": 10,
-    "optionCount": 26,
+    "optionCount": 27,
     "package": "@vitejs/plugin-vue",
-    "version": "6.0.7"
+    "version": "6.0.10"
   },
   "summary": {
     "honored": 22,
-    "intentional-divergence": 18,
+    "intentional-divergence": 19,
     "unimplemented": 0
   },
   "options": {
@@ -48,6 +48,10 @@
     "features.propsDestructure": {
       "status": "intentional-divergence",
       "reason": "Reactive defineProps destructure is always on, matching the Vue 3.5+ compiler default; Vize does not emulate the pre-3.5 opt-out branch."
+    },
+    "features.vapor": {
+      "status": "intentional-divergence",
+      "reason": "Vapor output is selected by Vize's top-level `vapor` option or shared compiler config; the upstream feature bag's restricted force-mode policy is not treated as a second compiler switch."
     },
     "include": {
       "status": "honored",

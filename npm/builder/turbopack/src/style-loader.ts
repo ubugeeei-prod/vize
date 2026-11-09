@@ -3,6 +3,7 @@ import { MappedModule } from "@vizejs/builder-shared/mapped-module";
 import sources from "webpack-sources";
 import type { LoaderContext } from "./types.ts";
 
+/** Extracts one authored style block while preserving its source map. */
 export default function vizeStyleLoader(
   this: LoaderContext<Record<string, never>>,
   source: string,

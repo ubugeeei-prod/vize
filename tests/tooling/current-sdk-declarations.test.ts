@@ -10,14 +10,15 @@ const source = fileURLToPath(new URL("../../npm/cli", import.meta.url));
 
 void test("the current manifest and actual declaration graph cover mapper and checker consumers", () => {
   const closure = captureCurrentSdkDeclarations(source);
-  assert.equal(closure.files.length, 14);
-  assert.equal(closure.graph.files.length, 14);
-  assert.equal(closure.graph.edges.length, 24);
+  assert.equal(closure.files.length, 15);
+  assert.equal(closure.graph.files.length, 15);
+  assert.equal(closure.graph.edges.length, 25);
   assert.equal(closure.mapperGraph.files.length, 13);
   assert.equal(closure.mapperGraph.edges.length, 23);
   assert.ok(closure.files.includes("virtual-ts-emits.d.ts"));
   assert.ok(closure.files.includes("virtual-ts-listeners.d.ts"));
   assert.ok(closure.files.includes("virtual-ts-checker.d.ts"));
+  assert.ok(closure.files.includes("virtual-ts-checker-strict.d.ts"));
 });
 
 void test("current consumers reject missing, unshipped, disconnected or publicly exposed private declarations", () => {

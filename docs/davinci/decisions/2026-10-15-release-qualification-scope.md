@@ -39,8 +39,8 @@ joins that existing Q before its unchanged verify-only command; it cannot
 bootstrap or rerun qualification.
 The package build sequencer is `node tools/support/github/run-many.ts`.
 Node's stable type stripping runs that TypeScript file. Package builds still
-install `rust-script` because tasks such as `generate:rule-types` call the
-remaining `tools/commands/**/*.rs` entrypoints.
+still install `rust-script` while other tasks call the remaining
+`tools/commands/**/*.rs` entrypoints; `generate:rule-types` itself now runs in stable Node.
 
 The earlier five-workflow and browser-capture release contract remains historical;
 the current required workflow is exact-H Check. The source handoff is implemented

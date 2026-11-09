@@ -153,7 +153,7 @@ void test("PR and merge queue preserve package tests, native declaration, type a
     for (const step of job.steps.slice(1)) assert.ok(step.if, `${name}: ${step.name ?? step.uses}`);
   }
   const windows = jsChecks.jobs["pr-oxlint-windows-json-config"];
-  assert.equal(windows["runs-on"], "windows-2025");
+  assert.equal(windows["runs-on"], "blacksmith-32vcpu-windows-2025");
   assert.equal(windows.defaults.run.shell, "bash");
   assert.equal(
     windows.steps.find((step) => step.name === "Run the reported JSON-config command on Windows")

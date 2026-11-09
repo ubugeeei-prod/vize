@@ -37,8 +37,8 @@ const localLintCommand = runTask("check");
 const directPackageCheckCommand = runPackageScriptDirectly("check", directCheckPackages);
 const rustClippyCommand = [
   "cargo clippy --workspace -- -D warnings -D clippy::wildcard_imports",
-  rustTool("ci/check-workspace-lints", "--check"),
-  rustTool("ci/check-skeleton-todos", "--check"),
+  "node tools/commands/ci/check-workspace-lints.ts --check",
+  "node tools/commands/ci/check-skeleton-todos.ts --check",
 ].join(" && ");
 const iterationRepoCheckCommand = [
   "node",
