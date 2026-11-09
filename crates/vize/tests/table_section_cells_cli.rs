@@ -13,6 +13,26 @@ const APP: &str = r#"<template>
 </template>
 "#;
 
+const EXPECTED_BUILD: &str = r#"import { createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("table", null, [
+    _createElementVNode("thead", null, [
+      _createElementVNode("th", null, "Name"),
+      _createElementVNode("th", null, "Grade")
+    ])
+  ]))
+}"#;
+
+const EXPECTED_LINT_REPORT: &str = r#"[
+  {
+    "file": "App.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  }
+]"#;
+
 #[test]
 fn build_and_lint_preserve_authored_table_section_cells() {
     let project = tempfile::tempdir().expect("temporary project");
@@ -30,9 +50,7 @@ fn build_and_lint_preserve_authored_table_section_cells() {
         String::from_utf8_lossy(&build.stderr)
     );
     let built = fs::read_to_string(project.path().join("dist/App.js")).expect("built module");
-    assert!(built.contains("\"thead\", null, ["), "{built}");
-    assert_eq!(built.matches("\"th\"").count(), 2, "{built}");
-    assert_eq!(built.matches("\"tr\"").count(), 0, "{built}");
+    assert_eq!(built, EXPECTED_BUILD);
 
     let config = project.path().join("serialized-config.json");
     fs::write(
@@ -60,5 +78,5 @@ fn build_and_lint_preserve_authored_table_section_cells() {
         String::from_utf8_lossy(&lint.stderr)
     );
     let report = String::from_utf8(lint.stdout).expect("UTF-8 lint report");
-    assert!(!report.contains("parser/template"), "{report}");
+    assert_eq!(report, EXPECTED_LINT_REPORT);
 }
