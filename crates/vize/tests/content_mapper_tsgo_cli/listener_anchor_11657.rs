@@ -1,5 +1,7 @@
 //! #11657: an authored check TypeScript anchors at the `(` wrapping it stays
 //! reported; the unmapped ignores cover only generated-only scaffolding.
+//! Since #11675 a listener check lands on the authored value's `(`, not on
+//! the attribute's `=`.
 
 use std::path::PathBuf;
 
@@ -113,11 +115,11 @@ fn checks_anchored_at_wrapping_parentheses_stay_reported() {
             "src/Forms.vue(22,19): error TS2345",
             "src/Forms.vue(23,31): error TS2345",
             "src/Forms.vue(24,27): error TS2345",
-            "src/Forms.vue(25,49): error TS2322",
-            "src/Forms.vue(9,33): error TS2322",
-            "src/Handler.vue(5,33): error TS2322",
+            "src/Forms.vue(25,51): error TS2322",
+            "src/Forms.vue(9,35): error TS2322",
+            "src/Handler.vue(5,35): error TS2322",
             "src/HandlerAndProp.vue(5,11): error TS2322",
-            "src/HandlerAndProp.vue(5,33): error TS2322",
+            "src/HandlerAndProp.vue(5,35): error TS2322",
         ],
         "{}",
         output_text(&output)
