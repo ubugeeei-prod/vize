@@ -20,17 +20,18 @@ readme = "README.md"
 
 [dependencies]
 vize_l0 = { workspace = true }
+vize_l1 = { workspace = true }
 vize_l1_to_l2 = { workspace = true }
 vize_l2 = { workspace = true }
 vize_l3 = { workspace = true }
 serde_json = { workspace = true }
 oxc_syntax = { workspace = true }
+oxc_diagnostics = { workspace = true }
 
 [dev-dependencies]
 davinci_test_support = { workspace = true, features = ["native-dom"] }
 oxc_parser = { workspace = true }
 oxc_span = { workspace = true }
-vize_l1 = { workspace = true }
 
 [lints]
 workspace = true

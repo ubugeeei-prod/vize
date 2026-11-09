@@ -4940,6 +4940,7 @@ name = "vize_l4"
 version = "0.474.0"
 dependencies = [
  "davinci_test_support",
+ "oxc_diagnostics",
  "oxc_span",
  "oxc_syntax",
  "serde_json",
