@@ -151,7 +151,9 @@ function run(args: Arguments): void {
     suppressionsByPath,
     ruleMap,
   );
-  const names = [...nameOccurrences].sort(([left], [right]) => left.localeCompare(right));
+  const names = [...nameOccurrences].sort(([left], [right]) =>
+    left < right ? -1 : left > right ? 1 : 0,
+  );
   const unmapped = names
     .filter(([rule]) => !ruleMap.mapped.has(rule))
     .map(([rule, occurrences]) => ({ rule, occurrences }));
