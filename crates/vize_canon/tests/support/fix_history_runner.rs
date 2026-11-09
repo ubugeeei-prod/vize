@@ -65,112 +65,23 @@ pub(crate) fn check_pack_with_capture_policy(
         "every historical issue must retain exact fixture custody"
     );
     assert_eq!(pack.regression_commit, regression);
+    // Packs captured from their own fix commit need no entry here.
     assert_eq!(
         pack.source_revision,
         match name {
-            "aria-kebab-prop-11048"
-            | "aria-propertykey-capture-11153"
-            | "component-tag-aliases-11020" => regression,
-            "content-mapper-template-callback-listener-11023" => regression,
-            "content-mapper-vue-generic-11051" => regression,
-            "unknown-component-slot-payload-11027" | "declared-any-slot-provider-11027" =>
-                regression,
             "import-literal-geometry-10762" | "escaped-import-literals-10763" => {
                 "62652a4d4029fa11016dfa1ac8c24669b42c8d7a"
             }
             "package-target-deletion-refresh" => "13fa41356d075047a229f580014b637d3bbeb57f",
-            "template-context-undefined-10667"
-            | "contextual-prop-anchors-10661"
-            | "typed-import-meta"
-            | "slot-outlet-key"
-            | "options-api-any-instance"
-            | "authored-unused-symbols"
-            | "split-script-original"
-            | "v-for-source-original"
-            | "v-for-component-source-original"
-            | "declared-prop-names-original"
-            | "template-suppression-original"
-            | "template-ref-signatures-10948"
-            | "native-pointer-events-original"
-            | "cache-maintenance-9860"
-            | "workspace-alias-cache-10063"
-            | "workspace-package-import-alias-10175"
-            | "nuxt-unknown-template-options-10013"
-            | "reactive-props-destructure-10008"
-            | "generic-fallthrough-spread-9956"
-            | "optional-fallthrough-spread-10170"
-            | "misskey-generated-inference-9516"
-            | "component-v-bind-duplicate-diagnostic-10069"
-            | "inferred-project-tsconfig-9718"
-            | "content-mapper-global-component-10185"
-            | "allow-importing-ts-extensions-9890"
-            | "nuxt-plugin-injection-types"
-            | "listener-attribute-parity-9852"
-            | "dependency-probe-history-10936"
-            | "dynamic-component-union-listener-10026"
-            | "native-inline-event-handler-9835"
-            | "art-variant-implicit-component-9854"
-            | "runtime-props-report-10100-10101"
-            | "component-render-h-props-9855"
-            | "component-listener-alias-scope-10112"
-            | "content-mapper-duplicate-attributes-10184"
-            | "content-mapper-musea-art-10186"
-            | "content-mapper-nuxt-emit-10195"
-            | "incomplete-script-setup-recovery-10200"
-            | "dynamic-directive-expression-mapping-10182"
-            | "content-mapper-template-expression-syntax"
-            | "content-mapper-const-enum-import"
-            | "content-mapper-diagnostics-10187"
-            | "content-mapper-javascript-checkjs-10217"
-            | "content-mapper-dynamic-template-ref-10198"
-            | "content-mapper-type-only-import-use"
-            | "content-mapper-unknown-options-10218"
-            | "content-mapper-dynamic-template-ref-union-10251"
-            | "content-mapper-dynamic-template-ref-scope-10251"
-            | "content-mapper-props-binding-10196"
-            | "strict-fallthrough-default-7856"
-            | "content-mapper-multiline-callback-10191"
-            | "content-mapper-define-slots-typeof-10197"
-            | "content-mapper-nested-vfor-guard-10216"
-            | "content-mapper-filename-globals-10190"
-            | "native-expect-error-10413"
-            | "generic-constructor-slots-10416"
-            | "long-prop-kebab-case-10423"
-            | "pug-refusal-10430"
-            | "portable-pug-10434"
-            | "jsx-prop-token-ranges-10494"
-            | "quoted-generic-parameters-10540"
-            | "planned-generic-syntax-route-10598"
-            | "unicode-prop-bindings-10573"
-            | "undeclared-instance-globals-10617"
-            | "experimental-router-import-10520"
-            | "experimental-router-props-10579"
-            | "literal-reference-paths-10551"
-            | "content-mapper-experimental-router-10526"
-            | "narrowed-slot-host-guard-10660"
-            | "callback-render-position-10738"
-            | "generic-slot-outlet-10883"
-            | "empty-generic-public-contract-10540"
-            | "component-input-diagnostic-owners-10607"
-            | "content-mapper-merged-class-10788"
-            | "content-mapper-slot-host-callbacks-10774"
-            | "native-completion-order-10747"
-            | "global-scope-build-info-10819"
-            | "relative-sibling-storage-10934"
-            | "reopen-repaired-diagnostics-10730"
-            | "editor-alias-import-extension-10753"
-            | "tsconfig-literal-brackets-10819"
-            | "options-api-reserved-component-reference"
-            | "setup-custom-properties"
-            | "empty-v-slot-expression"
-            | "public-instance-ts-directives-10984"
-            | "zero-argument-slot-constructor-11013"
-            | "event-inference-callback-10739"
-            | "required-default-props" => regression,
-            "valueless-directive-import-3140" => {
-                "88e8500c1e5f1b29d80f42c8ca065cc9cbd56899"
-            }
-            _ => "9aaa1fe458a09e0d0c6604dc8835ccf7c737d943",
+            "valueless-directive-import-3140" => "88e8500c1e5f1b29d80f42c8ca065cc9cbd56899",
+            "component-event-tuples"
+            | "component-listener-prop-duplicate-10397"
+            | "event-handler-narrowing"
+            | "required-props-edges"
+            | "reserved-expression-shapes"
+            | "template-definite-assignment"
+            | "unicode-reserved-props" => "9aaa1fe458a09e0d0c6604dc8835ccf7c737d943",
+            _ => regression,
         }
     );
     assert_eq!(pack.diagnostic_contract.position_base, 1);

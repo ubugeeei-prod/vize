@@ -1,0 +1,4 @@
+import { setupParseMdFileDialogCtx } from "./ParseMdFileDialog.vue";
+
+const ready: string = setupParseMdFileDialogCtx().ready;
+void ready;
