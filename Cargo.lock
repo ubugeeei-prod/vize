@@ -4868,6 +4868,7 @@ dependencies = [
  "vize_l0",
  "vize_l1",
  "vize_oxc_parser",
+ "vize_relief",
 ]
 
 [[package]]
