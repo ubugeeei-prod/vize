@@ -137,3 +137,42 @@ fn explicit_false_restores_the_unit_rule_after_true_without_enabling_a_missing_r
     assert_eq!(core::mem::size_of_val(&ValidVSlot), 0);
     assert_eq!(core::mem::size_of_val(&ValidVSlot::allowing_modifiers()), 0);
 }
+
+#[test]
+fn test_valid_same_dynamic_slot_expression_in_separate_loops() {
+    let linter = create_linter();
+    let result = linter.lint_template(
+        r#"<MyComponent>
+            <template v-for="id in first" :key="id" #[`popup:${id}`]="{ item }">{{ item }}</template>
+            <template v-for="id in second" :key="id" #[`popup:${id}`]="{ item }">{{ item }}</template>
+        </MyComponent>"#,
+        "test.vue",
+    );
+    assert_eq!(result.error_count, 0);
+}
+
+#[test]
+fn test_invalid_duplicate_static_slot_is_still_reported() {
+    let linter = create_linter();
+    let result = linter.lint_template(
+        r#"<MyComponent>
+            <template #header>A</template>
+            <template #header>B</template>
+        </MyComponent>"#,
+        "test.vue",
+    );
+    assert_eq!(result.error_count, 1);
+}
+
+#[test]
+fn test_invalid_same_dynamic_slot_in_identical_loops() {
+    let linter = create_linter();
+    let result = linter.lint_template(
+        r#"<MyComponent>
+            <template v-for="id in ids" :key="id" #[`popup:${id}`]="{ item }">{{ item }}</template>
+            <template v-for="id in ids" :key="id" #[`popup:${id}`]="{ item }">{{ item }}</template>
+        </MyComponent>"#,
+        "test.vue",
+    );
+    assert_eq!(result.error_count, 1);
+}

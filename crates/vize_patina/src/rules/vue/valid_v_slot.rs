@@ -137,7 +137,14 @@ fn check_child_slot_templates(ctx: &mut LintContext, owner: &ElementNode) {
             in_if_chain = starts_chain;
         }
 
-        if let Some(name) = static_slot_name(slot) {
+        if let Some(mut name) = static_slot_name(slot) {
+            // Like eslint-plugin-vue: a slot name built from the `v-for` variables
+            // of its own `<template>` only collides with another slot made by an
+            // identical loop, not with every slot that spells the same expression.
+            if let Some(signature) = loop_signature(child, slot) {
+                name.push('\0');
+                name.push_str(&signature);
+            }
             if !current_group_slots.contains(&name) && seen_slots.contains(&name) {
                 ctx.error_with_help(
                     ctx.t("vue/valid-v-slot.invalid_location"),
@@ -165,6 +172,45 @@ fn check_child_slot_templates(ctx: &mut LintContext, owner: &ElementNode) {
             ctx.t("vue/valid-v-slot.help"),
         );
     }
+}
+
+/// The normalized `v-for` expression of `element` when the slot argument of
+/// `slot` uses one of that loop's variables.
+fn loop_signature(element: &ElementNode, slot: &DirectiveNode) -> Option<String> {
+    let Some(ExpressionNode::Simple(arg)) = &slot.arg else {
+        return None;
+    };
+    if arg.is_static {
+        return None;
+    }
+    let for_exp = element.props.iter().find_map(|prop| match prop {
+        PropNode::Directive(dir) if dir.name == "for" => match &dir.exp {
+            Some(ExpressionNode::Simple(exp)) => Some(exp.content),
+            _ => None,
+        },
+        _ => None,
+    })?;
+    let (left, _) = for_exp
+        .split_once(" in ")
+        .or_else(|| for_exp.split_once(" of "))?;
+    let variables = identifiers(left);
+    let uses_loop_variable = identifiers(arg.content)
+        .iter()
+        .any(|name| variables.contains(name));
+    uses_loop_variable.then(|| {
+        for_exp
+            .split_whitespace()
+            .collect::<std::vec::Vec<_>>()
+            .join(" ")
+            .to_compact_string()
+    })
+}
+
+fn identifiers(source: &str) -> std::vec::Vec<&str> {
+    source
+        .split(|c: char| !(c.is_alphanumeric() || c == '_' || c == '$'))
+        .filter(|token| !token.is_empty() && !token.starts_with(|c: char| c.is_ascii_digit()))
+        .collect()
 }
 
 fn finish_slot_group(seen_slots: &mut FxHashSet<String>, group_slots: &mut FxHashSet<String>) {
