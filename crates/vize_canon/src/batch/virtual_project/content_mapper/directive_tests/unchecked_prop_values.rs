@@ -15,7 +15,7 @@ use crate::virtual_ts::unchecked_prop_value_declaration;
 
 const APP: &str = "<script setup lang=\"ts\">\nimport Field from './Field.vue'\n</script>\n<template>\n  <Field label=\"x\" :maxlength=\"{}\" />\n</template>\n";
 const DECLARED: &str = "  type __Field_Declared_0 = __Field_Props_0 & $EmitListeners<typeof Field> & $RequiredFallthroughProps<typeof Field> & VueTemplatePublicAttrsType;\n";
-const OWNED: &str = "  const __vize_prop_check_0_maxlength: $UncheckedPropValue<__Field_Declared_0, \"maxlength\", __Field_0_prop_maxlength> = {} satisfies __Field_0_prop_maxlength;\n";
+const OWNED: &str = "  const __vize_prop_check_0_maxlength: $UncheckedPropValue<__Field_Declared_0, \"maxlength\", __Field_0_prop_maxlength> = ({}) satisfies __Field_0_prop_maxlength;\n";
 const PLAIN: &str = "  const __vize_prop_check_0_maxlength: __Field_0_prop_maxlength = {};\n";
 const NAME: &str = "__vize_prop_check_0_maxlength";
 
@@ -81,7 +81,7 @@ fn echoed_assignment_keeps_only_its_name_visible() {
         .expect("directive table")
         .directives;
     let name_end = span.0[0] + span.0[1];
-    let value = start + OWNED.find("= {}").expect("value") + 2;
+    let value = start + OWNED.find("({})").expect("value") + 1;
     assert_eq!(policies(&directives, span.0[0]), Vec::<usize>::new());
     assert_eq!(policies(&directives, name_end), [DIRECTIVE_POLICY_IGNORE]);
     assert_eq!(policies(&directives, value), [DIRECTIVE_POLICY_IGNORE]);
@@ -125,7 +125,7 @@ fn literal_owners_alone_take_the_owned_form() {
             Vec::<usize>::new(),
             "{source}"
         );
-        let value = start + statement.find("= {}").expect("value") + 2;
+        let value = start + statement.find("{}").expect("value");
         let echoed = if statement == OWNED {
             vec![DIRECTIVE_POLICY_IGNORE]
         } else {
@@ -139,6 +139,36 @@ fn literal_owners_alone_take_the_owned_form() {
             "ARIA keeps the plain owner"
         );
     }
+}
+
+/// A value that ends on its own line still reaches `satisfies`: without the
+/// parentheses, ASI ends the declaration before it (TS1434).
+#[test]
+fn multi_line_values_stay_one_owned_expression() {
+    let source = APP
+        .replace(
+            ":maxlength=\"{}\"",
+            ":maxlength=\"\n    cond\n      ? 1\n      : {}\n  \"",
+        )
+        .replace("'./Field.vue'", "'./Field.vue'\nconst cond = true");
+    let result = generate_vue_content_mapper_transform(Path::new("/project/App.vue"), &source)
+        .expect("transform");
+    let text = result.text.as_str();
+    let start = text
+        .find("  const __vize_prop_check_0_maxlength: $UncheckedPropValue<__Field_Declared_0, \"maxlength\", __Field_0_prop_maxlength> = (")
+        .expect("owned per-prop check");
+    let statement = text
+        .get(start..)
+        .and_then(|tail| tail.split_once(";\n"))
+        .map(|(statement, _)| statement)
+        .expect("statement end");
+    assert_eq!(
+        statement
+            .rsplit_once(") satisfies ")
+            .map(|(_, contract)| contract),
+        Some("__Field_0_prop_maxlength"),
+        "{statement}"
+    );
 }
 
 #[test]

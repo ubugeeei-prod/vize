@@ -91,7 +91,7 @@ impl OwnedPropValues {
         self.owned.get(index).copied().unwrap_or(false)
     }
 
-    /// `: $UncheckedPropValue<inputs, key, contract> = `
+    /// `: $UncheckedPropValue<inputs, key, contract> = (`
     pub(crate) fn append_type(&self, ts: &mut crate::virtual_ts::TextBuf, prop: &PassedProp) {
         let (component, idx) = (self.component.as_str(), self.idx);
         let name = to_safe_identifier_fragment(prop.name.as_str());
@@ -100,14 +100,15 @@ impl OwnedPropValues {
             ": {UNCHECKED_PROP_VALUE_REFERENCE}__{component}_Declared_{idx}, "
         );
         push_ts_string_literal(ts, component_prop_key(prop.name.as_str()).as_str());
-        append!(*ts, ", __{component}_{idx}_prop_{name}> = ");
+        append!(*ts, ", __{component}_{idx}_prop_{name}> = (");
     }
 
-    /// ` satisfies contract` after the value.
+    /// `) satisfies contract` after the value. The parentheses keep a
+    /// multi-line value from ending the statement before `satisfies`.
     pub(crate) fn append_tail(&self, ts: &mut crate::virtual_ts::TextBuf, prop: &PassedProp) {
         let (component, idx) = (self.component.as_str(), self.idx);
         let name = to_safe_identifier_fragment(prop.name.as_str());
-        append!(*ts, " satisfies __{component}_{idx}_prop_{name}");
+        append!(*ts, ") satisfies __{component}_{idx}_prop_{name}");
     }
 }
 

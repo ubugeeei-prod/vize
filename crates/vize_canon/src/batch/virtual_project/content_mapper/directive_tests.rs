@@ -210,7 +210,7 @@ fn component_prop_assignments_are_ignored_only_when_the_literal_owns_them() {
         + "const ".len();
     let tail = result
         .text
-        .find(": $UncheckedPropValue<__Child_Declared_0, \"count\", __Child_0_prop_count> = value satisfies __Child_0_prop_count;")
+        .find(": $UncheckedPropValue<__Child_Declared_0, \"count\", __Child_0_prop_count> = (value) satisfies __Child_0_prop_count;")
         .expect("owned per-prop check");
     let literal = result
         .text
