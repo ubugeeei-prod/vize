@@ -89,11 +89,12 @@ const wire: readonly Rule[] = [
 ];
 
 // Frozen #10900 custody (sha-pinned before-bytes and the projection that reads them)
-// and the completion gate's ban list, which must spell the names it bans.
+// and the completion gate and codename rename, which must spell the names they ban.
 const frozen = new Set([
   "tools/support/cross_file/async_component/public-before.json.txt",
   "tools/support/cross_file/async_component/verify.ts",
   "tools/commands/davinci/completion-gates.ts",
+  "tools/support/levels/rename-codenames.ts",
 ]);
 // Live indexes in docs that cite the moved files; other docs keep historical bytes.
 const indexes = new Set([

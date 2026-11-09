@@ -43,7 +43,7 @@ void test("every gate names an issue and the tier order never goes back", () => 
   }
 });
 
-void test("codename scan counts paths and lines but not aliases, history or the docs that may keep them", () => {
+void test("codename scan counts paths and lines but not aliases, history or the docs Markdown that may keep them", () => {
   // Spelled through the gate's own list so this file holds no banned literal.
   const pick = (prefix: string) => {
     const found = codenames.find((entry) => entry.startsWith(prefix));
@@ -60,15 +60,16 @@ void test("codename scan counts paths and lines but not aliases, history or the 
       "crates/vize/src/profile.rs": `record("${program}.expr.parses");\n`,
       [`docs/${program}/plan/${dump}-format.md`]: `${title(dump)} and ${title(program)}\n`,
       "docs/content/guide.md": `${title(l3)} and ${title(program)}\n`,
+      [`docs/${program}/plan/remarks.schema.json`]: `"the ${dump} page"\n`,
       [[...gateFiles][0]]: JSON.stringify(l3) + ",\n",
       "tests/_fixtures/run/cargo.jsonl": `{"${l3}": 1}\n`,
       "crates/vize/tests/fixtures/fix-history/run/cargo.json": `{"${l3}": 1}\n`,
       "tests/_fixtures/differential/compiler/case/observed-base.json": `"${program}.x.y"\n`,
     }),
   );
-  assert.equal(report.paths, 1);
-  assert.equal(report.lines, 4);
-  assert.deepEqual(report.byName, { [stages]: 1, [dump]: 1, [program]: 3 });
+  assert.equal(report.paths, 2);
+  assert.equal(report.lines, 5);
+  assert.deepEqual(report.byName, { [stages]: 1, [dump]: 3, [program]: 3 });
 });
 
 void test("measured gates fail on a legacy edge and pass once it is gone", () => {
