@@ -263,7 +263,8 @@ fn script_and_style_internal_work_stays_linear() {
         assert_eq!(script_ranges.len(), count);
         assert_eq!(style_ranges.len(), count);
         assert!(script_work <= script.content.len() + count);
-        assert!(style_work <= style.content.len() + count);
+        // Two structure nodes per rule: the rule and its declaration.
+        assert!(style_work <= style.content.len() + 2 * count);
         if let Some(previous) = previous_script_work {
             assert!(script_work <= previous * 2 + 32);
         }
@@ -286,4 +287,31 @@ fn an_unopened_document_yields_no_folding_ranges() {
         partial_result_params: PartialResultParams::default(),
     };
     assert!(folding_ranges(&state, &params).is_none());
+}
+
+#[test]
+fn indented_style_blocks_fold_through_their_last_nested_line() {
+    for lang in ["sass", "stylus"] {
+        let source = vize_l0::cstr!(
+            "<style lang=\"{lang}\">\n.outer\n  // comment\n  .inner\n    color: red\n    margin: 0\n.next\n  color: blue\n</style>\n"
+        );
+
+        assert_eq!(
+            ranges(&source),
+            vec![
+                (0, 7, Some("region"), Some("style")),
+                (1, 5, None, None),
+                (3, 5, None, None),
+                (6, 7, None, None),
+            ],
+            "{lang}"
+        );
+    }
+}
+
+#[test]
+fn unknown_style_languages_stay_opaque() {
+    let source = "<style lang=\"unknown\">\n.outer {\n  color: red;\n}\n</style>\n";
+
+    assert_eq!(ranges(source), vec![(0, 3, Some("region"), Some("style"))]);
 }
