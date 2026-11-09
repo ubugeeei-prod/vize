@@ -33,9 +33,7 @@ use crate::types::{
     BindingType, SfcCompileExperimentalOptions, SfcCompileOptions, SfcCompileResult, SfcDescriptor,
     SfcError,
 };
-use vize_atelier_core::{
-    CodegenOptions, TemplateSyntaxMode, lane::ScriptTables, options::CustomElementMatcher,
-};
+use vize_atelier_core::{CodegenOptions, TemplateSyntaxMode, options::CustomElementMatcher};
 
 use self::bindings::{
     collect_normal_script_bindings, croquis_to_legacy_bindings, merge_normal_script_bindings,
@@ -407,7 +405,7 @@ fn compile_sfc_inner(
         }
     );
     let mut script_bindings = croquis_to_legacy_bindings(&croquis.bindings, setup_program.as_ref());
-    let script_tables = ScriptTables::from_croquis(&croquis);
+    let script_tables = vize_atelier_core::lane::ScriptTables::from_croquis(&croquis);
 
     // 2. ScriptCompileContext: needed for macro span info and TypeScript type resolution
     //    (Croquis doesn't resolve type references like `defineProps<Props>()`)
