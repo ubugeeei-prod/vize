@@ -6,6 +6,7 @@ use vize_carton::FxHashSet;
 use crate::batch::import_rewriter::{ImportRewriter, VirtualAliasRewritePolicy};
 use crate::virtual_ts::{VirtualTsCheckOptions, VirtualTsOptions};
 
+use super::super::passthrough::PassthroughProbes;
 use super::super::setup_props::RuntimePropResolveCache;
 
 #[derive(Clone, Copy)]
@@ -17,6 +18,7 @@ pub(in crate::batch::virtual_project) struct ScriptBuildContext<'a> {
     pub(in crate::batch::virtual_project) mirrorable_project_files: Option<&'a FxHashSet<PathBuf>>,
     pub(in crate::batch::virtual_project) alias_rewrite_policy:
         Option<&'a VirtualAliasRewritePolicy>,
+    pub(in crate::batch::virtual_project) passthrough_probes: Option<&'a PassthroughProbes>,
 }
 
 #[derive(Clone, Copy)]
@@ -61,6 +63,15 @@ impl<'a> VirtualBuildContext<'a> {
             preserve_declaration_spelling: self.preserve_declaration_spelling,
             mirrorable_project_files: self.mirrorable_project_files,
             alias_rewrite_policy: self.alias_rewrite_policy,
+            passthrough_probes: self.passthrough_probes(),
         }
+    }
+
+    /// The batch's shared directory listings, when it builds as a batch.
+    pub(in crate::batch::virtual_project) fn passthrough_probes(
+        self,
+    ) -> Option<&'a PassthroughProbes> {
+        self.runtime_prop_resolve_cache
+            .map(RuntimePropResolveCache::passthrough_probes)
     }
 }

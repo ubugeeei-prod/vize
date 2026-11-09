@@ -81,6 +81,7 @@ pub(in crate::batch::virtual_project) fn build_script_registered_file(
             content,
             context.roots.0,
             context.roots.1,
+            context.passthrough_probes,
         ),
         diagnostics: Vec::new(),
         unchecked_javascript: false,
