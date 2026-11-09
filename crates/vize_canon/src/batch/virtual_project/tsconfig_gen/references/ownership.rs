@@ -85,7 +85,7 @@ impl TsconfigOwnershipCache {
     /// The root project followed by every transitive reference, in declaration
     /// order and with cycles/deduplicated diamonds visited once.
     pub fn project_paths(&mut self, tsconfig_path: &Path) -> Vec<PathBuf> {
-        let resolved = graph::normalize_path(tsconfig_path);
+        let resolved = self.specs.normalize(tsconfig_path);
         self.project_paths
             .entry(resolved)
             .or_insert_with_key(|root| graph::collect_project_paths(root))
@@ -135,14 +135,25 @@ impl TsconfigOwnershipCache {
         source_path: &Path,
         source_kind: TsconfigSourceKind,
     ) -> PathBuf {
+        let source_path = graph::normalize_path(source_path);
+        self.effective_config_for_normalized_source(tsconfig_path, &source_path, source_kind)
+    }
+
+    /// [`Self::effective_config_for_source`] for a source the caller has
+    /// already canonicalized, as `canonicalize` would spell it.
+    pub fn effective_config_for_normalized_source(
+        &mut self,
+        tsconfig_path: &Path,
+        source_path: &Path,
+        source_kind: TsconfigSourceKind,
+    ) -> PathBuf {
         let projects = self.project_paths(tsconfig_path);
         let root = projects
             .first()
             .cloned()
-            .unwrap_or_else(|| graph::normalize_path(tsconfig_path));
-        let source_path = graph::normalize_path(source_path);
+            .unwrap_or_else(|| self.specs.normalize(tsconfig_path));
         unique_owner(&root, &projects, |project| {
-            self.project_owns_normalized_source(project, &source_path, source_kind)
+            self.project_owns_normalized_source(project, source_path, source_kind)
         })
     }
 }
