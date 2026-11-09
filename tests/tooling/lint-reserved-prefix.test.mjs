@@ -43,13 +43,8 @@ await test("exact reserved membership and groups preserve complete CLI packets",
   );
   const propsSuccessors = JSON.parse(fs.readFileSync(propsSuccessorsPath, "utf8"));
   const propsPackets = new Map(propsSuccessors.coreCases.map((entry) => [entry.id, entry]));
-  const reservedKeysSuccessorsPath = path.join(
-    fixture,
-    "no-reserved-keys-route-successors.json",
-  );
-  const reservedKeysSuccessors = JSON.parse(
-    fs.readFileSync(reservedKeysSuccessorsPath, "utf8"),
-  );
+  const reservedKeysSuccessorsPath = path.join(fixture, "no-reserved-keys-route-successors.json");
+  const reservedKeysSuccessors = JSON.parse(fs.readFileSync(reservedKeysSuccessorsPath, "utf8"));
   const reservedKeysPackets = new Map(
     reservedKeysSuccessors.coreCases.map((entry) => [entry.id, entry]),
   );
@@ -58,9 +53,7 @@ await test("exact reserved membership and groups preserve complete CLI packets",
     if (!successor) return findings;
     assert.equal(successor.filename, entry.filename);
     assert.equal(successor.sourceSha256, entry.sourceSha256);
-    return [...findings, ...successor.diagnostics].sort(
-      (left, right) => left.start - right.start,
-    );
+    return [...findings, ...successor.diagnostics].sort((left, right) => left.start - right.start);
   };
   const withCurrentDefault = (entry, findings) => {
     const successor = defaultPackets.get(entry.id);
@@ -216,15 +209,19 @@ await test("exact reserved membership and groups preserve complete CLI packets",
     validateBuildReceipt(receipt, build);
     const scenarios = corpus.cases.flatMap((entry) => [
       ...[null, "recommended", "essential", "ecosystem"].map((preset) => {
-        const findings = withCurrentReservedKeys(
+        const current = withCurrentReservedKeys(
           entry,
           companionPackets.get(entry.id).combinedCliDiagnostics,
         );
+        const findings =
+          preset === "essential"
+            ? current.filter((diagnostic) => diagnostic.rule_name !== "vue/prop-name-casing")
+            : withCurrentDefault(entry, current);
         return {
           entry,
           preset,
           config: null,
-          findings: preset === "essential" ? findings : withCurrentDefault(entry, findings),
+          findings,
         };
       }),
       { entry, preset: "incremental", config: null, findings: [] },
