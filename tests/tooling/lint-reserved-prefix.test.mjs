@@ -45,11 +45,24 @@ await test("exact reserved membership and groups preserve complete CLI packets",
   const propsPackets = new Map(propsSuccessors.coreCases.map((entry) => [entry.id, entry]));
   const reservedKeysSuccessorsPath = path.join(fixture, "no-reserved-keys-route-successors.json");
   const reservedKeysSuccessors = JSON.parse(fs.readFileSync(reservedKeysSuccessorsPath, "utf8"));
-  const withCurrentDefault = (entry, findings) => {
+  const reservedKeysPackets = new Map(
+    reservedKeysSuccessors.coreCases.map((entry) => [entry.id, entry]),
+  );
+  const compareText = (left, right) => (left < right ? -1 : left > right ? 1 : 0);
+  const compareDiagnostic = (left, right) =>
+    left.start - right.start ||
+    left.end - right.end ||
+    (left.severity === right.severity ? 0 : left.severity === "error" ? -1 : 1) ||
+    compareText(left.rule_name, right.rule_name) ||
+    compareText(left.message, right.message) ||
+    compareText(left.help ?? "", right.help ?? "") ||
+    compareText(JSON.stringify(left.labels ?? []), JSON.stringify(right.labels ?? []));
+  const withCurrentDefault = (entry, findings, { includeReservedKeys = true } = {}) => {
     const successor = defaultPackets.get(entry.id);
     const unused = unusedPackets.get(entry.id);
     const props = propsPackets.get(entry.id);
-    for (const selected of [successor, unused, props].filter(Boolean)) {
+    const reservedKeys = includeReservedKeys ? reservedKeysPackets.get(entry.id) : undefined;
+    for (const selected of [successor, unused, props, reservedKeys].filter(Boolean)) {
       assert.equal(selected.filename, entry.filename);
       assert.equal(selected.sourceSha256, entry.sourceSha256);
     }
@@ -57,6 +70,7 @@ await test("exact reserved membership and groups preserve complete CLI packets",
       ...(successor ? [successor.diagnostic] : []),
       ...(unused ? unused.diagnostics : []),
       ...(props ? props.diagnostics : []),
+      ...(reservedKeys ? reservedKeys.diagnostics : []),
     ];
     const companionAdditions = companionPackets
       .get(entry.id)
@@ -65,12 +79,7 @@ await test("exact reserved membership and groups preserve complete CLI packets",
           diagnostic.rule_name === "vue/prop-name-casing" &&
           !findings.some((finding) => JSON.stringify(finding) === JSON.stringify(diagnostic)),
       );
-    assert.ok(
-      findings.every((finding) =>
-        additions.every((diagnostic) => diagnostic.start <= finding.start),
-      ),
-    );
-    return [...additions, ...findings, ...companionAdditions];
+    return [...additions, ...findings, ...companionAdditions].sort(compareDiagnostic);
   };
   assert.equal(companions.cases.length, 20);
   assert.equal(defaultSuccessors.coreCases.length, 18);
@@ -215,7 +224,9 @@ await test("exact reserved membership and groups preserve complete CLI packets",
       {
         entry,
         preset: null,
-        findings: withCurrentDefault(entry, companionPackets.get(entry.id).diagnostics),
+        findings: withCurrentDefault(entry, companionPackets.get(entry.id).diagnostics, {
+          includeReservedKeys: false,
+        }),
         config: JSON.stringify({ linter: { rules: { [corpus.rule]: "off" } } }) + "\n",
       },
       {

@@ -18,10 +18,10 @@
     }
   },
   "routes": {
-    "default": "equivalent script/no-reserved-props finding owns the final packet",
-    "recommended": "equivalent script/no-reserved-props finding owns the final packet",
+    "default": "current successor beside script/no-reserved-props",
+    "recommended": "current successor beside script/no-reserved-props",
     "essential": "equivalent script/no-reserved-props finding owns the final packet",
-    "ecosystem": "equivalent script/no-reserved-props finding owns the final packet",
+    "ecosystem": "current successor beside script/no-reserved-props",
     "explicitIncremental": "current successor",
     "explicitTargetOff": "absent",
     "incremental": "absent",
