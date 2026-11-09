@@ -18,11 +18,12 @@
     }
   },
   "routes": {
-    "default": "merge in CLI source order",
-    "recommended": "merge in CLI source order",
-    "essential": "merge in CLI source order",
-    "ecosystem": "merge in CLI source order",
-    "explicitTargetOff": "merge in CLI source order",
+    "default": "equivalent script/no-reserved-props finding owns the final packet",
+    "recommended": "equivalent script/no-reserved-props finding owns the final packet",
+    "essential": "equivalent script/no-reserved-props finding owns the final packet",
+    "ecosystem": "equivalent script/no-reserved-props finding owns the final packet",
+    "explicitIncremental": "current successor",
+    "explicitTargetOff": "absent",
     "incremental": "absent",
     "n8nProjection": "absent"
   },

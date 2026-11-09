@@ -45,16 +45,6 @@ await test("exact reserved membership and groups preserve complete CLI packets",
   const propsPackets = new Map(propsSuccessors.coreCases.map((entry) => [entry.id, entry]));
   const reservedKeysSuccessorsPath = path.join(fixture, "no-reserved-keys-route-successors.json");
   const reservedKeysSuccessors = JSON.parse(fs.readFileSync(reservedKeysSuccessorsPath, "utf8"));
-  const reservedKeysPackets = new Map(
-    reservedKeysSuccessors.coreCases.map((entry) => [entry.id, entry]),
-  );
-  const withCurrentReservedKeys = (entry, findings) => {
-    const successor = reservedKeysPackets.get(entry.id);
-    if (!successor) return findings;
-    assert.equal(successor.filename, entry.filename);
-    assert.equal(successor.sourceSha256, entry.sourceSha256);
-    return [...findings, ...successor.diagnostics].sort((left, right) => left.start - right.start);
-  };
   const withCurrentDefault = (entry, findings) => {
     const successor = defaultPackets.get(entry.id);
     const unused = unusedPackets.get(entry.id);
@@ -209,10 +199,7 @@ await test("exact reserved membership and groups preserve complete CLI packets",
     validateBuildReceipt(receipt, build);
     const scenarios = corpus.cases.flatMap((entry) => [
       ...[null, "recommended", "essential", "ecosystem"].map((preset) => {
-        const current = withCurrentReservedKeys(
-          entry,
-          companionPackets.get(entry.id).combinedCliDiagnostics,
-        );
+        const current = companionPackets.get(entry.id).combinedCliDiagnostics;
         const findings =
           preset === "essential"
             ? current.filter((diagnostic) => diagnostic.rule_name !== "vue/prop-name-casing")
@@ -228,10 +215,7 @@ await test("exact reserved membership and groups preserve complete CLI packets",
       {
         entry,
         preset: null,
-        findings: withCurrentDefault(
-          entry,
-          withCurrentReservedKeys(entry, companionPackets.get(entry.id).diagnostics),
-        ),
+        findings: withCurrentDefault(entry, companionPackets.get(entry.id).diagnostics),
         config: JSON.stringify({ linter: { rules: { [corpus.rule]: "off" } } }) + "\n",
       },
       {
@@ -242,6 +226,24 @@ await test("exact reserved membership and groups preserve complete CLI packets",
       },
     ]);
     scenarios.push(
+      ...reservedKeysSuccessors.coreCases.map((successor) => {
+        const entry = corpus.cases.find((entry) => entry.id === successor.id);
+        assert.ok(entry, successor.id);
+        assert.equal(successor.filename, entry.filename);
+        assert.equal(successor.sourceSha256, entry.sourceSha256);
+        return {
+          entry,
+          preset: null,
+          findings: successor.diagnostics,
+          config:
+            JSON.stringify({
+              linter: {
+                preset: "incremental",
+                rules: { [reservedKeysSuccessors.rule]: "error" },
+              },
+            }) + "\n",
+        };
+      }),
       ...originals.cases.map((entry, index) => ({
         entry,
         preset: null,
@@ -315,7 +317,7 @@ await test("exact reserved membership and groups preserve complete CLI packets",
       }
       fs.unlinkSync(file);
     }
-    assert.equal(evidence.runs.length, 161);
+    assert.equal(evidence.runs.length, 162);
     assert.deepEqual(custody(), evidence.custody);
   } finally {
     persist();
