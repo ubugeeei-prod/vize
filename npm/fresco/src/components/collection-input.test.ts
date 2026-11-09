@@ -69,6 +69,30 @@ test("Select typeahead cycles matching enabled options and ignores input while b
   mounted.unmount();
 });
 
+test("Select keeps keyboard and typeahead targets inside a bounded viewport", async () => {
+  const mounted = mountFresco(() =>
+    h(Select, {
+      options: [
+        { label: "Alpha", value: "alpha" },
+        { label: "Beta", value: "beta", disabled: true },
+        { label: "Charlie", value: "charlie" },
+        { label: "Delta", value: "delta" },
+      ],
+      focused: true,
+      maxHeight: 2,
+    }),
+  );
+
+  assert.deepEqual(textLines(mounted), ["> Alpha", "  Beta", "  ..."]);
+  await dispatchKey({ key: "down" });
+  assert.deepEqual(textLines(mounted), ["  ...", "  Beta", "> Charlie", "  ..."]);
+  await typeChars("d");
+  assert.deepEqual(textLines(mounted), ["  ...", "  Charlie", "> Delta"]);
+  await dispatchKey({ key: "home" });
+  assert.deepEqual(textLines(mounted), ["> Alpha", "  Beta", "  ..."]);
+  mounted.unmount();
+});
+
 test("List keeps keyboard navigation visible and selects by stable key", async () => {
   const value = ref("a");
   const mounted = mountFresco(() =>

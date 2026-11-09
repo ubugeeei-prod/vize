@@ -49,6 +49,7 @@ import type { ScrollBoxItemSlot, ScrollBoxProps } from "./scroll-types.js";
 import { Text, type TextProps, type TextWrap } from "./Text.js";
 import { TextArea, type TextAreaProps } from "./TextArea.js";
 import { TextInput, type TextInputProps } from "./TextInput.js";
+import { Select, type SelectProps } from "./Select.js";
 import { Diff, type DiffProps } from "./Diff.js";
 import { LineNumber, type LineNumberProps } from "./LineNumber.js";
 import Transform from "./FrescoTransform.vue";
@@ -329,6 +330,17 @@ export const scrollBoxRejectsStringViewport: ScrollBoxProps = {
   viewportSize: "5",
 };
 
+export const selectAcceptsBoundedViewport: SelectProps = {
+  options: [{ label: "Alpha", value: "alpha" }],
+  maxHeight: 4,
+};
+
+export const selectRejectsStringViewport: SelectProps = {
+  options: [],
+  // @ts-expect-error - viewport sizes are numeric option counts.
+  maxHeight: "4",
+};
+
 // --- Component prop contracts through h() ----------------------------------
 
 export function componentsRenderWithTypedProps() {
@@ -337,6 +349,7 @@ export function componentsRenderWithTypedProps() {
     h(Text, { content: "hi", wrap: "truncate-middle", bold: true }),
     h(TextInput, { modelValue: "v", focused: true, maskChar: "#" }),
     h(TextArea, { modelValue: "first\nsecond", focused: true, rows: 2 }),
+    h(Select, { options: [], maxHeight: 4 }),
     h(Modal, { visible: true, focusId: "dialog", initialFocusId: "confirm" }),
     h(Popover, { open: true, placement: "bottom", accessibilityLabel: "Actions" }),
     h(LineNumber, { value: 42, width: 3 }),
