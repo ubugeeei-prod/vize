@@ -58,25 +58,19 @@ jobs:
         with: { node-version-file: package.json, package-manager-cache: false }
       - run: node --test tests/tooling/content-mapper-pair.test.ts
 
-  build:
+  # Linux and Windows build separately so the Linux and WSL2 cells start
+  # without waiting for the slower Windows build.
+  build-linux:
     if: github.event_name == 'workflow_dispatch'
     needs: test
-    strategy:
-      fail-fast: true
-      matrix:
-        include:
-          - os: linux
-            runner: blacksmith-32vcpu-ubuntu-2404
-            exe: vize
-          - os: windows
-            runner: blacksmith-32vcpu-windows-2025
-            exe: vize.exe
-    runs-on: ${{ matrix.runner }}
+    runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 90
     env:
       BASE: ${{ inputs.base }}
       HEAD: ${{ inputs.head }}
-    steps:
+      PAIR_OS: linux
+      PAIR_EXE: vize
+    steps: &build-steps
       - name: Validate inputs
         shell: bash
         run: |
@@ -85,13 +79,13 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with: { persist-credentials: false }
       - name: Setup MSVC toolchain
-        if: matrix.os == 'windows'
+        if: env.PAIR_OS == 'windows'
         uses: ilammy/msvc-dev-cmd@0b201ec74fa43914dc39ae48a89fd1d8cb592756 # v1
         with: { arch: amd64 }
       - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
         with: { toolchain: "1.99.1" }
       - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
-        if: matrix.os == 'linux'
+        if: env.PAIR_OS == 'linux'
         with: { wild-version: "0.9.0" }
       - name: Build both commits
         shell: bash
@@ -105,17 +99,29 @@ jobs:
             # One target directory: the second build recompiles only what differs.
             (cd "$RUNNER_TEMP/src-$side" && CARGO_TARGET_DIR="$target" cargo build --profile ci-opt -p vize --bin vize)
             mkdir -p "pair-bin/$side"
-            cp "$target/ci-opt/${{ matrix.exe }}" "pair-bin/$side/"
+            cp "$target/ci-opt/$PAIR_EXE" "pair-bin/$side/"
           done
           ls -l pair-bin/*
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: pair-bin-${{ matrix.os }}
+          name: pair-bin-${{ env.PAIR_OS }}
           path: pair-bin/
           retention-days: 7
 
+  build-windows:
+    if: github.event_name == 'workflow_dispatch'
+    needs: test
+    runs-on: blacksmith-32vcpu-windows-2025
+    timeout-minutes: 90
+    env:
+      BASE: ${{ inputs.base }}
+      HEAD: ${{ inputs.head }}
+      PAIR_OS: windows
+      PAIR_EXE: vize.exe
+    steps: *build-steps
+
   linux:
-    needs: build
+    needs: build-linux
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 90
     steps:
@@ -160,7 +166,7 @@ jobs:
         with: { name: pair-linux, path: "${{ runner.temp }}/pair-out/", if-no-files-found: warn }
 
   wsl2:
-    needs: build
+    needs: build-linux
     # WSL2 needs nested virtualization; Blacksmith Windows runners lack it.
     runs-on: windows-2025
     timeout-minutes: 150
@@ -225,7 +231,7 @@ jobs:
         with: { name: pair-wsl2, path: "${{ runner.temp }}/vize-pair/out/", if-no-files-found: warn }
 
   windows:
-    needs: build
+    needs: build-windows
     runs-on: blacksmith-32vcpu-windows-2025
     timeout-minutes: 90
     steps:
