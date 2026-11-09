@@ -272,6 +272,15 @@ test("passive native LSP capture retains the complete original Matrix workflow",
     true,
   );
   delete current.jobs["davinci-dom-divergence-promotion"];
+  // The T2 differential aggregate only reads the uploaded shard reports.
+  const differential = current.jobs["real-project-differential"];
+  assert.equal(differential.needs, "real-project-matrix");
+  assert.equal(differential.permissions, undefined);
+  assert.equal(
+    differential.steps.at(-2).run,
+    "node tests/differential/real-project.ts real-project-shards real-project-differential",
+  );
+  delete current.jobs["real-project-differential"];
   assert.deepEqual(current.permissions, { contents: "read" });
   current.permissions = original.permissions;
   const corpus = current.jobs["davinci-dom-corpus"];

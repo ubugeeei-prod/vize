@@ -33,8 +33,12 @@ function dialectBucket(buckets, dialect) {
 
 // Product adapters validate their runtime observations, receipts and comparisons.
 // This report only credits the exact, pinned case/target coordinates they expose.
+const scopes = ["registered-fixtures", "real-projects"];
+
 export function summarizeNativeAcceptance(loaded, report, options) {
   assert.match(options.sourceRevision, /^[a-f0-9]{40}$/, "expected source revision is required");
+  const scope = options.scope ?? "registered-fixtures";
+  assert(scopes.includes(scope), `unknown acceptance scope: ${scope}`);
   validateResultEnvelope(loaded, report, options.sourceRevision);
   const targets = new Map();
   const plannedTargets = new Map(loaded.cases.map((fixture) => [fixture.id, fixture.targets]));
@@ -86,7 +90,7 @@ export function summarizeNativeAcceptance(loaded, report, options) {
   return {
     schema: "vize.differential.acceptance",
     version: 1,
-    scope: "registered-fixtures",
+    scope,
     product: report.product,
     sourceRevision: report.sourceRevision,
     manifestSha256: report.manifestSha256,
@@ -106,8 +110,13 @@ export function summarizeNativeAcceptance(loaded, report, options) {
 }
 
 export function renderNativeAcceptanceMarkdown(summaries) {
+  const scope = summaries[0]?.scope ?? "registered-fixtures";
+  assert(
+    summaries.every((summary) => summary.scope === scope),
+    "one acceptance table per scope",
+  );
   const lines = [
-    "### Native-only acceptance (registered fixtures)",
+    `### Native-only acceptance (${scope.replace("-", " ")})`,
     "",
     "Product | Target | Native-only | Equivalent | Unsupported | Legacy-backed | Unverified",
     "--- | --- | ---: | ---: | ---: | ---: | ---:",

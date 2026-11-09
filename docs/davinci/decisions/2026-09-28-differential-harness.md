@@ -60,3 +60,19 @@ dialect coverage.
 Extending this one SSR fixture to every compiler target, dialect and T1/T2
 source is still open. The source-built CLI test belongs in Actions after the
 build receipt step; until that run finishes, the reference match is unverified.
+
+## Real-project rows (T2, #6891)
+
+`tests/differential/real-project.ts` writes one `vize.differential.manifest`,
+`vize.differential.result` and acceptance summary per product
+(`T2/<product>/`) from the Real Project Matrix shard reports. Every pinned
+project gets one case per product (`<product>/real/<project-id>`, with
+`projectId` and the fixture ledger's dialect claims) at the deletion-policy
+target: compiler `dom`, linter `lint`, formatter `fmt`, type checker `batch`,
+LSP `stdio`. The legacy lane is the shard's source-built run, `completed` only
+when it ran and its raw output is in the shard report; a missing shard still
+yields every planned row as `missing-evidence`. The scheduled
+`real-project-differential` job uploads the bundle and appends the tables to
+the run summary. No product has a native-only real-project route yet, so
+every native lane is `unsupported`; compiler `ssr`/`vapor` have no T2 rows
+because the Matrix compiles the default DOM target only.
