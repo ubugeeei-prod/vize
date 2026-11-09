@@ -18,6 +18,21 @@ pub(crate) struct InputStamp {
     installed_identity: Option<(u64, u64, i64, i64)>,
     symlink_target: Option<PathBuf>,
     source_content: bool,
+    /// `lstat` facts of a disk-read file that had settled outside the racy
+    /// window. While they are unchanged its bytes are too, so validation
+    /// need not read it again. Never part of equality.
+    settled: Option<SettledIdentity>,
+}
+
+/// Device, inode, size, mtime and status-change time. Every write moves the
+/// status-change time, even when size and mtime are restored.
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+struct SettledIdentity {
+    device: u64,
+    inode: u64,
+    len: u64,
+    modified: (i64, i64),
+    changed: (i64, i64),
 }
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
@@ -83,6 +98,8 @@ impl InputStampCache {
 #[derive(Default)]
 pub(crate) struct InputStampValidation {
     current: FxHashMap<(PathBuf, bool), InputStamp>,
+    /// One `lstat` per path for stamps whose settled identity can answer.
+    identities: FxHashMap<PathBuf, Option<SettledIdentity>>,
 }
 
 #[cfg(feature = "native")]
@@ -93,6 +110,17 @@ impl InputStampValidation {
         stats: Option<&mut InputStampReadStats>,
     ) -> bool {
         let (path, source_content) = expected.observation_identity();
+        if let Some(settled) = expected.settled {
+            let observed = self
+                .identities
+                .entry(path.to_path_buf())
+                .or_insert_with(|| observed_identity(path));
+            // Same identity as a settled read: the same bytes, so the fresh
+            // capture would equal `expected` without reading them.
+            if *observed == Some(settled) {
+                return true;
+            }
+        }
         let current = self
             .current
             .entry((path.to_path_buf(), source_content))
@@ -173,6 +201,15 @@ impl InputStamp {
         let symlink_target = matches!(kind, Some(InputKind::Symlink))
             .then(|| std::fs::read_link(&path).ok())
             .flatten();
+        // Only bytes read from disk here may later be certified by metadata;
+        // registered source bytes stay compared by their digest.
+        let settled = (content.is_none() && !source_content)
+            .then(|| {
+                metadata
+                    .as_ref()
+                    .and_then(|metadata| settled_identity(metadata, std::time::SystemTime::now()))
+            })
+            .flatten();
         Self {
             path,
             modified,
@@ -182,6 +219,7 @@ impl InputStamp {
             installed_identity,
             symlink_target,
             source_content,
+            settled,
         }
     }
 
@@ -289,7 +327,10 @@ fn is_route_manifest(path: &Path) -> bool {
 const RACY_WINDOW: Duration = Duration::from_secs(2);
 
 fn changed_recently(metadata: &std::fs::Metadata) -> bool {
-    let now = std::time::SystemTime::now();
+    changed_recently_at(metadata, std::time::SystemTime::now())
+}
+
+fn changed_recently_at(metadata: &std::fs::Metadata, now: std::time::SystemTime) -> bool {
     let recent = |time: std::io::Result<std::time::SystemTime>| {
         time.ok().is_none_or(|time| {
             now.duration_since(time)
@@ -331,6 +372,50 @@ fn installed_identity(metadata: &std::fs::Metadata) -> Option<(u64, u64, i64, i6
 /// Without a status-change time, installed files keep content digests.
 #[cfg(not(unix))]
 fn installed_identity(_metadata: &std::fs::Metadata) -> Option<(u64, u64, i64, i64)> {
+    None
+}
+
+/// A regular file whose mtime and status-change time are both older than
+/// the racy window at `now`.
+#[cfg(unix)]
+fn settled_identity(
+    metadata: &std::fs::Metadata,
+    now: std::time::SystemTime,
+) -> Option<SettledIdentity> {
+    (!changed_recently_at(metadata, now))
+        .then(|| raw_identity(metadata))
+        .flatten()
+}
+
+#[cfg(not(unix))]
+fn settled_identity(
+    _metadata: &std::fs::Metadata,
+    _now: std::time::SystemTime,
+) -> Option<SettledIdentity> {
+    None
+}
+
+#[cfg(unix)]
+fn raw_identity(metadata: &std::fs::Metadata) -> Option<SettledIdentity> {
+    use std::os::unix::fs::MetadataExt;
+    (metadata.file_type().is_file() && metadata.ino() != 0 && metadata.ctime() > 0).then(|| {
+        SettledIdentity {
+            device: metadata.dev(),
+            inode: metadata.ino(),
+            len: metadata.len(),
+            modified: (metadata.mtime(), metadata.mtime_nsec()),
+            changed: (metadata.ctime(), metadata.ctime_nsec()),
+        }
+    })
+}
+
+#[cfg(all(unix, feature = "native"))]
+fn observed_identity(path: &Path) -> Option<SettledIdentity> {
+    raw_identity(&std::fs::symlink_metadata(path).ok()?)
+}
+
+#[cfg(all(not(unix), feature = "native"))]
+fn observed_identity(_path: &Path) -> Option<SettledIdentity> {
     None
 }
 
