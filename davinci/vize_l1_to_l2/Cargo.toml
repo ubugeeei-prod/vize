@@ -1,9 +1,7 @@
 # L1→L2 — the Vue lowering (codename Ricalco, Davinci P2-8).
 #
-# A ricalco is the tracing that transfers a drawing onto a new surface.
-# This crate is that act for Davinci: it traces the lossless Vue surface
-# tree (L1, vize_l1) into the neutral semantic op family (L2,
-# vize_l2); Ricalco remains the codename. This is a total function
+# This crate traces the lossless Vue surface tree (L1, vize_l1) into the
+# neutral semantic op family (L2, vize_l2). This is a total function
 # that yields ops or diagnostics, never
 # a panic and never a partial-then-abandoned state.
 #

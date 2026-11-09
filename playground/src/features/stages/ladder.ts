@@ -1,5 +1,5 @@
-// The stage feed as a stage ladder: rungs (L1 Surface, L2 Disegno,
-// L3 Impeto), their pages, a few counts read off the canonical pages, and the
+// The stage feed as a stage ladder: rungs (L1 Surface, L2 Semantic,
+// L3 Reactivity), their pages, a few counts read off the canonical pages, and the
 // pass timeline in feed order. Pure data shaping over the negotiated feed -
 // every fact shown comes from a page the compiler printed.
 
@@ -75,8 +75,8 @@ const PAGE_KINDS: Record<string, { rung: RungId; kind: PageKind; label: string }
 
 const RUNG_NAMES: Record<RungId, { ordinal: string; name: string }> = {
   l1: { ordinal: "L1", name: "Surface" },
-  l2: { ordinal: "L2", name: "Disegno" },
-  l3: { ordinal: "L3", name: "Impeto" },
+  l2: { ordinal: "L2", name: "Semantic" },
+  l3: { ordinal: "L3", name: "Reactivity" },
 };
 
 function plural(count: number, noun: string): string {

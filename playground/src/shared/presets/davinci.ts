@@ -7,7 +7,7 @@ import { computed, ref } from "vue";
 import TodoItem from "./TodoItem.vue";
 
 const draft = ref("");
-const todos = ref([{ id: 1, text: "Sketch the disegno", done: true }]);
+const todos = ref([{ id: 1, text: "Sketch the outline", done: true }]);
 const remaining = computed(() => todos.value.filter((todo) => !todo.done).length);
 
 function add() {
@@ -41,12 +41,12 @@ const year = new Date().getFullYear();
   <article class="poster">
     <header>
       <h1>Vue Fes Japan</h1>
-      <p class="tagline">From <em>disegno</em> to fresco</p>
+      <p class="tagline">From <em>sketch</em> to fresco</p>
     </header>
     <ul class="talks">
       <li><strong>Surface</strong> the lossless tree</li>
-      <li><strong>Disegno</strong> the semantic IR</li>
-      <li><strong>Impeto</strong> the reactive graph</li>
+      <li><strong>Semantic</strong> the neutral IR</li>
+      <li><strong>Reactivity</strong> the reactive graph</li>
     </ul>
     <footer>© {{ year }}</footer>
   </article>
