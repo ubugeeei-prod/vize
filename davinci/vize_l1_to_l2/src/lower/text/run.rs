@@ -113,10 +113,16 @@ pub(crate) fn lower_text_run<'a>(
                     &cx.allocator,
                 )));
             } else {
-                for child in children.get(start..end).unwrap_or_default() {
-                    if let SurfaceChild::Interpolation(interpolation) = child {
-                        let expression = filter_expr_at(cx, interpolation.content.text);
-                        cx.consumed_expressions.push(expression);
+                // The compiler lanes never consume the compatibility ASTs.
+                // Retain them only for the comment-preserving lint lowering;
+                // otherwise every mixed run would parse each expression a
+                // second time after the compound representation is built.
+                if cx.preserve_comments() {
+                    for child in children.get(start..end).unwrap_or_default() {
+                        if let SurfaceChild::Interpolation(interpolation) = child {
+                            let expression = filter_expr_at(cx, interpolation.content.text);
+                            cx.consumed_expressions.push(expression);
+                        }
                     }
                 }
                 // A mixed run is the compound representation: one

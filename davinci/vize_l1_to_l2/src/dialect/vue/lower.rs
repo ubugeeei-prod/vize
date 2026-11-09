@@ -87,9 +87,10 @@ pub struct Lowered<'a, P = StdVec<ProvenanceRecord>> {
     /// by its compound `ui.interpolation` op (P2-9 installment 4,
     /// [`lower::text`](text)); validated and published by lowering.
     pub texts: SideTable<TextParts>,
-    /// Retained expressions consumed into compound text ops. They no longer
-    /// have a direct op slot, but lint/editor consumers still need their
-    /// authentic AST and authored coordinates without reparsing L1 text.
+    /// Retained expressions consumed into compound text ops. The
+    /// comment-preserving lint lowering populates this compatibility channel;
+    /// ordinary compiler lowerings leave it empty so they do not parse a
+    /// compound expression twice.
     pub consumed_expressions: StdVec<vize_l2::expr::ExprRef<'a>>,
     /// Consumed `ui.for` scope views, keyed by the `ui.for` op's
     /// page-order id; validated and published by lowering.
