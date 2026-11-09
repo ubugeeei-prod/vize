@@ -37,7 +37,23 @@ pub(super) const TSCONFIG_CONTENTS: &str = r#"{
 "#;
 
 pub(super) fn path_to_wire(path: &Path) -> String {
-    path.to_string_lossy().as_ref().to_compact_string()
+    let path = path.to_string_lossy();
+    #[cfg(windows)]
+    return normalize_windows_drive_letter(path.as_ref());
+    #[cfg(not(windows))]
+    path.as_ref().to_compact_string()
+}
+
+#[cfg(any(windows, test))]
+fn normalize_windows_drive_letter(path: &str) -> String {
+    let bytes = path.as_bytes();
+    if bytes.len() >= 2 && bytes[0].is_ascii_uppercase() && bytes[1] == b':' {
+        let mut normalized = String::with_capacity(path.len());
+        normalized.push(char::from(bytes[0].to_ascii_lowercase()));
+        normalized.push_str(&path[1..]);
+        return normalized;
+    }
+    path.to_compact_string()
 }
 
 /// Mirror the authored file's package-relative directory below the session
@@ -102,7 +118,7 @@ mod tests {
     #[cfg(unix)]
     use super::store::is_stale_session_directory;
     use super::{
-        cleanup_stale_session_roots, effective_tsconfig_for_source,
+        cleanup_stale_session_roots, effective_tsconfig_for_source, normalize_windows_drive_letter,
         remove_finished_process_sessions, resolve_corsa_executable, session_store_root,
         session_tsconfig_contents, virtual_file_path,
     };
@@ -114,6 +130,22 @@ mod tests {
     use vize_l0::cstr;
 
     static NEXT_CASE_ID: AtomicU64 = AtomicU64::new(0);
+
+    #[test]
+    fn wire_paths_use_typescript_windows_drive_spelling() {
+        assert_eq!(
+            normalize_windows_drive_letter(r"C:\repo\.vize\patina\session\src\b.ts"),
+            r"c:\repo\.vize\patina\session\src\b.ts"
+        );
+        assert_eq!(
+            normalize_windows_drive_letter(r"c:\repo\src\a.ts"),
+            r"c:\repo\src\a.ts"
+        );
+        assert_eq!(
+            normalize_windows_drive_letter(r"\\server\share\src\a.ts"),
+            r"\\server\share\src\a.ts"
+        );
+    }
 
     #[test]
     fn virtual_file_mirrors_the_authored_package_directory() {

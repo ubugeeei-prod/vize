@@ -103,6 +103,8 @@ const overrides: Record<string, string> = {
   vue: "3.5.35",
   "@vitejs/plugin-vue": "6.0.7",
 };
+if (phase !== "before" && process.platform === "win32")
+  overrides["@typescript/typescript-win32-x64"] = "7.0.2";
 if (phase === "candidate") {
   assert.equal(authority.kind, "source-image-sdk");
   assert.equal(authority.wrapperVersion, version);
@@ -409,6 +411,40 @@ for (const [label, severity] of [
     assert.equal(asNumber(entry.errorCount), severity === "error" ? 1 : 0);
   }
 }
+if (phase !== "before" && process.platform === "win32") {
+  const first = join(app, "src/Vize12292A.ts"),
+    second = join(app, "src/Vize12292B.ts");
+  writeFileSync(first, "Promise.resolve(1);\n");
+  writeFileSync(second, "Promise.resolve(1);\n");
+  writeFileSync(
+    config,
+    'export default {vue:{linter:{preset:"incremental",rules:{"type/no-floating-promises":"error"}}}};\n',
+  );
+  const packet = lint("windows-type-aware-multi-file-12292", [
+    "lint",
+    "--type-aware",
+    "--format",
+    "json",
+    "--help-level",
+    "none",
+    "src/Vize12292A.ts",
+    "src/Vize12292B.ts",
+  ]);
+  assert.equal(packet.status, 1, packet.stdout + packet.stderr);
+  assert.doesNotMatch(packet.stdout + packet.stderr, /type\/corsa-runtime|source file not found/i);
+  const findings = asArray(parseJson(packet.stdout))
+    .map((value) => asRecord(value))
+    .flatMap((entry) =>
+      asArray(entry.messages)
+        .map((value) => asRecord(value))
+        .filter((message) => message.ruleId === "type/no-floating-promises")
+        .map(() => asString(entry.file)),
+    );
+  assert.deepEqual(
+    findings.map((file) => file.replaceAll("\\", "/").split("/").at(-1)),
+    ["Vize12292A.ts", "Vize12292B.ts"],
+  );
+}
 writeFileSync(config, original);
 record.json("acceptance.json", {
   phase,
@@ -417,6 +453,15 @@ record.json("acceptance.json", {
   status: "pass",
   identity,
   sourceAuthority: authority,
-  controls: ["original-command", "off-first", "error", "off-reloaded", "throw"],
+  controls: [
+    "original-command",
+    "off-first",
+    "error",
+    "off-reloaded",
+    "throw",
+    ...(phase !== "before" && process.platform === "win32"
+      ? ["windows-type-aware-multi-file-12292"]
+      : []),
+  ],
   stdin: "untouched by observer; actual config projection and imported graph reload completed",
 });
