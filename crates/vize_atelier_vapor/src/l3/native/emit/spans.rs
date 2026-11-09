@@ -1,4 +1,4 @@
-//! Authored spans for the native L3 Vapor payload (Davinci P3-9).
+//! Authored spans for the native L3 Vapor payload (Levels P3-9).
 //!
 //! L3 operands keep the span of each element, attribute and binding; the
 //! tokens inside them (tag name, attribute value, directive argument) are

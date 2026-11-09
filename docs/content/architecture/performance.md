@@ -124,19 +124,19 @@ addon (`@vizejs/native`) rather than as a separate process.
 
 `vize_carton::Allocator` is a bump allocator for AST nodes, wrapping
 [`oxc_allocator`](https://docs.rs/oxc_allocator) so template nodes and retained JavaScript
-expressions share one arena and one lifetime (`davinci/vize_l0/src/allocator.rs`). This means:
+expressions share one arena and one lifetime (`levels/vize_l0/src/allocator.rs`). This means:
 
 - **Allocation is O(1)** — Just bump a pointer forward. No free list traversal, no fragmentation management.
 - **Reclamation is O(1) and reused** — At the end of a compile the arena is `reset()`, not dropped:
   the bump pointer returns to the start of the chunk and the arena goes back to a per-worker free
-  list (`davinci/vize_l0/src/pool.rs`, capped at 4 idle arenas per worker). The next file reuses
+  list (`levels/vize_l0/src/pool.rs`, capped at 4 idle arenas per worker). The next file reuses
   the same memory instead of asking the OS for more.
 - **Memory locality is excellent** — Nodes are packed contiguously in memory, maximizing L1/L2 cache hits during tree traversal.
 
 Arena-backed values may not outlive their compile. That contract is enforced by the compiler
 (`reset` takes `&mut self`, and the pool guard owns its arena) and, in debug builds, by a
 generation stamp that panics if a value is read after its arena was recycled
-(`davinci/vize_l0/src/allocator/generation.rs`).
+(`levels/vize_l0/src/allocator/generation.rs`).
 
 Nothing in the AST implements `Drop` — the arena container types reject payloads that need
 dropping, so this is a compile error rather than a convention.
@@ -166,7 +166,7 @@ literals without touching the arena at all. This means:
 
 Interning is the fallback, not the common case. Most names are never copied at all: a tag name, an
 attribute name, and most expression content are `&'a str` slices borrowed directly from the
-template source, so the common path allocates nothing (`davinci/vize_l0/src/interner.rs`
+template source, so the common path allocates nothing (`levels/vize_l0/src/interner.rs`
 documents the per-field policy).
 
 Atoms are ordinary `&'a str`, so name comparisons are content comparisons, not pointer identity.
@@ -190,8 +190,8 @@ The Vite plugin (`@vizejs/vite-plugin`) caches at file level, in two layers with
 ## Measured: Arena and Expression Work
 
 The compiler-internals work described above is measured by a per-crate microbench harness
-(`cargo bench --bench davinci`) over a fixed six-fixture ladder,
-`tools/benchmarks/crates/davinci_harness/fixtures/{small,medium,large,stress-deep,stress-wide,stress-interp}.vue`.
+(`cargo bench --bench levels`) over a fixed six-fixture ladder,
+`tools/benchmarks/crates/level_harness/fixtures/{small,medium,large,stress-deep,stress-wide,stress-interp}.vue`.
 
 **How to read these numbers.** Allocation counts are deterministic and machine-independent, so they
 are exact facts and are used as the regression ratchet. Wall times were taken on a shared
@@ -199,7 +199,7 @@ development machine with `--quick` sampling and are **directional only** — wal
 pending. In `docs/davinci/plan/budgets.toml`, `wall_p50_ns` and `allocs` have different meanings:
 `0` means an unrecorded baseline for wall time, but a measured zero for allocation calls.
 Allocation baselines are already recorded and enforced independently of wall-time baselines.
-Per-run result files land in `tools/benchmarks/results/davinci/` and are local artifacts, not committed baselines.
+Per-run result files land in `tools/benchmarks/results/levels/` and are local artifacts, not committed baselines.
 
 Allocation calls per compile, before and after the string-and-arena work (exact, same fixtures):
 

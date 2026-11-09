@@ -9,7 +9,7 @@ residual re-measure. This installment closes the first.
 
 ## What landed
 
-A second comparator target, `davinci_s2_transform_vue2`, compiled only
+A second comparator target, `level_s2_transform_vue2`, compiled only
 with `--features legacy` (`[[test]] required-features`). The shipped
 `.sync` / `slot-scope` expansion lives behind that feature; a Vue 2
 dual-run without it would compare S2's rewrite against an inert Vue 3

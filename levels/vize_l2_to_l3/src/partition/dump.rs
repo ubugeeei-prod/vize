@@ -1,4 +1,4 @@
-//! The partition-fact folio page: the exported static/dynamic facts as a
+//! The partition-fact dump page: the exported static/dynamic facts as a
 //! derived, round-trippable stage dump.
 //!
 //! The facts are computed once during L2→L3 lowering and read by SSR without
@@ -17,9 +17,9 @@ use vize_l0::{Span, cstr};
 
 use super::{PartitionFact, PartitionFacts, PartitionKind};
 
-/// Owned folio page for the exported partition facts, `[s3-partition-folio]`.
+/// Owned dump page for the exported partition facts, `[s3-partition-dump]`.
 #[derive(Debug, Clone, Default, PartialEq, Eq, Dump)]
-#[dump(name = "s3-partition-folio")]
+#[dump(name = "s3-partition-dump")]
 pub struct Page {
     /// One record per canonical L3 op, in export order.
     pub ops: Vec<Fact>,

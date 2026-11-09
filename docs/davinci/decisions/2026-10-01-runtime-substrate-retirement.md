@@ -4,7 +4,7 @@ Decision for [#6833](https://github.com/ubugeeei-prod/vize/issues/6833), after
 the runtime, consumers, owned pages and law harnesses have their real owners.
 
 The last legacy consumers import shared contracts directly from L0. This
-removes their `vize_davinci` declarations, normal or dev, without replacing
+removes their `vize_level` declarations, normal or dev, without replacing
 a product route. Croquis CF adds its explicit L0 dependency; Carton remains
 its legacy storage facade in `crates/`. Diagnostics use `vize_l0::diag` and
 witnesses its verifier; pass/fact, key, identity and Dump APIs retain the same

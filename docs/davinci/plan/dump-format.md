@@ -4,8 +4,8 @@
 > The "test-mode printer" contract for Davinci folio dumps (P0-10): which
 > text is canonical, what normalization the printer applies, and what
 > `Display` mode elides. The trait lives in
-> `davinci/vize_davinci/src/folio.rs`; the hand-written page is the croquis
-> folio (`davinci/vize_davinci/src/folio/croquis.rs`), which absorbs the
+> `levels/vize_level/src/dump.rs`; the hand-written page is the croquis
+> folio (`levels/vize_level/src/dump/croquis.rs`), which absorbs the
 > croquis "VIR" dump (`crates/vize_croquis/src/croquis/vir.rs`), and since
 > P2-4 `#[derive(Folio)]` generates pages under the "Derived pages"
 > contract below.
@@ -82,7 +82,7 @@ every derived type `T`:
 - Scalar fields print as `name=value` lines inside the header, in field
   declaration order. All are required; parse accepts them in any order,
   each at most once. Values go through `FolioValue`
-  (`davinci/vize_davinci/src/folio/value.rs`): `bool`, the integers, and
+  (`levels/vize_level/src/dump/value.rs`): `bool`, the integers, and
   `vize_carton::String` — an unsupported field type is a compile error.
 - A `Vec<T>` field prints as a `[page.field]` section, one entry per line,
   **order preserved** (order-bearing lists are never sorted, rule 1).
@@ -110,13 +110,13 @@ section`) rather than silently misparsed; an empty-string list entry prints
 as a blank line and vanishes on reparse.
 
 The first derived page is `[budget-observer]` (P2-3's counter set), pinned
-by TS-16 in `davinci/vize_davinci/tests/folio_derive_laws.rs` and checked
+by TS-16 in `levels/vize_level/tests/dump_derive_laws.rs` and checked
 through the typed `BudgetObserver` page tests.
 
 ## The repro page (`[repro]`, P2-13)
 
 The crash reproducer the ICE policy writes
-(`davinci/vize_davinci/src/folio/repro.rs`), hand-written because two of its
+(`levels/vize_level/src/dump/repro.rs`), hand-written because two of its
 decisions are semantic: `failed-pass=` may print an **empty value** (a panic
 caught outside a driven pipeline is not attributable to a pass), and the
 `[repro.artifact]` section is **verbatim and terminal** — everything after
@@ -176,7 +176,7 @@ value.
 
 ## Fixtures
 
-`davinci/vize_davinci/tests/fixtures/croquis/` holds `.vue` inputs with
+`levels/vize_level/tests/fixtures/croquis/` holds `.vue` inputs with
 their committed canonical `.folio` dumps. The harness
 (`cargo test -p vize_croquis --test croquis_dump`) re-analyzes each input
 with the inspector recipe, checks the parser accepts the live renderer's
@@ -209,7 +209,7 @@ coverage):
 ## Disegno page (P2-5a; expression payloads P2-5b)
 
 The L2 stage dump: an owned document model (`DisegnoFolio`,
-`davinci/vize_l2/src/folio.rs`) of one op tree. Hand-written under the
+`levels/vize_l2/src/dump.rs`) of one op tree. Hand-written under the
 "Derived pages" boundary, because the derived grammar is flat (header
 scalars plus one-level sections) while the L2 artifact is region-nested by
 its central design decision — ops own their regions — and flattening the
@@ -277,14 +277,14 @@ embedding other control characters are outside the contract. The folio
 models the dump, not the analysis: tree shape is validated, semantic
 invariants (branch ordering, region well-formedness beyond the grammar)
 belong to the L2 verifier (P2-6). The committed reference page is
-`davinci/vize_l2/tests/fixtures/reference.folio`, pinned by TS-16 in
-`davinci/vize_l2/tests/dump_laws.rs` (which also pins every opaque
+`levels/vize_l2/tests/fixtures/reference.dump`, pinned by TS-16 in
+`levels/vize_l2/tests/dump_laws.rs` (which also pins every opaque
 reason spelling both directions) and mirrored from a live arena tree in
 `tests/dump_mirror.rs`; the arena-reset replay law is
 `tests/expr_replay.rs`. Provenance records get their own derived page,
 `[s2-provenance-folio]` (`rule=… node=… before="…" after="…" @s:e`, this
 page's escapes; grammar in `vize_l2::folio::provenance`, TS-16 laws in
-`tests/provenance_folio.rs`).
+`tests/provenance_dump.rs`).
 
 ## L2 verifier invariants (P2-6)
 
@@ -311,7 +311,7 @@ offending pass (`` L2 verifier: {n} violation(s) after `{stage}.{pass}` ``).
 **Rigor follows `PassKind`.** The structural set holds after every pass;
 the canonical set additionally holds from the first `MandatoryLowering`
 pass on — the kind that canonicalizes
-(`davinci/vize_davinci/src/pass/kind.rs`) — and `MandatoryDiagnostic` /
+(`levels/vize_level/src/pass/kind.rs`) — and `MandatoryDiagnostic` /
 `Optional` passes never change the rigor. The set grows with the passes
 that establish more canonical form (P2-9); a new invariant lands here
 first, with its code.
@@ -326,27 +326,27 @@ own).
 
 **Expr-ref liveness** is the one check with no code of its own: it reuses
 the P1-11 debug arena-generation stamp (`Allocator::stamp` /
-`assert_stamp_current`, `davinci/vize_l0/src/allocator/generation.rs`)
+`assert_stamp_current`, `levels/vize_l0/src/allocator/generation.rs`)
 and fails with that mechanism's own panic. One stamp covers the whole
 artifact today because `ExprSlot` is zero-sized; the P2-5b seam is
 `VerifyObserver::check_live`, where the walk validates each expression
 position's stamp once `ExprRef` gives the positions identity.
 
-**Invalid fixtures (TS-18).** `davinci/vize_l2/tests/fixtures/invalid/`
+**Invalid fixtures (TS-18).** `levels/vize_l2/tests/fixtures/invalid/`
 holds hand-built pages that are grammar-valid and semantically invalid,
 each committed beside its exact expected rendering (`.expected`,
 whole-file equality, no partial matching). The harness is
-`davinci/vize_l2/tests/verifier_fixtures.rs`; the id-resolution and
+`levels/vize_l2/tests/verifier_fixtures.rs`; the id-resolution and
 liveness lanes, which no page text can encode, are pinned with the same
 exact oracles in `tests/verifier_observer.rs`.
 
 ## Impeto page (P3-1)
 
 The L3 stage dump is documented in
-[`folio-format-impeto.md`](./folio-format-impeto.md). That page owns the flat
+[`dump-format-l3.md`](./dump-format-l3.md). That page owns the flat
 Impeto grammar and the TS-27 validator contract.
 
 ## Contract pages (P6-1a, P6-1b)
 
-The input world's lossless surface page is documented in [`folio-format-s1.md`](./folio-format-l1.md),
-the expression world's projection page in [`folio-format-projection.md`](./folio-format-projection.md).
+The input world's lossless surface page is documented in [`dump-format-s1.md`](./dump-format-l1.md),
+the expression world's projection page in [`dump-format-projection.md`](./dump-format-projection.md).

@@ -187,15 +187,11 @@ test("passive native LSP capture retains the complete original Matrix workflow",
       "retention-days": 30,
     },
   });
-  const divergenceIssue = current.jobs["davinci-dom-divergence-issue"];
+  const divergenceIssue = current.jobs["level-dom-divergence-issue"];
   assert.deepEqual(divergenceIssue, {
     name: "file canonical DOM divergence",
     if: "${{ always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') }}",
-    needs: [
-      "davinci-dom-corpus",
-      "davinci-dom-divergence-reduction",
-      "davinci-dom-divergence-promotion",
-    ],
+    needs: ["level-dom-corpus", "level-dom-divergence-reduction", "level-dom-divergence-promotion"],
     permissions: { contents: "read", actions: "read", issues: "write" },
     "runs-on": "blacksmith-32vcpu-ubuntu-2404",
     "timeout-minutes": 5,
@@ -214,7 +210,7 @@ test("passive native LSP capture retains the complete original Matrix workflow",
         uses: "actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c",
         with: {
           name: "canonical-corpus-dom-${{ github.run_id }}-${{ github.run_attempt }}-${{ github.sha }}",
-          path: "real-project-davinci-dom-corpus",
+          path: "real-project-level-dom-corpus",
         },
       },
       {
@@ -222,7 +218,7 @@ test("passive native LSP capture retains the complete original Matrix workflow",
         uses: "actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c",
         with: {
           name: "canonical-corpus-dom-reduction-${{ github.run_id }}-${{ github.run_attempt }}-${{ github.sha }}",
-          path: "real-project-davinci-dom-reduction",
+          path: "real-project-level-dom-reduction",
         },
       },
       {
@@ -231,7 +227,7 @@ test("passive native LSP capture retains the complete original Matrix workflow",
         uses: "actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c",
         with: {
           name: "canonical-corpus-dom-promotion-${{ github.run_id }}-${{ github.run_attempt }}-${{ github.sha }}",
-          path: "real-project-davinci-dom-promotion",
+          path: "real-project-level-dom-promotion",
         },
       },
       {
@@ -239,27 +235,27 @@ test("passive native LSP capture retains the complete original Matrix workflow",
         env: { GH_TOKEN: "${{ github.token }}" },
         shell: "bash",
         run:
-          "args=(publish real-project-davinci-dom-corpus real-project-davinci-dom-reduction)\n" +
-          "if [[ -s real-project-davinci-dom-promotion/promotion.json ]]; then\n" +
-          "  args+=(real-project-davinci-dom-promotion)\n" +
+          "args=(publish real-project-level-dom-corpus real-project-level-dom-reduction)\n" +
+          "if [[ -s real-project-level-dom-promotion/promotion.json ]]; then\n" +
+          "  args+=(real-project-level-dom-promotion)\n" +
           "fi\n" +
           'node tools/support/compat/github/canonical-corpus-divergence-issue.mjs "${args[@]}"\n',
       },
     ],
   });
-  delete current.jobs["davinci-dom-divergence-issue"];
-  const divergenceReduction = current.jobs["davinci-dom-divergence-reduction"];
+  delete current.jobs["level-dom-divergence-issue"];
+  const divergenceReduction = current.jobs["level-dom-divergence-reduction"];
   assert.equal(divergenceReduction.name, "reduce canonical DOM divergence");
-  assert.equal(divergenceReduction.needs, "davinci-dom-corpus");
+  assert.equal(divergenceReduction.needs, "level-dom-corpus");
   assert.deepEqual(divergenceReduction.permissions, { contents: "read", actions: "read" });
   assert.equal(
     divergenceReduction.steps.some((step) => step.name === "Reduce the first divergence witness"),
     true,
   );
-  delete current.jobs["davinci-dom-divergence-reduction"];
-  const divergencePromotion = current.jobs["davinci-dom-divergence-promotion"];
+  delete current.jobs["level-dom-divergence-reduction"];
+  const divergencePromotion = current.jobs["level-dom-divergence-promotion"];
   assert.equal(divergencePromotion.name, "promote canonical DOM divergence fixture");
-  assert.equal(divergencePromotion.needs, "davinci-dom-divergence-reduction");
+  assert.equal(divergencePromotion.needs, "level-dom-divergence-reduction");
   assert.deepEqual(divergencePromotion.permissions, {
     actions: "read",
     contents: "write",
@@ -271,16 +267,16 @@ test("passive native LSP capture retains the complete original Matrix workflow",
     ),
     true,
   );
-  delete current.jobs["davinci-dom-divergence-promotion"];
+  delete current.jobs["level-dom-divergence-promotion"];
   assert.deepEqual(current.permissions, { contents: "read" });
   current.permissions = original.permissions;
-  const corpus = current.jobs["davinci-dom-corpus"];
+  const corpus = current.jobs["level-dom-corpus"];
   assert.deepEqual(corpus.permissions, {
     contents: "read",
     actions: "read",
     checks: "read",
   });
-  corpus.permissions = original.jobs["davinci-dom-corpus"].permissions;
+  corpus.permissions = original.jobs["level-dom-corpus"].permissions;
   // The release-gated title also names the exact
   // release dispatch beside the original enforced and observational titles.
   assert.match(

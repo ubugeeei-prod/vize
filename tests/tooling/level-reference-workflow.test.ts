@@ -24,7 +24,7 @@ type Workflow = {
   jobs: Record<string, { steps: Step[]; if?: unknown; "continue-on-error"?: unknown }>;
 };
 
-const workflowPath = [".github", "workflows", "davinci-reference.yml"] as const;
+const workflowPath = [".github", "workflows", "level-reference.yml"] as const;
 const job = "reference-backends";
 
 function assertReferenceWorkflow(workflow: Workflow): void {
@@ -52,26 +52,23 @@ function assertReferenceWorkflow(workflow: Workflow): void {
       [".", "vp install --frozen-lockfile --prefer-offline"],
       [".", "cargo test -p vize_l3 --test lattice_reference_fixture"],
       [".", "cargo test -p vize_l2_to_l3 --test l3_reference_fixture"],
-      [".", "cargo test -p vize_atelier_vapor --test davinci_l3_compiled_trace"],
-      [".", "cargo test -p vize_atelier_vapor --test davinci_mounted_behavior"],
+      [".", "cargo test -p vize_atelier_vapor --test level_l3_compiled_trace"],
+      [".", "cargo test -p vize_atelier_vapor --test level_mounted_behavior"],
       [
         ".",
-        "cargo test -p vize_atelier_vapor --test davinci_vapor_upstream_parity --test davinci_keep_alive_parity --test davinci_suspense_parity --test davinci_structural_slots_parity --test davinci_transition_parity",
+        "cargo test -p vize_atelier_vapor --test level_vapor_upstream_parity --test level_keep_alive_parity --test level_suspense_parity --test level_structural_slots_parity --test level_transition_parity",
       ],
       ["tests", "vize-ci-apt-retry vp exec playwright install --with-deps chromium"],
       [
         ".",
-        "cargo test -p vize_atelier_vapor --test davinci_event_handlers -- --ignored --nocapture",
+        "cargo test -p vize_atelier_vapor --test level_event_handlers -- --ignored --nocapture",
       ],
     ],
   );
 }
 
 test("TS-28 reference and mounted backends run nightly and on dispatch", () => {
-  assert.equal(
-    fs.existsSync(path.join(repoRoot, ".github", "workflows", "davinci-lean.yml")),
-    false,
-  );
+  assert.equal(fs.existsSync(path.join(repoRoot, ".github", "workflows", "level-lean.yml")), false);
   assertReferenceWorkflow(parseYaml(readRepoFile(...workflowPath)));
 });
 
@@ -96,7 +93,7 @@ test("TS-28 rejects commented, moved and disabled workflow commands", () => {
 test("TS-30 Chromium contract cannot silently skip its ignored Rust test", () => {
   const source = readRepoFile(...workflowPath);
   const command =
-    "cargo test -p vize_atelier_vapor --test davinci_event_handlers -- --ignored --nocapture";
+    "cargo test -p vize_atelier_vapor --test level_event_handlers -- --ignored --nocapture";
   const skipped = source.replace(command, command.replace(" -- --ignored --nocapture", ""));
   assert.throws(() => assertReferenceWorkflow(parseYaml(skipped)), assert.AssertionError);
 });
@@ -136,8 +133,8 @@ function assertHarness(source: string, name: string): void {
 
 test("P3-15 laws are Kani harnesses that the Kani workflow verifies", () => {
   const lattice = harnesses(
-    ["davinci", "vize_l3", "src", "lattice", "kani.rs"],
-    ["davinci", "vize_l3", "src", "lattice", "classify_proofs.rs"],
+    ["levels", "vize_l3", "src", "lattice", "kani.rs"],
+    ["levels", "vize_l3", "src", "lattice", "classify_proofs.rs"],
   );
   for (const name of [
     "join_has_its_units_and_is_monotone",
@@ -149,10 +146,10 @@ test("P3-15 laws are Kani harnesses that the Kani workflow verifies", () => {
     assertHarness(lattice, name);
   }
   assert.match(
-    readRepoFile("davinci", "vize_l3", "tests", "lattice.rs"),
+    readRepoFile("levels", "vize_l3", "tests", "lattice.rs"),
     /^fn the_verdict_never_changes_the_class_and_only_proven_facts_fire\(\)/mu,
   );
-  const root = ["tests", "davinci_test_support", "src", "l3_reference"];
+  const root = ["tests", "level_test_support", "src", "l3_reference"];
   const reference = harnesses(
     [...root, "schedule_proofs.rs"],
     [...root, "checker_proofs.rs"],
@@ -176,20 +173,20 @@ test("P3-15 laws are Kani harnesses that the Kani workflow verifies", () => {
   ]) {
     assertHarness(reference, name);
   }
-  const kani = readRepoFile(".github", "workflows", "davinci-kani.yml");
-  assert.match(kani, /args: davinci\/vize_l3\/src\/lattice\/kani\.rs /u);
-  assert.match(kani, /args: tests\/davinci_test_support\/src\/l3_reference\/kani\.rs /u);
+  const kani = readRepoFile(".github", "workflows", "level-kani.yml");
+  assert.match(kani, /args: levels\/vize_l3\/src\/lattice\/kani\.rs /u);
+  assert.match(kani, /args: tests\/level_test_support\/src\/l3_reference\/kani\.rs /u);
   const checker = readRepoFile(...root, "checker.rs");
   assert.doesNotMatch(
     checker,
     /\bloop\b|\bwhile\b|\bunsafe\b/u,
     "the graph checker must stay total",
   );
-  const bridge = readRepoFile("davinci", "vize_l2_to_l3", "tests", "l3_reference_fixture.rs");
+  const bridge = readRepoFile("levels", "vize_l2_to_l3", "tests", "l3_reference_fixture.rs");
   assert.match(bridge, /^    mod schedule;$/mu);
   assert.match(bridge, /^    mod reference;$/mu);
-  const lattices = readRepoFile("davinci", "vize_l3", "tests", "lattice_reference_fixture.rs");
-  assert.match(lattices, /tests\/fixtures\/l3-reference\/reactivity-lattice\.folio/u);
+  const lattices = readRepoFile("levels", "vize_l3", "tests", "lattice_reference_fixture.rs");
+  assert.match(lattices, /tests\/fixtures\/l3-reference\/reactivity-lattice\.dump/u);
   assert.match(lattices, /ReactivityPage::of\(&facts\)\.print_to_string\(DumpMode::Full\)/u);
   assert.match(lattices, /lattice::negative_tests\(&text\)/u);
 });

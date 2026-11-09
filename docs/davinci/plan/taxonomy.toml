@@ -1,4 +1,4 @@
-# Davinci construct taxonomy — the dimension catalog behind the construct
+# Levels construct taxonomy — the dimension catalog behind the construct
 # matrices (docs/davinci/assurance.md, "Edge cases must not exist —
 # elimination by enumeration").
 #
@@ -6,14 +6,14 @@
 # change until signed off.
 #
 # Consumers:
-#   tools/commands/davinci/matrix-gen.rs      — generates fixture stubs from this file
-#   tools/commands/davinci/corpus-coverage.ts — (P0-6) reports real-project counts
+#   tools/commands/levels/matrix-gen.rs      — generates fixture stubs from this file
+#   tools/commands/levels/corpus-coverage.ts — (P0-6) reports real-project counts
 #                                       against the same ids
 #
 # Every generated matrix fixture combines one value per dimension. A new
 # surface construct means a new entry here first — a construct without a
 # taxonomy row cannot merge. File format is the TOML subset implemented by
-# tools/commands/davinci/matrix-gen.rs (quoted strings, arrays of tables).
+# tools/commands/levels/matrix-gen.rs (quoted strings, arrays of tables).
 
 [taxonomy]
 version = 1

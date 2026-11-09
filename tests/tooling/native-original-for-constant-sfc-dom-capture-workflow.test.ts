@@ -5,9 +5,9 @@ import { nativeSetupCaptureRequired } from "../../tools/support/compat/github/na
 
 test("every constant source, emitter-only or full capture input requires a real fresh native setup packet", () => {
   for (const path of [
-    "davinci/vize_l3/src/decision/dom/build/for_head/runtime.rs",
-    "davinci/vize_l4/src/targets/dom/for_head.rs",
-    "davinci/vize_l4/src/targets/dom/vue/for_head.rs",
+    "levels/vize_l3/src/decision/dom/build/for_head/runtime.rs",
+    "levels/vize_l4/src/targets/dom/for_head.rs",
+    "levels/vize_l4/src/targets/dom/vue/for_head.rs",
     "crates/vize_atelier_sfc/src/native_selected_setup/tests/original_for_constant.rs",
     "crates/vize_atelier_sfc/tests/fixtures/native_original_for_constant_sfc_vue_3_5_35.json",
     "crates/vize_atelier_sfc/tests/fixtures/native_original_for_constant_inherited_sfc_vue_3_5_35.json",
@@ -22,7 +22,7 @@ test("every constant source, emitter-only or full capture input requires a real 
     "docs/davinci/decisions/2026-10-04-original-for-constant-dom-proposal.md",
     "tests/tooling/support/native-original-for-constant-sfc-dom-runtime.md",
     "crates/vize_atelier_sfc/tests/fixtures/native_original_for_constant_sfc_vue_3_5_35.json.notes",
-    "davinci/vize_l4/src/targets/ssr/for_head.rs",
+    "levels/vize_l4/src/targets/ssr/for_head.rs",
   ])
     assert.equal(nativeSetupCaptureRequired([path]), false, path);
 });

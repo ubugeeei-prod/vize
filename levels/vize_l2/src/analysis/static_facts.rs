@@ -20,7 +20,7 @@ mod remarks;
 pub use super::constant_expression::is_self_bound_constant as constant_for_hoist;
 pub use remarks::{STATIC_PROPS, STATIC_SUBTREE};
 
-/// The pass name in pipeline strings and folio pages.
+/// The pass name in pipeline strings and dump pages.
 pub const NAME: &str = "hoist-static";
 
 /// Static-subtree analysis is optional, fusable and preserves the artifact.

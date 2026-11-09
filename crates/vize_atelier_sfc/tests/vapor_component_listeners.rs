@@ -109,12 +109,12 @@ fn selected_component_events_keep_whole_retained_results_and_model_names() {
                 Vec::new()
             };
             let allocator = Allocator::new();
-            let result = |davinci_retained_lane| {
+            let result = |level_retained_lane| {
                 let result = vize_atelier_vapor::compile_vapor(
                     &allocator,
                     source,
                     vize_atelier_vapor::VaporCompilerOptions {
-                        davinci_retained_lane,
+                        level_retained_lane,
                         prefix_identifiers,
                         ..Default::default()
                     },

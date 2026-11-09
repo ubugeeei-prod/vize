@@ -32,7 +32,7 @@ export function splitProcessSegments(lines: readonly string[]): Segment[] {
       }
       // Build output and blank separators only; never counters or results.
       assert(
-        !/^(?:canonical observer process|test result:|davinci[ -]|test .* \.\.\. )/.test(line),
+        !/^(?:canonical observer process|test result:|levels[ -]|test .* \.\.\. )/.test(line),
         "Observer evidence outside a process segment",
       );
       continue;
@@ -69,8 +69,8 @@ function counter(line: string, name: string): number {
   return Number(match[1]);
 }
 
-const closurePrefix = "davinci-differential corpus scope:";
-const shardPrefix = "davinci-differential corpus shard:";
+const closurePrefix = "level-differential corpus scope:";
+const shardPrefix = "level-differential corpus shard:";
 const resultPattern =
   /^test result: ok\. (\d+) passed; 0 failed; 0 ignored; 0 measured; (\d+) filtered out;/;
 
@@ -113,18 +113,18 @@ const shapes = ["dom_inline", "dom_module", "ssr", "vapor"];
 /** One shard's canonical counters; returns the number of files it swept. */
 function validateShardCounters(kind: SuiteKind, lines: readonly string[], totals: Totals): number {
   if (kind === "reach") {
-    const summary = single(lines, "davinci production reach: scope=canonical ");
+    const summary = single(lines, "levels production reach: scope=canonical ");
     const files = counter(summary, "files");
     assert.equal(counter(summary, "unreadable"), 0, "Unreadable reach inputs");
     assert.equal(counter(summary, "parse_errors"), 0, "Reach parse failures");
     const canonical = lines.slice(lines.indexOf(summary));
     for (const shape of shapes) {
-      const reachLine = single(canonical, `davinci production reach: shape=${shape} `);
+      const reachLine = single(canonical, `levels production reach: shape=${shape} `);
       assert.equal(counter(reachLine, "rejected"), 0, "Production reach rejected a plan");
       assert.equal(counter(reachLine, "divergences"), 0, "Production reach diverged");
       const native = single(
         canonical,
-        `davinci native-only acceptance: scope=canonical product=compiler target=${shape} `,
+        `levels native-only acceptance: scope=canonical product=compiler target=${shape} `,
       );
       assert.equal(counter(native, "planned"), files, "Native reach inventory changed");
       assert.equal(
@@ -140,10 +140,10 @@ function validateShardCounters(kind: SuiteKind, lines: readonly string[], totals
     return files;
   }
   assert.equal(kind, "ssr", "Only reach and SSR sweeps are sharded");
-  const emitter = single(lines, "davinci SSR corpus sweep: scope=canonical ");
+  const emitter = single(lines, "levels SSR corpus sweep: scope=canonical ");
   const files = counter(emitter, "files");
   assert.equal(counter(emitter, "parsed"), files, "SSR parse inventory changed");
-  const production = single(lines, "davinci SSR production sweep: scope=canonical ");
+  const production = single(lines, "levels SSR production sweep: scope=canonical ");
   for (const [label, line] of [
     ["emitter", emitter],
     ["production", production],
@@ -200,7 +200,7 @@ export function validateShardedObserver(
       assert(result.passed >= suite.minimumTests, "Observer tests shrank");
       closure(segment.lines, gitlinks);
       assert.equal(suite.kind, "pug", "Unknown unsharded observer suite");
-      const pugLine = single(segment.lines, "davinci pug corpus sweep: ");
+      const pugLine = single(segment.lines, "levels pug corpus sweep: ");
       assert.equal(counter(pugLine, "files"), identity.files, "Pug corpus shrank");
       assert(
         counter(pugLine, "pug") > 0 && counter(pugLine, "compiled_lanes") > 0,

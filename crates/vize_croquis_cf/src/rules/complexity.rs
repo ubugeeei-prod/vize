@@ -1,7 +1,7 @@
 //! Cross-file complexity scoring.
 //!
 //! The template-control-flow dimension is fed by the L2
-//! `template-complexity` facts (Davinci P4-9a/P4-9b, [`template`]): own
+//! `template-complexity` facts (Levels P4-9a/P4-9b, [`template`]): own
 //! cyclomatic and cognitive complexity per component, summed over the
 //! components in scope. Nothing here scans expression text.
 

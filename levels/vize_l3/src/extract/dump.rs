@@ -13,9 +13,9 @@ use super::report::{Decision, DecisionKind, Delta, Extraction, Reason};
 use crate::op::OpId;
 use crate::placement::dump::{field, parse_placement, parse_u32};
 
-/// One extraction, printed as `[s3-extraction-folio]`.
+/// One extraction, printed as `[s3-extraction-dump]`.
 #[derive(Debug, Clone, Default, PartialEq, Eq, Dump)]
-#[dump(name = "s3-extraction-folio")]
+#[dump(name = "s3-extraction-dump")]
 pub struct Page {
     pub tier: String,
     pub candidate_budget: u32,

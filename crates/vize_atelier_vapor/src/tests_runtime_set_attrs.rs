@@ -14,7 +14,7 @@ fn assert_compiles(source: &str, retained: bool, expected: &str) {
         source,
         VaporCompilerOptions {
             prefix_identifiers: true,
-            davinci_retained_lane: retained,
+            level_retained_lane: retained,
             ..Default::default()
         },
     );

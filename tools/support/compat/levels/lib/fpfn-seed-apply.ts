@@ -1,12 +1,12 @@
 // Injection planning and application for the seeded-defect generator
-// (Davinci P0-13). Two pilot defect classes:
+// (Levels P0-13). Two pilot defect classes:
 //
 //   class (a) "undefined-template-ref": rename one `<script setup>` binding
 //   (first eligible, deterministic — see fpfn-seed-sfc.ts for the
 //   eligibility contract) everywhere in the script block, so the template
 //   reference dangles. Expected diagnostic: vue/no-undefined-refs.
 //
-//   class (b) "unused-binding": inject `const davinciSeededUnused = 0;`
+//   class (b) "unused-binding": inject `const levelSeededUnused = 0;`
 //   into `<script setup>` (creating the block when the file has none).
 //   Expected diagnostic: vue/no-unused-setup-bindings, explicitly enabled
 //   on the independent class-(b) mutation plane.
@@ -31,8 +31,8 @@ export const CLASS_A = "undefined-template-ref";
 export const CLASS_B = "unused-binding";
 export const CLASS_A_RULE = "vue/no-undefined-refs";
 export const CLASS_B_RULE = "vue/no-unused-setup-bindings";
-export const SEEDED_NAME_SUFFIX = "__davinci_seeded";
-export const UNUSED_BINDING_NAME = "davinciSeededUnused";
+export const SEEDED_NAME_SUFFIX = "__level_seeded";
+export const UNUSED_BINDING_NAME = "levelSeededUnused";
 export const UNUSED_BINDING_STATEMENT = `const ${UNUSED_BINDING_NAME} = 0;\n`;
 
 export type Span = [number, number];

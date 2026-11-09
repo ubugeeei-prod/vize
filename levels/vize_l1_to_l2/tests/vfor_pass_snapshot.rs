@@ -1,5 +1,5 @@
 //! TS-17 for lowering-published `v-for` facts (P2-9 series 2):
-//! committed fixture in, pipeline out, **full normalized folio**
+//! committed fixture in, pipeline out, **full normalized dump**
 //! snapshot — the P2-4 harness shape, as `vif_pass_snapshot.rs`
 //! applied it to installment 1.
 //!
@@ -34,11 +34,11 @@ fn fixture(name: &str) -> vize_l0::String {
 }
 
 #[test]
-fn the_loops_fixture_snapshots_the_post_pass_folio() {
+fn the_loops_fixture_snapshots_the_post_pass_dump() {
     let source = fixture("loops.vue");
-    with_transformed(&source, |lowered, folio, facts, budget| {
-        // The oracle: the full normalized folio after the pipeline ran.
-        assert_dump_snapshot!(*folio);
+    with_transformed(&source, |lowered, dump, facts, budget| {
+        // The oracle: the full normalized dump after the pipeline ran.
+        assert_dump_snapshot!(*dump);
 
         // Supplements: the planned walk accounting through the budget
         // observer's own derived page. The fixture builds `v-if` and
@@ -90,13 +90,13 @@ fn the_loops_fixture_snapshots_the_post_pass_folio() {
 }
 
 #[test]
-fn the_holes_fixture_snapshots_the_post_pass_folio() {
+fn the_holes_fixture_snapshots_the_post_pass_dump() {
     let source = fixture("holes.vue");
-    with_transformed(&source, |lowered, folio, facts, _| {
+    with_transformed(&source, |lowered, dump, facts, _| {
         // The undecomposable value keeps its op (pessimal escape); the
         // expressionless v-for keeps only its element. Both errors are
         // the lowering's — the fact mirror adds none.
-        assert_dump_snapshot!(*folio);
+        assert_dump_snapshot!(*dump);
         assert_eq!(lowered.diagnostics.len(), 2);
         assert_eq!(
             lowered.diagnostics[0].message.as_str(),

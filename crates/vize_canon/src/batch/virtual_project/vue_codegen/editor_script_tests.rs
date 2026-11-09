@@ -160,7 +160,7 @@ fn unusable_template_without_a_script_keeps_the_complete_fallback() {
 fn complete_malformed_ts40_template_preserves_the_whole_original_fallback() {
     let source = include_str!(concat!(
         env!("CARGO_MANIFEST_DIR"),
-        "/../../tests/_fixtures/davinci-ts40-projection/parse-recovery.vue"
+        "/../../tests/_fixtures/level-ts40-projection/parse-recovery.vue"
     ));
     for newline in ["\n", "\r\n"] {
         let source = source.replace('\n', newline);

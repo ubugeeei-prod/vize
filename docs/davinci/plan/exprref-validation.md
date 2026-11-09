@@ -37,8 +37,8 @@ why a substitute would not satisfy the contract.
 - `cargo test -p vize_extension_host --features extension-host --test wit_golden --test wit_golden_expression --test wit_golden_typed_expression --test wit_legacy`:
   real new and historical components, negotiation, exact pages and both host
   modes. SDK archive hashes are independently pinned by
-  `tests/tooling/davinci-extension-sdk.test.ts`.
-- `node --test tests/tooling/davinci-extension-host-deps.test.ts`: the shipped
+  `tests/tooling/level-extension-sdk.test.ts`.
+- `node --test tests/tooling/level-extension-host-deps.test.ts`: the shipped
   dependency closure keeps Wasmtime confined to the optional host.
 - `cargo test -p vize_extension_host --test contract_surface`: released
   canonical surface bytes and every version transition.

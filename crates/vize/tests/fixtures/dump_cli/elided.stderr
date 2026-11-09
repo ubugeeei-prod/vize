@@ -1,1 +1,1 @@
-dump: @INPUT_PATH@: folio parse error at line 5: missing span
+dump: @INPUT_PATH@: dump parse error at line 5: missing span

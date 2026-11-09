@@ -4,11 +4,11 @@ use vize_l2::dump::Page as L2Page;
 const EMPTY: &str = "[l2-dump-v2]\nops=0\n\n";
 
 #[test]
-fn l2_folio_is_the_physical_stage_name() {
-    let folio = L2Page::parse(EMPTY).expect("empty L2 folio parses");
+fn l2_dump_is_the_physical_stage_name() {
+    let dump = L2Page::parse(EMPTY).expect("empty L2 dump parses");
 
-    assert_eq!(folio, L2Page::default());
-    assert_eq!(folio.print_to_string(DumpMode::Full).as_str(), EMPTY);
+    assert_eq!(dump, L2Page::default());
+    assert_eq!(dump.print_to_string(DumpMode::Full).as_str(), EMPTY);
 }
 
 #[test]

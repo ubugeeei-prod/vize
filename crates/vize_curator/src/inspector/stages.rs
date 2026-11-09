@@ -1,7 +1,7 @@
-//! Stage feed construction for the inspector (Davinci P2-18).
+//! Stage feed construction for the inspector (Levels P2-18).
 //!
 //! The inspector's stage pages, in the feed shape this inspector owns
-//! (`folio::feed::StageFeed`, committed schema
+//! (`dump::feed::StageFeed`, committed schema
 //! `docs/davinci/plan/stage-ladder-feed.schema.json`). There is exactly one
 //! serializer of that shape - `StageFeed::to_json` - so this module
 //! builds pages and parses the feed's own output into the

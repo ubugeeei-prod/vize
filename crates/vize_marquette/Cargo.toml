@@ -9,7 +9,7 @@ description = "Versioned application blueprints for Vize"
 metadata.vize.stability = "experimental"
 
 [features]
-# Reads contract surfaces from WIT sources (`contracts::wit`, Davinci P6-8).
+# Reads contract surfaces from WIT sources (`contracts::wit`, Levels P6-8).
 wit = ["dep:wit-parser"]
 
 [dependencies]

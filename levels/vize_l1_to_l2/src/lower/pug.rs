@@ -1,4 +1,4 @@
-//! pug L1 → L2 (Davinci P4-12c, charter #12).
+//! pug L1 → L2 (Levels P4-12c, charter #12).
 //!
 //! # The shape: desugar at L1, one Vue lowering
 //!

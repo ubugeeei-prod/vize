@@ -7,7 +7,7 @@ import { pathToFileURL } from "node:url";
 
 const pack = JSON.parse(
   fs.readFileSync(
-    new URL("../../davinci/vize_l4/tests/fixtures/native-ssr-vue-3.5.35.json", import.meta.url),
+    new URL("../../levels/vize_l4/tests/fixtures/native-ssr-vue-3.5.35.json", import.meta.url),
     "utf8",
   ),
 );
@@ -241,7 +241,7 @@ test(
 const roles = JSON.parse(
   fs.readFileSync(
     new URL(
-      "../../davinci/vize_l4/tests/fixtures/native-ssr-component-roles-vue-3.5.35.json",
+      "../../levels/vize_l4/tests/fixtures/native-ssr-component-roles-vue-3.5.35.json",
       import.meta.url,
     ),
     "utf8",

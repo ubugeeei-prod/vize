@@ -8,11 +8,11 @@ not a level rename or a rename of other art-named products.
 The crate remains `publish = false` and experimental. Its directory is
 `crates/vize_incremental/`: it is currently a transitional product adapter
 with normal dependencies on `vize_croquis` and `vize_relief`, so placing it in
-`davinci/` would violate the program's dependency direction. The rename
+`levels/` would violate the program's dependency direction. The rename
 does not remove those dependencies or give any legacy-backed path native credit.
 `SfcSummary` remains owned by `vize_l2::summary`.
 
-Replay `python3 tools/commands/davinci/rename-incremental-tier.py --phase moves`
+Replay `python3 tools/commands/levels/rename-incremental-tier.py --phase moves`
 on fresh main and commit the byte-exact moves first. Then run the same script
 with `--phase references` to update package/workspace/lock identities, Rust
 imports, workflow triggers and commands, tooling assertions and documentation.
@@ -21,7 +21,7 @@ package ordering; the actual resolver locks zero changed dependency versions.
 Format the changed Rust imports with `cargo fmt --package vize_incremental
 --package vize_maestro` and changed Markdown tables with `vp fmt`. Regenerate
 the existing Croquis and consumer-migration inventories through their
-`tools/support/compat/davinci/{croquis-consumers,consumer-migration-surfaces}.mjs`
+`tools/support/compat/levels/{croquis-consumers,consumer-migration-surfaces}.mjs`
 `--write` entry points. The import regrouping changes three LSP inventory
 source-line coordinates; the natural scanner remains unchanged.
 The key-capture fixture's historical build logs retain their original bytes.

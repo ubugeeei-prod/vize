@@ -1,4 +1,4 @@
-//! Parser for the croquis folio (`[vir]`) text format.
+//! Parser for the croquis dump (`[vir]`) text format.
 //!
 //! Accepts canonical output byte-for-byte and is lenient exactly where the
 //! printer normalizes: section order, blank-line placement, unsorted name
@@ -75,7 +75,7 @@ impl Section {
 }
 
 struct Parser {
-    folio: Page,
+    dump: Page,
     current: Option<Section>,
     seen: u16,
     /// Bits: 1 = script_setup, 2 = scopes, 4 = bindings.
@@ -88,7 +88,7 @@ struct Parser {
 
 pub(super) fn parse(input: &str) -> Result<Page, DumpError> {
     let mut parser = Parser {
-        folio: Page::default(),
+        dump: Page::default(),
         current: None,
         seen: 0,
         header_seen: 0,
@@ -151,7 +151,7 @@ impl Parser {
                     return Ok(());
                 }
                 if tail_is_span(line) {
-                    self.folio.macros.push(entry::parse_macro(line, line_no)?);
+                    self.dump.macros.push(entry::parse_macro(line, line_no)?);
                 } else {
                     self.pending_macro = Some((String::from(line), line_no));
                 }
@@ -160,7 +160,7 @@ impl Parser {
                 joined.push('\n');
                 joined.push_str(line);
                 if tail_is_span(line) {
-                    self.folio
+                    self.dump
                         .macros
                         .push(entry::parse_macro(joined.as_str(), start_line)?);
                 } else {
@@ -172,15 +172,15 @@ impl Parser {
     }
 
     fn entry_line(&mut self, section: Section, line: &str, no: usize) -> Result<(), DumpError> {
-        let folio = &mut self.folio;
+        let dump = &mut self.dump;
         match section {
-            Section::Vir => return entry::parse_header(line, no, folio, &mut self.header_seen),
-            Section::Props => folio.props.push(entry::parse_prop(line, no)?),
-            Section::Extern => folio.externs.push(entry::parse_extern(line, no)?),
-            Section::Types => folio.types.push(entry::parse_type(line, no)?),
-            Section::Bindings => folio.bindings.push(entry::parse_binding_group(line, no)?),
-            Section::Scopes => folio.scopes.push(entry::parse_scope(line, no)?),
-            Section::Errors => folio.errors.push(entry::parse_error(line, no)?),
+            Section::Vir => return entry::parse_header(line, no, dump, &mut self.header_seen),
+            Section::Props => dump.props.push(entry::parse_prop(line, no)?),
+            Section::Extern => dump.externs.push(entry::parse_extern(line, no)?),
+            Section::Types => dump.types.push(entry::parse_type(line, no)?),
+            Section::Bindings => dump.bindings.push(entry::parse_binding_group(line, no)?),
+            Section::Scopes => dump.scopes.push(entry::parse_scope(line, no)?),
+            Section::Errors => dump.errors.push(entry::parse_error(line, no)?),
             Section::Emits
             | Section::Models
             | Section::Expose
@@ -200,7 +200,7 @@ impl Parser {
 
     /// Close the active section: reject an unterminated `[macros]` entry
     /// and move the verbatim buffer (minus its trailing-blank separator)
-    /// into the folio.
+    /// into the dump.
     fn flush(&mut self) -> Result<(), DumpError> {
         if let Some((_, start_line)) = self.pending_macro.take() {
             return Err(err(start_line, cstr!("macro line is missing a span")));
@@ -216,18 +216,18 @@ impl Parser {
             lines.pop();
         }
         match section {
-            Section::Emits => self.folio.emits = lines,
-            Section::Models => self.folio.models = lines,
-            Section::Reactivity => self.folio.reactivity = lines,
+            Section::Emits => self.dump.emits = lines,
+            Section::Models => self.dump.models = lines,
+            Section::Reactivity => self.dump.reactivity = lines,
             Section::Expose | Section::Slots => {
                 let entries: Vec<SurfaceEntry> = lines
                     .into_iter()
                     .map(|line| entry::parse_surface_entry(line.as_str()))
                     .collect();
                 if section == Section::Expose {
-                    self.folio.expose = entries;
+                    self.dump.expose = entries;
                 } else {
-                    self.folio.slots = entries;
+                    self.dump.slots = entries;
                 }
             }
             // Only verbatim sections get past the check above.
@@ -244,16 +244,16 @@ impl Parser {
         if self.header_seen != 0b111 {
             return Err(err(0, cstr!("incomplete [vir] header")));
         }
-        validate_scopes(&self.folio)?;
-        Ok(self.folio)
+        validate_scopes(&self.dump)?;
+        Ok(self.dump)
     }
 }
 
 /// Scope entry ids must be unique and every parent reference must resolve
 /// to an entry.
-fn validate_scopes(folio: &Page) -> Result<(), DumpError> {
+fn validate_scopes(dump: &Page) -> Result<(), DumpError> {
     let mut ids: FxHashSet<(char, u64)> = FxHashSet::default();
-    for scope in &folio.scopes {
+    for scope in &dump.scopes {
         if !ids.insert((scope.id.prefix, scope.id.index)) {
             return Err(err(
                 0,
@@ -261,7 +261,7 @@ fn validate_scopes(folio: &Page) -> Result<(), DumpError> {
             ));
         }
     }
-    for scope in &folio.scopes {
+    for scope in &dump.scopes {
         for parent in &scope.parents {
             if !ids.contains(&(parent.prefix, parent.index)) {
                 return Err(err(

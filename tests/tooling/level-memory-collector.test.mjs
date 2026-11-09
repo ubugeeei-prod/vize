@@ -48,7 +48,7 @@ await test("duplicate, extra and foreign emitted reports cannot qualify", (t) =>
     () =>
       collectFreshReports(
         f.root,
-        `${f.markers}\ndavinci-harness: wrote ${path.join(f.dir, "three.json")}`,
+        `${f.markers}\nlevel-harness: wrote ${path.join(f.dir, "three.json")}`,
         f.identities,
       ),
     /unregistered|extra/,
@@ -57,7 +57,7 @@ await test("duplicate, extra and foreign emitted reports cannot qualify", (t) =>
     () =>
       collectFreshReports(
         f.root,
-        `${f.markers}\ndavinci-harness: wrote /tmp/foreign.json`,
+        `${f.markers}\nlevel-harness: wrote /tmp/foreign.json`,
         f.identities,
       ),
     /outside|foreign/,

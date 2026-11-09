@@ -1,4 +1,4 @@
-//! Davinci P3-8 SSR corpus gate (TS-11 for the SSR lane).
+//! Levels P3-8 SSR corpus gate (TS-11 for the SSR lane).
 //!
 //! Every SFC template compiles on the selected SSR lane and with the legacy
 //! AST walker pinned, under the options the production SFC compile derives
@@ -8,12 +8,12 @@
 //! actually emit from the L4 plan, so a gate that only ever compares the
 //! legacy walker against itself proves nothing.
 //!
-//! `VIZE_DAVINCI_DIFFERENTIAL_CORPUS=<dir>` widens the committed battery to
-//! every `.vue` file under `<dir>` (see `davinci_test_support::corpus`).
+//! `VIZE_LEVEL_DIFFERENTIAL_CORPUS=<dir>` widens the committed battery to
+//! every `.vue` file under `<dir>` (see `level_test_support::corpus`).
 //!
 //! Two sweeps share the input. The emitter sweep derives options by hand and
 //! measures what the plan emitter can own; the production sweep
-//! (`davinci_ssr_corpus/production.rs`) drives the SFC adapter entry point
+//! (`level_ssr_corpus/production.rs`) drives the SFC adapter entry point
 //! unchanged and reports the production reach.
 
 #![expect(
@@ -24,7 +24,7 @@
 
 use std::collections::BTreeMap;
 
-use davinci_test_support::corpus::read_corpus_source;
+use level_test_support::corpus::read_corpus_source;
 use vize_atelier_sfc::{SfcCompileOptions, SfcParseOptions, compile_sfc, parse_sfc};
 use vize_atelier_ssr::differential::{SsrLaneComparison, compare_ssr_lanes};
 use vize_atelier_ssr::{SsrCompilerExperimentalOptions, SsrCompilerOptions};
@@ -298,8 +298,8 @@ fn ssr_lanes_agree_on_sfc_templates_body() {
     );
     production::assert_clean("battery", &battery_production);
 
-    let Some(sweep) = davinci_test_support::corpus::resolve_env_shard() else {
-        eprintln!("VIZE_DAVINCI_DIFFERENTIAL_CORPUS unset: committed battery only");
+    let Some(sweep) = level_test_support::corpus::resolve_env_shard() else {
+        eprintln!("VIZE_LEVEL_DIFFERENTIAL_CORPUS unset: committed battery only");
         return;
     };
     let mut corpus = Report::default();
@@ -311,7 +311,7 @@ fn ssr_lanes_agree_on_sfc_templates_body() {
         production::compare(name.as_ref(), &source, &mut reach);
     }
     eprintln!(
-        "davinci SSR production sweep: scope={} templates={} compared={} s4={} error_skips={} rejected={} divergences={}",
+        "levels SSR production sweep: scope={} templates={} compared={} s4={} error_skips={} rejected={} divergences={}",
         sweep.scope_label(),
         reach.templates,
         reach.compared,
@@ -320,10 +320,10 @@ fn ssr_lanes_agree_on_sfc_templates_body() {
         reach.rejected.len(),
         reach.divergences.len(),
     );
-    eprintln!("davinci SSR production lanes: {:?}", reach.lanes);
+    eprintln!("levels SSR production lanes: {:?}", reach.lanes);
     production::assert_clean("production", &reach);
     eprintln!(
-        "davinci SSR corpus sweep: scope={} files={} parsed={} templates={} compared={} s4={} legacy_error_skips={} rejected={} divergences={}",
+        "levels SSR corpus sweep: scope={} files={} parsed={} templates={} compared={} s4={} legacy_error_skips={} rejected={} divergences={}",
         sweep.scope_label(),
         corpus.files,
         corpus.parsed,
@@ -334,7 +334,7 @@ fn ssr_lanes_agree_on_sfc_templates_body() {
         corpus.rejected.len(),
         corpus.divergences.len(),
     );
-    eprintln!("davinci SSR corpus lanes: {:?}", corpus.lanes);
+    eprintln!("levels SSR corpus lanes: {:?}", corpus.lanes);
     assert!(
         corpus.compared > 0,
         "a corpus sweep that compares nothing proves nothing"

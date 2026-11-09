@@ -1,6 +1,6 @@
 name: Shipped Linux LSP resource comparison
 
-# Optional same-SHA supplement to davinci-resource-budgets.yml. The scheduled
+# Optional same-SHA supplement to level-resource-budgets.yml. The scheduled
 # ci-opt gate and all its ceilings remain unchanged. A fat-LTO pass never
 # substitutes for a failing ci-opt result.
 on:
@@ -42,22 +42,22 @@ jobs:
           --message-format=json-render-diagnostics > "${RUNNER_TEMP}/release-build.jsonl"
       - name: Record the measured binary and build identity
         run: >-
-          vp exec node tools/support/compat/davinci/lsp-build-identity.ts
+          vp exec node tools/support/compat/levels/lsp-build-identity.ts
           target/x86_64-unknown-linux-gnu/release/vize release
           "${RUNNER_TEMP}/release-build.jsonl" "${RUNNER_TEMP}/release-build-identity.json"
       - name: Measure the complete TS-44 campaign with the shipped profile
         run: >-
-          rust-script tools/commands/davinci/resource-budgets.rs --measure
+          rust-script tools/commands/levels/resource-budgets.rs --measure
           --preset linux-x64-ci --runs 3 --keystrokes 20 --idle-seconds 60
           --server target/x86_64-unknown-linux-gnu/release/vize
           --out "${RUNNER_TEMP}/release-resource.json"
       - name: Apply every unchanged TS-44 ceiling to this additional build
         run: >-
-          rust-script tools/commands/davinci/resource-budgets.rs --check
+          rust-script tools/commands/levels/resource-budgets.rs --check
           --measurement "${RUNNER_TEMP}/release-resource.json"
       - name: Verify the protocol and controlled edit oracle
         run: >-
-          vp exec node tools/support/compat/davinci/lsp-resources.ts
+          vp exec node tools/support/compat/levels/lsp-resources.ts
           --server target/x86_64-unknown-linux-gnu/release/vize
           --build "release: fat LTO, one codegen unit"
           --files 2 --runs 1 --idle-seconds 10
@@ -65,7 +65,7 @@ jobs:
       - name: Measure 10000 open buffers, 16 production providers, and Corsa
         run: >-
           timeout --signal=TERM --kill-after=30s 45m
-          vp exec node tools/support/compat/davinci/lsp-resources.ts
+          vp exec node tools/support/compat/levels/lsp-resources.ts
           --server target/x86_64-unknown-linux-gnu/release/vize
           --build "release: fat LTO, one codegen unit"
           --files 10000 --warm-providers 16 --runs 1 --idle-seconds 10

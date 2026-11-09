@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import { test } from "node:test";
-import { validateLoopScenario } from "./support/davinci-mounted-trace.mjs";
+import { validateLoopScenario } from "./support/level-mounted-trace.mjs";
 
 function fixture(name: string, extension: string) {
   return JSON.parse(

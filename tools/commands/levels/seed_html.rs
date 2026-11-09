@@ -1,4 +1,4 @@
-//! TS-37 seeded HTML nesting classes (Davinci P4-11a / P4-11b) for
+//! TS-37 seeded HTML nesting classes (Levels P4-11a / P4-11b) for
 //! `seed-defects.rs --html-nesting`.
 //!
 //! Every eligible `.vue` file gets one snippet per nesting class appended to
@@ -15,10 +15,10 @@
 pub const NESTING_RULE: &str = "vue/permitted-contents";
 pub const COMPOSED_RULE: &str = "html/cross-component-nesting";
 pub const COMPOSED_CLASS: &str = "cross-component-nesting";
-pub const BLOCK_FILE: &str = "__davinci_seed_block.vue";
-pub const BLOCK_SOURCE: &str = "<template>\n  <div>davinci seeded block</div>\n</template>\n";
-const BLOCK_IMPORT: &str = "import DavinciSeedBlock from \"./__davinci_seed_block.vue\";\n";
-const COMPOSED_SNIPPET: &str = "<p>@<DavinciSeedBlock /></p>";
+pub const BLOCK_FILE: &str = "__level_seed_block.vue";
+pub const BLOCK_SOURCE: &str = "<template>\n  <div>levels seeded block</div>\n</template>\n";
+const BLOCK_IMPORT: &str = "import LevelSeedBlock from \"./__level_seed_block.vue\";\n";
+const COMPOSED_SNIPPET: &str = "<p>@<LevelSeedBlock /></p>";
 
 /// One snippet per class, in `ViolationClass` order; each `@` marks the start
 /// of one expected finding (an element's `<tag`, or a text node), in order.
@@ -200,7 +200,7 @@ pub fn plan(source: &str, imported: bool) -> Result<HtmlSeed, &'static str> {
     }
     let close = template_close(source)?;
     let script = script_setup_insert(source).filter(|at| *at < source.len());
-    let mut block = String::from("<div data-davinci-seed>\n");
+    let mut block = String::from("<div data-level-seed>\n");
     let mut marks: Vec<(&'static str, &'static str, usize, usize)> = Vec::new();
     let composed = script.is_some();
     let snippets = NESTING

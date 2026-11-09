@@ -1,7 +1,7 @@
 //! The crash-repro page (`[repro]`) - what the ICE policy writes and what
 //! `vize repro` reads back (charter #30, P2-13).
 //!
-//! A `repro.folio` is a self-contained reproducer for a pipeline run that
+//! A `repro.dump` is a self-contained reproducer for a pipeline run that
 //! stopped on a panic: the pipeline string (P2-2 grammar), the run
 //! configuration a replay needs, the failure the run recorded, and the
 //! last-good stage dump. "Last-good" is literal: it is the artifact as of the
@@ -19,7 +19,7 @@
 //!   embedded artifact - blank lines, `[`-prefixed lines, all of it. That is
 //!   the only way to embed an arbitrary dump without an escaping scheme, and
 //!   it means the section must come last and is exempt from the
-//!   one-blank-line rule (folio-format.md rule 4), an exemption the format
+//!   one-blank-line rule (dump-format.md rule 4), an exemption the format
 //!   doc records.
 //! - **`failed-pass` may be empty.** A panic caught outside a driven pipeline
 //!   (the build path's real compile, until P2-12b routes it through the pass
@@ -78,7 +78,7 @@ pub struct Page {
     /// The panic payload, newline-normalized by the writer.
     pub reason: String,
     /// How to read `artifact`: `source` means the authored input verbatim;
-    /// any other name is the folio stage that parses the dump.
+    /// any other name is the dump stage that parses the dump.
     pub artifact_stage: String,
     /// Replay configuration (`mode`, `inject-panic`, ...), printed sorted.
     pub config: FxHashMap<String, String>,
@@ -206,7 +206,7 @@ impl Dump for Page {
                 cstr!("invalid pipeline `{pipeline}`: {error}"),
             ));
         }
-        let mut folio = Self {
+        let mut dump = Self {
             pipeline,
             failed_stage: page::require_scalar(failed_stage, "failed-stage")?,
             failed_pass: page::require_scalar(failed_pass, "failed-pass")?,
@@ -215,7 +215,7 @@ impl Dump for Page {
             config,
             artifact,
         };
-        folio.normalize();
-        Ok(folio)
+        dump.normalize();
+        Ok(dump)
     }
 }

@@ -92,9 +92,9 @@ when detached — reporting **fusion grouping explicitly so timing never lies**;
 into reading; crash reproducers = last-good folio + pipeline string, replayable
 via `vize repro`; machine-readable timing (JSON) so CI gates on the traversal budget.
 
-**`davinci-opt`.** MLIR's testing culture rests on `mlir-opt` + round-tripping
+**`level-opt`.** MLIR's testing culture rests on `mlir-opt` + round-tripping
 textual IR. _Import:_ Folio must **parse, not just print**, for L2/L3; a
-The retired `davinci-opt` binary read a folio, ran a named no-op pipeline,
+The retired `level-opt` binary read a folio, ran a named no-op pipeline,
 and printed a folio. Current `vize dump` captures real product stages.
 Without round-trip, every pass test drags the full upstream pipeline — the
 exact coupling MLIR's guide warns against. A `#[derive(Folio)]` proc-macro

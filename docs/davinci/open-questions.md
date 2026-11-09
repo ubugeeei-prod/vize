@@ -175,7 +175,7 @@ settles.
 - **#11 Naming:**
   - The stages are renamed to levels L0–L4, and crates carry level names
     only.
-  - `vize_davinci` is deleted and its contents move into `vize_l0`.
+  - `vize_level` is deleted and its contents move into `vize_l0`.
   - Codenames (including Folio) become doc-only aliases.
   - Croquis keeps its name as a legacy product crate, not as the name of the
     semantic engine.

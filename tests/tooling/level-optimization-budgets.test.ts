@@ -1,4 +1,4 @@
-// Davinci optimization budgets (plan/phase-3.md P3-10).
+// Levels optimization budgets (plan/phase-3.md P3-10).
 //
 // P3-10's try-measure-commit pass is allowed to choose an extraction only
 // after the metric rule is pinned. This test keeps the `-O` tiers, candidate
@@ -11,7 +11,7 @@ import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
-import { parseTomlLite } from "../../tools/support/compat/davinci/toml-lite.ts";
+import { parseTomlLite } from "../../tools/support/compat/levels/toml-lite.ts";
 
 type OptimizationBudget = {
   tier: string;

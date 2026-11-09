@@ -13,10 +13,10 @@ not by unique fixture path: the current compiler-surface lane must record
 
 The durable witnesses are:
 
-- [`davinci-corpus-comparison-count.test.ts`](../../../../../tests/tooling/davinci-corpus-comparison-count.test.ts)
+- [`level-corpus-comparison-count.test.ts`](../../../../../tests/tooling/level-corpus-comparison-count.test.ts)
   - asserts the current manifest yields 144 compiler comparisons, while the
     unique fixture-path count remains 142.
-- [`corpus-baseline-artifact.ts`](../../../../../tools/support/compat/davinci/lib/corpus-baseline-artifact.ts)
+- [`corpus-baseline-artifact.ts`](../../../../../tools/support/compat/levels/lib/corpus-baseline-artifact.ts)
   - exposes the shared expected-count helper used by corpus baseline and diff
     scope proof.
 - [`p2-11.md`](../p2-11.md)

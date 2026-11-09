@@ -5,14 +5,14 @@
 use super::{VaporCompilerOptions, compile_vapor};
 use vize_carton::{Allocator, String};
 
-fn render_lines(source: &str, davinci_retained_lane: bool) -> std::vec::Vec<String> {
+fn render_lines(source: &str, level_retained_lane: bool) -> std::vec::Vec<String> {
     let allocator = Allocator::new();
     let result = compile_vapor(
         &allocator,
         source,
         VaporCompilerOptions {
             prefix_identifiers: true,
-            davinci_retained_lane,
+            level_retained_lane,
             ..Default::default()
         },
     );
@@ -81,14 +81,14 @@ export function render(_ctx) {
   const n1 = _createDynamicComponent(() => (_ctx.c), { innerHTML: () => (_ctx.h) }, null, false)
   return n2
 }"#;
-    for davinci_retained_lane in [false, true] {
+    for level_retained_lane in [false, true] {
         let allocator = Allocator::new();
         let result = compile_vapor(
             &allocator,
             source,
             VaporCompilerOptions {
                 prefix_identifiers: true,
-                davinci_retained_lane,
+                level_retained_lane,
                 ..Default::default()
             },
         );

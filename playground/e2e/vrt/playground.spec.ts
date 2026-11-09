@@ -8,7 +8,7 @@ const TABS = [
   "croquis",
   "cross-file",
   "musea",
-  "davinci",
+  "levels",
 ] as const;
 
 /**
@@ -24,17 +24,17 @@ const OUTPUT_READY: Record<(typeof TABS)[number], string> = {
   croquis: ".perf-badge",
   "cross-file": ".status-time",
   musea: ".perf-badge",
-  davinci: ".davinci-rail",
+  levels: ".level-rail",
 };
 
 /** Per-tab regions whose content is machine-dependent (measured timings). */
 const MASKED: Partial<Record<(typeof TABS)[number], string[]>> = {
-  davinci: [
-    ".davinci-badge",
-    ".davinci-time-strip",
-    ".davinci-step-time",
-    ".davinci-walk-time",
-    ".davinci-timeline-summary",
+  levels: [
+    ".level-badge",
+    ".level-time-strip",
+    ".level-step-time",
+    ".level-walk-time",
+    ".level-timeline-summary",
   ],
 };
 

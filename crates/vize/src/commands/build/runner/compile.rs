@@ -1,6 +1,6 @@
 //! Per-file compilation with profiling for the build command.
 //!
-//! # Arena reuse across files (Davinci P1-11)
+//! # Arena reuse across files (Levels P1-11)
 //!
 //! The batch is file-parallel over rayon and every compile allocates from an
 //! arena, which is no longer built per file: the compiler takes it from
@@ -47,7 +47,7 @@ use crate::commands::build::ScriptExtension;
 use crate::commands::build::config::{
     CompileError, CompileOutput, CompileStats, ErrorPhase, FileProfile,
 };
-use crate::commands::davinci_ice;
+use crate::commands::level_ice;
 
 use super::capture::BuildCapture;
 use super::profile_facts::{self, FileProfileFacts, StatsCacheStatus};
@@ -58,20 +58,20 @@ pub(super) use errors::check_compile_result;
 
 /// The ICE-guarded per-file compile (P2-13, charter #30): an injected panic
 /// or a panic caught around the real compile fails **this file** - with a
-/// written `repro.folio` and an `internal compiler error` report - while the
+/// written `repro.dump` and an `internal compiler error` report - while the
 /// rest of the batch continues. There is no fallback output on this path:
 /// charter #26 forbids degrading to possibly-wrong output, so an ICE'd file
 /// emits nothing but its repro.
 ///
 /// Catching is live in every unwind build (dev, test, CI - where TS-23 pins
 /// it); the release profile's `panic = "abort"` keeps its abort semantics
-/// (see `commands::davinci_ice`).
+/// (see `commands::level_ice`).
 pub(super) fn compile_file_with_profile(
     path: &PathBuf,
     settings: &CompileFileSettings,
     stats: &CompileStats,
 ) -> Result<(CompileOutput, FileProfile, Option<BuildCapture>), CompileError> {
-    if let Some(injection) = settings.davinci.injection_for(path)
+    if let Some(injection) = settings.levels.injection_for(path)
         && (injection.when.is_none()
             || injection
                 .fires_on(&vize_carton::source_io::read_to_string(path).unwrap_or_default()))
@@ -79,12 +79,12 @@ pub(super) fn compile_file_with_profile(
         // The injected pass was validated to be in the plan; should it not run,
         // the file compiles normally.
         if let Err(failure) =
-            davinci_ice::run_injected(settings.davinci.plan_string.as_str(), &injection.pass)
+            level_ice::run_injected(settings.levels.plan_string.as_str(), &injection.pass)
         {
             return Err(ice_error(path, settings, &failure, Some(injection)));
         }
     }
-    davinci_ice::silence_panics();
+    level_ice::silence_panics();
     match catch_unwind(AssertUnwindSafe(|| {
         compile_file_inner(path, settings, stats)
     })) {
@@ -93,10 +93,10 @@ pub(super) fn compile_file_with_profile(
             // A panic in the real compile: the driver did not see it, so it
             // carries the plan's stage and no pass (a stated unknown beats a
             // plausible lie).
-            let failure = davinci_ice::IceFailure {
-                stage: settings.davinci.stage.into(),
+            let failure = level_ice::IceFailure {
+                stage: settings.levels.stage.into(),
                 pass: String::default(),
-                reason: davinci_ice::panic_reason(payload),
+                reason: level_ice::panic_reason(payload),
             };
             Err(ice_error(path, settings, &failure, None))
         }
@@ -108,13 +108,13 @@ pub(super) fn compile_file_with_profile(
 fn ice_error(
     path: &PathBuf,
     settings: &CompileFileSettings,
-    failure: &davinci_ice::IceFailure,
-    inject: Option<&davinci_ice::Injection>,
+    failure: &level_ice::IceFailure,
+    inject: Option<&level_ice::Injection>,
 ) -> CompileError {
     let source = vize_carton::source_io::read_to_string(path).unwrap_or_default();
-    let folio = davinci_ice::source_repro(
-        settings.davinci.plan_string.as_str(),
-        settings.davinci.mode,
+    let dump = level_ice::source_repro(
+        settings.levels.plan_string.as_str(),
+        settings.levels.mode,
         inject,
         failure,
         String::from(source.as_str()),
@@ -123,7 +123,7 @@ fn ice_error(
         .file_stem()
         .and_then(|name| name.to_str())
         .unwrap_or("anonymous");
-    let error = match davinci_ice::write_repro(&settings.davinci.repro_dir, stem, &folio) {
+    let error = match level_ice::write_repro(&settings.levels.repro_dir, stem, &dump) {
         Ok(repro_path) => cstr!(
             "internal compiler error: {}\nrepro: {}",
             failure.text(),
@@ -284,7 +284,7 @@ fn compile_file_inner(
                 let experimental = SfcCompileExperimentalOptions {
                     self_component: settings.experimental_self_component,
                 };
-                if settings.davinci.dump_dir.is_some() {
+                if settings.levels.dump_dir.is_some() {
                     compile_sfc_for_adapter_with_project_and_stage_capture(
                         &descriptor,
                         compile_opts,

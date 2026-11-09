@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { corpus, measureDisabledPluginOverhead } from "./fixtures/davinci-plugin-sdk/bench.mjs";
+import { corpus, measureDisabledPluginOverhead } from "./fixtures/level-plugin-sdk/bench.mjs";
 
 const budgets = {
   compile: { ratio: 1.25, absoluteUsPerFile: 250 },

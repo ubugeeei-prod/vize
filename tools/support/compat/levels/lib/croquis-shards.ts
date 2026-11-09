@@ -16,7 +16,7 @@ import type { CrateGroup, ProductId } from "./croquis-render.ts";
 import type { GeneratedFile } from "./artifact-set.ts";
 import { ARTIFACT_REL, REGEN_COMMAND, SHARD_DIR_REL } from "./paths.ts";
 
-const CHECK_COMMAND = "node tools/support/compat/davinci/croquis-consumers.ts --check";
+const CHECK_COMMAND = "node tools/support/compat/levels/croquis-consumers.ts --check";
 
 function header(extra: readonly string[] = []): string[] {
   const lines = [
@@ -44,7 +44,7 @@ function renderIndex(
 ): string {
   const lines = header([
     `     Totals:     ${SUMMARY_COMMAND}`,
-    "     Generator:  tools/support/compat/davinci/croquis-consumers.ts",
+    "     Generator:  tools/support/compat/levels/croquis-consumers.ts",
   ]);
   lines.push("");
   lines.push("# Croquis consumption matrix");
@@ -52,7 +52,7 @@ function renderIndex(
   lines.push(
     "Which workspace crates consume the public analysis products of" +
       " `crates/vize_croquis`. Mechanizes the 2026-08-13 hand audit in" +
-      " [semantic-engine.md](../semantic-engine.md#the-problem-measured) (Davinci P0-7).",
+      " [semantic-engine.md](../semantic-engine.md#the-problem-measured) (Levels P0-7).",
   );
   lines.push("");
   lines.push("## Layout");
@@ -63,8 +63,8 @@ function renderIndex(
       " consuming crate: that crate's resolved product sites and its non-product" +
       " `vize_croquis` imports. A crate with neither has no shard. Shards record" +
       " line-level facts, so they are not committed: each run writes them under" +
-      " `artifacts/davinci-ledgers/croquis-consumption/<crate>.md`, CI uploads them" +
-      ` in the \`davinci-generated-ledgers\` artifact, and a shard committed under` +
+      " `artifacts/level-ledgers/croquis-consumption/<crate>.md`, CI uploads them" +
+      ` in the \`level-generated-ledgers\` artifact, and a shard committed under` +
       ` \`${SHARD_DIR_REL}/\` is stale.`,
   );
   lines.push("");
@@ -95,7 +95,7 @@ function renderIndex(
 }
 
 function renderShard(crate: string, group: CrateGroup, productIds: readonly ProductId[]): string {
-  const directory = existsSync(path.join(repoRoot, "davinci", crate)) ? "davinci" : "crates";
+  const directory = existsSync(path.join(repoRoot, "levels", crate)) ? "levels" : "crates";
   const lines = header();
   lines.push("");
   lines.push(`# Croquis consumption: \`${crate}\``);

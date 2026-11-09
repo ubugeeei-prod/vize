@@ -62,15 +62,13 @@ pub(super) fn select_from_l2<'a, 'e, C: CaptureSink>(
         return SsrL4Selection::Rejected(
             violations
                 .into_iter()
-                .map(|violation| {
-                    cstr!("Davinci L4 verifier rejected SSR bridge input: {violation}")
-                })
+                .map(|violation| cstr!("Levels L4 verifier rejected SSR bridge input: {violation}"))
                 .collect(),
         );
     }
     if s3.partition.ops.len() != s3.program.ops.len() {
         return SsrL4Selection::Rejected(std::vec![cstr!(
-            "Davinci L4 verifier rejected SSR bridge input: partition facts {} did not match ops {}",
+            "Levels L4 verifier rejected SSR bridge input: partition facts {} did not match ops {}",
             s3.partition.ops.len(),
             s3.program.ops.len()
         )]);
@@ -81,7 +79,7 @@ pub(super) fn select_from_l2<'a, 'e, C: CaptureSink>(
             lowered
                 .errors
                 .iter()
-                .map(|error| cstr!("Davinci L4 string-plan rejected SSR bridge input: {error:?}"))
+                .map(|error| cstr!("Levels L4 string-plan rejected SSR bridge input: {error:?}"))
                 .collect::<std::vec::Vec<String>>(),
         );
     }
@@ -110,7 +108,7 @@ pub(super) fn select_from_l2<'a, 'e, C: CaptureSink>(
         Ok(()) => SsrL4Selection::Emitted(ctx.finish_render()),
         Err(AdmissionFailure::Unsupported(reason)) => SsrL4Selection::Legacy(reason),
         Err(AdmissionFailure::Invalid(message)) => SsrL4Selection::Rejected(std::vec![cstr!(
-            "Davinci L4 string-plan emitter rejected SSR artifact: {message}"
+            "Levels L4 string-plan emitter rejected SSR artifact: {message}"
         )]),
     }
 }
@@ -136,15 +134,13 @@ pub(super) fn select_from_l2_plain<'a, 'e>(
         return SsrL4Selection::Rejected(
             violations
                 .into_iter()
-                .map(|violation| {
-                    cstr!("Davinci L4 verifier rejected SSR bridge input: {violation}")
-                })
+                .map(|violation| cstr!("Levels L4 verifier rejected SSR bridge input: {violation}"))
                 .collect(),
         );
     }
     if s3.partition.ops.len() != s3.program.ops.len() {
         return SsrL4Selection::Rejected(std::vec![cstr!(
-            "Davinci L4 verifier rejected SSR bridge input: partition facts {} did not match ops {}",
+            "Levels L4 verifier rejected SSR bridge input: partition facts {} did not match ops {}",
             s3.partition.ops.len(),
             s3.program.ops.len()
         )]);
@@ -155,7 +151,7 @@ pub(super) fn select_from_l2_plain<'a, 'e>(
             lowered
                 .errors
                 .iter()
-                .map(|error| cstr!("Davinci L4 string-plan rejected SSR bridge input: {error:?}"))
+                .map(|error| cstr!("Levels L4 string-plan rejected SSR bridge input: {error:?}"))
                 .collect::<std::vec::Vec<String>>(),
         );
     }
@@ -184,7 +180,7 @@ pub(super) fn select_from_l2_plain<'a, 'e>(
         Ok(()) => SsrL4Selection::Emitted(ctx.finish_render()),
         Err(AdmissionFailure::Unsupported(reason)) => SsrL4Selection::Legacy(reason),
         Err(AdmissionFailure::Invalid(message)) => SsrL4Selection::Rejected(std::vec![cstr!(
-            "Davinci L4 string-plan emitter rejected SSR artifact: {message}"
+            "Levels L4 string-plan emitter rejected SSR artifact: {message}"
         )]),
     }
 }

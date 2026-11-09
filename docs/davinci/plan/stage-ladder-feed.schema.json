@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://vize.dev/schemas/stage-ladder-feed.schema.json",
-  "title": "Davinci stage ladder feed",
-  "description": "The observer's folio output as one consumable document (P2-18): the pages a run emitted, in emission order, under the schema_version the stage view negotiates on (devtool.md data layer - a consumer refuses a mismatch loudly instead of misrendering). Producer: the `vize inspector` payload embeds it under `stageFeed`. Transport is deliberately unspecified here - that decision is P2-19.",
+  "title": "Levels stage ladder feed",
+  "description": "The observer's dump output as one consumable document (P2-18): the pages a run emitted, in emission order, under the schema_version the stage view negotiates on (devtool.md data layer - a consumer refuses a mismatch loudly instead of misrendering). Producer: the `vize inspector` payload embeds it under `stageFeed`. Transport is deliberately unspecified here - that decision is P2-19.",
   "type": "object",
   "additionalProperties": false,
   "required": ["schema_version", "command", "pages"],
@@ -44,7 +44,7 @@
           },
           "text": {
             "type": "string",
-            "description": "The page text: canonical Full-mode folio text, or for L1 the byte-faithful surface render."
+            "description": "The page text: canonical Full-mode dump text, or for L1 the byte-faithful surface render."
           }
         }
       }

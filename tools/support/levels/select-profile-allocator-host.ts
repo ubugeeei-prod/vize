@@ -8,7 +8,7 @@ import { cssNamingGateReplayText } from "./css-naming-gate-continuation.ts";
 
 export const contracts = [
   {
-    file: "davinci/vize_l0/src/profiler/allocation.rs",
+    file: "levels/vize_l0/src/profiler/allocation.rs",
     old: "d3e899fad86456821435fabbc70da210c55e7c44b9c5c8c06218acc221781517",
     next: "d97bd9786d45e715e74b84f46663c24b61639fc63772a6df33ac127da6d6339e",
   },
@@ -23,12 +23,12 @@ export const contracts = [
     next: "958e159032c13e19222b2e54557d89d5e6927abf7ddd38d2a465ffe39269bb2c",
   },
   {
-    file: "crates/vize_carton/tests/davinci_profile_export.rs",
+    file: "crates/vize_carton/tests/level_profile_export.rs",
     old: "9f18a586da1dee0097ad38c042caea7e52e31508b0747c42e1d6565cd12f7aae",
     next: "e35f20d09549d359661f8b054dcc6e5533f31adc07d5d45ffcd76289ccde9e8b",
   },
   {
-    file: "tests/tooling/davinci/davinci-atelier-sfc-stage-alias.test.mjs",
+    file: "tests/tooling/levels/level-atelier-sfc-stage-alias.test.mjs",
     old: "0039b68bc23fa3077a61407c0caf903a978e81027377c99563142120008829f1",
     next: "2d743d27f4328b01a811d7ba0f962fcd4541e528f09e8193d346d23ead9d8921",
   },
@@ -41,7 +41,7 @@ export const contracts = [
 export const hostModule = "crates/vize_carton/src/profile_allocator.rs";
 export const hostModuleText =
   "//! Host allocator selection for allocation profiling.\n\nuse std::alloc::System;\n\nuse vize_l0::profiler::ProfilingAllocator;\n\n/// Select the host system allocator without another allocator wrapper.\n///\n/// The returned value is the exact L0 accounting wrapper around [`System`].\n/// Native callers selecting another allocator continue to use\n/// [`ProfilingAllocator::from_allocator`] directly.\n///\n/// ```\n/// const ALLOCATOR: vize_l0::profiler::ProfilingAllocator<std::alloc::System> =\n///     vize_carton::profile_allocator::system_allocator();\n/// let _ = ALLOCATOR;\n/// ```\npub const fn system_allocator() -> ProfilingAllocator<System> {\n    ProfilingAllocator::from_allocator(System)\n}\n";
-export const sfcImportGate = "tests/tooling/davinci/davinci-atelier-sfc-stage-alias.test.mjs";
+export const sfcImportGate = "tests/tooling/levels/level-atelier-sfc-stage-alias.test.mjs";
 const sfcGateAnchor = '\nvoid test("Atelier SFC declares';
 const sfcGateHelper =
   '\nfunction assertPreferredSource(source, relPath) {\n  const selected =\n    relPath === "crates/vize_atelier_sfc/tests/allocation_budget.rs"\n      ? source.replace(\n          /^#\\[global_allocator\\]\\nstatic GLOBAL: ProfilingAllocator<System> = vize_carton::profile_allocator::system_allocator\\(\\);$/mu,\n          "",\n        )\n      : source;\n  assert.doesNotMatch(selected, /\\bvize_carton\\b/u, relPath);\n}\n';
@@ -124,7 +124,7 @@ export function prepareAllocatorSelection(read: Reader): Map<string, string> {
   const planned = new Map<string, string>();
   for (const contract of found) {
     let text = contract.text!;
-    if (contract.file === "davinci/vize_l0/src/profiler/allocation.rs")
+    if (contract.file === "levels/vize_l0/src/profiler/allocation.rs")
       text = text
         .replace(
           "use std::alloc::{GlobalAlloc, Layout, System};",
@@ -167,7 +167,7 @@ export function originalAllocatorSelection(read: Reader): Map<string, string> {
   const original = new Map<string, string>();
   for (const contract of contracts) {
     let text = allocatorReplayText(contract.file, read(contract.file))!;
-    if (contract.file === "davinci/vize_l0/src/profiler/allocation.rs")
+    if (contract.file === "levels/vize_l0/src/profiler/allocation.rs")
       text = text
         .replace(
           "use std::alloc::{GlobalAlloc, Layout};",

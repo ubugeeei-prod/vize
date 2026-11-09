@@ -95,7 +95,7 @@ test("source planning uses Node and offline metadata before selecting affected p
   assert.equal(ciSelection?.if, "${{ needs.pr-source-plan.outputs.tooling == 'true' }}");
   assert.equal(
     ciSelection?.run,
-    'node --test --test-reporter=spec --test-reporter-destination=stdout --test-reporter=./tools/support/compat/github/test-case-reporter.ts --test-reporter-destination="$RUNNER_TEMP/test-cases-ci-selection.json" tests/tooling/ci-iteration-plans.test.ts tests/tooling/pr-required-rust.test.ts tests/tooling/rust-test-cohorts.test.ts tests/tooling/rust-build-evidence.test.mjs tests/tooling/pinned-fixture-hydration.test.ts tests/tooling/native-preparation-identity.test.ts tests/tooling/native-formatter-build-custody.test.mjs tests/tooling/native-ci-formatter-custody.test.mjs tests/tooling/native-history-profile.test.ts tests/tooling/native-history-toolchain.test.ts tests/tooling/publish-npm-package*.test.ts tests/tooling/davinci-canonical-corpus-kernel-prefix.test.ts',
+    'node --test --test-reporter=spec --test-reporter-destination=stdout --test-reporter=./tools/support/compat/github/test-case-reporter.ts --test-reporter-destination="$RUNNER_TEMP/test-cases-ci-selection.json" tests/tooling/ci-iteration-plans.test.ts tests/tooling/pr-required-rust.test.ts tests/tooling/rust-test-cohorts.test.ts tests/tooling/rust-build-evidence.test.mjs tests/tooling/pinned-fixture-hydration.test.ts tests/tooling/native-preparation-identity.test.ts tests/tooling/native-formatter-build-custody.test.mjs tests/tooling/native-ci-formatter-custody.test.mjs tests/tooling/native-history-profile.test.ts tests/tooling/native-history-toolchain.test.ts tests/tooling/publish-npm-package*.test.ts tests/tooling/level-canonical-corpus-kernel-prefix.test.ts',
   );
   const check = parse(readRepoFile(".github", "workflows", "check.yml")) as typeof source;
   const js = check.jobs["check-js"].steps ?? [];
@@ -328,7 +328,7 @@ test("unchanged queue gate hydrates the same pinned fixture for all five full Ru
       "tests/tooling/native-history-profile.test.ts",
       "tests/tooling/native-history-toolchain.test.ts",
       "tests/tooling/publish-npm-package*.test.ts",
-      "tests/tooling/davinci-canonical-corpus-kernel-prefix.test.ts",
+      "tests/tooling/level-canonical-corpus-kernel-prefix.test.ts",
     ],
   );
   assert.equal(action.runs.steps.length, 1);

@@ -32,9 +32,9 @@ directly, including slot, fragment and branch positions. The existing folio
 and hoist witnesses were adjusted so the new comment op remains visible to
 span and static-lattice checks.
 
-`crates/vize_atelier_dom/tests/davinci_s2_sfc_comment_selector.rs` compares a
+`crates/vize_atelier_dom/tests/level_s2_sfc_comment_selector.rs` compares a
 comment-preserving SFC sections compile against the compatibility lane and
-asserts the selected compile records one `davinci.s2_dom.files` counter. The
+asserts the selected compile records one `levels.s2_dom.files` counter. The
 full emitted body is pinned exactly, including `_createCommentVNode("kept")`.
 
 This installment does not tick P2-11. The full production-lane switch remains

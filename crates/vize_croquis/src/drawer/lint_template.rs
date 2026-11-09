@@ -1,4 +1,4 @@
-//! Lint-template projection from the completed Davinci L1/L2 artifact.
+//! Lint-template projection from the completed Levels L1/L2 artifact.
 //!
 //! The existing template drawer still owns the compatibility semantics. This
 //! module supplies its short-lived node view without running Armature again:
@@ -79,7 +79,7 @@ impl<'t, 'a> LintTemplate<'t, 'a> {
     }
 
     /// Borrow the compatibility template view used by consumers that have not
-    /// yet moved their emission APIs from Relief to the Davinci artifact.
+    /// yet moved their emission APIs from Relief to the Levels artifact.
     ///
     /// The view is projected from the resident L1/L2 pair; this never runs the
     /// template parser again. Keeping the root inside the callback also makes

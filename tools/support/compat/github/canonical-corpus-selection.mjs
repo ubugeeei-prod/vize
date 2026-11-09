@@ -5,41 +5,41 @@ import { changedPaths } from "./plan-source-checks.ts";
 import { aggregateCheckNeedsResults } from "./require-needs-success.ts";
 
 // Only paths the canonical corpus jobs provably read. Keep this list honest
-// with tests/tooling/davinci-canonical-corpus-selection-inputs.test.ts, which
+// with tests/tooling/level-canonical-corpus-selection-inputs.test.ts, which
 // derives the read set from the workflows, script imports, Cargo path
 // dependencies and literal fixture paths.
 const inputs = [
   /^\.gitmodules$/,
   // The workflows on the PR/queue call path and the local actions they use.
-  /^\.github\/workflows\/(?:check|pr-source-checks|davinci-canonical-corpus)\.yml$/,
+  /^\.github\/workflows\/(?:check|pr-source-checks|level-canonical-corpus)\.yml$/,
   /^\.github\/actions\/(?:setup-rust-script|setup-wild-http-recovery|setup-rust-sticky-cache|reuse-rust-target)\//,
   // setup-node reads the pinned runtime from package.json.
   /^package\.json$/,
   /^(?:Cargo\.(?:toml|lock)|rust-toolchain\.toml)$/,
   /^\.cargo\//,
-  /^davinci\//,
+  /^levels\//,
   /^crates\/vize_(?:atelier_|armature\/|canon\/|carton\/|croquis\/|croquis_cf\/|curator\/|relief\/)/,
   /^upstream\/forks\//,
   // Pinned gitlinks, the committed fixture SFCs swept by production reach,
   // and the fixture folders the observer binaries and recorder read.
   /^tests\/_fixtures\/_git\//,
   /^tests\/_fixtures\/(?:.*\/)?[^/]*\.vue$/,
-  /^tests\/_fixtures\/davinci-pug\//,
+  /^tests\/_fixtures\/level-pug\//,
   // Compiled into the shared Rust tool library used by the corpus recorder.
   /^tests\/_fixtures\/differential\/lsp\/template-expression-globals-8015\/globals\.expected\.json$/,
   /^tests\/_fixtures\/differential\/compiler\/(?:ssr-builtins-7891|typed-slot-handler-scope-8142|n8n-if-key-regression|maybe-ref-authored-handlers-10164|real-project-dom-reductions)\//,
-  /^tests\/_fixtures\/(?:vue-ecosystem-fixtures|davinci-baseline)\.json$/,
+  /^tests\/_fixtures\/(?:vue-ecosystem-fixtures|level-baseline)\.json$/,
   /^docs\/davinci\/plan\/(?:phase-3\.md|reach-budgets\.toml|corpus-baseline-notes\.md|corpus-baseline-unstable\.json)$/,
-  /^tests\/davinci_test_support\//,
-  /^tests\/tooling\/(?:davinci-dom-corpus|davinci-canonical-corpus|fixture-)/,
+  /^tests\/level_test_support\//,
+  /^tests\/tooling\/(?:level-dom-corpus|level-canonical-corpus|fixture-)/,
   /^tests\/tooling\/fixtures\/canonical-observer-logs\//,
   /^tests\/tooling\/support\/canonical-corpus-worker-inventory\.mjs$/,
   /^tools\/(?:commands\/fixtures|support\/compat\/fixtures|benchmarks)\//,
-  /^tools\/commands\/davinci\//,
+  /^tools\/commands\/levels\//,
   /^tools\/support\/(?:Cargo\.toml|lib\.rs|editors\/|fixtures\/)/,
   /^tools\/support\/common\.rs$/,
   /^tools\/support\/(?:command-runtime|json-value)\.ts$/,
-  /^tools\/support\/compat\/davinci\/lib\/(?:corpus-baseline-contract|corpus-baseline-artifact|ordering|paths)\.ts$/,
+  /^tools\/support\/compat\/levels\/lib\/(?:corpus-baseline-contract|corpus-baseline-artifact|ordering|paths)\.ts$/,
   /^tools\/support\/compat\/github\/canonical-corpus-[a-z-]+\.(?:mjs|ts|rs)$/,
   /^tools\/support\/compat\/github\/(?:comparison-base|plan-source-checks|require-needs-success|prepare-vue-benchmarks|release-preflight-github)\.mjs$/,
   /^tools\/support\/compat\/github\/(?:comparison-base|plan-source-checks)\.ts$/,

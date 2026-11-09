@@ -1,4 +1,4 @@
-// Davinci P4-12c — the pinned `pug` package as the independent oracle for
+// Levels P4-12c — the pinned `pug` package as the independent oracle for
 // the pug L1 dialect. The committed `.html` of every matrix fixture must be
 // byte-identical to what `pug@3.0.4` renders for the fixture's
 // `<template lang="pug">` content exactly as `@vue/compiler-sfc` hands it
@@ -16,7 +16,7 @@ import { fileURLToPath } from "node:url";
 
 import { assertStaticPug, parseSfc, pug, pugOptions } from "./support/pug/oracle-runtime.ts";
 
-const fixtures = new URL("../_fixtures/davinci-pug/", import.meta.url);
+const fixtures = new URL("../_fixtures/level-pug/", import.meta.url);
 const write = process.env.VIZE_PUG_ORACLE_WRITE === "1";
 const lexPug = createRequire(createRequire(import.meta.url).resolve("pug"))("pug-lexer") as (
   source: string,

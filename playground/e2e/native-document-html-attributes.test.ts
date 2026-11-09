@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vite-plus/test";
-import corpus from "../../davinci/vize_l1/tests/fixtures/document/html-attributes.json";
+import corpus from "../../levels/vize_l1/tests/fixtures/document/html-attributes.json";
 
 // These same complete authored sources and expected effective attribute arrays
 // execute in Rust. DOMParser independently constructs actual Chromium values.

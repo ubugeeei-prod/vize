@@ -3,7 +3,7 @@
 //! Every code has a `compiler/<name>.message` — its headline, whose `en` text
 //! is byte-identical to `ErrorCode::message()` so English output never moves —
 //! and a `compiler/<name>.help` saying what to do about it. `<name>` is
-//! `ErrorCode::name()`. `tests/tooling/davinci-diagnostic-catalog.test.ts`
+//! `ErrorCode::name()`. `tests/tooling/level-diagnostic-catalog.test.ts`
 //! enumerates the enum's variants from source and fails when a code lacks
 //! either entry in any locale or when an `en` message drifts from the enum.
 //!

@@ -1,4 +1,4 @@
-//! The resident tier (Davinci P5-4a): long-lived processes — Maestro,
+//! The resident tier (Levels P5-4a): long-lived processes — Maestro,
 //! `check-server`, watch modes — run the stages as **salsa** queries keyed by
 //! the P5-1a stage artifact keys (charter #10, the rust-analyzer/rustc
 //! two-tier precedent).
@@ -20,7 +20,7 @@
 //!   served artifact compared with the clean path after every step.
 //!
 //! The one-shot CLI never links this crate: `vize build`/`fmt`/`lint` stay on
-//! the fused non-salsa pipeline, and `tests/tooling/davinci-resident-salsa.test.ts`
+//! the fused non-salsa pipeline, and `tests/tooling/level-resident-salsa.test.ts`
 //! proves no crate outside the resident tier depends on `salsa`.
 
 pub mod accounting;

@@ -22,4 +22,4 @@ stays open.
 
 - `cargo test -p vize_atelier_ssr --lib s4::`
 - `cargo test -p vize_atelier_ssr --test ssr_snapshot`
-- `VIZE_DAVINCI_DIFFERENTIAL_CORPUS="$PWD" cargo test -p vize_atelier_ssr --test davinci_ssr_corpus --features davinci-differential`
+- `VIZE_LEVEL_DIFFERENTIAL_CORPUS="$PWD" cargo test -p vize_atelier_ssr --test level_ssr_corpus --features level-differential`

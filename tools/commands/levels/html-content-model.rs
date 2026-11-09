@@ -9,7 +9,7 @@
 //! serde_json = "1"
 //! ```
 //!
-//! Generate the HTML content-model fact table (Davinci P4-11a).
+//! Generate the HTML content-model fact table (Levels P4-11a).
 //!
 //! `crates/vize_patina/src/html_content_model/whatwg.tsv` is derived from
 //! the pinned WHATWG snapshot excerpt in `…/html_content_model/whatwg/`:
@@ -17,9 +17,9 @@
 //! the excerpt by a recipe below — no element list is typed by hand.
 //!
 //! Usage:
-//!   rust-script tools/commands/davinci/html-content-model.rs --write
-//!   rust-script tools/commands/davinci/html-content-model.rs --check [--table <path>]
-//!   rust-script tools/commands/davinci/html-content-model.rs --extract <parsing.html> <indices.html>
+//!   rust-script tools/commands/levels/html-content-model.rs --write
+//!   rust-script tools/commands/levels/html-content-model.rs --check [--table <path>]
+//!   rust-script tools/commands/levels/html-content-model.rs --extract <parsing.html> <indices.html>
 //!
 //! `--extract` refreshes the excerpt from downloaded multipage spec pages
 //! (maintenance only; the snapshot date is recorded in the excerpt).
@@ -81,7 +81,7 @@ fn run() -> Result<u8, String> {
                     break;
                 }
             }
-            println!("  Regenerate with: rust-script tools/commands/davinci/html-content-model.rs --write");
+            println!("  Regenerate with: rust-script tools/commands/levels/html-content-model.rs --write");
             Ok(1)
         }
         _ => Err("usage: html-content-model.rs --write | --check [--table <path>] | --extract <parsing.html> <indices.html>".to_string()),

@@ -11,17 +11,17 @@
 //! the legacy tree - re-derive the floor deliberately (`--nocapture` prints
 //! every row and its per-stage breakdown).
 //!
-//! The same run also pins Davinci's side of the tie: the walks measured here
+//! The same run also pins Levels's side of the tie: the walks measured here
 //! must not exceed `vize_curator::legacy_plan::SSR.group_count()`, so the
 //! pass-manager plan that describes the legacy pipeline remains the upper
 //! bound. The plans live in `vize_curator::legacy_plan` and are read from the
 //! dev-dependencies: a published crate cannot depend on an unpublished one.
 //!
 //! The probe is process-global and monotone, so this file holds a single
-//! `#[test]` in its own binary - the `davinci_expr_reparse_floor.rs` shape.
+//! `#[test]` in its own binary - the `level_expr_reparse_floor.rs` shape.
 #![expect(clippy::panic, reason = "tests assert by panicking")]
 
-use davinci_harness::fixtures::{LADDER, template_block};
+use level_harness::fixtures::{LADDER, template_block};
 use std::fmt::Write as _;
 use vize_atelier_core::walk_probe::{WALK_STAGES, WalkCounts};
 use vize_atelier_ssr::compile_ssr;
@@ -74,7 +74,7 @@ fn ssr_walk_baseline_holds() {
             );
         }
         println!(
-            "davinci.walk ssr {} walks={} visits={}{}",
+            "levels.walk ssr {} walks={} visits={}{}",
             fixture.name,
             delta.total_walks(),
             delta.total_visits(),

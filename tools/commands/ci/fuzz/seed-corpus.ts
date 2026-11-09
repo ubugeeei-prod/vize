@@ -12,10 +12,10 @@ const vueGlobs = [
   "playground/e2e/**/*.vue",
 ] as const;
 
-const folioGlobs = [
-  "crates/vize_croquis/tests/fixtures/**/*.folio",
-  "davinci/vize_l0/tests/fixtures/**/*.folio",
-  "davinci/vize_l2/tests/fixtures/**/*.folio",
+const dumpGlobs = [
+  "crates/vize_croquis/tests/fixtures/**/*.dump",
+  "levels/vize_l0/tests/fixtures/**/*.dump",
+  "levels/vize_l2/tests/fixtures/**/*.dump",
 ] as const;
 
 export const corpusTargets = [
@@ -27,7 +27,7 @@ export const corpusTargets = [
   "template_compile",
   "l1_lowering",
   "l2_to_l3_lowering",
-  "folio_parse",
+  "dump_parse",
 ] as const;
 type CorpusTarget = (typeof corpusTargets)[number];
 
@@ -108,8 +108,8 @@ export function seedFuzzCorpus(arguments_: readonly string[]): number {
     corpusTargets.map((target) => [target, resetCorpus(corpusRoot, target)]),
   ) as Record<CorpusTarget, string>;
 
-  const folioFiles = globFiles(root, folioGlobs);
-  for (const file of folioFiles) writeSeed(directories.folio_parse, fs.readFileSync(file));
+  const dumpFiles = globFiles(root, dumpGlobs);
+  for (const file of dumpFiles) writeSeed(directories.dump_parse, fs.readFileSync(file));
 
   const vueFiles = globFiles(root, vueGlobs);
   const scriptBlocks = /<script\b[^>]*>(.*?)<\/script>/gis;
@@ -179,7 +179,7 @@ export function seedFuzzCorpus(arguments_: readonly string[]): number {
   }
 
   console.log(
-    `Seeded ${sfcCount} sfc_parse entries, ${templateCount} template entries (template_lexer/template_compile/l1_lowering/l2_to_l3_lowering), ${expressionCount} JS/TS expression entries, ${programCount} native Program sources in eight explicit profiles, ${styleCount} CSS entries, ${folioFiles.length} folio pages from ${vueFiles.length + folioFiles.length} fixtures, and ${loweringRegressionCount} retained l1_lowering regression entries.`,
+    `Seeded ${sfcCount} sfc_parse entries, ${templateCount} template entries (template_lexer/template_compile/l1_lowering/l2_to_l3_lowering), ${expressionCount} JS/TS expression entries, ${programCount} native Program sources in eight explicit profiles, ${styleCount} CSS entries, ${dumpFiles.length} dump pages from ${vueFiles.length + dumpFiles.length} fixtures, and ${loweringRegressionCount} retained l1_lowering regression entries.`,
   );
   return 0;
 }

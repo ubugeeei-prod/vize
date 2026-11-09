@@ -31,8 +31,6 @@ mod tests_component_assets;
 #[cfg(test)]
 mod tests_component_prop_modifiers;
 #[cfg(test)]
-mod tests_davinci_differential;
-#[cfg(test)]
 mod tests_dotted_slots;
 #[cfg(test)]
 mod tests_dynamic_component;
@@ -44,6 +42,8 @@ mod tests_generated_identity;
 mod tests_implicit_default_slot;
 #[cfg(test)]
 mod tests_insertion_state;
+#[cfg(test)]
+mod tests_level_differential;
 #[cfg(test)]
 mod tests_once_components;
 #[cfg(test)]

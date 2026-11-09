@@ -36,9 +36,9 @@ memchr.workspace = true
 unicode-width.workspace = true
 
 [dev-dependencies]
-davinci_test_support = { workspace = true, features = ["formatter"] }
+level_test_support = { workspace = true, features = ["formatter"] }
 criterion.workspace = true
-davinci_harness.workspace = true
+level_harness.workspace = true
 insta.workspace = true
 serde_json.workspace = true
 sha2.workspace = true

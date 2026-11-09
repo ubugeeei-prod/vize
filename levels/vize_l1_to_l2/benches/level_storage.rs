@@ -13,7 +13,7 @@
 #![expect(clippy::expect_used, reason = "tests assert by panicking")]
 
 use criterion::{Criterion, criterion_group};
-use davinci_harness::stage::bench_stage_with_metrics;
+use level_harness::stage::bench_stage_with_metrics;
 use vize_l0::pass::NoObserver;
 use vize_l0::{Allocator, cstr};
 use vize_l1::markup::parse;
@@ -47,7 +47,7 @@ const HELPER_RICH_LARGE: &str = include_str!("fixtures/helper-rich-large.vue");
 /// every rule but `unknown`, three nesting levels, fourteen rows.
 const COMPLEXITY_DASHBOARD: &str = include_str!("../tests/fixtures/complexity/dashboard.vue");
 
-fn davinci_storage(criterion: &mut Criterion) {
+fn level_storage(criterion: &mut Criterion) {
     let vfor_id = cstr!("s1_to_s2_lower_vfor_three_aliases");
     bench_stage_with_metrics(
         criterion,
@@ -124,7 +124,7 @@ fn davinci_storage(criterion: &mut Criterion) {
     bench_stage_with_metrics(
         criterion,
         &helper_rich_id,
-        "fixture:davinci/vize_l1_to_l2/benches/fixtures/helper-rich-large.vue",
+        "fixture:levels/vize_l1_to_l2/benches/fixtures/helper-rich-large.vue",
         |window| {
             window.measure(|| {
                 let emitted =
@@ -135,7 +135,7 @@ fn davinci_storage(criterion: &mut Criterion) {
     );
 }
 
-fn davinci_complexity(criterion: &mut Criterion) {
+fn level_complexity(criterion: &mut Criterion) {
     let complexity_id = cstr!("s1_to_s2_pass_template_complexity");
     bench_stage_with_metrics(
         criterion,
@@ -153,5 +153,5 @@ fn davinci_complexity(criterion: &mut Criterion) {
     );
 }
 
-criterion_group!(davinci_storage_group, davinci_storage, davinci_complexity);
-davinci_harness::main!(davinci_storage_group);
+criterion_group!(level_storage_group, level_storage, level_complexity);
+level_harness::main!(level_storage_group);

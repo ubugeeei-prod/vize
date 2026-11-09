@@ -44,6 +44,6 @@
   "sourceCause": {
     "bindings": "crates/vize_atelier_sfc/src/script/context/props.rs:extract_single_prop_from_type inserts real props into the shared binding map",
     "fallback": "crates/vize_atelier_sfc/src/compile_script/inline/compiler/render.rs:collect_setup_bindings iterates the map before filtering props",
-    "map": "davinci/vize_l0/src/lib.rs reexports rustc_hash::FxHashMap"
+    "map": "levels/vize_l0/src/lib.rs reexports rustc_hash::FxHashMap"
   }
 }

@@ -72,10 +72,10 @@ pub(super) fn compute_block(
     // The replaced block's token was cancelled by the caller, which cascaded
     // to every old region task; the ones not adopted are the cancelled work.
     stats.regions.cancelled += used.iter().filter(|used| !**used).count() as u32;
-    let (folio, diagnostics) = assemble(regions.iter().map(|region| &region.lowering));
+    let (dump, diagnostics) = assemble(regions.iter().map(|region| &region.lowering));
     let page = PageArtifact {
-        key: ArtifactKey::of(&folio, 0),
-        folio,
+        key: ArtifactKey::of(&dump, 0),
+        dump,
         diagnostics,
     };
     let snapshot = BlockSnapshot {

@@ -11,7 +11,7 @@ use vize_l2::dump::{
 };
 use vize_l2::op::Op;
 
-fn folio(css: &str, block_start: u32) -> L2Page {
+fn dump(css: &str, block_start: u32) -> L2Page {
     let arena = Allocator::default();
     let op = lower_style_block(&arena, css, block_start);
     L2Page::of(core::slice::from_ref(&op))
@@ -20,7 +20,7 @@ fn folio(css: &str, block_start: u32) -> L2Page {
 #[test]
 fn two_calls_round_trip_on_the_carrier() {
     let css = ".foo { color: v-bind(color); background: v-bind('bgColor'); }";
-    let value = folio(css, 0);
+    let value = dump(css, 0);
     assert_eq!(value.op_count(), 3);
     assert_eq!(
         value.print_to_string(DumpMode::Full).as_str(),
@@ -40,7 +40,7 @@ ui.element style @0:61
 #[test]
 fn block_start_produces_file_absolute_spans() {
     let css = ".foo { color: v-bind(color); }";
-    let shifted = folio(css, 90);
+    let shifted = dump(css, 90);
     assert_eq!(
         shifted.print_to_string(DumpMode::Full).as_str(),
         "\
@@ -53,7 +53,7 @@ ui.element style @90:120
 
 "
     );
-    let DumpOp::Element(DumpElement { bindings, span, .. }) = &folio(css, 90).ops[0] else {
+    let DumpOp::Element(DumpElement { bindings, span, .. }) = &dump(css, 90).ops[0] else {
         panic!("carrier is ui.element");
     };
     assert_eq!(span.start, 90);
@@ -73,7 +73,7 @@ ui.element style @90:120
 fn shifted_block_start_offsets_every_css_bind_span() {
     let css = ".foo { color: v-bind(color); margin: v-bind(size + 'px'); }";
     let block_start = 32;
-    let value = folio(css, block_start);
+    let value = dump(css, block_start);
     let DumpOp::Element(DumpElement { bindings, span, .. }) = &value.ops[0] else {
         panic!("carrier is ui.element");
     };
@@ -169,7 +169,7 @@ fn strings_comments_and_prefixed_names_are_not_calls() {
 .label { background: 'v-bind(bg)'; }
 .foo { transition: my-v-bind(x); animation: -webkit-v-bind(y); }
 "#;
-    let DumpOp::Element(DumpElement { bindings, .. }) = &folio(css, 0).ops[0] else {
+    let DumpOp::Element(DumpElement { bindings, .. }) = &dump(css, 0).ops[0] else {
         panic!("carrier is ui.element");
     };
     assert_eq!(bindings.len(), 1);
@@ -188,7 +188,7 @@ fn strings_comments_and_prefixed_names_are_not_calls() {
 fn quoted_expressions_keep_inner_parentheses() {
     let css = r#".header { background: v-bind("parentBg ?? 'var(--bg)'"); }"#;
     assert_eq!(
-        folio(css, 0).print_to_string(DumpMode::Full).as_str(),
+        dump(css, 0).print_to_string(DumpMode::Full).as_str(),
         "\
 [l2-dump-v2]
 ops=2

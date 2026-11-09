@@ -38,7 +38,7 @@
       "successorOf": {
         "kind": "previous-inline-refusal",
         "base": "7603cccc1cdcf41241310ae5ed1e60f2eac32c4b",
-        "paths": ["davinci/vize_l3/tests/native_model_trim.rs", "davinci/vize_l3/tests/native_model_lazy.rs"],
+        "paths": ["levels/vize_l3/tests/native_model_trim.rs", "levels/vize_l3/tests/native_model_lazy.rs"],
         "historicalCompleteNativePacket": false
       }
     },

@@ -7,7 +7,7 @@ text (`{{ not }}` stays literal), so it stays `surface_semantics`.
 
 ## Still refused (checkout smoke)
 
-Emitter sweep, `VIZE_DAVINCI_DIFFERENTIAL_CORPUS` = the checkout, 0
+Emitter sweep, `VIZE_LEVEL_DIFFERENTIAL_CORPUS` = the checkout, 0
 divergences, 0 rejected: **767 of 779** compared templates emit from
 the plan (was 764 of 779). Legacy reasons:
 
@@ -25,4 +25,4 @@ compared (`legacy.croquis` 597, `surface_semantics` 3, `operation` 2,
 
 - `cargo test -p vize_atelier_ssr --lib s4::`
 - `cargo test -p vize_atelier_ssr --test ssr_snapshot`
-- `VIZE_DAVINCI_DIFFERENTIAL_CORPUS="$PWD" cargo test -p vize_atelier_ssr --test davinci_ssr_corpus --features davinci-differential`
+- `VIZE_LEVEL_DIFFERENTIAL_CORPUS="$PWD" cargo test -p vize_atelier_ssr --test level_ssr_corpus --features level-differential`

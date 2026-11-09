@@ -328,7 +328,7 @@ impl<'a, P: ProvenanceSink> Cx<'a, P> {
             let after = after();
             // The span excludes `after` formatting: it counts rule/before
             // ownership and record-vector allocation traffic.
-            #[cfg(feature = "davinci-benchmark-profile")]
+            #[cfg(feature = "level-benchmark-profile")]
             let _guard = super::benchmark::record_guard();
             records.push(ProvenanceRecord {
                 rule: String::from(rule),

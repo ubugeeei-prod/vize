@@ -185,7 +185,7 @@ impl Drawer {
         };
         let base_offset = expr.loc().span.start;
         // Standalone petite-vue virtual documents have no occurrence packet.
-        // Reuse the authenticated Davinci expression walk there; occurrence
+        // Reuse the authenticated Levels expression walk there; occurrence
         // capture still owns its richer reference/range packet on other paths.
         if self.occurrence_capture.is_none()
             && !self.ident_cache.contains_key(content)

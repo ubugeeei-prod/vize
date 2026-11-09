@@ -1,4 +1,4 @@
-//! The Impeto phase validator.
+//! The L3 phase validator.
 //!
 //! The validator is whole-artifact rather than local: L3 is a graph, so edge
 //! resolution and effect scopes are artifact invariants. It still does no
@@ -88,7 +88,7 @@ fn check_root(program: &Tables<'_, '_>, out: &mut Vec<Violation>) {
         out.push(Violation {
             code: ViolationCode::RootRegion,
             span: Span::new(0, 0),
-            message: cstr!("Impeto program does not define root region r#0"),
+            message: cstr!("L3 program does not define root region r#0"),
         });
         return;
     };

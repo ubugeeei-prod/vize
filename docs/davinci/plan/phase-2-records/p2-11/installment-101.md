@@ -11,14 +11,14 @@ quietly lose S2 coverage unless the profiled compile path exercises the same
 projection that `DomEmitOptions` already exposes.
 
 With source maps disabled, a custom runtime global compile now has a direct
-machine gate: it must enter S2 profiling, record the `davinci.s2_dom.*`
+machine gate: it must enter S2 profiling, record the `levels.s2_dom.*`
 counters and stay byte-identical with the compatibility source-map compile.
 The source-map request remains the compatibility boundary because S2 still
 emits no map.
 
 ## Evidence
 
-`crates/vize_atelier_dom/tests/davinci_s2_profile.rs` now asserts that a
+`crates/vize_atelier_dom/tests/level_s2_profile.rs` now asserts that a
 source-map-free DOM compile using `runtime_global_name = "RuntimeVue"` stays on
 S2 under profiling and produces the same preamble and render body as the
 compatibility source-map compile.

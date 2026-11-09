@@ -1,18 +1,18 @@
 <!-- GENERATED FILE — do not edit by hand.
-     Regenerate: node tools/support/compat/davinci/sourcelocation-inventory.ts --write
-     Verify:     node tools/support/compat/davinci/sourcelocation-inventory.ts --check
-     Generator:  tools/support/compat/davinci/sourcelocation-inventory.ts -->
+     Regenerate: node tools/support/compat/levels/sourcelocation-inventory.ts --write
+     Verify:     node tools/support/compat/levels/sourcelocation-inventory.ts --check
+     Generator:  tools/support/compat/levels/sourcelocation-inventory.ts -->
 
 # `SourceLocation` consumer inventory
 
 Every textual read of the relief `SourceLocation` members that
-`vize_carton::Span` (`davinci/vize_l0/src/span.rs`) deleted —
+`vize_carton::Span` (`levels/vize_l0/src/span.rs`) deleted —
 `source`, `start.line`, `start.column`, `end.line`, `end.column` —
 across `crates/*/src`, plus the migration group each consumer moved to as
 relief nodes switched to two-u32 byte spans instead of owned
 `{ start: Position, end: Position, source: String }` triples
 ([architecture.md](../architecture.md), L0). This was the migration map
-Davinci P1 executed (P0-9). P1-3 executed group 1 (`source` reads off
+Levels P1 executed (P0-9). P1-3 executed group 1 (`source` reads off
 `SourceLocation`); P1-4 executed groups 2 and 3 (line/column reads to
 offset-derived rendering, the `Position` type and its converters deleted).
 The scan now counts zero across all five members, and regeneration fails if
@@ -21,7 +21,7 @@ any read — or any deleted carrier — comes back.
 ## Resolution method (and its limits)
 
 - Comments and string literals are stripped first
-  (`tools/support/compat/davinci/lib/rust-source.ts`); member paths are then counted
+  (`tools/support/compat/levels/lib/rust-source.ts`); member paths are then counted
   **textually** on loc-shaped receivers only: chained `.loc.<member>`,
   `.loc().<member>`, `.location.<member>` accesses, and bare locals named
   `loc` / `location` / `*_loc` / `*_location`.
@@ -29,7 +29,7 @@ any read — or any deleted carrier — comes back.
   the surviving offset representation — the pre-migration
   `start.offset` / `end.offset` reads moved to them verbatim
   (their per-crate counts churn with every PR, so they are not committed:
-  `node tools/support/compat/davinci/sourcelocation-inventory.ts --summary` prints them).
+  `node tools/support/compat/levels/sourcelocation-inventory.ts --summary` prints them).
 - `#[cfg(test)]` code inside `src/` is included and reported in the
   "in test code" column: a site counts as test code when its file is a test
   module by name (`tests.rs`, `*_tests.rs`, `/tests/`) or sits at or
@@ -76,9 +76,9 @@ migrated sites:
 
 ### Group 2 — line/column reads moved to offset-derived rendering (migrated by P1-4: 3 direct sites + 4 known-missed at P0-9, 0 remain)
 
-Line/column exist only at diagnostic- or LSP-rendering time under Davinci:
+Line/column exist only at diagnostic- or LSP-rendering time under Levels:
 derived from byte offsets via `vize_carton::line_index::LineIndex`
-(`davinci/vize_l0/src/line_index.rs:30`) at the edge that needs them — exactly how the
+(`levels/vize_l0/src/line_index.rs:30`) at the edge that needs them — exactly how the
 source-map `finish()` step and Patina's output layer already worked. The
 eagerly-stored `Position { line, column }` pairs deleted with the type.
 Where each read went:

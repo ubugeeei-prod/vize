@@ -17,7 +17,7 @@ ignores it, and so does the plan.
 
 ## Measured
 
-`VIZE_DAVINCI_DIFFERENTIAL_CORPUS` = the checkout, 0 divergences, 0
+`VIZE_LEVEL_DIFFERENTIAL_CORPUS` = the checkout, 0 divergences, 0
 rejected. After the two shapes below, production lanes are only `s4`
 (785) and `none` (3). Compared templates are 784 of 788, with 4 legacy
 compile errors skipped. The emitter sweep is 779 of 779.
@@ -39,4 +39,4 @@ selects it.
 
 - `cargo test -p vize_atelier_ssr --lib s4::`
 - `cargo test -p vize_atelier_ssr --test ssr_snapshot`
-- `VIZE_DAVINCI_DIFFERENTIAL_CORPUS="$PWD" cargo test -p vize_atelier_ssr --test davinci_ssr_corpus --features davinci-differential`
+- `VIZE_LEVEL_DIFFERENTIAL_CORPUS="$PWD" cargo test -p vize_atelier_ssr --test level_ssr_corpus --features level-differential`

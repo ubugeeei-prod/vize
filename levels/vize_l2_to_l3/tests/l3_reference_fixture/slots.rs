@@ -132,7 +132,7 @@ fn check_lines(path: &Path, lines: &[Value]) {
 
 /// The committed observations the independent reference computes for `stem`.
 fn check_behavior(fixtures: &Path, stem: &str) {
-    let actual = davinci_test_support::l3_reference::matrix::behavior_of(fixtures, stem).unwrap();
+    let actual = level_test_support::l3_reference::matrix::behavior_of(fixtures, stem).unwrap();
     check_text(&fixtures.join(format!("{stem}.behavior.jsonl")), &actual);
 }
 
@@ -161,7 +161,7 @@ fn slot_reference_cases_are_rust_lowered() {
         }));
         graphs.push(json!({ "name": name, "graph": graph, "values": values }));
     }
-    let fixtures = davinci_test_support::l3_reference::fixtures();
+    let fixtures = level_test_support::l3_reference::fixtures();
     check_lines(&fixtures.join("slot-reference.cases.jsonl"), &rows);
     check_lines(&fixtures.join("slot-reference.lowered.jsonl"), &graphs);
     check_behavior(&fixtures, "slot-reference");

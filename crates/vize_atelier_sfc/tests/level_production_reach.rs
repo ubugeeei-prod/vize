@@ -1,8 +1,8 @@
-//! Davinci P3-17 production reach: how much of a real `compile_sfc` run the
-//! Davinci stages actually emit.
+//! Levels P3-17 production reach: how much of a real `compile_sfc` run the
+//! Levels stages actually emit.
 //!
-//! The per-stage differential lanes (`davinci_dom_corpus*`,
-//! `davinci_ssr_corpus`, the Vapor artifact gates) prove parity for the
+//! The per-stage differential lanes (`level_dom_corpus*`,
+//! `level_ssr_corpus`, the Vapor artifact gates) prove parity for the
 //! template-compiler entry points. They do not say how many *production*
 //! compiles reach those stages: `compile_sfc` attaches a Croquis summary,
 //! inline render closures, binding metadata, scoped-style ids and module-mode
@@ -10,7 +10,7 @@
 //! legacy lane. This gate compiles every committed fixture SFC through each
 //! shipping adapter shape ([`shapes::Shape`]) exactly as the adapter does,
 //! reads the backend's selection counters around each compile, and reports
-//! the fraction of templates each Davinci stage emitted, with a per-reason
+//! the fraction of templates each Levels stage emitted, with a per-reason
 //! count for the rest.
 //!
 //! Two gates ride on the measurement:
@@ -24,13 +24,13 @@
 //!   `compile_sfc` modules — code, CSS, errors, warnings — must be byte
 //!   equal (TS-11 over the production path, charter #23).
 //!
-//! `VIZE_DAVINCI_DIFFERENTIAL_CORPUS=<dir>` additionally sweeps every `.vue`
+//! `VIZE_LEVEL_DIFFERENTIAL_CORPUS=<dir>` additionally sweeps every `.vue`
 //! file under `<dir>` (the hydrated Real Project Matrix corpus) and reports
 //! its reach; parity is enforced there too, the floors are not.
 //!
 //! ```text
 //! cargo test -p vize_atelier_sfc --features legacy-dom-differential \
-//!     --test davinci_production_reach -- --nocapture
+//!     --test level_production_reach -- --nocapture
 //! ```
 
 #![expect(clippy::disallowed_macros, reason = "reports are built with format!")]
@@ -38,7 +38,7 @@
 #![expect(clippy::disallowed_methods, reason = "fixture I/O uses std strings")]
 #![expect(clippy::indexing_slicing, reason = "tests assert by panicking")]
 
-mod davinci_production_reach {
+mod level_production_reach {
     pub mod acceptance;
     pub mod diff;
     pub mod fixtures;
@@ -67,15 +67,15 @@ use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
 use std::sync::Mutex;
 
-use davinci_production_reach::acceptance::report;
-use davinci_production_reach::diff::{divergence, error_divergence};
-use davinci_production_reach::fixtures::collect_committed_fixtures;
-use davinci_production_reach::parity::{
+use level_production_reach::acceptance::report;
+use level_production_reach::diff::{divergence, error_divergence};
+use level_production_reach::fixtures::collect_committed_fixtures;
+use level_production_reach::parity::{
     absorb_prebackend, compare_with_legacy, measure_projection, parity_failures,
 };
-use davinci_production_reach::shapes::{Shape, compile, explicit_vapor_source};
-use davinci_production_reach::tally::{Lane, Tally, classify, classify_route, floors};
-use davinci_test_support::corpus::read_corpus_source;
+use level_production_reach::shapes::{Shape, compile, explicit_vapor_source};
+use level_production_reach::tally::{Lane, Tally, classify, classify_route, floors};
+use level_test_support::corpus::read_corpus_source;
 use vize_atelier_sfc::{SfcParseOptions, parse_sfc};
 use vize_l0::profiler::global_profiler;
 
@@ -207,7 +207,7 @@ fn component_loop_prop_before_spread_keeps_legacy_layout() {
 }
 
 #[test]
-fn production_compiles_report_and_hold_their_davinci_reach() {
+fn production_compiles_report_and_hold_their_level_reach() {
     let _guard = PROFILER_TEST_LOCK.lock().unwrap();
     std::thread::Builder::new()
         .stack_size(256 * 1024 * 1024)
@@ -333,8 +333,8 @@ fn production_reach_body() {
     assert_parity(&committed);
     assert_floors(&committed);
 
-    let Some(sweep_root) = davinci_test_support::corpus::resolve_env_shard() else {
-        eprintln!("VIZE_DAVINCI_DIFFERENTIAL_CORPUS unset: committed fixtures only");
+    let Some(sweep_root) = level_test_support::corpus::resolve_env_shard() else {
+        eprintln!("VIZE_LEVEL_DIFFERENTIAL_CORPUS unset: committed fixtures only");
         return;
     };
     let hydrated = sweep(&sweep_root.root, &sweep_root.files);

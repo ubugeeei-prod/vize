@@ -30,13 +30,13 @@ use vize_l2::scope::ScopeFacts;
 use vize_l2::verify::{Rigor, Violation, verify, verify_table};
 
 pub use authored::assert_authored_artifact;
-pub use dump_spans::assert_folio_spans_resolve;
+pub use dump_spans::assert_dump_spans_resolve;
 
 /// The owned snapshot of one lowering, for exact-equality pins.
 #[derive(Debug)]
 pub struct Artifact {
-    /// The canonical `Full`-mode folio text (owned, arena-free).
-    pub folio: String,
+    /// The canonical `Full`-mode dump text (owned, arena-free).
+    pub dump: String,
     /// The minted op count.
     pub op_count: u32,
     /// The diagnostics, in emission order.
@@ -54,8 +54,8 @@ pub fn artifact(source: &str) -> Artifact {
 
 /// [`artifact`] under an explicit Vue dialect.
 pub fn artifact_caps(source: &str, caps: LegacyCaps) -> Artifact {
-    with_lowered_caps(source, caps, |lowered, folio| Artifact {
-        folio: folio.print_to_string(DumpMode::Full),
+    with_lowered_caps(source, caps, |lowered, dump| Artifact {
+        dump: dump.print_to_string(DumpMode::Full),
         op_count: lowered.op_count,
         diagnostics: lowered.diagnostics.clone(),
         provenance: lowered.provenance.clone(),
@@ -68,7 +68,7 @@ pub fn artifact_caps(source: &str, caps: LegacyCaps) -> Artifact {
     })
 }
 
-/// Parse + lower `source` and hand the artifact (with its owned folio
+/// Parse + lower `source` and hand the artifact (with its owned dump
 /// mirror) to `f`.
 pub fn with_lowered<R>(source: &str, f: impl FnOnce(&Lowered<'_>, &L2Page) -> R) -> R {
     with_lowered_caps(source, LegacyCaps::VUE3, f)
@@ -83,8 +83,8 @@ pub fn with_lowered_caps<R>(
     let allocator = Allocator::new();
     let (tree, errors) = parse(&allocator, source);
     let lowered = lower_with_caps(&allocator, &tree, &errors, caps);
-    let folio = L2Page::of(&lowered.root.ops);
-    f(&lowered, &folio)
+    let dump = L2Page::of(&lowered.root.ops);
+    f(&lowered, &dump)
 }
 
 /// Parse + lower `source`, run the L2 transform pipeline (P2-9) under
@@ -105,7 +105,7 @@ pub fn with_transformed<R>(
 pub fn assembled_dom(source: &str) -> String {
     with_transformed(
         source,
-        |lowered, _folio, facts, _budget| match vize_l1_to_l2::emit_dom(lowered, facts) {
+        |lowered, _dump, facts, _budget| match vize_l1_to_l2::emit_dom(lowered, facts) {
             Ok(emitted) => emitted.assembled(),
             Err(error) => panic!("emit refused {source:?}: {error:?}"),
         },
@@ -128,8 +128,8 @@ pub fn with_transformed_caps<R>(
     let mut lowered = lower_with_caps(&allocator, &tree, &errors, caps);
     let mut budget = vize_l0::pass::BudgetObserver::new();
     let facts = vize_l1_to_l2::pass::run_transform(&mut lowered, &mut budget);
-    let folio = L2Page::of(&lowered.root.ops);
-    f(&lowered, &folio, &facts, &budget)
+    let dump = L2Page::of(&lowered.root.ops);
+    f(&lowered, &dump, &facts, &budget)
 }
 
 /// The soundness oracle of [`assert_sound`], applied **after** the L2
@@ -141,73 +141,73 @@ pub fn assert_transformed_sound(source: &str, context: &str) {
 
 /// [`assert_transformed_sound`] under an explicit Vue dialect.
 pub fn assert_transformed_sound_caps(source: &str, caps: LegacyCaps, context: &str) {
-    with_transformed_caps(source, caps, |lowered, folio, facts, _budget| {
+    with_transformed_caps(source, caps, |lowered, dump, facts, _budget| {
         assert_authored_artifact(source, lowered);
-        assert_folio_spans_resolve(source, folio, context);
+        assert_dump_spans_resolve(source, dump, context);
         assert_eq!(
             u64::from(lowered.op_count),
-            folio.op_count(),
+            dump.op_count(),
             "id accounting diverged post-pass: {context}"
         );
         assert_eq!(
-            verify(folio, Rigor::Canonical),
+            verify(dump, Rigor::Canonical),
             Vec::<Violation>::new(),
             "verifier rejected post-pass output: {context}"
         );
         assert_eq!(
-            verify_table(folio, &lowered.scopes),
+            verify_table(dump, &lowered.scopes),
             Vec::<Violation>::new(),
             "a scope key dangles post-pass: {context}"
         );
         assert_eq!(
-            verify_table(folio, &facts.if_facts),
+            verify_table(dump, &facts.if_facts),
             Vec::<Violation>::new(),
             "an if-facts key dangles: {context}"
         );
         assert_eq!(
-            verify_table(folio, &facts.for_facts),
+            verify_table(dump, &facts.for_facts),
             Vec::<Violation>::new(),
             "a for-facts key dangles: {context}"
         );
         assert_eq!(
-            verify_table(folio, &facts.slot_facts),
+            verify_table(dump, &facts.slot_facts),
             Vec::<Violation>::new(),
             "a slot-facts key dangles: {context}"
         );
         assert_eq!(
-            verify_table(folio, &lowered.texts),
+            verify_table(dump, &lowered.texts),
             Vec::<Violation>::new(),
             "a recorded text-run key dangles: {context}"
         );
         assert_eq!(
-            verify_table(folio, &facts.text_facts),
+            verify_table(dump, &facts.text_facts),
             Vec::<Violation>::new(),
             "a text-facts key dangles: {context}"
         );
         assert_eq!(
-            verify_table(folio, &facts.model_faults),
+            verify_table(dump, &facts.model_faults),
             Vec::<Violation>::new(),
             "a model-fault key dangles: {context}"
         );
         assert_eq!(
-            verify_table(folio, &facts.static_facts),
+            verify_table(dump, &facts.static_facts),
             Vec::<Violation>::new(),
             "a static-facts key dangles: {context}"
         );
-        let printed = folio.print_to_string(DumpMode::Full);
+        let printed = dump.print_to_string(DumpMode::Full);
         let reparsed = L2Page::parse(printed.as_str()).unwrap_or_else(|error| {
-            panic!("post-pass folio re-parse failed ({context}): {error:?}")
+            panic!("post-pass dump re-parse failed ({context}): {error:?}")
         });
         assert_eq!(
-            &reparsed, folio,
-            "post-pass folio round-trip diverged: {context}"
+            &reparsed, dump,
+            "post-pass dump round-trip diverged: {context}"
         );
     });
 }
 
 /// The soundness oracle, asserted for every input the suites touch:
 ///
-/// 1. **Id accounting** — the minted count equals the folio's op count,
+/// 1. **Id accounting** — the minted count equals the dump's op count,
 ///    so page-order ids resolve by construction.
 /// 2. **Verifier-clean at `Canonical` rigor** — the lowering builds
 ///    canonical `ui.if` shapes from birth and every span nests.
@@ -221,36 +221,36 @@ pub fn assert_sound(source: &str, context: &str) {
 
 /// [`assert_sound`] under an explicit Vue dialect.
 pub fn assert_sound_caps(source: &str, caps: LegacyCaps, context: &str) {
-    with_lowered_caps(source, caps, |lowered, folio| {
+    with_lowered_caps(source, caps, |lowered, dump| {
         assert_authored_artifact(source, lowered);
-        assert_folio_spans_resolve(source, folio, context);
+        assert_dump_spans_resolve(source, dump, context);
         assert_eq!(
             u64::from(lowered.op_count),
-            folio.op_count(),
+            dump.op_count(),
             "id accounting diverged: {context}"
         );
         assert_eq!(
-            verify(folio, Rigor::Canonical),
+            verify(dump, Rigor::Canonical),
             Vec::<Violation>::new(),
             "verifier rejected lowered output: {context}"
         );
         assert_eq!(
-            verify_table(folio, &lowered.scopes),
+            verify_table(dump, &lowered.scopes),
             Vec::<Violation>::new(),
             "a scope key dangles: {context}"
         );
         assert_eq!(
-            verify_table(folio, &lowered.texts),
+            verify_table(dump, &lowered.texts),
             Vec::<Violation>::new(),
             "a recorded text-run key dangles: {context}"
         );
         assert_eq!(
-            verify_table(folio, &lowered.wrappers),
+            verify_table(dump, &lowered.wrappers),
             Vec::<Violation>::new(),
             "a wrapper-key fact dangles: {context}"
         );
         assert_eq!(
-            verify_table(folio, &lowered.for_wrappers),
+            verify_table(dump, &lowered.for_wrappers),
             Vec::<Violation>::new(),
             "a for-wrapper fact dangles: {context}"
         );
@@ -260,15 +260,15 @@ pub fn assert_sound_caps(source: &str, caps: LegacyCaps, context: &str) {
             .filter_map(|record| record.node.map(|node| (node, ())))
             .collect();
         assert_eq!(
-            verify_table(folio, &provenance_ids),
+            verify_table(dump, &provenance_ids),
             Vec::<Violation>::new(),
             "a provenance node dangles: {context}"
         );
-        let printed = folio.print_to_string(DumpMode::Full);
+        let printed = dump.print_to_string(DumpMode::Full);
         let reparsed = L2Page::parse(printed.as_str())
-            .unwrap_or_else(|error| panic!("folio re-parse failed ({context}): {error:?}"));
-        assert_eq!(&reparsed, folio, "folio round-trip diverged: {context}");
+            .unwrap_or_else(|error| panic!("dump re-parse failed ({context}): {error:?}"));
+        assert_eq!(&reparsed, dump, "dump round-trip diverged: {context}");
         let reprinted = reparsed.print_to_string(DumpMode::Full);
-        assert_eq!(reprinted, printed, "folio re-print diverged: {context}");
+        assert_eq!(reprinted, printed, "dump re-print diverged: {context}");
     });
 }

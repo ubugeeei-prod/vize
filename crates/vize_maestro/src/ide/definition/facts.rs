@@ -1,4 +1,4 @@
-//! Go-to-definition's declared fact demands (Davinci P4-3a): definition
+//! Go-to-definition's declared fact demands (Levels P4-3a): definition
 //! spans come from the `Bindings` group, never from `Croquis` fields.
 
 use vize_croquis::Croquis;

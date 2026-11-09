@@ -63,7 +63,7 @@ interface NativeCapture {
 }
 
 const fixturePath = new URL(
-  "../../../../davinci/vize_l4/tests/fixtures/selected-template-dom-vue-3.5.35.json",
+  "../../../../levels/vize_l4/tests/fixtures/selected-template-dom-vue-3.5.35.json",
   import.meta.url,
 );
 const fromUi = createRequire(new URL("../../../../npm/ui/package.json", import.meta.url));
@@ -89,7 +89,7 @@ const options = {
 // Audit the actual neutral table rather than copying a compiler tag table.
 // The selected structural provider already refuses these special modes.
 const tagSource = fs.readFileSync(
-  new URL("../../../../davinci/vize_l0/src/dom_tag_config.rs", import.meta.url),
+  new URL("../../../../levels/vize_l0/src/dom_tag_config.rs", import.meta.url),
   "utf8",
 );
 const htmlTable = tagSource.match(/pub static HTML_TAGS:[\s\S]*?phf_set!\s*\{([\s\S]*?)\};/);

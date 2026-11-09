@@ -1,10 +1,10 @@
-export const core = "davinci/vize_l0/src/profiler.rs";
+export const core = "levels/vize_l0/src/profiler.rs";
 export const host = "crates/vize_carton/src/lib.rs";
 export const exportFile = "crates/vize_carton/src/profile_export.rs";
 export const exportTests = "crates/vize_carton/src/profile_export/tests.rs";
 export const moves: [string, string][] = [
-  ["davinci/vize_l0/src/profiler/export.rs", exportFile],
-  ["davinci/vize_l0/src/profiler/tests/export.rs", exportTests],
+  ["levels/vize_l0/src/profiler/export.rs", exportFile],
+  ["levels/vize_l0/src/profiler/tests/export.rs", exportTests],
 ];
 export const removedExports = `pub use export::{
     PROFILE_EXPORT_SCHEMA_VERSION, ProfileExport, ProfileExportAllocCounts,
@@ -20,9 +20,9 @@ export const commonOldImport =
   "use vize_l0::profiler::{ProfileExportBudget, ProfileExportOptions, global_profiler};";
 export const commonNewImport = hostImport + "\nuse vize_l0::profiler::global_profiler;";
 export const oracleFiles = [
-  "davinci/vize_l0/tests/pass_observer_timing.rs",
-  "davinci/vize_l0/tests/dump_collector.rs",
-  "davinci/vize_l1_to_l2/tests/provenance_profile_wire.rs",
+  "levels/vize_l0/tests/pass_observer_timing.rs",
+  "levels/vize_l0/tests/dump_collector.rs",
+  "levels/vize_l1_to_l2/tests/provenance_profile_wire.rs",
 ];
 export const callerChanges: [string, string, string][] = [
   ...["crates/vize/src/commands/profile_export.rs", ...oracleFiles].map(
@@ -34,7 +34,7 @@ export const callerChanges: [string, string, string][] = [
     hostImport + "\nuse vize_l0::profiler::{Profiler, SpanAttribution};",
   ],
   [
-    "crates/vize_atelier_sfc/examples/davinci_production_perf/attribution.rs",
+    "crates/vize_atelier_sfc/examples/level_production_perf/attribution.rs",
     `use vize_l0::profiler::{
     ProfileExportOptions, allocation_snapshot, global_profiler, reset_allocation_counters,
 };`,
@@ -42,7 +42,7 @@ export const callerChanges: [string, string, string][] = [
 use vize_l0::profiler::{allocation_snapshot, global_profiler, reset_allocation_counters};`,
   ],
   [
-    "crates/vize_carton/tests/davinci_profile_export.rs",
+    "crates/vize_carton/tests/level_profile_export.rs",
     `use vize_carton::profiler::{
     ProfileExportBudget, ProfileExportOptions, ProfilingAllocator, SpanAttribution,
     allocation_snapshot, global_profiler,
@@ -61,8 +61,8 @@ export const calls: [string, string, string][] = [
   ...[
     ...oracleFiles,
     "crates/vize_curator/src/inspector/stages/profile.rs",
-    "crates/vize_atelier_sfc/examples/davinci_production_perf/attribution.rs",
-    "crates/vize_carton/tests/davinci_profile_export.rs",
+    "crates/vize_atelier_sfc/examples/level_production_perf/attribution.rs",
+    "crates/vize_carton/tests/level_profile_export.rs",
     exportTests,
   ].map((file): [string, string, string] => [
     file,
@@ -73,13 +73,13 @@ export const calls: [string, string, string][] = [
 export const edges: [string, string, "dependencies" | "dev-dependencies", string][] = [
   [
     "vize_l0",
-    "davinci/vize_l0/Cargo.toml",
+    "levels/vize_l0/Cargo.toml",
     "dev-dependencies",
     'vize_carton = { path = "../../crates/vize_carton" }',
   ],
   [
     "vize_l1_to_l2",
-    "davinci/vize_l1_to_l2/Cargo.toml",
+    "levels/vize_l1_to_l2/Cargo.toml",
     "dev-dependencies",
     "vize_carton.workspace = true",
   ],
@@ -99,12 +99,12 @@ export const edges: [string, string, "dependencies" | "dev-dependencies", string
 
 export const gateChanges: [string, string, string][] = [
   [
-    "tests/tooling/davinci/davinci-atelier-sfc-stage-alias.test.mjs",
+    "tests/tooling/levels/level-atelier-sfc-stage-alias.test.mjs",
     'import { test } from "node:test";',
     'import { test } from "node:test";\nimport { parse as parseToml } from "@iarna/toml";',
   ],
   [
-    "tests/tooling/davinci/davinci-atelier-sfc-stage-alias.test.mjs",
+    "tests/tooling/levels/level-atelier-sfc-stage-alias.test.mjs",
     "function compiler() {",
     `function assertPreferredDependencies(cargoToml) {
   const manifest = parseToml(cargoToml);
@@ -119,22 +119,22 @@ export const gateChanges: [string, string, string][] = [
 function compiler() {`,
   ],
   [
-    "tests/tooling/davinci/davinci-atelier-sfc-stage-alias.test.mjs",
+    "tests/tooling/levels/level-atelier-sfc-stage-alias.test.mjs",
     "  assert.match(cargoToml, /^vize_l0\\.workspace = true$/m);\n  assert.doesNotMatch(cargoToml, /^vize_carton\\.workspace = true$/m);",
     "  assertPreferredDependencies(cargoToml);",
   ],
   [
-    "tests/tooling/support/davinci-host-imports.ts",
-    'import { withoutI18nHostImports } from "./davinci-i18n-host-imports.ts";',
-    'import { withoutProfileHostImports } from "./davinci-profile-host-imports.ts";\nimport { withoutI18nHostImports } from "./davinci-i18n-host-imports.ts";',
+    "tests/tooling/support/level-host-imports.ts",
+    'import { withoutI18nHostImports } from "./level-i18n-host-imports.ts";',
+    'import { withoutProfileHostImports } from "./level-profile-host-imports.ts";\nimport { withoutI18nHostImports } from "./level-i18n-host-imports.ts";',
   ],
   [
-    "tests/tooling/support/davinci-host-imports.ts",
+    "tests/tooling/support/level-host-imports.ts",
     "return withoutI18nHostImports(storage, file);",
     "return withoutProfileHostImports(withoutI18nHostImports(storage, file), file);",
   ],
   [
-    "tests/tooling/davinci-stage-dependencies.test.ts",
+    "tests/tooling/level-stage-dependencies.test.ts",
     '["vize", "vize_patina", "vize_maestro", "vize_relief", "vize_vitrine"]',
     '["vize", "vize_patina", "vize_maestro", "vize_relief", "vize_vitrine", "vize_curator"]',
   ],

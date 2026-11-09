@@ -121,7 +121,7 @@ fn compile_vapor_inner_with_stack<'a, C: CaptureSink>(
     runtime_module_name: &str,
     capture: &mut C,
 ) -> (VaporCompileResult, std::vec::Vec<CompilerError>) {
-    #[cfg(feature = "davinci-benchmark")]
+    #[cfg(feature = "level-benchmark")]
     let options = super::benchmark::apply(options);
     capture.effective_option("template_syntax", || cstr!("{template_syntax:?}"));
     capture.effective_option("ssr", || cstr!("{}", options.ssr));
@@ -162,7 +162,7 @@ fn compile_vapor_inner_with_stack<'a, C: CaptureSink>(
                 && options.prefix_identifiers,
             // L3 lowering currently implements only Vue's default condense
             // mode; preserve must use the parser-backed retained lane.
-            retained_lane: options.davinci_retained_lane
+            retained_lane: options.level_retained_lane
                 || vize_atelier_core::parser::current_whitespace_strategy(
                     vize_atelier_core::WhitespaceStrategy::Condense,
                 ) == vize_atelier_core::WhitespaceStrategy::Preserve
@@ -172,7 +172,7 @@ fn compile_vapor_inner_with_stack<'a, C: CaptureSink>(
         capture,
     );
     // A map-requesting compile also carries the authored anchors generation
-    // needs beyond the IR (Davinci P3-9).
+    // needs beyond the IR (Levels P3-9).
     let source_map = experimental_options.source_map;
     let emit = |ir: &crate::ir::RootIRNode<'a>, errors, spans: Option<&VaporSourceSpans>| {
         generate(

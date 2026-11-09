@@ -115,7 +115,7 @@
       }
     },
     {
-      "path": "davinci-road/plan/consumer-migration-surfaces.md",
+      "path": "level-road/plan/consumer-migration-surfaces.md",
       "parent": {
         "blob": "ba61c16297b6190f50c777f34d836ad6f7565466",
         "sha256": "a54f993d9186a91099e77f6d6b1c0b6924c8a3807f685b077e251b3b07ae84ef"
@@ -126,7 +126,7 @@
       }
     },
     {
-      "path": "davinci-road/plan/consumer-migration-surfaces.tsv",
+      "path": "level-road/plan/consumer-migration-surfaces.tsv",
       "parent": {
         "blob": "b345503d7dcacdbdcc02d792e0106d09907207be",
         "sha256": "90132862bb6875277eb8eac164a63d7d01fabb61c653cfb852aad3ceec64bcf2"
@@ -137,7 +137,7 @@
       }
     },
     {
-      "path": "davinci-road/plan/croquis-consumption.md",
+      "path": "level-road/plan/croquis-consumption.md",
       "parent": {
         "blob": "91b809b105c9905a8049782f8ef3b51d8db1c6aa",
         "sha256": "dc22b2eb56d758850ef02b4bc75c3e1230721f4f7af1ae64907290085d80e237"

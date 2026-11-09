@@ -3,7 +3,7 @@
 //! Exact-equality oracles over the pass's products — the canonical
 //! grouping facts, the first `ScopeOrigin::Synthesized` producer (both
 //! directions), the slot-boundary hygiene, the four diagnostics with
-//! relief's exact wording, and the tree preservation. The TS-17 folio
+//! relief's exact wording, and the tree preservation. The TS-17 dump
 //! snapshots live in `vslot_pass_snapshot.rs`.
 
 #![expect(clippy::expect_used, reason = "tests assert by panicking")]
@@ -304,11 +304,11 @@ fn the_pass_preserves_the_tree() {
     // Like v-for, a preserving mandatory pass: grouping is a published
     // fact — a binding op cannot leave the surface without shifting
     // every page-order id after it. Diagnostics DO append (unlike
-    // v-for), so only the folio is pinned byte-identical.
+    // v-for), so only the dump is pinned byte-identical.
     let source = r#"<Card v-slot="p"><b>{{ p }}</b></Card><span v-slot="q">x</span>"#;
-    let before = with_lowered(source, |_, folio| folio.clone());
-    with_transformed(source, |_, folio, _, _| {
-        assert_eq!(folio, &before, "the v-slot pass must not mutate");
+    let before = with_lowered(source, |_, dump| dump.clone());
+    with_transformed(source, |_, dump, _, _| {
+        assert_eq!(dump, &before, "the v-slot pass must not mutate");
     });
 }
 

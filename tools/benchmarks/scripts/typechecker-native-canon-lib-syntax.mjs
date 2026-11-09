@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { maskRustNonCode, tokensOf } from "../../../tests/tooling/davinci-storage-rust-syntax.ts";
+import { maskRustNonCode, tokensOf } from "../../../tests/tooling/level-storage-rust-syntax.ts";
 
 const builtins = new Set([
   "Debug",

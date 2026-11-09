@@ -19,7 +19,7 @@ test("a PR runs affected checks and explicitly requests duplicate heavy qualific
   for (const path of [
     "crates/vize_canon/src/lib.rs",
     "crates/vize_patina/src/linter/engine/rule_sets.rs",
-    "davinci/vize_l2/src/lib.rs",
+    "levels/vize_l2/src/lib.rs",
     "upstream/forks/lightningcss/src/lib.rs",
     "npm/linter/oxlint/src/index.ts",
     "npm/native/index.d.ts",
@@ -29,7 +29,7 @@ test("a PR runs affected checks and explicitly requests duplicate heavy qualific
     ".github/workflows/pr-js-checks.yml",
     ".github/actions/setup-rust-sticky-cache/action.yml",
     "tools/support/compat/github/canonical-corpus-selection.mjs",
-    "tests/davinci_test_support/src/corpus.rs",
+    "tests/level_test_support/src/corpus.rs",
     "tests/_fixtures/differential/lint/n8n-cli-config/cases.json",
   ]) {
     assert.equal(pr([path]), "fast", path);

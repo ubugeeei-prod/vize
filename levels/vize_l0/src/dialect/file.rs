@@ -1,4 +1,4 @@
-//! One resolved input-dialect descriptor shared by every Davinci level.
+//! One resolved input-dialect descriptor shared by every Levels level.
 //!
 //! Configuration and structural detection may begin with separate selectors,
 //! but a file crosses the L0 -> L1 boundary with exactly one of these values.

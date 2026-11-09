@@ -16,7 +16,7 @@ The following existing decisions moved verbatim from the central record to
 keep that entry point within its 350-line cap:
 
 - The initial #6831 gate scopes physical level/conversion packages and the
-  owners of production aliases (L0/Carton and L3/Impeto today). It reports three
+  owners of production aliases (L0/Carton and L3/L3 today). It reports three
   existing normal legacy entry edges and five derived root-to-entry paths.
   Entries and their supported root sets only shrink; target, optional and
   rename variants are distinct. Dev oracle and build kinds are kept separate.

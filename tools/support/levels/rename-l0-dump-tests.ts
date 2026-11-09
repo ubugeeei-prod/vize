@@ -6,10 +6,10 @@ import { resolve } from "node:path";
 // Historical source names remain in the foundation ownership replay.
 const root = fileURLToPath(new URL("../../../", import.meta.url));
 const names = [
-  ["folio_derive_laws.rs", "dump_derive_laws.rs"],
-  ["folio_dump.rs", "dump_hash_gate.rs"],
+  ["dump_derive_laws.rs", "dump_derive_laws.rs"],
+  ["dump_dump.rs", "dump_hash_gate.rs"],
 ];
-const directory = "davinci/vize_l0/tests/";
+const directory = "levels/vize_l0/tests/";
 const phase = process.argv[2];
 if (!["moves", "integrate", "check"].includes(phase)) {
   throw new Error("Usage: rename-l0-dump-tests.ts moves|integrate|check");
@@ -36,8 +36,8 @@ if (phase === "moves") {
   const updates = new Map<string, string>();
   const records = "docs/davinci/plan/phase-2-records.md";
   let source = readFileSync(resolve(root, records), "utf8");
-  const oldLink = "[`folio_derive_laws`](../../../davinci/vize_l0/tests/folio_derive_laws.rs)";
-  const newLink = "[`dump_derive_laws`](../../../davinci/vize_l0/tests/dump_derive_laws.rs)";
+  const oldLink = "[`dump_derive_laws`](../../../levels/vize_l0/tests/dump_derive_laws.rs)";
+  const newLink = "[`dump_derive_laws`](../../../levels/vize_l0/tests/dump_derive_laws.rs)";
   if (source.includes(oldLink)) source = source.replace(oldLink, newLink);
   else if (!source.includes(newLink)) throw new Error("Missing current foundation law link");
   updates.set(records, source);

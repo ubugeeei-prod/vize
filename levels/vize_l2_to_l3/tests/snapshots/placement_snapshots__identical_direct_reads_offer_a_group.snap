@@ -21,7 +21,7 @@ from=1 to=2 kind=effect-order effect=-
 id=0 owner=1 region=0 span=5:17
 id=1 owner=2 region=1 span=18:27
 
-[s3-placement-folio]
+[s3-placement-dump]
 
-[s3-placement-folio.placements]
+[s3-placement-dump.placements]
 op=2 alternatives=inline,group leader=1 chosen=inline

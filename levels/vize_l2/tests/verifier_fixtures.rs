@@ -1,9 +1,9 @@
-//! TS-18: the invalid-folio fixture set (P2-6).
+//! TS-18: the invalid-dump fixture set (P2-6).
 //!
 //! `tests/fixtures/invalid/` holds hand-built L2 pages that are
 //! grammar-valid — `parse` accepts them, which is the point: the verifier
 //! owns what the grammar deliberately does not — and semantically invalid.
-//! Each `.folio` is committed beside its exact expected rendering
+//! Each `.dump` is committed beside its exact expected rendering
 //! (`.expected`: one `{code} @{start}:{end} {message}` line per violation,
 //! page order, canonical `en` locale), and the harness compares **whole
 //! files** — no partial matching (TS-13). The fixture count is pinned so a
@@ -25,10 +25,10 @@ const INVALID_FIXTURES: usize = 15;
 /// (L2V004–L2V006): structurally sound, so [`Rigor::Raw`] must accept
 /// them — the rigor split is load-bearing, not decorative.
 const CANONICAL_ONLY: &[&str] = &[
-    "empty-if.folio",
-    "floating-else.folio",
-    "leading-else.folio",
-    "else-mid-chain.folio",
+    "empty-if.dump",
+    "floating-else.dump",
+    "leading-else.dump",
+    "else-mid-chain.dump",
 ];
 
 fn invalid_dir() -> PathBuf {
@@ -38,14 +38,14 @@ fn invalid_dir() -> PathBuf {
         .join("invalid")
 }
 
-/// The `.folio` files of the invalid set, sorted by file name.
+/// The `.dump` files of the invalid set, sorted by file name.
 fn invalid_pages() -> Vec<PathBuf> {
     let mut pages: Vec<PathBuf> = std::fs::read_dir(invalid_dir())
         .expect("the committed invalid fixture directory reads")
         .map(|entry| entry.expect("fixture directory entries read").path())
         .filter(|path| {
             path.extension()
-                .is_some_and(|extension| extension == "folio")
+                .is_some_and(|extension| extension == "dump")
         })
         .collect();
     pages.sort();
@@ -73,9 +73,9 @@ fn every_invalid_page_is_rejected_with_its_exact_committed_diagnostic() {
             .to_str()
             .expect("fixture names are UTF-8");
         let text = std::fs::read_to_string(&page).expect("committed fixture reads");
-        let folio = L2Page::parse(&text)
+        let dump = L2Page::parse(&text)
             .unwrap_or_else(|error| panic!("{name} must be grammar-valid: {error:?}"));
-        let rendered = render(&verify(&folio, Rigor::Canonical));
+        let rendered = render(&verify(&dump, Rigor::Canonical));
         let expected = std::fs::read_to_string(page.with_extension("expected"))
             .expect("every invalid page has a committed .expected twin");
         assert_eq!(rendered.as_str(), expected.as_str(), "{name}");
@@ -94,10 +94,9 @@ fn every_invalid_page_is_committed_in_canonical_spelling() {
             .to_str()
             .expect("fixture names are UTF-8");
         let text = std::fs::read_to_string(&page).expect("committed fixture reads");
-        let folio = L2Page::parse(&text).expect("grammar-valid fixture parses");
+        let dump = L2Page::parse(&text).expect("grammar-valid fixture parses");
         let mut printed = vize_l0::String::default();
-        folio
-            .print(&mut printed, vize_l0::dump::Mode::Full)
+        dump.print(&mut printed, vize_l0::dump::Mode::Full)
             .expect("printing into a string cannot fail");
         assert_eq!(printed.as_str(), text.as_str(), "{name}");
     }
@@ -108,8 +107,8 @@ fn canonical_only_pages_hold_every_structural_invariant_at_raw_rigor() {
     let dir = invalid_dir();
     for name in CANONICAL_ONLY {
         let text = std::fs::read_to_string(dir.join(name)).expect("committed fixture reads");
-        let folio = L2Page::parse(&text).expect("grammar-valid fixture parses");
-        assert_eq!(verify(&folio, Rigor::Raw), vec![], "{name}");
+        let dump = L2Page::parse(&text).expect("grammar-valid fixture parses");
+        assert_eq!(verify(&dump, Rigor::Raw), vec![], "{name}");
     }
 }
 
@@ -118,9 +117,9 @@ fn the_committed_reference_page_verifies_clean_at_both_rigors() {
     let reference = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
         .join("tests")
         .join("fixtures")
-        .join("reference.folio");
+        .join("reference.dump");
     let text = std::fs::read_to_string(reference).expect("committed reference page reads");
-    let folio = L2Page::parse(&text).expect("the reference page parses");
-    assert_eq!(verify(&folio, Rigor::Raw), vec![]);
-    assert_eq!(verify(&folio, Rigor::Canonical), vec![]);
+    let dump = L2Page::parse(&text).expect("the reference page parses");
+    assert_eq!(verify(&dump, Rigor::Raw), vec![]);
+    assert_eq!(verify(&dump, Rigor::Canonical), vec![]);
 }

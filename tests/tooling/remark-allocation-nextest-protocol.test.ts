@@ -10,7 +10,7 @@ const CASE = "remarks_preserve_zero_cost_and_the_positive_control";
 
 test("remark allocation harness separates nextest discovery, selection and callback failure", () => {
   const source = readFileSync(
-    fileURLToPath(new URL("../../davinci/vize_l0/tests/remark_zero_cost.rs", import.meta.url)),
+    fileURLToPath(new URL("../../levels/vize_l0/tests/remark_zero_cost.rs", import.meta.url)),
     "utf8",
   );
   const start = source.indexOf("const CASE: &str =");

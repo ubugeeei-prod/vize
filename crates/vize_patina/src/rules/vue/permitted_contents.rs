@@ -1,7 +1,7 @@
 //! vue/permitted-contents
 //!
 //! Report nesting the HTML standard forbids, as proven by the exact checker in
-//! [`crate::html_content_model`] (Davinci P4-11a, precision tier `exact`).
+//! [`crate::html_content_model`] (Levels P4-11a, precision tier `exact`).
 //!
 //! Two families of violations:
 //!

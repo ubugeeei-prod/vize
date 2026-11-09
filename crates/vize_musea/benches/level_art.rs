@@ -1,4 +1,4 @@
-//! Allocation budget for `parse_art` on the L0/L1 reader (Davinci P4-13).
+//! Allocation budget for `parse_art` on the L0/L1 reader (Levels P4-13).
 //!
 //! Each case measures one whole `parse_art` call — the SFC split, the L1
 //! tree of the `<art>` block, the variants and the `defineArt()` reader —
@@ -16,7 +16,7 @@
 )]
 
 use criterion::{Criterion, criterion_group};
-use davinci_harness::stage::bench_stage_with_metrics;
+use level_harness::stage::bench_stage_with_metrics;
 use vize_l0::cstr;
 use vize_musea::{Allocator, ArtParseOptions, parse_art};
 
@@ -129,7 +129,7 @@ fn bench_case(criterion: &mut Criterion, id: &str, fixture: &str, source: &'stat
     });
 }
 
-fn davinci_art(criterion: &mut Criterion) {
+fn level_art(criterion: &mut Criterion) {
     bench_case(
         criterion,
         &cstr!("musea_parse_art_define_art"),
@@ -150,5 +150,5 @@ fn davinci_art(criterion: &mut Criterion) {
     );
 }
 
-criterion_group!(davinci_art_group, davinci_art);
-davinci_harness::main!(davinci_art_group);
+criterion_group!(level_art_group, level_art);
+level_harness::main!(level_art_group);

@@ -21,7 +21,7 @@ fn vue2() -> LegacyCaps {
 }
 
 fn assembled(source: &str) -> String {
-    with_transformed_caps(source, vue2(), |lowered, _folio, facts, _budget| {
+    with_transformed_caps(source, vue2(), |lowered, _dump, facts, _budget| {
         emit_dom(lowered, facts)
             .unwrap_or_else(|error| panic!("emit refused {source:?}: {error:?}"))
             .assembled()

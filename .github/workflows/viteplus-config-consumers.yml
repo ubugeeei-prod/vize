@@ -16,7 +16,7 @@ on:
       - "tools/support/release/verify_published/vite-startup-reports.json"
       - "tests/tooling/release/published-vite-startup.test.ts"
       - "crates/vize_carton/src/config/**"
-      - "davinci/vize_l0/src/config/**"
+      - "levels/vize_l0/src/config/**"
       - "crates/vize/src/commands/fmt/**"
       - "crates/vize/src/commands/fmt.rs"
       - "npm/cli/pkl/**"

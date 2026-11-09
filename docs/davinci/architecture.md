@@ -18,7 +18,7 @@
 > supersedes parts of this page:
 >
 > - S0–S4 naming (now levels L0–L4)
-> - the crate layout (`vize_davinci` is removed; crates carry level names
+> - the crate layout (`vize_level` is removed; crates carry level names
 >   only)
 > - S4 placement (now a single `vize_l4`)
 > - S3 routing (L3 is the decision layer for every backend)

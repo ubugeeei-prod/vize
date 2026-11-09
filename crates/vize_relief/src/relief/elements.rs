@@ -107,7 +107,7 @@ impl<'a> AttributeNode<'a> {
 pub struct DirectiveNode<'a> {
     /// Normalized directive name without prefix (e.g., "if", "for", "bind").
     /// An atom: the shorthand forms normalize to `'static` names and `v-x`
-    /// forms slice the source, so this never allocates (Davinci P1-10).
+    /// forms slice the source, so this never allocates (Levels P1-10).
     pub name: &'a str,
     /// Raw attribute name including shorthand (e.g., "@click", ":class"):
     /// a slice of the template source.

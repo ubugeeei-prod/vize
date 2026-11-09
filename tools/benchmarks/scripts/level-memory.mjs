@@ -273,7 +273,7 @@ try {
         run(
           "rust-script",
           [
-            path.join(roots.head, "tools/commands/davinci/bench-compare.rs"),
+            path.join(roots.head, "tools/commands/levels/bench-compare.rs"),
             "--results",
             path.join(out, side, `run-${repetition}`, "level-reports"),
             "--baseline",

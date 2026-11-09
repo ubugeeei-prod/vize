@@ -51,7 +51,7 @@ fn complete(source: &str, retained: bool, mapped: bool) -> (Value, usize) {
         &allocator,
         source,
         VaporCompilerOptions {
-            davinci_retained_lane: retained,
+            level_retained_lane: retained,
             ..Default::default()
         },
         VaporCompilerExperimentalOptions {
@@ -250,7 +250,7 @@ fn only_the_actual_returned_keyed_root_templates_get_fallthrough_flags() {
                 &allocator,
                 source,
                 VaporCompilerOptions {
-                    davinci_retained_lane: retained,
+                    level_retained_lane: retained,
                     ..Default::default()
                 },
                 Default::default(),

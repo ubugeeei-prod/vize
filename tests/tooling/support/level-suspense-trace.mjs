@@ -1,8 +1,8 @@
 import assert from "node:assert/strict";
 import process from "node:process";
 import { Window } from "happy-dom";
-import { loadRuntime, observeChildren } from "./davinci-mounted-trace.mjs";
-import { evaluateCompiledRender } from "./davinci-runtime-trace.mjs";
+import { loadRuntime, observeChildren } from "./level-mounted-trace.mjs";
+import { evaluateCompiledRender } from "./level-runtime-trace.mjs";
 import { officialCompilerVapor, vueVaporVersion } from "./vue-vapor-release.mjs";
 
 const chunks = [];

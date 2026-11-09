@@ -1,10 +1,10 @@
-//! L3 - the Davinci reactivity IR (codename Impeto): the backend convergence
+//! L3 - the Levels reactivity IR (codename Impeto): the backend convergence
 //! layer for DOM and Vapor.
 //!
 //! **Experimental:** the stage API may change in any alpha release; record
 //! intentional breaking changes in the release notes.
 //!
-//! Impeto is flat and id-based by design. L2 owns the semantic tree; L3 owns
+//! L3 is flat and id-based by design. L2 owns the semantic tree; L3 owns
 //! update ordering, effect grouping, and backend decisions that must be shared
 //! rather than rediscovered by each emitter. Ordering constraints are explicit
 //! [`op::StateEdge`] values, regions are named by [`op::RegionId`], and the
@@ -12,14 +12,14 @@
 //! effect scopes that leak.
 //!
 //! The crate is `no_std + alloc` from birth so L3 artifacts can be printed,
-//! validated, and replayed on the same portability lane as the earlier Davinci
+//! validated, and replayed on the same portability lane as the earlier Levels
 //! stage libraries.
 //!
 //! Placement alternatives (hoist / cache / inline / group) are an explicit
 //! overlay on the op graph; see [`placement`].
 //!
 //! The operation semantics review point lives in
-//! [`docs/davinci/plan/impeto-ops.md`](../../../docs/davinci/plan/impeto-ops.md)
+//! [`docs/davinci/plan/l3-ops.md`](../../../docs/davinci/plan/l3-ops.md)
 //! and is kept in sync with [`op::OpKind`] plus the independent Rust reference.
 
 #![no_std]

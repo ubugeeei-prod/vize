@@ -11,17 +11,17 @@ import {
   runVizeLintJson,
   shardProjectDir,
   writeJson,
-} from "../../support/compat/davinci/lib/fpfn-shared.ts";
+} from "../../support/compat/levels/lib/fpfn-shared.ts";
 import {
   defuseSuppressions,
   intersectSuppressions,
   loadRuleMap,
   scanSuppressions,
-} from "../../support/compat/davinci/lib/fpfn-suppress-scan.ts";
-import type { SuppressionScan } from "../../support/compat/davinci/lib/fpfn-suppress-scan.ts";
+} from "../../support/compat/levels/lib/fpfn-suppress-scan.ts";
+import type { SuppressionScan } from "../../support/compat/levels/lib/fpfn-suppress-scan.ts";
 
 const usage =
-  "Usage: node tools/commands/davinci/suppression-telemetry.ts (--fixtures <dir> | --corpus-shard) --out <dir> [--report <path>]\n\nCollects eslint-disable pragmas, maps rule names to vize analogs, and\nreports vize diagnostics on suppressed lines as FP candidates.";
+  "Usage: node tools/commands/levels/suppression-telemetry.ts (--fixtures <dir> | --corpus-shard) --out <dir> [--report <path>]\n\nCollects eslint-disable pragmas, maps rule names to vize analogs, and\nreports vize diagnostics on suppressed lines as FP candidates.";
 
 interface Arguments {
   fixtures?: string;
@@ -160,7 +160,7 @@ function run(args: Arguments): void {
   const mappedNamesSeen = names.filter(([rule]) => ruleMap.mapped.has(rule)).length;
   const report = {
     schemaVersion: 1,
-    tool: "tools/commands/davinci/suppression-telemetry.ts",
+    tool: "tools/commands/levels/suppression-telemetry.ts",
     source: { kind: source.kind, label: source.label },
     ruleMap: {
       fixture: ruleMap.fixturePath,

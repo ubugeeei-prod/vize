@@ -1,8 +1,8 @@
-name: Davinci reference backends
+name: Levels reference backends
 
-# The independent L3 reference (`davinci_test_support::l3_reference`) against
+# The independent L3 reference (`level_test_support::l3_reference`) against
 # its committed pages, then both mounted backends against the same pages. The
-# reference laws are Kani harnesses in `davinci-kani.yml`.
+# reference laws are Kani harnesses in `level-kani.yml`.
 
 on:
   schedule:
@@ -10,7 +10,7 @@ on:
   workflow_dispatch:
 
 concurrency:
-  group: davinci-reference-${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}
+  group: level-reference-${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}
   cancel-in-progress: true
 
 permissions:
@@ -35,7 +35,7 @@ jobs:
           wild-version: "0.9.0"
       - uses: ./.github/actions/setup-rust-sticky-cache
         with:
-          key: davinci-reference
+          key: level-reference
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with:
@@ -48,14 +48,14 @@ jobs:
       - name: Run TS-28 reference, P3-15 schedule and C-23 checker differentials
         run: cargo test -p vize_l2_to_l3 --test l3_reference_fixture
       - name: Run TS-28 compiled backend trace
-        run: cargo test -p vize_atelier_vapor --test davinci_l3_compiled_trace
+        run: cargo test -p vize_atelier_vapor --test level_l3_compiled_trace
       - name: Run TS-30 mounted backend behavior
-        run: cargo test -p vize_atelier_vapor --test davinci_mounted_behavior
+        run: cargo test -p vize_atelier_vapor --test level_mounted_behavior
       - name: Run TS-33 upstream Vapor behavioral parity
-        run: cargo test -p vize_atelier_vapor --test davinci_vapor_upstream_parity --test davinci_keep_alive_parity --test davinci_suspense_parity --test davinci_structural_slots_parity --test davinci_transition_parity
+        run: cargo test -p vize_atelier_vapor --test level_vapor_upstream_parity --test level_keep_alive_parity --test level_suspense_parity --test level_structural_slots_parity --test level_transition_parity
       - uses: ./.github/actions/setup-ubuntu-archive
       - name: Install Chromium for the event contract
         working-directory: tests
         run: vize-ci-apt-retry vp exec playwright install --with-deps chromium
       - name: Run TS-30 event scope and delivery in Chromium
-        run: cargo test -p vize_atelier_vapor --test davinci_event_handlers -- --ignored --nocapture
+        run: cargo test -p vize_atelier_vapor --test level_event_handlers -- --ignored --nocapture

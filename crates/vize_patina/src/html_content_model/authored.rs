@@ -1,4 +1,4 @@
-//! Which parse the checker reads (Davinci P4-11a).
+//! Which parse the checker reads (Levels P4-11a).
 //!
 //! The checker needs the template **as authored**. The linter's own
 //! (`Standard`) parse repairs tree construction in a few situations; where it

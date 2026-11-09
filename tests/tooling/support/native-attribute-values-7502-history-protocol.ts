@@ -37,7 +37,7 @@ export function historyCommands7502(worktree: string, history: string) {
     ["git", ["fetch", "--no-tags", "origin", baseline7502.revision]],
     ["git", ["worktree", "add", "--detach", "--", worktree, baseline7502.revision]],
     ["vp", ["install", "--frozen-lockfile", "--prefer-offline"]],
-    ["vp", ["exec", "node", "tools/support/compat/davinci/plugin-sandbox-image.mjs"]],
+    ["vp", ["exec", "node", "tools/support/compat/levels/plugin-sandbox-image.mjs"]],
     ["vp", ["node", "tests/tooling/support/native-attribute-values-7502-build.ts", history]],
     ["vp", ["node", "tests/tooling/support/native-attribute-values-7502-judge.ts"]],
     [

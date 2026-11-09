@@ -1,7 +1,7 @@
-// Davinci P0-13 — seeded-defect + suppression-telemetry pilot oracles.
+// Levels P0-13 — seeded-defect + suppression-telemetry pilot oracles.
 //
 // Exercises both FP/FN pilot tools over the COMMITTED miniature fixture set
-// (tests/_fixtures/davinci-fpfn) so CI proves the identity assertion without
+// (tests/_fixtures/level-fpfn) so CI proves the identity assertion without
 // corpus hydration; the corpus-shard run stays a local/nightly concern
 // (docs/davinci/plan/phase-0.md, P0-13).
 //
@@ -19,10 +19,10 @@ import { test } from "node:test";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
-const fixtures = path.join(root, "tests/_fixtures/davinci-fpfn");
+const fixtures = path.join(root, "tests/_fixtures/level-fpfn");
 const expectedDir = path.join(fixtures, "expected");
-const seedTool = path.join(root, "tools/commands/davinci/seed-defects.rs");
-const suppressionTool = path.join(root, "tools/commands/davinci/suppression-telemetry.ts");
+const seedTool = path.join(root, "tools/commands/levels/seed-defects.rs");
+const suppressionTool = path.join(root, "tools/commands/levels/suppression-telemetry.ts");
 
 function runTool(tool: string, args: string[]) {
   const stableNode = tool.endsWith(".ts");
@@ -39,7 +39,7 @@ function readJson(filePath: string): unknown {
 }
 
 function tempDir(label: string): string {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), `davinci-fpfn-${label}-`));
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), `level-fpfn-${label}-`));
   process.on("exit", () => fs.rmSync(dir, { recursive: true, force: true }));
   return dir;
 }
@@ -333,7 +333,7 @@ test("suppression telemetry reports the mapped FP candidate and the unmapped nam
 // hooks. The real current-recall oracle above retains its 3/3 + 4/4 law.
 test("compatibility seeded assertion carries the same opt-in policy through canonical Vite", async () => {
   const { assertSeededTree } =
-    await import("../../tools/support/compat/davinci/lib/fpfn-seed-assert.ts");
+    await import("../../tools/support/compat/levels/lib/fpfn-seed-assert.ts");
   const { baseline, seeded } = syntheticTrees();
   const baselineLintJson = path.join(seedOut, "compatibility-baseline.json");
   const seededLintJson = path.join(seedOut, "compatibility-seeded.json");

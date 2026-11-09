@@ -125,7 +125,7 @@ pub(super) fn has_slot_content(bindings: &[DumpBinding]) -> bool {
         .any(|binding| matches!(binding, DumpBinding::SlotContent(_)))
 }
 
-/// Whether a folio component is slot-active (the shared unit rule).
+/// Whether a dump component is slot-active (the shared unit rule).
 pub fn l2_slot_active(bindings: &[DumpBinding], children: &[DumpOp]) -> bool {
     has_slot_content(bindings)
         || children.iter().any(|child| {

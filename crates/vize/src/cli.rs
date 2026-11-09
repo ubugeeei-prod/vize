@@ -82,7 +82,7 @@ enum Commands {
     #[cfg(feature = "maestro")]
     Ide(crate::commands::ide::IdeArgs),
 
-    /// Replay a Davinci crash repro (repro.folio) and verify it reproduces
+    /// Replay a Levels crash repro (repro.dump) and verify it reproduces
     Repro(crate::commands::repro::ReproArgs),
 
     /// Shrink a failing SFC or crash repro while it keeps failing the same way

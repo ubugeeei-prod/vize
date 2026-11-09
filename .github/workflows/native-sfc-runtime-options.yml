@@ -12,8 +12,8 @@ on:
       - crates/vize_atelier_sfc/src/**
       - crates/vize_atelier_ssr/src/**
       - crates/vize_atelier_vapor/src/**
-      - davinci/vize_l0/src/js_string.rs
-      - davinci/vize_l1_to_l2/src/emit/**
+      - levels/vize_l0/src/js_string.rs
+      - levels/vize_l1_to_l2/src/emit/**
       - tests/tooling/native-sfc-runtime-options.test.mjs
       - tests/tooling/support/script-setup-default-expose.ts
       - tests/tooling/support/setup-component-bracket-reference.ts

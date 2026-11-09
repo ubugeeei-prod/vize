@@ -55,7 +55,7 @@ export function readRealProjectMatrixWorkflow(): RealProjectMatrixWorkflow {
 
 export function readCanonicalCorpusWorkflow(): RealProjectMatrixWorkflow {
   return parse(
-    readRepoFile(".github", "workflows", "davinci-canonical-corpus.yml"),
+    readRepoFile(".github", "workflows", "level-canonical-corpus.yml"),
   ) as RealProjectMatrixWorkflow;
 }
 

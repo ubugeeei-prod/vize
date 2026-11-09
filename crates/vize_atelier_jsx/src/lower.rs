@@ -259,7 +259,7 @@ impl<'a, 'm, 's: 'a> Lowerer<'a, 'm, 's> {
         self.bump
     }
 
-    /// Arena box; the arena containers take `&&Allocator` (Davinci P1-10).
+    /// Arena box; the arena containers take `&&Allocator` (Levels P1-10).
     pub(crate) fn boxed<T>(&self, value: T) -> Box<'a, T> {
         boxed_in(self.bump, value)
     }

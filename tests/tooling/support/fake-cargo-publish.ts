@@ -1,7 +1,7 @@
 export const assertPublishManifestIsSanitized = [
   "if (args[0] === 'publish') {",
   "  const crateName = args.at(-1);",
-  "  const native = path.join(process.cwd(), 'davinci', crateName, 'Cargo.toml');",
+  "  const native = path.join(process.cwd(), 'levels', crateName, 'Cargo.toml');",
   "  const upstreamFork = { vize_oxc_parser: 'oxc_parser', vize_parcel_sourcemap: 'parcel_sourcemap', vize_lightningcss: 'lightningcss' }[crateName];",
   "  const manifestPath = upstreamFork ? path.join(process.cwd(), 'upstream', 'forks', upstreamFork, 'Cargo.toml') : fs.existsSync(native) ? native : path.join(process.cwd(), 'crates', crateName, 'Cargo.toml');",
   "  const manifest = fs.readFileSync(manifestPath, 'utf8');",

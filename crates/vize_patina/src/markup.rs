@@ -12,9 +12,9 @@
 //! This module lifts the rule API onto a small, typed, **borrow-based** facade
 //! projected from three backends without materializing a synthetic AST:
 //!
-//! - **L2 (Disegno)** — the Davinci semantic IR ([`L2Markup`]): SFC templates
+//! - **L2 (L2)** — the Levels semantic IR ([`L2Markup`]): SFC templates
 //!   through the L1→L2 lowering, JSX/TSX through the P2-16 L2 projection. This
-//!   is the backend the lint lanes converge on (Davinci P4-7).
+//!   is the backend the lint lanes converge on (Levels P4-7).
 //! - **Relief** — a `vize_relief` template root (a raw template parse, or a
 //!   JSX root lowered to Relief).
 //! - **OXC** — a JSX/TSX program read straight from the OXC AST.
@@ -157,7 +157,7 @@ impl<'a> MarkupDocument<'a> {
         }
     }
 
-    /// Create a markup document viewing an L2 (Disegno) artifact.
+    /// Create a markup document viewing an L2 (L2) artifact.
     ///
     /// The view is zero-copy: elements, bindings, text, and scopes borrow the
     /// L2 op tree and its lowering-published side tables directly.

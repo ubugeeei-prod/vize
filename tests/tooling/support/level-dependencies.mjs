@@ -3,7 +3,7 @@ import {
   assertDependencyReport,
   initialEntries,
   inspectLevelDependencies,
-} from "../../../tools/support/compat/davinci/level-dependencies.ts";
+} from "../../../tools/support/compat/levels/level-dependencies.ts";
 
 const revision = "f59e69c38ecbead394ba30f0fdacb5f9c1b9fd04";
 /** The L3 package's published name before the level crates took level names. */
@@ -12,7 +12,7 @@ export function fixture() {
   const names = [
     "vize_carton",
     oldL3Package,
-    "vize_davinci",
+    "vize_level",
     "vize_l1",
     "vize_l2",
     "vize_l1_to_l2",
@@ -59,7 +59,7 @@ export function fixture() {
   add("vize_l1", "vize_armature");
   add("vize_l1", "vize_relief");
   add("vize_armature", "vize_relief");
-  add("vize_l2", "vize_davinci");
+  add("vize_l2", "vize_level");
   add(oldL3Package, "vize_carton", { rename: "vize_l0" });
   add("vize_l1_to_l2", "vize_l1");
   add("vize_l1_to_l2", "vize_relief");

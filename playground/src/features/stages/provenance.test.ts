@@ -89,7 +89,7 @@ ui.element div @3:36
   ui.interpolation js("msg" @24:27) @21:30
 
 `;
-    expect(dumpLines("disegno", s2).map((line) => line.node)).toEqual([
+    expect(dumpLines("l2", s2).map((line) => line.node)).toEqual([
       null,
       null,
       null,

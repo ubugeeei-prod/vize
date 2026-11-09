@@ -6,20 +6,20 @@ on:
       - .github/actions/install-playwright-browsers/**
       - Cargo.lock
       - Cargo.toml
-      - davinci/vize_l0/**
-      - davinci/vize_l1/**
+      - levels/vize_l0/**
+      - levels/vize_l1/**
       - crates/vize_armature/**
       - crates/vize_relief/**
       - package.json
       - pnpm-lock.yaml
       - tests/package.json
-      - tests/tooling/davinci-document-body-elements.test.ts
-      - tests/tooling/davinci-document-disclosure-elements.test.ts
-      - tests/tooling/davinci-document-embedded-fallback.test.ts
-      - tests/tooling/davinci-document-foreign-content.test.ts
-      - tests/tooling/davinci-document-phrasing.test.ts
-      - tests/tooling/davinci-document-select.test.ts
-      - tests/tooling/davinci-document-special-text.test.ts
+      - tests/tooling/level-document-body-elements.test.ts
+      - tests/tooling/level-document-disclosure-elements.test.ts
+      - tests/tooling/level-document-embedded-fallback.test.ts
+      - tests/tooling/level-document-foreign-content.test.ts
+      - tests/tooling/level-document-phrasing.test.ts
+      - tests/tooling/level-document-select.test.ts
+      - tests/tooling/level-document-special-text.test.ts
 permissions: { contents: read }
 concurrency:
   group: l1-document-special-text-${{ github.event.pull_request.number }}
@@ -75,10 +75,10 @@ jobs:
       - name: Compare the original packet with Chromium
         run: |
           vp node --test \
-            tests/tooling/davinci-document-body-elements.test.ts \
-            tests/tooling/davinci-document-disclosure-elements.test.ts \
-            tests/tooling/davinci-document-embedded-fallback.test.ts \
-            tests/tooling/davinci-document-foreign-content.test.ts \
-            tests/tooling/davinci-document-phrasing.test.ts \
-            tests/tooling/davinci-document-select.test.ts \
-            tests/tooling/davinci-document-special-text.test.ts
+            tests/tooling/level-document-body-elements.test.ts \
+            tests/tooling/level-document-disclosure-elements.test.ts \
+            tests/tooling/level-document-embedded-fallback.test.ts \
+            tests/tooling/level-document-foreign-content.test.ts \
+            tests/tooling/level-document-phrasing.test.ts \
+            tests/tooling/level-document-select.test.ts \
+            tests/tooling/level-document-special-text.test.ts

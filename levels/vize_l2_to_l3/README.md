@@ -1,6 +1,6 @@
 # vize_l2_to_l3
 
-`vize_l2_to_l3` lowers Davinci L2 semantic regions into the flat L3 Impeto
+`vize_l2_to_l3` lowers Levels L2 semantic regions into the flat L3 L3
 program shape and exports the shared static/dynamic partition facts computed
 during that lowering.
 
@@ -14,8 +14,8 @@ analysis and production selection remain unfinished under #6839.
 Lowering copies tags, namespaces, attributes, expressions, binding targets,
 model read/write contracts, modifiers, branch conditions, loop aliases and slot
 parameters into L3-owned operands. L2 and its source arena can be released after
-lowering. The shared partition facts and graph-only Folio remain unchanged;
-`vize_l3::values_folio::L3ValuesFolio` exports the paired value page.
+lowering. The shared partition facts and graph-only Dump remain unchanged;
+`vize_l3::values_dump::L3ValuesDump` exports the paired value page.
 
 `PartitionFacts::stale` names the first fact that stops describing the
 program. The P3-10 `vize_l3::optimize` pipeline writes only the placement

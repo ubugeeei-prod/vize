@@ -1,5 +1,5 @@
 //! The auto-import code action's script-binding check, read through a
-//! declared fact demand (Davinci P4-3a).
+//! declared fact demand (Levels P4-3a).
 #![expect(
     clippy::disallowed_methods,
     reason = "tower-lsp lsp_types take std String/HashMap values, built with to_string/format!"

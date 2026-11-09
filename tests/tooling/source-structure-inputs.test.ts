@@ -11,7 +11,7 @@ const deferred = "tests/tooling/lsp-smoke.test.ts";
 
 function fixture() {
   const cwd = fs.mkdtempSync(path.join(os.tmpdir(), "vize-structure-inputs-"));
-  for (const directory of ["tests/tooling", "tests/tooling/davinci", "tests/tooling/release"]) {
+  for (const directory of ["tests/tooling", "tests/tooling/levels", "tests/tooling/release"]) {
     fs.mkdirSync(path.join(cwd, directory), { recursive: true });
   }
   // Deliberately provide no literal imports or named source paths: the real

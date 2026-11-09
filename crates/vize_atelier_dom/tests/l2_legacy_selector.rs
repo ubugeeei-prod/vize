@@ -177,7 +177,7 @@ fn removed_dom_lane_flag_does_not_disarm_vue3_l2_selection() {
 }
 
 fn removed_dom_lane_flag_name() -> &'static str {
-    concat!("VIZE", "_DAVINCI", "_DOM")
+    concat!("VIZE", "_LEVEL", "_DOM")
 }
 
 #[derive(Debug, PartialEq, Eq)]

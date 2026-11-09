@@ -138,8 +138,8 @@ pub fn both(source: &str, content: &str, start: u32) -> (Naive, Naive) {
     let (tree, errors) = parse(&allocator, content);
     let lowered = lower_source_block(&allocator, &tree, &errors, block);
     let facts = vize_l2::analysis::template_complexity::run(&lowered.root, lowered.op_count);
-    let folio = L2Page::of(&lowered.root.ops);
-    (production(&facts), evaluate(&folio))
+    let dump = L2Page::of(&lowered.root.ops);
+    (production(&facts), evaluate(&dump))
 }
 
 /// Both implementations over a bare template string (offset 0).

@@ -143,7 +143,7 @@ void test("#8908 audit pins every current Pug and Jade surface to executable evi
   assert.match(refused, /(?:^|\n)mixin card\(title\)\n/u);
   assert.match(refused, /(?:^|\n)\+card\(heading\)\n/u);
   assert.match(
-    read("tests/_fixtures/davinci-pug/refused/mixin-and-call.diagnostics"),
+    read("tests/_fixtures/level-pug/refused/mixin-and-call.diagnostics"),
     /mixin call cannot be evaluated at build time: `heading` is not defined/u,
   );
 });

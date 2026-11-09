@@ -17,7 +17,7 @@ runs:
           echo 'selected=true' >> "$GITHUB_OUTPUT"
         else
           git diff --name-only "$BASE_SHA" "$GITHUB_SHA" > "$RUNNER_TEMP/vue2-whole-sfc-paths.txt"
-          if rg '^(Cargo\.(toml|lock)$|davinci/vize_l[01]/(src/|Cargo\.toml$)|upstream/forks/oxc[^/]*/|crates/vize_glyph/(Cargo\.toml$|src/(native_doc(\.rs|/)|lib\.rs$)|tests/(native_vue2_scriptless_sfc|native_vue2_sfc_diagnostics_drop|fixtures/native-vue2-scriptless-sfc-2\.7\.16\.json))|tests/_fixtures/reference/vue2/|tests/tooling/(native-vue2-scriptless-sfc-oracle\.test\.ts|support/vue2-whole-sfc-(oracle|observations)\.ts|support/vue2-pinned)|\.github/actions/(test-native-vue2-scriptless-sfc|test-native-historical-sfc-documents)/|\.github/workflows/pr-source-checks\.yml)' "$RUNNER_TEMP/vue2-whole-sfc-paths.txt"; then
+          if rg '^(Cargo\.(toml|lock)$|levels/vize_l[01]/(src/|Cargo\.toml$)|upstream/forks/oxc[^/]*/|crates/vize_glyph/(Cargo\.toml$|src/(native_doc(\.rs|/)|lib\.rs$)|tests/(native_vue2_scriptless_sfc|native_vue2_sfc_diagnostics_drop|fixtures/native-vue2-scriptless-sfc-2\.7\.16\.json))|tests/_fixtures/reference/vue2/|tests/tooling/(native-vue2-scriptless-sfc-oracle\.test\.ts|support/vue2-whole-sfc-(oracle|observations)\.ts|support/vue2-pinned)|\.github/actions/(test-native-vue2-scriptless-sfc|test-native-historical-sfc-documents)/|\.github/workflows/pr-source-checks\.yml)' "$RUNNER_TEMP/vue2-whole-sfc-paths.txt"; then
             echo 'selected=true' >> "$GITHUB_OUTPUT"
           else
             echo 'selected=false' >> "$GITHUB_OUTPUT"

@@ -48,17 +48,17 @@ await test("selection covers pinned inputs, drivers and real producers in both c
     "tests/_fixtures/vue-ecosystem-fixtures.json",
     "tests/_fixtures/differential/compiler/ssr-builtins-7891/App.vue.txt",
     "tests/_fixtures/differential/compiler/n8n-if-key-regression/diagnostics.json",
-    "tests/_fixtures/davinci-pug/corpus-baseline.tsv",
+    "tests/_fixtures/level-pug/corpus-baseline.tsv",
     "tests/_fixtures/differential/lint/authored/Original.vue",
     "docs/davinci/plan/reach-budgets.toml",
     "package.json",
     "upstream/forks/lightningcss/src/lib.rs",
     "crates/vize_curator/src/lib.rs",
-    "tests/davinci_test_support/Cargo.toml",
-    "tests/davinci_test_support/src/corpus.rs",
-    "tests/davinci_test_support/src/corpus/io_tests.rs",
-    "tools/support/compat/fixtures/davinci-dom-corpus-workflow.ts",
-    "tools/support/compat/davinci/lib/corpus-baseline-contract.ts",
+    "tests/level_test_support/Cargo.toml",
+    "tests/level_test_support/src/corpus.rs",
+    "tests/level_test_support/src/corpus/io_tests.rs",
+    "tools/support/compat/fixtures/level-dom-corpus-workflow.ts",
+    "tools/support/compat/levels/lib/corpus-baseline-contract.ts",
     "tools/support/compat/github/canonical-corpus-selection.mjs",
     "tools/support/compat/github/canonical-corpus-identity.mjs",
     "tools/support/compat/github/canonical-corpus-inventory.mjs",
@@ -68,7 +68,7 @@ await test("selection covers pinned inputs, drivers and real producers in both c
     "tools/support/compat/github/canonical-corpus-jobs.ts",
     "tools/support/compat/github/canonical-corpus-native-walk.ts",
     "tools/support/compat/github/canonical-corpus-finite-walk.mjs",
-    "tests/tooling/davinci-canonical-corpus-native-archive.test.mjs",
+    "tests/tooling/level-canonical-corpus-native-archive.test.mjs",
     "tools/support/compat/github/canonical-corpus-logical-walk.ts",
     "tools/support/compat/github/canonical-corpus-types.ts",
     "tools/support/compat/github/canonical-corpus-io-probe.mjs",
@@ -85,12 +85,12 @@ await test("selection covers pinned inputs, drivers and real producers in both c
     "tools/support/compat/github/require-rust-tier.ts",
     "tools/support/compat/github/plan-source-checks.ts",
     "tools/benchmarks/scripts/vue-benchmarks-replay.ts",
-    ".github/workflows/davinci-canonical-corpus.yml",
+    ".github/workflows/level-canonical-corpus.yml",
     ".github/workflows/pr-source-checks.yml",
     ".github/workflows/check.yml",
     ".github/actions/setup-rust-script/action.yml",
     ".github/actions/setup-rust-sticky-cache/cache-policy.ts",
-    "davinci/vize_l1/src/lib.rs",
+    "levels/vize_l1/src/lib.rs",
     "crates/vize_atelier_ssr/src/lib.rs",
     "crates/vize_armature/src/lib.rs",
     "Cargo.lock",
@@ -159,11 +159,11 @@ await test("a required canonical execution cannot be skipped, failed or hidden b
 
 await test("ordinary source and queue reports require the strict reusable execution", () => {
   const source = parse(readRepoFile(".github", "workflows", "pr-source-checks.yml"));
-  const corpus = parse(readRepoFile(".github", "workflows", "davinci-canonical-corpus.yml"));
+  const corpus = parse(readRepoFile(".github", "workflows", "level-canonical-corpus.yml"));
   const matrix = parse(readRepoFile(".github", "workflows", "real-project-matrix.yml"));
   const worker = corpus.jobs["canonical-observers"];
-  assert.equal(corpus.jobs["davinci-dom-corpus"].needs, "canonical-observers");
-  assert.equal(corpus.jobs["davinci-dom-corpus"].if, "${{ always() }}");
+  assert.equal(corpus.jobs["level-dom-corpus"].needs, "canonical-observers");
+  assert.equal(corpus.jobs["level-dom-corpus"].if, "${{ always() }}");
   assert.equal(worker.strategy["fail-fast"], false);
   assert.equal(worker.strategy["max-parallel"], 3);
   assert.deepEqual(worker.strategy.matrix.observer, ["dom", "ssr-pug", "reach"]);
@@ -171,25 +171,25 @@ await test("ordinary source and queue reports require the strict reusable execut
     worker.steps.find((step) => step.name === "Upload required observer evidence").with.overwrite,
     undefined,
   );
-  assert.deepEqual(matrix.jobs["davinci-dom-corpus"], {
+  assert.deepEqual(matrix.jobs["level-dom-corpus"], {
     permissions: { contents: "read", actions: "read", checks: "read" },
-    uses: "./.github/workflows/davinci-canonical-corpus.yml",
-    with: { davinci_dom_corpus_mode: "${{ inputs.davinci_dom_corpus_mode || 'enforce' }}" },
+    uses: "./.github/workflows/level-canonical-corpus.yml",
+    with: { level_dom_corpus_mode: "${{ inputs.level_dom_corpus_mode || 'enforce' }}" },
   });
   assert.deepEqual(source.jobs["canonical-corpus"], {
     permissions: { contents: "read", actions: "read", checks: "read" },
     needs: "pr-source-plan",
     if: "${{ !cancelled() && needs.pr-source-plan.result == 'success' && needs.pr-source-plan.outputs.canonical-corpus == 'true' }}",
-    uses: "./.github/workflows/davinci-canonical-corpus.yml",
+    uses: "./.github/workflows/level-canonical-corpus.yml",
   });
   assert.ok(source.jobs["source-report"].needs.includes("canonical-corpus"));
   assert.equal(
     source.jobs["source-report"].steps.at(-1).run,
     "node tools/support/compat/github/canonical-corpus-selection.mjs --check",
   );
-  assert.equal(corpus.on.workflow_call.inputs.davinci_dom_corpus_mode.default, "enforce");
+  assert.equal(corpus.on.workflow_call.inputs.level_dom_corpus_mode.default, "enforce");
   assert.deepEqual(corpus.permissions, { contents: "read" });
-  assert.deepEqual(corpus.jobs["davinci-dom-corpus"].permissions, {
+  assert.deepEqual(corpus.jobs["level-dom-corpus"].permissions, {
     contents: "read",
     actions: "read",
     checks: "read",
@@ -202,5 +202,5 @@ await test("ordinary source and queue reports require the strict reusable execut
     CARGO_TERM_COLOR: "always",
     FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true,
   });
-  assert.equal(corpus.jobs["davinci-dom-corpus"]["timeout-minutes"], 120);
+  assert.equal(corpus.jobs["level-dom-corpus"]["timeout-minutes"], 120);
 });

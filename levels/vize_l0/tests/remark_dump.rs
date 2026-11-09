@@ -8,7 +8,7 @@
 
 use std::path::Path;
 
-use davinci_test_support::schema as schema_check;
+use level_test_support::schema as schema_check;
 use vize_l0::dump::remarks::{RemarkLog, RemarksSchemaMismatch};
 use vize_l0::dump::{Dump, Error as DumpError, Mode as DumpMode};
 use vize_l0::pass::RemarkKind;

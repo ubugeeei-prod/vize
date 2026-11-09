@@ -61,7 +61,7 @@ total lowering skeleton, and exported partition fact contract. _Closed
 to the same record.
 
 **P3-4 Rust reference + differential.** The independent, test-only reference in
-`tests/davinci_test_support/src/l3_reference` provides executable small-step
+`tests/level_test_support/src/l3_reference` provides executable small-step
 semantics for L3 ops under both Vapor and VDOM interpretations; the runner
 compares compiled-output behavior traces with the reference on L3 fixtures
 (TS-28). _Accept:_ runner in CI on the fixture ladder. The 2026-09-15
@@ -89,7 +89,7 @@ branches and keyed loops) now share eight full observations too. The mounted
 runner and the independent reference use one contract across the fixture ladder, the
 TS-29 matrix and the model/slot references (see the record).
 
-**P3-5 Op reference doc.** `docs/davinci/plan/impeto-ops.md`: every op's
+**P3-5 Op reference doc.** `docs/davinci/plan/l3-ops.md`: every op's
 meaning under both interpretations, written **before any optional pass
 lands** (MIR anti-lesson); the independent Rust reference is the normative
 companion; Folio is the concrete syntax. _Accept:_ review point — signed off;
@@ -282,12 +282,12 @@ feed C-13. _Accept:_ remarks render in Spolvero (C-5); diff job wired.
 _Substrate slice 2026-09-21:_ see [P3-13 record](./phase-3-records/p3-13.md)
 and [remarks-format.md](./remarks-format.md): the observer's remark hook with
 a compile-time zero-cost gate (0 allocations detached, measured), the
-`[remarks]` page and schema-versioned JSON, `davinci-opt --remarks`, and
+`[remarks]` page and schema-versioned JSON, `level-opt --remarks`, and
 `hoist-static` as the first emitter. _TS-32 slice 2026-09-21:_ the corpus
 remarks-diff over the 433 in-repo fixtures is wired into `clippy-and-test`
 against a committed baseline whose bless refuses unexplained
 `applied → missed` transitions. _Feed slice 2026-09-21:_ the Spolvero feed
-(inspector, `analyzeSfc`, `davinci-opt`) carries the remarks, and the C-13
+(inspector, `analyzeSfc`, `level-opt`) carries the remarks, and the C-13
 backlog is mined from the TS-32 corpus. _Rendering slice 2026-09-22:_ the
 playground's Davinci tab renders them (C-5). **Landed** 2026-09-22: both
 acceptance items hold; emitters for decisions made outside the pass manager

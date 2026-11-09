@@ -153,7 +153,7 @@ jobs:
           path: |
             npm/wasm/vize_vitrine*
             playground/src/wasm/vize_vitrine*
-          key: ${{ runner.os }}-docs-wasm-v2-${{ hashFiles('crates/**/*.rs', 'davinci/**/*.rs', 'crates/**/Cargo.toml', 'davinci/**/Cargo.toml', 'Cargo.toml', 'Cargo.lock', 'tools/support/github/build-vitrine-wasm.ts', 'tools/support/tasks/build-vitrine-wasm.ts', 'tools/support/command-runtime.ts') }}
+          key: ${{ runner.os }}-docs-wasm-v2-${{ hashFiles('crates/**/*.rs', 'levels/**/*.rs', 'crates/**/Cargo.toml', 'levels/**/Cargo.toml', 'Cargo.toml', 'Cargo.lock', 'tools/support/github/build-vitrine-wasm.ts', 'tools/support/tasks/build-vitrine-wasm.ts', 'tools/support/command-runtime.ts') }}
 
       - name: Install wasm-bindgen-cli
         if: steps.cache-wasm.outputs.cache-hit != 'true'

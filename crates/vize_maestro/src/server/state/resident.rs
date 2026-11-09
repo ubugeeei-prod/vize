@@ -1,4 +1,4 @@
-//! The resident tier behind the request paths (Davinci P5-6a, diagnostics in
+//! The resident tier behind the request paths (Levels P5-6a, diagnostics in
 //! P5-6b, annotations and document structure in P5-6c).
 //!
 //! Hover, completion, definition, diagnostics, semantic tokens, inlay hints

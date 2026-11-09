@@ -81,7 +81,7 @@ await test("equal output still requires both debug detectors and the actual corp
 await test("the controlled comparison is manual-only and retains the real seeded CLI recall", () => {
   const workflow = parse(
     readFileSync(
-      new URL("../../.github/workflows/davinci-unused-bindings.yml", import.meta.url),
+      new URL("../../.github/workflows/level-unused-bindings.yml", import.meta.url),
       "utf8",
     ),
   );
@@ -95,7 +95,7 @@ await test("the controlled comparison is manual-only and retains the real seeded
     "${{ github.event_name == 'workflow_dispatch' && inputs.compare-profiles }}",
   );
   assert.equal(
-    compare.env.VIZE_DAVINCI_FACT_CORPUS,
+    compare.env.VIZE_LEVEL_FACT_CORPUS,
     "tests/_fixtures/_git/splitpanes,tests/_fixtures/_git/layoutit-grid,tests/_fixtures/_git/cssgridgenerator",
   );
   assert.ok(
@@ -106,10 +106,10 @@ await test("the controlled comparison is manual-only and retains the real seeded
     ),
   );
   const recall = steps.find((step: WorkflowStep) =>
-    step.run?.includes("davinci-unused-setup-bindings.test.ts"),
+    step.run?.includes("level-unused-setup-bindings.test.ts"),
   );
   assert.equal(recall.if, undefined);
-  assert.match(recall.run, /target\/ci\/vize.*davinci-fpfn-pilots\.test\.ts/);
+  assert.match(recall.run, /target\/ci\/vize.*level-fpfn-pilots\.test\.ts/);
   assert.match(steps.at(-1).if, /always\(\)/);
 });
 
@@ -271,7 +271,7 @@ await test("unhashed, missing and escaped unit evidence stays explicitly unavail
 await test("tee preserves Cargo success/failure and partial raw output without invoking real Cargo", () => {
   const workflow = parse(
     readFileSync(
-      new URL("../../.github/workflows/davinci-unused-bindings.yml", import.meta.url),
+      new URL("../../.github/workflows/level-unused-bindings.yml", import.meta.url),
       "utf8",
     ),
   );

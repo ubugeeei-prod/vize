@@ -29,7 +29,7 @@ const e2eFile = ".github/workflows/e2e.yml";
 const hash = (value) => createHash("sha256").update(value).digest("hex");
 const token = /^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$/;
 const dynamicPrefixes = new Set([
-  "davinci-production-pairs-",
+  "level-production-pairs-",
   "fresco-dimensions-",
   "fuzz-",
   "native-smoke-",

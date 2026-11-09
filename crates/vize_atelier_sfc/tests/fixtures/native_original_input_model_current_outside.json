@@ -170,7 +170,7 @@
   },
   "provenance": {
     "independentlyReviewedBeforeFreeze": true,
-    "peerFile": "/private/tmp/vize-overnight-20261031/davinci/native-model-lazy-20261101/independent-peer-clear-owner-record.json",
+    "peerFile": "/private/tmp/vize-overnight-20261031/levels/native-model-lazy-20261101/independent-peer-clear-owner-record.json",
     "peerSha256": "164bd99f125f20caf024c545ac06602ba8c8223d620c61c424789488c39a0f32",
     "peer": {
       "schema": "vize.native-model-lazy.independent-peer-message-owner-record",
@@ -308,7 +308,7 @@
     "all47OldPacksByteIdentical": true,
     "nativeGoldenComparisonPerformedAtCapture": false,
     "wholePacketQualificationAtCapture": false,
-    "scope": "single original lazy/trim, six original inputs and explicit current outside successors; no default/general/public Model or whole Davinci qualification"
+    "scope": "single original lazy/trim, six original inputs and explicit current outside successors; no default/general/public Model or whole Levels qualification"
   },
   "arrays": {
     "dom": [

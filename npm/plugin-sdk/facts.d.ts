@@ -288,7 +288,7 @@ export interface SignatureContract {
   readonly prop_type_arguments: string | null;
   readonly emit_type_arguments: string | null;
   readonly slot_type_arguments: string | null;
-  /** Public names in authored completion order, without folio key encoding. */
+  /** Public names in authored completion order, without dump key encoding. */
   readonly props_complete: boolean;
   readonly with_defaults: string | null;
   readonly prop_order: readonly string[];
@@ -368,7 +368,7 @@ export interface FactGroups {
     ProvideInjectFact
   >;
   readonly "race-conditions": ReadonlyMap<number, RaceConditionFact>;
-  /** Alpha keys are canonical folio declaration keys. */
+  /** Alpha keys are canonical dump declaration keys. */
   readonly "component-signature": ReadonlyMap<string, SignatureContract>;
   readonly "prop-types": ReadonlyMap<string, PropContract>;
   readonly "emit-types": ReadonlyMap<string, EmitContract>;

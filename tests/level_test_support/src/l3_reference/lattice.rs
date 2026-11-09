@@ -1,7 +1,7 @@
 //! Differential between the Rust P3-2 evaluator and an independent
 //! classifier written from the declarative rule table in
 //! `docs/davinci/plan/phase-3.md`, never from Rust source. The committed
-//! `[s3-reactivity-folio]` page is what Rust prints for an enumerated matrix;
+//! `[s3-reactivity-dump]` page is what Rust prints for an enumerated matrix;
 //! this parses it independently, re-enumerates the matrix and recomputes every
 //! class. The matrix is all 256 effect sets for an inert local binding, then
 //! every origin and escape pair with no effect and with each single effect,
@@ -179,7 +179,7 @@ fn spelling(class: Class) -> &'static str {
 }
 
 fn print(rows: &[Row]) -> String {
-    let mut out = String::from("[s3-reactivity-folio]\n\n[s3-reactivity-folio.bindings]\n");
+    let mut out = String::from("[s3-reactivity-dump]\n\n[s3-reactivity-dump.bindings]\n");
     for row in rows {
         let effects = match row.input.effects.is_empty() {
             true => String::from("-"),
@@ -205,12 +205,12 @@ fn print(rows: &[Row]) -> String {
 fn parse(text: &str) -> Result<Vec<Row>, String> {
     let lines: Vec<&str> = text.split('\n').filter(|l| !l.is_empty()).collect();
     let [
-        "[s3-reactivity-folio]",
-        "[s3-reactivity-folio.bindings]",
+        "[s3-reactivity-dump]",
+        "[s3-reactivity-dump.bindings]",
         rows @ ..,
     ] = lines.as_slice()
     else {
-        return Err("missing reactivity folio sections".into());
+        return Err("missing reactivity dump sections".into());
     };
     let rows = rows
         .iter()

@@ -205,7 +205,7 @@ fn collect_sources() -> Vec<(String, String)> {
     for (label, source) in fixtures.templates {
         sources.push((format!("fix:{label}"), source.to_string()));
     }
-    let matrix = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../tests/fixtures/davinci-matrix");
+    let matrix = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../tests/fixtures/level-matrix");
     let mut paths: Vec<_> = std::fs::read_dir(&matrix)
         .expect("matrix")
         .map(|entry| entry.expect("entry").path())

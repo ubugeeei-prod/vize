@@ -39,14 +39,14 @@ const code = computed(() =>
 </script>
 
 <template>
-  <div class="davinci-output">
-    <div class="davinci-subtabs" role="tablist" aria-label="Emitted code">
+  <div class="level-output">
+    <div class="level-subtabs" role="tablist" aria-label="Emitted code">
       <button
         v-for="item in TARGETS"
         :key="item.id"
         type="button"
         role="tab"
-        :class="['davinci-subtab', { active: target === item.id }]"
+        :class="['level-subtab', { active: target === item.id }]"
         :aria-selected="target === item.id"
         :title="item.note"
         @click="() => emit('update:target', item.id)"
@@ -54,13 +54,13 @@ const code = computed(() =>
         {{ item.label }}
       </button>
     </div>
-    <div class="davinci-subtabs" role="tablist" aria-label="Output boundary">
+    <div class="level-subtabs" role="tablist" aria-label="Output boundary">
       <button
         v-for="(page, index) in backendPages ?? []"
         :key="`${page.step}:${index}`"
         type="button"
         role="tab"
-        :class="['davinci-subtab', { active: !moduleShown && backendIndex === index }]"
+        :class="['level-subtab', { active: !moduleShown && backendIndex === index }]"
         :aria-selected="!moduleShown && backendIndex === index"
         @click="() => (selected = `backend:${index}`)"
       >
@@ -69,18 +69,18 @@ const code = computed(() =>
       <button
         type="button"
         role="tab"
-        :class="['davinci-subtab', { active: moduleShown }]"
+        :class="['level-subtab', { active: moduleShown }]"
         :aria-selected="moduleShown"
         @click="() => (selected = 'module')"
       >
         Assembled SFC module
       </button>
     </div>
-    <div v-if="variant.error" class="davinci-message error">{{ variant.error }}</div>
-    <div v-else-if="!code" class="davinci-message">This target emitted no code for the source.</div>
+    <div v-if="variant.error" class="level-message error">{{ variant.error }}</div>
+    <div v-else-if="!code" class="level-message">This target emitted no code for the source.</div>
     <CodeHighlight
       v-else
-      class="davinci-output-code"
+      class="level-output-code"
       :code
       :language="moduleShown && variant.isTypeScript ? 'typescript' : 'javascript'"
       :theme

@@ -1,4 +1,4 @@
-//! JSX/TSX markup dispatch (Davinci P4-7b).
+//! JSX/TSX markup dispatch (Levels P4-7b).
 //!
 //! Markup rules run over the P2-16 L2 projection of each render root. Rules
 //! with no markup entry point still walk the lowered Relief root.

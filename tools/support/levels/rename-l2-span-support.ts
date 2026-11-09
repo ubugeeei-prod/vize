@@ -5,9 +5,9 @@ import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = fileURLToPath(new URL("../../../", import.meta.url));
-const oldPath = "davinci/vize_l1_to_l2/tests/support/folio_spans.rs";
-const newPath = "davinci/vize_l1_to_l2/tests/support/dump_spans.rs";
-const supportPath = "davinci/vize_l1_to_l2/tests/support/mod.rs";
+const oldPath = "levels/vize_l1_to_l2/tests/support/dump_spans.rs";
+const newPath = "levels/vize_l1_to_l2/tests/support/dump_spans.rs";
+const supportPath = "levels/vize_l1_to_l2/tests/support/mod.rs";
 const decisionPath = "docs/davinci/decisions/2026-09-27-level-restructure.md";
 const companionPath = "docs/davinci/decisions/2026-10-04-l2-span-support-name.md";
 const sourceHash = "59aac2c9a3ee9d615551f42beb0dda95557302da1b5be735a2d33f3ecf36e364";
@@ -26,10 +26,10 @@ if (createHash("sha256").update(source).digest("hex") !== sourceHash) {
 }
 
 const references = [
-  ["mod folio_spans;", "mod dump_spans;"],
+  ["mod dump_spans;", "mod dump_spans;"],
   [
-    "pub use folio_spans::assert_folio_spans_resolve;",
-    "pub use dump_spans::assert_folio_spans_resolve;",
+    "pub use dump_spans::assert_dump_spans_resolve;",
+    "pub use dump_spans::assert_dump_spans_resolve;",
   ],
 ];
 const support = readFileSync(resolve(root, supportPath), "utf8");
@@ -44,7 +44,7 @@ const states = references.map(([before, after]) => {
 if (states[0] !== states[1]) throw new Error("Partially integrated support module");
 
 const decision = readFileSync(resolve(root, decisionPath), "utf8");
-const original = "while `.folio` fixture bytes and extensions remain unchanged.";
+const original = "while `.dump` fixture bytes and extensions remain unchanged.";
 const link = "[L2 span support naming](./2026-10-04-l2-span-support-name.md)";
 const addition = ` ${link} moves one private span-oracle module byte-for-byte, updates only its module references, and preserves every law, diagnostic and fixture byte with unchanged dependency declarations.`;
 if (!existsSync(resolve(root, companionPath))) throw new Error("Missing paired naming decision");

@@ -12,7 +12,7 @@ import {
   type Repo,
   scanCodenames,
   workspaceMembers,
-} from "../../tools/commands/davinci/completion-gates.ts";
+} from "../../tools/commands/levels/completion-gates.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const doc = fs.readFileSync(path.join(root, "docs/davinci/completion-gates.md"), "utf8");
@@ -124,7 +124,7 @@ void test("the Rust-only gate matches Lean workflow tokens without substring fal
   );
   const lean = formal(
     memory({
-      ".github/workflows/davinci-lean.yml": "",
+      ".github/workflows/level-lean.yml": "",
       "tests/formal/reference/lakefile.lean": "",
       "tests/formal/reference/Reference.lean": "",
     }),
@@ -150,5 +150,5 @@ void test("issue gates are unknown offline and fail while an issue is open", () 
 
 void test("workspace members are read from the real Cargo.toml", () => {
   const members = workspaceMembers(fs.readFileSync(path.join(root, "Cargo.toml"), "utf8"));
-  assert.ok(members.includes("davinci/vize_l0"));
+  assert.ok(members.includes("levels/vize_l0"));
 });

@@ -13,17 +13,17 @@ S2 can emit those contracts.
 
 The same PR hardens the switched path by removing observer overhead from the
 unobserved S2 emitter, preserving UTF-8 while stripping slot-scope prefixes, and
-guarding deep S2 emit/folio recursion on small stacks. The DOM traversal and
+guarding deep S2 emit/dump recursion on small stacks. The DOM traversal and
 expression-reparse floors were updated to the measured S2 selector values, and
 the owned-storage inventory was refreshed after reviewing the new stack-guard
 sites.
 
 ## Evidence
 
-`crates/vize_atelier_dom/tests/davinci_s2_production_selector.rs` asserts the
+`crates/vize_atelier_dom/tests/level_s2_production_selector.rs` asserts the
 selector boundaries: supported source-map-free compiles use S2, source maps and
 comments use compatibility, and SFC section-emitting compiles remain on
-compatibility until S2 section offsets land. `crates/vize_s2/tests/folio_deep_stack.rs`
+compatibility until S2 section offsets land. `crates/vize_s2/tests/dump_deep_stack.rs`
 pins the deep-folio stack witness.
 
 Focused gates:
@@ -31,11 +31,11 @@ Focused gates:
 ```sh
 RUST_BACKTRACE=1 cargo test -p vize_atelier_dom -p vize_s1_to_s2 -p vize_s2 --tests
 cargo test -p vize_s2 --test folio_deep_stack -- --nocapture
-rust-script tools/commands/davinci/assertion-lint.rs
+rust-script tools/commands/levels/assertion-lint.rs
 node tools/commands/ci/source-file-lengths.ts --check --base-ref origin/main
 cargo fmt --all -- --check
 git diff --check
-node --test tests/tooling/davinci-traversal-budgets.test.ts tests/tooling/davinci-storage-policy.test.ts
+node --test tests/tooling/level-traversal-budgets.test.ts tests/tooling/level-storage-policy.test.ts
 ```
 
 This installment does not tick P2-11. The full production-lane switch remains

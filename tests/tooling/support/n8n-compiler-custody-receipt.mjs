@@ -55,7 +55,7 @@ export function verifyBaseline(root, baseline, repairAnchor) {
       baseline,
       "--",
       "crates/*/src",
-      "davinci/*/src",
+      "levels/*/src",
       "Cargo.toml",
       "Cargo.lock",
     ],

@@ -142,7 +142,7 @@ pub struct PageArtifact {
     /// The L2 page key.
     pub key: ArtifactKey,
     /// The owned page.
-    pub folio: L2Page,
+    pub dump: L2Page,
     /// Surface and lowering diagnostics, in decision order.
     pub diagnostics: Vec<Diagnostic>,
 }
@@ -289,10 +289,10 @@ pub fn page_artifact(source: &BlockSource, config: StageConfig) -> Option<PageAr
     let allocator = Allocator::default();
     if source.kind == BlockKind::Style {
         let op = lower_style_block(&allocator, source.text.as_str(), 0);
-        let folio = L2Page::of(core::slice::from_ref(&op));
+        let dump = L2Page::of(core::slice::from_ref(&op));
         return Some(PageArtifact {
-            key: ArtifactKey::of(&folio, 0),
-            folio,
+            key: ArtifactKey::of(&dump, 0),
+            dump,
             diagnostics: Vec::new(),
         });
     }
@@ -302,10 +302,10 @@ pub fn page_artifact(source: &BlockSource, config: StageConfig) -> Option<PageAr
     let caps = LegacyCaps::for_version(config.vue_version);
     let (tree, errors) = vize_l1::markup::parse(&allocator, source.text.as_str());
     let lowered = lower_with_caps(&allocator, &tree, &errors, caps);
-    let folio = L2Page::of(&lowered.root.ops);
+    let dump = L2Page::of(&lowered.root.ops);
     Some(PageArtifact {
-        key: ArtifactKey::of(&folio, 0),
-        folio,
+        key: ArtifactKey::of(&dump, 0),
+        dump,
         diagnostics: lowered.diagnostics,
     })
 }

@@ -11,9 +11,9 @@ function readRepoFile(...parts: string[]): string {
   return fs.readFileSync(path.join(repoRoot, ...parts), "utf8");
 }
 
-test("Davinci L1 uses the physical crate package and directory", () => {
+test("Levels L1 uses the physical crate package and directory", () => {
   const workspaceManifest = readRepoFile("Cargo.toml");
-  assert.match(workspaceManifest, /^\s*"davinci\/vize_l1",$/m);
+  assert.match(workspaceManifest, /^\s*"levels\/vize_l1",$/m);
   const manifest = parseToml(workspaceManifest) as {
     workspace?: { dependencies?: { vize_l1?: unknown }; package?: { version?: unknown } };
   };
@@ -22,13 +22,13 @@ test("Davinci L1 uses the physical crate package and directory", () => {
     assert.fail("workspace package version must be declared");
   }
   assert.deepEqual(manifest.workspace?.dependencies?.vize_l1, {
-    path: "davinci/vize_l1",
+    path: "levels/vize_l1",
     version: `=${workspaceVersion}`,
   });
-  assert.doesNotMatch(workspaceManifest, /crates\/vize_sinopia/u);
-  assert.doesNotMatch(workspaceManifest, /^vize_sinopia = /m);
+  assert.doesNotMatch(workspaceManifest, /crates\/vize_l1/u);
+  assert.doesNotMatch(workspaceManifest, /^vize_l1 = /m);
 
-  const surfaceManifest = readRepoFile("davinci", "vize_l1", "Cargo.toml");
+  const surfaceManifest = readRepoFile("levels", "vize_l1", "Cargo.toml");
   assert.match(surfaceManifest, /^name = "vize_l1"$/m);
 
   const lockfile = readRepoFile("Cargo.lock");
@@ -41,8 +41,8 @@ test("current lossless L1 recipes use the physical package and preserve historic
   const task = readRepoFile("docs/davinci", "plan", "phase-2-tasks.md");
   assert.match(task, /## P2-7 — L1 Vue surface tree/u);
   const record = readRepoFile("docs/davinci", "plan", "phase-2-records", "p2-7.md");
-  assert.match(record, /cargo test -p vize_s1 --features davinci-differential/u);
+  assert.match(record, /cargo test -p vize_s1 --features level-differential/u);
   assert.match(record, /cargo tree -i vize_s1\s+--workspace/u);
-  assert.doesNotMatch(record, /cargo (?:test -p|tree -i) vize_sinopia/u);
-  assert.doesNotMatch(record, /crates\/vize_sinopia/u);
+  assert.doesNotMatch(record, /cargo (?:test -p|tree -i) vize_l1/u);
+  assert.doesNotMatch(record, /crates\/vize_l1/u);
 });

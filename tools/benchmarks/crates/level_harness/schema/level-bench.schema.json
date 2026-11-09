@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://vize.dev/schemas/davinci-bench.schema.json",
-  "title": "Davinci bench report",
-  "description": "One bench run exported by tools/benchmarks/crates/davinci_harness (P0-1). Written to tools/benchmarks/results/davinci/<bench_id>.json. All four metric families must be present; allocation and RSS metrics are null only where the platform or harness setup cannot produce them.",
+  "$id": "https://vize.dev/schemas/level-bench.schema.json",
+  "title": "Levels bench report",
+  "description": "One bench run exported by tools/benchmarks/crates/level_harness (P0-1). Written to tools/benchmarks/results/levels/<bench_id>.json. All four metric families must be present; allocation and RSS metrics are null only where the platform or harness setup cannot produce them.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -68,7 +68,7 @@
     "harness_version": {
       "type": "string",
       "minLength": 1,
-      "description": "davinci_harness crate version that produced the report."
+      "description": "level_harness crate version that produced the report."
     }
   }
 }

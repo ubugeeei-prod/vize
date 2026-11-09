@@ -1,4 +1,4 @@
-//! TS-31 source-map coverage measurement (Davinci P3-9).
+//! TS-31 source-map coverage measurement (Levels P3-9).
 //!
 //! Compiles the TS-31 fixture battery with source maps on for every live
 //! backend, decodes the maps with an independent decoder, classifies every
@@ -8,10 +8,10 @@
 //! remeasured: the harness copies that row's frozen anchor statuses out of
 //! the committed report, including when `VIZE_UPDATE_TS31_REPORT=1` rewrites
 //! the live rows. The budget comparison lives in
-//! `tests/tooling/davinci-sourcemap-coverage.test.ts`.
+//! `tests/tooling/level-sourcemap-coverage.test.ts`.
 //!
 //! Regenerate the report after an intentional emitter change with
-//! `VIZE_UPDATE_TS31_REPORT=1 cargo test -p vize_atelier_sfc --test davinci_ts31_sourcemap`.
+//! `VIZE_UPDATE_TS31_REPORT=1 cargo test -p vize_atelier_sfc --test level_ts31_sourcemap`.
 
 #![expect(
     clippy::disallowed_macros,
@@ -24,7 +24,7 @@
     reason = "tests assert by panicking; insta and fixtures use format!; fixtures use std strings"
 )]
 
-mod davinci_ts31_sourcemap {
+mod level_ts31_sourcemap {
     pub mod battery;
     pub mod compile;
     pub mod decode;
@@ -33,9 +33,9 @@ mod davinci_ts31_sourcemap {
 
 use std::path::PathBuf;
 
-use davinci_ts31_sourcemap::battery::{self, Backend, Fixture};
-use davinci_ts31_sourcemap::measure::{self, Rows};
-use davinci_ts31_sourcemap::{compile, decode};
+use level_ts31_sourcemap::battery::{self, Backend, Fixture};
+use level_ts31_sourcemap::measure::{self, Rows};
+use level_ts31_sourcemap::{compile, decode};
 
 const TEMPLATE_BACKENDS: [Backend; 3] = [Backend::Dom, Backend::Vapor, Backend::Ssr];
 const UPDATE_ENV: &str = "VIZE_UPDATE_TS31_REPORT";
@@ -110,7 +110,7 @@ fn measure_battery(frozen_legacy: serde_json::Value) -> serde_json::Value {
     );
     serde_json::json!({
         "suite": "TS-31",
-        "command": "cargo test -p vize_atelier_sfc --test davinci_ts31_sourcemap",
+        "command": "cargo test -p vize_atelier_sfc --test level_ts31_sourcemap",
         "battery": {
             "templates": templates.len(),
             "sfcs": sfcs.len(),

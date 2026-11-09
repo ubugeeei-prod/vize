@@ -12,7 +12,7 @@ empty static style object before merging the dynamic binding.
 
 ## Evidence
 
-`crates/vize_atelier_dom/tests/davinci_s2_style_merge.rs` compares the
+`crates/vize_atelier_dom/tests/level_s2_style_merge.rs` compares the
 bare-static-plus-dynamic cases against the shipped DOM output, and the
 `vize_s1_to_s2` static-prop tests pin the direct emitter behavior. The
 unsupported census and catalogue retire the former refusal so the gap cannot

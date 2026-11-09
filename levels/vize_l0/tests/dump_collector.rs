@@ -5,7 +5,7 @@
 use std::path::Path;
 use vize_carton::timing_observer::TimingObserver;
 
-use davinci_test_support::schema as schema_check;
+use level_test_support::schema as schema_check;
 use vize_carton::profile_export::{ProfileExportBudget, ProfileExportOptions, export_report};
 use vize_l0::dump::collector::Collector;
 use vize_l0::pass::{
@@ -48,11 +48,11 @@ fn collector_records_one_canonical_page_per_executed_pass() {
     assert_eq!(budget.walks, 1);
     assert_eq!(budget.passes, 2);
     assert_eq!(collector.pages.len(), 2);
-    assert_eq!(collector.pages[0].name.as_str(), "000-l2.alpha.folio");
+    assert_eq!(collector.pages[0].name.as_str(), "000-l2.alpha.dump");
     assert_eq!(collector.pages[0].stage.as_str(), "l2");
     assert_eq!(collector.pages[0].pass.as_str(), "alpha");
     assert_eq!(collector.pages[0].text.as_str(), BUDGET);
-    assert_eq!(collector.pages[1].name.as_str(), "001-l2.beta.folio");
+    assert_eq!(collector.pages[1].name.as_str(), "001-l2.beta.dump");
     assert_eq!(collector.pages[1].text.as_str(), BUDGET);
 }
 
@@ -92,7 +92,7 @@ fn timing_json_satisfies_the_p0_11_schema() {
     assert_eq!(schema_check::validate(&schema, &json, "$"), Ok(()));
     assert_eq!(json["schema_version"], 1);
     assert_eq!(json["command"], "typed-pass-test");
-    assert_eq!(json["spans"][0]["key"], "davinci.pass.walk");
+    assert_eq!(json["spans"][0]["key"], "levels.pass.walk");
     assert_eq!(json["spans"][0]["count"], 1);
     assert_eq!(json["spans"][0]["attribution"]["stage"], "l2");
     assert_eq!(json["spans"][0]["attribution"]["pass"], "alpha");

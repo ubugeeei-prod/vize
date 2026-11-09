@@ -223,7 +223,7 @@ function build(directory: string) {
         "HEAD",
         "--",
         "crates",
-        "davinci",
+        "levels",
         "Cargo.toml",
         "Cargo.lock",
         ".cargo",

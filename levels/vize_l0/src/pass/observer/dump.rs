@@ -1,6 +1,6 @@
-//! The folio-printing observer: a stage dump after every pass.
+//! The dump-printing observer: a stage dump after every pass.
 //!
-//! `architecture.md`'s folio contract is that every stage dumps to stable,
+//! `architecture.md`'s dump contract is that every stage dumps to stable,
 //! readable text, and the reason it is worth having after *each* pass is
 //! bisection: given a wrong output, the pass that first made it wrong is found
 //! by diffing consecutive dumps rather than by reasoning.
@@ -35,7 +35,7 @@ pub struct DumpObserver<W> {
 }
 
 impl<W: Write> DumpObserver<W> {
-    /// A folio observer printing `Full`-mode pages into `sink`.
+    /// A dump observer printing `Full`-mode pages into `sink`.
     #[must_use]
     pub const fn new(sink: W) -> Self {
         Self {
@@ -45,7 +45,7 @@ impl<W: Write> DumpObserver<W> {
         }
     }
 
-    /// A folio observer printing `mode` pages into `sink`.
+    /// A dump observer printing `mode` pages into `sink`.
     #[must_use]
     pub const fn with_mode(sink: W, mode: DumpMode) -> Self {
         Self {
@@ -83,7 +83,7 @@ impl<W: Write> DumpObserver<W> {
 
 /// The observer half is deliberately empty: printing needs the artifact, which
 /// the hooks do not carry, so [`DumpObserver::page`] is called by whoever has
-/// it. Implementing the trait anyway means a folio observer composes with the
+/// it. Implementing the trait anyway means a dump observer composes with the
 /// others through [`Pair`](super::Pair) instead of being a special case.
 impl<W> PassObserver for DumpObserver<W> {
     fn before_pipeline(&mut self, _pipeline: &Pipeline) {}

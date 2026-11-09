@@ -1,8 +1,8 @@
 //! A production-valid prefixed original is fully compared in its diagnosed mode.
 #![expect(clippy::disallowed_types, reason = "whole differential report vectors")]
-mod davinci_dom_corpus_support;
+mod level_dom_corpus_support;
 mod n8n_typed_prefixed;
-use davinci_dom_corpus_support::{Lane, Report, compare_sfc_template_lane};
+use level_dom_corpus_support::{Lane, Report, compare_sfc_template_lane};
 
 const ORIGINAL: &str = include_str!(
     "../../../tests/_fixtures/differential/compiler/n8n-if-key-regression/InstanceAiConfirmationPanel.vue.txt"

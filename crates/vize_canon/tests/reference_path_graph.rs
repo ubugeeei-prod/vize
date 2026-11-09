@@ -3,7 +3,7 @@
 
 use vize_canon::BatchTypeChecker;
 
-use davinci_test_support::reference_path_project as project;
+use level_test_support::reference_path_project as project;
 
 #[test]
 fn reported_project_matches_the_pinned_corpus_bytes() {

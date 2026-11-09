@@ -17,9 +17,9 @@ id=1 kind=l3.set-text region=1 effect=0 span=8:17
 id=0 owner=1 region=1 span=8:17
 
 `;
-const PARTITION = `[s3-partition-folio]
+const PARTITION = `[s3-partition-dump]
 
-[s3-partition-folio.ops]
+[s3-partition-dump.ops]
 op=0 kind=static span=3:23
 op=1 kind=dynamic span=8:17
 

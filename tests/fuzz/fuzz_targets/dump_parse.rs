@@ -1,19 +1,19 @@
 #![no_main]
 
-// Dump-parser fuzz target (Davinci P2-8, TS-20).
+// Dump-parser fuzz target (Levels P2-8, TS-20).
 //
-// Drives the hand-written Davinci folio parsers with arbitrary UTF-8
+// Drives the hand-written Levels dump parsers with arbitrary UTF-8
 // under the invariant that *no input must panic*: parsers return
 // `Result<_, DumpError>` for malformed pages, so a panic here is always
-// a bug. Four parsers share the input — the L2 Disegno page
-// (`vize_l2`, path `davinci/vize_l2`), the L3 Impeto page, the croquis page,
+// a bug. Four parsers share the input — the L2 L2 page
+// (`vize_l2`, path `levels/vize_l2`), the L3 L3 page, the croquis page,
 // and the repro page (`vize_curator`).
 //
 // When an input does parse, the mode-explicit round-trip law is asserted
 // on it: the canonical `Full`-mode print must re-parse to a document
 // that prints identically (normalization by the first print).
 //
-// The corpus is seeded from the committed .folio fixtures by
+// The corpus is seeded from the committed .dump fixtures by
 // `tools/commands/ci/fuzz/seed-corpus.ts`.
 use libfuzzer_sys::fuzz_target;
 use vize_croquis::dump::Page as CroquisPage;

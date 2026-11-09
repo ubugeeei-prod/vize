@@ -3,7 +3,7 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 export function toolingTestFiles(cwd = fileURLToPath(new URL("../../../../", import.meta.url))) {
-  return ["tests/tooling", "tests/tooling/davinci", "tests/tooling/release"]
+  return ["tests/tooling", "tests/tooling/levels", "tests/tooling/release"]
     .flatMap((directory) =>
       readdirSync(join(cwd, directory))
         .filter((name) => /\.test\.(?:ts|mjs)$/.test(name))

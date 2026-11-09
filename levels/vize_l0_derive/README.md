@@ -1,6 +1,6 @@
 # vize_l0_derive
 
-`vize_l0_derive` provides `#[derive(Folio)]` for the Davinci stage-dump
+`vize_l0_derive` provides `#[derive(Dump)]` for the Levels stage-dump
 contract. It is a host-side proc macro; generated code remains target-neutral.
 
 Support and deprecation guarantees are defined in the

@@ -11,7 +11,7 @@ use super::{BindingOp, Region};
 /// node (`createElementNS`, SSR serialization), so it survives into L2.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum Namespace {
-    /// The HTML namespace (the default; elided from folio lines).
+    /// The HTML namespace (the default; elided from dump lines).
     #[default]
     Html,
     /// The SVG namespace.
@@ -41,7 +41,7 @@ pub struct Attribute<'a> {
 /// `ui.element` - a native element.
 ///
 /// Grouping is fixed: attributes, then attached bindings, then the owned
-/// children region. The folio page prints exactly that order.
+/// children region. The dump page prints exactly that order.
 #[derive(Debug)]
 pub struct ElementOp<'a> {
     /// Tag exactly as authored, a slice of the source.

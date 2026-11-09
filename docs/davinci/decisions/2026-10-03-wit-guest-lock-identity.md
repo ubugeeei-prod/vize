@@ -42,13 +42,13 @@ The original workspace lock SHA-256 is
 (526 packages). The original typed guest lock is
 `2e737da61e194d3edd4ae774ca14834efd14861bacfd76adf6d18efff53f0708`
 (39 packages). Its entire Vize path dependency union is the guest's direct
-`davinci/vize_guest` dependency, selecting `typed-expression` and the default
+`levels/vize_guest` dependency, selecting `typed-expression` and the default
 runtime. The SDK depends only on the existing exact `dlmalloc 0.2.14` and
 `wit-bindgen 0.62.0` registry declarations; no implementation crate is added.
 
 Actual Cargo `1.98.0 (797e8a9bc 2026-08-05)` produces exactly one lock line
 with `cargo update --offline --manifest-path
- davinci/vize_extension_host/tests/guests/typed-expression-echo/Cargo.toml
+ levels/vize_extension_host/tests/guests/typed-expression-echo/Cargo.toml
 -p vize_guest --precise 0.430.1`: only the local SDK version changes.
 The corrected lock SHA-256 is
 `fb15b90ee266e91aa08f360272706a2f4811e06562dab34460befdf9730f764f`.

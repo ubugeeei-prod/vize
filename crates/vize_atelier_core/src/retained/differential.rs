@@ -1,4 +1,4 @@
-//! Dual-run instrumentation for the Davinci differential lane (split from
+//! Dual-run instrumentation for the Levels differential lane (split from
 //! `retained.rs` under the source budget; see the module docs there).
 //! Counter pattern mirrors `vize_croquis::drawer::differential`.
 //!

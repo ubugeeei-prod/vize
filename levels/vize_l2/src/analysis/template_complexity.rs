@@ -51,7 +51,7 @@ mod regions;
 
 pub use print::print_facts;
 
-/// The pass name in pipeline strings and folio pages.
+/// The pass name in pipeline strings and dump pages.
 pub const NAME: &str = "template-complexity";
 
 /// The pass description — classification reasoning in the module docs.

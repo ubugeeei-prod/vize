@@ -49,7 +49,7 @@ function profileIdentity(root: string, requireNormal = true): void {
     for (const [name, relative] of [
       ["recoverySha256", "crates/vize_croquis/src/script_parser/recovery.rs"],
       ["lockSha256", "Cargo.lock"],
-      ["carrierSha256", "davinci/vize_l0/examples/source_recovery_clone_benchmark.rs"],
+      ["carrierSha256", "levels/vize_l0/examples/source_recovery_clone_benchmark.rs"],
     ])
       assert.equal(normal[name!], digest(path.join(source, relative!)));
     const artifacts = fs
@@ -74,7 +74,7 @@ function profileIdentity(root: string, requireNormal = true): void {
     assert.equal(compiler.manifest_path, path.join(source, "crates/vize_croquis/Cargo.toml"));
     assert.equal(
       record(carrier.target).src_path,
-      path.join(source, "davinci/vize_l0/examples/source_recovery_clone_benchmark.rs"),
+      path.join(source, "levels/vize_l0/examples/source_recovery_clone_benchmark.rs"),
     );
     assert(list(carrier.features).includes("micro-profiling"));
     assert.equal(compiler.fresh, false);

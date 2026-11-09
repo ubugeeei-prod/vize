@@ -13,13 +13,13 @@ fn original_vapor_parser_rejections_keep_their_identity_and_complete_diagnostics
     let _guard = crate::PROFILER_TEST_LOCK.lock().unwrap();
     let cases = [
         (
-            "davinci-html-nesting/Page.vue",
-            include_str!("../../../../tests/_fixtures/davinci-html-nesting/Page.vue"),
+            "level-html-nesting/Page.vue",
+            include_str!("../../../../tests/_fixtures/level-html-nesting/Page.vue"),
             "Vapor template compilation errors: [\"Invalid end tag.\"]",
         ),
         (
-            "davinci-ts40-projection/parse-recovery.vue",
-            include_str!("../../../../tests/_fixtures/davinci-ts40-projection/parse-recovery.vue"),
+            "level-ts40-projection/parse-recovery.vue",
+            include_str!("../../../../tests/_fixtures/level-ts40-projection/parse-recovery.vue"),
             "Vapor template compilation errors: [\"Element is missing end tag.\"]",
         ),
     ];

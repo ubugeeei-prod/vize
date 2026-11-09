@@ -45,7 +45,7 @@ on:
       - tests/_fixtures/differential/config/nuxt-elk-host-options/**
       - npm/native/**
       - crates/**
-      - davinci/**
+      - levels/**
       - Cargo.toml
       - Cargo.lock
       - .cargo/**
@@ -94,7 +94,7 @@ on:
       - tests/_fixtures/differential/config/nuxt-elk-host-options/**
       - npm/native/**
       - crates/**
-      - davinci/**
+      - levels/**
       - Cargo.toml
       - Cargo.lock
       - .cargo/**

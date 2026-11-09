@@ -1,5 +1,5 @@
 //! `vize check`'s template-binding check, reading the `UndefinedRefs` fact
-//! group through a declared demand (Davinci P4-3a).
+//! group through a declared demand (Levels P4-3a).
 
 use vize_carton::cstr;
 use vize_croquis::facts::{CroquisFacts, Demand, FactConsumer, FactGroup, UndefinedRefs};

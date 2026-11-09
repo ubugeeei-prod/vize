@@ -6,7 +6,7 @@ on:
       - .github/workflows/native-sfc-runtime-version.yml
       - crates/vize_vitrine/src/napi/sfc.rs
       - crates/vize_vitrine/src/napi/sfc/**
-      - davinci/vize_l0/src/config/model/vue.rs
+      - levels/vize_l0/src/config/model/vue.rs
       - tests/tooling/native-sfc-runtime-version.test.mjs
   workflow_dispatch:
 

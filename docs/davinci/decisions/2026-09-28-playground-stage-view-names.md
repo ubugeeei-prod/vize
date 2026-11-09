@@ -9,7 +9,7 @@ editing their contents; `tools/support/levels/rename-playground-stage-view.py`
 replays the moves and reference updates after a conflict.
 
 This is a source identity change. The stage page `kind` values and feed JSON,
-the `Davinci` UI tab's route key and label, its preset source, user-visible
+the `Levels` UI tab's route key and label, its preset source, user-visible
 page/remark text, and VRT PNG bytes are unchanged. The generated Vapor test
 snapshot updates only the renamed App component binding and import. The natural
 v-on corpus shard changes two path cells for `dump-view.vue`; spellings and
@@ -18,9 +18,9 @@ focused playground tests, typechecking, the browser stage ladder, ordinary
 Actions, and the protected merge queue before treating this slice as landed.
 
 Remaining #6832 naming inventory is explicit: the active
-`playground/src/shared/presets/davinci.ts` path and its exported names; the
-`Davinci` tab key, label, query parameter and VRT snapshot names; and the
-`.davinci-*` CSS/DOM class names across the stage view. Those are not approved
+`playground/src/shared/presets/levels.ts` path and its exported names; the
+`Levels` tab key, label, query parameter and VRT snapshot names; and the
+`.level-*` CSS/DOM class names across the stage view. Those are not approved
 exceptions. A later PR must rename them with URL/VRT migration evidence, or
 the maintainer must approve a scoped exception. The shared production capture
 and CLI work remain open independently.

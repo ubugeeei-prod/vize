@@ -295,12 +295,12 @@
       "5c6066b4d08f022b73322ce0f1f0a57c4cc1b46ba49555472d62d17dfe213bd2"
     ],
     [
-      "davinci/vize_l0/src/lib.rs",
+      "levels/vize_l0/src/lib.rs",
       "632e4e87710accf267e08c5892b3f6408d0fe6164f6548d597f8043a2e82efb8",
       "0d544717b2058c246219ae659ec6fb5f84626b802791084ace286798db07d093"
     ],
     [
-      "davinci/vize_l0/src/path.rs",
+      "levels/vize_l0/src/path.rs",
       "6baa58e143416eaed0d9b82984de455d76006dd5fd4dfa81b80190765307e7e3",
       null
     ]

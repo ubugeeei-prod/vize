@@ -1,5 +1,5 @@
 //! Span-preserving emission for the identifier-prefix transform
-//! (Davinci P1-9).
+//! (Levels P1-9).
 //!
 //! The AST walk ([`super::collector::IdentifierCollector`], or the
 //! standalone `_ctx.` collector in `prefix.rs`) decides WHAT to rewrite:

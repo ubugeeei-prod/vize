@@ -1,4 +1,4 @@
-# L1→L2 — the Vue lowering (codename Ricalco, Davinci P2-8).
+# L1→L2 — the Vue lowering (codename Ricalco, Levels P2-8).
 #
 # This crate traces the lossless Vue surface tree (L1, vize_l1) into the
 # neutral semantic op family (L2, vize_l2). This is a total function
@@ -15,16 +15,16 @@ edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
-description = "L1-to-L2 - the Davinci Vue template lowering (codename Ricalco, P2-8)"
+description = "L1-to-L2 - the Levels Vue template lowering (codename Ricalco, P2-8)"
 autotests = false
 metadata.vize.stability = "experimental"
 
 [features]
 # Separate production attribution executable only; absent from timed builds.
-davinci-benchmark-profile = []
-# Arms the corpus-runnable TS-20 lane (`tests/davinci_lowering_corpus.rs`),
+level-benchmark-profile = []
+# Arms the corpus-runnable TS-20 lane (`tests/level_lowering_corpus.rs`),
 # the P1-6/P1-7 differential-lane shape: committed battery with pinned
-# counts, plus `VIZE_DAVINCI_DIFFERENTIAL_CORPUS=<dir>` widening.
+# counts, plus `VIZE_LEVEL_DIFFERENTIAL_CORPUS=<dir>` widening.
 legacy-differential = ["typescript"]
 
 # The `is_ts` lane erases types by running oxc's transformer, whose
@@ -56,8 +56,8 @@ vize_l2 = { workspace = true }
 serde_json = { workspace = true }
 vize_carton.workspace = true
 criterion = { workspace = true }
-davinci_harness = { workspace = true }
-davinci_test_support.workspace = true
+level_harness = { workspace = true }
+level_test_support.workspace = true
 insta = { workspace = true }
 sha2 = { workspace = true }
 toml = { workspace = true }
@@ -67,47 +67,47 @@ vize_atelier_dom = { workspace = true, features = ["legacy-differential"] }
 vize_croquis = { workspace = true }
 
 [[bench]]
-name = "davinci_storage"
+name = "level_storage"
 harness = false
 
 [[test]]
-name = "davinci_lowering_corpus"
+name = "level_lowering_corpus"
 required-features = ["legacy-differential"]
 
 [[test]]
-name = "davinci_pug_corpus"
+name = "level_pug_corpus"
 required-features = ["legacy-differential"]
 
 [[test]]
-name = "davinci_dom_corpus"
+name = "level_dom_corpus"
 required-features = ["legacy-differential"]
 
 [[test]]
-name = "davinci_dom_corpus_prefixed"
+name = "level_dom_corpus_prefixed"
 required-features = ["legacy-differential"]
 
 [[test]]
-name = "davinci_dom_corpus_bindings"
+name = "level_dom_corpus_bindings"
 required-features = ["legacy-differential"]
 
 [[test]]
-name = "davinci_dom_n8n_diagnosed"
+name = "level_dom_n8n_diagnosed"
 required-features = ["legacy-differential"]
 
 [[test]]
-name = "davinci_dom_n8n_default_loops"
+name = "level_dom_n8n_default_loops"
 required-features = ["legacy-differential"]
 
 [[test]]
-name = "davinci_dom_n8n_helper_props"
+name = "level_dom_n8n_helper_props"
 required-features = ["legacy-differential"]
 
 [[test]]
-name = "davinci_dom_n8n_if_key_modes"
+name = "level_dom_n8n_if_key_modes"
 required-features = ["legacy-differential"]
 
 [[test]]
-name = "davinci_remarks_corpus"
+name = "level_remarks_corpus"
 required-features = ["legacy-differential"]
 
 # Ordinary integration tests link as one binary; see tests/main.rs.

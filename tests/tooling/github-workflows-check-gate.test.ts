@@ -3,7 +3,7 @@ import { spawnSync, type SpawnSyncReturns } from "node:child_process";
 import { test } from "node:test";
 import { parse } from "yaml";
 import { aggregateNeedsResults } from "../../tools/support/compat/github/require-needs-success.ts";
-import { sourceInventoryLanes } from "../../tools/support/compat/davinci/source-inventories.ts";
+import { sourceInventoryLanes } from "../../tools/support/compat/levels/source-inventories.ts";
 import { checkWorkflowJobSources, readRepoFile, root } from "./support/github-workflows.ts";
 const FULL_ONLY =
   "${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}";
@@ -120,7 +120,7 @@ test("source gates cover iteration events while full qualification runs on sched
     "${{ github.event_name == 'pull_request' || github.event_name == 'merge_group' || github.event_name == 'push' }}",
   );
   assert.equal(checkSteps.find((step) => step.name === "Check JS/TS")?.if, FULL_ONLY);
-  const inventory = checkSteps.find((step) => step.name === "Check Davinci source inventories");
+  const inventory = checkSteps.find((step) => step.name === "Check Levels source inventories");
   assert.ok(inventory);
   assert.equal(inventory.if, FULL_ONLY);
   assert.equal(inventory.uses, "./.github/actions/check-level-inventories");
@@ -131,18 +131,18 @@ test("source gates cover iteration events while full qualification runs on sched
   };
   assert.equal(inventoryAction.runs.using, "composite");
   const validate = inventoryAction.runs.steps.find(
-    (step) => step.name === "Check Davinci source inventories",
+    (step) => step.name === "Check Levels source inventories",
   );
-  assert.equal(validate?.run, "node tools/support/compat/davinci/source-inventories.ts");
+  assert.equal(validate?.run, "node tools/support/compat/levels/source-inventories.ts");
   // The same five checks, in the same order within each dependent lane.
   assert.deepEqual(
     sourceInventoryLanes.flat().map((args) => `node ${args.join(" ")}`),
     [
-      "node tools/support/compat/davinci/croquis-consumers.ts --check",
-      "node tools/support/compat/davinci/consumer-migration-surfaces.ts --check",
-      "node --test tests/tooling/davinci-storage-policy.test.ts",
-      "node tools/support/compat/davinci/generated-ledgers.ts --write",
-      "node tools/support/compat/davinci/generated-ledgers.ts --check",
+      "node tools/support/compat/levels/croquis-consumers.ts --check",
+      "node tools/support/compat/levels/consumer-migration-surfaces.ts --check",
+      "node --test tests/tooling/level-storage-policy.test.ts",
+      "node tools/support/compat/levels/generated-ledgers.ts --write",
+      "node tools/support/compat/levels/generated-ledgers.ts --check",
     ],
   );
   assert.ok(
@@ -151,10 +151,10 @@ test("source gates cover iteration events while full qualification runs on sched
     "inventory checks must fail before the heavy JS check setup",
   );
   const ledgerUpload = inventoryAction.runs.steps.find(
-    (step) => step.name === "Upload generated Davinci ledgers",
+    (step) => step.name === "Upload generated Levels ledgers",
   );
-  assert.equal(ledgerUpload?.with?.name, "davinci-generated-ledgers");
-  assert.equal(ledgerUpload?.with?.path, "artifacts/davinci-ledgers/");
+  assert.equal(ledgerUpload?.with?.name, "level-generated-ledgers");
+  assert.equal(ledgerUpload?.with?.path, "artifacts/level-ledgers/");
   assert.equal(ledgerUpload?.with?.["if-no-files-found"], "error");
   assert.equal(ledgerUpload?.with?.["retention-days"], 14);
   assert.equal(ledgerUpload?.if, "${{ always() }}");
@@ -208,7 +208,7 @@ test("source gates cover iteration events while full qualification runs on sched
     workflow.jobs?.["rust-native-differential"]?.steps?.find((step) => step.name === "Test")?.uses,
     "./.github/actions/test-rust-workspace-differential",
   );
-  assert.match(commands("rust-davinci-allocations"), /cargo bench -p vize_l1_to_l2/);
+  assert.match(commands("rust-level-allocations"), /cargo bench -p vize_l1_to_l2/);
   assert.match(commands("branch-coverage"), /coverage:source:branch/);
   assert.match(commands("playground-test"), /test:browser/);
   assert.deepEqual(workflow.jobs?.["playground-test"]?.needs, ["build-js-packages"]);
@@ -362,13 +362,13 @@ test("full JS qualification retains independent native builds and strictly gates
   }
 });
 test("slow suites use schedules or explicit dispatch without starting on PRs", () => {
-  const pushOrDispatch = ["level-html-content-model.yml", "davinci-incremental.yml"];
+  const pushOrDispatch = ["level-html-content-model.yml", "level-incremental.yml"];
   const scheduledOrDispatch = [
     "benchmark.yml",
     "check-bench.yml",
     "content-mapper-conformance.yml",
-    "davinci-reference.yml",
-    "davinci-resource-budgets.yml",
+    "level-reference.yml",
+    "level-resource-budgets.yml",
     "e2e.yml",
     "editor-conformance.yml",
     "fresco.yml",

@@ -17,7 +17,7 @@ use super::{AnalysisEvent, FailEvent, PassEvent, PassObserver, Pipeline};
 
 /// Counts what the traversal and pass budgets gate.
 ///
-/// Carries a derived folio page (`[budget-observer]`, P2-4), so a run's
+/// Carries a derived dump page (`[budget-observer]`, P2-4), so a run's
 /// counts print and parse under the TS-16 round-trip laws like any other
 /// stage artifact. The retired host exposed it as a selectable stage; typed
 /// tests still pin the budget page and walk counts.

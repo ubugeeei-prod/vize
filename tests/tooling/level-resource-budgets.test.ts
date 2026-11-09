@@ -1,5 +1,5 @@
-// TS-44 baselines (Davinci P5-11a): `budgets.toml [resource]` and its gate,
-// `tools/commands/davinci/resource-budgets.rs`. The tool is exercised on the
+// TS-44 baselines (Levels P5-11a): `budgets.toml [resource]` and its gate,
+// `tools/commands/levels/resource-budgets.rs`. The tool is exercised on the
 // committed file and on injected mutations: a number without methodology and
 // a loosened or dropped ceiling must each fail, and a measurement over a
 // ceiling must fail the check.
@@ -11,14 +11,14 @@ import path from "node:path";
 import { test } from "node:test";
 import { parse } from "yaml";
 
-import { parseTomlLite } from "../../tools/support/compat/davinci/toml-lite.ts";
+import { parseTomlLite } from "../../tools/support/compat/levels/toml-lite.ts";
 import {
   readRepoFile,
   restorePinnedWildAction,
   root as repoRoot,
 } from "./support/github-workflows.ts";
 
-const tool = path.join(repoRoot, "tools/commands/davinci/resource-budgets.rs");
+const tool = path.join(repoRoot, "tools/commands/levels/resource-budgets.rs");
 const budgetsText = readRepoFile("docs/davinci", "plan", "budgets.toml");
 const presetFields = [
   "machine",
@@ -105,9 +105,7 @@ test("[resource] pins numbers with their methodology beside every one", () => {
 });
 
 test("the recorded command is the one CI measures with", () => {
-  const workflow = parse(
-    readRepoFile(".github", "workflows", "davinci-resource-budgets.yml"),
-  ) as any;
+  const workflow = parse(readRepoFile(".github", "workflows", "level-resource-budgets.yml")) as any;
   assert.equal(Object.hasOwn(workflow.on, "push"), false);
   assert.ok(workflow.on.schedule);
   assert.equal(Object.hasOwn(workflow.on, "workflow_dispatch"), true);
@@ -134,9 +132,7 @@ test("the recorded command is the one CI measures with", () => {
 
 test("the measured server and the x86_64 gnu release CLI link without Wild", () => {
   // Wild ignores `--icf=all`, so a Wild-linked server would measure 4.8 MiB more than ships.
-  const workflow = parse(
-    readRepoFile(".github", "workflows", "davinci-resource-budgets.yml"),
-  ) as any;
+  const workflow = parse(readRepoFile(".github", "workflows", "level-resource-budgets.yml")) as any;
   const wildSetup = (steps: Array<{ uses?: string; if?: string }>) =>
     steps.filter(
       (step) =>

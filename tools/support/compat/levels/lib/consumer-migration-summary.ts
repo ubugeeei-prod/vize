@@ -15,7 +15,7 @@ import type {
 } from "./consumer-migration-types.ts";
 
 export const SUMMARY_COMMAND =
-  "node tools/support/compat/davinci/consumer-migration-surfaces.ts --summary";
+  "node tools/support/compat/levels/consumer-migration-surfaces.ts --summary";
 
 function n(value: number): string {
   return String(value);
@@ -66,7 +66,7 @@ function renderTotals(consumers: readonly ConsumerSummary[]): string {
   return formatTable(
     [
       "consumer",
-      "stage/Davinci",
+      "stage/Levels",
       "preferred stage names",
       "compat code names",
       "old AST/Croquis",

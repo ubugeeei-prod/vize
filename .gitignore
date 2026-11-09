@@ -2,11 +2,11 @@
 target/
 .docs-example-target/
 
-# Davinci bench harness run output (committed baselines live under baseline/)
-tools/benchmarks/results/davinci/*.json
+# Levels bench harness run output (committed baselines live under baseline/)
+tools/benchmarks/results/levels/*.json
 
-# Whole-repository Davinci count reports are CI/release artifacts.
-/artifacts/davinci-ledgers/
+# Whole-repository Levels count reports are CI/release artifacts.
+/artifacts/level-ledgers/
 
 # Node.js
 node_modules/

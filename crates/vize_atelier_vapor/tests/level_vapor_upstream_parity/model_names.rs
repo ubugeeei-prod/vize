@@ -88,14 +88,14 @@ fn model_names_replace_old_listeners_and_restore_static_props_like_official_vapo
         let props = ["title", "label", "titleModifiers", "labelModifiers"];
         let emits = ["update:title", "update:label"];
         let native = trace(
-            "davinci-mounted-trace.mjs",
+            "level-mounted-trace.mjs",
             json!({
                 "backend":"vapor","code":compiled.code,"context":context,"steps":steps,"identities":true,
                 "components":{"Child":{"code":child_code.code,"props":props,"emits":emits}},
             }),
         );
         let official = trace(
-            "davinci-upstream-vapor-trace.mjs",
+            "level-upstream-vapor-trace.mjs",
             json!({
                 "source":source,"context":context,"steps":steps,
                 "components":{"Child":{"source":child,"props":props,"emits":emits}},

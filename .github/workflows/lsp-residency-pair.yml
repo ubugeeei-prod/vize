@@ -14,8 +14,8 @@ on:
       - "crates/vize_canon/src/lsp_client/editor_lsp/**"
       - "crates/vize_canon/src/lsp_client/retained_text.rs"
       - "tools/benchmarks/scripts/lsp-residency-pair-report.ts"
-      - "tools/support/compat/davinci/lsp-resources.ts"
-      - "tools/support/compat/davinci/lib/lsp-resource-*.ts"
+      - "tools/support/compat/levels/lsp-resources.ts"
+      - "tools/support/compat/levels/lib/lsp-resource-*.ts"
       - "tests/tooling/lsp-residency-pair-report.test.ts"
   workflow_dispatch:
     inputs:
@@ -84,7 +84,7 @@ jobs:
             git checkout --detach "$sha"
             test "$(git rev-parse HEAD)" = "$sha"
             CARGO_TARGET_DIR="$target" cargo build --locked --profile ci-opt -p vize --features profiling --message-format=json-render-diagnostics > "$OBSERVATION_ROOT/${role}-build.jsonl" 2> "$OBSERVATION_ROOT/${role}-build.stderr"
-            vp exec node tools/support/compat/davinci/lsp-build-identity.ts "$target/ci-opt/vize" ci-opt "$OBSERVATION_ROOT/${role}-build.jsonl" "$OBSERVATION_ROOT/${role}-build-identity.json"
+            vp exec node tools/support/compat/levels/lsp-build-identity.ts "$target/ci-opt/vize" ci-opt "$OBSERVATION_ROOT/${role}-build.jsonl" "$OBSERVATION_ROOT/${role}-build-identity.json"
           done
           git checkout --detach "$SOURCE_SHA"
       - name: Discard warmups and collect three fresh alternating pairs
@@ -99,7 +99,7 @@ jobs:
               git checkout --detach "$sha"
               test "$(git rev-parse HEAD)" = "$sha"
               profile="$OBSERVATION_ROOT/${phase}-${role}-profile"
-              vp exec node tools/support/compat/davinci/lsp-resources.ts \
+              vp exec node tools/support/compat/levels/lsp-resources.ts \
                 --server "$target/ci-opt/vize" --files 2500 --open-files 2500 \
                 --warm-providers 16 --runs 1 --idle-seconds 10 \
                 --build "ci-opt profiling; exact ${role} ${sha}; 32-vCPU runner" \

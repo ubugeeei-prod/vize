@@ -1,4 +1,4 @@
-// Corpus sweep + reduction (Davinci P0-5, TS-11). `corpus-baseline` and
+// Corpus sweep + reduction (Levels P0-5, TS-11). `corpus-baseline` and
 // `corpus-diff` both run the existing real-project harness
 // (`tools/support/compat/fixtures/tool-matrix-report.ts`) across all shards through
 // `runMatrix`, then reduce every per-project per-surface payload to a
@@ -301,7 +301,7 @@ export function resolveVizeBin(vizeBin: string | null | undefined): string {
 }
 
 export function scratchRoot(label: string): string {
-  return path.join(repoRoot, ".vize", "davinci-corpus", label);
+  return path.join(repoRoot, ".vize", "level-corpus", label);
 }
 
 export function cleanupScratch(dir: string): void {

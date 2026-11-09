@@ -5,12 +5,12 @@ import { describeWalk, parseFusionPlan, planWalks, type TimelineWalk } from "./f
 import type { TimelineStep } from "./ladder";
 
 // Two fusable runs around a barrier, as the compiler prints the plan
-// (the Rust `fusion_plan_folio` pin states the same page).
-const PLAN = `[fusion-plan-folio]
+// (the Rust `fusion_plan_dump` pin states the same page).
+const PLAN = `[fusion-plan-dump]
 stage=s2
 walks=3
 
-[fusion-plan-folio.passes]
+[fusion-plan-dump.passes]
 walk=0 pass=normalize kind=optional fusability=fusable
 walk=0 pass=fold kind=optional fusability=fusable
 walk=1 pass=check kind=mandatory-diagnostic fusability=barrier
@@ -30,7 +30,7 @@ describe("parseFusionPlan", () => {
         { walk: 2, pass: "tidy", kind: "optional", fusability: "fusable" },
       ],
     });
-    expect(parseFusionPlan("[fusion-plan-folio]\nstage=s2\nwalks=0\n\n")).toEqual({
+    expect(parseFusionPlan("[fusion-plan-dump]\nstage=s2\nwalks=0\n\n")).toEqual({
       stage: "l2",
       walks: 0,
       passes: [],
@@ -38,8 +38,8 @@ describe("parseFusionPlan", () => {
   });
 
   it("refuses other pages and malformed records", () => {
-    expect(parseFusionPlan("[disegno]\nops=0\n\n")).toBeNull();
-    expect(parseFusionPlan("[fusion-plan-folio]\nwalks=1\n\n")).toBeNull();
+    expect(parseFusionPlan("[l2]\nops=0\n\n")).toBeNull();
+    expect(parseFusionPlan("[fusion-plan-dump]\nwalks=1\n\n")).toBeNull();
     expect(parseFusionPlan(PLAN.replace("fusability=barrier", "fusability=fused"))).toBeNull();
   });
 });
@@ -88,27 +88,27 @@ describe("PassTimeline walks", () => {
 
   it("brackets the passes of each walk and names how it ran", async () => {
     const wrapper = mount(PassTimeline, { props: { steps, walks, current: null } });
-    const groups = wrapper.findAll(".davinci-walk");
+    const groups = wrapper.findAll(".level-walk");
     expect(groups.map((group) => group.classes())).toEqual([
-      ["davinci-walk", "fusable"],
-      ["davinci-walk"],
+      ["level-walk", "fusable"],
+      ["level-walk"],
     ]);
     expect(
-      groups.map((group) => group.findAll(".davinci-step-pass").map((pass) => pass.text())),
+      groups.map((group) => group.findAll(".level-step-pass").map((pass) => pass.text())),
     ).toEqual([["normalize", "fold"], ["check"]]);
     const label = (group: (typeof groups)[number]) =>
-      group.findAll(".davinci-walk-label > span").map((part) => part.text());
+      group.findAll(".level-walk-label > span").map((part) => part.text());
     expect(groups.map(label)).toEqual([
       ["walk 1", "2 passes fused", "7 µs"],
       ["walk 2", "barrier"],
     ]);
-    expect(groups[0].find(".davinci-walk-steps").attributes("aria-label")).toBe(
+    expect(groups[0].find(".level-walk-steps").attributes("aria-label")).toBe(
       "Walk 1 over the L2 tree (2 passes fused): normalize, fold, 7 µs",
     );
-    expect(wrapper.find(".davinci-timeline-summary").text()).toBe(
-      "0 of 3 passes changed the folio in 2 walks",
+    expect(wrapper.find(".level-timeline-summary").text()).toBe(
+      "0 of 3 passes changed the dump in 2 walks",
     );
-    await groups[0].findAll(".davinci-step")[1].trigger("click");
+    await groups[0].findAll(".level-step")[1].trigger("click");
     expect(wrapper.emitted("select")).toEqual([[steps[2]]]);
     wrapper.unmount();
   });

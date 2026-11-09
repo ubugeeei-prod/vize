@@ -17,7 +17,7 @@ The Rust fixture requires full first/second/third output equality and `changed`
 truth. The CLI fixture requires a current-source build receipt, original check
 status, three complete writes and a successful final read-only check. Its
 report retains full outputs, stdout/stderr, status and signal for every process.
-Native Davinci formatter handling remains unsupported. Prepared fixtures alone
+Native Levels formatter handling remains unsupported. Prepared fixtures alone
 grant no execution, performance, protected merge or release credit.
 
 The first twenty complete inputs/current expectations remain exact. Three

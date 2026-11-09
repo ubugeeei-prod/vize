@@ -11,7 +11,7 @@ import { typecheckerRunStatus } from "../../tools/support/compat/fixtures/typech
 import { runTool } from "../../tools/support/compat/fixtures/tool-matrix-run.mjs";
 import { validateTypecheckerOutput } from "../../tools/support/compat/fixtures/tool-matrix-typechecker.ts";
 import { readAndValidateVizeRun } from "../../tools/support/compat/fixtures/typecheck-divergence-report-inputs.mjs";
-import { reduceShards } from "../../tools/support/compat/davinci/lib/corpus-baseline-run.ts";
+import { reduceShards } from "../../tools/support/compat/levels/lib/corpus-baseline-run.ts";
 
 const configFile = "packages/frontend/editor-ui/tsconfig.json";
 const root = fileURLToPath(new URL("../../", import.meta.url));

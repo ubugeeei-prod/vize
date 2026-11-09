@@ -1,10 +1,10 @@
 //! TS-9 lane for P4-10a: exact route facts and route-typing diagnostics over
-//! `tests/_fixtures/davinci-routes/`, every error witness re-verified (TS-36)
+//! `tests/_fixtures/level-routes/`, every error witness re-verified (TS-36)
 //! and zero undeclared fact accesses (TS-35).
 //!
 //! Each fixture directory is one project; `expected.txt` in it is the exact
 //! rendering of its facts and diagnostics. Regenerate after an intended
-//! change with `UPDATE_DAVINCI_ROUTES=1 cargo test -p vize_croquis_cf --test davinci_routes`.
+//! change with `UPDATE_LEVEL_ROUTES=1 cargo test -p vize_croquis_cf --test level_routes`.
 #![expect(clippy::unwrap_used, reason = "tests assert by panicking")]
 #![expect(clippy::disallowed_macros, reason = "fixtures use std strings")]
 #![expect(clippy::disallowed_methods, reason = "fixtures use std strings")]
@@ -20,7 +20,7 @@ use vize_l0::diag::verify::verify;
 use vize_l0::fact::{FactManager, undeclared_accesses};
 
 fn fixtures_root() -> PathBuf {
-    Path::new(env!("CARGO_MANIFEST_DIR")).join("../../tests/_fixtures/davinci-routes")
+    Path::new(env!("CARGO_MANIFEST_DIR")).join("../../tests/_fixtures/level-routes")
 }
 
 fn files(dir: &Path, root: &Path, out: &mut Vec<(String, String)>) {
@@ -86,7 +86,7 @@ fn every_fixture_renders_exactly_and_every_witness_verifies() {
         ]
     );
 
-    let update = std::env::var_os("UPDATE_DAVINCI_ROUTES").is_some();
+    let update = std::env::var_os("UPDATE_LEVEL_ROUTES").is_some();
     let mut stale = Vec::new();
     for dir in &dirs {
         let project = project_of(dir);
@@ -122,7 +122,7 @@ fn every_fixture_renders_exactly_and_every_witness_verifies() {
     }
     assert!(
         stale.is_empty(),
-        "stale fixtures; rerun with UPDATE_DAVINCI_ROUTES=1"
+        "stale fixtures; rerun with UPDATE_LEVEL_ROUTES=1"
     );
     assert_eq!(
         undeclared_accesses(),

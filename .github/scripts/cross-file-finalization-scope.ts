@@ -29,7 +29,7 @@ export function planFinalizationComparison(
   assert.ok(
     expectedPaths.every(
       (name) =>
-        /^(?:crates|davinci)\/[A-Za-z0-9_./-]+\.rs$/u.test(name) &&
+        /^(?:crates|levels)\/[A-Za-z0-9_./-]+\.rs$/u.test(name) &&
         !name.split("/").some((part) => part === "." || part === ".." || part.length === 0),
     ),
     "historical source scope must contain unique relative Rust paths",
@@ -69,7 +69,7 @@ export function main(
   assert.equal(actualHead, head, "planner must inspect the exact authored source");
   const changed = execFileSync(
     "git",
-    ["diff", "--name-only", "-z", base!, head!, "--", "crates", "davinci"],
+    ["diff", "--name-only", "-z", base!, head!, "--", "crates", "levels"],
     { encoding: "utf8" },
   )
     .split("\0")

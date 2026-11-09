@@ -3,15 +3,15 @@ on:
   pull_request:
     paths:
       - .github/workflows/vue2-ir-template.yml
-      - davinci/vize_l1_to_l2/src/native_vue2*
-      - davinci/vize_l1_to_l2/src/native_vue2/**
-      - davinci/vize_l1_to_l2/src/dialect/vue2*
-      - davinci/vize_l1_to_l2/src/dialect/vue2/**
-      - davinci/vize_l4/src/targets/vue2*
-      - davinci/vize_l4/src/targets/vue2/**
-      - davinci/vize_l4/examples/vue2_ir_template.rs
-      - davinci/vize_l4/examples/vue2_ir_template_lexical/**
-      - davinci/vize_l4/src/expr/resolved.rs
+      - levels/vize_l1_to_l2/src/native_vue2*
+      - levels/vize_l1_to_l2/src/native_vue2/**
+      - levels/vize_l1_to_l2/src/dialect/vue2*
+      - levels/vize_l1_to_l2/src/dialect/vue2/**
+      - levels/vize_l4/src/targets/vue2*
+      - levels/vize_l4/src/targets/vue2/**
+      - levels/vize_l4/examples/vue2_ir_template.rs
+      - levels/vize_l4/examples/vue2_ir_template_lexical/**
+      - levels/vize_l4/src/expr/resolved.rs
       - Cargo.lock
       - tests/tooling/native-vue2-ir-*.mjs
   workflow_dispatch:
@@ -49,8 +49,8 @@ jobs:
           path: .vue2-ir-recipe
           persist-credentials: false
           sparse-checkout: |
-            davinci/vize_l4/examples/vue2_ir_template.rs
-            davinci/vize_l4/examples/vue2_ir_template_lexical
+            levels/vize_l4/examples/vue2_ir_template.rs
+            levels/vize_l4/examples/vue2_ir_template_lexical
             tests/tooling/native-vue2-ir-template.test.mjs
             tests/tooling/native-vue2-ir-lexical.test.mjs
             tests/tooling/native-vue2-ir-vnode.mjs
@@ -58,8 +58,8 @@ jobs:
       - name: Use the same public-IR consumer against both producer revisions
         run: |
           test "$(git -C .vue2-ir-recipe rev-parse HEAD)" = "$RECIPE_SHA"
-          cp .vue2-ir-recipe/davinci/vize_l4/examples/vue2_ir_template.rs davinci/vize_l4/examples/
-          cp -R .vue2-ir-recipe/davinci/vize_l4/examples/vue2_ir_template_lexical davinci/vize_l4/examples/
+          cp .vue2-ir-recipe/levels/vize_l4/examples/vue2_ir_template.rs levels/vize_l4/examples/
+          cp -R .vue2-ir-recipe/levels/vize_l4/examples/vue2_ir_template_lexical levels/vize_l4/examples/
           cp .vue2-ir-recipe/tests/tooling/native-vue2-ir-*.mjs tests/tooling/
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with: { node-version-file: package.json, cache: true, run-install: false }
@@ -97,8 +97,8 @@ jobs:
           assert.equal(source, process.env.SOURCE_SHA);
           const file = join(process.env.CARGO_TARGET_DIR, 'ci/examples/vue2_ir_template');
           const hash = bytes => createHash('sha256').update(bytes).digest('hex');
-          const files = execFileSync('git', ['ls-files', '--', 'davinci/vize_l4/src/expr/resolved.rs', 'Cargo.lock', 'Cargo.toml', 'davinci/vize_l1_to_l2/src/lib.rs', 'davinci/vize_l1_to_l2/src/native_vue2.rs', 'davinci/vize_l1_to_l2/src/native_vue2', 'davinci/vize_l1_to_l2/src/dialect/vue2.rs', 'davinci/vize_l1_to_l2/src/dialect/vue2', 'davinci/vize_l4/src/targets.rs', 'davinci/vize_l4/src/targets/vue2.rs', 'davinci/vize_l4/src/targets/vue2'], {encoding:'utf8'}).trim().split('\n');
-          writeFileSync('target/vize-tests/vue2-ir/producer.json', JSON.stringify({source, tree:execFileSync('git',['rev-parse','HEAD^{tree}'],{encoding:'utf8'}).trim(), executable:{file,bytes:statSync(file).size,sha256:hash(readFileSync(file))}, compiler:execFileSync('rustc',['--version'],{encoding:'utf8'}).trim(), consumerRecipe: {source:process.env.RECIPE_SHA, files:Object.fromEntries(['davinci/vize_l4/examples/vue2_ir_template.rs','davinci/vize_l4/examples/vue2_ir_template_lexical/mod.rs','tests/tooling/native-vue2-ir-template.test.mjs','tests/tooling/native-vue2-ir-lexical.test.mjs','tests/tooling/native-vue2-ir-vnode.mjs'].map(file=>[file,hash(readFileSync(file))]))}, sourceFiles: Object.fromEntries(files.map(file => [file,hash(readFileSync(file))])), runId:process.env.GITHUB_RUN_ID},null,2)+'\n');
+          const files = execFileSync('git', ['ls-files', '--', 'levels/vize_l4/src/expr/resolved.rs', 'Cargo.lock', 'Cargo.toml', 'levels/vize_l1_to_l2/src/lib.rs', 'levels/vize_l1_to_l2/src/native_vue2.rs', 'levels/vize_l1_to_l2/src/native_vue2', 'levels/vize_l1_to_l2/src/dialect/vue2.rs', 'levels/vize_l1_to_l2/src/dialect/vue2', 'levels/vize_l4/src/targets.rs', 'levels/vize_l4/src/targets/vue2.rs', 'levels/vize_l4/src/targets/vue2'], {encoding:'utf8'}).trim().split('\n');
+          writeFileSync('target/vize-tests/vue2-ir/producer.json', JSON.stringify({source, tree:execFileSync('git',['rev-parse','HEAD^{tree}'],{encoding:'utf8'}).trim(), executable:{file,bytes:statSync(file).size,sha256:hash(readFileSync(file))}, compiler:execFileSync('rustc',['--version'],{encoding:'utf8'}).trim(), consumerRecipe: {source:process.env.RECIPE_SHA, files:Object.fromEntries(['levels/vize_l4/examples/vue2_ir_template.rs','levels/vize_l4/examples/vue2_ir_template_lexical/mod.rs','tests/tooling/native-vue2-ir-template.test.mjs','tests/tooling/native-vue2-ir-lexical.test.mjs','tests/tooling/native-vue2-ir-vnode.mjs'].map(file=>[file,hash(readFileSync(file))]))}, sourceFiles: Object.fromEntries(files.map(file => [file,hash(readFileSync(file))])), runId:process.env.GITHUB_RUN_ID},null,2)+'\n');
           JS
       - name: Install exact official Vue 2 runtime and compiler pairs
         shell: bash

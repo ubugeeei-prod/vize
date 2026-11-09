@@ -90,7 +90,7 @@ fn computed_disabled_key_removes_stale_props_and_restores_them() {
         &allocator,
         SOURCE,
         VaporCompilerOptions {
-            davinci_retained_lane: true,
+            level_retained_lane: true,
             ..options
         },
     );
@@ -119,7 +119,7 @@ fn computed_disabled_key_removes_stale_props_and_restores_them() {
     ];
     for (lane, code) in [("native", native.code), ("retained", retained.code)] {
         let actual = trace::trace(
-            "davinci-mounted-trace.mjs",
+            "level-mounted-trace.mjs",
             json!({
                 "backend": "vapor",
                 "code": code,
@@ -131,7 +131,7 @@ fn computed_disabled_key_removes_stale_props_and_restores_them() {
         assert_eq!(actual, expected, "{lane} trace");
     }
     let official = trace::trace(
-        "davinci-upstream-vapor-trace.mjs",
+        "level-upstream-vapor-trace.mjs",
         json!({"source": SOURCE, "context": context, "steps": steps}),
     );
     assert_eq!(official, expected, "official compiler-vapor trace");

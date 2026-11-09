@@ -1,8 +1,8 @@
-// Consumer migration surface inventory for the Davinci rollout plan.
+// Consumer migration surface inventory for the Levels rollout plan.
 //
 // The scan is intentionally observational: it records where the compiler,
 // linter, typechecker, typechecker content-mapper, formatter, and LSP still
-// name Davinci/L0/L1/L2, legacy AST/parser/Croquis crates, or raw OXC crates.
+// name Levels/L0/L1/L2, legacy AST/parser/Croquis crates, or raw OXC crates.
 // It does not change runtime wiring and is safe to merge before any rollout.
 //
 // The committed inventory is sharded so parallel PRs stop conflicting on it:
@@ -10,13 +10,13 @@
 // shard layout — configuration only) plus one TSV per (consumer, crate) under
 // docs/davinci/plan/consumer-migration-surfaces/. Only the index is committed:
 // the shards record file paths and line numbers, so they are written to
-// artifacts/davinci-ledgers/consumer-migration-surfaces/ on every run and
+// artifacts/level-ledgers/consumer-migration-surfaces/ on every run and
 // uploaded by CI. Cross-file totals are never committed; --summary prints them.
 //
 // Usage:
-//   node tools/support/compat/davinci/consumer-migration-surfaces.ts --write
-//   node tools/support/compat/davinci/consumer-migration-surfaces.ts --check
-//   node tools/support/compat/davinci/consumer-migration-surfaces.ts --summary
+//   node tools/support/compat/levels/consumer-migration-surfaces.ts --write
+//   node tools/support/compat/levels/consumer-migration-surfaces.ts --check
+//   node tools/support/compat/levels/consumer-migration-surfaces.ts --summary
 
 import { checkArtifactSet, writeArtifactSet } from "./lib/artifact-set.ts";
 import {
@@ -31,13 +31,13 @@ import {
 } from "./lib/consumer-migration-summary.ts";
 
 const ARTIFACT_REL = "docs/davinci/plan/consumer-migration-surfaces.md";
-const REGEN_COMMAND = "node tools/support/compat/davinci/consumer-migration-surfaces.ts --write";
+const REGEN_COMMAND = "node tools/support/compat/levels/consumer-migration-surfaces.ts --write";
 
 function main() {
   const mode = process.argv[2];
   if (mode !== "--write" && mode !== "--check" && mode !== "--summary") {
     console.error(
-      "usage: node tools/support/compat/davinci/consumer-migration-surfaces.ts --write | --check | --summary",
+      "usage: node tools/support/compat/levels/consumer-migration-surfaces.ts --write | --check | --summary",
     );
     process.exit(2);
   }

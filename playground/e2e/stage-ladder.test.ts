@@ -1,11 +1,11 @@
-// The Davinci tab's data path against the real wasm compiler: each target's
+// The Levels tab's data path against the real wasm compiler: each target's
 // `compileSfc` `captureStages` feed negotiates, climbs its rungs, and every
 // span the stage pages print lands on the authored source the editor highlights.
 import { beforeAll, describe, expect, it } from "vite-plus/test";
 import { ref, shallowRef } from "vue";
 import { loadWasm, type CompilerOptions, type WasmModule } from "../src/wasm";
 import { negotiateProductCapture } from "../src/wasm/types/productCapture";
-import { DAVINCI_PRESET } from "../src/shared/presets/davinci";
+import { LEVEL_PRESET } from "../src/shared/presets/levels";
 import type { CodeOutputs } from "../src/features/atelier/codeOutputs";
 import type { StageLadder } from "../src/features/stages/ladder";
 import {
@@ -41,14 +41,14 @@ let dom: Run;
 let ssr: Run;
 
 function run(target: keyof typeof TARGETS): Run {
-  const result = wasm.compileSfc(DAVINCI_PRESET, TARGETS[target]);
+  const result = wasm.compileSfc(LEVEL_PRESET, TARGETS[target]);
   const negotiation = negotiateProductCapture(result.stageCapture, target);
   if (!negotiation.ok) throw new Error(negotiation.error);
   const captured: ProductCapturedResult = { result, negotiation };
   const state = useProductCaptureState(
     shallowRef({ [target]: captured }),
-    ref(DAVINCI_PRESET),
-    ref(DAVINCI_PRESET),
+    ref(LEVEL_PRESET),
+    ref(LEVEL_PRESET),
     shallowRef({} as CodeOutputs),
     ref(target),
   );
@@ -72,16 +72,14 @@ function authored(at: Run, pageKey: string, needle: string): string {
   const shown = page(at, pageKey)!;
   const line = dumpLines(shown.kind, shown.text).find((l) => l.text.includes(needle))!;
   const range = templateBytesToSfcRange(at.ladder.template, at.templateStart, line.span!);
-  return DAVINCI_PRESET.slice(range.start, range.end);
+  return LEVEL_PRESET.slice(range.start, range.end);
 }
 
 function why(at: Run, needle: string) {
   const provenance = at.ladder.rungs[1].pages.find((p) => p.kind === "provenance");
   expect(provenance).toBeDefined();
   const records = parseProvenance(provenance!.text);
-  const line = dumpLines("disegno", page(at, "l2/lower")!.text).find((l) =>
-    l.text.includes(needle),
-  )!;
+  const line = dumpLines("l2", page(at, "l2/lower")!.text).find((l) => l.text.includes(needle))!;
   return recordsForNode(records, line.node!).map(({ rule, after }) => [rule, after]);
 }
 
@@ -131,7 +129,7 @@ describe("Stage ladder from the real compiler", () => {
 
   it("maps stage lines back to the exact authored source", () => {
     expect(ssr.ladder.template).toBe(
-      DAVINCI_PRESET.slice(ssr.templateStart, ssr.templateStart + ssr.ladder.template.length),
+      LEVEL_PRESET.slice(ssr.templateStart, ssr.templateStart + ssr.ladder.template.length),
     );
     expect(authored(ssr, "l2/lower", 'ui.on name="keyup"')).toBe('@keyup.enter="add"');
     expect(authored(ssr, "l2/lower", 'js("todo.text"')).toBe("{{ todo.text }}");
@@ -213,7 +211,7 @@ describe("Stage ladder from the real compiler", () => {
     expect(dom.observed.remarks).toBe(true);
     expect(summarizeRemarks(dom.ladder.remarks)).toEqual({ applied: 3, missed: 8, analysis: 0 });
     expect(dom.ladder.timeline.find(({ key }) => key === "l2/hoist-static")!.remarks).toBe(11);
-    const lines = dumpLines("disegno", page(dom, "l2/lower")!.text);
+    const lines = dumpLines("l2", page(dom, "l2/lower")!.text);
     const about = (needle: string) => {
       const line = lines.find((l) => l.text.includes(needle))!;
       return remarksAt(dom.ladder.remarks, line.span!).map(({ kind, name, args }) => [

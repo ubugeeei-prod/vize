@@ -8,7 +8,7 @@ import {
   p2_11FileExpectations,
   p2_11Installment,
   p2_11TableRows,
-} from "./davinci-phase2-ledger/p2-11-rows.ts";
+} from "./level-phase2-ledger/p2-11-rows.ts";
 
 export function recordsTaskRow(source: string, id: string): string {
   const escaped = id.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&");
@@ -191,7 +191,7 @@ export function assertP2_17P2_20ExitBlockers(
   const phaseLedger = requiredSection(
     phase,
     /^## Current execution ledger/mu,
-    /^## Davinci describes/mu,
+    /^## Levels describes/mu,
     "Phase 2 current ledger",
   );
   const p2_17 = phaseTaskSection(tasksLater, "P2-17");
@@ -276,12 +276,12 @@ function assertP2_17MechanicalWitnesses(): void {
   assert.match(signoffRecord, /Provenance survives failure/);
 
   const spanWitness = fs.readFileSync(
-    new URL("../../../davinci/vize_l1_to_l2/tests/ir_contract_spans.rs", import.meta.url),
+    new URL("../../../levels/vize_l1_to_l2/tests/ir_contract_spans.rs", import.meta.url),
     "utf8",
   );
   assert.match(spanWitness, /P2-17 mechanical span gate/);
-  assert.match(spanWitness, /owned_folio_spans_resolve_for_optional_corpus/);
-  assert.match(spanWitness, /assert_folio_spans_resolve/);
+  assert.match(spanWitness, /owned_dump_spans_resolve_for_optional_corpus/);
+  assert.match(spanWitness, /assert_dump_spans_resolve/);
 
   const schemaWitness = fs.readFileSync(
     new URL("../../../crates/vize_curator/tests/stage_feed.rs", import.meta.url),
@@ -292,7 +292,7 @@ function assertP2_17MechanicalWitnesses(): void {
   assert.match(schemaWitness, /SchemaGateError::VersionMismatch/);
 
   const profileWitness = fs.readFileSync(
-    new URL("../../../davinci/vize_l0/tests/dump_collector.rs", import.meta.url),
+    new URL("../../../levels/vize_l0/tests/dump_collector.rs", import.meta.url),
     "utf8",
   );
   assert.match(profileWitness, /timing_json_satisfies_the_p0_11_schema/);

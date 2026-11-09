@@ -13,7 +13,7 @@ render bytes.
 
 ## Evidence
 
-`crates/vize_atelier_dom/tests/davinci_s2_hoist_static_selector.rs` compares
+`crates/vize_atelier_dom/tests/level_s2_hoist_static_selector.rs` compares
 disabled-hoist output against the compatibility lane and asserts that the
 selected compile records the S2 DOM profiling counter. The option matrix and
 production-boundary tooling keep `hoist_static` classified as projected into

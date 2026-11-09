@@ -5,7 +5,7 @@
 > the FN oracle"). Every defect class the seeded-defect generator injects is
 > asserted by **identity, not count**: the manifest records each injection's
 > file, span, and expected rule id, and the `--assert` mode of
-> `tools/commands/davinci/seed-defects.rs` compares the exact diagnostic set against
+> `tools/commands/levels/seed-defects.rs` compares the exact diagnostic set against
 > it. A measured miss lands here with a disposition (`fixed` /
 > `justified-with-witness` / `deferred-with-issue`) and is never left
 > ambient.
@@ -13,16 +13,16 @@
 ## Pilot scan scope (P0-13, measured 2026-08-14)
 
 Tool output quoted verbatim (`scope-proof` lines are printed by
-`tools/commands/davinci/seed-defects.rs`); the corpus-shard run is local/nightly,
+`tools/commands/levels/seed-defects.rs`); the corpus-shard run is local/nightly,
 the committed miniature set runs in CI via
-`tests/tooling/davinci-fpfn-pilots.test.ts`.
+`tests/tooling/level-fpfn-pilots.test.ts`.
 
 - Corpus shard (`splitpanes+layoutit-grid+cssgridgenerator`):
   `scope-proof: files-scanned=130 class-a-eligible=49 class-a-injections=49 class-b-injections=130`
 - Matrix stubs (`matrix-gen`, element-kind × directive plane):
   `scope-proof: files-scanned=90 class-a-eligible=0 class-a-injections=0 class-b-injections=90`
   (stubs are template-only, so class (a) has no script binding to rename)
-- Committed miniature set (`tests/_fixtures/davinci-fpfn`):
+- Committed miniature set (`tests/_fixtures/level-fpfn`):
   `scope-proof: files-scanned=4 class-a-eligible=3 class-a-injections=3 class-b-injections=4`
 
 ## FN-1 — class (a) undefined-template-ref: fixed by default registration
@@ -50,7 +50,7 @@ identity assertion proves the registration fix without weakening the oracle.
 **Disposition:** `fixed` for default-preset recall and config enablement.
 
 - The default preset now instantiates the rule, so the seeded-defect pilot is
-  3/3 (`tests/_fixtures/davinci-fpfn/expected/assert-report.json`).
+  3/3 (`tests/_fixtures/level-fpfn/expected/assert-report.json`).
 - `#4636` / `fix/patina-undefined-refs-dispatch` registers the rule on the
   opt-in path. `"vue/no-undefined-refs": "warn"` now instantiates and runs
   the rule. The engine rule-name set is no longer a dead gate entry.
@@ -69,8 +69,8 @@ projects it through `UnusedBindings`. `vue/no-unused-setup-bindings` is
 the opt-in Sound consumer. Invalid semantics, direct eval and unknown
 external blocks cannot justify an unused report.
 
-The seed is now `davinciSeededUnused`. Underscore-prefixed declarations
-remain intentionally exempt; the old `__davinci_seeded_unused` did not
+The seed is now `levelSeededUnused`. Underscore-prefixed declarations
+remain intentionally exempt; the old `__level_seeded_unused` did not
 exercise this contract. Class (b) runs on an independent mutation tree
 with complete baseline/seeded diagnostic multiset checks, preventing a
 class-(a) rename from introducing a separate unused declaration.

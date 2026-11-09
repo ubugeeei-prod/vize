@@ -53,7 +53,7 @@ fn template(source: &str, retained: bool, mapped: bool) -> (Value, usize, u64) {
         source,
         VaporCompilerOptions {
             prefix_identifiers: true,
-            davinci_retained_lane: retained,
+            level_retained_lane: retained,
             ..Default::default()
         },
         VaporCompilerExperimentalOptions {

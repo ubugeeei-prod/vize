@@ -9,13 +9,13 @@ import {
 } from "../../tools/support/compat/github/tooling-test-shards.ts";
 
 const browser = "tests/tooling/formatter-css-rule-layout.test.mjs";
-const bodyElementsBrowser = "tests/tooling/davinci-document-body-elements.test.ts";
-const disclosureElementsBrowser = "tests/tooling/davinci-document-disclosure-elements.test.ts";
-const embeddedFallbackBrowser = "tests/tooling/davinci-document-embedded-fallback.test.ts";
-const foreignContentBrowser = "tests/tooling/davinci-document-foreign-content.test.ts";
-const phrasingBrowser = "tests/tooling/davinci-document-phrasing.test.ts";
-const selectBrowser = "tests/tooling/davinci-document-select.test.ts";
-const specialTextBrowser = "tests/tooling/davinci-document-special-text.test.ts";
+const bodyElementsBrowser = "tests/tooling/level-document-body-elements.test.ts";
+const disclosureElementsBrowser = "tests/tooling/level-document-disclosure-elements.test.ts";
+const embeddedFallbackBrowser = "tests/tooling/level-document-embedded-fallback.test.ts";
+const foreignContentBrowser = "tests/tooling/level-document-foreign-content.test.ts";
+const phrasingBrowser = "tests/tooling/level-document-phrasing.test.ts";
+const selectBrowser = "tests/tooling/level-document-select.test.ts";
+const specialTextBrowser = "tests/tooling/level-document-special-text.test.ts";
 const others = Array.from({ length: 40 }, (_, index) => `tests/tooling/${index}.test.mjs`);
 const files = [...others.slice(0, 3), browser];
 

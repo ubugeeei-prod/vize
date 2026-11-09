@@ -1,7 +1,7 @@
 # Empty props after template-loop child-key suppression
 
 The exact `6a37d1d27006f75a6b414367513633d5c48cc2df` hosted
-`davinci_dom_n8n_default_loops` control rejected the native module at byte686:
+`level_dom_n8n_default_loops` control rejected the native module at byte686:
 the shipped compiler emits `null` after suppressing the sole child key; the
 native props writer emits `{  }`. The complete modules both have1013 bytes.
 
@@ -46,7 +46,7 @@ Cheap local checks cover formatting, assertion policy, receipt identity and
 source length. Rust execution remains pending the same existing hosted target:
 
 ```sh
-cargo test -p vize_l1_to_l2 --profile ci --features legacy-differential --test davinci_dom_n8n_default_loops
+cargo test -p vize_l1_to_l2 --profile ci --features legacy-differential --test level_dom_n8n_default_loops
 ```
 
 Fresh entire canonical DOM/reach parity remains required. Historical285 DOM

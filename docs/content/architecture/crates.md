@@ -10,7 +10,7 @@ For example, SFC compilation starts with `vize_atelier_sfc`, while a formatter c
 to their Rust implementation.
 
 These tables describe the existing product crates under `crates/`; experimental level crates live
-under `davinci/`. Before depending on a public Rust API, check its
+under `levels/`. Before depending on a public Rust API, check its
 [Rust crate support tier](../stability.md#rust-crate-support-tiers). To change an implementation,
 continue to the [Source Guide](./source-guide.md).
 

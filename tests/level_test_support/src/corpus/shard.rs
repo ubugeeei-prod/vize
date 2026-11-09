@@ -3,11 +3,11 @@
 //! The production-reach and SSR sweeps clear and read the process-wide
 //! profiler around every compile, so threads inside one test process would
 //! mix counters. CI instead builds the test binary once and runs several
-//! copies of it, each with `VIZE_DAVINCI_DIFFERENTIAL_CORPUS_SHARD=<index>/<count>`.
+//! copies of it, each with `VIZE_LEVEL_DIFFERENTIAL_CORPUS_SHARD=<index>/<count>`.
 //! Shard `index` keeps every file whose position in the complete collected
 //! vector is congruent to `index` modulo `count`, writes those logical paths
 //! (NUL-terminated, in sweep order) to the file named by
-//! `VIZE_DAVINCI_DIFFERENTIAL_CORPUS_SHARD_VECTOR`, and reports one line. The
+//! `VIZE_LEVEL_DIFFERENTIAL_CORPUS_SHARD_VECTOR`, and reports one line. The
 //! observer recorder sums the shard counters and proves the vectors are an
 //! exact, disjoint cover of the canonical file manifest. Without the shard
 //! variable the sweep is the complete corpus, exactly as before.
@@ -20,11 +20,11 @@ use vize_l0::{CompactString, cstr};
 use super::{CorpusSweep, resolve_env_sweep};
 
 /// The environment variable naming this process's shard as `index/count`.
-pub const SHARD_ENV: &str = "VIZE_DAVINCI_DIFFERENTIAL_CORPUS_SHARD";
+pub const SHARD_ENV: &str = "VIZE_LEVEL_DIFFERENTIAL_CORPUS_SHARD";
 
 /// The environment variable naming the file that receives the shard's
 /// NUL-terminated logical path vector.
-pub const SHARD_VECTOR_ENV: &str = "VIZE_DAVINCI_DIFFERENTIAL_CORPUS_SHARD_VECTOR";
+pub const SHARD_VECTOR_ENV: &str = "VIZE_LEVEL_DIFFERENTIAL_CORPUS_SHARD_VECTOR";
 
 /// One process-level slice of a collected corpus vector.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -128,7 +128,7 @@ pub fn resolve_env_shard() -> Option<CorpusSweep> {
     });
     let sweep = CorpusSweep { root, scope, files };
     eprintln!(
-        "davinci-differential corpus shard: scope={} index={} count={} planned={planned} selected={}",
+        "level-differential corpus shard: scope={} index={} count={} planned={planned} selected={}",
         sweep.scope_label(),
         shard.index,
         shard.count,

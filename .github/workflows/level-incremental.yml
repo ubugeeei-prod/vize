@@ -1,4 +1,4 @@
-name: Davinci Incremental
+name: Levels Incremental
 
 # Phase 5 incrementality suites (docs/davinci/plan/test-suites.md):
 # - TS-43 key stability runs on two platforms against one committed golden, so
@@ -10,27 +10,27 @@ name: Davinci Incremental
 
 on:
   push:
-    branches: [main, davinci]
+    branches: [main, levels]
     paths:
-      - "davinci/vize_l0/**"
-      - "davinci/vize_l1/**"
-      - "davinci/vize_l2/**"
-      - "davinci/vize_l1_to_l2/**"
+      - "levels/vize_l0/**"
+      - "levels/vize_l1/**"
+      - "levels/vize_l2/**"
+      - "levels/vize_l1_to_l2/**"
       - "crates/vize_incremental/**"
       - "crates/vize_croquis/src/sfc/**"
       - "crates/vize_croquis/src/croquis/alpha*"
       - "crates/vize_croquis/src/croquis/alpha/**"
       - "crates/vize_maestro/src/ide/completion/template/component_*"
       - "crates/vize_maestro/src/ide/completion/template/component_interface/**"
-      - "tools/commands/davinci/incremental-equivalence*"
-      - "tools/commands/davinci/incremental-equivalence/**"
+      - "tools/commands/levels/incremental-equivalence*"
+      - "tools/commands/levels/incremental-equivalence/**"
       - "Cargo.lock"
       - "docs/davinci/plan/key-manifests.md"
-      - ".github/workflows/davinci-incremental.yml"
+      - ".github/workflows/level-incremental.yml"
   workflow_dispatch:
 
 concurrency:
-  group: davinci-incremental-${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}
+  group: level-incremental-${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}
   cancel-in-progress: true
 
 permissions:
@@ -66,12 +66,12 @@ jobs:
       - uses: ./.github/actions/setup-rust-sticky-cache
         if: runner.os == 'Linux'
         with:
-          key: davinci-incremental
+          key: level-incremental
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
       - uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
         if: runner.os != 'Linux'
         with:
-          shared-key: davinci-incremental-${{ matrix.platform.target }}
+          shared-key: level-incremental-${{ matrix.platform.target }}
           cache-workspace-crates: "true"
       - name: Compare the L0 TS-43 golden keys
         run: cargo test -p vize_l0 --test artifact_keys --test key_manifests --test hash_domains -- --nocapture
@@ -95,7 +95,7 @@ jobs:
           wild-version: "0.9.0"
       - uses: ./.github/actions/setup-rust-sticky-cache
         with:
-          key: davinci-incremental-equivalence
+          key: level-incremental-equivalence
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
       - name: Setup stable Node
         uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
@@ -107,8 +107,8 @@ jobs:
       - name: TS-42 production alpha interfaces over the corpus shard
         run: cargo test -p vize_maestro production_alpha_corpus_edits_match_clean -- --ignored --nocapture
       - name: TS-42 over the corpus shard and the committed fixtures
-        run: node tools/commands/davinci/incremental-equivalence.ts --corpus-shard --fixtures tests/_fixtures/_projects --fixtures tests/_fixtures/vue-language-tools
+        run: node tools/commands/levels/incremental-equivalence.ts --corpus-shard --fixtures tests/_fixtures/_projects --fixtures tests/_fixtures/vue-language-tools
       - name: Verify the seeded stale-cache defect fixture
         run: cargo test -p vize_incremental --features seeded-stale-cache --test equivalence
       - name: Prove TS-42 catches the seeded stale-cache defect
-        run: node tools/commands/davinci/incremental-equivalence.ts --corpus-shard --fixtures tests/_fixtures/_projects --fixtures tests/_fixtures/vue-language-tools --seeded
+        run: node tools/commands/levels/incremental-equivalence.ts --corpus-shard --fixtures tests/_fixtures/_projects --fixtures tests/_fixtures/vue-language-tools --seeded

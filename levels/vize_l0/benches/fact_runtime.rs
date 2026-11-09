@@ -1,4 +1,4 @@
-//! Davinci fact microbenches: the fact verify mode's zero-cost-when-off
+//! Levels fact microbenches: the fact verify mode's zero-cost-when-off
 //! claim (P4-1b, the P2-3 pair shape).
 //!
 //! Run with: cargo bench -p vize_l0 --bench fact_runtime
@@ -8,8 +8,8 @@
 //! — and differ only in the verify policy type handed to
 //! `FactManager::after_pass`:
 //!
-//! - `davinci_fact_query_unobserved` — [`NoFactVerify`], trust every claim.
-//! - `davinci_fact_query_observed` — [`FactVerifyObserver`], which is the
+//! - `level_fact_query_unobserved` — [`NoFactVerify`], trust every claim.
+//! - `level_fact_query_observed` — [`FactVerifyObserver`], which is the
 //!   recompute-and-compare mode in debug builds and compiles to nothing in
 //!   the release profile benches build with.
 //!
@@ -119,19 +119,19 @@ fn run<V: FactVerify>() -> u64 {
 }
 
 fn fact_runtime(criterion: &mut Criterion) {
-    davinci_harness::bench_with_metrics(
+    level_harness::bench_with_metrics(
         criterion,
-        "davinci_fact_query_unobserved",
-        "davinci/vize_l0/benches/fact_runtime.rs",
+        "level_fact_query_unobserved",
+        "levels/vize_l0/benches/fact_runtime.rs",
         run::<NoFactVerify>,
     );
-    davinci_harness::bench_with_metrics(
+    level_harness::bench_with_metrics(
         criterion,
-        "davinci_fact_query_observed",
-        "davinci/vize_l0/benches/fact_runtime.rs",
+        "level_fact_query_observed",
+        "levels/vize_l0/benches/fact_runtime.rs",
         run::<FactVerifyObserver>,
     );
 }
 
 criterion_group!(fact_runtime_group, fact_runtime);
-davinci_harness::main!(fact_runtime_group);
+level_harness::main!(fact_runtime_group);

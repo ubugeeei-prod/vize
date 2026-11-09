@@ -1,7 +1,7 @@
 import path from "node:path";
 import { test } from "node:test";
 
-import { assertL0AliasConsumer, repoRoot } from "./support/davinci-stage-dependencies.ts";
+import { assertL0AliasConsumer, repoRoot } from "./support/level-stage-dependencies.ts";
 
 test("Glyph formatter imports L0 storage through the stage alias", () => {
   assertL0AliasConsumer({

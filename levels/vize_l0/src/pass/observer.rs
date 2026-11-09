@@ -23,7 +23,7 @@
 //! the observer type, so [`NoObserver`]'s empty bodies inline away and the
 //! un-observed pipeline is the pipeline. That is stronger than checking
 //! attachment once per pipeline (guardrail 1 asks for once per pipeline, never
-//! per node) — there is no check at all. The `davinci` bench pair pins it:
+//! per node) — there is no check at all. The `levels` bench pair pins it:
 //! the observer-absent case is **alloc-identical** to the un-observed one.
 //!
 //! The remark hook keeps the same property: [`PassObserver::REMARKS`] is an

@@ -26,7 +26,7 @@ fn shipped(source: &str) -> String {
 }
 
 fn emitted(source: &str) -> String {
-    with_transformed(source, |lowered, _folio, facts, _budget| {
+    with_transformed(source, |lowered, _dump, facts, _budget| {
         emit_dom(lowered, facts)
             .unwrap_or_else(|error| panic!("emit refused {source:?}: {error:?}"))
             .assembled()

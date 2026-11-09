@@ -159,8 +159,8 @@ fn parser_tests() -> Result<(), String> {
     for text in [
         "",
         "operand=[]",
-        "[s3-values-folio]\n",
-        "[s3-values-folio]\n[unknown]",
+        "[s3-values-dump]\n",
+        "[s3-values-dump]\n[unknown]",
     ] {
         expect_error("malformed value page", values::parse(text))?;
     }

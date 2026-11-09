@@ -1,5 +1,5 @@
 //! The composable interestingness oracles (P3-14): diagnostics, remarks,
-//! folio content, budget breaches, crashes, and the llvm-reduce escape
+//! dump content, budget breaches, crashes, and the llvm-reduce escape
 //! hatch — an external script. A candidate is interesting when **every**
 //! configured check holds (conjunction), so oracles compose by listing.
 //!
@@ -19,7 +19,7 @@ use vize_l0::pass::{BudgetObserver, Pair, RemarkCollector, RemarkKind};
 use vize_l0::stage::pipeline_wire_id;
 use vize_l0::{Allocator, String, cstr};
 
-use crate::commands::davinci_ice::{self, IceFailure};
+use crate::commands::level_ice::{self, IceFailure};
 
 /// One interestingness check.
 #[derive(Debug, Clone)]
@@ -38,13 +38,13 @@ pub(crate) enum Check {
         kind: RemarkKind,
         name: String,
     },
-    /// The post-transform L2 folio contains this text.
-    FolioContains(String),
+    /// The post-transform L2 dump contains this text.
+    DumpContains(String),
     /// Some L1→L2 diagnostic's message contains this text.
     Diagnostic(String),
     /// The L2 transform pipeline walked the tree more than this many times.
     WalksOver(u32),
-    /// The canonical default legacy and Davinci DOM lanes emit different code.
+    /// The canonical default legacy and Levels DOM lanes emit different code.
     DomDivergence,
     /// `sh -c "<command> <file>"` exits 0 with the candidate written to
     /// `file` — the sovereign interestingness script.
@@ -56,7 +56,7 @@ pub(crate) enum Check {
 
 /// One L2 run's observable products.
 struct L2Run {
-    folio: String,
+    dump: String,
     remarks: Vec<vize_l0::pass::observer::RecordedRemark>,
     diagnostics: Vec<String>,
     walks: u32,
@@ -77,7 +77,7 @@ fn l2_run(source: &str) -> Option<L2Run> {
     let _facts = vize_l1_to_l2::pass::run_transform(&mut lowered, &mut observers);
     let Pair(budget, remarks) = observers;
     Some(L2Run {
-        folio: vize_l2::dump::Page::of(&lowered.root.ops).print_to_string(DumpMode::Full),
+        dump: vize_l2::dump::Page::of(&lowered.root.ops).print_to_string(DumpMode::Full),
         remarks: remarks.finish(),
         diagnostics: lowered
             .diagnostics
@@ -89,9 +89,9 @@ fn l2_run(source: &str) -> Option<L2Run> {
 }
 
 fn crashes(source: &str) -> bool {
-    davinci_ice::silence_panics();
+    level_ice::silence_panics();
     std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
-        davinci_ice::compile_source(source, false, false);
+        level_ice::compile_source(source, false, false);
     }))
     .is_err()
 }
@@ -157,7 +157,7 @@ impl Check {
     fn needs_l2(&self) -> bool {
         matches!(
             self,
-            Self::Remark { .. } | Self::FolioContains(_) | Self::Diagnostic(_) | Self::WalksOver(_)
+            Self::Remark { .. } | Self::DumpContains(_) | Self::Diagnostic(_) | Self::WalksOver(_)
         )
     }
 }
@@ -175,7 +175,7 @@ pub(crate) fn interesting(checks: &[Check], candidate: &str) -> bool {
                 let mut replayed = repro.clone();
                 replayed.artifact = String::from(candidate);
                 replayed.normalize();
-                matches!(davinci_ice::replay(&replayed), Ok(Some(found)) if found == *failure)
+                matches!(level_ice::replay(&replayed), Ok(Some(found)) if found == *failure)
             }
             Check::Crash => crashes(candidate),
             Check::Remark { origin, kind, name } => s2.as_ref().is_some_and(|s2| {
@@ -188,9 +188,9 @@ pub(crate) fn interesting(checks: &[Check], candidate: &str) -> bool {
                             == Some((remark.stage.as_str(), remark.pass.as_str()))
                 })
             }),
-            Check::FolioContains(text) => s2
+            Check::DumpContains(text) => s2
                 .as_ref()
-                .is_some_and(|s2| s2.folio.contains(text.as_str())),
+                .is_some_and(|s2| s2.dump.contains(text.as_str())),
             Check::Diagnostic(text) => s2.as_ref().is_some_and(|s2| {
                 s2.diagnostics
                     .iter()
@@ -214,6 +214,6 @@ mod tests {
     #[test]
     fn dom_divergence_requires_byte_different_outputs() {
         assert!(!outputs_differ("same", "same"));
-        assert!(outputs_differ("legacy", "davinci"));
+        assert!(outputs_differ("legacy", "levels"));
     }
 }

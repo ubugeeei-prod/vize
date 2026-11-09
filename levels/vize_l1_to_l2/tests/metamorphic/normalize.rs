@@ -1,9 +1,9 @@
 //! The declared normalization of the TS-21 oracle.
 //!
-//! The oracle compares L2 folios of original and mutant as **full
+//! The oracle compares L2 dumps of original and mutant as **full
 //! normalized artifacts** — whole-document `Display`-mode prints, whole
 //! value equality, never a substring (TS-13). `Display` is the
-//! `folio-format.md` elision (every ` @s:e` span, line tails and
+//! `dump-format.md` elision (every ` @s:e` span, line tails and
 //! expression payloads alike, and nothing else), which is exactly the
 //! quotient a byte-shifting mutation needs; the `ops=` header is
 //! recomputed by the printer from the normalized tree. On top of that,
@@ -16,7 +16,7 @@
 //!
 //! The P2-15 `merge_text` and `condense` rules are **gone — the P2-9
 //! ratchet**: installment 4 absorbed the text merge and the condense
-//! into the lowering itself (`davinci/vize_l1_to_l2/src/lower/text.rs`),
+//! into the lowering itself (`levels/vize_l1_to_l2/src/lower/text.rs`),
 //! so split/merge and whitespace mutants lower to the original's
 //! artifact with no declared rule at all, exactly as the P2-15 record's
 //! "left open" clause demanded ("turn them off and watch the suite stay
@@ -49,12 +49,12 @@ impl Normalization {
 }
 
 /// The full normalized artifact: apply `rules`, print `Display`.
-pub fn normalized_display(folio: &L2Page, rules: Normalization) -> String {
-    let mut folio = folio.clone();
+pub fn normalized_display(dump: &L2Page, rules: Normalization) -> String {
+    let mut dump = dump.clone();
     if rules.sort_attrs {
-        walk_region(&mut folio.ops);
+        walk_region(&mut dump.ops);
     }
-    folio.print_to_string(DumpMode::Display)
+    dump.print_to_string(DumpMode::Display)
 }
 
 fn walk_region(ops: &mut [DumpOp]) {

@@ -7,16 +7,16 @@ use vize_l3::placement::dump::{Page as PlacementPage, Record as DumpPlacement};
 use vize_l3::placement::{Placement, PlacementRecord, PlacementSet};
 
 const CANONICAL: &str = "\
-[s3-placement-folio]
+[s3-placement-dump]
 
-[s3-placement-folio.placements]
+[s3-placement-dump.placements]
 op=1 alternatives=inline,cache leader=- chosen=cache
 op=3 alternatives=inline,group leader=2 chosen=inline
 op=5 alternatives=inline,hoist leader=- chosen=hoist
 
 ";
 
-fn folio() -> PlacementPage {
+fn dump() -> PlacementPage {
     let row = |op, alternative, leader: Option<u32>, chosen| {
         DumpPlacement(
             PlacementRecord::new(
@@ -40,17 +40,17 @@ fn folio() -> PlacementPage {
 fn full_print_is_identity_on_canonical_text() {
     let parsed = PlacementPage::parse(CANONICAL).expect("canonical text parses");
     assert_eq!(parsed.print_to_string(DumpMode::Full).as_str(), CANONICAL);
-    assert_eq!(parsed, folio());
+    assert_eq!(parsed, dump());
 }
 
 #[test]
 fn parse_print_is_structural_identity() {
-    let printed = folio().print_to_string(DumpMode::Full);
+    let printed = dump().print_to_string(DumpMode::Full);
     assert_eq!(printed.as_str(), CANONICAL);
-    assert_eq!(PlacementPage::parse(printed.as_str()), Ok(folio()));
+    assert_eq!(PlacementPage::parse(printed.as_str()), Ok(dump()));
     assert_eq!(
-        folio().print_to_string(DumpMode::Display),
-        folio().print_to_string(DumpMode::Full)
+        dump().print_to_string(DumpMode::Display),
+        dump().print_to_string(DumpMode::Full)
     );
 }
 
@@ -73,8 +73,7 @@ fn every_set_round_trips_including_the_empty_one() {
 
 #[test]
 fn parse_rejects_malformed_rows_exactly() {
-    let page =
-        |row: &str| cstr!("[s3-placement-folio]\n\n[s3-placement-folio.placements]\n{row}\n");
+    let page = |row: &str| cstr!("[s3-placement-dump]\n\n[s3-placement-dump.placements]\n{row}\n");
     let cases = [
         (
             "op=1 alternatives=cache,inline leader=- chosen=inline",

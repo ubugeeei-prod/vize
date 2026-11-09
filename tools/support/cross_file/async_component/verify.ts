@@ -225,13 +225,13 @@ const cleanLint = publicBefore.reports.lint.map((file) => ({
 }));
 // The frozen report predates the #6832 rename of the payload's stage feed member.
 const frozenInspector = publicBefore.reports.inspectorAgent;
-const { spolvero: frozenFeed, ...frozenPayload } = object(frozenInspector.payload);
+const { stages: frozenFeed, ...frozenPayload } = object(frozenInspector.payload);
 const frozenUrl = frozenInspector.playgroundUrl;
 assert(frozenFeed && typeof frozenUrl === "string");
-assert.equal(frozenUrl.split("%22spolvero%22").length, 2);
+assert.equal(frozenUrl.split("%22stage%22").length, 2);
 const renamedInspector: ObjectValue = {
   ...frozenInspector,
-  playgroundUrl: frozenUrl.replace("%22spolvero%22", "%22stageFeed%22"),
+  playgroundUrl: frozenUrl.replace("%22stage%22", "%22stageFeed%22"),
   payload: { ...frozenPayload, stageFeed: frozenFeed },
 };
 const commands = [

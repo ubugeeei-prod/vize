@@ -283,7 +283,7 @@ await test("selection still rejects foreign run, attempt, head, digest and artif
   const artifacts = [artifact];
   for (const [observer, name] of [
     ["ssr-pug", "Run L4 SSR and pug L1 differential corpora"],
-    ["reach", "Measure Davinci production reach on the hydrated corpus"],
+    ["reach", "Measure Levels production reach on the hydrated corpus"],
   ]) {
     const worker = structuredClone(job);
     worker.id += jobs.length;

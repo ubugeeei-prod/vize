@@ -7,7 +7,7 @@ import { baseline7502, exactKeys7502, hash7502 } from "./native-attribute-values
 export const stageTests7502 = [
   {
     step: "selected-owner-build",
-    path: "davinci/vize_l2/tests/native_selected_owner_cases/attribute.rs",
+    path: "levels/vize_l2/tests/native_selected_owner_cases/attribute.rs",
     sha256: "43bbe2f6b5b2e2c4ec7638547af99b21e4e186bcd497cdbbd43f7c2b95458ec1",
     argv: [
       "test",
@@ -24,7 +24,7 @@ export const stageTests7502 = [
   },
   {
     step: "selected-template-build",
-    path: "davinci/vize_l4/tests/native_selected_template_cases/refusal.rs",
+    path: "levels/vize_l4/tests/native_selected_template_cases/refusal.rs",
     sha256: "1f6f981707350e8258447592559d23b63f874339e9798158f188be12e590b939",
     argv: [
       "test",
@@ -59,7 +59,7 @@ export const stageTests7502 = [
   },
   {
     step: "vapor-class-policy-build",
-    path: "davinci/vize_l3/src/decision/vapor/tests.rs",
+    path: "levels/vize_l3/src/decision/vapor/tests.rs",
     sha256: "243f60d865902f0795dc0c0131ca78350346bbf0aea859d63a465793dd7026e8",
     argv: [
       "test",

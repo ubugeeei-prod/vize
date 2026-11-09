@@ -2,7 +2,7 @@
 pipeline=template(transform,codegen)
 failed-stage=template
 failed-pass=transform
-reason=injected davinci panic in pass `transform`
+reason=injected levels panic in pass `transform`
 artifact-stage=source
 
 [repro.config]

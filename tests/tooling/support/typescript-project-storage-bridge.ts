@@ -1,12 +1,12 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
-import { scanStorage } from "../davinci-storage-scan.ts";
+import { scanStorage } from "../level-storage-scan.ts";
 
 export const projectStorageBridgePaths = [
-  "davinci/vize_l0/src/path.rs",
-  "davinci/vize_l0/src/typescript_project.rs",
-  "davinci/vize_l0/src/typescript_project/rebase.rs",
+  "levels/vize_l0/src/path.rs",
+  "levels/vize_l0/src/typescript_project.rs",
+  "levels/vize_l0/src/typescript_project/rebase.rs",
 ] as const;
 const bytes = readFileSync(
   new URL("../../_fixtures/tooling/typescript-project-storage-bridge-11794.json", import.meta.url),

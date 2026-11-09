@@ -1,4 +1,4 @@
-//! Focused Davinci parity pins for static-props/static-vnode hoist order.
+//! Focused Levels parity pins for static-props/static-vnode hoist order.
 
 #![expect(
     clippy::disallowed_macros,

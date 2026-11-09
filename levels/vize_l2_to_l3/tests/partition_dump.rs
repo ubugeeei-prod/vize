@@ -1,4 +1,4 @@
-//! TS-16 laws for the partition-fact page (`[s3-partition-folio]`): canonical
+//! TS-16 laws for the partition-fact page (`[s3-partition-dump]`): canonical
 //! text is a print/parse fixed point, the live-fact mirror prints exactly,
 //! and malformed records are refused with their line.
 
@@ -8,9 +8,9 @@ use vize_l2_to_l3::partition::dump::{Fact as DumpPartitionFact, Page as Partitio
 use vize_l2_to_l3::{PartitionKind, lower};
 
 const CANONICAL: &str = "\
-[s3-partition-folio]
+[s3-partition-dump]
 
-[s3-partition-folio.ops]
+[s3-partition-dump.ops]
 op=0 kind=static span=0:88
 op=1 kind=static span=20:81
 op=2 kind=dynamic span=28:46
@@ -21,11 +21,11 @@ op=4 kind=dynamic span=61:72
 
 #[test]
 fn full_print_is_identity_on_canonical_text() {
-    let folio = PartitionPage::parse(CANONICAL).expect("canonical text parses");
-    assert_eq!(folio.print_to_string(DumpMode::Full).as_str(), CANONICAL);
+    let dump = PartitionPage::parse(CANONICAL).expect("canonical text parses");
+    assert_eq!(dump.print_to_string(DumpMode::Full).as_str(), CANONICAL);
     assert_eq!(
-        folio.print_to_string(DumpMode::Display),
-        folio.print_to_string(DumpMode::Full)
+        dump.print_to_string(DumpMode::Display),
+        dump.print_to_string(DumpMode::Full)
     );
 }
 
@@ -37,17 +37,17 @@ fn the_live_mirror_prints_the_lowered_facts_exactly() {
     let s2 = vize_l1_to_l2::lower(&allocator, &tree, &errors);
     let lowered = lower(&allocator, &s2.root);
 
-    let folio = PartitionPage::of(&lowered.partition);
-    assert_eq!(folio.print_to_string(DumpMode::Full).as_str(), CANONICAL);
+    let dump = PartitionPage::of(&lowered.partition);
+    assert_eq!(dump.print_to_string(DumpMode::Full).as_str(), CANONICAL);
     assert_eq!(
         PartitionPage::parse(CANONICAL).expect("canonical text parses"),
-        folio
+        dump
     );
 }
 
 #[test]
 fn structural_round_trip_holds_for_both_kinds() {
-    let folio = PartitionPage {
+    let dump = PartitionPage {
         ops: vec![
             DumpPartitionFact {
                 op: 7,
@@ -61,25 +61,24 @@ fn structural_round_trip_holds_for_both_kinds() {
             },
         ],
     };
-    let printed = folio.print_to_string(DumpMode::Full);
-    assert_eq!(PartitionPage::parse(printed.as_str()), Ok(folio));
+    let printed = dump.print_to_string(DumpMode::Full);
+    assert_eq!(PartitionPage::parse(printed.as_str()), Ok(dump));
 }
 
 #[test]
 fn malformed_records_are_refused_with_their_line() {
     let unknown_kind =
-        "[s3-partition-folio]\n\n[s3-partition-folio.ops]\nop=0 kind=hoisted span=0:1\n\n";
+        "[s3-partition-dump]\n\n[s3-partition-dump.ops]\nop=0 kind=hoisted span=0:1\n\n";
     assert_eq!(
         PartitionPage::parse(unknown_kind).unwrap_err(),
         DumpError::new(4, cstr!("unknown partition kind `hoisted`"))
     );
-    let bad_span = "[s3-partition-folio]\n\n[s3-partition-folio.ops]\nop=0 kind=static span=01\n\n";
+    let bad_span = "[s3-partition-dump]\n\n[s3-partition-dump.ops]\nop=0 kind=static span=01\n\n";
     assert_eq!(
         PartitionPage::parse(bad_span).unwrap_err(),
         DumpError::new(4, cstr!("invalid span `01`"))
     );
-    let extra =
-        "[s3-partition-folio]\n\n[s3-partition-folio.ops]\nop=0 kind=static span=0:1 x=1\n\n";
+    let extra = "[s3-partition-dump]\n\n[s3-partition-dump.ops]\nop=0 kind=static span=0:1 x=1\n\n";
     assert_eq!(
         PartitionPage::parse(extra).unwrap_err(),
         DumpError::new(4, cstr!("unexpected field `x=1`"))

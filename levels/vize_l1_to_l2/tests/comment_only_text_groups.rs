@@ -48,8 +48,8 @@ fn comment_only_runs_keep_one_authored_decision_per_comment() {
         source.push_str(comment);
     }
     source.push_str("</div>");
-    support::with_lowered(source.as_str(), |lowered, folio| {
-        let [DumpOp::Element(element)] = folio.ops.as_slice() else {
+    support::with_lowered(source.as_str(), |lowered, dump| {
+        let [DumpOp::Element(element)] = dump.ops.as_slice() else {
             panic!("expected the div root");
         };
         assert!(element.children.is_empty());
@@ -71,8 +71,8 @@ fn comment_only_runs_keep_one_authored_decision_per_comment() {
 #[test]
 fn comment_only_runs_stop_before_elements_and_interpolations() {
     let source = "<div><!--a--><!--b--><i/><!--c--><!--d-->{{ value }}<!--e--><!--f--></div>";
-    support::with_lowered(source, |lowered, folio| {
-        let [DumpOp::Element(root)] = folio.ops.as_slice() else {
+    support::with_lowered(source, |lowered, dump| {
+        let [DumpOp::Element(root)] = dump.ops.as_slice() else {
             panic!("expected the div root");
         };
         let [DumpOp::Element(child), DumpOp::Interpolation(interpolation)] =
@@ -100,8 +100,8 @@ fn comment_only_runs_stop_before_elements_and_interpolations() {
 #[test]
 fn comments_before_text_remain_in_the_whitespace_group() {
     let source = "<div><!--a--><!--b-->\n  x<!--c--><!--d-->\n y</div>";
-    support::with_lowered(source, |lowered, folio| {
-        let [DumpOp::Element(root)] = folio.ops.as_slice() else {
+    support::with_lowered(source, |lowered, dump| {
+        let [DumpOp::Element(root)] = dump.ops.as_slice() else {
             panic!("expected the div root");
         };
         assert!(matches!(root.children.as_slice(), [DumpOp::Text(text)] if text.content == " x y"));
@@ -122,8 +122,8 @@ fn preserved_comments_remain_distinct_children_in_authored_order() {
     let (tree, errors) = vize_l1::markup::parse(&allocator, source);
     assert!(errors.is_empty());
     let lowered = lower_preserving_comments(&allocator, &tree, &errors);
-    let folio = L2Page::of(&lowered.root.ops);
-    let [DumpOp::Element(root)] = folio.ops.as_slice() else {
+    let dump = L2Page::of(&lowered.root.ops);
+    let [DumpOp::Element(root)] = dump.ops.as_slice() else {
         panic!("expected the div root");
     };
     let [
@@ -177,8 +177,8 @@ fn recovered_leading_bytes_still_break_comment_text_groups() {
     comment.leading = gap.text;
     assert_eq!(vize_l1::markup::check_fidelity(&tree), Ok(()));
     let lowered = lower(&allocator, &tree, &errors);
-    let folio = L2Page::of(&lowered.root.ops);
-    let [DumpOp::Element(root)] = folio.ops.as_slice() else {
+    let dump = L2Page::of(&lowered.root.ops);
+    let [DumpOp::Element(root)] = dump.ops.as_slice() else {
         panic!("expected the div root");
     };
     let [DumpOp::Text(first), DumpOp::Text(last)] = root.children.as_slice() else {

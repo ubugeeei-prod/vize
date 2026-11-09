@@ -100,7 +100,7 @@ pub fn render_profile_report(report: &ProfileReport<'_>) -> String {
         "cache.stats_compile.",
     );
     render_counter_table(&mut out, report, "Source facts", "source.");
-    render_counter_table(&mut out, report, "Davinci plan", "davinci.build.");
+    render_counter_table(&mut out, report, "Levels plan", "levels.build.");
     render_counter_table(&mut out, report, "L2 DOM traversal", "l2.dom.");
     render_counter_table(&mut out, report, "Product lanes", "lane.");
     render_counter_table(&mut out, report, "Vue dialects", "dialect.");

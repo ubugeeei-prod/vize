@@ -33,9 +33,9 @@ executed suites:
 
 The workspace total is **18,583 passed, zero failed, 37 ignored**. Inventory lists
 18,620 cases in 1,220 binaries; JUnit contains 1,190 nonempty executed suites. The
-other 30 binaries are empty or ignored-only. Davinci means `davinci/**` plus
-`tests/davinci_test_support`; its extension contract/host belong there, while
-`tools/benchmarks/crates/davinci_harness` remains benchmark support.
+other 30 binaries are empty or ignored-only. Davinci means `levels/**` plus
+`tests/level_test_support`; its extension contract/host belong there, while
+`tools/benchmarks/crates/level_harness` remains benchmark support.
 
 Doctests are separate: **435 passed, zero failed, 36 ignored**, including vendor
 packages. All 51 result phases were accumulated, including multiple phases for a

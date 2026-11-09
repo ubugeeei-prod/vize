@@ -27,7 +27,7 @@ export type ProjectionMatrix = {
 };
 
 export function loadProjectionMatrix(root: string): ProjectionMatrix {
-  const file = path.join(root, "tests/_fixtures/davinci-ts40-projection/matrix.json");
+  const file = path.join(root, "tests/_fixtures/level-ts40-projection/matrix.json");
   return JSON.parse(fs.readFileSync(file, "utf8")) as ProjectionMatrix;
 }
 
@@ -35,7 +35,7 @@ export function validateProjectionMatrix(root: string, matrix: ProjectionMatrix)
   assert(matrix.schemaVersion === 1, "TS-40 schemaVersion must be 1");
   assert(
     matrix.claim === "current-canon-maestro-behavior-only",
-    "TS-40 must not claim Davinci or L2 parity",
+    "TS-40 must not claim Levels or L2 parity",
   );
   assert(matrix.fixtures.length > 0, "TS-40 fixture matrix must not be empty");
   assert(matrix.normalization.length > 0, "TS-40 normalization policy must be explicit");

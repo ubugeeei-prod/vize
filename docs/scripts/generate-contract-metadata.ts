@@ -57,7 +57,7 @@ const evidence = {
     ".github/workflows/pr-rust-checks.yml",
     "crates/vize_glyph/src/lib.rs",
   ],
-  davinci: [
+  levels: [
     "docs/davinci/README.md",
     "tests/tooling/compiled-docs-inputs.test.ts",
     "docs/davinci/plan/budgets.toml",
@@ -151,12 +151,12 @@ export function documentationContractMetadata() {
         evidence: evidence.glyph,
       },
       {
-        id: "davinci",
-        title: "Davinci",
+        id: "levels",
+        title: "Levels",
         packageName: "@vizejs/native",
         documentation: "https://github.com/ubugeeei-prod/vize/tree/main/docs/davinci",
         installation: { package: "pnpm add @vizejs/native" },
-        evidence: evidence.davinci,
+        evidence: evidence.levels,
       },
       {
         id: "devtools",

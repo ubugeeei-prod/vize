@@ -25,8 +25,8 @@ use support::{assert_transformed_sound, with_transformed};
 /// The single root element of branch `index` of the `chain`-th root op
 /// (the `vif_pass.rs` helper, repeated test-file-locally like the span
 /// helper below).
-fn branch_root(folio: &L2Page, chain: usize, index: usize) -> &DumpElement {
-    let DumpOp::If(if_op) = &folio.ops[chain] else {
+fn branch_root(dump: &L2Page, chain: usize, index: usize) -> &DumpElement {
+    let DumpOp::If(if_op) = &dump.ops[chain] else {
         panic!("root op {chain} is not ui.if");
     };
     match &if_op.branches[index].ops[..] {
@@ -97,7 +97,7 @@ fn a_dynamic_key_extracts_without_leaving_the_surface() {
     // records the value text and the binding's index; the op itself
     // stays (a pass removing a binding would shift every later id).
     let source = r#"<p v-if="a" :key="ka">1</p><p v-else :key="kb">2</p>"#;
-    with_transformed(source, |lowered, folio, facts, _| {
+    with_transformed(source, |lowered, dump, facts, _| {
         assert_eq!(lowered.diagnostics, vec![]);
         let entries = facts.if_facts.sorted_entries();
         assert_eq!(entries.len(), 1);
@@ -119,7 +119,7 @@ fn a_dynamic_key_extracts_without_leaving_the_surface() {
             ]
         );
         // The binding op stays on the carrier surface.
-        assert_eq!(branch_root(folio, 0, 0).bindings.len(), 1);
+        assert_eq!(branch_root(dump, 0, 0).bindings.len(), 1);
     });
     assert_transformed_sound(source, "dynamic-keys");
 }
@@ -140,7 +140,7 @@ fn the_first_key_spelling_in_authored_order_wins() {
     // re-derived from spans. `:key` first: the static `key` attribute
     // stays on the surface.
     let source = r#"<p v-if="a" :key="ka" key="s">1</p><p v-else>2</p>"#;
-    with_transformed(source, |_, folio, facts, _| {
+    with_transformed(source, |_, dump, facts, _| {
         let entries = facts.if_facts.sorted_entries();
         assert_eq!(
             entries[0].1.branches[0]
@@ -153,7 +153,7 @@ fn the_first_key_spelling_in_authored_order_wins() {
             }
         );
         assert_eq!(
-            branch_root(folio, 0, 0).attributes,
+            branch_root(dump, 0, 0).attributes,
             vec![DumpAttribute {
                 name: "key".into(),
                 value: Some("s".into()),
@@ -170,7 +170,7 @@ fn a_slot_outlet_branch_key_extracts_from_the_outlet_surface() {
     // attribute surface; series 5 gave it one, and the extraction now
     // runs exactly as on elements.
     let source = r#"<slot v-if="a" key="s"></slot><p v-else>f</p>"#;
-    with_transformed(source, |_, folio, facts, _| {
+    with_transformed(source, |_, dump, facts, _| {
         let entries = facts.if_facts.sorted_entries();
         assert_eq!(
             entries[0].1.branches[0]
@@ -179,7 +179,7 @@ fn a_slot_outlet_branch_key_extracts_from_the_outlet_surface() {
                 .kind,
             BranchKeyKind::Static(Some("s".into()))
         );
-        let DumpOp::If(if_op) = &folio.ops[0] else {
+        let DumpOp::If(if_op) = &dump.ops[0] else {
             panic!("root is ui.if");
         };
         let [DumpOp::Slot(outlet)] = &if_op.branches[0].ops[..] else {

@@ -1,5 +1,5 @@
 //! TS-17 for the `v-slot` pass (P2-9 series 3): committed fixture in,
-//! pipeline out, **full normalized folio** snapshot — the P2-4 harness
+//! pipeline out, **full normalized dump** snapshot — the P2-4 harness
 //! shape, as the vif and vfor snapshots applied it.
 //!
 //! The snapshot is the oracle; the walk accounting, the grouping facts
@@ -34,11 +34,11 @@ fn fixture(name: &str) -> vize_l0::String {
 }
 
 #[test]
-fn the_groups_fixture_snapshots_the_post_pass_folio() {
+fn the_groups_fixture_snapshots_the_post_pass_dump() {
     let source = fixture("groups.vue");
-    with_transformed(&source, |lowered, folio, facts, budget| {
-        // The oracle: the full normalized folio after the pipeline ran.
-        assert_dump_snapshot!(*folio);
+    with_transformed(&source, |lowered, dump, facts, budget| {
+        // The oracle: the full normalized dump after the pipeline ran.
+        assert_dump_snapshot!(*dump);
 
         // Supplements: the planned walk accounting through the budget
         // observer's own derived page. Slot carriers are what this
@@ -101,12 +101,12 @@ fn the_groups_fixture_snapshots_the_post_pass_folio() {
 }
 
 #[test]
-fn the_invalid_fixture_snapshots_the_post_pass_folio() {
+fn the_invalid_fixture_snapshots_the_post_pass_dump() {
     let source = fixture("invalid.vue");
-    with_transformed(&source, |lowered, folio, facts, _| {
+    with_transformed(&source, |lowered, dump, facts, _| {
         // The tree survives every error untouched (kept fragments, not
         // rollback), the four diagnostics ride the unified channel.
-        assert_dump_snapshot!(*folio);
+        assert_dump_snapshot!(*dump);
         let messages: Vec<&str> = lowered
             .diagnostics
             .iter()

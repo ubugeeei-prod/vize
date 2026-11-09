@@ -39,7 +39,7 @@ const campaigns = (event: string, source: Step[] = steps) =>
 
 test("every affected PR retains source-built Nuxt 3 SSR, hydration and navigation", () => {
   assert.ok(workflow.on.pull_request.paths?.includes("crates/**"));
-  assert.ok(workflow.on.pull_request.paths?.includes("davinci/**"));
+  assert.ok(workflow.on.pull_request.paths?.includes("levels/**"));
   assert.ok(workflow.on.pull_request.paths?.includes("npm/framework/nuxt/**"));
   assert.equal(job.if, undefined);
   assert.notEqual(job["continue-on-error"], true);

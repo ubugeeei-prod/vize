@@ -229,7 +229,7 @@ export function assertSeededTree({ manifest, outDir, cli, hooks }: SeedAssertInp
 
   return {
     schemaVersion: 1,
-    tool: "tools/davinci/seed-defects.mjs --assert",
+    tool: "tools/levels/seed-defects.mjs --assert",
     source: manifest.source,
     scope: manifest.scope,
     lint: {

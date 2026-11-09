@@ -14,7 +14,7 @@ use vize_l1_to_l2::exemptions;
 fn a_non_native_tag_lowers_as_a_component() {
     let art = artifact("<MyComp>text</MyComp>");
     assert_eq!(
-        art.folio,
+        art.dump,
         "[l2-dump-v2]\n\
          ops=2\n\
          \n\
@@ -29,7 +29,7 @@ fn a_non_native_tag_lowers_as_a_component() {
 fn the_svg_namespace_is_entered_by_tag_and_inherited() {
     let art = artifact("<svg><path/></svg>");
     assert_eq!(
-        art.folio,
+        art.dump,
         "[l2-dump-v2]\n\
          ops=2\n\
          \n\
@@ -44,7 +44,7 @@ fn the_svg_namespace_is_entered_by_tag_and_inherited() {
 fn a_bare_svg_tag_enters_the_svg_namespace() {
     let art = artifact("<feImage />");
     assert_eq!(
-        art.folio,
+        art.dump,
         "[l2-dump-v2]\n\
          ops=1\n\
          \n\
@@ -61,7 +61,7 @@ fn v_model_lowers_to_the_contract_with_synthesized_attributes() {
     // in declared order (element-kind, modifiers).
     let art = artifact("<input v-model.lazy.trim=\"msg\">");
     assert_eq!(
-        art.folio,
+        art.dump,
         "[l2-dump-v2]\n\
          ops=2\n\
          \n\
@@ -80,7 +80,7 @@ fn v_model_lowers_to_the_contract_with_synthesized_attributes() {
 fn a_custom_directive_rides_through_as_the_dialect_op() {
     let art = artifact("<div v-pin:top.stop=\"v\"></div>");
     assert_eq!(
-        art.folio,
+        art.dump,
         "[l2-dump-v2]\n\
          ops=2\n\
          \n\
@@ -95,7 +95,7 @@ fn a_custom_directive_rides_through_as_the_dialect_op() {
 fn a_slot_outlet_owns_its_fallback_and_normalizes_the_implicit_name() {
     let named = artifact("<slot name=\"s\"><span>f</span></slot>");
     assert_eq!(
-        named.folio,
+        named.dump,
         "[l2-dump-v2]\n\
          ops=3\n\
          \n\
@@ -108,7 +108,7 @@ fn a_slot_outlet_owns_its_fallback_and_normalizes_the_implicit_name() {
 
     let implicit = artifact("<slot></slot>");
     assert_eq!(
-        implicit.folio,
+        implicit.dump,
         "[l2-dump-v2]\n\
          ops=1\n\
          \n\
@@ -119,7 +119,7 @@ fn a_slot_outlet_owns_its_fallback_and_normalizes_the_implicit_name() {
 
     let dynamic = artifact("<slot :name=\"n\"></slot>");
     assert_eq!(
-        dynamic.folio,
+        dynamic.dump,
         "[l2-dump-v2]\n\
          ops=1\n\
          \n\
@@ -136,7 +136,7 @@ fn one_way_bindings_lower_to_the_normalized_ops() {
     // prop), and `@` spellings ride `ui.on` with modifiers verbatim.
     let art = artifact("<li v-for=\"(item, i) in items\" :key=\"item.id\">{{ item.name }}</li>");
     assert_eq!(
-        art.folio,
+        art.dump,
         "[l2-dump-v2]\n\
          ops=4\n\
          \n\
@@ -151,7 +151,7 @@ fn one_way_bindings_lower_to_the_normalized_ops() {
 
     let on = artifact("<button @click.stop.prevent=\"go()\" v-on=\"handlers\">x</button>");
     assert_eq!(
-        on.folio,
+        on.dump,
         "[l2-dump-v2]\n\
          ops=4\n\
          \n\
@@ -173,7 +173,7 @@ fn the_parser_shorthands_are_mirrored_at_lowering() {
     // (`vize_armature/src/parser/attribute.rs:267-340`).
     let art = artifact("<a :model-value .innerHTML=\"h\"></a>");
     assert_eq!(
-        art.folio,
+        art.dump,
         "[l2-dump-v2]\n\
          ops=3\n\
          \n\
@@ -190,7 +190,7 @@ fn the_parser_shorthands_are_mirrored_at_lowering() {
 fn v_once_lowers_to_the_dialect_flag() {
     let art = artifact("<div v-once>x</div>");
     assert_eq!(
-        art.folio,
+        art.dump,
         "[l2-dump-v2]\n\
          ops=3\n\
          \n\
@@ -207,7 +207,7 @@ fn v_once_lowers_to_the_dialect_flag() {
 fn v_memo_lowers_to_the_dialect_op_with_the_expression() {
     let art = artifact(r#"<p v-memo="[id]">x</p>"#);
     assert_eq!(
-        art.folio,
+        art.dump,
         "[l2-dump-v2]\n\
          ops=3\n\
          \n\
@@ -224,7 +224,7 @@ fn v_memo_lowers_to_the_dialect_op_with_the_expression() {
 fn v_memo_may_carry_an_opaque_expression() {
     let art = artifact(r#"<p v-memo="%">x</p>"#);
     assert_eq!(
-        art.folio,
+        art.dump,
         "[l2-dump-v2]\n\
          ops=3\n\
          \n\
@@ -241,7 +241,7 @@ fn v_memo_may_carry_an_opaque_expression() {
 fn v_show_lowers_to_the_dialect_op() {
     let art = artifact(r#"<p v-show="open">x</p>"#);
     assert_eq!(
-        art.folio,
+        art.dump,
         "[l2-dump-v2]\n\
          ops=3\n\
          \n\
@@ -263,7 +263,7 @@ fn ill_formed_v_once_spellings_still_defer() {
     ] {
         let art = artifact(src);
         assert_eq!(
-            art.folio,
+            art.dump,
             cstr!(
                 "[l2-dump-v2]\n\
                  ops=2\n\
@@ -296,7 +296,7 @@ fn v_pre_freezes_its_subtree_and_leaves_no_diagnostic() {
     // `vize_atelier_dom/tests/v_pre_freezes_its_subtree.rs`.
     let art = artifact("<p v-pre :x=\"1\">{{ y }}</p>");
     assert_eq!(
-        art.folio,
+        art.dump,
         "[l2-dump-v2]\n\
          ops=2\n\
          \n\
@@ -325,7 +325,7 @@ fn a_missing_end_tag_hole_becomes_a_surface_diagnostic() {
     // still lowers structurally, its span running to its last child.
     let art = artifact("<div><span>x</div>");
     assert_eq!(
-        art.folio,
+        art.dump,
         "[l2-dump-v2]\n\
          ops=3\n\
          \n\

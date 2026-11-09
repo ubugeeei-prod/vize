@@ -13,7 +13,7 @@ import {
   walkRustFiles,
   workspaceDependencyDeclaration,
   workspacePackage,
-} from "./support/davinci-stage-dependencies.ts";
+} from "./support/level-stage-dependencies.ts";
 
 const aliases = new Map<string, ReadonlyArray<readonly [string, string | null]>>([
   ["vize_l1", [["vize_l0", null]]],
@@ -44,7 +44,7 @@ const aliases = new Map<string, ReadonlyArray<readonly [string, string | null]>>
   ],
 ]);
 
-const publishedDavinciStages = new Set([
+const publishedLevelStages = new Set([
   "vize_l0",
   "vize_l0_derive",
   "vize_l1",
@@ -66,7 +66,7 @@ test("host executable lookup does not enter normal or build level dependencies",
   }
 });
 
-test("Davinci crates import retained packages through stage aliases", () => {
+test("Levels crates import retained packages through stage aliases", () => {
   for (const [packageName, expectedAliases] of aliases) {
     const dependencies = workspacePackage(metadata, packageName).dependencies;
     for (const [dependencyName, rename] of expectedAliases) {
@@ -83,7 +83,7 @@ test("Davinci crates import retained packages through stage aliases", () => {
   }
 });
 
-test("Davinci stage dependencies are one-way and acyclic", () => {
+test("Levels stage dependencies are one-way and acyclic", () => {
   const tiers = new Map<string, number>([
     ["vize_carton", 1],
     ["vize_l0", 0.5],
@@ -124,12 +124,12 @@ test("Davinci stage dependencies are one-way and acyclic", () => {
   }
 });
 
-test("Davinci stage crates are publishable with registry-resolvable dependencies", () => {
-  for (const packageName of publishedDavinciStages) {
+test("Levels stage crates are publishable with registry-resolvable dependencies", () => {
+  for (const packageName of publishedLevelStages) {
     const pkg = workspacePackage(metadata, packageName);
     assert.equal(pkg.publish, null, `${packageName} must be publishable for the production switch`);
     for (const dependency of pkg.dependencies) {
-      if (dependency.kind === "dev" || !publishedDavinciStages.has(dependency.name)) continue;
+      if (dependency.kind === "dev" || !publishedLevelStages.has(dependency.name)) continue;
       assert.match(
         dependency.req,
         /^=\d+\.\d+\.\d+$/u,
@@ -144,17 +144,17 @@ test("Davinci stage crates are publishable with registry-resolvable dependencies
   }
 });
 
-test("Davinci fuzz harness imports stage packages through aliases", () => {
+test("Levels fuzz harness imports stage packages through aliases", () => {
   const manifest = readRepoFile("tests", "fuzz", "Cargo.toml");
-  assert.match(manifest, /^vize_l0 = \{ path = "\.\.\/\.\.\/davinci\/vize_l0" \}$/m);
-  assert.match(manifest, /^vize_l1_to_l2 = \{ path = "\.\.\/\.\.\/davinci\/vize_l1_to_l2" \}$/m);
-  assert.match(manifest, /^vize_l2 = \{ path = "\.\.\/\.\.\/davinci\/vize_l2" \}$/m);
-  assert.match(manifest, /^vize_l2_to_l3 = \{ path = "\.\.\/\.\.\/davinci\/vize_l2_to_l3" \}$/m);
-  assert.match(manifest, /^vize_l3 = \{ path = "\.\.\/\.\.\/davinci\/vize_l3" \}$/m);
+  assert.match(manifest, /^vize_l0 = \{ path = "\.\.\/\.\.\/levels\/vize_l0" \}$/m);
+  assert.match(manifest, /^vize_l1_to_l2 = \{ path = "\.\.\/\.\.\/levels\/vize_l1_to_l2" \}$/m);
+  assert.match(manifest, /^vize_l2 = \{ path = "\.\.\/\.\.\/levels\/vize_l2" \}$/m);
+  assert.match(manifest, /^vize_l2_to_l3 = \{ path = "\.\.\/\.\.\/levels\/vize_l2_to_l3" \}$/m);
+  assert.match(manifest, /^vize_l3 = \{ path = "\.\.\/\.\.\/levels\/vize_l3" \}$/m);
   assert.doesNotMatch(manifest, /^vize_(?:carton|disegno|ricalco) = /m); // codename: published package name
 
   for (const target of [
-    "folio_parse.rs",
+    "dump_parse.rs",
     "l1_lowering.rs",
     "l2_to_l3_lowering.rs",
     "template_compile.rs",
@@ -164,28 +164,28 @@ test("Davinci fuzz harness imports stage packages through aliases", () => {
   }
 });
 
-test("Davinci L2 uses the physical crate directory", () => {
+test("Levels L2 uses the physical crate directory", () => {
   const workspaceManifest = readRepoFile("Cargo.toml");
-  assert.match(workspaceManifest, /^\s*"davinci\/vize_l2",$/m);
+  assert.match(workspaceManifest, /^\s*"levels\/vize_l2",$/m);
   assert.deepEqual(workspaceDependencyDeclaration("vize_l2"), {
-    path: "davinci/vize_l2",
+    path: "levels/vize_l2",
     version: `=${workspacePackage(metadata, "vize_l2").version}`,
   });
   assert.doesNotMatch(workspaceManifest, /crates\/vize_disegno/u); // codename: published package name
 });
 
-test("Davinci L1-to-L2 uses the physical crate package and directory", () => {
+test("Levels L1-to-L2 uses the physical crate package and directory", () => {
   const workspaceManifest = readRepoFile("Cargo.toml");
-  assert.match(workspaceManifest, /^\s*"davinci\/vize_l1_to_l2",$/m);
+  assert.match(workspaceManifest, /^\s*"levels\/vize_l1_to_l2",$/m);
   assert.deepEqual(workspaceDependencyDeclaration("vize_l1_to_l2"), {
-    path: "davinci/vize_l1_to_l2",
+    path: "levels/vize_l1_to_l2",
     version: `=${workspacePackage(metadata, "vize_l1_to_l2").version}`,
   });
   assert.doesNotMatch(workspaceManifest, /crates\/vize_ricalco/u); // codename: published package name
   assert.doesNotMatch(workspaceManifest, /^vize_ricalco = /m); // codename: published package name
   assert.doesNotMatch(workspaceManifest, /package = "vize_ricalco"/u); // codename: published package name
 
-  const loweringManifest = readRepoFile("davinci", "vize_l1_to_l2", "Cargo.toml");
+  const loweringManifest = readRepoFile("levels", "vize_l1_to_l2", "Cargo.toml");
   assert.match(loweringManifest, /^name = "vize_l1_to_l2"$/m);
 
   const lockfile = readRepoFile("Cargo.lock");
@@ -193,21 +193,21 @@ test("Davinci L1-to-L2 uses the physical crate package and directory", () => {
   assert.doesNotMatch(lockfile, /\bvize_ricalco\b/u); // codename: published package name
 });
 
-test("Davinci L3 uses the physical crate package and directory", () => {
+test("Levels L3 uses the physical crate package and directory", () => {
   const workspaceManifest = readRepoFile("Cargo.toml");
-  assert.match(workspaceManifest, /^\s*"davinci\/vize_l3",$/m);
+  assert.match(workspaceManifest, /^\s*"levels\/vize_l3",$/m);
   assert.deepEqual(workspaceDependencyDeclaration("vize_l3"), {
-    path: "davinci/vize_l3",
+    path: "levels/vize_l3",
     version: `=${workspacePackage(metadata, "vize_l3").version}`,
   });
-  assert.doesNotMatch(workspaceManifest, /\bvize_impeto\b/u);
+  assert.doesNotMatch(workspaceManifest, /\bvize_l3\b/u);
 
-  const l3Manifest = readRepoFile("davinci", "vize_l3", "Cargo.toml");
+  const l3Manifest = readRepoFile("levels", "vize_l3", "Cargo.toml");
   assert.match(l3Manifest, /^name = "vize_l3"$/m);
 });
 
-test("Davinci L1-to-L2 source paths use the physical L2 folio type", () => {
-  const sourceDir = path.join(repoRoot, "davinci", "vize_l1_to_l2", "src");
+test("Levels L1-to-L2 source paths use the physical L2 dump type", () => {
+  const sourceDir = path.join(repoRoot, "levels", "vize_l1_to_l2", "src");
   for (const fullPath of walkRustFiles(sourceDir)) {
     const source = fs.readFileSync(fullPath, "utf8");
     assert.doesNotMatch(
@@ -218,7 +218,7 @@ test("Davinci L1-to-L2 source paths use the physical L2 folio type", () => {
   }
 });
 
-test("Davinci DOM production imports lowering through the physical L1-to-L2 package", () => {
+test("Levels DOM production imports lowering through the physical L1-to-L2 package", () => {
   const lowering = dependency(metadata, "vize_atelier_dom", "vize_l1_to_l2", null);
   assert.equal(lowering.rename, null);
   const dependencies = workspacePackage(metadata, "vize_atelier_dom").dependencies;
@@ -261,7 +261,7 @@ test("Atelier core L2 witnesses import lowering through the physical L1-to-L2 pa
   }
 });
 
-test("Davinci Vapor compile path imports the verified L3 bridge", () => {
+test("Levels Vapor compile path imports the verified L3 bridge", () => {
   const vapor = workspacePackage(metadata, "vize_atelier_vapor");
   for (const [dependencyName, rename] of [
     ["vize_l1", null],

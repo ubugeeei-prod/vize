@@ -1,6 +1,6 @@
 # vize_l2
 
-`vize_l2` is Davinci's input-neutral semantic IR. Dialect-specific lowering
+`vize_l2` is Levels's input-neutral semantic IR. Dialect-specific lowering
 crates use its operations, provenance, scope, and invariant checks.
 
 Support and deprecation guarantees are defined in the

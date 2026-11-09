@@ -2,7 +2,7 @@
 //! (`vize_atelier_sfc::css::transform`): strings and comments are not
 //! calls, `my-v-bind(` / `-webkit-v-bind(` need a left boundary, and an
 //! unmatched `(` stops the scan. Kept as a conversion-local copy so
-//! ricalco never grows an atelier_sfc edge (that crate is published;
+//! l1_to_l2 never grows an atelier_sfc edge (that crate is published;
 //! this one is not).
 
 /// One `v-bind(...)` whose argument survived trim + outer-quote strip.

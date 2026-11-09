@@ -1,4 +1,4 @@
-//! Davinci P1-6 differential lane — corpus-runnable entry.
+//! Levels P1-6 differential lane — corpus-runnable entry.
 //!
 //! Compiled only with the `legacy-differential` feature (see
 //! `[[test]] required-features` in Cargo.toml), which also arms the dual-run
@@ -12,18 +12,18 @@
 //!
 //! ```text
 //! cargo test -p vize_croquis --features legacy-differential \
-//!     --test davinci_differential -- --nocapture
+//!     --test level_differential -- --nocapture
 //! ```
 //!
 //! sweeps a committed expression battery plus the P0-2 fixture ladder with
 //! pinned comparison counts (the ratchet: dispatch or retention changes move
-//! these numbers loudly). Setting `VIZE_DAVINCI_DIFFERENTIAL_CORPUS=<dir>`
+//! these numbers loudly). Setting `VIZE_LEVEL_DIFFERENTIAL_CORPUS=<dir>`
 //! additionally sweeps every `.vue` file under `<dir>` (e.g.
 //! `tests/_fixtures/_git` for the hydrated ecosystem corpus) through the
 //! same dual-run analysis and reports the totals. The canonical fixture
 //! root fails closed unless its submodule inventory reconciles; other roots
 //! sweep in smoke scope with `closure_evidence=false` (see
-//! `davinci_test_support::corpus`).
+//! `level_test_support::corpus`).
 
 use std::fs;
 
@@ -123,7 +123,7 @@ fn differential_lane_agrees_and_reports() {
     );
 
     // -- P0-2 fixture ladder, pinned counts -------------------------------
-    for fixture in &davinci_harness::fixtures::LADDER {
+    for fixture in &level_harness::fixtures::LADDER {
         analyze_source(fixture.source, SfcCroquisOptions::full());
         analyze_source(fixture.source, SfcCroquisOptions::for_compile());
     }
@@ -139,7 +139,7 @@ fn differential_lane_agrees_and_reports() {
     );
 
     // -- optional corpus sweep --------------------------------------------
-    if let Some(sweep) = davinci_test_support::corpus::resolve_env_sweep() {
+    if let Some(sweep) = level_test_support::corpus::resolve_env_sweep() {
         let files = &sweep.files;
         assert!(
             !files.is_empty(),
@@ -156,7 +156,7 @@ fn differential_lane_agrees_and_reports() {
         }
         let end = differential::stats();
         eprintln!(
-            "davinci-differential corpus sweep: files={} analyzed={} identifier_comparisons={} component_reference_comparisons={} v_for_shapes={}",
+            "level-differential corpus sweep: files={} analyzed={} identifier_comparisons={} component_reference_comparisons={} v_for_shapes={}",
             files.len(),
             analyzed,
             end.identifier_comparisons - after_ladder.identifier_comparisons,
@@ -171,7 +171,7 @@ fn differential_lane_agrees_and_reports() {
 
     let end = differential::stats();
     eprintln!(
-        "davinci-differential totals: identifier_comparisons={} component_reference_comparisons={} v_for_shapes={}",
+        "level-differential totals: identifier_comparisons={} component_reference_comparisons={} v_for_shapes={}",
         end.identifier_comparisons, end.component_reference_comparisons, end.v_for_shapes,
     );
 }

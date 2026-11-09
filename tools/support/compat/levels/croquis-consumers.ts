@@ -1,4 +1,4 @@
-// Croquis consumption matrix generator (Davinci P0-7).
+// Croquis consumption matrix generator (Levels P0-7).
 //
 // Enumerates the public analysis products of crates/vize_croquis
 // (the `pub` fields of the `Croquis` struct in src/croquis.rs, the
@@ -29,9 +29,9 @@
 // --summary prints the same source-qualified report on demand.
 //
 // Usage:
-//   node tools/support/compat/davinci/croquis-consumers.ts --write     # regenerate index + shards
-//   node tools/support/compat/davinci/croquis-consumers.ts --check     # byte-compare against committed
-//   node tools/support/compat/davinci/croquis-consumers.ts --summary   # print cross-crate totals
+//   node tools/support/compat/levels/croquis-consumers.ts --write     # regenerate index + shards
+//   node tools/support/compat/levels/croquis-consumers.ts --check     # byte-compare against committed
+//   node tools/support/compat/levels/croquis-consumers.ts --summary   # print cross-crate totals
 //
 // Node builtins only. Output is deterministic (stable sort everywhere,
 // no timestamps, no absolute paths).
@@ -64,7 +64,7 @@ function main() {
   const mode = process.argv[2];
   if (mode !== "--write" && mode !== "--check" && mode !== "--summary") {
     console.error(
-      "usage: node tools/support/compat/davinci/croquis-consumers.ts --write | --check | --summary",
+      "usage: node tools/support/compat/levels/croquis-consumers.ts --write | --check | --summary",
     );
     process.exit(2);
   }

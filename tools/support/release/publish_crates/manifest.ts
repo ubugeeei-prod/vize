@@ -23,7 +23,7 @@ export function crateManifestPath(crateName: string): string {
   if (upstreamDirectory !== "") {
     return joinPath(joinPath("upstream/forks", upstreamDirectory), "Cargo.toml");
   }
-  const native = joinPath(joinPath("davinci", crateName), "Cargo.toml");
+  const native = joinPath(joinPath("levels", crateName), "Cargo.toml");
   return pathExists(native) ? native : joinPath(joinPath("crates", crateName), "Cargo.toml");
 }
 

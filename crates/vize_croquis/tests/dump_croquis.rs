@@ -18,7 +18,7 @@ fn committed_pages() -> Vec<PathBuf> {
     let mut pages: Vec<_> = std::fs::read_dir(root)
         .expect("fixture directory exists")
         .map(|entry| entry.expect("readable fixture entry").path())
-        .filter(|path| path.extension().is_some_and(|ext| ext == "folio"))
+        .filter(|path| path.extension().is_some_and(|ext| ext == "dump"))
         .collect();
     pages.sort();
     pages
@@ -55,7 +55,7 @@ fn malformed_page_reports_the_exact_parse_error() {
     let error = CroquisPage::parse("x\n").expect_err("content before [vir] is invalid");
     assert_eq!(
         error.to_compact_string(),
-        "folio parse error at line 1: content before the [vir] header"
+        "dump parse error at line 1: content before the [vir] header"
     );
 }
 

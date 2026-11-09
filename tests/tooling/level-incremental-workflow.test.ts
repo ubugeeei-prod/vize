@@ -1,5 +1,5 @@
 // P5-9 / P5-1a: the incrementality workflow keeps its shape — TS-42 runs on
-// every matching main/davinci push, over the corpus shard, with the seeded
+// every matching main/levels push, over the corpus shard, with the seeded
 // stale-cache defect proven caught; TS-43 runs on a Linux and a macOS lane.
 
 import assert from "node:assert/strict";
@@ -23,30 +23,30 @@ type Workflow = {
 };
 
 const workflow = parseYaml(
-  fs.readFileSync(path.join(repoRoot, ".github/workflows/davinci-incremental.yml"), "utf8"),
+  fs.readFileSync(path.join(repoRoot, ".github/workflows/level-incremental.yml"), "utf8"),
 ) as Workflow;
 
 const shard = ["splitpanes", "layoutit-grid", "cssgridgenerator"];
 const fixtures =
   "--fixtures tests/_fixtures/_projects --fixtures tests/_fixtures/vue-language-tools";
-const driver = "node tools/commands/davinci/incremental-equivalence.ts";
+const driver = "node tools/commands/levels/incremental-equivalence.ts";
 
 function runs(job: Job): string[] {
   return job.steps.flatMap((step) => (step.run ? step.run.trim().split("\n") : []));
 }
 
 test("the incrementality workflow triggers on the resident tier and its keyers", () => {
-  assert.deepEqual(workflow.on.push.branches, ["main", "davinci"]);
+  assert.deepEqual(workflow.on.push.branches, ["main", "levels"]);
   assert.ok(Object.hasOwn(workflow.on, "workflow_dispatch"));
   assert.ok(!Object.hasOwn(workflow.on, "pull_request"));
   const paths = workflow.on.push.paths;
   for (const required of [
     "crates/vize_incremental/**",
-    "davinci/vize_l0/**",
-    "davinci/vize_l2/**",
-    "davinci/vize_l1_to_l2/**",
-    "tools/commands/davinci/incremental-equivalence/**",
-    ".github/workflows/davinci-incremental.yml",
+    "levels/vize_l0/**",
+    "levels/vize_l2/**",
+    "levels/vize_l1_to_l2/**",
+    "tools/commands/levels/incremental-equivalence/**",
+    ".github/workflows/level-incremental.yml",
   ]) {
     assert.ok(paths.includes(required), `push must trigger on ${required}`);
   }
@@ -72,7 +72,7 @@ test("TS-42 runs over the hydrated corpus shard and proves the seeded defect cau
     `${driver} --corpus-shard ${fixtures} --seeded`,
   ]);
   const source = fs.readFileSync(
-    path.join(repoRoot, "tools/commands/davinci/incremental-equivalence.ts"),
+    path.join(repoRoot, "tools/commands/levels/incremental-equivalence.ts"),
     "utf8",
   );
   assert.ok(
@@ -80,7 +80,7 @@ test("TS-42 runs over the hydrated corpus shard and proves the seeded defect cau
     "the driver's shard must be the hydrated one",
   );
   const scripts = fs
-    .readdirSync(path.join(repoRoot, "tools/commands/davinci/incremental-equivalence/scripts"))
+    .readdirSync(path.join(repoRoot, "tools/commands/levels/incremental-equivalence/scripts"))
     .filter((name) => name.endsWith(".edits"));
   assert.deepEqual(scripts.toSorted(), [
     "01-template-keystrokes.edits",

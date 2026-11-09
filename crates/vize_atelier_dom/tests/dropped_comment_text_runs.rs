@@ -9,7 +9,7 @@
 //! there at all.
 //!
 //! With comments **on** the node exists and does break the run, which is
-//! the shape `davinci_dom_corpus`'s comment fixtures already cover.
+//! the shape `level_dom_corpus`'s comment fixtures already cover.
 //!
 //! Every expectation below is the output of `@vue/compiler-dom` itself
 //! (checked against 3.5.41 and 3.6.0-beta.10, `mode: "function"`,

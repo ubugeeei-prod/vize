@@ -11,16 +11,16 @@ use super::{
     Verdict,
 };
 
-/// Owned folio page for the L3 reactivity lattice.
+/// Owned dump page for the L3 reactivity lattice.
 #[derive(Debug, Clone, Default, PartialEq, Eq, Dump)]
-#[dump(name = "s3-reactivity-folio")]
+#[dump(name = "s3-reactivity-dump")]
 pub struct Page {
     /// Binding facts in binding-id order.
     pub bindings: Vec<Binding>,
 }
 
 impl Page {
-    /// Mirror live arena facts into the owned folio page.
+    /// Mirror live arena facts into the owned dump page.
     #[must_use]
     pub fn of(facts: &LatticeFacts<'_>) -> Self {
         Self {

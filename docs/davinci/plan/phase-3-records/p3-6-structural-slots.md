@@ -33,9 +33,9 @@ same structural slot metadata for direct code and mapping comparisons.
 - The parser agreement corpus includes the supported sources and their
   prefixes/punctuation deletions.
 - `tests_source_map::structural_slots` records exact code and decoded mappings.
-- `davinci_expr_reparse_floor` keeps native walk/reparse counts at zero and
+- `level_expr_reparse_floor` keeps native walk/reparse counts at zero and
   leaves the seven allocation ceilings unchanged.
-- `davinci_structural_slots_parity` runs separate native, retained and official
+- `level_structural_slots_parity` runs separate native, retained and official
   mounted traces. It checks conditional name changes, array/object reorder,
   item replacement, insertion/deletion, fallback restoration, scoped props,
   events, node identity and final unmount. Its retained compiles run in their

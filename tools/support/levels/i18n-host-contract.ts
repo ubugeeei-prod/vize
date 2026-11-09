@@ -1,4 +1,4 @@
-export const coreRoot = "davinci/vize_l0/src/";
+export const coreRoot = "levels/vize_l0/src/";
 export const hostRoot = "crates/vize_carton/src/";
 const modules = [
   "i18n_compiler",

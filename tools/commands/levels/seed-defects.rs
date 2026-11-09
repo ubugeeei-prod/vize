@@ -12,7 +12,7 @@
 use std::{env, path::PathBuf, process::ExitCode};
 
 use vize_tool_support::common;
-mod davinci_fpfn;
+mod level_fpfn;
 mod seed_exact;
 mod seed_exact_gen;
 // Exact snippet markers follow the current rule diagnostic targets.
@@ -22,11 +22,11 @@ mod seed_html_run;
 mod seed_pilot;
 mod seed_print;
 
-use davinci_fpfn::{assert_seeded_tree, resolve_vize_cli};
+use level_fpfn::{assert_seeded_tree, resolve_vize_cli};
 
 pub const USAGE: &str = "\
-Usage: rust-script tools/commands/davinci/seed-defects.rs [--html-nesting | --exact-classes] (--fixtures <dir> | --matrix | --corpus-shard) --out <dir> [--assert] [--report <path>]
-       rust-script tools/commands/davinci/seed-defects.rs --check-classes [--contracts <table.rs>] [--ledger <ledger-fn.md>]
+Usage: rust-script tools/commands/levels/seed-defects.rs [--html-nesting | --exact-classes] (--fixtures <dir> | --matrix | --corpus-shard) --out <dir> [--assert] [--report <path>]
+       rust-script tools/commands/levels/seed-defects.rs --check-classes [--contracts <table.rs>] [--ledger <ledger-fn.md>]
 
 Seeds defect classes and (with --assert) verifies recall by diagnostic
 identity. --html-nesting seeds the P4-11 HTML nesting classes.

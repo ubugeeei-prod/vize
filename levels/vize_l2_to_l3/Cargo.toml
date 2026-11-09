@@ -5,19 +5,19 @@ edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
-description = "L2-to-L3 - the Davinci Impeto lowering and shared partition facts"
+description = "L2-to-L3 - the Levels L3 lowering and shared partition facts"
 metadata.vize.stability = "experimental"
 readme = "README.md"
 
 [dependencies]
 vize_l0 = { workspace = true }
-# The Folio contract the partition page (`L3PartitionFolio`) derives; shared
+# The Dump contract the partition page (`L3PartitionDump`) derives; shared
 # infrastructure at tier 1, so the one-way stage graph is unchanged.
 vize_l2 = { workspace = true }
 vize_l3 = { workspace = true }
 
 [dev-dependencies]
-davinci_test_support = { workspace = true, features = ["l3-reference"] }
+level_test_support = { workspace = true, features = ["l3-reference"] }
 vize_atelier_sfc = { workspace = true }
 insta = { workspace = true }
 serde_json = { workspace = true }

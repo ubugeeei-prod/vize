@@ -112,7 +112,7 @@ jobs:
               delta = json.loads(subprocess.check_output([
                   "node", "qualification/tools/support/cross_file/async_component/feature-delta.ts",
                   parent, spec["feature"], landed_feature, landed_merge, head,
-                  "--", "crates", "davinci", "Cargo.toml", "Cargo.lock",
+                  "--", "crates", "levels", "Cargo.toml", "Cargo.lock",
               ], text=True))
               assert delta["historicalParent"] == parent
               assert delta["historicalFeature"] == spec["feature"]

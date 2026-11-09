@@ -18,7 +18,7 @@ pub(crate) fn normalized(code: &str) -> String {
     let built = SemanticBuilder::new().build(&parsed.program);
     assert!(built.diagnostics.is_empty(), "{:?}", built.diagnostics);
     let scoping = built.semantic.scoping();
-    let mut prefix = String::from("__davinci_comparison_");
+    let mut prefix = String::from("__level_comparison_");
     while code.contains(prefix.as_str())
         || scoping
             .symbol_names()
@@ -189,12 +189,12 @@ fn generated_identity_comparison_refuses_direct_eval() {
 #[test]
 fn generated_identity_comparison_avoids_escaped_binding_and_global_capture() {
     for code in [
-        r"function render() { const __davinci_comparison\u005f0 = 7; const n1 = t0(); return [n1, __davinci_comparison\u005f0]; }",
-        r"function render() { const n1 = t0(); return [n1, __davinci_comparison\u005f0]; }",
+        r"function render() { const __level_comparison\u005f0 = 7; const n1 = t0(); return [n1, __level_comparison\u005f0]; }",
+        r"function render() { const n1 = t0(); return [n1, __level_comparison\u005f0]; }",
     ] {
         assert_eq!(
             normalized(code),
-            code.replace("n1", "__davinci_comparison__0")
+            code.replace("n1", "__level_comparison__0")
         );
     }
 }

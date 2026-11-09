@@ -155,7 +155,7 @@ jobs:
           VIZE_TEMPLATE_EMIT_TS40_CAPTURE: ${{ runner.temp }}/typed-context-undefined/legacy-ts40
         run: |
           directory="$RUNNER_TEMP/typed-context-undefined"
-          cargo test --locked --profile ci -p vize_maestro --features legacy --test davinci_ts40_projection current_projection_matrix_is_exact_and_non_empty -- --exact --nocapture > "$directory/legacy-ts40.stdout" 2> "$directory/legacy-ts40.stderr"
+          cargo test --locked --profile ci -p vize_maestro --features legacy --test level_ts40_projection current_projection_matrix_is_exact_and_non_empty -- --exact --nocapture > "$directory/legacy-ts40.stdout" 2> "$directory/legacy-ts40.stderr"
       - name: Retain all raw evidence including failed observations
         if: ${{ always() }}
         run: |

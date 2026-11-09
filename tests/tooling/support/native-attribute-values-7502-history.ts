@@ -145,7 +145,7 @@ export function hostedHistory7502(directory: string) {
     const runtime = run(
       "runtime",
       "vp",
-      ["exec", "node", "tools/support/compat/davinci/plugin-sandbox-image.mjs"],
+      ["exec", "node", "tools/support/compat/levels/plugin-sandbox-image.mjs"],
       worktree,
     );
     const env = {

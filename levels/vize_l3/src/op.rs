@@ -1,4 +1,4 @@
-//! The Impeto op family: flat, id-addressed operations plus explicit state
+//! The L3 op family: flat, id-addressed operations plus explicit state
 //! edges.
 //!
 //! L3 deliberately does not reuse Vapor's nested block IR. Regions name

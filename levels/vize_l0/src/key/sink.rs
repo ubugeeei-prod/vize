@@ -3,7 +3,7 @@
 //! Every key starts with the same domain prefix — a fixed tag, the stage's
 //! stable wire id and the recipe version — so keys of different stages or
 //! versions can never collide even on equal pages. After the prefix a
-//! keyer feeds either raw page text (the [`fmt::Write`] impl, for a folio
+//! keyer feeds either raw page text (the [`fmt::Write`] impl, for a dump
 //! `Full` print) or typed fields (length-prefixed strings, little-endian
 //! integers, rebased spans). Both are platform-stable encodings.
 
@@ -117,7 +117,7 @@ impl KeySink {
     }
 }
 
-/// Raw page text: a folio `Full` print streams through this. Never fails.
+/// Raw page text: a dump `Full` print streams through this. Never fails.
 impl fmt::Write for KeySink {
     fn write_str(&mut self, text: &str) -> fmt::Result {
         self.hasher.update(text.as_bytes());

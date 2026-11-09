@@ -1,18 +1,18 @@
-name: Davinci unused bindings
+name: Levels unused bindings
 
 on:
   pull_request:
     paths:
-      - "davinci/vize_l0/**"
+      - "levels/vize_l0/**"
       - "crates/vize_croquis/**"
       - "crates/vize_atelier_sfc/src/croquis/**"
       - "crates/vize_atelier_sfc/src/croquis.rs"
       - "crates/vize_patina/**"
-      - "tools/commands/davinci/seed-defects.rs"
-      - "tools/support/davinci/**"
-      - "tests/tooling/davinci-unused-setup-bindings.test.ts"
-      - "tests/_fixtures/davinci-fpfn/**"
-      - ".github/workflows/davinci-unused-bindings.yml"
+      - "tools/commands/levels/seed-defects.rs"
+      - "tools/support/levels/**"
+      - "tests/tooling/level-unused-setup-bindings.test.ts"
+      - "tests/_fixtures/level-fpfn/**"
+      - ".github/workflows/level-unused-bindings.yml"
       - "tools/support/compat/github/compare-unused-bindings-profiles.ts"
       - "tests/tooling/unused-bindings-profiles.test.ts"
   workflow_dispatch:
@@ -23,7 +23,7 @@ on:
         default: false
 
 concurrency:
-  group: davinci-unused-${{ github.event.pull_request.number || github.ref }}
+  group: level-unused-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 permissions:
   contents: read
@@ -61,7 +61,7 @@ jobs:
       - name: Check independent specs and real rule dispatch
         if: ${{ !inputs.compare-profiles }}
         env:
-          VIZE_DAVINCI_FACT_CORPUS: tests/_fixtures/_git/splitpanes,tests/_fixtures/_git/layoutit-grid,tests/_fixtures/_git/cssgridgenerator
+          VIZE_LEVEL_FACT_CORPUS: tests/_fixtures/_git/splitpanes,tests/_fixtures/_git/layoutit-grid,tests/_fixtures/_git/cssgridgenerator
         run: |
           set -o pipefail
           cargo test --profile ci --message-format=json-render-diagnostics -p vize_l0 --test fact_demand | tee target/unused-bindings-units/ci-fact_demand.jsonl
@@ -70,14 +70,14 @@ jobs:
       - name: Compare the same complete fact specs under both profiles
         if: ${{ github.event_name == 'workflow_dispatch' && inputs.compare-profiles }}
         env:
-          VIZE_DAVINCI_FACT_CORPUS: tests/_fixtures/_git/splitpanes,tests/_fixtures/_git/layoutit-grid,tests/_fixtures/_git/cssgridgenerator
+          VIZE_LEVEL_FACT_CORPUS: tests/_fixtures/_git/splitpanes,tests/_fixtures/_git/layoutit-grid,tests/_fixtures/_git/cssgridgenerator
         run: node tools/support/compat/github/compare-unused-bindings-profiles.ts
       - name: Build the real CLI
         run: |
           set -o pipefail
           cargo build --profile ci --message-format=json-render-diagnostics -p vize | tee target/unused-bindings-units/ci-vize.jsonl
       - name: Recall every class-b mutation and reject wrong diagnostic identities
-        run: VIZE_BIN="$PWD/target/ci/vize" vp exec node --test tests/tooling/davinci-unused-setup-bindings.test.ts tests/tooling/davinci-fpfn-pilots.test.ts
+        run: VIZE_BIN="$PWD/target/ci/vize" vp exec node --test tests/tooling/level-unused-setup-bindings.test.ts tests/tooling/level-fpfn-pilots.test.ts
       - name: Collect only emitted Cargo unit fingerprints
         if: ${{ always() }}
         run: node tools/support/compat/github/compare-unused-bindings-profiles.ts --collect-unit-evidence

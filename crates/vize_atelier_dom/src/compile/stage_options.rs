@@ -301,7 +301,7 @@ pub(super) fn emit_l2(
 /// Historical DOM compilation enables the legacy pipe-filter rewrite only on
 /// its identifier-prefixing transform path. In unprefixed function mode,
 /// `label | cap` remains a JavaScript bitwise-or expression. Keep the shared
-/// dialect table intact for SSR and direct Davinci consumers while projecting
+/// dialect table intact for SSR and direct Levels consumers while projecting
 /// that shipped DOM behavior at this product boundary.
 pub(super) fn dom_compat_caps(
     dialect: vize_l0::config::VueVersion,

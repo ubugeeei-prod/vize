@@ -9,7 +9,7 @@ on:
       - npm/builder/parcel-native/**
       - npm/native/**
       - crates/**
-      - davinci/**
+      - levels/**
       - Cargo.toml
       - Cargo.lock
       - tools/support/compat/parcel/**

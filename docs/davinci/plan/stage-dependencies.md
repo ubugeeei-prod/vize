@@ -13,7 +13,7 @@ compatibility change is still required.
 | L1 to L2 lowering                | `vize_l1_to_l2`      | `vize_l1_to_l2`    |
 | L2 to L3 lowering                | `vize_l2_to_l3`      | `vize_l2_to_l3`    |
 
-`vize_davinci` is shared infrastructure rather than another artifact stage. It
+`vize_level` is shared infrastructure rather than another artifact stage. It
 owns ids, diagnostics, side tables, pass machinery, Folio contracts, and the
 canonical alias metadata used by tools.
 
@@ -22,15 +22,15 @@ canonical alias metadata used by tools.
 The graph is ordered by build tier, not by semantic stage number. Dependencies
 may point only to an earlier tier:
 
-| Build tier | Preferred crate | Allowed Davinci dependencies                    |
-| ---------- | --------------- | ----------------------------------------------- |
-| 0          | `vize_l0`       | none                                            |
-| 1          | `vize_davinci`  | `vize_l0`                                       |
-| 1          | `vize_l1`       | `vize_l0`                                       |
-| 2          | `vize_l2`       | `vize_l0`, `vize_davinci`                       |
-| 3          | `vize_l3`       | `vize_l0`, `vize_davinci`, `vize_l2`            |
-| 3          | `vize_l1_to_l2` | `vize_l0`, `vize_davinci`, `vize_l1`, `vize_l2` |
-| 4          | `vize_l2_to_l3` | `vize_l0`, `vize_davinci`, `vize_l2`, `vize_l3` |
+| Build tier | Preferred crate | Allowed Davinci dependencies                  |
+| ---------- | --------------- | --------------------------------------------- |
+| 0          | `vize_l0`       | none                                          |
+| 1          | `vize_level`    | `vize_l0`                                     |
+| 1          | `vize_l1`       | `vize_l0`                                     |
+| 2          | `vize_l2`       | `vize_l0`, `vize_level`                       |
+| 3          | `vize_l3`       | `vize_l0`, `vize_level`, `vize_l2`            |
+| 3          | `vize_l1_to_l2` | `vize_l0`, `vize_level`, `vize_l1`, `vize_l2` |
+| 4          | `vize_l2_to_l3` | `vize_l0`, `vize_level`, `vize_l2`, `vize_l3` |
 
 L0 must never depend on a later tier. L3's native decision result borrows its
 actual sealed L2 owner through a normal downward dependency. The conversion
@@ -39,7 +39,7 @@ edge re-exports that sole producer; it still owns flat-program lowering.
 The resident tier (`vize_incremental`, P5-4a) is a consumer above every stage
 tier: it runs the stage functions as salsa queries for long-lived processes
 and is the only crate allowed to depend on `salsa`
-(`tests/tooling/davinci-resident-salsa.test.ts`). No stage crate may depend
+(`tests/tooling/level-resident-salsa.test.ts`). No stage crate may depend
 on it, and the one-shot CLI never links it.
 
 The [storage boundary](./storage-boundary.md) defines how every stage consumes
@@ -47,10 +47,10 @@ L0 strings and collections, inventories retained `alloc::vec::Vec` sites, and
 keeps host filesystem and process I/O in the `vize` CLI.
 
 Cargo manifests use dependency renames where the package id still differs from
-the preferred crate name. Today those exceptions are L0/Carton and L3/Impeto,
+the preferred crate name. Today those exceptions are L0/Carton and L3/L3,
 so source imports stay on `vize_l0`, `vize_l1`, `vize_l2`, `vize_l3`, and
 `vize_l1_to_l2` while package publication remains compatible.
-`tests/tooling/davinci-stage-dependencies.test.ts` reads Cargo metadata to pin
+`tests/tooling/level-stage-dependencies.test.ts` reads Cargo metadata to pin
 every spelling and reject a reversed tier edge or cycle.
 
 ## L0 host boundary

@@ -9,10 +9,10 @@ on:
       - "crates/vize_maestro/Cargo.toml"
       - "crates/vize_maestro/src/server.rs"
       - "crates/vize_maestro/src/server/**"
-      - "davinci/vize_l0/Cargo.toml"
-      - "davinci/vize_l0/src/profiler.rs"
-      - "davinci/vize_l0/src/profiler/**"
-      - "tools/benchmarks/crates/davinci_harness/**"
+      - "levels/vize_l0/Cargo.toml"
+      - "levels/vize_l0/src/profiler.rs"
+      - "levels/vize_l0/src/profiler/**"
+      - "tools/benchmarks/crates/level_harness/**"
       - "tests/tooling/lsp-scheduler-cost-carrier.test.ts"
 permissions:
   contents: read

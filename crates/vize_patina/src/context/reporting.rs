@@ -98,7 +98,7 @@ impl<'a> LintContext<'a> {
     ///
     /// The ranges move into the complete file through
     /// the internal `ScriptFrame`, which validates
-    /// them against the L0 frame the Davinci stages key spans on, and are
+    /// them against the L0 frame the Levels stages key spans on, and are
     /// then reported like any SFC-absolute range. This is FP-1's root fix: a
     /// script-analysis range reported through [`LintContext::report`] was
     /// shifted by the *template's* offset and rendered on unrelated lines.

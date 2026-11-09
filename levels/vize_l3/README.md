@@ -1,6 +1,6 @@
 # vize_l3
 
-`vize_l3` is Davinci's L3 reactivity IR. It records backend-oriented UI
+`vize_l3` is Levels's L3 reactivity IR. It records backend-oriented UI
 work as flat, id-addressed operations with explicit state and effect edges.
 
 `decision::build_decisions` separately computes conservative native decisions
@@ -15,7 +15,7 @@ role, source span, and value kind. Missing values differ from empty literals;
 opaque and foreign expressions remain classified rather than becoming JavaScript.
 The payload text belongs to the L3 arena and does not borrow an earlier stage.
 
-`L3ValuesFolio` is the owned value-page companion to the graph-only `L3Folio`.
+`L3ValuesDump` is the owned value-page companion to the graph-only `L3Dump`.
 Its `operand=` JSON tuples preserve escapes and authored ordering. Equality of
 these serialized rows is document equality, not semantic expression equality.
 The `L3V009` verifier checks value shape, source containment and references in
@@ -28,13 +28,13 @@ subtree under a control region, a cached scope-free event handler, or a leaf
 update grouped with the adjacent op reading the same direct reference. The
 overlay never rewrites the graph, so exported partition facts stay canonical;
 `L3V010` re-derives every recorded alternative and committed choice, and
-`L3PlacementFolio` prints the overlay on its own page.
+`L3PlacementDump` prints the overlay on its own page.
 
 `extract::extract` is the try-measure-commit pass over that overlay. Each
 candidate is performed on a trial plan, measured (emitted size, reactive-edge
 count, update-path length), and committed only under the `-O` tier's pinned
 rule and candidate budget, which mirror `budgets.toml`. Every candidate yields
-one applied or missed decision, printed on `L3ExtractionFolio`.
+one applied or missed decision, printed on `L3ExtractionDump`.
 
 Support and deprecation guarantees are defined in the
 [Rust crate support tiers](https://github.com/ubugeeei-prod/vize/blob/main/docs/content/stability.md#rust-crate-support-tiers).

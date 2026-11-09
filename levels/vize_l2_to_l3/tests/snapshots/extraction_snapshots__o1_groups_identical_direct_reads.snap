@@ -2,12 +2,12 @@
 source: crates/vize_l2_to_l3/tests/extraction_snapshots.rs
 expression: "decisions(r#\"<div :title=\"msg\">{{ msg }}</div>\"#, OptTier::O1)"
 ---
-[s3-placement-folio]
+[s3-placement-dump]
 
-[s3-placement-folio.placements]
+[s3-placement-dump.placements]
 op=2 alternatives=inline,group leader=1 chosen=group
 
-[s3-extraction-folio]
+[s3-extraction-dump]
 tier=O1
 candidate_budget=8
 budget_left=7
@@ -18,7 +18,7 @@ reactive_edges_after=1
 update_path_before=2
 update_path_after=2
 
-[s3-extraction-folio.decisions]
+[s3-extraction-dump.decisions]
 op=2 placement=group kind=applied reason=committed span=18:27 size=-21 edges=-1 path=0 budget=7
 
 [remarks]

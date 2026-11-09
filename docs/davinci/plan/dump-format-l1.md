@@ -2,8 +2,8 @@
 
 The L1 page is the lossless surface tree (`vize_l1::SurfaceTree`) as a folio
 page: `vize_extension_host::SurfacePage`, hand-written under the
-[folio contract](./folio-format.md) and carried by the input-dialect WIT world
-(`davinci/vize_guest/wit/input-dialect.wit`, P6-1a) as `lowered-block.surface` with
+[folio contract](./dump-format.md) and carried by the input-dialect WIT world
+(`levels/vize_guest/wit/input-dialect.wit`, P6-1a) as `lowered-block.surface` with
 `schema-version: 1`. `Display` prints the same text as `Full`: the page holds
 only offsets, so nothing is elidable.
 
@@ -44,7 +44,7 @@ The close variants and hole tokens are `vize_l1`'s hole policy one to one:
 - `parse(print(page)) == page` and `print(parse(text)) == text` for canonical
   text; `materialize` renders the source bytes back and mirrors to the same
   page. Pinned over the TS-19 battery and every prefix and suffix truncation
-  of it by `davinci/vize_extension_host/tests/surface_page_laws.rs`, which also
+  of it by `levels/vize_extension_host/tests/surface_page_laws.rs`, which also
   pins a reference page and every parse refusal with its exact message and
   1-based line.
 - Parse is lenient exactly where the printer normalizes (blank lines, the

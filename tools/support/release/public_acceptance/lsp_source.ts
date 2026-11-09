@@ -253,8 +253,8 @@ export function prepareLspSource(root: string, head: string, consumer: string, o
       head,
       "--",
       "crates/vize_carton/",
-      "davinci/vize_l0/",
-      "davinci/vize_l0_derive/",
+      "levels/vize_l0/",
+      "levels/vize_l0_derive/",
     ],
     { cwd: root, encoding: "utf8", maxBuffer: 4 * 1024 * 1024 },
   )
@@ -284,7 +284,7 @@ export function prepareLspSource(root: string, head: string, consumer: string, o
     ([name, version]) => `${name} = ${quote(version)}`,
   );
   const manifest =
-    `[workspace]\n[package]\nname = "vize_public_lsp_contracts"\nversion = ${quote(p.version)}\nedition = ${quote(p.edition)}\nrust-version = ${quote(p["rust-version"])}\nautobins = false\nautolib = false\nautotests = false\n[dependencies]\n${dependencies.join("\n")}\nvize_carton = { path = ${quote(path.join(sourceTree, "crates/vize_carton"))} }\nvize_l0 = { path = ${quote(path.join(sourceTree, "davinci/vize_l0"))} }\n` +
+    `[workspace]\n[package]\nname = "vize_public_lsp_contracts"\nversion = ${quote(p.version)}\nedition = ${quote(p.edition)}\nrust-version = ${quote(p["rust-version"])}\nautobins = false\nautolib = false\nautotests = false\n[dependencies]\n${dependencies.join("\n")}\nvize_carton = { path = ${quote(path.join(sourceTree, "crates/vize_carton"))} }\nvize_l0 = { path = ${quote(path.join(sourceTree, "levels/vize_l0"))} }\n` +
     supportTargets
       .map(
         (name) =>

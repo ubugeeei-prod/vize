@@ -13,7 +13,7 @@ selects the heavy tier:
 
 - the PR carries the `full-ci` label, or
 - it changes a path that can break those lanes: anything under `crates/`,
-  `davinci/` or `vendor/`, the Oxlint, native, builder and CLI packages, the
+  `levels/` or `vendor/`, the Oxlint, native, builder and CLI packages, the
   playground, the Cargo and pnpm manifests and lockfiles, the workflows and
   local actions, the GitHub planning tooling, and the shared fixtures.
 

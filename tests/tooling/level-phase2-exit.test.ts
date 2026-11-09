@@ -62,8 +62,8 @@ test("Phase 2 exit gate is fully evaluated and keeps the allocation miss visible
 });
 
 test("Phase 2 old-path flags are absent from live source roots", () => {
-  const oldDomEnv = ["VIZE_DAVINCI_", "DOM"].join("");
-  const oldTransformEnv = ["VIZE_DAVINCI_", "TRANSFORM"].join("");
+  const oldDomEnv = ["VIZE_LEVEL_", "DOM"].join("");
+  const oldTransformEnv = ["VIZE_LEVEL_", "TRANSFORM"].join("");
   const forbidden = [
     new RegExp(String.raw`\b${oldDomEnv}\b`, "u"),
     new RegExp(String.raw`\b${oldTransformEnv}\b`, "u"),
@@ -73,7 +73,7 @@ test("Phase 2 old-path flags are absent from live source roots", () => {
     new RegExp(String.raw`\bDomLaneSelection\b`, "u"),
     new RegExp(String.raw`\bskipped_legacy_flag\b`, "u"),
   ];
-  const roots = ["crates", "davinci", "tools", ".github"].map((root) => path.join(repoRoot, root));
+  const roots = ["crates", "levels", "tools", ".github"].map((root) => path.join(repoRoot, root));
   const matches: string[] = [];
 
   for (const file of roots.flatMap(walkFiles)) {

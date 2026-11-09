@@ -13,8 +13,8 @@
       (`vize_curator::inspector::ladder_pages`, TS-52 `spolvero_ladder`), and
       the playground's Davinci tab (`playground/src/features/stages/`)
       renders them after negotiating `schema_version`; the P2-18 rendering
-      review point is now a VRT baseline (`davinci-{light,dark}.png`) plus
-      the real-wasm `e2e/davinci-ladder.test.ts`. The `vize inspector`
+      review point is now a VRT baseline (`level-{light,dark}.png`) plus
+      the real-wasm `e2e/level-ladder.test.ts`. The `vize inspector`
       payload stays L1-only on purpose (it rides in share URLs; the playground
       recomputes the ladder from the same sources)._
 - [x] C-3 Pass timeline + fusion-group view from timing JSON (starts: P2-13)
@@ -22,27 +22,27 @@
       order, marks which passes changed the folio (exact page compare), diffs
       consecutive L2 pages through the inspector's line diff, and shows each
       step's wall time. The timing is the P0-11 profile export (`analyzeSfc`
-      `spolveroProfile`, key `davinci.spolvero.step`, `{stage, pass, block}`
+      `spolveroProfile`, key `levels.stages.step`, `{stage, pass, block}`
       attribution) serialized by the profiler's own exporter from durations a
       host clock measured (`vize_curator::inspector::ladder_run`; the browser
       passes `performance.now()`, since `std::time::Instant` is absent on
       wasm32-unknown-unknown; `spolvero_timing` pins it with a deterministic
       clock). Fusion groups: the feed carries the executed plan as the
-      `s2-plan` page (`[fusion-plan-folio]`, `vize_davinci::folio::plan`,
-      TS-16 laws in `tests/fusion_plan_folio.rs`), the export carries one
-      `davinci.pass.walk` span per walk attributed to its lead pass (the
+      `s2-plan` page (`[fusion-plan-folio]`, `vize_level::folio::plan`,
+      TS-16 laws in `tests/fusion_plan_dump.rs`), the export carries one
+      `levels.pass.walk` span per walk attributed to its lead pass (the
       timing observer's rule), and the timeline brackets each walk's passes
       with the walk's time. Today's L2 plans fuse nothing (barriers and one
       optional analysis), so every walk holds one pass._
 - [x] C-4 Flame views from profiler export (starts: P0-11 data available)
       _Landed 2026-09-22: the Davinci tab's Flame view folds the P0-11
-      export's attributed spans (key `davinci.spolvero.step`) into a stage >
+      export's attributed spans (key `levels.stages.step`) into a stage >
       pass > block flame graph - width is the exporter's `wall_ns.total`,
       siblings sort by name (the export carries no run order) - and diffs it
       frame by frame against a pinned earlier run (slower / faster / within
       10% / new). A frame opens the step page it names. Walk spans overlap
       their steps and are never added in. A CLI `--profile-json` export
-      (`vize build`, `davinci-opt --timing-json`) opens in the same view,
+      (`vize build`, `level-opt --timing-json`) opens in the same view,
       negotiated on `schema_version`, on any of its span keys._
 - [x] C-5 L3 pages, provenance navigation, remarks rendering (starts: P3-13)
       _S3 pages landed 2026-09-21 in the same feed: `s3` (graph),

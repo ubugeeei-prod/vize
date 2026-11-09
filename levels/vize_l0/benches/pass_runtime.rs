@@ -1,4 +1,4 @@
-//! Davinci microbenches: the pass manager's zero-cost-when-unattached claim.
+//! Levels microbenches: the pass manager's zero-cost-when-unattached claim.
 //!
 //! Run with: cargo bench -p vize_l0 --bench pass_runtime
 //!
@@ -8,14 +8,14 @@
 //! observer driver* should cost exactly what running the same plan without it
 //! costs:
 //!
-//! - `davinci_pipeline_unobserved` — walks the plan directly, no driver, no
+//! - `level_pipeline_unobserved` — walks the plan directly, no driver, no
 //!   observer type in sight. This is the floor.
-//! - `davinci_pipeline_no_observer` — the same plan through
+//! - `level_pipeline_no_observer` — the same plan through
 //!   [`run_pipeline`] with [`NoObserver`].
 //!
 //! **The gate is the `allocs` field**, which `budgets.toml` enforces exactly
 //! and which is machine-independent: the two entries must carry the *same*
-//! measured count, and `tools/davinci/bench-compare.mjs` fails any drift in
+//! measured count, and `tools/levels/bench-compare.mjs` fails any drift in
 //! either. Wall times are report-only until the Blacksmith recording (P0-4),
 //! and would in any case be the wrong instrument for "did this inline away" on
 //! a laptop.
@@ -77,10 +77,10 @@ fn work(desc: PassDesc) -> usize {
 }
 
 fn pass_runtime(criterion: &mut Criterion) {
-    davinci_harness::bench_with_metrics(
+    level_harness::bench_with_metrics(
         criterion,
-        "davinci_pipeline_unobserved",
-        "davinci/vize_l0/benches/pass_runtime.rs",
+        "level_pipeline_unobserved",
+        "levels/vize_l0/benches/pass_runtime.rs",
         || {
             let mut total = 0usize;
             let group_count = PIPELINE.group_count();
@@ -96,10 +96,10 @@ fn pass_runtime(criterion: &mut Criterion) {
         },
     );
 
-    davinci_harness::bench_with_metrics(
+    level_harness::bench_with_metrics(
         criterion,
-        "davinci_pipeline_no_observer",
-        "davinci/vize_l0/benches/pass_runtime.rs",
+        "level_pipeline_no_observer",
+        "levels/vize_l0/benches/pass_runtime.rs",
         || {
             let mut total = 0usize;
             run_pipeline(&PIPELINE, &mut NoObserver, |event| {
@@ -113,4 +113,4 @@ fn pass_runtime(criterion: &mut Criterion) {
 }
 
 criterion_group!(pass_runtime_group, pass_runtime);
-davinci_harness::main!(pass_runtime_group);
+level_harness::main!(pass_runtime_group);

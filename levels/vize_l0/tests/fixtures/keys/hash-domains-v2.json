@@ -186,7 +186,7 @@
   ],
   "sourceRevision": "de5e6566bd04f6aa0518ccf53f20802612905b04",
   "captureReceipt": {
-    "path": "crates/vize_davinci/tests/fixtures/keys/capture-v2/receipt.json",
+    "path": "crates/vize_level/tests/fixtures/keys/capture-v2/receipt.json",
     "sha256": "d5c6553cac4348910bb7de07d26848cad6deed2346ab7ba4396d11884ac5903d"
   }
 }

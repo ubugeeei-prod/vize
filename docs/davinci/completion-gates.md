@@ -8,8 +8,8 @@ roadmaps [#6826](https://github.com/ubugeeei-prod/vize/issues/6826) (levels),
 [#6830](https://github.com/ubugeeei-prod/vize/issues/6830) (CI) as checks.
 
 ```sh
-node tools/commands/davinci/completion-gates.ts            # measured gates
-node tools/commands/davinci/completion-gates.ts --issues   # plus issue state via gh
+node tools/commands/levels/completion-gates.ts            # measured gates
+node tools/commands/levels/completion-gates.ts --issues   # plus issue state via gh
 ```
 
 A **measured** gate is computed from the repository by the tool. An **issue** gate passes
@@ -20,7 +20,7 @@ are not committed here; the tool prints them.
 
 - Only native Davinci work counts. A legacy-backed result never passes a gate (#6828).
 - A definition changes only by a maintainer decision recorded in this file. The tool and
-  the tables change together; `tests/tooling/davinci-completion-gates.test.ts` keeps their
+  the tables change together; `tests/tooling/level-completion-gates.test.ts` keeps their
   ids identical.
 - Tiers are the dependency order. A tier's work needs the earlier gates it consumes; the
   `**Order:**` line of each issue in #6826 gives the finer edges. Structural slices may
@@ -33,7 +33,7 @@ are not committed here; the tool prints them.
 
 | Gate                   | Passes when                                                                                                                                                                                                                                                                                   | Kind     | Issues                                                 |
 | ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | ------------------------------------------------------ |
-| `levels.crates`        | The only crates under `davinci/` are `vize_l0`, `vize_l0_derive`, `vize_l1`, `vize_l1_to_l2`, `vize_l2`, `vize_l2_to_l3`, `vize_l3` and `vize_l4`.                                                                                                                                            | measured | #6833                                                  |
+| `levels.crates`        | The only crates under `levels/` are `vize_l0`, `vize_l0_derive`, `vize_l1`, `vize_l1_to_l2`, `vize_l2`, `vize_l2_to_l3`, `vize_l3` and `vize_l4`.                                                                                                                                             | measured | #6833                                                  |
 | `levels.dependencies`  | No level crate has a normal or build dependency on a legacy crate: `docs/davinci/plan/level-dependency-allowlist.json` is empty.                                                                                                                                                              | measured | #6831                                                  |
 | `levels.skeleton`      | No `#![expect(clippy::todo, reason = "skeleton: …")]` module remains.                                                                                                                                                                                                                         | measured | #6826                                                  |
 | `levels.codenames`     | No codename (Davinci, Sinopia, Disegno, Ricalco, Impeto, Stesura, Folio, Spolvero) appears in a path or a line. Exempt: `docs/davinci/`, captured output of past runs, and lines that say "codename" (the crate-doc alias). Other `docs/` pages may keep the level codenames but not Davinci. | measured | #6832                                                  |
@@ -125,6 +125,6 @@ are not committed here; the tool prints them.
    of concept only, as examples under `examples/` and not a supported surface: Svelte, Astro, Angular,
    Solid, MoonBit, CoffeeScript and Python. MoonBit and Python are example input languages only;
    repository tooling stays TypeScript/Rust.
-3. **The `davinci` name** (`levels.codenames`): Davinci is a codename. It is removed everywhere
+3. **The `levels` name** (`levels.codenames`): Davinci is a codename. It is removed everywhere
    except `docs/davinci/` by one scripted, replayable rename, landed in a merge window the
    maintainer schedules.

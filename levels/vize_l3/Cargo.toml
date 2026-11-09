@@ -5,7 +5,7 @@ edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
-description = "L3 - the Davinci reactivity IR (codename Impeto): flat scheduled ops with explicit state and effect edges"
+description = "L3 - the Levels reactivity IR (codename Impeto): flat scheduled ops with explicit state and effect edges"
 metadata.vize.stability = "experimental"
 readme = "README.md"
 
@@ -16,7 +16,7 @@ vize_l2 = { workspace = true }
 serde_json = { workspace = true }
 
 [dev-dependencies]
-davinci_test_support = { workspace = true, features = ["l3-reference"] }
+level_test_support = { workspace = true, features = ["l3-reference"] }
 toml = { workspace = true }
 vize_l1_to_l2 = { workspace = true }
 vize_l1 = { workspace = true }

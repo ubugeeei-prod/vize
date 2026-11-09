@@ -4,10 +4,10 @@
 import assert from "node:assert/strict";
 import { resolve } from "node:path";
 
-export const artifactDirectory = "real-project-davinci-dom-corpus";
+export const artifactDirectory = "real-project-level-dom-corpus";
 export const corpusRelative = "tests/_fixtures/_git";
-export const shardEnv = "VIZE_DAVINCI_DIFFERENTIAL_CORPUS_SHARD";
-export const shardVectorEnv = "VIZE_DAVINCI_DIFFERENTIAL_CORPUS_SHARD_VECTOR";
+export const shardEnv = "VIZE_LEVEL_DIFFERENTIAL_CORPUS_SHARD";
+export const shardVectorEnv = "VIZE_LEVEL_DIFFERENTIAL_CORPUS_SHARD_VECTOR";
 
 export type SuiteKind = "reach" | "ssr" | "pug";
 export type BuildTarget = {
@@ -28,8 +28,8 @@ const reach: Suite = {
   kind: "reach",
   package: "vize_atelier_sfc",
   features: "legacy-dom-differential",
-  test: "davinci_production_reach",
-  sweep: "production_compiles_report_and_hold_their_davinci_reach",
+  test: "level_production_reach",
+  sweep: "production_compiles_report_and_hold_their_level_reach",
   shards: 16,
   minimumTests: 17,
 };
@@ -37,7 +37,7 @@ const ssr: Suite = {
   kind: "ssr",
   package: "vize_atelier_ssr",
   features: "legacy-differential",
-  test: "davinci_ssr_corpus",
+  test: "level_ssr_corpus",
   sweep: "ssr_lanes_agree_on_sfc_templates",
   shards: 12,
   minimumTests: 3,
@@ -46,7 +46,7 @@ const pug: Suite = {
   kind: "pug",
   package: "vize_l1_to_l2",
   features: "legacy-differential",
-  test: "davinci_pug_corpus",
+  test: "level_pug_corpus",
   sweep: null,
   shards: 1,
   minimumTests: 1,
@@ -54,7 +54,7 @@ const pug: Suite = {
 const dom: BuildTarget = {
   package: "vize_l1_to_l2",
   features: "legacy-differential",
-  test: "davinci_dom_corpus",
+  test: "level_dom_corpus",
 };
 
 /** Observers whose evidence is produced by this process runner. */
@@ -140,7 +140,7 @@ export function processEnvironment(
   const env: Record<string, string | undefined> = {
     ...inherited,
     CARGO_MANIFEST_DIR: manifestDirectory,
-    VIZE_DAVINCI_DIFFERENTIAL_CORPUS: corpusRelative,
+    VIZE_LEVEL_DIFFERENTIAL_CORPUS: corpusRelative,
   };
   delete env[shardEnv];
   delete env[shardVectorEnv];

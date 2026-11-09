@@ -1,4 +1,4 @@
-//! TS-19 for the pug dialect (Davinci P4-12c): `render(parse_pug(src))
+//! TS-19 for the pug dialect (Levels P4-12c): `render(parse_pug(src))
 //! == src` as bytes over the committed pug fixture matrix, a malformed
 //! battery with its typed holes and recovered error codes pinned exactly,
 //! every prefix and suffix truncation of all of it, and a deterministic
@@ -46,7 +46,7 @@ fn assert_fidelity(source: &str) {
 
 /// Every committed `.pug` fixture (the P4-12c matrix and refusal sets).
 fn fixture_sources() -> Vec<(std::string::String, std::string::String)> {
-    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../tests/_fixtures/davinci-pug");
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../tests/_fixtures/level-pug");
     let mut sources = Vec::new();
     for dir in ["matrix", "refused"] {
         let mut entries: Vec<_> = std::fs::read_dir(root.join(dir))

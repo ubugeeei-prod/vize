@@ -9,7 +9,7 @@
 //! template replaced by the pinned `pug` package's HTML rendering — in the
 //! DOM, Vapor and SSR lanes, with and without a `<script setup>`. The
 //! `.html` side is the committed fixture `tests/tooling/
-//! davinci-pug-oracle.test.ts` proves is `pug@3.0.4`'s output; refused
+//! level-pug-oracle.test.ts` proves is `pug@3.0.4`'s output; refused
 //! pug fails the compile with its first diagnostic.
 
 use std::path::PathBuf;
@@ -28,7 +28,7 @@ const SHELLS: [&str; 2] = [
 
 fn fixtures(dir: &str) -> Vec<(String, PathBuf)> {
     let root = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-        .join("../../tests/_fixtures/davinci-pug")
+        .join("../../tests/_fixtures/level-pug")
         .join(dir);
     let mut paths: Vec<_> = std::fs::read_dir(&root)
         .expect("pug fixture directory")
@@ -117,7 +117,7 @@ fn pug_compiles_exactly_like_its_pug_rendered_html_in_every_lane() {
 #[test]
 fn jade_alias_compiles_exactly_like_pug_in_every_lane() {
     let path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-        .join("../../tests/_fixtures/davinci-pug/matrix/slots-and-components.pug");
+        .join("../../tests/_fixtures/level-pug/matrix/slots-and-components.pug");
     let template = std::fs::read_to_string(path).expect("pug");
     for shell in SHELLS {
         let pug = ["<template lang=\"pug\">", &template, "</template>\n", shell].concat();
@@ -317,7 +317,7 @@ fn template_error_location_points_at_authored_pug() {
 #[test]
 fn pug_includes_resolve_against_the_sfc_and_compile_like_their_html() {
     let root = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-        .join("../../tests/_fixtures/davinci-pug/includes")
+        .join("../../tests/_fixtures/level-pug/includes")
         .canonicalize()
         .expect("include fixtures");
     let pug = std::fs::read_to_string(root.join("layout.pug")).expect("pug");

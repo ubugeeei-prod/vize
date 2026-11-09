@@ -9,15 +9,15 @@
 
 **Lane:** D
 
-**Deliverable:** the assurance doctrine's verdict rules as types in `vize_davinci::diagnostic`: `Tier { Exact, Sound, Complete, Heuristic }` with a declared domain, a `RuleContract` const constructor that rejects `Heuristic` with error severity at compile time, and `Severity::Error` diagnostics constructible only through a proven constructor that takes a non-empty `Witness` (a chain of `WitnessLink { group: AnalysisId, span, key }` naming fact groups). `Witness::LegacyExempt` stays, counted by an inventory that only shrinks.
+**Deliverable:** the assurance doctrine's verdict rules as types in `vize_level::diagnostic`: `Tier { Exact, Sound, Complete, Heuristic }` with a declared domain, a `RuleContract` const constructor that rejects `Heuristic` with error severity at compile time, and `Severity::Error` diagnostics constructible only through a proven constructor that takes a non-empty `Witness` (a chain of `WitnessLink { group: AnalysisId, span, key }` naming fact groups). `Witness::LegacyExempt` stays, counted by an inventory that only shrinks.
 
 **Steps:**
 
-- [x] `davinci/vize_davinci/src/diagnostic/tier.rs` and `diagnostic/witness.rs`; the existing `Diagnostic::new` stops accepting `Severity::Error`
+- [x] `levels/vize_level/src/diagnostic/tier.rs` and `diagnostic/witness.rs`; the existing `Diagnostic::new` stops accepting `Severity::Error`
 - [x] Two `compile_fail` doctests: a heuristic rule declaring error severity, and an error diagnostic built without a witness (the provisional "canary rule that tries error-on-unknown fails to compile")
-- [x] `docs/davinci/plan/witness-exemptions.tsv` (producer, code, exempt count) with `tests/tooling/davinci-witness-exemptions.test.ts`: counts may only fall against the base revision, proven by an injected increase
+- [x] `docs/davinci/plan/witness-exemptions.tsv` (producer, code, exempt count) with `tests/tooling/level-witness-exemptions.test.ts`: counts may only fall against the base revision, proven by an injected increase
 
-**Acceptance:** `cargo test -p vize_davinci` and `cargo test -p vize_davinci --doc` green with both `compile_fail` canaries; TS-24 builds; the exemption checker green and demonstrably failing on an injected increase; TS-1, TS-13.
+**Acceptance:** `cargo test -p vize_level` and `cargo test -p vize_level --doc` green with both `compile_fail` canaries; TS-24 builds; the exemption checker green and demonstrably failing on an injected increase; TS-1, TS-13.
 
 **Deps:** P4-1a.
 
@@ -31,12 +31,12 @@
 
 **Lane:** D
 
-**Deliverable:** TS-36: `vize_davinci::witness::verify(&Diagnostic, &FactManager) -> Result<(), WitnessError>` re-checks every link against the fact base, run over every error diagnostic in debug and CI builds through an observer (release ZST).
+**Deliverable:** TS-36: `vize_level::witness::verify(&Diagnostic, &FactManager) -> Result<(), WitnessError>` re-checks every link against the fact base, run over every error diagnostic in debug and CI builds through an observer (release ZST).
 
 **Steps:**
 
-- [x] `davinci/vize_davinci/src/witness.rs` + `witness/`; forged-witness fixtures (wrong group, wrong span, missing key) each committed with its exact `WitnessError`
-- [x] Register the TS-36 command in [test-suites.md](./test-suites.md): `cargo test -p vize_davinci --test witness_verify` plus the TS-9 lint fixtures run in debug
+- [x] `levels/vize_level/src/witness.rs` + `witness/`; forged-witness fixtures (wrong group, wrong span, missing key) each committed with its exact `WitnessError`
+- [x] Register the TS-36 command in [test-suites.md](./test-suites.md): `cargo test -p vize_level --test witness_verify` plus the TS-9 lint fixtures run in debug
 
 **Acceptance:** every forged fixture rejected with the exact error, every valid witness verifies; zero unverifiable witnesses across TS-9; TS-1, TS-13.
 
@@ -44,7 +44,7 @@
 
 **Non-goals:** producing witnesses for rules (P4-6c, P4-8a…P4-8c); the "why" rendering (P4-14c).
 
-**Landed 2026-09-22:** `vize_davinci::witness` with the TS-36 lane — nine forged-witness fixtures each rejected with its exact `WitnessError`, the valid witness verified, and the debug/CI audit (release ZST); TS-9 carries no chains yet, so its zero is vacuous until the P4-8 waves — see the [P4-6b record](./phase-4-records/p4-6b.md).
+**Landed 2026-09-22:** `vize_level::witness` with the TS-36 lane — nine forged-witness fixtures each rejected with its exact `WitnessError`, the valid witness verified, and the debug/CI audit (release ZST); TS-9 carries no chains yet, so its zero is vacuous until the P4-8 waves — see the [P4-6b record](./phase-4-records/p4-6b.md).
 
 ## P4-6c — Patina on the unified channel
 
@@ -52,21 +52,21 @@
 
 **Lane:** D
 
-**Deliverable:** every one of the 248 rules has a `RuleContract` (tier + domain) in one table, `crates/vize_patina/src/rule_contracts.rs` — a table rather than per-file edits, so lane F keeps sole ownership of `rules/` — and Patina diagnostics convert to `vize_davinci::Diagnostic` with file-absolute spans framed by `vize_l0::{SourceRoot, SourceBlock}`, fixing FP-1's root cause (`type/require-typed-emits` / `type/require-typed-props` report script-block offsets against whole-file lines).
+**Deliverable:** every one of the 248 rules has a `RuleContract` (tier + domain) in one table, `crates/vize_patina/src/rule_contracts.rs` — a table rather than per-file edits, so lane F keeps sole ownership of `rules/` — and Patina diagnostics convert to `vize_level::Diagnostic` with file-absolute spans framed by `vize_l0::{SourceRoot, SourceBlock}`, fixing FP-1's root cause (`type/require-typed-emits` / `type/require-typed-props` report script-block offsets against whole-file lines).
 
 **Steps:**
 
-- [x] Table keys == registered rule names, asserted by a test; `tools/davinci/rule-parity.ts` gains a `tier` column and fails on a rule without one
+- [x] Table keys == registered rule names, asserted by a test; `tools/levels/rule-parity.ts` gains a `tier` column and fails on a rule without one
 - [x] Error-default rules (99 today) without witnesses enter `witness-exemptions.tsv`; that list is the P4-8 waves' drain queue (98 rows: `script/no-potential-component-option-typo` is heuristic, so its contract declares warning — the one `DEMOTED` rule)
 - [x] Offsets canonicalized through the L0 frame — in `crates/vize_patina/src/output/frame.rs` (`ScriptFrame`) rather than `output/shared.rs`, because the formatters only ever see file-absolute offsets: the frame is applied where a range's frame is known (the rule path and the native type-aware warnings). FP-1 [fixed](./ledger-fp.md), 17 → 0 baseline-shift pairs
 
-**Acceptance:** [ledger-fp.md](./ledger-fp.md) FP-1 flipped to `fixed` with the layoutit-grid pairs re-measured at 0 of 17; `node tools/support/compat/davinci/rule-parity.ts --check` green with the tier column (TS-12); TS-9 snapshots unchanged except the FP-1 spans, each changed line listed in the PR; exemption inventory ≤ 99 rule entries; TS-13.
+**Acceptance:** [ledger-fp.md](./ledger-fp.md) FP-1 flipped to `fixed` with the layoutit-grid pairs re-measured at 0 of 17; `node tools/support/compat/levels/rule-parity.ts --check` green with the tier column (TS-12); TS-9 snapshots unchanged except the FP-1 spans, each changed line listed in the PR; exemption inventory ≤ 99 rule entries; TS-13.
 
 **Deps:** P4-6a.
 
 **Non-goals:** migrating rule bodies (P4-8a…P4-8c); compiler and Canon producers (P4-14b).
 
-**Landed 2026-09-22:** all 248 rules carry a `RuleContract` (exact 199, complete 32, heuristic 17), the rule-parity matrix renders the tier, Patina converts to `vize_davinci::Diagnostic` through `to_unified`, 98 error rules report under counted exemptions (≤ 99), and FP-1 is fixed at 0 of 17 pairs — see the [P4-6c record](./phase-4-records/p4-6c.md).
+**Landed 2026-09-22:** all 248 rules carry a `RuleContract` (exact 199, complete 32, heuristic 17), the rule-parity matrix renders the tier, Patina converts to `vize_level::Diagnostic` through `to_unified`, 98 error rules report under counted exemptions (≤ 99), and FP-1 is fixed at 0 of 17 pairs — see the [P4-6c record](./phase-4-records/p4-6c.md).
 
 ## P4-7a — L2-backed markup facade
 
@@ -81,10 +81,10 @@
 **Steps:**
 
 - [x] `crates/vize_patina/src/markup/l2.rs`; Patina gains `vize_l1`, `vize_l2`, `vize_l1_to_l2` dependencies (publishable per the release firewall)
-- [x] `crates/vize_patina/src/markup/differential.rs` behind `davinci-differential`: the full `MarkupRule` hook trace (hook, spans, names, values, modifiers) compared exactly between the Relief/OXC and L2 projections
+- [x] `crates/vize_patina/src/markup/differential.rs` behind `level-differential`: the full `MarkupRule` hook trace (hook, spans, names, values, modifiers) compared exactly between the Relief/OXC and L2 projections
 - [x] Corpus-runnable entry and a plain-suite witness pinning the comparison count
 
-**Acceptance:** `cargo test -p vize_patina --features davinci-differential --test davinci_markup_differential` zero divergence over the rule fixtures and a corpus shard with scope proof; `cargo bench -p vize_patina --bench davinci_markup` L2 variant `allocs` recorded in `budgets.toml` (TS-10); TS-9 unchanged (no lane switched); TS-13.
+**Acceptance:** `cargo test -p vize_patina --features level-differential --test level_markup_differential` zero divergence over the rule fixtures and a corpus shard with scope proof; `cargo bench -p vize_patina --bench level_markup` L2 variant `allocs` recorded in `budgets.toml` (TS-10); TS-9 unchanged (no lane switched); TS-13.
 
 **Deps:** none (phase-2 exit).
 
@@ -181,7 +181,7 @@
 
 **Steps:**
 
-- [x] `davinci/vize_l1_to_l2/src/pass/cfg.rs`: `Optional`/`Fusable`, `Preserved::ALL`; per component **own cyclomatic** = 1 + decisions (each `ui.if` branch beyond the first, plus one for an `ui.if` without `v-else`; each `ui.for`; each `&&`, `||`, `??` and `?:` in a retained expression AST; an `Opaque` expression adds 0 and is counted as unknown) and **own cognitive** (+1 per structure, + nesting depth for nested `ui.if`/`ui.for`/scoped-slot regions, +1 per run of like logical operators)
+- [x] `levels/vize_l1_to_l2/src/pass/cfg.rs`: `Optional`/`Fusable`, `Preserved::ALL`; per component **own cyclomatic** = 1 + decisions (each `ui.if` branch beyond the first, plus one for an `ui.if` without `v-else`; each `ui.for`; each `&&`, `||`, `??` and `?:` in a retained expression AST; an `Opaque` expression adds 0 and is counted as unknown) and **own cognitive** (+1 per structure, + nesting depth for nested `ui.if`/`ui.for`/scoped-slot regions, +1 per run of like logical operators)
 - [x] TS-34 naive evaluator over the same definition
 - [x] Record the corpus distribution (p50/p90/p95/p99 of both metrics) with its command; pin the default thresholds at the recorded p95 (warn) in the spec
 

@@ -16,7 +16,7 @@ use crate::script::is_static_enum;
 
 use super::runtime_bindings::collect_runtime_bindings;
 
-/// Where each extracted section came from, in `content` offsets (Davinci P3-9).
+/// Where each extracted section came from, in `content` offsets (Levels P3-9).
 #[derive(Debug, Default)]
 pub(crate) struct SectionTrace {
     /// The provenance of each setup line, parallel to the setup lines.

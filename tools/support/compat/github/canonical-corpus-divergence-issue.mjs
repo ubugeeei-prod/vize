@@ -7,7 +7,7 @@ import { fileURLToPath } from "node:url";
 
 const ansiSequence = new RegExp(`${String.fromCharCode(27)}\\[[0-?]*[ -/]*[@-~]`, "g");
 const corpusPrefix = "tests/_fixtures/_git/";
-const issueLabels = ["priority:p0", "area:ci", "area:testing", "area:davinci"];
+const issueLabels = ["priority:p0", "area:ci", "area:testing", "area:levels"];
 
 function compareCodepoints(left, right) {
   return left < right ? -1 : left > right ? 1 : 0;
@@ -19,7 +19,7 @@ function stripAnsi(text) {
 
 function exactCorpusCount(log) {
   const counters = [
-    ...stripAnsi(log).matchAll(/davinci DOM corpus sweep: [^\r\n]* divergences=(\d+)/g),
+    ...stripAnsi(log).matchAll(/levels DOM corpus sweep: [^\r\n]* divergences=(\d+)/g),
   ];
   assert.equal(counters.length, 1, "Expected one canonical DOM corpus counter");
   const count = Number(counters[0][1]);
@@ -162,13 +162,13 @@ export function createDivergenceIssue(
   const digest = fingerprint(divergenceCount, samples);
   const reduction = validateReductionReceipt(reductionReceipt, context, digest, divergenceCount);
   const promotion = validatePromotionReceipt(promotionReceipt, context, digest);
-  const title = `fix(davinci): triage canonical DOM divergence ${digest}`;
+  const title = `fix(levels): triage canonical DOM divergence ${digest}`;
   const fixtures = [...new Set(samples.map((sample) => sample.fixturePath))].sort(
     compareCodepoints,
   );
   const comparisons = samples.map(
     (sample) =>
-      `- ${code(sample.sourcePath)}: old=${sample.oldLength} bytes, Davinci=${sample.newLength} bytes, first difference=${sample.firstDifference}; old window=${code(sample.oldWindow)}; Davinci window=${code(sample.newWindow)}`,
+      `- ${code(sample.sourcePath)}: old=${sample.oldLength} bytes, Levels=${sample.newLength} bytes, first difference=${sample.firstDifference}; old window=${code(sample.oldWindow)}; Levels window=${code(sample.newWindow)}`,
   );
   const artifact = `canonical-corpus-dom-${context.runId}-${context.runAttempt}-${context.sourceCommit}`;
   const reductionArtifact = `canonical-corpus-dom-reduction-${context.runId}-${context.runAttempt}-${context.sourceCommit}`;
@@ -189,7 +189,7 @@ export function createDivergenceIssue(
       ? "Next action: inspect the reduced witness artifact and commit only the minimized in-repo fixture before fixing the product behavior."
       : "Next action: reproduce the exact comparison from the workflow artifact, minimize it with `vize reduce`, and commit only the minimized in-repo fixture before fixing the product behavior.";
   const body = [
-    `The canonical real-project corpus found ${divergenceCount} legacy-vs-Davinci DOM output divergence(s).`,
+    `The canonical real-project corpus found ${divergenceCount} legacy-vs-Level DOM output divergence(s).`,
     "",
     `<!-- vize-real-project-divergence:${digest} -->`,
     "",

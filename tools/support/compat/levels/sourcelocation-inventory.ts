@@ -1,7 +1,7 @@
-// SourceLocation consumer inventory (Davinci P0-9).
+// SourceLocation consumer inventory (Levels P0-9).
 //
 // Counts every textual read of the relief `SourceLocation` members that the
-// Davinci `Span` type (davinci/vize_l0/src/span.rs) deleted —
+// Levels `Span` type (levels/vize_l0/src/span.rs) deleted —
 // `source`, `start.line`, `start.column`, `end.line`, `end.column` — across
 // `crates/*/src/**/*.rs`, grouped by crate and member, and emits the
 // migration record as docs/davinci/plan/sourcelocation-inventory.md. The
@@ -20,9 +20,9 @@
 // or deleted consumer fails regeneration instead of going silently stale.
 //
 // Usage:
-//   node tools/support/compat/davinci/sourcelocation-inventory.ts --write     # regenerate
-//   node tools/support/compat/davinci/sourcelocation-inventory.ts --check     # diff committed
-//   node tools/support/compat/davinci/sourcelocation-inventory.ts --summary   # span-read counts
+//   node tools/support/compat/levels/sourcelocation-inventory.ts --write     # regenerate
+//   node tools/support/compat/levels/sourcelocation-inventory.ts --check     # diff committed
+//   node tools/support/compat/levels/sourcelocation-inventory.ts --summary   # span-read counts
 //
 // Node builtins only. Output is deterministic (stable sort everywhere,
 // no timestamps, no absolute paths).
@@ -39,11 +39,11 @@ import {
 } from "./lib/sourcelocation-scan.ts";
 
 const ARTIFACT_REL = "docs/davinci/plan/sourcelocation-inventory.md";
-const REGEN_COMMAND = "node tools/support/compat/davinci/sourcelocation-inventory.ts --write";
-const SUMMARY_COMMAND = "node tools/support/compat/davinci/sourcelocation-inventory.ts --summary";
+const REGEN_COMMAND = "node tools/support/compat/levels/sourcelocation-inventory.ts --write";
+const SUMMARY_COMMAND = "node tools/support/compat/levels/sourcelocation-inventory.ts --summary";
 
 /** `source` reads counted at generation time of the P0-9 map, all migrated
- * away from `SourceLocation::source` by Davinci P1-3. */
+ * away from `SourceLocation::source` by Levels P1-3. */
 const P0_9_SOURCE_READS = 106;
 /** Line/column reads counted when P1-4 executed: 3 direct sites plus the 4
  * known-missed reads the limits section of the P0-9 map documented. */
@@ -125,7 +125,7 @@ function generate(scan: WorkspaceScan): string {
     "crates/vize_relief/src/errors/render.rs",
     /struct RenderedPosition/,
   );
-  const g2LineIndex = citeAnchor("davinci/vize_l0/src/line_index.rs", /pub struct LineIndex/);
+  const g2LineIndex = citeAnchor("levels/vize_l0/src/line_index.rs", /pub struct LineIndex/);
   const g2ReliefTest = citeAnchor(
     "crates/vize_relief/src/relief/tests.rs",
     /fn source_location_stub/,
@@ -144,19 +144,19 @@ function generate(scan: WorkspaceScan): string {
 
   return `<!-- GENERATED FILE — do not edit by hand.
      Regenerate: ${REGEN_COMMAND}
-     Verify:     node tools/support/compat/davinci/sourcelocation-inventory.ts --check
-     Generator:  tools/support/compat/davinci/sourcelocation-inventory.ts -->
+     Verify:     node tools/support/compat/levels/sourcelocation-inventory.ts --check
+     Generator:  tools/support/compat/levels/sourcelocation-inventory.ts -->
 
 # \`SourceLocation\` consumer inventory
 
 Every textual read of the relief \`SourceLocation\` members that
-\`vize_carton::Span\` (\`davinci/vize_l0/src/span.rs\`) deleted —
+\`vize_carton::Span\` (\`levels/vize_l0/src/span.rs\`) deleted —
 \`source\`, \`start.line\`, \`start.column\`, \`end.line\`, \`end.column\` —
 across \`crates/*/src\`, plus the migration group each consumer moved to as
 relief nodes switched to two-u32 byte spans instead of owned
 \`{ start: Position, end: Position, source: String }\` triples
 ([architecture.md](../architecture.md), L0). This was the migration map
-Davinci P1 executed (P0-9). P1-3 executed group 1 (\`source\` reads off
+Levels P1 executed (P0-9). P1-3 executed group 1 (\`source\` reads off
 \`SourceLocation\`); P1-4 executed groups 2 and 3 (line/column reads to
 offset-derived rendering, the \`Position\` type and its converters deleted).
 The scan now counts zero across all five members, and regeneration fails if
@@ -165,7 +165,7 @@ any read — or any deleted carrier — comes back.
 ## Resolution method (and its limits)
 
 - Comments and string literals are stripped first
-  (\`tools/support/compat/davinci/lib/rust-source.ts\`); member paths are then counted
+  (\`tools/support/compat/levels/lib/rust-source.ts\`); member paths are then counted
   **textually** on loc-shaped receivers only: chained \`.loc.<member>\`,
   \`.loc().<member>\`, \`.location.<member>\` accesses, and bare locals named
   \`loc\` / \`location\` / \`*_loc\` / \`*_location\`.
@@ -217,7 +217,7 @@ migrated sites:
 
 ### Group 2 — line/column reads moved to offset-derived rendering (migrated by P1-4: ${P1_4_LINE_COL_READS} at P0-9, 0 remain)
 
-Line/column exist only at diagnostic- or LSP-rendering time under Davinci:
+Line/column exist only at diagnostic- or LSP-rendering time under Levels:
 derived from byte offsets via \`vize_carton::line_index::LineIndex\`
 (\`${g2LineIndex}\`) at the edge that needs them — exactly how the
 source-map \`finish()\` step and Patina's output layer already worked. The
@@ -280,7 +280,7 @@ function main() {
   const mode = process.argv[2];
   if (mode !== "--write" && mode !== "--check" && mode !== "--summary") {
     console.error(
-      "usage: node tools/support/compat/davinci/sourcelocation-inventory.ts --write | --check | --summary",
+      "usage: node tools/support/compat/levels/sourcelocation-inventory.ts --write | --check | --summary",
     );
     process.exit(2);
   }

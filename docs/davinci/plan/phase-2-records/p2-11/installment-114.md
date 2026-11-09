@@ -25,13 +25,13 @@ S2 has become the source-map author.
 
 ## Evidence
 
-`crates/vize_atelier_dom/tests/davinci_s2_source_map.rs` compares template and
+`crates/vize_atelier_dom/tests/level_s2_source_map.rs` compares template and
 SFC section compiles with source maps enabled against the compatibility lane,
 asserts identical preamble, code, sections and map payloads, and checks that
-the selected compile records one `davinci.s2_dom.files` counter. The parsed map
+the selected compile records one `levels.s2_dom.files` counter. The parsed map
 must remain version 3 with non-empty mappings.
 
-`crates/vize_atelier_dom/tests/davinci_s2_production_selector.rs` also covers
+`crates/vize_atelier_dom/tests/level_s2_production_selector.rs` also covers
 the profiled production selector: source-map requests keep producing a map and
 use S2 once the map is verified against compatibility codegen. The tooling
 boundary classifies `source_map` as handled around S2 rather than projected

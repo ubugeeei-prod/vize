@@ -20,7 +20,7 @@ use crate::lower::Lowered;
 
 pub use vize_l2::analysis::for_facts::{ForName, ForParts as ForFacts};
 
-/// The pass name kept for existing folio/report strings.
+/// The pass name kept for existing dump/report strings.
 pub const NAME: &str = "v-for";
 
 /// Mirror lowering-published `ui.for` facts for transform consumers.

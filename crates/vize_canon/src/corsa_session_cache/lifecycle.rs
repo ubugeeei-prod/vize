@@ -1,4 +1,4 @@
-//! Session map for one check-server process (issue #699, Davinci P5-8).
+//! Session map for one check-server process (issue #699, Levels P5-8).
 //!
 //! A hit reuses the `ProjectSession`. A miss is the only path that spawns one.
 //! A session that has not been used for [`DEFAULT_SESSION_IDLE`] is dropped.

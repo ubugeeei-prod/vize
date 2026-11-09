@@ -221,9 +221,9 @@ fn sfc_compiler_options_change_module_and_standalone_runtimes() {
 const ALIAS_SOURCE: &str =
     "<script setup>\nconst msg = 1\n</script>\n\n<template>\n  <div>{{ msg }}</div>\n</template>\n";
 
-/// The croquis folio text for [`ALIAS_SOURCE`], the exact bytes both alias
+/// The croquis dump text for [`ALIAS_SOURCE`], the exact bytes both alias
 /// keys must carry.
-const CROQUIS_FOLIO: &str = r"[vir]
+const CROQUIS_DUMP: &str = r"[vir]
 script_setup=true
 scopes=6
 bindings=1
@@ -241,8 +241,8 @@ lit:msg
 
 ";
 
-/// The alias contract (Davinci P0-10): `analyzeSfc` carries the croquis folio
-/// text under both the deprecated `vir` key and `folio.croquis`,
+/// The alias contract (Levels P0-10): `analyzeSfc` carries the croquis dump
+/// text under both the deprecated `vir` key and `dump.croquis`,
 /// byte-identically.
 #[test]
 #[expect(clippy::string_slice, reason = "tests assert by panicking")]
@@ -256,15 +256,15 @@ fn the_croquis_alias_keys_stay_byte_identical() {
     // pins only the prefix and the per-environment stability is carried
     // by the equality law plus a same-process double-run pin.
     let vir = result["vir"].as_str().expect("vir is a string");
-    let expected_prefix = &CROQUIS_FOLIO[..CROQUIS_FOLIO.find("[scopes]").expect("prefix marker")];
+    let expected_prefix = &CROQUIS_DUMP[..CROQUIS_DUMP.find("[scopes]").expect("prefix marker")];
     assert_eq!(&vir[..expected_prefix.len()], expected_prefix);
     let again = analyze_sfc_json(ALIAS_SOURCE, "src/App.vue").expect("analysis succeeds");
     assert_eq!(result["vir"], again["vir"]);
-    assert_eq!(result["vir"], result["folio"]["croquis"]);
+    assert_eq!(result["vir"], result["dump"]["croquis"]);
     // The alias object itself gained no siblings.
-    let folio = result["folio"].as_object().expect("folio is an object");
-    assert_eq!(folio.len(), 1);
-    assert_eq!(result["folio"]["croquis"], result["vir"]);
+    let dump = result["dump"].as_object().expect("dump is an object");
+    assert_eq!(dump.len(), 1);
+    assert_eq!(result["dump"]["croquis"], result["vir"]);
 }
 
 /// `analyzeSfc` is the semantic analysis only: stage pages come from
@@ -279,5 +279,5 @@ fn the_analyze_result_runs_no_stage_ladder() {
         .map(String::as_str)
         .collect();
     members.sort_unstable();
-    assert_eq!(members, ["croquis", "diagnostics", "folio", "vir"]);
+    assert_eq!(members, ["croquis", "diagnostics", "dump", "vir"]);
 }

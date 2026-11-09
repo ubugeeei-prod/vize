@@ -17,7 +17,7 @@ retain their later roadmap order. No legacy-backed path receives native
 completion credit.
 
 The directory split is merged: levels, guest and dialect infrastructure live
-under `davinci/`; Carton, products and transitional adapters stay under
+under `levels/`; Carton, products and transitional adapters stay under
 `crates/`. The normal/build dependency direction remains one-way.
 
 The five default product replacements are **0/5 complete**. Compiler,

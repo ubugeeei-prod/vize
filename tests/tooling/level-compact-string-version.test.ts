@@ -35,7 +35,7 @@ function workspacePackage(metadata: Metadata, name: string): Package {
   return found;
 }
 
-test("Davinci and OXC share one exact CompactString implementation", () => {
+test("Levels and OXC share one exact CompactString implementation", () => {
   const metadata = readMetadata();
   const versions = metadata.packages
     .filter((pkg) => pkg.name === "compact_str")

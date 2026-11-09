@@ -1,6 +1,6 @@
 //! TS-17 for the `v-if` pass (P2-9 series 1): committed fixture in,
-//! pipeline out, **full normalized folio** snapshot — the P2-4 harness
-//! shape (`davinci/vize_davinci/tests/pipeline_snapshot.rs`), applied to
+//! pipeline out, **full normalized dump** snapshot — the P2-4 harness
+//! shape (`levels/vize_level/tests/pipeline_snapshot.rs`), applied to
 //! the first landed pass body.
 //!
 //! The snapshot is the oracle; the walk accounting, facts and
@@ -29,15 +29,15 @@ fn fixture(name: &str) -> vize_l0::String {
 }
 
 #[test]
-fn the_chain_fixture_snapshots_the_post_pass_folio() {
+fn the_chain_fixture_snapshots_the_post_pass_dump() {
     let source = fixture("chain-keys.vue");
-    with_transformed(&source, |lowered, folio, facts, budget| {
-        // The oracle: the full normalized folio after the pipeline ran.
+    with_transformed(&source, |lowered, dump, facts, budget| {
+        // The oracle: the full normalized dump after the pipeline ran.
         // The `story` and `fallback` keys have left the attribute
         // surface; the iterated `img` keeps its `key` (the branch root
         // is the `ui.for`); the unwrapped template branch never had a
         // carrier op for the wrapper's attributes.
-        assert_dump_snapshot!(*folio);
+        assert_dump_snapshot!(*dump);
 
         // Supplements: the planned walk accounting through the budget
         // observer's own derived page. The fixture builds `ui.if` ops and
@@ -71,12 +71,12 @@ fn the_chain_fixture_snapshots_the_post_pass_folio() {
 }
 
 #[test]
-fn the_collision_fixture_snapshots_the_post_pass_folio() {
+fn the_collision_fixture_snapshots_the_post_pass_dump() {
     let source = fixture("collision.vue");
-    with_transformed(&source, |lowered, folio, _, _| {
-        // The folio is clean - all three keys extracted - while the
+    with_transformed(&source, |lowered, dump, _, _| {
+        // The dump is clean - all three keys extracted - while the
         // duplicate-key errors ride the diagnostics channel.
-        assert_dump_snapshot!(*folio);
+        assert_dump_snapshot!(*dump);
         assert_eq!(lowered.diagnostics.len(), 3);
         for diagnostic in &lowered.diagnostics {
             assert_eq!(diagnostic.message.as_str(), vif::SAME_KEY_MESSAGE);

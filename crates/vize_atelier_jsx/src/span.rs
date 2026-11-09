@@ -2,7 +2,7 @@
 //!
 //! The lowering layer must preserve enough source information for compiler
 //! diagnostics, the type checker, the LSP, and Patina fixes. OXC reports byte
-//! offsets and Vize's [`SourceLocation`] is a byte span too (Davinci P1-4
+//! offsets and Vize's [`SourceLocation`] is a byte span too (Levels P1-4
 //! retired the eager line/column fields), so the conversion is a direct
 //! offset carry-over; consumers that render line/column derive them from the
 //! offsets at their edge via `vize_l0::line_index`. This module is the

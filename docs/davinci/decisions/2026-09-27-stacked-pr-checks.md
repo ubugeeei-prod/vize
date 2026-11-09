@@ -1,7 +1,7 @@
 # CI for stacked pull requests — #6830
 
 The Check workflow previously accepted pull requests only when their base
-was `main` or `davinci`. A native stack changes intermediate PR bases to the
+was `main` or `levels`. A native stack changes intermediate PR bases to the
 preceding branch, which prevented fresh Check runs when those heads changed.
 
 Accept every pull-request base in Check. Preserve the main merge-group event,

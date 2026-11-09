@@ -26,10 +26,10 @@ pub struct ForeignExpr<'a> {
     pub span: Span,
     /// The dialect's side tables, riding as opaque fact rows. The core
     /// never reads them; the producing dialect owns their
-    /// vocabulary **and their folio spelling** - until it exists, the
-    /// folio payload is dialect + source + span only (the P2-5b
+    /// vocabulary **and their dump spelling** - until it exists, the
+    /// dump payload is dialect + source + span only (the P2-5b
     /// contract's list), so a value carrying facts does not round-trip
-    /// through a folio yet. That is part of what "type-only" means.
+    /// through a dump yet. That is part of what "type-only" means.
     pub facts: Vec<'a, ForeignFact<'a>>,
 }
 

@@ -5,8 +5,8 @@ import path from "node:path";
 import { parseArgs } from "node:util";
 import { fileURLToPath } from "node:url";
 
-const old = "davinci/vize_l1_to_l2/src/pass/walk.rs";
-const current = "davinci/vize_l2/src/walk.rs";
+const old = "levels/vize_l1_to_l2/src/pass/walk.rs";
+const current = "levels/vize_l2/src/walk.rs";
 const marker = "pub struct PageWalk";
 const oldMarker = "pub(crate) struct PageWalk";
 
@@ -35,9 +35,7 @@ function check(root: string): void {
     throw new Error("conversion does not use the shared L2 page walk");
   }
   if (
-    !fs
-      .readFileSync(path.join(root, "davinci/vize_l2/src/lib.rs"), "utf8")
-      .includes("pub mod walk;")
+    !fs.readFileSync(path.join(root, "levels/vize_l2/src/lib.rs"), "utf8").includes("pub mod walk;")
   ) {
     throw new Error("L2 page walk is not registered");
   }

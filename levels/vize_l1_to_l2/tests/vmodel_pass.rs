@@ -5,7 +5,7 @@
 //! that mirrors the legacy lane's removal of invalid models — plus the
 //! scope-environment rules the port mirrors from the live transform
 //! (`crates/vize_atelier_core/src/lane/element.rs` +
-//! `crates/vize_atelier_core/src/lane/traverse.rs`). The TS-17 folio
+//! `crates/vize_atelier_core/src/lane/traverse.rs`). The TS-17 dump
 //! snapshots live in `vmodel_pass_snapshot.rs`.
 
 use crate::support;

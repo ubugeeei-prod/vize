@@ -30,8 +30,8 @@ function fixture(run: (root: string) => void) {
       "Cargo.toml": "[workspace]\n",
       "crates/vize_patina/src/lib.rs": "// synthetic product\n",
       [spec.sourcePath]: "// synthetic observer\n",
-      "davinci/vize_l1/src/lib.rs": "// synthetic upstream\n",
-      "tests/davinci_test_support/src/lib.rs": "// synthetic test provider\n",
+      "levels/vize_l1/src/lib.rs": "// synthetic upstream\n",
+      "tests/level_test_support/src/lib.rs": "// synthetic test provider\n",
     })) {
       const file = path.join(root, name);
       fs.mkdirSync(path.dirname(file), { recursive: true });
@@ -59,8 +59,8 @@ void test("observer source identity rejects dirty upstream/test-provider inputs 
     const original = productObserverSourceIdentity(root, spec);
     assert.match(original.sourceRevision, /^[a-f0-9]{40}$/);
     for (const source of [
-      "davinci/vize_l1/src/lib.rs",
-      "tests/davinci_test_support/src/lib.rs",
+      "levels/vize_l1/src/lib.rs",
+      "tests/level_test_support/src/lib.rs",
       spec.sourcePath,
       "Cargo.lock",
     ]) {
@@ -73,7 +73,7 @@ void test("observer source identity rejects dirty upstream/test-provider inputs 
       );
       fs.writeFileSync(file, before);
     }
-    const untracked = path.join(root, "davinci/vize_l1/src/injected.rs");
+    const untracked = path.join(root, "levels/vize_l1/src/injected.rs");
     fs.writeFileSync(untracked, "// not source-bound\n");
     assert.throws(() => productObserverSourceIdentity(root, spec), /untracked Rust\/Cargo/);
     fs.unlinkSync(untracked);

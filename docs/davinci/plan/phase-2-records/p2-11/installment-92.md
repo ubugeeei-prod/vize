@@ -11,7 +11,7 @@ setup ref, a setup maybe-ref, or an ordinary context member.
 
 ## Evidence
 
-`crates/vize_atelier_dom/tests/davinci_s2_inline_template_ref.rs` compares
+`crates/vize_atelier_dom/tests/level_s2_inline_template_ref.rs` compares
 static and bound template-ref output against the shipped lane for the inline
 configuration. The new scope helpers cover the prop and props-object arms
 that can carry refs.

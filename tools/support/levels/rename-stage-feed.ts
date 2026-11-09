@@ -37,7 +37,7 @@ type Rule = readonly [string | RegExp, string];
 // Paths, identifiers and the profile span key; longer spellings first.
 const names: readonly Rule[] = [
   [`${old}-feed.schema.json`, "stage-ladder-feed.schema.json"],
-  [`davinci.${old}.step`, "stages.step"],
+  [`levels.${old}.step`, "stages.step"],
   [`${old.toUpperCase()}_FEED_SCHEMA_VERSION`, "STAGE_FEED_SCHEMA_VERSION"],
   [`negotiate${Old}Feed`, "negotiateStageFeed"],
   [`tests_${old}_profile`, "tests_stage_profile"],
@@ -62,11 +62,11 @@ const wire: readonly Rule[] = [
   [`\`${old}\``, "`stageFeed`"],
   [`\`(${old}, `, "`(stageFeed, "],
   [`[^\\n]*${Old} feed payload/`, "[^\\n]*--test stage_feed_payload/"],
-  [`"title": "Davinci ${Old} feed"`, '"title": "Davinci stage ladder feed"'],
+  [`"title": "Levels ${Old} feed"`, '"title": "Levels stage ladder feed"'],
   [`schema_version ${Old} negotiates`, "schema_version the stage view negotiates"],
   [
     new RegExp(
-      `Producers: \`davinci-opt --folio-dir\` writes it as \`${old}\\.json\` beside the pages \\(${Old}Feed::of_dump[^)]*\\), the inspector payload embeds it under \`stageFeed\`, and the wasm \`analyzeSfc\` result carries`,
+      `Producers: \`level-opt --dump-dir\` writes it as \`${old}\\.json\` beside the pages \\(${Old}Feed::of_dump[^)]*\\), the inspector payload embeds it under \`stageFeed\`, and the wasm \`analyzeSfc\` result carries`,
       "u",
     ),
     "Producers: the inspector payload embeds it under `stageFeed`, and the wasm `analyzeSfc` result carries",
@@ -93,7 +93,7 @@ const wire: readonly Rule[] = [
 const frozen = new Set([
   "tools/support/cross_file/async_component/public-before.json.txt",
   "tools/support/cross_file/async_component/verify.ts",
-  "tools/commands/davinci/completion-gates.ts",
+  "tools/commands/levels/completion-gates.ts",
   "tools/support/levels/rename-codenames.ts",
 ]);
 // Live indexes in docs that cite the moved files; other docs keep historical bytes.

@@ -57,7 +57,7 @@ or mixed path. The already-combined explicit wholly-textual raw path keeps its
 original spelling and sum; this PR does not correct that separate legacy behavior.
 Five full authored Vue 1 sources, mapped/unmapped modules, complete DOM nodes/HTML,
 numeric updates and diagnostics are required in the existing protected
-`davinci_l2_transform_vue2` feature target. Its real Vue 3.5.35 runtime measures
+`level_l2_transform_vue2` feature target. Its real Vue 3.5.35 runtime measures
 retained coercion only, granting no Vue 1 runtime equivalence or native credit.
 The ordinary 64-cell authored child now invokes both default and header outlets,
 so named-slot and conditional updates are actually observable; all original SFCs,

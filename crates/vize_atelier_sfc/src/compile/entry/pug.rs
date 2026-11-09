@@ -1,4 +1,4 @@
-//! `<template lang="pug">` (and its legacy `jade` alias) — the Davinci pug
+//! `<template lang="pug">` (and its legacy `jade` alias) — the Levels pug
 //! dialect (P4-12c) selector.
 //!
 //! The pug L1 surface is desugared into its derived Vue template

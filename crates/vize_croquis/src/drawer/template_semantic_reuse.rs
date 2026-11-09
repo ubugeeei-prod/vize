@@ -145,7 +145,7 @@ pub fn collect_template_semantic_reuse(
     })
 }
 
-/// Build owned petite-vue hints from one completed Davinci L2 document.
+/// Build owned petite-vue hints from one completed Levels L2 document.
 ///
 /// The Relief root remains the traversal owner so virtual output and recovery
 /// stay byte-for-byte compatible. Only meanings authenticated against the same

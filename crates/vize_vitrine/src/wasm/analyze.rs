@@ -269,12 +269,12 @@ pub(super) fn analyze_sfc_json_with_options(
             },
         },
         "diagnostics": diagnostics,
-        // `vir` is deprecated in favor of the folio alias below; both carry
-        // the same croquis folio text for now (Davinci P0-10). Consumers
-        // should migrate to `folio.croquis`. Byte-identity of the two keys
+        // `vir` is deprecated in favor of the dump alias below; both carry
+        // the same croquis dump text for now (Levels P0-10). Consumers
+        // should migrate to `dump.croquis`. Byte-identity of the two keys
         // is pinned by `wasm::tests`.
         "vir": vir.as_str(),
-        "folio": {
+        "dump": {
             "croquis": vir.as_str(),
         },
     });

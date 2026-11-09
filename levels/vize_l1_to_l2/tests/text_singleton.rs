@@ -18,10 +18,10 @@ fn final_text_keeps_condensing_provenance_and_authored_spans() {
             "日本語\n  😀",
         ),
     ] {
-        with_transformed(source, |lowered, folio, facts, _| {
+        with_transformed(source, |lowered, dump, facts, _| {
             let start = source.find(raw).unwrap() as u32;
             let span = Span::new(start, start + raw.len() as u32);
-            let DumpOp::Element(element) = &folio.ops[0] else {
+            let DumpOp::Element(element) = &dump.ops[0] else {
                 panic!("expected an element");
             };
             assert!(matches!(element.children.last(), Some(DumpOp::Text(text))
@@ -50,8 +50,8 @@ fn final_text_keeps_condensing_provenance_and_authored_spans() {
 #[test]
 fn final_interpolation_keeps_its_retained_expression_and_authored_span() {
     let source = "<p><i/>{{ 日本語 + 1 }}</p>";
-    with_transformed(source, |lowered, folio, facts, _| {
-        let DumpOp::Element(element) = &folio.ops[0] else {
+    with_transformed(source, |lowered, dump, facts, _| {
+        let DumpOp::Element(element) = &dump.ops[0] else {
             panic!("expected an element");
         };
         let Some(DumpOp::Interpolation(interpolation)) = element.children.last() else {

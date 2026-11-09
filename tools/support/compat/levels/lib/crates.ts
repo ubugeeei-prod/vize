@@ -14,7 +14,7 @@ export interface Crate {
 
 export function discoverCrates(): Crate[] {
   const crates: Crate[] = [];
-  for (const directory of [CRATES_DIR, path.join(repoRoot, "davinci")]) {
+  for (const directory of [CRATES_DIR, path.join(repoRoot, "levels")]) {
     for (const dirent of readdirSync(directory, { withFileTypes: true }).sort((a, b) =>
       a.name < b.name ? -1 : a.name > b.name ? 1 : 0,
     )) {

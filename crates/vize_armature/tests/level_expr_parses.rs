@@ -1,7 +1,7 @@
 //! P1-5 retained-expression counter law: parse-at-template-parse.
 //!
 //! One template parse must attempt exactly one retained oxc parse per
-//! distinct non-static expression node it builds — `davinci.expr.parses ==
+//! distinct non-static expression node it builds — `levels.expr.parses ==
 //! distinct expressions`, no re-parses — and must retain the AST exactly
 //! where the content is one complete expression.
 //!
@@ -66,8 +66,8 @@ fn template_parse_retains_each_expression_ast_exactly_once() {
     let entry = counters
         .entries
         .iter()
-        .find(|entry| entry.name == "davinci.expr.parses")
-        .expect("the retained parse site records davinci.expr.parses");
+        .find(|entry| entry.name == "levels.expr.parses")
+        .expect("the retained parse site records levels.expr.parses");
     // The counter law under parse-at-template-parse: one increment per
     // distinct expression — an attempt is a parse, so the two `None` shapes
     // count too, and nothing is ever parsed twice.
@@ -193,7 +193,7 @@ fn template_parse_retains_each_expression_ast_exactly_once() {
         .counter_summary()
         .entries
         .iter()
-        .find(|entry| entry.name == "davinci.expr.parses")
+        .find(|entry| entry.name == "levels.expr.parses")
         .map(|entry| entry.total);
     assert_eq!(refused, None);
     profiler.clear();

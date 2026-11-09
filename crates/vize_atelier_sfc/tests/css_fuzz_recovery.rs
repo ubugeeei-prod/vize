@@ -1,7 +1,7 @@
 #![cfg(feature = "native")]
 
 mod support;
-use davinci_test_support::css_fuzz_boundary as boundary;
+use level_test_support::css_fuzz_boundary as boundary;
 use support::css_engine_successors as successors;
 
 #[test]

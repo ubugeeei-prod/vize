@@ -15,7 +15,7 @@ const manifest = JSON.parse(
 };
 const entries = new Map(manifest.files.map(([file, before, after]) => [file, { before, after }]));
 const preserved = new Map(manifest.preservedBodies);
-const oldLaw = "davinci/vize_l0/tests/pass_observer_timing.rs";
+const oldLaw = "levels/vize_l0/tests/pass_observer_timing.rs";
 const production = manifest.files.map(([file]) => file).filter((file) => file !== oldLaw);
 const digest = (side: "before" | "after", file: string) =>
   entries.get(file)?.[side] ?? preserved.get(file) ?? null;

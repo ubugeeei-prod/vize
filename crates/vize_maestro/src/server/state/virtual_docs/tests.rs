@@ -59,7 +59,7 @@ fn assert_petite_semantic_reuse_is_selected(source: &str) {
     assert!(errors.is_empty(), "legacy fixture must parse: {errors:?}");
     assert!(
         super::petite_semantic_reuse(&allocator, &root, source).is_some(),
-        "admitted petite source must select the Davinci reuse branch"
+        "admitted petite source must select the Levels reuse branch"
     );
 }
 
@@ -119,7 +119,7 @@ fn ide_context_survives_a_virtual_docs_write_across_an_await() {
 
 #[test]
 #[cfg(feature = "retained-program")]
-fn standalone_petite_davinci_route_preserves_the_complete_legacy_projection() {
+fn standalone_petite_level_route_preserves_the_complete_legacy_projection() {
     let state = ServerState::new();
     state.set_dialect_config(Some(vize_l0::dialect::VueDialect::PetiteVue));
     for (index, source) in [

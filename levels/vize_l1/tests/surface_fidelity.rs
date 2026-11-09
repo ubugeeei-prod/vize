@@ -13,7 +13,7 @@
     reason = "tests assert by panicking"
 )]
 
-use davinci_test_support::surface_fixture as common;
+use level_test_support::surface_fixture as common;
 use vize_l0::ErrorCode;
 use vize_l0::{Allocator, String};
 use vize_l1::markup::{

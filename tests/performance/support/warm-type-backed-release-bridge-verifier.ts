@@ -12,9 +12,9 @@ import { parse as parseToml } from "@iarna/toml";
 
 const schema = "vize.release.source-cut-version-bridge";
 const guestLocks = [
-  "davinci/vize_extension_host/tests/guests/expression-echo/Cargo.lock",
-  "davinci/vize_extension_host/tests/guests/output-echo/Cargo.lock",
-  "davinci/vize_extension_host/tests/guests/typed-expression-echo/Cargo.lock",
+  "levels/vize_extension_host/tests/guests/expression-echo/Cargo.lock",
+  "levels/vize_extension_host/tests/guests/output-echo/Cargo.lock",
+  "levels/vize_extension_host/tests/guests/typed-expression-echo/Cargo.lock",
   "examples/volt-target/Cargo.lock",
 ];
 

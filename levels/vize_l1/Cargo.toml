@@ -1,4 +1,4 @@
-# L1 — the Vue-template surface tree (codename Sinopia, Davinci P2-7).
+# L1 — the Vue-template surface tree (codename Sinopia, Levels P2-7).
 #
 # A lossless surface tree for Vue templates that renders back to the exact
 # source bytes, malformed input included.
@@ -9,13 +9,13 @@ edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
-description = "L1 - the lossless Vue-template surface tree (codename Sinopia, Davinci P2-7)"
+description = "L1 - the lossless Vue-template surface tree (codename Sinopia, Levels P2-7)"
 metadata.vize.stability = "experimental"
 
 [features]
 # Arms the corpus-runnable TS-19 lane (`tests/surface_corpus.rs`),
 # the P1-6/P1-7 differential-lane shape: committed battery with pinned
-# counts, plus `VIZE_DAVINCI_DIFFERENTIAL_CORPUS=<dir>` widening.
+# counts, plus `VIZE_LEVEL_DIFFERENTIAL_CORPUS=<dir>` widening.
 legacy-differential = []
 # Retain the published opt-in spelling for native lexer differential tests.
 # The lexer, entity decoder and callback adapter are available by default.
@@ -35,8 +35,8 @@ oxc_parser = { workspace = true }
 oxc_span = { workspace = true }
 
 [dev-dependencies]
-davinci_harness.workspace = true
-davinci_test_support.workspace = true
+level_harness.workspace = true
+level_test_support.workspace = true
 htmlize.workspace = true
 serde_json.workspace = true
 vize_armature.workspace = true

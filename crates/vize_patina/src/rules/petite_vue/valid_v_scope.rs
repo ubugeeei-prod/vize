@@ -120,7 +120,7 @@ impl Rule for ValidVScope {
 
 /// Legacy-refusal fallback for a (possibly parenthesized) object literal.
 ///
-/// Davinci owns the admitted document path. This preserves shipped behavior
+/// Levels owns the admitted document path. This preserves shipped behavior
 /// only when the whole original Document cannot mint its L2 view.
 fn is_object_literal(expr: &str) -> bool {
     // Wrap as the initializer of a declaration so the object literal parses as

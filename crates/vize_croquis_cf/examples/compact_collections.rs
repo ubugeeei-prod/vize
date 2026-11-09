@@ -1,7 +1,7 @@
 //! Identical single-thread workload for exact base/head collection measurements.
 #![expect(clippy::expect_used, reason = "measurement failures abort like tests")]
 
-use davinci_harness::alloc::{CountingAllocator, mark_installed, measure};
+use level_harness::alloc::{CountingAllocator, mark_installed, measure};
 use serde_json::{Value, json};
 use std::{hint::black_box, time::Instant};
 use vize_croquis::setup_context::SetupContextTracker;

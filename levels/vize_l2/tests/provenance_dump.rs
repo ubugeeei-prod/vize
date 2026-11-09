@@ -34,10 +34,10 @@ fn record(
 
 #[test]
 fn full_print_is_identity_on_canonical_text() {
-    let folio = ProvenancePage::parse(CANONICAL).expect("canonical text parses");
-    assert_eq!(folio.print_to_string(DumpMode::Full).as_str(), CANONICAL);
+    let dump = ProvenancePage::parse(CANONICAL).expect("canonical text parses");
+    assert_eq!(dump.print_to_string(DumpMode::Full).as_str(), CANONICAL);
     assert_eq!(
-        folio.records,
+        dump.records,
         vec![
             record(
                 "lower.element",
@@ -60,7 +60,7 @@ fn full_print_is_identity_on_canonical_text() {
 
 #[test]
 fn structural_round_trip_keeps_quotes_backslashes_and_tabs() {
-    let folio = ProvenancePage {
+    let dump = ProvenancePage {
         records: vec![record(
             "lower.text",
             Some(7),
@@ -69,8 +69,8 @@ fn structural_round_trip_keeps_quotes_backslashes_and_tabs() {
             (0, 6),
         )],
     };
-    let printed = folio.print_to_string(DumpMode::Full);
-    assert_eq!(ProvenancePage::parse(printed.as_str()), Ok(folio));
+    let printed = dump.print_to_string(DumpMode::Full);
+    assert_eq!(ProvenancePage::parse(printed.as_str()), Ok(dump));
 }
 
 #[test]

@@ -24,7 +24,7 @@
     "artifact": {
       "id": 13448419077,
       "name": "component-input-packets-head-17cd5ae925afa994999334ad408ab8b1ea59b314-42101899776",
-      "snapshot": "crates/vize_maestro/tests/snapshots/davinci_ts40_projection__davinci_ts40__options-api-slots__default.snap.new",
+      "snapshot": "crates/vize_maestro/tests/snapshots/level_ts40_projection__level_ts40__options-api-slots__default.snap.new",
       "sha256": "a85bf8e57d50f9f0623fad2a77ee5b6e4525a995e515b74482f62a69bac2da75"
     }
   },

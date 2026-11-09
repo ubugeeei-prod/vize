@@ -1,14 +1,14 @@
 //! `vize reduce` - shrink a failing SFC or crash repro to a minimal one that
-//! still fails the same way (Davinci P3-14, `folio-reduce`).
+//! still fails the same way (Levels P3-14, `dump-reduce`).
 //!
 //! llvm-reduce's model: a dumb deterministic driver ([`driver`]), an
 //! IR-aware deletion vocabulary ([`vocabulary`]: L1 subtrees, always
 //! re-printable), and a sovereign interestingness predicate ([`oracle`]),
 //! composed by listing checks.
 //!
-//! - A `*.repro.folio` input (the ICE policy's reproducer, charter #30) is
+//! - A `*.repro.dump` input (the ICE policy's reproducer, charter #30) is
 //!   reduced on its `source` artifact while it keeps replaying to **exactly**
-//!   the recorded failure; the output is a repro folio `vize repro` accepts.
+//!   the recorded failure; the output is a repro dump `vize repro` accepts.
 //! - A `.vue` input needs at least one check flag.
 //!
 //! The reduced artifact goes to `--out` (or stdout); one summary line goes
@@ -30,14 +30,14 @@ use vize_l0::dump::{Dump, Mode as DumpMode};
 use vize_l0::pass::RemarkKind;
 use vize_l0::{String, cstr};
 
-use super::davinci_ice::{self, ARTIFACT_STAGE_SOURCE, IceFailure};
+use super::level_ice::{self, ARTIFACT_STAGE_SOURCE, IceFailure};
 use driver::{ReduceError, reduce};
 use oracle::Check;
 
 #[expect(clippy::disallowed_types, reason = "dependency API uses std String")]
 #[derive(Args, Default)]
 pub struct ReduceArgs {
-    /// A `.vue` file or a `repro.folio` written by a failed build
+    /// A `.vue` file or a `repro.dump` written by a failed build
     pub input: PathBuf,
 
     /// Write the reduced artifact here instead of stdout
@@ -52,9 +52,9 @@ pub struct ReduceArgs {
     #[arg(long, value_name = "REMARK")]
     pub remark: Vec<std::string::String>,
 
-    /// Keep inputs whose post-transform L2 folio contains this text
+    /// Keep inputs whose post-transform L2 dump contains this text
     #[arg(long, value_name = "TEXT")]
-    pub folio_contains: Vec<std::string::String>,
+    pub dump_contains: Vec<std::string::String>,
 
     /// Keep inputs with an L1->L2 diagnostic whose message contains this text
     #[arg(long, value_name = "TEXT")]
@@ -64,7 +64,7 @@ pub struct ReduceArgs {
     #[arg(long, value_name = "N")]
     pub walks_over: Option<u32>,
 
-    /// Keep inputs whose legacy and Davinci DOM outputs differ
+    /// Keep inputs whose legacy and Levels DOM outputs differ
     #[arg(long)]
     pub dom_divergence: bool,
 
@@ -110,8 +110,8 @@ fn flag_checks(args: &ReduceArgs, scratch: &Path) -> Result<Vec<Check>, String> 
     for spec in &args.remark {
         checks.push(parse_remark(spec)?);
     }
-    for text in &args.folio_contains {
-        checks.push(Check::FolioContains(String::from(text.as_str())));
+    for text in &args.dump_contains {
+        checks.push(Check::DumpContains(String::from(text.as_str())));
     }
     for text in &args.diagnostic {
         checks.push(Check::Diagnostic(String::from(text.as_str())));
@@ -149,43 +149,43 @@ pub fn run(args: ReduceArgs) {
         .unwrap_or_else(|error| fail(2, &cstr!("cannot read {}: {error}", path.display())));
     let scratch = scratch_file(path);
     let mut checks = flag_checks(&args, &scratch).unwrap_or_else(|message| fail(2, &message));
-    let repro = path.to_string_lossy().ends_with(".folio");
-    let (artifact, repro_folio) = if repro {
-        let folio = ReproPage::parse(&text)
+    let repro = path.to_string_lossy().ends_with(".dump");
+    let (artifact, repro_dump) = if repro {
+        let dump = ReproPage::parse(&text)
             .unwrap_or_else(|error| fail(2, &cstr!("{}: {error}", path.display())));
-        if folio.artifact_stage.as_str() != ARTIFACT_STAGE_SOURCE {
+        if dump.artifact_stage.as_str() != ARTIFACT_STAGE_SOURCE {
             fail(
                 2,
                 &cstr!(
                     "cannot reduce artifact stage `{}`; only `{ARTIFACT_STAGE_SOURCE}` reduces today",
-                    folio.artifact_stage
+                    dump.artifact_stage
                 ),
             );
         }
         let failure = IceFailure {
-            stage: folio.failed_stage.clone(),
-            pass: folio.failed_pass.clone(),
-            reason: folio.reason.clone(),
+            stage: dump.failed_stage.clone(),
+            pass: dump.failed_pass.clone(),
+            reason: dump.reason.clone(),
         };
         checks.insert(
             0,
             Check::Reproduces {
-                repro: folio.clone(),
+                repro: dump.clone(),
                 failure,
             },
         );
-        (folio.artifact.clone(), Some(folio))
+        (dump.artifact.clone(), Some(dump))
     } else {
         if checks.is_empty() {
             fail(
                 2,
-                "a .vue input needs at least one check (--crash, --remark, --folio-contains, \
+                "a .vue input needs at least one check (--crash, --remark, --dump-contains, \
                  --diagnostic, --walks-over, --dom-divergence, --script)",
             );
         }
         (String::from(text.as_str()), None)
     };
-    davinci_ice::silence_panics();
+    level_ice::silence_panics();
     let outcome = reduce(artifact.as_str(), args.max_runs, &mut |candidate| {
         oracle::interesting(&checks, candidate)
     });
@@ -197,11 +197,11 @@ pub fn run(args: ReduceArgs) {
             "the input does not satisfy the oracle; nothing to preserve",
         ),
     };
-    let output = match repro_folio {
-        Some(mut folio) => {
-            folio.artifact = reduction.text.clone();
-            folio.normalize();
-            folio.print_to_string(DumpMode::Full)
+    let output = match repro_dump {
+        Some(mut dump) => {
+            dump.artifact = reduction.text.clone();
+            dump.normalize();
+            dump.print_to_string(DumpMode::Full)
         }
         None => reduction.text.clone(),
     };

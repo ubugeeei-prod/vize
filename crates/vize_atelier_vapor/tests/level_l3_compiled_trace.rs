@@ -149,7 +149,7 @@ fn compile_vapor_template(source: &str) -> String {
 
 fn runtime_backend_trace(backend: &str, fixture_name: &str, code: &str) -> Vec<String> {
     let repo_root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
-    let runner = repo_root.join("tests/tooling/support/davinci-runtime-trace.mjs");
+    let runner = repo_root.join("tests/tooling/support/level-runtime-trace.mjs");
     let payload = serde_json::json!({
         "backend": backend,
         "code": code,

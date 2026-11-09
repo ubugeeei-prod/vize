@@ -1,6 +1,6 @@
 //! Bounded laws of the incremental reference machine in `incremental.rs`.
 //!
-//! These harnesses replace `Impeto.IncrementalLaws`. The Lean statements are
+//! These harnesses replace `L3.IncrementalLaws`. The Lean statements are
 //! unbounded. Kani covers fixed structural shapes with symbolic values: empty
 //! and text-only siblings, two element siblings, a depth-two element tree, a
 //! keyed reorder, and one insertion. Addresses and tags range over three
@@ -144,12 +144,7 @@ fn top_level_identities_are_retained_or_fresh() {
     let should_retain: bool = kani::any();
     let previous_address = if should_retain { 1 } else { 0 };
     let (tag, previous_identity, next) = (symbol(), identity(), identity());
-    let previous = [node(
-        previous_address,
-        previous_identity,
-        tag,
-        Vec::new(),
-    )];
+    let previous = [node(previous_address, previous_identity, tag, Vec::new())];
     let payload = kani::any();
     let desired = [View::Element {
         address: 1,

@@ -4,7 +4,7 @@ use core::fmt;
 use serde::de::{Unexpected, Visitor};
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
-/// JSON contract version, independent of the opaque Davinci facet grammar.
+/// JSON contract version, independent of the opaque Levels facet grammar.
 pub const ALPHA_CONTRACT_SCHEMA: u16 = 1;
 
 /// A required schema marker that rejects every unsupported version on import.

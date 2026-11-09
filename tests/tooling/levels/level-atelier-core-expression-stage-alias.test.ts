@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { scanConsumerMigrationSurfaces } from "../../../tools/support/compat/davinci/lib/consumer-migration-scan.ts";
+import { scanConsumerMigrationSurfaces } from "../../../tools/support/compat/levels/lib/consumer-migration-scan.ts";
 
 type StageAliasRow = readonly [relPath: string, mode: "source" | "test", sites: number];
 

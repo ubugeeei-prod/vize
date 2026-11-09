@@ -7,7 +7,7 @@ import { fileURLToPath } from "node:url";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 
-// TS-34's corpus-shard lane (Davinci P4-3a). The committed planes (battery,
+// TS-34's corpus-shard lane (Levels P4-3a). The committed planes (battery,
 // fixture ladder, P2-15 matrix) ride `cargo test --workspace`; this gate runs
 // the corpus half in the test-scripts job over the CLI diagnostic fixture
 // (the P2-15 shard). Checking v-for collections removes its final positive
@@ -51,8 +51,8 @@ test("the Croquis fact specs agree with production over the corpus shard", (t) =
       encoding: "utf8",
       env: {
         ...process.env,
-        VIZE_DAVINCI_FACT_CORPUS: shard.join(","),
-        VIZE_DAVINCI_FACT_CORPUS_WITNESS: witness.join(","),
+        VIZE_LEVEL_FACT_CORPUS: shard.join(","),
+        VIZE_LEVEL_FACT_CORPUS_WITNESS: witness.join(","),
       },
       timeout: 1_500_000,
     },

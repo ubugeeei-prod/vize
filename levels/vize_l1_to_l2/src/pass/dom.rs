@@ -71,20 +71,20 @@ fn run_dom_legacy_transform<'a, O: PassObserver>(
         #[cfg(debug_assertions)]
         {
             verify.note(event);
-            let folio = vize_l2::dump::Page::of(&lowered.root.ops);
-            verify.check(event, &folio);
-            verify.check_table(event, &folio, &lowered.scopes);
-            verify.check_table(event, &folio, &lowered.texts);
-            verify.check_table(event, &folio, &lowered.if_facts);
-            verify.check_table(event, &folio, &lowered.for_facts);
-            verify.check_table(event, &folio, &lowered.wrappers);
-            verify.check_table(event, &folio, &lowered.for_wrappers);
-            verify.check_table(event, &folio, &facts.if_facts);
-            verify.check_table(event, &folio, &facts.for_facts);
-            verify.check_table(event, &folio, &facts.slot_facts);
-            verify.check_table(event, &folio, &facts.text_facts);
-            verify.check_table(event, &folio, &facts.model_faults);
-            verify.check_table(event, &folio, &facts.static_facts);
+            let dump = vize_l2::dump::Page::of(&lowered.root.ops);
+            verify.check(event, &dump);
+            verify.check_table(event, &dump, &lowered.scopes);
+            verify.check_table(event, &dump, &lowered.texts);
+            verify.check_table(event, &dump, &lowered.if_facts);
+            verify.check_table(event, &dump, &lowered.for_facts);
+            verify.check_table(event, &dump, &lowered.wrappers);
+            verify.check_table(event, &dump, &lowered.for_wrappers);
+            verify.check_table(event, &dump, &facts.if_facts);
+            verify.check_table(event, &dump, &facts.for_facts);
+            verify.check_table(event, &dump, &facts.slot_facts);
+            verify.check_table(event, &dump, &facts.text_facts);
+            verify.check_table(event, &dump, &facts.model_faults);
+            verify.check_table(event, &dump, &facts.static_facts);
         }
 
         Ok(())

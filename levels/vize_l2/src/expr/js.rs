@@ -8,20 +8,20 @@
 //! `crates/vize_armature/src/parser/expression.rs` applies at template
 //! parse - a retained AST that does not cover its text would lie to every
 //! consumer - and [`JsExpr::parse_in`] is its second and last home,
-//! with two callers: the **folio load path**, where the owned page's
+//! with two callers: the **dump load path**, where the owned page's
 //! slice + span re-enter an arena (arenas cannot persist - P1-11 - so a
-//! folio can only carry text), and the **L1→L2 lowering** (P2-8). The
+//! dump can only carry text), and the **L1→L2 lowering** (P2-8). The
 //! P2-5b text expected lowerings to receive armature's retained ASTs;
 //! the L1 that actually landed (P2-7, crate `vize_l1`, codename Sinopia) is token-level and
 //! retains no ASTs, so the lowering is where a template expression first
-//! parses on the Davinci lane - through this one admission rule, never a
+//! parses on the Levels lane - through this one admission rule, never a
 //! private variant of it. The deviation is recorded in the P2-8 record.
 //!
 //! Unlike armature's site, a parse here does **not** increment the
-//! `davinci.expr.parses` profiler counter: the P1-5 counter law
+//! `levels.expr.parses` profiler counter: the P1-5 counter law
 //! (`counter == distinct expressions`, each parsed at most once) is a
-//! statement about the shipped compile path. A folio load is tooling
-//! re-entry, and the P2-8 lowering is the additive Davinci lane - it
+//! statement about the shipped compile path. A dump load is tooling
+//! re-entry, and the P2-8 lowering is the additive Levels lane - it
 //! runs beside the shipped path, so counting it would double-count any
 //! file both paths see. The lane's counter story lands with the fused
 //! build path (P2-12b), where the lane *becomes* the compile path.
@@ -44,7 +44,7 @@ const EXPR_SOURCE_TYPE: SourceType = SourceType::ts();
 ///
 /// The architecture names the variant `Js(&'a Expression<'a>)`; the
 /// landed payload carries that AST reference **beside** its exact text
-/// and authored span, because the folio contract in the same task
+/// and authored span, because the dump contract in the same task
 /// requires slice + span at print time and an AST pointer alone cannot
 /// recover either (a standalone-parsed expression's oxc spans are
 /// text-relative, not file-relative). The deviation is recorded in

@@ -1,5 +1,5 @@
 //! TS-17 for the element/binding family (P2-9 series 5): committed
-//! fixture in, pipeline out, **full normalized folio** snapshot — the
+//! fixture in, pipeline out, **full normalized dump** snapshot — the
 //! P2-4 harness shape. The snapshots show the surface this installment
 //! landed: `ui.bind`/`ui.on` lines with the parser shorthands applied,
 //! the outlet's props surface, and the model contract standing beside
@@ -29,15 +29,15 @@ fn fixture(name: &str) -> vize_l0::String {
 }
 
 #[test]
-fn the_bindings_fixture_snapshots_the_post_pass_folio() {
+fn the_bindings_fixture_snapshots_the_post_pass_dump() {
     let source = fixture("bindings.vue");
-    with_transformed(&source, |lowered, folio, facts, budget| {
-        // The oracle: the full normalized folio after the pipeline ran.
+    with_transformed(&source, |lowered, dump, facts, budget| {
+        // The oracle: the full normalized dump after the pipeline ran.
         // The `.value` dot shorthand carries its synthesized `prop`
         // modifier, the valueless `:model-value` its camelized same-name
         // value, the outlet its props surface, and the two `ui.model`
         // contracts stand unexpanded.
-        assert_dump_snapshot!(*folio);
+        assert_dump_snapshot!(*dump);
 
         // Supplements: the model pass and the slot carriers' pass are
         // both bought by this fixture; `v-if` and `v-for` are not, so the
@@ -56,13 +56,13 @@ fn the_bindings_fixture_snapshots_the_post_pass_folio() {
 }
 
 #[test]
-fn the_invalid_fixture_snapshots_the_post_pass_folio() {
+fn the_invalid_fixture_snapshots_the_post_pass_dump() {
     let source = fixture("invalid.vue");
-    with_transformed(&source, |lowered, folio, facts, _| {
-        // The folio keeps every op — the L2 lane never removes an
+    with_transformed(&source, |lowered, dump, facts, _| {
+        // The dump keeps every op — the L2 lane never removes an
         // invalid model (the fault table is the legacy removal's
         // preserving twin) — while the errors ride the channel.
-        assert_dump_snapshot!(*folio);
+        assert_dump_snapshot!(*dump);
 
         let messages: Vec<&str> = lowered
             .diagnostics

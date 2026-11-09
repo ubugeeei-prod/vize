@@ -3,11 +3,11 @@ import fs from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
 
-import { RULES_DIR } from "../../tools/support/compat/davinci/lib/rule-parity-paths.ts";
+import { RULES_DIR } from "../../tools/support/compat/levels/lib/rule-parity-paths.ts";
 import {
   parseRuleFile,
   parseRuleSource,
-} from "../../tools/support/compat/davinci/lib/rule-parity-rules.ts";
+} from "../../tools/support/compat/levels/lib/rule-parity-rules.ts";
 
 const model = {
   templateHooks: ["enter_element", "check_directive"],

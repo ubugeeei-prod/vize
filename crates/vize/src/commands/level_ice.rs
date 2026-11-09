@@ -1,10 +1,10 @@
-//! The Davinci ICE machinery (charter #30, P2-13), shared by the build path
+//! The Levels ICE machinery (charter #30, P2-13), shared by the build path
 //! and `vize repro`.
 //!
 //! The policy this implements: an internal compiler error **fails the file
 //! and writes a reproducer** - it never degrades to possibly-wrong output
 //! (charter #26 forbids auto-fallback outright), and it never takes the rest
-//! of the batch down with it. The reproducer is a `repro.folio`
+//! of the batch down with it. The reproducer is a `repro.dump`
 //! ([`ReproPage`]): pipeline string, replay config, the recorded failure,
 //! and the last-good stage dump - which, until P2-12b routes the compile
 //! path through the pass manager, is the authored source itself
@@ -131,7 +131,7 @@ impl Injection {
     }
 }
 
-/// Validate a `--davinci-inject-panic <file-stem>:<pass>[:<tag>]` spec
+/// Validate a `--level-inject-panic <file-stem>:<pass>[:<tag>]` spec
 /// against the plan the build will run, so an injection that could never
 /// fire is an argument error rather than a silently green run.
 pub(crate) fn parse_inject_spec(
@@ -172,7 +172,7 @@ pub(crate) fn silence_panics() {
 }
 
 /// Extract a panic payload's text, newline-normalized so it fits a
-/// line-atomic folio scalar. Record and replay both pass through here, so
+/// line-atomic dump scalar. Record and replay both pass through here, so
 /// exact failure equality survives the normalization.
 #[expect(clippy::disallowed_types, reason = "dependency API uses std String")]
 pub(crate) fn panic_reason(payload: Box<dyn core::any::Any + Send>) -> String {
@@ -233,7 +233,7 @@ pub(crate) fn run_injected(pipeline: &str, inject_pass: &str) -> Result<(), IceF
     for plan in &build_plans(&segments) {
         let mut last: Option<(String, String)> = None;
         // The timing observer keeps a --profile-json build's export honest
-        // about davinci-driven walks; with profiling off it costs one atomic
+        // about level-driven walks; with profiling off it costs one atomic
         // load per walk.
         let mut observers = Pair(TimingObserver::new(), BudgetObserver::new());
         let outcome = run_pipeline(plan, &mut observers, |event| {
@@ -242,7 +242,7 @@ pub(crate) fn run_injected(pipeline: &str, inject_pass: &str) -> Result<(), IceF
                 String::from(event.desc().name),
             ));
             if event.desc().name == inject_pass {
-                return Err(PassFailure::new("injected davinci failure"));
+                return Err(PassFailure::new("injected levels failure"));
             }
             Ok(())
         });
@@ -252,7 +252,7 @@ pub(crate) fn run_injected(pipeline: &str, inject_pass: &str) -> Result<(), IceF
             return Err(IceFailure {
                 stage,
                 pass,
-                reason: cstr!("injected davinci panic in pass `{inject_pass}`"),
+                reason: cstr!("injected levels panic in pass `{inject_pass}`"),
             });
         }
     }
@@ -276,7 +276,7 @@ pub(crate) fn source_repro(
             config.insert(String::from(replay::CONFIG_INJECT_WHEN), tag.clone());
         }
     }
-    let mut folio = ReproPage {
+    let mut dump = ReproPage {
         pipeline: String::from(plan_str),
         failed_stage: failure.stage.clone(),
         failed_pass: failure.pass.clone(),
@@ -285,21 +285,21 @@ pub(crate) fn source_repro(
         config,
         artifact: source,
     };
-    folio.normalize();
-    folio
+    dump.normalize();
+    dump
 }
 
-/// Write `folio` as `{stem}.repro.folio` under `dir`, creating `dir` first
+/// Write `dump` as `{stem}.repro.dump` under `dir`, creating `dir` first
 /// (the compile phase runs before the output writer creates anything).
 ///
 /// # Errors
 ///
 /// Returns a formatted message naming the path that failed.
-pub(crate) fn write_repro(dir: &Path, stem: &str, folio: &ReproPage) -> Result<PathBuf, String> {
+pub(crate) fn write_repro(dir: &Path, stem: &str, dump: &ReproPage) -> Result<PathBuf, String> {
     std::fs::create_dir_all(dir)
         .map_err(|error| cstr!("cannot create {}: {error}", dir.display()))?;
-    let path = dir.join(cstr!("{stem}.repro.folio").as_str());
-    std::fs::write(&path, folio.print_to_string(DumpMode::Full).as_bytes())
+    let path = dir.join(cstr!("{stem}.repro.dump").as_str());
+    std::fs::write(&path, dump.print_to_string(DumpMode::Full).as_bytes())
         .map_err(|error| cstr!("cannot write {}: {error}", path.display()))?;
     Ok(path)
 }

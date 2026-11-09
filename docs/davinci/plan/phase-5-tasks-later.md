@@ -54,8 +54,8 @@
 
 **Steps:**
 
-- [x] `node tools/commands/davinci/incremental-equivalence.ts` with committed edit scripts _(six scripts under `incremental-equivalence/scripts/`; the harness is `vize_incremental::equivalence`)_
-- [x] `.github/workflows/davinci-incremental.yml` required on PRs touching `crates/vize_incremental/` _(the `incremental-equivalence` job; its shape is pinned by `davinci-incremental-workflow.test.ts`)_
+- [x] `node tools/commands/levels/incremental-equivalence.ts` with committed edit scripts _(six scripts under `incremental-equivalence/scripts/`; the harness is `vize_incremental::equivalence`)_
+- [x] `.github/workflows/level-incremental.yml` required on PRs touching `crates/vize_incremental/` _(the `incremental-equivalence` job; its shape is pinned by `level-incremental-workflow.test.ts`)_
 
 **Acceptance:** TS-42 green with scope proof (edits applied and artifacts compared are counted; a zero-comparison run fails); a seeded stale-cache bug is caught.
 
@@ -75,7 +75,7 @@
 
 **Steps:**
 
-- [x] `davinci/vize_l1_to_l2/src/partial.rs` exposes the kept fragments to the fact manager
+- [x] `levels/vize_l1_to_l2/src/partial.rs` exposes the kept fragments to the fact manager
 - [x] TS-47 scenarios in `tests/tooling/lsp-broken-file*`: hover and completion in a file with a parse error elsewhere
 
 **Acceptance:** TS-47 scenarios exact; no diagnostic regression on the well-formed fixtures (TS-9).
@@ -96,8 +96,8 @@
 
 **Steps:**
 
-- [x] `rust-script tools/commands/davinci/resource-budgets.rs --measure` and `--check`
-- [x] `tests/tooling/davinci-resource-budgets.test.ts` rejects a number without methodology and a loosened number
+- [x] `rust-script tools/commands/levels/resource-budgets.rs --measure` and `--check`
+- [x] `tests/tooling/level-resource-budgets.test.ts` rejects a number without methodology and a loosened number
 
 **Acceptance:** the section populated with numbers, not adjectives; the checker proven to fail on an injected loosening; results reproducible from the recorded command.
 

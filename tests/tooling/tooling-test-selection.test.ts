@@ -16,7 +16,7 @@ function fixture() {
   const cwd = mkdtempSync(join(tmpdir(), "vize-tooling-inputs-"));
   for (const directory of [
     "tests/tooling/support",
-    "tests/tooling/davinci",
+    "tests/tooling/levels",
     "tests/tooling/release",
     "tools",
     "docs",
@@ -24,7 +24,7 @@ function fixture() {
     mkdirSync(join(cwd, directory), { recursive: true });
   }
   const write = (file: string, source = "") => writeFileSync(join(cwd, file), source);
-  write("tests/tooling/davinci-phase4-contract-status.test.ts", 'import "./support/plan.ts";');
+  write("tests/tooling/level-phase4-contract-status.test.ts", 'import "./support/plan.ts";');
   write("tests/tooling/support/plan.ts", 'export { value } from "../../../tools/plan-input.mjs";');
   write("tools/plan-input.mjs", "export const value = 1;");
   write("tests/tooling/native.test.ts");
@@ -35,13 +35,13 @@ function fixture() {
 void test("a source edit selects only the tests that import or name it", () => {
   const f = fixture();
   try {
-    assert.deepEqual(planToolingTests(["davinci/vize_l1/src/lib.rs"], { cwd: f.cwd }).tests, []);
-    f.write("tests/tooling/native.test.ts", 'const crate = ["davinci", "vize_l1"];');
-    assert.deepEqual(planToolingTests(["davinci/vize_l1/src/lib.rs"], { cwd: f.cwd }).tests, [
+    assert.deepEqual(planToolingTests(["levels/vize_l1/src/lib.rs"], { cwd: f.cwd }).tests, []);
+    f.write("tests/tooling/native.test.ts", 'const crate = ["levels", "vize_l1"];');
+    assert.deepEqual(planToolingTests(["levels/vize_l1/src/lib.rs"], { cwd: f.cwd }).tests, [
       "tests/tooling/native.test.ts",
     ]);
     const docs = planToolingTests(["docs/davinci/plan/phase-4.md"], { cwd: f.cwd });
-    assert.ok(docs.tests.includes("tests/tooling/davinci-phase4-contract-status.test.ts"));
+    assert.ok(docs.tests.includes("tests/tooling/level-phase4-contract-status.test.ts"));
   } finally {
     f.cleanup();
   }
@@ -53,14 +53,14 @@ void test("transitive imports and deleted inputs select the contract", () => {
     for (const path of ["tools/plan-input.mjs", "tests/tooling/support/plan.ts"]) {
       assert.ok(
         planToolingTests([path], { cwd: f.cwd }).tests.includes(
-          "tests/tooling/davinci-phase4-contract-status.test.ts",
+          "tests/tooling/level-phase4-contract-status.test.ts",
         ),
       );
     }
     rmSync(join(f.cwd, "tools/plan-input.mjs"));
     assert.ok(
       planToolingTests(["tools/plan-input.mjs"], { cwd: f.cwd }).tests.includes(
-        "tests/tooling/davinci-phase4-contract-status.test.ts",
+        "tests/tooling/level-phase4-contract-status.test.ts",
       ),
     );
   } finally {
@@ -81,14 +81,14 @@ void test("unknown and shared dependency inputs restore the broad PR suite", () 
     }
     // This audited plan contract has a curated scope, so an incomplete
     // closure keeps the broad inputs instead of trusting named paths.
-    f.write("tests/tooling/davinci-phase4-contract-status.test.ts", "import(variable);");
-    assert.deepEqual(planToolingTests(["davinci/vize_l1/src/lib.rs"], { cwd: f.cwd }).tests, [
-      "tests/tooling/davinci-phase4-contract-status.test.ts",
+    f.write("tests/tooling/level-phase4-contract-status.test.ts", "import(variable);");
+    assert.deepEqual(planToolingTests(["levels/vize_l1/src/lib.rs"], { cwd: f.cwd }).tests, [
+      "tests/tooling/level-phase4-contract-status.test.ts",
     ]);
     // An unscoped test with a computed import runs on the paths it names.
-    f.write("tests/tooling/native.test.ts", 'import(join("davinci/vize_l1", variable));');
-    f.write("tests/tooling/davinci-phase4-contract-status.test.ts", "");
-    assert.deepEqual(planToolingTests(["davinci/vize_l1/src/lib.rs"], { cwd: f.cwd }).tests, [
+    f.write("tests/tooling/native.test.ts", 'import(join("levels/vize_l1", variable));');
+    f.write("tests/tooling/level-phase4-contract-status.test.ts", "");
+    assert.deepEqual(planToolingTests(["levels/vize_l1/src/lib.rs"], { cwd: f.cwd }).tests, [
       "tests/tooling/native.test.ts",
     ]);
   } finally {
@@ -119,8 +119,8 @@ void test("a retired-language file arriving or leaving anywhere selects the ledg
       "editors/vscode/test/router-host.mjs",
       "tests/typescript-plugin/project-metadata.mjs",
       "crates/vize/scripts/probe.py",
-      "davinci/proofs/Spec.lean",
-      "davinci/proofs/lean-toolchain",
+      "levels/proofs/Spec.lean",
+      "levels/proofs/lean-toolchain",
     ]) {
       add(file);
       assert.ok(selected(file).includes(ratchet), file);
@@ -326,7 +326,7 @@ void test("include and extends mutations preserve scoped or fail-closed compiler
 });
 
 void test("the actual failing helper and every configured external root select the real strict gate", () => {
-  const paths = ["tools/support/compat/davinci/lib/rule-parity-plain-types.ts"];
+  const paths = ["tools/support/compat/levels/lib/rule-parity-plain-types.ts"];
   const project = JSON.parse(
     readFileSync(new URL("../../tools/tsconfig.json", import.meta.url), "utf8"),
   );

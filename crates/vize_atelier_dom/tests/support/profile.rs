@@ -1,6 +1,6 @@
 //! Shared profile-counter pins for P2-12b L2 DOM tests.
 
-use davinci_harness::fixtures::LADDER;
+use level_harness::fixtures::LADDER;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct L2DomEmitCount {

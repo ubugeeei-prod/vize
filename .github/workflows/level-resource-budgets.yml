@@ -1,6 +1,6 @@
-name: Davinci resource budgets
+name: Levels resource budgets
 
-# TS-44 (Davinci P5-11a): the resident `vize lsp` measured against the
+# TS-44 (Levels P5-11a): the resident `vize lsp` measured against the
 # `docs/davinci/plan/budgets.toml [resource]` ceilings on the reference
 # runner. Every recorded number names this workflow's measure command; the
 # ratchet step rejects a loosened or dropped ceiling against the PR base.
@@ -17,7 +17,7 @@ on:
         default: false
 
 concurrency:
-  group: davinci-resource-${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}
+  group: level-resource-${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}
   cancel-in-progress: true
 
 permissions:
@@ -52,7 +52,7 @@ jobs:
       # CLI, so crates/vize/build.rs folds identical code and packs relocations.
       - uses: ./.github/actions/setup-rust-sticky-cache
         with:
-          key: davinci-resource
+          key: level-resource
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
       - uses: ./.github/actions/setup-rust-script
       # The optimized profile check-bench measures; shipped release binaries
@@ -66,18 +66,18 @@ jobs:
           --message-format=json-render-diagnostics > "${RUNNER_TEMP}/resource-build.jsonl"
       - name: Record the measured binary and build identity
         run: >-
-          vp exec node tools/support/compat/davinci/lsp-build-identity.ts
+          vp exec node tools/support/compat/levels/lsp-build-identity.ts
           target/ci-opt/vize ci-opt "${RUNNER_TEMP}/resource-build.jsonl"
           "${RUNNER_TEMP}/resource-build-identity.json"
 
       - name: Measure the resident server
         run: >-
-          rust-script tools/commands/davinci/resource-budgets.rs --measure
+          rust-script tools/commands/levels/resource-budgets.rs --measure
           --preset "${RESOURCE_PRESET}" --runs 3 --keystrokes 20 --idle-seconds 60
           --server target/ci-opt/vize --out "${RUNNER_TEMP}/resource.json"
       - name: Every number carries its methodology
         if: ${{ !cancelled() }}
-        run: rust-script tools/commands/davinci/resource-budgets.rs --validate
+        run: rust-script tools/commands/levels/resource-budgets.rs --validate
       - name: No ceiling is loosened against the base
         if: ${{ !cancelled() && github.event_name == 'pull_request' }}
         env:
@@ -90,11 +90,11 @@ jobs:
           BASE_BUDGET_PATH="$(git ls-tree -r --name-only "${BASE_SHA}" | rg '(^|/)plan/budgets[.]toml$')"
           test -n "${BASE_BUDGET_PATH}"
           git show "${BASE_SHA}:${BASE_BUDGET_PATH}" > "${RUNNER_TEMP}/base-budgets.toml"
-          rust-script tools/commands/davinci/resource-budgets.rs --ratchet "${RUNNER_TEMP}/base-budgets.toml"
+          rust-script tools/commands/levels/resource-budgets.rs --ratchet "${RUNNER_TEMP}/base-budgets.toml"
       - name: The measurement holds every pinned ceiling
         if: ${{ !cancelled() }}
         run: >-
-          rust-script tools/commands/davinci/resource-budgets.rs --check
+          rust-script tools/commands/levels/resource-budgets.rs --check
           --measurement "${RUNNER_TEMP}/resource.json"
       - name: Summarize
         if: ${{ !cancelled() }}
@@ -127,7 +127,7 @@ jobs:
           wild-version: "0.9.0"
       - uses: ./.github/actions/setup-rust-sticky-cache
         with:
-          key: davinci-resident-resource
+          key: level-resident-resource
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
       - name: Build the isolated resident session
         run: >-
@@ -137,7 +137,7 @@ jobs:
           --config 'profile.ci-opt.codegen-units=16'
       - name: Measure and enforce the unchanged reference RSS ceilings
         run: >-
-          node tools/commands/davinci/resident-resources.ts
+          node tools/commands/levels/resident-resources.ts
           --server target/ci-opt/examples/resource_session --files 10000 --edits 32
           --runs 3 --out "${RUNNER_TEMP}/resident-resource.json"
       - name: Summarize the isolated session
@@ -176,13 +176,13 @@ jobs:
       # CLI, so crates/vize/build.rs folds identical code and packs relocations.
       - uses: ./.github/actions/setup-rust-sticky-cache
         with:
-          key: davinci-resource
+          key: level-resource
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
       - uses: ./.github/actions/setup-rust-script
       - name: Verify assertion, module, and source length gates
         run: >-
-          vp exec node --test tests/tooling/davinci-assertion-lint.test.ts
-          tests/tooling/davinci-module-layout.test.ts tests/tooling/source-file-lengths.test.ts
+          vp exec node --test tests/tooling/level-assertion-lint.test.ts
+          tests/tooling/level-module-layout.test.ts tests/tooling/source-file-lengths.test.ts
       - name: Build the production server
         run: >-
           cargo build --profile ci-opt -p vize
@@ -191,14 +191,14 @@ jobs:
           --config 'profile.ci-opt.codegen-units=16'
       - name: Verify the protocol and controlled edit oracle
         run: >-
-          vp exec node tools/support/compat/davinci/lsp-resources.ts
+          vp exec node tools/support/compat/levels/lsp-resources.ts
           --server target/ci-opt/vize --files 2 --runs 1 --idle-seconds 10
           --build "ci-opt: release, thin LTO, 16 codegen units"
           --out "${RUNNER_TEMP}/lsp-resource-smoke.json"
       - name: Measure 10000 open buffers, 16 production providers, and Corsa
         run: >-
           timeout --signal=TERM --kill-after=30s 45m
-          vp exec node tools/support/compat/davinci/lsp-resources.ts
+          vp exec node tools/support/compat/levels/lsp-resources.ts
           --server target/ci-opt/vize --files 10000 --warm-providers 16 --runs 1 --idle-seconds 10
           --build "ci-opt: release, thin LTO, 16 codegen units"
           --out "${RUNNER_TEMP}/lsp-resource.json"

@@ -7,10 +7,10 @@ separate emitters.
 
 This page is the human reference for the 17 stable operation mnemonics. The
 normative executable companion is the independent Rust reference in
-`tests/davinci_test_support/src/l3_reference/`, which
+`tests/level_test_support/src/l3_reference/`, which
 parses the same L3 Folio text and records the first VDOM/Vapor trace labels.
 Folio remains the concrete interchange syntax; see
-[`folio-format-impeto.md`](./folio-format-impeto.md).
+[`dump-format-l3.md`](./dump-format-l3.md).
 
 ## Program Model
 
@@ -157,7 +157,7 @@ spends one unit of the component's candidate budget; a candidate blocked by the
 committed plan (`subsumed`, `not-contiguous`) or reached after the budget is
 spent (`budget-exhausted`) is recorded as missed without measuring. Tiers are
 the `[optimization]` rows of `budgets.toml`, synced field for field by
-`davinci/vize_l3/tests/optimization_budgets.rs`.
+`levels/vize_l3/tests/optimization_budgets.rs`.
 
 The pass writes only `PlacementRecord::chosen` and is described as
 `Preserved::ALL`. `vize_l3::optimize::OPTIMIZE` is the `s3` pipeline

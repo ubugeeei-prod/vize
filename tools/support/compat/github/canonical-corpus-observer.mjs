@@ -10,7 +10,7 @@ import {
   expectedOldErrorSkips,
   parseCorpusEvidence,
   validateCorpusEvidence,
-} from "../fixtures/davinci-dom-corpus-workflow.ts";
+} from "../fixtures/level-dom-corpus-workflow.ts";
 import {
   artifactRoot,
   captureCorpus,
@@ -60,7 +60,7 @@ function inspectObserverLog(observer, bytes, identity, evidence) {
     .split(/\r?\n/)
     .map((line) => line.replace(/^\d{4}-\d\d-\d\dT[\d:.]+Z /, ""));
   const counters = lines.filter(
-    (line) => line.startsWith("davinci ") || line.startsWith("davinci-differential "),
+    (line) => line.startsWith("levels ") || line.startsWith("level-differential "),
   );
   if (observer !== "dom" && hasProcessSegments(lines)) {
     assert(evidence, "Sharded observer evidence requires the canonical manifest");
@@ -69,7 +69,7 @@ function inspectObserverLog(observer, bytes, identity, evidence) {
       vectors: validateShardedObserver(observer, lines, identity, evidence),
     };
   }
-  const closure = lines.filter((line) => line.startsWith("davinci-differential corpus scope:"));
+  const closure = lines.filter((line) => line.startsWith("level-differential corpus scope:"));
   assert.equal(closure.length, observer === "ssr-pug" ? 2 : 1, "Incomplete canonical scope");
   for (const line of closure) {
     assert(
@@ -111,10 +111,10 @@ function inspectObserverLog(observer, bytes, identity, evidence) {
     assert.equal(evidence.s2Refusals, 0, "DOM refused original inputs");
     assert.equal(evidence.divergences, 0, "DOM diverged");
   } else if (observer === "ssr-pug") {
-    const emitter = single(lines, "davinci SSR corpus sweep: scope=canonical ");
+    const emitter = single(lines, "levels SSR corpus sweep: scope=canonical ");
     assert.equal(counter(emitter, "files"), expectedFiles, "SSR corpus shrank");
     assert.equal(counter(emitter, "parsed"), expectedFiles, "SSR parse inventory changed");
-    const production = single(lines, "davinci SSR production sweep: scope=canonical ");
+    const production = single(lines, "levels SSR production sweep: scope=canonical ");
     for (const line of [emitter, production]) {
       assert(
         counter(line, "templates") > 0 && counter(line, "compared") > 0 && counter(line, "s4") > 0,
@@ -123,7 +123,7 @@ function inspectObserverLog(observer, bytes, identity, evidence) {
       assert.equal(counter(line, "rejected"), 0, "SSR rejected a plan");
       assert.equal(counter(line, "divergences"), 0, "SSR diverged");
     }
-    const pug = single(lines, "davinci pug corpus sweep: ");
+    const pug = single(lines, "levels pug corpus sweep: ");
     assert.equal(counter(pug, "files"), expectedFiles, "Pug corpus shrank");
     assert(
       counter(pug, "pug") > 0 && counter(pug, "compiled_lanes") > 0,
@@ -131,18 +131,18 @@ function inspectObserverLog(observer, bytes, identity, evidence) {
     );
     assert.equal(counter(pug, "refused"), 0, "Pug refused original inputs");
   } else {
-    const summary = single(lines, "davinci production reach: scope=canonical ");
+    const summary = single(lines, "levels production reach: scope=canonical ");
     assert.equal(counter(summary, "files"), expectedFiles, "Production reach corpus shrank");
     assert.equal(counter(summary, "unreadable"), 0, "Unreadable reach inputs");
     assert.equal(counter(summary, "parse_errors"), 0, "Reach parse failures");
     const canonical = lines.slice(lines.indexOf(summary));
     for (const shape of shapes) {
-      const reach = single(canonical, `davinci production reach: shape=${shape} `);
+      const reach = single(canonical, `levels production reach: shape=${shape} `);
       assert.equal(counter(reach, "rejected"), 0, "Production reach rejected a plan");
       assert.equal(counter(reach, "divergences"), 0, "Production reach diverged");
       const native = single(
         canonical,
-        `davinci native-only acceptance: scope=canonical product=compiler target=${shape} `,
+        `levels native-only acceptance: scope=canonical product=compiler target=${shape} `,
       );
       assert.equal(counter(native, "planned"), expectedFiles, "Native reach inventory changed");
       assert.equal(

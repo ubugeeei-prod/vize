@@ -9,7 +9,7 @@
 //!
 //! [`ScriptFrame`] is the one conversion from croquis' script-analysis frame
 //! to the file, validated through the L0 frame ([`SourceRoot`] /
-//! [`SourceBlock`]) that the Davinci stages key their spans on: a range that
+//! [`SourceBlock`]) that the Levels stages key their spans on: a range that
 //! is not inside the block it claims is refused, never guessed.
 
 use vize_atelier_sfc::SfcDescriptor;

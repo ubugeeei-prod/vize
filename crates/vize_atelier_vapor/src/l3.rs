@@ -118,7 +118,7 @@ impl<'a> VaporL3Artifact<'a> {
     }
 
     /// [`Self::into_ir`] that also returns the authored anchors when `spans`
-    /// is set (Davinci P3-9). `None` rejects this compile without code.
+    /// is set (Levels P3-9). `None` rejects this compile without code.
     pub(crate) fn into_ir_with_spans(
         self,
         allocator: &'a Allocator,
@@ -256,7 +256,7 @@ pub(crate) fn lower_source_for_vapor_captured<'a, C: CaptureSink>(
                 AdmissionFailure::Unsupported(reason) => VaporL3BridgeStatus::Legacy(reason),
                 AdmissionFailure::Invalid(message) => {
                     VaporL3BridgeStatus::Rejected(std::vec![cstr!(
-                        "Davinci L3 verifier rejected Vapor artifact: {message}"
+                        "Levels L3 verifier rejected Vapor artifact: {message}"
                     )])
                 }
             };
@@ -291,7 +291,7 @@ fn admit_with<'a>(
         return VaporL3BridgeStatus::Rejected(
             violations
                 .into_iter()
-                .map(|violation| cstr!("Davinci L3 verifier rejected Vapor artifact: {violation}"))
+                .map(|violation| cstr!("Levels L3 verifier rejected Vapor artifact: {violation}"))
                 .collect(),
         );
     }
@@ -310,7 +310,7 @@ fn admit_with<'a>(
             })
     {
         return VaporL3BridgeStatus::Rejected(std::vec![String::from(
-            "Davinci L3 verifier rejected Vapor artifact: partition identity/classification mismatch",
+            "Levels L3 verifier rejected Vapor artifact: partition identity/classification mismatch",
         )]);
     }
     match bridge_profile!(
@@ -320,7 +320,7 @@ fn admit_with<'a>(
         Ok(artifact) => VaporL3BridgeStatus::Accepted(VaporL3Artifact(artifact, recoveries)),
         Err(AdmissionFailure::Unsupported(reason)) => VaporL3BridgeStatus::Legacy(reason),
         Err(AdmissionFailure::Invalid(message)) => VaporL3BridgeStatus::Rejected(std::vec![cstr!(
-            "Davinci L3 verifier rejected Vapor artifact: {message}"
+            "Levels L3 verifier rejected Vapor artifact: {message}"
         )]),
     }
 }

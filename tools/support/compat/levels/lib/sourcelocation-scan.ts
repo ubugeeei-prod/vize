@@ -1,4 +1,4 @@
-// SourceLocation scanning helpers (Davinci P0-9).
+// SourceLocation scanning helpers (Levels P0-9).
 //
 // Split out of sourcelocation-inventory.ts under the 350-line source-length
 // budget: this module owns workspace scanning, member matching, and citation
@@ -142,7 +142,7 @@ export function citeSite(
   if (!site) {
     throw new Error(
       `citation lost: no ${member ?? "inventoried"} read found in ${relPath}; ` +
-        `re-classify this consumer in tools/support/compat/davinci/sourcelocation-inventory.ts`,
+        `re-classify this consumer in tools/support/compat/levels/sourcelocation-inventory.ts`,
     );
   }
   return `${site.relPath}:${site.line}`;
@@ -154,7 +154,7 @@ export function citeAnchor(relPath: string, anchor: RegExp): string {
   if (!existsSync(file)) {
     throw new Error(
       `citation lost: ${relPath} does not exist; ` +
-        `re-classify this consumer in tools/support/compat/davinci/sourcelocation-inventory.ts`,
+        `re-classify this consumer in tools/support/compat/levels/sourcelocation-inventory.ts`,
     );
   }
   const lines = readFileSync(file, "utf8").split("\n");
@@ -162,7 +162,7 @@ export function citeAnchor(relPath: string, anchor: RegExp): string {
   if (idx === -1) {
     throw new Error(
       `citation lost: ${anchor} not found in ${relPath}; ` +
-        `re-classify this consumer in tools/support/compat/davinci/sourcelocation-inventory.ts`,
+        `re-classify this consumer in tools/support/compat/levels/sourcelocation-inventory.ts`,
     );
   }
   return `${relPath}:${idx + 1}`;
@@ -197,8 +197,8 @@ export function assertAnchorAbsent(relPath: string, anchor: RegExp, description:
   if (idx !== -1) {
     throw new Error(
       `deletion regressed: ${description} reappeared at ${relPath}:${idx + 1}; ` +
-        `it was deleted by Davinci P1-4 — re-classify it in ` +
-        `tools/support/compat/davinci/sourcelocation-inventory.ts if it is back by design`,
+        `it was deleted by Levels P1-4 — re-classify it in ` +
+        `tools/support/compat/levels/sourcelocation-inventory.ts if it is back by design`,
     );
   }
 }
@@ -209,8 +209,8 @@ export function assertSymbolAbsent(name: string, description: string): void {
   if (count !== 0) {
     throw new Error(
       `deletion regressed: ${count} reference(s) to ${name} reappeared (${description}); ` +
-        `it was deleted by Davinci P1-4 — re-classify it in ` +
-        `tools/support/compat/davinci/sourcelocation-inventory.ts if it is back by design`,
+        `it was deleted by Levels P1-4 — re-classify it in ` +
+        `tools/support/compat/levels/sourcelocation-inventory.ts if it is back by design`,
     );
   }
 }

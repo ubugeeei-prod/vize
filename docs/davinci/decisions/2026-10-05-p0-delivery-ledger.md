@@ -40,7 +40,7 @@ not a claim that any unexecuted source repair is complete.
   npm/crates/editor visibility, deployed docs and installed-payload replay of
   original fixtures remain required. Historical `42a` gates stay historical.
   Source-merged fixes are not yet claimed publicly delivered; unresolved
-  reports, P0 zero, 10x and wider Davinci/fix-history work remain unfinished.
+  reports, P0 zero, 10x and wider Levels/fix-history work remain unfinished.
 
 ## Publication checkpoint: first v0.433.0 complete and THAW
 

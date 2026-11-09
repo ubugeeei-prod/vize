@@ -1,6 +1,6 @@
-//! Parser for the committed `[s3-values-folio]` operand pages.
+//! Parser for the committed `[s3-values-dump]` operand pages.
 
-use super::folio::field;
+use super::dump::field;
 use super::json::{Json, get_arr, get_nat, get_str, parse as parse_json};
 use super::program::Span;
 
@@ -135,9 +135,9 @@ pub fn parse(text: &str) -> Result<Vec<Operand>, String> {
         if line.is_empty() {
             continue;
         }
-        if line == "[s3-values-folio]" && current == 0 {
+        if line == "[s3-values-dump]" && current == 0 {
             current = 1;
-        } else if line == "[s3-values-folio.operands]" && current == 1 {
+        } else if line == "[s3-values-dump.operands]" && current == 1 {
             current = 2;
         } else if current == 2 {
             rows.push(parse_operand(line).map_err(|e| format!("line {}: {e}", index + 1))?);

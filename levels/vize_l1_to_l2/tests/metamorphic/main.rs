@@ -1,8 +1,8 @@
-//! Davinci P2-15 — the metamorphic suite v1 (TS-21).
+//! Levels P2-15 — the metamorphic suite v1 (TS-21).
 //!
 //! Equivalence-preserving mutations of Vue template source (attribute
 //! reorder, pass-through `<template>` wrap, text-node split/merge,
-//! whitespace-insignificant edits) must leave the L2 folio identical
+//! whitespace-insignificant edits) must leave the L2 dump identical
 //! modulo the declared normalization, compared as full normalized
 //! artifacts. The per-mutator equivalence justifications live in
 //! `mutators.rs`, the declared normalization in `normalize.rs`, the
@@ -13,12 +13,12 @@
 //! counted; a zero-mutation run fails):
 //!
 //! - the committed construct-matrix plane
-//!   (`tests/fixtures/davinci-matrix/`, TS-12 keeps it fresh), pinned
+//!   (`tests/fixtures/level-matrix/`, TS-12 keeps it fresh), pinned
 //!   census, always on;
-//! - a corpus shard via `VIZE_DAVINCI_METAMORPHIC_CORPUS=<dir>[,<dir>…]`
+//! - a corpus shard via `VIZE_LEVEL_METAMORPHIC_CORPUS=<dir>[,<dir>…]`
 //!   (read-only, copies-in-memory only — the P0-13 convention), the
 //!   P2-8 widening shape. CI feeds it the PR-hydrated submodules from
-//!   `tests/tooling/davinci-metamorphic-corpus.test.ts`; the full-corpus
+//!   `tests/tooling/level-metamorphic-corpus.test.ts`; the full-corpus
 //!   recipe is the same variable pointed at `tests/_fixtures/_git`.
 
 #![expect(
@@ -40,7 +40,7 @@ use std::path::{Path, PathBuf};
 use runner::{Report, collect_vue_files, run_files, run_source};
 
 fn matrix_dir() -> PathBuf {
-    Path::new(env!("CARGO_MANIFEST_DIR")).join("../../tests/fixtures/davinci-matrix")
+    Path::new(env!("CARGO_MANIFEST_DIR")).join("../../tests/fixtures/level-matrix")
 }
 
 #[test]
@@ -86,8 +86,8 @@ fn the_matrix_plane_is_metamorphically_stable() {
 
 #[test]
 fn the_corpus_shard_is_metamorphically_stable() {
-    let Some(roots) = std::env::var_os("VIZE_DAVINCI_METAMORPHIC_CORPUS") else {
-        eprintln!("VIZE_DAVINCI_METAMORPHIC_CORPUS unset: matrix plane only");
+    let Some(roots) = std::env::var_os("VIZE_LEVEL_METAMORPHIC_CORPUS") else {
+        eprintln!("VIZE_LEVEL_METAMORPHIC_CORPUS unset: matrix plane only");
         return;
     };
     let mut files = Vec::new();
@@ -104,7 +104,7 @@ fn the_corpus_shard_is_metamorphically_stable() {
         };
         assert!(
             root.is_dir(),
-            "VIZE_DAVINCI_METAMORPHIC_CORPUS must name directories: {}",
+            "VIZE_LEVEL_METAMORPHIC_CORPUS must name directories: {}",
             root.display()
         );
         collect_vue_files(&root, &mut files);
@@ -152,7 +152,7 @@ fn the_normalization_does_not_collapse_real_differences() {
     // normalization at all** — they now pin that the lowering's own
     // canonical operations (`lower::text`) keep real differences apart.
     use normalize::{Normalization, normalized_display};
-    let folio = |source: &str| {
+    let dump = |source: &str| {
         let allocator = vize_l0::Allocator::new();
         let (tree, errors) = vize_l1::markup::parse(&allocator, source);
         let lowered = vize_l1_to_l2::lower(&allocator, &tree, &errors);
@@ -161,30 +161,27 @@ fn the_normalization_does_not_collapse_real_differences() {
     // Attribute sorting must not erase a value difference…
     assert_ne!(
         normalized_display(
-            &folio(r#"<template><div a="1" b="2"/></template>"#),
+            &dump(r#"<template><div a="1" b="2"/></template>"#),
             Normalization::REORDER
         ),
         normalized_display(
-            &folio(r#"<template><div a="2" b="1"/></template>"#),
+            &dump(r#"<template><div a="2" b="1"/></template>"#),
             Normalization::REORDER
         ),
     );
     // …the lowering's text merge must not erase an element boundary…
     assert_ne!(
-        normalized_display(&folio("<template>ab</template>"), Normalization::NONE),
-        normalized_display(
-            &folio("<template>a<i></i>b</template>"),
-            Normalization::NONE
-        ),
+        normalized_display(&dump("<template>ab</template>"), Normalization::NONE),
+        normalized_display(&dump("<template>a<i></i>b</template>"), Normalization::NONE),
     );
     // …and the lowering's condense must not erase a text difference.
     assert_ne!(
         normalized_display(
-            &folio("<template><i>a b</i></template>"),
+            &dump("<template><i>a b</i></template>"),
             Normalization::NONE
         ),
         normalized_display(
-            &folio("<template><i>a c</i></template>"),
+            &dump("<template><i>a c</i></template>"),
             Normalization::NONE
         ),
     );
@@ -266,7 +263,7 @@ fn the_merge_mutator_holds_through_its_own_site_path() {
     let lowered = vize_l1_to_l2::lower(&allocator, &tree, &errors);
     let merged = vize_l2::dump::Page::of(&lowered.root.ops);
     // The re-merged slice is the original maximal run: byte-identical
-    // `Full`-mode folios, no normalization needed at all.
+    // `Full`-mode dumps, no normalization needed at all.
     use vize_l0::dump::{Dump, Mode as DumpMode};
     assert_eq!(
         merged.print_to_string(DumpMode::Full),

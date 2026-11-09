@@ -23,7 +23,7 @@
       },
       "successorOf": {
         "sourceRevision": "f233823358c1242013b51e53680ce257253c84fc",
-        "path": "davinci/vize_l2/src/file/region/native/pair/tests.rs",
+        "path": "levels/vize_l2/src/file/region/native/pair/tests.rs",
         "test": "paired_text_nested_mixed_headers_and_nonadjacent_roots_stay_lower_refusals",
         "sourceSha256": "d3da5c41da333984ff7b2d205667d71b8d05ecf6b699d7774cbbb466636359b2",
         "oracleGitBlob": "88c13a550551258e704f32b5312478aa581af0a4",
@@ -47,7 +47,7 @@
       },
       "successorOf": {
         "sourceRevision": "f233823358c1242013b51e53680ce257253c84fc",
-        "path": "davinci/vize_l2/src/file/region/native/pair/tests.rs",
+        "path": "levels/vize_l2/src/file/region/native/pair/tests.rs",
         "test": "paired_text_nested_mixed_headers_and_nonadjacent_roots_stay_lower_refusals",
         "sourceSha256": "3df55f9463e1ca613c46d74ce839219af5c4c8b1c46468fc2d184afdd2b46b62",
         "oracleGitBlob": "88c13a550551258e704f32b5312478aa581af0a4",

@@ -31,16 +31,16 @@ test("publish manifest keeps the original final newline and spaced table headers
   assert.equal(publishManifestWithoutDevDependencies("a = 1\n"), "a = 1\n");
 });
 
-test("crate manifests resolve vendor forks, Davinci levels, then legacy crates", () => {
+test("crate manifests resolve vendor forks, Levels levels, then legacy crates", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "release-crate-manifest-"));
   const cwd = process.cwd();
   try {
     process.chdir(root);
-    fs.mkdirSync("davinci/vize_l0", { recursive: true });
-    fs.writeFileSync("davinci/vize_l0/Cargo.toml", "");
+    fs.mkdirSync("levels/vize_l0", { recursive: true });
+    fs.writeFileSync("levels/vize_l0/Cargo.toml", "");
     assert.equal(crateManifestPath("vize_oxc_parser"), "upstream/forks/oxc_parser/Cargo.toml");
     assert.equal(crateManifestPath("vize_lightningcss"), "upstream/forks/lightningcss/Cargo.toml");
-    assert.equal(crateManifestPath("vize_l0"), "davinci/vize_l0/Cargo.toml");
+    assert.equal(crateManifestPath("vize_l0"), "levels/vize_l0/Cargo.toml");
     assert.equal(crateManifestPath("vize_canon"), "crates/vize_canon/Cargo.toml");
     assert.equal(crateManifestPath("toString"), "crates/toString/Cargo.toml");
   } finally {

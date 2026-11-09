@@ -19,7 +19,7 @@ fn vue3_leaves_sync_as_a_bind_modifier() {
     let source = r#"<Comp :title.sync="heading"/>"#;
     let art = artifact(source);
     assert_eq!(
-        art.folio,
+        art.dump,
         "[l2-dump-v2]\n\
          ops=2\n\
          \n\
@@ -36,7 +36,7 @@ fn vue2_admits_sync_as_the_dialect_op() {
     let source = r#"<Comp :title.sync="heading"/>"#;
     let art = artifact_caps(source, vue2());
     assert_eq!(
-        art.folio,
+        art.dump,
         "[l2-dump-v2]\n\
          ops=2\n\
          \n\
@@ -53,7 +53,7 @@ fn vue2_keeps_non_sync_bind_modifiers_on_the_dialect_op() {
     let source = r#"<Comp :title.sync.camel="heading"/>"#;
     let art = artifact_caps(source, vue2());
     assert_eq!(
-        art.folio,
+        art.dump,
         "[l2-dump-v2]\n\
          ops=2\n\
          \n\
@@ -70,7 +70,7 @@ fn vue2_leaves_dynamic_sync_as_bind() {
     let source = r#"<Comp :[foo].sync="heading"/>"#;
     let art = artifact_caps(source, vue2());
     assert_eq!(
-        art.folio,
+        art.dump,
         "[l2-dump-v2]\n\
          ops=2\n\
          \n\
@@ -87,7 +87,7 @@ fn vue3_reads_a_pipe_as_js() {
     let source = "{{msg | cap}}";
     let art = artifact(source);
     assert_eq!(
-        art.folio,
+        art.dump,
         "[l2-dump-v2]\n\
          ops=1\n\
          \n\
@@ -103,7 +103,7 @@ fn vue2_admits_a_pipe_as_the_filter_expression() {
     let source = "{{msg | cap}}";
     let art = artifact_caps(source, vue2());
     assert_eq!(
-        art.folio,
+        art.dump,
         "[l2-dump-v2]\n\
          ops=1\n\
          \n\
@@ -119,7 +119,7 @@ fn vue3_leaves_slot_scope_as_an_attribute() {
     let source = r#"<Comp><template slot-scope="props">x</template></Comp>"#;
     let art = artifact(source);
     assert_eq!(
-        art.folio,
+        art.dump,
         "[l2-dump-v2]\n\
          ops=3\n\
          \n\
@@ -138,7 +138,7 @@ fn vue2_admits_slot_scope_as_the_dialect_op() {
     let source = r#"<Comp><template slot-scope="props">x</template></Comp>"#;
     let art = artifact_caps(source, vue2());
     assert_eq!(
-        art.folio,
+        art.dump,
         "[l2-dump-v2]\n\
          ops=4\n\
          \n\
@@ -158,7 +158,7 @@ fn vue2_consumes_the_companion_slot_attribute() {
     let source = r#"<Comp><template slot="header" slot-scope="props">x</template></Comp>"#;
     let art = artifact_caps(source, vue2());
     assert_eq!(
-        art.folio,
+        art.dump,
         "[l2-dump-v2]\n\
          ops=4\n\
          \n\
@@ -177,7 +177,7 @@ fn vue2_leaves_slot_scope_when_v_slot_is_already_authored() {
     let source = r#"<Comp><template v-slot:header slot-scope="props">x</template></Comp>"#;
     let art = artifact_caps(source, vue2());
     assert_eq!(
-        art.folio,
+        art.dump,
         "[l2-dump-v2]\n\
          ops=4\n\
          \n\
@@ -197,7 +197,7 @@ fn vue1_admits_filters_but_not_sync() {
     let caps = LegacyCaps::for_version(VueVersion::V1);
     let sync = artifact_caps(r#"<Comp :title.sync="heading"/>"#, caps);
     assert_eq!(
-        sync.folio,
+        sync.dump,
         "[l2-dump-v2]\n\
          ops=2\n\
          \n\
@@ -208,7 +208,7 @@ fn vue1_admits_filters_but_not_sync() {
     );
     let filter = artifact_caps("{{msg | cap}}", caps);
     assert_eq!(
-        filter.folio,
+        filter.dump,
         "[l2-dump-v2]\n\
          ops=1\n\
          \n\
@@ -224,7 +224,7 @@ fn vue2_admits_a_pipe_on_a_bind_value() {
     let source = r#"<div :id="raw | formatId"/>"#;
     let art = artifact_caps(source, vue2());
     assert_eq!(
-        art.folio,
+        art.dump,
         "[l2-dump-v2]\n\
          ops=2\n\
          \n\
@@ -241,7 +241,7 @@ fn vue2_reads_an_event_handler_pipe_as_js() {
     let source = r#"<div @click="left | right"/>"#;
     let art = artifact_caps(source, vue2());
     assert_eq!(
-        art.folio,
+        art.dump,
         "[l2-dump-v2]\n\
          ops=2\n\
          \n\
@@ -258,7 +258,7 @@ fn vue2_scope_on_template_is_the_dialect_op() {
     let source = r#"<Comp><template scope="props">x</template></Comp>"#;
     let art = artifact_caps(source, vue2());
     assert_eq!(
-        art.folio,
+        art.dump,
         "[l2-dump-v2]\n\
          ops=4\n\
          \n\
@@ -277,7 +277,7 @@ fn vue2_scope_on_a_div_stays_an_attribute() {
     let source = r#"<div scope="props">x</div>"#;
     let art = artifact_caps(source, vue2());
     assert_eq!(
-        art.folio,
+        art.dump,
         "[l2-dump-v2]\n\
          ops=2\n\
          \n\
@@ -295,7 +295,7 @@ fn vue2_slot_scope_on_a_div_is_the_dialect_op() {
     let source = r#"<div slot-scope="props">x</div>"#;
     let art = artifact_caps(source, vue2());
     assert_eq!(
-        art.folio,
+        art.dump,
         "[l2-dump-v2]\n\
          ops=3\n\
          \n\

@@ -29,7 +29,7 @@ pub(super) struct StatsRun<'a> {
 
 impl StatsRun<'_> {
     pub(super) fn run(&self) {
-        if self.settings.davinci.dump_dir.is_some() {
+        if self.settings.levels.dump_dir.is_some() {
             // A cache hit has no executed compile to observe for this file.
             self.planned_inputs.par_iter().for_each(|input| {
                 self.record_result(

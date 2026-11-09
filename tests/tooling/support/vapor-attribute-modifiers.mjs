@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { createRequire } from "node:module";
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
-import { loadRuntime } from "./davinci-mounted-trace.mjs";
+import { loadRuntime } from "./level-mounted-trace.mjs";
 
 const fromUi = createRequire(new URL("../../../npm/ui/package.json", import.meta.url));
 const fromVue = createRequire(fromUi.resolve("vue-vapor-runtime/package.json"));

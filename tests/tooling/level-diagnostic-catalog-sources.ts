@@ -3,7 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-// Readers for the TS-53 catalog check (davinci-diagnostic-catalog.test.ts):
+// Readers for the TS-53 catalog check (level-diagnostic-catalog.test.ts):
 // they enumerate diagnostic codes and translations from the Rust sources that
 // define them, so the check never depends on a hand-kept list.
 
@@ -256,8 +256,8 @@ export interface CompilerCodes {
 
 /** `vize_relief::ErrorCode`: variants, `ALL`, `code()` and `message()`. */
 export function parseCompilerCodes(): CompilerCodes {
-  const errors = read("davinci", "vize_l0", "src", "compiler_error.rs");
-  const codes = read("davinci", "vize_l0", "src", "compiler_error", "codes.rs");
+  const errors = read("levels", "vize_l0", "src", "compiler_error.rs");
+  const codes = read("levels", "vize_l0", "src", "compiler_error", "codes.rs");
   const variants = [...block(errors, "pub enum ErrorCode").matchAll(/^\s*(\w+) = \d+,$/gmu)].map(
     (match) => match[1],
   );

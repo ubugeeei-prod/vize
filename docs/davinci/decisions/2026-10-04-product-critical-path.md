@@ -78,8 +78,8 @@ All5 history gates, whole product replacement and deletion remain unfinished.
 
 - `crates/vize_atelier_sfc/src/native.rs` and
   `tests/differential/compiler-api{,-manifest,-types}.ts`.
-- `davinci/vize_l3/src/decision/dom/{for_head,build/for_head}.rs`;
-  `davinci/vize_l4/src/targets/ts/vue.rs`;
+- `levels/vize_l3/src/decision/dom/{for_head,build/for_head}.rs`;
+  `levels/vize_l4/src/targets/ts/vue.rs`;
   `crates/vize_canon/src/corsa_bridge/native_vue.rs`.
 - `crates/vize_glyph/src/native_doc/selected_template.rs`, `formatter.rs`,
   `tests/differential/formatter-{api,native}.mjs` and the qualified capture record.

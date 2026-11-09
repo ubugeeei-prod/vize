@@ -342,7 +342,7 @@
     "7d6373037c6fff6c715f0aeb544b46c784cd32fcc1946bc3d024a3fb901503cb"
   ],
   [
-    "crates/vize_maestro/tests/snapshots/davinci_ts40_projection__davinci_ts40__define-model__default.snap",
+    "crates/vize_maestro/tests/snapshots/level_ts40_projection__level_ts40__define-model__default.snap",
     "5cfc471892ccdb62a0318cf9f3725c31d2dbe0a7",
     2432,
     "99eb9a4811b39095bb8ed4c0cc5abb1f50cbb4f5d64d094c00c3fd24d3de84f5",
@@ -351,7 +351,7 @@
     "99eb9a4811b39095bb8ed4c0cc5abb1f50cbb4f5d64d094c00c3fd24d3de84f5"
   ],
   [
-    "crates/vize_maestro/tests/snapshots/davinci_ts40_projection__davinci_ts40__parent-local-import__default.snap",
+    "crates/vize_maestro/tests/snapshots/level_ts40_projection__level_ts40__parent-local-import__default.snap",
     "335c8ba0a01174be9f4dd26ffc900807acff015c",
     2371,
     "08baef12b7e8a3b4b9a0c5bd92bc93406a71df9a49a0ba24cd554628cf343e43",

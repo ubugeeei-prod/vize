@@ -27,7 +27,7 @@
 //! Facts live beside the tree in a
 //! [`SideTable<ScopeFacts>`](vize_l0::side_table::SideTable) keyed by
 //! the introducing op's [`NodeId`](vize_l0::id::NodeId) (dense
-//! page-order ids, `folio-format.md` "Node numbering"). The table is the
+//! page-order ids, `dump-format.md` "Node numbering"). The table is the
 //! sparse non-arena form, so names are owned [`String`]s and the facts are
 //! `'static` - they survive `Allocator::reset` the way diagnostics do
 //! (P1-11), which is what keeps the LSP live on a broken SFC.
@@ -78,7 +78,7 @@ impl ScopeTag {
 }
 
 impl core::fmt::Display for ScopeTag {
-    /// Prints `#N`, the folio spelling of a scope tag.
+    /// Prints `#N`, the dump spelling of a scope tag.
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         write!(f, "#{}", self.0)
     }

@@ -5,7 +5,7 @@
 > 2026-09-06 as `99db931e5`.
 
 This installment closes the P2-11 production-lane switch. The explicit
-`VIZE_DAVINCI_DOM=legacy` selector, its `DOM_LANE_FLAG` name and the
+`VIZE_LEVEL_DOM=legacy` selector, its `DOM_LANE_FLAG` name and the
 `dom_lane_selection` / `DomLaneSelection` compatibility path were removed from
 the live DOM compile surface, leaving S2 DOM emit as the production selector
 for supported compiles.
@@ -17,12 +17,12 @@ compatibility diagnostics.
 
 ## Evidence
 
-`tests/tooling/davinci-dom-production-boundary.test.ts` requires live DOM
-production sources to stay free of `VIZE_DAVINCI_DOM`, `DOM_LANE_FLAG`,
+`tests/tooling/level-dom-production-boundary.test.ts` requires live DOM
+production sources to stay free of `VIZE_LEVEL_DOM`, `DOM_LANE_FLAG`,
 `dom_lane_selection`, `DomLaneSelection` and direct environment reads.
 
-`crates/vize_atelier_dom/tests/davinci_s2_legacy_selector.rs` and
-`crates/vize_atelier_dom/tests/davinci_s2_sfc_self_closing_selector.rs` pin the
+`crates/vize_atelier_dom/tests/level_s2_legacy_selector.rs` and
+`crates/vize_atelier_dom/tests/level_s2_sfc_self_closing_selector.rs` pin the
 post-deletion selector behavior. `crates/vize_atelier_dom/src/compile.rs`,
 `crates/vize_atelier_dom/src/compile/sfc.rs`,
 `crates/vize_atelier_dom/src/compile/stage_options.rs`,

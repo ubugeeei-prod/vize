@@ -10,7 +10,7 @@
 //! toml = "0.9"
 //! ```
 //!
-//! Davinci P5-11a (TS-44 baselines): measures the resident `vize lsp` and
+//! Levels P5-11a (TS-44 baselines): measures the resident `vize lsp` and
 //! gates `docs/davinci/plan/budgets.toml [resource]`.
 //!
 //!   --measure  --preset <id> [--runs N] [--keystrokes K] [--idle-seconds S]
@@ -50,8 +50,23 @@ const METRICS: &[(&str, &str)] = &[
     ("server_binary_mib", "MiB"),
 ];
 /// Methodology every preset (its `methodology` inline table) and every metric entry must carry.
-const PRESET_FIELDS: &[&str] = &["machine", "project", "server_build", "command", "runs", "recorded_at", "recorded_run"];
-const METRIC_FIELDS: &[&str] = &["baseline", "ceiling", "headroom", "unit", "statistic", "sampler"];
+const PRESET_FIELDS: &[&str] = &[
+    "machine",
+    "project",
+    "server_build",
+    "command",
+    "runs",
+    "recorded_at",
+    "recorded_run",
+];
+const METRIC_FIELDS: &[&str] = &[
+    "baseline",
+    "ceiling",
+    "headroom",
+    "unit",
+    "statistic",
+    "sampler",
+];
 const DOCUMENT: &str = "src/Scenario.vue";
 /// Line 3 of the TS-45 fixture document is `const total = "3";`: keystrokes
 /// alternate the initializer between two distinct type errors, so each edit's
@@ -66,12 +81,18 @@ fn main() -> ExitCode {
 }
 
 fn flag(args: &[String], name: &str) -> Option<String> {
-    args.iter().position(|arg| arg == name).and_then(|at| args.get(at + 1)).cloned()
+    args.iter()
+        .position(|arg| arg == name)
+        .and_then(|at| args.get(at + 1))
+        .cloned()
 }
 
 fn run(args: Vec<String>) -> Result<(), String> {
     let repo = common::repo_root()?;
-    let budgets = flag(&args, "--budgets").map_or_else(|| repo.join("docs/davinci/plan/budgets.toml"), PathBuf::from);
+    let budgets = flag(&args, "--budgets").map_or_else(
+        || repo.join("docs/davinci/plan/budgets.toml"),
+        PathBuf::from,
+    );
     if args.iter().any(|arg| arg == "--measure") {
         return measure(&repo, &args);
     }
@@ -91,7 +112,11 @@ fn run(args: Vec<String>) -> Result<(), String> {
         println!("resource budgets: ok ({} preset(s))", head.len());
         Ok(())
     } else {
-        Err(format!("resource budgets: {} problem(s)\n  {}", problems.len(), problems.join("\n  ")))
+        Err(format!(
+            "resource budgets: {} problem(s)\n  {}",
+            problems.len(),
+            problems.join("\n  ")
+        ))
     }
 }
 
@@ -100,18 +125,28 @@ type Presets = BTreeMap<String, toml::Table>;
 /// `[resource.<preset>]` tables of a budgets file (the bare `[resource]` table holds comments only).
 fn load_resource(path: &Path) -> Result<Presets, String> {
     let text = common::read_text(path)?;
-    let root: toml::Table = toml::from_str(&text).map_err(|error| format!("{}: {error}", path.display()))?;
-    let resource = root.get("resource").and_then(toml::Value::as_table).ok_or("budgets file has no [resource] table")?;
+    let root: toml::Table =
+        toml::from_str(&text).map_err(|error| format!("{}: {error}", path.display()))?;
+    let resource = root
+        .get("resource")
+        .and_then(toml::Value::as_table)
+        .ok_or("budgets file has no [resource] table")?;
     let mut presets = Presets::new();
     for (name, value) in resource {
-        let table = value.as_table().ok_or_else(|| format!("[resource] key `{name}` must be a preset table"))?;
+        let table = value
+            .as_table()
+            .ok_or_else(|| format!("[resource] key `{name}` must be a preset table"))?;
         presets.insert(name.clone(), table.clone());
     }
     Ok(presets)
 }
 
 fn number(value: Option<&toml::Value>) -> Option<f64> {
-    value.and_then(|value| value.as_float().or_else(|| value.as_integer().map(|integer| integer as f64)))
+    value.and_then(|value| {
+        value
+            .as_float()
+            .or_else(|| value.as_integer().map(|integer| integer as f64))
+    })
 }
 
 fn validate(presets: &Presets) -> Vec<String> {
@@ -128,38 +163,61 @@ fn validate(presets: &Presets) -> Vec<String> {
                     }
                 }
             }
-            None => problems.push(format!("{preset}: missing the `methodology` table ({})", PRESET_FIELDS.join(", "))),
+            None => problems.push(format!(
+                "{preset}: missing the `methodology` table ({})",
+                PRESET_FIELDS.join(", ")
+            )),
         }
         let mut pinned = 0;
         for (key, value) in table {
             if key == "methodology" {
                 continue;
             }
-            let Some(unit) = METRICS.iter().find(|(name, _)| name == key).map(|(_, unit)| *unit) else {
+            let Some(unit) = METRICS
+                .iter()
+                .find(|(name, _)| name == key)
+                .map(|(_, unit)| *unit)
+            else {
                 problems.push(format!("{preset}: unknown key `{key}`"));
                 continue;
             };
             pinned += 1;
             let Some(entry) = value.as_table() else {
-                problems.push(format!("{preset}.{key}: a bare number has no methodology; use {{ {} }}", METRIC_FIELDS.join(", ")));
+                problems.push(format!(
+                    "{preset}.{key}: a bare number has no methodology; use {{ {} }}",
+                    METRIC_FIELDS.join(", ")
+                ));
                 continue;
             };
             for field in METRIC_FIELDS {
                 if entry.get(*field).is_none() {
-                    problems.push(format!("{preset}.{key}: missing methodology field `{field}`"));
+                    problems.push(format!(
+                        "{preset}.{key}: missing methodology field `{field}`"
+                    ));
                 }
             }
-            let (baseline, ceiling, headroom) =
-                (number(entry.get("baseline")), number(entry.get("ceiling")), number(entry.get("headroom")));
-            if entry.get("unit").and_then(toml::Value::as_str).is_some_and(|actual| actual != unit) {
+            let (baseline, ceiling, headroom) = (
+                number(entry.get("baseline")),
+                number(entry.get("ceiling")),
+                number(entry.get("headroom")),
+            );
+            if entry
+                .get("unit")
+                .and_then(toml::Value::as_str)
+                .is_some_and(|actual| actual != unit)
+            {
                 problems.push(format!("{preset}.{key}: unit must be `{unit}`"));
             }
             if let (Some(baseline), Some(ceiling), Some(headroom)) = (baseline, ceiling, headroom) {
                 if !(baseline >= 0.0 && headroom >= 0.0 && ceiling >= baseline) {
-                    problems.push(format!("{preset}.{key}: needs 0 <= baseline <= ceiling and headroom >= 0"));
+                    problems.push(format!(
+                        "{preset}.{key}: needs 0 <= baseline <= ceiling and headroom >= 0"
+                    ));
                 }
                 if ceiling > (baseline * (1.0 + headroom)).ceil() + 1e-9 {
-                    problems.push(format!("{preset}.{key}: ceiling {ceiling} exceeds ceil(baseline × (1 + headroom))"));
+                    problems.push(format!(
+                        "{preset}.{key}: ceiling {ceiling} exceeds ceil(baseline × (1 + headroom))"
+                    ));
                 }
             }
         }
@@ -172,18 +230,32 @@ fn validate(presets: &Presets) -> Vec<String> {
 
 /// Every pinned metric of the measured preset must be measured and within its ceiling.
 fn check(presets: &Presets, measurement: &Value) -> Vec<String> {
-    let preset = measurement.get("preset").and_then(Value::as_str).unwrap_or_default();
+    let preset = measurement
+        .get("preset")
+        .and_then(Value::as_str)
+        .unwrap_or_default();
     let Some(table) = presets.get(preset) else {
-        return vec![format!("the measurement is for preset `{preset}`, which [resource] does not pin")];
+        return vec![format!(
+            "the measurement is for preset `{preset}`, which [resource] does not pin"
+        )];
     };
     let mut problems = Vec::new();
     for (key, _) in METRICS {
-        let Some(ceiling) = table.get(*key).and_then(toml::Value::as_table).and_then(|entry| number(entry.get("ceiling"))) else {
+        let Some(ceiling) = table
+            .get(*key)
+            .and_then(toml::Value::as_table)
+            .and_then(|entry| number(entry.get("ceiling")))
+        else {
             continue;
         };
-        match measurement.pointer(&format!("/metrics/{key}/value")).and_then(Value::as_f64) {
+        match measurement
+            .pointer(&format!("/metrics/{key}/value"))
+            .and_then(Value::as_f64)
+        {
             Some(value) if value <= ceiling => println!("{preset}.{key}: {value} <= {ceiling}"),
-            Some(value) => problems.push(format!("{preset}.{key}: measured {value} exceeds the ceiling {ceiling}")),
+            Some(value) => problems.push(format!(
+                "{preset}.{key}: measured {value} exceeds the ceiling {ceiling}"
+            )),
             None => problems.push(format!("{preset}.{key}: pinned but not measured")),
         }
     }
@@ -199,15 +271,21 @@ fn ratchet(base: &Presets, head: &Presets) -> Vec<String> {
             continue;
         };
         for (key, _) in METRICS {
-            let Some(before) = table.get(*key).and_then(toml::Value::as_table) else { continue };
+            let Some(before) = table.get(*key).and_then(toml::Value::as_table) else {
+                continue;
+            };
             let Some(after) = current.get(*key).and_then(toml::Value::as_table) else {
                 problems.push(format!("{preset}.{key}: pinned metric removed"));
                 continue;
             };
             for field in ["ceiling", "headroom"] {
-                if let (Some(old), Some(new)) = (number(before.get(field)), number(after.get(field))) {
+                if let (Some(old), Some(new)) =
+                    (number(before.get(field)), number(after.get(field)))
+                {
                     if new > old {
-                        problems.push(format!("{preset}.{key}.{field}: loosened from {old} to {new}"));
+                        problems.push(format!(
+                            "{preset}.{key}.{field}: loosened from {old} to {new}"
+                        ));
                     }
                 }
             }
@@ -226,18 +304,30 @@ fn percentile(values: &[f64], quantile: f64) -> f64 {
 
 fn measure(repo: &Path, args: &[String]) -> Result<(), String> {
     let preset = flag(args, "--preset").ok_or("--measure needs --preset <id>")?;
-    let runs: usize = flag(args, "--runs").unwrap_or_else(|| "3".into()).parse().map_err(|_| "bad --runs")?;
-    let keystrokes: usize = flag(args, "--keystrokes").unwrap_or_else(|| "20".into()).parse().map_err(|_| "bad --keystrokes")?;
-    let idle: u64 = flag(args, "--idle-seconds").unwrap_or_else(|| "60".into()).parse().map_err(|_| "bad --idle-seconds")?;
+    let runs: usize = flag(args, "--runs")
+        .unwrap_or_else(|| "3".into())
+        .parse()
+        .map_err(|_| "bad --runs")?;
+    let keystrokes: usize = flag(args, "--keystrokes")
+        .unwrap_or_else(|| "20".into())
+        .parse()
+        .map_err(|_| "bad --keystrokes")?;
+    let idle: u64 = flag(args, "--idle-seconds")
+        .unwrap_or_else(|| "60".into())
+        .parse()
+        .map_err(|_| "bad --idle-seconds")?;
     let server = match flag(args, "--server") {
         // Absolute: the server is spawned with the fixture workspace as its cwd.
-        Some(path) => PathBuf::from(&path).canonicalize().map_err(|error| format!("--server {path}: {error}"))?,
+        Some(path) => PathBuf::from(&path)
+            .canonicalize()
+            .map_err(|error| format!("--server {path}: {error}"))?,
         None => editor_e2e::resolve_real_server_path(repo)?,
     };
     let sampler = ProcSampler::new().map(Arc::new);
     let mut per_run = Vec::new();
     for run in 0..runs {
-        let session_root = std::env::temp_dir().join(format!("vize-p5-11a-{}-{run}", std::process::id()));
+        let session_root =
+            std::env::temp_dir().join(format!("vize-p5-11a-{}-{run}", std::process::id()));
         let workspace = prepare_workspace(repo, &session_root.join("real-vue"))?;
         let result = measure_run(&server, &workspace, keystrokes, idle, sampler.clone());
         let _ = std::fs::remove_dir_all(&session_root);
@@ -246,28 +336,71 @@ fn measure(repo: &Path, args: &[String]) -> Result<(), String> {
         per_run.push(result);
     }
     let series = |key: &str| -> Vec<f64> {
-        per_run.iter().flat_map(|run| match run.get(key) {
-            Some(Value::Array(values)) => values.iter().filter_map(Value::as_f64).collect::<Vec<_>>(),
-            Some(value) => value.as_f64().into_iter().collect(),
-            None => Vec::new(),
-        }).collect()
+        per_run
+            .iter()
+            .flat_map(|run| match run.get(key) {
+                Some(Value::Array(values)) => {
+                    values.iter().filter_map(Value::as_f64).collect::<Vec<_>>()
+                }
+                Some(value) => value.as_f64().into_iter().collect(),
+                None => Vec::new(),
+            })
+            .collect()
     };
     let mut metrics = Map::new();
     let mut put = |key: &str, statistic: &str, samples: Vec<f64>, value: Option<f64>| {
         if let Some(value) = value {
-            metrics.insert(key.into(), json!({ "value": value, "statistic": statistic, "samples": samples }));
+            metrics.insert(
+                key.into(),
+                json!({ "value": value, "statistic": statistic, "samples": samples }),
+            );
         }
     };
-    let (cold, first, keys) = (series("cold_start_ms"), series("first_diagnostics_ms"), series("keystroke_ms"));
-    put("cold_start_ms", "median over runs", cold.clone(), (!cold.is_empty()).then(|| percentile(&cold, 0.5)));
-    put("first_diagnostics_ms", "median over runs", first.clone(), (!first.is_empty()).then(|| percentile(&first, 0.5)));
-    put("keystroke_p95_ms", "nearest-rank p95 over every keystroke of every run", keys.clone(), (!keys.is_empty()).then(|| percentile(&keys, 0.95)));
-    for (key, source) in [("rss_peak_mib", "rss_peak_mib"), ("rss_idle_mib", "rss_idle_mib"), ("idle_cpu_pct", "idle_cpu_pct")] {
+    let (cold, first, keys) = (
+        series("cold_start_ms"),
+        series("first_diagnostics_ms"),
+        series("keystroke_ms"),
+    );
+    put(
+        "cold_start_ms",
+        "median over runs",
+        cold.clone(),
+        (!cold.is_empty()).then(|| percentile(&cold, 0.5)),
+    );
+    put(
+        "first_diagnostics_ms",
+        "median over runs",
+        first.clone(),
+        (!first.is_empty()).then(|| percentile(&first, 0.5)),
+    );
+    put(
+        "keystroke_p95_ms",
+        "nearest-rank p95 over every keystroke of every run",
+        keys.clone(),
+        (!keys.is_empty()).then(|| percentile(&keys, 0.95)),
+    );
+    for (key, source) in [
+        ("rss_peak_mib", "rss_peak_mib"),
+        ("rss_idle_mib", "rss_idle_mib"),
+        ("idle_cpu_pct", "idle_cpu_pct"),
+    ] {
         let samples = series(source);
-        put(key, "maximum over runs", samples.clone(), samples.iter().copied().reduce(f64::max));
+        put(
+            key,
+            "maximum over runs",
+            samples.clone(),
+            samples.iter().copied().reduce(f64::max),
+        );
     }
-    let binary = std::fs::metadata(&server).map_err(|error| error.to_string())?.len();
-    put("server_binary_mib", "file size of the measured server", vec![mib(binary)], Some(mib(binary)));
+    let binary = std::fs::metadata(&server)
+        .map_err(|error| error.to_string())?
+        .len();
+    put(
+        "server_binary_mib",
+        "file size of the measured server",
+        vec![mib(binary)],
+        Some(mib(binary)),
+    );
     let output = json!({
         "preset": preset,
         "server": server.display().to_string(),
@@ -286,11 +419,33 @@ fn measure(repo: &Path, args: &[String]) -> Result<(), String> {
     Ok(())
 }
 
-fn measure_run(server: &Path, workspace: &Path, keystrokes: usize, idle: u64, sampler: Option<Arc<ProcSampler>>) -> Result<Map<String, Value>, String> {
-    let uri = format!("file://{}", workspace.join(DOCUMENT).canonicalize().map_err(|error| error.to_string())?.display());
-    let root_uri = format!("file://{}", workspace.canonicalize().map_err(|error| error.to_string())?.display());
+fn measure_run(
+    server: &Path,
+    workspace: &Path,
+    keystrokes: usize,
+    idle: u64,
+    sampler: Option<Arc<ProcSampler>>,
+) -> Result<Map<String, Value>, String> {
+    let uri = format!(
+        "file://{}",
+        workspace
+            .join(DOCUMENT)
+            .canonicalize()
+            .map_err(|error| error.to_string())?
+            .display()
+    );
+    let root_uri = format!(
+        "file://{}",
+        workspace
+            .canonicalize()
+            .map_err(|error| error.to_string())?
+            .display()
+    );
     let mut session = Session::spawn(server, workspace)?;
-    let (peak, stop) = (Arc::new(Mutex::new(TreeSample::default())), Arc::new(AtomicBool::new(false)));
+    let (peak, stop) = (
+        Arc::new(Mutex::new(TreeSample::default())),
+        Arc::new(AtomicBool::new(false)),
+    );
     let watcher = sampler.clone().map(|sampler| {
         let (peak, stop, pid) = (peak.clone(), stop.clone(), session.pid());
         thread::spawn(move || {
@@ -312,22 +467,39 @@ fn measure_run(server: &Path, workspace: &Path, keystrokes: usize, idle: u64, sa
         "initializationOptions": { "editor": true, "ecosystem": true, "lint": true, "typecheck": true },
         "workspaceFolders": [{ "uri": root_uri, "name": "real-vue" }],
     }))?;
-    out.insert("cold_start_ms".into(), json!(ms(session.spawned_at, initialized.at)));
+    out.insert(
+        "cold_start_ms".into(),
+        json!(ms(session.spawned_at, initialized.at)),
+    );
     session.notify("initialized", json!({}))?;
-    let text = std::fs::read_to_string(workspace.join(DOCUMENT)).map_err(|error| error.to_string())?;
-    let opened = session.notify("textDocument/didOpen", json!({ "textDocument": { "uri": uri, "languageId": "vue", "version": 0, "text": text } }))?;
+    let text =
+        std::fs::read_to_string(workspace.join(DOCUMENT)).map_err(|error| error.to_string())?;
+    let opened = session.notify(
+        "textDocument/didOpen",
+        json!({ "textDocument": { "uri": uri, "languageId": "vue", "version": 0, "text": text } }),
+    )?;
     let settled = |version: i64, message: &'static str| {
         let uri = uri.clone();
         move |value: &Value| {
             value.get("method").and_then(Value::as_str) == Some("textDocument/publishDiagnostics")
                 && value.pointer("/params/uri").and_then(Value::as_str) == Some(uri.as_str())
                 && value.pointer("/params/version").and_then(Value::as_i64) == Some(version)
-                && value.pointer("/params/diagnostics").and_then(Value::as_array).is_some_and(|diagnostics| {
-                    diagnostics.iter().any(|d| d.get("code") == Some(&json!(2322)) && d.get("message").and_then(Value::as_str) == Some(message))
-                })
+                && value
+                    .pointer("/params/diagnostics")
+                    .and_then(Value::as_array)
+                    .is_some_and(|diagnostics| {
+                        diagnostics.iter().any(|d| {
+                            d.get("code") == Some(&json!(2322))
+                                && d.get("message").and_then(Value::as_str) == Some(message)
+                        })
+                    })
         }
     };
-    let first = session.wait("the first type diagnostics", Duration::from_secs(120), settled(0, TOGGLE[1].1))?;
+    let first = session.wait(
+        "the first type diagnostics",
+        Duration::from_secs(120),
+        settled(0, TOGGLE[1].1),
+    )?;
     out.insert("first_diagnostics_ms".into(), json!(ms(opened, first.at)));
     let line = text.lines().nth(3).ok_or("fixture changed")?.to_string();
     let start = line.find(TOGGLE[1].0).ok_or("fixture changed")?;
@@ -338,7 +510,11 @@ fn measure_run(server: &Path, workspace: &Path, keystrokes: usize, idle: u64, sa
         let version = keystroke as i64 + 1;
         let range = json!({ "start": { "line": 3, "character": start }, "end": { "line": 3, "character": start + current.len() } });
         let sent = session.notify("textDocument/didChange", json!({ "textDocument": { "uri": uri, "version": version }, "contentChanges": [{ "range": range, "text": next }] }))?;
-        let answer = session.wait(&format!("diagnostics for keystroke {version}"), Duration::from_secs(60), settled(version, message))?;
+        let answer = session.wait(
+            &format!("diagnostics for keystroke {version}"),
+            Duration::from_secs(60),
+            settled(version, message),
+        )?;
         latencies.push(json!(ms(sent, answer.at)));
         current = next;
     }
@@ -346,19 +522,32 @@ fn measure_run(server: &Path, workspace: &Path, keystrokes: usize, idle: u64, sa
     if let Some(sampler) = sampler {
         thread::sleep(Duration::from_secs(2)); // let the last publish's work finish
         let pid = session.pid();
-        let before = sampler.sample(pid).ok_or("the server exited before the idle window")?;
+        let before = sampler
+            .sample(pid)
+            .ok_or("the server exited before the idle window")?;
         let window = Instant::now();
         thread::sleep(Duration::from_secs(idle));
-        let after = sampler.sample(pid).ok_or("the server exited during the idle window")?;
+        let after = sampler
+            .sample(pid)
+            .ok_or("the server exited during the idle window")?;
         let seconds = window.elapsed().as_secs_f64();
-        out.insert("idle_cpu_pct".into(), json!(((after.cpu_seconds - before.cpu_seconds) / seconds * 100.0 * 1000.0).round() / 1000.0));
+        out.insert(
+            "idle_cpu_pct".into(),
+            json!(
+                ((after.cpu_seconds - before.cpu_seconds) / seconds * 100.0 * 1000.0).round()
+                    / 1000.0
+            ),
+        );
         out.insert("rss_idle_mib".into(), json!(mib(after.rss_bytes)));
         out.insert("processes".into(), json!(after.processes));
     }
     stop.store(true, Ordering::Relaxed);
     if let Some(watcher) = watcher {
         let _ = watcher.join();
-        out.insert("rss_peak_mib".into(), json!(mib(peak.lock().unwrap().rss_bytes)));
+        out.insert(
+            "rss_peak_mib".into(),
+            json!(mib(peak.lock().unwrap().rss_bytes)),
+        );
     }
     let code = session.close()?;
     if code != 0 {
@@ -377,9 +566,22 @@ fn prepare_workspace(repo: &Path, workspace: &Path) -> Result<PathBuf, String> {
         prepareRealVueWorkspace(dir);";
     let helper_url = format!("file://{}", helper.display());
     let workspace_arg = workspace.display().to_string();
-    let output = common::run_capture_in("node", &["--input-type=module", "-e", script, &helper_url, &workspace_arg], repo)?;
+    let output = common::run_capture_in(
+        "node",
+        &[
+            "--input-type=module",
+            "-e",
+            script,
+            &helper_url,
+            &workspace_arg,
+        ],
+        repo,
+    )?;
     if output.status != 0 {
-        return Err(format!("preparing the fixture workspace failed:\n{}", output.stderr));
+        return Err(format!(
+            "preparing the fixture workspace failed:\n{}",
+            output.stderr
+        ));
     }
     Ok(workspace.to_path_buf())
 }

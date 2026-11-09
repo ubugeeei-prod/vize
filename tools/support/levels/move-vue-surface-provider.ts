@@ -5,8 +5,8 @@ import path from "node:path";
 import { parseArgs } from "node:util";
 import { fileURLToPath } from "node:url";
 
-const old = "davinci/vize_l1/src/markup/parse.rs";
-const current = "davinci/vize_l1/src/dialect/vue3/surface.rs";
+const old = "levels/vize_l1/src/markup/parse.rs";
+const current = "levels/vize_l1/src/dialect/vue3/surface.rs";
 
 function isOwner(file: string): boolean {
   return fs.existsSync(file) && fs.readFileSync(file, "utf8").includes("pub fn parse_component");
@@ -31,7 +31,7 @@ function check(root: string): void {
   if (!shim.includes("pub use crate::dialect::vue3::surface::{") || isOwner(path.join(root, old))) {
     throw new Error("generic markup module must retain only the compatibility export");
   }
-  const dialect = fs.readFileSync(path.join(root, "davinci/vize_l1/src/dialect/vue3.rs"), "utf8");
+  const dialect = fs.readFileSync(path.join(root, "levels/vize_l1/src/dialect/vue3.rs"), "utf8");
   if (!dialect.includes("pub mod surface;"))
     throw new Error("Vue component module is not registered");
 }

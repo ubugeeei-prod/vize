@@ -11,7 +11,7 @@ nested foreign children to cache, and adds residual parity pins for
 vue-multiselect and vuestic-admin shapes.
 
 The authoritative hydrated evidence is Real Project Matrix run `33531193323`,
-job `s2 dom corpus`, artifact `real-project-davinci-dom-corpus`: canonical
+job `s2 dom corpus`, artifact `real-project-level-dom-corpus`: canonical
 closure evidence over 146 submodules, 42,668 files, 42,295 templates, 42,279
 comparisons, zero S2 refusals, zero divergences and no failures.
 

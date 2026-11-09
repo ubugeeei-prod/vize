@@ -17,7 +17,7 @@
 - [x] Diagnostics for an unknown route name and missing or extra params; tier `sound` within the declared domain (static route records, literal names)
 - [x] Maestro's `crates/vize_maestro/src/ide/ecosystem/router.rs` (687 lines) completions read the provider groups
 
-**Acceptance:** exact diagnostic snapshots over new fixtures `tests/_fixtures/davinci-routes/` (TS-9); a second writer to `RouteTree` is rejected by the registry with its exact error; TS-35; Maestro router completion tests exact; the open-questions entry becomes a stub pointing at the record.
+**Acceptance:** exact diagnostic snapshots over new fixtures `tests/_fixtures/level-routes/` (TS-9); a second writer to `RouteTree` is rejected by the registry with its exact error; TS-35; Maestro router completion tests exact; the open-questions entry becomes a stub pointing at the record.
 
 **Deps:** P4-1a, P4-2, P4-6a.
 
@@ -50,12 +50,12 @@
 
 **Lane:** I
 
-**Deliverable:** a spec-derived HTML content-model table committed as generated data — categories (flow, phrasing, interactive, …), permitted content, void elements, implied end tags, table anatomy — produced from a pinned WHATWG snapshot by `rust-script tools/commands/davinci/html-content-model.rs --write` with a `--check` staleness mode, read by `vue/permitted-contents` and the nesting checks in `rules/html/`; tier `exact` (charter #36's provably total checker target).
+**Deliverable:** a spec-derived HTML content-model table committed as generated data — categories (flow, phrasing, interactive, …), permitted content, void elements, implied end tags, table anatomy — produced from a pinned WHATWG snapshot by `rust-script tools/commands/levels/html-content-model.rs --write` with a `--check` staleness mode, read by `vue/permitted-contents` and the nesting checks in `rules/html/`; tier `exact` (charter #36's provably total checker target).
 
 **Steps:**
 
-- [x] `crates/vize_patina/src/html_content_model/` (table + total checker); the generator and its `--check` wired into `tests/tooling/davinci-matrices.test.ts` (TS-12)
-- [x] Seeded-defect classes for nesting violations added to `tools/commands/davinci/seed-defects.rs`
+- [x] `crates/vize_patina/src/html_content_model/` (table + total checker); the generator and its `--check` wired into `tests/tooling/level-matrices.test.ts` (TS-12)
+- [x] Seeded-defect classes for nesting violations added to `tools/commands/levels/seed-defects.rs`
 
 **Acceptance:** `--check` proven to fail on an injected table edit; TS-37 nesting classes at 100% recall, count-exact by identity; TS-38 zero untriaged candidates for the upgraded rules on the corpus shard; TS-9 changes listed line by line in the PR.
 
@@ -97,7 +97,7 @@
 **Steps:**
 
 - [x] Draft the rules, one fixture pair each
-- [x] `tests/tooling/davinci-style-spec.test.ts`: every rule id has a fixture pair and every pair a rule
+- [x] `tests/tooling/level-style-spec.test.ts`: every rule id has a fixture pair and every pair a rule
 
 **Acceptance:** the spec/fixture bijection test green and proven to fail on an orphan fixture. **Review point:** the maintainer signs off the style direction — no direction is pre-committed (charter #41).
 
@@ -120,7 +120,7 @@
 - [ ] Rewrite `crates/vize_glyph/src/template*` on L1; `cargo test -p vize_glyph --test style_spec` runs the TS-41 pairs
 - [ ] Attach the churn-vs-old report to the PR (reported, not gated)
 
-**Acceptance:** TS-5 — idempotence, parse-preservation, lint-agreement and pug — with an empty waiver ledger; TS-41 exact; `grep -rn "memchr" crates/vize_glyph/src/template` empty; `davinci-glyph-stage-alias.test.ts` extended for the L1 edge.
+**Acceptance:** TS-5 — idempotence, parse-preservation, lint-agreement and pug — with an empty waiver ledger; TS-41 exact; `grep -rn "memchr" crates/vize_glyph/src/template` empty; `level-glyph-stage-alias.test.ts` extended for the L1 edge.
 
 **Deps:** P4-12a.
 
@@ -132,7 +132,7 @@
 
 **Lane:** K
 
-**Deliverable:** charter #12 made real: a pug parser producing the lossless L1 surface with `Unexpected`/`Missing` holes (`davinci/vize_l1/src/pug/`), an L1→L2 lowering (`davinci/vize_l1_to_l2/src/lower/pug*`) so compile, lint, format and type-check share the lanes, and pug formatting in Glyph.
+**Deliverable:** charter #12 made real: a pug parser producing the lossless L1 surface with `Unexpected`/`Missing` holes (`levels/vize_l1/src/pug/`), an L1→L2 lowering (`levels/vize_l1_to_l2/src/lower/pug*`) so compile, lint, format and type-check share the lanes, and pug formatting in Glyph.
 
 **Steps:**
 
@@ -201,12 +201,12 @@ _Slices 2026-09-22 (surface, lowering, compile lanes; corpus compile oracle; lin
 
 **Lane:** M
 
-**Deliverable:** a rustc/Elm-grade renderer over `vize_davinci::Diagnostic` in `davinci/vize_davinci/src/render.rs`: `error[code]: message`, `file:line:col`, a source excerpt with primary `^^^` and secondary `---` labels, help/note/suggestion parts with diff-style fixes, color and no-color, line/column derived at render time from the L0 line index (P2-1's contract), messages resolved through a caller-supplied `Catalog` generic (static dispatch; `vize_carton::i18n::Translator` implements it at the CLI edge), exposed as `vize lint --format rich`.
+**Deliverable:** a rustc/Elm-grade renderer over `vize_level::Diagnostic` in `levels/vize_level/src/render.rs`: `error[code]: message`, `file:line:col`, a source excerpt with primary `^^^` and secondary `---` labels, help/note/suggestion parts with diff-style fixes, color and no-color, line/column derived at render time from the L0 line index (P2-1's contract), messages resolved through a caller-supplied `Catalog` generic (static dispatch; `vize_carton::i18n::Translator` implements it at the CLI edge), exposed as `vize lint --format rich`.
 
 **Steps:**
 
 - [x] Renderer + `Catalog` trait (`#![no_std]` + `alloc`); east-asian-wide width handling for ja/zh excerpts
-- [x] Register **TS-53** in [test-suites.md](./test-suites.md): `cargo test -p vize_davinci --test diagnostic_render` + `node --test tests/tooling/davinci-diagnostic-catalog.test.ts`
+- [x] Register **TS-53** in [test-suites.md](./test-suites.md): `cargo test -p vize_level --test diagnostic_render` + `node --test tests/tooling/level-diagnostic-catalog.test.ts`
 
 **Acceptance:** TS-53 snapshot fixtures exact per locale (en/ja/zh), including wide-character alignment and multi-label excerpts; TS-24; TS-1, TS-13.
 
@@ -224,7 +224,7 @@ _Slices 2026-09-22 (surface, lowering, compile lanes; corpus compile oracle; lin
 
 **Steps:**
 
-- [ ] `tests/tooling/davinci-diagnostic-catalog.test.ts` enumerates codes mechanically from the producers and fails on any missing locale
+- [ ] `tests/tooling/level-diagnostic-catalog.test.ts` enumerates codes mechanically from the producers and fails on any missing locale
 - [ ] Fill the gaps; English messages unchanged
 
 **Acceptance:** the catalog test green and proven to fail on a removed entry; 0 of 248 rules without a description in any locale; TS-9 English snapshots unchanged; TS-53.
@@ -257,14 +257,14 @@ _Slices 2026-09-22 (surface, lowering, compile lanes; corpus compile oracle; lin
 
 **Lane:** N
 
-**Deliverable:** `tools/commands/davinci/seed-defects.rs` extended so every rule with tier `exact` or `sound` has a generated defect class (manifest: file, span, expected rule id), asserted by identity.
+**Deliverable:** `tools/commands/levels/seed-defects.rs` extended so every rule with tier `exact` or `sound` has a generated defect class (manifest: file, span, expected rule id), asserted by identity.
 
 **Steps:**
 
 - [ ] One generator per class; classes enumerated from `rule_contracts.rs`, so a new exact/sound rule without a class fails
 - [ ] Misses triaged in [ledger-fn.md](./ledger-fn.md)
 
-**Acceptance:** TS-37 100% recall per in-domain class with scope proof; `tests/tooling/davinci-fpfn-pilots.test.ts` extended; no untriaged FN entry.
+**Acceptance:** TS-37 100% recall per in-domain class with scope proof; `tests/tooling/level-fpfn-pilots.test.ts` extended; no untriaged FN entry.
 
 **Deps:** P4-6c.
 
@@ -280,7 +280,7 @@ _Slices 2026-09-22 (surface, lowering, compile lanes; corpus compile oracle; lin
 
 **Steps:**
 
-- [ ] Weekly workflow running `node tools/commands/davinci/suppression-telemetry.ts` over the hydrated corpus; mapped-rule table extended for migrated rules
+- [ ] Weekly workflow running `node tools/commands/levels/suppression-telemetry.ts` over the hydrated corpus; mapped-rule table extended for migrated rules
 
 **Acceptance:** TS-38 zero untriaged candidates with full-corpus scope proof; the workflow pinned by a tooling test.
 
@@ -315,7 +315,7 @@ _Slices 2026-09-22 (surface, lowering, compile lanes; corpus compile oracle; lin
 
 **Lane:** X
 
-**Deliverable:** the exit gate in [phase-4.md](./phase-4.md) evaluated inline — a line is ticked only when satisfied, an unticked line names its blocker, no line is softened — with the in-phase old paths deleted or recorded as unfinished deletions with owners (charter #26) and the `davinci-differential` lanes' retirement restated.
+**Deliverable:** the exit gate in [phase-4.md](./phase-4.md) evaluated inline — a line is ticked only when satisfied, an unticked line names its blocker, no line is softened — with the in-phase old paths deleted or recorded as unfinished deletions with owners (charter #26) and the `level-differential` lanes' retirement restated.
 
 **Steps:**
 

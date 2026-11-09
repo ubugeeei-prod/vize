@@ -11,7 +11,7 @@
 //!
 //! # The invariant catalogue
 //!
-//! Documented in `docs/davinci/plan/folio-format.md` ("L2 verifier
+//! Documented in `docs/davinci/plan/dump-format.md` ("L2 verifier
 //! invariants") — the format doc is where "canonical" is written down.
 //!
 //! | code   | rigor      | invariant                                        |
@@ -26,7 +26,7 @@
 //! [`Rigor`] follows `PassKind`: the structural set holds after every
 //! pass; the canonical set additionally holds from the first
 //! `MandatoryLowering` pass on — the kind that canonicalizes
-//! (`davinci/vize_davinci/src/pass/kind.rs`) — and diagnostic/optional
+//! (`levels/vize_level/src/pass/kind.rs`) — and diagnostic/optional
 //! passes never change the rigor. Expr-ref liveness is the one check with
 //! no code of its own: it reuses the P1-11 arena-generation stamp
 //! ([`observer::VerifyObserver::check_live`]) rather than inventing a
@@ -38,7 +38,7 @@
 //! traversal — never a second walk per invariant. That is also why there
 //! is no parallel arena-tree walk: the owned model is the single surface
 //! the TS-18 fixture set and a live tree (via `L2Page::of`, which
-//! the folio observer's dump already needs) share, and a duplicated walk
+//! the dump observer's dump already needs) share, and a duplicated walk
 //! is exactly the drift the P1-8 scanner split taught. Violations are
 //! reported in **page order** — the order `print` emits lines — so
 //! aggregation is deterministic and fixture-comparable.
@@ -65,7 +65,7 @@ mod walk;
 pub use observer::VerifyObserver;
 
 /// Which invariant set applies, tracking the artifact's raw → canonical
-/// state (`davinci/vize_davinci/src/pass/canonical.rs`).
+/// state (`levels/vize_level/src/pass/canonical.rs`).
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Rigor {
     /// No mandatory-lowering pass has run: structural invariants only.
@@ -148,30 +148,30 @@ const _: () = assert!(size_of::<ViolationCode>() == 1);
 #[cfg(target_pointer_width = "64")]
 const _: () = assert!(size_of::<Violation>() == 40);
 
-/// Check the tree-shaped invariants of `folio` at `rigor`, in one walk.
+/// Check the tree-shaped invariants of `dump` at `rigor`, in one walk.
 ///
 /// Returns every violation in page order (the order `print` emits lines);
 /// an empty vector means the artifact holds the invariants. The side-table
 /// check is [`verify_table`] — id resolution needs the table, which the
 /// tree does not carry.
 #[must_use]
-pub fn verify(folio: &L2Page, rigor: Rigor) -> Vec<Violation> {
+pub fn verify(dump: &L2Page, rigor: Rigor) -> Vec<Violation> {
     let mut out = Vec::new();
-    walk::walk(folio, rigor, &mut out);
+    walk::walk(dump, rigor, &mut out);
     out
 }
 
 /// Check that every [`NodeId`](vize_l0::id::NodeId) `table`
-/// references resolves in `folio`.
+/// references resolves in `dump`.
 ///
 /// L2 ids are dense and page-ordered — every op line top to bottom, `attr`
 /// and `branch` lines carry no id — so a reference resolves iff its index
 /// is below the artifact's total op count, the same count the printed
-/// `ops=` header states (`folio-format.md`, "Node numbering"). Dangling
+/// `ops=` header states (`dump-format.md`, "Node numbering"). Dangling
 /// references are reported in ascending id order, one violation each.
 #[must_use]
-pub fn verify_table<T>(folio: &L2Page, table: &SideTable<T>) -> Vec<Violation> {
-    let count = folio.op_count();
+pub fn verify_table<T>(dump: &L2Page, table: &SideTable<T>) -> Vec<Violation> {
+    let count = dump.op_count();
     let mut out = Vec::new();
     for (id, _) in table.sorted_entries() {
         if u64::from(id.index()) >= count {
@@ -219,27 +219,27 @@ mod tests {
 
     #[test]
     fn an_empty_page_holds_every_invariant_at_both_rigors() {
-        let folio = L2Page::default();
-        assert_eq!(verify(&folio, Rigor::Raw), vec![]);
-        assert_eq!(verify(&folio, Rigor::Canonical), vec![]);
+        let dump = L2Page::default();
+        assert_eq!(verify(&dump, Rigor::Raw), vec![]);
+        assert_eq!(verify(&dump, Rigor::Canonical), vec![]);
     }
 
     #[test]
     fn an_empty_side_table_dangles_nothing() {
-        let folio = L2Page::default();
+        let dump = L2Page::default();
         let table: SideTable<u8> = SideTable::new();
-        assert_eq!(verify_table(&folio, &table), vec![]);
+        assert_eq!(verify_table(&dump, &table), vec![]);
     }
 
     #[test]
     fn a_dangling_reference_names_the_id_and_the_count_exactly() {
-        let folio = L2Page::default();
+        let dump = L2Page::default();
         let mut table = SideTable::new();
         table.insert(
             NodeId::from_index(4).expect("index 4 has an id"),
             "stale fact",
         );
-        let violations = verify_table(&folio, &table);
+        let violations = verify_table(&dump, &table);
         assert_eq!(
             violations,
             vec![Violation {

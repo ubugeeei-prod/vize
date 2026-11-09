@@ -5,7 +5,7 @@
 //! so any TS2367 here is a vize-only false positive.
 #![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
 
-use davinci_test_support::script_block_project as project;
+use level_test_support::script_block_project as project;
 
 const CHILD: &str = r#"<script setup lang="ts">
 defineProps<{ modelValue?: boolean; isOpenedDialogs?: boolean }>();

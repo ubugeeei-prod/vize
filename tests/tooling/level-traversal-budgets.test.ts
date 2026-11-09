@@ -1,10 +1,10 @@
-// Davinci traversal budgets (plan/phase-2.md P2-12a).
+// Levels traversal budgets (plan/phase-2.md P2-12a).
 //
 // Three suites, all reading docs/davinci/plan/budgets.toml:
 //   1. Traversal reconciliation — every `<backend>_<fixture>` id under
 //      [traversal] has a walk-probe recorder that measures it and vice versa.
 //      The backend domain is derived from the crates that ship a
-//      `tests/davinci_walk_baseline.rs` recorder x the harness LADDER, so a
+//      `tests/level_walk_baseline.rs` recorder x the harness LADDER, so a
 //      recorder without ceilings and a ceiling without a recorder both fail.
 //   2. Cross-copy equality — each ceiling equals the BASELINE table its
 //      recorder pins Rust-side, so the two committed copies of the same
@@ -13,7 +13,7 @@
 //      phase-start rev and carries non-zero values. The numbers themselves are
 //      the maintainer's review point, not CI's.
 //
-// Split from davinci-budgets.test.ts (which keeps the P0-4 [bench] registry)
+// Split from level-budgets.test.ts (which keeps the P0-4 [bench] registry)
 // because either file alone would breach the 350-line source budget.
 //
 // The measurement, the exclusion list and the reading of the numbers:
@@ -25,7 +25,7 @@ import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
-import { parseTomlLite } from "../../tools/support/compat/davinci/toml-lite.ts";
+import { parseTomlLite } from "../../tools/support/compat/levels/toml-lite.ts";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const budgetsPath = path.join(repoRoot, "docs/davinci", "plan", "budgets.toml");
@@ -40,7 +40,7 @@ const budgets = parseTomlLite(budgetsText) as {
 // restated, so a fixture added there without a ceiling fails here.
 function ladderNames(): string[] {
   const fixturesRs = fs.readFileSync(
-    path.join(repoRoot, "tools", "benchmarks", "crates", "davinci_harness", "src", "fixtures.rs"),
+    path.join(repoRoot, "tools", "benchmarks", "crates", "level_harness", "src", "fixtures.rs"),
     "utf8",
   );
   const start = fixturesRs.indexOf("pub const LADDER");
@@ -62,11 +62,11 @@ function inlineTableLines(section: string): string[] {
   return body.filter((line) => /^[A-Za-z0-9._-]+ = \{/.test(line));
 }
 
-const WALK_RECORDER = "tests/davinci_walk_baseline.rs";
+const WALK_RECORDER = "tests/level_walk_baseline.rs";
 
 function walkRecorders(): { backend: string; rows: Map<string, [number, number]> }[] {
   const recorders: { backend: string; rows: Map<string, [number, number]> }[] = [];
-  const crates = ["crates", "davinci"].flatMap((directory) =>
+  const crates = ["crates", "levels"].flatMap((directory) =>
     fs
       .readdirSync(path.join(repoRoot, directory))
       .sort()

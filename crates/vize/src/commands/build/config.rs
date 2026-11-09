@@ -145,7 +145,7 @@ pub(crate) enum ErrorPhase {
     /// An observed stage could not be written to the requested dump directory.
     Dump,
     /// An internal compiler error: a caught panic, reported with the path of
-    /// the `repro.folio` it wrote (P2-13, charter #30).
+    /// the `repro.dump` it wrote (P2-13, charter #30).
     Ice,
 }
 

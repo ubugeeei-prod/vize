@@ -161,10 +161,10 @@ jobs:
       - name: Run TS-40 current-projection baselines
         if: inputs.targeted-test != 'generic-body-error'
         run: |
-          cargo test -p vize --test integration -- davinci_ts40_projection_cli:: --nocapture
-          cargo test -p vize_maestro --test davinci_ts40_projection -- --nocapture
-          cargo test -p vize_maestro --features legacy --test davinci_ts40_projection -- --nocapture
-          node --test tests/tooling/davinci-ts40-projection.test.ts
+          cargo test -p vize --test integration -- level_ts40_projection_cli:: --nocapture
+          cargo test -p vize_maestro --test level_ts40_projection -- --nocapture
+          cargo test -p vize_maestro --features legacy --test level_ts40_projection -- --nocapture
+          node --test tests/tooling/level-ts40-projection.test.ts
       - name: Build packed Content Mapper runtime
         if: inputs.targeted-test != 'generic-body-error'
         run: |
@@ -581,7 +581,7 @@ jobs:
         if: ${{ !inputs.published-defaults-only }}
         env:
           VIZE_TEMPLATE_EMIT_TS40_CAPTURE: ${{ runner.temp }}/official-css-source/ts40-legacy
-        run: cargo test -p vize_maestro --features legacy --test davinci_ts40_projection -- --nocapture
+        run: cargo test -p vize_maestro --features legacy --test level_ts40_projection -- --nocapture
       - name: Build the real packed mapper runtime
         if: ${{ !inputs.published-defaults-only }}
         run: |

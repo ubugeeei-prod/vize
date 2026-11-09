@@ -13,7 +13,7 @@ type.
 | unbounded owned sequence | `alloc::vec::Vec`                 | Retain only in the exact reviewed inventory below; new or removed sites update the ledger.   |
 | hash collection          | `vize_l0::{FxHashMap, FxHashSet}` | Do not name a `std::collections` hash type in stage libraries.                               |
 
-The old `davinci-opt` host edge has been retired. `vize_davinci` is scanned as
+The old `level-opt` host edge has been retired. `vize_level` is scanned as
 library source throughout; the `vize` CLI owns paths, filesystem I/O, and exit
 codes. No exception extends to L1, L2, L3, or L1-to-L2 libraries. Importing or
 aliasing `std`, `vec`, or `collections` does not bypass the boundary.
@@ -27,7 +27,7 @@ The executable ledger requires strict equality, so both growth and reduction
 must update the file row in the same change. The aggregates (retained
 `alloc::vec::Vec` totals, per category and per scope) are derived from those
 rows into the [storage summary run artifact](./storage-summary.md) by
-`node tools/support/compat/davinci/generated-ledgers.ts --write`, never copied
+`node tools/support/compat/levels/generated-ledgers.ts --write`, never copied
 by hand or committed; full CI and release publish the validated checkout’s totals.
 
 | Category | Reason                                                                                                                    |
@@ -46,14 +46,14 @@ Mechanical conversion of source-sized buffers is not a goal because it can
 move large payloads onto the stack or add spill bookkeeping without reducing
 allocations.
 
-The L2 provenance page (`folio/provenance.rs`) and the L2-to-L3 partition
-page (`partition/folio.rs`) each retain one source-sized `Vec` of owned
+The L2 provenance page (`dump/provenance.rs`) and the L2-to-L3 partition
+page (`partition/dump.rs`) each retain one source-sized `Vec` of owned
 records: the same contract storage as the other derived Folio pages, while
 the live provenance records and the arena-owned `PartitionFacts` stay with
 their stages.
 
 L3 value payloads use an arena-owned operand sequence. The separate owned
-`values_folio.rs` page retains a source-sized `Vec` for serialization and L0
+`values_dump.rs` page retains a source-sized `Vec` for serialization and L0
 strings for tuple fields; `verify/operands.rs` appends input-sized diagnostics
 to the existing verifier buffer. These are contract and analysis storage,
 respectively, not additional owned IR sequences.
@@ -70,10 +70,10 @@ The per-scope counts for every owned-storage type are part of the generated
 in particular, any production `alloc::string::String` path creates a new file
 or count and fails the gate instead of becoming a `no_std` escape from L0.
 
-`tests/tooling/davinci-storage-policy.test.ts` masks comments, literals, and
+`tests/tooling/level-storage-policy.test.ts` masks comments, literals, and
 `#[cfg(test)]` items; resolves root, self, group, module, and raw aliases; and
 checks every production file, category, scope, and owned-storage type for exact
-equality with the TSV; `tests/tooling/davinci-storage-summary.test.ts` checks
+equality with the TSV; `tests/tooling/level-storage-summary.test.ts` checks
 the generated summary for byte equality with the aggregates of the TSV rows.
 The artifact staleness test additionally rejects missing and edited output in
 an isolated directory.

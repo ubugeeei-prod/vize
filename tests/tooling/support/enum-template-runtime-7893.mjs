@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { createRequire } from "node:module";
 import { pathToFileURL } from "node:url";
 import { Window } from "happy-dom";
-import { loadRuntime } from "./davinci-mounted-trace.mjs";
+import { loadRuntime } from "./level-mounted-trace.mjs";
 
 const chunks = [];
 for await (const chunk of process.stdin) chunks.push(chunk);

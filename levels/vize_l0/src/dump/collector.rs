@@ -1,6 +1,6 @@
-//! Per-pass folio dumping with the `--folio-after-change` hash gate (P2-13).
+//! Per-pass dump dumping with the `--dump-after-change` hash gate (P2-13).
 //!
-//! [`Collector`] collects the pages a `--folio-dir` run writes: one page per
+//! [`Collector`] collects the pages a `--dump-dir` run writes: one page per
 //! executed pass, or - hash-gated - only the passes whose artifact actually
 //! changed. It works on the artifact's **canonical `Full`-mode text** rather
 //! than on a typed artifact, because the Dump equality laws make the two
@@ -12,7 +12,7 @@
 //! their text plus stage/pass provenance (which the P2-18 stage feed
 //! serializes). Writing them into a directory was the retired host's job;
 //! product `vize dump` writes its distinct same-run capture pages. Names are
-//! `{seq:03}-{stage}.{pass}.folio` in emission order, so a directory listing
+//! `{seq:03}-{stage}.{pass}.dump` in emission order, so a directory listing
 //! sorts into the order the passes ran and two dumps of the same pass name
 //! (one pipeline may run a pass twice) cannot collide.
 
@@ -27,7 +27,7 @@ use crate::pass::PassEvent;
 /// plus the stage/pass provenance the stage feed (P2-18) serializes.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Page {
-    /// `{seq:03}-{stage}.{pass}.folio`, emission-ordered. Derived from
+    /// `{seq:03}-{stage}.{pass}.dump`, emission-ordered. Derived from
     /// (`seq`, [`stage`](Self::stage), [`pass`](Self::pass)) once, at
     /// emission - the one place the sequence number is known - and cached
     /// here; the semantic fields are the two below.
@@ -40,11 +40,11 @@ pub struct Page {
     pub text: String,
 }
 
-/// Collects per-pass folio pages, optionally hash-gated.
+/// Collects per-pass dump pages, optionally hash-gated.
 #[derive(Debug, Default)]
 pub struct Collector {
     /// When set, a pass emits a page only if the artifact's hash changed
-    /// across it (`--folio-after-change`). A no-op pass emits nothing.
+    /// across it (`--dump-after-change`). A no-op pass emits nothing.
     pub after_change_only: bool,
     /// Hash of the artifact as last seen ([`seed`](Self::seed) or the last
     /// emitted page). `None` until seeded, so an unseeded dump emits its
@@ -84,7 +84,7 @@ impl Collector {
         self.last_hash = Some(hash);
         self.pages.push(Page {
             name: cstr!(
-                "{:03}-{}.{}.folio",
+                "{:03}-{}.{}.dump",
                 self.pages.len(),
                 event.pipeline.stage,
                 event.desc().name

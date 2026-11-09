@@ -72,7 +72,7 @@ pub fn transform_destructured_props(
 
 /// [`transform_destructured_props`] that also reports the rewrites it applied
 /// as sorted, disjoint `(start, end, replacement length)` edits of `source`,
-/// so a caller can carry source-map provenance through the rewrite (Davinci
+/// so a caller can carry source-map provenance through the rewrite (Levels
 /// P3-9). The edits are `None` when rewrites overlap and no such list
 /// describes the result.
 #[expect(clippy::type_complexity, reason = "single-use tuple")]

@@ -17,7 +17,7 @@ publish = false
 cargo-fuzz = true
 
 [dependencies]
-davinci_test_support = { path = "../davinci_test_support", features = ["panic-boundary"] }
+level_test_support = { path = "../level_test_support", features = ["panic-boundary"] }
 libfuzzer-sys = "0.4"
 oxc_allocator = { version = "=0.142.0", git = "https://github.com/oxc-project/oxc", rev = "fc702c1fa9f0412d06ec6908b58cd395b826cf7f" }
 oxc_parser = { version = "=0.142.0", git = "https://github.com/oxc-project/oxc", rev = "fc702c1fa9f0412d06ec6908b58cd395b826cf7f" }
@@ -30,12 +30,12 @@ vize_atelier_sfc = { path = "../../crates/vize_atelier_sfc", default-features = 
 vize_atelier_dom = { path = "../../crates/vize_atelier_dom" }
 vize_croquis = { path = "../../crates/vize_croquis" }
 vize_curator = { path = "../../crates/vize_curator" }
-vize_l0 = { path = "../../davinci/vize_l0" }
-vize_l1 = { path = "../../davinci/vize_l1" }
-vize_l1_to_l2 = { path = "../../davinci/vize_l1_to_l2" }
-vize_l2 = { path = "../../davinci/vize_l2" }
-vize_l2_to_l3 = { path = "../../davinci/vize_l2_to_l3" }
-vize_l3 = { path = "../../davinci/vize_l3" }
+vize_l0 = { path = "../../levels/vize_l0" }
+vize_l1 = { path = "../../levels/vize_l1" }
+vize_l1_to_l2 = { path = "../../levels/vize_l1_to_l2" }
+vize_l2 = { path = "../../levels/vize_l2" }
+vize_l2_to_l3 = { path = "../../levels/vize_l2_to_l3" }
+vize_l3 = { path = "../../levels/vize_l3" }
 
 [[bin]]
 name = "sfc_parse"
@@ -94,8 +94,8 @@ doc = false
 bench = false
 
 [[bin]]
-name = "folio_parse"
-path = "fuzz_targets/folio_parse.rs"
+name = "dump_parse"
+path = "fuzz_targets/dump_parse.rs"
 test = false
 doc = false
 bench = false

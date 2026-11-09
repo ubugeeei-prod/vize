@@ -1,4 +1,4 @@
-//! Retained-AST fast path for the vapor expression resolver (Davinci P1-7).
+//! Retained-AST fast path for the vapor expression resolver (Levels P1-7).
 //!
 //! The legacy resolver (`expression.rs`) parses `(expr)` with the TS module
 //! dialect into a throwaway arena. The retained parse (P1-5) is TS with the
@@ -137,7 +137,7 @@ pub(super) fn resolve_inline_handler_node(
     ctx.resolve_expression(&callback)
 }
 
-/// Davinci P1-7 differential lane: the retained walk must reproduce the
+/// Levels P1-7 differential lane: the retained walk must reproduce the
 /// legacy `resolve_with_oxc` expression branch byte-for-byte. That branch
 /// counts through the P0-3 probe, so the dual-run replicates it in an
 /// uncounted arena instead — lane-only work stays off the production
@@ -172,7 +172,7 @@ fn assert_resolve_agrees(ctx: &GenerateContext<'_>, expr: &str, retained: &str, 
     assert_eq!(
         Some(retained),
         legacy.as_deref(),
-        "davinci-differential (P1-7): retained vapor resolve diverged from the legacy re-parse for expression {expr:?}"
+        "level-differential (P1-7): retained vapor resolve diverged from the legacy re-parse for expression {expr:?}"
     );
     vize_atelier_core::retained::differential::record_vapor_resolve_comparison();
 }

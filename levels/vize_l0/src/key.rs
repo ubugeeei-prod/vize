@@ -1,4 +1,4 @@
-//! Stage artifact keys (Davinci P5-1a): the content identity every cache of
+//! Stage artifact keys (Levels P5-1a): the content identity every cache of
 //! a stage artifact keys on.
 //!
 //! An [`ArtifactKey`] names one stage artifact of one SFC block — its L0
@@ -6,9 +6,9 @@
 //! of Doctor's `cache_identity` (domain-separated, versioned, explicit):
 //!
 //! - **Normalized structure, not presentation.** The hash walks the
-//!   artifact's canonical page: the Disegno folio `Full` form for L2, the
+//!   artifact's canonical page: the L2 dump `Full` form for L2, the
 //!   lossless render for L1 (L1's page — a lossless tree's page *is* its
-//!   token sequence). `Full` is the injective form the folio laws pin, so
+//!   token sequence). `Full` is the injective form the dump laws pin, so
 //!   two artifacts share a key exactly when their pages are equal.
 //! - **Span-relative.** Every span enters the hash rebased to the start of
 //!   its block ([`rebase`], the rustc relative-span import); the block's
@@ -58,7 +58,7 @@ pub mod schema {
     /// L1 surface page: the lossless render, one length-prefixed piece per
     /// token slice (`leading`, then `text`), in canonical token order.
     pub const L1_SURFACE: u32 = 2;
-    /// L2 page: the Disegno folio `Full` form with every span rebased to
+    /// L2 page: the L2 dump `Full` form with every span rebased to
     /// the block start.
     pub const L2_PAGE: u32 = 4;
 }
@@ -66,7 +66,7 @@ pub mod schema {
 /// A stage artifact with a content key.
 ///
 /// Implementations feed an **injective** encoding of the artifact's
-/// canonical page: a folio `Full` print (injective by the folio laws)
+/// canonical page: a dump `Full` print (injective by the dump laws)
 /// streamed through [`fmt::Write`], or length-prefixed typed fields. Spans
 /// go through [`KeySink::feed_span`] or [`rebase`] against
 /// [`KeySink::block_start`], never raw.

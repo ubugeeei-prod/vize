@@ -1,4 +1,4 @@
-// TS-45 (Davinci P5-12): the judge, the scenario and the CI wiring of the
+// TS-45 (Levels P5-12): the judge, the scenario and the CI wiring of the
 // multi-client LSP conformance suite in `tests/editor-conformance/`. The
 // editors themselves run in `.github/workflows/editor-conformance.yml`; this
 // file proves the judge is exact, that every expectation is load-bearing, and

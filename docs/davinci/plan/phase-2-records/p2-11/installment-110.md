@@ -15,16 +15,16 @@ production-ready for a shape it still does not emit.
 
 ## Evidence
 
-`crates/vize_atelier_dom/tests/davinci_s2_production_selector.rs` keeps the
+`crates/vize_atelier_dom/tests/level_s2_production_selector.rs` keeps the
 production selector on the compatibility path for the in-tag option, while
-`crates/vize_atelier_dom/tests/davinci_s2_profile_unsupported.rs` records the
+`crates/vize_atelier_dom/tests/level_s2_profile_unsupported.rs` records the
 same boundary in the unsupported-profile catalogue.
 
 Focused gates:
 
 ```sh
-cargo test -p vize_atelier_dom --test davinci_s2_production_selector --test davinci_s2_profile_unsupported
-vp exec node --test tests/tooling/davinci-dom-production-boundary.test.ts
+cargo test -p vize_atelier_dom --test level_s2_production_selector --test level_s2_profile_unsupported
+vp exec node --test tests/tooling/level-dom-production-boundary.test.ts
 git diff --check
 ```
 

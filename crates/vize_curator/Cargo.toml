@@ -27,7 +27,7 @@ vize_l1 = { workspace = true }
 vize_l1_to_l2 = { workspace = true }
 
 [dev-dependencies]
-davinci_test_support.workspace = true
+level_test_support.workspace = true
 insta.workspace = true
 
 [lints]

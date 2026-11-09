@@ -2,7 +2,7 @@ name: Check
 run-name: ${{ github.event_name == 'workflow_dispatch' && format('Check full @ {0}', github.sha) || format('Check {0} @ {1}', github.event_name, github.sha) }}
 on:
   push:
-    branches: [main, davinci]
+    branches: [main, levels]
   pull_request: {}
   merge_group:
     types: [checks_requested]
@@ -112,8 +112,8 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.merge_group.base_sha }}
           CANDIDATE_SHA: ${{ github.event.pull_request.head.sha || github.event.merge_group.head_sha }}
-        run: vp node tools/support/compat/davinci/legacy-deletion-guard.ts
-      - name: Check Davinci source inventories
+        run: vp node tools/support/compat/levels/legacy-deletion-guard.ts
+      - name: Check Levels source inventories
         if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
         uses: ./.github/actions/check-level-inventories
       - uses: ./.github/actions/setup-js-check-runtime

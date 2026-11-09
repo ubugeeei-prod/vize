@@ -44,10 +44,10 @@ vize_patina = { workspace = true }
 vize_canon = { workspace = true, features = ["native"] }
 vize_croquis = { workspace = true }
 vize_croquis_cf = { workspace = true }
-# Davinci ICE machinery (P2-13): repro folio + pass-manager driver. Both
+# Levels ICE machinery (P2-13): repro dump + pass-manager driver. Both
 # crates are publish = false, so this edge stays out of every release graph.
 # `vize reduce` (P3-14): the L1 surface tree is the deletion vocabulary and
-# the L1->L2 pipeline answers the remark / folio / budget oracles.
+# the L1->L2 pipeline answers the remark / dump / budget oracles.
 vize_l1 = { workspace = true }
 vize_l1_to_l2 = { workspace = true, features = ["legacy-differential"] }
 vize_l2 = { workspace = true }
@@ -108,7 +108,7 @@ similar.workspace = true
 [dev-dependencies]
 corsa.workspace = true
 corsa_lsp.workspace = true
-davinci_test_support = { workspace = true, features = [
+level_test_support = { workspace = true, features = [
   "vue-fixtures",
   "formatter",
   "reference-path",

@@ -14,7 +14,7 @@
 )]
 mod support;
 
-use davinci_harness::fixtures::{LADDER, template_block};
+use level_harness::fixtures::{LADDER, template_block};
 use vize_atelier_core::options::{CodegenOptions, TemplateSyntaxMode};
 use vize_atelier_dom::{
     DomCompilerOptions, compile_template, compile_template_with_options,

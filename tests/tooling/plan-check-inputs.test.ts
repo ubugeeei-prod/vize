@@ -20,7 +20,7 @@ await test("prose and tooling metadata do not rebuild product apps", () => {
 
 await test("product, compiled documentation and cache changes retain app checks", () => {
   for (const path of [
-    "davinci/vize_l2/src/lib.rs",
+    "levels/vize_l2/src/lib.rs",
     "crates/vize/src/main.rs",
     "upstream/forks/lightningcss/src/lib.rs",
     "npm/builder/vite/src/index.ts",
@@ -41,7 +41,7 @@ await test("product, compiled documentation and cache changes retain app checks"
 await test("dependency and security changes always audit and check engine compatibility", () => {
   for (const path of [
     "Cargo.lock",
-    "davinci/vize_l1/Cargo.toml",
+    "levels/vize_l1/Cargo.toml",
     "npm/cli/package.json",
     "pnpm-lock.yaml",
     "patches/listhen.patch",

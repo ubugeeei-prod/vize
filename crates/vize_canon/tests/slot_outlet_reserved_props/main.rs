@@ -1,5 +1,5 @@
 #![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
-use davinci_test_support::script_block_project as project;
+use level_test_support::script_block_project as project;
 
 /// Nuxt UI's `Link.vue` forwards its `as` prop through `<slot v-bind="{ as }">`.
 /// `as` is a reserved spelling, so the shorthand must read the prop binding

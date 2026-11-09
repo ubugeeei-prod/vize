@@ -16,7 +16,7 @@ const observers = [
 // of unrelated real test bodies for every individual input control.
 const fixtureRoot = mkdtempSync(join(tmpdir(), "vize-product-observer-inputs-"));
 after(() => rmSync(fixtureRoot, { recursive: true, force: true }));
-for (const directory of ["tests/tooling", "tests/tooling/davinci", "tests/tooling/release"])
+for (const directory of ["tests/tooling", "tests/tooling/levels", "tests/tooling/release"])
   mkdirSync(join(fixtureRoot, directory), { recursive: true });
 for (const file of observers) writeFileSync(join(fixtureRoot, file), "export {};\n");
 const sourcePlan = (file: string) => planToolingTests([file], { cwd: fixtureRoot });
@@ -38,14 +38,14 @@ void test("release prose and decision changes skip only the audited native produ
 void test("source, fixture, build and manually loaded runtime inputs retain both whole observers", () => {
   for (const file of [
     "crates/vize_atelier_sfc/src/lib.rs",
-    "davinci/vize_l1_to_l2/src/pass/cfg/source.rs",
+    "levels/vize_l1_to_l2/src/pass/cfg/source.rs",
     "npm/native/scripts/build-local.mts",
     "npm/linter/oxlint/src/index.ts",
     "npm/ui/package.json",
     "tests/_fixtures/differential/compiler/enum-template-bindings-7893/Badge.vue.txt",
     "tests/_fixtures/differential/linter/art-public-boundaries-7900/cases.json",
     "tests/tooling/support/enum-template-runtime-7893.mjs",
-    "tests/tooling/support/davinci-mounted-trace.mjs",
+    "tests/tooling/support/level-mounted-trace.mjs",
     "tests/tooling/support/art-lint-source-binding.cjs",
     "tools/support/compat/github/native-setup-capture.mjs",
     ".github/workflows/pr-source-checks.yml",

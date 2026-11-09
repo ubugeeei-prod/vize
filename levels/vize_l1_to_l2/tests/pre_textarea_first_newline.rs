@@ -30,13 +30,13 @@ fn native_first_newline_rule_keeps_second_newline_and_source_spans() {
         ("<pre>\rline</pre>", "\rline"),
         ("<pre v-pre>\n{{ a }}</pre>", "{{ a }}"),
     ] {
-        with_transformed(source, |lowered, folio, _, _| {
+        with_transformed(source, |lowered, dump, _, _| {
             assert!(
                 lowered.diagnostics.is_empty(),
                 "{source}: {:?}",
                 lowered.diagnostics
             );
-            let Some(Op::Element(element)) = folio.ops.first() else {
+            let Some(Op::Element(element)) = dump.ops.first() else {
                 panic!("expected native element");
             };
             let [Op::Text(text)] = element.children.as_slice() else {
@@ -91,10 +91,10 @@ fn native_comment_option_controls_first_visible_text_without_changing_spans() {
 #[test]
 fn nested_text_owners_restore_pre_rules_and_then_normal_whitespace() {
     let source = "<pre>\n<textarea>\nfirst\r\nsecond</textarea><span>\r\n  preserved   text</span></pre><p>  ordinary   text  </p>";
-    with_transformed(source, |lowered, folio, _, _| {
+    with_transformed(source, |lowered, dump, _, _| {
         assert!(lowered.diagnostics.is_empty());
-        let [Op::Element(pre), Op::Element(normal)] = folio.ops.as_slice() else {
-            panic!("expected pre and ordinary siblings: {:?}", folio.ops);
+        let [Op::Element(pre), Op::Element(normal)] = dump.ops.as_slice() else {
+            panic!("expected pre and ordinary siblings: {:?}", dump.ops);
         };
         let owners: Vec<_> = pre
             .children

@@ -127,7 +127,7 @@ mod tests {
     #[test]
     fn the_demo_app_findings_land_in_the_files_they_point_at() {
         let root = Path::new(env!("CARGO_MANIFEST_DIR"))
-            .join("../../tests/_fixtures/davinci-routes/demo-app");
+            .join("../../tests/_fixtures/level-routes/demo-app");
         let files = [
             "src/router/index.ts",
             "src/router/admin.ts",

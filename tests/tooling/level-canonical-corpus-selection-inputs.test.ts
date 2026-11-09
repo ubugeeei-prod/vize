@@ -15,13 +15,13 @@ import {
   changedLinks,
 } from "../../tools/support/compat/github/canonical-corpus-selection.mjs";
 import { readRepoFile, root } from "./support/github-workflows.ts";
-import { stripRust } from "../../tools/support/compat/davinci/lib/rust-source.ts";
+import { stripRust } from "../../tools/support/compat/levels/lib/rust-source.ts";
 
 type Step = { uses?: string; run?: string };
 type Job = { uses?: string; steps?: Step[] };
 type Workflow = { jobs: Record<string, Job> };
 
-const corpusWorkflow = ".github/workflows/davinci-canonical-corpus.yml";
+const corpusWorkflow = ".github/workflows/level-canonical-corpus.yml";
 const selects = (path: string) => canonicalCorpusRequired([path], "pull_request");
 const exists = (path: string) => existsSync(join(root, path));
 const index = execFileSync("git", ["ls-files", "-z"], {
@@ -198,15 +198,15 @@ function compiledRustReads(source: string): string[] {
 test("dependency compilation reads include assets while dormant runtime paths remain constants", () => {
   assert.deepEqual(
     compiledRustReads(
-      'const PATH: &str = "tests/_fixtures/davinci-baseline.json"; // include_str!("tests/_fixtures/davinci-baseline.json")',
+      'const PATH: &str = "tests/_fixtures/level-baseline.json"; // include_str!("tests/_fixtures/level-baseline.json")',
     ),
     [],
   );
   assert.deepEqual(
     compiledRustReads(
-      'const DATA: &[u8] = include_bytes!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../tests/_fixtures/davinci-baseline.json"));',
+      'const DATA: &[u8] = include_bytes!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../tests/_fixtures/level-baseline.json"));',
     ),
-    ["tests/_fixtures/davinci-baseline.json"],
+    ["tests/_fixtures/level-baseline.json"],
   );
 });
 
@@ -230,7 +230,7 @@ await test("every script, import and literal fixture read of the canonical jobs 
   for (const expected of [
     "tools/support/compat/github/canonical-corpus-batch.ts",
     "tools/support/compat/github/release-preflight-github.mjs",
-    "tools/support/compat/davinci/lib/corpus-baseline-contract.ts",
+    "tools/support/compat/levels/lib/corpus-baseline-contract.ts",
     ".github/actions/setup-rust-sticky-cache/cache-policy.ts",
   ])
     assert(scripts.has(expected), `${expected} left the derived script closure`);
@@ -238,10 +238,10 @@ await test("every script, import and literal fixture read of the canonical jobs 
 });
 
 const observerTests = [
-  "crates/vize_atelier_sfc/tests/davinci_production_reach",
-  "crates/vize_atelier_ssr/tests/davinci_ssr_corpus",
-  "davinci/vize_l1_to_l2/tests/davinci_dom_corpus",
-  "davinci/vize_l1_to_l2/tests/davinci_pug_corpus",
+  "crates/vize_atelier_sfc/tests/level_production_reach",
+  "crates/vize_atelier_ssr/tests/level_ssr_corpus",
+  "levels/vize_l1_to_l2/tests/level_dom_corpus",
+  "levels/vize_l1_to_l2/tests/level_pug_corpus",
 ];
 
 await test("every fixture the observer test binaries read selects the corpus", () => {
@@ -252,13 +252,13 @@ await test("every fixture the observer test binaries read selects the corpus", (
       exists(`${entry}.rs`) ? `${entry}.rs` : `${entry}/main.rs`,
       ...tracked(`${directory}/${name}`),
       ...tracked(`${directory}/${name}_support`),
-      ...(name === "davinci_pug_corpus" ? tracked(`${directory}/support`) : []),
+      ...(name === "level_pug_corpus" ? tracked(`${directory}/support`) : []),
     ].filter((path) => path.endsWith(".rs"));
   });
-  sources.push(...tracked("tests/davinci_test_support/src").filter((path) => path.endsWith(".rs")));
+  sources.push(...tracked("tests/level_test_support/src").filter((path) => path.endsWith(".rs")));
   const literals = new Set(sources.flatMap((source) => literalReads(readRepoFile(source))));
   for (const expected of [
-    "tests/_fixtures/davinci-pug",
+    "tests/_fixtures/level-pug",
     "tests/_fixtures/differential/compiler/ssr-builtins-7891",
     "tests/_fixtures/differential/compiler/typed-slot-handler-scope-8142/cases.json",
     "tests/_fixtures/differential/compiler/n8n-if-key-regression/diagnostics.json",
@@ -318,7 +318,7 @@ await test("every Cargo path dependency of the observer binaries selects the cor
         if (path) pending.push({ directory: path, root: false });
       }
   }
-  assert(seen.has("davinci/vize_l0") && seen.has("crates/vize_croquis"), "Missing core crates");
+  assert(seen.has("levels/vize_l0") && seen.has("crates/vize_croquis"), "Missing core crates");
   for (const directory of seen) assertSelected(`${directory}/Cargo.toml`, "observer Cargo crate");
 });
 

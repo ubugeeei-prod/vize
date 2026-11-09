@@ -1,4 +1,4 @@
-//! Template-complexity hotspots (Davinci P4-9b): components whose
+//! Template-complexity hotspots (Levels P4-9b): components whose
 //! **rendered** template complexity (own plus every distinct component they
 //! render, recursion counted once) is above the full-corpus p95.
 //!

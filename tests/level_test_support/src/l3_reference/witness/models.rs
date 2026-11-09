@@ -5,7 +5,7 @@ use std::path::Path;
 use super::{expect_error, mutate, with_steps};
 use crate::l3_reference::behavior::run_loop;
 use crate::l3_reference::checker_corpus::{json_lines, text_field};
-use crate::l3_reference::folio::parse_program;
+use crate::l3_reference::dump::parse_program;
 use crate::l3_reference::json::{self, Json, get, set};
 use crate::l3_reference::model_behavior::run;
 use crate::l3_reference::program::Program;

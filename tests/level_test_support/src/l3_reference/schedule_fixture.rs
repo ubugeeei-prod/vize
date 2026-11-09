@@ -7,7 +7,7 @@
 
 use std::path::Path;
 
-use super::folio::parse_program;
+use super::dump::parse_program;
 use super::program::{EdgeKind, Phase, Program, StateEdge};
 use super::schedule::{order_codes, precedes};
 use super::trace::{Backend, run};
@@ -144,7 +144,7 @@ fn observe(stem: &str, scenario: &str, program: &Program) -> Result<Option<Strin
 pub fn schedule_contract(fixtures: &Path) -> Result<String, String> {
     let mut actual = String::new();
     for stem in STEMS {
-        let path = fixtures.join(format!("{stem}.s3.folio"));
+        let path = fixtures.join(format!("{stem}.s3.dump"));
         let text = std::fs::read_to_string(&path).map_err(|e| format!("{stem}: {e}"))?;
         let program = parse_program(&text).map_err(|e| format!("{stem}: {e}"))?;
         for scenario in SCENARIOS {

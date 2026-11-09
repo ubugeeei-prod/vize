@@ -4,14 +4,14 @@
 use super::{VaporCompilerOptions, compile_vapor};
 use vize_carton::{Allocator, String, cstr};
 
-fn compile(source: &str, davinci_retained_lane: bool) -> String {
+fn compile(source: &str, level_retained_lane: bool) -> String {
     let allocator = Allocator::new();
     let result = compile_vapor(
         &allocator,
         source,
         VaporCompilerOptions {
             prefix_identifiers: true,
-            davinci_retained_lane,
+            level_retained_lane,
             ..Default::default()
         },
     );
@@ -142,7 +142,7 @@ fn spread_props_on_svg_elements_are_attributes() {
                 source,
                 VaporCompilerOptions {
                     prefix_identifiers: true,
-                    davinci_retained_lane: retained,
+                    level_retained_lane: retained,
                     ..Default::default()
                 },
             );

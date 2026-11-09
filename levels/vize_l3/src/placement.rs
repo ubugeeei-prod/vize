@@ -1,6 +1,6 @@
 //! Explicit placement alternatives for L3 ops (P3-10).
 //!
-//! Impeto keeps the choice of *where* an op's work runs as data on the op
+//! L3 keeps the choice of *where* an op's work runs as data on the op
 //! instead of deciding it while emitting, the aegraph discipline recorded in
 //! `docs/davinci/prior-art-toolchains.md`. The canonical program runs every op
 //! [`Placement::Inline`]; [`annotate`] records the other semantics-preserving

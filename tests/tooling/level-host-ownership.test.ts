@@ -1,11 +1,11 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { metadata, readRepoFile } from "./support/davinci-stage-dependencies.ts";
-import { scanConsumerMigrationSurfaces } from "../../tools/support/compat/davinci/lib/consumer-migration-scan.ts";
+import { metadata, readRepoFile } from "./support/level-stage-dependencies.ts";
+import { scanConsumerMigrationSurfaces } from "../../tools/support/compat/levels/lib/consumer-migration-scan.ts";
 
 test("stage catalogue names every actual level package and excludes host facades", () => {
-  const source = readRepoFile("davinci/vize_l0/src/stage.rs");
+  const source = readRepoFile("levels/vize_l0/src/stage.rs");
   const levels = new Map(
     [...source.matchAll(/pub const (L\d): LayerCrate = LayerCrate \{([^}]+)\};/gu)].map(
       ([, symbol, body]) => [symbol, body],

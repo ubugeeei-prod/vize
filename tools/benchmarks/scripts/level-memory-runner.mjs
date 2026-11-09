@@ -157,7 +157,7 @@ export function build(root, target, out) {
     "--profile",
     "ci-opt",
     "--features",
-    "davinci_harness/instruction-counts",
+    "level_harness/instruction-counts",
     "--message-format=json",
     "--target-dir",
     target,
@@ -177,10 +177,10 @@ export function build(root, target, out) {
   );
   const binaries = suites.map(({ plane, pkg, bench }) => {
     const directory =
-      pkg === "davinci_harness"
+      pkg === "level_harness"
         ? "tools/benchmarks/crates"
-        : fs.existsSync(path.join(root, "davinci", pkg))
-          ? "davinci"
+        : fs.existsSync(path.join(root, "levels", pkg))
+          ? "levels"
           : "crates";
     const source = path.join(root, directory, pkg, "benches", `${bench}.rs`);
     const matches = artifacts.filter((row) => path.resolve(row.target.src_path) === source);

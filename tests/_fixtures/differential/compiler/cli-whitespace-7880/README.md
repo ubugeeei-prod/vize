@@ -6,4 +6,4 @@
 
 `tests/tooling/cli-build-whitespace-7880.test.ts` consumes the existing exact-source CLI build receipt and renders twelve complete original DOM/SSR outputs against independent official Vue 3.5.35, already pinned in the UI workspace. Complete process streams, modules, official modules and rendered results are retained before assertions. The reporter compared 3.6.0-rc.10; this suite does not claim that version or browser/Vapor hydration parity.
 
-These are legacy CLI transport and semantic tests. Davinci replacement, native performance, public installation and actual merge/release require their separate evidence.
+These are legacy CLI transport and semantic tests. Levels replacement, native performance, public installation and actual merge/release require their separate evidence.

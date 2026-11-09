@@ -2,7 +2,7 @@
 // current-evidence pin every citation is checked against, the landed
 // `(installment, PR, main-line SHA)` rows, and the per-record phrases
 // each installment file must still carry. Split out of the assertions
-// in `../davinci-phase2-ledger.ts` to keep both under the 350-line
+// in `../level-phase2-ledger.ts` to keep both under the 350-line
 // source budget; the rows only ever grow.
 
 export function p2_11Installment(number: number): URL {

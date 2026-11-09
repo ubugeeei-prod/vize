@@ -329,7 +329,7 @@ export function inspectLevelDependencies(
 export function assertDependencyReport(report: DependencyReport): void {
   requireEvidence(
     report.directoryViolations.length === 0,
-    "Davinci-to-crates dependency paths: " + JSON.stringify(report.directoryViolations),
+    "Level-to-crates dependency paths: " + JSON.stringify(report.directoryViolations),
   );
   requireEvidence(
     report.unlisted.length === 0,

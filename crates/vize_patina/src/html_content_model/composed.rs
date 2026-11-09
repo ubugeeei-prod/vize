@@ -1,4 +1,4 @@
-//! Cross-component composition (Davinci P4-11b): the nesting no per-file
+//! Cross-component composition (Levels P4-11b): the nesting no per-file
 //! check can see.
 //!
 //! A template is checked with its mount point unknown, so a component whose

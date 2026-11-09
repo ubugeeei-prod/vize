@@ -1,13 +1,13 @@
-//! Canonical Davinci stage names and their current crate spellings.
+//! Canonical Levels stage names and their current crate spellings.
 //!
 //! Implementation names and artifact-key v2 use logical `l0` through `l4`.
 //! Pipeline selectors retain their separate `s0` through `s4` mapping;
 //! A listed crate identifies ownership, not implementation completeness.
 
-/// The stage a Davinci diagnostic came from.
+/// The stage a Levels diagnostic came from.
 ///
 /// The variants retain the logical names used by existing diagnostics and
-/// folio prose. Use [`Stage::physical_id`] when a physical layer id is needed.
+/// dump prose. Use [`Stage::physical_id`] when a physical layer id is needed.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum Stage {
     /// L0: reading the authored file into source coordinates.
@@ -94,7 +94,7 @@ pub fn pipeline_display_id(id: &str) -> &str {
     }
 }
 
-/// A Davinci layer crate.
+/// A Levels layer crate.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct LayerCrate {
     /// Short stage id used in implementation names and docs.
@@ -113,7 +113,7 @@ pub struct LayerCrate {
 /// artifact-producing stage.
 pub type StageCrate = LayerCrate;
 
-/// A Davinci conversion crate between two stage artifacts.
+/// A Levels conversion crate between two stage artifacts.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct ConversionCrate {
     /// Short conversion id used in implementation names and docs.
@@ -190,7 +190,7 @@ pub const L2_TO_L3: ConversionCrate = ConversionCrate {
     role: "semantic-to-backend scheduling lowering",
 };
 
-/// Davinci layer crates that exist in the workspace today.
+/// Levels layer crates that exist in the workspace today.
 pub const LAYERS: &[LayerCrate] = &[L0, L1, L2, L3, L4];
 
 /// Historical artifact-only view retained for compatibility.

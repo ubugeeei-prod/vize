@@ -66,7 +66,7 @@ pub fn compare_with(name: &str, source: &str, counters: &mut Counters, dialect: 
     // `site/src/layouts/header/Navigation.vue` carries L2 facts
     // `NotStatic, props_hoistable, nested_static`, which `hoist::predict`
     // turns into `Props` where the legacy lane decides `None`. That is a
-    // gap in the **replay**, not in what ships: `davinci_dom_corpus`
+    // gap in the **replay**, not in what ships: `level_dom_corpus`
     // finds the two lanes' compiled output for that file byte-identical,
     // and a props hoist is visible in output (`_hoisted_1 = {…}`), so the
     // effective decision agrees. What differs is that `pass::hoist`
@@ -140,9 +140,9 @@ pub fn compare_with(name: &str, source: &str, counters: &mut Counters, dialect: 
         return;
     }
     let facts = run_transform(&mut lowered, &mut NoObserver);
-    let folio = L2Page::of(&lowered.root.ops);
+    let dump = L2Page::of(&lowered.root.ops);
     let s2 = l2_lane::collect(
-        &folio,
+        &dump,
         &l2_lane::Tables {
             if_facts: &facts.if_facts,
             slot_facts: &facts.slot_facts,
@@ -221,7 +221,7 @@ pub fn compare_with(name: &str, source: &str, counters: &mut Counters, dialect: 
         let mut old_shape = vize_l0::String::default();
         hoist_old::shape_of(&root.children, &mut old_shape);
         let mut l2_shape = vize_l0::String::default();
-        hoist::shape_of_l2(&folio.ops, &mut l2_shape);
+        hoist::shape_of_l2(&dump.ops, &mut l2_shape);
         if scan.classifier {
             counters.hoist.classifier_templates += 1;
         } else if scan.consts {
@@ -246,7 +246,7 @@ pub fn compare_with(name: &str, source: &str, counters: &mut Counters, dialect: 
                 source,
                 &root.children,
                 &hoisted_root.children,
-                &folio.ops,
+                &dump.ops,
                 &facts.static_facts,
                 &mut counters.hoist,
             );

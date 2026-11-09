@@ -60,7 +60,7 @@ void test("SVG title parser controls register the complete native and Armature c
   assert.equal(new Set(controls.map(([name]) => name)).size, 12);
   for (const fields of controls) assert.equal(fields.length, 3);
   assert.deepEqual(entry.runtime.rustTargets, [
-    "davinci/vize_l1/tests/native_svg_title.rs",
+    "levels/vize_l1/tests/native_svg_title.rs",
     "crates/vize_armature/src/parser/svg_title_tests.rs",
   ]);
   assert.equal(entry.runtime.phase, "parser-source-controls");

@@ -1,5 +1,5 @@
-//! TS-17, established (P2-4): folio in -> pipeline -> **full normalized
-//! folio** snapshot out, with targeted structural asserts as supplements
+//! TS-17, established (P2-4): dump in -> pipeline -> **full normalized
+//! dump** snapshot out, with targeted structural asserts as supplements
 //! only (assurance §4).
 //!
 //! There are no landed optimization passes until P2-9, so the harness runs
@@ -48,22 +48,22 @@ fn fixture() -> PathBuf {
         .join("tests")
         .join("fixtures")
         .join("croquis")
-        .join("props-destructure.folio")
+        .join("props-destructure.dump")
 }
 
 #[test]
-fn a_pipeline_run_snapshots_the_full_normalized_folio() {
-    let text = std::fs::read_to_string(fixture()).expect("committed folio reads");
-    let folio = CroquisPage::parse(&text).expect("committed folio parses");
+fn a_pipeline_run_snapshots_the_full_normalized_dump() {
+    let text = std::fs::read_to_string(fixture()).expect("committed dump reads");
+    let dump = CroquisPage::parse(&text).expect("committed dump parses");
 
     let mut budget = BudgetObserver::new();
     run_pipeline(&PLAN, &mut budget, |_event| Ok(())).expect("a no-op pass body cannot fail");
 
-    // The oracle: the full normalized folio after the pipeline ran.
-    assert_dump_snapshot!(folio);
+    // The oracle: the full normalized dump after the pipeline ran.
+    assert_dump_snapshot!(dump);
 
     // Structural supplements: the plan's walk accounting, pinned through
-    // the budget observer's own derived folio page so the run's counts are
+    // the budget observer's own derived dump page so the run's counts are
     // themselves a TS-16 artifact.
     assert_eq!(
         budget.print_to_string(DumpMode::Full).as_str(),

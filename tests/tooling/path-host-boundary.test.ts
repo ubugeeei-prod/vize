@@ -5,8 +5,8 @@ import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import { rewritePathImports } from "../../tools/support/compat/levels/move-path-host.ts";
 import { pathHostCallers } from "../../tools/support/compat/levels/path-host-callers.ts";
-import { withoutHostRuntimeReferences } from "./support/davinci-host-imports.ts";
-import { withoutPathHostReferences } from "./support/davinci-path-host-imports.ts";
+import { withoutHostRuntimeReferences } from "./support/level-host-imports.ts";
+import { withoutPathHostReferences } from "./support/level-path-host-imports.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const read = (file: string) => fs.readFileSync(path.join(root, file), "utf8");
@@ -31,7 +31,7 @@ test("only the complete finite host references are admitted", () => {
       file,
     );
   }
-  assert.match(withoutPathHostReferences(source, "davinci/vize_l1/src/fixture.rs"), forbidden);
+  assert.match(withoutPathHostReferences(source, "levels/vize_l1/src/fixture.rs"), forbidden);
 });
 
 test("additional path APIs and identifier suffixes retain rejection", () => {

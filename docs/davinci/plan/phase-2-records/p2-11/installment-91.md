@@ -12,7 +12,7 @@ preference without changing the default lane.
 
 ## Evidence
 
-`crates/vize_atelier_dom/tests/davinci_s2_unref_helper_order.rs` pins the
+`crates/vize_atelier_dom/tests/level_s2_unref_helper_order.rs` pins the
 helper preamble order byte-for-byte against the shipped DOM lane, including
 the inline setup cases that introduced the late `_unref` mark.
 

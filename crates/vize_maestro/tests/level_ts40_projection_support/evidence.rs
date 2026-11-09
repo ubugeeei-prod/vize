@@ -194,7 +194,7 @@ fn public_instance_slot_packets_remain_authenticated() {
         owned_constructor,
         jsx_witness_successor,
         integrated_successor,
-        "crates/vize_maestro/tests/snapshots/davinci_ts40_projection__davinci_ts40__options-api-slots__default.snap.new",
+        "crates/vize_maestro/tests/snapshots/level_ts40_projection__level_ts40__options-api-slots__default.snap.new",
         "fb29a6ea745462c954eb0e7b0b4c008b4c1d5ec8379ec99400ddacaf075e779f",
     );
     let discriminated_jsx_union_successor = include_str!(
@@ -414,7 +414,7 @@ fn public_instance_mixed_vue2_packets_remain_authenticated() {
             owned_constructor,
             jsx_witness_successor,
             integrated_successor,
-            "crates/vize_maestro/tests/snapshots/davinci_ts40_projection__davinci_ts40__vue2-native-event__mixed-vue2__legacy-generators-enabled.snap.new",
+            "crates/vize_maestro/tests/snapshots/level_ts40_projection__level_ts40__vue2-native-event__mixed-vue2__legacy-generators-enabled.snap.new",
             "ce519376b1c12c5a51cb8952061ffdd3e581745f883ef50d049609552af56281",
         );
         let discriminated_jsx_union_successor = include_str!(

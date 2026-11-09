@@ -4,7 +4,7 @@ import {
   maskRustSource,
   tokensOf,
   type RustToken,
-} from "./davinci-storage-rust-syntax.ts";
+} from "./level-storage-rust-syntax.ts";
 
 export type StorageKind = "allocVec" | "allocString" | "l0String" | "arenaVec" | "smallVec";
 export type StorageMeasurement = { directPaths: number; boundUses: number };

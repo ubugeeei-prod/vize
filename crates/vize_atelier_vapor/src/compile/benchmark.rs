@@ -1,5 +1,5 @@
 //! Scoped retained selection for same-process production benchmark pairs.
-//! Compiled out unless the explicit `davinci-benchmark` feature is enabled.
+//! Compiled out unless the explicit `level-benchmark` feature is enabled.
 
 use super::VaporCompilerOptions;
 use core::cell::Cell;
@@ -22,7 +22,7 @@ pub fn with_retained_lane<R>(f: impl FnOnce() -> R) -> R {
 }
 
 pub(super) fn apply(mut options: VaporCompilerOptions) -> VaporCompilerOptions {
-    options.davinci_retained_lane |= RETAINED.with(Cell::get);
+    options.level_retained_lane |= RETAINED.with(Cell::get);
     options
 }
 
@@ -32,7 +32,7 @@ mod tests {
 
     #[test]
     fn retained_selector_restores_nested_and_unwound_scopes() {
-        let selected = || apply(VaporCompilerOptions::default()).davinci_retained_lane;
+        let selected = || apply(VaporCompilerOptions::default()).level_retained_lane;
         assert!(!selected());
         with_retained_lane(|| {
             assert!(selected());
@@ -47,10 +47,10 @@ mod tests {
         assert!(!selected());
         assert!(
             apply(VaporCompilerOptions {
-                davinci_retained_lane: true,
+                level_retained_lane: true,
                 ..Default::default()
             })
-            .davinci_retained_lane
+            .level_retained_lane
         );
     }
 }

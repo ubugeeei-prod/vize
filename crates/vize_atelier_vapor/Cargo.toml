@@ -32,10 +32,10 @@ thiserror = { workspace = true }
 [features]
 # Whole-SFC retained selector for the controlled production benchmark only.
 # No parser differential or code path is enabled in normal builds.
-davinci-benchmark = []
+level-benchmark = []
 # Attribution binary only; kept out of profile-disabled acceptance timings.
-davinci-benchmark-profile = ["davinci-benchmark", "vize_l1_to_l2/davinci-benchmark-profile"]
-# Arms the Davinci P1-7 differential lane in this crate's retained resolve
+level-benchmark-profile = ["level-benchmark", "vize_l1_to_l2/level-benchmark-profile"]
+# Arms the Levels P1-7 differential lane in this crate's retained resolve
 # path and in vize_atelier_core's migrated sites. Off in production builds.
 legacy-differential = ["vize_atelier_core/legacy-differential"]
 
@@ -44,7 +44,7 @@ legacy-differential = ["vize_atelier_core/legacy-differential"]
 vize_curator = { path = "../vize_curator" }
 oxc_semantic = { workspace = true }
 criterion = { workspace = true }
-davinci_harness = { workspace = true }
+level_harness = { workspace = true }
 # The DOM backend is compiled alongside Vapor in the cross-backend agreement
 # tests (`<template>` children must lower the same way in both backends).
 vize_atelier_dom = { workspace = true }
@@ -54,12 +54,12 @@ insta = { workspace = true }
 serde_json = { workspace = true }
 
 [[test]]
-name = "davinci_vapor_native_budget"
+name = "level_vapor_native_budget"
 # Keep libtest reporting outside the process-global measured compile windows.
 harness = false
 
 [[bench]]
-name = "davinci"
+name = "levels"
 harness = false
 
 [package.metadata.cargo-semver-checks.lints]

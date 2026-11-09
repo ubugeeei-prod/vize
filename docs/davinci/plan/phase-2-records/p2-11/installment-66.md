@@ -12,12 +12,12 @@ authored key.
 
 The durable witnesses are:
 
-- [`davinci_s2_template_wrapper_component_props.rs`](../../../../../crates/vize_atelier_dom/tests/l2_template_wrapper_component_props.rs)
+- [`level_s2_template_wrapper_component_props.rs`](../../../../../crates/vize_atelier_dom/tests/l2_template_wrapper_component_props.rs)
   - compares reduced template-wrapper component-prop cases byte-for-byte
     against the shipped DOM lane.
-- [`component.rs`](../../../../../davinci/vize_l1_to_l2/src/emit/component.rs)
+- [`component.rs`](../../../../../levels/vize_l1_to_l2/src/emit/component.rs)
   - owns the component static-props hoist decision at wrapper boundaries.
-- [`props_static.rs`](../../../../../davinci/vize_l1_to_l2/src/emit/props_static.rs)
+- [`props_static.rs`](../../../../../levels/vize_l1_to_l2/src/emit/props_static.rs)
   - records whether component props contain dynamic values, non-key props and
     valued props before hoist selection.
 

@@ -3,10 +3,10 @@
 //! Generates a TOML-like human-readable representation of a croquis
 //! for debugging and inspection purposes.
 //!
-//! VIR is absorbed into Davinci as the **croquis folio**: the parsing
+//! VIR is absorbed into Levels as the **croquis dump**: the parsing
 //! side and the format contract live in
 //! `vize_croquis::dump` (see
-//! `docs/davinci/plan/folio-format.md`). Changes here must keep the folio
+//! `docs/davinci/plan/dump-format.md`). Changes here must keep the dump
 //! round-trip green (`cargo test -p vize_croquis --test croquis_dump`).
 
 use super::{Croquis, TypeExportKind};
@@ -24,15 +24,15 @@ impl Croquis {
     ///
     /// # Important
     ///
-    /// **VIR is the croquis folio.** The format contract (grammar,
+    /// **VIR is the croquis dump.** The format contract (grammar,
     /// normalization, round-trip laws) lives in
     /// `vize_croquis::dump::Page` and is documented in
-    /// `docs/davinci/plan/folio-format.md`; the typed Croquis dump tests
+    /// `docs/davinci/plan/dump-format.md`; the typed Croquis dump tests
     /// verify canonical bytes. This renderer stays the producing side and
-    /// must not drift from the folio parser - the fixture harness in
+    /// must not drift from the dump parser - the fixture harness in
     /// `crates/vize_croquis/tests/croquis_dump.rs` pins the two together.
     ///
-    /// - Raw renderer output is near-canonical: the folio's first print
+    /// - Raw renderer output is near-canonical: the dump's first print
     ///   normalizes it (sorted map-derived name lists)
     /// - For programmatic access, use the `Croquis` struct fields directly
     ///

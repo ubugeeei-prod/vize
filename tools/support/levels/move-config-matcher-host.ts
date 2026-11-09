@@ -3,11 +3,11 @@ import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "
 import { dirname, join } from "node:path";
 
 const root = execFileSync("git", ["rev-parse", "--show-toplevel"], { encoding: "utf8" }).trim();
-const source = "davinci/vize_l0/src/config/matcher.rs";
+const source = "levels/vize_l0/src/config/matcher.rs";
 const target = "crates/vize_carton/src/config/matcher.rs";
-const core = "davinci/vize_l0/src/config.rs";
+const core = "levels/vize_l0/src/config.rs";
 const host = "crates/vize_carton/src/config.rs";
-const coreManifest = "davinci/vize_l0/Cargo.toml";
+const coreManifest = "levels/vize_l0/Cargo.toml";
 const hostManifest = "crates/vize_carton/Cargo.toml";
 const cliFacade = "crates/vize/src/lint_plan/matcher.rs";
 const cliCollection = "crates/vize/src/commands/lint/collect.rs";
@@ -72,7 +72,7 @@ function integrate() {
     "unexpected Carton manifest",
   );
   requireCondition(
-    read("tests/tooling/support/davinci-host-imports.ts").includes("host_config_matcher"),
+    read("tests/tooling/support/level-host-imports.ts").includes("host_config_matcher"),
     "the reviewed matcher host-import gate companion must accompany replay",
   );
   requireCondition(
@@ -125,7 +125,7 @@ function integrate() {
   );
   const updatedHostPackage = hostPackage.includes(' "globset",\n')
     ? hostPackage
-    : hostPackage.replace(' "davinci_test_support",\n', ' "davinci_test_support",\n "globset",\n');
+    : hostPackage.replace(' "level_test_support",\n', ' "level_test_support",\n "globset",\n');
   requireCondition(
     updatedHostPackage.includes(' "globset",\n'),
     "unexpected Carton lock dependency layout",

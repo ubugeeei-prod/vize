@@ -1,4 +1,4 @@
-//! The croquis folio: the croquis "VIR" dump absorbed as the first folio
+//! The croquis dump: the croquis "VIR" dump absorbed as the first dump
 //! page.
 //!
 //! [`Page`] is a document model of the text
@@ -6,9 +6,9 @@
 //! in [`DumpMode::Full`](vize_l0::dump::Mode) reproduces that format
 //! byte-for-byte for canonical content; parsing is the inverse. The live
 //! renderer stays in `crates/vize_croquis/src/croquis/vir.rs`; this module
-//! owns the format contract (see `docs/davinci/plan/folio-format.md`).
+//! owns the format contract (see `docs/davinci/plan/dump-format.md`).
 //!
-//! A folio models the dump, not the analysis: counts in the header are
+//! A dump models the dump, not the analysis: counts in the header are
 //! carried as printed, and no cross-section invariants are enforced beyond
 //! parent-reference resolution in `[scopes]`.
 
@@ -200,8 +200,8 @@ impl Dump for Page {
     }
 
     fn parse(input: &str) -> Result<Self, DumpError> {
-        let mut folio = parse::parse(input)?;
-        folio.normalize();
-        Ok(folio)
+        let mut dump = parse::parse(input)?;
+        dump.normalize();
+        Ok(dump)
     }
 }

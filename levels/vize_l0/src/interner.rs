@@ -1,6 +1,6 @@
 //! Arena-backed atoms for template names that repeat within one compile.
 //!
-//! Davinci P1-10 moved the AST's name-shaped fields off owned
+//! Levels P1-10 moved the AST's name-shaped fields off owned
 //! [`CompactString`](compact_str::CompactString) onto `&'a str`. Three sources
 //! can produce such a slice, and the choice per field is a real one:
 //!

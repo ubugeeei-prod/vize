@@ -1,4 +1,4 @@
-//! `<template lang="pug">` and the legacy `jade` spelling — the Davinci pug
+//! `<template lang="pug">` and the legacy `jade` spelling — the Levels pug
 //! dialect (P4-12c) selector for SFC linting.
 //!
 //! The pug block is swapped for its derived Vue template

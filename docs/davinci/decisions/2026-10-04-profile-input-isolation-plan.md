@@ -49,7 +49,7 @@ has top-level `allocation: null`, every span’s `alloc: null`, and `counters: [
 These are existing explicit unavailable observations, not measured zeros.
 Keep all these fields and all original command/version/budget/truncation,
 wall count/total/self/min/max/p50/p95/p99 and full stage/pass/block vectors.
-The complete ten-span expected JSON in `tests/spolvero_timing.rs` stays exact.
+The complete ten-span expected JSON in `tests/stage_timing.rs` stays exact.
 No schema decision or invented allocation/counter measurement is proposed.
 
 Native callers retain actual profiler span/counter snapshots and the exact

@@ -158,7 +158,7 @@ pilot rename stays at or above 55%.
 | 6     | `canon-alias-*`, native canon-lib, graph archive, profile replay                                                                                                                                      |    16 | 3,031 |
 | 7     | Native profile corpus, phase membership, report, capture and runner, retirement, release metadata, source custody                                                                                     |    14 | 2,741 |
 | 8     | Native phases driver, dependency link, source recipe and preparation, receipts                                                                                                                        |    10 | 2,539 |
-| 9     | `instruction-counts*`, `level-memory*`, after `tools/support/compat/davinci/toml-lite.mjs`                                                                                                            |     8 | 1,820 |
+| 9     | `instruction-counts*`, `level-memory*`, after `tools/support/compat/levels/toml-lite.mjs`                                                                                                             |     8 | 1,820 |
 
 Every batch imports only earlier batches or already typed `.ts` files.
 Batch 9 alone depends on a provider outside this directory.

@@ -17,16 +17,16 @@ next switch harder to under-test without changing emitted bytes on its own.
 
 `crates/vize_atelier_dom/tests/support/battery/model.rs` and
 `crates/vize_atelier_dom/tests/support/battery/outlets.rs` own the shared
-cases. `crates/vize_atelier_dom/tests/davinci_s2_model.rs`,
-`crates/vize_atelier_dom/tests/davinci_s2_outlets.rs` and
-`crates/vize_atelier_dom/tests/davinci_s2_option_families.rs` consume them.
+cases. `crates/vize_atelier_dom/tests/level_s2_model.rs`,
+`crates/vize_atelier_dom/tests/level_s2_outlets.rs` and
+`crates/vize_atelier_dom/tests/level_s2_option_families.rs` consume them.
 
 Focused gates:
 
 ```sh
 cargo fmt --all -- --check
-cargo test -p vize_atelier_dom --test davinci_s2_model --test davinci_s2_outlets --test davinci_s2_option_families
-rust-script tools/commands/davinci/assertion-lint.rs
+cargo test -p vize_atelier_dom --test level_s2_model --test level_s2_outlets --test level_s2_option_families
+rust-script tools/commands/levels/assertion-lint.rs
 node tools/commands/ci/source-file-lengths.ts --check --base-ref origin/main
 git diff --check
 ```

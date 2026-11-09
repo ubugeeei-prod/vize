@@ -1,4 +1,4 @@
-//! The L2 (Disegno) backend of the markup facade (Davinci P4-7a).
+//! The L2 (L2) backend of the markup facade (Levels P4-7a).
 //!
 //! [`L2Markup`] is a borrowed view over one lowered artifact: the L2 op tree,
 //! the lowering-published text-run facts that split a merged run back into

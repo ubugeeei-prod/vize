@@ -21,7 +21,7 @@ distribution and integration layers.
 | Path      | What lives there                                                                                                  |
 | --------- | ----------------------------------------------------------------------------------------------------------------- |
 | `crates/` | Rust crates for parsing, analysis, compilation, linting, formatting, type checking, LSP, CLI, and native bindings |
-| `davinci/` | Experimental level crates and shared infrastructure for the new pipeline |
+| `levels/` | Experimental level crates and shared infrastructure for the new pipeline |
 | `npm/`    | JavaScript packages for Vite, Nuxt, editor extensions, Musea integrations, and published package wrappers         |
 | `docs/`   | User documentation, architecture notes, release notes, and the docs site theme                                    |
 | `tests/`  | Cross-package fixtures, real-world projects, tooling tests, and snapshot governance                               |

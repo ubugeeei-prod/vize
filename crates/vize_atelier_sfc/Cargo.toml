@@ -12,7 +12,7 @@ metadata.vize.stability = "alpha-supported"
 default = ["native"]
 native = ["dep:lightningcss", "lightningcss/serde", "dep:parcel_selectors", "dep:parcel_sourcemap"]
 legacy = ["vize_atelier_core/legacy", "vize_atelier_ssr/legacy"]
-# Arms the Davinci P1-7 differential lane across the atelier crates: every
+# Arms the Levels P1-7 differential lane across the atelier crates: every
 # retained-AST consumption dual-runs the legacy re-parse and panics on
 # divergence. Off in production builds; the corpus-runnable entry below
 # requires it.
@@ -26,15 +26,15 @@ legacy-differential = [
 legacy-dom-differential = ["vize_atelier_dom/legacy-differential"]
 # Controlled selected/retained adapter comparisons, without the retained-AST
 # differential dual-run instrumentation used by semantic corpus tests.
-davinci-production-bench = [
+level-production-bench = [
   "legacy-dom-differential",
-  "vize_atelier_vapor/davinci-benchmark",
+  "vize_atelier_vapor/level-benchmark",
   "vize_atelier_ssr/legacy-differential",
 ]
 # Separate attribution executable; detailed spans are absent from timed pairs.
-davinci-production-profile = [
-  "davinci-production-bench",
-  "vize_atelier_vapor/davinci-benchmark-profile",
+level-production-profile = [
+  "level-production-bench",
+  "vize_atelier_vapor/level-benchmark-profile",
 ]
 
 [dependencies]
@@ -45,7 +45,7 @@ vize_atelier_core = { workspace = true }
 vize_atelier_dom = { workspace = true }
 vize_atelier_ssr = { workspace = true }
 vize_atelier_vapor = { workspace = true }
-# The Davinci pug dialect: `<template lang="pug">` desugars through L1.
+# The Levels pug dialect: `<template lang="pug">` desugars through L1.
 vize_l1_to_l2 = { workspace = true }
 vize_l1.workspace = true
 vize_l2.workspace = true
@@ -77,13 +77,13 @@ sha2 = { workspace = true }
 [dev-dependencies]
 vize_carton.workspace = true
 tempfile = { workspace = true }
-davinci_test_support = { workspace = true, features = ["panic-boundary"] }
+level_test_support = { workspace = true, features = ["panic-boundary"] }
 insta = { workspace = true }
 pklrust = { workspace = true }
 toml = { workspace = true }
 
 [target.'cfg(not(target_arch = "wasm32"))'.dev-dependencies]
-davinci_harness = { workspace = true }
+level_harness = { workspace = true }
 criterion = { workspace = true }
 mimalloc = { workspace = true }
 
@@ -104,11 +104,11 @@ name = "output_boundary"
 harness = false
 
 [[test]]
-name = "davinci_differential"
+name = "level_differential"
 required-features = ["legacy-differential"]
 
 [[test]]
-name = "davinci_production_reach"
+name = "level_production_reach"
 required-features = ["legacy-dom-differential"]
 
 [[example]]
@@ -116,8 +116,8 @@ name = "css_engine_recovery"
 required-features = ["native"]
 
 [[example]]
-name = "davinci_production_perf"
-required-features = ["davinci-production-bench"]
+name = "level_production_perf"
+required-features = ["level-production-bench"]
 
 [[example]]
 name = "sfc_fix_history_observer"

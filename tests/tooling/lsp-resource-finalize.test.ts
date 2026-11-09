@@ -7,7 +7,7 @@ import { test } from "node:test";
 import {
   finalizeLspResources,
   finalizeSampledLspRun,
-} from "../../tools/support/compat/davinci/lib/lsp-resource-finalize.ts";
+} from "../../tools/support/compat/levels/lib/lsp-resource-finalize.ts";
 
 function fixture() {
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), "vize-lsp-finalize-"));

@@ -13,8 +13,8 @@
 pub mod behavior;
 pub mod checker;
 pub mod checker_corpus;
+pub mod dump;
 pub mod expression;
-pub mod folio;
 pub mod incremental;
 pub mod iteration;
 pub mod json;

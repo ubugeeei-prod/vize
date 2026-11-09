@@ -1,11 +1,11 @@
 //! Arena-reset replay (P2-5b): P1-11's resident-cache reset scenario
-//! applied to folios.
+//! applied to dumps.
 //!
-//! The law under test: a printed folio carries everything an L2 tree
+//! The law under test: a printed dump carries everything an L2 tree
 //! needs to survive the arena it was built in. The mechanism that makes
 //! surviving *in place* impossible is the pool guard plus the debug
-//! arena-generation stamp (`davinci/vize_l0/src/allocator/generation.rs`:
-//! a stamped value read after `Allocator::reset` panics) - so the folio
+//! arena-generation stamp (`levels/vize_l0/src/allocator/generation.rs`:
+//! a stamped value read after `Allocator::reset` panics) - so the dump
 //! stores owned text + span, and a `js(...)` payload re-parses into a
 //! fresh arena on load. This test drives the full cycle: build in a
 //! pooled arena, mirror, print, **drop the `pool::acquire()` guard**
@@ -67,7 +67,7 @@ ui.interpolation opaque(multi-statement \"a++; b++\" @36:44) @34:46
 ";
 
 #[test]
-fn a_printed_folio_replays_across_an_arena_reset() {
+fn a_printed_dump_replays_across_an_arena_reset() {
     // -- print inside the pooled arena's lifetime -------------------------
     let (printed, mirrored) = {
         let guard = pool::acquire();
@@ -77,9 +77,9 @@ fn a_printed_folio_replays_across_an_arena_reset() {
         let mirrored = L2Page::of(&ops);
         (mirrored.print_to_string(DumpMode::Full), mirrored)
         // `guard` drops here: the arena resets and every `ExprRef` above -
-        // including the retained oxc AST - is gone. Only the owned folio
+        // including the retained oxc AST - is gone. Only the owned dump
         // and its printed text survive, which is the P1-11 contract this
-        // test exists to hold the folio to.
+        // test exists to hold the dump to.
     };
     assert_eq!(printed.as_str(), CANONICAL);
 
@@ -136,7 +136,7 @@ fn a_printed_folio_replays_across_an_arena_reset() {
     );
 }
 
-/// The load path is total: text a folio should never contain still loads,
+/// The load path is total: text a dump should never contain still loads,
 /// as the escape variant with the text-classified reason - never a panic,
 /// never a partial state.
 #[test]

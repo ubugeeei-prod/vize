@@ -3,11 +3,11 @@ import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
-import { analyzeConsumers } from "../../../tools/support/compat/davinci/lib/croquis-analysis.ts";
-import { enumerateProducts } from "../../../tools/support/compat/davinci/lib/croquis-products.ts";
-import { gateViolations } from "../../../tools/support/compat/davinci/lib/croquis-render.ts";
-import { renderCroquisArtifacts } from "../../../tools/support/compat/davinci/lib/croquis-shards.ts";
-import { ARTIFACT_REL, repoRoot } from "../../../tools/support/compat/davinci/lib/paths.ts";
+import { analyzeConsumers } from "../../../tools/support/compat/levels/lib/croquis-analysis.ts";
+import { enumerateProducts } from "../../../tools/support/compat/levels/lib/croquis-products.ts";
+import { gateViolations } from "../../../tools/support/compat/levels/lib/croquis-render.ts";
+import { renderCroquisArtifacts } from "../../../tools/support/compat/levels/lib/croquis-shards.ts";
+import { ARTIFACT_REL, repoRoot } from "../../../tools/support/compat/levels/lib/paths.ts";
 
 const output = process.argv[2];
 assert(output, "Provide an output file outside the checkout");
@@ -34,7 +34,7 @@ const generators = [
   "lib/croquis-render.ts",
   "lib/croquis-shards.ts",
 ].map((name) => {
-  const relative = "tools/support/compat/davinci/" + name;
+  const relative = "tools/support/compat/levels/" + name;
   return { path: relative, sha256: hash(fs.readFileSync(path.join(repoRoot, relative))) };
 });
 const report = {

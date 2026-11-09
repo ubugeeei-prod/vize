@@ -12,7 +12,7 @@ for setup-const handlers in the inline shape and for scoped handler params.
 
 ## Evidence
 
-`crates/vize_atelier_dom/tests/davinci_s2_cache_handlers.rs` compares cached,
+`crates/vize_atelier_dom/tests/level_s2_cache_handlers.rs` compares cached,
 uncached, scoped and binding-aware handler shapes against the shipped lane.
 The S2 emit options, event wrapper, model and merged-props paths all consume
 the same cache decision.

@@ -1,5 +1,5 @@
-# Assertion-lint allowlist (Davinci P0-12) — consumed by
-# tools/commands/davinci/assertion-lint.rs, doctrine in docs/davinci/assurance.md
+# Assertion-lint allowlist (Levels P0-12) — consumed by
+# tools/commands/levels/assertion-lint.rs, doctrine in docs/davinci/assurance.md
 # ("Strict oracles — no partial matching").
 #
 # Each [[allow]] group carries one justification and one expiry, and lists
@@ -13,10 +13,10 @@
 # a shorter expiry than the group it currently sits in.
 #
 # Initial population: the pre-existing violation set found when the lint
-# first landed (236 files, captured 2026-08-14 on the davinci branch).
+# first landed (236 files, captured 2026-08-14 on the levels branch).
 
 [[allow]]
-justification = "pre-davinci debt, triage in P0-12 completion"
+justification = "pre-level debt, triage in P0-12 completion"
 expires = "2026-12-31"
 paths = [
   "crates/vize/src/commands/check/nuxt/tsconfig_aliases.rs",
@@ -190,9 +190,9 @@ paths = [
   "crates/vize_canon/tests/setup_scoped_type_exports.rs",
   "crates/vize_canon/tests/tier_l_incremental/main.rs",
   "crates/vize_canon/tests/tsconfig_option_diagnostics.rs",
-  "davinci/vize_l0/src/config/model/vue.rs",
-  "davinci/vize_l0/src/flags.rs",
-  "davinci/vize_l0/src/source_range.rs",
+  "levels/vize_l0/src/config/model/vue.rs",
+  "levels/vize_l0/src/flags.rs",
+  "levels/vize_l0/src/source_range.rs",
   "crates/vize_carton/tests/loading.rs",
   "crates/vize_croquis/src/declaration_ts.rs",
   "crates/vize_croquis/src/effect_graph.rs",

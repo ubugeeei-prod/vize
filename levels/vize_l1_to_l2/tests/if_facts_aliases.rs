@@ -19,7 +19,7 @@ fn span(source: &str, token: &str) -> Result<Span, String> {
 fn real_lowering_and_pass_aliases_borrow_the_canonical_fact_type() -> Result<(), String> {
     let source =
         "<p v-if='ready' :title='label' :key='id' key='late'>x</p><slot v-else key='fallback'/>";
-    support::with_transformed(source, |lowered, folio, facts, _| {
+    support::with_transformed(source, |lowered, dump, facts, _| {
         let canonical: &SideTable<IfFacts> = &lowered.if_facts;
         let old_lower: &SideTable<lower::IfFacts> = canonical;
         let old_pass: &SideTable<pass::IfFacts> = canonical;
@@ -63,8 +63,8 @@ fn real_lowering_and_pass_aliases_borrow_the_canonical_fact_type() -> Result<(),
         assert!(core::ptr::eq(dynamic, pass_key));
         assert!(core::ptr::eq(&dynamic.kind, lower_kind));
         assert!(core::ptr::eq(&dynamic.kind, pass_kind));
-        let [Op::If(owner)] = folio.ops.as_slice() else {
-            return Err(String::from("actual If folio"));
+        let [Op::If(owner)] = dump.ops.as_slice() else {
+            return Err(String::from("actual If dump"));
         };
         let [first, last] = owner.branches.as_slice() else {
             return Err(String::from("actual two branches"));

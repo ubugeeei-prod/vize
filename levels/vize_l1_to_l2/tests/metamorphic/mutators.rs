@@ -23,8 +23,8 @@
 //! `ATTR_ORDER_TAGS` element list (`value`/`type` interplay and friends),
 //! unquoted or hole-bearing values (the swap must re-render into the same
 //! two attributes), and `v-pre`/rawtext regions. **Declared
-//! normalization:** the L2 folio records attributes in authored order
-//! (`davinci/vize_l1_to_l2/src/lower/element.rs:147-168`), so the oracle
+//! normalization:** the L2 dump records attributes in authored order
+//! (`levels/vize_l1_to_l2/src/lower/element.rs:147-168`), so the oracle
 //! compares with attribute lines sorted — the canonical quotient by
 //! exactly the permutation the mutator induces; absolute order stays
 //! pinned by the P2-8 exact-equality suites.
@@ -39,7 +39,7 @@
 //! element's node in both spellings, root position included, so root
 //! counting and attribute fallthrough see the same node. The lowering
 //! encodes the same rule: a branch-carrying `<template>` unwraps into its
-//! branch region (`davinci/vize_l1_to_l2/src/lower/structural.rs:213-217`,
+//! branch region (`levels/vize_l1_to_l2/src/lower/structural.rs:213-217`,
 //! the P2-8 unwrap site). A **bare** `<template>` is *not* pass-through —
 //! Vue renders it as a real template element — which is why this mutator
 //! only ever creates a wrapper that carries the moved branch directive.
@@ -51,7 +51,7 @@
 //! assignment are position-sensitive),
 //! a second branch directive on the element (the leftover would form a
 //! new chain), missing expressions, unterminated tags, `v-pre`/rawtext.
-//! **Normalization:** none beyond span elision — the folios must match
+//! **Normalization:** none beyond span elision — the dumps must match
 //! structurally.
 //!
 //! # Text-node split/merge ([`Kind::Split`], [`Kind::Merge`])
@@ -63,7 +63,7 @@
 //! a single call at codegen
 //! (`crates/vize_atelier_core/src/codegen/children.rs`), and since P2-9
 //! installment 4 the L2 lowering fuses them at conversion
-//! (`davinci/vize_l1_to_l2/src/lower/text.rs`), so node granularity of
+//! (`levels/vize_l1_to_l2/src/lower/text.rs`), so node granularity of
 //! text is representation, not meaning. These two mutate the **L1 tree**
 //! rather than the source — no source spelling can split a maximal text
 //! run — with both halves kept as genuine source subslices, so spans stay
@@ -73,11 +73,11 @@
 //! **Declared normalization:** none beyond span elision — the P2-15
 //! `merge_text` quotient was **ratcheted out** when P2-9 installment 4
 //! absorbed the merge into the lowering itself
-//! (`davinci/vize_l1_to_l2/src/lower/text.rs`): adjacent text now fuses
+//! (`levels/vize_l1_to_l2/src/lower/text.rs`): adjacent text now fuses
 //! before ids mint, so the mutant lowers to the original's artifact
 //! with no declared rule at all. Split additionally proves the exact
 //! inverse: re-merging the split tree must reproduce the original
-//! `Full`-mode folio byte-for-byte.
+//! `Full`-mode dump byte-for-byte.
 //!
 //! # Whitespace-insignificant edits ([`Kind::Whitespace`])
 //!
@@ -99,7 +99,7 @@
 //! whitespace), `v-pre` subtrees. **Declared normalization:** none
 //! beyond span elision — the P2-15 condense mirror was **ratcheted
 //! out** when P2-9 installment 4 absorbed the condense into the
-//! lowering (`davinci/vize_l1_to_l2/src/lower/text.rs`, rule-for-rule
+//! lowering (`levels/vize_l1_to_l2/src/lower/text.rs`, rule-for-rule
 //! the cited armature algorithm): both sides now lower pre-condensed,
 //! so the quotient the justification licenses is already the artifact.
 

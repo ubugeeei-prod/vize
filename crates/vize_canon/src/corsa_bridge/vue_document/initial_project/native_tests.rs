@@ -4,7 +4,7 @@
 use std::io::Write;
 use std::sync::atomic::Ordering;
 
-use davinci_test_support::original_diagnosing_process as control;
+use level_test_support::original_diagnosing_process as control;
 
 use super::super::CorsaVueVirtualDocumentOptions;
 use super::{CorsaBridge, CorsaVueWorkspaceRequest};

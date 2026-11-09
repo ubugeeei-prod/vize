@@ -15,7 +15,7 @@ use crate::lower::Lowered;
 pub use crate::lower::SAME_KEY_MESSAGE;
 pub use crate::lower::{BranchKey, BranchKeyKind, IfFacts};
 
-/// The pass name kept for existing folio/report strings.
+/// The pass name kept for existing dump/report strings.
 pub const NAME: &str = "v-if";
 
 /// Mirror lowering-published `ui.if` facts for transform consumers.

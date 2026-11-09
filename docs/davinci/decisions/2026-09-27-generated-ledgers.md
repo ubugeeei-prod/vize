@@ -6,12 +6,12 @@ Issue: [#6867](https://github.com/ubugeeei-prod/vize/issues/6867).
 
 Current whole-repository count tables are run artifacts. CI inventory validation
 generates the bundle from the checkout being validated and publishes it as
-`davinci-generated-ledgers`. Source contracts and reviewed compatibility inputs
+`level-generated-ledgers`. Source contracts and reviewed compatibility inputs
 remain blocking checks. PRs no longer rewrite the generated rule inventory or
 storage aggregate tables, so independent changes do not conflict on their totals.
 
-`node tools/support/compat/davinci/generated-ledgers.mjs --write` emits the bundle
-under the ignored `artifacts/davinci-ledgers/` directory. `--check` regenerates
+`node tools/support/compat/levels/generated-ledgers.mjs --write` emits the bundle
+under the ignored `artifacts/level-ledgers/` directory. `--check` regenerates
 from sources and rejects missing, edited or unexpected output. Both modes accept
 `--out-dir <dir>` for isolated validation. Individual rule and storage generators
 have the same byte-exact modes. Staleness tests generate a scratch copy and prove
@@ -48,7 +48,7 @@ failures remain blocking.
 
 The release candidate `f59c3e6d5552b7fbe3d281bcdf22a0a5d3d7a371` passed
 [full Check run 36330394793](https://github.com/ubugeeei-prod/vize/actions/runs/36330394793).
-Its `davinci-generated-ledgers` artifact `10935811185` contains the five reports.
+Its `level-generated-ledgers` artifact `10935811185` contains the five reports.
 Downloading that artifact and running the strict bundle `--check --out-dir`
 against the exact candidate checkout reproduced all five files byte-for-byte.
 

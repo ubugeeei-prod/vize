@@ -1,4 +1,4 @@
-//! TS-36 for composed findings (Davinci P4-11b): every
+//! TS-36 for composed findings (Levels P4-11b): every
 //! `html/cross-component-nesting` error carries a witness chain the P4-6b
 //! verifier re-checks against the fact base before it is reported.
 //!

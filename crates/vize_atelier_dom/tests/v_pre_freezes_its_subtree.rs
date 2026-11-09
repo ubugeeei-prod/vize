@@ -15,7 +15,7 @@
 //! `{ ":x": "1" }`, and `<div v-pre><li v-for="i in l">` shipped a real
 //! `renderList`.
 //!
-//! No corpus template caught it: `davinci_l2_transform_corpus`'s sweep
+//! No corpus template caught it: `level_l2_transform_corpus`'s sweep
 //! counts **zero** `v-pre` templates across the hydrated corpus, which is
 //! why this needs its own witness. Expectations are `@vue/compiler-dom`
 //! 3.6.0-beta.10's own output, cross-checked against this crate's legacy

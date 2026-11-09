@@ -19,7 +19,7 @@ function segmentLines(
 ): string[] {
   const { suite } = entry;
   const total = suite.minimumTests;
-  const closure = `davinci-differential corpus scope: root=/repo/tests/davinci_test_support/../../tests/_fixtures/_git scope=canonical closure_evidence=true submodules=${gitlinks}`;
+  const closure = `level-differential corpus scope: root=/repo/tests/level_test_support/../../tests/_fixtures/_git scope=canonical closure_evidence=true submodules=${gitlinks}`;
   if (entry.role === "base")
     return [
       `running ${total - 1} tests`,
@@ -30,7 +30,7 @@ function segmentLines(
     return [
       "running 1 test",
       closure,
-      `davinci pug corpus sweep: files=${paths.length} pug=3 refused=0 compiled_lanes=9`,
+      `levels pug corpus sweep: files=${paths.length} pug=3 refused=0 compiled_lanes=9`,
       `test ${suite.test} ... ok`,
       "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.00s",
     ];
@@ -38,27 +38,27 @@ function segmentLines(
   const counters =
     suite.kind === "reach"
       ? [
-          "davinci production reach: scope=committed files=551 unreadable=0 parse_errors=0 without_template=91",
+          "levels production reach: scope=committed files=551 unreadable=0 parse_errors=0 without_template=91",
           ...shapes.map(
             (shape) =>
-              `davinci production reach: shape=${shape} stage="L2" templates=458 accepted=442 permille=965 ready=0 legacy={} rejected=0 routed_vapor=0 unrecorded=0 sfc_errors={} compared=442 divergences=0`,
+              `levels production reach: shape=${shape} stage="L2" templates=458 accepted=442 permille=965 ready=0 legacy={} rejected=0 routed_vapor=0 unrecorded=0 sfc_errors={} compared=442 divergences=0`,
           ),
-          `davinci production reach: scope=canonical files=${files} unreadable=0 parse_errors=0 without_template=0`,
+          `levels production reach: scope=canonical files=${files} unreadable=0 parse_errors=0 without_template=0`,
           ...shapes.flatMap((shape) => [
-            `davinci production reach: shape=${shape} stage="L2" templates=${files} accepted=${files} permille=1000 ready=0 legacy={} rejected=0 routed_vapor=0 unrecorded=0 sfc_errors={} compared=${files} divergences=0`,
-            `davinci native-only acceptance: scope=canonical product=compiler target=${shape} planned=${files} native_only=0 legacy_backed=${files} unverified=0 permille=0 contribution=sfc_parse:legacy:legacy`,
+            `levels production reach: shape=${shape} stage="L2" templates=${files} accepted=${files} permille=1000 ready=0 legacy={} rejected=0 routed_vapor=0 unrecorded=0 sfc_errors={} compared=${files} divergences=0`,
+            `levels native-only acceptance: scope=canonical product=compiler target=${shape} planned=${files} native_only=0 legacy_backed=${files} unverified=0 permille=0 contribution=sfc_parse:legacy:legacy`,
           ]),
         ]
       : [
-          `davinci SSR production sweep: scope=canonical templates=${files} compared=${files} s4=${files} error_skips=0 rejected=0 divergences=0`,
-          `davinci SSR production lanes: {"s4": ${files}}`,
-          `davinci SSR corpus sweep: scope=canonical files=${files} parsed=${files} templates=${files} compared=${files} s4=${files} legacy_error_skips=0 rejected=0 divergences=0`,
-          `davinci SSR corpus lanes: {"s4": ${files}}`,
+          `levels SSR production sweep: scope=canonical templates=${files} compared=${files} s4=${files} error_skips=0 rejected=0 divergences=0`,
+          `levels SSR production lanes: {"s4": ${files}}`,
+          `levels SSR corpus sweep: scope=canonical files=${files} parsed=${files} templates=${files} compared=${files} s4=${files} legacy_error_skips=0 rejected=0 divergences=0`,
+          `levels SSR corpus lanes: {"s4": ${files}}`,
         ];
   return [
     "running 1 test",
     closure,
-    `davinci-differential corpus shard: scope=canonical index=${entry.index} count=${suite.shards} planned=${paths.length} selected=${files}`,
+    `level-differential corpus shard: scope=canonical index=${entry.index} count=${suite.shards} planned=${paths.length} selected=${files}`,
     ...counters,
     `test ${suite.sweep} ... ok`,
     "",
@@ -74,7 +74,7 @@ export function shardedObserverEvidence(
   gitlinks: number,
 ): ShardedEvidence {
   const vectors = new Map<string, Buffer>();
-  const lines = ["   Compiling davinci_test_support v0.0.0", "    Finished `test` profile"];
+  const lines = ["   Compiling level_test_support v0.0.0", "    Finished `test` profile"];
   for (const entry of observerProcesses(observer)) {
     const selected =
       entry.role === "shard"

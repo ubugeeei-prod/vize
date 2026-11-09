@@ -3,15 +3,15 @@
 Collapses the #6906..#6947 stack into one change. Level crates have no
 compatibility users, so no aliases or fallback readers are added.
 
-- **L3 package identity.** `crates/vize_impeto` moves to `davinci/vize_l3`
+- **L3 package identity.** `crates/vize_l3` moves to `levels/vize_l3`
   (move-only commit) and the package/dependency name becomes `vize_l3`.
   First-name semver checks use the published `vize_impeto@0.429.0` baseline.
-- **Stage view paths and feed types.** Playground `features/davinci/` becomes
-  `features/stages/`; DOM witnesses drop the `davinci_` prefix. The feed family
+- **Stage view paths and feed types.** Playground `features/levels/` becomes
+  `features/stages/`; DOM witnesses drop the `level_` prefix. The feed family
   becomes `StageFeed`, `StagePage`, `StageRemark`, `StageNegotiation`; its JSON
   schema and negotiation behavior are unchanged.
 - **Conversion registry.** `L2_TO_L3` is registered (metadata only).
-- **Dump API.** Shared `vize_davinci::dump::{Dump, Mode, Error}`, the `Dump`
+- **Dump API.** Shared `vize_level::dump::{Dump, Mode, Error}`, the `Dump`
   derive with `#[dump(name = ...)]`, and per-level `dump::Page` replace the
   codename page types.
 - **Versioned dump protocols.** L2 writes `[l2-dump-v2]` (published extension
@@ -62,14 +62,14 @@ SFC extraction. The existing level roundtrip command keeps its success and
 failure bytes. This feed covers the current native L1 → L2 → L3 ladder,
 separate from the current legacy-backed product compiler path.
 
-At the time of this earlier decision, `--pipeline` migration and removal of the `davinci-opt` bin remained open. The
+At the time of this earlier decision, `--pipeline` migration and removal of the `level-opt` bin remained open. The
 old binary still tests a no-op pass catalogue over input dumps; it does not
 serve as evidence that product compilation uses the new levels.
 
 ## Differential feature selectors
 
-The current differential test selectors `davinci-differential` and
-`davinci-dom-differential` become `legacy-differential` and
+The current differential test selectors `level-differential` and
+`level-dom-differential` become `legacy-differential` and
 `legacy-dom-differential`. Their Cargo dependency values, cfg gates, explicit
 Actions recipes, corpus helpers, current suite commands and tooling assertions
 move together. This is a feature-name change only: corpus environment variables

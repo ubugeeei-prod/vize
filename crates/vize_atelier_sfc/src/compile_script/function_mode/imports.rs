@@ -67,7 +67,7 @@ pub(crate) struct DedupedImport {
 }
 
 /// [`dedupe_imports`] that also says which input each kept import came from
-/// and whether it was copied or rebuilt (Davinci P3-9 source maps).
+/// and whether it was copied or rebuilt (Levels P3-9 source maps).
 pub(crate) fn dedupe_imports_with_origins(imports: &[String], is_ts: bool) -> Vec<DedupedImport> {
     let mut result: Vec<DedupedImport> = Vec::new();
     let mut seen_specifiers: FxHashSet<String> = FxHashSet::default();

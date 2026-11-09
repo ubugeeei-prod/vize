@@ -1,4 +1,4 @@
-//! Davinci L2 prop-value source retention witnesses.
+//! Levels L2 prop-value source retention witnesses.
 
 use crate::support;
 

@@ -11,7 +11,7 @@ S2 now mirrors that layout decision in both cached and static prop emit.
 
 ## Evidence
 
-`crates/vize_atelier_dom/tests/davinci_s2_cached_props_multiline.rs` compares
+`crates/vize_atelier_dom/tests/level_s2_cached_props_multiline.rs` compares
 the affected cached-props shapes against the shipped lane. The regression is
 covered at the object-emitter level and through static prop emission.
 

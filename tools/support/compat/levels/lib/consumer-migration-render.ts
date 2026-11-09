@@ -121,7 +121,7 @@ function renderScopes(consumers: readonly Consumer[]): string {
 function renderSlices(): string {
   return `## Independently mergeable no-rollout slices
 
-1. \`test(davinci): pin consumer migration surfaces\` - this artifact and its
+1. \`test(levels): pin consumer migration surfaces\` - this artifact and its
    drift test. It makes the current dependency shape reviewable without
    changing command routing or defaults.
 2. \`refactor(compiler): introduce stage-named compiler boundary adapters\` -
@@ -149,7 +149,7 @@ function renderSlices(): string {
    implementation delegates to the current Armature/Croquis/Canon stack. Guard
    hover, definition, diagnostics, semantic tokens, and formatting with
    existing LSP e2e tests.
-8. \`refactor(davinci): align physical layer names with l0/l1/l2\` - migrate
+8. \`refactor(levels): align physical layer names with l0/l1/l2\` - migrate
    public internal module/crate references toward L0/L1/L2 naming in small
    aliasing steps. Keep code names only as compatibility aliases until all
    consumers have moved.
@@ -171,14 +171,14 @@ export function renderConsumerMigrationSurfaces(
 
   return `<!-- GENERATED FILE - do not edit by hand.
      Regenerate: ${options.regenCommand}
-     Verify:     node tools/support/compat/davinci/consumer-migration-surfaces.ts --check
+     Verify:     node tools/support/compat/levels/consumer-migration-surfaces.ts --check
      Totals:     ${options.summaryCommand}
-     Generator:  tools/support/compat/davinci/consumer-migration-surfaces.ts -->
+     Generator:  tools/support/compat/levels/consumer-migration-surfaces.ts -->
 
 # Consumer migration surfaces
 
 This inventory records where the user-facing consumers that must eventually
-sit on Davinci/L0/L1/L2 still name stage crates, legacy AST/parser/Croquis
+sit on Levels/L0/L1/L2 still name stage crates, legacy AST/parser/Croquis
 crates, or raw OXC crates directly on current \`origin/main\`. It is an
 observational guard for planning only. It does not change rollout state.
 
@@ -211,8 +211,8 @@ ${renderScopes(scan.consumers)}
 
 Every row lives in exactly one TSV shard per (consumer, crate). Shards record
 file paths and line numbers, so they are not committed: each run writes them
-under \`artifacts/davinci-ledgers/consumer-migration-surfaces/\`, and CI uploads
-them in the \`davinci-generated-ledgers\` artifact. One row per file x class x surface x matched name,
+under \`artifacts/level-ledgers/consumer-migration-surfaces/\`, and CI uploads
+them in the \`level-generated-ledgers\` artifact. One row per file x class x surface x matched name,
 columns \`consumer_id\`, \`consumer\`, \`class\` (\`source\`, \`manifest\`,
 \`test/dev\`), \`file\`, \`first_line\`, \`surface_id\`, \`surface\`,
 \`surface_group\`, \`matched_name\`, \`name_kind\`, \`sites\`. The shard set is
@@ -232,7 +232,7 @@ ${renderSlices()}
 
 \`\`\`sh
 ${options.regenCommand}
-node tools/support/compat/davinci/consumer-migration-surfaces.ts --check
+node tools/support/compat/levels/consumer-migration-surfaces.ts --check
 ${options.summaryCommand}
 \`\`\`
 `;

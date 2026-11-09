@@ -105,9 +105,7 @@ void test("Core PR gates and canonical SSR-Pug use the recovery adapter", () => 
     Object.keys(js.jobs).filter((name) => name !== "pr-oxlint-windows-json-config"),
   );
   assert.deepEqual(uses(js.jobs, upstream), []);
-  const canonical = parse(
-    fs.readFileSync(".github/workflows/davinci-canonical-corpus.yml", "utf8"),
-  );
+  const canonical = parse(fs.readFileSync(".github/workflows/level-canonical-corpus.yml", "utf8"));
   const steps = canonical.jobs["canonical-observers"].steps;
   assert.deepEqual(
     steps.find((s) => s.uses === local),

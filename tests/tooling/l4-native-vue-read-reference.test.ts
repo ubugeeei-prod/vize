@@ -5,7 +5,7 @@ import { createRequire } from "node:module";
 import { test } from "node:test";
 import { pathToFileURL } from "node:url";
 
-const fixtureRoot = new URL("../../davinci/vize_l4/tests/fixtures/vue-setup-let/", import.meta.url);
+const fixtureRoot = new URL("../../levels/vize_l4/tests/fixtures/vue-setup-let/", import.meta.url);
 const metadata = JSON.parse(fs.readFileSync(new URL("capture.json", fixtureRoot), "utf8"));
 const fixtures = metadata.fixtureFiles.map((file: string) =>
   JSON.parse(fs.readFileSync(new URL(file, fixtureRoot), "utf8")),

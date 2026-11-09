@@ -325,7 +325,7 @@ await test("current fail-closed Rust collector qualifies finite routes while ret
     const { nodes, children } = fixture(root);
     const versions = [
       readFileSync("tests/tooling/fixtures/canonical_corpus_collector_original.rs"),
-      readFileSync("tests/davinci_test_support/src/corpus.rs"),
+      readFileSync("tests/level_test_support/src/corpus.rs"),
     ];
     const vectors = versions.map((source, index) => {
       const { harness } = collectorHarness(source);
@@ -418,7 +418,7 @@ await test("current fail-closed Rust collector qualifies finite routes while ret
 });
 
 await test("native collector includes exact required IO helpers and refuses omitted or duplicated definitions", () => {
-  const source = readFileSync("tests/davinci_test_support/src/corpus.rs", "utf8");
+  const source = readFileSync("tests/level_test_support/src/corpus.rs", "utf8");
   const { harness } = collectorHarness(Buffer.from(source));
   for (const name of ["fail_corpus_io", "corpus_entry_path", "collect_vue_edges"]) {
     const definition = source.match(new RegExp(`^fn ${name}\\([\\s\\S]*?\\n\\}\\n`, "m"))?.[0];
@@ -472,7 +472,7 @@ await test("native whole vectors and original-body extraction reject malformed e
     Buffer.from([255, 0]),
   ])
     assert.throws(() => parseNativeVector(bytes));
-  const source = readFileSync("tests/davinci_test_support/src/corpus.rs");
+  const source = readFileSync("tests/level_test_support/src/corpus.rs");
   const { body } = collectorHarness(source);
   assert.throws(() => collectorHarness(Buffer.from("missing source")), /unique/);
   assert.throws(() => collectorHarness(Buffer.concat([source, Buffer.from(body)])), /unique/);

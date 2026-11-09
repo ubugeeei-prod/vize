@@ -8,13 +8,13 @@ import {
 
 test("qualified config and lint changes rebuild their actual dependencies on both sides", () => {
   const dependencies = changedSourceDependencies([
-    "davinci/vize_l0/src/config/model/linter_rule_options.rs",
+    "levels/vize_l0/src/config/model/linter_rule_options.rs",
     "crates/vize_patina/src/linter/restricted_rules.rs",
     "crates/vize_maestro/src/ide/diagnostics/linter_options.rs",
   ]);
   assert.deepEqual(dependencies, ["vize_l0", "vize_patina"]);
   assert.deepEqual(changedSourceDependencies(["tests/tooling/receipt.test.ts"]), []);
-  assert.deepEqual(changedSourceDependencies(["davinci/vize_l00/src/lib.rs"]), []);
+  assert.deepEqual(changedSourceDependencies(["levels/vize_l00/src/lib.rs"]), []);
   const artifacts = dependencies.map((name) => ({ target: { name }, fresh: false }));
   assert.doesNotThrow(() => assertChangedDependenciesBuilt(dependencies, artifacts));
   for (const side of ["before", "after"])
@@ -44,7 +44,7 @@ test("qualified config and lint changes rebuild their actual dependencies on bot
 
 test("the path host move rebuilds both exact foundation owners", () => {
   const dependencies = changedSourceDependencies([
-    "davinci/vize_l0/src/lib.rs",
+    "levels/vize_l0/src/lib.rs",
     "crates/vize_carton/src/path.rs",
   ]);
   assert.deepEqual(dependencies, ["vize_l0", "vize_carton"]);

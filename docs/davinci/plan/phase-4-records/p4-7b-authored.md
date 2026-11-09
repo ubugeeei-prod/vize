@@ -50,7 +50,7 @@ for consumers that require condensed rendered text.
   panics if `permitted-contents` reaches the legacy template hook.
 - Full diagnostic comparisons cover English/Japanese/Chinese, full/hidden help,
   warning overrides, suppression comments and Unicode/CRLF SFC offsets.
-- `davinci_authored_markup_budget` runs alone because allocation counters are
+- `level_authored_markup_budget` runs alone because allocation counters are
   global. Ordinary source parse adds zero heap calls, peak bytes or arena bytes;
   the warmed default facade keeps exactly 7 content-model allocations and zero
   for every other markup rule. The existing benchmark ceiling is unchanged.

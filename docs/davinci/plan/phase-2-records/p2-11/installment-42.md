@@ -14,13 +14,13 @@ report-only until a reference-runner baseline exists.
 
 The durable witnesses are:
 
-- [`davinci_storage.rs`](../../../../../davinci/vize_l1_to_l2/benches/davinci_storage.rs)
+- [`level_storage.rs`](../../../../../levels/vize_l1_to_l2/benches/level_storage.rs)
   - defines the emit-only benchmark window and the synthetic P2-11 DOM surface.
 - [`budgets.toml`](../../budgets.toml)
   - registers `s1_to_s2_emit_p2_11_dom_surface` with `allocs = 60`.
 - [`check.yml`](../../../../../.github/workflows/check.yml)
   - runs the benchmark and `bench-compare` row in the Davinci allocation gate.
-- [`davinci-budgets.test.ts`](../../../../../tests/tooling/davinci-budgets.test.ts)
+- [`level-budgets.test.ts`](../../../../../tests/tooling/level-budgets.test.ts)
   - keeps the budget row reconciled with the bench source and asserts the
     exact allocation count.
 

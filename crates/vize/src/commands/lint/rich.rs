@@ -1,4 +1,4 @@
-//! `vize lint --format rich`: lint results through the Davinci diagnostic
+//! `vize lint --format rich`: lint results through the Levels diagnostic
 //! renderer (P4-14a), in the locale `--locale` selects.
 //!
 //! This is the CLI edge the renderer's contract names: the one place a

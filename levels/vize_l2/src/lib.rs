@@ -1,15 +1,15 @@
-//! L2 - the Davinci semantic IR (codename Disegno): the pivot stage and the
+//! L2 - the Levels semantic IR (codename Disegno): the pivot stage and the
 //! primary consumer surface.
 //!
 //! **Experimental:** the stage API may change in any alpha release; record
 //! intentional breaking changes in the release notes.
 //!
 //! L2 is the normalized, input-neutral representation of UI semantics
-//! (`docs/davinci/architecture.md`, "L2 — Disegno"). Vue templates, JSX and
+//! (`docs/davinci/architecture.md`, "L2 — L2"). Vue templates, JSX and
 //! pug all lower into the same [`op`] family; whatever is genuinely
 //! Vue-specific stays a `vue.*` dialect op instead of shaping the core.
 //! The Vue template lowering into this family is `vize_l1_to_l2` (codename
-//! Ricalco; P2-8); this crate holds the type family, its folio
+//! L1ToL2; P2-8); this crate holds the type family, its dump
 //! page, the invariants that are enforceable by construction, and the verifier
 //! for the ones that are not:
 //!
@@ -22,7 +22,7 @@
 //!   escape with pessimal documented semantics (P2-5b's decision; record
 //!   in `docs/davinci/plan/phase-2-records/p2-5b.md`).
 //! - [`dump`] — [`crate::dump::Page`], the L2 stage dump
-//!   (`docs/davinci/plan/folio-format.md`, "Disegno page").
+//!   (`docs/davinci/plan/dump-format.md`, "L2 page").
 //! - [`verify`] — the between-pass invariant checks (P2-6), debug/CI only:
 //!   local in the GHC `-dcore-lint` sense, and never in a release build.
 //! - [`scope`] / [`provenance`] — the side-table vocabulary lowerings

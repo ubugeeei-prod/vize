@@ -74,7 +74,7 @@ fn production_alpha_corpus_edits_match_clean() {
                 continue;
             };
             let mut edited = source.clone();
-            edited.insert_str(template.loc.end, "<!-- davinci body edit -->");
+            edited.insert_str(template.loc.end, "<!-- levels body edit -->");
             let body = read(&mut docs, &filename, &edited);
             assert_eq!(body, clean(&filename, &edited), "body {filename}");
             assert_eq!(body, first, "body dirtied an interface: {filename}");

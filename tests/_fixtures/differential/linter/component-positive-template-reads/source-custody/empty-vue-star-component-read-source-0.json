@@ -1,6 +1,6 @@
 [
   [
-    ".github/workflows/davinci-canon-scaling.yml",
+    ".github/workflows/level-canon-scaling.yml",
     {
       "mode": "100644",
       "blob": "e08fd2b98ec7b627ac4bbc1baf3fc009190fcf18",
@@ -1215,7 +1215,7 @@
     }
   ],
   [
-    "crates/vize_maestro/tests/snapshots/davinci_ts40_projection__davinci_ts40__define-model__default.snap",
+    "crates/vize_maestro/tests/snapshots/level_ts40_projection__level_ts40__define-model__default.snap",
     {
       "mode": "100644",
       "blob": "5cfc471892ccdb62a0318cf9f3725c31d2dbe0a7",
@@ -1230,7 +1230,7 @@
     }
   ],
   [
-    "crates/vize_maestro/tests/snapshots/davinci_ts40_projection__davinci_ts40__parent-local-import__default.snap",
+    "crates/vize_maestro/tests/snapshots/level_ts40_projection__level_ts40__parent-local-import__default.snap",
     {
       "mode": "100644",
       "blob": "335c8ba0a01174be9f4dd26ffc900807acff015c",
@@ -1245,7 +1245,7 @@
     }
   ],
   [
-    "crates/vize_maestro/tests/snapshots/davinci_ts40_projection__davinci_ts40__static-slot-name__default.snap",
+    "crates/vize_maestro/tests/snapshots/level_ts40_projection__level_ts40__static-slot-name__default.snap",
     {
       "mode": "100644",
       "blob": "d9808d36d74203f14a36099ad3f8d3462537d380",

@@ -10,7 +10,7 @@ use vize_l0::String;
 /// changes; the bump moves every fingerprint of that facet and refuses a
 /// page still stamped with the old version.
 pub mod schema {
-    /// The summary folio. Bump when the page grammar changes.
+    /// The summary dump. Bump when the page grammar changes.
     pub const SUMMARY: u16 = 1;
     /// `component-signature`: component name → type-parameter spelling.
     pub const SIGNATURE: u16 = 1;
@@ -45,7 +45,7 @@ pub enum Facet {
 }
 
 impl Facet {
-    /// Every facet, in folio order.
+    /// Every facet, in dump order.
     pub const ALL: [Self; 6] = [
         Self::Signature,
         Self::Prop,
@@ -117,7 +117,7 @@ impl Facet {
 pub enum SummaryError {
     /// The declaration name is empty or contains whitespace or `=`.
     BadName { facet: Facet, name: String },
-    /// The contract contains a newline, so it is not one folio line.
+    /// The contract contains a newline, so it is not one dump line.
     BadContract { facet: Facet, name: String },
     /// Two entries of `facet` share `name`.
     Duplicate { facet: Facet, name: String },

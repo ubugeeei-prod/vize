@@ -3,7 +3,7 @@
 The production compile now terminates the native emission route for every
 accepted artifact. A payload inconsistency detected while building the shared
 IR returns an explicit S3 emission diagnostic with empty code/templates and no
-source map. It increments `davinci.s3_vapor.rejected`; the obsolete
+source map. It increments `levels.s3_vapor.rejected`; the obsolete
 `legacy.emission` reason is removed. Such a failure never reparses the source
 or invokes the retained lowerer, matching the acceptance invariant above.
 

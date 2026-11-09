@@ -5,7 +5,7 @@
 //! Two independent supplements keep the snapshot from being self-blessed:
 //!
 //! - **The facts law.** Every remark's kind is re-derived from the pass's
-//!   *published facts* plus an owner census taken from the L2 folio (a
+//!   *published facts* plus an owner census taken from the L2 dump (a
 //!   separate walk over a separate tree): one `static-subtree` per element,
 //!   `applied` exactly when the level is `FullyStatic`; one `static-props`
 //!   per owner that is not whole-hoistable and has a props surface,
@@ -38,9 +38,9 @@ fn fixture(name: &str) -> String {
     )
 }
 
-/// One run: the post-pass folio, the facts in id order, and the remarks.
+/// One run: the post-pass dump, the facts in id order, and the remarks.
 struct Run {
-    folio: L2Page,
+    dump: L2Page,
     facts: Vec<StaticFacts>,
     remarks: RemarkLog,
 }
@@ -52,7 +52,7 @@ fn run(source: &str) -> Run {
     let mut collector = RemarkCollector::new();
     let facts = run_transform(&mut lowered, &mut collector);
     Run {
-        folio: L2Page::of(&lowered.root.ops),
+        dump: L2Page::of(&lowered.root.ops),
         facts: facts
             .static_facts
             .sorted_entries()
@@ -76,7 +76,7 @@ fn detached_facts(source: &str) -> Vec<StaticFacts> {
         .collect()
 }
 
-/// An owner as the folio sees it, in page (pre-)order.
+/// An owner as the dump sees it, in page (pre-)order.
 struct Owner {
     element: bool,
     span: Span,
@@ -132,7 +132,7 @@ fn kind(applied: bool) -> RemarkKind {
 fn assert_remarks_follow_facts(run: &Run, source: &str) {
     assert_eq!(run.facts, detached_facts(source), "remarks perturbed facts");
     let mut owners = Vec::new();
-    census(&run.folio.ops, &mut owners);
+    census(&run.dump.ops, &mut owners);
     assert_eq!(owners.len(), run.facts.len(), "one fact per owner");
     let mut expected: Vec<Verdict> = Vec::new();
     for (owner, fact) in owners.iter().zip(&run.facts) {

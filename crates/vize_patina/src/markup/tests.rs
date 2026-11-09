@@ -5,7 +5,7 @@
 //! over both backends through the zero-copy facade.
 
 // Wrapped in an inline `#[cfg(test)] mod` (the repo convention for split
-// test files) so the Davinci assertion lint, which only scans inline
+// test files) so the Levels assertion lint, which only scans inline
 // `#[cfg(test)] mod` bodies under `src/`, keeps covering these tests.
 mod ancestry_tests;
 mod anchor_is_valid_jsx_tests;

@@ -1,4 +1,4 @@
-//! Retained-vs-legacy expression shape checks (Davinci P1-7).
+//! Retained-vs-legacy expression shape checks (Levels P1-7).
 //!
 //! The boolean shape decisions (`is a handler reference`, `is a function
 //! expression`) shared between the legacy string entries in
@@ -79,7 +79,7 @@ fn function_expression_node(node: &SimpleExpressionNode<'_>, fallback: fn(&str) 
     }
 }
 
-/// Davinci P1-7 differential lane: a retained shape decision must match the
+/// Levels P1-7 differential lane: a retained shape decision must match the
 /// legacy string parse's decision (uncounted arena — lane-only work stays
 /// off the production re-parse floor). Divergence panics, never averages.
 #[cfg(any(test, feature = "legacy-differential"))]
@@ -99,7 +99,7 @@ fn differential_shape_check(raw: &str, retained_result: bool, shape: fn(&Express
     .unwrap_or(false);
     assert_eq!(
         retained_result, legacy,
-        "davinci-differential (P1-7): retained shape check diverged from the legacy parse for expression {raw:?}"
+        "level-differential (P1-7): retained shape check diverged from the legacy parse for expression {raw:?}"
     );
     crate::retained::differential::record_shape_comparison();
 }

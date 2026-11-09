@@ -18,7 +18,7 @@ import { observerProcesses } from "../../tools/support/compat/github/canonical-c
 
 const temporary = mkdtempSync(join(tmpdir(), "canonical-io-control-"));
 after(() => rmSync(temporary, { recursive: true, force: true }));
-const source = readFileSync("tests/davinci_test_support/src/corpus.rs");
+const source = readFileSync("tests/level_test_support/src/corpus.rs");
 const tools = compileProbe(source, join(temporary, "harness"));
 const originalTools = compileProbe(
   readFileSync("tests/tooling/fixtures/canonical_corpus_collector_original.rs"),
@@ -63,7 +63,7 @@ void test("serialized IO evidence retains source custody without becoming a snap
 void test("literal manifest spelling survives every source operation and prefix observation", () => {
   const workspace = join(temporary, "cycle");
   const root = `${workspace}/tests/_fixtures/_git`;
-  mkdirSync(`${workspace}/tests/davinci_test_support`, { recursive: true });
+  mkdirSync(`${workspace}/tests/level_test_support`, { recursive: true });
   mkdirSync(`${root}/jellyfin-vue/packaging/deb`, { recursive: true });
   mkdirSync(`${root}/jellyfin-vue/src`, { recursive: true });
   const bytes = Buffer.from("<template>whole 日本語 𐀀\r\n</template>\r\n");
@@ -73,11 +73,11 @@ void test("literal manifest spelling survives every source operation and prefix 
   const paths = parseNativeVector(vector);
   assert(paths.length > 20, "Keep aliases through the observed native boundary");
   assert.equal(new Set(paths).size, paths.length);
-  const longRoot = `${workspace}/tests/davinci_test_support/../../tests/_fixtures/_git`;
+  const longRoot = `${workspace}/tests/level_test_support/../../tests/_fixtures/_git`;
   assert.equal(literalPath(longRoot, paths[0]), `${longRoot}/${paths[0]}`);
   assert(
     literalPrefixes(literalPath(longRoot, paths[0])).some((prefix) =>
-      prefix.endsWith("davinci_test_support/.."),
+      prefix.endsWith("level_test_support/.."),
     ),
   );
   const summaries = [root, longRoot].map((spelling, index) =>
@@ -176,7 +176,7 @@ void test("invalid UTF8 remains a fatal read_to_string failure while whole binar
 });
 
 void test("diagnostics cannot suppress the ordinary SSR worker or become an accepted gate failure", () => {
-  const workflow = readFileSync(".github/workflows/davinci-canonical-corpus.yml", "utf8");
+  const workflow = readFileSync(".github/workflows/level-canonical-corpus.yml", "utf8");
   const diagnostic = workflow.indexOf("- name: Diagnose complete original corpus source IO");
   const ssr = workflow.indexOf("- name: Run L4 SSR and pug L1 differential corpora");
   const fatal = workflow.indexOf("- name: Require complete source IO diagnostic success");
@@ -201,6 +201,6 @@ void test("diagnostics cannot suppress the ordinary SSR worker or become an acce
         observerProcesses("ssr-pug").map((entry) => `${entry.suite.package}:${entry.suite.test}`),
       ),
     ],
-    ["vize_atelier_ssr:davinci_ssr_corpus", "vize_l1_to_l2:davinci_pug_corpus"],
+    ["vize_atelier_ssr:level_ssr_corpus", "vize_l1_to_l2:level_pug_corpus"],
   );
 });

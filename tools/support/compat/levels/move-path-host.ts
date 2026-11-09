@@ -9,7 +9,7 @@ import { lexicalView } from "../../levels/move-host-runtime.ts";
 import { pathHostCallers, pathHostFunctions } from "./path-host-callers.ts";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../../..");
-const SOURCE = "davinci/vize_l0/src/path.rs";
+const SOURCE = "levels/vize_l0/src/path.rs";
 const HOST = "crates/vize_carton/src/path.rs";
 const HOST_NAMESPACE = /(?<![\p{ID_Continue}])vize_carton\s*::\s*path(?![\p{ID_Continue}])/gu;
 const ORIGINAL_PATH_LAWS = "8e8124a5f6869844e332e8d0ba15cfb78a9b170e0a9b8f668a26aadc14972e0a";
@@ -50,7 +50,7 @@ function requireOnce(text: string, needle: string) {
 /** Validate all inputs before producing any integration writes. */
 export function integrationPlan(read: (file: string) => string): Map<string, string> {
   const plan = new Map<string, string>();
-  const foundation = read("davinci/vize_l0/src/lib.rs");
+  const foundation = read("levels/vize_l0/src/lib.rs");
   const facade = read("crates/vize_carton/src/lib.rs");
   const module = read(HOST);
   const lawMarker = "#[cfg(test)]\nmod tests {";
@@ -66,7 +66,7 @@ export function integrationPlan(read: (file: string) => string): Map<string, str
   if (pending) {
     requireOnce(foundation, declaration);
     if (facade.includes(declaration)) throw new Error("Colliding path owner");
-    plan.set("davinci/vize_l0/src/lib.rs", foundation.replace(declaration, ""));
+    plan.set("levels/vize_l0/src/lib.rs", foundation.replace(declaration, ""));
     plan.set("crates/vize_carton/src/lib.rs", facade + "\n" + declaration);
     requireOnce(module, "fn strip_windows_verbatim_prefix(");
     if (module.includes(EXPECTATION)) throw new Error("Partial path integration");

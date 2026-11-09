@@ -1,8 +1,8 @@
-//! The L2 folio: the stage dump.
+//! The L2 dump: the stage dump.
 //!
 //! [`Page`] is an **owned document model** of an L2 op tree,
 //! printable and parseable under the `vize_l0::dump` contract; the
-//! grammar is documented in `docs/davinci/plan/folio-format.md` ("Disegno
+//! grammar is documented in `docs/davinci/plan/dump-format.md` ("L2
 //! page"). [`Page::of`] mirrors a live arena tree into the owned
 //! model, because arena references cannot persist across a compile
 //! (P1-11's contract) and `parse` must construct values without an arena.
@@ -19,7 +19,7 @@
 //! `CroquisPage` precedent; the derive stays the right tool for any flat
 //! L2 side artifact a later task adds.
 //!
-//! A folio models the dump, not the analysis: the `ops=` header count is
+//! A dump models the dump, not the analysis: the `ops=` header count is
 //! the printer's computed statement about the tree (parse validates its
 //! syntax and discards the value - normalization by the first print), and
 //! no semantic invariant is enforced beyond tree shape; branch and region

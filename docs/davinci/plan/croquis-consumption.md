@@ -1,18 +1,18 @@
 <!-- GENERATED FILE — do not edit by hand.
-     Regenerate: node tools/support/compat/davinci/croquis-consumers.ts --write
-     Verify:     node tools/support/compat/davinci/croquis-consumers.ts --check
-     Totals:     node tools/support/compat/davinci/croquis-consumers.ts --summary
-     Generator:  tools/support/compat/davinci/croquis-consumers.ts -->
+     Regenerate: node tools/support/compat/levels/croquis-consumers.ts --write
+     Verify:     node tools/support/compat/levels/croquis-consumers.ts --check
+     Totals:     node tools/support/compat/levels/croquis-consumers.ts --summary
+     Generator:  tools/support/compat/levels/croquis-consumers.ts -->
 
 # Croquis consumption matrix
 
-Which workspace crates consume the public analysis products of `crates/vize_croquis`. Mechanizes the 2026-08-13 hand audit in [semantic-engine.md](../semantic-engine.md#the-problem-measured) (Davinci P0-7).
+Which workspace crates consume the public analysis products of `crates/vize_croquis`. Mechanizes the 2026-08-13 hand audit in [semantic-engine.md](../semantic-engine.md#the-problem-measured) (Levels P0-7).
 
 ## Layout
 
-This page holds only what depends on `vize_croquis` itself: the resolution method and the product set. Consumption facts are sharded one file per consuming crate: that crate's resolved product sites and its non-product `vize_croquis` imports. A crate with neither has no shard. Shards record line-level facts, so they are not committed: each run writes them under `artifacts/davinci-ledgers/croquis-consumption/<crate>.md`, CI uploads them in the `davinci-generated-ledgers` artifact, and a shard committed under `docs/davinci/plan/croquis-consumption/` is stale.
+This page holds only what depends on `vize_croquis` itself: the resolution method and the product set. Consumption facts are sharded one file per consuming crate: that crate's resolved product sites and its non-product `vize_croquis` imports. A crate with neither has no shard. Shards record line-level facts, so they are not committed: each run writes them under `artifacts/level-ledgers/croquis-consumption/<crate>.md`, CI uploads them in the `level-generated-ledgers` artifact, and a shard committed under `docs/davinci/plan/croquis-consumption/` is stale.
 
-Cross-crate aggregates — per-product totals, the products with no external consumer — and raw naive-grep disagreements are deliberately **not committed**: unrelated same-named native symbols otherwise conflict on the same count. Every `--check` prints the fresh source-qualified summary, including exact per-crate resolved/grep disagreements; print it separately with `node tools/support/compat/davinci/croquis-consumers.ts --summary`. The staleness check (TS-12) byte-compares this page, every shard, and the shard set itself (a leftover shard is stale).
+Cross-crate aggregates — per-product totals, the products with no external consumer — and raw naive-grep disagreements are deliberately **not committed**: unrelated same-named native symbols otherwise conflict on the same count. Every `--check` prints the fresh source-qualified summary, including exact per-crate resolved/grep disagreements; print it separately with `node tools/support/compat/levels/croquis-consumers.ts --summary`. The staleness check (TS-12) byte-compares this page, every shard, and the shard set itself (a leftover shard is stale).
 
 ## Resolution method (and its limits)
 
@@ -22,11 +22,11 @@ Cross-crate aggregates — per-product totals, the products with no external con
 - Types re-exported by croquis.rs (`pub use bindings::…`, `snapshot::…`, …) and the crate-root `pub use` groups in `crates/vize_croquis/src/lib.rs` whose source is a local module (this is what brings in the `effect_graph`, `scope`, `symbol`, `analyzer`, `drawer`, and `reactivity_overlay` families).
 - Crate-root passthrough re-exports of foreign items are **excluded** from the product set: `vize_carton::is_builtin_directive`, `vize_carton::is_builtin_tag`, `vize_carton::is_html_tag`, `vize_carton::is_math_ml_tag`, `vize_carton::is_native_tag`, `vize_carton::is_reserved_prop`, `vize_carton::is_svg_tag`, `vize_carton::is_void_tag`, `vize_relief::BindingType`.
 
-**Consumer resolution** — symbol-aware, per `crates/*/src/**/*.rs` and `davinci/*/src/**/*.rs`:
+**Consumer resolution** — symbol-aware, per `crates/*/src/**/*.rs` and `levels/*/src/**/*.rs`:
 
 - Rust `use` declarations are parsed (brace groups, `as` aliases, `pub use`) into per-file alias tables mapping local names to `vize_croquis` items; `pub use` re-export chains across crates are followed to a fixpoint (name-level, see limits). Comments and string literals are stripped before any counting, and the `use` declarations themselves are not counted as reference sites (a `pub use` re-export counts as one site).
 - **type rows** — sites are references to a resolved local alias, a module-qualified member (`reactivity::ReactiveKind`), or a fully qualified `vize_croquis::…` path.
-- **`Croquis.<field>` rows** — sites are field accesses (`summary.bindings`) counted only on receivers resolved to `Croquis` values: idents with a `Croquis` type annotation (params, struct fields, `let`, `&`/`&'a`/`&mut`/`Option<&…>`/`Box`/`Rc`/`Arc` wrappers), calls to same-file functions returning `Croquis`, and `let`-bindings whose right-hand side calls a workspace `pub fn` returning `Croquis` (`drawer.finish()`, `ctx.analysis()`), reads a workspace `pub` field typed `Croquis` (`result.croquis`), or calls an associated function on the `Croquis` type itself (`Croquis::default()`) — producer tables parsed from `crates/*/src` and `davinci/*/src`, matched by name. Inline chains through those producers (`entry.analysis.race_conditions`, `ctx.croquis().bindings`) are counted too.
+- **`Croquis.<field>` rows** — sites are field accesses (`summary.bindings`) counted only on receivers resolved to `Croquis` values: idents with a `Croquis` type annotation (params, struct fields, `let`, `&`/`&'a`/`&mut`/`Option<&…>`/`Box`/`Rc`/`Arc` wrappers), calls to same-file functions returning `Croquis`, and `let`-bindings whose right-hand side calls a workspace `pub fn` returning `Croquis` (`drawer.finish()`, `ctx.analysis()`), reads a workspace `pub` field typed `Croquis` (`result.croquis`), or calls an associated function on the `Croquis` type itself (`Croquis::default()`) — producer tables parsed from `crates/*/src` and `levels/*/src`, matched by name. Inline chains through those producers (`entry.analysis.race_conditions`, `ctx.croquis().bindings`) are counted too.
 - **naive grep lane** (cross-check) — raw word-boundary text matches per product name (`\.field` matches for field rows) over the same files — comments, strings, doc text, and same-named unrelated symbols included, imports included. Every `--check` report and `--summary` lists exact per-crate disagreements; these diagnostics are **not** reconciled: `grep > resolved` usually means comments/unrelated same-named symbols (for field rows: field accesses on non-`Croquis` receivers); `grep < resolved` would indicate a resolver bug and must be investigated.
 
 **Known limits** (undercounts are possible; the naive grep lane bounds them):

@@ -3,7 +3,7 @@
 import assert from "node:assert/strict";
 import { createRequire } from "node:module";
 import { Window } from "happy-dom";
-import { loadRuntime, observeChildren } from "./davinci-mounted-trace.mjs";
+import { loadRuntime, observeChildren } from "./level-mounted-trace.mjs";
 import { officialCompilerVapor, vueVaporVersion } from "./vue-vapor-release.mjs";
 
 const chunks = [];

@@ -3,7 +3,7 @@ import { test } from "node:test";
 import {
   inspectDirectoryDependencies,
   type CargoDependency,
-} from "../../tools/support/compat/davinci/directory-dependencies.ts";
+} from "../../tools/support/compat/levels/directory-dependencies.ts";
 
 type FixtureDependency = CargoDependency & { optional: boolean; rename: string | null };
 
@@ -14,7 +14,7 @@ function fixture() {
     manifest_path: string;
     dependencies: FixtureDependency[];
   }[] = [
-    ["native", "davinci"],
+    ["native", "levels"],
     ["product", "crates"],
     ["helper", "tools"],
   ].map(([name, directory]) => ({
@@ -43,7 +43,7 @@ function fixture() {
   return { metadata, add, report: () => inspectDirectoryDependencies(metadata) };
 }
 
-void test("products consume Davinci and dev-only differential oracles remain permitted", () => {
+void test("products consume Levels and dev-only differential oracles remain permitted", () => {
   const value = fixture();
   value.add("product", "native");
   value.add("native", "product", { kind: "dev" });

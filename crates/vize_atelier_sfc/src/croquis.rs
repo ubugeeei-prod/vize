@@ -190,7 +190,7 @@ pub fn analyze_sfc_descriptor_with_template_reuse(
     .croquis
 }
 
-/// Analyze a lint descriptor from its completed Davinci template artifact.
+/// Analyze a lint descriptor from its completed Levels template artifact.
 #[doc(hidden)]
 pub fn analyze_sfc_descriptor_with_lint_template(
     scripts: &SfcScriptParses<'_>,
@@ -213,7 +213,7 @@ pub fn analyze_sfc_descriptor_with_lint_template(
     .croquis
 }
 
-/// Analyze a lint descriptor from its completed Davinci template artifact,
+/// Analyze a lint descriptor from its completed Levels template artifact,
 /// resolving imported macro types before the template is drawn.
 #[doc(hidden)]
 pub fn analyze_sfc_descriptor_with_lint_template_resolved(
@@ -238,7 +238,7 @@ pub fn analyze_sfc_descriptor_with_lint_template_resolved(
     .croquis
 }
 
-/// Analyze a descriptor from its completed Davinci template artifact and
+/// Analyze a descriptor from its completed Levels template artifact and
 /// return matching merged-script offsets for virtual-document generation.
 #[doc(hidden)]
 pub fn analyze_sfc_descriptor_with_lint_template_context(

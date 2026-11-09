@@ -19,9 +19,9 @@ fn vue2() -> LegacyCaps {
 #[test]
 fn vue3_model_free_legacy_spellings_skip_the_model_pass() {
     let source = r#"<Comp :title.sync="heading"/>"#;
-    with_transformed(source, |lowered, folio, _, budget| {
+    with_transformed(source, |lowered, dump, _, budget| {
         assert_eq!(
-            folio.print_to_string(DumpMode::Full).as_str(),
+            dump.print_to_string(DumpMode::Full).as_str(),
             "[l2-dump-v2]\n\
              ops=2\n\
              \n\
@@ -45,9 +45,9 @@ fn vue3_model_free_legacy_spellings_skip_the_model_pass() {
 #[test]
 fn vue2_expands_sync_into_bind_plus_update_listener() {
     let source = r#"<Comp :title.sync="heading"/>"#;
-    with_transformed_caps(source, vue2(), |lowered, folio, _, budget| {
+    with_transformed_caps(source, vue2(), |lowered, dump, _, budget| {
         assert_eq!(
-            folio.print_to_string(DumpMode::Full).as_str(),
+            dump.print_to_string(DumpMode::Full).as_str(),
             "[l2-dump-v2]\n\
              ops=3\n\
              \n\
@@ -62,7 +62,7 @@ fn vue2_expands_sync_into_bind_plus_update_listener() {
             Dump::print_to_string(budget, DumpMode::Full).as_str(),
             "[budget-observer]\nwalks=3\npasses=4\nanalyses=0\npipelines=1\nfailures=0\n\n"
         );
-        assert_eq!(u64::from(lowered.op_count), folio.op_count());
+        assert_eq!(u64::from(lowered.op_count), dump.op_count());
     });
     assert_transformed_sound_caps(source, vue2(), "vue2-sync-expand");
 }
@@ -70,9 +70,9 @@ fn vue2_expands_sync_into_bind_plus_update_listener() {
 #[test]
 fn vue2_keeps_camel_on_the_bind() {
     let source = r#"<Comp :title.sync.camel="heading"/>"#;
-    with_transformed_caps(source, vue2(), |_, folio, _, _| {
+    with_transformed_caps(source, vue2(), |_, dump, _, _| {
         assert_eq!(
-            folio.print_to_string(DumpMode::Full).as_str(),
+            dump.print_to_string(DumpMode::Full).as_str(),
             "[l2-dump-v2]\n\
              ops=3\n\
              \n\
@@ -89,9 +89,9 @@ fn vue2_keeps_camel_on_the_bind() {
 #[test]
 fn vue2_rewrites_a_pipe_filter_to_the_asset_call() {
     let source = "{{msg | cap}}";
-    with_transformed_caps(source, vue2(), |_, folio, facts, _| {
+    with_transformed_caps(source, vue2(), |_, dump, facts, _| {
         assert_eq!(
-            folio.print_to_string(DumpMode::Full).as_str(),
+            dump.print_to_string(DumpMode::Full).as_str(),
             "[l2-dump-v2]\n\
              ops=1\n\
              \n\
@@ -115,9 +115,9 @@ fn vue2_rewrites_a_pipe_filter_to_the_asset_call() {
 #[test]
 fn vue2_rewrites_a_filter_with_args() {
     let source = "{{a | f(b)}}";
-    with_transformed_caps(source, vue2(), |_, folio, facts, _| {
+    with_transformed_caps(source, vue2(), |_, dump, facts, _| {
         assert_eq!(
-            folio.print_to_string(DumpMode::Full).as_str(),
+            dump.print_to_string(DumpMode::Full).as_str(),
             "[l2-dump-v2]\n\
              ops=1\n\
              \n\
@@ -141,9 +141,9 @@ fn vue2_rewrites_a_filter_with_args() {
 #[test]
 fn vue2_converts_slot_scope_into_slot_content() {
     let source = r#"<Comp><template slot-scope="props">x</template></Comp>"#;
-    with_transformed_caps(source, vue2(), |_, folio, facts, _| {
+    with_transformed_caps(source, vue2(), |_, dump, facts, _| {
         assert_eq!(
-            folio.print_to_string(DumpMode::Full).as_str(),
+            dump.print_to_string(DumpMode::Full).as_str(),
             "[l2-dump-v2]\n\
              ops=4\n\
              \n\
@@ -162,9 +162,9 @@ fn vue2_converts_slot_scope_into_slot_content() {
 #[test]
 fn vue2_strips_native_and_rewrites_keycodes() {
     let source = r#"<Comp @click.native @keyup.13="onKey"/>"#;
-    with_transformed_caps(source, vue2(), |_, folio, _, _| {
+    with_transformed_caps(source, vue2(), |_, dump, _, _| {
         assert_eq!(
-            folio.print_to_string(DumpMode::Full).as_str(),
+            dump.print_to_string(DumpMode::Full).as_str(),
             "[l2-dump-v2]\n\
              ops=3\n\
              \n\
@@ -181,9 +181,9 @@ fn vue2_strips_native_and_rewrites_keycodes() {
 #[test]
 fn vue3_leaves_native_and_keycodes() {
     let source = r#"<Comp @click.native @keyup.13="onKey"/>"#;
-    with_transformed(source, |_, folio, _, _| {
+    with_transformed(source, |_, dump, _, _| {
         assert_eq!(
-            folio.print_to_string(DumpMode::Full).as_str(),
+            dump.print_to_string(DumpMode::Full).as_str(),
             "[l2-dump-v2]\n\
              ops=3\n\
              \n\

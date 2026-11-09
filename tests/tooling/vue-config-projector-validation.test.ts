@@ -606,7 +606,7 @@ test("evaluated fluent output retains native policy without evaluating Vite plug
 
 test("every native language-server boolean survives canonical projection, including crossFile opt-outs", async () => {
   const model = await readFile(
-    new URL("../../davinci/vize_l0/src/config/model/language_server.rs", import.meta.url),
+    new URL("../../levels/vize_l0/src/config/model/language_server.rs", import.meta.url),
     "utf8",
   );
   const fields = [...model.matchAll(/pub ([a-z_]+): Option<bool>/gu)].map((match) =>

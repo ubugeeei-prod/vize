@@ -29,7 +29,7 @@ fn window<R>(action: impl FnOnce() -> R) -> (R, Value) {
         .collect();
     (
         result,
-        json!({"entries": entries, "attempts": summary.total("davinci.expr.parses"),
+        json!({"entries": entries, "attempts": summary.total("levels.expr.parses"),
         "oldExprReparseDelta": vize_atelier_core::expr_parse_probe::expr_parse_count() - before}),
     )
 }
@@ -189,7 +189,7 @@ pub(crate) fn judge(case: &Value, packet: &Value, structures: &Value) {
         .as_array()
         .expect("counters")
         .iter()
-        .find(|entry| entry["name"] == "davinci.expr.parses");
+        .find(|entry| entry["name"] == "levels.expr.parses");
     if attempts == 0 {
         assert!(counter.is_none(), "{id}: no parameter goal entered");
     } else {

@@ -35,7 +35,7 @@ pub fn analyze_sfc_descriptor_with_occurrences_and_template_reuse(
     analyze_sfc_descriptor_with_occurrences_impl(scripts, root, options, reuse, None)
 }
 
-/// Capture authored reads while drawing the completed Davinci artifact.
+/// Capture authored reads while drawing the completed Levels artifact.
 #[doc(hidden)]
 pub fn analyze_sfc_descriptor_with_lint_template_and_occurrences(
     scripts: &SfcScriptParses<'_>,

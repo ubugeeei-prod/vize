@@ -21,7 +21,7 @@ on:
         default: false
         type: boolean
       vapor_only:
-        description: Measure only the Davinci Vapor native/retained pairs
+        description: Measure only the Levels Vapor native/retained pairs
         required: false
         default: false
         type: boolean
@@ -103,7 +103,7 @@ jobs:
           VAPOR_ONLY: ${{ inputs.vapor_only }}
         run: |
           if [[ "$VAPOR_ONLY" == "true" ]]; then
-            printf '%s\n' '{"selected":["vize_atelier_vapor"],"reason":"Explicit Davinci Vapor native/retained comparison."}' > "$GITHUB_WORKSPACE/criterion-impact.json"
+            printf '%s\n' '{"selected":["vize_atelier_vapor"],"reason":"Explicit Levels Vapor native/retained comparison."}' > "$GITHUB_WORKSPACE/criterion-impact.json"
             echo 'has_suites=true' >> "$GITHUB_OUTPUT"
           else
             node head/tools/benchmarks/scripts/criterion-impact.ts \
@@ -262,7 +262,7 @@ jobs:
           wild-version: "0.9.0"
       - uses: ./.github/actions/setup-rust-sticky-cache
         with:
-          key: davinci-production-pairs-${{ matrix.repetition }}
+          key: level-production-pairs-${{ matrix.repetition }}
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with:
@@ -270,16 +270,16 @@ jobs:
           run-install: false
       - name: Check scoped selector and benchmark compile contract
         run: |
-          vp exec cargo test -p vize_atelier_vapor --features davinci-benchmark --lib compile::benchmark::tests
-          vp exec cargo clippy -p vize_atelier_sfc --features davinci-production-bench --example davinci_production_perf -- -D warnings -D clippy::wildcard_imports
+          vp exec cargo test -p vize_atelier_vapor --features level-benchmark --lib compile::benchmark::tests
+          vp exec cargo clippy -p vize_atelier_sfc --features level-production-bench --example level_production_perf -- -D warnings -D clippy::wildcard_imports
       - name: Build before timed windows
-        run: vp exec cargo build --profile ci-opt -p vize_atelier_sfc --features davinci-production-bench --example davinci_production_perf
+        run: vp exec cargo build --profile ci-opt -p vize_atelier_sfc --features level-production-bench --example level_production_perf
       - name: Measure shipping adapter pairs
         env:
           VIZE_BENCH_HEAD_SHA: ${{ inputs.head_sha }}
         run: |
           mkdir -p production-perf
-          target/ci-opt/examples/davinci_production_perf production-perf/samples.json
+          target/ci-opt/examples/level_production_perf production-perf/samples.json
           {
             git rev-parse HEAD
             rustc --version --verbose
@@ -291,15 +291,15 @@ jobs:
         env:
           VIZE_BENCH_HEAD_SHA: ${{ inputs.head_sha }}
         run: |
-          vp exec cargo clippy -p vize_l1_to_l2 --features davinci-benchmark-profile --lib -- -D warnings -D clippy::wildcard_imports
-          vp exec cargo clippy -p vize_atelier_sfc --features davinci-production-profile --example davinci_production_perf -- -D warnings -D clippy::wildcard_imports
-          vp exec cargo build --profile ci-opt -p vize_atelier_sfc --features davinci-production-profile --example davinci_production_perf
-          target/ci-opt/examples/davinci_production_perf production-perf/bridge-attribution.json --attribution-only
+          vp exec cargo clippy -p vize_l1_to_l2 --features level-benchmark-profile --lib -- -D warnings -D clippy::wildcard_imports
+          vp exec cargo clippy -p vize_atelier_sfc --features level-production-profile --example level_production_perf -- -D warnings -D clippy::wildcard_imports
+          vp exec cargo build --profile ci-opt -p vize_atelier_sfc --features level-production-profile --example level_production_perf
+          target/ci-opt/examples/level_production_perf production-perf/bridge-attribution.json --attribution-only
       - name: Upload raw samples and separate attribution profiles
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: davinci-production-perf-${{ matrix.repetition }}
+          name: level-production-perf-${{ matrix.repetition }}
           path: production-perf/
           if-no-files-found: warn
           retention-days: 30
@@ -320,13 +320,13 @@ jobs:
           run-install: false
       - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
-          pattern: davinci-production-perf-*
+          pattern: level-production-perf-*
           path: production-perf
       - name: Validate identities and aggregate all independent observations
-        run: vp exec node tools/benchmarks/scripts/davinci-production-summary.ts production-perf production-perf/summary.md
+        run: vp exec node tools/benchmarks/scripts/level-production-summary.ts production-perf production-perf/summary.md
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: davinci-production-summary
+          name: level-production-summary
           path: production-perf/summary.md
           if-no-files-found: error
           retention-days: 30

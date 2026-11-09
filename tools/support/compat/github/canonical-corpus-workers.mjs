@@ -24,7 +24,7 @@ import { readCanonicalJobs } from "./canonical-corpus-jobs.ts";
 const commands = {
   dom: "Run L2 DOM differential corpus",
   "ssr-pug": "Run L4 SSR and pug L1 differential corpora",
-  reach: "Measure Davinci production reach on the hydrated corpus",
+  reach: "Measure Levels production reach on the hydrated corpus",
 };
 const providerKeys = ["repositoryId", "providerSha", "providerRepositoryId"];
 const positive = (value, label) => assert(Number.isSafeInteger(value) && value > 0, label);

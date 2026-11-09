@@ -1,4 +1,4 @@
-import { registerRecutChecks } from "./support/davinci-recut.ts";
+import { registerRecutChecks } from "./support/level-recut.ts";
 
 registerRecutChecks({
   phase: 5,

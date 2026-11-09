@@ -45,7 +45,7 @@ impl PassKind {
         )
     }
 
-    /// Stable identifier for folio pages and pipeline dumps.
+    /// Stable identifier for dump pages and pipeline dumps.
     #[inline]
     #[must_use]
     pub const fn as_str(self) -> &'static str {
@@ -97,7 +97,7 @@ impl Fusability {
         matches!(self, Fusability::Fusable)
     }
 
-    /// Stable identifier for folio pages and pipeline dumps.
+    /// Stable identifier for dump pages and pipeline dumps.
     #[inline]
     #[must_use]
     pub const fn as_str(self) -> &'static str {

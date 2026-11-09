@@ -213,7 +213,7 @@ await test("dirty and staged approved sources, untracked source and dirty build 
     "staged",
     "untracked",
     "build-input",
-    "davinci",
+    "levels",
     "vendor-untracked",
     "assets-staged",
     "embedded-schema",
@@ -227,7 +227,7 @@ await test("dirty and staged approved sources, untracked source and dirty build 
       fs.writeFileSync(path.join(repository, "crates/example.rs"), "pub const VALUE: u8 = 1;\n");
       fs.writeFileSync(path.join(repository, "Cargo.toml"), "[workspace]\n");
       for (const name of [
-        "davinci/example.rs",
+        "levels/example.rs",
         "vendor/example.rs",
         "assets/example.txt",
         "npm/cli/schemas/vize.config.schema.json",
@@ -260,8 +260,8 @@ await test("dirty and staged approved sources, untracked source and dirty build 
         fs.writeFileSync(path.join(repository, "crates/extra.rs"), "pub const EXTRA: u8 = 2;\n");
       else if (change === "build-input")
         fs.appendFileSync(path.join(repository, "Cargo.toml"), "members = []\n");
-      else if (change === "davinci")
-        fs.appendFileSync(path.join(repository, "davinci/example.rs"), "dirty\n");
+      else if (change === "levels")
+        fs.appendFileSync(path.join(repository, "levels/example.rs"), "dirty\n");
       else if (change === "vendor-untracked")
         fs.writeFileSync(path.join(repository, "vendor/untracked.rs"), "dirty\n");
       else if (change === "assets-staged") {

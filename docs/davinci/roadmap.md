@@ -71,7 +71,7 @@ The rearchitecture cannot start blind. No behavior changes in this phase.
 - Folio dump harness skeleton (stage-dump → insta snapshot workflow) and the
   absorption of the croquis "VIR" debug dump as the croquis folio (deprecation
   alias in the inspector payload). Names are decided: Disegno / Impeto / Folio /
-  `vize_davinci` (charter #11).
+  `vize_level` (charter #11).
 - Profiler upgrade: `profile!` spans gain pass × stage × block × source-span
   attribution and a stable machine-readable export (`ai_context` precedent) —
   the substrate for the DevTool flame views and the AI optimization loop.
@@ -113,7 +113,7 @@ holds or improves — this phase should be a measurable win, not a wash.
   raw `*mut` traversal is replaced by id-based traversal.
 - The **DOM backend** is the first strangler target: it lowers from L2 while SSR
   and Vapor still run the old lane.
-- New crates (`vize_davinci`, `vize_l2`) are `no_std + alloc` from birth;
+- New crates (`vize_level`, `vize_l2`) are `no_std + alloc` from birth;
   `wasm32-wasip2` joins CI. Pass-manager observers (Folio-after-change dumps,
   timing, remark emission) land with the pass manager itself, so the DevTool's
   data feed exists from the first L2 build.

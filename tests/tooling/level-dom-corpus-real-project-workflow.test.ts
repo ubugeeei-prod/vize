@@ -17,19 +17,19 @@ import {
   parseOldErrorReasons,
   validateCorpusEvidence,
   verdictFor,
-} from "../../tools/support/compat/fixtures/davinci-dom-corpus-workflow.ts";
+} from "../../tools/support/compat/fixtures/level-dom-corpus-workflow.ts";
 import { findStep, readCanonicalCorpusWorkflow } from "./support/real-project-matrix-workflow.ts";
 
 const helperSource = readFileSync(
-  "tools/support/compat/fixtures/davinci-dom-corpus-workflow.ts",
+  "tools/support/compat/fixtures/level-dom-corpus-workflow.ts",
   "utf8",
 );
 
 test("real-project workflow carries a full-canonical L2 DOM corpus job", () => {
   const workflow = readCanonicalCorpusWorkflow();
-  const job = workflow.jobs?.["davinci-dom-corpus"];
+  const job = workflow.jobs?.["level-dom-corpus"];
   const worker = workflow.jobs?.["canonical-observers"];
-  assert.ok(job, "missing davinci-dom-corpus job");
+  assert.ok(job, "missing level-dom-corpus job");
   assert.ok(worker, "missing full canonical observers");
   const steps = job.steps ?? [];
   const workerSteps = worker.steps ?? [];
@@ -38,8 +38,8 @@ test("real-project workflow carries a full-canonical L2 DOM corpus job", () => {
   assert.equal(job["runs-on"], "blacksmith-32vcpu-ubuntu-2404");
   assert.equal(job["timeout-minutes"], 120);
   assert.equal(
-    job.env?.VIZE_DAVINCI_DOM_CORPUS_MODE,
-    "${{ inputs.davinci_dom_corpus_mode || 'enforce' }}",
+    job.env?.VIZE_LEVEL_DOM_CORPUS_MODE,
+    "${{ inputs.level_dom_corpus_mode || 'enforce' }}",
   );
 
   const checkout = steps.find((step) => step.uses?.startsWith("actions/checkout@"));
@@ -55,12 +55,12 @@ test("real-project workflow carries a full-canonical L2 DOM corpus job", () => {
   const hydrate = findStep(workerSteps, "Select and hydrate full fixture corpus");
   assert.equal(
     hydrate.run?.trim(),
-    "set -o pipefail\nnode tools/support/compat/fixtures/davinci-dom-corpus-workflow.ts hydrate 2>&1 | tee real-project-davinci-dom-corpus/initial-hydration.log\nnode tools/support/compat/github/canonical-corpus-observer.mjs rehydrate",
+    "set -o pipefail\nnode tools/support/compat/fixtures/level-dom-corpus-workflow.ts hydrate 2>&1 | tee real-project-level-dom-corpus/initial-hydration.log\nnode tools/support/compat/github/canonical-corpus-observer.mjs rehydrate",
   );
   for (const pattern of [
     /runCommand\("git", \["ls-files", "--stage", "--", corpusRoot\]\)/,
     /expectedGitlinks = 149/,
-    /artifactDir = "real-project-davinci-dom-corpus"/,
+    /artifactDir = "real-project-level-dom-corpus"/,
     /selected-gitlinks\.txt/,
     /"submodule",\s+"update",\s+"--init",\s+"--checkout",\s+"--depth",\s+"1",\s+"--jobs",\s+"32"/,
     /"submodule",\s+"update",\s+"--init",\s+"--checkout",\s+"--force"/,
@@ -70,24 +70,24 @@ test("real-project workflow carries a full-canonical L2 DOM corpus job", () => {
   }
 
   const corpus = findStep(workerSteps, "Run L2 DOM differential corpus");
-  assert.equal(corpus.id, "davinci_dom_corpus");
+  assert.equal(corpus.id, "level_dom_corpus");
   assert.equal(corpus["continue-on-error"], true);
-  assert.equal(corpus.run, "node tools/support/compat/fixtures/davinci-dom-corpus-workflow.ts run");
-  assert.match(helperSource, /VIZE_DAVINCI_DIFFERENTIAL_CORPUS: corpusRoot/);
+  assert.equal(corpus.run, "node tools/support/compat/fixtures/level-dom-corpus-workflow.ts run");
+  assert.match(helperSource, /VIZE_LEVEL_DIFFERENTIAL_CORPUS: corpusRoot/);
   assert.match(helperSource, /"cargo"/);
   assert.match(helperSource, /"test",\s+"-p",\s+"vize_l1_to_l2"/);
   assert.match(helperSource, /"legacy-differential"/);
-  assert.match(helperSource, /"davinci_dom_corpus"/);
+  assert.match(helperSource, /"level_dom_corpus"/);
   assert.match(helperSource, /dom-corpus\.log/);
 
   const finalize = findStep(steps, "Finalize L2 DOM corpus evidence");
   assert.equal(finalize.if, "${{ always() }}");
   assert.deepEqual(finalize.env, {
-    VIZE_DAVINCI_DOM_CORPUS_OUTCOME: "${{ steps.canonical_verification.outcome }}",
+    VIZE_LEVEL_DOM_CORPUS_OUTCOME: "${{ steps.canonical_verification.outcome }}",
   });
   assert.equal(
     finalize.run,
-    "node tools/support/compat/fixtures/davinci-dom-corpus-workflow.ts finalize-and-dehydrate",
+    "node tools/support/compat/fixtures/level-dom-corpus-workflow.ts finalize-and-dehydrate",
   );
   assert.match(helperSource, /"record-only"/);
   assert.match(helperSource, /expectedDomOutputComparisons = 150/);
@@ -98,10 +98,10 @@ test("real-project workflow carries a full-canonical L2 DOM corpus job", () => {
   assert.match(helperSource, /VSlotDuplicateSlotNames: 1/);
   assert.match(helperSource, /corpus old-lane skip allowlist drift/);
   assert.match(helperSource, /summary\.json/);
-  assert.match(helperSource, /davinci-differential corpus scope/);
-  assert.match(helperSource, /davinci DOM corpus sweep/);
-  assert.match(helperSource, /davinci DOM corpus old-lane error reasons/);
-  assert.match(helperSource, /Davinci L2 DOM corpus failed/);
+  assert.match(helperSource, /level-differential corpus scope/);
+  assert.match(helperSource, /levels DOM corpus sweep/);
+  assert.match(helperSource, /levels DOM corpus old-lane error reasons/);
+  assert.match(helperSource, /Levels L2 DOM corpus failed/);
   assert.match(helperSource, /function finalizeAndDehydrateCorpus/);
   assert.match(helperSource, /function dehydrateCorpus/);
   assert.match(helperSource, /selected-gitlinks\.txt/);
@@ -111,9 +111,9 @@ test("real-project workflow carries a full-canonical L2 DOM corpus job", () => {
   assert.equal(upload.if, "${{ always() }}");
   assert.equal(upload.uses, "actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a");
   assert.deepEqual(upload.with, {
-    name: "real-project-davinci-dom-corpus",
+    name: "real-project-level-dom-corpus",
     overwrite: true,
-    path: "real-project-davinci-dom-corpus",
+    path: "real-project-level-dom-corpus",
     "if-no-files-found": "error",
     "retention-days": 30,
   });
@@ -131,8 +131,8 @@ test("L2 DOM corpus workflow helper extracts canonical evidence", () => {
     ["tests/_fixtures/_git/airi", "tests/_fixtures/_git/create-vue"],
   );
   assert.deepEqual(
-    corpusEvidenceLines("\u001B[32mdavinci DOM corpus sweep: compared=1\u001B[0m\nx"),
-    ["\u001B[32mdavinci DOM corpus sweep: compared=1\u001B[0m"],
+    corpusEvidenceLines("\u001B[32mlevels DOM corpus sweep: compared=1\u001B[0m\nx"),
+    ["\u001B[32mlevels DOM corpus sweep: compared=1\u001B[0m"],
   );
   assert.equal(verdictFor("failure", "record-only"), "success");
   assert.equal(verdictFor("cancelled", "record-only"), "cancelled");
@@ -152,8 +152,8 @@ test("L2 DOM corpus workflow helper extracts canonical evidence", () => {
 
 test("L2 DOM corpus workflow extracts old-lane skip reasons from corpus logs", () => {
   const log = [
-    "davinci-differential corpus scope: root=tests/_fixtures/_git scope=canonical closure_evidence=true submodules=149",
-    "davinci DOM corpus sweep: files=3 unreadable=0 parsed=3 templates=3 compared=1 patch_fact_entries=1 old_error_skips=2 s2_refusals=0 divergences=0",
+    "level-differential corpus scope: root=tests/_fixtures/_git scope=canonical closure_evidence=true submodules=149",
+    "levels DOM corpus sweep: files=3 unreadable=0 parsed=3 templates=3 compared=1 patch_fact_entries=1 old_error_skips=2 s2_refusals=0 divergences=0",
     "corpus old-lane error skips (2):",
     '/repo/tests/_fixtures/_git/a.vue: 2 old-lane blocking errors: [CompilerError { code: InvalidEndTag, message: "Invalid end tag.", loc: None }, CompilerError { code: MissingEndTag, message: "Element is missing end tag.", loc: None }]',
     '/repo/tests/_fixtures/_git/b.vue: 1 old-lane blocking errors: [CompilerError { code: DuplicateAttribute, message: "Duplicate attribute.", loc: None }]',
@@ -175,8 +175,8 @@ test("L2 DOM corpus workflow extracts old-lane skip reasons from corpus logs", (
 
 test("L2 DOM corpus workflow prefers explicit old-lane reason counts", () => {
   const log = [
-    "davinci DOM corpus sweep: files=3 unreadable=0 parsed=3 templates=3 compared=1 patch_fact_entries=1 old_error_skips=2 s2_refusals=0 divergences=0",
-    'davinci DOM corpus old-lane error reasons: {"InvalidEndTag": 2, "VIfSameKey": 1}',
+    "levels DOM corpus sweep: files=3 unreadable=0 parsed=3 templates=3 compared=1 patch_fact_entries=1 old_error_skips=2 s2_refusals=0 divergences=0",
+    'levels DOM corpus old-lane error reasons: {"InvalidEndTag": 2, "VIfSameKey": 1}',
   ].join("\n");
 
   assert.deepEqual(parseOldErrorReasons(log), {
@@ -279,9 +279,9 @@ test("L2 DOM corpus workflow validates closure evidence artifacts", () => {
     writeFileSync(
       join(artifact, "dom-corpus.log"),
       [
-        "\u001B[32mdavinci-differential corpus scope: root=tests/_fixtures/_git scope=canonical closure_evidence=true submodules=149\u001B[0m",
-        "davinci DOM corpus sweep: files=37448 unreadable=0 parsed=37448 templates=35000 compared=34984 patch_fact_entries=44912 old_error_skips=16 s2_refusals=0 divergences=0",
-        'davinci DOM corpus old-lane error reasons: {"ExtendPoint":1,"InvalidEndTag":20,"MissingEndTag":10,"MissingWhitespaceBetweenAttributes":4,"VElseNoAdjacentIf":1,"VIfSameKey":4,"VSlotDuplicateSlotNames":1}',
+        "\u001B[32mlevel-differential corpus scope: root=tests/_fixtures/_git scope=canonical closure_evidence=true submodules=149\u001B[0m",
+        "levels DOM corpus sweep: files=37448 unreadable=0 parsed=37448 templates=35000 compared=34984 patch_fact_entries=44912 old_error_skips=16 s2_refusals=0 divergences=0",
+        'levels DOM corpus old-lane error reasons: {"ExtendPoint":1,"InvalidEndTag":20,"MissingEndTag":10,"MissingWhitespaceBetweenAttributes":4,"VElseNoAdjacentIf":1,"VIfSameKey":4,"VSlotDuplicateSlotNames":1}',
       ].join("\n"),
     );
 
@@ -323,8 +323,8 @@ test("L2 DOM corpus workflow rejects stale or dirty evidence artifacts", () => {
     writeFileSync(
       join(artifact, "dom-corpus.log"),
       [
-        "davinci-differential corpus scope: root=/tmp/tests/_fixtures/_git scope=smoke closure_evidence=false",
-        "davinci DOM corpus sweep: files=1 unreadable=3 parsed=1 templates=1 compared=0 old_error_skips=2 s2_refusals=1 divergences=1",
+        "level-differential corpus scope: root=/tmp/tests/_fixtures/_git scope=smoke closure_evidence=false",
+        "levels DOM corpus sweep: files=1 unreadable=3 parsed=1 templates=1 compared=0 old_error_skips=2 s2_refusals=1 divergences=1",
         "corpus old-lane error skips (2):",
         '/repo/tests/_fixtures/_git/a.vue: 1 old-lane blocking errors: [CompilerError { code: InvalidEndTag, message: "Invalid end tag.", loc: None }]',
         '/repo/tests/_fixtures/_git/b.vue: 1 old-lane blocking errors: [CompilerError { code: VIfSameKey, message: "v-if/v-else-if branches must use unique keys.", loc: None }]',

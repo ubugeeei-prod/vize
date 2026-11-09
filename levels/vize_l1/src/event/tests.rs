@@ -51,9 +51,9 @@ fn assert_trace(source: &str, in_tag_comments: bool) {
 
 #[test]
 fn direct_native_recorder_matches_fixture_events_and_utf8_cuts() {
-    for fixture in davinci_test_support::surface_fixture::WELL_FORMED
+    for fixture in level_test_support::surface_fixture::WELL_FORMED
         .iter()
-        .chain(davinci_test_support::surface_fixture::MALFORMED)
+        .chain(level_test_support::surface_fixture::MALFORMED)
     {
         assert_trace(fixture.source, false);
         for (index, _) in fixture.source.char_indices() {

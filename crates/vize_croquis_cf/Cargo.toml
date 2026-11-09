@@ -37,7 +37,7 @@ ecow.workspace = true
 fixedbitset.workspace = true
 
 [dev-dependencies]
-davinci_harness.workspace = true
+level_harness.workspace = true
 vize_armature.workspace = true
 insta.workspace = true
 criterion.workspace = true

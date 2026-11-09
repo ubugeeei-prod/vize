@@ -163,7 +163,7 @@ fn folded_css_has_real_complete_utf16_origins_and_rejects_mutations() {
                 &source,
                 VaporCompilerOptions {
                     prefix_identifiers: true,
-                    davinci_retained_lane: retained,
+                    level_retained_lane: retained,
                     ..Default::default()
                 },
                 VaporCompilerExperimentalOptions {
@@ -183,7 +183,7 @@ fn folded_css_has_real_complete_utf16_origins_and_rejects_mutations() {
                     &static_source,
                     VaporCompilerOptions {
                         prefix_identifiers: true,
-                        davinci_retained_lane: retained,
+                        level_retained_lane: retained,
                         ..Default::default()
                     },
                     VaporCompilerExperimentalOptions::default(),

@@ -82,12 +82,12 @@ describe("dumpTokens", () => {
 
 describe("spans", () => {
   it("reads the op's own span, not an inner expression span", () => {
-    expect(lineSpan("disegno", '  ui.bind name="class" value=js("cls" @16:19) @8:20')).toEqual({
+    expect(lineSpan("l2", '  ui.bind name="class" value=js("cls" @16:19) @8:20')).toEqual({
       start: 8,
       end: 20,
     });
-    expect(lineSpan("disegno", "[l2-dump-v2.ops]")).toBeNull();
-    expect(lineSpan("impeto", "id=1 parent=0 owner=0 span=21:30")).toEqual({ start: 21, end: 30 });
+    expect(lineSpan("l2", "[l2-dump-v2.ops]")).toBeNull();
+    expect(lineSpan("l3", "id=1 parent=0 owner=0 span=21:30")).toEqual({ start: 21, end: 30 });
     expect(lineSpan("partition", "op=0 kind=static span=3:36")).toEqual({ start: 3, end: 36 });
     expect(lineSpan("values", 'operand=[1,"value",0,null,null,"js","cls","",16,19]')).toEqual({
       start: 16,
@@ -102,7 +102,7 @@ describe("spans", () => {
   });
 
   it("answers the reverse query narrowest-first", () => {
-    const lines = dumpLines("disegno", L2);
+    const lines = dumpLines("l2", L2);
     expect(lines.map((line) => line.depth)).toEqual([0, 0, 0, 0, 0, 1, 1, 0]);
     // Byte 25 sits inside `msg`: the interpolation, then its element.
     expect(linesCovering(lines, 25)).toEqual([6, 4]);

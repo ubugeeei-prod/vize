@@ -1,4 +1,4 @@
-//! Production interface export from Croquis to the six Davinci α facets.
+//! Production interface export from Croquis to the six Levels α facets.
 //!
 //! Contracts are compact JSON with fixed field order. Type spellings and
 //! defaults are kept verbatim, including whitespace inside literal types.
@@ -244,7 +244,7 @@ impl Croquis {
     }
 }
 
-/// An injective folio-safe key; contracts retain the original name.
+/// An injective dump-safe key; contracts retain the original name.
 ///
 /// Ordinary names are unchanged. Empty names, whitespace, `=`, and the
 /// reserved `%` prefix are encoded as `%` followed by hexadecimal UTF-8.

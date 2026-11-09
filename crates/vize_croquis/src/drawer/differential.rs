@@ -1,4 +1,4 @@
-//! Davinci P1-6 differential lane — dual-run counters for the croquis
+//! Levels P1-6 differential lane — dual-run counters for the croquis
 //! consumer migration (wave A).
 //!
 //! While croquis's expression-input layer migrates onto the parse-once
@@ -14,8 +14,8 @@
 //! - `cargo test -p vize_croquis` exercises the comparators in every unit
 //!   test that walks a template through the drawer;
 //! - `cargo test -p vize_croquis --features legacy-differential --test
-//!   davinci_differential -- --nocapture` is the corpus-runnable entry
-//!   (`VIZE_DAVINCI_DIFFERENTIAL_CORPUS=<dir>` widens the sweep from the
+//!   level_differential -- --nocapture` is the corpus-runnable entry
+//!   (`VIZE_LEVEL_DIFFERENTIAL_CORPUS=<dir>` widens the sweep from the
 //!   committed fixture ladder to every `.vue` under `<dir>`);
 //! - production builds (feature off, not test) compile none of this and
 //!   run the retained path single-sided — zero cost when off.

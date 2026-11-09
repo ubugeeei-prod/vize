@@ -1,5 +1,5 @@
 //! Source-map provenance through the inline `<script setup>` compiler
-//! (Davinci P3-9).
+//! (Levels P3-9).
 //!
 //! Every stage below the sectioning keeps its text in `.vue` offsets: the
 //! sections are composed with the block's provenance as soon as they are cut,

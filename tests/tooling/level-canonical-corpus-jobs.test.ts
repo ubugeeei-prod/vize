@@ -35,7 +35,7 @@ const job = (entry: Check, attempt = 1) => ({
     "Capture canonical corpus identity",
     "Run L2 DOM differential corpus",
     "Run L4 SSR and pug L1 differential corpora",
-    "Measure Davinci production reach on the hydrated corpus",
+    "Measure Levels production reach on the hydrated corpus",
     "Record required observer evidence",
     "Upload required observer evidence",
   ].map((name, index) => ({ name, number: index + 1, conclusion: "success" })),

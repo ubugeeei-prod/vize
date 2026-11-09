@@ -1,4 +1,4 @@
-//! TS-34 for the template-complexity fact group (Davinci P4-9a): the
+//! TS-34 for the template-complexity fact group (Levels P4-9a): the
 //! production pass (`vize_l1_to_l2::pass::cfg`) against the naive
 //! evaluator (`spec.rs`), exact agreement on totals **and** on every
 //! breakdown row, over
@@ -6,10 +6,10 @@
 //! - hand-computed pins, one per rule of `complexity-metrics.md`, where
 //!   both implementations must also equal the number worked out by hand;
 //! - the committed construct-matrix plane
-//!   (`tests/fixtures/davinci-matrix/`, TS-12 keeps it fresh), census
+//!   (`tests/fixtures/level-matrix/`, TS-12 keeps it fresh), census
 //!   pinned;
-//! - a corpus shard via `VIZE_DAVINCI_COMPLEXITY_CORPUS=<dir>[,<dir>…]`
-//!   (`tests/tooling/davinci-complexity-corpus.test.ts` runs the two
+//! - a corpus shard via `VIZE_LEVEL_COMPLEXITY_CORPUS=<dir>[,<dir>…]`
+//!   (`tests/tooling/level-complexity-corpus.test.ts` runs the two
 //!   test-scripts submodules in CI), which also prints the distribution
 //!   table the metric spec records.
 
@@ -198,7 +198,7 @@ fn past_guard_logical_runs_never_invent_retained_ast_facts() {
 }
 
 fn matrix_dir() -> PathBuf {
-    Path::new(env!("CARGO_MANIFEST_DIR")).join("../../tests/fixtures/davinci-matrix")
+    Path::new(env!("CARGO_MANIFEST_DIR")).join("../../tests/fixtures/level-matrix")
 }
 
 #[test]
@@ -221,8 +221,8 @@ fn the_matrix_plane_agrees_with_the_naive_evaluator() {
 
 #[test]
 fn the_corpus_shard_agrees_with_the_naive_evaluator() {
-    let Some(roots) = std::env::var_os("VIZE_DAVINCI_COMPLEXITY_CORPUS") else {
-        eprintln!("VIZE_DAVINCI_COMPLEXITY_CORPUS unset: matrix plane only");
+    let Some(roots) = std::env::var_os("VIZE_LEVEL_COMPLEXITY_CORPUS") else {
+        eprintln!("VIZE_LEVEL_COMPLEXITY_CORPUS unset: matrix plane only");
         return;
     };
     let mut files = Vec::new();
@@ -239,7 +239,7 @@ fn the_corpus_shard_agrees_with_the_naive_evaluator() {
         };
         assert!(
             root.is_dir(),
-            "VIZE_DAVINCI_COMPLEXITY_CORPUS must name directories: {}",
+            "VIZE_LEVEL_COMPLEXITY_CORPUS must name directories: {}",
             root.display()
         );
         collect_vue_files(&root, &mut files);

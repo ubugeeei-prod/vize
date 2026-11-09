@@ -41,9 +41,9 @@ const vscodeExtensionLintIgnorePatterns = [
  * byte-stable.
  */
 const formatterSensitiveContentIgnorePatterns = [
-  "benchmarks/davinci_harness/fixtures/**",
+  "benchmarks/level_harness/fixtures/**",
   "crates/**/tests/fixtures/**",
-  "davinci/**/tests/fixtures/**",
+  "levels/**/tests/fixtures/**",
   // Registered CLI diagnostics depend on authored source positions and golden bytes.
   "tests/fixtures/typechecker/options-api-computed-setters/**",
   "tests/fixtures/typechecker/options-api-writable-computed/**",
@@ -54,7 +54,7 @@ const formatterSensitiveContentIgnorePatterns = [
   "crates/vize_glyph/tests/style_spec/**",
   "docs/content/**/*.md",
   "examples/vite-musea/playwright-report/**",
-  "tools/benchmarks/crates/davinci_harness/fixtures/**",
+  "tools/benchmarks/crates/level_harness/fixtures/**",
   // Original public Musea inputs and observations retain their authored bytes.
   "tests/tooling/fixtures/musea/static-variant-name/**",
   "tests/tooling/fixtures/musea/variant-binding-collision/**",
@@ -98,7 +98,7 @@ const config = {
       editorScenarioFixtureIgnorePattern,
       // These authenticated inputs and captures retain their exact original bytes.
       "crates/vize_canon/src/batch/virtual_project/content_mapper/directive_tests/fixtures/volar-directives.vue",
-      "crates/vize_maestro/tests/davinci_ts40_projection_support/fixtures/public-instance-mixed-vue2/successor-11675/receipt.json",
+      "crates/vize_maestro/tests/level_ts40_projection_support/fixtures/public-instance-mixed-vue2/successor-11675/receipt.json",
       "tests/fixtures/typechecker/undeclared-instance-globals-10617/source-packets-current-beca9eaf0681-provenance.json",
       "tests/fixtures/typechecker/undeclared-instance-globals-10617/source-packets-current-beca9eaf0681.json",
       "tests/fixtures/typechecker/undeclared-instance-globals-10617/source-packets-current-ccf36f226d00-provenance.json",

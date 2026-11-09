@@ -7,7 +7,7 @@ import { fileURLToPath } from "node:url";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 
-// TS-21's corpus-shard lane (Davinci P2-15). The metamorphic suite's
+// TS-21's corpus-shard lane (Levels P2-15). The metamorphic suite's
 // matrix-plane half rides `cargo test --workspace` in clippy-and-test;
 // this gate runs the corpus half in the test-scripts job over exactly
 // the submodules that job already hydrates for the CLI diagnostic
@@ -50,7 +50,7 @@ test("the metamorphic corpus shard holds with a scope proof", (t) => {
     {
       cwd: repoRoot,
       encoding: "utf8",
-      env: { ...process.env, VIZE_DAVINCI_METAMORPHIC_CORPUS: shard.join(",") },
+      env: { ...process.env, VIZE_LEVEL_METAMORPHIC_CORPUS: shard.join(",") },
       timeout: 1_500_000,
     },
   );

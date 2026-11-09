@@ -64,7 +64,7 @@ let
       path: type:
       craneLib.filterCargoSources path type
       || (
-        (lib.hasInfix "/crates/" path || lib.hasInfix "/davinci/" path)
+        (lib.hasInfix "/crates/" path || lib.hasInfix "/levels/" path)
         && lib.any (suffix: lib.hasSuffix suffix path) crateAssetSuffixes
       )
       || lib.any (asset: lib.hasSuffix asset path) externalAssets;

@@ -9,7 +9,7 @@ This installment measures it and closes it. The series box in
 
 ## What was measured
 
-Command: `cargo test -p vize_atelier_core --features legacy --test davinci_s2_transform_vue2`
+Command: `cargo test -p vize_atelier_core --features legacy --test level_s2_transform_vue2`
 (probe templates run through `compare_with(..., VueVersion::V2)` before
 any comparator change). The text projection prints both unit lists on
 TS-25 panic.

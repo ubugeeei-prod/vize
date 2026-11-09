@@ -1,30 +1,30 @@
-//! Davinci P2-7 TS-19 lane — corpus-runnable entry.
+//! Levels P2-7 TS-19 lane — corpus-runnable entry.
 //!
 //! Compiled only with the `legacy-differential` feature (see `[[test]]
 //! required-features` in Cargo.toml), the P1-6/P1-7 lane shape. Runs the
 //! committed battery with its exact-pinned scope and hole census (the
 //! cfg-regression witness — the plain suite pins the same numbers, so a
 //! feature-wiring regression fails loudly in both lanes), then, with
-//! `VIZE_DAVINCI_DIFFERENTIAL_CORPUS=<dir>`, additionally sweeps every
+//! `VIZE_LEVEL_DIFFERENTIAL_CORPUS=<dir>`, additionally sweeps every
 //! `.vue` file under `<dir>` (e.g. `tests/_fixtures/_git` for the
 //! hydrated ecosystem corpus): the **whole file's bytes** go through the
 //! L1 parser — SFC block markup as markup, `<script>`/`<style>` content
 //! as raw text — and `render(parse(src)) == src` is asserted per file.
 //! The canonical fixture root fails closed unless its submodule inventory
 //! reconciles; other roots sweep in smoke scope with
-//! `closure_evidence=false` (see `davinci_test_support::corpus`).
+//! `closure_evidence=false` (see `level_test_support::corpus`).
 //!
 //! Run:
 //!
 //! ```text
-//! VIZE_DAVINCI_DIFFERENTIAL_CORPUS=tests/_fixtures/_git \
+//! VIZE_LEVEL_DIFFERENTIAL_CORPUS=tests/_fixtures/_git \
 //!     cargo test -p vize_l1 --features legacy-differential \
 //!     --test surface_corpus -- --nocapture
 //! ```
 
 use std::fs;
 
-use davinci_test_support::surface_fixture as common;
+use level_test_support::surface_fixture as common;
 use vize_l0::{Allocator, String};
 use vize_l1::markup::{HoleCounts, hole_counts, parse, render};
 
@@ -61,8 +61,8 @@ fn surface_corpus_round_trips() {
     }
 
     // -- optional corpus sweep -------------------------------------------
-    let Some(sweep) = davinci_test_support::corpus::resolve_env_sweep() else {
-        eprintln!("VIZE_DAVINCI_DIFFERENTIAL_CORPUS unset: committed battery only");
+    let Some(sweep) = level_test_support::corpus::resolve_env_sweep() else {
+        eprintln!("VIZE_LEVEL_DIFFERENTIAL_CORPUS unset: committed battery only");
         return;
     };
     let files = &sweep.files;
@@ -82,7 +82,7 @@ fn surface_corpus_round_trips() {
         checked += 1;
     }
     eprintln!(
-        "davinci surface corpus sweep: files={} checked={}",
+        "levels surface corpus sweep: files={} checked={}",
         files.len(),
         checked
     );

@@ -10,7 +10,7 @@ use super::FactGroup;
 /// Read-mostly by design — a producer builds it once per artifact and every
 /// consumer borrows it — so the storage is a key-sorted vector: lookups are
 /// a binary search over contiguous memory, iteration is already in key
-/// order (what folio pages and the P4-2 α export need), and there is no
+/// order (what dump pages and the P4-2 α export need), and there is no
 /// hashing. Keys are unique.
 pub struct FactTable<G: FactGroup> {
     entries: Vec<(G::Key, G::Value)>,

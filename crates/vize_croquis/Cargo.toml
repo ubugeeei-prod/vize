@@ -37,7 +37,7 @@ oxc_span.workspace = true
 oxc_allocator.workspace = true
 
 [features]
-# Davinci P1-6 differential lane: dual-runs the retained-AST expression reads
+# Levels P1-6 differential lane: dual-runs the retained-AST expression reads
 # against the legacy re-parse paths and panics on divergence. Also active
 # under cfg(test); zero-cost when off. Deleted with the lane at P1-8.
 legacy-differential = []
@@ -52,23 +52,23 @@ vize_l1_to_l2.workspace = true
 # release before this crate. Version-less dev-deps are stripped when packaging.
 vize_atelier_sfc = { path = "../vize_atelier_sfc" }
 
-davinci_test_support.workspace = true
+level_test_support.workspace = true
 tempfile.workspace = true
 insta.workspace = true
 
 [target.'cfg(not(target_arch = "wasm32"))'.dev-dependencies]
 criterion.workspace = true
-davinci_harness.workspace = true
+level_harness.workspace = true
 
 [[bench]]
-name = "davinci"
+name = "levels"
 harness = false
 
 # The P1-6 differential lane's corpus-runnable entry; skipped unless the lane
 # feature is on so the plain workspace suite stays single-sided outside
 # vize_croquis's own unit tests.
 [[test]]
-name = "davinci_differential"
+name = "level_differential"
 required-features = ["legacy-differential"]
 
 [lints]

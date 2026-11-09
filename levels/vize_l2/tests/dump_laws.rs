@@ -1,4 +1,4 @@
-//! TS-16 for the disegno folio (P2-5a; expression payloads P2-5b). Full mode
+//! TS-16 for the l2 dump (P2-5a; expression payloads P2-5b). Full mode
 //! round-trips byte-exact canonical text and parse/print structure; Display
 //! elides spans and carries no round-trip law. The committed reference page
 //! covers every op and binding kind; `tests/dump_mirror.rs` builds the same
@@ -14,7 +14,7 @@ use vize_l2::expr::OpaqueReason;
 use vize_l2::op::Namespace;
 
 /// Canonical text of the reference tree.
-const CANONICAL: &str = include_str!("fixtures/reference.folio");
+const CANONICAL: &str = include_str!("fixtures/reference.dump");
 
 /// `Display` output for the same tree: every span elided, nothing else.
 const DISPLAY: &str = "\

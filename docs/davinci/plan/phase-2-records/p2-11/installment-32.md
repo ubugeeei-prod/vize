@@ -23,16 +23,16 @@ The realized cases are:
 
 The durable witnesses are:
 
-- [`folio_show.rs`](../../../../../davinci/vize_l2/tests/dump_show.rs)
+- [`dump_show.rs`](../../../../../levels/vize_l2/tests/dump_show.rs)
   - exact Folio parse/print and owned-mirror coverage for `vue.show`.
-- [`lowering_elements.rs`](../../../../../davinci/vize_l1_to_l2/tests/lowering_elements.rs)
+- [`lowering_elements.rs`](../../../../../levels/vize_l1_to_l2/tests/lowering_elements.rs)
   - well-formed `v-show` lowers to `vue.show`; the deferral witness remains on
     a still-unmapped directive.
-- [`davinci_s2_show.rs`](../../../../../crates/vize_atelier_dom/tests/l2_show.rs)
+- [`level_s2_show.rs`](../../../../../crates/vize_atelier_dom/tests/l2_show.rs)
   - S2-vs-shipped byte fixtures plus per-node patch-flag extraction across the
     realized cases above.
-- [`emit_unsupported_census.rs`](../../../../../davinci/vize_l1_to_l2/tests/emit_unsupported_census.rs)
-  and [`emit_unsupported_catalogue.rs`](../../../../../davinci/vize_l1_to_l2/tests/emit_unsupported_catalogue.rs)
+- [`emit_unsupported_census.rs`](../../../../../levels/vize_l1_to_l2/tests/emit_unsupported_census.rs)
+  and [`emit_unsupported_catalogue.rs`](../../../../../levels/vize_l1_to_l2/tests/emit_unsupported_catalogue.rs)
   - non-JS `v-show` expressions remain an explicit, source-covered refusal.
 
 This installment does not tick P2-11. The production-lane switch, hydrated

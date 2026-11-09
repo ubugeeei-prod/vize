@@ -1,7 +1,7 @@
 //! Arena constructors for the IR nodes that hold collections.
 //!
 //! Their vectors live in the compile arena so the whole IR graph is
-//! `Drop`-free (Davinci P1-10) — which is why they cannot simply be `Default`.
+//! `Drop`-free (Levels P1-10) — which is why they cannot simply be `Default`.
 
 use vize_carton::{Allocator, Vec};
 

@@ -52,7 +52,7 @@ const identities = providers.map((provider) => {
       "--untracked-files=no",
       "--",
       "crates",
-      "davinci",
+      "levels",
       "Cargo.lock",
     ),
     "",
@@ -90,14 +90,14 @@ const identities = providers.map((provider) => {
       ].map((name) => [name, hash(fs.readFileSync(path.join(provider.root, name)))]),
     ),
     unchangedTrees: Object.fromEntries(
-      ["crates/vize_croquis/src", "crates/vize_atelier_sfc/src", "davinci/vize_l0"].map((name) => [
+      ["crates/vize_croquis/src", "crates/vize_atelier_sfc/src", "levels/vize_l0"].map((name) => [
         name,
         git(provider.root, "rev-parse", `HEAD:${name}`),
       ]),
     ),
     observerInputs,
     sourceTrees: Object.fromEntries(
-      ["crates/vize_croquis_cf/src", "crates/vize/src", "davinci/vize_l0"].map((name) => [
+      ["crates/vize_croquis_cf/src", "crates/vize/src", "levels/vize_l0"].map((name) => [
         name,
         git(provider.root, "rev-parse", `HEAD:${name}`),
       ]),

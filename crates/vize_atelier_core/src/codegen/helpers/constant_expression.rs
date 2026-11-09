@@ -203,7 +203,7 @@ pub fn is_constant_simple_expression(
             assert_eq!(
                 Some(result),
                 legacy,
-                "davinci-differential (P1-7): retained constant check diverged from the legacy re-parse for expression {content:?}"
+                "level-differential (P1-7): retained constant check diverged from the legacy re-parse for expression {content:?}"
             );
             crate::retained::differential::record_shape_comparison();
         }

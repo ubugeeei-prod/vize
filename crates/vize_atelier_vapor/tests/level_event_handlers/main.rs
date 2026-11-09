@@ -1,5 +1,5 @@
 //! Real Chromium executes Rust-owned scenarios against both backends and the
-//! pinned Vue compilers/runtimes. The dedicated Davinci Actions lane runs this
+//! pinned Vue compilers/runtimes. The dedicated Levels Actions lane runs this
 //! explicitly; ordinary Rust suites do not require a browser installation.
 
 #![expect(
@@ -30,7 +30,7 @@ mod cases;
 mod scope;
 
 #[test]
-#[ignore = "requires installed Chromium; enforced by the Davinci browser Actions lane"]
+#[ignore = "requires installed Chromium; enforced by the Levels browser Actions lane"]
 fn mounted_event_handlers_match_vue_reference_and_independent_traces() {
     let mut fixtures = Vec::new();
     for &(name, handler, setup, calls, increment) in cases::CASES {
@@ -47,7 +47,7 @@ fn mounted_event_handlers_match_vue_reference_and_independent_traces() {
         "value", "event", false, true,
     ));
     let runner = Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join("../../tests/tooling/support/davinci-event-handlers.mjs");
+        .join("../../tests/tooling/support/level-event-handlers.mjs");
     let mut child = Command::new("node")
         .arg(runner)
         .stdin(Stdio::piped())

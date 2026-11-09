@@ -65,5 +65,5 @@ decides `Yes`, ignoring a namespace disagreement, walking outermost first,
 
 ## Remaining Lean
 
-`tests/formal/impeto` and the `Davinci Lean` workflow remain until the Impeto
+`tests/formal/l3` and the `Levels Lean` workflow remain until the Impeto
 laws and reference differentials are ported.

@@ -2,7 +2,7 @@
 
 [#10825](https://github.com/ubugeeei-prod/vize/issues/10825) applies the
 maintainer's 2026-10-13 decision that Lean proofs become Rust Kani harnesses
-to the three theorem modules left in `tests/formal/impeto` after the
+to the three theorem modules left in `tests/formal/l3` after the
 [lattice move](./2026-10-13-8840-l3-lattice-laws-kani.md):
 `Impeto.ScheduleLaws` (11 theorems), `Impeto.CheckerLaws` (4), and
 `Impeto.IncrementalLaws` (9).
@@ -10,14 +10,14 @@ to the three theorem modules left in `tests/formal/impeto` after the
 ## Decision
 
 The laws are proved about an independent Rust reference,
-`tests/davinci_test_support/src/l3_reference`, behind the test-only
-`l3-reference` feature of `davinci_test_support`. Like the Lean package, it
+`tests/level_test_support/src/l3_reference`, behind the test-only
+`l3-reference` feature of `level_test_support`. Like the Lean package, it
 reads only committed pages and never calls `vize_l3`: the crate does not
 depend on it. The scheduling contract, trace semantics, C-23 graph checker,
 and incremental update machine are dependency-free modules, so
-[`l3_reference/kani.rs`](../../../tests/davinci_test_support/src/l3_reference/kani.rs)
+[`l3_reference/kani.rs`](../../../tests/level_test_support/src/l3_reference/kani.rs)
 includes them directly and the `l3-reference` job of
-`.github/workflows/davinci-kani.yml` verifies them on every change to them.
+`.github/workflows/level-kani.yml` verifies them on every change to them.
 
 Rust differentials replace the Lean ones. `cargo test -p vize_l2_to_l3
 --test l3_reference_fixture` recomputes `schedule-contract.txt` from the

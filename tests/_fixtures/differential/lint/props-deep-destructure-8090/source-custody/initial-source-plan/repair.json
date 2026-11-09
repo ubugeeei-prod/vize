@@ -5,7 +5,7 @@
   "failedRun": 38205153114,
   "failedJob": 114666888498,
   "artifact": "docs/davinci/plan/consumer-migration-surfaces/linter/vize_patina.tsv",
-  "generator": "tools/support/compat/davinci/consumer-migration-surfaces.mjs --write",
+  "generator": "tools/support/compat/levels/consumer-migration-surfaces.mjs --write",
   "original": {
     "bytes": 158031,
     "sha256": "44c893ee88834e52c99fc46f1d07d2a08d3d00492bbbc9d376013a8bd3d6b3ba",

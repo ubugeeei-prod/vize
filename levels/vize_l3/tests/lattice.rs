@@ -7,9 +7,9 @@ use vize_l3::lattice::{
 };
 
 const CANONICAL: &str = "\
-[s3-reactivity-folio]
+[s3-reactivity-dump]
 
-[s3-reactivity-folio.bindings]
+[s3-reactivity-dump.bindings]
 id=0 class=static verdict=proven origin=local effects=- escape=none span=0:3
 id=1 class=reactive verdict=unknown origin=prop effects=capture,read-reactive escape=none span=4:9
 id=2 class=unstable verdict=proven origin=provide-inject effects=mutate-global escape=stored span=10:20
@@ -106,7 +106,7 @@ fn verdict_axis_is_orthogonal_and_consumers_fire_only_on_proven_values() {
 }
 
 /// Every binding summary there is: 4 origins, 256 effect sets, 4 escapes and
-/// 3 verdicts. The Kani harness `davinci/vize_l3/src/lattice/kani.rs` verifies
+/// 3 verdicts. The Kani harness `levels/vize_l3/src/lattice/kani.rs` verifies
 /// the value axis; these are the laws that also read the verdict axis.
 #[test]
 fn the_verdict_never_changes_the_class_and_only_proven_facts_fire() {
@@ -192,9 +192,9 @@ fn fact_group_lookup_keeps_binding_ids_exact() {
 }
 
 #[test]
-fn reactivity_folio_roundtrips_canonical_text() {
-    let folio = ReactivityPage::parse(CANONICAL).expect("canonical lattice folio parses");
-    assert_eq!(folio.print_to_string(DumpMode::Full).as_str(), CANONICAL);
+fn reactivity_dump_roundtrips_canonical_text() {
+    let dump = ReactivityPage::parse(CANONICAL).expect("canonical lattice dump parses");
+    assert_eq!(dump.print_to_string(DumpMode::Full).as_str(), CANONICAL);
 }
 
 #[test]
@@ -214,8 +214,8 @@ fn fact_group_print_is_structural_identity() {
                 .with_escape(EscapeKind::Stored),
         ],
     );
-    let folio = ReactivityPage::of(&facts);
-    let printed = folio.print_to_string(DumpMode::Full);
+    let dump = ReactivityPage::of(&facts);
+    let printed = dump.print_to_string(DumpMode::Full);
     assert_eq!(printed.as_str(), CANONICAL);
-    assert_eq!(ReactivityPage::parse(printed.as_str()).unwrap(), folio);
+    assert_eq!(ReactivityPage::parse(printed.as_str()).unwrap(), dump);
 }

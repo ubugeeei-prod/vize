@@ -88,7 +88,7 @@ fn mapped(projection: &ProgramProjection<'_, '_>, range: Range) -> Span {
 fn configured_original_required_named_export_ts_tsx_preserve_whole_raw_reports_and_related_ranges()
 {
     let pack: serde_json::Value = serde_json::from_str(include_str!(
-        "../../../../davinci/vize_l4/tests/fixtures/required-named-export-program-checker.json"
+        "../../../../levels/vize_l4/tests/fixtures/required-named-export-program-checker.json"
     ))
     .unwrap();
     let root = tempfile::TempDir::new().unwrap();

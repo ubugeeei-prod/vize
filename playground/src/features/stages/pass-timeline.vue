@@ -49,8 +49,8 @@ function describe(step: TimelineStep): string {
   const time = step.nanos === null ? "" : `, ${formatNanos(step.nanos)}`;
   if (step.producer) return `${rung} ${step.pass}: produces a new artifact${time}`;
   return step.changed
-    ? `${step.pass} changed the ${rung} folio${time}`
-    : `${step.pass} left the ${rung} folio unchanged (its product is facts)${time}`;
+    ? `${step.pass} changed the ${rung} dump${time}`
+    : `${step.pass} left the ${rung} dump unchanged (its product is facts)${time}`;
 }
 
 function walkTitle(walk: TimelineWalk): string {
@@ -60,33 +60,33 @@ function walkTitle(walk: TimelineWalk): string {
 </script>
 
 <template>
-  <div class="davinci-timeline">
-    <div class="davinci-timeline-row">
+  <div class="level-timeline">
+    <div class="level-timeline-row">
       <div
         v-if="totalNanos > 0"
-        class="davinci-time-strip"
+        class="level-time-strip"
         role="img"
         :aria-label="`Measured compiler work: ${formatNanos(totalNanos)} in total`"
       >
         <span
           v-for="step in measured"
           :key="step.key"
-          :class="['davinci-time-segment', `rung-${step.rung}`, { current: current === step.key }]"
+          :class="['level-time-segment', `rung-${step.rung}`, { current: current === step.key }]"
           :style="{ width: share(step) }"
           :title="describe(step)"
         ></span>
       </div>
-      <p class="davinci-timeline-summary">
+      <p class="level-timeline-summary">
         {{ changedPasses }} of {{ passCount }} {{ passCount === 1 ? "pass" : "passes" }} changed the
-        folio<template v-if="walks.length > 0">
+        dump<template v-if="walks.length > 0">
           in {{ walks.length }} {{ walks.length === 1 ? "walk" : "walks" }}</template
         ><template v-if="totalNanos > 0">, {{ formatNanos(totalNanos) }} total</template>
       </p>
     </div>
-    <ol class="davinci-steps" aria-label="Pipeline steps in run order">
+    <ol class="level-steps" aria-label="Pipeline steps in run order">
       <template v-for="entry in entries" :key="entry.key">
-        <li v-if="entry.walk" :class="['davinci-walk', { fusable: entry.walk.fusable }]">
-          <ol class="davinci-walk-steps" :aria-label="walkTitle(entry.walk)">
+        <li v-if="entry.walk" :class="['level-walk', { fusable: entry.walk.fusable }]">
+          <ol class="level-walk-steps" :aria-label="walkTitle(entry.walk)">
             <li v-for="step in entry.steps" :key="step.key">
               <StepPill
                 :step
@@ -96,10 +96,10 @@ function walkTitle(walk: TimelineWalk): string {
               />
             </li>
           </ol>
-          <span class="davinci-walk-label" :title="walkTitle(entry.walk)" aria-hidden="true">
+          <span class="level-walk-label" :title="walkTitle(entry.walk)" aria-hidden="true">
             <span>walk {{ entry.walk.index + 1 }}</span>
             <span>{{ describeWalk(entry.walk) }}</span>
-            <span v-if="entry.walk.nanos !== null" class="davinci-walk-time">{{
+            <span v-if="entry.walk.nanos !== null" class="level-walk-time">{{
               formatNanos(entry.walk.nanos)
             }}</span>
           </span>

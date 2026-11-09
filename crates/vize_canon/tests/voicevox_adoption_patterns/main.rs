@@ -1,7 +1,7 @@
 //! Small type-checking oracles for patterns that surfaced while trialing Vize
 //! in VOICEVOX.
 
-use davinci_test_support::script_block_project as project;
+use level_test_support::script_block_project as project;
 
 const SLIDER: &str = r#"<script setup lang="ts">
 defineProps<{

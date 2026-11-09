@@ -1,6 +1,6 @@
 //! TS-17 for lowering-published text facts (P2-9 series 4, fused in
 //! P2-12b): committed fixture in, pipeline out, **full normalized
-//! folio** snapshot — the P2-4 harness shape applied to the
+//! dump** snapshot — the P2-4 harness shape applied to the
 //! installment's surface.
 //!
 //! The snapshot is the oracle; the walk accounting, the recorded parts
@@ -29,15 +29,15 @@ fn fixture(name: &str) -> vize_l0::String {
 }
 
 #[test]
-fn the_merge_fixture_snapshots_the_post_pass_folio() {
+fn the_merge_fixture_snapshots_the_post_pass_dump() {
     let source = fixture("merge.vue");
-    with_transformed(&source, |lowered, folio, facts, budget| {
+    with_transformed(&source, |lowered, dump, facts, budget| {
         // The oracle: the whitespace-only indentation runs are gone,
         // the greeting merged into one `opaque(compound …)` op with the
         // interior run condensed, and the comment-punched `<p>` keeps
         // its two units — "a" alone, then the compound — because a
         // comment is a run boundary.
-        assert_dump_snapshot!(*folio);
+        assert_dump_snapshot!(*dump);
 
         // Supplements: the planned walk accounting. Text facts are
         // lowering-published, so the fixture pays only the fused
@@ -68,15 +68,15 @@ fn the_merge_fixture_snapshots_the_post_pass_folio() {
 }
 
 #[test]
-fn the_condense_fixture_snapshots_the_post_pass_folio() {
+fn the_condense_fixture_snapshots_the_post_pass_dump() {
     let source = fixture("condense.vue");
-    with_transformed(&source, |lowered, folio, facts, _| {
+    with_transformed(&source, |lowered, dump, facts, _| {
         // The oracle: the no-newline run between the spans survives as
         // one `ui.text " "`; the newline runs between elements are
         // gone; the div's mixed text collapsed and merged with its
         // interpolation; the `<pre>` content merged **uncondensed**
         // (the shipped `is_pre_tag` exemption).
-        assert_dump_snapshot!(*folio);
+        assert_dump_snapshot!(*dump);
         assert_eq!(facts.text_facts.len(), 2);
         // The pre compound keeps its bytes verbatim in every part.
         let entries = facts.text_facts.sorted_entries();

@@ -4,7 +4,7 @@
 //! consumed-scope facts, the provenance trail, and the things it
 //! deliberately does *not* do (no mutation, no user diagnostic, no
 //! synthesized name).
-//! The TS-17 folio snapshots live in `vfor_pass_snapshot.rs`.
+//! The TS-17 dump snapshots live in `vfor_pass_snapshot.rs`.
 
 use crate::support;
 
@@ -146,13 +146,13 @@ fn an_undecomposable_value_is_pessimally_pending() {
     // position is *pending*, not absent — under the opaque laws the
     // alias is unknowable, unlike the valid absent alias above.
     let source = r#"<p v-for="items">kept</p>"#;
-    with_transformed(source, |lowered, folio, facts, _| {
+    with_transformed(source, |lowered, dump, facts, _| {
         assert_eq!(lowered.diagnostics.len(), 1, "the lowering's error");
         assert_eq!(
             lowered.diagnostics[0].message.as_str(),
             "v-for has invalid expression."
         );
-        assert_eq!(count_fors(&folio.ops), 1, "op and region kept");
+        assert_eq!(count_fors(&dump.ops), 1, "op and region kept");
         let entries = facts.for_facts.sorted_entries();
         assert_eq!(entries.len(), 1);
         assert_eq!(entries[0].1.value, ForName::Pending);
@@ -168,8 +168,8 @@ fn the_iterated_elements_key_stays_on_its_attribute_surface() {
     // element's `key` — codegen reads it per vnode (P2-11's business).
     // The pass must leave the surface untouched.
     let source = r#"<li v-for="item in items" key="row">{{ item }}</li>"#;
-    with_transformed(source, |_, folio, facts, _| {
-        let DumpOp::For(for_op) = &folio.ops[0] else {
+    with_transformed(source, |_, dump, facts, _| {
+        let DumpOp::For(for_op) = &dump.ops[0] else {
             panic!("root op is not ui.for");
         };
         let [DumpOp::Element(element)] = &for_op.ops[..] else {
@@ -195,8 +195,8 @@ fn every_ui_for_is_consumed_with_a_fresh_tag() {
     // Dense consumption (every `ui.for` is an introduction site), tags
     // pairwise distinct — the hygiene freshness law as data.
     let source = r#"<ul v-for="row in grid"><li v-for="cell in row">{{ cell }}</li></ul><template v-for="n of five"><b>{{ n }}</b></template>"#;
-    with_transformed(source, |_, folio, facts, _| {
-        assert_eq!(count_fors(&folio.ops), 3);
+    with_transformed(source, |_, dump, facts, _| {
+        assert_eq!(count_fors(&dump.ops), 3);
         let entries = facts.for_facts.sorted_entries();
         assert_eq!(entries.len(), 3);
         let mut tags: Vec<u32> = entries.iter().map(|(_, fact)| fact.tag.index()).collect();
@@ -210,13 +210,13 @@ fn every_ui_for_is_consumed_with_a_fresh_tag() {
 #[test]
 fn the_fact_mirror_neither_mutates_nor_diagnoses() {
     // The lowering-published fact mirror is preserving: the transformed
-    // folio and diagnostics are byte-for-byte the lowering's own.
+    // dump and diagnostics are byte-for-byte the lowering's own.
     let source = r#"<section><div v-for="(a, b) in xs" key="k" :title="a">{{ b }}</div></section>"#;
-    let (before_folio, before_diagnostics) = with_lowered(source, |lowered, folio| {
-        (folio.clone(), lowered.diagnostics.clone())
+    let (before_dump, before_diagnostics) = with_lowered(source, |lowered, dump| {
+        (dump.clone(), lowered.diagnostics.clone())
     });
-    with_transformed(source, |lowered, folio, _, _| {
-        assert_eq!(folio, &before_folio, "the v-for mirror must not mutate");
+    with_transformed(source, |lowered, dump, _, _| {
+        assert_eq!(dump, &before_dump, "the v-for mirror must not mutate");
         assert_eq!(
             lowered.diagnostics, before_diagnostics,
             "the v-for mirror emits no user diagnostic"

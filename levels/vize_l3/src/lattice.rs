@@ -3,7 +3,7 @@
 //! The production L2-to-L3 lowering will feed this module from retained AST
 //! summaries. The first slice keeps that boundary explicit: callers provide a
 //! compact effect/escape summary per binding, and the naive evaluator publishes
-//! a typed fact group plus a folio page.
+//! a typed fact group plus a dump page.
 
 mod axis;
 mod class;

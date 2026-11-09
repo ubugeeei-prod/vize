@@ -9,7 +9,7 @@ import { officialCompilerVapor, vueVaporVersion } from "./support/vue-vapor-rele
 const pack = JSON.parse(
   readFileSync(
     new URL(
-      "../../davinci/vize_l4/tests/fixtures/native-vapor-vue-3.6.0-rc.9.json",
+      "../../levels/vize_l4/tests/fixtures/native-vapor-vue-3.6.0-rc.9.json",
       import.meta.url,
     ),
     "utf8",

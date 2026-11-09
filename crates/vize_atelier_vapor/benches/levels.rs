@@ -1,6 +1,6 @@
-//! Davinci microbenches: the Vapor pipeline split into its three stages.
+//! Levels microbenches: the Vapor pipeline split into its three stages.
 //!
-//! Run with: cargo bench -p vize_atelier_vapor --bench davinci
+//! Run with: cargo bench -p vize_atelier_vapor --bench levels
 //!
 //! Today's Vapor compile runs the full VDOM transform lane and then lowers
 //! from the surface AST, discarding the lane's codegen-node output
@@ -17,7 +17,7 @@
 //!
 //! A fused `compile_vapor` case pins the end-to-end number, and the
 //! expression re-parse counter is sampled around one fused compile per
-//! fixture for the `davinci.expr.parses` baseline.
+//! fixture for the `levels.expr.parses` baseline.
 
 #![expect(
     clippy::expect_used,
@@ -25,8 +25,8 @@
 )]
 
 use criterion::{Criterion, criterion_group};
-use davinci_harness::fixtures::{LADDER, template_block};
-use davinci_harness::stage::bench_stage_with_metrics;
+use level_harness::fixtures::{LADDER, template_block};
+use level_harness::stage::bench_stage_with_metrics;
 use vize_atelier_core::expr_parse_probe;
 use vize_atelier_core::lane::transform;
 use vize_atelier_core::options::TransformOptions;
@@ -41,7 +41,7 @@ fn vapor_transform_options() -> TransformOptions {
     }
 }
 
-fn davinci(criterion: &mut Criterion) {
+fn levels(criterion: &mut Criterion) {
     for fixture in &LADDER {
         let template =
             template_block(fixture.source).expect("every ladder fixture has a template block");
@@ -67,12 +67,12 @@ fn davinci(criterion: &mut Criterion) {
         let root = root;
         let ir = transform_to_ir(&allocator, &root, template);
         let generate_id = cstr!("atelier_vapor_generate_{}", fixture.name);
-        davinci_harness::bench_with_metrics(criterion, &generate_id, fixture.relative_path, || {
+        level_harness::bench_with_metrics(criterion, &generate_id, fixture.relative_path, || {
             generate_vapor(&ir, None)
         });
 
         let fused_id = cstr!("atelier_vapor_compile_{}", fixture.name);
-        davinci_harness::bench_with_metrics(criterion, &fused_id, fixture.relative_path, || {
+        level_harness::bench_with_metrics(criterion, &fused_id, fixture.relative_path, || {
             let allocator = Allocator::new();
             compile_vapor(&allocator, template, VaporCompilerOptions::default())
         });
@@ -85,7 +85,7 @@ fn davinci(criterion: &mut Criterion) {
         let before = expr_parse_probe::expr_parse_count();
         let _compiled = compile_vapor(&allocator, template, VaporCompilerOptions::default());
         let parses = expr_parse_probe::expr_parse_count() - before;
-        eprintln!("davinci.expr.parses vapor {} {parses}", fixture.name);
+        eprintln!("levels.expr.parses vapor {} {parses}", fixture.name);
     }
 }
 
@@ -118,7 +118,7 @@ fn native_pair(criterion: &mut Criterion) {
                             &source,
                             VaporCompilerOptions {
                                 prefix_identifiers: true,
-                                davinci_retained_lane: legacy,
+                                level_retained_lane: legacy,
                                 ..Default::default()
                             },
                         ))
@@ -130,5 +130,5 @@ fn native_pair(criterion: &mut Criterion) {
     group.finish();
 }
 
-criterion_group!(davinci_group, davinci, native_pair);
-davinci_harness::main!(davinci_group);
+criterion_group!(level_group, levels, native_pair);
+level_harness::main!(level_group);

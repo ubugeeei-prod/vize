@@ -3,8 +3,8 @@ on:
   pull_request:
     paths:
       - ".github/workflows/production-reach-accounting.yml"
-      - "crates/vize_atelier_sfc/tests/davinci_production_reach.rs"
-      - "crates/vize_atelier_sfc/tests/davinci_production_reach/**"
+      - "crates/vize_atelier_sfc/tests/level_production_reach.rs"
+      - "crates/vize_atelier_sfc/tests/level_production_reach/**"
   workflow_dispatch:
 permissions: { contents: read }
 concurrency:
@@ -30,11 +30,11 @@ jobs:
       - name: Verify complete original component-handler production parity
         run: |
           set -o pipefail
-          cargo test --locked --profile ci -p vize_atelier_sfc --features legacy-dom-differential --test davinci_production_reach inline_parity_regressions -- --nocapture 2>&1 | tee production-reach-originals.log
+          cargo test --locked --profile ci -p vize_atelier_sfc --features legacy-dom-differential --test level_production_reach inline_parity_regressions -- --nocapture 2>&1 | tee production-reach-originals.log
       - name: Hold complete committed-corpus parity, selection accounting and reach floors
         run: |
           set -o pipefail
-          cargo test --locked --profile ci -p vize_atelier_sfc --features legacy-dom-differential --test davinci_production_reach -- --nocapture 2>&1 | tee production-reach-corpus.log
+          cargo test --locked --profile ci -p vize_atelier_sfc --features legacy-dom-differential --test level_production_reach -- --nocapture 2>&1 | tee production-reach-corpus.log
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         if: always()
         with:

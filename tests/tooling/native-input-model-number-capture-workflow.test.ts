@@ -5,8 +5,8 @@ import { nativeVaporCaptureRequired } from "../../tools/support/compat/github/na
 
 test("number producer, inputs and all three consumers select genuine hosted capture", () => {
   for (const path of [
-    "davinci/vize_l3/tests/native_model_number/mod.rs",
-    ...["dom", "ssr", "vapor"].map((target) => `davinci/vize_l4/src/targets/${target}/model.rs`),
+    "levels/vize_l3/tests/native_model_number/mod.rs",
+    ...["dom", "ssr", "vapor"].map((target) => `levels/vize_l4/src/targets/${target}/model.rs`),
     "crates/vize_atelier_sfc/src/native_selected_setup/tests.rs",
     "crates/vize_atelier_sfc/src/native_selected_setup/tests/original_input_model_number.rs",
     ...["custody", "output", "refusal", "finish"].map(
@@ -27,7 +27,7 @@ test("number producer, inputs and all three consumers select genuine hosted capt
   ])
     assert.equal(nativeVaporCaptureRequired([path]), true, path);
   for (const path of [
-    "davinci/vize_l3/tests/native_model_numbers.rs",
+    "levels/vize_l3/tests/native_model_numbers.rs",
     "crates/vize_atelier_sfc/tests/fixtures/native_original_input_model_number_inputs.json.old",
     "tests/tooling/support/native-input-model-number-unknown.ts",
     "docs/davinci/model-number.md",

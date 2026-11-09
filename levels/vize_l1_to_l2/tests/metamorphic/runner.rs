@@ -2,7 +2,7 @@
 //!
 //! Every input file is parsed and lowered once; every enumerated site
 //! then gets its own fresh parse, one mutation, and one oracle
-//! comparison against the original's normalized folio. The run counts
+//! comparison against the original's normalized dump. The run counts
 //! sites, applied mutations, predicate skips and beyond-cap sites per
 //! mutator, and [`Report::verdict`] fails a run whose total mutation
 //! count is zero — a suite that silently degenerates to no mutations
@@ -148,7 +148,7 @@ fn rules_for(kind: Kind) -> Normalization {
     }
 }
 
-fn folio_of_source(source: &str) -> L2Page {
+fn dump_of_source(source: &str) -> L2Page {
     let allocator = Allocator::new();
     let (tree, errors) = parse(&allocator, source);
     let lowered = lower(&allocator, &tree, &errors);
@@ -158,7 +158,7 @@ fn folio_of_source(source: &str) -> L2Page {
 /// Run every mutator over one source, accumulating into `report`.
 pub fn run_source(source: &str, context: &str, report: &mut Report) {
     report.files += 1;
-    let original = folio_of_source(source);
+    let original = dump_of_source(source);
     let sites = {
         let allocator = Allocator::new();
         let (tree, _errors) = parse(&allocator, source);
@@ -187,27 +187,27 @@ fn check_site(source: &str, context: &str, site: &Site, original: &L2Page, repor
     let rules = rules_for(site.kind);
     let allocator = Allocator::new();
     let (mut tree, errors) = parse(&allocator, source);
-    let mutant_folio = match apply(&allocator, &mut tree, site) {
-        Mutant::Source(mutant_source) => folio_of_source(mutant_source.as_str()),
+    let mutant_dump = match apply(&allocator, &mut tree, site) {
+        Mutant::Source(mutant_source) => dump_of_source(mutant_source.as_str()),
         Mutant::InPlace => {
             let lowered = lower(&allocator, &tree, &errors);
             L2Page::of(&lowered.root.ops)
         }
     };
     let expected = normalized_display(original, rules);
-    let actual = normalized_display(&mutant_folio, rules);
+    let actual = normalized_display(&mutant_dump, rules);
     if expected != actual {
         report.failures.push(divergence(
             context,
             site,
-            "normalized folios diverge",
+            "normalized dumps diverge",
             &expected,
             &actual,
         ));
     }
     if let Detail::SplitAt { .. } = site.detail {
         // The exact inverse: re-merging the split reproduces the original
-        // `Full`-mode folio byte-for-byte (no normalization at all).
+        // `Full`-mode dump byte-for-byte (no normalization at all).
         merge_text(&mut tree, &site.path);
         let lowered = lower(&allocator, &tree, &errors);
         let remerged = L2Page::of(&lowered.root.ops);

@@ -168,5 +168,5 @@ broader ceiling. The strict all-provider scope, large-project acceptance and
 - Record the maintainer's review separately. No reviewer acceptance or v1 decision
   is recorded by this input package.
 
-The [v1 evidence package](../release/davinci-v1-evidence.md) maps these inputs to
+The [v1 evidence package](../release/level-v1-evidence.md) maps these inputs to
 the release checklist and preserves its remaining blockers.

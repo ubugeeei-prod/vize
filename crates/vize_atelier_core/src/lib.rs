@@ -17,14 +17,14 @@ pub mod runtime_helpers;
 pub mod test_macros;
 pub mod lane;
 pub mod steps;
-// Davinci P0-3 instrumentation; deleted when phase 1 retains parsed expressions.
+// Levels P0-3 instrumentation; deleted when phase 1 retains parsed expressions.
 #[doc(hidden)]
 pub mod expr_parse_probe;
-// Davinci P1-7 retained-expression consumption gates; shrinks away with the
+// Levels P1-7 retained-expression consumption gates; shrinks away with the
 // legacy re-parse sites at P1-8/P1-9.
 #[doc(hidden)]
 pub mod retained;
-// Davinci P2-12a pre-L2 traversal baseline; deleted when P2-12b's observer
+// Levels P2-12a pre-L2 traversal baseline; deleted when P2-12b's observer
 // counts walks through the pass manager instead.
 #[doc(hidden)]
 pub mod walk_probe;

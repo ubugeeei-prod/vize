@@ -10,7 +10,7 @@ pub enum BindingOrigin {
 }
 
 impl BindingOrigin {
-    /// Stable folio spelling.
+    /// Stable dump spelling.
     #[must_use]
     pub const fn as_str(self) -> &'static str {
         match self {
@@ -21,7 +21,7 @@ impl BindingOrigin {
         }
     }
 
-    /// Parse the stable folio spelling.
+    /// Parse the stable dump spelling.
     #[must_use]
     pub const fn from_str(value: &str) -> Option<Self> {
         match value.as_bytes() {
@@ -54,7 +54,7 @@ pub enum EscapeKind {
 }
 
 impl EscapeKind {
-    /// Stable folio spelling.
+    /// Stable dump spelling.
     #[must_use]
     pub const fn as_str(self) -> &'static str {
         match self {
@@ -65,7 +65,7 @@ impl EscapeKind {
         }
     }
 
-    /// Parse the stable folio spelling.
+    /// Parse the stable dump spelling.
     #[must_use]
     pub const fn from_str(value: &str) -> Option<Self> {
         match value.as_bytes() {
@@ -93,7 +93,7 @@ impl EscapeKind {
 /// every premise demands, then apply the provide/inject cap.
 ///
 /// It reads nothing but the three axes, so the Kani harness in
-/// `davinci/vize_l3/src/lattice/kani.rs` verifies this exact source against the
+/// `levels/vize_l3/src/lattice/kani.rs` verifies this exact source against the
 /// rule table.
 #[must_use]
 pub const fn classify(

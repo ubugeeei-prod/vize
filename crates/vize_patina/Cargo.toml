@@ -10,9 +10,9 @@ metadata.vize.stability = "compatibility-preview"
 autotests = false
 
 [features]
-# Arms the TS-25 markup lane (`tests/davinci_markup_differential.rs`): the
+# Arms the TS-25 markup lane (`tests/level_markup_differential.rs`): the
 # facade's full hook trace over Relief vs over L2, exact, on the committed
-# battery plus `VIZE_DAVINCI_DIFFERENTIAL_CORPUS=<dir>` widening.
+# battery plus `VIZE_LEVEL_DIFFERENTIAL_CORPUS=<dir>` widening.
 legacy-differential = []
 
 [dependencies]
@@ -24,7 +24,7 @@ vize_l0.workspace = true
 vize_croquis.workspace = true
 vize_atelier_sfc.workspace = true
 vize_atelier_jsx.workspace = true
-# Davinci stages: the markup facade views L2 (P4-7), reading L1 for the
+# Levels stages: the markup facade views L2 (P4-7), reading L1 for the
 # authored surface L2 normalizes away. Pug templates lower through the
 # same L1→L2 dependency.
 vize_l1.workspace = true
@@ -73,8 +73,8 @@ vize_glyph.workspace = true
 
 [target.'cfg(not(target_arch = "wasm32"))'.dev-dependencies]
 criterion.workspace = true
-davinci_harness.workspace = true
-davinci_test_support.workspace = true
+level_harness.workspace = true
+level_test_support.workspace = true
 tempfile.workspace = true
 
 [[bench]]
@@ -86,15 +86,15 @@ name = "markup_ir_bench"
 harness = false
 
 [[bench]]
-name = "davinci_markup"
+name = "level_markup"
 harness = false
 
 [[test]]
-name = "davinci_markup_differential"
+name = "level_markup_differential"
 required-features = ["legacy-differential"]
 
 [[test]]
-name = "davinci_authored_markup_budget"
+name = "level_authored_markup_budget"
 harness = false
 
 # The custody-pinned native-phase workflow runs this binary by name.

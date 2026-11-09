@@ -3,7 +3,7 @@
 //! Exact-equality oracles over the pass's three products — the moved
 //! branch-key facts, the duplicate-key diagnostics, and the provenance
 //! trail — plus the classification and rigor laws the review point
-//! names. The TS-17 folio snapshots live in `vif_pass_snapshot.rs`.
+//! names. The TS-17 dump snapshots live in `vif_pass_snapshot.rs`.
 
 #![expect(
     clippy::expect_used,
@@ -28,8 +28,8 @@ use vize_l2::dump::{
 
 /// The single root element of branch `index` of the `chain`-th root op,
 /// reached through a `ui.for` wrap when the branch carries one.
-fn branch_root(folio: &L2Page, chain: usize, index: usize) -> &DumpElement {
-    let DumpOp::If(if_op) = &folio.ops[chain] else {
+fn branch_root(dump: &L2Page, chain: usize, index: usize) -> &DumpElement {
+    let DumpOp::If(if_op) = &dump.ops[chain] else {
         panic!("root op {chain} is not ui.if");
     };
     match &if_op.branches[index].ops[..] {
@@ -59,12 +59,12 @@ fn span_of(source: &str, needle: &str, occurrence: usize) -> Span {
 #[test]
 fn extraction_moves_the_key_from_the_attribute_surface_to_a_fact() {
     let source = r#"<div v-if="a" key="x">1</div><div v-else key="y">2</div>"#;
-    with_transformed(source, |lowered, folio, facts, _| {
+    with_transformed(source, |lowered, dump, facts, _| {
         // The attribute surface no longer carries the keys: both branch
         // roots hold exactly no attributes (exact oracle, TS-13).
         for index in [0usize, 1] {
             assert_eq!(
-                branch_root(folio, 0, index).attributes,
+                branch_root(dump, 0, index).attributes,
                 vec![],
                 "branch {index} must have an empty attribute surface"
             );
@@ -169,11 +169,11 @@ fn a_for_wrapped_branch_keeps_its_key_with_the_iteration() {
     // the `ui.for` and the key belongs to the iteration - exactly the
     // legacy transform's has-v-for skip.
     let source = r#"<li v-if="a" v-for="i in xs" key="k">{{ i }}</li>"#;
-    with_transformed(source, |_, folio, facts, _| {
+    with_transformed(source, |_, dump, facts, _| {
         assert!(facts.if_facts.is_empty(), "no branch fact may exist");
         // The iterated element keeps exactly its key (exact oracle).
         assert_eq!(
-            branch_root(folio, 0, 0).attributes,
+            branch_root(dump, 0, 0).attributes,
             vec![DumpAttribute {
                 name: "key".into(),
                 value: Some("k".into()),
@@ -191,11 +191,11 @@ fn an_unwrapped_single_child_keeps_its_own_key() {
     // belongs to its own vnode, exactly as the legacy transform leaves
     // it. The span-identity guard is what this pins.
     let source = r#"<template v-if="a"><div key="z">x</div></template><p v-else>y</p>"#;
-    with_transformed(source, |lowered, folio, facts, _| {
+    with_transformed(source, |lowered, dump, facts, _| {
         assert!(facts.if_facts.is_empty(), "no branch fact may exist");
         // The inner element keeps exactly its own key (exact oracle).
         assert_eq!(
-            branch_root(folio, 0, 0).attributes,
+            branch_root(dump, 0, 0).attributes,
             vec![DumpAttribute {
                 name: "key".into(),
                 value: Some("z".into()),
@@ -234,8 +234,8 @@ fn the_pipeline_reports_one_walk_per_barrier_pass() {
 #[test]
 fn lowering_publishes_vif_facts_before_transform() {
     let source = r#"<p v-if="a" key="x">1</p><p v-else>2</p>"#;
-    with_lowered(source, |lowered, folio| {
-        assert!(!folio.ops.is_empty(), "the chain lowered to an op");
+    with_lowered(source, |lowered, dump| {
+        assert!(!dump.ops.is_empty(), "the chain lowered to an op");
         let entries = lowered.if_facts.sorted_entries();
         assert_eq!(entries.len(), 1);
         assert_eq!(

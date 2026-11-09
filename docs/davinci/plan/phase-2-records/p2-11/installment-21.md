@@ -15,10 +15,10 @@ treat `|` as a normal expression operator rather than a filter.
 
 The durable current witnesses are:
 
-- [`emit_filters.rs`](../../../../../davinci/vize_l1_to_l2/tests/emit_filters.rs)
+- [`emit_filters.rs`](../../../../../levels/vize_l1_to_l2/tests/emit_filters.rs)
   — direct S2 emission snapshots for filter assets, wrapped calls, and Vue 3
   non-filter behavior.
-- [`davinci_s2_filters.rs`](../../../../../crates/vize_atelier_dom/tests/l2_filters.rs)
+- [`level_s2_filters.rs`](../../../../../crates/vize_atelier_dom/tests/l2_filters.rs)
   — S2-vs-shipped byte-for-byte coverage under the legacy feature.
 
 This installment does not tick P2-11. Local slot/outlet guard-only shapes

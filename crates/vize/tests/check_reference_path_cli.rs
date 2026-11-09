@@ -6,7 +6,7 @@ use std::process::Command;
 
 use crate::support::corsa_path;
 use crate::support::corsa_requirement;
-use davinci_test_support::reference_path_project as project;
+use level_test_support::reference_path_project as project;
 
 #[test]
 fn reference_path_modules_keep_complete_cli_diagnostics() {

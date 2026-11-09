@@ -1,6 +1,6 @@
 // #6841: dialect code lives in each level's `dialect/`, `markup/`, `lang/` or `framework/`
 // modules; core modules never reference dialect policy. L1 has its own stricter gate
-// (davinci-l1-dialect-isolation.test.ts). L0 is exempt: it owns the configuration that
+// (level-l1-dialect-isolation.test.ts). L0 is exempt: it owns the configuration that
 // selects a dialect. Test code is exempt. `owed` only shrinks.
 import assert from "node:assert/strict";
 import fs from "node:fs";
@@ -8,7 +8,7 @@ import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
-import { maskRustSource } from "./davinci-storage-rust-syntax.ts";
+import { maskRustSource } from "./level-storage-rust-syntax.ts";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const crates = ["vize_l1_to_l2", "vize_l2", "vize_l2_to_l3", "vize_l3", "vize_l4"];
@@ -66,7 +66,7 @@ function offenders(root: string): string[] {
 }
 
 test("no core module outside the owed list references dialect policy", () => {
-  const found = offenders(path.join(repoRoot, "davinci"));
+  const found = offenders(path.join(repoRoot, "levels"));
   assert.deepEqual(
     found.filter((file) => !owed.includes(file)),
     [],
@@ -75,7 +75,7 @@ test("no core module outside the owed list references dialect policy", () => {
 });
 
 test("the owed list only shrinks", () => {
-  const found = new Set(offenders(path.join(repoRoot, "davinci")));
+  const found = new Set(offenders(path.join(repoRoot, "levels")));
   assert.deepEqual(
     owed.filter((file) => !found.has(file)),
     [],
@@ -117,7 +117,7 @@ test("dialect variant rematches include direct, glob and selected imports", () =
 });
 
 test("one L0 file descriptor owns every input axis and legacy types only re-export it", () => {
-  const owner = fs.readFileSync(path.join(repoRoot, "davinci/vize_l0/src/dialect/file.rs"), "utf8");
+  const owner = fs.readFileSync(path.join(repoRoot, "levels/vize_l0/src/dialect/file.rs"), "utf8");
   for (const field of ["version", "framework", "syntax", "profile", "lang"])
     assert.match(owner, new RegExp(`\\b${field}:`, "u"), `missing FileDialect.${field}`);
 
@@ -126,20 +126,20 @@ test("one L0 file descriptor owns every input axis and legacy types only re-expo
   assert.doesNotMatch(relief, /pub enum TemplateSyntaxMode/u);
 
   const descriptor = fs.readFileSync(
-    path.join(repoRoot, "davinci/vize_l1/src/container/vue/descriptor.rs"),
+    path.join(repoRoot, "levels/vize_l1/src/container/vue/descriptor.rs"),
     "utf8",
   );
   assert.match(descriptor, /dialect: FileDialect/u);
   assert.match(descriptor, /options\.resolve\(state\.lang\(\)\)/u);
 
   const document = fs.readFileSync(
-    path.join(repoRoot, "davinci/vize_l1/src/markup/document.rs"),
+    path.join(repoRoot, "levels/vize_l1/src/markup/document.rs"),
     "utf8",
   );
   assert.match(document, /FileDialect::document\(configured, root\.source\(\), syntax, lang\)/u);
 
   const target = fs.readFileSync(
-    path.join(repoRoot, "davinci/vize_l4/src/framework/vue.rs"),
+    path.join(repoRoot, "levels/vize_l4/src/framework/vue.rs"),
     "utf8",
   );
   assert.match(target, /registry::TargetOptions::for_file\(/u);
@@ -149,7 +149,7 @@ test("one L0 file descriptor owns every input axis and legacy types only re-expo
 
 test("each level has one registry and policy consumers do not rematch variants", () => {
   for (const crate of registryCrates) {
-    const root = path.join(repoRoot, "davinci", crate, "src");
+    const root = path.join(repoRoot, "levels", crate, "src");
     assert.ok(fs.existsSync(path.join(root, "registry.rs")), `${crate} has no registry.rs`);
     assert.match(
       fs.readFileSync(path.join(root, "lib.rs"), "utf8"),
@@ -167,9 +167,7 @@ test("each level has one registry and policy consumers do not rematch variants",
     "vize_l4/src/framework/vue.rs",
   ];
   for (const relative of consumers) {
-    const source = maskRustSource(
-      fs.readFileSync(path.join(repoRoot, "davinci", relative), "utf8"),
-    );
+    const source = maskRustSource(fs.readFileSync(path.join(repoRoot, "levels", relative), "utf8"));
     assert.match(source, /registry::/u, `${relative} does not use its level registry`);
     assert.doesNotMatch(
       source,
@@ -178,7 +176,7 @@ test("each level has one registry and policy consumers do not rematch variants",
     );
   }
 
-  const featureRoot = path.join(repoRoot, "davinci/vize_l1/src/dialect/vue/feature");
+  const featureRoot = path.join(repoRoot, "levels/vize_l1/src/dialect/vue/feature");
   const featureModule = fs.readFileSync(path.join(featureRoot, "mod.rs"), "utf8");
   for (const feature of [
     "attribute",
@@ -204,7 +202,7 @@ test("each level has one registry and policy consumers do not rematch variants",
 
   for (const version of ["vue0.rs", "vue1.rs", "vue2.rs", "vue3.rs"])
     assert.ok(
-      fs.existsSync(path.join(repoRoot, "davinci/vize_l1/src/dialect", version)),
+      fs.existsSync(path.join(repoRoot, "levels/vize_l1/src/dialect", version)),
       `missing Vue version table ${version}`,
     );
 });

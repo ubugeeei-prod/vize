@@ -2,10 +2,10 @@
 //! reference classifier.
 //!
 //! The committed fact page is exactly what `evaluate` prints for an enumerated
-//! input matrix. `davinci_test_support::l3_reference::lattice` re-enumerates the
+//! input matrix. `level_test_support::l3_reference::lattice` re-enumerates the
 //! same matrix, parses this page without `vize_l3` and recomputes every class
 //! from the declarative rule table. The lattice laws themselves are
-//! verified on this evaluator by `davinci/vize_l3/src/lattice/kani.rs`. Regenerate
+//! verified on this evaluator by `levels/vize_l3/src/lattice/kani.rs`. Regenerate
 //! the page with `VIZE_UPDATE_LATTICE_REFERENCE_FIXTURE=1` only when the rule
 //! spec changes.
 
@@ -17,7 +17,7 @@
 
 use std::path::Path;
 
-use davinci_test_support::l3_reference::{fixtures, lattice};
+use level_test_support::l3_reference::{fixtures, lattice};
 use vize_l0::dump::{Dump, Mode as DumpMode};
 use vize_l0::{Allocator, Span};
 use vize_l3::lattice::dump::Page as ReactivityPage;
@@ -99,7 +99,7 @@ fn rust_lattice_fact_page_matches_reference_fixture() {
     expected.push(b'\n');
 
     let path = Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join("../../tests/fixtures/l3-reference/reactivity-lattice.folio");
+        .join("../../tests/fixtures/l3-reference/reactivity-lattice.dump");
     if std::env::var("VIZE_UPDATE_LATTICE_REFERENCE_FIXTURE").as_deref() == Ok("1") {
         std::fs::write(&path, &expected).unwrap();
     }
@@ -132,7 +132,7 @@ fn fixture_matrix_publishes_every_class_and_verdict() {
 /// wrong classifiers are rejected.
 #[test]
 fn committed_fact_page_matches_the_independent_classifier() {
-    let text = std::fs::read_to_string(fixtures().join("reactivity-lattice.folio")).unwrap();
+    let text = std::fs::read_to_string(fixtures().join("reactivity-lattice.dump")).unwrap();
     assert_eq!(
         lattice::check(lattice::classify, &text).unwrap(),
         256 + 4 * 4 * 9

@@ -23,14 +23,14 @@ pub const SURFACE_SEMANTICS: &str = "surface_semantics";
 /// The lane one template compile took, read from its selection counters.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Lane {
-    /// The Davinci stage emitted the module.
+    /// The Levels stage emitted the module.
     Accepted,
     /// An explicit `<script vapor>` declaration routed a requested DOM shape
     /// through the Vapor backend, which recorded its own selection counter.
     RoutedVapor,
     /// The legacy lane emitted it, for the named reason.
     Legacy(String),
-    /// The Davinci artifact broke an invariant and the legacy lane emitted.
+    /// The Levels artifact broke an invariant and the legacy lane emitted.
     Rejected,
     /// The backend recorded no selection counter at all: its lane has no
     /// production selector yet (a witness-only bridge, for instance).
@@ -97,7 +97,7 @@ pub fn classify_route(
 pub struct Tally {
     /// Templates the shape compiled successfully.
     pub templates: u64,
-    /// Templates whose module the Davinci stage emitted.
+    /// Templates whose module the Levels stage emitted.
     pub accepted: u64,
     /// Explicit Vapor SFCs that overrode this shape's requested DOM backend.
     pub routed_vapor: u64,
@@ -190,7 +190,7 @@ impl Tally {
 
     pub fn line(&self, shape: Shape) -> String {
         format!(
-            "davinci production reach: shape={} stage={:?} templates={} accepted={} permille={} ready={} legacy={:?} rejected={} routed_vapor={} unrecorded={} sfc_errors={:?} compared={} divergences={}",
+            "levels production reach: shape={} stage={:?} templates={} accepted={} permille={} ready={} legacy={:?} rejected={} routed_vapor={} unrecorded={} sfc_errors={:?} compared={} divergences={}",
             shape.id(),
             shape.stage(),
             self.templates,

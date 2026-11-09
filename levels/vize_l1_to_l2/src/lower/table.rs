@@ -3,7 +3,7 @@
 //! Vue's DOM compiler rides the HTML parser shape: direct rows under a table
 //! gain an implicit `tbody`, and direct cells under a row group gain an
 //! implicit `tr`. L2 inserts those owners during lowering so synthesized op ids
-//! stay in folio page order.
+//! stay in dump page order.
 
 use vize_l0::{Box, Span, Vec, cstr};
 use vize_l1::markup::{Interpolation, SurfaceChild};

@@ -1,8 +1,8 @@
 #![no_main]
 
-// L2 -> L3 lowering fuzz target (Davinci P3-3, TS-20).
+// L2 -> L3 lowering fuzz target (Levels P3-3, TS-20).
 //
-// This extends the L1 -> L2 totality target through the Impeto bridge. Arbitrary
+// This extends the L1 -> L2 totality target through the L3 bridge. Arbitrary
 // UTF-8 must produce either a verified L3 program and partition facts or typed
 // diagnostics from earlier stages; it must not panic. When L3 is emitted, the
 // canonical Dump print must re-parse exactly. P3-10 placement annotation must
@@ -42,14 +42,14 @@ fuzz_target!(|data: &[u8]| {
     assert_spans_resolve(root, &lowered);
     assert_partition_matches_program(&lowered);
 
-    let folio = L3Page::of(&lowered.program);
-    let printed = folio.print_to_string(DumpMode::Full);
+    let dump = L3Page::of(&lowered.program);
+    let printed = dump.print_to_string(DumpMode::Full);
     let reparsed = L3Page::parse(printed.as_str()).expect("canonical print must re-parse");
-    assert_eq!(reparsed, folio);
+    assert_eq!(reparsed, dump);
 
     annotate(&mut lowered.program);
     assert_eq!(verify(&lowered.program), vec![]);
-    assert_eq!(L3Page::of(&lowered.program), folio);
+    assert_eq!(L3Page::of(&lowered.program), dump);
     assert_partition_matches_program(&lowered);
     let placements = PlacementPage::of(&lowered.program);
     let printed = placements.print_to_string(DumpMode::Full);
@@ -61,7 +61,7 @@ fuzz_target!(|data: &[u8]| {
     let extraction = optimize(&mut lowered.program, OptTier::O3, &mut collector)
         .expect("the optimization pipeline is closed");
     assert_eq!(verify(&lowered.program), vec![]);
-    assert_eq!(L3Page::of(&lowered.program), folio);
+    assert_eq!(L3Page::of(&lowered.program), dump);
     assert_eq!(lowered.partition.stale(&lowered.program), None);
     let report = ExtractionPage::of(&extraction);
     let printed = report.print_to_string(DumpMode::Full);

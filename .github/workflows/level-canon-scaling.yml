@@ -1,4 +1,4 @@
-name: Davinci Canon distinct-host scaling
+name: Levels Canon distinct-host scaling
 
 on:
   workflow_dispatch:
@@ -29,7 +29,7 @@ on:
         type: string
 
 concurrency:
-  group: davinci-canon-scaling-${{ github.sha }}
+  group: level-canon-scaling-${{ github.sha }}
   cancel-in-progress: false
 
 permissions:
@@ -84,7 +84,7 @@ jobs:
       - if: ${{ env.ORIGINAL_PUBLIC_REQUESTED != 'true' }}
         uses: ./.github/actions/setup-rust-sticky-cache
         with:
-          key: davinci-canon-scaling
+          key: level-canon-scaling
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}-${{ matrix.case }}-${{ matrix.files }}
       - name: Save exact source and protocol provenance
         if: ${{ github.event_name == 'workflow_dispatch' && env.ORIGINAL_CUT_REQUESTED != 'true' }}
@@ -92,7 +92,7 @@ jobs:
           SOURCE_SHA: ${{ matrix.source }}
           CASE: ${{ matrix.case }}
           FILES: ${{ matrix.files }}
-        run: node tools/benchmarks/scripts/davinci-canon-scaling-receipt.ts methodology
+        run: node tools/benchmarks/scripts/level-canon-scaling-receipt.ts methodology
       - name: Build the measured production server
         if: ${{ github.event_name == 'workflow_dispatch' && env.ORIGINAL_CUT_REQUESTED != 'true' }}
         run: >-
@@ -106,12 +106,12 @@ jobs:
           FILES: ${{ matrix.files }}
         run: >-
           timeout --signal=TERM --kill-after=30s 15m
-          vp exec node tools/support/compat/davinci/lsp-resources.ts
+          vp exec node tools/support/compat/levels/lsp-resources.ts
           --server target/ci-opt/vize --files "$FILES" --warm-providers "$FILES"
           --runs 1 --idle-seconds 10 --out "$RUNNER_TEMP/lsp-resource.json"
       - name: Save binary identity and exact command with every result
         if: ${{ always() && github.event_name == 'workflow_dispatch' && env.ORIGINAL_CUT_REQUESTED != 'true' }}
-        run: node tools/benchmarks/scripts/davinci-canon-scaling-receipt.ts attach
+        run: node tools/benchmarks/scripts/level-canon-scaling-receipt.ts attach
       - name: Bind the original warm-request pair to its actual source baseline
         if: ${{ github.event_name == 'pull_request' || env.ORIGINAL_CUT_REQUESTED == 'true' }}
         env:

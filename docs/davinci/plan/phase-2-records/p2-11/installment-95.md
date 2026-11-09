@@ -11,7 +11,7 @@ helper path.
 
 ## Evidence
 
-`crates/vize_atelier_dom/tests/davinci_s2_constant_style_binding.rs` pins the
+`crates/vize_atelier_dom/tests/level_s2_constant_style_binding.rs` pins the
 constant and non-constant style cases byte-for-byte. The new
 `emit::constant_expr` helper centralizes the predicate so the style, prefix and
 props-object paths agree.

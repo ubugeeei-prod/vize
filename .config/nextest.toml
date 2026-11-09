@@ -151,7 +151,7 @@ junit.store-success-output = true
 # Keep the seven exact allocation vectors for this one case in both PR/full
 # JUnit receipts; all other output policies and runtime settings stay unchanged.
 [[profile.default.overrides]]
-filter = 'package(=vize_atelier_vapor) & binary(=davinci_vapor_native_budget) & test(=native_lane_stays_within_its_allocation_ceilings)'
+filter = 'package(=vize_atelier_vapor) & binary(=level_vapor_native_budget) & test(=native_lane_stays_within_its_allocation_ceilings)'
 junit.store-success-output = true
 
 # Preserve complete public #7989 CLI/API observations in both inherited PR/full

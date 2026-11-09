@@ -83,7 +83,7 @@ pub fn assert_seeded_tree(
         && unexpected.is_empty();
     Ok(SeedAssertReport {
         schema_version: 1,
-        tool: "tools/commands/davinci/seed-defects.rs --assert".to_string(),
+        tool: "tools/commands/levels/seed-defects.rs --assert".to_string(),
         source: manifest.source.clone(),
         scope: manifest.scope.clone(),
         lint: LintCounts {

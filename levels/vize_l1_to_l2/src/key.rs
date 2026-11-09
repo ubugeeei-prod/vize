@@ -1,6 +1,6 @@
 //! The L1 surface page as a keyed artifact (P5-1a).
 //!
-//! L1 cannot name `vize_davinci` (the stage-dependency table keeps it on
+//! L1 cannot name `vize_level` (the stage-dependency table keeps it on
 //! L0 alone), so its [`KeyedArtifact`] view lives in this conversion crate,
 //! the one place that already joins L1 and the shared infrastructure. The
 //! L2 page keys itself (`impl KeyedArtifact for L2Page` in `vize_l2`).

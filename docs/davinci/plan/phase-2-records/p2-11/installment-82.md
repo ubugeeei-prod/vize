@@ -12,9 +12,9 @@ legacy `Transition` slot prop hoisting, foreign SVG hoist splitting and valued
 
 The durable witnesses are:
 
-- [`davinci_s2_corpus_residuals.rs`](../../../../../crates/vize_atelier_dom/tests/l2_corpus_residuals.rs)
+- [`level_s2_corpus_residuals.rs`](../../../../../crates/vize_atelier_dom/tests/l2_corpus_residuals.rs)
   - pins the final reduced residual snippets.
-- [`davinci_s2_patch_flags.rs`](../../../../../crates/vize_atelier_dom/tests/l2_patch_flags.rs)
+- [`level_s2_patch_flags.rs`](../../../../../crates/vize_atelier_dom/tests/l2_patch_flags.rs)
   - preserves patch flag behavior for the same surfaces.
 
 This installment does not tick P2-11. The production-lane switch remains open.

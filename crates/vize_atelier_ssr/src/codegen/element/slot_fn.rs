@@ -1,7 +1,7 @@
 //! SSR slot property and `_withCtx` slot function emission.
 //!
 //! Slot names map to their authored `v-slot` argument and each slot function
-//! opens at the authored element carrying the slot (Davinci P3-9).
+//! opens at the authored element carrying the slot (Levels P3-9).
 
 use super::super::helpers::collect_for_scoped_params;
 use super::component::{has_slot_directive, slot_template_in_children, template_slot_is_dynamic};

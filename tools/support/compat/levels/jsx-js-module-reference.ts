@@ -72,7 +72,7 @@ interface VueRuntime {
 }
 
 export const fixtureUrl = new URL(
-  "../../../../davinci/vize_l4/tests/fixtures/jsx-js-module-vue-3.5.35.json",
+  "../../../../levels/vize_l4/tests/fixtures/jsx-js-module-vue-3.5.35.json",
   import.meta.url,
 );
 const fromTests = createRequire(new URL("../../../../tests/package.json", import.meta.url));

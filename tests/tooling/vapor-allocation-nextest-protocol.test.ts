@@ -12,7 +12,7 @@ test("Vapor allocation harness separates nextest discovery, selection and callba
   const source = readFileSync(
     fileURLToPath(
       new URL(
-        "../../crates/vize_atelier_vapor/tests/davinci_vapor_native_budget.rs",
+        "../../crates/vize_atelier_vapor/tests/level_vapor_native_budget.rs",
         import.meta.url,
       ),
     ),
@@ -109,12 +109,12 @@ test("Vapor budget remains one mandatory, output-retained nextest case", () => {
   );
   const target = manifest
     .split("[[test]]")
-    .find((entry) => entry.split(/\n\s*\n/u)[0]?.includes('name = "davinci_vapor_native_budget"'));
+    .find((entry) => entry.split(/\n\s*\n/u)[0]?.includes('name = "level_vapor_native_budget"'));
   assert.ok(target, "the unchanged target is explicitly registered");
   const registration = target.split(/\n\s*\n/u)[0];
   assert.match(registration ?? "", /harness = false/u);
   assert.doesNotMatch(registration ?? "", /required-features|test = false/u);
-  const expected = `package(=vize_atelier_vapor) & binary(=davinci_vapor_native_budget) & test(=${CASE})`;
+  const expected = `package(=vize_atelier_vapor) & binary(=level_vapor_native_budget) & test(=${CASE})`;
   const override = config
     .split("[[profile.default.overrides]]")
     .find((entry) => entry.split(/\n\s*\n/u)[0]?.includes(`filter = '${expected}'`));

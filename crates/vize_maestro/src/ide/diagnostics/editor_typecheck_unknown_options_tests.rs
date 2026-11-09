@@ -3,7 +3,7 @@ use super::DiagnosticService;
 use super::editor_typecheck_fixture::{
     resolve_test_tsgo_binary, state_for_fixture, write_corsa_config,
 };
-use davinci_test_support::unknown_template_fixture as fixture;
+use level_test_support::unknown_template_fixture as fixture;
 use tower_lsp::lsp_types::{Diagnostic, DiagnosticSeverity, NumberOrString, Position, Range, Url};
 
 #[test]

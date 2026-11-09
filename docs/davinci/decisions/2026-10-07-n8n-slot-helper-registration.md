@@ -41,7 +41,7 @@ Its exact SHA256 is
 Stock ordering stays independent of Vize's legacy registration contract;
 the recorded legacy ordering predictions are source inference.
 
-The existing `davinci_dom_n8n_helper_props` target compares whole native and
+The existing `level_dom_n8n_helper_props` target compares whole native and
 forced-legacy modules for these 17 inputs in all three shipped option lanes.
 Local checks authenticate frozen bytes and source/module/license hashes.
 No local Vize Rust compilation or hosted candidate result is claimed here.

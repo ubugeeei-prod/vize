@@ -18,7 +18,7 @@ use crate::op::{OpId, Program};
 
 /// Placement records in program order.
 #[derive(Debug, Clone, Default, PartialEq, Eq, Dump)]
-#[dump(name = "s3-placement-folio")]
+#[dump(name = "s3-placement-dump")]
 pub struct Page {
     pub placements: Vec<Record>,
 }

@@ -106,7 +106,7 @@ fn authored_slice_span(css: &str, slice: &str, block_start: u32) -> Span {
 
 impl<'a> super::Lowered<'a> {
     /// Append one style block's carrier to the already-lowered template
-    /// tree and keep [`super::Lowered::op_count`] equal to the folio.
+    /// tree and keep [`super::Lowered::op_count`] equal to the dump.
     pub fn push_style_block(&mut self, allocator: &'a Allocator, css: &'a str, block_start: u32) {
         let op = lower_style_block(allocator, css, block_start);
         self.push_style_op(op);

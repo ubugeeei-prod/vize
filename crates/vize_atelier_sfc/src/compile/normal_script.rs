@@ -9,7 +9,7 @@ use crate::types::SfcDescriptor;
 use super::helpers::is_ts_lang;
 
 /// The normal `<script>` content kept beside `<script setup>`, and, when
-/// `trace` asks for it, that content's provenance in `.vue` offsets (Davinci
+/// `trace` asks for it, that content's provenance in `.vue` offsets (Levels
 /// P3-9).
 pub(super) fn extract_for_setup(
     descriptor: &SfcDescriptor<'_>,

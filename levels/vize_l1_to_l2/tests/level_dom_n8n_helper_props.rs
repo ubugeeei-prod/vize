@@ -5,11 +5,11 @@
     reason = "whole-module differential test reports use std strings"
 )]
 
-mod davinci_dom_corpus_support;
+mod level_dom_corpus_support;
 mod n8n_slot_registration;
 mod n8n_typed_prefixed;
 
-use davinci_dom_corpus_support::{Lane, Report, compare_sfc_template_lane};
+use level_dom_corpus_support::{Lane, Report, compare_sfc_template_lane};
 
 const NESTED_SLOT: &str = include_str!(
     "../../../tests/_fixtures/differential/compiler/n8n-helper-props/NestedConditionalSlot.vue.txt"

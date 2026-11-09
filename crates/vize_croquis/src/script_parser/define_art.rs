@@ -1,4 +1,4 @@
-//! A `defineArt()`-only reader for Musea (Davinci P4-13).
+//! A `defineArt()`-only reader for Musea (Levels P4-13).
 //!
 //! [`parse_script_setup`](super::parse_script_setup) runs the whole
 //! script-setup analysis — bindings, the scope chain with its global scopes,

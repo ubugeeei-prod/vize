@@ -35,7 +35,7 @@ pub(in crate::lower) fn generate_element_template(
 }
 
 /// [`generate_element_template`] linking the tag names, static attributes and
-/// text it copies to their authored ranges (Davinci P3-9); identical bytes.
+/// text it copies to their authored ranges (Levels P3-9); identical bytes.
 pub(in crate::lower) fn generate_element_template_spanned(
     root: RootAttributes<'_, '_>,
     scope_id: Option<&str>,

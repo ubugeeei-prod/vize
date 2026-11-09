@@ -224,7 +224,7 @@ mod tests {
 
     /// Assert a pipeline's pass names, in order. Spelled as a zip rather
     /// than a collected `Vec` so this suite owns no storage — the file is a
-    /// separate module, so `davinci-storage-policy`'s `cfg(test)` masking
+    /// separate module, so `level-storage-policy`'s `cfg(test)` masking
     /// does not reach it.
     #[track_caller]
     fn assert_names(pipeline: &vize_l0::pass::Pipeline, expected: &[&str]) {

@@ -1,4 +1,4 @@
-// Platform contract for exact Davinci allocation-byte peaks.
+// Platform contract for exact Levels allocation-byte peaks.
 //
 // Allocation call counts stay machine-independent. Peak requested bytes are
 // exact only on one target OS, so reports identify their producer and the
@@ -13,7 +13,7 @@ import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
-const comparePath = path.join(repoRoot, "tools", "commands", "davinci", "bench-compare.rs");
+const comparePath = path.join(repoRoot, "tools", "commands", "levels", "bench-compare.rs");
 const benchId = "s1_to_s2_lower_vfor_three_aliases";
 
 function budgetText(peaks: string): string {
@@ -39,7 +39,7 @@ function report(platform: string | undefined, peak: number): Record<string, unkn
 }
 
 function runCase(budgets: string, current: Record<string, unknown>) {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), "davinci-platform-gate-"));
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "level-platform-gate-"));
   const results = path.join(root, "results");
   fs.mkdirSync(results);
   fs.writeFileSync(path.join(root, "budgets.toml"), budgets);

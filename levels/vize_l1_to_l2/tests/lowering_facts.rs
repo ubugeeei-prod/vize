@@ -211,12 +211,12 @@ fn dropped_content_is_never_silent() {
 }
 
 #[test]
-fn page_order_ids_key_every_table_and_match_the_folio_count() {
+fn page_order_ids_key_every_table_and_match_the_dump_count() {
     with_lowered(
         "<div><span v-for=\"i in is\">{{i}}</span></div>",
-        |lowered, folio| {
+        |lowered, dump| {
             assert_eq!(lowered.op_count, 4);
-            assert_eq!(folio.op_count(), 4);
+            assert_eq!(dump.op_count(), 4);
             // div=0, for=1 (page order: the wrap precedes the element),
             // span=2, interpolation=3; the scope keys the ui.for.
             let keys: Vec<u32> = lowered

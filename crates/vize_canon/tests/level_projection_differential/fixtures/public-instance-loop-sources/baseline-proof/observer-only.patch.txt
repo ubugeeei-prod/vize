@@ -1,7 +1,7 @@
-diff --git a/crates/vize_canon/tests/davinci_projection_differential/main.rs b/crates/vize_canon/tests/davinci_projection_differential/main.rs
+diff --git a/crates/vize_canon/tests/level_projection_differential/main.rs b/crates/vize_canon/tests/level_projection_differential/main.rs
 index 0de92971d..2cb3483aa 100644
---- a/crates/vize_canon/tests/davinci_projection_differential/main.rs
-+++ b/crates/vize_canon/tests/davinci_projection_differential/main.rs
+--- a/crates/vize_canon/tests/level_projection_differential/main.rs
++++ b/crates/vize_canon/tests/level_projection_differential/main.rs
 @@ -152,6 +152,16 @@ fn check_diagnostics_land_inside_the_projection() {
                      added += 1;
                      additions.push(diagnostic);

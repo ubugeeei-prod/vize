@@ -11,7 +11,7 @@ the part that owns the expression.
 
 ## Evidence
 
-`crates/vize_atelier_dom/tests/davinci_s2_constant_text_run.rs` covers mixed
+`crates/vize_atelier_dom/tests/level_s2_constant_text_run.rs` covers mixed
 text and interpolation runs against the shipped DOM output. The child emitter
 now keeps each part's constant decision local to that part.
 

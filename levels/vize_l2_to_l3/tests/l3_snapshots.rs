@@ -37,14 +37,14 @@ fn snapshot(source: &str) -> String {
 }
 
 #[test]
-fn static_and_dynamic_template_snapshots_l3_folio() {
+fn static_and_dynamic_template_snapshots_l3_dump() {
     assert_l3_snapshot!(snapshot(
         r#"<main class="shell"><button :disabled="locked" @click="save">{{ label }}</button></main>"#
     ));
 }
 
 #[test]
-fn control_and_slots_template_snapshots_l3_folio() {
+fn control_and_slots_template_snapshots_l3_dump() {
     assert_l3_snapshot!(snapshot(
         r#"<section><p v-if="ready">ready</p><slot name="body"><span v-text="fallback" /></slot></section>"#
     ));

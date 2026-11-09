@@ -13,9 +13,9 @@ match the shipped compatibility lane. The main-line pin is `44058cef0`.
 
 - `cargo fmt --all -- --check`
 - `cargo test -p vize_atelier_dom compile::stage_options::tests --lib`
-- `cargo test -p vize_atelier_dom --test davinci_s2_codegen_option_selector`
-- `cargo test -p vize_atelier_dom --test davinci_s2_production_selector`
-- `node --test tests/tooling/davinci-dom-production-boundary.test.ts`
+- `cargo test -p vize_atelier_dom --test level_s2_codegen_option_selector`
+- `cargo test -p vize_atelier_dom --test level_s2_production_selector`
+- `node --test tests/tooling/level-dom-production-boundary.test.ts`
 - `git diff --check origin/main...HEAD`
 
 ## Remaining blocker

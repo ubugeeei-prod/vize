@@ -139,7 +139,7 @@ await test("finalization re-proves process-sharded observers and their exact sha
     assert.deepEqual(verify(), identity);
     assert.deepEqual(verify(true), identity);
     const reach = join(root, selection.workers[2]!.artifactName);
-    const vector = join(reach, "reach-davinci_production_reach-shard-05-of-16.nul");
+    const vector = join(reach, "reach-level_production_reach-shard-05-of-16.nul");
     const original = readFileSync(vector);
     const paths = original.toString("utf8").split("\0").filter(Boolean);
     writeFileSync(vector, `${[...paths].reverse().join("\0")}\0`);

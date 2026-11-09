@@ -20,7 +20,7 @@ pub fn rewrite_default(input: &str, as_name: &str, is_ts: bool) -> (String, bool
 
 /// [`rewrite_default`] plus the rewritten code's provenance in `input`: text
 /// outside the rewritten statements is copied, and each rewrite is anchored at
-/// the statement it replaced (Davinci P3-9 source maps).
+/// the statement it replaced (Levels P3-9 source maps).
 pub(crate) fn rewrite_default_traced(
     input: &str,
     as_name: &str,

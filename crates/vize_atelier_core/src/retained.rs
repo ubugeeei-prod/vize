@@ -1,4 +1,4 @@
-//! Retained-expression consumption gates (Davinci P1-7).
+//! Retained-expression consumption gates (Levels P1-7).
 //!
 //! P1-5 parses every template expression once, at template parse, into the
 //! compile's shared oxc arena (`SimpleExpressionNode::js_ast`, TS dialect,

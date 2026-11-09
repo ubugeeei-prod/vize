@@ -16,7 +16,7 @@ dynamic style values keep the shipped lane's helper shape once they are
 wrapped in a merged array.
 
 The durable witness is
-`crates/vize_atelier_dom/tests/davinci_s2_style_merge.rs`: eight
+`crates/vize_atelier_dom/tests/level_s2_style_merge.rs`: eight
 S2-vs-shipped DOM lane comparisons covering static-before-dynamic,
 dynamic-before-static, object literals, CSS functions containing
 semicolons, `v-if`, `v-for`, and `mergeProps` spread ordering. The

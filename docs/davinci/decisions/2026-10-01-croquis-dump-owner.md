@@ -10,7 +10,7 @@ normal dependency on the compatibility substrate. Native level crates gain no
 legacy dependency and no product compile path changes.
 
 The move-only commit relocates 38 files: four implementation files, four law
-harnesses, fourteen unchanged Vue/folio fixture pairs and two unchanged
+harnesses, fourteen unchanged Vue/dump fixture pairs and two unchanged
 snapshot files. Full/Display printing, grammar errors and normalization retain
 exact bytes. The SFC fixture harness uses the same parser and allocator via
 their direct owners. Its version-less, path-only SFC dev dependency is available

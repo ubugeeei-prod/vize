@@ -183,7 +183,7 @@ pub fn product_capture_value(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use davinci_test_support::schema;
+    use level_test_support::schema;
     use vize_l0::{String, dump::capture::CaptureSink, level::Level};
 
     fn source() -> ProductCaptureSource<'static> {

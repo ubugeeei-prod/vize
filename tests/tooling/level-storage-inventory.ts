@@ -4,7 +4,7 @@ import {
   type FileStorage,
   type StorageKind,
   type StorageMeasurement,
-} from "./davinci-storage-scan.ts";
+} from "./level-storage-scan.ts";
 
 export type StorageScope = "infra" | "l1" | "l2" | "l3" | "l1_to_l2" | "l2_to_l3";
 export type VecCategory = "contract" | "analysis" | "lower" | "pass" | "emit";
@@ -34,7 +34,7 @@ const header = [
 ].join("\t");
 
 export const categoryReasons: Record<VecCategory, string> = {
-  contract: "variable-length owned Folio/L2 contract data",
+  contract: "variable-length owned Dump/L2 contract data",
   analysis: "unbounded diagnostics, lookup storage, and traversal results",
   lower: "source-sized lowering worklists and owned results",
   pass: "source-sized pass facts, provenance, and traversal worklists",

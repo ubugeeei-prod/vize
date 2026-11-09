@@ -32,7 +32,7 @@ type Fixture = {
 const pack = JSON.parse(
   readFileSync(
     new URL(
-      "../../davinci/vize_l4/tests/fixtures/native-selected-root-text-vue-3.5.35.json",
+      "../../levels/vize_l4/tests/fixtures/native-selected-root-text-vue-3.5.35.json",
       import.meta.url,
     ),
     "utf8",
@@ -49,7 +49,7 @@ const pack = JSON.parse(
 const provider = JSON.parse(
   readFileSync(
     new URL(
-      "../../davinci/vize_l1/tests/fixtures/native-root-text-vue-3.5.35.json",
+      "../../levels/vize_l1/tests/fixtures/native-root-text-vue-3.5.35.json",
       import.meta.url,
     ),
     "utf8",

@@ -37,7 +37,7 @@ void test("only a trusted default-branch run saves the bootstrap runtime", () =>
   assert.equal(bootstrapCacheWrite(true, "push", "refs/heads/main", "main"), true);
   assert.equal(bootstrapCacheWrite(true, "schedule", "refs/heads/main", "main"), true);
   assert.equal(bootstrapCacheWrite(true, "workflow_dispatch", "refs/heads/main", "main"), true);
-  assert.equal(bootstrapCacheWrite(true, "push", "refs/heads/davinci", "main"), false);
+  assert.equal(bootstrapCacheWrite(true, "push", "refs/heads/levels", "main"), false);
   assert.equal(bootstrapCacheWrite(true, "push", "refs/heads/main", "main\n"), false);
   assert.equal(bootstrapCacheWrite(false, "push", "refs/heads/main", "main"), false);
   assert.equal(bootstrapCacheWrite(true, "pull_request", "refs/pull/1/merge", "main"), false);

@@ -126,9 +126,9 @@ fn scalar_unknown_ambiguous_and_decode_once_entities_keep_whole_vectors() {
         let expansions = usize::from(source.contains("&fjlig;"));
         assert_profiles(source, LexOptions::default(), expansions);
     }
-    for fixture in davinci_test_support::surface_fixture::WELL_FORMED
+    for fixture in level_test_support::surface_fixture::WELL_FORMED
         .iter()
-        .chain(davinci_test_support::surface_fixture::MALFORMED)
+        .chain(level_test_support::surface_fixture::MALFORMED)
     {
         for source in core::iter::once(fixture.source).chain(
             fixture.source.char_indices().flat_map(|(at, _)| {

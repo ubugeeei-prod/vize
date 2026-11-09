@@ -1,13 +1,13 @@
-//! Davinci P2-11 DOM corpus-runnable entry under binding metadata
+//! Levels P2-11 DOM corpus-runnable entry under binding metadata
 //! (installment 86): the same committed battery and
-//! `VIZE_DAVINCI_DIFFERENTIAL_CORPUS=<dir>` widening as
-//! `davinci_dom_corpus`, with both lanes compiled in module mode under
+//! `VIZE_LEVEL_DIFFERENTIAL_CORPUS=<dir>` widening as
+//! `level_dom_corpus`, with both lanes compiled in module mode under
 //! `prefix_identifiers: true` and the SFC's own (non-inline) binding
 //! metadata — the dev-server shape of a `<script setup>` component.
 
-mod davinci_dom_corpus_support;
+mod level_dom_corpus_support;
 
-use davinci_dom_corpus_support::{
+use level_dom_corpus_support::{
     Lane, Report, assert_clean_corpus, assert_empty, compare_sfc_template_lane, compare_sweep_lane,
 };
 
@@ -79,8 +79,8 @@ fn binding_metadata_dom_emit_agrees_on_sfc_templates_body() {
         report.patch_fact_entries,
     );
 
-    let Some(sweep) = davinci_test_support::corpus::resolve_env_sweep() else {
-        eprintln!("VIZE_DAVINCI_DIFFERENTIAL_CORPUS unset: committed battery only");
+    let Some(sweep) = level_test_support::corpus::resolve_env_sweep() else {
+        eprintln!("VIZE_LEVEL_DIFFERENTIAL_CORPUS unset: committed battery only");
         return;
     };
     assert!(
@@ -91,7 +91,7 @@ fn binding_metadata_dom_emit_agrees_on_sfc_templates_body() {
 
     let corpus = compare_sweep_lane(&sweep, Lane::Bindings);
     eprintln!(
-        "davinci binding DOM corpus sweep: scope={} files={} unreadable={} parsed={} templates={} compared={} patch_fact_entries={} old_error_skips={} s2_refusals={} divergences={}",
+        "levels binding DOM corpus sweep: scope={} files={} unreadable={} parsed={} templates={} compared={} patch_fact_entries={} old_error_skips={} s2_refusals={} divergences={}",
         sweep.scope_label(),
         corpus.files,
         corpus.unreadable_count,
@@ -104,15 +104,15 @@ fn binding_metadata_dom_emit_agrees_on_sfc_templates_body() {
         corpus.divergence_count,
     );
     eprintln!(
-        "davinci binding DOM corpus refusal reasons: {:?}",
+        "levels binding DOM corpus refusal reasons: {:?}",
         corpus.s2_refusal_reasons
     );
     eprintln!(
-        "davinci binding DOM corpus old-lane error reasons: {:?}",
+        "levels binding DOM corpus old-lane error reasons: {:?}",
         corpus.old_error_reasons
     );
     eprintln!(
-        "davinci binding DOM corpus refusal samples: {:?}",
+        "levels binding DOM corpus refusal samples: {:?}",
         corpus.s2_refusal_samples
     );
     assert!(

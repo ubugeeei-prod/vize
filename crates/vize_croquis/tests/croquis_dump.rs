@@ -1,15 +1,15 @@
-//! Croquis folio fixture harness.
+//! Croquis dump fixture harness.
 //!
 //! Every `tests/fixtures/croquis/*.vue` input is analyzed with the
 //! inspector's croquis recipe, rendered through the live
 //! `Croquis::to_vir()` renderer, parsed as a [`CroquisPage`], and printed
-//! canonically. The committed `*.folio` next to each input is that
+//! canonically. The committed `*.dump` next to each input is that
 //! canonical text; the typed page parse/print must be identity on it.
 //!
-//! Regenerate the committed folios after a deliberate renderer change:
+//! Regenerate the committed dumps after a deliberate renderer change:
 //!
 //! ```text
-//! UPDATE_FOLIO_FIXTURES=1 cargo test -p vize_croquis --test croquis_dump
+//! UPDATE_DUMP_FIXTURES=1 cargo test -p vize_croquis --test croquis_dump
 //! ```
 
 #![expect(clippy::expect_used, reason = "tests assert by panicking")]
@@ -61,40 +61,40 @@ fn fixture_inputs() -> Vec<PathBuf> {
 }
 
 #[test]
-fn committed_folios_are_canonical_renderer_output() {
+fn committed_dumps_are_canonical_renderer_output() {
     let inputs = fixture_inputs();
     assert!(
         inputs.len() >= 10,
-        "the acceptance gate needs at least 10 croquis folio fixtures, found {}",
+        "the acceptance gate needs at least 10 croquis dump fixtures, found {}",
         inputs.len()
     );
 
-    let update = std::env::var_os("UPDATE_FOLIO_FIXTURES").is_some();
+    let update = std::env::var_os("UPDATE_DUMP_FIXTURES").is_some();
     for input in &inputs {
         let source = std::fs::read_to_string(input).expect("readable fixture source");
         let vir = vir_of(&source);
 
         // The parser must accept everything the live renderer emits.
-        let folio = match CroquisPage::parse(vir.as_str()) {
-            Ok(folio) => folio,
+        let dump = match CroquisPage::parse(vir.as_str()) {
+            Ok(dump) => dump,
             Err(error) => panic!(
                 "{}: renderer output did not parse: {error}\n--- renderer output ---\n{vir}",
                 input.display()
             ),
         };
-        let canonical = folio.print_to_string(DumpMode::Full);
+        let canonical = dump.print_to_string(DumpMode::Full);
 
-        let folio_path = input.with_extension("folio");
+        let dump_path = input.with_extension("dump");
         if update {
-            std::fs::write(&folio_path, canonical.as_str()).expect("writable folio fixture");
+            std::fs::write(&dump_path, canonical.as_str()).expect("writable dump fixture");
         }
-        let committed = std::fs::read_to_string(&folio_path)
-            .unwrap_or_else(|_| panic!("{}: missing committed folio", folio_path.display()));
+        let committed = std::fs::read_to_string(&dump_path)
+            .unwrap_or_else(|_| panic!("{}: missing committed dump", dump_path.display()));
         assert_eq!(
             committed,
             canonical.as_str(),
-            "{}: committed folio is stale; rerun with UPDATE_FOLIO_FIXTURES=1",
-            folio_path.display()
+            "{}: committed dump is stale; rerun with UPDATE_DUMP_FIXTURES=1",
+            dump_path.display()
         );
 
         // Round-trip laws on the canonical text (the typed page gate).
@@ -103,13 +103,13 @@ fn committed_folios_are_canonical_renderer_output() {
             reparsed.print_to_string(DumpMode::Full).as_str(),
             canonical.as_str(),
             "{}: print(parse(t)) must be identity on canonical text",
-            folio_path.display()
+            dump_path.display()
         );
         assert_eq!(
             reparsed,
-            folio,
+            dump,
             "{}: parse(print(v)) must be structural identity",
-            folio_path.display()
+            dump_path.display()
         );
     }
 }

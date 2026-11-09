@@ -4,7 +4,7 @@
 //! data for tooling (`vize dump --level`, dependency gates); nothing converts
 //! through it at run time.
 
-/// One Davinci level.
+/// One Levels level.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum Level {
     /// L0: source, arena, spans, ids and the shared managers.

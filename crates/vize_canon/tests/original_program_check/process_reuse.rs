@@ -7,7 +7,7 @@ use vize_canon::{CorsaBridge, CorsaBridgeConfig};
 use vize_l0::{Allocator, String};
 use vize_l1::embed::Lang;
 
-use davinci_test_support::original_diagnosing_process as control;
+use level_test_support::original_diagnosing_process as control;
 
 fn complete_check(
     bridge: &CorsaBridge,

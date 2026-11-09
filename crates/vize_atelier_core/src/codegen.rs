@@ -41,7 +41,7 @@ use crate::options::CodegenOptions;
 
 pub use context::{CodegenContext, CodegenResult, CodegenResultWithSections, CodegenSections};
 pub use expression::convert_line_comments_to_block;
-// `pub` (P2-9 series 6): the Davinci differential comparator drives the
+// `pub` (P2-9 series 6): the Levels differential comparator drives the
 // shipped constant classifier from test space to detect where the L2
 // lane's deliberately weaker const rule diverges (`consts_templates`),
 // so the oracle is this function itself rather than a drift-prone copy.

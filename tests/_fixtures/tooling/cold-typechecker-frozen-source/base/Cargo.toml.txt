@@ -26,21 +26,21 @@ members = [
   "crates/vize_musea",
   "crates/vize_maestro",
   "crates/vize_curator",
-  "davinci/vize_l0_derive",
-  "davinci/vize_l2",
-  "davinci/vize_l3",
-  "davinci/vize_l1_to_l2",
-  "davinci/vize_l2_to_l3",
-  "davinci/vize_l1",
-  "davinci/vize_l4",
-  "davinci/vize_l0",
+  "levels/vize_l0_derive",
+  "levels/vize_l2",
+  "levels/vize_l3",
+  "levels/vize_l1_to_l2",
+  "levels/vize_l2_to_l3",
+  "levels/vize_l1",
+  "levels/vize_l4",
+  "levels/vize_l0",
   "crates/vize_fresco",
   "crates/vize_marquette",
   "crates/vize_doctor",
   "crates/vize_incremental",
-  "tools/benchmarks/crates/davinci_harness",
+  "tools/benchmarks/crates/level_harness",
   "tools/benchmarks/crates/vize",
-  "tests/davinci_test_support",
+  "tests/level_test_support",
   "tests/vize_test_runner",
 ]
 
@@ -72,28 +72,28 @@ vize_marquette = { path = "crates/vize_marquette", version = "=0.474.0" }
 vize_doctor = { path = "crates/vize_doctor", version = "=0.474.0" }
 
 # Workspace-only internal crates (always use the local path)
-davinci_harness = { path = "tools/benchmarks/crates/davinci_harness" }
-davinci_test_support = { path = "tests/davinci_test_support" }
+level_harness = { path = "tools/benchmarks/crates/level_harness" }
+level_test_support = { path = "tests/level_test_support" }
 vize_vitrine = { path = "crates/vize_vitrine", default-features = false }
 vize_glyph = { path = "crates/vize_glyph" }
 vize_maestro = { path = "crates/vize_maestro" }
 vize_curator = { path = "crates/vize_curator" }
 vize_incremental = { path = "crates/vize_incremental" }
 
-# Publishable Davinci stage infrastructure. Stage crates keep their physical
+# Publishable Levels stage infrastructure. Stage crates keep their physical
 # names and version fallbacks so a publishable consumer can resolve the same
 # dependency graph from crates.io.
-vize_l0_derive = { path = "davinci/vize_l0_derive", version = "=0.474.0" }
+vize_l0_derive = { path = "levels/vize_l0_derive", version = "=0.474.0" }
 
 # Level dependencies use physical package identities. L0 owns the shared
 # foundation; the legacy Carton package re-exports it.
-vize_l0 = { path = "davinci/vize_l0", version = "=0.474.0" }
-vize_l1 = { path = "davinci/vize_l1", version = "=0.474.0" }
-vize_l2 = { path = "davinci/vize_l2", version = "=0.474.0" }
-vize_l3 = { path = "davinci/vize_l3", version = "=0.474.0" }
-vize_l1_to_l2 = { path = "davinci/vize_l1_to_l2", version = "=0.474.0" }
-vize_l2_to_l3 = { path = "davinci/vize_l2_to_l3", version = "=0.474.0" }
-vize_l4 = { path = "davinci/vize_l4", version = "=0.474.0" }
+vize_l0 = { path = "levels/vize_l0", version = "=0.474.0" }
+vize_l1 = { path = "levels/vize_l1", version = "=0.474.0" }
+vize_l2 = { path = "levels/vize_l2", version = "=0.474.0" }
+vize_l3 = { path = "levels/vize_l3", version = "=0.474.0" }
+vize_l1_to_l2 = { path = "levels/vize_l1_to_l2", version = "=0.474.0" }
+vize_l2_to_l3 = { path = "levels/vize_l2_to_l3", version = "=0.474.0" }
+vize_l4 = { path = "levels/vize_l4", version = "=0.474.0" }
 
 # OXC dependencies (pinned to a specific upstream revision for reproducibility)
 oxc_parser = { package = "vize_oxc_parser", version = "=0.474.0", path = "vendor/oxc_parser" }
@@ -181,7 +181,7 @@ dashmap = "=6.2.1"
 xxhash-rust = { version = "=0.8.19", features = ["xxh3"] }
 # Incremental query engine for the resident tier only (charter #10 and #39):
 # `vize_incremental` is its sole dependent, the one-shot CLI stays on the fused
-# pipeline, and `tests/tooling/davinci-resident-salsa.test.ts` enforces both.
+# pipeline, and `tests/tooling/level-resident-salsa.test.ts` enforces both.
 # Pinned exactly; the default `rayon` feature stays off (file-parallelism is
 # the caller's, charter #33).
 salsa = { version = "=0.28.5", default-features = false, features = ["macros", "inventory"] }

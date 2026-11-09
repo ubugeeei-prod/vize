@@ -1,7 +1,7 @@
-//! TS-17 for the template-complexity analysis (Davinci P4-9a): committed
-//! fixture in, full transform pipeline out, **full normalized folio**
+//! TS-17 for the template-complexity analysis (Levels P4-9a): committed
+//! fixture in, full transform pipeline out, **full normalized dump**
 //! snapshot plus the full printed breakdown. An analysis pass moves no
-//! surface, so the folio is exactly what the lowering built (the
+//! surface, so the dump is exactly what the lowering built (the
 //! fact-not-mutation proof); the breakdown snapshot is the product. The
 //! structural supplements pin the fusion (the pass adds a pass, not a
 //! walk), the pipeline product equal to a standalone run, and the empty
@@ -34,15 +34,15 @@ fn fixture(name: &str) -> vize_l0::String {
     vize_l0::String::from(text.as_str())
 }
 
-/// Snapshot one fixture under explicit names (`<stem>_folio`,
+/// Snapshot one fixture under explicit names (`<stem>_dump`,
 /// `<stem>_breakdown`); returns `(cyclomatic, cognitive)` for the pins.
 fn snapshot(stem: &str, budget_text: &str) -> (u32, u32) {
     let name = format!("{stem}.vue");
     let source = fixture(&name);
-    let totals = with_transformed(&source, |lowered, folio, facts, budget| {
+    let totals = with_transformed(&source, |lowered, dump, facts, budget| {
         insta::assert_snapshot!(
-            format!("{stem}_folio"),
-            folio.print_to_string(DumpMode::Full).as_str()
+            format!("{stem}_dump"),
+            dump.print_to_string(DumpMode::Full).as_str()
         );
         let complexity = facts
             .complexity
@@ -64,7 +64,7 @@ fn snapshot(stem: &str, budget_text: &str) -> (u32, u32) {
 }
 
 #[test]
-fn the_constructs_fixture_snapshots_the_folio_and_the_breakdown() {
+fn the_constructs_fixture_snapshots_the_dump_and_the_breakdown() {
     // Three walks for four passes: `v-slot` and `v-model` are lone
     // barriers, and `hoist-static` + `template-complexity` share one.
     let totals = snapshot(
@@ -75,7 +75,7 @@ fn the_constructs_fixture_snapshots_the_folio_and_the_breakdown() {
 }
 
 #[test]
-fn the_dashboard_fixture_snapshots_the_folio_and_the_breakdown() {
+fn the_dashboard_fixture_snapshots_the_dump_and_the_breakdown() {
     let totals = snapshot(
         "dashboard",
         "[budget-observer]\nwalks=3\npasses=4\nanalyses=0\npipelines=1\nfailures=0\n\n",
@@ -89,7 +89,7 @@ fn empty_regions_preserve_all_facts_and_surrounding_page_order() {
     use vize_l0::id::NodeId;
     use vize_l1_to_l2::pass::cfg::{ComplexityFacts, Contribution, DecisionKind};
 
-    support::with_lowered("", |lowered, _folio| {
+    support::with_lowered("", |lowered, _dump| {
         assert_eq!(lowered.op_count, 0);
         assert_eq!(cfg::run(lowered), ComplexityFacts::empty());
     });
@@ -97,7 +97,7 @@ fn empty_regions_preserve_all_facts_and_surrounding_page_order() {
     // Empty children before, within and after real decisions must not mint ids
     // or change nesting. A nonempty branch and interpolation retain their rows.
     let source = r#"<p/><div v-if="ok"></div><span>{{ ready ? 1 : 2 }}</span><footer/>"#;
-    support::with_lowered(source, |lowered, _folio| {
+    support::with_lowered(source, |lowered, _dump| {
         // cfg::run also asserts complete shared PageWalk minted accounting.
         let facts = cfg::run(lowered);
         assert_eq!(lowered.op_count, 6);

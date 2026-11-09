@@ -51,7 +51,7 @@ async function evaluateRender(code, helpers, bindings, context) {
     .replace(/\bexport\s+function\s+render\s*\(/u, "function render(")
     .replace(/\bexport\s+const\s+render\s*=/u, "const render =")
     .replace(/\bexport\s+\{[^}]+\};?/gu, "");
-  const stateKey = `__davinciRuntimeTraceState_${process.pid}_${Date.now()}_${Math.random()
+  const stateKey = `__levelRuntimeTraceState_${process.pid}_${Date.now()}_${Math.random()
     .toString(36)
     .slice(2)}`;
   const lexicalContext = Object.entries(context).filter(([name]) => isIdentifierName(name));

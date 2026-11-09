@@ -11,13 +11,13 @@
 
 **Lane:** A
 
-**Deliverable:** `vize_davinci::key` — content keys per stage artifact (L1 surface tree, L2 page) at block granularity: a normalized-structure hash with spans externalized to L0 side tables (identity excludes presentation), `schema_version` inside every key, and span-relative hashing so an edit above a block changes zero keys of that block.
+**Deliverable:** `vize_level::key` — content keys per stage artifact (L1 surface tree, L2 page) at block granularity: a normalized-structure hash with spans externalized to L0 side tables (identity excludes presentation), `schema_version` inside every key, and span-relative hashing so an edit above a block changes zero keys of that block.
 
 **Steps:**
 
-- [x] `davinci/vize_davinci/src/key.rs` + `key/`: `ArtifactKey { stage, schema_version, hash: [u8; 16] }`; the hash walks the folio `Full` form with spans rebased to the block start _(L2: `impl KeyedArtifact for L2Folio`; L1: `vize_l1_to_l2::key::SurfacePage`, the lossless render; L0 source blocks: `source_block_key`)_
+- [x] `levels/vize_level/src/key.rs` + `key/`: `ArtifactKey { stage, schema_version, hash: [u8; 16] }`; the hash walks the folio `Full` form with spans rebased to the block start _(L2: `impl KeyedArtifact for L2Folio`; L1: `vize_l1_to_l2::key::SurfacePage`, the lossless render; L0 source blocks: `source_block_key`)_
 - [x] Edit-locality fixtures: insert above, inside and below a block; reorder blocks; whitespace-only edits _(ten cases over `tests/fixtures/keys/base.vue`, each pinning its exact changed set)_
-- [x] Register the TS-43 command in [test-suites.md](./test-suites.md): `cargo test -p vize_davinci --test artifact_keys`
+- [x] Register the TS-43 command in [test-suites.md](./test-suites.md): `cargo test -p vize_level --test artifact_keys`
 
 **Acceptance:** TS-43 — identical keys for identical block content regardless of offset, zero key changes for edits above a block, exactly the edited block's keys change otherwise; keys equal across two platforms (the Linux and macOS CI lanes print and compare them); TS-24; TS-1, TS-13.
 
@@ -37,10 +37,10 @@
 
 **Steps:**
 
-- [x] `KeyManifest` in `davinci/vize_davinci/src/key/manifest.rs`, folded into `ArtifactKey` _(`ArtifactKey::with_manifest`; `KeyManifest::fingerprint` for the content-less Corsa session; both refuse a manifest that sets a missing or extra input)_
+- [x] `KeyManifest` in `levels/vize_level/src/key/manifest.rs`, folded into `ArtifactKey` _(`ArtifactKey::with_manifest`; `KeyManifest::fingerprint` for the content-less Corsa session; both refuse a manifest that sets a missing or extra input)_
 - [x] A test flips each declared input and asserts the key changes, and asserts an unchanged manifest keeps the key
 
-**Acceptance:** `cargo test -p vize_davinci --test key_manifests` — every declared input changes the key, nothing else does; the manifest doc lists every artifact (a test reads it via `include_str!`); TS-43.
+**Acceptance:** `cargo test -p vize_level --test key_manifests` — every declared input changes the key, nothing else does; the manifest doc lists every artifact (a test reads it via `include_str!`); TS-43.
 
 **Deps:** P5-1a.
 
@@ -58,10 +58,10 @@
 
 **Steps:**
 
-- [x] `davinci/vize_davinci/src/summary.rs`: `SfcSummary` over α pages with per-declaration fingerprints
+- [x] `levels/vize_level/src/summary.rs`: `SfcSummary` over α pages with per-declaration fingerprints
 - [x] A fixture proves a hot-path optimization change inside a component body does not change any fingerprint
 
-**Acceptance:** `cargo test -p vize_davinci --test sfc_summary` — summary round trip exact (TS-16), the no-ripple fixture green, and a signature change invalidates exactly the recorded users.
+**Acceptance:** `cargo test -p vize_level --test sfc_summary` — summary round trip exact (TS-16), the no-ripple fixture green, and a signature change invalidates exactly the recorded users.
 
 **Deps:** P4-2, P5-1a.
 
@@ -79,7 +79,7 @@
 
 **Steps:**
 
-- [x] `davinci/vize_davinci/src/summary/global.rs` over the P4-3b and P4-3f project groups
+- [x] `levels/vize_level/src/summary/global.rs` over the P4-3b and P4-3f project groups
 
 **Acceptance:** a scenario test: adding a global component invalidates exactly the files that resolve it, and nothing else (TS-46 accounting).
 
@@ -99,7 +99,7 @@
 
 **Steps:**
 
-- [x] Crate + `salsa` pinned in the workspace; a `tests/tooling` check that no crate outside the resident tier depends on `salsa` _(`salsa =0.28.4`, `rayon` off; `davinci-resident-salsa.test.ts`)_
+- [x] Crate + `salsa` pinned in the workspace; a `tests/tooling` check that no crate outside the resident tier depends on `salsa` _(`salsa =0.28.4`, `rayon` off; `level-resident-salsa.test.ts`)_
 - [x] Queries: `source_text` (input) → `sfc_blocks` → `s1_block` / `s2_page` keyed by block key, with backdating when the key is unchanged _(the firewall is the `Block` tracked struct: content with its L0 key and position are separate tracked fields)_
 - [x] Cache-hit accounting counters exposed for TS-46 _(`ResidentDatabase::take_accounting`, read from salsa's event stream)_
 
@@ -165,7 +165,7 @@ The 10k-file RSS and summary TS-42 acceptance remain open.
 
 **Steps:**
 
-- [x] Replace the wave's `parse_sfc` calls (hover 7, definition 6, template scope 3, references 4, completion 2 of today's 71) with resident queries _(30 wave sites at landing plus the context's own parse: 81 → 50, pinned by `davinci-maestro-parse-sfc-ceiling.test.ts`)_
+- [x] Replace the wave's `parse_sfc` calls (hover 7, definition 6, template scope 3, references 4, completion 2 of today's 71) with resident queries _(30 wave sites at landing plus the context's own parse: 81 → 50, pinned by `level-maestro-parse-sfc-ceiling.test.ts`)_
 - [x] A keystroke perf test per feature on a large corpus project, results recorded in the task record _(exact parse accounting in `server/state/resident/tests.rs`; latency from `examples/keystroke_wave.rs`)_
 
 **Acceptance:** the wave's `parse_sfc` sites gone (a ceiling test pins the remaining count, which only falls); LSP e2e suites for hover/completion/definition exact (TS-7 and the `lsp-*` tooling tests); the recorded keystroke p95 not worse than the P5-11a baseline.

@@ -1,4 +1,4 @@
-//! Structured source maps for the assembled SFC module (Davinci P3-9).
+//! Structured source maps for the assembled SFC module (Levels P3-9).
 //!
 //! `compile_sfc` assembles its module from pieces: statement slices of the
 //! authored `<script>` / `<script setup>`, rebuilt imports, synthesized macro

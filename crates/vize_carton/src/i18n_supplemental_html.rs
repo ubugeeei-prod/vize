@@ -1,5 +1,5 @@
 //! Translations for the HTML content-model checker (`vue/permitted-contents`,
-//! Davinci P4-11a): one message and one help text per violation class.
+//! Levels P4-11a): one message and one help text per violation class.
 //!
 //! `{child}` and `{parent}` arrive already quoted (`<div>`, `<p>`, `text`).
 

@@ -93,7 +93,7 @@ pub enum OpaqueReason {
 }
 
 impl OpaqueReason {
-    /// The reason's folio spelling.
+    /// The reason's dump spelling.
     #[must_use]
     pub const fn mnemonic(self) -> &'static str {
         match self {
@@ -107,7 +107,7 @@ impl OpaqueReason {
         }
     }
 
-    /// Parse a folio spelling back into the reason.
+    /// Parse a dump spelling back into the reason.
     #[must_use]
     pub fn from_mnemonic(text: &str) -> Option<Self> {
         match text {

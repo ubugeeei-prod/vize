@@ -359,7 +359,7 @@ function requireSplitRustRecipes(
       wild!.uses = "wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203";
       restoreRustCaseReporting(job, contracts);
       job.steps[contracts].run =
-        "node --test --test-concurrency=1 tests/tooling/davinci-assertion-lint.test.ts tests/tooling/davinci-consumer-migration-surfaces.test.mjs tests/tooling/docs-reviewed-translations.test.ts";
+        "node --test --test-concurrency=1 tests/tooling/level-assertion-lint.test.ts tests/tooling/level-consumer-migration-surfaces.test.mjs tests/tooling/docs-reviewed-translations.test.ts";
       job.steps.splice(contracts + 1, 1);
       // PRs also lint the test targets of touched crates on the Clippy ratchet.
       const ratchet = job.steps.findIndex(

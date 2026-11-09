@@ -3,7 +3,7 @@
 //! Wires together parsing, the core transform lane, Vapor IR lowering, and
 //! code generation behind the public `compile_vapor*` functions.
 
-#[cfg(feature = "davinci-benchmark")]
+#[cfg(feature = "level-benchmark")]
 #[doc(hidden)]
 pub mod benchmark;
 mod entry;
@@ -64,10 +64,10 @@ pub struct VaporCompilerOptions {
     pub experimental_in_tag_comments: bool,
     /// Enable experimental `v-match` / `v-when` patterned template desugaring.
     pub experimental_patterned_template: bool,
-    /// Davinci A/B and baseline instrumentation: always select the retained
+    /// Levels A/B and baseline instrumentation: always select the retained
     /// (pre-L3) lane. Not a user option; production callers leave it unset.
     #[doc(hidden)]
-    pub davinci_retained_lane: bool,
+    pub level_retained_lane: bool,
 }
 
 /// Experimental Vapor compiler options kept separate from

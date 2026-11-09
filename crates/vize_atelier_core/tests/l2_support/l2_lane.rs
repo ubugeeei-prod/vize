@@ -3,7 +3,7 @@
 //! every owner's binding surface, in document order.
 //!
 //! Facts are keyed by page-order ids, so the walk re-derives them with
-//! the same numbering rule the folio's `ops=` header states: op line,
+//! the same numbering rule the dump's `ops=` header states: op line,
 //! attached bindings, then children.
 
 use vize_l0::String;
@@ -92,8 +92,8 @@ pub struct Tables<'t> {
 }
 
 /// Collect every chain, for, slot unit, outlet, text unit and owner
-/// surface in `folio`, outer before nested, document order.
-pub fn collect(folio: &L2Page, tables: &Tables<'_>) -> L2Projection {
+/// surface in `dump`, outer before nested, document order.
+pub fn collect(dump: &L2Page, tables: &Tables<'_>) -> L2Projection {
     let mut out = L2Projection {
         chains: Vec::new(),
         fors: Vec::new(),
@@ -113,7 +113,7 @@ pub fn collect(folio: &L2Page, tables: &Tables<'_>) -> L2Projection {
         excluded_bind: None,
         skip_slot_wrapper: false,
     };
-    walk(&folio.ops, tables, state, &mut next, &mut out);
+    walk(&dump.ops, tables, state, &mut next, &mut out);
     out
 }
 

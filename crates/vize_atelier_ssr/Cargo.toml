@@ -32,8 +32,8 @@ serde = { workspace = true }
 # Inspection metadata is a dev-only, unpublished oracle; strip it on packaging.
 vize_curator = { path = "../vize_curator" }
 criterion = { workspace = true }
-davinci_harness = { workspace = true }
-davinci_test_support = { workspace = true, features = ["ssr"] }
+level_harness = { workspace = true }
+level_test_support = { workspace = true, features = ["ssr"] }
 insta = { workspace = true }
 serde_json = { workspace = true }
 vize_atelier_sfc = { workspace = true }
@@ -42,15 +42,15 @@ vize_atelier_sfc = { workspace = true }
 workspace = true
 
 [[bench]]
-name = "davinci"
+name = "levels"
 harness = false
 
 [[test]]
-name = "davinci_ssr_corpus"
+name = "level_ssr_corpus"
 required-features = ["legacy-differential"]
 
 [[test]]
-name = "davinci_ssr_production_cases"
+name = "level_ssr_production_cases"
 required-features = ["legacy-differential"]
 
 [package.metadata.cargo-semver-checks.lints]

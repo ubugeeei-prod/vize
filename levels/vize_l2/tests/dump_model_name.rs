@@ -1,4 +1,4 @@
-//! `ui.model name=` folio grammar pins.
+//! `ui.model name=` dump grammar pins.
 
 use vize_l0::dump::{Dump, Mode as DumpMode};
 use vize_l2::dump::Page as L2Page;

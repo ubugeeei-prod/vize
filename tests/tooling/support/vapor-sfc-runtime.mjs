@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { transformSync } from "@babel/core";
 import { Window } from "happy-dom";
-import { loadRuntime, observeChildren } from "./davinci-mounted-trace.mjs";
+import { loadRuntime, observeChildren } from "./level-mounted-trace.mjs";
 
 const chunks = [];
 for await (const chunk of process.stdin) chunks.push(chunk);

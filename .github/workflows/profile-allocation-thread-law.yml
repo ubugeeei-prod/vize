@@ -3,10 +3,10 @@ on:
   pull_request:
     paths:
       - .github/workflows/profile-allocation-thread-law.yml
-      - davinci/vize_l0/src/profiler/core.rs
-      - davinci/vize_l0/src/profiler/allocation.rs
-      - davinci/vize_l0/src/profiler/metrics.rs
-      - davinci/vize_l0/tests/profile_allocation_thread_law.rs
+      - levels/vize_l0/src/profiler/core.rs
+      - levels/vize_l0/src/profiler/allocation.rs
+      - levels/vize_l0/src/profiler/metrics.rs
+      - levels/vize_l0/tests/profile_allocation_thread_law.rs
       - tools/benchmarks/scripts/profile_guard_send_law.ts
       - tools/benchmarks/scripts/profile-evidence-json.ts
   workflow_dispatch: {}
@@ -47,7 +47,7 @@ jobs:
           cargo +1.99.1 test --locked --profile ci -p vize_l0 --features micro-profiling --doc ProfileGuard 2>&1 | tee evidence/send-law.log
           python3 -c 'from pathlib import Path; text=Path("evidence/send-law.log").read_text(); assert "running 1 test" in text and "1 passed; 0 failed" in text'
           cargo +1.99.1 test --locked --profile ci -p vize_l0 --test source_operations_profile --features micro-profiling 2>&1 | tee evidence/observer-law.log
-          cargo +1.99.1 test --locked --profile ci -p vize_carton --test davinci_profile_export --features micro-profiling per_span_allocation_counts_and_schema_validation 2>&1 | tee evidence/nested-export-law.log
+          cargo +1.99.1 test --locked --profile ci -p vize_carton --test level_profile_export --features micro-profiling per_span_allocation_counts_and_schema_validation 2>&1 | tee evidence/nested-export-law.log
       - name: Check the same public-type snippet against old and new guards
         run: node tools/benchmarks/scripts/profile_guard_send_law.ts
       - name: Compile the profiling CLI after the carrier succeeds

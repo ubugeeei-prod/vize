@@ -5,7 +5,7 @@ Issue: [#6830](https://github.com/ubugeeei-prod/vize/issues/6830).
 ## Decision
 
 The `typechecker-native-phases.yml` PR path filter names the one tooling
-module its steps load, `tests/tooling/davinci-storage-rust-syntax.ts`, instead
+module its steps load, `tests/tooling/level-storage-rust-syntax.ts`, instead
 of `tests/tooling/**` and three exclusions. Every other source path, the
 manual `source_sha` dispatch that release uses, and the workflow's checks are
 unchanged.

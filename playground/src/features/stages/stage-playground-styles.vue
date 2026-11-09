@@ -5,11 +5,11 @@ defineOptions({ name: "StagePlaygroundStyles01" });
 <!-- These global selectors theme generated and third-party DOM owned by the feature. -->
 <!-- eslint-disable-next-line vue/require-scoped-style -->
 <style>
-/* Davinci tab: source on the left, the stage ladder on the right. The one
+/* Levels tab: source on the left, the stage ladder on the right. The one
    decorative device is the pounce line between stations - the pricked,
    dusted line a pounced transfer leaves - and everything else stays quiet. */
 
-.davinci-playground {
+.level-playground {
   --dv-ochre: var(--color-notice);
   --dv-ochre-bg: var(--color-notice-bg);
   --dv-ochre-border: var(--color-notice-border);
@@ -25,8 +25,8 @@ defineOptions({ name: "StagePlaygroundStyles01" });
   color: var(--text-primary);
 }
 
-.davinci-source,
-.davinci-stages {
+.level-source,
+.level-stages {
   display: flex;
   flex-direction: column;
   min-height: 0;
@@ -34,11 +34,11 @@ defineOptions({ name: "StagePlaygroundStyles01" });
   overflow: hidden;
 }
 
-.davinci-source {
+.level-source {
   border-right: 1px solid var(--border-primary);
 }
 
-.davinci-bar {
+.level-bar {
   display: flex;
   align-items: center;
   gap: 12px;
@@ -49,25 +49,25 @@ defineOptions({ name: "StagePlaygroundStyles01" });
   flex-shrink: 0;
 }
 
-.davinci-title {
+.level-title {
   margin: 0;
   font-size: 0.9375rem;
   font-weight: 600;
   letter-spacing: -0.01em;
 }
 
-.davinci-hint {
+.level-hint {
   font-size: 0.75rem;
   color: var(--text-muted);
 }
 
-.davinci-keys {
+.level-keys {
   margin-inline-start: auto;
   white-space: nowrap;
 }
 
-.davinci-source {
-  & .davinci-hint {
+.level-source {
+  & .level-hint {
     flex: 1;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -75,13 +75,13 @@ defineOptions({ name: "StagePlaygroundStyles01" });
   }
 }
 
-.davinci-example {
+.level-example {
   display: flex;
   align-items: center;
   gap: 6px;
 }
 
-.davinci-select {
+.level-select {
   padding: 4px 8px;
   font: inherit;
   font-size: 0.75rem;
@@ -91,7 +91,7 @@ defineOptions({ name: "StagePlaygroundStyles01" });
   border-radius: 6px;
 }
 
-.davinci-ghost {
+.level-ghost {
   padding: 4px 10px;
   font-size: 0.75rem;
   background: transparent;
@@ -101,12 +101,12 @@ defineOptions({ name: "StagePlaygroundStyles01" });
   cursor: pointer;
 }
 
-.davinci-ghost:hover {
+.level-ghost:hover {
   background: var(--bg-tertiary);
   color: var(--text-primary);
 }
 
-.davinci-badge {
+.level-badge {
   padding: 2px 8px;
   font-family: var(--font-mono);
   font-size: 0.6875rem;
@@ -115,7 +115,7 @@ defineOptions({ name: "StagePlaygroundStyles01" });
   border-radius: 4px;
 }
 
-.davinci-editor {
+.level-editor {
   position: relative;
   flex: 1;
   min-height: 0;
@@ -123,7 +123,7 @@ defineOptions({ name: "StagePlaygroundStyles01" });
 }
 
 /* Provenance highlight painted into Monaco (global: Monaco owns its DOM). */
-.davinci-provenance {
+.level-provenance {
   background: var(--color-notice-bg);
   outline: 1.5px solid var(--color-notice);
   outline-offset: -1px;
@@ -131,7 +131,7 @@ defineOptions({ name: "StagePlaygroundStyles01" });
 }
 
 /* Page tabs within a stage, and output targets */
-.davinci-subtabs {
+.level-subtabs {
   display: flex;
   gap: 4px;
   padding: 10px 20px 0;
@@ -140,7 +140,7 @@ defineOptions({ name: "StagePlaygroundStyles01" });
 }
 
 /* A tab label never wraps: the row scrolls instead. */
-.davinci-subtab {
+.level-subtab {
   flex-shrink: 0;
   white-space: nowrap;
   padding: 6px 12px;
@@ -153,22 +153,22 @@ defineOptions({ name: "StagePlaygroundStyles01" });
   cursor: pointer;
 }
 
-.davinci-subtab:hover {
+.level-subtab:hover {
   color: var(--text-secondary);
   background: var(--bg-secondary);
 }
 
-.davinci-subtab.active {
+.level-subtab.active {
   color: var(--text-primary);
   border-color: var(--border-primary);
   background: var(--bg-secondary);
 }
 
-.davinci-subtabs-gap {
+.level-subtabs-gap {
   flex: 1;
 }
 
-.davinci-count {
+.level-count {
   margin-inline-start: 4px;
   padding: 0 6px;
   font-size: 0.6875rem;
@@ -177,7 +177,7 @@ defineOptions({ name: "StagePlaygroundStyles01" });
   border-radius: 8px;
 }
 
-.davinci-body {
+.level-body {
   flex: 1;
   min-height: 0;
   padding: 12px 20px;
@@ -186,7 +186,7 @@ defineOptions({ name: "StagePlaygroundStyles01" });
   flex-direction: column;
 }
 
-.davinci-output {
+.level-output {
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -194,14 +194,14 @@ defineOptions({ name: "StagePlaygroundStyles01" });
   flex: 1;
 }
 
-.davinci-output {
-  & .davinci-subtabs {
+.level-output {
+  & .level-subtabs {
     padding: 0;
   }
 }
 
-.davinci-output {
-  & .davinci-output-code.code-highlight {
+.level-output {
+  & .level-output-code.code-highlight {
     flex: 1;
     min-height: 0;
     --code-line-height: 22px;
@@ -209,7 +209,7 @@ defineOptions({ name: "StagePlaygroundStyles01" });
   }
 }
 
-.davinci-message {
+.level-message {
   margin: 20px;
   padding: 14px 16px;
   font-size: 0.875rem;
@@ -219,14 +219,14 @@ defineOptions({ name: "StagePlaygroundStyles01" });
   border-radius: 8px;
 }
 
-.davinci-message.error {
+.level-message.error {
   color: var(--color-error);
   background: var(--color-error-bg);
   border-color: var(--color-error-border);
   white-space: pre-wrap;
 }
 
-.davinci-provenance-bar {
+.level-provenance-bar {
   display: flex;
   align-items: center;
   gap: 12px;
@@ -238,7 +238,7 @@ defineOptions({ name: "StagePlaygroundStyles01" });
   overflow: hidden;
 }
 
-.davinci-span {
+.level-span {
   padding: 2px 8px;
   font-family: var(--font-mono);
   font-size: 0.75rem;
@@ -250,7 +250,7 @@ defineOptions({ name: "StagePlaygroundStyles01" });
 }
 
 /* Why the focused op exists: its provenance rules (lowering, then pass facts). */
-.davinci-why {
+.level-why {
   flex-shrink: 0;
   padding: 2px 8px;
   font-family: var(--font-mono);
@@ -261,7 +261,7 @@ defineOptions({ name: "StagePlaygroundStyles01" });
   white-space: nowrap;
 }
 
-.davinci-why.fact {
+.level-why.fact {
   flex-shrink: 1;
   min-width: 0;
   overflow: hidden;
@@ -270,17 +270,17 @@ defineOptions({ name: "StagePlaygroundStyles01" });
   background: var(--color-teal-bg);
 }
 
-.davinci-why.remark.applied {
+.level-why.remark.applied {
   color: var(--color-teal);
   background: var(--color-teal-bg);
 }
 
-.davinci-why.remark.missed {
+.level-why.remark.missed {
   color: var(--color-notice);
   background: var(--color-notice-bg);
 }
 
-.davinci-snippet {
+.level-snippet {
   font-family: var(--font-mono);
   font-size: 0.8125rem;
   color: var(--text-primary);
@@ -290,17 +290,17 @@ defineOptions({ name: "StagePlaygroundStyles01" });
 }
 
 @media (max-width: 960px) {
-  .davinci-playground {
+  .level-playground {
     grid-template-columns: 1fr;
     grid-template-rows: minmax(240px, 40%) 1fr;
   }
 
-  .davinci-source {
+  .level-source {
     border-right: none;
     border-bottom: 1px solid var(--border-primary);
   }
 
-  .davinci-timeline-row {
+  .level-timeline-row {
     flex-direction: column;
     align-items: flex-start;
   }

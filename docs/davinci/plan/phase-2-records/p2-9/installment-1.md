@@ -14,7 +14,7 @@ the substrate along exactly that line:
 
 - **Pass bodies live in `vize_s1_to_s2::pass`** (`src/pass.rs` +
   `src/pass/vif.rs`). Ricalco is `publish = false`, already depends
-  downward on `vize_davinci` (the P2-2 pass manager) and `vize_s2`
+  downward on `vize_level` (the P2-2 pass manager) and `vize_s2`
   (the ops), and the passes are the continuation of the dialect
   lowering — the MLIR conversion-library shape extended one step:
   `lower` converts, the passes legalize. Not in `vize_s2` (the
@@ -22,7 +22,7 @@ the substrate along exactly that line:
   and verifier), not a new crate (premature for one pass; the series
   can split one out if the module outgrows the budget).
 - **The dual-run comparator lives in `vize_atelier_core` test space**
-  (`tests/s2_support/` + the two binaries), with `vize_davinci` /
+  (`tests/s2_support/` + the two binaries), with `vize_level` /
   `vize_s2` / `vize_s1_to_s2` / `vize_sinopia` as
   **dev-dependencies**. The gate's rule, read from its source: a
   workspace dependency escapes the publish-order check iff
@@ -42,7 +42,7 @@ the substrate along exactly that line:
 
 ### The lane flag (charter #26)
 
-`VIZE_DAVINCI_TRANSFORM` — named once in `vize_s1_to_s2::pass`
+`VIZE_LEVEL_TRANSFORM` — named once in `vize_s1_to_s2::pass`
 (`TRANSFORM_LANE_FLAG`; ricalco is `no_std` and reads no environment),
 read in the comparator: value `legacy` disarms the S2 dual-run,
 counted (`skipped_legacy_flag`), never silent. The legacy lane is the
@@ -122,7 +122,7 @@ holds the actual output bytes still. Skips are counted classes, never
 silence (module docs of `tests/s2_support/mod.rs` carry the full list).
 
 - **Battery**: 18 committed templates, dual-run with **exact-pinned**
-  counters in the plain witness (`davinci_s2_transform.rs`) and again
+  counters in the plain witness (`level_s2_transform.rs`) and again
   in the corpus entry: 18 compared, 19 if-ops, 36 branches, 13 static
   keys, 2 dynamic, 1 template-wrapper key, 1 slot-outlet key, 0 skips.
 - **Corpus** (read-only against the main checkout's hydrated fixtures,
@@ -160,9 +160,9 @@ silence (module docs of `tests/s2_support/mod.rs` carry the full list).
 The P2-5b command, run twice from this worktree (identical both runs):
 
 ```sh
-VIZE_DAVINCI_DIFFERENTIAL_CORPUS=/path/to/vize/tests/_fixtures/_git \
-  cargo test -p vize_atelier_sfc --features davinci-differential \
-  --test davinci_differential -- --nocapture
+VIZE_LEVEL_DIFFERENTIAL_CORPUS=/path/to/vize/tests/_fixtures/_git \
+  cargo test -p vize_atelier_sfc --features level-differential \
+  --test level_differential -- --nocapture
 ```
 
 admitted 196,236; legacy total 28,636 of 224,872 calls (**12.73%**;
@@ -186,7 +186,7 @@ Davinci task has used, and the six-test publish gate run green is its
 enforcement. The worktree materializes no fixture submodules and
 `corpus-diff.mjs` re-materializes `node_modules` (not runnable
 read-only), so the all-clean sweep is deferred with the standing
-recipe: `node tools/commands/davinci/corpus-diff.ts --surface compiler
+recipe: `node tools/commands/levels/corpus-diff.ts --surface compiler
 --shards 2 --timeout-ms 600000` from clean fixtures.
 
 ### Other acceptance, clause by clause
@@ -226,9 +226,9 @@ recipe: `node tools/commands/davinci/corpus-diff.ts --surface compiler
   dynamic arm of the collision check land with `ui.bind`
   (`transform_element`/`v_bind` installment). Corpus share measured:
   81 dynamic vs 45 static branch keys.
-- **Pass catalogue for `davinci-opt`**: the binary still binds unknown
+- **Pass catalogue for `level-opt`**: the binary still binds unknown
   pipeline names to no-ops; it cannot run ricalco's bodies because
-  `vize_davinci` depending on `vize_s1_to_s2` would be a cycle. The
+  `vize_level` depending on `vize_s1_to_s2` would be a cycle. The
   name→body catalogue needs a home above both (P2-11's program
   decision is the natural point).
 - **Comparator normalizations to revisit**: condition text compares

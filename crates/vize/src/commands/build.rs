@@ -146,7 +146,7 @@ pub struct BuildArgs {
 
     /// Inject a panic for the crash-repro machinery (TS-23): '<file-stem>:<pass>'
     #[arg(long, hide = true, value_name = "SPEC")]
-    pub davinci_inject_panic: Option<String>,
+    pub level_inject_panic: Option<String>,
 
     #[command(flatten)]
     pub profile_export: super::profile_export::ProfileExportArgs,

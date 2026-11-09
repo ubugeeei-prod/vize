@@ -3,8 +3,8 @@
 > [!NOTE]
 > The P3-13 remark contract: what a remark is, how it travels, its two
 > serialized forms, and the registered per-pass vocabulary. Code:
-> `davinci/vize_davinci/src/pass/observer/remark.rs` (the channel),
-> `davinci/vize_davinci/src/folio/remarks.rs` (the page and the JSON
+> `levels/vize_level/src/pass/observer/remark.rs` (the channel),
+> `levels/vize_level/src/dump/remarks.rs` (the page and the JSON
 > document). JSON schema: [`remarks.schema.json`](./remarks.schema.json).
 > Record: [P3-13](./phase-3-records/p3-13.md).
 
@@ -44,7 +44,7 @@ monomorphization time and a pass guards blocker classification and argument
 construction on it. Under `NoObserver`, `BudgetObserver`, `TimingObserver`
 or any composition of them the remark path compiles away: pinned as an
 exact **zero** allocations under the counting allocator
-(`davinci/vize_davinci/tests/remark_zero_cost.rs`), with an attached control
+(`levels/vize_level/tests/remark_zero_cost.rs`), with an attached control
 that allocates exactly one label per pass. Pass bodies run outside the pass
 manager (the production DOM path) take the detached `NoRemarks` sink.
 
@@ -73,7 +73,7 @@ booleans are bare. Entry order is carried, never re-sorted — the collector
 already made it canonical. An empty log is the bare `[remarks]` header.
 Parse is strict except that any `\uXXXX` escape is accepted and normalized
 by the first print; every rejection message is pinned by
-`davinci/vize_davinci/tests/remark_folio.rs`. `Display` drops the spans and
+`levels/vize_level/tests/remark_dump.rs`. `Display` drops the spans and
 carries no round-trip law. The typed `dump_remarks` test checks canonicity.
 
 ## The JSON document
@@ -87,18 +87,18 @@ anything else. The retired host wrote this historical v1 document; current
 
 ## TS-32 — the corpus remarks-diff
 
-`davinci/vize_l1_to_l2/tests/davinci_remarks_corpus.rs` (feature
-`davinci-differential`, run by the required `clippy-and-test` job) sweeps
+`levels/vize_l1_to_l2/tests/level_remarks_corpus.rs` (feature
+`level-differential`, run by the required `clippy-and-test` job) sweeps
 every `.vue` file under `tests/_fixtures` (the `_git` submodules and
 `node_modules` excluded, so every checkout sweeps the same set), lowers each
 inline HTML template and runs the L2 transform pipeline under a
 `RemarkCollector`. Spans are shifted to file offsets. The result is a
 `[remarks-corpus]` page — `files`, `entries` (`"path" <entry line>`),
 `explained` — that must equal the committed
-`tests/_fixtures/davinci-remarks-baseline.folio` byte for byte.
+`tests/_fixtures/level-remarks-baseline.dump` byte for byte.
 
 A difference fails with the keyed remarks-diff
-(`vize_davinci::folio::remarks::diff`): identity is
+(`vize_level::folio::remarks::diff`): identity is
 `(path, stage, pass, name, span, occurrence)`, and a changed identity is
 `regressed` (`applied → missed`), `improved`, `rekinded`, `reargued`
 (same kind, blocker moved), `added` or `removed`. Re-bless with
@@ -122,7 +122,7 @@ of lowering + the L2 transform pipeline per inline HTML template) and
 the retired host's v1 directory feed (the run's own log). This is what the playground's
 decision view renders (C-5).
 
-**C-13 backlog.** `vize_davinci::folio::remarks::backlog::mine_missed`
+**C-13 backlog.** `vize_level::folio::remarks::backlog::mine_missed`
 groups a corpus's `missed` remarks by `(stage, pass, name, reason)` and
 ranks them by hits. It relies on one vocabulary rule: **a remark's first
 argument is its subject** (what the decision is about — `tag`,
@@ -137,7 +137,7 @@ Every remark name a pass may emit, with its arguments in emission order —
 subject first. Adding a name or an argument key is a registry change in the
 same PR.
 
-### `s2.hoist-static` (`davinci/vize_l2/src/analysis/static_facts/remarks.rs`)
+### `s2.hoist-static` (`levels/vize_l2/src/analysis/static_facts/remarks.rs`)
 
 An analysis pass: `applied` means the hoist-licensing fact holds; whether
 DOM realization then hoists is position/option-dependent and not claimed.
@@ -160,12 +160,12 @@ Blockers come from the same functions the facts do
 (`consts::binding_blocker` / `props_blocker`, the region summary), so a
 remark cannot explain a decision the analysis did not make. TS-17 pins the
 full page for the `hoist` fixtures and re-derives every kind from the
-published facts (`davinci/vize_l1_to_l2/tests/hoist_pass_remarks.rs`).
+published facts (`levels/vize_l1_to_l2/tests/hoist_pass_remarks.rs`).
 
-### `s3.extract-placements` (`crates/vize_impeto/src/extract/report.rs`)
+### `s3.extract-placements` (`crates/vize_l3/src/extract/report.rs`)
 
 P3-10 try-measure-commit extraction, run as the second pass of the `s3`
-`OPTIMIZE` pipeline (`crates/vize_impeto/src/optimize.rs`). One remark per
+`OPTIMIZE` pipeline (`crates/vize_l3/src/optimize.rs`). One remark per
 recorded placement candidate, named after the placement; `applied` exactly
 when the candidate was measured and committed.
 
@@ -181,12 +181,12 @@ when the candidate was measured and committed.
 the trial measured (0 when the candidate was not measured); `budget-left` is
 the component's remaining candidate budget. The remarks mirror the
 `[s3-extraction-folio]` decision rows one for one; TS-17 pins both pages
-(`davinci/vize_l2_to_l3/tests/extraction_snapshots.rs`), and a detached run
+(`levels/vize_l2_to_l3/tests/extraction_snapshots.rs`), and a detached run
 must return the identical extraction.
 
-TS-32 gates the corpus too: `davinci/vize_l2_to_l3/tests/davinci_l3_remarks_corpus.rs`
+TS-32 gates the corpus too: `levels/vize_l2_to_l3/tests/level_l3_remarks_corpus.rs`
 runs the `-O3` pipeline over the same sweep as the L2 gate and compares with
-`tests/_fixtures/davinci-s3-remarks-baseline.folio` under the same bless and
+`tests/_fixtures/level-s3-remarks-baseline.dump` under the same bless and
 explanation rules. The baseline pins 147 remarks over 433 files: 10 `group`
 and 5 `hoist` applied; 124 `cache` and 8 single-node `hoist` missed as
 `regressed-emitted-size` under the zero epsilons.

@@ -9,17 +9,17 @@ import {
 } from "./support/github-workflows.ts";
 
 const s1ToL2LoweringCorpusCommand =
-  "cargo test -p vize_l1_to_l2 --features legacy-differential --test davinci_lowering_corpus -- --nocapture";
+  "cargo test -p vize_l1_to_l2 --features legacy-differential --test level_lowering_corpus -- --nocapture";
 const s1ToL2DomCorpusCommand =
-  "cargo test -p vize_l1_to_l2 --features legacy-differential --test davinci_dom_corpus -- --nocapture";
+  "cargo test -p vize_l1_to_l2 --features legacy-differential --test level_dom_corpus -- --nocapture";
 const ssrL4CorpusCommand =
-  'VIZE_DAVINCI_DIFFERENTIAL_CORPUS="$PWD" cargo test -p vize_atelier_ssr --features legacy-differential --test davinci_ssr_corpus -- --nocapture';
+  'VIZE_LEVEL_DIFFERENTIAL_CORPUS="$PWD" cargo test -p vize_atelier_ssr --features legacy-differential --test level_ssr_corpus -- --nocapture';
 const s1ToL2PugCorpusCommand =
-  "cargo test -p vize_l1_to_l2 --features legacy-differential --test davinci_pug_corpus -- --nocapture";
+  "cargo test -p vize_l1_to_l2 --features legacy-differential --test level_pug_corpus -- --nocapture";
 const jsxL2VdomParityCommand =
   "cargo test -p vize_atelier_jsx --features legacy-differential --lib vdom::l2_differential::l2_vdom_admitted_cases_match_relief_codegen -- --exact";
 const patinaMarkupDifferentialCommand =
-  'VIZE_DAVINCI_DIFFERENTIAL_CORPUS="$PWD" cargo test -p vize_patina --features legacy-differential --test davinci_markup_differential -- --nocapture';
+  'VIZE_LEVEL_DIFFERENTIAL_CORPUS="$PWD" cargo test -p vize_patina --features legacy-differential --test level_markup_differential -- --nocapture';
 
 function containsCommand(command: string): boolean {
   const expected = command.slice(command.indexOf("cargo ") + 6).split(" ");
@@ -30,7 +30,7 @@ function containsCommand(command: string): boolean {
       for (const argument of step.args) if (argument === expected[position]) position += 1;
       return (
         position === expected.length &&
-        !!step.workspaceCorpus === command.startsWith("VIZE_DAVINCI_DIFFERENTIAL_CORPUS=")
+        !!step.workspaceCorpus === command.startsWith("VIZE_LEVEL_DIFFERENTIAL_CORPUS=")
       );
     });
 }
@@ -45,7 +45,7 @@ test("feature-gated L1-to-L2 corpus lanes run in scheduled and manual Check", ()
     "action.yml",
   );
   const testReportJob = workflowJobBody(workflow, "test-report");
-  const manifest = readRepoFile("davinci", "vize_l1_to_l2", "Cargo.toml");
+  const manifest = readRepoFile("levels", "vize_l1_to_l2", "Cargo.toml");
   const suites = readRepoFile("docs/davinci", "plan", "test-suites.md");
 
   assert.match(
@@ -53,7 +53,7 @@ test("feature-gated L1-to-L2 corpus lanes run in scheduled and manual Check", ()
     /\| TS-20 \| Lowering totality fuzz\s+\| `cargo test -p vize_l1_to_l2` \/ `cargo test -p vize_l2_to_l3`/u,
   );
   assert.match(suites, /`l2_to_l3_lowering`/u);
-  for (const name of ["davinci_lowering_corpus", "davinci_dom_corpus", "davinci_pug_corpus"]) {
+  for (const name of ["level_lowering_corpus", "level_dom_corpus", "level_pug_corpus"]) {
     assert.match(
       manifest,
       new RegExp(
@@ -104,7 +104,7 @@ test("feature-gated L1-to-L2 corpus lanes run in scheduled and manual Check", ()
   );
   assert.match(
     readRepoFile("crates", "vize_atelier_ssr", "Cargo.toml"),
-    /^\[\[test\]\]\nname = "davinci_ssr_corpus"\nrequired-features = \["legacy-differential"\]$/m,
+    /^\[\[test\]\]\nname = "level_ssr_corpus"\nrequired-features = \["legacy-differential"\]$/m,
   );
   assert.ok(
     containsCommand(ssrL4CorpusCommand),
@@ -120,7 +120,7 @@ test("feature-gated L1-to-L2 corpus lanes run in scheduled and manual Check", ()
   );
   assert.match(
     readRepoFile("crates", "vize_patina", "Cargo.toml"),
-    /^\[\[test\]\]\nname = "davinci_markup_differential"\nrequired-features = \["legacy-differential"\]$/m,
+    /^\[\[test\]\]\nname = "level_markup_differential"\nrequired-features = \["legacy-differential"\]$/m,
   );
   assert.ok(
     containsCommand(patinaMarkupDifferentialCommand),

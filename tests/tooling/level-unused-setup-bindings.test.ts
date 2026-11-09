@@ -13,15 +13,15 @@ import {
   intersectSuppressions,
   loadRuleMap,
   scanSuppressions,
-} from "../../tools/support/compat/davinci/lib/fpfn-suppress-scan.ts";
+} from "../../tools/support/compat/levels/lib/fpfn-suppress-scan.ts";
 import {
   flattenLintJson,
   resolveVizeCli,
   runVizeLintJson,
-} from "../../tools/support/compat/davinci/lib/fpfn-shared.ts";
+} from "../../tools/support/compat/levels/lib/fpfn-shared.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
-const script = path.join(root, "tools/commands/davinci/seed-defects.rs");
+const script = path.join(root, "tools/commands/levels/seed-defects.rs");
 const shard = ["splitpanes", "layoutit-grid", "cssgridgenerator"];
 
 for (const [mode, expected] of [
@@ -37,11 +37,11 @@ for (const [mode, expected] of [
       })
     ) {
       t.skip(
-        "P0-13 shard is not hydrated; Davinci unused bindings Actions hydrates all three projects",
+        "P0-13 shard is not hydrated; Levels unused bindings Actions hydrates all three projects",
       );
       return;
     }
-    const out = fs.mkdtempSync(path.join(os.tmpdir(), "davinci-unused-"));
+    const out = fs.mkdtempSync(path.join(os.tmpdir(), "level-unused-"));
     try {
       const result = spawnSync(
         "rust-script",

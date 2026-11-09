@@ -4,7 +4,7 @@
 //! no fuzzer required, same soundness oracle everywhere.
 //!
 //! The battery is `vize_l1`'s own committed fixture set, imported
-//! from the shared Davinci test-support crate. The aggregate counts below are
+//! from the shared Levels test-support crate. The aggregate counts below are
 //! the cfg-regression witness the corpus lane re-pins: a change to the
 //! lowering's decision surface moves a pinned number loudly in both lanes.
 
@@ -12,7 +12,7 @@
 
 use crate::support;
 
-use davinci_test_support::surface_fixture as battery;
+use level_test_support::surface_fixture as battery;
 use support::{assert_authored_artifact, assert_sound, with_lowered};
 use vize_l0::diag::{Diagnostic, Stage};
 use vize_l0::dump::{Dump, Mode as DumpMode};
@@ -38,7 +38,7 @@ fn every_battery_fixture_lowers_soundly() {
 #[test]
 fn plain_lowering_soundness_covers_every_lowering_side_table() {
     let source = r#"<template v-if="ok" key="branch">hi {{ name }}</template><template v-for="item in items" :key="item.id"><span>{{ item }}</span></template>"#;
-    with_lowered(source, |lowered, _folio| {
+    with_lowered(source, |lowered, _dump| {
         assert_eq!(
             (
                 lowered.texts.len(),
@@ -83,13 +83,13 @@ fn a_source_block_lowering_keeps_file_absolute_spans() {
     let allocator = Allocator::new();
     let (tree, errors) = parse(&allocator, template);
     let lowered = vize_l1_to_l2::lower_source_block(&allocator, &tree, &errors, block);
-    let folio = L2Page::of(&lowered.root.ops);
+    let dump = L2Page::of(&lowered.root.ops);
 
     assert_authored_artifact(source, &lowered);
-    assert_eq!(u64::from(lowered.op_count), folio.op_count());
-    assert_eq!(verify(&folio, Rigor::Canonical), Vec::<Violation>::new());
+    assert_eq!(u64::from(lowered.op_count), dump.op_count());
+    assert_eq!(verify(&dump, Rigor::Canonical), Vec::<Violation>::new());
     assert_eq!(
-        folio.print_to_string(DumpMode::Full).as_str(),
+        dump.print_to_string(DumpMode::Full).as_str(),
         "\
 [l2-dump-v2]
 ops=3
@@ -130,11 +130,11 @@ fn source_block_tokenizer_errors_are_file_absolute() {
     assert_eq!(errors[0].code.message(), "Unexpected solidus in tag.");
 
     let lowered = vize_l1_to_l2::lower_source_block(&allocator, &tree, &errors, block);
-    let folio = L2Page::of(&lowered.root.ops);
+    let dump = L2Page::of(&lowered.root.ops);
 
     assert_authored_artifact(source, &lowered);
-    assert_eq!(u64::from(lowered.op_count), folio.op_count());
-    assert_eq!(verify(&folio, Rigor::Canonical), Vec::<Violation>::new());
+    assert_eq!(u64::from(lowered.op_count), dump.op_count());
+    assert_eq!(verify(&dump, Rigor::Canonical), Vec::<Violation>::new());
     assert_eq!(
         lowered.diagnostics,
         vec![Diagnostic::legacy_error(
@@ -196,7 +196,7 @@ fn the_battery_aggregates_are_pinned() {
     let mut provenance = 0usize;
     let mut scopes = 0usize;
     for fixture in battery::WELL_FORMED.iter().chain(battery::MALFORMED) {
-        with_lowered(fixture.source, |lowered, _folio| {
+        with_lowered(fixture.source, |lowered, _dump| {
             ops += u64::from(lowered.op_count);
             diagnostics += lowered.diagnostics.len();
             provenance += lowered.provenance.len();

@@ -1,4 +1,4 @@
-//! Standalone HTML execution with an optional Davinci petite-vue view.
+//! Standalone HTML execution with an optional Levels petite-vue view.
 
 use super::{Allocator, LintResult, Linter, TemplateRuleEnv};
 use vize_l0::dialect::standalone_html_dialect;
@@ -7,7 +7,7 @@ impl Linter {
     /// Lint a standalone HTML document that may use Vue from a CDN.
     #[inline]
     pub fn lint_standalone_html(&self, source: &str, filename: &str) -> LintResult {
-        self.lint_standalone_html_with_davinci(source, filename, true)
+        self.lint_standalone_html_with_level(source, filename, true)
     }
 
     #[cfg(test)]
@@ -16,14 +16,14 @@ impl Linter {
         source: &str,
         filename: &str,
     ) -> LintResult {
-        self.lint_standalone_html_with_davinci(source, filename, false)
+        self.lint_standalone_html_with_level(source, filename, false)
     }
 
-    fn lint_standalone_html_with_davinci(
+    fn lint_standalone_html_with_level(
         &self,
         source: &str,
         filename: &str,
-        use_davinci: bool,
+        use_level: bool,
     ) -> LintResult {
         let capacity = (source.len() * 4).max(self.initial_capacity);
         let allocator = Allocator::with_capacity(capacity);
@@ -34,7 +34,7 @@ impl Linter {
         let petite_document_demand = ["petite-vue/valid-v-effect", "petite-vue/valid-v-scope"]
             .into_iter()
             .any(|name| self.registry.has_rule(name) && self.is_rule_enabled(name));
-        let native_document = (use_davinci && dialect.is_petite_vue() && petite_document_demand)
+        let native_document = (use_level && dialect.is_petite_vue() && petite_document_demand)
             .then(|| vize_l0::SourceRoot::new(source).ok())
             .flatten()
             .map(|root| vize_l1::markup::document::NativeDocument::lex_in(&allocator, root));

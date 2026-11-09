@@ -2191,7 +2191,7 @@
           "sourceCall": "format_style_content",
           "originScope": "whole literal/concat source-array arm in original loop",
           "originWithin56FixSubjects": false,
-          "subject": "feat(davinci): land the phase-2 substrate and drop davinci into the compiler (#4452)",
+          "subject": "feat(levels): land the phase-2 substrate and drop levels into the compiler (#4452)",
           "claim": "exact original authored input; current output reference only"
         }
       ]
@@ -2239,7 +2239,7 @@
           "sourceCall": "format_style_content",
           "originScope": "whole literal/concat source-array arm in original loop",
           "originWithin56FixSubjects": false,
-          "subject": "feat(davinci): land the phase-2 substrate and drop davinci into the compiler (#4452)",
+          "subject": "feat(levels): land the phase-2 substrate and drop levels into the compiler (#4452)",
           "claim": "exact original authored input; current output reference only"
         }
       ]

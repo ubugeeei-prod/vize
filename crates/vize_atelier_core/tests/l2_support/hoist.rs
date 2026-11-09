@@ -202,7 +202,7 @@ pub fn walk_for_body(
 }
 
 /// Compare one template's decisions. `old1` is the default (unmutated)
-/// run's children, `old2` the hoist-armed run's, `s2` the folio ops.
+/// run's children, `old2` the hoist-armed run's, `s2` the dump ops.
 ///
 /// # Panics
 ///
@@ -300,7 +300,7 @@ pub fn predict_for_item(fact: &StaticFacts) -> Decision {
 /// The shipped decision procedure over the facts (the position rules
 /// of `hoist_static_inner`, options at the comparator's defaults:
 /// `inline` off, so that root arm is dead here and its predicate is
-/// battery-covered in ricalco's own suites; `scope_id` shapes the
+/// battery-covered in l1_to_l2's own suites; `scope_id` shapes the
 /// hoisted payload, never the decision). The `ns != Html` arm reads
 /// the fact's own `foreign` bit — the analysis carries the namespace
 /// context precisely because `ui.component` has none of its own.

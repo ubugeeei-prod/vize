@@ -1,4 +1,4 @@
-// Davinci bench artifacts are only comparable when they describe the same
+// Levels bench artifacts are only comparable when they describe the same
 // fixture, platform, and harness version.
 
 import assert from "node:assert/strict";
@@ -10,12 +10,12 @@ import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
-const comparePath = path.join(repoRoot, "tools", "commands", "davinci", "bench-compare.rs");
-const fixtureDir = path.join(repoRoot, "tests", "_fixtures", "davinci-bench-compare");
+const comparePath = path.join(repoRoot, "tools", "commands", "levels", "bench-compare.rs");
+const fixtureDir = path.join(repoRoot, "tests", "_fixtures", "level-bench-compare");
 
 function runCompare(root: string, budgets: string, baseline: string, current: string) {
   const env = { ...process.env };
-  delete env.DAVINCI_BASELINE_REFRESH;
+  delete env.LEVEL_BASELINE_REFRESH;
   return spawnSync(
     "rust-script",
     [comparePath, "--budgets", budgets, "--baseline", baseline, "--results", current],
@@ -32,7 +32,7 @@ function writeBudget(pathname: string) {
 }
 
 function runIdentityMismatch(field: string, value: string) {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), "davinci-bench-identity-"));
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "level-bench-identity-"));
   const baseline = path.join(root, "baseline");
   const current = path.join(root, "current");
   const budgets = path.join(root, "budgets.toml");

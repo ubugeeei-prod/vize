@@ -2,7 +2,7 @@
 //! axis (`class.rs`), the effect vocabulary (`effect.rs`) and the
 //! declarative-rule evaluator over the origin and escape axes (`axis.rs`).
 //!
-//! These harnesses replace the Lean module `Impeto.LatticeLaws`. Each one
+//! These harnesses replace the Lean module `L3.LatticeLaws`. Each one
 //! names the Lean theorems it replaces. The rule table is written from the
 //! declarative rules in `docs/davinci/plan/phase-3.md`, never from the Rust
 //! source, so the evaluator is checked against an independent statement.

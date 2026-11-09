@@ -11,7 +11,7 @@ use super::{
 #[cfg(unix)]
 use crate::corsa_bridge::CorsaBridgeConfig;
 #[cfg(unix)]
-use davinci_test_support::original_diagnosing_process as native;
+use level_test_support::original_diagnosing_process as native;
 use serde_json::{Value, json};
 
 fn packet(result: &SfcTypeCheckResult) -> Value {

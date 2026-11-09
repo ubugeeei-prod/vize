@@ -49,7 +49,7 @@ command. Original importer coverage remains in these files:
 - `lsp-native-navigation-workflow.test.ts`
 - `release/release-integration-catalog.test.ts`
 - `rust-test-archive.test.mjs`
-- `davinci-canonical-corpus-workflow.test.ts`
+- `level-canonical-corpus-workflow.test.ts`
 
 The canonical selector imports the real TypeScript gate and adds explicit
 literals for both new provider paths. Its original `.mjs` selector remains

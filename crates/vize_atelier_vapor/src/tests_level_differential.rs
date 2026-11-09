@@ -1,4 +1,4 @@
-//! Davinci P1-7 differential lane — plain-suite coverage witness (vapor).
+//! Levels P1-7 differential lane — plain-suite coverage witness (vapor).
 //!
 //! Under `cfg(test)` the retained resolve path dual-runs every gated read
 //! against the legacy `resolve_with_oxc` expression branch and panics on
@@ -7,7 +7,7 @@
 //! and asserts the comparator fired — a `cfg` regression that silently
 //! disarmed the lane fails here. Counter deltas use `>=` (process-global
 //! counters, concurrent tests); the exact-pinned lane lives in
-//! `vize_atelier_sfc/tests/davinci_differential.rs`.
+//! `vize_atelier_sfc/tests/level_differential.rs`.
 
 use crate::{VaporCompilerOptions, compile_vapor};
 use vize_atelier_core::retained::differential;

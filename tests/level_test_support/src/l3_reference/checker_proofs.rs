@@ -1,6 +1,6 @@
 //! Exactness of the C-23 checker, `checker.rs`: it reports a code exactly
 //! for each violated invariant of the declarative `WellFormed`
-//! specification, in validator order. Replaces `Impeto.CheckerLaws`. Bound:
+//! specification, in validator order. Replaces `L3.CheckerLaws`. Bound:
 //! the graphs of `graphs.rs` (3 ops, 2 regions, 1 edge, 1 effect, ids
 //! below 3, unconstrained spans).
 
@@ -139,7 +139,7 @@ fn ordered(p: &Program) -> bool {
             .all(|e| points_forward(p, e.source, e.target))
 }
 
-/// The codes in validator order, as `Impeto.Checker.violations` lists them.
+/// The codes in validator order, as `L3.Checker.violations` lists them.
 const CODES: [&str; 8] = [
     "L3V001", "L3V002", "L3V005", "L3V006", "L3V003", "L3V007", "L3V004", "L3V008",
 ];

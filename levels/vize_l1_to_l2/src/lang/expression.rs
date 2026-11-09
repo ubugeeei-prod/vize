@@ -127,7 +127,7 @@ pub(crate) fn opaque_at<'a>(
 }
 
 /// The provenance spelling of an admitted reference: `js`, `foreign`, or
-/// `opaque(<reason>)` — the mnemonic vocabulary the folio uses.
+/// `opaque(<reason>)` — the mnemonic vocabulary the dump uses.
 pub(crate) fn desc(expr: &ExprRef<'_>) -> String {
     match expr {
         ExprRef::Js(_) | ExprRef::Foreign(_) => String::from(expr.mnemonic()),

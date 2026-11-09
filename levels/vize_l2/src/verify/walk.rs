@@ -11,7 +11,7 @@
 //!
 //! The keyword and span accessors match exhaustively with no `_` arm on
 //! purpose: a new op variant must break this file loudly, the same
-//! staleness discipline `folio/owned.rs` and the canary test enforce.
+//! staleness discipline `dump/owned.rs` and the canary test enforce.
 
 use alloc::vec::Vec;
 
@@ -25,13 +25,13 @@ use crate::dump::{
 /// The immediate owner of a nested line: its keyword and its span.
 type Owner = Option<(&'static str, Span)>;
 
-pub(super) fn walk(folio: &L2Page, rigor: Rigor, out: &mut Vec<Violation>) {
-    for op in &folio.ops {
+pub(super) fn walk(dump: &L2Page, rigor: Rigor, out: &mut Vec<Violation>) {
+    for op in &dump.ops {
         visit_op(op, None, rigor, out);
     }
 }
 
-/// The keyword an op's folio line starts with — the owned twin of
+/// The keyword an op's dump line starts with — the owned twin of
 /// `Op::mnemonic`.
 fn keyword(op: &DumpOp) -> &'static str {
     match op {

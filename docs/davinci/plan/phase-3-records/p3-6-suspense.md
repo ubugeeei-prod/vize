@@ -38,7 +38,7 @@ for all three lanes; generated output does not install application plugins.
   selection.
 - Root and nested conditional boundaries have exact generated-code and
   decoded source-map snapshots, equal on native and retained lanes.
-- The isolated `davinci_suspense_parity` binary compares native, retained and
+- The isolated `level_suspense_parity` binary compares native, retained and
   official compiler output under the same pinned published runtime. A real
   controlled async `setup()` Promise keeps fallback visible until resolution;
   fallback text updates retain its DOM identity, resolution replaces it with

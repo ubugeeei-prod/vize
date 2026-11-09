@@ -1,4 +1,4 @@
-// Stage feed (Davinci P2-18, C-2/C-5): the compiler's stage pages as one
+// Stage feed (Levels P2-18, C-2/C-5): the compiler's stage pages as one
 // schema-versioned document. The committed schema is
 // `docs/davinci/plan/stage-ladder-feed.schema.json`. The stage tab reads
 // `negotiateProductCapture`; this module only keeps the page shape the
@@ -17,7 +17,7 @@ export interface StagePage {
   stage: string;
   /** Producing step: a pass name, `lower`, or `parse`. */
   pass: string;
-  /** Canonical folio text (L1: the byte-faithful surface render). */
+  /** Canonical dump text (L1: the byte-faithful surface render). */
   text: string;
 }
 

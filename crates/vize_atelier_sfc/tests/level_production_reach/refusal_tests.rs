@@ -26,14 +26,14 @@ fn census_groups_refusals_by_stable_bucket_largest_first() {
     assert_eq!(
         lines.first().map(String::as_str),
         Some(
-            "davinci production reach refusals: scope=committed shape=dom_inline total=5 \
+            "levels production reach refusals: scope=committed shape=dom_inline total=5 \
              reasons=[(\"hoist_constant_gap\", 3), (\"diagnostics\", 1), (\"selector\", 1)]"
         )
     );
     assert_eq!(
         lines.get(1).map(String::as_str),
         Some(
-            "davinci production reach refusal samples: scope=committed shape=dom_inline \
+            "levels production reach refusal samples: scope=committed shape=dom_inline \
              reason=hoist_constant_gap files=[\"a.vue@7\", \"b.vue@7\"]"
         )
     );

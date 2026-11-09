@@ -18,7 +18,7 @@ use vize_l2::op::{
 };
 
 /// Canonical text of the reference tree.
-const CANONICAL: &str = include_str!("fixtures/reference.folio");
+const CANONICAL: &str = include_str!("fixtures/reference.dump");
 
 /// Parse a retained `js` payload through the load-path parse site.
 fn js<'a>(allocator: &'a Allocator, source: &'a str, start: u32, end: u32) -> ExprRef<'a> {
@@ -258,7 +258,7 @@ fn arena_built<'a>(allocator: &'a Allocator) -> ArenaVec<'a, Op<'a>> {
 }
 
 #[test]
-fn an_arena_tree_mirrors_into_the_same_folio() {
+fn an_arena_tree_mirrors_into_the_same_dump() {
     let allocator = Allocator::default();
     let ops = arena_built(&allocator);
     let mirrored = L2Page::of(&ops);

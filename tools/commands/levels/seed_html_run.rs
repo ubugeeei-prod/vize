@@ -14,7 +14,7 @@ use std::{
 use serde::Serialize;
 
 use crate::common;
-use crate::davinci_fpfn::{
+use crate::level_fpfn::{
     DiagnosticRow, ResolvedSources, VizeCli, flatten_lint_json, index_to_line_col,
     line_col_to_index, line_starts_of, list_vue_files, resolve_vize_cli,
 };

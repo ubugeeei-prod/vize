@@ -14,7 +14,7 @@ const benchmarkBaselineRoot = path.join(
   "tools",
   "benchmarks",
   "results",
-  "davinci",
+  "levels",
   "baseline",
 );
 
@@ -33,22 +33,22 @@ const phaseExitGateDefinitions = [
   {
     id: "p3-16-parity",
     text: "Vapor: TS-33 behavioral parity green; SSR **and VDOM**: TS-11 byte-empty (P3-7 changes patch-flag derivation, so DOM parity re-gates here)",
-    witnesses: [".github/workflows/davinci-reference.yml", "tools/commands/davinci/corpus-diff.ts"],
+    witnesses: [".github/workflows/level-reference.yml", "tools/commands/levels/corpus-diff.ts"],
   },
   {
     id: "p3-16-source-map",
     text: "TS-31 source-map coverage ≥ budget on all three backends",
     witnesses: [
-      "crates/vize_atelier_sfc/tests/davinci_ts31_sourcemap.rs",
-      "tests/tooling/davinci-sourcemap-coverage.test.ts",
+      "crates/vize_atelier_sfc/tests/level_ts31_sourcemap.rs",
+      "tests/tooling/level-sourcemap-coverage.test.ts",
     ],
   },
   {
     id: "p3-16-production-reach",
     text: "Production reach: `[reach]` floors held and raised, production-path DOM parity oracle empty, no DOM shape refused for its Croquis summary (P3-17)",
     witnesses: [
-      "crates/vize_atelier_sfc/tests/davinci_production_reach.rs",
-      ".github/workflows/davinci-canonical-corpus.yml",
+      "crates/vize_atelier_sfc/tests/level_production_reach.rs",
+      ".github/workflows/level-canonical-corpus.yml",
     ],
   },
   {
@@ -63,14 +63,14 @@ const phaseExitGateDefinitions = [
     id: "p3-16-legacy-retirement",
     text: "TS-32 remarks-diff clean; old vapor/ssr lanes + flags deleted",
     witnesses: [
-      "davinci/vize_l1_to_l2/tests/davinci_remarks_corpus.rs",
-      "tests/tooling/davinci-remarks-diff-lane.test.ts",
+      "levels/vize_l1_to_l2/tests/level_remarks_corpus.rs",
+      "tests/tooling/level-remarks-diff-lane.test.ts",
     ],
   },
   {
     id: "p3-16-mandatory-suites",
     text: "TS-27/TS-28/TS-29/TS-30 all mandatory-green; TS-20 totality fuzz extended to L2→L3 green",
-    witnesses: [".github/workflows/davinci-reference.yml", ".github/workflows/fuzz.yml"],
+    witnesses: [".github/workflows/level-reference.yml", ".github/workflows/fuzz.yml"],
   },
 ] as const;
 

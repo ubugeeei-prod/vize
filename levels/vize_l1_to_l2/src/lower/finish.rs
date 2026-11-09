@@ -40,7 +40,7 @@ fn walk<'a>(
         ));
     }
     let ops = structural::lower_children(cx, &tree.children, Namespace::Html);
-    #[cfg(feature = "davinci-benchmark-profile")]
+    #[cfg(feature = "level-benchmark-profile")]
     if let Some(records) = cx.provenance.kept() {
         super::benchmark::retained(records, records.capacity());
     }

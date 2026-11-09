@@ -4,7 +4,7 @@
     "sfcs": 2,
     "templates": 5
   },
-  "command": "cargo test -p vize_atelier_sfc --test davinci_ts31_sourcemap",
+  "command": "cargo test -p vize_atelier_sfc --test level_ts31_sourcemap",
   "rows": {
     "dom/rewritten-identifier": {
       "anchors": {

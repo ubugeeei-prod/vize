@@ -1,7 +1,7 @@
 //! The per-pass artifact hook (`run_transform_with_pass_hook`): it sees
 //! every executed pass of the artifact-selected plan, in order, with the
 //! post-pass L2 tree, and it only observes - the facts, diagnostics and
-//! folio equal the hook-free `run_transform` run exactly.
+//! dump equal the hook-free `run_transform` run exactly.
 
 use vize_l0::dump::{Dump, Mode as DumpMode};
 use vize_l0::pass::BudgetObserver;

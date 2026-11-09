@@ -134,7 +134,7 @@ export function deriveInventory(
       }
     }
   }
-  const crates = ["crates", "davinci"].flatMap((directory) =>
+  const crates = ["crates", "levels"].flatMap((directory) =>
     (fs.existsSync(path.join(root, directory)) ? fs.readdirSync(path.join(root, directory)) : [])
       .sort()
       .map((crate) => ({ directory, crate })),

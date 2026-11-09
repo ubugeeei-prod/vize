@@ -1,6 +1,6 @@
 ---
-source: crates/vize_davinci/tests/folio_laws.rs
-expression: "$crate :: folio :: Folio ::\nprint_to_string(& folio, $crate :: folio :: FolioMode :: Full,)"
+source: crates/vize_level/tests/dump_laws.rs
+expression: "$crate :: dump :: Dump ::\nprint_to_string(& dump, $crate :: dump :: DumpMode :: Full,)"
 ---
 [vir]
 script_setup=true

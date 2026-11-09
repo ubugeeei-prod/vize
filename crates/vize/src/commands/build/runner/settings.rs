@@ -9,7 +9,7 @@ use vize_l0::config::{
 use vize_l0::hash::hash_bytes;
 
 use crate::commands::build::{BuildArgs, ScriptExtension};
-use crate::commands::davinci_ice;
+use crate::commands::level_ice;
 use crate::lint_plan::matcher::{LintPlanScope, absolute_path};
 
 pub(super) struct BuildConfigSettings {
@@ -116,7 +116,7 @@ pub(super) struct CompileFileSettings {
     pub(super) dialect: VueVersion,
     pub(super) script_ext: ScriptExtension,
     pub(super) record_profile_totals: bool,
-    pub(super) davinci: DavinciBuildSettings,
+    pub(super) levels: LevelBuildSettings,
     /// Project-preprocessed `<style lang="scss|…">` blocks (#8905).
     pub(super) preprocessed_styles: super::preprocess::PreprocessedStyles,
     compiler_scopes: Vec<CompilerScope>,
@@ -127,10 +127,10 @@ pub(super) struct CompileFileSettings {
     custom_elements_from_cli: bool,
 }
 
-/// The build's slice of the Davinci ICE machinery (P2-13): the plan the
-/// compile path is described by, where a `repro.folio` goes, the per-pass
+/// The build's slice of the Levels ICE machinery (P2-13): the plan the
+/// compile path is described by, where a `repro.dump` goes, the per-pass
 /// dump controls, and the TS-23 panic injection.
-pub(super) struct DavinciBuildSettings {
+pub(super) struct LevelBuildSettings {
     /// Opt-in destination for the stages from this exact product compile.
     pub(super) dump_dir: Option<PathBuf>,
     pub(super) dump_after_change: bool,
@@ -148,16 +148,16 @@ pub(super) struct DavinciBuildSettings {
     pub(super) stage: &'static str,
     /// Mode name recorded in `[repro.config]`.
     pub(super) mode: &'static str,
-    /// Parsed `--davinci-inject-panic` spec: `(file stem, injection)`.
-    pub(super) inject: Option<(String, davinci_ice::Injection)>,
-    /// Where a failing file's `repro.folio` is written (the output dir).
+    /// Parsed `--level-inject-panic` spec: `(file stem, injection)`.
+    pub(super) inject: Option<(String, level_ice::Injection)>,
+    /// Where a failing file's `repro.dump` is written (the output dir).
     pub(super) repro_dir: PathBuf,
 }
 
-impl DavinciBuildSettings {
+impl LevelBuildSettings {
     /// The injection targeting `path`, if any (its trigger, when set, is
     /// checked against the source by the caller).
-    pub(super) fn injection_for(&self, path: &Path) -> Option<&davinci_ice::Injection> {
+    pub(super) fn injection_for(&self, path: &Path) -> Option<&level_ice::Injection> {
         let (stem, injection) = self.inject.as_ref()?;
         (path.file_stem().and_then(|name| name.to_str()) == Some(stem.as_str()))
             .then_some(injection)
@@ -187,11 +187,11 @@ impl CompileFileSettings {
             .collect();
         let ssr = args.ssr || build_config.ssr.unwrap_or(false);
         let vapor = args.vapor || build_config.vapor.unwrap_or(false);
-        let (plan, mode) = davinci_ice::compile_plan(ssr, vapor);
-        let budget = davinci_ice::plan_budget(plan);
-        let inject = args.davinci_inject_panic.as_deref().map(|spec| {
-            davinci_ice::parse_inject_spec(spec, plan).unwrap_or_else(|error| {
-                eprintln!("\x1b[31mError:\x1b[0m --davinci-inject-panic: {error}");
+        let (plan, mode) = level_ice::compile_plan(ssr, vapor);
+        let budget = level_ice::plan_budget(plan);
+        let inject = args.level_inject_panic.as_deref().map(|spec| {
+            level_ice::parse_inject_spec(spec, plan).unwrap_or_else(|error| {
+                eprintln!("\x1b[31mError:\x1b[0m --level-inject-panic: {error}");
                 std::process::exit(1);
             })
         });
@@ -232,10 +232,10 @@ impl CompileFileSettings {
             dialect: build_config.dialect.unwrap_or_default(),
             script_ext: args.script_ext,
             record_profile_totals: args.profile,
-            davinci: DavinciBuildSettings {
+            levels: LevelBuildSettings {
                 dump_dir: args.dump_dir.clone(),
                 dump_after_change: args.dump_after_change,
-                plan_string: davinci_ice::plan_string(plan),
+                plan_string: level_ice::plan_string(plan),
                 planned_groups: budget.walks,
                 planned_passes: budget.passes,
                 stage: plan.stage,

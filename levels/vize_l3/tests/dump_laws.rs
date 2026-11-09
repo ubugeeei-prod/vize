@@ -76,15 +76,15 @@ fn program<'a>(allocator: &'a Allocator) -> Program<'a> {
 
 #[test]
 fn full_print_is_identity_on_canonical_text() {
-    let folio = L3Page::parse(CANONICAL).expect("canonical text parses");
-    assert_eq!(folio.print_to_string(DumpMode::Full).as_str(), CANONICAL);
+    let dump = L3Page::parse(CANONICAL).expect("canonical text parses");
+    assert_eq!(dump.print_to_string(DumpMode::Full).as_str(), CANONICAL);
 }
 
 #[test]
 fn parse_print_is_structural_identity() {
     let arena = Allocator::default();
-    let folio = L3Page::of(&program(&arena));
-    let printed = folio.print_to_string(DumpMode::Full);
+    let dump = L3Page::of(&program(&arena));
+    let printed = dump.print_to_string(DumpMode::Full);
     assert_eq!(printed.as_str(), CANONICAL);
-    assert_eq!(L3Page::parse(printed.as_str()).unwrap(), folio);
+    assert_eq!(L3Page::parse(printed.as_str()).unwrap(), dump);
 }

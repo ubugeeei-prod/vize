@@ -54,8 +54,8 @@ runs:
     - name: Test legacy projection anchors and complete diagnostic ranges
       shell: bash
       env:
-        VIZE_DAVINCI_DIFFERENTIAL_CORPUS: ${{ github.workspace }}
-      run: cargo test --locked --profile ci -p vize_canon --features legacy-differential --test davinci_projection_differential -- --nocapture
+        VIZE_LEVEL_DIFFERENTIAL_CORPUS: ${{ github.workspace }}
+      run: cargo test --locked --profile ci -p vize_canon --features legacy-differential --test level_projection_differential -- --nocapture
     - name: Test complete model event overload contracts with the native checker
       shell: bash
       env:

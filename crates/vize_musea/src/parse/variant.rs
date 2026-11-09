@@ -19,7 +19,7 @@ use vize_l1::markup::{Element, ElementClose, SurfaceChild};
 /// element's contents), in document order.
 ///
 /// The vector is a heap one: [`ArtVariant::args`] owns `serde_json` values, so
-/// it cannot live in an arena container (Davinci P1-10). The walk keeps its
+/// it cannot live in an arena container (Levels P1-10). The walk keeps its
 /// own stack, so nesting depth is bounded by memory, not the call stack.
 pub(crate) fn parse_variants<'a>(
     allocator: &'a Allocator,

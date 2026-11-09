@@ -31,8 +31,8 @@ export function assertSupportGraph(
   const locked = tomlJson(fs.readFileSync(originalLock, "utf8")).package;
   const allowed = new Map([
     ["vize_carton", "crates/vize_carton"],
-    ["vize_l0", "davinci/vize_l0"],
-    ["vize_l0_derive", "davinci/vize_l0_derive"],
+    ["vize_l0", "levels/vize_l0"],
+    ["vize_l0_derive", "levels/vize_l0_derive"],
   ]);
   const ids = new Set<string>();
   const visit = (id: string) => {

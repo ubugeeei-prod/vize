@@ -1,8 +1,8 @@
-// The Davinci tab's opening component: small enough to read from the back of
+// The Levels tab's opening component: small enough to read from the back of
 // a room, broad enough that every rung has something to show - a static
 // subtree, bindings, an event, v-model on an element and on a component, a
 // v-if/v-else chain, a v-for, and a named slot.
-export const DAVINCI_PRESET = `<script setup lang="ts">
+export const LEVEL_PRESET = `<script setup lang="ts">
 import { computed, ref } from "vue";
 import TodoItem from "./TodoItem.vue";
 
@@ -53,14 +53,14 @@ const year = new Date().getFullYear();
 </template>
 `;
 
-export interface DavinciExample {
+export interface LevelExample {
   key: string;
   label: string;
   code: string;
 }
 
 /** The tab's examples, in presentation order. */
-export const DAVINCI_EXAMPLES: DavinciExample[] = [
-  { key: "board", label: "Todo board", code: DAVINCI_PRESET },
+export const LEVEL_EXAMPLES: LevelExample[] = [
+  { key: "board", label: "Todo board", code: LEVEL_PRESET },
   { key: "static", label: "Static islands", code: STATIC_ISLANDS },
 ];

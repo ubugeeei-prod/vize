@@ -29,7 +29,7 @@ process ids are absent.
 ## Exact fixture scope
 
 The machine-readable matrix is
-`tests/_fixtures/davinci-ts40-projection/matrix.json`. It covers:
+`tests/_fixtures/level-ts40-projection/matrix.json`. It covers:
 
 - UTF-8 identifiers and materialized CRLF input;
 - malformed-SFC recovery as an explicit diagnostic/error outcome;
@@ -71,7 +71,7 @@ plus authored anchor hits on both mapping models.
 
 This baseline does not prove:
 
-- Davinci/L2 projection parity or readiness;
+- Levels/L2 projection parity or readiness;
 - full-corpus `vize check` false-positive/false-negative parity;
 - complete tsgo Content Mapper editor-feature coverage;
 - static slot-name navigation mappings outside Content Mapper;

@@ -1,5 +1,5 @@
 {
-  "schema": "vize.davinciCorpusUnstableRows",
+  "schema": "vize.levelCorpusUnstableRows",
   "version": 1,
   "notes": "docs/davinci/plan/corpus-baseline-notes.md",
   "rows": [

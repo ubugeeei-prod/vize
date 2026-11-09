@@ -232,7 +232,7 @@ constants or included dashboard bytes, independently of the benchmark
 target, function, module and type names. Other synthetic probes retain a
 generator-source fingerprint and included fixture bytes, with include paths
 normalized. The driver accepts exactly one side of the bijective
-`davinci_storage` to `l1_to_l2_storage` target/source move, preserving all
+`level_storage` to `l1_to_l2_storage` target/source move, preserving all
 benchmark ids, windows and numeric ceilings. A fixture label or path may
 change only while its input digest remains identical; changed input bytes
 still fail. Counter/span/timing identity renames are a separate registry and

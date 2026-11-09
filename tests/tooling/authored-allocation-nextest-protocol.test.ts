@@ -11,7 +11,7 @@ const CASE = "authored_projection_reuses_ordinary_storage_and_holds_the_facade_b
 test("authored allocation harness separates nextest discovery, selection and callback failure", () => {
   const source = readFileSync(
     fileURLToPath(
-      new URL("../../crates/vize_patina/tests/davinci_authored_markup_budget.rs", import.meta.url),
+      new URL("../../crates/vize_patina/tests/level_authored_markup_budget.rs", import.meta.url),
     ),
     "utf8",
   );

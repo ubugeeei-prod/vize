@@ -5,7 +5,7 @@ import { nativeVaporCaptureRequired } from "../../tools/support/compat/github/na
 
 test("all original trim source and consumer inputs select the actual runtime lane", () => {
   for (const path of [
-    "davinci/vize_l3/tests/native_model_trim.rs",
+    "levels/vize_l3/tests/native_model_trim.rs",
     "crates/vize_atelier_sfc/tests/native_input_model_trim/main.rs",
     "crates/vize_atelier_sfc/tests/native_input_model_trim/custody.rs",
     "crates/vize_atelier_sfc/tests/native_input_model_trim/output.rs",
@@ -22,7 +22,7 @@ test("all original trim source and consumer inputs select the actual runtime lan
   ])
     assert(nativeVaporCaptureRequired([path]), path);
   for (const path of [
-    "davinci/vize_l3/tests/native_model_trim_old.rs",
+    "levels/vize_l3/tests/native_model_trim_old.rs",
     "crates/vize_atelier_sfc/tests/native_input_model_trim/unknown.rs",
     "crates/vize_atelier_sfc/tests/fixtures/native_original_input_model_trim_inputs.json.old",
     "tests/tooling/support/native-input-model-trim-unknown.ts",

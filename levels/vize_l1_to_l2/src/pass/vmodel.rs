@@ -89,7 +89,7 @@ use crate::lower::Lowered;
 mod check;
 use check::check_model;
 
-/// The pass name in pipeline strings and folio pages.
+/// The pass name in pipeline strings and dump pages.
 pub const NAME: &str = "v-model";
 
 /// The on-scope message, byte-identical to relief's

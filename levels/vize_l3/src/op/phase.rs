@@ -1,4 +1,4 @@
-/// The named phase an Impeto artifact currently satisfies.
+/// The named phase an L3 artifact currently satisfies.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum Phase {
     /// L2 has lowered into flat L3 ops; partition and schedule are not fixed.
@@ -10,7 +10,7 @@ pub enum Phase {
 }
 
 impl Phase {
-    /// Stable folio spelling.
+    /// Stable dump spelling.
     #[must_use]
     pub const fn as_str(self) -> &'static str {
         match self {
@@ -20,7 +20,7 @@ impl Phase {
         }
     }
 
-    /// Parse the stable folio spelling.
+    /// Parse the stable dump spelling.
     #[must_use]
     pub const fn from_str(value: &str) -> Option<Self> {
         match value.as_bytes() {

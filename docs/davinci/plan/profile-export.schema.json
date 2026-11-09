@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://vize.dev/schemas/profile-export.schema.json",
   "title": "Vize profile export",
-  "description": "Machine-readable profiling report written by `vize <command> --profile-json <path>` (P0-11). Spans carry the historical dotted key plus optional structured attribution (stage, pass, file_id, block, span). The export is size-budgeted: entries beyond the recorded budget are dropped from the tail of a deterministic ranking and counted in `truncation`, never silently. Consumers: Spolvero (C-4) and the AI optimization loop (C-10).",
+  "description": "Machine-readable profiling report written by `vize <command> --profile-json <path>` (P0-11). Spans carry the historical dotted key plus optional structured attribution (stage, pass, file_id, block, span). The export is size-budgeted: entries beyond the recorded budget are dropped from the tail of a deterministic ranking and counted in `truncation`, never silently. Consumers: Stage (C-4) and the AI optimization loop (C-10).",
   "type": "object",
   "additionalProperties": false,
   "required": [

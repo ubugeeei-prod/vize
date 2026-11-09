@@ -18,7 +18,7 @@ export const TEST_AREAS: ReadonlyArray<{
       "crates/vize_atelier_jsx",
       "crates/vize_atelier_sfc",
       "crates/vize_incremental",
-      "davinci",
+      "levels",
       "upstream/forks/oxc_parser",
       "upstream/forks/lightningcss",
       "upstream/forks/parcel_sourcemap",
@@ -46,7 +46,7 @@ export const TEST_AREAS: ReadonlyArray<{
   { area: "Docs", paths: ["docs"] },
   {
     area: "Tooling",
-    paths: ["tests/tooling", "tests/davinci_test_support", "tests/vize_test_runner", "tools"],
+    paths: ["tests/tooling", "tests/level_test_support", "tests/vize_test_runner", "tools"],
   },
 ];
 

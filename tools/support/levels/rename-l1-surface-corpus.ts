@@ -4,8 +4,8 @@ import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = fileURLToPath(new URL("../../../", import.meta.url));
-const oldPath = "davinci/vize_l1/tests/davinci_surface_corpus.rs";
-const newPath = "davinci/vize_l1/tests/surface_corpus.rs";
+const oldPath = "levels/vize_l1/tests/level_surface_corpus.rs";
+const newPath = "levels/vize_l1/tests/surface_corpus.rs";
 const phase = process.argv[2];
 if (!["moves", "integrate", "check"].includes(phase)) {
   throw new Error("Usage: rename-l1-surface-corpus.ts moves|integrate|check");
@@ -27,26 +27,18 @@ if (phase === "moves") {
       updates.set(path, source);
     else throw new Error(`Unexpected surface corpus integration anchor: ${path}`);
   }
+  replace("levels/vize_l1/Cargo.toml", "tests/level_surface_corpus.rs", "tests/surface_corpus.rs");
+  replace("levels/vize_l1/Cargo.toml", 'name = "level_surface_corpus"', 'name = "surface_corpus"');
+  replace(newPath, "--test level_surface_corpus", "--test surface_corpus");
   replace(
-    "davinci/vize_l1/Cargo.toml",
-    "tests/davinci_surface_corpus.rs",
-    "tests/surface_corpus.rs",
-  );
-  replace(
-    "davinci/vize_l1/Cargo.toml",
-    'name = "davinci_surface_corpus"',
-    'name = "surface_corpus"',
-  );
-  replace(newPath, "--test davinci_surface_corpus", "--test surface_corpus");
-  replace(
-    "tests/davinci_test_support/src/surface_fixture.rs",
-    "(`davinci_surface_corpus.rs`)",
+    "tests/level_test_support/src/surface_fixture.rs",
+    "(`level_surface_corpus.rs`)",
     "(`surface_corpus.rs`)",
   );
   replace(
     "docs/davinci/plan/phase-2-records.md",
-    "[`davinci_surface_corpus`](../../../davinci/vize_l1/tests/davinci_surface_corpus.rs)",
-    "[`surface_corpus`](../../../davinci/vize_l1/tests/surface_corpus.rs)",
+    "[`level_surface_corpus`](../../../levels/vize_l1/tests/level_surface_corpus.rs)",
+    "[`surface_corpus`](../../../levels/vize_l1/tests/surface_corpus.rs)",
   );
   const command =
     "cargo test -p vize_l1 --features legacy-differential --test surface_corpus -- --nocapture";
@@ -54,7 +46,7 @@ if (phase === "moves") {
   const step = `      - name: Test L1 feature-enabled surface corpus\n        if: \u0024{{ contains(fromJSON(inputs.rust-plan).packages, 'vize_l1') }}\n        run: ${command}\n`;
   replace(".github/workflows/pr-rust-checks.yml", prAnchor, step + prAnchor);
   const first =
-    "        cargo test -p vize_l1_to_l2 --features legacy-differential --test davinci_lowering_corpus -- --nocapture\n";
+    "        cargo test -p vize_l1_to_l2 --features legacy-differential --test level_lowering_corpus -- --nocapture\n";
   replace(
     ".github/actions/test-rust-workspace-differential/action.yml",
     first,
@@ -64,8 +56,8 @@ if (phase === "moves") {
   replace(gate, "const tailCommands = [\n", `const tailCommands = [\n  "${command}",\n`);
   replace(
     gate,
-    '["davinci_remarks_corpus", 3, 42]',
-    '["surface_corpus", 1, 42],\n      ["davinci_remarks_corpus", 4, 42]',
+    '["level_remarks_corpus", 3, 42]',
+    '["surface_corpus", 1, 42],\n      ["level_remarks_corpus", 4, 42]',
   );
   replace(gate, '["no-such-command", 11, 0]', '["no-such-command", 12, 0]');
   replace(gate, "lines[5].endsWith", "lines[6].endsWith");

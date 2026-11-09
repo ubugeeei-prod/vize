@@ -1,7 +1,7 @@
 //! Exact-pinned structural shapes: `v-if` chains as region-owning
 //! `ui.if`, `v-for` as `ui.for` under the P2-5b split decision, template
 //! unwrapping, and the Vue 3 `v-if`-outside-`v-for` precedence. Every
-//! oracle is whole-artifact equality on the canonical `Full`-mode folio
+//! oracle is whole-artifact equality on the canonical `Full`-mode dump
 //! (assurance §4: no partial matching).
 
 use crate::support;
@@ -15,7 +15,7 @@ use vize_l1_to_l2::exemptions;
 fn a_v_if_chain_groups_into_one_region_owning_if() {
     let art = artifact("<div v-if=\"a\">x</div><span v-else-if=\"b\">y</span><p v-else>z</p>");
     assert_eq!(
-        art.folio,
+        art.dump,
         "[l2-dump-v2]\n\
          ops=7\n\
          \n\
@@ -43,7 +43,7 @@ fn the_for_value_splits_at_the_first_viable_keyword_never_as_js() {
     // `(a in b) in c`. The sub-slices are admitted individually.
     let art = artifact("<i v-for=\"a in b in c\">t</i>");
     assert_eq!(
-        art.folio,
+        art.dump,
         "[l2-dump-v2]\n\
          ops=3\n\
          \n\
@@ -63,7 +63,7 @@ fn an_unsplittable_for_value_rides_whole_as_the_classified_escape() {
     // error names Vue's grammar violation.
     let art = artifact("<i v-for=\"items\">t</i>");
     assert_eq!(
-        art.folio,
+        art.dump,
         "[l2-dump-v2]\n\
          ops=3\n\
          \n\
@@ -91,7 +91,7 @@ fn an_absent_alias_is_a_zero_width_escape_position() {
     // and holds the zero-width escape.
     let art = artifact("<a v-for=\" in xs\">y</a>");
     assert_eq!(
-        art.folio,
+        art.dump,
         "[l2-dump-v2]\n\
          ops=3\n\
          \n\
@@ -108,7 +108,7 @@ fn an_absent_alias_is_a_zero_width_escape_position() {
 fn a_template_wrapper_unwraps_into_its_branch_region() {
     let art = artifact("<template v-if=\"x\"><a>1</a><b>2</b></template>");
     assert_eq!(
-        art.folio,
+        art.dump,
         "[l2-dump-v2]\n\
          ops=5\n\
          \n\
@@ -129,7 +129,7 @@ fn a_slot_template_v_if_keeps_the_template_carrier() {
     // the kept `ui.element template` + `ui.slot-content`.
     let art = artifact(r#"<Foo><template #header v-if="ok">x</template></Foo>"#);
     assert_eq!(
-        art.folio,
+        art.dump,
         "[l2-dump-v2]\n\
          ops=5\n\
          \n\
@@ -151,7 +151,7 @@ fn v_if_evaluates_outside_v_for_on_one_element() {
     // the branch region owns the `ui.for`, which owns the element.
     let art = artifact("<p v-if=\"ok\" v-for=\"i in is\">t</p>");
     assert_eq!(
-        art.folio,
+        art.dump,
         "[l2-dump-v2]\n\
          ops=4\n\
          \n\
@@ -169,7 +169,7 @@ fn v_if_evaluates_outside_v_for_on_one_element() {
 fn an_orphan_else_keeps_its_fragment_under_the_exact_error() {
     let art = artifact("<div v-else>x</div>");
     assert_eq!(
-        art.folio,
+        art.dump,
         "[l2-dump-v2]\n\
          ops=2\n\
          \n\

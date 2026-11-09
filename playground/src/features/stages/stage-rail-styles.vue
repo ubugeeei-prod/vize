@@ -8,7 +8,7 @@ defineOptions({ name: "StageRailStyles01" });
 /* The stage rail (stations joined by the pounce line) and the pass timeline. */
 
 /* Stage rail */
-.davinci-rail {
+.level-rail {
   display: flex;
   align-items: stretch;
   padding: 18px 20px 14px;
@@ -16,7 +16,7 @@ defineOptions({ name: "StageRailStyles01" });
   flex-shrink: 0;
 }
 
-.davinci-station {
+.level-station {
   display: grid;
   grid-template-columns: auto 1fr;
   grid-template-rows: auto auto;
@@ -33,29 +33,29 @@ defineOptions({ name: "StageRailStyles01" });
   cursor: pointer;
 }
 
-.davinci-station:hover {
+.level-station:hover {
   background: var(--bg-secondary);
 }
 
-.davinci-station:focus-visible,
-.davinci-step:focus-visible,
-.davinci-subtab:focus-visible,
-.davinci-line:focus-visible {
+.level-station:focus-visible,
+.level-step:focus-visible,
+.level-subtab:focus-visible,
+.level-line:focus-visible {
   outline: 2px solid var(--dv-ochre);
   outline-offset: 2px;
 }
 
-.davinci-station.active {
+.level-station.active {
   background: var(--bg-secondary);
   border-color: var(--border-primary);
   color: var(--text-primary);
 }
 
-.davinci-station.empty {
+.level-station.empty {
   opacity: 0.55;
 }
 
-.davinci-station-ordinal {
+.level-station-ordinal {
   grid-row: 1 / span 2;
   align-self: center;
   display: inline-grid;
@@ -69,21 +69,21 @@ defineOptions({ name: "StageRailStyles01" });
   border-radius: 50%;
 }
 
-.davinci-station.active {
-  & .davinci-station-ordinal {
+.level-station.active {
+  & .level-station-ordinal {
     background: var(--text-primary);
     border-color: var(--text-primary);
     color: var(--bg-primary);
   }
 }
 
-.davinci-station-name {
+.level-station-name {
   font-size: 1rem;
   font-weight: 600;
   white-space: nowrap;
 }
 
-.davinci-station-facts {
+.level-station-facts {
   font-size: 0.75rem;
   color: var(--text-muted);
   white-space: nowrap;
@@ -91,7 +91,7 @@ defineOptions({ name: "StageRailStyles01" });
   text-overflow: ellipsis;
 }
 
-.davinci-pounce {
+.level-pounce {
   flex: 1;
   min-width: 16px;
   align-self: center;
@@ -104,7 +104,7 @@ defineOptions({ name: "StageRailStyles01" });
 }
 
 /* Pass timeline */
-.davinci-timeline {
+.level-timeline {
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -113,43 +113,43 @@ defineOptions({ name: "StageRailStyles01" });
   flex-shrink: 0;
 }
 
-.davinci-timeline-row {
+.level-timeline-row {
   display: flex;
   align-items: center;
   gap: 16px;
 }
 
 /* Where the time went, in run order: one segment per measured step. */
-.davinci-time-strip {
+.level-time-strip {
   display: flex;
   flex: 1;
   gap: 2px;
   height: 6px;
 }
 
-.davinci-time-segment {
+.level-time-segment {
   min-width: 3px;
   border-radius: 3px;
   opacity: 0.55;
 }
 
-.davinci-time-segment.current {
+.level-time-segment.current {
   opacity: 1;
 }
 
-.davinci-time-segment.rung-l1 {
+.level-time-segment.rung-l1 {
   background: var(--hl-tag);
 }
 
-.davinci-time-segment.rung-l2 {
+.level-time-segment.rung-l2 {
   background: var(--hl-directive);
 }
 
-.davinci-time-segment.rung-l3 {
+.level-time-segment.rung-l3 {
   background: var(--color-notice);
 }
 
-.davinci-steps {
+.level-steps {
   display: flex;
   flex-wrap: wrap;
   align-items: flex-start;
@@ -162,13 +162,13 @@ defineOptions({ name: "StageRailStyles01" });
 }
 
 /* One pass-manager walk: its passes above a bracket naming the walk. */
-.davinci-walk {
+.level-walk {
   display: flex;
   flex-direction: column;
   gap: 4px;
 }
 
-.davinci-walk-steps {
+.level-walk-steps {
   display: flex;
   gap: 6px;
   margin: 0;
@@ -176,7 +176,7 @@ defineOptions({ name: "StageRailStyles01" });
   list-style: none;
 }
 
-.davinci-walk-label {
+.level-walk-label {
   display: flex;
   gap: 8px;
   padding: 3px 10px 0;
@@ -187,21 +187,21 @@ defineOptions({ name: "StageRailStyles01" });
   white-space: nowrap;
 }
 
-.davinci-walk.fusable {
-  & .davinci-walk-label {
+.level-walk.fusable {
+  & .level-walk-label {
     border-top-color: var(--hl-directive);
   }
 }
 
 /* Fixed like the step times, so a live walk time never reflows the row. */
-.davinci-walk-time {
+.level-walk-time {
   min-width: 6ch;
   margin-inline-start: auto;
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-.davinci-step {
+.level-step {
   display: inline-flex;
   align-items: center;
   gap: 7px;
@@ -215,51 +215,51 @@ defineOptions({ name: "StageRailStyles01" });
   cursor: pointer;
 }
 
-.davinci-step:hover {
+.level-step:hover {
   background: var(--bg-secondary);
 }
 
-.davinci-step.current {
+.level-step.current {
   border-color: var(--text-primary);
   color: var(--text-primary);
   background: var(--bg-secondary);
 }
 
-.davinci-step-mark {
+.level-step-mark {
   width: 9px;
   height: 9px;
   border: 1.5px solid var(--dv-ochre);
   border-radius: 50%;
 }
 
-.davinci-step.changed {
-  & .davinci-step-mark {
+.level-step.changed {
+  & .level-step-mark {
     background: var(--dv-ochre);
   }
 }
 
-.davinci-step.producer {
-  & .davinci-step-mark {
+.level-step.producer {
+  & .level-step-mark {
     border-color: var(--text-primary);
     background: var(--text-primary);
     border-radius: 2px;
   }
 }
 
-.davinci-step-rung,
-.davinci-step-time {
+.level-step-rung,
+.level-step-time {
   font-size: 0.6875rem;
   color: var(--text-muted);
 }
 
 /* A fixed slot so live timings never reflow the steps while typing. */
-.davinci-step-time {
+.level-step-time {
   min-width: 6ch;
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-.davinci-step-remarks {
+.level-step-remarks {
   min-width: 18px;
   padding: 0 5px;
   font-size: 0.6875rem;
@@ -270,7 +270,7 @@ defineOptions({ name: "StageRailStyles01" });
   border-radius: 8px;
 }
 
-.davinci-timeline-summary {
+.level-timeline-summary {
   margin: 0 0 0 auto;
   font-size: 0.75rem;
   color: var(--text-muted);

@@ -5,15 +5,15 @@
   "freshProcessesMatched": true,
   "sourceIdentity": [
     {
-      "file": "davinci/vize_l1/src/markup/lex/compat/states.rs",
+      "file": "levels/vize_l1/src/markup/lex/compat/states.rs",
       "sha256": "36b3e4b4d55d2e0f4ea03662abc7a5792d3196c881d6b14482b9a0a2e4f8c85e"
     },
     {
-      "file": "davinci/vize_l1/src/markup/lex/compat/entity_decode.rs",
+      "file": "levels/vize_l1/src/markup/lex/compat/entity_decode.rs",
       "sha256": "9ecf12d3d3f811a27e6c96ba717459cd806225a87a626ec2f8d9318a6ed9112c"
     },
     {
-      "file": "davinci/vize_l1/src/markup/lex/compat/dynamic_arg.rs",
+      "file": "levels/vize_l1/src/markup/lex/compat/dynamic_arg.rs",
       "sha256": "a880c8c2ca4653f0b7cec1b17f7aab8c29272ea0e028eb661e806cc9e0b9c886"
     },
     {
@@ -32,21 +32,21 @@
   "records": [
     {
       "name": "callback-fixtures",
-      "file": "davinci/vize_l1/tests/_fixtures/tokenizer_callback_fixtures.bin",
+      "file": "levels/vize_l1/tests/_fixtures/tokenizer_callback_fixtures.bin",
       "cases": 6444,
       "bytes": 103104,
       "sha256": "b5ba1bea98197a95b1ca6269bc21cc3bb80fdc7f9e46f4fb97ecdf070787b0a3"
     },
     {
       "name": "callback-switches",
-      "file": "davinci/vize_l1/tests/_fixtures/tokenizer_callback_switches.bin",
+      "file": "levels/vize_l1/tests/_fixtures/tokenizer_callback_switches.bin",
       "cases": 14,
       "bytes": 224,
       "sha256": "3dbbc063cc9a4dd97cb4e2dc9866b60c471799b5ccb755ed3b3916e6095e5c2e"
     },
     {
       "name": "callback-resume",
-      "file": "davinci/vize_l1/tests/_fixtures/tokenizer_callback_resume.bin",
+      "file": "levels/vize_l1/tests/_fixtures/tokenizer_callback_resume.bin",
       "cases": 1,
       "bytes": 16,
       "sha256": "dce6120a18116ff18f0a444a5ba62cfc66c652a3b0f05d6a2a5dddc3a1f8f474"

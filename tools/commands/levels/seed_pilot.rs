@@ -7,7 +7,7 @@ use std::{
 };
 
 use crate::common;
-use crate::davinci_fpfn::{
+use crate::level_fpfn::{
     CLASS_A, CLASS_A_RULE, CLASS_B, CLASS_B_RULE, EditRecord, Identifier, Injection, SeedFile,
     SeedManifest, SeedScope, SourceInfo, UNUSED_BINDING_NAME, apply_seed, describe_seeded_span,
     list_vue_files, plan_class_a, plan_class_b, resolve_corpus_sources, resolve_fixture_sources,
@@ -46,7 +46,7 @@ pub fn seed(
                     &plan.name,
                     &applied.edits,
                 )?;
-                let starts = crate::davinci_fpfn::line_starts_of(&applied.seeded);
+                let starts = crate::level_fpfn::line_starts_of(&applied.seeded);
                 injections.push(Injection {
                     class_name: CLASS_A.to_string(),
                     path: seed_path.clone(),
@@ -70,7 +70,7 @@ pub fn seed(
                 let id_start = applied.seeded.find(UNUSED_BINDING_NAME).ok_or_else(|| {
                     "seed-defects internal error: unused binding not found".to_string()
                 })?;
-                let starts = crate::davinci_fpfn::line_starts_of(&applied.seeded);
+                let starts = crate::level_fpfn::line_starts_of(&applied.seeded);
                 injections.push(Injection {
                     class_name: CLASS_B.to_string(),
                     path: seed_path.clone(),
@@ -100,7 +100,7 @@ pub fn seed(
     injections.sort_by(|a, b| a.path.cmp(&b.path).then(a.class_name.cmp(&b.class_name)));
     let manifest = SeedManifest {
         schema_version: 1,
-        tool: "tools/commands/davinci/seed-defects.rs".to_string(),
+        tool: "tools/commands/levels/seed-defects.rs".to_string(),
         source: SourceInfo {
             kind: source.kind,
             label: source.label,
@@ -146,7 +146,7 @@ pub fn resolve_sources(
     matrix: bool,
     corpus_shard: bool,
     out_dir: &Path,
-) -> Result<crate::davinci_fpfn::ResolvedSources, String> {
+) -> Result<crate::level_fpfn::ResolvedSources, String> {
     let picked = usize::from(fixtures.is_some()) + usize::from(matrix) + usize::from(corpus_shard);
     if picked != 1 {
         return Err(format!(
@@ -162,17 +162,17 @@ pub fn resolve_sources(
         common::run_capture_in(
             "rust-script",
             &[
-                "tools/commands/davinci/matrix-gen.rs",
+                "tools/commands/levels/matrix-gen.rs",
                 "--write",
                 "--out-dir",
                 matrix_dir.to_string_lossy().as_ref(),
             ],
             repo_root,
         )?;
-        return Ok(crate::davinci_fpfn::ResolvedSources {
+        return Ok(crate::level_fpfn::ResolvedSources {
             kind: "matrix".to_string(),
             label: "matrix-gen".to_string(),
-            roots: vec![crate::davinci_fpfn::SourceRoot {
+            roots: vec![crate::level_fpfn::SourceRoot {
                 root: matrix_dir,
                 prefix: String::new(),
             }],

@@ -91,7 +91,7 @@ fn real_bridge(root: &Path) -> CorsaBridge {
 #[test]
 fn real_configured_original_programs_preserve_complete_diagnostics_and_source() {
     let fixtures: serde_json::Value = serde_json::from_str(include_str!(
-        "../../../../davinci/vize_l4/tests/fixtures/program-checker.json"
+        "../../../../levels/vize_l4/tests/fixtures/program-checker.json"
     ))
     .unwrap();
     for case in fixtures["cases"].as_array().unwrap() {

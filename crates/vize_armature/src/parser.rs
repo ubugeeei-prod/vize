@@ -80,7 +80,7 @@ use whitespace::{condense_whitespace, preserve_whitespace};
 
 pub struct Parser<'a> {
     allocator: &'a Allocator,
-    /// The compile's oxc arena pool: retained expression ASTs (Davinci P1-5)
+    /// The compile's oxc arena pool: retained expression ASTs (Levels P1-5)
     /// are parsed into it so they share the template tree's lifetime.
     oxc_allocator: &'a oxc_allocator::Allocator,
     source: &'a str,

@@ -8,7 +8,7 @@ use vize_l3::op::OpId;
 use vize_l3::placement::Placement;
 
 const CANONICAL: &str = "\
-[s3-extraction-folio]
+[s3-extraction-dump]
 tier=O1
 candidate_budget=8
 budget_left=5
@@ -19,7 +19,7 @@ reactive_edges_after=4
 update_path_before=7
 update_path_after=6
 
-[s3-extraction-folio.decisions]
+[s3-extraction-dump.decisions]
 op=1 placement=cache kind=missed reason=regressed-emitted-size span=5:15 size=6 edges=-1 path=-1 budget=7
 op=3 placement=group kind=applied reason=committed span=30:40 size=-21 edges=-1 path=0 budget=6
 op=5 placement=hoist kind=applied reason=committed span=45:75 size=-13 edges=0 path=-1 budget=5
@@ -125,9 +125,9 @@ fn parse_print_is_structural_identity_for_every_reason() {
 #[test]
 fn parse_rejects_malformed_rows_exactly() {
     let (header, _) = CANONICAL
-        .split_once("[s3-extraction-folio.decisions]")
+        .split_once("[s3-extraction-dump.decisions]")
         .expect("canonical page has a decisions section");
-    let page = |row: &str| cstr!("{header}[s3-extraction-folio.decisions]\n{row}\n");
+    let page = |row: &str| cstr!("{header}[s3-extraction-dump.decisions]\n{row}\n");
     let valid =
         "op=1 placement=cache kind=missed reason=subsumed span=1:2 size=0 edges=0 path=0 budget=0";
     assert_eq!(

@@ -87,7 +87,7 @@ all but the two codegen reads). The living code is
 
 `ui.bind` and `ui.on` landed in `vize_s2` by the P2-5a ritual:
 variants injected first, build captured broken —
-`folio/owned.rs:282` (`own_binding`, E0004) on the lib, then the test
+`dump/owned.rs:282` (`own_binding`, E0004) on the lib, then the test
 targets: `op_family` (the canary itself), `folio_laws`, `folio_mirror`
 (E0063 on the `SlotOp` shape change) — then fixed and re-run green.
 Size asserts: `BindOp` 72 / `OnOp` 72 held on the first guess;
@@ -256,8 +256,8 @@ snapshots did not move (the new ops appear only where authored).
 - **House rules**: every file ≤ 350 after the deliberate splits
   (`lower/bindop.rs` 160; `lower/structural.rs` 287 +
   `structural/wrapper.rs` 147; `pass/vif.rs` 289 + `vif/keys.rs` 149;
-  `pass/vmodel.rs` 343; disegno's `folio/owned/binding.rs` 135 +
-  `folio/print/binding.rs` 140 + `folio/parse/frame.rs` 180; the
+  `pass/vmodel.rs` 343; disegno's `dump/owned/binding.rs` 135 +
+  `dump/print/binding.rs` 140 + `dump/parse/frame.rs` 180; the
   comparator split four ways — `surface.rs` 178 types +
   `surface_check.rs` 220 + `surface_old.rs` 250 + `surface_old_help.rs`
   136 + `surface_s2.rs` 141, with `s2_lane.rs` back at 335, and the

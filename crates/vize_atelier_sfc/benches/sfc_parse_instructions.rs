@@ -8,14 +8,14 @@ const FIXTURE: &str = "crates/vize_atelier_sfc/tests/fixtures/template-only-benc
 const SOURCE: &str = include_str!("../tests/fixtures/template-only-bench.vue");
 
 fn template_only(c: &mut Criterion) {
-    davinci_harness::bench_with_metrics(c, "sfc_parse_template_only", FIXTURE, || {
+    level_harness::bench_with_metrics(c, "sfc_parse_template_only", FIXTURE, || {
         parse_sfc(SOURCE, SfcParseOptions::default()).expect("native template descriptor")
     });
-    davinci_harness::bench_with_metrics(c, "sfc_parse_template_only_retained", FIXTURE, || {
+    level_harness::bench_with_metrics(c, "sfc_parse_template_only_retained", FIXTURE, || {
         vize_croquis::sfc::parse_sfc(SOURCE, SfcParseOptions::default())
             .expect("retained template descriptor")
     });
 }
 
 criterion_group!(benches, template_only);
-davinci_harness::main!(benches);
+level_harness::main!(benches);

@@ -8,7 +8,7 @@ defineOptions({ name: "DumpViewStyles01" });
 /* Stage page listing: projector-legible mono text, a quiet gutter, and one
    ochre wash for the line that is linked to the source. */
 
-.davinci-folio {
+.level-dump {
   flex: 1;
   min-height: 0;
   overflow: auto;
@@ -23,39 +23,39 @@ defineOptions({ name: "DumpViewStyles01" });
   tab-size: 2;
 }
 
-.davinci-line {
+.level-line {
   display: flex;
   min-width: max-content;
   padding-inline-end: 20px;
   border-left: 3px solid transparent;
 }
 
-.davinci-line.linkable {
+.level-line.linkable {
   cursor: pointer;
 }
 
-.davinci-line.linkable:hover {
+.level-line.linkable:hover {
   background: var(--bg-tertiary);
 }
 
-.davinci-line.linked {
+.level-line.linked {
   border-left-color: var(--color-notice);
   background: var(--color-notice-bg);
 }
 
-.davinci-line.selected,
-.davinci-line.selected:hover {
+.level-line.selected,
+.level-line.selected:hover {
   border-left-color: var(--color-notice);
   background: var(--color-notice-bg);
   box-shadow: inset 0 0 0 1px var(--color-notice-border);
 }
 
-.davinci-line.davinci-section {
+.level-line.level-section {
   margin-top: 4px;
 }
 
 /* L3 partition overlay: teal static, ochre dynamic. */
-.davinci-mark {
+.level-mark {
   flex-shrink: 0;
   align-self: center;
   width: 8px;
@@ -64,15 +64,15 @@ defineOptions({ name: "DumpViewStyles01" });
   border-radius: 50%;
 }
 
-.davinci-mark.static {
+.level-mark.static {
   background: var(--color-teal);
 }
 
-.davinci-mark.dynamic {
+.level-mark.dynamic {
   background: var(--color-notice);
 }
 
-.davinci-ln {
+.level-ln {
   flex-shrink: 0;
   width: 3.5em;
   padding-inline-end: 1.25em;
@@ -82,7 +82,7 @@ defineOptions({ name: "DumpViewStyles01" });
   user-select: none;
 }
 
-.davinci-code {
+.level-code {
   white-space: pre;
 }
 
@@ -156,8 +156,8 @@ defineOptions({ name: "DumpViewStyles01" });
 }
 
 /* Page difference against the previous page of the same stage */
-.davinci-diff,
-.davinci-remarks {
+.level-diff,
+.level-remarks {
   flex: 1;
   min-height: 0;
   display: flex;
@@ -165,54 +165,54 @@ defineOptions({ name: "DumpViewStyles01" });
   gap: 10px;
 }
 
-.davinci-diff-summary {
+.level-diff-summary {
   margin: 0;
   font-size: 0.875rem;
   color: var(--text-secondary);
 }
 
-.davinci-diff-mark {
+.level-diff-mark {
   flex-shrink: 0;
   width: 1.5em;
   color: var(--text-muted);
   user-select: none;
 }
 
-.davinci-line.diff-add {
+.level-line.diff-add {
   background: var(--color-success-bg);
 }
 
-.davinci-line.diff-add {
-  & .davinci-diff-mark {
+.level-line.diff-add {
+  & .level-diff-mark {
     color: var(--color-success);
   }
 }
 
-.davinci-line.diff-remove {
+.level-line.diff-remove {
   background: var(--color-error-bg);
 }
 
-.davinci-line.diff-remove {
-  & .davinci-diff-mark {
+.level-line.diff-remove {
+  & .level-diff-mark {
     color: var(--color-error);
   }
 }
 
 /* Optimization remarks */
-.davinci-remarks-empty {
+.level-remarks-empty {
   max-width: 64ch;
   padding: 20px 22px;
   border: 1px dashed var(--border-primary);
   border-radius: 8px;
 }
 
-.davinci-remarks-title {
+.level-remarks-title {
   margin: 0 0 6px;
   font-size: 0.9375rem;
   font-weight: 600;
 }
 
-.davinci-remark-list {
+.level-remark-list {
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -222,7 +222,7 @@ defineOptions({ name: "DumpViewStyles01" });
   list-style: none;
 }
 
-.davinci-remark {
+.level-remark {
   display: grid;
   grid-template-columns: auto auto 1fr auto;
   align-items: baseline;
@@ -233,47 +233,47 @@ defineOptions({ name: "DumpViewStyles01" });
   border-radius: 8px;
 }
 
-.davinci-remark-outcome {
+.level-remark-outcome {
   padding: 1px 6px;
   font-family: var(--font-mono);
   font-size: 0.75rem;
   border-radius: 4px;
 }
 
-.davinci-remark.applied {
-  & .davinci-remark-outcome {
+.level-remark.applied {
+  & .level-remark-outcome {
     color: var(--color-teal);
     background: var(--color-teal-bg);
   }
 }
 
-.davinci-remark.missed {
-  & .davinci-remark-outcome {
+.level-remark.missed {
+  & .level-remark-outcome {
     color: var(--color-notice);
     background: var(--color-notice-bg);
   }
 }
 
-.davinci-remark.analysis {
-  & .davinci-remark-outcome {
+.level-remark.analysis {
+  & .level-remark-outcome {
     color: var(--text-secondary);
     background: var(--bg-tertiary);
   }
 }
 
-.davinci-remark-pass {
+.level-remark-pass {
   font-family: var(--font-mono);
   color: var(--text-secondary);
 }
 
-.davinci-remark-message {
+.level-remark-message {
   display: flex;
   flex-wrap: wrap;
   gap: 4px 8px;
   align-items: baseline;
 }
 
-.davinci-remark-arg {
+.level-remark-arg {
   font-family: var(--font-mono);
   font-size: 0.75rem;
   color: var(--text-muted);

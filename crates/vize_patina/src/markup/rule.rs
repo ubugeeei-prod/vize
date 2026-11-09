@@ -8,7 +8,7 @@ use super::scope::{MarkupConditional, MarkupList};
 use super::{MarkupContext, MarkupDocument};
 use crate::ir::ByteRange;
 
-/// The Davinci level a [`MarkupRule`] reads: the authored L1 surface, or the
+/// The Levels level a [`MarkupRule`] reads: the authored L1 surface, or the
 /// L1→L2 lowering.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum MarkupLevel {

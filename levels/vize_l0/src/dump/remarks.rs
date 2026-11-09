@@ -22,7 +22,7 @@
 //! one ` {key}={value}` per argument in emission order. A text value is a
 //! JSON string literal (so it may hold spaces, quotes, anything); integers
 //! and booleans are bare. Entry order is carried, never re-sorted (an
-//! order-bearing list, folio-format.md rule 1): the collector already put
+//! order-bearing list, dump-format.md rule 1): the collector already put
 //! it in canonical order. `Display` drops the spans and carries no
 //! round-trip law.
 

@@ -40,12 +40,12 @@ function toggle(index: number) {
 </script>
 
 <template>
-  <div ref="root" :class="['davinci-folio', `page-${kind}`]" aria-label="Stage page">
+  <div ref="root" :class="['level-dump', `page-${kind}`]" aria-label="Stage page">
     <template v-for="line in lines" :key="line.index">
       <div
         v-if="line.span"
         :class="[
-          'davinci-line',
+          'level-line',
           'linkable',
           { selected: selected === line.index, linked: linked.includes(line.index) },
         ]"
@@ -63,12 +63,12 @@ function toggle(index: number) {
         @keydown.space.prevent="() => toggle(line.index)"
       >
         <span
-          :class="['davinci-mark', marks?.get(line.index)]"
+          :class="['level-mark', marks?.get(line.index)]"
           :title="marks?.get(line.index)"
           aria-hidden="true"
         ></span>
-        <span class="davinci-ln">{{ line.index + 1 }}</span>
-        <span class="davinci-code"
+        <span class="level-ln">{{ line.index + 1 }}</span>
+        <span class="level-code"
           ><span
             v-for="token in withTokenOffsets(line.tokens)"
             :key="token.offset"
@@ -79,16 +79,16 @@ function toggle(index: number) {
       </div>
       <div
         v-else
-        :class="['davinci-line', { 'davinci-section': line.tokens[0]?.type === 'section' }]"
+        :class="['level-line', { 'level-section': line.tokens[0]?.type === 'section' }]"
         :data-line="line.index"
       >
         <span
-          :class="['davinci-mark', marks?.get(line.index)]"
+          :class="['level-mark', marks?.get(line.index)]"
           :title="marks?.get(line.index)"
           aria-hidden="true"
         ></span>
-        <span class="davinci-ln">{{ line.index + 1 }}</span>
-        <span class="davinci-code"
+        <span class="level-ln">{{ line.index + 1 }}</span>
+        <span class="level-code"
           ><span
             v-for="token in withTokenOffsets(line.tokens)"
             :key="token.offset"

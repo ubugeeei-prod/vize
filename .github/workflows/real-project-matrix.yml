@@ -1,12 +1,12 @@
 name: Real Project Matrix
 # "enforced" gates every surface. "release-gated" is the exact release dispatch:
-# tool surfaces and the Davinci corpus enforce, lint and LSP parity record their
+# tool surfaces and the Levels corpus enforce, lint and LSP parity record their
 # raw outcomes, and typecheck divergence is skipped. Every other combination is
 # "observational".
 run-name: >-
   Real Project Matrix ${{ inputs.project && 'scoped-diagnostic' || (inputs.core_tools_mode || 'enforce') == 'enforce' &&
   (inputs.typecheck_dependencies_mode || 'enforce') == 'enforce' &&
-  (inputs.davinci_dom_corpus_mode || 'enforce') == 'enforce' &&
+  (inputs.level_dom_corpus_mode || 'enforce') == 'enforce' &&
   ((inputs.lint_divergence_mode || 'enforce') == 'enforce' &&
   (inputs.lsp_mode || 'enforce') == 'enforce' &&
   (inputs.typecheck_divergence_mode || 'enforce') == 'enforce' &&
@@ -70,8 +70,8 @@ on:
           - enforce
           - record-only
           - skip
-      davinci_dom_corpus_mode:
-        description: "Davinci L2 DOM corpus gate handling"
+      level_dom_corpus_mode:
+        description: "Levels L2 DOM corpus gate handling"
         required: false
         default: "enforce"
         type: choice
@@ -303,7 +303,7 @@ jobs:
             tests/tooling/sfc-equivalence.test.ts \
             tests/tooling/glyph-corpus-idempotence.test.ts \
             tests/tooling/glyph-corpus-parse-preservation.test.ts \
-            tests/tooling/glyph-pug-oracle.test.ts tests/tooling/davinci-pug-corpus-oracle.test.ts \
+            tests/tooling/glyph-pug-oracle.test.ts tests/tooling/level-pug-corpus-oracle.test.ts \
             tests/tooling/glyph-corpus-lint-agreement.test.ts || glyph_exit_code=$?
           for property in idempotence parse-preservation lint-agreement; do
             if [[ ! -s "$FIXTURE_REPORT_DIR/glyph-$property.json" ]]; then
@@ -386,21 +386,21 @@ jobs:
           if-no-files-found: error
           retention-days: 30
 
-  davinci-dom-corpus:
+  level-dom-corpus:
     permissions: { contents: read, actions: read, checks: read }
-    uses: ./.github/workflows/davinci-canonical-corpus.yml
+    uses: ./.github/workflows/level-canonical-corpus.yml
     with:
-      davinci_dom_corpus_mode: ${{ inputs.davinci_dom_corpus_mode || 'enforce' }}
+      level_dom_corpus_mode: ${{ inputs.level_dom_corpus_mode || 'enforce' }}
 
-  davinci-dom-divergence-reduction:
+  level-dom-divergence-reduction:
     name: reduce canonical DOM divergence
     if: ${{ always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') }}
-    needs: davinci-dom-corpus
+    needs: level-dom-corpus
     permissions: { contents: read, actions: read }
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 20
     env:
-      REDUCTION_DIR: real-project-davinci-dom-reduction
+      REDUCTION_DIR: real-project-level-dom-reduction
     steps:
       - name: Checkout matrix commit
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
@@ -411,12 +411,12 @@ jobs:
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: canonical-corpus-dom-${{ github.run_id }}-${{ github.run_attempt }}-${{ github.sha }}
-          path: real-project-davinci-dom-corpus
+          path: real-project-level-dom-corpus
       - name: Plan one bounded reduction
         id: reduction
         run: >-
           node tools/support/compat/github/canonical-corpus-divergence-reduction.mjs
-          plan real-project-davinci-dom-corpus "$REDUCTION_DIR"
+          plan real-project-level-dom-corpus "$REDUCTION_DIR"
       - name: Hydrate the selected pinned fixture
         if: ${{ steps.reduction.outputs.required == 'true' }}
         env: { FIXTURE_PATH: "${{ steps.reduction.outputs.fixture_path }}" }
@@ -448,15 +448,15 @@ jobs:
           if-no-files-found: error
           retention-days: 30
 
-  davinci-dom-divergence-promotion:
+  level-dom-divergence-promotion:
     name: promote canonical DOM divergence fixture
     if: ${{ always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') }}
-    needs: davinci-dom-divergence-reduction
+    needs: level-dom-divergence-reduction
     permissions: { actions: read, contents: write, pull-requests: write }
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 5
     env:
-      PROMOTION_DIR: real-project-davinci-dom-promotion
+      PROMOTION_DIR: real-project-level-dom-promotion
     steps:
       - name: Checkout matrix commit
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
@@ -467,12 +467,12 @@ jobs:
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: canonical-corpus-dom-reduction-${{ github.run_id }}-${{ github.run_attempt }}-${{ github.sha }}
-          path: real-project-davinci-dom-reduction
+          path: real-project-level-dom-reduction
       - name: Promote minimized witness to a draft fixture PR
         env: { GH_TOKEN: "${{ github.token }}" }
         run: >-
           node tools/support/compat/github/canonical-corpus-divergence-promotion.mjs publish
-          real-project-davinci-dom-reduction "$PROMOTION_DIR"
+          real-project-level-dom-reduction "$PROMOTION_DIR"
       - name: Upload fixture promotion receipt
         if: ${{ always() }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -482,10 +482,10 @@ jobs:
           if-no-files-found: error
           retention-days: 30
 
-  davinci-dom-divergence-issue:
+  level-dom-divergence-issue:
     name: file canonical DOM divergence
     if: ${{ always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') }}
-    needs: [davinci-dom-corpus, davinci-dom-divergence-reduction, davinci-dom-divergence-promotion]
+    needs: [level-dom-corpus, level-dom-divergence-reduction, level-dom-divergence-promotion]
     permissions: { contents: read, actions: read, issues: write }
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 5
@@ -499,24 +499,24 @@ jobs:
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: canonical-corpus-dom-${{ github.run_id }}-${{ github.run_attempt }}-${{ github.sha }}
-          path: real-project-davinci-dom-corpus
+          path: real-project-level-dom-corpus
       - name: Download canonical DOM reduction
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: canonical-corpus-dom-reduction-${{ github.run_id }}-${{ github.run_attempt }}-${{ github.sha }}
-          path: real-project-davinci-dom-reduction
+          path: real-project-level-dom-reduction
       - name: Download canonical DOM fixture promotion
         continue-on-error: true
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: canonical-corpus-dom-promotion-${{ github.run_id }}-${{ github.run_attempt }}-${{ github.sha }}
-          path: real-project-davinci-dom-promotion
+          path: real-project-level-dom-promotion
       - name: File canonical DOM divergence issue
         env: { GH_TOKEN: "${{ github.token }}" }
         shell: bash
         run: |
-          args=(publish real-project-davinci-dom-corpus real-project-davinci-dom-reduction)
-          if [[ -s real-project-davinci-dom-promotion/promotion.json ]]; then
-            args+=(real-project-davinci-dom-promotion)
+          args=(publish real-project-level-dom-corpus real-project-level-dom-reduction)
+          if [[ -s real-project-level-dom-promotion/promotion.json ]]; then
+            args+=(real-project-level-dom-promotion)
           fi
           node tools/support/compat/github/canonical-corpus-divergence-issue.mjs "${args[@]}"

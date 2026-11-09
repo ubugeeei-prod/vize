@@ -10,7 +10,7 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..")
 const policyPath = path.join(root, "docs/davinci/plan/deletion-readiness-policy.json");
 const registryPath = path.join(root, "tests/_fixtures/vue-ecosystem-fixtures.json");
 const evidenceDir = path.resolve(
-  process.argv[2] ?? path.join(root, "artifacts/davinci-deletion-evidence"),
+  process.argv[2] ?? path.join(root, "artifacts/level-deletion-evidence"),
 );
 const headSha = process.env.GITHUB_SHA || process.argv[3];
 const today = new Date().toISOString().slice(0, 10);

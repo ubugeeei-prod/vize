@@ -16,7 +16,7 @@ import {
   recordsTaskRow,
   requiredLine,
   requiredSection,
-} from "./support/davinci-phase2-ledger.ts";
+} from "./support/level-phase2-ledger.ts";
 
 const docs = {
   roadmap: new URL("../../docs/davinci/roadmap.md", import.meta.url),

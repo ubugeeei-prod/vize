@@ -1,4 +1,4 @@
-//! TS-16 laws for the fusion-plan page (`[fusion-plan-folio]`, C-3): the
+//! TS-16 laws for the fusion-plan page (`[fusion-plan-dump]`, C-3): the
 //! page of a pipeline prints exactly, canonical text is a print/parse fixed
 //! point, malformed records are refused with their line - and the walks it
 //! names are the walks the pass manager actually runs, observed through the
@@ -40,11 +40,11 @@ const PLAN: Pipeline = Pipeline::new("s2", PASSES);
 
 /// Two fusable runs around a barrier: three walks for five passes.
 const CANONICAL: &str = "\
-[fusion-plan-folio]
+[fusion-plan-dump]
 stage=s2
 walks=3
 
-[fusion-plan-folio.passes]
+[fusion-plan-dump.passes]
 walk=0 pass=normalize kind=optional fusability=fusable
 walk=0 pass=fold kind=optional fusability=fusable
 walk=1 pass=check kind=mandatory-diagnostic fusability=barrier
@@ -55,12 +55,12 @@ walk=2 pass=sweep kind=optional fusability=fusable
 
 #[test]
 fn the_plan_of_a_pipeline_prints_exactly() {
-    let folio = PlanPage::of(&PLAN);
-    assert_eq!(folio.print_to_string(DumpMode::Full).as_str(), CANONICAL);
+    let dump = PlanPage::of(&PLAN);
+    assert_eq!(dump.print_to_string(DumpMode::Full).as_str(), CANONICAL);
     // A derived page prints the same canonical text in both modes.
     assert_eq!(
-        folio.print_to_string(DumpMode::Display),
-        folio.print_to_string(DumpMode::Full)
+        dump.print_to_string(DumpMode::Display),
+        dump.print_to_string(DumpMode::Full)
     );
 }
 
@@ -84,8 +84,8 @@ fn the_page_names_the_walks_the_pass_manager_runs() {
     let mut budget = BudgetObserver::new();
     run_pipeline(&PLAN, &mut budget, |_| Ok(())).expect("no-op bodies cannot fail");
 
-    let folio = PlanPage::of(&PLAN);
-    let paged: Vec<(u32, &str)> = folio
+    let dump = PlanPage::of(&PLAN);
+    let paged: Vec<(u32, &str)> = dump
         .passes
         .iter()
         .map(|pass| (pass.walk, pass.pass.as_str()))
@@ -96,20 +96,20 @@ fn the_page_names_the_walks_the_pass_manager_runs() {
         .map(|&(walk, name)| (walk, name))
         .collect();
     assert_eq!(paged, observed);
-    assert_eq!(folio.walks, budget.walks);
+    assert_eq!(dump.walks, budget.walks);
     assert_eq!(budget.passes, 5);
 }
 
 #[test]
 fn an_empty_plan_costs_no_walk() {
-    let folio = PlanPage::of(&Pipeline::new("s2", &[]));
+    let dump = PlanPage::of(&Pipeline::new("s2", &[]));
     assert_eq!(
-        folio.print_to_string(DumpMode::Full).as_str(),
-        "[fusion-plan-folio]\nstage=s2\nwalks=0\n\n"
+        dump.print_to_string(DumpMode::Full).as_str(),
+        "[fusion-plan-dump]\nstage=s2\nwalks=0\n\n"
     );
     assert_eq!(
-        PlanPage::parse("[fusion-plan-folio]\nstage=s2\nwalks=0\n\n"),
-        Ok(folio)
+        PlanPage::parse("[fusion-plan-dump]\nstage=s2\nwalks=0\n\n"),
+        Ok(dump)
     );
 }
 
@@ -136,7 +136,7 @@ fn full_print_is_identity_on_canonical_text_and_values_round_trip() {
 #[test]
 fn malformed_records_are_refused_with_their_line() {
     let page = |record: &str| {
-        cstr!("[fusion-plan-folio]\nstage=s2\nwalks=1\n\n[fusion-plan-folio.passes]\n{record}\n\n")
+        cstr!("[fusion-plan-dump]\nstage=s2\nwalks=1\n\n[fusion-plan-dump.passes]\n{record}\n\n")
     };
     let refused = |record: &str| PlanPage::parse(page(record).as_str()).unwrap_err();
     assert_eq!(

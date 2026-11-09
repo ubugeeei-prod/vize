@@ -14,7 +14,7 @@ complete frozen-source/root/peer review precedes publication.
 
 Six prewritten TS sources, each separately observed as actual TS and TSX with
 `const view=<></>;view;`, are checked into
-[the frozen fixture](../../../davinci/vize_l4/tests/fixtures/required-named-export-program-checker.json).
+[the frozen fixture](../../../levels/vize_l4/tests/fixtures/required-named-export-program-checker.json).
 Their twelve original observations occurred before any native qualification:
 
 | Original family                   | Complete original result per kind                 |

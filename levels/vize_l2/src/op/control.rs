@@ -12,10 +12,10 @@ use crate::expr::ExprRef;
 
 /// `ui.if` - structured conditional.
 ///
-/// The folio models the structure and the L2 verifier ([`crate::verify`])
+/// The dump models the structure and the L2 verifier ([`crate::verify`])
 /// owns the invariants (at least one branch, at most one trailing
 /// unconditional branch); the type deliberately encodes neither, matching
-/// the "models the dump, not the analysis" folio rule.
+/// the "models the dump, not the analysis" dump rule.
 #[derive(Debug)]
 pub struct IfOp<'a> {
     /// The branches, in authored order.

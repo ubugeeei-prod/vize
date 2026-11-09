@@ -49,5 +49,5 @@ The immediate core sequence is retained L1 syntax, canonical L2 ownership,
 single-walk native L3 decisions, fused L1-to-L2 production, and native L4
 expression/runtime/emitter implementations. Product adapters consume
 these real APIs only after their gates pass. Shared infrastructure stays
-in `davinci/`; products and transitional adapters stay in `crates/`, with
+in `levels/`; products and transitional adapters stay in `crates/`, with
 normal/build dependency direction enforced.

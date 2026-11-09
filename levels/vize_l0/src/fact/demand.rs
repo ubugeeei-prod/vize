@@ -89,7 +89,7 @@ impl Demand {
         Demand(self.0 & preserved.to_bits())
     }
 
-    /// The raw mask, for a folio page.
+    /// The raw mask, for a dump page.
     #[inline]
     #[must_use]
     pub const fn to_bits(self) -> u64 {

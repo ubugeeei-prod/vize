@@ -65,7 +65,7 @@ versioned contracts keep their identities:
 - Existing profile, remark and Spolvero stage strings remain valid. The
   playground maps them to L names for display. CLI pipeline selectors accept
   L names and their existing S aliases; terminal summaries always display L.
-  Saved Folio/profile IDs retain their versioned S wire identities, and remark
+  Saved Dump/profile IDs retain their versioned S wire identities, and remark
   selectors accept either spelling against those saved records.
 
 Historical exact-head evidence continues to name the packages and stages that

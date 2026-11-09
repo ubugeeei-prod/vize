@@ -20,7 +20,7 @@ plan. The legacy walker stays.
 
 ## Still refused (checkout smoke)
 
-Emitter sweep, `VIZE_DAVINCI_DIFFERENTIAL_CORPUS` = the checkout, 0
+Emitter sweep, `VIZE_LEVEL_DIFFERENTIAL_CORPUS` = the checkout, 0
 divergences, 0 rejected: **764 of 779** compared templates emit from the plan
 (was 750 of 779 before this slice). Legacy reasons:
 
@@ -39,4 +39,4 @@ witness are still open, so the walker is not deleted and P3-8 stays open.
 
 - `cargo test -p vize_atelier_ssr --lib s4::`
 - `cargo test -p vize_atelier_ssr --test ssr_snapshot`
-- `VIZE_DAVINCI_DIFFERENTIAL_CORPUS="$PWD" cargo test -p vize_atelier_ssr --test davinci_ssr_corpus --features davinci-differential`
+- `VIZE_LEVEL_DIFFERENTIAL_CORPUS="$PWD" cargo test -p vize_atelier_ssr --test level_ssr_corpus --features level-differential`

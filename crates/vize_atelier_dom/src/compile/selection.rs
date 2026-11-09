@@ -4,7 +4,7 @@
 //! selection counter while the active profiler is enabled: `accepted` when
 //! the L2 emitter produced the module, or one `legacy.<reason>` naming the
 //! first gate that kept the compile on the legacy transform lane. The
-//! production-reach gate (`vize_atelier_sfc/tests/davinci_production_reach.rs`)
+//! production-reach gate (`vize_atelier_sfc/tests/level_production_reach.rs`)
 //! reads these counters around real `compile_sfc` calls, so a reason added
 //! here must keep that one-counter-per-compile law. Nothing is recorded while
 //! the profiler is disabled (the P2-12b no-observer cost law).

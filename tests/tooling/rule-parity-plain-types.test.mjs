@@ -2,17 +2,17 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import test from "node:test";
 
-import { buildMatrix } from "../../tools/support/compat/davinci/lib/rule-parity-matrix.ts";
+import { buildMatrix } from "../../tools/support/compat/levels/lib/rule-parity-matrix.ts";
 import {
   derivePlainTypeDispatch,
   PLAIN_TYPE_SOURCES,
-} from "../../tools/support/compat/davinci/lib/rule-parity-plain-types.ts";
-import { renderArtifact } from "../../tools/support/compat/davinci/lib/rule-parity-render.ts";
+} from "../../tools/support/compat/levels/lib/rule-parity-plain-types.ts";
+import { renderArtifact } from "../../tools/support/compat/levels/lib/rule-parity-render.ts";
 import {
   matchBraceBlock,
   stripRustComments,
-} from "../../tools/support/compat/davinci/lib/rule-parity-rust-text.ts";
-import { stripRust } from "../../tools/support/compat/davinci/lib/rust-source.ts";
+} from "../../tools/support/compat/levels/lib/rule-parity-rust-text.ts";
+import { stripRust } from "../../tools/support/compat/levels/lib/rust-source.ts";
 
 const sources = Object.fromEntries(
   Object.entries(PLAIN_TYPE_SOURCES).map(([key, relative]) => [

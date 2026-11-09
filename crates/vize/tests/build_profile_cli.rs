@@ -79,10 +79,10 @@ fn build_stats_profile_reports_source_plate_facts() {
         "source.block.template.bytes",
         "source.cache.hit.files",
         "source.cache.bypass.self_component.files",
-        "Davinci plan",
-        "davinci.build.files",
-        "davinci.build.planned_groups",
-        "davinci.build.planned_passes",
+        "Levels plan",
+        "levels.build.files",
+        "levels.build.planned_groups",
+        "levels.build.planned_passes",
         "Product lanes",
         "lane.atelier.dom.requests",
         "Vue dialects",
@@ -90,7 +90,7 @@ fn build_stats_profile_reports_source_plate_facts() {
         "Template syntax",
         "template_syntax.standard.files",
         "lane atelier.dom, plate source.sfc",
-        "davinci planned groups 2 / passes 2",
+        "levels planned groups 2 / passes 2",
     ] {
         assert!(stderr.contains(expected), "missing {expected:?}\n{stderr}");
     }

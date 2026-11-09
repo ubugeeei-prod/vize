@@ -1,13 +1,13 @@
 <!-- GENERATED FILE - do not edit by hand.
-     Regenerate: node tools/support/compat/davinci/consumer-migration-surfaces.ts --write
-     Verify:     node tools/support/compat/davinci/consumer-migration-surfaces.ts --check
-     Totals:     node tools/support/compat/davinci/consumer-migration-surfaces.ts --summary
-     Generator:  tools/support/compat/davinci/consumer-migration-surfaces.ts -->
+     Regenerate: node tools/support/compat/levels/consumer-migration-surfaces.ts --write
+     Verify:     node tools/support/compat/levels/consumer-migration-surfaces.ts --check
+     Totals:     node tools/support/compat/levels/consumer-migration-surfaces.ts --summary
+     Generator:  tools/support/compat/levels/consumer-migration-surfaces.ts -->
 
 # Consumer migration surfaces
 
 This inventory records where the user-facing consumers that must eventually
-sit on Davinci/L0/L1/L2 still name stage crates, legacy AST/parser/Croquis
+sit on Levels/L0/L1/L2 still name stage crates, legacy AST/parser/Croquis
 crates, or raw OXC crates directly on current `origin/main`. It is an
 observational guard for planning only. It does not change rollout state.
 
@@ -55,8 +55,8 @@ observational guard for planning only. It does not change rollout state.
 
 Every row lives in exactly one TSV shard per (consumer, crate). Shards record
 file paths and line numbers, so they are not committed: each run writes them
-under `artifacts/davinci-ledgers/consumer-migration-surfaces/`, and CI uploads
-them in the `davinci-generated-ledgers` artifact. One row per file x class x surface x matched name,
+under `artifacts/level-ledgers/consumer-migration-surfaces/`, and CI uploads
+them in the `level-generated-ledgers` artifact. One row per file x class x surface x matched name,
 columns `consumer_id`, `consumer`, `class` (`source`, `manifest`,
 `test/dev`), `file`, `first_line`, `surface_id`, `surface`,
 `surface_group`, `matched_name`, `name_kind`, `sites`. The shard set is
@@ -65,7 +65,7 @@ fixed by the consumer scopes (table below), so it only changes when a scope does
 Cross-file aggregates — per-consumer and per-surface totals and the top files
 by site count — are deliberately **not committed**: they changed with every PR
 and made every open PR conflict. They are pure sums over the shards; print
-them with `node tools/support/compat/davinci/consumer-migration-surfaces.ts --summary`. The staleness check (TS-12)
+them with `node tools/support/compat/levels/consumer-migration-surfaces.ts --summary`. The staleness check (TS-12)
 byte-compares this page and refuses shards committed under
 `docs/davinci/plan/consumer-migration-surfaces/`.
 
@@ -92,7 +92,7 @@ byte-compares this page and refuses shards committed under
 
 ## Independently mergeable no-rollout slices
 
-1. `test(davinci): pin consumer migration surfaces` - this artifact and its
+1. `test(levels): pin consumer migration surfaces` - this artifact and its
    drift test. It makes the current dependency shape reviewable without
    changing command routing or defaults.
 2. `refactor(compiler): introduce stage-named compiler boundary adapters` -
@@ -120,7 +120,7 @@ byte-compares this page and refuses shards committed under
    implementation delegates to the current Armature/Croquis/Canon stack. Guard
    hover, definition, diagnostics, semantic tokens, and formatting with
    existing LSP e2e tests.
-8. `refactor(davinci): align physical layer names with l0/l1/l2` - migrate
+8. `refactor(levels): align physical layer names with l0/l1/l2` - migrate
    public internal module/crate references toward L0/L1/L2 naming in small
    aliasing steps. Keep code names only as compatibility aliases until all
    consumers have moved.
@@ -132,7 +132,7 @@ protocol behavior.
 ## Regeneration
 
 ```sh
-node tools/support/compat/davinci/consumer-migration-surfaces.ts --write
-node tools/support/compat/davinci/consumer-migration-surfaces.ts --check
-node tools/support/compat/davinci/consumer-migration-surfaces.ts --summary
+node tools/support/compat/levels/consumer-migration-surfaces.ts --write
+node tools/support/compat/levels/consumer-migration-surfaces.ts --check
+node tools/support/compat/levels/consumer-migration-surfaces.ts --summary
 ```

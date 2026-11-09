@@ -20,7 +20,7 @@
       "programmatic": " SSR checkbox string ",
       "successorOf": {
         "sourceBase": "ae65bd3add7768081384a44a72aaad23a9fc2947",
-        "path": "davinci/vize_l2/src/file/region/native/model/tests/refusal.rs",
+        "path": "levels/vize_l2/src/file/region/native/model/tests/refusal.rs",
         "law": "actual_root_geometry_and_late_header_failures_keep_inputs_without_publishing_any_model",
         "oldState": "Refused(UnsupportedChild)",
         "historicalCompleteNativePacket": false

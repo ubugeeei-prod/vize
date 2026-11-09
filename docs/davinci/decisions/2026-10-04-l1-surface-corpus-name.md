@@ -6,7 +6,7 @@ Decision for [#6832](https://github.com/ubugeeei-prod/vize/issues/6832),
 
 ## Bounded change
 
-Move `davinci/vize_l1/tests/davinci_surface_corpus.rs` to `surface_corpus.rs`
+Move `levels/vize_l1/tests/level_surface_corpus.rs` to `surface_corpus.rs`
 in a byte-identical move-only commit. A separate integration commit changes
 the explicit Cargo test target to `surface_corpus`, its current manifest and
 source command comments, the shared fixture helper's file reference, and the
@@ -16,9 +16,9 @@ historical evidence. No parser, provider, dependency or product dispatch changes
 The existing body checks all 16 well-formed and 26 malformed committed inputs,
 round-trip bytes and exact typed-hole counts. Preserve every fixture value,
 test assertion, serialized string and diagnostic, including the optional
-`VIZE_DAVINCI_DIFFERENTIAL_CORPUS` widening contract. Preserve the
+`VIZE_LEVEL_DIFFERENTIAL_CORPUS` widening contract. Preserve the
 `legacy-differential` requirement and the deprecated published
-`davinci-differential` alias under the
+`level-differential` alias under the
 [published feature policy](./2026-09-29-published-feature-compatibility.md).
 The legacy oracle remains a dev-only edge; no dependency-direction exception
 or naming-gate allowance is added.
@@ -72,7 +72,7 @@ The three excess calls' historical ownership remains UNKNOWN.
 
 This same existing PR prepares a measurement-ownership correction using the
 already-established standalone allocation-law protocol from L0/L1. Explicit
-Cargo registration sets `davinci_vapor_native_budget` to `harness = false`;
+Cargo registration sets `level_vapor_native_budget` to `harness = false`;
 the single unchanged case body then runs on process main instead of alongside
 libtest's running-test map, timeout deque and result-channel bookkeeping.
 This removes the known possible runner overlap, not an evidenced historical

@@ -70,7 +70,7 @@ benchmark harness, therefore build the same L0 source as before.
 
 The first commit moves `handshake.rs` without changing its bytes. The second
 integrates that module and splits the neutral records mechanically. On a
-conflict, run `node tools/support/compat/davinci/move-extension-wire.mjs` on
+conflict, run `node tools/support/compat/levels/move-extension-wire.mjs` on
 current main and review its bounded result; the script refuses changed source
 boundaries rather than copying an ancient whole file over current work.
 

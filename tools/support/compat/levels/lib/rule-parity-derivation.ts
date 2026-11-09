@@ -11,8 +11,8 @@ export function preambleSection(): string[] {
   const lines: string[] = [];
   lines.push("<!-- GENERATED FILE — do not edit by hand.");
   lines.push(`     Regenerate: ${REGEN_COMMAND}`);
-  lines.push("     Verify:     node tools/support/compat/davinci/rule-parity.ts --check");
-  lines.push("     Generator:  tools/support/compat/davinci/rule-parity.ts");
+  lines.push("     Verify:     node tools/support/compat/levels/rule-parity.ts --check");
+  lines.push("     Generator:  tools/support/compat/levels/rule-parity.ts");
   lines.push(`     Overrides:  ${OVERRIDES_REL} (hand-corrections; applied last) -->`);
   lines.push("");
   lines.push("# Rule-parity matrix (SFC × JSX/TSX)");
@@ -22,7 +22,7 @@ export function preambleSection(): string[] {
       " a first-cut portability classification for every lint rule under" +
       " `crates/vize_patina/src/rules/**` — the classification substrate for" +
       " charter #7's fairness metric (one rule corpus serving SFC and JSX at" +
-      " parity) and the fact-adoption target in charter #35 (Davinci P0-8).",
+      " parity) and the fact-adoption target in charter #35 (Levels P0-8).",
   );
   lines.push("");
   return lines;

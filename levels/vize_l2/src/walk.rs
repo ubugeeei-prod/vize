@@ -1,7 +1,7 @@
 //! The page-order re-derivation walk the L2 passes share.
 //!
 //! L2 ids are positional (dense page order: op line, attached bindings,
-//! then children — `folio-format.md`, "Node numbering"), so a pass that
+//! then children — `dump-format.md`, "Node numbering"), so a pass that
 //! keys facts re-derives them by walking in print order. The numbering
 //! law has exactly one home here: a second walk with its own skip
 //! arithmetic is the drift the P1-8 scanner split taught, and the

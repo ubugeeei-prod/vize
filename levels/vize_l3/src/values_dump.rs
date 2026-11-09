@@ -29,7 +29,7 @@ pub type OperandRow = (
 pub struct Operand(pub OperandRow, pub Option<u32>);
 
 #[derive(Debug, Clone, Default, PartialEq, Eq, Dump)]
-#[dump(name = "s3-values-folio")]
+#[dump(name = "s3-values-dump")]
 pub struct Page {
     pub operands: Vec<Operand>,
 }

@@ -1,4 +1,4 @@
-//! L2→L3 — the Davinci Impeto lowering.
+//! L2→L3 — the Levels L3 lowering.
 //!
 //! This crate keeps the conversion-library shape: L2 stays independent of L3,
 //! the edge owns flat lowering and its partition facts. Native shared decisions

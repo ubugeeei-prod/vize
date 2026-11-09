@@ -283,7 +283,7 @@ export function collectInventory(root: string = process.cwd()): TestInventory {
   // Include workspace components with no statically recognized cases.
   for (const absolute of files) {
     const file = normalizePath(root, absolute);
-    if (/^(?:crates|davinci|npm)\/[^/]+\/(?:Cargo\.toml|package\.json)$/.test(file)) {
+    if (/^(?:crates|levels|npm)\/[^/]+\/(?:Cargo\.toml|package\.json)$/.test(file)) {
       const component = componentFor(file);
       components.set(component, { component, files: 0, cases: 0 });
     }
@@ -330,10 +330,10 @@ export function attachSourceCoverage(
       throw new Error("Invalid LLVM file summary");
     }
     const normalized = file.filename.replaceAll("\\", "/");
-    const match = /(?:^|\/)((?:crates|davinci|npm|tests|tools|vendor)\/[^/]+)\//.exec(normalized);
+    const match = /(?:^|\/)((?:crates|levels|npm|tests|tools|vendor)\/[^/]+)\//.exec(normalized);
     if (!match) continue;
     const component = match[1];
-    if (!components.has(component) && !/^(?:crates|davinci)\//.test(component)) continue;
+    if (!components.has(component) && !/^(?:crates|levels)\//.test(component)) continue;
     const summary = components.get(component) ?? { component, files: 0, cases: 0 };
     const coverage = summary.coverage ?? {
       lines: { covered: 0, count: 0 },

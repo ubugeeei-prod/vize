@@ -129,7 +129,7 @@ the list of crates that have not joined yet from growing back.
 - **Reasoned suppressions.** Use `#[expect(lint, reason = "…")]` instead of `#[allow]`: a stale
   expectation fails the build, and each one records why it exists. When a lint only fires under
   some `cfg`, gate the expectation with `cfg_attr`.
-- **Skeleton `todo!()`.** Davinci level skeletons may leave bodies as `todo!()` inside a module
+- **Skeleton `todo!()`.** Levels level skeletons may leave bodies as `todo!()` inside a module
   that starts with `#![expect(clippy::todo, reason = "skeleton: #NNNN")]`, and only where no
   product path reaches them. `node tools/commands/ci/check-skeleton-todos.ts --check` compares the
   per-crate count with `tools/config/skeleton-todos.toml`; counts only go down (`--write` lowers
@@ -167,7 +167,7 @@ described in [Source Layout](#source-layout). `insta` keeps the recorded snapsho
   observers beside the implementation they compile. Preserve relative fixture references and move
   each assertion's snapshots with its source file.
 
-- **Exact assertions in every test file.** `tools/commands/davinci/assertion-lint.rs` scans inline
+- **Exact assertions in every test file.** `tools/commands/levels/assertion-lint.rs` scans inline
   `#[cfg(test)]` modules and every file reached through a `cfg(test)` module declaration. Partial
   assertions that already existed in out-of-line test files are held by the generated per-file
   ratchet `docs/davinci/plan/assertion-ratchet.tsv`: counts only go down, so after replacing a

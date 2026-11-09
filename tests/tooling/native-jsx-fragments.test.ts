@@ -10,7 +10,7 @@ import jsx from "@vue/babel-plugin-jsx";
 import { Window } from "happy-dom";
 
 const fixture = new URL(
-  "../../davinci/vize_l2/tests/fixtures/jsx-static-fragments/",
+  "../../levels/vize_l2/tests/fixtures/jsx-static-fragments/",
   import.meta.url,
 );
 const input = readFileSync(new URL("cases.json", fixture), "utf8");

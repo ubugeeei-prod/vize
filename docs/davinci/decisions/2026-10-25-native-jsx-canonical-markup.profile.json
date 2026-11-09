@@ -16,13 +16,13 @@
     "scope": "local new native capability cost; no prior-path equivalence, whole compiler throughput, allocation, LSP latency or universal speed claim"
   },
   "source_sha256": {
-    "davinci/vize_l2/src/artifact/builder/region.rs": "857678eb1f2dac172ed047bc37854312301ce2e13888e40a662bad8137fd5e62",
-    "davinci/vize_l2/src/lang/js/file.rs": "19e9b1f9b43845b244da20c9c970bde9b817467d683e47b21395faf492a5c222",
-    "davinci/vize_l2/src/lang/js/jsx_body.rs": "a1796e1224772fa7a293db7b3519aeec2b3ccc90370bdde89122c0025bc199c6",
-    "davinci/vize_l2/src/lang/js/jsx_body/markup/emit.rs": "2952e08a6d056faff926207d641c5ce55c9fd2d01405f4e7c2eb9879fb67de2a",
-    "davinci/vize_l2/src/lang/js/jsx_body/markup/prepare.rs": "5c68ad1cc8e04b4770a482ff63e863de0da8813999118fd34d771bd4bc7e83e1",
-    "davinci/vize_l2/src/lang/js/jsx_body/markup.rs": "21057e4563246f76bd5af65c513d4d1f8aaf5ee12bd5976396beeca400ae7ce2",
-    "davinci/vize_l2/examples/jsx_markup_profile.rs": "3a6dc87f69d796eeab9975188908058f73034a628798b949a769e2db8c41c1cc"
+    "levels/vize_l2/src/artifact/builder/region.rs": "857678eb1f2dac172ed047bc37854312301ce2e13888e40a662bad8137fd5e62",
+    "levels/vize_l2/src/lang/js/file.rs": "19e9b1f9b43845b244da20c9c970bde9b817467d683e47b21395faf492a5c222",
+    "levels/vize_l2/src/lang/js/jsx_body.rs": "a1796e1224772fa7a293db7b3519aeec2b3ccc90370bdde89122c0025bc199c6",
+    "levels/vize_l2/src/lang/js/jsx_body/markup/emit.rs": "2952e08a6d056faff926207d641c5ce55c9fd2d01405f4e7c2eb9879fb67de2a",
+    "levels/vize_l2/src/lang/js/jsx_body/markup/prepare.rs": "5c68ad1cc8e04b4770a482ff63e863de0da8813999118fd34d771bd4bc7e83e1",
+    "levels/vize_l2/src/lang/js/jsx_body/markup.rs": "21057e4563246f76bd5af65c513d4d1f8aaf5ee12bd5976396beeca400ae7ce2",
+    "levels/vize_l2/examples/jsx_markup_profile.rs": "3a6dc87f69d796eeab9975188908058f73034a628798b949a769e2db8c41c1cc"
   },
   "binary_sha256": "05472bdddef5c2c1834c71a645eb491a2c807be7501abeb73b500266d9a5b0cb",
   "median_us": {

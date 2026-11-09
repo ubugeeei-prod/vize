@@ -16,7 +16,7 @@ import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
-import { maskRustNonCode } from "./davinci-storage-rust-syntax.ts";
+import { maskRustNonCode } from "./level-storage-rust-syntax.ts";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const maestroSrc = path.join(repoRoot, "crates/vize_maestro/src");

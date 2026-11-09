@@ -1,5 +1,5 @@
-//! Owned folio span oracle: every span that survives into the lifetime-free
-//! L2 folio must resolve against the authored source.
+//! Owned dump span oracle: every span that survives into the lifetime-free
+//! L2 dump must resolve against the authored source.
 
 use vize_l0::{SourceRoot, Span};
 use vize_l2::dump::{
@@ -8,9 +8,9 @@ use vize_l2::dump::{
 };
 use vize_l2::expr::OpaqueReason;
 
-pub fn assert_folio_spans_resolve(source: &str, folio: &L2Page, context: &str) {
+pub fn assert_dump_spans_resolve(source: &str, dump: &L2Page, context: &str) {
     let root = SourceRoot::new(source).expect("authored source");
-    for op in &folio.ops {
+    for op in &dump.ops {
         assert_op(source, root, op, context);
     }
 }
@@ -270,7 +270,7 @@ fn is_legacy_synthetic_expr(authored_slice: &str, expr_source: &str) -> bool {
 fn assert_span(source: &str, root: SourceRoot<'_>, span: Span, label: &str, context: &str) {
     assert!(
         root.contains_span(span),
-        "{label} owned-folio span @{}:{} is not a valid authored UTF-8 range in source length {}: {context}",
+        "{label} owned-dump span @{}:{} is not a valid authored UTF-8 range in source length {}: {context}",
         span.start,
         span.end,
         source.len()

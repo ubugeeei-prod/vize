@@ -109,7 +109,7 @@ test("shared, deleted and unknown inputs still select every Rust package", () =>
     "tools/support/github/build-vitrine-wasm.ts",
     "tools/support/tasks/build-vitrine-wasm.ts",
     "tools/support/command-runtime.ts",
-    "tools/commands/davinci/incremental-equivalence/scripts/input.ts",
+    "tools/commands/levels/incremental-equivalence/scripts/input.ts",
     "tools/support/release/public_acceptance/gallery.ts",
   ]) {
     assert.equal(planSourceChecks([tool], "merge_group").playground, true, tool);
@@ -183,18 +183,18 @@ test("prose and tooling-only paths do not create affected product dependencies",
 });
 
 test("affected native captures keep source-built runtime proofs independent of tooling suites", () => {
-  assert.ok(planNativeRuntime(["davinci/vize_l4/src/targets/ssr.rs"]).matrix.lane.includes("ssr"));
+  assert.ok(planNativeRuntime(["levels/vize_l4/src/targets/ssr.rs"]).matrix.lane.includes("ssr"));
   assert.ok(
-    planNativeRuntime(["davinci/vize_l4/src/targets/vapor.rs"]).matrix.lane.includes("vapor"),
+    planNativeRuntime(["levels/vize_l4/src/targets/vapor.rs"]).matrix.lane.includes("vapor"),
   );
   assert.equal(planNativeRuntime(["Cargo.lock"]).matrix.lane.length, 8);
   assert.equal(
-    planNativeRuntime(["davinci/vize_l0_derive/src/lib.rs"], { packages: ["vize_l4"] }).matrix.lane
+    planNativeRuntime(["levels/vize_l0_derive/src/lib.rs"], { packages: ["vize_l4"] }).matrix.lane
       .length,
     8,
   );
   assert.ok(
-    planNativeRuntime(["davinci/vize_l4/tests/fixtures/selected-template-dom-vue-3.5.35.json"], {
+    planNativeRuntime(["levels/vize_l4/tests/fixtures/selected-template-dom-vue-3.5.35.json"], {
       packages: ["vize_l4"],
     }).matrix.lane.includes("selected-template"),
   );
@@ -282,8 +282,8 @@ test("product differential partitions preserve each selected command exactly onc
   assert.deepEqual(differentialMatrix(["vize_atelier_ssr"]), { lane: ["ssr"] });
   const commands = differentialSteps("ssr", ["vize_atelier_ssr"]);
   assert.equal(commands.length, 3);
-  assert.ok(commands[0].args.includes("davinci_ssr_corpus"));
-  assert.ok(commands[1].args.includes("davinci_ssr_production_cases"));
+  assert.ok(commands[0].args.includes("level_ssr_corpus"));
+  assert.ok(commands[1].args.includes("level_ssr_production_cases"));
   assert.ok(commands[1].args.includes("slot_element_text_children"));
   assert.equal(commands[2].env?.VIZE_VUE_RUNTIME_PRODUCTION, "1");
   assert.throws(() => differentialSteps("unknown", all), /unknown/);
@@ -300,7 +300,7 @@ test("differential commands retain their original corpus and production environm
     writeFileSync(
       join(bin, "cargo"),
       `#!${process.execPath}\nconst fs = require("node:fs");
-const { VIZE_DAVINCI_DIFFERENTIAL_CORPUS: corpus, VIZE_VUE_RUNTIME_PRODUCTION: production, VIZE_TEST_REQUIRE_TSGO: tsgo } = process.env;
+const { VIZE_LEVEL_DIFFERENTIAL_CORPUS: corpus, VIZE_VUE_RUNTIME_PRODUCTION: production, VIZE_TEST_REQUIRE_TSGO: tsgo } = process.env;
 fs.appendFileSync(process.env.COMMAND_LOG, JSON.stringify({ args: process.argv.slice(2), corpus, production, tsgo }) + "\\n");
 if (process.argv.includes(process.env.FAIL_TARGET)) process.exit(42);
 `,
@@ -318,7 +318,7 @@ if (process.argv.includes(process.env.FAIL_TARGET)) process.exit(42);
       COMMAND_LOG: log,
       VIZE_TEST_REQUIRE_TSGO: "1",
     };
-    delete env.VIZE_DAVINCI_DIFFERENTIAL_CORPUS;
+    delete env.VIZE_LEVEL_DIFFERENTIAL_CORPUS;
     delete env.VIZE_VUE_RUNTIME_PRODUCTION;
     // This fixture exercises the original command environment, not the outer
     // tooling job's Rust case reporter destination.
@@ -341,10 +341,10 @@ if (process.argv.includes(process.env.FAIL_TARGET)) process.exit(42);
       assert.equal(calls.length, lane.steps.length, lane.name);
       for (const call of calls) {
         const has = (target: string) => call.args.includes(target);
-        const workspace = has("davinci_ssr_corpus") || has("davinci_markup_differential");
+        const workspace = has("level_ssr_corpus") || has("level_markup_differential");
         assert.equal(call.corpus, workspace ? cwd : undefined, call.args.join(" "));
         const production = [
-          "davinci_vapor_upstream_parity",
+          "level_vapor_upstream_parity",
           "vapor_runtime_contracts",
           "vue_ssr_render",
         ].some(has);

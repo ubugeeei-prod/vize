@@ -2,7 +2,7 @@
 //!
 //! Inputs without an admitted retained AST — no AST retained for these
 //! bytes, dialect-gate rejection, or a TS strip that rewrote the text —
-//! are re-parsed here exactly as before Davinci P1-9: wrapped `(content)`
+//! are re-parsed here exactly as before Levels P1-9: wrapped `(content)`
 //! expression parse, then a whole-program parse for multi-statement
 //! handlers, then the simple-identifier fallback. Only the emission
 //! changed: collected rewrites are applied by [`super::splice`], the same

@@ -4,9 +4,9 @@
     reason = "complete differential receipts use std strings"
 )]
 
-mod davinci_dom_corpus_support;
 mod empty_props;
-use davinci_dom_corpus_support::{Lane, Report, compare_sfc_template_lane};
+mod level_dom_corpus_support;
+use level_dom_corpus_support::{Lane, Report, compare_sfc_template_lane};
 
 const ORIGINAL: &str = include_str!(
     "../../../tests/_fixtures/differential/compiler/n8n-slot-loop-regression/UserSelect.vue.txt"

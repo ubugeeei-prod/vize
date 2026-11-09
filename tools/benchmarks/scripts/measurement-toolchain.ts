@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
-import { parseTomlLite } from "../../support/compat/davinci/toml-lite.ts";
+import { parseTomlLite } from "../../support/compat/levels/toml-lite.ts";
 
 // Measurements use the contributor pin; a toolchain bump re-baselines them in the same PR.
 export const MEASUREMENT_RUST = "1.99.1";

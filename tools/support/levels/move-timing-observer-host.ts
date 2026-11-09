@@ -6,9 +6,9 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 export const timingMoves = [
-  ["davinci/vize_l0/src/pass/observer/timing.rs", "crates/vize_carton/src/timing_observer.rs"],
+  ["levels/vize_l0/src/pass/observer/timing.rs", "crates/vize_carton/src/timing_observer.rs"],
   [
-    "davinci/vize_l0/tests/pass_observer_timing.rs",
+    "levels/vize_l0/tests/pass_observer_timing.rs",
     "crates/vize_carton/tests/pass_observer_timing.rs",
   ],
 ] as const;
@@ -17,7 +17,7 @@ export const originalObserverSHA =
 export const originalLawSHA = "887262892647fd725260d1fa2b205aa914608049f269395399dbb5322d2fa8f7";
 export const hostImport = "use vize_carton::timing_observer::TimingObserver;";
 export const hostCallers = [
-  "crates/vize/src/commands/davinci_ice.rs",
+  "crates/vize/src/commands/level_ice.rs",
   "crates/vize_curator/src/inspector/stages/profile.rs",
 ] as const;
 const oldObserverImports =
@@ -70,7 +70,7 @@ export function timingIntegrationPlan(read: (file: string) => string) {
       originalLawSHA,
     );
   }
-  const observerExports = "davinci/vize_l0/src/pass/observer.rs";
+  const observerExports = "levels/vize_l0/src/pass/observer.rs";
   const exports = read(observerExports);
   if (pending) {
     once(exports, "pub use timing::{TimingObserver, WalkTiming};");
@@ -87,26 +87,26 @@ export function timingIntegrationPlan(read: (file: string) => string) {
         !exports.includes("TimingObserver, WalkTiming"),
     );
   for (const file of [
-    "davinci/vize_l0/src/pass.rs",
+    "levels/vize_l0/src/pass.rs",
     hostCallers[0],
-    "davinci/vize_l0/tests/dump_collector.rs",
-    "davinci/vize_l0/tests/remark_zero_cost.rs",
+    "levels/vize_l0/tests/dump_collector.rs",
+    "levels/vize_l0/tests/remark_zero_cost.rs",
   ]) {
     const text = read(file);
     if (pending) {
       once(text, "TimingObserver,");
       assert.ok(!text.includes(hostImport));
       const after = text.replace(/TimingObserver,[ \t]*/u, "");
-      assert.ok(file === "davinci/vize_l0/src/pass.rs" || /^use /mu.test(after));
+      assert.ok(file === "levels/vize_l0/src/pass.rs" || /^use /mu.test(after));
       plan.set(
         file,
-        file === "davinci/vize_l0/src/pass.rs"
+        file === "levels/vize_l0/src/pass.rs"
           ? after
           : after.replace(/^use /mu, hostImport + "\nuse "),
       );
     } else {
       assert.ok(!text.includes("TimingObserver,"));
-      if (file !== "davinci/vize_l0/src/pass.rs") once(text, hostImport);
+      if (file !== "levels/vize_l0/src/pass.rs") once(text, hostImport);
     }
   }
   for (const [file, before] of [

@@ -205,7 +205,7 @@ impl SfcSummary {
 
     /// Whether the summary exports nothing.
     ///
-    /// Every summary `from_alpha` and the folio parser accept has its
+    /// Every summary `from_alpha` and the dump parser accept has its
     /// signature, so this is false for those values.
     #[must_use]
     pub fn is_empty(&self) -> bool {
@@ -327,7 +327,7 @@ fn finish(mut declarations: Vec<Declaration>) -> SfcSummary {
     SfcSummary { declarations }
 }
 
-fn folio_error(err: SummaryError, line: usize) -> vize_l0::dump::Error {
+fn dump_error(err: SummaryError, line: usize) -> vize_l0::dump::Error {
     let message = match err {
         SummaryError::BadName { name, .. } => cstr!("invalid declaration name `{name}`"),
         SummaryError::BadContract { name, .. } => cstr!("invalid contract of `{name}`"),

@@ -3,8 +3,8 @@
 The projection page is a dialect's checkable projection of one block's
 expressions with its span links: the P4-5a `ProjectionMapping` rows as a
 folio page. It is `vize_extension_host::expression::ProjectionPage`,
-hand-written under the [folio contract](./folio-format.md) and carried by the
-expression-dialect WIT world (`davinci/vize_guest/wit/expression-dialect.wit`, P6-1b)
+hand-written under the [folio contract](./dump-format.md) and carried by the
+expression-dialect WIT world (`levels/vize_guest/wit/expression-dialect.wit`, P6-1b)
 as `analysis.projection` with `schema-version: 1`. Its sibling,
 `analysis.facts`, is the `expression-facts` α document
 ([fact-alpha-schemas.md](./fact-alpha-schemas.md)).

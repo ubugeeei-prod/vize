@@ -43,7 +43,7 @@ impl<'a> AliasGoal<'a> {
         }
         // This is the actual native frontend's original parameter goal, not
         // the Core frontend's retained root or a synthetic declaration parse.
-        global_profiler().record_counter("davinci.for_binding.parses", 1);
+        global_profiler().record_counter("levels.for_binding.parses", 1);
         let Ok(parameters) = Parser::new(cx.allocator.as_oxc(), source.text(), SourceType::ts())
             .parse_v_for_parameters()
         else {

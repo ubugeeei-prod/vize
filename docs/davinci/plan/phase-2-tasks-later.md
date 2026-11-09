@@ -17,8 +17,8 @@
 - [x] Mutators: attribute reorder, pass-through `<template>` wrap, text-node split/merge, whitespace-insignificant edits
 - [x] **Each mutator ships an equivalence justification and exclusion predicates**: no reordering across duplicate keys or across `class`/`style` merge-order-sensitive attributes; wraps only where root and slot semantics are unchanged; whitespace only within Vue's condense rules
 - [x] A mutator with no safe applicability at a site **skips** that site rather than mutating it, and the skip is **counted** — a suite that silently degenerates to zero mutations must fail, the scope-proof discipline TS-11 established
-- [x] Oracle: L2 folios identical modulo declared normalization (the `folio-format.md` rules), compared as full normalized artifacts
-- [x] Commit the matrix fixture plane. `tools/commands/davinci/matrix-gen.rs` defaults to `tests/fixtures/davinci-matrix/`, which **is not in the tree** — P0-12 landed the deterministic generator with a `--check` staleness mode but no committed fixtures. Commit the element-kind × directive plane and wire `--check` into `tests/tooling/davinci-matrices.test.ts`
+- [x] Oracle: L2 folios identical modulo declared normalization (the `dump-format.md` rules), compared as full normalized artifacts
+- [x] Commit the matrix fixture plane. `tools/commands/levels/matrix-gen.rs` defaults to `tests/fixtures/level-matrix/`, which **is not in the tree** — P0-12 landed the deterministic generator with a `--check` staleness mode but no committed fixtures. Commit the element-kind × directive plane and wire `--check` into `tests/tooling/level-matrices.test.ts`
 - [x] Runs over the matrix fixtures **and** a corpus shard in CI
 
 **Acceptance:** TS-21 established — the suite runs in CI over both sources with a scope proof (mutations applied and skips counted; a zero-mutation run fails); TS-12 green for the newly committed fixtures with the staleness check demonstrably failing on an injected edit; TS-13. **Review point:** the per-mutator equivalence justifications — an unjustified mutator is an oracle asserting a wrong expected value, which assurance §4 calls worse than no assertion. **Deps:** P2-5b, P2-8. **Non-goals:** L3 folio equivalence (phase 3); mutators needing semantic facts to decide applicability (phase 4); `folio-reduce` (P3-14); mutating the corpus submodules in place — copies only, the P0-13 convention.
@@ -49,7 +49,7 @@
 - [x] **No constructor-time folding**: folding happens in exactly one designated pass per stage (the top infinite-loop source)
 - [x] **The escape variant has pessimal documented semantics** from day one — P2-5b's decision is reviewed here against the `undef`/`poison` regret
 - [x] **Spans survive lowering**: every L2 op traces to an authored SFC span
-- [x] **`schema_version` on every current serialized agent-visible artifact** (devtool.md's data layer requires it: folio/feed and profile export) so Spolvero negotiates and refuses mismatches loudly; future remark and fact-table payloads inherit the same requirement when they become serialized artifacts
+- [x] **`schema_version` on every current serialized agent-visible artifact** (devtool.md's data layer requires it: dump/feed and profile export) so Spolvero negotiates and refuses mismatches loudly; future remark and fact-table payloads inherit the same requirement when they become serialized artifacts
 - [x] **Provenance survives failure**: partial L2 kept on error (P2-8's commitment, verified here)
 
 **Acceptance:** the signed-off checklist committed. The mechanical half is machine-checked and must land as tests, not prose: a corpus-wide assertion that every L2 op's span resolves into its authored SFC, and a folio-level assertion that `schema_version` is present and negotiated. **Review point** for the judgement half — this milestone exists precisely because these are the cheap fixes that become expensive once formats have consumers. **Deps:** P2-11, P2-12b, P2-13. **Non-goals:** L3 contracts (P3-5's op reference does the same job one stage later); freezing the format for external consumers, which is phase 6's contracts GA; a stability guarantee — charter #23 keeps internal formats free to break until then.
@@ -91,8 +91,8 @@
 **Steps:**
 
 - [x] Evaluate every line of the exit gate in [phase-2.md](./phase-2.md) and record the evidence inline
-- [x] Delete the in-phase old paths (P2-9's transform lane flag, P2-11's `VIZE_DAVINCI_DOM=legacy`) or record each as an unfinished deletion with an owner and an issue — charter #26's fix-forward switch happens here
-- [x] Restate the retirement condition for the `davinci-differential` lanes (phase 1's and phase 2's), which are written to live "for one release"
+- [x] Delete the in-phase old paths (P2-9's transform lane flag, P2-11's `VIZE_LEVEL_DOM=legacy`) or record each as an unfinished deletion with an owner and an issue — charter #26's fix-forward switch happens here
+- [x] Restate the retirement condition for the `level-differential` lanes (phase 1's and phase 2's), which are written to live "for one release"
 - [x] Re-bench the phase-start rev and this tree, compare against the P2-12a target, and record the result — including a miss, if it is one
 - [x] Corpus waiver ledger reviewed and empty (C-16)
 

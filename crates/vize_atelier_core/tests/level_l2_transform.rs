@@ -4,7 +4,7 @@
 //! legacy-vs-L2 with **exact-pinned** counters, so a cfg regression
 //! that disarms the differential lane fails loudly here (the
 //! P1-6/P1-7 witness law). The corpus-widened entry is
-//! `davinci_l2_transform_corpus.rs` (feature `legacy-differential`).
+//! `level_l2_transform_corpus.rs` (feature `legacy-differential`).
 
 #[expect(unused_imports, reason = "shared support; this binary uses a subset")]
 mod l2_support;
@@ -113,7 +113,7 @@ fn the_battery_dual_runs_with_pinned_counts() {
 #[test]
 fn the_same_key_wording_never_drifts_from_relief() {
     // The L2 pass duplicates relief's message text rather than the
-    // dependency (ricalco must not depend on the legacy AST crate);
+    // dependency (l1_to_l2 must not depend on the legacy AST crate);
     // this pin is what keeps the two channels from drifting.
     assert_eq!(
         vize_l1_to_l2::pass::vif::SAME_KEY_MESSAGE,

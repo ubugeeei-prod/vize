@@ -1,8 +1,8 @@
-// Davinci P4-12c — the corpus half of the pug compile oracle. The committed
+// Levels P4-12c — the corpus half of the pug compile oracle. The committed
 // baseline pins, for every inline `<template lang="pug">` SFC of the
 // registered corpus at its pinned revision, the sha256 of what the pinned
 // `pug@3.0.4` renders for the content `@vue/compiler-sfc` extracts. The Rust
-// corpus lane (`davinci/vize_l1_to_l2/tests/davinci_pug_corpus.rs`) holds
+// corpus lane (`levels/vize_l1_to_l2/tests/level_pug_corpus.rs`) holds
 // vize's derived template to those hashes and compiles each SFC against its
 // derived-HTML twin in the DOM, SSR and Vapor lanes, so together they are
 // the compile oracle over the corpus. Scope proof: for every hydrated
@@ -30,11 +30,11 @@ import type { ObserverProcess } from "../../tools/support/compat/github/canonica
 type Project = { id: string; fixturePath: string; fixtureDir: string; revision: string };
 type Row = { project: string; revision: string; file: string; sha256: string };
 
-const baselineUrl = new URL("../_fixtures/davinci-pug/corpus-baseline.tsv", import.meta.url);
+const baselineUrl = new URL("../_fixtures/level-pug/corpus-baseline.tsv", import.meta.url);
 const header = [
-  "# Davinci P4-12c pug corpus baseline: sha256 of pug@3.0.4 (doctype html, pretty false)",
+  "# Levels P4-12c pug corpus baseline: sha256 of pug@3.0.4 (doctype html, pretty false)",
   '# rendering of each inline lang="pug" template, as @vue/compiler-sfc extracts it.',
-  "# Regenerate: VIZE_PUG_ORACLE_WRITE=1 node --test tests/tooling/davinci-pug-corpus-oracle.test.ts",
+  "# Regenerate: VIZE_PUG_ORACLE_WRITE=1 node --test tests/tooling/level-pug-corpus-oracle.test.ts",
   "# project\trevision\tfile\tsha256",
 ];
 
@@ -170,36 +170,36 @@ test("the real-project matrix runs the pug corpus compile oracle on the hydrated
   // render every planned process as the equivalent original command.
   const command = (entry: ObserverProcess) => {
     const env = processEnvironment(entry, {}, "<package>", "<workspace>");
-    const shard = env.VIZE_DAVINCI_DIFFERENTIAL_CORPUS_SHARD;
+    const shard = env.VIZE_LEVEL_DIFFERENTIAL_CORPUS_SHARD;
     return [
-      `VIZE_DAVINCI_DIFFERENTIAL_CORPUS=${env.VIZE_DAVINCI_DIFFERENTIAL_CORPUS}`,
-      ...(shard ? [`VIZE_DAVINCI_DIFFERENTIAL_CORPUS_SHARD=${shard}`] : []),
+      `VIZE_LEVEL_DIFFERENTIAL_CORPUS=${env.VIZE_LEVEL_DIFFERENTIAL_CORPUS}`,
+      ...(shard ? [`VIZE_LEVEL_DIFFERENTIAL_CORPUS_SHARD=${shard}`] : []),
       "cargo",
       ...cargoArguments(entry.suite, ["--", ...processArguments(entry)]),
     ].join(" ");
   };
-  const corpus = "VIZE_DAVINCI_DIFFERENTIAL_CORPUS=tests/_fixtures/_git";
+  const corpus = "VIZE_LEVEL_DIFFERENTIAL_CORPUS=tests/_fixtures/_git";
   const commands = observerProcesses("ssr-pug").map(command);
   // The complete, unsharded hydrated-corpus pug compile oracle, exactly once.
   assert.deepEqual(
-    commands.filter((line) => line.includes("davinci_pug_corpus")),
+    commands.filter((line) => line.includes("level_pug_corpus")),
     [
-      `${corpus} cargo test -p vize_l1_to_l2 --features legacy-differential --test davinci_pug_corpus -- --nocapture`,
+      `${corpus} cargo test -p vize_l1_to_l2 --features legacy-differential --test level_pug_corpus -- --nocapture`,
     ],
   );
   // The SSR corpus binary: every other test once, its corpus sweep in shards.
-  const ssr = `${corpus}%s cargo test -p vize_atelier_ssr --features legacy-differential --test davinci_ssr_corpus -- --exact`;
+  const ssr = `${corpus}%s cargo test -p vize_atelier_ssr --features legacy-differential --test level_ssr_corpus -- --exact`;
   const sweep = "ssr_lanes_agree_on_sfc_templates";
   const shards = commands.filter((line) => line.includes("_SHARD=")).length;
   assert(shards > 0);
   assert.deepEqual(
-    commands.filter((line) => line.includes("davinci_ssr_corpus")),
+    commands.filter((line) => line.includes("level_ssr_corpus")),
     [
       `${ssr.replace("%s", "")} --skip ${sweep} --nocapture`,
       ...Array.from(
         { length: shards },
         (_, index) =>
-          `${ssr.replace("%s", ` VIZE_DAVINCI_DIFFERENTIAL_CORPUS_SHARD=${index}/${shards}`)} ${sweep} --nocapture`,
+          `${ssr.replace("%s", ` VIZE_LEVEL_DIFFERENTIAL_CORPUS_SHARD=${index}/${shards}`)} ${sweep} --nocapture`,
       ),
     ],
   );
@@ -207,5 +207,5 @@ test("the real-project matrix runs the pug corpus compile oracle on the hydrated
     steps.indexOf(lane) < steps.indexOf(findStep(steps, "Record required observer evidence")),
     "the full pug corpus oracle must run before its evidence is recorded",
   );
-  assert.equal(workflow.jobs?.["davinci-dom-corpus"]?.needs, "canonical-observers");
+  assert.equal(workflow.jobs?.["level-dom-corpus"]?.needs, "canonical-observers");
 });

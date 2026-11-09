@@ -90,7 +90,7 @@ pub(super) fn fragment_document(
 }
 
 /// A template fragment whose bounded semantic hints came from one authenticated
-/// original Davinci owner. The Relief root remains the output/recovery owner.
+/// original Levels owner. The Relief root remains the output/recovery owner.
 #[expect(
     clippy::too_many_arguments,
     reason = "one fragment owner and its anchored plan"

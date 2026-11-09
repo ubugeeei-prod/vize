@@ -1,5 +1,5 @@
 #![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
-use davinci_test_support::script_block_project as project;
+use level_test_support::script_block_project as project;
 
 /// The shape vue-tsc emits for a generic SFC in a library (reka-ui's
 /// `PinInputRoot`): a function whose return carries `__ctx`.

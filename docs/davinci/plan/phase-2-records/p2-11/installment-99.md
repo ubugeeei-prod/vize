@@ -33,7 +33,7 @@ Three behaviours were only discoverable by running the comparator:
 
 ## Evidence
 
-`crates/vize_atelier_dom/tests/davinci_s2_scope_id.rs` compares the S2 emit
+`crates/vize_atelier_dom/tests/level_s2_scope_id.rs` compares the S2 emit
 against the shipped lane byte-for-byte over 38 templates: empty and static
 elements, static and dynamic binds, class/style, multi-root, deep and
 sibling static trees, `v-if` / `v-else` / `v-for` and a `v-for` with a static

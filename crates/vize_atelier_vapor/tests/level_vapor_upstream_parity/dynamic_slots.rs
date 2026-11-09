@@ -91,14 +91,14 @@ fn computed_names_match_official_slot_updates_and_fallback_lifetimes() {
         slots.insert(second.to_owned(), json!({"text": "second"}));
         let slots = Value::Object(slots);
         let vize = trace(
-            "davinci-mounted-trace.mjs",
+            "level-mounted-trace.mjs",
             json!({
                 "backend": "vapor", "code": compiled.code, "context": context,
                 "steps": steps, "identities": true, "slots": slots,
             }),
         );
         let upstream = trace(
-            "davinci-upstream-vapor-trace.mjs",
+            "level-upstream-vapor-trace.mjs",
             json!({
                 "source": source, "context": context, "steps": steps, "slots": slots,
             }),

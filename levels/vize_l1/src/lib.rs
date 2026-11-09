@@ -1,4 +1,4 @@
-//! L1 — the lossless Vue-template surface tree (codename Sinopia, Davinci P2-7).
+//! L1 — the lossless Vue-template surface tree (codename Sinopia, Levels P2-7).
 //!
 //! **Experimental:** the stage API may change in any alpha release; record
 //! intentional breaking changes in the release notes.

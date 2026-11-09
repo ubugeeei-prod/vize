@@ -2,7 +2,7 @@
 //! The counters also include allocations on spawned threads, so libtest's
 //! concurrent result-channel bookkeeping must stay outside these windows.
 
-use davinci_harness::alloc::{CountingAllocator, mark_installed, measure, measure_returning};
+use level_harness::alloc::{CountingAllocator, mark_installed, measure, measure_returning};
 use vize_l0::Allocator;
 use vize_patina::ir::TemplateSyntax;
 use vize_patina::markup::{L2Template, MarkupContext, MarkupDocument};

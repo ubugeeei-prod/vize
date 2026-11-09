@@ -71,7 +71,7 @@ export function checkSkeletonTodos(arguments_: readonly string[]): number {
   const write = arguments_.includes("--write");
   const baselineText = readFileSync(baselinePath, "utf8");
   const baseline = parseBaseline(baselineText);
-  const counts = new Map([...countCrates("crates"), ...countCrates("davinci")]);
+  const counts = new Map([...countCrates("crates"), ...countCrates("levels")]);
   const problems: string[] = [];
   let raised = false;
   for (const [crate, count] of counts) {

@@ -12,7 +12,7 @@ autotests = false
 [features]
 legacy = ["vize_atelier_core/legacy"]
 
-# Arms the Davinci DOM differential lanes by exposing
+# Arms the Levels DOM differential lanes by exposing
 # `compile_template_legacy_with_options` — the shipped parse/transform/codegen
 # lane with the L2 emitter declined. The corpus comparators need it as their
 # *old* side: since the P2-11 production switch the ordinary entry points
@@ -39,7 +39,7 @@ thiserror = { workspace = true }
 # Inspection metadata is a dev-only, unpublished oracle; strip it on packaging.
 vize_curator = { path = "../vize_curator" }
 criterion = { workspace = true }
-davinci_harness = { workspace = true }
+level_harness = { workspace = true }
 insta = { workspace = true }
 serde_json = { workspace = true }
 toml = { workspace = true }
@@ -50,7 +50,7 @@ oxc_span = { workspace = true }
 # L2 test and benchmark fixtures still use the stage diagnostics/types.
 
 [[bench]]
-name = "davinci"
+name = "levels"
 harness = false
 
 [[test]]
@@ -92,10 +92,10 @@ required-features = ["legacy-differential"]
 
 # These read process-global walk and selector counters, so each keeps its own process under cargo test.
 [[test]]
-name = "davinci_expr_reparse_floor"
+name = "level_expr_reparse_floor"
 
 [[test]]
-name = "davinci_walk_baseline"
+name = "level_walk_baseline"
 
 [[test]]
 name = "l2_build_profile"

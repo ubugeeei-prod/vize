@@ -8,7 +8,7 @@ use vize_l0::Allocator;
 
 #[test]
 fn exact_original_late_class_header_has_whole_public_dom_ssr_successors() {
-    let pack: serde_json::Value = serde_json::from_str(include_str!("../../../../davinci/vize_l4/tests/fixtures/native-static-class-history-successor-vue-3.5.35.json")).unwrap();
+    let pack: serde_json::Value = serde_json::from_str(include_str!("../../../../levels/vize_l4/tests/fixtures/native-static-class-history-successor-vue-3.5.35.json")).unwrap();
     let source = pack["source"].as_str().unwrap();
     assert_eq!(
         source,

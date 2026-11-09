@@ -4,7 +4,7 @@ use super::{EffectId, OpId, OpKind, Phase, Region, RegionId, StateEdge};
 use crate::operand::Operand;
 use crate::placement::PlacementRecord;
 
-/// One flat Impeto operation.
+/// One flat L3 operation.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Op {
     pub id: OpId,

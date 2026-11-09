@@ -1,4 +1,4 @@
-//! `html/cross-component-nesting` end to end (Davinci P4-11b): the
+//! `html/cross-component-nesting` end to end (Levels P4-11b): the
 //! `examples/html-conformance` project, whose every template is valid on its
 //! own, linted with `--cross-file`. The full JSON report is compared exactly.
 //!

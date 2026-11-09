@@ -8,7 +8,7 @@ package (42 of its 66 named laws). It follows the
 
 ## Decision
 
-`tests/formal/impeto/Impeto/LatticeLaws.lean` is deleted.
+`tests/formal/l3/L3/LatticeLaws.lean` is deleted.
 [`tests/formal/kani/l3_lattice.rs`](../../../tests/formal/kani/l3_lattice.rs)
 grows from two harnesses to twelve and verifies the shipped evaluator.
 
@@ -19,7 +19,7 @@ Rust evaluator against it.
 
 To let Kani include the evaluator, `BindingOrigin` and `EscapeKind` move
 unchanged from `lattice/input.rs` to the dependency-free
-[`lattice/axis.rs`](../../../davinci/vize_l3/src/lattice/axis.rs), which also
+[`lattice/axis.rs`](../../../levels/vize_l3/src/lattice/axis.rs), which also
 gains `classify`. `evaluate_binding` calls it. Classes do not change.
 
 ## Each Lean theorem and its replacement
@@ -44,7 +44,7 @@ gains `classify`. `evaluate_binding` calls it. Classes do not change.
 
 The three verdict laws read `Verdict`, which lives in `vize_l0`, so the
 dependency-free kernel Kani includes does not contain it. They are checked by
-an exhaustive Rust test in `davinci/vize_l3/tests/lattice.rs` over every
+an exhaustive Rust test in `levels/vize_l3/tests/lattice.rs` over every
 binding summary there is: 4 origins, 256 effect sets, 4 escapes and 3
 verdicts. `classify` takes no verdict, so orthogonality also holds by its
 signature.

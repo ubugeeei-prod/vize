@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vite-plus/test";
-import containers from "../../davinci/vize_l1/tests/fixtures/document/html-semantic-body-containers.json";
-import nesting from "../../davinci/vize_l1/tests/fixtures/document/html-semantic-body-nesting.json";
+import containers from "../../levels/vize_l1/tests/fixtures/document/html-semantic-body-containers.json";
+import nesting from "../../levels/vize_l1/tests/fixtures/document/html-semantic-body-nesting.json";
 
 const corpus = [...containers, ...nesting];
 

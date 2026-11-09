@@ -57,7 +57,7 @@ export function validateEdges(read: Reader, old: boolean) {
       `unexpected profile host dependency: ${name}`,
     );
   }
-  for (const file of ["davinci/vize_l0/Cargo.toml", "crates/vize_carton/Cargo.toml"])
+  for (const file of ["levels/vize_l0/Cargo.toml", "crates/vize_carton/Cargo.toml"])
     requireState(
       (parseToml(read(file)).package as Table).version !== undefined &&
         table((parseToml(read(file)).package as Table).version) &&
@@ -85,13 +85,13 @@ export function prepare(rawRead: Reader): Map<string, string> {
     ) &&
     occurrences(hostSource, hostDeclaration) === 1;
   requireState(old || next, "unexpected profile export module ownership");
-  const sfcGate = digest(read("tests/tooling/davinci/davinci-atelier-sfc-stage-alias.test.mjs"));
+  const sfcGate = digest(read("tests/tooling/levels/level-atelier-sfc-stage-alias.test.mjs"));
   requireState(
     old ? sfcGate === hashes.sfcGate[0] : hashes.sfcGate[1].includes(sfcGate),
     "unexpected exact SFC dependency gate",
   );
   requireState(
-    digest(read("davinci/vize_l0/src/profiler/snapshot.rs")) === hashes.provider,
+    digest(read("levels/vize_l0/src/profiler/snapshot.rs")) === hashes.provider,
     "unexpected metric readback body",
   );
   requireState(
@@ -109,13 +109,13 @@ export function prepare(rawRead: Reader): Map<string, string> {
       "unexpected exact profile assembly body",
     );
   requireState(
-    read("davinci/vize_l0/src/profiler/snapshot.rs").includes("pub fn span_snapshot(&self)") &&
-      read("davinci/vize_l0/src/profiler/snapshot.rs").includes("pub fn counter_snapshot(&self)"),
+    read("levels/vize_l0/src/profiler/snapshot.rs").includes("pub fn span_snapshot(&self)") &&
+      read("levels/vize_l0/src/profiler/snapshot.rs").includes("pub fn counter_snapshot(&self)"),
     "public metric readback provider is required",
   );
   validateEdges(read, old);
   const ownedCaller = !old && digest(get(hashes.snapshotCaller[0])) === hashes.snapshotCaller[1];
-  const companion = digest(read("tests/tooling/support/davinci-profile-host-imports.ts"));
+  const companion = digest(read("tests/tooling/support/level-profile-host-imports.ts"));
   requireState(
     ownedCaller
       ? companion === hashes.snapshotCompanion
@@ -145,10 +145,10 @@ export function prepare(rawRead: Reader): Map<string, string> {
   }
   change(core, "mod export;\n", "");
   change(core, removedExports, "");
-  change("davinci/vize_l0/src/profiler/tests.rs", "mod export;\n\n", "");
+  change("levels/vize_l0/src/profiler/tests.rs", "mod export;\n\n", "");
   for (const [file, before, after] of gateChanges) {
     const source = get(file);
-    if (file !== "tests/tooling/davinci-stage-dependencies.test.ts") {
+    if (file !== "tests/tooling/level-stage-dependencies.test.ts") {
       const count = (text: string) => source.split(text).length - 1;
       requireState(
         old

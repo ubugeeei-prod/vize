@@ -32,7 +32,7 @@ impl<'a> ExpressionNode<'a> {
 #[derive(Debug)]
 pub struct SimpleExpressionNode<'a> {
     /// Expression text: the template source slice when the content is
-    /// verbatim, an arena copy when a transform computed it (Davinci P1-10).
+    /// verbatim, an arena copy when a transform computed it (Levels P1-10).
     pub content: &'a str,
     pub is_static: bool,
     pub const_type: ConstantType,
@@ -74,7 +74,7 @@ impl<'a> SimpleExpressionNode<'a> {
 
     /// Clone `node`'s content/staticness/location exactly as
     /// [`SimpleExpressionNode::new`] would, carrying the retained AST along
-    /// (Davinci P1-7): the clone's content is byte-identical to the
+    /// (Levels P1-7): the clone's content is byte-identical to the
     /// original's, so the parse-once `js_ast` describes it verbatim.
     pub fn from_node(node: &SimpleExpressionNode<'a>) -> Self {
         Self {
@@ -103,7 +103,7 @@ impl<'a> SimpleExpressionNode<'a> {
 }
 
 /// A template expression's JavaScript AST, parsed once per compile into the
-/// shared oxc arena pool (Davinci P1-5).
+/// shared oxc arena pool (Levels P1-5).
 ///
 /// `ast` covers the whole of `raw`: the parser only retains complete
 /// single-expression parses, so text a lone [`oxc_ast::ast::Expression`]
@@ -114,7 +114,7 @@ impl<'a> SimpleExpressionNode<'a> {
 ///
 /// Lifetime contract: `'a` is the compile's arena lifetime, so retained
 /// references are per-compile ephemera. Anything crossing a compile boundary
-/// (caches, folios, summaries) must convert to an owned form (the expression
+/// (caches, dumps, summaries) must convert to an owned form (the expression
 /// text) first — the arena/cache contract; never store this reference.
 ///
 /// `Copy`: both fields are shared references, so consumers (P1-6/P1-7) can

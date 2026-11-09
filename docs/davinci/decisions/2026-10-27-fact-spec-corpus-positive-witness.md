@@ -32,8 +32,8 @@ alongside splitpanes and cssgridgenerator. That run proves the existing complete
 three-project lane passed; it does not by itself give layoutit-grid's individual
 fact census. The new separate witness scope provides that census.
 
-`VIZE_DAVINCI_FACT_CORPUS` keeps the original selection.
-`VIZE_DAVINCI_FACT_CORPUS_WITNESS` optionally supplies additional real projects.
+`VIZE_LEVEL_FACT_CORPUS` keeps the original selection.
+`VIZE_LEVEL_FACT_CORPUS_WITNESS` optionally supplies additional real projects.
 The harness prints `corpus originals`, `corpus witnesses`, and their summed
 `corpus shard` scopes. The witness must independently compare positive unused
 facts, and the combined shard retains every exact-table comparison and every

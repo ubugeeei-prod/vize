@@ -1,6 +1,6 @@
 ---
 source: crates/vize_l1_to_l2/tests/cfg_pass_snapshot.rs
-expression: "folio.print_to_string(FolioMode::Full).as_str()"
+expression: "dump.print_to_string(DumpMode::Full).as_str()"
 ---
 [l2-dump-v2]
 ops=31

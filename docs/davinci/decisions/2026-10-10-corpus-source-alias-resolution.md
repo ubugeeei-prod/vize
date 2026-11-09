@@ -42,7 +42,7 @@ vector and byte-retention controls remain intact.
 
 The first repair PR [#8379](https://github.com/ubugeeei-prod/vize/pull/8379)
 source run `38025646383` skipped both canonical and Rust jobs: the shared
-`tests/davinci_test_support/` workspace crate was absent from the corpus
+`tests/level_test_support/` workspace crate was absent from the corpus
 selector and classified as JavaScript by the source planner. The
 [paired selector decision](https://github.com/ubugeeei-prod/vize/issues/6830#issuecomment-6093965676)
 adds that actual crate to both selectors. Its manifest, reader and test changes

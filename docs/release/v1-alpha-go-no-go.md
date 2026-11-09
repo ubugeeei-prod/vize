@@ -18,17 +18,17 @@ they operate.
 
 ## Pre-Tag Gate
 
-- [ ] All required PR checks are green on the release commit: ([PT-1 evidence](./davinci-v1-evidence.md#pre-tag-gate))
+- [ ] All required PR checks are green on the release commit: ([PT-1 evidence](./level-v1-evidence.md#pre-tag-gate))
   - [Check](../../.github/workflows/check.yml)
   - [Benchmark](../../.github/workflows/benchmark.yml)
   - [App E2E](../../.github/workflows/e2e.yml) for `dev`, `preview`, and `build`
   - [Docs Build](../../.github/workflows/build-docs.yml) evidence on the exact target commit
 - [ ] [Fuzz](../../.github/workflows/fuzz.yml) status, seeded corpus health, and uploaded
-      reproducers are reviewed when parser/compiler surfaces changed. ([PT-2 evidence](./davinci-v1-evidence.md#pre-tag-gate))
-- [ ] No release-blocking draft PR, open P0/P1 fix request, or failing required workflow remains. ([PT-3 evidence](./davinci-v1-evidence.md#pre-tag-gate))
-- [ ] Version is agreed and matches the intended channel, for example `1.0.0-alpha.N`. ([PT-4 evidence](./davinci-v1-evidence.md#pre-tag-gate))
-- [ ] Changelog or release post draft exists under `docs/content/blog/releases/`. ([PT-5 evidence](./davinci-v1-evidence.md#pre-tag-gate))
-- [ ] Local smoke commands pass from a clean checkout: ([PT-6 evidence](./davinci-v1-evidence.md#pre-tag-gate))
+      reproducers are reviewed when parser/compiler surfaces changed. ([PT-2 evidence](./level-v1-evidence.md#pre-tag-gate))
+- [ ] No release-blocking draft PR, open P0/P1 fix request, or failing required workflow remains. ([PT-3 evidence](./level-v1-evidence.md#pre-tag-gate))
+- [ ] Version is agreed and matches the intended channel, for example `1.0.0-alpha.N`. ([PT-4 evidence](./level-v1-evidence.md#pre-tag-gate))
+- [ ] Changelog or release post draft exists under `docs/content/blog/releases/`. ([PT-5 evidence](./level-v1-evidence.md#pre-tag-gate))
+- [ ] Local smoke commands pass from a clean checkout: ([PT-6 evidence](./level-v1-evidence.md#pre-tag-gate))
 
 ```bash
 vp install --frozen-lockfile
@@ -39,7 +39,7 @@ cargo audit --deny warnings
 vp run --workspace-root build:packages
 ```
 
-- [ ] Package-specific smoke checks pass when relevant: ([PT-7 evidence](./davinci-v1-evidence.md#pre-tag-gate))
+- [ ] Package-specific smoke checks pass when relevant: ([PT-7 evidence](./level-v1-evidence.md#pre-tag-gate))
 
 ```bash
 vp run --filter './npm/builder/vite-musea' test
@@ -49,24 +49,24 @@ vp run --filter './npm/native' build:debug
 
 ## Release PR and Promotion Gate
 
-- [ ] Release captain starts the command from an authenticated maintainer/admin checkout: ([RP-1 evidence](./davinci-v1-evidence.md#release-pr-and-promotion-gate))
+- [ ] Release captain starts the command from an authenticated maintainer/admin checkout: ([RP-1 evidence](./level-v1-evidence.md#release-pr-and-promotion-gate))
 
 ```bash
 vp run release alpha -y
 ```
 
-- [ ] The command opens a release PR whose author has the maintain or admin role. ([RP-2 evidence](./davinci-v1-evidence.md#release-pr-and-promotion-gate))
-- [ ] Required PR checks and **Release candidate ready** pass for the exact PR head. ([RP-3 evidence](./davinci-v1-evidence.md#release-pr-and-promotion-gate))
+- [ ] The command opens a release PR whose author has the maintain or admin role. ([RP-2 evidence](./level-v1-evidence.md#release-pr-and-promotion-gate))
+- [ ] Required PR checks and **Release candidate ready** pass for the exact PR head. ([RP-3 evidence](./level-v1-evidence.md#release-pr-and-promotion-gate))
 - [ ] The PR is based on the latest `main` immediately before promotion; if `main` advances,
-      the command refreshes the version commit and repeats validation. ([RP-4 evidence](./davinci-v1-evidence.md#release-pr-and-promotion-gate))
+      the command refreshes the version commit and repeats validation. ([RP-4 evidence](./level-v1-evidence.md#release-pr-and-promotion-gate))
 - [ ] Atomic promotion fast-forwards `main`, merges the PR and creates `vX.Y.Z-alpha.N`
-      at that same validated commit. Do not squash-merge or manually push a release tag. ([RP-5 evidence](./davinci-v1-evidence.md#release-pr-and-promotion-gate))
+      at that same validated commit. Do not squash-merge or manually push a release tag. ([RP-5 evidence](./level-v1-evidence.md#release-pr-and-promotion-gate))
 - [ ] The original dispatched [Release](../../.github/workflows/release.yml) run observes
-      promotion and publishes its prevalidated artifacts. No tag-triggered run is expected. ([RP-6 evidence](./davinci-v1-evidence.md#release-pr-and-promotion-gate))
+      promotion and publishes its prevalidated artifacts. No tag-triggered run is expected. ([RP-6 evidence](./level-v1-evidence.md#release-pr-and-promotion-gate))
 
 ## Publish Gate
 
-- [ ] Release workflow jobs pass for: ([PU-1 evidence](./davinci-v1-evidence.md#publish-gate))
+- [ ] Release workflow jobs pass for: ([PU-1 evidence](./level-v1-evidence.md#publish-gate))
   - CLI archives and GitHub release creation
   - native npm packages
   - root npm packages
@@ -75,8 +75,8 @@ vp run release alpha -y
   - required VS Code Marketplace publishing and exact-version visibility
 - [ ] Open VSX is an optional channel. Publish it only when the editor owner explicitly dispatches
       [`release-open-vsx.yml`](../../.github/workflows/release-open-vsx.yml) for an existing,
-      published GitHub Release tag; it is not part of the official release completion signal. ([PU-2 evidence](./davinci-v1-evidence.md#publish-gate))
-- [ ] npm owner verifies every package is visible with the expected prerelease dist-tag: ([PU-3 evidence](./davinci-v1-evidence.md#publish-gate))
+      published GitHub Release tag; it is not part of the official release completion signal. ([PU-2 evidence](./level-v1-evidence.md#publish-gate))
+- [ ] npm owner verifies every package is visible with the expected prerelease dist-tag: ([PU-3 evidence](./level-v1-evidence.md#publish-gate))
 
 ```bash
 npm view vize dist-tags --json
@@ -86,19 +86,19 @@ npm view @vizejs/wasm dist-tags --json
 ```
 
 - [ ] Rust owner verifies the exact version of every crate in `publishedCrates` in
-      `tools/support/release/publish_crates/main.ts`, including Canon and Patina. For example: ([PU-4 evidence](./davinci-v1-evidence.md#publish-gate))
+      `tools/support/release/publish_crates/main.ts`, including Canon and Patina. For example: ([PU-4 evidence](./level-v1-evidence.md#publish-gate))
 
 ```bash
 curl --fail-with-body https://crates.io/api/v1/crates/vize_canon/VERSION
 curl --fail-with-body https://crates.io/api/v1/crates/vize_patina/VERSION
 ```
 
-- [ ] Editor owner verifies the VS Code marketplace page shows the new pre-release. ([PU-5 evidence](./davinci-v1-evidence.md#publish-gate))
-- [ ] Release captain verifies GitHub release notes, artifacts, and prerelease status. ([PU-6 evidence](./davinci-v1-evidence.md#publish-gate))
+- [ ] Editor owner verifies the VS Code marketplace page shows the new pre-release. ([PU-5 evidence](./level-v1-evidence.md#publish-gate))
+- [ ] Release captain verifies GitHub release notes, artifacts, and prerelease status. ([PU-6 evidence](./level-v1-evidence.md#publish-gate))
 
 ## Post-Publish Gate
 
-- [ ] Fresh install smoke passes on a clean machine or throwaway directory: ([PP-1 evidence](./davinci-v1-evidence.md#post-publish-gate))
+- [ ] Fresh install smoke passes on a clean machine or throwaway directory: ([PP-1 evidence](./level-v1-evidence.md#post-publish-gate))
 
 ```bash
 tmp="$(mktemp -d)"
@@ -108,21 +108,21 @@ vp install -D @vizejs/vite-plugin@alpha @vizejs/vite-plugin-musea@alpha
 ```
 
 - [ ] Docs owner verifies the docs site, search index, and release post after
-      [Deploy Docs](../../.github/workflows/deploy-docs.yml) publishes current `main`. ([PP-2 evidence](./davinci-v1-evidence.md#post-publish-gate))
-- [ ] npm owner verifies native optional dependency resolution on macOS, Linux, and Windows runners. ([PP-3 evidence](./davinci-v1-evidence.md#post-publish-gate))
-- [ ] Release captain posts release communication with: ([PP-4 evidence](./davinci-v1-evidence.md#post-publish-gate))
+      [Deploy Docs](../../.github/workflows/deploy-docs.yml) publishes current `main`. ([PP-2 evidence](./level-v1-evidence.md#post-publish-gate))
+- [ ] npm owner verifies native optional dependency resolution on macOS, Linux, and Windows runners. ([PP-3 evidence](./level-v1-evidence.md#post-publish-gate))
+- [ ] Release captain posts release communication with: ([PP-4 evidence](./level-v1-evidence.md#post-publish-gate))
   - version and channel
   - installation commands
   - known limitations
   - rollback status and support window
-- [ ] Production-readiness status is updated against [Production Readiness](./production-readiness.md). ([PP-5 evidence](./davinci-v1-evidence.md#post-publish-gate))
+- [ ] Production-readiness status is updated against [Production Readiness](./production-readiness.md). ([PP-5 evidence](./level-v1-evidence.md#post-publish-gate))
 
 ## Rollback Plan
 
 Prefer a fixed alpha over destructive rollback. Use destructive actions only when a token leak,
 malware risk, or severe install break requires immediate containment.
 
-- [ ] Stop promotion by moving npm dist-tags back to the previous known-good alpha: ([RB-1 evidence](./davinci-v1-evidence.md#rollback-plan))
+- [ ] Stop promotion by moving npm dist-tags back to the previous known-good alpha: ([RB-1 evidence](./level-v1-evidence.md#rollback-plan))
 
 ```bash
 npm dist-tag add vize@<previous-version> alpha
@@ -130,23 +130,23 @@ npm dist-tag add @vizejs/vite-plugin@<previous-version> alpha
 npm dist-tag add @vizejs/vite-plugin-musea@<previous-version> alpha
 ```
 
-- [ ] Deprecate bad npm versions with an actionable message: ([RB-2 evidence](./davinci-v1-evidence.md#rollback-plan))
+- [ ] Deprecate bad npm versions with an actionable message: ([RB-2 evidence](./level-v1-evidence.md#rollback-plan))
 
 ```bash
 npm deprecate vize@<bad-version> "Do not use this alpha; upgrade to <fixed-version>."
 ```
 
-- [ ] Yank bad crates.io versions when Rust consumers must not resolve them: ([RB-3 evidence](./davinci-v1-evidence.md#rollback-plan))
+- [ ] Yank bad crates.io versions when Rust consumers must not resolve them: ([RB-3 evidence](./level-v1-evidence.md#rollback-plan))
 
 ```bash
 cargo yank --vers <bad-version> vize
 ```
 
 - [ ] If GitHub artifacts are broken, mark the release as draft or delete only the affected assets,
-      then rerun the release workflow from a fixed tag. ([RB-4 evidence](./davinci-v1-evidence.md#rollback-plan))
-- [ ] If docs are wrong, revert the docs commit or redeploy the previous known-good Pages artifact. ([RB-5 evidence](./davinci-v1-evidence.md#rollback-plan))
+      then rerun the release workflow from a fixed tag. ([RB-4 evidence](./level-v1-evidence.md#rollback-plan))
+- [ ] If docs are wrong, revert the docs commit or redeploy the previous known-good Pages artifact. ([RB-5 evidence](./level-v1-evidence.md#rollback-plan))
 - [ ] If the VS Code extension is broken, publish a fixed pre-release and update the marketplace
-      description. Do not unpublish without editor owner and release captain approval. ([RB-6 evidence](./davinci-v1-evidence.md#rollback-plan))
+      description. Do not unpublish without editor owner and release captain approval. ([RB-6 evidence](./level-v1-evidence.md#rollback-plan))
 
 ### Partial package publication recovery
 
@@ -171,7 +171,7 @@ Release completion before closing the release issue or creating another tag.
 ## Communication
 
 - [ ] Release captain opens a tracking comment or discussion with current status: go, no-go, or
-      rollback. ([CO-1 evidence](./davinci-v1-evidence.md#communication))
-- [ ] Owners add verification evidence and links to the release workflow run. ([CO-2 evidence](./davinci-v1-evidence.md#communication))
+      rollback. ([CO-1 evidence](./level-v1-evidence.md#communication))
+- [ ] Owners add verification evidence and links to the release workflow run. ([CO-2 evidence](./level-v1-evidence.md#communication))
 - [ ] If rollback is triggered, publish the user-facing impact, affected versions, fixed version, and
-      recommended action before closing the incident. ([CO-3 evidence](./davinci-v1-evidence.md#communication))
+      recommended action before closing the incident. ([CO-3 evidence](./level-v1-evidence.md#communication))

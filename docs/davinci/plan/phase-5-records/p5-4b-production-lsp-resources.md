@@ -52,7 +52,7 @@ is **record only**: the 337/316 MiB ceilings belong to the separate nine-file
 TS-44 baseline, and no new numeric ceiling is selected to fit this result.
 
 ```sh
-vp exec node tools/support/compat/davinci/lsp-resources.mjs \
+vp exec node tools/support/compat/levels/lsp-resources.mjs \
   --server target/ci-opt/vize --files 10000 --runs 1 --idle-seconds 10 \
   --warm-providers 16 \
   --out /tmp/production-lsp-resource.json
@@ -68,7 +68,7 @@ saved; incomplete measurements are not reported as accepted.
 ## Recorded run
 
 The production job is part of the manually dispatched
-`davinci-resource-budgets.yml` workflow. Its artifact is named
+`level-resource-budgets.yml` workflow. Its artifact is named
 `production-lsp-resource-linux-x64-ci`.
 
 The bounded scope completed in [run

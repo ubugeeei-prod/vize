@@ -1,4 +1,4 @@
-//! The naive evaluator's expression half: re-parse the folio text into a
+//! The naive evaluator's expression half: re-parse the dump text into a
 //! fresh arena, record every AST node with a parent link, and derive each
 //! operator tree and `?:` from those links alone (no inherited counters).
 
@@ -69,7 +69,7 @@ pub fn expression_facts(source: &str) -> Vec<ExprFact> {
     let allocator = Allocator::new();
     let parsed = oxc_parser::Parser::new(allocator.as_oxc(), source, SourceType::ts())
         .parse_expression()
-        .expect("folio js(...) text re-parses: it was admitted once");
+        .expect("dump js(...) text re-parses: it was admitted once");
     let mut collect = Collect::default();
     collect.visit_expression(&parsed);
     let nodes = collect.nodes;

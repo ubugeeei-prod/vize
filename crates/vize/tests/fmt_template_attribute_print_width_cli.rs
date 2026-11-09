@@ -5,9 +5,9 @@ use crate::support::vite_config;
 
 use std::{error::Error, fs, path::Path, process::Command};
 
-use davinci_test_support::formatter_continuation_reference as current_reference;
+use level_test_support::formatter_continuation_reference as current_reference;
 
-use davinci_test_support::formatter_expression_width_reference as expression_reference;
+use level_test_support::formatter_expression_width_reference as expression_reference;
 
 fn fmt(root: &Path, args: &[&str]) -> Result<std::process::Output, std::io::Error> {
     Command::new(env!("CARGO_BIN_EXE_vize"))

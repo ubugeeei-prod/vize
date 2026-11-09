@@ -52,7 +52,7 @@ test("TS-29 matrix is the full generated product with aligned artifacts", () => 
   );
   for (const entry of lowered) {
     assert.match(entry.graph, /^\[l3-dump-v2\]\nphase=built\n/u);
-    assert.match(entry.values, /^\[s3-values-folio\]\n/u);
+    assert.match(entry.values, /^\[s3-values-dump\]\n/u);
   }
 });
 

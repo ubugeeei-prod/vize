@@ -201,9 +201,9 @@ fn fixture_callbacks_and_utf8_cuts_keep_the_frozen_machine_contract() {
             ..Switches::default()
         },
     ] {
-        for fixture in davinci_test_support::surface_fixture::WELL_FORMED
+        for fixture in level_test_support::surface_fixture::WELL_FORMED
             .iter()
-            .chain(davinci_test_support::surface_fixture::MALFORMED)
+            .chain(level_test_support::surface_fixture::MALFORMED)
         {
             for (cut_index, source) in core::iter::once(fixture.source)
                 .chain(fixture.source.char_indices().flat_map(|(index, _)| {

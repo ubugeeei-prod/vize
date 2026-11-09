@@ -5,7 +5,7 @@
 //! prop). Each full observation, including element lifetimes, must equal the
 //! independent L3 reference in `slot-reference.behavior.jsonl`.
 
-use crate::davinci_mounted_behavior::runtime::mounted_trace_with_slots;
+use crate::level_mounted_behavior::runtime::mounted_trace_with_slots;
 use serde_json::Value;
 use std::path::Path;
 

@@ -4,7 +4,7 @@
 //! retained oxc ASTs P1-5 parses, and every arena-resident string — in a
 //! single pool with a single reset point.
 //!
-//! Davinci P1-1 introduced this handle as a *pair* of pools (a `bumpalo::Bump`
+//! Levels P1-1 introduced this handle as a *pair* of pools (a `bumpalo::Bump`
 //! for the template containers plus an [`oxc_allocator::Allocator`] for
 //! retained ASTs) because oxc's arena containers reject `Drop` payloads at
 //! compile time and the template nodes still owned heap strings. P1-10's
@@ -13,7 +13,7 @@
 //! and the const assertion inside [`crate::Box`] / [`crate::Vec`] now stands
 //! guard over every arena-resident type in the compiler.
 //!
-//! # Lifetime contract (Davinci P1-11)
+//! # Lifetime contract (Levels P1-11)
 //!
 //! The handle is **per compile**, and under the batch pool ([`crate::pool`])
 //! the same handle serves file after file with [`Allocator::reset`] in

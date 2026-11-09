@@ -1,4 +1,4 @@
-//! Davinci L4 lane for the SSR compile path.
+//! Levels L4 lane for the SSR compile path.
 //!
 //! P3-8 keeps SSR on a thin L2->L4 route: the compile path reads the shared
 //! L2->L3 partition facts, builds the SSR string plan, and emits the
@@ -67,7 +67,7 @@ pub(crate) enum LegacyReason {
 }
 
 impl LegacyReason {
-    /// The counter name without the `davinci.l4_ssr.` namespace.
+    /// The counter name without the `levels.l4_ssr.` namespace.
     #[cfg(feature = "legacy-differential")]
     pub(crate) fn counter_suffix(self) -> &'static str {
         let counter = self.counter();

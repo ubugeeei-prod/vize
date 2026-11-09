@@ -18,14 +18,14 @@ reviewable contract exists.
 
 ## Evidence
 
-`crates/vize_atelier_dom/tests/davinci_s2_custom_element_selector.rs` compares
+`crates/vize_atelier_dom/tests/level_s2_custom_element_selector.rs` compares
 template and SFC section compiles for an `ion-*` matcher against compatibility
-output and asserts the selected compile records one `davinci.s2_dom.files`
+output and asserts the selected compile records one `levels.s2_dom.files`
 counter. The same file pins the callback-predicate case as compatibility-only.
 
 `crates/vize_s1_to_s2/tests/emit_comp/basic_and_control_flow.rs` covers a
 matching `ion-*` tag emitted as an element rather than a component, and
-`tests/tooling/davinci-dom-production-boundary.test.ts` records
+`tests/tooling/level-dom-production-boundary.test.ts` records
 `custom_element_patterns` as part of the S2 DOM emit option surface.
 
 This installment does not tick P2-11. The full production-lane switch remains

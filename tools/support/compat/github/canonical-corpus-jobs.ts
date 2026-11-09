@@ -20,7 +20,7 @@ const canonicalSteps = [
   "Capture canonical corpus identity",
   "Run L2 DOM differential corpus",
   "Run L4 SSR and pug L1 differential corpora",
-  "Measure Davinci production reach on the hydrated corpus",
+  "Measure Levels production reach on the hydrated corpus",
   "Record required observer evidence",
   "Upload required observer evidence",
 ] as const;

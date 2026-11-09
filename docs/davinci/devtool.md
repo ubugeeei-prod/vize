@@ -46,7 +46,7 @@ historical v1 feed document (P2-18, `stage-ladder-feed.schema.json`) was the
 unit on those surfaces. Current product capture has a distinct version 2
 schema and reports only stages executed by the selected compiler lane:
 
-- **At rest / CLI** — historical v1 files came from `davinci-opt --folio-dir`.
+- **At rest / CLI** — historical v1 files came from `level-opt --folio-dir`.
   Current `vize dump --all-levels --json --dump-dir` writes a version 2
   product-stage feed beside the captured pages from one accepted compile.
 - **Browser playground** — the P2-18 embedding: wasm can open no socket and

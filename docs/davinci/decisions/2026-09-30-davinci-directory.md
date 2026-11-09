@@ -4,7 +4,7 @@ Tracking: [#6826](https://github.com/ubugeeei-prod/vize/issues/6826),
 [#6831](https://github.com/ubugeeei-prod/vize/issues/6831).
 
 The maintainer requested one PR separating Davinci implementation from legacy
-products. `davinci/` owns L0–L4, both conversions, the remaining substrate and
+products. `levels/` owns L0–L4, both conversions, the remaining substrate and
 derive crate, extension contracts/hosting, the guest SDK and MoonBit dialect.
 Package identities and published features retain their current names.
 
@@ -25,10 +25,10 @@ The pinned projection and diagnostic fixtures verify that switch. Legacy product
 SFC parsing and Resident stay in `crates/`; this does not close the product
 container migration (#6837) or promote unfinished dialect work to completion.
 
-`crates/` may depend on `davinci/`. Normal and build dependencies in the reverse
+`crates/` may depend on `levels/`. Normal and build dependencies in the reverse
 direction are forbidden, including renamed, optional, target-specific and
 transitive workspace declarations. Dev-only differential oracles are allowed.
-The Actions metadata gate checks every package under `davinci/`, including
+The Actions metadata gate checks every package under `levels/`, including
 helpers, without a directory allowlist.
 
 The last L1→Relief edge is removed by moving Namespace, compiler error codes
@@ -50,15 +50,15 @@ passed with an empty allowlist and no normal/build reverse paths, satisfying
 Replay directory and ownership moves on fresh main:
 
 ```sh
-node tools/support/compat/levels/move-davinci-directory.ts --move-only
+node tools/support/compat/levels/move-level-directory.ts --move-only
 # Commit directory moves without content edits.
-node tools/support/compat/levels/move-davinci-directory.ts --foundation-moves-only
+node tools/support/compat/levels/move-level-directory.ts --foundation-moves-only
 # Commit foundation file moves without content edits.
-node tools/support/compat/levels/move-davinci-directory.ts --foundation
-node tools/support/compat/levels/move-davinci-directory.ts --shared-moves-only
+node tools/support/compat/levels/move-level-directory.ts --foundation
+node tools/support/compat/levels/move-level-directory.ts --shared-moves-only
 # Commit stage/code file moves without content edits.
-node tools/support/compat/levels/move-davinci-directory.ts --shared-types
-node tools/support/compat/levels/move-davinci-directory.ts --references
+node tools/support/compat/levels/move-level-directory.ts --shared-types
+node tools/support/compat/levels/move-level-directory.ts --references
 cargo fmt --all
 ```
 

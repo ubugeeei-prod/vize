@@ -1,4 +1,4 @@
-// Self-test for the Davinci banned-assertion lint ("lint the linter",
+// Self-test for the Levels banned-assertion lint ("lint the linter",
 // plan/phase-0.md P0-12). The lint enforces docs/davinci/assurance.md
 // "Strict oracles — no partial matching" over Rust test code; this suite
 // pins (a) the exact finding set on a deliberately bad fixture and (b) a
@@ -13,8 +13,8 @@ import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
-const lintPath = path.join(repoRoot, "tools", "commands", "davinci", "assertion-lint.rs");
-const fixtureDir = path.join(repoRoot, "tests", "_fixtures", "davinci-assertion-lint");
+const lintPath = path.join(repoRoot, "tools", "commands", "levels", "assertion-lint.rs");
+const fixtureDir = path.join(repoRoot, "tests", "_fixtures", "level-assertion-lint");
 const allowlistPath = path.join(repoRoot, "docs/davinci", "plan", "assertion-allowlist.toml");
 
 function runLint(args: string[]) {
@@ -31,7 +31,7 @@ function badFixtureFindings(): string[] {
 }
 
 function temporaryAllowlist(expires: string, entries: string[]): string {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-davinci-assertion-lint-"));
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-level-assertion-lint-"));
   const allowlist = path.join(dir, "allowlist.toml");
   const paths = entries.map((entry) => `  "${entry}",`).join("\n");
   fs.writeFileSync(

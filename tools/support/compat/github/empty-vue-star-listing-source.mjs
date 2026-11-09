@@ -121,7 +121,7 @@ function confirm(owned) {
 
 const setupWorkflows = new Set([".github/workflows/typechecker-native-phases.yml"]);
 /** Recorded by its historical bytes only; the current workflow may change freely. */
-const unpinnedWorkflows = new Set([".github/workflows/davinci-canon-scaling.yml"]);
+const unpinnedWorkflows = new Set([".github/workflows/level-canon-scaling.yml"]);
 /** Historical source stays literal; current CI may use the approved setup changes. */
 export function assertStarListingWorkflowSetup(file, before, after) {
   assert(setupWorkflows.has(file), "only the reviewed current workflow contract");

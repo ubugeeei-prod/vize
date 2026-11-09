@@ -8,7 +8,7 @@
 //!   text that parses as one complete TS-dialect expression covering the
 //!   whole content, carried beside that exact text and its authored span.
 //! - [`ExprRef::Foreign`] - a non-JS expression dialect (charter #28).
-//!   **Type-only until phase 6**: the type and its folio spelling exist so
+//!   **Type-only until phase 6**: the type and its dump spelling exist so
 //!   the contract is closed, but no dialect implementation ships and no
 //!   lowering constructs one.
 //! - [`ExprRef::Filter`] - Vue 2 pipe filters (`{{ msg | capitalize }}`).
@@ -29,7 +29,7 @@
 //! an opaque expression is not even equal to itself), and offering
 //! structural equality on the other variants would make the unsound
 //! comparison one `match` arm away. Consumers that need identity compare
-//! the owned folio mirror, which is explicit about what it carries.
+//! the owned dump mirror, which is explicit about what it carries.
 //!
 //! # Capability resolution
 //!
@@ -58,7 +58,7 @@ use vize_l0::{Allocator, Span};
 /// A *reference*, deliberately: payloads are shared `&'a` borrows of the
 /// compile arena, so two positions may name the same payload (`ui.model`'s
 /// `read`/`write` typically do), and the enum stays two words. Nothing
-/// here survives `Allocator::reset` - the folio carries the owned form
+/// here survives `Allocator::reset` - the dump carries the owned form
 /// (P1-11's contract; see `crate::dump`).
 #[derive(Debug, Clone, Copy)]
 pub enum ExprRef<'a> {
@@ -73,7 +73,7 @@ pub enum ExprRef<'a> {
 }
 
 impl<'a> ExprRef<'a> {
-    /// The payload's stage-wide mnemonic - the keyword its folio token
+    /// The payload's stage-wide mnemonic - the keyword its dump token
     /// starts with.
     #[must_use]
     pub const fn mnemonic(&self) -> &'static str {
@@ -115,13 +115,13 @@ impl<'a> ExprRef<'a> {
     /// TS-dialect expression into the arena, falling back to the escape
     /// variant when the text is not admitted.
     ///
-    /// This is how a folio's `js(...)` payload re-enters an arena (the
+    /// This is how a dump's `js(...)` payload re-enters an arena (the
     /// owned page stores slice + span only, because AST references cannot
     /// persist across a compile - P1-11). It never panics and never
     /// half-succeeds (the MLIR one-shot import: lowerings are total
     /// functions): text [`JsExpr::parse_in`] refuses comes back as
     /// [`ExprRef::Opaque`] with the classified reason and pessimal
-    /// semantics, which is exactly what a hand-edited or stale folio has
+    /// semantics, which is exactly what a hand-edited or stale dump has
     /// earned.
     #[must_use]
     pub fn parse_js_in(allocator: &'a Allocator, source: &'a str, span: Span) -> Self {

@@ -11,8 +11,8 @@ fn sfc_facade_matches_relief_on_the_committed_template_battery() {
     for (_, source) in scan_rule_fixtures().templates {
         compare_template(&source);
     }
-    let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join("../../tests/fixtures/davinci-matrix");
+    let root =
+        std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../tests/fixtures/level-matrix");
     let mut paths: Vec<_> = std::fs::read_dir(root)
         .unwrap()
         .map(|entry| entry.unwrap().path())

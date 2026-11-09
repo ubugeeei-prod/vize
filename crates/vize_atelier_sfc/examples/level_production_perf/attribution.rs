@@ -29,8 +29,8 @@ pub(super) fn profile(inputs: &[&Input], shape: Shape, force_retained: bool) -> 
     let report = export_report(
         profiler,
         &ProfileExportOptions {
-            command: "davinci-production-perf-attribution",
-            allocation: cfg!(feature = "davinci-production-profile").then(allocation_snapshot),
+            command: "level-production-perf-attribution",
+            allocation: cfg!(feature = "level-production-profile").then(allocation_snapshot),
             budget: Default::default(),
         },
     );
@@ -85,7 +85,7 @@ pub fn run(inputs: &[Input], shape: Shape) -> Result<Value, Box<dyn std::error::
     }
     Ok(json!({
         "shape": shape.id(), "accepted_files": accepted.len(), "input_bridge_spans": input_spans,
-        "provenance_scope": if cfg!(feature = "davinci-production-profile") {
+        "provenance_scope": if cfg!(feature = "level-production-profile") {
             "Provenance kept at L1→L2 finish by lowerings whose consumer reads it; the DOM emitter keeps none. Capacity counters are retained requested storage, not traffic or peak. Record span traffic excludes after strings; total L1→L2 includes those. Later transform-pass provenance is outside finish counters."
         } else { "not enabled in this build" },
         "selected_profile": profile(&all, shape, false),

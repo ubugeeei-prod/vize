@@ -1,9 +1,9 @@
-//! Dump - the textual dump format every Davinci stage speaks.
+//! Dump - the textual dump format every Levels stage speaks.
 //!
-//! A folio is a stage artifact rendered as text. The contract is defined by
+//! A dump is a stage artifact rendered as text. The contract is defined by
 //! [`Dump`] together with the mode-explicit equality laws below; the
-//! normalization rules shared by every folio page are documented in
-//! `docs/davinci/plan/folio-format.md`.
+//! normalization rules shared by every dump page are documented in
+//! `docs/davinci/plan/dump-format.md`.
 //!
 //! # Equality laws (mode-explicit)
 //!
@@ -38,7 +38,7 @@ pub mod value;
 /// modes.
 pub use vize_l0_derive::Dump;
 
-/// Print mode for a folio page.
+/// Print mode for a dump page.
 ///
 /// See the module docs for the mode-explicit equality laws.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -50,7 +50,7 @@ pub enum Mode {
     Display,
 }
 
-/// Parse error for a folio page.
+/// Parse error for a dump page.
 ///
 /// Carries the 1-based line number in the input at which parsing failed.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -72,11 +72,11 @@ impl Error {
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         if self.line == 0 {
-            write!(f, "folio parse error: {}", self.message)
+            write!(f, "dump parse error: {}", self.message)
         } else {
             write!(
                 f,
-                "folio parse error at line {}: {}",
+                "dump parse error at line {}: {}",
                 self.line, self.message
             )
         }

@@ -5,17 +5,17 @@
 > 2026-09-06 as `5fea9fdc0`.
 
 This installment makes the remaining compatibility selection explicit. Vue 2
-dialects and `VIZE_DAVINCI_DOM=legacy` compiles stay on the old DOM lane until
+dialects and `VIZE_LEVEL_DOM=legacy` compiles stay on the old DOM lane until
 the production-switch exit gate deletes the flag and reviews the release-graph
 boundary. The S2 selector now receives a lane value instead of reading an
 implicit environment default at the support boundary.
 
 ## Evidence
 
-`crates/vize_atelier_dom/tests/davinci_s2_legacy_selector.rs` compiles a Vue 2
-legacy template and a Vue 3 template under `VIZE_DAVINCI_DOM=legacy`, then
+`crates/vize_atelier_dom/tests/level_s2_legacy_selector.rs` compiles a Vue 2
+legacy template and a Vue 3 template under `VIZE_LEVEL_DOM=legacy`, then
 asserts both return compatibility sections without recording the
-`davinci.s2_dom.files` profiling counter. The supporting
+`levels.s2_dom.files` profiling counter. The supporting
 `stage_options` tests pin `legacy`, `s2` and unset environment values to their
 selection lanes and reject S2 support when the legacy lane is selected.
 

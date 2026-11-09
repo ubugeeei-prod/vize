@@ -97,7 +97,7 @@ test("full checks retain required inventory preflights and exhaustive tooling be
   );
   assert.equal(steps[inventory]["continue-on-error"], undefined);
   const action = parse(readRepoFile(".github", "actions", "check-level-inventories", "action.yml"));
-  assert.equal(action.runs.steps[0].run, "node tools/support/compat/davinci/source-inventories.ts");
+  assert.equal(action.runs.steps[0].run, "node tools/support/compat/levels/source-inventories.ts");
   assert.equal(action.runs.steps[0]["continue-on-error"], undefined);
 
   assert.equal(check.jobs["full-source-cli"].uses, "./.github/workflows/full-source-cli.yml");
@@ -144,7 +144,7 @@ test("full checks retain required inventory preflights and exhaustive tooling be
     assert.ok(Array.isArray(plan.tests));
     const selected: unknown[] = plan.tests;
     assert.ok(selected.every((file): file is string => typeof file === "string"));
-    const inventory = ["tests/tooling", "tests/tooling/davinci", "tests/tooling/release"]
+    const inventory = ["tests/tooling", "tests/tooling/levels", "tests/tooling/release"]
       .flatMap((directory) =>
         readdirSync(join(root, directory))
           .filter((name) => /\.test\.(?:ts|mjs)$/.test(name))
@@ -152,7 +152,7 @@ test("full checks retain required inventory preflights and exhaustive tooling be
       )
       .sort();
     assert.deepEqual(selected, inventory);
-    for (const file of ["davinci-module-layout.test.ts", "retired-tooling-languages.test.ts"]) {
+    for (const file of ["level-module-layout.test.ts", "retired-tooling-languages.test.ts"]) {
       assert.ok(selected.includes(`tests/tooling/${file}`), `${file} must remain in full health`);
     }
   } finally {

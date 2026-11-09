@@ -13,10 +13,10 @@ owns the behavior, then use the corresponding fixture and expected output.
 | [`editor-conformance/`](./editor-conformance/)            | Editor-client and LSP conformance scenarios.                                                                                                                                                                         |
 | [`performance/`](./performance/)                          | LSP latency and churn tests.                                                                                                                                                                                         |
 | [`fuzz/`](./fuzz/)                                        | Fuzz targets and regression cases.                                                                                                                                                                                   |
-| [`davinci_test_support/`](./davinci_test_support/)        | Shared Rust support for Davinci test oracles.                                                                                                                                                                        |
+| [`level_test_support/`](./level_test_support/)            | Shared Rust support for Levels test oracles.                                                                                                                                                                         |
 
 The workspace's [`package.json`](./package.json) names the main browser,
 snapshot, readiness, and performance commands. Tests under `tooling/` also run
 in focused GitHub Actions lanes; inspect the relevant workflow when changing
-one of their paths or assumptions. For the Davinci stage model and phase-specific
-oracles, start at the [Davinci guide](../docs/davinci/README.md).
+one of their paths or assumptions. For the Levels stage model and phase-specific
+oracles, start at the [Levels guide](../docs/davinci/README.md).

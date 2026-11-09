@@ -1,5 +1,5 @@
 //! Re-export shim: the expression nesting guard lives in
-//! [`vize_l0::expression_guard`] since Davinci P1-5, so the armature
+//! [`vize_l0::expression_guard`] since Levels P1-5, so the armature
 //! retained-expression parse site shares the exact guard these transform and
 //! codegen entry points use. Import paths through this module are preserved.
 //! Since P1-9 the transform rewrite runs these scans only on its legacy

@@ -287,7 +287,7 @@ fn template_body(source: &str) -> Option<String> {
 fn matrix_fixtures() -> Vec<(String, PathBuf)> {
     let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
     let matrix =
-        std::fs::read_to_string(root.join("tests/_fixtures/davinci-ts40-projection/matrix.json"))
+        std::fs::read_to_string(root.join("tests/_fixtures/level-ts40-projection/matrix.json"))
             .expect("TS-40 matrix");
     let mut fixtures = Vec::new();
     for (id_at, _) in matrix.match_indices("\"id\":") {

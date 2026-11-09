@@ -1,4 +1,4 @@
-// Hydration preflight for Davinci real-project corpus runs.
+// Hydration preflight for Levels real-project corpus runs.
 //
 // The corpus runners operate on pinned gitlinks under tests/_fixtures/_git.
 // A checkout that has the gitlink but not the submodule working tree must fail

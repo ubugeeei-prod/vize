@@ -1,4 +1,4 @@
-//! Temporary expression re-parse counter (Davinci P0-3).
+//! Temporary expression re-parse counter (Levels P0-3).
 //!
 //! Counts every oxc parse of template-expression text on the compile path -
 //! one increment per parse-scoped `oxc_allocator::Allocator` the transform,
@@ -9,7 +9,7 @@
 //! per-fixture re-parse baseline
 //! (`docs/davinci/plan/expr-reparse-baseline.md`); phase 1 replaces the
 //! parse-copy-reparse round trips with retained ASTs, TS-26 then asserts
-//! `davinci.expr.parses == distinct expressions`, and this module is deleted
+//! `levels.expr.parses == distinct expressions`, and this module is deleted
 //! with the last call site.
 //!
 //! One relaxed atomic increment per counted parse; each counted parse builds

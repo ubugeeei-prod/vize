@@ -2,7 +2,7 @@
 //! named preservation groups, and the verify mode that rejects a pass
 //! lying about what it preserves.
 //!
-//! `cargo test -p vize_davinci --test fact_preserve`
+//! `cargo test -p vize_level --test fact_preserve`
 
 #![expect(clippy::expect_used, reason = "tests assert by panicking")]
 

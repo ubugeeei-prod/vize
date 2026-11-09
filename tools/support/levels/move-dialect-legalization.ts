@@ -20,7 +20,7 @@ const moves: Array<readonly [string, string]> = [
 ];
 
 function move(root: string): void {
-  const sourceRoot = path.join(root, "davinci/vize_l1_to_l2/src");
+  const sourceRoot = path.join(root, "levels/vize_l1_to_l2/src");
   const oldDirectory = path.join(sourceRoot, "pass/legacy");
   function existingFiles(directory: string): string[] {
     return fs.readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
@@ -69,7 +69,7 @@ function move(root: string): void {
 }
 
 function check(root: string): void {
-  const sourceRoot = path.join(root, "davinci/vize_l1_to_l2/src");
+  const sourceRoot = path.join(root, "levels/vize_l1_to_l2/src");
   for (const [old, current] of moves) {
     if (!fs.existsSync(path.join(sourceRoot, current)))
       throw new Error(`missing legalization owner: ${current}`);

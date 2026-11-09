@@ -1,4 +1,4 @@
-//! Versioned extension-contract surfaces (Davinci P6-8).
+//! Versioned extension-contract surfaces (Levels P6-8).
 //!
 //! A [`ContractSurface`] is the canonical, language-neutral description of
 //! one version of a WIT contract package — its interfaces, types, functions

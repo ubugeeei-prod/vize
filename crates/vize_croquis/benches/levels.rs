@@ -1,7 +1,7 @@
-//! Davinci microbenches: descriptor-level Croquis analysis over the P0-2
+//! Levels microbenches: descriptor-level Croquis analysis over the P0-2
 //! fixture ladder.
 //!
-//! Run with: cargo bench -p vize_croquis --bench davinci
+//! Run with: cargo bench -p vize_croquis --bench levels
 //!
 //! The measured entry point is the exact orchestration the compiler, linter,
 //! and type checker call: `vize_atelier_sfc::croquis::analyze_sfc_descriptor`
@@ -16,13 +16,13 @@
 #![expect(clippy::expect_used, reason = "tests assert by panicking")]
 
 use criterion::{Criterion, criterion_group};
-use davinci_harness::fixtures::LADDER;
+use level_harness::fixtures::LADDER;
 use vize_armature::Parser;
 use vize_atelier_sfc::croquis::{SfcCroquisOptions, analyze_sfc_descriptor};
 use vize_atelier_sfc::{SfcParseOptions, parse_sfc};
 use vize_carton::{Allocator, cstr};
 
-fn davinci(criterion: &mut Criterion) {
+fn levels(criterion: &mut Criterion) {
     for fixture in &LADDER {
         let descriptor = parse_sfc(fixture.source, SfcParseOptions::default())
             .expect("every ladder fixture is a well-formed SFC");
@@ -38,12 +38,9 @@ fn davinci(criterion: &mut Criterion) {
         ];
         for (preset_name, options) in presets {
             let bench_id = cstr!("croquis_analyze_{}_{}", preset_name, fixture.name);
-            davinci_harness::bench_with_metrics(
-                criterion,
-                &bench_id,
-                fixture.relative_path,
-                || analyze_sfc_descriptor(&descriptor, template_ast.as_ref(), options),
-            );
+            level_harness::bench_with_metrics(criterion, &bench_id, fixture.relative_path, || {
+                analyze_sfc_descriptor(&descriptor, template_ast.as_ref(), options)
+            });
         }
     }
 }
@@ -66,7 +63,7 @@ fn hoist_gate(criterion: &mut Criterion) {
     let mut off = SfcCroquisOptions::for_compile();
     off.analyzer_options.analyze_hoisting = false;
     let on = SfcCroquisOptions::for_compile();
-    davinci_harness::bench_with_metrics(
+    level_harness::bench_with_metrics(
         criterion,
         "croquis_hoist_gate_off_small",
         fixture.relative_path,
@@ -76,7 +73,7 @@ fn hoist_gate(criterion: &mut Criterion) {
                 .count()
         },
     );
-    davinci_harness::bench_with_metrics(
+    level_harness::bench_with_metrics(
         criterion,
         "croquis_hoist_gate_on_small",
         fixture.relative_path,
@@ -88,5 +85,5 @@ fn hoist_gate(criterion: &mut Criterion) {
     );
 }
 
-criterion_group!(davinci_group, davinci, hoist_gate);
-davinci_harness::main!(davinci_group);
+criterion_group!(level_group, levels, hoist_gate);
+level_harness::main!(level_group);

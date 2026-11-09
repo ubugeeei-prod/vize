@@ -43,7 +43,7 @@ test("publish_crates exactly partitions every publishable workspace crate", () =
     ...getManualPublishCrates(),
     ...getBlockedByManualPublishCrates(),
   ];
-  const workspaceSourceDirectories = ["crates", "davinci", path.join("upstream", "forks")];
+  const workspaceSourceDirectories = ["crates", "levels", path.join("upstream", "forks")];
   const publishableCrates = getMetadata()
     .packages.filter((pkg) =>
       workspaceSourceDirectories.some((directory) =>

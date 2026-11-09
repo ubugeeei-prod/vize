@@ -29,21 +29,21 @@ const opcodeContract = [
 const mnemonics = opcodeContract.map(([, , mnemonic]) => mnemonic);
 
 test("the Rust producer and the independent reference reader bind the new explicit protocol", () => {
-  const rust = fs.readFileSync(path.join(repoRoot, "davinci/vize_l3/src/dump.rs"), "utf8");
+  const rust = fs.readFileSync(path.join(repoRoot, "levels/vize_l3/src/dump.rs"), "utf8");
   const reader = fs.readFileSync(
-    path.join(repoRoot, "tests/davinci_test_support/src/l3_reference/folio.rs"),
+    path.join(repoRoot, "tests/level_test_support/src/l3_reference/dump.rs"),
     "utf8",
   );
   assert.match(rust, /#\[dump\(name = "l3-dump-v2"\)\]/u);
   for (const section of ["", ".regions", ".ops", ".edges", ".effects"]) {
     assert.ok(reader.includes(`"[l3-dump-v2${section}]"`));
   }
-  assert.ok(!rust.includes("s3-folio"));
-  assert.ok(!reader.includes("s3-folio"));
+  assert.ok(!rust.includes("s3-dump"));
+  assert.ok(!reader.includes("s3-dump"));
 });
 
 test("the canonical printer and parser preserve all sixteen old tags and append only child-value tag sixteen", () => {
-  const rust = fs.readFileSync(path.join(repoRoot, "davinci/vize_l3/src/op/kind.rs"), "utf8");
+  const rust = fs.readFileSync(path.join(repoRoot, "levels/vize_l3/src/op/kind.rs"), "utf8");
   const printed = [...rust.matchAll(/Self::([A-Za-z]+) => "(l3\.[^"]+)"/gu)].map((match) => [
     match[1],
     match[2],
@@ -68,7 +68,7 @@ test("the canonical printer and parser preserve all sixteen old tags and append 
 
 test("all active generated formal graph fixtures use the current protocol and known opcodes", () => {
   const fixtureRoot = path.join(repoRoot, "tests/fixtures/l3-reference");
-  const rust = fs.readFileSync(path.join(repoRoot, "davinci/vize_l3/src/op/kind.rs"), "utf8");
+  const rust = fs.readFileSync(path.join(repoRoot, "levels/vize_l3/src/op/kind.rs"), "utf8");
   const names = new Set(
     [...rust.matchAll(/Self::[A-Za-z]+ => "(l3\.[^"]+)"/gu)].map((match) => match[1]),
   );

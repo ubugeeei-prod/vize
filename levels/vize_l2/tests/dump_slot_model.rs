@@ -1,6 +1,6 @@
-//! Regression coverage for slot-owned `ui.model` folio bindings.
+//! Regression coverage for slot-owned `ui.model` dump bindings.
 //!
-//! The folio parser accepts the same attached-binding group for elements,
+//! The dump parser accepts the same attached-binding group for elements,
 //! components, and slot outlets. `ui.model` used the same admission path as
 //! leaf bindings but did not close back into `DumpSlot::bindings`, so malformed
 //! fuzz input could panic when indentation closed a slot-owned model frame.

@@ -8,7 +8,7 @@
     "no timestamps or process-local identifiers"
   ],
   "unproven": [
-    "Davinci or L2 projection parity",
+    "Levels or L2 projection parity",
     "full-corpus vize check diagnostic parity",
     "all tsgo Content Mapper editor features",
     "static slot-name navigation mappings outside Content Mapper",
@@ -36,7 +36,7 @@
   "fixtures": [
     {
       "id": "utf8-crlf-props",
-      "file": "tests/_fixtures/davinci-ts40-projection/utf8-crlf-props.vue",
+      "file": "tests/_fixtures/level-ts40-projection/utf8-crlf-props.vue",
       "coverage": ["utf8", "crlf", "props", "navigation-ranges"],
       "lineEnding": "crlf",
       "anchors": ["café", "title"],
@@ -45,7 +45,7 @@
     },
     {
       "id": "parse-recovery",
-      "file": "tests/_fixtures/davinci-ts40-projection/parse-recovery.vue",
+      "file": "tests/_fixtures/level-ts40-projection/parse-recovery.vue",
       "coverage": ["recovery"],
       "lineEnding": "lf",
       "anchors": ["broken"],
@@ -54,7 +54,7 @@
     },
     {
       "id": "dual-scripts-emits",
-      "file": "tests/_fixtures/davinci-ts40-projection/dual-scripts-emits.vue",
+      "file": "tests/_fixtures/level-ts40-projection/dual-scripts-emits.vue",
       "coverage": ["dual-script", "emits", "navigation-ranges"],
       "lineEnding": "lf",
       "anchors": ["label", "submit"],
@@ -63,7 +63,7 @@
     },
     {
       "id": "options-api-slots",
-      "file": "tests/_fixtures/davinci-ts40-projection/options-api-slots.vue",
+      "file": "tests/_fixtures/level-ts40-projection/options-api-slots.vue",
       "coverage": ["options-api", "slots", "props", "navigation-ranges"],
       "lineEnding": "lf",
       "anchors": ["message"],
@@ -72,7 +72,7 @@
     },
     {
       "id": "static-slot-name",
-      "file": "tests/_fixtures/davinci-ts40-projection/static-slot-name.vue",
+      "file": "tests/_fixtures/level-ts40-projection/static-slot-name.vue",
       "coverage": ["slots", "static-slot-name", "navigation-ranges"],
       "lineEnding": "lf",
       "anchors": ["item", "active", "label"],
@@ -82,7 +82,7 @@
     },
     {
       "id": "define-model",
-      "file": "tests/_fixtures/davinci-ts40-projection/define-model.vue",
+      "file": "tests/_fixtures/level-ts40-projection/define-model.vue",
       "coverage": ["define-model", "props", "emits", "navigation-ranges"],
       "lineEnding": "lf",
       "anchors": ["defineModel", "title", "modelValue"],
@@ -92,7 +92,7 @@
     },
     {
       "id": "generic-sfc",
-      "file": "tests/_fixtures/davinci-ts40-projection/generic-sfc.vue",
+      "file": "tests/_fixtures/level-ts40-projection/generic-sfc.vue",
       "coverage": ["generic-sfc", "props", "navigation-ranges"],
       "lineEnding": "lf",
       "anchors": ["item", "label"],
@@ -101,7 +101,7 @@
     },
     {
       "id": "jsx-script",
-      "file": "tests/_fixtures/davinci-ts40-projection/jsx-script.vue",
+      "file": "tests/_fixtures/level-ts40-projection/jsx-script.vue",
       "coverage": ["jsx", "navigation-ranges"],
       "lineEnding": "lf",
       "anchors": ["vnode", "ready"],
@@ -110,7 +110,7 @@
     },
     {
       "id": "tsx-script",
-      "file": "tests/_fixtures/davinci-ts40-projection/tsx-script.vue",
+      "file": "tests/_fixtures/level-ts40-projection/tsx-script.vue",
       "coverage": ["tsx", "props", "navigation-ranges"],
       "lineEnding": "lf",
       "anchors": ["count", "toFixed"],
@@ -119,7 +119,7 @@
     },
     {
       "id": "parent-local-import",
-      "file": "tests/_fixtures/davinci-ts40-projection/parent-local-import.vue",
+      "file": "tests/_fixtures/level-ts40-projection/parent-local-import.vue",
       "coverage": ["local-vue-import", "props", "navigation-ranges"],
       "lineEnding": "lf",
       "anchors": ["ChildLocal", "parentLabel"],
@@ -128,7 +128,7 @@
     },
     {
       "id": "child-local-import",
-      "file": "tests/_fixtures/davinci-ts40-projection/child-local-import.vue",
+      "file": "tests/_fixtures/level-ts40-projection/child-local-import.vue",
       "coverage": ["props", "navigation-ranges"],
       "lineEnding": "lf",
       "anchors": ["message"],
@@ -137,7 +137,7 @@
     },
     {
       "id": "vue2-native-event",
-      "file": "tests/_fixtures/davinci-ts40-projection/vue2-native-event.vue",
+      "file": "tests/_fixtures/level-ts40-projection/vue2-native-event.vue",
       "coverage": ["vue2", "emits", "navigation-ranges"],
       "lineEnding": "lf",
       "anchors": ["message", "input"],

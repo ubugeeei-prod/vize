@@ -10,8 +10,8 @@ import {
   summarizeKind,
   type InventoryRow,
   type StorageScope,
-} from "./davinci-storage-inventory.ts";
-import { hasStorage, scanStorage, storageKinds, type FileStorage } from "./davinci-storage-scan.ts";
+} from "./level-storage-inventory.ts";
+import { hasStorage, scanStorage, storageKinds, type FileStorage } from "./level-storage-scan.ts";
 
 import {
   movedProjectStorageIssues,
@@ -20,12 +20,12 @@ import {
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const libraryRoots = [
-  "davinci/vize_l0/src",
-  "davinci/vize_l1/src",
-  "davinci/vize_l2/src",
-  "davinci/vize_l3/src",
-  "davinci/vize_l1_to_l2/src",
-  "davinci/vize_l2_to_l3/src",
+  "levels/vize_l0/src",
+  "levels/vize_l1/src",
+  "levels/vize_l2/src",
+  "levels/vize_l3/src",
+  "levels/vize_l1_to_l2/src",
+  "levels/vize_l2_to_l3/src",
 ];
 const inventoryPath = path.join(repoRoot, "docs/davinci/plan/storage-inventory.tsv");
 // These existing std bridges were previously outside the stage gate in Carton.
@@ -45,12 +45,12 @@ function rustFiles(root: string): string[] {
 }
 
 function scopeFor(file: string): StorageScope {
-  if (file.startsWith("davinci/vize_l0/")) return "infra";
-  if (file.startsWith("davinci/vize_l1/")) return "l1";
-  if (file.startsWith("davinci/vize_l2/")) return "l2";
-  if (file.startsWith("davinci/vize_l3/")) return "l3";
-  if (file.startsWith("davinci/vize_l1_to_l2/")) return "l1_to_l2";
-  if (file.startsWith("davinci/vize_l2_to_l3/")) return "l2_to_l3";
+  if (file.startsWith("levels/vize_l0/")) return "infra";
+  if (file.startsWith("levels/vize_l1/")) return "l1";
+  if (file.startsWith("levels/vize_l2/")) return "l2";
+  if (file.startsWith("levels/vize_l3/")) return "l3";
+  if (file.startsWith("levels/vize_l1_to_l2/")) return "l1_to_l2";
+  if (file.startsWith("levels/vize_l2_to_l3/")) return "l2_to_l3";
   throw new Error(`unknown storage scope: ${file}`);
 }
 
@@ -113,7 +113,7 @@ test("stage storage has no opaque imports or unreviewed std paths", () => {
   for (const issue of foundationBridges.issues) {
     assert.match(
       issue,
-      /^davinci\/vize_l0\/src\/(?:allocator(?:\/tests)?|config\/[^:]+|pool(?:\/tests)?|profiler\/core|telegraph)\.rs: forbidden std storage (?:path|import): /u,
+      /^levels\/vize_l0\/src\/(?:allocator(?:\/tests)?|config\/[^:]+|pool(?:\/tests)?|profiler\/core|telegraph)\.rs: forbidden std storage (?:path|import): /u,
     );
   }
   const projectSources = Object.fromEntries(
@@ -144,11 +144,11 @@ test("all owned storage equals the reviewed per-file inventory", () => {
 
 test("production inventory excludes cfg(test) size evidence", () => {
   const byFile = new Map(expectedRows.map((row) => [row.file, row]));
-  assert.deepEqual(byFile.get("davinci/vize_l1_to_l2/src/emit/on.rs")?.storage.allocVec, {
+  assert.deepEqual(byFile.get("levels/vize_l1_to_l2/src/emit/on.rs")?.storage.allocVec, {
     directPaths: 0,
     boundUses: 0,
   });
-  assert.deepEqual(byFile.get("davinci/vize_l0/src/side_table.rs")?.storage.allocVec, {
+  assert.deepEqual(byFile.get("levels/vize_l0/src/side_table.rs")?.storage.allocVec, {
     directPaths: 1,
     boundUses: 2,
   });

@@ -63,7 +63,7 @@ export const mergeOnlyToolingTests = [
   "tests/tooling/lsp-concurrent-edit-deadlock.test.ts",
   "tests/tooling/lsp-corsa-crash-recovery.test.ts",
   "tests/tooling/lsp-css-module-contracts.test.ts",
-  "tests/tooling/lsp-davinci-ts40-projection-diagnostics.test.ts",
+  "tests/tooling/lsp-level-ts40-projection-diagnostics.test.ts",
   "tests/tooling/lsp-declaration-capability.test.ts",
   "tests/tooling/lsp-definition-navigation.test.ts",
   "tests/tooling/lsp-diagnostics-lifecycle.test.ts",
@@ -170,14 +170,14 @@ export const toolingTestScopes = [
   {
     input: "toolingRustCorpus",
     tests: [
-      "tests/tooling/davinci-fact-spec-corpus.test.ts",
-      "tests/tooling/davinci-complexity-corpus.test.ts",
-      "tests/tooling/davinci-metamorphic-corpus.test.ts",
+      "tests/tooling/level-fact-spec-corpus.test.ts",
+      "tests/tooling/level-complexity-corpus.test.ts",
+      "tests/tooling/level-metamorphic-corpus.test.ts",
     ],
   },
   {
     input: "toolingBenchCompare",
-    tests: ["tests/tooling/davinci-bench-compare.test.ts"],
+    tests: ["tests/tooling/level-bench-compare.test.ts"],
   },
   {
     input: "toolingReleaseContracts",
@@ -203,17 +203,17 @@ export const toolingTestScopes = [
   {
     input: "toolingPlans",
     tests: [
-      "tests/tooling/davinci-phase2-contract-status.test.ts",
-      "tests/tooling/davinci-phase3-contract-status.test.ts",
-      "tests/tooling/davinci-phase4-contract-status.test.ts",
-      "tests/tooling/davinci-phase5-contract-status.test.ts",
-      "tests/tooling/davinci-phase6-contract-status.test.ts",
-      "tests/tooling/davinci-storage-summary.test.ts",
+      "tests/tooling/level-phase2-contract-status.test.ts",
+      "tests/tooling/level-phase3-contract-status.test.ts",
+      "tests/tooling/level-phase4-contract-status.test.ts",
+      "tests/tooling/level-phase5-contract-status.test.ts",
+      "tests/tooling/level-phase6-contract-status.test.ts",
+      "tests/tooling/level-storage-summary.test.ts",
     ],
   },
   {
     input: "toolingLedgers",
-    tests: ["tests/tooling/davinci-phase2-ledger.test.ts"],
+    tests: ["tests/tooling/level-phase2-ledger.test.ts"],
   },
   {
     input: "toolingFixtureUnits",

@@ -1,6 +1,6 @@
 import { writeSync } from "node:fs";
 import assert from "node:assert/strict";
-import { loadRuntime } from "./davinci-mounted-trace.mjs";
+import { loadRuntime } from "./level-mounted-trace.mjs";
 import { forbidMountedRuntimeAddons } from "./mounted-runtime-native-boundary.ts";
 
 // Both real bundler producers must exit naturally before this pure-JS

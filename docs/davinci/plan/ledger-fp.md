@@ -10,7 +10,7 @@
 
 ## Suppression-telemetry pilot (P0-13, measured 2026-08-14)
 
-`tools/commands/davinci/suppression-telemetry.ts` lints byte-length-preserving
+`tools/commands/levels/suppression-telemetry.ts` lints byte-length-preserving
 _defused_ copies (vize honors `eslint-disable` pragmas natively — verified
 live — so linting the raw sources would hide exactly the intersection under
 measurement) and filters candidates to rule names actually mapped to vize
@@ -33,11 +33,11 @@ vize analog; per the P0-13 brief it is reported as unmapped, not an error
 and not a candidate.
 
 The candidate-detection mechanism itself is proven in CI on the committed
-miniature set (`tests/_fixtures/davinci-fpfn`), which plants one mapped
+miniature set (`tests/_fixtures/level-fpfn`), which plants one mapped
 suppression (`vue/no-multi-spaces`) over a firing line and one unmapped
 (`no-console`): `scope-proof: files-scanned=4 suppression-comments=2
 named=2 bare=0 rules-mapped=123 mapped-seen=1 unmapped-seen=1
-fp-candidates=1` (`tests/tooling/davinci-fpfn-pilots.test.ts`).
+fp-candidates=1` (`tests/tooling/level-fpfn-pilots.test.ts`).
 
 ## FP-1 — `type/require-typed-emits` spans point at the wrong file location
 

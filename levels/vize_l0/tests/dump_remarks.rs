@@ -4,7 +4,7 @@
 
 use std::path::Path;
 
-use davinci_test_support::schema as schema_check;
+use level_test_support::schema as schema_check;
 use vize_l0::dump::remarks::RemarkLog;
 use vize_l0::dump::{Dump, Mode as DumpMode};
 

@@ -102,7 +102,7 @@ export function verifyStandalonePluginSdk(
     ]) {
       assert.ok(fs.existsSync(path.join(installed, entry)), `tarball lacks ${entry}`);
     }
-    const fixtures = fileURLToPath(new URL("../fixtures/davinci-plugin-sdk", import.meta.url));
+    const fixtures = fileURLToPath(new URL("../fixtures/level-plugin-sdk", import.meta.url));
     fs.copyFileSync(path.join(fixtures, "packed-runtime.mjs"), path.join(directory, "runtime.mjs"));
     const runtime = run(process.execPath, ["runtime.mjs"], directory, env).trim();
     const require = createRequire(path.join(root, "tests/package.json"));

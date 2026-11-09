@@ -129,7 +129,7 @@ pub fn finalize_module_output(
 
 /// [`finalize_module_output`] that also carries `map` (the module's source
 /// map, as `SfcCompileResult::map` holds it) through a TypeScript strip, so the
-/// returned map describes the returned bytes (Davinci P3-9).
+/// returned map describes the returned bytes (Levels P3-9).
 pub fn finalize_module_output_with_map(
     code: vize_carton::String,
     preserve_typescript: bool,

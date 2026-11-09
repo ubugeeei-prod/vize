@@ -40,7 +40,7 @@ const tail = check.jobs["rust-native-differential"];
 const aggregate = check.jobs["clippy-and-test"];
 const producerNames = [
   "rust-clippy-portability",
-  "rust-davinci-allocations",
+  "rust-level-allocations",
   "rust-native-differential",
 ];
 const report = check.jobs["full-rust-report"];

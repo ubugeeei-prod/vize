@@ -26,16 +26,16 @@ id=1 kind=l3.set-text region=1 effect=0 span=8:17
 id=0 owner=1 region=1 span=8:17
 
 `;
-const PARTITION = `[s3-partition-folio]
+const PARTITION = `[s3-partition-dump]
 
-[s3-partition-folio.ops]
+[s3-partition-dump.ops]
 op=0 kind=static span=3:23
 op=1 kind=dynamic span=8:17
 
 `;
-const VALUES = `[s3-values-folio]
+const VALUES = `[s3-values-dump]
 
-[s3-values-folio.operands]
+[s3-values-dump.operands]
 operand=[0,"tag",null,null,null,"literal","div","",3,23]
 operand=[0,"namespace",null,null,null,"literal","html","",3,23]
 operand=[1,"text",null,null,null,"js","msg","",11,14]
@@ -84,8 +84,8 @@ describe("buildLadder", () => {
         name: "Semantic",
         facts: ["2 ops", "1 pass"],
         pages: [
-          { key: "l2/lower", kind: "disegno", label: "Lowered" },
-          { key: "l2/hoist-static", kind: "disegno", label: "hoist-static" },
+          { key: "l2/lower", kind: "l2", label: "Lowered" },
+          { key: "l2/hoist-static", kind: "l2", label: "hoist-static" },
         ],
       },
       {
@@ -94,7 +94,7 @@ describe("buildLadder", () => {
         name: "Reactivity",
         facts: ["2 ops", "1 dynamic"],
         pages: [
-          { key: "l3/lower", kind: "impeto", label: "Graph" },
+          { key: "l3/lower", kind: "l3", label: "Graph" },
           { key: "l3-partition/lower", kind: "partition", label: "Partition" },
           { key: "l3-values/lower", kind: "values", label: "Values" },
         ],
@@ -104,7 +104,7 @@ describe("buildLadder", () => {
     expect(ladder.unplaced).toEqual([]);
   });
 
-  it("lists steps in run order and marks which passes changed the folio", () => {
+  it("lists steps in run order and marks which passes changed the dump", () => {
     const changed = { path: "Component.vue", stage: "s2", pass: "legacy", text: `${L2}x` };
     const timings = new Map([
       ["l2/lower", 5000],
@@ -154,8 +154,8 @@ describe("buildLadder", () => {
     const ladder = buildLadder(feed([provenance]));
     const s2 = ladder.rungs[1];
     expect(s2.pages.map(({ key, kind, label }) => [key, kind, label])).toEqual([
-      ["l2/lower", "disegno", "Lowered"],
-      ["l2/hoist-static", "disegno", "hoist-static"],
+      ["l2/lower", "l2", "Lowered"],
+      ["l2/hoist-static", "l2", "hoist-static"],
       ["l2-provenance/transform", "provenance", "Provenance"],
     ]);
     expect(s2.facts).toEqual(["2 ops", "1 pass"]);
@@ -167,7 +167,7 @@ describe("buildLadder", () => {
       path: "Component.vue",
       stage: "s2-plan",
       pass: "transform",
-      text: "[fusion-plan-folio]\nstage=s2\nwalks=1\n\n[fusion-plan-folio.passes]\nwalk=0 pass=hoist-static kind=optional fusability=fusable\n\n",
+      text: "[fusion-plan-dump]\nstage=s2\nwalks=1\n\n[fusion-plan-dump.passes]\nwalk=0 pass=hoist-static kind=optional fusability=fusable\n\n",
     };
     const pages = feed().pages;
     const ladder = buildLadder(
@@ -178,9 +178,9 @@ describe("buildLadder", () => {
     );
     const s2 = ladder.rungs[1];
     expect(s2.pages.map(({ key, kind, label }) => [key, kind, label])).toEqual([
-      ["l2/lower", "disegno", "Lowered"],
+      ["l2/lower", "l2", "Lowered"],
       ["l2-plan/transform", "plan", "Plan"],
-      ["l2/hoist-static", "disegno", "hoist-static"],
+      ["l2/hoist-static", "l2", "hoist-static"],
     ]);
     // The rail keeps two facts; the walk count is the timeline summary's.
     expect(s2.facts).toEqual(["2 ops", "1 pass"]);
