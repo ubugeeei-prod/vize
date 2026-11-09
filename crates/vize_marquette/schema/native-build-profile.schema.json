@@ -1,0 +1,86 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://vize.dev/schemas/native-build-profile-v1.json",
+  "title": "Vize native build profile",
+  "description": "A native build profile consumed unchanged by local and hosted executors.",
+  "$ref": "#/$defs/profile",
+  "$defs": {
+    "identifier": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9._-]*$"
+    },
+    "runtimeVersion": {
+      "type": "string",
+      "pattern": "^[0-9A-Za-z][0-9A-Za-z._+-]*$"
+    },
+    "target": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["platform", "destination"],
+      "properties": {
+        "platform": {
+          "enum": ["android", "ios"]
+        },
+        "destination": {
+          "enum": ["simulator", "device", "store"]
+        },
+        "signing": {
+          "enum": ["none", "automatic", "manual"],
+          "default": "none"
+        }
+      }
+    },
+    "updates": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["channel", "runtimeVersion"],
+      "properties": {
+        "channel": {
+          "$ref": "#/$defs/identifier"
+        },
+        "runtimeVersion": {
+          "$ref": "#/$defs/runtimeVersion"
+        }
+      }
+    },
+    "profile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["format", "formatVersion", "profile", "configuration", "environment", "targets"],
+      "properties": {
+        "format": {
+          "const": "vize.native-build-profile"
+        },
+        "formatVersion": {
+          "const": 1
+        },
+        "profile": {
+          "$ref": "#/$defs/identifier"
+        },
+        "configuration": {
+          "enum": ["development", "preview", "production"]
+        },
+        "environment": {
+          "$ref": "#/$defs/identifier"
+        },
+        "targets": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/target"
+          }
+        },
+        "capabilities": {
+          "type": "array",
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/identifier"
+          }
+        },
+        "updates": {
+          "$ref": "#/$defs/updates"
+        }
+      }
+    }
+  }
+}
