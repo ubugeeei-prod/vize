@@ -1,4 +1,4 @@
-use super::{bound, load, Checked, Value};
+use super::{Checked, Value, bound, load};
 use serde_json::json;
 
 pub(super) const UPDATE: &str =
