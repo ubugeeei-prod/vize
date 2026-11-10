@@ -208,3 +208,31 @@ fn relaxed_fallthrough_root_keeps_declared_props_with_the_literal() {
         "the declared key, not its `Partial`, decides the owner"
     );
 }
+
+#[test]
+fn component_prop_assignments_are_ignored_only_when_the_literal_owns_them() {
+    let source = "<script setup lang=\"ts\">import Child from './Child.vue'; const value = 'wrong'</script>\n<template><Child :count=\"value\" /></template>\n";
+    let result = super::transform(source);
+    let directives = result
+        .diagnostic_directives
+        .expect("component prop echo directive");
+    let check = result
+        .text
+        .find("const __vize_prop_check_0_count")
+        .expect("per-prop check")
+        + "const ".len();
+    let tail = result
+        .text
+        .find(": $AttrValue<__Child_Props_0, \"count\", typeof Child, __Child_0_prop_count> = value satisfies __Child_0_prop_count;")
+        .expect("owned per-prop check");
+    let literal = result
+        .text
+        .find("\"count\": value")
+        .expect("whole-props entry");
+
+    // Its name keeps only what the literal leaves unchecked (#12458).
+    assert!(!super::covered(&directives.directives, check));
+    assert!(super::covered(&directives.directives, tail));
+    assert!(!super::covered(&directives.directives, literal));
+    assert!(directives.unused_expect_directive_diagnostics.is_empty());
+}
