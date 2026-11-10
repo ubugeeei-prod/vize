@@ -30,7 +30,7 @@ export const TOOLING_TIMINGS_PATH = new URL(
 export const TOOLING_TIMINGS_LOG_MARKER = "vize-tooling-test-timings";
 
 type ToolingTier = "pr" | "merge";
-type ToolingShardPlan = {
+export type ToolingShardPlan = {
   tier: ToolingTier;
   tests: readonly string[];
   leadSteps?: readonly string[];

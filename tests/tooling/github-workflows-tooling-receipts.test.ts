@@ -163,7 +163,7 @@ test("affected tooling builds the native addon only for a shard that reads it", 
     readRepoFile(".github", "actions", "test-affected-tooling", "action.yml"),
   ) as { runs: { steps: Step[] } };
   const plan = action.runs.steps.find((step) => step.id === "plan");
-  assert.match(plan?.run ?? "", /tooling-shard-native-build\.mjs/);
+  assert.match(plan?.run ?? "", /tooling-shard-native-build\.ts/);
   assert.match(plan?.run ?? "", /native-build=\$native_build/);
   assert.equal(plan?.env?.TOOLING_SHARD, "${{ inputs.shard }}/${{ inputs.total }}");
   assert.doesNotMatch(plan?.run ?? "", /\$\{\{\s*inputs\./);

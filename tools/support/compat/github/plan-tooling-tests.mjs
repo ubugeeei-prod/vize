@@ -236,7 +236,10 @@ export const dedicatedPrToolingTests = [
   "tests/tooling/content-mapper-instance-globals-10617.test.ts",
 ];
 const localNativeRuntimeImport =
-  /\b(?:from\s*|import\s*\(\s*|require\s*\(\s*)["'][^"']*npm\/native\/index\.js["']/u;
+  /(?:\b(?:from\s*|import\s*\(\s*|require\s*\(\s*)["'][^"']*npm\/native\/index\.js["']|\.artifacts\/native\/)/u;
+// This contract calls the build coordinator with a fully controlled runner;
+// it validates commands without consuming the real workspace addon/artifacts.
+const nativeBuildExemptTests = new Set(["tests/tooling/native-smoke-workflow.test.ts"]);
 const topLevelOnly = (reference) => !reference.replace(/\/[*/]*$/, "").includes("/");
 
 export function planToolingTests(
@@ -318,6 +321,7 @@ export function planToolingTests(
   const nativeBuildTests =
     tier === "pr"
       ? tests.filter((file) => {
+          if (nativeBuildExemptTests.has(file)) return false;
           const imports = closures.get(file);
           return imports?.files.some((input) =>
             localNativeRuntimeImport.test(readFileSync(join(cwd, input), "utf8")),

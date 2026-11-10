@@ -189,6 +189,10 @@ void test("pure typecheck and LSP helper contracts remain in T0; explicit runtim
   const nativePlan = planToolingTests([nativeRuntime]);
   assert.ok(nativePlan.tests.includes(nativeRuntime));
   assert.ok(nativePlan.nativeBuildTests.includes(nativeRuntime));
+  const nativeArtifactConsumer = "tests/tooling/art-lint-public-boundaries.test.mjs";
+  const nativeArtifactPlan = planToolingTests([nativeArtifactConsumer]);
+  assert.ok(nativeArtifactPlan.tests.includes(nativeArtifactConsumer));
+  assert.ok(nativeArtifactPlan.nativeBuildTests.includes(nativeArtifactConsumer));
   const workflowOnly = "tests/tooling/native-smoke-workflow.test.ts";
   const workflowPlan = planToolingTests([workflowOnly]);
   assert.ok(workflowPlan.tests.includes(workflowOnly));
