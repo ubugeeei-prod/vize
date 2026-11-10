@@ -69,6 +69,7 @@ fn migrated_sfc_rules_preserve_diagnostics_and_fixes() {
         r#"<p>日本語😀</p><MyComponent :title.sync.camel="title" @click.native.stop="handler"/>"#,
         r#"<p>日本語😀</p><input @keyup.13.27="submit"/><input @keyup.0.13="submit"/><input @keyup.13suffix="submit"/>"#,
         r#"<Foo><template slot="header" slot-scope="props" scope="legacy">x</template><div :slot="name"/></Foo>"#,
+        r#"<MyComponent inline-template/><router-link tag="button" :tag="el"/><div is="MyComponent" :is="something"/>"#,
         "<!-- eslint-disable-next-line vue/prefer-props-shorthand -->\n<MyComponent :foo=\"foo\"/>",
         "<!-- eslint-disable-next-line vue/no-useless-v-bind -->\n<div :title=\"'static'\"/>",
         "<!-- eslint-disable-next-line vue/no-multiple-objects-in-class -->\n<div :class=\"[{ active }, { hidden }]\"/>",
@@ -80,6 +81,9 @@ fn migrated_sfc_rules_preserve_diagnostics_and_fixes() {
         "<!-- eslint-disable-next-line vue/no-deprecated-slot-attribute -->\n<template slot=\"header\"/>",
         "<!-- eslint-disable-next-line vue/no-deprecated-slot-scope-attribute -->\n<template slot-scope=\"props\"/>",
         "<!-- eslint-disable-next-line vue/no-deprecated-scope-attribute -->\n<template scope=\"props\"/>",
+        "<!-- eslint-disable-next-line vue/no-deprecated-inline-template -->\n<MyComponent inline-template/>",
+        "<!-- eslint-disable-next-line vue/no-deprecated-router-link-tag-prop -->\n<router-link tag=\"button\"/>",
+        "<!-- eslint-disable-next-line vue/no-deprecated-html-element-is -->\n<div is=\"MyComponent\"/>",
         r#"<div v-pre><textarea>{{ raw }}</textarea></div>"#,
     ] {
         compare_template(source);
