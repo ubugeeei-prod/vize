@@ -48,6 +48,8 @@ jobs:
         with:
           key: ecosystem-producer
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - name: Enable the pinned package manager shim
+        run: corepack enable
       - name: Install the frozen provider closure
         run: vp install --frozen-lockfile --prefer-offline
       - name: Build the exact source CLI
