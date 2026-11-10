@@ -204,6 +204,7 @@ impl<'a> Lowering<'a> {
                                 index: None,
                             },
                             region: self.settle(region),
+                            host: None,
                             span: Span::new(span.start, close.end),
                         },
                         &self.allocator,

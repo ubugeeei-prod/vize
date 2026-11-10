@@ -172,6 +172,7 @@ impl<'a> Lowering<'a> {
                     index: None,
                 },
                 region,
+                host: None,
                 span,
             },
             &self.allocator,
