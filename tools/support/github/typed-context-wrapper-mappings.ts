@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
+import { CHECK_MODE_PRODUCER_SUCCESSORS } from "../compat/content-mapper/check-mode-successor.ts";
 
 export type MapperPacket = {
   text: string;
@@ -26,17 +27,7 @@ export function assertTypedContextWrapperMappings(
     "unqualified content-mapper producer",
   );
   let checkModePredecessor = producerText;
-  for (const [successor, predecessor] of [
-    [
-      "            template_use_navigation: !transform_options.diagnostics_only(),\n",
-      "            template_use_navigation: true,\n",
-    ],
-    [
-      "            preserve_event_navigation: !transform_options.diagnostics_only(),\n",
-      "            preserve_event_navigation: true,\n",
-    ],
-    ["            omit_navigation_references: transform_options.diagnostics_only(),\n", ""],
-  ] as const) {
+  for (const [successor, predecessor] of CHECK_MODE_PRODUCER_SUCCESSORS) {
     assert.equal(
       checkModePredecessor.split(successor).length,
       2,
@@ -126,6 +117,9 @@ export function assertTypedContextWrapperMappings(
   // The preceding whole-text transition has already relocated every old row.
   // A helper prefix change therefore moves this anchor and all ten old rows
   // together; no fixed generated-coordinate or prefix-length adjustment is used.
+  // Dedenting removes only wrapper bytes that precede the setup source, so its
+  // earlier rows move by the removed indentation while the setup-owned -59 row
+  // and the authored row at 0 retain their relative positions.
   const rows = (
     dedentedSetupAt >= 0
       ? [

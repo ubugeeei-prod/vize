@@ -13,6 +13,16 @@ const SCRIPT: &str = "import Comp from './Comp.vue'; const value = 1; const noop
 type Output = (String, Vec<VizeMapping>, Vec<VizeSemanticLink>);
 
 fn render(script: &str, template: &str, packets: bool, navigation: bool) -> Output {
+    render_projection(script, template, packets, navigation, false)
+}
+
+fn render_projection(
+    script: &str,
+    template: &str,
+    packets: bool,
+    navigation: bool,
+    omit_navigation_references: bool,
+) -> Output {
     let allocator = vize_carton::Allocator::new();
     let (root, errors) = vize_armature::parse(&allocator, template);
     assert!(errors.is_empty(), "{errors:?}");
@@ -60,7 +70,7 @@ fn render(script: &str, template: &str, packets: bool, navigation: bool) -> Outp
                 legacy_vue2: false,
                 options_api: false,
                 preserve_event_navigation: navigation,
-                omit_navigation_references: false,
+                omit_navigation_references,
                 has_default_alias: false,
                 script_content: Some(script),
                 experimental_strict_slot_children: false,
@@ -72,6 +82,26 @@ fn render(script: &str, template: &str, packets: bool, navigation: bool) -> Outp
     );
     result.1.extend(diagnostics);
     (result.0.into_compact(), result.1, result.2)
+}
+
+#[test]
+fn diagnostics_only_navigation_keeps_slot_and_event_name_checks() {
+    let template = "<!-- @vue-expect-error --><Comp id=\"bad\" @missing=\"noop\"><template #missing>{{ value.bad }}</template></Comp>";
+    for packets in [false, true] {
+        let editor = render_projection(SCRIPT, template, packets, true, false);
+        let check = render_projection(SCRIPT, template, packets, true, true);
+        for navigation in ["__vize_props_nav_0", "__vize_events_nav_0"] {
+            assert!(editor.0.contains(navigation), "editor retains {navigation}");
+            assert!(!check.0.contains(navigation), "check omits {navigation}");
+        }
+        for diagnostic in [
+            "__vize_event_keys_0",
+            "__vize_slots_nav_0",
+            "__vize_slot_nav_0_0",
+        ] {
+            assert!(check.0.contains(diagnostic), "check retains {diagnostic}");
+        }
+    }
 }
 
 // Preserve every full mapped payload and semantic edge under the relocation;

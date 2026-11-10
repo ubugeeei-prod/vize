@@ -6,6 +6,31 @@ use super::{Command, Output, Path, PathBuf, TSGO_ENV};
 
 const MODE_ENV: &str = "VIZE_CONTENT_MAPPER_MODE";
 
+/// A required CI cohort fails closed; an unconfigured local run remains optional.
+fn projection_host() -> Option<PathBuf> {
+    select_projection_host(
+        std::env::var_os(TSGO_ENV).map(PathBuf::from),
+        std::env::var_os("VIZE_TEST_REQUIRE_TSGO").is_some(),
+    )
+}
+
+fn select_projection_host(host: Option<PathBuf>, required: bool) -> Option<PathBuf> {
+    let Some(host) = host else {
+        assert!(
+            !required,
+            "unexecuted projection-mode cohort: VIZE_TEST_REQUIRE_TSGO is set and {TSGO_ENV} is absent"
+        );
+        eprintln!("skipping Content Mapper projection modes: {TSGO_ENV} is not set");
+        return None;
+    };
+    assert!(
+        host.is_file(),
+        "selected projection-mode Content Mapper host is not a file: {}",
+        host.display()
+    );
+    Some(host)
+}
+
 fn check(tsgo: &Path, project: &Path, mode: Option<&str>) -> Output {
     let mut command = Command::new(tsgo);
     command.current_dir(project).args([
@@ -25,8 +50,7 @@ fn check(tsgo: &Path, project: &Path, mode: Option<&str>) -> Output {
 
 #[test]
 fn check_projection_reports_the_editor_diagnostics() {
-    let Some(tsgo) = std::env::var_os(TSGO_ENV).map(PathBuf::from) else {
-        eprintln!("skipping Content Mapper projection modes: {TSGO_ENV} is not set");
+    let Some(tsgo) = projection_host() else {
         return;
     };
     let cases_root = workspace_root().join("target/vize-tests/tests");
@@ -68,4 +92,22 @@ fn check_projection_reports_the_editor_diagnostics() {
             assert_eq!(check.status.code(), editor.status.code(), "{fixture}");
         }
     }
+}
+
+#[test]
+fn optional_projection_host_without_a_provider_remains_unexecuted() {
+    assert_eq!(select_projection_host(None, false), None);
+}
+
+#[test]
+#[should_panic(expected = "unexecuted projection-mode cohort: VIZE_TEST_REQUIRE_TSGO is set")]
+fn required_projection_host_without_a_provider_fails_closed() {
+    let _ = select_projection_host(None, true);
+}
+
+#[test]
+#[should_panic(expected = "selected projection-mode Content Mapper host is not a file")]
+fn missing_projection_host_fails_before_the_parity_run() {
+    let root = tempfile::tempdir().unwrap();
+    let _ = select_projection_host(Some(root.path().join("missing-tsgo")), true);
 }

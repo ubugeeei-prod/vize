@@ -105,8 +105,9 @@ jobs:
             node tools/support/release/type-admission-mapper-host.ts "$provider" "$proof"
           runtime="$provider/node_modules/@typescript/typescript-linux-x64/lib/tsc"
           test -x "$runtime"
-          # Memo and adjacent-attribute cases use this qualified published beta.
+          # Projection parity, memo and adjacent-attribute cases use this qualified published beta.
           # Other conformance roles keep their own checker and companion closure.
+          printf 'VIZE_TEST_CONTENT_MAPPER_TSGO=%s\n' "$runtime" >> "$GITHUB_ENV"
           printf 'VIZE_TEST_MEMO_CONTENT_MAPPER_TSGO=%s\n' "$runtime" >> "$GITHUB_ENV"
           printf 'VIZE_TEST_RECOVERED_ATTRIBUTE_CONTENT_MAPPER_TSGO=%s\n' "$runtime" >> "$GITHUB_ENV"
       - name: Install Pkl CLI

@@ -1,19 +1,7 @@
 /** The #11675 producer adds only diagnostic-owned delimiter atoms. */
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
-
-/** Each line the check-mode producer changed, beside its predecessor. */
-const CHECK_MODE_SUCCESSOR = [
-  [
-    "            template_use_navigation: !transform_options.diagnostics_only(),\n",
-    "            template_use_navigation: true,\n",
-  ],
-  [
-    "            preserve_event_navigation: !transform_options.diagnostics_only(),\n",
-    "            preserve_event_navigation: true,\n",
-  ],
-  ["            omit_navigation_references: transform_options.diagnostics_only(),\n", ""],
-] as const;
+import { CHECK_MODE_PRODUCER_SUCCESSORS } from "./check-mode-successor.ts";
 
 export function assertWrapperMappingProducer(producer: Uint8Array): void {
   const digest = (bytes: string | Uint8Array) => createHash("sha256").update(bytes).digest("hex");
@@ -23,7 +11,7 @@ export function assertWrapperMappingProducer(producer: Uint8Array): void {
     "unqualified #11675 wrapper mapping producer",
   );
   let historical = Buffer.from(producer).toString("utf8");
-  for (const [successor, predecessor] of CHECK_MODE_SUCCESSOR) {
+  for (const [successor, predecessor] of CHECK_MODE_PRODUCER_SUCCESSORS) {
     assert.equal(historical.split(successor).length, 2);
     historical = historical.replace(successor, predecessor);
   }

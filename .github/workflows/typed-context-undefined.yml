@@ -16,6 +16,7 @@ on:
       - tests/_fixtures/differential/typechecker/template-context-undefined-10667/**
       - tools/support/github/typed-context-undefined-replay.mjs
       - tools/support/github/typed-context-wrapper-mappings.ts
+      - tools/support/compat/content-mapper/check-mode-successor.ts
       - tests/tooling/typed-context-wrapper-mappings.test.ts
   workflow_dispatch:
     inputs:
