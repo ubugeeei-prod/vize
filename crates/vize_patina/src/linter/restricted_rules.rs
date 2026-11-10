@@ -10,8 +10,8 @@ use super::config::Linter;
 use crate::preset::LintPreset;
 use crate::rules::opinionated::vue::{
     ComponentCasing, ComponentNameInTemplateCasing, ComponentNameInTemplateCasingNuxt,
-    HtmlSelfClosing, HtmlSelfClosingNuxt, HtmlSelfClosingOptions, SlotNameCasing,
-    VOnEventHyphenation, VOnEventHyphenationStyle,
+    HtmlButtonHasType, HtmlButtonHasTypeOptions, HtmlSelfClosing, HtmlSelfClosingNuxt,
+    HtmlSelfClosingOptions, SlotNameCasing, VOnEventHyphenation, VOnEventHyphenationStyle,
 };
 use crate::rules::script::{CustomEventNameCasing, EventNameCasing};
 use crate::rules::script::{DefineMacrosOrder, NoRestrictedMembers, RestrictedGlobals};
@@ -273,6 +273,15 @@ impl Linter {
     pub fn with_no_mutating_props_options(mut self, options: NoMutatingPropsOptions) -> Self {
         self.registry
             .replace(Box::new(NoMutatingProps::new(options)));
+        self
+    }
+
+    /// Configure accepted values for `vue/html-button-has-type` without enabling the rule.
+    pub fn with_html_button_has_type_options(mut self, options: HtmlButtonHasTypeOptions) -> Self {
+        if self.registry.has_rule("vue/html-button-has-type") {
+            self.registry
+                .replace(Box::new(HtmlButtonHasType::new(options)));
+        }
         self
     }
 

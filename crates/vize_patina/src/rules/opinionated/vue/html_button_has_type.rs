@@ -32,7 +32,7 @@
 
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
-use crate::markup::{MarkupContext, MarkupElement, MarkupRule, MarkupTraversal};
+use crate::markup::{MarkupBindingKind, MarkupContext, MarkupElement, MarkupRule, MarkupTraversal};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_relief::{ElementNode, ExpressionNode, PropNode};
 
@@ -44,16 +44,54 @@ static META: RuleMeta = RuleMeta {
     default_severity: Severity::Warning,
 };
 
-/// The set of valid `<button>` type values.
-const VALID_TYPES: [&str; 3] = ["button", "submit", "reset"];
+/// Button type values accepted by `vue/html-button-has-type`.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct HtmlButtonHasTypeOptions {
+    pub button: bool,
+    pub submit: bool,
+    pub reset: bool,
+}
 
-fn is_valid_type(value: &str) -> bool {
-    VALID_TYPES.contains(&value)
+impl Default for HtmlButtonHasTypeOptions {
+    fn default() -> Self {
+        Self {
+            button: true,
+            submit: true,
+            reset: true,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum TypePolicy {
+    Allowed,
+    Empty,
+    Invalid,
+    Forbidden,
 }
 
 /// Require an explicit valid type on button elements
 #[derive(Default)]
-pub struct HtmlButtonHasType;
+pub struct HtmlButtonHasType {
+    options: HtmlButtonHasTypeOptions,
+}
+
+impl HtmlButtonHasType {
+    pub fn new(options: HtmlButtonHasTypeOptions) -> Self {
+        Self { options }
+    }
+
+    fn classify(&self, value: &str) -> TypePolicy {
+        match value {
+            "" => TypePolicy::Empty,
+            "button" if self.options.button => TypePolicy::Allowed,
+            "submit" if self.options.submit => TypePolicy::Allowed,
+            "reset" if self.options.reset => TypePolicy::Allowed,
+            "button" | "submit" | "reset" => TypePolicy::Forbidden,
+            _ => TypePolicy::Invalid,
+        }
+    }
+}
 
 impl MarkupRule for HtmlButtonHasType {
     fn name(&self) -> &'static str {
@@ -69,8 +107,15 @@ impl MarkupRule for HtmlButtonHasType {
             return;
         }
 
-        // A bound `:type` / `type={…}` cannot be validated statically; skip it.
-        if element.has_bound_attribute("type") {
+        // A populated bound `:type` / `type={…}` cannot be validated statically.
+        // eslint-plugin-vue still reports an authored Vue binding with no expression.
+        if let Some(binding) = element.binding(MarkupBindingKind::Bind, "type") {
+            if ctx.is_jsx() || binding.expression().is_some() {
+                return;
+            }
+            let message = ctx.lint().t("vue/html-button-has-type.empty");
+            let help = ctx.lint().t("vue/html-button-has-type.help");
+            ctx.lint().warn_at_with_help(message, element.range(), help);
             return;
         }
 
@@ -78,13 +123,15 @@ impl MarkupRule for HtmlButtonHasType {
         match element.static_attribute("type") {
             Some(attr) => {
                 let value = attr.value().unwrap_or("");
-                if !is_valid_type(value) {
-                    let message = ctx
-                        .lint()
-                        .t_fmt("vue/html-button-has-type.invalid", &[("type", value)]);
-                    let help = ctx.lint().t("vue/html-button-has-type.help");
-                    ctx.lint().warn_at_with_help(message, range, help);
-                }
+                let message_key = match self.classify(value) {
+                    TypePolicy::Allowed => return,
+                    TypePolicy::Empty => "vue/html-button-has-type.empty",
+                    TypePolicy::Invalid => "vue/html-button-has-type.invalid",
+                    TypePolicy::Forbidden => "vue/html-button-has-type.forbidden",
+                };
+                let message = ctx.lint().t_fmt(message_key, &[("type", value)]);
+                let help = ctx.lint().t("vue/html-button-has-type.help");
+                ctx.lint().warn_at_with_help(message, range, help);
             }
             None => {
                 let message = ctx.lint().t("vue/html-button-has-type.missing");
@@ -109,21 +156,33 @@ impl Rule for HtmlButtonHasType {
             return;
         }
 
-        // A bound `:type` cannot be validated statically; skip it.
-        if has_bound_type(element) {
+        // A populated bound `:type` cannot be validated statically; skip it.
+        if let Some(has_expression) = bound_type_has_expression(element) {
+            if has_expression {
+                return;
+            }
+            ctx.warn_with_help(
+                ctx.t("vue/html-button-has-type.empty"),
+                &element.loc,
+                ctx.t("vue/html-button-has-type.help"),
+            );
             return;
         }
 
         match static_type_value(element) {
             Some(value) => {
-                if !is_valid_type(value) {
-                    let message = ctx.t_fmt("vue/html-button-has-type.invalid", &[("type", value)]);
-                    ctx.warn_with_help(
-                        message,
-                        &element.loc,
-                        ctx.t("vue/html-button-has-type.help"),
-                    );
-                }
+                let message_key = match self.classify(value) {
+                    TypePolicy::Allowed => return,
+                    TypePolicy::Empty => "vue/html-button-has-type.empty",
+                    TypePolicy::Invalid => "vue/html-button-has-type.invalid",
+                    TypePolicy::Forbidden => "vue/html-button-has-type.forbidden",
+                };
+                let message = ctx.t_fmt(message_key, &[("type", value)]);
+                ctx.warn_with_help(
+                    message,
+                    &element.loc,
+                    ctx.t("vue/html-button-has-type.help"),
+                );
             }
             None => {
                 ctx.warn_with_help(
@@ -146,27 +205,36 @@ fn static_type_value<'a>(element: &'a ElementNode) -> Option<&'a str> {
     })
 }
 
-/// Whether the element has a `v-bind:type` / `:type` directive.
-fn has_bound_type(element: &ElementNode) -> bool {
-    element.props.iter().any(|prop| match prop {
-        PropNode::Directive(dir) => {
-            dir.name == "bind"
-                && matches!(&dir.arg, Some(ExpressionNode::Simple(s)) if s.content == "type")
-        }
-        _ => false,
+/// Whether a `v-bind:type` / `:type` directive has an authored expression.
+fn bound_type_has_expression(element: &ElementNode) -> Option<bool> {
+    element.props.iter().find_map(|prop| match prop {
+        PropNode::Directive(dir) => (dir.name == "bind"
+            && matches!(&dir.arg, Some(ExpressionNode::Simple(s)) if s.content == "type"))
+        .then(|| match &dir.exp {
+            Some(ExpressionNode::Simple(expression)) => !expression.content.trim().is_empty(),
+            Some(_) => true,
+            None => false,
+        }),
+        _ => None,
     })
 }
 
 #[cfg(test)]
 mod tests {
-    use super::HtmlButtonHasType;
+    use super::{HtmlButtonHasType, HtmlButtonHasTypeOptions};
     use crate::linter::Linter;
     use crate::rule::RuleRegistry;
     use vize_atelier_jsx::JsxLang;
 
     fn create_linter() -> Linter {
         let mut registry = RuleRegistry::new();
-        registry.register(Box::new(HtmlButtonHasType));
+        registry.register(Box::new(HtmlButtonHasType::default()));
+        Linter::with_registry(registry)
+    }
+
+    fn create_configured_linter(options: HtmlButtonHasTypeOptions) -> Linter {
+        let mut registry = RuleRegistry::new();
+        registry.register(Box::new(HtmlButtonHasType::new(options)));
         Linter::with_registry(registry)
     }
 
@@ -197,6 +265,57 @@ mod tests {
         let result =
             linter.lint_template(r#"<button :type="dynamicType">Click</button>"#, "test.vue");
         assert_eq!(result.warning_count, 0);
+    }
+
+    #[test]
+    fn test_empty_bound_type_reports() {
+        let linter = create_linter();
+        let result = linter.lint_template(r#"<button :type="">Click</button>"#, "test.vue");
+        assert_eq!(result.warning_count, 1);
+        assert!(result.diagnostics[0].message.contains("value"));
+    }
+
+    #[test]
+    fn configured_type_policy_allows_only_enabled_values() {
+        let linter = create_configured_linter(HtmlButtonHasTypeOptions {
+            button: false,
+            submit: true,
+            reset: false,
+        });
+        let result = linter.lint_template(
+            r#"<div><button type="button">Button</button><button type="submit">Submit</button><button type="reset">Reset</button></div>"#,
+            "test.vue",
+        );
+        assert_eq!(result.warning_count, 2, "{:#?}", result.diagnostics);
+        assert!(result.diagnostics.iter().all(|diagnostic| {
+            diagnostic.message.contains("forbidden") && !diagnostic.message.contains("invalid")
+        }));
+    }
+
+    #[test]
+    fn configured_type_policy_keeps_missing_invalid_and_dynamic_boundaries() {
+        let linter = create_configured_linter(HtmlButtonHasTypeOptions {
+            button: false,
+            submit: false,
+            reset: false,
+        });
+        let result = linter.lint_template(
+            r#"<div><button>Missing</button><button type="menu">Invalid</button><button :type="dynamicType">Dynamic</button></div>"#,
+            "test.vue",
+        );
+        assert_eq!(result.warning_count, 2, "{:#?}", result.diagnostics);
+        assert!(
+            result
+                .diagnostics
+                .iter()
+                .any(|diagnostic| diagnostic.message.contains("missing"))
+        );
+        assert!(
+            result
+                .diagnostics
+                .iter()
+                .any(|diagnostic| diagnostic.message.contains("not a valid"))
+        );
     }
 
     #[test]

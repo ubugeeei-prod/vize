@@ -84,6 +84,15 @@ impl Linter {
                 shallow_only: value.shallow_only,
             });
         }
+        if let Some(value) = options.html_button_has_type() {
+            self = self.with_html_button_has_type_options(
+                crate::rules::opinionated::vue::HtmlButtonHasTypeOptions {
+                    button: value.button,
+                    submit: value.submit,
+                    reset: value.reset,
+                },
+            );
+        }
         if let Some(value) = options.warn_custom_directive() {
             self = self.with_warn_custom_directive_ignore(value.ignore.clone());
         }
@@ -337,6 +346,28 @@ mod tests {
                 .iter()
                 .all(|diagnostic| { diagnostic.rule_name == "vue/mustache-interpolation-spacing" })
         );
+    }
+
+    #[test]
+    fn html_button_type_config_reaches_the_selected_rule() {
+        let source = r#"<template><button type="button">Cancel</button><button type="submit">Save</button><button type="reset">Reset</button></template>"#;
+        let options: ConfigLintRuleOptions = serde_json::from_value(serde_json::json!({
+            "vue/html-button-has-type": {
+                "button": true,
+                "submit": false,
+                "reset": false
+            }
+        }))
+        .unwrap();
+        let result = Linter::with_preset(LintPreset::Opinionated)
+            .with_enabled_rules(Some(vec!["vue/html-button-has-type".into()]))
+            .with_config_rule_options(&options)
+            .lint_sfc(source, "App.vue");
+        assert_eq!(result.warning_count, 2, "{:#?}", result.diagnostics);
+        assert!(result.diagnostics.iter().all(|diagnostic| {
+            diagnostic.rule_name == "vue/html-button-has-type"
+                && diagnostic.message.contains("forbidden")
+        }));
     }
 
     #[test]

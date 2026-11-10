@@ -24,8 +24,8 @@
     "mapped": 70,
     "unimplemented": 39,
     "intentionalDivergence": 3,
-    "mappedWithTypedOptions": 22,
-    "mappedWithoutTypedOptions": 48
+    "mappedWithTypedOptions": 23,
+    "mappedWithoutTypedOptions": 47
   },
   "mappedWithTypedOptions": [
     ["vue/attribute-hyphenation", "vue/attribute-hyphenation"],
@@ -35,6 +35,7 @@
     ["vue/define-macros-order", "script/define-macros-order"],
     ["vue/define-props-destructuring", "script/define-props-destructuring"],
     ["vue/enforce-style-attribute", "vue/enforce-style-attribute"],
+    ["vue/html-button-has-type", "vue/html-button-has-type"],
     ["vue/html-self-closing", "vue/html-self-closing"],
     ["vue/html-quotes", "vue/html-quotes"],
     ["vue/mustache-interpolation-spacing", "vue/mustache-interpolation-spacing"],
