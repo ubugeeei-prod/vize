@@ -77,6 +77,7 @@ pub(super) fn create_serve_plan(args: &ServeArgs, cwd: &Path) -> Result<ServePla
     })
 }
 
+#[cfg(test)]
 pub(super) fn resolve_vite_binary(cwd: &Path) -> Option<PathBuf> {
     resolve_binary(cwd, VITE_BIN_NAMES)
 }
@@ -100,6 +101,7 @@ pub(super) fn resolve_vite_runner(cwd: &Path) -> Option<PathBuf> {
     None
 }
 
+#[cfg(test)]
 fn resolve_binary(cwd: &Path, names: &[&str]) -> Option<PathBuf> {
     cwd.ancestors().find_map(|ancestor| {
         let bin_dir = ancestor.join("node_modules").join(".bin");
