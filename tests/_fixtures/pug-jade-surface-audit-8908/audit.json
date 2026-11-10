@@ -1,7 +1,7 @@
 {
-  "version": 1,
+  "version": 2,
   "issue": 8908,
-  "auditedRevision": "459d2c8180be26a24f88d5f4ee84c3b4d357b386",
+  "auditedRevision": "20bb9c3d8adadaf541e9986926a0e985a31bdef5",
   "dialects": ["pug", "jade"],
   "fixtures": [
     {
@@ -27,9 +27,9 @@
     {
       "id": "compiler",
       "label": "Compiler",
-      "dialectState": { "pug": "partial", "jade": "partial" },
-      "current": "Accepted inline declarative templates compile like their rendered HTML twins in DOM, SSR, and Vapor; Jade is a case-insensitive alias.",
-      "remaining": "Executable or structural Pug constructs remain refused, including mixins, includes, conditionals, each, filters, and code interpolation; authored-Pug source-map parity is not established.",
+      "dialectState": { "pug": "supported", "jade": "supported" },
+      "current": "Inline Pug and Jade cover elements, components, directives, slots, interpolation, build-time conditionals and iteration, mixins, attributes and relative includes; their rendered HTML twins compile identically in DOM, SSR and Vapor, with authored diagnostics and source maps.",
+      "remaining": "Arbitrary executable JavaScript, while and case control flow, template inheritance, filters, rooted includes and external template src stay explicitly refused instead of entering the supported deterministic subset.",
       "witnesses": [
         {
           "path": "crates/vize_atelier_sfc/tests/pug_compile_oracle.rs",
@@ -43,7 +43,17 @@
         },
         {
           "path": "crates/vize_atelier_sfc/tests/pug_compile_oracle.rs",
-          "anchor": "fn refused_pug_fails_the_compile_with_its_first_diagnostic()",
+          "anchor": "fn template_only_map_navigates_generated_tokens_to_authored_pug()",
+          "dialects": ["pug", "jade"]
+        },
+        {
+          "path": "crates/vize_atelier_sfc/tests/pug_compile_oracle.rs",
+          "anchor": "fn pug_includes_resolve_against_the_sfc_and_compile_like_their_html()",
+          "dialects": ["pug", "jade"]
+        },
+        {
+          "path": "davinci/vize_l1_to_l2/tests/pug_lowering.rs",
+          "anchor": "fn every_matrix_fixture_derives_the_pinned_pug_html()",
           "dialects": ["pug", "jade"]
         }
       ]
@@ -51,9 +61,9 @@
     {
       "id": "vite",
       "label": "Vite / bundlers",
-      "dialectState": { "pug": "partial", "jade": "partial" },
-      "current": "Real Vite client and SSR, Rollup, webpack, and Rspack builds render the accepted Pug and Jade twins like HTML.",
-      "remaining": "The integrations inherit compiler refusals for executable Pug, and no HMR-specific Pug/Jade oracle is registered.",
+      "dialectState": { "pug": "supported", "jade": "supported" },
+      "current": "Vite client and SSR, Rollup, webpack and Rspack render the supported Pug and Jade twins like HTML; relative include dependencies are watched and invalidate the owning SFC through a real Vite HMR graph.",
+      "remaining": "Bundlers inherit the compiler's deterministic-subset refusals; filtered, rooted or over-budget include graphs fail closed and do not produce partial modules.",
       "witnesses": [
         {
           "path": "npm/builder/vite/src/pug-template.test.ts",
@@ -69,15 +79,20 @@
           "path": "npm/builder/rspack/src/pug-template.test.ts",
           "anchor": "t.assert.equal(await render(\"jade\", twins.jade), html);",
           "dialects": ["pug", "jade"]
+        },
+        {
+          "path": "npm/builder/vite/src/compiler-pug-includes-hmr.test.ts",
+          "anchor": "Pug include edits reach the owning module through the real Vite watcher",
+          "dialects": ["pug", "jade"]
         }
       ]
     },
     {
       "id": "typecheck",
       "label": "Type checker",
-      "dialectState": { "pug": "partial", "jade": "partial" },
-      "current": "Accepted inline attribute, directive, and interpolation expressions are projected and diagnostics map back to authored Pug; Jade reports the same CLI diagnostics at the same positions.",
-      "remaining": "External template src and refused Pug stay unprojected, so their expressions get no type diagnostics.",
+      "dialectState": { "pug": "supported", "jade": "supported" },
+      "current": "Supported inline attribute, directive and interpolation expressions project through the same virtual TypeScript contract as their HTML twins; Pug and Jade report the same diagnostics at authored positions.",
+      "remaining": "External template src and deliberately refused Pug programs are not projected, because no supported template program exists from which to derive trustworthy TypeScript ranges.",
       "witnesses": [
         {
           "path": "crates/vize/tests/check_pug_template_cli.rs",
@@ -99,14 +114,14 @@
     {
       "id": "lint",
       "label": "Linter",
-      "dialectState": { "pug": "partial", "jade": "partial" },
-      "current": "Accepted inline templates lint through the derived view with diagnostics on authored bytes; Jade matches Pug.",
-      "remaining": "Fixes inside the derived template are withheld, refused syntax cannot enter the template lane, and vue-eslint-parser provides no inside-Pug parity baseline.",
+      "dialectState": { "pug": "supported", "jade": "supported" },
+      "current": "All supported matrix programs lint like their rendered HTML twins and diagnostics map to authored Pug or Jade bytes. A pinned dho-web-client SFC is rendered with pug 3.0.4, then Patina and eslint-plugin-vue 10.9.2 must match the same rule, severity, count and upstream message prefix; Patina's full message separately pins its authored element context.",
+      "remaining": "Autofixes inside the derived template remain withheld. vue-eslint-parser cannot expose inside-Pug nodes, so upstream parity is measured against the exact rendered HTML twin while script findings remain directly comparable.",
       "witnesses": [
         {
           "path": "crates/vize_patina/tests/pug_template_lint.rs",
-          "anchor": "fn pug_diagnostics_match_the_html_twin_and_land_on_pug()",
-          "dialects": ["pug"]
+          "anchor": "fn every_matrix_fixture_lints_like_its_pug_rendered_html()",
+          "dialects": ["pug", "jade"]
         },
         {
           "path": "crates/vize_patina/tests/pug_template_lint.rs",
@@ -117,6 +132,16 @@
           "path": "tests/tooling/lint-divergence-pug-surface.test.ts",
           "anchor": "the TypeScript runner keeps pug template findings out of the scored surface",
           "dialects": ["pug"]
+        },
+        {
+          "path": "tests/tooling/lint-divergence-pug-surface.test.ts",
+          "anchor": "a pinned dho Pug project measures eslint-plugin-vue parity through its HTML twin",
+          "dialects": ["pug"]
+        },
+        {
+          "path": "crates/vize_patina/tests/pug_template_lint.rs",
+          "anchor": "fn dho_real_project_matches_the_pinned_eslint_plugin_vue_twin()",
+          "dialects": ["pug", "jade"]
         }
       ]
     },
@@ -142,9 +167,9 @@
     {
       "id": "lsp",
       "label": "LSP",
-      "dialectState": { "pug": "partial", "jade": "partial" },
-      "current": "Inline tag and attribute completion, hover, definition, references, and rename are covered for accepted Pug; Jade shares the syntax route with direct prop completion, navigation, hover, references, and rename coverage.",
-      "remaining": "External or refused Pug templates are not covered as a complete editor surface.",
+      "dialectState": { "pug": "supported", "jade": "supported" },
+      "current": "Inline tag and prop completion, hover, definition, references and rename use authored Pug ranges for supported templates; Jade shares the same route with dedicated completion and navigation coverage.",
+      "remaining": "External template src and deliberately refused Pug programs do not expose a complete editor surface, matching the compiler and type-checker boundary.",
       "witnesses": [
         {
           "path": "crates/vize_maestro/src/ide/completion/component_pug_props_tests.rs",
@@ -173,5 +198,39 @@
         }
       ]
     }
-  ]
+  ],
+  "closure": {
+    "realProjects": {
+      "state": "supported",
+      "current": "The Real Project Matrix runs compile, typecheck, lint and formatter checks over pinned Pug applications including dho-web-client, Wave UI, Splitpanes, Vue Cal, Vux and lx-music-desktop; LSP and SSR Pug observers are part of the same qualification workflow.",
+      "witnesses": [
+        {
+          "path": "tests/_fixtures/fixture-compatibility-ledger.json",
+          "anchor": "Pug-template Quasar application (211 of 215 pinned SFCs use"
+        },
+        {
+          "path": ".github/workflows/real-project-matrix.yml",
+          "anchor": "tests/tooling/glyph-pug-oracle.test.ts tests/tooling/davinci-pug-corpus-oracle.test.ts"
+        },
+        {
+          "path": "tests/_fixtures/pug-jade-surface-audit-8908/dho-current-balance-lint-parity.json",
+          "anchor": "https://github.com/hypha-dao/dho-web-client"
+        }
+      ]
+    },
+    "docs": {
+      "state": "supported",
+      "current": "The English and Japanese Vite guides list the supported Pug and Jade feature set, every product surface and the deliberate refusal and preservation boundaries.",
+      "witnesses": [
+        {
+          "path": "docs/content/guide/vite-plugin.md",
+          "anchor": "#### Supported Pug and Jade subset"
+        },
+        {
+          "path": "docs/content/ja/guide/vite-plugin.md",
+          "anchor": "#### 対応する Pug / Jade の範囲"
+        }
+      ]
+    }
+  }
 }
