@@ -179,5 +179,12 @@ test("a pinned dho Pug project measures eslint-plugin-vue parity through its HTM
     filePath: path.join(repoRoot, "target/dho-current-balance.vue"),
   });
   assert.ok(result);
-  assert.deepEqual(signature(result.messages), evidence.signatures);
+  const baselineSignatures = evidence.signatures.map(
+    ({ ruleId, severity, message, patinaMessage, count }: Record<string, unknown>) => {
+      assert.equal(typeof patinaMessage, "string");
+      assert.ok(patinaMessage.startsWith(message as string));
+      return { ruleId, severity, message, count };
+    },
+  );
+  assert.deepEqual(signature(result.messages), baselineSignatures);
 });

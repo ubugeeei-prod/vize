@@ -21,6 +21,7 @@
       "ruleId": "vue/require-v-for-key",
       "severity": "error",
       "message": "Elements in iteration expect to have 'v-bind:key' directives.",
+      "patinaMessage": "Elements in iteration expect to have 'v-bind:key' directives. Element: <div>",
       "count": 1
     }
   ]

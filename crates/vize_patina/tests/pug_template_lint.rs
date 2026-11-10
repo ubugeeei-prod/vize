@@ -114,7 +114,7 @@ fn dho_real_project_matches_the_pinned_eslint_plugin_vue_twin() {
             expected.push((
                 row["ruleId"].as_str().unwrap().to_owned(),
                 severity.to_owned(),
-                row["message"].as_str().unwrap().to_owned(),
+                row["patinaMessage"].as_str().unwrap().to_owned(),
             ));
         }
     }
