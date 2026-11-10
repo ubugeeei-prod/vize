@@ -79,7 +79,7 @@ export function page(
     "}",
     ...(planted
       ? [
-          "const climate = ref(42);",
+          'const climate = ref<string | number>("warm");',
           "function onPlantCommit(value: number): void {",
           "  count.value = value;",
           "}",
