@@ -27,13 +27,28 @@ fn syntax_error(source: &str) -> crate::types::SfcError {
 fn an_unclosed_call_fails_with_its_location() {
     let source = "<script setup lang=\"ts\">\nimport { ref } from 'vue'\nconst a = ref(1)\npick(\nfunction pick() {}\n</script>\n<template><div>{{ a }}</div></template>\n";
     let error = syntax_error(source);
-    assert!(
-        error.message.starts_with("<script setup> does not parse"),
-        "{error:?}"
+    let loc = error
+        .loc
+        .clone()
+        .expect("the error is located in the .vue file");
+    // The call is still open at the end of the setup content, where the
+    // parser reports it: offset 93, the start of the `</script>` line.
+    assert_eq!(
+        (
+            error.message.as_str(),
+            loc.start,
+            loc.end,
+            loc.start_line,
+            loc.start_column
+        ),
+        (
+            "<script setup> does not parse\n  Expected `)` but found `EOF`",
+            93,
+            93,
+            6,
+            1
+        )
     );
-    let loc = error.loc.expect("the error is located in the .vue file");
-    assert!(loc.start_line >= 4 && loc.start_line <= 6, "{loc:?}");
-    assert!(loc.start >= source.find("pick(").unwrap(), "{loc:?}");
 }
 
 #[test]
