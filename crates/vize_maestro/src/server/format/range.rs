@@ -24,7 +24,7 @@
 
 use tower_lsp::lsp_types::{Position, Range, TextEdit};
 
-use super::blocks::block_spans;
+use super::blocks::{block_spans, same_block_sequence};
 use crate::ide::position_to_offset;
 
 #[cfg(test)]
@@ -83,16 +83,17 @@ pub(crate) fn format_range_with_context(
 
     let authored = block_spans(content, filename)?;
     let target = block_spans(&formatted.code, filename)?;
-    // A formatter must not add, drop or reorder blocks. If it did, the two
-    // lists cannot be paired and there is no safe partial edit to make.
-    if authored.len() != target.len() {
+    // Discovery order follows block identity rather than source order, so
+    // profiles may reorder blocks. Adding, dropping or changing an identity
+    // still makes an authored source-range projection unsafe.
+    if !same_block_sequence(&authored, &target) {
         return None;
     }
 
     let mut edits = Vec::new();
-    for (&(authored_start, authored_end), &(target_start, target_end)) in
-        authored.iter().zip(target.iter())
-    {
+    for (authored, target) in authored.iter().zip(&target) {
+        let (authored_start, authored_end) = (authored.start, authored.end);
+        let (target_start, target_end) = (target.start, target.end);
         if selection_start > authored_end || authored_start > selection_end {
             continue;
         }
