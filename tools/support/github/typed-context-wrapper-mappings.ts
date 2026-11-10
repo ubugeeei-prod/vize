@@ -22,19 +22,11 @@ export function assertTypedContextWrapperMappings(
   ];
   assert.equal(
     digest(producer),
-    "1e4c7df125bece7d5a264b4b321eb932db96d8d036219c627c7d7e0415fe6c60",
+    "b8fc36d05f94fada235e03f97b3db407fd406bb7698b2c547eeac4e899802628",
     "unqualified content-mapper producer",
   );
   let checkModePredecessor = producerText;
   for (const [successor, predecessor] of [
-    [
-      "use crate::virtual_ts::{ProjectionFeatures, ProjectionMeta, VizeMapping};\n",
-      "use crate::virtual_ts::{ProjectionFeatures, ProjectionMeta, VirtualTsOptions, VizeMapping};\n",
-    ],
-    [
-      "    let mut virtual_ts_options = transform_options.virtual_ts_options();\n",
-      "    let mut virtual_ts_options = VirtualTsOptions::default();\n",
-    ],
     [
       "            template_use_navigation: !transform_options.diagnostics_only(),\n",
       "            template_use_navigation: true,\n",
@@ -43,6 +35,7 @@ export function assertTypedContextWrapperMappings(
       "            preserve_event_navigation: !transform_options.diagnostics_only(),\n",
       "            preserve_event_navigation: true,\n",
     ],
+    ["            omit_navigation_references: transform_options.diagnostics_only(),\n", ""],
   ] as const) {
     assert.equal(
       checkModePredecessor.split(successor).length,
