@@ -241,7 +241,7 @@ test("the virtual TS helper can retain the exact producing process", () => {
   const receipt = runVizeCheckJsonWithReceipt("/fixture", ["App.vue"], {
     allowExitCodes: [1],
     showVirtualTs: true,
-    spawnSync: (command, args, options) =>
+    spawnSync: (_command, _args, _options) =>
       ({
         output: ["", stdout, "provider note\n"],
         pid: 7,
