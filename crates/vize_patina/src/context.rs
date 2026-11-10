@@ -34,6 +34,16 @@ pub(crate) use eslint_directive::SuppressionSource;
 use eslint_directive::{ExactSuppressionState, InlineSuppressionState};
 use sfc_directives::SfcDirectiveState;
 
+/// Container semantics for template rules that differ between Vue and HTML.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub(crate) enum TemplateDocumentKind {
+    /// A Vue template, including the template block of an SFC.
+    #[default]
+    VueTemplate,
+    /// A complete standalone HTML document.
+    StandaloneHtml,
+}
+
 /// Lint context provides utilities for rules during execution.
 ///
 /// Uses arena allocation for efficient memory management during lint traversal.
@@ -100,6 +110,8 @@ pub struct LintContext<'a> {
     ssr_mode: SsrMode,
     /// Vue dialect of the document being linted (gates dialect-specific rules).
     dialect: VueDialect,
+    /// Container semantics for rules whose advice is unsafe in plain HTML.
+    document_kind: TemplateDocumentKind,
     /// Owner-bound Davinci meaning for an admitted standalone petite document.
     petite_document: Option<&'a vize_l2::dialect::petite::PetiteDocument<'a, 'a>>,
     /// Help display level.
@@ -167,6 +179,7 @@ impl<'a> LintContext<'a> {
             analysis_excluded_rules: None,
             ssr_mode: SsrMode::default(),
             dialect: VueDialect::default(),
+            document_kind: TemplateDocumentKind::default(),
             petite_document: None,
             help_level: HelpLevel::default(),
             expected_error_lines: FxHashSet::default(),
@@ -221,6 +234,7 @@ impl<'a> LintContext<'a> {
             analysis_excluded_rules: None,
             ssr_mode: SsrMode::default(),
             dialect: VueDialect::default(),
+            document_kind: TemplateDocumentKind::default(),
             petite_document: None,
             help_level: HelpLevel::default(),
             expected_error_lines: FxHashSet::default(),
@@ -287,6 +301,18 @@ impl<'a> LintContext<'a> {
     #[inline]
     pub fn dialect(&self) -> VueDialect {
         self.dialect
+    }
+
+    /// Set the container semantics for template rules.
+    #[inline]
+    pub(crate) fn set_document_kind(&mut self, kind: TemplateDocumentKind) {
+        self.document_kind = kind;
+    }
+
+    /// Whether this context owns a complete standalone HTML document.
+    #[inline]
+    pub(crate) fn is_standalone_html_document(&self) -> bool {
+        self.document_kind == TemplateDocumentKind::StandaloneHtml
     }
 
     /// Check if the document being linted uses the petite-vue dialect.

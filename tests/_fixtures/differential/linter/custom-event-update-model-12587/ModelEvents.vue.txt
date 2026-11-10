@@ -1,0 +1,11 @@
+<script setup lang="ts">
+const emit = defineEmits<{
+  "update:modelValue": [value: string]
+  "update:model-value": [value: string]
+  saveItem: []
+}>()
+
+emit("update:modelValue", "camel prop")
+emit("update:model-value", "kebab prop")
+emit("saveItem")
+</script>

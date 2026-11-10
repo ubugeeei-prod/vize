@@ -9,7 +9,7 @@ Uniformiser les clés entre guillemets dans les déclarations props et emits.
 
 | Gravité par défaut | Préréglages | Correction automatique | Options |
 | --- | --- | --- | --- |
-| `error` | `opinionated` | Non | Aucune |
+| `error` | Aucune | Non | Aucune |
 
 Champ d’application : Scripts JS/TS des SFC Vue ; les exemples montrent la forme concernée de l’Options API ou de script setup.
 

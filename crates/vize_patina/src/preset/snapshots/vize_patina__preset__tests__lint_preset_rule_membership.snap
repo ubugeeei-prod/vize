@@ -864,7 +864,6 @@ expression: "serde_json::to_string_pretty(&snapshot).unwrap()"
     "script/require-valid-default-prop",
     "script/require-typed-object-prop",
     "script/custom-event-name-casing",
-    "script/consistent-props-emits-key-quotes",
     "script/no-ref-as-operand",
     "script/require-explicit-slots",
     "script/no-duplicate-attr-inheritance",

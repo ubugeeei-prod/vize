@@ -10,9 +10,8 @@
 //! This walks the emit call sites and checks the string-literal event name (the
 //! first argument). Only string-literal event names are checked; a dynamic name
 //! (`emit(eventName)`) carries no literal to inspect and is skipped. The
-//! The `update:` prefix used by `v-model` is checked segment-by-segment, so
-//! `'update:modelValue'` is valid for camelCase while `'update:model-value'` is
-//! valid for kebab-case.
+//! `update:` prefix used by `v-model` is reserved: its suffix mirrors an
+//! authored prop name and is therefore not checked against event-name casing.
 //! Explicit configuration can instead require unseparated lowercase names such
 //! as `transitionstart`, or kebab-case names such as `transition-start`.
 //!
@@ -356,7 +355,14 @@ fn report(
     result.add_diagnostic(diagnostic);
 }
 
+/// Validate ordinary events while preserving the authored prop name after `update:`.
 fn is_valid_event_name(value: &str, casing: EventNameCasing) -> bool {
+    if value
+        .strip_prefix("update:")
+        .is_some_and(|prop| !prop.is_empty())
+    {
+        return true;
+    }
     match casing {
         EventNameCasing::CamelCase => is_camel_case_event(value),
         EventNameCasing::Lowercase => is_lowercase_event(value),
@@ -365,7 +371,7 @@ fn is_valid_event_name(value: &str, casing: EventNameCasing) -> bool {
 }
 
 /// Whether `value` is an acceptable camelCase event name. Each `:`-separated
-/// segment (so the `v-model` `update:modelValue` form is allowed) must match
+/// segment must match
 /// `^[a-z][a-zA-Z0-9]*$`: a lowercase first character followed by alphanumerics.
 fn is_camel_case_event(value: &str) -> bool {
     !value.is_empty() && value.split(':').all(is_camel_case_segment)

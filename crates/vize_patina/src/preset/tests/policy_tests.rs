@@ -48,14 +48,14 @@ emit('saveItem')
 }
 
 #[test]
-fn consistent_props_emits_key_quotes_is_opinionated_only() {
+fn consistent_props_emits_key_quotes_is_opt_in() {
     let source = r#"<script setup lang="ts">
 defineProps<{ "aria-label": string; disabled: boolean }>()
 </script>"#;
 
     let opinionated = Linter::with_preset(LintPreset::Opinionated).lint_sfc(source, "App.vue");
     assert!(
-        opinionated.diagnostics.iter().any(|diagnostic| {
+        !opinionated.diagnostics.iter().any(|diagnostic| {
             diagnostic.rule_name == "script/consistent-props-emits-key-quotes"
         })
     );
@@ -63,6 +63,15 @@ defineProps<{ "aria-label": string; disabled: boolean }>()
     let nuxt = Linter::with_preset(LintPreset::Nuxt).lint_sfc(source, "App.vue");
     assert!(
         !nuxt.diagnostics.iter().any(|diagnostic| {
+            diagnostic.rule_name == "script/consistent-props-emits-key-quotes"
+        })
+    );
+
+    let explicit = Linter::with_preset(LintPreset::Opinionated)
+        .with_additional_rules(vec!["script/consistent-props-emits-key-quotes".into()])
+        .lint_sfc(source, "App.vue");
+    assert!(
+        explicit.diagnostics.iter().any(|diagnostic| {
             diagnostic.rule_name == "script/consistent-props-emits-key-quotes"
         })
     );

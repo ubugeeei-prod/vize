@@ -85,9 +85,9 @@ fn test_valid_update_model_value() {
 }
 
 #[test]
-fn test_invalid_kebab_case_update_suffix_for_camel_case() {
+fn test_v_model_kebab_prop_name_is_reserved_for_camel_case() {
     let result = lint_sfc("<script>this.$emit('update:model-value', value)</script>");
-    assert_eq!(result.error_count, 1);
+    assert_eq!(result.error_count, 0);
 }
 
 #[test]
@@ -161,19 +161,20 @@ emit('myEvent')
 }
 
 #[test]
-fn test_configured_kebab_case_requires_kebab_v_model_suffix() {
-    let source = r#"
+fn test_v_model_suffix_keeps_authored_prop_casing() {
+    for source in [
+        r#"
 const emit = defineEmits(['update:model-value'])
 emit('update:model-value')
-"#;
-    let result = create_kebab_linter().lint(source, 0);
-    assert_eq!(result.error_count, 0);
-
-    let invalid = create_kebab_linter().lint(
-        "const emit = defineEmits(['update:modelValue']); emit('update:modelValue')",
-        0,
-    );
-    assert_eq!(invalid.error_count, 1);
+"#,
+        r#"
+const emit = defineEmits(['update:modelValue'])
+emit('update:modelValue')
+"#,
+    ] {
+        let result = create_kebab_linter().lint(source, 0);
+        assert_eq!(result.error_count, 0, "{:#?}", result.diagnostics);
+    }
 }
 
 #[test]

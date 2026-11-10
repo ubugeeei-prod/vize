@@ -104,6 +104,7 @@ impl crate::linter::config::Linter {
     }
 }
 
+use crate::context::TemplateDocumentKind;
 use crate::linter::sfc_scripts::SfcScripts;
 use crate::markup::L2Template;
 use vize_atelier_sfc::croquis::SfcCroquisOptions;
@@ -125,6 +126,8 @@ pub(crate) struct TemplateRuleEnv<'a> {
     /// Exact-node pragmas are applied after all complete-SFC producers join.
     pub defer_exact_suppressions: bool,
     pub dialect: VueDialect,
+    /// Container semantics visible to rules that distinguish Vue from HTML.
+    pub document_kind: TemplateDocumentKind,
     /// Markup rules `lint_sfc` runs on the L2 facade instead of the visitor.
     /// Empty on the raw-template and standalone-HTML lanes.
     pub facade_rules: &'static [&'static str],

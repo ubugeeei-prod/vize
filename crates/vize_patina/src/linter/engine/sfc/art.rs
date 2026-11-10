@@ -108,6 +108,7 @@ impl Linter {
                         petite_document: None,
                         defer_exact_suppressions: false,
                         dialect: vize_l0::dialect::VueDialect::Vue,
+                        document_kind: crate::context::TemplateDocumentKind::VueTemplate,
                         facade_rules: super::facade::RULES,
                     },
                 },

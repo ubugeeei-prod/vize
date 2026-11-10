@@ -9,7 +9,7 @@ Uniformizar chaves entre aspas nas declarações de props e emits.
 
 | Severidade padrão | Predefinições | Correção automática | Opções |
 | --- | --- | --- | --- |
-| `error` | `opinionated` | Não | Nenhuma |
+| `error` | Nenhuma | Não | Nenhuma |
 
 Aplicável a: Scripts JS/TS em SFCs Vue; os exemplos mostram a forma relevante de Options API ou script setup.
 
