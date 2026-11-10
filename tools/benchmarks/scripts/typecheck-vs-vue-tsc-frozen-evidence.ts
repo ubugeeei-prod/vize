@@ -190,15 +190,16 @@ export function profileAttribution(report: unknown) {
         wall_ns?: { total?: unknown; self?: unknown; min?: unknown; max?: unknown };
       };
       assert.equal(typeof span.key, "string");
+      const key = span.key as string;
       assert(Number.isSafeInteger(span.count) && Number(span.count) >= 0);
       assert(span.wall_ns && typeof span.wall_ns === "object");
       for (const field of ["total", "self", "min", "max"] as const)
         assert(
           Number.isSafeInteger(span.wall_ns[field]) && Number(span.wall_ns[field]) >= 0,
-          `${span.key}.wall_ns.${field}`,
+          `${key}.wall_ns.${field}`,
         );
       return {
-        key: span.key as string,
+        key,
         count: span.count as number,
         wallNs: {
           total: span.wall_ns.total as number,
