@@ -9,6 +9,7 @@ import { beforePropValueOr } from "../../../tools/support/compat/content-mapper/
 import { beforeListenerContract } from "../../../tools/support/compat/content-mapper/listener-contract-transition.ts";
 import { repoRoot } from "../_helpers/tool-commands.ts";
 import { beforeSharedTemplateRefUnwrapSource } from "../../../tools/support/compat/content-mapper/shared-template-ref-unwrap-transition.ts";
+import { beforeSharedUsageHelpersSource } from "../../../tools/support/compat/content-mapper/shared-usage-helpers-transition.ts";
 
 type CanonLeftoversReceipt = {
   compiledPreamble: { edits: Array<{ before: string; after: string }> };
@@ -43,7 +44,10 @@ const identity = (text: string): Identity => ({
 export function beforeCanonLeftoversSource(file: string, current: string): string {
   current = beforePropValueOr(
     file,
-    beforeListenerContract(file, beforeSharedTemplateRefUnwrapSource(file, current)),
+    beforeListenerContract(
+      file,
+      beforeSharedTemplateRefUnwrapSource(file, beforeSharedUsageHelpersSource(file, current)),
+    ),
   );
   const transition = receipt.files.find((candidate) => candidate.path === file);
   if (!transition) return current;
