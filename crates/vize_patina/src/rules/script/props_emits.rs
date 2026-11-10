@@ -14,7 +14,7 @@ mod prefer_define_emits_binding;
 mod prefer_prop_type_boolean_first;
 mod props_source;
 mod require_default_prop;
-pub(in crate::rules::script) mod require_explicit_emits;
+pub(crate) mod require_explicit_emits;
 mod require_prop_types;
 mod require_typed_object_prop;
 mod require_valid_default_prop;

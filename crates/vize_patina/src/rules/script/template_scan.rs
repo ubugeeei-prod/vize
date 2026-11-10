@@ -43,19 +43,19 @@ use crate::markup::surface_source::{DecodedSource, directive, element_verbatim};
 use vize_l0::String;
 use vize_l1::markup::{Element, SurfaceChild, SurfaceTree};
 
-pub(super) use calls::TemplateCall;
+pub(crate) use calls::TemplateCall;
 
 /// The template-visible emit helper. Available in every template expression and
 /// dispatching this component's own events, unlike a member call such as
 /// `child.$emit('x')`.
-pub(super) const DOLLAR_EMIT: &str = "$emit";
+pub(crate) const DOLLAR_EMIT: &str = "$emit";
 
 /// Visit every call with a plain identifier callee that the template performs.
 ///
 /// Calls whose callee is shadowed by an enclosing `v-for` alias or slot
 /// variable are skipped: inside that subtree the name is the iteration /slot
 /// binding, not the component's own.
-pub(super) fn for_each_template_call(
+pub(crate) fn for_each_template_call(
     root: &SurfaceTree<'_>,
     mut visit: impl FnMut(TemplateCall<'_>),
 ) {

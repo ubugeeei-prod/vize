@@ -53,6 +53,7 @@ impl Linter {
         if let Some(scripts) = env.sfc_scripts {
             ctx.set_sfc_scripts(scripts);
         }
+        ctx.set_template_surface(l2.surface());
         #[cfg(not(target_arch = "wasm32"))]
         let has_analysis = analysis.is_some();
         if let Some(analysis) = analysis {

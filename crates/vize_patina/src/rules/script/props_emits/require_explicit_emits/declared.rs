@@ -9,6 +9,7 @@ use oxc_ast::ast::{
     Argument, ArrayExpressionElement, BindingPattern, CallExpression, Expression, ObjectExpression,
     ObjectPropertyKind, PropertyKey, Statement,
 };
+use oxc_span::{GetSpan, Span};
 use oxc_syntax::symbol::SymbolId;
 use vize_l0::{CompactString, FxHashSet, ToCompactString};
 
@@ -29,16 +30,32 @@ impl Emits {
     }
 }
 
+/// One named macro declaration and the node upstream reports it at.
+pub(crate) struct MacroEntry {
+    pub(crate) name: CompactString,
+    pub(crate) span: Span,
+    /// Declared in the sibling script block rather than the linted one.
+    pub(crate) sibling: bool,
+}
+
 #[derive(Default)]
 pub(super) struct Collect {
     names: FxHashSet<CompactString>,
     pub(super) unknown: bool,
+    pub(super) entries: Vec<MacroEntry>,
+    /// The block the next entries are declared in.
+    pub(super) sibling: bool,
 }
 
 impl Collect {
-    pub(super) fn push(&mut self, name: Option<CompactString>) {
+    pub(super) fn push(&mut self, name: Option<CompactString>, span: Span) {
         match name {
             Some(name) => {
+                self.entries.push(MacroEntry {
+                    name: name.clone(),
+                    span,
+                    sibling: self.sibling,
+                });
                 self.names.insert(name);
             }
             None => self.unknown = true,
@@ -146,29 +163,84 @@ fn call_emits(call: &CallExpression<'_>, resolver: &Resolver<'_, '_, '_>) -> Emi
 /// Upstream's `getComponentEmitsFromDefine` for an object or array literal.
 pub(super) fn define_value(expression: &Expression<'_>) -> Option<Emits> {
     let mut collect = Collect::default();
+    define_value_into(expression, &mut collect).then(|| collect.finish())
+}
+
+/// [`define_value`] into `collect`; `false` when not an object or array literal.
+pub(super) fn define_value_into(expression: &Expression<'_>, collect: &mut Collect) -> bool {
     match expression.without_parentheses() {
         Expression::ObjectExpression(object) => {
             for property in &object.properties {
-                collect.push(match property {
+                let name = match property {
                     ObjectPropertyKind::ObjectProperty(property) => {
                         property_name(&property.key, property.computed)
                     }
                     ObjectPropertyKind::SpreadProperty(_) => None,
-                });
+                };
+                collect.push(name, property.span());
             }
         }
         Expression::ArrayExpression(array) => {
             for element in &array.elements {
                 match element {
                     ArrayExpressionElement::Elision(_) => {}
-                    ArrayExpressionElement::SpreadElement(_) => collect.push(None),
-                    element => collect.push(element.as_expression().and_then(literal_value)),
+                    element => collect.push(
+                        element.as_expression().and_then(literal_value),
+                        element.span(),
+                    ),
                 }
             }
         }
-        _ => return None,
+        _ => return false,
     }
-    Some(collect.finish())
+    true
+}
+
+/// Every named event a top-level `defineEmits` call declares, with its node.
+///
+/// Shared by rules that report at a declaration. An entry that cannot be named
+/// is left out, as eslint-plugin-vue's `{ emitName: null }` entries are. The
+/// flag is set when a type was left unresolved, so a caller can retry with a
+/// cross-file world.
+pub(crate) fn define_emits_entries<'a>(
+    call: &CallExpression<'a>,
+    semantic: &oxc_semantic::Semantic<'a>,
+    program: &'a oxc_ast::ast::Program<'a>,
+    sibling: Option<&oxc_ast::ast::Program<'_>>,
+    source: &str,
+    resolved_type_world: Option<&vize_croquis::types::ResolvedTypeWorld>,
+) -> (Vec<MacroEntry>, bool) {
+    let resolver = Resolver {
+        semantic,
+        program,
+        sibling,
+        source,
+        resolved_type_world,
+    };
+    let mut collect = Collect::default();
+    if let Some(argument) = call.arguments.first().and_then(Argument::as_expression) {
+        resolver.object_or_array_into(argument, Block::Own, 0, &mut collect);
+    } else if let Some(declared) = call
+        .type_arguments
+        .as_ref()
+        .and_then(|arguments| arguments.params.first())
+    {
+        collect = resolver.type_collect(declared);
+    }
+    (collect.entries, collect.unknown)
+}
+
+/// The named events of a Vue object's literal `emits` option, with their nodes.
+pub(crate) fn options_emits_entries(object: &ObjectExpression<'_>) -> Vec<MacroEntry> {
+    let mut collect = Collect::default();
+    for property in &object.properties {
+        if let ObjectPropertyKind::ObjectProperty(property) = property
+            && property_name(&property.key, property.computed).as_deref() == Some("emits")
+        {
+            define_value_into(&property.value, &mut collect);
+        }
+    }
+    collect.entries
 }
 
 /// Upstream's `getStaticPropertyName` for a property.

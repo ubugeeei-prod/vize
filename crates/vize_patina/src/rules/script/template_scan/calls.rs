@@ -13,22 +13,22 @@ use oxc_span::{SourceType, Span};
 use crate::markup::surface_source::DecodedSource;
 
 /// A call the template performs, with a plain identifier callee.
-pub(in crate::rules::script) struct TemplateCall<'a> {
+pub(crate) struct TemplateCall<'a> {
     /// The callee identifier, e.g. `total` or `$emit`.
-    pub(in crate::rules::script) callee: &'a str,
+    pub(crate) callee: &'a str,
     /// The first argument, when it is a string literal or a template literal
     /// without substitutions. `None` for a dynamic
     /// argument (`$emit(name)`) or no arguments at all — a value only the
     /// runtime knows cannot be checked against a declared set or a casing rule.
-    pub(in crate::rules::script) first_string_argument: Option<TemplateStringArgument<'a>>,
+    pub(crate) first_string_argument: Option<TemplateStringArgument<'a>>,
     /// Byte range of the callee identifier, relative to the template block.
-    pub(in crate::rules::script) callee_start: u32,
+    pub(crate) callee_start: u32,
     /// Exclusive end of [`TemplateCall::callee_start`].
-    pub(in crate::rules::script) callee_end: u32,
+    pub(crate) callee_end: u32,
     /// Byte range of the call expression, relative to the template block.
-    pub(in crate::rules::script) start: u32,
+    pub(crate) start: u32,
     /// Exclusive end of [`TemplateCall::start`].
-    pub(in crate::rules::script) end: u32,
+    pub(crate) end: u32,
     /// Arrow-function parameters whose scope contains this call.
     local_bindings: Vec<&'a str>,
 }
@@ -41,13 +41,13 @@ impl TemplateCall<'_> {
 
 /// A string-literal argument, with the range of the literal itself so a rule
 /// can report there rather than at the whole call.
-pub(in crate::rules::script) struct TemplateStringArgument<'a> {
-    pub(in crate::rules::script) value: &'a str,
+pub(crate) struct TemplateStringArgument<'a> {
+    pub(crate) value: &'a str,
     /// Byte range of the literal *including* its quotes, relative to the
     /// template block — matching how the script halves span a `StringLiteral`.
-    pub(in crate::rules::script) start: u32,
+    pub(crate) start: u32,
     /// Exclusive end of [`TemplateStringArgument::start`].
-    pub(in crate::rules::script) end: u32,
+    pub(crate) end: u32,
 }
 
 /// Call `visit` for every identifier-callee call in `source`, a single
