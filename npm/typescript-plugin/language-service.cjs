@@ -1,4 +1,5 @@
 "use strict";
+const { createMappedDiagnostics } = require("./diagnostic-packets.cjs");
 const { isSfc } = require("./virtual-modules.cjs");
 
 function createMappedLanguageService(ts, service, support) {
@@ -17,7 +18,9 @@ function createMappedLanguageService(ts, service, support) {
   for (const key of Object.keys(service))
     proxy[key] = typeof service[key] === "function" ? service[key].bind(service) : service[key];
   const get = (file) => support?.get(file);
+  const diagnostics = createMappedDiagnostics(ts, service, support, relatedInformation, unique);
   proxy.dispose = () => {
+    diagnostics.dispose();
     support?.dispose?.();
     service.dispose?.();
   };
@@ -174,76 +177,7 @@ function createMappedLanguageService(ts, service, support) {
     }
     return { ...value, ...(value.codeActions ? { codeActions } : {}) };
   });
-  for (const method of [
-    "getSyntacticDiagnostics",
-    "getSemanticDiagnostics",
-    "getSuggestionDiagnostics",
-  ]) {
-    proxy[method] = (file) => {
-      support?.ensure?.(file);
-      const document = get(file);
-      if (!document)
-        return service[method](file).map((value) => ({
-          ...value,
-          ...(value.relatedInformation
-            ? { relatedInformation: relatedInformation(value.relatedInformation) }
-            : {}),
-        }));
-      const sourceFile = ts.createSourceFile(file, document.source, ts.ScriptTarget.Latest);
-      const diagnostic = (value) => ({
-        ...value,
-        file: sourceFile,
-        category: ts.DiagnosticCategory.Error,
-      });
-      if (document.error)
-        return method === "getSemanticDiagnostics"
-          ? [
-              diagnostic({
-                start: 0,
-                length: 0,
-                code: 100003,
-                source: "vize",
-                messageText: document.error,
-              }),
-            ]
-          : [];
-      let applied, current;
-      // Suggestions bypass directives, so they never pay for another semantic check.
-      if (method === "getSuggestionDiagnostics") current = service[method](file);
-      else {
-        // EXPECT applies to the complete syntax+semantic set, never a per-packet subset.
-        const syntax = service.getSyntacticDiagnostics(file);
-        const semantic = service.getSemanticDiagnostics(file);
-        applied = support.engine.applyDiagnosticDirectives(document.projection, [
-          ...syntax,
-          ...semantic,
-        ]);
-        const channel = new Set(method === "getSyntacticDiagnostics" ? syntax : semantic);
-        current = applied.diagnostics.filter((value) => channel.has(value));
-      }
-      const mapped = current.flatMap((value) => {
-        const range = support.engine.mapLanguageDiagnosticRange(
-          document.projection,
-          value.start ?? 0,
-          value.length ?? 0,
-        );
-        const textSpan =
-          range.fidelity === "none" ? undefined : { start: range.start, length: range.length };
-        if (!textSpan && [6133, 6192, 6196].includes(value.code)) return [];
-        const result = { ...value, file: sourceFile, ...(textSpan || { start: 0, length: 0 }) };
-        if (!textSpan)
-          result.messageText = `In generated Vize code: ${ts.flattenDiagnosticMessageText(value.messageText, "\n")}`;
-        if (value.relatedInformation)
-          result.relatedInformation = relatedInformation(value.relatedInformation);
-        return [result];
-      });
-      const nativeSyntax = new Set(document.projection.diagnostics);
-      const authored = (applied?.sourceDiagnostics ?? []).filter((value) =>
-        method === "getSyntacticDiagnostics" ? nativeSyntax.has(value) : !nativeSyntax.has(value),
-      );
-      return unique([...mapped, ...authored.map(diagnostic)]);
-    };
-  }
+  Object.assign(proxy, diagnostics.methods);
   // Methods without an authored-range adapter must never expose generated
   // offsets or edits. Clients can use Vize's LSP for these additional features.
   for (const method of [

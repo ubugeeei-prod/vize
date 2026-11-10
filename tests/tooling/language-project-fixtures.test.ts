@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { historicalDemandedSfcSource } from "../../tools/support/compat/github/language-project-demanded-sfc-20261105.ts";
+import { historicalDiagnosticPacketsSource } from "../../tools/support/compat/github/language-project-diagnostic-packets-20261110.ts";
 import { historicalSnapshotWalkSource } from "../../tools/support/compat/github/language-project-snapshot-walk-20261109.ts";
 import { createHash } from "node:crypto";
 import fs from "node:fs";
@@ -191,7 +192,12 @@ void test("lazy SFC source successors refuse missing, partial, duplicate, future
       read,
       side,
       file,
-      historicalSnapshotWalkSource(read, side, file, read(side, file)),
+      historicalSnapshotWalkSource(
+        read,
+        side,
+        file,
+        historicalDiagnosticPacketsSource(read, side, file, read(side, file)),
+      ),
     );
   for (const entry of record.transitions) {
     if (!entry.path.startsWith("npm/typescript-plugin/")) continue;
