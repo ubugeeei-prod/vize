@@ -243,6 +243,15 @@ runs:
         if-no-files-found: ignore
         retention-days: 7
 
+    - name: Retain ecosystem producer qualification
+      if: ${{ always() }}
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      with:
+        name: ecosystem-producer-qualification-${{ github.run_id }}-${{ github.run_attempt }}-${{ github.sha }}
+        path: target/differential/ecosystem-producer-qualification/receipt.json
+        if-no-files-found: ignore
+        retention-days: 14
+
     - name: Retain source-built Vue LSP receipt and complete session wires
       if: ${{ always() }}
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
