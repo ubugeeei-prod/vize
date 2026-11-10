@@ -44,6 +44,25 @@ pub trait ParserConfig: Default + 'static {
 
     /// Get [`LexerConfig`] for this [`ParserConfig`].
     fn lexer_config(&self) -> Self::LexerConfig;
+
+    /// Whether a host-embedded markup grammar may be registered (see `parse_with_markup`).
+    /// Every markup hook site is compiled out when this is `false`.
+    const MARKUP: bool = false;
+}
+
+/// Parser config for [`crate::Parser::parse_with_markup`]: no tokens, markup hooks compiled in.
+#[derive(Copy, Clone, Default)]
+pub(crate) struct MarkupParserConfig;
+
+impl ParserConfig for MarkupParserConfig {
+    type LexerConfig = NoTokensLexerConfig;
+
+    const MARKUP: bool = true;
+
+    #[inline(always)]
+    fn lexer_config(&self) -> NoTokensLexerConfig {
+        NoTokensLexerConfig
+    }
 }
 
 /// Parser config for parsing without tokens (default).

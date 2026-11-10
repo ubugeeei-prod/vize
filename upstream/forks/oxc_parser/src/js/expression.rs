@@ -903,7 +903,9 @@ impl<'a, C: Config> ParserImpl<'a, C> {
                     lhs =
                         Expression::new_ts_non_null_expression(self.end_span(lhs_span), lhs, self);
                 }
-                Kind::LAngle | Kind::ShiftLeft if self.is_ts => {
+                Kind::LAngle | Kind::ShiftLeft
+                    if self.is_ts && !self.at_markup_line_start_tag() =>
+                {
                     if let Some(arguments) = self.parse_type_arguments_in_expression() {
                         lhs = Expression::new_ts_instantiation_expression(
                             self.end_span(lhs_span),
@@ -1209,6 +1211,10 @@ impl<'a, C: Config> ParserImpl<'a, C> {
             return self.parse_jsx_expression();
         }
 
+        if self.at_markup_directive(crate::MarkupSite::Expression) {
+            return self.parse_markup_expression();
+        }
+
         let span = self.start_span();
         let lhs = self.parse_lhs_expression_or_higher();
         // ++ -- postfix update expressions
@@ -1345,6 +1351,11 @@ impl<'a, C: Config> ParserImpl<'a, C> {
             };
 
             if stop {
+                break;
+            }
+
+            // A line-start `<tag` begins host-embedded markup, not a comparison.
+            if kind == Kind::LAngle && self.at_markup_line_start_tag() {
                 break;
             }
 

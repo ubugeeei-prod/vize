@@ -23,6 +23,9 @@ impl<'a> Dummy<'a> for JSXClosing<'a> {
 
 impl<'a, C: Config> ParserImpl<'a, C> {
     pub(crate) fn parse_jsx_expression(&mut self) -> Expression<'a> {
+        if C::MARKUP {
+            return self.parse_markup_expression();
+        }
         let span = self.start_span();
         self.bump_any(); // bump `<`
         let kind = self.cur_kind();
