@@ -15,7 +15,7 @@ description: "禁止模板表达式中的常量条件。"
 
 ## 错误示例
 
-三元条件始终为真。
+三元表达式的条件始终为真。
 
 ```vue annotate="remove:2"
 <template>
