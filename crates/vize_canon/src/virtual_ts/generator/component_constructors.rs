@@ -77,6 +77,7 @@ pub(super) fn emit_component_constructors<'a>(
         .global_span("canon.virtual_ts.emit_component_constructors");
     let legacy_component = needs_legacy_vue2_helpers(legacy_vue2, dialect);
     let declared = crate::virtual_ts::generated_names::declared;
+    let omit = crate::virtual_ts::generated_names::lib("Omit");
     let (props, emits, slots) = (declared("Props"), declared("Emits"), declared("$Slots"));
     if aliases.jsx_slots {
         append!(
@@ -109,7 +110,7 @@ pub(super) fn emit_component_constructors<'a>(
         });
     }
     ts.push_str("// ========== Default Export ==========\n");
-    ts.push_str(instance_helper(legacy_vue2, dialect));
+    crate::virtual_ts::generated_names::push_lib_text(ts, instance_helper(legacy_vue2, dialect));
     if aliases.has_exposed_type {
         ts.push_str(exposed_unwrap_helper(legacy_vue2, dialect));
     }
@@ -119,7 +120,7 @@ pub(super) fn emit_component_constructors<'a>(
     } else if aliases.has_authored_default {
         append!(
             *ts,
-            "type $ComponentInstance = Omit<{authored_instance}, '$props' | '$emit' | '$slots'> & "
+            "type $ComponentInstance = {omit}<{authored_instance}, '$props' | '$emit' | '$slots'> & "
         );
     } else {
         ts.push_str("type $ComponentInstance = ");
@@ -198,7 +199,7 @@ pub(super) fn emit_component_constructors<'a>(
         // parameters from the instance, instantiating every
         // `$ComponentInstanceFor` branch per relation (~7% of all types).
         let constructor_base = if aliases.has_authored_default {
-            cstr!("Omit<{authored_instance}, '$props' | '$emit' | '$slots'> & {base}")
+            cstr!("{omit}<{authored_instance}, '$props' | '$emit' | '$slots'> & {base}")
         } else {
             String::from(base.as_str())
         };

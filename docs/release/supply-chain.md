@@ -166,7 +166,8 @@ workflow after the package exists; its registry guard will reject the request.
 
 After every package is configured and one release has verified OIDC publishing,
 set the npm package publishing access to require two-factor authentication and
-disallow tokens, then delete any obsolete npm publishing secret from GitHub.
+disallow tokens. Do not create an npm publishing secret for the Release workflow;
+remove any obsolete npm publishing secret that predates the local handoff.
 
 ## What is not signed
 

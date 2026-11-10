@@ -41,6 +41,9 @@ impl ConfigLintRuleOptions {
         if let Some(options) = overlay.html_button_has_type {
             self.html_button_has_type = Some(options);
         }
+        if let Some(options) = overlay.no_use_v_if_with_v_for {
+            self.no_use_v_if_with_v_for = Some(options);
+        }
         if let Some(options) = &overlay.warn_custom_directive {
             self.warn_custom_directive = Some(options.clone());
         }

@@ -3,15 +3,36 @@ mod keyof_scope;
 mod shared_leaves;
 mod typed_router;
 mod workspace_roots;
-use super::{is_cli_diagnostic_line, is_global_diagnostic_line, parse_cli_diagnostics};
+use super::{
+    configure_batch_runtime, is_cli_diagnostic_line, is_global_diagnostic_line,
+    parse_cli_diagnostics,
+};
 use crate::batch::VirtualProject;
 use crate::batch::executor::diagnostics::DiagnosticMapper;
 use std::{
     fs,
-    path::PathBuf,
+    path::{Path, PathBuf},
+    process::Command,
     sync::atomic::{AtomicUsize, Ordering},
 };
 use vize_carton::cstr;
+
+#[test]
+fn selected_tsrs_batch_runtime_enables_the_qualified_fast_mode() {
+    let mut command = Command::new("tsrs");
+    configure_batch_runtime(&mut command, Path::new("/runtime/tsrs"));
+    let fast = command
+        .get_envs()
+        .find(|(name, _)| *name == "TSRS_FAST")
+        .and_then(|(_, value)| value)
+        .and_then(|value| value.to_str());
+    assert_eq!(fast, Some("1"));
+
+    let mut typescript = Command::new("tsgo");
+    configure_batch_runtime(&mut typescript, Path::new("/runtime/tsgo"));
+    assert!(typescript.get_envs().next().is_none());
+}
+
 fn unique_case_dir(name: &str) -> PathBuf {
     static NEXT_CASE_ID: AtomicUsize = AtomicUsize::new(0);
     let case_id = NEXT_CASE_ID.fetch_add(1, Ordering::Relaxed);

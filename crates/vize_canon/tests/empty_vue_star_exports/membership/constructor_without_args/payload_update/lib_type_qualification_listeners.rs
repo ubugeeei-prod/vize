@@ -39,6 +39,7 @@ fn restore(current: String, file: &Value) -> String {
 /// pass through; the layers below authenticate them.
 pub(super) fn source_before(path: &str, current: String) -> String {
     let current = super::listener_return_parity::source_before(path, current);
+    let current = super::lib_type_shadowing_audit::source_before(path, current);
     let current = super::template_ref_unwrap::source_before(path, current);
     let record = record();
     match record["files"]
@@ -73,7 +74,10 @@ mod tests {
             let path = file["path"].as_str().unwrap();
             let current = super::super::template_ref_unwrap::source_before(
                 path,
-                super::super::listener_return_parity::read_current(path),
+                super::super::lib_type_shadowing_audit::source_before(
+                    path,
+                    super::super::listener_return_parity::read_current(path),
+                ),
             );
             assert_eq!(support::hash(current.as_bytes()), file["after"]["sha256"]);
             let previous = source_before(path, current.clone());

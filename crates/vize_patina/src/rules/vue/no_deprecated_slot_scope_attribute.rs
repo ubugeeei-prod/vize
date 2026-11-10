@@ -26,9 +26,10 @@
 
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
+use crate::markup::{MarkupAttribute, MarkupContext, MarkupElement, MarkupRule, MarkupTraversal};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_l0::dialect::VueDialect;
-use vize_relief::{ElementNode, PropNode};
+use vize_relief::ElementNode;
 
 static META: RuleMeta = RuleMeta {
     name: "vue/no-deprecated-slot-scope-attribute",
@@ -43,6 +44,40 @@ mod native;
 /// Disallow the deprecated `slot-scope` attribute.
 pub struct NoDeprecatedSlotScopeAttribute;
 
+impl NoDeprecatedSlotScopeAttribute {
+    fn check_attribute(ctx: &mut LintContext<'_>, attribute: &MarkupAttribute<'_>) {
+        if ctx.dialect() != VueDialect::Vue || attribute.name() != "slot-scope" {
+            return;
+        }
+
+        ctx.error_at_with_help(
+            ctx.t("vue/no-deprecated-slot-scope-attribute.message"),
+            attribute.name_range(),
+            ctx.t("vue/no-deprecated-slot-scope-attribute.help"),
+        );
+    }
+
+    fn check_element(ctx: &mut LintContext<'_>, element: &MarkupElement<'_>) {
+        element.walk_attributes(&mut |attribute| {
+            Self::check_attribute(ctx, &attribute);
+        });
+    }
+}
+
+impl MarkupRule for NoDeprecatedSlotScopeAttribute {
+    fn name(&self) -> &'static str {
+        META.name
+    }
+
+    fn traversal(&self) -> MarkupTraversal {
+        MarkupTraversal::Elements
+    }
+
+    fn enter_element<'a>(&self, ctx: &mut MarkupContext<'_, 'a>, element: &MarkupElement<'a>) {
+        Self::check_element(ctx.lint(), element);
+    }
+}
+
 impl Rule for NoDeprecatedSlotScopeAttribute {
     fn meta(&self) -> &'static RuleMeta {
         &META
@@ -54,22 +89,12 @@ impl Rule for NoDeprecatedSlotScopeAttribute {
         Some(self)
     }
 
-    fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
-        if ctx.dialect() != VueDialect::Vue {
-            return;
-        }
+    fn as_markup_rule(&self) -> Option<&dyn MarkupRule> {
+        Some(self)
+    }
 
-        for prop in element.props.iter() {
-            if let PropNode::Attribute(attr) = prop
-                && attr.name == "slot-scope"
-            {
-                ctx.error_with_help(
-                    ctx.t("vue/no-deprecated-slot-scope-attribute.message"),
-                    &attr.name_loc,
-                    ctx.t("vue/no-deprecated-slot-scope-attribute.help"),
-                );
-            }
-        }
+    fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
+        Self::check_element(ctx, &MarkupElement::new(element));
     }
 }
 

@@ -666,8 +666,6 @@ jobs:
           run-id: ${{ inputs.npm_resume_run }}
           github-token: ${{ github.token }}
           repository: ${{ github.repository }}
-      - uses: ./.github/actions/npm-bootstrap-auth
-        with: { token: "${{ inputs.npm_resume_run != '' && secrets.NPM_BOOTSTRAP_TOKEN || '' }}" }
       - name: Publish native platforms before dependent packages
         id: publish
         run: |

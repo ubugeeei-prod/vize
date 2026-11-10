@@ -4,6 +4,7 @@ import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { beforeListenerReturnParity } from "./listener-return-parity-transition.ts";
 import { beforeGuardedInferenceArrow } from "./guarded-inference-arrow-transition.ts";
+import { beforeLibTypeShadowingAudit } from "./lib-type-shadowing-audit-transition.ts";
 import { beforeSharedUsageHelpersSource } from "./shared-usage-helpers-transition.ts";
 
 export const libTypeListenerRecord =
@@ -48,6 +49,7 @@ function load(): Transition {
 
 /** Remove only lib-name qualification while retaining newer listener semantics. */
 export function beforeCurrentListenerLibTypeQualification(path: string, current: string): string {
+  current = beforeLibTypeShadowingAudit(path, current);
   current = beforeGuardedInferenceArrow(path, current);
   const file = load().files.find((entry) => entry.path === path);
   if (!file || identity(current).sha256 !== file.after.sha256) return current;

@@ -17,9 +17,9 @@ use crate::rules::script::{CustomEventNameCasing, EventNameCasing};
 use crate::rules::script::{DefineMacrosOrder, NoRestrictedMembers, RestrictedGlobals};
 use crate::rules::vue::{
     AttributeHyphenation, HtmlQuotes, HyphenationStyle, MustacheInterpolationSpacing,
-    MustacheInterpolationSpacingStyle, NoMutatingProps, NoMutatingPropsOptions, PropNameCasing,
-    PropNameCasingOption, SfcElementOrder, SfcElementOrderOptions, SlotNameCasingStyle, VBindStyle,
-    VBindStyleOption, VOnStyle, VOnStyleOption, VSlotStyle,
+    MustacheInterpolationSpacingStyle, NoMutatingProps, NoMutatingPropsOptions, NoUseVIfWithVFor,
+    PropNameCasing, PropNameCasingOption, SfcElementOrder, SfcElementOrderOptions,
+    SlotNameCasingStyle, VBindStyle, VBindStyleOption, VOnStyle, VOnStyleOption, VSlotStyle,
 };
 use vize_l0::String;
 
@@ -288,6 +288,16 @@ impl Linter {
                 .replace(Box::new(HtmlButtonHasType::configured(
                     button, submit, reset,
                 )));
+        }
+        self
+    }
+
+    /// Configure `vue/no-use-v-if-with-v-for` without enabling the rule.
+    pub fn with_no_use_v_if_with_v_for_options(mut self, allow_using_iteration_var: bool) -> Self {
+        if self.registry.has_rule("vue/no-use-v-if-with-v-for") {
+            self.registry.replace(Box::new(NoUseVIfWithVFor::configured(
+                allow_using_iteration_var,
+            )));
         }
         self
     }

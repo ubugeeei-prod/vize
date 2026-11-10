@@ -32,9 +32,11 @@
 
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
+use crate::ir::ByteRange;
+use crate::markup::{MarkupContext, MarkupDirective, MarkupElement, MarkupElementKind, MarkupRule};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_l0::is_html_tag;
-use vize_relief::{ElementNode, ElementType, ExpressionNode, PropNode};
+use vize_relief::{DirectiveNode, ElementNode};
 
 static META: RuleMeta = RuleMeta {
     name: "vue/no-deprecated-html-element-is",
@@ -49,6 +51,74 @@ mod native;
 /// Disallow the `is` attribute on native HTML elements.
 pub struct NoDeprecatedHtmlElementIs;
 
+impl NoDeprecatedHtmlElementIs {
+    fn is_native_html_element(element: &MarkupElement<'_>) -> bool {
+        element.kind() == MarkupElementKind::Element
+            && element.tag() != "component"
+            && is_html_tag(element.tag())
+    }
+
+    fn report(ctx: &mut LintContext<'_>, range: ByteRange) {
+        ctx.error_at_with_help(
+            ctx.t("vue/no-deprecated-html-element-is.message"),
+            range,
+            ctx.t("vue/no-deprecated-html-element-is.help"),
+        );
+    }
+
+    fn check_element(ctx: &mut LintContext<'_>, element: &MarkupElement<'_>) {
+        if !Self::is_native_html_element(element) {
+            return;
+        }
+
+        element.walk_attributes(&mut |attribute| {
+            if attribute.name() != "is" {
+                return;
+            }
+            // `is="vue:Foo"` opts into the customized built-in lookup and is
+            // still supported in Vue 3, so it must not be flagged.
+            if attribute.value().is_some_and(is_vue_prefixed_value)
+                || authored_is_vue_prefixed(ctx.source, attribute.range())
+            {
+                return;
+            }
+            Self::report(ctx, attribute.range());
+        });
+    }
+
+    fn check_directive(
+        ctx: &mut LintContext<'_>,
+        element: &MarkupElement<'_>,
+        directive: &MarkupDirective<'_>,
+    ) {
+        if Self::is_native_html_element(element)
+            && directive.name_eq("bind")
+            && directive.is_static_arg_exact("is")
+        {
+            Self::report(ctx, directive.range());
+        }
+    }
+}
+
+impl MarkupRule for NoDeprecatedHtmlElementIs {
+    fn name(&self) -> &'static str {
+        META.name
+    }
+
+    fn enter_element<'a>(&self, ctx: &mut MarkupContext<'_, 'a>, element: &MarkupElement<'a>) {
+        Self::check_element(ctx.lint(), element);
+    }
+
+    fn enter_directive<'a>(
+        &self,
+        ctx: &mut MarkupContext<'_, 'a>,
+        element: &MarkupElement<'a>,
+        directive: &MarkupDirective<'a>,
+    ) {
+        Self::check_directive(ctx.lint(), element, directive);
+    }
+}
+
 impl Rule for NoDeprecatedHtmlElementIs {
     fn meta(&self) -> &'static RuleMeta {
         &META
@@ -58,51 +128,25 @@ impl Rule for NoDeprecatedHtmlElementIs {
         Some(self)
     }
 
+    fn as_markup_rule(&self) -> Option<&dyn MarkupRule> {
+        Some(self)
+    }
+
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
-        // Skip components (PascalCase / built-ins): `is` on a real component is
-        // not the removed native-element substitution.
-        if element.tag_type != ElementType::Element || !is_html_tag(element.tag) {
-            return;
-        }
+        Self::check_element(ctx, &MarkupElement::new(element));
+    }
 
-        // `<component is="...">` is the valid dynamic-component element.
-        if element.tag == "component" {
-            return;
-        }
-
-        for prop in element.props.iter() {
-            match prop {
-                PropNode::Attribute(attr) if attr.name == "is" => {
-                    // `is="vue:Foo"` opts into the customized built-in lookup and is
-                    // still supported in Vue 3, so it must not be flagged.
-                    if attr
-                        .value
-                        .as_ref()
-                        .is_some_and(|value| is_vue_prefixed_value(value.content))
-                        || authored_is_vue_prefixed(ctx.source, attr.loc.span)
-                    {
-                        continue;
-                    }
-                    ctx.error_with_help(
-                        ctx.t("vue/no-deprecated-html-element-is.message"),
-                        &attr.loc,
-                        ctx.t("vue/no-deprecated-html-element-is.help"),
-                    );
-                }
-                PropNode::Directive(directive)
-                    if directive.name == "bind"
-                        && matches!(directive.arg.as_ref(), Some(ExpressionNode::Simple(argument))
-                            if argument.is_static && argument.content == "is") =>
-                {
-                    ctx.error_with_help(
-                        ctx.t("vue/no-deprecated-html-element-is.message"),
-                        &directive.loc,
-                        ctx.t("vue/no-deprecated-html-element-is.help"),
-                    );
-                }
-                _ => {}
-            }
-        }
+    fn check_directive<'a>(
+        &self,
+        ctx: &mut LintContext<'a>,
+        element: &ElementNode<'a>,
+        directive: &DirectiveNode<'a>,
+    ) {
+        Self::check_directive(
+            ctx,
+            &MarkupElement::new(element),
+            &MarkupDirective::from_relief(directive),
+        );
     }
 }
 
@@ -113,12 +157,12 @@ fn is_vue_prefixed_value(value: &str) -> bool {
         || value.starts_with("v&#X75;e:")
 }
 
-fn authored_is_vue_prefixed(source: &str, span: vize_l0::Span) -> bool {
+fn authored_is_vue_prefixed(source: &str, range: ByteRange) -> bool {
     // The HTML parser decodes character references before producing attribute
     // locations, so the end offset can point into the authored value. Find the
     // nearest `is` attribute before the reported location instead of slicing
     // with the decoded end offset.
-    let search_end = (span.start as usize + 4).min(source.len());
+    let search_end = (range.start as usize + 4).min(source.len());
     let Some(attribute_start) = source
         .get(..search_end)
         .and_then(|prefix| prefix.rfind(" is="))

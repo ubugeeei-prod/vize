@@ -23,6 +23,7 @@ mod integrated_source;
 mod jsx_exact_keys;
 mod lib_type_qualification;
 mod lib_type_qualification_listeners;
+mod lib_type_shadowing_audit;
 mod listener_authored_props;
 mod listener_contract;
 mod listener_relations;

@@ -143,9 +143,10 @@ impl TemplateRefKeyChecks<'_> {
                 // A missing global produces the checker's error-type `any`.
                 // Keep that on the object side of the conditional: using it
                 // as the index would invent TS2538 beside the real TS2304.
+                let record = crate::virtual_ts::generated_names::lib("Record");
                 append!(
                     *ts,
-                    "void (null! as ({}IsVue extends true ? $TemplateRefs : Record<string, never>)[",
+                    "void (null! as ({}IsVue extends true ? $TemplateRefs : {record}<string, never>)[",
                     self.helper
                 );
             }

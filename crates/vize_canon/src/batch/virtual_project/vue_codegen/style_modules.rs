@@ -82,7 +82,7 @@ pub(super) fn append_duplicate_style_modules(
             sub_spans: Vec::new(),
         });
         code.push_str(": ");
-        code.push_str(block_type.as_str());
+        crate::virtual_ts::generated_names::push_lib_text(code, block_type.as_str());
         code.push(';');
     }
     code.push_str(" };\nvoid ({} as $StyleModuleDeclarations);\n");

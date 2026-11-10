@@ -41,7 +41,7 @@ type $BooleanKey<T, K extends keyof T = keyof T> = K extends any ? [Exclude<T[K]
 type $IfAny<T, Y, N> = 0 extends (1 & T) ? Y : N;
 type $NotUndefined<T> = T extends undefined ? never : T;
 type $MappedOmit<T, K extends keyof any> = { [P in keyof T as P extends K ? never : P]: T[P] };
-type $DefaultNativeType = null | number | string | boolean | symbol | Function;
+type $DefaultNativeType = null | number | string | boolean | symbol | globalThis.Function;
 type $InferDefault<P, T> = ((props: P) => T & {}) | (T extends $DefaultNativeType ? T : never);
 type __WithDefaultsArgs<T> = { [K in keyof T]?: $InferDefault<T, T[K]> };
 type __WithDefaultsResult<T, D, __BKeys extends keyof T = never> = T extends unknown ? Readonly<$MappedOmit<T, keyof D>> & { readonly [K in keyof D as K extends keyof T ? K : never]-?: K extends keyof T ? D[K] extends undefined ? $IfAny<D[K], $NotUndefined<T[K]>, T[K]> : $NotUndefined<T[K]> : never } & { readonly [K in __BKeys]-?: K extends keyof D ? D[K] extends undefined ? boolean | undefined : boolean : boolean } : never;
@@ -139,7 +139,7 @@ const globalThis = { Function: "label" as Function }
 const named = (value: Pick<string>) => value
 const handler = ref(named)
 
-  // @vize-map: 16160:16287 -> 0:217
+  // @vize-map: 16171:16298 -> 0:217
 
   // ========== Template Scope (inherits from setup) ==========
   // Ref type captures (before template scope shadows them)
@@ -332,7 +332,7 @@ type $VueComponentOptions = {
   emits?: any;
   slots?: any;
   setup?: (this: void, props: Readonly<Props>, ctx: any) => any;
-  render?: Function;
+  render?: globalThis.Function;
   components?: any;
   directives?: any;
   inheritAttrs?: boolean;

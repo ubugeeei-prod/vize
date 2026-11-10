@@ -185,6 +185,13 @@ lintRuleOptionsDef: JsonSchema = new JsonSchema {
       }
       additionalProperties = false
     }
+    ["vue/no-use-v-if-with-v-for"] = new JsonSchema {
+      type = "object"
+      properties {
+        ["allowUsingIterationVar"] = new JsonSchema { type = "boolean"; default = false }
+      }
+      additionalProperties = false
+    }
     ["vue/html-quotes"] = new JsonSchema {
       oneOf = new Listing {
         new JsonSchema {
