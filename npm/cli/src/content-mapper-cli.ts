@@ -14,7 +14,8 @@ try {
   if (answerContentMapperInitialize()) {
     assertMatchingNativeVersion();
     const native = require("@vizejs/native") as typeof import("@vizejs/native");
-    native.runCli(["content-mapper", "--initialized"]);
+    // The host pairs replies by id, so each one goes out once it is ready.
+    native.runCli(["content-mapper", "--initialized", "--reply-when-ready"]);
   }
 } catch (error) {
   if (error instanceof ContentMapperFramingError) {

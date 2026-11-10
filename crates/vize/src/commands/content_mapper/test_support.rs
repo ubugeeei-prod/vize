@@ -75,7 +75,13 @@ pub(super) fn exchange(input: &[u8]) -> Vec<Value> {
 pub(super) fn exchange_initialized(input: &[u8]) -> Vec<Value> {
     let mut reader = BufReader::new(Cursor::new(input));
     let mut output = Vec::new();
-    super::dispatch::serve(&mut reader, &mut output, true).unwrap();
+    super::dispatch::serve(
+        &mut reader,
+        &mut output,
+        true,
+        super::dispatch::ReplyOrder::Request,
+    )
+    .unwrap();
     decode_frames(&output)
 }
 
