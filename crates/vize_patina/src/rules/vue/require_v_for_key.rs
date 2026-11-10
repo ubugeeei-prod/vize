@@ -40,8 +40,9 @@ use vize_relief::{DirectiveNode, ElementNode};
 mod components;
 mod relief;
 
-use components::markup_element_is_custom_component;
-pub(super) use components::relief_element_is_custom_component;
+pub(super) use components::{
+    markup_element_is_custom_component, relief_element_is_custom_component,
+};
 use relief::relief_check;
 
 static META: RuleMeta = RuleMeta {
