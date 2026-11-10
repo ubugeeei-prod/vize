@@ -147,6 +147,16 @@ emit('change')
 }
 
 #[test]
+fn test_type_query_does_not_escape_analysis() {
+    let source = r#"
+const emit = defineEmits(['a'])
+type Emit = typeof emit
+"#;
+    let result = create_linter().lint(source, 0);
+    assert_eq!(result.warning_count, 1);
+}
+
+#[test]
 fn test_emit_passed_to_a_call_escapes_analysis() {
     let source = r#"
 import { useClose } from "./use-close";
