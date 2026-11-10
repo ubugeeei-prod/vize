@@ -22,17 +22,48 @@ export function assertTypedContextWrapperMappings(
   ];
   assert.equal(
     digest(producer),
-    "9c3faec15ca7c73c4a8a3f0fd1fcae7bb6f9d70c8e71a7046994d373e8b4e038",
+    "1e4c7df125bece7d5a264b4b321eb932db96d8d036219c627c7d7e0415fe6c60",
     "unqualified content-mapper producer",
+  );
+  let checkModePredecessor = producerText;
+  for (const [successor, predecessor] of [
+    [
+      "use crate::virtual_ts::{ProjectionFeatures, ProjectionMeta, VizeMapping};\n",
+      "use crate::virtual_ts::{ProjectionFeatures, ProjectionMeta, VirtualTsOptions, VizeMapping};\n",
+    ],
+    [
+      "    let mut virtual_ts_options = transform_options.virtual_ts_options();\n",
+      "    let mut virtual_ts_options = VirtualTsOptions::default();\n",
+    ],
+    [
+      "            template_use_navigation: !transform_options.diagnostics_only(),\n",
+      "            template_use_navigation: true,\n",
+    ],
+    [
+      "            preserve_event_navigation: !transform_options.diagnostics_only(),\n",
+      "            preserve_event_navigation: true,\n",
+    ],
+  ] as const) {
+    assert.equal(
+      checkModePredecessor.split(successor).length,
+      2,
+      "finite check-mode producer successor",
+    );
+    checkModePredecessor = checkModePredecessor.replace(successor, predecessor);
+  }
+  assert.equal(
+    digest(checkModePredecessor),
+    "9c3faec15ca7c73c4a8a3f0fd1fcae7bb6f9d70c8e71a7046994d373e8b4e038",
+    "finite check-mode producer successor",
   );
   const hoverOwnerSuccessor =
     "    span_features::retain_template_hover_owner(generated, &mut spans);\n";
   assert.equal(
-    producerText.split(hoverOwnerSuccessor).length,
+    checkModePredecessor.split(hoverOwnerSuccessor).length,
     2,
     "finite template-hover owner producer successor",
   );
-  const hoverOwnerPredecessor = producerText.replace(hoverOwnerSuccessor, "");
+  const hoverOwnerPredecessor = checkModePredecessor.replace(hoverOwnerSuccessor, "");
   assert.equal(
     digest(hoverOwnerPredecessor),
     "6a060e4d0c5d16cd3071f76ca35558abcecde9fcd5458346d54287eacdef03fd",
