@@ -184,13 +184,13 @@ The literal tasks above are uncached by default. Read-only `lint`, `fmt:check`,
 `check`, and `typecheck` tasks may use Vite+ caching explicitly:
 
 ```ts
-check: {
+const check = {
   command: "vize-vp-task check",
   cache: {
     input: [{ auto: true }, "!node_modules/.vize/**", "!**/.vize/**"],
     output: [],
   },
-},
+};
 ```
 
 Vite+ automatically tracks source files, configuration imports, dependencies, and
