@@ -6,6 +6,10 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { mock, test } from "node:test";
 import {
+  processResourceFacts,
+  runnerResourceFacts,
+} from "../../.github/actions/test-js-packages-with-history/native-fault-resources.ts";
+import {
   hashMeasurements,
   observeDescendants,
 } from "../../.github/actions/test-js-packages-with-history/native-fault-support.ts";
@@ -75,6 +79,92 @@ function fixture() {
 }
 
 const unix = { skip: process.platform === "win32" };
+
+void test("spawn evidence retains redacted argv, RLIMIT_NPROC, and cgroup PID counters", () => {
+  const root = fs.mkdtempSync(path.join(tmpdir(), "vize-spawn-resources-"));
+  try {
+    const processDirectory = path.join(root, "proc", "100");
+    const cgroupRoot = path.join(root, "sys", "fs", "cgroup");
+    const job = path.join(cgroupRoot, "job.slice");
+    fs.mkdirSync(processDirectory, { recursive: true });
+    fs.mkdirSync(job, { recursive: true });
+    const rawArgv = Buffer.from(
+      [
+        "/usr/bin/node",
+        "--token",
+        "private-token",
+        "https://user:password@example.test/input",
+        "NPM_TOKEN=private-token",
+        "--eval",
+        "console.log('private source')",
+        "public.ts",
+        "",
+      ].join("\0"),
+    );
+    fs.writeFileSync(path.join(processDirectory, "cmdline"), rawArgv);
+    fs.writeFileSync(
+      path.join(processDirectory, "limits"),
+      `${"Limit".padEnd(25)}Soft Limit Hard Limit Units\n${"Max processes".padEnd(25)}4096 8192 processes\n`,
+    );
+    fs.writeFileSync(path.join(processDirectory, "cgroup"), "0::/job.slice\n");
+    fs.writeFileSync(path.join(job, "pids.current"), "817\n");
+    fs.writeFileSync(path.join(job, "pids.max"), "1024\n");
+    fs.writeFileSync(path.join(job, "pids.peak"), "900\n");
+    fs.writeFileSync(path.join(job, "pids.events"), "max 3\n");
+    fs.writeFileSync(path.join(job, "pids.events.local"), "max 2\n");
+
+    const facts = processResourceFacts(processDirectory, cgroupRoot);
+    assert.deepEqual(facts.argv, [
+      "/usr/bin/node",
+      "--token",
+      "<redacted>",
+      "https://<redacted>@example.test/input",
+      "NPM_TOKEN=<redacted>",
+      "--eval",
+      "<redacted>",
+      "public.ts",
+    ]);
+    assert.equal(facts.argvSHA256, createHash("sha256").update(rawArgv).digest("hex"));
+    assert.deepEqual(facts.rlimitNproc, {
+      soft: "4096",
+      hard: "8192",
+      units: "processes",
+    });
+    assert.deepEqual(facts.cgroupPids, {
+      hierarchy: "v2",
+      path: "/job.slice",
+      "pids.current": "817",
+      "pids.max": "1024",
+      "pids.peak": "900",
+      "pids.events": "max 3",
+      "pids.events.local": "max 2",
+    });
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
+void test("runner spawn evidence distinguishes unavailable facts from absent limits", () => {
+  const root = fs.mkdtempSync(path.join(tmpdir(), "vize-runner-resources-"));
+  try {
+    const procRoot = path.join(root, "proc");
+    fs.mkdirSync(path.join(procRoot, "100"), { recursive: true });
+    fs.mkdirSync(path.join(procRoot, "sys", "kernel"), { recursive: true });
+    fs.writeFileSync(path.join(procRoot, "sys", "kernel", "pid_max"), "4194304\n");
+    fs.writeFileSync(path.join(procRoot, "sys", "kernel", "threads-max"), "123456\n");
+    fs.writeFileSync(path.join(procRoot, "loadavg"), "1.00 2.00 3.00 7/800 100\n");
+
+    const facts = runnerResourceFacts(100, procRoot, path.join(root, "cgroup"));
+    assert.equal(facts.kernel.pidMax, "4194304");
+    assert.equal(facts.kernel.threadsMax, "123456");
+    assert.equal(facts.kernel.loadAverage, "1.00 2.00 3.00 7/800 100");
+    assert.equal(facts.process.argvUnavailable, "Error");
+    assert.deepEqual(facts.process.rlimitNproc, { unavailable: "Error" });
+    assert.deepEqual(facts.process.cgroupPids, { unavailable: "Error" });
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
 
 void test(
   "non-Node descendant PPID/start/TID joins retain the physical executable and cached image",

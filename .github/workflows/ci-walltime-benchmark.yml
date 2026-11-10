@@ -265,6 +265,7 @@ jobs:
           cp .github/actions/test-js-packages-with-history/native-fault-core.ts "$RUNNER_TEMP/native-fault-core.ts"
           cp .github/actions/test-js-packages-with-history/native-fault-support.ts "$RUNNER_TEMP/native-fault-support.ts"
           cp .github/actions/test-js-packages-with-history/native-fault-retention.ts "$RUNNER_TEMP/native-fault-retention.ts"
+          cp .github/actions/test-js-packages-with-history/native-fault-resources.ts "$RUNNER_TEMP/native-fault-resources.ts"
           node --input-type=module <<'NODE'
           import { execFileSync } from 'node:child_process';
           import { createHash } from 'node:crypto';
@@ -273,28 +274,46 @@ jobs:
           const directory = process.env.RUNNER_TEMP;
           const receipt = {
             orchestration: execFileSync('git', ['rev-parse', 'HEAD', 'HEAD^{tree}'], { encoding: 'utf8' }).trim().split('\n'),
-            helpers: ['native-fault-evidence.ts', 'native-fault-core.ts', 'native-fault-support.ts', 'native-fault-retention.ts'].map(file => ({
+            helpers: ['native-fault-evidence.ts', 'native-fault-core.ts', 'native-fault-support.ts', 'native-fault-retention.ts', 'native-fault-resources.ts'].map(file => ({
               file, sha256: createHash('sha256').update(readFileSync(path.join(directory, file))).digest('hex'),
             })),
-            reportedFailureHead: '17bb01881b3e9721c273048d4698a1fb887c6a2e',
-            physicalFailedSource: 'a16d50297208eb4635c824449bdbb345c462351d',
-            physicalFailedTree: '670e62ad66b6ff29b441e887bc7f62abb641c106',
-            originalRun: 38150949243, originalFailedJob: 114504704179,
+            reportedFailureHead: '0b82a31fc9dd8634786fc17ec3bd3eeb8427ae6e',
+            physicalFailedSource: '0b82a31fc9dd8634786fc17ec3bd3eeb8427ae6e',
+            physicalFailedTree: 'b865787dc492550b568d7cea3bcf458f75b11cfb',
+            originalRun: 41700735853, originalFailedJob: 126145257863,
           };
           writeFileSync(path.join(directory, 'js-native-fault-evidence-orchestration/identity.json'), `${JSON.stringify(receipt, null, 2)}\n`);
           NODE
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
-          ref: a16d50297208eb4635c824449bdbb345c462351d
+          ref: 0b82a31fc9dd8634786fc17ec3bd3eeb8427ae6e
           persist-credentials: false
       - name: Authenticate the exact physical failed source
         run: |
-          test "$(git rev-parse HEAD)" = a16d50297208eb4635c824449bdbb345c462351d
-          test "$(git rev-parse 'HEAD^{tree}')" = 670e62ad66b6ff29b441e887bc7f62abb641c106
+          test "$(git rev-parse HEAD)" = 0b82a31fc9dd8634786fc17ec3bd3eeb8427ae6e
+          test "$(git rev-parse 'HEAD^{tree}')" = b865787dc492550b568d7cea3bcf458f75b11cfb
           test -z "$(git status --porcelain --untracked-files=no)"
-      - uses: ./.github/actions/setup-js-package-tests
+      - uses: ./.github/actions/cache-vp-bootstrap
+      - uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af # v1.21.2
+        with:
+          # Pin the `latest` image used by the retained 2026-11-03 run.
+          version: 1.4.0
+          node-version-file: package.json
+          cache: true
+          cache-save: false
+          run-install: false
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with: { toolchain: stable }
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with: { wild-version: "0.9.0" }
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          key: test-js-packages
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - name: Install the unchanged builders dependencies
+        run: node tools/support/compat/github/install-js-checks.ts builders
       - name: Observe the original mandatory JS command once
-        run: node "$RUNNER_TEMP/native-fault-evidence.ts" -- vp run --workspace-root test:js
+        run: node "$RUNNER_TEMP/native-fault-evidence.ts" -- vp run --workspace-root test:js:builders
       - name: Preserve bounded diagnostics and original native build receipts
         if: ${{ always() }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

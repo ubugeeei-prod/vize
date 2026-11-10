@@ -20,6 +20,7 @@ import {
   writeJson,
 } from "./native-fault-support.ts";
 import type { Packet } from "./native-fault-support.ts";
+import { runnerResourceFacts } from "./native-fault-resources.ts";
 import { processRetention } from "./native-fault-retention.ts";
 
 export const observers = {
@@ -27,6 +28,7 @@ export const observers = {
   privateGuest,
   observeDescendants,
   diagnoseCore,
+  runnerResources: runnerResourceFacts,
   taskDetails: () => runCapture(["vp", "run", "--last-details"], false, 10_000),
 };
 export const uiConformancePhases = [
@@ -69,6 +71,7 @@ function prepareObservation(invocation: Invocation): { output: string; receipt: 
       path.join(path.dirname(helper), "native-fault-core.ts"),
       path.join(path.dirname(helper), "native-fault-support.ts"),
       path.join(path.dirname(helper), "native-fault-retention.ts"),
+      path.join(path.dirname(helper), "native-fault-resources.ts"),
     ].map((filename) => ({ path: filename, sha256: sha256File(filename) })),
     sampling: "read-only /proc descendants; sampled maps are not complete-call evidence",
     coreCapture: "unavailable",
@@ -211,6 +214,10 @@ async function observeCommand(
   output: string,
   receipt: Packet,
 ): Promise<number> {
+  attempt(receipt, "resources-before", () => {
+    receipt.resourcesBefore = observers.runnerResources();
+    writeJson(path.join(output, "resources-before.json"), receipt.resourcesBefore);
+  });
   attempt(receipt, "source-before", () =>
     writeJson(path.join(output, "source-before.json"), observers.sourceSnapshot()),
   );
@@ -283,6 +290,10 @@ async function observeCommand(
         observers.observeDescendants(receipt.pid, seen, providers, output, "/proc", "terminal"),
       );
     receipt.processRetention = processRetention(seen);
+    attempt(receipt, "resources-after", () => {
+      receipt.resourcesAfter = observers.runnerResources();
+      writeJson(path.join(output, "resources-after.json"), receipt.resourcesAfter);
+    });
     Object.assign(receipt, { finishedAt: Date.now() / 1000, sampledMapPackets: seen.size });
     if (patternChanged)
       attempt(receipt, "restore", () => {
