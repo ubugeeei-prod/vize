@@ -13,6 +13,7 @@ import type { VizeSfcLoaderOptions as VizeLoaderOptions } from "../types/index.t
 /** .ce.vue → custom element */
 const DEFAULT_CE_PATTERN = /\.ce\.vue$/;
 
+/** Compile a Vue SFC and return the assembled JavaScript module to Rspack. */
 export default function vizeLoader(this: LoaderContext<VizeLoaderOptions>, source: string): void {
   const callback = this.async();
   const options = this.getOptions();

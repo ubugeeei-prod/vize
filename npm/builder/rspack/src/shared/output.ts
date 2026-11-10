@@ -9,17 +9,18 @@ import { bindDefaultExport } from "@vizejs/builder-shared/native-shape";
 import { hmrImportSnapshot, type ModuleImportInfo } from "./module-output.ts";
 import { MappedModule, parseSourceMap, type SourceMapV3 } from "./source-map.ts";
 
+/** Inputs used to assemble the JavaScript module emitted for a compiled SFC. */
 export interface GenerateOutputOptions {
   requestPath: string;
-  /** Inject HMR boilerplate using `module.hot` (Rspack/webpack CJS API) */
+  /** Inject HMR boilerplate using `module.hot` (Rspack/webpack CJS API). @default false */
   hmr?: boolean;
-  /** Original file path (for __file exposure in dev mode) */
+  /** Original file path (for __file exposure in dev mode). @default undefined */
   filePath?: string;
-  /** Whether this is a production build */
+  /** Whether this is a production build. @default false */
   isProduction?: boolean;
-  /** Project root context (for computing relative __file path) */
+  /** Project root context (for computing relative __file path). @default undefined */
   rootContext?: string;
-  /** Whether Rspack native CSS is handling CSS module exports */
+  /** Whether Rspack native CSS is handling CSS module exports. @default false */
   nativeCss?: boolean;
 }
 
