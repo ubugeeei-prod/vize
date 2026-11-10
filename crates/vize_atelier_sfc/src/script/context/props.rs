@@ -42,49 +42,24 @@ fn normalize_type_prop_name(name_part: &str) -> &str {
 
 impl ScriptCompileContext {
     /// Extract prop names from defineProps/withDefaults and add to bindings
-    pub(super) fn extract_props_bindings(&mut self, call: &MacroCall) {
+    pub(super) fn extract_props_bindings(
+        &mut self,
+        call: &MacroCall,
+        runtime_prop_keys: &[CompactString],
+    ) {
         // Handle type-based defineProps: defineProps<{ msg: string }>()
         if let Some(ref type_args) = call.type_args {
             self.extract_props_from_type_args(type_args);
             return;
         }
 
-        // Parse args to extract prop names
-        // Handle array syntax: ['msg', 'count']
-        // Handle object syntax: { msg: String, count: Number }
-        let args = call.args.trim();
-
-        if let Some(inner) = args.strip_prefix('[').and_then(|s| s.strip_suffix(']')) {
-            // Array syntax
-            for part in inner.split(',') {
-                let part = part.trim();
-                // Extract string literal
-                let quoted = |quote: char| part.strip_prefix(quote)?.strip_suffix(quote);
-                if let Some(name) = quoted('\'').or_else(|| quoted('"')) {
-                    self.bindings
-                        .bindings
-                        .insert(name.to_compact_string(), BindingType::Props);
-                }
-            }
-        } else if let Some(inner) = args.strip_prefix('{').and_then(|s| s.strip_suffix('}')) {
-            // Object syntax - extract keys
-            for part in inner.split(',') {
-                let part = part.trim();
-                // Find key before : or whitespace
-                if let Some((key, _)) = part.split_once(':') {
-                    let key = key.trim();
-                    if !key.is_empty() && is_valid_identifier(key) {
-                        self.bindings
-                            .bindings
-                            .insert(key.to_compact_string(), BindingType::Props);
-                    }
-                } else if is_valid_identifier(part) {
-                    // Shorthand property
-                    self.bindings
-                        .bindings
-                        .insert(part.to_compact_string(), BindingType::Props);
-                }
-            }
+        // Runtime declarations are read from the retained call AST. Splitting
+        // the authored text on commas and colons mistakes nested option keys
+        // (`type`, `required`, `default`, ...) and commented text for props.
+        for name in runtime_prop_keys {
+            self.bindings
+                .bindings
+                .insert(name.clone(), BindingType::Props);
         }
     }
 
@@ -227,6 +202,7 @@ fn unquote_prop_name(name: &str) -> Option<&str> {
 #[cfg(test)]
 mod tests {
     use super::ScriptCompileContext;
+    use crate::types::BindingType;
 
     #[test]
     fn resolve_type_prop_names_keeps_union_members_nested() {
@@ -286,5 +262,45 @@ const props = defineProps<Props>()
             Some("'single' | 'multiple'")
         );
         assert!(find("mode").required);
+    }
+
+    #[test]
+    fn runtime_props_only_register_top_level_ast_keys() {
+        let mut ctx = ScriptCompileContext::new(
+            r#"
+const shorthand = String
+const props = defineProps({
+  /** The title. */
+  title: {
+    type: String,
+    required: true,
+    default: () => ({ nested: true }),
+    validator: value => value.length > 0,
+  },
+  count: Number,
+  shorthand,
+  'aria-label': String,
+  ...shared,
+})
+"#,
+        );
+        ctx.analyze();
+
+        let mut props = ctx
+            .bindings
+            .bindings
+            .iter()
+            .filter_map(|(name, kind)| (*kind == BindingType::Props).then_some(name.as_str()))
+            .collect::<Vec<_>>();
+        props.sort_unstable();
+
+        assert_eq!(props, ["aria-label", "count", "shorthand", "title"]);
+        for nested in ["type", "required", "default", "validator", "nested"] {
+            assert_ne!(
+                ctx.bindings.bindings.get(nested),
+                Some(&BindingType::Props),
+                "nested option key {nested:?} must not become a prop"
+            );
+        }
     }
 }

@@ -2627,6 +2627,59 @@
       }
     },
     {
+      "id": "compiler/sfc/runtime-prop-binding-keys-12510",
+      "state": "active",
+      "targets": [
+        "ssr"
+      ],
+      "inputs": {
+        "root": "runtime-prop-binding-keys-12510",
+        "files": [
+          {
+            "path": "Layout.vue.txt",
+            "sha256": "4fa406a5e294eb701ad4d96b26c65e5a2b8eb7c0c7f7a724f6ddfbb18017d688",
+            "role": "entry"
+          }
+        ]
+      },
+      "reference": {
+        "path": "runtime-prop-binding-keys-12510/module.expected.txt",
+        "sha256": "a693d0bf1e41e799ce54f928b6e8c8ed494d4b62ed9cc3e491473ed846ef80fb",
+        "source": "crates/vize_atelier_sfc/tests/runtime_prop_bindings.rs; compiler-cli-ssr-v1 regression for #12510"
+      },
+      "adapters": {
+        "legacy": "compiler-cli-ssr-v1",
+        "native": null,
+        "reasons": {
+          "native": "Whole-product native SFC and Vue markup paths are unavailable; this row guards top-level runtime defineProps binding classification while the focused compiler regression pins the same contract."
+        }
+      },
+      "comparison": {
+        "contract": "compiler-ssr-module-bytes-v1",
+        "requiredFacets": [
+          "code",
+          "css",
+          "errors",
+          "warnings",
+          "macro_artifacts"
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
+            "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
+          }
+        ]
+      }
+    },
+    {
       "id": "compiler/sfc/scoped-checkout-stability-10067",
       "state": "active",
       "targets": [

@@ -1,0 +1,16 @@
+<script setup>
+defineProps({
+  /** The title. */
+  title: {
+    type: String,
+    required: true,
+    default: () => ({ nested: true }),
+    validator: value => value.length > 0,
+  },
+  count: Number,
+})
+</script>
+
+<template>
+  <p>{{ title }}:{{ count }}:{{ required }}:{{ validator }}</p>
+</template>

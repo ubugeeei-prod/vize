@@ -11,7 +11,7 @@ use crate::types::{BindingMetadata, BindingType};
 use vize_l2::framework::vue::is_builtin_macro;
 
 use super::super::MacroCall;
-use vize_carton::{String, ToCompactString};
+use vize_carton::{CompactString, String, ToCompactString};
 
 impl super::ScriptCompileContext {
     /// Analyze the existing parse-once program for the selected SFC target.
@@ -71,6 +71,16 @@ pub(super) fn extract_macro_from_expr(
         }
     }
     None
+}
+
+/// Return the statically declared top-level keys from a runtime `defineProps` call.
+///
+/// Nested option objects and spread operands deliberately contribute no keys.
+pub(super) fn runtime_prop_keys(call: &CallExpression<'_>, source: &str) -> Vec<CompactString> {
+    call.arguments
+        .first()
+        .map(|argument| crate::script::get_object_or_array_argument_keys(argument, source))
+        .unwrap_or_default()
 }
 
 /// Infer binding type from initializer

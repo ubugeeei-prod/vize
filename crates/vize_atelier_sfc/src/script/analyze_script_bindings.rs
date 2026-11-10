@@ -8,7 +8,7 @@
 
 use oxc_allocator::Allocator;
 use oxc_ast::ast::{
-    ArrayExpression, ArrayExpressionElement, ExportDefaultDeclarationKind, Expression,
+    Argument, ArrayExpression, ArrayExpressionElement, ExportDefaultDeclarationKind, Expression,
     ObjectExpression, ObjectPropertyKind, PropertyKey, Statement,
 };
 use oxc_span::SourceType;
@@ -172,6 +172,20 @@ pub fn get_object_or_array_expression_keys(
         Expression::ObjectExpression(obj) => get_object_expression_keys(obj, source),
         _ => Vec::new(),
     }
+}
+
+/// Get keys from either an object or array call argument.
+///
+/// `Argument::as_expression` excludes spread operands while keeping object and
+/// array handling in the same extractor used by non-call expressions.
+pub(crate) fn get_object_or_array_argument_keys(
+    value: &Argument<'_>,
+    source: &str,
+) -> Vec<CompactString> {
+    value
+        .as_expression()
+        .map(|expression| get_object_or_array_expression_keys(expression, source))
+        .unwrap_or_default()
 }
 
 /// Resolve object key to a string
