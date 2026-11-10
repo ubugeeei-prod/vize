@@ -7,13 +7,62 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
+interface Shape {
+  readonly id: string;
+  readonly host: Readonly<Record<string, unknown>>;
+  readonly red: boolean;
+}
+
+interface FileReceipt {
+  readonly path: string;
+  readonly sha256: string;
+}
+
+interface PackageReceipt {
+  readonly version: string;
+  readonly integrity: string;
+  readonly resolved: string;
+}
+
+interface RunReceipt {
+  readonly stage: Stage;
+  readonly shape: string;
+  readonly source: string;
+  readonly args: readonly string[];
+  readonly status: number | null;
+  readonly signal: NodeJS.Signals | null;
+  readonly error: string | null;
+  readonly stdout: string;
+  readonly stderr: string;
+  readonly report: string | null;
+  readonly milliseconds: number;
+}
+
+type Stage = "published" | "candidate" | "repaired-repeat";
+
+function isRecord(value: unknown): value is Readonly<Record<string, unknown>> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function stringProperty(record: Readonly<Record<string, unknown>>, property: string): string {
+  const value = record[property];
+  assert.ok(typeof value === "string", `${property} must be a string`);
+  return value;
+}
+
 const root = fileURLToPath(new URL("../../", import.meta.url));
 const fixture = path.join(root, "tests/_fixtures/_projects/vitest-project-extends");
 const evidence = path.resolve(process.argv[2] ?? path.join(root, "target/vitest-project-extends"));
-const hash = (bytes) => createHash("sha256").update(bytes).digest("hex");
+const hash = (bytes: string | NodeJS.ArrayBufferView) =>
+  createHash("sha256").update(bytes).digest("hex");
 fs.mkdirSync(evidence, { recursive: true });
-const locked = JSON.parse(fs.readFileSync(path.join(fixture, "package-lock.json"), "utf8"));
-const packages = {};
+const locked: unknown = JSON.parse(
+  fs.readFileSync(path.join(fixture, "package-lock.json"), "utf8"),
+);
+assert.ok(isRecord(locked), "package-lock.json must contain an object");
+const lockedPackages = locked.packages;
+assert.ok(isRecord(lockedPackages), "package-lock.json packages must contain an object");
+const packages: Record<string, PackageReceipt> = {};
 for (const [name, version] of Object.entries({
   "@vizejs/vite-plugin": "0.566.0",
   vize: "0.566.0",
@@ -22,17 +71,22 @@ for (const [name, version] of Object.entries({
   vitest: "5.0.1",
   vue: "3.5.43",
 })) {
-  const entry = locked.packages[`node_modules/${name}`];
-  assert.equal(entry.version, version);
-  assert.match(entry.integrity, /^sha512-/);
+  const entry: unknown = lockedPackages[`node_modules/${name}`];
+  assert.ok(isRecord(entry), `package-lock.json must contain node_modules/${name}`);
+  const lockedVersion = stringProperty(entry, "version");
+  const integrity = stringProperty(entry, "integrity");
+  const resolved = stringProperty(entry, "resolved");
+  assert.equal(lockedVersion, version);
+  assert.match(integrity, /^sha512-/);
   const installed = path.join(fixture, "node_modules", name);
-  assert.equal(
-    JSON.parse(fs.readFileSync(path.join(installed, "package.json"), "utf8")).version,
-    version,
+  const installedManifest: unknown = JSON.parse(
+    fs.readFileSync(path.join(installed, "package.json"), "utf8"),
   );
-  packages[name] = { version, integrity: entry.integrity, resolved: entry.resolved };
+  assert.ok(isRecord(installedManifest), `${name} package.json must contain an object`);
+  assert.equal(stringProperty(installedManifest, "version"), version);
+  packages[name] = { version, integrity, resolved };
 }
-const rows = [];
+const rows: RunReceipt[] = [];
 const shapes = [
   {
     id: "resolve-inherited",
@@ -47,8 +101,8 @@ const shapes = [
     host: { resolve: { alias: { "#x": "/dev/null" } } },
     red: false,
   },
-];
-const config = (shape) => `import { defineConfig } from "vite";
+] satisfies readonly Shape[];
+const config = (shape: Shape) => `import { defineConfig } from "vite";
 import vize from "@vizejs/vite-plugin";
 export default defineConfig({
   plugins: [vize()],
@@ -59,7 +113,7 @@ const component = path.join(fixture, "src/Hello.vue");
 const componentBytes = fs.readFileSync(`${component}.txt`);
 assert.equal(fs.existsSync(component), false, "the tracked carrier owns the exact runtime input");
 
-function files(directory) {
+function files(directory: string): FileReceipt[] {
   return fs
     .readdirSync(directory, { withFileTypes: true })
     .flatMap((entry) => {
@@ -76,7 +130,7 @@ function files(directory) {
     .sort((a, b) => a.path.localeCompare(b.path));
 }
 
-function run(stage, shape, expectedRed) {
+function run(stage: Stage, shape: Shape, expectedRed: boolean): void {
   const source = config(shape);
   fs.writeFileSync(path.join(fixture, "vite.config.ts"), source);
   const reportPath = path.join(evidence, `${stage}-${shape.id}.json`);
@@ -118,15 +172,17 @@ function run(stage, shape, expectedRed) {
     assert.match(result.stderr, /Custom config extends is no longer supported/);
   } else {
     assert.equal(result.status, 0, result.stdout + result.stderr);
-    const parsed = JSON.parse(report);
+    assert.ok(report !== null, `${stage}/${shape.id} must write a Vitest JSON report`);
+    const parsed: unknown = JSON.parse(report);
+    assert.ok(isRecord(parsed), `${stage}/${shape.id} report must contain an object`);
     assert.equal(parsed.success, true);
     assert.equal(parsed.numPassedTests, 1);
     assert.equal(parsed.numFailedTests, 0);
   }
 }
 
-const candidate = {};
-const installedBefore = {};
+const candidate: Record<string, readonly FileReceipt[]> = {};
+const installedBefore: Record<string, readonly FileReceipt[]> = {};
 const nativePackage = path.join(fixture, "node_modules/@vizejs/native-linux-x64-gnu");
 const nativeBefore = files(nativePackage);
 try {
@@ -139,8 +195,9 @@ try {
   })) {
     const destination = path.join(fixture, "node_modules", name, "dist");
     const built = path.join(root, source);
-    candidate[name] = files(built);
-    assert.ok(candidate[name].length > 0);
+    const candidateFiles = files(built);
+    assert.ok(candidateFiles.length > 0);
+    candidate[name] = candidateFiles;
     installedBefore[name] = files(destination);
     fs.cpSync(destination, path.join(evidence, `published-${name.replaceAll("/", "-")}`), {
       recursive: true,
@@ -152,7 +209,7 @@ try {
         path: entry.slice(entry.indexOf("/dist/") + 6),
         ...rest,
       })),
-      candidate[name].map(({ path: entry, ...rest }) => ({
+      candidateFiles.map(({ path: entry, ...rest }) => ({
         path: entry.slice(entry.indexOf("/dist/") + 6),
         ...rest,
       })),
