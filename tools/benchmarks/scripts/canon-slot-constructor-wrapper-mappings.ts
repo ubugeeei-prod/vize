@@ -50,6 +50,24 @@ function wrapped(image: Image, row: Tuple, previous?: Tuple, next?: Tuple) {
     (!next || start + length < next[0])
   );
 }
+function disjointPatternGaps(
+  image: Image,
+  row: Tuple,
+  cursor: number,
+): [Tuple, Tuple] | undefined {
+  const [start, length, original, originalLength, kind, features] = row;
+  if (original < 2 || kind !== 0 || features !== 1048575) return;
+  const opening: Tuple = [start - 2, 2, original - 2, 2, kind, features];
+  const closing: Tuple = [start + length, 2, original + originalLength, 2, kind, features];
+  if (
+    isDeepStrictEqual(image.rows[cursor], opening) &&
+    isDeepStrictEqual(image.rows[cursor + 2], closing) &&
+    bytes(image, opening[0], opening[1]) === "{ " &&
+    bytes(image, closing[0], closing[1]) === " }"
+  ) {
+    return [opening, closing];
+  }
+}
 // #12479: the component-props pass no longer replays a slot whose body checks
 // no component. Such a replay (with the host older releases declared for it)
 // held only `void` reads, so its rows leave with it.
@@ -90,6 +108,7 @@ export function assertConstructorWrapperMappings(
     );
     const candidate = current.rows[candidateIndex]!;
     const add = wrapped(before, old, before.rows[index - 1], before.rows[index + 1]);
+    const gaps = disjointPatternGaps(current, candidate, cursor);
     if (add) {
       assert.ok(
         wrapped(current, candidate),
@@ -113,6 +132,18 @@ export function assertConstructorWrapperMappings(
         current.rows[cursor + 2],
         [candidate[0] + candidate[1], 1, old[2], old[3], 1, 0],
         "exact closing wrapper atom",
+      );
+      cursor += 3;
+    } else if (gaps) {
+      assert.equal(
+        candidateIndex,
+        cursor + 1,
+        "the retained binding stays between its exact gaps",
+      );
+      expected.push(
+        contract(current, gaps[0], canonical),
+        retained,
+        contract(current, gaps[1], canonical),
       );
       cursor += 3;
     } else {
