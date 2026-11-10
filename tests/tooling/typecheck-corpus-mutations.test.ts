@@ -134,6 +134,40 @@ void test("diagnostics outside the plants, new or lost, are collateral", () => {
   assert.equal(referenceAnswer(judged, "prop"), "near TS2345");
 });
 
+void test("the n8n fallthrough plant owns the inserted tabindex attribute", () => {
+  const mutation = loadMutationSet("n8n").mutations.find(
+    ({ id }) => id === "fallthrough-status-tabindex",
+  );
+  assert.ok(mutation);
+  const source = `${"\n".repeat(147)}\t\t\t\t<TitledList :title="\`\${i18n.baseText('node.issues')}:\`" ${mutation.anchor}\n`;
+  const result = mutateFile(mutation.file, source, [mutation]);
+  const line = result.text.trimEnd().split("\n").at(-1)!;
+  assert.equal(line.indexOf(":items") + 1, 61, "the previous prop starts at the stale column");
+  assert.equal(
+    line.slice(mutation.expect.column - 1, mutation.expect.column - 1 + "tabindex".length),
+    "tabindex",
+    "the expected diagnostic belongs to the newly inserted fallthrough attribute name",
+  );
+  assert.deepEqual(
+    judgeLane(
+      set([mutation]),
+      result.regions,
+      [
+        [
+          mutation.file,
+          "error",
+          String(mutation.expect.line),
+          String(mutation.expect.column),
+          mutation.expect.code,
+          mutation.expect.message!,
+        ],
+      ],
+      [],
+    ).plants[mutation.id],
+    { count: 1, near: [] },
+  );
+});
+
 const lane = (counts: Record<string, number>, collateral = 0): LaneJudgement => ({
   plants: Object.fromEntries(
     Object.entries(counts).map(([id, count]) => [id, { count, near: [] }]),
