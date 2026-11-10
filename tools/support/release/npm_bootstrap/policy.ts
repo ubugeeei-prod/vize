@@ -33,6 +33,11 @@ function sha(value: unknown, message: string): string {
   return value;
 }
 
+function positiveId(value: unknown, message: string): string {
+  requireValue(typeof value === "number" && Number.isSafeInteger(value) && value > 0, message);
+  return value.toString();
+}
+
 export interface BootstrapRequest {
   packageName: string;
   packagePath: string;
@@ -100,7 +105,7 @@ export function validateCandidate(
     head_branch: run.head_branch,
     head_repository: headRepository.full_name,
     head_sha: run.head_sha,
-    id: String(run.id ?? ""),
+    id: positiveId(run.id, "Release run numeric ID required"),
     name: run.name,
     path: run.path,
     status: run.status,
@@ -157,22 +162,19 @@ export function validateArtifactInventory(
   requireValue(matches.length === 1, "Release run must have exactly one npm-packages artifact");
   const artifact = matches[0]!;
   requireValue(artifact.expired === false, "npm-packages artifact must not be expired");
-  requireValue(
-    Number.isSafeInteger(artifact.id) && Number(artifact.id) > 0,
-    "npm-packages artifact ID required",
-  );
+  const id = positiveId(artifact.id, "npm-packages artifact ID required");
   requireValue(
     typeof artifact.digest === "string" && /^sha256:[0-9a-f]{64}$/.test(artifact.digest),
     "npm-packages artifact SHA-256 digest required",
   );
   const source = object(artifact.workflow_run, "npm-packages workflow identity required");
   requireValue(
-    String(source.id ?? "") === request.releaseRunId &&
+    positiveId(source.id, "npm-packages workflow run ID required") === request.releaseRunId &&
       source.head_branch === "main" &&
       source.head_sha === parentSha,
     "npm-packages artifact is not bound to the exact Release run",
   );
-  return { digest: artifact.digest, id: String(artifact.id) };
+  return { digest: artifact.digest, id };
 }
 
 function parseManifest(source: string): Json {
