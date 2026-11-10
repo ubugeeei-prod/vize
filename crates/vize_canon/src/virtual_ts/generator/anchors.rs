@@ -121,6 +121,9 @@ impl SetupBindingAnchors<'_> {
         label: &'static str,
         value_reads: &[CompactString],
     ) {
+        let start = ts.len();
+        ts.push_str(BINDING_READS_OPEN);
+        let body = ts.len();
         profile!(
             label,
             emit_setup_binding_anchors(
@@ -137,6 +140,35 @@ impl SetupBindingAnchors<'_> {
                 ),
             )
         );
+        close_read_scope(ts, start, body, BINDING_READS_CLOSE);
+    }
+}
+
+/// Anchor reads only mark bindings used, so they need no control-flow type.
+/// At the end of the template closure every identifier read walks back
+/// through the whole template (and, for a setup `const`, through setup to its
+/// declaration), narrowing at each `v-if` guard. TypeScript extends a read's
+/// flow analysis into the enclosing function only from function expressions,
+/// so a nested function declaration ends each walk at its own start; outer
+/// bindings there take their declared types. Name resolution is unchanged, and
+/// the bare function read neither narrows nor leaves the helper unused.
+pub(super) const BINDING_READS_OPEN: &str = "\n  function __vize_binding_reads() {";
+pub(super) const BINDING_READS_CLOSE: &str = "  }\n  void __vize_binding_reads;\n";
+pub(super) const COMPONENT_READS_OPEN: &str = "\n  function __vize_component_reads() {";
+pub(super) const COMPONENT_READS_CLOSE: &str = "  }\n  void __vize_component_reads;\n";
+
+/// Close a read scope opened at `start`, or drop its opener when no read was
+/// emitted after `body`.
+pub(super) fn close_read_scope(
+    ts: &mut crate::virtual_ts::TextBuf,
+    start: usize,
+    body: usize,
+    close: &str,
+) {
+    if ts.len() == body {
+        ts.truncate(start);
+    } else {
+        ts.push_str(close);
     }
 }
 

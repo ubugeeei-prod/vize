@@ -72,7 +72,10 @@ pub(super) fn emit_unresolved_components(
             append!(*ts, "  const {safe}: any = undefined as any;\n");
         }
 
+        let reads_start = ts.len();
+        ts.push_str(super::anchors::COMPONENT_READS_OPEN);
         ts.push_str("\n  // Mark used components as referenced\n");
+        let reads_body = ts.len();
         components.retain_mut(|component| {
             if vize_croquis::drawer::is_dynamic_component_alias(component.as_str()) {
                 return false;
@@ -88,6 +91,13 @@ pub(super) fn emit_unresolved_components(
             *component = safe;
             true
         });
+        if ts.len() == reads_body {
+            // Keep the marker an empty component list has always emitted.
+            ts.truncate(reads_start);
+            ts.push_str("\n  // Mark used components as referenced\n");
+        } else {
+            ts.push_str(super::anchors::COMPONENT_READS_CLOSE);
+        }
     });
     components.sort_unstable();
     components
