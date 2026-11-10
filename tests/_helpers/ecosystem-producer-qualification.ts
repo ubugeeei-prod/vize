@@ -45,6 +45,12 @@ const sourceFiles = [
   "UiLibraries.vue",
 ] as const;
 
+/**
+ * Require reviewed diagnostic and generated-source packets for the ecosystem fixture.
+ *
+ * The four runs retain their producing process and provider identities so a
+ * successor snapshot cannot silently absorb dependency or source-CLI drift.
+ */
 export function qualifyEcosystemProducerDrift(repoRoot: string): void {
   const expectedPath = path.join(
     repoRoot,
@@ -315,7 +321,7 @@ function generatedSourceHashes(parsed: VizeCheckJson): Record<string, string> {
 
 function normalizeVirtualTs(virtualTs: string): string {
   return virtualTs.replace(
-    /(?:[A-Za-z]:)?[^"\n]*[\\/]vize[\\/]canon[\\/]projects[\\/][0-9a-f]{64}/g,
+    /(?:[A-Za-z]:)?[^"'`\s]*[\\/]vize[\\/]canon[\\/]projects[\\/][0-9a-f]{64}/g,
     "<vize-canon-project>",
   );
 }

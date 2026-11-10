@@ -3,13 +3,20 @@ name: Canon ecosystem producer qualification
 on:
   pull_request:
     paths:
+      - Cargo.lock
+      - Cargo.toml
       - .github/actions/check-vue-parity/action.yml
       - .github/workflows/canon-ecosystem-producer.yml
+      - crates/**
+      - package.json
+      - pnpm-lock.yaml
+      - pnpm-workspace.yaml
       - tests/_fixtures/apps/ecosystem-products/**
       - tests/_fixtures/ecosystem-producer-qualification-11806.json
       - tests/_helpers/apps.ts
       - tests/_helpers/ecosystem-producer-qualification.ts
       - tests/_helpers/vize-check.ts
+      - tests/package.json
       - tests/snapshots/check/ecosystem-products.ts
       - tests/tooling/ecosystem-producer-qualification.test.ts
   workflow_dispatch:
@@ -56,7 +63,7 @@ jobs:
         run: cargo build --locked --profile ci -p vize --features legacy
       - name: Qualify finite positive and negative controls
         run: node --test tests/tooling/ecosystem-producer-qualification.test.ts
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v4
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always()
         with:
           name: ecosystem-producer-qualification-${{ github.run_id }}-${{ github.run_attempt }}-${{ github.sha }}
