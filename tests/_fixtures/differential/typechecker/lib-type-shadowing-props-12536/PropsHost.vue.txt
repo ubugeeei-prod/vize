@@ -1,0 +1,18 @@
+<script lang="ts">
+type Exclude<T, U> = never
+type Extract<T, U> = never
+type Pick<T, K extends keyof T> = never
+export const propsLibTypePoison = true
+</script>
+
+<script setup lang="ts">
+const props = withDefaults(defineProps<{ label?: string; open?: boolean; size?: number; tags?: string[] }>(), {
+  label: 'none',
+  open: undefined,
+  size: 1,
+})
+</script>
+
+<template>
+  <p :title="label">{{ size.toFixed() }} {{ props.open }} {{ $props.label }} {{ tags?.length }}</p>
+</template>
