@@ -171,210 +171,210 @@ expression: outputs
                         ],
                     },
                     VizeMapping {
-                        gen_range: 43664..43670,
+                        gen_range: 43341..43347,
                         src_range: 37..43,
                         sub_spans: [],
                     },
                     VizeMapping {
-                        gen_range: 43954..43959,
+                        gen_range: 43617..43622,
                         src_range: 45..50,
                         sub_spans: [],
                     },
                     VizeMapping {
-                        gen_range: 43968..43974,
+                        gen_range: 43631..43637,
                         src_range: 76..82,
                         sub_spans: [],
                     },
                     VizeMapping {
-                        gen_range: 44258..44263,
+                        gen_range: 43907..43912,
                         src_range: 84..89,
                         sub_spans: [],
                     },
                     VizeMapping {
-                        gen_range: 44272..44278,
+                        gen_range: 43921..43927,
                         src_range: 162..168,
                         sub_spans: [],
                     },
                     VizeMapping {
-                        gen_range: 44562..44567,
+                        gen_range: 44197..44202,
                         src_range: 170..175,
                         sub_spans: [],
                     },
                     VizeMapping {
-                        gen_range: 44576..44582,
+                        gen_range: 44211..44217,
                         src_range: 201..207,
                         sub_spans: [],
                     },
                     VizeMapping {
-                        gen_range: 44866..44871,
+                        gen_range: 44487..44492,
                         src_range: 209..214,
                         sub_spans: [],
                     },
                     VizeMapping {
-                        gen_range: 45056..45121,
+                        gen_range: 44677..44735,
                         src_range: 44..55,
                         sub_spans: [
                             VizeSubSpan {
-                                gen_range: 45066..45091,
+                                gen_range: 44687..44712,
                                 src_range: 45..50,
                             },
                             VizeSubSpan {
-                                gen_range: 45117..45119,
+                                gen_range: 44731..44733,
                                 src_range: 52..54,
                             },
                         ],
                     },
                     VizeMapping {
-                        gen_range: 45249..45260,
+                        gen_range: 44856..44867,
                         src_range: 44..55,
                         sub_spans: [
                             VizeSubSpan {
-                                gen_range: 45250..45255,
+                                gen_range: 44857..44862,
                                 src_range: 45..50,
                             },
                             VizeSubSpan {
-                                gen_range: 45249..45256,
+                                gen_range: 44856..44863,
                                 src_range: 45..50,
                             },
                             VizeSubSpan {
-                                gen_range: 45258..45260,
+                                gen_range: 44865..44867,
                                 src_range: 52..54,
                             },
                         ],
                     },
                     VizeMapping {
-                        gen_range: 45204..45205,
+                        gen_range: 44811..44812,
                         src_range: 37..43,
                         sub_spans: [],
                     },
                     VizeMapping {
-                        gen_range: 45321..45432,
+                        gen_range: 44928..45039,
                         src_range: 37..43,
                         sub_spans: [],
                     },
                     VizeMapping {
-                        gen_range: 45462..45527,
+                        gen_range: 45069..45127,
                         src_range: 83..94,
                         sub_spans: [
                             VizeSubSpan {
-                                gen_range: 45472..45497,
+                                gen_range: 45079..45104,
                                 src_range: 84..89,
                             },
                             VizeSubSpan {
-                                gen_range: 45523..45525,
+                                gen_range: 45123..45125,
                                 src_range: 91..93,
                             },
                         ],
                     },
                     VizeMapping {
-                        gen_range: 45655..45666,
+                        gen_range: 45248..45259,
                         src_range: 83..94,
                         sub_spans: [
                             VizeSubSpan {
-                                gen_range: 45656..45661,
+                                gen_range: 45249..45254,
                                 src_range: 84..89,
                             },
                             VizeSubSpan {
-                                gen_range: 45655..45662,
+                                gen_range: 45248..45255,
                                 src_range: 84..89,
                             },
                             VizeSubSpan {
-                                gen_range: 45664..45666,
+                                gen_range: 45257..45259,
                                 src_range: 91..93,
                             },
                         ],
                     },
                     VizeMapping {
-                        gen_range: 45610..45611,
+                        gen_range: 45203..45204,
                         src_range: 76..82,
                         sub_spans: [],
                     },
                     VizeMapping {
-                        gen_range: 45727..45838,
+                        gen_range: 45320..45431,
                         src_range: 76..82,
                         sub_spans: [],
                     },
                     VizeMapping {
-                        gen_range: 45980..46045,
+                        gen_range: 45573..45631,
                         src_range: 169..180,
                         sub_spans: [
                             VizeSubSpan {
-                                gen_range: 45990..46015,
+                                gen_range: 45583..45608,
                                 src_range: 170..175,
                             },
                             VizeSubSpan {
-                                gen_range: 46041..46043,
+                                gen_range: 45627..45629,
                                 src_range: 177..179,
                             },
                         ],
                     },
                     VizeMapping {
-                        gen_range: 46173..46184,
+                        gen_range: 45752..45763,
                         src_range: 169..180,
                         sub_spans: [
                             VizeSubSpan {
-                                gen_range: 46174..46179,
+                                gen_range: 45753..45758,
                                 src_range: 170..175,
                             },
                             VizeSubSpan {
-                                gen_range: 46173..46180,
+                                gen_range: 45752..45759,
                                 src_range: 170..175,
                             },
                             VizeSubSpan {
-                                gen_range: 46182..46184,
+                                gen_range: 45761..45763,
                                 src_range: 177..179,
                             },
                         ],
                     },
                     VizeMapping {
-                        gen_range: 46128..46129,
+                        gen_range: 45707..45708,
                         src_range: 162..168,
                         sub_spans: [],
                     },
                     VizeMapping {
-                        gen_range: 46245..46356,
+                        gen_range: 45824..45935,
                         src_range: 162..168,
                         sub_spans: [],
                     },
                     VizeMapping {
-                        gen_range: 46388..46453,
+                        gen_range: 45967..46025,
                         src_range: 208..219,
                         sub_spans: [
                             VizeSubSpan {
-                                gen_range: 46398..46423,
+                                gen_range: 45977..46002,
                                 src_range: 209..214,
                             },
                             VizeSubSpan {
-                                gen_range: 46449..46451,
+                                gen_range: 46021..46023,
                                 src_range: 216..218,
                             },
                         ],
                     },
                     VizeMapping {
-                        gen_range: 46581..46592,
+                        gen_range: 46146..46157,
                         src_range: 208..219,
                         sub_spans: [
                             VizeSubSpan {
-                                gen_range: 46582..46587,
+                                gen_range: 46147..46152,
                                 src_range: 209..214,
                             },
                             VizeSubSpan {
-                                gen_range: 46581..46588,
+                                gen_range: 46146..46153,
                                 src_range: 209..214,
                             },
                             VizeSubSpan {
-                                gen_range: 46590..46592,
+                                gen_range: 46155..46157,
                                 src_range: 216..218,
                             },
                         ],
                     },
                     VizeMapping {
-                        gen_range: 46536..46537,
+                        gen_range: 46101..46102,
                         src_range: 201..207,
                         sub_spans: [],
                     },
                     VizeMapping {
-                        gen_range: 46653..46764,
+                        gen_range: 46218..46329,
                         src_range: 201..207,
                         sub_spans: [],
                     },
@@ -667,43 +667,43 @@ expression: outputs
                 ],
                 semantic_links: [
                     VizeSemanticLink {
-                        source_range: 43664..43670,
-                        target_range: 43682..43682,
+                        source_range: 43341..43347,
+                        target_range: 43359..43359,
                         kind: VueComponentPropCompletion,
                     },
                     VizeSemanticLink {
-                        source_range: 43664..43670,
-                        target_range: 43954..43959,
+                        source_range: 43341..43347,
+                        target_range: 43617..43622,
                         kind: VueComponentPropNavigation,
                     },
                     VizeSemanticLink {
-                        source_range: 43968..43974,
-                        target_range: 43986..43986,
+                        source_range: 43631..43637,
+                        target_range: 43649..43649,
                         kind: VueComponentPropCompletion,
                     },
                     VizeSemanticLink {
-                        source_range: 43968..43974,
-                        target_range: 44258..44263,
+                        source_range: 43631..43637,
+                        target_range: 43907..43912,
                         kind: VueComponentPropNavigation,
                     },
                     VizeSemanticLink {
-                        source_range: 44272..44278,
-                        target_range: 44290..44290,
+                        source_range: 43921..43927,
+                        target_range: 43939..43939,
                         kind: VueComponentPropCompletion,
                     },
                     VizeSemanticLink {
-                        source_range: 44272..44278,
-                        target_range: 44562..44567,
+                        source_range: 43921..43927,
+                        target_range: 44197..44202,
                         kind: VueComponentPropNavigation,
                     },
                     VizeSemanticLink {
-                        source_range: 44576..44582,
-                        target_range: 44594..44594,
+                        source_range: 44211..44217,
+                        target_range: 44229..44229,
                         kind: VueComponentPropCompletion,
                     },
                     VizeSemanticLink {
-                        source_range: 44576..44582,
-                        target_range: 44866..44871,
+                        source_range: 44211..44217,
+                        target_range: 44487..44492,
                         kind: VueComponentPropNavigation,
                     },
                 ],
@@ -881,210 +881,210 @@ expression: outputs
                         ],
                     },
                     VizeMapping {
-                        gen_range: 26414..26420,
+                        gen_range: 26091..26097,
                         src_range: 37..43,
                         sub_spans: [],
                     },
                     VizeMapping {
-                        gen_range: 26704..26709,
+                        gen_range: 26367..26372,
                         src_range: 45..50,
                         sub_spans: [],
                     },
                     VizeMapping {
-                        gen_range: 26718..26724,
+                        gen_range: 26381..26387,
                         src_range: 76..82,
                         sub_spans: [],
                     },
                     VizeMapping {
-                        gen_range: 27008..27013,
+                        gen_range: 26657..26662,
                         src_range: 84..89,
                         sub_spans: [],
                     },
                     VizeMapping {
-                        gen_range: 27022..27028,
+                        gen_range: 26671..26677,
                         src_range: 162..168,
                         sub_spans: [],
                     },
                     VizeMapping {
-                        gen_range: 27312..27317,
+                        gen_range: 26947..26952,
                         src_range: 170..175,
                         sub_spans: [],
                     },
                     VizeMapping {
-                        gen_range: 27326..27332,
+                        gen_range: 26961..26967,
                         src_range: 201..207,
                         sub_spans: [],
                     },
                     VizeMapping {
-                        gen_range: 27616..27621,
+                        gen_range: 27237..27242,
                         src_range: 209..214,
                         sub_spans: [],
                     },
                     VizeMapping {
-                        gen_range: 27806..27871,
+                        gen_range: 27427..27485,
                         src_range: 44..55,
                         sub_spans: [
                             VizeSubSpan {
-                                gen_range: 27816..27841,
+                                gen_range: 27437..27462,
                                 src_range: 45..50,
                             },
                             VizeSubSpan {
-                                gen_range: 27867..27869,
+                                gen_range: 27481..27483,
                                 src_range: 52..54,
                             },
                         ],
                     },
                     VizeMapping {
-                        gen_range: 27999..28010,
+                        gen_range: 27606..27617,
                         src_range: 44..55,
                         sub_spans: [
                             VizeSubSpan {
-                                gen_range: 28000..28005,
+                                gen_range: 27607..27612,
                                 src_range: 45..50,
                             },
                             VizeSubSpan {
-                                gen_range: 27999..28006,
+                                gen_range: 27606..27613,
                                 src_range: 45..50,
                             },
                             VizeSubSpan {
-                                gen_range: 28008..28010,
+                                gen_range: 27615..27617,
                                 src_range: 52..54,
                             },
                         ],
                     },
                     VizeMapping {
-                        gen_range: 27954..27955,
+                        gen_range: 27561..27562,
                         src_range: 37..43,
                         sub_spans: [],
                     },
                     VizeMapping {
-                        gen_range: 28071..28208,
+                        gen_range: 27678..27815,
                         src_range: 37..43,
                         sub_spans: [],
                     },
                     VizeMapping {
-                        gen_range: 28238..28303,
+                        gen_range: 27845..27903,
                         src_range: 83..94,
                         sub_spans: [
                             VizeSubSpan {
-                                gen_range: 28248..28273,
+                                gen_range: 27855..27880,
                                 src_range: 84..89,
                             },
                             VizeSubSpan {
-                                gen_range: 28299..28301,
+                                gen_range: 27899..27901,
                                 src_range: 91..93,
                             },
                         ],
                     },
                     VizeMapping {
-                        gen_range: 28431..28442,
+                        gen_range: 28024..28035,
                         src_range: 83..94,
                         sub_spans: [
                             VizeSubSpan {
-                                gen_range: 28432..28437,
+                                gen_range: 28025..28030,
                                 src_range: 84..89,
                             },
                             VizeSubSpan {
-                                gen_range: 28431..28438,
+                                gen_range: 28024..28031,
                                 src_range: 84..89,
                             },
                             VizeSubSpan {
-                                gen_range: 28440..28442,
+                                gen_range: 28033..28035,
                                 src_range: 91..93,
                             },
                         ],
                     },
                     VizeMapping {
-                        gen_range: 28386..28387,
+                        gen_range: 27979..27980,
                         src_range: 76..82,
                         sub_spans: [],
                     },
                     VizeMapping {
-                        gen_range: 28503..28640,
+                        gen_range: 28096..28233,
                         src_range: 76..82,
                         sub_spans: [],
                     },
                     VizeMapping {
-                        gen_range: 28782..28847,
+                        gen_range: 28375..28433,
                         src_range: 169..180,
                         sub_spans: [
                             VizeSubSpan {
-                                gen_range: 28792..28817,
+                                gen_range: 28385..28410,
                                 src_range: 170..175,
                             },
                             VizeSubSpan {
-                                gen_range: 28843..28845,
+                                gen_range: 28429..28431,
                                 src_range: 177..179,
                             },
                         ],
                     },
                     VizeMapping {
-                        gen_range: 28975..28986,
+                        gen_range: 28554..28565,
                         src_range: 169..180,
                         sub_spans: [
                             VizeSubSpan {
-                                gen_range: 28976..28981,
+                                gen_range: 28555..28560,
                                 src_range: 170..175,
                             },
                             VizeSubSpan {
-                                gen_range: 28975..28982,
+                                gen_range: 28554..28561,
                                 src_range: 170..175,
                             },
                             VizeSubSpan {
-                                gen_range: 28984..28986,
+                                gen_range: 28563..28565,
                                 src_range: 177..179,
                             },
                         ],
                     },
                     VizeMapping {
-                        gen_range: 28930..28931,
+                        gen_range: 28509..28510,
                         src_range: 162..168,
                         sub_spans: [],
                     },
                     VizeMapping {
-                        gen_range: 29047..29184,
+                        gen_range: 28626..28763,
                         src_range: 162..168,
                         sub_spans: [],
                     },
                     VizeMapping {
-                        gen_range: 29216..29281,
+                        gen_range: 28795..28853,
                         src_range: 208..219,
                         sub_spans: [
                             VizeSubSpan {
-                                gen_range: 29226..29251,
+                                gen_range: 28805..28830,
                                 src_range: 209..214,
                             },
                             VizeSubSpan {
-                                gen_range: 29277..29279,
+                                gen_range: 28849..28851,
                                 src_range: 216..218,
                             },
                         ],
                     },
                     VizeMapping {
-                        gen_range: 29409..29420,
+                        gen_range: 28974..28985,
                         src_range: 208..219,
                         sub_spans: [
                             VizeSubSpan {
-                                gen_range: 29410..29415,
+                                gen_range: 28975..28980,
                                 src_range: 209..214,
                             },
                             VizeSubSpan {
-                                gen_range: 29409..29416,
+                                gen_range: 28974..28981,
                                 src_range: 209..214,
                             },
                             VizeSubSpan {
-                                gen_range: 29418..29420,
+                                gen_range: 28983..28985,
                                 src_range: 216..218,
                             },
                         ],
                     },
                     VizeMapping {
-                        gen_range: 29364..29365,
+                        gen_range: 28929..28930,
                         src_range: 201..207,
                         sub_spans: [],
                     },
                     VizeMapping {
-                        gen_range: 29481..29618,
+                        gen_range: 29046..29183,
                         src_range: 201..207,
                         sub_spans: [],
                     },
@@ -1377,43 +1377,43 @@ expression: outputs
                 ],
                 semantic_links: [
                     VizeSemanticLink {
-                        source_range: 26414..26420,
-                        target_range: 26432..26432,
+                        source_range: 26091..26097,
+                        target_range: 26109..26109,
                         kind: VueComponentPropCompletion,
                     },
                     VizeSemanticLink {
-                        source_range: 26414..26420,
-                        target_range: 26704..26709,
+                        source_range: 26091..26097,
+                        target_range: 26367..26372,
                         kind: VueComponentPropNavigation,
                     },
                     VizeSemanticLink {
-                        source_range: 26718..26724,
-                        target_range: 26736..26736,
+                        source_range: 26381..26387,
+                        target_range: 26399..26399,
                         kind: VueComponentPropCompletion,
                     },
                     VizeSemanticLink {
-                        source_range: 26718..26724,
-                        target_range: 27008..27013,
+                        source_range: 26381..26387,
+                        target_range: 26657..26662,
                         kind: VueComponentPropNavigation,
                     },
                     VizeSemanticLink {
-                        source_range: 27022..27028,
-                        target_range: 27040..27040,
+                        source_range: 26671..26677,
+                        target_range: 26689..26689,
                         kind: VueComponentPropCompletion,
                     },
                     VizeSemanticLink {
-                        source_range: 27022..27028,
-                        target_range: 27312..27317,
+                        source_range: 26671..26677,
+                        target_range: 26947..26952,
                         kind: VueComponentPropNavigation,
                     },
                     VizeSemanticLink {
-                        source_range: 27326..27332,
-                        target_range: 27344..27344,
+                        source_range: 26961..26967,
+                        target_range: 26979..26979,
                         kind: VueComponentPropCompletion,
                     },
                     VizeSemanticLink {
-                        source_range: 27326..27332,
-                        target_range: 27616..27621,
+                        source_range: 26961..26967,
+                        target_range: 27237..27242,
                         kind: VueComponentPropNavigation,
                     },
                 ],
