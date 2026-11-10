@@ -60,6 +60,9 @@ pub(crate) struct VirtualTsCheckOptions {
     pub(crate) jsx_slots: bool,
     #[cfg(feature = "native")]
     pub(crate) strict_css_modules: bool,
+    /// The host reports every mapped diagnostic (Content Mapper): add
+    /// companion checks for values the whole-props literal leaves unchecked.
+    pub(crate) unchecked_prop_values: bool,
 }
 
 impl VirtualTsCheckOptions {
@@ -124,6 +127,7 @@ impl Default for VirtualTsCheckOptions {
             jsx_slots: false,
             #[cfg(feature = "native")]
             strict_css_modules: false,
+            unchecked_prop_values: false,
         }
     }
 }

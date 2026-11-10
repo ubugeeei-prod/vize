@@ -8,6 +8,7 @@ mod directive_exact;
 mod disjoint;
 mod inference_copies;
 mod navigation_blocks;
+mod unchecked_prop_values;
 
 /// Explicit directives only; `disjoint.rs` covers the unmapped ignores.
 fn transform(source: &str) -> super::ContentMapperTransform {
@@ -194,27 +195,6 @@ fn unmapped_ignore_directive_is_dropped() {
 fn templates_without_directives_emit_none() {
     let source = "<script setup lang=\"ts\">\nconst count = 1\n</script>\n<template>\n  <!-- plain comment -->\n  {{ count }}\n</template>\n";
     assert!(transform(source).diagnostic_directives.is_none());
-}
-
-#[test]
-fn component_prop_assignments_are_ignored_only_when_the_literal_owns_them() {
-    let source = "<script setup lang=\"ts\">import Child from './Child.vue'; const value = 'wrong'</script>\n<template><Child :count=\"value\" /></template>\n";
-    let result = transform(source);
-    let directives = result
-        .diagnostic_directives
-        .expect("component prop echo directive");
-    let check = result
-        .text
-        .find("const __vize_prop_check_0_count")
-        .expect("per-prop check");
-    let literal = result
-        .text
-        .find("\"count\": value")
-        .expect("whole-props entry");
-
-    assert!(covered(&directives.directives, check));
-    assert!(!covered(&directives.directives, literal));
-    assert!(directives.unused_expect_directive_diagnostics.is_empty());
 }
 
 #[test]

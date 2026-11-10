@@ -1,0 +1,8 @@
+<script setup lang="ts">
+import Child from './Child.vue'
+const current = 'wide' as const
+</script>
+<template>
+  <Child :options="{ mode: 'wide' }" :type="'text'" />
+  <Child :options="{ mode: current }" />
+</template>
