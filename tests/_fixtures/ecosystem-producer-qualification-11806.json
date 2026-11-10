@@ -1,0 +1,13 @@
+{
+  "diagnostics": {
+    "baseline": [],
+    "negative": [],
+    "positive": []
+  },
+  "inputSha256": {},
+  "virtualTsSha256": {
+    "baseline": {},
+    "negative": {},
+    "positive": {}
+  }
+}
