@@ -12,7 +12,6 @@
  * (typecheck-command.mjs); max RSS is GNU time's %M.
  */
 
-import { spawnSync } from "node:child_process";
 import { cpSync, mkdirSync, readFileSync, realpathSync, rmSync, writeFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { dirname, join, resolve } from "node:path";
@@ -28,7 +27,13 @@ import {
   singleCheckerResult,
   summarizePair,
 } from "./typecheck-corpus-pair-report.ts";
-import { GNU_TIME, type HostRun, hostArgs, hostRun } from "./typecheck-corpus-pair-host.ts";
+import {
+  type HostRun,
+  hostArgs,
+  hostRun,
+  packageVersion,
+  requireGnuTime,
+} from "./typecheck-corpus-pair-host.ts";
 import {
   diffBatchMapper,
   hostCorsaPath,
@@ -173,14 +178,6 @@ export function prepareProject(dir: string, corpus: Corpus, hosts: MapperHosts):
   for (const mapper of CONTENT_MAPPERS) writeProbePackage(dir, mapper);
 }
 
-function packageVersion(dir: string, name: string): string {
-  return (
-    JSON.parse(readFileSync(join(dir, "node_modules", name, "package.json"), "utf8")) as {
-      version: string;
-    }
-  ).version;
-}
-
 /** vue-tsc and the TypeScript it resolves; a missing install is an error. */
 export function resolveVueTsc(): { bin: string; vueTsc: string; typescript: string } {
   const dir = realpathSync(VUE_TSC_DIR);
@@ -194,15 +191,6 @@ export function resolveVueTsc(): { bin: string; vueTsc: string; typescript: stri
     vueTsc: manifest.version,
     typescript: (JSON.parse(readFileSync(typescript, "utf8")) as { version: string }).version,
   };
-}
-
-function requireGnuTime(): string {
-  const probe = spawnSync(GNU_TIME, ["--version"], { encoding: "utf8" });
-  const version = `${probe.stdout ?? ""}${probe.stderr ?? ""}`.trim().split("\n")[0] ?? "";
-  if (probe.status !== 0 || !/GNU time/iu.test(version)) {
-    throw new Error(`max RSS needs GNU time at ${GNU_TIME}; found: ${version || probe.error}`);
-  }
-  return version;
 }
 
 function main(): void {

@@ -1,3 +1,4 @@
+import { spawnSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
@@ -26,6 +27,20 @@ export type HostRun = {
   diagnostics: Diagnostic[];
   fingerprint: string;
 };
+
+export function requireGnuTime(): string {
+  const probe = spawnSync(GNU_TIME, ["--version"], { encoding: "utf8" });
+  const version = `${probe.stdout ?? ""}${probe.stderr ?? ""}`.trim().split("\n")[0] ?? "";
+  if (probe.status !== 0 || !/GNU time/iu.test(version)) {
+    throw new Error(`max RSS needs GNU time at ${GNU_TIME}; found: ${version || probe.error}`);
+  }
+  return version;
+}
+
+export function packageVersion(dir: string, name: string): string {
+  const manifest = join(dir, "node_modules", name, "package.json");
+  return (JSON.parse(readFileSync(manifest, "utf8")) as { version: string }).version;
+}
 
 export const hostArgs = (
   host: Host,
