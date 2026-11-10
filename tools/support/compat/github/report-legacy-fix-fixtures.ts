@@ -33,6 +33,10 @@ import { knownCompilerCssSource } from "../../../../tests/differential/compiler-
 import { newNativeRuntimeCases } from "./native-runtime-fixtures.ts";
 import { newVaporStyleApiCases } from "./vapor-style-api-fixtures.ts";
 import { newJsxChildApiCases } from "./jsx-child-api-fixtures.ts";
+import {
+  jsxEntrySource,
+  newJsxEntryCases,
+} from "../../../../tests/differential/compiler-jsx-entry.ts";
 import { newNativeDiagnosticPhaseCases } from "./native-diagnostic-phase-fixtures.ts";
 import { COMPILER_DOM_ID } from "../../../../tests/differential/compiler-dom.ts";
 
@@ -108,6 +112,7 @@ interface Manifest {
   cssApiCases?: unknown;
   vaporStyleApiCases?: unknown;
   jsxChildApiCases?: unknown;
+  jsxEntryCases?: unknown;
   diagnosticPhaseCases?: unknown;
 }
 
@@ -378,8 +383,17 @@ function checkProduct(
       jsxIds.length > 0 &&
       compilerPaths.length > 0 &&
       compilerPaths.every((path) => jsxChild.sources.has(path));
+    // A JSX entry case observes only the JSX compiler; shared backends need an SFC case.
+    const jsxEntryIds =
+      product === "compiler"
+        ? newJsxEntryCases(before?.jsxEntryCases, manifest.jsxEntryCases, (path) =>
+            readFile("head", path),
+          )
+        : [];
+    const jsxEntryOnly =
+      jsxEntryIds.length > 0 && compilerPaths.length > 0 && compilerPaths.every(jsxEntrySource);
     const registered =
-      (cssOnly || vaporOnly || jsxOnly || !batchRequired || cases.length > 0) &&
+      (cssOnly || vaporOnly || jsxOnly || jsxEntryOnly || !batchRequired || cases.length > 0) &&
       (!protocolRequired || protocols.length > 0) &&
       (!dtoRequired || dtoRegistered);
     return {
@@ -392,6 +406,7 @@ function checkProduct(
         ...cssApi,
         ...vaporIds,
         ...jsxIds,
+        ...jsxEntryIds,
         ...languageProject.ids,
         ...dtoProtocols,
         ...logical.ids,
