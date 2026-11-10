@@ -81,7 +81,7 @@ test("packed defineConfig runs native and Vite+ tools using the consumer's insta
       `import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 export default defineConfig({
   plugins: [{ name: "vite:vue", transform() { throw new Error("Old Vue compiler must be replaced"); } }],
-  lint: { ignorePatterns: ["dist/**", "library/**"], vue: { preset: "essential", rules: { "vue/no-v-html": "error" } }, rules: { "no-debugger": "error" } },
+  lint: { ignorePatterns: ["dist/**", "generated/**", "library/**"], vue: { preset: "essential", reportUnusedDisableDirectives: true, rules: { "vue/no-v-html": "error" } }, rules: { "no-debugger": "error" } },
   fmt: { ignorePatterns: ["dist/**", "library/**"], vue: { singleQuote: true } },
 });
 `,
@@ -91,6 +91,8 @@ export default defineConfig({
       '<script setup lang="ts">\nconst html = "hello";\n</script>\n<template><div v-html="html" /></template>\n',
     );
     write("script.ts", "debugger;\nexport const value=1;\n");
+    fs.mkdirSync(path.join(directory, "generated"));
+    write("generated/client.ts", "/* eslint-disable */\nexport const generated=1;\n");
     const lint = run(directory, ["run", "lint"], 1);
     assert.match(lint, /vize:vue\/no-v-html/);
     assert.match(lint, /no-debugger/);
