@@ -74,6 +74,7 @@ export default defineConfig({}).withVue({
 | `vue/slot-name-casing` | `"camelCase" \| "kebab-case" \| "singleword"` | Defaults to `camelCase`. Checks static names on rendered `<slot>` outlets; provider-side `v-slot` and `#name` syntax is outside this rule. |
 | `script/define-props-destructuring` | `{ destructure?: "only-when-assigned" \| "always" \| "never" }` | Defaults to `always`, checking assigned and bare typed calls. `only-when-assigned` skips bare calls; `never` requires props-object access. Vue 3.5 destructuring preserves reactivity. |
 | `vue/no-mutating-props` | `{ shallowOnly?: boolean }` | Defaults to `false`; `true` allows nested mutation while still disallowing direct prop reassignment. |
+| `vue/no-use-v-if-with-v-for` | `{ allowUsingIterationVar?: boolean }` | Defaults to `false`. `true` permits `v-if` only when its condition references a sibling `v-for` iteration variable; unrelated conditions are still reported. |
 | `vue/enforce-style-attribute` | `{ allow?: Array<"plain" \| "scoped" \| "module"> }` | Defaults to `["scoped"]`. Lists the accepted style-block modes. |
 | `vue/no-restricted-syntax` | `{ selectors?: Array<"ArrayExpression" \| "BinaryExpression" \| "CallExpression" \| "ConditionalExpression" \| "ObjectExpression" \| "UnaryExpression"> }` | Defaults to `[]`. Only exact supported ESTree node types are accepted; compound esquery selectors fail configuration. |
 | `vue/quote-props` | `"as-needed"` | Rejects unnecessary quoted object keys in retained template expressions. |
@@ -183,6 +184,40 @@ Good with this policy:
 
 ```vue
 <button type="button">Cancel</button>
+```
+
+## `vue/no-use-v-if-with-v-for`
+
+Set `allowUsingIterationVar` to `true` when a project intentionally filters a loop item with a
+same-element `v-if`. Conditions that do not reference a sibling `v-for` variable remain invalid,
+and the option does not enable the rule. The upstream rule is not fixable, so this policy produces
+diagnostics without an automatic rewrite.
+
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({}).withVue({
+  linter: {
+    rules: { "vue/no-use-v-if-with-v-for": "warn" },
+    ruleOptions: {
+      "vue/no-use-v-if-with-v-for": {
+        allowUsingIterationVar: true,
+      },
+    },
+  },
+});
+```
+
+Bad with this policy:
+
+```vue
+<li v-for="item in items" v-if="showAll">{{ item.name }}</li>
+```
+
+Good with this policy:
+
+```vue
+<li v-for="item in items" v-if="item.visible">{{ item.name }}</li>
 ```
 
 ## `vue/require-component-registration`

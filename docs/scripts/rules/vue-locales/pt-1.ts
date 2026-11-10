@@ -117,8 +117,8 @@ export const portugueseVue1: Record<string, readonly [purpose: string, bad: stri
     ],
     "vue/no-use-v-if-with-v-for": [
       "Proibir `v-if` no mesmo elemento que `v-for`",
-      "O mesmo elemento de lista combina v-if e v-for e testa a visibilidade por meio da variável do laço.",
-      "Uma coleção computada filtra os itens visíveis antes que o template itere sobre eles.",
+      "O mesmo elemento de lista combina v-if e v-for, mas a condição não referencia a variável do laço.",
+      "Com allowUsingIterationVar ativado, a condição referencia item do mesmo v-for.",
     ],
     "vue/no-useless-mustaches": [
       "Proibir interpolação com chaves duplas cuja expressão seja uma string literal constante",

@@ -77,6 +77,7 @@ export default defineConfig({}).withVue({
 | `vue/slot-name-casing` | `"camelCase" \| "kebab-case" \| "singleword"` | 既定は `camelCase` です。描画される `<slot>` outlet の静的な名前を検査します。提供側の `v-slot` と `#name` 構文はこのルールの対象外です。 |
 | `script/define-props-destructuring` | `{ destructure?: "only-when-assigned" \| "always" \| "never" }` | 既定は `always` で、代入した呼び出しと型付きの単独呼び出しを検査します。`only-when-assigned` は単独呼び出しを除外し、`never` は props オブジェクトでの参照を要求します。Vue 3.5 の分割代入はリアクティビティを保ちます。 |
 | `vue/no-mutating-props` | `{ shallowOnly?: boolean }` | 既定は `false` です。`true` では、プロパティ自体の再代入を禁止したまま、入れ子のプロパティの変更を許可します。 |
+| `vue/no-use-v-if-with-v-for` | `{ allowUsingIterationVar?: boolean }` | 既定は `false` です。`true` では、同じ要素の `v-if` が `v-for` の反復変数を参照する場合だけ許可し、無関係な条件は引き続き報告します。 |
 | `vue/enforce-style-attribute` | `{ allow?: Array<"plain" \| "scoped" \| "module"> }` | 既定は `["scoped"]` です。許可する style ブロックのモードを指定します。 |
 | `vue/no-restricted-syntax` | `{ selectors?: Array<"ArrayExpression" \| "BinaryExpression" \| "CallExpression" \| "ConditionalExpression" \| "ObjectExpression" \| "UnaryExpression"> }` | 既定は `[]` です。対応する ESTree ノード型の完全一致だけを受け付け、複合 esquery セレクターは設定エラーにします。 |
 | `vue/quote-props` | `"as-needed"` | 保持されたテンプレート式にある不要な引用符付きオブジェクトキーを禁止します。 |
@@ -185,6 +186,40 @@ export default defineConfig({}).withVue({
 
 ```vue
 <button type="button">Cancel</button>
+```
+
+## `vue/no-use-v-if-with-v-for`
+
+同じ要素の `v-if` でループ項目を意図的に絞り込むプロジェクトでは、
+`allowUsingIterationVar` を `true` にします。`v-for` の反復変数を参照しない条件は
+引き続き報告され、このオプションだけではルールを有効にしません。upstream のルールは
+自動修正に対応していないため、この設定も診断のみを行います。
+
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({}).withVue({
+  linter: {
+    rules: { "vue/no-use-v-if-with-v-for": "warn" },
+    ruleOptions: {
+      "vue/no-use-v-if-with-v-for": {
+        allowUsingIterationVar: true,
+      },
+    },
+  },
+});
+```
+
+この設定で報告される例：
+
+```vue
+<li v-for="item in items" v-if="showAll">{{ item.name }}</li>
+```
+
+この設定で許可される例：
+
+```vue
+<li v-for="item in items" v-if="item.visible">{{ item.name }}</li>
 ```
 
 ## `vue/require-component-registration`
