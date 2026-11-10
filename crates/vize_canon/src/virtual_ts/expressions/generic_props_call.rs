@@ -42,6 +42,7 @@ pub(super) fn generate_generic_props_call(
     typed_fallthrough_values: bool,
     hoist_shared_preamble: bool,
 ) {
+    let prefix = crate::virtual_ts::generated_names::template_prefix();
     let expr_indent = if usage.vif_guard.is_some() {
         cstr!("{indent}  ")
     } else {
@@ -52,7 +53,10 @@ pub(super) fn generate_generic_props_call(
         append_chained_vif_guard_open(ts, indent, guard, "Inference-only guard");
     }
 
-    vize_l0::emit_ts!(ts, "{expr_indent}(undefined as unknown as __VCheck{idx})(");
+    vize_l0::emit_ts!(
+        ts,
+        "{expr_indent}(undefined as unknown as {prefix}Check{idx})("
+    );
     let check_spread_values = typed_fallthrough_values && !usage.spread_props.is_empty();
     // TypeScript anchors an *argument* assignability failure — `TS2345` — at the
     // opening brace of the object literal. Mapping only that byte gives the
@@ -88,9 +92,9 @@ pub(super) fn generate_generic_props_call(
         if hoist_shared_preamble {
             let fallthrough_spread_checker =
                 crate::virtual_ts::helpers::shared_types::FALLTHROUGH_SPREAD_CHECKER.select(true);
-            vize_l0::emit_ts!(ts, "{expr_indent}(undefined as unknown as {fallthrough_spread_checker}<__VComp{idx}, __VProps{idx}>)(");
+            vize_l0::emit_ts!(ts, "{expr_indent}(undefined as unknown as {fallthrough_spread_checker}<{prefix}Comp{idx}, {prefix}Props{idx}>)(");
         } else {
-            vize_l0::emit_ts!(ts, "{expr_indent}(undefined as unknown as $FallthroughSpreadChecker<__VComp{idx}, __VProps{idx}>)(");
+            vize_l0::emit_ts!(ts, "{expr_indent}(undefined as unknown as $FallthroughSpreadChecker<{prefix}Comp{idx}, {prefix}Props{idx}>)(");
         }
         let start = ts.len();
         vize_l0::emit_ts!(ts, "$FallthroughProps_{idx}");

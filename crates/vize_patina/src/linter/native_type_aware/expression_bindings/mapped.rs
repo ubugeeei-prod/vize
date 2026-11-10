@@ -365,12 +365,27 @@ struct Probe {
 }
 
 /// `(undefined as unknown as __VCheck{N})({`: one component usage's
-/// whole-props check.
+/// whole-props check. An authored-name collision moves the family to
+/// `__V$<namespace>Check{N}`.
 fn is_component_checker_call(header: &str) -> bool {
-    header
+    let Some(mut rest) = header
         .trim_end()
-        .strip_prefix("(undefined as unknown as __VCheck")
-        .and_then(|rest| rest.strip_suffix(")({"))
+        .strip_prefix("(undefined as unknown as __V")
+    else {
+        return false;
+    };
+    if let Some(namespace) = rest.strip_prefix('$') {
+        let end = namespace
+            .bytes()
+            .position(|byte| !byte.is_ascii_digit())
+            .unwrap_or(namespace.len());
+        if end == 0 {
+            return false;
+        }
+        rest = namespace.get(end..).unwrap_or_default();
+    }
+    rest.strip_prefix("Check")
+        .and_then(|index| index.strip_suffix(")({"))
         .is_some_and(|index| !index.is_empty() && index.bytes().all(|byte| byte.is_ascii_digit()))
 }
 
@@ -379,4 +394,26 @@ fn guard_header(trimmed: &str) -> bool {
     let header = trimmed.strip_prefix('}').unwrap_or(trimmed).trim_start();
     (header.starts_with("if (") || header.starts_with("else if ("))
         && trimmed.trim_end().ends_with(") {")
+}
+
+#[cfg(test)]
+mod tests {
+    use super::is_component_checker_call;
+
+    #[test]
+    fn component_checker_call_accepts_the_default_and_collision_namespace() {
+        for header in [
+            "(undefined as unknown as __VCheck0)({",
+            "(undefined as unknown as __V$1Check42)({",
+        ] {
+            assert!(is_component_checker_call(header), "{header}");
+        }
+        for header in [
+            "(undefined as unknown as __V$Check0)({",
+            "(undefined as unknown as __V$1Props0)({",
+            "(undefined as unknown as __VCheck)({",
+        ] {
+            assert!(!is_component_checker_call(header), "{header}");
+        }
+    }
 }

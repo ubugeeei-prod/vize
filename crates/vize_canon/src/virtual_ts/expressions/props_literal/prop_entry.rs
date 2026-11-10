@@ -31,6 +31,7 @@ pub(super) fn append_prop_entry<'p>(
     ts: &mut crate::virtual_ts::TextBuf,
     mappings: &mut Vec<VizeMapping>,
     prop: &PassedProp,
+    contract_prefix: &str,
     template_binding_access: &TemplateBindingAccess,
     source_context: ComponentPropSource<'_>,
     expr_indent: &str,
@@ -129,7 +130,10 @@ pub(super) fn append_prop_entry<'p>(
             && let Some(idx) = source_context.aria_value_contract_index
         {
             let name = to_safe_identifier_fragment(prop.name.as_str());
-            append!(*ts, ", (undefined as unknown as __VProp{idx}${name})",);
+            append!(
+                *ts,
+                ", (undefined as unknown as {contract_prefix}Prop{idx}${name})",
+            );
         }
         ts.push(')');
     }

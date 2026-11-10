@@ -69,6 +69,7 @@ pub(crate) fn append_props_literal(
 ) -> std::ops::Range<usize> {
     let scoped_access = template_binding_access.for_scope(usage.scope_id);
     let template_binding_access = &scoped_access;
+    let contract_prefix = crate::virtual_ts::generated_names::template_prefix();
     let literal_gen_start = ts.len();
     ts! { &mut *ts =>
         {
@@ -130,6 +131,7 @@ pub(crate) fn append_props_literal(
             ts,
             mappings,
             prop,
+            contract_prefix.as_str(),
             template_binding_access,
             source_context,
             expr_indent,

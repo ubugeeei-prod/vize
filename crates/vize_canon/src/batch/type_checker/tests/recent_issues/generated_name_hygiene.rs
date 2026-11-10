@@ -2,11 +2,10 @@
 //!
 //! Per-usage contract aliases are spelled `__V<Role><N>` (see
 //! `virtual_ts::generated_names`). The host authors names beside that space:
-//! the legacy `__<Component>_Props_<N>` spelling, the bare `__VProps` role,
-//! Volar's `__VLS_*`, Vue's `__VUE_*__` and `__V` itself. A template type
-//! assertion reads each one; the legacy spelling used to be redeclared by the
-//! template scope, which turned `title: number` back into the child's
-//! `title: string` and lost the error below.
+//! the legacy `__<Component>_Props_<N>` spelling, an exact compact
+//! `__VProps0` binding, the bare `__VProps` role, Volar's `__VLS_*`, Vue's
+//! `__VUE_*__` and `__V` itself. A template type assertion reads each one;
+//! generated contracts must never replace the authored meaning.
 
 use super::super::{create_project_case, resolve_test_tsgo_binary, snapshot_project_diagnostics};
 use crate::batch::VirtualProject;
@@ -24,6 +23,7 @@ const HOST: &str = r#"<script setup lang="ts">
 import Child from './Child.vue'
 
 type __Child_Props_0 = { title: number }
+type __VProps0 = { title: number }
 type __VProps = { title: string }
 const __VLS_ctx = { label: 'ctx' }
 const __VUE_OPTIONS_API__ = 'options'
@@ -35,6 +35,7 @@ const probe: unknown = { title: 'probe' }
 <template>
   <Child :title="__VLS_ctx.label + __VComp + __VUE_OPTIONS_API__" :count="__V" />
   <Child :title="(probe as __Child_Props_0).title" />
+  <Child :title="(probe as __VProps0).title" />
   <Child :title="(probe as __VProps).title" />
 </template>
 "#;
@@ -63,10 +64,10 @@ fn authored_names_beside_the_reserved_prefix_keep_their_meaning() {
 
     // Every usage declares its own compact contract; no authored spelling is
     // declared a second time.
-    for usage in 0..3 {
+    for usage in 0..4 {
         assert_eq!(
             generated
-                .matches(&format!("type __VProps{usage} = "))
+                .matches(&format!("type __V$1Props{usage} = "))
                 .count(),
             1,
             "usage {usage} declares its contract once:\n{generated}"
@@ -74,6 +75,7 @@ fn authored_names_beside_the_reserved_prefix_keep_their_meaning() {
     }
     for authored in [
         "type __Child_Props_0 =",
+        "type __VProps0 =",
         "type __VProps =",
         "const __VComp =",
     ] {
@@ -89,11 +91,18 @@ fn authored_names_beside_the_reserved_prefix_keep_their_meaning() {
     };
     assert_eq!(
         snapshot,
-        [(
-            "src/Host.vue".into(),
-            Some(2322),
-            "15:11:error Type 'number' is not assignable to type 'string'.".into(),
-        )],
-        "only the authored `title: number` is wrong"
+        [
+            (
+                "src/Host.vue".into(),
+                Some(2322),
+                "16:11:error Type 'number' is not assignable to type 'string'.".into(),
+            ),
+            (
+                "src/Host.vue".into(),
+                Some(2322),
+                "17:11:error Type 'number' is not assignable to type 'string'.".into(),
+            ),
+        ],
+        "both authored `title: number` contracts keep their meaning"
     );
 }
