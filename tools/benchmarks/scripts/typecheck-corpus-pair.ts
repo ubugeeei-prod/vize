@@ -12,7 +12,6 @@
  * (typecheck-command.mjs); max RSS is GNU time's %M.
  */
 
-import { spawnSync } from "node:child_process";
 import { cpSync, mkdirSync, readFileSync, realpathSync, rmSync, writeFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { dirname, join, resolve } from "node:path";
@@ -28,10 +27,17 @@ import {
   singleCheckerResult,
   summarizePair,
 } from "./typecheck-corpus-pair-report.ts";
-import { GNU_TIME, type HostRun, hostArgs, hostRun } from "./typecheck-corpus-pair-host.ts";
+import {
+  type HostRun,
+  hostArgs,
+  hostRun,
+  packageVersion,
+  requireGnuTime,
+} from "./typecheck-corpus-pair-host.ts";
 import {
   diffBatchMapper,
   hostCorsaPath,
+  hostTsrsPath,
   renderBatchDiff,
   runBatchCheck,
 } from "./typecheck-corpus-pair-batch.ts";
@@ -174,14 +180,6 @@ export function prepareProject(dir: string, corpus: Corpus, hosts: MapperHosts):
   for (const mapper of CONTENT_MAPPERS) writeProbePackage(dir, mapper);
 }
 
-function packageVersion(dir: string, name: string): string {
-  return (
-    JSON.parse(readFileSync(join(dir, "node_modules", name, "package.json"), "utf8")) as {
-      version: string;
-    }
-  ).version;
-}
-
 /** vue-tsc and the TypeScript it resolves; a missing install is an error. */
 export function resolveVueTsc(): { bin: string; vueTsc: string; typescript: string } {
   const dir = realpathSync(VUE_TSC_DIR);
@@ -195,15 +193,6 @@ export function resolveVueTsc(): { bin: string; vueTsc: string; typescript: stri
     vueTsc: manifest.version,
     typescript: (JSON.parse(readFileSync(typescript, "utf8")) as { version: string }).version,
   };
-}
-
-function requireGnuTime(): string {
-  const probe = spawnSync(GNU_TIME, ["--version"], { encoding: "utf8" });
-  const version = `${probe.stdout ?? ""}${probe.stderr ?? ""}`.trim().split("\n")[0] ?? "";
-  if (probe.status !== 0 || !/GNU time/iu.test(version)) {
-    throw new Error(`max RSS needs GNU time at ${GNU_TIME}; found: ${version || probe.error}`);
-  }
-  return version;
 }
 
 function main(): void {
@@ -454,21 +443,38 @@ function main(): void {
   };
   if (values.batch) {
     const corsa = hostCorsaPath(TYPECHECK_HOSTS_DIR);
+    const tsrs = hostTsrsPath(TYPECHECK_HOSTS_DIR);
     const headBuild = resolve(values.head);
     const diffs = CORPORA.map((corpus) => {
       const project = projects(corpus, "head");
       const mapper = timed.get(`${corpus.id}-tsc-vize-head`)?.[0]?.diagnostics;
       if (!mapper) throw new Error(`${corpus.id}: no tsc mapper run on head`);
-      const one = runBatchCheck(headBuild, project, corsa);
-      // vize check pins one Corsa checker for determinism (#3905); measure what width changes.
+      const one = runBatchCheck(headBuild, project, corsa, { VIZE_CHECKERS: "1" });
+      // Qualify both batch hosts at the one-checker oracle and measured default width.
       const checkers = 8;
       const wide = runBatchCheck(headBuild, project, corsa, {
         VIZE_CHECKERS: String(checkers),
       });
       const widened = diffBatchMapper(corpus.id, wide, one);
+      const tsrsOne = runBatchCheck(headBuild, project, tsrs, { VIZE_CHECKERS: "1" });
+      const tsrsWide = runBatchCheck(headBuild, project, tsrs, {
+        VIZE_CHECKERS: String(checkers),
+      });
+      const tsrsVsTsgo = diffBatchMapper(corpus.id, tsrsOne, one);
+      const tsrsWidened = diffBatchMapper(corpus.id, tsrsWide, tsrsOne);
       return {
         ...diffBatchMapper(corpus.id, one, mapper),
         wide: { checkers, added: widened.batchOnly, removed: widened.mapperOnly },
+        tsrs: {
+          diagnostics: tsrsOne.length,
+          only: tsrsVsTsgo.batchOnly,
+          missing: tsrsVsTsgo.mapperOnly,
+          wide: {
+            checkers,
+            added: tsrsWidened.batchOnly,
+            removed: tsrsWidened.mapperOnly,
+          },
+        },
       };
     });
     writeFileSync(join(out, "batch-vs-mapper.json"), `${JSON.stringify(diffs, null, 1)}\n`);

@@ -104,12 +104,22 @@ pub(crate) struct DiagnosticOwnership {
     rows: Vec<Projection>,
     unproven: FxHashSet<InputOwner>,
     callback_primaries: Vec<Range<usize>>,
+    attr_value_helper: Option<vize_carton::String>,
     independent_reads: vize_carton::FxHashMap<InputOwner, independent_reads::PreparedReads>,
     /// Owners whose `v-model` write-back was emitted (`strictVModel`).
     model_write_backs: FxHashSet<InputOwner>,
 }
 
 impl DiagnosticOwnership {
+    pub(crate) fn record_attr_value_helper(&mut self, helper: vize_carton::String) {
+        debug_assert!(self.attr_value_helper.is_none());
+        self.attr_value_helper = Some(helper);
+    }
+
+    pub(crate) fn attr_value_helper(&self) -> Option<&str> {
+        self.attr_value_helper.as_deref()
+    }
+
     /// This actual canonical statement may not be hidden by a literal-shaped
     /// inference copy whose contextual contract is not proved equivalent.
     pub(crate) fn protect_callback_primary(&mut self, generated: Range<usize>) {

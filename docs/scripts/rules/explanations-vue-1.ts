@@ -164,10 +164,10 @@ export const vue1Explanations: readonly ExplanationRecord[] = [
   ],
   [
     "vue/no-use-v-if-with-v-for",
-    "The same list element combines v-if and v-for and tests visibility through the loop binding.",
-    "A computed collection filters the visible items before the template iterates over them.",
-    "同じ li に v-if と v-for を指定し、ループの変数で表示条件を検査しています。",
-    "computed で表示する項目を先に絞り込み、テンプレートではその配列の各項目を繰り返し描画します。",
+    "The same list element combines v-if and v-for, but the condition does not reference the loop binding.",
+    "With allowUsingIterationVar enabled, the condition references item from the same v-for.",
+    "同じ li に v-if と v-for を指定していますが、条件がループの変数を参照していません。",
+    "allowUsingIterationVar が有効なため、同じ v-for の item を条件から参照する場合は許可されます。",
   ],
   [
     "vue/no-useless-mustaches",

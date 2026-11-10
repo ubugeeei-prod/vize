@@ -7,6 +7,19 @@ import { sha256, writeJson } from "./typecheck-owned-pair-evidence.ts";
 import type { ProbeRecord } from "./typecheck-corpus-pair-parse.ts";
 
 const script = join(dirname(fileURLToPath(import.meta.url)), "content-mapper-byte-probe.ts");
+// The official Vue mapper retains the project graph while the untimed probe covers every SFC.
+// Keep that admission probe outside Node's default old-space ceiling on the 20k corpus.
+export const PROBE_MAPPER_MAX_OLD_SPACE_MB = 32 * 1024;
+
+/** Give Node-based reference mappers enough heap to cover the full owned corpus. */
+export function probeMapperCommand(exec: string[]) {
+  const [command, ...args] = exec;
+  assert.ok(command, "content mapper exec must not be empty");
+  return command === "node"
+    ? [process.execPath, `--max-old-space-size=${PROBE_MAPPER_MAX_OLD_SPACE_MB}`, ...args]
+    : exec;
+}
+
 /** Install an owned probe package that preserves the real mapper command. */
 export function prepareOwnedProbe(project: string, mapper: "vize" | "vue") {
   const real = realpathSync(
@@ -15,6 +28,7 @@ export function prepareOwnedProbe(project: string, mapper: "vize" | "vue") {
   const manifest = JSON.parse(readFileSync(join(real, "package.json"), "utf8"));
   const contentMapper = manifest.typescript?.contentMapper;
   assert.ok(contentMapper?.exec?.length > 0);
+  const mapperCommand = probeMapperCommand(contentMapper.exec);
   const name = `${mapper}-owned-pair-probe`,
     directory = join(project, "node_modules", name);
   mkdirSync(directory, { recursive: true });
@@ -25,7 +39,7 @@ export function prepareOwnedProbe(project: string, mapper: "vize" | "vue") {
     typescript: {
       contentMapper: {
         ...contentMapper,
-        exec: [process.execPath, script, real, "--", ...contentMapper.exec],
+        exec: [process.execPath, script, real, "--", ...mapperCommand],
       },
     },
   });

@@ -27,7 +27,7 @@ pub(super) fn publish_content_mapper_text(
     diagnostic_ownership: Option<&DiagnosticOwnershipCollector>,
     share_virtual_module: bool,
 ) {
-    append_attr_value_helper(code, share_virtual_module);
+    append_attr_value_helper(code, diagnostic_ownership, share_virtual_module);
     publicize_generated_diagnostic_helpers(
         code,
         mappings,
@@ -47,12 +47,28 @@ pub(super) fn publish_content_mapper_text(
     }
 }
 
-/// Owned per-prop checks reference one module helper; appending it shifts no
-/// generated coordinate.
-fn append_attr_value_helper(code: &mut CompactString, share_virtual_module: bool) {
-    use crate::virtual_ts::{ATTR_VALUE_REFERENCE, attr_value_declaration};
-    if memchr::memmem::find(code.as_bytes(), ATTR_VALUE_REFERENCE.as_bytes()).is_some() {
-        code.push_str(attr_value_declaration(share_virtual_module));
+/// Owned per-prop checks publish their already-qualified module helper here,
+/// after the native projection and every mapped suffix are complete. Test-only
+/// ownership-free transforms retain the original unqualified helper path.
+fn append_attr_value_helper(
+    code: &mut CompactString,
+    diagnostic_ownership: Option<&DiagnosticOwnershipCollector>,
+    share_virtual_module: bool,
+) {
+    if let Some(collector) = diagnostic_ownership
+        && let Some(helper) = collector.borrow().attr_value_helper()
+    {
+        code.push_str(helper);
+    } else if diagnostic_ownership.is_none()
+        && memchr::memmem::find(
+            code.as_bytes(),
+            crate::virtual_ts::ATTR_VALUE_REFERENCE.as_bytes(),
+        )
+        .is_some()
+    {
+        code.push_str(crate::virtual_ts::attr_value_declaration(
+            share_virtual_module,
+        ));
     }
 }
 

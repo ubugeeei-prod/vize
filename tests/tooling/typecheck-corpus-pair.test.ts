@@ -427,3 +427,30 @@ void test("the batch diff keeps every diagnostic only one path reports, matched 
   );
   assert.match(markdown, /\| `C\.vue` \| 9:3 \| TS7006 \| m \|/u);
 });
+
+void test("the batch report refuses hidden tsrs fast-mode and width drift", () => {
+  const at = (file: string, code: string): Diagnostic => [file, "error", "1", "1", code, "m"];
+  const markdown = renderBatchDiff([
+    {
+      corpus: "demo",
+      batch: 2,
+      mapper: 2,
+      batchOnly: [],
+      mapperOnly: [],
+      tsrs: {
+        diagnostics: 2,
+        only: [at("Tsrs.vue", "TS2322")],
+        missing: [at("Tsgo.vue", "TS2345")],
+        wide: {
+          checkers: 8,
+          added: [at("Wide.vue", "TS7006")],
+          removed: [at("Narrow.vue", "TS2339")],
+        },
+      },
+    },
+  ]);
+  assert.match(markdown, /2 diagnostics; 1 only under tsrs and 1 only under tsgo/u);
+  assert.match(markdown, /At 8 checkers, tsrs adds 1 and drops 1/u);
+  assert.match(markdown, /Only under tsrs batch/u);
+  assert.match(markdown, /Only under tsgo batch/u);
+});

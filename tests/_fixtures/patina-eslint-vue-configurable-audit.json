@@ -24,8 +24,8 @@
     "mapped": 70,
     "unimplemented": 39,
     "intentionalDivergence": 3,
-    "mappedWithTypedOptions": 23,
-    "mappedWithoutTypedOptions": 47
+    "mappedWithTypedOptions": 24,
+    "mappedWithoutTypedOptions": 46
   },
   "mappedWithTypedOptions": [
     ["vue/attribute-hyphenation", "vue/attribute-hyphenation"],
@@ -42,6 +42,7 @@
     ["vue/no-bare-strings-in-template", "vue/no-bare-strings-in-template"],
     ["vue/no-mutating-props", "vue/no-mutating-props"],
     ["vue/no-undef-components", "vue/require-component-registration"],
+    ["vue/no-use-v-if-with-v-for", "vue/no-use-v-if-with-v-for"],
     ["vue/prop-name-casing", "vue/prop-name-casing"],
     ["vue/slot-name-casing", "vue/slot-name-casing"],
     ["vue/sort-keys", "vue/sort-keys"],

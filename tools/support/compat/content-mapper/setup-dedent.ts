@@ -2,10 +2,15 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
+import { beforeLibTypeShadowingAudit } from "./lib-type-shadowing-audit-transition.ts";
 import type { Edit } from "./projection-byte-relocation.ts";
 
-const producer = readFileSync(
-  new URL("../../../../crates/vize_canon/src/virtual_ts/generator.rs", import.meta.url),
+const producerPath = "crates/vize_canon/src/virtual_ts/generator.rs";
+const producer = Buffer.from(
+  beforeLibTypeShadowingAudit(
+    producerPath,
+    readFileSync(new URL(`../../../../${producerPath}`, import.meta.url), "utf8"),
+  ),
 );
 assert.equal(producer.length, 37484, "certified verbatim setup producer size");
 assert.equal(

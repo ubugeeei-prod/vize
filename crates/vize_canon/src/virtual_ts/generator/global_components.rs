@@ -232,18 +232,24 @@ impl<'a> GlobalComponentPlan<'a> {
 
             if !has_header {
                 ts.push_str("\n// Global component stubs (vue module augmentations)\n");
-                ts.push_str(if self.legacy_vue2 {
-                    concat!(
-                        "type $GlobalComponent<__K extends PropertyKey, __F extends PropertyKey = __K, __G = import(\"vue\").GlobalComponents, ",
-                        "__C = __K extends keyof __G ? __G[__K] : __F extends keyof __G ? __G[__F] : any> = unknown extends __C ? any : __C;\n",
-                    )
-                } else {
-                    concat!(
-                        "type $GlobalComponent<__K extends string | number | symbol, __F extends string | number | symbol = __K, __L extends string | number | symbol = __F, __G = import(\"vue\").GlobalComponents, ",
-                        "__C = __K extends keyof __G ? __G[__K] : __F extends keyof __G ? __G[__F] : __L extends keyof __G ? __G[__L] : any> = unknown extends __C ? any : __C;\n",
-                    )
-                });
-                ts.push_str("type $GlobalComponentFallback = (props: Record<string, unknown>, ...args: any[]) => any;\n");
+                crate::virtual_ts::generated_names::push_lib_text(
+                    ts,
+                    if self.legacy_vue2 {
+                        concat!(
+                            "type $GlobalComponent<__K extends PropertyKey, __F extends PropertyKey = __K, __G = import(\"vue\").GlobalComponents, ",
+                            "__C = __K extends keyof __G ? __G[__K] : __F extends keyof __G ? __G[__F] : any> = unknown extends __C ? any : __C;\n",
+                        )
+                    } else {
+                        concat!(
+                            "type $GlobalComponent<__K extends string | number | symbol, __F extends string | number | symbol = __K, __L extends string | number | symbol = __F, __G = import(\"vue\").GlobalComponents, ",
+                            "__C = __K extends keyof __G ? __G[__K] : __F extends keyof __G ? __G[__F] : __L extends keyof __G ? __G[__L] : any> = unknown extends __C ? any : __C;\n",
+                        )
+                    },
+                );
+                crate::virtual_ts::generated_names::push_lib_text(
+                    ts,
+                    "type $GlobalComponentFallback = (props: Record<string, unknown>, ...args: any[]) => any;\n",
+                );
                 has_header = true;
             }
 

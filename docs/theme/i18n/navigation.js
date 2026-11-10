@@ -79,7 +79,10 @@ const vizeDocsI18nNavigation = (() => {
   function localizeLink(link, locale, active) {
     if (locale !== "en") {
       const url = new URL(link.getAttribute("href"), window.location.origin);
-      link.setAttribute("href", `/${locale}${url.pathname}${url.search}${url.hash}`);
+      const localePrefix = `/${locale}`;
+      if (url.pathname !== localePrefix && !url.pathname.startsWith(`${localePrefix}/`)) {
+        link.setAttribute("href", `${localePrefix}${url.pathname}${url.search}${url.hash}`);
+      }
     }
     const classes = link.className.split(/\s+/).filter((name) => name && name !== "active");
     link.className = (active ? [...classes, "active"] : classes).join(" ");
@@ -250,6 +253,11 @@ const vizeDocsI18nNavigation = (() => {
         queueMicrotask(sync);
       });
     }
+    sidebar.addEventListener("keydown", (event) => {
+      // A focused widget may consume Escape for its own dismissal. The
+      // provider's document listener must not close the sidebar as well.
+      if (event.key === "Escape" && event.defaultPrevented) event.stopPropagation();
+    });
     root.addEventListener("keydown", (event) => {
       if (
         event.key === "Escape" &&
@@ -268,6 +276,16 @@ const vizeDocsI18nNavigation = (() => {
     new MutationObserver(sync).observe(sidebar, { attributes: true, attributeFilter: ["class"] });
     mobile.addEventListener("change", sync);
     sync();
+
+    const searchOverlay = root.querySelector?.(".search-modal-overlay");
+    if (searchOverlay && !searchOverlay.dataset.vizeSearchEscape) {
+      searchOverlay.dataset.vizeSearchEscape = "contained";
+      searchOverlay.addEventListener("keydown", (event) => {
+        // The search runtime handles Escape on the overlay. Keep that event
+        // from reaching the provider's document-level sidebar dismissal.
+        if (event.key === "Escape") event.stopPropagation();
+      });
+    }
   }
 
   return {
