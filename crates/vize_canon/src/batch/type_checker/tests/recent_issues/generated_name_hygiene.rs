@@ -64,12 +64,17 @@ fn authored_names_beside_the_reserved_prefix_keep_their_meaning() {
     // Every usage declares its own compact contract; no authored spelling is
     // declared a second time.
     for usage in 0..3 {
-        assert!(
-            generated.contains(&format!("type __VProps{usage} = ")),
-            "usage {usage} must declare its contract:\n{generated}"
+        assert_eq!(
+            generated.matches(&format!("type __VProps{usage} = ")).count(),
+            1,
+            "usage {usage} declares its contract once:\n{generated}"
         );
     }
-    for authored in ["type __Child_Props_0 =", "type __VProps =", "const __VComp ="] {
+    for authored in [
+        "type __Child_Props_0 =",
+        "type __VProps =",
+        "const __VComp =",
+    ] {
         assert_eq!(
             generated.matches(authored).count(),
             1,
