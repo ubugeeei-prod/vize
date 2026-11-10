@@ -86,6 +86,7 @@ fn emit_prop_references(
     usage: &ComponentUsage,
     component_gen_range: &Range<usize>,
 ) {
+    let contract_prefix = crate::virtual_ts::generated_names::template_prefix();
     // A complete TypeScript binding pattern provides a stable completion point
     // even while the Vue attribute name is empty or only `:` has been typed.
     ts.push_str("  const { ");
@@ -94,7 +95,7 @@ fn emit_prop_references(
         crate::virtual_ts::helpers::shared_types::COMPONENT_NAVIGATION_PROPS.select(false);
     vize_l0::emit_ts!(
         ts,
-        "}} = undefined as unknown as {component_navigation_props}<__VProps{idx}>;\n"
+        "}} = undefined as unknown as {component_navigation_props}<{contract_prefix}Props{idx}>;\n"
     );
     semantic_links.push(VizeSemanticLink {
         source_range: component_gen_range.clone(),
@@ -119,7 +120,7 @@ fn emit_prop_references(
             // covers one line, which carries every reference statement.
             vize_l0::emit_ts!(
                 ts,
-                "  const {props_ref} = undefined as unknown as __VProps{idx} & globalThis.Record<string, unknown>;\n  // @ts-ignore Navigation-only references; no diagnostic owner.\n  void "
+                "  const {props_ref} = undefined as unknown as {contract_prefix}Props{idx} & globalThis.Record<string, unknown>;\n  // @ts-ignore Navigation-only references; no diagnostic owner.\n  void "
             );
             emitted_props_ref = true;
         } else {

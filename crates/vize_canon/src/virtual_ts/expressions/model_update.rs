@@ -30,7 +30,7 @@ pub(in crate::virtual_ts) fn is_model_prop(usage: &ComponentUsage, prop: &Passed
 pub(super) fn append_model_update_check(
     ts: &mut crate::virtual_ts::TextBuf,
     mappings: &mut Vec<VizeMapping>,
-    idx: usize,
+    (prefix, idx): (&str, usize),
     (usage, prop, source_context): (
         &ComponentUsage,
         &PassedProp,
@@ -41,17 +41,17 @@ pub(super) fn append_model_update_check(
     (indent, hoist_shared_preamble): (&str, bool),
 ) {
     let safe_prop_name = to_safe_identifier_fragment(prop.name.as_str());
-    let payload = vize_carton::cstr!("__VModel{idx}${safe_prop_name}");
+    let payload = vize_carton::cstr!("{prefix}Model{idx}${safe_prop_name}");
     if hoist_shared_preamble {
         let emit_listeners = crate::virtual_ts::helpers::shared_types::EMIT_LISTENERS.select(true);
         append!(
             *ts,
-            "{indent}type {payload} = {emit_listeners}<__VComp{idx}> extends {{ ",
+            "{indent}type {payload} = {emit_listeners}<{prefix}Comp{idx}> extends {{ ",
         );
     } else {
         append!(
             *ts,
-            "{indent}type {payload} = $EmitListeners<__VComp{idx}> extends {{ ",
+            "{indent}type {payload} = $EmitListeners<{prefix}Comp{idx}> extends {{ ",
         );
     }
     push_ts_string_literal(
