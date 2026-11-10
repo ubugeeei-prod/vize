@@ -13,6 +13,10 @@ import {
   authoredPieceCompilerSuccessor,
 } from "../../_helpers/compiler-authored-piece-successors.ts";
 import {
+  assertSetupBindingOrderSuccessor,
+  setupBindingOrderSuccessor,
+} from "../../_helpers/compiler-setup-binding-order-successors.ts";
+import {
   assertFailedBuild,
   type BuildResult,
   type CompilerObservation,
@@ -455,7 +459,7 @@ function assertSuccessfulBuild(result: BuildResult): void {
 
 function assertBrokenBuild(result: BuildResult, compiler: CompilerObservation): void {
   assertFailedBuild(result, appPath, compiler.output.errors);
-  assertAuthoredPieceCompilerSuccessor("vue-router-broken", compiler.outputText, {
+  assertSetupBindingOrderSuccessor("vue-router-broken", compiler.outputText, {
     packetSha256: brokenOutputSha256,
     codeSha256: brokenCodeSha256,
   });
@@ -479,10 +483,7 @@ function assertBrokenBuild(result: BuildResult, compiler: CompilerObservation): 
       warnings: [],
     },
   );
-  assert.equal(
-    compiler.output.code,
-    authoredPieceCompilerSuccessor("vue-router-broken").output.code,
-  );
+  assert.equal(compiler.output.code, setupBindingOrderSuccessor("vue-router-broken").output.code);
   assertParsesAsModule(compiler.output.code, "broken vue-router AppLink.json#code");
   assert.equal(compiler.output.code.includes("_createElementBlock"), false, compiler.output.code);
   assert.equal(count(compiler.output.code, "return {"), 1, compiler.output.code);
