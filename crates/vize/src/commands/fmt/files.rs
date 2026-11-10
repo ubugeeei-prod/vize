@@ -3,7 +3,7 @@ use ignore::WalkBuilder;
 use std::path::{Component, Path, PathBuf};
 
 use super::ignores::FmtIgnoreSet;
-use super::patterns::{is_format_extension, is_unimplemented_document_extension};
+use super::patterns::{is_format_target, is_unimplemented_document};
 
 const NODE_MODULES_DIR: &str = "node_modules";
 
@@ -99,13 +99,6 @@ fn collect_walked_files(
     }
 }
 
-#[inline]
-fn is_unimplemented_document(path: &Path) -> bool {
-    path.extension()
-        .and_then(|extension| extension.to_str())
-        .is_some_and(is_unimplemented_document_extension)
-}
-
 fn should_include_format_file(path: &Path, ignore_set: Option<&FmtIgnoreSet>) -> bool {
     !vize_carton::path::is_git_metadata_path(path)
         && path.is_file()
@@ -182,13 +175,6 @@ pub(super) fn normalize_fmt_pattern(pattern: &str) -> vize_l0::String {
     }
 
     normalized
-}
-
-#[inline]
-fn is_format_target(path: &Path) -> bool {
-    path.extension()
-        .and_then(|extension| extension.to_str())
-        .is_some_and(is_format_extension)
 }
 
 #[inline]

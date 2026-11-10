@@ -1,7 +1,7 @@
 use std::path::{Path, PathBuf};
 use vize_l0::String;
 
-use super::patterns::{default_fmt_patterns, is_format_extension};
+use super::patterns::{default_fmt_patterns, is_format_target};
 use super::{FmtArgs, files::FmtPattern};
 use crate::config;
 
@@ -286,10 +286,4 @@ fn compact_patterns(patterns: &[std::string::String]) -> Vec<String> {
 
 fn contains_glob_char(pattern: &str) -> bool {
     pattern.contains(['*', '?', '['])
-}
-
-fn is_format_target(path: &Path) -> bool {
-    path.extension()
-        .and_then(|extension| extension.to_str())
-        .is_some_and(is_format_extension)
 }

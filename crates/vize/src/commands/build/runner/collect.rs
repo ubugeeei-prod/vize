@@ -174,7 +174,7 @@ fn contains_glob_metacharacter(input: &str) -> bool {
 
 #[inline]
 fn is_vue_file(path: &Path) -> bool {
-    path.extension().is_some_and(|extension| extension == "vue")
+    vize_l0::dialect::FileKind::of_path(path) == Some(vize_l0::dialect::FileKind::Sfc)
 }
 
 #[cfg(test)]
