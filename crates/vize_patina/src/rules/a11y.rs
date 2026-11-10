@@ -31,6 +31,7 @@ mod no_redundant_roles;
 mod no_refer_to_non_existent_id;
 mod no_role_presentation_on_focusable;
 mod no_static_element_interactions;
+pub(crate) mod reference_values;
 mod role_has_required_aria_props;
 mod tabindex_no_positive;
 

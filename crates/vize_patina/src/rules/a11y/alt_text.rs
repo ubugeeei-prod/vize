@@ -25,14 +25,12 @@
 
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
-use crate::markup::{
-    MarkupBindingKind, MarkupContext, MarkupElement, MarkupElementKind, MarkupNode, MarkupRule,
-    MarkupTraversal,
-};
+use crate::markup::{MarkupContext, MarkupElement, MarkupElementKind, MarkupRule, MarkupTraversal};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_relief::ElementNode;
 
 use super::markup_helpers::get_static_or_bound_literal_markup_value;
+use super::reference_values::{has_accessible_child, has_aria_label, has_attribute_text};
 
 static META: RuleMeta = RuleMeta {
     name: "a11y/alt-text",
@@ -46,76 +44,28 @@ static META: RuleMeta = RuleMeta {
 #[derive(Default)]
 pub struct AltText;
 
-fn has_accessible_text(element: &MarkupElement<'_>, name: &str, allow_empty: bool) -> bool {
-    let mut valid = false;
-    element.walk_bindings(&mut |binding| {
-        if valid
-            || !matches!(
-                binding.kind(),
-                MarkupBindingKind::Attribute | MarkupBindingKind::Bind
-            )
-            || !binding.is_static_unqualified_arg_eq_ignore_ascii_case(name)
-        {
-            return;
-        }
-
-        if let Some(value) = binding.literal_string_value() {
-            valid = allow_empty || !value.trim().is_empty();
-            return;
-        }
-
-        if binding.kind() == MarkupBindingKind::Bind {
-            valid = binding
-                .expression()
-                .is_some_and(|expression| !matches!(expression.trim(), "" | "null" | "undefined"));
-        }
-    });
-    valid
-}
-
-fn has_markup_label(element: &MarkupElement<'_>) -> bool {
-    has_accessible_text(element, "aria-label", false)
-        || has_accessible_text(element, "aria-labelledby", false)
-}
-
-fn has_fallback_content(element: &MarkupElement<'_>) -> bool {
-    let mut found = false;
-    element.walk_children(&mut |child| {
-        if found {
-            return;
-        }
-        found = match child {
-            MarkupNode::Text(text) => text.is_significant(),
-            MarkupNode::Interpolation(_) | MarkupNode::If(_) | MarkupNode::For(_) => true,
-            MarkupNode::Element(child) => has_fallback_content(&child),
-            MarkupNode::Comment(_) | MarkupNode::Other(_) => false,
-        };
-    });
-    found
-}
-
 fn lint(ctx: &mut LintContext<'_>, element: &MarkupElement<'_>) {
     if element.kind() == MarkupElementKind::Component {
         return;
     }
     let keys = if element.is_unqualified_tag_exact("img") {
-        (!has_accessible_text(element, "alt", true))
+        (!has_attribute_text(element, "alt", true))
             .then_some(("a11y/alt-text.message_img", "a11y/alt-text.help_img"))
     } else if element.is_unqualified_tag_exact("area") {
-        (!has_accessible_text(element, "alt", false) && !has_markup_label(element))
+        (!has_attribute_text(element, "alt", false) && !has_aria_label(element))
             .then_some(("a11y/alt-text.message_area", "a11y/alt-text.help_area"))
     } else if element.is_unqualified_tag_exact("input") {
         (get_static_or_bound_literal_markup_value(element, "type") == Some("image")
-            && !has_accessible_text(element, "alt", false)
-            && !has_markup_label(element))
+            && !has_attribute_text(element, "alt", false)
+            && !has_aria_label(element))
         .then_some((
             "a11y/alt-text.message_input_image",
             "a11y/alt-text.help_input_image",
         ))
     } else if element.is_unqualified_tag_exact("object") {
-        (!has_accessible_text(element, "title", false)
-            && !has_markup_label(element)
-            && !has_fallback_content(element))
+        (!has_attribute_text(element, "title", false)
+            && !has_aria_label(element)
+            && !has_accessible_child(ctx.source, element))
         .then_some(("a11y/alt-text.message_object", "a11y/alt-text.help_object"))
     } else {
         None
@@ -274,5 +224,26 @@ mod tests {
         );
 
         assert_eq!(result.warning_count, 8, "{:?}", result.diagnostics);
+    }
+
+    #[test]
+    fn reads_bound_literals_and_hidden_children_like_the_reference() {
+        let result = create_linter().lint_template(
+            r#"<div>
+                <img src="/a.png" :alt="false" />
+                <img src="/a.png" :alt="(0)" />
+                <img src="/a.png" :alt="undefined" />
+                <object data="/a.pdf"><span aria-hidden="true">Report</span></object>
+                <object data="/a.pdf">{{ undefined }}</object>
+                <img src="/a.png" :alt="''" />
+                <object data="/a.pdf"><slot /></object>
+                <object data="/a.pdf" title=" "></object>
+                <map name="m"><area href="/a" alt=" " /></map>
+                <object data="/a.pdf"><span :aria-hidden="false">Report</span></object>
+            </div>"#,
+            "test.vue",
+        );
+
+        assert_eq!(result.warning_count, 7, "{:?}", result.diagnostics);
     }
 }

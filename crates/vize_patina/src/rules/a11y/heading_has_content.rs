@@ -8,13 +8,14 @@
 
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
-use crate::markup::{
-    MarkupBindingKind, MarkupContext, MarkupElement, MarkupElementKind, MarkupNode, MarkupRule,
-};
+use crate::markup::{MarkupBindingKind, MarkupContext, MarkupElement, MarkupNode, MarkupRule};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_relief::ElementNode;
 
 use super::markup_helpers::get_static_or_bound_literal_markup_value;
+use super::reference_values::{
+    has_attribute_text, interpolation_has_value, is_hidden_from_screen_reader, is_slot_outlet,
+};
 
 static META: RuleMeta = RuleMeta {
     name: "a11y/heading-has-content",
@@ -44,29 +45,6 @@ impl HeadingHasContent {
         get_static_or_bound_literal_markup_value(element, "is").filter(|tag| HEADINGS.contains(tag))
     }
 
-    fn is_hidden_from_accessibility_tree(element: &MarkupElement<'_>) -> bool {
-        let mut hidden = false;
-        element.walk_bindings(&mut |binding| {
-            if hidden {
-                return;
-            }
-
-            if matches!(
-                binding.kind(),
-                MarkupBindingKind::Attribute | MarkupBindingKind::Bind
-            ) && binding.is_static_unqualified_arg_eq_ignore_ascii_case("aria-hidden")
-            {
-                let false_literal = binding.literal_string_value() == Some("false")
-                    || binding.kind() == MarkupBindingKind::Bind
-                        && binding
-                            .expression()
-                            .is_some_and(|expression| expression.trim() == "false");
-                hidden = !false_literal;
-            }
-        });
-        hidden
-    }
-
     fn has_rendered_text_directive(element: &MarkupElement<'_>) -> bool {
         let mut found = false;
         element.walk_bindings(&mut |binding| {
@@ -83,35 +61,13 @@ impl HeadingHasContent {
         found
     }
 
-    fn interpolation_has_content(source: &str, range: crate::ir::ByteRange) -> bool {
-        let Some(authored) = source.get(range.start as usize..range.end as usize) else {
-            return true;
-        };
-        let expression = authored
-            .strip_prefix("{{")
-            .and_then(|value| value.strip_suffix("}}"))
-            .unwrap_or(authored)
-            .trim();
-        expression != "undefined"
-    }
-
     fn has_accessible_content(source: &str, element: &MarkupElement<'_>) -> bool {
         if Self::has_rendered_text_directive(element) {
             return true;
         }
 
         if element.is_unqualified_tag_exact("img") {
-            let mut named = false;
-            element.walk_bindings(&mut |binding| {
-                if binding.is_unqualified_arg_exact("alt") {
-                    named |= match binding.literal_string_value() {
-                        Some(value) => !value.trim().is_empty(),
-                        None if binding.kind() == MarkupBindingKind::Bind => true,
-                        None => false,
-                    };
-                }
-            });
-            return named;
+            return has_attribute_text(element, "alt", false);
         }
 
         let mut has_content = false;
@@ -120,16 +76,13 @@ impl HeadingHasContent {
                 has_content = true;
             }
             MarkupNode::Interpolation(range) => {
-                has_content |= Self::interpolation_has_content(source, range);
+                has_content |= interpolation_has_value(source, range);
             }
-            MarkupNode::Element(child_element)
-                if child_element.kind() == MarkupElementKind::Slot
-                    || child_element.is_unqualified_tag_exact("slot") =>
-            {
+            MarkupNode::Element(child_element) if is_slot_outlet(&child_element) => {
                 has_content = true;
             }
             MarkupNode::Element(child_element)
-                if !Self::is_hidden_from_accessibility_tree(&child_element)
+                if !is_hidden_from_screen_reader(&child_element)
                     && Self::has_accessible_content(source, &child_element) =>
             {
                 has_content = true;
@@ -298,5 +251,22 @@ mod tests {
         );
 
         assert_eq!(result.warning_count, 0, "{:?}", result.diagnostics);
+    }
+
+    #[test]
+    fn reads_parenthesized_values_and_untrimmed_image_text() {
+        let result = create_linter().lint_template(
+            r#"<div>
+                <h2>{{ (undefined) }}</h2>
+                <h2><img alt="" /></h2>
+                <h2><img :alt="null" /></h2>
+                <h2><img alt=" " /></h2>
+                <h2><img :alt="title" /></h2>
+                <h2><span :aria-hidden="(false)">Title</span></h2>
+            </div>"#,
+            "test.vue",
+        );
+
+        assert_eq!(result.warning_count, 4, "{:?}", result.diagnostics);
     }
 }
