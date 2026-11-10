@@ -1,5 +1,8 @@
 import assert from "node:assert/strict";
 
+import { listenerWrapperReference } from "./listener-wrapper-reference.js";
+import { publicInstanceReference } from "./public-instance-reference.js";
+
 const prefix =
   "The expected type comes from property 'fooBar' which is declared here on type 'ComponentPropsForTemplate<";
 const tail =
@@ -21,4 +24,9 @@ export function compactContractNameReference(packets) {
   assert.equal(related.length, 1, "one archived whole-props target message");
   related[0].messageText = after;
   return out;
+}
+
+/** Every reviewed successor of the archived packets, oldest first. */
+export function currentPacketReference(packets) {
+  return compactContractNameReference(listenerWrapperReference(publicInstanceReference(packets)));
 }

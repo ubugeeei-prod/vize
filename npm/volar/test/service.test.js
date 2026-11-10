@@ -4,9 +4,8 @@ import path from "node:path";
 import { test } from "node:test";
 import ts from "typescript";
 import { createVizeLanguagePlugin } from "../src/index.js";
-import { publicInstanceReference } from "./public-instance-reference.js";
-import { assertListenerStarts, listenerWrapperReference } from "./listener-wrapper-reference.js";
-import { compactContractNameReference } from "./compact-contract-name-reference.js";
+import { assertListenerStarts } from "./listener-wrapper-reference.js";
+import { currentPacketReference } from "./compact-contract-name-reference.js";
 import "./listener-wrapper-reference.test.js";
 import {
   directory,
@@ -506,8 +505,5 @@ void test("all captured packets equal the reviewed complete source expectations"
   );
   assert.equal(hash(JSON.stringify(expected)), provenance.expectedPacketDataSha256);
   assert.equal(expected.length, provenance.expectedPackets);
-  assert.deepEqual(
-    packets,
-    compactContractNameReference(listenerWrapperReference(publicInstanceReference(expected))),
-  );
+  assert.deepEqual(packets, currentPacketReference(expected));
 });
