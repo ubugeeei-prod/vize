@@ -466,7 +466,7 @@
   "withDefaults script prop": {
     "contents": {
       "kind": "markdown",
-      "value": "```typescript\n(property) title: string\n```"
+      "value": "```typescript\n(property) title: string\n```\nThe title shown above."
     },
     "range": {
       "end": {
