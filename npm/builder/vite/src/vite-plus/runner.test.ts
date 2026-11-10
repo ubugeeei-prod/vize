@@ -173,18 +173,18 @@ void test("fmt.ignorePatterns excludes Vue files from check and write, even for 
   });
 });
 
-void test("lint presentation and host ignores reach only the native linter", async () => {
+void test("lint presentation and ordered host ignores reach only the native linter", async () => {
   await project(async () => {
     const calls: string[][] = [];
     await runTools(
       "lint",
       ["App.vue"],
       {
-        config: { ignores: ["existing/**"], linter: { preset: "happy-path" } },
+        config: { ignores: ["src/**", "generated/**"], linter: { preset: "happy-path" } },
         options: {},
         lintLocale: "ja",
         lintHelpLevel: "short",
-        lintIgnorePatterns: ["generated/**", "existing/**"],
+        lintIgnorePatterns: ["**/*.ts", "!src/**/*.ts", "generated/**"],
       },
       "vp",
       "native",
@@ -192,7 +192,10 @@ void test("lint presentation and host ignores reach only the native linter", asy
         if (args[0] === "native") {
           const file = args[args.indexOf("--config") + 1];
           assert.deepEqual(JSON.parse(readFileSync(file, "utf8")).vue.ignores, [
-            path.resolve("existing/**").replaceAll("\\", "/"),
+            path.resolve("**/*.ts").replaceAll("\\", "/"),
+            `!${path.resolve("src/**/*.ts").replaceAll("\\", "/")}`,
+            path.resolve("generated/**").replaceAll("\\", "/"),
+            path.resolve("src/**").replaceAll("\\", "/"),
             path.resolve("generated/**").replaceAll("\\", "/"),
           ]);
         }

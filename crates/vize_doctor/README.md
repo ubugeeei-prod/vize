@@ -211,6 +211,14 @@ requires both the requested cache key and a pre-deserialization byte ceiling
 when loading untrusted objects. Backend-specific paths, timestamps, hosts,
 credentials, and transport metadata stay outside the envelope.
 
+`FilesystemCapabilitySnapshotCache` is the local persistent implementation. A
+caller supplies its cache root and per-object byte ceiling. The cache uses a
+versioned, Windows-safe digest layout, bounds reads before deserialization, and
+writes each object through a synchronized temporary file plus an atomic hard
+link. Cache objects are immutable: identical competing writes are idempotent,
+while divergent output for one cache key fails closed. The same envelope bytes
+remain suitable for a remote object store without translating the payload.
+
 ## Reporter integrations
 
 External CI, editor, code-hosting, and AI integrations implement the object-safe

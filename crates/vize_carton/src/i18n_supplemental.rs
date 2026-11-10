@@ -225,6 +225,18 @@ static ENTRIES: &[(&str, &str, &str, &str)] = &[
         "'{type}' 不是 '<button>' 的有效 'type'；请使用 \"button\"、\"submit\" 或 \"reset\"",
     ),
     (
+        "vue/html-button-has-type.empty",
+        "A value must be set for the '<button>' type attribute",
+        "'<button>' の type 属性には値を指定する必要があります",
+        "必须为 '<button>' 的 type 属性设置值",
+    ),
+    (
+        "vue/html-button-has-type.forbidden",
+        "'{type}' is forbidden by the configured '<button>' type policy",
+        "'{type}' は設定された '<button>' の type ポリシーで禁止されています",
+        "配置的 '<button>' type 策略禁止使用 '{type}'",
+    ),
+    (
         "vue/html-button-has-type.help",
         "A '<button>' defaults to type=\"submit\", which submits the enclosing form. Set an explicit type=\"button\", \"submit\", or \"reset\".",
         "'<button>' の type は既定で \"submit\" となり、囲っているフォームを送信します。明示的に type=\"button\"、\"submit\"、\"reset\" のいずれかを指定してください。",
