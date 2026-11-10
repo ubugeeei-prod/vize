@@ -139,6 +139,7 @@ fn hand_built() -> Page {
                     key: Some(js("i", 108, 109)),
                     index: None,
                 },
+                host: None,
                 ops: vec![Op::Slot(Slot {
                     name: Name::Dynamic(js("kind", 136, 140)),
                     attributes: vec![Attribute {

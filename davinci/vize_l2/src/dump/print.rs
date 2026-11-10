@@ -237,9 +237,31 @@ fn print_op_guarded<W: Write>(w: &mut W, op: &Op, depth: usize, mode: Style) -> 
                 w.write_str(" index=")?;
                 print_expr(w, index, mode)?;
             }
+            if let Some(host) = &for_op.host {
+                w.write_str(" host-left=")?;
+                quoted(w, host.left.as_str())?;
+                if let Some(index) = &host.index {
+                    w.write_str(" host-index=")?;
+                    quoted(w, index.as_str())?;
+                }
+                if let Some(key) = &host.key {
+                    w.write_str(" host-key=")?;
+                    print_expr(w, key, mode)?;
+                }
+                if host.r#await {
+                    w.write_str(" host-await")?;
+                }
+            }
             end_line(w, for_op.span, mode)?;
             for child in &for_op.ops {
                 print_op(w, child, depth + 1, mode)?;
+            }
+            if let Some(empty) = for_op.host.as_ref().and_then(|host| host.empty.as_ref()) {
+                indent(w, depth + 1)?;
+                w.write_str("empty\n")?;
+                for child in empty {
+                    print_op(w, child, depth + 2, mode)?;
+                }
             }
             Ok(())
         }

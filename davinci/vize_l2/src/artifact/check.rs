@@ -5,8 +5,8 @@ use oxc_span::GetSpan;
 use vize_l0::{Span, id::NodeId};
 
 use super::{ArtifactError, ArtifactParts, IfShape};
-use crate::expr::ExprRef;
-use crate::op::{BindingOp, Op};
+use crate::expr::{ExprRef, OpaqueReason};
+use crate::op::{BindingOp, ForOp, HostFor, Op};
 use crate::scope::ScopeOrigin;
 use crate::walk::{NodeEvent, NodeRef, PageWalk};
 
@@ -126,6 +126,11 @@ fn check_node(
             }
         }
     }
+    if let NodeRef::Op(Op::For(for_op)) = node
+        && let Some(host) = &for_op.host
+    {
+        host_for(parts.source, id, for_op, host)?;
+    }
     let introduces = match node {
         NodeRef::Op(Op::For(_) | Op::OriginalFor(_)) => true,
         NodeRef::Binding(BindingOp::SlotContent(it)) => it.params.is_some(),
@@ -143,6 +148,38 @@ fn check_node(
         }
     } else if introduces {
         return Err(ArtifactError::MissingScope { node: id });
+    }
+    Ok(())
+}
+
+/// A host loop keeps its head as host AST; its binding names only the
+/// collection and the authored left side, never a re-split key or index.
+fn host_for(
+    source: &str,
+    id: NodeId,
+    for_op: &ForOp<'_>,
+    host: &HostFor<'_>,
+) -> Result<(), ArtifactError> {
+    let left = host.left.span();
+    let left = Span::new(left.start, left.end);
+    owned_span(source, id, left, Some(for_op.span))?;
+    if let Some(index) = host.index {
+        owned_span(
+            source,
+            id,
+            Span::new(index.span.start, index.span.end),
+            Some(for_op.span),
+        )?;
+    }
+    let binding = &for_op.binding;
+    let value = matches!(binding.value, ExprRef::Opaque(opaque)
+        if opaque.reason == OpaqueReason::ForValue && opaque.span == left && opaque.source == host.left_text);
+    let authored = source.get(left.start as usize..left.end as usize) == Some(host.left_text);
+    if !(value && authored && matches!(binding.source, ExprRef::Js(_)))
+        || binding.key.is_some()
+        || binding.index.is_some()
+    {
+        return Err(ArtifactError::InvalidHostFor { node: id });
     }
     Ok(())
 }

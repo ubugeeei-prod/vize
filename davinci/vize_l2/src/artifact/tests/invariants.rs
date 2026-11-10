@@ -136,6 +136,7 @@ fn loops<'a>(a: &'a Allocator) -> ArtifactParts<'a> {
                     index: None,
                 },
                 region: region(a, []),
+                host: None,
                 span,
             },
             &a,

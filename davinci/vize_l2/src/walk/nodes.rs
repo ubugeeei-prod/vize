@@ -107,7 +107,12 @@ fn regions<'s, 'a>(
                         regions(walk, &branch.region.ops, Some(id), Some(branch.span), visit)?;
                     }
                 }
-                Op::For(for_op) => regions(walk, &for_op.region.ops, Some(id), Some(span), visit)?,
+                Op::For(for_op) => {
+                    regions(walk, &for_op.region.ops, Some(id), Some(span), visit)?;
+                    if let Some(empty) = for_op.host.as_ref().and_then(|host| host.empty.as_ref()) {
+                        regions(walk, &empty.ops, Some(id), Some(span), visit)?;
+                    }
+                }
                 Op::OriginalFor(for_op) => {
                     regions(walk, &for_op.region.ops, Some(id), Some(span), visit)?
                 }

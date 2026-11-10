@@ -108,6 +108,9 @@ impl<'s, 'a> NodeRef<'s, 'a> {
                     visit(it.binding.value);
                     optional(it.binding.key, visit);
                     optional(it.binding.index, visit);
+                    if let Some(host) = &it.host {
+                        optional(host.key, visit);
+                    }
                 }
                 // Original headers require their File owner, never a fabricated ExprRef.
                 Op::OriginalFor(_) => {}

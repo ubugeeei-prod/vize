@@ -30,6 +30,8 @@ pub(super) enum Frame {
     If(If),
     Branch(Branch),
     For(For),
+    /// The `@empty` region of the host `ui.for` beneath it.
+    Empty(alloc::vec::Vec<Op>),
     OriginalFor(OriginalFor),
     Slot(Slot, Phase),
 }
@@ -70,7 +72,8 @@ impl Parser {
                 Ok(())
             }
             Some(Frame::If(_)) => Err(err(line_no, cstr!("expected `branch` under `ui.if`"))),
-            None | Some(Frame::Branch(_) | Frame::For(_) | Frame::OriginalFor(_)) => {
+            None
+            | Some(Frame::Branch(_) | Frame::For(_) | Frame::Empty(_) | Frame::OriginalFor(_)) => {
                 Err(err(line_no, cstr!("`attr` outside an element")))
             }
         }
@@ -107,7 +110,8 @@ impl Parser {
             }
             Some(Frame::Model(_)) => Err(err(line_no, cstr!("expected `attr` under `ui.model`"))),
             Some(Frame::If(_)) => Err(err(line_no, cstr!("expected `branch` under `ui.if`"))),
-            None | Some(Frame::Branch(_) | Frame::For(_) | Frame::OriginalFor(_)) => {
+            None
+            | Some(Frame::Branch(_) | Frame::For(_) | Frame::Empty(_) | Frame::OriginalFor(_)) => {
                 Err(err(line_no, cstr!("binding outside an element")))
             }
         }
@@ -125,6 +129,7 @@ impl Parser {
                 | Frame::Component(..)
                 | Frame::Branch(_)
                 | Frame::For(_)
+                | Frame::Empty(_)
                 | Frame::OriginalFor(_)
                 | Frame::Slot(..),
             ) => Ok(()),
@@ -145,6 +150,7 @@ impl Parser {
             }
             Some(Frame::Branch(branch)) => branch.ops.push(op),
             Some(Frame::For(for_op)) => for_op.ops.push(op),
+            Some(Frame::Empty(ops)) => ops.push(op),
             Some(Frame::OriginalFor(for_op)) => for_op.ops.push(op),
             Some(Frame::Slot(slot, phase)) => {
                 *phase = Phase::Children;
@@ -172,6 +178,13 @@ impl Parser {
             Frame::For(for_op) => self.attach_op(Op::For(for_op), line_no)?,
             Frame::OriginalFor(for_op) => self.attach_op(Op::OriginalFor(for_op), line_no)?,
             Frame::Slot(slot, _) => self.attach_op(Op::Slot(slot), line_no)?,
+            Frame::Empty(ops) => match self.stack.last_mut() {
+                Some(Frame::For(For {
+                    host: Some(host), ..
+                })) if host.empty.is_none() => host.empty = Some(ops),
+                // Empty frames only open under a host `ui.for`.
+                _ => return Err(err(line_no, cstr!("`empty` outside a host `ui.for`"))),
+            },
             Frame::Branch(branch) => match self.stack.last_mut() {
                 Some(Frame::If(if_op)) => if_op.branches.push(branch),
                 // Branch frames only open under `ui.if`.

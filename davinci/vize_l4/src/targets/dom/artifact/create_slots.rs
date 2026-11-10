@@ -103,6 +103,12 @@ fn collect(
                     cx.walk = walk_after;
                 }
             }
+            Op::For(for_op) if for_op.host.is_some() => {
+                return Err(EmitError::unsupported_at(
+                    super::UnsupportedReason::HostForLoop,
+                    for_op.span,
+                ));
+            }
             Op::For(for_op) => {
                 let id = peek_id(cx);
                 if is_slot_for(cx, id, for_op) {

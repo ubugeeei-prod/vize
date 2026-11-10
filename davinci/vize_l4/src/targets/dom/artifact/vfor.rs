@@ -23,6 +23,9 @@ pub(super) fn emit_for(
     id: Option<NodeId>,
     fragment_key: Option<&str>,
 ) -> Result<(), EmitError> {
+    if for_op.host.is_some() {
+        return Err(EmitError::unsupported_at(Reason::HostForLoop, for_op.span));
+    }
     let source_raw = js_source(&for_op.binding.source)?;
     let source_prefixed;
     let source = if cx.prefixing() {

@@ -375,3 +375,108 @@ fn conditional_shapes_and_branch_order_are_checked_as_branches_open() {
         }
     );
 }
+
+/// One host statement parsed in the arena, as the TSRX host parser hands it over.
+fn host_loop<'a>(a: &'a Allocator, source: &'a str) -> super::HostForHead<'a> {
+    use oxc_ast::ast::Statement;
+    let program = a.alloc(
+        oxc_parser::Parser::new(a.as_oxc(), source, oxc_span::SourceType::mjs())
+            .parse()
+            .program,
+    );
+    let [
+        Statement::ForOfStatement(head),
+        Statement::VariableDeclaration(index),
+        ..,
+    ] = program.body.as_slice()
+    else {
+        panic!("expected a for-of head and an index declaration");
+    };
+    let oxc_ast::ast::BindingPattern::BindingIdentifier(index) = &index.declarations[0].id else {
+        panic!("expected an index identifier");
+    };
+    let right = oxc_span::GetSpan::span(&head.right);
+    super::HostForHead {
+        left: &head.left,
+        left_text: &source[5..24],
+        collection: JsExpr::parse_in(a, "rows", Span::new(right.start, right.end)).unwrap(),
+        index: Some(index),
+        key: None,
+        r#await: false,
+    }
+}
+
+#[test]
+fn host_loops_keep_the_authored_head_and_mint_empty_after_body() {
+    use crate::dump::Page;
+    use vize_l0::dump::{Dump, Mode};
+    let a = Allocator::default();
+    let source = "for (const { id, label } of rows); let i; row; none;";
+    let mut builder = Builder::new(&a, source).unwrap();
+    let head = host_loop(&a, source);
+    let span = Span::new(0, 52);
+    let id = builder
+        .region()
+        .host_for(head, span, |regions, owner| {
+            regions
+                .body(|region, _| {
+                    assert_eq!(region.text("row", Span::new(42, 45)).unwrap().index(), 1);
+                })
+                .unwrap();
+            assert_eq!(
+                regions.body(|_, _| {}),
+                Err(ArtifactError::InvalidHostFor { node: owner })
+            );
+            regions
+                .empty(|region, _| {
+                    assert_eq!(region.text("none", Span::new(47, 51)).unwrap().index(), 2);
+                })
+                .unwrap();
+        })
+        .unwrap();
+    let artifact = builder.finish().unwrap();
+    assert_eq!(artifact.node_count(), 3);
+    let scope = artifact.scopes().get(id).unwrap();
+    let names: alloc::vec::Vec<_> = scope.bindings.iter().map(|b| b.name.as_str()).collect();
+    assert_eq!(names, ["id", "label", "i"]);
+    let page = Page::of(&artifact.parts().root.ops);
+    let text = page.print_to_string(Mode::Full);
+    assert_eq!(
+        text.as_str(),
+        "[l2-dump-v2]\nops=3\n\n[l2-dump-v2.ops]\nui.for source=js(\"rows\" @28:32) \
+         value=opaque(for-value \"const { id, label }\" @5:24) host-left=\"const { id, label }\" \
+         host-index=\"i\" @0:52\n  ui.text \"row\" @42:45\n  empty\n    ui.text \"none\" @47:51\n\n"
+    );
+    assert_eq!(Page::parse(text.as_str()).unwrap(), page);
+
+    // A host binding never carries a re-split key; the checker refuses one.
+    let mut parts = artifact.into_parts();
+    let Some(Op::For(for_op)) = parts.root.ops.first_mut() else {
+        panic!("expected ui.for");
+    };
+    for_op.binding.key = Some(for_op.binding.source);
+    let rejected = Artifact::try_new(parts).err().unwrap();
+    assert_eq!(rejected.error, ArtifactError::InvalidHostFor { node: id });
+}
+
+#[test]
+fn host_loops_need_a_body_before_their_empty_region() {
+    let a = Allocator::default();
+    let source = "for (const { id, label } of rows); let i; row; none;";
+    let mut builder = Builder::new(&a, source).unwrap();
+    let head = host_loop(&a, source);
+    let result = builder
+        .region()
+        .host_for(head, Span::new(0, 52), |regions, owner| {
+            assert_eq!(
+                regions.empty(|_, _| {}),
+                Err(ArtifactError::InvalidHostFor { node: owner })
+            );
+        });
+    assert_eq!(
+        result,
+        Err(ArtifactError::UnfinishedOwner {
+            node: NodeId::FIRST
+        })
+    );
+}

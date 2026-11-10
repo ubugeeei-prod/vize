@@ -37,6 +37,7 @@ const DIRECT: &[Reason] = &[
     Reason::EmptyCompoundText,
     Reason::ForAliasNotEmittable,
     Reason::ForItemShape,
+    Reason::HostForLoop,
     Reason::IfBranchShape,
     Reason::IfWithoutBranches,
     Reason::MissingTextFacts,

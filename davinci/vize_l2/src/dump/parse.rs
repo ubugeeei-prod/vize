@@ -21,7 +21,7 @@ use vize_l0::dump::Error as DumpError;
 
 use crate::dump::Page;
 use crate::dump::codec::Grammar;
-use crate::dump::owned::{Binding, Op};
+use crate::dump::owned::{Binding, For, Op};
 
 mod binding_line;
 mod expr_token;
@@ -257,9 +257,19 @@ impl Parser {
                     | Frame::Model(_)
                     | Frame::Branch(_)
                     | Frame::For(_)
+                    | Frame::Empty(_)
                     | Frame::OriginalFor(_)
                     | Frame::Slot(..),
                 ) => Err(err(line_no, cstr!("`branch` outside `ui.if`"))),
+            },
+            Item::Empty => match self.stack.last() {
+                Some(Frame::For(For {
+                    host: Some(host), ..
+                })) if host.empty.is_none() => {
+                    self.stack.push(Frame::Empty(alloc::vec::Vec::new()));
+                    Ok(())
+                }
+                _ => Err(err(line_no, cstr!("`empty` outside a host `ui.for`"))),
             },
             Item::Op(op) => {
                 self.guard_child(line_no)?;

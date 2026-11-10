@@ -196,6 +196,7 @@ pub(crate) fn lower_for<'a>(
         ForOp {
             binding,
             region,
+            host: None,
             span,
         },
         &cx.allocator,

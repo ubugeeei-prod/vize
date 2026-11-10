@@ -33,6 +33,9 @@ pub enum UnsupportedReason {
     /// A props surface the shipped `has_static_props` hoists but the L2
     /// hoist pass's narrower constant rule does not (P3-17).
     HoistConstantGap,
+    /// A host-syntax loop (retained head, optional `@empty` region) has no
+    /// DOM emission yet.
+    HostForLoop,
     HtmlExpressionNotJs,
     IfBranchShape,
     IfConditionNotJs,
@@ -101,6 +104,7 @@ impl UnsupportedReason {
         Self::ForItemShape,
         Self::ForSourceNotJs,
         Self::HoistConstantGap,
+        Self::HostForLoop,
         Self::HtmlExpressionNotJs,
         Self::IfBranchShape,
         Self::IfConditionNotJs,
@@ -159,6 +163,7 @@ impl UnsupportedReason {
             Self::ForItemShape => "for_item_shape",
             Self::ForSourceNotJs => "for_source_not_js",
             Self::HoistConstantGap => "hoist_constant_gap",
+            Self::HostForLoop => "host_for_loop",
             Self::HtmlExpressionNotJs => "html_expression_not_js",
             Self::IfBranchShape => "if_branch_shape",
             Self::IfConditionNotJs => "if_condition_not_js",

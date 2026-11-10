@@ -189,6 +189,17 @@ impl<'a> Cx<'a> {
                     for_op.span,
                     PartitionKind::Dynamic,
                 );
+                // A host loop's `@empty` region is the op's second region, in
+                // authored order like conditional branches.
+                if let Some(empty) = for_op.host.as_ref().and_then(|host| host.empty.as_ref()) {
+                    self.lower_region(
+                        empty,
+                        target_region,
+                        id,
+                        for_op.span,
+                        PartitionKind::Dynamic,
+                    );
+                }
                 id
             }
             l2::Op::OriginalFor(for_op) => {
