@@ -42,18 +42,7 @@ void test("ordinary source-built compiler records intentional syntax failures wi
     assert.equal(row.legacy.observation, null);
     assert.match(row.legacy.error, /requires source-build recipe .* --features legacy/);
   }
-  const setupSyntax = report.rows.find(
-    (row) => row.id === "compiler/sfc/incomplete-script-setup-recovery-10200",
-  );
-  assert(setupSyntax);
-  assert.equal(setupSyntax.legacy.state, "failed");
-  assert.equal(setupSyntax.legacy.verdict, "failed");
-  assert.equal(setupSyntax.legacy.observation?.exitStatus, 1);
-  assert.match(
-    setupSyntax.legacy.error,
-    /<script setup> does not parse[\s\S]*Expected `\)` but found `EOF`/u,
-  );
-  const intentionalFailures = new Set([...vue1, setupSyntax].map((row) => row.id));
+  const intentionalFailures = new Set(vue1.map((row) => row.id));
   assert.equal(report.summary.legacyMatches, loaded.cases.length - intentionalFailures.size);
   assert.equal(report.summary.legacyFailures, intentionalFailures.size);
   assert.equal(report.summary.baselineDrift, 0);
