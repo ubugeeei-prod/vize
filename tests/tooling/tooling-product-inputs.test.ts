@@ -95,6 +95,31 @@ test("the original seven paths honor the exact audit and retain the Glyph checks
   );
 });
 
+test("native build planning follows runtime imports without fixture source false positives", (t) => {
+  const appHmr = "tests/tooling/app-hmr-client-module-identity.test.ts";
+  assert.ok(planToolingTests([appHmr]).nativeBuildTests.includes(appHmr));
+  const cwd = mkdtempSync(path.join(tmpdir(), "vize-native-build-plan-"));
+  t.after(() => rmSync(cwd, { recursive: true, force: true }));
+  for (const directory of ["tests/tooling", "tests/tooling/davinci", "tests/tooling/release"])
+    mkdirSync(path.join(cwd, directory), { recursive: true });
+  const testFile = "tests/tooling/native.test.ts";
+  const selected = () => planToolingTests([testFile], { cwd }).nativeBuildTests;
+  writeFileSync(path.join(cwd, testFile), 'import "../../npm/native/index.js";');
+  assert.deepEqual(selected(), [testFile]);
+  mkdirSync(path.join(cwd, "npm/builder/vite/src"), { recursive: true });
+  writeFileSync(path.join(cwd, testFile), 'import "../../npm/builder/vite/src/virtual.ts";');
+  writeFileSync(
+    path.join(cwd, "npm/builder/vite/src/virtual.ts"),
+    'import { compile } from "@vizejs/native";',
+  );
+  assert.deepEqual(selected(), [testFile]);
+  writeFileSync(
+    path.join(cwd, testFile),
+    `writeFileSync("fixture.js", 'import "@vizejs/native";');`,
+  );
+  assert.deepEqual(selected(), []);
+});
+
 test("all CLI producers, copied declarations, fixtures and selector changes retain the campaign", (t) => {
   const f = fixture(t);
   for (const input of [

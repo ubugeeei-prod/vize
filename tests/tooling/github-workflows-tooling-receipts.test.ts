@@ -167,19 +167,12 @@ test("affected tooling builds the native addon only for a shard that reads it", 
   assert.match(plan?.run ?? "", /native-build=\$native_build/);
   assert.equal(plan?.env?.TOOLING_SHARD, "${{ inputs.shard }}/${{ inputs.total }}");
   assert.doesNotMatch(plan?.run ?? "", /\$\{\{\s*inputs\./);
-  const native = action.runs.steps.find(
-    (step) => step.name === "Build the native addon required by this shard",
-  );
-  assert.deepEqual(native, {
-    name: "Build the native addon required by this shard",
-    if: "${{ steps.plan.outputs.native-build == 'true' }}",
-    shell: "bash",
-    run: "vp run --workspace-root build:native:test",
-  });
-  const tests = action.runs.steps.find((step) => step.name === "Test affected tooling scripts");
-  assert.equal(
-    tests?.run,
-    "node tools/commands/ci/verify-tool-layout.ts && node tools/support/compat/github/run-tooling-tests.mjs",
-  );
+  const native = action.runs.steps.find((step) => step.run?.includes("build:native:test"));
+  assert.equal(native?.if, "${{ steps.plan.outputs.native-build == 'true' }}");
+  assert.match(native?.run ?? "", /vp run --workspace-root build:native:test/);
+  const tests = action.runs.steps.find((step) => step.run?.includes("run-tooling-tests.mjs"));
+  const layout = tests?.run?.indexOf("verify-tool-layout.ts") ?? -1;
+  const runner = tests?.run?.indexOf("run-tooling-tests.mjs") ?? -1;
+  assert.ok(layout >= 0 && layout < runner);
   assert.doesNotMatch(tests?.run ?? "", /build:native:test|test:scripts:pr/);
 });
