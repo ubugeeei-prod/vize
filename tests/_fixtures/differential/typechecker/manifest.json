@@ -14197,6 +14197,40 @@
       }
     },
     {
+      "id": "typechecker/regression/lib-type-shadowing-props-12536",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "lib-type-shadowing-props-12536/PropsHost.vue.txt",
+          "sha256": "d6d0883bbbd7ee5211950776f192605c3db16e65614ddfd8837deaea35d1c320",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "lib-type-shadowing-props-12536/tsconfig.json.txt",
+          "sha256": "8f4cc08b465ddf6df35387e36be46136f6b6f7f5f19085ca9d6a3fcc1cda9b31",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "lib_type_shadowing_props::authored_lib_types_cannot_capture_props_projections; Exclude, Extract and Pick declared or imported by the SFC must not capture withDefaults results, defaulted prop bindings or keyed template props. Input-only batch registration for the shared Canon source change; no native parity claim."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/regression/lib-type-shadowing-setup-helpers-12536",
       "state": "active",
       "targets": [

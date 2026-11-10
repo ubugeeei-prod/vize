@@ -151,8 +151,13 @@ impl TemplatePropsModel {
     /// `None` for a component that declares no props: `$props` then keeps the
     /// generic instance-global form, whose `{}` is what `vue-tsc` reports too.
     pub(crate) fn instance_props_type(&self) -> Option<String> {
-        self.declares_props
-            .then(|| cstr!("Readonly<{}>", self.resolved_type_ref))
+        self.declares_props.then(|| {
+            cstr!(
+                "{}<{}>",
+                crate::virtual_ts::generated_names::lib("Readonly"),
+                self.resolved_type_ref
+            )
+        })
     }
 
     /// Emit the setup-scope capture an opaque `withDefaults` argument is typed
@@ -370,9 +375,10 @@ fn emit_keyed_template_prop_binding(
     let binding_name = prop_binding_identifier(prop_name);
     let start = ts.len() + "  const ".len();
     if has_default {
+        let exclude = crate::virtual_ts::generated_names::lib("Exclude");
         append!(
             *ts,
-            "  const {binding_name} = __vize_keyed_template_context[(\"{prop_name}\" satisfies keyof typeof __vize_keyed_template_context)] as Exclude<{props_type_ref}[\"{prop_name}\"], undefined>;\n"
+            "  const {binding_name} = __vize_keyed_template_context[(\"{prop_name}\" satisfies keyof typeof __vize_keyed_template_context)] as {exclude}<{props_type_ref}[\"{prop_name}\"], undefined>;\n"
         );
     } else {
         append!(
@@ -394,9 +400,10 @@ fn emit_unchecked_template_prop_binding(
     prop_name: &str,
 ) {
     let binding_name = prop_binding_identifier(prop_name);
+    let record = crate::virtual_ts::generated_names::lib("Record");
     append!(
         *ts,
-        "  const {binding_name} = ({props_object_binding} as Record<string, unknown>)[\"{prop_name}\"];\n"
+        "  const {binding_name} = ({props_object_binding} as {record}<string, unknown>)[\"{prop_name}\"];\n"
     );
     append!(*ts, "  void {binding_name};\n");
 }

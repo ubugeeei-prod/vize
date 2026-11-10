@@ -24,23 +24,28 @@ pub(super) fn template_props_type_ref(
     // Vue accepts surplus defaults, but only declared props belong to the
     // template contract. Let TypeScript resolve the keys of imported and
     // generic prop types instead of guessing their shape in the generator.
+    let lib = crate::virtual_ts::generated_names::lib;
+    let (extract, pick) = (lib("Extract"), lib("Pick"));
     let default_keys = cstr!(
-        "Extract<{}, keyof {base_type_ref}>",
+        "{extract}<{}, keyof {base_type_ref}>",
         key_union(defaulted_prop_names)
     );
     let Some(undefined_defaults) = boolean_casting else {
         return cstr!(
-            "__WithDefaultsResult<{base_type_ref}, Pick<{base_type_ref}, {default_keys}>>"
+            "__WithDefaultsResult<{base_type_ref}, {pick}<{base_type_ref}, {default_keys}>>"
         );
     };
     let boolean_keys = if undefined_defaults.is_empty() {
         cstr!("$BooleanKey<{base_type_ref}>")
     } else {
         let excluded = key_union(undefined_defaults);
-        cstr!("Exclude<$BooleanKey<{base_type_ref}>, {excluded}>")
+        cstr!(
+            "{}<$BooleanKey<{base_type_ref}>, {excluded}>",
+            lib("Exclude")
+        )
     };
     cstr!(
-        "__WithDefaultsResult<{base_type_ref}, Pick<{base_type_ref}, {default_keys}>, {boolean_keys}>"
+        "__WithDefaultsResult<{base_type_ref}, {pick}<{base_type_ref}, {default_keys}>, {boolean_keys}>"
     )
 }
 
