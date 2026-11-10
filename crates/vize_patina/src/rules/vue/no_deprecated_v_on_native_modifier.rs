@@ -55,6 +55,7 @@ static META: RuleMeta = RuleMeta {
 pub struct NoDeprecatedVOnNativeModifier;
 
 impl NoDeprecatedVOnNativeModifier {
+    /// Apply the shared authored-range check to either a Relief or L1 directive.
     fn check(ctx: &mut LintContext<'_>, directive: &MarkupDirective<'_>) {
         // Only the default Vue 3 dialect removed `.native`. petite-vue and the
         // legacy Vue 2 dialect treat `.native` differently, so leave them alone.

@@ -55,6 +55,7 @@ static META: RuleMeta = RuleMeta {
 pub struct NoDeprecatedVOnNumberModifiers;
 
 impl NoDeprecatedVOnNumberModifiers {
+    /// Apply first-numeric-modifier selection to either a Relief or L1 directive.
     fn check(ctx: &mut LintContext<'_>, directive: &MarkupDirective<'_>) {
         // Only the default Vue 3 dialect removed numeric `keyCode` modifiers.
         // petite-vue and the legacy Vue 2 dialect still understand them, so

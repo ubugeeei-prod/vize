@@ -66,6 +66,8 @@ fn migrated_sfc_rules_preserve_diagnostics_and_fixes() {
         r#"<MyComponent :foo/><div :title :class/>"#,
         r#"<slot name="my-slot"/><input id="name"/><label for="name">Name</label>"#,
         r#"<MyComponent :title.sync="title" @click.native="handler"/><input @keyup.13="submit"/>"#,
+        r#"<p>日本語😀</p><MyComponent :title.sync.camel="title" @click.native.stop="handler"/>"#,
+        r#"<p>日本語😀</p><input @keyup.13.27="submit"/><input @keyup.0.13="submit"/><input @keyup.13suffix="submit"/>"#,
         "<!-- eslint-disable-next-line vue/prefer-props-shorthand -->\n<MyComponent :foo=\"foo\"/>",
         "<!-- eslint-disable-next-line vue/no-useless-v-bind -->\n<div :title=\"'static'\"/>",
         "<!-- eslint-disable-next-line vue/no-multiple-objects-in-class -->\n<div :class=\"[{ active }, { hidden }]\"/>",

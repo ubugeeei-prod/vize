@@ -52,6 +52,7 @@ static META: RuleMeta = RuleMeta {
 pub struct NoDeprecatedVBindSync;
 
 impl NoDeprecatedVBindSync {
+    /// Apply the shared authored-range check to either a Relief or L1 directive.
     fn check(ctx: &mut LintContext<'_>, directive: &MarkupDirective<'_>) {
         // Only the default Vue 3 dialect removed `.sync`. petite-vue and the
         // legacy Vue 2 dialect treat `.sync` differently, so leave them alone.
