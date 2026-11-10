@@ -19,7 +19,7 @@ use super::virtual_project::VirtualProject;
 use oxc_span::SourceType;
 use vize_carton::{
     String,
-    corsa_resolver::{CorsaResolveError, CorsaResolveRequest, resolve_corsa_executable},
+    corsa_resolver::{CorsaResolveError, CorsaResolveRequest, resolve_batch_corsa_executable},
     cstr, profile,
 };
 
@@ -69,7 +69,7 @@ impl CorsaExecutor {
             project_root: Some(project_root),
         };
 
-        match resolve_corsa_executable(request) {
+        match resolve_batch_corsa_executable(request) {
             Ok(corsa_path) => Ok(Self {
                 corsa_path,
                 checker_count: None,

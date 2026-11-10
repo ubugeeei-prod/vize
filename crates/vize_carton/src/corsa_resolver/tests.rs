@@ -1,6 +1,6 @@
 use super::{
     CORSA_ENV_VARS, CorsaResolveError, CorsaResolveRequest, discover_in_walk, normalize_corsa_path,
-    platform_suffix, resolve_with_env,
+    platform_suffix, resolve_batch_with_env, resolve_with_env,
 };
 use std::ffi::OsString;
 use std::fs;
@@ -118,6 +118,22 @@ fn resolve(
     })
 }
 
+fn resolve_batch(
+    explicit_path: Option<&Path>,
+    project_root: Option<&Path>,
+    env: &[(&str, &Path)],
+) -> Result<PathBuf, CorsaResolveError> {
+    let request = CorsaResolveRequest {
+        explicit_path,
+        project_root,
+    };
+    resolve_batch_with_env(request, |name| {
+        env.iter()
+            .find(|(env_name, _)| *env_name == name)
+            .map(|(_, path)| OsString::from(path.as_os_str()))
+    })
+}
+
 #[test]
 fn explicit_path_wins_over_env_vars() {
     let temp_dir = TempDir::new().unwrap();
@@ -129,6 +145,53 @@ fn explicit_path_wins_over_env_vars() {
     let resolved = resolve(Some(&explicit), None, &[("CORSA_PATH", from_env.as_path())]).unwrap();
 
     assert_eq!(resolved, explicit.canonicalize().unwrap());
+}
+
+#[cfg(any(
+    all(target_os = "macos", target_arch = "aarch64"),
+    all(
+        target_os = "linux",
+        any(target_arch = "aarch64", target_arch = "x86_64")
+    )
+))]
+#[test]
+fn batch_discovery_prefers_declared_tsrs_but_keeps_explicit_authority() {
+    let temp_dir = TempDir::new().unwrap();
+    let root = temp_dir.path();
+    let suffix = platform_suffix();
+    let (_, tsrs) = write_tsrs_install(root);
+    write_typescript_manifest(
+        &root.join("node_modules/typescript/package.json"),
+        suffix,
+        "7.0.2",
+    );
+    let typescript = root
+        .join("node_modules/@typescript")
+        .join(&*crate::cstr!("typescript-{suffix}"))
+        .join("lib/tsc");
+    write_file(&typescript);
+    fs::write(
+        root.join("package.json"),
+        r#"{"devDependencies":{"typescript":"7.0.2","tsrs":"0.18.0"}}"#,
+    )
+    .unwrap();
+
+    assert_eq!(
+        resolve(None, Some(root), &[]).unwrap(),
+        typescript.canonicalize().unwrap()
+    );
+    assert_eq!(
+        resolve_batch(None, Some(root), &[]).unwrap(),
+        tsrs.canonicalize().unwrap()
+    );
+    assert_eq!(
+        resolve_batch(Some(&typescript), Some(root), &[]).unwrap(),
+        typescript.canonicalize().unwrap()
+    );
+    assert_eq!(
+        resolve_batch(None, Some(root), &[("TSGO_PATH", &typescript)]).unwrap(),
+        typescript.canonicalize().unwrap()
+    );
 }
 
 #[test]

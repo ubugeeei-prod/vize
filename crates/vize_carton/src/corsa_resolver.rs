@@ -27,7 +27,8 @@ use std::path::{Path, PathBuf};
 
 mod packages;
 use packages::{
-    find_node_modules_native, find_node_modules_wrapper, resolve_bin_shim, resolve_owned_launcher,
+    find_node_modules_native, find_node_modules_tsrs, find_node_modules_wrapper, resolve_bin_shim,
+    resolve_owned_launcher,
 };
 
 #[cfg(test)]
@@ -110,6 +111,21 @@ pub fn resolve_corsa_executable(
     resolve_with_env(request, |name| std::env::var_os(name))
 }
 
+/// Resolve the native runtime for a batch type check.
+///
+/// Explicit configuration and environment variables retain the same
+/// precedence as [`resolve_corsa_executable`]. During project discovery, a
+/// declared tsrs installation wins over the TypeScript/Corsa tiers: the batch
+/// corpus gate qualifies its diagnostic identity while its shared type graph
+/// is substantially cheaper for a complete check. Interactive editor and lint
+/// callers continue to use [`resolve_corsa_executable`] and its stable runtime
+/// order.
+pub fn resolve_batch_corsa_executable(
+    request: CorsaResolveRequest<'_>,
+) -> Result<PathBuf, CorsaResolveError> {
+    resolve_batch_with_env(request, |name| std::env::var_os(name))
+}
+
 /// Discover a Corsa executable by walking `start` and its ancestors, without
 /// consulting env vars, `$HOME`, `npm root -g`, or `PATH`.
 ///
@@ -172,6 +188,21 @@ fn resolve_with_env(
     request: CorsaResolveRequest<'_>,
     env: impl Fn(&str) -> Option<OsString>,
 ) -> Result<PathBuf, CorsaResolveError> {
+    resolve_with_env_and_discovery(request, env, discover_runtime)
+}
+
+fn resolve_batch_with_env(
+    request: CorsaResolveRequest<'_>,
+    env: impl Fn(&str) -> Option<OsString>,
+) -> Result<PathBuf, CorsaResolveError> {
+    resolve_with_env_and_discovery(request, env, discover_batch_runtime)
+}
+
+fn resolve_with_env_and_discovery(
+    request: CorsaResolveRequest<'_>,
+    env: impl Fn(&str) -> Option<OsString>,
+    discover: impl FnOnce(Option<&Path>) -> Result<Option<PathBuf>, CorsaResolveError>,
+) -> Result<PathBuf, CorsaResolveError> {
     if let Some(path) = request.explicit_path {
         return resolve_required_path(path, "configuration", request.project_root);
     }
@@ -186,7 +217,7 @@ fn resolve_with_env(
         return resolve_required_path(Path::new(&value), env_var, request.project_root);
     }
 
-    discover_runtime(request.project_root)?.ok_or(CorsaResolveError::NotFound)
+    discover(request.project_root)?.ok_or(CorsaResolveError::NotFound)
 }
 
 /// Resolve an explicitly requested path: anchor relative paths, require
@@ -221,6 +252,19 @@ fn discover_runtime(project_root: Option<&Path>) -> Result<Option<PathBuf>, Cors
 
     discover_in_walk_checked(&walk_starts).map_err(|invalid| CorsaResolveError::InvalidRuntime {
         package: invalid.package,
+    })
+}
+
+fn discover_batch_runtime(
+    project_root: Option<&Path>,
+) -> Result<Option<PathBuf>, CorsaResolveError> {
+    let cwd = std::env::current_dir().ok();
+    let walk_starts = discovery_starts(project_root, cwd.as_deref());
+
+    discover_batch_in_walk_checked(&walk_starts).map_err(|invalid| {
+        CorsaResolveError::InvalidRuntime {
+            package: invalid.package,
+        }
     })
 }
 
@@ -271,6 +315,36 @@ fn discover_in_walk_checked(
         }
     }
 
+    Ok(wrapper_fallback)
+}
+
+/// Batch checks prefer a declared tsrs provider, but retain the same nearest
+/// package boundary and invalid-provider failure policy as general discovery.
+fn discover_batch_in_walk_checked(
+    walk_starts: &[PathBuf],
+) -> Result<Option<PathBuf>, packages::InvalidNativePackage> {
+    let mut wrapper_fallback: Option<PathBuf> = None;
+    let mut visited: Vec<&Path> = Vec::new();
+    for start in walk_starts {
+        for dir in start.ancestors() {
+            if visited.contains(&dir) {
+                continue;
+            }
+            visited.push(dir);
+            if let Some(path) = find_node_modules_tsrs(dir)? {
+                return Ok(Some(path));
+            }
+            match probe_directory(dir)? {
+                Some(Candidate::Native(path) | Candidate::Legacy(path)) => {
+                    return Ok(Some(path));
+                }
+                Some(Candidate::Wrapper(path)) => {
+                    wrapper_fallback.get_or_insert(path);
+                }
+                None => {}
+            }
+        }
+    }
     Ok(wrapper_fallback)
 }
 
