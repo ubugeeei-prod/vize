@@ -125,6 +125,7 @@ impl CorsaProjectClient {
                 self.explicit_project_config.as_deref(),
             )?);
         }
+        self.register_editor_lsp_interrupt();
         self.editor_lsp_documents_dirty = true;
         Ok(())
     }
@@ -207,6 +208,7 @@ impl CorsaProjectClient {
             self.session = Some(session);
             self.capabilities = capabilities;
             self.editor_lsp = Some(editor);
+            self.register_editor_lsp_interrupt();
             self.project_session_attached_to_editor = true;
             self.shared_editor_transport = true;
             return Ok(true);
@@ -235,6 +237,7 @@ impl CorsaProjectClient {
                 .map_err(|error| cstr!("Cannot drain attached editor snapshot releases: {error}"));
             released.and(drained)
         });
+        self.editor_lsp_interrupt.clear();
         let editor_result = self.editor_lsp.take().map_or(Ok(()), |mut editor| {
             if discard {
                 editor.discard()

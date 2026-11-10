@@ -44,6 +44,7 @@ mod declaration;
 mod file_rename;
 mod implementation;
 mod inlay_hint;
+mod interrupt;
 #[cfg(test)]
 pub(crate) mod logical_disk_control;
 mod materialized;
@@ -63,6 +64,7 @@ mod tests;
 mod type_definition;
 #[cfg(all(test, unix))]
 mod watch_settle_tests;
+pub(crate) use interrupt::EditorLspInterrupt;
 pub(super) use original_program::OriginalDiagnosingSession;
 use requests::{
     RawDefinitionRequest, RawHoverRequest, RawPrepareRenameRequest, RawReferencesRequest,

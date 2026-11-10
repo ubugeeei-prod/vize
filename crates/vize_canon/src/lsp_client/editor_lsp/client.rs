@@ -4,7 +4,7 @@
 use corsa::runtime::block_on;
 use lsp_types::DocumentDiagnosticReportResult;
 use serde_json::Value;
-use std::path::PathBuf;
+use std::{path::PathBuf, sync::Arc};
 use vize_l0::{FxHashMap, String, cstr};
 
 use super::{CorsaProjectClient, EditorLspSession, retry::retry_transient_editor_request};
@@ -14,6 +14,17 @@ use crate::lsp_client::shared_text::DocumentTexts;
 mod query_view_tests;
 
 impl CorsaProjectClient {
+    pub(crate) fn bind_editor_lsp_interrupt(&mut self, interrupt: Arc<super::EditorLspInterrupt>) {
+        self.editor_lsp_interrupt = interrupt;
+        self.register_editor_lsp_interrupt();
+    }
+
+    pub(super) fn register_editor_lsp_interrupt(&self) {
+        if let Some(session) = &self.editor_lsp {
+            self.editor_lsp_interrupt.register(&session.client);
+        }
+    }
+
     /// A shared API snapshot also reads the editor's open buffers. Materialized
     /// refreshes reach it before the editor's pending didChange, so refresh it
     /// once the editor acknowledges the current buffers (#10730).
@@ -431,6 +442,7 @@ impl CorsaProjectClient {
         if self.project_session_attached_to_editor {
             return self.retire_shared_editor_transport(false);
         }
+        self.editor_lsp_interrupt.clear();
         let result = match self.editor_lsp.as_mut() {
             Some(session) => session.shutdown(),
             None => Ok(()),
@@ -449,6 +461,7 @@ impl CorsaProjectClient {
         if self.project_session_attached_to_editor {
             return self.retire_shared_editor_transport(true);
         }
+        self.editor_lsp_interrupt.clear();
         let result = match self.editor_lsp.as_mut() {
             Some(session) => session.discard(),
             None => Ok(()),
