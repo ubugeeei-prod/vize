@@ -7,6 +7,7 @@ mod support {
 }
 
 use std::collections::BTreeMap;
+use std::path::Path;
 
 use support::vue_setup::{corpus, observe, slice, text};
 use vize_l0::{String, cstr};
@@ -63,6 +64,14 @@ fn known_vue_kind_difference(
     )
 }
 
+/// Whether the file belongs to the tracked corpus whose reviewed inventories
+/// are pinned. Hydrated `tests/_fixtures/_git` checkouts vary by CI lane (the
+/// merge queue hydrates ElementPlus) and by developer, so they still join the
+/// mismatch checks but never the pinned counts.
+fn pinned_inventory(relative: &Path) -> bool {
+    !relative.starts_with("tests/_fixtures/_git")
+}
+
 /// Every natively classified binding has Croquis' kind, and in files with no
 /// unclassified pattern Croquis has no other binding except props read
 /// without a local, which belong to the props contract.
@@ -72,6 +81,7 @@ fn every_corpus_setup_binding_matches_croquis() {
     let (mut compared, mut bindings, mut patterns) = (0usize, 0usize, 0usize);
     let mut mismatches = Vec::new();
     let mut intentional = BTreeMap::<String, usize>::new();
+    let mut hydrated = BTreeMap::<String, usize>::new();
     for file in &files {
         let Ok(source) = std::fs::read_to_string(file) else {
             continue;
@@ -79,7 +89,13 @@ fn every_corpus_setup_binding_matches_croquis() {
         let Some((content, base, facts)) = observe(&source) else {
             continue;
         };
-        let relative = file.strip_prefix(&root).unwrap_or(file).display();
+        let path = file.strip_prefix(&root).unwrap_or(file);
+        let inventory = if pinned_inventory(path) {
+            &mut intentional
+        } else {
+            &mut hydrated
+        };
+        let relative = path.display();
         let facts = match facts {
             Ok(facts) => facts,
             Err(refusal) => {
@@ -102,7 +118,7 @@ fn every_corpus_setup_binding_matches_croquis() {
             bindings += 1;
             if expected != Some(kind) {
                 if known_vue_kind_difference(Some(kind), expected) {
-                    *intentional
+                    *inventory
                         .entry(cstr!("{kind:?} <- {expected:?}"))
                         .or_default() += 1;
                 } else {
@@ -122,9 +138,7 @@ fn every_corpus_setup_binding_matches_croquis() {
                 if setup && !native.iter().any(|known| known == name) {
                     let expected = croquis_kind(kind);
                     if known_vue_kind_difference(None, expected) {
-                        *intentional
-                            .entry(cstr!("none <- {expected:?}"))
-                            .or_default() += 1;
+                        *inventory.entry(cstr!("none <- {expected:?}")).or_default() += 1;
                     } else {
                         mismatches.push(cstr!("{relative}: {name} only croquis {kind:?}"));
                     }
@@ -133,7 +147,7 @@ fn every_corpus_setup_binding_matches_croquis() {
         }
     }
     eprintln!(
-        "compared {bindings} bindings in {compared} setup scripts ({patterns} with unclassified props); intentional Vue differences {intentional:?}"
+        "compared {bindings} bindings in {compared} setup scripts ({patterns} with unclassified props); intentional Vue differences {intentional:?}; hydrated fixture differences {hydrated:?}"
     );
     assert!(compared > 1000, "corpus shrank to {compared} setup scripts");
     assert_eq!(
@@ -382,7 +396,7 @@ fn croquis_reactive(source: ReactiveSource) -> vize_croquis::reactivity::Reactiv
 #[test]
 fn every_corpus_reactive_source_matches_croquis() {
     let (root, files) = corpus();
-    let (mut compared, mut sources) = (0usize, 0usize);
+    let (mut compared, mut sources, mut hydrated) = (0usize, 0usize, 0usize);
     let mut mismatches = Vec::new();
     for file in &files {
         let Ok(source) = std::fs::read_to_string(file) else {
@@ -392,6 +406,7 @@ fn every_corpus_reactive_source_matches_croquis() {
             continue;
         };
         compared += 1;
+        let path = file.strip_prefix(&root).unwrap_or(file);
         let mut native: Vec<(String, Option<_>)> = Vec::new();
         for binding in facts.bindings() {
             let name = slice(&content, base, binding.name).unwrap_or_default();
@@ -406,7 +421,11 @@ fn every_corpus_reactive_source_matches_croquis() {
             oracle.retain(|(known, _)| *known != name);
             oracle.push((name, Some(registered.kind)));
         }
-        sources += native.len();
+        if pinned_inventory(path) {
+            sources += native.len();
+        } else {
+            hydrated += native.len();
+        }
         for (name, source) in native {
             let expected = oracle
                 .iter()
@@ -414,14 +433,16 @@ fn every_corpus_reactive_source_matches_croquis() {
                 .find(|(known, _)| known == name)
                 .and_then(|(_, source)| *source);
             if source != expected {
-                let relative = file.strip_prefix(&root).unwrap_or(file).display();
+                let relative = path.display();
                 mismatches.push(cstr!(
                     "{relative}: {name} native {source:?} croquis {expected:?}"
                 ));
             }
         }
     }
-    eprintln!("compared {sources} reactive sources in {compared} setup scripts");
+    eprintln!(
+        "compared {sources} reactive sources (+{hydrated} in hydrated fixtures) in {compared} setup scripts"
+    );
     assert_eq!(sources, 3_167, "corpus reactive-source inventory changed");
     assert_eq!(mismatches, Vec::<String>::new());
 }
