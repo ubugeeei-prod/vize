@@ -94,7 +94,7 @@ export function qualifyEcosystemProducerDrift(repoRoot: string): void {
       replaceExactly(
         originals["GraphAnd3D.vue"],
         '<Panel position="top-left">',
-        '<Panel v-if="selectedNode" position="top-left">',
+        '<Panel v-if="selectedNode.data" position="top-left">',
       ),
     );
     writeSource(
@@ -131,7 +131,7 @@ export function qualifyEcosystemProducerDrift(repoRoot: string): void {
       replaceExactly(
         readSource(projectDir, "GraphAnd3D.vue"),
         "selectedNodeId = $event.node.id",
-        "$event.node.missing",
+        "selectedNodeId = $event.node.missing",
       ),
     );
     writeSource(
@@ -153,7 +153,7 @@ export function qualifyEcosystemProducerDrift(repoRoot: string): void {
       replaceExactly(
         originals["NaiveUiOptionsApi.vue"],
         "markReviewed(selectedLibrary)",
-        "$event.missing",
+        "markReviewed($event.missing)",
       ),
     );
     writeSource(
@@ -162,7 +162,7 @@ export function qualifyEcosystemProducerDrift(repoRoot: string): void {
       replaceExactly(
         originals["PrimeVueOptionsApi.vue"],
         "chooseAction(action.value)",
-        "$event.missing",
+        "chooseAction($event.missing)",
       ),
     );
     writeSource(
@@ -179,7 +179,7 @@ export function qualifyEcosystemProducerDrift(repoRoot: string): void {
           "`${left.value}:${right.value}`",
         ),
         "promoteLibrary(antValue)",
-        "$event.missing",
+        "promoteLibrary($event.missing)",
       ),
     );
     negative = run(projectDir);
@@ -265,7 +265,7 @@ function assertRun(
 ): void {
   assert.equal(receipt.process.status, status, receipt.process.stderr);
   assert.equal(receipt.process.signal, null);
-  assert.equal(receipt.process.stderr, "");
+  assert.match(receipt.process.stderr, /=== __vize_helpers\.d\.ts ===/);
   assert.equal(receipt.process.command, VIZE_BIN);
   assert.equal(JSON.stringify(receipt.parsed), receipt.process.stdout.trim());
   assert.deepEqual(flatDiagnostics(receipt.parsed), diagnostics);
