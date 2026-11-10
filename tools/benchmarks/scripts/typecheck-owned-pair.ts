@@ -19,6 +19,7 @@ import {
   writeJson,
 } from "./typecheck-owned-pair-evidence.ts";
 import {
+  checkerTracePolicy,
   clearProjectCaches,
   expectedOwnedSfcFiles,
   installRole,
@@ -168,6 +169,7 @@ async function main() {
   }> = [];
   for (const specification of workloads) {
     const workload = prepareOwnedWorkload(specification.id, work, out, hosts.base);
+    const tracePolicy = checkerTracePolicy(workload);
     for (const mapper of ["vize", "vue"] as const) prepareOwnedProbe(workload.directory, mapper);
     const probeAuthority = ownedProbeAuthority(workload.directory);
     const inputs = snapshotInputs(workload.directory);
@@ -207,7 +209,7 @@ async function main() {
         ? `tsconfig.${mapper}-owned-pair-probe.json`
         : `tsconfig.${mapper}-mapper.json`;
       const traceArgs =
-        probe && host.id === "tsc"
+        probe && host.id === "tsc" && tracePolicy.enabled
           ? ["--generateTrace", join(out, workload.id, `${vue ? "vue" : role}-trace`)]
           : [];
       const command =
@@ -345,10 +347,11 @@ async function main() {
         projection.get("vue")!,
       ),
     );
-    writeJson(
-      join(out, `${workload.id}-checker-traces.json`),
-      Object.fromEntries(
+    writeJson(join(out, `${workload.id}-checker-traces.json`), {
+      policy: tracePolicy,
+      ...Object.fromEntries(
         ["base", "head", "vue"].map((role) => {
+          if (!tracePolicy.enabled) return [role, null];
           const directory = join(out, workload.id, `${role}-trace`);
           const busiest = checkerBusyMs(directory);
           assert.ok(busiest.length > 0, "no checker work in the untimed trace");
@@ -363,7 +366,7 @@ async function main() {
           ];
         }),
       ),
-    );
+    });
     for (const phase of requiredSamples(workload.generated == null)) {
       const index = requiredSamples(workload.generated == null).indexOf(phase);
       for (const lane of lanes) {

@@ -25,6 +25,31 @@ export type Workload = {
   sfcs: number;
   generated: ScaleProject | null;
 };
+export type CheckerTracePolicy =
+  | { enabled: true; scope: "frozen-real-corpus" }
+  | {
+      enabled: false;
+      scope: "projection-only-generated-workload";
+      reason: string;
+    };
+
+/**
+ * TypeScript's `--generateTrace` includes the complete type catalog of every
+ * checker. Keep that attribution evidence for the two frozen real corpora,
+ * where it is useful and bounded. Generated scale workloads retain their
+ * complete mapper probe, per-SFC projection bytes and diagnostic packets, but
+ * do not turn an untimed attribution probe into multi-gigabyte type catalogs.
+ */
+export function checkerTracePolicy(workload: Pick<Workload, "generated">): CheckerTracePolicy {
+  return workload.generated === null
+    ? { enabled: true, scope: "frozen-real-corpus" }
+    : {
+        enabled: false,
+        scope: "projection-only-generated-workload",
+        reason:
+          "TypeScript --generateTrace serializes complete checker type catalogs; generated workloads retain the complete mapper probe and per-SFC projection bytes instead.",
+      };
+}
 export const OWNED_WORKLOADS = [
   { id: "misskey", sfcs: 583 },
   { id: "n8n", sfcs: 1113 },
