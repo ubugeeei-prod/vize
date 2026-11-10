@@ -15,15 +15,28 @@ export function assertTypedContextWrapperMappings(
   producer: Uint8Array,
 ): void {
   const digest = (bytes: string | Uint8Array) => createHash("sha256").update(bytes).digest("hex");
-  const producerText = Buffer.from(producer).toString("utf8");
+  const verbatimRunSuccessor =
+    "    span_normalize::join_verbatim_runs(source, generated, &mut spans);\n";
+  const currentProducer = Buffer.from(producer).toString("utf8");
   const componentExportAdditions = [
     "mod component_export;\n",
     "    component_export::insert_spans(&mut spans, mappings, metadata);\n",
   ];
   assert.equal(
     digest(producer),
-    "9c3faec15ca7c73c4a8a3f0fd1fcae7bb6f9d70c8e71a7046994d373e8b4e038",
+    "3322172bbc61ab874838620ff5351315026993e13999a0736a62c3edaa09fb84",
     "unqualified content-mapper producer",
+  );
+  assert.equal(
+    currentProducer.split(verbatimRunSuccessor).length,
+    2,
+    "finite verbatim-run producer successor",
+  );
+  const producerText = currentProducer.replace(verbatimRunSuccessor, "");
+  assert.equal(
+    digest(producerText),
+    "9c3faec15ca7c73c4a8a3f0fd1fcae7bb6f9d70c8e71a7046994d373e8b4e038",
+    "finite verbatim-run producer successor",
   );
   const hoverOwnerSuccessor =
     "    span_features::retain_template_hover_owner(generated, &mut spans);\n";
