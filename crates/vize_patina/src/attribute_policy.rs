@@ -3,9 +3,88 @@
 mod img_alt;
 pub(crate) use img_alt::{ImageAltMessages, ImageAltPolicy};
 
-/// Keep the registered tabindex rule's complete i32 parsing semantics.
+/// Match the JavaScript numeric coercion used by eslint-plugin-vuejs-accessibility.
 pub fn positive_tabindex(value: &str) -> bool {
-    value.parse::<i32>().is_ok_and(|number| number > 0)
+    let value = value.trim();
+    if value.is_empty() {
+        return false;
+    }
+    for (prefix, radix) in [
+        ("0x", 16),
+        ("0X", 16),
+        ("0o", 8),
+        ("0O", 8),
+        ("0b", 2),
+        ("0B", 2),
+    ] {
+        if let Some(digits) = value.strip_prefix(prefix) {
+            return !digits.is_empty()
+                && digits.chars().all(|digit| digit.is_digit(radix))
+                && digits.chars().any(|digit| digit != '0');
+        }
+    }
+    if matches!(value, "Infinity" | "+Infinity") {
+        return true;
+    }
+    if value
+        .bytes()
+        .any(|byte| byte.is_ascii_alphabetic() && !matches!(byte, b'e' | b'E'))
+    {
+        return false;
+    }
+    value.parse::<f64>().is_ok_and(|number| number > 0.0)
+}
+
+/// Evaluate a literal bound by `v-bind:tabindex`. Beyond the reference's ESTree
+/// `Literal`, a unary `+` and a substitution-free template literal also count.
+pub(crate) fn positive_bound_tabindex_literal(expression: &str) -> bool {
+    use crate::rules::a11y::reference_values::{BoundLiteral, bound_literal, strip_parentheses};
+
+    let expression = strip_parentheses(expression);
+    let expression = expression.strip_prefix('+').unwrap_or(expression);
+    match bound_literal(expression) {
+        Some(BoundLiteral::String(value)) => positive_tabindex(value),
+        Some(BoundLiteral::Number(value)) => value > 0.0,
+        _ => false,
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{positive_bound_tabindex_literal, positive_tabindex};
+
+    #[test]
+    fn tabindex_values_follow_javascript_numeric_coercion() {
+        for value in [
+            "1",
+            " 1 ",
+            "1.5",
+            ".5",
+            "1e1",
+            "0x1",
+            "0o10",
+            "0b10",
+            "Infinity",
+            "+Infinity",
+        ] {
+            assert!(positive_tabindex(value), "{value}");
+        }
+        for value in [
+            "", "0", "-1", "inf", "+inf", "infinity", "NaN", "+0x1", "1e", "１",
+        ] {
+            assert!(!positive_tabindex(value), "{value}");
+        }
+    }
+
+    #[test]
+    fn bound_tabindex_only_evaluates_literals() {
+        for value in ["2", "2.5", "(2)", "1_000", "+2", "'2'", "\" 2 \"", "`0x2`"] {
+            assert!(positive_bound_tabindex_literal(value), "{value}");
+        }
+        for value in ["value", "Infinity", "`${value}`", "'0'", "-1", "2n", "true"] {
+            assert!(!positive_bound_tabindex_literal(value), "{value}");
+        }
+    }
 }
 
 /// Returns a CSS replacement suggestion if the attribute is deprecated on the given element.

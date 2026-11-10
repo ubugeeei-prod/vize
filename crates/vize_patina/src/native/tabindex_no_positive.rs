@@ -1,4 +1,4 @@
-//! Static tabindex integer checks over original same-owner attributes.
+//! Literal tabindex numeric checks over original same-owner attributes.
 
 use std::borrow::Cow;
 
@@ -19,24 +19,41 @@ pub(super) fn check(
 ) -> Result<Vec<NativeLintFinding>, NativeLintRefusal> {
     header::opening_range(element)?;
     let mut findings = Vec::new();
-    let mut names: SmallVec<[&str; 8]> = SmallVec::new();
+    let mut names: SmallVec<[(&str, bool); 8]> = SmallVec::new();
     for original in element.attributes() {
-        let header::Binding::Static { name, value, range } = header::binding(element, &original)?
-        else {
-            continue;
+        let (name, value, range, bound) = match header::binding(element, &original)? {
+            header::Binding::Static { name, value, range } => (name, value, range, false),
+            header::Binding::Bind { name, range, .. } => (
+                name,
+                original
+                    .surface()
+                    .value
+                    .as_ref()
+                    .map(|value| value.content.text),
+                range,
+                true,
+            ),
+            header::Binding::Other { .. } => continue,
         };
-        if names
-            .iter()
-            .any(|previous| previous.eq_ignore_ascii_case(name))
-        {
+        let permits_static_bound_pair =
+            name.eq_ignore_ascii_case("class") || name.eq_ignore_ascii_case("style");
+        if names.iter().any(|(previous, previous_bound)| {
+            previous.eq_ignore_ascii_case(name)
+                && (!permits_static_bound_pair || *previous_bound == bound)
+        }) {
             let span = attribute::span(element.component().block(), original.surface().name.text)?;
             return Err(NativeLintRefusal::DuplicateAttribute { span });
         }
-        names.push(name);
+        names.push((name, bound));
         let Some(value) = value else {
             continue;
         };
-        if !name.eq_ignore_ascii_case("tabindex") || !positive(value)? {
+        let positive = if bound {
+            crate::attribute_policy::positive_bound_tabindex_literal(value)
+        } else {
+            positive(value)?
+        };
+        if !name.eq_ignore_ascii_case("tabindex") || !positive {
             continue;
         }
         findings.push(finding(range, messages));

@@ -25,14 +25,12 @@
 
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
-use crate::markup::{
-    MarkupBindingKind, MarkupContext, MarkupElement, MarkupElementKind, MarkupRule, MarkupTraversal,
-};
+use crate::markup::{MarkupContext, MarkupElement, MarkupElementKind, MarkupRule, MarkupTraversal};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use vize_relief::{ElementNode, ElementType, ExpressionNode, PropNode};
+use vize_relief::ElementNode;
 
-use super::helpers::get_static_attribute_value;
-use super::markup_helpers::get_static_markup_attribute_value;
+use super::markup_helpers::get_static_or_bound_literal_markup_value;
+use super::reference_values::{has_accessible_child, has_aria_label, has_attribute_text};
 
 static META: RuleMeta = RuleMeta {
     name: "a11y/alt-text",
@@ -46,37 +44,37 @@ static META: RuleMeta = RuleMeta {
 #[derive(Default)]
 pub struct AltText;
 
-fn has_attribute_or_binding(element: &ElementNode, name: &str) -> bool {
-    element.props.iter().any(|prop| match prop {
-        PropNode::Attribute(attr) => attr.name == name,
-        PropNode::Directive(dir) => {
-            if dir.name == "bind" {
-                matches!(
-                    &dir.arg,
-                    Some(ExpressionNode::Simple(s)) if s.content == name
-                )
-            } else {
-                false
-            }
-        }
-    })
-}
-
-/// A static attribute, or a bind with a static or dynamic argument.
-fn has_markup_attribute_or_binding(element: &MarkupElement<'_>, name: &str) -> bool {
-    let mut found = false;
-    element.walk_bindings(&mut |binding| {
-        found |= matches!(
-            binding.kind(),
-            MarkupBindingKind::Attribute | MarkupBindingKind::Bind
-        ) && binding.is_unqualified_arg_exact(name);
-    });
-    found
-}
-
-fn has_markup_label(element: &MarkupElement<'_>) -> bool {
-    has_markup_attribute_or_binding(element, "aria-label")
-        || has_markup_attribute_or_binding(element, "aria-labelledby")
+fn lint(ctx: &mut LintContext<'_>, element: &MarkupElement<'_>) {
+    if element.kind() == MarkupElementKind::Component {
+        return;
+    }
+    let keys = if element.is_unqualified_tag_exact("img") {
+        (!has_attribute_text(element, "alt", true))
+            .then_some(("a11y/alt-text.message_img", "a11y/alt-text.help_img"))
+    } else if element.is_unqualified_tag_exact("area") {
+        (!has_attribute_text(element, "alt", false) && !has_aria_label(element))
+            .then_some(("a11y/alt-text.message_area", "a11y/alt-text.help_area"))
+    } else if element.is_unqualified_tag_exact("input") {
+        (get_static_or_bound_literal_markup_value(element, "type") == Some("image")
+            && !has_attribute_text(element, "alt", false)
+            && !has_aria_label(element))
+        .then_some((
+            "a11y/alt-text.message_input_image",
+            "a11y/alt-text.help_input_image",
+        ))
+    } else if element.is_unqualified_tag_exact("object") {
+        (!has_attribute_text(element, "title", false)
+            && !has_aria_label(element)
+            && !has_accessible_child(ctx.source, element))
+        .then_some(("a11y/alt-text.message_object", "a11y/alt-text.help_object"))
+    } else {
+        None
+    };
+    if let Some((message, help)) = keys {
+        let message = ctx.t(message);
+        let help = ctx.t(help);
+        ctx.warn_at_with_help(message, element.range(), help);
+    }
 }
 
 impl MarkupRule for AltText {
@@ -89,34 +87,7 @@ impl MarkupRule for AltText {
     }
 
     fn enter_element<'a>(&self, ctx: &mut MarkupContext<'_, 'a>, element: &MarkupElement<'a>) {
-        if element.kind() == MarkupElementKind::Component {
-            return;
-        }
-        let keys = if element.is_unqualified_tag_exact("img") {
-            (!has_markup_attribute_or_binding(element, "alt"))
-                .then_some(("a11y/alt-text.message_img", "a11y/alt-text.help_img"))
-        } else if element.is_unqualified_tag_exact("area") {
-            (!has_markup_attribute_or_binding(element, "alt") && !has_markup_label(element))
-                .then_some(("a11y/alt-text.message_area", "a11y/alt-text.help_area"))
-        } else if element.is_unqualified_tag_exact("input") {
-            (get_static_markup_attribute_value(element, "type") == Some("image")
-                && !has_markup_attribute_or_binding(element, "alt")
-                && !has_markup_label(element))
-            .then_some((
-                "a11y/alt-text.message_input_image",
-                "a11y/alt-text.help_input_image",
-            ))
-        } else if element.is_unqualified_tag_exact("object") {
-            (!has_markup_attribute_or_binding(element, "title") && !has_markup_label(element))
-                .then_some(("a11y/alt-text.message_object", "a11y/alt-text.help_object"))
-        } else {
-            None
-        };
-        if let Some((message, help)) = keys {
-            let message = ctx.lint().t(message);
-            let help = ctx.lint().t(help);
-            ctx.lint().warn_at_with_help(message, element.range(), help);
-        }
+        lint(ctx.lint(), element);
     }
 }
 
@@ -130,56 +101,7 @@ impl Rule for AltText {
     }
 
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
-        if element.tag_type == ElementType::Component {
-            return;
-        }
-
-        match element.tag {
-            "img" if !has_attribute_or_binding(element, "alt") => {
-                ctx.warn_with_help(
-                    ctx.t("a11y/alt-text.message_img"),
-                    &element.loc,
-                    ctx.t("a11y/alt-text.help_img"),
-                );
-            }
-            "area"
-                if !has_attribute_or_binding(element, "alt")
-                    && !has_attribute_or_binding(element, "aria-label")
-                    && !has_attribute_or_binding(element, "aria-labelledby") =>
-            {
-                ctx.warn_with_help(
-                    ctx.t("a11y/alt-text.message_area"),
-                    &element.loc,
-                    ctx.t("a11y/alt-text.help_area"),
-                );
-            }
-            "input" => {
-                let input_type = get_static_attribute_value(element, "type");
-                if input_type == Some("image")
-                    && !has_attribute_or_binding(element, "alt")
-                    && !has_attribute_or_binding(element, "aria-label")
-                    && !has_attribute_or_binding(element, "aria-labelledby")
-                {
-                    ctx.warn_with_help(
-                        ctx.t("a11y/alt-text.message_input_image"),
-                        &element.loc,
-                        ctx.t("a11y/alt-text.help_input_image"),
-                    );
-                }
-            }
-            "object"
-                if !has_attribute_or_binding(element, "title")
-                    && !has_attribute_or_binding(element, "aria-label")
-                    && !has_attribute_or_binding(element, "aria-labelledby") =>
-            {
-                ctx.warn_with_help(
-                    ctx.t("a11y/alt-text.message_object"),
-                    &element.loc,
-                    ctx.t("a11y/alt-text.help_object"),
-                );
-            }
-            _ => {}
-        }
+        lint(ctx, &MarkupElement::new(element));
     }
 }
 
@@ -280,5 +202,48 @@ mod tests {
             "test.vue",
         );
         assert_eq!(result.warning_count, 0);
+    }
+
+    #[test]
+    fn matches_eslint_plugin_vuejs_accessibility_text_boundaries() {
+        let result = create_linter().lint_template(
+            r#"<div>
+                <img src="/logo.png" alt />
+                <img src="/logo.png" :alt="null" />
+                <object data="/report.pdf" type="application/pdf">Report</object>
+                <object data="/report.pdf" type="application/pdf"><p>Report</p></object>
+                <object data="/report.pdf" type="application/pdf">{{ label }}</object>
+                <object data="/report.pdf" title=""></object>
+                <map name="m"><area href="/a" alt="" /></map>
+                <map name="m"><area href="/a" aria-label="" /></map>
+                <input type="image" src="/go.png" alt="" />
+                <input type="image" src="/go.png" alt />
+                <input :type="'image'" src="/go.png" />
+            </div>"#,
+            "test.vue",
+        );
+
+        assert_eq!(result.warning_count, 8, "{:?}", result.diagnostics);
+    }
+
+    #[test]
+    fn reads_bound_literals_and_hidden_children_like_the_reference() {
+        let result = create_linter().lint_template(
+            r#"<div>
+                <img src="/a.png" :alt="false" />
+                <img src="/a.png" :alt="(0)" />
+                <img src="/a.png" :alt="undefined" />
+                <object data="/a.pdf"><span aria-hidden="true">Report</span></object>
+                <object data="/a.pdf">{{ undefined }}</object>
+                <img src="/a.png" :alt="''" />
+                <object data="/a.pdf"><slot /></object>
+                <object data="/a.pdf" title=" "></object>
+                <map name="m"><area href="/a" alt=" " /></map>
+                <object data="/a.pdf"><span :aria-hidden="false">Report</span></object>
+            </div>"#,
+            "test.vue",
+        );
+
+        assert_eq!(result.warning_count, 7, "{:?}", result.diagnostics);
     }
 }
