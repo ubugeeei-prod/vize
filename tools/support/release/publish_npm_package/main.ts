@@ -14,6 +14,7 @@ import {
   toolBin,
 } from "../command_runtime.ts";
 import { isJsonObject, parseJson, stringMember, type JsonValue } from "../ordered_json.ts";
+import { npmTagForVersion } from "../npm-tag.ts";
 import { npmVersionIsVisible, waitForRegistryVisibility, type NpmPackageInfo } from "./registry.ts";
 import { isStagedPublishError } from "./staged_error.ts";
 
@@ -102,14 +103,9 @@ function envTrue(name: string): boolean {
   return nonEmptyEnv(name) === "true";
 }
 
-/** Derives the npm dist-tag for a package version. */
+/** Applies an explicit publishing override before the version-derived channel. */
 export function npmTag(version: string): string {
-  const configured = nonEmptyEnv("NPM_TAG");
-  if (configured !== undefined) return configured;
-  if (version.includes("-alpha")) return "alpha";
-  if (version.includes("-beta")) return "beta";
-  if (version.includes("-rc")) return "rc";
-  return "latest";
+  return nonEmptyEnv("NPM_TAG") ?? npmTagForVersion(version);
 }
 
 function shellQuote(value: string): string {

@@ -26,6 +26,7 @@
 //! - Capability cache keys are domain-separated and explain every invalidation boundary.
 //! - Cacheable capability outputs validate provenance and their complete payload identity.
 //! - Persistent cache objects are portable across local and remote backends and fail closed.
+//! - Filesystem cache writes are bounded, immutable, atomic, and safe under competing writers.
 //!
 //! # Example
 //!
@@ -82,7 +83,9 @@ pub use cache_identity::{
 };
 pub use capability_execution::{
     CapabilityExecutionCacheStatus, CapabilityExecutionError, CapabilityExecutionOutcome,
-    CapabilityExecutionTelemetry, CapabilitySnapshotCache, MemoryCapabilitySnapshotCache,
+    CapabilityExecutionTelemetry, CapabilitySnapshotCache,
+    DOCTOR_FILESYSTEM_CAPABILITY_CACHE_LAYOUT_VERSION, FilesystemCapabilitySnapshotCache,
+    FilesystemCapabilitySnapshotCacheError, MemoryCapabilitySnapshotCache,
     MemoryCapabilitySnapshotCacheError, execute_cached_capability,
 };
 pub use capability_snapshot::{

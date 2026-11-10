@@ -50,39 +50,40 @@ The phase files own the normative gate lines. This package keeps their boxes ope
 ## Checklist evidence map
 
 These row IDs are linked from [the normative checklist](./v1-alpha-go-no-go.md).
-“Candidate pending” means a v1 alpha version and exact target SHA must first be
-selected through the existing release PR workflow. Prior release evidence cannot
-be promoted to that SHA. Commands and gate strength in the checklist are unchanged.
+“Candidate pending” means a v1 alpha version and exact `main` source SHA must first
+be selected for the current Release workflow. Prior release evidence cannot be
+promoted to that SHA. The workflow creates a version-stamped child candidate and
+never rewrites `main`.
 
 ### Pre-tag gate
 
-| ID   | Checklist item                                                              | Evidence / blocker                                                                                                                                                                                         |
-| ---- | --------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| PT-1 | Required PR checks: Check, Benchmark, App E2E dev/preview/build, Docs Build | **Candidate pending.** Collect all four workflows at that exact SHA, including each App E2E mode; use [PR workflow](./pr-workflow.md). Historical v0.428.1 Check is linked above.                          |
-| PT-2 | Fuzz status, corpus and reproducers                                         | **Candidate pending.** [Fuzz workflow](../../.github/workflows/fuzz.yml) owns seeded parser/compiler corpus and reproducers; retain the run and artifact inventory for the candidate.                      |
-| PT-3 | No blocking draft, P0/P1 request or failing workflow                        | **Blocked.** Open phase exits and SDK/resident acceptance above require triage. Release captain must review current issue/PR state and latest required workflow heads before promotion.                    |
-| PT-4 | Agreed alpha version / channel                                              | **Owner decision pending.** No `1.0.0-alpha.N` is selected; maintenance version `0.428.1` is not that decision.                                                                                            |
-| PT-5 | Changelog / release post draft                                              | **Candidate pending.** Create the exact-version post under `docs/content/blog/releases/`; include only shipped surfaces and known limitations.                                                             |
-| PT-6 | Clean-checkout smoke commands                                               | **Candidate pending.** Record frozen install, check:ci, test:scripts, cargo test, cargo audit and build:packages for the exact candidate; Actions may supply equivalent clean-checkout execution evidence. |
-| PT-7 | Package-specific smoke                                                      | **Candidate pending.** Preserve Vite Musea test/build and native build:debug outputs when those packages are in the release.                                                                               |
+| ID   | Checklist item                                                           | Evidence / blocker                                                                                                                                                                                         |
+| ---- | ------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| PT-1 | Required checks: Check, Benchmark, App E2E dev/preview/build, Docs Build | **Candidate pending.** Collect all four workflows at the exact selected source SHA, including each App E2E mode. Historical v0.428.1 Check is linked above.                                                |
+| PT-2 | Fuzz status, corpus and reproducers                                      | **Candidate pending.** [Fuzz workflow](../../.github/workflows/fuzz.yml) owns seeded parser/compiler corpus and reproducers; retain the run and artifact inventory for the candidate.                      |
+| PT-3 | No blocking draft, P0/P1 request or failing workflow                     | **Blocked.** Open phase exits and SDK/resident acceptance above require triage. Release captain must review current issue/PR state and latest required workflow heads before promotion.                    |
+| PT-4 | Agreed alpha version / channel                                           | **Owner decision pending.** No `1.0.0-alpha.N` is selected; maintenance version `0.428.1` is not that decision.                                                                                            |
+| PT-5 | Changelog / release post draft                                           | **Candidate pending.** Create the exact-version post under `docs/content/blog/releases/`; include only shipped surfaces and known limitations.                                                             |
+| PT-6 | Clean-checkout smoke commands                                            | **Candidate pending.** Record frozen install, check:ci, test:scripts, cargo test, cargo audit and build:packages for the exact candidate; Actions may supply equivalent clean-checkout execution evidence. |
+| PT-7 | Package-specific smoke                                                   | **Candidate pending.** Preserve Vite Musea test/build and native build:debug outputs when those packages are in the release.                                                                               |
 
-### Release PR and promotion gate
+### Release candidate and tag gate
 
-| ID   | Checklist item                                        | Evidence / blocker                                                                                                                                        |
-| ---- | ----------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| RP-1 | Authenticated release command                         | **Candidate pending.** Authorized release captain runs `vp run release alpha -y`; [workflow procedure](./pr-workflow.md).                                 |
-| RP-2 | Release PR author has maintain/admin role             | **Candidate pending.** Record the actual release PR and its author permission result; no author is assumed.                                               |
-| RP-3 | Exact-head checks and Release candidate ready         | **Candidate pending.** Require terminal successful candidate readiness and all required checks on that release PR head.                                   |
-| RP-4 | Latest main before promotion                          | **Candidate pending.** Preserve refreshed-head validation if main advances; candidate script owns this check.                                             |
-| RP-5 | Atomic main / merge / tag identity                    | **Candidate pending.** Read back the identical validated commit for main, release PR merge and alpha tag; no manual release-tag shortcut.                 |
-| RP-6 | Original Release run publishes prevalidated artifacts | **Candidate pending.** Record the original [Release run](../../.github/workflows/release.yml), promotion result and reused candidate artifact provenance. |
+| ID   | Checklist item                                   | Evidence / blocker                                                                                                                                                            |
+| ---- | ------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| RP-1 | Authenticated Release dispatch                   | **Candidate pending.** Record the maintainer dispatch with explicit source SHA and `1.0.0-alpha.N` inputs.                                                                    |
+| RP-2 | Source / candidate parent identity               | **Candidate pending.** Read back the version-stamped candidate and prove its sole parent is the selected `main` source SHA.                                                   |
+| RP-3 | Exact candidate builds and smoke                 | **Candidate pending.** Require terminal candidate builds, package tarball smoke, and editor-host smoke before tag creation.                                                   |
+| RP-4 | Approved source immediately before publication   | **Candidate pending.** If the selected SHA is no longer approved, stop and dispatch a replacement candidate; do not move an existing tag.                                     |
+| RP-5 | Candidate / temporary ref / tag identity         | **Candidate pending.** Read back the candidate tag and removal of only its `refs/release-candidates/<source SHA>` ref; `main` remains unchanged.                              |
+| RP-6 | Original Release and post-publish run identities | **Candidate pending.** Record the original [Release run](../../.github/workflows/release.yml), candidate SHA, tag, source parent, and separately dispatched verification run. |
 
 ### Publish gate
 
 | ID   | Checklist item                                                     | Evidence / blocker                                                                                                                                                                              |
 | ---- | ------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | PU-1 | CLI, GitHub Release, native/root/WASM npm, crates.io, VS Code jobs | **Candidate pending.** Require every listed publisher and exact-version visibility check; success of one registry is insufficient.                                                              |
-| PU-2 | Optional Open VSX channel                                          | **No owner dispatch recorded.** [Open VSX workflow](../../.github/workflows/release-open-vsx.yml) remains optional and requires the editor owner's explicit dispatch after a published release. |
+| PU-2 | Automatic Open VSX universal and platform channels                 | **Candidate pending.** The same Release run publishes each target; record exact-version public visibility separately from Marketplace.                                                          |
 | PU-3 | npm version and prerelease dist-tags                               | **Candidate pending.** Read exact published versions and dist-tags for every release package, including the four packages named in the checklist.                                               |
 | PU-4 | Every published Rust crate visible                                 | **Candidate pending.** Use the exact crate inventory in [publish_crates](../../tools/support/release/publish_crates/main.ts), including Canon and Patina, then read each registry version back. |
 | PU-5 | VS Code new pre-release visible                                    | **Candidate pending.** Editor owner supplies marketplace exact-version readback.                                                                                                                |
@@ -93,7 +94,7 @@ be promoted to that SHA. Commands and gate strength in the checklist are unchang
 | ID   | Checklist item                                                    | Evidence / blocker                                                                                                                                              |
 | ---- | ----------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | PP-1 | Fresh install from external directory                             | **Candidate pending.** Run checklist alpha CLI/Vite/Vite Musea installs in a throwaway directory after registry visibility; preserve installed versions.        |
-| PP-2 | Docs site / search index / release post                           | **Candidate pending.** Docs owner reads deployed site after [Deploy Docs](../../.github/workflows/deploy-docs.yml), matching the released main revision.        |
+| PP-2 | Docs site / search index / release post                           | **Candidate pending.** Docs owner reads the deployed site after [Deploy Docs](../../.github/workflows/deploy-docs.yml), matching the selected source revision.  |
 | PP-3 | Native optional dependencies on macOS/Linux/Windows               | **Candidate pending.** Record actual tarball install/runtime results on all three operating systems.                                                            |
 | PP-4 | Release communication: version, install, limits, rollback/support | **Maintainer scope decision pending (P6-12).** Prepare truth-pass evidence; do not infer permission to publish or a support window.                             |
 | PP-5 | Production readiness status                                       | **Candidate pending.** Reconcile every changed claim with [Production Readiness](./production-readiness.md), required evidence and known experimental surfaces. |
@@ -108,7 +109,7 @@ actions before a failure. No rollback or registry mutation is requested here.
 | RB-1 | Restore prior alpha npm dist-tags | [Checklist procedure](./v1-alpha-go-no-go.md#rollback-plan). **Candidate pending:** release captain must identify the prior verified alpha version before promotion.         |
 | RB-2 | Deprecate a bad npm version       | [Checklist command](./v1-alpha-go-no-go.md#rollback-plan). **Conditional:** npm owner supplies affected/fixed versions and an actionable message if an incident requires it. |
 | RB-3 | Yank bad Rust versions            | [Checklist command](./v1-alpha-go-no-go.md#rollback-plan). **Conditional:** Rust owner determines affected exact versions and need for containment.                          |
-| RB-4 | Repair GitHub assets              | [Checklist procedure](./v1-alpha-go-no-go.md#rollback-plan). **Conditional:** release captain identifies only the affected assets and validated fixed tag.                   |
+| RB-4 | Publish fixed GitHub artifacts    | [Checklist procedure](./v1-alpha-go-no-go.md#rollback-plan). **Conditional:** preserve the affected tag and publish a validated fixed alpha.                                 |
 | RB-5 | Revert/redeploy wrong docs        | [Deploy workflow](../../.github/workflows/deploy-docs.yml). **Candidate pending:** docs owner records the last verified Pages artifact/revision.                             |
 | RB-6 | Fixed VS Code pre-release         | [Editor recovery procedure](./v1-alpha-go-no-go.md#partial-editor-publication-recovery). **Conditional:** editor owner and release captain retain control over unpublishing. |
 

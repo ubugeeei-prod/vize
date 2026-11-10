@@ -229,18 +229,30 @@ export function readsProse(path, sources) {
 // a widely shared helper says nothing about what any one test exercises; the
 // same reference in a test or a narrow helper still selects it.
 export const SHARED_HELPER_IMPORTERS = 10;
+// These source-built campaigns have their own path-scoped PR workflows. Keep
+// their selector audits available without duplicating the campaign in the
+// general affected-tooling critical path.
+export const dedicatedPrToolingTests = [
+  "tests/tooling/content-mapper-instance-globals-10617.test.ts",
+];
 const topLevelOnly = (reference) => !reference.replace(/\/[*/]*$/, "").includes("/");
 
-export function planToolingTests(paths, { tier = "pr", cwd = root } = {}) {
+export function planToolingTests(
+  paths,
+  { tier = "pr", cwd = root, includeDedicated = false } = {},
+) {
   if (!["pr", "merge"].includes(tier)) throw new Error("tier must be pr or merge");
   const files = toolingTestFiles(cwd);
   const mergeOnly = new Set(mergeOnlyToolingTests);
+  const dedicated = new Set(dedicatedPrToolingTests);
   const code = paths.filter((path) => !isProse(path));
   const unknown =
     paths.length === 0 ||
     code.some((path) => !matchesAny(path, [...cacheInputs.tooling, ...globalInputs]));
   const global = code.some((path) => matchesAny(path, globalInputs));
-  const candidates = files.filter((file) => tier === "pr" && !mergeOnly.has(file));
+  const candidates = files.filter(
+    (file) => tier === "pr" && !mergeOnly.has(file) && (includeDedicated || !dedicated.has(file)),
+  );
   const closures = new Map(candidates.map((file) => [file, localImportInputs(file, cwd)]));
   const importers = new Map();
   for (const { files: members } of closures.values())
@@ -269,6 +281,7 @@ export function planToolingTests(paths, { tier = "pr", cwd = root } = {}) {
   const tests = files.filter((file) => {
     if (tier === "merge") return true;
     if (mergeOnly.has(file)) return false;
+    if (dedicated.has(file) && !includeDedicated) return false;
     if (unknown || global || paths.includes(file)) return true;
     // The natural corpus scans tracked carriers across the checkout, including
     // prose and deleted files; literal import/path inference cannot name them all.
@@ -303,6 +316,7 @@ export function planToolingTests(paths, { tier = "pr", cwd = root } = {}) {
     tests,
     totalTests: files.length,
     deferredTests: tier === "merge" ? 0 : files.filter((file) => mergeOnly.has(file)).length,
+    dedicatedTests: tier === "merge" ? 0 : files.filter((file) => dedicated.has(file)).length,
     reason:
       tier === "merge"
         ? "full merge suite"
@@ -355,7 +369,7 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
     );
   }
   const shards = toolingShards(plan).map(({ testMs }) => Math.round(testMs / 1000));
-  const message = `Tooling tests: ${plan.tests.length}/${plan.totalTests}; ${plan.deferredTests} deferred to T1; ${plan.reason}; ${shards.length} shard(s), estimated test seconds ${shards.join("/")}.\n`;
+  const message = `Tooling tests: ${plan.tests.length}/${plan.totalTests}; ${plan.deferredTests} deferred to T1; ${plan.dedicatedTests} delegated to path-scoped PR workflows; ${plan.reason}; ${shards.length} shard(s), estimated test seconds ${shards.join("/")}.\n`;
   process.stdout.write(message);
   if (process.env.GITHUB_STEP_SUMMARY) appendFileSync(process.env.GITHUB_STEP_SUMMARY, message);
 }

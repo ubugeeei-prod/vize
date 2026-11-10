@@ -122,45 +122,37 @@ test("PR product lanes stay independent of the affected tooling producer", () =>
   }
 });
 
-test("the real tooling report permits only an empty PR producer skip and retains the queue build", () => {
+test("the real tooling report requires the source CLI and every selected worker", () => {
   const workflow = parse(readRepoFile(".github", "workflows", "pr-source-checks.yml")) as Workflow;
   const report = workflow.jobs["affected-tooling-report"];
   assert.deepEqual(report.needs, ["pr-source-plan", "affected-tooling-cli", "affected-tooling"]);
   const step = report.steps?.find((item) => item.name === "Require every selected tooling worker");
   assert.ok(step?.run);
   assert.deepEqual(step.env, {
-    EVENT_NAME: "${{ github.event_name }}",
     SELECTED: "${{ needs.pr-source-plan.outputs.affected-tooling }}",
     CLI: "${{ needs.affected-tooling-cli.result }}",
     WORKERS: "${{ needs.affected-tooling.result }}",
   });
   assert.equal(step["continue-on-error"], undefined);
-  const accepted = new Set([
-    "pull_request/false/skipped/skipped",
-    "pull_request/true/success/success",
-    "merge_group/false/success/skipped",
-    "merge_group/true/success/success",
-  ]);
-  for (const event of ["pull_request", "merge_group", "workflow_dispatch", ""])
-    for (const selected of ["true", "false", ""])
-      for (const cli of ["success", "skipped", "failure", "cancelled", ""])
-        for (const workers of ["success", "skipped", "failure", "cancelled", ""]) {
-          const result: SpawnSyncReturns<string> = spawnSync(
-            "bash",
-            ["-euo", "pipefail", "-c", step.run],
-            {
-              encoding: "utf8",
-              env: {
-                ...process.env,
-                EVENT_NAME: event,
-                SELECTED: selected,
-                CLI: cli,
-                WORKERS: workers,
-              },
+  const accepted = new Set(["false/success/skipped", "true/success/success"]);
+  for (const selected of ["true", "false", ""])
+    for (const cli of ["success", "skipped", "failure", "cancelled", ""])
+      for (const workers of ["success", "skipped", "failure", "cancelled", ""]) {
+        const result: SpawnSyncReturns<string> = spawnSync(
+          "bash",
+          ["-euo", "pipefail", "-c", step.run],
+          {
+            encoding: "utf8",
+            env: {
+              ...process.env,
+              SELECTED: selected,
+              CLI: cli,
+              WORKERS: workers,
             },
-          );
-          assert.ifError(result.error);
-          const key = [event, selected, cli, workers].join("/");
-          assert.equal(result.status === 0, accepted.has(key), `${key}: ${result.stderr}`);
-        }
+          },
+        );
+        assert.ifError(result.error);
+        const key = [selected, cli, workers].join("/");
+        assert.equal(result.status === 0, accepted.has(key), `${key}: ${result.stderr}`);
+      }
 });

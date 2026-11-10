@@ -55,6 +55,7 @@ test("the public verifier starts npm without Windows command-shell ambiguity", (
   assert.match(verifier, /command\(label, process\.execPath, \[cli, \.\.\.args\], cwd\)/u);
   assert.doesNotMatch(verifier, /npm\.cmd/u);
   assert.match(verifier, /failure: error instanceof Error/u);
+  assert.match(verifier, /isReleaseVersion\(version\)/u);
 });
 
 test("published fresh projects run from exact public versions on every release host", () => {

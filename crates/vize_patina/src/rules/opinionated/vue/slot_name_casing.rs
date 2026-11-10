@@ -22,9 +22,10 @@
 
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
+use crate::markup::{MarkupContext, MarkupElement, MarkupElementKind, MarkupRule, MarkupTraversal};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use crate::rules::vue::SlotNameCasingStyle;
-use vize_relief::{ElementNode, ElementType, PropNode};
+use vize_relief::ElementNode;
 
 static META: RuleMeta = RuleMeta {
     name: "vue/slot-name-casing",
@@ -74,33 +75,57 @@ fn accepts(style: SlotNameCasingStyle, name: &str) -> bool {
     }
 }
 
-fn lint<'a>(style: SlotNameCasingStyle, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
-    if element.tag_type != ElementType::Slot {
+fn lint(style: SlotNameCasingStyle, ctx: &mut LintContext<'_>, element: &MarkupElement<'_>) {
+    if element.kind() != MarkupElementKind::Slot {
         return;
     }
-    let Some(attribute) = element.props.iter().find_map(|prop| match prop {
-        PropNode::Attribute(attribute) if attribute.name == "name" => Some(attribute),
-        _ => None,
-    }) else {
+    let Some(attribute) = element.static_attribute("name") else {
         return;
     };
-    let Some(value) = &attribute.value else {
+    let Some(name) = attribute.value() else {
         return;
     };
-    let name = value.content;
     if name.is_empty() || accepts(style, name) {
         return;
     }
 
     let casing = style.name();
-    ctx.warn_with_help(
+    ctx.warn_at_with_help(
         ctx.t_fmt(
             "vue/slot-name-casing.message",
             &[("name", name), ("casing", casing)],
         ),
-        &attribute.loc,
+        attribute.range(),
         ctx.t_fmt("vue/slot-name-casing.help", &[("casing", casing)]),
     );
+}
+
+impl MarkupRule for SlotNameCasing {
+    fn name(&self) -> &'static str {
+        META.name
+    }
+
+    fn traversal(&self) -> MarkupTraversal {
+        MarkupTraversal::Elements
+    }
+
+    fn enter_element<'a>(&self, ctx: &mut MarkupContext<'_, 'a>, element: &MarkupElement<'a>) {
+        lint(SlotNameCasingStyle::CamelCase, ctx.lint(), element);
+    }
+}
+
+impl MarkupRule for ConfiguredSlotNameCasing {
+    fn name(&self) -> &'static str {
+        META.name
+    }
+
+    fn traversal(&self) -> MarkupTraversal {
+        MarkupTraversal::Elements
+    }
+
+    fn enter_element<'a>(&self, ctx: &mut MarkupContext<'_, 'a>, element: &MarkupElement<'a>) {
+        lint(self.style, ctx.lint(), element);
+    }
 }
 
 impl Rule for SlotNameCasing {
@@ -108,8 +133,16 @@ impl Rule for SlotNameCasing {
         &META
     }
 
+    fn as_markup_rule(&self) -> Option<&dyn MarkupRule> {
+        Some(self)
+    }
+
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
-        lint(SlotNameCasingStyle::CamelCase, ctx, element);
+        lint(
+            SlotNameCasingStyle::CamelCase,
+            ctx,
+            &MarkupElement::new(element),
+        );
     }
 }
 
@@ -118,8 +151,12 @@ impl Rule for ConfiguredSlotNameCasing {
         &META
     }
 
+    fn as_markup_rule(&self) -> Option<&dyn MarkupRule> {
+        Some(self)
+    }
+
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
-        lint(self.style, ctx, element);
+        lint(self.style, ctx, &MarkupElement::new(element));
     }
 }
 

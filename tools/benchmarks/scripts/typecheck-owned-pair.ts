@@ -412,14 +412,16 @@ async function main() {
   assert.deepEqual(providerAfter, providerBefore, "provider closure changed during experiment");
   for (const role of ["base", "head"] as const)
     assert.deepEqual(ownedNativeAuthority(builds[role], sources[role]), authorities[role]);
+  const allMemoryQualified = memoryQualification.every((row) => row.qualified);
   writeJson(join(out, "experiment.json"), {
     ...experiment,
-    qualified: memoryQualification.every((row) => row.qualified),
+    qualified: allMemoryQualified,
     diagnosticIdentityQualified: true,
     wallCpuQualified: true,
     memoryQualification,
     providerClosureSha256: sha256(JSON.stringify(providerAfter)),
   });
+  assert.ok(allMemoryQualified, "whole-tree RSS/PSS qualification is incomplete");
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {

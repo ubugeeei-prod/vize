@@ -802,6 +802,24 @@
           },
           "additionalProperties": false
         },
+        "vue/html-button-has-type": {
+          "type": "object",
+          "properties": {
+            "button": {
+              "default": true,
+              "type": "boolean"
+            },
+            "submit": {
+              "default": true,
+              "type": "boolean"
+            },
+            "reset": {
+              "default": true,
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": false
+        },
         "vue/html-quotes": {
           "oneOf": [
             {

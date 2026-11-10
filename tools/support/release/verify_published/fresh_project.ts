@@ -14,6 +14,7 @@ import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 
 import { collectOutput, runMain, type CollectedOutput } from "../command_io.ts";
+import { isReleaseVersion } from "../release/versions.ts";
 import {
   APP,
   assertCheckoutIsolation,
@@ -26,7 +27,6 @@ import {
 } from "./fresh_project_fixture.ts";
 import { watchDiagnostics } from "./lsp_client.ts";
 
-const VERSION = /^\d+\.\d+\.\d+$/u;
 const REGISTRY = "https://registry.npmjs.org/";
 const INIT_ARGS = ["--yes", "--no-lint", "--vite", "--fmt", "--typecheck", "--editor"];
 
@@ -140,7 +140,7 @@ export async function verifyPublishedFreshProject(
   version: string,
   evidence: string,
 ): Promise<void> {
-  assert.match(version, VERSION, "published version must be X.Y.Z");
+  assert.ok(isReleaseVersion(version), "published version must be canonical semver");
   const checkout = realpathSync(process.cwd());
   const temporary = mkdtempSync(join(tmpdir(), "vize-published-fresh-"));
   const runner = join(temporary, "runner");
