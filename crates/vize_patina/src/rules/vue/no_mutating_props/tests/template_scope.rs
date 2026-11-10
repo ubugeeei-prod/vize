@@ -17,7 +17,7 @@ fn reported_lines(sfc: &str) -> Vec<usize> {
 #[test]
 fn reports_function_handlers_and_the_iterated_prop() {
     let sfc = r#"<script setup lang="ts">
-const props = defineProps<{ item: { name: string; count: number }; rows: string[]; names: string[] }>();
+const props = defineProps<{ item: { name: string; count: number }; rows: string[]; names: string[]; functions: string[] }>();
 </script>
 
 <template>
@@ -36,12 +36,14 @@ const props = defineProps<{ item: { name: string; count: number }; rows: string[
     <button type="button" @click="item.name = 'c'">g</button>
     <p v-for="name in names" :key="name" @click="rows.splice(0, 1)">{{ name }}</p>
     <button type="button" @click="function () { rows.push('h'); }">h</button>
+    <button type="button" @click="functions.push('i'); noop()">i</button>
+    <button type="button" @click="async  function () { rows.push('j'); }">j</button>
   </div>
 </template>
 "#;
     assert_eq!(
         reported_lines(sfc),
-        [7, 8, 9, 10, 12, 13, 16, 17, 18, 19, 20]
+        [7, 8, 9, 10, 12, 13, 16, 17, 18, 19, 20, 21, 22]
     );
 }
 

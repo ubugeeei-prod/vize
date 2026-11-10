@@ -7,6 +7,8 @@
 //! resolves after the next DOM flush. Port of
 //! [`vue/valid-next-tick`](https://eslint.vuejs.org/rules/valid-next-tick.html),
 //! applied to `<script setup>` and plain scripts as well as component options.
+//! For compatibility, the `Vue.nextTick` spelling is recognized syntactically,
+//! even when `Vue` is a local binding.
 //! It reports:
 //! - a call without a callback whose Promise is not awaited, returned,
 //!   assigned, chained with `.then()` or passed to `Promise.*([...])`
@@ -112,7 +114,10 @@ impl ScriptRule for ValidNextTick {
                 continue;
             };
             let next_tick = match member.property.name.as_str() {
-                "$nextTick" => true,
+                "$nextTick" => matches!(
+                    member.object.without_parentheses(),
+                    Expression::ThisExpression(_)
+                ),
                 "nextTick" => match member.object.without_parentheses() {
                     Expression::Identifier(object) => {
                         object.name == "Vue"
@@ -369,6 +374,12 @@ mod tests {
     fn test_invalid_bare_instance_call() {
         let result = create_linter().lint("this.$nextTick()", 0);
         assert_eq!(result.warning_count, 1);
+    }
+
+    #[test]
+    fn test_unrelated_next_tick_receiver_is_not_flagged() {
+        let result = create_linter().lint("vm.$nextTick()", 0);
+        assert_eq!(result.warning_count, 0, "{:#?}", result.diagnostics);
     }
 
     #[test]

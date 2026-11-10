@@ -93,9 +93,7 @@ pub(super) fn for_each_mutation_target(
     }
     // `@click="function () { ... }"` is a function expression, which a
     // statement list only accepts inside parentheses.
-    let trimmed = source.trim_start();
-    let wrapped = (trimmed.starts_with("function") || trimmed.starts_with("async function"))
-        .then(|| vize_l0::cstr!("({source})"));
+    let wrapped = is_function_expression_handler(source).then(|| vize_l0::cstr!("({source})"));
     let shift = u32::from(wrapped.is_some());
     let allocator = Allocator::default();
     let parsed = Parser::new(
@@ -125,6 +123,22 @@ pub(super) fn for_each_mutation_target(
                 deep: target.deep,
             });
         }
+    }
+}
+
+/// Whether the handler starts with a function-expression token sequence.
+fn is_function_expression_handler(source: &str) -> bool {
+    let rest = source.trim_start();
+    let rest = rest
+        .strip_prefix("async")
+        .filter(|after| after.chars().next().is_some_and(char::is_whitespace))
+        .map_or(rest, str::trim_start);
+    let Some(after) = rest.strip_prefix("function") else {
+        return false;
+    };
+    match after.chars().next() {
+        None => true,
+        Some(character) => character.is_whitespace() || matches!(character, '(' | '*'),
     }
 }
 

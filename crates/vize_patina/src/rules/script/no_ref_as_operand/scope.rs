@@ -98,7 +98,10 @@ pub(super) fn record_declaration(
             binding = ref_kind;
         }
         if let BindingPattern::ArrayPattern(array) = &declarator.id
-            && declarator.init.as_ref().is_some_and(is_define_model_call)
+            && declarator
+                .init
+                .as_ref()
+                .is_some_and(|init| is_define_model_call(init, frame, outer))
         {
             // `const [model, modifiers] = defineModel()`: only the first element is the ref.
             for (index, element) in array.elements.iter().enumerate() {
@@ -145,9 +148,16 @@ pub(super) fn record_declaration(
     }
 }
 
-fn is_define_model_call(expression: &Expression<'_>) -> bool {
+/// Whether an initializer calls the unshadowed Vue compiler macro.
+fn is_define_model_call(expression: &Expression<'_>, local: &Frame, outer: &[Frame]) -> bool {
     matches!(expression.without_parentheses(), Expression::CallExpression(call)
-        if matches!(&call.callee, Expression::Identifier(callee) if callee.name == "defineModel"))
+        if matches!(&call.callee, Expression::Identifier(callee)
+            if callee.name == "defineModel" && !is_bound("defineModel", local, outer)))
+}
+
+/// Whether a lexical binding shadows a compiler macro name.
+fn is_bound(name: &str, local: &Frame, outer: &[Frame]) -> bool {
+    local.contains_key(name) || outer.iter().rev().any(|frame| frame.contains_key(name))
 }
 
 pub(super) fn record_binding_names(
@@ -189,7 +199,8 @@ pub(super) fn expression_binding(
     match expression {
         Expression::Identifier(id) => resolve(id.name.as_str(), local, outer),
         Expression::CallExpression(call) => {
-            if matches!(&call.callee, Expression::Identifier(identifier) if identifier.name == "defineModel")
+            if matches!(&call.callee, Expression::Identifier(identifier)
+                if identifier.name == "defineModel" && !is_bound("defineModel", local, outer))
                 || expression_binding(&call.callee, local, outer) == Binding::Factory
             {
                 Binding::Ref

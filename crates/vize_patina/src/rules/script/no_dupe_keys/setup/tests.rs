@@ -151,6 +151,13 @@ const label = "Name"
     );
     assert!(
         collisions(
+            "const props = defineProps<{foo: string}>(); defineModel('bar'); const bar = props.foo;",
+            None,
+        )
+        .is_empty()
+    );
+    assert!(
+        collisions(
             "const props = defineProps<{value: number}>(); const value = props.value;",
             None,
         )

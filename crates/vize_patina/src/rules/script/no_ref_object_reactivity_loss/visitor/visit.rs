@@ -183,7 +183,44 @@ impl<'a> Visitor<'_, 'a> {
                     self.write_target(&rest.target);
                 }
             }
+            AssignmentTarget::TSAsExpression(expression) => {
+                self.write_expression_target(&expression.expression)
+            }
+            AssignmentTarget::TSSatisfiesExpression(expression) => {
+                self.write_expression_target(&expression.expression)
+            }
+            AssignmentTarget::TSNonNullExpression(expression) => {
+                self.write_expression_target(&expression.expression)
+            }
+            AssignmentTarget::TSTypeAssertion(expression) => {
+                self.write_expression_target(&expression.expression)
+            }
             other => self.visit_assignment_target(other),
+        }
+    }
+
+    /// Visit a write target hidden by a TypeScript expression wrapper.
+    fn write_expression_target(&mut self, target: &Expression<'a>) {
+        let target = target.without_parentheses();
+        if let Some(member) = target.as_member_expression() {
+            self.write_member(member);
+            return;
+        }
+        match target {
+            Expression::TSAsExpression(expression) => {
+                self.write_expression_target(&expression.expression)
+            }
+            Expression::TSSatisfiesExpression(expression) => {
+                self.write_expression_target(&expression.expression)
+            }
+            Expression::TSNonNullExpression(expression) => {
+                self.write_expression_target(&expression.expression)
+            }
+            Expression::TSTypeAssertion(expression) => {
+                self.write_expression_target(&expression.expression)
+            }
+            Expression::Identifier(_) => {}
+            target => self.visit_expression(target),
         }
     }
 

@@ -189,6 +189,15 @@ fn test_array_destructured_define_model_binds_the_model_ref() {
 }
 
 #[test]
+fn test_shadowed_define_model_does_not_bind_a_ref() {
+    assert_eq!(
+        lint("const defineModel = () => [0, {}]\nconst [model] = defineModel()\nif (model) {}")
+            .error_count,
+        0
+    );
+}
+
+#[test]
 fn test_invalid_conditional_test() {
     assert_eq!(
         lint("const flag = ref(false)\nconst x = flag ? 1 : 2").error_count,

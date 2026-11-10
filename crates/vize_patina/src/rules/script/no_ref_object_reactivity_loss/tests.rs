@@ -138,6 +138,30 @@ const draft = ref(count.value) as Ref<number>
 }
 
 #[test]
+fn covers_destructuring_copy_and_write_target_shapes() {
+    assert_copies(
+        "import { ref } from 'vue'; const count = ref(0); let value; ({ value } = count);",
+        1,
+    );
+    assert_copies(
+        "import { ref } from 'vue'; const count = ref(0); let value; ({ value = 1 } = count);",
+        1,
+    );
+    assert_copies(
+        "import { ref } from 'vue'; const count = ref(0); let x; ({ ['value']: x } = count);",
+        1,
+    );
+    assert_copies(
+        "import { ref } from 'vue'; const pair = ref([]); const bar = ref({}); let rest; [...rest] = pair; ({ ...rest } = bar);",
+        0,
+    );
+    assert_copies(
+        "import { ref } from 'vue'; const count = ref(0); (count.value as any) = 1;",
+        0,
+    );
+}
+
+#[test]
 fn reports_nested_value_copies_inside_a_ref_initializer() {
     assert_copies(
         r#"
