@@ -261,6 +261,42 @@ For Nuxt compatibility, the plugin isolates `define` values per Vite environment
 | `vize lint`                                             | Template rules apply; style blocks are not linted as CSS                                                                            | Template rules apply                |
 | LSP                                                     | CSS completion and hover (indented syntax included); `v-bind()` go-to-definition; CSS-module class completion in every preprocessor | Tag completion and go-to-definition |
 
+#### Supported Pug and Jade subset
+
+Pug support is built into Vize; it does not execute the project's JavaScript or
+require a local `pug` package. `lang="jade"` is a case-insensitive alias for the
+same implementation. The supported deterministic subset includes:
+
+- elements, components, class/id shorthand, attributes, Vue directives,
+  interpolation, slots and text blocks;
+- build-time `if` / `unless` / `else`, `each` / `for`, literal variables and
+  values that can be evaluated without calling project code;
+- mixin calls, mixin blocks, `attributes` and `&attributes` when their inputs
+  are build-time values; and
+- relative `.pug` includes plus raw-text includes. Included files are Vite
+  dependencies, so editing one invalidates the owning SFC during HMR.
+
+The compiler checks this subset against Pug-rendered HTML in DOM, SSR and Vapor
+modes. Generated module source maps, diagnostics, type-check results and editor
+ranges point back to the authored Pug or Jade source. The linter runs template
+rules on that authored view. A pinned dho-web-client Pug SFC also checks its
+rule, severity, count and upstream message prefix against eslint-plugin-vue
+10.9.2 on the exact pug 3.0.4-rendered HTML twin; Patina separately pins its
+full message with authored element context. The formatter intentionally keeps
+the Pug program opaque and only normalizes its outer indentation. Completion,
+hover, definition, references and rename are available inside supported inline templates.
+
+Known gaps fail closed instead of compiling a partial template. Vize refuses
+arbitrary executable JavaScript, `while` / `case`, template inheritance,
+filters, filtered or rooted includes, and external `<template src>` Pug. Pug
+template autofixes are withheld because a derived HTML edit cannot always be
+mapped back losslessly, and there is no language-aware Pug printer. These
+boundaries apply equally to `pug` and `jade`.
+
+The Real Project Matrix exercises Pug-heavy applications including
+dho-web-client and Wave UI across compile, type-check, lint and format checks;
+the same workflow carries the Pug LSP and SSR observers.
+
 ## Nuxt Compatibility
 
 The plugin exposes a compatibility shim for tools that probe for `@vitejs/plugin-vue`'s API (like Nuxt). This means Vize works with Nuxt's built-in Vue integration without special configuration:

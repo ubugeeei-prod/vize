@@ -26,7 +26,7 @@ pub(crate) use preamble::{EMIT_OVERLOAD_HELPERS, EMIT_PROPS_HELPER, SETUP_SCOPE_
 use vue2_members::VUE2_INSTANCE_MEMBERS;
 pub(crate) use vue2_members::is_vue2_instance_member;
 
-use super::types::{TemplateGlobal, VirtualTsOptions};
+use super::types::{CSS_MODULE_GLOBAL_MARKER, TemplateGlobal, VirtualTsOptions};
 use vize_carton::config::VueVersion;
 use vize_carton::{String, append};
 
@@ -45,6 +45,7 @@ pub(crate) fn generate_template_context(
     (attrs_type, refs_type, emit_initializer): (Option<&str>, Option<&str>, Option<&str>),
 ) -> String {
     let mut ctx = String::default();
+    let record = crate::virtual_ts::generated_names::lib("Record");
 
     // Declared only when referenced: every file would otherwise declare and
     // check the three aliases, which TypeScript cannot share across files.
@@ -57,7 +58,10 @@ pub(crate) fn generate_template_context(
     // Instance type + conditional accessor helper
     let vue2_dialect = legacy_vue2 || matches!(dialect, VueVersion::V2 | VueVersion::V2_7);
     if vue2_dialect {
-        ctx.push_str("    // Vue template context (Vue 2-compatible structural fallback)\n    type __Ctx = { $attrs: Record<string, unknown>; $slots: Record<string, unknown>; $refs: Record<string, any>; $emit: (...args: any[]) => void; };\n");
+        append!(
+            ctx,
+            "    // Vue template context (Vue 2-compatible structural fallback)\n    type __Ctx = {{ $attrs: {record}<string, unknown>; $slots: {record}<string, unknown>; $refs: {record}<string, any>; $emit: (...args: any[]) => void; }};\n"
+        );
     } else {
         ctx.push_str("    // Vue template context (delegates to ComponentPublicInstance)\n    // @ts-ignore TS2694/TS2307: a `vue` without `ComponentPublicInstance` must degrade template context extras to unchecked, never error.\n    type __Ctx = import('vue').ComponentPublicInstance;\n");
     }
@@ -113,12 +117,16 @@ pub(crate) fn generate_template_context(
         ctx.push_str("    // Plugin globals (via ComponentCustomProperties)\n");
         for global in &options.template_globals {
             let type_annotation = global.context_type_annotation();
-            append!(
-                ctx,
-                "    const {}: {} = (void 0) as any;\n",
-                global.name,
-                type_annotation
-            );
+            append!(ctx, "    const {}: ", global.name);
+            if global.default_value == CSS_MODULE_GLOBAL_MARKER {
+                crate::virtual_ts::generated_names::push_lib_text(
+                    &mut ctx,
+                    type_annotation.as_str(),
+                );
+            } else {
+                ctx.push_str(type_annotation.as_str());
+            }
+            ctx.push_str(" = (void 0) as any;\n");
         }
     }
 
@@ -129,7 +137,7 @@ pub(crate) fn generate_template_context(
         for module_name in &options.css_modules {
             append!(
                 ctx,
-                "    const {module_name}: __Global<'{module_name}', Record<string, string>> = (void 0) as any;\n"
+                "    const {module_name}: __Global<'{module_name}', {record}<string, string>> = (void 0) as any;\n"
             );
         }
     }

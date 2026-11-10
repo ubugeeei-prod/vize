@@ -74,6 +74,7 @@ export default defineConfig({}).withVue({
 | `vue/slot-name-casing` | `"camelCase" \| "kebab-case" \| "singleword"` | Defaults to `camelCase`. Checks static names on rendered `<slot>` outlets; provider-side `v-slot` and `#name` syntax is outside this rule. |
 | `script/define-props-destructuring` | `{ destructure?: "only-when-assigned" \| "always" \| "never" }` | Defaults to `always`, checking assigned and bare typed calls. `only-when-assigned` skips bare calls; `never` requires props-object access. Vue 3.5 destructuring preserves reactivity. |
 | `vue/no-mutating-props` | `{ shallowOnly?: boolean }` | Defaults to `false`; `true` allows nested mutation while still disallowing direct prop reassignment. |
+| `vue/no-use-v-if-with-v-for` | `{ allowUsingIterationVar?: boolean }` | Defaults to `false`. `true` permits `v-if` only when its condition references a sibling `v-for` iteration variable; unrelated conditions are still reported. |
 | `vue/enforce-style-attribute` | `{ allow?: Array<"plain" \| "scoped" \| "module"> }` | Defaults to `["scoped"]`. Lists the accepted style-block modes. |
 | `vue/no-restricted-syntax` | `{ selectors?: Array<"ArrayExpression" \| "BinaryExpression" \| "CallExpression" \| "ConditionalExpression" \| "ObjectExpression" \| "UnaryExpression"> }` | Defaults to `[]`. Only exact supported ESTree node types are accepted; compound esquery selectors fail configuration. |
 | `vue/quote-props` | `"as-needed"` | Rejects unnecessary quoted object keys in retained template expressions. |
@@ -85,6 +86,7 @@ export default defineConfig({}).withVue({
 | `vue/require-component-registration` | `{ globals?: string[] }` | Explicit application/preview component names; accepts PascalCase and kebab-case spellings. Options do not enable the rule. |
 | `vue/sfc-element-order` | `{ order?: Array<string \| string[]> }` | Defaults to `[["script", "template"], "style"]`. A nested array means any of those block selectors may appear at that rank. |
 | `vue/html-self-closing` | `{ html?: { void?: Style; normal?: Style; component?: Style }; svg?: Style; math?: Style }`, where `Style` is `"always"`, `"never"`, or `"any"` | Defaults match eslint-plugin-vue: `html.void: "never"`, `html.normal: "always"`, `html.component: "always"`, `svg: "always"`, and `math: "always"`. |
+| `vue/html-button-has-type` | `{ button?: boolean; submit?: boolean; reset?: boolean }` | All three values default to `true`. Setting one to `false` reports that otherwise valid static button type as forbidden. |
 | `vue/html-quotes` | `"double" \| "single"` or `{ style?: "double" \| "single"; avoidEscape?: boolean }` | Defaults to double quotes and `avoidEscape: false`. With `avoidEscape: true`, a quoted value containing the requested delimiter is left unchanged. |
 | `vue/mustache-interpolation-spacing` | `"always" \| "never"` | Defaults to `"always"`. Requires or forbids whitespace immediately inside `{{` and `}}`; both sides are fixed independently. |
 | `vue/v-on-event-hyphenation` | `"always" \| "never" \| { style?: "always" \| "never"; ignore?: string[] }` | Defaults to `always` and an empty ignore list. Exempts event names containing a configured case-sensitive substring. |
@@ -147,6 +149,76 @@ Good (configured provider):
 When `entries` match a file, their `linter.ruleOptions` overlay the root options for that file.
 Each configured rule option object replaces the same root object; arrays such as `globals`,
 `members`, `order`, and `tokens` are not concatenated across entries.
+
+## `vue/html-button-has-type`
+
+Use the three booleans to restrict which valid static button types a project permits. Missing,
+empty, and invalid types are always reported, while a populated dynamic `:type` binding remains
+valid because its value cannot be checked statically. The upstream rule is not fixable, so this
+policy produces diagnostics without an automatic rewrite.
+
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({}).withVue({
+  linter: {
+    rules: { "vue/html-button-has-type": "warn" },
+    ruleOptions: {
+      "vue/html-button-has-type": {
+        button: true,
+        submit: false,
+        reset: false,
+      },
+    },
+  },
+});
+```
+
+Bad with this policy:
+
+```vue
+<button type="submit">Save</button>
+```
+
+Good with this policy:
+
+```vue
+<button type="button">Cancel</button>
+```
+
+## `vue/no-use-v-if-with-v-for`
+
+Set `allowUsingIterationVar` to `true` when a project intentionally filters a loop item with a
+same-element `v-if`. Conditions that do not reference a sibling `v-for` variable remain invalid,
+and the option does not enable the rule. The upstream rule is not fixable, so this policy produces
+diagnostics without an automatic rewrite.
+
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({}).withVue({
+  linter: {
+    rules: { "vue/no-use-v-if-with-v-for": "warn" },
+    ruleOptions: {
+      "vue/no-use-v-if-with-v-for": {
+        allowUsingIterationVar: true,
+      },
+    },
+  },
+});
+```
+
+Bad with this policy:
+
+```vue
+<li v-for="item in items" v-if="showAll">{{ item.name }}</li>
+```
+
+Good with this policy:
+
+```vue
+<li v-for="item in items" v-if="item.visible">{{ item.name }}</li>
+```
 
 ## `vue/require-component-registration`
 

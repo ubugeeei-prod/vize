@@ -24,8 +24,10 @@ import {
   killSurvivors,
   machineMemory,
   percentile,
+  procStatHasAddressSpace,
   psTimeSeconds,
   readTree,
+  reconcilePssSnapshot,
 } from "../../tools/benchmarks/scripts/lsp-vs-volar-metrics.ts";
 import {
   markdown,
@@ -36,6 +38,54 @@ import { judge, runSession } from "../../tools/benchmarks/scripts/lsp-vs-volar-s
 import { OpenDocument } from "../../tools/benchmarks/scripts/lsp-vs-volar-text.ts";
 import { session } from "./support/lsp-vs-volar-sessions.ts";
 import { FrameReader } from "../../tools/benchmarks/scripts/lsp-vs-volar-wire.ts";
+import {
+  PROBE_MAPPER_MAX_OLD_SPACE_MB,
+  prepareOwnedProbe,
+  probeMapperCommand,
+} from "../../tools/benchmarks/scripts/typecheck-owned-pair-projection.ts";
+
+test("owned Node mapper probes reserve heap for the full generated corpus", () => {
+  assert.deepEqual(probeMapperCommand(["node", "server.js"]), [
+    process.execPath,
+    `--max-old-space-size=${PROBE_MAPPER_MAX_OLD_SPACE_MB}`,
+    "server.js",
+  ]);
+  assert.deepEqual(probeMapperCommand(["mapper", "--stdio"]), ["mapper", "--stdio"]);
+});
+
+test("owned probe manifests retain mapper settings and pin the expanded Node command", () => {
+  const project = mkdtempSync(join(os.tmpdir(), "owned-probe-command-"));
+  try {
+    const mapper = join(project, "node_modules/@vue/content-mapper");
+    mkdirSync(mapper, { recursive: true });
+    writeFileSync(
+      join(mapper, "package.json"),
+      JSON.stringify({
+        name: "@vue/content-mapper",
+        typescript: {
+          contentMapper: {
+            dynamicConfig: true,
+            exec: ["node", "server.js"],
+          },
+        },
+      }),
+    );
+
+    assert.equal(prepareOwnedProbe(project, "vue"), "tsconfig.vue-owned-pair-probe.json");
+    const manifest = JSON.parse(
+      readFileSync(join(project, "node_modules/vue-owned-pair-probe/package.json"), "utf8"),
+    );
+    const wrapped = manifest.typescript.contentMapper;
+    assert.equal(wrapped.dynamicConfig, true);
+    assert.deepEqual(wrapped.exec.slice(-3), [
+      process.execPath,
+      `--max-old-space-size=${PROBE_MAPPER_MAX_OLD_SPACE_MB}`,
+      "server.js",
+    ]);
+  } finally {
+    rmSync(project, { recursive: true, force: true });
+  }
+});
 
 test("frames split across chunks and tsserver's counted newline both decode", () => {
   const messages: unknown[] = [];
@@ -242,6 +292,33 @@ test("statistics use nearest rank and ps CPU time parses every width", () => {
   assert.equal(percentile([], 50), null);
   assert.equal(psTimeSeconds("0:01.50"), 1.5);
   assert.equal(psTimeSeconds("1-02:03:04"), 93784);
+});
+
+test("PSS snapshots drop only members that exited during the memory read", () => {
+  const members = [{ pid: 1 }, { pid: 2 }, { pid: 3 }];
+  const pss = new Map([
+    [1, 10],
+    [2, null],
+    [3, null],
+  ]);
+  const snapshot = reconcilePssSnapshot(
+    members,
+    (pid) => pss.get(pid) ?? null,
+    (pid) => pid !== 2,
+  );
+  assert.deepEqual(snapshot, {
+    members: [
+      { member: { pid: 1 }, pssBytes: 10 },
+      { member: { pid: 3 }, pssBytes: null },
+    ],
+    exited: 1,
+  });
+});
+
+test("zombies no longer invalidate an otherwise complete PSS snapshot", () => {
+  assert.equal(procStatHasAddressSpace("1 (node worker) R 0 0 0"), true);
+  assert.equal(procStatHasAddressSpace("2 (node worker) Z 1 0 0"), false);
+  assert.equal(procStatHasAddressSpace("3 (node worker) X 1 0 0"), false);
 });
 
 test("reports exclude failed samples from latency and say so", () => {

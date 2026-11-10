@@ -63,6 +63,9 @@ jobs:
       tag: ${{ steps.resume.outputs.tag || steps.cut.outputs.tag }}
       sha: ${{ steps.resume.outputs.sha || steps.cut.outputs.sha }}
       ref: ${{ steps.cut.outputs.ref }}
+      npm_tag: ${{ steps.channel.outputs.npm_tag }}
+      prerelease: ${{ steps.channel.outputs.prerelease }}
+      make_latest: ${{ steps.channel.outputs.make_latest }}
       publish_tag: ${{ steps.resume.outputs.publish_tag }}
       allow_newer_tag: ${{ steps.resume.outputs.allow_newer_tag }}
       cli_matrix: ${{ steps.platforms.outputs.cli_matrix }}
@@ -114,6 +117,20 @@ jobs:
         if: inputs.npm_resume_run == ''
         env: { RELEASE_VERSION: "${{ steps.resolve.outputs.version }}" }
         run: node tools/support/release/release/main.ts cut ${RELEASE_VERSION:+"$RELEASE_VERSION"}
+      - name: Resolve the release channel
+        id: channel
+        env:
+          RELEASE_VERSION: ${{ steps.resume.outputs.version || steps.cut.outputs.version }}
+        run: |
+          npm_tag="$(node tools/commands/release/npm/tag.ts "$RELEASE_VERSION")"
+          echo "npm_tag=$npm_tag" >> "$GITHUB_OUTPUT"
+          if [[ "$npm_tag" == "latest" ]]; then
+            echo "prerelease=false" >> "$GITHUB_OUTPUT"
+            echo "make_latest=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "prerelease=true" >> "$GITHUB_OUTPUT"
+            echo "make_latest=false" >> "$GITHUB_OUTPUT"
+          fi
       - name: Emit the actual created candidate's original producer attestation
         if: steps.cut.outputs.sha != ''
         env:
@@ -649,8 +666,6 @@ jobs:
           run-id: ${{ inputs.npm_resume_run }}
           github-token: ${{ github.token }}
           repository: ${{ github.repository }}
-      - uses: ./.github/actions/npm-bootstrap-auth
-        with: { token: "${{ inputs.npm_resume_run != '' && secrets.NPM_BOOTSTRAP_TOKEN || '' }}" }
       - name: Publish native platforms before dependent packages
         id: publish
         run: |
@@ -717,6 +732,7 @@ jobs:
     timeout-minutes: 15
     environment: vscode-marketplace
     env:
+      NPM_TAG: ${{ needs.version.outputs.npm_tag }}
       VSCE_DLX_BIN: npx
       VSCE_PAT: ${{ secrets.VSCE_PAT }}
     steps:
@@ -736,6 +752,7 @@ jobs:
     timeout-minutes: 35
     environment: open-vsx-registry
     env:
+      NPM_TAG: ${{ needs.version.outputs.npm_tag }}
       OVSX_PAT: ${{ secrets.OVSX_PAT }}
       # The publisher runs ovsx through `vp dlx`, whose deps have build scripts.
       PNPM_CONFIG_STRICT_DEP_BUILDS: "false"
@@ -766,6 +783,7 @@ jobs:
       matrix:
         settings: ${{ fromJSON(needs.version.outputs.editor_matrix) }}
     env:
+      NPM_TAG: ${{ needs.version.outputs.npm_tag }}
       VIZE_EXTENSION_TARGET: ${{ matrix.settings.target }}
       VSIX_SOURCE_PATH: ${{ matrix.settings.sourcePath }}
       VSCE_DLX_BIN: npx
@@ -795,6 +813,7 @@ jobs:
       matrix:
         settings: ${{ fromJSON(needs.version.outputs.editor_matrix) }}
     env:
+      NPM_TAG: ${{ needs.version.outputs.npm_tag }}
       VIZE_EXTENSION_TARGET: ${{ matrix.settings.target }}
       VSIX_SOURCE_PATH: ${{ matrix.settings.sourcePath }}
       OVSX_PAT: ${{ secrets.OVSX_PAT }}
@@ -905,7 +924,8 @@ jobs:
           tag_name: ${{ needs.version.outputs.tag }}
           body_path: ${{ runner.temp }}/release-notes.md
           generate_release_notes: false
-          make_latest: true
+          prerelease: ${{ needs.version.outputs.prerelease }}
+          make_latest: ${{ needs.version.outputs.make_latest }}
           overwrite_files: true
           files: |
             cli-artifacts/*.tar.gz

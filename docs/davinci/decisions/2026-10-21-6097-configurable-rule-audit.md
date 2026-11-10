@@ -44,6 +44,20 @@ The compatibility-port cohort maps nine more configurable upstream rules. Four o
 counterparts expose typed options, bringing the audited surface to 70 mapped rules, including 22
 with typed options, and leaving 39 unimplemented configurable rules.
 
+The button-policy cohort adds the upstream `button`, `submit`, and `reset` booleans for
+`vue/html-button-has-type`. All three default to `true`; disabling a value reports that otherwise
+valid static type as forbidden while missing, empty, invalid, and populated dynamic bindings keep
+their upstream boundaries. This brings the audited surface to 23 mapped rules with typed options
+and leaves 47 mapped configurable rules without typed options. The upstream rule is not fixable,
+so this cohort has no autofix behavior to configure.
+
+The iteration-variable cohort adds upstream's `allowUsingIterationVar` boolean for
+`vue/no-use-v-if-with-v-for`. It defaults to `false`; `true` permits only same-element `v-if`
+conditions that reference a sibling `v-for` variable, while unrelated conditions remain
+reportable. This brings the audited surface to 24 mapped rules with typed options and leaves 46
+mapped configurable rules without typed options. The upstream rule is not fixable, so the option
+does not introduce an automatic rewrite.
+
 ## Provider boundary
 
 The executable differential provider remains pinned to 10.9.2. Moving it to 10.11.1 changes

@@ -6,6 +6,7 @@ export type * from "./native.ts";
 
 // Style Block Types
 
+/** Style-block metadata exposed to the Rspack compilation pipeline. */
 export interface StyleBlockInfo {
   /** Raw style content */
   content: string;
@@ -23,6 +24,7 @@ export interface StyleBlockInfo {
 
 // Custom Block Types
 
+/** Custom-block metadata exposed to the Rspack compilation pipeline. */
 export interface CustomBlockInfo {
   /** Tag name (e.g., "i18n", "docs") */
   type: string;
@@ -38,6 +40,7 @@ export interface CustomBlockInfo {
 
 // SFC Block Src Info
 
+/** External script and template sources referenced by an SFC. */
 export interface SfcSrcInfo {
   /** <script src> path, or null */
   scriptSrc?: string | null;
@@ -57,6 +60,7 @@ export interface TemplateAssetUrl {
 
 // Compiled Module Types
 
+/** Normalized SFC compilation result consumed by Rspack output assembly. */
 export interface CompiledModule {
   code: string;
   /** Per-source metadata for browser-local HMR comparisons. */
@@ -102,24 +106,24 @@ export type VizeSfcCompilerOptions = Omit<SfcCompileOptionsNapi, "ssr" | "vapor"
 
 /** Compatibility type; prefer VizeSfcLoaderOptions or VizeJsxLoaderOptions. */
 export interface VizeLoaderOptions {
-  /** Override production output; otherwise follows loader mode / NODE_ENV. */
+  /** Override production output; otherwise follows loader mode / NODE_ENV. @default Rspack mode or NODE_ENV */
   isProduction?: boolean;
-  /** Source maps; falls back to compilerOptions, then Rspack's loader context. */
+  /** Source maps; falls back to compilerOptions, then Rspack's loader context. @default enabled outside production */
   sourceMap?: boolean;
 
   /** SSR mode @default false */
   ssr?: boolean;
 
-  /** Project root */
+  /** Project root. @default Rspack rootContext */
   root?: string;
 
-  /** @deprecated Use module.rules[].include. Retained as a loader passthrough filter. */
+  /** @deprecated Use module.rules[].include. Retained as a loader passthrough filter. @default all files */
   include?: string | RegExp | (string | RegExp)[];
 
-  /** @deprecated Use module.rules[].exclude. Retained as a loader passthrough filter. */
+  /** @deprecated Use module.rules[].exclude. Retained as a loader passthrough filter. @default no files */
   exclude?: string | RegExp | (string | RegExp)[];
 
-  /** Low-level compiler options for @vizejs/native compileSfc */
+  /** Low-level compiler options for @vizejs/native compileSfc. @default {} */
   compilerOptions?: VizeSfcCompilerOptions;
 
   /** Custom element mode. true=all, RegExp=matched. @default /\.ce\.vue$/ */
@@ -131,13 +135,13 @@ export interface VizeLoaderOptions {
   /** Default JSX output mode for `.jsx`/`.tsx` without a `"use vue:*"` directive. @default "vdom" */
   jsxMode?: "vdom" | "vapor";
 
-  /** JSX semantics; `"babel"` opts into @vue/babel-plugin-jsx compatibility. */
+  /** JSX semantics; `"babel"` opts into @vue/babel-plugin-jsx compatibility. @default "native" */
   jsxCompat?: "native" | "babel";
 
   /** HMR. false to disable in dev. @default true (dev), false (prod/SSR) */
   hotReload?: boolean;
 
-  /** CSS handling config */
+  /** CSS handling config. @default auto-detected from the Rspack configuration */
   css?: {
     /** With autoRules: false, override the plugin default for this SFC chain.
      * With automatic rules, must match the plugin's resolved CSS mode. */
@@ -160,6 +164,7 @@ export type VizeJsxLoaderOptions = Pick<
   "sourceMap" | "vapor" | "jsxMode" | "jsxCompat" | "include" | "exclude"
 >;
 
+/** Options accepted by the style-block extraction loader. */
 export interface VizeStyleLoaderOptions {
   /** Rspack native CSS mode @default false */
   native?: boolean;
@@ -167,42 +172,43 @@ export interface VizeStyleLoaderOptions {
 
 // Plugin Options Types
 
+/** Options for the Vize Rspack plugin's rule and feature-flag integration. */
 export interface VizeRspackPluginOptions {
-  /** @deprecated Use rule.include. This legacy field only filters plugin watch logs. */
+  /** @deprecated Use rule.include. This legacy field only filters plugin watch logs. @default all files */
   include?: string | RegExp | (string | RegExp)[];
 
-  /** @deprecated Use rule.exclude. This legacy field only filters plugin watch logs. */
+  /** @deprecated Use rule.exclude. This legacy field only filters plugin watch logs. @default no files */
   exclude?: string | RegExp | (string | RegExp)[];
 
-  /** @deprecated Use Rspack mode. Retained for plugin flags/logging only. */
+  /** @deprecated Use Rspack mode. Retained for plugin flags/logging only. @default Rspack mode */
   isProduction?: boolean;
 
-  /** @deprecated Use SFC loader ssr. This plugin field is not forwarded. */
+  /** @deprecated Use SFC loader ssr. This plugin field is not forwarded. @default undefined */
   ssr?: boolean;
 
-  /** @deprecated Use loader sourceMap. This plugin field is not forwarded. */
+  /** @deprecated Use loader sourceMap. This plugin field is not forwarded. @default undefined */
   sourceMap?: boolean;
 
-  /** @deprecated Use loader vapor. This plugin field only affects the legacy debug message. */
+  /** @deprecated Use loader vapor. This plugin field only affects the legacy debug message. @default undefined */
   vapor?: boolean;
 
-  /** @deprecated Use JSX loader jsxMode. This plugin field is not forwarded. */
+  /** @deprecated Use JSX loader jsxMode. This plugin field is not forwarded. @default undefined */
   jsxMode?: "vdom" | "vapor";
 
-  /** @deprecated Use JSX loader jsxCompat. This plugin field is not forwarded. */
+  /** @deprecated Use JSX loader jsxCompat. This plugin field is not forwarded. @default undefined */
   jsxCompat?: "native" | "babel";
 
-  /** @deprecated Use loader root or Rspack context. This plugin field is not forwarded. */
+  /** @deprecated Use loader root or Rspack context. This plugin field is not forwarded. @default undefined */
   root?: string;
 
-  /** CSS config */
+  /** CSS config. @default auto-detected from Rspack version and experiments.css */
   css?: {
     /** Automatic CSS mode, or default for manual SFC rules. Auto-detected from
      * the Rspack version and experiments.css when omitted. */
     native?: boolean;
   };
 
-  /** @deprecated Use SFC loader compilerOptions. This plugin field is not forwarded. */
+  /** @deprecated Use SFC loader compilerOptions. This plugin field is not forwarded. @default undefined */
   compilerOptions?: SfcCompileOptionsNapi;
 
   /** Debug logging @default false */

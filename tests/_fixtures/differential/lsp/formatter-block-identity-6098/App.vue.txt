@@ -1,0 +1,5 @@
+<style>.before{color:red}</style>
+<script>const   ordinary=1</script>
+<template><main><span   /></main></template>
+<script setup>const   setup=2</script>
+<style>.after{color:blue}</style>

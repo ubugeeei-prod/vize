@@ -77,6 +77,24 @@ test("catalog pins come from the workspace file", () => {
   assert.throws(() => catalogVersion(workspace, "vue-beta", "missing"), /no missing pin/u);
 });
 
+test("the cold pair exposes the qualified runtime and checker-width matrix", () => {
+  const hosts = JSON.parse(
+    readFileSync(
+      new URL("../../tools/benchmarks/typecheck-hosts/package.json", import.meta.url),
+      "utf8",
+    ),
+  ) as { dependencies?: Record<string, string> };
+  assert.match(hosts.dependencies?.tsrs ?? "", /^\d+\.\d+\.\d+-ts\d+\.\d+\.\d+-beta$/u);
+
+  const workflow = readFileSync(
+    new URL("../../.github/workflows/typecheck-cold-pair.yml", import.meta.url),
+    "utf8",
+  );
+  assert.match(workflow, /options: \[tsgo, tsrs\]/u);
+  assert.match(workflow, /options: \["1", "8"\]/u);
+  assert.match(workflow, /--runtime "\$RUNTIME" --checkers "\$CHECKERS"/u);
+});
+
 const roots = {
   mirror: "/cache/run",
   modules: "/p/node_modules",

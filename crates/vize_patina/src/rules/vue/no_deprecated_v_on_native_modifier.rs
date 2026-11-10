@@ -36,6 +36,7 @@
 
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
+use crate::markup::{MarkupContext, MarkupDirective, MarkupElement, MarkupRule};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_l0::dialect::VueDialect;
 use vize_relief::{DirectiveNode, ElementNode};
@@ -53,6 +54,49 @@ static META: RuleMeta = RuleMeta {
 /// Disallow the deprecated `.native` modifier on `v-on`.
 pub struct NoDeprecatedVOnNativeModifier;
 
+impl NoDeprecatedVOnNativeModifier {
+    /// Apply the shared authored-range check to either a Relief or L1 directive.
+    fn check(ctx: &mut LintContext<'_>, directive: &MarkupDirective<'_>) {
+        // Only the default Vue 3 dialect removed `.native`. petite-vue and the
+        // legacy Vue 2 dialect treat `.native` differently, so leave them alone.
+        if ctx.dialect() != VueDialect::Vue || !directive.name_eq("on") {
+            return;
+        }
+
+        let mut native_range = None;
+        directive.walk_modifier_ranges(&mut |modifier, range| {
+            if native_range.is_none() && modifier == "native" {
+                native_range = Some(range);
+            }
+        });
+        let Some(native_range) = native_range else {
+            return;
+        };
+
+        // Report on the `.native` modifier itself for a precise underline.
+        ctx.error_at_with_help(
+            ctx.t("vue/no-deprecated-v-on-native-modifier.message"),
+            native_range,
+            ctx.t("vue/no-deprecated-v-on-native-modifier.help"),
+        );
+    }
+}
+
+impl MarkupRule for NoDeprecatedVOnNativeModifier {
+    fn name(&self) -> &'static str {
+        META.name
+    }
+
+    fn enter_directive<'a>(
+        &self,
+        ctx: &mut MarkupContext<'_, 'a>,
+        _element: &MarkupElement<'a>,
+        directive: &MarkupDirective<'a>,
+    ) {
+        Self::check(ctx.lint(), directive);
+    }
+}
+
 impl Rule for NoDeprecatedVOnNativeModifier {
     fn as_native_template_rule(&self) -> Option<&dyn crate::native::template::NativeTemplateRule> {
         Some(self)
@@ -62,33 +106,17 @@ impl Rule for NoDeprecatedVOnNativeModifier {
         &META
     }
 
+    fn as_markup_rule(&self) -> Option<&dyn MarkupRule> {
+        Some(self)
+    }
+
     fn check_directive<'a>(
         &self,
         ctx: &mut LintContext<'a>,
         _element: &ElementNode<'a>,
         directive: &DirectiveNode<'a>,
     ) {
-        // Only the default Vue 3 dialect removed `.native`. petite-vue and the
-        // legacy Vue 2 dialect treat `.native` differently, so leave them alone.
-        if ctx.dialect() != VueDialect::Vue {
-            return;
-        }
-
-        // Only `v-on` / `@` carries the `.native` modifier.
-        if directive.name != "on" {
-            return;
-        }
-
-        let Some(native) = directive.modifiers.iter().find(|m| m.content == "native") else {
-            return;
-        };
-
-        // Report on the `.native` modifier itself for a precise underline.
-        ctx.error_with_help(
-            ctx.t("vue/no-deprecated-v-on-native-modifier.message"),
-            &native.loc,
-            ctx.t("vue/no-deprecated-v-on-native-modifier.help"),
-        );
+        Self::check(ctx, &MarkupDirective::from_relief(directive));
     }
 }
 

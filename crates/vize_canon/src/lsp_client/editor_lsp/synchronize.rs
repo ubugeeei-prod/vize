@@ -6,16 +6,34 @@ use std::str::FromStr;
 use vize_l0::{FxHashSet, String, cstr};
 
 use super::EditorLspSession;
-use crate::lsp_client::shared_text::{DocumentTexts, RetainedText};
 use crate::lsp_client::tracked_documents::TrackedDocumentTexts;
+use crate::{
+    file_uri::file_uri_to_path,
+    lsp_client::shared_text::{DocumentTexts, RetainedText},
+};
 #[cfg(test)]
 use vize_l0::FxHashMap;
 
 /// Stay comfortably below the transport's bounded outbound notification queue.
 /// A response-backed symbol request drains preceding notifications.
 const NOTIFICATIONS_PER_BARRIER: usize = 128;
+/// Preserve the established explicit-overlay contract for ordinary projects.
+/// Disk-backed admission is only needed once a full replay would require a
+/// transport drain; below that size, opening every retained source keeps wire
+/// custody and watcher-independent functional evidence unchanged.
+const DISK_DOCUMENT_MINIMUM: usize = NOTIFICATIONS_PER_BARRIER;
 
 impl EditorLspSession {
+    /// Returns whether disabling the disk view requires a complete overlay replay.
+    pub(super) fn prefer_disk_documents(&mut self, enabled: bool) -> bool {
+        self.prefer_disk_documents = enabled;
+        let replay = !enabled && !self.disk_documents.is_empty();
+        if replay {
+            self.disk_documents.clear();
+        }
+        replay
+    }
+
     /// Bring the reusable editor transport to the same virtual-project view as
     /// the project-session transport, including dependency removals.
     pub(super) fn synchronize(&mut self, documents: &DocumentTexts) -> Result<(), String> {
@@ -41,16 +59,40 @@ impl EditorLspSession {
         let phase =
             crate::corsa_bridge::preparation_trace::Phase::start("editor_mirror", documents.len());
         let (mut desired, mut removed) = selected_documents(documents, &self.documents, changes);
+        let admit_disk_documents =
+            self.prefer_disk_documents && documents.len() >= DISK_DOCUMENT_MINIMUM;
         desired.sort_unstable_by(|left, right| left.0.cmp(right.0));
         for (document_uri, text) in desired {
+            if self.retain_exact_disk_document(admit_disk_documents, document_uri, text) {
+                continue;
+            }
             let changed = self
                 .documents
                 .get(document_uri.as_str())
                 .is_none_or(|current| current != text);
+            self.disk_documents.remove(document_uri.as_str());
             let uri = self.mirror(document_uri, text)?;
             if changed {
                 self.flush_if_full(Some(&uri))?;
             }
+        }
+
+        let disk_removed = match changes {
+            Some(changes) => changes
+                .iter()
+                .filter(|uri| !documents.contains_key(uri.as_str()))
+                .filter(|uri| self.disk_documents.remove(uri.as_str()).is_some())
+                .count(),
+            None => {
+                let before = self.disk_documents.len();
+                self.disk_documents
+                    .retain(|uri, _| documents.contains_key(uri.as_str()));
+                before.saturating_sub(self.disk_documents.len())
+            }
+        };
+        if disk_removed > 0 {
+            self.query_barrier_required = true;
+            self.advance_document_generation();
         }
 
         if removed.is_empty() {
@@ -82,6 +124,33 @@ impl EditorLspSession {
         Ok(())
     }
 
+    fn retain_exact_disk_document(
+        &mut self,
+        admit_disk_documents: bool,
+        document_uri: &str,
+        text: &RetainedText,
+    ) -> bool {
+        if !admit_disk_documents || self.documents.contains_key(document_uri) {
+            return false;
+        }
+        if let Some(matches) =
+            existing_disk_document_matches(&self.disk_documents, document_uri, text)
+        {
+            // An admitted disk document is a read-only baseline. Once its
+            // retained revision changes, the editor must observe that change
+            // through didOpen/didChange even when materialization has already
+            // written the same new bytes to disk. Otherwise the server can
+            // keep its previous snapshot until an unreliable watcher event.
+            return matches;
+        }
+        if !exact_disk_text(document_uri, text) {
+            return false;
+        }
+        self.disk_documents
+            .insert(document_uri.into(), text.clone());
+        true
+    }
+
     fn close_mirrored_document(&mut self, document_uri: &str) -> Result<(), String> {
         let uri = parse_document_uri(document_uri)?;
         self.tracked_documents = None;
@@ -95,6 +164,7 @@ impl EditorLspSession {
                 })?;
         }
         self.documents.remove(document_uri);
+        self.disk_documents.remove(document_uri);
         self.dirty_documents.remove(document_uri);
         self.query_barrier_required = true;
         self.advance_document_generation();
@@ -119,6 +189,21 @@ impl EditorLspSession {
         self.unacknowledged_notifications = 0;
         Ok(())
     }
+}
+
+fn exact_disk_text(document_uri: &str, text: &RetainedText) -> bool {
+    let Some(path) = file_uri_to_path(document_uri) else {
+        return false;
+    };
+    std::fs::read(path).is_ok_and(|bytes| bytes == text.as_str().as_bytes())
+}
+
+fn existing_disk_document_matches(
+    documents: &DocumentTexts,
+    document_uri: &str,
+    text: &RetainedText,
+) -> Option<bool> {
+    documents.get(document_uri).map(|current| current == text)
 }
 
 fn selected_documents<'a>(
@@ -166,6 +251,44 @@ mod tests {
             ("file:///b.ts".into(), "b".into()),
             ("file:///z.ts".into(), "z".into()),
         ])
+    }
+
+    #[test]
+    fn exact_materialized_bytes_do_not_require_an_open_overlay() {
+        let root = tempfile::tempdir().unwrap();
+        let path = root.path().join("Member.vue.ts");
+        std::fs::write(&path, "export const member = 1;").unwrap();
+        let uri = crate::file_uri::path_to_file_uri(&path);
+
+        assert!(exact_disk_text(
+            &uri,
+            &RetainedText::from("export const member = 1;")
+        ));
+        assert!(!exact_disk_text(
+            &uri,
+            &RetainedText::from("export const member = 2;")
+        ));
+        assert!(!exact_disk_text(
+            "untitled:Member.vue.ts",
+            &RetainedText::from("export const member = 1;")
+        ));
+    }
+
+    #[test]
+    fn changed_disk_baselines_require_an_editor_overlay() {
+        let root = tempfile::tempdir().unwrap();
+        let path = root.path().join("Member.vue.ts");
+        let uri = crate::file_uri::path_to_file_uri(&path);
+        let mut disk_documents = DocumentTexts::default();
+        disk_documents.insert(uri.clone(), RetainedText::from("export const member = 1;"));
+        let desired = RetainedText::from("export const member = 2;");
+        std::fs::write(&path, desired.as_str()).unwrap();
+
+        assert!(exact_disk_text(&uri, &desired));
+        assert_eq!(
+            existing_disk_document_matches(&disk_documents, &uri, &desired),
+            Some(false)
+        );
     }
 
     #[test]

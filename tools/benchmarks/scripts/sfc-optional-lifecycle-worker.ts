@@ -20,6 +20,7 @@ interface LifecycleIdentity {
   readonly viteEntry: string;
   readonly vueEntry: string;
   readonly typescriptEntry: string;
+  readonly typescriptVersion: string;
   readonly pluginEntry: string;
   readonly museaEntry: string;
   readonly fixtureParent: string;
@@ -178,7 +179,7 @@ export async function runLifecycleWorker(identityFile: string, output: string): 
   const { default: ts } = (await import(pathToFileURL(identity.typescriptEntry).href)) as {
     default: TypeScriptRuntime;
   };
-  assert.equal(ts.version, "6.0.3");
+  assert.equal(ts.version, identity.typescriptVersion);
   const truth = ts.createSourceFile(
     "truth.ts",
     "type Props = { " + members + " }",

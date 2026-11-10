@@ -1,0 +1,10 @@
+<script setup lang="ts">
+defineProps<{ value: string; transform: (value: string) => string }>()
+const emit = defineEmits<{ save: [value: string] }>()
+defineSlots<{ default(props: { item: string }): any }>()
+defineExpose({ focus: () => undefined })
+</script>
+
+<template>
+  <button @click="emit('save', value)"><slot :item="value" /></button>
+</template>

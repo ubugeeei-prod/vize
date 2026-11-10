@@ -92,6 +92,7 @@ pub(crate) fn append_slot_selection(
 /// the external component contract.
 fn usage_raw_props(component: &str, pair: &str, hoisted: bool) -> String {
     let raw = shared_types::COMPONENT_RAW_PROPS.select(hoisted);
+    let record = crate::virtual_ts::generated_names::lib("Record");
     // The with-arguments sentinel has no $props; a real constructor result
     // retains its own public surface. Inspect these actual values rather than
     // re-reading constructor parameters or a slot fallback. Built-in any tests
@@ -100,7 +101,7 @@ fn usage_raw_props(component: &str, pair: &str, hoisted: bool) -> String {
         "(typeof {pair}.withArguments extends {{ $props: unknown }} ? typeof {pair}.withArguments : typeof {pair}.withoutArguments)"
     );
     cstr!(
-        "typeof {component} extends {{ readonly __vizeComponentMarker: true }} ? {raw}<typeof {component}> : 0 extends (1 & {selected}) ? {raw}<typeof {component}> : {selected} extends {{ $props: infer __P }} ? unknown extends __P ? Record<string, unknown> : __P : {raw}<typeof {component}>"
+        "typeof {component} extends {{ readonly __vizeComponentMarker: true }} ? {raw}<typeof {component}> : 0 extends (1 & {selected}) ? {raw}<typeof {component}> : {selected} extends {{ $props: infer __P }} ? unknown extends __P ? {record}<string, unknown> : __P : {raw}<typeof {component}>"
     )
 }
 
@@ -111,18 +112,24 @@ pub(crate) fn append_usage_props(
     hoisted: bool,
 ) {
     let is_any = shared_types::IS_ANY.select(hoisted);
+    let record = crate::virtual_ts::generated_names::lib("Record");
     if let Some(pair) = pair {
         let props = usage_raw_props(component, pair, hoisted);
         append!(
             *ts,
-            "typeof {component} extends {{ __vizeCheck: infer __F }} ? ({is_any}<__F> extends true ? {props} : Record<string, unknown>) : {props};\n"
+            "typeof {component} extends {{ __vizeCheck: infer __F }} ? ({is_any}<__F> extends true ? {props} : {record}<string, unknown>) : {props};\n"
         );
+    } else if hoisted {
+        // The body reads only the component type, so the shared helper is
+        // evaluated once per component type instead of once per usage.
+        let usage_props = shared_types::USAGE_PROPS.select(true);
+        append!(*ts, "{usage_props}<typeof {component}>;\n");
     } else {
         // Preserve the existing allocation-free writer for unrelated usages.
         let raw = shared_types::COMPONENT_RAW_PROPS.select(hoisted);
         append!(
             *ts,
-            "typeof {component} extends {{ __vizeCheck: infer __F }} ? ({is_any}<__F> extends true ? {raw}<typeof {component}> : Record<string, unknown>) : {raw}<typeof {component}>;\n"
+            "typeof {component} extends {{ __vizeCheck: infer __F }} ? ({is_any}<__F> extends true ? {raw}<typeof {component}> : {record}<string, unknown>) : {raw}<typeof {component}>;\n"
         );
     }
 }

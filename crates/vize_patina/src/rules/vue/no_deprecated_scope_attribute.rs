@@ -31,9 +31,10 @@
 
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
+use crate::markup::{MarkupAttribute, MarkupContext, MarkupElement, MarkupRule, MarkupTraversal};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_l0::dialect::VueDialect;
-use vize_relief::{ElementNode, PropNode};
+use vize_relief::ElementNode;
 
 static META: RuleMeta = RuleMeta {
     name: "vue/no-deprecated-scope-attribute",
@@ -46,37 +47,55 @@ static META: RuleMeta = RuleMeta {
 /// Disallow the deprecated `scope` attribute on `<template>`.
 pub struct NoDeprecatedScopeAttribute;
 
+impl NoDeprecatedScopeAttribute {
+    fn check_attribute(ctx: &mut LintContext<'_>, attribute: &MarkupAttribute<'_>) {
+        if attribute.name() != "scope" {
+            return;
+        }
+
+        ctx.error_at_with_help(
+            ctx.t("vue/no-deprecated-scope-attribute.message"),
+            attribute.name_range(),
+            ctx.t("vue/no-deprecated-scope-attribute.help"),
+        );
+    }
+
+    fn check_element(ctx: &mut LintContext<'_>, element: &MarkupElement<'_>) {
+        if ctx.dialect() != VueDialect::Vue || !element.is_unqualified_tag_exact("template") {
+            return;
+        }
+
+        element.walk_attributes(&mut |attribute| {
+            Self::check_attribute(ctx, &attribute);
+        });
+    }
+}
+
+impl MarkupRule for NoDeprecatedScopeAttribute {
+    fn name(&self) -> &'static str {
+        META.name
+    }
+
+    fn traversal(&self) -> MarkupTraversal {
+        MarkupTraversal::Elements
+    }
+
+    fn enter_element<'a>(&self, ctx: &mut MarkupContext<'_, 'a>, element: &MarkupElement<'a>) {
+        Self::check_element(ctx.lint(), element);
+    }
+}
+
 impl Rule for NoDeprecatedScopeAttribute {
     fn meta(&self) -> &'static RuleMeta {
         &META
     }
 
+    fn as_markup_rule(&self) -> Option<&dyn MarkupRule> {
+        Some(self)
+    }
+
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
-        if ctx.dialect() != VueDialect::Vue {
-            return;
-        }
-
-        // `scope` is only the deprecated slot syntax on `<template>`; on other
-        // elements (e.g. `<th scope="col">`) it is valid HTML.
-        if element.tag != "template" {
-            return;
-        }
-
-        for prop in element.props.iter() {
-            if let PropNode::Attribute(attr) = prop
-                && attr.name == "scope"
-            {
-                let loc = vize_relief::SourceLocation::new(
-                    attr.loc.span.start,
-                    attr.loc.span.start + "scope".len() as u32,
-                );
-                ctx.error_with_help(
-                    ctx.t("vue/no-deprecated-scope-attribute.message"),
-                    &loc,
-                    ctx.t("vue/no-deprecated-scope-attribute.help"),
-                );
-            }
-        }
+        Self::check_element(ctx, &MarkupElement::new(element));
     }
 }
 

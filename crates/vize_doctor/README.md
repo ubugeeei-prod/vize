@@ -211,6 +211,29 @@ requires both the requested cache key and a pre-deserialization byte ceiling
 when loading untrusted objects. Backend-specific paths, timestamps, hosts,
 credentials, and transport metadata stay outside the envelope.
 
+`FilesystemCapabilitySnapshotCache` is the local persistent implementation. A
+caller supplies its cache root and per-object byte ceiling. The cache uses a
+versioned, Windows-safe digest layout, bounds reads before deserialization, and
+writes each object through a synchronized temporary file plus an atomic hard
+link. Cache objects are immutable: identical competing writes are idempotent,
+while divergent output for one cache key fails closed. The same envelope bytes
+remain suitable for a remote object store without translating the payload.
+
+`RemoteCapabilitySnapshotCache` adds the provider-neutral remote acceptance
+boundary. A `RemoteCapabilitySnapshotStore` implementation owns credentials,
+network retries, provider addressing, and atomic publish-if-absent behavior.
+Doctor supplies the canonical key, media type, portable bytes, and response
+ceiling, then independently validates the returned object metadata and complete
+envelope. Existing remote objects win immutable publication races: identical
+output is accepted, while divergent output for one key fails closed.
+
+`LayeredCapabilitySnapshotCache` composes those compatible stores without
+giving either backend authority over snapshot identity. Loads prefer a fast
+front cache, validate and promote durable backing hits, and skip backing work on
+front hits. Misses publish to the durable backing cache before the front cache,
+so a failed front write can be recovered by a later promotion. Every tier's key
+and complete snapshot acknowledgement is validated before it is returned.
+
 ## Reporter integrations
 
 External CI, editor, code-hosting, and AI integrations implement the object-safe

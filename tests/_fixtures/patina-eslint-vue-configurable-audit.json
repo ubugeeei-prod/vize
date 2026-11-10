@@ -24,8 +24,8 @@
     "mapped": 70,
     "unimplemented": 39,
     "intentionalDivergence": 3,
-    "mappedWithTypedOptions": 22,
-    "mappedWithoutTypedOptions": 48
+    "mappedWithTypedOptions": 24,
+    "mappedWithoutTypedOptions": 46
   },
   "mappedWithTypedOptions": [
     ["vue/attribute-hyphenation", "vue/attribute-hyphenation"],
@@ -35,12 +35,14 @@
     ["vue/define-macros-order", "script/define-macros-order"],
     ["vue/define-props-destructuring", "script/define-props-destructuring"],
     ["vue/enforce-style-attribute", "vue/enforce-style-attribute"],
+    ["vue/html-button-has-type", "vue/html-button-has-type"],
     ["vue/html-self-closing", "vue/html-self-closing"],
     ["vue/html-quotes", "vue/html-quotes"],
     ["vue/mustache-interpolation-spacing", "vue/mustache-interpolation-spacing"],
     ["vue/no-bare-strings-in-template", "vue/no-bare-strings-in-template"],
     ["vue/no-mutating-props", "vue/no-mutating-props"],
     ["vue/no-undef-components", "vue/require-component-registration"],
+    ["vue/no-use-v-if-with-v-for", "vue/no-use-v-if-with-v-for"],
     ["vue/prop-name-casing", "vue/prop-name-casing"],
     ["vue/slot-name-casing", "vue/slot-name-casing"],
     ["vue/sort-keys", "vue/sort-keys"],

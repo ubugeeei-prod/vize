@@ -2,7 +2,14 @@ import type { SessionResult } from "../../../tools/benchmarks/scripts/lsp-vs-vol
 
 /** One recorded session with one script edit of `editMs` and one hover. */
 export function session(editor: string, editMs: number, ok: boolean): SessionResult {
-  const reading = { cpuSeconds: 1, rssBytes: 1048576, pssBytes: null, processes: 2, pids: [] };
+  const reading = {
+    cpuSeconds: 1,
+    rssBytes: 1048576,
+    pssBytes: null,
+    processes: 2,
+    pssExitedProcesses: 0,
+    pids: [],
+  };
   return {
     editor,
     kind: editor.startsWith("vize") ? "vize" : "volar",

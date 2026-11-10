@@ -5,7 +5,7 @@ import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 import { parse } from "yaml";
-import "./npm-bootstrap-auth.test.ts";
+import "./npm-trusted-publishing.test.ts";
 import { cadenceDecision } from "../../../tools/support/release/release/cadence.ts";
 import {
   cadenceRegistryDecision,
@@ -375,7 +375,7 @@ test("verification runs outside the release concurrency group and gates only JSR
   assert.match(steps, /verify_published\/main\.ts "\$RELEASE_VERSION" "\$\{packages\[@\]\}"/);
   for (const [name, job] of Object.entries(verify.jobs)) {
     const checkout = job.steps?.find((step) => step.uses?.startsWith("actions/checkout@"));
-    if (name !== "publish-jsr") {
+    if (name !== "publish-jsr" && job.steps) {
       const expected = name === "quota-dry-run" ? "${{ github.sha }}" : "${{ inputs.tag }}";
       assert.equal(checkout?.with?.ref, expected, name);
     }

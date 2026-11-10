@@ -6,6 +6,7 @@ import path from "node:path";
 import { extractStyleBlocks } from "../shared/utils.ts";
 import type { VizeStyleLoaderOptions } from "../types/index.ts";
 
+/** Extract the requested style block from its owning Vue SFC. */
 export default function vizeStyleLoader(
   this: LoaderContext<VizeStyleLoaderOptions>,
   source: string,

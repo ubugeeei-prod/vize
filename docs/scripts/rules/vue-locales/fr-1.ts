@@ -116,8 +116,8 @@ export const frenchVue1 = {
   ],
   "vue/no-use-v-if-with-v-for": [
     "Interdire `v-if` sur le même élément que `v-for`",
-    "Le même élément de liste combine v-if et v-for et teste la visibilité au moyen de la liaison de la boucle.",
-    "Une collection calculée filtre les éléments visibles avant que le template n’itère dessus.",
+    "Le même élément de liste combine v-if et v-for, mais la condition ne référence pas la variable de la boucle.",
+    "Avec allowUsingIterationVar activé, la condition référence item provenant du même v-for.",
   ],
   "vue/no-useless-mustaches": [
     "Interdire une interpolation à doubles accolades dont l’expression est une chaîne littérale constante",

@@ -32,9 +32,11 @@
 
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
+use crate::ir::ByteRange;
+use crate::markup::{MarkupAttribute, MarkupContext, MarkupDirective, MarkupElement, MarkupRule};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_l0::dialect::VueDialect;
-use vize_relief::{DirectiveNode, ElementNode, ExpressionNode, PropNode, SourceLocation};
+use vize_relief::{DirectiveNode, ElementNode};
 
 mod native;
 
@@ -49,6 +51,68 @@ static META: RuleMeta = RuleMeta {
 /// Disallow the deprecated `slot` attribute.
 pub struct NoDeprecatedSlotAttribute;
 
+impl NoDeprecatedSlotAttribute {
+    fn report(ctx: &mut LintContext<'_>, range: ByteRange) {
+        ctx.error_at_with_help(
+            ctx.t("vue/no-deprecated-slot-attribute.message"),
+            range,
+            ctx.t("vue/no-deprecated-slot-attribute.help"),
+        );
+    }
+
+    fn check_element(ctx: &mut LintContext<'_>, element: &MarkupElement<'_>) {
+        if ctx.dialect() != VueDialect::Vue {
+            return;
+        }
+
+        element.walk_attributes(&mut |attribute: MarkupAttribute<'_>| {
+            if attribute.name() == "slot" {
+                Self::report(ctx, attribute.name_range());
+            }
+        });
+    }
+
+    fn check_directive(ctx: &mut LintContext<'_>, directive: &MarkupDirective<'_>) {
+        if ctx.dialect() != VueDialect::Vue
+            || !directive.name_eq("bind")
+            || !directive.is_static_arg_exact("slot")
+        {
+            return;
+        }
+
+        // Report the authored directive key, including its prefix/modifiers.
+        // Dot shorthand has a synthesized prop modifier at the prefix only.
+        let start = directive.range().start;
+        let Some(argument) = directive.argument_range() else {
+            return;
+        };
+        let mut end = argument.end;
+        directive.walk_modifier_ranges(&mut |_modifier, range| {
+            end = end.max(range.end);
+        });
+        Self::report(ctx, ByteRange::new(start, end));
+    }
+}
+
+impl MarkupRule for NoDeprecatedSlotAttribute {
+    fn name(&self) -> &'static str {
+        META.name
+    }
+
+    fn enter_element<'a>(&self, ctx: &mut MarkupContext<'_, 'a>, element: &MarkupElement<'a>) {
+        Self::check_element(ctx.lint(), element);
+    }
+
+    fn enter_directive<'a>(
+        &self,
+        ctx: &mut MarkupContext<'_, 'a>,
+        _element: &MarkupElement<'a>,
+        directive: &MarkupDirective<'a>,
+    ) {
+        Self::check_directive(ctx.lint(), directive);
+    }
+}
+
 impl Rule for NoDeprecatedSlotAttribute {
     fn meta(&self) -> &'static RuleMeta {
         &META
@@ -60,23 +124,12 @@ impl Rule for NoDeprecatedSlotAttribute {
         Some(self)
     }
 
-    fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
-        // Only the default Vue 3 dialect removed the `slot` attribute.
-        if ctx.dialect() != VueDialect::Vue {
-            return;
-        }
+    fn as_markup_rule(&self) -> Option<&dyn MarkupRule> {
+        Some(self)
+    }
 
-        for prop in element.props.iter() {
-            if let PropNode::Attribute(attr) = prop
-                && attr.name == "slot"
-            {
-                ctx.error_with_help(
-                    ctx.t("vue/no-deprecated-slot-attribute.message"),
-                    &attr.name_loc,
-                    ctx.t("vue/no-deprecated-slot-attribute.help"),
-                );
-            }
-        }
+    fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
+        Self::check_element(ctx, &MarkupElement::new(element));
     }
 
     fn check_directive<'a>(
@@ -85,31 +138,7 @@ impl Rule for NoDeprecatedSlotAttribute {
         _element: &ElementNode<'a>,
         directive: &DirectiveNode<'a>,
     ) {
-        if ctx.dialect() != VueDialect::Vue || directive.name != "bind" {
-            return;
-        }
-        let Some(ExpressionNode::Simple(argument)) = &directive.arg else {
-            return;
-        };
-        if !argument.is_static || argument.content != "slot" {
-            return;
-        }
-
-        // Report the authored directive key, including its prefix/modifiers.
-        // Dot shorthand has a synthesized prop modifier at the prefix only.
-        // Computed arguments and object bindings do not identify a slot key.
-        let start = directive.loc.span.start;
-        let end = directive
-            .modifiers
-            .last()
-            .map_or(argument.loc.span.end, |modifier| {
-                argument.loc.span.end.max(modifier.loc.span.end)
-            });
-        ctx.error_with_help(
-            ctx.t("vue/no-deprecated-slot-attribute.message"),
-            &SourceLocation::new(start, end),
-            ctx.t("vue/no-deprecated-slot-attribute.help"),
-        );
+        Self::check_directive(ctx, &MarkupDirective::from_relief(directive));
     }
 }
 

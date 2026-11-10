@@ -13,6 +13,7 @@ import {
 } from "node:fs";
 import { resolve, join, basename } from "node:path";
 import { authoredDirectives } from "../compat/content-mapper/producer-unmapped-ignores.ts";
+import { dedentEdits } from "../compat/content-mapper/setup-dedent.ts";
 import { assertTypedContextWrapperMappings } from "./typed-context-wrapper-mappings.ts";
 const [mode, outArg, phase] = process.argv.slice(2),
   out = resolve(outArg);
@@ -38,6 +39,12 @@ const embeddedHelpers = (root) =>
       path === null ? Buffer.from("\n") : readFileSync(join(root, path)),
     ),
   );
+const currentComponentConstructor = `type $ComponentConstructor = new <$AuthoredProps = unknown, $JsxProps = unknown>(props?: $AuthoredProps & $ComponentInput<Props, {}, $AuthoredProps>, ...args: any[]) => ($IsAny<$AuthoredProps> extends true ? true : $IsUnknown<$AuthoredProps> extends true ? $UsePublicInstance<$JsxProps> : false) extends true ? $ComponentInstance : NoInfer<$ComponentInstanceFor<$ComponentInstance, {
+  $props: Props;
+  readonly __vizeRawProps?: Props;
+  $emit: $PublicEmit<Emits>;
+  $slots: $PublicSlots<$Slots>;
+}, $ComponentPublicBase, Props, {}, $AuthoredProps, $JsxProps>>;`;
 const overlap = (start, length, edit) => start < edit.end && edit.start < start + length;
 const point = (value, edits) => {
   assert(Number.isSafeInteger(value) && value >= 0);
@@ -89,12 +96,13 @@ const certifyMapperTransition = (beforePacket, afterPacket) => {
       replacement: afterHelper,
       label: "embedded helper block",
     },
+    ...dedentEdits(before, after),
   ];
   const beforeText = before.toString();
   for (const [oldValue, currentValue, label] of [
     [
       "type __VizeComponentConstructor = new <__VizeAuthoredProps = unknown>(props?: __VizeAuthoredProps & __VizeComponentInput<Props, {}, __VizeAuthoredProps>, ...args: any[]) => __VizeUsePublicInstance<__VizeAuthoredProps> extends true ? __VizeComponentInstance : __VizeReplaceComponentProps<__VizeComponentInstance, __VizeAuthoredKeyWitness<__VizeAuthoredProps> & __VizeComponentInputProps<Props, {}> & __VizeComponentInputGuard<Props, {}, __VizeAuthoredProps>>;",
-      "type $ComponentConstructor = new <$AuthoredProps = unknown, $JsxProps = unknown>(props?: $AuthoredProps & $ComponentInput<Props, {}, $AuthoredProps>, ...args: any[]) => $ComponentInstanceFor<$ComponentInstance, Props, {}, $AuthoredProps, $JsxProps>;",
+      currentComponentConstructor,
       "integrated generic component constructor",
     ],
     [
@@ -171,17 +179,16 @@ const certifyNativeTransition = (beforeText, afterText) => {
   const source = before.toString();
   const oldConstructor =
     "type __VizeComponentConstructor = new <__VizeAuthoredProps = unknown>(props?: __VizeAuthoredProps & __VizeComponentInput<Props, {}, __VizeAuthoredProps>, ...args: any[]) => __VizeUsePublicInstance<__VizeAuthoredProps> extends true ? __VizeComponentInstance : __VizeReplaceComponentProps<__VizeComponentInstance, __VizeAuthoredKeyWitness<__VizeAuthoredProps> & __VizeComponentInputProps<Props, {}> & __VizeComponentInputGuard<Props, {}, __VizeAuthoredProps>>;";
-  const currentConstructor =
-    "type $ComponentConstructor = new <$AuthoredProps = unknown, $JsxProps = unknown>(props?: $AuthoredProps & $ComponentInput<Props, {}, $AuthoredProps>, ...args: any[]) => $ComponentInstanceFor<$ComponentInstance, Props, {}, $AuthoredProps, $JsxProps>;";
   const constructorStart = uniqueOffset(before, Buffer.from(oldConstructor));
   const constructorEnd = constructorStart + Buffer.byteLength(oldConstructor);
   const primary = [
     {
       start: constructorStart,
       end: constructorEnd,
-      replacement: Buffer.from(currentConstructor),
+      replacement: Buffer.from(currentComponentConstructor),
       label: "integrated generic component constructor",
     },
+    ...dedentEdits(before, after),
   ];
   for (const match of source.matchAll(/\b__Vize[A-Za-z0-9_]+\b/gu)) {
     const start = Buffer.byteLength(source.slice(0, match.index));

@@ -10,16 +10,16 @@ use super::config::Linter;
 use crate::preset::LintPreset;
 use crate::rules::opinionated::vue::{
     ComponentCasing, ComponentNameInTemplateCasing, ComponentNameInTemplateCasingNuxt,
-    HtmlSelfClosing, HtmlSelfClosingNuxt, HtmlSelfClosingOptions, SlotNameCasing,
-    VOnEventHyphenation, VOnEventHyphenationStyle,
+    HtmlButtonHasType, HtmlSelfClosing, HtmlSelfClosingNuxt, HtmlSelfClosingOptions,
+    SlotNameCasing, VOnEventHyphenation, VOnEventHyphenationStyle,
 };
 use crate::rules::script::{CustomEventNameCasing, EventNameCasing};
 use crate::rules::script::{DefineMacrosOrder, NoRestrictedMembers, RestrictedGlobals};
 use crate::rules::vue::{
     AttributeHyphenation, HtmlQuotes, HyphenationStyle, MustacheInterpolationSpacing,
-    MustacheInterpolationSpacingStyle, NoMutatingProps, NoMutatingPropsOptions, PropNameCasing,
-    PropNameCasingOption, SfcElementOrder, SfcElementOrderOptions, SlotNameCasingStyle, VBindStyle,
-    VBindStyleOption, VOnStyle, VOnStyleOption, VSlotStyle,
+    MustacheInterpolationSpacingStyle, NoMutatingProps, NoMutatingPropsOptions, NoUseVIfWithVFor,
+    PropNameCasing, PropNameCasingOption, SfcElementOrder, SfcElementOrderOptions,
+    SlotNameCasingStyle, VBindStyle, VBindStyleOption, VOnStyle, VOnStyleOption, VSlotStyle,
 };
 use vize_l0::String;
 
@@ -273,6 +273,32 @@ impl Linter {
     pub fn with_no_mutating_props_options(mut self, options: NoMutatingPropsOptions) -> Self {
         self.registry
             .replace(Box::new(NoMutatingProps::new(options)));
+        self
+    }
+
+    /// Configure accepted values for `vue/html-button-has-type` without enabling the rule.
+    pub fn with_html_button_has_type_options(
+        mut self,
+        button: bool,
+        submit: bool,
+        reset: bool,
+    ) -> Self {
+        if self.registry.has_rule("vue/html-button-has-type") {
+            self.registry
+                .replace(Box::new(HtmlButtonHasType::configured(
+                    button, submit, reset,
+                )));
+        }
+        self
+    }
+
+    /// Configure `vue/no-use-v-if-with-v-for` without enabling the rule.
+    pub fn with_no_use_v_if_with_v_for_options(mut self, allow_using_iteration_var: bool) -> Self {
+        if self.registry.has_rule("vue/no-use-v-if-with-v-for") {
+            self.registry.replace(Box::new(NoUseVIfWithVFor::configured(
+                allow_using_iteration_var,
+            )));
+        }
         self
     }
 

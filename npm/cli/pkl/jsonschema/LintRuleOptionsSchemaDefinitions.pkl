@@ -176,6 +176,22 @@ lintRuleOptionsDef: JsonSchema = new JsonSchema {
     }
     ["vue/sfc-element-order"] = ConfigArtifactDefinitions.sfcElementOrderOptionsDef
     ["vue/html-self-closing"] = ConfigArtifactDefinitions.htmlSelfClosingOptionsDef
+    ["vue/html-button-has-type"] = new JsonSchema {
+      type = "object"
+      properties {
+        ["button"] = new JsonSchema { type = "boolean"; default = true }
+        ["submit"] = new JsonSchema { type = "boolean"; default = true }
+        ["reset"] = new JsonSchema { type = "boolean"; default = true }
+      }
+      additionalProperties = false
+    }
+    ["vue/no-use-v-if-with-v-for"] = new JsonSchema {
+      type = "object"
+      properties {
+        ["allowUsingIterationVar"] = new JsonSchema { type = "boolean"; default = false }
+      }
+      additionalProperties = false
+    }
     ["vue/html-quotes"] = new JsonSchema {
       oneOf = new Listing {
         new JsonSchema {

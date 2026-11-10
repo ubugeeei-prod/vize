@@ -7,6 +7,7 @@ import { getLegacyNativeCssState, resolveNativeCss } from "../shared/nativeCss.t
 import { applyRuleCloning } from "./ruleCloning.ts";
 import { applyNativeCssMode } from "./loaderOptions.ts";
 
+/** Configure Vue feature flags and the Rspack rules used by the Vize loaders. */
 export class VizePlugin {
   static readonly name = "VizePlugin";
 
