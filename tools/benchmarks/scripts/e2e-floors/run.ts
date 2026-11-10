@@ -26,6 +26,8 @@ import { MAPPER_HOSTS, prepareMapperPackages, resolveMapperHosts, TYPECHECK_HOST
 import { generateScaleProject, writeProject } from "../scale-project-generator.ts";
 import { compactRecording } from "./compact-rec.ts";
 import { dropProducerIgnores, dropWhitespaceIgnores } from "./ignore-gaps.ts";
+import { shortenIdentifiers } from "./short-idents.ts";
+import { stripEditor } from "./strip-editor.ts";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const repoRoot = resolve(here, "..", "..", "..", "..");
@@ -146,6 +148,10 @@ for (const corpus of corpora) {
   notes.push(`${corpus.id} whitespace ignores: ${compactRecording(recs.vize, wsIgnores, dropWhitespaceIgnores)}`);
   const noIgnores = join(work, `rec-${corpus.id}-vize-no-ignores`);
   notes.push(`${corpus.id} producer ignores: ${compactRecording(recs.vize, noIgnores, dropProducerIgnores)}`);
+  const shortIds = join(work, `rec-${corpus.id}-vize-short-ids`);
+  notes.push(`${corpus.id} short identifiers: ${compactRecording(recs.vize, shortIds, shortenIdentifiers)}`);
+  const checkMode = join(work, `rec-${corpus.id}-vize-check-mode`);
+  notes.push(`${corpus.id} editor-only lines stripped: ${compactRecording(recs.vize, checkMode, stripEditor)}`);
   for (const [id, tsconfig] of [["vize", cfg.vizeTl], ["vue", cfg.vueTl]] as const) {
     const log = join(work, `tl-${corpus.id}-${id}.jsonl`);
     run(`tl-${id}`, tsconfig, { TL_LOG: log });
@@ -164,6 +170,8 @@ for (const corpus of corpora) {
     ["tsc", "vize replay compacted", () => run("replay-compact", cfg.replay, { REC_DIR: compacted })],
     ["tsc", "vize replay without whitespace ignores", () => run("replay-ws", cfg.replay, { REC_DIR: wsIgnores })],
     ["tsc", "vize replay without producer ignores (bound)", () => run("replay-noign", cfg.replay, { REC_DIR: noIgnores })],
+    ["tsc", "vize replay short identifiers", () => run("replay-short", cfg.replay, { REC_DIR: shortIds })],
+    ["tsc", "vize replay check-mode strip", () => run("replay-check", cfg.replay, { REC_DIR: checkMode })],
     ["tsc", "vue replay (zero wait)", () => run("replay-vue", cfg.replay, { REC_DIR: recs.vue })],
     ["tsc", "vize expressions-only", () => run("anyab", cfg.anyab)],
     ["tsc", "vize expressions-only replay", () => run("replay-anyab", cfg.replay, { REC_DIR: recs.anyab })],
@@ -177,6 +185,8 @@ for (const corpus of corpora) {
     ["tsrs", "vize replay compacted", () => runTsrs("replay-compact", cfg.replay, { REC_DIR: compacted })],
     ["tsrs", "vize replay without whitespace ignores", () => runTsrs("replay-ws", cfg.replay, { REC_DIR: wsIgnores })],
     ["tsrs", "vize replay without producer ignores (bound)", () => runTsrs("replay-noign", cfg.replay, { REC_DIR: noIgnores })],
+    ["tsrs", "vize replay short identifiers", () => runTsrs("replay-short", cfg.replay, { REC_DIR: shortIds })],
+    ["tsrs", "vize replay check-mode strip", () => runTsrs("replay-check", cfg.replay, { REC_DIR: checkMode })],
     ["tsrs", "vue replay (zero wait)", () => runTsrs("replay-vue", cfg.replay, { REC_DIR: recs.vue })],
     ["tsrs", "vize expressions-only replay", () => runTsrs("replay-anyab", cfg.replay, { REC_DIR: recs.anyab })],
   ];
@@ -195,6 +205,8 @@ for (const corpus of corpora) {
     for (let i = 0; i < Math.min(runs, 3); i++) vt.runs.push(vueTsc());
     rows.push(vt);
   }
+  const zero = rows.find((row) => row.lane === "vize replay (zero wait)");
+  for (const row of rows) if (zero && row !== zero && row.lane.startsWith("vize replay") && row.runs[0]) notes.push(`${corpus.id} ${row.host} ${row.lane}: diagnostics ${row.runs[0].fingerprint === rows.find((r) => r.host === row.host && r.lane === "vize replay (zero wait)")?.runs[0]?.fingerprint ? "IDENTICAL" : "DIFFER"} to vize replay`);
   report[corpus.id] = rows;
   writeFileSync(join(out, `${corpus.id}.json`), JSON.stringify(rows.map((row) => ({ host: row.host, lane: row.lane, runs: row.runs.map(({ diagnostics, ...r }) => ({ ...r, diagnosticCount: diagnostics.length })) })), null, 1));
 }
