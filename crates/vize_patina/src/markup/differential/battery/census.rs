@@ -40,6 +40,10 @@ pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
         // Review regressions add three literal fixtures.
         + 3
         // Configurable v-if/v-for policy adds one distinct literal fixture.
+        + 1
+        // External accessibility compatibility adds four literal fixtures.
+        + 4
+        // Review corrections add one literal fixture.
         + 1,
     // Original 1057/87 census plus non-literal calls in valid_v_slot (3 + 1),
     // require_toggle_inside_transition (3), the v-else-if/v-is/v-pre rules (38
@@ -199,7 +203,11 @@ pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
         // Review regressions add eight focused fixture calls.
         + 8
         // Configurable v-if/v-for policy adds two focused literal calls.
-        + 2,
+        + 2
+        // External accessibility compatibility adds four literal calls.
+        + 4
+        // Review corrections add one literal call.
+        + 1,
     rule_fixture_skipped: 87
         + 4
         + 3
@@ -282,7 +290,11 @@ pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
         // Review regressions retain twenty complete trace lines.
         + 20
         // Configurable v-if/v-for policy retains six complete trace lines.
-        + 6,
+        + 6
+        // External accessibility compatibility retains 211 trace lines.
+        + 211
+        // Review corrections retain fourteen complete trace lines.
+        + 14,
     restructured: 0,
     jsx: JsxComparison {
         roots: 14,

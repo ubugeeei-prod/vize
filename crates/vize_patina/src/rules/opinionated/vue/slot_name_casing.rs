@@ -56,15 +56,44 @@ fn is_camel_case_name(name: &str) -> bool {
 }
 
 fn is_kebab_case_name(name: &str) -> bool {
-    let mut segments = name.split('-');
-    segments.next().is_some_and(is_lowercase_segment) && segments.all(is_lowercase_segment)
-}
-
-fn is_lowercase_segment(segment: &str) -> bool {
-    !segment.is_empty()
-        && segment
-            .bytes()
-            .all(|byte| byte.is_ascii_lowercase() || byte.is_ascii_digit())
+    !name.is_empty()
+        && !name.starts_with('-')
+        && !name.contains("--")
+        && !name.chars().any(|character| {
+            character.is_ascii_uppercase()
+                || character.is_whitespace()
+                || matches!(
+                    character,
+                    '!' | '"'
+                        | '#'
+                        | '%'
+                        | '&'
+                        | '\''
+                        | '('
+                        | ')'
+                        | '*'
+                        | '+'
+                        | ','
+                        | '.'
+                        | '/'
+                        | ':'
+                        | ';'
+                        | '<'
+                        | '='
+                        | '>'
+                        | '?'
+                        | '@'
+                        | '['
+                        | '\\'
+                        | ']'
+                        | '^'
+                        | '_'
+                        | '`'
+                        | '{'
+                        | '|'
+                        | '}'
+                )
+        })
 }
 
 fn accepts(style: SlotNameCasingStyle, name: &str) -> bool {
@@ -294,5 +323,31 @@ mod tests {
                 Some(format!("Rename the rendered slot outlet to {}.", style.name()).as_str())
             );
         }
+    }
+
+    #[test]
+    fn kebab_case_matches_eslint_plugin_vue_boundaries() {
+        let mut registry = RuleRegistry::new();
+        registry.register(Box::new(SlotNameCasing::configured(
+            SlotNameCasingStyle::KebabCase,
+        )));
+        let result = Linter::with_registry(registry).lint_template(
+            r#"<div>
+                <slot name="row-" />
+                <slot name="$row" />
+                <slot name="row$" />
+                <slot name="ro~w" />
+                <slot name="a$b-c" />
+                <slot name="ñame" />
+                <slot name="名前" />
+                <slot name="rowActions" />
+                <slot name="-row" />
+                <slot name="row--actions" />
+                <slot name="row_actions" />
+            </div>"#,
+            "test.vue",
+        );
+
+        assert_eq!(result.warning_count, 4, "{:?}", result.diagnostics);
     }
 }

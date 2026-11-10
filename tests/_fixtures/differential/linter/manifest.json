@@ -4286,6 +4286,43 @@
       }
     },
     {
+      "id": "linter/patina/compat-a11y-12754",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "patina-compat-a11y-12754",
+        "files": [
+          {
+            "path": "Accessibility.vue.txt",
+            "role": "third-party-accessibility-compatibility-reproduction",
+            "sha256": "328663e1d96383f6e63f233ace884d497d81ce0f9ca6ad1f697142aa96491e54"
+          },
+          {
+            "path": "SlotCasing.vue.txt",
+            "role": "third-party-slot-casing-compatibility-reproduction",
+            "sha256": "bfc8385816dffed8e955fc6eb549599e416bdbc19cb95a110349c74fc5c3b4b1"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/patina/compat-audit-12669",
       "state": "active",
       "targets": [

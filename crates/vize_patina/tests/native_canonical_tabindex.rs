@@ -23,9 +23,23 @@ fn actual_vue_and_jsx_owners_match_complete_registered_rule_packets() {
 }
 
 #[test]
-fn every_native_input_uses_the_same_value_sensitive_i32_policy() {
+fn every_native_input_uses_the_same_javascript_numeric_coercion() {
     for dialect in [Dialect::Vue, Dialect::Jsx, Dialect::Tsx] {
-        for value in ["1", "+1", "01", "00099", "2147483647", "+2147483647"] {
+        for value in [
+            "1",
+            "+1",
+            "01",
+            "00099",
+            "2147483647",
+            "+2147483647",
+            "2147483648",
+            "+2147483648",
+            " 1",
+            "1 ",
+            "1.0",
+            "1e1",
+            "0x1",
+        ] {
             let body = vize_l0::cstr!("<div tabindex='{value}'/>");
             assert_eq!(parity(dialect, &body, "\n", Locale::En).len(), 1);
         }
@@ -36,16 +50,9 @@ fn every_native_input_uses_the_same_value_sensitive_i32_policy() {
             "-0",
             "-1",
             "-2147483648",
-            "2147483648",
-            "+2147483648",
             "-2147483649",
-            " 1",
-            "1 ",
-            "1.0",
-            "1e1",
             "++1",
             "--1",
-            "0x1",
             "１",
             "١",
         ] {
@@ -67,15 +74,19 @@ fn only_the_actual_vue_producer_admits_its_decoded_entity_values() {
         ("&#x31;", 1),
         ("&#43;1", 1),
         ("&#x2b;&#49;", 1),
-        ("&#32;1", 0),
-        ("1&#9;", 0),
-        ("&nbsp;1", 0),
+        ("&#32;1", 1),
+        ("1&#9;", 1),
+        ("&nbsp;1", 1),
         ("&#45;1", 0),
         ("&unknown;1", 0),
         ("&fjlig;", 0),
-        ("2&#49;47483648", 0),
+        ("2&#49;47483648", 1),
     ] {
         let body = vize_l0::cstr!("<div tabindex='{value}'/>");
-        assert_eq!(parity(Dialect::Vue, &body, "\r\n", Locale::Ja).len(), count);
+        assert_eq!(
+            parity(Dialect::Vue, &body, "\r\n", Locale::Ja).len(),
+            count,
+            "{value}"
+        );
     }
 }

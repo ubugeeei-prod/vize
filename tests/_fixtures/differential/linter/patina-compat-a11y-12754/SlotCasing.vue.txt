@@ -1,0 +1,13 @@
+<template>
+  <slot name="row-" />
+  <slot name="$row" />
+  <slot name="row$" />
+  <slot name="ro~w" />
+  <slot name="a$b-c" />
+  <slot name="ñame" />
+  <slot name="名前" />
+  <slot name="rowActions" />
+  <slot name="-row" />
+  <slot name="row--actions" />
+  <slot name="row_actions" />
+</template>
