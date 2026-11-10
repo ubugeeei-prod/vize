@@ -56,6 +56,31 @@ printf '<!doctype html><title>Musea</title>\n' > dist/__musea__/index.html
     bin
 }
 
+#[cfg(unix)]
+fn write_vite_plus_bin(root: &Path) -> PathBuf {
+    use std::os::unix::fs::PermissionsExt;
+
+    let bin = root.join("node_modules/.bin/vp");
+    fs::create_dir_all(bin.parent().unwrap()).unwrap();
+    fs::write(
+        &bin,
+        r#"#!/bin/sh
+if [ "$1" != "build" ]; then
+  exit 9
+fi
+if [ "${VIZE_MUSEA_STATIC_BUILD:-}" != "1" ]; then
+  exit 1
+fi
+printf 'vite-plus stdout sentinel\n'
+mkdir -p dist/__musea__
+printf '<!doctype html><title>Musea</title>\n' > dist/__musea__/index.html
+"#,
+    )
+    .unwrap();
+    fs::set_permissions(&bin, fs::Permissions::from_mode(0o755)).unwrap();
+    bin
+}
+
 #[cfg(windows)]
 fn write_vite_bin(root: &Path) -> PathBuf {
     let bin = root.join("node_modules/.bin/vite.cmd");
@@ -68,6 +93,24 @@ if not "%VIZE_MUSEA_STATIC_BUILD%"=="1" exit /b 1
 echo vite stdout sentinel
 echo vite stderr sentinel 1>&2
 if "%VIZE_MUSEA_TEST_FAIL%"=="1" exit /b 7
+mkdir dist\__musea__
+echo ^<!doctype html^>^<title^>Musea^</title^> > dist\__musea__\index.html
+"#,
+    )
+    .unwrap();
+    bin
+}
+
+#[cfg(windows)]
+fn write_vite_plus_bin(root: &Path) -> PathBuf {
+    let bin = root.join("node_modules/.bin/vp.cmd");
+    fs::create_dir_all(bin.parent().unwrap()).unwrap();
+    fs::write(
+        &bin,
+        r#"@echo off
+if not "%1"=="build" exit /b 9
+if not "%VIZE_MUSEA_STATIC_BUILD%"=="1" exit /b 1
+echo vite-plus stdout sentinel
 mkdir dist\__musea__
 echo ^<!doctype html^>^<title^>Musea^</title^> > dist\__musea__\index.html
 "#,
@@ -126,4 +169,42 @@ fn musea_build_forwards_vite_errors_and_reports_the_numeric_exit_code() {
         "{stderr}"
     );
     assert!(!stderr.contains("status exit status"), "{stderr}");
+}
+
+#[test]
+fn musea_build_uses_child_vite_plus_instead_of_parent_nuxt() {
+    let workspace = tempfile::tempdir().unwrap();
+    fs::write(workspace.path().join("nuxt.config.ts"), "export default {}").unwrap();
+    fs::write(
+        workspace.path().join("package.json"),
+        r#"{
+  "devDependencies": {
+    "@vizejs/nuxt": "0.474.0",
+    "nuxt": "4.0.0"
+  }
+}"#,
+    )
+    .unwrap();
+    let gallery = workspace.path().join("gallery");
+    fs::create_dir(&gallery).unwrap();
+    write_project(&gallery);
+    let vite_plus_bin = write_vite_plus_bin(&gallery);
+    assert!(vite_plus_bin.is_file());
+
+    let output = Command::new(env!("CARGO_BIN_EXE_vize"))
+        .args(["musea", "--build"])
+        .current_dir(&gallery)
+        .output()
+        .expect("failed to run vize musea --build through Vite+");
+
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(output.status.success(), "{stderr}");
+    assert!(stdout.contains("vite-plus stdout sentinel"), "{stdout}");
+    assert!(
+        stderr.contains(vite_plus_bin.to_string_lossy().as_ref()),
+        "{stderr}"
+    );
+    assert!(!stderr.contains("detected a Nuxt project"), "{stderr}");
+    assert!(gallery.join("dist/__musea__/index.html").is_file());
 }
