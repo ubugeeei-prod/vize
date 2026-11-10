@@ -201,7 +201,7 @@ fn tsrx_modules_format_whole_and_decline_ranges() {
         futures::executor::block_on(server.formatting(formatting_params(uri.clone()))).unwrap(),
         Some(vec![TextEdit {
             range: Range::new(Position::new(0, 0), Position::new(3, 0)),
-            new_text: "export function Badge({ text }: { text: string }) @{\n\t<span class='badge'>{ text }</span>\n}\n".to_string(),
+            new_text: "export function Badge({ text }: { text: string }) @{\n  <span class='badge'>{text}</span>\n}\n".to_string(),
         }])
     );
     assert_eq!(

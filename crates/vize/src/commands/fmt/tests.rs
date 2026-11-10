@@ -21,7 +21,7 @@ fn format_file_source_formats_standalone_tsx() {
 }
 
 #[test]
-fn format_file_source_formats_tsrx_host_code_around_verbatim_markup() {
+fn format_file_source_formats_tsrx_host_code_and_markup() {
     let options = super::FormatOptions::default();
     let allocator = super::Allocator::default();
     let source = "export function Badge({text}:{text:string}) @{\n\t<span class='badge'>{ text }</span>\n}\n";
@@ -36,7 +36,7 @@ fn format_file_source_formats_tsrx_host_code_around_verbatim_markup() {
     assert!(result.changed);
     assert_eq!(
         result.code.as_str(),
-        "export function Badge({ text }: { text: string }) @{\n\t<span class='badge'>{ text }</span>\n}\n"
+        "export function Badge({ text }: { text: string }) @{\n  <span class='badge'>{text}</span>\n}\n"
     );
     assert!(
         format_file_source(
