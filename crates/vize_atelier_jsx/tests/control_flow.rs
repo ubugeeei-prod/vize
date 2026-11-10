@@ -68,3 +68,41 @@ fn vapor_control_flow_matrix() {
         vapor_code(source, JsxLang::Jsx, false)
     }));
 }
+
+/// `renderList` runs only the returned JSX per item and passes `(item, index)`,
+/// so any other callback is rejected instead of silently dropping its
+/// statements or parameters (#12477).
+#[test]
+fn map_callbacks_beyond_a_list_body_are_rejected() {
+    const MESSAGE: &str = "a `.map()` callback that renders JSX must be an expression body or a single `return`, with at most `(item, index)` parameters; move other statements out of the callback";
+    for source in [
+        "const A = () => <ul>{items.map((item) => { const label = item.name; return <li>{label}</li>; })}</ul>;",
+        "const A = () => <ul>{items.map((item, i, all) => <li>{all.length}</li>)}</ul>;",
+        "const A = () => <ul>{items.map((...args) => <li>{args[0]}</li>)}</ul>;",
+        "const A = () => <ul>{items.map(function (item) { if (!item) return null; return <li>{item}</li>; })}</ul>;",
+    ] {
+        let allocator = vize_l0::Allocator::new();
+        let out =
+            vize_atelier_jsx::lower_source(&allocator, allocator.as_oxc(), source, JsxLang::Jsx);
+        let errors: Vec<&str> = out
+            .diagnostics
+            .iter()
+            .filter(|diagnostic| diagnostic.is_error())
+            .map(|diagnostic| diagnostic.message.as_str())
+            .collect();
+        assert_eq!(errors, [MESSAGE], "{source}");
+    }
+    let list = "const A = () => <ul>{items.map((item) => { return <li>{item}</li>; })}</ul>;";
+    assert_eq!(
+        vdom_code(list, JsxLang::Jsx),
+        r#"export function render(_ctx, _cache) {
+  return (_createElementVNode("ul", null, [
+    (_createElementVNode(_Fragment, null, _renderList(items, (item) => {
+      return (_createElementVNode("li", null, [
+        item
+      ]))
+    }), 256 /* UNKEYED_FRAGMENT */))
+  ]))
+}"#
+    );
+}

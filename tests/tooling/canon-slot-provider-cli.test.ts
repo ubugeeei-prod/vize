@@ -50,6 +50,7 @@ import {
   applyPropValueOrIn,
   beforePropValueOrIn,
 } from "../../tools/support/compat/content-mapper/prop-value-or-transition.ts";
+import { applyListenerContractIn } from "../../tools/support/compat/content-mapper/listener-contract-transition.ts";
 
 test("quiet CLI debug output retains exact helper/file bytes and refuses unrelated stderr", () => {
   const record = JSON.parse(
@@ -173,9 +174,10 @@ test("quiet CLI debug output retains exact helper/file bytes and refuses unrelat
   assert.equal(beforeInstanceInputKeysIn(keysSourcePreamble), canonSourcePreamble);
   const ownedSourcePreamble = applyUnownedOwnedKeysIn(keysSourcePreamble);
   assert.equal(beforeUnownedOwnedKeysIn(ownedSourcePreamble), keysSourcePreamble);
-  const currentSourcePreamble = applyPropValueOrIn(ownedSourcePreamble);
-  assert.equal(beforePropValueOrIn(currentSourcePreamble), ownedSourcePreamble);
-  assert.throws(() => applyPropValueOrIn(currentSourcePreamble), /PropValueOr/u);
+  const propValueOrSourcePreamble = applyPropValueOrIn(ownedSourcePreamble);
+  assert.equal(beforePropValueOrIn(propValueOrSourcePreamble), ownedSourcePreamble);
+  assert.throws(() => applyPropValueOrIn(propValueOrSourcePreamble), /PropValueOr/u);
+  const currentSourcePreamble = applyListenerContractIn(propValueOrSourcePreamble);
   const canonPredecessor = [...canonLeftoverPreamblePaths]
     .reverse()
     .reduce((current, file) => beforeCanonLeftoversIn(file, current), canonSourcePreamble);

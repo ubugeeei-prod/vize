@@ -13,7 +13,7 @@ use serde::{Deserialize, Serialize};
 mod file;
 mod kind;
 mod scan;
-pub use file::{FileDialect, Lang, ProfileKind, TemplateSyntaxMode};
+pub use file::{FileDialect, JsxSemantics, Lang, ProfileKind, TemplateSyntaxMode};
 pub use kind::{FileKind, ModuleFormat, ScriptKind};
 use scan::{skip_while, slice};
 

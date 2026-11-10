@@ -30,13 +30,14 @@ pub(super) mod surface;
 pub(super) mod texts;
 pub(super) mod walk;
 
-/// Which input dialect an L2 artifact was lowered from.
+/// Which input an L2 artifact was lowered from.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum L2Origin {
     /// A Vue template, through the L1→L2 lowering.
     Template,
-    /// A JSX/TSX render root, through the P2-16 projection.
-    Jsx,
+    /// Markup inside a script module (a JSX/TSX render root, a TSRX region):
+    /// no L1 surface, spans absolute in the module source.
+    Embedded,
 }
 
 /// A borrowed L2 artifact the markup facade views.
@@ -78,7 +79,24 @@ impl<'a> L2Markup<'a> {
             root: &root.root,
             source: root.source,
             op_count: root.op_count,
-            origin: L2Origin::Jsx,
+            origin: L2Origin::Embedded,
+            texts: None,
+            text_index: texts::EMPTY,
+            allocator: None,
+            surface: None,
+            authored: None,
+        }
+    }
+
+    /// View a sealed L2 artifact of markup embedded in a script module (a
+    /// TSRX region). Like a JSX root it has no L1 surface; spans address the
+    /// whole module source.
+    pub fn from_artifact(artifact: &'a vize_l2::artifact::Artifact<'a>) -> Self {
+        Self {
+            root: artifact.root(),
+            source: artifact.source(),
+            op_count: artifact.node_count(),
+            origin: L2Origin::Embedded,
             texts: None,
             text_index: texts::EMPTY,
             allocator: None,

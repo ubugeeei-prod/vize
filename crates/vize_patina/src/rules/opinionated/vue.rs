@@ -18,6 +18,7 @@ mod no_template_lang;
 mod no_template_shadow;
 mod no_unused_refs;
 mod no_useless_mustaches;
+mod no_useless_string_literal;
 mod no_useless_v_bind;
 mod no_v_text;
 mod prefer_props_shorthand;

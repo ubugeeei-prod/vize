@@ -29,8 +29,14 @@ pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
         + 1
         // Compatibility template rules add two focused literal fixtures.
         + 2
+        // Mapped-rule parity regressions add nine distinct literal fixtures.
+        + 9
+        // Promise-chain ownership adds one complete script-rule fixture.
+        + 1
         + 3
-        + 7,
+        + 7
+        // Review regressions add three literal fixtures.
+        + 3,
     // Original 1057/87 census plus non-literal calls in valid_v_slot (3 + 1),
     // require_toggle_inside_transition (3), the v-else-if/v-is/v-pre rules (38
     // templates over 42 calls, one `v-pre` helper, #8856) and v_bind_style (one
@@ -176,8 +182,16 @@ pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
         + 1
         // Compatibility template rules add two focused literal calls.
         + 2
+        // Mapped-rule parity regressions add thirteen fixture calls.
+        + 13
+        // Promise-chain ownership adds one complete script-rule call.
+        + 1
         + 5
-        + 9,
+        + 9
+        // Merged ownership coverage adds one helper-driven observation.
+        + 1
+        // Review regressions add eight focused fixture calls.
+        + 8,
     rule_fixture_skipped: 87
         + 4
         + 3
@@ -214,8 +228,14 @@ pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
         + 3
         // The compatibility scorecard keeps that call scanner-owned.
         + 1
+        // Four helper-driven mapped-rule inputs remain explicit scanner skips.
+        + 4
         + 2
-        + 2,
+        + 2
+        // The merged helper-driven observation remains an explicit skip.
+        + 1
+        // Five review inputs are intentionally helper-driven scanner skips.
+        + 5,
     matrix: 90,
     template_lines: 6316 + 233 + 5 + 10 + 25 + 7 - 49
         + 31
@@ -241,8 +261,16 @@ pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
         + 9
         // Compatibility template rules contribute ten retained trace lines.
         + 10
+        // Complete mapped-rule parity traces add eighty-four retained lines.
+        + 84
+        // Promise-chain ownership retains seven complete trace lines.
+        + 7
         + 32
-        + 59,
+        + 59
+        // The merged ownership observation retains nine trace lines.
+        + 9
+        // Review regressions retain twenty complete trace lines.
+        + 20,
     restructured: 0,
     jsx: JsxComparison {
         roots: 14,

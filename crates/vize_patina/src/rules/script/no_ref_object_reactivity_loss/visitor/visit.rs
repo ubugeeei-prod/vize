@@ -74,6 +74,34 @@ impl<'a> Visit<'a> for Visitor<'_, 'a> {
     }
 
     fn visit_call_expression(&mut self, it: &CallExpression<'a>) {
+        match it.callee.get_inner_expression() {
+            Expression::ArrowFunctionExpression(arrow) if !arrow.r#async => {
+                self.frames.push(FxHashMap::default());
+                self.bind_params(&arrow.params);
+                walk_arrow_function_expression(self, arrow);
+                self.frames.pop();
+                for argument in &it.arguments {
+                    self.visit_argument(argument);
+                }
+                return;
+            }
+            Expression::FunctionExpression(function)
+                if !function.r#async && !function.generator =>
+            {
+                self.frames.push(FxHashMap::default());
+                if let Some(id) = &function.id {
+                    self.insert(id.name.as_str(), Kind::Other);
+                }
+                self.bind_params(&function.params);
+                walk_function(self, function, ScopeFlags::Function);
+                self.frames.pop();
+                for argument in &it.arguments {
+                    self.visit_argument(argument);
+                }
+                return;
+            }
+            _ => {}
+        }
         walk_call_expression(self, it);
     }
 

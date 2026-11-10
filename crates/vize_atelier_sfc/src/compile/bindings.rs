@@ -1,7 +1,7 @@
 //! Binding metadata conversion and registration for SFC compilation.
 //!
-//! Handles converting between Croquis and legacy binding formats,
-//! and registering bindings from normal `<script>` blocks.
+//! Registers compiler-specific setup bindings and the bindings of normal
+//! `<script>` blocks.
 
 mod vapor;
 pub(super) use vapor::for_vapor;
@@ -13,28 +13,6 @@ use oxc_ast::ast::{
 use vize_l0::{ToCompactString, profile};
 
 use crate::types::{BindingMetadata, BindingType};
-
-/// Convert Croquis BindingMetadata (CompactString keys) to legacy BindingMetadata (String keys)
-pub(super) fn croquis_to_legacy_bindings(
-    src: &vize_croquis::croquis::BindingMetadata,
-    program: Option<&Program<'_>>,
-) -> BindingMetadata {
-    let mut dst = BindingMetadata {
-        is_script_setup: src.is_script_setup,
-        ..Default::default()
-    };
-    for (name, bt) in src.iter() {
-        dst.bindings.insert(name.to_compact_string(), bt);
-    }
-    for (local, key) in &src.props_aliases {
-        dst.props_aliases
-            .insert(local.to_compact_string(), key.to_compact_string());
-    }
-    if let Some(program) = program {
-        register_setup_enum_bindings(&mut dst, program);
-    }
-    dst
-}
 
 /// Collect bindings from normal `<script>` block.
 ///
@@ -165,10 +143,10 @@ pub(super) fn collect_normal_script_bindings(content: &str) -> BindingMetadata {
 }
 
 /// Preserve the script compiler's static enum classification in the template
-/// metadata. Croquis records runtime enum names as setup constants; the SFC
-/// compiler also knows which declarations can be hoisted as literal constants.
-/// Reuse the retained program instead of parsing the script again.
-fn register_setup_enum_bindings(bindings: &mut BindingMetadata, program: &Program<'_>) {
+/// metadata. The setup facts record runtime enum names as setup constants; the
+/// SFC compiler also knows which declarations can be hoisted as literal
+/// constants.
+pub(super) fn register_setup_enum_bindings(bindings: &mut BindingMetadata, program: &Program<'_>) {
     for statement in &program.body {
         if let Statement::TSEnumDeclaration(enumeration) = statement
             && !enumeration.declare

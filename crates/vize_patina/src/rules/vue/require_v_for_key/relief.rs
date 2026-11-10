@@ -9,7 +9,7 @@ use vize_relief::{DirectiveNode, ElementNode, ExpressionNode, PropNode, Template
 
 fn relief_element_has_key(element: &ElementNode<'_>) -> bool {
     element.props.iter().any(|prop| match prop {
-        PropNode::Attribute(attr) => attr.name == "key",
+        PropNode::Attribute(_) => false,
         PropNode::Directive(dir) => {
             if relief_directive_is_bound_key(dir) {
                 return true;

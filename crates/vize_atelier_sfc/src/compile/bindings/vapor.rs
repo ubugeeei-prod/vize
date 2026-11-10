@@ -13,7 +13,7 @@ use crate::{
 /// literals from the setup-state proxy. Preserve the public binding metadata.
 pub(in crate::compile) fn for_vapor<'b>(
     bindings: &'b BindingMetadata,
-    program: &Option<Program<'_>>,
+    program: Option<&Program<'_>>,
 ) -> Cow<'b, BindingMetadata> {
     let mut result = Cow::Borrowed(bindings);
     let Some(program) = program else {

@@ -1,15 +1,13 @@
 //! JSX/TSX markup dispatch (Davinci P4-7b).
 //!
-//! Markup rules run over the P2-16 L2 projection of each render root. Rules
-//! with no markup entry point still walk the lowered Relief root.
+//! Markup rules run over the P2-16 L2 projection of each render root through
+//! the input-neutral markup entry (`markup.rs`). Rules with no markup entry
+//! point still walk the lowered Relief root.
 
-use crate::context::LintContext;
+use super::markup::finish_markup;
 use crate::diagnostic::LintDiagnostic;
-use crate::ir::TemplateSyntax;
 use crate::linter::config::{LintResult, Linter};
-use crate::markup::{L2Markup, MarkupContext, MarkupDocument};
 use crate::visitor::LintVisitor;
-use vize_croquis::Croquis;
 use vize_l0::dialect::VueDialect;
 use vize_l0::{Allocator, ToCompactString, profile};
 use vize_relief::RootNode;
@@ -24,114 +22,6 @@ impl Linter {
         self.has_active_semantic_template_rules()
     }
 
-    /// Markup rules whose JSX shape is on the L2 projection without a list or
-    /// branch (`jsx_needs_lowering` is false).
-    pub(super) fn lint_jsx_over_ir<'a>(
-        &self,
-        allocator: &'a Allocator,
-        source: &'a str,
-        filename: &'a str,
-        markup: &L2Markup<'_>,
-        analysis: Option<&'a Croquis>,
-    ) -> LintResult {
-        self.visit_jsx_l2(allocator, source, filename, markup, analysis, false)
-    }
-
-    /// List/branch markup rules over an admitted L2 projection.
-    pub(super) fn lint_jsx_lowered_markup_l2<'a>(
-        &self,
-        allocator: &'a Allocator,
-        source: &'a str,
-        filename: &'a str,
-        markup: &L2Markup<'_>,
-    ) -> LintResult {
-        self.visit_jsx_l2(allocator, source, filename, markup, None, true)
-    }
-
-    /// List/branch markup rules (`jsx_needs_lowering`) over the lowered Relief
-    /// root, when the L2 projection refused that root.
-    pub(super) fn lint_jsx_lowered_markup_root<'a>(
-        &self,
-        allocator: &'a Allocator,
-        source: &'a str,
-        filename: &'a str,
-        root: &RootNode<'a>,
-    ) -> LintResult {
-        let mut ctx = self.jsx_context(allocator, source, filename);
-        let document = MarkupDocument::new(root, TemplateSyntax::Vue);
-        profile!("patina.jsx.lowered_markup.visit", {
-            let mut markup_ctx = MarkupContext::new(&mut ctx, &document);
-            for rule in self.registry.rules() {
-                if rule.jsx_needs_lowering()
-                    && let Some(markup_rule) = rule.as_markup_rule()
-                {
-                    document.visit_with(markup_rule, &mut markup_ctx);
-                }
-            }
-        });
-        finish_jsx(filename, ctx)
-    }
-
-    /// Element-shaped markup rules when the P2-16 projection refuses the root.
-    /// Same rule partition as [`Self::lint_jsx_over_ir`], over the lowered root.
-    pub(super) fn lint_jsx_over_ir_refused<'a>(
-        &self,
-        allocator: &'a Allocator,
-        source: &'a str,
-        filename: &'a str,
-        root: &RootNode<'a>,
-        analysis: Option<&'a Croquis>,
-    ) -> LintResult {
-        let mut ctx = self.jsx_context(allocator, source, filename);
-        let mut document = MarkupDocument::new(root, TemplateSyntax::Vue);
-        if let Some(analysis) = analysis {
-            ctx.set_analysis(analysis);
-            document = document.with_analysis(analysis);
-        }
-        profile!("patina.jsx.ir.visit", {
-            let mut markup_ctx = MarkupContext::new(&mut ctx, &document);
-            for rule in self.registry.rules() {
-                if rule.jsx_needs_lowering() {
-                    continue;
-                }
-                if let Some(markup_rule) = rule.as_markup_rule() {
-                    document.visit_with(markup_rule, &mut markup_ctx);
-                }
-            }
-        });
-        finish_jsx(filename, ctx)
-    }
-
-    fn visit_jsx_l2<'a>(
-        &self,
-        allocator: &'a Allocator,
-        source: &'a str,
-        filename: &'a str,
-        markup: &L2Markup<'_>,
-        analysis: Option<&'a Croquis>,
-        needs_lowering: bool,
-    ) -> LintResult {
-        let markup = crate::markup::reborrow_markup(markup);
-        let mut ctx = self.jsx_context(allocator, source, filename);
-        let mut document = MarkupDocument::from_l2(markup, TemplateSyntax::Vue);
-        if let Some(analysis) = analysis {
-            ctx.set_analysis(analysis);
-            document = document.with_analysis(analysis);
-        }
-        profile!("patina.jsx.ir.visit", {
-            let mut markup_ctx = MarkupContext::new(&mut ctx, &document);
-            for rule in self.registry.rules() {
-                if rule.jsx_needs_lowering() != needs_lowering {
-                    continue;
-                }
-                if let Some(markup_rule) = rule.as_markup_rule() {
-                    document.visit_with(markup_rule, &mut markup_ctx);
-                }
-            }
-        });
-        finish_jsx(filename, ctx)
-    }
-
     /// Legacy rules (no markup entry point) over one lowered Relief root.
     pub(super) fn lint_jsx_fallback_root(
         &self,
@@ -141,7 +31,7 @@ impl Linter {
         root: &RootNode<'_>,
         keep_mask: &[bool],
     ) -> LintResult {
-        let mut ctx = self.jsx_context(allocator, source, filename);
+        let mut ctx = self.markup_context(allocator, source, filename);
         ctx.set_dialect(VueDialect::Vue);
         // The visitor zips rules with their names and reads the mask with
         // `get`, so unequal lengths cannot misalign or panic.
@@ -153,22 +43,7 @@ impl Linter {
             keep_mask,
         );
         profile!("patina.jsx.fallback.visit", visitor.visit_root(root));
-        finish_jsx(filename, ctx)
-    }
-
-    fn jsx_context<'a>(
-        &'a self,
-        allocator: &'a Allocator,
-        source: &'a str,
-        filename: &'a str,
-    ) -> LintContext<'a> {
-        let mut ctx = LintContext::with_locale(allocator, source, filename, self.locale);
-        ctx.set_enabled_rules(self.enabled_rules.clone());
-        ctx.set_config_disabled_rules(self.disabled_rules.clone());
-        ctx.set_config_rule_severities(self.severity_overrides.clone());
-        ctx.set_help_level(self.help_level);
-        ctx.set_custom_elements(&self.custom_elements);
-        ctx
+        finish_markup(filename, ctx)
     }
 
     /// Drop diagnostics `result` already reported in `seen` (rule name and range).
@@ -225,16 +100,5 @@ impl Linter {
             error_count,
             warning_count,
         }
-    }
-}
-
-fn finish_jsx(filename: &str, ctx: LintContext<'_>) -> LintResult {
-    let error_count = ctx.error_count();
-    let warning_count = ctx.warning_count();
-    LintResult {
-        filename: filename.to_compact_string(),
-        diagnostics: ctx.into_diagnostics(),
-        error_count,
-        warning_count,
     }
 }

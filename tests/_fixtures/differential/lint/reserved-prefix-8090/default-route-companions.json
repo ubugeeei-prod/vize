@@ -8385,6 +8385,16 @@
           "fix": null
         },
         {
+          "rule_name": "vue/prop-name-casing",
+          "severity": "warning",
+          "message": "Prop \"_secret\" is not in camelCase",
+          "start": 55,
+          "end": 70,
+          "help": "Declare props in camelCase; a template may still write them in kebab-case:\n```vue\n<!-- Bad -->\ndefineProps({ 'my-prop': String })\n\n<!-- Good -->\ndefineProps({ myProp: String })\n```",
+          "labels": [],
+          "fix": null
+        },
+        {
           "rule_name": "script/no-reserved-props",
           "severity": "error",
           "message": "Prop name '$custom' is reserved.",
@@ -8419,6 +8429,16 @@
           "fix": null
         },
         {
+          "rule_name": "vue/prop-name-casing",
+          "severity": "warning",
+          "message": "Prop \"_secret\" is not in camelCase",
+          "start": 55,
+          "end": 70,
+          "help": "Declare props in camelCase; a template may still write them in kebab-case:\n```vue\n<!-- Bad -->\ndefineProps({ 'my-prop': String })\n\n<!-- Good -->\ndefineProps({ myProp: String })\n```",
+          "labels": [],
+          "fix": null
+        },
+        {
           "rule_name": "script/no-reserved-props",
           "severity": "error",
           "message": "Prop name '$custom' is reserved.",
@@ -8450,6 +8470,16 @@
               "end": 45
             }
           ],
+          "fix": null
+        },
+        {
+          "rule_name": "vue/prop-name-casing",
+          "severity": "warning",
+          "message": "Prop \"_secret\" is not in camelCase",
+          "start": 55,
+          "end": 70,
+          "help": "Declare props in camelCase; a template may still write them in kebab-case:\n```vue\n<!-- Bad -->\ndefineProps({ 'my-prop': String })\n\n<!-- Good -->\ndefineProps({ myProp: String })\n```",
+          "labels": [],
           "fix": null
         },
         {

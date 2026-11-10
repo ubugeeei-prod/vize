@@ -2,9 +2,8 @@
 //!
 //! Disallow ARIA attributes and role on elements that do not support them.
 //!
-//! Certain HTML elements like `<meta>`, `<html>`, `<script>`, and `<style>`
-//! do not support ARIA attributes or the `role` attribute because they are
-//! not rendered visually or do not have semantic meaning in the accessibility tree.
+//! Reserved HTML elements do not support ARIA attributes or the `role`
+//! attribute because they are outside the accessibility tree.
 //!
 //! Based on eslint-plugin-jsx-a11y aria-unsupported-elements rule.
 
@@ -170,6 +169,27 @@ mod tests {
         let linter = create_linter();
         let result = linter.lint_template(r#"<meta :aria-hidden="hidden" />"#, "test.vue");
         assert_eq!(result.error_count, 1);
+    }
+
+    #[test]
+    fn test_all_reserved_elements_reject_aria_and_role() {
+        let linter = create_linter();
+        let expected = [
+            "base", "col", "colgroup", "head", "html", "link", "meta", "noembed", "noscript",
+            "param", "picture", "script", "source", "style", "title", "track",
+        ];
+        assert_eq!(super::helpers::ARIA_UNSUPPORTED_ELEMENTS, expected);
+        for tag in super::helpers::ARIA_UNSUPPORTED_ELEMENTS {
+            for attribute in [
+                r#"aria-hidden="true""#,
+                r#":aria-label="label""#,
+                r#"role="none""#,
+            ] {
+                let source = format!("<{tag} {attribute} />");
+                let result = linter.lint_template(&source, "test.vue");
+                assert_eq!(result.error_count, 1, "{source}");
+            }
+        }
     }
 
     #[test]

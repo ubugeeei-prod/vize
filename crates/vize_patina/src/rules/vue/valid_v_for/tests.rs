@@ -61,6 +61,31 @@ fn test_invalid_v_for_no_in_or_of() {
 }
 
 #[test]
+fn rejects_empty_and_destructured_key_or_index_aliases() {
+    let linter = create_linter();
+    for expression in [
+        "(, index) in items",
+        "(value, , index) in record",
+        "(item, { length }) in items",
+        "(item, key, [index]) in items",
+    ] {
+        let source = format!(r#"<div v-for="{expression}" />"#);
+        let result = linter.lint_template(&source, "test.vue");
+        assert_eq!(
+            result.error_count, 1,
+            "{expression}: {:?}",
+            result.diagnostics
+        );
+    }
+
+    let valid = linter.lint_template(
+        r#"<div v-for="({ id }, key, index) in items" :key="id" />"#,
+        "test.vue",
+    );
+    assert_eq!(valid.error_count, 0, "{:?}", valid.diagnostics);
+}
+
+#[test]
 fn dynamic_slot_templates_do_not_require_keys_on_component_bodies() {
     let linter = create_linter();
     let result = linter.lint_template(

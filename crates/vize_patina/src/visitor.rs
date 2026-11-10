@@ -117,7 +117,7 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
                 // hot and individual rule spans add measurable overhead.
                 let keep_mask = self.keep_mask;
                 profile!("patina.rules.check_interpolation", {
-                    Self::callback_rules::<false>(
+                    Self::callback_rules(
                         self.ctx,
                         self.rules,
                         self.rule_names,
@@ -202,7 +202,7 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
         // one guard around the rule batch, not one guard per rule.
         let keep_mask = self.keep_mask;
         profile!("patina.rules.enter_element", {
-            Self::callback_rules::<false>(
+            Self::callback_rules(
                 self.ctx,
                 self.rules,
                 self.rule_names,
@@ -218,7 +218,7 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
         for prop in el.props.iter() {
             if let PropNode::Directive(dir) = prop {
                 profile!("patina.rules.check_directive", {
-                    Self::callback_rules::<false>(
+                    Self::callback_rules(
                         self.ctx,
                         self.rules,
                         self.rule_names,
@@ -238,7 +238,7 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
         if self.run_exit_element_rules {
             // Exit element - run rules
             profile!("patina.rules.exit_element", {
-                Self::callback_rules::<false>(
+                Self::callback_rules(
                     self.ctx,
                     self.rules,
                     self.rule_names,

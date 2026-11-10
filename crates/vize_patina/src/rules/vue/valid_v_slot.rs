@@ -154,6 +154,13 @@ fn check_child_slot_templates(ctx: &mut LintContext, owner: &ElementNode) {
         }
 
         if let Some(name) = static_slot_name(slot) {
+            if slot_name_is_loop_independent(child, slot) == Some(true) {
+                ctx.error_with_help(
+                    ctx.t("vue/valid-v-slot.duplicate_distribution"),
+                    &slot.loc,
+                    ctx.t("vue/valid-v-slot.help"),
+                );
+            }
             let occurrence = ChildSlot {
                 loop_scope: loop_scoped_slot(child, slot),
                 name,
@@ -191,6 +198,43 @@ fn check_child_slot_templates(ctx: &mut LintContext, owner: &ElementNode) {
             ctx.t("vue/valid-v-slot.help"),
         );
     }
+}
+
+fn slot_name_is_loop_independent(
+    element: &ElementNode<'_>,
+    slot: &DirectiveNode<'_>,
+) -> Option<bool> {
+    let for_expression = element.props.iter().find_map(|prop| match prop {
+        PropNode::Directive(directive) if directive.name == "for" => match directive.exp.as_ref() {
+            Some(ExpressionNode::Simple(expression)) => Some(expression.content),
+            _ => None,
+        },
+        _ => None,
+    })?;
+    let aliases = parse_v_for_scope_expression(for_expression)?;
+    let Some(ExpressionNode::Simple(argument)) = slot.arg.as_ref() else {
+        return Some(true);
+    };
+    if argument.is_static {
+        return Some(true);
+    }
+    let argument_ast = argument.js_ast?.as_expression()?;
+    let reads = extract_identifier_refs_retained_only(argument.content, &argument_ast)?;
+    let uses = |name: &str| reads.iter().any(|read| read.name == name);
+    Some(
+        !aliases
+            .value_bindings
+            .iter()
+            .any(|binding| uses(binding.as_str()))
+            && !aliases
+                .key_alias
+                .as_ref()
+                .is_some_and(|binding| uses(binding.as_str()))
+            && !aliases
+                .index_alias
+                .as_ref()
+                .is_some_and(|binding| uses(binding.as_str())),
+    )
 }
 
 fn finish_slot_group(seen_slots: &mut Vec<ChildSlot>, group_slots: &mut Vec<ChildSlot>) {
@@ -313,7 +357,7 @@ fn is_component_parent_context(parent: &ElementContext) -> bool {
 fn static_slot_name(directive: &DirectiveNode) -> Option<String> {
     match &directive.arg {
         None => Some("default".into()),
-        Some(ExpressionNode::Simple(arg)) => {
+        Some(ExpressionNode::Simple(arg)) if arg.is_static => {
             let mut name = arg.content.to_compact_string();
             for modifier in &directive.modifiers {
                 name.push('.');
@@ -321,6 +365,7 @@ fn static_slot_name(directive: &DirectiveNode) -> Option<String> {
             }
             Some(name)
         }
+        Some(ExpressionNode::Simple(arg)) => Some(vize_l0::cstr!("[{}]", arg.content)),
         Some(ExpressionNode::Compound(_)) => None,
     }
 }

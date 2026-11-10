@@ -1,0 +1,173 @@
+{
+  "schema": "vize.listenerContractSource.v1",
+  "credit": {
+    "compiled": false,
+    "native": false,
+    "performance": false
+  },
+  "files": [
+    {
+      "path": "crates/vize_canon/src/virtual_ts/scope/component_events.rs",
+      "before": {
+        "bytes": 22805,
+        "sha256": "e884363d6e668dcd802341d67d4edadebd0b49103b1683a566959d0f6122b74d"
+      },
+      "after": {
+        "bytes": 23235,
+        "sha256": "4c63b1be0fe618c37b665a5f399fe277c5306314e4c26854ca2509797e61b235"
+      },
+      "hunks": [
+        {
+          "before": "mod inference_helpers;\nmod listener_relations;\n",
+          "after": "mod inference_helpers;\nmod listener_contract;\nmod listener_relations;\n"
+        },
+        {
+          "before": "use vize_carton::{CompactString, FxHashMap, FxHashSet, String, cstr};\nuse vize_croquis::{Croquis, EventHandlerScopeData, Scope, naming::to_pascal_case};\n\n",
+          "after": "use vize_carton::{CompactString, FxHashMap, FxHashSet, String, cstr};\nuse vize_croquis::{Croquis, EventHandlerScopeData, Scope};\n\n"
+        },
+        {
+          "before": "use crate::virtual_ts::component_reference::component_binding_reference_with_resolution;\nuse crate::virtual_ts::helpers::{\n    push_ts_string_literal, to_safe_identifier, to_safe_identifier_fragment,\n};\nuse crate::virtual_ts::types::VirtualTsOptions;\n",
+          "after": "use crate::virtual_ts::component_reference::component_binding_reference_with_resolution;\nuse crate::virtual_ts::helpers::{to_safe_identifier, to_safe_identifier_fragment};\nuse crate::virtual_ts::types::VirtualTsOptions;\n"
+        },
+        {
+          "before": "        fallthrough_listeners && (!requested_native_fallthrough || native_fallthrough_only);\n    let pascal_event = to_pascal_case(data.event_name.as_str());\n    let on_handler = cstr!(\"on{pascal_event}\");\n    let mut owned_listener_key = crate::virtual_ts::TextBuf::default();\n    if fallthrough_listeners && !legacy_vue2 {\n        push_ts_string_literal(&mut owned_listener_key, on_handler.as_str());\n    }\n    let mut listener_key = crate::virtual_ts::TextBuf::default();\n    push_ts_string_literal(&mut listener_key, on_handler.as_str());\n    let prop_key = if on_handler.contains(':') {\n        cstr!(\"\\\"{}\\\"\", on_handler.as_str())\n    } else {\n",
+          "after": "        fallthrough_listeners && (!requested_native_fallthrough || native_fallthrough_only);\n    let listener_contract::Keys {\n        listener_key,\n        prop_key,\n        raw_listener_key,\n    } = listener_contract::keys(data.event_name.as_str());\n    let owned_listener_key = if fallthrough_listeners && !legacy_vue2 {\n        listener_key.clone()\n    } else {\n"
+        },
+        {
+          "before": "    } else {\n        on_handler\n    };\n",
+          "after": "    } else {\n        String::default()\n    };\n"
+        },
+        {
+          "before": "        cstr!(\"__{component_type_name}_{contract_scope_id}_{safe_event_name}_prop_args\");\n    // Vue's published EmitsToProps retains authored hyphens (onFoo-bar),\n    // while generated SFC contracts expose the camelized listener (onFooBar).\n    // Only the spelling actually written by the user admits the raw alias.\n    let raw_listener_key = if data.event_name.contains('-') {\n        let mut raw_handler = String::from(\"on\");\n        let mut chars = data.event_name.chars();\n        if let Some(first) = chars.next() {\n            raw_handler.extend(first.to_uppercase());\n        }\n        raw_handler.push_str(chars.as_str());\n        let mut raw_key = String::default();\n        push_ts_string_literal(&mut raw_key, &raw_handler);\n        raw_key\n    } else {\n        String::from(\"never\")\n    };\n    let static_emit_args =\n",
+          "after": "        cstr!(\"__{component_type_name}_{contract_scope_id}_{safe_event_name}_prop_args\");\n    let static_emit_args =\n"
+        },
+        {
+          "before": "    let listener_type = cstr!(\"__{component_type_name}_{scope_id}_{safe_event_name}_listener\");\n    if first_component {\n",
+          "after": "    let listener_type = cstr!(\"__{component_type_name}_{scope_id}_{safe_event_name}_listener\");\n    let shared_contract = listener_contract::applies(\n        legacy_vue2,\n        hoist_shared_preamble && share_listener_relations,\n        gated_inference,\n        explicit_generic.is_some(),\n        fallthrough_listeners && !native_fallthrough_only,\n    );\n    if first_component {\n"
+        },
+        {
+          "before": "    if first_component {\n        relations.emit(ts, indent);\n        // A vue-tsc generic library export instantiates its generics with their\n",
+          "after": "    if first_component {\n        if !shared_contract {\n            relations.emit(ts, indent);\n        }\n        // A vue-tsc generic library export instantiates its generics with their\n"
+        },
+        {
+          "before": "    }\n    // Constructor `$props` contains ambient DOM listeners. For a generated,\n",
+          "after": "    }\n    if shared_contract {\n        return Some(listener_contract::emit(\n            ts,\n            mappings,\n            listener_contract::Contract {\n                summary,\n                component_name: component_name.as_str(),\n                data,\n                scope,\n                component_ref: &component_ref,\n                component_type_name: &component_type_name,\n                safe_event_name: &safe_event_name,\n                prop_key: &prop_key,\n                library: &library,\n                props_box: &props_box,\n                emit_props_box: &emit_props_box,\n                fallthrough_box: native_fallthrough_only.then_some(fallthrough_box.as_str()),\n                listener_key: &listener_key,\n                raw_listener_key: &raw_listener_key,\n                template_binding_access,\n                template_ast,\n                source_context,\n                inference_outer_vif_guard,\n                event_inference_usages,\n                indent,\n                needs_typed_handler_assignment,\n                has_script_component_binding,\n                scope_id,\n            },\n        ));\n    }\n    // Constructor `$props` contains ambient DOM listeners. For a generated,\n"
+        }
+      ]
+    },
+    {
+      "path": "crates/vize_canon/src/virtual_ts/helpers/declarations/shared-listener-args.d.ts.txt",
+      "before": {
+        "bytes": 711,
+        "sha256": "fef5c40105887cdd343341d34f38343a3522d2fd5526a73107ee6de9ebf90ff5"
+      },
+      "after": {
+        "bytes": 3685,
+        "sha256": "49724b840a69b9ffe4708ee3fa2c8c75c495b43c3bd1ee51ad090c7a0c20a430"
+      },
+      "hunks": [
+        {
+          "before": "  export type $ListenerArgs<__P, __K extends string | number | symbol, __Raw extends string | number | symbol = never> = __P extends { [__Q in __K]?: (...args: infer __A) => any } ? __A : __P extends { [__Q in __K]?: infer __H } ? [Extract<NonNullable<__H>, (...args: any) => any>] extends [never] ? $ListenerMissing<__P, __Raw> : Extract<NonNullable<__H>, (...args: any) => any> extends (...args: infer __A) => any ? __A : $ListenerMissing<__P, __Raw> : $ListenerMissing<__P, __Raw>;\n}\n",
+          "after": "  export type $ListenerArgs<__P, __K extends string | number | symbol, __Raw extends string | number | symbol = never> = __P extends { [__Q in __K]?: (...args: infer __A) => any } ? __A : __P extends { [__Q in __K]?: infer __H } ? [Extract<NonNullable<__H>, (...args: any) => any>] extends [never] ? $ListenerMissing<__P, __Raw> : Extract<NonNullable<__H>, (...args: any) => any> extends (...args: infer __A) => any ? __A : $ListenerMissing<__P, __Raw> : $ListenerMissing<__P, __Raw>;\n  type $ListenerPropArgs<__L, __PB, __K extends string | number | symbol, __Raw extends string | number | symbol> = [__L] extends [true] ? unknown[] : __PB extends [infer __P] ? $ListenerArgs<__P, __K, __Raw> : unknown[];\n  type $ListenerFallthroughArgs<__FB, __K extends string | number | symbol, __Raw extends string | number | symbol> = __FB extends [infer __F] ? NonNullable<__F> extends infer __P ? $ListenerArgs<__P, __K, __Raw> extends infer __A extends unknown[] ? (__A extends [] ? unknown[] : __A) : unknown[] : unknown[] : unknown[];\n  type $ListenerStaticArgs<__EB, __K extends string | number | symbol> = __EB extends [infer __EP] ? __EP extends { [__Q in __K]?: (...args: infer __A) => any } ? __A : unknown[] : unknown[];\n  type $ListenerPayload<__Prop, __Static, __Unresolved, __Inferred, __Loose> = [__Loose] extends [true] ? unknown[] : unknown[] extends __Inferred ? (unknown[] extends __Prop ? (unknown[] extends __Static ? __Unresolved : __Static) : __Prop) : __Inferred;\n  type $ListenerEvent<__Args> = [__Args] extends [infer __A extends unknown[]] ? [__A] extends [[]] ? any : unknown[] extends __A ? any : __A[0] : never;\n  type $ListenerFallthroughReturn<__FB, __K extends string | number | symbol> = __FB extends [infer __F] ? NonNullable<__F> extends { [__Q in __K]?: infer __H } ? Extract<NonNullable<__H>, (...args: any[]) => any> extends (...args: any[]) => infer __R ? __R : any : any : any;\n  type $ListenerReturn<__Prop, __PB, __Unresolved, __K extends string | number | symbol> = unknown[] extends __Prop ? __Unresolved : __PB extends [infer __P] ? (__P extends { [__Q in __K]?: (...args: any[]) => infer __R } ? __R : any) : any;\n  type $ListenerArrays<__PB, __K extends string | number | symbol> = __PB extends [infer __P] ? 0 extends (1 & __P) ? never : __P extends { [__Q in __K]?: infer __H } ? Extract<NonNullable<__H>, readonly unknown[]> : never : never;\n  type $ListenerShape<__Args, __Return, __Arrays, __Listener = unknown[] extends __Args ? ((...args: any[]) => any) : ((...args: __Args extends unknown[] ? __Args : never) => __Return)> = { event: $ListenerEvent<__Args>; listener: __Listener; handler: unknown[] extends __Args ? ((...args: any[]) => any) : __Listener; looseHandler: unknown[] extends __Args ? unknown : __Listener; arrays: __Arrays };\n  type $ListenerContractOf<__PB, __FB, __K extends string | number | symbol, __Raw extends string | number | symbol, __Prop, __Static, __Inferred, __Loose> = $ListenerShape<$ListenerPayload<__Prop, __Static, $ListenerFallthroughArgs<__FB, __K, __Raw>, __Inferred, __Loose>, $ListenerReturn<__Prop, __PB, $ListenerFallthroughReturn<__FB, __K>, __K>, $ListenerArrays<__PB, __K>>;\n  export type $ListenerContract<__L, __PB, __EB, __FB, __K extends string | number | symbol, __Raw extends string | number | symbol, __Inferred, __Loose> = $ListenerContractOf<__PB, __FB, __K, __Raw, $ListenerPropArgs<__L, __PB, __K, __Raw>, $ListenerStaticArgs<__EB, __K>, __Inferred, __Loose>;\n}\n"
+        }
+      ]
+    },
+    {
+      "path": "npm/cli/scripts/listener-argument-exports.ts",
+      "before": {
+        "bytes": 4660,
+        "sha256": "60cccf633b77b2c8346a1badd14cb07ea44060c6650359b2bdf867d0b147c810"
+      },
+      "after": {
+        "bytes": 5413,
+        "sha256": "8c8378feab2eadc029f33fc28c2173943a39cd0bb3fbf3a43ec0053d7a3eac3c"
+      },
+      "hunks": [
+        {
+          "before": "  const outputs = new Map([[\"npm/cli/virtual-ts-listeners.d.ts\", formatted.code]]);\n  const helper = shared.found[1]!;\n  const parameters = helper.typeParameters!.map((node) => node.getText(shared.source));\n  const arguments_ = helper.typeParameters!.map((node) => node.name.text);\n  const forward = `import type * as ${namespace} from \"./virtual-ts-listeners.js\" with { \"resolution-mode\": \"import\" };\\nexport type $ListenerArgs<${parameters.join(\", \")}> = ${namespace}.$ListenerArgs<${arguments_.join(\", \")}>;\\n`;\n  const forwarding = await format(\"virtual-ts.d.ts\", forward, { printWidth: 100 });\n",
+          "after": "  const outputs = new Map([[\"npm/cli/virtual-ts-listeners.d.ts\", formatted.code]]);\n  // Every exported shared relation is forwarded under its own name.\n  const exported: ts.TypeAliasDeclaration[] = [];\n  shared.source.forEachChild(function visit(node) {\n    if (\n      ts.isTypeAliasDeclaration(node) &&\n      node.modifiers?.some((modifier) => modifier.kind === ts.SyntaxKind.ExportKeyword)\n    )\n      exported.push(node);\n    ts.forEachChild(node, visit);\n  });\n  const forward =\n    `import type * as ${namespace} from \"./virtual-ts-listeners.js\" with { \"resolution-mode\": \"import\" };\\n` +\n    exported\n      .map((helper) => {\n        const parameters = helper.typeParameters!.map((node) => node.getText(shared.source));\n        const arguments_ = helper.typeParameters!.map((node) => node.name.text);\n        return `export type ${helper.name.text}<${parameters.join(\", \")}> = ${namespace}.${helper.name.text}<${arguments_.join(\", \")}>;\\n`;\n      })\n      .join(\"\");\n  const forwarded = exported.map((helper) => helper.name.text);\n  const forwarding = await format(\"virtual-ts.d.ts\", forward, { printWidth: 100 });\n"
+        },
+        {
+          "before": "    const bindings = parsed.statements.filter(\n      (node) => ts.isTypeAliasDeclaration(node) && node.name.text === \"$ListenerArgs\",\n    );\n",
+          "after": "    const bindings = parsed.statements.filter(\n      (node) => ts.isTypeAliasDeclaration(node) && forwarded.includes(node.name.text),\n    );\n"
+        },
+        {
+          "before": "    } else {\n      assert.equal(bindings.length, 1, `${file} listener export count`);\n      assert.equal(imports.length, 1, `${file} listener import count`);\n",
+          "after": "    } else {\n      assert.equal(imports.length, 1, `${file} listener import count`);\n"
+        },
+        {
+          "before": "      assert.equal(imports.length, 1, `${file} listener import count`);\n      const block = source.slice(imports[0]!.getStart(parsed), bindings[0]!.end).trimEnd() + \"\\n\";\n      assert.equal(block, forwarding.code, `${file} refuses unknown listener forwarding`);\n      outputs.set(file, source);\n    }\n",
+          "after": "      assert.equal(imports.length, 1, `${file} listener import count`);\n      const start = imports[0]!.getStart(parsed);\n      const block = source.slice(start, bindings.at(-1)!.end).trimEnd() + \"\\n\";\n      // Only the current forwarding, or the `$ListenerArgs`-only one it extends.\n      assert.ok(\n        block === forwarding.code || forwarding.code.startsWith(block),\n        `${file} refuses unknown listener forwarding`,\n      );\n      assert.equal(source.slice(start + block.length).trim(), \"\", `${file} forwarding last`);\n      outputs.set(file, source.slice(0, start) + forwarding.code);\n    }\n"
+        }
+      ]
+    },
+    {
+      "path": "npm/cli/virtual-ts-listeners.d.ts",
+      "before": {
+        "bytes": 806,
+        "sha256": "643048acce2ca1f480f541b70f25fa52baa2ed452f3860cc2bd84082fb2b81ed"
+      },
+      "after": {
+        "bytes": 4101,
+        "sha256": "bef58ac085eda768a4614b7bafa86489732f92e6375d250a442e2d9fec2bb01b"
+      },
+      "hunks": [
+        {
+          "before": "    : $ListenerMissing<__P, __Raw>;\n",
+          "after": "    : $ListenerMissing<__P, __Raw>;\ntype $ListenerPropArgs<\n  __L,\n  __PB,\n  __K extends string | number | symbol,\n  __Raw extends string | number | symbol,\n> = [__L] extends [true]\n  ? unknown[]\n  : __PB extends [infer __P]\n    ? $ListenerArgs<__P, __K, __Raw>\n    : unknown[];\ntype $ListenerFallthroughArgs<\n  __FB,\n  __K extends string | number | symbol,\n  __Raw extends string | number | symbol,\n> = __FB extends [infer __F]\n  ? NonNullable<__F> extends infer __P\n    ? $ListenerArgs<__P, __K, __Raw> extends infer __A extends unknown[]\n      ? __A extends []\n        ? unknown[]\n        : __A\n      : unknown[]\n    : unknown[]\n  : unknown[];\ntype $ListenerStaticArgs<__EB, __K extends string | number | symbol> = __EB extends [infer __EP]\n  ? __EP extends { [__Q in __K]?: (...args: infer __A) => any }\n    ? __A\n    : unknown[]\n  : unknown[];\ntype $ListenerPayload<__Prop, __Static, __Unresolved, __Inferred, __Loose> = [__Loose] extends [\n  true,\n]\n  ? unknown[]\n  : unknown[] extends __Inferred\n    ? unknown[] extends __Prop\n      ? unknown[] extends __Static\n        ? __Unresolved\n        : __Static\n      : __Prop\n    : __Inferred;\ntype $ListenerEvent<__Args> = [__Args] extends [infer __A extends unknown[]]\n  ? [__A] extends [[]]\n    ? any\n    : unknown[] extends __A\n      ? any\n      : __A[0]\n  : never;\ntype $ListenerFallthroughReturn<__FB, __K extends string | number | symbol> = __FB extends [\n  infer __F,\n]\n  ? NonNullable<__F> extends { [__Q in __K]?: infer __H }\n    ? Extract<NonNullable<__H>, (...args: any[]) => any> extends (...args: any[]) => infer __R\n      ? __R\n      : any\n    : any\n  : any;\ntype $ListenerReturn<\n  __Prop,\n  __PB,\n  __Unresolved,\n  __K extends string | number | symbol,\n> = unknown[] extends __Prop\n  ? __Unresolved\n  : __PB extends [infer __P]\n    ? __P extends { [__Q in __K]?: (...args: any[]) => infer __R }\n      ? __R\n      : any\n    : any;\ntype $ListenerArrays<__PB, __K extends string | number | symbol> = __PB extends [infer __P]\n  ? 0 extends 1 & __P\n    ? never\n    : __P extends { [__Q in __K]?: infer __H }\n      ? Extract<NonNullable<__H>, readonly unknown[]>\n      : never\n  : never;\ntype $ListenerShape<\n  __Args,\n  __Return,\n  __Arrays,\n  __Listener = unknown[] extends __Args\n    ? (...args: any[]) => any\n    : (...args: __Args extends unknown[] ? __Args : never) => __Return,\n> = {\n  event: $ListenerEvent<__Args>;\n  listener: __Listener;\n  handler: unknown[] extends __Args ? (...args: any[]) => any : __Listener;\n  looseHandler: unknown[] extends __Args ? unknown : __Listener;\n  arrays: __Arrays;\n};\ntype $ListenerContractOf<\n  __PB,\n  __FB,\n  __K extends string | number | symbol,\n  __Raw extends string | number | symbol,\n  __Prop,\n  __Static,\n  __Inferred,\n  __Loose,\n> = $ListenerShape<\n  $ListenerPayload<\n    __Prop,\n    __Static,\n    $ListenerFallthroughArgs<__FB, __K, __Raw>,\n    __Inferred,\n    __Loose\n  >,\n  $ListenerReturn<__Prop, __PB, $ListenerFallthroughReturn<__FB, __K>, __K>,\n  $ListenerArrays<__PB, __K>\n>;\nexport type $ListenerContract<\n  __L,\n  __PB,\n  __EB,\n  __FB,\n  __K extends string | number | symbol,\n  __Raw extends string | number | symbol,\n  __Inferred,\n  __Loose,\n> = $ListenerContractOf<\n  __PB,\n  __FB,\n  __K,\n  __Raw,\n  $ListenerPropArgs<__L, __PB, __K, __Raw>,\n  $ListenerStaticArgs<__EB, __K>,\n  __Inferred,\n  __Loose\n>;\n"
+        }
+      ]
+    },
+    {
+      "path": "npm/cli/virtual-ts.d.ts",
+      "before": {
+        "bytes": 15314,
+        "sha256": "d1492046d1338f93081b51cacb1b13962edbce179cb8632523d6adfee4a8fa43"
+      },
+      "after": {
+        "bytes": 15582,
+        "sha256": "075b5cd3b0591b21c216cc7e4e8c9b8fb012e09a7a1e3661083677d3853cba12"
+      },
+      "hunks": [
+        {
+          "before": "> = __vizeListenerTypes.$ListenerArgs<__P, __K, __Raw>;\n",
+          "after": "> = __vizeListenerTypes.$ListenerArgs<__P, __K, __Raw>;\nexport type $ListenerContract<\n  __L,\n  __PB,\n  __EB,\n  __FB,\n  __K extends string | number | symbol,\n  __Raw extends string | number | symbol,\n  __Inferred,\n  __Loose,\n> = __vizeListenerTypes.$ListenerContract<__L, __PB, __EB, __FB, __K, __Raw, __Inferred, __Loose>;\n"
+        }
+      ]
+    },
+    {
+      "path": "npm/cli/virtual-ts.d.mts",
+      "before": {
+        "bytes": 15314,
+        "sha256": "d1492046d1338f93081b51cacb1b13962edbce179cb8632523d6adfee4a8fa43"
+      },
+      "after": {
+        "bytes": 15582,
+        "sha256": "075b5cd3b0591b21c216cc7e4e8c9b8fb012e09a7a1e3661083677d3853cba12"
+      },
+      "hunks": [
+        {
+          "before": "> = __vizeListenerTypes.$ListenerArgs<__P, __K, __Raw>;\n",
+          "after": "> = __vizeListenerTypes.$ListenerArgs<__P, __K, __Raw>;\nexport type $ListenerContract<\n  __L,\n  __PB,\n  __EB,\n  __FB,\n  __K extends string | number | symbol,\n  __Raw extends string | number | symbol,\n  __Inferred,\n  __Loose,\n> = __vizeListenerTypes.$ListenerContract<__L, __PB, __EB, __FB, __K, __Raw, __Inferred, __Loose>;\n"
+        }
+      ]
+    },
+    {
+      "path": "npm/cli/virtual-ts.d.cts",
+      "before": {
+        "bytes": 15314,
+        "sha256": "d1492046d1338f93081b51cacb1b13962edbce179cb8632523d6adfee4a8fa43"
+      },
+      "after": {
+        "bytes": 15582,
+        "sha256": "075b5cd3b0591b21c216cc7e4e8c9b8fb012e09a7a1e3661083677d3853cba12"
+      },
+      "hunks": [
+        {
+          "before": "> = __vizeListenerTypes.$ListenerArgs<__P, __K, __Raw>;\n",
+          "after": "> = __vizeListenerTypes.$ListenerArgs<__P, __K, __Raw>;\nexport type $ListenerContract<\n  __L,\n  __PB,\n  __EB,\n  __FB,\n  __K extends string | number | symbol,\n  __Raw extends string | number | symbol,\n  __Inferred,\n  __Loose,\n> = __vizeListenerTypes.$ListenerContract<__L, __PB, __EB, __FB, __K, __Raw, __Inferred, __Loose>;\n"
+        }
+      ]
+    }
+  ]
+}

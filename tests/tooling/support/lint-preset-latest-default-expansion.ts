@@ -75,6 +75,31 @@ pub struct BuiltinScriptRuleMeta {
 
 export const publicApiDocSourcePaths = publicApiDocSuccessors.map(({ path }) => path);
 
+const mappedRuleSourceSuccessor = {
+  path: "crates/vize_patina/src/rules/opinionated/vue.rs",
+  before: {
+    bytes: 5168,
+    sha256: "8743912347daf84470fda192822e116f205165f46ad9eef4c3fc23fb81abaa6c",
+  },
+  after: {
+    bytes: 5199,
+    sha256: "cc576d6b49b3e23e6752a05e88d2b26c269f66031866301f72a12de0957e9732",
+  },
+  addition: "mod no_useless_string_literal;\n",
+} as const;
+
+// Remove only the exact mapped-rule module registration before replaying the
+// older preset histories. The whole-file identities reject unrelated edits.
+function inverseMappedRuleSource(name: string, body: Buffer): Buffer {
+  if (name !== mappedRuleSourceSuccessor.path) return body;
+  identity(body, mappedRuleSourceSuccessor.after);
+  const text = body.toString("utf8");
+  assert.equal(text.split(mappedRuleSourceSuccessor.addition).length, 2, name);
+  const predecessor = Buffer.from(text.replace(mappedRuleSourceSuccessor.addition, ""));
+  identity(predecessor, mappedRuleSourceSuccessor.before);
+  return predecessor;
+}
+
 // Remove only the exact public-API documentation additions before the frozen
 // preset-history ledgers replay. Byte identities keep unrelated edits fatal.
 export function inversePatinaPublicApiDocs(name: string, body: Buffer): Buffer {
@@ -92,8 +117,13 @@ export function inversePatinaPublicApiDocs(name: string, body: Buffer): Buffer {
 }
 
 export function inversePatinaCurrentSource(name: string, body: Buffer): Buffer {
-  const publicSource = inversePatinaPublicApiDocs(name, body);
-  return inverseLatestDefaultExpansion(name, inverseEslintVueRulePort(name, publicSource));
+  return inverseLatestDefaultExpansion(
+    name,
+    inverseEslintVueRulePort(
+      name,
+      inversePatinaPublicApiDocs(name, inverseMappedRuleSource(name, body)),
+    ),
+  );
 }
 export function currentPresetCases(body: Buffer, essentialCases: string[], manifest: any): any {
   identity(body, {

@@ -26,7 +26,7 @@ mod no_deprecated_events_api;
 mod no_deprecated_model_definition;
 mod no_deprecated_props_default_this;
 mod no_deprecated_vue_config_keycodes;
-mod no_dupe_keys;
+pub(crate) mod no_dupe_keys;
 mod no_duplicate_attr_inheritance;
 mod no_export_in_script_setup;
 mod no_expose_after_await;

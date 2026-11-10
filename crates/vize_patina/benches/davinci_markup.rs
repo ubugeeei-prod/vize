@@ -1,12 +1,12 @@
 //! Allocation regression probes for the markup facade passes: the L2 JSX
 //! pass and the L2-backed template pass (P4-7a, switched in P4-7b).
 //!
-//! Setup (lower, contexts, registry) stays outside the stage window; the
-//! measured section is exactly the per-rule `visit_with` loop `lint_jsx`
-//! drives over the L2 projection for rules that do not need the list/branch
-//! partition. The one-root fixture must perform **zero** allocations in that
-//! window — the exact `allocs` budget makes any reintroduced per-rule root
-//! vector (or child spill) fail closed.
+//! Setup (lower, contexts, registry, rule selection) stays outside the stage
+//! window; the measured section is exactly the one [`MarkupRules`] walk
+//! `lint_jsx` drives over the L2 projection for rules that do not need the
+//! list/branch partition. The one-root fixture must perform **zero**
+//! allocations in that window — the exact `allocs` budget makes any
+//! reintroduced per-rule root vector (or child spill) fail closed.
 
 #![expect(
     clippy::expect_used,
@@ -18,8 +18,27 @@ use criterion::{Criterion, criterion_group};
 use davinci_harness::stage::bench_stage_with_metrics;
 use vize_l0::{Allocator, cstr};
 use vize_patina::ir::TemplateSyntax;
-use vize_patina::markup::{L2Markup, L2Template, MarkupContext, MarkupDocument};
-use vize_patina::{JsxLang, LintContext, RuleRegistry};
+use vize_patina::markup::{
+    L2Markup, L2Template, MarkupContext, MarkupDocument, MarkupRules, RankedMarkupRule,
+};
+use vize_patina::{JsxLang, LintContext, Rule, RuleRegistry};
+
+/// The registry's markup rules `keep` admits, at their ranks.
+fn markup_rules(
+    registry: &RuleRegistry,
+    keep: impl Fn(&dyn Rule) -> bool,
+) -> Vec<RankedMarkupRule<'_>> {
+    registry
+        .rules()
+        .iter()
+        .enumerate()
+        .filter(|(_, rule)| keep(rule.as_ref()))
+        .filter_map(|(rank, rule)| {
+            rule.as_markup_rule()
+                .map(|rule| RankedMarkupRule::new(rank, rule))
+        })
+        .collect()
+}
 
 /// One-root, diagnostic-free JSX module: a single outermost element with a
 /// nested child mix (static attribute, event, text) so the walk exercises
@@ -51,22 +70,14 @@ fn davinci_markup(criterion: &mut Criterion) {
             .as_ref()
             .expect("the gallery root must project to L2");
         let markup = L2Markup::from_projected_root(projected);
+        let rules = markup_rules(&registry, |rule| !rule.jsx_needs_lowering());
         let mut lint = LintContext::new(&allocator, ONE_ROOT, "bench.jsx");
         let document = MarkupDocument::from_l2(&markup, TemplateSyntax::Vue);
         let visited = {
             let mut markup_ctx = MarkupContext::new(&mut lint, &document);
             window.measure(|| {
-                let mut visited = 0u32;
-                for rule in registry.rules() {
-                    if rule.jsx_needs_lowering() {
-                        continue;
-                    }
-                    if let Some(markup_rule) = rule.as_markup_rule() {
-                        document.visit_with(markup_rule, &mut markup_ctx);
-                        visited += 1;
-                    }
-                }
-                visited
+                document.visit_with(&MarkupRules::new(&rules), &mut markup_ctx);
+                rules.len()
             })
         };
         assert!(visited > 0, "the direct-IR pass must drive markup rules");
@@ -87,13 +98,13 @@ const ONE_ROOT_TEMPLATE: &str = r#"<section class="gallery">
 </section>
 "#;
 
-/// P4-7a: the per-rule `visit_with` loop over the L2-backed facade. Parse and
-/// the L1→L2 lowering stay in setup; the measured window is the traversal
-/// only. The view is zero-copy — element, binding and text projection borrow
-/// the op tree, the L1 surface and the side tables, and allocate nothing; the
-/// window's whole exact `allocs` budget (7) is `vue/permitted-contents`
-/// building its owned content-model skeleton (P4-11a), measured by skipping
-/// that one rule, which leaves 0.
+/// P4-7a: every markup rule in one [`MarkupRules`] walk over the L2-backed
+/// facade, as SFC templates dispatch them. Parse and the L1→L2 lowering stay
+/// in setup; the measured window is the traversal only. The view is zero-copy:
+/// element, binding and text projection borrow the op tree, the L1 surface and
+/// the side tables, and allocate nothing; the window's whole exact `allocs`
+/// budget (7) is `vue/permitted-contents` building its owned content-model
+/// skeleton (P4-11a), measured by skipping that one rule, which leaves 0.
 fn davinci_l2_markup(criterion: &mut Criterion) {
     let registry = RuleRegistry::default();
     let id = cstr!("patina_s2_markup_one_root");
@@ -105,19 +116,14 @@ fn davinci_l2_markup(criterion: &mut Criterion) {
             "fixture must lower cleanly"
         );
         let markup = lowered.markup();
+        let rules = markup_rules(&registry, |_| true);
         let mut lint = LintContext::new(&allocator, ONE_ROOT_TEMPLATE, "bench.vue");
         let document = MarkupDocument::from_l2(&markup, TemplateSyntax::Vue);
         let visited = {
             let mut markup_ctx = MarkupContext::new(&mut lint, &document);
             window.measure(|| {
-                let mut visited = 0u32;
-                for rule in registry.rules() {
-                    if let Some(markup_rule) = rule.as_markup_rule() {
-                        document.visit_with(markup_rule, &mut markup_ctx);
-                        visited += 1;
-                    }
-                }
-                visited
+                document.visit_with(&MarkupRules::new(&rules), &mut markup_ctx);
+                rules.len()
             })
         };
         assert!(visited > 0, "the L2 pass must drive markup rules");

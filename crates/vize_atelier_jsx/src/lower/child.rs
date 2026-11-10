@@ -58,7 +58,7 @@ impl<'a, 'm, 's: 'a> Lowerer<'a, 'm, 's> {
 
     /// The explicit client Native producer owns this role; compatibility output
     /// retains its original unmarked compound and backend contract.
-    fn owns_native_vdom_child_values(&self) -> bool {
+    pub(crate) fn owns_native_vdom_child_values(&self) -> bool {
         self.babel_vdom_lane
             && self.current_output_mode == crate::JsxOutputMode::Vdom
             && !self.uses_babel_compat()
@@ -218,7 +218,7 @@ impl<'a, 'm, 's: 'a> Lowerer<'a, 'm, 's> {
 }
 
 /// Whether `expression` contains a JSX element or fragment anywhere.
-fn contains_jsx(expression: &oxc_ast::ast::Expression<'_>) -> bool {
+pub(super) fn contains_jsx(expression: &oxc_ast::ast::Expression<'_>) -> bool {
     use oxc_ast_visit::Visit;
 
     struct Finder(bool);

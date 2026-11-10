@@ -69,6 +69,7 @@ impl<'a> Visit<'a> for RefOperandVisitor<'_> {
     }
 
     fn visit_switch_statement(&mut self, it: &SwitchStatement<'a>) {
+        self.check_operand(&it.discriminant);
         self.visit_expression(&it.discriminant);
         let mut frame = Frame::default();
         for case in &it.cases {

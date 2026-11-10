@@ -217,6 +217,36 @@ fn test_invalid_other_factories() {
 }
 
 #[test]
+fn define_model_template_refs_and_switch_discriminants_are_operands() {
+    let source = r#"
+import { useTemplateRef } from 'vue'
+const mode = ref('list')
+const open = defineModel('open')
+const page = defineModel('page')
+const input = useTemplateRef('input')
+const next = page + 1
+if (open) input.value?.focus()
+if (!input) mode.value = 'list'
+switch (mode) { case 'grid': break }
+"#;
+    assert_eq!(lint(source).error_count, 4);
+}
+
+#[test]
+fn to_refs_members_and_explicit_vue_ref_return_types_are_refs() {
+    let source = r#"
+import { toRefs } from 'vue'
+import type { Ref } from 'vue'
+const { active } = toRefs(props)
+declare function useOpen(): Ref<boolean>
+const open = useOpen()
+if (active) console.log('active')
+const label = open ? 'open' : 'closed'
+"#;
+    assert_eq!(lint(source).error_count, 2);
+}
+
+#[test]
 fn test_factory_with_ts_cast() {
     assert_eq!(
         lint("const count = ref(0) as Ref<number>\ncount + 1").error_count,

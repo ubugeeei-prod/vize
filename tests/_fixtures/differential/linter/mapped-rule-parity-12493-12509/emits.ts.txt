@@ -1,0 +1,3 @@
+export interface Emits {
+  (event: "select-item", value: string): void
+}

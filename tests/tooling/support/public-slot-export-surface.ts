@@ -180,6 +180,53 @@ function withProvenPropValueOrAdditionRemoved(
   return { ...actual, exports };
 }
 
+/** `$ListenerContract` is new; its oracle proves it equals the alias chain. */
+function withProvenListenerContractRemoved(
+  actual: ExportSurface,
+  expected: ExportSurface,
+): ExportSurface {
+  const exports = structuredClone(actual.exports);
+  const name = "$ListenerContract";
+  const index = exports.findIndex((entry) => entry.name === name);
+  if (expected.exports.some((entry) => entry.name === name) || index < 0)
+    return { ...actual, exports };
+  const oracle = new URL(
+    "tests/tooling/canon-listener-contract-equivalence.test.ts",
+    repositoryRoot,
+  );
+  assert.ok(fs.existsSync(oracle) && fs.readFileSync(oracle, "utf8").includes(name));
+  const unconstrained = (parameter: string) => ({
+    name: parameter,
+    constraint: null,
+    default: null,
+  });
+  const key = (parameter: string) => ({
+    name: parameter,
+    constraint: "string | number | symbol",
+    default: null,
+  });
+  assert.deepEqual(exports[index], {
+    name,
+    type: true,
+    value: false,
+    namespace: false,
+    declarations: [
+      {
+        kind: "TypeAliasDeclaration",
+        parameters: [
+          ...["__L", "__PB", "__EB", "__FB"].map(unconstrained),
+          key("__K"),
+          key("__Raw"),
+          ...["__Inferred", "__Loose"].map(unconstrained),
+        ],
+        signatures: [],
+      },
+    ],
+  });
+  exports.splice(index, 1);
+  return { ...actual, exports };
+}
+
 export function assertPublicSlotExportSurface(
   actual: ExportSurface,
   expected: ExportSurface,
@@ -192,7 +239,10 @@ export function assertPublicSlotExportSurface(
     Object.fromEntries(
       withProvenDefaultsRestored(
         withProvenPropValueOrAdditionRemoved(
-          withProvenListenerAdditionRemoved(actual, expected),
+          withProvenListenerAdditionRemoved(
+            withProvenListenerContractRemoved(actual, expected),
+            expected,
+          ),
           expected,
         ),
         changes,

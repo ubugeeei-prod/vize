@@ -131,7 +131,7 @@ describe("DumpView", () => {
     await rows[4].trigger("focus");
     await rows[4].trigger("click");
     await rows[5].trigger("keydown", { key: "Enter" });
-    expect(wrapper.emitted("hover")).toEqual([[4], [null], [4]]);
+    expect(wrapper.emitted("highlight")).toEqual([[4], [null], [4]]);
     expect(wrapper.emitted("select")).toEqual([[4], [null]]);
     wrapper.unmount();
   });

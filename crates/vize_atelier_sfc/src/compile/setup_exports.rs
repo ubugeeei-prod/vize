@@ -56,7 +56,7 @@ fn runtime_export(statement: &Statement<'_>) -> Option<Span> {
     }
 }
 
-fn location(source: &str, start: usize, end: usize) -> BlockLocation {
+pub(super) fn location(source: &str, start: usize, end: usize) -> BlockLocation {
     let position = |offset| {
         let mut line = 1;
         let mut column = 1;

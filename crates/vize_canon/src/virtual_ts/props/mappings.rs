@@ -79,9 +79,10 @@ impl<'a> PropBindingMappings<'a> {
         let binding = prop_binding_identifier(name);
         let start = ts.len() + "  const ".len();
         if has_default {
+            let exclude = crate::virtual_ts::generated_names::lib("Exclude");
             append!(
                 *ts,
-                "  const {binding} = {props_object_binding}[\"{name}\"] as Exclude<{props_type_ref}[\"{name}\"], undefined>;\n"
+                "  const {binding} = {props_object_binding}[\"{name}\"] as {exclude}<{props_type_ref}[\"{name}\"], undefined>;\n"
             );
         } else {
             append!(

@@ -34,6 +34,7 @@ fn restore(current: String, file: &Value) -> String {
 /// The pre-refactor bytes of a recorded producer's current image. Older
 /// images pass through; the layers below authenticate them.
 pub(super) fn source_before(path: &str, current: String) -> String {
+    let current = super::listener_contract::source_before(path, current);
     let current = super::static_emit_gate::source_before(path, current);
     let record = record();
     match record["files"]
@@ -66,7 +67,10 @@ mod tests {
         let record = record();
         for file in record["files"].as_array().unwrap() {
             let path = file["path"].as_str().unwrap();
-            let current = super::super::static_emit_gate::read_current(path);
+            let current = super::super::static_emit_gate::source_before(
+                path,
+                super::super::listener_contract::read_current(path),
+            );
             assert_eq!(support::hash(current.as_bytes()), file["after"]["sha256"]);
             let previous = source_before(path, current.clone());
             assert_eq!(support::hash(previous.as_bytes()), file["before"]["sha256"]);

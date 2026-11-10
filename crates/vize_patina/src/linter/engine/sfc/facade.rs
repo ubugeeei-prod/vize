@@ -6,17 +6,11 @@
 use crate::context::{LintContext, TemplateCommentDirectives};
 use crate::ir::TemplateSyntax;
 use crate::linter::config::Linter;
-use crate::markup::{MarkupContext, MarkupDocument};
+use crate::markup::{MarkupContext, MarkupDocument, MarkupRules};
 use crate::visitor::LintVisitor;
 use vize_croquis::Croquis;
 use vize_l0::profile;
 use vize_relief::RootNode;
-
-mod batch;
-
-// This rule's whole-document check replaces a legacy template-level callback.
-// Keep that callback at its registry position before the element visitor.
-const TEMPLATE_DOCUMENT_RULE: &str = "vue/permitted-contents";
 
 /// Exact diagnostic, help, label and fix parity is checked by the SFC battery.
 pub(in crate::linter::engine) const RULES: &[&str] = &[
@@ -70,6 +64,12 @@ pub(in crate::linter::engine) const RULES: &[&str] = &[
     "a11y/no-refer-to-non-existent-id",
     "a11y/no-static-element-interactions",
     "a11y/role-has-required-aria-props",
+    "vue/valid-v-cloak",
+    "vue/valid-v-once",
+    "vue/valid-v-text",
+    "vue/valid-v-html",
+    "vue/valid-v-show",
+    "vue/no-v-text",
 ];
 
 pub(in crate::linter::engine) struct Dispatch<'a> {
@@ -91,16 +91,7 @@ pub(in crate::linter::engine) fn dispatch_template_rules<'a>(
     let names = all_names.get(..input.rule_count).unwrap_or(all_names);
     let exit = linter.registry.has_exit_element_rules();
     let directives = TemplateCommentDirectives::new(input.l2.surface());
-    let selected: Vec<_> = rules
-        .iter()
-        .zip(names.iter().copied())
-        .enumerate()
-        .filter_map(|(index, (rule, name))| {
-            (input.rules.contains(&name) && linter.is_rule_enabled(name))
-                .then(|| rule.as_markup_rule().map(|rule| (index, rule.name(), rule)))
-                .flatten()
-        })
-        .collect();
+    let selected = linter.markup_rules(input.rule_count, |name, _| input.rules.contains(&name));
 
     if selected.is_empty() {
         let mut visitor =
@@ -110,8 +101,8 @@ pub(in crate::linter::engine) fn dispatch_template_rules<'a>(
     }
 
     let mut keep = vec![true; input.rule_count];
-    for (index, _, _) in &selected {
-        if let Some(slot) = keep.get_mut(*index) {
+    for rule in &selected {
+        if let Some(slot) = keep.get_mut(rule.rank()) {
             *slot = false;
         }
     }
@@ -121,29 +112,14 @@ pub(in crate::linter::engine) fn dispatch_template_rules<'a>(
     if let Some(analysis) = input.analysis {
         document = document.with_analysis(analysis);
     }
-    let document_rule = selected
-        .iter()
-        .find(|(_, name, _)| *name == TEMPLATE_DOCUMENT_RULE);
     {
         let mut visitor = LintVisitor::with_rule_filter(ctx, rules, names, exit, &keep)
             .with_template_directives(&directives);
-        profile!("patina.template.visit", {
-            visitor.visit_root_with_template_hook(input.root, &mut |index, ctx| {
-                let Some((selected_index, _, rule)) = document_rule else {
-                    return false;
-                };
-                if index != *selected_index {
-                    return false;
-                }
-                let mut markup_ctx = MarkupContext::new(ctx, &document);
-                rule.enter_document(&mut markup_ctx, &document);
-                true
-            });
-        });
+        profile!("patina.template.visit", visitor.visit_root(input.root));
     }
     profile!("patina.sfc.facade.visit", {
         let mut markup_ctx = MarkupContext::new(ctx, &document);
-        document.visit_with(&batch::Rules(&selected), &mut markup_ctx);
+        document.visit_with(&MarkupRules::new(&selected), &mut markup_ctx);
     });
 }
 

@@ -261,7 +261,10 @@ pub(crate) fn has_any_event_handler(element: &ElementNode, events: &[&str]) -> b
 }
 
 /// Elements that do not support ARIA attributes
-pub const ARIA_UNSUPPORTED_ELEMENTS: &[&str] = &["meta", "html", "script", "style"];
+pub const ARIA_UNSUPPORTED_ELEMENTS: &[&str] = &[
+    "base", "col", "colgroup", "head", "html", "link", "meta", "noembed", "noscript", "param",
+    "picture", "script", "source", "style", "title", "track",
+];
 
 /// Mapping of elements to their implicit ARIA roles
 pub fn get_implicit_role(tag: &str, element: &ElementNode) -> Option<&'static str> {
@@ -347,15 +350,17 @@ pub(super) fn get_implicit_role_by_attr<'a>(
 pub fn get_required_aria_props(role: &str) -> &'static [&'static str] {
     match role {
         "checkbox" => &["aria-checked"],
-        "combobox" => &["aria-expanded"],
+        "combobox" => &["aria-controls", "aria-expanded"],
         "heading" => &["aria-level"],
         "meter" => &["aria-valuenow"],
+        "menuitemcheckbox" | "menuitemradio" => &["aria-checked"],
         "option" => &["aria-selected"],
         "radio" => &["aria-checked"],
         "scrollbar" => &["aria-controls", "aria-valuenow"],
         "separator" => &["aria-valuenow"],
         "slider" => &["aria-valuenow"],
         "switch" => &["aria-checked"],
+        "treeitem" => &["aria-selected"],
         _ => &[],
     }
 }

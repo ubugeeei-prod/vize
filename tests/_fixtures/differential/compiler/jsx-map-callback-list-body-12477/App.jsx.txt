@@ -1,0 +1,2 @@
+const A = () => <ul>{items.map((item) => { const label = item.name.toUpperCase(); return <li>{label}</li>; })}</ul>;
+const B = () => <ul>{items.map((item, index, array) => <li>{array.length}</li>)}</ul>;

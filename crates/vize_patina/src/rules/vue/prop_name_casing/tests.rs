@@ -126,3 +126,22 @@ fn a_script_only_options_component_is_checked() {
         vec![reported(sfc, "_instance", "_instance: null")]
     );
 }
+
+#[test]
+fn template_less_setup_and_computed_options_keys_are_checked() {
+    let setup = "<script setup lang=\"ts\">defineProps<{ greeting_text: number }>()</script>";
+    assert_eq!(
+        findings(setup),
+        vec![reported(setup, "greeting_text", "greeting_text: number")]
+    );
+
+    let options = "<script>export default { props: { [\"greeting-text\"]: String } }</script><template><p /></template>";
+    assert_eq!(
+        findings(options),
+        vec![reported(
+            options,
+            "greeting-text",
+            "[\"greeting-text\"]: String"
+        )]
+    );
+}

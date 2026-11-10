@@ -69,8 +69,8 @@ void test("every real markup partition remains required after the helper extract
     "as_markup_rule",
     "jsx_needs_lowering",
     "legacy_keep_mask",
-    "lint_jsx_over_ir",
-    "lint_jsx_lowered_markup_root",
+    "lint_markup_l2",
+    "lint_markup_root",
     "lint_jsx_fallback_root",
   ]) {
     const modified = changeBody(engine, "lint_jsx_without_types", (body) =>

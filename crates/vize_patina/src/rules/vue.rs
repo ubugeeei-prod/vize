@@ -16,6 +16,7 @@ mod authored_closing;
 mod comment_directive;
 mod compatibility_sfc;
 mod compatibility_template;
+mod directive_shape;
 mod if_chain;
 mod macro_type_argument;
 mod no_bare_strings_in_template;

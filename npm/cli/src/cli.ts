@@ -3,6 +3,10 @@ import { createRequire } from "node:module";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
+import {
+  answerContentMapperInitialize,
+  ContentMapperFramingError,
+} from "./content-mapper-launch.js";
 import { runInitCli } from "./init.js";
 import { nativeVersionMismatchMessage } from "./native-version.js";
 import { runSetupCli } from "./setup.js";
@@ -47,11 +51,24 @@ try {
     // `init` prompts, so it is the one command that has to be async. Failures
     // land in the same reporter as the synchronous commands.
     runInitCli(args.slice(1)).catch(fail);
+  } else if (args[0] === "content-mapper") {
+    assertMatchingNativeVersion();
+    // Reply before the addon loads; the host's `initialize` wait is fixed (#12530).
+    if (answerContentMapperInitialize()) {
+      const native = require("@vizejs/native") as typeof import("@vizejs/native");
+      native.runCli([...args, "--initialized"]);
+    }
   } else {
     assertMatchingNativeVersion();
     const native = require("@vizejs/native") as typeof import("@vizejs/native");
     native.runCli(args);
   }
 } catch (error) {
-  fail(error);
+  if (error instanceof ContentMapperFramingError) {
+    // The native server reports a broken stream the same way.
+    process.stderr.write(`vize content-mapper: ${error.message}\n`);
+    process.exitCode = 1;
+  } else {
+    fail(error);
+  }
 }
