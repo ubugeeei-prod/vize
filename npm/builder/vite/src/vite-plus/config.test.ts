@@ -3,8 +3,13 @@ import { mkdirSync, mkdtempSync, writeFileSync, rmSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
-import { defineConfig, withVue, withVize } from "../vite-plus.ts";
-import { taskConfigKey, type ConfigWithVizeTasks, type VueConfigObject } from "./types.ts";
+import { defineConfig, vitePlusConfig, withVue, withVize } from "../vite-plus.ts";
+import {
+  sourceConfigKey,
+  taskConfigKey,
+  type ConfigWithVizeTasks,
+  type VueConfigObject,
+} from "./types.ts";
 import { resolveConfigExport } from "../config.ts";
 import { createTasks } from "./tasks.ts";
 
@@ -12,6 +17,25 @@ assert.equal(withVize, defineConfig);
 assert.notEqual(withVue, defineConfig);
 
 const env = { command: "build", mode: "production" } as const;
+
+void test("vitePlusConfig leaves the outer Vite+ call and task table static", async () => {
+  const previous = process.env["VP_RESOLVING_CONFIG_METADATA"];
+  process.env["VP_RESOLVING_CONFIG_METADATA"] = "1";
+  try {
+    const result = await vitePlusConfig({ vue: { compiler: { sourceMap: true } } });
+    assert.deepEqual(result.plugins, []);
+    assert.ok(result.lint?.ignorePatterns?.includes("**/node_modules/**"));
+    assert.deepEqual(result.lint?.rules, {});
+    assert.ok(result.fmt?.ignorePatterns?.includes("**/node_modules/**"));
+    assert.ok(result.fmt?.ignorePatterns?.includes("**/*.vue"));
+    assert.equal(result.run, undefined);
+    assert.equal(result[taskConfigKey]?.options.tasks, false);
+    assert.deepEqual(result[sourceConfigKey], { vue: { compiler: { sourceMap: true } } });
+  } finally {
+    if (previous === undefined) delete process.env["VP_RESOLVING_CONFIG_METADATA"];
+    else process.env["VP_RESOLVING_CONFIG_METADATA"] = previous;
+  }
+});
 
 void test("defineConfig composes async Vite+ and native config without mutating either input", async () => {
   const config = { linter: { preset: "essential" as const } };

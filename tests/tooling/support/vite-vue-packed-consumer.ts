@@ -233,6 +233,7 @@ for (const kind of ["legacy", "canonical", "wrapped", "condense"]) {
     '{ name: "packed-build-observer", configResolved(config) {',
     'const names = config.plugins.map(({name}) => name);',
     'writeFileSync("plugins-observed.json", JSON.stringify(names));',
+    'if (process.env.VP_RESOLVING_CONFIG_METADATA === "1") { assert.equal(names.filter(name => name === "vite-plugin-vize").length, 0); return; }',
     'assert.equal(names.filter(name => name === "vite-plugin-vize").length, 1);',
     'assert.equal(names.filter(name => name === "packed-build-observer").length, 1);',
     'assertVizeVueCompatShim(config.plugins, forbiddenHost);',
