@@ -72,7 +72,7 @@ impl MarkupFormatter<'_, '_> {
                 && line_width(depth, &opening, self.options) + body.len() + close.len() + 3
                     <= self.options.print_width as usize
             {
-                return Ok(vize_l0::cstr!("{opening}{body}</{close}>").into());
+                return Ok(vize_l0::cstr!("{opening}{body}</{close}>"));
             }
             let mut output = opening;
             self.newline(&mut output);
@@ -90,7 +90,7 @@ impl MarkupFormatter<'_, '_> {
                 && line_width(depth, candidate.as_str(), self.options)
                     <= self.options.print_width as usize
             {
-                return Ok(candidate.into());
+                return Ok(candidate);
             }
         }
         let mut output = opening;
@@ -109,7 +109,7 @@ impl MarkupFormatter<'_, '_> {
             if line_width(depth, candidate.as_str(), self.options)
                 <= self.options.print_width as usize
             {
-                return Ok(candidate.into());
+                return Ok(candidate);
             }
         }
         let mut output = String::from("<>");
@@ -185,10 +185,10 @@ impl MarkupFormatter<'_, '_> {
                 Ok(output)
             }
             Attribute::Shorthand { expression, .. } => {
-                Ok(vize_l0::cstr!("{{{}}}", self.expression(expression)?).into())
+                Ok(vize_l0::cstr!("{{{}}}", self.expression(expression)?))
             }
             Attribute::Spread { expression, .. } => {
-                Ok(vize_l0::cstr!("{{...{}}}", self.expression(expression)?).into())
+                Ok(vize_l0::cstr!("{{...{}}}", self.expression(expression)?))
             }
         }
     }
@@ -462,10 +462,9 @@ impl MarkupFormatter<'_, '_> {
             .map(|(binding, _)| binding)
             .map(ToCompactString::to_compact_string)
             .ok_or_else(|| {
-                FormatError::ScriptFormatError(
-                    vize_l0::cstr!("could not isolate formatted TSRX @for binding: {formatted}")
-                        .into(),
-                )
+                FormatError::ScriptFormatError(vize_l0::cstr!(
+                    "could not isolate formatted TSRX @for binding: {formatted}"
+                ))
             })
     }
 
@@ -473,9 +472,9 @@ impl MarkupFormatter<'_, '_> {
         let span = expression.span();
         let source = self.embedded_source(span.start as usize, span.end as usize)?;
         script::format_tsx_expression(source.trim(), self.options).ok_or_else(|| {
-            FormatError::ScriptFormatError(
-                vize_l0::cstr!("could not format embedded TSRX expression: {source}").into(),
-            )
+            FormatError::ScriptFormatError(vize_l0::cstr!(
+                "could not format embedded TSRX expression: {source}"
+            ))
         })
     }
 
@@ -513,7 +512,7 @@ impl MarkupFormatter<'_, '_> {
         match name {
             TagName::Static(span) => Ok(String::from(self.slice(*span)?)),
             TagName::Dynamic { expression, .. } => {
-                Ok(vize_l0::cstr!("{{{}}}", self.expression(expression)?).into())
+                Ok(vize_l0::cstr!("{{{}}}", self.expression(expression)?))
             }
         }
     }
