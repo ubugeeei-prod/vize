@@ -100,7 +100,10 @@ fn emit_vue_component_options_type(
             "  setup?: (this: void, props: {readonly}<{props_ref}>, ctx: any) => any;\n"
         );
     }
-    ts.push_str(VUE_COMPONENT_OPTIONS_MEMBERS_AFTER_SETUP);
+    crate::virtual_ts::generated_names::push_lib_text(
+        ts,
+        VUE_COMPONENT_OPTIONS_MEMBERS_AFTER_SETUP,
+    );
 }
 
 /// Alias the authored default export and its instance type so the generated
@@ -183,9 +186,10 @@ pub(super) fn emit_default_export_declaration(
     // partial so parent payload inference remains exact without turning an
     // omitted slot into a component-usage error.
     if let Some(slots_ref) = &static_slots_ref {
+        let partial = crate::virtual_ts::generated_names::lib("Partial");
         append!(
             component_contract_fields,
-            " readonly __vizeSlots?: Partial<{slots_ref}>;"
+            " readonly __vizeSlots?: {partial}<{slots_ref}>;"
         );
     }
     if let Some(fallthrough_ref) = fallthrough_props_ref {

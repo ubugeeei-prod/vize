@@ -64,6 +64,40 @@ pub(in crate::virtual_ts::scope) fn append_prop_check_helpers(
     typed_fallthrough_values: bool,
     hoist_shared_preamble: bool,
 ) {
+    if !crate::virtual_ts::generated_names::rewrites_lib_text() {
+        append_prop_check_helpers_text(
+            ts,
+            usages,
+            check_unknown_props,
+            check_unknown_fallthrough_props,
+            strict_component_attrs,
+            typed_fallthrough_values,
+            hoist_shared_preamble,
+        );
+        return;
+    }
+    let mut helpers = crate::virtual_ts::TextBuf::default();
+    append_prop_check_helpers_text(
+        &mut helpers,
+        usages,
+        check_unknown_props,
+        check_unknown_fallthrough_props,
+        strict_component_attrs,
+        typed_fallthrough_values,
+        hoist_shared_preamble,
+    );
+    crate::virtual_ts::generated_names::push_lib_text(ts, &helpers);
+}
+
+fn append_prop_check_helpers_text(
+    ts: &mut crate::virtual_ts::TextBuf,
+    usages: &[(usize, &ComponentUsage)],
+    check_unknown_props: bool,
+    check_unknown_fallthrough_props: bool,
+    strict_component_attrs: bool,
+    typed_fallthrough_values: bool,
+    hoist_shared_preamble: bool,
+) {
     let needs_aria_prop_value = usages.iter().any(|(_, usage)| {
         usage
             .props

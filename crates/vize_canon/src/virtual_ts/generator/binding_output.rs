@@ -1,7 +1,24 @@
 //! Publish generated code with both binding metadata carriers.
 
-use super::super::{VirtualTsOutput, VizeMapping, VizeSemanticLink};
+use super::super::{
+    TextBuf, VirtualTsGenerationOptions, VirtualTsOutput, VizeMapping, VizeSemanticLink,
+};
 use vize_carton::String;
+
+pub(super) fn finish(ts: TextBuf, options: VirtualTsGenerationOptions<'_>) -> vize_carton::String {
+    if ts.contains(super::super::ATTR_VALUE_REFERENCE)
+        && let Some(collector) = options.diagnostic_ownership
+    {
+        let mut helper = TextBuf::default();
+        helper.push_lib_text(super::super::attr_value_declaration(
+            options.hoist_shared_preamble,
+        ));
+        collector
+            .borrow_mut()
+            .record_attr_value_helper(helper.into_compact());
+    }
+    ts.into_compact()
+}
 
 pub(super) fn publish(
     ts: String,

@@ -26,9 +26,11 @@ pub(super) fn emit_setup_type(
     for element in roots.iter().flatten() {
         let ty = if is_native_tag(element.tag) {
             let map = match element.ns {
-                Namespace::Svg => "SVGElementTagNameMap",
-                Namespace::MathMl => "MathMLElementTagNameMap",
-                _ => "HTMLElementTagNameMap",
+                Namespace::Svg => crate::virtual_ts::generated_names::lib("SVGElementTagNameMap"),
+                Namespace::MathMl => {
+                    crate::virtual_ts::generated_names::lib("MathMLElementTagNameMap")
+                }
+                _ => crate::virtual_ts::generated_names::lib("HTMLElementTagNameMap"),
             };
             let mut tag = crate::virtual_ts::TextBuf::default();
             push_ts_string_literal(&mut tag, element.tag);
@@ -44,7 +46,10 @@ pub(super) fn emit_setup_type(
     }
     let inferred = !types.is_empty();
     if inferred {
-        ts.push_str("  type $RootNativeElement<T extends PropertyKey, M> = T extends keyof M ? M[T] : Element;\n");
+        crate::virtual_ts::generated_names::push_lib_text(
+            ts,
+            "  type $RootNativeElement<T extends PropertyKey, M> = T extends keyof M ? M[T] : Element;\n",
+        );
         ts.push_str("  type $RootComponentEl<C> = C extends abstract new (...args: any[]) => infer I ? I extends { $el: infer E } ? E : any : C extends (props: any, ctx: any, expose: (exposed: infer E) => any, ...args: any[]) => any ? E extends { $el: infer D } ? D : any : any;\n");
         let ty = types
             .iter()

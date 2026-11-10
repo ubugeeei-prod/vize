@@ -1,0 +1,119 @@
+<!-- @inferComponentDollarEl true -->
+<script lang="ts">
+type AnimationEvent = never
+type ArrayConstructor = never
+type Awaited = never
+type BooleanConstructor = never
+type Capitalize = never
+type ClipboardEvent = never
+type CompositionEvent = never
+type Date = never
+type DateConstructor = never
+type DragEvent = never
+type Element = never
+type ErrorEvent = never
+type Event = never
+type Exclude = never
+type Extract = never
+type FocusEvent = never
+type FormDataEvent = never
+type Function = never
+type FunctionConstructor = never
+type GlobalEventHandlersEventMap = never
+type HashChangeEvent = never
+type HTMLElementTagNameMap = never
+type InputEvent = never
+type InstanceType = never
+type Iterable = never
+type KeyboardEvent = never
+type Lowercase = never
+type MathMLElementTagNameMap = never
+type MessageEvent = never
+type MouseEvent = never
+type NoInfer = never
+type NonNullable = never
+type NumberConstructor = never
+type ObjectConstructor = never
+type Omit = never
+type Parameters = never
+type Partial = never
+type Pick = never
+type PointerEvent = never
+type PopStateEvent = never
+type PropertyKey = never
+type Readonly = never
+type Record = never
+type Required = never
+type ReturnType = never
+type SecurityPolicyViolationEvent = never
+type StorageEvent = never
+type StringConstructor = never
+type SubmitEvent = never
+type SVGElementTagNameMap = never
+type ToggleEvent = never
+type TouchEvent = never
+type TransitionEvent = never
+type Uncapitalize = never
+type WheelEvent = never
+export const libTypePoison = true
+export default { name: 'LibTypeAudit' }
+</script>
+
+<script setup lang="ts">
+import { ref, useCssModule, useTemplateRef } from 'vue'
+import Child from './Child.vue'
+
+const mode = ref(0)
+const value = ref('ok')
+const slotName = ref('default')
+const button = useTemplateRef('button')
+const styles = useCssModule()
+const onEvent = (_event: unknown) => undefined
+const onSave = (saved: string) => saved.toUpperCase()
+void button
+</script>
+
+<template>
+  <div
+    v-if="mode === 0"
+    :class="styles.root"
+    @dblclick="onEvent"
+    @click="onEvent"
+    @touchstart="onEvent"
+    @keydown="onEvent"
+    @focus="onEvent"
+    @input="onEvent"
+    @compositionstart="onEvent"
+    @submit="onEvent"
+    @change="onEvent"
+    @drag="onEvent"
+    @copy="onEvent"
+    @wheel="onEvent"
+    @animationstart="onEvent"
+    @transitionend="onEvent"
+    @error="onEvent"
+    @toggle="onEvent"
+    @formdata="onEvent"
+    @popstate="onEvent"
+    @hashchange="onEvent"
+    @message="onEvent"
+    @storage="onEvent"
+    @securitypolicyviolation="onEvent"
+  >
+    <Child
+      :value="value"
+      :transform="item => item.toUpperCase()"
+      :ref="instance => instance?.focus()"
+      @save="onSave"
+    >
+      <template #[slotName]="{ item }">{{ item.toUpperCase() }}</template>
+    </Child>
+    <Transition @enter="onEvent"><button ref="button">ok</button></Transition>
+    <GlobalWidget :value="value" @save="onSave" />
+    <slot :name="slotName" v-bind="{ value }" />
+  </div>
+  <svg v-else-if="mode === 1"><circle /></svg>
+  <math v-else><mi>{{ value }}</mi></math>
+</template>
+
+<style module>.root { color: red; }</style>

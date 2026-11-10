@@ -31,6 +31,10 @@ impl TextBuf {
         self.0.push_str(text);
     }
 
+    pub(crate) fn push_lib_text(&mut self, text: &str) {
+        super::generated_names::push_lib_text(self, text);
+    }
+
     #[inline]
     pub(crate) fn push(&mut self, character: char) {
         self.0.push(character);
