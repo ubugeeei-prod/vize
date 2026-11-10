@@ -46,7 +46,7 @@ fn reports_setup_macro_compatibility_failures() {
 fn reports_next_tick_native_events_and_unsorted_options() {
     let next_tick = lint(
         Box::new(NextTickStyle),
-        "<script setup>nextTick(() => ready())</script><template />",
+        "<script setup>import { nextTick } from 'vue'; nextTick(() => ready())</script><template />",
     );
     assert_eq!(next_tick.warning_count, 1);
     let event = lint(
@@ -59,4 +59,25 @@ fn reports_next_tick_native_events_and_unsorted_options() {
         "<script>export default { methods: { zebra() {}, alpha() {} } }</script><template />",
     );
     assert_eq!(sorted.warning_count, 1);
+}
+
+#[test]
+fn next_tick_style_resolves_vue_imports_and_parenthesized_awaits() {
+    let alias = lint(
+        Box::new(NextTickStyle),
+        "<script>import { nextTick as tick } from 'vue'; tick(() => undefined)</script><template />",
+    );
+    assert_eq!(alias.warning_count, 1, "{:?}", alias.diagnostics);
+
+    let unrelated = lint(
+        Box::new(NextTickStyle),
+        "<script>import { nextTick } from './scheduler'; nextTick(() => undefined); nextTick()</script><template />",
+    );
+    assert_eq!(unrelated.warning_count, 0, "{:?}", unrelated.diagnostics);
+
+    let awaited = lint(
+        Box::new(NextTickStyle),
+        "<script>import { nextTick } from 'vue'; async function run() { await (nextTick()) }</script><template />",
+    );
+    assert_eq!(awaited.warning_count, 0, "{:?}", awaited.diagnostics);
 }

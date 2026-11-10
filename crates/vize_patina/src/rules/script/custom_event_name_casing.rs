@@ -311,9 +311,9 @@ impl<'a> CustomEventNameCasingVisitor<'a, '_> {
 }
 
 fn static_event_name<'a>(argument: &'a Argument<'a>) -> Option<(&'a str, Span)> {
-    match argument {
-        Argument::StringLiteral(literal) => Some((literal.value.as_str(), literal.span)),
-        Argument::TemplateLiteral(literal) if literal.expressions.is_empty() => {
+    match argument.as_expression()?.without_parentheses() {
+        Expression::StringLiteral(literal) => Some((literal.value.as_str(), literal.span)),
+        Expression::TemplateLiteral(literal) if literal.expressions.is_empty() => {
             Some((literal.single_quasi()?.as_str(), literal.span))
         }
         _ => None,

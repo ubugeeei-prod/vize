@@ -1,4 +1,12 @@
-const REF_FACTORY_NAMES: &[&str] = &["ref", "computed", "shallowRef", "toRef", "customRef"];
+const REF_FACTORY_NAMES: &[&str] = &[
+    "ref",
+    "computed",
+    "shallowRef",
+    "toRef",
+    "customRef",
+    "defineModel",
+    "useTemplateRef",
+];
 
 pub(super) fn source_may_contain_ref_operand(source: &str) -> bool {
     if !REF_FACTORY_NAMES
@@ -208,5 +216,16 @@ mod tests {
         assert!(source_may_contain_ref_operand(
             "const emit = defineEmits(['change'])\nconst active = computed(() => true)\nemit('change', active)"
         ));
+    }
+
+    #[test]
+    fn keeps_define_model_and_template_ref_operands() {
+        for source in [
+            "const open = defineModel('open')\nconst label = open ? 'open' : 'closed'",
+            "const input = useTemplateRef('input')\nif (!input) console.log('missing')",
+            "const count = ref(0)\nconst open = defineModel('open')\ncount.value++\nconst label = open ? 'open' : 'closed'",
+        ] {
+            assert!(source_may_contain_ref_operand(source), "{source}");
+        }
     }
 }

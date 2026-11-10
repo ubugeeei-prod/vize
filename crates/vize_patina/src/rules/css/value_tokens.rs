@@ -6,14 +6,14 @@ use cssparser::{
 };
 
 #[derive(Default)]
-pub(super) struct ValueTokens {
-    pub(super) bindings: Vec<(usize, usize)>,
+pub(crate) struct ValueTokens {
+    pub(crate) bindings: Vec<(usize, usize)>,
     pub(super) important: Vec<(usize, usize)>,
     declarations: bool,
 }
 
 impl ValueTokens {
-    pub(super) fn new(source: &str) -> Self {
+    pub(crate) fn new(source: &str) -> Self {
         let mut input = ParserInput::new(source);
         let mut parser = Parser::new(&mut input);
         let mut tokens = Self::default();

@@ -54,6 +54,8 @@ pub(super) fn script_rule_may_match(rule_name: &str, source: &str) -> bool {
                         b"fetch",
                         b"setTimeout",
                         b"setInterval",
+                        b"requestAnimationFrame",
+                        b"setImmediate",
                         b"queueMicrotask",
                         b"Promise",
                         b".then",

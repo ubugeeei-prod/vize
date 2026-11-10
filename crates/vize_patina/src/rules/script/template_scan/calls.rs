@@ -124,15 +124,22 @@ impl<'a> Visit<'a> for CallCollector<'a> {
         // Only a plain identifier callee: a member call (`bus.emit('x')`,
         // `child.$emit('x')`) dispatches on another object, which is a
         // different thing entirely and is deliberately not tracked.
-        if let Expression::Identifier(callee) = &it.callee {
+        if let Expression::Identifier(callee) = it.callee.without_parentheses() {
             self.calls.push(CollectedCall {
                 callee: callee.name.as_str(),
                 callee_span: callee.span,
-                first_string_argument: match it.arguments.first() {
-                    Some(Argument::StringLiteral(literal)) => {
+                first_string_argument: match it
+                    .arguments
+                    .first()
+                    .and_then(Argument::as_expression)
+                    .map(Expression::without_parentheses)
+                {
+                    Some(Expression::StringLiteral(literal)) => {
                         Some((literal.value.as_str(), literal.span))
                     }
-                    Some(Argument::TemplateLiteral(literal)) if literal.expressions.is_empty() => {
+                    Some(Expression::TemplateLiteral(literal))
+                        if literal.expressions.is_empty() =>
+                    {
                         literal
                             .single_quasi()
                             .map(|quasi| (quasi.as_str(), literal.span))

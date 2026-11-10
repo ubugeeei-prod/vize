@@ -35,9 +35,8 @@ mod types;
 use oxc_ast::{
     AstKind,
     ast::{
-        Argument, BindingPattern, CallExpression, Expression, FormalParameters,
-        IdentifierReference, MemberExpression, ObjectExpression, ObjectPropertyKind, Program,
-        VariableDeclarationKind,
+        BindingPattern, CallExpression, Expression, FormalParameters, IdentifierReference,
+        MemberExpression, ObjectExpression, ObjectPropertyKind, Program, VariableDeclarationKind,
     },
 };
 use oxc_ast_visit::{
@@ -389,11 +388,16 @@ fn context_parameter(params: &FormalParameters<'_>) -> (Option<SymbolId>, Option
 
 /// The literal first argument: a string, or a template without substitutions.
 fn literal_event(call: &CallExpression<'_>) -> Option<(CompactString, Span)> {
-    match call.arguments.first()? {
-        Argument::StringLiteral(literal) => {
+    match call
+        .arguments
+        .first()?
+        .as_expression()?
+        .without_parentheses()
+    {
+        Expression::StringLiteral(literal) => {
             Some((CompactString::new(literal.value.as_str()), literal.span))
         }
-        Argument::TemplateLiteral(literal) if literal.expressions.is_empty() => Some((
+        Expression::TemplateLiteral(literal) if literal.expressions.is_empty() => Some((
             CompactString::new(literal.single_quasi()?.as_str()),
             literal.span,
         )),

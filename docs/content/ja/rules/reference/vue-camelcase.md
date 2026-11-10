@@ -19,7 +19,7 @@ description: "テンプレート式の識別子を camelCase に揃えます。"
 
 ```vue annotate="remove:2"
 <template>
-  <p>{{ user_name }}</p>
+  <p>{{ { user_name: value } }}</p>
 </template>
 ```
 
@@ -29,7 +29,7 @@ description: "テンプレート式の識別子を camelCase に揃えます。"
 
 ```vue annotate="add:2"
 <template>
-  <p>{{ userName }}</p>
+  <p>{{ { userName: value } }}</p>
 </template>
 ```
 
@@ -54,4 +54,4 @@ export default defineConfig({}).withVue({
 
 - [Vue ルール](../vue.md)
 - [全ルール](../all.md)
-- [ソースコード](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/compatibility_template/core_rules/camelcase.rs#L10)
+- [ソースコード](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/compatibility_template/core_rules/camelcase.rs#L12)

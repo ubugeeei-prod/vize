@@ -1,6 +1,8 @@
 //! `vue/no-constant-condition` compatibility rule.
 
-use super::super::core_checks::{CoreKind, check_expression};
+use super::super::core_checks::{
+    CoreKind, check_directive as check_core_directive, check_expression,
+};
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
@@ -42,13 +44,6 @@ impl Rule for NoConstantCondition {
         _element: &ElementNode<'a>,
         directive: &DirectiveNode<'a>,
     ) {
-        if let Some(expression) = &directive.exp {
-            check_expression(
-                ctx,
-                expression,
-                CoreKind::NoConstantCondition,
-                EntityContext::Attribute,
-            );
-        }
+        check_core_directive(ctx, directive, CoreKind::NoConstantCondition);
     }
 }

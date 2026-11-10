@@ -1,6 +1,8 @@
 //! `vue/eqeqeq` compatibility rule.
 
-use super::super::core_checks::{CoreKind, check_expression};
+use super::super::core_checks::{
+    CoreKind, check_directive as check_core_directive, check_expression, check_sfc_styles,
+};
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
@@ -23,6 +25,10 @@ impl Rule for Eqeqeq {
         &META
     }
 
+    fn run_on_sfc<'a>(&self, ctx: &mut LintContext<'a>) {
+        check_sfc_styles(ctx, CoreKind::Eqeqeq);
+    }
+
     fn check_interpolation<'a>(
         &self,
         ctx: &mut LintContext<'a>,
@@ -42,8 +48,6 @@ impl Rule for Eqeqeq {
         _element: &ElementNode<'a>,
         directive: &DirectiveNode<'a>,
     ) {
-        if let Some(expression) = &directive.exp {
-            check_expression(ctx, expression, CoreKind::Eqeqeq, EntityContext::Attribute);
-        }
+        check_core_directive(ctx, directive, CoreKind::Eqeqeq);
     }
 }

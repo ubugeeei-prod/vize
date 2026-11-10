@@ -27,6 +27,13 @@ pub(super) const SEMANTIC_TEMPLATE_RULES: &[&str] = &[
 ];
 
 pub(super) const SHARED_SFC_DESCRIPTOR_RULES: &[&str] = &[
+    "vue/dot-notation",
+    "vue/eqeqeq",
+    "vue/no-implicit-coercion",
+    "vue/no-loss-of-precision",
+    "vue/no-negated-condition",
+    "vue/no-useless-concat",
+    "vue/prefer-template",
     "vue/enforce-style-attribute",
     "vue/next-tick-style",
     "vue/no-content-outside-block",
