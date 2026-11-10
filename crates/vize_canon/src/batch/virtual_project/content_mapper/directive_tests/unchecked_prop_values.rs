@@ -180,7 +180,8 @@ fn authored_expectation_covers_the_visible_name() {
 
 /// A fallthrough root checks its literal against `Partial` props, which
 /// renders the same wrong-value message as the assignment. Its declared props
-/// stay owned by the literal, so the assignment never repeats that report.
+/// stay owned by the literal, except for an explicit `undefined` that the
+/// relaxed target accepts and the required per-prop contract must reject.
 #[test]
 fn relaxed_fallthrough_root_keeps_declared_props_with_the_literal() {
     let mut options = ContentMapperTransformOptions::default();
@@ -191,7 +192,7 @@ fn relaxed_fallthrough_root_keeps_declared_props_with_the_literal() {
     let result = generate_vue_content_mapper_transform_with_options(
         Path::new("/project/Typed.vue"),
         source,
-        options,
+        options.clone(),
     )
     .expect("transform");
     let text = result.text.as_str();
@@ -206,6 +207,21 @@ fn relaxed_fallthrough_root_keeps_declared_props_with_the_literal() {
             .count(),
         1,
         "the declared key, not its `Partial`, decides the owner"
+    );
+
+    let undefined = generate_vue_content_mapper_transform_with_options(
+        Path::new("/project/Wrapper.vue"),
+        &source.replace(":label=\"1\"", ":label=\"undefined\""),
+        options,
+    )
+    .expect("undefined transform");
+    assert_eq!(
+        undefined
+            .text
+            .matches("  const __vize_prop_check_0_label: $AttrValue<__Inner_Props_0, \"label\", unknown, __Inner_0_prop_label, {}> = undefined satisfies __Inner_0_prop_label;\n")
+            .count(),
+        1,
+        "the per-prop contract owns explicit undefined at the relaxed root"
     );
 }
 

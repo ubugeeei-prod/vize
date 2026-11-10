@@ -13734,7 +13734,7 @@
               "html-template",
               "ts"
             ],
-            "selector": "content_mapper_tsgo_cli::fallthrough_value_12458::relaxed_fallthrough_roots_report_wrong_values_once; a fallthrough root under checkRequiredFallthroughAttributes checked through tsc 7.1 with the Vize mapper and vize check on the same project (the explicit undefined case is tracked by #12491)"
+            "selector": "content_mapper_tsgo_cli::fallthrough_value_12458::relaxed_fallthrough_roots_report_wrong_values_once; a wrong declared value at a fallthrough root under checkRequiredFallthroughAttributes, checked through tsc 7.1 with the Vize mapper and vize check on the same project"
           }
         ]
       }
@@ -15148,6 +15148,45 @@
               "ts"
             ],
             "selector": "content_mapper_tsgo_cli::recovered_attribute_boundary_11731::legal_quoted_boundaries_keep_neighbor_and_unused_diagnostics; original reported Gap/Other project, valid repair, independent same-file error and noUnusedLocals false/true under a required real host, LF/CRLF. Native Component/Document token packets and whole mapper packet have separate regression tests. Input-only registration; source-host after qualification is required."
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/regression/relaxed-fallthrough-undefined-12491",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "relaxed-fallthrough-undefined-12491/Inner.vue.txt",
+          "sha256": "72e9d3d2be8f495cd46269f2eff3336c253d1e453db81e713b9c56836e615514",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "relaxed-fallthrough-undefined-12491/Wrapper.vue.txt",
+          "sha256": "35845e50389727159b7ea5b03b3419e994e1d219c43241cc146503593f1a7bb8",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "relaxed-fallthrough-undefined-12491/tsconfig.json.txt",
+          "sha256": "1927c08f47e2e5748682b396326abf2922661bf323963775af64f2834220e6d8",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "content_mapper_tsgo_cli::fallthrough_value_12458::relaxed_fallthrough_roots_report_undefined_required_props; an explicit undefined required prop at a relaxed fallthrough root, checked through tsc 7.1 with the Vize mapper and vize check on the same project"
           }
         ]
       }
