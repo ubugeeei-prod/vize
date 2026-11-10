@@ -13287,6 +13287,45 @@
       }
     },
     {
+      "id": "typechecker/regression/content-mapper-commented-binding-12582",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "content-mapper-commented-binding-12582/App.vue.txt",
+          "sha256": "b9e41dcb5ccbf751a738b34df86978bfce267d4c518cf50612f1bd210e1fa0bb",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "content-mapper-commented-binding-12582/Child.vue.txt",
+          "sha256": "7acf6f93d0917f74bcfdf4fa24e8f3f6f0ef8d0f10860bc9736aa7f7d8e43231",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "content-mapper-commented-binding-12582/tsconfig.json.txt",
+          "sha256": "8b2c95d95331863b8b9b707a4b717a99fdb42c714409fe4021f8ebd0b11c7454",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "content_mapper::masked_spans::exact_fragments_survive_comment_elision_with_different_lengths; content_mapper::tests::diagnostic_origin::commented_template_binding_members_keep_diagnostic_owners. A multi-line component binding with block comments is printed into three generated copies with different byte lengths; each item.kind copy maps back to the one authored member instead of falling through an unmapped gap. Input-only registration; no native parity claim."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/regression/content-mapper-declaration-fallthrough-11591",
       "state": "active",
       "targets": [
