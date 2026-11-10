@@ -376,3 +376,45 @@ export default { data() { return { count: 1 } } }
         );
     }
 }
+
+#[test]
+fn a_slot_prop_pattern_maps_to_one_generated_binding() {
+    // #12486: the component-props replay leaves the pattern unmapped, so the
+    // host projects a hover or diagnostic on it once.
+    let fixture =
+        std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/component_api_hover");
+    let file = fixture.join("src/Parent.vue");
+    let source = std::fs::read_to_string(&file).unwrap();
+    let responses = exchange(&frames(&[
+        initialize_request(),
+        json!({
+            "jsonrpc": "2.0",
+            "id": 2,
+            "method": "openProject",
+            "params": {
+                "configFileName": fixture.join("tsconfig.json"),
+                "projectHandle": "p1",
+                "options": null,
+                "compilerOptions": {}
+            }
+        }),
+        json!({
+            "jsonrpc": "2.0",
+            "id": 3,
+            "method": "transform",
+            "params": { "fileName": file, "content": source, "projectHandle": "p1" }
+        }),
+    ]));
+    let pattern = source.find("row }\">{{ row }}</template></Child>").unwrap();
+    // `[generatedStart, generatedLength, originalStart, originalLength, ...]`
+    let covering = responses[2]["result"]["mappings"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .filter(|span| {
+            let start = span[2].as_u64().unwrap() as usize;
+            start <= pattern && pattern < start + span[3].as_u64().unwrap() as usize
+        })
+        .count();
+    assert_eq!(covering, 1);
+}
