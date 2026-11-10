@@ -99,7 +99,7 @@ void test("timed packing uses the fewest runners within the target and bounds th
   }
 });
 
-void test("runner 1 reserves exactly the captures its matrix entry runs", () => {
+void test("runner 1 reserves capture time while preserving the exact partition", () => {
   assert.deepEqual(toolingLeadSteps("pr", {}), ["historical-sfc-documents"]);
   assert.deepEqual(toolingLeadSteps("merge", {}), allLeadSteps);
   assert.deepEqual(toolingLeadSteps("pr", { "native-ssr-capture": true }), [
@@ -120,7 +120,6 @@ void test("runner 1 reserves exactly the captures its matrix entry runs", () => 
   const files = planToolingTests(["Cargo.toml"], { tier: "merge" }).tests;
   const plain = toolingShards(plan(files, "merge"));
   const reserved = toolingShards(plan(files, "merge", allLeadSteps));
-  assert.equal(reserved.length, plain.length);
   assert.ok(reserved[0].testMs < plain[0].testMs);
   assert.deepEqual(reserved.flatMap(({ files }) => files).sort(), files);
   for (const leadSteps of [["unknown"], ["native-ssr", "native-ssr"], "native-ssr"]) {

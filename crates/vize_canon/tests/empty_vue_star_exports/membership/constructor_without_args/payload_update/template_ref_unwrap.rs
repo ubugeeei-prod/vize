@@ -42,6 +42,7 @@ fn restore(current: &str, transition: &Value) -> String {
 /// The pre-unwrap bytes of a recorded asset's current image. Older images
 /// pass through; the layers below authenticate them.
 pub(super) fn source_before(path: &str, current: String) -> String {
+    let current = super::usage_helpers::source_before(path, current);
     let current = super::constructor_noinfer_return::source_before(path, current);
     let record = record();
     match record["files"]
@@ -57,6 +58,7 @@ pub(super) fn source_before(path: &str, current: String) -> String {
 
 /// A compiled preamble without the shared unwrap aliases.
 pub(super) fn preamble_before(current: &str) -> String {
+    let current = &super::usage_helpers::preamble_before(current);
     let record = record();
     match ["compiledPreamble", "compiledStrictPreamble"]
         .into_iter()
@@ -78,6 +80,7 @@ mod tests {
         for file in record["files"].as_array().unwrap() {
             let path = file["path"].as_str().unwrap();
             let current = fs::read_to_string(support::repository().join(path)).unwrap();
+            let current = super::super::usage_helpers::source_before(path, current);
             assert!(is_after(&current, file), "{path}");
             let previous = source_before(path, current.clone());
             assert_eq!(support::hash(previous.as_bytes()), file["before"]["sha256"]);
@@ -101,6 +104,7 @@ mod tests {
                 "compiledStrictPreamble",
             ),
         ] {
+            let current = &super::super::usage_helpers::preamble_before(current);
             let preamble = &record[key];
             assert!(is_after(current, preamble));
             let previous = preamble_before(current);

@@ -24,6 +24,7 @@ mod hyphenation;
 mod merge;
 mod mustache_spacing;
 mod no_mutating_props;
+mod no_use_v_if_with_v_for;
 mod prop_name_casing;
 mod props_destructuring;
 mod real_project_allowances;
@@ -57,6 +58,7 @@ pub use html_self_closing::{
 pub use hyphenation::HyphenationStyle;
 pub use mustache_spacing::MustacheInterpolationSpacingStyle;
 pub use no_mutating_props::NoMutatingPropsOptions;
+pub use no_use_v_if_with_v_for::NoUseVIfWithVForOptions;
 pub use prop_name_casing::{PropNameCasingOptions, PropNameCasingStyle};
 pub use props_destructuring::{DefinePropsDestructuringOptions, PropsDestructureMode};
 pub use real_project_allowances::{
@@ -146,6 +148,9 @@ pub struct ConfigLintRuleOptions {
     /// Button type values accepted by `vue/html-button-has-type`.
     #[serde(rename = "vue/html-button-has-type")]
     html_button_has_type: Option<HtmlButtonHasTypeOptions>,
+    /// Whether `v-if` may reference the iteration variables from a sibling `v-for`.
+    #[serde(rename = "vue/no-use-v-if-with-v-for")]
+    no_use_v_if_with_v_for: Option<NoUseVIfWithVForOptions>,
     /// Exact custom directives known to be registered by the application.
     #[serde(rename = "vue/warn-custom-directive")]
     warn_custom_directive: Option<WarnCustomDirectiveOptions>,
@@ -241,6 +246,7 @@ impl ConfigLintRuleOptions {
             && self.slot_name_casing.is_none()
             && self.no_mutating_props.is_none()
             && self.html_button_has_type.is_none()
+            && self.no_use_v_if_with_v_for.is_none()
             && self.warn_custom_directive.is_none()
             && self.no_bare_strings_in_template.is_none()
             && self.anchor_has_content.is_none()
@@ -346,6 +352,12 @@ impl ConfigLintRuleOptions {
     #[inline]
     pub fn html_button_has_type(&self) -> Option<HtmlButtonHasTypeOptions> {
         self.html_button_has_type
+    }
+
+    /// Configured iteration-variable policy for `vue/no-use-v-if-with-v-for`.
+    #[inline]
+    pub fn no_use_v_if_with_v_for(&self) -> Option<NoUseVIfWithVForOptions> {
+        self.no_use_v_if_with_v_for
     }
 
     /// Configured custom-directive exemptions.

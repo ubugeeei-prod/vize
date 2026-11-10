@@ -1,0 +1,90 @@
+{
+  "schema": "vize.instance-global-current-provenance",
+  "version": 1,
+  "issue": 10617,
+  "pullRequest": 12615,
+  "producer": {
+    "sourceRevision": "c6a6c571b090f86cf3c8bff563ed9cb7d1ea7034",
+    "sourceTree": "d27f654c759d74392e05e651029d2498f16758fa",
+    "pullRequestHead": "0c3ae8dc16cec2a240124f550d7ecf7fb159946a",
+    "binarySha256": "78e53d3b52fde64a0f738db83cefcbbb992ae20d49395aae40f51a42b979f239",
+    "recipe": "cargo build --profile ci -p vize",
+    "captureRun": 42781388461,
+    "artifactId": 13746472560,
+    "runAttempt": 1,
+    "platform": "linux",
+    "arch": "x64"
+  },
+  "artifact": {
+    "repository": "ubugeeei-prod/vize",
+    "run": 42781388461,
+    "job": 129712771074,
+    "id": 13746472560,
+    "name": "instance-globals-10617-0c3ae8dc16cec2a240124f550d7ecf7fb159946a-1",
+    "digest": "sha256:a36320d46224ffa25515e66dd680456799ac0a3db396bc7635938edf27c5104b",
+    "bytes": 18677366
+  },
+  "previousPopulation": {
+    "path": "source-packets-current-f29a8ee58999.json",
+    "bytes": 419557,
+    "sha256": "c5318722198f96647551a7eae5b123e95d5cf2f1087cbf99753de78326ec17df"
+  },
+  "successorPopulation": {
+    "path": "source-packets-current-c6a6c571b090.json",
+    "bytes": 417627,
+    "sha256": "9e51f91058641c3ef70474e16a1e4c5540d96bba5e2616de192e236c640a14e8"
+  },
+  "sourceReceipt": {
+    "path": "crates/vize_canon/tests/empty_vue_star_exports/membership/constructor_without_args/payload_update/canon_leftovers_11499.json",
+    "sha256": "250e01138d163f77a5d98b20bc97f562a663ebb924c17c810b9d9cf02280128e"
+  },
+  "evidence": {
+    "source-build.json": {
+      "bytes": 326,
+      "sha256": "f785572757205b92e409f390c77598e72a66264622c1ea0dfc0b224ec73ef537"
+    },
+    "source-launch.json": {
+      "bytes": 882,
+      "sha256": "c23e9b58ba91272dc9bf469686509c1e7193cdfcce5f727b78045f57872ca055"
+    },
+    "source-protocol.json": {
+      "bytes": 479047,
+      "sha256": "602023a69e1ef10659f604d857291d0be6ad24860d85e04abb0cae833e6c9184"
+    },
+    "outcomes.json": {
+      "bytes": 112711,
+      "sha256": "91752533607cc5b6865da0e73c90c7e15068ed0c82d85dd39340903b6a44b3d0"
+    },
+    "qualification.json": {
+      "bytes": 116860,
+      "sha256": "a9602dcc60d6b9b97c7fe7bba28dfd8103bb9316c373fe4555b84aaa56cda173"
+    },
+    "host-matrix.json": {
+      "bytes": 4327,
+      "sha256": "f2d0954beed138dced3b5c79a95066380abaf852a233ff01d214bd2cf3b8335b"
+    }
+  },
+  "capturedQualification": {
+    "status": "unqualified",
+    "fullPacketQualification": false,
+    "hostMatrixQualification": false,
+    "totalOutcomes": 499,
+    "passedOutcomes": 495,
+    "gapCount": 4,
+    "gapIds": [
+      "whole-packet/lf/slot-shadow",
+      "whole-packet/lf/mixed-slot-scope",
+      "whole-packet/crlf-unicode/slot-shadow",
+      "whole-packet/crlf-unicode/mixed-slot-scope"
+    ]
+  },
+  "review": {
+    "completePackets": 80,
+    "allNonWholePacketOutcomesPassed": true,
+    "qualificationCredit": false,
+    "nativeAcceptanceCredit": false,
+    "publicPackageAcceptanceCredit": false,
+    "performanceCredit": false,
+    "reason": "The child usage in the LF and CRLF/Unicode slot-shadow and mixed-slot-scope packets now names the shared $UsageProps and $UsageRequiredFallthrough helpers instead of declaring their inline conditionals on its __Child_Props_0 and __Child_CheckProps_0 lines, so each packet shrank by exactly those two alias bodies and every later generated coordinate moved by the same bytes, while all 495 semantic, protocol, mapping-geometry, and real-host controls passed; this record retains the observed postimages without assigning acceptance credit to the stale-golden run."
+  }
+}

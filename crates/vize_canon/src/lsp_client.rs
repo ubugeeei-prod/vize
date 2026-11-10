@@ -22,6 +22,7 @@ pub(crate) use diagnostic_phase::PhasedDiagnostic;
 mod diagnostics_api;
 mod diagnostics_lsp;
 mod editor_lsp;
+pub(crate) use editor_lsp::EditorLspInterrupt;
 #[cfg(test)]
 pub(crate) use editor_lsp::logical_disk_control::run as native_logical_disk_control_for_test;
 mod initial_diagnostics;
@@ -93,6 +94,8 @@ pub struct CorsaProjectClient {
     /// project-session API rejects as unsupported (corsa-bind#409), and the
     /// standard-tsgo diagnostics path when no project-session API exists.
     editor_lsp: Option<editor_lsp::EditorLspSession>,
+    /// Out-of-band close handle scoped to the bridge that owns this client.
+    editor_lsp_interrupt: Arc<editor_lsp::EditorLspInterrupt>,
     /// Requested by this editor owner even when its initial config has no members.
     /// Retried only at an existing project replacement, never per diagnostic.
     shared_editor_transport_requested: bool,
@@ -160,6 +163,7 @@ impl CorsaProjectClient {
             session_document_uris: Default::default(),
             external_document_uris: Default::default(),
             editor_lsp: None,
+            editor_lsp_interrupt: Arc::new(Default::default()),
             shared_editor_transport_requested: false,
             shared_editor_transport: false,
             project_session_attached_to_editor: false,

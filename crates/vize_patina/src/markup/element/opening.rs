@@ -3,6 +3,7 @@
 use super::{MarkupElement, MarkupElementInner};
 use crate::markup::jsx_names::{jsx_attribute_directive_kind, jsx_element_ref};
 use crate::markup::l2::binding::{L2Item, walk_items};
+use crate::markup::l2::surface::SurfaceDirective;
 use crate::markup::{MarkupAttribute, MarkupBinding, MarkupDirective, relief_scopes};
 use oxc_ast::ast::JSXAttributeItem;
 use vize_relief::PropNode;
@@ -45,7 +46,7 @@ impl<'a> MarkupElement<'a> {
                     super::super::l2::binding::opens_v_pre(doc, element, op.attributes());
                 super::super::authored::walk_attributes(element, doc, true, opens_v_pre, visitor);
             }
-            MarkupElementInner::L2 { .. } | MarkupElementInner::L2Carrier { .. } => self
+            MarkupElementInner::L2 { doc, .. } | MarkupElementInner::L2Carrier { doc, .. } => self
                 .walk_l2_items(&mut |item| match item {
                     L2Item::Attribute { attribute, doc } => {
                         visitor(MarkupAttribute::from_l2(attribute, doc));
@@ -53,7 +54,17 @@ impl<'a> MarkupElement<'a> {
                     L2Item::Surface { attr, doc } if !item.is_directive() => {
                         visitor(MarkupAttribute::from_surface(attr, doc));
                     }
-                    L2Item::Binding(_) | L2Item::Surface { .. } => {}
+                    // L2 consumes legacy plain `slot-scope` / `scope` attrs
+                    // into a VueSlotScope op. They remain authored static
+                    // attributes on L1 and belong in this projection.
+                    L2Item::Binding(binding) => {
+                        if let Some(attr) = binding.surface
+                            && SurfaceDirective::parse(attr.name.text).is_none()
+                        {
+                            visitor(MarkupAttribute::from_surface(attr, doc));
+                        }
+                    }
+                    L2Item::Surface { .. } => {}
                 }),
         }
     }

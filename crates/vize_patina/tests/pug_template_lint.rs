@@ -89,6 +89,53 @@ fn jade_alias_reports_the_same_authored_diagnostics_as_pug() {
 }
 
 #[test]
+fn dho_real_project_matches_the_pinned_eslint_plugin_vue_twin() {
+    let pug = include_str!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/../../tests/_fixtures/pug-jade-surface-audit-8908/dho-current-balance.pug.vue.txt"
+    ));
+    let html = include_str!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/../../tests/_fixtures/pug-jade-surface-audit-8908/dho-current-balance.html.vue.txt"
+    ));
+    let evidence: serde_json::Value = serde_json::from_str(include_str!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/../../tests/_fixtures/pug-jade-surface-audit-8908/dho-current-balance-lint-parity.json"
+    )))
+    .unwrap();
+    let mut expected = Vec::new();
+    for row in evidence["signatures"].as_array().unwrap() {
+        let severity = match row["severity"].as_str().unwrap() {
+            "error" => "Error",
+            "warning" => "Warning",
+            other => panic!("unsupported baseline severity: {other}"),
+        };
+        let upstream_message = row["upstreamMessage"].as_str().unwrap();
+        let patina_message = row["patinaMessage"].as_str().unwrap();
+        assert_eq!(patina_message, format!("{upstream_message} Element: <div>"));
+        for _ in 0..row["count"].as_u64().unwrap() {
+            expected.push((
+                row["ruleId"].as_str().unwrap().to_owned(),
+                severity.to_owned(),
+                patina_message.to_owned(),
+            ));
+        }
+    }
+    expected.sort();
+    let linter = Linter::new().with_enabled_rules(Some(vec!["vue/require-v-for-key".into()]));
+    for (filename, source) in [
+        ("DhoPug.vue", pug.to_owned()),
+        (
+            "DhoJade.vue",
+            pug.replacen("lang=\"pug\"", "lang=\"JADE\"", 1),
+        ),
+        ("DhoHtml.vue", html.to_owned()),
+    ] {
+        assert_eq!(signature(&linter.lint_sfc(&source, filename)), expected);
+    }
+}
+
+#[test]
 fn attribute_order_judges_the_authored_order_not_pugs_class_hoisting() {
     // pug renders `.card(v-if="ok")` as `<div class="card" v-if="ok">`;
     // the author wrote the class shorthand first by pug convention, and the

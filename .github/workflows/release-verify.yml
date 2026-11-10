@@ -104,6 +104,17 @@ jobs:
           read -ra packages <<< "$RELEASE_PACKAGES"
           node tools/support/release/verify_published/main.ts "$RELEASE_VERSION" "${packages[@]}"
 
+  # Reuse the exact public npm version on every supported host. The verifier
+  # runs from the immutable tag, while all product code comes from the registry.
+  verify-fresh-projects:
+    name: Verify published fresh projects
+    needs: verify-npm
+    uses: ./.github/workflows/published-fresh-project.yml
+    with:
+      version: ${{ inputs.version }}
+      source_ref: ${{ inputs.tag }}
+    permissions: { contents: read }
+
   # Gates nothing: fresh, migrated and monorepo projects configured only by
   # vite.config.ts and tsconfig.json, using the packages just verified.
   verify-config:

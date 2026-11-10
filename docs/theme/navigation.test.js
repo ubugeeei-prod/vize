@@ -55,6 +55,40 @@ for (const { code } of globalThis.__vizeDocsSitemap.supportedLocales) {
   });
 }
 
+void test("provider-localized links are not prefixed with the locale twice", () => {
+  const document = createNavigationDocument([
+    ["/ja/getting-started/index.html", "Getting Started"],
+    ["/ja/philosophy/index.html", "Philosophy"],
+    ["/ja/guide/content-mapper/index.html", "Content Mapper"],
+    ["/ja/guide/musea/index.html", "Musea"],
+  ]);
+  applyNavigation(document, "/ja/getting-started/index.html");
+
+  assert.deepEqual(sections(document), [
+    {
+      title: "はじめに",
+      labels: ["クイックスタート", "設計思想"],
+    },
+    {
+      title: "型チェッカー",
+      labels: ["Content Mapper"],
+    },
+    {
+      title: "コンポーネント",
+      labels: ["Musea"],
+    },
+  ]);
+  assert.deepEqual(
+    document.querySelectorAll(".nav-link[href]").map((link) => link.getAttribute("href")),
+    [
+      "/ja/getting-started/index.html",
+      "/ja/philosophy/index.html",
+      "/ja/guide/content-mapper/index.html",
+      "/ja/guide/musea/index.html",
+    ],
+  );
+});
+
 void test("applyNavigationOrder keeps the Blog group compact", () => {
   const document = createNavigationDocument([
     ["/", "index"],

@@ -38,7 +38,9 @@ pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
         + 3
         + 7
         // Review regressions add three literal fixtures.
-        + 3,
+        + 3
+        // Configurable v-if/v-for policy adds one distinct literal fixture.
+        + 1,
     // Original 1057/87 census plus non-literal calls in valid_v_slot (3 + 1),
     // require_toggle_inside_transition (3), the v-else-if/v-is/v-pre rules (38
     // templates over 42 calls, one `v-pre` helper, #8856) and v_bind_style (one
@@ -195,7 +197,9 @@ pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
         // Merged ownership coverage adds one helper-driven observation.
         + 1
         // Review regressions add eight focused fixture calls.
-        + 8,
+        + 8
+        // Configurable v-if/v-for policy adds two focused literal calls.
+        + 2,
     rule_fixture_skipped: 87
         + 4
         + 3
@@ -276,7 +280,9 @@ pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
         // The merged ownership observation retains nine trace lines.
         + 9
         // Review regressions retain twenty complete trace lines.
-        + 20,
+        + 20
+        // Configurable v-if/v-for policy retains six complete trace lines.
+        + 6,
     restructured: 0,
     jsx: JsxComparison {
         roots: 14,

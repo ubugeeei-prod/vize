@@ -87,6 +87,9 @@ impl Linter {
         if let Some(value) = options.html_button_has_type() {
             self = self.with_html_button_has_type_options(value.button, value.submit, value.reset);
         }
+        if let Some(value) = options.no_use_v_if_with_v_for() {
+            self = self.with_no_use_v_if_with_v_for_options(value.allow_using_iteration_var);
+        }
         if let Some(value) = options.warn_custom_directive() {
             self = self.with_warn_custom_directive_ignore(value.ignore.clone());
         }
@@ -267,6 +270,9 @@ fn self_closing_style(value: ConfigSelfClosingStyle) -> HtmlSelfClosingStyle {
 
 #[cfg(test)]
 mod macro_order;
+
+#[cfg(test)]
+mod no_use_v_if_with_v_for;
 
 #[cfg(test)]
 mod tests {

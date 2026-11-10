@@ -83,74 +83,78 @@ crates.io settings can be repaired from a CLI using authenticated owner access.
 ### First-publish bootstrap
 
 npm only allows Trusted Publishing to be configured after a package exists. Do
-not use an older failed release for recovery. Merge the bootstrap workflow,
-start a [release PR](./pr-workflow.md) with `vp run release patch -y`, and let its
-validated Release workflow reach a terminal failure at the new package's OIDC publish
-job. Record that Release run ID, then send the fixed `npm-bootstrap` repository
-dispatch:
+not use an older failed release for recovery. Before cutting the release, add the
+new package's exact repository path and npm name to the reviewed allowlist in
+`tools/support/release/npm_bootstrap/policy.ts` and to the matching workflow
+choice. The bootstrap workflow and allowlist must already be on `main` when the
+normal Release workflow starts.
 
-Freeze `main` after any required bootstrap-control repair until the bootstrap
-preflight has validated its dispatch SHA against current `origin/main`.
-Disable PR auto-merge and allow neither direct pushes nor other merges during
-that window. Keep the production tag immutable; do not create replacement tags
-to chase `main`.
+Let the Release workflow build and smoke the candidate, create its immutable
+tag, and reach a terminal failure in `Publish npm packages` because the new
+package has no Trusted Publisher yet. Record the exact failed Release run ID.
+Run the handoff workflow from `main`; do not rerun it from a branch or create a
+replacement tag:
 
 ```bash
-FRESH_TAG=vX.Y.Z
+VERSION=X.Y.Z
+FRESH_TAG=v$VERSION
 RELEASE_RUN_ID=123456789
-gh api repos/ubugeeei-prod/vize/dispatches \
-  -f event_type=npm-bootstrap \
-  -F "client_payload[tag_name]=$FRESH_TAG" \
-  -F "client_payload[release_run_id]=$RELEASE_RUN_ID" \
-  -F 'client_payload[package_path]=npm/framework/nuxt-lint-config'
+PACKAGE_PATH=npm/path/already-added-to-the-bootstrap-allowlist
+gh workflow run release-npm-bootstrap.yml --ref main \
+  -f version="$VERSION" \
+  -f tag_name="$FRESH_TAG" \
+  -f release_run_id="$RELEASE_RUN_ID" \
+  -f package_path="$PACKAGE_PATH"
 ```
 
-GitHub executes the workflow definition from the default branch. The bootstrap
-requires the repository-dispatch SHA to equal current `origin/main`, whose
-workspace version must equal the tagged release version. The immutable tag
-must remain on main's first-parent history; control repairs can have a newer
-SHA within that same release version. It binds tagged workspace/package versions
-and queries the supplied Release run before any credential is
-available. The run must be the completed failed `.github/workflows/release.yml`
-candidate `workflow_dispatch` run initiated for that release PR and exact SHA,
-with title `Release vX.Y.Z PR #N @ SHA` and name `Release` or that exact validated
-title; promotion creates the tag inside that
-same run. Its package build, candidate authorization, preflight, promotion and tarball smoke
-jobs must be successful, while only the target package publish job is required
-to have failed. The exact package artifact from that run is downloaded,
-identity-checked, manifest-normalized, and smoke-installed again. The workflow
-refuses to run unless the package remains absent from npm. It then runs
-`npm pack` twice and requires both tarballs to be byte-for-byte identical before
-uploading this credential-free handoff artifact:
+The policy requires a strict version and matching `vX.Y.Z` tag. That tag must
+resolve to a commit with exactly one parent, and that parent must be the exact
+`main` head of the supplied completed, failed `.github/workflows/release.yml`
+run. Candidate preparation, the single `npm-packages` build, tarball smoke, tag
+creation, and post-build publication admission must have succeeded; the npm
+publisher must have failed. The workflow selects the one live `npm-packages`
+artifact by its numeric ID, records its GitHub SHA-256 digest, and downloads it
+into an otherwise empty staging tree.
+
+The selected package path, manifest name, tagged workspace/package version,
+and public access must match the allowlist. npm must return exactly HTTP 404 for
+the package; an existing package or an ambiguous registry failure refuses the
+handoff. The existing release manifest normalizer resolves only the candidate
+artifact's workspace and catalog protocols. The workflow then runs `npm pack`
+twice with lifecycle scripts disabled, requires byte-for-byte equality and npm's
+SHA-512 integrity, and uploads this credential-free handoff artifact:
 
 ```text
-npm-cli-first-publish-vizejs-nuxt-lint-config-X.Y.Z/
+npm-cli-first-publish-<scope>-<package>-X.Y.Z/
 ├── SHA512SUMS
 ├── npm-publish-handoff.json
-└── vizejs-nuxt-lint-config-X.Y.Z.tgz
+└── <scope>-<package>-X.Y.Z.tgz
 ```
 
-The handoff workflow does not request an OIDC token, read an npm secret, or
-publish anything. Download the named artifact shown in its job summary, verify
-`SHA512SUMS`, authenticate locally as an npm owner with settings 2FA, and make
-the one-time first publish from the exact tarball:
+The workflow has only `actions: read` and `contents: read`. It has no deployment
+environment, OIDC permission, npm secret, publication command, provenance flag,
+tag writer, or dispatch writer. Download the exact artifact named in its job
+summary, inspect `npm-publish-handoff.json`, verify `SHA512SUMS`, authenticate
+locally as an npm owner with settings 2FA, and make the one-time first publish
+from that tarball:
 
 ```bash
 shasum -a 512 --check SHA512SUMS
 npm whoami
-npm publish ./vizejs-nuxt-lint-config-X.Y.Z.tgz --access public
+npm publish ./<scope>-<package>-X.Y.Z.tgz --access public
 ```
 
 This local CLI first publish does not have GitHub Actions OIDC provenance. That
 is expected only for the package-creation bootstrap; do not pass
 `--provenance`, and do not describe this run as Trusted Publishing.
 
-Immediately after the first publish of `@vizejs/nuxt-lint-config`, configure the
-normal release workflow as its trusted publisher. Use npm CLI 11.17.0 or newer
-and authenticate as an npm owner with settings 2FA:
+Immediately after the first publish, configure the normal release workflow as
+the package's trusted publisher. Use npm CLI 11.17.0 or newer and authenticate
+as an npm owner with settings 2FA:
 
 ```bash
-npm trust github @vizejs/nuxt-lint-config --file release.yml --repo ubugeeei-prod/vize --env npm --allow-publish --yes
+PACKAGE_NAME=@vizejs/new-package
+npm trust github "$PACKAGE_NAME" --file release.yml --repo ubugeeei-prod/vize --env npm --allow-publish --yes
 ```
 
 Confirm the package's npm settings name `release.yml` and the `npm` environment,
@@ -162,7 +166,8 @@ workflow after the package exists; its registry guard will reject the request.
 
 After every package is configured and one release has verified OIDC publishing,
 set the npm package publishing access to require two-factor authentication and
-disallow tokens, then delete any obsolete npm publishing secret from GitHub.
+disallow tokens. Do not create an npm publishing secret for the Release workflow;
+remove any obsolete npm publishing secret that predates the local handoff.
 
 ## What is not signed
 
