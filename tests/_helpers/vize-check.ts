@@ -36,6 +36,20 @@ type RunVizeCheckJsonOptions = {
   tsconfig?: string;
 };
 
+export type VizeCheckProcessReceipt = {
+  readonly args: readonly string[];
+  readonly command: string;
+  readonly signal: NodeJS.Signals | null;
+  readonly status: number;
+  readonly stderr: string;
+  readonly stdout: string;
+};
+
+export type VizeCheckJsonReceipt = {
+  readonly parsed: VizeCheckJson;
+  readonly process: VizeCheckProcessReceipt;
+};
+
 const DEFAULT_ALLOWED_EXIT_CODES = [0, 1] as const;
 
 type VizeCheckSpawnSync = (
@@ -49,6 +63,21 @@ export function runVizeCheckJson(
   patterns: readonly string[],
   options: RunVizeCheckJsonOptions = {},
 ): VizeCheckJson {
+  return runVizeCheckJsonWithReceipt(cwd, patterns, options).parsed;
+}
+
+/**
+ * Run the JSON check without discarding the process that produced it.
+ *
+ * Snapshot qualification needs the exact exit, stdout and stderr alongside
+ * the parsed packet: a valid JSON packet proves neither that the expected
+ * diagnostic exit was used nor which provider process produced it.
+ */
+export function runVizeCheckJsonWithReceipt(
+  cwd: string,
+  patterns: readonly string[],
+  options: RunVizeCheckJsonOptions = {},
+): VizeCheckJsonReceipt {
   const args = buildVizeCheckArgs(patterns, options);
   console.log(`Running: ${formatCommand(VIZE_BIN, args)}`);
 
@@ -75,7 +104,17 @@ export function runVizeCheckJson(
     result.stdout.trim().length > 0,
     `vize check should print JSON on stdout; stderr was:\n${result.stderr}`,
   );
-  return JSON.parse(result.stdout) as VizeCheckJson;
+  return {
+    parsed: JSON.parse(result.stdout) as VizeCheckJson,
+    process: {
+      args,
+      command: VIZE_BIN,
+      signal: result.signal,
+      status,
+      stderr: result.stderr,
+      stdout: result.stdout,
+    },
+  };
 }
 
 export function buildVizeCheckArgs(
