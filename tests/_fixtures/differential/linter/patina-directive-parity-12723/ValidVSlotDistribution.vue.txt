@@ -1,0 +1,40 @@
+<script setup lang="ts">
+import MyTable from "./MyTable.vue";
+
+const { name, names, other } = defineProps<{ name: string; names: string[]; other: string }>();
+</script>
+
+<template>
+  <MyTable>
+    <template #[name]>a</template>
+    <template v-for="name in names" :key="name" #[name]>b</template>
+  </MyTable>
+  <MyTable>
+    <template v-for="name in names" :key="name" #[name]>b</template>
+    <template #[name]>a</template>
+  </MyTable>
+  <MyTable>
+    <template #[name]>a</template>
+    <template #[name]>a2</template>
+  </MyTable>
+  <MyTable>
+    <template v-for="name in names" :key="name" #[name]>b</template>
+    <template v-for="name in names" :key="name" #[name]>b2</template>
+  </MyTable>
+  <MyTable>
+    <template v-for="x in names" :key="x" #[name]>c</template>
+    <template #[name]>c2</template>
+  </MyTable>
+  <MyTable>
+    <template v-for="(key, value) in names" :key="key" #[key]>d</template>
+    <template #[key]>d2</template>
+  </MyTable>
+  <MyTable>
+    <template v-for="name in names" :key="name" #[`${name}-x`]>e</template>
+    <template #[`${name}-x`]>e2</template>
+  </MyTable>
+  <MyTable>
+    <template v-for="name in names" :key="name" #[name]>f</template>
+    <template v-for="name in other" :key="name" #[name]>f2</template>
+  </MyTable>
+</template>

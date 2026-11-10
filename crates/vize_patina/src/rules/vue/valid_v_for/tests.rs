@@ -68,6 +68,8 @@ fn rejects_empty_and_destructured_key_or_index_aliases() {
         "(value, , index) in record",
         "(item, { length }) in items",
         "(item, key, [index]) in items",
+        "(item, index = 1) in items",
+        "(value, key, index = 0) in record",
     ] {
         let source = format!(r#"<div v-for="{expression}" />"#);
         let result = linter.lint_template(&source, "test.vue");
@@ -83,6 +85,28 @@ fn rejects_empty_and_destructured_key_or_index_aliases() {
         "test.vue",
     );
     assert_eq!(valid.error_count, 0, "{:?}", valid.diagnostics);
+}
+
+#[test]
+fn accepts_line_breaks_around_in_and_of() {
+    let linter = create_linter();
+    for expression in [
+        "item in\n  items",
+        "item\n  in\n  items",
+        "item\tof\titems",
+        "(item,\n  index)\n  of items",
+    ] {
+        let source = format!(r#"<div v-for="{expression}" :key="item"></div>"#);
+        let result = linter.lint_template(&source, "test.vue");
+        assert_eq!(
+            result.error_count, 0,
+            "{expression}: {:?}",
+            result.diagnostics
+        );
+    }
+    // Vue requires whitespace before the keyword.
+    let result = linter.lint_template(r#"<div v-for="(item)in items"></div>"#, "test.vue");
+    assert_eq!(result.error_count, 1, "{:?}", result.diagnostics);
 }
 
 #[test]

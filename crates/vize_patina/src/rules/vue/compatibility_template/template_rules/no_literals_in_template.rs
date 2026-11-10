@@ -4,6 +4,7 @@ use super::shared::static_argument;
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
+use crate::visitor::has_free_reference;
 use oxc_ast::ast::Expression;
 use vize_relief::{DirectiveNode, ElementNode, ExpressionNode};
 
@@ -41,13 +42,17 @@ impl Rule for NoLiteralsInTemplate {
         let Some(parsed) = expression.js_ast.and_then(|ast| ast.as_expression()) else {
             return;
         };
+        // Like the reference, only the top-level expression counts, and a
+        // literal reading a `v-for` or slot variable cannot move to script.
         if matches!(
-            parsed.ast.get_inner_expression(),
+            parsed.ast.without_parentheses(),
             Expression::ObjectExpression(_)
                 | Expression::ArrayExpression(_)
                 | Expression::FunctionExpression(_)
                 | Expression::ArrowFunctionExpression(_)
-        ) {
+        ) && !(ctx.v_for_vars().next().is_some()
+            && has_free_reference(expression.content, |name| ctx.is_v_for_var(name)))
+        {
             ctx.warn_with_help(
                 "Unexpected literal in a template binding",
                 &expression.loc,

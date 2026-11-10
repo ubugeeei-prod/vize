@@ -46,7 +46,9 @@ pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
         // Review corrections add one literal fixture.
         + 1
         // Reference literal readings add two literal fixtures.
-        + 2,
+        + 2
+        // Directive parity regressions add 6 literal fixtures.
+        + 6,
     // Original 1057/87 census plus non-literal calls in valid_v_slot (3 + 1),
     // require_toggle_inside_transition (3), the v-else-if/v-is/v-pre rules (38
     // templates over 42 calls, one `v-pre` helper, #8856) and v_bind_style (one
@@ -211,7 +213,9 @@ pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
         // Review corrections add one literal call.
         + 1
         // Reference literal readings add two literal calls.
-        + 2,
+        + 2
+        // Directive parity regressions add 15 fixture calls.
+        + 15,
     rule_fixture_skipped: 87
         + 4
         + 3
@@ -255,7 +259,9 @@ pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
         // The merged helper-driven observation remains an explicit skip.
         + 1
         // Five review inputs are intentionally helper-driven scanner skips.
-        + 5,
+        + 5
+        // Directive parity regressions keep 8 loop-driven inputs as scanner skips.
+        + 8,
     matrix: 90,
     template_lines: 6316 + 233 + 5 + 10 + 25 + 7 - 49
         + 31
@@ -300,7 +306,9 @@ pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
         // Review corrections retain fourteen complete trace lines.
         + 14
         // Reference literal readings retain 93 complete trace lines.
-        + 93,
+        + 93
+        // Directive parity regressions retain 42 complete trace lines.
+        + 42,
     restructured: 0,
     jsx: JsxComparison {
         roots: 14,

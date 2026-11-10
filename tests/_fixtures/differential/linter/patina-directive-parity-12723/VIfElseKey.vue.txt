@@ -1,0 +1,60 @@
+<template>
+  <div>
+    <MyIcon v-if="a" />
+    <MyIcon v-if="b" />
+  </div>
+  <div>
+    <MyIcon v-if="a" />
+    <MyIcon v-else-if="b" />
+    <MyIcon v-else />
+  </div>
+  <div>
+    <MyIcon v-if="a" />
+  </div>
+  <div>
+    <MyIcon v-if="b" />
+    <MyIcon v-else />
+  </div>
+  <div>
+    <MyIcon v-if="a" key="1" />
+    <MyIcon v-else />
+  </div>
+  <div>
+    <MyIcon v-if="a" />
+    <template v-else-if="b"><MyIcon /></template>
+    <MyIcon v-else />
+  </div>
+  <Wrapper>
+    <MyIcon v-if="a" />
+    <MyIcon v-else />
+  </Wrapper>
+  <div>
+    <MyIcon v-if="a" />
+    <Other v-else />
+    <MyIcon v-if="b" />
+    <MyIcon v-else />
+  </div>
+  <div>
+    <MyIcon v-if="a" :key="k" />
+    <MyIcon v-else :[key]="k" />
+  </div>
+  <div>
+    <my-icon v-if="a" />
+    <MyIcon v-else />
+  </div>
+  <div>
+    <component v-if="a" :is="x" />
+    <component v-else :is="y" />
+  </div>
+  <div>
+    <MyIcon v-if="a">
+      <MyIcon v-if="c" />
+      <MyIcon v-else />
+    </MyIcon>
+    <MyIcon v-else />
+  </div>
+  <div>
+    <div is="vue:foo" v-if="a" />
+    <div is="vue:foo" v-else />
+  </div>
+</template>

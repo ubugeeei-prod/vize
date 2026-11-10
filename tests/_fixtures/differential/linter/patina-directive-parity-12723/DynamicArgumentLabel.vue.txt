@@ -1,0 +1,15 @@
+<script setup lang="ts">
+defineProps<{ id: string }>();
+const htmlFor = "title";
+const alt = "alt";
+</script>
+
+<template>
+  <div>
+    <label :[htmlFor]="id">Name</label>
+    <label>Name</label>
+    <label :for="id">Name</label>
+    <img src="/a.png" :[alt]="id" />
+    <img src="/a.png" :alt="id" />
+  </div>
+</template>

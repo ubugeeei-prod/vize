@@ -97,7 +97,7 @@ fn has_for_attribute(element: &ElementNode) -> bool {
                 && !dir.shorthand
                 && match &dir.arg {
                     Some(ExpressionNode::Simple(s))
-                        if s.content == "for" || s.content == "htmlFor" =>
+                        if s.is_static && (s.content == "for" || s.content == "htmlFor") =>
                     {
                         dir.exp.as_ref().is_some_and(|expression| match expression {
                             ExpressionNode::Simple(simple) => nonempty_expression(simple.content),
@@ -148,7 +148,7 @@ fn has_nested_form_control(
     false
 }
 
-fn has_markup_for(element: &MarkupElement<'_>, source: &str) -> bool {
+fn has_markup_for(element: &MarkupElement<'_>, source: &str, template: bool) -> bool {
     let mut found = false;
     element.walk_bindings(&mut |binding| {
         found |= match binding.kind() {
@@ -160,11 +160,17 @@ fn has_markup_for(element: &MarkupElement<'_>, source: &str) -> bool {
                         .is_some_and(|value| !value.is_empty())
             }
             MarkupBindingKind::Bind => {
+                // A template's dynamic `:[htmlFor]` names whatever it evaluates to.
+                let names = |name| {
+                    if template {
+                        binding.is_static_unqualified_arg_exact(name)
+                    } else {
+                        binding.is_unqualified_arg_exact(name)
+                    }
+                };
                 if binding.arg_name().is_none() {
                     true
-                } else if binding.is_unqualified_arg_exact("for")
-                    || binding.is_unqualified_arg_exact("htmlFor")
-                {
+                } else if names("for") || names("htmlFor") {
                     let range = binding.range();
                     let has_authored_value = source
                         .get(range.start as usize..range.end as usize)
@@ -214,7 +220,7 @@ impl MarkupRule for LabelHasFor {
     fn enter_element<'a>(&self, ctx: &mut MarkupContext<'_, 'a>, element: &MarkupElement<'a>) {
         if element.kind() == MarkupElementKind::Component
             || !element.is_unqualified_tag_exact("label")
-            || has_markup_for(element, ctx.lint().source)
+            || has_markup_for(element, ctx.lint().source, ctx.is_template())
             || has_nested_markup_control(element, &self.control_components)
         {
             return;
@@ -392,5 +398,12 @@ mod tests {
             let result = linter.lint_jsx(source, "test.jsx", vize_atelier_jsx::JsxLang::Jsx);
             assert_eq!(result.warning_count, expected, "{source}: {result:?}");
         }
+    }
+
+    #[test]
+    fn dynamic_argument_is_not_a_for_attribute() {
+        let result =
+            create_linter().lint_template(r#"<label :[htmlFor]="id">Name</label>"#, "test.vue");
+        assert_eq!(result.warning_count, 1, "{:?}", result.diagnostics);
     }
 }

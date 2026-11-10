@@ -25,13 +25,12 @@
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use crate::visitor::parse_v_for_variables;
-use oxc_allocator::Allocator as OxcAllocator;
-use oxc_ast::ast::{BindingPattern, IdentifierReference};
-use oxc_ast_visit::Visit;
-use oxc_parser::Parser;
-use oxc_span::{GetSpan, SourceType};
-use vize_croquis::drawer::retain_v_for_binding_parameters;
+use crate::visitor::{has_free_reference, parse_v_for_variables};
+use oxc_ast::ast::BindingPattern;
+use oxc_span::GetSpan;
+use vize_croquis::drawer::{
+    retain_v_for_binding_parameters, retain_v_for_binding_parameters_with_source,
+};
 use vize_l0::{Allocator, CompactString, ensure_sufficient_stack};
 use vize_relief::{DirectiveNode, ElementNode, ExpressionNode, PropNode, TemplateChildNode};
 
@@ -104,10 +103,7 @@ impl Rule for ValidVFor {
                     ExpressionNode::Compound(_) => return, // Complex expressions are harder to validate
                 };
 
-                let trimmed = content.trim();
-
-                // Check if empty
-                if trimmed.is_empty() {
+                if content.trim().is_empty() {
                     ctx.error_with_help(
                         ctx.t("vue/valid-v-for.missing_expression"),
                         &directive.loc,
@@ -116,65 +112,7 @@ impl Rule for ValidVFor {
                     return;
                 }
 
-                // Check for "in" or "of" keyword
-                let has_in = trimmed.contains(" in ");
-                let has_of = trimmed.contains(" of ");
-
-                if !has_in && !has_of {
-                    ctx.error_with_help(
-                        ctx.t("vue/valid-v-for.invalid_syntax"),
-                        &directive.loc,
-                        ctx.t("vue/valid-v-for.help"),
-                    );
-                    return;
-                }
-
-                // Validate alias part (left side of in/of)
-                let (alias_part, source_part) = if has_in {
-                    if let Some(parts) = trimmed.split_once(" in ") {
-                        parts
-                    } else {
-                        ctx.error_with_help(
-                            ctx.t("vue/valid-v-for.invalid_syntax"),
-                            &directive.loc,
-                            ctx.t("vue/valid-v-for.help"),
-                        );
-                        return;
-                    }
-                } else if let Some(parts) = trimmed.split_once(" of ") {
-                    parts
-                } else {
-                    ctx.error_with_help(
-                        ctx.t("vue/valid-v-for.invalid_syntax"),
-                        &directive.loc,
-                        ctx.t("vue/valid-v-for.help"),
-                    );
-                    return;
-                };
-
-                let alias = alias_part.trim();
-                let source = source_part.trim();
-
-                // Check alias is not empty
-                if alias.is_empty() {
-                    ctx.error_with_help(
-                        ctx.t("vue/valid-v-for.invalid_syntax"),
-                        &directive.loc,
-                        ctx.t("vue/valid-v-for.help"),
-                    );
-                    return;
-                }
-
-                // Check source is not empty
-                if source.is_empty() {
-                    ctx.error_with_help(
-                        ctx.t("vue/valid-v-for.invalid_syntax"),
-                        &directive.loc,
-                        ctx.t("vue/valid-v-for.help"),
-                    );
-                    return;
-                }
-
+                // Vue splits on any whitespace around `in`/`of`, line breaks included.
                 if !aliases_are_valid(content) {
                     ctx.error_with_help(
                         ctx.t("vue/valid-v-for.invalid_syntax"),
@@ -200,11 +138,10 @@ fn aliases_are_valid(expression: &str) -> bool {
     {
         return false;
     }
-    parameters
-        .items
-        .iter()
-        .skip(1)
-        .all(|parameter| matches!(parameter.pattern, BindingPattern::BindingIdentifier(_)))
+    parameters.items.iter().skip(1).all(|parameter| {
+        matches!(parameter.pattern, BindingPattern::BindingIdentifier(_))
+            && parameter.initializer.is_none()
+    })
 }
 
 fn has_empty_alias_position(raw: &str, parameters: &oxc_ast::ast::FormalParameters<'_>) -> bool {
@@ -296,10 +233,8 @@ fn check_iteration_keys(
                     let Some(ExpressionNode::Simple(expression)) = &directive.exp else {
                         return false;
                     };
-                    expression
-                        .content
-                        .split_once(" in ")
-                        .or_else(|| expression.content.split_once(" of "))
+                    let allocator = Allocator::default();
+                    retain_v_for_binding_parameters_with_source(&allocator, expression.content)
                         .is_some_and(|(_, source)| expression_references_any(source, &variables))
                 });
                 if !depends_on_parent {
@@ -392,30 +327,9 @@ fn bound_key_directive<'a>(element: &'a ElementNode<'a>) -> Option<&'a Directive
 }
 
 fn expression_references_any(expression: &str, names: &[CompactString]) -> bool {
-    struct References<'name> {
-        names: &'name [CompactString],
-        found: bool,
-    }
-    impl<'a> Visit<'a> for References<'_> {
-        fn visit_identifier_reference(&mut self, reference: &IdentifierReference<'a>) {
-            self.found |= self
-                .names
-                .iter()
-                .any(|name| reference.name == name.as_str());
-        }
-    }
-
-    let allocator = OxcAllocator::default();
-    let Ok(expression) = Parser::new(&allocator, expression, SourceType::ts()).parse_expression()
-    else {
-        return false;
-    };
-    let mut references = References {
-        names,
-        found: false,
-    };
-    references.visit_expression(&expression);
-    references.found
+    has_free_reference(expression, |reference| {
+        names.iter().any(|name| name.as_str() == reference)
+    })
 }
 
 #[cfg(test)]

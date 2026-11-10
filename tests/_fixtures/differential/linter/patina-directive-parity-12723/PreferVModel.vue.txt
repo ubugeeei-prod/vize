@@ -1,0 +1,36 @@
+<script setup lang="ts">
+import { ref } from "vue";
+
+const x = ref("");
+const map = ref<Record<string, string>>({});
+</script>
+
+<template>
+  <MyInput :model-value="x" @update:model-value="x = $event" />
+  <MyInput :model-value="x" @update:modelValue="x = $event" />
+  <MyInput :page-size="x" @update:pageSize="x = $event" />
+  <MyInput :model-value="x" @update:model-value="(v) => (x = v)" />
+  <MyInput :model-value="x" @update:model-value="(v: string) => x = v" />
+  <MyInput :model-value="x" @update:model-value="x = $event;" />
+  <MyInput :model-value="map['a b']" @update:model-value="map['ab'] = $event" />
+  <slot :model-value="x" @update:model-value="x = $event" />
+  <div is="vue:my-input" :model-value="x" @update:model-value="x = $event">text</div>
+  <MyInput :modelValue="x" @update:model-value="x=$event" />
+  <MyInput :model-value="x" @update:model-value="x = $event; y()" />
+  <MyInput :model-value="x" @update:model-value="(v) => { x = v }" />
+  <MyInput :model-value="x" @update:model-value="v => x = v" />
+  <MyInput :model-value="x" @update:model-value="async (v) => x = v" />
+  <MyInput :model-value="map[ 'a' ]" @update:model-value="map['a'] = $event" />
+  <MyInput :model-value="(x)" @update:model-value="x = $event" />
+  <MyInput :model-value="x" @update:model-value="x = ($event)" />
+  <MyInput :model-value="x" @update:model-value="(x = $event)" />
+  <MyInput :model-value="x" @update:model-value="x += $event" />
+  <MyInput :model-value.prop="x" @update:model-value="x = $event" />
+  <MyInput :model-value="x" @update:model-value.once="x = $event" />
+  <component :is="Foo" :model-value="x" @update:model-value="x = $event" />
+  <MyInput :foo_bar="x" @update:fooBar="x = $event" />
+  <MyInput :FooBar="x" @update:fooBar="x = $event" />
+  <MyInput :model-value="x" @update:model-value="function (v) { x = v }" />
+  <MyInput :model-value="x" @update:model-value="(v = 1) => x = v" />
+  <MyInput :model-value="x" @update:model-value="([v]) => x = v" />
+</template>

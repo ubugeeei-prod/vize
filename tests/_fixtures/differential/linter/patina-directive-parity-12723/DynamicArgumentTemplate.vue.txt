@@ -1,0 +1,27 @@
+<script setup lang="ts">
+defineProps<{ show: boolean; value: string; name: string }>();
+const key = "title";
+</script>
+
+<template>
+  <div>
+    <template v-if="show" :[key]="value">
+      <p>a</p>
+    </template>
+    <template v-if="show" :key="value">
+      <p>b</p>
+    </template>
+    <template v-if="show" :[name]="value">
+      <p>c</p>
+    </template>
+    <template v-for="(value, key) in { a: name }" :key="key" :[key]="value">
+      <p>d</p>
+    </template>
+    <template v-for="item in [1]" :[key]="item">
+      <p>e</p>
+    </template>
+    <template v-for="item in [1]" :key="item">
+      <p>f</p>
+    </template>
+  </div>
+</template>

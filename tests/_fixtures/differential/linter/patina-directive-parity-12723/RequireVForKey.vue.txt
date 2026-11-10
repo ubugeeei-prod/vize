@@ -1,0 +1,19 @@
+<script setup lang="ts">
+const { items } = defineProps<{ items: { id: string }[] }>();
+const key = "key";
+</script>
+
+<template>
+  <ul>
+    <li v-for="item in items" v-bind="{ key: item.id }">{{ item.id }}</li>
+    <li v-for="item in items" v-bind="{ id: item.id }">{{ item.id }}</li>
+    <li v-for="item in items" :key="item.id">{{ item.id }}</li>
+    <li v-for="item in items" :[key]="item.id">{{ item.id }}</li>
+    <li v-for="item in items" key="static">{{ item.id }}</li>
+    <li v-for="item in items" v-bind:key="item.id">{{ item.id }}</li>
+    <li v-for="item in items" v-bind="({ key: item.id })">{{ item.id }}</li>
+    <template v-for="item in items" v-bind="{ key: item.id }"><li>{{ item.id }}</li></template>
+    <template v-for="item in items" :[key]="item.id"><li>{{ item.id }}</li></template>
+    <template v-for="item in items"><li :[key]="item.id">{{ item.id }}</li></template>
+  </ul>
+</template>

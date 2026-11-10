@@ -55,7 +55,7 @@ fn is_key(prop: &PropNode<'_>) -> bool {
             directive.name == "bind"
                 && matches!(
                     directive.arg.as_ref(),
-                    Some(ExpressionNode::Simple(argument)) if argument.content == "key"
+                    Some(ExpressionNode::Simple(argument)) if argument.is_static && argument.content == "key"
                 )
         }
     }
@@ -143,5 +143,12 @@ mod tests {
             .map(|diagnostic| diagnostic.message.as_str())
             .collect();
         assert_eq!(reports, [MESSAGE]);
+    }
+
+    #[test]
+    fn dynamic_argument_is_not_a_key() {
+        let reports =
+            lint(r#"<div><template v-for="item in items" :[key]="item"><p /></template></div>"#);
+        assert!(reports.is_empty(), "{reports:?}");
     }
 }

@@ -84,6 +84,7 @@ impl NoUselessTemplateAttributes {
                 // :key is allowed on v-for templates
                 if name == "bind"
                     && let Some(vize_relief::ExpressionNode::Simple(arg)) = &dir.arg
+                    && arg.is_static
                     && arg.content == "key"
                 {
                     return true;
@@ -249,5 +250,14 @@ mod tests {
             "test.vue",
         );
         assert_eq!(result.error_count, 2, "{:?}", result.diagnostics);
+    }
+
+    #[test]
+    fn dynamic_argument_named_key_is_still_useless() {
+        let result = create_linter().lint_template(
+            r#"<div><template v-if="show" :[key]="value"><p /></template></div>"#,
+            "test.vue",
+        );
+        assert_eq!(result.error_count, 1, "{:?}", result.diagnostics);
     }
 }

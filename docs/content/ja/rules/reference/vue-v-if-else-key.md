@@ -54,4 +54,4 @@ export default defineConfig({}).withVue({
 
 - [Vue ルール](../vue.md)
 - [全ルール](../all.md)
-- [ソースコード](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/compatibility_template/template_rules/v_if_else_key.rs#L9)
+- [ソースコード](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/compatibility_template/template_rules/v_if_else_key.rs#L17)

@@ -9,7 +9,9 @@ use crate::rule::Rule;
 use vize_l0::{CompactString, profile};
 use vize_relief::{ElementNode, PropNode, TemplateChildNode};
 
-pub use crate::visitor_scope::{parse_slot_scope_variables, parse_v_for_variables};
+pub use crate::visitor_scope::{
+    has_free_reference, parse_slot_scope_variables, parse_v_for_variables,
+};
 
 mod branches;
 mod dispatch;
