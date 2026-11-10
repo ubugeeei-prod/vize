@@ -487,8 +487,7 @@ if (mode === "prepare") {
   const setupEdit = edits.find((edit) => edit.label === "dedented setup source");
   assert(setupEdit, "certified setup-source edit");
   const beforeSetupSource = setupEdit.start + Buffer.byteLength("  \n  ");
-  const afterSetupSource =
-    point(setupEdit.start, edits) + Buffer.byteLength("\n");
+  const afterSetupSource = point(setupEdit.start, edits) + Buffer.byteLength("\n");
   const mappings = a.mappings.map(([start, length, ...rest]) => {
     if (overlap(start, length, setupEdit)) {
       assert(
