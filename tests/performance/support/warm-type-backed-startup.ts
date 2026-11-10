@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { performance } from "node:perf_hooks";
+import { completionDocumentationResolveCapabilities } from "../../tooling/support/lsp/session.ts";
 import { QueryRecorder } from "./warm-type-backed-measure.ts";
 import { assertTypedPackets, requests } from "./warm-type-backed-packets.ts";
 
@@ -12,10 +13,14 @@ export async function startup(
   coldStart: boolean,
 ) {
   const start = performance.now();
-  const initialization = await recorder.session.initialize(workspace, {
-    editor: true,
-    typecheck: true,
-  });
+  const initialization = await recorder.session.initialize(
+    workspace,
+    {
+      editor: true,
+      typecheck: true,
+    },
+    completionDocumentationResolveCapabilities,
+  );
   const initializeMs = performance.now() - start;
   let began!: () => void;
   const actualDiagnostics = new Promise<void>((resolve) => {

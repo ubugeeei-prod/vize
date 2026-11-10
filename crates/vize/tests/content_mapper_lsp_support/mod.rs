@@ -254,7 +254,13 @@ pub fn editor_capabilities() -> Value {
         "textDocument": {
             "synchronization": { "dynamicRegistration": true },
             "diagnostic": { "dynamicRegistration": true },
-            "completion": { "dynamicRegistration": true },
+            "completion": {
+                "dynamicRegistration": true,
+                "completionItem": {
+                    "documentationFormat": ["markdown"],
+                    "resolveSupport": { "properties": ["documentation"] }
+                }
+            },
             "signatureHelp": { "dynamicRegistration": true },
             "hover": { "dynamicRegistration": true },
             "definition": { "dynamicRegistration": true },

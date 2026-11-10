@@ -72,6 +72,14 @@ impl ServerState {
     pub(crate) fn legacy_vue2_enabled(&self) -> bool {
         *self.type_checker_legacy_vue2.read() || self.lsp_features().legacy_vue2
     }
+
+    /// Select the effective Vue 2 checker path without invoking an external
+    /// configuration evaluator in focused unit and integration tests.
+    #[cfg(test)]
+    pub(crate) fn set_legacy_vue2_for_test(&self, enabled: bool) {
+        *self.type_checker_legacy_vue2.write() = enabled;
+    }
+
     /// Resolve Vue 3 Options API template bindings. Implied by legacy mode.
     #[inline]
     pub(crate) fn options_api_enabled(&self) -> bool {

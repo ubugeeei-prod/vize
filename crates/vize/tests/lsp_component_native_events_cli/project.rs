@@ -100,7 +100,10 @@ impl Project {
         };
         project.send(
             json!({ "jsonrpc": "2.0", "id": 1, "method": "initialize", "params": {
-                "processId": null, "rootUri": file_uri(project.root.path()), "capabilities": {},
+                "processId": null, "rootUri": file_uri(project.root.path()),
+                "capabilities": { "textDocument": { "completion": { "completionItem": {
+                    "resolveSupport": { "properties": ["documentation"] }
+                } } } },
                 "initializationOptions": { "lint": false, "typecheck": true, "hover": true }
             }}),
         );
