@@ -241,7 +241,42 @@ pub(super) fn with_whole_expression<T>(
 
 #[cfg(test)]
 mod tests {
+    use super::super::{PrefixScope, Site, node_content, prefix_expression};
     use super::{js_module, parses_as_params, slot_params_syntax_valid};
+    use oxc_ast::ast::{Expression, Statement};
+    use oxc_span::GetSpan;
+    use vize_l0::{Allocator, Span};
+    use vize_l2::expr::JsExpr;
+    use vize_l2::expr::js::JsCoordinates;
+
+    /// A host program keeps its expressions' file-absolute spans; L2 retains
+    /// them with identity coordinates whose prefix is the expression start.
+    #[test]
+    fn retained_expressions_with_file_absolute_spans_are_prefixed_in_place() {
+        let allocator = Allocator::default();
+        let source = "let unused = 0;\nlet value = foo + bar.baz;\n";
+        let program =
+            oxc_parser::Parser::new(allocator.as_oxc(), source, oxc_span::SourceType::mjs())
+                .parse()
+                .program;
+        let program = allocator.as_oxc().alloc(program);
+        let Some(Statement::VariableDeclaration(declaration)) = program.body.get(1) else {
+            panic!("second statement declares");
+        };
+        let Some(ast @ Expression::BinaryExpression(_)) = &declaration.declarations[0].init else {
+            panic!("binary initializer");
+        };
+        let span = Span::new(ast.span().start, ast.span().end);
+        let text = &source[span.start as usize..span.end as usize];
+        let coordinates = JsCoordinates::checked(source, text, span, span.start, &[]).unwrap();
+        let js = JsExpr::from_retained_in(&allocator, ast, text, span, coordinates).unwrap();
+        let scope = PrefixScope::new(None, true, false, false);
+        let content = node_content(source, js.source, js.span);
+        let Ok(prefixed) = prefix_expression(&scope, &content, Some(js), Site::Expression) else {
+            panic!("the retained expression is prefixable");
+        };
+        assert_eq!(prefixed.text.as_str(), "_ctx.foo + _ctx.bar.baz");
+    }
 
     #[test]
     fn slot_params_must_consume_the_complete_arrow_expression() {
