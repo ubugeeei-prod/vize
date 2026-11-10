@@ -9,7 +9,6 @@ pub(crate) use contract_share::{flush as flush_slot_contracts, reset as reset_sl
 
 use vize_carton::{CompactString, FxHashSet, String};
 use vize_croquis::{Croquis, analysis::ComponentUsage};
-use vize_l0::ts;
 use vize_relief::RootNode;
 
 use crate::virtual_ts::expressions::ComponentPropCheckContext;
@@ -153,32 +152,33 @@ pub(super) fn generate_component_slot_checks(
     }
 }
 
+/// The slot keys a usage provides, as `Record<keys, true>`.
+///
+/// `$RequiredSlots` reads only `keyof` this type. A literal union of the keys
+/// is one interned type wherever it is written, and `Record` of it one alias
+/// instantiation, so every use of a component that provides the same slots
+/// shares one `$RequiredSlots` instantiation. An object type literal is a new
+/// type at each use, which made TypeScript evaluate the check per use.
 fn provided_slots_type(usage: &ComponentUsage) -> String {
+    let record = crate::virtual_ts::generated_names::lib("Record");
     if usage.slots.iter().any(|slot| slot.name_is_dynamic) {
-        return String::from("Record<string, true>");
+        return vize_carton::cstr!("{record}<string, true>");
     }
-    if usage.slots.is_empty() {
-        return String::from("{}");
-    }
-
     let mut seen = FxHashSet::default();
-    let mut output = String::default();
-    ts! { &mut output =>
-        {
-            #{
-                for slot in &usage.slots {
-                    if !seen.insert(slot.name.clone()) {
-                        continue;
-                    }
-                    __ts.push_str(" readonly ");
-                    push_ts_string_literal(__ts, slot.name.as_str());
-                    __ts.push_str(": true;");
-                }
-            }
-            #(" ")
+    let mut keys = String::default();
+    for slot in &usage.slots {
+        if !seen.insert(slot.name.clone()) {
+            continue;
         }
+        if !keys.is_empty() {
+            keys.push_str(" | ");
+        }
+        push_ts_string_literal(&mut keys, slot.name.as_str());
     }
-    output
+    if keys.is_empty() {
+        keys.push_str("never");
+    }
+    vize_carton::cstr!("{record}<{keys}, true>")
 }
 
 pub(super) fn push_ts_string_literal(output: &mut impl crate::virtual_ts::TsText, value: &str) {
