@@ -25,9 +25,19 @@ const comparisonStep = job.steps.find(
   (step: { name?: string }) => step.name === "Resolve and fetch comparison base",
 );
 const sourceStep = job.steps.find((step: { name?: string }) => step.name === "Plan source checks");
+const expansionStep = job.steps.find(
+  (step: { name?: string }) => step.name === "Expand the source planner checkout",
+);
+const sparseCheckoutPath = ".github/source-plan-sparse-checkout";
 const comparisonPath = "tools/support/compat/github/comparison-base.ts";
 const sourcePath = "tools/support/compat/github/plan-source-checks.ts";
-const runtimeFiles = ["Cargo.lock", "package.json", comparisonPath, sourcePath].sort();
+const runtimeFiles = [
+  sparseCheckoutPath,
+  "Cargo.lock",
+  "package.json",
+  comparisonPath,
+  sourcePath,
+].sort();
 
 function git(cwd: string, ...args: string[]) {
   return execFileSync("git", args, {
@@ -96,7 +106,7 @@ function checkout(
   git(cwd, "init", "-q");
   git(cwd, "remote", "add", "origin", pathToFileURL(source.origin).href);
   const sparse: string | undefined = selected ? checkoutInputs["sparse-checkout"] : undefined;
-  assert.equal(checkoutInputs["fetch-depth"], 1);
+  assert.equal(checkoutInputs["fetch-depth"], undefined);
   git(
     cwd,
     "fetch",
@@ -112,6 +122,14 @@ function checkout(
     put(cwd, ".git/info/sparse-checkout", `${sparse.trim()}\n`);
   }
   git(cwd, "checkout", "-q", "--detach", "FETCH_HEAD");
+  if (sparse) {
+    assert.equal(sparse, `/${sparseCheckoutPath}`);
+    execFileSync("git", ["sparse-checkout", "set", "--no-cone", "--stdin"], {
+      cwd,
+      input: readFileSync(join(cwd, sparseCheckoutPath)),
+      stdio: ["pipe", "pipe", "pipe"],
+    });
+  }
   return cwd;
 }
 
@@ -163,6 +181,10 @@ await test("the source plan keeps complete Git selection outside its sparse work
   const full = checkout(scratch, "full", source, false);
   const selected = checkout(scratch, "selected", source, true);
   assert.equal(job["timeout-minutes"], 5);
+  assert.equal(
+    expansionStep.run,
+    `git sparse-checkout set --no-cone --stdin < ${sparseCheckoutPath}`,
+  );
   assert.match(comparisonStep.run, /git fetch --no-tags --depth=1 origin/);
   assert.match(sourceStep.run, /plan-pr-checks\.ts/);
   assert.equal(git(selected, "rev-parse", "--is-shallow-repository"), "true");

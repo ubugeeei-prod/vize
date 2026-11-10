@@ -15,8 +15,7 @@ jobs:
     timeout-minutes: 5
     outputs:
       comparison-base: ${{ steps.comparison.outputs.base }}
-      # Canonical/browser qualification runs in the merge queue; PRs can opt
-      # into the duplicate qualification with the `full-ci` label.
+      # PRs opt into queue-only canonical/browser qualification with `full-ci`.
       heavy: ${{ steps.plan.outputs.heavy }}
       canonical-corpus: ${{ steps.plan.outputs.heavy == 'true' && steps.canonical-corpus-plan.outputs.canonical-corpus || 'false' }}
       rust: ${{ steps.plan.outputs.rust }}
@@ -32,52 +31,12 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
-          fetch-depth: 1
-          # checkout v6 combines sparse input with a blob:none fetch. Keep the
-          # planner's executable/type-project closure and Cargo target entry
-          # points, while Git trees still expose changes outside this worktree.
-          sparse-checkout-cone-mode: false
-          sparse-checkout: |
-            /package.json
-            /pnpm-workspace.yaml
-            /Cargo.toml
-            /Cargo.lock
-            /tsconfig.json
-            /**/Cargo.toml
-            /**/package.json
-            /**/src/lib.rs
-            /**/src/main.rs
-            /**/src/bin/*.rs
-            /**/src/bin/**/main.rs
-            /**/tests/*.rs
-            /**/tests/*/main.rs
-            /**/examples/*.rs
-            /**/examples/*/main.rs
-            /**/benches/*.rs
-            /**/benches/*/main.rs
-            /**/build.rs
-            /tests/vize_test_runner/src/coverage.rs
-            /tests/vize_test_runner/src/dump_patches.rs
-            /tools/benchmarks/crates/vize/doctor_tui.rs
-            /.github/
-            /tools/
-            /npm/
-            /tests/tooling/
-            /tests/tsconfig.json
-            /tests/**/*.ts
-            /tests/**/*.mts
-            /tests/**/*.cts
-            /tests/**/*.js
-            /tests/**/*.mjs
-            /tests/**/*.cjs
-            /docs/tsconfig.json
-            /docs/**/*.ts
-            /docs/**/*.mts
-            /docs/**/*.cts
-            /docs/**/*.js
-            /docs/**/*.mjs
-            /docs/**/*.cjs
-            /examples/oxlint-vize/check-configs.ts
+          {
+            sparse-checkout-cone-mode: false,
+            sparse-checkout: "/.github/source-plan-sparse-checkout",
+          }
+      - name: Expand the source planner checkout
+        run: git sparse-checkout set --no-cone --stdin < .github/source-plan-sparse-checkout
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with: { node-version-file: "package.json", package-manager-cache: false }
       - name: Resolve and fetch comparison base
@@ -116,8 +75,7 @@ jobs:
         id: tooling-plan
         env: { BASE_SHA: "${{ steps.comparison.outputs.base }}" }
         run: node tools/support/compat/github/plan-tooling-tests.mjs "$BASE_SHA" "$GITHUB_SHA" --tier pr --output "$RUNNER_TEMP/tooling-plan.json" --github-output
-  # PR and queue Rust lanes build only native configurations; the release
-  # also builds @vizejs/wasm without it. Check that configuration first.
+  # Check the release-only non-native WASM configuration beside PR Rust lanes.
   wasm-release-check:
     name: WASM release build check
     needs: pr-source-plan
@@ -188,8 +146,7 @@ jobs:
             if [[ "$EVENT_NAME" == pull_request ]]; then [[ "$CLI" == skipped ]]
             else [[ "$CLI" == success ]]; fi
           fi
-  # Beside the lanes, not before them: every lane already waits for the source
-  # report, which requires this job.
+  # Run beside the lanes; their required source report already waits for this job.
   ci-selection-tests:
     name: CI selection tests
     needs: pr-source-plan
