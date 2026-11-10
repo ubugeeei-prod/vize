@@ -5835,5 +5835,33 @@
       ]
     }
   ],
-  "jsxEntryCases": []
+  "jsxEntryCases": [
+    {
+      "id": "compiler/jsx/map-callback-list-body-12477",
+      "state": "active",
+      "adapter": "compiler-jsx-entry-source-v1",
+      "compat": "native",
+      "targets": [
+        "vdom",
+        "vapor",
+        "vdom-ssr",
+        "vapor-ssr"
+      ],
+      "inputs": {
+        "root": "jsx-map-callback-list-body-12477",
+        "files": [
+          {
+            "path": "App.jsx.txt",
+            "role": "entry",
+            "sha256": "9fb58806fb4c25fea57c828988b089b8efdfb804105ac22e491ea5b2e26d5137"
+          }
+        ]
+      },
+      "reference": {
+        "path": "jsx-map-callback-list-body-12477/modules.expected.json",
+        "sha256": "d8fc0a8dbe744a9f9bb6d33ab49381a8cd0486c0ff6f4054f7ea1b9f6a5066a6",
+        "source": "Source-built vize_atelier_jsx compile_jsx with the #12477 fix: a block-body callback with statements before its return, and a callback with a third parameter, are error diagnostics on every target instead of a renderList that reads unbound names. The issue reproduction is the entry; the reference was reviewed against the issue."
+      }
+    }
+  ]
 }

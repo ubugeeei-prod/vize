@@ -163,7 +163,12 @@ impl<'a, 'm, 's: 'a> Lowerer<'a, 'm, 's> {
             return None;
         }
         let argument = call.arguments.first()?.as_expression()?;
-
+        if !map_callback_is_structural(unwrap_parens(argument)) {
+            if super::child::contains_jsx(argument) {
+                self.reject(call.span, MAP_CALLBACK_SHAPE);
+            }
+            return None;
+        }
         // The callback's params (value, index) and returned JSX.
         let (params, body_jsx_child) = match unwrap_parens(argument) {
             Expression::ArrowFunctionExpression(arrow) => {
@@ -235,18 +240,15 @@ impl<'a, 'm, 's: 'a> Lowerer<'a, 'm, 's> {
         self.lower_block_return_jsx(&body.statements)
     }
 
-    /// Find the first `return <jsx>` in a block body and lower its JSX.
+    /// Lower the JSX of a block body that is exactly one `return <jsx>`.
     fn lower_block_return_jsx(
         &mut self,
         statements: &[Statement<'_>],
     ) -> Option<TemplateChildNode<'a>> {
-        for stmt in statements {
-            if let Statement::ReturnStatement(ret) = stmt {
-                let argument = ret.argument.as_ref()?;
-                return self.lower_render_expr_child(argument);
-            }
-        }
-        None
+        let [Statement::ReturnStatement(ret)] = statements else {
+            return None;
+        };
+        self.lower_render_expr_child(ret.argument.as_ref()?)
     }
 
     /// Lower a returned render expression. This accepts JSX directly and JSX
@@ -324,6 +326,28 @@ impl<'a, 'm, 's: 'a> Lowerer<'a, 'm, 's> {
         };
         TemplateChildNode::Interpolation(self.boxed(node))
     }
+}
+
+/// `items.map(cb)` with JSX in a callback that is not a list body.
+const MAP_CALLBACK_SHAPE: &str = "a `.map()` callback that renders JSX must be an expression body or a single `return`, with at most `(item, index)` parameters; move other statements out of the callback";
+
+/// `renderList` runs only the returned JSX per item and passes `(item, index)`,
+/// so a callback lowers to `v-for` only when that is all it does.
+fn map_callback_is_structural(callback: &Expression<'_>) -> bool {
+    let (params, statements) = match callback {
+        Expression::ArrowFunctionExpression(arrow) => (&arrow.params, &arrow.body.statements),
+        Expression::FunctionExpression(func) => match func.body.as_ref() {
+            Some(body) => (&func.params, &body.statements),
+            None => return false,
+        },
+        _ => return true,
+    };
+    params.items.len() <= 2
+        && params.rest.is_none()
+        && matches!(
+            statements.as_slice(),
+            [Statement::ExpressionStatement(_) | Statement::ReturnStatement(_)]
+        )
 }
 
 fn is_jsx(expr: &Expression<'_>) -> bool {

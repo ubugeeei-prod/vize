@@ -1,0 +1,42 @@
+[
+  {
+    "target": "vdom",
+    "code": "import { createElementVNode as _createElementVNode } from \"vue\"\n\nconst A = () => (() => {\nreturn ((_ctx, _cache) => {\n  return (_createElementVNode(\"ul\", null, [\n    items.map((item) => { const label = item.name.toUpperCase(); return <li>{label}</li>; })\n  ]))\n})(undefined, [])\n})();\nconst B = () => (() => {\nreturn ((_ctx, _cache) => {\n  return (_createElementVNode(\"ul\", null, [\n    items.map((item, index, array) => <li>{array.length}</li>)\n  ]))\n})(undefined, [])\n})();\n",
+    "errors": [
+      "a `.map()` callback that renders JSX must be an expression body or a single `return`, with at most `(item, index)` parameters; move other statements out of the callback",
+      "a `.map()` callback that renders JSX must be an expression body or a single `return`, with at most `(item, index)` parameters; move other statements out of the callback"
+    ],
+    "warnings": [],
+    "scopedStyles": []
+  },
+  {
+    "target": "vapor",
+    "code": "",
+    "errors": [
+      "a `.map()` callback that renders JSX must be an expression body or a single `return`, with at most `(item, index)` parameters; move other statements out of the callback",
+      "a `.map()` callback that renders JSX must be an expression body or a single `return`, with at most `(item, index)` parameters; move other statements out of the callback"
+    ],
+    "warnings": [],
+    "scopedStyles": []
+  },
+  {
+    "target": "vdom-ssr",
+    "code": "",
+    "errors": [
+      "a `.map()` callback that renders JSX must be an expression body or a single `return`, with at most `(item, index)` parameters; move other statements out of the callback",
+      "a `.map()` callback that renders JSX must be an expression body or a single `return`, with at most `(item, index)` parameters; move other statements out of the callback"
+    ],
+    "warnings": [],
+    "scopedStyles": []
+  },
+  {
+    "target": "vapor-ssr",
+    "code": "",
+    "errors": [
+      "a `.map()` callback that renders JSX must be an expression body or a single `return`, with at most `(item, index)` parameters; move other statements out of the callback",
+      "a `.map()` callback that renders JSX must be an expression body or a single `return`, with at most `(item, index)` parameters; move other statements out of the callback"
+    ],
+    "warnings": [],
+    "scopedStyles": []
+  }
+]

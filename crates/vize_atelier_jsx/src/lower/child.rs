@@ -218,7 +218,7 @@ impl<'a, 'm, 's: 'a> Lowerer<'a, 'm, 's> {
 }
 
 /// Whether `expression` contains a JSX element or fragment anywhere.
-fn contains_jsx(expression: &oxc_ast::ast::Expression<'_>) -> bool {
+pub(super) fn contains_jsx(expression: &oxc_ast::ast::Expression<'_>) -> bool {
     use oxc_ast_visit::Visit;
 
     struct Finder(bool);
