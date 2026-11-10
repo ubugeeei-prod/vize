@@ -107,9 +107,9 @@ impl<'a, 'ctx> IdentifierCollector<'a, 'ctx> {
 
         // Check if this is an inline mode ref binding
         if self.ctx.options.inline {
-            // Croquis first: use ReactiveKind for precise determination
-            if let Some(kind) = self.ctx.get_reactive_kind(name) {
-                return kind.needs_value_access();
+            // The reactivity API behind the binding decides first.
+            if let Some(source) = self.ctx.reactive_source(name) {
+                return source.reads_value();
             }
             // Fallback: binding_metadata
             if let Some(bindings) = &self.ctx.options.binding_metadata
@@ -133,7 +133,7 @@ impl<'a, 'ctx> IdentifierCollector<'a, 'ctx> {
         // In inline mode, known refs are accessed with `.value`. In function
         // mode, setup bindings are read through Vue's `$setup` proxy, matching
         // @vue/compiler-sfc output.
-        if self.ctx.get_reactive_kind(name).is_some() {
+        if self.ctx.reactive_source(name).is_some() {
             return false;
         }
 

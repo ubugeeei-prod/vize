@@ -4,8 +4,8 @@
 
 use vize_atelier_core::RuntimeHelper;
 use vize_l0::{String, ToCompactString, cstr};
-use vize_l1_to_l2::{TransformContent, decode_ssr_static_text};
 use vize_l2::op as l2;
+use vize_l4::targets::dom::artifact::{TransformContent, decode_ssr_static_text};
 
 use super::slots::Ranges;
 use super::{Emitter, Result, plan_source, text};

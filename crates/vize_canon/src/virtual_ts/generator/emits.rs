@@ -329,13 +329,14 @@ fn emit_emit_props_helper(
     let emit_options = names::helper("__EmitOptions", &[""]);
     let emits = names::declared("Emits");
     if info.has_runtime_emits && !info.has_model_emits {
+        let setup = names::setup_return("");
         if info.preserve_event_navigation {
             ts! { &mut *ts =>
-                #("type ") #static_event_map = __EmitOptions<Awaited<ReturnType<typeof __setup>>["__vize_emits"]>;
+                #("type ") #static_event_map = __EmitOptions<#setup["__vize_emits"]>;
             }
         }
         ts! { &mut *ts =>
-            type $StaticEmitProps = #emit_props<Awaited<ReturnType<typeof __setup>>["__vize_emits"]>;
+            type $StaticEmitProps = #emit_props<#setup["__vize_emits"]>;
             #("\n")
         }
     } else {

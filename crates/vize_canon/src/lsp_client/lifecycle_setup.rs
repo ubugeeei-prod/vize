@@ -51,18 +51,14 @@ pub(super) fn write_materialized_project_tsconfig(
         })
         .unwrap_or_else(|| workspace_config_path(project_root));
     let mut include = vec![String::new("**/*")];
-    if overlay_root
-        .parent()
-        .is_some_and(|owner| owner.join("scratch") == project_root)
-    {
-        // A rootless session owns these exact generated declarations. Keep
-        // them when materializing, without globbing unrelated scratch files.
-        include.extend([
-            crate::file_uri::path_to_typescript_name(&project_root.join("__vize_vue_modules.d.ts")),
-            crate::file_uri::path_to_typescript_name(
-                &project_root.join(crate::virtual_ts::SHARED_PREAMBLE_FILE_NAME),
-            ),
-        ]);
+    // A generated root (rootless scratch or Canon mirror) owns these exact
+    // declarations outside the overlay. This `include` replaces the root's
+    // own, so name them again, without globbing unrelated root files.
+    for name in crate::batch::virtual_project::ROOT_DECLARATION_FILES {
+        let declarations = project_root.join(name);
+        if declarations.is_file() {
+            include.push(crate::file_uri::path_to_typescript_name(&declarations));
+        }
     }
     let content = json!({
         "extends": crate::file_uri::path_to_typescript_name(&selected),
@@ -108,6 +104,63 @@ pub(super) fn write_shared_helper_decls(temp_dir_path: &Path) -> Result<(), Stri
     )
     .map_err(|e| cstr!("Failed to write shared helper declarations: {e}"))
 }
+
+/// A Canon root resolves packages through its own install view. The mirror
+/// standing in for it must ascend into that view, not into the authored
+/// install its storage linked at creation.
+pub(super) fn link_canon_dependencies(
+    project_root: &Path,
+    overlay_root: &Path,
+) -> Result<(), String> {
+    let source = project_root.join("node_modules");
+    if !project_root.join("__vize_vue_modules.d.ts").is_file() || !source.join("vue").is_dir() {
+        return Ok(());
+    }
+    let target = overlay_root
+        .parent()
+        .ok_or_else(|| cstr!("Private Corsa storage has no owner directory"))?
+        .join("node_modules");
+    match std::fs::read_link(&target) {
+        Ok(current) if current == source => return Ok(()),
+        // Only the storage's own dependency link is ever replaced.
+        Ok(_) => unlink_dependencies(&target)
+            .map_err(|error| cstr!("Failed to retire private Corsa dependencies: {error}"))?,
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => {}
+        Err(error) => {
+            return Err(cstr!(
+                "Private Corsa dependencies are not an owned link: {error}"
+            ));
+        }
+    }
+    link_dependencies(&source, &target)
+        .map_err(|error| cstr!("Failed to link private Corsa dependencies: {error}"))
+}
+
+fn unlink_dependencies(target: &Path) -> std::io::Result<()> {
+    #[cfg(unix)]
+    {
+        std::fs::remove_file(target)
+    }
+    #[cfg(windows)]
+    {
+        std::fs::remove_dir(target)
+    }
+}
+
+fn link_dependencies(source: &Path, target: &Path) -> std::io::Result<()> {
+    #[cfg(unix)]
+    {
+        std::os::unix::fs::symlink(source, target)
+    }
+    #[cfg(windows)]
+    {
+        std::os::windows::fs::symlink_dir(source, target)
+            .or_else(|_| junction::create(source, target))
+    }
+}
+
+#[cfg(test)]
+mod canon_mirror_tests;
 
 #[cfg(test)]
 mod tests {

@@ -119,7 +119,11 @@ fn visit_op(op: &DumpOp, owner: Owner, rigor: Rigor, out: &mut Vec<Violation>) {
         | DumpOp::Comment(_) => {}
         DumpOp::If(if_op) => visit_if(if_op, rigor, out),
         DumpOp::For(for_op) => {
-            for child in &for_op.ops {
+            let empty = for_op
+                .host
+                .iter()
+                .flat_map(|host| host.empty.iter().flatten());
+            for child in for_op.ops.iter().chain(empty) {
                 visit_op(child, Some((kw, span)), rigor, out);
             }
         }

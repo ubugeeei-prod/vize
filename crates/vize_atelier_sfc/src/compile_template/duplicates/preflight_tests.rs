@@ -1,5 +1,5 @@
 use super::*;
-use vize_l1_to_l2::SurfacePreflight;
+use vize_l4::targets::dom::artifact::SurfacePreflight;
 
 fn template(source: &str) -> SfcTemplateBlock<'_> {
     SfcTemplateBlock {
@@ -184,7 +184,7 @@ fn rejected_preflight_preserves_complete_error_and_the_original_sidecar_boundary
                 component_name: None,
                 experimental_self_component: false,
                 bindings: None,
-                croquis: None,
+                script_tables: None,
                 collect_map: false,
                 authored_source: None,
                 pug_source_map: None,

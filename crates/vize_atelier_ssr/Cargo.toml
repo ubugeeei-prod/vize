@@ -21,9 +21,9 @@ vize_l0 = { workspace = true }
 vize_relief = { workspace = true }
 vize_armature = { workspace = true }
 vize_atelier_core = { workspace = true }
-vize_croquis = { workspace = true }
 vize_l1 = { workspace = true }
-vize_l1_to_l2 = { workspace = true, features = ["typescript"] }
+vize_l1_to_l2 = { workspace = true }
+vize_l4 = { workspace = true, features = ["typescript"] }
 vize_l2 = { workspace = true }
 vize_l2_to_l3 = { workspace = true }
 vize_l3 = { workspace = true }

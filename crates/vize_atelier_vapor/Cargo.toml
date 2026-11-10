@@ -9,6 +9,7 @@ description = "Atelier Vapor - The Vapor mode compiler workshop for Vize"
 metadata.vize.stability = "experimental"
 
 [dependencies]
+vize_l4 = { workspace = true }
 vize_l0 = { workspace = true }
 vize_carton = { workspace = true }
 vize_atelier_core = { workspace = true }

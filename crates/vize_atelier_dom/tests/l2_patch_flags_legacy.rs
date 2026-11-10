@@ -10,7 +10,8 @@ use crate::support;
 
 use vize_l0::Allocator;
 use vize_l0::config::VueVersion;
-use vize_l1_to_l2::{LegacyCaps, emit_dom_source_with_caps};
+use vize_l1_to_l2::LegacyCaps;
+use vize_l4::targets::dom::artifact::emit_dom_source_with_caps;
 
 struct Case {
     name: &'static str,

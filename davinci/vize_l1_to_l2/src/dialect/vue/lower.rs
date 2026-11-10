@@ -43,14 +43,18 @@ pub use text::{
     branch_gap_text_at, rebuild_source,
 };
 
+/// How a lowering treats comments and consumed compound expressions.
+#[doc(hidden)]
 #[derive(Clone, Copy)]
-pub(crate) struct LowerPolicy {
+pub struct LowerPolicy {
     preserve_comments: bool,
     retain_consumed_expressions: bool,
 }
 
 impl LowerPolicy {
-    pub(crate) const fn compile(preserve_comments: bool) -> Self {
+    /// The compile policy: comments as requested, no retained consumed expressions.
+    #[must_use]
+    pub const fn compile(preserve_comments: bool) -> Self {
         Self {
             preserve_comments,
             retain_consumed_expressions: false,
@@ -161,7 +165,8 @@ pub fn lower_preserving_comments<'a>(
     )
 }
 
-pub(crate) fn lower_with_caps_and_comment_policy<'a, P: ProvenanceSink + Default>(
+#[doc(hidden)]
+pub fn lower_with_caps_and_comment_policy<'a, P: ProvenanceSink + Default>(
     allocator: &'a Allocator,
     tree: &SurfaceTree<'a>,
     errors: &[SurfaceError],

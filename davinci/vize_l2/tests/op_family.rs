@@ -166,6 +166,7 @@ fn every_op<'a>(allocator: &'a Allocator) -> Vec<'a, Op<'a>> {
                         index: None,
                     },
                     region: region(allocator),
+                    host: None,
                     span,
                 },
                 &allocator,

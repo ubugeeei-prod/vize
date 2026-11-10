@@ -21,7 +21,7 @@ use crate::support;
 use vize_atelier_core::options::{BindingMetadata, BindingType, CodegenMode, CodegenOptions};
 use vize_atelier_dom::DomCompilerOptions;
 use vize_l0::FxHashMap;
-use vize_l1_to_l2::{BindingKind, BindingTable, DomEmitMode, DomEmitOptions};
+use vize_l4::targets::dom::artifact::{BindingKind, BindingTable, DomEmitMode, DomEmitOptions};
 
 const BATTERY: &[(&str, &str)] = &[
     // The plain path already carried the rule; it is the control.
@@ -222,7 +222,7 @@ fn a_constant_handler_leaves_the_merged_dynamic_props_array() {
     let table = table(&metadata);
     let allocator = vize_l0::Allocator::new();
     let dynamic_props = |src: &str, inline: bool| {
-        let assembled = vize_l1_to_l2::emit_dom_source_with_options(
+        let assembled = vize_l4::targets::dom::artifact::emit_dom_source_with_options(
             &allocator,
             src,
             vize_l1_to_l2::LegacyCaps::VUE3,

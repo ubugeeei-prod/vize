@@ -13,9 +13,10 @@ use vize_l0::{Span, String, cstr};
 
 use crate::dump::codec::Grammar;
 use crate::dump::owned::{
-    Attribute, Bind, Branch, Comment, Component, Element, For, ForBinding, If, Interpolation,
-    Model, Name, On, Op, OriginalFor, Slot, SlotContent, SlotsObject, Text, VueCloak, VueCssBind,
-    VueDirective, VueHtml, VueMemo, VueOnce, VueShow, VueSlotScope, VueSync, VueText,
+    Attribute, Bind, Branch, Comment, Component, Element, For, ForBinding, HostFor, If,
+    Interpolation, Model, Name, On, Op, OriginalFor, Slot, SlotContent, SlotsObject, Text,
+    VueCloak, VueCssBind, VueDirective, VueHtml, VueMemo, VueOnce, VueShow, VueSlotScope, VueSync,
+    VueText,
 };
 use crate::dump::parse::expr_token::take_expr;
 use crate::op::Namespace;
@@ -39,6 +40,8 @@ pub(in crate::dump) enum Item {
     VueText(VueText),
     Cloak(VueCloak),
     Branch(Branch),
+    /// `empty`: the `@empty` region of the enclosing host `ui.for`.
+    Empty,
     Op(Op),
 }
 
@@ -110,6 +113,7 @@ pub(in crate::dump) fn parse_item(
     match keyword {
         "attr" => attr(rest, line_no),
         "branch" => branch(rest, line_no),
+        "empty" if rest.is_empty() => Ok(Item::Empty),
         "ui.element" => element(rest, line_no, grammar),
         "ui.component" => component(rest, line_no, grammar),
         "ui.text" => text(rest, line_no),
@@ -295,6 +299,33 @@ fn for_op(rest: &str, line_no: usize) -> Result<Item, DumpError> {
         index = Some(expr);
         rest = tail;
     }
+    let mut host = None;
+    if let Some(tail) = rest.strip_prefix(" host-left=") {
+        let (left, mut tail) = take_quoted(tail, line_no)?;
+        let mut head = HostFor {
+            left,
+            index: None,
+            key: None,
+            r#await: false,
+            empty: None,
+        };
+        if let Some(after) = tail.strip_prefix(" host-index=") {
+            let (name, after) = take_quoted(after, line_no)?;
+            head.index = Some(name);
+            tail = after;
+        }
+        if let Some(after) = tail.strip_prefix(" host-key=") {
+            let (expr, after) = take_expr(after, line_no)?;
+            head.key = Some(expr);
+            tail = after;
+        }
+        if let Some(after) = tail.strip_prefix(" host-await") {
+            head.r#await = true;
+            tail = after;
+        }
+        host = Some(alloc::boxed::Box::new(head));
+        rest = tail;
+    }
     Ok(Item::Op(Op::For(For {
         binding: ForBinding {
             source,
@@ -302,6 +333,7 @@ fn for_op(rest: &str, line_no: usize) -> Result<Item, DumpError> {
             key,
             index,
         },
+        host,
         ops: alloc::vec::Vec::new(),
         span: tail_span(rest, line_no)?,
     })))

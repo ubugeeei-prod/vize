@@ -1,0 +1,1 @@
+export type Parameters<T extends (...args: any) => any> = never

@@ -48,7 +48,7 @@ pub mod text;
 pub mod vue;
 
 pub use bind::{BindOp, OnOp};
-pub use control::{ForBinding, ForOp, IfBranch, IfOp};
+pub use control::{ForBinding, ForOp, HostFor, IfBranch, IfOp};
 mod original_for;
 pub use element::{Attribute, ComponentOp, ElementOp, Namespace};
 pub use handler::{HandlerId, OnHandlerRef};

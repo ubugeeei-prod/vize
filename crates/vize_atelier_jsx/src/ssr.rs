@@ -4,13 +4,13 @@
 //! used for hydration, while this module emits server-side `ssrRender` code via
 //! the shared `vize_atelier_ssr` pipeline.
 
+use vize_atelier_core::lane::ScriptTables;
 use vize_atelier_core::lane::transform_with_source_text;
 use vize_atelier_core::options::TransformOptions;
 use vize_atelier_ssr::{
     SsrCodegenContext, SsrCodegenResult, SsrCompilerExperimentalOptions, SsrCompilerOptions,
     SsrSfcContext, compile_l2_to_ssr, compile_l2_to_ssr_with_host_context,
 };
-use vize_croquis::Croquis;
 use vize_l0::{Allocator, String};
 
 use crate::diagnostics::JsxDiagnostic;
@@ -69,7 +69,8 @@ pub fn compile_to_ssr(
     let lowered = lower_source(allocator, allocator.as_oxc(), source, lang);
     let mut diagnostics = lowered.diagnostics;
 
-    let analysis: &Croquis = allocator.alloc_owned(lowered.analysis);
+    let script_tables: &ScriptTables =
+        allocator.alloc_owned(ScriptTables::from_croquis(&lowered.analysis));
 
     let mut components = Vec::with_capacity(lowered.roots.len());
     for mut lowered_root in lowered.roots {
@@ -77,7 +78,7 @@ pub fn compile_to_ssr(
         components.push(compile_lowered_root_to_ssr(
             allocator,
             lowered_root,
-            analysis,
+            script_tables,
             options.default_mode,
             source,
             &mut diagnostics,
@@ -98,7 +99,7 @@ pub fn compile_to_ssr(
 pub(crate) fn compile_lowered_root_to_ssr(
     allocator: &Allocator,
     lowered: LoweredRoot,
-    analysis: &Croquis,
+    script_tables: &ScriptTables,
     default_mode: JsxOutputMode,
     source: &str,
     diagnostics: &mut Vec<JsxDiagnostic>,
@@ -106,7 +107,7 @@ pub(crate) fn compile_lowered_root_to_ssr(
     compile_root_on_lane(
         allocator,
         lowered,
-        analysis,
+        script_tables,
         default_mode,
         source,
         SsrLane::Plan,
@@ -129,7 +130,7 @@ pub(crate) enum SsrLane {
 fn compile_root_on_lane(
     allocator: &Allocator,
     lowered: LoweredRoot,
-    analysis: &Croquis,
+    script_tables: &ScriptTables,
     default_mode: JsxOutputMode,
     source: &str,
     lane: SsrLane,
@@ -139,7 +140,7 @@ fn compile_root_on_lane(
     compile_root_with_origins(
         allocator,
         lowered,
-        analysis,
+        script_tables,
         default_mode,
         source,
         lane,
@@ -158,7 +159,7 @@ fn compile_root_on_lane(
 pub(crate) fn compile_root_with_origins(
     allocator: &Allocator,
     lowered: LoweredRoot,
-    analysis: &Croquis,
+    script_tables: &ScriptTables,
     default_mode: JsxOutputMode,
     source: &str,
     lane: SsrLane,
@@ -216,7 +217,7 @@ pub(crate) fn compile_root_with_origins(
         legacy_ssr(
             allocator,
             &mut root,
-            analysis,
+            script_tables,
             source,
             ssr_options,
             experimental,
@@ -252,7 +253,7 @@ pub(crate) fn compile_root_with_origins(
 fn legacy_ssr<'a>(
     allocator: &'a Allocator,
     root: &mut vize_relief::RootNode<'a>,
-    analysis: &'a Croquis,
+    script_tables: &'a ScriptTables,
     source: &'a str,
     ssr_options: &SsrCompilerOptions,
     experimental: SsrCompilerExperimentalOptions,
@@ -266,7 +267,7 @@ fn legacy_ssr<'a>(
         binding_metadata: None,
         ..Default::default()
     };
-    transform_with_source_text(allocator, root, transform_opts, Some(analysis), source);
+    transform_with_source_text(allocator, root, transform_opts, Some(script_tables), source);
     SsrCodegenContext::new_with_experimental_options(allocator, ssr_options, source, experimental)
         .with_host_context(context)
         .generate(root)

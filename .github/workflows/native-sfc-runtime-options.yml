@@ -13,7 +13,7 @@ on:
       - crates/vize_atelier_ssr/src/**
       - crates/vize_atelier_vapor/src/**
       - davinci/vize_l0/src/js_string.rs
-      - davinci/vize_l1_to_l2/src/emit/**
+      - davinci/vize_l4/src/targets/dom/artifact/**
       - tests/tooling/native-sfc-runtime-options.test.mjs
       - tests/tooling/support/script-setup-default-expose.ts
       - tests/tooling/support/setup-component-bracket-reference.ts

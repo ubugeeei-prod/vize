@@ -1,0 +1,10 @@
+export interface Shape {
+  area(): number
+}
+
+export class Circle implements Shape {
+  constructor(public r: number) {}
+  area() {
+    return 3 * this.r * this.r
+  }
+}

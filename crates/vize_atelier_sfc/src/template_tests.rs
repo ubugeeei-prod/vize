@@ -251,7 +251,9 @@ const isRootSelected = ref(false)
             component_name: None,
             experimental_self_component: false,
             bindings: Some(&binding_metadata),
-            croquis: Some(croquis),
+            script_tables: Some(vize_atelier_core::lane::ScriptTables::from_croquis(
+                &croquis,
+            )),
             collect_map: false,
             authored_source: None,
             pug_source_map: None,

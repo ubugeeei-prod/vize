@@ -81,8 +81,9 @@ impl SlotTypes {
 /// `binding`, under the payload helper's rules for `any` hosts and
 /// `string`-typed names; a missing member is `any`, as the payload is.
 fn slot_member_type(binding: &str, name: &str) -> String {
+    let non_nullable = crate::virtual_ts::generated_names::lib("NonNullable");
     let member = cstr!(
-        "({{ [__K in keyof __H & {name}]-?: NonNullable<__H[__K]> }}[keyof __H & {name}] extends infer __M ? [__M] extends [never] ? any : __M : any)"
+        "({{ [__K in keyof __H & {name}]-?: {non_nullable}<__H[__K]> }}[keyof __H & {name}] extends infer __M ? [__M] extends [never] ? any : __M : any)"
     );
     cstr!(
         "typeof {binding} extends infer __H ? 0 extends (1 & __H) ? any : string extends {name} ? (string extends keyof __H ? {member} : any) : {member} : never"
@@ -363,7 +364,8 @@ pub(super) fn generate_v_slot_props_scope(
         )
         .payload
     };
-    let function_gen_start = ts.len();
+    // The pattern stays unmapped: the template pass maps the same pattern,
+    // and a second mapped copy would report each of its diagnostics twice.
     emit_slot_function_open(
         ts,
         indent,
@@ -372,15 +374,6 @@ pub(super) fn generate_v_slot_props_scope(
         &props_type,
         false,
         |ts| {
-            map_slot_props_pattern(
-                mappings,
-                scope,
-                ctx.summary.scopes.v_slot_pattern_offset(scope.id),
-                ctx.source_context.offset,
-                props_pattern.as_str(),
-                function_gen_start,
-                ts,
-            );
             // Mark slot prop variables as used
             if data.prop_names.is_empty() {
                 vize_l0::emit_ts!(ts, "{inner_indent}void {props_pattern};\n");

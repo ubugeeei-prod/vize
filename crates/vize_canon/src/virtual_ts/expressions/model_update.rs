@@ -58,7 +58,10 @@ pub(super) fn append_model_update_check(
         ts,
         &vize_carton::cstr!("onUpdate:{}", camelize(prop.name.as_str())),
     );
-    ts.push_str("?: infer __L } ? NonNullable<__L> extends (...args: infer __A) => any ? __A extends [infer __V, ...any[]] ? __V : any : any : any;\n");
+    crate::virtual_ts::generated_names::push_lib_text(
+        ts,
+        "?: infer __L } ? NonNullable<__L> extends (...args: infer __A) => any ? __A extends [infer __V, ...any[]] ? __V : any : any : any;\n",
+    );
 
     let statement_start = ts.len();
     append!(*ts, "{indent}void ((__vize_model_value: {payload}) => {{ ");

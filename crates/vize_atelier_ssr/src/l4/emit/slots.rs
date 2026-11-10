@@ -2,8 +2,8 @@
 
 use vize_atelier_core::RuntimeHelper;
 use vize_l0::{FxHashSet, String, ToCompactString};
-use vize_l1_to_l2::TransformExpressions;
 use vize_l2::op::{self as l2, DynamicName};
+use vize_l4::targets::dom::artifact::TransformExpressions;
 
 use super::{Emitter, PLAIN, Result};
 use crate::codegen::element::props::{is_valid_js_identifier, quoted_js_string};
@@ -118,9 +118,10 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
             .bindings
             .iter()
             .find_map(|binding| match binding {
-                l2::BindingOp::SlotsObject(object) => {
-                    Some(self.expr(&object.value, vize_l1_to_l2::TransformContent::Decoded))
-                }
+                l2::BindingOp::SlotsObject(object) => Some(self.expr(
+                    &object.value,
+                    vize_l4::targets::dom::artifact::TransformContent::Decoded,
+                )),
                 _ => None,
             })
             .transpose()

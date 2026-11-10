@@ -29,7 +29,7 @@ vize_l0 = { workspace = true }
 vize_croquis = { workspace = true }
 vize_relief = { workspace = true }
 vize_armature = { workspace = true }
-vize_l1_to_l2 = { workspace = true }
+vize_l2 = { workspace = true }
 
 memoffset = { workspace = true }
 compact_str = { workspace = true }
@@ -52,14 +52,13 @@ serde_json = { workspace = true }
 thiserror = { workspace = true }
 
 [dev-dependencies]
+vize_l1_to_l2 = { workspace = true }
 criterion = { workspace = true }
 davinci_harness = { workspace = true }
 davinci_test_support = { workspace = true }
 insta = { workspace = true }
 
-# The Davinci L2 lane test fixtures remain test-space only (P2-9). Production
-# retained-expression admission uses the level-owned vize_l1_to_l2 gate above.
-vize_l2 = { workspace = true }
+# The L2 lane test fixtures remain test-space only (P2-9).
 vize_l1 = { workspace = true }
 
 # The P2-9 corpus-runnable differential entry (the P1-6/P1-7 lane shape):

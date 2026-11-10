@@ -56,6 +56,7 @@ vize_l3 = { workspace = true }
 vize_l1 = { workspace = true }
 vize_l1_to_l2 = { workspace = true }
 vize_l2 = { workspace = true }
+vize_l4 = { workspace = true }
 vize = { path = "../vize", default-features = false, features = [
   "glyph",
   "maestro",

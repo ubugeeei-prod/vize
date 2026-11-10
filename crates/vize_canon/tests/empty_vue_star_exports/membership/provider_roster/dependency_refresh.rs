@@ -3,7 +3,7 @@ use serde_json::json;
 use std::fs;
 
 const UPDATE: &str = "malformed-membership/provider-dependency-refresh-update-12212.json";
-const UPDATE_HASH: &str = "2c2ac89d1c11a17e060a95c0837f0bdb1b04381901021aa3227d95c885355eaf";
+const UPDATE_HASH: &str = "d7e51719d5763b52238d07c6d74f0bdb8153274d7aa484ef9d168d1d06805f04";
 const PREVIOUS_BINDING: &str = "tests/_fixtures/differential/typechecker/empty-vue-star-exports/malformed-membership/provider-dependency-update-12212.json";
 const QUALIFICATION: &str = "malformed-membership/provider-js-tooling-refresh-update-12212.json";
 const QUALIFICATION_BINDING: &str = "tests/_fixtures/differential/typechecker/empty-vue-star-exports/malformed-membership/provider-js-tooling-refresh-update-12212.json";

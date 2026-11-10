@@ -1,0 +1,9 @@
+<script setup lang="ts">
+import { useTemplateRef } from 'vue'
+import Child from './Child.vue'
+const child = useTemplateRef('child')
+</script>
+
+<template>
+  <Child ref="child" label="x" @click="child?.focus()" />
+</template>

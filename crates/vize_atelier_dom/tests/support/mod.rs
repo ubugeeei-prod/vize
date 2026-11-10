@@ -11,9 +11,10 @@ use vize_atelier_dom::{
 };
 use vize_l0::Allocator;
 use vize_l0::config::VueVersion;
-use vize_l1_to_l2::{
-    DomEmitOptions, EmitError, LegacyCaps, UnsupportedReason, emit_dom_source,
-    emit_dom_source_with_caps, emit_dom_source_with_options,
+use vize_l1_to_l2::LegacyCaps;
+use vize_l4::targets::dom::artifact::{
+    DomEmitOptions, EmitError, UnsupportedReason, emit_dom_source, emit_dom_source_with_caps,
+    emit_dom_source_with_options,
 };
 
 #[derive(Clone, Copy)]

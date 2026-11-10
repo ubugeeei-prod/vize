@@ -1,6 +1,7 @@
 //! Emit helpers by lexical ownership; never rewrite a generated block afterward.
 
 use super::super::template_ref_keys::TemplateRefUsage;
+use crate::virtual_ts::generated_names::push_lib_text;
 use crate::virtual_ts::helpers::setup_macros::{
     SETUP_MACRO_HELPERS, VUE_SETUP_HELPERS, VUE_SETUP_HELPERS_HOISTED,
 };
@@ -92,11 +93,14 @@ pub(super) fn emit(
 ) {
     let shadowed = &plan.shadowed;
     if shadowed.is_empty() && !generic_props && !typed_refs && !plan.active_template_ref {
-        ts.push_str(if hoisted {
-            VUE_SETUP_HELPERS_HOISTED
-        } else {
-            VUE_SETUP_HELPERS
-        });
+        push_lib_text(
+            ts,
+            if hoisted {
+                VUE_SETUP_HELPERS_HOISTED
+            } else {
+                VUE_SETUP_HELPERS
+            },
+        );
         return;
     }
     ts.push_str(if hoisted {
@@ -112,17 +116,23 @@ pub(super) fn emit(
             continue;
         }
         if helper.name == "defineProps" && generic_props {
-            ts.push_str(if hoisted {
-                GENERIC_PROPS_HOISTED
-            } else {
-                GENERIC_PROPS_EMBEDDED
-            });
+            push_lib_text(
+                ts,
+                if hoisted {
+                    GENERIC_PROPS_HOISTED
+                } else {
+                    GENERIC_PROPS_EMBEDDED
+                },
+            );
         } else {
-            ts.push_str(if hoisted {
-                helper.hoisted
-            } else {
-                helper.embedded
-            });
+            push_lib_text(
+                ts,
+                if hoisted {
+                    helper.hoisted
+                } else {
+                    helper.embedded
+                },
+            );
         }
     }
     ts.push_str("  // Mark compiler macros as used\n  ");

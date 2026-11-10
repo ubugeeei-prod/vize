@@ -1,0 +1,96 @@
+{
+  "schema": "vize.propValueOrSource.v1",
+  "issue": 12431,
+  "credit": {
+    "compiled": false,
+    "native": false,
+    "performance": false
+  },
+  "files": [
+    {
+      "path": "crates/vize_canon/src/virtual_ts/helpers/declarations/component-checks.d.ts.txt",
+      "before": {
+        "bytes": 8324,
+        "sha256": "8b78a238856c7599da7d38bd9f1f354d9394481282230845c5c52ba9056cb133"
+      },
+      "after": {
+        "bytes": 8534,
+        "sha256": "8f6b799ca82213141bd449927c5f72cd7bd643debf38d7f128f56aa2148d8abf"
+      },
+      "hunks": [
+        {
+          "before": "export type $PropValue<P, K extends PropertyKey, F = unknown, __V = P extends unknown ? (K extends keyof P ? P[K] : never) : never> = [__V] extends [never] ? F : __V;\n",
+          "after": "export type $PropValue<P, K extends PropertyKey, F = unknown, __V = P extends unknown ? (K extends keyof P ? P[K] : never) : never> = [__V] extends [never] ? F : __V;\nexport type $PropValueOr<P, K extends PropertyKey, C, FK extends PropertyKey = K, __V = P extends unknown ? (K extends keyof P ? P[K] : never) : never> = [__V] extends [never] ? $FallthroughValue<C, FK> : __V;\n"
+        }
+      ]
+    },
+    {
+      "path": "npm/cli/virtual-ts.d.ts",
+      "before": {
+        "bytes": 15091,
+        "sha256": "77e6e079f845e76ae1694ab142deb2bd4b253599d21c0ecd36038f5142775f05"
+      },
+      "after": {
+        "bytes": 15314,
+        "sha256": "d1492046d1338f93081b51cacb1b13962edbce179cb8632523d6adfee4a8fa43"
+      },
+      "hunks": [
+        {
+          "before": "> = [__V] extends [never] ? F : __V;\n",
+          "after": "> = [__V] extends [never] ? F : __V;\nexport type $PropValueOr<\n  P,\n  K extends PropertyKey,\n  C,\n  FK extends PropertyKey = K,\n  __V = P extends unknown ? (K extends keyof P ? P[K] : never) : never,\n> = [__V] extends [never] ? $FallthroughValue<C, FK> : __V;\n"
+        }
+      ]
+    },
+    {
+      "path": "npm/cli/virtual-ts.d.mts",
+      "before": {
+        "bytes": 15091,
+        "sha256": "77e6e079f845e76ae1694ab142deb2bd4b253599d21c0ecd36038f5142775f05"
+      },
+      "after": {
+        "bytes": 15314,
+        "sha256": "d1492046d1338f93081b51cacb1b13962edbce179cb8632523d6adfee4a8fa43"
+      },
+      "hunks": [
+        {
+          "before": "> = [__V] extends [never] ? F : __V;\n",
+          "after": "> = [__V] extends [never] ? F : __V;\nexport type $PropValueOr<\n  P,\n  K extends PropertyKey,\n  C,\n  FK extends PropertyKey = K,\n  __V = P extends unknown ? (K extends keyof P ? P[K] : never) : never,\n> = [__V] extends [never] ? $FallthroughValue<C, FK> : __V;\n"
+        }
+      ]
+    },
+    {
+      "path": "npm/cli/virtual-ts.d.cts",
+      "before": {
+        "bytes": 15091,
+        "sha256": "77e6e079f845e76ae1694ab142deb2bd4b253599d21c0ecd36038f5142775f05"
+      },
+      "after": {
+        "bytes": 15314,
+        "sha256": "d1492046d1338f93081b51cacb1b13962edbce179cb8632523d6adfee4a8fa43"
+      },
+      "hunks": [
+        {
+          "before": "> = [__V] extends [never] ? F : __V;\n",
+          "after": "> = [__V] extends [never] ? F : __V;\nexport type $PropValueOr<\n  P,\n  K extends PropertyKey,\n  C,\n  FK extends PropertyKey = K,\n  __V = P extends unknown ? (K extends keyof P ? P[K] : never) : never,\n> = [__V] extends [never] ? $FallthroughValue<C, FK> : __V;\n"
+        }
+      ]
+    }
+  ],
+  "compiledPreamble": {
+    "path": "vize_canon::virtual_ts::SHARED_PREAMBLE_DTS",
+    "before": {
+      "bytes": 48944,
+      "sha256": "297cee4b2bb2bfecfeeb9aad61b60c8ebd5e26d6a73cbcd3678a430b4462a191"
+    },
+    "after": {
+      "bytes": 49154,
+      "sha256": "46f6322da31954de7b764473f58164a3d4d18e499c2d4fdbf953a5911bfc4633"
+    },
+    "hunks": [
+      {
+        "before": "export type $PropValue<P, K extends PropertyKey, F = unknown, __V = P extends unknown ? (K extends keyof P ? P[K] : never) : never> = [__V] extends [never] ? F : __V;\n",
+        "after": "export type $PropValue<P, K extends PropertyKey, F = unknown, __V = P extends unknown ? (K extends keyof P ? P[K] : never) : never> = [__V] extends [never] ? F : __V;\nexport type $PropValueOr<P, K extends PropertyKey, C, FK extends PropertyKey = K, __V = P extends unknown ? (K extends keyof P ? P[K] : never) : never> = [__V] extends [never] ? $FallthroughValue<C, FK> : __V;\n"
+      }
+    ]
+  }
+}

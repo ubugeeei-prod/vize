@@ -10,12 +10,12 @@
     "$EmitOwnedKeys",
     "$EmitPropsFactory",
     "$FallthroughSpreadChecker",
-    "$FallthroughValue",
     "$IsLibraryGenericExport",
     "$ListenerArgs",
     "$NavigationSlots",
     "$PropChecker",
     "$PropValue",
+    "$PropValueOr",
     "$PropsResolver",
     "$PropsSelector",
     "$ProvidedSlotChildren",
@@ -111,15 +111,15 @@
         },
         {
           "path": "virtual-ts.d.cts",
-          "sha256": "77e6e079f845e76ae1694ab142deb2bd4b253599d21c0ecd36038f5142775f05"
+          "sha256": "d1492046d1338f93081b51cacb1b13962edbce179cb8632523d6adfee4a8fa43"
         },
         {
           "path": "virtual-ts.d.mts",
-          "sha256": "77e6e079f845e76ae1694ab142deb2bd4b253599d21c0ecd36038f5142775f05"
+          "sha256": "d1492046d1338f93081b51cacb1b13962edbce179cb8632523d6adfee4a8fa43"
         },
         {
           "path": "virtual-ts.d.ts",
-          "sha256": "77e6e079f845e76ae1694ab142deb2bd4b253599d21c0ecd36038f5142775f05"
+          "sha256": "d1492046d1338f93081b51cacb1b13962edbce179cb8632523d6adfee4a8fa43"
         }
       ]
     },
@@ -167,7 +167,7 @@
         },
         {
           "path": "virtual-ts.d.ts",
-          "sha256": "77e6e079f845e76ae1694ab142deb2bd4b253599d21c0ecd36038f5142775f05"
+          "sha256": "d1492046d1338f93081b51cacb1b13962edbce179cb8632523d6adfee4a8fa43"
         }
       ]
     },
@@ -211,7 +211,7 @@
         },
         {
           "path": "virtual-ts.d.ts",
-          "sha256": "77e6e079f845e76ae1694ab142deb2bd4b253599d21c0ecd36038f5142775f05"
+          "sha256": "d1492046d1338f93081b51cacb1b13962edbce179cb8632523d6adfee4a8fa43"
         }
       ]
     }

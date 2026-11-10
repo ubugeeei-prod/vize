@@ -215,6 +215,7 @@ fn nested_if_for_and_slot_fallback_preserve_control_containment() {
                 index: None,
             },
             region: region(&allocator, [slot]),
+            host: None,
             span: SPAN,
         },
         &allocator,

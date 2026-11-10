@@ -5,6 +5,7 @@ import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { certifiedTransition } from "./canonical-helper-transition.ts";
+import { beforeLibTypeQualification } from "./lib-type-qualification-transition.ts";
 import { beforeCanonLeftovers, canonLeftoversSha256 } from "./strict-extra-keys-transition.ts";
 
 export const emitOverloadsPath =
@@ -117,7 +118,8 @@ export function certifyEmitOverloadAssets(
         ["-C", sources.repository, "show", `${revision}:${file}`],
         { stdio: ["ignore", "pipe", "pipe"] },
       );
-      assert.equal(digest(source), expectedHash, `uncertified emit producer source: ${file}`);
+      const certified = Buffer.from(beforeLibTypeQualification(file, source.toString("utf8")));
+      assert.equal(digest(certified), expectedHash, `uncertified emit producer source: ${file}`);
       assert.deepEqual(
         readFileSync(path.join(root, file)),
         source,

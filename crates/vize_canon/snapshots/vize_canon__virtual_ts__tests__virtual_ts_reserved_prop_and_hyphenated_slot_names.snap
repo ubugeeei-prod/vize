@@ -231,6 +231,7 @@ function __setup() {
   type $IsLibraryGenericExport<C> = C extends { __vizeCheck: any } | { readonly __vizeComponentMarker: true } ? false : C extends (...args: any[]) => infer __R ? 0 extends (1 & __R) ? false : '__ctx' extends keyof __R ? true : false : false;
   type $PropChecker<C, P, T = $ComponentCheckTail<C>> = $IsAny<C> extends true ? (props: { readonly [K in keyof P]: P[K] } & Record<string, unknown>) => void : C extends { __vizeCheck: infer __F } ? $IsAny<__F> extends true ? (props: $ComponentCheckProps<P, T>) => void : unknown extends __F ? (props: $ComponentCheckProps<P, T>) => void : __F extends (...args: any[]) => any ? __F : (props: $ComponentCheckProps<P, T>) => void : $IsLibraryGenericExport<C> extends true ? C : (props: $ComponentCheckProps<P, T>) => void;
   type $PropValue<P, K extends PropertyKey, F = unknown, __V = P extends unknown ? (K extends keyof P ? P[K] : never) : never> = [__V] extends [never] ? F : __V;
+  type $PropValueOr<P, K extends PropertyKey, C, FK extends PropertyKey = K, __V = P extends unknown ? (K extends keyof P ? P[K] : never) : never> = [__V] extends [never] ? $FallthroughValue<C, FK> : __V;
   type $StructuralSlots<C> = C extends { readonly __vizeSlots?: infer __S } ? NonNullable<__S> : any;
   type $EmptyVueNavigationSlots<C> = ('__isFragment' | '__isTeleport' | '__isSuspense' | 'slots') extends keyof C ? $IsAny<C[Extract<'__isFragment' | '__isTeleport' | '__isSuspense', keyof C>]> extends true ? any : [NonNullable<C[Extract<'__isFragment' | '__isTeleport' | '__isSuspense', keyof C>]>] extends [never] ? C extends { slots?: infer __S } ? $IsAny<__S> extends true ? any : unknown extends __S ? any : [keyof NonNullable<__S>] extends [never] ? C extends { setup?: (props: infer __P, ...args: any[]) => any } ? string extends keyof __P ? any : {} : {} : any : any : any : any;
   type $NativeNavigationSlots<C> = C extends new (...args: any[]) => { $slots: any } ? $IsAny<InstanceType<C>> extends true ? $EmptyVueNavigationSlots<C> : $IsAny<InstanceType<C>['$slots']> extends true ? any : unknown extends InstanceType<C>['$slots'] ? any : InstanceType<C>['$slots'] : any;
@@ -245,12 +246,13 @@ function __setup() {
   type __TrendChart_CheckTail_0 = $ComponentCheckTail<__TrendChart_Component_0>;
   type __TrendChart_ValueProps_0 = $IsLibraryGenericExport<__TrendChart_Component_0> extends true ? Record<string, any> : __TrendChart_Props_0 & $EmitListeners<__TrendChart_Component_0> & $PublicComponentAttrs;
   type __TrendChart_Check_0 = $PropChecker<__TrendChart_Component_0, __TrendChart_CheckProps_0, __TrendChart_CheckTail_0>;
-  type __TrendChart_0_prop_class = $PropValue<__TrendChart_ValueProps_0, 'class', $FallthroughValue<__TrendChart_Component_0, 'class'>>;
+  type __TrendChart_0_prop_class = $PropValueOr<__TrendChart_ValueProps_0, 'class', __TrendChart_Component_0>;
 
   // Component template navigation references
   void TrendChart;
   const { } = undefined as unknown as $ComponentNavigationProps<__TrendChart_Props_0>;
-  const __vize_props_nav_0 = undefined as unknown as __TrendChart_Props_0 & Record<string, unknown>;
+  const __vize_props_nav_0 = undefined as unknown as __TrendChart_Props_0 & globalThis.Record<string, unknown>;
+  // @ts-ignore Navigation-only references; no diagnostic owner.
   void __vize_props_nav_0.class;
   const __vize_slots_nav_0 = undefined as unknown as $NavigationSlots<typeof TrendChart>;
   const __vize_slot_nav_0_0 = undefined as unknown as typeof __vize_slots_nav_0['area-gradient'];
@@ -266,11 +268,6 @@ function __setup() {
   type $SlotContract_0 = $StructuralSlots<typeof TrendChart>;
   const __vize_required_slots_0: $RequiredSlots<$SlotContract_0, { readonly "area-gradient": true; }> = {};
   void __vize_required_slots_0;
-
-  // Component props in v-slot scope: #area-gradient
-  void function _slot_props_area_gradient_7({ id }: $SlotPayload<typeof __vize_slot_host_7, "area-gradient", typeof TrendChart>) {
-    void id;
-  };
 
   // Mark used components as referenced
   void TrendChart;

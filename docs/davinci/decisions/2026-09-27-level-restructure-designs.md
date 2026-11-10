@@ -182,6 +182,8 @@ JSX semantics has two axes:
 
 The detailed op design is in the
 [#6885 design comment](https://github.com/ubugeeei-prod/vize/issues/6885#issuecomment-5848360240).
+The per-construct mapping and delivery order are in the
+[2026-11-10 record](./2026-11-10-6885-jsx-l2-lowering.md).
 
 - **`ComponentDef { exec: ReRender | RunOnce, body }`.** The execution model
   is context on the component definition, not a per-node flag. SFC templates

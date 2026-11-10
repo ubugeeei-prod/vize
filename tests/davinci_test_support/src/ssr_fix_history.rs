@@ -68,10 +68,10 @@ pub fn options() -> Result<Value, Box<dyn std::error::Error>> {
     let options = SsrCompilerOptions::default();
     if options.dialect != vize_l0::config::VueVersion::V3
         || options.binding_metadata.is_some()
-        || options.croquis.is_some()
+        || options.script_tables.is_some()
     {
         return Err(
-            "SSR fixture defaults gained dialect, binding metadata or Croquis context".into(),
+            "SSR fixture defaults gained dialect, binding metadata or script tables".into(),
         );
     }
     let SsrCompilerExperimentalOptions {

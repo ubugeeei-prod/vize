@@ -1,6 +1,6 @@
 //! P2-16 differential witnesses for JSX VDOM L2 migration.
 
-use vize_croquis::Croquis;
+use vize_atelier_core::lane::ScriptTables;
 use vize_l0::{Allocator, String};
 
 use crate::l2::L2Refusal;
@@ -301,7 +301,8 @@ fn compile_case(source: &str, lang: JsxLang, route: EmitRoute) -> Output {
     let mut lowered = lower_source(&allocator, allocator.as_oxc(), source, lang);
     assert!(!lowered.has_errors(), "{:?}", lowered.diagnostics);
 
-    let analysis: &Croquis = allocator.alloc_owned(lowered.analysis);
+    let script_tables: &ScriptTables =
+        allocator.alloc_owned(ScriptTables::from_croquis(&lowered.analysis));
     let mut root = lowered.roots.pop().expect("one JSX root");
     assert!(lowered.roots.is_empty(), "expected exactly one JSX root");
 
@@ -314,7 +315,7 @@ fn compile_case(source: &str, lang: JsxLang, route: EmitRoute) -> Output {
     let component = compile_root_to_vdom(
         &allocator,
         root,
-        analysis,
+        script_tables,
         lang.is_typescript(),
         &VdomCompileOptions::default(),
         VdomCompatOptions::default(),

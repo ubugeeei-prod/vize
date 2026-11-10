@@ -33,12 +33,12 @@ type CurrentPacketProvenance = {
 export function assertCurrentPacketProvenance(provenance: CurrentPacketProvenance): void {
   assert.deepEqual(provenance.artifact, {
     repository: "ubugeeei-prod/vize",
-    run: 42646667936,
-    job: 129264778908,
-    id: 13690100504,
-    name: "instance-globals-10617-8827c3de910036ad616a4ebbf441a2b4f14a7684-1",
-    digest: "sha256:e350807b134e8c1b2a4d440170e6b29ab969cb83d58bb7f548adaf9d1c333cbf",
-    bytes: 18676246,
+    run: 42680895978,
+    job: 129375771855,
+    id: 13704185312,
+    name: "instance-globals-10617-a8146816896489c638b4c88c9f1ef31775d5f5a0-1",
+    digest: "sha256:08e204445821ba9d397c9bac3c00c5607e7923125b648ad14aa77a8bd8c5cb69",
+    bytes: 18675726,
   });
   assert.deepEqual(provenance.capturedQualification, {
     totalOutcomes: 499,
@@ -62,6 +62,6 @@ export function assertCurrentPacketProvenance(provenance: CurrentPacketProvenanc
     publicPackageAcceptanceCredit: false,
     performanceCredit: false,
     reason:
-      "The component contract now passes never as the required-key set when every fallthrough member admits {}, so the four slot-shadow and mixed-slot-scope packets carry the gated $RequiredFallthroughProps reference on their one __Child_CheckProps_0 line and every later generated coordinate moved by that growth while all 495 semantic, protocol, mapping-geometry, and real-host controls passed; this record retains the observed postimages without assigning acceptance credit to the stale-golden run.",
+      "The component-props pass no longer replays a v-slot scope whose body checks no component, so the LF and CRLF/Unicode slot-shadow and mixed-slot-scope packets each lost exactly that 214-byte replay and its one mapped $ghost binding, the two unmapped-gap ignore rows around that binding merged into one, and every later generated coordinate moved by 214, while all 495 semantic, protocol, mapping-geometry, and real-host controls passed; this record retains the observed postimages without assigning acceptance credit to the stale-golden run.",
   });
 }

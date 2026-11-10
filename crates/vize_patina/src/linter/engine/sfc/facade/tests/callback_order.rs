@@ -111,7 +111,7 @@ impl MarkupRule for CallbackRule {
     }
 }
 
-fn linter(kinds: &[Kind], facade: bool, ordered: bool) -> Linter {
+fn linter(kinds: &[Kind], facade: bool) -> Linter {
     let mut registry = RuleRegistry::new();
     for kind in kinds {
         registry.register(Box::new(CallbackRule {
@@ -119,12 +119,7 @@ fn linter(kinds: &[Kind], facade: bool, ordered: bool) -> Linter {
             facade,
         }));
     }
-    let linter = Linter::with_registry(registry);
-    if ordered {
-        linter.with_editor_callback_order()
-    } else {
-        linter
-    }
+    Linter::with_registry(registry)
 }
 
 fn expected(events: &[(Kind, &'static str)]) -> LintResult {
@@ -147,7 +142,7 @@ fn packet(result: &LintResult) -> vize_l0::CompactString {
 }
 
 #[test]
-fn editor_callback_order_preserves_real_phases_configured_rank_and_nested_exit() {
+fn callback_order_preserves_real_phases_configured_rank_and_nested_exit() {
     use Kind::{Directive as D, Element as E, Multiple as M};
     for (kinds, events) in [
         (
@@ -188,31 +183,19 @@ fn editor_callback_order_preserves_real_phases_configured_rank_and_nested_exit()
         ),
     ] {
         let expected = packet(&expected(&events));
-        let legacy = linter(&kinds, false, false).lint_sfc(SOURCE, "order.vue");
+        let legacy = linter(&kinds, false).lint_sfc(SOURCE, "order.vue");
         assert_eq!(
             packet(&legacy),
             expected,
             "authored original callback packet"
         );
-        let ordered_legacy = linter(&kinds, false, true).lint_sfc(SOURCE, "order.vue");
-        assert_eq!(
-            packet(&ordered_legacy),
-            expected,
-            "legacy bytes stay intact"
-        );
-        let facade = linter(&kinds, true, true).lint_sfc(SOURCE, "order.vue");
+        let facade = linter(&kinds, true).lint_sfc(SOURCE, "order.vue");
         assert_eq!(packet(&facade), expected, "one rule reports in four phases");
-        let ordinary = linter(&kinds, true, false).lint_sfc(SOURCE, "order.vue");
-        assert_ne!(
-            packet(&ordinary),
-            expected,
-            "control exposes deferred dispatch"
-        );
     }
 }
 
 #[test]
-fn editor_callback_order_retains_all_unsuppressed_complete_diagnostics() {
+fn callback_order_retains_all_unsuppressed_complete_diagnostics() {
     use Kind::{Directive as D, Element as E, Multiple as M};
     let events = [
         (M, "template"),
@@ -228,7 +211,7 @@ fn editor_callback_order_retains_all_unsuppressed_complete_diagnostics() {
         (M, "exit"),
     ];
     for facade in [false, true] {
-        let result = linter(&[D, E, M], facade, true)
+        let result = linter(&[D, E, M], facade)
             .with_disabled_rules(vec![metadata(E).name.into()])
             .lint_sfc(SOURCE, "order.vue");
         assert_eq!(packet(&result), packet(&expected(&events)));
@@ -236,7 +219,7 @@ fn editor_callback_order_retains_all_unsuppressed_complete_diagnostics() {
 }
 
 #[test]
-fn editor_callback_order_preserves_comment_producers_between_real_visits() {
+fn callback_order_preserves_comment_producers_between_real_visits() {
     use Kind::{Directive as D, Element as E, Multiple as M};
     let events = [
         (M, "template"),
@@ -267,8 +250,8 @@ fn editor_callback_order_preserves_comment_producers_between_real_visits() {
         ),
     );
     expected.warning_count += 1;
-    for (facade, ordered) in [(false, false), (false, true), (true, true)] {
-        let result = linter(&[D, E, M], facade, ordered).lint_sfc(&source, "order.vue");
+    for facade in [false, true] {
+        let result = linter(&[D, E, M], facade).lint_sfc(&source, "order.vue");
         assert_eq!(packet(&result), packet(&expected));
     }
 }

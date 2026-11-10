@@ -25,7 +25,8 @@ use vize_atelier_sfc::{
     compile_sfc_for_adapter, parse_sfc,
 };
 use vize_l0::Allocator;
-use vize_l1_to_l2::{DomEmitMode, DomEmitOptions, LegacyCaps, emit_dom_source_with_options};
+use vize_l1_to_l2::LegacyCaps;
+use vize_l4::targets::dom::artifact::{DomEmitMode, DomEmitOptions, emit_dom_source_with_options};
 
 const CASES: &str = include_str!(
     "../../../tests/_fixtures/differential/compiler/component-slot-text-7970/cases.json"

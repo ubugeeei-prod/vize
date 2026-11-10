@@ -1,0 +1,90 @@
+{
+  "schema": "vize.instance-global-current-provenance",
+  "version": 1,
+  "issue": 10617,
+  "pullRequest": 12486,
+  "producer": {
+    "sourceRevision": "cd10508733d6328e481bea39abad775855d7c7b7",
+    "sourceTree": "a84c2a0e022cf23126afbb0d14b302d61a6fe286",
+    "pullRequestHead": "a8146816896489c638b4c88c9f1ef31775d5f5a0",
+    "binarySha256": "ab76b6695bf6b2f8eaba5e4daebbcd850592fa1aa7f646f031b3fa68368dcacc",
+    "recipe": "cargo build --profile ci -p vize",
+    "captureRun": 42680895978,
+    "artifactId": 13704185312,
+    "runAttempt": 1,
+    "platform": "linux",
+    "arch": "x64"
+  },
+  "artifact": {
+    "repository": "ubugeeei-prod/vize",
+    "run": 42680895978,
+    "job": 129375771855,
+    "id": 13704185312,
+    "name": "instance-globals-10617-a8146816896489c638b4c88c9f1ef31775d5f5a0-1",
+    "digest": "sha256:08e204445821ba9d397c9bac3c00c5607e7923125b648ad14aa77a8bd8c5cb69",
+    "bytes": 18675726
+  },
+  "previousPopulation": {
+    "path": "source-packets-current-0891e5274506.json",
+    "bytes": 407451,
+    "sha256": "346738906b7fd32d3de2361876972edf1ba49a3d3823f75fd737a65a80dfdc72"
+  },
+  "successorPopulation": {
+    "path": "source-packets-current-cd10508733d6.json",
+    "bytes": 406214,
+    "sha256": "7709b6133c772cd363c2c5dd3f94eb3f68ab2ba91be4460af7c3acae4ad32b98"
+  },
+  "sourceReceipt": {
+    "path": "crates/vize_canon/tests/empty_vue_star_exports/membership/constructor_without_args/payload_update/canon_leftovers_11499.json",
+    "sha256": "250e01138d163f77a5d98b20bc97f562a663ebb924c17c810b9d9cf02280128e"
+  },
+  "evidence": {
+    "source-build.json": {
+      "bytes": 326,
+      "sha256": "1d2c4b276547b6f3d00a9be9804a6c8f7d868c16c7617e79dc625abca7a8143c"
+    },
+    "source-launch.json": {
+      "bytes": 882,
+      "sha256": "42612524ce7946e40e32cb4541cb2a6e8c678e59801850b62e3fec4236bef6bd"
+    },
+    "source-protocol.json": {
+      "bytes": 467199,
+      "sha256": "7f6e850e0a39ae1ed5b38f2d172c8b8e90775c462b28357df26450c353da5133"
+    },
+    "outcomes.json": {
+      "bytes": 115115,
+      "sha256": "af97f5c227b2ae02d5a1d5ec46161085267747c048feab897737b2178e5b855e"
+    },
+    "qualification.json": {
+      "bytes": 119264,
+      "sha256": "a4e167a3051eaf625db9cb9962b1a8a72e2718a6b7214431b369e0ce13f3383d"
+    },
+    "host-matrix.json": {
+      "bytes": 4328,
+      "sha256": "6f05c020edf6fce1a58c1f72aa9a0fda9b87273f5378f0045e1a6196e60c15a1"
+    }
+  },
+  "capturedQualification": {
+    "status": "unqualified",
+    "fullPacketQualification": false,
+    "hostMatrixQualification": false,
+    "totalOutcomes": 499,
+    "passedOutcomes": 495,
+    "gapCount": 4,
+    "gapIds": [
+      "whole-packet/lf/slot-shadow",
+      "whole-packet/lf/mixed-slot-scope",
+      "whole-packet/crlf-unicode/slot-shadow",
+      "whole-packet/crlf-unicode/mixed-slot-scope"
+    ]
+  },
+  "review": {
+    "completePackets": 80,
+    "allNonWholePacketOutcomesPassed": true,
+    "qualificationCredit": false,
+    "nativeAcceptanceCredit": false,
+    "publicPackageAcceptanceCredit": false,
+    "performanceCredit": false,
+    "reason": "The component-props pass no longer replays a v-slot scope whose body checks no component, so the LF and CRLF/Unicode slot-shadow and mixed-slot-scope packets each lost exactly that 214-byte replay and its one mapped $ghost binding, the two unmapped-gap ignore rows around that binding merged into one, and every later generated coordinate moved by 214, while all 495 semantic, protocol, mapping-geometry, and real-host controls passed; this record retains the observed postimages without assigning acceptance credit to the stale-golden run."
+  }
+}

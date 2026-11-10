@@ -12370,6 +12370,57 @@
       }
     },
     {
+      "id": "typechecker/materialized-canon-root-12533/style-binding-navigation",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "test": "canon_mirror_navigation::style_binding_navigation_keeps_canon_project_types",
+      "sourceRevision": "53d12cd3c4aa23a45b4e8044ddd169fe36e3b15e",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "materialized-canon-root-12533/tsconfig.json.txt",
+          "sha256": "e9e112b331d5eace62f75421ecc52d79c5d900aaa15ad41d8f18ce744d3d34c0"
+        },
+        {
+          "file": "src/shapes.ts",
+          "path": "materialized-canon-root-12533/shapes.ts.txt",
+          "sha256": "10805ca4a929b6d579e51e3724b3c0ddb40473daf92aff8c9d4f75305f5366b6"
+        },
+        {
+          "file": "src/Child.vue",
+          "path": "materialized-canon-root-12533/Child.vue.txt",
+          "sha256": "5738abfbb05743fb5f97fc8fe931288d24f3d590eb94c956a4ca2fc7dc075142"
+        },
+        {
+          "file": "src/Card.vue",
+          "path": "materialized-canon-root-12533/Card.vue.txt",
+          "sha256": "9092530762e8e2028d95699c87e3aabd96e30bcaafe55bedea89c8d70f70bfd5"
+        },
+        {
+          "file": "src/Panel.vue",
+          "path": "materialized-canon-root-12533/Panel.vue.txt",
+          "sha256": "f72ff16f3889dba81cb2f7cc6c3b0f906b70bd89b900dc1094ac278986f34687"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "canon_mirror_navigation::style_binding_navigation_keeps_canon_project_types; #12533 editor Canon project materialized by a CSS v-bind() query keeps the root declarations and package view"
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/mixed-script-static-ref-11811",
       "state": "active",
       "targets": [
@@ -12646,6 +12697,74 @@
               "ts"
             ],
             "selector": "content_mapper_tsgo_cli::quoted_generic_parameters::body_error::independent_authored_body_errors_survive_generic_repairs; newly pinned original CRLF repaired reference input, not a new semantic program"
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/project-session-retirement-11168/watch-settle-stop-budget",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "test": "lsp_client::editor_lsp::watch_settle_tests::an_unfinished_watch_update_never_holds_shutdown_past_the_client_budget",
+      "sourceRevision": "680dfd088f5979a7131911124845e68cc7beb67c",
+      "inputs": [
+        {
+          "file": "reference/probe.ts",
+          "path": "project-session-retirement-11168/probe.ts.txt",
+          "sha256": "ad35bcc06b1b2018c4c5a215eb3dda57934260a777415d64ba79513beabd6d29"
+        },
+        {
+          "file": "reference/tsconfig.json",
+          "path": "project-session-retirement-11168/tsconfig.json.txt",
+          "sha256": "81075be1182e35f06d3fac2f7fcaee5a5f650b044d52bb804b51d5488fac9eee"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "ts"
+            ],
+            "selector": "lsp_client::editor_lsp::watch_settle_tests::an_unfinished_watch_update_never_holds_shutdown_past_the_client_budget; an editor session's watch settling stays within VS Code's 2 s stop budget, not a new semantic program"
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/project-session-retirement-11168/watch-teardown-12526",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "test": "content_mapper_tsgo_cli::quoted_generic_parameters::body_error::independent_authored_body_errors_survive_generic_repairs",
+      "sourceRevision": "de748ac735b35a231a8122ae946843371aad0aa3",
+      "inputs": [
+        {
+          "file": "reference/probe.ts",
+          "path": "project-session-retirement-11168/probe.ts.txt",
+          "sha256": "ad35bcc06b1b2018c4c5a215eb3dda57934260a777415d64ba79513beabd6d29"
+        },
+        {
+          "file": "reference/tsconfig.json",
+          "path": "project-session-retirement-11168/tsconfig.json.txt",
+          "sha256": "81075be1182e35f06d3fac2f7fcaee5a5f650b044d52bb804b51d5488fac9eee"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "ts"
+            ],
+            "selector": "content_mapper_tsgo_cli::quoted_generic_parameters::body_error::independent_authored_body_errors_survive_generic_repairs; #12526 plain-TypeScript session teardown with client-side watching keeps the worker's stderr empty, not a new semantic program"
           }
         ]
       }
@@ -13985,6 +14104,221 @@
       }
     },
     {
+      "id": "typechecker/regression/lib-type-shadowing-12536",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "lib-type-shadowing-12536/Child.vue.txt",
+          "sha256": "5140653d8a1bc8609ea117633c1785eaede9f865a0125acb548f4f17a6697bf2",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "lib-type-shadowing-12536/Parent.vue.txt",
+          "sha256": "37f64f73c1789e83bb3dd7cbdf6c3568c00d7b0a0bdec479b9a850b7cbf2d62e",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "lib-type-shadowing-12536/Picker.vue.txt",
+          "sha256": "65863801b031d678c640416a462f75b34c27308db4db3df82b01f02752981b6f",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "lib-type-shadowing-12536/lib-types.ts.txt",
+          "sha256": "aeeca1d6f7f2736d7e7329035c23088a974234c8d4b3505e1ad4268b001c3a60",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "lib-type-shadowing-12536/tsconfig.json.txt",
+          "sha256": "8f4cc08b465ddf6df35387e36be46136f6b6f7f5f19085ca9d6a3fcc1cda9b31",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "shared_helper_shadowing::authored_lib_types_cannot_capture_the_projection; a lib type name (Parameters) declared or imported by the SFC must not capture listener or slot outlet projection types. Input-only batch registration for the shared Canon source change; no native parity claim."
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/regression/lib-type-shadowing-emits-12536",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "lib-type-shadowing-emits-12536/Child.vue.txt",
+          "sha256": "5140653d8a1bc8609ea117633c1785eaede9f865a0125acb548f4f17a6697bf2",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "lib-type-shadowing-emits-12536/Parent.vue.txt",
+          "sha256": "65a5cea70df74276d7bb76d6cef32e6b43691696c77fcfd70acade6cc93c0816",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "lib-type-shadowing-emits-12536/Picker.vue.txt",
+          "sha256": "65863801b031d678c640416a462f75b34c27308db4db3df82b01f02752981b6f",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "lib-type-shadowing-emits-12536/tsconfig.json.txt",
+          "sha256": "8f4cc08b465ddf6df35387e36be46136f6b6f7f5f19085ca9d6a3fcc1cda9b31",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "shared_helper_shadowing::authored_lib_types_cannot_capture_the_projection; authored Awaited and ReturnType must not capture the runtime-emit props and event map or the authored default component alias. Input-only batch registration for the shared Canon source change; no native parity claim."
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/regression/lib-type-shadowing-setup-helpers-12536",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "lib-type-shadowing-setup-helpers-12536/SetupChild.vue.txt",
+          "sha256": "ea7705eb2e70c7c1a996acd671a7c69f8a6d64f3367f85e572b209bce06f45ba",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "lib-type-shadowing-setup-helpers-12536/SetupHost.vue.txt",
+          "sha256": "7cb0bb176e417ab34cf81ccedc8b7e31e99a350a024fcf4ad65995de15533135",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "lib-type-shadowing-setup-helpers-12536/tsconfig.json.txt",
+          "sha256": "8f4cc08b465ddf6df35387e36be46136f6b6f7f5f19085ca9d6a3fcc1cda9b31",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "lib_type_shadowing_setup_helpers::authored_lib_types_cannot_capture_setup_helpers; lib and DOM type names declared or imported by the SFC must not capture macro signatures, template ref registries, CSS module types or component v-model payloads. Input-only batch registration for the shared Canon source change; no native parity claim."
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/regression/lib-type-shadowing-setup-return-12536",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "lib-type-shadowing-setup-return-12536/Child.vue.txt",
+          "sha256": "5140653d8a1bc8609ea117633c1785eaede9f865a0125acb548f4f17a6697bf2",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "lib-type-shadowing-setup-return-12536/Parent.vue.txt",
+          "sha256": "df68d068932f7fc061e9f2910f9d1946cf904b65a8ec6197b7ab7591c457caf4",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "lib-type-shadowing-setup-return-12536/Picker.vue.txt",
+          "sha256": "65863801b031d678c640416a462f75b34c27308db4db3df82b01f02752981b6f",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "lib-type-shadowing-setup-return-12536/tsconfig.json.txt",
+          "sha256": "8f4cc08b465ddf6df35387e36be46136f6b6f7f5f19085ca9d6a3fcc1cda9b31",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "shared_helper_shadowing::authored_lib_types_cannot_capture_the_projection; authored Awaited and ReturnType must not capture the setup-return aliases (slots, setup type exports, namespace captures, ambient captures, options props). Input-only batch registration for the shared Canon source change; no native parity claim."
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/regression/lib-type-shadowing-slots-12536",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "lib-type-shadowing-slots-12536/SlotChild.vue.txt",
+          "sha256": "dad1390679fce7cf7c46c79be5297f0245ec04feb1f0ae1e26f696719a91b7e6",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "lib-type-shadowing-slots-12536/SlotHost.vue.txt",
+          "sha256": "7a117fb8c153bbef58441413631452f33604c85cdf96df9a16d40b7ec61fa443",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "lib-type-shadowing-slots-12536/tsconfig.json.txt",
+          "sha256": "8f4cc08b465ddf6df35387e36be46136f6b6f7f5f19085ca9d6a3fcc1cda9b31",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "lib_type_shadowing_template_helpers::authored_lib_types_cannot_capture_template_helpers; Exclude, Extract, NonNullable and PropertyKey declared or imported by the SFC must not capture slot outlet, scoped slot, inferred slot or narrowed ref unwrap helpers. Input-only batch registration for the shared Canon source change; no native parity claim."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/regression/library-generic-event-payload-11447",
       "state": "active",
       "targets": [
@@ -14337,6 +14671,45 @@
               "ts"
             ],
             "selector": "source CLI original11145 physical input pin only; checker packet/native parity/filesystem/public acceptance unsupported"
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/regression/nav-index-signature-access-12531",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "nav-index-signature-access-12531/Child.vue.txt",
+          "sha256": "80e104125b7b45cdde8e9c25c54e9e6da7e6ca644750747d1f9d9ae2b24a852f",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "nav-index-signature-access-12531/App.vue.txt",
+          "sha256": "37bae2ee5352367dd83953821fc77e8054a045e69303b61975030082012033fd",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "nav-index-signature-access-12531/tsconfig.json.txt",
+          "sha256": "9a54dc4959496a733a898e9b2a6be98e9eccb0503da71b83177425b5bf280c9f",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "content_mapper_tsgo_cli::nav_index_signature_access_12531::undeclared_attributes_stay_clean_under_no_property_access_from_index_signature; the issue repro with noPropertyAccessFromIndexSignature plus a wrong declared prop value control, checked through tsc 7.1 with the Vize mapper and vize check on the same project"
           }
         ]
       }
@@ -15548,6 +15921,45 @@
       }
     },
     {
+      "id": "typechecker/regression/slot-pattern-once-12479",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "slot-pattern-once-12479/Child.vue.txt",
+          "sha256": "308845836149e2a7c10c26cb46c41ebd913b2005969a21c24cce5ee219d73d7a",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "slot-pattern-once-12479/Parent.vue.txt",
+          "sha256": "a6c1076dcbf8eb16d5ad1610b5c3dbf5b26bcd74b5ee975791e567e6c8975443",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "slot-pattern-once-12479/tsconfig.json.txt",
+          "sha256": "8b2c95d95331863b8b9b707a4b717a99fdb42c714409fe4021f8ebd0b11c7454",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "content_mapper_tsgo_cli::replayed_pattern_duplicates::standard_tsgo_reports_each_replayed_pattern_diagnostic_once; content_mapper::tests::diagnostic_ownership::replayed_patterns. The component-props pass no longer replays an unchecked v-slot scope and leaves a needed replay's pattern unmapped, so the missing destructured slot prop is reported once under tsc and the content mapper. Input-only batch registration; vize check already reported it once, so no batch diagnostic behavior or native parity claim."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/regression/strict-v-model-mapper-11643",
       "state": "active",
       "targets": [
@@ -15847,6 +16259,45 @@
               "ts"
             ],
             "selector": "content_mapper::directive_tests::disjoint::every_entry_point_ignores_unmapped_scaffolding; #11472 napi generateVueLanguageCode and the CLI mapper return the same directive table, unmapped ignores included, for a mapped SFC and the invalid-SFC fallback. Input-only registration, no diagnostic pack."
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/regression/v-for-pattern-once-12520",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "v-for-pattern-once-12520/App.vue.txt",
+          "sha256": "322d3f75e14c33a26313f4fa2ba2f1b0a9764e05dcbf2dded0dee1e8c8c48e98",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "v-for-pattern-once-12520/Child.vue.txt",
+          "sha256": "1f073807c204074cf7c1590959b2e6d16686b8825770bfeeb397ea31a65ed9ad",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "v-for-pattern-once-12520/tsconfig.json.txt",
+          "sha256": "8b2c95d95331863b8b9b707a4b717a99fdb42c714409fe4021f8ebd0b11c7454",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "content_mapper_tsgo_cli::replayed_pattern_duplicates::standard_tsgo_reports_each_replayed_pattern_diagnostic_once; content_mapper::tests::diagnostic_ownership::replayed_patterns. The component-props pass no longer replays an unchecked v-for scope and leaves a needed replay's aliases unmapped, so the missing destructured v-for property is reported once under tsc and the content mapper. Input-only batch registration; vize check already reported it once, so no batch diagnostic behavior or native parity claim."
           }
         ]
       }

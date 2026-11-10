@@ -7,7 +7,7 @@ on:
       - "davinci/vize_l1_to_l2/src/lower/forop*"
       - "davinci/vize_l1_to_l2/src/lower/forop/**"
       - "davinci/vize_l1_to_l2/src/lang/for_op.rs"
-      - "davinci/vize_l1_to_l2/src/emit/**"
+      - "davinci/vize_l4/src/targets/dom/artifact/**"
       - "crates/vize_atelier_ssr/src/l4/**"
       - "crates/vize_atelier_vapor/src/lower/control.rs"
       - "crates/vize_atelier_core/src/steps/v_for*"

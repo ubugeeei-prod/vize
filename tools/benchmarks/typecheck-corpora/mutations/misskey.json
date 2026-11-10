@@ -199,10 +199,6 @@
         "column": 34,
         "code": "TS2339",
         "message": "'itme'"
-      },
-      "known": {
-        "issue": 12479,
-        "count": 2
       }
     },
     {

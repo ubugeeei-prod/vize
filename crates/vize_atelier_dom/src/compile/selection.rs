@@ -40,7 +40,7 @@ pub(super) enum DomLegacyReason {
     CustomRenderer,
     /// The requested whitespace strategy is not implemented by L2 lowering.
     Whitespace,
-    /// A Croquis summary is attached (the script-setup SFC path).
+    /// Script tables register a component the binding metadata lacks.
     Croquis,
     /// The source text may carry patterned-template directives.
     PatternedSource,
@@ -111,8 +111,8 @@ pub(super) fn record(outcome: Result<(), DomLegacyReason>) {
 /// compile this to the identity.
 #[inline]
 pub(super) fn noting_refusal<T>(
-    emitted: Result<T, vize_l1_to_l2::EmitError>,
-) -> Result<T, vize_l1_to_l2::EmitError> {
+    emitted: Result<T, vize_l4::targets::dom::artifact::EmitError>,
+) -> Result<T, vize_l4::targets::dom::artifact::EmitError> {
     #[cfg(feature = "legacy-differential")]
     if let Err(error) = &emitted {
         differential::note_emit_refusal(*error);
@@ -128,14 +128,14 @@ pub(super) fn noting_refusal<T>(
 pub mod differential {
     use core::cell::Cell;
 
-    use vize_l1_to_l2::EmitError;
+    use vize_l4::targets::dom::artifact::EmitError;
 
     std::thread_local! {
         static FORCE_LEGACY: Cell<bool> = const { Cell::new(false) };
         static EMIT_REFUSAL: Cell<Option<EmitError>> = const { Cell::new(None) };
     }
 
-    /// Historical arm. A projectable Croquis summary is admitted in
+    /// Historical arm. Projectable script tables are admitted in
     /// production, so this no longer changes the selector.
     pub fn with_croquis_projection<R>(f: impl FnOnce() -> R) -> R {
         f()
@@ -159,7 +159,7 @@ pub mod differential {
 
     /// Take the typed error L2 returned for this thread's latest DOM
     /// compile, so a corpus sweep can attribute `emit_refused` templates to
-    /// their [`vize_l1_to_l2::UnsupportedReason`] bucket. `None` when L2
+    /// their [`vize_l4::targets::dom::artifact::UnsupportedReason`] bucket. `None` when L2
     /// emitted the module or the selector never ran it.
     pub fn take_emit_refusal() -> Option<EmitError> {
         EMIT_REFUSAL.with(Cell::take)

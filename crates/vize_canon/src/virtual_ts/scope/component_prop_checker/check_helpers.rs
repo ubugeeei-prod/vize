@@ -246,6 +246,9 @@ pub(in crate::virtual_ts::scope) fn append_prop_check_helpers(
     ts.push_str(
         "  type $PropValue<P, K extends PropertyKey, F = unknown, __V = P extends unknown ? (K extends keyof P ? P[K] : never) : never> = [__V] extends [never] ? F : __V;\n",
     );
+    ts.push_str(
+        "  type $PropValueOr<P, K extends PropertyKey, C, FK extends PropertyKey = K, __V = P extends unknown ? (K extends keyof P ? P[K] : never) : never> = [__V] extends [never] ? $FallthroughValue<C, FK> : __V;\n",
+    );
     if typed_fallthrough_values
         && usages
             .iter()
@@ -257,7 +260,8 @@ pub(in crate::virtual_ts::scope) fn append_prop_check_helpers(
         ts.push_str(
             "  type $FallthroughSpreadGuard<C, P, A, __K = $InvalidFallthroughSpreadKeys<P, $FallthroughProps<C>, A>> = [__K] extends [never] ? unknown : { readonly __vizeInvalidFallthroughSpreadValues: __K };\n",
         );
-        ts.push_str(
+        crate::virtual_ts::generated_names::push_lib_text(
+            ts,
             "  type $FallthroughSpreadChecker<C, P> = <A>(props: A & $FallthroughSpreadGuard<C, P, NoInfer<A>>) => A;\n",
         );
     }

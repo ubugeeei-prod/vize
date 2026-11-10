@@ -1,3 +1,4 @@
+use crate::virtual_ts::generated_names::push_lib_text;
 use crate::virtual_ts::template_binding_access::TemplateBindingAccess;
 use vize_carton::{FxHashMap, String, append};
 
@@ -60,27 +61,35 @@ pub(super) fn emit_slot_outlet_helpers(
     let needs_spread = needs_static_spread || needs_dynamic_spread;
 
     // Match Vue's functional-slot normalization without erasing overloaded call signatures.
-    ts.push_str("  function __vizeSlotOutlet<S>(slot: S): S extends () => infer R ? (props: {}) => R : NonNullable<S> { return slot as any; }\n");
+    push_lib_text(
+        ts,
+        "  function __vizeSlotOutlet<S>(slot: S): S extends () => infer R ? (props: {}) => R : NonNullable<S> { return slot as any; }\n",
+    );
     // Payload aliases provide contextual typing for v-bind spreads.
     if needs_spread {
         ts.push_str("  type $SlotOutletFn = (...args: any[]) => any;\n");
     }
     if needs_static_spread {
-        ts.push_str(
+        push_lib_text(
+            ts,
             "  type $SlotOutletTarget<__S, __K extends PropertyKey> = Extract<NonNullable<__S[__K & keyof __S]>, $SlotOutletFn>;\n",
         );
-        ts.push_str(
+        push_lib_text(
+            ts,
             "  type $SlotOutletArgs<__S, __K extends PropertyKey> = [$SlotOutletTarget<__S, __K>] extends [never] ? [] : Parameters<$SlotOutletTarget<__S, __K>>;\n",
         );
-        ts.push_str(
+        push_lib_text(
+            ts,
             "  type $SlotOutletPayload<__S, __K extends PropertyKey> = [$SlotOutletArgs<__S, __K>] extends [[]] ? unknown : $SlotOutletArgs<__S, __K>[0];\n",
         );
     }
     if needs_dynamic_spread {
-        ts.push_str(
+        push_lib_text(
+            ts,
             "  type $AnySlotOutletTarget<__S> = Extract<NonNullable<__S[keyof __S]>, $SlotOutletFn>;\n",
         );
-        ts.push_str(
+        push_lib_text(
+            ts,
             "  type $AnySlotOutletArgs<__S> = [$AnySlotOutletTarget<__S>] extends [never] ? [] : Parameters<$AnySlotOutletTarget<__S>>;\n",
         );
         ts.push_str(
@@ -100,7 +109,8 @@ pub(super) fn emit_slot_outlet_helpers(
         // Intersecting known payloads with the expected type hides incompatible
         // members as `never`. Keep their authored types, including generic
         // conditional payloads, and apply the fallback only to non-object values.
-        ts.push_str(
+        push_lib_text(
+            ts,
             "  type $SlotOutletSpreadPayload<__Expected, __T> = $SlotOutletObject<__T> | (__T extends object ? never : __Expected & Record<string, unknown>);\n",
         );
         ts.push_str(

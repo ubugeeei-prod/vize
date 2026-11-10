@@ -15,7 +15,7 @@ type.
 
 The old `davinci-opt` host edge has been retired. `vize_davinci` is scanned as
 library source throughout; the `vize` CLI owns paths, filesystem I/O, and exit
-codes. No exception extends to L1, L2, L3, or L1-to-L2 libraries. Importing or
+codes. No exception extends to L1, L2, L3, L4, or L1-to-L2 libraries. Importing or
 aliasing `std`, `vec`, or `collections` does not bypass the boundary.
 
 ## Retained `alloc::vec::Vec` inventory

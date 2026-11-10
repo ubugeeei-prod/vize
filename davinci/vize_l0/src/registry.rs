@@ -7,8 +7,56 @@
 use crate::{
     FileDialect, Lang, ProfileKind, TemplateSyntaxMode,
     config::VueVersion,
-    dialect::{VueDialect, detect_petite_vue_document},
+    dialect::{FileKind, ModuleFormat, ScriptKind, VueDialect, detect_petite_vue_document},
 };
+
+const fn script(lang: Lang, jsx: bool, module: ModuleFormat) -> FileKind {
+    FileKind::Script(ScriptKind {
+        lang,
+        jsx,
+        declaration: false,
+        module,
+    })
+}
+
+/// Every source extension Vize reads and the kind it selects, in display
+/// order. A `.d` before a TypeScript extension without JSX marks a
+/// declaration file of the same shape.
+pub(crate) const FILE_KINDS: &[(&str, FileKind)] = &[
+    ("vue", FileKind::Sfc),
+    ("html", FileKind::Document),
+    ("htm", FileKind::Document),
+    ("js", script(Lang::Js, false, ModuleFormat::Package)),
+    ("mjs", script(Lang::Js, false, ModuleFormat::Esm)),
+    ("cjs", script(Lang::Js, false, ModuleFormat::CommonJs)),
+    ("ts", script(Lang::Ts, false, ModuleFormat::Package)),
+    ("mts", script(Lang::Ts, false, ModuleFormat::Esm)),
+    ("cts", script(Lang::Ts, false, ModuleFormat::CommonJs)),
+    ("jsx", script(Lang::Js, true, ModuleFormat::Package)),
+    ("tsx", script(Lang::Ts, true, ModuleFormat::Package)),
+    ("tsrx", FileKind::Tsrx),
+];
+
+/// Resolve the kind a file name selects.
+#[must_use]
+pub fn file_kind(name: &str) -> Option<FileKind> {
+    let (stem, extension) = name.rsplit_once('.')?;
+    if stem.is_empty() {
+        return None;
+    }
+    let (_, kind) = FILE_KINDS.iter().find(|(known, _)| *known == extension)?;
+    Some(match *kind {
+        FileKind::Script(script)
+            if matches!(script.lang, Lang::Ts) && !script.jsx && stem.ends_with(".d") =>
+        {
+            FileKind::Script(ScriptKind {
+                declaration: true,
+                ..script
+            })
+        }
+        kind => kind,
+    })
+}
 
 /// Resolve a Vue component descriptor from its configured axes.
 #[must_use]

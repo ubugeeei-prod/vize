@@ -1,0 +1,341 @@
+// Vue-aware emission entry policy; included by the compatibility module.
+use vize_l0::dump::capture::{CaptureSink, NoCapture};
+use vize_l0::pass::{BudgetObserver, NoObserver, PassObserver};
+use vize_l0::{Allocator, TemplateSyntaxMode, ensure_sufficient_stack};
+use vize_l1::markup::{SurfaceParseOptions, parse_with_options_and_caps};
+use vize_l2::provenance::NoProvenance;
+
+use vize_l1_to_l2::lower::{LegacyCaps, LowerPolicy, lower_with_caps_and_comment_policy};
+use vize_l1_to_l2::pass::{TransformProfile, run_dom_transform_with_profile};
+
+use super::run::{DomEmitObservation, emit_dom_observed};
+use super::{DomEmit, DomEmitOptions, EmitError};
+
+#[cfg(any())]
+mod preflight;
+pub use preflight::{
+    SurfacePreflight, emit_dom_source_with_preflight,
+    emit_dom_source_with_preflight_and_environment,
+    emit_dom_source_with_preflight_environment_and_syntax,
+};
+
+#[cfg(any())]
+mod slot_scope;
+pub use slot_scope::{
+    emit_dom_source_observed_with_options_captured_and_slot_scope,
+    emit_dom_source_observed_with_options_captured_slot_scope_and_environment,
+    emit_dom_source_observed_with_options_captured_slot_scope_environment_and_syntax,
+    emit_dom_source_with_options_captured_and_slot_scope,
+    emit_dom_source_with_options_captured_slot_scope_and_environment,
+    emit_dom_source_with_options_captured_slot_scope_environment_and_syntax,
+};
+
+struct EmitInvocation<'o, 'p, 'v> {
+    options: &'o DomEmitOptions<'p>,
+    syntax: TemplateSyntaxMode,
+    strict_slot_params: bool,
+    no_slotted: bool,
+    development: bool,
+    preflight: Option<&'v mut dyn SurfacePreflight>,
+}
+
+/// Observer-facing counts for the L2 DOM emitter.
+///
+/// `transform` reports only pass-manager walks still needed before DOM
+/// emission. On the Vue 3 build path, preserving fact products are folded into
+/// the emitter setup, so the single code-producing walk is the whole
+/// observer-facing budget. Helper/name/static probes are subtree queries and
+/// stay outside the P2-12a traversal baseline by design.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct DomEmitBudget {
+    pub transform: BudgetObserver,
+    pub emit_walks: u32,
+    pub emit_visits: u32,
+}
+
+impl DomEmitBudget {
+    #[must_use]
+    pub const fn total_walks(&self) -> u32 {
+        self.transform.walks + self.emit_walks
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ObservedDomEmit {
+    pub emit: DomEmit,
+    pub budget: DomEmitBudget,
+}
+
+#[cfg(any(test, feature = "legacy-differential"))]
+#[derive(Debug, Clone, PartialEq, Eq)]
+#[doc(hidden)]
+pub struct ObservedPatchFactsEmit {
+    pub emit: DomEmit,
+    pub materialized_entries: usize,
+}
+
+pub fn emit_dom_source_observed<'a>(
+    allocator: &'a Allocator,
+    source: &'a str,
+) -> Result<ObservedDomEmit, EmitError> {
+    emit_dom_source_with_caps_observed(allocator, source, LegacyCaps::VUE3)
+}
+
+pub fn emit_dom_source_with_caps_observed<'a>(
+    allocator: &'a Allocator,
+    source: &'a str,
+    caps: LegacyCaps,
+) -> Result<ObservedDomEmit, EmitError> {
+    emit_dom_source_observed_with_options(allocator, source, caps, &DomEmitOptions::DEFAULT)
+}
+
+/// [`emit_dom_source_with_caps_observed`] under explicit [`DomEmitOptions`].
+pub fn emit_dom_source_observed_with_options<'a>(
+    allocator: &'a Allocator,
+    source: &'a str,
+    caps: LegacyCaps,
+    options: &DomEmitOptions<'_>,
+) -> Result<ObservedDomEmit, EmitError> {
+    emit_dom_source_observed_with_slot_policy(allocator, source, caps, options, false)
+}
+
+/// SFC-only variant that refuses malformed slot parameters before assembly.
+#[doc(hidden)]
+pub fn emit_dom_source_sfc_observed_with_options<'a>(
+    allocator: &'a Allocator,
+    source: &'a str,
+    caps: LegacyCaps,
+    options: &DomEmitOptions<'_>,
+) -> Result<ObservedDomEmit, EmitError> {
+    emit_dom_source_observed_with_slot_policy(allocator, source, caps, options, true)
+}
+
+fn emit_dom_source_observed_with_slot_policy(
+    allocator: &Allocator,
+    source: &str,
+    caps: LegacyCaps,
+    options: &DomEmitOptions<'_>,
+    strict_slot_params: bool,
+) -> Result<ObservedDomEmit, EmitError> {
+    emit_dom_source_observed_with_slot_policy_captured(
+        allocator,
+        source,
+        caps,
+        options,
+        strict_slot_params,
+        false,
+        TemplateSyntaxMode::Standard,
+        &mut NoCapture,
+    )
+}
+
+#[expect(clippy::too_many_arguments, reason = "DOM emission inputs")]
+fn emit_dom_source_observed_with_slot_policy_captured<C: CaptureSink>(
+    allocator: &Allocator,
+    source: &str,
+    caps: LegacyCaps,
+    options: &DomEmitOptions<'_>,
+    strict_slot_params: bool,
+    no_slotted: bool,
+    syntax: TemplateSyntaxMode,
+    capture: &mut C,
+) -> Result<ObservedDomEmit, EmitError> {
+    let mut transform = BudgetObserver::new();
+    let observed = emit_dom_source_with_options_and_observer_captured(
+        allocator,
+        source,
+        caps,
+        EmitInvocation {
+            options,
+            syntax,
+            strict_slot_params,
+            no_slotted,
+            development: true,
+            preflight: None,
+        },
+        &mut transform,
+        capture,
+    )?;
+    Ok(ObservedDomEmit {
+        emit: observed.emit,
+        budget: DomEmitBudget {
+            transform,
+            emit_walks: 1,
+            emit_visits: observed.emit_visits,
+        },
+    })
+}
+
+/// Observe the instruction budget and the executed stages in the same native
+/// DOM emission. The caller still decides whether the product accepted it.
+pub fn emit_dom_source_observed_with_options_captured<C: CaptureSink>(
+    allocator: &Allocator,
+    source: &str,
+    caps: LegacyCaps,
+    options: &DomEmitOptions<'_>,
+    strict_slot_params: bool,
+    capture: &mut C,
+) -> Result<ObservedDomEmit, EmitError> {
+    emit_dom_source_observed_with_options_captured_and_slot_scope(
+        allocator,
+        source,
+        caps,
+        options,
+        strict_slot_params,
+        false,
+        capture,
+    )
+}
+
+#[cfg(any(test, feature = "legacy-differential"))]
+#[doc(hidden)]
+pub fn emit_dom_source_patch_facts_observed<'a>(
+    allocator: &'a Allocator,
+    source: &'a str,
+) -> Result<ObservedPatchFactsEmit, EmitError> {
+    emit_dom_source_patch_facts_observed_with_options(
+        allocator,
+        source,
+        LegacyCaps::VUE3,
+        &DomEmitOptions::DEFAULT,
+    )
+}
+
+#[cfg(any(test, feature = "legacy-differential"))]
+#[doc(hidden)]
+pub fn emit_dom_source_patch_facts_observed_with_options<'a>(
+    allocator: &'a Allocator,
+    source: &'a str,
+    caps: LegacyCaps,
+    options: &DomEmitOptions<'_>,
+) -> Result<ObservedPatchFactsEmit, EmitError> {
+    let mut observer = vize_l0::pass::NoObserver;
+    let observed = emit_dom_source_with_options_and_observer(
+        allocator,
+        source,
+        caps,
+        options,
+        &mut observer,
+        TemplateSyntaxMode::Standard,
+        false,
+        false,
+        true,
+        None,
+    )?;
+    Ok(ObservedPatchFactsEmit {
+        emit: observed.emit,
+        materialized_entries: observed.patch_fact_entries,
+    })
+}
+
+#[expect(
+    clippy::too_many_arguments,
+    reason = "existing source compilation inputs and optional borrowed validation"
+)]
+pub(super) fn emit_dom_source_with_options_and_observer<'a, O: PassObserver>(
+    allocator: &'a Allocator,
+    source: &'a str,
+    caps: LegacyCaps,
+    options: &DomEmitOptions<'_>,
+    observer: &mut O,
+    syntax: TemplateSyntaxMode,
+    strict_slot_params: bool,
+    no_slotted: bool,
+    development: bool,
+    preflight: Option<&mut dyn SurfacePreflight>,
+) -> Result<DomEmitObservation, EmitError> {
+    ensure_sufficient_stack(|| {
+        let (tree, errors) = parse_with_options_and_caps(
+            allocator,
+            source,
+            SurfaceParseOptions {
+                experimental_in_tag_comments: options.experimental_in_tag_comments,
+                syntax,
+            },
+            caps,
+        );
+        if let Some(preflight) = preflight
+            && !preflight.check(Some((&tree, &errors)))
+        {
+            return Err(EmitError::Diagnostics);
+        }
+        let mut lowered = lower_with_caps_and_comment_policy::<NoProvenance>(
+            allocator,
+            &tree,
+            &errors,
+            caps,
+            LowerPolicy::compile(options.comments),
+            options.custom_element_patterns,
+            options.custom_element_predicate,
+        );
+        let mut profile = TransformProfile::DEFAULT;
+        if !options.hoist_static {
+            profile = profile.without_static_analysis();
+        }
+        let facts = run_dom_transform_with_profile(&mut lowered, observer, profile);
+        emit_dom_observed(
+            &lowered,
+            &facts,
+            options,
+            strict_slot_params,
+            no_slotted,
+            development,
+        )
+    })
+}
+
+/// The same native emission as the ordinary entry, with an optional compile-
+/// time selected stage sink. Page rendering is inside sink closures.
+fn emit_dom_source_with_options_and_observer_captured<'a, O: PassObserver, C: CaptureSink>(
+    allocator: &'a Allocator,
+    source: &'a str,
+    caps: LegacyCaps,
+    invocation: EmitInvocation<'_, '_, '_>,
+    observer: &mut O,
+    capture: &mut C,
+) -> Result<DomEmitObservation, EmitError> {
+    if !C::RECORDING {
+        let EmitInvocation {
+            options,
+            syntax,
+            strict_slot_params,
+            no_slotted,
+            development,
+            preflight,
+        } = invocation;
+        return emit_dom_source_with_options_and_observer(
+            allocator,
+            source,
+            caps,
+            options,
+            observer,
+            syntax,
+            strict_slot_params,
+            no_slotted,
+            development,
+            preflight,
+        );
+    }
+    capture::emit_dom_source_captured(allocator, source, caps, invocation, observer, capture)
+}
+
+/// Capture pages from the exact source-to-DOM emission that returns `emit`.
+/// The caller commits or discards them once the product lane is selected.
+pub fn emit_dom_source_with_options_captured<'a, C: CaptureSink>(
+    allocator: &'a Allocator,
+    source: &'a str,
+    caps: LegacyCaps,
+    options: &DomEmitOptions<'_>,
+    strict_slot_params: bool,
+    capture: &mut C,
+) -> Result<DomEmit, EmitError> {
+    emit_dom_source_with_options_captured_and_slot_scope(
+        allocator,
+        source,
+        caps,
+        options,
+        strict_slot_params,
+        false,
+        capture,
+    )
+}

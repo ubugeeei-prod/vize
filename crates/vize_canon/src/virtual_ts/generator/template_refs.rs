@@ -388,11 +388,14 @@ impl TemplateRefUnwraps {
             self.hoist_shared_preamble,
         ));
         if !self.narrowed_bindings.is_empty() {
-            ts.push_str(if has_generic_param && !self.legacy_helpers {
-                GENERIC_NARROWED_REF_UNWRAP_HELPER
-            } else {
-                NARROWED_REF_UNWRAP_HELPER
-            });
+            crate::virtual_ts::generated_names::push_lib_text(
+                ts,
+                if has_generic_param && !self.legacy_helpers {
+                    GENERIC_NARROWED_REF_UNWRAP_HELPER
+                } else {
+                    NARROWED_REF_UNWRAP_HELPER
+                },
+            );
         }
         for name in &self.setup_bindings {
             let unwrap = self.unwrap_prefix(name);

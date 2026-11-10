@@ -14,7 +14,7 @@ use crate::support;
 
 use support::with_transformed;
 use vize_l0::Allocator;
-use vize_l1_to_l2::{emit_dom, emit_dom_source};
+use vize_l4::targets::dom::artifact::{emit_dom, emit_dom_source};
 
 fn assembled(source: &str) -> String {
     with_transformed(source, |lowered, _folio, facts, _budget| {

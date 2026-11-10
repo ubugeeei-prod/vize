@@ -6,7 +6,7 @@
     {
       "path": "crates/vize_atelier_sfc/src/compile.rs",
       "referenceBlob": "6856ecc04ae177fe53724a09fbf2c0f5654a1fb7",
-      "currentBlob": "9f62f82b85cb8947042d9cd098913b7da206a781",
+      "currentBlob": "9ea3101384f1a8bdca40099b9b3fab9f4473d4d1",
       "replacements": [
         {
           "reference": "mod normal_script;\npub(crate) mod output_module;\nmod props_rest;\nmod setup_exports;\nmod stage_capture;\n#[cfg(test)]\n",
@@ -43,6 +43,22 @@
         {
           "reference": "            &setup_css_module_names,\n            &scope_id,\n            filename,\n            options.template.is_prod,\n",
           "current": "            &setup_css_module_names,\n            &scope_id,\n            &scope_id,\n            filename.ends_with(\".art.vue\"),\n            options.template.is_prod,\n"
+        },
+        {
+          "reference": "    // 1. Croquis parser: rich analysis with ReactivityTracker\n    let mut croquis = profile!(\n        \"atelier.sfc.script_setup.croquis\",\n",
+          "current": "    // 1. Croquis parser: rich analysis with ReactivityTracker\n    let croquis = profile!(\n        \"atelier.sfc.script_setup.croquis\",\n"
+        },
+        {
+          "reference": "    let mut script_bindings = croquis_to_legacy_bindings(&croquis.bindings, setup_program.as_ref());\n\n",
+          "current": "    let mut script_bindings = croquis_to_legacy_bindings(&croquis.bindings, setup_program.as_ref());\n    let script_tables = vize_atelier_core::lane::ScriptTables::from_croquis(&croquis);\n\n"
+        },
+        {
+          "reference": "                &mut script_bindings,\n                &mut croquis,\n            )\n",
+          "current": "                &mut script_bindings,\n            )\n"
+        },
+        {
+          "reference": "                        Some(&script_bindings),\n                        Some(croquis),\n                    ),\n",
+          "current": "                        Some(&script_bindings),\n                        Some(script_tables),\n                    ),\n"
         }
       ]
     },

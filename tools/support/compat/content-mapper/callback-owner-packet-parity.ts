@@ -19,6 +19,7 @@ import {
   type CallbackSourceReader,
 } from "./callback-owner-current-source.ts";
 import { withInertCallbackRows, type InertCallbackBinding } from "./callback-owner-inert-packet.ts";
+import { withoutReplayAliasRows } from "./callback-owner-replay-aliases.ts";
 
 type Edit = { start: number; end: number; replacement: Buffer };
 const nativeRoot =
@@ -391,6 +392,8 @@ export function assertPreservedCallbackPacket(
   assert.equal(typeof after.text, "string");
   if (before.text === after.text) {
     if (isDeepStrictEqual(after, before)) return;
+    // #12520: the only certified mapping-only change unmaps loop replay aliases.
+    if (isDeepStrictEqual(after, withoutReplayAliasRows(before))) return;
     const expected =
       inertBindings && authoredSource !== undefined
         ? withInertCallbackRows(before, after, authoredSource, inertBindings)

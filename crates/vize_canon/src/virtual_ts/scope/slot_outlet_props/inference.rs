@@ -24,7 +24,7 @@ const INFERRED_SLOT_HELPERS: &str = r#"  type $InferredSlotKeys<U> = U extends a
 "#;
 
 pub(super) fn emit_inferred_slot_helpers(ts: &mut crate::virtual_ts::TextBuf) {
-    ts.push_str(INFERRED_SLOT_HELPERS);
+    crate::virtual_ts::generated_names::push_lib_text(ts, INFERRED_SLOT_HELPERS);
 }
 
 pub(crate) fn has_inferred_slots(summary: &Croquis, root: Option<&RootNode<'_>>) -> bool {
@@ -152,7 +152,8 @@ impl SlotOutletChecks {
             if outlet.name_is_dynamic {
                 append!(
                     slot,
-                    "{{ [K in NonNullable<typeof __vize_slot_name_{}>]?: (props: typeof __vize_slot_payload_{}) => any }}",
+                    "{{ [K in {}<typeof __vize_slot_name_{}>]?: (props: typeof __vize_slot_payload_{}) => any }}",
+                    crate::virtual_ts::generated_names::lib("NonNullable"),
                     outlet.start,
                     outlet.start
                 );
@@ -182,9 +183,15 @@ impl SlotOutletChecks {
             }
             let id = scope.id.as_u32();
             types.push(if matches!(scope.kind, ScopeKind::VFor) {
-                cstr!("NonNullable<typeof __vize_slot_scope_{id}[number]>")
+                cstr!(
+                    "{}<typeof __vize_slot_scope_{id}[number]>",
+                    crate::virtual_ts::generated_names::lib("NonNullable")
+                )
             } else {
-                cstr!("ReturnType<typeof __vize_slot_scope_{id}>")
+                cstr!(
+                    "{}<typeof __vize_slot_scope_{id}>",
+                    crate::virtual_ts::generated_names::lib("ReturnType")
+                )
             });
         }
         if types.is_empty() {

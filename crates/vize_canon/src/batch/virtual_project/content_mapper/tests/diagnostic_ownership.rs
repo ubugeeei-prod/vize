@@ -6,6 +6,7 @@ use std::path::Path;
 
 mod inert_callbacks;
 mod model_values;
+mod replayed_patterns;
 
 const MIN: &str = include_str!(concat!(
     env!("CARGO_MANIFEST_DIR"),

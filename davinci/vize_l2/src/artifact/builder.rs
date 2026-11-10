@@ -42,6 +42,12 @@ enum Owner<'a> {
     Branch {
         condition: Option<ExprRef<'a>>,
     },
+    HostFor {
+        binding: crate::op::ForBinding<'a>,
+        host: crate::op::HostFor<'a>,
+        body: Option<Region<'a>>,
+    },
+    HostRegion,
 }
 
 impl Owner<'_> {
@@ -49,7 +55,11 @@ impl Owner<'_> {
     fn accepts_bindings(&self) -> bool {
         !matches!(
             self,
-            Self::OriginalFor(_) | Self::Conditional { .. } | Self::Branch { .. }
+            Self::OriginalFor(_)
+                | Self::Conditional { .. }
+                | Self::Branch { .. }
+                | Self::HostFor { .. }
+                | Self::HostRegion
         )
     }
 }
@@ -61,6 +71,8 @@ pub use conditional::BranchBuilder;
 mod element;
 pub(crate) use element::ElementAllocation;
 mod factory;
+mod host_for;
+pub use host_for::{HostForBuilder, HostForHead};
 mod native_if;
 mod original_for;
 mod region;

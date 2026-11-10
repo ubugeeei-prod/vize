@@ -216,6 +216,7 @@ fn emit_ref_loop(
         &mut unmapped,
         ctx.template_offset,
         None,
+        false,
         at.as_str(),
         scope,
         ctx.template_binding_access,

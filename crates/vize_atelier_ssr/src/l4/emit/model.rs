@@ -3,8 +3,8 @@
 
 use vize_atelier_core::RuntimeHelper;
 use vize_l0::{String, ToCompactString, cstr};
-use vize_l1_to_l2::{TransformContent, decode_template_entities};
 use vize_l2::op::{self as l2, DynamicName};
+use vize_l4::targets::dom::artifact::{TransformContent, decode_template_entities};
 
 use super::attrs::{Attached, admit_value, bound_value, static_value};
 use super::{Emitter, Result};

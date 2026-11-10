@@ -285,7 +285,8 @@ fn collect_mapped_type(call: &CallExpression<'_>, mapped_types: &mut Vec<MappedT
     let mut text = String::default();
     append!(
         text,
-        "[K in {key_union}]: ReturnType<typeof {}>[K]",
+        "[K in {key_union}]: {}<typeof {}>[K]",
+        crate::virtual_ts::generated_names::lib("ReturnType"),
         store.name.as_str()
     );
     mapped_types.push(MappedType {

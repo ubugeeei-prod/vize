@@ -1,13 +1,13 @@
 //! VDOM compiler options.
 
 use serde::{Deserialize, Serialize};
+use vize_atelier_core::lane::ScriptTables;
 use vize_atelier_core::options::{BindingMetadata, CodegenMode};
-use vize_croquis::Croquis;
 use vize_l0::String;
 use vize_l0::config::VueVersion;
 
 /// VDOM compiler options
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct DomCompilerOptions {
     /// Output mode: function or module
@@ -80,34 +80,10 @@ pub struct DomCompilerOptions {
     #[serde(skip)]
     pub dialect: VueVersion,
 
-    /// Semantic analysis data from Croquis (optional, enhances transforms)
+    /// `<script setup>` reactivity and component registrations beyond the
+    /// binding metadata.
     #[serde(skip)]
-    pub croquis: Option<Box<Croquis>>,
-}
-
-impl Clone for DomCompilerOptions {
-    fn clone(&self) -> Self {
-        Self {
-            mode: self.mode,
-            prefix_identifiers: self.prefix_identifiers,
-            hoist_static: self.hoist_static,
-            cache_handlers: self.cache_handlers,
-            scope_id: self.scope_id.clone(),
-            ssr: self.ssr,
-            source_map: self.source_map,
-            comments: self.comments,
-            experimental_in_tag_comments: self.experimental_in_tag_comments,
-            experimental_patterned_template: self.experimental_patterned_template,
-            component_name: self.component_name.clone(),
-            inline: self.inline,
-            custom_renderer: self.custom_renderer,
-            binding_metadata: self.binding_metadata.clone(),
-            is_ts: self.is_ts,
-            dialect: self.dialect,
-            // Croquis is not cloneable; it will be consumed when passed to the compiler
-            croquis: None,
-        }
-    }
+    pub script_tables: Option<ScriptTables>,
 }
 
 impl Default for DomCompilerOptions {
@@ -129,7 +105,7 @@ impl Default for DomCompilerOptions {
             binding_metadata: None,
             is_ts: false,
             dialect: VueVersion::V3,
-            croquis: None,
+            script_tables: None,
         }
     }
 }

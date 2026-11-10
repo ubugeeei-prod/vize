@@ -45,6 +45,7 @@ legacy-differential = []
 davinci-differential = ["legacy-differential"]
 
 [dev-dependencies]
+vize_l4 = { workspace = true }
 vize_l1_to_l2.workspace = true
 
 # Dev-only cycle (vize_atelier_sfc depends on this crate normally); cargo

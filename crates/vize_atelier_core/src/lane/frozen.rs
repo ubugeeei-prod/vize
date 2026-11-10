@@ -1,9 +1,8 @@
 //! Compiler-owned join of parser frozen-element provenance into the existing lane.
 
-use super::{TransformContext, TransformLaneOptions, transform_inner};
+use super::{ScriptTables, TransformContext, TransformLaneOptions, transform_inner};
 use crate::{CompilerError, ErrorCode, RootNode, TransformOptions, options::CustomElementMatcher};
 use vize_armature::FrozenElements;
-use vize_croquis::Croquis;
 use vize_l0::{Allocator, Span, String};
 
 /// Join an original parser bundle before any transform/context mutation.
@@ -20,7 +19,7 @@ pub fn transform_with_frozen_elements<'a>(
     source: &'a str,
     root: &mut RootNode<'a>,
     options: TransformOptions,
-    analysis: Option<&'a Croquis>,
+    script_tables: Option<&'a ScriptTables>,
     custom_elements: CustomElementMatcher,
     template_syntax_quirks: bool,
     hoisted_scope_id: Option<String>,
@@ -37,7 +36,7 @@ pub fn transform_with_frozen_elements<'a>(
         allocator,
         root,
         options,
-        analysis,
+        script_tables,
         TransformLaneOptions {
             template_syntax_quirks,
             hoisted_scope_id,

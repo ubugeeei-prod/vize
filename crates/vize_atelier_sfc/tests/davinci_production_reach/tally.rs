@@ -13,7 +13,7 @@ use super::refusal::RefusalCensus;
 use super::vapor_surface;
 use vize_atelier_sfc::dom_differential::shapes::Shape;
 use vize_atelier_sfc::{SfcDescriptor, SfcError};
-use vize_l1_to_l2::EmitError;
+use vize_l4::targets::dom::artifact::EmitError;
 
 /// The selection reason of a template the L2 DOM emitter attempted and refused.
 pub const EMIT_REFUSED: &str = "emit_refused";

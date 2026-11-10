@@ -47,20 +47,19 @@ const label = 'ok';
         assert_eq!(
             text.matches(raw_call).count(),
             2,
-            "the template slot scope must retain its two raw inference copies; the props scope reads its host: {text}"
+            "the template slot scope must retain its two raw inference copies: {text}"
         );
-        for (start, end, copies) in [
-            (
-                "// v-slot scope: #default",
-                "// Component props type declarations",
-                2,
-            ),
-            (
-                "// Component props in v-slot scope: #default",
-                "// Mark used components as referenced",
-                0,
-            ),
-        ] {
+        // Nothing in the slot is checked, so it has no props replay.
+        assert_eq!(
+            text.matches("// Component props in v-slot scope").count(),
+            0,
+            "{text}"
+        );
+        for (start, end, copies) in [(
+            "// v-slot scope: #default",
+            "// Component props type declarations",
+            2,
+        )] {
             assert_eq!(text.matches(start).count(), 1, "unique scope start: {text}");
             assert_eq!(text.matches(end).count(), 1, "unique scope end: {text}");
             let (_, after_start) = text.split_once(start).expect("the slot scope exists");

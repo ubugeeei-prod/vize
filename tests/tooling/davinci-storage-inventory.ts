@@ -6,7 +6,7 @@ import {
   type StorageMeasurement,
 } from "./davinci-storage-scan.ts";
 
-export type StorageScope = "infra" | "l1" | "l2" | "l3" | "l1_to_l2" | "l2_to_l3";
+export type StorageScope = "infra" | "l1" | "l2" | "l3" | "l4" | "l1_to_l2" | "l2_to_l3";
 export type VecCategory = "contract" | "analysis" | "lower" | "pass" | "emit";
 export type InventoryRow = {
   scope: StorageScope;
@@ -17,7 +17,7 @@ export type InventoryRow = {
 export type StorageSummary = StorageMeasurement & { files: number };
 export type ScopeSummary = Record<StorageKind, StorageSummary>;
 
-const scopes: StorageScope[] = ["infra", "l1", "l2", "l3", "l1_to_l2", "l2_to_l3"];
+const scopes: StorageScope[] = ["infra", "l1", "l2", "l3", "l4", "l1_to_l2", "l2_to_l3"];
 const categories: VecCategory[] = ["contract", "analysis", "lower", "pass", "emit"];
 const header = [
   "scope",

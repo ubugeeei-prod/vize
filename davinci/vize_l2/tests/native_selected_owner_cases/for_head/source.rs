@@ -157,7 +157,8 @@ fn original_for_adds_no_size_growth_to_existing_for_binding_or_operation_variant
 -> Result<(), &'static str> {
     if usize::BITS == 64 {
         equal(core::mem::size_of::<vize_l2::op::ForBinding<'_>>(), 64)?;
-        equal(core::mem::size_of::<vize_l2::op::ForOp<'_>>(), 96)?;
+        // The host-loop head pointer is the one deliberate growth (#6858).
+        equal(core::mem::size_of::<vize_l2::op::ForOp<'_>>(), 104)?;
         equal(core::mem::size_of::<Op<'_>>(), 16)?;
         equal(core::mem::size_of::<vize_l2::op::OriginalForOp<'_>>(), 40)?;
     }

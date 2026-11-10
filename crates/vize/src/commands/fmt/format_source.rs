@@ -4,7 +4,7 @@ use super::{Allocator, FormatOptions, FormatResult, VueVersion};
 use oxc_span::SourceType;
 use std::path::Path;
 use vize_glyph::{GlyphFormatter, format_script_with_sort_imports};
-use vize_l0::profile;
+use vize_l0::{Lang, dialect::FileKind, profile};
 
 pub(super) fn format_file_source(
     path: &Path,
@@ -38,12 +38,12 @@ pub(super) fn format_file_source(
 }
 
 fn script_source_type_for_path(path: &Path) -> Option<SourceType> {
-    let extension = path.extension().and_then(|extension| extension.to_str())?;
-    match extension {
-        "js" | "mjs" | "cjs" => Some(SourceType::from_path("module.js").ok()?.with_module(true)),
-        "ts" | "mts" | "cts" => Some(SourceType::from_path(path).ok()?.with_module(true)),
-        "jsx" => Some(SourceType::jsx().with_module(true)),
-        "tsx" => Some(SourceType::tsx().with_module(true)),
-        _ => None,
-    }
+    let script = FileKind::of_path(path)?.script()?;
+    let source_type = match (script.lang, script.jsx) {
+        (Lang::Js, false) => SourceType::from_path("module.js").ok()?,
+        (Lang::Ts, false) => SourceType::from_path(path).ok()?,
+        (Lang::Js, true) => SourceType::jsx(),
+        (Lang::Ts, true) => SourceType::tsx(),
+    };
+    Some(source_type.with_module(true))
 }
