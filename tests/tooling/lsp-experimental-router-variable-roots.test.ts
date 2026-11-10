@@ -120,7 +120,16 @@ test(
         const receipt = { directory, source, raw, stages: [] as unknown[], stderr: "" };
         receipts.push(receipt);
         try {
-          await session.initialize(directory, options);
+          await session.initialize(directory, options, {
+            textDocument: {
+              completion: {
+                completionItem: {
+                  documentationFormat: ["markdown", "plaintext"],
+                  resolveSupport: { properties: ["documentation"] },
+                },
+              },
+            },
+          });
           session.notify("textDocument/didOpen", {
             textDocument: { uri, languageId: "vue", version: 1, text: source },
           });

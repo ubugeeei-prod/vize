@@ -148,11 +148,24 @@ await test("original literal unions keep complete native candidates, resolution 
       workspace,
       options: { editor: true, typecheck: true, lint: false },
     });
-    const initialized = await active.initialize(workspace, {
-      editor: true,
-      typecheck: true,
-      lint: false,
-    });
+    const initialized = await active.initialize(
+      workspace,
+      {
+        editor: true,
+        typecheck: true,
+        lint: false,
+      },
+      {
+        textDocument: {
+          completion: {
+            completionItem: {
+              documentationFormat: ["markdown", "plaintext"],
+              resolveSupport: { properties: ["documentation"] },
+            },
+          },
+        },
+      },
+    );
     record({ kind: "whole-initialize", initialized });
     assert.equal(
       (initialized as { capabilities: { completionProvider: { resolveProvider: boolean } } })
