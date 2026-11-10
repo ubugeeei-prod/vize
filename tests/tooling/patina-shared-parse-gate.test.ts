@@ -52,6 +52,27 @@ const LEDGER: Readonly<Record<string, number>> = {
   "rules/vue/valid_v_model.rs": 1,
 };
 
+// These consumers create or suppress diagnostics from template evidence. They
+// must retain the lint pass's resident L1 surface instead of restoring the
+// second Relief/Armature parse removed by #11682.
+const SCRIPT_TEMPLATE_SCAN_OWNERS: Readonly<Record<string, readonly string[]>> = {
+  "linter/script_rules/sfc.rs": ["artifact.surface()", "template_surface:"],
+  "rules/script/no_duplicate_attr_inheritance/template.rs": ["SurfaceTree", "directive(root"],
+  "rules/script/prefer_computed/template.rs": ["SurfaceTree", "template_surface"],
+  "rules/script/require_explicit_slots/template.rs": ["SurfaceTree", "directive(self.root"],
+  "rules/script/sfc_context.rs": ["SurfaceTree", "template_surface"],
+  "rules/script/template_scan.rs": ["SurfaceTree", "DecodedSource"],
+  "rules/script/template_scan/calls.rs": ["DecodedSource", "authored_span"],
+};
+
+const RETIRED_SCRIPT_TEMPLATE_INPUTS = [
+  /\bvize_relief\b/u,
+  /\bRootNode\b/u,
+  /\bvize_armature\b/u,
+  /\battribute_source_span\b/u,
+  /\btemplate_root\b/u,
+] as const;
+
 const root = fileURLToPath(new URL("../../", import.meta.url));
 const source = join(root, "crates/vize_patina/src");
 const isTest = (path: string) => /(^|\/)tests?(\/|\.rs$)|_tests?\.rs$/.test(path);
@@ -120,4 +141,16 @@ void test("the site counter sees qualified, imported and Croquis parses only", (
     1,
   );
   assert.equal(parseSites("fn parse_script_block(s: &str) {}"), 0);
+});
+
+void test("script template scans retain the resident L1 surface", () => {
+  for (const [file, markers] of Object.entries(SCRIPT_TEMPLATE_SCAN_OWNERS)) {
+    const text = readFileSync(join(source, file), "utf8");
+    for (const marker of markers) {
+      assert.ok(text.includes(marker), `${file} lost its L1 ownership marker: ${marker}`);
+    }
+    for (const retired of RETIRED_SCRIPT_TEMPLATE_INPUTS) {
+      assert.doesNotMatch(text, retired, `${file} restored a retired template input: ${retired}`);
+    }
+  }
 });
