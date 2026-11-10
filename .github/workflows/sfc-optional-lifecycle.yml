@@ -1,4 +1,4 @@
-name: Native SFC optional lifecycle diagnostic
+name: Current native SFC lifecycle
 on:
   workflow_call:
     inputs:
