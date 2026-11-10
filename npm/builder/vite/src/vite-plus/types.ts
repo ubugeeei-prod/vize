@@ -102,6 +102,7 @@ export interface VizeTaskConfig {
   lintTypecheck?: boolean;
   lintLocale?: VizeLintOptions["locale"];
   lintHelpLevel?: VizeLintOptions["helpLevel"];
+  lintIgnorePatterns?: string[];
   fmtIgnorePatterns?: string[];
 }
 export interface VizePlusConfigFactory {

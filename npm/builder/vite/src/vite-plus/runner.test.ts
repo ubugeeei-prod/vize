@@ -173,21 +173,29 @@ void test("fmt.ignorePatterns excludes Vue files from check and write, even for 
   });
 });
 
-void test("lint locale and help level are passed only to the native linter", async () => {
+void test("lint presentation and host ignores reach only the native linter", async () => {
   await project(async () => {
     const calls: string[][] = [];
     await runTools(
       "lint",
       ["App.vue"],
       {
-        config: { linter: { preset: "happy-path" } },
+        config: { ignores: ["existing/**"], linter: { preset: "happy-path" } },
         options: {},
         lintLocale: "ja",
         lintHelpLevel: "short",
+        lintIgnorePatterns: ["generated/**", "existing/**"],
       },
       "vp",
       "native",
       async (_, args) => {
+        if (args[0] === "native") {
+          const file = args[args.indexOf("--config") + 1];
+          assert.deepEqual(JSON.parse(readFileSync(file, "utf8")).vue.ignores, [
+            path.resolve("existing/**").replaceAll("\\", "/"),
+            path.resolve("generated/**").replaceAll("\\", "/"),
+          ]);
+        }
         calls.push(args);
         return 0;
       },

@@ -174,9 +174,16 @@ export async function runNative(
     metadata.config === undefined
       ? ((await loadConfig(process.cwd(), { env })) ?? {})
       : await resolveConfigExport(metadata.config, env);
+  const taskConfig =
+    command === "lint" && metadata.lintIgnorePatterns?.length
+      ? {
+          ...config,
+          ignores: [...new Set([...(config.ignores ?? []), ...metadata.lintIgnorePatterns])],
+        }
+      : config;
   const file = path.join(os.tmpdir(), `.vize-vp-${randomUUID()}.json`);
   try {
-    await writeFile(file, JSON.stringify({ vue: relocateTaskConfig(config, process.cwd()) }), {
+    await writeFile(file, JSON.stringify({ vue: relocateTaskConfig(taskConfig, process.cwd()) }), {
       flag: "wx",
       mode: 0o600,
     });

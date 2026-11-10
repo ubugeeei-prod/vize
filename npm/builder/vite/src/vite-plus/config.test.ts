@@ -229,6 +229,7 @@ void test("native lint presentation and shared format ignores reach only their o
   const source = {
     lint: {
       vue: { preset: "happy-path" as const, locale: "ja" as const, helpLevel: "short" as const },
+      ignorePatterns: ["generated/**"],
     },
     fmt: { vue: { singleQuote: false }, ignorePatterns: ["generated/**"] },
   };
@@ -236,12 +237,14 @@ void test("native lint presentation and shared format ignores reach only their o
   const metadata = (result as ConfigWithVizeTasks)[taskConfigKey]!;
   assert.equal(metadata.lintLocale, "ja");
   assert.equal(metadata.lintHelpLevel, "short");
+  assert.deepEqual(metadata.lintIgnorePatterns, ["generated/**"]);
   assert.deepEqual(metadata.fmtIgnorePatterns, ["generated/**"]);
   assert.deepEqual(result.fmt?.ignorePatterns?.slice(0, 1), ["generated/**"]);
   assert.ok(!("locale" in (result.lint ?? {})));
   assert.ok(!("helpLevel" in (result.lint ?? {})));
   assert.deepEqual((await resolveConfigExport(metadata.config!)).linter, { preset: "happy-path" });
   assert.deepEqual(source.fmt.ignorePatterns, ["generated/**"]);
+  assert.deepEqual(source.lint.ignorePatterns, ["generated/**"]);
 });
 
 void test("legacy vize config keys report an explicit Vue migration", async () => {
