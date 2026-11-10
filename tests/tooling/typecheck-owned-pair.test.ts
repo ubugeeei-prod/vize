@@ -274,6 +274,22 @@ test("one experiment pairs every huge workload and alternates role order with di
   assert.equal(requiredSamples(true).filter((phase) => phase.startsWith("warm-")).length, 5);
 });
 
+test("real workload SFC custody follows the frozen tsconfig source set", async () => {
+  const { expectedOwnedSfcFiles } =
+    await import("../../tools/benchmarks/scripts/typecheck-owned-pair-projects.ts");
+  const sha256 = "a".repeat(64);
+  const inputs = [
+    { file: "src/App.vue", sha256 },
+    { file: "src/app/__tests__/fixtures/exampleFeature/ExampleFeatureModal.vue", sha256 },
+    { file: "src/App.ts", sha256 },
+  ];
+  assert.deepEqual(expectedOwnedSfcFiles("n8n", inputs), ["src/App.vue"]);
+  assert.deepEqual(expectedOwnedSfcFiles("vue-20000", inputs), [
+    "src/App.vue",
+    "src/app/__tests__/fixtures/exampleFeature/ExampleFeatureModal.vue",
+  ]);
+});
+
 test("flat interpolation workloads retain every expression and one planted diagnostic", async () => {
   const { generateFlatInterpolationProject } =
     await import("../../tools/benchmarks/scripts/typecheck-owned-pair-projects.ts");

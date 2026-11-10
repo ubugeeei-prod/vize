@@ -20,6 +20,7 @@ import {
 } from "./typecheck-owned-pair-evidence.ts";
 import {
   clearProjectCaches,
+  expectedOwnedSfcFiles,
   installRole,
   prepareOwnedWorkload,
   selectOwnedWorkloads,
@@ -170,9 +171,7 @@ async function main() {
     for (const mapper of ["vize", "vue"] as const) prepareOwnedProbe(workload.directory, mapper);
     const probeAuthority = ownedProbeAuthority(workload.directory);
     const inputs = snapshotInputs(workload.directory);
-    const expectedSfcFiles = inputs
-      .filter((row) => row.file.endsWith(".vue"))
-      .map((row) => row.file);
+    const expectedSfcFiles = expectedOwnedSfcFiles(workload.id, inputs);
     assert.equal(
       expectedSfcFiles.length,
       workload.sfcs,
