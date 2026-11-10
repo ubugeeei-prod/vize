@@ -343,6 +343,11 @@ export interface LintRuleOptions {
     svg?: "always" | "never" | "any";
     math?: "always" | "never" | "any";
   };
+  "vue/html-button-has-type"?: {
+    button?: boolean;
+    submit?: boolean;
+    reset?: boolean;
+  };
   "vue/html-quotes"?:
     | ("double" | "single")
     | {

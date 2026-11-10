@@ -18,6 +18,8 @@ pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
         + 2
         + 2
         + 6
+        // Configurable button types add three focused literal fixtures.
+        + 3
         + 1
         + 5
         + 2
@@ -174,6 +176,8 @@ pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
         + 8
         + 4
         + 3
+        // Configurable button types add three focused literal calls.
+        + 3
         // The 28-rule compatibility wave adds one loop-driven call.
         + 1
         // Dynamic class counterpart coverage adds one literal call.
@@ -255,6 +259,8 @@ pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
         + 29
         - 4
         + 12
+        // Configurable button type fixtures retain thirty-six trace lines.
+        + 36
         // The dynamic class fixture contributes thirteen retained trace lines.
         + 13
         // The conditional branch control contributes nine retained trace lines.
