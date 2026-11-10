@@ -70,6 +70,18 @@ export const previousSlotsExport = "export type Slots = $Slots;";
 export const currentSlotsExport = "export type { $Slots as Slots };";
 export const previousSlotsMarker = "Partial<Slots>";
 export const currentSlotsMarker = "Partial<$Slots>";
+export const previousSetupWithDefaults =
+  "  function withDefaults<_T, _BKeys extends keyof _T, _D extends __WithDefaultsArgs<_T>>(_props: __DefineProps<_T, _BKeys>, _defaults: _D): __WithDefaultsResult<_T, _D, _BKeys>; function withDefaults(_props: any, _defaults: any) { void _props; void _defaults; return undefined as any; }";
+export const currentSetupWithDefaults = previousSetupWithDefaults.replace(
+  "): __WithDefaultsResult<",
+  "): _T & __WithDefaultsResult<",
+);
+export const previousSharedWithDefaults =
+  "declare function __vize_withDefaults<_T, _BKeys extends keyof _T, _D extends __WithDefaultsArgs<_T>>(_props: __DefineProps<_T, _BKeys>, _defaults: _D): __WithDefaultsResult<_T, _D, _BKeys>;";
+export const currentSharedWithDefaults = previousSharedWithDefaults.replace(
+  "): __WithDefaultsResult<",
+  "): _T & __WithDefaultsResult<",
+);
 
 function relocationEdits(
   before: Buffer,
@@ -165,6 +177,20 @@ function relocationEdits(
   for (const transition of [
     certifiedTransition(before, after, previousSlotsExport, currentSlotsExport, "Slots export"),
     certifiedTransition(before, after, previousSlotsMarker, currentSlotsMarker, "Slots marker"),
+    certifiedTransition(
+      before,
+      after,
+      previousSetupWithDefaults,
+      currentSetupWithDefaults,
+      "setup withDefaults authored return",
+    ),
+    certifiedTransition(
+      before,
+      after,
+      previousSharedWithDefaults,
+      currentSharedWithDefaults,
+      "shared withDefaults authored return",
+    ),
   ])
     if (transition) certifiedEdits.push(transition);
   const emitTransition = certifyEmitOverloadInventory(before, after, assets.emitOverloads);
