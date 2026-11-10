@@ -129,27 +129,33 @@ const props = withDefaults(defineProps<Props>(), { label: 'ok' })
     let result = generate_vue_content_mapper_transform(Path::new("Props.vue"), authored)
         .expect("content mapper transform");
 
-    assert!(
-        result.text.contains(
-            "): __WithDefaultsResult<_T, _D, _BKeys> & { readonly [K in keyof _T]: unknown };"
-        ),
+    assert_eq!(
+        result
+            .text
+            .matches(
+                "): __WithDefaultsResult<_T, _D, _BKeys> & { readonly [K in keyof _T]: unknown };"
+            )
+            .count(),
+        1,
         "{}",
-        result.text
+        result.text,
     );
     let runtime = generate_vue_content_mapper_transform(
         Path::new("Runtime.vue"),
         "<script setup lang=\"ts\">const props = defineProps({ 'title': String })</script>",
     )
     .expect("runtime prop transform");
-    assert!(
-        runtime.text.contains("  title?: string;"),
+    assert_eq!(
+        runtime.text.matches("  title?: string;").count(),
+        1,
         "{}",
-        runtime.text
+        runtime.text,
     );
-    assert!(
-        !runtime.text.contains("  \"title\"?: string;"),
+    assert_eq!(
+        runtime.text.matches("  \"title\"?: string;").count(),
+        0,
         "{}",
-        runtime.text
+        runtime.text,
     );
 }
 

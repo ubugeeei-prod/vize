@@ -87,11 +87,15 @@ export default defineComponent({
     )
     .expect("Options API transform");
 
-    assert!(
-        result.text.contains(
-            "type $Slots = {\n  /** Row slot. */\n  item?: (props: { row: number }) => any;\n};"
-        ),
+    assert_eq!(
+        result
+            .text
+            .matches(
+                "type $Slots = {\n  /** Row slot. */\n  item?: (props: { row: number }) => any;\n};"
+            )
+            .count(),
+        1,
         "{}",
-        result.text
+        result.text,
     );
 }
