@@ -1,0 +1,27 @@
+<template><widget :title="$t('profiles.current-balance.currentBalance')"><div class="h-b2 sub q-mt-md">{{ $t('profiles.current-balance.loremIpsumDolor') }}</div><div class="q-mt-md"><template v-for="token of tokens"><div class="div q-mb-sm"><div class="row q-mb-xs"><div class="h-btn1 text-heading">{{ token.name }}</div></div><div class="row"><div class="col-3"><q-avatar size="40px"><img :src="token.logo"></q-avatar></div><div class="col bg-internal-bg flex items-center q-px-sm q-ml-xs border rounded-top"><loading-spinner v-if="loading" color="primary" size="30px"></loading-spinner><div class="h-b2 text-heading" v-else>{{ token.amount }}</div></div></div></div></template></div></widget></template>
+
+<script>
+export default {
+  name: 'current-balance',
+  components: {
+    Widget: () => import('~/components/common/widget.vue'),
+    LoadingSpinner: () => import('~/components/common/loading-spinner.vue')
+  },
+  props: {
+    tokens: {
+      type: Array,
+      default: () => []
+    },
+    loading: {
+      type: Boolean
+    }
+  }
+}
+</script>
+
+<style lang="stylus">
+.sub
+  color: #9EA0A5 !important
+.rounded-top
+  border-radius:  26px
+</style>
