@@ -32,6 +32,7 @@ import { GNU_TIME, type HostRun, hostArgs, hostRun } from "./typecheck-corpus-pa
 import {
   diffBatchMapper,
   hostCorsaPath,
+  hostTsrsPath,
   renderBatchDiff,
   runBatchCheck,
 } from "./typecheck-corpus-pair-batch.ts";
@@ -450,6 +451,7 @@ function main(): void {
   };
   if (values.batch) {
     const corsa = hostCorsaPath(TYPECHECK_HOSTS_DIR);
+    const tsrs = hostTsrsPath(TYPECHECK_HOSTS_DIR);
     const headBuild = resolve(values.head);
     const diffs = CORPORA.map((corpus) => {
       const project = projects(corpus, "head");
@@ -462,9 +464,25 @@ function main(): void {
         VIZE_CHECKERS: String(checkers),
       });
       const widened = diffBatchMapper(corpus.id, wide, one);
+      const tsrsOne = runBatchCheck(headBuild, project, tsrs, { VIZE_CHECKERS: "1" });
+      const tsrsWide = runBatchCheck(headBuild, project, tsrs, {
+        VIZE_CHECKERS: String(checkers),
+      });
+      const tsrsVsTsgo = diffBatchMapper(corpus.id, tsrsOne, one);
+      const tsrsWidened = diffBatchMapper(corpus.id, tsrsWide, tsrsOne);
       return {
         ...diffBatchMapper(corpus.id, one, mapper),
         wide: { checkers, added: widened.batchOnly, removed: widened.mapperOnly },
+        tsrs: {
+          diagnostics: tsrsOne.length,
+          only: tsrsVsTsgo.batchOnly,
+          missing: tsrsVsTsgo.mapperOnly,
+          wide: {
+            checkers,
+            added: tsrsWidened.batchOnly,
+            removed: tsrsWidened.mapperOnly,
+          },
+        },
       };
     });
     writeFileSync(join(out, "batch-vs-mapper.json"), `${JSON.stringify(diffs, null, 1)}\n`);
