@@ -24,6 +24,7 @@ import {
   killSurvivors,
   machineMemory,
   percentile,
+  procStatHasAddressSpace,
   psTimeSeconds,
   readTree,
   reconcilePssSnapshot,
@@ -264,6 +265,12 @@ test("PSS snapshots drop only members that exited during the memory read", () =>
     ],
     exited: 1,
   });
+});
+
+test("zombies no longer invalidate an otherwise complete PSS snapshot", () => {
+  assert.equal(procStatHasAddressSpace("1 (node worker) R 0 0 0"), true);
+  assert.equal(procStatHasAddressSpace("2 (node worker) Z 1 0 0"), false);
+  assert.equal(procStatHasAddressSpace("3 (node worker) X 1 0 0"), false);
 });
 
 test("reports exclude failed samples from latency and say so", () => {

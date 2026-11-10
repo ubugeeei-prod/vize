@@ -85,10 +85,15 @@ export function reconcilePssSnapshot<T extends { pid: number }>(
   return { members: snapshot, exited };
 }
 
+/** Whether a discovered `/proc/<pid>/stat` row can still own an address space. */
+export function procStatHasAddressSpace(stat: string): boolean {
+  const fields = stat.slice(stat.lastIndexOf(")") + 2).split(" ");
+  return fields[0] !== "Z" && fields[0] !== "X";
+}
+
 function procEntryStillAlive(pid: number): boolean {
   try {
-    readFileSync(`/proc/${pid}/stat`);
-    return true;
+    return procStatHasAddressSpace(readFileSync(`/proc/${pid}/stat`, "utf8"));
   } catch {
     return false;
   }
