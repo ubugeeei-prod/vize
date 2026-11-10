@@ -20,13 +20,22 @@ fn editor_projection_infers_documented_defaults_through_its_local_props_alias() 
         preserve_event_navigation: true,
         ..Default::default()
     };
-    let project =
-        build_vue_virtual_workspace_project(&host, DEFAULTS, options, &[], &[], environment(&session))
-            .unwrap();
+    let project = build_vue_virtual_workspace_project(
+        &host,
+        DEFAULTS,
+        options,
+        &[],
+        &[],
+        environment(&session),
+    )
+    .unwrap();
     let code = project.host.pre_rewrite_code.as_str();
     for (needle, count) in [
         // The module keeps a local owner alias for public props...
-        ("export type { __RuntimePropShape, __LooseRequired, __DefineProps,", 1),
+        (
+            "export type { __RuntimePropShape, __LooseRequired, __DefineProps,",
+            1,
+        ),
         // ...so both macros resolve `__DefineProps` in this module, and the
         // documented result keeps the authored declarations without changing
         // any value type.

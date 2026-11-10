@@ -274,16 +274,18 @@ const props = withDefaults(defineProps<Props>(), { label: 'ok' })
             );
             // Without module-local owner aliases both macros name the same
             // shared `__DefineProps`, so `defineProps` keeps its hoisted alias.
-            assert_eq!(
-                code.contains("const defineProps = __vize_defineProps;"),
-                hoisted,
-                "{code}"
-            );
-            assert_eq!(
-                code.contains("  function defineProps<_T = unknown>(): __DefineProps<"),
-                !hoisted,
-                "{code}"
-            );
+            for (needle, count) in [
+                (
+                    "const defineProps = __vize_defineProps;",
+                    usize::from(hoisted),
+                ),
+                (
+                    "  function defineProps<_T = unknown>(): __DefineProps<",
+                    usize::from(!hoisted),
+                ),
+            ] {
+                assert_eq!(code.matches(needle).count(), count, "{needle}\n{code}");
+            }
         }
     }
 }
