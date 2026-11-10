@@ -10,7 +10,7 @@ import {
   rmSync,
   writeFileSync,
 } from "node:fs";
-import { dirname, join, resolve } from "node:path";
+import { dirname, join, matchesGlob, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { CORPORA } from "./typecheck-corpus-pair.ts";
 import { generateScaleProject, PLANT_CODES, type ScaleProject } from "./scale-project-generator.ts";
@@ -127,6 +127,35 @@ export function selectOwnedWorkloads(requested?: string) {
     assert.ok(specification, `unknown workload: ${id}`);
     return specification;
   });
+}
+
+/**
+ * Return the authored SFCs admitted by the frozen workload's own tsconfig.
+ *
+ * The copied source closure deliberately retains excluded fixtures as custody
+ * evidence. Those files must stay in the input snapshot, but they are not part
+ * of the TypeScript program and therefore must not be required to reach the
+ * mapper. Generated workloads have no excluded source fixtures.
+ */
+export function expectedOwnedSfcFiles(
+  id: string,
+  inputs: ReturnType<typeof snapshotInputs>,
+): string[] {
+  const vueFiles = inputs.filter((row) => row.file.endsWith(".vue")).map((row) => row.file);
+  const real = CORPORA.find((entry) => entry.id === id);
+  if (!real) return vueFiles;
+  const config = real.tsconfig as {
+    include: readonly string[];
+    exclude?: readonly string[];
+  };
+  const normalize = (pattern: string) => pattern.replace(/^\.\//u, "");
+  const include = config.include.map(normalize);
+  const exclude = (config.exclude ?? []).map(normalize);
+  return vueFiles.filter(
+    (file) =>
+      include.some((pattern) => matchesGlob(file, pattern)) &&
+      !exclude.some((pattern) => matchesGlob(file, pattern)),
+  );
 }
 
 export function installRole(workload: Workload, hosts: MapperHosts) {
