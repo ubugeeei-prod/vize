@@ -30,9 +30,10 @@
 
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
+use crate::markup::{MarkupContext, MarkupDirective, MarkupElement, MarkupRule};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_l0::dialect::VueDialect;
-use vize_relief::{ElementNode, ExpressionNode, PropNode};
+use vize_relief::{DirectiveNode, ElementNode};
 
 static META: RuleMeta = RuleMeta {
     name: "vue/no-deprecated-router-link-tag-prop",
@@ -45,50 +46,93 @@ static META: RuleMeta = RuleMeta {
 /// Disallow the `tag` prop on `<router-link>`.
 pub struct NoDeprecatedRouterLinkTagProp;
 
+impl NoDeprecatedRouterLinkTagProp {
+    fn is_router_link(ctx: &LintContext<'_>, element: &MarkupElement<'_>) -> bool {
+        ctx.dialect() == VueDialect::Vue
+            && (element.is_unqualified_tag_exact("router-link")
+                || element.is_unqualified_tag_exact("RouterLink"))
+    }
+
+    fn report(ctx: &mut LintContext<'_>, range: crate::ir::ByteRange) {
+        ctx.error_at_with_help(
+            ctx.t("vue/no-deprecated-router-link-tag-prop.message"),
+            range,
+            ctx.t("vue/no-deprecated-router-link-tag-prop.help"),
+        );
+    }
+
+    fn check_element(ctx: &mut LintContext<'_>, element: &MarkupElement<'_>) {
+        if !Self::is_router_link(ctx, element) {
+            return;
+        }
+
+        element.walk_attributes(&mut |attribute| {
+            if attribute.name() == "tag" {
+                Self::report(ctx, attribute.name_range());
+            }
+        });
+    }
+
+    fn check_directive(
+        ctx: &mut LintContext<'_>,
+        element: &MarkupElement<'_>,
+        directive: &MarkupDirective<'_>,
+    ) {
+        if !Self::is_router_link(ctx, element)
+            || !directive.name_eq("bind")
+            || directive.arg_name() != Some("tag")
+        {
+            return;
+        }
+        if let Some(range) = directive.argument_range() {
+            Self::report(ctx, range);
+        }
+    }
+}
+
+impl MarkupRule for NoDeprecatedRouterLinkTagProp {
+    fn name(&self) -> &'static str {
+        META.name
+    }
+
+    fn enter_element<'a>(&self, ctx: &mut MarkupContext<'_, 'a>, element: &MarkupElement<'a>) {
+        Self::check_element(ctx.lint(), element);
+    }
+
+    fn enter_directive<'a>(
+        &self,
+        ctx: &mut MarkupContext<'_, 'a>,
+        element: &MarkupElement<'a>,
+        directive: &MarkupDirective<'a>,
+    ) {
+        Self::check_directive(ctx.lint(), element, directive);
+    }
+}
+
 impl Rule for NoDeprecatedRouterLinkTagProp {
     fn meta(&self) -> &'static RuleMeta {
         &META
     }
 
+    fn as_markup_rule(&self) -> Option<&dyn MarkupRule> {
+        Some(self)
+    }
+
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
-        // Vue Router 4 (the router for the default Vue 3 dialect) removed `tag`.
-        if ctx.dialect() != VueDialect::Vue {
-            return;
-        }
+        Self::check_element(ctx, &MarkupElement::new(element));
+    }
 
-        // Match both the kebab-case and PascalCase spellings of the component.
-        if element.tag != "router-link" && element.tag != "RouterLink" {
-            return;
-        }
-
-        for prop in element.props.iter() {
-            match prop {
-                PropNode::Attribute(attr) if attr.name == "tag" => {
-                    ctx.error_with_help(
-                        ctx.t("vue/no-deprecated-router-link-tag-prop.message"),
-                        &attr.name_loc,
-                        ctx.t("vue/no-deprecated-router-link-tag-prop.help"),
-                    );
-                }
-                PropNode::Directive(dir)
-                    if dir.name == "bind"
-                        && matches!(
-                            &dir.arg,
-                            Some(ExpressionNode::Simple(s)) if s.content == "tag"
-                        ) =>
-                {
-                    let Some(ExpressionNode::Simple(argument)) = &dir.arg else {
-                        continue;
-                    };
-                    ctx.error_with_help(
-                        ctx.t("vue/no-deprecated-router-link-tag-prop.message"),
-                        &argument.loc,
-                        ctx.t("vue/no-deprecated-router-link-tag-prop.help"),
-                    );
-                }
-                _ => {}
-            }
-        }
+    fn check_directive<'a>(
+        &self,
+        ctx: &mut LintContext<'a>,
+        element: &ElementNode<'a>,
+        directive: &DirectiveNode<'a>,
+    ) {
+        Self::check_directive(
+            ctx,
+            &MarkupElement::new(element),
+            &MarkupDirective::from_relief(directive),
+        );
     }
 }
 
