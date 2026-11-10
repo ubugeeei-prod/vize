@@ -521,19 +521,46 @@ Child.
 
         let offset = source.find("Child.").unwrap() + "Child.".len();
         let ctx = IdeContext::new(&state, &uri, offset).unwrap();
-        let labels = completion_labels(
-            CompletionService::complete_with_corsa(&ctx, Some(bridge.clone()))
-                .await
-                .unwrap(),
-        );
+        let document = crate::ide::corsa_support::open_canonical_virtual_document(&ctx, &bridge)
+            .await
+            .unwrap();
+        let (line, character) =
+            crate::ide::corsa_support::canonical_source_offset_to_position(&document, ctx.offset)
+                .unwrap();
+        let raw_labels = CompletionService::request_resolvable(
+            &ctx,
+            &bridge,
+            &document.request_uri,
+            line,
+            character,
+        )
+        .await
+        .into_iter()
+        .map(|item| item.label)
+        .collect::<Vec<_>>();
+        let labels = CompletionService::request_canonical(&ctx, &bridge)
+            .await
+            .unwrap()
+            .into_iter()
+            .map(|item| item.label)
+            .collect::<Vec<_>>();
         let _ = bridge.shutdown().await;
 
-        assert!(
-            !labels.is_empty(),
-            "component value should expose authored TypeScript members"
+        assert_eq!(
+            raw_labels
+                .iter()
+                .filter(|label| label.as_str() == "__vizeComponentMarker")
+                .count(),
+            1,
+            "the checker response must prove that this is a generated component: {raw_labels:?}"
         );
-        assert!(
-            labels.iter().all(|label| !label.starts_with("__vize")),
+        let generated_labels = labels
+            .iter()
+            .filter(|label| label.starts_with("__vize"))
+            .collect::<Vec<_>>();
+        assert_eq!(
+            generated_labels,
+            Vec::<&String>::new(),
             "generated component contract members leaked: {labels:?}"
         );
     });
