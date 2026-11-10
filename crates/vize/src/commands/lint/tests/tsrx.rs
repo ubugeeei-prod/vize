@@ -55,3 +55,24 @@ fn a_module_with_an_unsupported_construct_reports_every_one_and_lints_no_region(
     );
     assert_eq!((result.error_count, result.warning_count), (1, 0));
 }
+
+#[test]
+fn a_module_with_host_loops_reports_each_and_lints_no_region() {
+    let source = "export function List({ items }: { items: string[] }) @{
+  <ul  class=\"list\">
+    @for (const item of items; key item) {
+      <li  title={item}><img src={item} /></li>
+    } @empty {
+      <li>none</li>
+    }
+  </ul>
+}
+";
+    let result = lint_tsrx(&Linter::new(), source, "List.tsrx");
+    assert_eq!(rows(&result), [("parser/tsrx", 81, 208)]);
+    assert_eq!(
+        result.diagnostics[0].message,
+        "@for is not linted in TSRX modules yet, so this module's markup is not linted"
+    );
+    assert_eq!((result.error_count, result.warning_count), (1, 0));
+}

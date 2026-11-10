@@ -32,7 +32,13 @@ fn node(source: &str, node_: &Node<'_>, issues: &mut Vec<TsrxIssue>) {
             }
             return;
         }
-        Node::For(iteration) => (TsrxIssueKind::For, iteration.span),
+        Node::For(iteration) => {
+            block(source, &iteration.body, issues);
+            if let Some(empty) = &iteration.empty {
+                block(source, empty, issues);
+            }
+            return;
+        }
         Node::Switch(switch) => (TsrxIssueKind::Switch, switch.span),
         Node::Try(boundary) => (TsrxIssueKind::Try, boundary.span),
     };

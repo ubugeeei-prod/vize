@@ -178,7 +178,6 @@ fn unsupported_constructs_refuse_the_module_at_their_spans() {
     let source = "function A() @{
 \tconst ok = true;
 \t<div title=\"a &amp; b\">
-\t\t@for (const item of items) { <p>{item}</p> }
 \t\t@switch (mode) { @case 'a': { <b /> } }
 \t\t@try { <C /> } @catch (error) { <p>failed</p> }
 \t\t<{tag} />
@@ -191,10 +190,6 @@ fn unsupported_constructs_refuse_the_module_at_their_spans() {
     let found = issues(source);
     let expected = [
         (TsrxIssueKind::Entity, "\"a &amp; b\""),
-        (
-            TsrxIssueKind::For,
-            "@for (const item of items) { <p>{item}</p> }",
-        ),
         (
             TsrxIssueKind::Switch,
             "@switch (mode) { @case 'a': { <b /> } }",
@@ -218,6 +213,42 @@ fn unsupported_constructs_refuse_the_module_at_their_spans() {
     for ((kind, text), (expected_kind, expected_text)) in found.iter().zip(expected) {
         assert_eq!((*kind, text.as_str()), (expected_kind, expected_text));
     }
+}
+
+#[test]
+fn for_loops_keep_their_host_head_and_empty_region() {
+    let source = "function L({ rows }) @{
+\t<ul>
+\t\t@for (const { id, label } of rows; index i; key id) {
+\t\t\t<li>{i}: {label}</li>
+\t\t} @empty {
+\t\t\t<li>none</li>
+\t\t}
+\t</ul>
+}
+";
+    let regions = dumps(source);
+    let [(RegionSite::FunctionBody, page)] = regions.as_slice() else {
+        panic!("{regions:?}");
+    };
+    assert_eq!(
+        page,
+        r#"[l2-dump-v2]
+ops=8
+
+[l2-dump-v2.ops]
+ui.element ul @25:151
+  ui.for source=js("rows" @61:65) value=opaque(for-value "const { id, label }" @38:57) host-left="const { id, label }" host-index="i" host-key=js("id" @80:82) @32:144
+    ui.element li @89:110
+      ui.jsx-child js("i" @94:95) @93:96
+      ui.text ": " @96:98
+      ui.jsx-child js("label" @99:104) @98:105
+    empty
+      ui.element li @127:140
+        ui.text "none" @131:135
+
+"#
+    );
 }
 
 #[test]

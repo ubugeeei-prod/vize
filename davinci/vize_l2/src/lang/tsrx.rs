@@ -20,6 +20,8 @@
 //!   the neutral bare attribute. `{expr}` and `{name}` become `ui.bind`, and
 //!   `{...expr}` becomes an object-spread `ui.bind`. Spans keep authored order.
 //! - `@if`/`@else` becomes `ui.if`.
+//! - `@for` becomes `ui.for` with the retained host head (`HostFor`): the
+//!   authored left side, `index`, `key`, `await`, and the `@empty` region.
 //! - A function-body region (`@{ … }`) lowers only its render node. Its setup
 //!   statements stay host code.
 //!
@@ -47,8 +49,6 @@ pub enum TsrxIssueKind {
     Syntax,
     /// Setup statements inside markup, which need the statement-container slice.
     StatementContainer,
-    /// `@for`, which needs an iteration op with a host head and an empty branch.
-    For,
     /// `@switch`, which needs a single-evaluation switch op.
     Switch,
     /// `@try`/`@pending`/`@catch`, which needs a boundary op.
