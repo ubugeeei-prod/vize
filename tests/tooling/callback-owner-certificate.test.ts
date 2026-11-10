@@ -12,6 +12,7 @@ import {
   assertCallbackNativeAttributeSource,
   assertPreservedCallbackPacket,
 } from "../../tools/support/compat/content-mapper/callback-owner-packet-parity.ts";
+import { mergedListenerWitnessEdits } from "../../tools/support/compat/content-mapper/callback-owner-listener-witness.ts";
 import {
   currentNativeAttributeAliases,
   previousNativeAttributeAliases,
@@ -146,6 +147,53 @@ test("native callback aliases retain the complete source asset and exact UTF-8 g
         { ...before, mappings: [[before.mappings[0][0] + 4, 1, 6, 5, 0, 0]] },
         { ...after, mappings: [[after.mappings[0][0] + 4, 1, 6, 5, 0, 0]] },
         source,
+      ),
+    );
+  }
+});
+
+test("merged listener witnesses retain complete callback packets and exact geometry", () => {
+  for (const newline of ["\n", "\r\n"]) {
+    const prefix = `const props = {${newline}`;
+    const legacy = [
+      '  ...{} as { "onClick": never },',
+      '  ...{} as { "onUpdate:modelValue": never },',
+      '  ...{} as { "onClick": never },',
+    ].join(newline);
+    const merged = '  ...null! as { "onUpdate:modelValue": never; "onClick": never },';
+    const suffix = `  tail,${newline}};${newline}${currentSlotsExport}${newline}`;
+    const beforeText = `${prefix}${legacy}${newline}${suffix}`;
+    const afterText = `${prefix}${merged}${newline}${suffix}`;
+    const beforeTail = Buffer.byteLength(beforeText.slice(0, beforeText.indexOf("tail")));
+    const afterTail = Buffer.byteLength(afterText.slice(0, afterText.indexOf("tail")));
+    const packet = (text: string, generated: number) => ({
+      text,
+      diagnostics: [],
+      mappings: [[generated, 4, 0, 4, 0, 0]],
+      futureMetadata: { preserved: true },
+    });
+    const before = packet(beforeText, beforeTail);
+    const after = packet(afterText, afterTail);
+
+    const edits = mergedListenerWitnessEdits(beforeText);
+    assert.equal(edits.length, 1);
+    assert.equal(edits[0].replacement.toString(), `${merged}${newline}`);
+    assertPreservedCallbackPacket(before, after, "tail");
+
+    for (const changed of [
+      { ...after, text: after.text.replace('"onClick": never', '"onClick": unknown') },
+      { ...after, text: after.text.replace('; "onClick": never', "") },
+      { ...after, mappings: before.mappings },
+      { ...after, futureMetadata: { preserved: false } },
+    ])
+      assert.throws(() => assertPreservedCallbackPacket(before, changed, "tail"));
+
+    const editStart = edits[0].start;
+    assert.throws(() =>
+      assertPreservedCallbackPacket(
+        { ...before, mappings: [[editStart, 1, 0, 1, 0, 0]] },
+        { ...after, mappings: [[editStart, 1, 0, 1, 0, 0]] },
+        "t",
       ),
     );
   }

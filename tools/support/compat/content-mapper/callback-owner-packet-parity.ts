@@ -19,6 +19,7 @@ import {
   type CallbackSourceReader,
 } from "./callback-owner-current-source.ts";
 import { withInertCallbackRows, type InertCallbackBinding } from "./callback-owner-inert-packet.ts";
+import { mergedListenerWitnessEdits } from "./callback-owner-listener-witness.ts";
 import { withoutReplayAliasRows } from "./callback-owner-replay-aliases.ts";
 
 type Edit = { start: number; end: number; replacement: Buffer };
@@ -411,6 +412,7 @@ export function assertPreservedCallbackPacket(
   );
   const currentEdits = currentSource.edits;
   const relationEdits = listenerRelationEdits(original, actualText, currentEdits);
+  const witnessEdits = mergedListenerWitnessEdits(original);
   const slotsTransition = original.includes(previousSlotsExport);
   if (slotsTransition) {
     assert.equal(original.split(previousSlotsExport).length, 2);
@@ -419,7 +421,7 @@ export function assertPreservedCallbackPacket(
     assert.equal(actualText.split(currentSlotsExport).length, 2);
   } else {
     assert.ok(
-      currentEdits.length > 0 || relationEdits.length > 0,
+      currentEdits.length > 0 || relationEdits.length > 0 || witnessEdits.length > 0,
       "same current Slots requires certified emitter edits",
     );
     for (const text of [original, actualText]) {
@@ -445,12 +447,18 @@ export function assertPreservedCallbackPacket(
     ...scaffoldEdits(original, markerTransition, nativeTransition),
     ...currentEdits,
     ...relationEdits,
+    ...witnessEdits,
   ].sort((left, right) => left.start - right.start);
   for (let index = 1; index < edits.length; index++) {
     assert.ok(edits[index - 1]!.end <= edits[index]!.start, "current scaffold edits are disjoint");
     assert.notEqual(edits[index - 1]!.start, edits[index]!.start);
   }
-  if (nativeTransition || currentEdits.length > 0 || relationEdits.length > 0) {
+  if (
+    nativeTransition ||
+    currentEdits.length > 0 ||
+    relationEdits.length > 0 ||
+    witnessEdits.length > 0
+  ) {
     assert.equal(
       typeof authoredSource,
       "string",
