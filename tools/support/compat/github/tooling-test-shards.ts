@@ -15,10 +15,10 @@ export function toolingTestFiles(cwd = fileURLToPath(new URL("../../../../", imp
 // Partition the selected PR files or the complete merge suite. Actions runners own separate
 // checkouts; every runner still executes its own files serially. Measured timings only decide
 // where a file runs and how many runners a plan needs, never whether it runs.
-export const MAX_TOOLING_SHARDS = 16;
-// PR and queue shards start after the source CLI and pay about 80s of setup
-// and native build each. A 60s PR test budget keeps the affected lane below
-// the three-minute PR target without increasing the complete merge cohort.
+export const MAX_TOOLING_SHARDS = 32;
+// PR and queue shards pay the shared checkout/setup cost, while only native
+// consumers build the addon. A 60s PR test budget keeps the affected lane
+// below the three-minute PR target without increasing the merge target.
 export const TOOLING_SHARD_TARGET_MS = Object.freeze({ pr: 60_000, merge: 100_000 });
 export const TOOLING_TIMINGS_SCHEMA = "vize-tooling-test-timings-v1";
 // The table names every tooling test, so it lives beside them.
@@ -34,6 +34,7 @@ type ToolingShardPlan = {
   tier: ToolingTier;
   tests: readonly string[];
   leadSteps?: readonly string[];
+  nativeBuildTests?: readonly string[];
 };
 export type ToolingTimings = {
   schema: typeof TOOLING_TIMINGS_SCHEMA;
@@ -132,13 +133,17 @@ export function estimateToolingTestMs(tier: ToolingTier, file: string) {
 
 function validatePlan(plan: ToolingShardPlan) {
   const lead = plan.leadSteps ?? [];
+  const nativeBuildTests = plan.nativeBuildTests ?? [];
   const known = new Set<string>(TOOLING_LEAD_STEPS.map(({ id }) => id));
   if (
     !["pr", "merge"].includes(plan.tier) ||
     !Array.isArray(plan.tests) ||
     !Array.isArray(lead) ||
+    !Array.isArray(nativeBuildTests) ||
     new Set(lead).size !== lead.length ||
-    lead.some((id) => !known.has(id))
+    lead.some((id) => !known.has(id)) ||
+    new Set(nativeBuildTests).size !== nativeBuildTests.length ||
+    nativeBuildTests.some((file) => !plan.tests.includes(file))
   ) {
     throw new Error("invalid tooling shard plan");
   }
@@ -240,4 +245,9 @@ export function selectToolingShard(plan: ToolingShardPlan, shard: unknown = "") 
     throw new Error("expected a complete tooling shard index/count from the planned matrix");
   }
   return shards[index - 1].files;
+}
+
+export function toolingShardNativeBuildRequired(plan: ToolingShardPlan, shard: unknown = "") {
+  const selected = new Set(selectToolingShard(plan, shard));
+  return (plan.nativeBuildTests ?? []).some((file) => selected.has(file));
 }

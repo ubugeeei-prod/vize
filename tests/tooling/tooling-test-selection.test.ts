@@ -185,6 +185,14 @@ void test("pure typecheck and LSP helper contracts remain in T0; explicit runtim
     assert.ok(!plan.tests.includes(file), file);
     assert.ok(planToolingTests([file], { includeDedicated: true }).tests.includes(file), file);
   }
+  const nativeRuntime = "tests/tooling/glyph-vue2-native.test.ts";
+  const nativePlan = planToolingTests([nativeRuntime]);
+  assert.ok(nativePlan.tests.includes(nativeRuntime));
+  assert.ok(nativePlan.nativeBuildTests.includes(nativeRuntime));
+  const workflowOnly = "tests/tooling/native-smoke-workflow.test.ts";
+  const workflowPlan = planToolingTests([workflowOnly]);
+  assert.ok(workflowPlan.tests.includes(workflowOnly));
+  assert.ok(!workflowPlan.nativeBuildTests.includes(workflowOnly));
 });
 
 void test("the runner keeps shared fixtures serial and rejects unrecognized or duplicate plans", () => {

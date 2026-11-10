@@ -19,14 +19,16 @@ import {
   selectToolingShard,
   toolingLeadSteps,
   toolingShardMatrix,
+  toolingShardNativeBuildRequired,
   toolingShards,
 } from "../../tools/support/compat/github/tooling-test-shards.ts";
 
-const plan = (tests, tier = "pr", leadSteps) => ({
+const plan = (tests, tier = "pr", leadSteps, nativeBuildTests) => ({
   version: 1,
   tier,
   tests,
   ...(leadSteps ? { leadSteps } : {}),
+  ...(nativeBuildTests ? { nativeBuildTests } : {}),
 });
 const allLeadSteps = TOOLING_LEAD_STEPS.map(({ id }) => id);
 
@@ -125,6 +127,29 @@ void test("runner 1 reserves exactly the captures its matrix entry runs", () => 
     assert.throws(() => toolingShardMatrix(plan(files, "merge", leadSteps)), /invalid/);
     assert.throws(() => toolingTestCommand(plan(files, "merge", leadSteps), files, "1/16"));
   }
+});
+
+void test("only shards that own a native runtime consumer build the addon", () => {
+  const files = Array.from({ length: 24 }, (_, index) => `tests/tooling/${index}.test.ts`);
+  const nativeBuildTests = [files[3], files[17]];
+  const input = plan(files, "pr", undefined, nativeBuildTests);
+  const matrix = toolingShardMatrix(input).include;
+  const owners = matrix.filter(({ index, total }) =>
+    toolingShardNativeBuildRequired(input, `${index}/${total}`),
+  );
+  assert.ok(owners.length >= 1 && owners.length <= nativeBuildTests.length);
+  assert.deepEqual(
+    owners
+      .flatMap(({ index, total }) => selectToolingShard(input, `${index}/${total}`))
+      .filter((file) => nativeBuildTests.includes(file))
+      .sort(),
+    [...nativeBuildTests].sort(),
+  );
+  const plain = plan(files);
+  const first = toolingShardMatrix(plain).include[0];
+  assert.equal(toolingShardNativeBuildRequired(plain, `${first.index}/${first.total}`), false);
+  for (const invalid of [[files[0], files[0]], ["tests/tooling/other.test.ts"]])
+    assert.throws(() => toolingShardMatrix(plan(files, "pr", undefined, invalid)), /invalid/);
 });
 
 void test("invalid or incomplete shard coordinates fail closed", () => {

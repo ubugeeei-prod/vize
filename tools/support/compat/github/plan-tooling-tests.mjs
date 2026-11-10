@@ -235,6 +235,8 @@ export const SHARED_HELPER_IMPORTERS = 10;
 export const dedicatedPrToolingTests = [
   "tests/tooling/content-mapper-instance-globals-10617.test.ts",
 ];
+const localNativeRuntimeImport =
+  /\b(?:from\s*|import\s*\(\s*|require\s*\(\s*)["'][^"']*npm\/native\/index\.js["']/u;
 const topLevelOnly = (reference) => !reference.replace(/\/[*/]*$/, "").includes("/");
 
 export function planToolingTests(
@@ -310,10 +312,23 @@ export function planToolingTests(
     const sources = imports.files.map(references);
     return product.paths.some((path) => readsProse(path, sources));
   });
+  // The native addon is expensive to rebuild in every isolated worker. Keep
+  // the default fail-closed task for full T1, while the PR tier builds it only
+  // in shards whose discovered local import closure names the runtime entry.
+  const nativeBuildTests =
+    tier === "pr"
+      ? tests.filter((file) => {
+          const imports = closures.get(file);
+          return imports?.files.some((input) =>
+            localNativeRuntimeImport.test(readFileSync(join(cwd, input), "utf8")),
+          );
+        })
+      : [];
   return {
     version: 1,
     tier,
     tests,
+    nativeBuildTests,
     totalTests: files.length,
     deferredTests: tier === "merge" ? 0 : files.filter((file) => mergeOnly.has(file)).length,
     dedicatedTests: tier === "merge" ? 0 : files.filter((file) => dedicated.has(file)).length,

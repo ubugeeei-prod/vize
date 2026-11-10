@@ -6,6 +6,7 @@ import { parse } from "yaml";
 import { checkWorkflowJobSources, readRepoFile } from "./support/github-workflows.ts";
 
 type Step = {
+  id?: string;
   name?: string;
   run?: string;
   uses?: string;
@@ -155,4 +156,28 @@ test("the real tooling report requires the source CLI and every selected worker"
         const key = [selected, cli, workers].join("/");
         assert.equal(result.status === 0, accepted.has(key), `${key}: ${result.stderr}`);
       }
+});
+
+test("affected tooling builds the native addon only for a shard that reads it", () => {
+  const action = parse(
+    readRepoFile(".github", "actions", "test-affected-tooling", "action.yml"),
+  ) as { runs: { steps: Step[] } };
+  const plan = action.runs.steps.find((step) => step.id === "plan");
+  assert.match(plan?.run ?? "", /tooling-shard-native-build\.mjs/);
+  assert.match(plan?.run ?? "", /native-build=\$native_build/);
+  const native = action.runs.steps.find(
+    (step) => step.name === "Build the native addon required by this shard",
+  );
+  assert.deepEqual(native, {
+    name: "Build the native addon required by this shard",
+    if: "${{ steps.plan.outputs.native-build == 'true' }}",
+    shell: "bash",
+    run: "vp run --workspace-root build:native:test",
+  });
+  const tests = action.runs.steps.find((step) => step.name === "Test affected tooling scripts");
+  assert.equal(
+    tests?.run,
+    "node tools/commands/ci/verify-tool-layout.ts && node tools/support/compat/github/run-tooling-tests.mjs",
+  );
+  assert.doesNotMatch(tests?.run ?? "", /build:native:test|test:scripts:pr/);
 });

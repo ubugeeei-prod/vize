@@ -32,11 +32,14 @@ runs:
         cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}-shard-1
     - uses: ./.github/actions/setup-rust-script
     - name: Select the same affected tooling tests as the planner
+      id: plan
       shell: bash
       env: { BASE_SHA: "${{ inputs.base }}" }
       run: |
         if [[ ! "$BASE_SHA" =~ ^0+$ ]]; then git fetch --no-tags origin "$BASE_SHA"; fi
         node tools/support/compat/github/plan-tooling-tests.mjs "$BASE_SHA" "$GITHUB_SHA" --tier pr --output "$RUNNER_TEMP/tooling-plan.json"
+        native_build="$(node tools/support/compat/github/tooling-shard-native-build.mjs "$RUNNER_TEMP/tooling-plan.json" "${{ inputs.shard }}/${{ inputs.total }}")"
+        echo "native-build=$native_build" >> "$GITHUB_OUTPUT"
     - name: Hydrate CLI and fact corpus fixtures and install JS dependencies
       shell: bash
       run: git submodule update --init --force --depth 1 -- tests/_fixtures/_git/ant-design-vue tests/_fixtures/_git/create-vue tests/_fixtures/_git/layoutit-grid tests/_fixtures/_git/vue-select tests/_fixtures/_git/vue-router && vp install --frozen-lockfile --prefer-offline
@@ -51,6 +54,10 @@ runs:
         VIZE_TOOLING_TEST_PLAN: ${{ runner.temp }}/tooling-plan.json
         VIZE_TOOLING_TEST_TIER: pr
         VIZE_TOOLING_TEST_SHARD: ${{ inputs.shard }}/${{ inputs.total }}
+    - name: Build the native addon required by this shard
+      if: ${{ steps.plan.outputs.native-build == 'true' }}
+      shell: bash
+      run: vp run --workspace-root build:native:test
     - name: Test affected tooling scripts
       id: tests
       shell: bash
@@ -63,7 +70,7 @@ runs:
         VIZE_TOOLING_TEST_TIER: pr
         VIZE_TOOLING_TEST_PLAN: ${{ runner.temp }}/tooling-plan.json
         VIZE_TOOLING_TEST_SHARD: ${{ inputs.shard }}/${{ inputs.total }}
-      run: vp run --workspace-root test:scripts:pr
+      run: node tools/commands/ci/verify-tool-layout.ts && node tools/support/compat/github/run-tooling-tests.mjs
     - name: Upload tooling test cases
       if: ${{ !cancelled() && steps.tests.outcome != 'skipped' }}
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
