@@ -112,7 +112,10 @@ fn auto_line_endings_apply_to_host_and_markup() {
         ..FormatOptions::default()
     };
     let formatted = format_tsrx(source, &options, &Allocator::default(), None).unwrap();
-    assert!(!formatted.replace("\r\n", "").contains(['\r', '\n']));
+    assert_eq!(
+        formatted.as_str(),
+        "export function A() @{\r\n  <div>\r\n    <span>one</span>\r\n    <span>two</span>\r\n  </div>\r\n}\r\n"
+    );
     let again = format_tsrx(formatted.as_str(), &options, &Allocator::default(), None).unwrap();
     assert_eq!(again, formatted);
 }
