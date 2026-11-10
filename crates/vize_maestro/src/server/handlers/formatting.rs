@@ -33,6 +33,11 @@ pub(super) async fn formatting(
         let Ok(context) = server.state.try_formatter_context_for_path(&formatter_path) else {
             return Ok(None);
         };
+        if is_tsrx(uri) {
+            return Ok(super::super::format::format_tsrx_document_with_context(
+                &_content, &context,
+            ));
+        }
         Ok(super::super::format::format_document_with_context(
             &_content,
             &context,
@@ -55,7 +60,8 @@ pub(super) async fn range_formatting(
     let _range = params.range;
 
     // See `formatting`: standalone HTML must not go through the SFC formatter.
-    if crate::utils::is_standalone_html_path(uri.path()) {
+    // TSRX modules are formatted whole, never by range.
+    if crate::utils::is_standalone_html_path(uri.path()) || is_tsrx(uri) {
         return Ok(None);
     }
 
@@ -94,7 +100,8 @@ pub(super) async fn on_type_formatting(
     let uri = &params.text_document_position.text_document.uri;
 
     // See `formatting`: standalone HTML must not go through the SFC formatter.
-    if crate::utils::is_standalone_html_path(uri.path()) {
+    // TSRX modules are formatted whole, never by range.
+    if crate::utils::is_standalone_html_path(uri.path()) || is_tsrx(uri) {
         return Ok(None);
     }
 
@@ -121,4 +128,11 @@ pub(super) async fn on_type_formatting(
     }
     #[cfg(not(feature = "glyph"))]
     Ok(None)
+}
+
+fn is_tsrx(uri: &tower_lsp::lsp_types::Url) -> bool {
+    let path = uri
+        .to_file_path()
+        .unwrap_or_else(|_| std::path::PathBuf::from(uri.path()));
+    vize_l0::dialect::FileKind::of_path(&path) == Some(vize_l0::dialect::FileKind::Tsrx)
 }

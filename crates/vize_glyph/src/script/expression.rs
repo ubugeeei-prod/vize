@@ -122,6 +122,19 @@ pub fn format_js_expression(expr: &str, options: &FormatOptions) -> Option<Strin
     format_js_expression_with_quote_style(expr, options, None).map(|formatted| formatted.code)
 }
 
+/// Format an expression from a TSRX region, where nested JSX is valid syntax.
+pub(crate) fn format_tsx_expression(expr: &str, options: &FormatOptions) -> Option<String> {
+    format_expression_with_layout(
+        expr,
+        options,
+        None,
+        None,
+        None,
+        SourceType::tsx().with_module(true),
+    )
+    .map(|formatted| formatted.code)
+}
+
 /// HTML attributes use double quotes independently of the script quote option.
 /// Single-quoted JavaScript strings keep their delimiters out of the attribute.
 pub(crate) fn format_js_expression_in_attribute(
@@ -146,6 +159,7 @@ pub(crate) fn format_js_expression_in_attribute_with_layout(
         Some(QuoteStyle::Single),
         Some(attribute_depth),
         Some((attribute_name, attribute_value, trimmed_attribute_value)),
+        SourceType::ts().with_module(true),
     )
 }
 
@@ -154,7 +168,14 @@ pub(crate) fn format_js_expression_with_quote_style(
     options: &FormatOptions,
     quote_style: Option<QuoteStyle>,
 ) -> Option<FormattedExpression> {
-    format_expression_with_layout(expr, options, quote_style, None, None)
+    format_expression_with_layout(
+        expr,
+        options,
+        quote_style,
+        None,
+        None,
+        SourceType::ts().with_module(true),
+    )
 }
 
 fn format_expression_with_layout(
@@ -163,6 +184,7 @@ fn format_expression_with_layout(
     quote_style: Option<QuoteStyle>,
     attribute_depth: Option<usize>,
     attribute_layout: Option<(&str, &str, &str)>,
+    source_type: SourceType,
 ) -> Option<FormattedExpression> {
     let trimmed = trim_expression(expr);
     if trimmed.is_empty() {
@@ -178,8 +200,6 @@ fn format_expression_with_layout(
         let (oxc_allocator, wrapped) = &mut *scratch;
         // Recycle the arena memory instead of allocating/freeing a fresh one.
         oxc_allocator.reset();
-
-        let source_type = SourceType::ts().with_module(true);
 
         // Wrap the expression in a `void (…)` statement so it parses as a complete
         // statement the formatter can emit cleanly; we extract the inner part

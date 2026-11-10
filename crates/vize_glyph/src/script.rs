@@ -17,7 +17,7 @@ pub(crate) use block_identity::format_sfc_script_content_stable;
 pub use expression::format_js_expression;
 pub(crate) use expression::{
     format_js_expression_in_attribute, format_js_expression_in_attribute_with_layout,
-    format_js_expression_with_quote_style,
+    format_js_expression_with_quote_style, format_tsx_expression,
 };
 pub(crate) use expression_wrapper::FormattedExpression;
 

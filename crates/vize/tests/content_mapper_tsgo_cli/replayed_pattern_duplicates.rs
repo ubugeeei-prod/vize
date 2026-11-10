@@ -77,6 +77,19 @@ const CASES: [(&str, &str); 11] = [
 const ITEM: &str = "'{ id: number; name: string; }'";
 const PAYLOAD: &str = "'{ value: string; item: { id: number; label?: string | undefined; }; }'";
 
+const RENAMED_CHILD: &str = include_str!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../tests/_fixtures/differential/typechecker/slot-renamed-key-12511/Child.vue.txt"
+));
+const RENAMED_PARENT: &str = include_str!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../tests/_fixtures/differential/typechecker/slot-renamed-key-12511/Parent.vue.txt"
+));
+const RENAMED_CONFIG: &str = include_str!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../tests/_fixtures/differential/typechecker/slot-renamed-key-12511/tsconfig.json.txt"
+));
+
 #[test]
 #[ignore = "requires the authenticated beta host and actual source CLI in native-canon Actions"]
 fn standard_tsgo_reports_each_replayed_pattern_diagnostic_once() {
@@ -89,7 +102,7 @@ fn standard_tsgo_reports_each_replayed_pattern_diagnostic_once() {
     std::fs::create_dir_all(&parent_dir).unwrap();
     let project = tempfile::Builder::new()
         .prefix("replayed-pattern-duplicates-")
-        .tempdir_in(parent_dir)
+        .tempdir_in(&parent_dir)
         .unwrap();
     let root = project.path();
     install_mapper_manifest(root);
@@ -139,6 +152,31 @@ fn standard_tsgo_reports_each_replayed_pattern_diagnostic_once() {
     assert_eq!(
         stdout.lines().collect::<Vec<_>>(),
         expected,
+        "{}",
+        output_text(&output)
+    );
+    assert_eq!(output.stderr, b"", "{}", output_text(&output));
+    assert_eq!(output.status.code(), Some(2), "{}", output_text(&output));
+
+    let renamed = tempfile::Builder::new()
+        .prefix("slot-renamed-key-")
+        .tempdir_in(parent_dir)
+        .unwrap();
+    install_mapper_manifest(renamed.path());
+    install_vue_package(renamed.path());
+    std::fs::create_dir_all(renamed.path().join("src")).unwrap();
+    std::fs::write(renamed.path().join("tsconfig.json"), RENAMED_CONFIG).unwrap();
+    std::fs::write(renamed.path().join("src/Child.vue"), RENAMED_CHILD).unwrap();
+    std::fs::write(renamed.path().join("src/Parent.vue"), RENAMED_PARENT).unwrap();
+    let output = check_project(&host, renamed.path(), "tsconfig.json");
+    assert_eq!(
+        std::str::from_utf8(&output.stdout)
+            .unwrap()
+            .lines()
+            .collect::<Vec<_>>(),
+        [
+            "src/Parent.vue(5,32): error TS2339: Property 'absent' does not exist on type '{ value: string; }'."
+        ],
         "{}",
         output_text(&output)
     );

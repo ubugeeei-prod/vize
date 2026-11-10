@@ -110,7 +110,7 @@ Vue configuration](./vue-configuration.md) for paths and scoped entries.
 | `compiler`                            | Vite+ compiler plugin controls; `false` keeps the existing Vue compiler when `vue.compiler` is absent              |
 | `typecheck`                           | Vite+ native-check task controls; `false` disables the task unless `vue.typeChecker.enabled` explicitly enables it |
 | `lint.vue`                            | Native lint task options, including `typecheck`, `locale` and `helpLevel`                                          |
-| Other `lint` fields                   | The installed Vite+ / Oxlint configuration                                                                         |
+| Other `lint` fields                   | The installed Vite+ / Oxlint configuration; `ignorePatterns` also excludes native lint inputs                      |
 | `fmt.vue`                             | Native formatter task options; `false` returns formatting to Oxfmt when `vue.formatter` is absent                  |
 | Other `fmt` fields                    | The installed Vite+ / Oxfmt configuration; `ignorePatterns` also excludes native Vue formatting                    |
 | `pack.vue`                            | Native declaration and map options                                                                                 |
@@ -237,7 +237,9 @@ with Oxfmt. Set `lint.vue: false` or `fmt.vue: false` to return the correspondin
 responsibility to Vite+. The integration option `conflicts: false` disables
 automatic overlap handling.
 
-`fmt.ignorePatterns` applies to both formatters, so generated or vendored Vue files
+`lint.ignorePatterns` applies to both linters, so one list excludes generated or
+vendored Vue, JavaScript, and TypeScript inputs from both native lint and Oxlint.
+`fmt.ignorePatterns` likewise applies to both formatters, so generated or vendored Vue files
 stay untouched. An entry that excludes every Vue file (`**/*.vue` or `*.vue`) only keeps
 `.vue` away from Oxfmt, as the integration does by default, so `conflicts: false` projects
 can add it themselves; `vize fmt` still formats them. To use `lint.vue: false` or `fmt.vue: false`, omit the corresponding

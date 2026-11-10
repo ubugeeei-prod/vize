@@ -1,0 +1,14 @@
+<script setup lang="ts">
+import Child from './Child.vue'
+import { exactType } from './shared'
+</script>
+
+<template>
+  <!-- @vue-generic {string} -->
+  <Child @foo="(value) => exactType(value, {} as string)" />
+  <!-- @vue-generic {number, boolean} -->
+  <Child @foo="(value, flag) => (
+    exactType(value, {} as number),
+    exactType(flag, {} as boolean)
+  )" />
+</template>

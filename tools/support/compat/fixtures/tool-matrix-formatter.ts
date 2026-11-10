@@ -7,7 +7,7 @@ import { isAbsolute, resolve } from "node:path";
 import { collectInputPaths } from "./tool-matrix-inputs.ts";
 
 const noFilesMessage =
-  "No .vue, .js, .mjs, .cjs, .ts, .mts, .cts, .jsx, .tsx, .json, .jsonc, .yaml, .yml, .md, or .markdown files found matching the patterns";
+  "No .vue, .js, .mjs, .cjs, .ts, .mts, .cts, .jsx, .tsx, .tsrx, .json, .jsonc, .yaml, .yml, .md, or .markdown files found matching the patterns";
 
 export function snapshotFormatterInputs(cwd: string, patterns: readonly string[]): string {
   const digest = createHash("sha256");
