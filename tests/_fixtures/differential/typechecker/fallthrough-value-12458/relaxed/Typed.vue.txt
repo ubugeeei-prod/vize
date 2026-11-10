@@ -1,0 +1,6 @@
+<script setup lang="ts">
+import Inner from './Inner.vue'
+</script>
+<template>
+  <Inner :label="1" />
+</template>

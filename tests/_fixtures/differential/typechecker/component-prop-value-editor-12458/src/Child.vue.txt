@@ -1,0 +1,4 @@
+<script setup lang="ts">
+defineProps<{ options: { mode: 'compact' | 'wide'; count?: number } }>()
+</script>
+<template><input /></template>

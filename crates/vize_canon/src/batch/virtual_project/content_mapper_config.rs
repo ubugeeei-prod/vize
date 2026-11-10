@@ -157,7 +157,10 @@ impl ContentMapperTransformOptions {
     }
 
     pub(super) const fn virtual_ts_check_options(self) -> crate::virtual_ts::VirtualTsCheckOptions {
-        self.checks
+        crate::virtual_ts::VirtualTsCheckOptions {
+            unchecked_prop_values: true,
+            ..self.checks
+        }
     }
 }
 

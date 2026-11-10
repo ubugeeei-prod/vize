@@ -30,7 +30,18 @@ fn resolved(vue_compiler_options: &str) -> (VirtualTsCheckOptions, VirtualTsChec
         .unwrap()
         .transform_options
         .virtual_ts_check_options();
-    (project.virtual_ts_check_options, mapper)
+    let check = project.virtual_ts_check_options;
+    // A host switch, not a Vue option: only the mapper host needs the
+    // companion value checks (#12458).
+    assert_eq!(
+        (check.unchecked_prop_values, mapper.unchecked_prop_values),
+        (false, true)
+    );
+    let mapper = VirtualTsCheckOptions {
+        unchecked_prop_values: false,
+        ..mapper
+    };
+    (check, mapper)
 }
 
 #[test]

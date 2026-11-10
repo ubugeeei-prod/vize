@@ -329,18 +329,21 @@ pub(super) struct ComponentPropsContext<'a, 'template> {
     /// `@vue-generic` usages and the instantiated binding each resolves through.
     pub(super) explicit_generics: &'a ExplicitGenerics,
     pub(super) dynamic_aliases: &'a DynamicComponentAliases,
+    pub(super) unchecked_prop_values: bool,
 }
 
 impl<'a> ComponentPropsContext<'a, '_> {
     pub(super) const fn source_context(&self) -> ComponentPropSource<'a> {
-        ComponentPropSource::new(
+        let mut source = ComponentPropSource::new(
             self.template_source,
             self.template_offset,
             &self.summary.scopes,
         )
         .with_model_modifiers(self.model_modifiers)
         .with_diagnostic_ownership(self.diagnostic_ownership)
-        .with_expected_packet(self.inference_prelude.is_some())
+        .with_expected_packet(self.inference_prelude.is_some());
+        source.unchecked_prop_values = self.unchecked_prop_values;
+        source
     }
 }
 
