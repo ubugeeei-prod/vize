@@ -94,20 +94,35 @@ export function assertTypedContextWrapperMappings(
   assert(statement >= 0 && generated.indexOf(needle, statement + 1) < 0, "unique interpolation");
   const start = statement + Buffer.byteLength("void (");
   // The preceding whole-text transition has already relocated every old row.
-  // A helper prefix change therefore moves this anchor and all ten old rows
-  // together; no fixed generated-coordinate or prefix-length adjustment is used.
-  const rows = [
-    [-2754, 2, 37, 2, 0, 1048575],
-    [-2752, 9, 39, 9, 0, 1048575],
-    [-2743, 10, 48, 10, 0, 1048575],
-    [-951, 12, 25, 12, 0, 1048575],
-    [-939, 2, 37, 2, 0, 1048575],
-    [-937, 9, 39, 9, 0, 1048575],
-    [-928, 10, 48, 10, 0, 1048575],
-    [-918, 4, 58, 4, 0, 1048575],
-    [-59, 9, 39, 9, 0, 1048575],
-    [0, 9, 89, 9, 0, 1048575],
-  ].map(([relative, ...fields]) => [start + relative, ...fields]);
+  // Helper replacement and the finite generated-comment cut move this anchor
+  // and the ten old rows through the whole-text edit set. Retain the captured
+  // predecessor as an independent fixture while accepting only its exact cut.
+  const contextReason = Buffer.from(
+    "// @ts-ignore TS2694/TS2307: a `vue` without `ComponentPublicInstance` must degrade template context extras to unchecked, never error.",
+  );
+  const expressionMap = Buffer.from("// @vize-map: expr -> 89:98");
+  const hasContextReason = generated.includes(contextReason);
+  assert.equal(
+    generated.includes(expressionMap),
+    hasContextReason,
+    "generated comment bytes must transition as one finite successor",
+  );
+  const relativeRows = hasContextReason
+    ? [-2754, -2752, -2743, -951, -939, -937, -928, -918, -59, 0]
+    : [-2627, -2625, -2616, -828, -816, -814, -805, -795, -59, 0];
+  const fields = [
+    [2, 37, 2, 0, 1048575],
+    [9, 39, 9, 0, 1048575],
+    [10, 48, 10, 0, 1048575],
+    [12, 25, 12, 0, 1048575],
+    [2, 37, 2, 0, 1048575],
+    [9, 39, 9, 0, 1048575],
+    [10, 48, 10, 0, 1048575],
+    [4, 58, 4, 0, 1048575],
+    [9, 39, 9, 0, 1048575],
+    [9, 89, 9, 0, 1048575],
+  ];
+  const rows = relativeRows.map((relative, index) => [start + relative, ...fields[index]]);
   assert.deepEqual(projected, rows, "all projected historical tuples must remain exact");
   assert.equal(Buffer.from(source).subarray(89, 98).toString(), "undefined");
   const atom = (at: number) => [at, 1, 89, 9, 1, 0];

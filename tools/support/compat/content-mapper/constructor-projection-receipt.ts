@@ -62,6 +62,7 @@ export function writeConstructorProjectionReceipt(
     comparatorModules: Object.fromEntries(
       [
         "constructor-projection-parity.ts",
+        "generated-comment-bytes-cut.ts",
         "constructor-helper-assets.ts",
         "constructor-projection-receipt.ts",
         "projection-byte-relocation.ts",

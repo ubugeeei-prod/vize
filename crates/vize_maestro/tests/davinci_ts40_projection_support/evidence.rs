@@ -7,6 +7,17 @@ mod unowned_owned_keys;
 use super::{capture_fixture, load_matrix, normalize::sha256};
 use receipt::{authenticate_join_receipt, authenticate_packets, authenticate_successor_receipt};
 
+fn non_text_fields<'a>(record: &'a str, omitted_prefixes: &[&str]) -> Vec<&'a str> {
+    record
+        .lines()
+        .filter(|line| {
+            omitted_prefixes
+                .iter()
+                .all(|prefix| !line.starts_with(prefix))
+        })
+        .collect()
+}
+
 #[test]
 fn public_instance_slot_packets_remain_authenticated() {
     authenticate_packets(
@@ -248,20 +259,10 @@ fn public_instance_slot_packets_remain_authenticated() {
         instance_input_keys_successor,
     );
     let unowned_successor = unowned_owned_keys::slots(instance_input_keys_successor);
-    let non_text_fields = |record: &str| {
-        record
-            .lines()
-            .filter(|line| {
-                !line.starts_with("text=")
-                    && !line.starts_with("pre-rewrite-text=")
-                    && !line.starts_with("import-source-map-probes=")
-            })
-            .map(str::to_owned)
-            .collect::<Vec<_>>()
-    };
+    let omitted = ["text=", "pre-rewrite-text=", "import-source-map-probes="];
     assert_eq!(
-        non_text_fields(delimiter_successor),
-        non_text_fields(owned_constructor)
+        non_text_fields(delimiter_successor, &omitted),
+        non_text_fields(owned_constructor, &omitted)
     );
     let matrix = load_matrix();
     let fixture = matrix
@@ -481,16 +482,9 @@ fn public_instance_mixed_vue2_packets_remain_authenticated() {
             instance_input_keys_successor,
         );
         let unowned_successor = unowned_owned_keys::mixed_vue2(instance_input_keys_successor);
-        let non_text_fields = |record: &str| {
-            record
-                .lines()
-                .filter(|line| !line.starts_with("text="))
-                .map(str::to_owned)
-                .collect::<Vec<_>>()
-        };
         assert_eq!(
-            non_text_fields(delimiter_successor),
-            non_text_fields(owned_constructor)
+            non_text_fields(delimiter_successor, &["text="]),
+            non_text_fields(owned_constructor, &["text="])
         );
         assert_eq!(
             capture_fixture(fixture).render().as_str(),

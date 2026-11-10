@@ -45,6 +45,7 @@ on:
       - "tools/support/compat/content-mapper/aria-component*.ts"
       - "tools/support/compat/content-mapper/aria-source-package.ts"
       - "tools/support/compat/content-mapper/constructor-projection-parity.ts"
+      - "tools/support/compat/content-mapper/generated-comment-bytes-cut.ts"
       - "tools/support/compat/content-mapper/constructor-helper-assets.ts"
       - "tools/support/compat/content-mapper/constructor-projection-receipt.ts"
       - "tools/support/compat/content-mapper/projection-byte-relocation.ts"

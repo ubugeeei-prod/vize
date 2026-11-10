@@ -41,6 +41,7 @@ import {
 } from "./component-constructor-transition.ts";
 import { certifyComponentExportTransition } from "./component-export-transition.ts";
 import { dedentEdits } from "./setup-dedent.ts";
+import { generatedCommentBytesCut } from "./generated-comment-bytes-cut.ts";
 import { writeConstructorProjectionReceipt } from "./constructor-projection-receipt.ts";
 const digest = (bytes: Uint8Array) => createHash("sha256").update(bytes).digest("hex");
 type Link = {
@@ -70,6 +71,29 @@ export const previousSlotsExport = "export type Slots = $Slots;";
 export const currentSlotsExport = "export type { $Slots as Slots };";
 export const previousSlotsMarker = "Partial<Slots>";
 export const currentSlotsMarker = "Partial<$Slots>";
+
+function generatedCommentCutEdits(
+  before: Buffer,
+  covered: readonly (Edit & { label: string })[],
+): (Edit & { label: string })[] {
+  const numericMapPrefix = /^\/\/ @vize-map: \d+:\d+ -> $/u;
+  return generatedCommentBytesCut(before.toString()).edits.flatMap((edit) => {
+    const existing = covered.filter(
+      (candidate) => edit.start < candidate.end && candidate.start < edit.end,
+    );
+    for (const candidate of existing)
+      assert.ok(
+        candidate.start <= edit.start && edit.end <= candidate.end,
+        "generated comment cut must not cross another certified replacement",
+      );
+    if (
+      existing.length > 0 ||
+      numericMapPrefix.test(before.subarray(edit.start, edit.end).toString())
+    )
+      return [];
+    return [{ ...edit, label: "generated comment byte cut" }];
+  });
+}
 
 function relocationEdits(
   before: Buffer,
@@ -175,6 +199,7 @@ function relocationEdits(
   if (genericComponentContextTransition) certifiedEdits.push(genericComponentContextTransition);
   const componentExportTransition = certifyComponentExportTransition(before, after);
   certifiedEdits.push(...(componentExportTransition?.edits ?? []), ...dedentEdits(before, after));
+  certifiedEdits.push(...generatedCommentCutEdits(before, certifiedEdits));
   const originalComments = comments(before.toString(), baseGeneratedRanges);
   const actualComments = comments(after.toString(), headGeneratedRanges);
   assert.equal(
@@ -196,11 +221,12 @@ function relocationEdits(
     if (event.kind === "replacement") {
       const { edit } = event;
       assert.ok((edits.at(-1)?.end ?? 0) <= edit.start, "certified replacements must be disjoint");
-      assert.equal(
-        edit.at ?? uniqueOffset(after, edit.replacement),
-        point(edit.start, edits),
-        `${edit.label} boundary moved`,
-      );
+      if (edit.label !== "generated comment byte cut")
+        assert.equal(
+          edit.at ?? uniqueOffset(after, edit.replacement),
+          point(edit.start, edits),
+          `${edit.label} boundary moved`,
+        );
       edits.push(edit);
       continue;
     }

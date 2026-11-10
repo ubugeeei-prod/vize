@@ -1,5 +1,8 @@
 import assert from "node:assert/strict";
+import fs from "node:fs";
+import path from "node:path";
 import test from "node:test";
+import { fileURLToPath } from "node:url";
 import {
   auditScopeCompatibility,
   scopeBindingMode,
@@ -7,6 +10,17 @@ import {
   scopePacketEqual,
   scopeCorrectnessReport,
 } from "../../tools/benchmarks/scripts/component-scope-binding-compatibility.ts";
+const root = fileURLToPath(new URL("../..", import.meta.url));
+
+test("constructor packets use the shared exact-transition certifier", () => {
+  const workflow = fs.readFileSync(
+    path.join(root, ".github/workflows/component-scope-binding.yml"),
+    "utf8",
+  );
+  assert.match(workflow, /constructor-projection-compare\.ts/u);
+  assert.doesNotMatch(workflow, /cmp "\$evidence\/base-constructor\.json"/u);
+});
+
 test("experiment remains default; malformed provenance still fails before commands", () => {
   assert.equal(scopeBindingMode(["/evidence"]).purpose, "experiment");
   assert.equal(scopeBindingMode(["/evidence", "--correctness"]).purpose, "correctness");

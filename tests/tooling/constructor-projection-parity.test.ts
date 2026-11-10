@@ -20,6 +20,7 @@ import {
   type Assets,
   type Row,
 } from "../../tools/support/compat/content-mapper/constructor-projection-parity.ts";
+import { generatedCommentBytesCut } from "../../tools/support/compat/content-mapper/generated-comment-bytes-cut.ts";
 
 const root = fileURLToPath(new URL("../..", import.meta.url));
 const assets = readAssets(root, root);
@@ -202,6 +203,41 @@ test("certified helper and self-described coordinates preserve complete packets"
   assert.equal(proof.edits.length, 2);
   assert.equal(proof.edits[0].start, base.text.indexOf(assets.embedded.toString()));
   assert.equal(proof.edits[1].replacementBytes < proof.edits[1].end - proof.edits[1].start, true);
+});
+
+test("generated comment cuts compose with helper relocation without hiding other bytes", () => {
+  const { source, base, head } = fixture();
+  const debugComments =
+    "// @vize-map: expr -> 0:1\n// @ts-ignore Inference-only callback branch.\n";
+  base.text += debugComments;
+  head.text += debugComments;
+  const cut = generatedCommentBytesCut(head.text);
+  assert.equal(cut.edits.length, 2);
+  head.text = cut.text;
+  const proof = relocatePacket(base, head, source, assets);
+  assert.equal(proof.edits.length, 4);
+
+  const altered = structuredClone(head);
+  altered.text += "const unrelated = true;\n";
+  assert.throws(() => relocatePacket(base, altered, source, assets), /all other complete/);
+});
+
+test("generated comment cuts derive every later map coordinate from the complete edit set", () => {
+  const source = "x";
+  const generated = "const value = 1;\n";
+  const debug = "// @vize-map: expr -> 0:1\n// @ts-ignore Inference-only callback branch.\n";
+  const start = bytes(debug);
+  const base = {
+    text: `${debug}${generated}// @vize-map: ${start}:${start + bytes(generated)} -> 0:1\n`,
+    mappings: [],
+    diagnostics: [],
+  };
+  const cut = generatedCommentBytesCut(base.text);
+  assert.equal(cut.edits.length, 3);
+  const head = { ...base, text: cut.text };
+  const proof = relocatePacket(base, head, source, assets);
+  assert.equal(proof.edits.length, 3);
+  assert.match(head.text, /@vize-map: 14:31 -> 0:1/u);
 });
 
 test("collision-safe slot exports and markers are exact certified replacements", () => {

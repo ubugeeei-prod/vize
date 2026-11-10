@@ -13,6 +13,7 @@ import {
 } from "node:fs";
 import { resolve, join, basename } from "node:path";
 import { authoredDirectives } from "../compat/content-mapper/producer-unmapped-ignores.ts";
+import { generatedCommentBytesCut } from "../compat/content-mapper/generated-comment-bytes-cut.ts";
 import { assertTypedContextWrapperMappings } from "./typed-context-wrapper-mappings.ts";
 const [mode, outArg, phase] = process.argv.slice(2),
   out = resolve(outArg);
@@ -72,6 +73,47 @@ const applyEdits = (text, edits) => {
   fragments.push(text.subarray(cursor));
   return Buffer.concat(fragments);
 };
+const setupSourceFramingEdits = (before) => {
+  const previousPrefix = Buffer.from("  \n  ");
+  const authored = Buffer.from("defineProps<{ undefined: string }>();");
+  const previousSuffix = Buffer.from("\n  \n");
+  const previous = Buffer.concat([previousPrefix, authored, previousSuffix]);
+  const start = uniqueOffset(before, previous);
+  const suffixStart = start + previousPrefix.length + authored.length;
+  return [
+    {
+      start,
+      end: start + previousPrefix.length,
+      replacement: Buffer.from("\n"),
+      label: "setup source prefix framing",
+    },
+    {
+      start: suffixStart,
+      end: suffixStart + previousSuffix.length,
+      replacement: Buffer.from("\n\n"),
+      label: "setup source suffix framing",
+    },
+  ];
+};
+const generatedCommentCutEdits = (before, covered) => {
+  const numericMapPrefix = /^\/\/ @vize-map: \d+:\d+ -> $/u;
+  return generatedCommentBytesCut(before.toString()).edits.flatMap((edit) => {
+    const existing = covered.filter((candidate) =>
+      overlap(edit.start, edit.end - edit.start, candidate),
+    );
+    for (const candidate of existing)
+      assert(
+        candidate.start <= edit.start && edit.end <= candidate.end,
+        "generated comment cut must not cross another certified edit",
+      );
+    if (
+      existing.length > 0 ||
+      numericMapPrefix.test(before.subarray(edit.start, edit.end).toString())
+    )
+      return [];
+    return [{ ...edit, label: "generated comment byte cut" }];
+  });
+};
 const certifyMapperTransition = (beforePacket, afterPacket) => {
   const before = Buffer.from(beforePacket.text);
   const after = Buffer.from(afterPacket.text);
@@ -94,7 +136,12 @@ const certifyMapperTransition = (beforePacket, afterPacket) => {
   for (const [oldValue, currentValue, label] of [
     [
       "type __VizeComponentConstructor = new <__VizeAuthoredProps = unknown>(props?: __VizeAuthoredProps & __VizeComponentInput<Props, {}, __VizeAuthoredProps>, ...args: any[]) => __VizeUsePublicInstance<__VizeAuthoredProps> extends true ? __VizeComponentInstance : __VizeReplaceComponentProps<__VizeComponentInstance, __VizeAuthoredKeyWitness<__VizeAuthoredProps> & __VizeComponentInputProps<Props, {}> & __VizeComponentInputGuard<Props, {}, __VizeAuthoredProps>>;",
-      "type $ComponentConstructor = new <$AuthoredProps = unknown, $JsxProps = unknown>(props?: $AuthoredProps & $ComponentInput<Props, {}, $AuthoredProps>, ...args: any[]) => $ComponentInstanceFor<$ComponentInstance, Props, {}, $AuthoredProps, $JsxProps>;",
+      `type $ComponentConstructor = new <$AuthoredProps = unknown, $JsxProps = unknown>(props?: $AuthoredProps & $ComponentInput<Props, {}, $AuthoredProps>, ...args: any[]) => ($IsAny<$AuthoredProps> extends true ? true : $IsUnknown<$AuthoredProps> extends true ? $UsePublicInstance<$JsxProps> : false) extends true ? $ComponentInstance : NoInfer<$ComponentInstanceFor<$ComponentInstance, {
+  $props: Props;
+  readonly __vizeRawProps?: Props;
+  $emit: $PublicEmit<Emits>;
+  $slots: $PublicSlots<$Slots>;
+}, $ComponentPublicBase, Props, {}, $AuthoredProps, $JsxProps>>;`,
       "integrated generic component constructor",
     ],
     [
@@ -111,6 +158,7 @@ const certifyMapperTransition = (beforePacket, afterPacket) => {
       label,
     });
   }
+  primary.push(...setupSourceFramingEdits(before));
   for (const match of beforeText.matchAll(/\b__Vize[A-Za-z0-9_]+\b/gu)) {
     const start = Buffer.byteLength(beforeText.slice(0, match.index));
     const end = start + Buffer.byteLength(match[0]);
@@ -133,6 +181,7 @@ const certifyMapperTransition = (beforePacket, afterPacket) => {
       label: "undefined-safe generated value",
     });
   }
+  primary.push(...generatedCommentCutEdits(before, primary));
   primary.sort((left, right) => left.start - right.start || left.end - right.end);
   for (let index = 1; index < primary.length; index++)
     assert(primary[index - 1].end <= primary[index].start, "certified generated edits overlap");
@@ -163,6 +212,8 @@ const certifyMapperTransition = (beforePacket, afterPacket) => {
     generatedIdentifierEdits: primary.filter(
       (edit) => edit.label === "collision-safe generated identifier",
     ).length,
+    generatedCommentByteEdits: primary.filter((edit) => edit.label === "generated comment byte cut")
+      .length,
   };
 };
 const certifyNativeTransition = (beforeText, afterText) => {
@@ -171,8 +222,12 @@ const certifyNativeTransition = (beforeText, afterText) => {
   const source = before.toString();
   const oldConstructor =
     "type __VizeComponentConstructor = new <__VizeAuthoredProps = unknown>(props?: __VizeAuthoredProps & __VizeComponentInput<Props, {}, __VizeAuthoredProps>, ...args: any[]) => __VizeUsePublicInstance<__VizeAuthoredProps> extends true ? __VizeComponentInstance : __VizeReplaceComponentProps<__VizeComponentInstance, __VizeAuthoredKeyWitness<__VizeAuthoredProps> & __VizeComponentInputProps<Props, {}> & __VizeComponentInputGuard<Props, {}, __VizeAuthoredProps>>;";
-  const currentConstructor =
-    "type $ComponentConstructor = new <$AuthoredProps = unknown, $JsxProps = unknown>(props?: $AuthoredProps & $ComponentInput<Props, {}, $AuthoredProps>, ...args: any[]) => $ComponentInstanceFor<$ComponentInstance, Props, {}, $AuthoredProps, $JsxProps>;";
+  const currentConstructor = `type $ComponentConstructor = new <$AuthoredProps = unknown, $JsxProps = unknown>(props?: $AuthoredProps & $ComponentInput<Props, {}, $AuthoredProps>, ...args: any[]) => ($IsAny<$AuthoredProps> extends true ? true : $IsUnknown<$AuthoredProps> extends true ? $UsePublicInstance<$JsxProps> : false) extends true ? $ComponentInstance : NoInfer<$ComponentInstanceFor<$ComponentInstance, {
+  $props: Props;
+  readonly __vizeRawProps?: Props;
+  $emit: $PublicEmit<Emits>;
+  $slots: $PublicSlots<$Slots>;
+}, $ComponentPublicBase, Props, {}, $AuthoredProps, $JsxProps>>;`;
   const constructorStart = uniqueOffset(before, Buffer.from(oldConstructor));
   const constructorEnd = constructorStart + Buffer.byteLength(oldConstructor);
   const primary = [
@@ -182,6 +237,7 @@ const certifyNativeTransition = (beforeText, afterText) => {
       replacement: Buffer.from(currentConstructor),
       label: "integrated generic component constructor",
     },
+    ...setupSourceFramingEdits(before),
   ];
   for (const match of source.matchAll(/\b__Vize[A-Za-z0-9_]+\b/gu)) {
     const start = Buffer.byteLength(source.slice(0, match.index));
@@ -213,6 +269,7 @@ const certifyNativeTransition = (beforeText, afterText) => {
     replacement: Buffer.from("readonly __vizeNativeFallthroughRoot: true; "),
     label: "native fallthrough ownership marker",
   });
+  primary.push(...generatedCommentCutEdits(before, primary));
   primary.sort((left, right) => left.start - right.start || left.end - right.end);
   for (let index = 1; index < primary.length; index++)
     assert(primary[index - 1].end <= primary[index].start, "certified native edits overlap");
@@ -245,6 +302,8 @@ const certifyNativeTransition = (beforeText, afterText) => {
     generatedIdentifierEdits: primary.filter(
       (edit) => edit.label === "collision-safe generated identifier",
     ).length,
+    generatedCommentByteEdits: primary.filter((edit) => edit.label === "generated comment byte cut")
+      .length,
   };
 };
 if (mode === "prepare") {
@@ -501,10 +560,12 @@ if (mode === "prepare") {
     oldCliFalseCleanPreserved: true,
     wholeNativeCodeOnlyCertifiedGeneratedContractsAndContextLiteralChanged: true,
     nativeCollisionSafeGeneratedIdentifierEdits: nativeTransition.generatedIdentifierEdits,
+    nativeGeneratedCommentByteEdits: nativeTransition.generatedCommentByteEdits,
     wholeMapperCodeOnlyCertifiedGeneratedContractsAndContextLiteralsChanged: true,
     beforeEmbeddedHelperSha256: transition.beforeHelperSha256,
     afterEmbeddedHelperSha256: transition.afterHelperSha256,
     collisionSafeGeneratedIdentifierEdits: transition.generatedIdentifierEdits,
+    mapperGeneratedCommentByteEdits: transition.generatedCommentByteEdits,
     allAuthoredRangesAndFeaturesExact: true,
     productionMappingNormalization: false,
     packets: [...before, ...after, ...options].map((p) => ({
