@@ -1,5 +1,6 @@
-use super::{findings, last_span_for, lint_sfc, none, span_for};
+use super::{findings, last_span_for, lint_sfc, lint_sfc_with_rule, none, span_for};
 use crate::diagnostic::Severity;
+use crate::rules::vue::{NoMutatingProps, NoMutatingPropsOptions};
 
 // --- The recovered case: an assignment inside an inline handler ------------
 
@@ -192,6 +193,86 @@ const assign = 'assign';
 </template>
 "#;
     assert_eq!(findings(&lint_sfc(sfc)), none());
+}
+
+#[test]
+fn ignores_copies_nested_callbacks_and_shallow_nested_mutations() {
+    let copied = r#"<script setup lang="ts">
+const props = defineProps<{ items: string[] }>();
+const copy = [...props.items];
+</script>
+<template>
+  <button @click="copy.push('x'); (() => props.items.push('y'))()">go</button>
+</template>"#;
+    assert_eq!(findings(&lint_sfc(copied)), none());
+
+    let shallow = r#"<script setup lang="ts">
+const props = defineProps<{ items: string[] }>();
+</script>
+<template>
+  <button @click="props.items.splice(0, 1); props.items = []">go</button>
+</template>"#;
+    let (start, end) = span_for(shallow, "props.items = []");
+    let result = lint_sfc_with_rule(
+        shallow,
+        NoMutatingProps::new(NoMutatingPropsOptions { shallow_only: true }),
+    );
+    assert_eq!(
+        findings(&result),
+        vec![(
+            "vue/no-mutating-props",
+            Severity::Error,
+            start,
+            end,
+            "Unexpected mutation of prop 'props.items' in an inline handler",
+        )]
+    );
+}
+
+#[test]
+fn reports_mutations_in_every_template_expression_kind() {
+    let sfc = r#"<script setup lang="ts">
+defineProps<{ rows: string[] }>();
+</script>
+<template>
+  <ul><li v-for="row in rows.sort()" :key="row">{{ row }}</li></ul>
+  <p>{{ rows.reverse().join(", ") }}</p>
+  <MyList :items="rows.splice(0, 3)" />
+  <p v-if="rows.fill('x')">filled</p>
+</template>"#;
+    let result = lint_sfc(sfc);
+    assert_eq!(
+        result
+            .diagnostics
+            .iter()
+            .map(|diagnostic| (diagnostic.start, diagnostic.end))
+            .collect::<Vec<_>>(),
+        [
+            "rows.sort()",
+            "rows.reverse()",
+            "rows.splice(0, 3)",
+            "rows.fill('x')",
+        ]
+        .map(|expression| span_for(sfc, expression))
+    );
+}
+
+#[test]
+fn ignores_copied_shadowed_and_shallow_template_mutations() {
+    let sfc = r#"<script setup lang="ts">
+defineProps<{ rows: string[]; groups: string[][] }>();
+</script>
+<template>
+  <p>{{ [...rows].sort() }}</p>
+  <p>{{ rows.slice().sort() }}</p>
+  <p>{{ groups.map(rows => rows.sort()) }}</p>
+  <MyList :items="rows.splice(0, 3)" />
+</template>"#;
+    let result = lint_sfc_with_rule(
+        sfc,
+        NoMutatingProps::new(NoMutatingPropsOptions { shallow_only: true }),
+    );
+    assert_eq!(findings(&result), none());
 }
 
 // --- The template does not mutate a prop: exactly zero findings ------------

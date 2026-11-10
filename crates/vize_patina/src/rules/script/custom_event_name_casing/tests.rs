@@ -102,6 +102,22 @@ emit('my-event')
 }
 
 #[test]
+fn test_static_template_literal_event_name_is_checked() {
+    let source = r#"
+const emit = defineEmits(['my-event'])
+emit(`my-event`)
+"#;
+    let result = create_linter().lint(source, 0);
+    assert_eq!(result.error_count, 1);
+
+    let dynamic = create_linter().lint(
+        "const emit = defineEmits(['change']); emit(`update-${field}`)",
+        0,
+    );
+    assert_eq!(dynamic.error_count, 0);
+}
+
+#[test]
 fn test_configured_kebab_case_allows_kebab_emit() {
     let source = r#"
 const emit = defineEmits(['my-event'])

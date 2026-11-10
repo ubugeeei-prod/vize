@@ -5,11 +5,11 @@ use oxc_ast::{
     AstKind,
     ast::{
         BindingPattern, CallExpression, Declaration, Expression, ObjectPropertyKind, Program,
-        Statement, TSInterfaceDeclaration, TSSignature, TSType, TSTypeName,
+        PropertyKey, Statement, TSInterfaceDeclaration, TSSignature, TSType, TSTypeName,
     },
 };
 use oxc_semantic::Semantic;
-use oxc_span::GetSpan;
+use oxc_span::{GetSpan, Span};
 use vize_l0::{CompactString, FxHashSet};
 
 #[derive(Clone, Copy)]
@@ -24,7 +24,7 @@ struct Inputs<'s, 'a> {
     module: Option<Scope<'s, 'a>>,
 }
 
-pub(super) fn names<'s, 'a>(
+pub(crate) fn names<'s, 'a>(
     call: &'a CallExpression<'a>,
     setup: &'a Program<'a>,
     semantic: &'s Semantic<'a>,
@@ -78,6 +78,83 @@ pub(super) fn names<'s, 'a>(
     let mut seen = FxHashSet::default();
     names.retain(|name| seen.insert(name.clone()));
     names
+}
+
+pub(crate) fn declaration_span(call: &CallExpression<'_>, name: &str) -> Option<Span> {
+    if let Some(argument) = call
+        .arguments
+        .first()
+        .and_then(|argument| argument.as_expression())
+    {
+        match argument.get_inner_expression() {
+            Expression::ObjectExpression(object) => {
+                return object.properties.iter().find_map(|property| {
+                    let ObjectPropertyKind::ObjectProperty(property) = property else {
+                        return None;
+                    };
+                    (static_property_name(&property.key) == Some(name)).then(|| property.span())
+                });
+            }
+            Expression::ArrayExpression(array) => {
+                return array.elements.iter().find_map(|element| {
+                    let Some(Expression::StringLiteral(literal)) = element.as_expression() else {
+                        return None;
+                    };
+                    (literal.value == name).then_some(literal.span)
+                });
+            }
+            _ => {}
+        }
+    }
+    call.type_arguments
+        .as_ref()
+        .and_then(|arguments| arguments.params.first())
+        .and_then(|ty| type_property_span(ty, name))
+}
+
+fn type_property_span(ty: &TSType<'_>, name: &str) -> Option<Span> {
+    match ty {
+        TSType::TSTypeLiteral(literal) => literal.members.iter().find_map(|member| {
+            let (key, span) = match member {
+                TSSignature::TSPropertySignature(property) => (&property.key, property.span),
+                TSSignature::TSMethodSignature(method) => (&method.key, method.span),
+                _ => return None,
+            };
+            (static_property_name(key) == Some(name)).then_some(span)
+        }),
+        TSType::TSIntersectionType(intersection) => intersection
+            .types
+            .iter()
+            .find_map(|ty| type_property_span(ty, name)),
+        TSType::TSUnionType(union) => union
+            .types
+            .iter()
+            .find_map(|ty| type_property_span(ty, name)),
+        TSType::TSParenthesizedType(parenthesized) => {
+            type_property_span(&parenthesized.type_annotation, name)
+        }
+        _ => None,
+    }
+}
+
+fn static_property_name<'a>(key: &'a PropertyKey<'a>) -> Option<&'a str> {
+    match key {
+        PropertyKey::StaticIdentifier(identifier) => Some(identifier.name.as_str()),
+        PropertyKey::StringLiteral(literal) => Some(literal.value.as_str()),
+        PropertyKey::TemplateLiteral(template) => {
+            template.single_quasi().map(|value| value.as_str())
+        }
+        PropertyKey::ParenthesizedExpression(parenthesized) => {
+            match parenthesized.expression.get_inner_expression() {
+                Expression::StringLiteral(literal) => Some(literal.value.as_str()),
+                Expression::TemplateLiteral(template) => {
+                    template.single_quasi().map(|value| value.as_str())
+                }
+                _ => None,
+            }
+        }
+        _ => None,
+    }
 }
 
 fn runtime_names<'s, 'a>(

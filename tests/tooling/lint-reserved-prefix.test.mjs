@@ -43,11 +43,33 @@ await test("exact reserved membership and groups preserve complete CLI packets",
   );
   const propsSuccessors = JSON.parse(fs.readFileSync(propsSuccessorsPath, "utf8"));
   const propsPackets = new Map(propsSuccessors.coreCases.map((entry) => [entry.id, entry]));
-  const withCurrentDefault = (entry, findings) => {
+  const reservedKeysSuccessorsPath = path.join(fixture, "no-reserved-keys-route-successors.json");
+  const reservedKeysSuccessors = JSON.parse(fs.readFileSync(reservedKeysSuccessorsPath, "utf8"));
+  const reservedKeysPackets = new Map(
+    reservedKeysSuccessors.coreCases.map((entry) => [entry.id, entry]),
+  );
+  const compareText = (left, right) => (left < right ? -1 : left > right ? 1 : 0);
+  const compareDiagnostic = (left, right) =>
+    left.start - right.start ||
+    left.end - right.end ||
+    (left.severity === right.severity ? 0 : left.severity === "error" ? -1 : 1) ||
+    compareText(left.rule_name, right.rule_name) ||
+    compareText(left.message, right.message) ||
+    compareText(left.help ?? "", right.help ?? "") ||
+    compareText(JSON.stringify(left.labels ?? []), JSON.stringify(right.labels ?? []));
+  const withCurrentReservedKeys = (entry, findings) => {
+    const reservedKeys = reservedKeysPackets.get(entry.id);
+    if (!reservedKeys) return findings;
+    assert.equal(reservedKeys.filename, entry.filename);
+    assert.equal(reservedKeys.sourceSha256, entry.sourceSha256);
+    return [...findings, ...reservedKeys.diagnostics].sort(compareDiagnostic);
+  };
+  const withCurrentDefault = (entry, findings, { includeReservedKeys = true } = {}) => {
     const successor = defaultPackets.get(entry.id);
     const unused = unusedPackets.get(entry.id);
     const props = propsPackets.get(entry.id);
-    for (const selected of [successor, unused, props].filter(Boolean)) {
+    const reservedKeys = includeReservedKeys ? reservedKeysPackets.get(entry.id) : undefined;
+    for (const selected of [successor, unused, props, reservedKeys].filter(Boolean)) {
       assert.equal(selected.filename, entry.filename);
       assert.equal(selected.sourceSha256, entry.sourceSha256);
     }
@@ -55,6 +77,7 @@ await test("exact reserved membership and groups preserve complete CLI packets",
       ...(successor ? [successor.diagnostic] : []),
       ...(unused ? unused.diagnostics : []),
       ...(props ? props.diagnostics : []),
+      ...(reservedKeys ? reservedKeys.diagnostics : []),
     ];
     const companionAdditions = companionPackets
       .get(entry.id)
@@ -63,17 +86,13 @@ await test("exact reserved membership and groups preserve complete CLI packets",
           diagnostic.rule_name === "vue/prop-name-casing" &&
           !findings.some((finding) => JSON.stringify(finding) === JSON.stringify(diagnostic)),
       );
-    assert.ok(
-      findings.every((finding) =>
-        additions.every((diagnostic) => diagnostic.start <= finding.start),
-      ),
-    );
-    return [...additions, ...findings, ...companionAdditions];
+    return [...additions, ...findings, ...companionAdditions].sort(compareDiagnostic);
   };
   assert.equal(companions.cases.length, 20);
   assert.equal(defaultSuccessors.coreCases.length, 18);
   assert.equal(unusedSuccessors.coreCases.length, 1);
   assert.equal(propsSuccessors.coreCases.length, 1);
+  assert.equal(reservedKeysSuccessors.coreCases.length, 1);
   assert.equal(
     companions.targetCorpus.sha256,
     sha256(fs.readFileSync(path.join(fixture, "cases.json"))),
@@ -91,8 +110,20 @@ await test("exact reserved membership and groups preserve complete CLI packets",
     sha256(fs.readFileSync(path.join(fixture, "default-route-companions.json"))),
   );
   assert.equal(
+    reservedKeysSuccessors.bases.core.sha256,
+    sha256(fs.readFileSync(path.join(fixture, "default-route-companions.json"))),
+  );
+  assert.equal(
+    reservedKeysSuccessors.bases.bare.sha256,
+    sha256(fs.readFileSync(path.join(fixture, "bare-parent-route-successors.json"))),
+  );
+  assert.equal(
+    reservedKeysSuccessors.bases.producer.sha256,
+    sha256(fs.readFileSync(path.join(fixture, reservedKeysSuccessors.bases.producer.path))),
+  );
+  assert.equal(
     companions.cases.reduce((count, entry) => count + entry.diagnostics.length, 0),
-    62,
+    63,
   );
   for (const entry of corpus.cases) {
     const companion = companionPackets.get(entry.id);
@@ -134,6 +165,7 @@ await test("exact reserved membership and groups preserve complete CLI packets",
     "require-define-component-route-successors.json",
     "no-unused-setup-bindings-route-successors.json",
     "define-props-destructuring-route-successors.json",
+    "no-reserved-keys-route-successors.json",
     "primary-sources.json",
     "observe-before.mjs",
     "original-public-before.json",
@@ -183,19 +215,28 @@ await test("exact reserved membership and groups preserve complete CLI packets",
     validateBuildReceipt(receipt, build);
     const scenarios = corpus.cases.flatMap((entry) => [
       ...[null, "recommended", "essential", "ecosystem"].map((preset) => {
-        const findings = companionPackets.get(entry.id).combinedCliDiagnostics;
+        const current = companionPackets.get(entry.id).combinedCliDiagnostics;
+        const findings =
+          preset === "essential"
+            ? withCurrentReservedKeys(
+                entry,
+                current.filter((diagnostic) => diagnostic.rule_name !== "vue/prop-name-casing"),
+              )
+            : withCurrentDefault(entry, current);
         return {
           entry,
           preset,
           config: null,
-          findings: preset === "essential" ? findings : withCurrentDefault(entry, findings),
+          findings,
         };
       }),
       { entry, preset: "incremental", config: null, findings: [] },
       {
         entry,
         preset: null,
-        findings: withCurrentDefault(entry, companionPackets.get(entry.id).diagnostics),
+        findings: withCurrentDefault(entry, companionPackets.get(entry.id).diagnostics, {
+          includeReservedKeys: false,
+        }),
         config: JSON.stringify({ linter: { rules: { [corpus.rule]: "off" } } }) + "\n",
       },
       {
@@ -206,6 +247,24 @@ await test("exact reserved membership and groups preserve complete CLI packets",
       },
     ]);
     scenarios.push(
+      ...reservedKeysSuccessors.coreCases.map((successor) => {
+        const entry = corpus.cases.find((entry) => entry.id === successor.id);
+        assert.ok(entry, successor.id);
+        assert.equal(successor.filename, entry.filename);
+        assert.equal(successor.sourceSha256, entry.sourceSha256);
+        return {
+          entry,
+          preset: null,
+          findings: successor.diagnostics,
+          config:
+            JSON.stringify({
+              linter: {
+                preset: "incremental",
+                rules: { [reservedKeysSuccessors.rule]: "error" },
+              },
+            }) + "\n",
+        };
+      }),
       ...originals.cases.map((entry, index) => ({
         entry,
         preset: null,
@@ -279,7 +338,7 @@ await test("exact reserved membership and groups preserve complete CLI packets",
       }
       fs.unlinkSync(file);
     }
-    assert.equal(evidence.runs.length, 161);
+    assert.equal(evidence.runs.length, 162);
     assert.deepEqual(custody(), evidence.custody);
   } finally {
     persist();

@@ -218,7 +218,7 @@ function snippet(text: string): string {
             :kind="page.kind"
             :selected="selectedLine"
             :linked="linkedLines"
-            @hover="($event) => (hoveredLine = $event)"
+            @highlight="($event) => (hoveredLine = $event)"
             @select="($event) => (selectedLine = $event)"
           />
           <div v-else class="davinci-message">This stage produced no page for the source.</div>

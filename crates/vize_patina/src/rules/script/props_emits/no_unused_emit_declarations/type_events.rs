@@ -189,7 +189,7 @@ fn collect_event_from_signature(
     events: &mut Vec<DeclaredEvent>,
 ) {
     match member {
-        TSSignature::TSPropertySignature(property) => {
+        TSSignature::TSPropertySignature(property) if !property.computed => {
             if let Some(name) = property_key_name(&property.key) {
                 events.push(DeclaredEvent {
                     name: CompactString::new(name),
@@ -198,7 +198,7 @@ fn collect_event_from_signature(
                 });
             }
         }
-        TSSignature::TSMethodSignature(method) => {
+        TSSignature::TSMethodSignature(method) if !method.computed => {
             if let Some(name) = property_key_name(&method.key) {
                 events.push(DeclaredEvent {
                     name: CompactString::new(name),

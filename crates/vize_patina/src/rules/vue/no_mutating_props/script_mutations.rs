@@ -11,7 +11,7 @@ pub(super) use self::depth::ScriptPropMutationKind;
 use self::depth::{MutationOperation, PropBindingKind, script_mutation_kind};
 
 use oxc_ast::ast::{
-    Argument, AssignmentExpression, BindingPattern, CallExpression, Expression,
+    Argument, AssignmentExpression, BindingPattern, CallExpression, Expression, Function,
     IdentifierReference, ObjectPropertyKind, Program, PropertyKey, SimpleAssignmentTarget,
     Statement, UnaryExpression, UpdateExpression,
 };
@@ -69,6 +69,76 @@ pub(super) fn find_prop_mutations(source: &str, program: &Program<'_>) -> Vec<Sc
         .mutations
         .sort_unstable_by_key(|mutation| (mutation.span.start, mutation.span.end));
     collector.mutations
+}
+
+pub(super) fn find_setup_parameter_mutations(
+    source: &str,
+    program: &Program<'_>,
+    function: &Function<'_>,
+) -> Vec<ScriptPropMutation> {
+    let semantic = SemanticBuilder::new().build(program).semantic;
+    let scoping = semantic.scoping();
+    let mut prop_symbols = FxHashMap::default();
+    let Some(parameter) = function.params.items.first() else {
+        return Vec::new();
+    };
+    collect_parameter_symbols(&parameter.pattern, &mut prop_symbols, false);
+    if prop_symbols.is_empty() {
+        return Vec::new();
+    }
+    let mut collector = MutationCollector {
+        source,
+        scoping,
+        prop_symbols: &prop_symbols,
+        mutations: Vec::new(),
+    };
+    if let Some(body) = &function.body {
+        collector.visit_function_body(body);
+    }
+    collector
+        .mutations
+        .sort_unstable_by_key(|mutation| (mutation.span.start, mutation.span.end));
+    collector.mutations
+}
+
+fn collect_parameter_symbols(
+    pattern: &BindingPattern<'_>,
+    symbols: &mut FxHashMap<SymbolId, PropBindingKind>,
+    destructured: bool,
+) {
+    match pattern {
+        BindingPattern::BindingIdentifier(identifier) => {
+            if let Some(symbol) = identifier.symbol_id.get() {
+                symbols.insert(
+                    symbol,
+                    if destructured {
+                        PropBindingKind::Value
+                    } else {
+                        PropBindingKind::Object
+                    },
+                );
+            }
+        }
+        BindingPattern::ObjectPattern(object) => {
+            for property in &object.properties {
+                collect_parameter_symbols(&property.value, symbols, true);
+            }
+            if let Some(rest) = &object.rest {
+                collect_parameter_symbols(&rest.argument, symbols, false);
+            }
+        }
+        BindingPattern::ArrayPattern(array) => {
+            for element in array.elements.iter().flatten() {
+                collect_parameter_symbols(element, symbols, true);
+            }
+            if let Some(rest) = &array.rest {
+                collect_parameter_symbols(&rest.argument, symbols, true);
+            }
+        }
+        BindingPattern::AssignmentPattern(assignment) => {
+            collect_parameter_symbols(&assignment.left, symbols, destructured)
+        }
+    }
 }
 
 /// Collect statically declared runtime prop names and same-named local

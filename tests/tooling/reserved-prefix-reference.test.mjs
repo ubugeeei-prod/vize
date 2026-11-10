@@ -15,7 +15,7 @@ const frozen = {
   "originals.json": "65d7e2cbbdc5552f1d28338163d88506716fc8ebd6a2a88a0c5eab5670283144",
   "bare-parent-successors.json": "24f0a6e69dab5ae91929d0d2b4022de46d099048ba3782f8fd8c48480485ec84",
   "default-route-companions.json":
-    "34eefb3a6dbe1804ee1b5e46441cf9aeb93c1c4c1773f41b5139b49e97c44e15",
+    "694f72191c8a0d0fe70870198ab2ebc22ed17083e28c51e896c8e749783558c7",
   "bare-parent-route-successors.json":
     "d6f177c108ec9494f24d5dc5a7d70ea0433e0aa0c69242db53f0760f51e00a4e",
   "original-sources.json": "9fe2a2cbaf134f6896bd497befe5996e67383884d16d8650ba5752fc8df4d08e",

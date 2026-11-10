@@ -7,9 +7,12 @@
 //! the same normalisation [`super::super::no_unused_properties`] performs.
 
 use crate::context::LintContext;
-use crate::rules::script::{collect_options_props, script_source_type};
+use crate::rules::script::{
+    NoDupeKeysModuleScript, collect_options_props, no_dupe_keys, script_source_type,
+};
 use oxc_allocator::Allocator;
 use oxc_parser::Parser;
+use oxc_semantic::SemanticBuilder;
 use oxc_span::SourceType;
 
 use super::super::macro_type_argument::macro_type_argument_span;
@@ -72,6 +75,43 @@ pub(super) fn declarations(ctx: &LintContext<'_>) -> Vec<Declaration> {
     };
 
     let Some(analysis) = ctx.analysis() else {
+        if let (Some(block), Some(scripts)) = (script_setup, ctx.sfc_scripts())
+            && let Some(parsed) = scripts.script_setup()
+            && !parsed.panicked
+            && parsed.diagnostics.is_empty()
+        {
+            let built = SemanticBuilder::new()
+                .with_build_nodes(true)
+                .build(&parsed.program);
+            if built.diagnostics.is_empty()
+                && !no_dupe_keys::setup::macro_shadowed(
+                    &parsed.program,
+                    &built.semantic,
+                    "defineProps",
+                )
+            {
+                for candidate in no_dupe_keys::setup::candidates(&parsed.program) {
+                    for name in no_dupe_keys::setup::props::names(
+                        candidate.call,
+                        &parsed.program,
+                        &built.semantic,
+                        NoDupeKeysModuleScript::Absent,
+                        None,
+                        block.content.as_ref(),
+                        None,
+                    ) {
+                        let span =
+                            no_dupe_keys::setup::props::declaration_span(candidate.call, &name)
+                                .unwrap_or(candidate.call.span);
+                        declarations.push(Declaration {
+                            name,
+                            start: block.loc.start as u32 + span.start,
+                            end: block.loc.start as u32 + span.end,
+                        });
+                    }
+                }
+            }
+        }
         return declarations;
     };
     let Some(call) = analysis.macros.define_props() else {

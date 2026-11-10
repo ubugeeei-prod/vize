@@ -143,18 +143,7 @@ fn has_markup_bound_key(element: &MarkupElement<'_>, exact: bool) -> bool {
 }
 
 fn has_markup_key(element: &MarkupElement<'_>, exact: bool) -> bool {
-    let mut found = false;
-    element.walk_bindings(&mut |binding| {
-        found |= matches!(
-            binding.kind(),
-            MarkupBindingKind::Attribute | MarkupBindingKind::Bind
-        ) && if exact {
-            binding.is_unqualified_arg_exact("key")
-        } else {
-            binding.arg_name_eq("key")
-        };
-    });
-    found || has_object_bound_key(element)
+    has_markup_bound_key(element, exact) || has_object_bound_key(element)
 }
 
 fn has_object_bound_key(element: &MarkupElement<'_>) -> bool {

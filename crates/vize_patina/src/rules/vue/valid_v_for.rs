@@ -26,12 +26,13 @@ use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use crate::visitor::parse_v_for_variables;
-use oxc_allocator::Allocator;
-use oxc_ast::ast::IdentifierReference;
+use oxc_allocator::Allocator as OxcAllocator;
+use oxc_ast::ast::{BindingPattern, IdentifierReference};
 use oxc_ast_visit::Visit;
 use oxc_parser::Parser;
-use oxc_span::SourceType;
-use vize_l0::{CompactString, ensure_sufficient_stack};
+use oxc_span::{GetSpan, SourceType};
+use vize_croquis::drawer::retain_v_for_binding_parameters;
+use vize_l0::{Allocator, CompactString, ensure_sufficient_stack};
 use vize_relief::{DirectiveNode, ElementNode, ExpressionNode, PropNode, TemplateChildNode};
 
 use super::require_v_for_key::relief_element_is_custom_component;
@@ -171,10 +172,94 @@ impl Rule for ValidVFor {
                         &directive.loc,
                         ctx.t("vue/valid-v-for.help"),
                     );
+                    return;
+                }
+
+                if !aliases_are_valid(content) {
+                    ctx.error_with_help(
+                        ctx.t("vue/valid-v-for.invalid_syntax"),
+                        &directive.loc,
+                        ctx.t("vue/valid-v-for.help"),
+                    );
                 }
             }
         }
     }
+}
+
+fn aliases_are_valid(expression: &str) -> bool {
+    let allocator = Allocator::default();
+    let Some(bindings) = retain_v_for_binding_parameters(&allocator, expression) else {
+        return false;
+    };
+    let parameters = &bindings.parameters;
+    if parameters.items.is_empty()
+        || parameters.items.len() > 3
+        || parameters.rest.is_some()
+        || has_empty_alias_position(bindings.raw, parameters)
+    {
+        return false;
+    }
+    parameters
+        .items
+        .iter()
+        .skip(1)
+        .all(|parameter| matches!(parameter.pattern, BindingPattern::BindingIdentifier(_)))
+}
+
+fn has_empty_alias_position(raw: &str, parameters: &oxc_ast::ast::FormalParameters<'_>) -> bool {
+    let Some(first) = parameters.items.first() else {
+        return true;
+    };
+    if separator_count(raw.get(..first.span().start as usize).unwrap_or_default()) > 0 {
+        return true;
+    }
+    for pair in parameters.items.windows(2) {
+        let [left_item, right_item] = pair else {
+            continue;
+        };
+        let left = left_item.span().end as usize;
+        let right = right_item.span().start as usize;
+        if separator_count(raw.get(left..right).unwrap_or_default()) > 1 {
+            return true;
+        }
+    }
+    separator_count(
+        raw.get(
+            parameters
+                .items
+                .last()
+                .map_or(0, |item| item.span().end as usize)..,
+        )
+        .unwrap_or_default(),
+    ) > 1
+}
+
+fn separator_count(gap: &str) -> usize {
+    let bytes = gap.as_bytes();
+    let mut count = 0;
+    let mut index = 0;
+    while index < bytes.len() {
+        if bytes.get(index..index + 2) == Some(b"//") {
+            index += 2;
+            while bytes
+                .get(index)
+                .is_some_and(|byte| !matches!(*byte, b'\n' | b'\r'))
+            {
+                index += 1;
+            }
+        } else if bytes.get(index..index + 2) == Some(b"/*") {
+            index += 2;
+            while index + 1 < bytes.len() && bytes.get(index..index + 2) != Some(b"*/") {
+                index += 1;
+            }
+            index = (index + 2).min(bytes.len());
+        } else {
+            count += usize::from(bytes.get(index) == Some(&b','));
+            index += 1;
+        }
+    }
+    count
 }
 
 fn check_iteration_keys(
@@ -320,7 +405,7 @@ fn expression_references_any(expression: &str, names: &[CompactString]) -> bool 
         }
     }
 
-    let allocator = Allocator::default();
+    let allocator = OxcAllocator::default();
     let Ok(expression) = Parser::new(&allocator, expression, SourceType::ts()).parse_expression()
     else {
         return false;

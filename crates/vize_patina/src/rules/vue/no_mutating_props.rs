@@ -18,12 +18,12 @@ mod options;
 mod options_api;
 mod scope;
 mod script_mutations;
+mod template;
 #[cfg(test)]
 mod tests;
 
-use self::mutation_targets::MutationTargetKind;
 pub use self::options::NoMutatingPropsOptions;
-use self::scope::{PropScope, expression_source, push_for_aliases, push_identifier_tokens};
+use self::scope::PropScope;
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
@@ -31,7 +31,7 @@ use vize_croquis::facts::{Bindings, Demand, FactConsumer, FactGroup};
 use vize_l0::FxHashSet;
 use vize_l0::String;
 use vize_l0::cstr;
-use vize_relief::{DirectiveNode, ElementNode, ForNode, PropNode, RootNode, TemplateChildNode};
+use vize_relief::RootNode;
 
 static META: RuleMeta = RuleMeta {
     name: "vue/no-mutating-props",
@@ -57,199 +57,6 @@ impl NoMutatingProps {
     pub fn new(options: NoMutatingPropsOptions) -> Self {
         Self {
             options: options.into(),
-        }
-    }
-
-    /// Two-way bindings (`v-model` and Vue 2 `v-bind.sync`) write their target.
-    fn check_two_way_mutation<'a>(
-        &self,
-        ctx: &mut LintContext<'a>,
-        directive: &DirectiveNode<'a>,
-        scope: &PropScope<'_>,
-    ) {
-        let binding = if directive.name == "model" {
-            "v-model"
-        } else if directive.name == "bind"
-            && directive
-                .modifiers
-                .iter()
-                .any(|modifier| modifier.content == "sync")
-        {
-            "v-bind.sync"
-        } else {
-            return;
-        };
-
-        let Some(exp) = directive.exp.as_ref() else {
-            return;
-        };
-        let content = expression_source(exp, ctx.source);
-        if !self.should_report_template_mutation(scope.mutation_kind(content)) {
-            return;
-        }
-        let span = exp.loc().span;
-        if ctx.diagnostics.iter().any(|diagnostic| {
-            diagnostic.rule_name == META.name
-                && diagnostic.start == span.start
-                && diagnostic.end == span.end
-        }) {
-            return;
-        }
-        ctx.report(
-            crate::diagnostic::LintDiagnostic::error(
-                ctx.current_rule,
-                cstr!("Unexpected mutation of prop '{}' via {}", content, binding),
-                span.start,
-                span.end,
-            )
-            .with_help("Use a local ref or emit an event instead of mutating props directly"),
-        );
-    }
-
-    /// Check whether a `v-on` inline handler mutates a prop.
-    fn check_handler_mutation<'a>(
-        &self,
-        ctx: &mut LintContext<'a>,
-        directive: &DirectiveNode<'a>,
-        scope: &PropScope<'_>,
-    ) {
-        if directive.name != "on" {
-            return;
-        }
-        let Some(exp) = directive.exp.as_ref() else {
-            return;
-        };
-        let expression_start = exp.loc().span.start;
-        let mut mutated: Vec<TemplateMutation> = Vec::new();
-        handlers::for_each_mutation_target(expression_source(exp, ctx.source), |mutation| {
-            let target = mutation.target.trim();
-            if !self.should_report_template_mutation(scope.mutation_kind(target)) {
-                return;
-            }
-            let start = expression_start + mutation.span.start;
-            let end = expression_start + mutation.span.end;
-            if mutated
-                .iter()
-                .any(|seen| seen.target == target && seen.start == start && seen.end == end)
-            {
-                return;
-            }
-            mutated.push(TemplateMutation {
-                target: String::new(target),
-                start,
-                end,
-            });
-        });
-        for mutation in mutated {
-            ctx.report(
-                crate::diagnostic::LintDiagnostic::error(
-                    ctx.current_rule,
-                    cstr!(
-                        "Unexpected mutation of prop '{}' in an inline handler",
-                        mutation.target
-                    ),
-                    mutation.start,
-                    mutation.end,
-                )
-                .with_help("Use a local ref or emit an event instead of mutating props directly"),
-            );
-        }
-    }
-
-    /// Recursively check template children for prop mutations.
-    fn check_children<'a>(
-        &self,
-        ctx: &mut LintContext<'a>,
-        children: &[TemplateChildNode<'a>],
-        scope: &mut PropScope<'_>,
-    ) {
-        for child in children {
-            match child {
-                TemplateChildNode::Element(el) => self.check_element(ctx, el, scope),
-                TemplateChildNode::If(if_node) => {
-                    for branch in if_node.branches.iter() {
-                        self.check_children(ctx, &branch.children, scope);
-                    }
-                }
-                TemplateChildNode::For(for_node) => self.check_for(ctx, for_node, scope),
-                _ => {}
-            }
-        }
-    }
-
-    /// A `v-for` binds its aliases for the whole subtree, so they shadow a prop
-    /// of the same name inside it.
-    fn check_for<'a>(
-        &self,
-        ctx: &mut LintContext<'a>,
-        for_node: &ForNode<'a>,
-        scope: &mut PropScope<'_>,
-    ) {
-        let depth = scope.shadowed.len();
-        for alias in [
-            for_node.value_alias.as_ref(),
-            for_node.key_alias.as_ref(),
-            for_node.object_index_alias.as_ref(),
-        ]
-        .into_iter()
-        .flatten()
-        {
-            push_identifier_tokens(expression_source(alias, ctx.source), &mut scope.shadowed);
-        }
-        self.check_children(ctx, &for_node.children, scope);
-        scope.shadowed.truncate(depth);
-    }
-
-    /// Check an element for prop mutations.
-    fn check_element<'a>(
-        &self,
-        ctx: &mut LintContext<'a>,
-        element: &ElementNode<'a>,
-        scope: &mut PropScope<'_>,
-    ) {
-        let depth = scope.shadowed.len();
-
-        // A `v-for` alias is in scope for the element's *own* bindings as well
-        // as its children (`v-for="msg in rows" @click="msg = 1"` mutates the
-        // iteration variable, not the prop), so it has to be collected before
-        // any directive on this element is checked. Whether the parse lowered
-        // `v-for` into a `ForNode` or left it as a directive here depends on
-        // the transform stage, so both spellings are handled.
-        for prop in element.props.iter() {
-            if let PropNode::Directive(dir) = prop
-                && dir.name == "for"
-            {
-                push_for_aliases(dir, &mut scope.shadowed, ctx.source);
-            }
-        }
-
-        for prop in element.props.iter() {
-            if let PropNode::Directive(dir) = prop {
-                self.check_two_way_mutation(ctx, dir, scope);
-                self.check_handler_mutation(ctx, dir, scope);
-            }
-        }
-
-        // A slot variable, by contrast, scopes the slot *content*, so it is
-        // collected only after this element's own directives are checked.
-        for prop in element.props.iter() {
-            if let PropNode::Directive(dir) = prop
-                && dir.name == "slot"
-                && let Some(exp) = dir.exp.as_ref()
-            {
-                push_identifier_tokens(expression_source(exp, ctx.source), &mut scope.shadowed);
-            }
-        }
-
-        self.check_children(ctx, &element.children, scope);
-        scope.shadowed.truncate(depth);
-    }
-
-    fn should_report_template_mutation(&self, kind: Option<MutationTargetKind>) -> bool {
-        match kind {
-            Some(MutationTargetKind::Direct) => true,
-            Some(MutationTargetKind::Deep) => !self.options.shallow_only,
-            None => false,
         }
     }
 
@@ -410,12 +217,6 @@ fn contains_identifier(source: &str, name: &str) -> bool {
                 .get(end)
                 .is_some_and(|byte| is_identifier(*byte))
     })
-}
-
-struct TemplateMutation {
-    target: String,
-    start: u32,
-    end: u32,
 }
 
 impl Rule for NoMutatingProps {

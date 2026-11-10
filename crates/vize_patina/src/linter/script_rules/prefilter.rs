@@ -70,11 +70,13 @@ pub(super) fn script_rule_may_match(rule_name: &str, source: &str) -> bool {
         }
         RULE_NO_RESERVED_IDENTIFIERS => contains_any(bytes, RESERVED_IDENTIFIER_NEEDLES),
         RULE_NO_DUPE_KEYS => {
+            source_may_define_component_options(bytes)
+                || contains_any(bytes, &[b"defineProps", b"defineModel"])
+        }
+        RULE_NO_RESERVED_KEYS => {
             source_may_define_component_options(bytes) || contains(bytes, b"defineProps")
         }
-        RULE_NO_RESERVED_KEYS | RULE_NO_POTENTIAL_COMPONENT_OPTION_TYPO => {
-            source_may_define_component_options(bytes)
-        }
+        RULE_NO_POTENTIAL_COMPONENT_OPTION_TYPO => source_may_define_component_options(bytes),
         RULE_NO_SIDE_EFFECTS_IN_COMPUTED => {
             (source_may_define_component_options(bytes)
                 && contains(bytes, b"computed")

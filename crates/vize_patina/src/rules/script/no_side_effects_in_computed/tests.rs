@@ -331,3 +331,30 @@ export default {
         "$set"
     );
 }
+
+#[test]
+fn reports_object_assign_and_delete_on_external_state() {
+    let source = r#"
+import { computed, ref } from 'vue'
+const settings = ref({ theme: 'light' })
+const assigned = computed(() => Object.assign(settings.value, { theme: 'dark' }))
+const removed = computed(() => delete settings.value.theme)
+const fresh = computed(() => Object.assign({}, settings.value))
+"#;
+    let result = create_linter().lint(source, 0);
+    assert_eq!(result.error_count, 2, "{:?}", result.diagnostics);
+}
+
+#[test]
+fn reports_object_assign_and_delete_on_this() {
+    let source = r#"
+export default {
+  computed: {
+    changed() { return Object.assign(this.settings, { theme: 'dark' }) },
+    removed() { return delete this.settings.theme }
+  }
+}
+"#;
+    let result = create_linter().lint(source, 0);
+    assert_eq!(result.error_count, 2, "{:?}", result.diagnostics);
+}

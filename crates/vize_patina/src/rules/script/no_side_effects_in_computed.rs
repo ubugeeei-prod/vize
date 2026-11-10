@@ -58,13 +58,17 @@ use crate::diagnostic::{LintDiagnostic, Severity};
 use oxc_ast::ast::{
     Argument, BindingPattern, CallExpression, ExportDefaultDeclarationKind, Expression, Function,
     ObjectExpression, ObjectProperty, ObjectPropertyKind, Program, PropertyKey, PropertyKind,
-    Statement,
+    Statement, UnaryExpression,
 };
 use oxc_ast_visit::{
     Visit,
-    walk::{walk_assignment_expression, walk_call_expression, walk_update_expression},
+    walk::{
+        walk_assignment_expression, walk_call_expression, walk_unary_expression,
+        walk_update_expression,
+    },
 };
 use oxc_span::Span;
+use oxc_syntax::operator::UnaryOperator;
 use vize_l0::{CompactString, FxHashMap};
 
 mod composition;
@@ -155,7 +159,9 @@ pub(super) fn computed_getter_body<'a>(property: &'a ObjectProperty<'a>) -> Opti
 }
 
 /// Locate the `get` accessor inside `{ get() {}, set() {} }`.
-fn accessor_object_getter<'a>(object: &'a ObjectExpression<'a>) -> Option<GetterBody<'a>> {
+pub(super) fn accessor_object_getter<'a>(
+    object: &'a ObjectExpression<'a>,
+) -> Option<GetterBody<'a>> {
     for property in &object.properties {
         let ObjectPropertyKind::ObjectProperty(property) = property else {
             continue;
@@ -286,7 +292,28 @@ impl<'a> Visit<'a> for SideEffectVisitor<'_> {
                 },
             );
         }
+        if matches!(&it.callee, Expression::StaticMemberExpression(member)
+            if matches!(member.object.get_inner_expression(), Expression::Identifier(identifier) if identifier.name == "Object")
+                && member.property.name == "assign")
+            && let Some(target) = it.arguments.first().and_then(Argument::as_expression)
+            && target.as_member_expression().is_some()
+            && (expression_root_is_this(target)
+                || composition::root_is_external(target, self.scoping, self.getter_span))
+        {
+            self.report(it.span, "an Object.assign call on external state");
+        }
         walk_call_expression(self, it);
+    }
+
+    fn visit_unary_expression(&mut self, it: &UnaryExpression<'a>) {
+        if it.operator == UnaryOperator::Delete
+            && it.argument.as_member_expression().is_some()
+            && (expression_root_is_this(&it.argument)
+                || composition::root_is_external(&it.argument, self.scoping, self.getter_span))
+        {
+            self.report(it.span, "a deletion from external state");
+        }
+        walk_unary_expression(self, it);
     }
 }
 

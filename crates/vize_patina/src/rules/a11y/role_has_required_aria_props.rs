@@ -51,10 +51,11 @@ fn has_aria_attribute_or_binding(element: &ElementNode, name: &str) -> bool {
         PropNode::Attribute(attr) => attr.name == name,
         PropNode::Directive(dir) => {
             if dir.name == "bind" {
-                matches!(
-                    &dir.arg,
-                    Some(ExpressionNode::Simple(s)) if s.content == name
-                )
+                dir.arg.is_none()
+                    || matches!(
+                        &dir.arg,
+                        Some(ExpressionNode::Simple(s)) if s.content == name
+                    )
             } else {
                 false
             }
@@ -89,7 +90,9 @@ fn has_markup_attribute_or_binding(element: &MarkupElement<'_>, name: &str) -> b
         found |= matches!(
             binding.kind(),
             MarkupBindingKind::Attribute | MarkupBindingKind::Bind
-        ) && binding.is_unqualified_arg_exact(name);
+        ) && (binding.is_unqualified_arg_exact(name)
+            // `v-bind="attrs"` may provide any required ARIA state at runtime.
+            || (binding.kind() == MarkupBindingKind::Bind && binding.arg_name().is_none()));
     });
     found
 }
@@ -254,6 +257,16 @@ mod tests {
     }
 
     #[test]
+    fn object_binding_can_supply_required_aria_properties() {
+        let linter = create_linter();
+        let result = linter.lint_template(
+            r#"<input role="combobox" aria-expanded="false" v-bind="fieldProps" />"#,
+            "test.vue",
+        );
+        assert_eq!(result.warning_count, 0);
+    }
+
+    #[test]
     fn native_checked_inputs_do_not_require_aria_checked() {
         let linter = create_linter();
         for source in [
@@ -274,6 +287,20 @@ mod tests {
             r#"<div role="switch"></div>"#,
             r#"<input type="text" role="switch" />"#,
             r#"<input :type="kind" role="switch" />"#,
+        ] {
+            let result = linter.lint_template(source, "test.vue");
+            assert_eq!(result.warning_count, 1, "{source}");
+        }
+    }
+
+    #[test]
+    fn wai_aria_12_role_requirements_are_complete() {
+        let linter = create_linter();
+        for source in [
+            r#"<input role="combobox" aria-expanded="false" />"#,
+            r#"<div role="menuitemcheckbox" tabindex="-1">Bold</div>"#,
+            r#"<div role="menuitemradio" tabindex="-1">Left</div>"#,
+            r#"<li role="treeitem">Node</li>"#,
         ] {
             let result = linter.lint_template(source, "test.vue");
             assert_eq!(result.warning_count, 1, "{source}");

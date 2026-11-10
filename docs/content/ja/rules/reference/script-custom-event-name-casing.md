@@ -57,4 +57,4 @@ export default defineConfig({}).withVue({
 - [型と script のルール](../type-and-script.md)
 - [ルールのオプション](../options.md)
 - [全ルール](../all.md)
-- [ソースコード](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/custom_event_name_casing.rs#L74)
+- [ソースコード](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/custom_event_name_casing.rs#L75)

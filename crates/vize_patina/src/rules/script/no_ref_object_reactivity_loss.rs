@@ -34,7 +34,14 @@ use visitor::Visitor;
 
 pub(super) const RULE: &str = "vue/no-ref-object-reactivity-loss";
 pub(super) const MESSAGE: &str = "Getting a value from the ref object in the same scope will cause the value to lose reactivity.";
-pub(super) const REF_FACTORIES: &[&str] = &["ref", "computed", "shallowRef", "toRef", "customRef"];
+pub(super) const REF_FACTORIES: &[&str] = &[
+    "ref",
+    "computed",
+    "shallowRef",
+    "toRef",
+    "customRef",
+    "useTemplateRef",
+];
 
 static META: ScriptRuleMeta = ScriptRuleMeta {
     name: RULE,

@@ -6,7 +6,7 @@
   "bases": {
     "core": {
       "path": "default-route-companions.json",
-      "sha256": "34eefb3a6dbe1804ee1b5e46441cf9aeb93c1c4c1773f41b5139b49e97c44e15"
+      "sha256": "694f72191c8a0d0fe70870198ab2ebc22ed17083e28c51e896c8e749783558c7"
     },
     "bare": {
       "path": "bare-parent-route-successors.json",

@@ -9,6 +9,8 @@ use vize_l0::{
 };
 use vize_l1::markup::NativeLintTagKind;
 
+use crate::rules::a11y::helpers::ARIA_UNSUPPORTED_ELEMENTS;
+
 use super::{
     Evidence, NativeAttributeFact, NativeBindingKind, NativeHeaderFact, NativeUnsupportedAriaFact,
 };
@@ -83,7 +85,7 @@ impl FactProducer<Evidence> for NativeUnsupportedAria {
         // This is the exact registered lint rule's authored-name contract, not
         // a DOM/runtime classification or a legacy semantic helper invocation.
         if header.kind == NativeLintTagKind::Component
-            || !matches!(header.tag.as_str(), "meta" | "html" | "script" | "style")
+            || !ARIA_UNSUPPORTED_ELEMENTS.contains(&header.tag.as_str())
         {
             return FactTable::default();
         }

@@ -62,6 +62,10 @@ fn ordinary<'a>(property: &'a ObjectProperty<'a>) -> Option<&'a Function<'a>> {
     }
 }
 
+pub(super) fn setup_function<'a>(options: &'a ObjectExpression<'a>) -> Option<&'a Function<'a>> {
+    option(options, "setup").and_then(ordinary)
+}
+
 fn object<'a>(property: &'a ObjectProperty<'a>) -> Option<&'a ObjectExpression<'a>> {
     if property.kind != PropertyKind::Init {
         return None;
