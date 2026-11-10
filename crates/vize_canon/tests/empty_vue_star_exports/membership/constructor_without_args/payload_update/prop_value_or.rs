@@ -43,6 +43,7 @@ fn restore_if_current(current: String, file: &Value) -> String {
 /// The pre-rewrite bytes of a recorded helper's current image. Older images
 /// pass through; the layers below authenticate them.
 pub(super) fn source_before(path: &str, current: String) -> String {
+    let current = super::listener_contract::source_before(path, current);
     let record = record();
     match record["files"]
         .as_array()
@@ -57,7 +58,8 @@ pub(super) fn source_before(path: &str, current: String) -> String {
 
 /// The compiled shared preamble with this layer removed.
 pub(super) fn preamble_before(current: &str) -> String {
-    restore_if_current(current.to_owned(), &record()["compiledPreamble"])
+    let current = super::listener_contract::preamble_before(current);
+    restore_if_current(current, &record()["compiledPreamble"])
 }
 
 #[cfg(test)]
@@ -67,17 +69,16 @@ mod tests {
     #[test]
     fn recorded_helpers_and_compiled_preamble_restore_their_exact_predecessors() {
         let record = record();
-        let physical = vize_canon::virtual_ts::SHARED_PREAMBLE_DTS.to_owned();
+        let physical = super::super::listener_contract::preamble_before(
+            vize_canon::virtual_ts::SHARED_PREAMBLE_DTS,
+        );
         let mut images: Vec<(&Value, String)> = record["files"]
             .as_array()
             .unwrap()
             .iter()
             .map(|file| {
                 let path = file["path"].as_str().unwrap();
-                (
-                    file,
-                    fs::read_to_string(support::repository().join(path)).unwrap(),
-                )
+                (file, super::super::listener_contract::read_current(path))
             })
             .collect();
         images.push((&record["compiledPreamble"], physical));

@@ -1,7 +1,6 @@
 //! Reverse the shared listener relation before authenticating older SDK history.
 use super::support;
 use serde_json::{Value, json};
-use std::fs;
 
 const PREAMBLE_SOURCE: &str = "crates/vize_canon/src/virtual_ts/helpers/preamble.rs";
 const GENERATOR: &str = "npm/cli/scripts/generate-content-mapper-types.ts";
@@ -29,10 +28,18 @@ export type $ListenerArgs<
 > = __vizeListenerTypes.$ListenerArgs<__P, __K, __Raw>;
 "#;
 
-const SHARED_LISTENER: &str = include_str!(concat!(
+const SHARED_LISTENER_CURRENT: &str = include_str!(concat!(
     env!("CARGO_MANIFEST_DIR"),
     "/src/virtual_ts/helpers/declarations/shared-listener-args.d.ts.txt"
 ));
+
+/// The asset as this layer recorded it, before the shared listener contract.
+fn shared_listener() -> String {
+    super::listener_contract::source_before(
+        "crates/vize_canon/src/virtual_ts/helpers/declarations/shared-listener-args.d.ts.txt",
+        SHARED_LISTENER_CURRENT.to_owned(),
+    )
+}
 
 struct Transition {
     path: &'static str,
@@ -129,8 +136,9 @@ pub(super) fn preamble_before(current: &str) -> String {
         47_268,
         "be971e511d48ce689262c5c6f422ff2685085bf166a0c93f9c0a9c93b9848ba3",
     );
-    assert_eq!(current.matches(SHARED_LISTENER).count(), 1);
-    let previous = current.replacen(SHARED_LISTENER, "", 1);
+    let shared = shared_listener();
+    assert_eq!(current.matches(shared.as_str()).count(), 1);
+    let previous = current.replacen(shared.as_str(), "", 1);
     authenticate(
         &previous,
         46_557,
@@ -163,7 +171,7 @@ pub(super) fn retain_provenance(manifest: &mut Value) {
         ),
     ];
     for (path, bytes, sha) in new_files {
-        let body = fs::read_to_string(support::repository().join(path)).unwrap();
+        let body = super::listener_contract::read_current(path);
         authenticate(&body, bytes, sha);
     }
     manifest["provenance"]["currentListenerRelationUpdate"] = json!({
@@ -198,14 +206,16 @@ mod tests {
     #[test]
     fn current_sources_and_preamble_reconstruct_the_exact_predecessor() {
         for transition in &TRANSITIONS {
-            let current = fs::read_to_string(support::repository().join(transition.path)).unwrap();
+            let current = super::super::listener_contract::read_current(transition.path);
             authenticate(
                 &source_before(transition.path, current),
                 transition.before_bytes,
                 transition.before_sha,
             );
         }
-        let previous = preamble_before(vize_canon::virtual_ts::SHARED_PREAMBLE_DTS);
+        let previous = preamble_before(&super::super::listener_contract::preamble_before(
+            vize_canon::virtual_ts::SHARED_PREAMBLE_DTS,
+        ));
         authenticate(
             &previous,
             46_557,
@@ -216,17 +226,19 @@ mod tests {
     #[test]
     fn malformed_or_duplicate_successors_are_refused() {
         for transition in &TRANSITIONS {
-            let current = fs::read_to_string(support::repository().join(transition.path)).unwrap();
+            let current = super::super::listener_contract::read_current(transition.path);
             for changed in [format!("{current}\n"), format!("{current}{current}")] {
                 assert!(
                     std::panic::catch_unwind(|| source_before(transition.path, changed)).is_err()
                 );
             }
         }
-        let current = vize_canon::virtual_ts::SHARED_PREAMBLE_DTS;
+        let current = &super::super::listener_contract::preamble_before(
+            vize_canon::virtual_ts::SHARED_PREAMBLE_DTS,
+        );
         for changed in [
-            current.replacen(SHARED_LISTENER, "", 1),
-            format!("{current}{SHARED_LISTENER}"),
+            current.replacen(shared_listener().as_str(), "", 1),
+            format!("{current}{}", shared_listener()),
         ] {
             assert!(std::panic::catch_unwind(|| preamble_before(&changed)).is_err());
         }

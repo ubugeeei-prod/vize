@@ -7,6 +7,7 @@ mod emit_resolver_share;
 mod generic_inference;
 mod handler_context;
 mod inference_helpers;
+mod listener_contract;
 mod listener_relations;
 mod listener_return;
 mod native_fallthrough;
@@ -18,13 +19,11 @@ pub(crate) use emit_resolver_share::{
 pub(crate) use inference_helpers::emit_event_inference_helpers;
 
 use vize_carton::{CompactString, FxHashMap, FxHashSet, String, cstr};
-use vize_croquis::{Croquis, EventHandlerScopeData, Scope, naming::to_pascal_case};
+use vize_croquis::{Croquis, EventHandlerScopeData, Scope};
 
 use super::context::{ComponentContractKey, EventContract, EventContractKey};
 use crate::virtual_ts::component_reference::component_binding_reference_with_resolution;
-use crate::virtual_ts::helpers::{
-    push_ts_string_literal, to_safe_identifier, to_safe_identifier_fragment,
-};
+use crate::virtual_ts::helpers::{to_safe_identifier, to_safe_identifier_fragment};
 use crate::virtual_ts::types::VirtualTsOptions;
 use generic_inference::{
     EmitInferenceContext, find_component_usage_for_event, generate_inferred_emit_args,
@@ -126,18 +125,15 @@ pub(super) fn generate_component_event_types(
     let native_fallthrough_only = requested_native_fallthrough && has_resolved_component_binding;
     let fallthrough_listeners =
         fallthrough_listeners && (!requested_native_fallthrough || native_fallthrough_only);
-    let pascal_event = to_pascal_case(data.event_name.as_str());
-    let on_handler = cstr!("on{pascal_event}");
-    let mut owned_listener_key = crate::virtual_ts::TextBuf::default();
-    if fallthrough_listeners && !legacy_vue2 {
-        push_ts_string_literal(&mut owned_listener_key, on_handler.as_str());
-    }
-    let mut listener_key = crate::virtual_ts::TextBuf::default();
-    push_ts_string_literal(&mut listener_key, on_handler.as_str());
-    let prop_key = if on_handler.contains(':') {
-        cstr!("\"{}\"", on_handler.as_str())
+    let listener_contract::Keys {
+        listener_key,
+        prop_key,
+        raw_listener_key,
+    } = listener_contract::keys(data.event_name.as_str());
+    let owned_listener_key = if fallthrough_listeners && !legacy_vue2 {
+        listener_key.clone()
     } else {
-        on_handler
+        String::default()
     };
     let component_contract = ComponentContractKey {
         component_type_name: component_type_name.clone(),
@@ -183,22 +179,6 @@ pub(super) fn generate_component_event_types(
     );
     let prop_args =
         cstr!("__{component_type_name}_{contract_scope_id}_{safe_event_name}_prop_args");
-    // Vue's published EmitsToProps retains authored hyphens (onFoo-bar),
-    // while generated SFC contracts expose the camelized listener (onFooBar).
-    // Only the spelling actually written by the user admits the raw alias.
-    let raw_listener_key = if data.event_name.contains('-') {
-        let mut raw_handler = String::from("on");
-        let mut chars = data.event_name.chars();
-        if let Some(first) = chars.next() {
-            raw_handler.extend(first.to_uppercase());
-        }
-        raw_handler.push_str(chars.as_str());
-        let mut raw_key = String::default();
-        push_ts_string_literal(&mut raw_key, &raw_handler);
-        raw_key
-    } else {
-        String::from("never")
-    };
     let static_emit_args =
         cstr!("__{component_type_name}_{contract_scope_id}_{safe_event_name}_static_emit_args");
     let emit_args = cstr!("__{component_type_name}_{scope_id}_{safe_event_name}_emit_args");
@@ -208,8 +188,17 @@ pub(super) fn generate_component_event_types(
     let return_type = cstr!("__{component_type_name}_{contract_scope_id}_{safe_event_name}_return");
     let event_type = cstr!("__{component_type_name}_{scope_id}_{safe_event_name}_event");
     let listener_type = cstr!("__{component_type_name}_{scope_id}_{safe_event_name}_listener");
+    let shared_contract = listener_contract::applies(
+        legacy_vue2,
+        hoist_shared_preamble && share_listener_relations,
+        gated_inference,
+        explicit_generic.is_some(),
+        fallthrough_listeners && !native_fallthrough_only,
+    );
     if first_component {
-        relations.emit(ts, indent);
+        if !shared_contract {
+            relations.emit(ts, indent);
+        }
         // A vue-tsc generic library export instantiates its generics with their
         // constraints here, so its payload comes from the bound-props call below.
         vize_l0::emit_ts!(
@@ -239,6 +228,37 @@ pub(super) fn generate_component_event_types(
                 "{indent}type {fallthrough_box} = typeof {component_ref} extends {{ readonly __vizeFallthroughProps?: infer __F }} ? {is_any}<__F> extends true ? [] : [__F] : [];\n",
             );
         }
+    }
+    if shared_contract {
+        return Some(listener_contract::emit(
+            ts,
+            mappings,
+            listener_contract::Contract {
+                summary,
+                component_name: component_name.as_str(),
+                data,
+                scope,
+                component_ref: &component_ref,
+                component_type_name: &component_type_name,
+                safe_event_name: &safe_event_name,
+                prop_key: &prop_key,
+                library: &library,
+                props_box: &props_box,
+                emit_props_box: &emit_props_box,
+                fallthrough_box: native_fallthrough_only.then_some(fallthrough_box.as_str()),
+                listener_key: &listener_key,
+                raw_listener_key: &raw_listener_key,
+                template_binding_access,
+                template_ast,
+                source_context,
+                inference_outer_vif_guard,
+                event_inference_usages,
+                indent,
+                needs_typed_handler_assignment,
+                has_script_component_binding,
+                scope_id,
+            },
+        ));
     }
     // Constructor `$props` contains ambient DOM listeners. For a generated,
     // non-generic child, an unowned listener can instead belong to its typed
