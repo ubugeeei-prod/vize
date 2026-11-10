@@ -1,0 +1,27 @@
+---
+source: crates/vize_glyph/tests/tsrx_modules.rs
+expression: formatted.as_str()
+---
+export function Card({
+  title,
+  id,
+  attrs,
+}: {
+  title: string;
+  id: string;
+  attrs: Record<string, string>;
+}) @{
+  const label = title.trim();
+
+  <article class="card" data-id={id} {...attrs}>
+    <h2 {id}>{label}</h2>
+    /* a block comment between children */
+    <p>Plain text &amp; an entity, then {label.length} characters.</p>
+    // a line comment between children
+    <>
+      <span>one</span>
+      <span>two</span>
+    </>
+    <input type="text" disabled value={label} />
+  </article>
+}

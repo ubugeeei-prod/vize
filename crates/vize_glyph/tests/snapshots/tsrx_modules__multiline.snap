@@ -1,0 +1,8 @@
+---
+source: crates/vize_glyph/tests/tsrx_modules.rs
+expression: "assert_formats(\"multiline\", source).as_str()"
+---
+function view(items: string[]) {
+  return <ul>{items.map((item) => <li>{item}</li>)}</ul>;
+}
+const label = true ? <b>yes</b> : null;

@@ -9,7 +9,7 @@ use std::path::PathBuf;
 #[derive(Args)]
 #[expect(clippy::disallowed_types, reason = "dependency API uses std String")]
 pub struct FmtArgs {
-    /// Vue/JS/TS/JSON/JSONC globs; YAML/Markdown formatting is not implemented.
+    /// Vue/JS/TS/TSRX/JSON/JSONC globs; YAML/Markdown formatting is not implemented.
     #[arg(help = FORMAT_PATTERN_HELP)]
     pub patterns: Vec<String>,
 
