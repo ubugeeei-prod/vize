@@ -50,10 +50,13 @@ function emit(name: string, data: Uint8Array, admitted: boolean): AuditCase {
   return entry;
 }
 
+// Every retained artifact shares the `ee<ep>!!!` prefix. Since #12772 the guard
+// reads the regex OXC sees after it, so admission rejects these inputs and only
+// the parser packets below measure them.
 for (const [name, digest] of Object.entries(expected)) {
   const data = readFileSync(path.join(corpus, name));
   assert.equal(sha256(data), digest, name);
-  emit(name, data, true);
+  emit(name, data, false);
 }
 assert.deepEqual(
   readFileSync(
@@ -66,7 +69,7 @@ for (const [label, suffix] of [
   ["x", "\n// x"],
   ["greater", "\n// >"],
 ] as const) {
-  emit(`10401-append-${label}.input`, Buffer.concat([original, Buffer.from(suffix)]), true);
+  emit(`10401-append-${label}.input`, Buffer.concat([original, Buffer.from(suffix)]), false);
 }
 for (const size of [4096, 8192, 16384]) {
   // Historical #10682 raw size controls: admission rejects these prefixes.
@@ -111,7 +114,8 @@ for (const entry of index.cases) {
   assert.match(name, /^[a-z0-9-]+$/u);
   const data = retained(`cases/${name}.input`);
   assert.equal(sha256(data), entry.input_sha256);
-  emit(`historical-10682-${name}.input`, data, entry.require_admission).historical_id = name;
+  // The archived admission flags predate #12772 (see the corpus loop above).
+  emit(`historical-10682-${name}.input`, data, false).historical_id = name;
   for (const kind of ["controls", "program-observer"] as const) {
     const packet = retained(`packets/${name}.${kind}.json`);
     assert.equal(sha256(packet), entry[`${kind}_sha256`]);
