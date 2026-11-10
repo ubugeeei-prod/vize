@@ -135,29 +135,29 @@ function __setup() {
   void defineProps; void defineEmits; void defineExpose; void defineModel; void defineSlots; void withDefaults; void useTemplateRef;
 
   // User setup code
-  
-  
-  
-  
-  const props = withDefaults(defineProps<Props>(), {
-    initialCount: 0
-  })
-  
-  const emit = defineEmits<Emits>()
-  
-  const count = ref(props.initialCount)
-  const doubled = computed(() => count.value * 2)
-  
-  function increment() {
-    count.value++
-    emit('change', count.value)
-  }
-  
-  watch(count, (newVal) => {
-    console.log('Count changed:', newVal)
-  })
-  
-  // @vize-map: 16127:16513 -> 0:501
+
+
+
+
+const props = withDefaults(defineProps<Props>(), {
+  initialCount: 0
+})
+
+const emit = defineEmits<Emits>()
+
+const count = ref(props.initialCount)
+const doubled = computed(() => count.value * 2)
+
+function increment() {
+  count.value++
+  emit('change', count.value)
+}
+
+watch(count, (newVal) => {
+  console.log('Count changed:', newVal)
+})
+
+  // @vize-map: 16127:16469 -> 0:501
 
   // ========== Template Scope (inherits from setup) ==========
   // Ref type captures (before template scope shadows them)
@@ -247,12 +247,12 @@ type $ComponentInstance = {
   $emit: $PublicEmit<Emits>;
   $slots: $PublicSlots<$Slots>;
 } & $ComponentPublicBase;
-type $ComponentConstructor = new <$AuthoredProps = unknown, $JsxProps = unknown>(props?: $AuthoredProps & $ComponentInput<Props, __EmitProps<Emits>, $AuthoredProps>, ...args: any[]) => $ComponentInstanceFor<$ComponentInstance, {
+type $ComponentConstructor = new <$AuthoredProps = unknown, $JsxProps = unknown>(props?: $AuthoredProps & $ComponentInput<Props, __EmitProps<Emits>, $AuthoredProps>, ...args: any[]) => ($IsAny<$AuthoredProps> extends true ? true : $IsUnknown<$AuthoredProps> extends true ? $UsePublicInstance<$JsxProps> : false) extends true ? $ComponentInstance : NoInfer<$ComponentInstanceFor<$ComponentInstance, {
   $props: Props & __EmitProps<Emits>;
   readonly __vizeRawProps?: Props;
   $emit: $PublicEmit<Emits>;
   $slots: $PublicSlots<$Slots>;
-}, $ComponentPublicBase, Props, __EmitProps<Emits>, $AuthoredProps, $JsxProps>;
+}, $ComponentPublicBase, Props, __EmitProps<Emits>, $AuthoredProps, $JsxProps>>;
 type $VueComponentOptions = {
   [key: string]: any;
   name?: string;

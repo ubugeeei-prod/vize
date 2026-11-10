@@ -13,6 +13,7 @@ use vize_l0::{FxHashMap, FxHashSet, String, append};
 use super::super::types::{VirtualTsGenerationOptions, VirtualTsOptions};
 use super::anchors::emit_props_shadow_anchor;
 use super::legacy_vue2::{needs_legacy_vue2_helpers, ref_unwrap_helper_for_template};
+use crate::virtual_ts::helpers::shared_types::{TEMPLATE_REF_UNWRAP, TEMPLATE_REF_UNWRAP_NARROWED};
 use crate::virtual_ts::{VizeMapping, VizeSemanticLink, VizeSemanticLinkKind};
 
 /// Setup-side template artifacts are emitted before the template closure owns
@@ -60,6 +61,10 @@ pub(super) struct TemplateRefUnwraps {
     legacy_helpers: bool,
     dialect: VueVersion,
     hoist_shared_preamble: bool,
+    /// Modern non-generic shadows name the shared unwrap aliases directly: a
+    /// per-file alias, even one forwarding to them, keeps TypeScript from
+    /// reusing their instantiations across files.
+    shared_unwrap: bool,
     props_shadow_anchor: Option<Range<usize>>,
 }
 
@@ -96,6 +101,10 @@ pub(super) fn collect_and_emit_scope_preamble(
         options,
         generation_options,
     );
+    unwraps.shared_unwrap = unwraps.hoist_shared_preamble
+        && !unwraps.legacy_helpers
+        && !has_generic_param
+        && !generation_options.local_template_ref_unwrap;
     let captures = unwraps.emit_type_captures(ts);
     unwraps.props_shadow_anchor = if unwraps.props_object_binding() == "props" {
         emit_props_shadow_anchor(ts, summary, template_referenced_names)
@@ -181,7 +190,7 @@ impl TemplateRefUnwraps {
             .iter()
             .any(|binding| binding == name)
         {
-            append!(annotation, "__U<__R_{name}>");
+            append!(annotation, "{}<__R_{name}>", self.unwrap_alias());
         } else if self.deferred_bindings.iter().any(|binding| binding == name) {
             append!(annotation, "__D_{name}");
         } else {
@@ -286,6 +295,7 @@ impl TemplateRefUnwraps {
             legacy_helpers,
             dialect: generation_options.dialect,
             hoist_shared_preamble: generation_options.hoist_shared_preamble,
+            shared_unwrap: false,
             props_shadow_anchor: None,
         }
     }
@@ -381,41 +391,54 @@ impl TemplateRefUnwraps {
         }
 
         ts.push_str("    // Auto-unwrap Vue refs in template scope\n");
-        ts.push_str(ref_unwrap_helper_for_template(
-            self.legacy_helpers,
-            self.dialect,
-            has_generic_param,
-            self.hoist_shared_preamble,
-        ));
-        if !self.narrowed_bindings.is_empty() {
-            crate::virtual_ts::generated_names::push_lib_text(
-                ts,
-                if has_generic_param && !self.legacy_helpers {
-                    GENERIC_NARROWED_REF_UNWRAP_HELPER
-                } else {
-                    NARROWED_REF_UNWRAP_HELPER
-                },
-            );
+        if !self.shared_unwrap {
+            ts.push_str(ref_unwrap_helper_for_template(
+                self.legacy_helpers,
+                self.dialect,
+                has_generic_param,
+                self.hoist_shared_preamble,
+            ));
+            if !self.narrowed_bindings.is_empty() {
+                crate::virtual_ts::generated_names::push_lib_text(
+                    ts,
+                    if has_generic_param && !self.legacy_helpers {
+                        GENERIC_NARROWED_REF_UNWRAP_HELPER
+                    } else {
+                        NARROWED_REF_UNWRAP_HELPER
+                    },
+                );
+            }
         }
         for name in &self.setup_bindings {
             let unwrap = self.unwrap_prefix(name);
-            record_template_shadow(ts, name, unwrap, ">", captures, semantic_links);
+            record_template_shadow(ts, name, &unwrap, ">", captures, semantic_links);
         }
         for name in &self.options_api_setup_bindings {
-            append!(ts, "    var {name}: __U<__R_{name}> = (void 0) as any;\n");
+            append!(
+                ts,
+                "    var {name}: {}<__R_{name}> = (void 0) as any;\n",
+                self.unwrap_alias()
+            );
         }
         for name in &self.auto_import_bindings {
             let unwrap = self.unwrap_prefix(name);
-            record_template_shadow(ts, name, unwrap, ">", captures, semantic_links);
+            record_template_shadow(ts, name, &unwrap, ">", captures, semantic_links);
         }
     }
 
-    fn unwrap_prefix(&self, name: &str) -> &'static str {
-        if self.narrowed_bindings.contains(name) {
-            "__UN<__R_"
+    fn unwrap_alias(&self) -> &'static str {
+        TEMPLATE_REF_UNWRAP.select(self.shared_unwrap)
+    }
+
+    fn unwrap_prefix(&self, name: &str) -> String {
+        let alias = if self.narrowed_bindings.contains(name) {
+            TEMPLATE_REF_UNWRAP_NARROWED.select(self.shared_unwrap)
         } else {
-            "__U<__R_"
-        }
+            self.unwrap_alias()
+        };
+        let mut prefix = String::from(alias);
+        prefix.push_str("<__R_");
+        prefix
     }
 }
 

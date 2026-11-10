@@ -129,9 +129,9 @@ function __setup() {
   void defineProps; void defineEmits; void defineExpose; void defineModel; void defineSlots; void withDefaults; void useTemplateRef;
 
   // User setup code
-  const elems = { a: [1], b: ["a"] } as const;
-  const key = "a" as "a" | "b";
-  // @vize-map: 16022:16101 -> 0:105
+const elems = { a: [1], b: ["a"] } as const;
+const key = "a" as "a" | "b";
+  // @vize-map: 16022:16097 -> 0:105
 
   // ========== Template Scope (inherits from setup) ==========
   ;(function __template() {
@@ -256,12 +256,12 @@ type $ComponentInstance = {
   $emit: $PublicEmit<Emits>;
   $slots: $PublicSlots<$Slots>;
 } & $ComponentPublicBase;
-type $ComponentConstructor = new <$AuthoredProps = unknown, $JsxProps = unknown>(props?: $AuthoredProps & $ComponentInput<Props, {}, $AuthoredProps>, ...args: any[]) => $ComponentInstanceFor<$ComponentInstance, {
+type $ComponentConstructor = new <$AuthoredProps = unknown, $JsxProps = unknown>(props?: $AuthoredProps & $ComponentInput<Props, {}, $AuthoredProps>, ...args: any[]) => ($IsAny<$AuthoredProps> extends true ? true : $IsUnknown<$AuthoredProps> extends true ? $UsePublicInstance<$JsxProps> : false) extends true ? $ComponentInstance : NoInfer<$ComponentInstanceFor<$ComponentInstance, {
   $props: Props;
   readonly __vizeRawProps?: Props;
   $emit: $PublicEmit<Emits>;
   $slots: $PublicSlots<$Slots>;
-}, $ComponentPublicBase, Props, {}, $AuthoredProps, $JsxProps>;
+}, $ComponentPublicBase, Props, {}, $AuthoredProps, $JsxProps>>;
 type $VueComponentOptions = {
   [key: string]: any;
   name?: string;

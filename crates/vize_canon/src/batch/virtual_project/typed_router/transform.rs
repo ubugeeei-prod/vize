@@ -181,9 +181,8 @@ pub(super) fn apply(
         else {
             continue;
         };
-        // Filename-only macro edits preserve the generated argument body. Setup
-        // emission indents each body line, so validate the exact call header
-        // through its opening parenthesis instead of requiring flat body bytes.
+        // Filename-only macro edits preserve the generated argument body; validate
+        // the exact call header through its opening parenthesis.
         let Some(authored) = script.get(source.start..site.validation_end as usize) else {
             continue;
         };
@@ -481,8 +480,8 @@ fn owned_header(
         }
         cursor = cursor.max(range.end);
     }
-    // Setup emission owns each copied line; its generated indentation and
-    // separators have no authored spans. Syntax still needs exact ownership.
+    // Setup emission owns each copied line; generated separators have no
+    // authored spans. Syntax still needs exact ownership.
     source
         .get(cursor..)
         .is_some_and(|text| text.chars().all(char::is_whitespace))

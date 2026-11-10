@@ -153,3 +153,22 @@ test("a non-hoisted helper block gains `$PropValueOr` right after `$PropValue`",
   const current = `  type __Comp_0_prop_pick = ${lazyPropValue(`${vt}$PropValue`, "__Comp_ValueProps_0", "pick", "__Comp_Component_0", "pick")};\n`;
   assert.equal(apply(prefixed, withLandedEdits(prefixed, current, [])), current);
 });
+
+test("verbatim setup lines (#12481) land as two-byte deletions inside the setup frame", () => {
+  const head = "function __setup() {\n  // User setup code\n";
+  const map = (end: number) => `  // @vize-map: 42:${end} -> 0:20\n}\n`;
+  const before = `${head}  const a = 1;\n  \n  a;\n${map(62)}`;
+  const after = `${head}const a = 1;\n\na;\n${map(56)}`;
+  const edits = withLandedEdits(before, after, []);
+  assert.deepEqual(
+    edits.map(({ start, end, replacement }) => [start, end, replacement.toString()]),
+    [
+      [42, 44, ""],
+      [57, 59, ""],
+      [60, 62, ""],
+    ],
+  );
+  // The map comment's own end moves with them; the packet audit relocates it.
+  assert.equal(apply(before, edits), `${head}const a = 1;\n\na;\n${map(62)}`);
+  assert.deepEqual(withLandedEdits(after, after, []), []);
+});

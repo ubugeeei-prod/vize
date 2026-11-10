@@ -40,9 +40,9 @@ function __setup() {
 
 
 
-  const props = defineProps<ParentWidgetProps>();
+const props = defineProps<ParentWidgetProps>();
 
-  // @vize-map: 1230:1295 -> 0:184
+  // @vize-map: 1230:1283 -> 0:184
 
   // ========== Template Scope (inherits from setup) ==========
   // Anchor before the template scope shadows `props`
@@ -138,12 +138,12 @@ type $ComponentInstance = {
   $emit: $PublicEmit<Emits>;
   $slots: $PublicSlots<$Slots>;
 } & $ComponentPublicBase;
-type $ComponentConstructor = new <$AuthoredProps = unknown, $JsxProps = unknown>(props?: $AuthoredProps & $ComponentInput<Props, {}, $AuthoredProps>, ...args: any[]) => $ComponentInstanceFor<$ComponentInstance, {
+type $ComponentConstructor = new <$AuthoredProps = unknown, $JsxProps = unknown>(props?: $AuthoredProps & $ComponentInput<Props, {}, $AuthoredProps>, ...args: any[]) => ($IsAny<$AuthoredProps> extends true ? true : $IsUnknown<$AuthoredProps> extends true ? $UsePublicInstance<$JsxProps> : false) extends true ? $ComponentInstance : NoInfer<$ComponentInstanceFor<$ComponentInstance, {
   $props: Props;
   readonly __vizeRawProps?: Props;
   $emit: $PublicEmit<Emits>;
   $slots: $PublicSlots<$Slots>;
-}, $ComponentPublicBase, Props, {}, $AuthoredProps, $JsxProps>;
+}, $ComponentPublicBase, Props, {}, $AuthoredProps, $JsxProps>>;
 type $VueComponentOptions = {
   [key: string]: any;
   name?: string;

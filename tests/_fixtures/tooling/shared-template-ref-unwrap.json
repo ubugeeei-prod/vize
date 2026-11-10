@@ -1,0 +1,112 @@
+{
+  "schema": "vize.sharedTemplateRefUnwrapSource.v1",
+  "credit": {
+    "compiled": false,
+    "native": false,
+    "performance": false
+  },
+  "files": [
+    {
+      "path": "crates/vize_canon/src/virtual_ts/helpers/declarations/shared-template-refs.d.ts.txt",
+      "before": {
+        "bytes": 689,
+        "sha256": "6e3b42d01faf41cf57e13cde91fcf065498b31947e822342f2e7643b34acef50"
+      },
+      "after": {
+        "bytes": 1173,
+        "sha256": "884d01698e2a360f0e15cfce4a06830b28e35a3cc95004ccbae1899465f28546"
+      },
+      "hunks": [
+        {
+          "before": "export type $WidenTemplateRef<T> = $IsAny<T> extends true ? T : $IsUnion<T> extends true ? T : T extends string ? string extends T ? string : T : T extends number ? number extends T ? number : T : T extends boolean ? boolean extends T ? boolean : T : T;\n",
+          "after": "export type $WidenTemplateRef<T> = $IsAny<T> extends true ? T : $IsUnion<T> extends true ? T : T extends string ? string extends T ? string : T : T extends number ? number extends T ? number : T : T extends boolean ? boolean extends T ? boolean : T : T;\n// Template ref unwrap, shared so each instantiation is cached once per program.\nexport type $TemplateRefUnwrap<T> = T extends { value: unknown } ? T extends import('vue').Ref ? $WidenTemplateRef<T['value']> : T : T;\nexport type $TemplateRefUnwrapNarrowed<T> = [T] extends [import('vue').Ref] ? $TemplateRefUnwrap<T> : [Extract<T, import('vue').Ref>] extends [never] ? $TemplateRefUnwrap<T> : (NonNullable<T> & import('vue').Ref<unknown> & { value: $TemplateRefUnwrap<T> })['value'];\n"
+        }
+      ]
+    },
+    {
+      "path": "npm/cli/virtual-ts.d.ts",
+      "before": {
+        "bytes": 15582,
+        "sha256": "075b5cd3b0591b21c216cc7e4e8c9b8fb012e09a7a1e3661083677d3853cba12"
+      },
+      "after": {
+        "bytes": 16090,
+        "sha256": "c1060931833e6664de7c2ab363a000a9ed048a350f6b5330a7cf432d5a211a97"
+      },
+      "hunks": [
+        {
+          "before": "              : T\n            : T;\n",
+          "after": "              : T\n            : T;\n// Template ref unwrap, shared so each instantiation is cached once per program.\nexport type $TemplateRefUnwrap<T> = T extends { value: unknown }\n  ? T extends import(\"vue\").Ref\n    ? $WidenTemplateRef<T[\"value\"]>\n    : T\n  : T;\nexport type $TemplateRefUnwrapNarrowed<T> = [T] extends [import(\"vue\").Ref]\n  ? $TemplateRefUnwrap<T>\n  : [Extract<T, import(\"vue\").Ref>] extends [never]\n    ? $TemplateRefUnwrap<T>\n    : (NonNullable<T> & import(\"vue\").Ref<unknown> & { value: $TemplateRefUnwrap<T> })[\"value\"];\n"
+        }
+      ]
+    },
+    {
+      "path": "npm/cli/virtual-ts.d.mts",
+      "before": {
+        "bytes": 15582,
+        "sha256": "075b5cd3b0591b21c216cc7e4e8c9b8fb012e09a7a1e3661083677d3853cba12"
+      },
+      "after": {
+        "bytes": 16090,
+        "sha256": "c1060931833e6664de7c2ab363a000a9ed048a350f6b5330a7cf432d5a211a97"
+      },
+      "hunks": [
+        {
+          "before": "              : T\n            : T;\n",
+          "after": "              : T\n            : T;\n// Template ref unwrap, shared so each instantiation is cached once per program.\nexport type $TemplateRefUnwrap<T> = T extends { value: unknown }\n  ? T extends import(\"vue\").Ref\n    ? $WidenTemplateRef<T[\"value\"]>\n    : T\n  : T;\nexport type $TemplateRefUnwrapNarrowed<T> = [T] extends [import(\"vue\").Ref]\n  ? $TemplateRefUnwrap<T>\n  : [Extract<T, import(\"vue\").Ref>] extends [never]\n    ? $TemplateRefUnwrap<T>\n    : (NonNullable<T> & import(\"vue\").Ref<unknown> & { value: $TemplateRefUnwrap<T> })[\"value\"];\n"
+        }
+      ]
+    },
+    {
+      "path": "npm/cli/virtual-ts.d.cts",
+      "before": {
+        "bytes": 15582,
+        "sha256": "075b5cd3b0591b21c216cc7e4e8c9b8fb012e09a7a1e3661083677d3853cba12"
+      },
+      "after": {
+        "bytes": 16090,
+        "sha256": "c1060931833e6664de7c2ab363a000a9ed048a350f6b5330a7cf432d5a211a97"
+      },
+      "hunks": [
+        {
+          "before": "              : T\n            : T;\n",
+          "after": "              : T\n            : T;\n// Template ref unwrap, shared so each instantiation is cached once per program.\nexport type $TemplateRefUnwrap<T> = T extends { value: unknown }\n  ? T extends import(\"vue\").Ref\n    ? $WidenTemplateRef<T[\"value\"]>\n    : T\n  : T;\nexport type $TemplateRefUnwrapNarrowed<T> = [T] extends [import(\"vue\").Ref]\n  ? $TemplateRefUnwrap<T>\n  : [Extract<T, import(\"vue\").Ref>] extends [never]\n    ? $TemplateRefUnwrap<T>\n    : (NonNullable<T> & import(\"vue\").Ref<unknown> & { value: $TemplateRefUnwrap<T> })[\"value\"];\n"
+        }
+      ]
+    }
+  ],
+  "compiledPreamble": {
+    "path": "vize_canon::virtual_ts::SHARED_PREAMBLE_DTS",
+    "before": {
+      "bytes": 52128,
+      "sha256": "f99aa98799587d3f65f3c343deb75846d8a37b86c9fe18cc4cd29cce8f929d22"
+    },
+    "after": {
+      "bytes": 52612,
+      "sha256": "6313a1f43b18266d116b8fbd3b35c1badf4ac710bb6cfd24f47e530100548938"
+    },
+    "hunks": [
+      {
+        "before": "export type $WidenTemplateRef<T> = $IsAny<T> extends true ? T : $IsUnion<T> extends true ? T : T extends string ? string extends T ? string : T : T extends number ? number extends T ? number : T : T extends boolean ? boolean extends T ? boolean : T : T;\n",
+        "after": "export type $WidenTemplateRef<T> = $IsAny<T> extends true ? T : $IsUnion<T> extends true ? T : T extends string ? string extends T ? string : T : T extends number ? number extends T ? number : T : T extends boolean ? boolean extends T ? boolean : T : T;\n// Template ref unwrap, shared so each instantiation is cached once per program.\nexport type $TemplateRefUnwrap<T> = T extends { value: unknown } ? T extends import('vue').Ref ? $WidenTemplateRef<T['value']> : T : T;\nexport type $TemplateRefUnwrapNarrowed<T> = [T] extends [import('vue').Ref] ? $TemplateRefUnwrap<T> : [Extract<T, import('vue').Ref>] extends [never] ? $TemplateRefUnwrap<T> : (NonNullable<T> & import('vue').Ref<unknown> & { value: $TemplateRefUnwrap<T> })['value'];\n"
+      }
+    ]
+  },
+  "compiledStrictPreamble": {
+    "path": "vize_canon::virtual_ts::SHARED_PREAMBLE_STRICT_DTS",
+    "before": {
+      "bytes": 51919,
+      "sha256": "451e8d0ab8fcd0bd257d88026e87b460262e3cb5501fd839a167f811f4f182a0"
+    },
+    "after": {
+      "bytes": 52403,
+      "sha256": "7400cb2e4f4d50fccfd069d9c5920ae1b6d8410de7bd70c7ccae5d645862a73f"
+    },
+    "hunks": [
+      {
+        "before": "export type $WidenTemplateRef<T> = $IsAny<T> extends true ? T : $IsUnion<T> extends true ? T : T extends string ? string extends T ? string : T : T extends number ? number extends T ? number : T : T extends boolean ? boolean extends T ? boolean : T : T;\n",
+        "after": "export type $WidenTemplateRef<T> = $IsAny<T> extends true ? T : $IsUnion<T> extends true ? T : T extends string ? string extends T ? string : T : T extends number ? number extends T ? number : T : T extends boolean ? boolean extends T ? boolean : T : T;\n// Template ref unwrap, shared so each instantiation is cached once per program.\nexport type $TemplateRefUnwrap<T> = T extends { value: unknown } ? T extends import('vue').Ref ? $WidenTemplateRef<T['value']> : T : T;\nexport type $TemplateRefUnwrapNarrowed<T> = [T] extends [import('vue').Ref] ? $TemplateRefUnwrap<T> : [Extract<T, import('vue').Ref>] extends [never] ? $TemplateRefUnwrap<T> : (NonNullable<T> & import('vue').Ref<unknown> & { value: $TemplateRefUnwrap<T> })['value'];\n"
+      }
+    ]
+  }
+}

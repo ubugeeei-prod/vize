@@ -1,0 +1,166 @@
+{
+  "schema": "vize.instance-global-current-provenance",
+  "version": 1,
+  "issue": 10617,
+  "pullRequest": 12572,
+  "producer": {
+    "sourceRevision": "b6b4bbb0a16ab65e29ef7202b488215d8ea4b9a9",
+    "sourceTree": "a0eaaebab5342d9c68a85171f72d341193f0d4a8",
+    "pullRequestHead": "8f1d67abf8491620cc642e26537fbf9be74020ab",
+    "binarySha256": "b6065ac8236c1d8a23219e91b97181717255284c276dd3d2a6f6b66adfef2ad3",
+    "recipe": "cargo build --profile ci -p vize",
+    "captureRun": 42736126056,
+    "artifactId": 13726709260,
+    "runAttempt": 1,
+    "platform": "linux",
+    "arch": "x64"
+  },
+  "artifact": {
+    "repository": "ubugeeei-prod/vize",
+    "run": 42736126056,
+    "job": 129566448378,
+    "id": 13726709260,
+    "name": "instance-globals-10617-8f1d67abf8491620cc642e26537fbf9be74020ab-1",
+    "digest": "sha256:77d86be670c33cdfbf53852cab06902dad03a5a8ce8ba9af165ff844841688d6",
+    "bytes": 18718518
+  },
+  "previousPopulation": {
+    "path": "source-packets-current-cd10508733d6.json",
+    "bytes": 406214,
+    "sha256": "7709b6133c772cd363c2c5dd3f94eb3f68ab2ba91be4460af7c3acae4ad32b98"
+  },
+  "successorPopulation": {
+    "path": "source-packets-current-b6b4bbb0a16a.json",
+    "bytes": 419180,
+    "sha256": "3332986082728aacb6bb6ea8bcd1ab81b3c3ef398ea807347f29e99aa74fb7ca"
+  },
+  "sourceReceipt": {
+    "path": "crates/vize_canon/tests/empty_vue_star_exports/membership/constructor_without_args/payload_update/canon_leftovers_11499.json",
+    "sha256": "250e01138d163f77a5d98b20bc97f562a663ebb924c17c810b9d9cf02280128e"
+  },
+  "evidence": {
+    "source-build.json": {
+      "bytes": 326,
+      "sha256": "ccbf7e2e6510ffd304f3009c8de0f1d50c8ab139b6fa256dfac99f8c20314cca"
+    },
+    "source-launch.json": {
+      "bytes": 882,
+      "sha256": "1cdd550a933f09614e20c20377d63b5b74764378aecd1974a131cc039f517806"
+    },
+    "source-protocol.json": {
+      "bytes": 480063,
+      "sha256": "4970e948a89c8f1a107e44499802d5c2147f5ecc0b6753d771e9deefe72aec21"
+    },
+    "outcomes.json": {
+      "bytes": 844225,
+      "sha256": "1ca4d81de548c449f53888cf8345deacd5dd18a81393e2e9642aea3768c4f069"
+    },
+    "qualification.json": {
+      "bytes": 848526,
+      "sha256": "8923d0ce2aeca4ed1d2149716f4ecade532ca5a1ab82c7d3684b69f27e514ed2"
+    },
+    "host-matrix.json": {
+      "bytes": 4324,
+      "sha256": "08cf87dc5d1a95a5b8c2ea6b7764aa126c0feb5fa3db1936cac8a6bc4d3c79ba"
+    }
+  },
+  "capturedQualification": {
+    "status": "unqualified",
+    "fullPacketQualification": false,
+    "hostMatrixQualification": false,
+    "totalOutcomes": 499,
+    "passedOutcomes": 419,
+    "gapCount": 80,
+    "gapIds": [
+      "whole-packet/lf/original",
+      "whole-packet/lf/valid",
+      "whole-packet/lf/undeclared-only",
+      "whole-packet/lf/repaired",
+      "whole-packet/lf/repeated",
+      "whole-packet/lf/optional",
+      "whole-packet/lf/call",
+      "whole-packet/lf/v-for-source",
+      "whole-packet/lf/intentional-any",
+      "whole-packet/lf/declared-unknown",
+      "whole-packet/lf/plugin-valid",
+      "whole-packet/lf/plugin-invalid",
+      "whole-packet/lf/setup-shadow",
+      "whole-packet/lf/loop-shadow",
+      "whole-packet/lf/slot-shadow",
+      "whole-packet/lf/css-module",
+      "whole-packet/lf/own-props",
+      "whole-packet/lf/options-own-method",
+      "whole-packet/lf/expect-error-opening-child",
+      "whole-packet/lf/ignore-opening-child",
+      "whole-packet/lf/expect-owned-interpolation",
+      "whole-packet/lf/ignore-owned-interpolation",
+      "whole-packet/lf/expect-owned-attribute",
+      "whole-packet/lf/ignore-owned-attribute",
+      "whole-packet/lf/expect-owned-foreign-sibling",
+      "whole-packet/lf/ignore-owned-foreign-sibling",
+      "whole-packet/lf/shorthand-free",
+      "whole-packet/lf/typeof-value-free",
+      "whole-packet/lf/object-key",
+      "whole-packet/lf/member-key",
+      "whole-packet/lf/string-comment-role",
+      "whole-packet/lf/template-literal-raw",
+      "whole-packet/lf/template-literal-value",
+      "whole-packet/lf/callback-shadow",
+      "whole-packet/lf/callback-mixed",
+      "whole-packet/lf/callback-free",
+      "whole-packet/lf/computed-key-free",
+      "whole-packet/lf/mixed-loop-scope",
+      "whole-packet/lf/mixed-slot-scope",
+      "whole-packet/lf/destructured-callback-shadow",
+      "whole-packet/crlf-unicode/original",
+      "whole-packet/crlf-unicode/valid",
+      "whole-packet/crlf-unicode/undeclared-only",
+      "whole-packet/crlf-unicode/repaired",
+      "whole-packet/crlf-unicode/repeated",
+      "whole-packet/crlf-unicode/optional",
+      "whole-packet/crlf-unicode/call",
+      "whole-packet/crlf-unicode/v-for-source",
+      "whole-packet/crlf-unicode/intentional-any",
+      "whole-packet/crlf-unicode/declared-unknown",
+      "whole-packet/crlf-unicode/plugin-valid",
+      "whole-packet/crlf-unicode/plugin-invalid",
+      "whole-packet/crlf-unicode/setup-shadow",
+      "whole-packet/crlf-unicode/loop-shadow",
+      "whole-packet/crlf-unicode/slot-shadow",
+      "whole-packet/crlf-unicode/css-module",
+      "whole-packet/crlf-unicode/own-props",
+      "whole-packet/crlf-unicode/options-own-method",
+      "whole-packet/crlf-unicode/expect-error-opening-child",
+      "whole-packet/crlf-unicode/ignore-opening-child",
+      "whole-packet/crlf-unicode/expect-owned-interpolation",
+      "whole-packet/crlf-unicode/ignore-owned-interpolation",
+      "whole-packet/crlf-unicode/expect-owned-attribute",
+      "whole-packet/crlf-unicode/ignore-owned-attribute",
+      "whole-packet/crlf-unicode/expect-owned-foreign-sibling",
+      "whole-packet/crlf-unicode/ignore-owned-foreign-sibling",
+      "whole-packet/crlf-unicode/shorthand-free",
+      "whole-packet/crlf-unicode/typeof-value-free",
+      "whole-packet/crlf-unicode/object-key",
+      "whole-packet/crlf-unicode/member-key",
+      "whole-packet/crlf-unicode/string-comment-role",
+      "whole-packet/crlf-unicode/template-literal-raw",
+      "whole-packet/crlf-unicode/template-literal-value",
+      "whole-packet/crlf-unicode/callback-shadow",
+      "whole-packet/crlf-unicode/callback-mixed",
+      "whole-packet/crlf-unicode/callback-free",
+      "whole-packet/crlf-unicode/computed-key-free",
+      "whole-packet/crlf-unicode/mixed-loop-scope",
+      "whole-packet/crlf-unicode/mixed-slot-scope",
+      "whole-packet/crlf-unicode/destructured-callback-shadow"
+    ]
+  },
+  "review": {
+    "completePackets": 80,
+    "allNonWholePacketOutcomesPassed": true,
+    "qualificationCredit": false,
+    "nativeAcceptanceCredit": false,
+    "publicPackageAcceptanceCredit": false,
+    "performanceCredit": false,
+    "reason": "Every whole packet lost the two-space indentation of its authored setup lines and its setup map comment moved by the same bytes (#12550), every component constructor return gained the inline public-instance pick and NoInfer wrapper (#12523), and the slot-shadow and mixed-slot-scope packets dropped their per-file __U/__UN declarations and name the shared unwrap aliases (#12470); every mapping, directive and semantic link moved only by those edits, while all 419 semantic, protocol, mapping-geometry, and real-host controls passed; this record retains the observed postimages without assigning acceptance credit to the stale-golden run."
+  }
+}

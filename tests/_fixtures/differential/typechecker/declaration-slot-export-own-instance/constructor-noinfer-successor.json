@@ -1,0 +1,53 @@
+{
+  "schema": "vize.declaration-constructor-noinfer-successor.v1",
+  "pullRequest": 12523,
+  "qualificationCredit": false,
+  "sourceReceipt": {
+    "path": "tests/_fixtures/tooling/constructor-noinfer-return.json",
+    "sha256": "99d6cd2156b715533872cff628b7e8ffde2bb78c1cf0c1b534d591f6b9042c1c"
+  },
+  "outputs": [
+    {
+      "path": "crates/vize/tests/snapshots/integration__check_cli__check_can_emit_declarations_slot_reexport.snap",
+      "before": {
+        "sha256": "19fdc778ca2363fd043d7bb4b4a77346040b0e27b0f976018add94667f1804bc",
+        "bytes": 17161
+      },
+      "after": {
+        "sha256": "f8867c1c962171531c82bf6ea47a703c78525df4863c5bb656b7bbadd6790de2",
+        "bytes": 17373
+      },
+      "edits": [
+        {
+          "before": "import type { $ComponentInput, $ComponentInstanceFor, $PublicEmit, $PublicSlots, $ComponentPublicBase } from \\\"./__vize_helpers.js\\\";\\n",
+          "after": "import type { $IsAny, $ComponentInput, $ComponentInstanceFor, $IsUnknown, $UsePublicInstance, $PublicEmit, $PublicSlots, $ComponentPublicBase } from \\\"./__vize_helpers.js\\\";\\n"
+        },
+        {
+          "before": "type $ComponentConstructor = new <$AuthoredProps = unknown, $JsxProps = unknown>(props?: $AuthoredProps & $ComponentInput<Props, {}, $AuthoredProps>, ...args: any[]) => $ComponentInstanceFor<$ComponentInstance, {\\n    $props: Props;\\n    readonly __vizeRawProps?: Props;\\n    $emit: $PublicEmit<Emits>;\\n    $slots: $PublicSlots<$Slots>;\\n}, $ComponentPublicBase, Props, {}, $AuthoredProps, $JsxProps>;\\n",
+          "after": "type $ComponentConstructor = new <$AuthoredProps = unknown, $JsxProps = unknown>(props?: $AuthoredProps & $ComponentInput<Props, {}, $AuthoredProps>, ...args: any[]) => ($IsAny<$AuthoredProps> extends true ? true : $IsUnknown<$AuthoredProps> extends true ? $UsePublicInstance<$JsxProps> : false) extends true ? $ComponentInstance : NoInfer<$ComponentInstanceFor<$ComponentInstance, {\\n    $props: Props;\\n    readonly __vizeRawProps?: Props;\\n    $emit: $PublicEmit<Emits>;\\n    $slots: $PublicSlots<$Slots>;\\n}, $ComponentPublicBase, Props, {}, $AuthoredProps, $JsxProps>>;\\n"
+        }
+      ]
+    },
+    {
+      "path": "crates/vize/tests/snapshots/integration__build_declaration_emit_cli__build_dts_emits_declarations_alongside_compiled_js_slot_reexport.snap",
+      "before": {
+        "sha256": "97559ee240f7d3d0306831eeaddcb6bcf86e404608e6d24dd90c4f5c4121628b",
+        "bytes": 17413
+      },
+      "after": {
+        "sha256": "8681ca61d494683b13ada7c9325f2a7b7d1ed6f0f4826685e2057bd241a2025a",
+        "bytes": 17625
+      },
+      "edits": [
+        {
+          "before": "import type { $ComponentInput, $ComponentInstanceFor, $PublicEmit, $PublicSlots, $ComponentPublicBase } from \\\"./__vize_helpers.js\\\";\\n",
+          "after": "import type { $IsAny, $ComponentInput, $ComponentInstanceFor, $IsUnknown, $UsePublicInstance, $PublicEmit, $PublicSlots, $ComponentPublicBase } from \\\"./__vize_helpers.js\\\";\\n"
+        },
+        {
+          "before": "type $ComponentConstructor = new <$AuthoredProps = unknown, $JsxProps = unknown>(props?: $AuthoredProps & $ComponentInput<Props, import(\\\"./__vize_helpers.js\\\").__EmitProps<Emits>, $AuthoredProps>, ...args: any[]) => $ComponentInstanceFor<$ComponentInstance, {\\n    $props: Props & import(\\\"./__vize_helpers.js\\\").__EmitProps<Emits>;\\n    readonly __vizeRawProps?: Props;\\n    $emit: $PublicEmit<Emits>;\\n    $slots: $PublicSlots<$Slots>;\\n}, $ComponentPublicBase, Props, import(\\\"./__vize_helpers.js\\\").__EmitProps<Emits>, $AuthoredProps, $JsxProps>;\\n",
+          "after": "type $ComponentConstructor = new <$AuthoredProps = unknown, $JsxProps = unknown>(props?: $AuthoredProps & $ComponentInput<Props, import(\\\"./__vize_helpers.js\\\").__EmitProps<Emits>, $AuthoredProps>, ...args: any[]) => ($IsAny<$AuthoredProps> extends true ? true : $IsUnknown<$AuthoredProps> extends true ? $UsePublicInstance<$JsxProps> : false) extends true ? $ComponentInstance : NoInfer<$ComponentInstanceFor<$ComponentInstance, {\\n    $props: Props & import(\\\"./__vize_helpers.js\\\").__EmitProps<Emits>;\\n    readonly __vizeRawProps?: Props;\\n    $emit: $PublicEmit<Emits>;\\n    $slots: $PublicSlots<$Slots>;\\n}, $ComponentPublicBase, Props, import(\\\"./__vize_helpers.js\\\").__EmitProps<Emits>, $AuthoredProps, $JsxProps>>;\\n"
+        }
+      ]
+    }
+  ]
+}

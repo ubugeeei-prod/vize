@@ -128,24 +128,24 @@ function __setup<T extends string = 'a'>() {
   void defineProps; void defineEmits; void defineExpose; void defineModel; void defineSlots; void withDefaults; void useTemplateRef;
 
   // User setup code
-  
-  const { value = undefined } = defineProps<{
-    value?: T;
-  }>();
-  
-  const emit = defineEmits<{
-    "update:value": [value: T];
-  }>();
-  
-  defineSlots<{
-    default: (props: { value: T | undefined }) => unknown;
-  }>();
-  
-  function onClick(): void {
-    if (value !== undefined) emit("update:value", value);
-  }
-  
-  // @vize-map: 16047:16374 -> 0:292
+
+const { value = undefined } = defineProps<{
+  value?: T;
+}>();
+
+const emit = defineEmits<{
+  "update:value": [value: T];
+}>();
+
+defineSlots<{
+  default: (props: { value: T | undefined }) => unknown;
+}>();
+
+function onClick(): void {
+  if (value !== undefined) emit("update:value", value);
+}
+
+  // @vize-map: 16047:16340 -> 0:292
 
 
   // Setup-scoped props type artifact

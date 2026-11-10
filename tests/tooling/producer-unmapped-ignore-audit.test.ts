@@ -51,3 +51,54 @@ test("an authored directive change is still rejected", () => {
   const after = authoredDirectives(packet([[1, 1, 0, 2, 2, 0], gap]), true);
   assert.notDeepEqual(before, after);
 });
+
+const navigation =
+  "a\n  const __vize_props_nav_0 = undefined as unknown as P;\n  // @ts-ignore Navigation-only references; no diagnostic owner.\n  void __vize_props_nav_0.k; void __vize_props_nav_0['k-2'];\nb";
+
+/** Spans for `a`, both keys and `b`. */
+function spans(source: string): [number, number][] {
+  return [
+    [0, 1],
+    [source.indexOf(".k;") + 1, 1],
+    [source.indexOf("k-2"), 3],
+    [source.length - 1, 1],
+  ];
+}
+
+function navigationPacket(source: string, directives: number[][]) {
+  return {
+    text: source,
+    mappings: spans(source).map(([start, length]) => [start, length, 0, 1, 1, 0]),
+    diagnosticDirectives: { directives, unusedExpectDirectiveDiagnostics: [] },
+  };
+}
+
+test("a navigation block and its gaps may share one IGNORE", () => {
+  const end = navigation.length - 1;
+  assert.equal(
+    authoredDirectives(navigationPacket(navigation, [[0, 0, 1, end, 0, 0]]), true),
+    null,
+  );
+  const [, [k], [k2]] = spans(navigation);
+  const legacy = [
+    [0, 0, 1, k!, 0, 0],
+    [0, 0, k! + 1, k2!, 0, 0],
+    [0, 0, k2! + 3, end, 0, 0],
+  ];
+  assert.equal(authoredDirectives(navigationPacket(navigation, legacy), true), null);
+});
+
+test("one IGNORE over references the comment does not cover is rejected", () => {
+  for (const source of [
+    navigation.replace("// @ts-ignore Navigation-only", "// Navigation-only"),
+    navigation.replace("; void __vize_props_nav_0['k-2']", "; void other['k-2']"),
+    navigation.replace("__vize_props_nav_0 =", "__vize_props_nav_x ="),
+  ]) {
+    const end = source.length - 1;
+    assert.throws(
+      () => authoredDirectives(navigationPacket(source, [[0, 0, 1, end, 0, 0]]), true),
+      /unmapped gaps/,
+      source,
+    );
+  }
+});

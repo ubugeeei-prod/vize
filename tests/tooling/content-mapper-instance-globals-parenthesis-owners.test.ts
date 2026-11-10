@@ -63,7 +63,7 @@ test("10617 current packets add only the independently observed 11675 diagnostic
     "8d388c0430adc0200efd324478c2f59e701a857e381b35988502249f746d4a08",
   );
   const current = JSON.parse(parenthesisRaw);
-  assert.equal(authority.currentSourcePackets, "source-packets-current-cd10508733d6.json");
+  assert.equal(authority.currentSourcePackets, "source-packets-current-b6b4bbb0a16a.json");
   const proofRaw = readFileSync(
     new URL(
       "../fixtures/typechecker/undeclared-instance-globals-10617/source-packets-current-beca9eaf0681-provenance.json",
@@ -108,9 +108,16 @@ test("11675 current packet comparisons reject missing, widened, foreign and extr
     files,
     cases,
   )!.packets.find((row) => row.label === "lf/setup-shadow")!.result;
-  const current = selectPacketGoldens(authority, files, cases)!.packets.find(
-    (row) => row.label === "lf/setup-shadow",
-  )!.result;
+  // The population that added the delimiters; later successors relocate them.
+  const current = JSON.parse(
+    readFileSync(
+      new URL(
+        "../fixtures/typechecker/undeclared-instance-globals-10617/source-packets-current-beca9eaf0681.json",
+        import.meta.url,
+      ),
+      "utf8",
+    ),
+  ).packets.find((row: { label: string }) => row.label === "lf/setup-shadow")!.result as Transform;
   assert.deepEqual(parenthesisDiagnosticMappings(current), [
     [1745, 1, 94, 20, 1, 0],
     [1766, 1, 94, 20, 1, 0],

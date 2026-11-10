@@ -6,6 +6,7 @@ use std::fs;
 mod canon_leftovers;
 mod checker_augmentations;
 mod constructor_emit_export;
+mod constructor_noinfer_return;
 mod current_loose_emit;
 mod dependency_ownership;
 mod emit_member_infer;
@@ -34,6 +35,7 @@ mod required_keys_short_circuit;
 mod runtime_prop_call;
 mod static_emit_gate;
 mod strict_extra_keys;
+mod template_ref_unwrap;
 mod unowned_owned_keys;
 
 const RECORD: &str = "malformed-membership/slot-provider-payload-update-11027.json";

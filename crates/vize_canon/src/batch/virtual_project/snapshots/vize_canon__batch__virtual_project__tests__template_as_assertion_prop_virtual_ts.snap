@@ -1,6 +1,5 @@
 ---
 source: crates/vize_canon/src/batch/virtual_project/tests.rs
-assertion_line: 610
 expression: snapshot_text(virtual_file.content.as_str())
 ---
 /// <reference lib="es2022" />
@@ -34,16 +33,16 @@ function __setup() {
 
   // User setup code
 
-  defineProps<{
-    as?: string
-  }>()
+defineProps<{
+  as?: string
+}>()
 
-  const value = 'demo'
-  const onFocus = (target: HTMLElement) => {
-    target.dataset.focused = 'true'
-  }
+const value = 'demo'
+const onFocus = (target: HTMLElement) => {
+  target.dataset.focused = 'true'
+}
 
-  // @vize-map: 1096:1252 -> 0:135
+  // @vize-map: 1096:1232 -> 0:135
 
   // ========== Template Scope (inherits from setup) ==========
   ;(function __template() {
@@ -98,12 +97,12 @@ type $ComponentInstance = {
   $emit: $PublicEmit<Emits>;
   $slots: $PublicSlots<$Slots>;
 } & $ComponentPublicBase;
-type $ComponentConstructor = new <$AuthoredProps = unknown, $JsxProps = unknown>(props?: $AuthoredProps & $ComponentInput<Props, {}, $AuthoredProps>, ...args: any[]) => $ComponentInstanceFor<$ComponentInstance, {
+type $ComponentConstructor = new <$AuthoredProps = unknown, $JsxProps = unknown>(props?: $AuthoredProps & $ComponentInput<Props, {}, $AuthoredProps>, ...args: any[]) => ($IsAny<$AuthoredProps> extends true ? true : $IsUnknown<$AuthoredProps> extends true ? $UsePublicInstance<$JsxProps> : false) extends true ? $ComponentInstance : NoInfer<$ComponentInstanceFor<$ComponentInstance, {
   $props: Props;
   readonly __vizeRawProps?: Props;
   $emit: $PublicEmit<Emits>;
   $slots: $PublicSlots<$Slots>;
-}, $ComponentPublicBase, Props, {}, $AuthoredProps, $JsxProps>;
+}, $ComponentPublicBase, Props, {}, $AuthoredProps, $JsxProps>>;
 type $VueComponentOptions = {
   [key: string]: any;
   name?: string;

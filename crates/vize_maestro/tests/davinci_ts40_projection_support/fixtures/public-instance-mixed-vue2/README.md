@@ -76,3 +76,8 @@ mapping, diagnostic and authored-hit counts are unchanged.
 `$UnownedComponentAttrs` computes its owned key set once, as a defaulted type
 argument. The content mapper and Maestro grow by the 11-byte helper edit; canon
 is byte-identical; mapping, diagnostic and authored-hit counts are unchanged.
+
+`successor-setup-verbatim-12481` records #12550 (issue #12481): authored setup
+lines are copied verbatim instead of being indented by two spaces. Canon, the
+content mapper and Maestro each shrink by the 10 removed indentation bytes;
+mapping, diagnostic and authored-hit counts are unchanged.

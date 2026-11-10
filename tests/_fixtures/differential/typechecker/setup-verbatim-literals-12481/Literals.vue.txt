@@ -1,0 +1,19 @@
+<script setup lang="ts">
+const sql = `
+SELECT *
+FROM t`
+const exact: "\nSELECT *\nFROM t" = sql
+const marker = `
+export default 1
+`
+const markerExact: "\nexport default 1\n" = marker
+const continued = "a\
+b"
+const joined: "ab" = continued
+const lines = `${[1].map((n) => {
+  const doubled = n * 2
+  return doubled
+}).join('')}
+  indented`
+</script>
+<template><div>{{ exact }}{{ markerExact }}{{ joined }}{{ lines }}</div></template>

@@ -1,0 +1,35 @@
+{
+  "schema": "vize.constructorNoInferReturnSource.v1",
+  "credit": {
+    "compiled": false,
+    "native": false,
+    "performance": false
+  },
+  "files": [
+    {
+      "path": "crates/vize_canon/src/virtual_ts/generator/component_constructors.rs",
+      "before": {
+        "bytes": 11021,
+        "sha256": "e0cfed345e8b961f56738eb2a2ed54fa6712d7dc218ffeb35a425cf6f973aeed"
+      },
+      "after": {
+        "bytes": 11555,
+        "sha256": "2b4dc73e687a01f9217935f40250c934aa0766f07803631f4c5e796b891036c6"
+      },
+      "hunks": [
+        {
+          "before": "        // check; TSX binds `$JsxProps` and stays exact (#11629).\n",
+          "after": "        // check; TSX binds `$JsxProps` and stays exact (#11629).\n        // The public instance is chosen inline and the bound instance sits in\n        // `NoInfer`: relations and `new` would otherwise infer both\n        // parameters from the instance, instantiating every\n        // `$ComponentInstanceFor` branch per relation (~7% of all types).\n"
+        },
+        {
+          "before": "            String::from(base.as_str())\n        };\n",
+          "after": "            String::from(base.as_str())\n        };\n        let no_infer = crate::virtual_ts::generated_names::lib(\"NoInfer\");\n"
+        },
+        {
+          "before": "            *ts,\n            \"type $ComponentConstructor = new <$AuthoredProps = unknown, $JsxProps = unknown>(props?: $AuthoredProps & $ComponentInput<{props_ref}, {emit_props_ref}, $AuthoredProps>, ...args: any[]) => $ComponentInstanceFor<$ComponentInstance, {own}, {constructor_base}, {props_ref}, {emit_props_ref}, $AuthoredProps, $JsxProps>;\\n\"\n",
+          "after": "            *ts,\n            \"type $ComponentConstructor = new <$AuthoredProps = unknown, $JsxProps = unknown>(props?: $AuthoredProps & $ComponentInput<{props_ref}, {emit_props_ref}, $AuthoredProps>, ...args: any[]) => ($IsAny<$AuthoredProps> extends true ? true : $IsUnknown<$AuthoredProps> extends true ? $UsePublicInstance<$JsxProps> : false) extends true ? $ComponentInstance : {no_infer}<$ComponentInstanceFor<$ComponentInstance, {own}, {constructor_base}, {props_ref}, {emit_props_ref}, $AuthoredProps, $JsxProps>>;\\n\"\n"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,102 @@
+{
+  "schema": "vize.experimental-router-constructor-noinfer-transition.v1",
+  "qualificationCredit": false,
+  "sourceReceipt": {
+    "path": "tests/_fixtures/tooling/constructor-noinfer-return.json",
+    "sha256": "99d6cd2156b715533872cff628b7e8ffde2bb78c1cf0c1b534d591f6b9042c1c"
+  },
+  "edit": {
+    "before": "type $ComponentConstructor = new <$AuthoredProps = unknown, $JsxProps = unknown>(props?: $AuthoredProps & $ComponentInput<Props, {}, $AuthoredProps>, ...args: any[]) => $ComponentInstanceFor<$ComponentInstance, {\n  $props: Props;\n  readonly __vizeRawProps?: Props;\n  $emit: $PublicEmit<Emits>;\n  $slots: $PublicSlots<$Slots>;\n}, $ComponentPublicBase, Props, {}, $AuthoredProps, $JsxProps>;\n",
+    "after": "type $ComponentConstructor = new <$AuthoredProps = unknown, $JsxProps = unknown>(props?: $AuthoredProps & $ComponentInput<Props, {}, $AuthoredProps>, ...args: any[]) => ($IsAny<$AuthoredProps> extends true ? true : $IsUnknown<$AuthoredProps> extends true ? $UsePublicInstance<$JsxProps> : false) extends true ? $ComponentInstance : NoInfer<$ComponentInstanceFor<$ComponentInstance, {\n  $props: Props;\n  readonly __vizeRawProps?: Props;\n  $emit: $PublicEmit<Emits>;\n  $slots: $PublicSlots<$Slots>;\n}, $ComponentPublicBase, Props, {}, $AuthoredProps, $JsxProps>>;\n"
+  },
+  "entries": [
+    {
+      "variant": "lf",
+      "kind": "valid",
+      "previous": {
+        "file": "lf.valid.unowned-owned-keys.virtual.ts.txt",
+        "sha256": "e9bf18f670ea640ab4c1fbd37e2be6cc8cf57b5bed7e0c1a6807c378f4eb693b",
+        "bytes": 15276
+      },
+      "current": {
+        "file": "lf.valid.constructor-noinfer.virtual.ts.txt",
+        "sha256": "c14f740be89a81f924f2fbf4ae0c9fee72471b938b8c9e9bf7f456269c755930",
+        "bytes": 15418
+      }
+    },
+    {
+      "variant": "lf",
+      "kind": "invalid",
+      "previous": {
+        "file": "lf.invalid.unowned-owned-keys.virtual.ts.txt",
+        "sha256": "dd5ce5ae6ea3cbf04eb4e6e384b2023f4263e3e6e99ea018c22b200dd392dc73",
+        "bytes": 15280
+      },
+      "current": {
+        "file": "lf.invalid.constructor-noinfer.virtual.ts.txt",
+        "sha256": "e0f10f666d61671786357e3185830ba52cdbf823006badefa502eb55ccc47e58",
+        "bytes": 15422
+      }
+    },
+    {
+      "variant": "crlf",
+      "kind": "valid",
+      "previous": {
+        "file": "crlf.valid.unowned-owned-keys.virtual.ts.txt",
+        "sha256": "591f12fda35e65baa33ca5debb31b9e27be0743ad93680c9e30fa887471bab3e",
+        "bytes": 15276
+      },
+      "current": {
+        "file": "crlf.valid.constructor-noinfer.virtual.ts.txt",
+        "sha256": "41972ceb0a81f1df5268fbe244a8d5f1e2d248c3784e60152be658adac2e6344",
+        "bytes": 15418
+      }
+    },
+    {
+      "variant": "crlf",
+      "kind": "invalid",
+      "previous": {
+        "file": "crlf.invalid.unowned-owned-keys.virtual.ts.txt",
+        "sha256": "055db71d88b57a576a57104cfda462e77c9f893944d3bf8cdeed976d5c599246",
+        "bytes": 15280
+      },
+      "current": {
+        "file": "crlf.invalid.constructor-noinfer.virtual.ts.txt",
+        "sha256": "df4ea4734f25b6c8a8a096bdbe860cf608b38cfceca0b8da7976755ba70030e1",
+        "bytes": 15422
+      }
+    },
+    {
+      "variant": "explicit",
+      "kind": "valid",
+      "previous": {
+        "file": "explicit.valid.unowned-owned-keys.virtual.ts.txt",
+        "sha256": "917e96782146f0c3d61b0e17544cc9d314122d443b3175c0ba981a6e6dedb947",
+        "bytes": 15204
+      },
+      "current": {
+        "file": "explicit.valid.constructor-noinfer.virtual.ts.txt",
+        "sha256": "3d88148387581d1483df17913a6920e4b18ccd61d19afa7f958e69f3082b95c3",
+        "bytes": 15346
+      }
+    },
+    {
+      "variant": "explicit",
+      "kind": "invalid",
+      "previous": {
+        "file": "explicit.invalid.unowned-owned-keys.virtual.ts.txt",
+        "sha256": "917e96782146f0c3d61b0e17544cc9d314122d443b3175c0ba981a6e6dedb947",
+        "bytes": 15204
+      },
+      "current": {
+        "file": "explicit.invalid.constructor-noinfer.virtual.ts.txt",
+        "sha256": "3d88148387581d1483df17913a6920e4b18ccd61d19afa7f958e69f3082b95c3",
+        "bytes": 15346
+      }
+    }
+  ],
+  "setupVerbatim": {
+    "pullRequest": 12550,
+    "certifier": "tools/support/compat/content-mapper/verbatim-setup-relocation.ts"
+  }
+}

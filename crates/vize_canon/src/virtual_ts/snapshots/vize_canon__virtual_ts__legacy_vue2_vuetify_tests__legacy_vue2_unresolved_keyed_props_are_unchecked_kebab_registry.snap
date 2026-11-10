@@ -134,10 +134,10 @@ function __setup() {
   void defineProps; void defineEmits; void defineExpose; void defineModel; void defineSlots; void withDefaults; void useTemplateRef;
 
   // User setup code
-  
-  defineProps<Props>()
-  
-  // @vize-map: 16604:16633 -> 0:76
+
+defineProps<Props>()
+
+  // @vize-map: 16604:16627 -> 0:76
 
   // ========== Template Scope (inherits from setup) ==========
   ;(function __template() {
@@ -171,9 +171,9 @@ function __setup() {
 
   // Undefined references from template:
   void (__vize_keyed_template_context.width);
-  // @vize-map: 18206:18211 -> 18:23
+  // @vize-map: 18200:18205 -> 18:23
   void (__vize_keyed_template_context.hideDetails);
-  // @vize-map: 18289:18300 -> 40:51
+  // @vize-map: 18283:18294 -> 40:51
 
   // Component props type declarations
   type $IsAny<T> = 0 extends (1 & T) ? true : false;
@@ -263,12 +263,12 @@ type $ComponentInstance = {
   $emit: $PublicEmit<Emits>;
   $slots: $PublicSlots<$Slots>;
 } & $ComponentPublicBase;
-type $ComponentConstructor = new <$AuthoredProps = unknown, $JsxProps = unknown>(props?: $AuthoredProps & $ComponentInput<Props, {}, $AuthoredProps>, ...args: any[]) => $ComponentInstanceFor<$ComponentInstance, {
+type $ComponentConstructor = new <$AuthoredProps = unknown, $JsxProps = unknown>(props?: $AuthoredProps & $ComponentInput<Props, {}, $AuthoredProps>, ...args: any[]) => ($IsAny<$AuthoredProps> extends true ? true : $IsUnknown<$AuthoredProps> extends true ? $UsePublicInstance<$JsxProps> : false) extends true ? $ComponentInstance : NoInfer<$ComponentInstanceFor<$ComponentInstance, {
   $props: Props;
   readonly __vizeRawProps?: Props;
   $emit: $PublicEmit<Emits>;
   $slots: $PublicSlots<$Slots>;
-}, $ComponentPublicBase, Props, {}, $AuthoredProps, $JsxProps>;
+}, $ComponentPublicBase, Props, {}, $AuthoredProps, $JsxProps>>;
 type $VueComponentOptions = {
   [key: string]: any;
   name?: string;
@@ -369,10 +369,10 @@ function __setup() {
   void defineProps; void defineEmits; void defineExpose; void defineModel; void defineSlots; void withDefaults; void useTemplateRef;
 
   // User setup code
-  
-  defineProps<Props>()
-  
-  // @vize-map: 6530:6559 -> 0:76
+
+defineProps<Props>()
+
+  // @vize-map: 6530:6553 -> 0:76
 
   // ========== Template Scope (inherits from setup) ==========
   ;(function __template() {
@@ -415,9 +415,9 @@ function __setup() {
 
   // Undefined references from template:
   void (width);
-  // @vize-map: 8306:8311 -> 18:23
+  // @vize-map: 8300:8305 -> 18:23
   void (hideDetails);
-  // @vize-map: 8357:8368 -> 40:51
+  // @vize-map: 8351:8362 -> 40:51
 
   // Auto-imported/built-in components (not in script bindings)
   const v_select: any = undefined as any;

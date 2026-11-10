@@ -1,0 +1,50 @@
+{
+  "InstanceType": {
+    "contents": {
+      "kind": "markdown",
+      "value": "```typescript\nconst instance: $ComponentInstance\n```"
+    },
+    "range": {
+      "end": {
+        "character": 22,
+        "line": 5
+      },
+      "start": {
+        "character": 14,
+        "line": 5
+      }
+    }
+  },
+  "tag": {
+    "contents": {
+      "kind": "markdown",
+      "value": "```typescript\nconst Child: VueComponent &\n{\n  props: { title: string };\n}\n```\n\nVue component: Child.vue"
+    },
+    "range": {
+      "end": {
+        "character": 8,
+        "line": 10
+      },
+      "start": {
+        "character": 3,
+        "line": 10
+      }
+    }
+  },
+  "template ref": {
+    "contents": {
+      "kind": "markdown",
+      "value": "```typescript\nconst child: Readonly<ShallowRef<$ComponentInstance | null>>\n```"
+    },
+    "range": {
+      "end": {
+        "character": 11,
+        "line": 3
+      },
+      "start": {
+        "character": 6,
+        "line": 3
+      }
+    }
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "pullRequest": 12550,
+  "predecessor": {
+    "path": "successor-unowned-owned-keys-11654/projection-record.txt",
+    "bytes": 2326,
+    "sha256": "daf570de140baf0bfebf23e895371f8f9bc53dd53b340bb46f6cf92790d491ff"
+  },
+  "successor": {
+    "path": "successor-setup-verbatim-12481/projection-record.txt",
+    "bytes": 2326,
+    "sha256": "b083a3a2da2e1096fc73839da27e2d1d998aa9d43603d8ca2985d3f4f2f32fa0"
+  },
+  "delta": {
+    "canonGeneratedTextBytes": -10,
+    "contentMapperGeneratedTextBytes": -10,
+    "maestroGeneratedTextBytes": -10,
+    "contentMapperMappings": 0,
+    "contentMapperAuthoredHits": 0
+  },
+  "nativeAcceptanceCredit": false,
+  "scope": "Local exact record for #12481 under the legacy feature: authored setup lines are copied verbatim instead of being indented by two spaces. Every projection shrinks by the 10 removed indentation bytes; mapping, diagnostic and authored-hit counts are unchanged. No native TypeScript consumer acceptance credit."
+}

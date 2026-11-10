@@ -11,7 +11,8 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const SNAPSHOT_DIR = path.join(__dirname, "__snapshots__");
 const app = compilerMacrosApp;
 const qualifiedEmitProps = 'import("vize:virtual-ts").__EmitProps<';
-const qualifiedWidenTemplateRef = 'import("vize:virtual-ts").$WidenTemplateRef';
+// Ref shadows name the shared unwrap alias directly (#12431).
+const qualifiedTemplateRefUnwrap = 'import("vize:virtual-ts").$TemplateRefUnwrap';
 const currentReceipt = {
   emitHelperFiles: [
     "src/DefineEmitsMethodInterface.vue",
@@ -21,9 +22,10 @@ const currentReceipt = {
   helperHoistProvenance: "#11049 / ac442c78c8dda5dd05ee3c30049fa2d970bd9bc1",
   slotAliasProvenance: "#11064 / c2ee0878fec5d53edb7c30e10f374e37ab256f02",
   slotCallFiles: ["src/DefineSlotsType.vue"],
-  // Exact source packet successor: #11153 / Actions 41101082471, artifact 12998523533.
-  snapshotSha256: "03ff2bbda760469cae9fe73b603995287b78338c96819f52a8941d3780f565bd",
-  widenHelperFiles: [
+  // Regenerated at the shared-unwrap head: every diagnostic field is unchanged; only
+  // `virtualTs` moved (shared unwrap references and the constructor shape since #12162).
+  snapshotSha256: "5d8ea46dbc67e3962600ef74a1bf45db4157d16af738ce6f1a22affef3f865b9",
+  unwrapHelperFiles: [
     "src/DefineExposeType.vue",
     "src/DefineModelType.vue",
     "src/ProvideInjectSymbol.vue",
@@ -44,10 +46,10 @@ describe(`${app.name} check (type checker)`, () => {
 
     assert.deepEqual(
       parsed.files
-        .filter(({ virtualTs }) => virtualTs?.includes(qualifiedWidenTemplateRef) === true)
+        .filter(({ virtualTs }) => virtualTs?.includes(qualifiedTemplateRefUnwrap) === true)
         .map(({ file }) => file),
-      currentReceipt.widenHelperFiles,
-      `qualified widening helpers changed after ${currentReceipt.helperHoistProvenance}`,
+      currentReceipt.unwrapHelperFiles,
+      `qualified unwrap helpers changed after ${currentReceipt.helperHoistProvenance}`,
     );
     assert.deepEqual(
       parsed.files
@@ -65,9 +67,9 @@ describe(`${app.name} check (type checker)`, () => {
     );
     for (const { file, virtualTs = "" } of parsed.files) {
       assert.equal(
-        count(virtualTs, "$WidenTemplateRef"),
-        count(virtualTs, qualifiedWidenTemplateRef),
-        `${file} must not restore a file-local widening helper`,
+        count(virtualTs, "$TemplateRefUnwrap<"),
+        count(virtualTs, `${qualifiedTemplateRefUnwrap}<`),
+        `${file} must not restore a file-local unwrap helper`,
       );
       assert.equal(
         count(virtualTs, "__EmitProps<"),

@@ -129,10 +129,10 @@ function __setup() {
   void defineProps; void defineEmits; void defineExpose; void defineModel; void defineSlots; void withDefaults; void useTemplateRef;
 
   // User setup code
-  
-  defineProps<Props>()
-  
-  // @vize-map: 16021:16050 -> 0:76
+
+defineProps<Props>()
+
+  // @vize-map: 16021:16044 -> 0:76
 
   // ========== Template Scope (inherits from setup) ==========
   ;(function __template() {
@@ -174,13 +174,13 @@ function __setup() {
 
   // Undefined references from template:
   void (__vize_keyed_template_context.isMini);
-  // @vize-map: 18018:18024 -> 8:14
+  // @vize-map: 18012:18018 -> 8:14
   void (__vize_keyed_template_context.hideDetails);
-  // @vize-map: 18101:18112 -> 21:32
+  // @vize-map: 18095:18106 -> 21:32
   void (__vize_keyed_template_context.chips);
-  // @vize-map: 18190:18195 -> 39:44
+  // @vize-map: 18184:18189 -> 39:44
   void (__vize_keyed_template_context.width);
-  // @vize-map: 18273:18278 -> 51:56
+  // @vize-map: 18267:18272 -> 51:56
 
   // Reference setup bindings (used in template/CSS v-bind)
   void mini;
@@ -201,12 +201,12 @@ type $ComponentInstance = {
   $emit: $PublicEmit<Emits>;
   $slots: $PublicSlots<$Slots>;
 } & $ComponentPublicBase;
-type $ComponentConstructor = new <$AuthoredProps = unknown, $JsxProps = unknown>(props?: $AuthoredProps & $ComponentInput<Props, {}, $AuthoredProps>, ...args: any[]) => $ComponentInstanceFor<$ComponentInstance, {
+type $ComponentConstructor = new <$AuthoredProps = unknown, $JsxProps = unknown>(props?: $AuthoredProps & $ComponentInput<Props, {}, $AuthoredProps>, ...args: any[]) => ($IsAny<$AuthoredProps> extends true ? true : $IsUnknown<$AuthoredProps> extends true ? $UsePublicInstance<$JsxProps> : false) extends true ? $ComponentInstance : NoInfer<$ComponentInstanceFor<$ComponentInstance, {
   $props: Props;
   readonly __vizeRawProps?: Props;
   $emit: $PublicEmit<Emits>;
   $slots: $PublicSlots<$Slots>;
-}, $ComponentPublicBase, Props, {}, $AuthoredProps, $JsxProps>;
+}, $ComponentPublicBase, Props, {}, $AuthoredProps, $JsxProps>>;
 type $VueComponentOptions = {
   [key: string]: any;
   name?: string;
@@ -307,10 +307,10 @@ function __setup() {
   void defineProps; void defineEmits; void defineExpose; void defineModel; void defineSlots; void withDefaults; void useTemplateRef;
 
   // User setup code
-  
-  defineProps<Props>()
-  
-  // @vize-map: 6530:6559 -> 0:76
+
+defineProps<Props>()
+
+  // @vize-map: 6530:6553 -> 0:76
 
   // ========== Template Scope (inherits from setup) ==========
   ;(function __template() {

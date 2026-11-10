@@ -1,6 +1,5 @@
 ---
 source: crates/vize_canon/src/batch/virtual_project/tests.rs
-assertion_line: 654
 expression: "snapshot_text(fs::read_to_string(&virtual_vue_path).unwrap().as_str())"
 ---
 /// <reference lib="es2022" />
@@ -32,9 +31,9 @@ function __setup() {
 
   // User setup code
 
-  const message = 'Hello'
+const message = 'Hello'
 
-  // @vize-map: 1081:1113 -> 0:25
+  // @vize-map: 1081:1107 -> 0:25
 
   // ========== Template Scope (inherits from setup) ==========
   ;(function __template() {
@@ -70,12 +69,12 @@ type $ComponentInstance = {
   $emit: $PublicEmit<Emits>;
   $slots: $PublicSlots<$Slots>;
 } & $ComponentPublicBase;
-type $ComponentConstructor = new <$AuthoredProps = unknown, $JsxProps = unknown>(props?: $AuthoredProps & $ComponentInput<Props, {}, $AuthoredProps>, ...args: any[]) => $ComponentInstanceFor<$ComponentInstance, {
+type $ComponentConstructor = new <$AuthoredProps = unknown, $JsxProps = unknown>(props?: $AuthoredProps & $ComponentInput<Props, {}, $AuthoredProps>, ...args: any[]) => ($IsAny<$AuthoredProps> extends true ? true : $IsUnknown<$AuthoredProps> extends true ? $UsePublicInstance<$JsxProps> : false) extends true ? $ComponentInstance : NoInfer<$ComponentInstanceFor<$ComponentInstance, {
   $props: Props;
   readonly __vizeRawProps?: Props;
   $emit: $PublicEmit<Emits>;
   $slots: $PublicSlots<$Slots>;
-}, $ComponentPublicBase, Props, {}, $AuthoredProps, $JsxProps>;
+}, $ComponentPublicBase, Props, {}, $AuthoredProps, $JsxProps>>;
 type $VueComponentOptions = {
   [key: string]: any;
   name?: string;

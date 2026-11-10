@@ -443,8 +443,6 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                     (line_start, line_end),
                     source_offset,
                 );
-                ts.push_str("  "); // indentation (not in source)
-
                 let mut output_line = std::borrow::Cow::Borrowed(line);
                 setup_type_exports.strip_projected_modifiers(&mut output_line, line_start as u32);
 
@@ -466,6 +464,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                 if let Some(default_expr) = trimmed_line
                     .strip_prefix("export default")
                     .filter(|rest| options_api_support::follows_default_keyword(rest))
+                    .filter(|_| !module_plan.inside_literal(line_start))
                 {
                     emitted_default_alias = true;
                     declared_default_alias = true;

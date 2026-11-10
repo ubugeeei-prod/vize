@@ -1,0 +1,45 @@
+{
+  "version": 1,
+  "kind": "exact-setup-verbatim-generated-successor",
+  "issue": 12481,
+  "pullRequest": 12550,
+  "nativeAcceptanceCredit": false,
+  "entries": [
+    {
+      "entry": 74,
+      "before": [
+        "project/A.vue.ts",
+        4162,
+        "cd51d87928e166f44ac8577ed93f85cddb5f3c6630d6c285ca7c76e6194bdcc5"
+      ],
+      "after": [
+        "project/A.vue.ts",
+        4152,
+        "585cf725dd3ba55362fc685169f9927b4d586fbe8cc1c0714aa42fe12b0cc311"
+      ],
+      "deltaBytes": -10,
+      "edit": {
+        "before": "  // User setup code\n  \n  const broken = ;\n  defineProps<{ title?: string }>()\n  defineSlots<{ default(props: { label: string; items: { label: string }[] }): unknown }>()\n  ;\n  \n  // @vize-map: 1081:1238 -> 0:142",
+        "after": "  // User setup code\n\nconst broken = ;\ndefineProps<{ title?: string }>()\ndefineSlots<{ default(props: { label: string; items: { label: string }[] }): unknown }>()\n  ;\n\n  // @vize-map: 1081:1228 -> 0:142"
+      }
+    },
+    {
+      "entry": 75,
+      "before": [
+        "project/B.vue.ts",
+        4382,
+        "2e547c9d6106b3ebe0f799ad41f621c0afbfccef331b17020713315219e4053e"
+      ],
+      "after": [
+        "project/B.vue.ts",
+        4374,
+        "c71fd1e13b882cf48929e8c8bddd1872ca2cef1e2df2c86dca2cafa1df55e909"
+      ],
+      "deltaBytes": -8,
+      "edit": {
+        "before": "  // User setup code\n  \n  defineProps<{ title?: string }>()\n  defineSlots<{ default(props: { label: string; items: { label: string }[] }): unknown }>()\n  \n  // @vize-map: 1097:1231 -> 0:125",
+        "after": "  // User setup code\n\ndefineProps<{ title?: string }>()\ndefineSlots<{ default(props: { label: string; items: { label: string }[] }): unknown }>()\n\n  // @vize-map: 1097:1223 -> 0:125"
+      }
+    }
+  ]
+}

@@ -142,10 +142,10 @@ fn authored_reference_packages_keep_internal_spellings() {
 "#;
     let result = generate_vue_content_mapper_transform(Path::new("App.vue"), source)
         .expect("content mapper transform");
-
     let references = result
         .text
         .lines()
+        .take_while(|line| line.starts_with("///"))
         .filter_map(|line| line.strip_prefix("/// <reference types="))
         .collect::<Vec<_>>();
     assert_eq!(

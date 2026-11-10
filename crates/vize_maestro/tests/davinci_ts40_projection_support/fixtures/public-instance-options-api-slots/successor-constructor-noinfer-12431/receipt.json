@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "pullRequest": 12523,
+  "predecessor": {
+    "path": "successor-setup-verbatim-12481/projection-record.txt",
+    "bytes": 2234,
+    "sha256": "923819eb3e06eeee954a950ad95fda48626c515f2f78e59db1511111f385b2d0"
+  },
+  "successor": {
+    "path": "successor-constructor-noinfer-12431/projection-record.txt",
+    "bytes": 2234,
+    "sha256": "fbb281e17beaf89265a90e4be950dc18eb7d61fe156aba93a29407e3b5a8685e"
+  },
+  "delta": {
+    "canonGeneratedTextBytes": 172,
+    "contentMapperGeneratedTextBytes": 172,
+    "maestroGeneratedTextBytes": 172,
+    "contentMapperMappings": 0,
+    "contentMapperAuthoredHits": 0
+  },
+  "nativeAcceptanceCredit": false,
+  "scope": "Local exact record for #12431: the component constructor picks the public instance inline and keeps the bound instance behind NoInfer. Every projection grows by the 172-byte constructor edit; mapping, diagnostic and authored-hit counts are unchanged, so the changed coordinate hashes are derived relocation. No native TypeScript consumer acceptance credit."
+}

@@ -2,7 +2,8 @@ use std::fs;
 
 use super::{VirtualProject, snapshot_text, unique_case_dir};
 
-const MODERN_REF_UNWRAP_HELPER: &str = "type __U<T> = T extends { value: unknown } ? T extends import('vue').Ref ? import(\"vize:virtual-ts\").$WidenTemplateRef<T['value']> : T : T;";
+/// Hoisted modern shadows name the program-wide unwrap alias directly.
+const MODERN_REF_UNWRAP_REFERENCE: &str = "import(\"vize:virtual-ts\").$TemplateRefUnwrap<__R_";
 const LEGACY_REF_UNWRAP_HELPER: &str = "type __U<T> = T extends { value: infer __V } ? __V : T;";
 
 #[test]
@@ -60,7 +61,13 @@ const count = ref(0)
         snapshot_text(default_content.as_str())
     );
     insta::assert_snapshot!("dialect_v2", snapshot_text(v2_content.as_str()));
-    assert!(default_content.contains(MODERN_REF_UNWRAP_HELPER));
+    assert_eq!(
+        default_content
+            .matches("var count: import(\"vize:virtual-ts\").$TemplateRefUnwrap<__R_count> = (void 0) as any;")
+            .count(),
+        1
+    );
+    assert_eq!(default_content.matches("type __U<").count(), 0);
     assert!(v2_content.contains(LEGACY_REF_UNWRAP_HELPER));
     assert!(!default_content.contains("Ref<infer"));
     assert!(!v2_content.contains("Ref<infer"));
@@ -199,6 +206,8 @@ export default {
 const PROGRAM_WIDE_TEMPLATE_HELPERS: &[&str] = &[
     "type $IsUnion<",
     "type $WidenTemplateRef<",
+    "type $TemplateRefUnwrap<",
+    "type $TemplateRefUnwrapNarrowed<",
     "type $SlotHostSlots<",
     "type $SlotPayload<",
     "type $EmitRequiredKeys<",
@@ -255,9 +264,15 @@ fn static_template_helpers_are_hoisted_once_per_program() {
             );
         }
         assert_eq!(
-            content.matches(MODERN_REF_UNWRAP_HELPER).count(),
+            content.matches(MODERN_REF_UNWRAP_REFERENCE).count(),
             1,
-            "{} must still declare its own dialect-specific __U",
+            "{} must shadow its ref through the hoisted unwrap alias",
+            path.display()
+        );
+        assert_eq!(
+            content.matches("type __U<").count(),
+            0,
+            "{} must not declare a per-file unwrap alias",
             path.display()
         );
     }

@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { beforeInstanceInputKeys } from "./instance-input-keys-transition.ts";
+import { beforeSharedTemplateRefUnwrapSource } from "./shared-template-ref-unwrap-transition.ts";
 
 export const strictExtraKeysPath = "crates/vize_canon/src/virtual_ts/component_prop_helpers.txt";
 export const strictExtraKeysBeforeSha256 =
@@ -52,7 +53,7 @@ function canonLeftoversTransition(path: string) {
 }
 
 export function beforeCanonLeftovers(path: string, current: string): string {
-  current = beforeInstanceInputKeys(path, current);
+  current = beforeInstanceInputKeys(path, beforeSharedTemplateRefUnwrapSource(path, current));
   const transition = canonLeftoversTransition(path);
   if (!transition) return current;
   const currentIdentity = identity(current);
