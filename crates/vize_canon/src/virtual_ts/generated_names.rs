@@ -146,10 +146,14 @@ fn compact_template_prefix(parameters: Option<&GenericParameters>, summary: &Cro
     if available("__V") {
         return String::const_new("__V");
     }
-    (1usize..)
-        .map(|suffix| cstr!("__V${suffix}"))
-        .find(|prefix| available(prefix))
-        .unwrap_or_else(|| unreachable!("an unbounded compact-name namespace must have a gap"))
+    let mut suffix = 1usize;
+    loop {
+        let prefix = cstr!("__V${suffix}");
+        if available(&prefix) {
+            return prefix;
+        }
+        suffix += 1;
+    }
 }
 
 /// Prefix shared by every compact per-usage contract name in this projection.
