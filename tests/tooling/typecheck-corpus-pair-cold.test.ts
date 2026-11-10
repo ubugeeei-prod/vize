@@ -134,7 +134,8 @@ void test(
     assert.equal(result.status, 0);
     const tree = sampler.take("sampled");
     assert.ok(tree, "no record for the tagged tree");
-    assert.equal(tree.hostName, "node");
+    // Node 24 names its main thread, and so /proc/<pid>/status, "MainThread".
+    assert.ok(["node", "MainThread"].includes(tree.hostName), tree.hostName);
     assert.equal(tree.mappers, 1);
     assert.ok(tree.mapperKb > 64 * 1024, `child peak ${tree.mapperKb} kB`);
     assert.ok(tree.treePeakKb >= tree.mapperKb, `tree ${tree.treePeakKb} kB`);
