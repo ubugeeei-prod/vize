@@ -162,13 +162,16 @@ async function disableVizeAndWaitForShutdown(logPath) {
   );
 }
 
-function waitForReadyServer(logPath, label) {
-  return waitForLogEntries(
+async function waitForReadyServer(logPath, label) {
+  await waitForLogEntries(
     logPath,
     (entries) =>
       initializeMessages(entries).length >= 1 && methodMessages(entries, "initialized").length >= 1,
     label,
   );
+  // A later settings sync may still replace this client; typing into the gap is lost.
+  await vscode.commands.executeCommand("vize.test.waitForConfigurationIdle");
+  return readLogEntries(logPath);
 }
 
 function openWorkspaceDocument(...segments) {
