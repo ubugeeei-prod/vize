@@ -29,7 +29,7 @@ surfaces and are not routine CI-refactor targets.
 | Group | Area                                                                                   | Workflows |
 | ----- | -------------------------------------------------------------------------------------- | --------- |
 | 01    | [Pull request orchestration](#01-pull-request-orchestration)                           | 20        |
-| 02    | [Release and public acceptance](#02-release-and-public-acceptance)                     | 33        |
+| 02    | [Release and public acceptance](#02-release-and-public-acceptance)                     | 34        |
 | 03    | [Benchmarks and profiling](#03-benchmarks-and-profiling)                               | 38        |
 | 04    | [Type checking and content mapping](#04-type-checking-and-content-mapping)             | 15        |
 | 05    | [Language services and editors](#05-language-services-and-editors)                     | 23        |
@@ -92,20 +92,21 @@ Publication, registry, and installed-consumer evidence. Trusted-publishing workf
 | 02.17 | Published component ARIA                  | [`published-component-aria.yml`](./published-component-aria.yml)                           |
 | 02.18 | Published computed event names            | [`published-computed-event-names.yml`](./published-computed-event-names.yml)               |
 | 02.19 | Published original constructor 27         | [`published-constructor-original27.yml`](./published-constructor-original27.yml)           |
-| 02.20 | Published human reports 11252 and 11253   | [`published-human-reports-11252-11253.yml`](./published-human-reports-11252-11253.yml)     |
-| 02.21 | Published slot instance NoAny             | [`published-slot-instance-noany.yml`](./published-slot-instance-noany.yml)                 |
-| 02.22 | Published slot provider controls          | [`published-slot-provider.yml`](./published-slot-provider.yml)                             |
-| 02.23 | Queue release gates                       | [`queue-release-gates.yml`](./queue-release-gates.yml)                                     |
-| 02.24 | Release build cache                       | [`release-build-cache.yml`](./release-build-cache.yml)                                     |
-| 02.25 | Release cadence                           | [`release-cadence.yml`](./release-cadence.yml)                                             |
-| 02.26 | Release contracts                         | [`release-contracts.yml`](./release-contracts.yml)                                         |
-| 02.27 | Release JSR                               | [`release-jsr.yml`](./release-jsr.yml)                                                     |
-| 02.28 | Prepare npm first-publish handoff         | [`release-npm-bootstrap.yml`](./release-npm-bootstrap.yml)                                 |
-| 02.29 | Release smoke contracts                   | [`release-smoke-contracts.yml`](./release-smoke-contracts.yml)                             |
-| 02.30 | Release verify                            | [`release-verify.yml`](./release-verify.yml)                                               |
-| 02.31 | Release Zed host                          | [`release-zed-host.yml`](./release-zed-host.yml)                                           |
-| 02.32 | Release                                   | [`release.yml`](./release.yml)                                                             |
-| 02.33 | Published TypeScript provider acceptance  | [`typescript-provider-public.yml`](./typescript-provider-public.yml)                       |
+| 02.20 | Published fresh project                   | [`published-fresh-project.yml`](./published-fresh-project.yml)                             |
+| 02.21 | Published human reports 11252 and 11253   | [`published-human-reports-11252-11253.yml`](./published-human-reports-11252-11253.yml)     |
+| 02.22 | Published slot instance NoAny             | [`published-slot-instance-noany.yml`](./published-slot-instance-noany.yml)                 |
+| 02.23 | Published slot provider controls          | [`published-slot-provider.yml`](./published-slot-provider.yml)                             |
+| 02.24 | Queue release gates                       | [`queue-release-gates.yml`](./queue-release-gates.yml)                                     |
+| 02.25 | Release build cache                       | [`release-build-cache.yml`](./release-build-cache.yml)                                     |
+| 02.26 | Release cadence                           | [`release-cadence.yml`](./release-cadence.yml)                                             |
+| 02.27 | Release contracts                         | [`release-contracts.yml`](./release-contracts.yml)                                         |
+| 02.28 | Release JSR                               | [`release-jsr.yml`](./release-jsr.yml)                                                     |
+| 02.29 | Prepare npm first-publish handoff         | [`release-npm-bootstrap.yml`](./release-npm-bootstrap.yml)                                 |
+| 02.30 | Release smoke contracts                   | [`release-smoke-contracts.yml`](./release-smoke-contracts.yml)                             |
+| 02.31 | Release verify                            | [`release-verify.yml`](./release-verify.yml)                                               |
+| 02.32 | Release Zed host                          | [`release-zed-host.yml`](./release-zed-host.yml)                                           |
+| 02.33 | Release                                   | [`release.yml`](./release.yml)                                                             |
+| 02.34 | Published TypeScript provider acceptance  | [`typescript-provider-public.yml`](./typescript-provider-public.yml)                       |
 
 ## 03 Benchmarks and profiling
 
