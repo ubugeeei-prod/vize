@@ -11,17 +11,17 @@ export const currentRuntimeProp =
 const previousSha256 = "1cb95f44b238332378bab53af58bbe0b95ad428d2a846f3136b81bfc3590cb98";
 const currentSha256 = "3767bffe638c34126238eb7122ed70be0c5d1cbc8a79349aa10bdbc08f0820b5";
 const digest = (bytes: Buffer) => createHash("sha256").update(bytes).digest("hex");
-export const previousSetupWithDefaults =
+export const previousEmbeddedWithDefaults =
   "  function withDefaults<_T, _BKeys extends keyof _T, _D extends __WithDefaultsArgs<_T>>(_props: __DefineProps<_T, _BKeys>, _defaults: _D): __WithDefaultsResult<_T, _D, _BKeys>; function withDefaults(_props: any, _defaults: any) { void _props; void _defaults; return undefined as any; }";
-export const currentSetupWithDefaults = previousSetupWithDefaults.replace(
-  "): __WithDefaultsResult<",
-  "): _T & __WithDefaultsResult<",
+export const currentEmbeddedWithDefaults = previousEmbeddedWithDefaults.replace(
+  "; function withDefaults(_props: any",
+  " & { readonly [K in keyof _T]: unknown }; function withDefaults(_props: any",
 );
 export const previousSharedWithDefaults =
   "declare function __vize_withDefaults<_T, _BKeys extends keyof _T, _D extends __WithDefaultsArgs<_T>>(_props: __DefineProps<_T, _BKeys>, _defaults: _D): __WithDefaultsResult<_T, _D, _BKeys>;";
 export const currentSharedWithDefaults = previousSharedWithDefaults.replace(
-  "): __WithDefaultsResult<",
-  "): _T & __WithDefaultsResult<",
+  ";",
+  " & { readonly [K in keyof _T]: unknown };",
 );
 
 export function certifyCanonicalAssets(
@@ -70,7 +70,7 @@ function occurrences(text: string, needle: string) {
 export function applyWithDefaultsDocsIn(input: string) {
   let output = input;
   for (const [previous, current, label] of [
-    [previousSetupWithDefaults, currentSetupWithDefaults, "setup"],
+    [previousEmbeddedWithDefaults, currentEmbeddedWithDefaults, "embedded"],
     [previousSharedWithDefaults, currentSharedWithDefaults, "shared"],
   ]) {
     const counts = {

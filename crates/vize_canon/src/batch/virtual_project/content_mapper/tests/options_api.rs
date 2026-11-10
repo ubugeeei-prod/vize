@@ -68,3 +68,30 @@ export default {
         disabled.text
     );
 }
+
+#[test]
+fn slots_type_payloads_become_documented_optional_slot_functions() {
+    let source = r#"<script lang="ts">
+import { defineComponent, type SlotsType } from 'vue'
+export default defineComponent({
+  slots: Object as SlotsType<{
+    /** Row slot. */
+    'item': { row: number }
+  }>,
+})
+</script>"#;
+    let result = generate_vue_content_mapper_transform_with_options(
+        Path::new("Options.vue"),
+        source,
+        ContentMapperTransformOptions::default().with_options_api(true),
+    )
+    .expect("Options API transform");
+
+    assert!(
+        result.text.contains(
+            "type $Slots = {\n  /** Row slot. */\n  item?: (props: { row: number }) => any;\n};"
+        ),
+        "{}",
+        result.text
+    );
+}

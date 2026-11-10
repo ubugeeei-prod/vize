@@ -120,7 +120,10 @@ fn generated_model_prop_and_event_rows_retain_authored_ast_contents() {
                 ..Default::default()
             },
         );
-        let prop_start = output.code.find("saveItem?: string;").expect("model prop");
+        let prop_start = output
+            .code
+            .find("\"saveItem\"?: string;")
+            .expect("model prop");
         let event_start = output
             .code
             .find("/* __vize_model_event */ \"update:saveItem\"")
@@ -139,7 +142,8 @@ fn generated_model_prop_and_event_rows_retain_authored_ast_contents() {
         assert_eq!(
             rows,
             vec![
-                (prop_start..prop_start + 8, 121..129),
+                (prop_start..prop_start + 10, 121..129),
+                (prop_start + 1..prop_start + 9, 121..129),
                 (event_start..event_start + 17, 121..129),
                 (event_start + 1..event_start + 16, 121..129),
                 (event_start + 8..event_start + 16, 121..129),
@@ -168,7 +172,11 @@ const name = defineModel<string>('name')
         &VirtualTsOptions::default(),
         VirtualTsGenerationOptions::default(),
     );
-    let model_start = output.code.find("\n  name?: string;").expect("model prop") + 3;
+    let model_start = output
+        .code
+        .find("\n  \"name\"?: string;")
+        .expect("model prop")
+        + 3;
     let authored_start = 100 + script.find("'name'").expect("authored model name") + 1;
     let rows: Vec<_> = output
         .mapping
@@ -180,14 +188,14 @@ const name = defineModel<string>('name')
     assert_eq!(
         rows,
         vec![(
-            model_start..model_start + 4,
+            model_start..model_start + 6,
             authored_start..authored_start + 4,
         )]
     );
     assert!(
         output
             .code
-            .find("\n  nameplate")
+            .find("\n  \"nameplate\"")
             .is_some_and(|start| start < model_start)
     );
 }

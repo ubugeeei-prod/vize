@@ -118,6 +118,42 @@ fn component_prop_navigation_is_the_only_hover_owner() {
 }
 
 #[test]
+fn editor_only_prop_surfaces_preserve_docs_without_changing_value_types() {
+    let authored = r#"<script setup lang="ts">
+interface Props {
+  /** Visible label. */
+  label?: string
+}
+const props = withDefaults(defineProps<Props>(), { label: 'ok' })
+</script>"#;
+    let result = generate_vue_content_mapper_transform(Path::new("Props.vue"), authored)
+        .expect("content mapper transform");
+
+    assert!(
+        result.text.contains(
+            "): __WithDefaultsResult<_T, _D, _BKeys> & { readonly [K in keyof _T]: unknown };"
+        ),
+        "{}",
+        result.text
+    );
+    let runtime = generate_vue_content_mapper_transform(
+        Path::new("Runtime.vue"),
+        "<script setup lang=\"ts\">const props = defineProps({ 'title': String })</script>",
+    )
+    .expect("runtime prop transform");
+    assert!(
+        runtime.text.contains("  title?: string;"),
+        "{}",
+        runtime.text
+    );
+    assert!(
+        !runtime.text.contains("  \"title\"?: string;"),
+        "{}",
+        runtime.text
+    );
+}
+
+#[test]
 fn protocol_v1_feature_constants_match_the_pinned_upstream_shape() {
     // Upstream `spanmap.FeatureAll` is `(FeatureCodeLens << 1) - 1` over 20 bits
     // and `SpanMap.Validate` rejects any segment carrying a bit outside it, so an

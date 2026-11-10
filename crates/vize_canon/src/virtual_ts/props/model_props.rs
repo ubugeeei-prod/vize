@@ -14,9 +14,15 @@ use crate::virtual_ts::generic_parameters::GenericParameters;
 
 use super::template_model_modifiers::{model_modifier_prop_name, model_modifier_type};
 
-fn emit_type_member(ts: &mut crate::virtual_ts::TextBuf, name: &str, optional: &str, ty: &str) {
+fn emit_type_member(
+    ts: &mut crate::virtual_ts::TextBuf,
+    name: &str,
+    optional: &str,
+    ty: &str,
+    prefer_identifier: bool,
+) {
     ts.push_str("  ");
-    if is_identifier_name(name) {
+    if prefer_identifier && is_identifier_name(name) {
         ts.push_str(name);
     } else {
         push_ts_string_literal(ts, name);
@@ -77,7 +83,7 @@ fn emit_model_prop_members(
     let prop_type = model_value_type(generic_parameters, model);
     if emitted_names.insert(name.into()) {
         emit_model_doc(ts, summary, script, model);
-        emit_type_member(ts, name, optional, prop_type.as_str());
+        emit_type_member(ts, name, optional, prop_type.as_str(), false);
     }
 
     let modifiers_name = model_modifier_prop_name(name);
@@ -89,7 +95,13 @@ fn emit_model_prop_members(
             lib("Partial"),
             lib("Record")
         );
-        emit_type_member(ts, modifiers_name.as_str(), "?", modifier_type.as_str());
+        emit_type_member(
+            ts,
+            modifiers_name.as_str(),
+            "?",
+            modifier_type.as_str(),
+            false,
+        );
     }
 }
 
@@ -146,6 +158,7 @@ pub(super) fn append_macro_props_type_literal(
     script: Option<&str>,
     models: &[ModelDefinition],
     generic_parameters: Option<&GenericParameters>,
+    prefer_identifier_props: bool,
 ) {
     ts! { &mut *ts =>
         {
@@ -170,7 +183,13 @@ pub(super) fn append_macro_props_type_literal(
                         __ts.push_str(doc);
                         __ts.push('\n');
                     }
-                    emit_type_member(__ts, prop.name.as_str(), optional, prop_type);
+                    emit_type_member(
+                        __ts,
+                        prop.name.as_str(),
+                        optional,
+                        prop_type,
+                        prefer_identifier_props,
+                    );
                     emitted_names.insert(prop.name.as_str().into());
                 }
                 for model in models {

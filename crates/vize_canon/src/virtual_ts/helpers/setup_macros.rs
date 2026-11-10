@@ -6,6 +6,9 @@ pub(crate) struct SetupMacroHelper {
     pub hoisted: &'static str,
 }
 
+pub(crate) const WITH_DEFAULTS_DOCS_EMBEDDED: &str = r#"  function withDefaults<_T, _BKeys extends keyof _T, _D extends __WithDefaultsArgs<_T>>(_props: __DefineProps<_T, _BKeys>, _defaults: _D): __WithDefaultsResult<_T, _D, _BKeys> & { readonly [K in keyof _T]: unknown }; function withDefaults(_props: any, _defaults: any) { void _props; void _defaults; return undefined as any; }
+"#;
+
 macro_rules! setup_helpers {
     ($(($name:literal, $embedded:literal, $hoisted:literal)),+ $(,)?) => {
         pub const VUE_SETUP_HELPERS: &str = concat!(
@@ -66,7 +69,7 @@ setup_helpers!(
     ),
     (
         "withDefaults",
-        r#"  function withDefaults<_T, _BKeys extends keyof _T, _D extends __WithDefaultsArgs<_T>>(_props: __DefineProps<_T, _BKeys>, _defaults: _D): _T & __WithDefaultsResult<_T, _D, _BKeys>; function withDefaults(_props: any, _defaults: any) { void _props; void _defaults; return undefined as any; }
+        r#"  function withDefaults<_T, _BKeys extends keyof _T, _D extends __WithDefaultsArgs<_T>>(_props: __DefineProps<_T, _BKeys>, _defaults: _D): __WithDefaultsResult<_T, _D, _BKeys>; function withDefaults(_props: any, _defaults: any) { void _props; void _defaults; return undefined as any; }
 "#,
         r#"  const withDefaults = __vize_withDefaults;
 "#

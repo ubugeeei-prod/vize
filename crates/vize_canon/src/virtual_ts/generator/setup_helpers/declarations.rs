@@ -3,7 +3,7 @@
 use super::super::template_ref_keys::TemplateRefUsage;
 use crate::virtual_ts::generated_names::push_lib_text;
 use crate::virtual_ts::helpers::setup_macros::{
-    SETUP_MACRO_HELPERS, VUE_SETUP_HELPERS, VUE_SETUP_HELPERS_HOISTED,
+    SETUP_MACRO_HELPERS, VUE_SETUP_HELPERS, VUE_SETUP_HELPERS_HOISTED, WITH_DEFAULTS_DOCS_EMBEDDED,
 };
 use oxc_allocator::Allocator;
 use oxc_parser::Parser;
@@ -41,7 +41,7 @@ impl SetupHelperPlan {
         ts: &mut crate::virtual_ts::TextBuf,
         hoisted: bool,
     ) {
-        emit(ts, self, hoisted, false, false);
+        emit(ts, self, hoisted, false, false, false);
     }
 
     pub(crate) fn emit_import_anchors(&self, ts: &mut crate::virtual_ts::TextBuf) {
@@ -90,9 +90,15 @@ pub(super) fn emit(
     hoisted: bool,
     generic_props: bool,
     typed_refs: bool,
+    preserve_with_defaults_docs: bool,
 ) {
     let shadowed = &plan.shadowed;
-    if shadowed.is_empty() && !generic_props && !typed_refs && !plan.active_template_ref {
+    if shadowed.is_empty()
+        && !generic_props
+        && !typed_refs
+        && !plan.active_template_ref
+        && !(preserve_with_defaults_docs && !hoisted)
+    {
         push_lib_text(
             ts,
             if hoisted {
@@ -124,6 +130,8 @@ pub(super) fn emit(
                     GENERIC_PROPS_EMBEDDED
                 },
             );
+        } else if helper.name == "withDefaults" && preserve_with_defaults_docs && !hoisted {
+            push_lib_text(ts, WITH_DEFAULTS_DOCS_EMBEDDED);
         } else {
             push_lib_text(
                 ts,
@@ -262,7 +270,7 @@ mod template_ref_fallback_tests {
             );
             for hoisted in [false, true] {
                 let mut generated = crate::virtual_ts::TextBuf::default();
-                emit(&mut generated, &plan, hoisted, false, false);
+                emit(&mut generated, &plan, hoisted, false, false, false);
                 let helper = SETUP_MACRO_HELPERS
                     .iter()
                     .find(|helper| helper.name == "useTemplateRef")
@@ -295,7 +303,7 @@ mod template_ref_fallback_tests {
             false,
         );
         let mut generated = crate::virtual_ts::TextBuf::default();
-        emit(&mut generated, &plan, false, false, false);
+        emit(&mut generated, &plan, false, false, false, false);
         assert_eq!(generated, VUE_SETUP_HELPERS);
     }
 }

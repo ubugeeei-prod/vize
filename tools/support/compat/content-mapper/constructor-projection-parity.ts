@@ -10,14 +10,14 @@ import {
   uniqueOffset,
   previousRuntimeProp,
   currentRuntimeProp,
-  previousSetupWithDefaults,
-  currentSetupWithDefaults,
+  previousEmbeddedWithDefaults,
+  currentEmbeddedWithDefaults,
   previousSharedWithDefaults,
   currentSharedWithDefaults,
 } from "./canonical-helper-transition.ts";
 export {
-  previousSetupWithDefaults,
-  currentSetupWithDefaults,
+  previousEmbeddedWithDefaults,
+  currentEmbeddedWithDefaults,
   previousSharedWithDefaults,
   currentSharedWithDefaults,
 } from "./canonical-helper-transition.ts";
@@ -177,9 +177,9 @@ function relocationEdits(
     certifiedTransition(
       before,
       after,
-      previousSetupWithDefaults,
-      currentSetupWithDefaults,
-      "setup withDefaults authored return",
+      previousEmbeddedWithDefaults,
+      currentEmbeddedWithDefaults,
+      "embedded withDefaults docs return",
     ),
     certifiedTransition(
       before,

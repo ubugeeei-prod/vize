@@ -7,14 +7,14 @@ import { test } from "node:test";
 import {
   canonicalPaths,
   comparePackets,
-  currentSetupWithDefaults,
+  currentEmbeddedWithDefaults,
   currentSharedWithDefaults,
   currentSlotsExport,
   currentSlotsMarker,
   currentNativeAttributeAliases,
   nativeAttributesPath,
+  previousEmbeddedWithDefaults,
   previousNativeAttributeAliases,
-  previousSetupWithDefaults,
   previousSharedWithDefaults,
   previousSlotsExport,
   previousSlotsMarker,
@@ -245,10 +245,10 @@ test("slot-only packets do not invent a helper relocation", () => {
   );
 });
 
-test("withDefaults authored returns are exact certified replacements", () => {
+test("withDefaults docs returns are exact certified replacements", () => {
   const packet = (text: string) => ({ text, mappings: [], diagnostics: [] });
   for (const [before, after, label] of [
-    [previousSetupWithDefaults, currentSetupWithDefaults, "setup"],
+    [previousEmbeddedWithDefaults, currentEmbeddedWithDefaults, "embedded"],
     [previousSharedWithDefaults, currentSharedWithDefaults, "shared"],
   ]) {
     const proof = relocatePacket(packet(`${before}\n`), packet(`${after}\n`), "", assets);
@@ -258,11 +258,11 @@ test("withDefaults authored returns are exact certified replacements", () => {
       () =>
         relocatePacket(
           packet(`${before}\n`),
-          packet(`${after.replace("_T & ", "unknown & ")}\n`),
+          packet(`${after.replace("unknown", "never")}\n`),
           "",
           assets,
         ),
-      new RegExp(`${label} withDefaults authored return`),
+      new RegExp(`${label} withDefaults`),
     );
   }
 });

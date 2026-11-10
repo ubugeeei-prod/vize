@@ -166,14 +166,16 @@ impl<'a> MacroTypeMappings<'a> {
             let Some(authored) = declarations.model_declaration(model.name.as_str()) else {
                 continue;
             };
-            let mut needle = crate::virtual_ts::TextBuf::from_text("  ");
-            let identifier = oxc_syntax::identifier::is_identifier_name(model.name.as_str());
-            if identifier {
-                needle.push_str(model.name.as_str());
-            } else {
-                push_ts_string_literal(&mut needle, model.name.as_str());
-            }
-            let start = if identifier {
+            let mut quoted = crate::virtual_ts::TextBuf::from_text("  ");
+            push_ts_string_literal(&mut quoted, model.name.as_str());
+            let quoted_start = generated.find(quoted.as_str());
+            let identifier =
+                oxc_syntax::identifier::is_identifier_name(model.name.as_str()).then(|| {
+                    let mut identifier = crate::virtual_ts::TextBuf::from_text("  ");
+                    identifier.push_str(model.name.as_str());
+                    identifier
+                });
+            let identifier_start = identifier.as_ref().and_then(|needle| {
                 generated
                     .match_indices(needle.as_str())
                     .find_map(|(start, _)| {
@@ -183,19 +185,21 @@ impl<'a> MacroTypeMappings<'a> {
                         )
                         .then_some(start)
                     })
-            } else {
-                generated.find(needle.as_str())
-            };
-            let Some(start) = start else {
+            });
+            let Some((start, length)) = (match (quoted_start, identifier_start) {
+                (Some(quoted_start), Some(identifier_start)) if identifier_start < quoted_start => {
+                    Some((identifier_start, identifier.as_ref().unwrap().len() - 2))
+                }
+                (Some(quoted_start), _) => Some((quoted_start, quoted.len() - 2)),
+                (None, Some(identifier_start)) => {
+                    Some((identifier_start, identifier.as_ref().unwrap().len() - 2))
+                }
+                (None, None) => None,
+            }) else {
                 continue;
             };
             let start = generated_start + start + 2;
-            self.map_model_symbol(
-                ts,
-                start..start + needle.len() - 2,
-                authored,
-                model.name.as_str(),
-            );
+            self.map_model_symbol(ts, start..start + length, authored, model.name.as_str());
         }
     }
 

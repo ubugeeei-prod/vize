@@ -109,6 +109,7 @@ pub(super) fn emit_setup_helpers(
     script_content: Option<&str>,
     generic_param: Option<&crate::virtual_ts::generic_parameters::GenericParameters>,
     hoist_shared_preamble: bool,
+    preserve_with_defaults_docs: bool,
     template_ast: Option<&RootNode<'_>>,
 ) -> bool {
     // Static `ref="name"` attributes on plain elements, keyed for
@@ -186,6 +187,7 @@ pub(super) fn emit_setup_helpers(
         hoist_shared_preamble,
         boolean_keys.is_some(),
         template_refs.is_some() && component_context.helpers.template_refs.needs_registry(),
+        preserve_with_defaults_docs,
     );
     // Whether the template's ref registry is declared in this scope.
     template_refs.is_some()

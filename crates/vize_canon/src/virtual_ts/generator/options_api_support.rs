@@ -1,8 +1,10 @@
 use oxc_allocator::Allocator;
-use oxc_ast::ast::{ArrayExpressionElement, Expression, TSType, TSTypeName};
+use oxc_ast::ast::{
+    ArrayExpressionElement, Expression, PropertyKey, TSSignature, TSType, TSTypeName,
+};
 use oxc_parser::Parser;
 use oxc_span::{GetSpan, SourceType};
-use oxc_syntax::identifier::is_identifier_part;
+use oxc_syntax::identifier::{is_identifier_name, is_identifier_part};
 use vize_carton::String;
 use vize_croquis::{Croquis, OptionGroup};
 
@@ -81,10 +83,10 @@ pub(super) fn find_options_api_slots_type(script: &str) -> Option<String> {
     }
     let options = component_options_from_program(&parsed.program)?;
     let slots = option_expression_property(options, "slots")?;
-    slots_type_from_expression(script, slots).map(String::from)
+    slots_type_from_expression(script, slots)
 }
 
-fn slots_type_from_expression<'a>(script: &'a str, expression: &Expression<'_>) -> Option<&'a str> {
+fn slots_type_from_expression(script: &str, expression: &Expression<'_>) -> Option<String> {
     match expression {
         Expression::TSAsExpression(value) => slots_type_argument(script, &value.type_annotation)
             .or_else(|| slots_type_from_expression(script, &value.expression)),
@@ -104,7 +106,7 @@ fn slots_type_from_expression<'a>(script: &'a str, expression: &Expression<'_>) 
     }
 }
 
-fn slots_type_argument<'a>(script: &'a str, annotation: &TSType<'_>) -> Option<&'a str> {
+fn slots_type_argument(script: &str, annotation: &TSType<'_>) -> Option<String> {
     let TSType::TSTypeReference(reference) = annotation else {
         return None;
     };
@@ -115,7 +117,78 @@ fn slots_type_argument<'a>(script: &'a str, annotation: &TSType<'_>) -> Option<&
         return None;
     }
     let argument = reference.type_arguments.as_ref()?.params.first()?;
-    source_slice(script, argument.span())
+    options_api_slots_contract(script, argument)
+        .or_else(|| source_slice(script, argument.span()).map(String::from))
+}
+
+/// Vue's `SlotsType` records the payload object for property-form members,
+/// while the public component instance exposes optional slot functions. Emit
+/// that public shape directly so TypeScript hover sees both the payload and
+/// the authored member documentation.
+fn options_api_slots_contract(script: &str, argument: &TSType<'_>) -> Option<String> {
+    let TSType::TSTypeLiteral(literal) = argument else {
+        return None;
+    };
+    let mut rendered = String::from("{\n");
+    let mut previous_end = literal.span.start.saturating_add(1) as usize;
+    for member in &literal.members {
+        let (key, value, member_end) = match member {
+            TSSignature::TSPropertySignature(property) if !property.computed => {
+                let key = slot_member_key(script, &property.key)?;
+                let annotation = property.type_annotation.as_ref()?;
+                let value = source_slice(script, annotation.type_annotation.span())?;
+                let value = if matches!(annotation.type_annotation, TSType::TSFunctionType(_)) {
+                    String::from(value)
+                } else {
+                    vize_carton::cstr!("(props: {value}) => any")
+                };
+                (key, value, property.span.end as usize)
+            }
+            TSSignature::TSMethodSignature(method)
+                if !method.computed && method.type_parameters.is_none() =>
+            {
+                let key = slot_member_key(script, &method.key)?;
+                let params = source_slice(script, method.params.span())?;
+                (
+                    key,
+                    vize_carton::cstr!("{params} => any"),
+                    method.span.end as usize,
+                )
+            }
+            _ => return None,
+        };
+        let key_start = member.span().start as usize;
+        if let Some(doc) = leading_jsdoc(script.get(previous_end..key_start)?) {
+            rendered.push_str("  ");
+            rendered.push_str(doc);
+            rendered.push('\n');
+        }
+        rendered.push_str("  ");
+        rendered.push_str(key.as_str());
+        rendered.push_str("?: ");
+        rendered.push_str(value.as_str());
+        rendered.push_str(";\n");
+        previous_end = member_end;
+    }
+    rendered.push('}');
+    Some(rendered)
+}
+
+fn slot_member_key(script: &str, key: &PropertyKey<'_>) -> Option<String> {
+    match key {
+        PropertyKey::StaticIdentifier(identifier) => Some(String::from(identifier.name.as_str())),
+        PropertyKey::Identifier(identifier) => Some(String::from(identifier.name.as_str())),
+        PropertyKey::StringLiteral(literal) if is_identifier_name(literal.value.as_str()) => {
+            Some(String::from(literal.value.as_str()))
+        }
+        _ => source_slice(script, key.span()).map(String::from),
+    }
+}
+
+fn leading_jsdoc(preamble: &str) -> Option<&str> {
+    let start = preamble.rfind("/**")?;
+    let doc = preamble.get(start..)?.trim();
+    doc.ends_with("*/").then_some(doc)
 }
 
 fn props_from_expression(
@@ -186,7 +259,7 @@ export default defineComponent({
 "#;
         assert_eq!(
             find_options_api_slots_type(source).as_deref(),
-            Some("{\n    /** Row slot. */\n    item: { row: number }\n  }")
+            Some("{\n  /** Row slot. */\n  item?: (props: { row: number }) => any;\n}")
         );
     }
 }

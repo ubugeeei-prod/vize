@@ -349,6 +349,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         options_api_props.as_ref(),
         &syntactic_type_only_imported_names,
         setup_type_exports.exports_public_type("Props"),
+        generation_options.component_name.is_some(),
     );
     let fallthrough_scope = self::fallthrough::FallthroughComponentScope::new(
         summary,
@@ -393,6 +394,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         script_content,
         generic_parameters,
         hoist_shared_preamble,
+        generation_options.component_name.is_some(),
         template_ast,
     );
     ts.push_str("\n\n");
