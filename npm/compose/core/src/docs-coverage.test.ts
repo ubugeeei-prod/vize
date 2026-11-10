@@ -73,6 +73,58 @@ void test("re-exports are exempt and an overload group is documented once", () =
   assert.deepEqual(audit.problems, []);
 });
 
+void test("identifier export assignments audit their referenced declaration", () => {
+  const documented = auditDocumentation(
+    "plugin.d.cts",
+    [
+      "/** Initialize the TypeScript server plugin. */",
+      "declare function init(modules: unknown): unknown;",
+      "export = init;",
+    ].join("\n"),
+  );
+  assert.equal(documented.declarations, 1);
+  assert.deepEqual(documented.problems, []);
+
+  const defaultExport = auditDocumentation(
+    "plugin.ts",
+    ["/** Shared plugin object. */", "const plugin = {};", "export default plugin;"].join("\n"),
+  );
+  assert.equal(defaultExport.declarations, 1);
+  assert.deepEqual(defaultExport.problems, []);
+
+  const undocumented = auditDocumentation(
+    "plugin.d.cts",
+    ["declare function init(modules: unknown): unknown;", "export = init;"].join("\n"),
+  );
+  assert.equal(undocumented.declarations, 1);
+  assert.deepEqual(undocumented.problems, [
+    'plugin.d.cts:1 export "init" has no JSDoc block directly above',
+  ]);
+
+  const sameNamedTypeAndValue = auditDocumentation(
+    "plugin.ts",
+    [
+      "/** Public plugin type. */",
+      "interface plugin {}",
+      "const plugin = {};",
+      "export default plugin;",
+    ].join("\n"),
+  );
+  assert.equal(sameNamedTypeAndValue.declarations, 1);
+  assert.deepEqual(sameNamedTypeAndValue.problems, [
+    'plugin.ts:3 export "plugin" has no JSDoc block directly above',
+  ]);
+
+  const valueNamespace = auditDocumentation(
+    "plugin.d.cts",
+    ["declare namespace plugin {", "  const version: string;", "}", "export = plugin;"].join("\n"),
+  );
+  assert.equal(valueNamespace.declarations, 1);
+  assert.deepEqual(valueNamespace.problems, [
+    'plugin.d.cts:1 export "plugin" has no JSDoc block directly above',
+  ]);
+});
+
 void test("public source graphs follow relative re-exports once", () => {
   const fixtureRoot = new URL("test-support/fixtures/api-documentation/", import.meta.url);
   const audit = auditSourceGraph(

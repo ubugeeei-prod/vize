@@ -50,6 +50,29 @@ const packages = [
     entrypoints: [new URL("mcp-musea/src/index.ts", npmRoot)],
   },
   {
+    name: "@vizejs/builder-shared",
+    sourceRoot: npmRoot,
+    minimumDeclarations: 15,
+    entrypoints: [
+      new URL("builder/shared/mapped-module.ts", npmRoot),
+      new URL("builder/shared/module-output.ts", npmRoot),
+      new URL("builder/shared/native-shape.ts", npmRoot),
+      new URL("builder/shared/hot-reload.ts", npmRoot),
+    ],
+  },
+  {
+    name: "@vizejs/fresco-native",
+    sourceRoot: new URL("../../npm/fresco-native/", import.meta.url),
+    minimumDeclarations: 49,
+    entrypoints: [new URL("../../npm/fresco-native/index.d.ts", import.meta.url)],
+  },
+  {
+    name: "@vizejs/typescript-vue-plugin",
+    sourceRoot: new URL("../../npm/typescript-plugin/", import.meta.url),
+    minimumDeclarations: 1,
+    entrypoints: [new URL("../../npm/typescript-plugin/index.d.cts", import.meta.url)],
+  },
+  {
     name: "@vizejs/unplugin",
     sourceRoot: npmRoot,
     minimumDeclarations: 20,

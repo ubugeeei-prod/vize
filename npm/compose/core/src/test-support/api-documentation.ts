@@ -51,11 +51,30 @@ function declarationNames(statement: ts.Statement): readonly string[] | undefine
     ts.isClassDeclaration(statement) ||
     ts.isInterfaceDeclaration(statement) ||
     ts.isTypeAliasDeclaration(statement) ||
-    ts.isEnumDeclaration(statement)
+    ts.isEnumDeclaration(statement) ||
+    ts.isModuleDeclaration(statement)
   ) {
     return [statement.name?.text ?? "default"];
   }
   return undefined;
+}
+
+function namespaceContainsValue(statement: ts.ModuleDeclaration): boolean {
+  const body = statement.body;
+  if (body == null) return false;
+  if (ts.isModuleDeclaration(body)) return namespaceContainsValue(body);
+  if (!ts.isModuleBlock(body)) return false;
+  return body.statements.some(isValueDeclaration);
+}
+
+function isValueDeclaration(statement: ts.Statement): boolean {
+  return (
+    ts.isVariableStatement(statement) ||
+    ts.isFunctionDeclaration(statement) ||
+    ts.isClassDeclaration(statement) ||
+    ts.isEnumDeclaration(statement) ||
+    (ts.isModuleDeclaration(statement) && namespaceContainsValue(statement))
+  );
 }
 
 function propertyName(member: ts.TypeElement, source: ts.SourceFile): string {
@@ -89,6 +108,16 @@ export function auditDocumentation(file: string, sourceText: string): Documentat
   const seenFunctionNames = new Set<string>();
   let declarations = 0;
   let optionalMembers = 0;
+
+  const valueDeclarationsByName = new Map<string, ts.Statement>();
+  for (const statement of source.statements) {
+    if (!isValueDeclaration(statement)) continue;
+    for (const name of declarationNames(statement) ?? []) {
+      if (name !== "default" && !valueDeclarationsByName.has(name)) {
+        valueDeclarationsByName.set(name, statement);
+      }
+    }
+  }
 
   for (const statement of source.statements) {
     if (!hasExportModifier(statement)) continue;
@@ -125,6 +154,19 @@ export function auditDocumentation(file: string, sourceText: string): Documentat
           `${file}:${lineNumber(source, member)} optional option "${propertyName(member, source)}" must document @default`,
         );
       }
+    }
+  }
+
+  for (const statement of source.statements) {
+    if (!ts.isExportAssignment(statement) || !ts.isIdentifier(statement.expression)) continue;
+    const declaration = valueDeclarationsByName.get(statement.expression.text);
+    if (declaration == null || hasExportModifier(declaration)) continue;
+
+    declarations += 1;
+    if (directDocumentation(declaration, source) === undefined) {
+      problems.push(
+        `${file}:${lineNumber(source, declaration)} export "${statement.expression.text}" has no JSDoc block directly above`,
+      );
     }
   }
 

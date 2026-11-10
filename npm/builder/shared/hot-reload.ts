@@ -1,12 +1,20 @@
 /** HMR code generation for Vue SFCs using `module.hot` (Rspack/webpack CJS API). */
 
+/** Native module fingerprints used to choose between rerender and reload. */
 export interface HmrMetadata {
+  /** Fingerprint of the complete authored SFC. */
   source: string;
+  /** Fingerprint of the script block when it exists. */
   script?: string;
+  /** Fingerprint of the template block when it exists. */
   template?: string;
+  /** Fingerprint of compiler options that affect module behavior. */
   options: string;
+  /** Adapter-supplied eligibility flag; the HMR consumer applies further preservation checks. */
   canRerender: boolean;
+  /** Adapter-supplied module identity used by the HMR consumer's equality checks. */
   module: string;
+  /** Adapter-supplied style-structure identity; emitted style content may be tracked separately. */
   styles: string;
 }
 

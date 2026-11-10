@@ -9,6 +9,7 @@ export type VizeConfigOptions = NonNullable<Parameters<typeof createVizeRuleConf
 
 // Keep the actual rule objects: collection, options, diagnostics and UTF-8 edits
 // have one implementation shared with the existing public ESLint bridge.
+/** ESLint plugin with native Vize rules and generated flat-config presets. */
 const plugin: ESLint.Plugin & { configs: Record<keyof typeof ruleConfigs, Linter.Config> } = {
   meta: { name: packageJson.name, version: packageJson.version },
   rules: bridge.rules as unknown as NonNullable<ESLint.Plugin["rules"]>,
