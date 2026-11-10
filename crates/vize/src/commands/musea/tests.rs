@@ -1,5 +1,7 @@
 use super::ServeArgs;
-use super::serve_plan::{VITE_BIN_NAMES, create_serve_plan, resolve_vite_binary};
+use super::serve_plan::{
+    VITE_BIN_NAMES, VITE_PLUS_BIN_NAMES, create_serve_plan, resolve_vite_binary,
+};
 use std::fs;
 use std::path::{Path, PathBuf};
 
@@ -9,6 +11,14 @@ fn write_vite_bin(root: &Path) -> PathBuf {
     let vite_bin = bin_dir.join(VITE_BIN_NAMES[0]);
     fs::write(&vite_bin, "").unwrap();
     vite_bin
+}
+
+fn write_vite_plus_bin(root: &Path) -> PathBuf {
+    let bin_dir = root.join("node_modules").join(".bin");
+    fs::create_dir_all(&bin_dir).unwrap();
+    let vite_plus_bin = bin_dir.join(VITE_PLUS_BIN_NAMES[0]);
+    fs::write(&vite_plus_bin, "").unwrap();
+    vite_plus_bin
 }
 
 fn write_musea_vite_setup(root: &Path) {
@@ -112,6 +122,52 @@ fn serve_plan_runs_static_build_with_musea_environment() {
     assert_eq!(plan.program, vite_bin);
     assert_eq!(plan.args, ["build"]);
     assert_eq!(plan.env, [("VIZE_MUSEA_STATIC_BUILD".into(), "1".into())]);
+}
+
+#[test]
+fn serve_plan_prefers_child_vite_plus_over_parent_nuxt() {
+    let workspace = tempfile::tempdir().unwrap();
+    fs::write(workspace.path().join("nuxt.config.ts"), "export default {}").unwrap();
+    fs::write(
+        workspace.path().join("package.json"),
+        r#"{
+  "devDependencies": {
+    "@vizejs/nuxt": "0.474.0",
+    "nuxt": "4.0.0"
+  }
+}"#,
+    )
+    .unwrap();
+
+    let gallery = workspace.path().join("gallery");
+    fs::create_dir(&gallery).unwrap();
+    write_musea_vite_setup(&gallery);
+    let package = fs::read_to_string(gallery.join("package.json")).unwrap();
+    fs::write(
+        gallery.join("package.json"),
+        package.replace(
+            "\n  }\n}",
+            ",\n    \"vite\": \"npm:@voidzero-dev/vite-plus-core@1.5.0\",\n    \"vite-plus\": \"1.5.0\"\n  }\n}",
+        ),
+    )
+    .unwrap();
+    let vite_plus_bin = write_vite_plus_bin(&gallery);
+
+    let serve = create_serve_plan(&ServeArgs::default(), &gallery).unwrap();
+    assert_eq!(serve.program, vite_plus_bin);
+    assert_eq!(serve.args, ["dev", "--host", "localhost", "--port", "6006"]);
+
+    let build = create_serve_plan(
+        &ServeArgs {
+            build: true,
+            ..ServeArgs::default()
+        },
+        &gallery,
+    )
+    .unwrap();
+    assert_eq!(build.program, vite_plus_bin);
+    assert_eq!(build.args, ["build"]);
+    assert_eq!(build.env, [("VIZE_MUSEA_STATIC_BUILD".into(), "1".into())]);
 }
 
 #[test]

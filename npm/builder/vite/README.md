@@ -28,29 +28,41 @@ Install the `vite-plus` version your project uses, then configure the whole tool
 
 ```ts
 // vite.config.ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+import { defineConfig } from "vite-plus";
+import { vitePlusConfig } from "@vizejs/vite-plugin/vite-plus";
 
-const vpConfig = {
+const vize = await vitePlusConfig({
   server: { port: 3000 },
-};
+  vue: {
+    compiler: { sourceMap: true },
+    linter: { preset: "essential" },
+    formatter: { singleQuote: true },
+  },
+});
 
-export default defineConfig(vpConfig).withVue({
-  compiler: { sourceMap: true },
-  linter: { preset: "essential" },
-  formatter: { singleQuote: true },
+export default defineConfig({
+  ...vize,
+  run: {
+    tasks: {
+      check: { command: "vize-vp-task check", cache: false },
+      lint: { command: "vize-vp-task lint", cache: false },
+      fmt: { command: "vize-vp-task fmt", cache: false },
+    },
+  },
 });
 ```
 
-Run `vp run check`, `lint`, `fmt`, `build`, or `pack` without registering another
-plugin or writing CLI scripts. Native lint runs alongside Oxlint; overlapping
-rules and Vue formatting ownership are configured automatically.
+With Vite+ 1.5 or later, literal tasks are read without bundling or evaluating
+the config. Native lint runs alongside Oxlint; overlapping rules and Vue
+formatting ownership are configured automatically. The Vite+ guide lists the
+complete literal task table, including typecheck, build, pack, and editor setup.
 
-Keep shared native settings in `vue:` using `.withVue(vueConfig)`. Import ordinary
-JavaScript objects to reuse settings; custom config `extends` is no longer supported.
+Keep shared native settings in `vue:`. Import ordinary JavaScript objects to
+reuse settings; custom config `extends` is no longer supported.
 Use `pack.vue` for native declarations, declaration maps, and compiler maps.
-The standalone `withVue(vueConfig, vpConfig)` helper remains available; it is not
-an alias of `defineConfig(vpConfig)`. `withVize` is a compatibility name for the
-config-first helper. Prefer the fluent API for new configuration.
+The `defineConfig(vpConfig).withVue(vueConfig)` wrapper, standalone `withVue`,
+and `withVize` names remain available for dynamic configuration and older Vite+
+versions, but they require config evaluation before task lookup.
 
 Vite+ remains a user-selected optional peer (0.2.3 or later); configuration types
 come from that peer. Ordinary Vite users do not need to install it. Built-in

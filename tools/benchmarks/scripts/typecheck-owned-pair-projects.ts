@@ -10,7 +10,7 @@ import {
   rmSync,
   writeFileSync,
 } from "node:fs";
-import { dirname, join, resolve } from "node:path";
+import { dirname, join, matchesGlob, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { CORPORA } from "./typecheck-corpus-pair.ts";
 import { generateScaleProject, PLANT_CODES, type ScaleProject } from "./scale-project-generator.ts";
@@ -25,6 +25,31 @@ export type Workload = {
   sfcs: number;
   generated: ScaleProject | null;
 };
+export type CheckerTracePolicy =
+  | { enabled: true; scope: "frozen-real-corpus" }
+  | {
+      enabled: false;
+      scope: "projection-only-generated-workload";
+      reason: string;
+    };
+
+/**
+ * TypeScript's `--generateTrace` includes the complete type catalog of every
+ * checker. Keep that attribution evidence for the two frozen real corpora,
+ * where it is useful and bounded. Generated scale workloads retain their
+ * complete mapper probe, per-SFC projection bytes and diagnostic packets, but
+ * do not turn an untimed attribution probe into multi-gigabyte type catalogs.
+ */
+export function checkerTracePolicy(workload: Pick<Workload, "generated">): CheckerTracePolicy {
+  return workload.generated === null
+    ? { enabled: true, scope: "frozen-real-corpus" }
+    : {
+        enabled: false,
+        scope: "projection-only-generated-workload",
+        reason:
+          "TypeScript --generateTrace serializes complete checker type catalogs; generated workloads retain the complete mapper probe and per-SFC projection bytes instead.",
+      };
+}
 export const OWNED_WORKLOADS = [
   { id: "misskey", sfcs: 583 },
   { id: "n8n", sfcs: 1113 },
@@ -127,6 +152,35 @@ export function selectOwnedWorkloads(requested?: string) {
     assert.ok(specification, `unknown workload: ${id}`);
     return specification;
   });
+}
+
+/**
+ * Return the authored SFCs admitted by the frozen workload's own tsconfig.
+ *
+ * The copied source closure deliberately retains excluded fixtures as custody
+ * evidence. Those files must stay in the input snapshot, but they are not part
+ * of the TypeScript program and therefore must not be required to reach the
+ * mapper. Generated workloads have no excluded source fixtures.
+ */
+export function expectedOwnedSfcFiles(
+  id: string,
+  inputs: ReturnType<typeof snapshotInputs>,
+): string[] {
+  const vueFiles = inputs.filter((row) => row.file.endsWith(".vue")).map((row) => row.file);
+  const real = CORPORA.find((entry) => entry.id === id);
+  if (!real) return vueFiles;
+  const config = real.tsconfig as {
+    include: readonly string[];
+    exclude?: readonly string[];
+  };
+  const normalize = (pattern: string) => pattern.replace(/^\.\//u, "");
+  const include = config.include.map(normalize);
+  const exclude = (config.exclude ?? []).map(normalize);
+  return vueFiles.filter(
+    (file) =>
+      include.some((pattern) => matchesGlob(file, pattern)) &&
+      !exclude.some((pattern) => matchesGlob(file, pattern)),
+  );
 }
 
 export function installRole(workload: Workload, hosts: MapperHosts) {

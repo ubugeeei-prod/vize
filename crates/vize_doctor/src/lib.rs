@@ -25,6 +25,7 @@
 //! - AI context is vendor-neutral, explicitly source-fed, budgeted, and wire-validated.
 //! - Capability cache keys are domain-separated and explain every invalidation boundary.
 //! - Cacheable capability outputs validate provenance and their complete payload identity.
+//! - Persistent cache objects are portable across local and remote backends and fail closed.
 //!
 //! # Example
 //!
@@ -86,6 +87,9 @@ pub use capability_execution::{
 };
 pub use capability_snapshot::{
     CapabilitySnapshot, CapabilitySnapshotError, DOCTOR_CAPABILITY_SNAPSHOT_FORMAT_VERSION,
+    DOCTOR_PERSISTENT_CAPABILITY_SNAPSHOT_FORMAT_VERSION,
+    DOCTOR_PERSISTENT_CAPABILITY_SNAPSHOT_MEDIA_TYPE, PersistentCapabilitySnapshot,
+    PersistentCapabilitySnapshotError,
 };
 pub use filter::{DoctorFilter, DoctorFilterDimension, DoctorFilterError, DoctorFilterSpec};
 pub use fingerprint::{

@@ -475,6 +475,14 @@ fn has_label(labels: &[String], expected: &str) -> bool {
 }
 
 #[cfg(feature = "native")]
-fn resolve_tsgo_binary() -> Option<std::path::PathBuf> {
-    crate::test_support::tsgo()
+/// Resolve the checked-in TypeScript runtime, or report the deliberate skip so
+/// a dependency-light local run cannot masquerade as checker coverage.
+pub(super) fn resolve_tsgo_binary() -> Option<std::path::PathBuf> {
+    let binary = crate::test_support::tsgo();
+    if binary.is_none() {
+        eprintln!(
+            "skipping checker-backed component completion test: the locked tsgo runtime is not installed"
+        );
+    }
+    binary
 }

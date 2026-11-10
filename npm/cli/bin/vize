@@ -1,2 +1,7 @@
 #!/usr/bin/env node
-import "../dist/cli.mjs";
+
+if (process.argv[2] === "content-mapper") {
+  import("../dist/content-mapper-cli.mjs");
+} else {
+  import("../dist/cli.mjs");
+}

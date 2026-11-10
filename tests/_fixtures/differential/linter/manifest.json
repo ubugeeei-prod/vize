@@ -724,6 +724,44 @@
       }
     },
     {
+      "id": "linter/core-rule-expression-compatibility-12595",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "core-rule-expression-compatibility-12595",
+        "files": [
+          {
+            "path": "CoreRuleCompatibility.vue.txt",
+            "role": "regression-reproduction-with-invalid-controls",
+            "sha256": "d5bc8facbbe9191b84013850bc5a1d88883d9df1abb12e769d605091714c5031"
+          },
+          {
+            "path": "vite.config.mjs",
+            "role": "native-cli-config",
+            "sha256": "47ea8b7f16e1c7d3505132fa1055838c3b9c0ece366ff747de38c1b130c48643"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "js",
+              "ts"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/corsa-session-waiters-10393",
       "state": "active",
       "targets": [
@@ -3078,6 +3116,48 @@
       }
     },
     {
+      "id": "linter/explicit-slots-imported-intersection-12599",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "explicit-slots-imported-intersection-12599",
+        "files": [
+          {
+            "path": "Field.vue.txt",
+            "role": "issue-authored-regression-reproduction",
+            "sha256": "3e45660ca94f596e0fed46d327ad34bc905c6d0aea1d68b3f92aeeffdc98c806"
+          },
+          {
+            "path": "WholeType.vue.txt",
+            "role": "whole-imported-type-negative-control",
+            "sha256": "98d1276256a2d5a7ecc54e56eb749efcec985907840fa39f5baaa522b4bf7bcc"
+          },
+          {
+            "path": "types.ts.txt",
+            "role": "imported-slot-type",
+            "sha256": "52de0f52b8b34419d939597b9d4ad6611e52d1bd52c6d9c0e841a5323848edd9"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/explicit-type-rule-preset-10717",
       "state": "active",
       "targets": [
@@ -4071,6 +4151,48 @@
       }
     },
     {
+      "id": "linter/no-unused-emit-wrappers-12597",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "no-unused-emit-wrappers-12597",
+        "files": [
+          {
+            "path": "NameInput.vue.txt",
+            "role": "issue-authored-reproduction",
+            "sha256": "143217a42d5203424ce3f3db54c58e80cd585164af9dd8503f5d292998de5d40"
+          },
+          {
+            "path": "use-field.ts.txt",
+            "role": "issue-authored-support-module",
+            "sha256": "1a59fee90af301e80f3b6e564be5917dc98ed5c683c6e272a4aab18774c6dc1c"
+          },
+          {
+            "path": "vize.json.txt",
+            "role": "issue-authored-linter-configuration",
+            "sha256": "50498faa909b322a179bd22aadec34fe1b7f2f3d1c4b79af2c0caec4b679742e"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/operational-documentation-11863",
       "state": "active",
       "targets": [
@@ -4638,6 +4760,46 @@
               "vue3-sfc",
               "html-template",
               "js",
+              "ts"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "linter/require-expose-module-owners-12598",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "require-expose-module-owners-12598",
+        "files": [
+          {
+            "path": "messages.ts.txt",
+            "role": "issue-authored-reproduction",
+            "sha256": "1fcef3d0c807b9df2b5a66c28ccaf7ee162ed90d1a6c0baf594940233b1142ac"
+          },
+          {
+            "path": "mount-helper.ts.txt",
+            "role": "issue-authored-reproduction",
+            "sha256": "11f31805689ff8641f7d927bed985422a5dd4733a3afd1148d3e6d6fe27c1112"
+          },
+          {
+            "path": "router.options.ts.txt",
+            "role": "issue-authored-reproduction",
+            "sha256": "e46bdca47c99dc1c87e8a582aa3d7c797f183895a334142eabbffda816b8c429"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
               "ts"
             ],
             "selector": "linter manifest pinned authored sources"

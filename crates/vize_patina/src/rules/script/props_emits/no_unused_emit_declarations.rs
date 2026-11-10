@@ -14,10 +14,10 @@
 //! This is intentionally pragmatic. It tracks the captured emit function
 //! (`const emit = defineEmits(...)`) and the string-literal event names passed
 //! as its first argument (`emit('change')`). An event declared but never emitted
-//! through that function is reported. Passing the function to another call
-//! escapes it to code this rule cannot inspect, so all declarations are then
-//! treated as potentially used, matching eslint-plugin-vue. Calls are counted from the macro
-//! declaration onward, matching eslint-plugin-vue's source-order visitor. When
+//! through that function is reported. Passing, storing, or returning the
+//! function escapes it to code this rule cannot inspect, so all declarations
+//! are treated as potentially used. Calls are counted from the macro declaration
+//! onward, matching eslint-plugin-vue's source-order visitor. When
 //! the `defineEmits` return value is not assigned to a binding (e.g. a bare
 //! `defineEmits([...])`), only template `$emit(...)` calls can use declarations.
 //!
@@ -130,6 +130,7 @@ impl ScriptRule for NoUnusedEmitDeclarations {
                     used: &mut used,
                     after: declaration.start,
                     escaped: false,
+                    direct_call_callee: None,
                 };
                 collector.visit_program(program);
                 escaped = collector.escaped;
@@ -354,53 +355,54 @@ struct EmittedCollector<'a, 'set> {
     used: &'set mut FxHashSet<CompactString>,
     after: u32,
     escaped: bool,
+    /// Span of a bare `emit(...)` callee while its call is being walked.
+    /// Every other value reference escapes the local event-name analysis.
+    direct_call_callee: Option<Span>,
 }
 
 impl<'a> Visit<'a> for EmittedCollector<'_, '_> {
     fn visit_call_expression(&mut self, it: &CallExpression<'a>) {
-        if let Expression::Identifier(callee) = &it.callee
-            && callee.name.as_str() == self.emit_name
-            && callee.span.start > self.after
+        let direct_emit_callee = match &it.callee {
+            Expression::Identifier(callee) if callee.name.as_str() == self.emit_name => {
+                Some(callee.span)
+            }
+            _ => None,
+        };
+        if direct_emit_callee.is_some_and(|span| span.start > self.after)
             && let Some(Argument::StringLiteral(literal)) = it.arguments.first()
         {
             self.used.insert(CompactString::new(literal.value.as_str()));
         }
-        if it.span.start > self.after {
-            self.escaped |= it
-                .arguments
-                .iter()
-                .any(|argument| argument_references_emit(argument, self.emit_name));
+
+        let previous_callee = self.direct_call_callee;
+        if let Some(span) = direct_emit_callee {
+            self.direct_call_callee = Some(span);
         }
         walk_call_expression(self, it);
+        self.direct_call_callee = previous_callee;
     }
-}
 
-fn argument_references_emit(argument: &Argument<'_>, emit_name: &str) -> bool {
-    match argument {
-        Argument::ObjectExpression(object) => object.properties.iter().any(|property| {
-            matches!(property, ObjectPropertyKind::ObjectProperty(property)
-                if direct_emit_reference(&property.value, emit_name))
-        }),
-        Argument::ArrayExpression(array) => array.elements.iter().any(|element| {
-            element
-                .as_expression()
-                .is_some_and(|expression| direct_emit_reference(expression, emit_name))
-        }),
-        _ => argument
-            .as_expression()
-            .is_some_and(|expression| direct_emit_reference(expression, emit_name)),
-    }
-}
+    fn visit_ts_type_query_expr_name(&mut self, it: &oxc_ast::ast::TSTypeQueryExprName<'a>) {
+        use oxc_ast::ast::TSTypeQueryExprName;
 
-fn direct_emit_reference(expression: &Expression<'_>, emit_name: &str) -> bool {
-    let expression = expression.without_parentheses();
-    if matches!(expression, Expression::Identifier(identifier) if identifier.name == emit_name) {
-        return true;
+        match it {
+            TSTypeQueryExprName::IdentifierReference(_) | TSTypeQueryExprName::QualifiedName(_) => {
+            }
+            _ => oxc_ast_visit::walk::walk_ts_type_query_expr_name(self, it),
+        }
     }
-    expression.as_member_expression().is_some_and(|member| {
-        matches!(member.object().without_parentheses(), Expression::Identifier(identifier)
-            if identifier.name == emit_name)
-    })
+
+    fn visit_identifier_reference(&mut self, identifier: &IdentifierReference<'a>) {
+        if identifier.span.start <= self.after
+            || identifier.name.as_str() != self.emit_name
+            || self
+                .direct_call_callee
+                .is_some_and(|span| span == identifier.span)
+        {
+            return;
+        }
+        self.escaped = true;
+    }
 }
 
 /// Whether the callee is the bare `defineEmits` compiler macro.

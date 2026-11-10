@@ -1,0 +1,4 @@
+export type FieldSlots = {
+  label?(): unknown;
+  append?(): unknown;
+};

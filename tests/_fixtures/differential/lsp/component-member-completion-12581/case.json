@@ -1,0 +1,50 @@
+{
+  "version": 1,
+  "id": "lsp/regression/component-member-completion-12581",
+  "provenance": {
+    "fixCommit": "c244b05cae3530609245e73c0da3087da74eb70e",
+    "witnessPath": "crates/vize_maestro/src/ide/completion/component_member_visibility_tests.rs",
+    "witnessTest": "imported_component_member_completion_hides_generated_contract_fields",
+    "inputOrigin": "exact minimal imported component value reproduction from issue 12581",
+    "contractOrigin": "complete ordered source-built component member completion response"
+  },
+  "files": [
+    {
+      "source": "Parent.vue.txt",
+      "runtimePath": "Parent.vue",
+      "sha256": "61561733db155c2d3ec39cfc60ed6747c8a3ad1ed395b5f4a8ead901568e0636"
+    },
+    {
+      "source": "Child.vue.txt",
+      "runtimePath": "Child.vue",
+      "sha256": "55160b3732f16d4bece8fd92e792d08b8f640d12a1dcb84058f24f41cbaa0f98"
+    }
+  ],
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": true,
+    "crossFile": true,
+    "completion": true,
+    "ecosystem": false
+  },
+  "entry": "Parent.vue",
+  "expected": {
+    "source": "response.expected.json",
+    "sha256": "1bbd8af6d9cec91d1a6e2696eaa65674825edc0e1756738fec4f50f927110a93"
+  },
+  "method": "textDocument/completion",
+  "request": {
+    "params": {
+      "position": {
+        "line": 2,
+        "character": 6
+      },
+      "context": {
+        "triggerKind": 1
+      }
+    }
+  },
+  "documentVersion": 1,
+  "scope": "complete source-built component member completion response plus raw-checker, template-route, and legacy controls; no native adapter credit"
+}

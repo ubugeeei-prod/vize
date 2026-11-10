@@ -153,6 +153,7 @@ export function assertMetadata(metadata, fixture, row) {
     lintTypecheck: false,
     lintLocale: undefined,
     lintHelpLevel: undefined,
+    lintIgnorePatterns: undefined,
     fmtIgnorePatterns: undefined,
   };
   row.metadataComparison = { actual: completeConfig(actual), expected: completeConfig(expected) };

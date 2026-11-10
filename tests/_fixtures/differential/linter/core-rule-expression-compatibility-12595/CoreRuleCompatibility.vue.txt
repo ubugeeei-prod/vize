@@ -1,0 +1,20 @@
+<script setup lang="ts">
+const MAX_ITEMS = 3
+const ITEM_LIMITS = { perPage: 5 }
+const user_name = "Ada"
+const raw = "1"
+
+function move(delta: number) {
+  return delta
+}
+</script>
+
+<template>
+  <p>{{ MAX_ITEMS }}</p>
+  <p :data-limit="ITEM_LIMITS.perPage">{{ user_name }}</p>
+  <button type="button" @click="move(+1)">Next</button>
+  <input type="number" :step="+Number(raw)" />
+  <p>{{ +parseInt(raw, 10) }}</p>
+  <p>{{ +parseFloat(raw) }}</p>
+  <p>{{ +raw }}</p>
+</template>

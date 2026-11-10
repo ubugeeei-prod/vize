@@ -6,7 +6,7 @@ use super::nested_indent;
 use super::slot_outlet_props::generate_scope_slot_outlet_checks;
 use super::slot_scope::generate_v_slot_scope;
 use super::vif_guard::{
-    append_ignored_vif_guard_open, callback_vif_guard, callback_vif_guard_for_v_for_aliases,
+    append_ignored_vif_guard_open, callback_vif_guard, callback_vif_guard_for_stable_aliases,
     common_vif_guard_prefix_outside_v_for_scope,
 };
 use crate::virtual_ts::expressions::{
@@ -177,12 +177,13 @@ pub(super) fn generate_scope_node(
         ScopeData::EventHandler(data) if ctx.check_options.check_event_handlers() => {
             // Callback bodies execute after the render branch has finished, so
             // mutable captures must not inherit its narrowing. Immutable
-            // `v-for` aliases are the exception: TypeScript preserves their
-            // narrowing across closures. Bare listener values retain the full
-            // render guard inside their generated handler. Only deferred
-            // callbacks need the outer block: wrapping a bare reference also
-            // hides shared inference declarations from sibling listeners
-            // (#11965, #11973, #12005, #12017).
+            // `v-for` aliases and `v-slot` parameters are the exception:
+            // TypeScript preserves their narrowing across closures. Bare
+            // listener values retain the full render guard inside their
+            // generated handler. Only deferred callbacks need the outer block:
+            // wrapping a bare reference also hides shared inference
+            // declarations from sibling listeners (#11965, #11973, #12005,
+            // #12017, #12593).
             let expressions = ctx.expressions_by_scope.get(&scope_id);
             let has_deferred_callback = expressions.is_some_and(|expressions| {
                 expressions.iter().any(|expression| {
@@ -203,24 +204,28 @@ pub(super) fn generate_scope_node(
             let common_guard =
                 expressions.and_then(|exprs| super::vif_guard::common_vif_guard_prefix(exprs));
             let enclosing_guard = if has_deferred_callback {
-                let v_for_aliases: Vec<_> = ctx
+                let stable_callback_aliases: Vec<_> = ctx
                     .summary
                     .scopes
                     .bindings_visible_from(scope.id)
                     .into_iter()
-                    .filter_map(|(name, _, kind)| (kind == ScopeKind::VFor).then_some(name))
+                    .filter_map(|(name, _, kind)| {
+                        matches!(kind, ScopeKind::VFor | ScopeKind::VSlot).then_some(name)
+                    })
                     .collect();
-                let reads_v_for_alias = expressions.is_some_and(|expressions| {
+                let reads_stable_callback_alias = expressions.is_some_and(|expressions| {
                     expressions.iter().any(|expression| {
                         guarded_callback_reads(expression)
                             .iter()
-                            .any(|read| v_for_aliases.contains(&read.as_str()))
+                            .any(|read| stable_callback_aliases.contains(&read.as_str()))
                     })
                 });
-                reads_v_for_alias
+                reads_stable_callback_alias
                     .then_some(common_guard.as_deref())
                     .flatten()
-                    .and_then(|guard| callback_vif_guard_for_v_for_aliases(guard, &v_for_aliases))
+                    .and_then(|guard| {
+                        callback_vif_guard_for_stable_aliases(guard, &stable_callback_aliases)
+                    })
             } else if has_listener_reference {
                 data.target_component.as_ref().and(common_guard)
             } else {

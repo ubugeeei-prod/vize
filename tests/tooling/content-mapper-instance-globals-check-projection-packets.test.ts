@@ -19,7 +19,7 @@ type SemanticLink = {
 type Result = Transform & { semanticLinks?: SemanticLink[] };
 
 const previousName = "source-packets-current-b6b4bbb0a16a.json";
-const currentName = "source-packets-current-67b6fffe3bc8.json";
+const observedName = "source-packets-current-67b6fffe3bc8.json";
 const changedLabels = [
   "lf/slot-shadow",
   "lf/mixed-slot-scope",
@@ -29,14 +29,18 @@ const changedLabels = [
 
 test("the CLI check projection omits only four wire-only template-ref links", () => {
   const { authority, files, cases } = readGlobalsFixture();
-  assert.equal(authority.currentSourcePackets, currentName);
-  const current = selectPacketGoldens(authority, files, cases)!;
+  assert.equal(authority.currentSourcePackets, "source-packets-current-f29a8ee58999.json");
+  const observed = selectPacketGoldens(
+    { ...authority, currentSourcePackets: observedName },
+    files,
+    cases,
+  )!;
   const previous = selectPacketGoldens(
     { ...authority, currentSourcePackets: previousName },
     files,
     cases,
   )!;
-  const provenance = JSON.parse(files.get(current.provenance as string)!);
+  const provenance = JSON.parse(files.get(observed.provenance as string)!);
   assert.equal(provenance.producer.sourceRevision, "67b6fffe3bc88922d9d460b15d76fd7ceb35d06c");
   assert.equal(provenance.producer.pullRequestHead, "1b75300829290185308e49e98c2d3b4c3d6c9575");
   assert.deepEqual(provenance.sourceReceipt, {
@@ -53,14 +57,14 @@ test("the CLI check projection omits only four wire-only template-ref links", ()
     sha256: sha(files.get(previousName)!),
   });
   assert.deepEqual(provenance.successorPopulation, {
-    path: currentName,
-    bytes: Buffer.byteLength(files.get(currentName)!),
-    sha256: sha(files.get(currentName)!),
+    path: observedName,
+    bytes: Buffer.byteLength(files.get(observedName)!),
+    sha256: sha(files.get(observedName)!),
   });
 
   const changed: string[] = [];
   let identical = 0;
-  for (const [index, packet] of current.packets.entries()) {
+  for (const [index, packet] of observed.packets.entries()) {
     const oldPacket = previous.packets[index]!;
     assert.equal(packet.label, oldPacket.label);
     assert.equal(packet.sourceSha256, oldPacket.sourceSha256);

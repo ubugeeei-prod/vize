@@ -107,7 +107,7 @@ test("closed UI mode executes both original argv in one source/session/shared128
       receipt.declaredPhases,
       commands.map((command, index) => ({ name: index ? "ui-check" : "native-build", command })),
     );
-    assert.equal(receipt.helpers.length, 4);
+    assert.equal(receipt.helpers.length, 5);
     assert.equal(receipt.commandReturnCode, 0);
     assert.equal(receipt.phases.length, 2);
     assert.equal(value.calls[1].snapshot.phases[0].commandReturnCode, 0);

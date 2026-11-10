@@ -36,15 +36,20 @@ export function assertCurrentPacketProvenance(
 ): void {
   assert.deepEqual(provenance.artifact, {
     repository: "ubugeeei-prod/vize",
-    run: 42774589490,
-    job: 129691996696,
-    id: 13743648133,
-    name: "instance-globals-tooling-14-42774589490-1",
-    digest: "sha256:45256d8b1bf1fd62d15d3da613e14ad68f28d345cbf0ffdcc11f147f6e137316",
-    bytes: 392307,
+    run: 42772339922,
+    job: 129684248644,
+    id: 13742224501,
+    name: "instance-globals-tooling-15-42772339922-1",
+    digest: "sha256:562e1bc06c236903cb89ce8fd49881919870d76846c2599e6539b725f2deeeb7",
+    bytes: 393773,
   });
-  const slotPackets = ["slot-shadow", "mixed-slot-scope"];
-  // Check mode omits only the four slot-packet navigation links; every other outcome passed.
+  const changed = [
+    "lf/slot-shadow",
+    "lf/mixed-slot-scope",
+    "crlf-unicode/slot-shadow",
+    "crlf-unicode/mixed-slot-scope",
+  ];
+  assert.ok(changed.every((label) => labels.includes(label)));
   assert.deepEqual(provenance.capturedQualification, {
     totalOutcomes: 398,
     passedOutcomes: 394,
@@ -52,9 +57,7 @@ export function assertCurrentPacketProvenance(
     status: "unqualified",
     fullPacketQualification: false,
     hostMatrixQualification: false,
-    gapIds: labels
-      .filter((label) => slotPackets.some((packet) => label.endsWith(`/${packet}`)))
-      .map((label) => `whole-packet/${label}`),
+    gapIds: changed.map((label) => `whole-packet/${label}`),
   });
   assert.deepEqual(provenance.review, {
     completePackets: 80,
@@ -64,6 +67,6 @@ export function assertCurrentPacketProvenance(
     publicPackageAcceptanceCredit: false,
     performanceCredit: false,
     reason:
-      "Only the LF and CRLF/Unicode slot-shadow and mixed-slot-scope whole packets dropped their wire-only vueSetupTemplateRefUnwrap semanticLinks in the diagnostics-only CLI projection (#12604); their generated text, mappings, diagnostic directives, diagnostics, and all other fields stayed exact, the other 76 complete results were byte-identical, and all 394 semantic, protocol, mapping-geometry, and real-host controls passed; this record retains the observed postimages without assigning acceptance credit to the stale-golden run.",
+      "Only the LF and CRLF/Unicode slot-shadow and mixed-slot-scope packets add the exact disjoint opening and closing slot-pattern gap mappings required by #12511. Their generated text, diagnostics, semantic links and all other opaque fields remain exact, the other 76 packets are byte-identical, and all 394 non-whole-packet semantic, protocol, mapping-geometry, reported-beta and official-nightly controls passed. The pinned source-built TypeScript host was unavailable, so this record retains the observed postimages without assigning host-matrix, public-package or performance acceptance credit.",
   });
 }

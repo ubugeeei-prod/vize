@@ -1587,6 +1587,53 @@
       }
     },
     {
+      "id": "lsp/regression/component-member-completion-12581",
+      "state": "active",
+      "targets": [
+        "stdio"
+      ],
+      "inputs": {
+        "root": "component-member-completion-12581",
+        "files": [
+          {
+            "path": "Parent.vue.txt",
+            "sha256": "61561733db155c2d3ec39cfc60ed6747c8a3ad1ed395b5f4a8ead901568e0636"
+          },
+          {
+            "path": "Child.vue.txt",
+            "sha256": "55160b3732f16d4bece8fd92e792d08b8f640d12a1dcb84058f24f41cbaa0f98"
+          }
+        ]
+      },
+      "case": {
+        "path": "component-member-completion-12581/case.json",
+        "sha256": "3fd6b1169cc16d627eb4369740f4b8e8ab52267e398d801b4792ef3407123521"
+      },
+      "requestCount": 1,
+      "initializationOptions": {
+        "editor": true,
+        "lint": false,
+        "typecheck": true,
+        "crossFile": true,
+        "completion": true,
+        "ecosystem": false
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "ts"
+            ],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "lsp/regression/content-mapper-nuxt-emit-10195",
       "state": "active",
       "targets": [
@@ -4265,6 +4312,46 @@
               "vue3-sfc",
               "html-template",
               "ts"
+            ],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "lsp/regression/stdio-client-eof-12433",
+      "state": "active",
+      "targets": [
+        "stdio"
+      ],
+      "inputs": {
+        "root": "stdio-client-eof-12433",
+        "files": [
+          {
+            "path": "ClientLifecycle.vue.txt",
+            "sha256": "73e9a19a3ccd644c8cadb605d55e18e73eef0e18583f9c0f01557046eed05704"
+          }
+        ]
+      },
+      "case": {
+        "path": "stdio-client-eof-12433/case.json",
+        "sha256": "5ca1a6a3edfface5617900c600e80603158b6d2dd7f717bf003e1fa62be0a2ce"
+      },
+      "requestCount": 1,
+      "initializationOptions": {
+        "lint": false,
+        "typecheck": false,
+        "ecosystem": false
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
             ],
             "selector": "LSP manifest pinned authored sources"
           }

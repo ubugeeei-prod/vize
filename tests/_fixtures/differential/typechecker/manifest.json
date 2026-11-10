@@ -13287,6 +13287,45 @@
       }
     },
     {
+      "id": "typechecker/regression/content-mapper-commented-binding-12582",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "content-mapper-commented-binding-12582/App.vue.txt",
+          "sha256": "b9e41dcb5ccbf751a738b34df86978bfce267d4c518cf50612f1bd210e1fa0bb",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "content-mapper-commented-binding-12582/Child.vue.txt",
+          "sha256": "7acf6f93d0917f74bcfdf4fa24e8f3f6f0ef8d0f10860bc9736aa7f7d8e43231",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "content-mapper-commented-binding-12582/tsconfig.json.txt",
+          "sha256": "8b2c95d95331863b8b9b707a4b717a99fdb42c714409fe4021f8ebd0b11c7454",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "content_mapper::masked_spans::exact_fragments_survive_comment_elision_with_different_lengths; content_mapper::tests::diagnostic_origin::commented_template_binding_members_keep_diagnostic_owners. A multi-line component binding with block comments is printed into three generated copies with different byte lengths; each item.kind copy maps back to the one authored member instead of falling through an unmapped gap. Input-only registration; no native parity claim."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/regression/content-mapper-declaration-fallthrough-11591",
       "state": "active",
       "targets": [
@@ -13734,7 +13773,7 @@
               "html-template",
               "ts"
             ],
-            "selector": "content_mapper_tsgo_cli::fallthrough_value_12458::relaxed_fallthrough_roots_report_wrong_values_once; a fallthrough root under checkRequiredFallthroughAttributes checked through tsc 7.1 with the Vize mapper and vize check on the same project (the explicit undefined case is tracked by #12491)"
+            "selector": "content_mapper_tsgo_cli::fallthrough_value_12458::relaxed_fallthrough_roots_report_wrong_values_once; a wrong declared value at a fallthrough root under checkRequiredFallthroughAttributes, checked through tsc 7.1 with the Vize mapper and vize check on the same project"
           }
         ]
       }
@@ -15153,6 +15192,45 @@
       }
     },
     {
+      "id": "typechecker/regression/relaxed-fallthrough-undefined-12491",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "relaxed-fallthrough-undefined-12491/Inner.vue.txt",
+          "sha256": "72e9d3d2be8f495cd46269f2eff3336c253d1e453db81e713b9c56836e615514",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "relaxed-fallthrough-undefined-12491/Wrapper.vue.txt",
+          "sha256": "35845e50389727159b7ea5b03b3419e994e1d219c43241cc146503593f1a7bb8",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "relaxed-fallthrough-undefined-12491/tsconfig.json.txt",
+          "sha256": "1927c08f47e2e5748682b396326abf2922661bf323963775af64f2834220e6d8",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "content_mapper_tsgo_cli::fallthrough_value_12458::relaxed_fallthrough_roots_report_undefined_required_props; an explicit undefined required prop at a relaxed fallthrough root, checked through tsc 7.1 with the Vize mapper and vize check on the same project"
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/regression/reported-commented-vif-11378",
       "state": "active",
       "targets": [
@@ -16243,6 +16321,45 @@
       }
     },
     {
+      "id": "typechecker/regression/slot-renamed-key-12511",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "slot-renamed-key-12511/Child.vue.txt",
+          "sha256": "308845836149e2a7c10c26cb46c41ebd913b2005969a21c24cce5ee219d73d7a",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "slot-renamed-key-12511/Parent.vue.txt",
+          "sha256": "aac67c0e50cd1c1edff0b88d5177c96365e23e16ddbc430fb4aa4ee4d3d77cbb",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "slot-renamed-key-12511/tsconfig.json.txt",
+          "sha256": "8b2c95d95331863b8b9b707a4b717a99fdb42c714409fe4021f8ebd0b11c7454",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "content_mapper_tsgo_cli::replayed_pattern_duplicates::standard_tsgo_reports_each_replayed_pattern_diagnostic_once physically consumes the pinned Child.vue, Parent.vue and tsconfig under the authenticated beta content-mapper host and requires the exact Parent.vue(5,32) TS2339 for the missing renamed key; content_mapper::tests::a_renamed_slot_prop_key_keeps_one_diagnostic_mapping requires exactly one protocol mapping owner at the authored key. Input-only batch registration; vize check and @vue/content-mapper already report the same diagnostic, so no batch behavior or native parity claim."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/regression/strict-v-model-mapper-11643",
       "state": "active",
       "targets": [
@@ -16922,6 +17039,56 @@
               "ts"
             ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/scoped-slot-listener-narrowing-12593",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "test": "content_mapper_tsgo_cli::vfor_const_listener_narrowing_11973::standard_tsgo_keeps_scoped_slot_narrowing_in_listener_callbacks",
+      "inputs": [
+        {
+          "file": "list.vue",
+          "path": "scoped-slot-listener-narrowing-12593/list.vue.txt",
+          "sha256": "b914caa88badc29b9bfcb89d28b7e67c5096275e29ec5f13bf42cb45bf560d1c"
+        },
+        {
+          "file": "child.vue",
+          "path": "scoped-slot-listener-narrowing-12593/child.vue.txt",
+          "sha256": "ac11425760301445a3ca67b112a8ea74b9e5830187d1d19685eaac3702c6a51a"
+        },
+        {
+          "file": "repro.vue",
+          "path": "scoped-slot-listener-narrowing-12593/repro.vue.txt",
+          "sha256": "2f6f8f005cc69366cc54abf9be0d68906bc7e3e31615ac691c7291bc43fb9ea2"
+        },
+        {
+          "file": "tsconfig.json",
+          "path": "scoped-slot-listener-narrowing-12593/tsconfig.json.txt",
+          "sha256": "891c2814ce5d58cbf34bf2690bd83081b962fa38b4e7e9f7e75afabaa5339af5"
+        },
+        {
+          "file": "cases.json",
+          "path": "scoped-slot-listener-narrowing-12593/cases.json",
+          "sha256": "4eaba0670028460a01ee323faa76456fb973178a88240d10b80d1a208ebd8216"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "Required actual source CLI beta content-mapper protocol; a scoped-slot parameter narrowed by v-if stays narrowed inside an arrow-function listener."
           }
         ]
       }

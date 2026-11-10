@@ -147,6 +147,16 @@ emit('change')
 }
 
 #[test]
+fn test_type_query_does_not_escape_analysis() {
+    let source = r#"
+const emit = defineEmits(['a'])
+type Emit = typeof emit
+"#;
+    let result = create_linter().lint(source, 0);
+    assert_eq!(result.warning_count, 1);
+}
+
+#[test]
 fn test_emit_passed_to_a_call_escapes_analysis() {
     let source = r#"
 import { useClose } from "./use-close";
@@ -158,37 +168,37 @@ const { close } = useClose(emit);
 }
 
 #[test]
-fn test_type_cast_emit_argument_does_not_escape_upstream_analysis() {
+fn test_type_cast_emit_argument_escapes_analysis() {
     let source = r#"
 const emit = defineEmits<{ close: [] }>()
 useVModel(props, 'modelValue', emit as any)
 "#;
     let result = create_linter().lint(source, 0);
-    assert_eq!(result.warning_count, 1);
+    assert_eq!(result.warning_count, 0);
 }
 
 #[test]
-fn test_emit_stored_does_not_count_as_direct_usage() {
+fn test_emit_stored_escapes_analysis() {
     let source = r#"
 const emit = defineEmits(['close', 'save'])
 const handlers = { emit }
 "#;
     let result = create_linter().lint(source, 0);
-    assert_eq!(result.warning_count, 2);
+    assert_eq!(result.warning_count, 0);
 }
 
 #[test]
-fn test_emit_bind_does_not_count_as_emitting_or_escaping() {
+fn test_emit_bind_escapes_analysis() {
     let source = r#"
 const emit = defineEmits<{ save: [value: boolean] }>()
 const handlers = { save: emit.bind(null, 'save') }
 "#;
     let result = create_linter().lint(source, 0);
-    assert_eq!(result.warning_count, 1);
+    assert_eq!(result.warning_count, 0);
 }
 
 #[test]
-fn test_emit_returned_does_not_count_as_direct_usage() {
+fn test_emit_returned_escapes_analysis() {
     let source = r#"
 const emit = defineEmits(['close'])
 function use() {
@@ -196,7 +206,49 @@ function use() {
 }
 "#;
     let result = create_linter().lint(source, 0);
-    assert_eq!(result.warning_count, 1);
+    assert_eq!(result.warning_count, 0);
+}
+
+#[test]
+fn test_wrapped_emit_references_escape_analysis() {
+    for reference in [
+        "emit as FieldEmit",
+        "emit as unknown as FieldEmit",
+        "emit!",
+        "<FieldEmit>emit",
+    ] {
+        let source = format!(
+            r#"
+type FieldEmit = (event: "change", value: string) => void
+const emit = defineEmits<{{ change: [value: string] }}>()
+useField({{ emit: {reference} }})
+"#
+        );
+        let result = create_linter().lint(&source, 0);
+        assert_eq!(result.warning_count, 0, "reference: {reference}");
+    }
+}
+
+#[test]
+fn test_satisfies_wrapped_object_escapes_analysis() {
+    let source = r#"
+type FieldOptions = { emit: (event: "change", value: string) => void }
+const emit = defineEmits<{ change: [value: string] }>()
+useField({ emit } satisfies FieldOptions)
+"#;
+    let result = create_linter().lint(source, 0);
+    assert_eq!(result.warning_count, 0);
+}
+
+#[test]
+fn test_emit_stored_in_options_variable_escapes_analysis() {
+    let source = r#"
+const emit = defineEmits<{ change: [value: string] }>()
+const options = { emit }
+useField(options)
+"#;
+    let result = create_linter().lint(source, 0);
+    assert_eq!(result.warning_count, 0);
 }
 
 #[test]

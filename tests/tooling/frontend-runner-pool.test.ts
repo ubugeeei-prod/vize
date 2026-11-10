@@ -211,6 +211,11 @@ test("maximum non-release runners preserve every original job contract", () => {
       restoreContentMapperHelperAbi(restored.jobs["node-engine-compat"]);
     }
     if (specification.name === "pr-source-checks") {
+      restoreReviewedCheckout(
+        restored.jobs["pr-source-plan"],
+        before.jobs["pr-source-plan"],
+        "pr-source-plan",
+      );
       restoreHistoryToolchainSelection(
         restored.jobs["ci-selection-tests"],
         before.jobs["ci-selection-tests"],
@@ -364,6 +369,8 @@ test("all existing frontend job and step truth tables stay identical", () => {
       }
       if (specification.name === "pr-source-checks" && id === "ci-selection-tests")
         restoreHistoryToolchainSelection(updated, original);
+      if (specification.name === "pr-source-checks" && id === "pr-source-plan")
+        restoreReviewedCheckout(updated, original, "pr-source-plan");
       const predicates = [{ before: original.if ?? "true", after: updated.if ?? "true" }];
       for (const [index, step] of (original.steps ?? []).entries()) {
         const counterpart = updated.steps?.[index];

@@ -5,8 +5,10 @@ name: LSP vs Vue language tools
 # editing session on pinned real projects and generated ones. Reports cold
 # start, process-tree CPU and PSS/RSS, CPU per edit and p50/p99 latency of
 # correct answers; the scale-<n>k fixtures add each metric against SFC count.
-# Report only: it gates nothing. Pinned to `cpus` cores so the numbers resemble
-# a developer laptop; `compare_ref` adds a second vize row for before/after.
+# Performance remains report-only. The 5k fixture gates Vize diagnostic
+# convergence because a completed benchmark can otherwise retain failed samples
+# only in its artifact. Pinned to `cpus` cores so the numbers resemble a
+# developer laptop; `compare_ref` adds a second vize row for before/after.
 # The tsserver row is Vize's backend for TypeScript 5.7-6.x: the project's
 # tsserver with this commit's @vizejs/typescript-vue-plugin, the like-for-like
 # counterpart of the Volar row.
@@ -245,6 +247,10 @@ jobs:
             --meta "rounds=$rounds" --meta "cycles=$cycles" \
             --out "lsp-vs-volar-$JOB.md" --json "lsp-vs-volar-$JOB.json" --logs "lsp-vs-volar-logs-$JOB"
           cat "lsp-vs-volar-$JOB.md" >> "$GITHUB_STEP_SUMMARY"
+          if [[ " $FIXTURE_IDS " == *" scale-5k "* ]]; then
+            node tools/benchmarks/scripts/lsp-vs-volar-convergence.ts \
+              --json "lsp-vs-volar-$JOB.json" --fixture scale-5k
+          fi
 
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always()

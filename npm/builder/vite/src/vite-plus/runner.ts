@@ -13,6 +13,18 @@ import { relocateTaskConfig } from "./config-paths.ts";
 
 export type Execute = (command: string, args: string[]) => Promise<number>;
 
+/** Mark only the config read as metadata resolution and restore the caller environment. */
+export async function withConfigMetadataResolution<T>(load: () => Promise<T>): Promise<T> {
+  const previous = process.env["VP_RESOLVING_CONFIG_METADATA"];
+  process.env["VP_RESOLVING_CONFIG_METADATA"] = "1";
+  try {
+    return await load();
+  } finally {
+    if (previous === undefined) delete process.env["VP_RESOLVING_CONFIG_METADATA"];
+    else process.env["VP_RESOLVING_CONFIG_METADATA"] = previous;
+  }
+}
+
 /** Run every selected checker, even when an earlier tool reports diagnostics. */
 export async function runTools(
   task: VizeTask,
@@ -100,7 +112,9 @@ export async function runTask(argv: string[]): Promise<number> {
     throw new Error(`Unknown Vize task: ${task}`);
   }
   const { loadConfigFromFile } = require("vite-plus") as typeof import("vite-plus");
-  const loaded = await loadConfigFromFile({ command: "build", mode: "production" });
+  const loaded = await withConfigMetadataResolution(() =>
+    loadConfigFromFile({ command: "build", mode: "production" }),
+  );
   const metadata = (loaded?.config as ConfigWithVizeTasks | undefined)?.[taskConfigKey];
   if (!metadata)
     throw new Error(
@@ -160,9 +174,16 @@ export async function runNative(
     metadata.config === undefined
       ? ((await loadConfig(process.cwd(), { env })) ?? {})
       : await resolveConfigExport(metadata.config, env);
+  const taskConfig =
+    command === "lint" && metadata.lintIgnorePatterns?.length
+      ? {
+          ...config,
+          ignores: [...new Set([...(config.ignores ?? []), ...metadata.lintIgnorePatterns])],
+        }
+      : config;
   const file = path.join(os.tmpdir(), `.vize-vp-${randomUUID()}.json`);
   try {
-    await writeFile(file, JSON.stringify({ vue: relocateTaskConfig(config, process.cwd()) }), {
+    await writeFile(file, JSON.stringify({ vue: relocateTaskConfig(taskConfig, process.cwd()) }), {
       flag: "wx",
       mode: 0o600,
     });

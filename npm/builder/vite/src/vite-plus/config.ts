@@ -113,6 +113,7 @@ export function normalizeConfig(source: VueConfigObject, integration: VizePlusOp
         : typeof lintConfig === "object"
           ? lintConfig.helpLevel
           : undefined,
+    lintIgnorePatterns: resolvedHostLint?.ignorePatterns,
     fmtIgnorePatterns: oxfmt.ignorePatterns,
   };
   const vp: UserConfig = {

@@ -1,0 +1,10 @@
+<script setup lang="ts">
+import { type FieldEmit, useField } from "./use-field";
+
+const emit = defineEmits<{ change: [value: string] }>();
+const { onInput } = useField({ emit: emit as FieldEmit });
+</script>
+
+<template>
+  <input type="text" @input="onInput" />
+</template>

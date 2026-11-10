@@ -225,7 +225,7 @@ test("projection proof rejects missing, errored and unstable transforms and reta
 });
 
 test("one experiment pairs every huge workload and alternates role order with distinct cold samples", async () => {
-  const { OWNED_WORKLOADS, selectOwnedWorkloads } =
+  const { checkerTracePolicy, OWNED_WORKLOADS, selectOwnedWorkloads } =
     await import("../../tools/benchmarks/scripts/typecheck-owned-pair-projects.ts");
   const { PAIR_LANES, selectPairLanes, sampleOrder, requiredSamples } =
     await import("../../tools/benchmarks/scripts/typecheck-owned-pair.ts");
@@ -256,10 +256,7 @@ test("one experiment pairs every huge workload and alternates role order with di
   assert.throws(() => selectOwnedWorkloads("missing"));
   assert.deepEqual(sampleOrder(0), ["base", "head"]);
   assert.deepEqual(sampleOrder(1), ["head", "base"]);
-  assert.deepEqual(
-    PAIR_LANES.map((row) => row.id),
-    ["tsc", "tsrs", "batch-8"],
-  );
+  assert.equal(PAIR_LANES.map((row) => row.id).join(","), "tsc,tsrs,batch-8");
   assert.deepEqual(
     selectPairLanes("tsc,tsrs").map((row) => row.id),
     ["tsc", "tsrs"],
@@ -272,6 +269,24 @@ test("one experiment pairs every huge workload and alternates role order with di
   assert.throws(() => selectPairLanes("missing"));
   assert.equal(requiredSamples(false).filter((phase) => phase.startsWith("warm-")).length, 3);
   assert.equal(requiredSamples(true).filter((phase) => phase.startsWith("warm-")).length, 5);
+  assert.equal(checkerTracePolicy({ generated: null }).enabled, true);
+  assert.equal(checkerTracePolicy({ generated: {} as never }).enabled, false);
+});
+
+test("real workload SFC custody follows the frozen tsconfig source set", async () => {
+  const { expectedOwnedSfcFiles } =
+    await import("../../tools/benchmarks/scripts/typecheck-owned-pair-projects.ts");
+  const sha256 = "a".repeat(64);
+  const inputs = [
+    { file: "src/App.vue", sha256 },
+    { file: "src/app/__tests__/fixtures/exampleFeature/ExampleFeatureModal.vue", sha256 },
+    { file: "src/App.ts", sha256 },
+  ];
+  assert.deepEqual(expectedOwnedSfcFiles("n8n", inputs), ["src/App.vue"]);
+  assert.deepEqual(expectedOwnedSfcFiles("vue-20000", inputs), [
+    "src/App.vue",
+    "src/app/__tests__/fixtures/exampleFeature/ExampleFeatureModal.vue",
+  ]);
 });
 
 test("flat interpolation workloads retain every expression and one planted diagnostic", async () => {

@@ -1,0 +1,20 @@
+<script setup lang="ts">
+import Child from "./child.vue";
+import List from "./list.vue";
+
+type File = { kind: "file"; name: string; size: number };
+type Folder = { kind: "folder"; name: string };
+const items: (File | Folder)[] = [];
+const isFile = (item: File | Folder): item is File => item.kind === "file";
+function select(file: File): void {
+  console.log(file.size);
+}
+</script>
+
+<template>
+  <List :items="items">
+    <template #item="{ item }">
+      <Child v-if="isFile(item)" @click="() => select(item)" />
+    </template>
+  </List>
+</template>

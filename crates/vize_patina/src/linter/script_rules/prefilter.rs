@@ -261,6 +261,13 @@ pub(super) fn is_typescript_filename(filename: &str) -> bool {
         .any(|extension| filename.ends_with(extension))
 }
 
+/// Whether a standalone script filename is one of Vue's JSX component hosts.
+pub(super) fn is_jsx_filename(filename: &str) -> bool {
+    [".jsx", ".tsx"]
+        .iter()
+        .any(|extension| filename.ends_with(extension))
+}
+
 /// Vue 2 migration rules and `require-prop-types` inspect component code only:
 /// an SFC or JSX module (as in eslint-plugin-vue) or one that calls
 /// `defineComponent`. A `$on`, `data: {}` or `props` object in any other module
