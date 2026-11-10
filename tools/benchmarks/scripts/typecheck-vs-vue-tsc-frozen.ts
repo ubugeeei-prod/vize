@@ -17,6 +17,7 @@ import {
   hash,
   identity,
   orders,
+  profileAttribution,
   save,
   source,
   statusConsistent,
@@ -149,10 +150,11 @@ export async function campaign(options: {
         incumbentListFiles: 1,
         correctness: 8,
         freshNormal: 8,
+        freshProfile: 1,
         discardedWarmup: 2,
         cacheReusedNormal: 8,
       },
-      outerCommands: 56,
+      outerCommands: 58,
       setupCommandsSeparate: true,
       forwardedNativeChildrenCount: "observed separately; not inferred from outer count",
     },
@@ -343,6 +345,27 @@ export async function campaign(options: {
           assert.equal(identity(native).sha256, frozenProvider.native.sha256);
         }
     }
+    const profileName = prefix + "-fresh-app-cache-profile-vize",
+      profileFile = path.join(out, profileName, "profile.json"),
+      profiled = await invoke(
+        project,
+        "vize",
+        profileName,
+        path.join(out, profileName + "-cache"),
+        {},
+        native,
+        ["--profile-json", profileFile],
+      );
+    assert.deepEqual(profiled.diagnostics, proof.diagnostics, "profiled diagnostics must match");
+    assertStatusStable(
+      timed.find((row) => row.tool === "vize")!.measurement.status,
+      profiled.measurement.status,
+    );
+    const profile = {
+      command: profiled.name,
+      raw: identity(profileFile),
+      attribution: profileAttribution(JSON.parse(fs.readFileSync(profileFile, "utf8"))),
+    };
     const inputsAfter = inputSnapshot(project.root, provider);
     save(path.join(out, prefix + "-inputs-after-timing.json"), inputsAfter);
     assertInputs(inputsBefore, inputsAfter, cache.excludedOwnedOutputs);
@@ -404,6 +427,7 @@ export async function campaign(options: {
         refusals: nativeProof.refusals,
       },
       fileInventory: identity(path.join(out, prefix + "-incumbent-files.json")),
+      coldProfile: profile,
       rows,
       warmupsDiscarded: warmups.map((row) => row.name),
       qualifiedHeadline: false,
@@ -417,7 +441,7 @@ export async function campaign(options: {
     summaries.push(summary);
     save(path.join(out, prefix + "-summary.json"), summary);
   }
-  assert.equal(allTransactions.length, 56);
+  assert.equal(allTransactions.length, 58);
   verifySource(sourceRoot, provider);
   verifyProvider(provider);
   assert.deepEqual(identity(binary), vize);

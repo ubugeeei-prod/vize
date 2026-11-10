@@ -13,6 +13,7 @@ import {
   inventory,
   orders,
   providerPins,
+  profileAttribution,
   source,
   statusConsistent,
   assertStatusStable,
@@ -72,6 +73,40 @@ test("GNU command CPU preserves quantization, zero system, duplicate/missing/mal
     resource.replace("kbytes): 100", "kbytes): 0"),
   ])
     assert.throws(() => gnuTime(text));
+});
+test("cold profile attribution preserves required batch stages and refuses truncation", () => {
+  const span = (key: string, total: number) => ({
+    key,
+    count: 1,
+    wall_ns: { total, self: total - 1, min: total, max: total },
+  });
+  const report = {
+    schema_version: 1,
+    truncation: { dropped_spans: 0, dropped_counters: 0 },
+    spans: [
+      span("unrelated", 99),
+      span("canon.executor.materialize", 30),
+      span("canon.corsa.cli", 40),
+      span("canon.vue.virtual_ts", 20),
+      span("cli.check.collect.imports", 10),
+    ],
+  };
+  assert.deepEqual(
+    profileAttribution(report).spans.map((row) => row.key),
+    [
+      "canon.corsa.cli",
+      "canon.executor.materialize",
+      "canon.vue.virtual_ts",
+      "cli.check.collect.imports",
+    ],
+  );
+  assert.throws(() =>
+    profileAttribution({
+      ...report,
+      truncation: { dropped_spans: 1, dropped_counters: 0 },
+    }),
+  );
+  assert.throws(() => profileAttribution({ ...report, spans: report.spans.slice(0, -1) }));
 });
 test("exact whole packet, multiline messages, duplicate findings and unknown fields remain visible", () => {
   const packet = {
@@ -186,7 +221,7 @@ test("whole provider fixture bytes and immutable source/SDK closure stay pinned"
     hash(fs.readFileSync(new URL("package.json.txt", fixture)).subarray(1)),
     providerPins.package,
   );
-  assert.equal(source, "33eb41ea8a39d997383e797fea3dca5e482c0a9d");
+  assert.equal(source, "20bb9c3d8adadaf541e9986926a0e985a31bdef5");
   assert.equal(sourceBodies.length, 13);
   assert.equal(
     sourceBodies.filter(
@@ -297,7 +332,7 @@ test("only manual frontdoor executes the fixed cohort; all failure raw is upload
     "utf8",
   );
   assert.match(workflow, /if: \$\{\{ github.event_name == 'workflow_dispatch' \}\}/u);
-  assert.match(workflow, /git worktree add --detach.*33eb41ea8a39d997383e797fea3dca5e482c0a9d/u);
+  assert.match(workflow, /git worktree add --detach.*20bb9c3d8adadaf541e9986926a0e985a31bdef5/u);
   assert.match(workflow, /node-version: "24.14.0"/u);
   assert.match(workflow, /toolchain: "1.99.1"/u);
   assert.match(workflow, /--exclude=target/u);

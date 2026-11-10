@@ -17,38 +17,38 @@ import {
 export const sourceBodies = [
   {
     file: "Cargo.toml",
-    bytes: 13168,
-    sha256: "6400cafce2abb1c16bb3c43dfc6498d0a0c695c88849bd5a6bdd4063b91377de",
+    bytes: 13606,
+    sha256: "1c73076252940edaee865777124cf7bd89a1817c579cddc0e7417c31a62afba0",
   },
   {
     file: "Cargo.lock",
-    bytes: 128818,
-    sha256: "e9a8659e79a919541b6cf29340886dabad787a18fa3051bd77873fc3a76194a4",
+    bytes: 132479,
+    sha256: "4071ed167a8d3ef7b3a3b4152c5710690f0e4d5e41df1b529321161db3c92508",
   },
   {
     file: "npm/cli/package.json",
-    bytes: 4062,
-    sha256: "00845d6bef7571d1b554247e0b3fc5808557e910c10b331b63e970fb88919058",
+    bytes: 4494,
+    sha256: "e4fa0c743fbc3fe1efec08f09ee72c38b2faa476e831f0233ea05efea63644a1",
   },
   {
     file: "npm/cli/virtual-ts.d.ts",
-    bytes: 15334,
-    sha256: "d5e5eee803afd4fdb74912647d453322d36ce476daef487012eb1eca25f750df",
+    bytes: 17669,
+    sha256: "dcb67b889d553e934ceba9ba18d9e28e94ec2aca3b8a99d9112a54a686ce4fed",
   },
   {
     file: "npm/cli/virtual-ts.d.mts",
-    bytes: 15334,
-    sha256: "d5e5eee803afd4fdb74912647d453322d36ce476daef487012eb1eca25f750df",
+    bytes: 17669,
+    sha256: "dcb67b889d553e934ceba9ba18d9e28e94ec2aca3b8a99d9112a54a686ce4fed",
   },
   {
     file: "npm/cli/virtual-ts.d.cts",
-    bytes: 15334,
-    sha256: "d5e5eee803afd4fdb74912647d453322d36ce476daef487012eb1eca25f750df",
+    bytes: 17669,
+    sha256: "dcb67b889d553e934ceba9ba18d9e28e94ec2aca3b8a99d9112a54a686ce4fed",
   },
   {
     file: "npm/cli/virtual-ts-globals.d.ts",
-    bytes: 18966,
-    sha256: "d647737ea035f166c94c131013af3265a3a33783dbad307b2eb3c6d558fc476a",
+    bytes: 17952,
+    sha256: "2a5c1fa16a59f9f27e360ca70a7fbdbd301911dd390f9e21aa62b636bb6b7fc7",
   },
   {
     file: "npm/cli/virtual-ts-patterns.d.ts",
@@ -77,8 +77,8 @@ export const sourceBodies = [
   },
   {
     file: "npm/cli/generated/content-mapper-types.d.ts",
-    bytes: 11202,
-    sha256: "7457fd86aafb4b2a5b1edbddedf538a45a072517645dd0ece2fd4c074a0f632e",
+    bytes: 12864,
+    sha256: "6ca30ff161868951fce4151a1ff072646a98c11b45667b09f00fab3c2dce081b",
   },
 ];
 export type Project = {

@@ -28,7 +28,7 @@ jobs:
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with: { node-version: "24.14.0", package-manager-cache: false }
       - name: Fetch immutable product source oracle
-        run: git fetch --no-tags --depth=1 origin 33eb41ea8a39d997383e797fea3dca5e482c0a9d
+        run: git fetch --no-tags --depth=1 origin 20bb9c3d8adadaf541e9986926a0e985a31bdef5
       - name: Validate complete evidence and refusal controls
         run: node --test tests/tooling/typecheck-vs-vue-tsc-evidence.test.ts tests/tooling/typecheck-vs-vue-tsc-frozen.test.ts
   bench:
@@ -47,8 +47,8 @@ jobs:
       - name: Prepare exact product and frozen provider
         run: |
           mkdir "$RUNNER_TEMP/comparative"
-          git fetch --no-tags --depth=1 origin 33eb41ea8a39d997383e797fea3dca5e482c0a9d
-          git worktree add --detach "$RUNNER_TEMP/comparative/source" 33eb41ea8a39d997383e797fea3dca5e482c0a9d
+          git fetch --no-tags --depth=1 origin 20bb9c3d8adadaf541e9986926a0e985a31bdef5
+          git worktree add --detach "$RUNNER_TEMP/comparative/source" 20bb9c3d8adadaf541e9986926a0e985a31bdef5
           mkdir "$RUNNER_TEMP/comparative/provider"
           cp tests/_fixtures/tooling/typecheck-vs-vue-tsc-provider/package.json.txt "$RUNNER_TEMP/comparative/provider/package.json"
           cp tests/_fixtures/tooling/typecheck-vs-vue-tsc-provider/package-lock.json.txt "$RUNNER_TEMP/comparative/provider/package-lock.json"
