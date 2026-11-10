@@ -159,7 +159,7 @@ pub struct For {
     /// The iteration binding.
     pub binding: ForBinding,
     /// The host-language head, for a host loop.
-    pub host: Option<HostFor>,
+    pub host: Option<alloc::boxed::Box<HostFor>>,
     /// The repeated region.
     pub ops: Vec<Op>,
     /// Source range.
@@ -293,12 +293,14 @@ fn own_op_guarded(op: &IrOp<'_>) -> Op {
                 key: for_op.binding.key.as_ref().map(own_expr),
                 index: for_op.binding.index.as_ref().map(own_expr),
             },
-            host: for_op.host.as_ref().map(|host| HostFor {
-                left: String::from(host.left_text),
-                index: host.index.map(|index| String::from(index.name.as_str())),
-                key: host.key.as_ref().map(own_expr),
-                r#await: host.r#await,
-                empty: host.empty.as_ref().map(own_region),
+            host: for_op.host.as_ref().map(|host| {
+                alloc::boxed::Box::new(HostFor {
+                    left: String::from(host.left_text),
+                    index: host.index.map(|index| String::from(index.name.as_str())),
+                    key: host.key.as_ref().map(own_expr),
+                    r#await: host.r#await,
+                    empty: host.empty.as_ref().map(own_region),
+                })
             }),
             ops: own_region(&for_op.region),
             span: for_op.span,

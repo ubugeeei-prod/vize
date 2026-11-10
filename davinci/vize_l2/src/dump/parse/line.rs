@@ -323,7 +323,7 @@ fn for_op(rest: &str, line_no: usize) -> Result<Item, DumpError> {
             head.r#await = true;
             tail = after;
         }
-        host = Some(head);
+        host = Some(alloc::boxed::Box::new(head));
         rest = tail;
     }
     Ok(Item::Op(Op::For(For {
