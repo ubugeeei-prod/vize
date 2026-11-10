@@ -12,7 +12,8 @@
  *   node run.ts --head <worktree> --runs 3 --work <dir> --out <dir>
  */
 
-import { cpSync, mkdirSync, readFileSync, realpathSync, rmSync, writeFileSync } from "node:fs";
+import { spawnSync } from "node:child_process";
+import { cpSync, mkdirSync, readFileSync, realpathSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -73,6 +74,26 @@ type Row = { host: string; lane: string; runs: HostRun[] };
 const report: Record<string, Row[]> = {};
 const timelines: Record<string, string[]> = {};
 const notes: string[] = [];
+const loaded: Record<string, Record<string, { files: number; bytes: number }>> = {};
+/** Group listed files: user sources, TypeScript libs, the vize package, vue types, other packages. */
+function classifyLoaded(paths: string[], dir: string) {
+  const groups: Record<string, { files: number; bytes: number }> = {};
+  for (const path of paths) {
+    const group = !path.includes("/node_modules/") && path.startsWith(dir)
+      ? "user"
+      : /\/lib\.[^/]*\.d\.ts$/.test(path) && !path.startsWith(dir)
+        ? "typescript lib"
+        : /\/node_modules\/vize\//.test(path)
+          ? "vize package"
+          : /\/node_modules\/(vue|@vue)\//.test(path)
+            ? "vue types"
+            : "other packages";
+    const entry = (groups[group] ??= { files: 0, bytes: 0 });
+    entry.files += 1;
+    try { entry.bytes += statSync(path).size; } catch {}
+  }
+  return groups;
+}
 const only = values.only ? new Set(values.only.split(",")) : null;
 
 for (const corpus of corpora) {
@@ -90,6 +111,7 @@ for (const corpus of corpora) {
     vize: "tsconfig.vize-mapper.json",
     vue: "tsconfig.vue-mapper.json",
     stub: addMapper(dir, "stub", ["node", tool("stub-mapper.ts")]),
+    stubHelpers: addMapper(dir, "stub-helpers", ["node", tool("stub-mapper.ts")]),
     vizeRecord: addMapper(dir, "vize-record", ["node", tool("record-proxy.ts"), ...vizeExec]),
     vueRecord: addMapper(dir, "vue-record", ["node", tool("record-proxy.ts"), ...vueExec]),
     anyabRecord: addMapper(dir, "anyab-record", ["node", tool("record-proxy.ts"), "node", tool("anyablate-proxy.ts"), ...vizeExec]),
@@ -102,6 +124,13 @@ for (const corpus of corpora) {
     hostRun([hosts.tsc, ...hostArgs(tsc, dir, tsconfig)], dir, tsconfig, join(work, "time", `${corpus.id}-${key}.time`), env);
   const runTsrs = (key: string, tsconfig: string, env: Record<string, string> = {}): HostRun =>
     hostRun([hosts.tsrs, ...hostArgs(tsrs, dir, tsconfig)], dir, tsconfig, join(work, "time", `${corpus.id}-tsrs-${key}.time`), env);
+  const absolute = { STUB_TEXT: "export default {} as any;\n" };
+  const helpersOnly = { STUB_TEXT: `/// <reference lib="es2022" />\n/// <reference lib="dom" />\n/// <reference lib="dom.iterable" />\nimport type * as __vize from "vize/virtual-ts-checker";\nexport default {} as any;\n` };
+  // Untimed: which files each projection makes tsc load beyond the user's own.
+  for (const [id, tsconfig, env] of [["absolute floor", cfg.stub, absolute], ["helpers-only floor", cfg.stubHelpers, helpersOnly], ["vize", cfg.vize, {}], ["vue", cfg.vue, {}]] as const) {
+    const listed = spawnSync(hosts.tsc, hostArgs(tsc, dir, tsconfig, ["--listFiles"]), { cwd: dir, encoding: "utf8", maxBuffer: 1 << 30, env: { ...process.env, ...env } }).stdout.split("\n").filter((line) => line.startsWith("/"));
+    loaded[`${corpus.id}/${id}`] = classifyLoaded(listed, dir);
+  }
   const vueTsc = (): HostRun =>
     hostRun([process.execPath, "--max-old-space-size=16384", vueTscBin, "--noEmit", "--extendedDiagnostics", "--pretty", "false", "-p", join(dir, "tsconfig.json")], dir, "tsconfig.json", join(work, "time", `${corpus.id}-vue-tsc.time`));
 
@@ -129,6 +158,8 @@ for (const corpus of corpora) {
     ["tsc", "vize", () => run("vize", cfg.vize)],
     ["tsc", "vue", () => run("vue", cfg.vue)],
     ["tsc", "stub (fixed cost)", () => run("stub", cfg.stub)],
+    ["tsc", "absolute floor (export default {} as any)", () => run("absolute", cfg.stub, absolute)],
+    ["tsc", "helpers-only floor", () => run("helpers-only", cfg.stubHelpers, helpersOnly)],
     ["tsc", "vize replay (zero wait)", () => run("replay-vize", cfg.replay, { REC_DIR: recs.vize })],
     ["tsc", "vize replay compacted", () => run("replay-compact", cfg.replay, { REC_DIR: compacted })],
     ["tsc", "vize replay without whitespace ignores", () => run("replay-ws", cfg.replay, { REC_DIR: wsIgnores })],
@@ -139,6 +170,9 @@ for (const corpus of corpora) {
     ["tsrs", "vize", () => runTsrs("vize", cfg.vize)],
     ["tsrs", "vue", () => runTsrs("vue", cfg.vue)],
     ["tsrs", "stub (fixed cost)", () => runTsrs("stub", cfg.stub)],
+    ["tsrs", "absolute floor (export default {} as any)", () => runTsrs("absolute", cfg.stub, absolute)],
+    ["tsrs", "helpers-only floor", () => runTsrs("helpers-only", cfg.stubHelpers, helpersOnly)],
+    ["tsrs", "vize expressions-only", () => runTsrs("anyab", cfg.anyab)],
     ["tsrs", "vize replay (zero wait)", () => runTsrs("replay-vize", cfg.replay, { REC_DIR: recs.vize })],
     ["tsrs", "vize replay compacted", () => runTsrs("replay-compact", cfg.replay, { REC_DIR: compacted })],
     ["tsrs", "vize replay without whitespace ignores", () => runTsrs("replay-ws", cfg.replay, { REC_DIR: wsIgnores })],
@@ -188,6 +222,23 @@ for (const [corpus, all] of Object.entries(report)) for (const host of ["tsc", "
   }
   lines.push("");
 }
+const composition = ["absolute floor", "helpers-only floor", "vize expressions-only", "vize", "vue"];
+const phase = (name: string) => new RegExp(`^${name.replace(/[.*+?^${}()|[\]\\/]/g, "\\$&")}( time)?$`);
+for (const [corpus, all] of Object.entries(report)) for (const host of ["tsc", "tsrs"]) {
+  lines.push(`### Floor composition: ${corpus}, ${host === "tsc" ? "tsc 7.1" : "tsrs --fast"}`, "", "| lane | Files | Lines | Identifiers | Symbols | Types | Instantiations | I/O read s | Parse s | Program s | Bind s | Check s | Total s | wall s | max RSS MB |", "| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |");
+  for (const prefix of composition) {
+    const row = all.find((r) => r.host === host && (r.lane === prefix || r.lane.startsWith(`${prefix} (`) || (prefix === "vize expressions-only" && r.lane === prefix)));
+    if (!row) continue;
+    const cells = ["Files", "Lines", "Identifiers", "Symbols", "Types", "Instantiations"].map((name) => fmt(med(row, (r) => stat(r, phase(name))), 0));
+    const times = ["I/O read", "Parse", "Program", "Bind", "Check", "Total"].map((name) => fmt(med(row, (r) => stat(r, phase(name))), 3));
+    lines.push(`| ${row.lane} | ${[...cells, ...times].join(" | ")} | ${fmt(med(row, (r) => r.wallMs / 1000), 2)} | ${fmt(med(row, (r) => r.time.maxRssKb / 1024), 0)} |`);
+  }
+  const wall = (prefix: string) => { const row = all.find((r) => r.host === host && r.lane.startsWith(prefix)); return row ? Number(med(row, (r) => r.wallMs / 1000)) : NaN; };
+  lines.push("", `Physical cap (vue wall / absolute floor wall): ${(wall("vue") / wall("absolute floor")).toFixed(2)}x; vue / helpers-only: ${(wall("vue") / wall("helpers-only floor")).toFixed(2)}x; vue / expressions-only: ${(wall("vue") / wall("vize expressions-only")).toFixed(2)}x; vue / vize: ${(wall("vue") / wall("vize")).toFixed(2)}x.`, "");
+}
+lines.push("### Files loaded per projection (tsc --listFiles, untimed)", "", "| corpus / lane | user | typescript lib | vize package | vue types | other packages |", "| --- | --- | --- | --- | --- | --- |");
+for (const [key, groups] of Object.entries(loaded)) lines.push(`| ${key} | ${["user", "typescript lib", "vize package", "vue types", "other packages"].map((g) => groups[g] ? `${groups[g].files} / ${(groups[g].bytes / 1024).toFixed(0)} KB` : "0").join(" | ")} |`);
+lines.push("");
 lines.push("### Compacted replies", "", ...notes.map((note) => `- ${note}`), "");
 lines.push("### Request timelines (proxy-observed, ms from mapper start)", "");
 for (const [key, summary] of Object.entries(timelines)) lines.push(`- ${key}: ${summary.join("; ")}`);
