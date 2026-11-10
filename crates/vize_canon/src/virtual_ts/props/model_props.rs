@@ -175,10 +175,11 @@ pub(super) fn append_macro_props_type_literal(
                 for prop in summary.macros.props() {
                     let prop_type = prop.prop_type.as_deref().unwrap_or("unknown");
                     let optional = if parent_requires_prop(prop) { "" } else { "?" };
-                    if let Some((_, doc)) = docs
+                    let doc = docs
                         .iter()
                         .find(|(key, _)| super::runtime_docs::names_prop(key, &prop.name))
-                    {
+                        .map(|(_, doc)| *doc);
+                    if let Some(doc) = doc {
                         __ts.push_str("  ");
                         __ts.push_str(doc);
                         __ts.push('\n');
@@ -188,7 +189,7 @@ pub(super) fn append_macro_props_type_literal(
                         prop.name.as_str(),
                         optional,
                         prop_type,
-                        prefer_identifier_props,
+                        prefer_identifier_props && doc.is_some(),
                     );
                     emitted_names.insert(prop.name.as_str().into());
                 }

@@ -250,21 +250,23 @@ interface Props {
 }
 const props = withDefaults(defineProps<Props>(), { label: 'ok' })
 </script>"#;
-        let document = generate_vue_document_virtual_ts(
+        let document = generate_vue_document_virtual_ts_with_options(
             Path::new("Props.vue"),
             source,
             &VirtualTsOptions::default(),
             &ImportRewriter::new(),
             false,
+            VueDocumentVirtualTsOptions {
+                preserve_event_navigation: true,
+                ..Default::default()
+            },
         )
         .unwrap();
 
         assert_eq!(
             document
                 .pre_rewrite_code
-                .matches(
-                    "): __WithDefaultsResult<_T, _D, _BKeys> & { readonly [K in keyof _T]: unknown };"
-                )
+                .matches("): __WithDefaultsResult<_T, _D, _BKeys> & _T;")
                 .count(),
             1,
             "{}",

@@ -443,12 +443,7 @@ export function assertPreservedCallbackPacket(
     if (isDeepStrictEqual(after, replaySuccessor)) return;
     const expected =
       inertBindings && authoredSource !== undefined
-        ? withInertCallbackRows(
-            replaySuccessor ?? before,
-            after,
-            authoredSource,
-            inertBindings,
-          )
+        ? withInertCallbackRows(before, after, authoredSource, inertBindings)
         : (replaySuccessor ?? before);
     assert.deepEqual(
       after,

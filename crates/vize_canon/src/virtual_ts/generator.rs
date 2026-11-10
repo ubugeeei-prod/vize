@@ -396,7 +396,8 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         script_content,
         generic_parameters,
         hoist_shared_preamble,
-        editor_component_projection
+        (generation_options.preserve_event_navigation
+            || generation_options.component_name.is_some())
             && summary.macros.with_defaults_expression().is_some(),
         template_ast,
     );
