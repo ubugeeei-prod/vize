@@ -113,7 +113,7 @@ import Child from "./Child.vue";
 <template><Child title="ok" depressed="x" /></template>
 "#,
             expected_diagnostics: &[
-                "error:4:29 [TS2353] Object literal may only specify known properties, and '\"depressed\"' does not exist in type '$ComponentCheckProps<__Child_CheckProps_0, $CheckTail>'. (source: <template><Child title=\"ok\" depressed=\"x\" /></template>)",
+                "error:4:29 [TS2353] Object literal may only specify known properties, and '\"depressed\"' does not exist in type '$ComponentCheckProps<__VCheckProps0, $CheckTail>'. (source: <template><Child title=\"ok\" depressed=\"x\" /></template>)",
             ],
         },
         Case {

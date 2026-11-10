@@ -1,5 +1,15 @@
 # Current instance-global packet authority
 
+The active expected population is `source-packets-current-37bb3e238210.json`: all 80 whole transform results from [source Actions 42780733364](https://github.com/ubugeeei-prod/vize/actions/runs/42780733364/job/129710794572), synthetic merge producer `37bb3e238210ad6c7bc3bb897d3a1dcaf83aa74f` for PR head `3b31c027c73e863311a651dcbafc3599f7a746b1`. The launch receipt binds the exact source CLI, and the artifact admits the reported beta and official nightly TypeScript hosts.
+
+The strict comparison remains **unqualified**: 394 of 398 semantic, protocol, geometry and whole-packet outcomes passed. Only the LF and CRLF/Unicode `slot-shadow` and `mixed-slot-scope` whole packets changed: their per-usage contract aliases are spelled `__V<Role><N>` (`__VProps0`, `__VComp0`, `__VCheckProps0`, `__VCheckTail0`, `__VCheck0`) instead of `__Child_<Role>_0` (#12646). Their text changes only at those names, every generated coordinate after a renamed name moves by exactly the bytes it lost, and every diagnostic and source coordinate is unchanged; the other 76 complete results remain byte-identical. Every non-whole-packet outcome passed.
+
+`complete: true` records the complete observed successor population. It grants no pinned source-host, public-package or performance acceptance and does not retroactively qualify the capture. `source-packets-current-37bb3e238210-provenance.json` binds the producer, artifact digest, exact evidence members, previous population, failed qualification vector and explicit credit limits.
+
+## Previous authority (historical)
+
+# Current instance-global packet authority
+
 The active expected population is `source-packets-current-f29a8ee58999.json`: all 80 whole transform results from [source Actions 42772339922](https://github.com/ubugeeei-prod/vize/actions/runs/42772339922/job/129684248644), synthetic merge producer `f29a8ee589997f08d4c72addca1fd4fe1fd69f95` for PR head `4808c05a1a0e2fe769f132b5b79224922250736a`. The launch receipt binds the exact source CLI, and the artifact admits the reported beta and official nightly TypeScript hosts.
 
 The strict comparison remains **unqualified**: 394 of 398 semantic, protocol, geometry and whole-packet outcomes passed. Only the LF and CRLF/Unicode `slot-shadow` and `mixed-slot-scope` whole packets changed. Each adds the exact source-affine mappings for the disjoint `{ ` and ` }` gaps around its retained slot binding (#12511); generated text, diagnostics, semantic links and every other opaque field remain unchanged, and the other 76 complete results remain byte-identical. Every non-whole-packet outcome passed.

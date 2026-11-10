@@ -599,7 +599,7 @@ fn test_external_template_bindings_do_not_shadow_auto_imported_components() {
     assert!(
         output
             .code
-            .contains("type __auto_card_Props_0 = typeof AutoCard extends { __vizeCheck: infer __F } ? ($IsAny<__F> extends true ? $ComponentRawProps<typeof AutoCard> : Record<string, unknown>) : $ComponentRawProps<typeof AutoCard>;")
+            .contains("type __VProps0 = typeof AutoCard extends { __vizeCheck: infer __F } ? ($IsAny<__F> extends true ? $ComponentRawProps<typeof AutoCard> : Record<string, unknown>) : $ComponentRawProps<typeof AutoCard>;")
     );
 }
 
@@ -634,8 +634,8 @@ fn test_unknown_pascal_component_props_use_the_ambient_fallback() {
             .count(),
         1
     );
-    assert!(output.code.contains("type __AutoCard_Props_0"));
-    assert!(output.code.contains("__AutoCard_Check_0"));
+    assert!(output.code.contains("type __VProps0"));
+    assert!(output.code.contains("__VCheck0"));
 }
 
 #[test]
@@ -832,7 +832,7 @@ const wrong = 'not a number'
     );
 
     assert!(!output.code.contains("__vize_prop_check"));
-    assert!(!output.code.contains("type __Child_Props_0"));
+    assert!(!output.code.contains("type __VProps0"));
 }
 
 #[test]

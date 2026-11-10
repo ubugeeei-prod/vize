@@ -36,12 +36,12 @@ export function assertCurrentPacketProvenance(
 ): void {
   assert.deepEqual(provenance.artifact, {
     repository: "ubugeeei-prod/vize",
-    run: 42772339922,
-    job: 129684248644,
-    id: 13742224501,
-    name: "instance-globals-tooling-15-42772339922-1",
-    digest: "sha256:562e1bc06c236903cb89ce8fd49881919870d76846c2599e6539b725f2deeeb7",
-    bytes: 393773,
+    run: 42780733364,
+    job: 129710794572,
+    id: 13746003658,
+    name: "instance-globals-tooling-9-42780733364-1",
+    digest: "sha256:916f2e98c2f2b3e7ab3162ebeb81244f506f38b447c0ed20f50fad83d816bd2d",
+    bytes: 394106,
   });
   const changed = [
     "lf/slot-shadow",
@@ -67,6 +67,6 @@ export function assertCurrentPacketProvenance(
     publicPackageAcceptanceCredit: false,
     performanceCredit: false,
     reason:
-      "Only the LF and CRLF/Unicode slot-shadow and mixed-slot-scope packets add the exact disjoint opening and closing slot-pattern gap mappings required by #12511. Their generated text, diagnostics, semantic links and all other opaque fields remain exact, the other 76 packets are byte-identical, and all 394 non-whole-packet semantic, protocol, mapping-geometry, reported-beta and official-nightly controls passed. The pinned source-built TypeScript host was unavailable, so this record retains the observed postimages without assigning host-matrix, public-package or performance acceptance credit.",
+      "Only the LF and CRLF/Unicode slot-shadow and mixed-slot-scope packets respell their per-usage contract aliases as __V<Role><N> (#12646). Their text changes only at those names, every generated coordinate after a renamed name moves by exactly the bytes it lost, and every diagnostic and source coordinate is unchanged; the other 76 packets are byte-identical, and all 394 non-whole-packet semantic, protocol, mapping-geometry, reported-beta and official-nightly controls passed. The pinned source-built TypeScript host was unavailable, so this record retains the observed postimages without assigning host-matrix, public-package or performance acceptance credit.",
   });
 }

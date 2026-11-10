@@ -77,7 +77,7 @@ fn unbound_root_slot_keeps_only_the_constructor_pair_its_props_type_reads() {
     // ... and the usage's props type is its only reader.
     let props_alias = code
         .lines()
-        .find(|line| line.trim_start().starts_with("type __el_badge_Props_0 = "))
+        .find(|line| line.trim_start().starts_with("type __VProps0 = "))
         .unwrap_or_else(|| panic!("props alias:\n{code}"));
     let alias_reads = count(props_alias, "typeof __vize_slot_host_1_instances.");
     assert_ne!(alias_reads, 0, "{code}");

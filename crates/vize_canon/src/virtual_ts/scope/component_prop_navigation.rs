@@ -4,7 +4,7 @@ use vize_carton::cstr;
 use vize_croquis::croquis::{ComponentUsage, PassedProp, SlotUsage};
 
 use crate::virtual_ts::component_reference::component_binding_reference;
-use crate::virtual_ts::helpers::{to_camel_case, to_safe_identifier_fragment};
+use crate::virtual_ts::helpers::to_camel_case;
 use crate::virtual_ts::semantic_links::{VizeSemanticLink, VizeSemanticLinkKind};
 use crate::virtual_ts::types::{VizeMapping, VizeSubSpan};
 
@@ -92,7 +92,7 @@ fn emit_prop_references(
     usage: &ComponentUsage,
     component_gen_range: &Range<usize>,
 ) {
-    let component_type_name = to_safe_identifier_fragment(usage.name.as_str());
+    let contract_prefix = crate::virtual_ts::generated_names::template_prefix();
     // A complete TypeScript binding pattern provides a stable completion point
     // even while the Vue attribute name is empty or only `:` has been typed.
     ts.push_str("  const { ");
@@ -101,7 +101,7 @@ fn emit_prop_references(
         crate::virtual_ts::helpers::shared_types::COMPONENT_NAVIGATION_PROPS.select(false);
     vize_l0::emit_ts!(
         ts,
-        "}} = undefined as unknown as {component_navigation_props}<__{component_type_name}_Props_{idx}>;\n"
+        "}} = undefined as unknown as {component_navigation_props}<{contract_prefix}Props{idx}>;\n"
     );
     semantic_links.push(VizeSemanticLink {
         source_range: component_gen_range.clone(),
@@ -126,7 +126,7 @@ fn emit_prop_references(
             // covers one line, which carries every reference statement.
             vize_l0::emit_ts!(
                 ts,
-                "  const {props_ref} = undefined as unknown as __{component_type_name}_Props_{idx} & globalThis.Record<string, unknown>;\n  // @ts-ignore Navigation-only references; no diagnostic owner.\n  void "
+                "  const {props_ref} = undefined as unknown as {contract_prefix}Props{idx} & globalThis.Record<string, unknown>;\n  // @ts-ignore Navigation-only references; no diagnostic owner.\n  void "
             );
             emitted_props_ref = true;
         } else {

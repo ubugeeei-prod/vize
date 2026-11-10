@@ -118,7 +118,7 @@ pub(crate) fn observe(root: &Path, mut record: impl FnMut(Value)) -> Witness {
     assert_eq!(app.matches(COMPONENT_NAVIGATION_HELPER).count(), 1);
     assert_eq!(app.matches(SLOT_NAVIGATION_PRELUDE).count(), 0);
     assert_eq!(helpers.matches(SHARED_SLOT_NAVIGATION_PRELUDE).count(), 1);
-    let construct = "\n  void MySwitch;\n  const { } = undefined as unknown as $ComponentNavigationProps<__MySwitch_Props_0>;\n";
+    let construct = "\n  void MySwitch;\n  const { } = undefined as unknown as $ComponentNavigationProps<__VProps0>;\n";
     assert_eq!(app.matches(construct).count(), 1);
     let cursor = app.find(construct).unwrap() + "\n  void MySwitch;\n  const { ".len();
     assert!(app.find(&mapping).unwrap() < cursor);

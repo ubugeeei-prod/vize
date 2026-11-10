@@ -9915,7 +9915,7 @@
       },
       "packReference": {
         "path": "required-default-props/cases.json",
-        "sha256": "652725e01be53de61a16c1a5f532989adc2e3e01115eabae24beac550db87b78"
+        "sha256": "48393c7dc1f76c978697cea430f4b73aee0eb08ac24846f0a2ec5ef8440fa581"
       },
       "inputs": [
         {
@@ -9986,7 +9986,7 @@
       },
       "packReference": {
         "path": "required-default-props/cases.json",
-        "sha256": "652725e01be53de61a16c1a5f532989adc2e3e01115eabae24beac550db87b78"
+        "sha256": "48393c7dc1f76c978697cea430f4b73aee0eb08ac24846f0a2ec5ef8440fa581"
       },
       "inputs": [
         {
@@ -10050,7 +10050,7 @@
           "column": 4,
           "severity": 1,
           "code": 2345,
-          "message": "Argument of type '{ title: string; }' is not assignable to parameter of type '$ComponentCheckProps<__OptionsChild_CheckProps_0, $PublicComponentAttrs & { abbr?: unknown; about?: unknown; \"accent-height\"?: unknown; accentHeight?: unknown; accept?: unknown; acceptcharset?: unknown; ... 676 more ...; zoomAndPan?: unknown; } & { ...; } & Record<...>>'.\nProperty 'flag' is missing in type '{ title: string; }' but required in type '{ readonly label?: string | undefined; readonly flag: boolean; readonly title: string; }'."
+          "message": "Argument of type '{ title: string; }' is not assignable to parameter of type '$ComponentCheckProps<__VCheckProps0, $PublicComponentAttrs & { abbr?: unknown; about?: unknown; \"accent-height\"?: unknown; accentHeight?: unknown; accept?: unknown; acceptcharset?: unknown; accesskey?: unknown; accumulate?: unknown; ... 674 more ...; zoomAndPan?: unknown; } & { ...; } & Record<...>>'.\nProperty 'flag' is missing in type '{ title: string; }' but required in type '{ readonly label?: string | undefined; readonly flag: boolean; readonly title: string; }'."
         },
         {
           "file": "src/Parent.vue",
@@ -10102,7 +10102,7 @@
       "regressionCommit": "f3a26b0e30c98b135a9e897c3584526eb0a2b96d",
       "packReference": {
         "path": "required-props-edges/cases.json",
-        "sha256": "d018f21b657a11d81dd4e53be169fddd484f965b88ce475d9a20828ec22c852b"
+        "sha256": "aa70d19d35a0c88f4934150f9db89d6f269b51bfbab250160dbf623adcce281a"
       },
       "inputs": [
         {

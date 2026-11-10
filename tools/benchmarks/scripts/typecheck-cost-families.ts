@@ -90,17 +90,17 @@ const TEMPLATE_FAMILIES: Array<[family: string, pattern: RegExp]> = [
   ],
   ["events-resolve", /__vize_events_|__vize_event_keys_|__vize_kebab_events/u],
   ["prop-check", /__vize_prop_check_/u],
-  ["props-call", /as unknown as __\w+?_Check_\d+\)\(/u],
+  ["props-call", /as unknown as __(\w+?_Check_|V(?:\$\d+)?Check)\d+\)\(/u],
   [
     "contract-alias",
-    /^\s*type __\w+?_(Props|Component|CheckProps|CheckTail|ValueProps|FallthroughValue|Check)_\d+\b|^\s*type __\w+?_\d+_prop_|\$ComponentCheckTail|VueTemplatePublicAttrsType|\$Vue(VNode|AllowedComponent|ComponentCustom)Props/u,
+    /^\s*type __\w+?_(Props|Component|CheckProps|CheckTail|ValueProps|FallthroughValue|Check)_\d+\b|^\s*type __V(?:\$\d+)?(Props|Comp|CheckProps|CheckTail|ValueProps|Check)\d+\b|^\s*type __\w+?_\d+_prop_|^\s*type __V(?:\$\d+)?Prop\d+\$|\$ComponentCheckTail|VueTemplatePublicAttrsType|\$Vue(VNode|AllowedComponent|ComponentCustom)Props/u,
   ],
   [
     "component-nav",
     /\$ComponentNavigationProps|__vize_props_nav_|^\s*const \{[^}]*\} = undefined as unknown as/u,
   ],
   ["native-element", /__vize_native_prop_check_|\$NativeElement/u],
-  ["model", /_model_|__vize_model/u],
+  ["model", /_model_|__vize_model|__V(?:\$\d+)?Model\d/u],
   [
     "template-context",
     /__Ctx\b|__Global\b|\$GlobalContext|__ctx\b|\$attrs|\$slots|\$refs|\$emit\b|\$style|= props\["|\btype __U\d*</u,
@@ -176,9 +176,29 @@ export function localAlias(
 const LISTENER_SUFFIX =
   "prop_args|fallthrough_args|inferred_emit_args|static_emit_args|emit_args|args|event|return_native_fallthrough|return|prop_arrays|listener|handler";
 
-/** Per-usage alias names folded to their emitter shape: `__MkA_22_click_args` → `__C_N_click_args`. */
+/** Compact per-usage contract roles, keyed by the legacy role they replace. */
+const COMPACT_CONTRACT_ROLES: Record<string, string> = {
+  Comp: "Component",
+  Props: "Props",
+  ValueProps: "ValueProps",
+  CheckProps: "CheckProps",
+  CheckTail: "CheckTail",
+  Check: "Check",
+};
+
+/**
+ * Per-usage alias names folded to their emitter shape: `__MkA_22_click_args` → `__C_N_click_args`.
+ * Compact `__V<Role><N>` spellings fold to the same keys as the legacy
+ * `__<Component>_<Role>_<N>` spellings, so base and head attributions compare.
+ */
 export function normalizeAlias(name: string): string {
   return name
+    .replace(
+      /^__V(?:\$\d+)?(Props|Comp|CheckProps|CheckTail|ValueProps|Check)\d+$/u,
+      (_, role: string) => `__C_${COMPACT_CONTRACT_ROLES[role]}_N`,
+    )
+    .replace(/^__V(?:\$\d+)?Prop\d+\$[\w$]+$/u, "__C_N_prop_*")
+    .replace(/^__V(?:\$\d+)?Model\d+\$[\w$]+$/u, "__C_N_model_*")
     .replace(
       /^__\w+?_(Props|Component|CheckProps|CheckTail|ValueProps|FallthroughValue|Check)_\d+$/u,
       "__C_$1_N",
@@ -188,6 +208,7 @@ export function normalizeAlias(name: string): string {
     .replace(/^__\w+?_\d+_emit_resolver$/u, "__C_N_emit_resolver")
     .replace(new RegExp(`^__\\w+?_\\d+_[\\w$]+?_(${LISTENER_SUFFIX})$`, "u"), "__C_N_*_$1")
     .replace(/^__\w+?_slot_contract$/u, "__C_slot_contract")
+    .replace(/^__\w+?_\d+_model_\w+$/u, "__C_N_model_*")
     .replace(/\d+/gu, "N");
 }
 

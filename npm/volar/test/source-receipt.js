@@ -53,6 +53,7 @@ const receipt = {
       "npm/volar/test/service-harness.js",
       "npm/volar/test/public-instance-reference.js",
       "npm/volar/test/listener-wrapper-reference.js",
+      "npm/volar/test/compact-contract-name-reference.js",
       "npm/volar/test/listener-wrapper-reference.test.js",
       "npm/volar/test/listener-wrapper-reference.provenance.json",
       "npm/volar/test/reference-fixtures/listener-wrapper.vue.txt",

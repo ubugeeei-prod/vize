@@ -72,7 +72,7 @@ fn a_snake_case_prop_keeps_its_name() {
     );
 
     assert!(
-        code.contains("$PropValueOr<__Child_ValueProps_0, 'my_prop', __Child_Component_0>"),
+        code.contains("$PropValueOr<__VValueProps0, 'my_prop', __VComp0>"),
         "an underscore was treated as a separator:\n{code}"
     );
 }
@@ -89,7 +89,7 @@ fn a_prop_named_template_keeps_its_case_everywhere_it_is_emitted() {
     // Every site that names the prop has to agree with the declared key, or the
     // prop check reports it missing while the parent clearly bound it.
     assert!(
-        code.contains("$PropValueOr<__Child_ValueProps_0, 'Template', __Child_Component_0>"),
+        code.contains("$PropValueOr<__VValueProps0, 'Template', __VComp0>"),
         "prop alias type lost the declared casing:\n{code}"
     );
     assert!(
@@ -115,7 +115,7 @@ fn kebab_case_attributes_still_resolve_to_their_camel_case_prop() {
 
     assert!(
         code.contains(
-            "$PropValue<__Child_ValueProps_0, 'my-prop', $PropValueOr<__Child_ValueProps_0, 'myProp', __Child_Component_0, 'my-prop'>>"
+            "$PropValue<__VValueProps0, 'my-prop', $PropValueOr<__VValueProps0, 'myProp', __VComp0, 'my-prop'>>"
         ),
         "literal own prop must precede its camel alias and fallthrough lookup:\n{code}"
     );

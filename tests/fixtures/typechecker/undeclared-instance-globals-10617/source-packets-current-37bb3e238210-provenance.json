@@ -1,0 +1,90 @@
+{
+  "schema": "vize.instance-global-current-provenance",
+  "version": 1,
+  "issue": 10617,
+  "pullRequest": 12646,
+  "producer": {
+    "sourceRevision": "37bb3e238210ad6c7bc3bb897d3a1dcaf83aa74f",
+    "sourceTree": "bb4f3802e89a16933fbb337b157b57b7cd53fc75",
+    "pullRequestHead": "3b31c027c73e863311a651dcbafc3599f7a746b1",
+    "binarySha256": "e6cecc73453853c62db8d6e3a39b18a2b621e182eb7d67cdc3ab35adcdb0366c",
+    "recipe": "cargo build --profile ci -p vize",
+    "captureRun": 42780733364,
+    "artifactId": 13746003658,
+    "runAttempt": 1,
+    "platform": "linux",
+    "arch": "x64"
+  },
+  "artifact": {
+    "repository": "ubugeeei-prod/vize",
+    "run": 42780733364,
+    "job": 129710794572,
+    "id": 13746003658,
+    "name": "instance-globals-tooling-9-42780733364-1",
+    "digest": "sha256:916f2e98c2f2b3e7ab3162ebeb81244f506f38b447c0ed20f50fad83d816bd2d",
+    "bytes": 394106
+  },
+  "previousPopulation": {
+    "path": "source-packets-current-f29a8ee58999.json",
+    "bytes": 419557,
+    "sha256": "c5318722198f96647551a7eae5b123e95d5cf2f1087cbf99753de78326ec17df"
+  },
+  "successorPopulation": {
+    "path": "source-packets-current-37bb3e238210.json",
+    "bytes": 419125,
+    "sha256": "52c69acacccadc9e0d50a4877562f0f468833e1b01c17a06bdfbf4d821a8b080"
+  },
+  "sourceReceipt": {
+    "path": "crates/vize_canon/tests/empty_vue_star_exports/membership/constructor_without_args/payload_update/canon_leftovers_11499.json",
+    "sha256": "250e01138d163f77a5d98b20bc97f562a663ebb924c17c810b9d9cf02280128e"
+  },
+  "evidence": {
+    "source-build.json": {
+      "bytes": 1882,
+      "sha256": "fffdb9d691e53b2bf01caf5cdfede0513cd84d00923d41327918094d393b50bf"
+    },
+    "source-launch.json": {
+      "bytes": 882,
+      "sha256": "b4aa051a213462950567d9d783f7f022d5c55694f160aa3aa84682d1bab5b29d"
+    },
+    "source-protocol.json": {
+      "bytes": 480726,
+      "sha256": "e63aefa3c9fe530f7dfd962bfd823e943b025822ce26091c57f9add8679eb6a5"
+    },
+    "outcomes.json": {
+      "bytes": 105694,
+      "sha256": "16ba5b890ebfcf20f462cb98e9268221c3947307ad503b8a73476adae3e9343d"
+    },
+    "qualification.json": {
+      "bytes": 109036,
+      "sha256": "f050d222c99f86bc56ce21a4319adf7d0a864739c30bb2fa25debb1f24ceb15b"
+    },
+    "host-matrix.json": {
+      "bytes": 3798,
+      "sha256": "493a685b2b463da6eed62ac4a94617417bb4593b5bc18d7c93ed595d5a712a14"
+    }
+  },
+  "capturedQualification": {
+    "status": "unqualified",
+    "fullPacketQualification": false,
+    "hostMatrixQualification": false,
+    "totalOutcomes": 398,
+    "passedOutcomes": 394,
+    "gapCount": 4,
+    "gapIds": [
+      "whole-packet/lf/slot-shadow",
+      "whole-packet/lf/mixed-slot-scope",
+      "whole-packet/crlf-unicode/slot-shadow",
+      "whole-packet/crlf-unicode/mixed-slot-scope"
+    ]
+  },
+  "review": {
+    "completePackets": 80,
+    "allNonWholePacketOutcomesPassed": true,
+    "qualificationCredit": false,
+    "nativeAcceptanceCredit": false,
+    "publicPackageAcceptanceCredit": false,
+    "performanceCredit": false,
+    "reason": "Only the LF and CRLF/Unicode slot-shadow and mixed-slot-scope packets respell their per-usage contract aliases as __V<Role><N> (#12646). Their text changes only at those names, every generated coordinate after a renamed name moves by exactly the bytes it lost, and every diagnostic and source coordinate is unchanged; the other 76 packets are byte-identical, and all 394 non-whole-packet semantic, protocol, mapping-geometry, reported-beta and official-nightly controls passed. The pinned source-built TypeScript host was unavailable, so this record retains the observed postimages without assigning host-matrix, public-package or performance acceptance credit."
+  }
+}

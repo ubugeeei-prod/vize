@@ -396,7 +396,7 @@ export default defineComponent({
         // template expressions keep reading the reserved prop through the instance
         "  void __vize_options_instance[\"as\"];",
         // the dynamic component resolves the local
-        "  type __as_Component_0 = typeof _as;",
+        "  type __VComp0 = typeof _as;",
     ] {
         assert!(
             output.code.lines().any(|line| line == expected),

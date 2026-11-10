@@ -14,8 +14,8 @@ use super::DIRECTIVE_POLICY_EXPECT;
 use crate::virtual_ts::attr_value_declaration;
 
 const APP: &str = "<script setup lang=\"ts\">\nimport Field from './Field.vue'\n</script>\n<template>\n  <Field label=\"x\" :maxlength=\"{}\" />\n</template>\n";
-const OWNED: &str = "  const __vize_prop_check_0_maxlength: $AttrValue<__Field_Props_0, \"maxlength\", typeof Field, __Field_0_prop_maxlength> = {} satisfies __Field_0_prop_maxlength;\n";
-const PLAIN: &str = "  const __vize_prop_check_0_maxlength: __Field_0_prop_maxlength = {};\n";
+const OWNED: &str = "  const __vize_prop_check_0_maxlength: $AttrValue<__VProps0, \"maxlength\", typeof Field, __VProp0$maxlength> = {} satisfies __VProp0$maxlength;\n";
+const PLAIN: &str = "  const __vize_prop_check_0_maxlength: __VProp0$maxlength = {};\n";
 const NAME: &str = "__vize_prop_check_0_maxlength";
 
 fn policies(directives: &[ContentMapperDiagnosticDirective], at: usize) -> Vec<usize> {
@@ -127,7 +127,7 @@ fn literal_owners_alone_take_the_owned_form() {
         };
         assert_eq!(policies(&directives, value), echoed, "{source}");
         assert_eq!(
-            text.matches("  const __vize_prop_check_0_aria_busy: __Field_0_prop_aria_busy = 1;\n")
+            text.matches("  const __vize_prop_check_0_aria_busy: __VProp0$aria_busy = 1;\n")
                 .count(),
             aria_plain,
             "ARIA keeps the plain owner"
@@ -150,7 +150,7 @@ fn split_values_stay_one_owned_expression() {
         let result = generate_vue_content_mapper_transform(Path::new("/project/App.vue"), &source)
             .expect("transform");
         let text = result.text.as_str();
-        let opening = "  const __vize_prop_check_0_maxlength: $AttrValue<__Field_Props_0, \"maxlength\", typeof Field, __Field_0_prop_maxlength> = (";
+        let opening = "  const __vize_prop_check_0_maxlength: $AttrValue<__VProps0, \"maxlength\", typeof Field, __VProp0$maxlength> = (";
         let start = text.find(opening).expect("owned per-prop check");
         let statement = text
             .get(start..)
@@ -159,7 +159,7 @@ fn split_values_stay_one_owned_expression() {
             .expect("statement end");
         assert_eq!(
             statement.get(opening.len()..),
-            Some(vize_l0::cstr!("{value}) satisfies __Field_0_prop_maxlength").as_str()),
+            Some(vize_l0::cstr!("{value}) satisfies __VProp0$maxlength").as_str()),
             "{statement}"
         );
     }
@@ -197,13 +197,13 @@ fn relaxed_fallthrough_root_keeps_declared_props_with_the_literal() {
     .expect("transform");
     let text = result.text.as_str();
     assert_eq!(
-        text.matches("  type __Inner_CheckProps_0 = Partial<__Inner_Props_0> & ")
+        text.matches("  type __VCheckProps0 = Partial<__VProps0> & ")
             .count(),
         1,
         "the root usage is relaxed"
     );
     assert_eq!(
-        text.matches("  const __vize_prop_check_0_label: $AttrValue<__Inner_Props_0, \"label\", typeof Inner, __Inner_0_prop_label> = 1 satisfies __Inner_0_prop_label;\n")
+        text.matches("  const __vize_prop_check_0_label: $AttrValue<__VProps0, \"label\", typeof Inner, __VProp0$label> = 1 satisfies __VProp0$label;\n")
             .count(),
         1,
         "the declared key, not its `Partial`, decides the owner"
@@ -218,7 +218,7 @@ fn relaxed_fallthrough_root_keeps_declared_props_with_the_literal() {
     assert_eq!(
         undefined
             .text
-            .matches("  const __vize_prop_check_0_label: $AttrValue<__Inner_Props_0, \"label\", unknown, __Inner_0_prop_label, {}> = undefined satisfies __Inner_0_prop_label;\n")
+            .matches("  const __vize_prop_check_0_label: $AttrValue<__VProps0, \"label\", unknown, __VProp0$label, {}> = undefined satisfies __VProp0$label;\n")
             .count(),
         1,
         "the per-prop contract owns explicit undefined at the relaxed root"
@@ -239,7 +239,7 @@ fn component_prop_assignments_are_ignored_only_when_the_literal_owns_them() {
         + "const ".len();
     let tail = result
         .text
-        .find(": $AttrValue<__Child_Props_0, \"count\", typeof Child, __Child_0_prop_count> = value satisfies __Child_0_prop_count;")
+        .find(": $AttrValue<__VProps0, \"count\", typeof Child, __VProp0$count> = value satisfies __VProp0$count;")
         .expect("owned per-prop check");
     let literal = result
         .text

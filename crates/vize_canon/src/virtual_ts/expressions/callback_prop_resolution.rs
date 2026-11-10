@@ -7,7 +7,6 @@ use super::component_props::{ComponentPropSource, is_checkable_prop};
 use super::prop_sources::{append_prop_value, generated_prop_value};
 use super::spread_reserved_props::rewrite_reserved_spread_references;
 use super::ts_suppression_comments::inference_callback_parameters_on_ignored_lines;
-use crate::virtual_ts::helpers::to_safe_identifier_fragment;
 use crate::virtual_ts::scope::is_inline_callback_prop;
 use crate::virtual_ts::template_binding_access::TemplateBindingAccess;
 use vize_carton::{String, cstr};
@@ -21,13 +20,10 @@ pub(super) struct CallbackPropsResolution {
 pub(super) fn append_prop_check_type(
     ts: &mut crate::virtual_ts::TextBuf,
     (resolution, hoist_shared_preamble): (Option<&CallbackPropsResolution>, bool),
-    (component_type_name, idx, safe_prop_name, prop_name): (&str, usize, &str, &str),
+    (prefix, idx, safe_prop_name, prop_name): (&str, usize, &str, &str),
 ) {
     let Some(resolution) = resolution else {
-        vize_l0::emit_ts!(
-            ts,
-            ": __{component_type_name}_{idx}_prop_{safe_prop_name} = "
-        );
+        vize_l0::emit_ts!(ts, ": {prefix}Prop{idx}${safe_prop_name} = ");
         return;
     };
     let camel_prop_name = super::super::helpers::to_camel_case(prop_name);
@@ -37,12 +33,12 @@ pub(super) fn append_prop_check_type(
         let resolved_prop = crate::virtual_ts::helpers::shared_types::RESOLVED_PROP.select(true);
         vize_l0::emit_ts!(
             ts,
-            ": {resolved_prop}<typeof {resolved_props}, typeof {selected_props}, '{camel_prop_name}', __{component_type_name}_{idx}_prop_{safe_prop_name}> = "
+            ": {resolved_prop}<typeof {resolved_props}, typeof {selected_props}, '{camel_prop_name}', {prefix}Prop{idx}${safe_prop_name}> = "
         );
     } else {
         vize_l0::emit_ts!(
             ts,
-            ": $ResolvedProp<typeof {resolved_props}, typeof {selected_props}, '{camel_prop_name}', __{component_type_name}_{idx}_prop_{safe_prop_name}> = "
+            ": $ResolvedProp<typeof {resolved_props}, typeof {selected_props}, '{camel_prop_name}', {prefix}Prop{idx}${safe_prop_name}> = "
         );
     }
 }
@@ -71,9 +67,9 @@ pub(super) fn generate_callback_props_resolution(
         return None;
     }
 
-    let component_type_name = to_safe_identifier_fragment(usage.name.as_str());
-    let resolved_props = cstr!("__vize_resolved_{component_type_name}_props_{idx}");
-    let selected_props = cstr!("__vize_selected_{component_type_name}_props_{idx}");
+    let prefix = crate::virtual_ts::generated_names::template_prefix();
+    let resolved_props = cstr!("{prefix}ResolvedProps{idx}");
+    let selected_props = cstr!("{prefix}SelectedProps{idx}");
     let expr_indent = String::from(indent);
     if hoist_shared_preamble {
         let resolved_context_props =

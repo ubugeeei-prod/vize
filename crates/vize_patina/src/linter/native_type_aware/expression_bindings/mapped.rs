@@ -319,7 +319,7 @@ fn expression_owner_statements(text: &str) -> Vec<ExpressionOwnerStatement<'_>> 
         let Some(header) = text.get(call_start..line_end) else {
             continue;
         };
-        if !header.contains("_Check_") || !header.trim_end().ends_with(")({") {
+        if !is_component_checker_call(header) {
             continue;
         }
         let Some(before) = text.get(..call_start) else {
@@ -364,9 +364,56 @@ struct Probe {
     copy: Option<std::ops::Range<usize>>,
 }
 
+/// `(undefined as unknown as __VCheck{N})({`: one component usage's
+/// whole-props check. An authored-name collision moves the family to
+/// `__V$<namespace>Check{N}`.
+fn is_component_checker_call(header: &str) -> bool {
+    let Some(mut rest) = header
+        .trim_end()
+        .strip_prefix("(undefined as unknown as __V")
+    else {
+        return false;
+    };
+    if let Some(namespace) = rest.strip_prefix('$') {
+        let end = namespace
+            .bytes()
+            .position(|byte| !byte.is_ascii_digit())
+            .unwrap_or(namespace.len());
+        if end == 0 {
+            return false;
+        }
+        rest = namespace.get(end..).unwrap_or_default();
+    }
+    rest.strip_prefix("Check")
+        .and_then(|index| index.strip_suffix(")({"))
+        .is_some_and(|index| !index.is_empty() && index.bytes().all(|byte| byte.is_ascii_digit()))
+}
+
 /// An `if` / `else if` header line.
 fn guard_header(trimmed: &str) -> bool {
     let header = trimmed.strip_prefix('}').unwrap_or(trimmed).trim_start();
     (header.starts_with("if (") || header.starts_with("else if ("))
         && trimmed.trim_end().ends_with(") {")
+}
+
+#[cfg(test)]
+mod tests {
+    use super::is_component_checker_call;
+
+    #[test]
+    fn component_checker_call_accepts_the_default_and_collision_namespace() {
+        for header in [
+            "(undefined as unknown as __VCheck0)({",
+            "(undefined as unknown as __V$1Check42)({",
+        ] {
+            assert!(is_component_checker_call(header), "{header}");
+        }
+        for header in [
+            "(undefined as unknown as __V$Check0)({",
+            "(undefined as unknown as __V$1Props0)({",
+            "(undefined as unknown as __VCheck)({",
+        ] {
+            assert!(!is_component_checker_call(header), "{header}");
+        }
+    }
 }

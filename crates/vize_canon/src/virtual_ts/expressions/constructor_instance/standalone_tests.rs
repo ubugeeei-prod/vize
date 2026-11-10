@@ -32,7 +32,7 @@ impl<'a> Visit<'a> for Declarations {
     }
 
     fn visit_ts_type_alias_declaration(&mut self, declaration: &TSTypeAliasDeclaration<'a>) {
-        if declaration.id.name == "__ElBadge_Props_0" {
+        if declaration.id.name == "__VProps0" {
             self.props.push(declaration.span);
         }
         walk_ts_type_alias_declaration(self, declaration);
@@ -92,7 +92,7 @@ fn standalone_and_shared_props_use_the_actual_constructor_pair() {
             "$IsAny"
         };
         let props = cstr!(
-            "type __ElBadge_Props_0 = typeof ElBadge extends {{ __vizeCheck: infer __F }} ? ({is_any}<__F> extends true ? {raw} : Record<string, unknown>) : {raw};"
+            "type __VProps0 = typeof ElBadge extends {{ __vizeCheck: infer __F }} ? ({is_any}<__F> extends true ? {raw} : Record<string, unknown>) : {raw};"
         );
         assert_eq!(
             declarations

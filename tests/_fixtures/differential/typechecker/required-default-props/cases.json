@@ -92,7 +92,7 @@
           "column": 4,
           "severity": 1,
           "code": 2345,
-          "message": "Argument of type '{ title: string; }' is not assignable to parameter of type '$ComponentCheckProps<__OptionsChild_CheckProps_0, $PublicComponentAttrs & { abbr?: unknown; about?: unknown; \"accent-height\"?: unknown; accentHeight?: unknown; accept?: unknown; acceptcharset?: unknown; ... 676 more ...; zoomAndPan?: unknown; } & { ...; } & Record<...>>'.\nProperty 'flag' is missing in type '{ title: string; }' but required in type '{ readonly label?: string | undefined; readonly flag: boolean; readonly title: string; }'."
+          "message": "Argument of type '{ title: string; }' is not assignable to parameter of type '$ComponentCheckProps<__VCheckProps0, $PublicComponentAttrs & { abbr?: unknown; about?: unknown; \"accent-height\"?: unknown; accentHeight?: unknown; accept?: unknown; acceptcharset?: unknown; accesskey?: unknown; accumulate?: unknown; ... 674 more ...; zoomAndPan?: unknown; } & { ...; } & Record<...>>'.\nProperty 'flag' is missing in type '{ title: string; }' but required in type '{ readonly label?: string | undefined; readonly flag: boolean; readonly title: string; }'."
         },
         {
           "file": "src/Parent.vue",
