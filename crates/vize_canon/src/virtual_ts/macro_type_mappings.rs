@@ -167,12 +167,26 @@ impl<'a> MacroTypeMappings<'a> {
                 continue;
             };
             let mut needle = crate::virtual_ts::TextBuf::from_text("  ");
-            if oxc_syntax::identifier::is_identifier_name(model.name.as_str()) {
+            let identifier = oxc_syntax::identifier::is_identifier_name(model.name.as_str());
+            if identifier {
                 needle.push_str(model.name.as_str());
             } else {
                 push_ts_string_literal(&mut needle, model.name.as_str());
             }
-            let Some(start) = generated.find(needle.as_str()) else {
+            let start = if identifier {
+                generated
+                    .match_indices(needle.as_str())
+                    .find_map(|(start, _)| {
+                        matches!(
+                            generated.as_bytes().get(start + needle.len()),
+                            Some(b'?' | b':')
+                        )
+                        .then_some(start)
+                    })
+            } else {
+                generated.find(needle.as_str())
+            };
+            let Some(start) = start else {
                 continue;
             };
             let start = generated_start + start + 2;

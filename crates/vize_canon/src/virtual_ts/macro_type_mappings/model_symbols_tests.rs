@@ -81,14 +81,18 @@ fn unverified_names_preserve_the_original_whole_ast_mapping() {
         ),
         (
             Some("'saveItem'"),
-            "prefix(); saveItem",
+            "prefix(); deleteItem",
             "saveItem",
-            (10..18, 100..110),
+            (10..20, 100..110),
         ),
         (Some("''"), "prefix(); \"update:\"", "", (10..19, 100..102)),
     ] {
         assert_eq!(model_rows(authored, generated, name), vec![expected]);
     }
+    assert_eq!(
+        model_rows(Some("'saveItem'"), "prefix(); saveItem", "saveItem"),
+        vec![(10..18, 101..109)]
+    );
 }
 
 #[test]
@@ -116,10 +120,7 @@ fn generated_model_prop_and_event_rows_retain_authored_ast_contents() {
                 ..Default::default()
             },
         );
-        let prop_start = output
-            .code
-            .find("\"saveItem\"?: string;")
-            .expect("model prop");
+        let prop_start = output.code.find("saveItem?: string;").expect("model prop");
         let event_start = output
             .code
             .find("/* __vize_model_event */ \"update:saveItem\"")
@@ -138,12 +139,55 @@ fn generated_model_prop_and_event_rows_retain_authored_ast_contents() {
         assert_eq!(
             rows,
             vec![
-                (prop_start..prop_start + 10, 121..129),
-                (prop_start + 1..prop_start + 9, 121..129),
+                (prop_start..prop_start + 8, 121..129),
                 (event_start..event_start + 17, 121..129),
                 (event_start + 1..event_start + 16, 121..129),
                 (event_start + 8..event_start + 16, 121..129),
             ]
         );
     }
+}
+
+#[test]
+fn model_prop_mapping_does_not_capture_an_identifier_prefix_sibling() {
+    let script = r#"
+const props = defineProps({ nameplate: String })
+const name = defineModel<string>('name')
+"#;
+    let allocator = vize_carton::Allocator::new();
+    let (root, _) = vize_armature::parse(&allocator, "<span />");
+    let mut analyzer = vize_croquis::Analyzer::with_options(vize_croquis::AnalyzerOptions::full());
+    analyzer.analyze_script_setup(script);
+    analyzer.analyze_template(&root);
+    let output = generate_virtual_ts_with_offsets_and_checks(
+        &analyzer.finish(),
+        Some(script),
+        Some(&root),
+        100,
+        0,
+        &VirtualTsOptions::default(),
+        VirtualTsGenerationOptions::default(),
+    );
+    let model_start = output.code.find("\n  name?: string;").expect("model prop") + 3;
+    let authored_start = 100 + script.find("'name'").expect("authored model name") + 1;
+    let rows: Vec<_> = output
+        .mapping
+        .spans()
+        .iter()
+        .filter(|row| row.gen_range.start == model_start)
+        .map(|row| (row.gen_range.clone(), row.src_range.clone()))
+        .collect();
+    assert_eq!(
+        rows,
+        vec![(
+            model_start..model_start + 4,
+            authored_start..authored_start + 4,
+        )]
+    );
+    assert!(
+        output
+            .code
+            .find("\n  nameplate")
+            .is_some_and(|start| start < model_start)
+    );
 }
