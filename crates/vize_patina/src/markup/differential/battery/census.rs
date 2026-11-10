@@ -313,8 +313,8 @@ pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
         + 93
         // Directive parity regressions retain 48 complete trace lines.
         + 48
-        // Plugin-faithful a11y handler fixtures retain fifty-one trace lines.
-        + 51,
+        // Plugin-faithful a11y handler fixtures retain fifty-four trace lines.
+        + 54,
     restructured: 0,
     jsx: JsxComparison {
         roots: 14,
