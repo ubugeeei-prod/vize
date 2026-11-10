@@ -2,6 +2,7 @@
 
 use crate::virtual_ts::template_binding_access::TemplateBindingAccess;
 use crate::virtual_ts::{expressions::ComponentPropSource, types::VizeMapping};
+mod component_boxes;
 mod emit_props_gate;
 mod emit_resolver_share;
 mod generic_inference;
@@ -200,35 +201,26 @@ pub(super) fn generate_component_event_types(
         if !shared_contract {
             relations.emit(ts, indent);
         }
-        // A vue-tsc generic library export instantiates its generics with their
-        // constraints here, so its payload comes from the bound-props call below.
-        vize_l0::emit_ts!(
+        component_boxes::emit(
             ts,
-            "{indent}type {library} = typeof {component_ref} extends {{ __vizeCheck: any }} | {{ readonly __vizeComponentMarker: true }} ? false : typeof {component_ref} extends (...args: any[]) => infer __R ? 0 extends (1 & __R) ? false : '__ctx' extends keyof __R ? true : false : false;\n",
+            indent,
+            &component_boxes::Boxes {
+                library: &library,
+                props: &props_box,
+                emit_props: &emit_props_box,
+                fallthrough: &fallthrough_box,
+            },
+            &component_ref,
+            if native_fallthrough_only {
+                component_boxes::Fallthrough::Native
+            } else if fallthrough_listeners {
+                component_boxes::Fallthrough::Contextual
+            } else {
+                component_boxes::Fallthrough::None
+            },
+            is_any,
+            shared_contract,
         );
-        vize_l0::emit_ts!(
-            ts,
-            "{indent}type {props_box} = typeof {component_ref} extends {{ new (...args: any[]): {{ $props: infer __P }} }} ? [__P] : typeof {component_ref} extends (props: infer __P, ...args: any[]) => any ? [__P] : [];\n",
-        );
-        vize_l0::emit_ts!(
-            ts,
-            "{indent}type {emit_props_box} = typeof {component_ref} extends {{ __vizeEmitProps?: infer __EP }} ? [__EP] : [];\n",
-        );
-        if native_fallthrough_only {
-            native_fallthrough::emit_box(
-                ts,
-                indent,
-                fallthrough_box.as_str(),
-                component_ref.as_str(),
-                is_any,
-            );
-        } else if fallthrough_listeners {
-            // An `any` root has no typed contract, the same as no root.
-            vize_l0::emit_ts!(
-                ts,
-                "{indent}type {fallthrough_box} = typeof {component_ref} extends {{ readonly __vizeFallthroughProps?: infer __F }} ? {is_any}<__F> extends true ? [] : [__F] : [];\n",
-            );
-        }
     }
     if shared_contract {
         return Some(listener_contract::emit(

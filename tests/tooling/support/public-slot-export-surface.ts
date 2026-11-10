@@ -227,6 +227,55 @@ function withProvenListenerContractRemoved(
   return { ...actual, exports };
 }
 
+/** The shared component boxes and emit gate are new; their oracle proves them equal to the inline aliases. */
+function withProvenComponentBoxesRemoved(
+  actual: ExportSurface,
+  expected: ExportSurface,
+): ExportSurface {
+  const oracle = new URL("tests/tooling/canon-component-boxes-equivalence.test.ts", repositoryRoot);
+  const parameter = (name: string, fallback: string | null = null) => ({
+    name,
+    constraint: null,
+    default: fallback,
+  });
+  const additions: [string, ReturnType<typeof parameter>[]][] = [
+    ...[
+      "$ComponentLibraryFlag",
+      "$ComponentPropsBox",
+      "$ComponentEmitPropsBox",
+      "$ComponentNativeFallthroughBox",
+      "$ComponentEventsResolver",
+    ].map((name): [string, ReturnType<typeof parameter>[]] => [name, [parameter("C")]]),
+    ["$EmitGateNativeInput", [parameter("C")]],
+    ["$EmitGateResolver", [parameter("L"), parameter("C")]],
+    [
+      "$EmitGateInput",
+      [
+        parameter("L"),
+        parameter("C"),
+        parameter("F"),
+        parameter("R", "F extends (...args: any) => infer T ? T : any"),
+        parameter("U", "R"),
+      ],
+    ],
+  ];
+  const exports = structuredClone(actual.exports);
+  for (const [name, parameters] of additions) {
+    const index = exports.findIndex((entry) => entry.name === name);
+    if (expected.exports.some((entry) => entry.name === name) || index < 0) continue;
+    assert.ok(fs.existsSync(oracle) && fs.readFileSync(oracle, "utf8").includes("$EmitGate"));
+    assert.deepEqual(exports[index], {
+      name,
+      type: true,
+      value: false,
+      namespace: false,
+      declarations: [{ kind: "TypeAliasDeclaration", parameters, signatures: [] }],
+    });
+    exports.splice(index, 1);
+  }
+  return { ...actual, exports };
+}
+
 export function assertPublicSlotExportSurface(
   actual: ExportSurface,
   expected: ExportSurface,
@@ -240,7 +289,10 @@ export function assertPublicSlotExportSurface(
       withProvenDefaultsRestored(
         withProvenPropValueOrAdditionRemoved(
           withProvenListenerAdditionRemoved(
-            withProvenListenerContractRemoved(actual, expected),
+            withProvenListenerContractRemoved(
+              withProvenComponentBoxesRemoved(actual, expected),
+              expected,
+            ),
             expected,
           ),
           expected,

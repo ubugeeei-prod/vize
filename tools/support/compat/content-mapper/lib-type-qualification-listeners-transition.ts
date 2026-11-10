@@ -2,6 +2,7 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
+import { beforeComponentBoxes } from "./component-boxes-transition.ts";
 
 export const libTypeListenerRecord =
   "tests/_fixtures/tooling/lib-type-qualification-listeners-12536.json";
@@ -45,6 +46,7 @@ function load(): Transition {
 
 /** The exact pre-qualification bytes of a recorded producer's current image; older images pass through. */
 export function beforeListenerLibTypeQualification(path: string, current: string): string {
+  current = beforeComponentBoxes(path, current);
   const file = load().files.find((entry) => entry.path === path);
   if (!file || identity(current).sha256 !== file.after.sha256) return current;
   assert.equal(

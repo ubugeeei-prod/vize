@@ -44,9 +44,15 @@ fn generate(template: &str, options: VirtualTsGenerationOptions<'_>) -> vize_car
 
 #[test]
 fn a_computed_is_listener_takes_the_gated_call_in_both_modes() {
-    for (hoist_shared_preamble, factory) in [
-        (false, "$EmitPropsFactory<C>"),
-        (true, "import(\"vize:virtual-ts\").$EmitPropsFactory<C>"),
+    // A hoisted module names the shared SDK gate instead of declaring its own.
+    for (hoist_shared_preamble, resolver, input, aliases) in [
+        (false, "__vize_emit_resolver", "__vize_emit_input", 1),
+        (
+            true,
+            "import(\"vize:virtual-ts\").$EmitGateResolver",
+            "import(\"vize:virtual-ts\").$EmitGateInput",
+            0,
+        ),
     ] {
         let code = generate(
             COMPUTED,
@@ -55,18 +61,24 @@ fn a_computed_is_listener_takes_the_gated_call_in_both_modes() {
                 ..Default::default()
             },
         );
-        assert_eq!(code.matches(GATED).count(), 1, "{code}");
+        let gated = vize_carton::cstr!(
+            "const __vize_emit_factory_0 = (undefined as unknown as {resolver}<"
+        );
+        assert_eq!(code.matches(gated.as_str()).count(), 1, "{code}");
         assert_eq!(code.matches(DIRECT).count(), 0, "{code}");
-        assert_eq!(code.matches(ALIASES).count(), 1, "{code}");
+        assert_eq!(code.matches(ALIASES).count(), aliases, "{code}");
         assert_eq!(
-            code.matches(vize_carton::cstr!("(component: C) => C : {factory};").as_str())
+            code.matches("(component: C) => C : $EmitPropsFactory<C>;")
                 .count(),
-            1,
+            aliases,
             "{code}"
         );
         assert_eq!(
-            code.matches("const __vize_emit_props_0 = (undefined as unknown as __vize_emit_input<")
-                .count(),
+            code.matches(
+                vize_carton::cstr!("const __vize_emit_props_0 = (undefined as unknown as {input}<")
+                    .as_str()
+            )
+            .count(),
             1,
             "{code}"
         );

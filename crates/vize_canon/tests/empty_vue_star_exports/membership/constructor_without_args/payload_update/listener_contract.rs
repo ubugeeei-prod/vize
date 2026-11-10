@@ -77,9 +77,10 @@ pub(super) fn read_current(path: &str) -> String {
 
 /// The compiled preamble without the contract lines its asset gained.
 pub(super) fn preamble_before(current: &str) -> String {
+    let current = super::component_boxes::preamble_before(current);
     let hash = support::hash(current.as_bytes());
     let Some((_, before)) = PREAMBLE.iter().find(|(after, _)| *after == hash) else {
-        return current.to_owned();
+        return current;
     };
     let record = record();
     let asset = record["files"]
@@ -88,7 +89,7 @@ pub(super) fn preamble_before(current: &str) -> String {
         .iter()
         .find(|file| file["path"] == ASSET)
         .unwrap();
-    let previous = invert(current, asset["hunks"].as_array().unwrap());
+    let previous = invert(&current, asset["hunks"].as_array().unwrap());
     assert_eq!(support::hash(previous.as_bytes()), *before);
     previous
 }
@@ -123,6 +124,7 @@ mod tests {
         .into_iter()
         .zip(PREAMBLE)
         {
+            let current = &super::super::component_boxes::preamble_before(current);
             assert_eq!(support::hash(current.as_bytes()), after);
             let previous = preamble_before(current);
             assert_eq!(support::hash(previous.as_bytes()), before);

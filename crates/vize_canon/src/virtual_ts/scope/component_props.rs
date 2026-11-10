@@ -243,6 +243,7 @@ pub(super) fn generate_component_props(
             strict_v_model: ctx.strict_v_model,
             typed_fallthrough_values: ctx.typed_fallthrough_values,
             hoist_shared_preamble: ctx.hoist_shared_preamble,
+            share_component_boxes: ctx.share_component_boxes,
             experimental_strict_slot_children: ctx.experimental_strict_slot_children,
             explicit_generics: ctx.explicit_generics,
             dynamic_aliases: ctx.dynamic_aliases,

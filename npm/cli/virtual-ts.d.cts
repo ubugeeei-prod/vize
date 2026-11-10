@@ -254,6 +254,112 @@ export type $IsLibraryGenericExport<C> = C extends
         ? true
         : false
     : false;
+export type $ComponentLibraryFlag<C> = 0 extends 1 & C
+  ? C extends { __vizeCheck: any } | { readonly __vizeComponentMarker: true }
+    ? false
+    : C extends (...args: any[]) => infer __R
+      ? 0 extends 1 & __R
+        ? false
+        : "__ctx" extends keyof __R
+          ? true
+          : false
+      : false
+  : [C] extends [{ __vizeCheck: any } | { readonly __vizeComponentMarker: true }]
+    ? false
+    : [C] extends [(...args: any[]) => infer __R]
+      ? 0 extends 1 & __R
+        ? false
+        : "__ctx" extends keyof __R
+          ? true
+          : false
+      : false;
+export type $ComponentPropsBox<C> = 0 extends 1 & C
+  ? C extends { new (...args: any[]): { $props: infer __P } }
+    ? [__P]
+    : C extends (props: infer __P, ...args: any[]) => any
+      ? [__P]
+      : []
+  : [C] extends [{ new (...args: any[]): { $props: infer __P } }]
+    ? [__P]
+    : [C] extends [(props: infer __P, ...args: any[]) => any]
+      ? [__P]
+      : [];
+export type $ComponentEmitPropsBox<C> = 0 extends 1 & C
+  ? C extends { __vizeEmitProps?: infer __EP }
+    ? [__EP]
+    : []
+  : [C] extends [{ __vizeEmitProps?: infer __EP }]
+    ? [__EP]
+    : [];
+export type $ComponentNativeFallthroughBox<C> = 0 extends 1 & C
+  ? []
+  : [C] extends [
+        { readonly __vizeNativeFallthroughRoot: true; readonly __vizeFallthroughProps?: infer __F },
+      ]
+    ? "__vizeEmitProps" extends keyof {
+        [
+          __K in keyof (C & {}) as string extends __K
+            ? never
+            : number extends __K
+              ? never
+              : symbol extends __K
+                ? never
+                : __K
+        ]: unknown;
+      }
+      ? $IsAny<__F> extends true
+        ? []
+        : [__F]
+      : []
+    : [];
+export type $ComponentEventsResolver<C> = 0 extends 1 & C
+  ? C extends { __vizeResolveEvents?: infer __F }
+    ? __F extends (...args: any[]) => any
+      ? __F
+      : (props: any) => $ComponentEvents<C>
+    : (props: any) => $ComponentEvents<C>
+  : [C] extends [{ __vizeResolveEvents?: infer __F }]
+    ? __F extends (...args: any[]) => any
+      ? __F
+      : (props: any) => $ComponentEvents<C>
+    : (props: any) => $ComponentEvents<C>;
+type $EmitGateNativeInput<C> = C extends new (...args: any[]) => any
+  ? C extends { readonly __vizeComponentMarker: true }
+    ? false
+    : true
+  : false;
+export type $EmitGateResolver<L, C> = [L] extends [true]
+  ? (component: C) => C
+  : $EmitPropsFactory<C>;
+export type $EmitGateInput<L, C, F, R = F extends (...args: any) => infer T ? T : any, U = R> = [
+  L,
+] extends [true]
+  ? F
+  : true extends (
+        0 extends 1 & C
+          ? false
+          : C extends { __vizeResolveEmitProps?: infer X }
+            ? X extends (...args: any[]) => any
+              ? true
+              : $EmitGateNativeInput<C>
+            : C extends { __vizeResolveProps?: infer X }
+              ? X extends (...args: any[]) => any
+                ? true
+                : $EmitGateNativeInput<C>
+              : $EmitGateNativeInput<C>
+      )
+    ? F
+    : [R] extends [never]
+      ? F
+      : [
+            R extends unknown
+              ? (<G>() => G extends R ? 1 : 2) extends <G>() => G extends U ? 1 : 2
+                ? true
+                : false
+              : false,
+          ] extends [true]
+        ? (props: any) => R
+        : F;
 export type $PropChecker<C, P, T> =
   $IsAny<C> extends true
     ? (props: { readonly [K in keyof P]: P[K] } & Record<string, unknown>) => void

@@ -357,10 +357,11 @@ fn repeated_emit_resolver_is_emitted_once() {
     let mut outputs = Vec::new();
     for hoist in [false, true] {
         let output = generated(script, template, hoist);
-        // Gated uses share the module's one resolver alias and declare none.
+        // Gated uses share one resolver and declare none: the module's, or the
+        // shared SDK gate when hoisted.
         assert_eq!(
             output.code.matches("type __vize_emit_resolver<").count(),
-            1,
+            usize::from(!hoist),
             "one module resolver; hoist={hoist}: {}",
             output.code
         );

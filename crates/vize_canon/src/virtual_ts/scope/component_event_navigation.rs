@@ -33,6 +33,7 @@ pub(super) fn emit_event_references(
         preserve_event_navigation: ctx.preserve_event_navigation,
         check_unknown_events: ctx.check_unknown_events,
         hoist_shared_preamble: ctx.hoist_shared_preamble,
+        share_component_boxes: ctx.share_component_boxes,
     };
     for &(idx, usage) in checkable_usages {
         if is_closure_scoped(ctx.summary, usage) || ctx.dynamic_aliases.is_scoped(usage.start) {
@@ -73,6 +74,7 @@ pub(super) fn emit_scoped_event_references(
         preserve_event_navigation: ctx.preserve_event_navigation,
         check_unknown_events: ctx.check_unknown_events,
         hoist_shared_preamble: ctx.hoist_shared_preamble,
+        share_component_boxes: ctx.share_component_boxes,
     };
     for &(idx, usage) in usages {
         let component_ref = component_binding_reference(
@@ -104,6 +106,7 @@ struct EventNavigationContext<'a> {
     preserve_event_navigation: bool,
     check_unknown_events: bool,
     hoist_shared_preamble: bool,
+    share_component_boxes: bool,
 }
 
 fn is_closure_scoped(summary: &Croquis, usage: &ComponentUsage) -> bool {
@@ -321,11 +324,25 @@ fn emit_resolved_events(
     resolved_events: &str,
     indent: &str,
 ) {
-    let component_events = crate::virtual_ts::helpers::shared_types::COMPONENT_EVENTS
-        .select(ctx.hoist_shared_preamble);
+    if ctx.share_component_boxes {
+        // One shared instantiation per component across the program.
+        let resolver =
+            crate::virtual_ts::helpers::shared_types::COMPONENT_EVENTS_RESOLVER.select(true);
+        vize_l0::emit_ts!(
+            ts,
+            "{indent}type __vize_events_resolver_{idx} = {resolver}<typeof {component_ref}>;\n"
+        );
+    } else {
+        let component_events = crate::virtual_ts::helpers::shared_types::COMPONENT_EVENTS
+            .select(ctx.hoist_shared_preamble);
+        vize_l0::emit_ts!(
+            ts,
+            "{indent}type __vize_events_resolver_{idx} = typeof {component_ref} extends {{ __vizeResolveEvents?: infer __F }} ? (__F extends (...args: any[]) => any ? __F : (props: any) => {component_events}<typeof {component_ref}>) : (props: any) => {component_events}<typeof {component_ref}>;\n"
+        );
+    }
     vize_l0::emit_ts!(
         ts,
-        "{indent}type __vize_events_resolver_{idx} = typeof {component_ref} extends {{ __vizeResolveEvents?: infer __F }} ? (__F extends (...args: any[]) => any ? __F : (props: any) => {component_events}<typeof {component_ref}>) : (props: any) => {component_events}<typeof {component_ref}>;\n{indent}// @ts-ignore Inference-only call; the authored prop checker owns diagnostics.\n{indent}const {resolved_events} = (undefined as unknown as __vize_events_resolver_{idx})("
+        "{indent}// @ts-ignore Inference-only call; the authored prop checker owns diagnostics.\n{indent}const {resolved_events} = (undefined as unknown as __vize_events_resolver_{idx})("
     );
     if !usage.spread_props.is_empty() {
         crate::virtual_ts::expressions::append_inference_props_literal(

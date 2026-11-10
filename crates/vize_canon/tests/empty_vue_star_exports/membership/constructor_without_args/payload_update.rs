@@ -5,6 +5,7 @@ use std::fs;
 
 mod canon_leftovers;
 mod checker_augmentations;
+mod component_boxes;
 mod constructor_emit_export;
 mod current_loose_emit;
 mod dependency_ownership;

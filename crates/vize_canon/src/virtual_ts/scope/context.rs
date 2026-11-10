@@ -248,6 +248,7 @@ pub(crate) struct VForPropsContext<'a, 'template> {
     pub(crate) strict_v_model: bool,
     pub(crate) typed_fallthrough_values: bool,
     pub(crate) hoist_shared_preamble: bool,
+    pub(crate) share_component_boxes: bool,
     pub(crate) experimental_strict_slot_children: bool,
     pub(crate) explicit_generics: &'a ExplicitGenerics,
     pub(super) dynamic_aliases: &'a DynamicComponentAliases,
@@ -314,6 +315,8 @@ pub(super) struct ComponentPropsContext<'a, 'template> {
     pub(super) strict_v_model: bool,
     pub(super) component_binding_check: ComponentBindingCheck<'a>,
     pub(super) legacy_vue2: bool,
+    /// Listener boxes may name the shared SDK helpers: hoisted, Vue 3, closed types.
+    pub(super) share_component_boxes: bool,
     pub(super) check_unknown_props: bool,
     pub(super) check_unknown_fallthrough_props: bool,
     /// Validate undeclared values against an inherited fallthrough surface.

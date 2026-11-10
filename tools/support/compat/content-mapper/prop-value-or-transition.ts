@@ -2,6 +2,7 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
+import { beforeComponentBoxes } from "./component-boxes-transition.ts";
 
 export const propValueOrRecord = "tests/_fixtures/tooling/prop-value-or-12431.json";
 export const propValueOrRecordSha256 =
@@ -52,6 +53,7 @@ export function applyPropValueOrIn(previous: string): string {
 
 /** The exact pre-addition bytes of a recorded helper's current image; others pass through. */
 export function beforePropValueOr(path: string, current: string): string {
+  current = beforeComponentBoxes(path, current);
   const file = load().files.find((entry) => entry.path === path);
   if (!file || identity(current).sha256 !== file.after.sha256) return current;
   for (const hunk of file.hunks) {

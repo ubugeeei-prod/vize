@@ -220,6 +220,13 @@ pub(super) fn emit_scope_closures(
         component_binding_check: options.component_binding_check,
         legacy_vue2: options.legacy_vue2,
         check_unknown_props: check_options.check_unknown_props,
+        share_component_boxes: options.hoist_shared_preamble
+            && super::component_events::gates_inference(
+                options
+                    .generic_parameters
+                    .is_some_and(|generic| !generic.parameters.is_empty()),
+                options.legacy_vue2,
+            ),
         check_unknown_fallthrough_props: check_options.check_unknown_fallthrough_props,
         typed_fallthrough_values: check_options.fallthrough_attributes
             || check_options.check_unknown_props,

@@ -3,6 +3,7 @@ mod allow_importing_ts_extensions;
 mod art_variant;
 mod art_variant_implicit_component;
 mod beyond_vue_tsc;
+mod component_boxes;
 mod component_event_assignment_scope;
 mod component_listener_alias_scope;
 mod component_listener_guard_share;
