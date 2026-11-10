@@ -200,12 +200,20 @@ pub(super) fn generate_component_event_types(
         if !shared_contract {
             relations.emit(ts, indent);
         }
-        // A vue-tsc generic library export instantiates its generics with their
-        // constraints here, so its payload comes from the bound-props call below.
-        vize_l0::emit_ts!(
-            ts,
-            "{indent}type {library} = typeof {component_ref} extends {{ __vizeCheck: any }} | {{ readonly __vizeComponentMarker: true }} ? false : typeof {component_ref} extends (...args: any[]) => infer __R ? 0 extends (1 & __R) ? false : '__ctx' extends keyof __R ? true : false : false;\n",
-        );
+        if explicit_generic.is_some() {
+            // `@vue-generic` has already instantiated the library export. Its
+            // call-signature props own the specialized listener payload; do
+            // not send it through the unbound-library inference fallback.
+            vize_l0::emit_ts!(ts, "{indent}type {library} = false;\n");
+        } else {
+            // A vue-tsc generic library export instantiates its generics with
+            // their constraints here, so its payload comes from the
+            // bound-props call below.
+            vize_l0::emit_ts!(
+                ts,
+                "{indent}type {library} = typeof {component_ref} extends {{ __vizeCheck: any }} | {{ readonly __vizeComponentMarker: true }} ? false : typeof {component_ref} extends (...args: any[]) => infer __R ? 0 extends (1 & __R) ? false : '__ctx' extends keyof __R ? true : false : false;\n",
+            );
+        }
         vize_l0::emit_ts!(
             ts,
             "{indent}type {props_box} = typeof {component_ref} extends {{ new (...args: any[]): {{ $props: infer __P }} }} ? [__P] : typeof {component_ref} extends (props: infer __P, ...args: any[]) => any ? [__P] : [];\n",
