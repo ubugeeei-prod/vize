@@ -15,6 +15,7 @@ mod batch;
 pub use batch::PreparedLint;
 mod ecosystem_hint;
 mod jsx;
+mod markup;
 mod offset;
 mod parse_diagnostics;
 mod rule_sets;
@@ -367,13 +368,12 @@ impl Linter {
                     }
                     let rules = MarkupRules::new(rules);
                     let markup_result = match &markup {
-                        Some(markup) => self.lint_jsx_markup_l2(
-                            &allocator, source, filename, markup, analysis, rules,
-                        ),
+                        Some(markup) => self
+                            .lint_markup_l2(&allocator, source, filename, markup, analysis, rules),
                         // The P2-16 projection refused this root (an unsupported
                         // element, a comment, a compound expression). Keep the
                         // lowered Relief document so the rule still runs.
-                        None => self.lint_jsx_markup_root(
+                        None => self.lint_markup_root(
                             &allocator,
                             source,
                             filename,

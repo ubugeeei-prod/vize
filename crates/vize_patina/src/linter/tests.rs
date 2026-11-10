@@ -34,6 +34,7 @@ mod jsx_placeholder_label_option;
 mod jsx_require_datetime;
 mod jsx_streaming;
 mod jsx_use_list;
+mod markup_entry;
 mod musea;
 mod no_mutating_props;
 mod no_top_level_ref;
