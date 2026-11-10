@@ -165,8 +165,8 @@ role="combobox"
 aria-controls="lb"
 :aria-activedescendant="`lb-option-${focused}`"
   >Select</button>
-  <div id="lb" role="listbox">
-<button role="option" tabindex="-1">A</button>
+  <div id="lb" role="listbox" @keydown="onKey">
+<div role="option" @click="pick">A</div>
   </div>
 </div>"#,
         "test.vue",
@@ -186,9 +186,9 @@ fn combobox_listbox_and_options_need_no_focus() {
         let (controls, id) = ids.split_once(" | ").unwrap_or_default();
         let source = format!(
             r#"<input aria-activedescendant="fruit-0" {controls} aria-expanded="true" aria-label="Fruit" role="combobox" />
-<ul {id} role="listbox">
-  <li id="fruit-0" aria-selected="true" role="option">Apple</li>
-  <li role="option"><span>Banana</span></li>
+<ul {id} role="listbox" @keydown="onKey">
+  <li id="fruit-0" aria-selected="true" role="option" @click="pick">Apple</li>
+  <li role="option" @click="pick"><span>Banana</span></li>
 </ul>"#
         );
         let result = linter.lint_template(&source, "test.vue");
@@ -210,8 +210,8 @@ aria-expanded="true"
 aria-label="Fruit"
 role="combobox"
   />
-  <ul :id="listId" role="listbox">
-<li id="fruit-0" aria-selected="true" role="option">Apple</li>
+  <ul :id="listId" role="listbox" @keydown="onKey">
+<li id="fruit-0" aria-selected="true" role="option" @click="pick">Apple</li>
   </ul>
 </template>
 "#;
@@ -236,8 +236,8 @@ fn handlerless_listboxes_and_options_do_not_need_focus() {
         );
     }
     // Options outside the controlled listbox are still checked.
-    let outside = r#"<input aria-activedescendant="a" aria-controls="lb" role="combobox" /><ul id="lb" role="listbox"><li role="option">A</li></ul><div role="option">B</div>"#;
-    assert_eq!(linter.lint_template(outside, "test.vue").warning_count, 0);
+    let outside = r#"<input aria-activedescendant="a" aria-controls="lb" role="combobox" /><ul id="lb" role="listbox" @keydown="onKey"><li role="option" @click="pick">A</li></ul><div role="option" @click="pick">B</div>"#;
+    assert_eq!(linter.lint_template(outside, "test.vue").warning_count, 1);
 }
 
 #[test]
@@ -323,7 +323,7 @@ const select = (option: string): void => void option;
         lines,
         vec![
             19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40,
-            41, 42, 43, 51, 53, 54, 55, 58, 61, 62
+            41, 42, 43, 51, 53, 54, 55, 61, 62
         ],
         "{:?}",
         result.diagnostics

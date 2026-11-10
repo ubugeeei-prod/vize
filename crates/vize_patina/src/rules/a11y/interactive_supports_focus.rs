@@ -102,7 +102,8 @@ impl InteractiveSupportsFocus {
             && !is_disabled_element(element)
             && !is_hidden_from_screen_reader(element)
             && !is_presentation_role(element)
-            && !is_interactive_element(element))
+            && !is_interactive_element(element)
+            && !has_focusable_contenteditable(element))
         .then_some(role)
     }
 
@@ -235,6 +236,16 @@ fn is_disabled_element(element: &MarkupElement<'_>) -> bool {
             attribute(element, "aria-disabled"),
             Some(AttrValue::Str("true") | AttrValue::Bool(true))
         )
+}
+
+/// A present `contenteditable` value is focusable unless it is exactly the
+/// static false value. Unknown bound values retain the diagnostic.
+fn has_focusable_contenteditable(element: &MarkupElement<'_>) -> bool {
+    match attribute(element, "contenteditable") {
+        Some(AttrValue::Null | AttrValue::Bool(true)) => true,
+        Some(AttrValue::Str(value)) => value != "false",
+        Some(AttrValue::Num(_) | AttrValue::Bool(false) | AttrValue::Expr) | None => false,
+    }
 }
 
 fn collect_subtree(element: &MarkupElement<'_>, starts: &mut FxHashSet<u32>) {

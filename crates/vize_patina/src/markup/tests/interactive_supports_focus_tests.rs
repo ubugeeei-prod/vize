@@ -62,23 +62,23 @@ fn interactive_supports_focus_template() {
         ),
         (
             r#"<div role="button" contenteditable="true" @click="handle">Click</div>"#,
-            1,
-            "contenteditable=\"true\" is no tab index",
+            0,
+            "contenteditable true is focusable",
         ),
         (
             r#"<div role="button" contenteditable="" @click="handle">Click</div>"#,
-            1,
-            "contenteditable=\"\" is no tab index",
+            0,
+            "empty contenteditable is focusable",
         ),
         (
             r#"<div role="button" contenteditable="plaintext-only" @click="handle">Click</div>"#,
-            1,
-            "contenteditable=\"plaintext-only\" is no tab index",
+            0,
+            "plaintext-only contenteditable is focusable",
         ),
         (
             r#"<div role="button" contenteditable="FALSE" @click="handle">Click</div>"#,
-            1,
-            "contenteditable=\"FALSE\" is no tab index",
+            0,
+            "contenteditable value remains exact",
         ),
         (
             r#"<div role="button" contenteditable="false" @click="handle">Click</div>"#,
@@ -87,8 +87,8 @@ fn interactive_supports_focus_template() {
         ),
         (
             r#"<div role="button" :contenteditable="true" @click="handle">Click</div>"#,
-            1,
-            "bound contenteditable stays outside the legacy static-value helper",
+            0,
+            "bound true contenteditable is focusable",
         ),
         (
             r#"<div role="button" contenteditable="false" contenteditable="true" @click="handle">Click</div>"#,

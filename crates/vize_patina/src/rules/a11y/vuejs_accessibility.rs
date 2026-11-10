@@ -313,16 +313,21 @@ pub(crate) fn has_on_directive(element: &MarkupElement<'_>, name: &str, template
         if found {
             return;
         }
-        found = binding.kind() == MarkupBindingKind::On
-            && if template {
-                binding.is_static_unqualified_arg_eq_ignore_ascii_case(name)
-                    && binding.expression().is_some_and(is_handler_source)
-            } else {
-                binding.is_static_unqualified_arg_exact(name)
-                    && (binding.expression().is_some() || binding.retained_expression().is_some())
-            };
+        found = on_matches(&binding, name, template);
     });
     found
+}
+
+/// Whether one binding is the requested authored handler.
+fn on_matches(binding: &MarkupBinding<'_>, name: &str, template: bool) -> bool {
+    binding.kind() == MarkupBindingKind::On
+        && if template {
+            binding.is_static_unqualified_arg_eq_ignore_ascii_case(name)
+                && binding.expression().is_some_and(is_handler_source)
+        } else {
+            binding.is_static_unqualified_arg_exact(name)
+                && (binding.expression().is_some() || binding.retained_expression().is_some())
+        }
 }
 
 /// `hasOnDirectives`.
@@ -331,9 +336,16 @@ pub(crate) fn has_on_directives(
     names: &[&str],
     template: bool,
 ) -> bool {
-    names
-        .iter()
-        .any(|name| has_on_directive(element, name, template))
+    let mut found = false;
+    element.walk_bindings(&mut |binding| {
+        if found {
+            return;
+        }
+        found = names
+            .iter()
+            .any(|name| on_matches(&binding, name, template));
+    });
+    found
 }
 
 /// `utils/interactiveHandlers.json`.
