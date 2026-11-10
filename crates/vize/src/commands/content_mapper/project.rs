@@ -18,6 +18,8 @@ use vize_canon::{
 };
 use vize_l0::{FxHashMap, String as CompactString, cstr};
 
+use super::mode::ProjectionMode;
+
 /// Mapper diagnostic code for an options value that is not an object.
 const OPTION_CODE_NOT_AN_OBJECT: i32 = 1;
 /// Mapper diagnostic code for an option Vize does not recognize.
@@ -36,9 +38,18 @@ pub(super) struct ProjectSettings {
 #[derive(Default)]
 pub(super) struct ProjectRegistry {
     projects: FxHashMap<CompactString, ProjectSettings>,
+    /// The launcher's projection mode, which overrides detection.
+    mode: Option<ProjectionMode>,
 }
 
 impl ProjectRegistry {
+    pub fn new(mode: Option<ProjectionMode>) -> Self {
+        Self {
+            projects: FxHashMap::default(),
+            mode,
+        }
+    }
+
     pub fn open(&mut self, handle: CompactString, settings: ProjectSettings) {
         self.projects.insert(handle, settings);
     }
@@ -49,6 +60,10 @@ impl ProjectRegistry {
 
     pub fn settings(&self, handle: &str) -> Option<&ProjectSettings> {
         self.projects.get(handle)
+    }
+
+    pub const fn mode(&self) -> Option<ProjectionMode> {
+        self.mode
     }
 }
 
@@ -101,6 +116,7 @@ pub(super) struct OpenProjectResult {
 /// TypeScript reports the diagnostics against the tsconfig entry.
 pub(super) fn resolve_open_project(
     params: &OpenProjectParams,
+    explicit_mode: Option<ProjectionMode>,
 ) -> Result<(ProjectSettings, OpenProjectResult), CorsaError> {
     let empty_compiler_options = serde_json::Map::new();
     let (configuration, _) = ContentMapperProjectConfiguration::load_with_compiler_options(
@@ -162,6 +178,11 @@ pub(super) fn resolve_open_project(
             shared_helpers.fingerprint
         )
     };
+    let mode = ProjectionMode::resolve(
+        explicit_mode,
+        params.config_file_name.as_str(),
+        &params.compiler_options,
+    );
     Ok((
         ProjectSettings {
             project_context: configuration.project_context,
@@ -172,10 +193,11 @@ pub(super) fn resolve_open_project(
                 .with_check_javascript(check_javascript)
                 .with_external_component_attrs_module(shared_helpers.core_types)
                 .with_external_component_type_helpers(shared_helpers.core_types)
-                .with_shared_virtual_module(shared_helpers.virtual_module),
+                .with_shared_virtual_module(shared_helpers.virtual_module)
+                .with_diagnostics_only(mode == ProjectionMode::Check),
         },
         OpenProjectResult {
-            config_identity,
+            config_identity: mode.config_identity(&config_identity),
             watched_files,
             option_diagnostics: diagnostics,
         },

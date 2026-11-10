@@ -1,5 +1,7 @@
 use serde_json::{Value, json};
+use vize_l0::cstr;
 
+use super::mode::ProjectionMode;
 use super::test_support::{
     close_project_request, exchange, frames, initialize_request, open_project_request,
     transform_request,
@@ -283,4 +285,155 @@ fn malformed_inherited_config_does_not_open_a_default_settings_project() {
             .contains("base.json")
     );
     assert_eq!(responses[4]["error"]["code"], -32602);
+}
+
+const NAVIGATED_SOURCE: &str = r#"<script setup lang="ts">
+import { ref } from 'vue'
+import Child from './Child.vue'
+const count = ref(1)
+function onChange() {}
+</script>
+<template>
+  <Child :count="count" @change="onChange"><template #footer>{{ count }}</template></Child>
+</template>
+"#;
+
+/// Editor and check counts of each navigation marker. A slot reference also
+/// rejects a missing slot name, so the check projection keeps it.
+const NAVIGATION_MARKERS: [(&str, usize, usize); 5] = [
+    ("__vize_template_use", 2, 0),
+    ("Component template navigation references", 1, 0),
+    ("__vize_props_nav_", 2, 0),
+    ("__vize_events_nav_", 2, 0),
+    ("__vize_slots_nav_", 2, 2),
+];
+
+/// The open reply's identity and the transform's text for one openProject.
+fn open_and_transform(request: Value) -> (vize_l0::String, vize_l0::String) {
+    let responses = exchange(&frames(&[
+        initialize_request(),
+        request,
+        transform_request(3, NAVIGATED_SOURCE),
+    ]));
+    let field = |value: &Value| vize_l0::String::from(value.as_str().unwrap());
+    (
+        field(&responses[1]["result"]["configIdentity"]),
+        field(&responses[2]["result"]["text"]),
+    )
+}
+
+#[test]
+fn command_line_hosts_get_the_check_projection_under_its_own_identity() {
+    let directory = tempfile::tempdir().unwrap();
+    let config = directory.path().join("tsconfig.json");
+    std::fs::write(&config, "{}").unwrap();
+    // What TypeScript 7.1's language server sends for this project.
+    let editor_options = json!({
+        "configFilePath": config,
+        "runExternalCode": true,
+        "strict": true
+    });
+    let mut editor = configured_open(2, "p1", &config);
+    editor["params"]["compilerOptions"] = editor_options.clone();
+    let (editor_identity, editor_text) = open_and_transform(editor);
+
+    for cli_flag in [
+        json!({ "project": config }),
+        json!({ "project": directory.path() }),
+        json!({ "watch": true }),
+        json!({ "build": true }),
+    ] {
+        let mut options = editor_options.clone();
+        options
+            .as_object_mut()
+            .unwrap()
+            .extend(cli_flag.as_object().unwrap().clone());
+        let mut check = configured_open(2, "p1", &config);
+        check["params"]["compilerOptions"] = options;
+        let (check_identity, check_text) = open_and_transform(check);
+        assert_eq!(
+            check_identity,
+            cstr!("{editor_identity}:check"),
+            "{cli_flag}"
+        );
+        for (marker, _, check) in NAVIGATION_MARKERS {
+            assert_eq!(
+                check_text.matches(marker).count(),
+                check,
+                "{cli_flag} {marker}: {check_text}"
+            );
+        }
+    }
+    for (marker, editor, _) in NAVIGATION_MARKERS {
+        assert_eq!(
+            editor_text.matches(marker).count(),
+            editor,
+            "{marker}: {editor_text}"
+        );
+    }
+}
+
+#[test]
+fn tsconfig_options_the_editor_host_forwards_keep_the_editor_projection() {
+    let directory = tempfile::tempdir().unwrap();
+    let config = directory.path().join("tsconfig.json");
+    std::fs::write(&config, "{}").unwrap();
+    let mut plain = configured_open(2, "p1", &config);
+    plain["params"]["compilerOptions"] = json!({ "configFilePath": config });
+    let (plain_identity, plain_text) = open_and_transform(plain);
+    // TypeScript 7.1's language server forwards these from a tsconfig; only
+    // `watch`, `listFilesOnly`, `showConfig`, `help` and `locale` are refused.
+    let mut forwarded = configured_open(2, "p1", &config);
+    forwarded["params"]["compilerOptions"] = json!({
+        "configFilePath": config,
+        "project": directory.path().join("x"),
+        "checkers": 2,
+        "listFiles": true,
+        "extendedDiagnostics": true,
+        "pretty": false,
+        "runExternalCode": true
+    });
+    let (forwarded_identity, forwarded_text) = open_and_transform(forwarded);
+    assert_eq!(forwarded_identity, plain_identity);
+    assert_eq!(forwarded_text, plain_text);
+}
+
+#[test]
+fn an_explicit_mode_overrides_detection() {
+    let project = json!({ "project": "/project/tsconfig.json" });
+    for (explicit, options, expected) in [
+        (
+            Some(ProjectionMode::Editor),
+            &project,
+            ProjectionMode::Editor,
+        ),
+        (
+            Some(ProjectionMode::Check),
+            &json!({}),
+            ProjectionMode::Check,
+        ),
+        (None, &project, ProjectionMode::Check),
+        (None, &json!({}), ProjectionMode::Editor),
+    ] {
+        assert_eq!(
+            ProjectionMode::resolve(explicit, "/project/tsconfig.json", options),
+            expected,
+            "{explicit:?} {options}"
+        );
+    }
+    // An inferred project has no config for `-p` to name.
+    assert_eq!(
+        ProjectionMode::resolve(None, "", &project),
+        ProjectionMode::Editor
+    );
+    assert_eq!(
+        ["check", "editor", "Check", "", "diagnostics"].map(ProjectionMode::parse),
+        [
+            Some(ProjectionMode::Check),
+            Some(ProjectionMode::Editor),
+            None,
+            None,
+            None
+        ]
+    );
 }

@@ -12,6 +12,8 @@ pub struct ContentMapperTransformOptions {
     pub(super) external_component_type_helpers: bool,
     /// Hoist repeated helpers into the installed `vize/virtual-ts` module.
     pub(super) shared_virtual_module: bool,
+    /// Project only what diagnostics read, as `vize check` does.
+    pub(super) diagnostics_only: bool,
     pub(in crate::batch::virtual_project) configured_global_template_ref: bool,
     /// The project's `vueCompilerOptions`, resolved exactly as `vize check`
     /// resolves them (`vue_check_options::resolve`, #11688).
@@ -27,6 +29,7 @@ impl Default for ContentMapperTransformOptions {
             external_component_attrs_module: false,
             external_component_type_helpers: false,
             shared_virtual_module: false,
+            diagnostics_only: false,
             configured_global_template_ref: false,
             checks: VirtualTsCheckOptions::default(),
         }
@@ -87,5 +90,19 @@ impl ContentMapperTransformOptions {
     #[must_use]
     pub const fn shared_virtual_module(self) -> bool {
         self.shared_virtual_module
+    }
+
+    /// Drop editor-only navigation scaffolding for a host that never asks
+    /// for hover, definition or rename: a command-line type-check.
+    #[must_use]
+    pub const fn with_diagnostics_only(mut self, enabled: bool) -> Self {
+        self.diagnostics_only = enabled;
+        self
+    }
+
+    /// Whether the projection carries only what diagnostics read.
+    #[must_use]
+    pub const fn diagnostics_only(self) -> bool {
+        self.diagnostics_only
     }
 }

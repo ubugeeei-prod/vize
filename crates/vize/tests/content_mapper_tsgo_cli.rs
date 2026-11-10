@@ -37,6 +37,7 @@ mod nested_function_guard_11853;
 mod optional_prop_spacing;
 mod options_api_diagnostics;
 mod project_declarations;
+mod projection_modes;
 mod props_binding;
 mod pug_refusal;
 mod quoted_generic_parameters;

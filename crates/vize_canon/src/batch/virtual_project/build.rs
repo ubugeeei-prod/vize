@@ -185,6 +185,7 @@ pub(super) fn build_vue_registered_file(
                 preserve_event_navigation: context
                     .editor_document_options
                     .is_some_and(|options| options.preserve_event_navigation),
+                omit_navigation_references: false,
                 legacy_vue2: context.legacy_vue2,
                 dialect: context.dialect,
                 template_syntax: context.template_syntax,

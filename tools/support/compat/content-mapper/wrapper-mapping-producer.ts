@@ -1,15 +1,25 @@
 /** The #11675 producer adds only diagnostic-owned delimiter atoms. */
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
+import { CHECK_MODE_PRODUCER_SUCCESSORS } from "./check-mode-successor.ts";
 
 export function assertWrapperMappingProducer(producer: Uint8Array): void {
   const digest = (bytes: string | Uint8Array) => createHash("sha256").update(bytes).digest("hex");
   assert.equal(
     digest(producer),
-    "271dfc983bf196cd118b521e7ac401824b19c423d2cacfa32dcfec29bdec922b",
+    "23000f014edd106b8ffe1cb1ebd9424f783a5cbd879cabf435f4bcfaffd51580",
     "unqualified #11675 wrapper mapping producer",
   );
   let historical = Buffer.from(producer).toString("utf8");
+  for (const [successor, predecessor] of CHECK_MODE_PRODUCER_SUCCESSORS) {
+    assert.equal(historical.split(successor).length, 2);
+    historical = historical.replace(successor, predecessor);
+  }
+  assert.equal(
+    digest(historical),
+    "271dfc983bf196cd118b521e7ac401824b19c423d2cacfa32dcfec29bdec922b",
+    "certified check-mode wrapper successor",
+  );
   for (const [successor, expected, message] of [
     [
       "    span_features::retain_component_prop_hover_owner(generated, &mut spans);\n",

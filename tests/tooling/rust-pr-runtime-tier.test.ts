@@ -394,6 +394,7 @@ fi
         assert.equal(
           readFileSync(githubEnv, "utf8"),
           [
+            `VIZE_TEST_PROJECTION_CONTENT_MAPPER_TSGO=${cwd}/mq-content-mapper-host/node_modules/@typescript/typescript-linux-x64/lib/tsc`,
             `VIZE_TEST_MEMO_CONTENT_MAPPER_TSGO=${cwd}/mq-content-mapper-host/node_modules/@typescript/typescript-linux-x64/lib/tsc`,
             `VIZE_TEST_RECOVERED_ATTRIBUTE_CONTENT_MAPPER_TSGO=${cwd}/mq-content-mapper-host/node_modules/@typescript/typescript-linux-x64/lib/tsc`,
             "",

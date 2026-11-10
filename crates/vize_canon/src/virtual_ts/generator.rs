@@ -455,7 +455,6 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                 }
 
                 props_const_assertions.splice_output_line(&mut output_line, line_start);
-
                 // Strip `export` from non-import lines inside setup scope
                 let trimmed_line = output_line.trim_start();
                 if let Some(default_expr) = trimmed_line
@@ -682,6 +681,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                 legacy_vue2,
                 options_api,
                 preserve_event_navigation: generation_options.preserve_event_navigation,
+                omit_navigation_references: generation_options.omit_navigation_references,
                 has_default_alias: declared_default_alias,
                 script_content,
                 experimental_strict_slot_children: generation_options

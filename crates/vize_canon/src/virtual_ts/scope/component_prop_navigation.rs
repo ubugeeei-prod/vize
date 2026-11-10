@@ -19,7 +19,9 @@ pub(super) fn emit_references(
     ctx: &ComponentPropsContext<'_, '_>,
     checkable_usages: &[(usize, &ComponentUsage)],
 ) {
-    ts.push_str("\n  // Component template navigation references\n");
+    if !ctx.omit_navigation_references {
+        ts.push_str("\n  // Component template navigation references\n");
+    }
     for &(idx, usage) in checkable_usages {
         emit_usage_references(ts, mappings, semantic_links, ctx, idx, usage);
     }
@@ -65,15 +67,19 @@ pub(super) fn emit_usage_references(
         });
     }
 
-    emit_prop_references(
-        ts,
-        mappings,
-        semantic_links,
-        ctx,
-        idx,
-        usage,
-        &tag_gen_range,
-    );
+    if !ctx.omit_navigation_references {
+        emit_prop_references(
+            ts,
+            mappings,
+            semantic_links,
+            ctx,
+            idx,
+            usage,
+            &tag_gen_range,
+        );
+    }
+    // A slot reference also rejects a slot name the component lacks, so a
+    // diagnostics-only projection keeps it.
     emit_slot_references(ts, mappings, ctx, idx, usage);
 }
 

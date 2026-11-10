@@ -4,6 +4,7 @@ use serde_json::{Value, json};
 use std::fs;
 
 mod canon_leftovers;
+mod check_mode_generator;
 mod checker_augmentations;
 mod closed_emit_factory;
 mod component_hover_gaps;

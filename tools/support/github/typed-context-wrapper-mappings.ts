@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
+import { CHECK_MODE_PRODUCER_SUCCESSORS } from "../compat/content-mapper/check-mode-successor.ts";
 
 export type MapperPacket = {
   text: string;
@@ -22,17 +23,34 @@ export function assertTypedContextWrapperMappings(
   ];
   assert.equal(
     digest(producer),
-    "271dfc983bf196cd118b521e7ac401824b19c423d2cacfa32dcfec29bdec922b",
+    "23000f014edd106b8ffe1cb1ebd9424f783a5cbd879cabf435f4bcfaffd51580",
     "unqualified content-mapper producer",
+  );
+  let checkModePredecessor = producerText;
+  for (const [successor, predecessor] of CHECK_MODE_PRODUCER_SUCCESSORS) {
+    assert.equal(
+      checkModePredecessor.split(successor).length,
+      2,
+      "finite check-mode producer successor",
+    );
+    checkModePredecessor = checkModePredecessor.replace(successor, predecessor);
+  }
+  assert.equal(
+    digest(checkModePredecessor),
+    "271dfc983bf196cd118b521e7ac401824b19c423d2cacfa32dcfec29bdec922b",
+    "finite check-mode producer successor",
   );
   const componentHoverOwnerSuccessor =
     "    span_features::retain_component_prop_hover_owner(generated, &mut spans);\n";
   assert.equal(
-    producerText.split(componentHoverOwnerSuccessor).length,
+    checkModePredecessor.split(componentHoverOwnerSuccessor).length,
     2,
     "finite component-hover owner producer successor",
   );
-  const componentHoverOwnerPredecessor = producerText.replace(componentHoverOwnerSuccessor, "");
+  const componentHoverOwnerPredecessor = checkModePredecessor.replace(
+    componentHoverOwnerSuccessor,
+    "",
+  );
   assert.equal(
     digest(componentHoverOwnerPredecessor),
     "9c3faec15ca7c73c4a8a3f0fd1fcae7bb6f9d70c8e71a7046994d373e8b4e038",

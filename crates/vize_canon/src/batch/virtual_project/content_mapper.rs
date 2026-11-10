@@ -176,7 +176,7 @@ fn transform_with_shared_sources(
             preserve_authored_component: true,
             preserve_script_on_template_error: true,
             component_name: Some(component_name.as_str()),
-            template_use_navigation: true,
+            template_use_navigation: !transform_options.diagnostics_only(),
             external_component_attrs_module: transform_options
                 .external_component_attrs_module
                 .then_some(if transform_options.external_component_type_helpers {
@@ -184,7 +184,8 @@ fn transform_with_shared_sources(
                 } else {
                     crate::virtual_ts::ComponentHelperModule::Attributes
                 }),
-            preserve_event_navigation: true,
+            preserve_event_navigation: !transform_options.diagnostics_only(),
+            omit_navigation_references: transform_options.diagnostics_only(),
             legacy_vue2: false,
             dialect: VueVersion::default(),
             template_syntax: TemplateSyntaxMode::default(),
@@ -199,7 +200,6 @@ fn transform_with_shared_sources(
             runtime_prop_resolve_cache: type_sources,
         },
     )?;
-
     publish::publish_content_mapper_text(
         &mut code,
         &mut mappings,

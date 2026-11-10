@@ -1,0 +1,90 @@
+{
+  "schema": "vize.instance-global-current-provenance",
+  "version": 1,
+  "issue": 10617,
+  "pullRequest": 12604,
+  "producer": {
+    "sourceRevision": "a0fe19e9a57e31b1a2f785273477ea10c5d2c3ae",
+    "sourceTree": "599f2f70d3456993357047af3c3ee0f844a19bfa",
+    "pullRequestHead": "393142e7e6e77c9dde476131485011bfef8dfe59",
+    "binarySha256": "4dff7d3c3d08ecca16f45a5a4061bf966491517da15d28365796f91bbaeb0175",
+    "recipe": "cargo build --profile ci -p vize",
+    "captureRun": 42811997092,
+    "artifactId": 13762672879,
+    "runAttempt": 1,
+    "platform": "linux",
+    "arch": "x64"
+  },
+  "artifact": {
+    "repository": "ubugeeei-prod/vize",
+    "run": 42811997092,
+    "job": 129816418407,
+    "id": 13762672879,
+    "name": "instance-globals-10617-393142e7e6e77c9dde476131485011bfef8dfe59-1",
+    "digest": "sha256:7f5c7f7be65b5e1447a99bb70d8006713b927a80bdcd1a708c33328f90f1e57c",
+    "bytes": 18675558
+  },
+  "previousPopulation": {
+    "path": "source-packets-current-c6a6c571b090.json",
+    "bytes": 417627,
+    "sha256": "9e51f91058641c3ef70474e16a1e4c5540d96bba5e2616de192e236c640a14e8"
+  },
+  "successorPopulation": {
+    "path": "source-packets-current-a0fe19e9a57e.json",
+    "bytes": 416722,
+    "sha256": "bb469a9d4d5aac4ea578445080b0d9a371e17bad338dc4a637cfb00d32840802"
+  },
+  "sourceReceipt": {
+    "path": "crates/vize/src/commands/content_mapper/mode.rs",
+    "sha256": "b3eccef49da6e5e1ae8915f7678ffca652ac8acf5792a0a1dcdbd61c85dfba43"
+  },
+  "evidence": {
+    "source-build.json": {
+      "bytes": 326,
+      "sha256": "a0b60f0057a6449116787b9d8ab95a7e4d15df4d7398037fa8e564356a5252d2"
+    },
+    "source-launch.json": {
+      "bytes": 882,
+      "sha256": "776644f94019644a6309bb098e2422f87c174ed6e0972ccc2f75b1cf7d2835a5"
+    },
+    "source-protocol.json": {
+      "bytes": 478167,
+      "sha256": "db0778aed50d1228cdb29c687d4635b6277e8ab796c57519dc29e87d20222372"
+    },
+    "outcomes.json": {
+      "bytes": 110131,
+      "sha256": "034473a9e44aa25a66d915d1619165d615813af8059dc773d31cc8848d456c64"
+    },
+    "qualification.json": {
+      "bytes": 114280,
+      "sha256": "36051cdac3ec5decf78d7f2af80014a088c871383f9a0bd5f64dee0cc50249d9"
+    },
+    "host-matrix.json": {
+      "bytes": 4327,
+      "sha256": "e9f3294af75a7a4f9fef5b7223bb8e34cc3e1b4b22fdaee605291623fef150de"
+    }
+  },
+  "capturedQualification": {
+    "status": "unqualified",
+    "fullPacketQualification": false,
+    "hostMatrixQualification": false,
+    "totalOutcomes": 499,
+    "passedOutcomes": 495,
+    "gapCount": 4,
+    "gapIds": [
+      "whole-packet/lf/slot-shadow",
+      "whole-packet/lf/mixed-slot-scope",
+      "whole-packet/crlf-unicode/slot-shadow",
+      "whole-packet/crlf-unicode/mixed-slot-scope"
+    ]
+  },
+  "review": {
+    "completePackets": 80,
+    "allNonWholePacketOutcomesPassed": true,
+    "qualificationCredit": false,
+    "nativeAcceptanceCredit": false,
+    "publicPackageAcceptanceCredit": false,
+    "performanceCredit": false,
+    "reason": "Only the LF and CRLF/Unicode slot-shadow and mixed-slot-scope whole packets dropped their wire-only vueSetupTemplateRefUnwrap semanticLinks, which the content-mapper protocol does not carry (#12604); their generated text, mappings, diagnostic directives, diagnostics, and all other fields stayed exact, the other 76 complete results were byte-identical, and all 495 semantic, protocol, mapping-geometry, and real-host controls passed; this record retains the observed postimages without assigning acceptance credit to the stale-golden run."
+  }
+}
