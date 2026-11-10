@@ -106,6 +106,16 @@ test("native build planning follows runtime imports without fixture source false
   const selected = () => planToolingTests([testFile], { cwd }).nativeBuildTests;
   writeFileSync(path.join(cwd, testFile), 'import "../../npm/native/index.js";');
   assert.deepEqual(selected(), [testFile]);
+  for (const load of [
+    'createRequire(import.meta.url)("../../npm/native/index.js");',
+    'createRequire(import.meta.url)(path.join(root, "npm/native/index.js"));',
+    'readFileSync(new URL("../../npm/native/index.js", import.meta.url));',
+  ]) {
+    writeFileSync(path.join(cwd, testFile), load);
+    assert.deepEqual(selected(), [testFile], load);
+  }
+  writeFileSync(path.join(cwd, testFile), 'planAffectedJs(packages, ["npm/native/index.js"]);');
+  assert.deepEqual(selected(), []);
   mkdirSync(path.join(cwd, "npm/builder/vite/src"), { recursive: true });
   writeFileSync(path.join(cwd, testFile), 'import "../../npm/builder/vite/src/virtual.ts";');
   writeFileSync(
