@@ -354,7 +354,7 @@
   "slot prop pattern": {
     "contents": {
       "kind": "markdown",
-      "value": "```typescript\n(parameter) row: number\n```"
+      "value": "```typescript\n(parameter) row: number\n```\n"
     },
     "range": {
       "end": {
