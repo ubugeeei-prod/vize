@@ -181,8 +181,10 @@ pub(crate) fn reexport(ts: &mut crate::virtual_ts::TextBuf, public: &'static str
 /// the SFC's bindings once per projection.
 const LIB_TYPES: &[&str] = &[
     "Awaited",
+    "Element",
     "Exclude",
     "Extract",
+    "HTMLElementTagNameMap",
     "InstanceType",
     "NoInfer",
     "NonNullable",
@@ -191,8 +193,10 @@ const LIB_TYPES: &[&str] = &[
     "Partial",
     "Pick",
     "PropertyKey",
+    "Readonly",
     "Record",
     "ReturnType",
+    "SVGElementTagNameMap",
 ];
 
 /// A lib type, global in every program.

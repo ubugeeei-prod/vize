@@ -237,7 +237,8 @@ impl SetupImportPlan {
                 }
                 append!(
                     *ts,
-                    "Omit<typeof __vize_setup_import_{index}, {}> & {{ {} }};\n",
+                    "{}<typeof __vize_setup_import_{index}, {}> & {{ {} }};\n",
+                    crate::virtual_ts::generated_names::lib("Omit"),
                     keys.join(" | "),
                     fields.join("; ")
                 );
@@ -268,9 +269,10 @@ fn emit_css_module_type(ts: &mut crate::virtual_ts::TextBuf, options: &VirtualTs
                     append!(*__ts, "    {name}: {};\n", global.type_annotation);
                     has_default |= global.name == "$style";
                 }
+                let record = crate::virtual_ts::generated_names::lib("Record");
                 for name in &options.css_modules {
                     let quoted = serde_json::to_string(name.as_str()).unwrap_or_default();
-                    append!(*__ts, "    {quoted}: Record<string, string>;\n");
+                    append!(*__ts, "    {quoted}: {record}<string, string>;\n");
                     has_default |= name == "$style";
                 }
             }
@@ -283,8 +285,10 @@ fn emit_css_module_type(ts: &mut crate::virtual_ts::TextBuf, options: &VirtualTs
                 if has_default {
                     __ts.push_str("    (): $StyleModules['$style'];\n");
                 }
-                __ts.push_str(
-                    "    <K extends Exclude<keyof $StyleModules, '$style'>>(name: K): $StyleModules[K];\n  ",
+                append!(
+                    *__ts,
+                    "    <K extends {}<keyof $StyleModules, '$style'>>(name: K): $StyleModules[K];\n  ",
+                    crate::virtual_ts::generated_names::lib("Exclude")
                 );
             }
         }

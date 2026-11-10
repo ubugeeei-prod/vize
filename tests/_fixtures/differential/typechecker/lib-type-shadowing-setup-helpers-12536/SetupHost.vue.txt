@@ -1,0 +1,31 @@
+<script lang="ts">
+type Element = never
+type Exclude<T, U> = never
+type Extract<T, U> = never
+type HTMLElementTagNameMap = never
+type NonNullable<T> = never
+type Readonly<T> = never
+type SVGElementTagNameMap = never
+export const setupLibTypePoison = true
+</script>
+
+<script setup lang="ts" generic="T extends string">
+import { ref, useCssModule, useTemplateRef } from 'vue'
+import SetupChild from './SetupChild.vue'
+
+const props = defineProps<{ label: T; items: string[] }>()
+const button = useTemplateRef('button')
+const child = useTemplateRef('child')
+const styles = useCssModule()
+const chosen = ref('')
+void child
+</script>
+
+<template>
+  <button ref="button" :class="styles.root" @click="button?.focus()">{{ props.label }}</button>
+  <SetupChild ref="child" v-model="chosen" :items="props.items" />
+</template>
+
+<style module>
+.root { color: red; }
+</style>

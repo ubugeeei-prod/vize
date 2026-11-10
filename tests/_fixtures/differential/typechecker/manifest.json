@@ -14163,6 +14163,45 @@
       }
     },
     {
+      "id": "typechecker/regression/lib-type-shadowing-setup-helpers-12536",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "lib-type-shadowing-setup-helpers-12536/SetupChild.vue.txt",
+          "sha256": "ea7705eb2e70c7c1a996acd671a7c69f8a6d64f3367f85e572b209bce06f45ba",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "lib-type-shadowing-setup-helpers-12536/SetupHost.vue.txt",
+          "sha256": "7cb0bb176e417ab34cf81ccedc8b7e31e99a350a024fcf4ad65995de15533135",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "lib-type-shadowing-setup-helpers-12536/tsconfig.json.txt",
+          "sha256": "8f4cc08b465ddf6df35387e36be46136f6b6f7f5f19085ca9d6a3fcc1cda9b31",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "lib_type_shadowing_setup_helpers::authored_lib_types_cannot_capture_setup_helpers; lib and DOM type names declared or imported by the SFC must not capture macro signatures, template ref registries, CSS module types or component v-model payloads. Input-only batch registration for the shared Canon source change; no native parity claim."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/regression/lib-type-shadowing-setup-return-12536",
       "state": "active",
       "targets": [
