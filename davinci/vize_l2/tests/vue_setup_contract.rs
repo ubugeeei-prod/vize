@@ -273,7 +273,13 @@ fn rejected_declarations_are_reported() {
 /// Croquis disagrees with Vue, the authority, on these files. Croquis lists
 /// no member of an intersection that names a type it cannot read
 /// (`defineProps<Imported & { readonly as?: T }>()`); Vue declares `as`.
-const CROQUIS_DIFFERENCES: &[&str] = &["npm/ui/src/families/navigation/pagination/pagination.vue"];
+/// ElementPlus' cascader menu intersects `{ nodes; index }` with
+/// `Pick<CascaderCommonProps, …>` the same way. Pinned fixtures are hydrated
+/// only on some CI lanes, so a path counts only when it is present.
+const CROQUIS_DIFFERENCES: &[&str] = &[
+    "npm/ui/src/families/navigation/pagination/pagination.vue",
+    "tests/_fixtures/_git/element-plus/packages/components/cascader-panel/src/menu.vue",
+];
 
 /// Sorted `(name, required)` pairs.
 fn pairs(mut pairs: Vec<(String, bool)>) -> Vec<(String, bool)> {
@@ -346,5 +352,10 @@ fn every_corpus_props_contract_matches_croquis() {
         .iter()
         .filter_map(|mismatch| mismatch.split_once('\n').map(|(path, _)| path))
         .collect::<Vec<_>>();
-    assert_eq!(differences, CROQUIS_DIFFERENCES, "{mismatches:#?}");
+    let expected = CROQUIS_DIFFERENCES
+        .iter()
+        .copied()
+        .filter(|path| root.join(path).is_file())
+        .collect::<Vec<_>>();
+    assert_eq!(differences, expected, "{mismatches:#?}");
 }
