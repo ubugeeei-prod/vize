@@ -182,7 +182,7 @@ test("a pinned dho Pug project measures eslint-plugin-vue parity through its HTM
   const baselineSignatures = evidence.signatures.map(
     ({ ruleId, severity, message, patinaMessage, count }: Record<string, unknown>) => {
       assert.equal(typeof patinaMessage, "string");
-      assert.ok(patinaMessage.startsWith(message as string));
+      assert.equal(patinaMessage, `${message as string} Element: <div>`);
       return { ruleId, severity, message, count };
     },
   );
