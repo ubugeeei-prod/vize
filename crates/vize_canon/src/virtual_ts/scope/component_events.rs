@@ -171,7 +171,6 @@ pub(super) fn generate_component_event_types(
     // fallthrough root: derive each once and unwrap the one-tuple per event.
     let component_aliases = cstr!("__{component_type_name}_{component_scope_id}_");
     let props_box = cstr!("{component_aliases}_props");
-    let raw_props_box = cstr!("{component_aliases}_raw_props");
     let emit_props_box = cstr!("{component_aliases}_emit_props");
     let fallthrough_box = cstr!("{component_aliases}_fallthrough");
     let library = cstr!("{component_aliases}_library");
@@ -213,10 +212,6 @@ pub(super) fn generate_component_event_types(
         );
         vize_l0::emit_ts!(
             ts,
-            "{indent}type {raw_props_box} = typeof {component_ref} extends {{ readonly __vizeRawProps?: infer __RP }} ? [__RP] : [];\n",
-        );
-        vize_l0::emit_ts!(
-            ts,
             "{indent}type {emit_props_box} = typeof {component_ref} extends {{ __vizeEmitProps?: infer __EP }} ? [__EP] : [];\n",
         );
         if native_fallthrough_only {
@@ -250,7 +245,6 @@ pub(super) fn generate_component_event_types(
                 prop_key: &prop_key,
                 library: &library,
                 props_box: &props_box,
-                raw_props_box: &raw_props_box,
                 emit_props_box: &emit_props_box,
                 fallthrough_box: native_fallthrough_only.then_some(fallthrough_box.as_str()),
                 listener_key: &listener_key,
@@ -441,7 +435,6 @@ pub(super) fn generate_component_event_types(
             return_type: return_type.as_str(),
             prop_args: prop_args.as_str(),
             props_box: props_box.as_str(),
-            raw_props_box: raw_props_box.as_str(),
             fallthrough_box: fallthrough_box.as_str(),
             prop_key: prop_key.as_str(),
         },

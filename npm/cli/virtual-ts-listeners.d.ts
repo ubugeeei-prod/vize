@@ -73,34 +73,20 @@ type $ListenerFallthroughReturn<__FB, __K extends string | number | symbol> = __
       : any
     : any
   : any;
-type $ListenerAuthoredReturn<__RPB, __K extends string | number | symbol> = __RPB extends [
-  infer __RP,
-]
-  ? __RP extends { [__Q in __K]?: infer __H }
-    ? Extract<NonNullable<__H>, (...args: any[]) => any> extends (...args: any[]) => infer __R
-      ? [__R]
-      : []
-    : []
-  : [];
 type $ListenerReturn<
   __Prop,
   __Static,
   __PB,
-  __RPB,
   __Unresolved,
   __K extends string | number | symbol,
-  __Authored = $ListenerAuthoredReturn<__RPB, __K>,
-> = __Authored extends [infer __R]
-  ? __R
-  : unknown[] extends __Static
-    ? unknown[] extends __Prop
-      ? __Unresolved
-      : __PB extends [infer __P]
-        ? __P extends { [__Q in __K]?: (...args: any[]) => infer __R }
-          ? __R
-          : any
+  __Public = unknown[] extends __Prop
+    ? __Unresolved
+    : __PB extends [infer __P]
+      ? __P extends { [__Q in __K]?: (...args: any[]) => infer __R }
+        ? __R
         : any
-    : void;
+      : any,
+> = unknown[] extends __Static ? __Public : 0 extends 1 & __Public ? void : __Public;
 type $ListenerArrays<__PB, __K extends string | number | symbol> = __PB extends [infer __P]
   ? 0 extends 1 & __P
     ? never
@@ -124,7 +110,6 @@ type $ListenerShape<
 };
 type $ListenerContractOf<
   __PB,
-  __RPB,
   __FB,
   __K extends string | number | symbol,
   __Raw extends string | number | symbol,
@@ -140,13 +125,12 @@ type $ListenerContractOf<
     __Inferred,
     __Loose
   >,
-  $ListenerReturn<__Prop, __Static, __PB, __RPB, $ListenerFallthroughReturn<__FB, __K>, __K>,
+  $ListenerReturn<__Prop, __Static, __PB, $ListenerFallthroughReturn<__FB, __K>, __K>,
   $ListenerArrays<__PB, __K>
 >;
 export type $ListenerContract<
   __L,
   __PB,
-  __RPB,
   __EB,
   __FB,
   __K extends string | number | symbol,
@@ -155,7 +139,6 @@ export type $ListenerContract<
   __Loose,
 > = $ListenerContractOf<
   __PB,
-  __RPB,
   __FB,
   __K,
   __Raw,

@@ -37,7 +37,7 @@
         "code": 2322,
         "category": 1,
         "messageText": {
-          "messageText": "Type '(value: number) => undefined' is not assignable to type '(value: string) => any'.",
+          "messageText": "Type '(value: number) => undefined' is not assignable to type '(value: string) => void'.",
           "category": 1,
           "code": 2322,
           "next": [

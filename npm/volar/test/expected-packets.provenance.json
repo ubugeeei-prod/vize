@@ -20,9 +20,15 @@
   "normalization": "Replace the one complete fixture workspace root with <workspace> in strings. Preserve all JSONable result fields and ordered arrays; represent diagnostic SourceFile objects by exact authored fileName and text, not cyclic compiler AST internals. No coordinate or message normalization.",
   "expectedPackets": 38,
   "expectedFileSha256": "64d303cf7846abe6f78e4bb798f816a44a3010fa24e62f595bab871cb62c78b3",
-  "expectedPacketDataSha256": "cc4105b72d75ee50cf42b7612551c0f7843539df51ae26b7cf7d3568dbb4dccf",
+  "expectedPacketDataSha256": "4b1dddccbe26f62f74e0c8eb3aca9d572b2e3713b44ff5cac220bf7ce78065fc",
+  "historicalExpectedPacketDataSha256": "cc4105b72d75ee50cf42b7612551c0f7843539df51ae26b7cf7d3568dbb4dccf",
+  "sourceOwnedSuccessor": {
+    "issue": 12431,
+    "source": "3d4415c20fe99c7e48abe5f005c4bcb3105e651e",
+    "change": "The one synthesized listener return in feature-boundaries.json advances from any to void; listener-return-reference.js restores the exact native predecessor before historical transitions."
+  },
   "storage": {
     "files": ["basic.json", "updates-and-language.json", "art.json", "feature-boundaries.json"],
-    "rule": "Concatenate complete JSON arrays in this order. Packet fields, values and array order match the original expectedFileSha256; only file layout and JSON whitespace changed."
+    "rule": "Concatenate complete JSON arrays in this order. Packet fields, values and array order match the original expectedFileSha256 after the one exact source-owned listener-return successor is inverted."
   }
 }

@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { beforeListenerReturnReference } from "./listener-return-reference.js";
 
 // The archived packets remain byte-authenticated by their existing provenance.
 // Advance only the nine reviewed missing-template-name diagnostics in #10933.
@@ -16,7 +17,7 @@ const changes = [
 ];
 
 export function historicalPublicInstanceReference(packets) {
-  const out = structuredClone(packets);
+  const out = beforeListenerReturnReference(packets);
   for (const [packetName, index, name, start] of changes) {
     const packet = out.find((row) => row.name === packetName);
     assert.ok(packet, `missing archived packet: ${packetName}`);

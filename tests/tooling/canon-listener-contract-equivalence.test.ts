@@ -25,10 +25,6 @@ const TEMPLATES = {
     `${events}.rs`,
     "type {props_box} = typeof {component_ref} extends {{ new (...args: any[]): {{ $props: infer __P }} }} ? [__P] : typeof {component_ref} extends (props: infer __P, ...args: any[]) => any ? [__P] : [];",
   ],
-  rawProps: [
-    `${events}.rs`,
-    "type {raw_props_box} = typeof {component_ref} extends {{ readonly __vizeRawProps?: infer __RP }} ? [__RP] : [];",
-  ],
   emitProps: [
     `${events}.rs`,
     "type {emit_props_box} = typeof {component_ref} extends {{ __vizeEmitProps?: infer __EP }} ? [__EP] : [];",
@@ -65,13 +61,10 @@ const TEMPLATES = {
     `${events}/native_fallthrough.rs`,
     "type {native_return} = {fallthrough_box} extends infer __B ? __B extends [infer __F] ? NonNullable<__F> extends {{ {prop_key}?: infer __H }} ? Extract<NonNullable<__H>, (...args: any[]) => any> extends (...args: any[]) => infer __R ? __R : any : any : any : never;",
   ],
+  publicReturn: [`${events}/listener_return.rs`, "type {return_type}_public = {public_return};"],
   return: [
     `${events}/listener_return.rs`,
-    "type {return_type} = {authored_return} extends [infer __R] ? __R : unknown[] extends {static_emit_args} ? ({public_return}) : void;",
-  ],
-  authoredReturn: [
-    `${events}/listener_return.rs`,
-    "type {authored_return} = {raw_props_box} extends infer __B ? __B extends [infer __RP] ? __RP extends {{ {prop_key}?: infer __H }} ? {lib_extract}<{lib_non_nullable}<__H>, (...args: any[]) => any> extends (...args: any[]) => infer __R ? [__R] : [] : [] : [] : never;",
+    "type {return_type} = unknown[] extends {static_emit_args} ? {return_type}_public : 0 extends (1 & {return_type}_public) ? void : {return_type}_public;",
   ],
   members: [
     `${events}/prop_array_share.rs`,
@@ -96,7 +89,7 @@ const TEMPLATES = {
   looseHandler: [`${events}.rs`, "unknown[] extends {args_type} ? unknown : {listener_type}"],
   contract: [
     `${events}/listener_contract.rs`,
-    "type {alias} = {helper}<{library}, {props_box}, {raw_props_box}, {emit_props_box}, {fallthrough_box}, {listener_key}, {raw_listener_key}, {inferred_args}, {loose}>;",
+    "type {alias} = {helper}<{library}, {props_box}, {emit_props_box}, {fallthrough_box}, {listener_key}, {raw_listener_key}, {inferred_args}, {loose}>;",
   ],
 } as const;
 
@@ -133,7 +126,7 @@ const prelude = [
 ];
 
 const emitProps =
-  "{ onSelect?: Fn<[id: number, label: string]>; 'onUpdate:modelValue'?: Fn<[value: string]>; onRowClick?: Fn<[row: { id: number }]> }";
+  "{ onSelect?: Fn<[id: number, label: string], any>; 'onUpdate:modelValue'?: Fn<[value: string], any>; onRowClick?: Fn<[row: { id: number }], any> }";
 const shapes: Record<string, string> = {
   any: "any",
   unknown: "unknown",
@@ -188,13 +181,10 @@ function usage(
     component_ref: `${p}_C`,
     library: `${p}_library`,
     props_box: `${p}_props`,
-    raw_props_box: `${p}_raw_props`,
     emit_props_box: `${p}_emit_props`,
     fallthrough_box: `${p}_fallthrough`,
     is_any: "$IsAny",
     prop_key,
-    lib_extract: "Extract",
-    lib_non_nullable: "NonNullable",
     prop_listener_args: `$ListenerArgs<__P, ${listener_key}, ${raw_listener_key}>`,
     prop_args: `${p}_prop_args`,
     fallthrough_args: `${p}_fallthrough_args`,
@@ -207,7 +197,6 @@ function usage(
     event_type: `${p}_event`,
     native_return: `${p}_native_return`,
     return_type: `${p}_return`,
-    authored_return: `${p}_authored_return`,
     unresolved_return: native ? `${p}_native_return` : "any",
     props_members: `${p}_members`,
     arrays_type: `${p}_arrays`,
@@ -227,7 +216,6 @@ function usage(
     `declare const ${p}_C: ${shape};`,
     f("library"),
     f("props"),
-    f("rawProps"),
     f("emitProps"),
     native ? f("nativeBox") : `type ${p}_fallthrough = [];`,
     f("propArgs"),
@@ -238,7 +226,7 @@ function usage(
     f("emitArgs"),
     f("args"),
     f("event"),
-    f("authoredReturn"),
+    f("publicReturn"),
     f("return"),
     f("members"),
     f("arrays"),
@@ -340,6 +328,22 @@ void test("the shared contract has exactly the chain's types and printed text", 
   }
 });
 
+void test("declared emits use void without widening authored listener returns", () => {
+  const lines = [
+    ...prelude,
+    "type Synthesized = $ListenerContract<false, [{ onSave?: Fn<[value: string], any> }], [{ onSave?: Fn<[value: string], any> }], [], 'onSave', never, unknown[], false>['listener'];",
+    "type Authored = $ListenerContract<false, [{ onSave?: Fn<[value: string], number> }], [{ onSave?: Fn<[value: string], any> }], [], 'onSave', never, unknown[], false>['listener'];",
+    "type Unresolved = $ListenerContract<false, [{ onSave?: Fn<[value: string], any> }], [], [], 'onSave', never, unknown[], false>['listener'];",
+    "type SynthesizedIsVoid = Expect<Equal<Synthesized, Fn<[value: string], void>>>;",
+    "type AuthoredKeepsNumber = Expect<Equal<Authored, Fn<[value: string], number>>>;",
+    "type UnresolvedKeepsAny = Expect<Equal<Unresolved, Fn<[value: string], any>>>;",
+  ];
+  for (const exactOptionalPropertyTypes of [false, true]) {
+    const { diagnostics } = check(lines.join("\n"), [], exactOptionalPropertyTypes);
+    assert.deepEqual(diagnostics, [], `exactOptionalPropertyTypes=${exactOptionalPropertyTypes}`);
+  }
+});
+
 void test("the oracle rejects a contract that changes a listener", () => {
   const { lines, pairs } = cases();
   for (const [name, from, to] of [
@@ -354,9 +358,9 @@ void test("the oracle rejects a contract that changes a listener", () => {
       "__Args extends infer __A extends unknown[]",
     ],
     [
-      "drops the authored listener return",
-      "__Authored extends [infer __R] ? __R : unknown[] extends __Static",
-      "__Authored extends [infer __R] ? any : unknown[] extends __Static",
+      "widens the authored listener return",
+      "0 extends (1 & __Public) ? void : __Public",
+      "0 extends (1 & __Public) ? any : __Public",
     ],
   ] as const) {
     const broken = lines.map((line) => line.replace(from, to)).join("\n");

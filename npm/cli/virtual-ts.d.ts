@@ -445,21 +445,10 @@ export type $ListenerArgs<
 export type $ListenerContract<
   __L,
   __PB,
-  __RPB,
   __EB,
   __FB,
   __K extends string | number | symbol,
   __Raw extends string | number | symbol,
   __Inferred,
   __Loose,
-> = __vizeListenerTypes.$ListenerContract<
-  __L,
-  __PB,
-  __RPB,
-  __EB,
-  __FB,
-  __K,
-  __Raw,
-  __Inferred,
-  __Loose
->;
+> = __vizeListenerTypes.$ListenerContract<__L, __PB, __EB, __FB, __K, __Raw, __Inferred, __Loose>;
