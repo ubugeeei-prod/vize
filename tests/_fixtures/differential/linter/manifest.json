@@ -4034,6 +4034,48 @@
       }
     },
     {
+      "id": "linter/no-unused-emit-wrappers-12597",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "no-unused-emit-wrappers-12597",
+        "files": [
+          {
+            "path": "NameInput.vue.txt",
+            "role": "issue-authored-reproduction",
+            "sha256": "143217a42d5203424ce3f3db54c58e80cd585164af9dd8503f5d292998de5d40"
+          },
+          {
+            "path": "use-field.ts.txt",
+            "role": "issue-authored-support-module",
+            "sha256": "1a59fee90af301e80f3b6e564be5917dc98ed5c683c6e272a4aab18774c6dc1c"
+          },
+          {
+            "path": "vize.json.txt",
+            "role": "issue-authored-linter-configuration",
+            "sha256": "50498faa909b322a179bd22aadec34fe1b7f2f3d1c4b79af2c0caec4b679742e"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/operational-documentation-11863",
       "state": "active",
       "targets": [

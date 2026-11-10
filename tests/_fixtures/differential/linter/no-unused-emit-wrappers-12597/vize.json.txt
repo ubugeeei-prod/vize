@@ -1,0 +1,10 @@
+{
+  "vue": {
+    "linter": {
+      "preset": "incremental",
+      "rules": {
+        "script/no-unused-emit-declarations": "error"
+      }
+    }
+  }
+}
