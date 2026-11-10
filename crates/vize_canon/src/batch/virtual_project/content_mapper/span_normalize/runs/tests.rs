@@ -79,3 +79,26 @@ fn shared_originals_keep_disjoint_or_equal_pieces() {
         }
     }
 }
+
+#[test]
+fn only_a_line_break_joins_verbatim_pieces() {
+    let verbatim = |at: usize, len: usize| ContentMapperSpan([at, len, at, len, 0, 7]);
+    let text = "{ name }\nnext line";
+    // `{ `, `name`, ` }` touch or share one space: each keeps its exact span.
+    let pieces = vec![verbatim(0, 2), verbatim(2, 4), verbatim(6, 2)];
+    assert_eq!(
+        super::join_verbatim_runs(text, text, pieces.clone()),
+        pieces
+    );
+    let spaced = vec![verbatim(0, 1), verbatim(2, 4)];
+    assert_eq!(
+        super::join_verbatim_runs(text, text, spaced.clone()),
+        spaced
+    );
+    // Across the shared `\n`, the two lines map as one run at the same offsets.
+    let lines = vec![verbatim(0, 8), verbatim(9, 9)];
+    assert_eq!(
+        super::join_verbatim_runs(text, text, lines),
+        vec![verbatim(0, 18)]
+    );
+}

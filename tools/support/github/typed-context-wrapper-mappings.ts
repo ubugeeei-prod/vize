@@ -16,8 +16,7 @@ export function assertTypedContextWrapperMappings(
   producer: Uint8Array,
 ): void {
   const digest = (bytes: string | Uint8Array) => createHash("sha256").update(bytes).digest("hex");
-  const verbatimRunSuccessor =
-    "    span_normalize::join_verbatim_runs(source, generated, &mut spans);\n";
+  const verbatimRunSuccessor = "    span_normalize::join_verbatim_runs(source, generated, spans)\n";
   const currentProducer = Buffer.from(producer).toString("utf8");
   const componentExportAdditions = [
     "mod component_export;\n",
@@ -25,7 +24,7 @@ export function assertTypedContextWrapperMappings(
   ];
   assert.equal(
     digest(producer),
-    "57780645b2afe83b11407854af43bee9d0f443e9151f72219a662b828627513f",
+    "e70d9c79f81b29616c97f2ad334f081ef48b05be88141fefc6909aa6bfdae367",
     "unqualified content-mapper producer",
   );
   assert.equal(
@@ -33,7 +32,7 @@ export function assertTypedContextWrapperMappings(
     2,
     "finite verbatim-run producer successor",
   );
-  let checkModePredecessor = currentProducer.replace(verbatimRunSuccessor, "");
+  let checkModePredecessor = currentProducer.replace(verbatimRunSuccessor, "    spans\n");
   assert.equal(
     digest(checkModePredecessor),
     "23000f014edd106b8ffe1cb1ebd9424f783a5cbd879cabf435f4bcfaffd51580",

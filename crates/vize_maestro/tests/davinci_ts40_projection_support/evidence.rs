@@ -3,6 +3,7 @@
 mod constructor_noinfer_return;
 mod receipt;
 mod unowned_owned_keys;
+mod verbatim_runs;
 
 use super::{capture_fixture, load_matrix, normalize::sha256};
 use receipt::{authenticate_join_receipt, authenticate_packets, authenticate_successor_receipt};
@@ -271,7 +272,7 @@ fn public_instance_slot_packets_remain_authenticated() {
         .expect("reviewed Options API slot fixture");
     assert_eq!(
         capture_fixture(fixture).render().as_str(),
-        constructor_noinfer_return::slots(unowned_successor)
+        verbatim_runs::slots(unowned_successor)
     );
 }
 #[test]

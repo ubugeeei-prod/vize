@@ -1,18 +1,21 @@
-//! Join verbatim spans across whitespace that the generated and authored text share.
+//! Join verbatim lines across the line breaks that the generated and authored
+//! text share.
 //!
 //! Copied setup lines map one span per line, and every newline between them
-//! becomes an unmapped-gap ignore. When both sides hold the same whitespace,
-//! one span maps the whole run at the same offsets, so no position moves.
-//! A span whose original another span also maps, or a gap that another span
-//! maps into, stays split: originals must remain disjoint or equal.
+//! becomes an unmapped-gap ignore. When both sides hold the same line break
+//! and indentation, one span maps the whole run at the same offsets, so no
+//! position moves. Only a gap that holds a `\n` joins: pieces within one line
+//! (a name and its delimiters) keep their exact spans. A span whose original
+//! another span also maps, or a gap that another span maps into, stays split:
+//! originals must remain disjoint or equal.
 
 use super::super::{ContentMapperSpan, ContentMapperSpanKind};
 
 pub(in super::super) fn join_verbatim_runs(
     source: &str,
     generated: &str,
-    spans: &mut Vec<ContentMapperSpan>,
-) {
+    spans: Vec<ContentMapperSpan>,
+) -> Vec<ContentMapperSpan> {
     let mut originals: Vec<(usize, usize)> =
         spans.iter().map(|span| (span.0[2], span.0[3])).collect();
     originals.sort_unstable();
@@ -27,7 +30,7 @@ pub(in super::super) fn join_verbatim_runs(
             .is_some_and(|&(original, _)| original < end)
     };
     let mut joined: Vec<ContentMapperSpan> = Vec::with_capacity(spans.len());
-    for span in spans.drain(..) {
+    for span in spans {
         if let Some(previous) = joined.last_mut()
             && joinable(source, generated, previous, &span, &shared, &mapped_inside)
         {
@@ -38,7 +41,7 @@ pub(in super::super) fn join_verbatim_runs(
         }
         joined.push(span);
     }
-    *spans = joined;
+    joined
 }
 
 fn joinable(
@@ -75,7 +78,9 @@ fn joinable(
             .get(gap_start..at)
             .zip(source.get(original_gap_start..original))
             .is_some_and(|(gap, original_gap)| {
-                gap == original_gap && gap.bytes().all(|byte| matches!(byte, b' ' | b'\t' | b'\n'))
+                gap == original_gap
+                    && gap.contains('\n')
+                    && gap.bytes().all(|byte| matches!(byte, b' ' | b'\t' | b'\n'))
             })
 }
 
