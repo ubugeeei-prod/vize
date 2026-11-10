@@ -1,5 +1,5 @@
 //! Hide generated lexical bindings by declaration origin and private component
-//! contract members only after the contract marker proves their ownership.
+//! contract members only after a generated contract field proves ownership.
 
 use oxc_allocator::Allocator;
 use oxc_parser::Parser;
@@ -12,8 +12,11 @@ use vize_l0::{FxHashSet, String};
 use crate::ide::{IdeContext, corsa_support, offset_to_position, position_to_offset};
 
 const GENERATED_COMPONENT_MARKER: &str = "__vizeComponentMarker";
+const GENERATED_COMPONENT_EMIT_PROPS: &str = "__vizeEmitProps";
 const GENERATED_MEMBER_PREFIX: &str = "__vize";
 
+/// Remove generated lexical bindings and private generated component members
+/// while retaining the checker's order and metadata for authored items.
 pub(super) fn retain_authored_bindings(
     ctx: &IdeContext<'_>,
     document: &corsa_support::CanonicalVirtualDocument,
@@ -89,13 +92,19 @@ pub(super) fn retain_authored_bindings(
 }
 
 /// Remove private fields only when the completion list proves that its receiver
-/// carries Vize's generated component contract. Ordinary authored objects may
-/// use the same prefix and must keep those members.
+/// carries Vize's generated component contract. Vue 3 contracts carry the
+/// marker; unmarked Vue 2 emit-only contracts still carry the generated emit
+/// props field. Ordinary authored objects may use other members with the same
+/// prefix and must keep them.
 fn retain_authored_component_members(items: &mut Vec<CompletionItem>) {
-    if items
-        .iter()
-        .any(|item| item.label == GENERATED_COMPONENT_MARKER)
-    {
+    let generated_contract = items.iter().any(|item| {
+        let label = item.label.strip_suffix('?').unwrap_or(item.label.as_str());
+        matches!(
+            label,
+            GENERATED_COMPONENT_MARKER | GENERATED_COMPONENT_EMIT_PROPS
+        )
+    });
+    if generated_contract {
         items.retain(|item| !item.label.starts_with(GENERATED_MEMBER_PREFIX));
     }
 }
@@ -116,6 +125,8 @@ mod tests {
     }
 
     #[test]
+    /// Marker-bearing Vue 3 contracts lose every generated member without
+    /// changing authored item order, kind or documentation.
     fn generated_component_contract_members_are_hidden_without_rewriting_public_items() {
         let title = item("title", CompletionItemKind::PROPERTY, "authored title");
         let render = item("render", CompletionItemKind::METHOD, "authored render");
@@ -145,6 +156,32 @@ mod tests {
     }
 
     #[test]
+    /// Emit-only legacy contracts use their generated emit-props field as the
+    /// ownership proof when the Vue 3 marker is absent.
+    fn unmarked_legacy_component_contract_members_are_hidden() {
+        let render = item("render", CompletionItemKind::METHOD, "authored render");
+        let mut items = vec![
+            item(
+                GENERATED_COMPONENT_EMIT_PROPS,
+                CompletionItemKind::PROPERTY,
+                "generated emits",
+            ),
+            item(
+                "__vizeRawEmits",
+                CompletionItemKind::PROPERTY,
+                "generated raw emits",
+            ),
+            render.clone(),
+        ];
+
+        retain_authored_component_members(&mut items);
+
+        assert_eq!(items, [render]);
+    }
+
+    #[test]
+    /// A prefix alone is not ownership evidence for an ordinary authored
+    /// object, so unrelated authored names remain visible.
     fn an_authored_prefixed_member_is_preserved_without_the_component_marker() {
         let authored = item(
             "__vizeAuthored",

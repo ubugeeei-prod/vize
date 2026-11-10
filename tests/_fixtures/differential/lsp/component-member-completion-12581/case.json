@@ -6,7 +6,7 @@
     "witnessPath": "crates/vize_maestro/src/ide/completion/component_props_tests.rs",
     "witnessTest": "imported_component_member_completion_hides_generated_contract_fields",
     "inputOrigin": "exact minimal imported component value reproduction from issue 12581",
-    "contractOrigin": "the focused Corsa regression validates the public completion response; this row pins the authored SFC bytes"
+    "contractOrigin": "complete ordered source-built component member completion response"
   },
   "files": [
     {
@@ -20,12 +20,31 @@
       "sha256": "55160b3732f16d4bece8fd92e792d08b8f640d12a1dcb84058f24f41cbaa0f98"
     }
   ],
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": true,
+    "crossFile": true,
+    "completion": true,
+    "ecosystem": false
+  },
   "entry": "Parent.vue",
   "expected": {
     "source": "response.expected.json",
-    "sha256": "1f5e046f4f5234ee8744458d21c57c689061ce3305629b2ddd8682de9f2fe71b"
+    "sha256": "1bbd8af6d9cec91d1a6e2696eaa65674825edc0e1756738fec4f50f927110a93"
   },
-  "method": "textDocument/foldingRange",
+  "method": "textDocument/completion",
+  "request": {
+    "params": {
+      "position": {
+        "line": 2,
+        "character": 6
+      },
+      "context": {
+        "triggerKind": 1
+      }
+    }
+  },
   "documentVersion": 1,
-  "scope": "exact issue input custody plus focused checker-backed completion witness; no native adapter or acceptance credit"
+  "scope": "complete source-built component member completion response plus raw-checker, template-route, and legacy controls; no native adapter credit"
 }

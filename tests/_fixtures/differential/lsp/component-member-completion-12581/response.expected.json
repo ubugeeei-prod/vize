@@ -1,8 +1,198 @@
 [
   {
-    "startLine": 0,
-    "endLine": 3,
-    "kind": "region",
-    "collapsedText": "script setup"
+    "filterText": "__defaults",
+    "insertText": "__defaults",
+    "kind": 5,
+    "label": "__defaults?",
+    "sortText": "11"
+  },
+  {
+    "filterText": "__file",
+    "insertText": "__file",
+    "kind": 5,
+    "label": "__file?",
+    "sortText": "11"
+  },
+  {
+    "filterText": "__isBuiltIn",
+    "insertText": "__isBuiltIn",
+    "kind": 5,
+    "label": "__isBuiltIn?",
+    "sortText": "11"
+  },
+  {
+    "filterText": "__isFragment",
+    "insertText": "__isFragment",
+    "kind": 5,
+    "label": "__isFragment?",
+    "sortText": "11"
+  },
+  {
+    "filterText": "__isKeepAlive",
+    "insertText": "__isKeepAlive",
+    "kind": 5,
+    "label": "__isKeepAlive?",
+    "sortText": "11"
+  },
+  {
+    "filterText": "__isSuspense",
+    "insertText": "__isSuspense",
+    "kind": 5,
+    "label": "__isSuspense?",
+    "sortText": "11"
+  },
+  {
+    "filterText": "__isTeleport",
+    "insertText": "__isTeleport",
+    "kind": 5,
+    "label": "__isTeleport?",
+    "sortText": "11"
+  },
+  {
+    "filterText": "__multiRoot",
+    "insertText": "__multiRoot",
+    "kind": 5,
+    "label": "__multiRoot?",
+    "sortText": "11"
+  },
+  {
+    "filterText": "__name",
+    "insertText": "__name",
+    "kind": 5,
+    "label": "__name?",
+    "sortText": "11"
+  },
+  {
+    "filterText": "__vapor",
+    "insertText": "__vapor",
+    "kind": 5,
+    "label": "__vapor?",
+    "sortText": "11"
+  },
+  {
+    "filterText": "__vccOpts",
+    "insertText": "__vccOpts",
+    "kind": 5,
+    "label": "__vccOpts?",
+    "sortText": "11"
+  },
+  {
+    "kind": 2,
+    "label": "apply",
+    "sortText": "11"
+  },
+  {
+    "kind": 5,
+    "label": "arguments",
+    "sortText": "11"
+  },
+  {
+    "kind": 2,
+    "label": "bind",
+    "sortText": "11"
+  },
+  {
+    "filterText": "call",
+    "insertText": "call",
+    "kind": 5,
+    "label": "call?",
+    "sortText": "11"
+  },
+  {
+    "kind": 5,
+    "label": "caller",
+    "sortText": "11"
+  },
+  {
+    "filterText": "compatConfig",
+    "insertText": "compatConfig",
+    "kind": 5,
+    "label": "compatConfig?",
+    "sortText": "11"
+  },
+  {
+    "filterText": "components",
+    "insertText": "components",
+    "kind": 5,
+    "label": "components?",
+    "sortText": "11"
+  },
+  {
+    "filterText": "directives",
+    "insertText": "directives",
+    "kind": 5,
+    "label": "directives?",
+    "sortText": "11"
+  },
+  {
+    "filterText": "emits",
+    "insertText": "emits",
+    "kind": 5,
+    "label": "emits?",
+    "sortText": "11"
+  },
+  {
+    "filterText": "inheritAttrs",
+    "insertText": "inheritAttrs",
+    "kind": 5,
+    "label": "inheritAttrs?",
+    "sortText": "11"
+  },
+  {
+    "kind": 5,
+    "label": "length",
+    "sortText": "11"
+  },
+  {
+    "filterText": "name",
+    "insertText": "name",
+    "kind": 5,
+    "label": "name?",
+    "sortText": "11"
+  },
+  {
+    "filterText": "props",
+    "insertText": "props",
+    "kind": 5,
+    "label": "props?",
+    "sortText": "11"
+  },
+  {
+    "kind": 5,
+    "label": "prototype",
+    "sortText": "11"
+  },
+  {
+    "filterText": "render",
+    "insertText": "render",
+    "kind": 5,
+    "label": "render?",
+    "sortText": "11"
+  },
+  {
+    "filterText": "setup",
+    "insertText": "setup",
+    "kind": 5,
+    "label": "setup?",
+    "sortText": "11"
+  },
+  {
+    "filterText": "slots",
+    "insertText": "slots",
+    "kind": 5,
+    "label": "slots?",
+    "sortText": "11"
+  },
+  {
+    "kind": 2,
+    "label": "toString",
+    "sortText": "11"
+  },
+  {
+    "filterText": ".Symbol",
+    "insertText": "[Symbol]",
+    "kind": 6,
+    "label": "Symbol",
+    "sortText": "15"
   }
 ]

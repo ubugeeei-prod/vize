@@ -1607,13 +1607,16 @@
       },
       "case": {
         "path": "component-member-completion-12581/case.json",
-        "sha256": "41805c545fe856c3412b1c82f805f1c83e1c2c973012b16bbe35188ba4e92b93"
+        "sha256": "7a425266596d1798fb5ce81fdc20be1a475eecfe651814bfc50ca823e5a66312"
       },
       "requestCount": 1,
       "initializationOptions": {
         "editor": true,
         "lint": false,
-        "typecheck": false
+        "typecheck": true,
+        "crossFile": true,
+        "completion": true,
+        "ecosystem": false
       },
       "dialectCoverage": {
         "state": "source-inspected",
