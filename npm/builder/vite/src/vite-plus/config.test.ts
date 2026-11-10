@@ -24,8 +24,10 @@ void test("vitePlusConfig leaves the outer Vite+ call and task table static", as
   try {
     const result = await vitePlusConfig({ vue: { compiler: { sourceMap: true } } });
     assert.deepEqual(result.plugins, []);
-    assert.equal(result.lint, undefined);
-    assert.equal(result.fmt, undefined);
+    assert.ok(result.lint?.ignorePatterns?.includes("**/node_modules/**"));
+    assert.deepEqual(result.lint?.rules, {});
+    assert.ok(result.fmt?.ignorePatterns?.includes("**/node_modules/**"));
+    assert.ok(result.fmt?.ignorePatterns?.includes("**/*.vue"));
     assert.equal(result.run, undefined);
     assert.equal(result[taskConfigKey]?.options.tasks, false);
     assert.deepEqual(result[sourceConfigKey], { vue: { compiler: { sourceMap: true } } });

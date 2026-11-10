@@ -96,7 +96,7 @@ async function configureResolvedConfig(
     );
   }
   return {
-    ...(resolvingMetadata ? vp : configureTools(vp, options)),
+    ...configureTools(vp, options, !resolvingMetadata),
     plugins,
     pack: await configurePack(source.pack, compiler, metadata),
     run:
