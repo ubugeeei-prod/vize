@@ -84,11 +84,11 @@ fn test_valid_non_ref_binding() {
 }
 
 #[test]
-fn test_valid_typeof() {
-    // `typeof` inspects the binding, not its value.
+fn test_invalid_typeof_and_void() {
+    // `typeof count === "number"` tests the ref object and is always false.
     assert_eq!(
-        lint("const count = ref(0)\nif (typeof count === 'object') {}").error_count,
-        0
+        lint("const count = ref(0)\nif (typeof count === 'number') {}\nvoid count").error_count,
+        2
     );
 }
 
@@ -153,12 +153,38 @@ fn test_invalid_logical_operand() {
         1
     );
     assert_eq!(
-        lint("const count = ref(0)\nconst x = other || count").error_count,
+        lint("const count = ref(0)\nconst x = (count) ?? 1").error_count,
         1
     );
+}
+
+#[test]
+fn test_valid_logical_right_operand_and_let_left_operand() {
+    // The right operand is the selected value; a `let` ref may be reassigned.
     assert_eq!(
-        lint("const count = ref(0)\nconst x = count ?? 1").error_count,
+        lint("const count = ref(0)\nconst x = other ?? count\nconst y = other || count")
+            .error_count,
+        0
+    );
+    assert_eq!(
+        lint("let count = ref(0)\nconst x = count || 1\ncount = 2").error_count,
         1
+    );
+}
+
+#[test]
+fn test_tagged_template_values_are_not_stringified() {
+    assert_eq!(
+        lint("const count = ref(0)\nconst a = tag`${count}`\nconst b = `${count}`").error_count,
+        1
+    );
+}
+
+#[test]
+fn test_array_destructured_define_model_binds_the_model_ref() {
+    assert_eq!(
+        lint("const [model, modifiers] = defineModel()\nif (model) {}\nconst text = model + modifiers").error_count,
+        2
     );
 }
 

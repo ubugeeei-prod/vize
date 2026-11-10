@@ -200,6 +200,11 @@ fn identifier_is_external(
     let Some(symbol) = symbol(id, scoping) else {
         return false;
     };
+    // eslint-plugin-vue skips import bindings: `arrays.reverse(list)` calls an
+    // exported helper, and a namespace object cannot be mutated.
+    if scoping.symbol_flags(symbol).is_import() {
+        return false;
+    }
     let declaration = scoping.symbol_span(symbol);
     declaration.start < getter.start || declaration.end > getter.end
 }

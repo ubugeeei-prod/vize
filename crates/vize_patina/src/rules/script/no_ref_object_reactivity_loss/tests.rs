@@ -104,13 +104,37 @@ const watched = computed(() => item.value)
 const refs = toRefs(foo)
 const watchedBag = computed(() => refs.item.value)
 const [a] = ref(0)
-const copiedIntoAnotherRef = ref(count.value) as Ref<number>
 foo.bar = ref(0)
+const list = ref([])
+list.value[0] = 1
+list.value.item.name = 1
+;[count.value, other] = pair
 let alias = ref(0)
 alias = alias
 unknown.value
 "#;
     assert!(messages(source).is_empty(), "{:?}", messages(source));
+}
+
+#[test]
+fn reports_reads_nested_in_write_targets_and_destructuring_assignments() {
+    assert_copies(
+        r#"
+import { ref } from 'vue'
+const list = ref([])
+const index = ref(0)
+const count = ref(0)
+let late = 0
+list.value[index.value] = 1
+list.value[index.value]++
+slot(index.value).n = 2
+;({ value: late } = count)
+const draft = ref(count.value) as Ref<number>
+;(list.value as any).length = 0
+;({ foo: late = count.value } = bar)
+"#,
+        7,
+    );
 }
 
 #[test]

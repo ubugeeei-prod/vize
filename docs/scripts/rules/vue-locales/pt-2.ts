@@ -188,6 +188,8 @@ export const portugueseVue2: Record<string, readonly [purpose: string, bad: stri
   };
 
 export const portugueseVueNotes = {
+  "A type assertion does not change the value it wraps, so `(rows as string[]).push(x)` and `rows!.push(x)` in a template are reported as mutations of the prop `rows`; eslint-plugin-vue stops at the assertion.":
+    "Uma asserção de tipo não altera o valor que envolve; por isso, em um template, `(rows as string[]).push(x)` e `rows!.push(x)` são relatados como mutações da prop `rows`, enquanto o eslint-plugin-vue para na asserção.",
   "Checks the static name of a rendered slot outlet. The parent-side v-slot and #name provider syntax is outside this rule.":
     "Verifica o nome estático de um ponto de inserção de slot renderizado. A sintaxe de provedor v-slot e #name no componente pai fica fora desta regra.",
   "The component filename is checked. PascalCase and kebab-case are accepted; mixed casing is reported.":

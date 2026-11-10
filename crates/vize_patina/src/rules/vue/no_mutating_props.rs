@@ -60,7 +60,7 @@ impl NoMutatingProps {
         }
     }
 
-    fn report_authored_v_model_mutations(&self, ctx: &mut LintContext<'_>) {
+    fn report_authored_v_model_mutations(&self, ctx: &mut LintContext<'_>, judged: &[u32]) {
         let (mut prop_names, has_props_object_binding) = ctx
             .analysis()
             .and_then(scope::template_props)
@@ -92,6 +92,7 @@ impl NoMutatingProps {
             prop_names: &prop_names_ref,
             has_props_object_binding,
             shadowed: local_bindings.into_iter().collect(),
+            two_way_starts: Vec::new(),
         };
         let bytes = template.as_bytes();
         let mut search_from = 0;
@@ -141,6 +142,9 @@ impl NoMutatingProps {
             else {
                 continue;
             };
+            if judged.contains(&(value_start as u32)) {
+                continue;
+            }
             let value_end = value_start + value_end_relative;
             let Some(target) = template.get(value_start..value_end) else {
                 continue;
@@ -277,6 +281,7 @@ impl Rule for NoMutatingProps {
     }
 
     fn run_on_template<'a>(&self, ctx: &mut LintContext<'a>, root: &RootNode<'a>) {
+        let mut judged = Vec::new();
         if let Some((prop_names, has_props_object_binding)) =
             ctx.analysis().and_then(scope::template_props)
             && (!prop_names.is_empty() || has_props_object_binding)
@@ -287,13 +292,15 @@ impl Rule for NoMutatingProps {
                 prop_names: &prop_names_ref,
                 has_props_object_binding,
                 shadowed: Vec::new(),
+                two_way_starts: Vec::new(),
             };
             self.check_children(ctx, &root.children, &mut scope);
+            judged = scope.two_way_starts;
         }
 
         // HTML recovery can reparent a Vue component out of the validated
         // tree. Recheck authored v-model attributes after traversal, sharing
         // this context so exact-span deduplication remains deterministic.
-        self.report_authored_v_model_mutations(ctx);
+        self.report_authored_v_model_mutations(ctx, &judged);
     }
 }

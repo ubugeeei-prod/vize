@@ -13,6 +13,8 @@ Proibir a mutação de props de componentes.
 
 Aplicável a: Templates e blocos de SFC Vue, com o contexto do script quando exigido pela regra.
 
+Uma asserção de tipo não altera o valor que envolve; por isso, em um template, `(rows as string[]).push(x)` e `rows!.push(x)` são relatados como mutações da prop `rows`, enquanto o eslint-plugin-vue para na asserção.
+
 ## Incorreto
 
 Incrementar props.count escreve diretamente em um valor fornecido pelo componente pai.

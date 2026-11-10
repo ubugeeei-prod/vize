@@ -37,6 +37,8 @@ export const manual7: Record<string, RuleExample> = {
       source:
         '<script setup lang="ts">\nconst props = defineProps<{ count: number }>();\nconst emit = defineEmits<{ "update:count": [value: number] }>();\n\nfunction increment() {\n  emit("update:count", props.count + 1);\n}\n</script>',
     },
+    note: "A type assertion does not change the value it wraps, so `(rows as string[]).push(x)` and `rows!.push(x)` in a template are reported as mutations of the prop `rows`; eslint-plugin-vue stops at the assertion.",
+    noteJa: "型アサーションは包んだ値を変えないため、テンプレートの `(rows as string[]).push(x)` や `rows!.push(x)` も prop `rows` の変更として報告します。eslint-plugin-vue はアサーションで追跡を止めます。",
     evidence: "docs/content/rules/vue-components.md",
   },
   "vue/no-non-component-keep-alive-child": {

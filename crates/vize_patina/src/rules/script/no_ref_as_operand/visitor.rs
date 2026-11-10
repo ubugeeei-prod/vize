@@ -10,7 +10,7 @@ use oxc_ast::ast::{
     ComputedMemberExpression, ConditionalExpression, DoWhileStatement, Expression, ForInStatement,
     ForOfStatement, ForStatement, ForStatementLeft, Function, FunctionBody, IfStatement,
     LogicalExpression, Program, Statement, StaticBlock, StaticMemberExpression, SwitchStatement,
-    TemplateLiteral, UnaryExpression, UpdateExpression, WhileStatement,
+    TaggedTemplateExpression, TemplateLiteral, UnaryExpression, UpdateExpression, WhileStatement,
 };
 use oxc_ast_visit::{
     Visit,
@@ -25,7 +25,7 @@ use oxc_ast_visit::{
     },
 };
 
-use oxc_syntax::{operator::UnaryOperator, scope::ScopeFlags};
+use oxc_syntax::scope::ScopeFlags;
 
 impl<'a> Visit<'a> for RefOperandVisitor<'_> {
     fn visit_program(&mut self, it: &Program<'a>) {
@@ -200,9 +200,10 @@ impl<'a> Visit<'a> for RefOperandVisitor<'_> {
         if let oxc_ast::ast::AssignmentTarget::AssignmentTargetIdentifier(id) = &it.left
             && self.is_ref(&id.name)
         {
-            let replacement_is_ref = self.scopes.split_last().is_some_and(|(local, outer)| {
-                expression_binding(&it.right, local, outer) == Binding::Ref
-            });
+            let replacement_is_ref = self
+                .scopes
+                .split_last()
+                .is_some_and(|(local, outer)| expression_binding(&it.right, local, outer).is_ref());
             // Replacing a ref binding with another ref is allowed. Assigning an
             // ordinary value must write through `.value`; compound assignments
             // always read and write the wrapped value.
@@ -230,14 +231,9 @@ impl<'a> Visit<'a> for RefOperandVisitor<'_> {
     }
 
     fn visit_unary_expression(&mut self, it: &UnaryExpression<'a>) {
-        // `!count`, `-count`, `+count`, `~count` read the value. `typeof`,
-        // `void`, and `delete` inspect the binding itself and are not flagged.
-        if !matches!(
-            it.operator,
-            UnaryOperator::Typeof | UnaryOperator::Void | UnaryOperator::Delete
-        ) {
-            self.check_operand(&it.argument);
-        }
+        // `typeof count === "number"` tests the ref object too, so every unary
+        // operator is checked like eslint-plugin-vue does.
+        self.check_operand(&it.argument);
         walk_unary_expression(self, it);
     }
 
@@ -248,9 +244,22 @@ impl<'a> Visit<'a> for RefOperandVisitor<'_> {
     }
 
     fn visit_logical_expression(&mut self, it: &LogicalExpression<'a>) {
-        self.check_operand(&it.left);
-        self.check_operand(&it.right);
+        // Only the left operand is tested; the right one is the selected value
+        // (`injected ?? fallback`). A `let` ref may hold a reassigned value.
+        if let Expression::Identifier(id) = it.left.without_parentheses()
+            && self.binding(&id.name) == Binding::Ref
+        {
+            self.report(id.span, &id.name);
+        }
         walk_logical_expression(self, it);
+    }
+
+    fn visit_tagged_template_expression(&mut self, it: &TaggedTemplateExpression<'a>) {
+        // The tag receives the ref objects themselves; nothing is stringified.
+        self.visit_expression(&it.tag);
+        for expression in &it.quasi.expressions {
+            self.visit_expression(expression);
+        }
     }
 
     fn visit_conditional_expression(&mut self, it: &ConditionalExpression<'a>) {

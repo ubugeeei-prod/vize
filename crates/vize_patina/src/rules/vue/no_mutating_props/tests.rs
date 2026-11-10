@@ -5,6 +5,7 @@ use crate::rule::{Rule, RuleCategory, RuleRegistry};
 
 mod script_mutations;
 mod template_handlers;
+mod template_scope;
 
 /// Lint a full SFC with only this rule enabled.
 ///

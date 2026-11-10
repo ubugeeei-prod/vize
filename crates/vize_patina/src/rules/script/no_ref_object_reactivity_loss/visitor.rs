@@ -25,8 +25,6 @@ pub(super) struct Visitor<'result, 'ast> {
     pub(super) offset: usize,
     pub(super) result: &'result mut ScriptLintResult,
     pub(super) fn_depth: u32,
-    pub(super) writing: bool,
-    pub(super) suppress_reads: bool,
     pub(super) frames: Vec<FxHashMap<CompactString, Kind>>,
     pub(super) sibling_program: Option<&'ast Program<'ast>>,
 }

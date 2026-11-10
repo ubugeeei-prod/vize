@@ -89,8 +89,6 @@ impl ScriptRule for NoRefObjectReactivityLoss {
             offset,
             result,
             fn_depth: 0,
-            writing: false,
-            suppress_reads: false,
             frames: Vec::new(),
             sibling_program: sfc.sibling_program,
         };

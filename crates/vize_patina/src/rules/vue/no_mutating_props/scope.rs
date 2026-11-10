@@ -19,6 +19,9 @@ pub(super) struct PropScope<'names> {
     /// over-collects, which only ever *suppresses* a report, the safe
     /// direction for evidence that creates findings.
     pub(super) shadowed: Vec<String>,
+    /// Template offsets of the two-way bindings the scoped walk has judged, so
+    /// the raw-text fallback does not judge them again without their scope.
+    pub(super) two_way_starts: Vec<u32>,
 }
 
 impl PropScope<'_> {
@@ -40,9 +43,9 @@ fn starts_member(rest: &str) -> bool {
 
 /// Push the value / key / index aliases of a `v-for` directive.
 ///
-/// The parsed aliases are preferred; a `v-for` the parser could not split
-/// falls back to the whole expression, whose identifier tokens include the
-/// source as well as the aliases. Over-collecting only suppresses reports.
+/// The parsed aliases are preferred, then the aliases split from the raw
+/// expression, so the iterated prop stays a prop inside its own loop. Only a
+/// `v-for` that cannot be split falls back to every identifier token.
 pub(super) fn push_for_aliases(directive: &DirectiveNode<'_>, out: &mut Vec<String>, source: &str) {
     if let Some(parsed) = directive.for_parse_result.as_ref() {
         for alias in [
@@ -57,9 +60,17 @@ pub(super) fn push_for_aliases(directive: &DirectiveNode<'_>, out: &mut Vec<Stri
         }
         return;
     }
-    if let Some(exp) = directive.exp.as_ref() {
-        push_identifier_tokens(expression_source(exp, source), out);
+    let Some(exp) = directive.exp.as_ref() else {
+        return;
+    };
+    let exp = expression_source(exp, source);
+    if let Some(parsed) = vize_croquis::drawer::parse_v_for_scope_expression(exp) {
+        out.extend(parsed.value_bindings);
+        out.extend(parsed.key_alias);
+        out.extend(parsed.index_alias);
+        return;
     }
+    push_identifier_tokens(exp, out);
 }
 
 pub(super) fn expression_source<'a>(exp: &'a ExpressionNode<'a>, source: &'a str) -> &'a str {

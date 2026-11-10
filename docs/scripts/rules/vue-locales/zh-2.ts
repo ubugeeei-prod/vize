@@ -187,6 +187,8 @@ export const chineseVue2: Record<string, readonly [purpose: string, bad: string,
 };
 
 export const chineseVueNotes = {
+  "A type assertion does not change the value it wraps, so `(rows as string[]).push(x)` and `rows!.push(x)` in a template are reported as mutations of the prop `rows`; eslint-plugin-vue stops at the assertion.":
+    "类型断言不会改变它包裹的值，因此模板中的 `(rows as string[]).push(x)` 和 `rows!.push(x)` 也会作为对 prop `rows` 的修改报告；eslint-plugin-vue 会在断言处停止追踪。",
   "Checks the static name of a rendered slot outlet. The parent-side v-slot and #name provider syntax is outside this rule.":
     "检查渲染的插槽出口的静态名称。父组件侧的 v-slot 和 #name 提供语法不在此规则范围内。",
   "The component filename is checked. PascalCase and kebab-case are accepted; mixed casing is reported.":
