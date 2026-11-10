@@ -16,7 +16,7 @@ test("v1 alpha go/no-go checklist covers release gates and rollback", () => {
   for (const heading of [
     "## Owners",
     "## Pre-Tag Gate",
-    "## Release PR and Promotion Gate",
+    "## Release Candidate and Tag Gate",
     "## Publish Gate",
     "## Post-Publish Gate",
     "## Rollback Plan",
@@ -48,6 +48,10 @@ test("v1 alpha go/no-go checklist covers release gates and rollback", () => {
   }
 
   for (const requiredTerm of [
+    "release-candidates/",
+    "source commit",
+    "prerelease: true",
+    "make_latest: false",
     "dist-tags",
     "crates.io",
     "VS Code marketplace",
@@ -56,6 +60,15 @@ test("v1 alpha go/no-go checklist covers release gates and rollback", () => {
     "npm deprecate",
   ]) {
     assert.match(checklist, new RegExp(requiredTerm));
+  }
+
+  for (const retiredContract of [
+    "vp run release alpha -y",
+    "Atomic promotion fast-forwards",
+    "Open VSX does not run automatically",
+    "release-open-vsx.yml",
+  ]) {
+    assert.doesNotMatch(checklist, new RegExp(retiredContract));
   }
 });
 

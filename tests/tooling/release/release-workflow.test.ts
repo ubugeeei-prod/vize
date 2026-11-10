@@ -28,6 +28,7 @@ type Job = {
   environment?: string;
   env?: Record<string, string>;
   permissions?: Record<string, string>;
+  outputs?: Record<string, string>;
   uses?: string;
   steps?: Array<{
     env?: Record<string, string>;
@@ -182,6 +183,18 @@ test("release is dispatched on main with an optional exact version or npm resume
   assert.deepEqual(version.permissions, { actions: "read", contents: "write" });
   assert.match(JSON.stringify(version.steps), /release\/release\/main\.ts cut/);
   assert.match(JSON.stringify(version.steps), /release\/npm_resume\/main\.ts/);
+  assert.equal(version.outputs?.npm_tag, "${{ steps.channel.outputs.npm_tag }}");
+  assert.equal(version.outputs?.prerelease, "${{ steps.channel.outputs.prerelease }}");
+  assert.equal(version.outputs?.make_latest, "${{ steps.channel.outputs.make_latest }}");
+  const channel = version.steps?.find((step) => step.id === "channel");
+  assert.equal(
+    channel?.env?.RELEASE_VERSION,
+    "${{ steps.resume.outputs.version || steps.cut.outputs.version }}",
+  );
+  assert.match(String(channel?.run), /tools\/commands\/release\/npm\/tag\.ts/);
+  assert.match(String(channel?.run), /npm_tag=\$npm_tag/);
+  assert.match(String(channel?.run), /prerelease=(?:true|false)/);
+  assert.match(String(channel?.run), /make_latest=(?:true|false)/);
 });
 
 test("npm resume preserves the trusted workflow and restores only the selected run artifacts", () => {
@@ -370,6 +383,13 @@ test("verification runs outside the release concurrency group and gates only JSR
   assert.equal(verifyNeeds("verify-npm").length, 0);
   assert.match(String(verify.jobs["verify-npm"].if), /github\.ref == 'refs\/heads\/main'/);
   const steps = (verify.jobs["verify-npm"].steps ?? []).map((step) => step.run ?? "").join("\n");
+  const versionPattern = /\[\[ "\$RELEASE_VERSION" =~ (\^.*\$) \]\]/.exec(steps)?.[1];
+  assert.ok(versionPattern);
+  const releaseVersion = new RegExp(versionPattern);
+  for (const version of ["1.0.0", "1.0.0-alpha", "1.0.0-alpha.1", "2.3.4-rc.12"])
+    assert.match(version, releaseVersion);
+  for (const version of ["v1.0.0", "1.0", "1.0.0-", "1.0.0-alpha..1"])
+    assert.doesNotMatch(version, releaseVersion);
   assert.match(steps, /^\[\[ "\$RELEASE_TAG" == "v\$RELEASE_VERSION" \]\]$/m);
   assert.match(steps, /^\[\[ "\$\(git rev-parse HEAD\)" == "\$RELEASE_SHA" \]\]$/m);
   assert.match(steps, /verify_published\/main\.ts "\$RELEASE_VERSION" "\$\{packages\[@\]\}"/);
@@ -437,6 +457,23 @@ test("Open VSX publication tolerates ovsx dependency build scripts", () => {
   const job = (workflow.jobs["publish-open-vsx"] as Job & { env?: Record<string, string> }).env;
   assert.equal(job?.PNPM_CONFIG_STRICT_DEP_BUILDS, "false");
   assert.ok(Number(job?.PUBLISH_RESOLUTION_RETRY_LIMIT) * 10 >= 600, "waits 10 min for the scan");
+});
+
+test("prerelease metadata and channel reach every editor publisher and GitHub Release", () => {
+  for (const name of [
+    "publish-vscode",
+    "publish-open-vsx",
+    "publish-vscode-platforms",
+    "publish-open-vsx-platforms",
+  ]) {
+    assert.equal(workflow.jobs[name].env?.NPM_TAG, "${{ needs.version.outputs.npm_tag }}", name);
+  }
+
+  const create = workflow.jobs["github-release"].steps?.find((step) =>
+    step.uses?.startsWith("softprops/action-gh-release@"),
+  );
+  assert.equal(create?.with?.prerelease, "${{ needs.version.outputs.prerelease }}");
+  assert.equal(create?.with?.make_latest, "${{ needs.version.outputs.make_latest }}");
 });
 
 test("the automatic cadence releases a green main commit only after user-facing changes", () => {
