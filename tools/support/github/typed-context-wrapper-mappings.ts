@@ -22,17 +22,48 @@ export function assertTypedContextWrapperMappings(
   ];
   assert.equal(
     digest(producer),
-    "271dfc983bf196cd118b521e7ac401824b19c423d2cacfa32dcfec29bdec922b",
+    "659b27180f1ab25b91e09698ac83218f518fb2dafca39fb4188cf8cf11ab5acc",
     "unqualified content-mapper producer",
+  );
+  let checkModePredecessor = producerText;
+  for (const [successor, predecessor] of [
+    [
+      "use crate::virtual_ts::{ProjectionFeatures, ProjectionMeta, VizeMapping};\n",
+      "use crate::virtual_ts::{ProjectionFeatures, ProjectionMeta, VirtualTsOptions, VizeMapping};\n",
+    ],
+    [
+      "    let mut virtual_ts_options = transform_options.virtual_ts_options();\n",
+      "    let mut virtual_ts_options = VirtualTsOptions::default();\n",
+    ],
+    [
+      "            template_use_navigation: !transform_options.diagnostics_only(),\n",
+      "            template_use_navigation: true,\n",
+    ],
+    [
+      "            preserve_event_navigation: !transform_options.diagnostics_only(),\n",
+      "            preserve_event_navigation: true,\n",
+    ],
+  ] as const) {
+    assert.equal(
+      checkModePredecessor.split(successor).length,
+      2,
+      "finite check-mode producer successor",
+    );
+    checkModePredecessor = checkModePredecessor.replace(successor, predecessor);
+  }
+  assert.equal(
+    digest(checkModePredecessor),
+    "271dfc983bf196cd118b521e7ac401824b19c423d2cacfa32dcfec29bdec922b",
+    "finite check-mode producer successor",
   );
   const componentHoverOwnerSuccessor =
     "    span_features::retain_component_prop_hover_owner(generated, &mut spans);\n";
   assert.equal(
-    producerText.split(componentHoverOwnerSuccessor).length,
+    checkModePredecessor.split(componentHoverOwnerSuccessor).length,
     2,
     "finite component-hover owner producer successor",
   );
-  const componentHoverOwnerPredecessor = producerText.replace(componentHoverOwnerSuccessor, "");
+  const componentHoverOwnerPredecessor = checkModePredecessor.replace(componentHoverOwnerSuccessor, "");
   assert.equal(
     digest(componentHoverOwnerPredecessor),
     "9c3faec15ca7c73c4a8a3f0fd1fcae7bb6f9d70c8e71a7046994d373e8b4e038",

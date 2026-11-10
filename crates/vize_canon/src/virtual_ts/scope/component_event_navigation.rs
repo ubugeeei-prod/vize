@@ -31,6 +31,7 @@ pub(super) fn emit_event_references(
         template_offset: ctx.template_offset,
         template_binding_access: ctx.template_binding_access,
         preserve_event_navigation: ctx.preserve_event_navigation,
+        omit_navigation_references: ctx.options.omit_navigation_references,
         check_unknown_events: ctx.check_unknown_events,
         hoist_shared_preamble: ctx.hoist_shared_preamble,
     };
@@ -71,6 +72,7 @@ pub(super) fn emit_scoped_event_references(
         template_offset: ctx.source_context.offset,
         template_binding_access: ctx.template_binding_access,
         preserve_event_navigation: ctx.preserve_event_navigation,
+        omit_navigation_references: ctx.options.omit_navigation_references,
         check_unknown_events: ctx.check_unknown_events,
         hoist_shared_preamble: ctx.hoist_shared_preamble,
     };
@@ -102,6 +104,7 @@ struct EventNavigationContext<'a> {
     template_offset: u32,
     template_binding_access: &'a TemplateBindingAccess<'a>,
     preserve_event_navigation: bool,
+    omit_navigation_references: bool,
     check_unknown_events: bool,
     hoist_shared_preamble: bool,
 }
@@ -127,6 +130,9 @@ fn emit_usage_event_references(
     let record = crate::virtual_ts::generated_names::lib("Record");
     if ctx.check_unknown_events {
         emit_event_name_checks(ts, mappings, ctx, idx, usage, component_ref, indent);
+    }
+    if ctx.omit_navigation_references {
+        return;
     }
     let resolved_events = cstr!("__vize_events_resolved_{idx}");
     let direct_events_ref = cstr!("__vize_events_nav_{idx}");

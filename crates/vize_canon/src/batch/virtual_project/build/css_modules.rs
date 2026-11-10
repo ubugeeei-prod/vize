@@ -51,6 +51,7 @@ pub(crate) fn virtual_ts_options_for_descriptor(
         external_template_bindings: base.external_template_bindings.clone(),
         reference_paths: base.reference_paths.clone(),
         strict_instance_globals: base.strict_instance_globals,
+        omit_navigation_references: base.omit_navigation_references,
     }
 }
 

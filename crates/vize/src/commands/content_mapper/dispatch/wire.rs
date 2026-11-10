@@ -7,8 +7,7 @@ use serde::ser::{SerializeStruct, Serializer};
 use serde_json::{Value, json};
 use vize_canon::{
     ContentMapperDiagnostic, ContentMapperDiagnosticDirective, ContentMapperDiagnosticDirectives,
-    ContentMapperSemanticLink, ContentMapperSpan, ContentMapperTransform,
-    ContentMapperUnusedExpectDiagnostic,
+    ContentMapperSpan, ContentMapperTransform, ContentMapperUnusedExpectDiagnostic,
 };
 
 /// Room for `Content-Length: <u64>\r\n\r\n` ahead of the body.
@@ -50,7 +49,8 @@ pub(super) fn encode_transform(
         text,
         extension,
         mappings,
-        semantic_links,
+        // The protocol has no semantic links, and TypeScript drops the field.
+        semantic_links: _,
         diagnostic_directives,
         diagnostics,
     } = transform;
@@ -73,10 +73,6 @@ pub(super) fn encode_transform(
     push_json_str(&mut frame, extension);
     frame.extend_from_slice(br#","mappings":"#);
     push_spans(&mut frame, mappings);
-    if !semantic_links.is_empty() {
-        frame.extend_from_slice(br#","semanticLinks":"#);
-        serde_json::to_writer(&mut frame, &SortedSeq(semantic_links)).map_err(io::Error::other)?;
-    }
     frame.extend_from_slice(br#","text":"#);
     push_json_str(&mut frame, text);
     frame.extend_from_slice(b"}}");
@@ -290,25 +286,6 @@ impl Serialize for Sorted<'_, ContentMapperDiagnostic> {
     }
 }
 
-impl Serialize for Sorted<'_, ContentMapperSemanticLink> {
-    fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
-        let ContentMapperSemanticLink {
-            source_start,
-            source_length,
-            target_start,
-            target_length,
-            kind,
-        } = self.0;
-        let mut out = serializer.serialize_struct("ContentMapperSemanticLink", 5)?;
-        out.serialize_field("kind", kind)?;
-        out.serialize_field("sourceLength", source_length)?;
-        out.serialize_field("sourceStart", source_start)?;
-        out.serialize_field("targetLength", target_length)?;
-        out.serialize_field("targetStart", target_start)?;
-        out.end()
-    }
-}
-
 impl Serialize for Sorted<'_, ContentMapperUnusedExpectDiagnostic> {
     fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
         let ContentMapperUnusedExpectDiagnostic { code, message_text } = self.0;
@@ -319,11 +296,15 @@ impl Serialize for Sorted<'_, ContentMapperUnusedExpectDiagnostic> {
     }
 }
 
-/// A transform as its reply decodes: serde's value with the five-element
-/// tuples TypeScript reads as `FeatureAll` spans and ignore directives.
+/// A transform as its reply decodes: serde's value without semantic links,
+/// with the five-element tuples TypeScript reads as `FeatureAll` spans and
+/// ignore directives.
 #[cfg(test)]
 pub(in crate::commands::content_mapper) fn wire_value(transform: &ContentMapperTransform) -> Value {
     let mut value = serde_json::to_value(transform).unwrap_or_default();
+    if let Some(result) = value.as_object_mut() {
+        result.remove("semanticLinks");
+    }
     let narrow = |rows: Option<&mut Vec<Value>>, column: usize, compact: usize| {
         for row in rows.into_iter().flatten() {
             if let Some(tuple) = row.as_array_mut()
@@ -424,6 +405,28 @@ mod tests {
         assert_eq!(
             value["result"]["diagnosticDirectives"]["directives"],
             json!([[0, 0, 0, 1, 0], [1, 2, 3, 4, 1, 0]])
+        );
+    }
+
+    #[test]
+    fn semantic_links_stay_off_the_wire() {
+        let frame = encode_transform(&json!(1), &transform(true)).unwrap();
+        let text = std::str::from_utf8(&frame).unwrap();
+        let (_, body) = text.split_once("\r\n\r\n").unwrap();
+        let value: serde_json::Value = serde_json::from_str(body).unwrap();
+        assert_eq!(
+            value["result"]
+                .as_object()
+                .unwrap()
+                .keys()
+                .collect::<Vec<_>>(),
+            [
+                "diagnosticDirectives",
+                "diagnostics",
+                "extension",
+                "mappings",
+                "text"
+            ]
         );
     }
 
