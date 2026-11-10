@@ -4,18 +4,19 @@
 //! interface or type alias the module declares at top level, an
 //! intersection or union of those, or one of Vue's utility types over them
 //! (`Partial`, `Required`, `Readonly`; `Pick` and `Omit` with string literal
-//! keys). Vue reads property and method signatures as members. Vue's merge
+//! keys). Vue reads property and method signatures as members, and call
+//! signatures and function types as event declarations. Vue's merge
 //! rules apply: an interface's own members win over inherited ones; across
 //! an intersection or union the first member of a name stays, optional when
 //! any of them is. A name the module declares wins over a utility type.
 //! Every other part (imports, globals, generics, other type forms) is
 //! unexpanded.
 
-use super::static_key;
+use super::{static_key, string_key};
 use alloc::vec::Vec;
 use oxc_ast::ast::{
-    Declaration, Expression, Statement, TSInterfaceDeclaration, TSLiteral, TSSignature, TSType,
-    TSTypeName, TSTypeParameterInstantiation,
+    Declaration, Expression, FormalParameters, Statement, TSInterfaceDeclaration, TSLiteral,
+    TSSignature, TSType, TSTypeName, TSTypeParameterInstantiation,
 };
 use oxc_span::GetSpan;
 use vize_l0::Span;
@@ -29,6 +30,88 @@ pub(super) struct Member<'a> {
     /// A property signature's annotation.
     pub(super) value: Option<Span>,
     pub(super) optional: bool,
+}
+
+/// A call signature or function type: an event declaration.
+#[derive(Debug, Clone)]
+pub(super) struct Call<'a> {
+    /// The event parameter's string literal types: text and contents span.
+    pub(super) names: Vec<(&'a str, Span)>,
+    pub(super) declaration: Span,
+    /// The parameters after the event parameter.
+    pub(super) payload: Option<Span>,
+    /// The event parameter, or the signature without one, when it is not
+    /// typed by string literals only.
+    pub(super) opaque: Option<Span>,
+}
+
+impl<'a> Call<'a> {
+    fn of(
+        parameters: &FormalParameters<'a>,
+        span: oxc_span::Span,
+        authored: &mut dyn FnMut(oxc_span::Span) -> Span,
+    ) -> Self {
+        let declaration = authored(span);
+        let mut literals = Vec::new();
+        let Some(event) = parameters.items.first() else {
+            return Self {
+                names: Vec::new(),
+                declaration,
+                payload: None,
+                opaque: Some(declaration),
+            };
+        };
+        let literal = event
+            .type_annotation
+            .as_ref()
+            .is_some_and(|annotation| literal_names(&annotation.type_annotation, &mut literals));
+        let names = literals
+            .into_iter()
+            .map(|(key, name)| (key, authored(name)))
+            .collect();
+        let start = parameters
+            .items
+            .get(1)
+            .map(|second| second.span.start)
+            .or_else(|| parameters.rest.as_ref().map(|rest| rest.span.start));
+        let end = parameters
+            .rest
+            .as_ref()
+            .map(|rest| rest.span.end)
+            .or_else(|| parameters.items.last().map(|last| last.span.end));
+        let payload = match (start, end) {
+            (Some(start), Some(end)) => Some(authored(oxc_span::Span::new(start, end))),
+            _ => None,
+        };
+        Self {
+            names,
+            declaration,
+            payload,
+            opaque: (!literal).then(|| authored(event.span)),
+        }
+    }
+}
+
+/// Collects a string literal type, or a union's string literal members;
+/// whether every member is one.
+fn literal_names<'a>(ty: &TSType<'a>, names: &mut Vec<(&'a str, oxc_span::Span)>) -> bool {
+    match ty {
+        TSType::TSLiteralType(literal) => match &literal.literal {
+            TSLiteral::StringLiteral(key) => string_key(key)
+                .map(|span| names.push((key.value.as_str(), span)))
+                .is_some(),
+            _ => false,
+        },
+        TSType::TSParenthesizedType(inner) => literal_names(&inner.type_annotation, names),
+        TSType::TSUnionType(union) => {
+            let mut all = true;
+            for part in &union.types {
+                all &= literal_names(part, names);
+            }
+            all
+        }
+        _ => false,
+    }
 }
 
 /// A type as far as its members can be read without resolving anything.
@@ -56,6 +139,7 @@ pub(super) enum Shape<'a> {
 #[derive(Debug, Default)]
 pub(super) struct Body<'a> {
     members: Vec<Member<'a>>,
+    calls: Vec<Call<'a>>,
     opaque: Vec<Span>,
 }
 
@@ -77,6 +161,11 @@ impl<'a> Body<'a> {
                         .as_ref()
                         .map(|annotation| annotation.type_annotation.span()),
                 ),
+                TSSignature::TSCallSignatureDeclaration(call) => {
+                    body.calls
+                        .push(Call::of(&call.params, call.span, &mut *authored));
+                    continue;
+                }
                 TSSignature::TSMethodSignature(method) => (
                     &method.key,
                     method.computed,
@@ -111,6 +200,10 @@ impl<'a> Shape<'a> {
         match ty {
             TSType::TSTypeLiteral(literal) => Self::Body(Body::of(&literal.members, authored)),
             TSType::TSParenthesizedType(inner) => Self::of(&inner.type_annotation, authored),
+            TSType::TSFunctionType(function) => Self::Body(Body {
+                calls: alloc::vec![Call::of(&function.params, function.span, authored)],
+                ..Body::default()
+            }),
             TSType::TSIntersectionType(intersection) => Self::Merge(
                 intersection
                     .types
@@ -180,6 +273,7 @@ fn literal_keys<'a>(ty: &TSType<'a>) -> Option<Vec<&'a str>> {
 #[derive(Debug, Default)]
 pub(super) struct Listed<'a> {
     pub(super) members: Vec<Member<'a>>,
+    pub(super) calls: Vec<Call<'a>>,
     pub(super) unexpanded: Vec<Span>,
 }
 
@@ -187,6 +281,7 @@ impl<'a> Listed<'a> {
     fn opaque(span: Span) -> Self {
         Self {
             members: Vec::new(),
+            calls: Vec::new(),
             unexpanded: alloc::vec![span],
         }
     }
@@ -203,6 +298,7 @@ impl<'a> Listed<'a> {
                 None => self.members.push(member),
             }
         }
+        self.calls.extend(other.calls);
         self.unexpanded.extend(other.unexpanded);
     }
 
@@ -213,6 +309,7 @@ impl<'a> Listed<'a> {
                 self.members.push(member);
             }
         }
+        self.calls.extend(other.calls);
         self.unexpanded.extend(other.unexpanded);
     }
 }
@@ -305,11 +402,13 @@ impl<'a> LocalTypes<'a> {
         match shape {
             Shape::Body(body) => Listed {
                 members: body.members.clone(),
+                calls: body.calls.clone(),
                 unexpanded: body.opaque.clone(),
             },
             Shape::Interface(own, bases) => {
                 let mut listed = Listed {
                     members: own.members.clone(),
+                    calls: own.calls.clone(),
                     unexpanded: own.opaque.clone(),
                 };
                 for base in bases {

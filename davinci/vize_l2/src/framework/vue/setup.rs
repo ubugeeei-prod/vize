@@ -12,7 +12,9 @@ mod props;
 pub use bindings::{ReactiveSource, SetupBinding, SetupBindingKind};
 pub use props::{PropsDestructure, PropsField};
 
-use super::contract::{self, ComponentContract, LocalTypes, PropsDraft};
+use super::contract::{
+    self, ComponentContract, ContractCheckpoint, ContractDraft, LocalTypes, PropsDraft,
+};
 use super::{MacroKind, lookup};
 use crate::file::{ScopeId, ScriptUnit};
 use crate::lang::js::{CallEvent, DeclaredEvent, FileObserver, StatementEvent};
@@ -120,8 +122,7 @@ pub struct SetupObserver<'a> {
     runtime_prop_keys: Vec<Span>,
     bindings: bindings::Bindings<'a>,
     types: LocalTypes<'a>,
-    props_contract: Option<PropsDraft<'a>>,
-    duplicates: Vec<Span>,
+    contract: ContractDraft<'a>,
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -154,22 +155,13 @@ impl<'a> SetupObserver<'a> {
                 expected: program.statements,
             });
         }
-        let props = self.props_contract.map(|mut props| {
-            for (key, value) in self.bindings.defaults {
-                props.destructure_default(key, value);
-            }
-            props.finish(&self.types)
-        });
         Ok(SetupFacts {
             macro_calls: self.calls,
             runtime_prop_keys: self.runtime_prop_keys,
             bindings: self.bindings.rows,
             props_destructure: self.bindings.props,
             unclassified: self.bindings.unclassified,
-            contract: ComponentContract {
-                props,
-                duplicates: self.duplicates,
-            },
+            contract: self.contract.finish(&self.types, self.bindings.defaults),
         })
     }
 
@@ -210,6 +202,12 @@ impl<'a> SetupObserver<'a> {
         self.calls.push(record);
         if row.kind == MacroKind::DefineProps {
             self.define_props(base, record.span, call);
+        } else {
+            let overflow = &mut self.overflow;
+            self.contract
+                .call(row.kind, record.span, declarator, call, &mut |span| {
+                    authored(base, span, overflow)
+                });
         }
         if row.kind == MacroKind::WithDefaults
             && let Some(Argument::CallExpression(inner)) = call.arguments.first()
@@ -220,7 +218,8 @@ impl<'a> SetupObserver<'a> {
             let overflow = &mut self.overflow;
             if let Some(defaults) = call.arguments.get(1)
                 && let Some(props) = self
-                    .props_contract
+                    .contract
+                    .props
                     .as_mut()
                     .filter(|props| props.declaration() == inner)
             {
@@ -244,15 +243,15 @@ impl<'a> SetupObserver<'a> {
                 .unclassified
                 .extend(read.escaped.iter().copied());
         }
-        if self.props_contract.is_some() {
-            self.duplicates.push(span);
+        if self.contract.props.is_some() {
+            self.contract.duplicates.push(span);
             return;
         }
         let type_argument = call
             .type_arguments
             .as_ref()
             .and_then(|arguments| arguments.params.first());
-        self.props_contract = Some(PropsDraft::new(span, type_argument, runtime, authored));
+        self.contract.props = Some(PropsDraft::new(span, type_argument, runtime, authored));
     }
 }
 
@@ -335,8 +334,7 @@ impl<'a> FileObserver<'a> for SetupObserver<'a> {
             unclassified: self.bindings.unclassified.len(),
             defaults: self.bindings.defaults.len(),
             types: self.types.len(),
-            contract: self.props_contract.is_some(),
-            duplicates: self.duplicates.len(),
+            contract: self.contract.checkpoint(),
         }
     }
 
@@ -357,10 +355,7 @@ impl<'a> FileObserver<'a> for SetupObserver<'a> {
         }
         self.bindings.defaults.truncate(checkpoint.defaults);
         self.types.truncate(checkpoint.types);
-        if !checkpoint.contract {
-            self.props_contract = None;
-        }
-        self.duplicates.truncate(checkpoint.duplicates);
+        self.contract.rollback(checkpoint.contract);
     }
 }
 
@@ -375,6 +370,5 @@ pub struct SetupCheckpoint {
     unclassified: usize,
     defaults: usize,
     types: usize,
-    contract: bool,
-    duplicates: usize,
+    contract: ContractCheckpoint,
 }

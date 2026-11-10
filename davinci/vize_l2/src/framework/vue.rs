@@ -172,7 +172,10 @@ pub fn artifact_macro_names() -> impl Iterator<Item = &'static str> {
 }
 
 mod contract;
-pub use contract::{ComponentContract, ContractSource, Prop, PropsContract};
+pub use contract::{
+    CallContract, ComponentContract, ContractSource, Emit, EmitsContract, ModelContract, ModelName,
+    Prop, PropsContract, SlotsContract,
+};
 
 mod setup;
 pub use setup::{

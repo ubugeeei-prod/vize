@@ -3,11 +3,11 @@
 //! known, plus the defaults `withDefaults` and a destructure name.
 
 use super::types::{LocalTypes, Shape};
-use super::{ContractSource, Prop, PropsContract, option, static_values, string_key};
-use alloc::vec::Vec;
-use oxc_ast::ast::{
-    Argument, ArrayExpressionElement, Expression, ObjectPropertyKind, PropertyKey, TSType,
+use super::{
+    ContractSource, Prop, PropsContract, RuntimeEntry, option, runtime_entries, static_values,
 };
+use alloc::vec::Vec;
+use oxc_ast::ast::{Argument, Expression, TSType};
 use oxc_span::GetSpan;
 use vize_l0::Span;
 
@@ -139,85 +139,46 @@ pub(crate) struct RuntimeProps<'a> {
     pub(crate) escaped: Vec<Span>,
 }
 
-/// Reads a runtime props declaration as Vue's `getObjectOrArrayExpressionKeys`
-/// does: the string elements of an array; the identifier and string-literal
-/// keys of an object. The argument is not unwrapped, as in Vue.
+/// Reads a runtime props declaration (see [`runtime_entries`]). An options
+/// object value declares `required` and `default`.
 pub(crate) fn runtime_props<'a>(
     argument: &Argument<'a>,
     authored: &mut dyn FnMut(oxc_span::Span) -> Span,
 ) -> RuntimeProps<'a> {
     let mut read = RuntimeProps::default();
-    match argument {
-        Argument::ArrayExpression(array) => {
-            for element in &array.elements {
-                let ArrayExpressionElement::StringLiteral(literal) = element else {
-                    read.unexpanded.push(authored(element.span()));
-                    continue;
-                };
-                match string_key(literal) {
-                    Some(name) => read.props.push(Named {
-                        key: literal.value.as_str(),
-                        prop: Prop {
-                            name: authored(name),
-                            declaration: authored(literal.span),
-                            value: None,
-                            required: false,
-                            default: None,
-                        },
-                    }),
-                    None => read.escape(authored(literal.span)),
-                }
-            }
+    runtime_entries(argument, |entry| match entry {
+        RuntimeEntry::Key {
+            key,
+            name,
+            declaration,
+            value,
+        } => {
+            let options = match value {
+                Some(Expression::ObjectExpression(options)) => Some(&**options),
+                _ => None,
+            };
+            let required = options
+                .and_then(|options| option(options, "required"))
+                .is_some_and(
+                    |value| matches!(value, Expression::BooleanLiteral(value) if value.value),
+                );
+            let default = options
+                .and_then(|options| option(options, "default"))
+                .map(|value| authored(value.span()));
+            read.props.push(Named {
+                key,
+                prop: Prop {
+                    name: authored(name),
+                    declaration: authored(declaration),
+                    value: value.map(|value| authored(value.span())),
+                    required,
+                    default,
+                },
+            });
         }
-        Argument::ObjectExpression(object) => {
-            for property in &object.properties {
-                let ObjectPropertyKind::ObjectProperty(property) = property else {
-                    read.unexpanded.push(authored(property.span()));
-                    continue;
-                };
-                let (key, name) = match &property.key {
-                    PropertyKey::StaticIdentifier(id) => (id.name.as_str(), id.span),
-                    PropertyKey::StringLiteral(literal) => match string_key(literal) {
-                        Some(name) => (literal.value.as_str(), name),
-                        None => {
-                            read.escape(authored(literal.span));
-                            continue;
-                        }
-                    },
-                    _ => {
-                        read.unexpanded.push(authored(property.span));
-                        continue;
-                    }
-                };
-                let options = match &property.value {
-                    Expression::ObjectExpression(options) => Some(&**options),
-                    _ => None,
-                };
-                let required = options
-                    .and_then(|options| option(options, "required"))
-                    .is_some_and(
-                        |value| matches!(value, Expression::BooleanLiteral(value) if value.value),
-                    );
-                let default = options
-                    .and_then(|options| option(options, "default"))
-                    .map(|value| authored(value.span()));
-                read.props.push(Named {
-                    key,
-                    prop: Prop {
-                        name: authored(name),
-                        declaration: authored(oxc_span::Span::new(
-                            property.key.span().start,
-                            property.span.end,
-                        )),
-                        value: Some(authored(property.value.span())),
-                        required,
-                        default,
-                    },
-                });
-            }
-        }
-        other => read.unexpanded.push(authored(other.span())),
-    }
+        RuntimeEntry::Escaped(key) => read.escape(authored(key)),
+        RuntimeEntry::Unread(span) => read.unexpanded.push(authored(span)),
+    });
     read
 }
 
