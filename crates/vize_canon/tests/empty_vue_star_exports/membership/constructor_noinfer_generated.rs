@@ -48,6 +48,17 @@ fn successor_body(current: &str, record: &Value, entry: &Value) -> String {
     successor
 }
 
+/// The authenticated successor bodies, for the next layer's reconstruction.
+#[cfg(test)]
+pub(super) fn current_bodies() -> Vec<String> {
+    let (_, record) = records();
+    super::canon_leftovers_generated::current_bodies()
+        .iter()
+        .zip(record["entries"].as_array().unwrap())
+        .map(|(body, entry)| successor_body(body, &record, entry))
+        .collect()
+}
+
 pub(super) fn apply(manifest: &mut Value, members: &mut [Value]) {
     let (predecessor, record) = records();
     let entries = record["entries"].as_array().unwrap();
