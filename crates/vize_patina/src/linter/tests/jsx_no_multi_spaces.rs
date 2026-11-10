@@ -213,3 +213,31 @@ const A = () => <div  className="foo" />;
     );
     assert_eq!(result.error_count, 0);
 }
+
+#[test]
+fn no_multi_spaces_checks_jsx_expression_children_like_interpolations() {
+    let linter = linter_with(Box::new(NoMultiSpaces::default()));
+    let template = include_str!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/../../tests/_fixtures/differential/linter/no-multi-spaces-jsx-expression/interpolation.vue.txt"
+    ));
+    let template_result = linter.lint_template(template, "test.vue");
+    let source = include_str!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/../../tests/_fixtures/differential/linter/no-multi-spaces-jsx-expression/expression-child.jsx.txt"
+    ));
+    let result = linter.lint_jsx(source, "test.jsx", JsxLang::Jsx);
+
+    assert_eq!(
+        diagnostic_slices(template, &template_result),
+        vec!["  ", "  "]
+    );
+    assert_eq!(
+        diagnostic_slices(source, &result),
+        vec!["  ", "  "],
+        "{:?}",
+        result.diagnostics
+    );
+    let starts: Vec<_> = result.diagnostics.iter().map(|d| d.start).collect();
+    assert_eq!(starts, vec![23, 26]);
+}

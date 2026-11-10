@@ -8,6 +8,7 @@ import { fileURLToPath } from "node:url";
 import { test } from "node:test";
 import {
   checkMeasurement,
+  fixtureDigest,
   loadBudgets,
   ratchetBudgets,
   validateBudgets,
@@ -17,6 +18,11 @@ import {
   authenticateInstructionMeasurementSource,
   verifyRepositoryInstructionBudgets,
 } from "../../tools/benchmarks/scripts/instruction-methodology-transition.mjs";
+import {
+  formatterInstructionSuites,
+  instructionSuiteSource,
+  levelInstructionSuites,
+} from "../../tools/benchmarks/scripts/instruction-counts-suites.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const fixture = path.join(root, "tests/_fixtures/tooling/instruction-methodology-transition");
@@ -51,15 +57,43 @@ function packet(family) {
   const report = validateMeasurement(JSON.parse(raw), registry);
   return { old, current, report, registry };
 }
+// The committed bench sources whose bytes pin a family's synthetic inputs.
+function benchSources(family) {
+  const suites =
+    family.name === "level" ? levelInstructionSuites(root) : formatterInstructionSuites();
+  return suites.map((suite) => instructionSuiteSource(root, suite));
+}
+// Active rows after the archive: a cap may only fall, and an input identity
+// may change only to the digest of the one committed bench that declares the
+// probe (a bench edit re-pins its synthetic input).
+function verifyActiveRows(family, active, archived) {
+  for (const [id, row] of Object.entries(archived)) {
+    const now = active[id];
+    assert.ok(now, `${id}: active row removed`);
+    assert.equal(now.fixture, row.fixture, `${id}: active fixture changed`);
+    assert.equal(now.window, row.window, `${id}: active window changed`);
+    assert.ok(now.instructions <= row.instructions, `${id}: active cap raised`);
+    if (now.fixture_sha256 !== row.fixture_sha256) {
+      const declaring = benchSources(family).filter((source) =>
+        fs.readFileSync(source, "utf8").includes(`"${id}"`),
+      );
+      assert.equal(declaring.length, 1, `${id}: identity changed without one declaring bench`);
+      assert.equal(
+        now.fixture_sha256,
+        fixtureDigest(root, now.fixture, declaring[0]),
+        `${id}: identity changed without its committed bench source`,
+      );
+    }
+  }
+}
 // 1.99.0 registry, committed 1.99.1 registry and its three-run same-input evidence.
+// The archive replays under its own rows; the active rows may only ratchet.
 function rebase(family) {
   const { current: old, registry } = packet(family);
   const active = loadBudgets(path.join(root, "docs/davinci/plan", family.active));
+  verifyActiveRows(family, active.instruction, old.instruction);
   const current = validateBudgets(
-    {
-      ...active,
-      instruction: Object.fromEntries([...registry].map((id) => [id, active.instruction[id]])),
-    },
+    { ...active, instruction: structuredClone(old.instruction) },
     registry,
   );
   const raw = fs.readFileSync(path.join(fixture, `${family.name}-rust1991.json`));
@@ -320,6 +354,55 @@ for (const family of families) {
     const extra = structuredClone(current);
     extra.instruction.foreign_probe = structuredClone(current.instruction[id]);
     assert.throws(() => ratchetBudgets(extra, old), /preserve every row, input identity/);
+  });
+
+  void test(`${family.name}: active rows may only lower caps or re-pin an input to its committed bench`, () => {
+    const { current: old } = packet(family);
+    const active = loadBudgets(path.join(root, "docs/davinci/plan", family.active)).instruction;
+    verifyActiveRows(family, active, old.instruction);
+    const ids = Object.keys(old.instruction);
+    const check = (change) => {
+      const rows = structuredClone(active);
+      change(rows);
+      return () => verifyActiveRows(family, rows, old.instruction);
+    };
+    const [first] = ids;
+    check((rows) => {
+      rows[first].instructions -= 1;
+    })();
+    assert.throws(
+      check((rows) => {
+        rows[first].instructions = old.instruction[first].instructions + 1;
+      }),
+      /active cap raised/,
+    );
+    assert.throws(
+      check((rows) => {
+        delete rows[first];
+      }),
+      /active row removed/,
+    );
+    for (const id of ids) {
+      assert.throws(
+        check((rows) => {
+          rows[id].fixture_sha256 = "0".repeat(64);
+        }),
+        /identity changed without/,
+        id,
+      );
+    }
+    if (family.name !== "level") return;
+    // A re-pin must match the bench that declares the probe, not any bench.
+    const id = "patina_jsx_markup_one_root";
+    const other = benchSources(family).find(
+      (source) => !fs.readFileSync(source, "utf8").includes(`"${id}"`),
+    );
+    assert.throws(
+      check((rows) => {
+        rows[id].fixture_sha256 = fixtureDigest(root, rows[id].fixture, other);
+      }),
+      /identity changed without its committed bench source/,
+    );
   });
 
   void test(`${family.name}: the 1.99.1 re-baseline pins compiler, method and both provenances`, () => {

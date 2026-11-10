@@ -65,34 +65,28 @@ impl<'rule, 'ctx, 'mc, 'a, R: MarkupRule + ?Sized> MarkupDocumentVisitor<'rule, 
     }
 
     fn text(&mut self, text: MarkupText<'a>) {
-        if matches!(
-            self.traversal,
-            MarkupTraversal::Full | MarkupTraversal::ElementsAndText
-        ) {
+        if self.traversal.keeps_text_and_exits() {
             self.set_rule();
             self.rule.enter_text(self.ctx, &text);
         }
     }
 
     fn interpolation(&mut self, range: crate::ir::ByteRange) {
-        if self.traversal == MarkupTraversal::Full {
+        if self.traversal.enters_interpolations() {
             self.set_rule();
             self.rule.enter_interpolation(self.ctx, range);
         }
     }
 
     fn conditional(&mut self, conditional: MarkupConditional<'a>) {
-        if self.traversal == MarkupTraversal::Full {
+        if self.traversal.is_full() {
             self.set_rule();
             self.rule.enter_conditional(self.ctx, &conditional);
         }
     }
 
     fn list(&mut self, list: MarkupList<'a>) {
-        if matches!(
-            self.traversal,
-            MarkupTraversal::Full | MarkupTraversal::AttributesAndLists
-        ) {
+        if self.traversal.keeps_attributes_and_lists() {
             self.set_rule();
             self.rule.enter_list(self.ctx, &list);
         }
@@ -158,18 +152,14 @@ impl<'rule, 'ctx, 'mc, 'a, R: MarkupRule + ?Sized> MarkupDocumentVisitor<'rule, 
                     self.visit_element(MarkupElement::from_l2(L2ElementOp::Slot(slot), doc))
                 }
                 Op::Text(text) => {
-                    if matches!(
-                        self.traversal,
-                        MarkupTraversal::Full | MarkupTraversal::ElementsAndText
-                    ) {
+                    if self.traversal.keeps_text_and_exits() {
                         self.text(children::text_node(doc, text));
                     }
                 }
                 Op::Interpolation(interpolation) | Op::JsxChildValue(interpolation) => {
-                    if matches!(
-                        self.traversal,
-                        MarkupTraversal::Full | MarkupTraversal::ElementsAndText
-                    ) {
+                    if self.traversal.keeps_text_and_exits()
+                        || self.traversal.enters_interpolations()
+                    {
                         children::walk_interpolation(doc, interpolation, &mut |node| match node {
                             MarkupNode::Text(text) => self.text(text),
                             MarkupNode::Interpolation(range) => self.interpolation(range),
@@ -212,30 +202,21 @@ impl<'rule, 'ctx, 'mc, 'a, R: MarkupRule + ?Sized> MarkupDocumentVisitor<'rule, 
     fn visit_element_inner(&mut self, element: MarkupElement<'a>) {
         self.ctx.push_element(element);
 
-        if matches!(
-            self.traversal,
-            MarkupTraversal::Full | MarkupTraversal::Elements | MarkupTraversal::ElementsAndText
-        ) {
+        if self.traversal.enters_elements() {
             self.set_rule();
             self.rule.enter_element(self.ctx, &element);
         }
-        if matches!(
-            self.traversal,
-            MarkupTraversal::Full | MarkupTraversal::AttributesAndLists
-        ) {
+        if self.traversal.keeps_attributes_and_lists() {
             self.set_rule();
             self.rule.enter_attributes(self.ctx, &element);
         }
-        if matches!(
-            self.traversal,
-            MarkupTraversal::Full | MarkupTraversal::Bindings
-        ) {
+        if self.traversal.enters_bindings() {
             element.walk_bindings(&mut |binding| {
                 self.ctx.lint.current_rule = self.name;
                 self.rule.enter_binding(self.ctx, &element, &binding);
             });
         }
-        if self.traversal == MarkupTraversal::Full {
+        if self.traversal.is_full() {
             element.walk_directives(&mut |directive| {
                 self.ctx.lint.current_rule = self.name;
                 self.rule.enter_directive(self.ctx, &element, &directive);
@@ -267,10 +248,7 @@ impl<'rule, 'ctx, 'mc, 'a, R: MarkupRule + ?Sized> MarkupDocumentVisitor<'rule, 
             }
         }
 
-        if matches!(
-            self.traversal,
-            MarkupTraversal::Full | MarkupTraversal::ElementsAndText
-        ) {
+        if self.traversal.keeps_text_and_exits() {
             self.set_rule();
             self.rule.exit_element(self.ctx, &element);
         }

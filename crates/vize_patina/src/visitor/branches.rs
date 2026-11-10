@@ -11,7 +11,7 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
         // Run if checks
         let keep_mask = self.keep_mask;
         profile!("patina.rules.check_if", {
-            Self::callback_rules::<false>(
+            Self::callback_rules(
                 self.ctx,
                 self.rules,
                 self.rule_names,
@@ -34,7 +34,7 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
         // Run for checks
         let keep_mask = self.keep_mask;
         profile!("patina.rules.check_for", {
-            Self::callback_rules::<false>(
+            Self::callback_rules(
                 self.ctx,
                 self.rules,
                 self.rule_names,

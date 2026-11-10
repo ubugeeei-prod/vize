@@ -69,7 +69,7 @@ impl MarkupRule for NoMultiSpaces {
     }
 
     fn traversal(&self) -> MarkupTraversal {
-        MarkupTraversal::Elements
+        MarkupTraversal::ElementsAndInterpolations
     }
 
     fn enter_element<'a>(&self, ctx: &mut MarkupContext<'_, 'a>, element: &MarkupElement<'a>) {

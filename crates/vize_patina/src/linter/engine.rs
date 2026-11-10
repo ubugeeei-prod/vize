@@ -30,6 +30,7 @@ mod unused_directives;
 
 pub(crate) use template_extract::extract_template_fast;
 
+use crate::markup::{MarkupRules, RankedMarkupRule};
 use crate::{context::LintContext, diagnostic::LintSummary, preset::LintPreset};
 use vize_atelier_sfc::{SfcParseOptions, parse_sfc};
 use vize_croquis::Croquis;
@@ -306,18 +307,28 @@ impl Linter {
         let rules = self.registry.rules();
         let mut any_ir = false;
         let mut any_lowered_markup = false;
+        // Each markup group runs as one shared walk per root, as in SFC.
+        let mut ir_rules = Vec::new();
+        let mut lowered_rules = Vec::new();
         let legacy_keep_mask: Vec<bool> = rules
             .iter()
-            .map(|rule| match rule.as_markup_rule() {
-                Some(_) if rule.jsx_needs_lowering() => {
-                    any_lowered_markup = true;
-                    false
+            .zip(self.rule_names().iter().copied())
+            .enumerate()
+            .map(|(rank, (rule, name))| {
+                let Some(markup) = rule.as_markup_rule() else {
+                    return true;
+                };
+                let lowering = rule.jsx_needs_lowering();
+                let (any, group) = if lowering {
+                    (&mut any_lowered_markup, &mut lowered_rules)
+                } else {
+                    (&mut any_ir, &mut ir_rules)
+                };
+                *any = true;
+                if self.is_rule_enabled(name) {
+                    group.push(RankedMarkupRule::new(rank, markup));
                 }
-                Some(_) => {
-                    any_ir = true;
-                    false
-                }
-                None => true,
+                false
             })
             .collect();
         let any_legacy = legacy_keep_mask.iter().any(|keep| *keep);
@@ -348,41 +359,30 @@ impl Linter {
             }
 
             for lowered_root in &lowered.roots {
-                if let Ok(projected) = lowered_root.l2.as_ref() {
-                    let markup = crate::markup::L2Markup::from_projected_root(projected);
-                    if any_ir {
-                        let ir_result =
-                            self.lint_jsx_over_ir(&allocator, source, filename, &markup, analysis);
-                        result = Self::merge_lint_results(result, ir_result);
+                let markup = lowered_root.l2.as_ref().ok();
+                let markup = markup.map(crate::markup::L2Markup::from_projected_root);
+                for (rules, analysis) in [(&ir_rules, analysis), (&lowered_rules, None)] {
+                    if rules.is_empty() {
+                        continue;
                     }
-                    if any_lowered_markup {
-                        let lowered_markup =
-                            self.lint_jsx_lowered_markup_l2(&allocator, source, filename, &markup);
-                        result = Self::merge_lint_results(result, lowered_markup);
-                    }
-                } else {
-                    // The P2-16 projection refused this root (an unsupported
-                    // element, a comment, a compound expression). Keep the
-                    // lowered Relief document so the rule still runs.
-                    if any_ir {
-                        let ir_result = self.lint_jsx_over_ir_refused(
+                    let rules = MarkupRules::new(rules);
+                    let markup_result = match &markup {
+                        Some(markup) => self.lint_jsx_markup_l2(
+                            &allocator, source, filename, markup, analysis, rules,
+                        ),
+                        // The P2-16 projection refused this root (an unsupported
+                        // element, a comment, a compound expression). Keep the
+                        // lowered Relief document so the rule still runs.
+                        None => self.lint_jsx_markup_root(
                             &allocator,
                             source,
                             filename,
                             &lowered_root.root,
                             analysis,
-                        );
-                        result = Self::merge_lint_results(result, ir_result);
-                    }
-                    if any_lowered_markup {
-                        let lowered_markup = self.lint_jsx_lowered_markup_root(
-                            &allocator,
-                            source,
-                            filename,
-                            &lowered_root.root,
-                        );
-                        result = Self::merge_lint_results(result, lowered_markup);
-                    }
+                            rules,
+                        ),
+                    };
+                    result = Self::merge_lint_results(result, markup_result);
                 }
                 if any_legacy {
                     let legacy = self.lint_jsx_fallback_root(

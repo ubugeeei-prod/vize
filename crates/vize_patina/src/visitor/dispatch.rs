@@ -6,7 +6,7 @@ use crate::rule::Rule;
 
 impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
     #[inline]
-    pub(super) fn callback_rules<const INCLUDE_MASKED: bool>(
+    pub(super) fn callback_rules(
         ctx: &mut LintContext<'a>,
         rules: &[Box<dyn Rule>],
         names: &[&'static str],
@@ -16,14 +16,14 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
     ) {
         if ctx.callback_order_enabled() {
             ctx.record_callback_site(site);
-            Self::callback_rules_inner::<true, INCLUDE_MASKED>(ctx, rules, names, keep, visit);
+            Self::callback_rules_inner::<true>(ctx, rules, names, keep, visit);
         } else {
-            Self::callback_rules_inner::<false, INCLUDE_MASKED>(ctx, rules, names, keep, visit);
+            Self::callback_rules_inner::<false>(ctx, rules, names, keep, visit);
         }
     }
 
     #[inline]
-    fn callback_rules_inner<const ORDERED: bool, const INCLUDE_MASKED: bool>(
+    fn callback_rules_inner<const ORDERED: bool>(
         ctx: &mut LintContext<'a>,
         rules: &[Box<dyn Rule>],
         names: &[&'static str],
@@ -31,7 +31,7 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
         mut visit: impl FnMut(usize, &dyn Rule, &mut LintContext<'a>),
     ) {
         for (index, (rule, name)) in rules.iter().zip(names.iter().copied()).enumerate() {
-            if !INCLUDE_MASKED && !Self::rule_active(keep, index) {
+            if !Self::rule_active(keep, index) {
                 continue;
             }
             if ORDERED {
