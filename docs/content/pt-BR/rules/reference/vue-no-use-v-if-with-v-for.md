@@ -9,7 +9,7 @@ Proibir `v-if` no mesmo elemento que `v-for`.
 
 | Severidade padrão | Predefinições | Correção automática | Opções |
 | --- | --- | --- | --- |
-| `warning` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | Não | Nenhuma |
+| `warning` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | Não | [Opções das regras](/rules/options.md) |
 
 Aplicável a: Templates e blocos de SFC Vue, com o contexto do script quando exigido pela regra.
 
@@ -51,12 +51,20 @@ export default defineConfig({}).withVue({
     "preset": "incremental",
     "rules": {
       "vue/no-use-v-if-with-v-for": "warn"
+    },
+    "ruleOptions": {
+      "vue/no-use-v-if-with-v-for": {
+        "allowUsingIterationVar": true
+      }
     }
   },
 });
 ```
 
 Depois, execute `vp run lint`.
+
+`allowUsingIterationVar` usa `false` por padrão. Com `true`, um `v-if` no mesmo elemento é
+permitido somente quando a condição referencia uma variável de iteração do `v-for` associado.
 
 ## Páginas relacionadas
 

@@ -9,7 +9,7 @@ description: "同じ要素での v-if と v-for の併用を検出します。"
 
 | 既定の重大度 | プリセット | 自動修正 | オプション |
 | --- | --- | --- | --- |
-| `warning` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | なし |
+| `warning` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | [ルールのオプション](../options.md) |
 
 適用範囲：Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。
 
@@ -51,12 +51,20 @@ export default defineConfig({}).withVue({
     "preset": "incremental",
     "rules": {
       "vue/no-use-v-if-with-v-for": "warn"
+    },
+    "ruleOptions": {
+      "vue/no-use-v-if-with-v-for": {
+        "allowUsingIterationVar": true
+      }
     }
   },
 });
 ```
 
 設定したら `vp run lint` を実行します。
+
+`allowUsingIterationVar` の既定値は `false` です。`true` にすると、同じ要素の `v-if` が
+`v-for` の反復変数を参照する場合だけ許可し、無関係な条件は引き続き報告します。
 
 ## 関連ページ
 

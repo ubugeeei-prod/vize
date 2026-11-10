@@ -820,6 +820,16 @@
           },
           "additionalProperties": false
         },
+        "vue/no-use-v-if-with-v-for": {
+          "type": "object",
+          "properties": {
+            "allowUsingIterationVar": {
+              "default": false,
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": false
+        },
         "vue/html-quotes": {
           "oneOf": [
             {

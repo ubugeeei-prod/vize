@@ -55,13 +55,13 @@ pub use linter_rule_options::{
     HyphenationStyle, LabelHasForOptions, LintRuleOptions, MuseaDesignToken,
     MuseaPreferDesignTokensOptions, MustacheInterpolationSpacingStyle,
     NoBareStringsInTemplateOptions, NoMutatingPropsOptions, NoRestrictedGlobalsOptions,
-    NoRestrictedMembersOptions, NoRestrictedSyntaxOptions, PropNameCasingOptions,
-    PropNameCasingStyle, PropsDestructureMode, QuotePropsStyle, RestrictedGlobal, RestrictedMember,
-    SfcElementOrderGroup, SfcElementOrderOptions, SlotNameCasingStyle, SortKeysOptions,
-    SortKeysOrder, StrictBooleanExpressionsOptions, StyleAttributeMode,
-    TemplateComponentNameCasing, VBindStyle, VOnEventHyphenationConfig, VOnEventHyphenationOptions,
-    VOnStyle, VSlotNamedStyle, VSlotStyle, VSlotStyleOptions, VSlotStyleValue, VSlotUniformStyle,
-    WarnCustomDirectiveOptions,
+    NoRestrictedMembersOptions, NoRestrictedSyntaxOptions, NoUseVIfWithVForOptions,
+    PropNameCasingOptions, PropNameCasingStyle, PropsDestructureMode, QuotePropsStyle,
+    RestrictedGlobal, RestrictedMember, SfcElementOrderGroup, SfcElementOrderOptions,
+    SlotNameCasingStyle, SortKeysOptions, SortKeysOrder, StrictBooleanExpressionsOptions,
+    StyleAttributeMode, TemplateComponentNameCasing, VBindStyle, VOnEventHyphenationConfig,
+    VOnEventHyphenationOptions, VOnStyle, VSlotNamedStyle, VSlotStyle, VSlotStyleOptions,
+    VSlotStyleValue, VSlotUniformStyle, WarnCustomDirectiveOptions,
 };
 pub use type_checker::TypeCheckerConfig;
 pub use vue::{ParseVueVersionError, VueVersion};
