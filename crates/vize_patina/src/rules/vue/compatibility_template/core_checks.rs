@@ -206,10 +206,10 @@ fn style_expression_span(source: &str, start: usize, end: usize) -> Option<(usiz
 }
 
 fn check_v_for(mut visitor: CoreVisitor<'_, '_>, retained: crate::context::RetainedVFor<'_>) {
-    visitor.parse_offset = retained.parameters_offset;
+    visitor.set_parse_offset(retained.parameters_offset);
     visitor.camelcase_bindings = false;
     visitor.visit_formal_parameters(retained.parameters);
-    visitor.parse_offset = retained.source_offset;
+    visitor.set_parse_offset(retained.source_offset);
     visitor.camelcase_bindings = true;
     visitor.visit_expression(retained.source);
 }

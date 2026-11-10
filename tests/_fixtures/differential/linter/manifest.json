@@ -4323,6 +4323,43 @@
       }
     },
     {
+      "id": "linter/patina/compat-review-12768",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "patina-compat-review-12768",
+        "files": [
+          {
+            "path": "ImportResolution.vue.txt",
+            "role": "review-import-resolution-reproduction",
+            "sha256": "8d954b00a8fc1aca56e3a29cc208707cd22c035d348acdb6be8dd5f6e73996da"
+          },
+          {
+            "path": "TemplateEdges.vue.txt",
+            "role": "review-template-semantics-reproduction",
+            "sha256": "07a146f2e9f310ce380091f8bdf08e1c2aad674e0295799bcb017197a344793e"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/patina/rule-fixes-9872-9873",
       "state": "active",
       "targets": [

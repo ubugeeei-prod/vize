@@ -1,7 +1,7 @@
 //! `vue/no-console` compatibility rule.
 
 use super::super::core_checks::{
-    CoreKind, check_directive as check_core_directive, check_expression,
+    CoreKind, check_directive as check_core_directive, check_expression, check_sfc_styles,
 };
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
@@ -23,6 +23,10 @@ pub struct NoConsole;
 impl Rule for NoConsole {
     fn meta(&self) -> &'static RuleMeta {
         &META
+    }
+
+    fn run_on_sfc<'a>(&self, ctx: &mut LintContext<'a>) {
+        check_sfc_styles(ctx, CoreKind::NoConsole);
     }
 
     fn check_interpolation<'a>(

@@ -42,12 +42,12 @@
 use super::{ScriptLintResult, ScriptRule, ScriptRuleMeta};
 use crate::diagnostic::{LintDiagnostic, Severity};
 use oxc_ast::ast::{
-    ArrowFunctionExpression, CallExpression, Expression, ImportDeclaration,
-    ImportDeclarationSpecifier, Program, Statement,
+    ArrowFunctionExpression, CallExpression, Expression, ImportDeclarationSpecifier, Program,
+    Statement,
 };
 use oxc_ast_visit::{
     Visit,
-    walk::{walk_arrow_function_expression, walk_import_declaration, walk_statement},
+    walk::{walk_arrow_function_expression, walk_statement},
 };
 use oxc_span::Span;
 use vize_l0::{CompactString, FxHashSet};
@@ -83,10 +83,11 @@ impl ScriptRule for ValidNextTick {
         offset: usize,
         result: &mut ScriptLintResult,
     ) {
+        let bindings = NextTickBindings::collect(program);
         let mut visitor = ValidNextTickVisitor {
             offset,
             result,
-            imported_aliases: FxHashSet::default(),
+            bindings,
             returned_arrow_statement: None,
         };
         visitor.visit_program(program);
@@ -96,28 +97,50 @@ impl ScriptRule for ValidNextTick {
 struct ValidNextTickVisitor<'result> {
     offset: usize,
     result: &'result mut ScriptLintResult,
-    imported_aliases: FxHashSet<CompactString>,
+    bindings: NextTickBindings,
     returned_arrow_statement: Option<Span>,
 }
 
-impl<'a> Visit<'a> for ValidNextTickVisitor<'_> {
-    fn visit_import_declaration(&mut self, it: &ImportDeclaration<'a>) {
-        if it.source.value.as_str() == "vue"
-            && let Some(specifiers) = &it.specifiers
-        {
-            for specifier in specifiers {
-                let ImportDeclarationSpecifier::ImportSpecifier(specifier) = specifier else {
-                    continue;
-                };
-                if specifier.imported.name().as_str() == "nextTick" {
-                    self.imported_aliases
-                        .insert(CompactString::new(specifier.local.name.as_str()));
+#[derive(Default)]
+struct NextTickBindings {
+    named: FxHashSet<CompactString>,
+    namespaces: FxHashSet<CompactString>,
+}
+
+impl NextTickBindings {
+    fn collect(program: &Program<'_>) -> Self {
+        let mut bindings = Self::default();
+        for statement in &program.body {
+            let Statement::ImportDeclaration(import) = statement else {
+                continue;
+            };
+            if import.import_kind.is_type() || import.source.value.as_str() != "vue" {
+                continue;
+            }
+            for specifier in import.specifiers.iter().flatten() {
+                match specifier {
+                    ImportDeclarationSpecifier::ImportSpecifier(specifier)
+                        if !specifier.import_kind.is_type()
+                            && specifier.imported.name() == "nextTick" =>
+                    {
+                        bindings
+                            .named
+                            .insert(CompactString::new(specifier.local.name.as_str()));
+                    }
+                    ImportDeclarationSpecifier::ImportNamespaceSpecifier(specifier) => {
+                        bindings
+                            .namespaces
+                            .insert(CompactString::new(specifier.local.name.as_str()));
+                    }
+                    _ => {}
                 }
             }
         }
-        walk_import_declaration(self, it);
+        bindings
     }
+}
 
+impl<'a> Visit<'a> for ValidNextTickVisitor<'_> {
     fn visit_statement(&mut self, it: &Statement<'a>) {
         // A bare `nextTick()` whose value is discarded surfaces as the whole
         // expression of an `ExpressionStatement`. When it is awaited, chained,
@@ -127,7 +150,7 @@ impl<'a> Visit<'a> for ValidNextTickVisitor<'_> {
         if let Statement::ExpressionStatement(statement) = it
             && (self.returned_arrow_statement != Some(statement.span)
                 || !returns_call(&statement.expression))
-            && let Some(span) = bare_next_tick_call(&statement.expression, &self.imported_aliases)
+            && let Some(span) = bare_next_tick_call(&statement.expression, &self.bindings)
         {
             let start = self.offset as u32 + span.start;
             let end = self.offset as u32 + span.end;
@@ -169,17 +192,14 @@ fn returns_call(expression: &Expression<'_>) -> bool {
 
 /// If `expression` (a statement's whole expression) is a bare `nextTick()` /
 /// `this.$nextTick()` call with no callback argument, return its span.
-fn bare_next_tick_call(
-    expression: &Expression<'_>,
-    imported_aliases: &FxHashSet<CompactString>,
-) -> Option<Span> {
+fn bare_next_tick_call(expression: &Expression<'_>, bindings: &NextTickBindings) -> Option<Span> {
     let call = unwrap_to_call(expression)?;
     if !call.arguments.is_empty() {
         // A callback argument (or any argument) means the caller is scheduling
         // work; that form is allowed.
         return None;
     }
-    next_tick_callee_span(call, imported_aliases)
+    next_tick_callee_span(call, bindings)
 }
 
 /// Strip parentheses / `void` to reach a `CallExpression`, if the expression is
@@ -199,24 +219,32 @@ fn unwrap_to_call<'a, 'b>(expression: &'b Expression<'a>) -> Option<&'b CallExpr
 
 /// The span of the callee when this call is `nextTick(...)` (a vue import alias)
 /// or `<expr>.$nextTick(...)`.
-fn next_tick_callee_span(
-    call: &CallExpression<'_>,
-    imported_aliases: &FxHashSet<CompactString>,
-) -> Option<Span> {
-    match &call.callee {
+fn next_tick_callee_span(call: &CallExpression<'_>, bindings: &NextTickBindings) -> Option<Span> {
+    match call.callee.get_inner_expression() {
         Expression::Identifier(identifier) => {
             let name = identifier.name.as_str();
-            if imported_aliases.contains(name) {
+            if bindings.named.contains(name) {
                 Some(call.span)
             } else {
                 None
             }
         }
-        callee if callee.is_member_expression() => callee
-            .as_member_expression()
-            .and_then(|member| member.static_property_name())
-            .filter(|name| *name == "$nextTick")
-            .map(|_| call.span),
+        callee if callee.is_member_expression() => {
+            let member = callee.as_member_expression()?;
+            match member.static_property_name()? {
+                "$nextTick" => Some(call.span),
+                "nextTick"
+                    if matches!(
+                        member.object().get_inner_expression(),
+                        Expression::Identifier(identifier)
+                            if bindings.namespaces.contains(identifier.name.as_str())
+                    ) =>
+                {
+                    Some(call.span)
+                }
+                _ => None,
+            }
+        }
         _ => None,
     }
 }
@@ -345,6 +373,12 @@ mod tests {
     fn test_invalid_aliased_bare_call() {
         let result = create_linter().lint("import { nextTick as tick } from 'vue'\ntick()", 0);
         assert_eq!(result.warning_count, 1);
+    }
+
+    #[test]
+    fn test_invalid_namespace_call_before_import() {
+        let result = create_linter().lint("Vue.nextTick(); import * as Vue from 'vue';", 0);
+        assert_eq!(result.warning_count, 1, "{:#?}", result.diagnostics);
     }
 
     #[test]

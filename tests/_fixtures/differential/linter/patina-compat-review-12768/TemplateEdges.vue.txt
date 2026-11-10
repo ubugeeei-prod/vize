@@ -1,0 +1,20 @@
+<script setup lang="ts">
+const loading = true
+const value = 1
+const b = 2
+const f = (input: unknown) => input
+</script>
+
+<template>
+  <p v-if="loading && true">{{ 'x' + f('a' + b) }}</p>
+  <p>{{ f({ get current() { return value }, recurse: function recurse() {}, plain: function () {} }) }}</p>
+  <p>{{ f({ '1e3': value, '9007199254740992': value, '1': value }) }}</p>
+</template>
+
+<style scoped>
+p {
+  color: v-bind('console.log(value)');
+  width: v-bind('({ value: value })');
+  height: v-bind('({ "quoted": value })');
+}
+</style>

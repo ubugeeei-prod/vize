@@ -1,0 +1,27 @@
+<script lang="ts">
+import Vue from "vue"
+import computed from "./signals"
+</script>
+
+<script setup lang="ts">
+Vue.nextTick()
+nextTick()
+import { nextTick } from "vue"
+import * as Runtime from "vue"
+
+Runtime.nextTick()
+myawait(nextTick())
+
+const fromVue = Vue.computed(() => {
+  setTimeout(() => {}, 0)
+  return 1
+})
+const unrelated = computed(() => {
+  setTimeout(() => {}, 0)
+  return 1
+})
+
+console.log(fromVue, unrelated)
+</script>
+
+<template><button @click="Runtime.nextTick()">run</button></template>

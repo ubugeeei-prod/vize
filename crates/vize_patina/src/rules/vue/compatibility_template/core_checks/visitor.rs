@@ -16,8 +16,8 @@ use oxc_ast::ast::{
     BinaryExpression, BindingIdentifier, BindingProperty, ComputedMemberExpression,
     ConditionalExpression, DoWhileStatement, Expression, ForStatement, IdentifierReference,
     IfStatement, NumericLiteral, ObjectExpression, ObjectPattern, ObjectProperty,
-    ObjectPropertyKind, PropertyKey, Statement, StaticMemberExpression, UnaryExpression,
-    WhileStatement,
+    ObjectPropertyKind, PropertyKey, PropertyKind, Statement, StaticMemberExpression,
+    UnaryExpression, WhileStatement,
 };
 use oxc_ast_visit::{Visit, walk};
 use oxc_span::{GetSpan, Span};
@@ -29,7 +29,7 @@ pub(super) struct CoreVisitor<'ctx, 'source> {
     origin: Origin,
     kind: CoreKind,
     pub(super) parse_offset: u32,
-    prefer_template_covered_until: u32,
+    prefer_template_covered_additions: FxHashSet<(u32, u32)>,
     pub(super) camelcase_bindings: bool,
     camelcase_declarations: FxHashSet<CompactString>,
 }
@@ -46,7 +46,7 @@ impl CoreVisitor<'_, '_> {
             origin,
             kind,
             parse_offset: 0,
-            prefer_template_covered_until: 0,
+            prefer_template_covered_additions: FxHashSet::default(),
             camelcase_bindings,
             camelcase_declarations: FxHashSet::default(),
         }
@@ -60,6 +60,13 @@ impl CoreVisitor<'_, '_> {
         if let Some(range) = self.origin.range(span) {
             self.ctx
                 .warn_at_with_help(self.kind.message(), range, compatibility_help());
+        }
+    }
+
+    pub(super) fn set_parse_offset(&mut self, parse_offset: u32) {
+        if self.parse_offset != parse_offset {
+            self.parse_offset = parse_offset;
+            self.prefer_template_covered_additions.clear();
         }
     }
 
@@ -171,11 +178,20 @@ impl<'a> Visit<'a> for CoreVisitor<'_, '_> {
             }
             CoreKind::PreferTemplate
                 if binary.operator == BinaryOperator::Addition
-                    && binary.span.end > self.prefer_template_covered_until
+                    && !self
+                        .prefer_template_covered_additions
+                        .contains(&(binary.span.start, binary.span.end))
                     && addition_has_string_and_non_string(binary) =>
             {
                 self.report(binary.span);
-                self.prefer_template_covered_until = binary.span.end;
+                collect_nested_addition_spans(
+                    &binary.left,
+                    &mut self.prefer_template_covered_additions,
+                );
+                collect_nested_addition_spans(
+                    &binary.right,
+                    &mut self.prefer_template_covered_additions,
+                );
             }
             _ => {}
         }
@@ -354,7 +370,9 @@ impl<'a> Visit<'a> for CoreVisitor<'_, '_> {
                 }
                 CoreKind::ObjectShorthand
                     if !property.method
-                        && matches!(&property.value, Expression::FunctionExpression(_)) =>
+                        && property.kind == PropertyKind::Init
+                        && matches!(&property.value, Expression::FunctionExpression(function)
+                            if function.id.is_none()) =>
                 {
                     self.report(property.span);
                 }
@@ -392,4 +410,16 @@ impl<'a> Visit<'a> for CoreVisitor<'_, '_> {
         }
         walk::walk_binding_property(self, property);
     }
+}
+
+fn collect_nested_addition_spans(expression: &Expression<'_>, spans: &mut FxHashSet<(u32, u32)>) {
+    let Expression::BinaryExpression(binary) = expression.get_inner_expression() else {
+        return;
+    };
+    if binary.operator != BinaryOperator::Addition {
+        return;
+    }
+    spans.insert((binary.span.start, binary.span.end));
+    collect_nested_addition_spans(&binary.left, spans);
+    collect_nested_addition_spans(&binary.right, spans);
 }
