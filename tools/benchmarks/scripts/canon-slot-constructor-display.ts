@@ -65,6 +65,25 @@ function compactContractDisplaySuccessor(value: unknown) {
   });
 }
 
+export function compactContractCliDisplaySuccessor(value: unknown) {
+  const packet = JSON.stringify(value);
+  assert.equal(
+    packet.split("__WitnessChild_CheckProps_0").length - 1,
+    3,
+    "the whole CLI packet must retain all three certified alias displays",
+  );
+  assert.equal(
+    packet.split("... 676 more ...").length - 1,
+    3,
+    "the whole CLI packet must retain all three certified truncation displays",
+  );
+  return JSON.parse(
+    packet
+      .replaceAll("__WitnessChild_CheckProps_0", "__VCheckProps0")
+      .replaceAll("... 676 more ...", "... 674 more ..."),
+  );
+}
+
 export function assertAuthoredNativeDiagnostics(row: SlotCase, before: unknown, after: unknown) {
   if (row.id === "overload-last-zero") {
     assert.equal(hash(row.source), propsCorrection.sourceSha256);
@@ -132,5 +151,9 @@ export function assertCliDiagnosticContract(row: SlotCase, before: unknown, afte
   const observed = observedCase(row).cli;
   assert.ok(isRecord(observed));
   assert.deepEqual(before, observed.base, "the complete published CLI packet stays exact");
-  assert.deepEqual(after, observed.head, "the complete renamed CLI packet stays exact");
+  assert.deepEqual(
+    after,
+    compactContractCliDisplaySuccessor(observed.head),
+    "the complete renamed CLI packet must match the compact contract successor",
+  );
 }
