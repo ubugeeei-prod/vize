@@ -24,8 +24,10 @@ fn successor_body(current: &str, entry: &Value) -> String {
     assert_eq!(support::hash(current.as_bytes()), entry["before"][2]);
     let before = entry["edit"]["before"].as_str().unwrap();
     let after = entry["edit"]["after"].as_str().unwrap();
-    assert!(
-        before.starts_with("  // User setup code\n") && after.starts_with("  // User setup code\n")
+    const MARKER: &str = "  // User setup code\n";
+    assert_eq!(
+        (before.get(..MARKER.len()), after.get(..MARKER.len())),
+        (Some(MARKER), Some(MARKER))
     );
     let dedented = before
         .lines()

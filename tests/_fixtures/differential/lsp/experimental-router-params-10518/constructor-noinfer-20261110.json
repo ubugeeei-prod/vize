@@ -20,8 +20,8 @@
       },
       "current": {
         "file": "lf.valid.constructor-noinfer.virtual.ts.txt",
-        "sha256": "221bd2b4ba2c9dfeb42e12ced8516e2c2e807eb67a1943bdb7b7fefc5ca0c8ba",
-        "bytes": 15448
+        "sha256": "152d3b1681b4cab25d96c1f30be33267ba35a9ceb29dae2a6d6d34317779819b",
+        "bytes": 15418
       }
     },
     {
@@ -34,8 +34,8 @@
       },
       "current": {
         "file": "lf.invalid.constructor-noinfer.virtual.ts.txt",
-        "sha256": "86179024e3090ec38379c533f9bec1bb1a8986348de1b4c4a0f349664c0f067c",
-        "bytes": 15452
+        "sha256": "eb19b15c1d85119df05303c2cf5ab754cd9c0831dcf641787cb33a47634e6a45",
+        "bytes": 15422
       }
     },
     {
@@ -48,8 +48,8 @@
       },
       "current": {
         "file": "crlf.valid.constructor-noinfer.virtual.ts.txt",
-        "sha256": "b6688a07cfa2d23b0aef61368e030b405e2b47bf31296bde32a1d97d4997f743",
-        "bytes": 15448
+        "sha256": "edf31ffe601cae48d9d147e0bb45d55a19ce0364e9cc48de9b933440d68261ac",
+        "bytes": 15418
       }
     },
     {
@@ -62,8 +62,8 @@
       },
       "current": {
         "file": "crlf.invalid.constructor-noinfer.virtual.ts.txt",
-        "sha256": "bc65755461f4d7923fdd68f31c8d1a3d08ab3088b51ba47d04e30d6bec439aa0",
-        "bytes": 15452
+        "sha256": "04bd3c602d5bc30ae56db68ccc3cb1c1ab9376635532bcafce334ec7cb535d84",
+        "bytes": 15422
       }
     },
     {
@@ -76,8 +76,8 @@
       },
       "current": {
         "file": "explicit.valid.constructor-noinfer.virtual.ts.txt",
-        "sha256": "d6497ed9a8ffb2673df2e1d625af9fdf9ad3c2b988a047b5aac3e81cc9468418",
-        "bytes": 15376
+        "sha256": "b01836fe0f710e0e0981c87615b2e3b36cf06aa70ad0b8ad0e8926d2dd75e7dd",
+        "bytes": 15346
       }
     },
     {
@@ -90,9 +90,13 @@
       },
       "current": {
         "file": "explicit.invalid.constructor-noinfer.virtual.ts.txt",
-        "sha256": "d6497ed9a8ffb2673df2e1d625af9fdf9ad3c2b988a047b5aac3e81cc9468418",
-        "bytes": 15376
+        "sha256": "b01836fe0f710e0e0981c87615b2e3b36cf06aa70ad0b8ad0e8926d2dd75e7dd",
+        "bytes": 15346
       }
     }
-  ]
+  ],
+  "setupVerbatim": {
+    "pullRequest": 12550,
+    "certifier": "tools/support/compat/content-mapper/verbatim-setup-relocation.ts"
+  }
 }
