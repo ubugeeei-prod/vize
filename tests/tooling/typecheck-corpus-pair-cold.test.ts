@@ -41,7 +41,7 @@ void test("the pair checks four pinned corpora cold, and plants only where a set
       ["misskey", 583],
       ["n8n", 1113],
       ["nuxt-ui", 187],
-      ["reka-ui", 454],
+      ["reka-ui", 455],
     ],
   );
   for (const corpus of CORPORA) {

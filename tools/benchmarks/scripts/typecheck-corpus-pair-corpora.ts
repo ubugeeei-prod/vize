@@ -101,13 +101,14 @@ export const CORPORA = [
   },
   {
     // packages/core `type-check`: tsconfig.check.json over tsconfig.app.json
-    // over @vue/tsconfig 0.7's tsconfig.dom.json.
+    // over @vue/tsconfig 0.7's tsconfig.dom.json. One excluded story SFC is
+    // imported by an included one, so the host maps 455.
     id: "reka-ui",
     label: "reka-ui core",
     submodule: "tests/_fixtures/_git/reka-ui",
     source: "tests/_fixtures/_git/reka-ui/packages/core",
     copy: ["src", "env.d.ts"],
-    sfcs: 454,
+    sfcs: 455,
     tsconfig: {
       compilerOptions: {
         noEmit: true,
