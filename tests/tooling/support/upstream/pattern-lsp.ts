@@ -6,7 +6,7 @@ import ts from "typescript";
 import { pathToFileURL } from "node:url";
 import { isDiagnosticsForUri, offsetToPosition } from "../lsp/assertions.ts";
 import type { LspDiagnostic, LspRange } from "../lsp/protocol.ts";
-import { LspSession } from "../lsp/session.ts";
+import { completionDocumentationResolveCapabilities, LspSession } from "../lsp/session.ts";
 import { patternRoot, workspace } from "./vue-language-tools.ts";
 
 export function referenceLspSources(): Map<string, string> {
@@ -72,7 +72,11 @@ export class PatternSession {
       lsp: { editor: true, typecheck: true, lint: false },
     });
     fs.writeFileSync(this.file, "<template />");
-    await this.session.initialize(this.directory, { editor: true, typecheck: true, lint: false });
+    await this.session.initialize(
+      this.directory,
+      { editor: true, typecheck: true, lint: false },
+      completionDocumentationResolveCapabilities,
+    );
   }
 
   async update(source: string): Promise<LspDiagnostic[]> {

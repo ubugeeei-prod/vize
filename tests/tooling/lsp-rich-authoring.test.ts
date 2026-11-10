@@ -5,7 +5,7 @@ import path from "node:path";
 import { test } from "node:test";
 import { pathToFileURL } from "node:url";
 import { workspace } from "./support/upstream/vue-language-tools.ts";
-import { LspSession } from "./support/lsp/session.ts";
+import { completionDocumentationResolveCapabilities, LspSession } from "./support/lsp/session.ts";
 import {
   firstLocation,
   hoverToText,
@@ -99,7 +99,11 @@ for (const [surface, source] of Object.entries(surfaces)) {
       });
     }
     try {
-      await session.initialize(directory, { editor: true, typecheck: true, lint: false });
+      await session.initialize(
+        directory,
+        { editor: true, typecheck: true, lint: false },
+        completionDocumentationResolveCapabilities,
+      );
       for (const expression of ["api.for", "api.", "getApi().", "api?."]) {
         await update(expression);
         const response = (await request(
