@@ -124,6 +124,7 @@ fn emit_usage_event_references(
 ) {
     let component_events = crate::virtual_ts::helpers::shared_types::COMPONENT_EVENTS
         .select(ctx.hoist_shared_preamble);
+    let record = crate::virtual_ts::generated_names::lib("Record");
     if ctx.check_unknown_events {
         emit_event_name_checks(ts, mappings, ctx, idx, usage, component_ref, indent);
     }
@@ -195,7 +196,7 @@ fn emit_usage_event_references(
             if !emitted_model_completion_ref {
                 vize_l0::emit_ts!(
                     ts,
-                    "{event_indent}const {model_completion_ref}: typeof {resolved_events} & Record<string, unknown> = {resolved_events};\n"
+                    "{event_indent}const {model_completion_ref}: typeof {resolved_events} & {record}<string, unknown> = {resolved_events};\n"
                 );
                 emitted_model_completion_ref = true;
             }
@@ -219,12 +220,12 @@ fn emit_usage_event_references(
             if ctx.preserve_event_navigation {
                 vize_l0::emit_ts!(
                     ts,
-                    "{event_indent}const {events_ref}: typeof {resolved_events} & Record<string, unknown> = {resolved_events};\n"
+                    "{event_indent}const {events_ref}: typeof {resolved_events} & {record}<string, unknown> = {resolved_events};\n"
                 );
             } else {
                 vize_l0::emit_ts!(
                     ts,
-                    "{event_indent}const {events_ref} = undefined as unknown as {component_events}<typeof {component_ref}> & Record<string, unknown>;\n"
+                    "{event_indent}const {events_ref} = undefined as unknown as {component_events}<typeof {component_ref}> & {record}<string, unknown>;\n"
                 );
             }
             *emitted_ref = true;
@@ -280,11 +281,12 @@ fn emit_event_name_checks(
     }
     let component_events = crate::virtual_ts::helpers::shared_types::COMPONENT_EVENTS
         .select(ctx.hoist_shared_preamble);
+    let capitalize = crate::virtual_ts::generated_names::lib("Capitalize");
     // Handler values are checked separately. Use the canonical event map so
     // raw emits, listener props and kebab aliases all share the same names.
     vize_l0::emit_ts!(
         ts,
-        "{indent}const __vize_event_keys_{idx}: {{ [K in keyof {component_events}<typeof {component_ref}> & string as `on${{Capitalize<$ComponentAttrCamel<K>>}}`]?: unknown }} = {{\n"
+        "{indent}const __vize_event_keys_{idx}: {{ [K in keyof {component_events}<typeof {component_ref}> & string as `on${{{capitalize}<$ComponentAttrCamel<K>>}}`]?: unknown }} = {{\n"
     );
     let mut emitted_names = FxHashSet::default();
     for event in &usage.events {

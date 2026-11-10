@@ -137,10 +137,14 @@ pub(super) fn append_prop_checker_alias(
     // `never` and skip the scan; either branch is the same instantiation the
     // default arguments produce.
     let own_props = if relax_required {
-        cstr!("Partial<__{component_type_name}_Props_{idx}>")
+        cstr!(
+            "{}<__{component_type_name}_Props_{idx}>",
+            crate::virtual_ts::generated_names::lib("Partial")
+        )
     } else {
         cstr!("__{component_type_name}_Props_{idx}")
     };
+    let record = crate::virtual_ts::generated_names::lib("Record");
     // Keep the standalone/content-mapper path on the original static format
     // strings. Passing the same local helper names through format arguments
     // leaves the output byte-identical but makes `fmt::write` reserve a few
@@ -164,10 +168,17 @@ pub(super) fn append_prop_checker_alias(
             );
         }
         if force_value_props || usage_needs_per_prop_aliases(usage) {
-            vize_l0::emit_ts!(
-                ts,
-                "  type __{component_type_name}_ValueProps_{idx} = $IsLibraryGenericExport<__{component_type_name}_Component_{idx}> extends true ? Record<string, any> : __{component_type_name}_Props_{idx} & $EmitListeners<__{component_type_name}_Component_{idx}> & $PublicComponentAttrs;\n",
-            );
+            if record == "Record" {
+                vize_l0::emit_ts!(
+                    ts,
+                    "  type __{component_type_name}_ValueProps_{idx} = $IsLibraryGenericExport<__{component_type_name}_Component_{idx}> extends true ? Record<string, any> : __{component_type_name}_Props_{idx} & $EmitListeners<__{component_type_name}_Component_{idx}> & $PublicComponentAttrs;\n",
+                );
+            } else {
+                vize_l0::emit_ts!(
+                    ts,
+                    "  type __{component_type_name}_ValueProps_{idx} = $IsLibraryGenericExport<__{component_type_name}_Component_{idx}> extends true ? {record}<string, any> : __{component_type_name}_Props_{idx} & $EmitListeners<__{component_type_name}_Component_{idx}> & $PublicComponentAttrs;\n",
+                );
+            }
         }
         vize_l0::emit_ts!(
             ts,
@@ -197,10 +208,17 @@ pub(super) fn append_prop_checker_alias(
         );
     }
     if force_value_props || usage_needs_per_prop_aliases(usage) {
-        vize_l0::emit_ts!(
-            ts,
-            "  type __{component_type_name}_ValueProps_{idx} = {is_library_generic}<__{component_type_name}_Component_{idx}> extends true ? Record<string, any> : __{component_type_name}_Props_{idx} & {emit_listeners}<__{component_type_name}_Component_{idx}> & $PublicComponentAttrs;\n",
-        );
+        if record == "Record" {
+            vize_l0::emit_ts!(
+                ts,
+                "  type __{component_type_name}_ValueProps_{idx} = {is_library_generic}<__{component_type_name}_Component_{idx}> extends true ? Record<string, any> : __{component_type_name}_Props_{idx} & {emit_listeners}<__{component_type_name}_Component_{idx}> & $PublicComponentAttrs;\n",
+            );
+        } else {
+            vize_l0::emit_ts!(
+                ts,
+                "  type __{component_type_name}_ValueProps_{idx} = {is_library_generic}<__{component_type_name}_Component_{idx}> extends true ? {record}<string, any> : __{component_type_name}_Props_{idx} & {emit_listeners}<__{component_type_name}_Component_{idx}> & $PublicComponentAttrs;\n",
+            );
+        }
     }
     vize_l0::emit_ts!(
         ts,

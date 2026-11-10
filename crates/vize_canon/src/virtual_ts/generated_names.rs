@@ -180,23 +180,63 @@ pub(crate) fn reexport(ts: &mut crate::virtual_ts::TextBuf, public: &'static str
 /// Every lib type [`lib`] spells or [`push_lib_text`] rewrites, checked against
 /// the SFC's bindings once per projection.
 const LIB_TYPES: &[&str] = &[
+    "AnimationEvent",
+    "ArrayConstructor",
     "Awaited",
+    "BooleanConstructor",
+    "Capitalize",
+    "ClipboardEvent",
+    "CompositionEvent",
+    "Date",
+    "DateConstructor",
+    "DragEvent",
     "Element",
+    "ErrorEvent",
+    "Event",
     "Exclude",
     "Extract",
+    "FocusEvent",
+    "FormDataEvent",
+    "Function",
+    "FunctionConstructor",
+    "GlobalEventHandlersEventMap",
+    "HashChangeEvent",
     "HTMLElementTagNameMap",
+    "InputEvent",
     "InstanceType",
+    "Iterable",
+    "KeyboardEvent",
+    "Lowercase",
+    "MathMLElementTagNameMap",
+    "MessageEvent",
+    "MouseEvent",
     "NoInfer",
     "NonNullable",
+    "NumberConstructor",
+    "Object",
+    "ObjectConstructor",
     "Omit",
     "Parameters",
     "Partial",
     "Pick",
+    "PointerEvent",
+    "PopStateEvent",
     "PropertyKey",
     "Readonly",
     "Record",
+    "Required",
     "ReturnType",
+    "SecurityPolicyViolationEvent",
+    "StorageEvent",
+    "StringConstructor",
+    "SubmitEvent",
     "SVGElementTagNameMap",
+    "ThisType",
+    "ToggleEvent",
+    "TouchEvent",
+    "TransitionEvent",
+    "Uncapitalize",
+    "WheelEvent",
 ];
 
 /// A lib type, global in every program.
@@ -216,7 +256,16 @@ pub(crate) fn lib(name: &'static str) -> String {
 
 /// Append generated helper `text` with each [`LIB_TYPES`] reference [`lib`]
 /// would qualify spelled `globalThis.{name}`. Never pass authored text.
-pub(crate) fn push_lib_text(ts: &mut crate::virtual_ts::TextBuf, text: &str) {
+pub(crate) fn rewrites_lib_text() -> bool {
+    CURRENT.with_borrow(|projection| {
+        LIB_TYPES.iter().any(|name| {
+            projection.shadowed.contains(name)
+                || projection.bound.iter().any(|bound| bound == *name)
+        })
+    })
+}
+
+pub(crate) fn push_lib_text(ts: &mut impl crate::virtual_ts::TsText, text: &str) {
     let qualified: Vec<&'static str> = CURRENT.with_borrow(|projection| {
         LIB_TYPES
             .iter()
