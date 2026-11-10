@@ -8,6 +8,7 @@
 import assert from "node:assert/strict";
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join, relative } from "node:path";
+import { assertExactDiagnosticFingerprints } from "./typecheck-corpus-pair-parse.ts";
 
 export type ProbeFile = { bytes: number; sourceBytes: number; templateBytes: number };
 export type FileCost = { bytes: number; checkMs: number | null };
@@ -186,6 +187,24 @@ export function assertProjectionBudget(reports: ProjectionReport[]): void {
     report.violations.map((file) => `${report.corpus}/${file}`),
   );
   assert.equal(violations.length, 0, `Vize head exceeds Vue for ${violations.join(", ")}`);
+}
+
+export function assertProbeDiagnosticIdentity(
+  probes: ReadonlyMap<string, { fingerprint: string }>,
+  corpora: readonly { id: string }[],
+  hosts: readonly { id: string }[],
+): void {
+  assertExactDiagnosticFingerprints(
+    corpora.flatMap((corpus) =>
+      hosts.map((host) => {
+        const label = `${corpus.id}-${host.id}`;
+        const base = probes.get(`${label}-vize-base`);
+        const head = probes.get(`${label}-vize-head`);
+        if (!base || !head) throw new Error(`${label}: missing Vize probe`);
+        return { label, base: base.fingerprint, head: head.fingerprint };
+      }),
+    ),
+  );
 }
 
 const kb = (bytes: number) => (bytes / 1024).toFixed(1);
