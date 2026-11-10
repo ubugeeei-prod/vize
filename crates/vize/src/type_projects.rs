@@ -16,6 +16,9 @@ use vize_l0::{FxHashMap, String};
 mod captured;
 use captured::CapturedProject;
 
+mod host_path;
+pub use host_path::{plain_windows_path, plain_windows_path_buf};
+
 mod source_facts;
 pub(crate) use source_facts::{Facts, SourceFacts};
 
@@ -194,7 +197,7 @@ impl ImportedTypeProjects {
 
 /// Project roots affected by an observed configuration or absent candidate.
 pub fn type_project_owners(path: &Path) -> Vec<PathBuf> {
-    captured::owners(&vize_l0::typescript_project::normalize_path_lexically(path))
+    captured::owners(&host_path(path))
 }
 
 /// Configuration watch inputs for an exact captured revision, copied once by
@@ -204,9 +207,12 @@ pub fn type_project_inputs(
     revision: u64,
     known_revision: Option<u64>,
 ) -> Option<Vec<PathBuf>> {
-    captured::inputs(
-        &vize_l0::typescript_project::normalize_path_lexically(root),
-        revision,
-        known_revision,
-    )
+    captured::inputs(&host_path(root), revision, known_revision)
+}
+
+/// Captures index plain spellings; accept a verbatim one from older hosts.
+fn host_path(path: &Path) -> PathBuf {
+    vize_l0::typescript_project::normalize_path_lexically(&plain_windows_path_buf(
+        path.to_path_buf(),
+    ))
 }

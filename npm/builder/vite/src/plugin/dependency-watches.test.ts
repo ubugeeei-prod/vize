@@ -84,8 +84,32 @@ void test("build compilation retains its host watch registration", () => {
     watched.push(file);
   };
   const watch = createDependencyWatch(null, addWatchFile);
-  assert.equal(watch, addWatchFile);
   watch!("/project/src/tsconfig.json");
   assert.deepEqual(watched, ["/project/src/tsconfig.json"]);
   assert.equal(createDependencyWatch(null, undefined), undefined);
+});
+
+void test("Windows verbatim dependencies are watched once in their plain spelling", () => {
+  for (const server of [true, false]) {
+    const watched: string[] = [];
+    const record = (file: string) => {
+      watched.push(file);
+    };
+    const watch = createDependencyWatch(server ? { watcher: { add: record } } : null, record);
+    for (const dependency of [
+      "C:\\app\\tsconfig.json",
+      "\\\\?\\C:\\app\\src\\tsconfig.json",
+      "\\\\?\\C:\\app\\src\\types.ts",
+      "\\\\?\\C:\\app\\tsconfig.json",
+      "\\\\?\\UNC\\host\\share\\types.ts",
+      "\\\\host\\share\\types.ts",
+    ])
+      watch!(dependency);
+    assert.deepEqual(watched, [
+      "C:\\app\\tsconfig.json",
+      "C:\\app\\src\\tsconfig.json",
+      "C:\\app\\src\\types.ts",
+      "\\\\host\\share\\types.ts",
+    ]);
+  }
 });

@@ -10,12 +10,21 @@ pub(crate) fn type_project_to_napi(
             revision: revision.to_string(),
         })
 }
+/// Watch inputs for the host: one file can be reached both canonically
+/// (`\\?\C:\…` on Windows) and as authored, so list its plain spelling once.
 pub(crate) fn dependencies_to_napi(dependencies: &[impl AsRef<str>]) -> Option<Vec<String>> {
     (!dependencies.is_empty()).then(|| {
-        dependencies
+        let mut paths: Vec<String> = dependencies
             .iter()
-            .map(|path| path.as_ref().to_owned())
-            .collect()
+            .map(|path| {
+                let path = path.as_ref();
+                vize::type_projects::plain_windows_path(path)
+                    .map_or_else(|| path.to_owned(), Into::into)
+            })
+            .collect();
+        paths.sort_unstable();
+        paths.dedup();
+        paths
     })
 }
 
