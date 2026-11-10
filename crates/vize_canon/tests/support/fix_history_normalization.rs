@@ -2,30 +2,39 @@
 
 use super::fix_history_contract::Diagnostic;
 
+/// Usage ordinals after the legacy `__<Component>_CheckProps_` and the compact
+/// `__VCheckProps` spellings of the whole-props target.
+const CHECK_PROPS_MARKERS: [&str; 2] = ["_CheckProps_", "__VCheckProps"];
+
 pub(crate) fn normalize_generated_check_ordinals(diagnostics: &[Diagnostic]) -> Vec<Diagnostic> {
     diagnostics
         .iter()
         .cloned()
         .map(|mut diagnostic| {
-            let mut message = diagnostic.message.as_str();
-            let mut normalized = std::string::String::with_capacity(message.len());
-            while let Some(at) = message.find("_CheckProps_") {
-                let after_marker = at + "_CheckProps_".len();
-                normalized.push_str(&message[..after_marker]);
-                let digit_count = message[after_marker..]
-                    .bytes()
-                    .take_while(u8::is_ascii_digit)
-                    .count();
-                if digit_count > 0 {
-                    normalized.push('#');
-                }
-                message = &message[after_marker + digit_count..];
+            for marker in CHECK_PROPS_MARKERS {
+                diagnostic.message = normalize_ordinals_after(&diagnostic.message, marker);
             }
-            normalized.push_str(message);
-            diagnostic.message = normalized;
             diagnostic
         })
         .collect()
+}
+
+fn normalize_ordinals_after(mut message: &str, marker: &str) -> std::string::String {
+    let mut normalized = std::string::String::with_capacity(message.len());
+    while let Some(at) = message.find(marker) {
+        let after_marker = at + marker.len();
+        normalized.push_str(&message[..after_marker]);
+        let digit_count = message[after_marker..]
+            .bytes()
+            .take_while(u8::is_ascii_digit)
+            .count();
+        if digit_count > 0 {
+            normalized.push('#');
+        }
+        message = &message[after_marker + digit_count..];
+    }
+    normalized.push_str(message);
+    normalized
 }
 
 pub(crate) fn assert_generated_check_ordinal_normalization_preserves_markers_without_digits() {
@@ -35,13 +44,15 @@ pub(crate) fn assert_generated_check_ordinal_normalization_preserves_markers_wit
         column: 1,
         severity: 1,
         code: Some(2322),
-        message: String::from("_CheckProps_ stays distinct from _CheckProps_12"),
+        message: String::from(
+            "_CheckProps_ stays distinct from _CheckProps_12; __VCheckProps from __VCheckProps3",
+        ),
     }];
 
     let normalized = normalize_generated_check_ordinals(&diagnostics);
 
     assert_eq!(
         normalized[0].message,
-        "_CheckProps_ stays distinct from _CheckProps_#"
+        "_CheckProps_ stays distinct from _CheckProps_#; __VCheckProps from __VCheckProps#"
     );
 }

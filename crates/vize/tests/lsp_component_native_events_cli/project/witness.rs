@@ -293,7 +293,8 @@ fn complete_event_source_counterfactual_recovers_original_position() {
         &format!("{anchor}{HISTORICAL_SLOT_NAVIGATION_PRELUDE}"),
         1,
     );
-    let construct = "\n  void MySwitch;\n  const { } = undefined as unknown as __VProps0;\n";
+    let construct =
+        "\n  void MySwitch;\n  const { } = undefined as unknown as __MySwitch_Props_0;\n";
     let (counterfactual, position) =
         source_counterfactual(&current, construct, HISTORICAL_SLOT_NAVIGATION_PRELUDE);
     assert_eq!(position, 20_850);
@@ -331,6 +332,6 @@ fn event_counterfactual_refuses_unknown_prelude() {
     let unknown = current.replace("[keyof NonNullable<__S>]", "[keyof NonNullable<Unknown>]");
     historical_counterfactual(
         &unknown,
-        "\n  void MySwitch;\n  const { } = undefined as unknown as __VProps0;\n",
+        "\n  void MySwitch;\n  const { } = undefined as unknown as __MySwitch_Props_0;\n",
     );
 }
