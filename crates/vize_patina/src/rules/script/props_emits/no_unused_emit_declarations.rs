@@ -58,8 +58,8 @@
 
 use oxc_ast::ast::{
     Argument, ArrayExpressionElement, BindingPattern, CallExpression, Declaration, Expression,
-    IdentifierReference, ObjectPropertyKind, Program, Statement, TSInterfaceDeclaration, TSLiteral,
-    TSSignature, TSType, TSTypeAliasDeclaration, TSTypeName,
+    IdentifierReference, ObjectExpression, ObjectPropertyKind, Program, Statement,
+    TSInterfaceDeclaration, TSLiteral, TSSignature, TSType, TSTypeAliasDeclaration, TSTypeName,
 };
 use oxc_ast_visit::{
     Visit,
