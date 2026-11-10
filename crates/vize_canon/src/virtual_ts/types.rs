@@ -250,7 +250,7 @@ pub(crate) struct VirtualTsGenerationOptions<'a> {
     pub(crate) self_component_name: Option<&'a str>,
     /// Preserve symbol links from component listeners to authored emit keys.
     pub(crate) preserve_event_navigation: bool,
-    /// Skip editor-only component tag, prop and event references for a host
+    /// Skip editor-only prop and event references for a host
     /// that reads diagnostics but never asks for hover, definition or rename.
     pub(crate) omit_navigation_references: bool,
     /// Legacy Vue 2.7 / Nuxt 2 (implies `options_api` plus Nuxt 2 globals).

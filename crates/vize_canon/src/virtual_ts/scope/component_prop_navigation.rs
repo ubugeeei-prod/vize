@@ -35,12 +35,6 @@ pub(super) fn emit_usage_references(
     idx: usize,
     usage: &ComponentUsage,
 ) {
-    // A slot reference also rejects a slot name the component lacks, so a
-    // diagnostics-only projection keeps it.
-    if ctx.omit_navigation_references {
-        emit_slot_references(ts, mappings, ctx, idx, usage);
-        return;
-    }
     let named_dynamic_ref = named_dynamic_navigation_reference(ctx, usage);
     let inference_only = named_dynamic_ref.is_some();
     let component_ref = named_dynamic_ref.unwrap_or_else(|| {
@@ -73,15 +67,19 @@ pub(super) fn emit_usage_references(
         });
     }
 
-    emit_prop_references(
-        ts,
-        mappings,
-        semantic_links,
-        ctx,
-        idx,
-        usage,
-        &tag_gen_range,
-    );
+    if !ctx.omit_navigation_references {
+        emit_prop_references(
+            ts,
+            mappings,
+            semantic_links,
+            ctx,
+            idx,
+            usage,
+            &tag_gen_range,
+        );
+    }
+    // A slot reference also rejects a slot name the component lacks, so a
+    // diagnostics-only projection keeps it.
     emit_slot_references(ts, mappings, ctx, idx, usage);
 }
 

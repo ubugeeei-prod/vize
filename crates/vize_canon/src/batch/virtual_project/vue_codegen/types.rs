@@ -50,7 +50,7 @@ pub(in crate::batch::virtual_project) struct VueCodegenOptions<'a> {
     pub(in crate::batch::virtual_project) external_component_attrs_module:
         Option<ComponentHelperModule>,
     pub(in crate::batch::virtual_project) preserve_event_navigation: bool,
-    /// Remove editor-only component navigation from diagnostics-only output.
+    /// Remove editor-only prop and event navigation from diagnostics-only output.
     pub(in crate::batch::virtual_project) omit_navigation_references: bool,
     pub(in crate::batch::virtual_project) legacy_vue2: bool,
     pub(in crate::batch::virtual_project) dialect: VueVersion,

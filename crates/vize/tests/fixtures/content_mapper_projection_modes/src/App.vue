@@ -25,4 +25,5 @@ function onChange(value: string) {
   />
   <TypeOnly :count="1" />
   <Child v-if="label" :count="items.length" :label="label.missing" />
+  <Child :count="1" :tabindex="{}" />
 </template>
