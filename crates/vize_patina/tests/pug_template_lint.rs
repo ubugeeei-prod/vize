@@ -119,7 +119,7 @@ fn dho_real_project_matches_the_pinned_eslint_plugin_vue_twin() {
         }
     }
     expected.sort();
-    let linter = Linter::new().with_enabled_rules(Some(vec!["vue/require-v-for-key".to_owned()]));
+    let linter = Linter::new().with_enabled_rules(Some(vec!["vue/require-v-for-key".into()]));
     for (filename, source) in [
         ("DhoPug.vue", pug.to_owned()),
         (
