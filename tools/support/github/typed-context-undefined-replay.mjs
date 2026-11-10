@@ -13,6 +13,7 @@ import {
 } from "node:fs";
 import { resolve, join, basename } from "node:path";
 import { authoredDirectives } from "../compat/content-mapper/producer-unmapped-ignores.ts";
+import { dedentEdits } from "../compat/content-mapper/setup-dedent.ts";
 import { assertTypedContextWrapperMappings } from "./typed-context-wrapper-mappings.ts";
 const [mode, outArg, phase] = process.argv.slice(2),
   out = resolve(outArg);
@@ -217,6 +218,7 @@ const certifyNativeTransition = (beforeText, afterText) => {
     replacement: Buffer.from("readonly __vizeNativeFallthroughRoot: true; "),
     label: "native fallthrough ownership marker",
   });
+  primary.push(...dedentEdits(before, after));
   primary.sort((left, right) => left.start - right.start || left.end - right.end);
   for (let index = 1; index < primary.length; index++)
     assert(primary[index - 1].end <= primary[index].start, "certified native edits overlap");
