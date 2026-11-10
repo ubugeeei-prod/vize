@@ -96,8 +96,8 @@ export function validateJsxDispatch(source: string): void {
     "as_markup_rule",
     "jsx_needs_lowering",
     "legacy_keep_mask",
-    "lint_jsx_markup_l2",
-    "lint_jsx_markup_root",
+    "lint_markup_l2",
+    "lint_markup_root",
     "lint_jsx_fallback_root",
   ]) {
     if (!markup.includes(anchor)) {
