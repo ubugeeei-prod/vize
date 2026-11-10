@@ -62,9 +62,10 @@ function npmCommand(label: string, args: readonly string[], cwd: string): Promis
 }
 
 function linuxLibc(): "gnu" | "musl" {
-  const report = process.report?.getReport();
-  const header = report?.header as { glibcVersionRuntime?: unknown } | undefined;
-  return typeof header?.glibcVersionRuntime === "string" ? "gnu" : "musl";
+  const report = process.report?.getReport() as
+    | { header?: { glibcVersionRuntime?: unknown } }
+    | undefined;
+  return typeof report?.header?.glibcVersionRuntime === "string" ? "gnu" : "musl";
 }
 
 /** Public optional package that the current process must select. */
