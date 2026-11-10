@@ -36,8 +36,10 @@ use super::emit::{
 };
 use super::slot_outlet_props::generate_scope_slot_outlet_checks;
 
+mod mapping;
 mod payload;
 
+use mapping::map_slot_props_pattern;
 pub(crate) use payload::emit_slot_payload_helpers;
 use payload::find_slot_host;
 
@@ -434,49 +436,6 @@ fn slot_props_pattern(data: &VSlotScopeData, scope_id: u32) -> String {
         .as_ref()
         .map(|pattern| pattern.as_str().into())
         .unwrap_or_else(|| cstr!("__vize_slot_props_{scope_id}"))
-}
-
-fn map_slot_props_pattern(
-    mappings: &mut Vec<VizeMapping>,
-    scope: &Scope,
-    pattern_offset: Option<u32>,
-    template_offset: u32,
-    props_pattern: &str,
-    function_gen_start: usize,
-    ts: &str,
-) {
-    let function_text = ts.get(function_gen_start..).unwrap_or_default();
-    // TypeScript anchors missing destructured properties on the property key,
-    // not the renamed local binding. Preserve the complete authored pattern.
-    if let Some(source_start) = pattern_offset
-        && let Some(relative) = function_text.find(props_pattern)
-    {
-        let start = function_gen_start + relative;
-        let source_start = (template_offset + source_start) as usize;
-        mappings.push(VizeMapping {
-            gen_range: start..start + props_pattern.len(),
-            src_range: source_start..source_start + props_pattern.len(),
-            sub_spans: Vec::new(),
-        });
-    }
-    for (prop_name, binding) in scope.bindings() {
-        if super::emit::pattern_identifier_offset(props_pattern, prop_name).is_none() {
-            continue;
-        }
-        let Some(generated_relative) =
-            super::emit::pattern_identifier_offset(function_text, prop_name)
-        else {
-            continue;
-        };
-        let src_start = binding.declaration_offset;
-        mappings.push(VizeMapping {
-            gen_range: function_gen_start + generated_relative
-                ..function_gen_start + generated_relative + prop_name.len(),
-            src_range: (template_offset + src_start) as usize
-                ..(template_offset + src_start) as usize + prop_name.len(),
-            sub_spans: Vec::new(),
-        });
-    }
 }
 
 #[cfg(test)]

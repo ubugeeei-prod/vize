@@ -418,3 +418,48 @@ fn a_slot_prop_pattern_maps_to_one_generated_binding() {
         .count();
     assert_eq!(covering, 1);
 }
+
+#[test]
+fn a_renamed_slot_prop_key_keeps_one_diagnostic_mapping() {
+    let fixture =
+        std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/component_api_hover");
+    let file = fixture.join("src/Parent.vue");
+    let source = r#"<script setup lang="ts">
+import Child from './Child.vue'
+</script>
+<template>
+  <Child title="x"><template #item="{ absent: renamed = 2 }">{{ renamed }}</template></Child>
+</template>
+"#;
+    let responses = exchange(&frames(&[
+        initialize_request(),
+        json!({
+            "jsonrpc": "2.0",
+            "id": 2,
+            "method": "openProject",
+            "params": {
+                "configFileName": fixture.join("tsconfig.json"),
+                "projectHandle": "p1",
+                "options": null,
+                "compilerOptions": {}
+            }
+        }),
+        json!({
+            "jsonrpc": "2.0",
+            "id": 3,
+            "method": "transform",
+            "params": { "fileName": file, "content": source, "projectHandle": "p1" }
+        }),
+    ]));
+    let key = source.find("absent: renamed").unwrap();
+    let covering = responses[2]["result"]["mappings"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .filter(|span| {
+            let start = span[2].as_u64().unwrap() as usize;
+            start <= key && key < start + span[3].as_u64().unwrap() as usize
+        })
+        .count();
+    assert_eq!(covering, 1, "{}", responses[2]);
+}

@@ -16321,6 +16321,45 @@
       }
     },
     {
+      "id": "typechecker/regression/slot-renamed-key-12511",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "slot-renamed-key-12511/Child.vue.txt",
+          "sha256": "308845836149e2a7c10c26cb46c41ebd913b2005969a21c24cce5ee219d73d7a",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "slot-renamed-key-12511/Parent.vue.txt",
+          "sha256": "aac67c0e50cd1c1edff0b88d5177c96365e23e16ddbc430fb4aa4ee4d3d77cbb",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "slot-renamed-key-12511/tsconfig.json.txt",
+          "sha256": "8b2c95d95331863b8b9b707a4b717a99fdb42c714409fe4021f8ebd0b11c7454",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "content_mapper_tsgo_cli::replayed_pattern_duplicates::standard_tsgo_reports_each_replayed_pattern_diagnostic_once physically consumes the pinned Child.vue, Parent.vue and tsconfig under the authenticated beta content-mapper host and requires the exact Parent.vue(5,32) TS2339 for the missing renamed key; content_mapper::tests::a_renamed_slot_prop_key_keeps_one_diagnostic_mapping requires exactly one protocol mapping owner at the authored key. Input-only batch registration; vize check and @vue/content-mapper already report the same diagnostic, so no batch behavior or native parity claim."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/regression/strict-v-model-mapper-11643",
       "state": "active",
       "targets": [
