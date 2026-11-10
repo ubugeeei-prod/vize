@@ -22,6 +22,9 @@ export const manual1: Record<string, RuleExample> = {
       source: '<template>\n  <button type="button" @click="open">Open</button>\n</template>',
     },
     evidence: "docs/content/rules/accessibility-structure.md",
+    note: 'Unlike eslint-plugin-vuejs-accessibility, a listbox that owns a focusable option (roving tabindex) or that a combobox controls through `aria-activedescendant` needs no tab stop of its own, a bound `tabindex` whose conditional branches are all integers (`:tabindex="active ? 0 : -1"`) counts as a tab index, and `:aria-hidden="false"` does not hide the element.',
+    noteJa:
+      'eslint-plugin-vuejs-accessibility と異なり、フォーカスできる option を持つ listbox（roving tabindex）や、combobox が `aria-activedescendant` で操作する listbox は自身のタブ位置を必要としません。条件分岐のすべてが整数になる `tabindex` の束縛（`:tabindex="active ? 0 : -1"`）は tabindex として扱い、`:aria-hidden="false"` は要素を隠しません。',
   },
   "a11y/label-has-for": {
     bad: {

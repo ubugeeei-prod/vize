@@ -13,7 +13,7 @@ Require keyboard event handlers with click events.
 
 Applies to: Vue SFC templates and blocks, with script context where the rule requires it.
 
-Checks non-interactive elements without an interactive role. Native buttons and elements with an interactive ARIA role are outside this rule's finding.
+Checks native elements with a click handler, including those with an interactive ARIA role. Natively interactive elements such as buttons, inputs and links with `href` are outside this rule's finding. `:aria-hidden="false"` does not hide the element.
 
 ## Bad
 
@@ -56,4 +56,4 @@ Then run `vp run lint`.
 
 - [Accessibility rules](../accessibility.md)
 - [All rules](../all.md)
-- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/click_events_have_key_events.rs#L25)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/click_events_have_key_events.rs#L27)

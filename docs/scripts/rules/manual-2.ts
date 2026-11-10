@@ -59,6 +59,9 @@ export const manual2: Record<string, RuleExample> = {
         '<template>\n  <button type="button" @keydown.enter="select">Select</button>\n</template>',
     },
     evidence: "docs/content/rules/accessibility-integrity.md",
+    note: 'Unlike eslint-plugin-vuejs-accessibility, a bound `role` with an interactive conditional branch, such as `:role="clickable ? \'button\' : undefined"`, is not static, and `:aria-hidden="false"` does not hide the element.',
+    noteJa:
+      'eslint-plugin-vuejs-accessibility と異なり、`:role="clickable ? \'button\' : undefined"` のように条件分岐に対話的な role を含む束縛は静的要素として扱わず、`:aria-hidden="false"` は要素を隠しません。',
   },
   "a11y/placeholder-label-option": {
     bad: {

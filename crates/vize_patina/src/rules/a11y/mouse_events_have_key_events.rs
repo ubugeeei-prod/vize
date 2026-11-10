@@ -22,10 +22,12 @@ use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::markup::{MarkupBindingKind, MarkupContext, MarkupElement, MarkupRule};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use vize_relief::{ElementNode, ExpressionNode, PropNode};
+use vize_relief::ElementNode;
 
-use super::helpers::{has_event_handler, is_aria_hidden_true, is_presentation_role};
 use super::markup_helpers;
+use super::vuejs_accessibility::{
+    has_on_directive, has_on_directives, is_jsx_filename, is_vue_template,
+};
 
 static META: RuleMeta = RuleMeta {
     name: "a11y/mouse-events-have-key-events",
@@ -53,23 +55,6 @@ impl MouseEventsHaveKeyEvents {
             }
         });
         found
-    }
-
-    fn has_component_listener_prop(element: &ElementNode<'_>, event_name: &str) -> bool {
-        let mut listener = vize_l0::String::with_capacity(event_name.len() + 2);
-        listener.push_str("on");
-        let mut characters = event_name.chars();
-        let Some(first) = characters.next() else {
-            return false;
-        };
-        listener.push(first.to_ascii_uppercase());
-        listener.extend(characters);
-        element.props.iter().any(|prop| {
-            matches!(prop, PropNode::Directive(directive)
-                if directive.name == "bind"
-                    && matches!(&directive.arg, Some(ExpressionNode::Simple(argument))
-                        if argument.is_static && argument.content == listener))
-        })
     }
 
     /// Presentation/none and `aria-hidden="true"` opt the element out, the same
@@ -112,6 +97,49 @@ impl MarkupRule for MouseEventsHaveKeyEvents {
     }
 
     fn enter_element<'a>(&self, ctx: &mut MarkupContext<'_, 'a>, element: &MarkupElement<'a>) {
+        if is_vue_template(ctx) {
+            Self::check_template(ctx.lint(), element);
+        } else {
+            Self::check_jsx(ctx, element);
+        }
+    }
+}
+
+impl MouseEventsHaveKeyEvents {
+    fn report(ctx: &mut LintContext<'_>, element: &MarkupElement<'_>, message: &str) {
+        ctx.warn_at_with_help(
+            ctx.t(message),
+            element.range(),
+            ctx.t("a11y/mouse-events-have-key-events.help"),
+        );
+    }
+
+    /// The plugin checks every element, components included: an undeclared
+    /// listener falls through to the component root.
+    fn check_template(ctx: &mut LintContext<'_>, element: &MarkupElement<'_>) {
+        let over = has_on_directives(element, &["mouseover", "mouseenter"], true);
+        if (over || has_on_directive(element, "hover", true))
+            && !has_on_directives(element, &["focus", "focusin"], true)
+        {
+            let message = if over {
+                "a11y/mouse-events-have-key-events.message_enter"
+            } else {
+                "a11y/mouse-events-have-key-events.message_hover"
+            };
+            Self::report(ctx, element, message);
+        }
+        if has_on_directives(element, &["mouseout", "mouseleave"], true)
+            && !has_on_directives(element, &["blur", "focusout"], true)
+        {
+            Self::report(
+                ctx,
+                element,
+                "a11y/mouse-events-have-key-events.message_leave",
+            );
+        }
+    }
+
+    fn check_jsx(ctx: &mut MarkupContext<'_, '_>, element: &MarkupElement<'_>) {
         if Self::is_markup_opt_out(element) {
             return;
         }
@@ -174,53 +202,8 @@ impl Rule for MouseEventsHaveKeyEvents {
     }
 
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
-        if is_aria_hidden_true(element) || is_presentation_role(element) {
-            return;
-        }
-
-        let has_hover = has_event_handler(element, "hover")
-            || (element.tag_type == vize_relief::ElementType::Component
-                && Self::has_component_listener_prop(element, "hover"));
-        if element.tag_type == vize_relief::ElementType::Component {
-            if has_hover
-                && !has_event_handler(element, "focus")
-                && !has_event_handler(element, "focusin")
-                && !Self::has_component_listener_prop(element, "focus")
-                && !Self::has_component_listener_prop(element, "focusin")
-            {
-                ctx.warn_with_help(
-                    ctx.t("a11y/mouse-events-have-key-events.message_hover"),
-                    &element.loc,
-                    ctx.t("a11y/mouse-events-have-key-events.help"),
-                );
-            }
-            return;
-        }
-
-        // mouseenter/mouseover/hover require @focus or @focusin
-        if (has_event_handler(element, "mouseenter")
-            || has_event_handler(element, "mouseover")
-            || has_hover)
-            && !has_event_handler(element, "focus")
-            && !has_event_handler(element, "focusin")
-        {
-            ctx.warn_with_help(
-                ctx.t("a11y/mouse-events-have-key-events.message_enter"),
-                &element.loc,
-                ctx.t("a11y/mouse-events-have-key-events.help"),
-            );
-        }
-
-        // mouseleave/mouseout require @blur or @focusout
-        if (has_event_handler(element, "mouseleave") || has_event_handler(element, "mouseout"))
-            && !has_event_handler(element, "blur")
-            && !has_event_handler(element, "focusout")
-        {
-            ctx.warn_with_help(
-                ctx.t("a11y/mouse-events-have-key-events.message_leave"),
-                &element.loc,
-                ctx.t("a11y/mouse-events-have-key-events.help"),
-            );
+        if !is_jsx_filename(ctx.filename) {
+            Self::check_template(ctx, &MarkupElement::new(element));
         }
     }
 }
@@ -299,7 +282,7 @@ mod tests {
     }
 
     #[test]
-    fn test_valid_presentation_none_and_aria_hidden() {
+    fn presentation_and_aria_hidden_do_not_opt_out() {
         let linter = create_linter();
         for source in [
             r#"<div role="presentation" @mouseover="highlight" @mouseout="unhighlight" />"#,
@@ -307,12 +290,12 @@ mod tests {
             r#"<div aria-hidden="true" @mouseover="highlight" @mouseout="unhighlight" />"#,
         ] {
             let template = linter.lint_template(source, "test.vue");
-            assert_eq!(template.warning_count, 0, "{source}");
+            assert_eq!(template.warning_count, 2, "{source}");
             let sfc = linter.lint_sfc(
                 &format!("<template>\n  {source}\n</template>\n"),
                 "MyOverlay.vue",
             );
-            assert_eq!(sfc.warning_count, 0, "{source}");
+            assert_eq!(sfc.warning_count, 2, "{source}");
         }
     }
 
@@ -366,12 +349,31 @@ mod tests {
     }
 
     #[test]
-    fn component_listener_props_count_as_static_event_handlers() {
+    fn listener_props_are_not_v_on_handlers() {
         let result = create_linter().lint_template(
             r#"<MyTooltip :onHover="show" />
 <MyTooltip :onHover="show" :onFocus="show" />"#,
             "test.vue",
         );
-        assert_eq!(result.warning_count, 1);
+        assert_eq!(result.warning_count, 0);
+    }
+
+    #[test]
+    fn component_mouse_listeners_and_handler_values_follow_the_plugin() {
+        let result = create_linter().lint_template(
+            r#"<div>
+<MyButton @mouseenter="show" />
+<MyButton @mouseleave="hide" />
+<MyButton @mouseover="show" @mouseout="hide" />
+<MyButton @mouseenter="show" @focus="show" />
+<div @mouseover="void 0" @focus="null">a</div>
+<div @mouseout="void 0" @blur="null">b</div>
+<div @mouseenter="null">c</div>
+<div @mouseover="keys.show" @mouseout="hide" @blur="keys.hide">d</div>
+</div>"#,
+            "test.vue",
+        );
+        // A member expression or `null` is no handler; both groups report on `@mouseover @mouseout`.
+        assert_eq!(result.warning_count, 7, "{:?}", result.diagnostics);
     }
 }

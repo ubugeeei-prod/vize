@@ -13,7 +13,7 @@ description: "クリックで操作する要素にキーボード操作も用意
 
 適用範囲：Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。
 
-対話的な役割を持たない通常要素が対象です。button や対話的な ARIA role を持つ要素はこの検出の対象外です。
+クリックハンドラーを持つ通常要素が対象で、対話的な ARIA role を持つ要素も含みます。button、input、href を持つリンクなど本来操作できる要素は対象外です。`:aria-hidden="false"` は要素を隠しません。
 
 ## 悪い例
 
@@ -56,4 +56,4 @@ export default defineConfig({}).withVue({
 
 - [アクセシビリティのルール](../accessibility.md)
 - [全ルール](../all.md)
-- [ソースコード](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/click_events_have_key_events.rs#L25)
+- [ソースコード](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/click_events_have_key_events.rs#L27)

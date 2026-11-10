@@ -13,7 +13,7 @@ Exiger des gestionnaires de clavier avec les événements de clic.
 
 Champ d’application : Templates et blocs des SFC Vue, avec le contexte du script requis par la règle.
 
-Contrôle les éléments non interactifs sans rôle interactif. Les boutons natifs et les éléments possédant un rôle ARIA interactif sont hors du champ du diagnostic de cette règle.
+Contrôle les éléments natifs dotés d’un gestionnaire de clic, y compris ceux qui ont un rôle ARIA interactif. Les éléments nativement interactifs, comme les boutons, les champs et les liens avec `href`, sont hors du champ du diagnostic de cette règle. `:aria-hidden="false"` ne masque pas l’élément.
 
 ## Mauvais
 
@@ -56,4 +56,4 @@ Lancez ensuite `vp run lint`.
 
 - [Règles d’accessibilité](../accessibility.md)
 - [Toutes les règles](../all.md)
-- [Code source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/click_events_have_key_events.rs#L25)
+- [Code source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/click_events_have_key_events.rs#L27)

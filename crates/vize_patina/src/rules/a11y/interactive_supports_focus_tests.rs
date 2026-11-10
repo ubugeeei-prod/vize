@@ -153,3 +153,179 @@ fn listbox_ownership_controls_keep_complete_packets_on_native_and_legacy_hosts()
         }
     }
 }
+
+#[test]
+fn test_valid_activedescendant_listbox() {
+    let linter = linter(false);
+    let result = linter.lint_template(
+        r#"<div>
+  <button
+type="button"
+role="combobox"
+aria-controls="lb"
+:aria-activedescendant="`lb-option-${focused}`"
+  >Select</button>
+  <div id="lb" role="listbox">
+<button role="option" tabindex="-1">A</button>
+  </div>
+</div>"#,
+        "test.vue",
+    );
+    assert_eq!(result.warning_count, 0);
+}
+
+#[test]
+fn combobox_listbox_and_options_need_no_focus() {
+    let linter = linter(false);
+    for ids in [
+        r#"aria-controls="fruits" | id="fruits""#,
+        r#":aria-controls="listId" | :id="listId""#,
+        r#":aria-controls="'fruits'" | id="fruits""#,
+        r#"aria-controls="other fruits" | :id="`fruits`""#,
+    ] {
+        let (controls, id) = ids.split_once(" | ").unwrap_or_default();
+        let source = format!(
+            r#"<input aria-activedescendant="fruit-0" {controls} aria-expanded="true" aria-label="Fruit" role="combobox" />
+<ul {id} role="listbox">
+  <li id="fruit-0" aria-selected="true" role="option">Apple</li>
+  <li role="option"><span>Banana</span></li>
+</ul>"#
+        );
+        let result = linter.lint_template(&source, "test.vue");
+        assert_eq!(result.warning_count, 0, "{ids}: {:?}", result.diagnostics);
+    }
+}
+
+#[test]
+fn combobox_with_bound_ids_in_an_sfc() {
+    let source = r#"<script setup lang="ts">
+const listId = "fruits";
+</script>
+
+<template>
+  <input
+aria-activedescendant="fruit-0"
+:aria-controls="listId"
+aria-expanded="true"
+aria-label="Fruit"
+role="combobox"
+  />
+  <ul :id="listId" role="listbox">
+<li id="fruit-0" aria-selected="true" role="option">Apple</li>
+  </ul>
+</template>
+"#;
+    let result = linter(false).lint_sfc(source, "BoundIds.vue");
+    assert_eq!(result.warning_count, 0, "{:?}", result.diagnostics);
+}
+
+#[test]
+fn handlerless_listboxes_and_options_do_not_need_focus() {
+    let linter = linter(false);
+    for source in [
+        // No aria-activedescendant on the controlling element.
+        r#"<input :aria-controls="listId" role="combobox" /><ul :id="listId" role="listbox"><li role="option">A</li></ul>"#,
+        // A different expression is a different id.
+        r#"<input aria-activedescendant="a" :aria-controls="listId" role="combobox" /><ul :id="otherId" role="listbox"><li role="option">A</li></ul>"#,
+    ] {
+        let result = linter.lint_template(source, "test.vue");
+        assert_eq!(
+            result.warning_count, 0,
+            "{source}: {:?}",
+            result.diagnostics
+        );
+    }
+    // Options outside the controlled listbox are still checked.
+    let outside = r#"<input aria-activedescendant="a" aria-controls="lb" role="combobox" /><ul id="lb" role="listbox"><li role="option">A</li></ul><div role="option">B</div>"#;
+    assert_eq!(linter.lint_template(outside, "test.vue").warning_count, 0);
+}
+
+#[test]
+fn matches_the_plugin_on_issue_12762_except_focusable_owners() {
+    // The plugin also reports 45 and 46 (roving tabindex listboxes) and 50 and
+    // 60, whose bound `tabindex` is an integer on every branch.
+    let source = r#"<script setup lang="ts">
+import MyOption from "./MyOption.vue";
+
+const onEvent = (): void => undefined;
+const keys = {
+  onKeydown: (): void => undefined,
+  tabindex: (option: string): number => (option === "a" ? 0 : -1),
+};
+const role = "button";
+const enabled = true;
+const hidden = true;
+const label = "Options";
+const options = ["a", "b"];
+const selected = "a";
+const select = (option: string): void => void option;
+</script>
+
+<template>
+  <div role="button" @contextmenu="onEvent">x</div>
+  <div role="button" @doubleclick="onEvent">x</div>
+  <div role="button" @drag="onEvent">x</div>
+  <div role="button" @dragend="onEvent">x</div>
+  <div role="button" @dragenter="onEvent">x</div>
+  <div role="button" @dragexit="onEvent">x</div>
+  <div role="button" @dragleave="onEvent">x</div>
+  <div role="button" @dragover="onEvent">x</div>
+  <div role="button" @dragstart="onEvent">x</div>
+  <div role="button" @drop="onEvent">x</div>
+  <div role="button" @mouseenter="onEvent">x</div>
+  <div role="button" @mouseleave="onEvent">x</div>
+  <div role="button" @mousemove="onEvent">x</div>
+  <div role="button" @mouseout="onEvent">x</div>
+  <div role="button" @mouseover="onEvent">x</div>
+  <div role="grid" @click="onEvent">x</div>
+  <div role="menubar" @click="onEvent">x</div>
+  <div role="progressbar" @click="onEvent">x</div>
+  <div role="radiogroup" @click="onEvent">x</div>
+  <div role="rowheader" @click="onEvent">x</div>
+  <div role="treegrid" @click="onEvent">x</div>
+  <div role="doc-backlink" @click="onEvent">x</div>
+  <div role="doc-biblioref" @click="onEvent">x</div>
+  <div role="doc-glossref" @click="onEvent">x</div>
+  <div role="doc-noteref" @click="onEvent">x</div>
+  <div role="listbox" :aria-label="label" class="rows" @keydown="keys.onKeydown"><MyOption v-for="option in options" :id="option" :key="option" :selected="option === selected" :tabindex="keys.tabindex(option)" @click="select(option)">{{ option }}</MyOption></div>
+  <div role="listbox" :aria-label="label" @keydown="onEvent"><div role="option" tabindex="0" aria-selected="true">a</div></div>
+  <div role="listbox" :aria-label="label" @keydown="onEvent"><div v-for="option in options" :key="option" role="option" :tabindex="option === selected ? 0 : -1" aria-selected="false">{{ option }}</div></div>
+  <div role="button" aria-disabled="true" @click="onEvent">x</div>
+  <div role="button" aria-hidden="true" @click="onEvent">x</div>
+  <div role="button" :aria-hidden="hidden" @click="onEvent">x</div>
+  <div role="button" :tabindex="enabled ? 0 : -1" @click="onEvent">x</div>
+  <div role="button" :tabindex="enabled ? 0 : undefined" @click="onEvent">x</div>
+  <div role="button" tabindex @click="onEvent">x</div>
+  <div role="button" tabindex="" @click="onEvent">x</div>
+  <div :role="'button'" @click="onEvent">x</div>
+  <a role="button" @click="onEvent">x</a>
+  <svg><polygon points="0,0 1,1 0,1" role="button" @click="onEvent" /></svg>
+  <svg role="button" @click="onEvent"><path d="M0 0h1" /></svg>
+  <div role="textbox" contenteditable="true" @keydown="onEvent">x</div>
+  <div role="button" @click="keys.onKeydown">x</div>
+  <div role="tab" :tabindex="selected === 'a' ? 0 : -1" :aria-selected="selected === 'a'" @click="select('a')">a</div>
+  <div role="BUTTON" @click="onEvent">x</div>
+  <div role="button link" @click="onEvent">x</div>
+</template>
+"#;
+    let result = linter(false).lint_sfc(source, "App.vue");
+    let lines: Vec<usize> = result
+        .diagnostics
+        .iter()
+        .map(|diagnostic| {
+            source
+                .get(..diagnostic.start as usize)
+                .map_or(0, |prefix| prefix.matches('\n').count())
+                + 1
+        })
+        .collect();
+    assert_eq!(
+        lines,
+        vec![
+            19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40,
+            41, 42, 43, 51, 53, 54, 55, 58, 61, 62
+        ],
+        "{:?}",
+        result.diagnostics
+    );
+}

@@ -13,6 +13,8 @@ Exigir que elementos com papéis interativos possam receber foco.
 
 Aplicável a: Templates e blocos de SFC Vue, com o contexto do script quando exigido pela regra.
 
+Diferentemente do eslint-plugin-vuejs-accessibility, um listbox que contém uma option focalizável (roving tabindex) ou que um combobox controla por `aria-activedescendant` não precisa de uma parada de tabulação própria, um `tabindex` vinculado cujos ramos condicionais são todos inteiros (`:tabindex="active ? 0 : -1"`) conta como tabindex, e `:aria-hidden="false"` não oculta o elemento.
+
 ## Incorreto
 
 Atribuir a um `span` o papel de botão e um manipulador de clique não permite que o elemento receba foco pelo teclado.
@@ -54,4 +56,4 @@ Depois, execute `vp run lint`.
 
 - [Regras de acessibilidade](../accessibility.md)
 - [Todas as regras](../all.md)
-- [Código-fonte](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/interactive_supports_focus.rs#L42)
+- [Código-fonte](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/interactive_supports_focus.rs#L46)

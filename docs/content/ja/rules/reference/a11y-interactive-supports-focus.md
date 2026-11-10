@@ -13,6 +13,8 @@ description: "操作可能な role の要素をフォーカス可能にします
 
 適用範囲：Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。
 
+eslint-plugin-vuejs-accessibility と異なり、フォーカスできる option を持つ listbox（roving tabindex）や、combobox が `aria-activedescendant` で操作する listbox は自身のタブ位置を必要としません。条件分岐のすべてが整数になる `tabindex` の束縛（`:tabindex="active ? 0 : -1"`）は tabindex として扱い、`:aria-hidden="false"` は要素を隠しません。
+
 ## 悪い例
 
 span に button のロールとクリックハンドラーを付けても、キーボードでフォーカスできる要素にはなりません。
@@ -54,4 +56,4 @@ export default defineConfig({}).withVue({
 
 - [アクセシビリティのルール](../accessibility.md)
 - [全ルール](../all.md)
-- [ソースコード](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/interactive_supports_focus.rs#L42)
+- [ソースコード](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/interactive_supports_focus.rs#L46)

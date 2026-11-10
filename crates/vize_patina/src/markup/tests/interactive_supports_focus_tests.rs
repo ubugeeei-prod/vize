@@ -37,13 +37,13 @@ fn interactive_supports_focus_template() {
         ),
         (
             r#"<div role="button" tabindex="" @click="handle">Click</div>"#,
-            0,
-            "empty tabindex remains focusable",
+            1,
+            "an empty tabindex is no tab index",
         ),
         (
             r#"<div role="button" tabindex="x" @click="handle">Click</div>"#,
-            0,
-            "non-numeric tabindex remains focusable",
+            1,
+            "a non-integer tabindex is no tab index",
         ),
         (
             r#"<div role="button" tabindex="-1" @click="handle">Click</div>"#,
@@ -52,8 +52,8 @@ fn interactive_supports_focus_template() {
         ),
         (
             r#"<div role="button" tabindex tabindex="0" @click="handle">Click</div>"#,
-            1,
-            "first valueless duplicate tabindex masks later values",
+            0,
+            "a valueless first tabindex counts, as in the plugin",
         ),
         (
             r#"<div role="button" :tabindex="0" @click="handle">Click</div>"#,
@@ -62,23 +62,23 @@ fn interactive_supports_focus_template() {
         ),
         (
             r#"<div role="button" contenteditable="true" @click="handle">Click</div>"#,
-            0,
-            "contenteditable true",
+            1,
+            "contenteditable=\"true\" is no tab index",
         ),
         (
             r#"<div role="button" contenteditable="" @click="handle">Click</div>"#,
-            0,
-            "empty contenteditable remains focusable",
+            1,
+            "contenteditable=\"\" is no tab index",
         ),
         (
             r#"<div role="button" contenteditable="plaintext-only" @click="handle">Click</div>"#,
-            0,
-            "plaintext-only contenteditable remains focusable",
+            1,
+            "contenteditable=\"plaintext-only\" is no tab index",
         ),
         (
             r#"<div role="button" contenteditable="FALSE" @click="handle">Click</div>"#,
-            0,
-            "contenteditable value is exact",
+            1,
+            "contenteditable=\"FALSE\" is no tab index",
         ),
         (
             r#"<div role="button" contenteditable="false" @click="handle">Click</div>"#,

@@ -13,6 +13,8 @@ Disallow event handlers on static elements.
 
 Applies to: Vue SFC templates and blocks, with script context where the rule requires it.
 
+Unlike eslint-plugin-vuejs-accessibility, a bound `role` with an interactive conditional branch, such as `:role="clickable ? 'button' : undefined"`, is not static, and `:aria-hidden="false"` does not hide the element.
+
 ## Bad
 
 A static section receives an Enter-key action without an interactive role.
@@ -54,4 +56,4 @@ Then run `vp run lint`.
 
 - [Accessibility rules](../accessibility.md)
 - [All rules](../all.md)
-- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/no_static_element_interactions.rs#L37)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/no_static_element_interactions.rs#L39)

@@ -77,12 +77,12 @@ fn mouse_events_template() {
     assert_eq!(
         run_over_template(&rule, r#"<div @mouseEnter="show" @focus="show"></div>"#),
         0,
-        "event arguments remain exact and case-sensitive"
+        "vue-eslint-parser lower-cases event arguments"
     );
     assert_eq!(
         run_over_template(&rule, r#"<div @mouseenter="show" @Focus="show"></div>"#),
-        1,
-        "companion event arguments remain exact and case-sensitive"
+        0,
+        "vue-eslint-parser lower-cases companion event arguments"
     );
 }
 

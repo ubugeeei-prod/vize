@@ -13,6 +13,8 @@ description: "禁止在静态元素上设置事件处理器。"
 
 适用范围：Vue SFC 模板和代码块，包括规则所需的脚本上下文。
 
+与 eslint-plugin-vuejs-accessibility 不同，条件分支中含有交互式角色的 `role` 绑定（例如 `:role="clickable ? 'button' : undefined"`）不视为静态元素；`:aria-hidden="false"` 不会隐藏元素。
+
 ## 错误示例
 
 静态 section 接收 Enter 键操作，却没有交互角色。
@@ -54,4 +56,4 @@ export default defineConfig({}).withVue({
 
 - [无障碍规则](../accessibility.md)
 - [全部规则](../all.md)
-- [源代码](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/no_static_element_interactions.rs#L37)
+- [源代码](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/no_static_element_interactions.rs#L39)
