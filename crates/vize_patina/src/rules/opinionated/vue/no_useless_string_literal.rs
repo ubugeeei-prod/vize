@@ -22,9 +22,9 @@ fn literal_body_is_static(inner: &str, delimiter: u8) -> bool {
             escaped = false;
         } else if byte == b'\\' {
             escaped = true;
-        } else if byte == delimiter {
-            return false;
-        } else if delimiter == b'`' && byte == b'$' && bytes.get(index + 1) == Some(&b'{') {
+        } else if byte == delimiter
+            || (delimiter == b'`' && byte == b'$' && bytes.get(index + 1) == Some(&b'{'))
+        {
             return false;
         }
         index += 1;

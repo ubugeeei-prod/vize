@@ -56,7 +56,7 @@ impl MouseEventsHaveKeyEvents {
     }
 
     fn has_component_listener_prop(element: &ElementNode<'_>, event_name: &str) -> bool {
-        let mut listener = String::with_capacity(event_name.len() + 2);
+        let mut listener = vize_carton::String::with_capacity(event_name.len() + 2);
         listener.push_str("on");
         let mut characters = event_name.chars();
         let Some(first) = characters.next() else {
