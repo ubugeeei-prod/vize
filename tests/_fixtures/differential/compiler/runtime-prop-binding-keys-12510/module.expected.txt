@@ -1,0 +1,28 @@
+import { ssrInterpolate as _ssrInterpolate, ssrRenderAttrs as _ssrRenderAttrs } from "@vue/server-renderer"
+
+
+function ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {
+  _push(`<p${_ssrRenderAttrs(_attrs)}>${_ssrInterpolate($props.title)}:${_ssrInterpolate($props.count)}:${_ssrInterpolate(_ctx.required)}:${_ssrInterpolate(_ctx.validator)}</p>`)
+}
+
+export default {
+  __name: 'Layout',
+  props: {
+  /** The title. */
+  title: {
+    type: String,
+    required: true,
+    default: () => ({ nested: true }),
+    validator: value => value.length > 0,
+  },
+  count: Number,
+},
+  ssrRender: ssrRender,
+  setup(__props, { expose: __expose }) {
+  __expose();
+
+
+return {}
+}
+
+}

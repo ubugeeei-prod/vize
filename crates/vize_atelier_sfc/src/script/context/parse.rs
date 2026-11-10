@@ -19,7 +19,7 @@ use super::ScriptCompileContext;
 use super::helpers::{
     extract_args_from_call, extract_macro_from_expr, extract_type_args_from_call,
     infer_binding_type, is_call_of, is_import_type_only, macro_binding_name, named_import_binding,
-    register_binding_pattern, span_text,
+    register_binding_pattern, runtime_prop_keys, span_text,
 };
 use crate::script::{build_interface_type_source, register_enum};
 
@@ -41,6 +41,10 @@ impl ScriptCompileContext {
         self.process_program(&ret.program, source, vapor);
     }
 
+    /// Collect type declarations, imports, macros, and bindings from a retained OXC program.
+    ///
+    /// `source` must be the exact text used to parse `program` so span-backed macro data remains
+    /// valid while AST-derived facts, such as runtime prop keys, keep their structural boundaries.
     pub(super) fn process_program(&mut self, program: &Program<'_>, source: &str, vapor: bool) {
         // First pass: collect all TypeScript interfaces and type aliases
         // This ensures they're available when resolving type references in macros
@@ -224,7 +228,15 @@ impl ScriptCompileContext {
                         if let Some(mut macro_call) = extract_macro_from_expr(init, source) {
                             // Attach binding name to macro call
                             macro_call.1.binding_name = binding_name.clone();
-                            self.register_macro(&macro_call.0, macro_call.1);
+                            let prop_keys = match init {
+                                Expression::CallExpression(call)
+                                    if macro_call.0 == "defineProps" =>
+                                {
+                                    runtime_prop_keys(call, source)
+                                }
+                                _ => Vec::new(),
+                            };
+                            self.register_macro(&macro_call.0, macro_call.1, &prop_keys);
                         }
 
                         // Check for withDefaults wrapping
@@ -252,7 +264,8 @@ impl ScriptCompileContext {
                                     type_args,
                                     binding_name.as_deref().map(String::from),
                                 );
-                                self.extract_props_bindings(&props_call);
+                                let prop_keys = runtime_prop_keys(inner_call, source);
+                                self.extract_props_bindings(&props_call, &prop_keys);
                                 self.macros.define_props = Some(props_call);
                                 self.has_define_props_call = true;
                             }
@@ -292,7 +305,13 @@ impl ScriptCompileContext {
                                 is_props_destructure = true;
 
                                 // Register defineProps macro (for type args / runtime props)
-                                self.extract_props_bindings(&macro_call);
+                                let prop_keys = match init {
+                                    Expression::CallExpression(call) => {
+                                        runtime_prop_keys(call, source)
+                                    }
+                                    _ => Vec::new(),
+                                };
+                                self.extract_props_bindings(&macro_call, &prop_keys);
                                 self.macros.define_props = Some(macro_call.clone());
                                 self.has_define_props_call = true;
 
@@ -400,7 +419,13 @@ impl ScriptCompileContext {
             Statement::ExpressionStatement(expr_stmt) => {
                 // Handle standalone macro calls like defineExpose({...})
                 if let Some(macro_call) = extract_macro_from_expr(&expr_stmt.expression, source) {
-                    self.register_macro(&macro_call.0, macro_call.1);
+                    let prop_keys = match &expr_stmt.expression {
+                        Expression::CallExpression(call) if macro_call.0 == "defineProps" => {
+                            runtime_prop_keys(call, source)
+                        }
+                        _ => Vec::new(),
+                    };
+                    self.register_macro(&macro_call.0, macro_call.1, &prop_keys);
                 }
 
                 // Handle standalone withDefaults(defineProps<...>(), {...})
@@ -427,7 +452,8 @@ impl ScriptCompileContext {
                             type_args,
                             None,
                         );
-                        self.extract_props_bindings(&props_call);
+                        let prop_keys = runtime_prop_keys(inner_call, source);
+                        self.extract_props_bindings(&props_call, &prop_keys);
                         self.macros.define_props = Some(props_call);
                         self.has_define_props_call = true;
                     }
@@ -439,11 +465,16 @@ impl ScriptCompileContext {
     }
 
     /// Register a macro call
-    pub(super) fn register_macro(&mut self, name: &str, call: MacroCall) {
+    pub(super) fn register_macro(
+        &mut self,
+        name: &str,
+        call: MacroCall,
+        runtime_prop_keys: &[vize_carton::CompactString],
+    ) {
         match name {
             "defineProps" => {
                 // Extract prop names and add to bindings
-                self.extract_props_bindings(&call);
+                self.extract_props_bindings(&call, runtime_prop_keys);
                 self.macros.define_props = Some(call);
             }
             "defineEmits" => self.macros.define_emits = Some(call),

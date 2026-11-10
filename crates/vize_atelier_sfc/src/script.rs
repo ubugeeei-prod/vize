@@ -24,6 +24,7 @@ pub(crate) mod type_resolution;
 mod utils;
 
 // Re-export main types
+pub(crate) use analyze_script_bindings::get_object_or_array_argument_keys;
 pub use analyze_script_bindings::{analyze_script_bindings, get_object_or_array_expression_keys};
 pub use context::{
     ScriptCompileContext, SfcTypeProject, TypeResolutionBatchGuard, TypeSourceSnapshot,
