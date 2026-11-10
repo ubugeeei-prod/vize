@@ -1,0 +1,62 @@
+name: Canon ecosystem producer qualification
+
+on:
+  pull_request:
+    paths:
+      - .github/actions/check-vue-parity/action.yml
+      - .github/workflows/canon-ecosystem-producer.yml
+      - tests/_fixtures/apps/ecosystem-products/**
+      - tests/_fixtures/ecosystem-producer-qualification-11806.json
+      - tests/_helpers/apps.ts
+      - tests/_helpers/ecosystem-producer-qualification.ts
+      - tests/_helpers/vize-check.ts
+      - tests/snapshots/check/ecosystem-products.ts
+      - tests/tooling/ecosystem-producer-qualification.test.ts
+  workflow_dispatch:
+
+permissions: { contents: read }
+concurrency:
+  group: canon-ecosystem-producer-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+env:
+  CARGO_TERM_COLOR: always
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+  NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
+
+jobs:
+  qualification:
+    name: Qualify diagnostics and generated sources
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af # v1.21.2
+        with:
+          node-version-file: package.json
+          cache: true
+          cache-save: false
+          run-install: false
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with: { toolchain: "1.99.1" }
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with: { wild-version: "0.9.0" }
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          key: ecosystem-producer
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - name: Install the frozen provider closure
+        run: vp install --frozen-lockfile --prefer-offline
+      - name: Build the exact source CLI
+        run: cargo build --locked --profile ci -p vize --features legacy
+      - name: Qualify finite positive and negative controls
+        run: node --test tests/tooling/ecosystem-producer-qualification.test.ts
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v4
+        if: always()
+        with:
+          name: ecosystem-producer-qualification-${{ github.run_id }}-${{ github.run_attempt }}-${{ github.sha }}
+          path: target/differential/ecosystem-producer-qualification/receipt.json
+          if-no-files-found: ignore
+          retention-days: 14

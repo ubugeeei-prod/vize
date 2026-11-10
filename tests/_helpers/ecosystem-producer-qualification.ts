@@ -267,7 +267,7 @@ function assertRun(
   assert.equal(receipt.process.signal, null);
   assert.match(receipt.process.stderr, /=== __vize_helpers\.d\.ts ===/);
   assert.equal(receipt.process.command, VIZE_BIN);
-  assert.equal(JSON.stringify(receipt.parsed), receipt.process.stdout.trim());
+  assert.deepEqual(JSON.parse(receipt.process.stdout), receipt.parsed);
   assert.deepEqual(flatDiagnostics(receipt.parsed), diagnostics);
   assert.deepEqual(generatedSourceHashes(receipt.parsed), virtualTsSha256);
 }
