@@ -4480,9 +4480,19 @@
             "sha256": "841afff523dd0bb9e33865d9b67fa58ebedaca104be040afb077b7f91d9121ed"
           },
           {
+            "path": "NoDupeVElseIf.vue.txt",
+            "role": "issue-authored-reproduction",
+            "sha256": "97bc69aa8ca9040d69952ad534d6dca97432683b6fb2eaa3305ad64e0565ffd4"
+          },
+          {
             "path": "NoLiteralsInTemplate.vue.txt",
             "role": "issue-authored-reproduction",
             "sha256": "a6bf944788ef7f8f582bd7ca5cc7820d85708f1d595d8dea7e216f096ab822a4"
+          },
+          {
+            "path": "NoUselessStringLiteral.vue.txt",
+            "role": "issue-authored-reproduction",
+            "sha256": "cf6924110867e2f79c425c34bd4b8d6e6637d1a9559786408215ad3c10da1db1"
           },
           {
             "path": "PreferVModel.vue.txt",
