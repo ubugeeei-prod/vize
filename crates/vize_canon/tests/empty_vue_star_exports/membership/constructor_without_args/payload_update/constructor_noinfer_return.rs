@@ -42,6 +42,7 @@ fn restore(current: &str, transition: &Value) -> String {
 /// The pre-`NoInfer` bytes of a recorded producer's current image. Older
 /// images pass through; the layers below authenticate them.
 pub(super) fn source_before(path: &str, current: String) -> String {
+    let current = super::generated_comment_bytes::source_before(path, current);
     let record = record();
     match record["files"]
         .as_array()

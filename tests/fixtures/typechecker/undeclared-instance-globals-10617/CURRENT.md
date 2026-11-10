@@ -1,5 +1,15 @@
 # Current instance-global packet authority
 
+The active expected population is `source-packets-current-1ca72e5ed642.json`: all 80 whole transform results from [source Actions 42781084117](https://github.com/ubugeeei-prod/vize/actions/runs/42781084117/job/129712976983), synthetic merge producer `1ca72e5ed642e45f993abf0eef07e3acc97e427a` for PR head `9c05ba0bb01db70db11793ae3d0c13c48124edb9`. The launch receipt binds the exact source CLI, and the artifact admits the reported beta, official nightly, and pinned source-built TypeScript host.
+
+The original strict comparison remains **unqualified**: 419 of 499 semantic, protocol, geometry, and whole-packet outcomes passed. Every whole packet changed by the generated comment cut only (#12621): its debug-only `@vize-map: expr|prop|handler|component` lines and the reasons after its generated `@ts-ignore` directives left the text. Every diagnostic and opaque field is unchanged; every mapping, directive and semantic link moved only by those removed bytes. Every non-whole-packet outcome and all three real-host controls passed.
+
+`complete: true` records the complete observed successor population. It grants no public-package or performance acceptance and does not retroactively qualify the capture. `source-packets-current-1ca72e5ed642-provenance.json` binds the producer, artifact digest, exact evidence members, previous population, failed qualification vector, and explicit credit limits.
+
+## Previous authority (historical)
+
+# Current instance-global packet authority
+
 The active expected population is `source-packets-current-f29a8ee58999.json`: all 80 whole transform results from [source Actions 42772339922](https://github.com/ubugeeei-prod/vize/actions/runs/42772339922/job/129684248644), synthetic merge producer `f29a8ee589997f08d4c72addca1fd4fe1fd69f95` for PR head `4808c05a1a0e2fe769f132b5b79224922250736a`. The launch receipt binds the exact source CLI, and the artifact admits the reported beta and official nightly TypeScript hosts.
 
 The strict comparison remains **unqualified**: 394 of 398 semantic, protocol, geometry and whole-packet outcomes passed. Only the LF and CRLF/Unicode `slot-shadow` and `mixed-slot-scope` whole packets changed. Each adds the exact source-affine mappings for the disjoint `{ ` and ` }` gaps around its retained slot binding (#12511); generated text, diagnostics, semantic links and every other opaque field remain unchanged, and the other 76 complete results remain byte-identical. Every non-whole-packet outcome passed.

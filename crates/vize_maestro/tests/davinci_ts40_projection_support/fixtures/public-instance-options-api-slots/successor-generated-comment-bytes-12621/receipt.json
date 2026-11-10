@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "pullRequest": 12621,
+  "predecessor": {
+    "path": "successor-constructor-noinfer-12431/projection-record.txt",
+    "bytes": 2234,
+    "sha256": "fbb281e17beaf89265a90e4be950dc18eb7d61fe156aba93a29407e3b5a8685e"
+  },
+  "successor": {
+    "path": "successor-generated-comment-bytes-12621/projection-record.txt",
+    "bytes": 2234,
+    "sha256": "8fafbb80c2317e0b8b276559fb7d46a09abc4e2bfdf0e950680784ecc1262450"
+  },
+  "delta": {
+    "canonGeneratedTextBytes": -153,
+    "contentMapperGeneratedTextBytes": -153,
+    "maestroGeneratedTextBytes": -153,
+    "contentMapperMappings": 0,
+    "contentMapperAuthoredHits": 0
+  },
+  "nativeAcceptanceCredit": false,
+  "scope": "Local exact record for #12621: generated TS drops its debug-only @vize-map expr/prop/handler/component lines and the reasons after generated @ts-ignore. Each projection shrinks by exactly those comment bytes; mapping, diagnostic and authored-hit counts are unchanged, so the changed coordinate hashes are derived relocation. No native TypeScript consumer acceptance credit."
+}

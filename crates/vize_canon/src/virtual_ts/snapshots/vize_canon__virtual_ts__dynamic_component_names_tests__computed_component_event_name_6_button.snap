@@ -141,7 +141,7 @@ let pressed = false
   // ========== Template Scope (inherits from setup) ==========
   ;(function __template() {
     // Vue template context (delegates to ComponentPublicInstance)
-    // @ts-ignore TS2694/TS2307: a `vue` without `ComponentPublicInstance` must degrade template context extras to unchecked, never error.
+    // @ts-ignore
     type __Ctx = import('vue').ComponentPublicInstance;
     const __ctx = (void 0) as unknown as __Ctx;
     const $attrs = __ctx.$attrs;
@@ -151,14 +151,12 @@ let pressed = false
     void __ctx; void $attrs; void $slots; void $refs; void $emit;
 
   void (vnodeMounted); // DynamicEventArgument
-  // @vize-map: expr -> 10:22
 
   // @vnodeMounted handler
   type __vize_dynamic_component_8_listener = (...args: any[]) => any;
   void ((...__vize_args: Parameters<__vize_dynamic_component_8_listener>) => {
     const $event = __vize_args[0] as any; void $event;
     pressed = true;  // handler expression
-    // @vize-map: handler -> 25:39
   });
 
   // Reference setup bindings (used in template/CSS v-bind)

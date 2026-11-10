@@ -145,7 +145,7 @@ const todos = ref([{ id: 1, text: 'Hello' }])
     type __U<T> = T extends { value: unknown } ? T extends import('vue').Ref ? $WidenTemplateRef<T['value']> : T : T;
     var todos: __U<__R_todos> = (void 0) as any;
     // Vue template context (delegates to ComponentPublicInstance)
-    // @ts-ignore TS2694/TS2307: a `vue` without `ComponentPublicInstance` must degrade template context extras to unchecked, never error.
+    // @ts-ignore
     type __Ctx = import('vue').ComponentPublicInstance;
     const __ctx = (void 0) as unknown as __Ctx;
     const $attrs = __ctx.$attrs;
@@ -161,9 +161,7 @@ const todos = ref([{ id: 1, text: 'Hello' }])
   for (const [todo] of __vize_v_for_source_8) {
     void todo;
     void (todo.id); // VBind
-    // @vize-map: expr -> 46:53
     void (todo); // VBind
-    // @vize-map: expr -> 62:66
   }
   }
 
@@ -201,7 +199,6 @@ const todos = ref([{ id: 1, text: 'Hello' }])
   type $RequiredSlotKeys<__S> = { [__K in keyof __S]-?: undefined extends __S[__K] ? never : __K }[keyof __S];
   type $MissingRequiredSlots<__S, __P> = Exclude<$RequiredSlotKeys<__S>, keyof __P>;
   type $RequiredSlots<__S, __P> = $IsAny<__S> extends true ? {} : string extends keyof __S ? {} : [keyof __S] extends [never] ? {} : [$MissingRequiredSlots<__S, __P>] extends [never] ? {} : { readonly __vizeMissingSlots: $MissingRequiredSlots<__S, __P> };
-  // @vize-map: component -> 8:70
   type __TodoItem_Props_0 = typeof TodoItem extends { __vizeCheck: infer __F } ? ($IsAny<__F> extends true ? $ComponentRawProps<typeof TodoItem> : Record<string, unknown>) : $ComponentRawProps<typeof TodoItem>;
   type __TodoItem_Component_0 = typeof TodoItem;
   type __TodoItem_CheckProps_0 = __TodoItem_Props_0 & $EmitListeners<__TodoItem_Component_0> & ($FallthroughProps<__TodoItem_Component_0> extends infer __F ? [__F extends unknown ? {} extends __F ? never : __F : never] extends [never] ? $RequiredFallthroughProps<__TodoItem_Component_0, __F, never> : $RequiredFallthroughProps<__TodoItem_Component_0, __F> : never);
@@ -224,7 +221,6 @@ const todos = ref([{ id: 1, text: 'Hello' }])
   const __vize_v_for_source_8 = __vForList(todos);
   for (const [todo] of __vize_v_for_source_8) {
     void todo;
-    // @vize-map: prop -> 55:67
     const __vize_prop_check_0_item: __TodoItem_0_prop_item = todo;
     void __vize_prop_check_0_item;
     (undefined as unknown as __TodoItem_Check_0)({

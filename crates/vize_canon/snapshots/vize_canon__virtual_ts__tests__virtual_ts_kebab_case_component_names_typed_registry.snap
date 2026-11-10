@@ -143,7 +143,7 @@ function handleUpdate(value: string) {
   // ========== Template Scope (inherits from setup) ==========
   ;(function __template() {
     // Vue template context (delegates to ComponentPublicInstance)
-    // @ts-ignore TS2694/TS2307: a `vue` without `ComponentPublicInstance` must degrade template context extras to unchecked, never error.
+    // @ts-ignore
     type __Ctx = import('vue').ComponentPublicInstance;
     const __ctx = (void 0) as unknown as __Ctx;
     const $attrs = __ctx.$attrs;
@@ -155,7 +155,6 @@ function handleUpdate(value: string) {
   const __vize_kebab_events_nav_0 = undefined as unknown as $ComponentEvents<typeof my_widget> & Record<string, unknown>;
   void __vize_kebab_events_nav_0['update:modelValue'];
   void (value); // VBind
-  // @vize-map: expr -> 19:24
 
   // @update:model-value handler
   type __my_widget_7__listener_missing<__P, __Raw extends string | number | symbol> = [__Raw] extends [never] ? unknown[] : __P extends { [__K in __Raw]?: (...args: infer __A) => any } ? __A : unknown[];
@@ -165,7 +164,7 @@ function handleUpdate(value: string) {
   type __my_widget_7__emit_props = typeof my_widget extends { __vizeEmitProps?: infer __EP } ? [__EP] : [];
   type __my_widget_7_update_model_value_prop_args = __my_widget_7__library extends true ? unknown[] : __my_widget_7__props extends infer __B ? __B extends [infer __P] ? __my_widget_7__listener_args<__P, "onUpdate:modelValue", "onUpdate:model-value"> : unknown[] : never;
   const __vize_emit_factory_0 = (undefined as unknown as __vize_emit_resolver<__my_widget_7__library, typeof my_widget>)(my_widget); const __vize_emit_props_0 = (undefined as unknown as __vize_emit_input<__my_widget_7__library, typeof my_widget, typeof __vize_emit_factory_0>)({
-    // @ts-ignore Inference-only prop; the canonical component-props call owns diagnostics.
+    // @ts-ignore
     "label": value,
   });
   type __my_widget_7_update_model_value_inferred_emit_args = __my_widget_7__library extends true ? (typeof __vize_emit_props_0 extends { __ctx?: infer __X } ? NonNullable<__X> extends { props: infer __P } ? __P : {} : {}) extends { "onUpdate:modelValue"?: (...args: infer __A) => any } ? __A : unknown[] : typeof __vize_emit_props_0 extends { readonly __vizeLooseListener: infer __L extends unknown[] } ? unknown[] : typeof __vize_emit_props_0 extends { "onUpdate:modelValue"?: (...args: infer __A) => any } ? __A : unknown[];
@@ -179,7 +178,6 @@ function handleUpdate(value: string) {
     const __vize_event = (__vize_args as unknown[])[0] as __my_widget_7_update_model_value_event; void __vize_event;
     const __vize_handler_7_47: __my_widget_7_update_model_value_listener | null | undefined = (handleUpdate);
     if (__vize_handler_7_47) __vize_handler_7_47(...__vize_args);  // handler expression
-    // @vize-map: handler -> 47:59
   });
 
   // Component props type declarations
@@ -219,7 +217,6 @@ function handleUpdate(value: string) {
   type $RequiredSlotKeys<__S> = { [__K in keyof __S]-?: undefined extends __S[__K] ? never : __K }[keyof __S];
   type $MissingRequiredSlots<__S, __P> = Exclude<$RequiredSlotKeys<__S>, keyof __P>;
   type $RequiredSlots<__S, __P> = $IsAny<__S> extends true ? {} : string extends keyof __S ? {} : [keyof __S] extends [never] ? {} : [$MissingRequiredSlots<__S, __P>] extends [never] ? {} : { readonly __vizeMissingSlots: $MissingRequiredSlots<__S, __P> };
-  // @vize-map: component -> 0:63
   type __my_widget_Props_0 = typeof my_widget extends { __vizeCheck: infer __F } ? ($IsAny<__F> extends true ? $ComponentRawProps<typeof my_widget> : Record<string, unknown>) : $ComponentRawProps<typeof my_widget>;
   type __my_widget_Component_0 = typeof my_widget;
   type __my_widget_CheckProps_0 = __my_widget_Props_0 & $EmitListeners<__my_widget_Component_0> & ($FallthroughProps<__my_widget_Component_0> extends infer __F ? [__F extends unknown ? {} extends __F ? never : __F : never] extends [never] ? $RequiredFallthroughProps<__my_widget_Component_0, __F, never> : $RequiredFallthroughProps<__my_widget_Component_0, __F> : never);
@@ -236,7 +233,6 @@ function handleUpdate(value: string) {
   void __vize_props_nav_0.label;
 
   // Component props value checks (template scope)
-  // @vize-map: prop -> 11:25
   const __vize_prop_check_0_label: __my_widget_0_prop_label = value;
   void __vize_prop_check_0_label;
   (undefined as unknown as __my_widget_Check_0)({

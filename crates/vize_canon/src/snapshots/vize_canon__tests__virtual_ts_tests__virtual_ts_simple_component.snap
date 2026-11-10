@@ -152,7 +152,7 @@ function increment() {
     var count: __U<__R_count> = (void 0) as any;
     var message: __U<__R_message> = (void 0) as any;
     // Vue template context (delegates to ComponentPublicInstance)
-    // @ts-ignore TS2694/TS2307: a `vue` without `ComponentPublicInstance` must degrade template context extras to unchecked, never error.
+    // @ts-ignore
     type __Ctx = import('vue').ComponentPublicInstance;
     const __ctx = (void 0) as unknown as __Ctx;
     const $attrs = __ctx.$attrs;
@@ -162,15 +162,12 @@ function increment() {
     void __ctx; void $attrs; void $slots; void $refs; void $emit;
 
   void (message); // Interpolation
-  // @vize-map: expr -> 184:191
   void (count); // Interpolation
-  // @vize-map: expr -> 216:221
 
   // @click handler
   void ((__vize_event: PointerEvent) => {
     const __vize_handler_8_84 = ((__vize_cb: ((_e: PointerEvent) => unknown) | null | undefined) => __vize_cb)((increment));
     if (__vize_handler_8_84) __vize_handler_8_84(__vize_event);  // handler expression
-    // @vize-map: handler -> 249:258
   });
 
   // Reference setup bindings (used in template/CSS v-bind)

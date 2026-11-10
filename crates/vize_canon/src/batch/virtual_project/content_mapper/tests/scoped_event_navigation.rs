@@ -20,18 +20,25 @@ const handleConfirm = (value: "conditional") => value;
 "#;
     let result =
         generate_vue_content_mapper_transform(Path::new("App.vue"), source).expect("transform");
-    let guard_comment = result
-        .text
-        .find("Navigation-only guard")
-        .expect("navigation guard comment");
-    let guard = guard_comment
-        + result.text[guard_comment..]
-            .find("if ((conditionalValue))")
-            .expect("navigation guard");
     let resolver = result
         .text
         .find("const __vize_events_resolved_")
         .expect("event resolver");
+    // The navigation guard is the ignored `if` that opens right before the
+    // resolver.
+    let guard = result.text[..resolver]
+        .rfind("if ((conditionalValue))")
+        .expect("navigation guard");
+    assert_eq!(
+        result.text[..guard]
+            .trim_end()
+            .rsplit('\n')
+            .next()
+            .map(str::trim),
+        Some("// @ts-ignore"),
+        "{}",
+        result.text
+    );
 
     assert!(guard < resolver, "{}", result.text);
     let resolved_value = result.text[resolver..]

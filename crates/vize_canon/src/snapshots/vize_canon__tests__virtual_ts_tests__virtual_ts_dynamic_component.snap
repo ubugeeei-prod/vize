@@ -151,7 +151,7 @@ function switchComponent() {
     type __U<T> = T extends { value: unknown } ? T extends import('vue').Ref ? $WidenTemplateRef<T['value']> : T : T;
     var currentComponent: __U<__R_currentComponent> = (void 0) as any;
     // Vue template context (delegates to ComponentPublicInstance)
-    // @ts-ignore TS2694/TS2307: a `vue` without `ComponentPublicInstance` must degrade template context extras to unchecked, never error.
+    // @ts-ignore
     type __Ctx = import('vue').ComponentPublicInstance;
     const __ctx = (void 0) as unknown as __Ctx;
     const $attrs = __ctx.$attrs;
@@ -161,13 +161,11 @@ function switchComponent() {
     void __ctx; void $attrs; void $slots; void $refs; void $emit;
 
   void (currentComponent); // VBind
-  // @vize-map: expr -> 346:362
 
   // @click handler
   void ((__vize_event: PointerEvent) => {
     const __vize_handler_10_80 = ((__vize_cb: ((_e: PointerEvent) => unknown) | null | undefined) => __vize_cb)((switchComponent));
     if (__vize_handler_10_80) __vize_handler_10_80(__vize_event);  // handler expression
-    // @vize-map: handler -> 397:412
   });
 
   // Component props type declarations
@@ -204,7 +202,6 @@ function switchComponent() {
   type $RequiredSlotKeys<__S> = { [__K in keyof __S]-?: undefined extends __S[__K] ? never : __K }[keyof __S];
   type $MissingRequiredSlots<__S, __P> = Exclude<$RequiredSlotKeys<__S>, keyof __P>;
   type $RequiredSlots<__S, __P> = $IsAny<__S> extends true ? {} : string extends keyof __S ? {} : [keyof __S] extends [never] ? {} : [$MissingRequiredSlots<__S, __P>] extends [never] ? {} : { readonly __vizeMissingSlots: $MissingRequiredSlots<__S, __P> };
-  // @vize-map: component -> 330:364
   type __currentComponent_Props_0 = typeof currentComponent extends { __vizeCheck: infer __F } ? ($IsAny<__F> extends true ? $ComponentRawProps<typeof currentComponent> : Record<string, unknown>) : $ComponentRawProps<typeof currentComponent>;
   type __currentComponent_Component_0 = typeof currentComponent;
   type __currentComponent_CheckProps_0 = __currentComponent_Props_0 & $EmitListeners<__currentComponent_Component_0> & ($FallthroughProps<__currentComponent_Component_0> extends infer __F ? [__F extends unknown ? {} extends __F ? never : __F : never] extends [never] ? $RequiredFallthroughProps<__currentComponent_Component_0, __F, never> : $RequiredFallthroughProps<__currentComponent_Component_0, __F> : never);

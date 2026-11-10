@@ -140,7 +140,7 @@ const onOpen = () => undefined
   // ========== Template Scope (inherits from setup) ==========
   ;(function __template() {
     // Vue template context (delegates to ComponentPublicInstance)
-    // @ts-ignore TS2694/TS2307: a `vue` without `ComponentPublicInstance` must degrade template context extras to unchecked, never error.
+    // @ts-ignore
     type __Ctx = import('vue').ComponentPublicInstance;
     const __ctx = (void 0) as unknown as __Ctx;
     const $attrs = __ctx.$attrs;
@@ -182,7 +182,6 @@ const onOpen = () => undefined
     const __vize_event = (__vize_args as unknown[])[0] as __Child_12_select_event; void __vize_event;
     const __vize_handler_12_24: __Child_12_select_handler | __Child_12_select_prop_arrays | null | undefined = (onSelect);
     if (typeof __vize_handler_12_24 === "function") (__vize_handler_12_24 as __Child_12_select_listener)(...__vize_args);  // handler expression
-    // @vize-map: handler -> 24:32
   });
 
   // @close handler
@@ -201,7 +200,6 @@ const onOpen = () => undefined
     const __vize_event = (__vize_args as unknown[])[0] as __Child_13_close_event; void __vize_event;
     const __vize_handler_13_42: __Child_13_close_handler | __Child_13_close_prop_arrays | null | undefined = (onClose);
     if (typeof __vize_handler_13_42 === "function") (__vize_handler_13_42 as __Child_13_close_listener)(...__vize_args);  // handler expression
-    // @vize-map: handler -> 42:49
   });
 
   // @select handler
@@ -214,7 +212,6 @@ const onOpen = () => undefined
     const __vize_event = (__vize_args as unknown[])[0] as __Child_14_select_event; void __vize_event;
     const __vize_handler_14_72: __Child_14_select_handler | __Child_12_select_prop_arrays | null | undefined = (onSelect);
     if (typeof __vize_handler_14_72 === "function") (__vize_handler_14_72 as __Child_14_select_listener)(...__vize_args);  // handler expression
-    // @vize-map: handler -> 72:80
   });
 
   // @close handler
@@ -227,7 +224,6 @@ const onOpen = () => undefined
     const __vize_event = (__vize_args as unknown[])[0] as __Child_15_close_event; void __vize_event;
     const __vize_handler_15_90: __Child_15_close_handler | __Child_13_close_prop_arrays | null | undefined = (onClose);
     if (typeof __vize_handler_15_90 === "function") (__vize_handler_15_90 as __Child_15_close_listener)(...__vize_args);  // handler expression
-    // @vize-map: handler -> 90:97
   });
 
   // @save handler
@@ -253,7 +249,6 @@ const onOpen = () => undefined
     const __vize_event = (__vize_args as unknown[])[0] as __Other_16_save_event; void __vize_event;
     const __vize_handler_16_118: __Other_16_save_handler | __Other_16_save_prop_arrays | null | undefined = (onSave);
     if (typeof __vize_handler_16_118 === "function") (__vize_handler_16_118 as __Other_16_save_listener)(...__vize_args);  // handler expression
-    // @vize-map: handler -> 118:124
   });
 
   // @open handler
@@ -272,7 +267,6 @@ const onOpen = () => undefined
     const __vize_event = (__vize_args as unknown[])[0] as __Other_17_open_event; void __vize_event;
     const __vize_handler_17_133: __Other_17_open_handler | __Other_17_open_prop_arrays | null | undefined = (onOpen);
     if (typeof __vize_handler_17_133 === "function") (__vize_handler_17_133 as __Other_17_open_listener)(...__vize_args);  // handler expression
-    // @vize-map: handler -> 133:139
   });
 
   // Component props type declarations
@@ -312,16 +306,13 @@ const onOpen = () => undefined
   type $RequiredSlotKeys<__S> = { [__K in keyof __S]-?: undefined extends __S[__K] ? never : __K }[keyof __S];
   type $MissingRequiredSlots<__S, __P> = Exclude<$RequiredSlotKeys<__S>, keyof __P>;
   type $RequiredSlots<__S, __P> = $IsAny<__S> extends true ? {} : string extends keyof __S ? {} : [keyof __S] extends [never] ? {} : [$MissingRequiredSlots<__S, __P>] extends [never] ? {} : { readonly __vizeMissingSlots: $MissingRequiredSlots<__S, __P> };
-  // @vize-map: component -> 8:53
   type __Child_Props_0 = typeof Child extends { __vizeCheck: infer __F } ? ($IsAny<__F> extends true ? $ComponentRawProps<typeof Child> : Record<string, unknown>) : $ComponentRawProps<typeof Child>;
   type __Child_Component_0 = typeof Child;
   type __Child_CheckProps_0 = __Child_Props_0 & $EmitListeners<__Child_Component_0> & ($FallthroughProps<__Child_Component_0> extends infer __F ? [__F extends unknown ? {} extends __F ? never : __F : never] extends [never] ? $RequiredFallthroughProps<__Child_Component_0, __F, never> : $RequiredFallthroughProps<__Child_Component_0, __F> : never);
   type __Child_CheckTail_0 = $ComponentCheckTail<__Child_Component_0>;
   type __Child_Check_0 = $PropChecker<__Child_Component_0, __Child_CheckProps_0, __Child_CheckTail_0>;
-  // @vize-map: component -> 56:101
   type __Child_Props_1 = __Child_Props_0;
   type __Child_Check_1 = __Child_Check_0;
-  // @vize-map: component -> 104:143
   type __Other_Props_2 = typeof Other extends { __vizeCheck: infer __F } ? ($IsAny<__F> extends true ? $ComponentRawProps<typeof Other> : Record<string, unknown>) : $ComponentRawProps<typeof Other>;
   type __Other_Component_2 = typeof Other;
   type __Other_CheckProps_2 = __Other_Props_2 & $EmitListeners<__Other_Component_2> & ($FallthroughProps<__Other_Component_2> extends infer __F ? [__F extends unknown ? {} extends __F ? never : __F : never] extends [never] ? $RequiredFallthroughProps<__Other_Component_2, __F, never> : $RequiredFallthroughProps<__Other_Component_2, __F> : never);

@@ -271,7 +271,7 @@ fn public_instance_slot_packets_remain_authenticated() {
         .expect("reviewed Options API slot fixture");
     assert_eq!(
         capture_fixture(fixture).render().as_str(),
-        constructor_noinfer_return::slots(unowned_successor)
+        constructor_noinfer_return::current_slots(unowned_successor)
     );
 }
 #[test]
@@ -494,7 +494,7 @@ fn public_instance_mixed_vue2_packets_remain_authenticated() {
         );
         assert_eq!(
             capture_fixture(fixture).render().as_str(),
-            constructor_noinfer_return::mixed_vue2(unowned_successor)
+            constructor_noinfer_return::current_mixed_vue2(unowned_successor)
         );
     }
 }

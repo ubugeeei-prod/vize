@@ -100,7 +100,6 @@ function __setup() {
     void $listeners;void $children;void $scopedSlots;void $on;void $off;void $once;void $set;void $delete;void $createElement;void _c;
 
   void ('wrong'); // VBind
-  // @vize-map: expr -> 23:30
 
   // Component props type declarations
   type $IsAny<T> = 0 extends (1 & T) ? true : false;
@@ -136,7 +135,6 @@ function __setup() {
   type $RequiredSlotKeys<__S> = { [__K in keyof __S]-?: undefined extends __S[__K] ? never : __K }[keyof __S];
   type $MissingRequiredSlots<__S, __P> = Exclude<$RequiredSlotKeys<__S>, keyof __P>;
   type $RequiredSlots<__S, __P> = $IsAny<__S> extends true ? {} : string extends keyof __S ? {} : [keyof __S] extends [never] ? {} : [$MissingRequiredSlots<__S, __P>] extends [never] ? {} : { readonly __vizeMissingSlots: $MissingRequiredSlots<__S, __P> };
-  // @vize-map: component -> 0:34
   type __ExternalInput_Props_0 = typeof ExternalInput extends { __vizeCheck: infer __F } ? ($IsAny<__F> extends true ? $ComponentRawProps<typeof ExternalInput> : Record<string, unknown>) : $ComponentRawProps<typeof ExternalInput>;
   type __ExternalInput_Component_0 = typeof ExternalInput;
   type __ExternalInput_CheckProps_0 = __ExternalInput_Props_0 & $EmitListeners<__ExternalInput_Component_0> & ($FallthroughProps<__ExternalInput_Component_0> extends infer __F ? [__F extends unknown ? {} extends __F ? never : __F : never] extends [never] ? $RequiredFallthroughProps<__ExternalInput_Component_0, __F, never> : $RequiredFallthroughProps<__ExternalInput_Component_0, __F> : never);
@@ -153,7 +151,6 @@ function __setup() {
   void __vize_props_nav_0.count;
 
   // Component props value checks (template scope)
-  // @vize-map: prop -> 15:31
   const __vize_prop_check_0_count: __ExternalInput_0_prop_count = 'wrong';
   void __vize_prop_check_0_count;
   (undefined as unknown as __ExternalInput_Check_0)({

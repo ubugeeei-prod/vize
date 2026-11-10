@@ -122,9 +122,7 @@ const count = ref(0)
   void test;
 
   void (test); // Interpolation
-  // @vize-map: expr -> 140:144
   void (count); // Interpolation
-  // @vize-map: expr -> 151:156
 
   // Reference setup bindings (used in template/CSS v-bind)
   void count; void (null as unknown as keyof typeof ref); void test;

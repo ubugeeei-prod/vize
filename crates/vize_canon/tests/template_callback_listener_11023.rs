@@ -24,7 +24,7 @@ const slots = defineSlots<Partial<Record<"a" | "b", () => VNode>>>();
 "#;
     let result =
         generate_vue_content_mapper_transform(Path::new("parent.vue"), source).expect("transform");
-    let guarded = r#"// @ts-ignore Inference-only callback prop; mapped prop owner checks diagnostics.
+    let guarded = r#"// @ts-ignore
     "bar": (baz) => Boolean(slots[baz]),"#;
 
     assert_eq!(
@@ -33,14 +33,19 @@ const slots = defineSlots<Partial<Record<"a" | "b", () => VNode>>>();
         "every inference-only callback copy must suppress its own line:\n{}",
         result.text
     );
+    let ignored_resolvers = result
+        .text
+        .lines()
+        .zip(result.text.lines().skip(1))
+        .filter(|(line, next)| {
+            line.trim() == "// @ts-ignore"
+                && next
+                    .trim_start()
+                    .starts_with("const __vize_events_resolved_")
+        })
+        .count();
     assert_eq!(
-        result
-            .text
-            .matches(
-                "// @ts-ignore Inference-only call; the authored prop checker owns diagnostics."
-            )
-            .count(),
-        1,
+        ignored_resolvers, 1,
         "the outer call still suppresses aggregate assignability errors:\n{}",
         result.text
     );

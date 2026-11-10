@@ -423,7 +423,8 @@ fn emit_expression_statement(
             .map_or(generated_expression, String::as_str);
         append!(
             *ts,
-            "{indent}// @ts-ignore Inference-only listener value; the typed event scope owns diagnostics.\n{indent}void (("
+            // Inference-only listener value; the typed event scope owns diagnostics.
+            "{indent}// @ts-ignore\n{indent}void (("
         );
         ts.push_str(inference_expression);
         append!(
@@ -467,7 +468,6 @@ fn emit_expression_statement(
             sub_spans: Vec::new(),
         });
     }
-    append!(*ts, "{indent}// @vize-map: expr -> {src_start}:{src_end}\n",);
 }
 
 #[cfg(test)]

@@ -151,7 +151,7 @@ const data = ref<string[]>([])
     var message: __U<__R_message> = (void 0) as any;
     var status: __U<__R_status> = (void 0) as any;
     // Vue template context (delegates to ComponentPublicInstance)
-    // @ts-ignore TS2694/TS2307: a `vue` without `ComponentPublicInstance` must degrade template context extras to unchecked, never error.
+    // @ts-ignore
     type __Ctx = import('vue').ComponentPublicInstance;
     const __ctx = (void 0) as unknown as __Ctx;
     const $attrs = __ctx.$attrs;
@@ -163,13 +163,10 @@ const data = ref<string[]>([])
   const __vize_native_key_190: Partial<$NativeElement<"p">> = { "key": undefined as never };
   void __vize_native_key_190;
   if (status === 'loading') {
-    // @vize-map: expr -> 215:235
   } else if (status === 'error') {
-    // @vize-map: expr -> 274:292
     void (message); // Interpolation
-    // @vize-map: expr -> 311:318
   }
-  // @ts-ignore Narrowing-only guard; authored v-if checks own diagnostics.
+  // @ts-ignore
   if (!(status === 'loading') && !(status === 'error')) {
 
     // v-for scope: item in data
@@ -180,7 +177,6 @@ const data = ref<string[]>([])
       const __vize_native_prop_check_195: $NativeElementProp<$NativeElement<"p">, "key"> = (item);
       void __vize_native_prop_check_195; // VBind
       void (item); // Interpolation
-      // @vize-map: expr -> 395:399
     }
     }
   }

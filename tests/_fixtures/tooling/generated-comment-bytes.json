@@ -1,0 +1,497 @@
+{
+  "schema": "vize.generatedCommentBytesSource.v1",
+  "credit": {
+    "compiled": false,
+    "native": false,
+    "performance": false
+  },
+  "files": [
+    {
+      "path": "crates/vize_canon/src/virtual_ts/expressions/callback_prop_resolution.rs",
+      "before": {
+        "bytes": 8952,
+        "sha256": "9c3b76c316278b8279dd8f216fa43d3fde42e316395251868bcf6ad442469f6f"
+      },
+      "after": {
+        "bytes": 8971,
+        "sha256": "96c29534c6ffc5714d080f34911cd05d53a02c613cfaa461f318167246ef7aed"
+      },
+      "hunks": [
+        {
+          "before": "                ts,\n                \"{expr_indent}  // @ts-ignore Inference-only callback prop; mapped prop owner checks diagnostics.\\n\"\n            );\n",
+          "after": "                ts,\n                // Inference-only callback prop; mapped prop owner checks diagnostics.\n                \"{expr_indent}  // @ts-ignore\\n\"\n            );\n"
+        }
+      ]
+    },
+    {
+      "path": "crates/vize_canon/src/virtual_ts/expressions/component_props.rs",
+      "before": {
+        "bytes": 16755,
+        "sha256": "558c949d2e927244c81be1ec84f185cae2a3d678f792ff080aa89c48c6d1bf8e"
+      },
+      "after": {
+        "bytes": 16614,
+        "sha256": "de17d77bff7fabb3d32a2951435360235905ffd88b26ed107134f98b8ff0d039"
+      },
+      "hunks": [
+        {
+          "before": "            );\n            append!(\n                *ts,\n                \"{indent}// @vize-map: prop -> {prop_src_start}:{prop_src_end}\\n\",\n            );\n\n            let safe_prop_name = to_safe_identifier_fragment(prop.name.as_str());\n",
+          "after": "            );\n            let safe_prop_name = to_safe_identifier_fragment(prop.name.as_str());\n"
+        }
+      ]
+    },
+    {
+      "path": "crates/vize_canon/src/virtual_ts/expressions/generic_props_call.rs",
+      "before": {
+        "bytes": 17085,
+        "sha256": "874c682fd473137fa40c862b4c862ba8bd38d7ff875e7c65d59a076ab6054a82"
+      },
+      "after": {
+        "bytes": 17115,
+        "sha256": "706ee7945b53c0cccd40a15291f2af1bc0cc73da7c85f887e778dc54aa3584ba"
+      },
+      "hunks": [
+        {
+          "before": "            ts,\n            \"{indent}// @ts-ignore Inference-only constructor; authored props checks own diagnostics.\\n\"\n        );\n",
+          "after": "            ts,\n            // Inference-only constructor; authored props checks own diagnostics.\n            \"{indent}// @ts-ignore\\n\"\n        );\n"
+        },
+        {
+          "before": "            ts,\n            \"{indent}// @ts-ignore Inference-only guard; authored v-if checks own diagnostics.\\n\"\n        );\n",
+          "after": "            ts,\n            // Inference-only guard; authored v-if checks own diagnostics.\n            \"{indent}// @ts-ignore\\n\"\n        );\n"
+        },
+        {
+          "before": "            ts,\n            \"\\n{indent}// @ts-ignore Inference-only guard; authored v-if checks own diagnostics.\\n{indent}\"\n        );\n",
+          "after": "            ts,\n            // Inference-only guard; authored v-if checks own diagnostics.\n            \"\\n{indent}// @ts-ignore\\n{indent}\"\n        );\n"
+        },
+        {
+          "before": "    let pair = constructor_instance::instance_pair_name(binding_name, source_context.scopes);\n    vize_l0::emit_ts!(\n        ts,\n        \"{indent}// @ts-ignore Inference-only constructor; authored props checks own diagnostics.\\n\"\n    );\n    constructor_instance::append_capture_open(ts, pair.as_str(), indent);\n",
+          "after": "    let pair = constructor_instance::instance_pair_name(binding_name, source_context.scopes);\n    // Inference-only constructor; authored props checks own diagnostics.\n    vize_l0::emit_ts!(ts, \"{indent}// @ts-ignore\\n\");\n    constructor_instance::append_capture_open(ts, pair.as_str(), indent);\n"
+        }
+      ]
+    },
+    {
+      "path": "crates/vize_canon/src/virtual_ts/expressions/statement_guard.rs",
+      "before": {
+        "bytes": 3366,
+        "sha256": "ee8aa5c05c01c0e0f6774f93e9095556c1824362eae14f9fe5def347e057aa0d"
+      },
+      "after": {
+        "bytes": 3266,
+        "sha256": "dc11ecf596e8621634e12dc7a5b8182880f082754a059329808f4a400b14f977"
+      },
+      "hunks": [
+        {
+          "before": "    );\n    append!(\n        *ts,\n        \"{indent}  // @vize-map: expr -> {src_start}:{src_end}\\n\",\n    );\n    if chained.is_some() {\n",
+          "after": "    );\n    if chained.is_some() {\n"
+        }
+      ]
+    },
+    {
+      "path": "crates/vize_canon/src/virtual_ts/expressions/statements.rs",
+      "before": {
+        "bytes": 16842,
+        "sha256": "6eeb30b1e78c879443b31d00f806b09d5d3951ac6622d4c63e0f1a1844592bb3"
+      },
+      "after": {
+        "bytes": 16781,
+        "sha256": "7dc243d376d834681e7ac3afe22ec568919bb02363acd909e6958883ecdef151"
+      },
+      "hunks": [
+        {
+          "before": "        append!(\n            *ts,\n            \"{indent}// @ts-ignore Inference-only listener value; the typed event scope owns diagnostics.\\n{indent}void ((\"\n        );\n        ts.push_str(inference_expression);\n",
+          "after": "        append!(\n            *ts,\n            // Inference-only listener value; the typed event scope owns diagnostics.\n            \"{indent}// @ts-ignore\\n{indent}void ((\"\n        );\n        ts.push_str(inference_expression);\n"
+        },
+        {
+          "before": "        });\n    }\n    append!(*ts, \"{indent}// @vize-map: expr -> {src_start}:{src_end}\\n\",);\n}\n\n",
+          "after": "        });\n    }\n}\n\n"
+        }
+      ]
+    },
+    {
+      "path": "crates/vize_canon/src/virtual_ts/expressions/ts_suppression_comments/callback_line_suppression.rs",
+      "before": {
+        "bytes": 12022,
+        "sha256": "f48c2770aecb1863f1f34170b69295379d1cb6e719db1825e795e9be0ac8a727"
+      },
+      "after": {
+        "bytes": 12124,
+        "sha256": "7cf47d644f63a9361c9876897e9cc5d8a5c058d39eafea69fee5c6087ec19945"
+      },
+      "hunks": [
+        {
+          "before": "\npub(super) const BRANCH_IGNORE: &str = \"// @ts-ignore Inference-only callback branch.\\n\";\n\n",
+          "after": "\n/// Ignores an inference-only callback branch. TypeScript reads only the bare\n/// directive, so the generated text carries no reason.\npub(super) const BRANCH_IGNORE: &str = \"// @ts-ignore\\n\";\n\n"
+        }
+      ]
+    },
+    {
+      "path": "crates/vize_canon/src/virtual_ts/expressions/ts_suppression_comments/nested_callbacks.rs",
+      "before": {
+        "bytes": 4367,
+        "sha256": "a07ed83625e3fceda54440639e71100ed7d42b12657ceda067a267e970450f3d"
+      },
+      "after": {
+        "bytes": 4405,
+        "sha256": "8ddcb0f03176a5e0dc401a7ef5f33bfd2e0d93aeba49a8e43a2134cdee78a157"
+      },
+      "hunks": [
+        {
+          "before": "\nconst IGNORE: &str = \"\\n// @ts-ignore Inference-only nested callback parameter.\\n\";\n\n",
+          "after": "\n/// Ignores an inference-only nested callback parameter.\nconst IGNORE: &str = \"\\n// @ts-ignore\\n\";\n\n"
+        },
+        {
+          "before": "                } else {\n                    \"(\\n// @ts-ignore Inference-only nested callback parameter.\\n\"\n                },\n",
+          "after": "                } else {\n                    // Inference-only nested callback parameter.\n                    \"(\\n// @ts-ignore\\n\"\n                },\n"
+        }
+      ]
+    },
+    {
+      "path": "crates/vize_canon/src/virtual_ts/expressions/vif_chain/emit.rs",
+      "before": {
+        "bytes": 5679,
+        "sha256": "74abccdab051e6a73c89f5876fe99cc131479db2964008abf9e2e62a0e74010c"
+      },
+      "after": {
+        "bytes": 5244,
+        "sha256": "448ba92164cdbccda0ca14e0bc1c67008214d0a6c6146e87c8f68f6bfd62d587"
+      },
+      "hunks": [
+        {
+          "before": "    let context = ctx.context;\n    let exprs = ctx.exprs;\n    match (first, branch.condition) {\n",
+          "after": "    let context = ctx.context;\n    match (first, branch.condition) {\n"
+        },
+        {
+          "before": "        (true, None) => {}\n    }\n\n    if let Some(expr) = branch\n        .condition_expr_index\n        .and_then(|expr_index| exprs.get(expr_index))\n    {\n        let src_start = (context.template_offset + expr.start) as usize;\n        let src_end = (context.template_offset + expr.end) as usize;\n        append!(\n            *ts,\n            \"{}  // @vize-map: expr -> {src_start}:{src_end}\\n\",\n            context.indent,\n        );\n    }\n",
+          "after": "        (true, None) => {}\n    }\n"
+        }
+      ]
+    },
+    {
+      "path": "crates/vize_canon/src/virtual_ts/helpers.rs",
+      "before": {
+        "bytes": 14621,
+        "sha256": "ee73ec807315eed6dd2af7d6183d3d0e357bc1d2fde832b4d95fd888c6ba6606"
+      },
+      "after": {
+        "bytes": 14632,
+        "sha256": "35f21cfd7857eb87b750e67e3d58be13127f26804c0758a181b5c4cb2ea6101a"
+      },
+      "hunks": [
+        {
+          "before": "    } else {\n        ctx.push_str(\"    // Vue template context (delegates to ComponentPublicInstance)\\n    // @ts-ignore TS2694/TS2307: a `vue` without `ComponentPublicInstance` must degrade template context extras to unchecked, never error.\\n    type __Ctx = import('vue').ComponentPublicInstance;\\n\");\n    }\n",
+          "after": "    } else {\n        // TS2694/TS2307: a `vue` without `ComponentPublicInstance` must degrade template context extras to unchecked, never error.\n        ctx.push_str(\"    // Vue template context (delegates to ComponentPublicInstance)\\n    // @ts-ignore\\n    type __Ctx = import('vue').ComponentPublicInstance;\\n\");\n    }\n"
+        }
+      ]
+    },
+    {
+      "path": "crates/vize_canon/src/virtual_ts/props/setup_scoped.rs",
+      "before": {
+        "bytes": 4201,
+        "sha256": "1b7b302ed91542496344f7abfd0d4da415ebe8a3b85b27f703a5e44ad697160d"
+      },
+      "after": {
+        "bytes": 4008,
+        "sha256": "499767b3f4afe93db38b895e6f58820373e3f706ac46ea267f157add0978d71e"
+      },
+      "hunks": [
+        {
+          "before": "    } else {\n        \"// @ts-ignore TS6196: SFC generic may be used by emits or slots.\\n\"\n    }\n",
+          "after": "    } else {\n        // TS6196: SFC generic may be used by emits or slots.\n        \"// @ts-ignore\\n\"\n    }\n"
+        },
+        {
+          "before": "            unused_generic_comment(Some(\"T\"), \"ImportedProps\"),\n            \"// @ts-ignore TS6196: SFC generic may be used by emits or slots.\\n\"\n        );\n",
+          "after": "            unused_generic_comment(Some(\"T\"), \"ImportedProps\"),\n            \"// @ts-ignore\\n\"\n        );\n"
+        },
+        {
+          "before": "            unused_generic_comment(Some(\"T, U\"), \"LocalProps<T>\"),\n            \"// @ts-ignore TS6196: SFC generic may be used by emits or slots.\\n\"\n        );\n",
+          "after": "            unused_generic_comment(Some(\"T, U\"), \"LocalProps<T>\"),\n            \"// @ts-ignore\\n\"\n        );\n"
+        },
+        {
+          "before": "            unused_generic_comment(Some(\"T\"), r#\"{ T: string; kind: \"T\" }\"#),\n            \"// @ts-ignore TS6196: SFC generic may be used by emits or slots.\\n\"\n        );\n",
+          "after": "            unused_generic_comment(Some(\"T\"), r#\"{ T: string; kind: \"T\" }\"#),\n            \"// @ts-ignore\\n\"\n        );\n"
+        },
+        {
+          "before": "            unused_generic_comment(Some(\"T\"), \"SomeTTProps\"),\n            \"// @ts-ignore TS6196: SFC generic may be used by emits or slots.\\n\"\n        );\n",
+          "after": "            unused_generic_comment(Some(\"T\"), \"SomeTTProps\"),\n            \"// @ts-ignore\\n\"\n        );\n"
+        }
+      ]
+    },
+    {
+      "path": "crates/vize_canon/src/virtual_ts/props/template_model/opaque_defaults.rs",
+      "before": {
+        "bytes": 3824,
+        "sha256": "7b9a458dd60dcd6335f9fce43447d6700caa73fa5067d10f5decd3ffd4ebdef4"
+      },
+      "after": {
+        "bytes": 3835,
+        "sha256": "59a669a05cfdc9d6aee455a73974da38243643c486f3f195f709b2f15196338f"
+      },
+      "hunks": [
+        {
+          "before": "    ts.push_str(\n        \"  // @ts-ignore TS2345: the authored withDefaults call reports an invalid argument.\\n\",\n    );\n",
+          "after": "    ts.push_str(\n        // TS2345: the authored withDefaults call reports an invalid argument.\n        \"  // @ts-ignore\\n\",\n    );\n"
+        }
+      ]
+    },
+    {
+      "path": "crates/vize_canon/src/virtual_ts/scope/component_event_navigation.rs",
+      "before": {
+        "bytes": 15585,
+        "sha256": "ec64e956b5abf148ab55f2db09e6d3eb3f9292072197744ee6e7fcd3c2bb7d5a"
+      },
+      "after": {
+        "bytes": 15615,
+        "sha256": "43994b5e666b869d41a4cb40184f57cc0d8f9cd75dafbc676b50f1e58d90f3e5"
+      },
+      "hunks": [
+        {
+          "before": "        ts,\n        \"{indent}type __vize_events_resolver_{idx} = typeof {component_ref} extends {{ __vizeResolveEvents?: infer __F }} ? (__F extends (...args: any[]) => any ? __F : (props: any) => {component_events}<typeof {component_ref}>) : (props: any) => {component_events}<typeof {component_ref}>;\\n{indent}// @ts-ignore Inference-only call; the authored prop checker owns diagnostics.\\n{indent}const {resolved_events} = (undefined as unknown as __vize_events_resolver_{idx})(\"\n    );\n",
+          "after": "        ts,\n        // Inference-only call; the authored prop checker owns diagnostics.\n        \"{indent}type __vize_events_resolver_{idx} = typeof {component_ref} extends {{ __vizeResolveEvents?: infer __F }} ? (__F extends (...args: any[]) => any ? __F : (props: any) => {component_events}<typeof {component_ref}>) : (props: any) => {component_events}<typeof {component_ref}>;\\n{indent}// @ts-ignore\\n{indent}const {resolved_events} = (undefined as unknown as __vize_events_resolver_{idx})(\"\n    );\n"
+        },
+        {
+          "before": "                ts,\n                \"{indent}  // @ts-ignore Inference-only callback prop; mapped prop owner checks diagnostics.\\n\"\n            );\n",
+          "after": "                ts,\n                // Inference-only callback prop; mapped prop owner checks diagnostics.\n                \"{indent}  // @ts-ignore\\n\"\n            );\n"
+        }
+      ]
+    },
+    {
+      "path": "crates/vize_canon/src/virtual_ts/scope/component_events/emit_props_gate.rs",
+      "before": {
+        "bytes": 7131,
+        "sha256": "7ec00bb45bf4c0f59b045f68e7587915096b8ce5020dc4d498d259504c4b02eb"
+      },
+      "after": {
+        "bytes": 7142,
+        "sha256": "f6e91f0079949c7a1284a486f7d74d636f281d90027072a99c0147c7a0e6c904"
+      },
+      "hunks": [
+        {
+          "before": "        *ts,\n        \"{indent}// @ts-ignore Inference-only factory; called before the guard below.\\n{indent}const __vize_emit_factory_{usage_idx} = (undefined as unknown as __vize_emit_resolver<{library}, typeof {component_ref}>)({component_ref});\\n\",\n    );\n",
+          "after": "        *ts,\n        // Inference-only factory; called before the guard below.\n        \"{indent}// @ts-ignore\\n{indent}const __vize_emit_factory_{usage_idx} = (undefined as unknown as __vize_emit_resolver<{library}, typeof {component_ref}>)({component_ref});\\n\",\n    );\n"
+        }
+      ]
+    },
+    {
+      "path": "crates/vize_canon/src/virtual_ts/scope/component_events/generic_inference.rs",
+      "before": {
+        "bytes": 19290,
+        "sha256": "08721b15c0bc7b0bc8c93fe14e615a3218326ef8e9896caa4531f46790b5aae2"
+      },
+      "after": {
+        "bytes": 19393,
+        "sha256": "81047631a100ff8bbac1308cbb4233b0362c72bc59376d60a6ac75b310e92933"
+      },
+      "hunks": [
+        {
+          "before": "            *ts,\n            \"{}  // @ts-ignore Probe leaf errors are owned by the canonical component-props call.\\n{}  \",\n            ctx.indent,\n",
+          "after": "            *ts,\n            // Probe leaf errors are owned by the canonical component-props call.\n            \"{}  // @ts-ignore\\n{}  \",\n            ctx.indent,\n"
+        },
+        {
+          "before": "            ts,\n            \"{call_indent}// @ts-ignore Inference-only guard; authored binding checks own diagnostics.\\n\"\n        );\n",
+          "after": "            ts,\n            // Inference-only guard; authored binding checks own diagnostics.\n            \"{call_indent}// @ts-ignore\\n\"\n        );\n"
+        },
+        {
+          "before": "                *ts,\n                \"{}// @ts-ignore Inference-only dynamic target/props; the canonical component-props call owns diagnostics.\\n\",\n                ctx.indent\n",
+          "after": "                *ts,\n                // Inference-only dynamic target/props; the canonical component-props call owns diagnostics.\n                \"{}// @ts-ignore\\n\",\n                ctx.indent\n"
+        },
+        {
+          "before": "                        ts,\n                        \"{call_indent}  // @ts-ignore Inference-only callback prop; mapped prop owner checks diagnostics.\\n\"\n                    );\n",
+          "after": "                        ts,\n                        // Inference-only callback prop; mapped prop owner checks diagnostics.\n                        \"{call_indent}  // @ts-ignore\\n\"\n                    );\n"
+        },
+        {
+          "before": "                        ts,\n                        \"{call_indent}  // @ts-ignore Inference-only prop; the canonical component-props call owns diagnostics.\\n\"\n                    );\n",
+          "after": "                        ts,\n                        // Inference-only prop; the canonical component-props call owns diagnostics.\n                        \"{call_indent}  // @ts-ignore\\n\"\n                    );\n"
+        }
+      ]
+    },
+    {
+      "path": "crates/vize_canon/src/virtual_ts/scope/component_events/prop_array_share.rs",
+      "before": {
+        "bytes": 9254,
+        "sha256": "da1e80d5b62ba63032c9e41541b9920fea433f3505fee8c717cada37e6ffcfbb"
+      },
+      "after": {
+        "bytes": 9069,
+        "sha256": "1e0eeb450fc040ad7fba0e5bb6299a2374467175114640057dfdbcf0961398f9"
+      },
+      "hunks": [
+        {
+          "before": "        );\n        let maps: Vec<&str> = code\n            .lines()\n            .filter(|line| line.contains(\"// @vize-map: handler -> \"))\n            .collect();\n        let expected = handler_ranges();\n        assert_eq!(maps.len(), expected.len(), \"{maps:?}\");\n        for (line, range) in maps.iter().zip(expected) {\n            let marked =\n                vize_carton::cstr!(\"// @vize-map: handler -> {}:{}\\n\", range.start, range.end);\n            assert_eq!(line.trim(), marked.trim());\n        }\n",
+          "after": "        );\n        for range in handler_ranges() {\n            assert!(\n                output\n                    .mapping\n                    .spans()\n                    .iter()\n                    .any(|span| span.src_range == range),\n                \"handler {range:?} keeps its mapping\"\n            );\n        }\n"
+        }
+      ]
+    },
+    {
+      "path": "crates/vize_canon/src/virtual_ts/scope/component_prop_navigation.rs",
+      "before": {
+        "bytes": 10311,
+        "sha256": "aa23a62d402c6da96aa2efed81553d9d34abb3487da0ee279d20dc4bdc03542f"
+      },
+      "after": {
+        "bytes": 10322,
+        "sha256": "0d557bad2f1ce04a764621268bd14ef11c4568884a7303e0aa95a8e58de6c3f3"
+      },
+      "hunks": [
+        {
+          "before": "    if inference_only {\n        ts.push_str(\"  // @ts-ignore Navigation-only reference; the authored v-bind statement owns diagnostics.\\n\");\n    }\n",
+          "after": "    if inference_only {\n        // Navigation-only reference; the authored v-bind statement owns diagnostics.\n        ts.push_str(\"  // @ts-ignore\\n\");\n    }\n"
+        }
+      ]
+    },
+    {
+      "path": "crates/vize_canon/src/virtual_ts/scope/component_props.rs",
+      "before": {
+        "bytes": 19031,
+        "sha256": "420600cc2b89fe8708527cd80a45be7ab137657ef522a011dc8857f76303948f"
+      },
+      "after": {
+        "bytes": 18819,
+        "sha256": "d9fc8ed8f04f15e9ffe93a6a495d0155320f6dadf91a8b2afdeef6eba1fe10b9"
+      },
+      "hunks": [
+        {
+          "before": "\n    let src_start = (ctx.template_offset + usage.start) as usize;\n    let src_end = (ctx.template_offset + usage.end) as usize;\n    vize_l0::emit_ts!(ts, \"  // @vize-map: component -> {src_start}:{src_end}\\n\",);\n    // Prefer the modern static raw-props identity while retaining the\n",
+          "after": "\n    // Prefer the modern static raw-props identity while retaining the\n"
+        }
+      ]
+    },
+    {
+      "path": "crates/vize_canon/src/virtual_ts/scope/dynamic_component.rs",
+      "before": {
+        "bytes": 13393,
+        "sha256": "cbbdc03183f96fbbc67f7ab93130c2afb4a0576b1107b6c088b68a2901a69bca"
+      },
+      "after": {
+        "bytes": 13454,
+        "sha256": "401bc4c52db48159ea83743098ee714b49dfbdee28888b031e9799b1161085dc"
+      },
+      "hunks": [
+        {
+          "before": "                    start: usage.start,\n                    comment: \"// @ts-ignore Inference-only alias; authored v-if and v-bind statements own diagnostics.\",\n                    statement: vize_carton::cstr!(\n",
+          "after": "                    start: usage.start,\n                    // Inference-only alias; authored v-if and v-bind statements own diagnostics.\n                    comment: \"// @ts-ignore\",\n                    statement: vize_carton::cstr!(\n"
+        },
+        {
+          "before": "                    start: usage.start,\n                    comment: \"// @ts-ignore Inference-only alias; the authored v-bind statement owns diagnostics.\",\n                    statement: vize_carton::cstr!(\n",
+          "after": "                    start: usage.start,\n                    // Inference-only alias; the authored v-bind statement owns diagnostics.\n                    comment: \"// @ts-ignore\",\n                    statement: vize_carton::cstr!(\n"
+        },
+        {
+          "before": "            *ts,\n            \"{indent}// @ts-ignore Inference-only guard; the authored v-if statement owns diagnostics.\\n{indent}const {} = ({});\\n\",\n            self.name,\n",
+          "after": "            *ts,\n            // Inference-only guard; the authored v-if statement owns diagnostics.\n            \"{indent}// @ts-ignore\\n{indent}const {} = ({});\\n\",\n            self.name,\n"
+        }
+      ]
+    },
+    {
+      "path": "crates/vize_canon/src/virtual_ts/scope/event_handler.rs",
+      "before": {
+        "bytes": 16228,
+        "sha256": "9fe10fcc440b791ba4495d33d74c7d5336c1d2e714071070a78dfdc296e44462"
+      },
+      "after": {
+        "bytes": 16081,
+        "sha256": "2ca7858201ba30af12e8a8604dd0d12e0f869bc98173bc5af3260f2f68eb3315"
+      },
+      "hunks": [
+        {
+          "before": "                        *ts,\n                        \"{indent}// @ts-ignore Inference-only guard; authored v-if checks own diagnostics.\\n{indent}if (!({guard})) throw 0;\\n\",\n                        indent = ctx.indent,\n",
+          "after": "                        *ts,\n                        // Inference-only guard; authored v-if checks own diagnostics.\n                        \"{indent}// @ts-ignore\\n{indent}if (!({guard})) throw 0;\\n\",\n                        indent = ctx.indent,\n"
+        },
+        {
+          "before": "            }\n            append!(\n                *ts,\n                \"{indent}// @vize-map: handler -> {src_start}:{src_end}\\n\",\n                indent = handler_indent,\n            );\n            if guard.is_some() && !early_exit_guard {\n",
+          "after": "            }\n            if guard.is_some() && !early_exit_guard {\n"
+        }
+      ]
+    },
+    {
+      "path": "crates/vize_canon/src/virtual_ts/scope/forwarded_roots.rs",
+      "before": {
+        "bytes": 5914,
+        "sha256": "d0c4a577dcf7a6af6e58cdb7ce49f4b37473697486952c67699407812105bbee"
+      },
+      "after": {
+        "bytes": 5963,
+        "sha256": "eeba709b87f8df61f47296bb60bc7d32f01640d8fd8bfadd1dbfaa8d11965d08"
+      },
+      "hunks": [
+        {
+          "before": "            *ts,\n            \"{indent}// @ts-ignore Inference-only guard and call; the root's mapped prop checks own diagnostics.\\n\"\n        );\n",
+          "after": "            *ts,\n            // Inference-only guard and call; the root's mapped prop checks own diagnostics.\n            \"{indent}// @ts-ignore\\n\"\n        );\n"
+        },
+        {
+          "before": "            *ts,\n            \"{indent}// @ts-ignore Inference-only call; the root's mapped prop checks own diagnostics.\\n\"\n        );\n",
+          "after": "            *ts,\n            // Inference-only call; the root's mapped prop checks own diagnostics.\n            \"{indent}// @ts-ignore\\n\"\n        );\n"
+        },
+        {
+          "before": "                *ts,\n                \"{indent}  // @ts-ignore Inference-only callback prop; the mapped prop owner checks diagnostics.\\n\"\n            );\n",
+          "after": "                *ts,\n                // Inference-only callback prop; the mapped prop owner checks diagnostics.\n                \"{indent}  // @ts-ignore\\n\"\n            );\n"
+        }
+      ]
+    },
+    {
+      "path": "crates/vize_canon/src/virtual_ts/scope/ref_instances.rs",
+      "before": {
+        "bytes": 13231,
+        "sha256": "3fb41f5bea25fe4107212fcd3eb0ad38d73e3d6ac5f073854d1808e9893db5d4"
+      },
+      "after": {
+        "bytes": 13272,
+        "sha256": "f02416a0e9b788e4e293b8fd4d48d66b6ad434d0421a83a5acb6ebc2a3a1027f"
+      },
+      "hunks": [
+        {
+          "before": "        *ts,\n        \"{indent}// @ts-ignore Inference-only call; the usage's mapped prop checks own diagnostics.\\n\"\n    );\n",
+          "after": "        *ts,\n        // Inference-only call; the usage's mapped prop checks own diagnostics.\n        \"{indent}// @ts-ignore\\n\"\n    );\n"
+        },
+        {
+          "before": "                *ts,\n                \"{indent}  // @ts-ignore Inference-only callback prop; the mapped prop owner checks diagnostics.\\n\"\n            );\n",
+          "after": "                *ts,\n                // Inference-only callback prop; the mapped prop owner checks diagnostics.\n                \"{indent}  // @ts-ignore\\n\"\n            );\n"
+        },
+        {
+          "before": "        *ts,\n        \"{at}// @ts-ignore Inference-only guard; the authored binding checks own diagnostics.\\n\"\n    );\n",
+          "after": "        *ts,\n        // Inference-only guard; the authored binding checks own diagnostics.\n        \"{at}// @ts-ignore\\n\"\n    );\n"
+        }
+      ]
+    },
+    {
+      "path": "crates/vize_canon/src/virtual_ts/scope/vif_guard.rs",
+      "before": {
+        "bytes": 15696,
+        "sha256": "52acd343f92a24b0279e91a2528839ed508ff2491f1f323ee823762aaa91d2c9"
+      },
+      "after": {
+        "bytes": 15850,
+        "sha256": "02da940a275123079541888fcca34e6dc35db49c6503483fbb92f62946dd47aa"
+      },
+      "hunks": [
+        {
+          "before": "\npub(crate) fn append_ignored_vif_guard_open(\n",
+          "after": "\n/// Opens an inference-only guard; the authored v-if checks own its\n/// diagnostics. `_purpose` names the guard's role at the call site: TypeScript\n/// reads only the bare directive, so the generated text carries no reason.\npub(crate) fn append_ignored_vif_guard_open(\n"
+        },
+        {
+          "before": "    guard: &str,\n    purpose: &str,\n) {\n",
+          "after": "    guard: &str,\n    _purpose: &str,\n) {\n"
+        },
+        {
+          "before": "    let guard = one_line.as_ref();\n    append!(\n        *ts,\n        \"{indent}// @ts-ignore {purpose}; authored v-if checks own diagnostics.\\n{indent}if ({guard}) {{\\n\"\n    );\n}\n",
+          "after": "    let guard = one_line.as_ref();\n    append!(*ts, \"{indent}// @ts-ignore\\n{indent}if ({guard}) {{\\n\");\n}\n"
+        }
+      ]
+    },
+    {
+      "path": "crates/vize_canon/src/virtual_ts/scope/vif_guard_chain.rs",
+      "before": {
+        "bytes": 17762,
+        "sha256": "e1d2ff95b2558bb4d97a49acf58bf224a7d6cd1ab0e0371376be6e0741300af3"
+      },
+      "after": {
+        "bytes": 17731,
+        "sha256": "f0e709952d8e5838b78cbe3a2e24126aa5f5bac408dda80a8ea4ac755f8b3f6d"
+      },
+      "hunks": [
+        {
+          "before": "        let mapped_condition = condition.as_deref_mut().filter(|_| mapped_here);\n        if let (Some(purpose), None) = (purpose, mapped_condition.as_ref()) {\n            append!(\n                *ts,\n                \"{indent}// @ts-ignore {purpose}; authored v-if checks own diagnostics.\\n\"\n            );\n        }\n",
+          "after": "        let mapped_condition = condition.as_deref_mut().filter(|_| mapped_here);\n        // Authored v-if checks own this sibling guard's diagnostics.\n        if let (Some(_), None) = (purpose, mapped_condition.as_ref()) {\n            append!(*ts, \"{indent}// @ts-ignore\\n\");\n        }\n"
+        }
+      ]
+    }
+  ]
+}

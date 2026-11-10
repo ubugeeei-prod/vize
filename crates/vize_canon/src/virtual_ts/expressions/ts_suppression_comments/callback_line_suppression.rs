@@ -14,7 +14,9 @@ pub(super) fn has_callback_parser_candidate(value: &str) -> bool {
     matches!(candidate_gate(value), CandidateGate::Parse)
 }
 
-pub(super) const BRANCH_IGNORE: &str = "// @ts-ignore Inference-only callback branch.\n";
+/// Ignores an inference-only callback branch. TypeScript reads only the bare
+/// directive, so the generated text carries no reason.
+pub(super) const BRANCH_IGNORE: &str = "// @ts-ignore\n";
 
 pub(super) struct RewrittenCallbackBranches {
     pub(super) text: String,

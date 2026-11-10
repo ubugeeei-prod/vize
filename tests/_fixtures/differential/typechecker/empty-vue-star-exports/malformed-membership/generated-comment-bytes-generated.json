@@ -1,0 +1,47 @@
+{
+  "version": 1,
+  "kind": "exact-generated-comment-bytes-successor",
+  "nativeAcceptanceCredit": false,
+  "entries": [
+    {
+      "entry": 74,
+      "before": [
+        "project/A.vue.ts",
+        4152,
+        "585cf725dd3ba55362fc685169f9927b4d586fbe8cc1c0714aa42fe12b0cc311"
+      ],
+      "after": [
+        "project/A.vue.ts",
+        4031,
+        "39826707c05afcbdb8334be14af1d581411b8d8830a3ec9173476e65de2d6b18"
+      ],
+      "deltaBytes": -121,
+      "hunks": [
+        {
+          "before": "    // @ts-ignore TS2694/TS2307: a `vue` without `ComponentPublicInstance` must degrade template context extras to unchecked, never error.\n",
+          "after": "    // @ts-ignore\n"
+        }
+      ]
+    },
+    {
+      "entry": 75,
+      "before": [
+        "project/B.vue.ts",
+        4374,
+        "c71fd1e13b882cf48929e8c8bddd1872ca2cef1e2df2c86dca2cafa1df55e909"
+      ],
+      "after": [
+        "project/B.vue.ts",
+        4253,
+        "400513f4de76b75857b228c8a18d07d5a45a12d62c99cd0d0e322fb7596ff0d5"
+      ],
+      "deltaBytes": -121,
+      "hunks": [
+        {
+          "before": "    // @ts-ignore TS2694/TS2307: a `vue` without `ComponentPublicInstance` must degrade template context extras to unchecked, never error.\n",
+          "after": "    // @ts-ignore\n"
+        }
+      ]
+    }
+  ]
+}

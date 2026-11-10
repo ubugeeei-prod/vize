@@ -16,6 +16,7 @@ import { root } from "./support/lsp/paths.ts";
 import { completionDocumentationResolveCapabilities, LspSession } from "./support/lsp/session.ts";
 import { assertCanonLeftoversGolden } from "./support/lsp/experimental-router-canon-leftovers.ts";
 import { constructorNoInferPredecessor } from "./support/lsp/experimental-router-constructor-noinfer.ts";
+import { generatedCommentBytesPredecessor } from "./support/lsp/experimental-router-generated-comment-bytes.ts";
 import { instanceInputKeysPredecessor } from "./support/lsp/experimental-router-instance-input-keys.ts";
 import { unownedOwnedKeysPredecessor } from "./support/lsp/experimental-router-unowned-owned-keys.ts";
 import { resolveTypecheckRuntime } from "./support/typecheck-dependency.ts";
@@ -70,11 +71,12 @@ function generatedGolden(expected: Golden, kind: "valid" | "invalid"): string {
   const golden = expected.generated[kind];
   assert.match(
     golden.file,
-    /^(?:lf|crlf|explicit)\.(?:valid|invalid)(?:\.canon-leftovers|\.instance-input-keys|\.unowned-owned-keys|\.constructor-noinfer)?\.virtual\.ts\.txt$/u,
+    /^(?:lf|crlf|explicit)\.(?:valid|invalid)(?:\.canon-leftovers|\.instance-input-keys|\.unowned-owned-keys|\.constructor-noinfer|\.generated-comment-bytes)?\.virtual\.ts\.txt$/u,
   );
   const goldenBytes = fs.readFileSync(path.join(custody, golden.file));
   assert.equal(createHash("sha256").update(goldenBytes).digest("hex"), golden.sha256);
-  const noinfer = constructorNoInferPredecessor(custody, root, golden, goldenBytes);
+  const comments = generatedCommentBytesPredecessor(custody, root, golden, goldenBytes);
+  const noinfer = constructorNoInferPredecessor(custody, root, comments.entry, comments.bytes);
   const ownedKeys = unownedOwnedKeysPredecessor(custody, root, noinfer.entry, noinfer.bytes);
   const predecessor = instanceInputKeysPredecessor(
     custody,

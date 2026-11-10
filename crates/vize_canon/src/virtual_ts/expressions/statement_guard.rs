@@ -78,10 +78,6 @@ pub(super) fn generate_vif_guard_expression(
         trimmed_expression,
         template_binding_access,
     );
-    append!(
-        *ts,
-        "{indent}  // @vize-map: expr -> {src_start}:{src_end}\n",
-    );
     if chained.is_some() {
         append_chained_vif_guard_close(ts, indent);
     } else {

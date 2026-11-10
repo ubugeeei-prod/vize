@@ -129,7 +129,8 @@ pub(super) fn generate_inferred_emit_args(
         );
         append!(
             *ts,
-            "{}  // @ts-ignore Probe leaf errors are owned by the canonical component-props call.\n{}  ",
+            // Probe leaf errors are owned by the canonical component-props call.
+            "{}  // @ts-ignore\n{}  ",
             ctx.indent,
             ctx.indent,
         );
@@ -207,7 +208,8 @@ pub(super) fn generate_inferred_emit_args(
         append!(*ts, "{}const {emit_props} = (() => {{\n", ctx.indent);
         vize_l0::emit_ts!(
             ts,
-            "{call_indent}// @ts-ignore Inference-only guard; authored binding checks own diagnostics.\n"
+            // Inference-only guard; authored binding checks own diagnostics.
+            "{call_indent}// @ts-ignore\n"
         );
         if gated {
             super::emit_props_gate::append_guarded_input(
@@ -229,7 +231,8 @@ pub(super) fn generate_inferred_emit_args(
         if dynamic_component || !usage.spread_props.is_empty() {
             append!(
                 *ts,
-                "{}// @ts-ignore Inference-only dynamic target/props; the canonical component-props call owns diagnostics.\n",
+                // Inference-only dynamic target/props; the canonical component-props call owns diagnostics.
+                "{}// @ts-ignore\n",
                 ctx.indent
             );
         }
@@ -281,7 +284,8 @@ pub(super) fn generate_inferred_emit_args(
                 if entry.inline_callback {
                     vize_l0::emit_ts!(
                         ts,
-                        "{call_indent}  // @ts-ignore Inference-only callback prop; mapped prop owner checks diagnostics.\n"
+                        // Inference-only callback prop; mapped prop owner checks diagnostics.
+                        "{call_indent}  // @ts-ignore\n"
                     );
                 } else {
                     // This literal infers emit arguments. It is also checked
@@ -290,7 +294,8 @@ pub(super) fn generate_inferred_emit_args(
                     // authored diagnostic (#10397).
                     vize_l0::emit_ts!(
                         ts,
-                        "{call_indent}  // @ts-ignore Inference-only prop; the canonical component-props call owns diagnostics.\n"
+                        // Inference-only prop; the canonical component-props call owns diagnostics.
+                        "{call_indent}  // @ts-ignore\n"
                     );
                 }
                 vize_l0::emit_ts!(ts, "{call_indent}  ");

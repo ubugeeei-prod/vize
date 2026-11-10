@@ -15,6 +15,7 @@ mod emit_overload_window;
 mod emit_overloads;
 mod emit_props_twins;
 mod extra_keys_policy;
+mod generated_comment_bytes;
 mod generic_event_specialization;
 mod input_channels;
 mod instance_input_keys;

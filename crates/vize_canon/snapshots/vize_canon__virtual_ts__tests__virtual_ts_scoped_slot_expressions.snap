@@ -167,7 +167,7 @@ const items = ['a', 'b']
   // ========== Template Scope (inherits from setup) ==========
   ;(function __template() {
     // Vue template context (delegates to ComponentPublicInstance)
-    // @ts-ignore TS2694/TS2307: a `vue` without `ComponentPublicInstance` must degrade template context extras to unchecked, never error.
+    // @ts-ignore
     type __Ctx = import('vue').ComponentPublicInstance;
     const __ctx = (void 0) as unknown as __Ctx;
     const $attrs = __ctx.$attrs;
@@ -177,10 +177,9 @@ const items = ['a', 'b']
     void __ctx; void $attrs; void $slots; void $refs; void $emit;
 
   void (items); // VBind
-  // @vize-map: expr -> 16:21
 
   // v-slot scope: #default
-  // @ts-ignore Inference-only constructor; authored props checks own diagnostics.
+  // @ts-ignore
   const __vize_slot_host_7_instances = (undefined as unknown as <__Z, __P>(withoutArguments: __Z, withArguments: __P) => { readonly withoutArguments: __Z; readonly withArguments: __P })(new (undefined as unknown as $SlotConstructorWithoutArguments<$SlotConstructor<typeof MyList>>)(), new (undefined as unknown as $SlotConstructorWithArguments<$SlotConstructor<typeof MyList>>)({
     "items": items,
   }, ...([] as unknown as $SlotConstructorArgs<$SlotConstructor<typeof MyList>>)));
@@ -191,7 +190,6 @@ const items = ['a', 'b']
   void function _slot_default_7({ item }: $SlotPayload<typeof __vize_slot_host_7, "default", typeof MyList>) {
     void item;
     void (item); // Interpolation
-    // @vize-map: expr -> 64:68
   };
 
   // Component props type declarations
@@ -228,7 +226,6 @@ const items = ['a', 'b']
   type $RequiredSlotKeys<__S> = { [__K in keyof __S]-?: undefined extends __S[__K] ? never : __K }[keyof __S];
   type $MissingRequiredSlots<__S, __P> = Exclude<$RequiredSlotKeys<__S>, keyof __P>;
   type $RequiredSlots<__S, __P> = $IsAny<__S> extends true ? {} : string extends keyof __S ? {} : [keyof __S] extends [never] ? {} : [$MissingRequiredSlots<__S, __P>] extends [never] ? {} : { readonly __vizeMissingSlots: $MissingRequiredSlots<__S, __P> };
-  // @vize-map: component -> 0:23
   type __MyList_Props_0 = typeof MyList extends { __vizeCheck: infer __F } ? ($IsAny<__F> extends true ? typeof MyList extends { readonly __vizeComponentMarker: true } ? $ComponentRawProps<typeof MyList> : 0 extends (1 & (typeof __vize_slot_host_7_instances.withArguments extends { $props: unknown } ? typeof __vize_slot_host_7_instances.withArguments : typeof __vize_slot_host_7_instances.withoutArguments)) ? $ComponentRawProps<typeof MyList> : (typeof __vize_slot_host_7_instances.withArguments extends { $props: unknown } ? typeof __vize_slot_host_7_instances.withArguments : typeof __vize_slot_host_7_instances.withoutArguments) extends { $props: infer __P } ? unknown extends __P ? Record<string, unknown> : __P : $ComponentRawProps<typeof MyList> : Record<string, unknown>) : typeof MyList extends { readonly __vizeComponentMarker: true } ? $ComponentRawProps<typeof MyList> : 0 extends (1 & (typeof __vize_slot_host_7_instances.withArguments extends { $props: unknown } ? typeof __vize_slot_host_7_instances.withArguments : typeof __vize_slot_host_7_instances.withoutArguments)) ? $ComponentRawProps<typeof MyList> : (typeof __vize_slot_host_7_instances.withArguments extends { $props: unknown } ? typeof __vize_slot_host_7_instances.withArguments : typeof __vize_slot_host_7_instances.withoutArguments) extends { $props: infer __P } ? unknown extends __P ? Record<string, unknown> : __P : $ComponentRawProps<typeof MyList>;
   type __MyList_Component_0 = typeof MyList;
   type __MyList_CheckProps_0 = __MyList_Props_0 & $EmitListeners<__MyList_Component_0> & ($FallthroughProps<__MyList_Component_0> extends infer __F ? [__F extends unknown ? {} extends __F ? never : __F : never] extends [never] ? $RequiredFallthroughProps<__MyList_Component_0, __F, never> : $RequiredFallthroughProps<__MyList_Component_0, __F> : never);
@@ -248,7 +245,6 @@ const items = ['a', 'b']
   void __vize_slot_nav_0_0;
 
   // Component props value checks (template scope)
-  // @vize-map: prop -> 8:22
   const __vize_prop_check_0_items: __MyList_0_prop_items = items;
   void __vize_prop_check_0_items;
   (undefined as unknown as __MyList_Check_0)({

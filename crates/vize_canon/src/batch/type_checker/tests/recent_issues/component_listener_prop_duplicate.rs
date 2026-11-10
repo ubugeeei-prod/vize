@@ -101,13 +101,7 @@ function onChange(_value: boolean) {}
         .filter(|line| line.contains("@ts-ignore"))
         .map(str::trim)
         .collect();
-    assert_eq!(
-        ignore_lines,
-        vec![
-            "// @ts-ignore Inference-only prop; the canonical component-props call owns diagnostics."
-        ],
-        "{probe}"
-    );
+    assert_eq!(ignore_lines, vec!["// @ts-ignore"], "{probe}");
     let checked_lines: Vec<_> = probe
         .lines()
         .filter(|line| line.contains("\"checked\""))

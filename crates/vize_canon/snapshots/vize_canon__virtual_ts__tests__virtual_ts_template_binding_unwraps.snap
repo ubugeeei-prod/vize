@@ -145,7 +145,7 @@ const inputRef = useTemplateRef<HTMLInputElement>('input')
     var inputRef: __U<__R_inputRef> = (void 0) as any;
     var users: __U<__R_users> = (void 0) as any;
     // Vue template context (delegates to ComponentPublicInstance)
-    // @ts-ignore TS2694/TS2307: a `vue` without `ComponentPublicInstance` must degrade template context extras to unchecked, never error.
+    // @ts-ignore
     type __Ctx = import('vue').ComponentPublicInstance;
     const __ctx = (void 0) as unknown as __Ctx;
     const $attrs = __ctx.$attrs;
@@ -155,9 +155,7 @@ const inputRef = useTemplateRef<HTMLInputElement>('input')
     void __ctx; void $attrs; void $slots; void $refs; void $emit;
 
   void (users.length); // Interpolation
-  // @vize-map: expr -> 8:20
   void (inputRef && inputRef.focus()); // Interpolation
-  // @vize-map: expr -> 27:55
 
   // Reference setup bindings (used in template/CSS v-bind)
   void inputRef; void (null as unknown as keyof typeof ref); void (null as unknown as keyof typeof useTemplateRef); void users;

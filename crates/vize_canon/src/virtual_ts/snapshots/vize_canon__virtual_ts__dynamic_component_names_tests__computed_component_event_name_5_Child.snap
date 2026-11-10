@@ -141,7 +141,7 @@ let pressed = false
   // ========== Template Scope (inherits from setup) ==========
   ;(function __template() {
     // Vue template context (delegates to ComponentPublicInstance)
-    // @ts-ignore TS2694/TS2307: a `vue` without `ComponentPublicInstance` must degrade template context extras to unchecked, never error.
+    // @ts-ignore
     type __Ctx = import('vue').ComponentPublicInstance;
     const __ctx = (void 0) as unknown as __Ctx;
     const $attrs = __ctx.$attrs;
@@ -151,14 +151,12 @@ let pressed = false
     void __ctx; void $attrs; void $slots; void $refs; void $emit;
 
   void (vnodeMounted); // DynamicEventArgument
-  // @vize-map: expr -> 9:21
 
   // @vnodeMounted handler
   type __vize_dynamic_component_8_listener = (...args: any[]) => any;
   void ((...__vize_args: Parameters<__vize_dynamic_component_8_listener>) => {
     const $event = __vize_args[0] as any; void $event;
     pressed = true;  // handler expression
-    // @vize-map: handler -> 24:38
   });
 
   // Component props type declarations
@@ -195,7 +193,6 @@ let pressed = false
   type $RequiredSlotKeys<__S> = { [__K in keyof __S]-?: undefined extends __S[__K] ? never : __K }[keyof __S];
   type $MissingRequiredSlots<__S, __P> = Exclude<$RequiredSlotKeys<__S>, keyof __P>;
   type $RequiredSlots<__S, __P> = $IsAny<__S> extends true ? {} : string extends keyof __S ? {} : [keyof __S] extends [never] ? {} : [$MissingRequiredSlots<__S, __P>] extends [never] ? {} : { readonly __vizeMissingSlots: $MissingRequiredSlots<__S, __P> };
-  // @vize-map: component -> 0:42
   type __Child_Props_0 = typeof Child extends { __vizeCheck: infer __F } ? ($IsAny<__F> extends true ? $ComponentRawProps<typeof Child> : Record<string, unknown>) : $ComponentRawProps<typeof Child>;
   type __Child_Component_0 = typeof Child;
   type __Child_CheckProps_0 = __Child_Props_0 & $EmitListeners<__Child_Component_0> & ($FallthroughProps<__Child_Component_0> extends infer __F ? [__F extends unknown ? {} extends __F ? never : __F : never] extends [never] ? $RequiredFallthroughProps<__Child_Component_0, __F, never> : $RequiredFallthroughProps<__Child_Component_0, __F> : never);

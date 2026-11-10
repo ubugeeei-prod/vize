@@ -124,7 +124,8 @@ impl DynamicComponentAliases {
             let declaration = match guard {
                 Some(guard) => AliasDeclaration {
                     start: usage.start,
-                    comment: "// @ts-ignore Inference-only alias; authored v-if and v-bind statements own diagnostics.",
+                    // Inference-only alias; authored v-if and v-bind statements own diagnostics.
+                    comment: "// @ts-ignore",
                     statement: vize_carton::cstr!(
                         "const {}{annotation} = ({guard}) ? ({expression}) : (undefined as never);",
                         usage.name
@@ -132,7 +133,8 @@ impl DynamicComponentAliases {
                 },
                 None => AliasDeclaration {
                     start: usage.start,
-                    comment: "// @ts-ignore Inference-only alias; the authored v-bind statement owns diagnostics.",
+                    // Inference-only alias; the authored v-bind statement owns diagnostics.
+                    comment: "// @ts-ignore",
                     statement: vize_carton::cstr!(
                         "const {}{annotation} = ({expression});",
                         usage.name
@@ -255,7 +257,8 @@ impl GuardDeclaration {
     fn push(&self, ts: &mut crate::virtual_ts::TextBuf, indent: &str) {
         append!(
             *ts,
-            "{indent}// @ts-ignore Inference-only guard; the authored v-if statement owns diagnostics.\n{indent}const {} = ({});\n",
+            // Inference-only guard; the authored v-if statement owns diagnostics.
+            "{indent}// @ts-ignore\n{indent}const {} = ({});\n",
             self.name,
             self.expression
         );

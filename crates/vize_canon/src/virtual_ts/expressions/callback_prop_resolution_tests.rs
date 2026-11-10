@@ -52,9 +52,7 @@ fn callback_resolution_keeps_inference_and_branch_selection_separate() {
     assert_eq!(
         output
             .code
-            .matches(
-                "// @ts-ignore Inference-only callback prop; mapped prop owner checks diagnostics.\n    \"pick\": (item) => item.id,"
-            )
+            .matches("// @ts-ignore\n    \"pick\": (item) => item.id,")
             .count(),
         1,
         "inference-only callback line must not own duplicate diagnostics:\n{}",
@@ -125,9 +123,7 @@ fn multiline_callback_starts_on_the_ignored_property_line() {
     assert_eq!(
         output
             .code
-            .matches(
-                "// @ts-ignore Inference-only callback prop; mapped prop owner checks diagnostics.\n    \"check\": (params) =>"
-            )
+            .matches("// @ts-ignore\n    \"check\": (params) =>")
             .count(),
         1,
         "the ignored line must contain the callback parameter token:\n{}",

@@ -59,7 +59,8 @@ pub(crate) fn generate_template_context(
     if vue2_dialect {
         ctx.push_str("    // Vue template context (Vue 2-compatible structural fallback)\n    type __Ctx = { $attrs: Record<string, unknown>; $slots: Record<string, unknown>; $refs: Record<string, any>; $emit: (...args: any[]) => void; };\n");
     } else {
-        ctx.push_str("    // Vue template context (delegates to ComponentPublicInstance)\n    // @ts-ignore TS2694/TS2307: a `vue` without `ComponentPublicInstance` must degrade template context extras to unchecked, never error.\n    type __Ctx = import('vue').ComponentPublicInstance;\n");
+        // TS2694/TS2307: a `vue` without `ComponentPublicInstance` must degrade template context extras to unchecked, never error.
+        ctx.push_str("    // Vue template context (delegates to ComponentPublicInstance)\n    // @ts-ignore\n    type __Ctx = import('vue').ComponentPublicInstance;\n");
     }
     if needs_global_helper {
         ctx.push_str("    type $GlobalContextIsAny<T> = 0 extends (1 & T) ? true : false;\n    type $GlobalContextProperty<T, F> = $GlobalContextIsAny<T> extends true ? T : unknown extends T ? F : T;\n    type __Global<K extends string, F = unknown> = K extends keyof __Ctx ? $GlobalContextProperty<__Ctx[K], F> : F;\n");

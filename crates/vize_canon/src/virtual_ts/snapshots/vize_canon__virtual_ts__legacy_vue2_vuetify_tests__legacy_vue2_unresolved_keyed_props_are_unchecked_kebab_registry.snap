@@ -142,7 +142,7 @@ defineProps<Props>()
   // ========== Template Scope (inherits from setup) ==========
   ;(function __template() {
     // Vue template context (delegates to ComponentPublicInstance)
-    // @ts-ignore TS2694/TS2307: a `vue` without `ComponentPublicInstance` must degrade template context extras to unchecked, never error.
+    // @ts-ignore
     type __Ctx = import('vue').ComponentPublicInstance;
     const __ctx = (void 0) as unknown as __Ctx;
     const $attrs = __ctx.$attrs;
@@ -165,15 +165,13 @@ defineProps<Props>()
   void width;
 
   void (width); // VBind
-  // @vize-map: expr -> 18:23
   void (hideDetails); // VBind
-  // @vize-map: expr -> 40:51
 
   // Undefined references from template:
   void (__vize_keyed_template_context.width);
-  // @vize-map: 18200:18205 -> 18:23
+  // @vize-map: 18019:18024 -> 18:23
   void (__vize_keyed_template_context.hideDetails);
-  // @vize-map: 18283:18294 -> 40:51
+  // @vize-map: 18102:18113 -> 40:51
 
   // Component props type declarations
   type $IsAny<T> = 0 extends (1 & T) ? true : false;
@@ -209,7 +207,6 @@ defineProps<Props>()
   type $RequiredSlotKeys<__S> = { [__K in keyof __S]-?: undefined extends __S[__K] ? never : __K }[keyof __S];
   type $MissingRequiredSlots<__S, __P> = Exclude<$RequiredSlotKeys<__S>, keyof __P>;
   type $RequiredSlots<__S, __P> = $IsAny<__S> extends true ? {} : string extends keyof __S ? {} : [keyof __S] extends [never] ? {} : [$MissingRequiredSlots<__S, __P>] extends [never] ? {} : { readonly __vizeMissingSlots: $MissingRequiredSlots<__S, __P> };
-  // @vize-map: component -> 0:55
   type __v_select_Props_0 = typeof v_select extends { __vizeCheck: infer __F } ? ($IsAny<__F> extends true ? $ComponentRawProps<typeof v_select> : Record<string, unknown>) : $ComponentRawProps<typeof v_select>;
   type __v_select_Component_0 = typeof v_select;
   type __v_select_CheckProps_0 = __v_select_Props_0 & $EmitListeners<__v_select_Component_0> & ($FallthroughProps<__v_select_Component_0> extends infer __F ? [__F extends unknown ? {} extends __F ? never : __F : never] extends [never] ? $RequiredFallthroughProps<__v_select_Component_0, __F, never> : $RequiredFallthroughProps<__v_select_Component_0, __F> : never);
@@ -227,10 +224,8 @@ defineProps<Props>()
   void __vize_props_nav_0.width; void __vize_props_nav_0.hideDetails;
 
   // Component props value checks (template scope)
-  // @vize-map: prop -> 10:24
   const __vize_prop_check_0_width: __v_select_0_prop_width = width;
   void __vize_prop_check_0_width;
-  // @vize-map: prop -> 25:52
   const __vize_prop_check_0_hide_details: __v_select_0_prop_hide_details = hideDetails;
   void __vize_prop_check_0_hide_details;
   (undefined as unknown as __v_select_Check_0)({
@@ -409,15 +404,13 @@ defineProps<Props>()
   void width;
 
   void (width); // VBind
-  // @vize-map: expr -> 18:23
   void (hideDetails); // VBind
-  // @vize-map: expr -> 40:51
 
   // Undefined references from template:
   void (width);
-  // @vize-map: 8300:8305 -> 18:23
+  // @vize-map: 8240:8245 -> 18:23
   void (hideDetails);
-  // @vize-map: 8351:8362 -> 40:51
+  // @vize-map: 8291:8302 -> 40:51
 
   // Auto-imported/built-in components (not in script bindings)
   const v_select: any = undefined as any;

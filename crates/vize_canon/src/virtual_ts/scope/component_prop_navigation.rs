@@ -45,7 +45,8 @@ pub(super) fn emit_usage_references(
     });
 
     if inference_only {
-        ts.push_str("  // @ts-ignore Navigation-only reference; the authored v-bind statement owns diagnostics.\n");
+        // Navigation-only reference; the authored v-bind statement owns diagnostics.
+        ts.push_str("  // @ts-ignore\n");
     }
     ts.push_str("  void ");
     let tag_gen_start = ts.len();

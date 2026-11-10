@@ -325,7 +325,8 @@ fn emit_resolved_events(
         .select(ctx.hoist_shared_preamble);
     vize_l0::emit_ts!(
         ts,
-        "{indent}type __vize_events_resolver_{idx} = typeof {component_ref} extends {{ __vizeResolveEvents?: infer __F }} ? (__F extends (...args: any[]) => any ? __F : (props: any) => {component_events}<typeof {component_ref}>) : (props: any) => {component_events}<typeof {component_ref}>;\n{indent}// @ts-ignore Inference-only call; the authored prop checker owns diagnostics.\n{indent}const {resolved_events} = (undefined as unknown as __vize_events_resolver_{idx})("
+        // Inference-only call; the authored prop checker owns diagnostics.
+        "{indent}type __vize_events_resolver_{idx} = typeof {component_ref} extends {{ __vizeResolveEvents?: infer __F }} ? (__F extends (...args: any[]) => any ? __F : (props: any) => {component_events}<typeof {component_ref}>) : (props: any) => {component_events}<typeof {component_ref}>;\n{indent}// @ts-ignore\n{indent}const {resolved_events} = (undefined as unknown as __vize_events_resolver_{idx})("
     );
     if !usage.spread_props.is_empty() {
         crate::virtual_ts::expressions::append_inference_props_literal(
@@ -361,7 +362,8 @@ fn emit_resolved_events(
         if inline_callback {
             vize_l0::emit_ts!(
                 ts,
-                "{indent}  // @ts-ignore Inference-only callback prop; mapped prop owner checks diagnostics.\n"
+                // Inference-only callback prop; mapped prop owner checks diagnostics.
+                "{indent}  // @ts-ignore\n"
             );
         }
         vize_l0::emit_ts!(ts, "{indent}  ");
