@@ -244,6 +244,7 @@ void test("all current descriptive matrix cohorts retain success, failed and can
   const logs: Record<number, string> = {};
   const expected: Record<string, number> = {};
   const nested = "../../../../../tmp/original/tests/tooling/misskey.test.ts";
+  const nestedToolingTest = "tests/tooling/imported-subprocess.test.ts";
   const jobs = matrix.map(({ name, index, total }) => {
     const files = Object.fromEntries(
       selectToolingShard(plan, `${index}/${total}`).map((file, offset) => [
@@ -252,7 +253,10 @@ void test("all current descriptive matrix cohorts retain success, failed and can
       ]),
     );
     Object.assign(expected, files);
-    if (index === 1) files[nested] = 27;
+    if (index === 1) {
+      files[nested] = 27;
+      files[nestedToolingTest] = 31;
+    }
     logs[index] =
       `${TOOLING_TIMINGS_LOG_MARKER} ${JSON.stringify({ tier: "merge", shard: `${index}/${total}`, files })}`;
     return {
@@ -262,6 +266,7 @@ void test("all current descriptive matrix cohorts retain success, failed and can
     };
   });
   expected[nested] = 27;
+  expected[nestedToolingTest] = 31;
   assert.deepEqual(measureToolingJobs(jobs, (id) => logs[id]).tiers, { pr: {}, merge: expected });
   for (const name of ["runtime captures", "no selected test files"]) {
     const record = `${TOOLING_TIMINGS_LOG_MARKER} ${JSON.stringify({ tier: "merge", shard: "1/1", files: {} })}`;
@@ -292,7 +297,6 @@ void test("all current descriptive matrix cohorts retain success, failed and can
     files: unknown = { "tests/tooling/a.test.ts": 12, "tests/tooling/b.test.ts": 21 },
   ) => `${TOOLING_TIMINGS_LOG_MARKER} ${JSON.stringify({ tier, shard, files })}`;
   for (const name of [
-    "Tooling (a)",
     "Tooling (a + 2 files)",
     "Tooling (missing + 1 files)",
     "Tooling (a + 0 files)",
@@ -304,6 +308,13 @@ void test("all current descriptive matrix cohorts retain success, failed and can
       /cohort mismatch/,
     );
   }
+  assert.deepEqual(
+    measureToolingJobs([{ id: 1, name: "Tooling (a)", conclusion: "success" }], () => raw()).tiers,
+    {
+      pr: {},
+      merge: { "tests/tooling/a.test.ts": 12, "tests/tooling/b.test.ts": 21 },
+    },
+  );
   for (const shard of ["0/1", "2/1", "1/0", "01/2", "1/17", "1/2 extra", "1/9007199254740992"]) {
     assert.throws(() => parseToolingTimingLog(raw(shard)), /invalid tooling timing shard/);
     assert.throws(
