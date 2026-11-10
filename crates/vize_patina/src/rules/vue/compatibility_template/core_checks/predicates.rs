@@ -1,6 +1,7 @@
 //! Small semantic predicates shared by the core-rule visitor.
 
-use oxc_ast::ast::{BinaryExpression, Expression, NumericLiteral, PropertyKey};
+use oxc_ast::ast::{BinaryExpression, ChainElement, Expression, PropertyKey};
+use oxc_syntax::number::ToJsString;
 use oxc_syntax::operator::{BinaryOperator, UnaryOperator};
 
 pub(super) fn is_underscored_identifier(name: &str) -> bool {
@@ -9,10 +10,10 @@ pub(super) fn is_underscored_identifier(name: &str) -> bool {
 }
 
 pub(super) fn is_numeric(expression: &Expression<'_>) -> bool {
-    match expression.get_inner_expression() {
+    match expression.without_parentheses() {
         Expression::NumericLiteral(_) => true,
         Expression::CallExpression(call) => matches!(
-            call.callee.get_inner_expression(),
+            call.callee.without_parentheses(),
             Expression::Identifier(identifier)
                 if matches!(identifier.name.as_str(), "Number" | "parseInt" | "parseFloat")
         ),
@@ -20,7 +21,7 @@ pub(super) fn is_numeric(expression: &Expression<'_>) -> bool {
     }
 }
 
-pub(super) fn is_identifier_name(name: &str) -> bool {
+fn is_identifier_name(name: &str) -> bool {
     let mut bytes = name.bytes();
     bytes
         .next()
@@ -28,23 +29,47 @@ pub(super) fn is_identifier_name(name: &str) -> bool {
         && bytes.all(|byte| byte.is_ascii_alphanumeric() || matches!(byte, b'_' | b'$'))
 }
 
-pub(super) fn can_unquote_property(name: &str) -> bool {
-    is_identifier_name(name) || is_canonical_integer_property(name)
+/// A literal key that `vue/dot-notation` would rather see as `.key`.
+pub(super) fn dot_notation_key<'a>(key: &'a Expression<'a>) -> Option<&'a Expression<'a>> {
+    let key = key.without_parentheses();
+    let name = match key {
+        Expression::StringLiteral(literal) => literal.value.as_str(),
+        Expression::BooleanLiteral(literal) if literal.value => "true",
+        Expression::BooleanLiteral(_) => "false",
+        Expression::NullLiteral(_) => "null",
+        Expression::TemplateLiteral(template) if template.expressions.is_empty() => template
+            .quasis
+            .first()
+            .and_then(|quasi| quasi.value.cooked.as_ref())
+            .map(|cooked| cooked.as_str())?,
+        _ => return None,
+    };
+    is_identifier_name(name).then_some(key)
 }
 
-fn is_canonical_integer_property(name: &str) -> bool {
-    const MAX_SAFE_INTEGER: u64 = 9_007_199_254_740_991;
+pub(super) fn can_unquote_property(name: &str) -> bool {
+    oxc_syntax::identifier::is_identifier_name(name) || is_canonical_number_property(name)
+}
 
-    if name == "0" {
-        return true;
-    }
-    name.as_bytes()
-        .first()
-        .is_some_and(|byte| byte.is_ascii_digit() && *byte != b'0')
-        && name.bytes().all(|byte| byte.is_ascii_digit())
+/// One decimal number token that prints back as written (`String(Number(key)) === key`).
+fn is_canonical_number_property(name: &str) -> bool {
+    let (mantissa, exponent) = match name.split_once(['e', 'E']) {
+        Some((mantissa, exponent)) => (mantissa, Some(exponent)),
+        None => (name, None),
+    };
+    let (integer, fraction) = mantissa.split_once('.').unwrap_or((mantissa, ""));
+    let digits = |part: &str| part.bytes().all(|byte| byte.is_ascii_digit());
+    let token = !(integer.is_empty() && fraction.is_empty())
+        && digits(integer)
+        && digits(fraction)
+        && exponent.is_none_or(|exponent| {
+            let unsigned = exponent.strip_prefix(['+', '-']).unwrap_or(exponent);
+            !unsigned.is_empty() && digits(unsigned)
+        });
+    token
         && name
-            .parse::<u64>()
-            .is_ok_and(|value| value <= MAX_SAFE_INTEGER)
+            .parse::<f64>()
+            .is_ok_and(|value| value.to_js_string() == name)
 }
 
 pub(super) fn is_empty_string_like(expression: &Expression<'_>) -> bool {
@@ -82,30 +107,61 @@ pub(super) fn is_known_string(expression: &Expression<'_>) -> bool {
     }
 }
 
+/// `a * 1` or `a - 0`; a chain such as `2 * a * 1` has no plain non-numeric operand.
 pub(super) fn is_implicit_numeric_coercion(binary: &BinaryExpression<'_>) -> bool {
+    let plain_non_numeric = |operand: &Expression<'_>| {
+        !matches!(
+            operand.without_parentheses(),
+            Expression::BinaryExpression(_)
+        ) && !is_numeric(operand)
+    };
     match binary.operator {
         BinaryOperator::Multiplication => {
-            is_number(&binary.left, 1.0) && !is_numeric(&binary.right)
-                || is_number(&binary.right, 1.0) && !is_numeric(&binary.left)
+            (is_number(&binary.left, 1.0) || is_number(&binary.right, 1.0))
+                && (plain_non_numeric(&binary.right) || plain_non_numeric(&binary.left))
         }
         BinaryOperator::Subtraction => is_number(&binary.right, 0.0) && !is_numeric(&binary.left),
         _ => false,
     }
 }
 
+/// `a * 1` written as the dividend of `a * 1 / b` reads as `a * (1 / b)`.
+pub(super) fn multiplies_by_fraction_of_one<'a>(
+    binary: &'a BinaryExpression<'a>,
+) -> Option<&'a BinaryExpression<'a>> {
+    if binary.operator != BinaryOperator::Division {
+        return None;
+    }
+    match &binary.left {
+        Expression::BinaryExpression(left)
+            if left.operator == BinaryOperator::Multiplication && is_number(&left.right, 1.0) =>
+        {
+            Some(left)
+        }
+        _ => None,
+    }
+}
+
 fn is_number(expression: &Expression<'_>, expected: f64) -> bool {
-    matches!(expression.get_inner_expression(), Expression::NumericLiteral(literal) if literal.value == expected)
+    matches!(expression.without_parentheses(), Expression::NumericLiteral(literal) if literal.value == expected)
 }
 
 pub(super) fn is_index_of_call(expression: &Expression<'_>) -> bool {
-    let Expression::CallExpression(call) = expression.get_inner_expression() else {
-        return false;
+    let call = match expression.without_parentheses() {
+        Expression::CallExpression(call) => call,
+        Expression::ChainExpression(chain) => match &chain.expression {
+            ChainElement::CallExpression(call) => call,
+            _ => return false,
+        },
+        _ => return false,
     };
-    call.callee
-        .get_inner_expression()
-        .as_member_expression()
+    let member = match call.callee.without_parentheses() {
+        Expression::ChainExpression(chain) => chain.expression.as_member_expression(),
+        callee => callee.as_member_expression(),
+    };
+    member
         .and_then(|member| member.static_property_name())
-        .is_some_and(|property| property == "indexOf")
+        .is_some_and(|property| matches!(property, "indexOf" | "lastIndexOf"))
 }
 
 pub(super) fn leftmost_addition_operand<'a>(expression: &'a Expression<'a>) -> &'a Expression<'a> {
@@ -240,31 +296,6 @@ pub(super) fn is_negated(expression: &Expression<'_>) -> bool {
         ),
         _ => false,
     }
-}
-
-pub(super) fn numeric_literal_may_lose_precision(literal: &NumericLiteral<'_>) -> bool {
-    let Some(raw) = literal.raw.as_ref().map(|raw| raw.as_str()) else {
-        return false;
-    };
-    if !literal.value.is_finite() {
-        return true;
-    }
-    let normalized = raw.replace('_', "");
-    if let Some(hex) = normalized
-        .strip_prefix("0x")
-        .or_else(|| normalized.strip_prefix("0X"))
-    {
-        return u128::from_str_radix(hex, 16)
-            .ok()
-            .is_some_and(|value| literal.value as u128 != value);
-    }
-    if normalized.bytes().all(|byte| byte.is_ascii_digit()) {
-        return normalized
-            .parse::<u128>()
-            .ok()
-            .is_some_and(|value| literal.value as u128 != value);
-    }
-    false
 }
 
 pub(super) fn property_name<'a>(key: &'a PropertyKey<'a>) -> Option<&'a str> {
