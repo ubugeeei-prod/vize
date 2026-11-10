@@ -194,7 +194,6 @@ fn generate_component_prop_checks_inner<const LEGACY_SCALARS: bool>(
     let source_context = ctx.source_context;
     let indent = ctx.indent;
     let strict_v_model = ctx.strict_v_model;
-    let component_type_name = to_safe_identifier_fragment(usage.name.as_str());
     let has_inline_callback = !LEGACY_SCALARS
         && usage
             .props
@@ -329,12 +328,7 @@ fn generate_component_prop_checks_inner<const LEGACY_SCALARS: bool>(
                         resolved_props.as_ref().filter(|_| inline_callback),
                         ctx.hoist_shared_preamble,
                     ),
-                    (
-                        component_type_name.as_str(),
-                        idx,
-                        safe_prop_name.as_str(),
-                        prop.name.as_str(),
-                    ),
+                    (idx, safe_prop_name.as_str(), prop.name.as_str()),
                 );
             }
             let value_gen_range = profile!("canon.virtual_ts.prop_check.value_emission", {
@@ -411,7 +405,7 @@ fn generate_component_prop_checks_inner<const LEGACY_SCALARS: bool>(
                 super::model_update::append_model_update_check(
                     ts,
                     mappings,
-                    (component_type_name.as_str(), idx),
+                    idx,
                     (usage, prop, source_context),
                     generated_value.text.as_str(),
                     target_source,

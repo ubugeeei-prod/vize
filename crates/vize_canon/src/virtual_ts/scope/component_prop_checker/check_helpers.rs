@@ -274,7 +274,7 @@ pub(in crate::virtual_ts::scope) fn append_prop_check_helpers(
     // are emitted inside a template scope's function body, not at module level.
     //
     // A generic child's props come from its `__vizeCheck<T>(props)` call, so
-    // `__X_Props_N` is `Record<string, unknown>` and every per-prop alias
+    // `__VProps{N}` is `Record<string, unknown>` and every per-prop alias
     // resolves to `unknown`. An inline callback prop annotated `unknown` has
     // no contextual type, so `strict` reports TS7006 on parameters that are
     // in fact contextually typed by the checker call below — a new error on

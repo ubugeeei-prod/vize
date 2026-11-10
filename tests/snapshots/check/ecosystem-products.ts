@@ -84,13 +84,13 @@ const ariaPropReceipts = [
     file: "src/PrimeVueOptionsApi.vue",
     priorProperty: '"aria-label": `${selectedAction.label} search`,',
     property:
-      '...__vizeComponentAriaPropEntries("aria-label", "ariaLabel", `${selectedAction.label} search`, (undefined as unknown as __InputText_0_prop_aria_label)),',
+      '...__vizeComponentAriaPropEntries("aria-label", "ariaLabel", `${selectedAction.label} search`, (undefined as unknown as __VProp0$aria_label)),',
   },
   {
     file: "src/UiLibraries.vue",
     priorProperty: '"aria-label": "PrimeVue input",',
     property:
-      '...__vizeComponentAriaPropEntries("aria-label", "ariaLabel", "PrimeVue input", (undefined as unknown as __InputText_16_prop_aria_label)),',
+      '...__vizeComponentAriaPropEntries("aria-label", "ariaLabel", "PrimeVue input", (undefined as unknown as __VProp16$aria_label)),',
   },
 ] as const;
 

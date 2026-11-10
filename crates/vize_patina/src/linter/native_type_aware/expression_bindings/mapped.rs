@@ -319,7 +319,7 @@ fn expression_owner_statements(text: &str) -> Vec<ExpressionOwnerStatement<'_>> 
         let Some(header) = text.get(call_start..line_end) else {
             continue;
         };
-        if !header.contains("_Check_") || !header.trim_end().ends_with(")({") {
+        if !is_component_checker_call(header) {
             continue;
         }
         let Some(before) = text.get(..call_start) else {
@@ -362,6 +362,16 @@ struct Probe {
     name: std::ops::Range<usize>,
     /// Exact affine copy. Comment-stripped copies deliberately stay unmapped.
     copy: Option<std::ops::Range<usize>>,
+}
+
+/// `(undefined as unknown as __VCheck{N})({`: one component usage's
+/// whole-props check.
+fn is_component_checker_call(header: &str) -> bool {
+    header
+        .trim_end()
+        .strip_prefix("(undefined as unknown as __VCheck")
+        .and_then(|rest| rest.strip_suffix(")({"))
+        .is_some_and(|index| !index.is_empty() && index.bytes().all(|byte| byte.is_ascii_digit()))
 }
 
 /// An `if` / `else if` header line.

@@ -49,7 +49,7 @@ const onClose = () => undefined
     }
     output
         .code
-        .find("type __MyChild_Check_1 = __MyChild_Check_0;")
+        .find("type __VCheck1 = __VCheck0;")
         .expect("later whole-props check reuses the first resolved checker");
     assert_eq!(
         output.code.matches("const __vize_emit_props_").count(),
@@ -124,9 +124,6 @@ fn shared_aliases_follow_actual_model_and_spread_reads() {
                 let usages = vize_croquis::facts::component_usage_list(&summary);
                 assert_eq!(usages.len(), 2);
                 assert_eq!(usages[0].name, usages[1].name);
-                let name = crate::virtual_ts::helpers::to_safe_identifier_fragment(
-                    usages[1].name.as_str(),
-                );
                 let output = generate_virtual_ts_with_offsets_and_checks(
                     &summary,
                     Some(script),
@@ -147,8 +144,8 @@ fn shared_aliases_follow_actual_model_and_spread_reads() {
                         ..Default::default()
                     },
                 );
-                let alias = cstr!("__{name}_Component_1");
-                let declaration = cstr!("  type {alias} = __{name}_Component_0;");
+                let alias = String::from("__VComp1");
+                let declaration = cstr!("  type {alias} = __VComp0;");
                 let actual = output
                     .code
                     .lines()
@@ -174,7 +171,7 @@ fn shared_aliases_follow_actual_model_and_spread_reads() {
                     output.code
                 );
                 for suffix in ["CheckProps", "CheckTail"] {
-                    let prefix = cstr!("type __{name}_{suffix}_1");
+                    let prefix = cstr!("type __V{suffix}1");
                     assert_eq!(
                         output
                             .code
@@ -187,8 +184,8 @@ fn shared_aliases_follow_actual_model_and_spread_reads() {
                         output.code
                     );
                 }
-                let checker = cstr!("  type __{name}_Check_1 = __{name}_Check_0;");
-                let check_prefix = cstr!("type __{name}_Check_1");
+                let checker = String::from("  type __VCheck1 = __VCheck0;");
+                let check_prefix = String::from("type __VCheck1");
                 assert_eq!(
                     output
                         .code
@@ -230,8 +227,7 @@ fn repeated_prop_value_type_is_emitted_once() {
         } else {
             "$PropValueOr"
         };
-        let shared_type =
-            cstr!("{prop_value_or}<__MyChild_ValueProps_0, 'label', __MyChild_Component_0>");
+        let shared_type = cstr!("{prop_value_or}<__VValueProps0, 'label', __VComp0>");
         assert_eq!(
             output.code.matches(shared_type.as_str()).count(),
             1,
@@ -242,9 +238,7 @@ fn repeated_prop_value_type_is_emitted_once() {
             output
                 .code
                 .lines()
-                .filter(
-                    |line| line.trim() == "type __MyChild_1_prop_label = __MyChild_0_prop_label;"
-                )
+                .filter(|line| line.trim() == "type __VProp1$label = __VProp0$label;")
                 .count(),
             1,
             "the second static use aliases the shared prop type; hoist={hoist}: {}",
@@ -255,8 +249,7 @@ fn repeated_prop_value_type_is_emitted_once() {
         } else {
             "$CallableProp<"
         };
-        let callable_alias =
-            cstr!("type __MyChild_2_prop_label = {callable}__MyChild_0_prop_label>;");
+        let callable_alias = cstr!("type __VProp2$label = {callable}__VProp0$label>;");
         assert_eq!(
             output
                 .code
@@ -271,9 +264,7 @@ fn repeated_prop_value_type_is_emitted_once() {
             output
                 .code
                 .lines()
-                .filter(
-                    |line| line.trim() == "type __MyChild_2_prop_label = __MyChild_0_prop_label;"
-                )
+                .filter(|line| line.trim() == "type __VProp2$label = __VProp0$label;")
                 .count(),
             0,
             "a callback must not reuse the static prop type; hoist={hoist}: {}",

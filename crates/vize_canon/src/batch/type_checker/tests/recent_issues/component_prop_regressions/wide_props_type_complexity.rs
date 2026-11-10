@@ -80,16 +80,15 @@ const pick = (_value: string, _index: number) => {}
     let authored = "{ variant0: \"solid\"; onSelect3: (_value: string, _index: number) => void; class: string; }";
     let flattened = "{ readonly title: string; readonly variant0?: \"ghost\" | \"link\" | \"outline\" | \"solid\" | undefined; readonly onSelect0?: ((value: string, index: number) => void) | undefined; readonly itemList0?: readonly { ...; }[] | undefined; ... 118 more ...; readonly onClose?: (() => any) | undefined; }";
     // The isolated stub's `NativeElements` is `Record<string, …>`, so the
-    // #4966 global-attr surface renders as its open index-map form here. The
-    // longer shared data-attr map causes TypeScript to elide the final record.
-    let native_tail = "$PublicComponentAttrs & { [x: string]: unknown; } & { [x: `data${Capitalize<string>}`]: unknown; [x: `data-${string}`]: unknown; } & Record<...>";
+    // #4966 global-attr surface renders as its open index-map form here.
+    let native_tail = "$PublicComponentAttrs & { [x: string]: unknown; } & { [x: `data${Capitalize<string>}`]: unknown; [x: `data-${string}`]: unknown; } & Record<string, unknown>";
     assert_eq!(
         snapshot,
         vec![(
             String::from("src/Parent.vue"),
             Some(2345),
             cstr!(
-                "7:4:error Argument of type '{authored}' is not assignable to parameter of type '$ComponentCheckProps<__Wide_CheckProps_0, {native_tail}>'.\nProperty 'title' is missing in type '{authored}' but required in type '{flattened}'."
+                "7:4:error Argument of type '{authored}' is not assignable to parameter of type '$ComponentCheckProps<__VCheckProps0, {native_tail}>'.\nProperty 'title' is missing in type '{authored}' but required in type '{flattened}'."
             ),
         )],
         "a 121-prop child reports exactly its missing required prop, with no complexity error"

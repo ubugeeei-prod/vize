@@ -20,7 +20,7 @@ fn callback_resolution_keeps_inference_and_branch_selection_separate() {
     assert_eq!(
         output
             .code
-            .matches("const __vize_resolved_Child_props_0 = (undefined as unknown as $ResolvedContextProps)((undefined as unknown as $PropsResolver<typeof Child>)({")
+            .matches("const __VResolvedProps0 = (undefined as unknown as $ResolvedContextProps)((undefined as unknown as $PropsResolver<typeof Child>)({")
             .count(),
         1,
         "inference resolver must keep the authored callback:\n{}",
@@ -29,7 +29,7 @@ fn callback_resolution_keeps_inference_and_branch_selection_separate() {
     assert_eq!(
         output
             .code
-            .matches("const __vize_selected_Child_props_0 = (undefined as unknown as $PropsSelector<typeof __vize_resolved_Child_props_0>)({")
+            .matches("const __VSelectedProps0 = (undefined as unknown as $PropsSelector<typeof __VResolvedProps0>)({")
             .count(),
         1,
         "selector must be constrained by the inferred props union:\n{}",
@@ -38,7 +38,7 @@ fn callback_resolution_keeps_inference_and_branch_selection_separate() {
     assert_eq!(
         output
             .code
-            .matches("$ResolvedProp<typeof __vize_resolved_Child_props_0, typeof __vize_selected_Child_props_0, 'pick'")
+            .matches("$ResolvedProp<typeof __VResolvedProps0, typeof __VSelectedProps0, 'pick'")
             .count(),
         1,
         "mapped owner must use both inference and selected-branch types:\n{}",

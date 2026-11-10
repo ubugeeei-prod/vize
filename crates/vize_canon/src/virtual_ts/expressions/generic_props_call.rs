@@ -5,7 +5,6 @@
 //! per-file source-length budget. The props object literal both calls pass is
 //! assembled by [`super::props_literal`].
 
-use super::super::helpers::to_safe_identifier_fragment;
 use super::super::scope::{append_chained_vif_guard_close, append_chained_vif_guard_open};
 use super::super::types::VizeMapping;
 use super::component_props::ComponentPropSource;
@@ -43,7 +42,6 @@ pub(super) fn generate_generic_props_call(
     typed_fallthrough_values: bool,
     hoist_shared_preamble: bool,
 ) {
-    let component_type_name = to_safe_identifier_fragment(usage.name.as_str());
     let expr_indent = if usage.vif_guard.is_some() {
         cstr!("{indent}  ")
     } else {
@@ -54,10 +52,7 @@ pub(super) fn generate_generic_props_call(
         append_chained_vif_guard_open(ts, indent, guard, "Inference-only guard");
     }
 
-    vize_l0::emit_ts!(
-        ts,
-        "{expr_indent}(undefined as unknown as __{component_type_name}_Check_{idx})("
-    );
+    vize_l0::emit_ts!(ts, "{expr_indent}(undefined as unknown as __VCheck{idx})(");
     let check_spread_values = typed_fallthrough_values && !usage.spread_props.is_empty();
     // TypeScript anchors an *argument* assignability failure — `TS2345` — at the
     // opening brace of the object literal. Mapping only that byte gives the
@@ -93,9 +88,9 @@ pub(super) fn generate_generic_props_call(
         if hoist_shared_preamble {
             let fallthrough_spread_checker =
                 crate::virtual_ts::helpers::shared_types::FALLTHROUGH_SPREAD_CHECKER.select(true);
-            vize_l0::emit_ts!(ts, "{expr_indent}(undefined as unknown as {fallthrough_spread_checker}<__{component_type_name}_Component_{idx}, __{component_type_name}_Props_{idx}>)(");
+            vize_l0::emit_ts!(ts, "{expr_indent}(undefined as unknown as {fallthrough_spread_checker}<__VComp{idx}, __VProps{idx}>)(");
         } else {
-            vize_l0::emit_ts!(ts, "{expr_indent}(undefined as unknown as $FallthroughSpreadChecker<__{component_type_name}_Component_{idx}, __{component_type_name}_Props_{idx}>)(");
+            vize_l0::emit_ts!(ts, "{expr_indent}(undefined as unknown as $FallthroughSpreadChecker<__VComp{idx}, __VProps{idx}>)(");
         }
         let start = ts.len();
         vize_l0::emit_ts!(ts, "$FallthroughProps_{idx}");

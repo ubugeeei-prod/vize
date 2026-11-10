@@ -14,6 +14,20 @@
 //!
 //! A lib type the SFC declares or imports itself is reached the same way
 //! (#12536). Without either binding every name is spelled as before.
+//!
+//! # Template-scope names
+//!
+//! A per-usage name the generator declares inside the template scope is
+//! spelled `__V<Role><N>`: the reserved `__V` prefix, a PascalCase role and
+//! the file-local usage index, e.g. `__VComp3`, `__VCheckProps3`. The index
+//! alone keeps a role unique, so the component's name is not repeated in
+//! every alias. A fragment derived from authored text, such as a prop name,
+//! follows a `$` so the spelling stays injective: `__VProp3$aria_label`.
+//!
+//! The prefix is hygienic the way `__vize_` was: authored code never spells a
+//! name `__V` + PascalCase role + digits. Neighbouring conventions cannot
+//! meet it either; Volar's `__VLS_*` and Vue's `__VUE_*__` flags put `_` or a
+//! second capital where a role starts with one capital and lowercase letters.
 
 use core::fmt;
 use std::cell::RefCell;

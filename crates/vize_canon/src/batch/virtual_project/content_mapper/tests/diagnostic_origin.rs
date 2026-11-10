@@ -135,7 +135,7 @@ import Child from './Child.vue'
         generate_vue_content_mapper_transform(Path::new("App.vue"), source).expect("transform");
     let call = result
         .text
-        .find("as __Child_Check_0)(")
+        .find("as __VCheck0)(")
         .expect("component checker call");
     let opening = call + result.text[call..].find('{').expect("props literal");
     assert_eq!(

@@ -267,10 +267,8 @@ fn empty_options_component_does_not_infer_unowned_optional_raw_metadata() {
         "{code}"
     );
     assert_eq!(
-        code.matches(
-            "const { } = undefined as unknown as $ComponentNavigationProps<__Div_Props_0>;"
-        )
-        .count(),
+        code.matches("const { } = undefined as unknown as $ComponentNavigationProps<__VProps0>;")
+            .count(),
         1,
         "{code}"
     );
@@ -293,7 +291,7 @@ fn checked_component_props_camelize_aria_with_a_present_value_witness() {
         true,
     );
     assert_eq!(
-        code.matches("...__vizeComponentAriaPropEntries(\"aria-label\", \"ariaLabel\", label, (undefined as unknown as __Child_0_prop_aria_label))")
+        code.matches("...__vizeComponentAriaPropEntries(\"aria-label\", \"ariaLabel\", label, (undefined as unknown as __VProp0$aria_label))")
             .count(),
         1,
         "{code}"
@@ -313,7 +311,7 @@ fn checked_component_props_camelize_aria_with_a_present_value_witness() {
     assert_eq!(code.matches("\"dataTest\": label").count(), 1, "{code}");
     assert_eq!(
         code.matches(
-            "type __Child_0_prop_aria_label = $PropValue<__Child_Props_0, 'aria-label', $PropValueOr<__Child_ValueProps_0, 'ariaLabel', __Child_Component_0, 'aria-label'>>;"
+            "type __VProp0$aria_label = $PropValue<__VProps0, 'aria-label', $PropValueOr<__VValueProps0, 'ariaLabel', __VComp0, 'aria-label'>>;"
         )
         .count(),
         1,
@@ -327,7 +325,7 @@ fn checked_component_props_camelize_aria_with_a_present_value_witness() {
     );
     assert_eq!(
         camel
-            .matches("...__vizeComponentAriaPropEntries(\"aria-label\", \"ariaLabel\", label, (undefined as unknown as __Child_0_prop_ariaLabel))")
+            .matches("...__vizeComponentAriaPropEntries(\"aria-label\", \"ariaLabel\", label, (undefined as unknown as __VProp0$ariaLabel))")
             .count(),
         1,
         "a camel-authored binding must retain the raw quoted-key witness: {camel}"
@@ -335,7 +333,7 @@ fn checked_component_props_camelize_aria_with_a_present_value_witness() {
     assert_eq!(
         camel
             .matches(
-                "type __Child_0_prop_ariaLabel = $PropValue<__Child_Props_0, 'aria-label', $PropValueOr<__Child_ValueProps_0, 'ariaLabel', __Child_Component_0>>;"
+                "type __VProp0$ariaLabel = $PropValue<__VProps0, 'aria-label', $PropValueOr<__VValueProps0, 'ariaLabel', __VComp0>>;"
             )
             .count(),
         1,
