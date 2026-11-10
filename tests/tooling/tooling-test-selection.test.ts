@@ -7,6 +7,7 @@ import { fileURLToPath } from "node:url";
 import { test } from "node:test";
 import { mergeOnlyToolingTests } from "../../tools/config/vite-plus/tooling-test-scopes.ts";
 import {
+  dedicatedPrToolingTests,
   planToolingTests,
   toolingTestFiles,
 } from "../../tools/support/compat/github/plan-tooling-tests.mjs";
@@ -173,12 +174,17 @@ void test("merge planning restores every scenario, including directly changed de
 void test("pure typecheck and LSP helper contracts remain in T0; explicit runtime inventory exists", () => {
   const files = toolingTestFiles();
   for (const file of mergeOnlyToolingTests) assert.ok(files.includes(file), file);
+  for (const file of dedicatedPrToolingTests) assert.ok(files.includes(file), file);
   const plan = planToolingTests(["pnpm-lock.yaml"]);
   assert.ok(plan.tests.includes("tests/tooling/typecheck-dependency-gates.test.ts"));
   assert.ok(plan.tests.includes("tests/tooling/typecheck-baseline-ambient.test.ts"));
   assert.ok(plan.tests.includes("tests/tooling/tooling-test-selection.test.ts"));
   assert.ok(!plan.tests.includes("tests/tooling/lsp-smoke.test.ts"));
   assert.ok(!plan.tests.includes("tests/tooling/typecheck-baseline-project.test.ts"));
+  for (const file of dedicatedPrToolingTests) {
+    assert.ok(!plan.tests.includes(file), file);
+    assert.ok(planToolingTests([file], { includeDedicated: true }).tests.includes(file), file);
+  }
 });
 
 void test("the runner keeps shared fixtures serial and rejects unrecognized or duplicate plans", () => {

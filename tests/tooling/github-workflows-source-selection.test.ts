@@ -73,11 +73,12 @@ test("source planning uses Node and offline metadata before selecting affected p
     "${{ needs.pr-source-plan.outputs.js-plan }}",
   );
   assert.equal(plan.outputs?.tooling, "${{ steps.plan.outputs.tooling }}");
-  assert.equal(source.jobs["affected-tooling-cli"].needs, "pr-source-plan");
   assert.equal(
-    source.jobs["affected-tooling-cli"].if,
-    "${{ github.event_name != 'pull_request' || needs.pr-source-plan.outputs.affected-tooling != 'false' }}",
+    source.jobs["affected-tooling-cli"].needs,
+    undefined,
+    "build the source CLI beside the planner",
   );
+  assert.equal(source.jobs["affected-tooling-cli"].if, undefined);
   assert.deepEqual(
     Object.entries(source.jobs)
       .filter(([, job]) => /affected-tooling-cli|source-cli/.test(JSON.stringify(job)))

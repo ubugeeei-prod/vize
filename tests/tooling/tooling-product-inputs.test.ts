@@ -54,7 +54,8 @@ function fixture(t: TestContext) {
       path.join(cwd, `tests/tooling/shared-launch-${index}.test.ts`),
       'import "./support/lsp/launch.ts"; import "../_helpers/realworld-patch.ts";',
     );
-  const selected = (paths: string[]) => planToolingTests(paths, { cwd }).tests as string[];
+  const selected = (paths: string[]) =>
+    planToolingTests(paths, { cwd, includeDedicated: true }).tests as string[];
   return {
     cwd,
     selected,
