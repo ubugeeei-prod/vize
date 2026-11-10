@@ -155,6 +155,7 @@ pub use self::entry::{
     emit_dom_source_with_caps, emit_dom_source_with_options,
 };
 pub use self::error::{EmitError, UnsupportedReason, UnsupportedRefusal};
+pub use self::helper::RuntimeHelpers;
 #[doc(hidden)]
 pub use self::js::parse_rejected_expression_is_raw_js;
 pub use self::options::ReactiveRead;

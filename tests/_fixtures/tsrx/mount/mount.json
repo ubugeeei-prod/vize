@@ -1,0 +1,32 @@
+{
+  "rows": [
+    {
+      "id": "counter/clicks",
+      "file": "tests/_fixtures/tsrx/mount/counter.tsrx",
+      "component": "Counter",
+      "props": { "title": "Tally", "step": 1 },
+      "steps": [{ "click": "button" }, { "click": "button" }, { "click": "button" }]
+    },
+    {
+      "id": "counter/props",
+      "file": "tests/_fixtures/tsrx/mount/counter.tsrx",
+      "component": "Counter",
+      "props": { "title": "Tally", "step": 2 },
+      "steps": [{ "click": "button" }, { "props": { "title": "Renamed" } }, { "props": { "step": 1 } }, { "click": "button" }]
+    },
+    {
+      "id": "attributes/updates",
+      "file": "tests/_fixtures/tsrx/mount/attributes.tsrx",
+      "component": "Field",
+      "props": { "name": "email", "value": "a", "disabled": false, "tone": "plain" },
+      "steps": [{ "props": { "value": "abcd" } }, { "props": { "disabled": true, "tone": "warn" } }, { "props": { "name": "user" } }]
+    },
+    {
+      "id": "values/updates",
+      "file": "tests/_fixtures/tsrx/mount/values.tsrx",
+      "component": "Values",
+      "props": { "text": "x", "count": 1, "flag": false, "items": ["a", "b"] },
+      "steps": [{ "props": { "flag": true } }, { "props": { "count": 5, "text": "" } }, { "props": { "items": [] } }]
+    }
+  ]
+}

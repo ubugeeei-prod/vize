@@ -98,6 +98,11 @@ impl<'a> TsrxRegion<'a> {
     pub fn artifact(&self) -> &Artifact<'a> {
         &self.artifact
     }
+
+    #[must_use]
+    pub fn into_artifact(self) -> Artifact<'a> {
+        self.artifact
+    }
 }
 
 /// Every region of one module, lowered, in source order.
@@ -116,6 +121,11 @@ impl<'a> TsrxArtifacts<'a> {
     #[must_use]
     pub fn regions(&self) -> &[TsrxRegion<'a>] {
         &self.regions
+    }
+
+    #[must_use]
+    pub fn into_regions(self) -> Vec<TsrxRegion<'a>> {
+        self.regions
     }
 }
 
@@ -164,6 +174,13 @@ pub fn lower<'a>(
         });
     }
     Ok(TsrxArtifacts { module, regions })
+}
+
+/// Whether a static tag names a component: a member tag, or a name that does
+/// not start with a lowercase ASCII letter.
+#[must_use]
+pub fn is_component(name: &str) -> bool {
+    name.contains('.') || !name.starts_with(|first: char| first.is_ascii_lowercase())
 }
 
 /// A retained host expression, without a parse or a copy.

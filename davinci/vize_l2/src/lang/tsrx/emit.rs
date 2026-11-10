@@ -5,7 +5,7 @@ use vize_l1::markup::tsrx::{
     Attribute, AttributeValue, Block, Child, Element, Node, Region, RegionSite, TagName,
 };
 
-use super::{TsrxIssue, TsrxIssueKind, expression, text};
+use super::{TsrxIssue, TsrxIssueKind, expression, is_component, text};
 use crate::artifact::{ArtifactError, RegionBuilder};
 use crate::expr::ExprRef;
 use crate::op::{self, Namespace};
@@ -222,11 +222,6 @@ fn children<'a>(
         }
     }
     Ok(())
-}
-
-/// A member tag, or a name not starting with a lowercase ASCII letter.
-fn is_component(name: &str) -> bool {
-    name.contains('.') || !name.starts_with(|first: char| first.is_ascii_lowercase())
 }
 
 fn slice<'a>(cx: &Context<'a>, span: Span) -> Result<&'a str> {
