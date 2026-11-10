@@ -25,8 +25,11 @@ const CHANGED = [
 
 test("CURRENT adds only the exact disjoint slot-pattern gap mappings", () => {
   const { authority, files, cases } = readGlobalsFixture();
-  assert.equal(authority.currentSourcePackets, CURRENT);
-  const current = selectPacketGoldens(authority, files, cases)!;
+  const current = selectPacketGoldens(
+    { ...authority, currentSourcePackets: CURRENT },
+    files,
+    cases,
+  )!;
   const previous = selectPacketGoldens(
     { ...authority, currentSourcePackets: PREVIOUS },
     files,

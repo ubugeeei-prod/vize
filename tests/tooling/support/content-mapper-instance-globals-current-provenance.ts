@@ -36,12 +36,12 @@ export function assertCurrentPacketProvenance(
 ): void {
   assert.deepEqual(provenance.artifact, {
     repository: "ubugeeei-prod/vize",
-    run: 42772339922,
-    job: 129684248644,
-    id: 13742224501,
-    name: "instance-globals-tooling-15-42772339922-1",
-    digest: "sha256:562e1bc06c236903cb89ce8fd49881919870d76846c2599e6539b725f2deeeb7",
-    bytes: 393773,
+    run: 42781388461,
+    job: 129712771074,
+    id: 13746472560,
+    name: "instance-globals-10617-0c3ae8dc16cec2a240124f550d7ecf7fb159946a-1",
+    digest: "sha256:a36320d46224ffa25515e66dd680456799ac0a3db396bc7635938edf27c5104b",
+    bytes: 18677366,
   });
   const changed = [
     "lf/slot-shadow",
@@ -51,8 +51,8 @@ export function assertCurrentPacketProvenance(
   ];
   assert.ok(changed.every((label) => labels.includes(label)));
   assert.deepEqual(provenance.capturedQualification, {
-    totalOutcomes: 398,
-    passedOutcomes: 394,
+    totalOutcomes: 499,
+    passedOutcomes: 495,
     gapCount: 4,
     status: "unqualified",
     fullPacketQualification: false,
@@ -67,6 +67,6 @@ export function assertCurrentPacketProvenance(
     publicPackageAcceptanceCredit: false,
     performanceCredit: false,
     reason:
-      "Only the LF and CRLF/Unicode slot-shadow and mixed-slot-scope packets add the exact disjoint opening and closing slot-pattern gap mappings required by #12511. Their generated text, diagnostics, semantic links and all other opaque fields remain exact, the other 76 packets are byte-identical, and all 394 non-whole-packet semantic, protocol, mapping-geometry, reported-beta and official-nightly controls passed. The pinned source-built TypeScript host was unavailable, so this record retains the observed postimages without assigning host-matrix, public-package or performance acceptance credit.",
+      "The child usage in the LF and CRLF/Unicode slot-shadow and mixed-slot-scope packets now names the shared $UsageProps and $UsageRequiredFallthrough helpers instead of declaring their inline conditionals on its __Child_Props_0 and __Child_CheckProps_0 lines, so each packet shrank by exactly those two alias bodies and every later generated coordinate moved by the same bytes, while all 495 semantic, protocol, mapping-geometry, and real-host controls passed; this record retains the observed postimages without assigning acceptance credit to the stale-golden run.",
   });
 }
