@@ -1,0 +1,1 @@
+<template><main>client lifecycle</main></template>
