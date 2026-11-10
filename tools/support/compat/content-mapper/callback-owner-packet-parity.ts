@@ -359,7 +359,7 @@ function mapCommentEdits(
     assert.ok(0 <= s0 && s0 <= s1 && s1 <= sourceBytes);
     for (const edit of edits)
       assert.ok(
-        !(g0 < edit.end && edit.start < g1),
+        "frame" in edit || !(g0 < edit.end && edit.start < g1),
         "a map comment cannot claim changed scaffolding",
       );
     const values = [point(g0, edits), point(g1, edits), s0, s1];
@@ -498,7 +498,7 @@ export function assertPreservedCallbackPacket(
         "authored projection cannot overlap scaffold edits",
       );
       assert.ok(
-        ![edit.start, edit.end].includes(start) && ![edit.start, edit.end].includes(end),
+        "frame" in edit || ![edit.start, edit.end].some((at) => at === start || at === end),
         "authored projection cannot sit on an ambiguous scaffold boundary",
       );
     }

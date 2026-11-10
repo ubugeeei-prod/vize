@@ -52,7 +52,7 @@ fn an_explicit_tuple_touching_the_block_keeps_every_gap() {
     let touched = rows(TEXT, vec![expect]);
     // Five spans leave six gaps; the expect keeps its own interval.
     assert_eq!(touched.len(), 7);
-    assert!(touched.contains(&expect.0));
+    assert_eq!(touched.iter().filter(|row| **row == expect.0).count(), 1);
     let lengths =
         |rows: Vec<[usize; 6]>| rows.iter().map(|row| row[3] - row[2]).collect::<Vec<_>>();
     assert_eq!(
@@ -115,10 +115,9 @@ fn published_parent_ignores_each_navigation_block_once() {
         .find("const __vize_props_nav_0 = ")
         .expect("navigation block");
     let references = text[start..].split_inclusive('\n').nth(2).unwrap();
-    assert!(
-        references
-            .trim_start()
-            .starts_with("void __vize_props_nav_0."),
+    assert_eq!(
+        references.trim_start(),
+        "void __vize_props_nav_0.a; void __vize_props_nav_0.b; void __vize_props_nav_0.dataX;\n",
         "{text}"
     );
     let end = start

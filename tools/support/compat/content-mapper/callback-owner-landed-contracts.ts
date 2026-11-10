@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { beforeInstanceInputKeys } from "./instance-input-keys-transition.ts";
 import { beforeUnownedOwnedKeys } from "./unowned-owned-keys-transition.ts";
 import { propValueOrPreambleEdit } from "./prop-value-or-transition.ts";
+import { dedentEdits } from "./setup-dedent.ts";
 
 type Edit = { start: number; end: number; replacement: Buffer };
 
@@ -161,6 +162,8 @@ export function withLandedEdits(before: string, after: string, edits: Edit[]): E
     ...navigationEdits(before, after),
     ...lazyPropValueEdits(before, after),
     ...localPropValueOrEdits(before, after),
+    // #12481: authored setup lines lose the two spaces the old projection prefixed.
+    ...dedentEdits(Buffer.from(before), Buffer.from(after)),
   ];
   for (const match of before.matchAll(ungated)) {
     const replacement = requiredFallthroughGate(match[1]!, match[2]!);

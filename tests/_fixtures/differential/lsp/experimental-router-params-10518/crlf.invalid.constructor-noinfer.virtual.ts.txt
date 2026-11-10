@@ -87,22 +87,22 @@ function __setup() {
   void defineProps; void defineEmits; void defineExpose; void defineModel; void defineSlots; void withDefaults; void useTemplateRef;
 
   // User setup code
-  
-  // 雪😀
-  definePage<"src/pages/products/[id=int].vue">({
-    params: {
-      query: { page: { parser: 'int', format: 'value', default: 1 }, tags: { parser: 'string', format: 'array' }, at: { parser: 'date', format: 'value' } },
-      hash: { heading: {} },
-    },
-  })
-  const route = useRoute<import('vue-router/auto-routes')._RouteNamesForFilePath<"src/pages/products/[id=int].vue">>()
-  const id: number = route.params.id
-  const page: number = route.params.page
-  const tags: string[] | undefined = route.params.tags
-  const at: Date | undefined = route.params.at
-  const heading: string | undefined = route.params.heading
-  
-  // @vize-map: 11495:12007 -> 0:588
+
+// 雪😀
+definePage<"src/pages/products/[id=int].vue">({
+  params: {
+    query: { page: { parser: 'int', format: 'value', default: 1 }, tags: { parser: 'string', format: 'array' }, at: { parser: 'date', format: 'value' } },
+    hash: { heading: {} },
+  },
+})
+const route = useRoute<import('vue-router/auto-routes')._RouteNamesForFilePath<"src/pages/products/[id=int].vue">>()
+const id: number = route.params.id
+const page: number = route.params.page
+const tags: string[] | undefined = route.params.tags
+const at: Date | undefined = route.params.at
+const heading: string | undefined = route.params.heading
+
+  // @vize-map: 11495:11983 -> 0:588
 
   // ========== Template Scope (inherits from setup) ==========
   // Ref type captures (before template scope shadows them)

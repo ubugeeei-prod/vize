@@ -448,11 +448,11 @@
   "generated": {
     "valid": {
       "file": "explicit.valid.constructor-noinfer.virtual.ts.txt",
-      "sha256": "d6497ed9a8ffb2673df2e1d625af9fdf9ad3c2b988a047b5aac3e81cc9468418"
+      "sha256": "b01836fe0f710e0e0981c87615b2e3b36cf06aa70ad0b8ad0e8926d2dd75e7dd"
     },
     "invalid": {
       "file": "explicit.invalid.constructor-noinfer.virtual.ts.txt",
-      "sha256": "d6497ed9a8ffb2673df2e1d625af9fdf9ad3c2b988a047b5aac3e81cc9468418"
+      "sha256": "b01836fe0f710e0e0981c87615b2e3b36cf06aa70ad0b8ad0e8926d2dd75e7dd"
     }
   }
 }

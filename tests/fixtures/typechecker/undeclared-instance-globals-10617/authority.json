@@ -256,13 +256,13 @@
     },
     {
       "path": "source-packets-current-b6b4bbb0a16a.json",
-      "bytes": 512728,
-      "sha256": "999dcd520692409517afae987f6aff107021250d586ec5065e7e94cbc86a82ce"
+      "bytes": 419180,
+      "sha256": "3332986082728aacb6bb6ea8bcd1ab81b3c3ef398ea807347f29e99aa74fb7ca"
     },
     {
       "path": "source-packets-current-b6b4bbb0a16a-provenance.json",
       "bytes": 7255,
-      "sha256": "f383ab9bf7455f68fe4015361ac3fa780822d57b02ba61611fe41e10a2602dea"
+      "sha256": "ab97545d43c7c0e109e08c4fea02812a6341a1d6db7c76cfd5b2c2f413ca3974"
     }
   ],
   "currentSourcePackets": "source-packets-current-b6b4bbb0a16a.json"

@@ -1,8 +1,12 @@
-//! #12523: the component constructor keeps its bound instance behind `NoInfer`.
+//! #12523: the component constructor keeps its bound instance behind `NoInfer`,
+//! on top of the #12481 verbatim setup successor.
+
+mod setup_verbatim_lines;
 
 use super::receipt::authenticate_successor_receipt;
 
 pub(super) fn slots(predecessor: &'static str) -> &'static str {
+    let predecessor = setup_verbatim_lines::slots(predecessor);
     let successor = include_str!(
         "../fixtures/public-instance-options-api-slots/successor-constructor-noinfer-12431/projection-record.txt"
     );
@@ -19,6 +23,7 @@ pub(super) fn slots(predecessor: &'static str) -> &'static str {
 }
 
 pub(super) fn mixed_vue2(predecessor: &'static str) -> &'static str {
+    let predecessor = setup_verbatim_lines::mixed_vue2(predecessor);
     let successor = include_str!(
         "../fixtures/public-instance-mixed-vue2/successor-constructor-noinfer-12431/projection-record.txt"
     );

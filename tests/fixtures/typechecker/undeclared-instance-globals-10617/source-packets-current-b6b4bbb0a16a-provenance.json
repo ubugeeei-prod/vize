@@ -31,8 +31,8 @@
   },
   "successorPopulation": {
     "path": "source-packets-current-b6b4bbb0a16a.json",
-    "bytes": 512728,
-    "sha256": "999dcd520692409517afae987f6aff107021250d586ec5065e7e94cbc86a82ce"
+    "bytes": 419180,
+    "sha256": "3332986082728aacb6bb6ea8bcd1ab81b3c3ef398ea807347f29e99aa74fb7ca"
   },
   "sourceReceipt": {
     "path": "crates/vize_canon/tests/empty_vue_star_exports/membership/constructor_without_args/payload_update/canon_leftovers_11499.json",
