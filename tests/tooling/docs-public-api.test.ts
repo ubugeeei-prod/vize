@@ -100,6 +100,19 @@ const packages = [
     source: new URL("../../npm/builder/parcel/src/", import.meta.url),
   },
   {
+    name: "@vizejs/rspack-plugin",
+    sourceRoot: npmRoot,
+    minimumDeclarations: 55,
+    minimumOptionalMembers: 41,
+    entrypoints: [
+      new URL("builder/rspack/src/index.ts", npmRoot),
+      new URL("builder/rspack/src/loader/index.ts", npmRoot),
+      new URL("builder/rspack/src/loader/jsx-loader.ts", npmRoot),
+      new URL("builder/rspack/src/loader/style-loader.ts", npmRoot),
+      new URL("builder/rspack/src/loader/scope-loader.ts", npmRoot),
+    ],
+  },
+  {
     name: "prettier-plugin-vize",
     source: new URL("../../npm/formatter/prettier/src/", import.meta.url),
   },
