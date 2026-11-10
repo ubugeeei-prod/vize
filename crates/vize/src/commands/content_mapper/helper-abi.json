@@ -21,7 +21,6 @@
     "$PropsSelector",
     "$ProvidedSlotChildren",
     "$RegisteredSlotProvider",
-    "$RequiredFallthroughProps",
     "$RequiredSlots",
     "$ResolvedContextProps",
     "$ResolvedProp",
@@ -38,6 +37,12 @@
     "$StructuralSlots",
     "$TemplateRefUnwrap",
     "$TemplateRefUnwrapNarrowed",
+    "$UsageEmitPropsBox",
+    "$UsageLibrary",
+    "$UsageNativeFallthroughBox",
+    "$UsageProps",
+    "$UsagePropsBox",
+    "$UsageRequiredFallthrough",
     "IsAny",
     "__EmitProps"
   ],
@@ -114,15 +119,15 @@
         },
         {
           "path": "virtual-ts.d.cts",
-          "sha256": "c1060931833e6664de7c2ab363a000a9ed048a350f6b5330a7cf432d5a211a97"
+          "sha256": "2b6631bd53eb4410028aa3aaf0938e2a127cc9825f2d55a8a1f17f217ca3c104"
         },
         {
           "path": "virtual-ts.d.mts",
-          "sha256": "c1060931833e6664de7c2ab363a000a9ed048a350f6b5330a7cf432d5a211a97"
+          "sha256": "2b6631bd53eb4410028aa3aaf0938e2a127cc9825f2d55a8a1f17f217ca3c104"
         },
         {
           "path": "virtual-ts.d.ts",
-          "sha256": "c1060931833e6664de7c2ab363a000a9ed048a350f6b5330a7cf432d5a211a97"
+          "sha256": "2b6631bd53eb4410028aa3aaf0938e2a127cc9825f2d55a8a1f17f217ca3c104"
         }
       ]
     },
@@ -170,7 +175,7 @@
         },
         {
           "path": "virtual-ts.d.ts",
-          "sha256": "c1060931833e6664de7c2ab363a000a9ed048a350f6b5330a7cf432d5a211a97"
+          "sha256": "2b6631bd53eb4410028aa3aaf0938e2a127cc9825f2d55a8a1f17f217ca3c104"
         }
       ]
     },
@@ -214,7 +219,7 @@
         },
         {
           "path": "virtual-ts.d.ts",
-          "sha256": "c1060931833e6664de7c2ab363a000a9ed048a350f6b5330a7cf432d5a211a97"
+          "sha256": "2b6631bd53eb4410028aa3aaf0938e2a127cc9825f2d55a8a1f17f217ca3c104"
         }
       ]
     }
