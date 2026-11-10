@@ -2,6 +2,7 @@
 import assert from "node:assert/strict";
 import { beforeInstanceInputKeys } from "./instance-input-keys-transition.ts";
 import { beforeUnownedOwnedKeys } from "./unowned-owned-keys-transition.ts";
+import { propValueOrPreambleEdit } from "./prop-value-or-transition.ts";
 
 type Edit = { start: number; end: number; replacement: Buffer };
 
@@ -96,7 +97,7 @@ function navigationEdits(before: string, after: string): Edit[] {
   return edits;
 }
 
-const vt = String.raw`(?:import\("vize:virtual-ts"\)\.)?`;
+const vt = String.raw`(?:import\("vize[:/]virtual-ts"\)\.)?`;
 const quoted = String.raw`'((?:[^'\\]|\\.)*)'`;
 const eagerValue = new RegExp(
   String.raw`(${vt}\$PropValue)<(__[\w$]+_ValueProps_\d+), ${quoted}(, ${vt}\$FallthroughValue<(__[\w$]+_Component_\d+), ${quoted}>>)`,
@@ -137,9 +138,30 @@ function lazyPropValueEdits(before: string, after: string): Edit[] {
   return edits;
 }
 
+/** #12431: a non-hoisted helper block declares `$PropValueOr` right after `$PropValue`. */
+function localPropValueOrEdits(before: string, after: string): Edit[] {
+  const { before: line, after: lines } = propValueOrPreambleEdit();
+  const local = (text: string) => `  ${text.replace(/^export /u, "")}`;
+  const value = local(line);
+  const added = local(lines.slice(line.length));
+  const count = (text: string, needle: string) => text.split(needle).length - 1;
+  const blocks = count(before, value);
+  if (blocks === 0 || count(before, added) > 0 || count(after, value + added) !== blocks) return [];
+  const edits: Edit[] = [];
+  for (let at = before.indexOf(value); at >= 0; at = before.indexOf(value, at + 1)) {
+    const end = Buffer.byteLength(before.slice(0, at + value.length));
+    edits.push({ start: end, end, replacement: Buffer.from(added) });
+  }
+  return edits;
+}
+
 /** Appends the landed edits for every line `after` replaces with its current form. */
 export function withLandedEdits(before: string, after: string, edits: Edit[]): Edit[] {
-  const gates: Edit[] = [...navigationEdits(before, after), ...lazyPropValueEdits(before, after)];
+  const gates: Edit[] = [
+    ...navigationEdits(before, after),
+    ...lazyPropValueEdits(before, after),
+    ...localPropValueOrEdits(before, after),
+  ];
   for (const match of before.matchAll(ungated)) {
     const replacement = requiredFallthroughGate(match[1]!, match[2]!);
     if (after.split(match[0]).length > 1 || after.split(replacement).length === 1) continue;
