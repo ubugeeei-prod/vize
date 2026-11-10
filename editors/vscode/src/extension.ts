@@ -17,6 +17,10 @@ import {
   type LspInitializationOptions,
 } from "./extension-core.js";
 import { registerHostTestCommands } from "./host-test-commands.js";
+import {
+  trackConfigurationSyncForHostTest,
+  waitForConfigurationIdle,
+} from "./configuration-sync-test-state.js";
 import { registerTypeScriptContentMapperDiscovery } from "./content-mapper-discovery.js";
 import { createClientOptions, disposeClientFileEvents } from "./client-options.js";
 import { WorkspaceLspConfigDiscovery } from "./workspace-config.js";
@@ -33,6 +37,7 @@ let outputChannel: OutputChannel;
 let statusBarItem: StatusBarItem | undefined;
 let selectedServerCandidate: InspectedServerCandidate | undefined;
 let activeInitializationOptions: LspInitializationOptions = {};
+let activeClientInputs: string | undefined;
 let currentStatus: VizeStatus = "disabled";
 let currentStatusDetail = "";
 let configurationSyncTimer: ReturnType<typeof setTimeout> | undefined;
@@ -179,6 +184,7 @@ export async function activate(context: ExtensionContext): Promise<void> {
     }),
     ...registerHostTestCommands(
       () => client,
+      () => waitForConfigurationIdle(() => configurationSyncTimer !== undefined),
       process.env,
       () =>
         selectedServerCandidate && {
@@ -214,7 +220,11 @@ function scheduleClientSync(context: ExtensionContext, reason: string): void {
   }, 150);
 }
 
-async function syncClientToConfiguration(context: ExtensionContext, reason: string): Promise<void> {
+function syncClientToConfiguration(context: ExtensionContext, reason: string): Promise<void> {
+  return trackConfigurationSyncForHostTest(syncClient(context, reason));
+}
+
+async function syncClient(context: ExtensionContext, reason: string): Promise<void> {
   if (
     (client || startingClientGeneration !== undefined) &&
     reason === "project configuration changed"
@@ -297,6 +307,11 @@ async function syncClientToConfiguration(context: ExtensionContext, reason: stri
     outputChannel.appendLine("Starting Vize language server with workspace configuration.");
   }
 
+  if (client && reason === "configuration changed" && clientInputs(config) === activeClientInputs) {
+    traceConfig(`sync retained generation=${generation}; the live client has these settings`);
+    return;
+  }
+
   if (client) {
     updateStatusBar("starting", "Restarting language server");
     outputChannel.appendLine(`Restarting Vize language server (${reason}).`);
@@ -329,6 +344,7 @@ async function startClient(
     log: (message) => outputChannel.appendLine(message),
   });
   activeInitializationOptions = initializationOptions;
+  activeClientInputs = clientInputs(config, initializationOptions);
   const capabilityDescription = workspaceLspConfig.describeCapabilities(initializationOptions);
   updateStatusBar("starting", `Starting with ${capabilityDescription}`);
   if (Object.keys(initializationOptions).length === 0) {
@@ -414,6 +430,18 @@ async function startClient(
     updateStatusBar("failed", "Failed to start language server");
     window.showErrorMessage(`Vize: Failed to start language server: ${String(error)}`);
   }
+}
+
+// Everything a started client was built from: the settings dictionary the client
+// snapshots (trace, auto-insert, server selection), the serverPath scopes trust
+// reads, and the initialization options, which also depend on project configs.
+function clientInputs(
+  config: ReturnType<typeof workspace.getConfiguration>,
+  options = getInitializationOptions(config, {
+    hasWorkspaceLspConfig: workspaceLspConfig.hasConfig,
+  }),
+): string {
+  return JSON.stringify([config, config.inspect("serverPath"), options]);
 }
 
 async function stopClient(): Promise<void> {

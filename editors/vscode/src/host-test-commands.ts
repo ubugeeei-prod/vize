@@ -15,6 +15,7 @@ import {
  */
 export function registerHostTestCommands(
   getClient: () => HostTestLanguageClient | undefined,
+  waitForConfigurationIdle: () => Promise<void>,
   environment: Partial<Record<string, string>> = process.env,
   getServerInfo?: () => HostTestServerInfo | undefined,
 ): Disposable[] {
@@ -27,6 +28,7 @@ export function registerHostTestCommands(
   if (environment[HOST_TEST_COMMAND_ENVIRONMENT_FLAG] === "1") {
     registrations.push(
       commands.registerCommand("vize.test.waitForAutoInsertIdle", waitForAutoInsertIdle),
+      commands.registerCommand("vize.test.waitForConfigurationIdle", waitForConfigurationIdle),
     );
   }
   return registrations;

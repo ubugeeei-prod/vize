@@ -7,7 +7,12 @@ import vm from "node:vm";
 // Runs the extension's real sync, discovery and setup sources against a
 // scripted VS Code surface, so lifecycle tests observe the actual ordering.
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
-const body = ["extension-setup.ts", "server-discovery.ts", "extension.ts"]
+const body = [
+  "extension-setup.ts",
+  "server-discovery.ts",
+  "configuration-sync-test-state.ts",
+  "extension.ts",
+]
   .map((file) => {
     const source = fs.readFileSync(path.join(root, "editors/vscode/src", file), "utf8");
     return stripTypeScriptTypes(source, { mode: "transform" })
@@ -55,6 +60,7 @@ export interface SyncControl {
   scheduleClientSync(context: object, reason: string): void;
   syncClientToConfiguration(context: object, reason: string): Promise<void>;
   deactivate(): Promise<void>;
+  waitForConfigurationIdle(): Promise<void>;
   setClient(value: unknown): void;
   setHasConfig(value: boolean): void;
   getClient(): unknown;
@@ -139,6 +145,7 @@ export function createSync(
           policy.configuration ?? {
             enabled: true,
             get: (_key: string, fallback: unknown) => fallback,
+            inspect: () => undefined,
           }
         );
       },
@@ -204,6 +211,7 @@ export function createSync(
          globalStorageUri: { fsPath: "/test/global-storage" },
          ...extensionContext,
        }, reason), deactivate,
+       waitForConfigurationIdle: () => waitForConfigurationIdle(() => configurationSyncTimer !== undefined),
        setClient: (value) => { client = value; activeInitializationOptions = getInitializationOptions(
          policyConfiguration, { hasWorkspaceLspConfig: workspaceLspConfig.hasConfig }); },
        setHasConfig: (value) => { workspaceLspConfig.hasConfig = value; },

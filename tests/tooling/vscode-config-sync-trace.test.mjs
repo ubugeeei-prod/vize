@@ -326,3 +326,91 @@ await test("real changed discovery options supersede unpublished initialization 
   assert.equal(current.control.state().hasClient, true);
   assert.equal(current.operations.filter(([kind]) => kind === "real-stop").length, 1);
 });
+
+// A WorkspaceConfiguration-shaped snapshot: its dictionary backs `get`, `inspect` and JSON.
+function settings(values, scopes = {}) {
+  return {
+    enabled: true,
+    get: (key, fallback) => values[key] ?? fallback,
+    inspect: (key) => ({ [scopes[key] ?? "workspaceValue"]: values[key] }),
+    toJSON: () => values,
+  };
+}
+
+const startsAndStops = (current) => [
+  current.operations.filter(([kind]) => kind === "real-start").length,
+  current.operations.filter(([kind]) => kind === "real-stop").length,
+];
+
+await test("back-to-back settings writes keep the client the first sync started (run 42735996099)", async () => {
+  const initialized = deferred();
+  initialized.resolve();
+  const current = createSync(async () => {}, undefined, false, initialized, {
+    actualOptions: true,
+    configuration: settings({ enable: true, "autoInsert.enable": true }),
+  });
+  // vize.autoInsert.enable, then vize.enable: the first write's sync already reads both.
+  await current.control.syncClientToConfiguration({}, "configuration changed");
+  const started = current.control.getClient();
+  await current.control.syncClientToConfiguration({}, "configuration changed");
+  assert.equal(current.control.getClient(), started);
+  assert.deepEqual(startsAndStops(current), [1, 0]);
+  assert.deepEqual(current.initializations, [{ autoInsert: true }]);
+});
+
+await test("settings syncs still restart for a changed setting, server path scope or a manual restart", async () => {
+  const initialized = deferred();
+  initialized.resolve();
+  const values = { enable: true, "autoInsert.enable": true };
+  const scopes = {};
+  const current = createSync(async () => {}, undefined, false, initialized, {
+    actualOptions: true,
+    configuration: settings(values, scopes),
+  });
+  const sync = (reason = "configuration changed") =>
+    current.control.syncClientToConfiguration({}, reason);
+  await sync();
+  values["trace.server"] = "verbose";
+  await sync();
+  assert.deepEqual(startsAndStops(current), [2, 1], "a client-only setting restarts");
+  values["autoInsert.enable"] = false;
+  await sync();
+  assert.deepEqual(startsAndStops(current), [3, 2], "an initialization option restarts");
+  values.serverPath = "/bin/vize";
+  await sync();
+  assert.deepEqual(startsAndStops(current), [4, 3], "a server path restarts");
+  scopes.serverPath = "globalValue";
+  await sync();
+  assert.deepEqual(startsAndStops(current), [5, 4], "a trust-relevant server path scope restarts");
+  await sync();
+  assert.deepEqual(startsAndStops(current), [5, 4], "the same settings keep the client");
+  await sync("manual restart");
+  assert.deepEqual(startsAndStops(current), [6, 5], "a manual restart restarts");
+  assert.deepEqual(current.initializations, [
+    { autoInsert: true },
+    { autoInsert: true },
+    ...Array(4).fill({ autoInsert: false }),
+  ]);
+});
+
+await test("configuration idle waits for a scheduled settings sync and the start it runs", async () => {
+  const gate = deferred();
+  const current = createSync(async () => {}, undefined, false, gate, {
+    actualOptions: true,
+    configuration: settings({ enable: true }),
+  });
+  current.control.scheduleClientSync({}, "configuration changed");
+  let idle = false;
+  const waiting = current.control.waitForConfigurationIdle().then(() => {
+    idle = true;
+  });
+  const [syncTimer, pollTimer] = [...current.timers.keys()];
+  current.timers.get(syncTimer)();
+  await current.started.promise;
+  current.timers.get(pollTimer)();
+  await new Promise((resolve) => setImmediate(resolve));
+  assert.equal(idle, false, "the held client start keeps settings busy");
+  gate.resolve();
+  await waiting;
+  assert.equal(current.control.state().hasClient, true);
+});
