@@ -18,8 +18,8 @@ type SemanticLink = {
 };
 type Result = Transform & { semanticLinks?: SemanticLink[] };
 
-const previousName = "source-packets-current-b6b4bbb0a16a.json";
-const observedName = "source-packets-current-67b6fffe3bc8.json";
+const previousName = "source-packets-current-c6a6c571b090.json";
+const observedName = "source-packets-current-a0fe19e9a57e.json";
 const changedLabels = [
   "lf/slot-shadow",
   "lf/mixed-slot-scope",
@@ -27,24 +27,19 @@ const changedLabels = [
   "crlf-unicode/mixed-slot-scope",
 ];
 
-test("the CLI check projection omits only four wire-only template-ref links", () => {
+test("the mapper wire omits only four wire-only template-ref links", () => {
   const { authority, files, cases } = readGlobalsFixture();
-  // The parallel observation never replaces main's newer CURRENT population.
-  assert.notEqual(authority.currentSourcePackets, observedName);
-  assert.notEqual(authority.currentSourcePackets, previousName);
-  const observed = selectPacketGoldens(
-    { ...authority, currentSourcePackets: observedName },
-    files,
-    cases,
-  )!;
+  assert.equal(authority.currentSourcePackets, observedName);
+  const observed = selectPacketGoldens(authority, files, cases)!;
   const previous = selectPacketGoldens(
     { ...authority, currentSourcePackets: previousName },
     files,
     cases,
   )!;
   const provenance = JSON.parse(files.get(observed.provenance as string)!);
-  assert.equal(provenance.producer.sourceRevision, "67b6fffe3bc88922d9d460b15d76fd7ceb35d06c");
-  assert.equal(provenance.producer.pullRequestHead, "1b75300829290185308e49e98c2d3b4c3d6c9575");
+  assert.equal(provenance.pullRequest, 12604);
+  assert.equal(provenance.producer.sourceRevision, "a0fe19e9a57e31b1a2f785273477ea10c5d2c3ae");
+  assert.equal(provenance.producer.pullRequestHead, "393142e7e6e77c9dde476131485011bfef8dfe59");
   assert.deepEqual(provenance.sourceReceipt, {
     path: "crates/vize/src/commands/content_mapper/mode.rs",
     sha256: sha(

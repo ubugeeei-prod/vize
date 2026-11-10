@@ -37,8 +37,7 @@ test("the usage-helper population changes only the two shared alias bodies", () 
   const { authority, files, cases } = readGlobalsFixture();
   const name = "source-packets-current-c6a6c571b090.json";
   const previousName = "source-packets-current-f29a8ee58999.json";
-  assert.equal(authority.currentSourcePackets, name);
-  const golden = selectPacketGoldens(authority, files, cases)!;
+  const golden = selectPacketGoldens({ ...authority, currentSourcePackets: name }, files, cases)!;
   const previous = selectPacketGoldens(
     { ...authority, currentSourcePackets: previousName },
     files,

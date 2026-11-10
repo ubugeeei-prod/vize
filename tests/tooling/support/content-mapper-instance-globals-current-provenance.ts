@@ -36,12 +36,12 @@ export function assertCurrentPacketProvenance(
 ): void {
   assert.deepEqual(provenance.artifact, {
     repository: "ubugeeei-prod/vize",
-    run: 42781388461,
-    job: 129712771074,
-    id: 13746472560,
-    name: "instance-globals-10617-0c3ae8dc16cec2a240124f550d7ecf7fb159946a-1",
-    digest: "sha256:a36320d46224ffa25515e66dd680456799ac0a3db396bc7635938edf27c5104b",
-    bytes: 18677366,
+    run: 42811997092,
+    job: 129816418407,
+    id: 13762672879,
+    name: "instance-globals-10617-393142e7e6e77c9dde476131485011bfef8dfe59-1",
+    digest: "sha256:7f5c7f7be65b5e1447a99bb70d8006713b927a80bdcd1a708c33328f90f1e57c",
+    bytes: 18675558,
   });
   const changed = [
     "lf/slot-shadow",
@@ -67,6 +67,6 @@ export function assertCurrentPacketProvenance(
     publicPackageAcceptanceCredit: false,
     performanceCredit: false,
     reason:
-      "The child usage in the LF and CRLF/Unicode slot-shadow and mixed-slot-scope packets now names the shared $UsageProps and $UsageRequiredFallthrough helpers instead of declaring their inline conditionals on its __Child_Props_0 and __Child_CheckProps_0 lines, so each packet shrank by exactly those two alias bodies and every later generated coordinate moved by the same bytes, while all 495 semantic, protocol, mapping-geometry, and real-host controls passed; this record retains the observed postimages without assigning acceptance credit to the stale-golden run.",
+      "Only the LF and CRLF/Unicode slot-shadow and mixed-slot-scope whole packets dropped their wire-only vueSetupTemplateRefUnwrap semanticLinks, which the content-mapper protocol does not carry (#12604); their generated text, mappings, diagnostic directives, diagnostics, and all other fields stayed exact, the other 76 complete results were byte-identical, and all 495 semantic, protocol, mapping-geometry, and real-host controls passed; this record retains the observed postimages without assigning acceptance credit to the stale-golden run.",
   });
 }
