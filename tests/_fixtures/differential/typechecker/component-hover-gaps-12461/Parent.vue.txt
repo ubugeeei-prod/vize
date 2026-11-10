@@ -1,0 +1,20 @@
+<script setup lang="ts">
+import { ref } from 'vue'
+import InterfaceChild from './InterfaceChild.vue'
+import OptionsChild from './OptionsChild.vue'
+import RuntimeChild from './RuntimeChild.vue'
+
+const count = ref(1)
+const name = ref('')
+function onChange(value: string) {
+  console.log(value)
+}
+</script>
+
+<template>
+  <InterfaceChild title="i" :item-count="count" active v-model:name="name" />
+  <OptionsChild title="o" @change="onChange">
+    <template #item="{ row }">{{ row }}</template>
+  </OptionsChild>
+  <RuntimeChild title="r" />
+</template>
