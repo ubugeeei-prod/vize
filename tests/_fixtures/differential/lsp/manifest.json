@@ -4319,6 +4319,46 @@
       }
     },
     {
+      "id": "lsp/regression/stdio-client-eof-12433",
+      "state": "active",
+      "targets": [
+        "stdio"
+      ],
+      "inputs": {
+        "root": "stdio-client-eof-12433",
+        "files": [
+          {
+            "path": "ClientLifecycle.vue.txt",
+            "sha256": "73e9a19a3ccd644c8cadb605d55e18e73eef0e18583f9c0f01557046eed05704"
+          }
+        ]
+      },
+      "case": {
+        "path": "stdio-client-eof-12433/case.json",
+        "sha256": "5ca1a6a3edfface5617900c600e80603158b6d2dd7f717bf003e1fa62be0a2ce"
+      },
+      "requestCount": 1,
+      "initializationOptions": {
+        "lint": false,
+        "typecheck": false,
+        "ecosystem": false
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "lsp/regression/stylus-colors-10442",
       "state": "active",
       "targets": [
