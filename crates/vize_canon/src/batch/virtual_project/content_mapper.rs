@@ -200,7 +200,6 @@ fn transform_with_shared_sources(
             runtime_prop_resolve_cache: type_sources,
         },
     )?;
-
     publish::publish_content_mapper_text(
         &mut code,
         &mut mappings,

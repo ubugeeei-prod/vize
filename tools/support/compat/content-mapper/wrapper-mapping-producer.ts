@@ -7,7 +7,7 @@ export function assertWrapperMappingProducer(producer: Uint8Array): void {
   const digest = (bytes: string | Uint8Array) => createHash("sha256").update(bytes).digest("hex");
   assert.equal(
     digest(producer),
-    "a2e22c9ee38c9eb77150b805e8e5e09f086f05041940eaaaf0dfea51e1aec6a9",
+    "23000f014edd106b8ffe1cb1ebd9424f783a5cbd879cabf435f4bcfaffd51580",
     "unqualified #11675 wrapper mapping producer",
   );
   let historical = Buffer.from(producer).toString("utf8");

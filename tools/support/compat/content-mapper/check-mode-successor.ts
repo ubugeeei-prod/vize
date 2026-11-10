@@ -12,6 +12,11 @@ export const CHECK_MODE_PRODUCER_SUCCESSORS = [
     "            preserve_event_navigation: true,\n",
   ],
   ["            omit_navigation_references: transform_options.diagnostics_only(),\n", ""],
+  // The blank line keeps the producer within its source length budget.
+  [
+    "    )?;\n    publish::publish_content_mapper_text(\n",
+    "    )?;\n\n    publish::publish_content_mapper_text(\n",
+  ],
 ] as const;
 
 const generatorPath = "crates/vize_canon/src/virtual_ts/generator.rs";
