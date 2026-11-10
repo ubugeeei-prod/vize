@@ -53,10 +53,12 @@ function fixture() {
       JSON.stringify(environmentNames) +
       ".map(name => [name, process.env[name] ?? null]))}));\n",
   );
-  const installed = path.join(packageRoot, "dist", "cli.mjs");
-  fs.cpSync(fileURLToPath(new URL("../dist", import.meta.url)), path.dirname(installed), {
+  const installed = path.join(packageRoot, "bin", "vize");
+  fs.cpSync(fileURLToPath(new URL("../dist", import.meta.url)), path.join(packageRoot, "dist"), {
     recursive: true,
   });
+  fs.mkdirSync(path.dirname(installed), { recursive: true });
+  fs.copyFileSync(fileURLToPath(new URL("../bin/vize", import.meta.url)), installed);
   const run = (args: string[], override: Record<string, string> = {}) => {
     const environment = { ...process.env };
     for (const name of environmentNames) delete environment[name];
@@ -181,9 +183,12 @@ function install() {
   fs.cpSync(fileURLToPath(new URL("../dist", import.meta.url)), path.join(packageRoot, "dist"), {
     recursive: true,
   });
+  const cli = path.join(packageRoot, "bin", "vize");
+  fs.mkdirSync(path.dirname(cli), { recursive: true });
+  fs.copyFileSync(fileURLToPath(new URL("../bin/vize", import.meta.url)), cli);
   return {
     root,
-    cli: path.join(packageRoot, "dist", "cli.mjs"),
+    cli,
     loaded: path.join(root, "loaded"),
   };
 }
