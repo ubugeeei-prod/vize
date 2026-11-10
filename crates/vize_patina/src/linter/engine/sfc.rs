@@ -34,6 +34,7 @@ impl Linter {
                             petite_document: None,
                             defer_exact_suppressions: true,
                             dialect: VueDialect::Vue,
+                            document_kind: crate::context::TemplateDocumentKind::VueTemplate,
                             facade_rules: facade::RULES,
                         },
                     },
@@ -302,6 +303,7 @@ impl Linter {
                 petite_document: None,
                 defer_exact_suppressions: true,
                 dialect: VueDialect::Vue,
+                document_kind: crate::context::TemplateDocumentKind::VueTemplate,
                 facade_rules: facade::RULES,
             },
         )

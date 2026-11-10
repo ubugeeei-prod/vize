@@ -41,6 +41,19 @@ pub(super) fn validate_direct_vite_musea_setup(cwd: &Path) -> Result<(), String>
     ))
 }
 
+/// Return the nearest package that owns both a Musea Vite dependency and the
+/// Vite configuration that enables it. Keeping those two signals on the same
+/// ancestor prevents a workspace child from being mistaken for a parent Nuxt
+/// application merely because the parent's dependencies are visible.
+pub(super) fn find_direct_vite_musea_root(cwd: &Path) -> Option<PathBuf> {
+    cwd.ancestors()
+        .find(|root| {
+            has_musea_vite_plugin_dependency(root)
+                && vite_config_at(root).is_some_and(|path| vite_config_mentions_musea(&path))
+        })
+        .map(Path::to_path_buf)
+}
+
 fn has_musea_vite_plugin_dependency(root: &Path) -> bool {
     package_json_has_dependency(root, MUSEA_VITE_PLUGIN)
         || root
@@ -52,12 +65,14 @@ fn has_musea_vite_plugin_dependency(root: &Path) -> bool {
 }
 
 fn find_vite_config(cwd: &Path) -> Option<PathBuf> {
-    cwd.ancestors().find_map(|ancestor| {
-        VITE_CONFIG_FILES
-            .iter()
-            .map(|file_name| ancestor.join(file_name))
-            .find(|path| path.is_file())
-    })
+    cwd.ancestors().find_map(vite_config_at)
+}
+
+fn vite_config_at(root: &Path) -> Option<PathBuf> {
+    VITE_CONFIG_FILES
+        .iter()
+        .map(|file_name| root.join(file_name))
+        .find(|path| path.is_file())
 }
 
 fn vite_config_mentions_musea(path: &Path) -> bool {

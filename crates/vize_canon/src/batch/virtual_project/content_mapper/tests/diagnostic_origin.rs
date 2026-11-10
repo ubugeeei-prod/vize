@@ -208,3 +208,41 @@ values.map(it => it);
     assert_eq!(span[4], 0, "setup line should remain verbatim: {span:?}");
     assert_eq!(span[2] + generated - span[0], original);
 }
+
+#[test]
+fn commented_template_binding_members_keep_diagnostic_owners() {
+    let source = r#"<script setup lang="ts">
+import { ref } from "vue";
+import Child from "./Child.vue";
+
+const items = ref<{ id: number }[]>([]);
+const done = ref(false);
+</script>
+
+<template>
+  <Child
+    v-for="item in items"
+    :key="item.id"
+    :height="
+      done &&
+      item.kind === 'a'
+        ? 30 /* top */ - 20 /* bottom */
+        : undefined
+    "
+  />
+</template>
+"#;
+    let result =
+        generate_vue_content_mapper_transform(Path::new("App.vue"), source).expect("transform");
+    let original = source.find("item.kind").expect("authored member");
+    let expected = original..original + "item.kind".len();
+    let generated = result.text.match_indices("item.kind").collect::<Vec<_>>();
+    assert_eq!(generated.len(), 3, "generated checks:\n{}", result.text);
+    for (start, _) in generated {
+        assert_eq!(
+            diagnostic_origin(&result.mappings, start..start + "item.kind".len()),
+            expected,
+            "every generated copy must report on the authored member",
+        );
+    }
+}

@@ -73,7 +73,11 @@ impl Project {
         let mut lsp = LspProcess::spawn(root.path());
         lsp.send(
             json!({"jsonrpc":"2.0","id":1,"method":"initialize","params":{
-                "processId":null,"rootUri":file_uri(root.path()),"capabilities":{},
+                "processId":null,"rootUri":file_uri(root.path()),
+                "capabilities":{"textDocument":{"completion":{"completionItem":{
+                    "documentationFormat":["markdown"],
+                    "resolveSupport":{"properties":["documentation"]}
+                }}}},
                 "initializationOptions":{"lint":false,"typecheck":native,"hover":true}
             }}),
         );

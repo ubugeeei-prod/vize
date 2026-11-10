@@ -11,6 +11,7 @@ import {
   retainProcessPacket,
 } from "./native-fault-retention.ts";
 import type { ObservationPhase } from "./native-fault-retention.ts";
+import { processResourceFacts } from "./native-fault-resources.ts";
 
 export const hashMeasurements = { bytes: 0, seconds: 0 };
 export type Packet = Record<string, any>;
@@ -410,6 +411,7 @@ export function observeDescendants(
         startTicks: processInfo.start,
         executable,
         executableIdentity,
+        resources: processResourceFacts(directory),
         observedAt: Date.now() / 1000,
         selection: "partial process/task sample; not a complete process or call census",
         ...taskObservation,

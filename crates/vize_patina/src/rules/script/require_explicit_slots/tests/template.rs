@@ -330,6 +330,42 @@ defineSlots<ImportedSlots & { default(): unknown }>();
 }
 
 #[test]
+fn an_intersection_with_an_imported_type_is_not_treated_as_a_closed_declaration() {
+    let sfc = r#"<script setup lang="ts">
+import type { FieldSlots } from './types';
+defineSlots<{ control?(): unknown } & FieldSlots>();
+</script>
+
+<template>
+  <slot name="control" />
+  <slot name="label" />
+  <slot name="append" />
+</template>
+"#;
+    assert_eq!(findings(&lint_sfc(sfc)), none());
+}
+
+#[test]
+fn an_intersection_of_enumerable_types_still_reports_an_undeclared_slot() {
+    let sfc = r#"<script setup lang="ts">
+type FieldSlots = { label?(): unknown; append?(): unknown };
+defineSlots<{ control?(): unknown } & FieldSlots>();
+</script>
+
+<template>
+  <slot name="control" />
+  <slot name="label" />
+  <slot name="append" />
+  <slot name="other" />
+</template>
+"#;
+    assert_eq!(
+        owned(&lint_sfc(sfc)),
+        vec![undeclared(sfc, r#"<slot name="other" />"#, "other")]
+    );
+}
+
+#[test]
 fn accepts_a_string_literal_bound_slot_name() {
     let sfc = r#"<script setup lang="ts">
 defineSlots<{ footer(): unknown }>();

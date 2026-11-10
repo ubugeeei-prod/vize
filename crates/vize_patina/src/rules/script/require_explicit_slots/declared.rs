@@ -135,10 +135,15 @@ fn declared_from_type(
         TSType::TSIntersectionType(intersection) => {
             let mut names = FxHashSet::default();
             for ty in &intersection.types {
-                if let DeclaredSlots::Known(part) =
-                    declared_from_type(ty, programs, depth + 1, seen)
-                {
-                    names.extend(part);
+                match declared_from_type(ty, programs, depth + 1, seen) {
+                    DeclaredSlots::Known(part) => names.extend(part),
+                    // An unresolved constituent may declare any rendered
+                    // slot. Keeping only the enumerable constituents would
+                    // turn a partial view of the intersection into a closed
+                    // contract and manufacture undeclared-slot findings.
+                    DeclaredSlots::Absent | DeclaredSlots::Unknown => {
+                        return DeclaredSlots::Unknown;
+                    }
                 }
             }
             DeclaredSlots::Known(names)

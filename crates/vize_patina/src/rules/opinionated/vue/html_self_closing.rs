@@ -146,12 +146,20 @@ impl Rule for HtmlSelfClosingNuxt {
     }
 }
 
+/// Report Vue self-closing policy only when the owning document uses Vue semantics.
 fn check_element<'a>(
     ctx: &mut LintContext<'a>,
     element: &ElementNode<'a>,
     options: HtmlSelfClosingOptions,
     allow_vuetify_tags: bool,
 ) {
+    // This rule models Vue template semantics. In a plain HTML document the
+    // slash on a non-void start tag does not close it, and formatters may emit
+    // a slash on void elements, so either diagnostic would be unsafe.
+    if ctx.is_standalone_html_document() {
+        return;
+    }
+
     // vue-eslint-parser treats the contents of <noscript> as raw text. Relief
     // retains the authored nodes for editor features, but this compatibility
     // rule must not lint markup that upstream cannot observe.
@@ -214,6 +222,7 @@ fn check_element<'a>(
     }
 }
 
+/// Build the diagnostic and safe fix for one self-closing policy violation.
 fn report(
     ctx: &mut LintContext<'_>,
     element: &ElementNode<'_>,

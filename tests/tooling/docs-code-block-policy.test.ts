@@ -74,7 +74,7 @@ void test("documentation code blocks use a semantic highlighter", () => {
   assert.deepEqual(violations, []);
 });
 
-void test("Vite+ configuration examples compose Vue settings with withVue", () => {
+void test("Vite+ configuration examples use a supported Vue integration", () => {
   const violations: string[] = [];
   const scriptLanguages = new Set(["js", "jsx", "ts", "tsx", "javascript", "typescript"]);
   for (const file of markdownFiles(contentRoot)) {
@@ -84,7 +84,8 @@ void test("Vite+ configuration examples compose Vue settings with withVue", () =
         scriptLanguages.has(fence.language) &&
         (/from\s+["'](?:vite|vite-plus|@vizejs\/vite-plugin\/vite-plus)["']/u.test(source) ||
           /\/\/\s*vite\.config\.[cm]?[jt]s/u.test(source));
-      if (viteConfig && !source.includes(".withVue(")) {
+      const integratesVue = source.includes(".withVue(") || source.includes("vitePlusConfig(");
+      if (viteConfig && !integratesVue) {
         violations.push(`${path.relative(repoRoot, file)}:${fence.line}`);
       }
     }

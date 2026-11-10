@@ -1,6 +1,7 @@
 //! Standalone HTML execution with an optional Davinci petite-vue view.
 
 use super::{Allocator, LintResult, Linter, TemplateRuleEnv};
+use crate::context::TemplateDocumentKind;
 use vize_l0::dialect::standalone_html_dialect;
 
 impl Linter {
@@ -42,6 +43,7 @@ impl Linter {
             vize_l2::dialect::petite::PetiteDocument::lower_in(&allocator, owner).ok()
         });
         let mut env = TemplateRuleEnv::relief(dialect);
+        env.document_kind = TemplateDocumentKind::StandaloneHtml;
         env.petite_document = petite_document.as_ref();
         let mut result = self
             .lint_template_with_allocator_config(&allocator, source, filename, false, false, env);

@@ -32,7 +32,11 @@ mod unused_directives;
 pub(crate) use template_extract::extract_template_fast;
 
 use crate::markup::{MarkupRules, RankedMarkupRule};
-use crate::{context::LintContext, diagnostic::LintSummary, preset::LintPreset};
+use crate::{
+    context::{LintContext, TemplateDocumentKind},
+    diagnostic::LintSummary,
+    preset::LintPreset,
+};
 use vize_atelier_sfc::{SfcParseOptions, parse_sfc};
 use vize_croquis::Croquis;
 use vize_l0::Allocator;
@@ -79,6 +83,7 @@ impl<'a> TemplateRuleEnv<'a> {
             petite_document: None,
             defer_exact_suppressions: false,
             dialect,
+            document_kind: TemplateDocumentKind::VueTemplate,
             facade_rules: &[],
         }
     }

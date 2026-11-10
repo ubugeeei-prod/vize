@@ -46,9 +46,14 @@ export const overlappingVueRules = [
   "valid-next-tick",
 ] as const;
 
-export function configureTools(config: UserConfig, options: VizePlusOptions): UserConfig {
+export function configureTools(
+  config: UserConfig,
+  options: VizePlusOptions,
+  discoverVueRules = true,
+): UserConfig {
   if (options.conflicts === false) return config;
-  const supported = options.lint === false ? new Set<string>() : availableVueRules();
+  const supported =
+    options.lint === false || !discoverVueRules ? new Set<string>() : availableVueRules();
   return {
     ...config,
     lint:

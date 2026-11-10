@@ -21,6 +21,9 @@
     "url": "https://github.com/ubugeeei-prod/vize",
     "directory": "npm/builder/vite"
   },
+  "bin": {
+    "vize-vp-task": "./dist/internal/vite-plus-task.mjs"
+  },
   "files": [
     "client.d.ts",
     "index.d.mts",

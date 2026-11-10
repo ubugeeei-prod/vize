@@ -55,6 +55,13 @@ pub struct SfcScriptContext<'a> {
     /// SFC may omit `<template>`, and an inline HTML script has a non-zero
     /// source offset.
     pub is_sfc: bool,
+    /// Whether the authored standalone file uses a JSX component extension.
+    ///
+    /// Bare default-exported objects are component definitions in Vue SFCs
+    /// and `.jsx` / `.tsx` modules, but not in ordinary JavaScript or
+    /// TypeScript modules. This bit carries that filename-owned distinction to
+    /// AST rules without asking them to infer it from source syntax.
+    pub is_jsx_file: bool,
     /// Whether this is a `<script setup>` block. Some Vue macros are only
     /// available there, even though ordinary scripts may call the same APIs.
     pub is_script_setup: bool,

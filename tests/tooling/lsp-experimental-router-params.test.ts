@@ -13,7 +13,7 @@ import {
   type RouterGeneratedDocument,
 } from "./support/router-experimental-transport.ts";
 import { root } from "./support/lsp/paths.ts";
-import { LspSession } from "./support/lsp/session.ts";
+import { completionDocumentationResolveCapabilities, LspSession } from "./support/lsp/session.ts";
 import { assertCanonLeftoversGolden } from "./support/lsp/experimental-router-canon-leftovers.ts";
 import { constructorNoInferPredecessor } from "./support/lsp/experimental-router-constructor-noinfer.ts";
 import { instanceInputKeysPredecessor } from "./support/lsp/experimental-router-instance-input-keys.ts";
@@ -35,6 +35,7 @@ const options = {
   lint: false,
   typecheck: true,
 };
+const resolveCapabilities = completionDocumentationResolveCapabilities;
 const methods = [
   "textDocument/hover",
   "textDocument/completion",
@@ -363,7 +364,7 @@ test(
         };
         receipts.push(receipt);
         try {
-          await session.initialize(directory, options);
+          await session.initialize(directory, options, resolveCapabilities);
           const uri = open(session, directory, expected.source);
           for (const [version, source] of [
             [1, expected.source],
@@ -431,7 +432,7 @@ test(
       };
       receipts.push(receipt);
       try {
-        await session.initialize([enabled, disabled], options);
+        await session.initialize([enabled, disabled], options, resolveCapabilities);
         const enabledUri = open(session, enabled, expected.source);
         const nativeQueries = async (label: string, revision: number) => {
           const actual = await queries(session, enabledUri, expected.source);
