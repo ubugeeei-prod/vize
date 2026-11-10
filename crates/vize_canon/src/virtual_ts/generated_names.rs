@@ -40,6 +40,8 @@ use vize_l0::ts_emit::{EmitHole, EmitLen, TsBuf};
 use super::generic_parameters::GenericParameters;
 use vize_croquis::Croquis;
 
+mod compact;
+
 struct Projection {
     bound: Vec<String>,
     authored: Vec<String>,
@@ -84,7 +86,7 @@ impl Drop for Binding {
 pub(crate) fn bind(parameters: Option<&GenericParameters>, summary: &Croquis) -> Binding {
     let authored = summary.type_exports.iter();
     let binding = bind_names(parameters, authored.map(|export| export.name.as_str()));
-    let template_prefix = compact_template_prefix(parameters, summary);
+    let template_prefix = compact::template_prefix(parameters, summary);
     let shadowed = LIB_TYPES
         .iter()
         .copied()
@@ -95,65 +97,6 @@ pub(crate) fn bind(parameters: Option<&GenericParameters>, summary: &Croquis) ->
         projection.shadowed = shadowed;
     });
     binding
-}
-
-const COMPACT_TEMPLATE_ROLES: &[&str] = &[
-    "Comp",
-    "Props",
-    "ValueProps",
-    "CheckProps",
-    "CheckTail",
-    "Check",
-    "ResolvedProps",
-    "SelectedProps",
-];
-
-fn compact_name_is_authored(
-    parameters: Option<&GenericParameters>,
-    summary: &Croquis,
-    name: &str,
-) -> bool {
-    parameters.is_some_and(|parameters| parameters.parameter_names().any(|bound| bound == name))
-        || crate::virtual_ts::helpers::hygiene::authored_binding(summary, name)
-}
-
-fn compact_template_prefix(parameters: Option<&GenericParameters>, summary: &Croquis) -> String {
-    let available = |prefix: &str| {
-        summary
-            .component_usages
-            .iter()
-            .enumerate()
-            .all(|(idx, usage)| {
-                COMPACT_TEMPLATE_ROLES.iter().all(|role| {
-                    !compact_name_is_authored(
-                        parameters,
-                        summary,
-                        cstr!("{prefix}{role}{idx}").as_str(),
-                    )
-                }) && usage.props.iter().all(|prop| {
-                    let prop =
-                        crate::virtual_ts::helpers::to_safe_identifier_fragment(prop.name.as_str());
-                    ["Prop", "Model"].into_iter().all(|role| {
-                        !compact_name_is_authored(
-                            parameters,
-                            summary,
-                            cstr!("{prefix}{role}{idx}${prop}").as_str(),
-                        )
-                    })
-                })
-            })
-    };
-    if available("__V") {
-        return String::const_new("__V");
-    }
-    let mut suffix = 1usize;
-    loop {
-        let prefix = cstr!("__V${suffix}");
-        if available(&prefix) {
-            return prefix;
-        }
-        suffix += 1;
-    }
 }
 
 /// Prefix shared by every compact per-usage contract name in this projection.
