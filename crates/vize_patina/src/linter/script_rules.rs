@@ -29,8 +29,8 @@ mod setup_emits_dispatch_tests;
 
 use html_scripts::extract_inline_scripts;
 use prefilter::{
-    is_typescript_filename, script_rule_applies_to_filename, script_rule_applies_to_language,
-    script_rule_applies_to_module, script_rule_may_match,
+    is_jsx_filename, is_typescript_filename, script_rule_applies_to_filename,
+    script_rule_applies_to_language, script_rule_applies_to_module, script_rule_may_match,
 };
 pub use registry::BuiltinScriptRuleMeta;
 use registry::{
@@ -327,6 +327,7 @@ pub(crate) fn append_builtin_script_rules_for_source(
             offset,
             parsed.as_ref(),
             SfcScriptContext {
+                is_jsx_file: is_jsx_filename(result.filename.as_str()),
                 typescript: is_typescript_filename(result.filename.as_str()),
                 typescript_jsx: result.filename.ends_with(".tsx"),
                 ..SfcScriptContext::default()

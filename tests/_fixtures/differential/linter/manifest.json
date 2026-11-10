@@ -4726,6 +4726,46 @@
       }
     },
     {
+      "id": "linter/require-expose-module-owners-12598",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "require-expose-module-owners-12598",
+        "files": [
+          {
+            "path": "messages.ts.txt",
+            "role": "issue-authored-reproduction",
+            "sha256": "1fcef3d0c807b9df2b5a66c28ccaf7ee162ed90d1a6c0baf594940233b1142ac"
+          },
+          {
+            "path": "mount-helper.ts.txt",
+            "role": "issue-authored-reproduction",
+            "sha256": "11f31805689ff8641f7d927bed985422a5dd4733a3afd1148d3e6d6fe27c1112"
+          },
+          {
+            "path": "router.options.ts.txt",
+            "role": "issue-authored-reproduction",
+            "sha256": "e46bdca47c99dc1c87e8a582aa3d7c797f183895a334142eabbffda816b8c429"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "ts"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/retained-projection-10440",
       "state": "active",
       "targets": [

@@ -320,6 +320,7 @@ pub(crate) fn append_builtin_script_diagnostics_with_template_context<'a>(
     });
     let sfc_context = SfcScriptContext {
         is_sfc: true,
+        is_jsx_file: false,
         is_script_setup: false,
         typescript: false,
         typescript_jsx: false,
