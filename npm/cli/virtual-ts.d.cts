@@ -265,9 +265,7 @@ export type $IsLibraryGenericExport<C> = C extends
         ? true
         : false
     : false;
-// Per-usage aliases that read only the component type, cached once per component type.
-// `NoInfer<C>` keeps each check non-distributive, like the `typeof Component` it replaces;
-// `keyof (C & {})` likewise keeps the finite-key mapping from distributing over `C`.
+// Per-usage aliases over `typeof Component`; `NoInfer<C>` and `keyof (C & {})` keep them non-distributive.
 export type $UsageProps<C> =
   NoInfer<C> extends { __vizeCheck: infer __F }
     ? $IsAny<__F> extends true
@@ -304,15 +302,7 @@ export type $UsageNativeFallthroughBox<C> =
     readonly __vizeFallthroughProps?: infer __F;
   }
     ? "__vizeEmitProps" extends keyof {
-        [
-          __K in keyof (C & {}) as string extends __K
-            ? never
-            : number extends __K
-              ? never
-              : symbol extends __K
-                ? never
-                : __K
-        ]: unknown;
+        [__K in keyof (C & {}) as string extends __K ? never : __K]: unknown;
       }
       ? $IsAny<__F> extends true
         ? []

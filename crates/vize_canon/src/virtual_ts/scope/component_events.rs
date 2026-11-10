@@ -12,6 +12,7 @@ mod listener_relations;
 mod listener_return;
 mod native_fallthrough;
 mod prop_array_share;
+mod usage_boxes;
 pub(crate) use emit_props_gate::{emit_gate_aliases, gates_inference};
 pub(crate) use emit_resolver_share::{
     flush as flush_emit_resolvers, reset as reset_emit_resolvers,
@@ -202,40 +203,12 @@ pub(super) fn generate_component_event_types(
         }
         // A vue-tsc generic library export instantiates its generics with their
         // constraints here, so its payload comes from the bound-props call below.
-        if hoist_shared_preamble {
-            // These boxes read only the component type. The shared helpers
-            // check it non-distributively, exactly as these inline forms do,
-            // and are evaluated once per component type instead of per usage.
-            use crate::virtual_ts::helpers::shared_types;
-            let usage_library = shared_types::USAGE_LIBRARY.select(true);
-            let usage_props_box = shared_types::USAGE_PROPS_BOX.select(true);
-            let usage_emit_props_box = shared_types::USAGE_EMIT_PROPS_BOX.select(true);
-            vize_l0::emit_ts!(
-                ts,
-                "{indent}type {library} = {usage_library}<typeof {component_ref}>;\n",
-            );
-            vize_l0::emit_ts!(
-                ts,
-                "{indent}type {props_box} = {usage_props_box}<typeof {component_ref}>;\n",
-            );
-            vize_l0::emit_ts!(
-                ts,
-                "{indent}type {emit_props_box} = {usage_emit_props_box}<typeof {component_ref}>;\n",
-            );
-        } else {
-            vize_l0::emit_ts!(
-                ts,
-                "{indent}type {library} = typeof {component_ref} extends {{ __vizeCheck: any }} | {{ readonly __vizeComponentMarker: true }} ? false : typeof {component_ref} extends (...args: any[]) => infer __R ? 0 extends (1 & __R) ? false : '__ctx' extends keyof __R ? true : false : false;\n",
-            );
-            vize_l0::emit_ts!(
-                ts,
-                "{indent}type {props_box} = typeof {component_ref} extends {{ new (...args: any[]): {{ $props: infer __P }} }} ? [__P] : typeof {component_ref} extends (props: infer __P, ...args: any[]) => any ? [__P] : [];\n",
-            );
-            vize_l0::emit_ts!(
-                ts,
-                "{indent}type {emit_props_box} = typeof {component_ref} extends {{ __vizeEmitProps?: infer __EP }} ? [__EP] : [];\n",
-            );
-        }
+        let boxes = usage_boxes::Boxes {
+            library: &library,
+            props: &props_box,
+            emit_props: &emit_props_box,
+        };
+        usage_boxes::emit(ts, indent, boxes, &component_ref, hoist_shared_preamble);
         if native_fallthrough_only {
             native_fallthrough::emit_box(
                 ts,
