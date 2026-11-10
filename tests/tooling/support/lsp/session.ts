@@ -115,6 +115,15 @@ export class LspSession {
       editor: true,
       typecheck: true,
     },
+    capabilities: Record<string, unknown> = {
+      textDocument: {
+        completion: {
+          completionItem: {
+            documentationFormat: ["markdown", "plaintext"],
+          },
+        },
+      },
+    },
   ): Promise<unknown> {
     const workspaceDirs = typeof workspaceDir === "string" ? [workspaceDir] : [...workspaceDir];
     assert.ok(workspaceDirs.length > 0, "initialize requires at least one workspace folder");
@@ -122,15 +131,7 @@ export class LspSession {
     const result = await this.request("initialize", {
       processId: process.pid,
       rootUri: workspaceDirs.length === 1 ? pathToFileURL(workspaceDirs[0]).href : null,
-      capabilities: {
-        textDocument: {
-          completion: {
-            completionItem: {
-              documentationFormat: ["markdown", "plaintext"],
-            },
-          },
-        },
-      },
+      capabilities,
       initializationOptions,
       workspaceFolders: workspaceDirs.map((dir) => ({
         uri: pathToFileURL(dir).href,

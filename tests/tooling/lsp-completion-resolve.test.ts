@@ -120,7 +120,16 @@ test("completion resolves authored documentation through the real server", async
     );
   };
   try {
-    await session.initialize(workspace);
+    await session.initialize(workspace, undefined, {
+      textDocument: {
+        completion: {
+          completionItem: {
+            documentationFormat: ["markdown", "plaintext"],
+            resolveSupport: { properties: ["documentation"] },
+          },
+        },
+      },
+    });
     for (const [name, source] of Object.entries(sources)) {
       await t.test(name, async () => {
         open(source);
