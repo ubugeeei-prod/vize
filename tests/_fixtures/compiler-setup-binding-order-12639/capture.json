@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "scope": "Exact packet successor for #12639, which lists a template-error module's setup return bindings in Vue's order. Only that object's shorthand properties move; the #11698 authored-piece packet stays authoritative for every other byte.",
+  "producer": {
+    "changeRevision": "0f9027744e96c6a77d2cf5f61d1ad6a49ef0bcfb",
+    "observedRevision": "fcd90b54e6abb8ca843a22fce817e55634e921f4",
+    "oracle": "cargo build -p vize_atelier_sfc --features legacy --example cli_build_result_oracle",
+    "routerSourceRevision": "feed382f2fbfe38b3892ea780f5aea3d5459986a"
+  },
+  "rows": [
+    {
+      "id": "vue-router-broken",
+      "sourceSha256": "6ddb0231e81f4e6fae7d241c911e1b5141ca63e8c72546717cc05d796d95547a",
+      "previousPacketSha256": "effbd4f77cbf8cd3ea29ee70303537eff9bc5808f4a9eed161ad0aebd857039b",
+      "previousCodeSha256": "e63cb66fab69b0dbfdf8dfa696b802ddaddcb1b058765a01f1d46f4f612ab9c1",
+      "currentPacketSha256": "586273e429a141faa16a9023fe1aeddbc58ef4009d5b61ced8ff4420c4cba7ff",
+      "currentCodeSha256": "1c82c10923752fa2fc3bd66cc1074d28552b23d46f459405bf62ee6d98d4ae07"
+    }
+  ]
+}
