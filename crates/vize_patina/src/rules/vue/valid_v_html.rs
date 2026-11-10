@@ -22,8 +22,10 @@
 
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
+use crate::markup::{MarkupContext, MarkupDirective, MarkupElement, MarkupRule};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use vize_relief::{DirectiveNode, ElementNode, ExpressionNode};
+use crate::rules::vue::directive_shape::{Shape, Value};
+use vize_relief::{DirectiveNode, ElementNode};
 
 static META: RuleMeta = RuleMeta {
     name: "vue/valid-v-html",
@@ -33,12 +35,40 @@ static META: RuleMeta = RuleMeta {
     default_severity: Severity::Error,
 };
 
+static SHAPE: Shape = Shape {
+    name: "html",
+    value: Value::Required,
+    value_message: "vue/valid-v-html.missing_expression",
+    argument_message: "vue/valid-v-html.unexpected_argument",
+    modifier_message: "vue/valid-v-html.unexpected_modifier",
+    help: "vue/valid-v-html.help",
+};
+
 /// Enforce valid v-html directives
 pub struct ValidVHtml;
+
+impl MarkupRule for ValidVHtml {
+    fn name(&self) -> &'static str {
+        META.name
+    }
+
+    fn enter_directive<'a>(
+        &self,
+        ctx: &mut MarkupContext<'_, 'a>,
+        _element: &MarkupElement<'a>,
+        directive: &MarkupDirective<'a>,
+    ) {
+        SHAPE.check(ctx.lint(), directive);
+    }
+}
 
 impl Rule for ValidVHtml {
     fn meta(&self) -> &'static RuleMeta {
         &META
+    }
+
+    fn as_markup_rule(&self) -> Option<&dyn MarkupRule> {
+        Some(self)
     }
 
     fn check_directive<'a>(
@@ -47,42 +77,7 @@ impl Rule for ValidVHtml {
         _element: &ElementNode<'a>,
         directive: &DirectiveNode<'a>,
     ) {
-        if directive.name != "html" {
-            return;
-        }
-
-        if !has_expression(&directive.exp) {
-            ctx.error_with_help(
-                ctx.t("vue/valid-v-html.missing_expression"),
-                &directive.loc,
-                ctx.t("vue/valid-v-html.help"),
-            );
-        }
-
-        if directive.arg.is_some() {
-            ctx.error_with_help(
-                ctx.t("vue/valid-v-html.unexpected_argument"),
-                &directive.loc,
-                ctx.t("vue/valid-v-html.help"),
-            );
-        }
-
-        if !directive.modifiers.is_empty() {
-            ctx.error_with_help(
-                ctx.t("vue/valid-v-html.unexpected_modifier"),
-                &directive.loc,
-                ctx.t("vue/valid-v-html.help"),
-            );
-        }
-    }
-}
-
-/// Check whether the directive carries a non-empty expression.
-fn has_expression(exp: &Option<ExpressionNode>) -> bool {
-    match exp {
-        Some(ExpressionNode::Simple(s)) => !s.content.trim().is_empty(),
-        Some(ExpressionNode::Compound(c)) => !c.children.is_empty(),
-        None => false,
+        SHAPE.check(ctx, &MarkupDirective::from_relief(directive));
     }
 }
 

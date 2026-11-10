@@ -21,8 +21,10 @@
 
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
+use crate::markup::{MarkupContext, MarkupDirective, MarkupElement, MarkupRule};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use vize_relief::{DirectiveNode, ElementNode, ExpressionNode};
+use crate::rules::vue::directive_shape::{Shape, Value};
+use vize_relief::{DirectiveNode, ElementNode};
 
 static META: RuleMeta = RuleMeta {
     name: "vue/valid-v-cloak",
@@ -32,12 +34,40 @@ static META: RuleMeta = RuleMeta {
     default_severity: Severity::Error,
 };
 
+static SHAPE: Shape = Shape {
+    name: "cloak",
+    value: Value::Forbidden,
+    value_message: "vue/valid-v-cloak.unexpected_value",
+    argument_message: "vue/valid-v-cloak.unexpected_argument",
+    modifier_message: "vue/valid-v-cloak.unexpected_modifier",
+    help: "vue/valid-v-cloak.help",
+};
+
 /// Enforce valid v-cloak directives
 pub struct ValidVCloak;
+
+impl MarkupRule for ValidVCloak {
+    fn name(&self) -> &'static str {
+        META.name
+    }
+
+    fn enter_directive<'a>(
+        &self,
+        ctx: &mut MarkupContext<'_, 'a>,
+        _element: &MarkupElement<'a>,
+        directive: &MarkupDirective<'a>,
+    ) {
+        SHAPE.check(ctx.lint(), directive);
+    }
+}
 
 impl Rule for ValidVCloak {
     fn meta(&self) -> &'static RuleMeta {
         &META
+    }
+
+    fn as_markup_rule(&self) -> Option<&dyn MarkupRule> {
+        Some(self)
     }
 
     fn check_directive<'a>(
@@ -46,42 +76,7 @@ impl Rule for ValidVCloak {
         _element: &ElementNode<'a>,
         directive: &DirectiveNode<'a>,
     ) {
-        if directive.name != "cloak" {
-            return;
-        }
-
-        if has_expression(&directive.exp) {
-            ctx.error_with_help(
-                ctx.t("vue/valid-v-cloak.unexpected_value"),
-                &directive.loc,
-                ctx.t("vue/valid-v-cloak.help"),
-            );
-        }
-
-        if directive.arg.is_some() {
-            ctx.error_with_help(
-                ctx.t("vue/valid-v-cloak.unexpected_argument"),
-                &directive.loc,
-                ctx.t("vue/valid-v-cloak.help"),
-            );
-        }
-
-        if !directive.modifiers.is_empty() {
-            ctx.error_with_help(
-                ctx.t("vue/valid-v-cloak.unexpected_modifier"),
-                &directive.loc,
-                ctx.t("vue/valid-v-cloak.help"),
-            );
-        }
-    }
-}
-
-/// Check whether the directive carries a non-empty expression.
-fn has_expression(exp: &Option<ExpressionNode>) -> bool {
-    match exp {
-        Some(ExpressionNode::Simple(s)) => !s.content.trim().is_empty(),
-        Some(ExpressionNode::Compound(c)) => !c.children.is_empty(),
-        None => false,
+        SHAPE.check(ctx, &MarkupDirective::from_relief(directive));
     }
 }
 

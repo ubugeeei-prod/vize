@@ -136,6 +136,14 @@ pub(super) fn directive(out: &mut String, directive: &MarkupDirective<'_>) {
     out.push_str(" mods=[");
     directive.walk_modifiers(&mut |name| modifier(out, name));
     out.push(']');
+    append!(
+        *out,
+        " value={} arg_range={:?} authored_mods=[",
+        directive.has_value(),
+        directive.argument_range()
+    );
+    directive.walk_modifier_ranges(&mut |name, at| append!(*out, "{name}@{at:?} "));
+    out.push(']');
 }
 
 impl MarkupRule for TraceRecorder {
