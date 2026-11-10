@@ -127,3 +127,29 @@ test("an eager per-prop fallback migrates to the lazy helper around its unchange
     2,
   );
 });
+
+test("a non-hoisted helper block gains `$PropValueOr` right after `$PropValue`", () => {
+  const value =
+    "  type $PropValue<P, K extends PropertyKey, F = unknown, __V = P extends unknown ? (K extends keyof P ? P[K] : never) : never> = [__V] extends [never] ? F : __V;\n";
+  const added =
+    "  type $PropValueOr<P, K extends PropertyKey, C, FK extends PropertyKey = K, __V = P extends unknown ? (K extends keyof P ? P[K] : never) : never> = [__V] extends [never] ? $FallthroughValue<C, FK> : __V;\n";
+  const eager =
+    "  type __Comp_0_prop_pick = $CallableProp<$PropValue<__Comp_ValueProps_0, 'pick', $FallthroughValue<__Comp_Component_0, 'pick'>>>;\n";
+  const lazy = `  type __Comp_0_prop_pick = $CallableProp<${lazyPropValue("$PropValue", "__Comp_ValueProps_0", "pick", "__Comp_Component_0", "pick")}>;\n`;
+  const before = `x\n${value}  type $CallableProp<T> = T;\n${eager}y\n`;
+  const after = `x\n${value}${added}  type $CallableProp<T> = T;\n${lazy}y\n`;
+  const edits = withLandedEdits(before, after, []);
+  assert.equal(apply(before, edits), after);
+  // The insertion alone does not certify a different helper body.
+  assert.notEqual(
+    apply(before, withLandedEdits(before, after.replace("$FallthroughValue<C, FK>", "C"), [])),
+    after.replace("$FallthroughValue<C, FK>", "C"),
+  );
+  // A packet that already declares it gains nothing.
+  assert.deepEqual(withLandedEdits(after, after, []), []);
+  // The mapper's shared-helper prefix migrates as the batch prefix does.
+  const vt = 'import("vize/virtual-ts").';
+  const prefixed = `  type __Comp_0_prop_pick = ${vt}$PropValue<__Comp_ValueProps_0, 'pick', ${vt}$FallthroughValue<__Comp_Component_0, 'pick'>>;\n`;
+  const current = `  type __Comp_0_prop_pick = ${lazyPropValue(`${vt}$PropValue`, "__Comp_ValueProps_0", "pick", "__Comp_Component_0", "pick")};\n`;
+  assert.equal(apply(prefixed, withLandedEdits(prefixed, current, [])), current);
+});

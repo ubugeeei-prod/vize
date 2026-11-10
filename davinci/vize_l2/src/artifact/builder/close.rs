@@ -63,6 +63,14 @@ impl<'a> Builder<'a> {
                     element: None,
                 };
             }
+            // Host loops close in `host_for`, which owns both of their regions.
+            Owner::HostFor { .. } | Owner::HostRegion => {
+                return ClosedFrame {
+                    native_if: None,
+                    original_for: None,
+                    element: None,
+                };
+            }
             Owner::OriginalFor(id) => {
                 let owner = Box::new_in(
                     crate::op::OriginalForOp {

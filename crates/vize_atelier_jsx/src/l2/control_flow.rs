@@ -80,6 +80,7 @@ pub(super) fn lower_for<'a>(
         ForOp {
             binding,
             region: Region { ops },
+            host: None,
             span: for_node.loc.span,
         },
         &allocator,

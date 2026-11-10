@@ -5,7 +5,8 @@
 //! ops, and each op owns the content it controls (see [`crate::op`] for
 //! why ownership is the fusion-tractability point).
 
-use vize_l0::{Span, Vec};
+use oxc_ast::ast::{BindingIdentifier, ForStatementLeft};
+use vize_l0::{Box, Span, Vec};
 
 use super::Region;
 use crate::expr::ExprRef;
@@ -42,8 +43,34 @@ pub struct ForOp<'a> {
     pub binding: ForBinding<'a>,
     /// The repeated content.
     pub region: Region<'a>,
+    /// The authored host-language head, for a loop written in host syntax
+    /// (`@for (const item of items; index i; key item.id)`). `None` for a
+    /// template directive loop.
+    pub host: Option<Box<'a, HostFor<'a>>>,
     /// The whole iteration's source range.
     pub span: Span,
+}
+
+/// The host-language head of a [`ForOp`] and its `@empty` region.
+///
+/// The head is retained host AST with authored spans, never re-synthesized.
+/// A host loop's [`ForBinding`] keeps the collection as `source`, the
+/// authored left side as opaque `value` text and no `key`/`index`: those
+/// live here, where the host grammar put them.
+#[derive(Debug)]
+pub struct HostFor<'a> {
+    /// The per-iteration declaration (`const item`, `const { a, b }`).
+    pub left: &'a ForStatementLeft<'a>,
+    /// The authored text of `left`.
+    pub left_text: &'a str,
+    /// The `index` binding, when authored.
+    pub index: Option<&'a BindingIdentifier<'a>>,
+    /// The `key` expression, when authored.
+    pub key: Option<ExprRef<'a>>,
+    /// `for await`.
+    pub r#await: bool,
+    /// Content rendered when the collection yields no item.
+    pub empty: Option<Region<'a>>,
 }
 
 /// The iteration binding of a [`ForOp`]: the source and the per-iteration
@@ -75,6 +102,6 @@ pub struct ForBinding<'a> {
 const _: () = {
     assert!(core::mem::size_of::<IfOp<'_>>() == 32);
     assert!(core::mem::size_of::<IfBranch<'_>>() == 48);
-    assert!(core::mem::size_of::<ForOp<'_>>() == 96);
+    assert!(core::mem::size_of::<ForOp<'_>>() == 104);
     assert!(core::mem::size_of::<ForBinding<'_>>() == 64);
 };

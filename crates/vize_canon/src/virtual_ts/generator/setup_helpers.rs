@@ -155,13 +155,15 @@ pub(super) fn emit_setup_helpers(
         } else {
             ""
         };
-        append!(
-            *ts,
-            "{dom_ref_helper}{component_ref_helper}{instance_helpers}"
-        );
+        for helper in [dom_ref_helper, component_ref_helper, instance_helpers] {
+            crate::virtual_ts::generated_names::push_lib_text(ts, helper);
+        }
         if component_context.helpers.template_refs.needs_registry() {
             append!(*ts, "  type $TemplateRefs = {{{registry_body}}};\n");
-            ts.push_str("  type $UseTemplateRef = { <_K extends keyof $TemplateRefs>(_key: _K): Readonly<import('vue').ShallowRef<$TemplateRefs[_K] | null>>; <_T = unknown>(_key: string): Readonly<import('vue').ShallowRef<_T | null>>; };\n");
+            crate::virtual_ts::generated_names::push_lib_text(
+                ts,
+                "  type $UseTemplateRef = { <_K extends keyof $TemplateRefs>(_key: _K): Readonly<import('vue').ShallowRef<$TemplateRefs[_K] | null>>; <_T = unknown>(_key: string): Readonly<import('vue').ShallowRef<_T | null>>; };\n",
+            );
         }
     }
     if record.types_dollar_refs() {

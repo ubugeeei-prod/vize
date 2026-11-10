@@ -18,8 +18,8 @@ use vize_l2::analysis::text_facts::TextParts;
 use vize_l2::artifact::ArtifactParts;
 use vize_l2::expr::{ExprRef, ForeignExpr, OpaqueExpr, OpaqueReason};
 use vize_l2::op::{
-    Attribute, BindingContract, BindingOp, ComponentOp, ElementOp, ForBinding, ForOp, IfBranch,
-    IfOp, InterpolationOp, ModelOp, Namespace, Op, Region, TextOp,
+    Attribute, BindingContract, BindingOp, ComponentOp, ElementOp, ForBinding, ForOp, HostFor,
+    IfBranch, IfOp, InterpolationOp, ModelOp, Namespace, Op, Region, TextOp,
 };
 use vize_l2::scope::ScopeOrigin;
 use vize_l4::targets::dom::artifact::{EmitError, UnsupportedReason as Reason, emit_dom};
@@ -30,6 +30,7 @@ const DIRECT: &[(Reason, Factory)] = &[
     (Reason::EmptyCompoundText, empty_compound_text),
     (Reason::ForAliasNotEmittable, for_alias_not_emittable),
     (Reason::ForItemShape, for_item_shape),
+    (Reason::HostForLoop, host_for_loop),
     (Reason::IfBranchShape, if_branch_shape),
     (Reason::IfWithoutBranches, if_without_branches),
     (Reason::MissingTextFacts, missing_text_facts),
@@ -102,6 +103,36 @@ fn for_item_shape<'a>(a: &'a Allocator) -> (Lowered<'a>, L2Facts) {
         lowered(a, region(a, [for_op(a, js(a, "item"), empty_region(a))])),
         L2Facts::default(),
     )
+}
+
+/// A host-syntax head with an `@empty` region; the DOM target has no emission for it yet.
+fn host_for_loop<'a>(a: &'a Allocator) -> (Lowered<'a>, L2Facts) {
+    let source = "for (const item of items);";
+    let program = a.alloc(
+        oxc_parser::Parser::new(a.as_oxc(), source, oxc_span::SourceType::mjs())
+            .parse()
+            .program,
+    );
+    let Some(oxc_ast::ast::Statement::ForOfStatement(statement)) = program.body.first() else {
+        panic!("expected a for-of statement");
+    };
+    let host = HostFor {
+        left: &statement.left,
+        left_text: "const item",
+        index: None,
+        key: None,
+        r#await: false,
+        empty: Some(region(a, [text(a, "none")])),
+    };
+    let Op::For(mut for_op) = for_op(
+        a,
+        opaque(a, "const item", OpaqueReason::ForValue),
+        region(a, [text(a, "row")]),
+    ) else {
+        panic!("expected ui.for");
+    };
+    for_op.host = Some(ab(a, host));
+    (lowered(a, region(a, [Op::For(for_op)])), L2Facts::default())
 }
 
 fn for_alias_not_emittable<'a>(a: &'a Allocator) -> (Lowered<'a>, L2Facts) {
@@ -193,6 +224,7 @@ fn for_op<'a>(a: &'a Allocator, value: ExprRef<'a>, body: Region<'a>) -> Op<'a> 
                 index: None,
             },
             region: body,
+            host: None,
             span: sp(),
         },
     ))

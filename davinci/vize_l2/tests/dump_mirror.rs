@@ -238,6 +238,7 @@ fn arena_built<'a>(allocator: &'a Allocator) -> ArenaVec<'a, Op<'a>> {
                     &allocator,
                 ),
             },
+            host: None,
             span: Span::new(100, 161),
         },
         &allocator,
