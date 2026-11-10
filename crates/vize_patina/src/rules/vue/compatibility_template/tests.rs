@@ -15,6 +15,16 @@ fn lint_sfc(rule: Box<dyn Rule>, source: &str) -> LintResult {
     Linter::with_registry(registry).lint_sfc(source, "Component.vue")
 }
 
+/// The authored text under each diagnostic, in report order.
+fn reported<'a>(rule: Box<dyn Rule>, template: &'a str) -> Vec<&'a str> {
+    let mut diagnostics = lint(rule, template).diagnostics;
+    diagnostics.sort_by_key(|diagnostic| diagnostic.start);
+    diagnostics
+        .iter()
+        .filter_map(|diagnostic| template.get(diagnostic.start as usize..diagnostic.end as usize))
+        .collect()
+}
+
 #[test]
 fn core_rules_read_retained_expression_ast() {
     let eqeqeq = lint(Box::new(Eqeqeq), "<p>{{ value == null }}</p>");
@@ -255,7 +265,71 @@ fn object_key_rules_avoid_semantics_changing_suggestions() {
             "'1e3': a, '1.0': a, '9007199254740992': a, '9007199254740991': a }) }}</p>",
         ),
     );
-    assert_eq!(quotes.warning_count, 5, "{:?}", quotes.diagnostics);
+    assert_eq!(quotes.warning_count, 6, "{:?}", quotes.diagnostics);
+}
+
+#[test]
+fn location_rules_report_the_operator_or_each_hole() {
+    let equality = reported(
+        Box::new(Eqeqeq),
+        "<p>{{ (a) /* == */ != (b) }} {{ a == b == c }}</p>",
+    );
+    assert_eq!(equality, ["!=", "==", "=="]);
+    let concat = reported(
+        Box::new(NoUselessConcat),
+        "<p>{{ 'a' +\n'b' + 'c' }} {{ 'x' /* + */ + ('y' + z) }}</p>",
+    );
+    assert_eq!(concat, ["+", "+"]);
+    let sparse = reported(
+        Box::new(NoSparseArrays),
+        "<p>{{ [a, ,\n b, /* , */ ,] }} {{ [,,] }} {{ [(a), , ...b] }}</p>",
+    );
+    assert_eq!(sparse, [",", ",", ",", ",", ","]);
+}
+
+#[test]
+fn literal_keys_match_the_core_rule_values() {
+    let quotes = reported(
+        Box::new(QuoteProps),
+        "<p>{{ use({ '1.5': a, '0.25': a, '1e+21': a, '1e3': a, '.5': a, 'café': a }) }}</p>",
+    );
+    assert_eq!(quotes, ["'1.5'", "'0.25'", "'1e+21'", "'café'"]);
+    let dots = reported(
+        Box::new(DotNotation),
+        "<p>{{ map[true] }} {{ map[false] }} {{ map[null] }} {{ map[(\"a\")] }} {{ map[1] }}</p>",
+    );
+    assert_eq!(dots, ["true", "false", "null", "\"a\""]);
+    let shorthand = lint(
+        Box::new(ObjectShorthand),
+        "<p>{{ use({ a: (a), run: (function () {}), __proto__: function () {} }) }}</p>",
+    );
+    assert_eq!(shorthand.warning_count, 2, "{:?}", shorthand.diagnostics);
+}
+
+#[test]
+fn implicit_coercion_skips_fractions_chains_and_numeric_negations() {
+    let result = reported(
+        Box::new(NoImplicitCoercion),
+        concat!(
+            "<p>{{ a * 1 / 4 }} {{ 2 * a * 1 }} {{ - -1 }} {{ - -Number(a) }} {{ (a * 1) / 4 }}</p>",
+            "<p>{{ ~a?.indexOf('x') }} {{ ~a.lastIndexOf('x') }}</p>",
+        ),
+    );
+    assert_eq!(result, ["a * 1", "~a?.indexOf('x')", "~a.lastIndexOf('x')"]);
+}
+
+#[test]
+fn numeric_precision_compares_significant_digits_in_every_base() {
+    let result = lint(
+        Box::new(NoLossOfPrecision),
+        concat!(
+            "<p>{{ 0.12345678901234567890 }} {{ 900719.9254740994 }} {{ 9.007199254740993e15 }}</p>",
+            "<p>{{ 0b100000000000000000000000000000000000000000000000000001 }}</p>",
+            "<p>{{ 0o400000000000000001 }} {{ 1e-350 }}</p>",
+            "<p>{{ 12300000000000000000000000 }} {{ 1_230000000_00000000_00000_000 }}</p>",
+        ),
+    );
+    assert_eq!(result.warning_count, 6, "{:?}", result.diagnostics);
 }
 
 #[test]

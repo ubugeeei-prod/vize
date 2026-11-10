@@ -1,6 +1,9 @@
 //! Shared retained-AST walk for the template core-extension rules.
 
+mod precision;
 mod predicates;
+mod reporting;
+mod tokens;
 mod visitor;
 
 use super::origin::Origin;
@@ -99,6 +102,7 @@ fn check_expression_with_directive<'a>(
             let mut visitor = CoreVisitor::new(
                 ctx,
                 origin,
+                simple.content,
                 kind,
                 !matches!(directive, Some("for" | "slot")),
             );
@@ -112,7 +116,7 @@ fn check_expression_with_directive<'a>(
             return;
         }
         if let Some(Ok(parameters)) = retained.as_slot_parameters() {
-            let mut visitor = CoreVisitor::new(ctx, origin, kind, false);
+            let mut visitor = CoreVisitor::new(ctx, origin, simple.content, kind, false);
             visitor.camelcase_bindings = false;
             visitor.visit_formal_parameters(parameters);
             return;
@@ -122,7 +126,10 @@ fn check_expression_with_directive<'a>(
         let Some(retained) = ctx.compatibility_v_for(simple.loc.span, simple.content) else {
             return;
         };
-        check_v_for(CoreVisitor::new(ctx, origin, kind, false), retained);
+        check_v_for(
+            CoreVisitor::new(ctx, origin, simple.content, kind, false),
+            retained,
+        );
         return;
     }
     if directive != Some("on") {
@@ -131,7 +138,7 @@ fn check_expression_with_directive<'a>(
     let Some(program) = ctx.compatibility_handler(simple.loc.span, simple.content) else {
         return;
     };
-    CoreVisitor::new(ctx, origin, kind, true).visit_program(program);
+    CoreVisitor::new(ctx, origin, simple.content, kind, true).visit_program(program);
 }
 
 pub(super) fn check_directive<'a>(
@@ -183,7 +190,7 @@ pub(super) fn check_sfc_styles(ctx: &mut LintContext<'_>, kind: CoreKind) {
         let Some(expression) = ctx.compatibility_expression(span, source) else {
             continue;
         };
-        CoreVisitor::new(ctx, origin, kind, false).visit_expression(expression);
+        CoreVisitor::new(ctx, origin, source, kind, false).visit_expression(expression);
     }
 }
 

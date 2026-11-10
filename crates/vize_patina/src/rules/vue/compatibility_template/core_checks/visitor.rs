@@ -1,12 +1,13 @@
 //! OXC visitor for the compatibility core-rule family.
 
 use super::{
-    CoreKind, compatibility_help,
+    CoreKind,
+    precision::numeric_literal_may_lose_precision,
     predicates::{
-        addition_has_string_and_non_string, can_unquote_property, is_constant,
-        is_empty_string_like, is_identifier_name, is_implicit_numeric_coercion, is_index_of_call,
-        is_known_string, is_negated, is_numeric, is_string_like, is_underscored_identifier,
-        leftmost_addition_operand, numeric_literal_may_lose_precision, property_name,
+        addition_has_string_and_non_string, can_unquote_property, dot_notation_key, is_constant,
+        is_empty_string_like, is_implicit_numeric_coercion, is_index_of_call, is_known_string,
+        is_negated, is_numeric, is_string_like, is_underscored_identifier,
+        leftmost_addition_operand, multiplies_by_fraction_of_one, property_name,
         rightmost_addition_operand,
     },
 };
@@ -20,16 +21,20 @@ use oxc_ast::ast::{
     UnaryExpression, WhileStatement,
 };
 use oxc_ast_visit::{Visit, walk};
-use oxc_span::{GetSpan, Span};
+use oxc_span::GetSpan;
 use oxc_syntax::operator::{AssignmentOperator, BinaryOperator, UnaryOperator};
 use vize_l0::{CompactString, FxHashSet};
 
 pub(super) struct CoreVisitor<'ctx, 'source> {
-    ctx: &'ctx mut LintContext<'source>,
-    origin: Origin,
-    kind: CoreKind,
+    pub(super) ctx: &'ctx mut LintContext<'source>,
+    pub(super) origin: Origin,
+    pub(super) kind: CoreKind,
+    /// The parsed text; AST offsets plus `parse_offset` index into it.
+    pub(super) source: &'source str,
     pub(super) parse_offset: u32,
-    prefer_template_covered_additions: FxHashSet<(u32, u32)>,
+    /// Spans an enclosing node already settled: nested `prefer-template`
+    /// additions, or the `a * 1` of `a * 1 / b`.
+    pub(super) covered_spans: FxHashSet<(u32, u32)>,
     pub(super) camelcase_bindings: bool,
     camelcase_declarations: FxHashSet<CompactString>,
 }
@@ -38,55 +43,20 @@ impl CoreVisitor<'_, '_> {
     pub(super) fn new<'ctx, 'source>(
         ctx: &'ctx mut LintContext<'source>,
         origin: Origin,
+        source: &'source str,
         kind: CoreKind,
         camelcase_bindings: bool,
     ) -> CoreVisitor<'ctx, 'source> {
         CoreVisitor {
             ctx,
             origin,
+            source,
             kind,
             parse_offset: 0,
-            prefer_template_covered_additions: FxHashSet::default(),
+            covered_spans: FxHashSet::default(),
             camelcase_bindings,
             camelcase_declarations: FxHashSet::default(),
         }
-    }
-
-    pub(super) fn report(&mut self, span: Span) {
-        let span = Span::new(
-            span.start.saturating_add(self.parse_offset),
-            span.end.saturating_add(self.parse_offset),
-        );
-        if let Some(range) = self.origin.range(span) {
-            self.ctx
-                .warn_at_with_help(self.kind.message(), range, compatibility_help());
-        }
-    }
-
-    pub(super) fn set_parse_offset(&mut self, parse_offset: u32) {
-        if self.parse_offset != parse_offset {
-            self.parse_offset = parse_offset;
-            self.prefer_template_covered_additions.clear();
-        }
-    }
-
-    fn expressions_share_line(&self, left: Span, right: Span) -> bool {
-        let adjusted = |span: Span| {
-            Span::new(
-                span.start.saturating_add(self.parse_offset),
-                span.end.saturating_add(self.parse_offset),
-            )
-        };
-        let Some(left) = self.origin.range(adjusted(left)) else {
-            return false;
-        };
-        let Some(right) = self.origin.range(adjusted(right)) else {
-            return false;
-        };
-        self.ctx
-            .source
-            .get(left.end as usize..right.start as usize)
-            .is_some_and(|between| !between.contains(['\n', '\r']))
     }
 }
 
@@ -104,11 +74,9 @@ impl<'a> Visit<'a> for CoreVisitor<'_, '_> {
 
     fn visit_computed_member_expression(&mut self, member: &ComputedMemberExpression<'a>) {
         if self.kind == CoreKind::DotNotation
-            && member
-                .static_property_name()
-                .is_some_and(|property| is_identifier_name(property.as_str()))
+            && let Some(key) = dot_notation_key(&member.expression)
         {
-            self.report(member.expression.span());
+            self.report(key.span());
         }
         if self.kind == CoreKind::NoConsole
             && matches!(member.object.get_inner_expression(),
@@ -144,6 +112,12 @@ impl<'a> Visit<'a> for CoreVisitor<'_, '_> {
     }
 
     fn visit_binary_expression(&mut self, binary: &BinaryExpression<'a>) {
+        if self.kind == CoreKind::NoImplicitCoercion
+            && let Some(dividend) = multiplies_by_fraction_of_one(binary)
+        {
+            self.covered_spans
+                .insert((dividend.span.start, dividend.span.end));
+        }
         match self.kind {
             CoreKind::Eqeqeq
                 if matches!(
@@ -151,9 +125,18 @@ impl<'a> Visit<'a> for CoreVisitor<'_, '_> {
                     BinaryOperator::Equality | BinaryOperator::Inequality
                 ) =>
             {
-                self.report(binary.span);
+                self.report_operator(
+                    binary.left.span(),
+                    binary.right.span(),
+                    binary.operator.as_str(),
+                );
             }
-            CoreKind::NoImplicitCoercion if is_implicit_numeric_coercion(binary) => {
+            CoreKind::NoImplicitCoercion
+                if is_implicit_numeric_coercion(binary)
+                    && !self
+                        .covered_spans
+                        .contains(&(binary.span.start, binary.span.end)) =>
+            {
                 self.report(binary.span);
             }
             CoreKind::NoImplicitCoercion
@@ -173,25 +156,19 @@ impl<'a> Visit<'a> for CoreVisitor<'_, '_> {
                     && is_string_like(right)
                     && self.expressions_share_line(left.span(), right.span())
                 {
-                    self.report(binary.span);
+                    self.report_operator(left.span(), right.span(), "+");
                 }
             }
             CoreKind::PreferTemplate
                 if binary.operator == BinaryOperator::Addition
                     && !self
-                        .prefer_template_covered_additions
+                        .covered_spans
                         .contains(&(binary.span.start, binary.span.end))
                     && addition_has_string_and_non_string(binary) =>
             {
                 self.report(binary.span);
-                collect_nested_addition_spans(
-                    &binary.left,
-                    &mut self.prefer_template_covered_additions,
-                );
-                collect_nested_addition_spans(
-                    &binary.right,
-                    &mut self.prefer_template_covered_additions,
-                );
+                collect_nested_addition_spans(&binary.left, &mut self.covered_spans);
+                collect_nested_addition_spans(&binary.right, &mut self.covered_spans);
             }
             _ => {}
         }
@@ -261,7 +238,7 @@ impl<'a> Visit<'a> for CoreVisitor<'_, '_> {
                 .iter()
                 .any(|element| matches!(element, ArrayExpressionElement::Elision(_)))
         {
-            self.report(array.span);
+            self.report_sparse_array_holes(array);
         }
         walk::walk_array_expression(self, array);
     }
@@ -325,16 +302,17 @@ impl<'a> Visit<'a> for CoreVisitor<'_, '_> {
             && ((unary.operator == UnaryOperator::UnaryPlus && !is_numeric(&unary.argument))
                 || (unary.operator == UnaryOperator::LogicalNot
                     && matches!(
-                        unary.argument.get_inner_expression(),
+                        unary.argument.without_parentheses(),
                         Expression::UnaryExpression(inner)
                             if inner.operator == UnaryOperator::LogicalNot
                     ))
                 || (unary.operator == UnaryOperator::BitwiseNot
                     && is_index_of_call(&unary.argument))
                 || (unary.operator == UnaryOperator::UnaryNegation
-                    && matches!(unary.argument.get_inner_expression(),
+                    && matches!(unary.argument.without_parentheses(),
                         Expression::UnaryExpression(inner)
-                            if inner.operator == UnaryOperator::UnaryNegation)))
+                            if inner.operator == UnaryOperator::UnaryNegation
+                                && !is_numeric(&inner.argument))))
         {
             self.report(unary.span);
         }
@@ -353,25 +331,26 @@ impl<'a> Visit<'a> for CoreVisitor<'_, '_> {
             let ObjectPropertyKind::ObjectProperty(property) = entry else {
                 continue;
             };
+            // `{ __proto__: value }` sets the prototype; the shorthand forms define an own property.
+            let proto_key = !property.computed && property_name(&property.key) == Some("__proto__");
+            let value = property.value.without_parentheses();
             match self.kind {
                 CoreKind::ObjectShorthand
                     if !property.shorthand
                         && !property.method
                         && !property.computed
-                        && property_name(&property.key) != Some("__proto__")
+                        && !proto_key
                         && property_name(&property.key).is_some_and(|key| {
-                            matches!(
-                                &property.value,
-                                Expression::Identifier(value) if value.name == key
-                            )
+                            matches!(value, Expression::Identifier(value) if value.name == key)
                         }) =>
                 {
                     self.report(property.span);
                 }
                 CoreKind::ObjectShorthand
                     if !property.method
+                        && !proto_key
                         && property.kind == PropertyKind::Init
-                        && matches!(&property.value, Expression::FunctionExpression(function)
+                        && matches!(value, Expression::FunctionExpression(function)
                             if function.id.is_none()) =>
                 {
                     self.report(property.span);
