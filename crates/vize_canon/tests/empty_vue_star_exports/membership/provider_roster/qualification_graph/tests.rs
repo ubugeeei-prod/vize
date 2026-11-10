@@ -374,12 +374,18 @@ mod js_tooling_refresh_successor {
     }
 
     fn inputs() -> Inputs {
+        let current_lock = fs::read(support::repository().join("pnpm-lock.yaml")).unwrap();
+        let lock = super::super::eslint_vue_scorecard::reconstruct_predecessor(
+            &super::super::eslint_vue_scorecard::update(),
+            &current_lock,
+        )
+        .unwrap();
         Inputs {
             previous: super::super::super::load(),
             predecessor: docs_metadata_update(),
             predecessor_bytes: fs::read(support::corpus().join(docs_metadata::UPDATE)).unwrap(),
             update: js_tooling_refresh::update(),
-            lock: fs::read(support::repository().join("pnpm-lock.yaml")).unwrap(),
+            lock,
             package: fs::read(support::repository().join("package.json")).unwrap(),
             workspace: fs::read(support::repository().join(WORKSPACE)).unwrap(),
             unplugin_manifest: fs::read(

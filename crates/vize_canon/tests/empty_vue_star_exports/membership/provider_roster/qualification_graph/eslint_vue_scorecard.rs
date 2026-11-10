@@ -4,7 +4,7 @@ use serde_json::json;
 pub(super) const UPDATE: &str =
     "malformed-membership/provider-eslint-vue-scorecard-update-12539.json";
 pub(super) const UPDATE_HASH: &str =
-    "e6959fc8db8571a036a24aaf339d61451da165ef7fc8400549605c7f700fed14";
+    "a06cdc218872597a518bffb4d61bfc5aa2824ac2b4b50e7f6ab1d860899b2094";
 const PREVIOUS_BINDING: &str = "tests/_fixtures/differential/typechecker/empty-vue-star-exports/malformed-membership/provider-js-tooling-refresh-update-12212.json";
 pub(super) const MANIFEST: &str = "tools/benchmarks/scripts/package.json";
 
@@ -70,7 +70,7 @@ fn unique_offset(haystack: &[u8], needle: &[u8]) -> Checked<usize> {
     Ok(offset)
 }
 
-fn reconstruct_predecessor(update: &Value, lock: &[u8]) -> Checked<Vec<u8>> {
+pub(super) fn reconstruct_predecessor(update: &Value, lock: &[u8]) -> Checked<Vec<u8>> {
     let insertions = update["lockInsertions"]
         .as_array()
         .ok_or("two exact scorecard lock insertions")?;

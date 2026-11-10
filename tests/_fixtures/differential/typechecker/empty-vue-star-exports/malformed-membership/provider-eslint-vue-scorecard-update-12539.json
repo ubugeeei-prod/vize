@@ -4,14 +4,14 @@
   "previousProviderQualificationRecord": {
     "path": "tests/_fixtures/differential/typechecker/empty-vue-star-exports/malformed-membership/provider-js-tooling-refresh-update-12212.json",
     "bytes": 2624,
-    "sha256": "912ab62d53b6903d3d07c633c471d42fed27d11746265827f7785eeacd3c23b2",
-    "gitBlob": "d416f3104c3155d189690532241961bfa9002626"
+    "sha256": "33ae8c1b412b57b32ca5671758f08d10cfd4389df8164dd78a9d9edda8259b24",
+    "gitBlob": "4fac0dd0f9598354c3d476f97115a27853682792"
   },
   "previousQualificationLock": {
     "path": "pnpm-lock.yaml",
-    "bytes": 1089723,
-    "sha256": "cb8542699cbaaad1f5457513d574ef01add5644982683115beae1e140bfc61d7",
-    "gitBlob": "846feaad2a263de2bc6a9bb1aab8a9a342320957"
+    "bytes": 1102641,
+    "sha256": "d02921de92dc00bc1b524695c522922642bcebe09aa5a6478d76c03973de4b62",
+    "gitBlob": "6298e11e391ea0ac9c062bd448dcb231116361b5"
   },
   "previousQualificationPackage": {
     "path": "package.json",
@@ -21,9 +21,9 @@
   },
   "finalQualificationLock": {
     "path": "pnpm-lock.yaml",
-    "bytes": 1091261,
-    "sha256": "8ba3923750fe1bbe9f5ac91b32df9f9935091a8cdcc97b423d5f9519fc87d75e",
-    "gitBlob": "a8e4b4f401ac1b95580b3f1174d6533a4660840d"
+    "bytes": 1104179,
+    "sha256": "4d7d7e247c9f829178539681f4e48eeff3fc3bc86ed165a044c7d0a051c3fc2e",
+    "gitBlob": "0e2ec5f9baa7f6a46116b43f769593912563f532"
   },
   "finalQualificationPackage": {
     "path": "package.json",
@@ -33,9 +33,9 @@
   },
   "workspaceManifest": {
     "path": "pnpm-workspace.yaml",
-    "bytes": 9383,
-    "sha256": "06c87c57386897704293c9c4b2ca8c8965e00c33d76d24041890e67a6742ecde",
-    "gitBlob": "4c2f815ad9b6433377e1198777c265021fe7d90f"
+    "bytes": 9699,
+    "sha256": "030a08b4a6b0665327cedde929d24f3791799b08ff24ef6d1403845a830b028c",
+    "gitBlob": "ed71f90e0b624564c4ac6d18520ddf09885a60f7"
   },
   "scorecardManifest": {
     "path": "tools/benchmarks/scripts/package.json",
@@ -53,7 +53,7 @@
   ],
   "verification": {
     "command": "vp install --frozen-lockfile --ignore-scripts",
-    "lockSha256": "8ba3923750fe1bbe9f5ac91b32df9f9935091a8cdcc97b423d5f9519fc87d75e"
+    "lockSha256": "4d7d7e247c9f829178539681f4e48eeff3fc3bc86ed165a044c7d0a051c3fc2e"
   },
   "nativeAcceptanceCredit": false,
   "scope": "Pin the eslint-plugin-vue scorecard independently from the frozen differential provider and authorize only its manifest entry plus the two exact lockfile insertions. This record gives source provenance only."
