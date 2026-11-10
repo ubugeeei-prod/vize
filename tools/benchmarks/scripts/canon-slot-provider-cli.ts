@@ -77,16 +77,18 @@ export function slotCliPacket(
   const certifiedPreamble = applyCurrentSlotPreamble(
     applySourceOwnedPreambleTransitions(applyPreviousOverloadPreamble(text)),
   );
-  const currentPreamble = applySharedTemplateRefUnwrapIn(applyListenerContractIn(
-    applyPropValueOrIn(
-      applyUnownedOwnedKeysIn(
-        applyInstanceInputKeysIn(
-          applyCanonLeftoverPreamble(
-            applyEmitMemberInferIn(
-              applyStrictExtraKeysIn(
-                applyDiscriminatedJsxUnionIn(
-                  applyIntegratedSourcePreambleTransitions(
-                    applyCurrentOverloadPreamble(certifiedPreamble),
+  const currentPreamble = applySharedTemplateRefUnwrapIn(
+    applyListenerContractIn(
+      applyPropValueOrIn(
+        applyUnownedOwnedKeysIn(
+          applyInstanceInputKeysIn(
+            applyCanonLeftoverPreamble(
+              applyEmitMemberInferIn(
+                applyStrictExtraKeysIn(
+                  applyDiscriminatedJsxUnionIn(
+                    applyIntegratedSourcePreambleTransitions(
+                      applyCurrentOverloadPreamble(certifiedPreamble),
+                    ),
                   ),
                 ),
               ),
@@ -95,7 +97,7 @@ export function slotCliPacket(
         ),
       ),
     ),
-  ));
+  );
   assert.equal(currentPreamble.split(replacement).length, 2);
   const files = observed.result.files.filter((file) => typeof file.virtualTs === "string");
   assert.ok(files.length > 0, "all actual virtual file bodies must remain in JSON");
