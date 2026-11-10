@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
+import { beforeClosedEmitFactory } from "./closed-emit-factory-transition.ts";
 
 type Identity = { bytes: number; sha256: string };
 type Hunk = { before: string; after: string };
@@ -34,6 +35,8 @@ const identity = (text: string): Identity => ({
 export function beforeSharedUsageHelpersSource(file: string, current: string): string {
   const transition = record.files.find((candidate) => candidate.path === file);
   if (!transition) return current;
+  // The closed-SFC helpers sit on top of the same declaration and SDK assets.
+  current = beforeClosedEmitFactory(file, current);
   const now = identity(current);
   if (now.bytes !== transition.after.bytes || now.sha256 !== transition.after.sha256)
     return current;

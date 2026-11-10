@@ -72,6 +72,40 @@ export const TEMPLATES = {
 export const aliasSource = gate.match(/const GATE_ALIASES: &str = "((?:[^"\\]|\\.)*)";/u);
 assert.ok(aliasSource, "GATE_ALIASES");
 export const GATE_ALIASES = aliasSource[1]!.replaceAll("\\n", "\n").replaceAll('\\"', '"');
+const closedSource = gate.match(/const CLOSED_EMIT_ALIASES: &str = "((?:[^"\\]|\\.)*)";/u);
+assert.ok(closedSource, "CLOSED_EMIT_ALIASES");
+/** The closed-SFC check a standalone module declares for itself. */
+export const CLOSED_EMIT_ALIASES = closedSource[1]!.replaceAll("\\n", "\n").replaceAll('\\"', '"');
+/** Gate alias text with the generator's placeholders bound to a standalone module's local helpers. */
+export const gateAliases = (aliases: string = GATE_ALIASES): string =>
+  aliases
+    .replaceAll("{closed_aliases}", CLOSED_EMIT_ALIASES)
+    .replaceAll("{closed_target}", "__vize_emit_closed")
+    .replaceAll("{closed_factory}", "__vize_emit_closed_factory")
+    .replaceAll("{emit_props_factory}", "$EmitPropsFactory");
+/** The shared `vize:virtual-ts` closed-SFC helpers, as `component-checks` declares them. */
+export const SHARED_CLOSED_EMIT = fs
+  .readFileSync(
+    new URL(
+      "crates/vize_canon/src/virtual_ts/helpers/declarations/component-checks.d.ts.txt",
+      repo,
+    ),
+    "utf8",
+  )
+  .split("\n")
+  .filter((line) => /^export type \$ClosedEmit(?:Target|Factory)</u.test(line))
+  .map((line) => line.replace(/^export /u, ""))
+  .join("\n");
+/** Gate alias text bound the way a hoisted module binds it, with the shared helpers declared beside it. */
+export const sharedGateAliases = (aliases: string = GATE_ALIASES): string =>
+  [
+    SHARED_CLOSED_EMIT,
+    aliases
+      .replaceAll("{closed_aliases}", "")
+      .replaceAll("{closed_target}", "$ClosedEmitTarget")
+      .replaceAll("{closed_factory}", "$ClosedEmitFactory")
+      .replaceAll("{emit_props_factory}", "$EmitPropsFactory"),
+  ].join("\n");
 
 /** Rust `format!` semantics for named placeholders. */
 export function format(template: string, values: Record<string, string>): string {
@@ -288,11 +322,16 @@ export function guardedUsage(
   ];
 }
 
-export function program(aliases: string, only?: string, historical = false): string {
+export function program(
+  aliases: string,
+  only?: string,
+  historical = false,
+  bind: (aliases: string) => string = gateAliases,
+): string {
   return [
     ...prelude,
     historical ? oracle.historical.helpers : helpers,
-    aliases.replaceAll("{emit_props_factory}", "$EmitPropsFactory"),
+    bind(aliases),
     ...Object.entries(shapes)
       .filter(([name]) => only === undefined || name === only)
       .flatMap(([name, shape]) =>

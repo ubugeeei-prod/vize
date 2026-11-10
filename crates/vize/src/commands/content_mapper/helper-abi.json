@@ -2,6 +2,8 @@
   "schema": 1,
   "consumers": [
     "$CallableProp",
+    "$ClosedEmitFactory",
+    "$ClosedEmitTarget",
     "$ComponentEvents",
     "$ComponentNavigationProps",
     "$ComponentRawProps",
@@ -119,15 +121,15 @@
         },
         {
           "path": "virtual-ts.d.cts",
-          "sha256": "dcb67b889d553e934ceba9ba18d9e28e94ec2aca3b8a99d9112a54a686ce4fed"
+          "sha256": "7044c53f02f04f1a41025dfa1374929e3092768e242e9c923284316e64e65526"
         },
         {
           "path": "virtual-ts.d.mts",
-          "sha256": "dcb67b889d553e934ceba9ba18d9e28e94ec2aca3b8a99d9112a54a686ce4fed"
+          "sha256": "7044c53f02f04f1a41025dfa1374929e3092768e242e9c923284316e64e65526"
         },
         {
           "path": "virtual-ts.d.ts",
-          "sha256": "dcb67b889d553e934ceba9ba18d9e28e94ec2aca3b8a99d9112a54a686ce4fed"
+          "sha256": "7044c53f02f04f1a41025dfa1374929e3092768e242e9c923284316e64e65526"
         }
       ]
     },
@@ -175,7 +177,7 @@
         },
         {
           "path": "virtual-ts.d.ts",
-          "sha256": "dcb67b889d553e934ceba9ba18d9e28e94ec2aca3b8a99d9112a54a686ce4fed"
+          "sha256": "7044c53f02f04f1a41025dfa1374929e3092768e242e9c923284316e64e65526"
         }
       ]
     },
@@ -219,7 +221,7 @@
         },
         {
           "path": "virtual-ts.d.ts",
-          "sha256": "dcb67b889d553e934ceba9ba18d9e28e94ec2aca3b8a99d9112a54a686ce4fed"
+          "sha256": "7044c53f02f04f1a41025dfa1374929e3092768e242e9c923284316e64e65526"
         }
       ]
     }

@@ -1,0 +1,133 @@
+{
+  "schema": "vize.closedEmitFactorySource.v1",
+  "credit": {
+    "compiled": false,
+    "native": false,
+    "performance": false
+  },
+  "files": [
+    {
+      "path": "crates/vize_canon/src/virtual_ts/scope/component_events/emit_props_gate.rs",
+      "before": {
+        "bytes": 7131,
+        "sha256": "7ec00bb45bf4c0f59b045f68e7587915096b8ce5020dc4d498d259504c4b02eb"
+      },
+      "after": {
+        "bytes": 9705,
+        "sha256": "57c32978b4eedd195b813192d0c607945fc2bd76c7acdf444c06f4c074e0854b"
+      },
+      "hunks": [
+        {
+          "before": "/// the cheap call also requires every member to return the identical type.\nconst GATE_ALIASES: &str = \"type __vize_emit_native_input<C> = C extends new (...args: any[]) => any ? C extends { readonly __vizeComponentMarker: true } ? false : true : false;\\ntype __vize_emit_resolver<L, C> = [L] extends [true] ? (component: C) => C : {emit_props_factory}<C>;\\ntype __vize_emit_input<L, C, F, R = F extends (...args: any) => infer T ? T : any, U = R> = [L] extends [true] ? F : true extends (0 extends (1 & C) ? false : C extends { __vizeResolveEmitProps?: infer X } ? X extends (...args: any[]) => any ? true : __vize_emit_native_input<C> : C extends { __vizeResolveProps?: infer X } ? X extends (...args: any[]) => any ? true : __vize_emit_native_input<C> : __vize_emit_native_input<C>) ? F : [R] extends [never] ? F : [R extends unknown ? (<G>() => G extends R ? 1 : 2) extends <G>() => G extends U ? 1 : 2 ? true : false : false] extends [true] ? (props: any) => R : F;\\n\";\n\n",
+          "after": "/// the cheap call also requires every member to return the identical type.\n///\n/// `{closed_target}` selects the commonest route, a single non-generic Vize\n/// SFC, before the factory is built. That route is the factory's marked\n/// constructor member, `(component: unknown) => <A>(props: $EmitInput<…>) =>\n/// __EmitProps<$UnionEmit<C>>`, and its return never reads `A`. For one\n/// member (identical to the whole type, so no union), `$UnionEmit<C>` is the\n/// `$emit` the closed check infers, and `{closed_factory}`, `(component:\n/// unknown) => (props: any) => __EmitProps<E>`, is the same factory minus its\n/// props input. `__vize_emit_input` then returns that call unchanged: its own\n/// branches would make the same `(props: any) => R` of it, and the full\n/// factory's single signature returns the same `R` where they would not.\n/// Unions, `any`, `never`, generic resolvers, unmarked constructors and an\n/// `$emit` of `never` keep the full factory and the full gate.\nconst GATE_ALIASES: &str = \"type __vize_emit_native_input<C> = C extends new (...args: any[]) => any ? C extends { readonly __vizeComponentMarker: true } ? false : true : false;\\n{closed_aliases}type __vize_emit_resolver<L, C> = [L] extends [true] ? (component: C) => C : {closed_target}<C> extends true ? {closed_factory}<C> : {emit_props_factory}<C>;\\ntype __vize_emit_input<L, C, F, R = F extends (...args: any) => infer T ? T : any, U = R> = [L] extends [true] ? F : {closed_target}<C> extends true ? F : true extends (0 extends (1 & C) ? false : C extends { __vizeResolveEmitProps?: infer X } ? X extends (...args: any[]) => any ? true : __vize_emit_native_input<C> : C extends { __vizeResolveProps?: infer X } ? X extends (...args: any[]) => any ? true : __vize_emit_native_input<C> : __vize_emit_native_input<C>) ? F : [R] extends [never] ? F : [R extends unknown ? (<G>() => G extends R ? 1 : 2) extends <G>() => G extends U ? 1 : 2 ? true : false : false] extends [true] ? (props: any) => R : F;\\n\";\n\n/// A hoisted module names the shared `$ClosedEmitTarget`/`$ClosedEmitFactory`,\n/// instantiated once per component for the whole program. A standalone module\n/// declares the same two aliases itself.\nconst CLOSED_EMIT_ALIASES: &str = \"type __vize_emit_closed<C, A = C> = [C] extends [never] ? false : 0 extends (1 & C) ? false : [C extends { readonly __vizeComponentMarker: true } ? (<G>() => G extends C ? 1 : 2) extends <G>() => G extends A ? 1 : 2 ? C extends { __vizeResolveEmitProps?: infer X } ? X extends (...args: any[]) => any ? false : true : C extends { __vizeResolveProps?: infer X } ? X extends (...args: any[]) => any ? false : true : true : false : false] extends [true] ? [C extends new (...args: any[]) => { $emit: infer E } ? E : never] extends [never] ? false : true : false;\\ntype __vize_emit_closed_factory<C> = (component: unknown) => (props: any) => __EmitProps<C extends new (...args: any[]) => { $emit: infer E } ? E : never>;\\n\";\n\n"
+        },
+        {
+          "before": "    }\n    let emit_props_factory =\n        crate::virtual_ts::helpers::shared_types::EMIT_PROPS_FACTORY.select(hoist_shared_preamble);\n    ts.push_str(&GATE_ALIASES.replace(\"{emit_props_factory}\", emit_props_factory));\n}\n",
+          "after": "    }\n    use crate::virtual_ts::helpers::shared_types::{\n        CLOSED_EMIT_FACTORY, CLOSED_EMIT_TARGET, EMIT_PROPS_FACTORY,\n    };\n    ts.push_str(\n        &GATE_ALIASES\n            .replace(\n                \"{closed_aliases}\",\n                if hoist_shared_preamble {\n                    \"\"\n                } else {\n                    CLOSED_EMIT_ALIASES\n                },\n            )\n            .replace(\n                \"{closed_target}\",\n                CLOSED_EMIT_TARGET.select(hoist_shared_preamble),\n            )\n            .replace(\n                \"{closed_factory}\",\n                CLOSED_EMIT_FACTORY.select(hoist_shared_preamble),\n            )\n            .replace(\n                \"{emit_props_factory}\",\n                EMIT_PROPS_FACTORY.select(hoist_shared_preamble),\n            ),\n    );\n}\n"
+        }
+      ]
+    },
+    {
+      "path": "crates/vize_canon/src/virtual_ts/helpers/declarations/component-checks.d.ts.txt",
+      "before": {
+        "bytes": 9925,
+        "sha256": "01c2edfcc89dd12d7f84715dbb49dfe16dc4e613f84238204c74f5fc2287290a"
+      },
+      "after": {
+        "bytes": 10646,
+        "sha256": "2b5d0d9cc9936ec189b6ca1bd028794338e218511d16f69682634073c01056ec"
+      },
+      "hunks": [
+        {
+          "before": "export type $PropValueOr<P, K extends PropertyKey, C, FK extends PropertyKey = K, __V = P extends unknown ? (K extends keyof P ? P[K] : never) : never> = [__V] extends [never] ? $FallthroughValue<C, FK> : __V;\ntype $InvalidFallthroughSpreadKeys<P, F, A> = { [K in keyof A]-?: K extends keyof P | keyof $KebabProps<P> ? never : K extends keyof F ? $IsAny<A[K]> extends true ? never : A[K] extends F[K] ? never : K extends \"id\" ? A[K] extends string | number ? never : K : K : never }[keyof A];\n",
+          "after": "export type $PropValueOr<P, K extends PropertyKey, C, FK extends PropertyKey = K, __V = P extends unknown ? (K extends keyof P ? P[K] : never) : never> = [__V] extends [never] ? $FallthroughValue<C, FK> : __V;\nexport type $ClosedEmitTarget<C, A = C> = [C] extends [never] ? false : 0 extends (1 & C) ? false : [C extends { readonly __vizeComponentMarker: true } ? (<G>() => G extends C ? 1 : 2) extends <G>() => G extends A ? 1 : 2 ? C extends { __vizeResolveEmitProps?: infer X } ? X extends (...args: any[]) => any ? false : true : C extends { __vizeResolveProps?: infer X } ? X extends (...args: any[]) => any ? false : true : true : false : false] extends [true] ? [C extends new (...args: any[]) => { $emit: infer E } ? E : never] extends [never] ? false : true : false;\nexport type $ClosedEmitFactory<C> = (component: unknown) => (props: any) => __EmitProps<C extends new (...args: any[]) => { $emit: infer E } ? E : never>;\ntype $InvalidFallthroughSpreadKeys<P, F, A> = { [K in keyof A]-?: K extends keyof P | keyof $KebabProps<P> ? never : K extends keyof F ? $IsAny<A[K]> extends true ? never : A[K] extends F[K] ? never : K extends \"id\" ? A[K] extends string | number ? never : K : K : never }[keyof A];\n"
+        }
+      ]
+    },
+    {
+      "path": "npm/cli/virtual-ts.d.ts",
+      "before": {
+        "bytes": 17669,
+        "sha256": "dcb67b889d553e934ceba9ba18d9e28e94ec2aca3b8a99d9112a54a686ce4fed"
+      },
+      "after": {
+        "bytes": 18650,
+        "sha256": "7044c53f02f04f1a41025dfa1374929e3092768e242e9c923284316e64e65526"
+      },
+      "hunks": [
+        {
+          "before": "> = [__V] extends [never] ? $FallthroughValue<C, FK> : __V;\ntype $InvalidFallthroughSpreadKeys<P, F, A> = {\n",
+          "after": "> = [__V] extends [never] ? $FallthroughValue<C, FK> : __V;\nexport type $ClosedEmitTarget<C, A = C> = [C] extends [never]\n  ? false\n  : 0 extends 1 & C\n    ? false\n    : [\n          C extends { readonly __vizeComponentMarker: true }\n            ? (<G>() => G extends C ? 1 : 2) extends <G>() => G extends A ? 1 : 2\n              ? C extends { __vizeResolveEmitProps?: infer X }\n                ? X extends (...args: any[]) => any\n                  ? false\n                  : true\n                : C extends { __vizeResolveProps?: infer X }\n                  ? X extends (...args: any[]) => any\n                    ? false\n                    : true\n                  : true\n              : false\n            : false,\n        ] extends [true]\n      ? [C extends new (...args: any[]) => { $emit: infer E } ? E : never] extends [never]\n        ? false\n        : true\n      : false;\nexport type $ClosedEmitFactory<C> = (\n  component: unknown,\n) => (props: any) => __EmitProps<C extends new (...args: any[]) => { $emit: infer E } ? E : never>;\ntype $InvalidFallthroughSpreadKeys<P, F, A> = {\n"
+        }
+      ]
+    },
+    {
+      "path": "npm/cli/virtual-ts.d.mts",
+      "before": {
+        "bytes": 17669,
+        "sha256": "dcb67b889d553e934ceba9ba18d9e28e94ec2aca3b8a99d9112a54a686ce4fed"
+      },
+      "after": {
+        "bytes": 18650,
+        "sha256": "7044c53f02f04f1a41025dfa1374929e3092768e242e9c923284316e64e65526"
+      },
+      "hunks": [
+        {
+          "before": "> = [__V] extends [never] ? $FallthroughValue<C, FK> : __V;\ntype $InvalidFallthroughSpreadKeys<P, F, A> = {\n",
+          "after": "> = [__V] extends [never] ? $FallthroughValue<C, FK> : __V;\nexport type $ClosedEmitTarget<C, A = C> = [C] extends [never]\n  ? false\n  : 0 extends 1 & C\n    ? false\n    : [\n          C extends { readonly __vizeComponentMarker: true }\n            ? (<G>() => G extends C ? 1 : 2) extends <G>() => G extends A ? 1 : 2\n              ? C extends { __vizeResolveEmitProps?: infer X }\n                ? X extends (...args: any[]) => any\n                  ? false\n                  : true\n                : C extends { __vizeResolveProps?: infer X }\n                  ? X extends (...args: any[]) => any\n                    ? false\n                    : true\n                  : true\n              : false\n            : false,\n        ] extends [true]\n      ? [C extends new (...args: any[]) => { $emit: infer E } ? E : never] extends [never]\n        ? false\n        : true\n      : false;\nexport type $ClosedEmitFactory<C> = (\n  component: unknown,\n) => (props: any) => __EmitProps<C extends new (...args: any[]) => { $emit: infer E } ? E : never>;\ntype $InvalidFallthroughSpreadKeys<P, F, A> = {\n"
+        }
+      ]
+    },
+    {
+      "path": "npm/cli/virtual-ts.d.cts",
+      "before": {
+        "bytes": 17669,
+        "sha256": "dcb67b889d553e934ceba9ba18d9e28e94ec2aca3b8a99d9112a54a686ce4fed"
+      },
+      "after": {
+        "bytes": 18650,
+        "sha256": "7044c53f02f04f1a41025dfa1374929e3092768e242e9c923284316e64e65526"
+      },
+      "hunks": [
+        {
+          "before": "> = [__V] extends [never] ? $FallthroughValue<C, FK> : __V;\ntype $InvalidFallthroughSpreadKeys<P, F, A> = {\n",
+          "after": "> = [__V] extends [never] ? $FallthroughValue<C, FK> : __V;\nexport type $ClosedEmitTarget<C, A = C> = [C] extends [never]\n  ? false\n  : 0 extends 1 & C\n    ? false\n    : [\n          C extends { readonly __vizeComponentMarker: true }\n            ? (<G>() => G extends C ? 1 : 2) extends <G>() => G extends A ? 1 : 2\n              ? C extends { __vizeResolveEmitProps?: infer X }\n                ? X extends (...args: any[]) => any\n                  ? false\n                  : true\n                : C extends { __vizeResolveProps?: infer X }\n                  ? X extends (...args: any[]) => any\n                    ? false\n                    : true\n                  : true\n              : false\n            : false,\n        ] extends [true]\n      ? [C extends new (...args: any[]) => { $emit: infer E } ? E : never] extends [never]\n        ? false\n        : true\n      : false;\nexport type $ClosedEmitFactory<C> = (\n  component: unknown,\n) => (props: any) => __EmitProps<C extends new (...args: any[]) => { $emit: infer E } ? E : never>;\ntype $InvalidFallthroughSpreadKeys<P, F, A> = {\n"
+        }
+      ]
+    }
+  ],
+  "compiledPreamble": {
+    "path": "vize_canon::virtual_ts::SHARED_PREAMBLE_DTS",
+    "before": {
+      "bytes": 54003,
+      "sha256": "10ed1f5af441320b2c0d0a48dd0235693c9603f726cd4c94446e06c38fb05df0"
+    },
+    "after": {
+      "bytes": 54724,
+      "sha256": "585a376a5c33d5bebfaed31c55392157889bc21a164db8a50dbaf4b262df011d"
+    },
+    "hunks": [
+      {
+        "before": "export type $PropValueOr<P, K extends PropertyKey, C, FK extends PropertyKey = K, __V = P extends unknown ? (K extends keyof P ? P[K] : never) : never> = [__V] extends [never] ? $FallthroughValue<C, FK> : __V;\ntype $InvalidFallthroughSpreadKeys<P, F, A> = { [K in keyof A]-?: K extends keyof P | keyof $KebabProps<P> ? never : K extends keyof F ? $IsAny<A[K]> extends true ? never : A[K] extends F[K] ? never : K extends \"id\" ? A[K] extends string | number ? never : K : K : never }[keyof A];\n",
+        "after": "export type $PropValueOr<P, K extends PropertyKey, C, FK extends PropertyKey = K, __V = P extends unknown ? (K extends keyof P ? P[K] : never) : never> = [__V] extends [never] ? $FallthroughValue<C, FK> : __V;\nexport type $ClosedEmitTarget<C, A = C> = [C] extends [never] ? false : 0 extends (1 & C) ? false : [C extends { readonly __vizeComponentMarker: true } ? (<G>() => G extends C ? 1 : 2) extends <G>() => G extends A ? 1 : 2 ? C extends { __vizeResolveEmitProps?: infer X } ? X extends (...args: any[]) => any ? false : true : C extends { __vizeResolveProps?: infer X } ? X extends (...args: any[]) => any ? false : true : true : false : false] extends [true] ? [C extends new (...args: any[]) => { $emit: infer E } ? E : never] extends [never] ? false : true : false;\nexport type $ClosedEmitFactory<C> = (component: unknown) => (props: any) => __EmitProps<C extends new (...args: any[]) => { $emit: infer E } ? E : never>;\ntype $InvalidFallthroughSpreadKeys<P, F, A> = { [K in keyof A]-?: K extends keyof P | keyof $KebabProps<P> ? never : K extends keyof F ? $IsAny<A[K]> extends true ? never : A[K] extends F[K] ? never : K extends \"id\" ? A[K] extends string | number ? never : K : K : never }[keyof A];\n"
+      }
+    ]
+  },
+  "compiledStrictPreamble": {
+    "path": "vize_canon::virtual_ts::SHARED_PREAMBLE_STRICT_DTS",
+    "before": {
+      "bytes": 53794,
+      "sha256": "42a83de35ad2d2fb0e82d280830cfd024bbc3fe3b814ddfeed1857e044743381"
+    },
+    "after": {
+      "bytes": 54515,
+      "sha256": "a3261404a9c79f08e5c8f8f74a73a2b31d212a797df961606fa785455c087067"
+    },
+    "hunks": [
+      {
+        "before": "export type $PropValueOr<P, K extends PropertyKey, C, FK extends PropertyKey = K, __V = P extends unknown ? (K extends keyof P ? P[K] : never) : never> = [__V] extends [never] ? $FallthroughValue<C, FK> : __V;\ntype $InvalidFallthroughSpreadKeys<P, F, A> = { [K in keyof A]-?: K extends keyof P | keyof $KebabProps<P> ? never : K extends keyof F ? $IsAny<A[K]> extends true ? never : A[K] extends F[K] ? never : K extends \"id\" ? A[K] extends string | number ? never : K : K : never }[keyof A];\n",
+        "after": "export type $PropValueOr<P, K extends PropertyKey, C, FK extends PropertyKey = K, __V = P extends unknown ? (K extends keyof P ? P[K] : never) : never> = [__V] extends [never] ? $FallthroughValue<C, FK> : __V;\nexport type $ClosedEmitTarget<C, A = C> = [C] extends [never] ? false : 0 extends (1 & C) ? false : [C extends { readonly __vizeComponentMarker: true } ? (<G>() => G extends C ? 1 : 2) extends <G>() => G extends A ? 1 : 2 ? C extends { __vizeResolveEmitProps?: infer X } ? X extends (...args: any[]) => any ? false : true : C extends { __vizeResolveProps?: infer X } ? X extends (...args: any[]) => any ? false : true : true : false : false] extends [true] ? [C extends new (...args: any[]) => { $emit: infer E } ? E : never] extends [never] ? false : true : false;\nexport type $ClosedEmitFactory<C> = (component: unknown) => (props: any) => __EmitProps<C extends new (...args: any[]) => { $emit: infer E } ? E : never>;\ntype $InvalidFallthroughSpreadKeys<P, F, A> = { [K in keyof A]-?: K extends keyof P | keyof $KebabProps<P> ? never : K extends keyof F ? $IsAny<A[K]> extends true ? never : A[K] extends F[K] ? never : K extends \"id\" ? A[K] extends string | number ? never : K : K : never }[keyof A];\n"
+      }
+    ]
+  }
+}

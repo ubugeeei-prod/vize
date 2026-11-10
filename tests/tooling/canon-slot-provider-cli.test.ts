@@ -59,6 +59,10 @@ import {
   applySharedUsageHelpersIn,
   beforeSharedUsageHelpersIn,
 } from "../../tools/support/compat/content-mapper/shared-usage-helpers-transition.ts";
+import {
+  applyClosedEmitFactoryIn,
+  beforeClosedEmitFactoryIn,
+} from "../../tools/support/compat/content-mapper/closed-emit-factory-transition.ts";
 
 test("quiet CLI debug output retains exact helper/file bytes and refuses unrelated stderr", () => {
   const record = JSON.parse(
@@ -188,8 +192,10 @@ test("quiet CLI debug output retains exact helper/file bytes and refuses unrelat
   const listenerSourcePreamble = applyListenerContractIn(propValueOrSourcePreamble);
   const unwrapSourcePreamble = applySharedTemplateRefUnwrapIn(listenerSourcePreamble);
   assert.equal(beforeSharedTemplateRefUnwrapIn(unwrapSourcePreamble), listenerSourcePreamble);
-  const currentSourcePreamble = applySharedUsageHelpersIn(unwrapSourcePreamble);
-  assert.equal(beforeSharedUsageHelpersIn(currentSourcePreamble), unwrapSourcePreamble);
+  const usageSourcePreamble = applySharedUsageHelpersIn(unwrapSourcePreamble);
+  assert.equal(beforeSharedUsageHelpersIn(usageSourcePreamble), unwrapSourcePreamble);
+  const currentSourcePreamble = applyClosedEmitFactoryIn(usageSourcePreamble);
+  assert.equal(beforeClosedEmitFactoryIn(currentSourcePreamble), usageSourcePreamble);
   const canonPredecessor = [...canonLeftoverPreamblePaths]
     .reverse()
     .reduce((current, file) => beforeCanonLeftoversIn(file, current), canonSourcePreamble);

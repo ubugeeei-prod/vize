@@ -26,13 +26,19 @@ const helpers = [
   ownership,
   read(`${declarations}emit-inference.d.ts.txt`),
 ].join("\n");
-const gate = read(
+const gateSource = read(
   "crates/vize_canon/src/virtual_ts/scope/component_events/emit_props_gate.rs",
-).match(/const GATE_ALIASES: &str = "((?:[^"\\]|\\.)*)";/u);
-assert.ok(gate);
-const gateAliases = gate[1]!
-  .replaceAll("\\n", "\n")
-  .replaceAll('\\"', '"')
+);
+const rustString = (name: string) => {
+  const match = gateSource.match(new RegExp(`const ${name}: &str = "((?:[^"\\\\]|\\\\.)*)";`, "u"));
+  assert.ok(match, name);
+  return match[1]!.replaceAll("\\n", "\n").replaceAll('\\"', '"');
+};
+// A standalone module's binding: the closed-SFC check is declared beside the gate.
+const gateAliases = rustString("GATE_ALIASES")
+  .replaceAll("{closed_aliases}", rustString("CLOSED_EMIT_ALIASES"))
+  .replaceAll("{closed_target}", "__vize_emit_closed")
+  .replaceAll("{closed_factory}", "__vize_emit_closed_factory")
   .replaceAll("{emit_props_factory}", "$EmitPropsFactory");
 
 // Hand-authored external constructors exercise the actual production mapper.

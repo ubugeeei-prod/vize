@@ -16,6 +16,10 @@ import {
   gate,
   TEMPLATES,
   GATE_ALIASES,
+  CLOSED_EMIT_ALIASES,
+  SHARED_CLOSED_EMIT,
+  gateAliases,
+  sharedGateAliases,
   format,
   prelude,
   sfc,
@@ -75,13 +79,27 @@ void test("the gate mirrors every $EmitPropsFactory route", () => {
 });
 
 void test("a gated emit-props call has exactly the direct call's type", () => {
-  for (const exactOptionalPropertyTypes of [false, true]) {
-    assert.deepEqual(
-      diagnostics(program(GATE_ALIASES), exactOptionalPropertyTypes),
-      [],
-      `exactOptionalPropertyTypes=${exactOptionalPropertyTypes}`,
-    );
+  // Standalone modules declare the closed check; hoisted ones name the shared helpers.
+  for (const bind of [gateAliases, sharedGateAliases]) {
+    for (const exactOptionalPropertyTypes of [false, true]) {
+      assert.deepEqual(
+        diagnostics(program(GATE_ALIASES, undefined, false, bind), exactOptionalPropertyTypes),
+        [],
+        `${bind.name} exactOptionalPropertyTypes=${exactOptionalPropertyTypes}`,
+      );
+    }
   }
+});
+
+void test("the shared closed helpers are the standalone aliases under their SDK names", () => {
+  const renamed = CLOSED_EMIT_ALIASES.replace(
+    "type __vize_emit_closed_factory<C>",
+    "type $ClosedEmitFactory<C>",
+  )
+    .replace("type __vize_emit_closed<C, A = C>", "type $ClosedEmitTarget<C, A = C>")
+    .trimEnd()
+    .split("\n");
+  assert.deepEqual(SHARED_CLOSED_EMIT.split("\n"), renamed);
 });
 
 void test("the oracle rejects gates that drop a props-dependent route or the factory result", () => {
@@ -98,12 +116,23 @@ void test("the oracle rejects gates that drop a props-dependent route or the fac
     ],
     [
       "library exports read as props-independent",
-      GATE_ALIASES.replace("[L] extends [true] ? F : true extends", "true extends"),
+      GATE_ALIASES.replace(
+        "[L] extends [true] ? F : {closed_target}<C> extends true ? F : true extends",
+        "{closed_target}<C> extends true ? F : true extends",
+      ),
       "library",
     ],
     [
       "the cheap call drops the factory result",
       GATE_ALIASES.replace("(props: any) => R : F", "(props: any) => {} : F"),
+      "sameEmitUnion",
+    ],
+    [
+      "the closed factory drops the component's emits",
+      gateAliases().replace(
+        "(props: any) => __EmitProps<C extends new (...args: any[]) => { $emit: infer E } ? E : never>",
+        "(props: any) => {}",
+      ),
       "sfc",
     ],
     [
@@ -126,7 +155,7 @@ void test("the historical deferred counter stays frozen and generic templates ke
     [
       ...prelude,
       historical ? oracle.historical.helpers : helpers,
-      GATE_ALIASES.replaceAll("{emit_props_factory}", "$EmitPropsFactory"),
+      gateAliases(),
       `export function template<K extends ${resolvesEmits} | ${sfc}>() {`,
       ...usage(
         "deferred",
@@ -159,17 +188,27 @@ void test("the gate takes the cheap call exactly where the factory ignores the p
   );
 });
 
+void test("only a single non-generic SFC skips the full factory", () => {
+  const closed = ["sfc", "loose", "required"];
+  const lines = [...prelude, helpers, gateAliases(), SHARED_CLOSED_EMIT];
+  for (const [name, shape] of Object.entries(shapes)) {
+    lines.push(
+      `type Closed_${name} = Expect<Equal<__vize_emit_closed<${shape}>, ${closed.includes(name)}>>;`,
+      `type Shared_${name} = Expect<Equal<$ClosedEmitTarget<${shape}>, ${closed.includes(name)}>>;`,
+    );
+  }
+  for (const exactOptionalPropertyTypes of [false, true]) {
+    assert.deepEqual(diagnostics(lines.join("\n"), exactOptionalPropertyTypes), []);
+  }
+});
+
 function assertRoutes(
   cheap: readonly string[],
   direct: readonly string[],
   helperText: string,
   aliases = GATE_ALIASES,
 ): void {
-  const lines = [
-    ...prelude,
-    helperText,
-    aliases.replaceAll("{emit_props_factory}", "$EmitPropsFactory"),
-  ];
+  const lines = [...prelude, helperText, gateAliases(aliases)];
   for (const name of [...cheap, ...direct]) {
     const component_ref = `C_${name}`;
     const library = `${component_ref}_library`;
@@ -238,11 +277,7 @@ void test("a successor refuses unknown producer bytes and altered historical con
 
 void test("a gated result still feeds the listener args, so the call stays", () => {
   // `_emit_args`/`_args` read `inferred` unless `unknown[] extends inferred`.
-  const lines = [
-    ...prelude,
-    helpers,
-    GATE_ALIASES.replaceAll("{emit_props_factory}", "$EmitPropsFactory"),
-  ];
+  const lines = [...prelude, helpers, gateAliases()];
   const read = {
     sfc: "[value: number]",
     unmarked: "[value: boolean]",
