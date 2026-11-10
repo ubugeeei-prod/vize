@@ -1,0 +1,10 @@
+<script setup lang="ts">
+function pick(flag: boolean) {
+  if (flag) {
+    const wrong: number = "s"
+    return wrong
+  }
+  return 0
+}
+</script>
+<template><div>{{ pick(true) }}</div></template>
