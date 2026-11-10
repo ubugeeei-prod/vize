@@ -274,6 +274,7 @@ impl CorsaBridge {
         let config = self.config.clone();
         let shared = self.shared_editor_transport;
         let initialized = Arc::clone(&self.initialized);
+        let editor_lsp_interrupt = Arc::clone(&self.editor_lsp_interrupt);
         self.submit_async(move |slot| {
             // This remains inside the queued owner: cleanup cannot remove the
             // marker between admission and physical entry on another worker.
@@ -285,7 +286,9 @@ impl CorsaBridge {
                 // This eager constructor has not received the Canon mirror.
                 // Its error keeps the existing retry/error ownership law;
                 // only the seeded factory can expose this graph on failure.
-                *slot = Some(build_client(&config, shared)?);
+                let mut client = build_client(&config, shared)?;
+                client.bind_editor_lsp_interrupt(editor_lsp_interrupt);
+                *slot = Some(client);
             }
             lease.retain();
             lease.publish(&initialized, true)

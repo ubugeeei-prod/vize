@@ -36,6 +36,8 @@ pub struct CorsaBridge {
     pub(super) config: CorsaBridgeConfig,
     /// Worker thread owning the synchronous Corsa project session.
     worker: BoundedWorker<Option<CorsaProjectClient>>,
+    /// Close handle for the worker-owned editor child after caller timeout.
+    pub(super) editor_lsp_interrupt: Arc<crate::lsp_client::EditorLspInterrupt>,
     /// Read-only initial diagnostics never occupy the mutable foreground lane.
     initial_diagnostics_worker: BoundedWorker<()>,
     /// Whether the bridge is initialized
@@ -116,12 +118,14 @@ impl CorsaBridge {
         let editor_session = Arc::new(super::EditorMirrorSession::with_compiler_configuration(
             compiler_configuration,
         ));
+        let editor_lsp_interrupt = Arc::new(Default::default());
         Self {
             worker: BoundedWorker::new_with_keepalive(
                 "vize-corsa-bridge",
                 None,
                 Arc::clone(&editor_session),
             ),
+            editor_lsp_interrupt,
             initial_diagnostics_worker: BoundedWorker::new_with_keepalive(
                 "vize-initial-api-read",
                 (),
@@ -206,6 +210,7 @@ impl CorsaBridge {
         }) {
             Ok(result) => result,
             Err(WorkerError::TimedOut) => {
+                self.interrupt_editor_lsp();
                 let bound = self.config.timeout_ms;
                 tracing::warn!("corsa request outran the {bound}ms bridge bound; abandoned it");
                 Err(CorsaBridgeError::Timeout)
@@ -231,6 +236,7 @@ impl CorsaBridge {
         {
             Ok(result) => result,
             Err(WorkerError::TimedOut) => {
+                self.interrupt_editor_lsp();
                 let bound = self.config.timeout_ms;
                 tracing::warn!("corsa request outran the {bound}ms bridge bound; abandoned it");
                 Err(CorsaBridgeError::Timeout)
@@ -256,11 +262,18 @@ impl CorsaBridge {
         {
             Ok(result) => result,
             Err(WorkerError::TimedOut) => {
+                self.interrupt_editor_lsp();
                 let bound = self.config.timeout_ms;
                 tracing::warn!("corsa request outran the {bound}ms bridge bound; abandoned it");
                 Err(CorsaBridgeError::Timeout)
             }
             Err(WorkerError::Stopped) => Err(CorsaBridgeError::ProcessTerminated),
+        }
+    }
+
+    fn interrupt_editor_lsp(&self) {
+        if self.editor_lsp_interrupt.interrupt() {
+            tracing::warn!("retiring timed-out Corsa editor child");
         }
     }
 }
@@ -293,7 +306,33 @@ pub(super) fn parse_lsp_locations(value: Value) -> Result<Vec<LspLocation>, Cors
 
 #[cfg(test)]
 mod tests {
-    use super::parse_lsp_locations;
+    use super::{CorsaBridge, parse_lsp_locations};
+    use crate::corsa_bridge::{CorsaBridgeConfig, CorsaBridgeError};
+    use std::{sync::mpsc, time::Duration};
+
+    #[test]
+    fn bridge_timeout_runs_registered_editor_cleanup() {
+        let bridge = CorsaBridge::with_config(CorsaBridgeConfig {
+            timeout_ms: 10,
+            ..Default::default()
+        });
+        let (interrupted_tx, interrupted_rx) = mpsc::channel();
+        bridge
+            .editor_lsp_interrupt
+            .register_test_interrupt(move || {
+                let _ = interrupted_tx.send(());
+            });
+
+        let result = bridge.submit(|_| {
+            std::thread::sleep(Duration::from_millis(100));
+            Ok(())
+        });
+
+        assert!(matches!(result, Err(CorsaBridgeError::Timeout)));
+        interrupted_rx
+            .recv_timeout(Duration::from_secs(10))
+            .expect("timed-out editor child must be interrupted");
+    }
 
     #[test]
     fn declaration_and_implementation_location_links_normalize_to_locations() {

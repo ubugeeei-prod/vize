@@ -125,6 +125,7 @@ impl CorsaProjectClient {
             external_document_uris: Default::default(),
             overlay_storage,
             editor_lsp,
+            editor_lsp_interrupt: Arc::new(Default::default()),
             shared_editor_transport_requested: shared_editor_transport,
             shared_editor_transport: project_session_attached_to_editor,
             project_session_attached_to_editor,
