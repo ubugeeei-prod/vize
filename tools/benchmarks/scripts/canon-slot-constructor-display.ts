@@ -42,6 +42,29 @@ function observedCase(row: SlotCase) {
   return observed;
 }
 
+function compactContractDisplaySuccessor(value: unknown) {
+  assert.ok(Array.isArray(value), "the native diagnostic packet must stay an array");
+  return value.map((diagnostic) => {
+    assert.ok(isRecord(diagnostic) && typeof diagnostic.message === "string");
+    assert.equal(
+      diagnostic.message.split("__WitnessChild_CheckProps_0").length - 1,
+      1,
+      "the certified component contract alias must occur exactly once",
+    );
+    assert.equal(
+      diagnostic.message.split("... 677 more ...").length - 1,
+      1,
+      "the certified TypeScript display boundary must occur exactly once",
+    );
+    return {
+      ...diagnostic,
+      message: diagnostic.message
+        .replace("__WitnessChild_CheckProps_0", "__VCheckProps0")
+        .replace("... 677 more ...", "... 675 more ..."),
+    };
+  });
+}
+
 export function assertAuthoredNativeDiagnostics(row: SlotCase, before: unknown, after: unknown) {
   if (row.id === "overload-last-zero") {
     assert.equal(hash(row.source), propsCorrection.sourceSha256);
@@ -60,6 +83,14 @@ export function assertAuthoredNativeDiagnostics(row: SlotCase, before: unknown, 
       "the complete published false authored error stays exact",
     );
     assert.deepEqual(after, [], "both independent oracles accept this numeric overload usage");
+    return;
+  }
+  if (row.id === "missing-required" || row.id === "unknown-prop") {
+    assert.deepEqual(
+      after,
+      compactContractDisplaySuccessor(before),
+      "only the compact contract alias and its exact TypeScript truncation may change",
+    );
     return;
   }
   if (row.id !== "missing-symbol") {
