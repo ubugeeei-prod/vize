@@ -1,0 +1,12 @@
+import type { PublicProps, VNode } from 'vue'
+
+type Props<T> = { items: T[]; pick?: T } & PublicProps
+
+/** A generic component as vue-tsc declares it. */
+declare const GenericLib: <T>(
+  props: Props<T>,
+  ctx?: unknown,
+  expose?: unknown,
+  setup?: Promise<{ props: Props<T> }>,
+) => VNode & { __ctx?: { props: Props<T> } }
+export default GenericLib

@@ -27,6 +27,7 @@ pub(super) fn publish_content_mapper_text(
     diagnostic_ownership: Option<&DiagnosticOwnershipCollector>,
     share_virtual_module: bool,
 ) {
+    append_attr_value_helper(code, share_virtual_module);
     publicize_generated_diagnostic_helpers(
         code,
         mappings,
@@ -43,6 +44,15 @@ pub(super) fn publish_content_mapper_text(
     for start in starts.into_iter().rev() {
         let end = start + PRIVATE_MODULE.len();
         code.replace_range(start..end, PUBLISHED_MODULE);
+    }
+}
+
+/// Owned per-prop checks reference one module helper; appending it shifts no
+/// generated coordinate.
+fn append_attr_value_helper(code: &mut CompactString, share_virtual_module: bool) {
+    use crate::virtual_ts::{ATTR_VALUE_REFERENCE, attr_value_declaration};
+    if memchr::memmem::find(code.as_bytes(), ATTR_VALUE_REFERENCE.as_bytes()).is_some() {
+        code.push_str(attr_value_declaration(share_virtual_module));
     }
 }
 

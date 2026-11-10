@@ -18,6 +18,7 @@ mod directive_tables;
 mod dynamic_component_event_names;
 mod dynamic_template_refs;
 mod expect_element_coverage_11486;
+mod fallthrough_value_12458;
 mod generic_component_cast_11966;
 mod generic_constructor_slots;
 mod global_component_listener_11373;

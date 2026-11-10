@@ -1,0 +1,7 @@
+<script setup lang="ts">
+import Field from './Field.vue'
+</script>
+<template>
+  <Field label="x" :maxlength="{}" />
+  <Field :label="1" :tabindex="true" :aria-busy="1" />
+</template>

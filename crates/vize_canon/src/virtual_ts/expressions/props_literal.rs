@@ -15,14 +15,16 @@ use super::prop_sources::append_prop_value;
 use super::spread_reserved_props::rewrite_reserved_spread_references;
 use crate::virtual_ts::template_binding_access::TemplateBindingAccess;
 use prop_entry::append_prop_entry;
-use vize_carton::{FxHashSet, append};
+use vize_carton::append;
 use vize_croquis::{
     ScopeChain, ScopeId,
     croquis::{ComponentUsage, SpreadProp},
 };
 use vize_l0::ts;
 
+mod entry_marks;
 mod prop_entry;
+pub(crate) use entry_marks::{literal_carries_value, named_entry_marks};
 pub(crate) use prop_entry::entry_sub_spans_with_synthetic_value_gaps as prop_entry_sub_spans_with_synthetic_value_gaps;
 #[cfg(feature = "native")]
 pub(crate) use prop_entry::key_sub_spans;
@@ -94,8 +96,8 @@ pub(crate) fn append_props_literal(
     let merge_style_bindings = style_bindings.len() > 1;
     let mut emitted_merged_style = false;
     let mut spreads = usage.spread_props.iter().peekable();
-    let mut authored_named_keys = FxHashSet::default();
-    for prop in &usage.props {
+    let marks = named_entry_marks(usage, (merge_class_bindings, merge_style_bindings));
+    for (prop, marked) in usage.props.iter().zip(marks) {
         if !is_checkable_prop(prop) {
             continue;
         }
@@ -135,8 +137,7 @@ pub(crate) fn append_props_literal(
             merge_bindings,
             bindings,
             emitted_merged,
-            spreads.peek().is_some(),
-            &mut authored_named_keys,
+            marked == Some(true),
         );
         let Some(rows) = rows else {
             continue;

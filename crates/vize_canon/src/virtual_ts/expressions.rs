@@ -48,6 +48,7 @@ mod spread_reserved_props;
 mod statement_guard;
 mod statements;
 mod ts_suppression_comments;
+pub(super) mod unchecked_prop_values;
 mod value_checks;
 mod vapor_directive;
 mod vif_chain;

@@ -12,7 +12,7 @@ use crate::virtual_ts::helpers::{
 };
 use crate::virtual_ts::template_binding_access::TemplateBindingAccess;
 use crate::virtual_ts::types::{VizeMapping, VizeSubSpan};
-use vize_carton::{FxHashSet, String, append};
+use vize_carton::{String, append};
 use vize_croquis::croquis::PassedProp;
 
 use super::NAMED_PROP_DIAGNOSTIC_MARKER;
@@ -38,8 +38,7 @@ pub(super) fn append_prop_entry<'p>(
     merge_class_bindings: bool,
     class_bindings: &[(&'p PassedProp, String)],
     emitted_merged_class: &mut bool,
-    before_following_spread: bool,
-    authored_named_keys: &mut FxHashSet<String>,
+    marked: bool,
 ) -> Option<PropDiagnosticRows<'p>> {
     let template_offset = source_context.offset;
     let mut merged_value_ranges = Vec::new();
@@ -94,8 +93,6 @@ pub(super) fn append_prop_entry<'p>(
             (None, component_prop_key(prop.name.as_str()))
         };
     let aria_present_value = aria_raw_prop_name.is_some();
-
-    let repeated_named_key = !authored_named_keys.insert(camel_prop_name.clone());
     // Keep named props direct so TypeScript contextually elaborates their
     // value errors at the property instead of reporting a second TS2345 on
     // the whole object when a later v-bind spread exists (#10069). The
@@ -107,7 +104,8 @@ pub(super) fn append_prop_entry<'p>(
     // key with one value evaluation. The dedicated assignment owns its value
     // diagnostic. Suppressing this synthetic entry also retains `aria-*` as an
     // undeclared HTML attr without widening arbitrary attrs (#11048, #9658).
-    if aria_present_value || (before_following_spread && !repeated_named_key) {
+    // `named_entry_marks` decides these rows for the per-prop emitter too.
+    if marked {
         append!(
             *ts,
             "{expr_indent}  // {NAMED_PROP_DIAGNOSTIC_MARKER} are owned by the per-prop check.\n",
@@ -235,7 +233,7 @@ pub(super) fn append_prop_entry<'p>(
         // A callback literal carries a synthetic `never`, not the authored
         // body. Only the separately checked callback can own its value range.
         value: if inline_callback { 0..0 } else { value_span },
-        ignored_primary: before_following_spread && !repeated_named_key,
+        ignored_primary: marked && !aria_present_value,
         merged: merge_named_bindings,
         merged_values,
     })

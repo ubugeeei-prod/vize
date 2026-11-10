@@ -228,6 +228,7 @@ pub(super) fn emit_scope_closures(
         relaxed_required_usage_starts: &relaxed_required_usage_starts,
         explicit_generics: &explicit_generics,
         dynamic_aliases: &dynamic_aliases,
+        unchecked_prop_values: check_options.unchecked_prop_values,
     };
     let owned_usages = check_options
         .check_props
