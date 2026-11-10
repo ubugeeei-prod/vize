@@ -90,6 +90,52 @@ const point = (offset: number, edits: Edit[]) =>
     .filter((edit) => edit.end <= offset)
     .reduce((delta, edit) => delta + edit.replacement.length - (edit.end - edit.start), 0);
 
+const hoverFeature = 1;
+
+/** Admit only the producer's removal of duplicate component-prop hover owners. */
+function withComponentPropHoverOwnership(
+  expected: Record<string, unknown>,
+  actual: Record<string, unknown>,
+): Record<string, unknown> {
+  assert.equal(expected.text, actual.text, "this transition changes only mapping features");
+  assert.equal(typeof expected.text, "string");
+  assert.ok(Array.isArray(expected.mappings) && Array.isArray(actual.mappings));
+  assert.equal(actual.mappings.length, expected.mappings.length);
+  const text = Buffer.from(expected.text as string);
+  const before = expected.mappings as number[][];
+  const after = actual.mappings as number[][];
+  const linePrefix = (row: number[]) => {
+    assert.equal(row.length, 6);
+    const start = row[0]!;
+    assert.ok(Number.isSafeInteger(start) && start >= 0 && start <= text.length);
+    const line = text.lastIndexOf(0x0a, start - 1) + 1;
+    return text.subarray(line, start).toString("utf8");
+  };
+  const owner = (row: number[]) =>
+    (row[5]! & hoverFeature) !== 0 &&
+    linePrefix(row).trimStart().startsWith("void __vize_props_nav_");
+  const result = structuredClone(expected);
+  result.mappings = before.map((row, index) => {
+    const candidate = after[index]!;
+    assert.equal(row.length, 6);
+    assert.equal(candidate.length, 6);
+    assert.ok(row.every(Number.isSafeInteger) && candidate.every(Number.isSafeInteger));
+    if (isDeepStrictEqual(candidate, row)) return row;
+    const hoverOnly =
+      isDeepStrictEqual(candidate.slice(0, 5), row.slice(0, 5)) &&
+      (row[5]! & hoverFeature) !== 0 &&
+      candidate[5] === (row[5]! & ~hoverFeature);
+    if (!hoverOnly) return row;
+    const retainedOwner = after.findIndex(
+      (other) => other[2] === row[2] && other[3] === row[3] && owner(other),
+    );
+    assert.ok(retainedOwner >= 0, "a component prop navigation span retains hover ownership");
+    assert.ok(owner(before[retainedOwner]!), "the retained hover owner existed in the base packet");
+    return candidate;
+  });
+  return result;
+}
+
 function utf8Range(bytes: Buffer, start: number, length: number) {
   assert.ok(Number.isSafeInteger(start) && Number.isSafeInteger(length));
   assert.ok(start >= 0 && length >= 0 && start + length <= bytes.length);
@@ -393,12 +439,22 @@ export function assertPreservedCallbackPacket(
   if (before.text === after.text) {
     if (isDeepStrictEqual(after, before)) return;
     // #12520: the only certified mapping-only change unmaps loop replay aliases.
-    if (isDeepStrictEqual(after, withoutReplayAliasRows(before))) return;
+    const replaySuccessor = withoutReplayAliasRows(before);
+    if (isDeepStrictEqual(after, replaySuccessor)) return;
     const expected =
       inertBindings && authoredSource !== undefined
-        ? withInertCallbackRows(before, after, authoredSource, inertBindings)
-        : before;
-    assert.deepEqual(after, expected, "all unchanged callback fields stay exact");
+        ? withInertCallbackRows(
+            replaySuccessor ?? before,
+            after,
+            authoredSource,
+            inertBindings,
+          )
+        : (replaySuccessor ?? before);
+    assert.deepEqual(
+      after,
+      withComponentPropHoverOwnership(expected, after),
+      "all unchanged callback fields stay exact",
+    );
     return;
   }
   const original = before.text as string;
@@ -613,7 +669,7 @@ export function assertPreservedCallbackPacket(
       : after;
   assert.deepEqual(
     comparisonAfter,
-    expected,
+    withComponentPropHoverOwnership(expected, comparisonAfter),
     "all authored spans, roles, order and other metadata stay exact",
   );
 }
