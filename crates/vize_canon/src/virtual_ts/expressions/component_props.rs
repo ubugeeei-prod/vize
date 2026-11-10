@@ -206,6 +206,7 @@ fn generate_component_prop_checks_inner<const LEGACY_SCALARS: bool>(
         super::unchecked_prop_values::OwnedPropValues::new(
             (usage, idx, component_ref),
             source_context,
+            ctx.relaxed_required,
         )
     });
     if let Some(guard) = grouped_guard_expr {
