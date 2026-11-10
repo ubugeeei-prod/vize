@@ -442,23 +442,21 @@ fn map_slot_props_pattern(
     ts: &str,
 ) {
     let function_text = ts.get(function_gen_start..).unwrap_or_default();
-    // TypeScript anchors missing destructured properties on the property key,
-    // not the renamed local binding. Preserve the complete authored pattern.
-    if let Some(source_start) = pattern_offset
-        && let Some(relative) = function_text.find(props_pattern)
-    {
-        let start = function_gen_start + relative;
-        let source_start = (template_offset + source_start) as usize;
-        mappings.push(VizeMapping {
-            gen_range: start..start + props_pattern.len(),
-            src_range: source_start..source_start + props_pattern.len(),
-            sub_spans: Vec::new(),
-        });
-    }
+    let pattern = pattern_offset.and_then(|source_offset| {
+        function_text.find(props_pattern).map(|generated_offset| {
+            (
+                function_gen_start + generated_offset,
+                (template_offset + source_offset) as usize,
+            )
+        })
+    });
+    let mut binding_ranges = Vec::new();
     for (prop_name, binding) in scope.bindings() {
-        if super::emit::pattern_identifier_offset(props_pattern, prop_name).is_none() {
+        let Some(pattern_relative) =
+            super::emit::pattern_identifier_offset(props_pattern, prop_name)
+        else {
             continue;
-        }
+        };
         let Some(generated_relative) =
             super::emit::pattern_identifier_offset(function_text, prop_name)
         else {
@@ -472,6 +470,34 @@ fn map_slot_props_pattern(
                 ..(template_offset + src_start) as usize + prop_name.len(),
             sub_spans: Vec::new(),
         });
+        binding_ranges.push(pattern_relative..pattern_relative + prop_name.len());
+    }
+    // TypeScript anchors a missing renamed property on its key, not on the
+    // local binding. Mapping the whole pattern as well as each binding made
+    // protocol normalization accept the shorter bindings first and discard
+    // the overlapping whole-pattern span, leaving that key unmapped (#12511).
+    // Emit only the disjoint gaps around binding identifiers; together with
+    // the identifier rows above, every authored byte has exactly one owner.
+    if let Some((generated_start, source_start)) = pattern {
+        binding_ranges.sort_by_key(|range| (range.start, range.end));
+        let mut cursor = 0;
+        for binding in binding_ranges {
+            if cursor < binding.start {
+                mappings.push(VizeMapping {
+                    gen_range: generated_start + cursor..generated_start + binding.start,
+                    src_range: source_start + cursor..source_start + binding.start,
+                    sub_spans: Vec::new(),
+                });
+            }
+            cursor = cursor.max(binding.end);
+        }
+        if cursor < props_pattern.len() {
+            mappings.push(VizeMapping {
+                gen_range: generated_start + cursor..generated_start + props_pattern.len(),
+                src_range: source_start + cursor..source_start + props_pattern.len(),
+                sub_spans: Vec::new(),
+            });
+        }
     }
 }
 
