@@ -7,7 +7,6 @@ use std::path::Path;
 use std::sync::mpsc::{self, Receiver, Sender};
 use std::sync::{Mutex, PoisonError};
 use std::thread;
-use std::time::{Duration, Instant};
 
 use serde::Serialize;
 use serde_json::{Value, json};
@@ -22,9 +21,11 @@ use super::project::{
 use super::{InitializeParams, Request, TransformParams, read_frame};
 
 mod replies;
+mod type_sources;
 mod wire;
 pub(super) use replies::ReplyOrder;
 use replies::{WriteProgress, write_replies};
+use type_sources::{SharedTypeSources, StopExpiry};
 #[cfg(all(test, target_os = "linux", target_pointer_width = "64"))]
 use wire::encode_frame;
 #[cfg(test)]
@@ -36,46 +37,6 @@ use wire::{encode_error, encode_result, encode_transform};
 // Debug v-for replay at 2,048 levels also completed with 32/64 MiB. Keep the
 // measured headroom independent of a host's inherited RUST_MIN_STACK setting.
 const TRANSFORM_WORKER_STACK_BYTES: usize = 64 * 1024 * 1024;
-
-/// Oldest imported-type snapshot a starting transform may still join.
-const TYPE_SOURCE_MAX_AGE: Duration = Duration::from_secs(1);
-
-/// Imported type modules shared while transforms overlap. A host burst reads
-/// each dependency once. An idle server, or a snapshot older than
-/// [`TYPE_SOURCE_MAX_AGE`], reads the filesystem again.
-#[derive(Default)]
-struct SharedTypeSources {
-    state: Mutex<TypeSourceGeneration>,
-}
-
-#[derive(Default)]
-struct TypeSourceGeneration {
-    active: usize,
-    current: Option<(ContentMapperTypeSources, Instant)>,
-}
-
-impl SharedTypeSources {
-    fn acquire(&self) -> ContentMapperTypeSources {
-        let mut state = self.state.lock().unwrap_or_else(PoisonError::into_inner);
-        state.active += 1;
-        if let Some((sources, created)) = &state.current
-            && created.elapsed() < TYPE_SOURCE_MAX_AGE
-        {
-            return sources.clone();
-        }
-        let sources = ContentMapperTypeSources::default();
-        state.current = Some((sources.clone(), Instant::now()));
-        sources
-    }
-
-    fn release(&self) {
-        let mut state = self.state.lock().unwrap_or_else(PoisonError::into_inner);
-        state.active = state.active.saturating_sub(1);
-        if state.active == 0 {
-            state.current = None;
-        }
-    }
-}
 
 struct TransformJob {
     seq: u64,
@@ -163,6 +124,9 @@ fn serve_with_plan<R: BufRead, W: Write + Send>(
         spawn_failure: None,
     };
     let read_result = thread::scope(|scope| {
+        let _stop_expiry = StopExpiry(&type_sources);
+        // Without this thread an idle snapshot lives until the next burst.
+        let _ = thread::Builder::new().spawn_scoped(scope, || type_sources.expire_idle());
         let writer_error = &write_error;
         let writer_progress = &progress;
         writer_builder.spawn_scoped(scope, move || {
@@ -414,24 +378,3 @@ fn transform_frame(job: &TransformJob, sources: &ContentMapperTypeSources) -> io
 
 #[cfg(all(test, target_os = "linux", target_pointer_width = "64"))]
 mod tests;
-
-#[cfg(test)]
-mod type_source_tests {
-    use super::SharedTypeSources;
-
-    #[test]
-    fn overlapping_transforms_share_type_sources_until_idle() {
-        let shared = SharedTypeSources::default();
-        let first = shared.acquire();
-        let overlapping = shared.acquire();
-        assert_eq!(first, overlapping);
-        shared.release();
-        let joined = shared.acquire();
-        assert_eq!(first, joined);
-        shared.release();
-        shared.release();
-        let after_idle = shared.acquire();
-        assert_ne!(first, after_idle);
-        shared.release();
-    }
-}
