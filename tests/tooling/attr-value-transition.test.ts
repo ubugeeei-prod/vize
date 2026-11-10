@@ -7,6 +7,8 @@ import {
 
 const owned = (value: string) =>
   `: $AttrValue<__WitnessChild_Props_0, "value", typeof WitnessChild, __WitnessChild_0_prop_value> = ${value} satisfies __WitnessChild_0_prop_value;\n`;
+const compactOwned = (value: string, family = "__V") =>
+  `: $AttrValue<${family}Props0, "value", typeof WitnessChild, ${family}Prop0$value> = ${value} satisfies ${family}Prop0$value;\n`;
 const name = "  const __vize_prop_check_0_value";
 
 test("an owned #12458 check yields its plain predecessor line", () => {
@@ -25,11 +27,21 @@ test("a parenthesized owned value also yields its unwrapped predecessor", () => 
   ]);
 });
 
+test("a compact owned check yields the exact named predecessor", () => {
+  for (const family of ["__V", "__V$1"]) {
+    assert.deepEqual(attrValuePredecessors(name, compactOwned("1", family)), [
+      "  const __vize_prop_check_0_value: __WitnessChild_0_prop_value = 1;\n",
+    ]);
+  }
+});
+
 test("other directives and mismatched contracts are not certified", () => {
   for (const [prefix, generated] of [
     [name, "  const __vize_prop_check_0_value: __WitnessChild_0_prop_value = 1;\n"],
     [name, owned("1").replace(" satisfies __WitnessChild_0_prop_value", " satisfies __Other")],
     [name, owned("1").replace("$AttrValue<", "$PropValue<")],
+    [name, compactOwned("1").replace("__VProp0$value> =", "__VProp1$value> =")],
+    [name, compactOwned("1").replace("typeof WitnessChild", "typeof registry.Child")],
     ["  const other", owned("1")],
     ["  void __vize_prop_check_0_value", owned("1")],
   ])
