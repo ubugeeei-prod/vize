@@ -33,6 +33,25 @@ pub(super) fn is_object_argument(argument: &Argument<'_>) -> bool {
     })
 }
 
+/// Return the argument that owns the component options for a Vue factory.
+///
+/// Most supported factories take their options last (`component(name,
+/// options)`), while `createApp(component, rootProps)` always owns its
+/// component in the first argument. Root props must never be linted as an
+/// Options API component.
+pub(super) fn component_argument_index(
+    callee: &Expression<'_>,
+    argument_count: usize,
+) -> Option<usize> {
+    if argument_count == 0 {
+        return None;
+    }
+    match callee.without_parentheses() {
+        Expression::Identifier(identifier) if identifier.name == "createApp" => Some(0),
+        _ => Some(argument_count - 1),
+    }
+}
+
 pub(super) fn skip_wrappers<'b, 'a>(expression: &'b Expression<'a>) -> &'b Expression<'a> {
     match expression {
         Expression::ParenthesizedExpression(inner) => skip_wrappers(&inner.expression),
