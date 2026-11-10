@@ -14460,6 +14460,45 @@
       }
     },
     {
+      "id": "typechecker/regression/lib-type-shadowing-audit-12536",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "lib-type-shadowing-audit-12536/Child.vue.txt",
+          "sha256": "5339f6a1e7ca23048942a4eee6c51735327f30a7532b5d1e73e8cdd959c13698",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "lib-type-shadowing-audit-12536/Parent.vue.txt",
+          "sha256": "776dcfe7780f03009568b5f73693c8703b53b5fc82fffb8b899d9fb765c1564b",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "lib-type-shadowing-audit-12536/tsconfig.json.txt",
+          "sha256": "8f4cc08b465ddf6df35387e36be46136f6b6f7f5f19085ca9d6a3fcc1cda9b31",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "lib_type_shadowing_audit::authored_lib_types_do_not_change_batch_diagnostics; every active TypeScript lib, DOM global and inline helper name declared or imported by the SFC must not capture the generated projection. Input-only batch registration for the shared Canon source change; no native parity claim."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/regression/lib-type-shadowing-emits-12536",
       "state": "active",
       "targets": [

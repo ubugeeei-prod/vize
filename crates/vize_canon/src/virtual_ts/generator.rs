@@ -193,7 +193,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     let default_export_object = options_script.default_export.object;
     let default_export_class = options_script.default_export.class;
     if default_export_object.is_some() {
-        ts.push_str(legacy_vue2::define_component_helper(legacy_vue2, dialect));
+        ts.push_lib_text(legacy_vue2::define_component_helper(legacy_vue2, dialect));
     }
     let module_plan = script_content
         .map(|script| script_module::collect(script, recover_lone_setup, generation_options))
@@ -867,7 +867,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     );
     let export = component_export::default_export(&mut ts, public_names.as_ref());
     binding_output::publish(
-        ts.into_compact(),
+        binding_output::finish(ts, generation_options),
         mappings,
         diagnostic_mappings,
         semantic_links,

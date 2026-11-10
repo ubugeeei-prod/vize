@@ -455,6 +455,7 @@ fn uses_vize_owned_runtime_but_not_an_undeclared_preview() {
     assert_eq!(resolved, Some(owned_binary.canonicalize().unwrap()));
 }
 
+mod batch_selection;
 mod bundled_vize;
 mod package_runtime;
 mod project_packages;

@@ -101,6 +101,7 @@ const certifyMapperTransition = (beforePacket, afterPacket) => {
       replacement: afterHelper,
       label: "embedded helper block",
     },
+    ...dedentEdits(before, after),
   ];
   const withDefaultsTransition = certifiedTransition(
     before,
@@ -110,7 +111,6 @@ const certifyMapperTransition = (beforePacket, afterPacket) => {
     "embedded withDefaults docs return",
   );
   if (withDefaultsTransition) primary.push(withDefaultsTransition);
-  primary.push(...dedentEdits(before, after));
   const beforeText = before.toString();
   for (const [oldValue, currentValue, label] of [
     [
@@ -201,6 +201,7 @@ const certifyNativeTransition = (beforeText, afterText) => {
       replacement: Buffer.from(currentComponentConstructor),
       label: "integrated generic component constructor",
     },
+    ...dedentEdits(before, after),
   ];
   for (const match of source.matchAll(/\b__Vize[A-Za-z0-9_]+\b/gu)) {
     const start = Buffer.byteLength(source.slice(0, match.index));
@@ -232,7 +233,6 @@ const certifyNativeTransition = (beforeText, afterText) => {
     replacement: Buffer.from("readonly __vizeNativeFallthroughRoot: true; "),
     label: "native fallthrough ownership marker",
   });
-  primary.push(...dedentEdits(before, after));
   primary.sort((left, right) => left.start - right.start || left.end - right.end);
   for (let index = 1; index < primary.length; index++)
     assert(primary[index - 1].end <= primary[index].start, "certified native edits overlap");
@@ -490,7 +490,6 @@ if (mode === "prepare") {
     b,
     mappings,
     readFileSync("source/crates/vize_canon/src/batch/virtual_project/content_mapper.rs"),
-    "component-hover-gaps-12461",
   );
   const links = a.semanticLinks ?? [];
   assert.deepEqual(

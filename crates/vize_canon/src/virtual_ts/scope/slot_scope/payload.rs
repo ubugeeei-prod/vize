@@ -42,8 +42,8 @@ pub(crate) fn emit_slot_payload_helpers(
         }),
         _ => false,
     }) {
-        ts.push_str(SLOT_RESOLVER_HELPERS);
-        ts.push_str(SLOT_PAYLOAD_HELPER);
+        ts.push_lib_text(SLOT_RESOLVER_HELPERS);
+        ts.push_lib_text(SLOT_PAYLOAD_HELPER);
     }
 }
 

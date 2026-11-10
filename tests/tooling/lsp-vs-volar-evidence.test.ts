@@ -38,6 +38,54 @@ import { judge, runSession } from "../../tools/benchmarks/scripts/lsp-vs-volar-s
 import { OpenDocument } from "../../tools/benchmarks/scripts/lsp-vs-volar-text.ts";
 import { session } from "./support/lsp-vs-volar-sessions.ts";
 import { FrameReader } from "../../tools/benchmarks/scripts/lsp-vs-volar-wire.ts";
+import {
+  PROBE_MAPPER_MAX_OLD_SPACE_MB,
+  prepareOwnedProbe,
+  probeMapperCommand,
+} from "../../tools/benchmarks/scripts/typecheck-owned-pair-projection.ts";
+
+test("owned Node mapper probes reserve heap for the full generated corpus", () => {
+  assert.deepEqual(probeMapperCommand(["node", "server.js"]), [
+    process.execPath,
+    `--max-old-space-size=${PROBE_MAPPER_MAX_OLD_SPACE_MB}`,
+    "server.js",
+  ]);
+  assert.deepEqual(probeMapperCommand(["mapper", "--stdio"]), ["mapper", "--stdio"]);
+});
+
+test("owned probe manifests retain mapper settings and pin the expanded Node command", () => {
+  const project = mkdtempSync(join(os.tmpdir(), "owned-probe-command-"));
+  try {
+    const mapper = join(project, "node_modules/@vue/content-mapper");
+    mkdirSync(mapper, { recursive: true });
+    writeFileSync(
+      join(mapper, "package.json"),
+      JSON.stringify({
+        name: "@vue/content-mapper",
+        typescript: {
+          contentMapper: {
+            dynamicConfig: true,
+            exec: ["node", "server.js"],
+          },
+        },
+      }),
+    );
+
+    assert.equal(prepareOwnedProbe(project, "vue"), "tsconfig.vue-owned-pair-probe.json");
+    const manifest = JSON.parse(
+      readFileSync(join(project, "node_modules/vue-owned-pair-probe/package.json"), "utf8"),
+    );
+    const wrapped = manifest.typescript.contentMapper;
+    assert.equal(wrapped.dynamicConfig, true);
+    assert.deepEqual(wrapped.exec.slice(-3), [
+      process.execPath,
+      `--max-old-space-size=${PROBE_MAPPER_MAX_OLD_SPACE_MB}`,
+      "server.js",
+    ]);
+  } finally {
+    rmSync(project, { recursive: true, force: true });
+  }
+});
 
 test("frames split across chunks and tsserver's counted newline both decode", () => {
   const messages: unknown[] = [];

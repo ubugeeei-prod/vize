@@ -105,7 +105,10 @@ pub(super) fn emit_bindings(
                     ts,
                     mappings,
                     binding,
-                    &cstr!("{value} as Omit<typeof {value}, {keys}>"),
+                    &cstr!(
+                        "{value} as {}<typeof {value}, {keys}>",
+                        crate::virtual_ts::generated_names::lib("Omit")
+                    ),
                     offset,
                     indent,
                 );

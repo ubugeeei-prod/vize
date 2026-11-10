@@ -21,6 +21,16 @@ on:
         description: Alternating recorded cold runs per build
         type: string
         default: "5"
+      runtime:
+        description: Native checker host used by both builds
+        type: choice
+        options: [tsgo, tsrs]
+        default: tsgo
+      checkers:
+        description: Explicit checker width used by both builds
+        type: choice
+        options: ["1", "8"]
+        default: "8"
       strace:
         description: Attribute filesystem calls per process, syscall and path on Linux
         type: boolean
@@ -41,7 +51,7 @@ on:
       - tests/tooling/typecheck-cold-pair.test.ts
 permissions: { contents: read }
 concurrency:
-  group: typecheck-cold-pair-${{ github.event.pull_request.number || inputs.head }}-${{ inputs.base }}-${{ inputs.projects }}-${{ inputs.platforms }}
+  group: typecheck-cold-pair-${{ github.event.pull_request.number || inputs.head }}-${{ inputs.base }}-${{ inputs.projects }}-${{ inputs.platforms }}-${{ inputs.runtime }}-${{ inputs.checkers }}
   cancel-in-progress: true
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
@@ -166,18 +176,22 @@ jobs:
         env:
           PROJECTS: ${{ inputs.projects }}
           RUNS: ${{ inputs.runs }}
+          RUNTIME: ${{ inputs.runtime }}
+          CHECKERS: ${{ inputs.checkers }}
           ALLOW: ${{ inputs.allow_output_change && '--allow-output-change' || '' }}
           STRACE: ${{ inputs.strace && '--strace' || '' }}
         run: |
           set -euo pipefail
           [[ "$PROJECTS" =~ ^(vue|monorepo):[0-9]+(,(vue|monorepo):[0-9]+)*$ ]] && [[ "$RUNS" =~ ^[1-9][0-9]?$ ]]
+          [[ "$RUNTIME" =~ ^(tsgo|tsrs)$ ]] && [[ "$CHECKERS" =~ ^(1|8)$ ]]
           sudo apt-get update -qq && sudo apt-get install -y --no-install-recommends time strace
           chmod +x pair-bin/*/vize
           node tools/benchmarks/scripts/typecheck-cold-pair.ts \
             --bin base=pair-bin/base/vize --bin head=pair-bin/head/vize \
-            --root "$RUNNER_TEMP/pair" --projects "$PROJECTS" --runs "$RUNS" $ALLOW $STRACE \
-            --label linux-ext4 --out "$RUNNER_TEMP/pair-out" > /dev/null
-          cat "$RUNNER_TEMP/pair-out/cold-pair-linux-ext4.md" >> "$GITHUB_STEP_SUMMARY"
+            --root "$RUNNER_TEMP/pair" --projects "$PROJECTS" --runs "$RUNS" \
+            --runtime "$RUNTIME" --checkers "$CHECKERS" $ALLOW $STRACE \
+            --label "linux-ext4-$RUNTIME-c$CHECKERS" --out "$RUNNER_TEMP/pair-out" > /dev/null
+          cat "$RUNNER_TEMP/pair-out/cold-pair-linux-ext4-$RUNTIME-c$CHECKERS.md" >> "$GITHUB_STEP_SUMMARY"
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always()
         with:
@@ -226,11 +240,14 @@ jobs:
         env:
           PROJECTS: ${{ inputs.projects }}
           RUNS: ${{ inputs.runs }}
+          RUNTIME: ${{ inputs.runtime }}
+          CHECKERS: ${{ inputs.checkers }}
           ALLOW: ${{ inputs.allow_output_change && '--allow-output-change' || '' }}
-          WSLENV: PROJECTS/u:RUNS/u:ALLOW/u:WSL_MOUNT_ROOT/u:GITHUB_STEP_SUMMARY/u
+          WSLENV: PROJECTS/u:RUNS/u:RUNTIME/u:CHECKERS/u:ALLOW/u:WSL_MOUNT_ROOT/u:GITHUB_STEP_SUMMARY/u
         run: |
           set -euo pipefail
           [[ "$PROJECTS" =~ ^(vue|monorepo):[0-9]+(,(vue|monorepo):[0-9]+)*$ ]] && [[ "$RUNS" =~ ^[1-9][0-9]?$ ]]
+          [[ "$RUNTIME" =~ ^(tsgo|tsrs)$ ]] && [[ "$CHECKERS" =~ ^(1|8)$ ]]
           # Binaries and the cache root stay on ext4 in both cells; only the project location differs.
           bin="$HOME/pair-bin"
           mkdir -p "$bin/base" "$bin/head" "$WSL_MOUNT_ROOT"
@@ -242,9 +259,9 @@ jobs:
             node tools/benchmarks/scripts/typecheck-cold-pair.ts \
               --bin "base=$bin/base/vize" --bin "head=$bin/head/vize" \
               --root "${entry#*=}" --cache-root "$HOME/vize-cold-pair-cache" \
-              --projects "$PROJECTS" --runs "$RUNS" $ALLOW \
-              --label "$label" --out "$WSL_MOUNT_ROOT/out" > /dev/null
-            cat "$WSL_MOUNT_ROOT/out/cold-pair-$label.md" >> "$summary_path"
+              --projects "$PROJECTS" --runs "$RUNS" --runtime "$RUNTIME" --checkers "$CHECKERS" $ALLOW \
+              --label "$label-$RUNTIME-c$CHECKERS" --out "$WSL_MOUNT_ROOT/out" > /dev/null
+            cat "$WSL_MOUNT_ROOT/out/cold-pair-$label-$RUNTIME-c$CHECKERS.md" >> "$summary_path"
           done
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always()
@@ -272,17 +289,20 @@ jobs:
         env:
           PROJECTS: ${{ inputs.projects }}
           RUNS: ${{ inputs.runs }}
+          RUNTIME: ${{ inputs.runtime }}
+          CHECKERS: ${{ inputs.checkers }}
           ALLOW: ${{ inputs.allow_output_change && '--allow-output-change' || '' }}
         run: |
-          if ($env:PROJECTS -notmatch '^(vue|monorepo):[0-9]+(,(vue|monorepo):[0-9]+)*$' -or $env:RUNS -notmatch '^[1-9][0-9]?$') { throw "invalid inputs" }
+          if ($env:PROJECTS -notmatch '^(vue|monorepo):[0-9]+(,(vue|monorepo):[0-9]+)*$' -or $env:RUNS -notmatch '^[1-9][0-9]?$' -or $env:RUNTIME -notmatch '^(tsgo|tsrs)$' -or $env:CHECKERS -notmatch '^(1|8)$') { throw "invalid inputs" }
           $out = Join-Path $env:RUNNER_TEMP 'pair-out'
           $extra = @(); if ($env:ALLOW) { $extra += $env:ALLOW }
           node tools/benchmarks/scripts/typecheck-cold-pair.ts `
             --bin "base=$PWD\pair-bin\base\vize.exe" --bin "head=$PWD\pair-bin\head\vize.exe" `
-            --root (Join-Path $env:RUNNER_TEMP 'pair') --projects $env:PROJECTS --runs $env:RUNS @extra `
-            --label windows-ntfs --out $out | Out-Null
+            --root (Join-Path $env:RUNNER_TEMP 'pair') --projects $env:PROJECTS --runs $env:RUNS `
+            --runtime $env:RUNTIME --checkers $env:CHECKERS @extra `
+            --label "windows-ntfs-$($env:RUNTIME)-c$($env:CHECKERS)" --out $out | Out-Null
           if ($LASTEXITCODE -ne 0) { throw "pair failed" }
-          Get-Content (Join-Path $out 'cold-pair-windows-ntfs.md') | Add-Content $env:GITHUB_STEP_SUMMARY
+          Get-Content (Join-Path $out "cold-pair-windows-ntfs-$($env:RUNTIME)-c$($env:CHECKERS).md") | Add-Content $env:GITHUB_STEP_SUMMARY
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always()
         with:

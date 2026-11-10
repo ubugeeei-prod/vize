@@ -22,18 +22,13 @@ const integratedCapture = (): typeof capture => {
   ]);
   return data;
 };
-const verify = (
-  data = integratedCapture(),
-  bytes = producer,
-  projection: "wrapper-successor" | "component-hover-gaps-12461" = "wrapper-successor",
-) =>
+const verify = (data = integratedCapture(), bytes = producer) =>
   assertTypedContextWrapperMappings(
     data.source,
     data.before,
     data.current,
     data.projectedHistoricalMappings,
     bytes,
-    projection,
   );
 
 void test("actual captured current mapping retains the old packet and adds both authored wrapper atoms", () => {
@@ -64,14 +59,17 @@ void test("a separately certified helper prefix relocation moves both atoms with
   verify(data);
 });
 
-void test("component hover props and setup anchors use their finite successor geometry", () => {
+void test("verbatim setup keeps the finite rows exact around its three dedented lines", () => {
   const data = integratedCapture();
-  const deltas = [6, 6, 6, 2, 2, 2, 2, 2, 0, 0];
-  for (const [index, delta] of deltas.entries()) {
-    data.projectedHistoricalMappings[index][0] += delta;
-    data.current.mappings[index < 9 ? index : 10][0] += delta;
-  }
-  verify(data, producer, "component-hover-gaps-12461");
+  data.current.text = data.current.text.replace(
+    "  // User setup code\n  \n  defineProps<{ undefined: string }>();\n  \n",
+    "  // User setup code\n\ndefineProps<{ undefined: string }>();\n\n",
+  );
+  for (const index of [3, 4, 5, 6, 7]) data.projectedHistoricalMappings[index][0] -= 4;
+  for (const index of [8, 9]) data.projectedHistoricalMappings[index][0] -= 6;
+  for (const index of [3, 4, 5, 6, 7]) data.current.mappings[index][0] -= 4;
+  for (const index of [8, 9, 10, 11, 12]) data.current.mappings[index][0] -= 6;
+  verify(data);
 });
 
 void test("unknown producer, authored source and opaque packet fields are refused", () => {

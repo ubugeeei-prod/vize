@@ -13,7 +13,6 @@ export function assertTypedContextWrapperMappings(
   current: MapperPacket,
   projected: number[][],
   producer: Uint8Array,
-  projection: "wrapper-successor" | "component-hover-gaps-12461" = "wrapper-successor",
 ): void {
   const digest = (bytes: string | Uint8Array) => createHash("sha256").update(bytes).digest("hex");
   const producerText = Buffer.from(producer).toString("utf8");
@@ -107,32 +106,34 @@ export function assertTypedContextWrapperMappings(
   const statement = generated.indexOf(needle);
   assert(statement >= 0 && generated.indexOf(needle, statement + 1) < 0, "unique interpolation");
   const start = statement + Buffer.byteLength("void (");
+  const legacySetup = Buffer.from(
+    "  // User setup code\n  \n  defineProps<{ undefined: string }>();\n  \n",
+  );
+  const verbatimSetup = Buffer.from(
+    "  // User setup code\n\ndefineProps<{ undefined: string }>();\n\n",
+  );
+  const hasLegacySetup = generated.indexOf(legacySetup) >= 0;
+  const hasVerbatimSetup = generated.indexOf(verbatimSetup) >= 0;
+  assert.notEqual(hasLegacySetup, hasVerbatimSetup, "finite setup projection generation");
   // The preceding whole-text transition has already relocated every old row.
-  // A helper prefix change therefore moves this anchor and all ten old rows
-  // together; no fixed generated-coordinate or prefix-length adjustment is used.
-  const historicalRows = {
-    "wrapper-successor": [-2754, -2752, -2743, -951, -939, -937, -928, -918, -59, 0],
-    // Identifier-safe public props re-anchor their three symbol rows by six
-    // bytes. Setup dedent keeps the next five authored spans on their original
-    // identifiers rather than moving them into the removed indentation.
-    "component-hover-gaps-12461": [-2748, -2746, -2737, -949, -937, -935, -926, -916, -59, 0],
-  } as const;
-  const fields = [
-    [2, 37, 2, 0, 1048575],
-    [9, 39, 9, 0, 1048575],
-    [10, 48, 10, 0, 1048575],
-    [12, 25, 12, 0, 1048575],
-    [2, 37, 2, 0, 1048575],
-    [9, 39, 9, 0, 1048575],
-    [10, 48, 10, 0, 1048575],
-    [4, 58, 4, 0, 1048575],
-    [9, 39, 9, 0, 1048575],
-    [9, 89, 9, 0, 1048575],
-  ] as const;
-  const rows = historicalRows[projection].map((relative, index) => [
-    start + relative,
-    ...fields[index],
-  ]);
+  // Verbatim setup removes six bytes between the prefix rows and this anchor,
+  // and two between the setup rows and the anchor. Keep the immutable captured
+  // predecessor and the exact current successor as two finite offset sets.
+  const offsets = hasVerbatimSetup
+    ? [-2748, -2746, -2737, -949, -937, -935, -926, -916, -59, 0]
+    : [-2754, -2752, -2743, -951, -939, -937, -928, -918, -59, 0];
+  const rows = [
+    [offsets[0], 2, 37, 2, 0, 1048575],
+    [offsets[1], 9, 39, 9, 0, 1048575],
+    [offsets[2], 10, 48, 10, 0, 1048575],
+    [offsets[3], 12, 25, 12, 0, 1048575],
+    [offsets[4], 2, 37, 2, 0, 1048575],
+    [offsets[5], 9, 39, 9, 0, 1048575],
+    [offsets[6], 10, 48, 10, 0, 1048575],
+    [offsets[7], 4, 58, 4, 0, 1048575],
+    [offsets[8], 9, 39, 9, 0, 1048575],
+    [offsets[9], 9, 89, 9, 0, 1048575],
+  ].map(([relative, ...fields]) => [start + relative, ...fields]);
   assert.deepEqual(projected, rows, "all projected historical tuples must remain exact");
   assert.equal(Buffer.from(source).subarray(89, 98).toString(), "undefined");
   const atom = (at: number) => [at, 1, 89, 9, 1, 0];

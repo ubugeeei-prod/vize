@@ -103,9 +103,10 @@ fn visit(
             ) else {
                 continue;
             };
+            let partial = crate::virtual_ts::generated_names::lib("Partial");
             append!(
                 *ts,
-                "  const __vize_native_key_{}: Partial<$NativeElement<{tag}>> = {{ ",
+                "  const __vize_native_key_{}: {partial}<$NativeElement<{tag}>> = {{ ",
                 location.span.start
             );
             let key_start = ts.len();
@@ -167,9 +168,10 @@ fn emit_fragment_prop_names(
         let Ok(key) = serde_json::to_string(name) else {
             continue;
         };
+        let partial = crate::virtual_ts::generated_names::lib("Partial");
         append!(
             *ts,
-            "  const __vize_fragment_prop_{}: Partial<$NativeElement<\"template\">> = {{ ",
+            "  const __vize_fragment_prop_{}: {partial}<$NativeElement<\"template\">> = {{ ",
             location.span.start
         );
         let key_start = ts.len();

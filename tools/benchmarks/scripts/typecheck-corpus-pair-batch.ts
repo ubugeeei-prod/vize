@@ -19,6 +19,11 @@ export function hostCorsaPath(hostsDir: string): string {
   return join(hostsDir, "node_modules", "@typescript", platform, "lib", "tsc");
 }
 
+/** The independently pinned tsrs host, normalized by Vize to its native image. */
+export function hostTsrsPath(hostsDir: string): string {
+  return join(hostsDir, "node_modules", "tsrs", "bin", "tsrs");
+}
+
 export function runBatchCheck(
   buildDir: string,
   projectDir: string,
@@ -60,6 +65,13 @@ export type BatchMapperDiff = {
   mapperOnly: Diagnostic[];
   /** `vize check` at a wider Corsa checker width: what it reports differently from one checker. */
   wide?: { checkers: number; added: Diagnostic[]; removed: Diagnostic[] };
+  /** Materialized batch diagnostics under qualified tsrs fast mode versus tsgo. */
+  tsrs?: {
+    diagnostics: number;
+    only: Diagnostic[];
+    missing: Diagnostic[];
+    wide: { checkers: number; added: Diagnostic[]; removed: Diagnostic[] };
+  };
 };
 
 const key = ([file, , line, column, code]: Diagnostic) => `${file}:${line}:${column} ${code}`;
@@ -105,6 +117,14 @@ export function renderBatchDiff(diffs: BatchMapperDiff[]): string {
             "",
           ]
         : []),
+      ...(diff.tsrs
+        ? [
+            `The materialized tsrs fast host reports ${diff.tsrs.diagnostics} diagnostics; ${diff.tsrs.only.length} only under tsrs and ${diff.tsrs.missing.length} only under tsgo.`,
+            "",
+            `At ${diff.tsrs.wide.checkers} checkers, tsrs adds ${diff.tsrs.wide.added.length} and drops ${diff.tsrs.wide.removed.length} diagnostics against its one-checker result.`,
+            "",
+          ]
+        : []),
       ...(["batchOnly", "mapperOnly"] as const).flatMap((side) =>
         diff[side].length === 0
           ? []
@@ -114,6 +134,18 @@ export function renderBatchDiff(diffs: BatchMapperDiff[]): string {
               "| File | Line:col | Code | Message |",
               "| --- | --- | --- | --- |",
               ...diff[side].map(row),
+              "",
+            ],
+      ),
+      ...(["only", "missing"] as const).flatMap((side) =>
+        !diff.tsrs || diff.tsrs[side].length === 0
+          ? []
+          : [
+              `#### ${side === "only" ? "Only under tsrs batch" : "Only under tsgo batch"}`,
+              "",
+              "| File | Line:col | Code | Message |",
+              "| --- | --- | --- | --- |",
+              ...diff.tsrs[side].map(row),
               "",
             ],
       ),
