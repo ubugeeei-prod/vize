@@ -8,6 +8,17 @@ import type { JsonRpcId, JsonRpcMessage, LspInitializationOptions } from "./prot
 
 export { LspRequestError };
 
+export const completionDocumentationResolveCapabilities: Record<string, unknown> = {
+  textDocument: {
+    completion: {
+      completionItem: {
+        documentationFormat: ["markdown", "plaintext"],
+        resolveSupport: { properties: ["documentation"] },
+      },
+    },
+  },
+};
+
 /**
  * Minimal JSON-RPC client for production LSP smoke tests.
  *

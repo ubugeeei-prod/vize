@@ -12,7 +12,7 @@ import {
   type Json,
 } from "./support/router-experimental-transport.ts";
 import { root } from "./support/lsp/paths.ts";
-import { LspSession } from "./support/lsp/session.ts";
+import { completionDocumentationResolveCapabilities, LspSession } from "./support/lsp/session.ts";
 import { resolveTypecheckRuntime } from "./support/typecheck-dependency.ts";
 import { writeVueConfigFixture } from "./support/vue-config-fixture.ts";
 
@@ -120,16 +120,7 @@ test(
         const receipt = { directory, source, raw, stages: [] as unknown[], stderr: "" };
         receipts.push(receipt);
         try {
-          await session.initialize(directory, options, {
-            textDocument: {
-              completion: {
-                completionItem: {
-                  documentationFormat: ["markdown", "plaintext"],
-                  resolveSupport: { properties: ["documentation"] },
-                },
-              },
-            },
-          });
+          await session.initialize(directory, options, completionDocumentationResolveCapabilities);
           session.notify("textDocument/didOpen", {
             textDocument: { uri, languageId: "vue", version: 1, text: source },
           });
