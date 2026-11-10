@@ -1,0 +1,90 @@
+{
+  "schema": "vize.instance-global-current-provenance",
+  "version": 1,
+  "issue": 10617,
+  "pullRequest": 12646,
+  "producer": {
+    "sourceRevision": "a21f72c9e8f26addb6c4c6082986fcf3070178ef",
+    "sourceTree": "f465bfa5d822263b872c11cbf279797863f51fce",
+    "pullRequestHead": "754dfff8285f920404ba958ed0c8d6594db0160e",
+    "binarySha256": "48c1eed51453232831f5c2b3853bbc1a2a3b3fd17d96aa30d5c605a5a269c3ae",
+    "recipe": "cargo build --profile ci -p vize",
+    "captureRun": 42795331506,
+    "artifactId": 13754879135,
+    "runAttempt": 1,
+    "platform": "linux",
+    "arch": "x64"
+  },
+  "artifact": {
+    "repository": "ubugeeei-prod/vize",
+    "run": 42795331506,
+    "job": 129767784297,
+    "id": 13754879135,
+    "name": "instance-globals-10617-754dfff8285f920404ba958ed0c8d6594db0160e-1",
+    "digest": "sha256:7944f79bd6bc40b9453950e82f29c3f3d8b5b9b9bd12f5537d33ad97031bfa0e",
+    "bytes": 18675495
+  },
+  "previousPopulation": {
+    "path": "source-packets-current-c6a6c571b090.json",
+    "bytes": 417627,
+    "sha256": "9e51f91058641c3ef70474e16a1e4c5540d96bba5e2616de192e236c640a14e8"
+  },
+  "successorPopulation": {
+    "path": "source-packets-current-a21f72c9e8f2.json",
+    "bytes": 417325,
+    "sha256": "8d998504628eef08cb9730e750a082dea60eb6f65e0171ce5088c560bf24328b"
+  },
+  "sourceReceipt": {
+    "path": "crates/vize_canon/tests/empty_vue_star_exports/membership/constructor_without_args/payload_update/canon_leftovers_11499.json",
+    "sha256": "250e01138d163f77a5d98b20bc97f562a663ebb924c17c810b9d9cf02280128e"
+  },
+  "evidence": {
+    "source-build.json": {
+      "bytes": 326,
+      "sha256": "e2f8db99d55d0c0d44f7090c1ce1f0ed0f2a55f16ac40168ae6fe7a110956734"
+    },
+    "source-launch.json": {
+      "bytes": 882,
+      "sha256": "701e4b19a766425a10b9423e4350db486b3a4227218fec5cdc430028d7b98f31"
+    },
+    "source-protocol.json": {
+      "bytes": 478611,
+      "sha256": "da3a751d1d0dfc694d590afa930c82e22331afa044c9ca0a693fe7bb31e50070"
+    },
+    "outcomes.json": {
+      "bytes": 110259,
+      "sha256": "fb79393394ff4a4ac08323d31dd951523ec32bda87795992ef3deebf40f08e39"
+    },
+    "qualification.json": {
+      "bytes": 114408,
+      "sha256": "180fabc1713ea59e27dd1f7686218286b5c303cc807c796190807027b943e28c"
+    },
+    "host-matrix.json": {
+      "bytes": 4328,
+      "sha256": "352a66e2c3f8f1d3eaedf15bb6a4c5d396205ef9aa66c34ce974de47572d2f8e"
+    }
+  },
+  "capturedQualification": {
+    "status": "unqualified",
+    "fullPacketQualification": false,
+    "hostMatrixQualification": false,
+    "totalOutcomes": 499,
+    "passedOutcomes": 495,
+    "gapCount": 4,
+    "gapIds": [
+      "whole-packet/lf/slot-shadow",
+      "whole-packet/lf/mixed-slot-scope",
+      "whole-packet/crlf-unicode/slot-shadow",
+      "whole-packet/crlf-unicode/mixed-slot-scope"
+    ]
+  },
+  "review": {
+    "completePackets": 80,
+    "allNonWholePacketOutcomesPassed": true,
+    "qualificationCredit": false,
+    "nativeAcceptanceCredit": false,
+    "publicPackageAcceptanceCredit": false,
+    "performanceCredit": false,
+    "reason": "The child usage in the LF and CRLF/Unicode slot-shadow and mixed-slot-scope packets now spells its per-usage contract aliases __VProps0, __VComp0, __VCheckProps0, __VCheckTail0 and __VCheck0 instead of __Child_<Role>_0 (#12646), so each packet's text changes only at those names and every generated coordinate after a renamed name moves by exactly the bytes it lost, while all 495 semantic, protocol, mapping-geometry, and real-host controls passed; this record retains the observed postimages without assigning acceptance credit to the stale-golden run."
+  }
+}

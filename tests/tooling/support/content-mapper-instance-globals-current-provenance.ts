@@ -36,12 +36,12 @@ export function assertCurrentPacketProvenance(
 ): void {
   assert.deepEqual(provenance.artifact, {
     repository: "ubugeeei-prod/vize",
-    run: 42781388461,
-    job: 129712771074,
-    id: 13746472560,
-    name: "instance-globals-10617-0c3ae8dc16cec2a240124f550d7ecf7fb159946a-1",
-    digest: "sha256:a36320d46224ffa25515e66dd680456799ac0a3db396bc7635938edf27c5104b",
-    bytes: 18677366,
+    run: 42795331506,
+    job: 129767784297,
+    id: 13754879135,
+    name: "instance-globals-10617-754dfff8285f920404ba958ed0c8d6594db0160e-1",
+    digest: "sha256:7944f79bd6bc40b9453950e82f29c3f3d8b5b9b9bd12f5537d33ad97031bfa0e",
+    bytes: 18675495,
   });
   const changed = [
     "lf/slot-shadow",
@@ -67,6 +67,6 @@ export function assertCurrentPacketProvenance(
     publicPackageAcceptanceCredit: false,
     performanceCredit: false,
     reason:
-      "The child usage in the LF and CRLF/Unicode slot-shadow and mixed-slot-scope packets now names the shared $UsageProps and $UsageRequiredFallthrough helpers instead of declaring their inline conditionals on its __Child_Props_0 and __Child_CheckProps_0 lines, so each packet shrank by exactly those two alias bodies and every later generated coordinate moved by the same bytes, while all 495 semantic, protocol, mapping-geometry, and real-host controls passed; this record retains the observed postimages without assigning acceptance credit to the stale-golden run.",
+      "The child usage in the LF and CRLF/Unicode slot-shadow and mixed-slot-scope packets now spells its per-usage contract aliases __VProps0, __VComp0, __VCheckProps0, __VCheckTail0 and __VCheck0 instead of __Child_<Role>_0 (#12646), so each packet's text changes only at those names and every generated coordinate after a renamed name moves by exactly the bytes it lost, while all 495 semantic, protocol, mapping-geometry, and real-host controls passed; this record retains the observed postimages without assigning acceptance credit to the stale-golden run.",
   });
 }

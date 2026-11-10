@@ -1,5 +1,15 @@
 # Current instance-global packet authority
 
+The active expected population is `source-packets-current-a21f72c9e8f2.json`: all 80 whole transform results from [source Actions 42795331506](https://github.com/ubugeeei-prod/vize/actions/runs/42795331506/job/129767784297), synthetic merge producer `a21f72c9e8f26addb6c4c6082986fcf3070178ef` for PR head `754dfff8285f920404ba958ed0c8d6594db0160e`. The launch receipt binds the exact source CLI, and the artifact admits the reported beta and official nightly TypeScript hosts.
+
+The strict comparison remains **unqualified**: 394 of 398 semantic, protocol, geometry and whole-packet outcomes passed. Only the LF and CRLF/Unicode `slot-shadow` and `mixed-slot-scope` whole packets changed: their per-usage contract aliases are spelled `__V<Role><N>` (`__VProps0`, `__VComp0`, `__VCheckProps0`, `__VCheckTail0`, `__VCheck0`) instead of `__Child_<Role>_0` (#12646). Their text changes only at those names, every generated coordinate after a renamed name moves by exactly the bytes it lost, and every diagnostic and source coordinate is unchanged; the other 76 complete results remain byte-identical. Every non-whole-packet outcome passed.
+
+`complete: true` records the complete observed successor population. It grants no pinned source-host, public-package or performance acceptance and does not retroactively qualify the capture. `source-packets-current-a21f72c9e8f2-provenance.json` binds the producer, artifact digest, exact evidence members, previous population, failed qualification vector and explicit credit limits.
+
+## Previous authority (historical)
+
+# Current instance-global packet authority
+
 The active expected population is `source-packets-current-c6a6c571b090.json`: all 80 whole transform results from [source Actions 42781388461](https://github.com/ubugeeei-prod/vize/actions/runs/42781388461/job/129712771074), synthetic merge producer `c6a6c571b090f86cf3c8bff563ed9cb7d1ea7034` for PR head `0c3ae8dc16cec2a240124f550d7ecf7fb159946a`. The launch receipt binds the exact source CLI, and the artifact admits the reported beta, official nightly, and pinned source-built TypeScript host.
 
 The original strict comparison remains **unqualified**: 495 of 499 semantic, protocol, geometry, and whole-packet outcomes passed. Only the LF and CRLF/Unicode `slot-shadow` and `mixed-slot-scope` whole packets changed: their child usage names the shared `$UsageProps` and `$UsageRequiredFallthrough` helpers instead of declaring the inline conditionals on its `__Child_Props_0` and `__Child_CheckProps_0` lines (#12615). Each packet shrank by exactly those two alias bodies and every later generated coordinate moved by the same bytes; every diagnostic, mapping and opaque field is otherwise unchanged, and the other 76 complete results remain byte-identical. Every non-whole-packet outcome and all three real-host controls passed.
