@@ -11,7 +11,7 @@ export default defineConfig({
     ignorePatterns: ["dist/**"],
   },
   pack: {
-    entry: ["src/index.ts", "src/config.ts", "src/cli.ts"],
+    entry: ["src/index.ts", "src/config.ts", "src/cli.ts", "src/content-mapper-cli.ts"],
     format: "esm",
     dts: true,
     clean: true,
