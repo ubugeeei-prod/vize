@@ -6,10 +6,12 @@ import { stripCssCommentsForScoped } from "../shared/utils.ts";
 
 const { compileCss } = native;
 
+/** Options for the scoped-CSS loader; scope metadata comes from the request query. */
 export interface VizeScopeLoaderOptions {
   // no options needed — scope metadata is extracted from the query string
 }
 
+/** Apply the native scoped-CSS transform to a scoped style sub-request. */
 export default function vizeScopeLoader(
   this: LoaderContext<VizeScopeLoaderOptions>,
   source: string,

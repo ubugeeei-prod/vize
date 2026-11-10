@@ -23,6 +23,7 @@ const STYLE_EXTENSION_MAP: Record<string, string> = {
 
 // ---------------------------------------------------------------------------
 
+/** Result of adapting the configured CSS rules for Vue style sub-requests. */
 export interface RuleCloningResult {
   /** Whether rule cloning was performed */
   applied: boolean;

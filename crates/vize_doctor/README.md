@@ -219,6 +219,14 @@ link. Cache objects are immutable: identical competing writes are idempotent,
 while divergent output for one cache key fails closed. The same envelope bytes
 remain suitable for a remote object store without translating the payload.
 
+`RemoteCapabilitySnapshotCache` adds the provider-neutral remote acceptance
+boundary. A `RemoteCapabilitySnapshotStore` implementation owns credentials,
+network retries, provider addressing, and atomic publish-if-absent behavior.
+Doctor supplies the canonical key, media type, portable bytes, and response
+ceiling, then independently validates the returned object metadata and complete
+envelope. Existing remote objects win immutable publication races: identical
+output is accepted, while divergent output for one key fails closed.
+
 ## Reporter integrations
 
 External CI, editor, code-hosting, and AI integrations implement the object-safe

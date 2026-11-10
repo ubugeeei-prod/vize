@@ -86,6 +86,33 @@ fn selected_art_uses_each_profile_without_editing_tags_or_neighbors() {
 }
 
 #[test]
+fn profile_block_reordering_preserves_script_setup_range_identity() {
+    let source = include_str!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/../../tests/_fixtures/differential/lsp/formatter-block-identity-6098/App.vue.txt"
+    ));
+    let options = FormatOptions::from_preset(FormatPreset::Vize);
+    let edits = selected(
+        source,
+        Range::new(Position::new(3, 22), Position::new(3, 23)),
+        &options,
+    )
+    .unwrap();
+    let pinned: Vec<TextEdit> = serde_json::from_str(include_str!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/../../tests/_fixtures/differential/lsp/formatter-block-identity-6098/response.expected.json"
+    )))
+    .unwrap();
+    assert_eq!(edits, pinned);
+
+    let formatted = vize_glyph::format_sfc(source, &options).unwrap().code;
+    let template = formatted.find("<template>").unwrap();
+    let script_setup = formatted.find("<script setup>").unwrap();
+    let script = formatted.find("<script>").unwrap();
+    assert!(script < script_setup && script_setup < template);
+}
+
+#[test]
 fn repeated_art_blocks_keep_their_identity_and_only_the_selected_one_changes() {
     const FIRST: &str = "<art title=\"first\"><Button   a=\"1\" /></art>\n";
     const SECOND: &str = "<art title=\"second\"><Other   b=\"2\" /></art>\n";

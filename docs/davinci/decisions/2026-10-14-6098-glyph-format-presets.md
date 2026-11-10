@@ -260,3 +260,27 @@ selected preset. Public CLI whole-output controls prove enabled and authored
 void-element forms plus fixed points, while the existing Node regression pins
 both directions through a third pass with immutable options and the option
 matrix exercises the enabled value over the full in-repo Vue corpus.
+
+## Exact editor ranges and closure
+
+Range and on-type formatting project formatter output through authored LSP
+`TextEdit` ranges. The projection now pairs every supported SFC block by a
+stable semantic identity (template, script setup, script, indexed style, or
+indexed Musea art block) before reading formatted bytes. Profiles may reorder
+whole blocks, but a same-count block-kind drift is refused instead of being
+mapped through an unrelated authored range. The profile range corpus pins
+UTF-16 coordinates, repeated block identity, CRLF, unchanged neighbours, and
+fixed points for all four profiles. This is the formatter's source-coordinate
+contract; the public string formatter continues to return `code` and `changed`
+and does not claim a serialized source-map API.
+
+The remaining acceptance is enforced by existing executable gates: every
+serialized formatter option is present in the JSON schema, generated
+TypeScript and Pkl types, and the English and Japanese option references. The
+option matrix runs the defaults, all four profiles, every non-default axis and
+seeded combinations over more than 300 Vue fixtures (at least 30,000 attempts),
+requiring a fixed point or an explicit refusal. The real-project matrix also
+requires formatter idempotence, parse preservation and lint agreement, while
+the CLI and editor reject directive-normalization policies that conflict with
+enabled linter rules. Together with the semantic block-identity guard above,
+these gates complete #6098.

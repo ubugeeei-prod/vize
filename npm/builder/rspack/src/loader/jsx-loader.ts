@@ -12,6 +12,7 @@ import { parseSourceMap } from "../shared/source-map.ts";
 import { matchesPattern } from "../shared/utils.ts";
 import type { VizeJsxLoaderOptions as VizeLoaderOptions } from "../types/index.ts";
 
+/** Compile a Vue JSX or TSX module through the native JSX compiler. */
 export default function vizeJsxLoader(
   this: LoaderContext<VizeLoaderOptions>,
   source: string,

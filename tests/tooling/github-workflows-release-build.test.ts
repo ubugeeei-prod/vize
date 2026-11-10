@@ -103,6 +103,15 @@ test("release and cache warming share every exact-checkout binary recipe", () =>
   );
 });
 
+test("release builds refuse to rewrite the stamped Cargo lock", () => {
+  const cliBuild = recipe("build-release-cli").runs.steps.find((step) => step.name === "Build CLI");
+  assert.match(cliBuild?.run ?? "", /cargo build --locked --release/u);
+
+  const nativeHelper = readRepoFile("tools", "support", "github", "build-napi-package.ts");
+  assert.match(nativeHelper, /"build",\s*"--locked",\s*"--release"/u);
+  assert.match(nativeHelper, /commandArgs\.push\("--", "--locked"\)/u);
+});
+
 test("all shipping platforms retain target and ABI guards on accelerated runners", () => {
   const expected = [
     "aarch64-apple-darwin",

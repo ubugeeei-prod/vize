@@ -22,6 +22,7 @@ function isOwnedCrate(name: string): boolean {
   return (
     name === "vize" ||
     name.startsWith("vize_") ||
+    name.startsWith("poc-") ||
     name === "davinci_harness" ||
     name === "davinci_test_support" ||
     name === "vize-zed-extension"

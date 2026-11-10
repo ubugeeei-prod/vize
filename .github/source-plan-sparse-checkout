@@ -24,6 +24,7 @@
 /.github/
 /tools/
 /npm/
+/editors/vscode/test/
 /tests/tooling/
 /tests/tsconfig.json
 /tests/**/*.ts

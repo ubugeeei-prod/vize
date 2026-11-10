@@ -32,6 +32,8 @@ function expectedNapiArgs(crateName: string, features: string): string {
     ".",
     "--target",
     "x86_64-unknown-linux-gnu",
+    "--",
+    "--locked",
   ].join("\n");
 }
 
