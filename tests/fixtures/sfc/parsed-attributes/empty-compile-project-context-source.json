@@ -1,12 +1,12 @@
 {
   "schema": "vize.sfc-empty-compile-project-context-source-successor.v1",
-  "reviewedSource": "fa58cf6fc5ca518483caa0cdd0fe8a58e56f4294",
-  "contract": "Reverse only the exact reviewed TypeScript project-context integration back to the retained complete empty-component source law. Empty validation stays the first compiler action; an absent setup script bypasses project discovery. Output packets and historical reference bytes are unchanged.",
+  "reviewedSource": "4ce24ba46b476b6e5bf26933fe013f1af2c319c5",
+  "contract": "Reverse only the exact reviewed TypeScript project-context and native setup-binding integrations back to the retained complete empty-component source law. Empty validation stays the first compiler action; an absent setup script bypasses project discovery and setup analysis. Output packets and historical reference bytes are unchanged.",
   "sources": [
     {
       "path": "crates/vize_atelier_sfc/src/compile.rs",
       "referenceBlob": "6856ecc04ae177fe53724a09fbf2c0f5654a1fb7",
-      "currentBlob": "22fe8214e718eb97cbb77837d3b3d0b437a22bee",
+      "currentBlob": "5acf65c0c967e3e8d852de7400f1317138a8fc87",
       "replacements": [
         {
           "reference": "mod normal_script;\npub(crate) mod output_module;\nmod props_rest;\nmod setup_exports;\nmod stage_capture;\n#[cfg(test)]\n",
@@ -95,6 +95,14 @@
         {
           "reference": "        Some(content) => (content.as_str(), None),\n        None => (script_setup_content.as_str(), setup_program.as_ref()),\n    };\n",
           "current": "        Some(content) => (content.as_str(), None),\n        None => (script_setup_content.as_str(), setup_program),\n    };\n"
+        },
+        {
+          "reference": "    // Parse the script setup once and observe its facts natively. The macro\n    // context analysis and (unless v-model demotion rewrites the content\n    // below) the inline compiler's statement sectioning reuse this Program.\n    let setup_arena = vize_l0::Allocator::default();\n    let setup = profile!(\n        \"atelier.sfc.script_setup.facts\",\n        setup_facts::SetupAnalysis::new(&setup_arena, &script_setup_content, descriptor)\n    )?;\n",
+          "current": "    let setup_arena = vize_l0::Allocator::default();\n    let setup_options = (descriptor, &options.template);\n    let setup = profile!(\n        \"atelier.sfc.script_setup.facts\",\n        setup_facts::SetupAnalysis::new(&setup_arena, &script_setup_content, setup_options)\n    )?;\n"
+        },
+        {
+          "reference": "    }\n\n    // Compile template with bindings (if present) to get the render function\n",
+          "current": "    }\n    ctx.bindings = script_bindings.clone();\n    // Compile template with bindings (if present) to get the render function\n"
         }
       ]
     },
