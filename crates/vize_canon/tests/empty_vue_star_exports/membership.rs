@@ -15,6 +15,7 @@ mod current_generated_constructor;
 mod current_updates;
 mod integrated_generated_constructor;
 mod provider_roster;
+mod setup_verbatim_generated;
 
 type Roots = [(&'static str, PathBuf); 3];
 type Checked<T> = Result<T, &'static str>;
@@ -249,6 +250,7 @@ fn expected(current_providers: bool) -> (Value, Value) {
     integrated_generated_constructor::apply(&mut manifest, &mut members);
     canon_leftovers_generated::apply(&mut manifest, &mut members);
     constructor_noinfer_generated::apply(&mut manifest, &mut members);
+    setup_verbatim_generated::apply(&mut manifest, &mut members);
     (manifest, json!(members))
 }
 
