@@ -8,7 +8,7 @@ import { generatedCommentBytesCut } from "../../../../tools/support/compat/conte
 type GoldenEntry = { file: string; sha256: string };
 type Identity = { file: string; sha256: string; bytes: number };
 
-const receiptSha256 = "125ec064644a5f6ff6d9d7c0b4158083d9b9723d422613a35f1f8ab3f820a1fd";
+const receiptSha256 = "3e75da62628885a9e43e52f7a8f730c2d8988f83533c8e05d9b37f63c3cac85c";
 const sha256 = (bytes: Buffer | string) => createHash("sha256").update(bytes).digest("hex");
 
 /**
