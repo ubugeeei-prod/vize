@@ -40,9 +40,9 @@ import {
   certifyGenericComponentContextTransition,
 } from "./component-constructor-transition.ts";
 import { certifyComponentExportTransition } from "./component-export-transition.ts";
+import { dedentEdits } from "./setup-dedent.ts";
 import { writeConstructorProjectionReceipt } from "./constructor-projection-receipt.ts";
 const digest = (bytes: Uint8Array) => createHash("sha256").update(bytes).digest("hex");
-
 type Link = {
   sourceStart: number;
   sourceLength: number;
@@ -174,7 +174,7 @@ function relocationEdits(
   const genericComponentContextTransition = certifyGenericComponentContextTransition(before, after);
   if (genericComponentContextTransition) certifiedEdits.push(genericComponentContextTransition);
   const componentExportTransition = certifyComponentExportTransition(before, after);
-  if (componentExportTransition) certifiedEdits.push(...componentExportTransition.edits);
+  certifiedEdits.push(...(componentExportTransition?.edits ?? []), ...dedentEdits(before, after));
   const originalComments = comments(before.toString(), baseGeneratedRanges);
   const actualComments = comments(after.toString(), headGeneratedRanges);
   assert.equal(
@@ -197,7 +197,7 @@ function relocationEdits(
       const { edit } = event;
       assert.ok((edits.at(-1)?.end ?? 0) <= edit.start, "certified replacements must be disjoint");
       assert.equal(
-        uniqueOffset(after, edit.replacement),
+        edit.at ?? uniqueOffset(after, edit.replacement),
         point(edit.start, edits),
         `${edit.label} boundary moved`,
       );
@@ -209,7 +209,7 @@ function relocationEdits(
     bounds(g0, g1 - g0, before.length);
     bounds(s0, s1 - s0, sourceBytes);
     assert.ok(g1 <= original.start, "a map comment must describe preceding code");
-    const values = [point(g0, edits), point(g1, edits), s0, s1];
+    const values = [point(g0, edits, true), point(g1, edits, true), s0, s1];
     assert.deepEqual(
       actual.values,
       values,
