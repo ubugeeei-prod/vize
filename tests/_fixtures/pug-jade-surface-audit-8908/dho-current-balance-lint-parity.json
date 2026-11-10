@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "source": {
+    "repository": "https://github.com/hypha-dao/dho-web-client",
+    "revision": "94a804ee650cb49990f6fcd4f4c54afa3a925abe",
+    "path": "src/components/profiles/current-balance.vue",
+    "blobSha": "6fd59dae62ba1c5f2f93d71c38f8e85aacf121c3",
+    "sha256": "0bb0557dd9f0f265451127fc15fdd27569be3660860e28ae8638a4d3b88eb35e"
+  },
+  "renderer": {
+    "package": "pug",
+    "version": "3.0.4",
+    "htmlTwinSha256": "0f3a39860c5280d0e5149b5292d7b4ebb03f3a2f5554812fc4f0c1285f5e11cf"
+  },
+  "baseline": {
+    "package": "eslint-plugin-vue",
+    "version": "10.9.2"
+  },
+  "signatures": [
+    {
+      "ruleId": "vue/require-v-for-key",
+      "severity": "error",
+      "message": "Elements in iteration expect to have 'v-bind:key' directives.",
+      "count": 1
+    }
+  ]
+}
