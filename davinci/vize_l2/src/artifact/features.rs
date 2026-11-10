@@ -194,4 +194,36 @@ mod tests {
         assert!(all.has_if_ops() && all.has_for_ops());
         assert!(all.has_slot_carriers() && all.has_model_bindings());
     }
+
+    /// The canonical builder records the family when it mints a child value,
+    /// and only then.
+    #[test]
+    fn built_child_values_record_the_jsx_child_family() {
+        use crate::artifact::Builder;
+        use crate::expr::{ExprRef, JsExpr};
+        use vize_l0::{Allocator, Span};
+
+        let a = Allocator::default();
+        let source = "{v}{{w}}";
+        let mut interpolated = Builder::new(&a, source).unwrap();
+        let w = JsExpr::parse_in(&a, "w", Span::new(5, 6)).unwrap();
+        interpolated
+            .region()
+            .interpolation(ExprRef::Js(w), Span::new(3, 8))
+            .unwrap();
+        assert_eq!(
+            interpolated.finish().unwrap().parts().features,
+            LoweringFeatures::EMPTY
+        );
+        let mut valued = Builder::new(&a, source).unwrap();
+        let v = JsExpr::parse_in(&a, "v", Span::new(1, 2)).unwrap();
+        valued
+            .region()
+            .child_value(ExprRef::Js(v), Span::new(0, 3))
+            .unwrap();
+        assert_eq!(
+            valued.finish().unwrap().parts().features,
+            LoweringFeatures::EMPTY.observing(OpFamily::JsxChild)
+        );
+    }
 }

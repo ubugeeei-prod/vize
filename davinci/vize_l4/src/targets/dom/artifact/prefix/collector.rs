@@ -43,6 +43,8 @@ pub(super) struct IdentifierCollector<'s, 'a> {
     /// bindings and member names; static object property keys are excluded.
     pub(super) has_identifier_references: bool,
     offset: usize,
+    /// Subtracted from every AST position before `offset` is added.
+    base: u32,
     local_scopes: StdVec<StdVec<String>>,
     pub(super) rewrites: StdVec<(usize, String)>,
     pub(super) suffix_rewrites: StdVec<(usize, String)>,
@@ -62,6 +64,7 @@ impl<'s, 'a> IdentifierCollector<'s, 'a> {
             used_is_ref: false,
             has_identifier_references: false,
             offset: 0,
+            base: 0,
             local_scopes: alloc::vec![StdVec::new()],
             rewrites: StdVec::new(),
             suffix_rewrites: StdVec::new(),
@@ -76,9 +79,11 @@ impl<'s, 'a> IdentifierCollector<'s, 'a> {
         scope: &'s PrefixScope<'s>,
         source: &'a str,
         offset: usize,
+        base: u32,
     ) -> Self {
         Self {
             offset,
+            base,
             wrapped: false,
             ..Self::new(scope, source)
         }
@@ -92,7 +97,7 @@ impl<'s, 'a> IdentifierCollector<'s, 'a> {
     }
 
     fn at(&self, position: u32) -> usize {
-        position as usize + self.offset
+        position.saturating_sub(self.base) as usize + self.offset
     }
 
     /// An assignment target wrapped in parens — `((model) = $event)` —

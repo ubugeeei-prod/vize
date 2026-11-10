@@ -110,8 +110,16 @@ impl Content<'_> {
             ast: js.ast,
             source: js.source,
             offset,
+            base: retained_base(js),
         })
     }
+}
+
+/// How far the parser positions of `js.ast` sit past `js.source`.
+fn retained_base(js: &JsExpr<'_>) -> u32 {
+    let root = oxc_span::GetSpan::span(js.ast);
+    js.ast_span_to_source(root)
+        .map_or(0, |decoded| root.start.saturating_sub(decoded.start))
 }
 
 /// An authored expression past the lane's one TypeScript boundary: every
@@ -460,6 +468,7 @@ pub(super) fn prefix_dynamic_arg(scope: &PrefixScope<'_>, js: &JsExpr<'_>) -> St
         ast: js.ast,
         source: js.source,
         offset: 0,
+        base: retained_base(js),
     });
     if content.starts_with('_') || content.starts_with('$') {
         return consume(scope, String::from(content), Site::Expression);
