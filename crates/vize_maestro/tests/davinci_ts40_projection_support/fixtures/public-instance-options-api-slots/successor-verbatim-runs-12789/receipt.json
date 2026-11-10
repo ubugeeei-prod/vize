@@ -16,7 +16,8 @@
     "contentMapperGeneratedTextBytes": 0,
     "maestroGeneratedTextBytes": 0,
     "contentMapperMappings": -1,
-    "contentMapperAuthoredHits": 0
+    "contentMapperAuthoredHits": 0,
+    "onlyContentMapperGeometryChanged": true
   },
   "nativeAcceptanceCredit": false,
   "scope": "Local exact record for #12431: the content mapper joins a setup block's verbatim lines across their shared line breaks into one span per run. Generated text is unchanged; only content-mapper mapping counts and their coordinate hashes move. No native TypeScript consumer acceptance credit."

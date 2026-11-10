@@ -64,6 +64,21 @@ fn crlf_setup_lines_stay_one_span_per_line() {
 fn shared_originals_keep_disjoint_or_equal_pieces() {
     let source = "<script setup lang=\"ts\">\nconst props = defineProps<{\n  modelValue: boolean\n  label: string\n}>()\n</script>\n<template><div>{{ props.label }}</div></template>\n";
     let (_, spans, all) = setup_spans(source);
+    let shared_key = source.find("modelValue").expect("shared prop key");
+    let shared_key_len = "modelValue".len();
+    assert!(
+        all.iter()
+            .filter(|span| (span.0[2], span.0[3]) == (shared_key, shared_key_len))
+            .count()
+            > 1,
+        "the prop key must have multiple owners: {all:?}"
+    );
+    assert!(
+        spans
+            .iter()
+            .any(|span| (span.0[2], span.0[3]) == (shared_key, shared_key_len)),
+        "the shared prop key must retain its exact setup span: {spans:?}"
+    );
     assert!(
         spans.len() > 1,
         "a shared prop key keeps its line split: {spans:?}"
@@ -100,5 +115,51 @@ fn only_a_line_break_joins_verbatim_pieces() {
     assert_eq!(
         super::join_verbatim_runs(text, text, lines),
         vec![verbatim(0, 18)]
+    );
+}
+
+#[test]
+fn unsafe_join_guards_keep_verbatim_pieces_split() {
+    let verbatim = |at: usize, len: usize, original: usize, features: usize| {
+        ContentMapperSpan([at, len, original, len, 0, features])
+    };
+    let text = "ab\ncd";
+
+    let mapped_inside = vec![
+        verbatim(0, 2, 0, 7),
+        verbatim(3, 2, 3, 7),
+        ContentMapperSpan([5, 0, 2, 1, 1, 0]),
+    ];
+    assert_eq!(
+        super::join_verbatim_runs(text, text, mapped_inside.clone()),
+        mapped_inside
+    );
+
+    let feature_mismatch = vec![verbatim(0, 2, 0, 7), verbatim(3, 2, 3, 0)];
+    assert_eq!(
+        super::join_verbatim_runs(text, text, feature_mismatch.clone()),
+        feature_mismatch
+    );
+
+    let gap_mismatch = vec![verbatim(0, 2, 0, 7), verbatim(3, 2, 3, 7)];
+    assert_eq!(
+        super::join_verbatim_runs(text, "ab\tcd", gap_mismatch.clone()),
+        gap_mismatch
+    );
+
+    let tab_gap = vec![verbatim(0, 2, 0, 7), verbatim(3, 2, 3, 7)];
+    assert_eq!(
+        super::join_verbatim_runs("ab\tcd", "ab\tcd", tab_gap.clone()),
+        tab_gap
+    );
+
+    let shared_original = vec![
+        verbatim(0, 2, 0, 7),
+        verbatim(3, 2, 3, 7),
+        verbatim(6, 2, 0, 7),
+    ];
+    assert_eq!(
+        super::join_verbatim_runs("ab\ncd\nab", "ab\ncd\nab", shared_original.clone()),
+        shared_original
     );
 }
