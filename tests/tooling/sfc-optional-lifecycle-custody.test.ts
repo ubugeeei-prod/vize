@@ -35,6 +35,7 @@ void test("issue 10582 keeps the reported and controlled evidence immutable", ()
   assert.match(driver, /retryPolicy: "none"/u);
   assert.match(driver, /receipt\.qualification\.reproduction = "not-reproduced"/u);
   assert.match(driver, /assert\.equal\(sourceSha, process\.env\.GITHUB_SHA/u);
+  assert.doesNotMatch(driver, /"vendor"/u);
   assert.match(workflow, /ref: "\$\{\{ inputs\.expected-driver-sha \}\}"/u);
   assert.equal(workflow.includes("ref: 1525ff2f7621e8f0b3053451568bec48ff5b8855"), false);
   assert.match(workflow, /sfc-optional-lifecycle-receipt-\$\{\{ github\.sha \}\}/u);
