@@ -198,18 +198,18 @@ const key = "a" as "a" | "b";
   type $MissingRequiredSlots<__S, __P> = Exclude<$RequiredSlotKeys<__S>, keyof __P>;
   type $RequiredSlots<__S, __P> = $IsAny<__S> extends true ? {} : string extends keyof __S ? {} : [keyof __S] extends [never] ? {} : [$MissingRequiredSlots<__S, __P>] extends [never] ? {} : { readonly __vizeMissingSlots: $MissingRequiredSlots<__S, __P> };
   // @vize-map: component -> 81:105
-  type __Test_Props_0 = typeof Test extends { __vizeCheck: infer __F } ? ($IsAny<__F> extends true ? $ComponentRawProps<typeof Test> : Record<string, unknown>) : $ComponentRawProps<typeof Test>;
-  type __Test_Component_0 = typeof Test;
-  type __Test_CheckProps_0 = __Test_Props_0 & $EmitListeners<__Test_Component_0> & ($FallthroughProps<__Test_Component_0> extends infer __F ? [__F extends unknown ? {} extends __F ? never : __F : never] extends [never] ? $RequiredFallthroughProps<__Test_Component_0, __F, never> : $RequiredFallthroughProps<__Test_Component_0, __F> : never);
-  type __Test_CheckTail_0 = $ComponentCheckTail<__Test_Component_0>;
-  type __Test_ValueProps_0 = $IsLibraryGenericExport<__Test_Component_0> extends true ? Record<string, any> : __Test_Props_0 & $EmitListeners<__Test_Component_0> & $PublicComponentAttrs;
-  type __Test_Check_0 = $PropChecker<__Test_Component_0, __Test_CheckProps_0, __Test_CheckTail_0>;
-  type __Test_0_prop_value1 = $PropValueOr<__Test_ValueProps_0, 'value1', __Test_Component_0>;
+  type __VProps0 = typeof Test extends { __vizeCheck: infer __F } ? ($IsAny<__F> extends true ? $ComponentRawProps<typeof Test> : Record<string, unknown>) : $ComponentRawProps<typeof Test>;
+  type __VComp0 = typeof Test;
+  type __VCheckProps0 = __VProps0 & $EmitListeners<__VComp0> & ($FallthroughProps<__VComp0> extends infer __F ? [__F extends unknown ? {} extends __F ? never : __F : never] extends [never] ? $RequiredFallthroughProps<__VComp0, __F, never> : $RequiredFallthroughProps<__VComp0, __F> : never);
+  type __VCheckTail0 = $ComponentCheckTail<__VComp0>;
+  type __VValueProps0 = $IsLibraryGenericExport<__VComp0> extends true ? Record<string, any> : __VProps0 & $EmitListeners<__VComp0> & $PublicComponentAttrs;
+  type __VCheck0 = $PropChecker<__VComp0, __VCheckProps0, __VCheckTail0>;
+  type __VProp0$value1 = $PropValueOr<__VValueProps0, 'value1', __VComp0>;
 
   // Component template navigation references
   void Test;
-  const { } = undefined as unknown as $ComponentNavigationProps<__Test_Props_0>;
-  const __vize_props_nav_0 = undefined as unknown as __Test_Props_0 & globalThis.Record<string, unknown>;
+  const { } = undefined as unknown as $ComponentNavigationProps<__VProps0>;
+  const __vize_props_nav_0 = undefined as unknown as __VProps0 & globalThis.Record<string, unknown>;
   // @ts-ignore Navigation-only references; no diagnostic owner.
   void __vize_props_nav_0.value1;
 
@@ -222,9 +222,9 @@ const key = "a" as "a" | "b";
     for (const [value] of __vize_v_for_source_7) {
       void value;
       // @vize-map: prop -> 87:102
-        const __vize_prop_check_0_value1: __Test_0_prop_value1 = value;
+        const __vize_prop_check_0_value1: __VProp0$value1 = value;
         void __vize_prop_check_0_value1;
-        (undefined as unknown as __Test_Check_0)({
+        (undefined as unknown as __VCheck0)({
           "value1": value,
         });
         type $SlotContract_0 = $StructuralSlots<typeof Test>;

@@ -32,6 +32,7 @@ mod empty_required_props;
 mod exact_optional_props;
 mod external_esm_module_augmentation;
 mod external_slot_payloads;
+mod generated_name_hygiene;
 mod generic_component_cast;
 mod generic_component_mount_slots;
 mod generic_component_parity;

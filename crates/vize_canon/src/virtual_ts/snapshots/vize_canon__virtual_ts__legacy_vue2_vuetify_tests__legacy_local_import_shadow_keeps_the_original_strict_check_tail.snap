@@ -137,26 +137,26 @@ function __setup() {
   type $MissingRequiredSlots<__S, __P> = Exclude<$RequiredSlotKeys<__S>, keyof __P>;
   type $RequiredSlots<__S, __P> = $IsAny<__S> extends true ? {} : string extends keyof __S ? {} : [keyof __S] extends [never] ? {} : [$MissingRequiredSlots<__S, __P>] extends [never] ? {} : { readonly __vizeMissingSlots: $MissingRequiredSlots<__S, __P> };
   // @vize-map: component -> 0:34
-  type __ExternalInput_Props_0 = typeof ExternalInput extends { __vizeCheck: infer __F } ? ($IsAny<__F> extends true ? $ComponentRawProps<typeof ExternalInput> : Record<string, unknown>) : $ComponentRawProps<typeof ExternalInput>;
-  type __ExternalInput_Component_0 = typeof ExternalInput;
-  type __ExternalInput_CheckProps_0 = __ExternalInput_Props_0 & $EmitListeners<__ExternalInput_Component_0> & ($FallthroughProps<__ExternalInput_Component_0> extends infer __F ? [__F extends unknown ? {} extends __F ? never : __F : never] extends [never] ? $RequiredFallthroughProps<__ExternalInput_Component_0, __F, never> : $RequiredFallthroughProps<__ExternalInput_Component_0, __F> : never);
-  type __ExternalInput_CheckTail_0 = $ComponentCheckTail<__ExternalInput_Component_0>;
-  type __ExternalInput_ValueProps_0 = $IsLibraryGenericExport<__ExternalInput_Component_0> extends true ? Record<string, any> : __ExternalInput_Props_0 & $EmitListeners<__ExternalInput_Component_0> & $PublicComponentAttrs;
-  type __ExternalInput_Check_0 = $PropChecker<__ExternalInput_Component_0, __ExternalInput_CheckProps_0, __ExternalInput_CheckTail_0>;
-  type __ExternalInput_0_prop_count = $PropValueOr<__ExternalInput_ValueProps_0, 'count', __ExternalInput_Component_0>;
+  type __VProps0 = typeof ExternalInput extends { __vizeCheck: infer __F } ? ($IsAny<__F> extends true ? $ComponentRawProps<typeof ExternalInput> : Record<string, unknown>) : $ComponentRawProps<typeof ExternalInput>;
+  type __VComp0 = typeof ExternalInput;
+  type __VCheckProps0 = __VProps0 & $EmitListeners<__VComp0> & ($FallthroughProps<__VComp0> extends infer __F ? [__F extends unknown ? {} extends __F ? never : __F : never] extends [never] ? $RequiredFallthroughProps<__VComp0, __F, never> : $RequiredFallthroughProps<__VComp0, __F> : never);
+  type __VCheckTail0 = $ComponentCheckTail<__VComp0>;
+  type __VValueProps0 = $IsLibraryGenericExport<__VComp0> extends true ? Record<string, any> : __VProps0 & $EmitListeners<__VComp0> & $PublicComponentAttrs;
+  type __VCheck0 = $PropChecker<__VComp0, __VCheckProps0, __VCheckTail0>;
+  type __VProp0$count = $PropValueOr<__VValueProps0, 'count', __VComp0>;
 
   // Component template navigation references
   void ExternalInput;
-  const { } = undefined as unknown as $ComponentNavigationProps<__ExternalInput_Props_0>;
-  const __vize_props_nav_0 = undefined as unknown as __ExternalInput_Props_0 & globalThis.Record<string, unknown>;
+  const { } = undefined as unknown as $ComponentNavigationProps<__VProps0>;
+  const __vize_props_nav_0 = undefined as unknown as __VProps0 & globalThis.Record<string, unknown>;
   // @ts-ignore Navigation-only references; no diagnostic owner.
   void __vize_props_nav_0.count;
 
   // Component props value checks (template scope)
   // @vize-map: prop -> 15:31
-  const __vize_prop_check_0_count: __ExternalInput_0_prop_count = 'wrong';
+  const __vize_prop_check_0_count: __VProp0$count = 'wrong';
   void __vize_prop_check_0_count;
-  (undefined as unknown as __ExternalInput_Check_0)({
+  (undefined as unknown as __VCheck0)({
     "count": 'wrong',
   });
   type $SlotContract_0 = $StructuralSlots<typeof ExternalInput>;

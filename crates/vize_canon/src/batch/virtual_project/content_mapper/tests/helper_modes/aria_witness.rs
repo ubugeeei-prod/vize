@@ -21,7 +21,7 @@ type $NotUndefined<T> = never;
         .expect("installed shared-helper transform");
         let text = result.text.as_str();
         assert_eq!(
-            text.matches("...__vizeComponentAriaPropEntries(\"aria-label\", \"ariaLabel\", \"x\", (undefined as unknown as __Child_0_prop_aria_label))")
+            text.matches("...__vizeComponentAriaPropEntries(\"aria-label\", \"ariaLabel\", \"x\", (undefined as unknown as __VProp0$aria_label))")
                 .count(),
             1,
             "the literal must call the emitted helper: {text}"

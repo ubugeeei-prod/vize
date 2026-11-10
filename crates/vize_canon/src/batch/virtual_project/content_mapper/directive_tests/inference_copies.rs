@@ -63,7 +63,7 @@ fn edit(source: &str, from: &str, to: &str) -> Box<str> {
 fn assert_inert_copy(case: &str, source: &str, authored: &str) {
     let result = published(source);
     let text = result.text.as_str();
-    let start = text.find("const __vize_resolved_").expect(case);
+    let start = text.find("const __VResolvedProps").expect(case);
     let end = start + text[start..].find("}));\n").expect(case) + "}));\n".len();
     let mut ignored = vec![false; end - start];
     for row in result

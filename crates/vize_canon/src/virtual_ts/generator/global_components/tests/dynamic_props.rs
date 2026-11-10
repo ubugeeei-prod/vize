@@ -100,7 +100,7 @@ fn ordinary_namespaced_tags_keep_their_markup_reference() {
     assert!(
         output
             .code
-            .contains("type __Registry_Choice_Props_0 = typeof Registry.Choice extends ")
+            .contains("type __VProps0 = typeof Registry.Choice extends ")
     );
     assert!(!output.code.contains("__vize_global_component_"));
     assert!(!output.code.contains("typeof Registry_Choice"));

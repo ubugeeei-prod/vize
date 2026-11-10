@@ -118,7 +118,7 @@ pub(crate) fn observe(root: &Path, mut record: impl FnMut(Value)) -> Witness {
     assert_eq!(app.matches(COMPONENT_NAVIGATION_HELPER).count(), 1);
     assert_eq!(app.matches(SLOT_NAVIGATION_PRELUDE).count(), 0);
     assert_eq!(helpers.matches(SHARED_SLOT_NAVIGATION_PRELUDE).count(), 1);
-    let construct = "\n  void MySwitch;\n  const { } = undefined as unknown as $ComponentNavigationProps<__MySwitch_Props_0>;\n";
+    let construct = "\n  void MySwitch;\n  const { } = undefined as unknown as $ComponentNavigationProps<__VProps0>;\n";
     assert_eq!(app.matches(construct).count(), 1);
     let cursor = app.find(construct).unwrap() + "\n  void MySwitch;\n  const { ".len();
     assert!(app.find(&mapping).unwrap() < cursor);
@@ -293,8 +293,7 @@ fn complete_event_source_counterfactual_recovers_original_position() {
         &format!("{anchor}{HISTORICAL_SLOT_NAVIGATION_PRELUDE}"),
         1,
     );
-    let construct =
-        "\n  void MySwitch;\n  const { } = undefined as unknown as __MySwitch_Props_0;\n";
+    let construct = "\n  void MySwitch;\n  const { } = undefined as unknown as __VProps0;\n";
     let (counterfactual, position) =
         source_counterfactual(&current, construct, HISTORICAL_SLOT_NAVIGATION_PRELUDE);
     assert_eq!(position, 20_850);
@@ -332,6 +331,6 @@ fn event_counterfactual_refuses_unknown_prelude() {
     let unknown = current.replace("[keyof NonNullable<__S>]", "[keyof NonNullable<Unknown>]");
     historical_counterfactual(
         &unknown,
-        "\n  void MySwitch;\n  const { } = undefined as unknown as __MySwitch_Props_0;\n",
+        "\n  void MySwitch;\n  const { } = undefined as unknown as __VProps0;\n",
     );
 }

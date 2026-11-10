@@ -176,7 +176,7 @@ const rows=inputs.map(input=>{
   if(!declaration){const statement=ancestor(node,ts.isExpressionStatement);if(statement&&ts.isVoidExpression(statement.expression))return 'interpolation';throw new Error('unknown interpolation owner')}
   if(!ts.isIdentifier(declaration.name))throw new Error('non-identifier negative owner');
   if(declaration.name.text==='__vize_prop_check_0_textConverter')return 'checked-callback';
-  if(declaration.name.text!=='__vize_resolved_Formatter_props_0')throw new Error('unknown callback owner');
+  if(declaration.name.text!=='__VResolvedProps0')throw new Error('unknown callback owner');
   const property=ancestor(node,ts.isPropertyAssignment);
   if(!property||!ts.isStringLiteral(property.name)||property.name.text!=='textConverter')throw new Error('unknown inference property');
   const comments=(ts.getLeadingCommentRanges(input.virtualTs,property.pos)??[]).map(range=>input.virtualTs.slice(range.pos,range.end));

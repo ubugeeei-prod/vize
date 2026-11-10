@@ -127,7 +127,7 @@ defineProps<{ variant?: "primary" | "secondary" }>();
         result.code,
     );
     assert!(
-        result.code.contains("type __Self_Props_0 = typeof Self"),
+        result.code.contains("type __VProps0 = typeof Self"),
         "expected Self prop checks, got:\n{}",
         result.code,
     );
@@ -169,9 +169,7 @@ defineArt("./Button.vue", { title: "Button" });
         result.code,
     );
     assert!(
-        result
-            .code
-            .contains("type __Button_Props_0 = typeof Button"),
+        result.code.contains("type __VProps0 = typeof Button"),
         "expected Button prop checks, got:\n{}",
         result.code,
     );

@@ -205,20 +205,20 @@ function switchComponent() {
   type $MissingRequiredSlots<__S, __P> = Exclude<$RequiredSlotKeys<__S>, keyof __P>;
   type $RequiredSlots<__S, __P> = $IsAny<__S> extends true ? {} : string extends keyof __S ? {} : [keyof __S] extends [never] ? {} : [$MissingRequiredSlots<__S, __P>] extends [never] ? {} : { readonly __vizeMissingSlots: $MissingRequiredSlots<__S, __P> };
   // @vize-map: component -> 330:364
-  type __currentComponent_Props_0 = typeof currentComponent extends { __vizeCheck: infer __F } ? ($IsAny<__F> extends true ? $ComponentRawProps<typeof currentComponent> : Record<string, unknown>) : $ComponentRawProps<typeof currentComponent>;
-  type __currentComponent_Component_0 = typeof currentComponent;
-  type __currentComponent_CheckProps_0 = __currentComponent_Props_0 & $EmitListeners<__currentComponent_Component_0> & ($FallthroughProps<__currentComponent_Component_0> extends infer __F ? [__F extends unknown ? {} extends __F ? never : __F : never] extends [never] ? $RequiredFallthroughProps<__currentComponent_Component_0, __F, never> : $RequiredFallthroughProps<__currentComponent_Component_0, __F> : never);
-  type __currentComponent_CheckTail_0 = $ComponentCheckTail<__currentComponent_Component_0>;
-  type __currentComponent_Check_0 = $PropChecker<__currentComponent_Component_0, __currentComponent_CheckProps_0, __currentComponent_CheckTail_0>;
+  type __VProps0 = typeof currentComponent extends { __vizeCheck: infer __F } ? ($IsAny<__F> extends true ? $ComponentRawProps<typeof currentComponent> : Record<string, unknown>) : $ComponentRawProps<typeof currentComponent>;
+  type __VComp0 = typeof currentComponent;
+  type __VCheckProps0 = __VProps0 & $EmitListeners<__VComp0> & ($FallthroughProps<__VComp0> extends infer __F ? [__F extends unknown ? {} extends __F ? never : __F : never] extends [never] ? $RequiredFallthroughProps<__VComp0, __F, never> : $RequiredFallthroughProps<__VComp0, __F> : never);
+  type __VCheckTail0 = $ComponentCheckTail<__VComp0>;
+  type __VCheck0 = $PropChecker<__VComp0, __VCheckProps0, __VCheckTail0>;
 
   // Component template navigation references
   void currentComponent;
-  const { } = undefined as unknown as $ComponentNavigationProps<__currentComponent_Props_0>;
+  const { } = undefined as unknown as $ComponentNavigationProps<__VProps0>;
 
   // Component props value checks (template scope)
   void [
     () => {
-      (undefined as unknown as __currentComponent_Check_0)({
+      (undefined as unknown as __VCheck0)({
       });
       type $SlotContract_0 = $StructuralSlots<typeof currentComponent>;
       const __vize_required_slots_0: $RequiredSlots<$SlotContract_0, {}> = {};
