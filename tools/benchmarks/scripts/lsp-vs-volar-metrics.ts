@@ -14,6 +14,8 @@ export interface TreeReading {
   /** Proportional set size: shared pages split between the processes mapping them. */
   pssBytes: number | null;
   processes: number;
+  /** Members that exited after `/proc/<pid>/stat` discovery but before the PSS read. */
+  pssExitedProcesses: number;
   /** Every live member, so a tree past its memory budget can be killed whole. */
   pids: number[];
   /** Per process, at phase marks only: which member holds the memory and CPU. */
@@ -62,6 +64,33 @@ function pssBytes(pid: number): number | null {
     return match ? Number(match[1]) * 1024 : null;
   } catch {
     return null;
+  }
+}
+
+export function reconcilePssSnapshot<T extends { pid: number }>(
+  members: T[],
+  readPss: (pid: number) => number | null,
+  isAlive: (pid: number) => boolean,
+): { members: Array<{ member: T; pssBytes: number | null }>; exited: number } {
+  const snapshot: Array<{ member: T; pssBytes: number | null }> = [];
+  let exited = 0;
+  for (const member of members) {
+    const pss = readPss(member.pid);
+    if (pss == null && !isAlive(member.pid)) {
+      exited++;
+      continue;
+    }
+    snapshot.push({ member, pssBytes: pss });
+  }
+  return { members: snapshot, exited };
+}
+
+function procEntryStillAlive(pid: number): boolean {
+  try {
+    readFileSync(`/proc/${pid}/stat`);
+    return true;
+  } catch {
+    return false;
   }
 }
 
@@ -136,9 +165,13 @@ export function psTimeSeconds(text: string): number {
 
 export function readTree(roots: number[], withPss = true, withMembers = false): TreeReading {
   if (process.platform === "linux") {
-    const members = descendants(procRows(), roots);
+    const discovered = descendants(procRows(), roots);
+    const snapshot = withPss
+      ? reconcilePssSnapshot(discovered, pssBytes, procEntryStillAlive)
+      : { members: discovered.map((member) => ({ member, pssBytes: null })), exited: 0 };
+    const members = snapshot.members.map(({ member }) => member);
     const pssByPid = new Map(
-      members.map((member) => [member.pid, withPss ? pssBytes(member.pid) : null]),
+      snapshot.members.map(({ member, pssBytes }) => [member.pid, pssBytes]),
     );
     const values = [...pssByPid.values()];
     const pss =
@@ -150,6 +183,7 @@ export function readTree(roots: number[], withPss = true, withMembers = false): 
       rssBytes: members.reduce((sum, row) => sum + row.rssPages, 0) * PAGE_BYTES,
       pssBytes: pss,
       processes: members.length,
+      pssExitedProcesses: snapshot.exited,
       pids: members.map((member) => member.pid),
       ...(withMembers && {
         members: members.map((member) => ({
@@ -182,6 +216,7 @@ export function readTree(roots: number[], withPss = true, withMembers = false): 
     rssBytes: members.reduce((sum, row) => sum + row.rssKiB * 1024, 0),
     pssBytes: null,
     processes: members.length,
+    pssExitedProcesses: 0,
     pids: members.map((member) => member.pid),
     ...(withMembers && {
       members: members.map((member) => ({
