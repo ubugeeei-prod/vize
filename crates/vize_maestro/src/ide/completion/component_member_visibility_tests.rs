@@ -69,8 +69,9 @@ fn template_component_member_completion_hides_generated_contract_fields() {
         };
         let source = r#"<script setup lang="ts">
 import Child from './Child.vue'
+const AuthoredChild = Object.assign(Child, { authoredMember: true as const })
 </script>
-<template>{{ Child. }}</template>
+<template>{{ AuthoredChild. }}</template>
 "#;
         let (raw_labels, labels) = component_member_completion_labels(
             corsa_path,
@@ -79,7 +80,7 @@ defineProps<{ someMessage: string }>()
 </script>
 "#,
             source,
-            "Child.",
+            "AuthoredChild.",
             MemberCompletionRoute::Template,
             false,
         )
@@ -96,6 +97,15 @@ defineProps<{ someMessage: string }>()
         assert!(
             !labels.is_empty(),
             "the template route must return checker items: {labels:?}"
+        );
+        assert_eq!(
+            labels
+                .iter()
+                .filter(|label| label.as_str() == "authoredMember")
+                .map(String::as_str)
+                .collect::<Vec<_>>(),
+            ["authoredMember"],
+            "the authored template component member must survive: {labels:?}"
         );
         assert_eq!(
             generated_member_labels(&labels),
