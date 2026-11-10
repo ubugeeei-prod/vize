@@ -6,7 +6,7 @@
     {
       "path": "crates/vize_atelier_sfc/src/compile.rs",
       "referenceBlob": "6856ecc04ae177fe53724a09fbf2c0f5654a1fb7",
-      "currentBlob": "5acf65c0c967e3e8d852de7400f1317138a8fc87",
+      "currentBlob": "916e5265acc72dd3f347e6009186d580c57d713a",
       "replacements": [
         {
           "reference": "mod normal_script;\npub(crate) mod output_module;\nmod props_rest;\nmod setup_exports;\nmod stage_capture;\n#[cfg(test)]\n",
@@ -103,6 +103,22 @@
         {
           "reference": "    }\n\n    // Compile template with bindings (if present) to get the render function\n",
           "current": "    }\n    ctx.bindings = script_bindings.clone();\n    // Compile template with bindings (if present) to get the render function\n"
+        },
+        {
+          "reference": "    // Register defineEmits bindings visible to the template's render scope.\n    if let Some(ref emits_macro) = ctx.macros.define_emits {\n",
+          "current": "    // Register defineEmits bindings visible to the template's render scope.\n    let mut synthetic_inline_dollar_emit = false;\n    if let Some(ref emits_macro) = ctx.macros.define_emits {\n"
+        },
+        {
+          "reference": "            script_bindings\n                .bindings\n                .entry(\"$emit\".to_compact_string())\n                .or_insert(BindingType::SetupConst);\n",
+          "current": "            if !script_bindings.bindings.contains_key(\"$emit\") {\n                script_bindings\n                    .bindings\n                    .insert(\"$emit\".to_compact_string(), BindingType::SetupConst);\n                synthetic_inline_dollar_emit = true;\n            }\n"
+        },
+        {
+          "reference": "        merge_normal_script_bindings(&mut script_bindings, &normal_script_bindings);\n        merge_normal_script_bindings(&mut ctx.bindings, &normal_script_bindings);\n    }\n",
+          "current": "        merge_normal_script_bindings(&mut script_bindings, &normal_script_bindings);\n        merge_normal_script_bindings(&mut ctx.bindings, &normal_script_bindings);\n        if normal_script_bindings.bindings.contains_key(\"$emit\") {\n            synthetic_inline_dollar_emit = false;\n        }\n    }\n"
+        },
+        {
+          "reference": "    }\n    ctx.bindings = script_bindings.clone();\n    // Compile template with bindings (if present) to get the render function\n",
+          "current": "    }\n    ctx.bindings = script_bindings.clone();\n    if synthetic_inline_dollar_emit {\n        // `$emit` is a setup-context alias for inline render only. Returning it\n        // as authored setup state would reference an undeclared identifier.\n        ctx.bindings.bindings.remove(\"$emit\");\n    }\n    // Compile template with bindings (if present) to get the render function\n"
         }
       ]
     },
