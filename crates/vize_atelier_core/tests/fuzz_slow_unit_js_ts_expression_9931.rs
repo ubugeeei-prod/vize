@@ -1,8 +1,8 @@
 //! Replay of the `js_ts_expression` slow unit from #9931.
 
 use vize_atelier_core::steps::expression::{
-    expression_has_balanced_delimiters, expression_is_safe_to_parse, expression_nesting_depth,
-    prefix_identifiers_in_expression, strip_typescript_from_expression,
+    MAX_EXPRESSION_NESTING_DEPTH, expression_has_balanced_delimiters, expression_is_safe_to_parse,
+    expression_nesting_depth, prefix_identifiers_in_expression, strip_typescript_from_expression,
 };
 
 /// Exact `slow-unit-3464555815191b27223aabc2da2fa2c0f61ea14d` bytes from the
@@ -16,8 +16,10 @@ fn issue_9931_slow_unit_is_rejected_before_parsing() {
     assert_eq!(REPRODUCER.matches('`').count(), 1);
     // The guard's delimiter and depth scans used to accept this malformed
     // template tail, hiding the regex body that OXC spent over a second parsing.
-    assert!(expression_has_balanced_delimiters(REPRODUCER));
-    assert_eq!(expression_nesting_depth(REPRODUCER), 2);
+    // The backtick sits inside the regex OXC reads after `<ep>!!!` (#12772),
+    // so the guard now sees the bracket runs behind it as well.
+    assert!(!expression_has_balanced_delimiters(REPRODUCER));
+    assert!(expression_nesting_depth(REPRODUCER) > MAX_EXPRESSION_NESTING_DEPTH);
     assert!(!expression_is_safe_to_parse(REPRODUCER));
     assert_eq!(
         prefix_identifiers_in_expression(REPRODUCER).as_str(),

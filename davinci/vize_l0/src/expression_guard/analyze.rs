@@ -16,6 +16,29 @@ fn arrow_default_paren_possible(bytes: &[u8], open: usize) -> bool {
     }
 }
 
+/// Whether the next token on the same line is `!` but not `!=`/`!==`. A line
+/// break may let OXC keep the type arguments, so it keeps the division view.
+fn prefix_bang_follows(bytes: &[u8], mut i: usize) -> bool {
+    loop {
+        match bytes.get(i) {
+            Some(b' ' | b'\t' | 0x0b | 0x0c) => i += 1,
+            Some(b'/') if bytes.get(i + 1) == Some(&b'*') => {
+                let end = skip_block_comment(bytes, i + 2);
+                if bytes.get(i..end).is_none_or(|comment| {
+                    comment
+                        .iter()
+                        .any(|byte| matches!(byte, b'\n' | b'\r' | 0xe2))
+                }) {
+                    return false;
+                }
+                i = end;
+            }
+            Some(b'!') => return bytes.get(i + 1) != Some(&b'='),
+            _ => return false,
+        }
+    }
+}
+
 /// Returns the maximum parser-recursion depth in `content`.
 ///
 /// Brackets and unambiguous TypeScript angles are paired, while decorator markers
@@ -243,7 +266,10 @@ pub(super) fn analyze_expression_nesting(content: &str) -> ExpressionNestingAnal
                     malformed_type_escape_opens = 0;
                     track_type_angles = false;
                 }
-                can_start_regex = !closed_type_angle;
+                // OXC refuses type arguments before a same-line prefix `!`
+                // (`a<b>!/re/`), so that `>` was relational and the `!` cannot
+                // be a non-null assertion: a regex follows it (#12772).
+                can_start_regex = !closed_type_angle || prefix_bang_follows(bytes, i + 1);
             }
             b'@' => {
                 decorator_depth += 1;

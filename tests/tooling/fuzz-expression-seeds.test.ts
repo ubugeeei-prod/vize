@@ -102,6 +102,11 @@ test("expression regression corpus seeds every retained campaign artifact byte-f
       "e7af98c99e3f841291f31ed2e56b228a807c71dc41d0ebd41b3720330009b069",
     ],
     [
+      "issue-12772.input",
+      5_966,
+      "322f730c8169c18fe4b1b01aa7682c9c4270da99a2d4713cb79eb9111562cb81",
+    ],
+    [
       "issue-7808.input",
       22_933,
       "8670c91bace6df50473b3ad261b306446fb59b345d8d644a9771aa5aa4a0e5cb",
@@ -150,7 +155,7 @@ test("expression regression corpus seeds every retained campaign artifact byte-f
       { encoding: "utf8", env: { ...process.env, VIZE_REPO_ROOT: root } },
     );
     assert.equal(result.status, 0, `${result.stdout}\n${result.stderr}`);
-    assert.match(result.stdout, /15 JS\/TS expression entries/);
+    assert.match(result.stdout, /16 JS\/TS expression entries/);
     const corpus = path.join(root, "tests/fuzz/corpus/js_ts_expression");
     assert.deepEqual(fs.readdirSync(corpus).sort(), [...seeds.keys()].sort());
     for (const [digest, bytes] of seeds) {

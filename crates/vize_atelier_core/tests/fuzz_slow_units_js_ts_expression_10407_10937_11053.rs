@@ -7,9 +7,11 @@
 //! exact #10401 artifact, which `issue-10401.input` already retains. Every
 //! other artifact is kept byte for byte in the regression corpus, seeded into
 //! the fuzz corpus by `tools/commands/ci/fuzz/seed-corpus.ts`, and replayed
-//! here on the fuzz target's own path: the shared guard admits the input, and
-//! the parser rejects it with a bounded arena instead of speculating for
-//! seconds.
+//! here on the parser: it rejects each input with a bounded arena instead of
+//! speculating for seconds. The shared guard used to admit them because it
+//! read the `/` after their `<ep>!!!` prefix as division, so a backtick inside
+//! OXC's regex hid the bracket runs; since #12772 it rejects them before
+//! parsing, like the fuzz target now does.
 
 use oxc_allocator::Allocator;
 use oxc_parser::Parser;
@@ -55,7 +57,7 @@ const SLOW_UNITS: [(&str, &str, usize); 6] = [
 const ARENA_CEILING_BYTES: usize = 4 * 1024 * 1024;
 
 #[test]
-fn retained_slow_units_are_admitted_and_parse_with_a_bounded_arena() {
+fn retained_slow_units_are_rejected_by_the_guard_and_parse_with_a_bounded_arena() {
     for (name, source, bytes) in SLOW_UNITS {
         assert_eq!(
             source.len(),
@@ -63,8 +65,8 @@ fn retained_slow_units_are_admitted_and_parse_with_a_bounded_arena() {
             "{name} must keep the campaign artifact bytes"
         );
         assert!(
-            expression_is_safe_to_parse(source),
-            "{name} must reach the parser the way the fuzz target replays it"
+            !expression_is_safe_to_parse(source),
+            "{name} keeps its bracket runs visible to the guard"
         );
 
         let allocator = Allocator::default();
