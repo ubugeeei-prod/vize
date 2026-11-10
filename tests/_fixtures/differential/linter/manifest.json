@@ -2837,6 +2837,43 @@
       }
     },
     {
+      "id": "linter/custom-event-update-model-12587",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "custom-event-update-model-12587",
+        "files": [
+          {
+            "path": "ModelEvents.vue.txt",
+            "role": "regression-reproduction-with-invalid-control",
+            "sha256": "aed7ffb3ce475d6cdfa297aff6f319e320ad1f80dd73bed74c2ae36ee204c71b"
+          },
+          {
+            "path": "vite.config.mjs",
+            "role": "native-cli-config",
+            "sha256": "3bf746bc382c6e1430b78c27e2d4dc6db93b7c9f481ad61bc5b8b88237485617"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "js",
+              "ts"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/define-expose-last-6097",
       "state": "active",
       "targets": [

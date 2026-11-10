@@ -66,4 +66,13 @@ defineProps<{ "aria-label": string; disabled: boolean }>()
             diagnostic.rule_name == "script/consistent-props-emits-key-quotes"
         })
     );
+
+    let explicit = Linter::with_preset(LintPreset::Opinionated)
+        .with_additional_rules(vec!["script/consistent-props-emits-key-quotes".into()])
+        .lint_sfc(source, "App.vue");
+    assert!(
+        explicit.diagnostics.iter().any(|diagnostic| {
+            diagnostic.rule_name == "script/consistent-props-emits-key-quotes"
+        })
+    );
 }

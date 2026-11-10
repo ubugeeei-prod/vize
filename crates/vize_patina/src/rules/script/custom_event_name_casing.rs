@@ -355,6 +355,7 @@ fn report(
     result.add_diagnostic(diagnostic);
 }
 
+/// Validate ordinary events while preserving the authored prop name after `update:`.
 fn is_valid_event_name(value: &str, casing: EventNameCasing) -> bool {
     if value
         .strip_prefix("update:")

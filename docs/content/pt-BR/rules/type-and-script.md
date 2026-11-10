@@ -69,14 +69,13 @@ Adicionadas por `happy-path`, a predefinição padrão.
 | <span id="type-require-typed-emits"></span>[`type/require-typed-emits`](./reference/type-require-typed-emits.md) | Exigir uma definição de tipo para defineEmits. |  |
 | <span id="type-require-typed-props"></span>[`type/require-typed-props`](./reference/type-require-typed-props.md) | Exigir uma definição de tipo para defineProps. |  |
 
-## Predefinições mais rígidas (23)
+## Predefinições mais rígidas (22)
 
 Só em `opinionated`, `nuxt` ou `ecosystem`. A coluna Predefinições mostra quais.
 
 | Regra | O que verifica | Predefinições | Correção automática |
 | --- | --- | --- | --- |
 | <span id="script-component-options-name-casing"></span>[`script/component-options-name-casing`](./reference/script-component-options-name-casing.md) | Exigir PascalCase na opção `name` do componente. | `opinionated`, `nuxt` |  |
-| <span id="script-consistent-props-emits-key-quotes"></span>[`script/consistent-props-emits-key-quotes`](./reference/script-consistent-props-emits-key-quotes.md) | Uniformizar chaves entre aspas nas declarações de props e emits. | `opinionated` |  |
 | <span id="script-custom-event-name-casing"></span>[`script/custom-event-name-casing`](./reference/script-custom-event-name-casing.md) | Exigir a capitalização configurada nos nomes de eventos personalizados emitidos. | `opinionated`, `nuxt` |  |
 | <span id="script-define-emits-declaration"></span>[`script/define-emits-declaration`](./reference/script-define-emits-declaration.md) | Exigir a forma de defineEmits&lt;{}&gt;() baseada em tipos em vez da forma em tempo de execução ou de array. | `opinionated`, `nuxt` |  |
 | <span id="script-define-macros-order"></span>[`script/define-macros-order`](./reference/script-define-macros-order.md) | Exigir uma ordem consistente para as macros do compilador Vue em &lt;script setup&gt;. | `opinionated`, `nuxt` |  |
@@ -99,12 +98,13 @@ Só em `opinionated`, `nuxt` ou `ecosystem`. A coluna Predefinições mostra qua
 | <span id="type-no-reactivity-loss"></span>[`type/no-reactivity-loss`](./reference/type-no-reactivity-loss.md) | Proibir cópias estáticas simples de valores reativos em atribuições e chamadas. | `nuxt`, `opinionated` |  |
 | <span id="type-no-unsafe-template-binding"></span>[`type/no-unsafe-template-binding`](./reference/type-no-unsafe-template-binding.md) | Proibir vinculações de template que resultam em tipos inseguros. | `nuxt`, `opinionated` |  |
 
-## Opcionais (15)
+## Opcionais (16)
 
 Não fazem parte de nenhuma predefinição. Ative pelo nome em `linter.rules`, passado a `withVue`.
 
 | Regra | O que verifica | Correção automática |
 | --- | --- | --- |
+| <span id="script-consistent-props-emits-key-quotes"></span>[`script/consistent-props-emits-key-quotes`](./reference/script-consistent-props-emits-key-quotes.md) | Uniformizar chaves entre aspas nas declarações de props e emits. |  |
 | <span id="script-no-next-tick"></span>[`script/no-next-tick`](./reference/script-no-next-tick.md) | Proibir o uso de nextTick() em componentes orientados a Vapor. |  |
 | <span id="script-no-reactive-destructure"></span>[`script/no-reactive-destructure`](./reference/script-no-reactive-destructure.md) | Proibir a desestruturação de objetos reativos que causa perda de reatividade. |  |
 | <span id="script-no-restricted-globals"></span>[`script/no-restricted-globals`](./reference/script-no-restricted-globals.md) | Proibir referências a variáveis globais do ambiente de execução que devem passar por um encapsulamento tipado. |  |

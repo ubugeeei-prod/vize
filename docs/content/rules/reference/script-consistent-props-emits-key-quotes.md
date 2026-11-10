@@ -9,7 +9,7 @@ Require consistent quoted keys in props and emits declarations.
 
 | Default severity | Presets | Automatic fix | Options |
 | --- | --- | --- | --- |
-| `error` | `opinionated` | No | None |
+| `error` | None | No | None |
 
 Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form.
 

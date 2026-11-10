@@ -121,9 +121,56 @@ export function inversePatinaCurrentSource(name: string, body: Buffer): Buffer {
     name,
     inverseEslintVueRulePort(
       name,
-      inversePatinaPublicApiDocs(name, inverseMappedRuleSource(name, body)),
+      inverseFormatterCompatibility(
+        name,
+        inversePatinaPublicApiDocs(name, inverseMappedRuleSource(name, body)),
+      ),
     ),
   );
+}
+
+// Reconstruct the exact pre-formatter-compatibility preset surface before the
+// older eslint-plugin-vue and general-default histories replay their ledgers.
+function inverseFormatterCompatibility(name: string, body: Buffer): Buffer {
+  if (name === "crates/vize_patina/src/linter/script_rules/registry/rules.rs") {
+    identity(body, {
+      bytes: 28379,
+      sha256: "9e5d71af9eb6bf367e7ac7b563035ec583826c62108e931eba4c8ed671ca867c",
+    });
+    const text = body.toString();
+    const after = `    BuiltinScriptRuleEntry { rule_name: RULE_CONSISTENT_PROPS_EMITS_KEY_QUOTES, profile_name: "patina.script_rule.consistent_props_emits_key_quotes", category: "Script", fixable: false, presets: OPT_IN_SCRIPT_PRESETS, rule: &ConsistentPropsEmitsKeyQuotes },`;
+    const before = `    BuiltinScriptRuleEntry { rule_name: RULE_CONSISTENT_PROPS_EMITS_KEY_QUOTES, profile_name: "patina.script_rule.consistent_props_emits_key_quotes", category: "Script", fixable: false, presets: OPINIONATED_ONLY_SCRIPT_PRESETS, rule: &ConsistentPropsEmitsKeyQuotes },`;
+    assert.equal(text.split(after).length, 2, name);
+    const predecessor = Buffer.from(text.replace(after, before));
+    identity(predecessor, {
+      bytes: 28389,
+      sha256: "aac823e2518b0b85b84410054300bcd97754c0ff1c51f8156a0b7985837d903b",
+    });
+    return predecessor;
+  }
+  if (
+    name ===
+    "crates/vize_patina/src/preset/snapshots/vize_patina__preset__tests__lint_preset_rule_membership.snap"
+  ) {
+    identity(body, {
+      bytes: 36173,
+      sha256: "596bea3d1adfe3248dd6ab6ec33bd1666d3f9c1f0f9ce8f8b4b706e1e6b7e370",
+    });
+    const text = body.toString();
+    const marker = `    "script/custom-event-name-casing",\n`;
+    assert.equal(text.split(marker).length, 4, name);
+    const first = text.indexOf(marker);
+    const opinionated = text.indexOf(marker, first + marker.length) + marker.length;
+    const predecessor = Buffer.from(
+      `${text.slice(0, opinionated)}    "script/consistent-props-emits-key-quotes",\n${text.slice(opinionated)}`,
+    );
+    identity(predecessor, {
+      bytes: 36221,
+      sha256: "24982170b23834b4fb93ef32d0751145915d9a4749a8fcc7a4d46b81cc4725e8",
+    });
+    return predecessor;
+  }
+  return body;
 }
 export function currentPresetCases(body: Buffer, essentialCases: string[], manifest: any): any {
   identity(body, {

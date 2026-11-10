@@ -9,7 +9,7 @@ props / emits 宣言で引用符が必須のキーがある場合、すべての
 
 | 既定の重大度 | プリセット | 自動修正 | オプション |
 | --- | --- | --- | --- |
-| `error` | `opinionated` | なし | なし |
+| `error` | なし | なし | なし |
 
 適用範囲：Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。
 

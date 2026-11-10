@@ -58,8 +58,8 @@ fn test_valid_void_not_self_closing() {
 #[test]
 fn plain_html_documents_do_not_receive_vue_self_closing_advice() {
     let linter = create_linter();
-    for filename in ["index.html", "INDEX.HTM"] {
-        let result = linter.lint_template(
+    for filename in ["index.html", "INDEX.HTM", "untitled"] {
+        let result = linter.lint_standalone_html(
             r#"<!doctype html><html><head><meta charset="UTF-8" /></head><body><div id="app"></div></body></html>"#,
             filename,
         );
