@@ -9,6 +9,7 @@
 
 mod bindings;
 mod props;
+pub(in crate::framework::vue) use bindings::Bindings;
 pub use bindings::{ReactiveSource, SetupBinding, SetupBindingKind};
 pub use props::{PropsDestructure, PropsField};
 

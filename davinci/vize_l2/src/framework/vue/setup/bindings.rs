@@ -10,8 +10,8 @@ use super::super::{MacroKind, lookup};
 use super::props::{self, PropsDestructure};
 use alloc::vec::Vec;
 use oxc_ast::ast::{
-    BindingPattern, CallExpression, Expression, ImportDeclaration, ImportDeclarationSpecifier,
-    Statement, VariableDeclarationKind, VariableDeclarator,
+    BindingPattern, CallExpression, Declaration, Expression, ImportDeclaration,
+    ImportDeclarationSpecifier, Statement, VariableDeclarationKind, VariableDeclarator,
 };
 use vize_l0::Span;
 
@@ -120,8 +120,8 @@ fn vue_setup_call(name: &str) -> Option<&'static (&'static str, SetupBindingKind
 
 /// Binding rows plus the local names that alias a Vue reactivity API.
 #[derive(Debug)]
-pub(super) struct Bindings<'a> {
-    pub(super) rows: Vec<SetupBinding>,
+pub(in crate::framework::vue) struct Bindings<'a> {
+    pub(in crate::framework::vue) rows: Vec<SetupBinding>,
     pub(super) props: Option<PropsDestructure>,
     /// `defineProps` destructures the facts do not cover.
     pub(super) unclassified: Vec<Span>,
@@ -129,7 +129,8 @@ pub(super) struct Bindings<'a> {
     pub(super) defaults: Vec<(&'a str, Span)>,
     aliases: Vec<(&'a str, &'static str)>,
     hoist_static: bool,
-    pub(super) overflow: bool,
+    script_setup: bool,
+    pub(in crate::framework::vue) overflow: bool,
 }
 
 impl Default for Bindings<'_> {
@@ -141,12 +142,20 @@ impl Default for Bindings<'_> {
             defaults: Vec::new(),
             aliases: Vec::new(),
             hoist_static: true,
+            script_setup: true,
             overflow: false,
         }
     }
 }
 
 impl<'a> Bindings<'a> {
+    pub(in crate::framework::vue) fn ordinary() -> Self {
+        Self {
+            script_setup: false,
+            ..Self::default()
+        }
+    }
+
     pub(super) fn set_hoist_static(&mut self, enabled: bool) {
         self.hoist_static = enabled;
     }
@@ -176,7 +185,7 @@ impl<'a> Bindings<'a> {
         self.rows.push(SetupBinding { name, kind, source });
     }
 
-    pub(super) fn statement(&mut self, base: u32, statement: &Statement<'a>) {
+    pub(in crate::framework::vue) fn statement(&mut self, base: u32, statement: &Statement<'a>) {
         match statement {
             Statement::ImportDeclaration(import) if !import.import_kind.is_type() => {
                 self.import(base, import);
@@ -197,6 +206,45 @@ impl<'a> Bindings<'a> {
                 }
             }
             Statement::TSEnumDeclaration(enumeration) if !enumeration.declare => {
+                let kind = if enumeration
+                    .body
+                    .members
+                    .iter()
+                    .all(|member| member.initializer.as_ref().is_none_or(is_static_node))
+                {
+                    SetupBindingKind::LiteralConst
+                } else {
+                    SetupBindingKind::SetupConst
+                };
+                self.push(base, enumeration.id.span, kind);
+            }
+            Statement::ExportNamedDeclaration(export) if !self.script_setup => {
+                if let Some(declaration) = &export.declaration {
+                    self.declaration(base, declaration);
+                }
+            }
+            _ => {}
+        }
+    }
+
+    fn declaration(&mut self, base: u32, declaration: &Declaration<'a>) {
+        match declaration {
+            Declaration::VariableDeclaration(declaration) if !declaration.declare => {
+                for declarator in &declaration.declarations {
+                    self.declarator(base, declaration.kind, declarator);
+                }
+            }
+            Declaration::FunctionDeclaration(function) if !function.declare => {
+                if let Some(id) = &function.id {
+                    self.push(base, id.span, SetupBindingKind::SetupConst);
+                }
+            }
+            Declaration::ClassDeclaration(class) if !class.declare => {
+                if let Some(id) = &class.id {
+                    self.push(base, id.span, SetupBindingKind::SetupConst);
+                }
+            }
+            Declaration::TSEnumDeclaration(enumeration) if !enumeration.declare => {
                 let kind = if enumeration
                     .body
                     .members
@@ -310,7 +358,9 @@ impl<'a> Bindings<'a> {
         };
         let callee = callee.name.as_str();
         let is_const = kind == VariableDeclarationKind::Const;
-        if let Some(row) = lookup(callee).filter(|row| row.builtin) {
+        if self.script_setup
+            && let Some(row) = lookup(callee).filter(|row| row.builtin)
+        {
             return match (is_const, row.kind) {
                 (true, MacroKind::DefineProps) => (
                     SetupBindingKind::SetupReactiveConst,
