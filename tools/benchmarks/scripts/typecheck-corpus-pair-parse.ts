@@ -137,6 +137,7 @@ export function runOrder<T>(variants: readonly T[], run: number): T[] {
   return run % 2 === 0 ? [...variants] : [...variants].reverse();
 }
 
+/** Fail when any paired base/head diagnostic fingerprint differs. */
 export function assertExactDiagnosticFingerprints(
   pairs: Array<{ label: string; base: string; head: string }>,
 ): void {
@@ -206,6 +207,7 @@ export function replyShape(result: Record<string, unknown>): ReplyShape {
   };
 }
 
+/** Combine authored byte context with the mapper response's exact generated shape. */
 export function probeRecord(
   pid: number,
   fileName: string,

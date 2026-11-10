@@ -47,6 +47,7 @@ const fromMapper = frameReader();
 type TransformInput = { fileName: string; sourceBytes: number; templateBytes: number };
 const transforms = new Map<string, TransformInput>();
 
+/** Measure the exact authored SFC and template-content UTF-8 bytes. */
 function transformInput(fileName: string, source: string): TransformInput {
   const parsed = parse(source, { filename: fileName, sourceMap: false });
   if (parsed.errors.length > 0) {

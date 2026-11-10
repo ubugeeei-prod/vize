@@ -126,6 +126,7 @@ const cost = (
   checkMs: check.size > 0 ? (check.get(file) ?? 0) : null,
 });
 
+/** Compare exact per-SFC inputs and generated costs across base, head and Vue. */
 export function projectionReport(
   corpus: string,
   sources: Record<
@@ -182,6 +183,7 @@ export function projectionReport(
   };
 }
 
+/** Fail after reports are persisted if any Vize head projection exceeds Vue. */
 export function assertProjectionBudget(reports: ProjectionReport[]): void {
   const violations = reports.flatMap((report) =>
     report.violations.map((file) => `${report.corpus}/${file}`),
@@ -189,6 +191,7 @@ export function assertProjectionBudget(reports: ProjectionReport[]): void {
   assert.equal(violations.length, 0, `Vize head exceeds Vue for ${violations.join(", ")}`);
 }
 
+/** Require exact base/head diagnostic fingerprints for every corpus and host. */
 export function assertProbeDiagnosticIdentity(
   probes: ReadonlyMap<string, { fingerprint: string }>,
   corpora: readonly { id: string }[],
@@ -211,6 +214,7 @@ const kb = (bytes: number) => (bytes / 1024).toFixed(1);
 const ms = (value: number | null) => (value == null ? "n/a" : value.toFixed(1));
 const ratio = (value: number, of: number) => (of > 0 ? `${(value / of).toFixed(2)}×` : "n/a");
 
+/** Render one stable per-SFC comparison table. */
 function table(title: string, rows: ProjectionRow[]): string[] {
   return [
     `#### ${title}`,
@@ -228,6 +232,7 @@ function table(title: string, rows: ProjectionRow[]): string[] {
 const busy = (threads: number[]) =>
   threads.length > 0 ? threads.map((value) => value.toFixed(0)).join(" / ") : "n/a";
 
+/** Render authored context and the three projection providers without changing evidence. */
 export function renderProjection(report: ProjectionReport, top = 15): string {
   const { authored, totals } = report;
   const by = (key: (row: ProjectionRow) => number) =>
