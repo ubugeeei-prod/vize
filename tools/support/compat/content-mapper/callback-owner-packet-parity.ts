@@ -438,6 +438,8 @@ export function assertPreservedCallbackPacket(
   assert.equal(typeof after.text, "string");
   if (before.text === after.text) {
     if (isDeepStrictEqual(after, before)) return;
+    const hoverSuccessor = withComponentPropHoverOwnership(before, after);
+    if (isDeepStrictEqual(after, hoverSuccessor)) return;
     // #12520: the only certified mapping-only change unmaps loop replay aliases.
     const replaySuccessor = withoutReplayAliasRows(before);
     if (isDeepStrictEqual(after, replaySuccessor)) return;
