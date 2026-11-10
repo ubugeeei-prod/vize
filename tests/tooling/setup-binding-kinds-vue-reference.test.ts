@@ -15,6 +15,9 @@ type ReferencePack = {
   fixtures: ReferenceFixture[];
 };
 
+const sortBindingEntries = (left: [string, string], right: [string, string]) =>
+  left[0].localeCompare(right[0]);
+
 const stableVueRequire = createRequire(new URL("../../npm/devtools/package.json", import.meta.url));
 const compiler = stableVueRequire("@vue/compiler-sfc") as {
   parse(source: string, options: { filename: string }): { descriptor: unknown; errors: unknown[] };
@@ -46,8 +49,12 @@ test("setup binding reference equals pinned Vue compileScript metadata", () => {
       id: fixture.id,
       hoistStatic: fixture.hoistStatic ?? true,
     });
-    const actual = Object.fromEntries(Object.entries(compiled.bindings).toSorted());
-    const expected = Object.fromEntries(Object.entries(fixture.referenceBindings).toSorted());
+    const actual = Object.fromEntries(
+      Object.entries(compiled.bindings).toSorted(sortBindingEntries),
+    );
+    const expected = Object.fromEntries(
+      Object.entries(fixture.referenceBindings).toSorted(sortBindingEntries),
+    );
     assert.deepEqual(actual, expected, fixture.id);
   }
 });
