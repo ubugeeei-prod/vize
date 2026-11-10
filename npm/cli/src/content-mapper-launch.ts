@@ -13,6 +13,7 @@ const MAX_HEADER_BYTES = 8 * 1024;
 const MAX_MESSAGE_BYTES = 64 * 1024 * 1024;
 const idle = new Int32Array(new SharedArrayBuffer(4));
 
+/** Error raised when the launcher receives invalid or incomplete content-mapper framing. */
 export class ContentMapperFramingError extends Error {}
 
 function readSome(buffer: Buffer, offset: number, length: number): number {
