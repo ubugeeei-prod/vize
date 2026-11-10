@@ -228,3 +228,102 @@ fn one_observer_refuses_a_second_program() {
     }
     assert_eq!(observer.finish(), Err(SetupFactsIncomplete::SecondProgram));
 }
+
+/// `(native keys, unclassified)` of a `<script setup lang="ts">` body.
+fn runtime_keys(script: &str) -> Option<(Vec<String>, Vec<String>)> {
+    let source = cstr!("<script setup lang=\"ts\">{script}</script>");
+    let (content, base, facts) = observe(&source)?;
+    let facts = facts.ok()?;
+    let slices = |spans: &[vize_l0::Span]| {
+        spans
+            .iter()
+            .map(|span| slice(&content, base, *span).unwrap_or_default())
+            .collect()
+    };
+    Some((
+        slices(facts.runtime_prop_keys()),
+        slices(facts.unclassified()),
+    ))
+}
+
+#[test]
+fn runtime_prop_keys_are_read_like_vue() {
+    let keys = |script| runtime_keys(script).map(|(keys, _)| keys);
+    assert_eq!(
+        keys("defineProps(['a', \"b\", c, `d`])"),
+        Some(vec![text("a"), text("b")])
+    );
+    assert_eq!(
+        keys(
+            "const props = defineProps({ a: String, /** doc */ 'b-c': { type: Number, required: true },\n\
+             ['d']: Object, [e]: Object, ...base, 1: Object, f() {} })"
+        ),
+        Some(vec![text("a"), text("b-c"), text("d"), text("f")])
+    );
+    assert_eq!(
+        keys("const props = withDefaults(defineProps({ g: String }), {})"),
+        Some(vec![text("g")])
+    );
+    // Vue reads the argument as written; a wrapper declares no keys.
+    assert_eq!(keys("defineProps({ h: String } as any)"), Some(Vec::new()));
+    assert_eq!(keys("defineProps<{ i: string }>()"), Some(Vec::new()));
+    assert_eq!(
+        runtime_keys("defineProps({ 'a\\u0062': String, c: String })"),
+        Some((Vec::new(), vec![text("'a\\u0062'")]))
+    );
+}
+
+/// Runtime keys equal the names Croquis records for a `defineProps` whose
+/// only argument is an array or object literal without spreads.
+#[test]
+fn every_corpus_runtime_prop_key_matches_croquis() {
+    let (root, files) = corpus();
+    let (mut compared, mut keys) = (0usize, 0usize);
+    let mut mismatches = Vec::new();
+    for file in &files {
+        let Ok(source) = std::fs::read_to_string(file) else {
+            continue;
+        };
+        let Some((content, base, Ok(facts))) = observe(&source) else {
+            continue;
+        };
+        let parsed = vize_croquis::script_parser::parse_script_setup(&content);
+        let Some(call) = parsed.macros.define_props() else {
+            continue;
+        };
+        let args = call.runtime_args.as_deref().unwrap_or_default().trim();
+        if call.type_args.is_some()
+            || args.contains("...")
+            || !(args.starts_with('[') || args.starts_with('{'))
+        {
+            continue;
+        }
+        compared += 1;
+        let mut native: Vec<String> = facts
+            .runtime_prop_keys()
+            .iter()
+            .map(|span| slice(&content, base, *span).unwrap_or_default())
+            .collect();
+        let mut oracle: Vec<String> = parsed
+            .macros
+            .props()
+            .iter()
+            .map(|prop| String::from(prop.name.as_str()))
+            .collect();
+        native.sort();
+        oracle.sort();
+        keys += native.len();
+        if native != oracle || !facts.unclassified().is_empty() {
+            let relative = file.strip_prefix(&root).unwrap_or(file).display();
+            mismatches.push(cstr!(
+                "{relative}\n  native:  {native:?}\n  croquis: {oracle:?}"
+            ));
+        }
+    }
+    eprintln!("compared {keys} runtime prop keys in {compared} setup scripts");
+    assert!(
+        compared > 10,
+        "corpus shrank to {compared} runtime declarations"
+    );
+    assert_eq!(mismatches, Vec::<String>::new());
+}

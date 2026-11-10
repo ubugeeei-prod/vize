@@ -1,4 +1,5 @@
-//! The locals of a `defineProps` destructure.
+//! The runtime-declared prop keys of `defineProps`, and the locals of a
+//! `defineProps` destructure.
 //!
 //! `const { a, b: c = 1, ...rest } = defineProps()` reads prop `a` as `a`,
 //! prop `b` as `c` with default `1`, and the remaining props as `rest`. Vue
@@ -7,7 +8,10 @@
 
 use super::bindings::{SetupBinding, SetupBindingKind};
 use alloc::vec::Vec;
-use oxc_ast::ast::{BindingPattern, ObjectPattern, PropertyKey};
+use oxc_ast::ast::{
+    Argument, ArrayExpressionElement, BindingPattern, ObjectPattern, ObjectPropertyKind,
+    PropertyKey, StringLiteral,
+};
 use oxc_span::GetSpan;
 use vize_l0::Span;
 
@@ -33,6 +37,54 @@ pub struct PropsField {
     pub default: Option<Span>,
 }
 
+/// The string-named keys of a `defineProps` runtime declaration, read as
+/// Vue's `getObjectOrArrayExpressionKeys` reads them: the string elements of
+/// an array; the identifier and string-literal keys of an object, spreads
+/// skipped. The argument is not unwrapped, as in Vue. Numeric keys name no
+/// binding a template can read. `Err` is a string key whose text is not its
+/// source text (an escape).
+pub(super) fn runtime_keys(
+    argument: Option<&Argument<'_>>,
+    mut authored: impl FnMut(oxc_span::Span) -> Span,
+) -> Result<Vec<Span>, Span> {
+    let string = |literal: &StringLiteral<'_>| string_key(literal).ok_or(literal.span);
+    let mut keys = Vec::new();
+    match argument {
+        Some(Argument::ArrayExpression(array)) => {
+            for element in &array.elements {
+                if let ArrayExpressionElement::StringLiteral(literal) = element {
+                    keys.push(string(literal));
+                }
+            }
+        }
+        Some(Argument::ObjectExpression(object)) => {
+            for property in &object.properties {
+                let ObjectPropertyKind::ObjectProperty(property) = property else {
+                    continue;
+                };
+                match &property.key {
+                    PropertyKey::StaticIdentifier(id) => keys.push(Ok(id.span)),
+                    PropertyKey::StringLiteral(literal) => keys.push(string(literal)),
+                    _ => {}
+                }
+            }
+        }
+        _ => {}
+    }
+    keys.into_iter()
+        .map(|key| match key {
+            Ok(span) => Ok(authored(span)),
+            Err(span) => Err(authored(span)),
+        })
+        .collect()
+}
+
+/// The span of a string literal's contents, when they are its source text.
+fn string_key(literal: &StringLiteral<'_>) -> Option<oxc_span::Span> {
+    (literal.value.len() + 2 == literal.span.size() as usize)
+        .then(|| oxc_span::Span::new(literal.span.start + 1, literal.span.end - 1))
+}
+
 /// The destructure and its bindings, or `None` for a pattern Vue rejects
 /// (computed or numeric key, nested pattern) or one whose key text is not
 /// its source text (an escaped string literal).
@@ -45,12 +97,7 @@ pub(super) fn destructure(
     for property in &pattern.properties {
         let (key, key_span) = match &property.key {
             PropertyKey::StaticIdentifier(id) if !property.computed => (id.name.as_str(), id.span),
-            PropertyKey::StringLiteral(literal)
-                if literal.value.len() + 2 == literal.span.size() as usize =>
-            {
-                let inner = oxc_span::Span::new(literal.span.start + 1, literal.span.end - 1);
-                (literal.value.as_str(), inner)
-            }
+            PropertyKey::StringLiteral(literal) => (literal.value.as_str(), string_key(literal)?),
             _ => return None,
         };
         let (local, default) = match &property.value {
