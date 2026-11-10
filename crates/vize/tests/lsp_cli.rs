@@ -60,6 +60,50 @@ fn lsp_exit_notification_terminates_process_while_stdin_stays_open() {
     assert!(status.success(), "LSP exited with {status}");
 }
 
+#[test]
+fn lsp_stdio_eof_terminates_with_an_unanswered_server_request() {
+    let project = tempfile::tempdir().unwrap();
+    let root_uri = file_uri(project.path());
+    let mut lsp = LspProcess::spawn(project.path());
+
+    lsp.send(json!({
+        "jsonrpc": "2.0",
+        "id": 1,
+        "method": "initialize",
+        "params": {
+            "processId": null,
+            "rootUri": root_uri,
+            "capabilities": {
+                "workspace": {
+                    "didChangeWatchedFiles": { "dynamicRegistration": true }
+                }
+            },
+            "initializationOptions": {
+                "lint": false,
+                "typecheck": false,
+                "ecosystem": false
+            }
+        }
+    }));
+    let initialize = lsp.recv_response(1);
+    assert!(initialize["result"].is_object(), "{initialize:#}");
+
+    lsp.send(json!({
+        "jsonrpc": "2.0",
+        "method": "initialized",
+        "params": {}
+    }));
+    let registration = lsp
+        .recv_matching(|message| message["method"].as_str() == Some("client/registerCapability"));
+    assert!(registration["id"].is_number(), "{registration:#}");
+
+    // Deliberately leave the server request unanswered. `tower-lsp` normally
+    // drains that in-flight handler after input EOF, which made a stdio server
+    // outlive its editor and any native backend owned by the service.
+    let status = lsp.wait_for_transport_eof();
+    assert!(status.success(), "LSP exited with {status}");
+}
+
 /// Neovim's default exit (`exit_timeout = false`) sends `shutdown` and then
 /// closes the server's pipes without waiting, so the server's next log write
 /// hits a closed stderr. Found by TS-45 (P5-12): the tracing subscriber's

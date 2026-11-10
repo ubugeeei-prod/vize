@@ -1,0 +1,79 @@
+{
+  "diagnostics": {
+    "baseline": [
+      "src/GraphAnd3D.vue\terror:59:12 [TS18048] 'selectedNode.data' is possibly 'undefined'. (source: {{ selectedNode.data.label }}: {{ selectedNode.data.status }})",
+      "src/GraphAnd3D.vue\terror:59:43 [TS18048] 'selectedNode.data' is possibly 'undefined'. (source: {{ selectedNode.data.label }}: {{ selectedNode.data.status }})"
+    ],
+    "negative": [
+      "src/ComposablesAndRouting.vue\terror:139:19 [TS18048] 'errors.email' is possibly 'undefined'. (source: <span v-if=\"errors.email.missing\">{{ errors.email.toFixed() }}</span>; binding: v-if)",
+      "src/ComposablesAndRouting.vue\terror:139:32 [TS2339] Property 'missing' does not exist on type 'string'. (source: <span v-if=\"errors.email.missing\">{{ errors.email.toFixed() }}</span>; binding: v-if)",
+      "src/ComposablesAndRouting.vue\terror:139:44 [TS18048] 'errors.email' is possibly 'undefined'. (source: <span v-if=\"errors.email.missing\">{{ errors.email.toFixed() }}</span>)",
+      "src/ComposablesAndRouting.vue\terror:139:57 [TS2551] Property 'toFixed' does not exist on type 'string'. Did you mean 'fixed'? (source: <span v-if=\"errors.email.missing\">{{ errors.email.toFixed() }}</span>)",
+      "src/GraphAnd3D.vue\terror:56:49 [TS2339] Property 'missing' does not exist on type 'GraphNode<any, any, string>'. (source: @node-click=\"selectedNodeId = $event.node.missing\")",
+      "src/MediaAndDataViz.vue\terror:107:8 [TS2322] Type 'string' is not assignable to type 'ItemSizeValue<{ id: string; name: string; downloads: number; }> | undefined'. (source: :item-size=\"'forty-four'\"; binding: 'item-size')",
+      "src/MediaAndDataViz.vue\terror:112:25 [TS2339] Property 'missing' does not exist on type '{ id: string; name: string; downloads: number; }'. (source: <strong>{{ item.missing }}</strong>)",
+      "src/NaiveUiOptionsApi.vue\terror:82:57 [TS2339] Property 'missing' does not exist on type 'MouseEvent'. (source: <NButton type=\"primary\" @click=\"markReviewed($event.missing)\">; binding: @click)",
+      "src/PrimeVueOptionsApi.vue\terror:58:35 [TS2339] Property 'missing' does not exist on type 'PointerEvent'. (source: @click=\"chooseAction($event.missing)\")",
+      "src/UiLibraries.vue\terror:91:60 [TS2339] Property 'missing' does not exist on type 'string'. (source: :filter-option=\"(inputValue, option) => inputValue.missing > 0 && option?.value !== undefined\")",
+      "src/UiLibraries.vue\terror:92:10 [TS2322] Type '(left: DefaultOptionType, right: DefaultOptionType) => string' is not assignable to type '(optionA: DefaultOptionType, optionB: DefaultOptionType) => number'.\nType 'string' is not assignable to type 'number'. (source: :filter-sort=\"(left, right) => `${left.value}:${right.value}`\"; binding: 'filter-sort')",
+      "src/UiLibraries.vue\terror:95:61 [TS2339] Property 'missing' does not exist on type 'MouseEvent'. (source: <AButton type=\"primary\" @click=\"promoteLibrary($event.missing)\">Promote</AButton>; binding: @click)"
+    ],
+    "positive": []
+  },
+  "inputSha256": {
+    "ComposablesAndRouting.vue": "81384997abaf81d54836dd2058bd77ca8fbdff8f9204121e333a0d6175832d9f",
+    "GraphAnd3D.vue": "108353622f169dc1db0fb2bde4701bdb6c035d0b34c2cc68ed2c7af536dcf94b",
+    "MediaAndDataViz.vue": "fbd8e8a49a6d317bef2fe247a6c91cfd5b5d072d85399a8787fc7cc7c36a1b20",
+    "NaiveUiOptionsApi.vue": "c7965480f191466ff7378c7fd3c68a65f89a2d3cb0a833ef089532649479253c",
+    "PrimeVueOptionsApi.vue": "6ec0ef530da5c3666e25311ec02d6790d87cd323bacaf1fddea1b281ba1f14ce",
+    "UiLibraries.vue": "6c6882959fd28449603ad9d08031137aa0e55d6d4f73c360f6844b299d94522c"
+  },
+  "historicalPackets": [
+    {
+      "qualificationRun": "https://github.com/ubugeeei-prod/vize/actions/runs/42774147966",
+      "source": "a4a920e7869428084c62f479d30dc724d394f54b",
+      "supersededBy": "#12602 / 65759c7bb9fd92959632cf7dac698e1547df13dd",
+      "unchanged": "diagnostics, inputSha256, and every generated hash except the three UiLibraries.vue entries",
+      "virtualTsSha256Delta": {
+        "baseline": "b80d731332ea85227df1f8932e870216794fe00bd9a3d17382be1477a9e3b449",
+        "negative": "17068ae182b9c9cc5d16ec59d4f1d6fc8a79d012997c2659538ab3bf938d4f58",
+        "positive": "7b0ac400ae2f6ac6c245224efcd122c1639bc606e105dbf46dfe742de08fcaba"
+      }
+    }
+  ],
+  "virtualTsSha256": {
+    "baseline": {
+      "src/ComposablesAndRouting.vue": "c0dcc90d54930eddac022521b4e69cb1736ae0f6033201c303a7ce4599eaa10b",
+      "src/GraphAnd3D.vue": "5cdda8e5a1bef268d3eca613f8197bde4b5e46c09244df2d977ef5414c5fe2f0",
+      "src/MediaAndDataViz.vue": "32e6b209ae637ee09c2732946b6855754e5c18966d95d28f83dbbdb13da5ba3b",
+      "src/NaiveUiOptionsApi.vue": "256a5c7ed39f18f826ea72f4b5d9077912a97aa5524425ed99a575a15eb75553",
+      "src/PrimeVueOptionsApi.vue": "9979307a1d210b04e9fd207103b8ee73e3a9e3171f4380105088ba85ef8b486a",
+      "src/UiLibraries.vue": "4c84bdb50e0368f1299c7040a41407eedaa5c74e1b52a7b4e649af71ed1a92b7",
+      "src/types.ts": "fd3d5212f52dd73c3ada8bcfd804262bddba7dacf8f9f62e749c4ad072ac773b",
+      "src/vendors/nuxt-ui-component.ts": "335393724dae043a042cb96e66622d5b329bb2614bdcda915ca1403e6b4d3429",
+      "src/vendors/vue-select.ts": "e2a9154cbef22004c61d9fedb2610eda4842466066b4a20ec8a0933755fc9e57"
+    },
+    "negative": {
+      "src/ComposablesAndRouting.vue": "ce0f2f7fbc9057a29acaba15dae0b811a2b33323467faa313bc8fdff5b640d2b",
+      "src/GraphAnd3D.vue": "759444765723d5d914a58f97a30504f4b83f0d6366820bdbc2c7dd6b4e6a7fea",
+      "src/MediaAndDataViz.vue": "485185cdac4d141d68d93454e7013e4f4024a481d1a4e79dd1a95ea65370708e",
+      "src/NaiveUiOptionsApi.vue": "a133417fc0a6e1abf61f253512bbe5ab40eaccd953572908b3a4ac9329c256e6",
+      "src/PrimeVueOptionsApi.vue": "cadb193b387808c171a8a73ec1aba9a9ed861462c906fd8cb630932654741e50",
+      "src/UiLibraries.vue": "0a74b27a1be01291a3be48bb8c2a785d5990716036a88798fc9f250b93b070f6",
+      "src/types.ts": "fd3d5212f52dd73c3ada8bcfd804262bddba7dacf8f9f62e749c4ad072ac773b",
+      "src/vendors/nuxt-ui-component.ts": "335393724dae043a042cb96e66622d5b329bb2614bdcda915ca1403e6b4d3429",
+      "src/vendors/vue-select.ts": "e2a9154cbef22004c61d9fedb2610eda4842466066b4a20ec8a0933755fc9e57"
+    },
+    "positive": {
+      "src/ComposablesAndRouting.vue": "c0dcc90d54930eddac022521b4e69cb1736ae0f6033201c303a7ce4599eaa10b",
+      "src/GraphAnd3D.vue": "65db07ed87ecf777b9f21ca5526f0493cef2f9b7017d0651fefd6df01b7e0c38",
+      "src/MediaAndDataViz.vue": "32e6b209ae637ee09c2732946b6855754e5c18966d95d28f83dbbdb13da5ba3b",
+      "src/NaiveUiOptionsApi.vue": "256a5c7ed39f18f826ea72f4b5d9077912a97aa5524425ed99a575a15eb75553",
+      "src/PrimeVueOptionsApi.vue": "9979307a1d210b04e9fd207103b8ee73e3a9e3171f4380105088ba85ef8b486a",
+      "src/UiLibraries.vue": "1ad7450734d9e57be62b5e4da14ed3b35d6ab0f92d88c37f099df26c3cd77e20",
+      "src/types.ts": "fd3d5212f52dd73c3ada8bcfd804262bddba7dacf8f9f62e749c4ad072ac773b",
+      "src/vendors/nuxt-ui-component.ts": "335393724dae043a042cb96e66622d5b329bb2614bdcda915ca1403e6b4d3429",
+      "src/vendors/vue-select.ts": "e2a9154cbef22004c61d9fedb2610eda4842466066b4a20ec8a0933755fc9e57"
+    }
+  }
+}

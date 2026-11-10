@@ -76,3 +76,15 @@ including printed cursors and speculative view limits. Unit controls compare
 both answers with those original predicates at every valid query offset, cursor
 and view limit; public script controls retain whole outputs and fixed points.
 The original formatter instruction probes and ceilings remain unchanged.
+
+## Verbatim host spans
+
+`ExternalCallbacks::with_verbatim_spans` lists host nodes an embedding grammar
+owns: an empty JSX fragment or function body whose span is listed prints its
+source text through `FormatSuppressedNode`, the printer an `oxfmt-ignore`
+comment selects (`AnyJsxTagWithChildren` in `print/jsx/element.rs`, and the
+`FunctionBody` writer in `print/function.rs` after its leading space and
+comments). The generated node dispatch is unchanged. `format_parse_options`
+exposes the options `parse_for_format` uses, so a caller that registers a
+markup grammar on the parser (#6858, TSRX) builds the same AST. With no spans
+listed the check is one length test; every other formatter path is unchanged.

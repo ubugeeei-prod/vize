@@ -117,7 +117,7 @@ impl CoreVisitor<'_, '_> {
 
 impl<'a> Visit<'a> for CoreVisitor<'_, '_> {
     fn visit_identifier_reference(&mut self, identifier: &IdentifierReference<'a>) {
-        if matches!(self.kind, CoreKind::Camelcase) && has_internal_underscore(&identifier.name) {
+        if matches!(self.kind, CoreKind::Camelcase) && is_underscored_identifier(&identifier.name) {
             self.report(identifier.span);
         }
         walk::walk_identifier_reference(self, identifier);
@@ -227,7 +227,7 @@ impl<'a> Visit<'a> for CoreVisitor<'_, '_> {
 
     fn visit_unary_expression(&mut self, unary: &UnaryExpression<'a>) {
         if matches!(self.kind, CoreKind::NoImplicitCoercion)
-            && (unary.operator == UnaryOperator::UnaryPlus
+            && ((unary.operator == UnaryOperator::UnaryPlus && !is_numeric(&unary.argument))
                 || (unary.operator == UnaryOperator::LogicalNot
                     && matches!(
                         unary.argument.get_inner_expression(),
@@ -280,8 +280,21 @@ impl<'a> Visit<'a> for CoreVisitor<'_, '_> {
     }
 }
 
-fn has_internal_underscore(name: &str) -> bool {
-    name.trim_matches('_').contains('_')
+fn is_underscored_identifier(name: &str) -> bool {
+    let body = name.trim_matches('_');
+    body.contains('_') && body != body.to_uppercase()
+}
+
+fn is_numeric(expression: &Expression<'_>) -> bool {
+    match expression.get_inner_expression() {
+        Expression::NumericLiteral(_) => true,
+        Expression::CallExpression(call) => matches!(
+            call.callee.get_inner_expression(),
+            Expression::Identifier(identifier)
+                if matches!(identifier.name.as_str(), "Number" | "parseInt" | "parseFloat")
+        ),
+        _ => false,
+    }
 }
 
 fn is_identifier_name(name: &str) -> bool {

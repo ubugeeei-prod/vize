@@ -18,19 +18,27 @@ pub(super) fn create_serve_plan(args: &ServeArgs, cwd: &Path) -> Result<ServePla
         ));
     }
 
-    let program = match resolve_vite_binary(cwd) {
-        Some(program) => program,
+    let project_root = match setup::find_direct_vite_musea_root(cwd) {
+        Some(root) => root,
         None if let Some(nuxt_root) = find_nuxt_project_root(cwd) => {
             return Err(nuxt_musea_message(&nuxt_root, args.build));
         }
-        None => PathBuf::from("vite"),
-    };
-    if let Err(message) = validate_direct_vite_musea_setup(cwd) {
-        if let Some(nuxt_root) = find_nuxt_project_root(cwd) {
-            return Err(nuxt_musea_message(&nuxt_root, args.build));
+        None => {
+            validate_direct_vite_musea_setup(cwd)?;
+            return Err(cstr!(
+                "vize musea: could not determine the direct Musea project root"
+            ));
         }
-        return Err(message);
-    }
+    };
+    let program = resolve_vite_runner(&project_root).unwrap_or_else(|| {
+        PathBuf::from(
+            if setup::package_json_has_dependency(&project_root, "vite-plus") {
+                "vp"
+            } else {
+                "vite"
+            },
+        )
+    });
     let mut env = Vec::new();
     if let Some(config_path) = &args.config {
         env.push((
@@ -69,7 +77,12 @@ pub(super) fn create_serve_plan(args: &ServeArgs, cwd: &Path) -> Result<ServePla
     })
 }
 
+#[cfg(test)]
 pub(super) fn resolve_vite_binary(cwd: &Path) -> Option<PathBuf> {
+    resolve_binary(cwd, VITE_BIN_NAMES)
+}
+
+pub(super) fn resolve_vite_runner(cwd: &Path) -> Option<PathBuf> {
     for ancestor in cwd.ancestors() {
         let bin_dir = ancestor.join("node_modules").join(".bin");
         for name in VITE_BIN_NAMES {
@@ -78,8 +91,25 @@ pub(super) fn resolve_vite_binary(cwd: &Path) -> Option<PathBuf> {
                 return Some(candidate);
             }
         }
+        for name in VITE_PLUS_BIN_NAMES {
+            let candidate = bin_dir.join(name);
+            if candidate.is_file() {
+                return Some(candidate);
+            }
+        }
     }
     None
+}
+
+#[cfg(test)]
+fn resolve_binary(cwd: &Path, names: &[&str]) -> Option<PathBuf> {
+    cwd.ancestors().find_map(|ancestor| {
+        let bin_dir = ancestor.join("node_modules").join(".bin");
+        names
+            .iter()
+            .map(|name| bin_dir.join(name))
+            .find(|candidate| candidate.is_file())
+    })
 }
 
 fn find_nuxt_project_root(cwd: &Path) -> Option<PathBuf> {
@@ -127,3 +157,9 @@ pub(super) const VITE_BIN_NAMES: &[&str] = &["vite.cmd", "vite.ps1", "vite"];
 
 #[cfg(not(windows))]
 pub(super) const VITE_BIN_NAMES: &[&str] = &["vite"];
+
+#[cfg(windows)]
+pub(super) const VITE_PLUS_BIN_NAMES: &[&str] = &["vp.cmd", "vp.ps1", "vp"];
+
+#[cfg(not(windows))]
+pub(super) const VITE_PLUS_BIN_NAMES: &[&str] = &["vp"];

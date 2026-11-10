@@ -1,0 +1,90 @@
+{
+  "schema": "vize.instance-global-current-provenance",
+  "version": 1,
+  "issue": 10617,
+  "pullRequest": 12603,
+  "producer": {
+    "sourceRevision": "f29a8ee589997f08d4c72addca1fd4fe1fd69f95",
+    "sourceTree": "9b85b3f050e63da39ffb2d61d7a06a57dc0b4dd8",
+    "pullRequestHead": "4808c05a1a0e2fe769f132b5b79224922250736a",
+    "binarySha256": "381194f4e9a9624af031333479da1db14dd6b49fe5f62b1dad4b26beebe02a7c",
+    "recipe": "cargo build --profile ci -p vize",
+    "captureRun": 42772339922,
+    "artifactId": 13742224501,
+    "runAttempt": 1,
+    "platform": "linux",
+    "arch": "x64"
+  },
+  "artifact": {
+    "repository": "ubugeeei-prod/vize",
+    "run": 42772339922,
+    "job": 129684248644,
+    "id": 13742224501,
+    "name": "instance-globals-tooling-15-42772339922-1",
+    "digest": "sha256:562e1bc06c236903cb89ce8fd49881919870d76846c2599e6539b725f2deeeb7",
+    "bytes": 393773
+  },
+  "previousPopulation": {
+    "path": "source-packets-current-b6b4bbb0a16a.json",
+    "bytes": 419180,
+    "sha256": "3332986082728aacb6bb6ea8bcd1ab81b3c3ef398ea807347f29e99aa74fb7ca"
+  },
+  "successorPopulation": {
+    "path": "source-packets-current-f29a8ee58999.json",
+    "bytes": 419557,
+    "sha256": "c5318722198f96647551a7eae5b123e95d5cf2f1087cbf99753de78326ec17df"
+  },
+  "sourceReceipt": {
+    "path": "crates/vize_canon/tests/empty_vue_star_exports/membership/constructor_without_args/payload_update/canon_leftovers_11499.json",
+    "sha256": "250e01138d163f77a5d98b20bc97f562a663ebb924c17c810b9d9cf02280128e"
+  },
+  "evidence": {
+    "source-build.json": {
+      "bytes": 1882,
+      "sha256": "8ee9195a37554b47e68f651e51a2c2a992c672207c0274b09e9d25045f5eaaa9"
+    },
+    "source-launch.json": {
+      "bytes": 882,
+      "sha256": "1a6008d5ed6ecb10b102c9b02a62aeced8f87bd63e86e701ba1cb65390c2edad"
+    },
+    "source-protocol.json": {
+      "bytes": 481250,
+      "sha256": "4fcf8e7747592a72963896da65b701d152a224106ec10e804493be62cb6b2963"
+    },
+    "outcomes.json": {
+      "bytes": 106018,
+      "sha256": "8d9697a6c02cf0720073bb0b5d44899ee61d553d592d5830b60fda61bb508354"
+    },
+    "qualification.json": {
+      "bytes": 109360,
+      "sha256": "a30189ad3b3133e20e0c046f961a33ecbf87865d3f924ca015466f2190fbeb6e"
+    },
+    "host-matrix.json": {
+      "bytes": 3798,
+      "sha256": "780680dfdf1222d514ab8e56febfda9344212dc32bcd74497d06c01d55d5dcf6"
+    }
+  },
+  "capturedQualification": {
+    "status": "unqualified",
+    "fullPacketQualification": false,
+    "hostMatrixQualification": false,
+    "totalOutcomes": 398,
+    "passedOutcomes": 394,
+    "gapCount": 4,
+    "gapIds": [
+      "whole-packet/lf/slot-shadow",
+      "whole-packet/lf/mixed-slot-scope",
+      "whole-packet/crlf-unicode/slot-shadow",
+      "whole-packet/crlf-unicode/mixed-slot-scope"
+    ]
+  },
+  "review": {
+    "completePackets": 80,
+    "allNonWholePacketOutcomesPassed": true,
+    "qualificationCredit": false,
+    "nativeAcceptanceCredit": false,
+    "publicPackageAcceptanceCredit": false,
+    "performanceCredit": false,
+    "reason": "Only the LF and CRLF/Unicode slot-shadow and mixed-slot-scope packets add the exact disjoint opening and closing slot-pattern gap mappings required by #12511. Their generated text, diagnostics, semantic links and all other opaque fields remain exact, the other 76 packets are byte-identical, and all 394 non-whole-packet semantic, protocol, mapping-geometry, reported-beta and official-nightly controls passed. The pinned source-built TypeScript host was unavailable, so this record retains the observed postimages without assigning host-matrix, public-package or performance acceptance credit."
+  }
+}

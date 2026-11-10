@@ -1,0 +1,28 @@
+{
+  "version": 1,
+  "id": "lsp/regression/stdio-client-eof-12433",
+  "provenance": {
+    "fixCommit": "de461c4b34542c219c89a446b6a5aeeb74459a83",
+    "witnessPath": "crates/vize/tests/lsp_cli.rs",
+    "witnessTest": "lsp_stdio_eof_terminates_with_an_unanswered_server_request",
+    "inputOrigin": "minimal authored Vue workspace retained for the stdio client-lifecycle regression",
+    "contractOrigin": "the differential response remains a content control; process termination is asserted by the Rust integration witness"
+  },
+  "input": {
+    "source": "ClientLifecycle.vue.txt",
+    "runtimePath": "ClientLifecycle.vue",
+    "sha256": "73e9a19a3ccd644c8cadb605d55e18e73eef0e18583f9c0f01557046eed05704"
+  },
+  "expected": {
+    "source": "response.expected.json",
+    "sha256": "38e0b9de817f645c4bec37c0d4a3e58baecccb040f5718dc069a72c7385a0bed"
+  },
+  "method": "textDocument/foldingRange",
+  "documentVersion": 1,
+  "initializationOptions": {
+    "lint": false,
+    "typecheck": false,
+    "ecosystem": false
+  },
+  "scope": "pinned content control plus an executable stdio EOF lifecycle witness; not native whole-product parity"
+}

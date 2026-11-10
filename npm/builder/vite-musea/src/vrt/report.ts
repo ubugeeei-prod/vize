@@ -8,7 +8,7 @@
 import path from "node:path";
 
 import type { VrtResult, VrtSummary } from "./types.js";
-import { escapeHtml } from "./comparison.js";
+import { escapeHtml } from "../html.js";
 
 /**
  * Generate VRT report in HTML format.

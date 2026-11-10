@@ -11,7 +11,7 @@ import path from "node:path";
 import type { TokenCategory, StyleDictionaryConfig, StyleDictionaryOutput } from "./parser.js";
 import { parseTokens } from "./parser.js";
 import { tokenNative } from "./native.js";
-import { escapeHtml } from "../utils.js";
+import { escapeHtml } from "../html.js";
 
 const SAFE_CSS_COLOR_PATTERN =
   /^(?:#[0-9a-fA-F]{3,8}|(?:rgb|hsl)a?\(\s*[-+.\d,%\s/]+\)|(?:oklch|oklab|lab|lch)\(\s*[-+.\d,%\s/]+\))$/;

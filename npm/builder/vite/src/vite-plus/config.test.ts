@@ -3,8 +3,13 @@ import { mkdirSync, mkdtempSync, writeFileSync, rmSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
-import { defineConfig, withVue, withVize } from "../vite-plus.ts";
-import { taskConfigKey, type ConfigWithVizeTasks, type VueConfigObject } from "./types.ts";
+import { defineConfig, vitePlusConfig, withVue, withVize } from "../vite-plus.ts";
+import {
+  sourceConfigKey,
+  taskConfigKey,
+  type ConfigWithVizeTasks,
+  type VueConfigObject,
+} from "./types.ts";
 import { resolveConfigExport } from "../config.ts";
 import { createTasks } from "./tasks.ts";
 
@@ -12,6 +17,25 @@ assert.equal(withVize, defineConfig);
 assert.notEqual(withVue, defineConfig);
 
 const env = { command: "build", mode: "production" } as const;
+
+void test("vitePlusConfig leaves the outer Vite+ call and task table static", async () => {
+  const previous = process.env["VP_RESOLVING_CONFIG_METADATA"];
+  process.env["VP_RESOLVING_CONFIG_METADATA"] = "1";
+  try {
+    const result = await vitePlusConfig({ vue: { compiler: { sourceMap: true } } });
+    assert.deepEqual(result.plugins, []);
+    assert.ok(result.lint?.ignorePatterns?.includes("**/node_modules/**"));
+    assert.deepEqual(result.lint?.rules, {});
+    assert.ok(result.fmt?.ignorePatterns?.includes("**/node_modules/**"));
+    assert.ok(result.fmt?.ignorePatterns?.includes("**/*.vue"));
+    assert.equal(result.run, undefined);
+    assert.equal(result[taskConfigKey]?.options.tasks, false);
+    assert.deepEqual(result[sourceConfigKey], { vue: { compiler: { sourceMap: true } } });
+  } finally {
+    if (previous === undefined) delete process.env["VP_RESOLVING_CONFIG_METADATA"];
+    else process.env["VP_RESOLVING_CONFIG_METADATA"] = previous;
+  }
+});
 
 void test("defineConfig composes async Vite+ and native config without mutating either input", async () => {
   const config = { linter: { preset: "essential" as const } };
@@ -205,6 +229,7 @@ void test("native lint presentation and shared format ignores reach only their o
   const source = {
     lint: {
       vue: { preset: "happy-path" as const, locale: "ja" as const, helpLevel: "short" as const },
+      ignorePatterns: ["generated/**"],
     },
     fmt: { vue: { singleQuote: false }, ignorePatterns: ["generated/**"] },
   };
@@ -212,12 +237,14 @@ void test("native lint presentation and shared format ignores reach only their o
   const metadata = (result as ConfigWithVizeTasks)[taskConfigKey]!;
   assert.equal(metadata.lintLocale, "ja");
   assert.equal(metadata.lintHelpLevel, "short");
+  assert.deepEqual(metadata.lintIgnorePatterns, ["generated/**"]);
   assert.deepEqual(metadata.fmtIgnorePatterns, ["generated/**"]);
   assert.deepEqual(result.fmt?.ignorePatterns?.slice(0, 1), ["generated/**"]);
   assert.ok(!("locale" in (result.lint ?? {})));
   assert.ok(!("helpLevel" in (result.lint ?? {})));
   assert.deepEqual((await resolveConfigExport(metadata.config!)).linter, { preset: "happy-path" });
   assert.deepEqual(source.fmt.ignorePatterns, ["generated/**"]);
+  assert.deepEqual(source.lint.ignorePatterns, ["generated/**"]);
 });
 
 void test("legacy vize config keys report an explicit Vue migration", async () => {

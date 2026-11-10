@@ -13,7 +13,7 @@
  * ```
  */
 
-export { musea } from "./plugin/index.js";
+export { musea } from "./plugin/lazy.js";
 
 export type {
   MuseaOptions,
@@ -46,14 +46,12 @@ export type {
   CiConfig,
 } from "./types/index.js";
 
-export {
-  MuseaVrtRunner,
-  generateVrtReport,
-  generateVrtJsonReport,
-  UnsupportedDiffStyleError,
-  type VrtResult,
-  type VrtSummary,
-} from "./vrt.js";
+export { MuseaVrtRunner } from "./root-vrt.js";
+
+export { generateVrtReport, generateVrtJsonReport } from "./vrt/report.js";
+export type { VrtResult, VrtSummary } from "./vrt/types.js";
+
+export { UnsupportedDiffStyleError } from "./vrt/diff-style-option.js";
 
 export {
   processStyleDictionary,
@@ -71,7 +69,8 @@ export {
   type TokenUsageMap,
 } from "./style-dictionary.js";
 
-export { MuseaA11yRunner, type A11ySummary } from "./a11y/index.js";
+export { MuseaA11yRunner } from "./root-a11y.js";
+export type { A11ySummary } from "./a11y/index.js";
 
 export {
   generateArtFile,
@@ -82,5 +81,5 @@ export {
   type GeneratedVariant,
 } from "./autogen/index.js";
 
-import { musea } from "./plugin/index.js";
+import { musea } from "./plugin/lazy.js";
 export default musea;

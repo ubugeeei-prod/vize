@@ -75,7 +75,9 @@ impl CompletionService {
             .filter_map(|raw| {
                 let item = serde_json::from_value::<LspCompletionItem>(raw.clone()).ok()?;
                 let mut item = Self::convert_lsp_completion(item);
-                if raw.get("data").is_some_and(|data| !data.is_null()) {
+                if ctx.state.supports_completion_documentation_resolve()
+                    && raw.get("data").is_some_and(|data| !data.is_null())
+                {
                     item.data = Some(json!({ RESOLVE_DATA: {
                         "uri": ctx.uri, "revision": revision, "requestUri": uri, "item": raw,
                     }}));

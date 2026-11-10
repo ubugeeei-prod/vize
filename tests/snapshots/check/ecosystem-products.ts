@@ -5,6 +5,7 @@ import * as fs from "node:fs";
 import * as path from "node:path";
 import { fileURLToPath } from "node:url";
 import { ecosystemProductsApp, requireVizeAndCorsaBins } from "../../_helpers/apps.ts";
+import { qualifyEcosystemProducerDrift } from "../../_helpers/ecosystem-producer-qualification.ts";
 import { assertSnapshot } from "../../_helpers/snapshot.ts";
 import {
   runVizeCheckJson,
@@ -256,6 +257,10 @@ describe(`${app.name} check (type checker)`, () => {
       currentReceipt.snapshotSha256,
       `current snapshot needs an intentional successor after ${currentReceipt.provenance}`,
     );
+  });
+
+  it("qualifies ecosystem producer drift before accepting a successor", () => {
+    qualifyEcosystemProducerDrift(path.resolve(__dirname, "../../.."));
   });
 });
 

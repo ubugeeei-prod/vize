@@ -78,6 +78,13 @@ void test("the original archives remain pinned while active package cases follow
   const historicalCheck = '    run(directory, ["run", "check"]);\n';
   const providerPack = '    run(directory, ["run", "pack"], 0, providerEnvironment);\n';
   const historicalPack = '    run(directory, ["run", "pack"]);\n';
+  const sharedLintIgnorePatterns =
+    '  lint: { ignorePatterns: ["dist/**", "generated/**", "library/**"], vue: { preset: "essential", reportUnusedDisableDirectives: true, rules: { "vue/no-v-html": "error" } }, rules: { "no-debugger": "error" } },\n';
+  const historicalLintIgnorePatterns =
+    '  lint: { ignorePatterns: ["dist/**", "library/**"], vue: { preset: "essential", rules: { "vue/no-v-html": "error" } }, rules: { "no-debugger": "error" } },\n';
+  const ignoredGeneratedFixture =
+    '    fs.mkdirSync(path.join(directory, "generated"));\n' +
+    '    write("generated/client.ts", "/* eslint-disable */\\nexport const generated=1;\\n");\n';
   const migratedPacked = packed.replaceAll("vize: {", "vue: {");
   const historical = [
     [addedImport, ""],
@@ -90,6 +97,8 @@ void test("the original archives remain pinned while active package cases follow
     [providerSetup, ""],
     [providerCheck, historicalCheck],
     [providerPack, historicalPack],
+    [sharedLintIgnorePatterns, historicalLintIgnorePatterns],
+    [ignoredGeneratedFixture, ""],
   ].reduce((source, [successor, original]) => replaceOnce(source, successor, original), current);
   assert.equal(historical, migratedPacked);
 

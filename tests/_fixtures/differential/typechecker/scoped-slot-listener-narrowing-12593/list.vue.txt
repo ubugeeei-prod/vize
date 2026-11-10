@@ -1,0 +1,10 @@
+<script setup lang="ts" generic="T">
+defineProps<{ items: T[] }>();
+defineSlots<{ item(props: { item: T }): unknown }>();
+</script>
+
+<template>
+  <ul>
+    <li v-for="(item, i) in items" :key="i"><slot name="item" :item="item" /></li>
+  </ul>
+</template>

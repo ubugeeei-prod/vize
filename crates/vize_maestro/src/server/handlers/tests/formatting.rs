@@ -188,3 +188,36 @@ fn formatting_handlers_are_gated_off_without_project_configuration() {
         None
     );
 }
+
+#[cfg(feature = "glyph")]
+#[test]
+fn tsrx_modules_format_whole_and_decline_ranges() {
+    let uri = Url::parse("file:///Badge.tsrx").unwrap();
+    let source = "export function Badge({text}:{text:string}) @{\n\t<span class='badge'>{ text }</span>\n}\n";
+    let service = server_with(&uri, source, "tsrx");
+    let server = service.inner();
+
+    assert_eq!(
+        futures::executor::block_on(server.formatting(formatting_params(uri.clone()))).unwrap(),
+        Some(vec![TextEdit {
+            range: Range::new(Position::new(0, 0), Position::new(3, 0)),
+            new_text: "export function Badge({ text }: { text: string }) @{\n  <span class='badge'>{text}</span>\n}\n".to_string(),
+        }])
+    );
+    assert_eq!(
+        futures::executor::block_on(server.range_formatting(range_params(uri.clone()))).unwrap(),
+        None
+    );
+    assert_eq!(
+        futures::executor::block_on(server.on_type_formatting(on_type_params(uri.clone())))
+            .unwrap(),
+        None
+    );
+
+    let broken = Url::parse("file:///Broken.tsrx").unwrap();
+    let service = server_with(&broken, "export function A() @{\n\t<div>\n}\n", "tsrx");
+    assert_eq!(
+        futures::executor::block_on(service.inner().formatting(formatting_params(broken))).unwrap(),
+        None
+    );
+}

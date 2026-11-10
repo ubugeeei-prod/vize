@@ -1,5 +1,5 @@
 import type { A11yViolation } from "../types/index.js";
-import { escapeHtml } from "../utils.js";
+import { escapeHtml } from "../html.js";
 
 export function nodeDetails(result: A11yViolation): string {
   return (result.targets ?? [])

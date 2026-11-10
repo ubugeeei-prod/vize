@@ -26,7 +26,7 @@ import { resolveSnapshotIdentity } from "./snapshot-identity.js";
 import { matchesSnapshotPattern } from "./snapshot-pattern.js";
 import { hostedCertificateArguments } from "./hosted-navigation.js";
 import { launchChromium } from "./browser-launch.js";
-import { resolveDiffStyle } from "./diff-style.js";
+import { resolveDiffStyle } from "./diff-style-option.js";
 export { normalizeVrtWorkerCount } from "./jobs.js";
 type ResolvedCaptureConfig = Required<Omit<CaptureConfig, "beforeCapture">> &
   Pick<CaptureConfig, "beforeCapture">;

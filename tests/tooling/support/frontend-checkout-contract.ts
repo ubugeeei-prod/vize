@@ -3,6 +3,11 @@ import assert from "node:assert/strict";
 type Job = { steps?: Record<string, unknown>[] };
 const checkout = "actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd";
 const contracts = {
+  "pr-source-plan": {
+    files: [".github/source-plan-sparse-checkout"],
+    inline: true,
+    expansion: "git sparse-checkout set --no-cone --stdin < .github/source-plan-sparse-checkout",
+  },
   "iteration-plan": {
     depth: 2,
     files: [
@@ -26,7 +31,7 @@ const contracts = {
   },
 } as const;
 
-/** Invert only #11756/#11778's independently exercised checkout input changes. */
+/** Invert only independently exercised checkout input changes. */
 export function restoreReviewedCheckout(current: Job, original: Job, site: keyof typeof contracts) {
   assert.ok(Object.hasOwn(contracts, site), "unreviewed checkout site");
   const before = original.steps?.[0];
@@ -44,10 +49,20 @@ export function restoreReviewedCheckout(current: Job, original: Job, site: keyof
   assert.deepEqual(steps[0], {
     ...before,
     with: {
-      "fetch-depth": contract.depth,
+      ...("depth" in contract ? { "fetch-depth": contract.depth } : {}),
       "sparse-checkout-cone-mode": false,
-      "sparse-checkout": contract.files.map((file) => `/${file}\n`).join(""),
+      "sparse-checkout": contract.files
+        .map((file) => `/${file}`)
+        .join("\n")
+        .concat("inline" in contract ? "" : "\n"),
     },
   });
   steps[0] = structuredClone(before);
+  if ("expansion" in contract) {
+    assert.deepEqual(steps[1], {
+      name: "Expand the source planner checkout",
+      run: contract.expansion,
+    });
+    steps.splice(1, 1);
+  }
 }

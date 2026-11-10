@@ -34,7 +34,7 @@ surfaces and are not routine CI-refactor targets.
 | 04    | [Type checking and content mapping](#04-type-checking-and-content-mapping)             | 15        |
 | 05    | [Language services and editors](#05-language-services-and-editors)                     | 23        |
 | 06    | [SFC, JSX, and compiler correctness](#06-sfc-jsx-and-compiler-correctness)             | 40        |
-| 07    | [Davinci, Canon, and Level](#07-davinci-canon-and-level)                               | 21        |
+| 07    | [Davinci, Canon, and Level](#07-davinci-canon-and-level)                               | 22        |
 | 08    | [Builders and framework integrations](#08-builders-and-framework-integrations)         | 23        |
 | 09    | [Lint, format, and developer tooling](#09-lint-format-and-developer-tooling)           | 14        |
 | 10    | [Applications and UI packages](#10-applications-and-ui-packages)                       | 4         |
@@ -257,26 +257,27 @@ Davinci migration, Canon ownership, Level lowering, and cross-file graph contrac
 | ID    | Workflow                                | File                                                                           |
 | ----- | --------------------------------------- | ------------------------------------------------------------------------------ |
 | 07.01 | Canon component casing accuracy         | [`canon-component-casing.yml`](./canon-component-casing.yml)                   |
-| 07.02 | Canon helper native baseline            | [`canon-helper-native-baseline.yml`](./canon-helper-native-baseline.yml)       |
-| 07.03 | Canon instance directive ownership      | [`canon-instance-directives.yml`](./canon-instance-directives.yml)             |
-| 07.04 | Canon slot constructor admission        | [`canon-slot-constructor.yml`](./canon-slot-constructor.yml)                   |
-| 07.05 | Canon slot provider ownership           | [`canon-slot-provider-any.yml`](./canon-slot-provider-any.yml)                 |
-| 07.06 | Compact Collections                     | [`compact-collections.yml`](./compact-collections.yml)                         |
-| 07.07 | Cross-file finalization work comparison | [`cross-file-finalization-compare.yml`](./cross-file-finalization-compare.yml) |
-| 07.08 | Cross-file finalization order           | [`cross-file-finalization-order.yml`](./cross-file-finalization-order.yml)     |
-| 07.09 | Cross-file dependency profiling         | [`cross-file-finalization.yml`](./cross-file-finalization.yml)                 |
-| 07.10 | Cross-file SFC effect graphs            | [`cross-file-sfc-effects.yml`](./cross-file-sfc-effects.yml)                   |
-| 07.11 | Cross-file retained import updates      | [`cross-file-source-updates.yml`](./cross-file-source-updates.yml)             |
-| 07.12 | Cross-file WASM effect grammars         | [`cross-file-wasm-effects.yml`](./cross-file-wasm-effects.yml)                 |
-| 07.13 | Canonical Davinci corpus                | [`davinci-canonical-corpus.yml`](./davinci-canonical-corpus.yml)               |
-| 07.14 | Davinci Incremental                     | [`davinci-incremental.yml`](./davinci-incremental.yml)                         |
-| 07.15 | Davinci Kani                            | [`davinci-kani.yml`](./davinci-kani.yml)                                       |
-| 07.16 | Davinci Plugin SDK                      | [`davinci-plugin-sdk.yml`](./davinci-plugin-sdk.yml)                           |
-| 07.17 | Davinci reference backends              | [`davinci-reference.yml`](./davinci-reference.yml)                             |
-| 07.18 | Davinci unused bindings                 | [`davinci-unused-bindings.yml`](./davinci-unused-bindings.yml)                 |
-| 07.19 | Level deletion readiness                | [`level-deletion-readiness.yml`](./level-deletion-readiness.yml)               |
-| 07.20 | Level dependencies                      | [`level-dependencies.yml`](./level-dependencies.yml)                           |
-| 07.21 | Level HTML content model                | [`level-html-content-model.yml`](./level-html-content-model.yml)               |
+| 07.02 | Canon ecosystem producer qualification  | [`canon-ecosystem-producer.yml`](./canon-ecosystem-producer.yml)               |
+| 07.03 | Canon helper native baseline            | [`canon-helper-native-baseline.yml`](./canon-helper-native-baseline.yml)       |
+| 07.04 | Canon instance directive ownership      | [`canon-instance-directives.yml`](./canon-instance-directives.yml)             |
+| 07.05 | Canon slot constructor admission        | [`canon-slot-constructor.yml`](./canon-slot-constructor.yml)                   |
+| 07.06 | Canon slot provider ownership           | [`canon-slot-provider-any.yml`](./canon-slot-provider-any.yml)                 |
+| 07.07 | Compact Collections                     | [`compact-collections.yml`](./compact-collections.yml)                         |
+| 07.08 | Cross-file finalization work comparison | [`cross-file-finalization-compare.yml`](./cross-file-finalization-compare.yml) |
+| 07.09 | Cross-file finalization order           | [`cross-file-finalization-order.yml`](./cross-file-finalization-order.yml)     |
+| 07.10 | Cross-file dependency profiling         | [`cross-file-finalization.yml`](./cross-file-finalization.yml)                 |
+| 07.11 | Cross-file SFC effect graphs            | [`cross-file-sfc-effects.yml`](./cross-file-sfc-effects.yml)                   |
+| 07.12 | Cross-file retained import updates      | [`cross-file-source-updates.yml`](./cross-file-source-updates.yml)             |
+| 07.13 | Cross-file WASM effect grammars         | [`cross-file-wasm-effects.yml`](./cross-file-wasm-effects.yml)                 |
+| 07.14 | Canonical Davinci corpus                | [`davinci-canonical-corpus.yml`](./davinci-canonical-corpus.yml)               |
+| 07.15 | Davinci Incremental                     | [`davinci-incremental.yml`](./davinci-incremental.yml)                         |
+| 07.16 | Davinci Kani                            | [`davinci-kani.yml`](./davinci-kani.yml)                                       |
+| 07.17 | Davinci Plugin SDK                      | [`davinci-plugin-sdk.yml`](./davinci-plugin-sdk.yml)                           |
+| 07.18 | Davinci reference backends              | [`davinci-reference.yml`](./davinci-reference.yml)                             |
+| 07.19 | Davinci unused bindings                 | [`davinci-unused-bindings.yml`](./davinci-unused-bindings.yml)                 |
+| 07.20 | Level deletion readiness                | [`level-deletion-readiness.yml`](./level-deletion-readiness.yml)               |
+| 07.21 | Level dependencies                      | [`level-dependencies.yml`](./level-dependencies.yml)                           |
+| 07.22 | Level HTML content model                | [`level-html-content-model.yml`](./level-html-content-model.yml)               |
 
 ## 08 Builders and framework integrations
 

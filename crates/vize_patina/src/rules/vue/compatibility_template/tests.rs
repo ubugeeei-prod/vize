@@ -20,6 +20,33 @@ fn core_rules_read_retained_expression_ast() {
 }
 
 #[test]
+fn camelcase_allows_screaming_snake_case_identifiers() {
+    let result = lint(
+        Box::new(Camelcase),
+        "<p>{{ MAX_ITEMS }} {{ ITEM_LIMITS.perPage }} {{ user_name }}</p>",
+    );
+
+    assert_eq!(result.warning_count, 1, "{:?}", result.diagnostics);
+    assert_eq!(result.diagnostics[0].start, 48);
+}
+
+#[test]
+fn no_implicit_coercion_allows_known_numeric_unary_plus_operands() {
+    let result = lint(
+        Box::new(NoImplicitCoercion),
+        concat!(
+            "<button @click=\"move(+1)\" />",
+            "<input :step=\"+Number(raw)\" />",
+            "<p>{{ +parseInt(raw, 10) }}</p>",
+            "<p>{{ +parseFloat(raw) }}</p>",
+            "<p>{{ +raw }}</p>",
+        ),
+    );
+
+    assert_eq!(result.warning_count, 1, "{:?}", result.diagnostics);
+}
+
+#[test]
 fn template_specific_rules_report_compatibility_cases() {
     let literals = lint(
         Box::new(NoLiteralsInTemplate),

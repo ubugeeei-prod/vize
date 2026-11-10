@@ -4,8 +4,10 @@ title: Vite+
 
 # Vite+
 
-Use one `defineConfig` for Vite+, the Vize compiler, native
-linter, formatter, and library declarations. Type-check with the content mapper.
+Use Vite+'s own `defineConfig` for Vite+, the Vize compiler, native linter,
+formatter, and library declarations. Keeping the outer call owned by Vite+
+lets `vp run` read literal tasks without bundling or evaluating the config.
+Type-check with the content mapper.
 Install `@vizejs/vite-plugin` and
 your preferred compatible `vite-plus` version in the project:
 
@@ -19,50 +21,76 @@ import/plugin diffs, or follow [Getting Started](../getting-started.md).
 
 ```ts
 // vite.config.ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+import { defineConfig } from "vite-plus";
+import { vitePlusConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({}).withVue({});
+const vize = await vitePlusConfig({ vue: {} });
+
+export default defineConfig({
+  ...vize,
+  run: {
+    tasks: {
+      "editor:setup": { command: "vize-vp-task editor:setup", cache: false },
+      check: { command: "vize-vp-task check", cache: false },
+      typecheck: { command: "vize-vp-task typecheck", cache: false },
+      lint: { command: "vize-vp-task lint", cache: false },
+      "lint:fix": { command: "vize-vp-task lint:fix", cache: false },
+      fmt: { command: "vize-vp-task fmt", cache: false },
+      "fmt:check": { command: "vize-vp-task fmt:check", cache: false },
+      build: { command: "vize-vp-task build", cache: false },
+      pack: { command: "vize-vp-task pack", cache: false },
+      dev: { command: "vize-vp-task dev", cache: false },
+      preview: { command: "vize-vp-task preview", cache: false },
+      test: { command: "vize-vp-task test", cache: false },
+    },
+  },
+});
 ```
 
 > [!IMPORTANT]
-> The helper requires Vite+ 0.2.3 or later.
+> Static task extraction requires Vite+ 1.5.0 or later. Keep every task literal
+> inside `run.tasks`; spreading a generated task object makes Vite+ evaluate the
+> config again.
 
 Vite+ is an optional peer dependency. Vize uses the project's installed version
-and its configuration types; it never downloads or replaces Vite+. Earlier versions can mistake a custom
-`defineConfig` for Vite+'s own and skip its generated tasks
-([upstream fix](https://github.com/voidzero-dev/vite-plus/releases/tag/v0.2.3)).
+and its configuration types; it never downloads or replaces Vite+.
 Ordinary Vite projects can keep the usual plugin entry point.
 
 ## Configuration
 
 ```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+import { defineConfig } from "vite-plus";
+import { vitePlusConfig } from "@vizejs/vite-plugin/vite-plus";
 import { defineVizeLintConfig, flatConfigs } from "oxlint-plugin-vize";
 
-export default defineConfig({
+const vize = await vitePlusConfig({
   server: { port: 3000 },
   lint: {
     rules: { "no-debugger": "error" },
     ignorePatterns: ["dist/**"],
   },
   fmt: { ignorePatterns: ["dist/**"] },
-}).withVue({
-  lint: defineVizeLintConfig(...flatConfigs.recommended, ...flatConfigs.ecosystem, {
-    ignorePatterns: ["dist/**"],
-    rules: { "no-console": "warn" },
-  }),
-  fmt: { singleQuote: true },
-  entries: [
-    {
-      files: ["src/admin/**/*.vue"],
-      linter: { rules: { "vue/no-v-html": "off" } },
-    },
-  ],
+  vue: {
+    lint: defineVizeLintConfig(...flatConfigs.recommended, ...flatConfigs.ecosystem, {
+      ignorePatterns: ["dist/**"],
+      rules: { "no-console": "warn" },
+    }),
+    fmt: { singleQuote: true },
+    entries: [
+      {
+        files: ["src/admin/**/*.vue"],
+        linter: { rules: { "vue/no-v-html": "off" } },
+      },
+    ],
+  },
 });
+
+export default defineConfig({ ...vize });
 ```
 
-Keep the root object as an ordinary, Vue-free Vite+ config. `.withVue()` composes
-the Vue flat lint layer with that root configuration, so the root
+Keep the root object as an ordinary Vite+ config and put shared Vue settings in
+its `vue` key. `vitePlusConfig()` composes the Vue flat lint layer with that root
+configuration, so the root
 `no-debugger` policy remains active alongside `flatConfigs.recommended`,
 `flatConfigs.ecosystem`, and the Vue-specific `no-console` rule. Use `compile`,
 `typeCheck`, `lint`, and `fmt`. `lint` is the host Oxlint block; its
@@ -82,7 +110,7 @@ Vue configuration](./vue-configuration.md) for paths and scoped entries.
 | `compiler`                            | Vite+ compiler plugin controls; `false` keeps the existing Vue compiler when `vue.compiler` is absent              |
 | `typecheck`                           | Vite+ native-check task controls; `false` disables the task unless `vue.typeChecker.enabled` explicitly enables it |
 | `lint.vue`                            | Native lint task options, including `typecheck`, `locale` and `helpLevel`                                          |
-| Other `lint` fields                   | The installed Vite+ / Oxlint configuration                                                                         |
+| Other `lint` fields                   | The installed Vite+ / Oxlint configuration; `ignorePatterns` also excludes native lint inputs                      |
 | `fmt.vue`                             | Native formatter task options; `false` returns formatting to Oxfmt when `vue.formatter` is absent                  |
 | Other `fmt` fields                    | The installed Vite+ / Oxfmt configuration; `ignorePatterns` also excludes native Vue formatting                    |
 | `pack.vue`                            | Native declaration and map options                                                                                 |
@@ -104,12 +132,12 @@ options in the existing TypeScript project:
 The typechecker runs once per task, including `check` when lint requests it.
 The helper removes its integration fields before passing the remaining config
 to Vite+. Other Vite+ options keep their upstream types, including future
-additions. Objects, promises, functions and async configuration functions are
-accepted, with Vite's environment forwarded to config functions.
+additions. The static integration accepts a literal object.
 
-### Extend an existing configuration
+### Dynamic configuration compatibility
 
-Keep root Vite+ settings in `defineConfig` and pass Vue settings directly to the chained helper:
+The original wrapper remains available for environment-dependent configuration
+functions and Vite+ versions before 1.5. It evaluates the config before task lookup:
 
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
@@ -127,8 +155,9 @@ compiler once. There is no custom config `extends`, and dedicated `vize.config.*
 files and top-level `vize:` settings are retired. Standard TypeScript `extends`
 and `references` in `tsconfig.json` remain supported.
 
-The standalone `withVue` helper and the `withVize` compatibility name remain supported, but new
-configuration should export the direct `defineConfig({ ... }).withVue({ ... })` chain shown above.
+The standalone `withVue` helper and the `withVize` compatibility name remain
+supported, but literal task-heavy projects should use `vitePlusConfig()` and
+Vite+'s outer `defineConfig`.
 
 ## Tasks
 
@@ -151,12 +180,17 @@ The recommended typecheck is the [content mapper](./content-mapper.md). TypeScri
 Pass paths after `--` to check, lint, and format tasks. Formatting also accepts
 `--check` or `--write`. Put tool options in the corresponding config section.
 Checks continue after diagnostics so one failing tool does not hide the others.
-Generated tasks are uncached by default. Opt in to Vite+ caching for the read-only
-`lint`, `fmt:check`, `check`, and `typecheck` tasks:
+The literal tasks above are uncached by default. Read-only `lint`, `fmt:check`,
+`check`, and `typecheck` tasks may use Vite+ caching explicitly:
 
 ```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-export default defineConfig({}, { taskCache: true }).withVue({});
+const check = {
+  command: "vize-vp-task check",
+  cache: {
+    input: [{ auto: true }, "!node_modules/.vize/**", "!**/.vize/**"],
+    output: [],
+  },
+};
 ```
 
 Vite+ automatically tracks source files, configuration imports, dependencies, and
@@ -164,9 +198,7 @@ directory entries. Generated `node_modules/.vize/**` and `**/.vize/**` files are
 excluded from cache inputs, and checks never restore output files. Source-writing
 tasks such as `fmt` and `lint:fix` remain uncached. Passing `--fix` to a cached
 check still runs on changed inputs, including reintroducing the same unformatted
-source after a previous fix. Existing `run.tasks` keep their own cache policy, and renaming a
-generated task preserves its policy. Both the Vite+ 0.x and 1.x cache APIs are
-supported.
+source after a previous fix.
 
 > [!WARNING]
 > Custom tasks use `vp run`. Built-in `vp check`, `vp lint`, and `vp fmt` do not
@@ -175,10 +207,13 @@ supported.
 Built-in `vp build`, `vp dev`, and `vp pack` already use the
 configured compiler or pack hooks.
 
-Existing package scripts are preserved. A pre-existing `check` script causes the
-generated task to be named `vize:check`; the same rule applies to other names.
-Explicit `run.tasks` definitions take precedence. Rename or disable generated
-tasks with the optional integration argument:
+Existing package scripts are preserved. If a literal task name already exists as
+a package script, rename its `run.tasks` key (for example, `vize:check`) or omit
+that task. Keep the task object literal after editing it so static extraction
+remains available.
+
+The compatibility wrapper still supports generated task renaming for dynamic
+configs:
 
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
@@ -202,7 +237,9 @@ with Oxfmt. Set `lint.vue: false` or `fmt.vue: false` to return the correspondin
 responsibility to Vite+. The integration option `conflicts: false` disables
 automatic overlap handling.
 
-`fmt.ignorePatterns` applies to both formatters, so generated or vendored Vue files
+`lint.ignorePatterns` applies to both linters, so one list excludes generated or
+vendored Vue, JavaScript, and TypeScript inputs from both native lint and Oxlint.
+`fmt.ignorePatterns` likewise applies to both formatters, so generated or vendored Vue files
 stay untouched. An entry that excludes every Vue file (`**/*.vue` or `*.vue`) only keeps
 `.vue` away from Oxfmt, as the integration does by default, so `conflicts: false` projects
 can add it themselves; `vize fmt` still formats them. To use `lint.vue: false` or `fmt.vue: false`, omit the corresponding

@@ -1,0 +1,26 @@
+---
+source: crates/vize_glyph/tests/tsrx_modules.rs
+expression: formatted.as_str()
+---
+export function View({ items, show }: { items: string[]; show: boolean }) @{
+  const total = items.length;
+
+  <section data-total={total} aria-label="items" class="list">
+    @if (show) {
+      <ul>
+        @for (const item of items; key item) {
+          <li title={item}>{item}</li>
+        }
+      </ul>
+    } @else {
+      <p>empty</p>
+    }
+    @try {
+      <p>ready</p>
+    } @pending {
+      <p>wait</p>
+    } @catch(error, reset) {
+      <button onClick={reset}>{error.message}</button>
+    }
+  </section>
+}

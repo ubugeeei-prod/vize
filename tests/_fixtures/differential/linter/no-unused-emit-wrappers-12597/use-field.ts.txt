@@ -1,0 +1,9 @@
+export type FieldEmit = (event: "change", value: string) => void;
+export type FieldOptions = { emit: FieldEmit };
+
+export function useField(options: FieldOptions) {
+  function onInput(event: Event): void {
+    options.emit("change", (event.target as HTMLInputElement).value);
+  }
+  return { onInput };
+}

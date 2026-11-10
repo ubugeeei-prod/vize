@@ -13,7 +13,7 @@ import { runTool } from "../../tools/support/compat/fixtures/tool-matrix-run.mjs
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const noFilesReport =
-  "No .vue, .js, .mjs, .cjs, .ts, .mts, .cts, .jsx, .tsx, .json, .jsonc, .yaml, .yml, .md, or .markdown files found matching the patterns\n";
+  "No .vue, .js, .mjs, .cjs, .ts, .mts, .cts, .jsx, .tsx, .tsrx, .json, .jsonc, .yaml, .yml, .md, or .markdown files found matching the patterns\n";
 
 function changedReport() {
   return [

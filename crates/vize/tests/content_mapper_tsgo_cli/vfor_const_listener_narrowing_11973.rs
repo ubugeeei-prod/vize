@@ -77,3 +77,35 @@ fn standard_tsgo_keeps_v_for_const_narrowing_in_listener_callbacks() {
     assert_eq!(result.stderr, b"", "{}", output_text(&result));
     assert_eq!(result.stdout, expected.as_bytes(), "{packet}");
 }
+
+#[test]
+#[ignore = "requires the authenticated beta host and actual source CLI in native-canon Actions"]
+fn standard_tsgo_keeps_scoped_slot_narrowing_in_listener_callbacks() {
+    let host = std::env::var_os(TSGO_ENV)
+        .map(PathBuf::from)
+        .expect("this explicitly selected regression requires the real beta content-mapper host");
+    assert!(host.is_file(), "the required host must be a physical image");
+    let fixture = workspace_root()
+        .join("tests/_fixtures/differential/typechecker/scoped-slot-listener-narrowing-12593");
+    let contract: Value =
+        serde_json::from_slice(&std::fs::read(fixture.join("cases.json")).unwrap()).unwrap();
+    assert_eq!(contract["issue"], 12593);
+    let parent = workspace_root().join("target/vize-tests/tests");
+    std::fs::create_dir_all(&parent).unwrap();
+    let project = tempfile::Builder::new()
+        .prefix("scoped-slot-listener-narrowing-12593-")
+        .tempdir_in(parent)
+        .unwrap();
+    install_mapper_manifest(project.path());
+    install_vue_package(project.path());
+    for input in contract["inputs"].as_array().unwrap() {
+        let file = input.as_str().unwrap();
+        let source = std::fs::read(fixture.join(format!("{file}.txt"))).unwrap();
+        std::fs::write(project.path().join(file), source).unwrap();
+    }
+
+    let result = check_project(&host, project.path(), "tsconfig.json");
+    assert!(result.status.success(), "{}", output_text(&result));
+    assert_eq!(result.stderr, b"", "{}", output_text(&result));
+    assert_eq!(result.stdout, b"", "{}", output_text(&result));
+}

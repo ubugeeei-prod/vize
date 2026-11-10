@@ -1,0 +1,13 @@
+<script setup lang="ts">
+import type { FieldSlots } from "./types";
+
+defineSlots<{ control?(): unknown } & FieldSlots>();
+</script>
+
+<template>
+  <div>
+    <slot name="control"></slot>
+    <slot name="label"></slot>
+    <slot name="append"></slot>
+  </div>
+</template>

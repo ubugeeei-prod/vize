@@ -71,6 +71,7 @@ pub mod source_project;
 pub mod source_sfc_folding;
 #[cfg(test)]
 pub(crate) mod test_support;
+mod transport_input;
 pub mod utils;
 pub mod virtual_code;
 
@@ -162,14 +163,20 @@ where
     let _module_termination = service.inner().module_link_transport_lease();
     #[cfg(feature = "experimental-source-navigation")]
     let read = server::ModuleLinkInput::new(read, service.inner().module_link_transport_lease());
+    let (read, input_termination) = transport_input::observe(read);
     let (service, exit_notification) = server::with_exit_signal(service);
     let transport = Server::new(read, write, socket).serve(service);
 
-    futures::pin_mut!(transport);
-    futures::pin_mut!(exit_notification);
-
-    match select(transport, exit_notification).await {
+    let termination = select(Box::pin(exit_notification), Box::pin(input_termination));
+    match select(Box::pin(transport), Box::pin(termination)).await {
         Either::Left(_) => {}
-        Either::Right(_) => tracing::info!("LSP exit notification handled; stopping transport"),
+        Either::Right((Either::Left(_), transport)) => {
+            tracing::info!("LSP exit notification handled; stopping transport");
+            drop(transport);
+        }
+        Either::Right((Either::Right(_), transport)) => {
+            tracing::info!("LSP input ended; cancelling in-flight transport work");
+            drop(transport);
+        }
     }
 }

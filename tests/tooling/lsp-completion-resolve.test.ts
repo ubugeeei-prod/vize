@@ -6,7 +6,7 @@ import { test } from "node:test";
 import { pathToFileURL } from "node:url";
 
 import { testOutputRoot } from "./support/lsp/paths.ts";
-import { LspSession } from "./support/lsp/session.ts";
+import { completionDocumentationResolveCapabilities, LspSession } from "./support/lsp/session.ts";
 import { offsetToPosition } from "./support/lsp/assertions.ts";
 
 type Item = Record<string, unknown>;
@@ -120,7 +120,7 @@ test("completion resolves authored documentation through the real server", async
     );
   };
   try {
-    await session.initialize(workspace);
+    await session.initialize(workspace, undefined, completionDocumentationResolveCapabilities);
     for (const [name, source] of Object.entries(sources)) {
       await t.test(name, async () => {
         open(source);

@@ -3,7 +3,7 @@ import { mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSyn
 import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
-import { runTools } from "./runner.ts";
+import { runTools, withConfigMetadataResolution } from "./runner.ts";
 import type { VizeTaskConfig } from "./types.ts";
 
 async function project(run: () => Promise<void>) {
@@ -20,6 +20,34 @@ async function project(run: () => Promise<void>) {
     rmSync(dir, { recursive: true, force: true });
   }
 }
+
+void test("config metadata resolution marks only the config load", async () => {
+  const previous = process.env["VP_RESOLVING_CONFIG_METADATA"];
+  delete process.env["VP_RESOLVING_CONFIG_METADATA"];
+  try {
+    assert.equal(
+      await withConfigMetadataResolution(async () => {
+        assert.equal(process.env["VP_RESOLVING_CONFIG_METADATA"], "1");
+        return "loaded";
+      }),
+      "loaded",
+    );
+    assert.equal(process.env["VP_RESOLVING_CONFIG_METADATA"], undefined);
+
+    process.env["VP_RESOLVING_CONFIG_METADATA"] = "caller";
+    await assert.rejects(
+      withConfigMetadataResolution(async () => {
+        assert.equal(process.env["VP_RESOLVING_CONFIG_METADATA"], "1");
+        throw new Error("load failed");
+      }),
+      { message: "load failed" },
+    );
+    assert.equal(process.env["VP_RESOLVING_CONFIG_METADATA"], "caller");
+  } finally {
+    if (previous === undefined) delete process.env["VP_RESOLVING_CONFIG_METADATA"];
+    else process.env["VP_RESOLVING_CONFIG_METADATA"] = previous;
+  }
+});
 
 void test("check runs native checks, native lint and Oxlint, and both formatters after failures", async () => {
   await project(async () => {
@@ -145,21 +173,29 @@ void test("fmt.ignorePatterns excludes Vue files from check and write, even for 
   });
 });
 
-void test("lint locale and help level are passed only to the native linter", async () => {
+void test("lint presentation and host ignores reach only the native linter", async () => {
   await project(async () => {
     const calls: string[][] = [];
     await runTools(
       "lint",
       ["App.vue"],
       {
-        config: { linter: { preset: "happy-path" } },
+        config: { ignores: ["existing/**"], linter: { preset: "happy-path" } },
         options: {},
         lintLocale: "ja",
         lintHelpLevel: "short",
+        lintIgnorePatterns: ["generated/**", "existing/**"],
       },
       "vp",
       "native",
       async (_, args) => {
+        if (args[0] === "native") {
+          const file = args[args.indexOf("--config") + 1];
+          assert.deepEqual(JSON.parse(readFileSync(file, "utf8")).vue.ignores, [
+            path.resolve("existing/**").replaceAll("\\", "/"),
+            path.resolve("generated/**").replaceAll("\\", "/"),
+          ]);
+        }
         calls.push(args);
         return 0;
       },

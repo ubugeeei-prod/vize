@@ -6,7 +6,7 @@ import { createRequire } from "node:module";
 import { test } from "node:test";
 import { pathToFileURL } from "node:url";
 import { root, testOutputRoot } from "./support/lsp/paths.ts";
-import { LspSession } from "./support/lsp/session.ts";
+import { completionDocumentationResolveCapabilities, LspSession } from "./support/lsp/session.ts";
 import { offsetToPosition } from "./support/lsp/assertions.ts";
 import { createMarker, hash, witness } from "./support/lsp/string-literal-witness.ts";
 import { resolveTypecheckRuntime } from "./support/typecheck-dependency.ts";
@@ -148,11 +148,15 @@ await test("original literal unions keep complete native candidates, resolution 
       workspace,
       options: { editor: true, typecheck: true, lint: false },
     });
-    const initialized = await active.initialize(workspace, {
-      editor: true,
-      typecheck: true,
-      lint: false,
-    });
+    const initialized = await active.initialize(
+      workspace,
+      {
+        editor: true,
+        typecheck: true,
+        lint: false,
+      },
+      completionDocumentationResolveCapabilities,
+    );
     record({ kind: "whole-initialize", initialized });
     assert.equal(
       (initialized as { capabilities: { completionProvider: { resolveProvider: boolean } } })

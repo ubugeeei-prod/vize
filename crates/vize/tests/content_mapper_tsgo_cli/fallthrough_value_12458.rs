@@ -19,6 +19,16 @@ macro_rules! fixture {
     };
 }
 
+macro_rules! issue_12491_fixture {
+    ($path:literal) => {
+        include_str!(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/../../tests/_fixtures/differential/typechecker/relaxed-fallthrough-undefined-12491/",
+            $path
+        ))
+    };
+}
+
 /// One owner each: the original fallthrough value, a declared prop, a
 /// literal fallthrough value and an ARIA attr.
 const EXPECTED: [(&str, u32, u32, &str); 4] = [
@@ -82,14 +92,13 @@ fn relaxed_fallthrough_roots_report_wrong_values_once() {
 }
 
 #[test]
-#[ignore = "#12491: only the ignored per-prop assignment rejects an explicit undefined at a relaxed root"]
 fn relaxed_fallthrough_roots_report_undefined_required_props() {
     check_pair(
         "fallthrough-relaxed-undefined-12458-",
-        fixture!("relaxed/tsconfig.json.txt"),
+        issue_12491_fixture!("tsconfig.json.txt"),
         &[
-            ("Inner.vue", fixture!("relaxed/Inner.vue.txt")),
-            ("Wrapper.vue", fixture!("relaxed/Wrapper.vue.txt")),
+            ("Inner.vue", issue_12491_fixture!("Inner.vue.txt")),
+            ("Wrapper.vue", issue_12491_fixture!("Wrapper.vue.txt")),
         ],
         &[(
             "Wrapper.vue",

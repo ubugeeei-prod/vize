@@ -1,0 +1,5 @@
+<script setup lang="ts">
+defineProps<{ height?: number }>();
+</script>
+
+<template><div /></template>
