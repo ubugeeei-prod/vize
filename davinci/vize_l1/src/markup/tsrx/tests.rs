@@ -1,4 +1,5 @@
-use alloc::{format, string::String, vec::Vec};
+use alloc::vec::Vec;
+use vize_l0::{String, cstr};
 
 use oxc_ast::ast::{Expression, ForStatementLeft, Statement};
 use oxc_span::GetSpan;
@@ -30,11 +31,11 @@ fn first_error(source: &str) -> String {
     assert!(!module.is_clean(), "expected an error in {source}");
     let diagnostic = module.diagnostics().first().unwrap();
     let code = match (&diagnostic.code.scope, &diagnostic.code.number) {
-        (Some(scope), Some(number)) => format!("{scope}{number}"),
+        (Some(scope), Some(number)) => cstr!("{scope}{number}"),
         _ => String::from("-"),
     };
     let label = diagnostic.labels.iter().next().unwrap();
-    format!(
+    cstr!(
         "{code} {}..{}",
         label.offset(),
         label.offset() + label.len()
@@ -70,28 +71,25 @@ fn element_spans_attributes_and_children() {
         .map(|attribute| match attribute {
             Attribute::Named { span, name, value } => {
                 let value = match value {
-                    Some(AttributeValue::String(span)) => format!("={}", text(source, *span)),
+                    Some(AttributeValue::String(span)) => cstr!("={}", text(source, *span)),
                     Some(AttributeValue::Expression { span, expression }) => {
                         assert_eq!(host(source, expression.span()), "y");
-                        format!("={}", text(source, *span))
+                        cstr!("={}", text(source, *span))
                     }
-                    None => String::new(),
+                    None => String::default(),
                 };
-                assert_eq!(
-                    text(source, *span),
-                    format!("{}{value}", text(source, *name))
-                );
-                format!("named {}{value}", text(source, *name))
+                assert_eq!(text(source, *span), cstr!("{}{value}", text(source, *name)));
+                cstr!("named {}{value}", text(source, *name))
             }
             Attribute::Shorthand { span, expression } => {
-                format!(
+                cstr!(
                     "shorthand {} {}",
                     text(source, *span),
                     host(source, expression.span())
                 )
             }
             Attribute::Spread { span, expression } => {
-                format!(
+                cstr!(
                     "spread {} {}",
                     text(source, *span),
                     host(source, expression.span())
@@ -285,17 +283,17 @@ fn comments_between_children_and_comment_like_text() {
         .children
         .iter()
         .map(|child| match child {
-            Child::Text(span) => format!("text {:?}", text(source, *span)),
+            Child::Text(span) => cstr!("text {:?}", text(source, *span)),
             Child::Comment(comment) => {
                 let kind = if comment.kind == CommentKind::Block {
                     "block"
                 } else {
                     "line"
                 };
-                format!("{kind} {:?}", text(source, comment.span))
+                cstr!("{kind} {:?}", text(source, comment.span))
             }
-            Child::Expression(child) => format!("expression {:?}", text(source, child.span)),
-            Child::Node(node) => format!("node {:?}", text(source, node.span())),
+            Child::Expression(child) => cstr!("expression {:?}", text(source, child.span)),
+            Child::Node(node) => cstr!("node {:?}", text(source, node.span())),
         })
         .collect();
     assert_eq!(
@@ -437,8 +435,8 @@ fn reference_corpus_rows_agree() {
         let error = &row["error"];
         let start = error["start"].as_u64().unwrap();
         let expected = match error["end"].as_u64() {
-            Some(end) => format!("{} {start}..{end}", error["code"].as_str().unwrap()),
-            None => format!("{} {start}", error["code"].as_str().unwrap()),
+            Some(end) => cstr!("{} {start}..{end}", error["code"].as_str().unwrap()),
+            None => cstr!("{} {start}", error["code"].as_str().unwrap()),
         };
         let found = first_error(&source);
         let found = if error["end"].is_null() {
