@@ -55,7 +55,6 @@ import {
   applySharedTemplateRefUnwrapIn,
   beforeSharedTemplateRefUnwrapIn,
 } from "../../tools/support/compat/content-mapper/shared-template-ref-unwrap-transition.ts";
-import { applyWithDefaultsDocsIn } from "../../tools/support/compat/content-mapper/canonical-helper-transition.ts";
 
 test("quiet CLI debug output retains exact helper/file bytes and refuses unrelated stderr", () => {
   const record = JSON.parse(
@@ -183,9 +182,8 @@ test("quiet CLI debug output retains exact helper/file bytes and refuses unrelat
   assert.equal(beforePropValueOrIn(propValueOrSourcePreamble), ownedSourcePreamble);
   assert.throws(() => applyPropValueOrIn(propValueOrSourcePreamble), /PropValueOr/u);
   const listenerSourcePreamble = applyListenerContractIn(propValueOrSourcePreamble);
-  const templateRefSourcePreamble = applySharedTemplateRefUnwrapIn(listenerSourcePreamble);
-  const currentSourcePreamble = applyWithDefaultsDocsIn(templateRefSourcePreamble);
-  assert.equal(beforeSharedTemplateRefUnwrapIn(templateRefSourcePreamble), listenerSourcePreamble);
+  const currentSourcePreamble = applySharedTemplateRefUnwrapIn(listenerSourcePreamble);
+  assert.equal(beforeSharedTemplateRefUnwrapIn(currentSourcePreamble), listenerSourcePreamble);
   const canonPredecessor = [...canonLeftoverPreamblePaths]
     .reverse()
     .reduce((current, file) => beforeCanonLeftoversIn(file, current), canonSourcePreamble);
