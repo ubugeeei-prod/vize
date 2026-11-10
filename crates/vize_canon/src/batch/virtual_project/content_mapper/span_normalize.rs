@@ -5,6 +5,9 @@ use std::ops::Range;
 
 use super::{ContentMapperSpanKind, SpanCandidate, ranges_overlap};
 
+mod runs;
+pub(super) use runs::join_verbatim_runs;
+
 pub(super) fn normalize(candidates: Vec<SpanCandidate>) -> Vec<SpanCandidate> {
     // A split verbatim piece takes its generated length from its original. When
     // both lengths agree, as every projected verbatim span's do, pieces stay
