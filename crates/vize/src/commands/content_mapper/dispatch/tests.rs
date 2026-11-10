@@ -6,9 +6,45 @@ use std::time::Duration;
 use serde::Serialize;
 use serde_json::{Value, json};
 
-use super::{TRANSFORM_WORKER_STACK_BYTES, WorkerPoolReceipt, serve_with_worker_plan};
+use super::{
+    TRANSFORM_WORKER_STACK_BYTES, WorkerPoolReceipt, WriteProgress, serve_with_worker_plan,
+    write_ordered,
+};
 
 const IMPOSSIBLE_STACK: usize = usize::MAX / 4;
+
+#[derive(Default)]
+struct FlushCounter {
+    bytes: Vec<u8>,
+    flushes: usize,
+}
+
+impl io::Write for FlushCounter {
+    fn write(&mut self, bytes: &[u8]) -> io::Result<usize> {
+        self.bytes.extend_from_slice(bytes);
+        Ok(bytes.len())
+    }
+
+    fn flush(&mut self) -> io::Result<()> {
+        self.flushes += 1;
+        Ok(())
+    }
+}
+
+#[test]
+fn writer_coalesces_a_ready_out_of_order_burst() {
+    let (done, ready) = mpsc::channel();
+    done.send((2, b"c".to_vec())).unwrap();
+    done.send((0, b"a".to_vec())).unwrap();
+    done.send((1, b"b".to_vec())).unwrap();
+    drop(done);
+
+    let mut writer = FlushCounter::default();
+    write_ordered(&mut writer, ready, &WriteProgress::new()).unwrap();
+
+    assert_eq!(writer.bytes, b"abc");
+    assert_eq!(writer.flushes, 1);
+}
 
 #[test]
 fn result_frames_preserve_recursive_legacy_field_order() {

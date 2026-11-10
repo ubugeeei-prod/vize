@@ -5,7 +5,7 @@ use std::io::{self, BufRead, Write};
 use std::panic::{AssertUnwindSafe, catch_unwind};
 use std::path::Path;
 use std::sync::mpsc::{self, Receiver, Sender};
-use std::sync::{Condvar, Mutex, PoisonError};
+use std::sync::{Arc, Condvar, Mutex, PoisonError};
 use std::thread;
 use std::time::{Duration, Instant};
 
@@ -79,7 +79,7 @@ struct TransformJob {
     id: Value,
     file_name: vize_l0::String,
     content: vize_l0::String,
-    settings: ProjectSettings,
+    settings: Arc<ProjectSettings>,
 }
 
 struct WriteProgress {
@@ -292,10 +292,19 @@ fn write_ordered<W: Write>(
     let mut pending = BTreeMap::<u64, Vec<u8>>::new();
     while let Ok((seq, bytes)) = done.recv() {
         pending.insert(seq, bytes);
+        // Workers commonly finish a burst together. Drain every completion
+        // already waiting before writing so one flush and one admission wake
+        // can publish the whole contiguous prefix.
+        for (seq, bytes) in done.try_iter() {
+            pending.insert(seq, bytes);
+        }
+        let first_unflushed = next;
         while let Some(frame) = pending.remove(&next) {
             writer.write_all(&frame)?;
-            writer.flush()?;
             next += 1;
+        }
+        if next != first_unflushed {
+            writer.flush()?;
             progress.record(next);
         }
     }
@@ -435,7 +444,7 @@ fn dispatch_transform(
             return reply(done, seq, &encode_error(&id, -32602, &message)?);
         }
     };
-    let Some(settings) = projects.settings(params.project_handle.as_str()).cloned() else {
+    let Some(settings) = projects.settings(params.project_handle.as_str()) else {
         let message = cstr!("Unknown content mapper project: {}", params.project_handle);
         return reply(done, seq, &encode_error(&id, -32602, &message)?);
     };

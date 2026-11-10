@@ -9,6 +9,7 @@
 //! failing the request, so TypeScript can surface them in the tsconfig.
 
 use std::path::Path;
+use std::sync::Arc;
 
 use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
@@ -35,20 +36,20 @@ pub(super) struct ProjectSettings {
 /// Open mapper projects, keyed by the host-assigned opaque handle.
 #[derive(Default)]
 pub(super) struct ProjectRegistry {
-    projects: FxHashMap<CompactString, ProjectSettings>,
+    projects: FxHashMap<CompactString, Arc<ProjectSettings>>,
 }
 
 impl ProjectRegistry {
     pub fn open(&mut self, handle: CompactString, settings: ProjectSettings) {
-        self.projects.insert(handle, settings);
+        self.projects.insert(handle, Arc::new(settings));
     }
 
     pub fn close(&mut self, handle: &str) {
         self.projects.remove(handle);
     }
 
-    pub fn settings(&self, handle: &str) -> Option<&ProjectSettings> {
-        self.projects.get(handle)
+    pub fn settings(&self, handle: &str) -> Option<Arc<ProjectSettings>> {
+        self.projects.get(handle).map(Arc::clone)
     }
 }
 
