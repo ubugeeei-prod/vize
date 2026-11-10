@@ -131,15 +131,22 @@ impl WriteProgress {
     }
 }
 
-pub(super) fn serve<R: BufRead, W: Write + Send>(reader: &mut R, writer: &mut W) -> io::Result<()> {
+/// Serve the protocol. `initialized` means the launcher already answered
+/// `initialize`, so project and transform requests are accepted at once.
+pub(super) fn serve<R: BufRead, W: Write + Send>(
+    reader: &mut R,
+    writer: &mut W,
+    initialized: bool,
+) -> io::Result<()> {
     let workers = thread::available_parallelism()
         .map(std::num::NonZero::get)
         .unwrap_or(1);
-    serve_with_worker_plan(
+    serve_with_plan(
         reader,
         writer,
         thread::Builder::new(),
         std::iter::repeat_n(TRANSFORM_WORKER_STACK_BYTES, workers),
+        initialized,
     )
     .map(|_| ())
 }
@@ -163,11 +170,22 @@ fn capture_worker_pool(receipt: &WorkerPoolReceipt) -> io::Result<()> {
     serde_json::to_writer(file, receipt).map_err(io::Error::other)
 }
 
+#[cfg(all(test, target_os = "linux", target_pointer_width = "64"))]
 fn serve_with_worker_plan<R: BufRead, W: Write + Send>(
     reader: &mut R,
     writer: &mut W,
     writer_builder: thread::Builder,
     worker_stacks: impl ExactSizeIterator<Item = usize>,
+) -> io::Result<WorkerPoolReceipt> {
+    serve_with_plan(reader, writer, writer_builder, worker_stacks, false)
+}
+
+fn serve_with_plan<R: BufRead, W: Write + Send>(
+    reader: &mut R,
+    writer: &mut W,
+    writer_builder: thread::Builder,
+    worker_stacks: impl ExactSizeIterator<Item = usize>,
+    initialized: bool,
 ) -> io::Result<WorkerPoolReceipt> {
     let write_error = Mutex::new(None::<io::Error>);
     let progress = WriteProgress::new();
@@ -212,8 +230,16 @@ fn serve_with_worker_plan<R: BufRead, W: Write + Send>(
         }
         let read = match std::num::NonZeroUsize::new(receipt.effective_workers) {
             None => Err(io::Error::other("content-mapper has no transform workers")),
-            Some(inflight_limit) => capture_worker_pool(&receipt)
-                .and_then(|()| read_loop(reader, &job_tx, &done_tx, &progress, inflight_limit)),
+            Some(inflight_limit) => capture_worker_pool(&receipt).and_then(|()| {
+                read_loop(
+                    reader,
+                    &job_tx,
+                    &done_tx,
+                    &progress,
+                    inflight_limit,
+                    initialized,
+                )
+            }),
         };
         drop(job_tx);
         drop(done_tx);
@@ -282,8 +308,8 @@ fn read_loop<R: BufRead>(
     done: &Sender<(u64, Vec<u8>)>,
     progress: &WriteProgress,
     inflight_limit: std::num::NonZeroUsize,
+    mut initialized: bool,
 ) -> io::Result<()> {
-    let mut initialized = false;
     let mut projects = ProjectRegistry::default();
     let mut seq = 0_u64;
     loop {

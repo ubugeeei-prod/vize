@@ -1,7 +1,8 @@
 use serde_json::{Value, json};
 
 use super::test_support::{
-    exchange, frames, initialize_request, open_project_request, transform_request,
+    exchange, exchange_initialized, frames, initialize_request, open_project_request,
+    transform_request,
 };
 
 #[test]
@@ -114,6 +115,27 @@ fn rejects_transform_before_initialize() {
 
     assert_eq!(responses[0]["id"], "early");
     assert_eq!(responses[0]["error"]["code"], -32002);
+}
+
+#[test]
+fn a_launcher_initialized_stream_serves_projects_without_initialize() {
+    // #12530: the JS launcher answers `initialize` before the addon loads.
+    let input = frames(&[
+        open_project_request(2, Value::Null, json!({})),
+        transform_request(3, "<template><div /></template>"),
+    ]);
+    let responses = exchange_initialized(&input);
+
+    assert_eq!(responses.len(), 2);
+    assert_eq!(responses[0]["id"], 2);
+    assert_eq!(responses[0].get("error"), None, "{}", responses[0]);
+    assert_eq!(responses[1]["id"], 3);
+    assert!(
+        responses[1]["result"]["text"].is_string(),
+        "{}",
+        responses[1]
+    );
+    assert_eq!(exchange(&input)[0]["error"]["code"], -32002);
 }
 
 #[test]
