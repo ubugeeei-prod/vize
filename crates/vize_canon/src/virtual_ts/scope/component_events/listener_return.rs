@@ -8,9 +8,11 @@ pub(super) struct Context<'a> {
     pub(super) indent: &'a str,
     pub(super) listener_args_type: &'a str,
     pub(super) args_type: &'a str,
+    pub(super) static_emit_args: &'a str,
     pub(super) return_type: &'a str,
     pub(super) prop_args: &'a str,
     pub(super) props_box: &'a str,
+    pub(super) raw_props_box: &'a str,
     pub(super) fallthrough_box: &'a str,
     pub(super) prop_key: &'a str,
 }
@@ -24,9 +26,11 @@ pub(super) fn emit(ts: &mut crate::virtual_ts::TextBuf, ctx: Context<'_>) -> Str
         indent,
         listener_args_type,
         args_type,
+        static_emit_args,
         return_type,
         prop_args,
         props_box,
+        raw_props_box,
         fallthrough_box,
         prop_key,
     } = ctx;
@@ -47,19 +51,26 @@ pub(super) fn emit(ts: &mut crate::virtual_ts::TextBuf, ctx: Context<'_>) -> Str
         } else {
             String::from("any")
         };
-        if let Some(props) = contextual_props {
-            let lib_non_nullable = crate::virtual_ts::generated_names::lib("NonNullable");
-            let lib_extract = crate::virtual_ts::generated_names::lib("Extract");
-            append!(
-                *ts,
-                "{indent}type {return_type} = unknown[] extends {prop_args} ? any : {props} extends {{ {prop_key}?: infer __H }} ? {lib_extract}<{lib_non_nullable}<__H>, (...args: any[]) => any> extends (...args: any[]) => infer __R ? __R : any : any;\n",
-            );
+        let lib_non_nullable = crate::virtual_ts::generated_names::lib("NonNullable");
+        let lib_extract = crate::virtual_ts::generated_names::lib("Extract");
+        let authored_return = cstr!("{return_type}_authored");
+        append!(
+            *ts,
+            "{indent}type {authored_return} = {raw_props_box} extends infer __B ? __B extends [infer __RP] ? __RP extends {{ {prop_key}?: infer __H }} ? {lib_extract}<{lib_non_nullable}<__H>, (...args: any[]) => any> extends (...args: any[]) => infer __R ? [__R] : [] : [] : [] : never;\n",
+        );
+        let public_return = if let Some(props) = contextual_props {
+            cstr!(
+                "unknown[] extends {prop_args} ? any : {props} extends {{ {prop_key}?: infer __H }} ? {lib_extract}<{lib_non_nullable}<__H>, (...args: any[]) => any> extends (...args: any[]) => infer __R ? __R : any : any"
+            )
         } else {
-            append!(
-                *ts,
-                "{indent}type {return_type} = unknown[] extends {prop_args} ? {unresolved_return} : {props_box} extends infer __B ? __B extends [infer __P] ? (__P extends {{ {prop_key}?: (...args: any[]) => infer __R }} ? __R : any) : any : never;\n",
-            );
-        }
+            cstr!(
+                "unknown[] extends {prop_args} ? {unresolved_return} : {props_box} extends infer __B ? __B extends [infer __P] ? (__P extends {{ {prop_key}?: (...args: any[]) => infer __R }} ? __R : any) : any : never"
+            )
+        };
+        append!(
+            *ts,
+            "{indent}type {return_type} = {authored_return} extends [infer __R] ? __R : unknown[] extends {static_emit_args} ? ({public_return}) : void;\n",
+        );
     }
     cstr!(
         "unknown[] extends {args_type} ? ((...args: any[]) => any) : ((...args: {listener_args_type}) => {return_type})"

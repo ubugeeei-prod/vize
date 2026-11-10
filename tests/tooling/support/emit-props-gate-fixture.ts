@@ -2,14 +2,14 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import { fileURLToPath } from "node:url";
 import ts from "typescript";
-import { beforeListenerLibTypeQualification } from "../../../tools/support/compat/content-mapper/lib-type-qualification-listeners-transition.ts";
+import { beforeCurrentListenerLibTypeQualification } from "../../../tools/support/compat/content-mapper/lib-type-qualification-listeners-transition.ts";
 import { emitGateOracle } from "./emit-props-gate-oracle.ts";
 
 // Shared by the emit-props gate oracles: the generator's own templates, the
 // component shapes a closed template can bind, and one TypeScript check.
 export const repo = new URL("../../../", import.meta.url);
 export const read = (path: string) =>
-  beforeListenerLibTypeQualification(path, fs.readFileSync(new URL(path, repo), "utf8"));
+  beforeCurrentListenerLibTypeQualification(path, fs.readFileSync(new URL(path, repo), "utf8"));
 export const oracle = emitGateOracle(read);
 export const declarations = "crates/vize_canon/src/virtual_ts/helpers/declarations/";
 export const inference = read(`${declarations}emit-inference.d.ts.txt`);

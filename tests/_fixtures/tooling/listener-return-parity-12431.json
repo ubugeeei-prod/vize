@@ -1,0 +1,216 @@
+{
+  "schema": "vize.listenerReturnParitySource.v1",
+  "issue": 12431,
+  "credit": {
+    "compiled": false,
+    "native": false,
+    "performance": false
+  },
+  "baseRevision": "d73d0c7dcfa17b58ae515db73ba5a2991b0888ab",
+  "files": [
+    {
+      "path": "crates/vize_canon/src/virtual_ts/scope/component_events.rs",
+      "before": {
+        "bytes": 23339,
+        "sha256": "8e782071a782a4222e51ca36ac6a59f726deaf593cb39eee9733170d282fc94d"
+      },
+      "after": {
+        "bytes": 23506,
+        "sha256": "4b98d94eb057059388a509557eed7826716cc75ad52f8f570abc86e6dfd79c1c"
+      },
+      "hunks": [
+        {
+          "before": "    // fallthrough root: derive each once and unwrap the one-tuple per event.\n    let component_aliases = cstr!(\"__{component_type_name}_{component_scope_id}_\");\n    let props_box = cstr!(\"{component_aliases}_props\");\n    let emit_props_box = cstr!(\"{component_aliases}_emit_props\");\n    let fallthrough_box = cstr!(\"{component_aliases}_fallthrough\");\n    let library = cstr!(\"{component_aliases}_library\");\n",
+          "after": "    // fallthrough root: derive each once and unwrap the one-tuple per event.\n    let component_aliases = cstr!(\"__{component_type_name}_{component_scope_id}_\");\n    let props_box = cstr!(\"{component_aliases}_props\");\n    let raw_props_box = cstr!(\"{component_aliases}_raw_props\");\n    let emit_props_box = cstr!(\"{component_aliases}_emit_props\");\n    let fallthrough_box = cstr!(\"{component_aliases}_fallthrough\");\n    let library = cstr!(\"{component_aliases}_library\");\n"
+        },
+        {
+          "before": "            ts,\n            \"{indent}type {props_box} = typeof {component_ref} extends {{ new (...args: any[]): {{ $props: infer __P }} }} ? [__P] : typeof {component_ref} extends (props: infer __P, ...args: any[]) => any ? [__P] : [];\\n\",\n        );\n        vize_l0::emit_ts!(\n            ts,\n            \"{indent}type {emit_props_box} = typeof {component_ref} extends {{ __vizeEmitProps?: infer __EP }} ? [__EP] : [];\\n\",\n",
+          "after": "            ts,\n            \"{indent}type {props_box} = typeof {component_ref} extends {{ new (...args: any[]): {{ $props: infer __P }} }} ? [__P] : typeof {component_ref} extends (props: infer __P, ...args: any[]) => any ? [__P] : [];\\n\",\n        );\n        vize_l0::emit_ts!(\n            ts,\n            \"{indent}type {raw_props_box} = typeof {component_ref} extends {{ readonly __vizeRawProps?: infer __RP }} ? [__RP] : [];\\n\",\n        );\n        vize_l0::emit_ts!(\n            ts,\n            \"{indent}type {emit_props_box} = typeof {component_ref} extends {{ __vizeEmitProps?: infer __EP }} ? [__EP] : [];\\n\",\n"
+        },
+        {
+          "before": "                prop_key: &prop_key,\n                library: &library,\n                props_box: &props_box,\n                emit_props_box: &emit_props_box,\n                fallthrough_box: native_fallthrough_only.then_some(fallthrough_box.as_str()),\n                listener_key: &listener_key,\n",
+          "after": "                prop_key: &prop_key,\n                library: &library,\n                props_box: &props_box,\n                raw_props_box: &raw_props_box,\n                emit_props_box: &emit_props_box,\n                fallthrough_box: native_fallthrough_only.then_some(fallthrough_box.as_str()),\n                listener_key: &listener_key,\n"
+        },
+        {
+          "before": "        );\n        args_type.clone()\n    };\n    // The modern listener returns what the child's declared listener prop\n    // returns: `any` for the handler props Vue's own `EmitFn`/Volar synthesis\n    // produce (`(user: User) => any`), so an emit-payload mismatch elaborates\n    // with the same expected type `vue-tsc` prints (#3889), and the authored\n    // return type of a prop such as `onClick?: () => number`, so a handler\n    // that returns nothing is rejected as it is under `vue-tsc`.\n    let listener_type_expr = listener_return::emit(\n        ts,\n        listener_return::Context {\n",
+          "after": "        );\n        args_type.clone()\n    };\n    // Vue's synthesized listener props return `void`. Keep that diagnostic\n    // surface for declared emits, while preserving the authored return type of\n    // a plain prop such as `onClick?: () => number`.\n    let listener_type_expr = listener_return::emit(\n        ts,\n        listener_return::Context {\n"
+        },
+        {
+          "before": "            indent,\n            listener_args_type: listener_args_type.as_str(),\n            args_type: args_type.as_str(),\n            return_type: return_type.as_str(),\n            prop_args: prop_args.as_str(),\n            props_box: props_box.as_str(),\n            fallthrough_box: fallthrough_box.as_str(),\n            prop_key: prop_key.as_str(),\n        },\n",
+          "after": "            indent,\n            listener_args_type: listener_args_type.as_str(),\n            args_type: args_type.as_str(),\n            static_emit_args: static_emit_args.as_str(),\n            return_type: return_type.as_str(),\n            prop_args: prop_args.as_str(),\n            props_box: props_box.as_str(),\n            raw_props_box: raw_props_box.as_str(),\n            fallthrough_box: fallthrough_box.as_str(),\n            prop_key: prop_key.as_str(),\n        },\n"
+        }
+      ]
+    },
+    {
+      "path": "crates/vize_canon/src/virtual_ts/scope/component_events/listener_contract.rs",
+      "before": {
+        "bytes": 7913,
+        "sha256": "23763ddbe73b6918dc420548c852ff6641b772427ee0041a0b9ee89b996fde4a"
+      },
+      "after": {
+        "bytes": 7992,
+        "sha256": "804f79574247b75596a7f50c185875bed8fdae174e0994d6b6a31893a966ce2c"
+      },
+      "hunks": [
+        {
+          "before": "    pub(super) prop_key: &'a str,\n    pub(super) library: &'a str,\n    pub(super) props_box: &'a str,\n    pub(super) emit_props_box: &'a str,\n    /// The native root's box, or `None` when no fallthrough payload applies.\n    pub(super) fallthrough_box: Option<&'a str>,\n",
+          "after": "    pub(super) prop_key: &'a str,\n    pub(super) library: &'a str,\n    pub(super) props_box: &'a str,\n    pub(super) raw_props_box: &'a str,\n    pub(super) emit_props_box: &'a str,\n    /// The native root's box, or `None` when no fallthrough payload applies.\n    pub(super) fallthrough_box: Option<&'a str>,\n"
+        },
+        {
+          "before": "        indent,\n        library,\n        props_box,\n        emit_props_box,\n        listener_key,\n        raw_listener_key,\n",
+          "after": "        indent,\n        library,\n        props_box,\n        raw_props_box,\n        emit_props_box,\n        listener_key,\n        raw_listener_key,\n"
+        },
+        {
+          "before": "    let helper = crate::virtual_ts::helpers::shared_types::LISTENER_CONTRACT.select(true);\n    vize_l0::emit_ts!(\n        ts,\n        \"{indent}type {alias} = {helper}<{library}, {props_box}, {emit_props_box}, {fallthrough_box}, {listener_key}, {raw_listener_key}, {inferred_args}, {loose}>;\\n\",\n    );\n    let script_binding = contract.has_script_component_binding;\n    let typed_handler = contract.needs_typed_handler_assignment\n",
+          "after": "    let helper = crate::virtual_ts::helpers::shared_types::LISTENER_CONTRACT.select(true);\n    vize_l0::emit_ts!(\n        ts,\n        \"{indent}type {alias} = {helper}<{library}, {props_box}, {raw_props_box}, {emit_props_box}, {fallthrough_box}, {listener_key}, {raw_listener_key}, {inferred_args}, {loose}>;\\n\",\n    );\n    let script_binding = contract.has_script_component_binding;\n    let typed_handler = contract.needs_typed_handler_assignment\n"
+        }
+      ]
+    },
+    {
+      "path": "crates/vize_canon/src/virtual_ts/scope/component_events/listener_return.rs",
+      "before": {
+        "bytes": 2490,
+        "sha256": "71e6b2f7db4df0f6e372313c4bd1184508f05cdded75f3b58cd857bb016be935"
+      },
+      "after": {
+        "bytes": 3120,
+        "sha256": "c999c654ee7aafa482ad2121d558aae8111633642dbc1249a8fe69f28288f236"
+      },
+      "hunks": [
+        {
+          "before": "    pub(super) indent: &'a str,\n    pub(super) listener_args_type: &'a str,\n    pub(super) args_type: &'a str,\n    pub(super) return_type: &'a str,\n    pub(super) prop_args: &'a str,\n    pub(super) props_box: &'a str,\n    pub(super) fallthrough_box: &'a str,\n    pub(super) prop_key: &'a str,\n}\n",
+          "after": "    pub(super) indent: &'a str,\n    pub(super) listener_args_type: &'a str,\n    pub(super) args_type: &'a str,\n    pub(super) static_emit_args: &'a str,\n    pub(super) return_type: &'a str,\n    pub(super) prop_args: &'a str,\n    pub(super) props_box: &'a str,\n    pub(super) raw_props_box: &'a str,\n    pub(super) fallthrough_box: &'a str,\n    pub(super) prop_key: &'a str,\n}\n"
+        },
+        {
+          "before": "        indent,\n        listener_args_type,\n        args_type,\n        return_type,\n        prop_args,\n        props_box,\n        fallthrough_box,\n        prop_key,\n    } = ctx;\n",
+          "after": "        indent,\n        listener_args_type,\n        args_type,\n        static_emit_args,\n        return_type,\n        prop_args,\n        props_box,\n        raw_props_box,\n        fallthrough_box,\n        prop_key,\n    } = ctx;\n"
+        },
+        {
+          "before": "        } else {\n            String::from(\"any\")\n        };\n        if let Some(props) = contextual_props {\n            let lib_non_nullable = crate::virtual_ts::generated_names::lib(\"NonNullable\");\n            let lib_extract = crate::virtual_ts::generated_names::lib(\"Extract\");\n            append!(\n                *ts,\n                \"{indent}type {return_type} = unknown[] extends {prop_args} ? any : {props} extends {{ {prop_key}?: infer __H }} ? {lib_extract}<{lib_non_nullable}<__H>, (...args: any[]) => any> extends (...args: any[]) => infer __R ? __R : any : any;\\n\",\n            );\n        } else {\n            append!(\n                *ts,\n                \"{indent}type {return_type} = unknown[] extends {prop_args} ? {unresolved_return} : {props_box} extends infer __B ? __B extends [infer __P] ? (__P extends {{ {prop_key}?: (...args: any[]) => infer __R }} ? __R : any) : any : never;\\n\",\n            );\n        }\n    }\n    cstr!(\n        \"unknown[] extends {args_type} ? ((...args: any[]) => any) : ((...args: {listener_args_type}) => {return_type})\"\n",
+          "after": "        } else {\n            String::from(\"any\")\n        };\n        let lib_non_nullable = crate::virtual_ts::generated_names::lib(\"NonNullable\");\n        let lib_extract = crate::virtual_ts::generated_names::lib(\"Extract\");\n        let authored_return = cstr!(\"{return_type}_authored\");\n        append!(\n            *ts,\n            \"{indent}type {authored_return} = {raw_props_box} extends infer __B ? __B extends [infer __RP] ? __RP extends {{ {prop_key}?: infer __H }} ? {lib_extract}<{lib_non_nullable}<__H>, (...args: any[]) => any> extends (...args: any[]) => infer __R ? [__R] : [] : [] : [] : never;\\n\",\n        );\n        let public_return = if let Some(props) = contextual_props {\n            cstr!(\n                \"unknown[] extends {prop_args} ? any : {props} extends {{ {prop_key}?: infer __H }} ? {lib_extract}<{lib_non_nullable}<__H>, (...args: any[]) => any> extends (...args: any[]) => infer __R ? __R : any : any\"\n            )\n        } else {\n            cstr!(\n                \"unknown[] extends {prop_args} ? {unresolved_return} : {props_box} extends infer __B ? __B extends [infer __P] ? (__P extends {{ {prop_key}?: (...args: any[]) => infer __R }} ? __R : any) : any : never\"\n            )\n        };\n        append!(\n            *ts,\n            \"{indent}type {return_type} = {authored_return} extends [infer __R] ? __R : unknown[] extends {static_emit_args} ? ({public_return}) : void;\\n\",\n        );\n    }\n    cstr!(\n        \"unknown[] extends {args_type} ? ((...args: any[]) => any) : ((...args: {listener_args_type}) => {return_type})\"\n"
+        }
+      ]
+    },
+    {
+      "path": "crates/vize_canon/src/virtual_ts/helpers/declarations/shared-listener-args.d.ts.txt",
+      "before": {
+        "bytes": 3685,
+        "sha256": "49724b840a69b9ffe4708ee3fa2c8c75c495b43c3bd1ee51ad090c7a0c20a430"
+      },
+      "after": {
+        "bytes": 4129,
+        "sha256": "55a77e0ba428eb158aae4be2c45a3495247b8d6b1427adc8ff58d30448a5ec58"
+      },
+      "hunks": [
+        {
+          "before": "  type $ListenerPayload<__Prop, __Static, __Unresolved, __Inferred, __Loose> = [__Loose] extends [true] ? unknown[] : unknown[] extends __Inferred ? (unknown[] extends __Prop ? (unknown[] extends __Static ? __Unresolved : __Static) : __Prop) : __Inferred;\n  type $ListenerEvent<__Args> = [__Args] extends [infer __A extends unknown[]] ? [__A] extends [[]] ? any : unknown[] extends __A ? any : __A[0] : never;\n  type $ListenerFallthroughReturn<__FB, __K extends string | number | symbol> = __FB extends [infer __F] ? NonNullable<__F> extends { [__Q in __K]?: infer __H } ? Extract<NonNullable<__H>, (...args: any[]) => any> extends (...args: any[]) => infer __R ? __R : any : any : any;\n  type $ListenerReturn<__Prop, __PB, __Unresolved, __K extends string | number | symbol> = unknown[] extends __Prop ? __Unresolved : __PB extends [infer __P] ? (__P extends { [__Q in __K]?: (...args: any[]) => infer __R } ? __R : any) : any;\n  type $ListenerArrays<__PB, __K extends string | number | symbol> = __PB extends [infer __P] ? 0 extends (1 & __P) ? never : __P extends { [__Q in __K]?: infer __H } ? Extract<NonNullable<__H>, readonly unknown[]> : never : never;\n  type $ListenerShape<__Args, __Return, __Arrays, __Listener = unknown[] extends __Args ? ((...args: any[]) => any) : ((...args: __Args extends unknown[] ? __Args : never) => __Return)> = { event: $ListenerEvent<__Args>; listener: __Listener; handler: unknown[] extends __Args ? ((...args: any[]) => any) : __Listener; looseHandler: unknown[] extends __Args ? unknown : __Listener; arrays: __Arrays };\n  type $ListenerContractOf<__PB, __FB, __K extends string | number | symbol, __Raw extends string | number | symbol, __Prop, __Static, __Inferred, __Loose> = $ListenerShape<$ListenerPayload<__Prop, __Static, $ListenerFallthroughArgs<__FB, __K, __Raw>, __Inferred, __Loose>, $ListenerReturn<__Prop, __PB, $ListenerFallthroughReturn<__FB, __K>, __K>, $ListenerArrays<__PB, __K>>;\n  export type $ListenerContract<__L, __PB, __EB, __FB, __K extends string | number | symbol, __Raw extends string | number | symbol, __Inferred, __Loose> = $ListenerContractOf<__PB, __FB, __K, __Raw, $ListenerPropArgs<__L, __PB, __K, __Raw>, $ListenerStaticArgs<__EB, __K>, __Inferred, __Loose>;\n}\n",
+          "after": "  type $ListenerPayload<__Prop, __Static, __Unresolved, __Inferred, __Loose> = [__Loose] extends [true] ? unknown[] : unknown[] extends __Inferred ? (unknown[] extends __Prop ? (unknown[] extends __Static ? __Unresolved : __Static) : __Prop) : __Inferred;\n  type $ListenerEvent<__Args> = [__Args] extends [infer __A extends unknown[]] ? [__A] extends [[]] ? any : unknown[] extends __A ? any : __A[0] : never;\n  type $ListenerFallthroughReturn<__FB, __K extends string | number | symbol> = __FB extends [infer __F] ? NonNullable<__F> extends { [__Q in __K]?: infer __H } ? Extract<NonNullable<__H>, (...args: any[]) => any> extends (...args: any[]) => infer __R ? __R : any : any : any;\n  type $ListenerAuthoredReturn<__RPB, __K extends string | number | symbol> = __RPB extends [infer __RP] ? __RP extends { [__Q in __K]?: infer __H } ? Extract<NonNullable<__H>, (...args: any[]) => any> extends (...args: any[]) => infer __R ? [__R] : [] : [] : [];\n  type $ListenerReturn<__Prop, __Static, __PB, __RPB, __Unresolved, __K extends string | number | symbol, __Authored = $ListenerAuthoredReturn<__RPB, __K>> = __Authored extends [infer __R] ? __R : unknown[] extends __Static ? unknown[] extends __Prop ? __Unresolved : __PB extends [infer __P] ? (__P extends { [__Q in __K]?: (...args: any[]) => infer __R } ? __R : any) : any : void;\n  type $ListenerArrays<__PB, __K extends string | number | symbol> = __PB extends [infer __P] ? 0 extends (1 & __P) ? never : __P extends { [__Q in __K]?: infer __H } ? Extract<NonNullable<__H>, readonly unknown[]> : never : never;\n  type $ListenerShape<__Args, __Return, __Arrays, __Listener = unknown[] extends __Args ? ((...args: any[]) => any) : ((...args: __Args extends unknown[] ? __Args : never) => __Return)> = { event: $ListenerEvent<__Args>; listener: __Listener; handler: unknown[] extends __Args ? ((...args: any[]) => any) : __Listener; looseHandler: unknown[] extends __Args ? unknown : __Listener; arrays: __Arrays };\n  type $ListenerContractOf<__PB, __RPB, __FB, __K extends string | number | symbol, __Raw extends string | number | symbol, __Prop, __Static, __Inferred, __Loose> = $ListenerShape<$ListenerPayload<__Prop, __Static, $ListenerFallthroughArgs<__FB, __K, __Raw>, __Inferred, __Loose>, $ListenerReturn<__Prop, __Static, __PB, __RPB, $ListenerFallthroughReturn<__FB, __K>, __K>, $ListenerArrays<__PB, __K>>;\n  export type $ListenerContract<__L, __PB, __RPB, __EB, __FB, __K extends string | number | symbol, __Raw extends string | number | symbol, __Inferred, __Loose> = $ListenerContractOf<__PB, __RPB, __FB, __K, __Raw, $ListenerPropArgs<__L, __PB, __K, __Raw>, $ListenerStaticArgs<__EB, __K>, __Inferred, __Loose>;\n}\n"
+        }
+      ]
+    },
+    {
+      "path": "npm/cli/virtual-ts-listeners.d.ts",
+      "before": {
+        "bytes": 4101,
+        "sha256": "bef58ac085eda768a4614b7bafa86489732f92e6375d250a442e2d9fec2bb01b"
+      },
+      "after": {
+        "bytes": 4620,
+        "sha256": "bdcdbea8c47aea9df5abf8840ace09592f30fc33d5d5e3bf748b1b2390bfa55b"
+      },
+      "hunks": [
+        {
+          "before": "      : any\n    : any\n  : any;\ntype $ListenerReturn<\n  __Prop,\n  __PB,\n  __Unresolved,\n  __K extends string | number | symbol,\n> = unknown[] extends __Prop\n  ? __Unresolved\n  : __PB extends [infer __P]\n    ? __P extends { [__Q in __K]?: (...args: any[]) => infer __R }\n      ? __R\n      : any\n    : any;\ntype $ListenerArrays<__PB, __K extends string | number | symbol> = __PB extends [infer __P]\n  ? 0 extends 1 & __P\n    ? never\n",
+          "after": "      : any\n    : any\n  : any;\ntype $ListenerAuthoredReturn<__RPB, __K extends string | number | symbol> = __RPB extends [\n  infer __RP,\n]\n  ? __RP extends { [__Q in __K]?: infer __H }\n    ? Extract<NonNullable<__H>, (...args: any[]) => any> extends (...args: any[]) => infer __R\n      ? [__R]\n      : []\n    : []\n  : [];\ntype $ListenerReturn<\n  __Prop,\n  __Static,\n  __PB,\n  __RPB,\n  __Unresolved,\n  __K extends string | number | symbol,\n  __Authored = $ListenerAuthoredReturn<__RPB, __K>,\n> = __Authored extends [infer __R]\n  ? __R\n  : unknown[] extends __Static\n    ? unknown[] extends __Prop\n      ? __Unresolved\n      : __PB extends [infer __P]\n        ? __P extends { [__Q in __K]?: (...args: any[]) => infer __R }\n          ? __R\n          : any\n        : any\n    : void;\ntype $ListenerArrays<__PB, __K extends string | number | symbol> = __PB extends [infer __P]\n  ? 0 extends 1 & __P\n    ? never\n"
+        },
+        {
+          "before": "};\ntype $ListenerContractOf<\n  __PB,\n  __FB,\n  __K extends string | number | symbol,\n  __Raw extends string | number | symbol,\n",
+          "after": "};\ntype $ListenerContractOf<\n  __PB,\n  __RPB,\n  __FB,\n  __K extends string | number | symbol,\n  __Raw extends string | number | symbol,\n"
+        },
+        {
+          "before": "    __Inferred,\n    __Loose\n  >,\n  $ListenerReturn<__Prop, __PB, $ListenerFallthroughReturn<__FB, __K>, __K>,\n  $ListenerArrays<__PB, __K>\n>;\nexport type $ListenerContract<\n  __L,\n  __PB,\n  __EB,\n  __FB,\n  __K extends string | number | symbol,\n",
+          "after": "    __Inferred,\n    __Loose\n  >,\n  $ListenerReturn<__Prop, __Static, __PB, __RPB, $ListenerFallthroughReturn<__FB, __K>, __K>,\n  $ListenerArrays<__PB, __K>\n>;\nexport type $ListenerContract<\n  __L,\n  __PB,\n  __RPB,\n  __EB,\n  __FB,\n  __K extends string | number | symbol,\n"
+        },
+        {
+          "before": "  __Loose,\n> = $ListenerContractOf<\n  __PB,\n  __FB,\n  __K,\n  __Raw,\n",
+          "after": "  __Loose,\n> = $ListenerContractOf<\n  __PB,\n  __RPB,\n  __FB,\n  __K,\n  __Raw,\n"
+        }
+      ]
+    },
+    {
+      "path": "npm/cli/virtual-ts.d.ts",
+      "before": {
+        "bytes": 16090,
+        "sha256": "c1060931833e6664de7c2ab363a000a9ed048a350f6b5330a7cf432d5a211a97"
+      },
+      "after": {
+        "bytes": 16126,
+        "sha256": "fe59f09184c8a73cac19b0ab8bfbc023ab6cc8e35679824ded5ff59f21f2612f"
+      },
+      "hunks": [
+        {
+          "before": "export type $ListenerContract<\n  __L,\n  __PB,\n  __EB,\n  __FB,\n  __K extends string | number | symbol,\n  __Raw extends string | number | symbol,\n  __Inferred,\n  __Loose,\n> = __vizeListenerTypes.$ListenerContract<__L, __PB, __EB, __FB, __K, __Raw, __Inferred, __Loose>;\n",
+          "after": "export type $ListenerContract<\n  __L,\n  __PB,\n  __RPB,\n  __EB,\n  __FB,\n  __K extends string | number | symbol,\n  __Raw extends string | number | symbol,\n  __Inferred,\n  __Loose,\n> = __vizeListenerTypes.$ListenerContract<\n  __L,\n  __PB,\n  __RPB,\n  __EB,\n  __FB,\n  __K,\n  __Raw,\n  __Inferred,\n  __Loose\n>;\n"
+        }
+      ]
+    },
+    {
+      "path": "npm/cli/virtual-ts.d.mts",
+      "before": {
+        "bytes": 16090,
+        "sha256": "c1060931833e6664de7c2ab363a000a9ed048a350f6b5330a7cf432d5a211a97"
+      },
+      "after": {
+        "bytes": 16126,
+        "sha256": "fe59f09184c8a73cac19b0ab8bfbc023ab6cc8e35679824ded5ff59f21f2612f"
+      },
+      "hunks": [
+        {
+          "before": "export type $ListenerContract<\n  __L,\n  __PB,\n  __EB,\n  __FB,\n  __K extends string | number | symbol,\n  __Raw extends string | number | symbol,\n  __Inferred,\n  __Loose,\n> = __vizeListenerTypes.$ListenerContract<__L, __PB, __EB, __FB, __K, __Raw, __Inferred, __Loose>;\n",
+          "after": "export type $ListenerContract<\n  __L,\n  __PB,\n  __RPB,\n  __EB,\n  __FB,\n  __K extends string | number | symbol,\n  __Raw extends string | number | symbol,\n  __Inferred,\n  __Loose,\n> = __vizeListenerTypes.$ListenerContract<\n  __L,\n  __PB,\n  __RPB,\n  __EB,\n  __FB,\n  __K,\n  __Raw,\n  __Inferred,\n  __Loose\n>;\n"
+        }
+      ]
+    },
+    {
+      "path": "npm/cli/virtual-ts.d.cts",
+      "before": {
+        "bytes": 16090,
+        "sha256": "c1060931833e6664de7c2ab363a000a9ed048a350f6b5330a7cf432d5a211a97"
+      },
+      "after": {
+        "bytes": 16126,
+        "sha256": "fe59f09184c8a73cac19b0ab8bfbc023ab6cc8e35679824ded5ff59f21f2612f"
+      },
+      "hunks": [
+        {
+          "before": "export type $ListenerContract<\n  __L,\n  __PB,\n  __EB,\n  __FB,\n  __K extends string | number | symbol,\n  __Raw extends string | number | symbol,\n  __Inferred,\n  __Loose,\n> = __vizeListenerTypes.$ListenerContract<__L, __PB, __EB, __FB, __K, __Raw, __Inferred, __Loose>;\n",
+          "after": "export type $ListenerContract<\n  __L,\n  __PB,\n  __RPB,\n  __EB,\n  __FB,\n  __K extends string | number | symbol,\n  __Raw extends string | number | symbol,\n  __Inferred,\n  __Loose,\n> = __vizeListenerTypes.$ListenerContract<\n  __L,\n  __PB,\n  __RPB,\n  __EB,\n  __FB,\n  __K,\n  __Raw,\n  __Inferred,\n  __Loose\n>;\n"
+        }
+      ]
+    }
+  ],
+  "preambles": [
+    {
+      "strict": false,
+      "before": {
+        "bytes": 52612,
+        "sha256": "6313a1f43b18266d116b8fbd3b35c1badf4ac710bb6cfd24f47e530100548938"
+      },
+      "after": {
+        "bytes": 53056,
+        "sha256": "ad3f386fdf6678abcfe6d68b8f260e339babcda54971c46b3323e47c8a08bf79"
+      }
+    },
+    {
+      "strict": true,
+      "before": {
+        "bytes": 52403,
+        "sha256": "7400cb2e4f4d50fccfd069d9c5920ae1b6d8410de7bd70c7ccae5d645862a73f"
+      },
+      "after": {
+        "bytes": 52847,
+        "sha256": "600c49a93659786e9430ce4a334fb66b010d82758ee735750346a1d88803c284"
+      }
+    }
+  ]
+}

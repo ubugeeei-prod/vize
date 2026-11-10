@@ -24,6 +24,7 @@ mod lib_type_qualification;
 mod lib_type_qualification_listeners;
 mod listener_contract;
 mod listener_relations;
+mod listener_return_parity;
 mod loose_emit_sdk;
 mod private_emit_sdk;
 mod projection_text_buffer;

@@ -171,6 +171,7 @@ pub(super) fn generate_component_event_types(
     // fallthrough root: derive each once and unwrap the one-tuple per event.
     let component_aliases = cstr!("__{component_type_name}_{component_scope_id}_");
     let props_box = cstr!("{component_aliases}_props");
+    let raw_props_box = cstr!("{component_aliases}_raw_props");
     let emit_props_box = cstr!("{component_aliases}_emit_props");
     let fallthrough_box = cstr!("{component_aliases}_fallthrough");
     let library = cstr!("{component_aliases}_library");
@@ -212,6 +213,10 @@ pub(super) fn generate_component_event_types(
         );
         vize_l0::emit_ts!(
             ts,
+            "{indent}type {raw_props_box} = typeof {component_ref} extends {{ readonly __vizeRawProps?: infer __RP }} ? [__RP] : [];\n",
+        );
+        vize_l0::emit_ts!(
+            ts,
             "{indent}type {emit_props_box} = typeof {component_ref} extends {{ __vizeEmitProps?: infer __EP }} ? [__EP] : [];\n",
         );
         if native_fallthrough_only {
@@ -245,6 +250,7 @@ pub(super) fn generate_component_event_types(
                 prop_key: &prop_key,
                 library: &library,
                 props_box: &props_box,
+                raw_props_box: &raw_props_box,
                 emit_props_box: &emit_props_box,
                 fallthrough_box: native_fallthrough_only.then_some(fallthrough_box.as_str()),
                 listener_key: &listener_key,
@@ -418,12 +424,9 @@ pub(super) fn generate_component_event_types(
         );
         args_type.clone()
     };
-    // The modern listener returns what the child's declared listener prop
-    // returns: `any` for the handler props Vue's own `EmitFn`/Volar synthesis
-    // produce (`(user: User) => any`), so an emit-payload mismatch elaborates
-    // with the same expected type `vue-tsc` prints (#3889), and the authored
-    // return type of a prop such as `onClick?: () => number`, so a handler
-    // that returns nothing is rejected as it is under `vue-tsc`.
+    // Vue's synthesized listener props return `void`. Keep that diagnostic
+    // surface for declared emits, while preserving the authored return type of
+    // a plain prop such as `onClick?: () => number`.
     let listener_type_expr = listener_return::emit(
         ts,
         listener_return::Context {
@@ -434,9 +437,11 @@ pub(super) fn generate_component_event_types(
             indent,
             listener_args_type: listener_args_type.as_str(),
             args_type: args_type.as_str(),
+            static_emit_args: static_emit_args.as_str(),
             return_type: return_type.as_str(),
             prop_args: prop_args.as_str(),
             props_box: props_box.as_str(),
+            raw_props_box: raw_props_box.as_str(),
             fallthrough_box: fallthrough_box.as_str(),
             prop_key: prop_key.as_str(),
         },

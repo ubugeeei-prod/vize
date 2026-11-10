@@ -85,6 +85,7 @@ pub(super) struct Contract<'a, 'template> {
     pub(super) prop_key: &'a str,
     pub(super) library: &'a str,
     pub(super) props_box: &'a str,
+    pub(super) raw_props_box: &'a str,
     pub(super) emit_props_box: &'a str,
     /// The native root's box, or `None` when no fallthrough payload applies.
     pub(super) fallthrough_box: Option<&'a str>,
@@ -137,6 +138,7 @@ pub(super) fn emit(
         indent,
         library,
         props_box,
+        raw_props_box,
         emit_props_box,
         listener_key,
         raw_listener_key,
@@ -152,7 +154,7 @@ pub(super) fn emit(
     let helper = crate::virtual_ts::helpers::shared_types::LISTENER_CONTRACT.select(true);
     vize_l0::emit_ts!(
         ts,
-        "{indent}type {alias} = {helper}<{library}, {props_box}, {emit_props_box}, {fallthrough_box}, {listener_key}, {raw_listener_key}, {inferred_args}, {loose}>;\n",
+        "{indent}type {alias} = {helper}<{library}, {props_box}, {raw_props_box}, {emit_props_box}, {fallthrough_box}, {listener_key}, {raw_listener_key}, {inferred_args}, {loose}>;\n",
     );
     let script_binding = contract.has_script_component_binding;
     let typed_handler = contract.needs_typed_handler_assignment

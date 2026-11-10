@@ -91,15 +91,27 @@ fn diagnostics_only_navigation_keeps_slot_and_event_name_checks() {
         let editor = render_projection(SCRIPT, template, packets, true, false);
         let check = render_projection(SCRIPT, template, packets, true, true);
         for navigation in ["__vize_props_nav_0", "__vize_events_nav_0"] {
-            assert!(editor.0.contains(navigation), "editor retains {navigation}");
-            assert!(!check.0.contains(navigation), "check omits {navigation}");
+            assert_eq!(
+                editor.0.matches(navigation).count(),
+                2,
+                "editor retains one declaration and one use of {navigation}"
+            );
+            assert_eq!(
+                check.0.matches(navigation).count(),
+                0,
+                "check omits every {navigation} packet"
+            );
         }
         for diagnostic in [
             "__vize_event_keys_0",
             "__vize_slots_nav_0",
             "__vize_slot_nav_0_0",
         ] {
-            assert!(check.0.contains(diagnostic), "check retains {diagnostic}");
+            assert_eq!(
+                check.0.matches(diagnostic).count(),
+                2,
+                "check retains one declaration and one use of {diagnostic}"
+            );
         }
     }
 }

@@ -8,12 +8,14 @@ defineProps<{
   label: string;
   onPress?: (id: number) => number;
   onTap?: ((value: string) => void) | ((value: string) => void)[];
+  onAuthored?: (value: string) => number;
 }>();
 defineEmits<{
   select: [id: number, label: string];
   "row-click": [row: { id: number }];
   "update:count": [value: number];
   ping: [];
+  authored: [value: string];
 }>();
 </script>
 
@@ -102,6 +104,7 @@ const flag = Math.random() > 0.5;
   <GenericChild :items="['a']" @pick="(item: number) => item" />
   <RootChild @input="(event: string) => event" />
   <Child label="a" @ping="(value: string) => value" />
+  <Child label="a" @authored="(value) => { value.toUpperCase(); }" />
 </template>
 "#;
 
@@ -147,12 +150,12 @@ fn shared_listener_contracts_keep_every_payload_diagnostic() {
             (
                 "src/Wrong.vue".into(),
                 Some(2322),
-                "10:21:error Type '(id: string) => string' is not assignable to type '(id: number, label: string) => any'.\nTypes of parameters 'id' and 'id' are incompatible.\nType 'number' is not assignable to type 'string'.".into(),
+                "10:21:error Type '(id: string) => string' is not assignable to type '(id: number, label: string) => void'.\nTypes of parameters 'id' and 'id' are incompatible.\nType 'number' is not assignable to type 'string'.".into(),
             ),
             (
                 "src/Wrong.vue".into(),
                 Some(2322),
-                "12:21:error Type '(value: string) => string' is not assignable to type '(value: number) => any'.\nTypes of parameters 'value' and 'value' are incompatible.\nType 'number' is not assignable to type 'string'.".into(),
+                "12:21:error Type '(value: string) => string' is not assignable to type '(value: number) => void'.\nTypes of parameters 'value' and 'value' are incompatible.\nType 'number' is not assignable to type 'string'.".into(),
             ),
             (
                 "src/Wrong.vue".into(),
@@ -162,17 +165,22 @@ fn shared_listener_contracts_keep_every_payload_diagnostic() {
             (
                 "src/Wrong.vue".into(),
                 Some(2322),
-                "16:19:error Type '(value: number) => number' is not assignable to type '(value: string) => any'.\nTypes of parameters 'value' and 'value' are incompatible.\nType 'string' is not assignable to type 'number'.".into(),
+                "16:19:error Type '(value: number) => number' is not assignable to type '(value: string) => void'.\nTypes of parameters 'value' and 'value' are incompatible.\nType 'string' is not assignable to type 'number'.".into(),
             ),
             (
                 "src/Wrong.vue".into(),
                 Some(2322),
-                "17:33:error Type '(item: number) => number' is not assignable to type '(item: string) => any'.\nTypes of parameters 'item' and 'item' are incompatible.\nType 'string' is not assignable to type 'number'.".into(),
+                "17:33:error Type '(item: number) => number' is not assignable to type '(item: string) => void'.\nTypes of parameters 'item' and 'item' are incompatible.\nType 'string' is not assignable to type 'number'.".into(),
             ),
             (
                 "src/Wrong.vue".into(),
                 Some(2322),
-                "19:21:error Type '(value: string) => string' is not assignable to type '() => any'.\nTarget signature provides too few arguments. Expected 1 or more, but got 0.".into(),
+                "19:21:error Type '(value: string) => string' is not assignable to type '() => void'.\nTarget signature provides too few arguments. Expected 1 or more, but got 0.".into(),
+            ),
+            (
+                "src/Wrong.vue".into(),
+                Some(2322),
+                "20:21:error Type '(value: string) => void' is not assignable to type '(value: string) => number'.\nType 'void' is not assignable to type 'number'.".into(),
             ),
             (
                 "src/Wrong.vue".into(),

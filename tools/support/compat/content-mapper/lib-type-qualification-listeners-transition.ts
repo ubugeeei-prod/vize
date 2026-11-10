@@ -2,6 +2,7 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
+import { beforeListenerReturnParity } from "./listener-return-parity-transition.ts";
 
 export const libTypeListenerRecord =
   "tests/_fixtures/tooling/lib-type-qualification-listeners-12536.json";
@@ -43,8 +44,8 @@ function load(): Transition {
   return parsed;
 }
 
-/** The exact pre-qualification bytes of a recorded producer's current image; older images pass through. */
-export function beforeListenerLibTypeQualification(path: string, current: string): string {
+/** Remove only lib-name qualification while retaining newer listener semantics. */
+export function beforeCurrentListenerLibTypeQualification(path: string, current: string): string {
   const file = load().files.find((entry) => entry.path === path);
   if (!file || identity(current).sha256 !== file.after.sha256) return current;
   assert.equal(
@@ -66,4 +67,9 @@ export function beforeListenerLibTypeQualification(path: string, current: string
     `listener lib type qualification predecessor: ${path}`,
   );
   return current;
+}
+
+/** The exact pre-qualification bytes after restoring newer source transitions. */
+export function beforeListenerLibTypeQualification(path: string, current: string): string {
+  return beforeCurrentListenerLibTypeQualification(path, beforeListenerReturnParity(path, current));
 }

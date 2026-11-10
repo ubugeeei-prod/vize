@@ -38,7 +38,7 @@ fn overloads_declared_before_a_generic_emit_keep_typed_payloads() {
         );
         std::fs::write(project_root.join("src/App.vue"), &wrong).unwrap();
         let message = format!(
-            "10:{column}:error Type '(value: {actual}) => void' is not assignable to type '(value: {expected}) => any'.\n\
+            "10:{column}:error Type '(value: {actual}) => void' is not assignable to type '(value: {expected}) => void'.\n\
              Types of parameters 'value' and 'value' are incompatible.\n\
              Type '{expected}' is not assignable to type '{actual}'."
         );

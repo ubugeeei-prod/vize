@@ -13,8 +13,8 @@ use vize_l0::String;
 /// vue-tsc 3.3.4:
 ///
 /// ```text
-/// src/Parent.vue(7,11): error TS2322: Type '(value: string) => string' is not assignable to type '(value: number) => any'.
-/// src/Parent.vue(7,24): error TS2322: Type '(value: string) => string' is not assignable to type '() => any'.
+/// src/Parent.vue(7,11): error TS2322: Type '(value: string) => string' is not assignable to type '(value: number) => void'.
+/// src/Parent.vue(7,24): error TS2322: Type '(value: string) => string' is not assignable to type '() => void'.
 /// src/Parent.vue(8,29): error TS2345: Argument of type 'number' is not assignable to parameter of type 'string'.
 /// ```
 ///
@@ -24,7 +24,7 @@ use vize_l0::String;
 /// byte-identical and must stay on the authored bytes.
 ///
 /// The pinned TypeScript-Go build normalizes vize's named rest tuple
-/// `(...args: [value: number]) => any` to `(value: number) => any` when it
+/// `(...args: [value: number]) => void` to `(value: number) => void` when it
 /// renders the diagnostic. The parameter label and listener shape therefore
 /// stay byte-identical to vue-tsc instead of creating a message-only
 /// divergence (#3447).
@@ -89,7 +89,7 @@ const take = (value: string) => value
                 String::from("src/Parent.vue"),
                 Some(2322),
                 String::from(
-                    "7:11:error Type '(value: string) => string' is not assignable to type '(value: number) => any'.\n\
+                    "7:11:error Type '(value: string) => string' is not assignable to type '(value: number) => void'.\n\
                      Types of parameters 'value' and '<target>' are incompatible.\n\
                      Type 'number' is not assignable to type 'string'."
                 ),
@@ -98,7 +98,7 @@ const take = (value: string) => value
                 String::from("src/Parent.vue"),
                 Some(2322),
                 String::from(
-                    "7:24:error Type '(value: string) => string' is not assignable to type '() => any'.\n\
+                    "7:24:error Type '(value: string) => string' is not assignable to type '() => void'.\n\
                      Target signature provides too few arguments. Expected 1 or more, but got 0."
                 ),
             ),
