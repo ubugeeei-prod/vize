@@ -78,3 +78,8 @@ fn joinable(
                 gap == original_gap && gap.bytes().all(|byte| matches!(byte, b' ' | b'\t' | b'\n'))
             })
 }
+
+#[cfg(test)]
+#[expect(clippy::string_slice, reason = "tests assert by panicking")]
+#[expect(clippy::panic, reason = "fixture assertions fail by panicking")]
+mod tests;
