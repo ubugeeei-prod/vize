@@ -3,7 +3,7 @@ import { mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSyn
 import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
-import { runTools } from "./runner.ts";
+import { runTools, withConfigMetadataResolution } from "./runner.ts";
 import type { VizeTaskConfig } from "./types.ts";
 
 async function project(run: () => Promise<void>) {
@@ -20,6 +20,34 @@ async function project(run: () => Promise<void>) {
     rmSync(dir, { recursive: true, force: true });
   }
 }
+
+void test("config metadata resolution marks only the config load", async () => {
+  const previous = process.env["VP_RESOLVING_CONFIG_METADATA"];
+  delete process.env["VP_RESOLVING_CONFIG_METADATA"];
+  try {
+    assert.equal(
+      await withConfigMetadataResolution(async () => {
+        assert.equal(process.env["VP_RESOLVING_CONFIG_METADATA"], "1");
+        return "loaded";
+      }),
+      "loaded",
+    );
+    assert.equal(process.env["VP_RESOLVING_CONFIG_METADATA"], undefined);
+
+    process.env["VP_RESOLVING_CONFIG_METADATA"] = "caller";
+    await assert.rejects(
+      withConfigMetadataResolution(async () => {
+        assert.equal(process.env["VP_RESOLVING_CONFIG_METADATA"], "1");
+        throw new Error("load failed");
+      }),
+      { message: "load failed" },
+    );
+    assert.equal(process.env["VP_RESOLVING_CONFIG_METADATA"], "caller");
+  } finally {
+    if (previous === undefined) delete process.env["VP_RESOLVING_CONFIG_METADATA"];
+    else process.env["VP_RESOLVING_CONFIG_METADATA"] = previous;
+  }
+});
 
 void test("check runs native checks, native lint and Oxlint, and both formatters after failures", async () => {
   await project(async () => {
