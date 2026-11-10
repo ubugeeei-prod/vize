@@ -23,6 +23,7 @@ use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use oxc_ast::ast::Expression;
+use oxc_syntax::operator::LogicalOperator;
 use vize_relief::{DirectiveNode, ElementNode, ExpressionNode};
 
 static META: RuleMeta = RuleMeta {
@@ -135,11 +136,17 @@ fn expression_is_definitely_non_array(expression: &Expression<'_>) -> bool {
         | Expression::BinaryExpression(_)
         | Expression::ClassExpression(_)
         | Expression::FunctionExpression(_)
-        | Expression::LogicalExpression(_)
         | Expression::ObjectExpression(_)
         | Expression::PrivateInExpression(_)
         | Expression::UnaryExpression(_)
         | Expression::UpdateExpression(_) => true,
+        Expression::LogicalExpression(logical) => match logical.operator {
+            LogicalOperator::And => expression_is_definitely_non_array(&logical.right),
+            LogicalOperator::Or | LogicalOperator::Coalesce => {
+                expression_is_definitely_non_array(&logical.left)
+                    && expression_is_definitely_non_array(&logical.right)
+            }
+        },
         Expression::AssignmentExpression(assignment) => {
             expression_is_definitely_non_array(&assignment.right)
         }
@@ -242,6 +249,19 @@ mod tests {
             let source = format!(r#"<div v-memo="{expression}" />"#);
             let result = linter.lint_template(&source, "test.vue");
             assert_eq!(result.error_count, 0, "{expression}");
+        }
+    }
+
+    #[test]
+    fn logical_fallbacks_are_rejected_only_when_every_result_is_non_array() {
+        let linter = create_linter();
+        for expression in ["deps || []", "deps ?? []", "ready && deps"] {
+            let source = format!(r#"<div v-memo="{expression}" />"#);
+            assert_eq!(linter.lint_template(&source, "test.vue").error_count, 0);
+        }
+        for expression in ["false || 1", "null ?? 'bad'", "ready && 1"] {
+            let source = format!(r#"<div v-memo="{expression}" />"#);
+            assert_eq!(linter.lint_template(&source, "test.vue").error_count, 1);
         }
     }
 

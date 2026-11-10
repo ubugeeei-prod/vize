@@ -165,6 +165,20 @@ const label = "Name"
     );
     assert!(
         collisions(
+            "const props = defineProps<{id: string; locale: string}>(); const { id } = props; const { locale } = toRefs(props);",
+            None,
+        )
+        .is_empty()
+    );
+    assert_eq!(
+        collisions(
+            "const props = defineProps<{id: string; locale: string}>(); const { locale: id } = props; const { id: locale } = toRefs(props);",
+            None,
+        ),
+        ["Duplicated key 'id'", "Duplicated key 'locale'"]
+    );
+    assert!(
+        collisions(
             "const { targetId: explicitTargetId = undefined } = defineProps<{targetId?: string}>(); const targetId = computed(() => explicitTargetId);",
             None,
         )

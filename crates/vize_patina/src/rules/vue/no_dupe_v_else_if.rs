@@ -172,6 +172,8 @@ fn condition_clauses(condition: JsExpression<'_>) -> Option<Vec<FxHashSet<String
     clauses(condition.ast, condition.raw)
 }
 
+const MAX_CLAUSES: usize = 256;
+
 fn clauses(expression: &Expression<'_>, source: &str) -> Option<Vec<FxHashSet<String>>> {
     match expression.get_inner_expression() {
         Expression::LogicalExpression(logical) if logical.operator == LogicalOperator::Or => {
@@ -182,7 +184,11 @@ fn clauses(expression: &Expression<'_>, source: &str) -> Option<Vec<FxHashSet<St
         Expression::LogicalExpression(logical) if logical.operator == LogicalOperator::And => {
             let left = clauses(&logical.left, source)?;
             let right = clauses(&logical.right, source)?;
-            let mut product = Vec::with_capacity(left.len().saturating_mul(right.len()));
+            let product_len = left.len().saturating_mul(right.len());
+            if product_len > MAX_CLAUSES {
+                return None;
+            }
+            let mut product = Vec::with_capacity(product_len);
             for left_clause in left {
                 for right_clause in &right {
                     let mut clause = left_clause.clone();
@@ -305,5 +311,20 @@ mod tests {
             "test.vue",
         );
         assert_eq!(result.error_count, 4, "{:?}", result.diagnostics);
+    }
+
+    #[test]
+    fn skips_exponentially_large_clause_products() {
+        let groups = (0..9)
+            .map(|index| format!("(a{index} || b{index})"))
+            .collect::<Vec<_>>()
+            .join(" && ");
+        let source = format!(r#"<p v-if="{groups}"/><p v-else-if="{groups}"/>"#);
+        assert_eq!(
+            create_linter()
+                .lint_template(&source, "test.vue")
+                .error_count,
+            0
+        );
     }
 }

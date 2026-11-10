@@ -301,6 +301,7 @@ export default {
   setup(props) { props.items.push(1); },
   methods: { add() { this.items.push(2); } }
 }
+
 </script>"#;
     assert_eq!(
         configured(false).lint_sfc(setup, "Probe.vue").error_count,
@@ -317,6 +318,32 @@ export default defineComponent({
     assert_eq!(
         configured(false).lint_sfc(wrapped, "Probe.vue").error_count,
         1
+    );
+}
+
+#[test]
+fn setup_props_follow_shallow_policy_and_lexical_scope() {
+    let source = r#"<script>
+export default {
+  props: ["items"],
+  setup(props) {
+    props.items.push(1);
+    props.items = [];
+    (() => { props.items = [2]; })();
+    function nested(props) { props.items = [3]; }
+    return { nested };
+  }
+}
+</script>"#;
+    assert_eq!(
+        packet(&configured(true).lint_sfc(source, "Probe.vue")),
+        expected(
+            "Probe.vue",
+            vec![
+                diagnostic(source, "props.items = []", "props.items", "in <script>"),
+                diagnostic(source, "props.items = [2]", "props.items", "in <script>"),
+            ]
+        )
     );
 }
 

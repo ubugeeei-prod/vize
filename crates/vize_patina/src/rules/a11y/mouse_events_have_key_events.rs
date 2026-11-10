@@ -22,7 +22,7 @@ use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::markup::{MarkupBindingKind, MarkupContext, MarkupElement, MarkupRule};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use vize_relief::ElementNode;
+use vize_relief::{ElementNode, ExpressionNode, PropNode};
 
 use super::helpers::{has_event_handler, is_aria_hidden_true, is_presentation_role};
 use super::markup_helpers;
@@ -43,13 +43,33 @@ impl MouseEventsHaveKeyEvents {
     fn has_static_event_handler(element: &MarkupElement<'_>, event_name: &str) -> bool {
         let mut found = false;
         element.walk_bindings(&mut |binding| {
-            if binding.kind() == MarkupBindingKind::On
-                && binding.is_static_unqualified_arg_exact(event_name)
+            if (binding.kind() == MarkupBindingKind::On
+                && binding.is_static_unqualified_arg_exact(event_name))
+                || (element.is_component()
+                    && binding.kind() == MarkupBindingKind::Bind
+                    && binding.is_static_event_handler_for(event_name))
             {
                 found = true;
             }
         });
         found
+    }
+
+    fn has_component_listener_prop(element: &ElementNode<'_>, event_name: &str) -> bool {
+        let mut listener = String::with_capacity(event_name.len() + 2);
+        listener.push_str("on");
+        let mut characters = event_name.chars();
+        let Some(first) = characters.next() else {
+            return false;
+        };
+        listener.push(first.to_ascii_uppercase());
+        listener.extend(characters);
+        element.props.iter().any(|prop| {
+            matches!(prop, PropNode::Directive(directive)
+                if directive.name == "bind"
+                    && matches!(&directive.arg, Some(ExpressionNode::Simple(argument))
+                        if argument.is_static && argument.content == listener))
+        })
     }
 
     /// Presentation/none and `aria-hidden="true"` opt the element out, the same
@@ -158,11 +178,15 @@ impl Rule for MouseEventsHaveKeyEvents {
             return;
         }
 
-        let has_hover = has_event_handler(element, "hover");
+        let has_hover = has_event_handler(element, "hover")
+            || (element.tag_type == vize_relief::ElementType::Component
+                && Self::has_component_listener_prop(element, "hover"));
         if element.tag_type == vize_relief::ElementType::Component {
             if has_hover
                 && !has_event_handler(element, "focus")
                 && !has_event_handler(element, "focusin")
+                && !Self::has_component_listener_prop(element, "focus")
+                && !Self::has_component_listener_prop(element, "focusin")
             {
                 ctx.warn_with_help(
                     ctx.t("a11y/mouse-events-have-key-events.message_hover"),
@@ -339,5 +363,15 @@ mod tests {
             "test.vue",
         );
         assert_eq!(result.warning_count, 2);
+    }
+
+    #[test]
+    fn component_listener_props_count_as_static_event_handlers() {
+        let result = create_linter().lint_template(
+            r#"<MyTooltip :onHover="show" />
+<MyTooltip :onHover="show" :onFocus="show" />"#,
+            "test.vue",
+        );
+        assert_eq!(result.warning_count, 1);
     }
 }

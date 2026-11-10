@@ -174,6 +174,11 @@ mod tests {
     #[test]
     fn test_all_reserved_elements_reject_aria_and_role() {
         let linter = create_linter();
+        let expected = [
+            "base", "col", "colgroup", "head", "html", "link", "meta", "noembed", "noscript",
+            "param", "picture", "script", "source", "style", "title", "track",
+        ];
+        assert_eq!(super::helpers::ARIA_UNSUPPORTED_ELEMENTS, expected);
         for tag in super::helpers::ARIA_UNSUPPORTED_ELEMENTS {
             for attribute in [
                 r#"aria-hidden="true""#,

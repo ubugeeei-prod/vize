@@ -171,6 +171,20 @@ fn imported_call_signatures_resolve_event_names() {
         CompactString::new("CallSignatureEmits"),
         TypeExportBinding::Local(CompactString::new("CallSignatureEmits")),
     );
+    api.declarations.insert(
+        CompactString::new("PartialCallSignatureEmits"),
+        TypeDeclaration {
+            kind: TypeDeclarationKind::Alias,
+            body: CompactString::new("((event: 'open') => void) | ((event: string) => void)"),
+            extends: Vec::new(),
+            type_parameters: None,
+            declaration_source: CompactString::new("type PartialCallSignatureEmits = never"),
+        },
+    );
+    api.exports.insert(
+        CompactString::new("PartialCallSignatureEmits"),
+        TypeExportBinding::Local(CompactString::new("PartialCallSignatureEmits")),
+    );
     let root = Arc::make_mut(world.modules.get_mut("root").unwrap());
     root.imports.insert(
         CompactString::new("CallSignatureEmits"),
@@ -179,7 +193,18 @@ fn imported_call_signatures_resolve_event_names() {
             exported: Some(CompactString::new("CallSignatureEmits")),
         },
     );
+    root.imports.insert(
+        CompactString::new("PartialCallSignatureEmits"),
+        TypeImport {
+            target: target("api"),
+            exported: Some(CompactString::new("PartialCallSignatureEmits")),
+        },
+    );
     let resolved = world.resolve_events("CallSignatureEmits");
     assert!(resolved.complete);
     assert_eq!(resolved.events, ["navigate", "close"]);
+
+    let partial = world.resolve_events("PartialCallSignatureEmits");
+    assert!(!partial.complete);
+    assert_eq!(partial.events, ["open"]);
 }

@@ -34,6 +34,8 @@ use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_relief::{ExpressionNode, InterpolationNode};
 
+use super::no_useless_string_literal::static_string_literal_inner;
+
 static META: RuleMeta = RuleMeta {
     name: "vue/no-useless-mustaches",
     description: "Disallow a mustache interpolation whose expression is a constant string literal",
@@ -75,39 +77,6 @@ impl Rule for NoUselessMustaches {
             ctx.t("vue/no-useless-mustaches.help"),
         );
     }
-}
-
-/// When `raw` is a constant string literal (`'x'`, `"x"`, or a template
-/// literal with no `${}` interpolation), return its inner content (between
-/// the quotes, escape sequences unresolved).
-fn static_string_literal_inner(raw: &str) -> Option<&str> {
-    let s = raw.trim();
-    let bytes = s.as_bytes();
-    let (&first, &last) = (bytes.first()?, bytes.last()?);
-    if bytes.len() < 2 {
-        return None;
-    }
-    let inner = s.get(1..s.len() - 1)?;
-    let is_literal = match first {
-        b'\'' | b'"' => first == last && is_single_quoted_literal_body(inner, first),
-        b'`' => last == b'`' && !s.contains("${"),
-        _ => false,
-    };
-    is_literal.then_some(inner)
-}
-
-fn is_single_quoted_literal_body(inner: &str, quote: u8) -> bool {
-    let mut escaped = false;
-    for byte in inner.bytes() {
-        if escaped {
-            escaped = false;
-        } else if byte == b'\\' {
-            escaped = true;
-        } else if byte == quote {
-            return false;
-        }
-    }
-    !escaped
 }
 
 /// Whether the (non-empty) literal content renders as whitespace only,
@@ -221,6 +190,23 @@ mod tests {
         let linter = create_linter();
         let result = linter.lint_template(r#"<div>{{ 'a' + 'b' }}</div>"#, "App.vue");
         assert_eq!(result.warning_count, 0);
+    }
+
+    #[test]
+    fn template_literals_are_delimiter_and_escape_aware() {
+        let linter = create_linter();
+        for source in [
+            r#"<div>{{ `a` + `b` }}</div>"#,
+            r#"<div>{{ `pre-${value}` }}</div>"#,
+        ] {
+            assert_eq!(linter.lint_template(source, "App.vue").warning_count, 0);
+        }
+        assert_eq!(
+            linter
+                .lint_template(r#"<div>{{ `pre-\${value}` }}</div>"#, "App.vue")
+                .warning_count,
+            1
+        );
     }
 
     #[test]

@@ -1,5 +1,6 @@
-use super::{findings, last_span_for, lint_sfc, none, span_for};
+use super::{findings, last_span_for, lint_sfc, lint_sfc_with_rule, none, span_for};
 use crate::diagnostic::Severity;
+use crate::rules::vue::{NoMutatingProps, NoMutatingPropsOptions};
 
 // --- The recovered case: an assignment inside an inline handler ------------
 
@@ -192,6 +193,40 @@ const assign = 'assign';
 </template>
 "#;
     assert_eq!(findings(&lint_sfc(sfc)), none());
+}
+
+#[test]
+fn ignores_copies_nested_callbacks_and_shallow_nested_mutations() {
+    let copied = r#"<script setup lang="ts">
+const props = defineProps<{ items: string[] }>();
+const copy = [...props.items];
+</script>
+<template>
+  <button @click="copy.push('x'); (() => props.items.push('y'))()">go</button>
+</template>"#;
+    assert_eq!(findings(&lint_sfc(copied)), none());
+
+    let shallow = r#"<script setup lang="ts">
+const props = defineProps<{ items: string[] }>();
+</script>
+<template>
+  <button @click="props.items.splice(0, 1); props.items = []">go</button>
+</template>"#;
+    let (start, end) = span_for(shallow, "props.items = []");
+    let result = lint_sfc_with_rule(
+        shallow,
+        NoMutatingProps::new(NoMutatingPropsOptions { shallow_only: true }),
+    );
+    assert_eq!(
+        findings(&result),
+        vec![(
+            "vue/no-mutating-props",
+            Severity::Error,
+            start,
+            end,
+            "Unexpected mutation of prop 'props.items' in an inline handler",
+        )]
+    );
 }
 
 #[test]

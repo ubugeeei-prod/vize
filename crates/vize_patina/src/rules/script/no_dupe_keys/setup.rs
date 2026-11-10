@@ -308,15 +308,19 @@ fn derived_from_props(
     if span.contains_inclusive(call) {
         return true;
     }
+    if matches!(declaration.id, BindingPattern::ObjectPattern(_))
+        && (identifier_is_props(initializer, semantic, props)
+            || to_refs_reads_props(initializer, semantic, props))
+    {
+        return pattern_maps_prop(&declaration.id, symbol, name);
+    }
     if derivation::initializer_reads_prop(initializer, semantic, props, name)
         || member_reads_prop(initializer, semantic, props, name)
         || to_ref_reads_prop(initializer, semantic, props, name)
     {
         return true;
     }
-    pattern_maps_prop(&declaration.id, symbol, name)
-        && (identifier_is_props(initializer, semantic, props)
-            || to_refs_reads_props(initializer, semantic, props))
+    false
 }
 
 fn member_reads_prop(

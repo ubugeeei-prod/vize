@@ -56,14 +56,11 @@ impl ResolvedTypeWorld {
         match ty {
             TSType::TSTypeLiteral(literal) => events_from_members(&literal.members),
             TSType::TSFunctionType(function) => {
-                let mut output = ScopedTypeEvents {
-                    complete: true,
-                    ..ScopedTypeEvents::default()
-                };
-                if function.this_param.is_none() {
-                    output.events.extend(parameter_events(&function.params));
+                if function.this_param.is_some() {
+                    ScopedTypeEvents::default()
+                } else {
+                    parameter_events(&function.params)
                 }
-                output
             }
             TSType::TSParenthesizedType(parenthesized) => {
                 self.events_ast(module, source, &parenthesized.type_annotation, visiting)
@@ -87,10 +84,14 @@ impl ResolvedTypeWorld {
                             ..reference.type_name.span().end as usize,
                     )
                     .unwrap_or_default();
-                match self.resolve(module, name) {
+                let mut output = match self.resolve(module, name) {
                     TypeLookup::Found(id) => self.declaration_events(&id, visiting),
                     TypeLookup::Unknown(_) => ScopedTypeEvents::default(),
+                };
+                if reference.type_arguments.is_some() {
+                    output.complete = false;
                 }
+                output
             }
             TSType::TSImportType(import) => {
                 let Some(qualifier) = &import.qualifier else {
@@ -148,20 +149,26 @@ fn events_from_members(members: &[TSSignature<'_>]) -> ScopedTypeEvents {
             TSSignature::TSCallSignatureDeclaration(signature)
                 if signature.this_param.is_none() =>
             {
-                output.events.extend(parameter_events(&signature.params));
+                combine_into(&mut output, parameter_events(&signature.params));
             }
             TSSignature::TSPropertySignature(property) => {
-                push_key(&mut output, &property.key);
+                push_key(&mut output, &property.key, property.computed);
             }
-            TSSignature::TSMethodSignature(method) => push_key(&mut output, &method.key),
-            _ => {}
+            TSSignature::TSMethodSignature(method) => {
+                push_key(&mut output, &method.key, method.computed);
+            }
+            _ => output.complete = false,
         }
     }
     deduplicate(&mut output.events);
     output
 }
 
-fn push_key(output: &mut ScopedTypeEvents, key: &PropertyKey<'_>) {
+fn push_key(output: &mut ScopedTypeEvents, key: &PropertyKey<'_>, computed: bool) {
+    if computed {
+        output.complete = false;
+        return;
+    }
     let name = match key {
         PropertyKey::StaticIdentifier(identifier) => Some(identifier.name.as_str()),
         PropertyKey::Identifier(identifier) => Some(identifier.name.as_str()),
@@ -175,15 +182,22 @@ fn push_key(output: &mut ScopedTypeEvents, key: &PropertyKey<'_>) {
     }
 }
 
-fn parameter_events(parameters: &FormalParameters<'_>) -> Vec<CompactString> {
+fn parameter_events(parameters: &FormalParameters<'_>) -> ScopedTypeEvents {
+    let mut output = ScopedTypeEvents {
+        complete: true,
+        ..ScopedTypeEvents::default()
+    };
     let Some(first) = parameters.items.first() else {
-        return Vec::new();
+        output.complete = false;
+        return output;
     };
     if !matches!(first.pattern, BindingPattern::BindingIdentifier(_)) {
-        return Vec::new();
+        output.complete = false;
+        return output;
     }
     let Some(annotation) = &first.type_annotation else {
-        return Vec::new();
+        output.complete = false;
+        return output;
     };
     let mut ty = &annotation.type_annotation;
     while let TSType::TSParenthesizedType(parenthesized) = ty {
@@ -193,7 +207,14 @@ fn parameter_events(parameters: &FormalParameters<'_>) -> Vec<CompactString> {
         TSType::TSUnionType(union) => union.types.iter().collect(),
         ty => vec![ty],
     };
-    types.into_iter().filter_map(literal_event).collect()
+    for ty in types {
+        if let Some(event) = literal_event(ty) {
+            output.events.push(event);
+        } else {
+            output.complete = false;
+        }
+    }
+    output
 }
 
 fn literal_event(ty: &TSType<'_>) -> Option<CompactString> {

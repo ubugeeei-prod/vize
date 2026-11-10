@@ -41,8 +41,8 @@
 
 use oxc_allocator::Allocator;
 use oxc_ast::ast::{
-    Argument, AssignmentExpression, AssignmentTarget, CallExpression, Expression,
-    SimpleAssignmentTarget, UnaryExpression, UpdateExpression,
+    Argument, ArrowFunctionExpression, AssignmentExpression, AssignmentTarget, CallExpression,
+    Expression, Function, SimpleAssignmentTarget, UnaryExpression, UpdateExpression,
 };
 use oxc_ast_visit::{
     Visit,
@@ -54,6 +54,7 @@ use oxc_ast_visit::{
 use oxc_parser::Parser;
 use oxc_span::{GetSpan, SourceType, Span};
 use oxc_syntax::operator::UnaryOperator;
+use oxc_syntax::scope::ScopeFlags;
 
 const MUTATING_ARRAY_METHODS: &[&str] = &[
     "push",
@@ -70,6 +71,7 @@ const MUTATING_ARRAY_METHODS: &[&str] = &[
 pub(super) struct HandlerMutationTarget<'a> {
     pub(super) target: &'a str,
     pub(super) span: Span,
+    pub(super) deep: bool,
 }
 
 /// Call `visit` with the source slice of every assignment / update target in
@@ -107,6 +109,7 @@ pub(super) fn for_each_mutation_target(
             visit(HandlerMutationTarget {
                 target: text,
                 span: target.mutation,
+                deep: target.deep,
             });
         }
     }
@@ -119,12 +122,17 @@ struct MutationTargetCollector {
 struct MutationTargetSpan {
     target: Span,
     mutation: Span,
+    deep: bool,
 }
 
 impl<'a> Visit<'a> for MutationTargetCollector {
+    fn visit_function(&mut self, _: &Function<'a>, _: ScopeFlags) {}
+
+    fn visit_arrow_function_expression(&mut self, _: &ArrowFunctionExpression<'a>) {}
+
     fn visit_assignment_expression(&mut self, it: &AssignmentExpression<'a>) {
         if let Some(span) = assignment_target_span(&it.left) {
-            self.push(span, it.span);
+            self.push(span, it.span, false);
         }
         // Keep walking: the right-hand side can hold further assignments
         // (`a = (props.msg = 'x')`).
@@ -133,29 +141,33 @@ impl<'a> Visit<'a> for MutationTargetCollector {
 
     fn visit_update_expression(&mut self, it: &UpdateExpression<'a>) {
         if let Some(span) = simple_assignment_target_span(&it.argument) {
-            self.push(span, it.span);
+            self.push(span, it.span, false);
         }
         walk_update_expression(self, it);
     }
 
     fn visit_unary_expression(&mut self, it: &UnaryExpression<'a>) {
         if it.operator == UnaryOperator::Delete {
-            self.push(it.argument.get_inner_expression().span(), it.span);
+            self.push(it.argument.get_inner_expression().span(), it.span, false);
         }
         walk_unary_expression(self, it);
     }
 
     fn visit_call_expression(&mut self, it: &CallExpression<'a>) {
         if let Some(target) = mutating_call_target(it) {
-            self.push(target.get_inner_expression().span(), it.span);
+            self.push(target.get_inner_expression().span(), it.span, true);
         }
         walk_call_expression(self, it);
     }
 }
 
 impl MutationTargetCollector {
-    fn push(&mut self, target: Span, mutation: Span) {
-        self.targets.push(MutationTargetSpan { target, mutation });
+    fn push(&mut self, target: Span, mutation: Span, deep: bool) {
+        self.targets.push(MutationTargetSpan {
+            target,
+            mutation,
+            deep,
+        });
     }
 }
 

@@ -104,7 +104,7 @@ impl Resolver<'_, '_, '_> {
                 .get(ty.span().start as usize..ty.span().end as usize)
         {
             let resolved_events = world.resolve_events(type_source);
-            if resolved_events.complete {
+            if resolved_events.complete && !resolved_events.events.is_empty() {
                 return Emits::Known(resolved_events.events.into_iter().collect());
             }
             let resolved = world.resolve_properties(type_source);

@@ -73,48 +73,13 @@ impl NoMutatingProps {
         let Some(exp) = directive.exp.as_ref() else {
             return;
         };
-        let expression_start = exp.loc().span.start;
-        let mut mutated: Vec<TemplateMutation> = Vec::new();
-        handlers::for_each_mutation_target(expression_source(exp, ctx.source), |mutation| {
-            let target = mutation.target.trim();
-            if !self.should_report_template_mutation(scope.mutation_kind(target)) {
-                return;
-            }
-            let start = expression_start + mutation.span.start;
-            let end = expression_start + mutation.span.end;
-            if mutated
-                .iter()
-                .any(|seen| seen.target == target && seen.start == start && seen.end == end)
-            {
-                return;
-            }
-            mutated.push(TemplateMutation {
-                target: String::new(target),
-                start,
-                end,
-            });
-        });
-        for mutation in mutated {
-            if ctx.diagnostics.iter().any(|diagnostic| {
-                diagnostic.rule_name == META.name
-                    && diagnostic.start == mutation.start
-                    && diagnostic.end == mutation.end
-            }) {
-                continue;
-            }
-            ctx.report(
-                crate::diagnostic::LintDiagnostic::error(
-                    ctx.current_rule,
-                    cstr!(
-                        "Unexpected mutation of prop '{}' in an inline handler",
-                        mutation.target
-                    ),
-                    mutation.start,
-                    mutation.end,
-                )
-                .with_help("Use a local ref or emit an event instead of mutating props directly"),
-            );
-        }
+        self.report_expression_mutations(
+            ctx,
+            exp,
+            scope,
+            "in an inline handler",
+            "Use a local ref or emit an event instead of mutating props directly",
+        );
     }
 
     fn check_template_expression_mutation(
@@ -123,18 +88,42 @@ impl NoMutatingProps {
         expression: &ExpressionNode<'_>,
         scope: &PropScope<'_>,
     ) {
+        self.report_expression_mutations(
+            ctx,
+            expression,
+            scope,
+            "in a template expression",
+            "Use a non-mutating expression or derive a local value instead",
+        );
+    }
+
+    fn report_expression_mutations(
+        &self,
+        ctx: &mut LintContext<'_>,
+        expression: &ExpressionNode<'_>,
+        scope: &PropScope<'_>,
+        context: &str,
+        help: &str,
+    ) {
         let expression_start = expression.loc().span.start;
-        let mut reports = Vec::new();
+        let mut reports: Vec<TemplateMutation> = Vec::new();
         handlers::for_each_mutation_target(expression_source(expression, ctx.source), |mutation| {
             let target = mutation.target.trim();
-            if !self.should_report_template_mutation(scope.mutation_kind(target)) {
+            let kind = scope.mutation_kind(target).map(|kind| {
+                if mutation.deep && kind == MutationTargetKind::Direct {
+                    MutationTargetKind::Deep
+                } else {
+                    kind
+                }
+            });
+            if !self.should_report_template_mutation(kind) {
                 return;
             }
             let start = expression_start + mutation.span.start;
             let end = expression_start + mutation.span.end;
             if reports
                 .iter()
-                .any(|seen: &TemplateMutation| seen.start == start && seen.end == end)
+                .any(|seen| seen.target == target && seen.start == start && seen.end == end)
             {
                 return;
             }
@@ -156,13 +145,14 @@ impl NoMutatingProps {
                 crate::diagnostic::LintDiagnostic::error(
                     ctx.current_rule,
                     cstr!(
-                        "Unexpected mutation of prop '{}' in a template expression",
-                        mutation.target
+                        "Unexpected mutation of prop '{}' {}",
+                        mutation.target,
+                        context
                     ),
                     mutation.start,
                     mutation.end,
                 )
-                .with_help("Use a non-mutating expression or derive a local value instead"),
+                .with_help(help),
             );
         }
     }
