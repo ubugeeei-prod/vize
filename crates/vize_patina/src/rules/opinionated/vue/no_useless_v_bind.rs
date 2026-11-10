@@ -23,6 +23,9 @@
 
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
+use crate::markup::{
+    MarkupBinding, MarkupBindingKind, MarkupContext, MarkupElement, MarkupRule, MarkupTraversal,
+};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_relief::{DirectiveNode, ElementNode, ExpressionNode};
 
@@ -39,9 +42,55 @@ static META: RuleMeta = RuleMeta {
 /// Disallow a v-bind whose value is a plain string literal.
 pub struct NoUselessVBind;
 
+impl MarkupRule for NoUselessVBind {
+    fn name(&self) -> &'static str {
+        META.name
+    }
+
+    fn traversal(&self) -> MarkupTraversal {
+        MarkupTraversal::Bindings
+    }
+
+    fn enter_binding<'a>(
+        &self,
+        ctx: &mut MarkupContext<'_, 'a>,
+        _element: &MarkupElement<'a>,
+        binding: &MarkupBinding<'a>,
+    ) {
+        if !ctx.is_template() || binding.kind() != MarkupBindingKind::Bind {
+            return;
+        }
+        let Some(name) = binding.arg_name() else {
+            return;
+        };
+        if !binding.is_static_unqualified_arg_exact(name) {
+            return;
+        }
+        let mut has_modifier = false;
+        binding.walk_modifiers(&mut |_| has_modifier = true);
+        if has_modifier || !binding.expression().is_some_and(is_static_string_literal) {
+            return;
+        }
+
+        let message = ctx
+            .lint()
+            .t_fmt("vue/no-useless-v-bind.message", &[("name", name)]);
+        let help = ctx.lint().t("vue/no-useless-v-bind.help");
+        ctx.lint().warn_at_with_help(message, binding.range(), help);
+    }
+}
+
 impl Rule for NoUselessVBind {
     fn meta(&self) -> &'static RuleMeta {
         &META
+    }
+
+    fn as_markup_rule(&self) -> Option<&dyn MarkupRule> {
+        Some(self)
+    }
+
+    fn jsx_needs_lowering(&self) -> bool {
+        true
     }
 
     fn check_directive<'a>(

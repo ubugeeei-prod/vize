@@ -23,6 +23,9 @@
 
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
+use crate::markup::{
+    MarkupBinding, MarkupBindingKind, MarkupContext, MarkupElement, MarkupRule, MarkupTraversal,
+};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use oxc_allocator::Allocator;
 use oxc_ast::ast::{ArrayExpressionElement, Expression};
@@ -41,9 +44,51 @@ static META: RuleMeta = RuleMeta {
 /// Disallow multiple object literals inside a `:class` array binding.
 pub struct NoMultipleObjectsInClass;
 
+impl MarkupRule for NoMultipleObjectsInClass {
+    fn name(&self) -> &'static str {
+        META.name
+    }
+
+    fn traversal(&self) -> MarkupTraversal {
+        MarkupTraversal::Bindings
+    }
+
+    fn enter_binding<'a>(
+        &self,
+        ctx: &mut MarkupContext<'_, 'a>,
+        _element: &MarkupElement<'a>,
+        binding: &MarkupBinding<'a>,
+    ) {
+        if !ctx.is_template()
+            || binding.kind() != MarkupBindingKind::Bind
+            || !binding.is_static_unqualified_arg_exact("class")
+        {
+            return;
+        }
+        let Some(expression) = binding.retained_expression() else {
+            return;
+        };
+        if count_top_level_objects(expression.ast) < 2 {
+            return;
+        }
+
+        let message = ctx.lint().t("vue/no-multiple-objects-in-class.message");
+        let help = ctx.lint().t("vue/no-multiple-objects-in-class.help");
+        ctx.lint().warn_at_with_help(message, binding.range(), help);
+    }
+}
+
 impl Rule for NoMultipleObjectsInClass {
     fn meta(&self) -> &'static RuleMeta {
         &META
+    }
+
+    fn as_markup_rule(&self) -> Option<&dyn MarkupRule> {
+        Some(self)
+    }
+
+    fn jsx_needs_lowering(&self) -> bool {
+        true
     }
 
     fn check_directive<'a>(
@@ -97,7 +142,11 @@ fn count_top_level_objects_in_array(raw: &str) -> usize {
         return 0;
     }
 
-    let Expression::ArrayExpression(array) = unwrap_expression(&parsed) else {
+    count_top_level_objects(&parsed)
+}
+
+fn count_top_level_objects<'a>(expression: &'a Expression<'a>) -> usize {
+    let Expression::ArrayExpression(array) = unwrap_expression(expression) else {
         return 0;
     };
 
