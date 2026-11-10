@@ -20,6 +20,7 @@ pub(crate) enum PropsTypeEmission {
 pub(crate) fn generate_setup_scoped_props_artifact(
     ts: &mut crate::virtual_ts::TextBuf,
     summary: &Croquis,
+    script: Option<&str>,
     generic_parameters: Option<&GenericParameters>,
 ) {
     let Some(type_args) = summary
@@ -40,7 +41,7 @@ pub(crate) fn generate_setup_scoped_props_artifact(
         append!(*ts, "  type $SetupProps = {inner_type};\n");
     } else {
         append!(*ts, "  type $SetupProps = {inner_type} & ");
-        append_model_props_type_literal(ts, summary, models, generic_parameters);
+        append_model_props_type_literal(ts, summary, script, models, generic_parameters);
         ts.push_str(";\n");
     }
     ts.push_str("  const __vize_setup_props = undefined as unknown as $SetupProps;\n");

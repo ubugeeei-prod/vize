@@ -95,6 +95,7 @@ pub(super) fn generate_setup_props(
         plan.generate_props_type(
             ts,
             summary,
+            source.script,
             generic_param,
             options_api_props,
             type_only_imported_names,
@@ -195,6 +196,7 @@ impl SetupPropsPlan {
         &self,
         ts: &mut crate::virtual_ts::TextBuf,
         summary: &Croquis,
+        script: Option<&str>,
         generic_param: Option<&GenericParameters>,
         options_api_props: Option<&OptionsApiPropsSource>,
         type_only_imported_names: &FxHashSet<CompactString>,
@@ -202,6 +204,7 @@ impl SetupPropsPlan {
         generate_props_type(
             ts,
             summary,
+            script,
             generic_param,
             options_api_props,
             type_only_imported_names,
@@ -317,7 +320,12 @@ impl SetupPropsPlan {
         );
         if self.defer {
             let generated_start = ts.len();
-            generate_setup_scoped_props_artifact(ts, source.summary, generic_parameters);
+            generate_setup_scoped_props_artifact(
+                ts,
+                source.summary,
+                source.script,
+                generic_parameters,
+            );
             MacroTypeMappings::new(source.mappings, source.script, source.offset).map_model_props(
                 ts,
                 generated_start,

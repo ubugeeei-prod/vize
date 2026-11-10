@@ -61,7 +61,7 @@ use self::macro_anchors::emit_setup_scope_macro_anchors;
 use self::options_api::{analyze_options_api_script, emit_options_api_variables};
 use self::options_api_bridge::generate_options_api_bridge;
 use self::options_api_props_identifiers::PropsConstAssertions;
-use self::options_api_support::find_options_api_props;
+use self::options_api_support::{find_options_api_props, find_options_api_slots_type};
 use self::script_blocks::ScriptBlockScopes;
 use self::setup_helpers::{SetupHelperComponentContext, emit_setup_helpers};
 use self::setup_imports::SetupImportPlan;
@@ -302,6 +302,9 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     );
     let options_api_props = options_api
         .then(|| script_content.and_then(find_options_api_props))
+        .flatten();
+    let options_api_slots = options_api
+        .then(|| script_content.and_then(find_options_api_slots_type))
         .flatten();
     let syntactic_type_only_imported_names = syntactic_type_only_imported_names(
         summary,
@@ -793,6 +796,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         !module_plan.exported_types.contains("Slots"),
         module_plan.bound_types.contains("Slots")
             && component_public_types::uses_module_scoped_authored_slots_binding(summary),
+        options_api_slots.as_deref(),
         inferred_slots,
     );
     let (has_exposed_type, exposed_is_generic) =

@@ -21,6 +21,7 @@ pub(super) fn emit_slots_type(
     generic_injection: Option<&(String, Vec<String>)>,
     export_slots: bool,
     authored_slots_binding: bool,
+    options_api_slots: Option<&str>,
     inferred_slots: bool,
 ) -> bool {
     let slots_type_args = summary
@@ -58,6 +59,9 @@ pub(super) fn emit_slots_type(
             mappings.map_slot_keys(start..end, &summary.macros);
             !suffix.is_empty()
         }
+    } else if let Some(options_api_slots) = options_api_slots {
+        ts! { &mut *ts => #("type ") #slots #(" = ") #options_api_slots #(";") }
+        false
     } else if inferred_slots {
         let (declaration, arguments) = generic_injection
             .map(|(declaration, arguments)| {

@@ -114,7 +114,7 @@
   "interface model": {
     "contents": {
       "kind": "markdown",
-      "value": "**name**\n\n_Component prop_\n\n```typescript\n(property) name?: string | undefined\n```\n\n**Requirement**\n\nOptional\n\n**Example**\n\n```vue\n<InterfaceChild name=\"...\" />\n<InterfaceChild :name=\"value\" />\n```\n\n**Docs**\n\n[Vue Component Props](https://vuejs.org/guide/components/props.html)"
+      "value": "**name**\n\n_Component prop_\n\n```typescript\n(property) name?: string | undefined\n```\nThe edited name.\n\n**Requirement**\n\nOptional\n\n**Example**\n\n```vue\n<InterfaceChild name=\"...\" />\n<InterfaceChild :name=\"value\" />\n```\n\n**Docs**\n\n[Vue Component Props](https://vuejs.org/guide/components/props.html)"
     },
     "range": {
       "end": {
@@ -242,7 +242,7 @@
   "options slot name": {
     "contents": {
       "kind": "markdown",
-      "value": "```typescript\n(property) item?: ((props: {\n    row: number;\n}) => any) | undefined\n```"
+      "value": "```typescript\n(property) item?: ((props: {\n    row: number;\n}) => any) | undefined\n```\n\nRow slot."
     },
     "range": {
       "end": {

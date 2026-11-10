@@ -1,3 +1,4 @@
+use oxc_syntax::identifier::is_identifier_name;
 use vize_carton::{FxHashSet, String, append, cstr};
 use vize_croquis::{
     Croquis,
@@ -15,8 +16,28 @@ use super::template_model_modifiers::{model_modifier_prop_name, model_modifier_t
 
 fn emit_type_member(ts: &mut crate::virtual_ts::TextBuf, name: &str, optional: &str, ty: &str) {
     ts.push_str("  ");
-    push_ts_string_literal(ts, name);
+    if is_identifier_name(name) {
+        ts.push_str(name);
+    } else {
+        push_ts_string_literal(ts, name);
+    }
     append!(*ts, "{optional}: {ty};\n");
+}
+
+fn emit_model_doc(
+    ts: &mut crate::virtual_ts::TextBuf,
+    summary: &Croquis,
+    script: Option<&str>,
+    model: &ModelDefinition,
+) {
+    let Some(doc) = script.and_then(|script| {
+        super::runtime_docs::model_doc(script, &summary.macros, model.name.as_str())
+    }) else {
+        return;
+    };
+    ts.push_str("  ");
+    ts.push_str(doc);
+    ts.push('\n');
 }
 
 /// Vue publishes a runtime prop that carries a `default` (even `undefined`) as
@@ -46,6 +67,7 @@ fn parent_requires_prop(prop: &PropDefinition) -> bool {
 fn emit_model_prop_members(
     ts: &mut crate::virtual_ts::TextBuf,
     summary: &Croquis,
+    script: Option<&str>,
     model: &ModelDefinition,
     generic_parameters: Option<&GenericParameters>,
     emitted_names: &mut FxHashSet<String>,
@@ -54,6 +76,7 @@ fn emit_model_prop_members(
     let name = model.name.as_str();
     let prop_type = model_value_type(generic_parameters, model);
     if emitted_names.insert(name.into()) {
+        emit_model_doc(ts, summary, script, model);
         emit_type_member(ts, name, optional, prop_type.as_str());
     }
 
@@ -93,6 +116,7 @@ pub(crate) fn emitted_model_prop_names(
 pub(super) fn append_model_props_type_literal(
     ts: &mut crate::virtual_ts::TextBuf,
     summary: &Croquis,
+    script: Option<&str>,
     models: &[ModelDefinition],
     generic_parameters: Option<&GenericParameters>,
 ) {
@@ -105,6 +129,7 @@ pub(super) fn append_model_props_type_literal(
                     emit_model_prop_members(
                         __ts,
                         summary,
+                        script,
                         model,
                         generic_parameters,
                         &mut emitted_names,
@@ -118,6 +143,7 @@ pub(super) fn append_model_props_type_literal(
 pub(super) fn append_macro_props_type_literal(
     ts: &mut crate::virtual_ts::TextBuf,
     summary: &Croquis,
+    script: Option<&str>,
     models: &[ModelDefinition],
     generic_parameters: Option<&GenericParameters>,
 ) {
@@ -151,6 +177,7 @@ pub(super) fn append_macro_props_type_literal(
                     emit_model_prop_members(
                         __ts,
                         summary,
+                        script,
                         model,
                         generic_parameters,
                         &mut emitted_names,

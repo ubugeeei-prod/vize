@@ -82,7 +82,7 @@
   "interface boolean prop": {
     "contents": {
       "kind": "markdown",
-      "value": "```typescript\n(property) Props.active?: boolean | undefined\n```\nWhether the row is active.\n\n---\n\n```typescript\n(property) active?: boolean | undefined\n```\nWhether the row is active."
+      "value": "```typescript\n(property) Props.active?: boolean | undefined\n```\nWhether the row is active."
     },
     "range": {
       "end": {
@@ -98,7 +98,7 @@
   "interface kebab prop": {
     "contents": {
       "kind": "markdown",
-      "value": "```typescript\n(property) SharedProps.itemCount?: number | undefined\n```\nHow many rows.\n\n---\n\n```typescript\n(property) itemCount?: number | undefined\n```\nHow many rows."
+      "value": "```typescript\n(property) SharedProps.itemCount?: number | undefined\n```\nHow many rows."
     },
     "range": {
       "end": {
@@ -114,7 +114,7 @@
   "interface model": {
     "contents": {
       "kind": "markdown",
-      "value": "```typescript\n(property) \"name\"?: string | undefined\n```"
+      "value": "```typescript\n(property) name?: string | undefined\n```\nThe edited name."
     },
     "range": {
       "end": {
@@ -130,7 +130,7 @@
   "interface prop": {
     "contents": {
       "kind": "markdown",
-      "value": "```typescript\n(property) SharedProps.title: string\n```\nThe title shown above.\n\n---\n\n```typescript\n(property) title: string\n```\nThe title shown above."
+      "value": "```typescript\n(property) SharedProps.title: string\n```\nThe title shown above."
     },
     "range": {
       "end": {
@@ -210,7 +210,7 @@
   "options event": {
     "contents": {
       "kind": "markdown",
-      "value": "```typescript\n(property) \"change\": (value: string) => any\n```\n"
+      "value": "```typescript\n(property) change: (value: string) => any\n```\n"
     },
     "range": {
       "end": {
@@ -242,7 +242,7 @@
   "options slot name": {
     "contents": {
       "kind": "markdown",
-      "value": "```typescript\n(property) \"item\"?: ((props: {\n    row: number;\n}) => any) | undefined\n```\n"
+      "value": "```typescript\n(property) item?: ((props: {\n    row: number;\n}) => any) | undefined\n```\nRow slot."
     },
     "range": {
       "end": {
@@ -274,7 +274,7 @@
   "runtime prop": {
     "contents": {
       "kind": "markdown",
-      "value": "```typescript\n(property) \"title\": string\n```\nThe title shown above."
+      "value": "```typescript\n(property) title: string\n```\nThe title shown above."
     },
     "range": {
       "end": {

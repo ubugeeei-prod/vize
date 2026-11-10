@@ -1,6 +1,7 @@
 use oxc_ast::ast::{
     ArrayExpression, ArrayExpressionElement, Expression, ObjectExpression, ObjectPropertyKind,
 };
+use oxc_span::GetSpan;
 use vize_carton::{CompactString, FxHashMap, FxHashSet};
 
 use crate::macros::EmitDefinition;
@@ -85,10 +86,14 @@ fn collect_from_array(result: &mut ScriptParseResult, array: &ArrayExpression<'_
         let ArrayExpressionElement::StringLiteral(literal) = element else {
             continue;
         };
-        result.macros.add_emit(EmitDefinition {
-            name: CompactString::new(literal.value.as_str()),
-            payload_type: None,
-        });
+        result.macros.add_emit_with_declaration(
+            EmitDefinition {
+                name: CompactString::new(literal.value.as_str()),
+                payload_type: None,
+            },
+            literal.span.start,
+            literal.span.end,
+        );
     }
 }
 
@@ -105,10 +110,15 @@ fn collect_from_object<'a>(
                 let Some(name) = property_key_name(&property.key) else {
                     continue;
                 };
-                result.macros.add_emit(EmitDefinition {
-                    name: CompactString::new(name),
-                    payload_type: extract_runtime_emit_payload_type(&property.value, source),
-                });
+                let span = property.key.span();
+                result.macros.add_emit_with_declaration(
+                    EmitDefinition {
+                        name: CompactString::new(name),
+                        payload_type: extract_runtime_emit_payload_type(&property.value, source),
+                    },
+                    span.start,
+                    span.end,
+                );
             }
             ObjectPropertyKind::SpreadProperty(spread) => {
                 let Expression::Identifier(identifier) = &spread.argument else {

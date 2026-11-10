@@ -167,7 +167,11 @@ impl<'a> MacroTypeMappings<'a> {
                 continue;
             };
             let mut needle = crate::virtual_ts::TextBuf::from_text("  ");
-            push_ts_string_literal(&mut needle, model.name.as_str());
+            if oxc_syntax::identifier::is_identifier_name(model.name.as_str()) {
+                needle.push_str(model.name.as_str());
+            } else {
+                push_ts_string_literal(&mut needle, model.name.as_str());
+            }
             let Some(start) = generated.find(needle.as_str()) else {
                 continue;
             };
@@ -193,15 +197,24 @@ impl<'a> MacroTypeMappings<'a> {
     ) {
         let source_name = self.authored_text(authored).and_then(quoted_content);
         let generated_name = ts.get(generated.clone()).and_then(quoted_content);
+        let generated_identifier = ts
+            .get(generated.clone())
+            .filter(|text| oxc_syntax::identifier::is_identifier_name(text));
         let verified = !name.is_empty()
             && source_name == Some(name)
-            && generated_name
-                .is_some_and(|text| text == name || text.strip_prefix("update:") == Some(name));
+            && (generated_identifier == Some(name)
+                || generated_name.is_some_and(|text| {
+                    text == name || text.strip_prefix("update:") == Some(name)
+                }));
         if !verified {
             self.map_whole_symbol(generated, authored);
             return;
         }
         let content = (authored.0 + 1, authored.1 - 1);
+        if generated_identifier == Some(name) {
+            self.map_exact(generated, content);
+            return;
+        }
         let inner = generated.start + 1..generated.end - 1;
         self.map_whole_symbol(generated, content);
         if inner.len() != name.len() {

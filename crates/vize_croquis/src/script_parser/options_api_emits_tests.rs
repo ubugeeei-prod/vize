@@ -2,8 +2,7 @@ use super::{ScriptParserOptions, parse_script_with_options};
 
 #[test]
 fn parses_options_api_emits_runtime_object_payloads() {
-    let result = parse_script_with_options(
-        r#"
+    let source = r#"
 type ChoiceOption = { value: string }
 
 const sharedEmits = {
@@ -21,7 +20,9 @@ export default {
     },
   },
 }
-"#,
+"#;
+    let result = parse_script_with_options(
+        source,
         ScriptParserOptions {
             options_api: true,
             legacy_vue2: true,
@@ -43,4 +44,14 @@ export default {
         emits.iter().any(|emit| emit.name == "close"),
         "spread emits should be extracted, got {emits:?}"
     );
+    for name in ["close", "input", "cancel"] {
+        let (start, end) = result
+            .macros
+            .emit_declaration(name)
+            .expect("Options API event declaration");
+        let authored = source
+            .get(start as usize..end as usize)
+            .expect("authored event key");
+        assert_eq!(authored.trim_matches(['\'', '"']), name);
+    }
 }
