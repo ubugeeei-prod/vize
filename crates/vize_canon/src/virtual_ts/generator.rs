@@ -303,7 +303,9 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     let options_api_props = options_api
         .then(|| script_content.and_then(find_options_api_props))
         .flatten();
-    let options_api_slots = (options_api && generation_options.component_name.is_some())
+    let editor_component_projection = generation_options.component_name.is_some()
+        || !generation_options.preserve_authored_component;
+    let options_api_slots = (options_api && editor_component_projection)
         .then(|| script_content.and_then(find_options_api_slots_type))
         .flatten();
     let syntactic_type_only_imported_names = syntactic_type_only_imported_names(
@@ -394,7 +396,8 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         script_content,
         generic_parameters,
         hoist_shared_preamble,
-        generation_options.component_name.is_some(),
+        generation_options.component_name.is_some()
+            && summary.macros.with_defaults_expression().is_some(),
         template_ast,
     );
     ts.push_str("\n\n");

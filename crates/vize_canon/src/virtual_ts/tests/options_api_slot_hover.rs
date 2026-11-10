@@ -14,7 +14,20 @@ export default defineComponent({
     let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
     analyzer.analyze_script_plain(script);
     let summary = analyzer.finish();
-    let native = generate_virtual_ts_with_offsets_and_checks(
+    let batch = generate_virtual_ts_with_offsets_and_checks(
+        &summary,
+        Some(script),
+        None,
+        0,
+        0,
+        &Default::default(),
+        VirtualTsGenerationOptions {
+            options_api: true,
+            preserve_authored_component: true,
+            ..Default::default()
+        },
+    );
+    let document_editor = generate_virtual_ts_with_offsets_and_checks(
         &summary,
         Some(script),
         None,
@@ -26,7 +39,7 @@ export default defineComponent({
             ..Default::default()
         },
     );
-    let editor = generate_virtual_ts_with_offsets_and_checks(
+    let content_mapper = generate_virtual_ts_with_offsets_and_checks(
         &summary,
         Some(script),
         None,
@@ -40,14 +53,10 @@ export default defineComponent({
         },
     );
 
-    assert_eq!(native.code.matches("type $Slots = {};").count(), 1);
-    assert_eq!(
-        editor
-            .code
-            .matches(
-                "type $Slots = {\n  /** Row slot. */\n  item?: (props: { row: number }) => any;\n};"
-            )
-            .count(),
-        1
-    );
+    assert_eq!(batch.code.matches("type $Slots = {};").count(), 1);
+    let documented_slot =
+        "type $Slots = {\n  /** Row slot. */\n  item?: (props: { row: number }) => any;\n};";
+    for editor in [document_editor, content_mapper] {
+        assert_eq!(editor.code.matches(documented_slot).count(), 1);
+    }
 }
