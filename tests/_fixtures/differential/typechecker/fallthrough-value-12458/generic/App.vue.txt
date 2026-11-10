@@ -1,0 +1,9 @@
+<script setup lang="ts">
+import Generic from './Generic.vue'
+import GenericLib from './GenericLib'
+</script>
+<template>
+  <Generic :items="[1, 2]" :pick="'x'" :maxlength="{}" />
+  <GenericLib :items="[1, 2]" :pick="'x'" :maxlength="{}" />
+  <Generic :items="['a']" pick="b" :tabindex="true" />
+</template>

@@ -53,9 +53,13 @@ const receiverFilter = " content_mapper_tsgo_cli::reported_expression_duplicates
 // #12445 appended the component hover suite to the LSP command.
 const hoverFilter = " content_mapper_tsgo_lsp_hover::";
 assert.equal(actualWorkflow.split(hoverFilter).length, 2);
+// #12458 appended its fallthrough value suite to the prop-problem command.
+const fallthroughFilter = " content_mapper_tsgo_cli::fallthrough_value_12458::";
+assert.equal(actualWorkflow.split(fallthroughFilter).length, 2);
 const receiverAdjustedWorkflow = restoreConformanceWorkflow(stripProviderClosure(actualWorkflow))
   .replace(receiverFilter, "")
-  .replace(hoverFilter, "");
+  .replace(hoverFilter, "")
+  .replace(fallthroughFilter, "");
 const workflow = receiverAdjustedWorkflow
   .replace(standardRoleCommand, standardCommand)
   .replace(staticRefCommand, modelEventsCommand)

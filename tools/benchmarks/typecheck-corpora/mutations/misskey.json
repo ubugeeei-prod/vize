@@ -329,10 +329,6 @@
         "column": 41,
         "code": "TS2322",
         "message": "Type '{}' is not assignable to type 'Numberish | undefined'"
-      },
-      "known": {
-        "issue": 12458,
-        "count": 0
       }
     },
     {

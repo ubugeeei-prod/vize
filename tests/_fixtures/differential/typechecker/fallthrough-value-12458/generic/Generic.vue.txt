@@ -1,0 +1,4 @@
+<script setup lang="ts" generic="T">
+defineProps<{ items: T[]; pick?: T }>()
+</script>
+<template><input /></template>
