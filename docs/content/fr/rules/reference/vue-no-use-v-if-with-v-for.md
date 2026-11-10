@@ -15,11 +15,11 @@ Champ d’application : Templates et blocs des SFC Vue, avec le contexte du scri
 
 ## Mauvais
 
-Le même élément de liste combine v-if et v-for et teste la visibilité au moyen de la liaison de la boucle.
+Le même élément de liste combine v-if et v-for, mais la condition ne référence pas la variable de la boucle.
 
 ```vue annotate="remove:2"
 <template>
-  <li v-for="item in items" v-if="item.visible" :key="item.id">
+  <li v-for="item in items" v-if="showAll" :key="item.id">
     {{ item.name }}
   </li>
 </template>
@@ -27,15 +27,11 @@ Le même élément de liste combine v-if et v-for et teste la visibilité au moy
 
 ## Bon
 
-Une collection calculée filtre les éléments visibles avant que le template n’itère dessus.
+Avec allowUsingIterationVar activé, la condition référence item provenant du même v-for.
 
-```vue annotate="add:1,2,3,4,6"
-<script setup lang="ts">
-const visibleItems = computed(() => items.filter((item) => item.visible));
-</script>
-
+```vue annotate="add:2"
 <template>
-  <li v-for="item in visibleItems" :key="item.id">
+  <li v-for="item in items" v-if="item.visible" :key="item.id">
     {{ item.name }}
   </li>
 </template>

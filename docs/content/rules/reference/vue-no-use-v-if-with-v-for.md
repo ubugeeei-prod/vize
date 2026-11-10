@@ -15,11 +15,11 @@ Applies to: Vue SFC templates and blocks, with script context where the rule req
 
 ## Bad
 
-The same list element combines v-if and v-for and tests visibility through the loop binding.
+The same list element combines v-if and v-for, but the condition does not reference the loop binding.
 
 ```vue annotate="remove:2"
 <template>
-  <li v-for="item in items" v-if="item.visible" :key="item.id">
+  <li v-for="item in items" v-if="showAll" :key="item.id">
     {{ item.name }}
   </li>
 </template>
@@ -27,15 +27,11 @@ The same list element combines v-if and v-for and tests visibility through the l
 
 ## Good
 
-A computed collection filters the visible items before the template iterates over them.
+With allowUsingIterationVar enabled, the condition references item from the same v-for.
 
-```vue annotate="add:1,2,3,4,6"
-<script setup lang="ts">
-const visibleItems = computed(() => items.filter((item) => item.visible));
-</script>
-
+```vue annotate="add:2"
 <template>
-  <li v-for="item in visibleItems" :key="item.id">
+  <li v-for="item in items" v-if="item.visible" :key="item.id">
     {{ item.name }}
   </li>
 </template>

@@ -15,11 +15,11 @@ description: "禁止在同一元素上使用 `v-if` 与 `v-for`。"
 
 ## 错误示例
 
-同一个列表元素同时使用 v-if 和 v-for，并通过循环绑定检查可见性。
+同一个列表元素同时使用 v-if 和 v-for，但条件没有引用循环变量。
 
 ```vue annotate="remove:2"
 <template>
-  <li v-for="item in items" v-if="item.visible" :key="item.id">
+  <li v-for="item in items" v-if="showAll" :key="item.id">
     {{ item.name }}
   </li>
 </template>
@@ -27,15 +27,11 @@ description: "禁止在同一元素上使用 `v-if` 与 `v-for`。"
 
 ## 正确示例
 
-计算属性中的集合先筛选出可见项，再由模板进行迭代。
+启用 allowUsingIterationVar 后，条件可以引用同一个 v-for 中的 item。
 
-```vue annotate="add:1,2,3,4,6"
-<script setup lang="ts">
-const visibleItems = computed(() => items.filter((item) => item.visible));
-</script>
-
+```vue annotate="add:2"
 <template>
-  <li v-for="item in visibleItems" :key="item.id">
+  <li v-for="item in items" v-if="item.visible" :key="item.id">
     {{ item.name }}
   </li>
 </template>
