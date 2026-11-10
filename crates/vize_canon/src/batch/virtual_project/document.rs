@@ -240,4 +240,35 @@ mod tests {
             assert_eq!(actual, expected, "{}", document.pre_rewrite_code);
         }
     }
+
+    #[test]
+    fn single_document_with_defaults_preserves_prop_documentation() {
+        let source = r#"<script setup lang="ts">
+interface Props {
+  /** Visible label. */
+  label?: string
+}
+const props = withDefaults(defineProps<Props>(), { label: 'ok' })
+</script>"#;
+        let document = generate_vue_document_virtual_ts(
+            Path::new("Props.vue"),
+            source,
+            &VirtualTsOptions::default(),
+            &ImportRewriter::new(),
+            false,
+        )
+        .unwrap();
+
+        assert_eq!(
+            document
+                .pre_rewrite_code
+                .matches(
+                    "): __WithDefaultsResult<_T, _D, _BKeys> & { readonly [K in keyof _T]: unknown };"
+                )
+                .count(),
+            1,
+            "{}",
+            document.pre_rewrite_code,
+        );
+    }
 }

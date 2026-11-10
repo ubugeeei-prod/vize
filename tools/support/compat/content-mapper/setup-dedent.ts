@@ -7,10 +7,10 @@ import type { Edit } from "./projection-byte-relocation.ts";
 const producer = readFileSync(
   new URL("../../../../crates/vize_canon/src/virtual_ts/generator.rs", import.meta.url),
 );
-assert.equal(producer.length, 38188, "certified verbatim setup producer size");
+assert.equal(producer.length, 38172, "certified verbatim setup producer size");
 assert.equal(
   createHash("sha256").update(producer).digest("hex"),
-  "87839dacc6072fc16e33f4bc1d236a27de5b6659af31a16d5bae802f7dfbaf60",
+  "7c8ac57f7b13bc6a3c58a182bc16cc4adb8f1f32c95a41db6f87a4e605690be1",
   "certified verbatim setup producer source",
 );
 
