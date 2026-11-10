@@ -18,7 +18,7 @@ import {
   verifyQ16List,
   verifyQ16Lock,
 } from "../../tools/support/compat/content-mapper/reported-q16.ts";
-import { restoreConformanceNativeStaging } from "./support/native-staging-inverse.ts";
+import { restoreConformanceWorkflow } from "./support/conformance-workflow-inverse.ts";
 
 const actualWorkflow = fs.readFileSync(
   new URL("../../.github/workflows/content-mapper-conformance.yml", import.meta.url),
@@ -53,9 +53,7 @@ const receiverFilter = " content_mapper_tsgo_cli::reported_expression_duplicates
 // #12445 appended the component hover suite to the LSP command.
 const hoverFilter = " content_mapper_tsgo_lsp_hover::";
 assert.equal(actualWorkflow.split(hoverFilter).length, 2);
-const receiverAdjustedWorkflow = restoreConformanceNativeStaging(
-  stripProviderClosure(actualWorkflow),
-)
+const receiverAdjustedWorkflow = restoreConformanceWorkflow(stripProviderClosure(actualWorkflow))
   .replace(receiverFilter, "")
   .replace(hoverFilter, "");
 const workflow = receiverAdjustedWorkflow
