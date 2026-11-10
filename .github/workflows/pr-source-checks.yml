@@ -15,8 +15,7 @@ jobs:
     timeout-minutes: 5
     outputs:
       comparison-base: ${{ steps.comparison.outputs.base }}
-      # Canonical/browser qualification runs in the merge queue; PRs can opt
-      # into the duplicate qualification with the `full-ci` label.
+      # PRs opt into queue-only canonical/browser qualification with `full-ci`.
       heavy: ${{ steps.plan.outputs.heavy }}
       canonical-corpus: ${{ steps.plan.outputs.heavy == 'true' && steps.canonical-corpus-plan.outputs.canonical-corpus || 'false' }}
       rust: ${{ steps.plan.outputs.rust }}
@@ -31,6 +30,13 @@ jobs:
       affected-tooling-matrix: ${{ steps.tooling-plan.outputs.tooling-matrix }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          {
+            sparse-checkout-cone-mode: false,
+            sparse-checkout: "/.github/source-plan-sparse-checkout",
+          }
+      - name: Expand the source planner checkout
+        run: git sparse-checkout set --no-cone --stdin < .github/source-plan-sparse-checkout
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with: { node-version-file: "package.json", package-manager-cache: false }
       - name: Resolve and fetch comparison base
@@ -69,8 +75,7 @@ jobs:
         id: tooling-plan
         env: { BASE_SHA: "${{ steps.comparison.outputs.base }}" }
         run: node tools/support/compat/github/plan-tooling-tests.mjs "$BASE_SHA" "$GITHUB_SHA" --tier pr --output "$RUNNER_TEMP/tooling-plan.json" --github-output
-  # PR and queue Rust lanes build only native configurations; the release
-  # also builds @vizejs/wasm without it. Check that configuration first.
+  # Check the release-only non-native WASM configuration beside PR Rust lanes.
   wasm-release-check:
     name: WASM release build check
     needs: pr-source-plan
@@ -141,8 +146,7 @@ jobs:
             if [[ "$EVENT_NAME" == pull_request ]]; then [[ "$CLI" == skipped ]]
             else [[ "$CLI" == success ]]; fi
           fi
-  # Beside the lanes, not before them: every lane already waits for the source
-  # report, which requires this job.
+  # Run beside the lanes; their required source report already waits for this job.
   ci-selection-tests:
     name: CI selection tests
     needs: pr-source-plan
