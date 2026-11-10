@@ -199,6 +199,8 @@ export const chineseVueNotes = {
     "参见[复杂度评分与组件边界](../../guide/cross-file-complexity.md)，了解示例中两项评分的各部分贡献。",
   "The filename is the finding. Rename the same component; changing a child tag does not fix it.":
     "问题在于文件名。需要重命名该组件；更改子标签不能修复此问题。",
+  "The filename is the finding. The configured exact Item exemption does not allow another single-word name.":
+    "问题在于文件名。精确配置的 Item 例外不会允许其他单个单词的名称。",
   "Enable only for a single-root contract. Vue 3 normally supports fragments.":
     "仅在需要单根节点约定时启用。Vue 3 通常支持片段。",
   "This catalog entry does not currently emit its rule-specific finding through SFC lint. The Bad/Good pair describes the intended convention, not an executable finding. Enabling the ID does not supply the missing SFC check.":

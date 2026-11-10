@@ -9,17 +9,17 @@ Require component names to be multi-word.
 
 | Default severity | Presets | Automatic fix | Options |
 | --- | --- | --- | --- |
-| `error` | `essential`, `nuxt`, `opinionated` | No | None |
+| `error` | `essential`, `nuxt`, `opinionated` | No | [Rule options](../options.md) |
 
 Applies to: Vue SFC templates and blocks, with script context where the rule requires it.
 
-The filename is the finding. Rename the same component; changing a child tag does not fix it.
+The filename is the finding. The configured exact Item exemption does not allow another single-word name.
 
 ## Bad
 
-Item.vue gives the component a single-word name.
+Thing.vue is a single-word name and is not in the configured ignores list.
 
-`Item.vue`
+`Thing.vue`
 
 ```vue
 <template><p>Item</p></template>
@@ -27,9 +27,9 @@ Item.vue gives the component a single-word name.
 
 ## Good
 
-TodoItem.vue gives the same template a multi-word component name.
+Item.vue is permitted by the exact configured Item exemption.
 
-`TodoItem.vue`
+`Item.vue`
 
 ```vue
 <template><p>Item</p></template>
@@ -45,6 +45,13 @@ export default defineConfig({}).withVue({
     "preset": "incremental",
     "rules": {
       "vue/multi-word-component-names": "error"
+    },
+    "ruleOptions": {
+      "vue/multi-word-component-names": {
+        "ignores": [
+          "Item"
+        ]
+      }
     }
   },
 });
@@ -55,5 +62,6 @@ Then run `vp run lint`.
 ## Related
 
 - [Vue rules](../vue.md)
+- [Rule options](../options.md)
 - [All rules](../all.md)
 - [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/multi_word_component_names.rs#L41)

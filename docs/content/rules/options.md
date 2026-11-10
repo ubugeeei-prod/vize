@@ -74,6 +74,7 @@ export default defineConfig({}).withVue({
 | `vue/slot-name-casing` | `"camelCase" \| "kebab-case" \| "singleword"` | Defaults to `camelCase`. Checks static names on rendered `<slot>` outlets; provider-side `v-slot` and `#name` syntax is outside this rule. |
 | `script/define-props-destructuring` | `{ destructure?: "only-when-assigned" \| "always" \| "never" }` | Defaults to `always`, checking assigned and bare typed calls. `only-when-assigned` skips bare calls; `never` requires props-object access. Vue 3.5 destructuring preserves reactivity. |
 | `vue/no-mutating-props` | `{ shallowOnly?: boolean }` | Defaults to `false`; `true` allows nested mutation while still disallowing direct prop reassignment. |
+| `vue/multi-word-component-names` | `{ ignores?: string[] }` | Defaults to an empty list in addition to the built-in `App` and Vue component exemptions. Names are exact and unique; PascalCase entries also admit their kebab-case spelling. |
 | `vue/no-use-v-if-with-v-for` | `{ allowUsingIterationVar?: boolean }` | Defaults to `false`. `true` permits `v-if` only when its condition references a sibling `v-for` iteration variable; unrelated conditions are still reported. |
 | `vue/enforce-style-attribute` | `{ allow?: Array<"plain" \| "scoped" \| "module"> }` | Defaults to `["scoped"]`. Lists the accepted style-block modes. |
 | `vue/no-restricted-syntax` | `Array<string \| { selector: string, message?: string }>` or `{ selectors?: ... }` | Defaults to `[]`. The eslint-plugin-vue option form: esquery selectors over the vue-eslint-parser template AST (`VElement`, `VText`, `VExpressionContainer`, `VAttribute`, … and the TS-ESTree nodes of every expression), each with an optional message. See [the supported selector subset](#vue-no-restricted-syntax-selectors); a selector outside it fails configuration. |
@@ -184,6 +185,38 @@ Good with this policy:
 
 ```vue
 <button type="button">Cancel</button>
+```
+
+## `vue/multi-word-component-names`
+
+List single-word component names that are intentionally part of the project's public vocabulary.
+The list extends the built-in `App` and Vue component exemptions and does not enable the rule.
+Matching is exact; a PascalCase entry also permits its kebab-case spelling. The upstream rule is
+not fixable, so an unlisted name must be renamed or explicitly configured.
+
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({}).withVue({
+  linter: {
+    rules: { "vue/multi-word-component-names": "error" },
+    ruleOptions: {
+      "vue/multi-word-component-names": { ignores: ["Item"] },
+    },
+  },
+});
+```
+
+Bad with this policy: `Thing.vue`
+
+```vue
+<template><p>Thing</p></template>
+```
+
+Good with this policy: `Item.vue`
+
+```vue
+<template><p>Item</p></template>
 ```
 
 ## `vue/no-use-v-if-with-v-for`

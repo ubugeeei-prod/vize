@@ -50,17 +50,27 @@ static META: RuleMeta = RuleMeta {
 pub struct MultiWordComponentNames {
     /// Component names to ignore (e.g., "App", "Nuxt")
     pub ignore: Vec<&'static str>,
+    configured_ignores: Vec<vize_l0::String>,
 }
 
 impl Default for MultiWordComponentNames {
     fn default() -> Self {
         Self {
             ignore: vec!["App", "app"],
+            configured_ignores: Vec::new(),
         }
     }
 }
 
 impl MultiWordComponentNames {
+    /// Add project-local component names to the upstream default exemptions.
+    pub fn with_ignores(configured_ignores: Vec<vize_l0::String>) -> Self {
+        Self {
+            configured_ignores,
+            ..Self::default()
+        }
+    }
+
     fn is_multi_word(name: &str) -> bool {
         kebab_case(name).split('-').count() > 1
     }
@@ -79,6 +89,9 @@ impl MultiWordComponentNames {
         self.ignore
             .iter()
             .any(|ignore| *ignore == name || (is_pascal_case(ignore) && kebab_case(ignore) == name))
+            || self.configured_ignores.iter().any(|ignore| {
+                ignore == name || (is_pascal_case(ignore) && kebab_case(ignore) == name)
+            })
             || is_vue_builtin(name)
             || Self::is_multi_word(name)
     }
@@ -235,7 +248,42 @@ mod tests {
         let linter = create_linter();
         let result = linter.lint_template(r#"<div>hello</div>"#, "Item.vue");
         assert_eq!(result.error_count, 1);
+        assert!(result.diagnostics[0].fix.is_none());
         insta::assert_debug_snapshot!(result.diagnostics);
+    }
+
+    #[test]
+    fn configured_ignores_extend_defaults_and_remain_exact() {
+        let mut registry = RuleRegistry::new();
+        registry.register(Box::new(MultiWordComponentNames::with_ignores(vec![
+            "Todo".into(),
+        ])));
+        let linter = Linter::with_registry(registry);
+
+        assert_eq!(
+            linter
+                .lint_template(r#"<div>hello</div>"#, "Todo.vue")
+                .error_count,
+            0
+        );
+        assert_eq!(
+            linter
+                .lint_template(r#"<div>hello</div>"#, "todo.vue")
+                .error_count,
+            0
+        );
+        assert_eq!(
+            linter
+                .lint_template(r#"<div>hello</div>"#, "Todos.vue")
+                .error_count,
+            1
+        );
+        assert_eq!(
+            linter
+                .lint_template(r#"<div>hello</div>"#, "App.vue")
+                .error_count,
+            0
+        );
     }
 
     #[test]

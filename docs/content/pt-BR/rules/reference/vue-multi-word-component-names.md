@@ -9,17 +9,17 @@ Exigir nomes de componentes com mais de uma palavra.
 
 | Severidade padrão | Predefinições | Correção automática | Opções |
 | --- | --- | --- | --- |
-| `error` | `essential`, `nuxt`, `opinionated` | Não | Nenhuma |
+| `error` | `essential`, `nuxt`, `opinionated` | Não | [Opções das regras](/rules/options.md) |
 
 Aplicável a: Templates e blocos de SFC Vue, com o contexto do script quando exigido pela regra.
 
-A ocorrência diagnosticada é o nome de arquivo. Renomeie o mesmo componente; alterar uma tag filha não corrige o problema.
+A ocorrência diagnosticada é o nome de arquivo. A exceção exata Item configurada não permite outro nome de uma palavra.
 
 ## Incorreto
 
-Item.vue dá ao componente um nome de uma única palavra.
+Thing.vue é um nome de uma palavra que não está na lista de exceções configurada.
 
-`Item.vue`
+`Thing.vue`
 
 ```vue
 <template><p>Item</p></template>
@@ -27,9 +27,9 @@ Item.vue dá ao componente um nome de uma única palavra.
 
 ## Correto
 
-TodoItem.vue dá ao mesmo template um nome de componente com mais de uma palavra.
+Item.vue é permitido pela exceção exata Item configurada.
 
-`TodoItem.vue`
+`Item.vue`
 
 ```vue
 <template><p>Item</p></template>
@@ -45,6 +45,13 @@ export default defineConfig({}).withVue({
     "preset": "incremental",
     "rules": {
       "vue/multi-word-component-names": "error"
+    },
+    "ruleOptions": {
+      "vue/multi-word-component-names": {
+        "ignores": [
+          "Item"
+        ]
+      }
     }
   },
 });
@@ -55,5 +62,6 @@ Depois, execute `vp run lint`.
 ## Páginas relacionadas
 
 - [Regras Vue](../vue.md)
+- [Opções das regras](/rules/options.md)
 - [Todas as regras](../all.md)
 - [Código-fonte](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/multi_word_component_names.rs#L41)

@@ -33,11 +33,12 @@ export const scopedOverrides: Record<string, RuleExample> = {
     vue("<template><p>Item</p></template>"),
     "crates/vize_patina/src/rules/opinionated/vue/multi_word_component_names.rs",
     {
-      badFilename: "Item.vue",
-      goodFilename: "TodoItem.vue",
-      note: "The filename is the finding. Rename the same component; changing a child tag does not fix it.",
+      badFilename: "Thing.vue",
+      goodFilename: "Item.vue",
+      ruleOptions: { ignores: ["Item"] },
+      note: "The filename is the finding. The configured exact Item exemption does not allow another single-word name.",
       noteJa:
-        "検出対象はファイル名です。同じコンポーネントのファイル名を変更します。子要素のタグ名は対象ではありません。",
+        "検出対象はファイル名です。完全一致で設定した Item の除外は、別の一語名を許可しません。",
     },
   ),
   "script/prefer-computed": pair(

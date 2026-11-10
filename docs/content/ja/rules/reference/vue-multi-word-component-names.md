@@ -9,17 +9,17 @@ description: "コンポーネント名を複数の単語で構成します。"
 
 | 既定の重大度 | プリセット | 自動修正 | オプション |
 | --- | --- | --- | --- |
-| `error` | `essential`, `nuxt`, `opinionated` | なし | なし |
+| `error` | `essential`, `nuxt`, `opinionated` | なし | [ルールのオプション](../options.md) |
 
 適用範囲：Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。
 
-検出対象はファイル名です。同じコンポーネントのファイル名を変更します。子要素のタグ名は対象ではありません。
+検出対象はファイル名です。完全一致で設定した Item の除外は、別の一語名を許可しません。
 
 ## 悪い例
 
-Item.vue は一つの語だけのコンポーネント名です。
+Thing.vue は一語の名前で、設定した除外リストにも含まれていません。
 
-`Item.vue`
+`Thing.vue`
 
 ```vue
 <template><p>Item</p></template>
@@ -27,9 +27,9 @@ Item.vue は一つの語だけのコンポーネント名です。
 
 ## 良い例
 
-同じコンポーネントのファイル名を、複数の単語からなる TodoItem.vue に変更します。
+Item.vue は完全一致で設定した Item の除外により許可されます。
 
-`TodoItem.vue`
+`Item.vue`
 
 ```vue
 <template><p>Item</p></template>
@@ -45,6 +45,13 @@ export default defineConfig({}).withVue({
     "preset": "incremental",
     "rules": {
       "vue/multi-word-component-names": "error"
+    },
+    "ruleOptions": {
+      "vue/multi-word-component-names": {
+        "ignores": [
+          "Item"
+        ]
+      }
     }
   },
 });
@@ -55,5 +62,6 @@ export default defineConfig({}).withVue({
 ## 関連ページ
 
 - [Vue ルール](../vue.md)
+- [ルールのオプション](../options.md)
 - [全ルール](../all.md)
 - [ソースコード](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/multi_word_component_names.rs#L41)

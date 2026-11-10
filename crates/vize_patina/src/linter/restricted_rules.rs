@@ -16,14 +16,24 @@ use crate::rules::opinionated::vue::{
 use crate::rules::script::{CustomEventNameCasing, EventNameCasing};
 use crate::rules::script::{DefineMacrosOrder, NoRestrictedMembers, RestrictedGlobals};
 use crate::rules::vue::{
-    AttributeHyphenation, HtmlQuotes, HyphenationStyle, MustacheInterpolationSpacing,
-    MustacheInterpolationSpacingStyle, NoMutatingProps, NoMutatingPropsOptions, NoUseVIfWithVFor,
-    PropNameCasing, PropNameCasingOption, SfcElementOrder, SfcElementOrderOptions,
-    SlotNameCasingStyle, VBindStyle, VBindStyleOption, VOnStyle, VOnStyleOption, VSlotStyle,
+    AttributeHyphenation, HtmlQuotes, HyphenationStyle, MultiWordComponentNames,
+    MustacheInterpolationSpacing, MustacheInterpolationSpacingStyle, NoMutatingProps,
+    NoMutatingPropsOptions, NoUseVIfWithVFor, PropNameCasing, PropNameCasingOption,
+    SfcElementOrder, SfcElementOrderOptions, SlotNameCasingStyle, VBindStyle, VBindStyleOption,
+    VOnStyle, VOnStyleOption, VSlotStyle,
 };
 use vize_l0::String;
 
 impl Linter {
+    /// Configure exact component-name exemptions without enabling the rule.
+    pub fn with_multi_word_component_name_ignores(mut self, ignores: Vec<String>) -> Self {
+        if self.registry.has_rule("vue/multi-word-component-names") {
+            self.registry
+                .replace(Box::new(MultiWordComponentNames::with_ignores(ignores)));
+        }
+        self
+    }
+
     /// Configure custom directives known to be registered by the application.
     pub fn with_warn_custom_directive_ignore(mut self, names: Vec<String>) -> Self {
         if self.registry.has_rule("vue/warn-custom-directive") {

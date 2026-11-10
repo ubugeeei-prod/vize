@@ -297,6 +297,9 @@ export interface LintRuleOptions {
   "vue/no-mutating-props"?: {
     shallowOnly?: boolean;
   };
+  "vue/multi-word-component-names"?: {
+    ignores?: string[];
+  };
   "vue/warn-custom-directive"?: {
     ignore?: string[];
   };

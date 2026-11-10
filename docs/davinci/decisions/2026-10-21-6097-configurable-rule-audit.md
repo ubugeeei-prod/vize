@@ -58,6 +58,13 @@ reportable. This brings the audited surface to 24 mapped rules with typed option
 mapped configurable rules without typed options. The upstream rule is not fixable, so the option
 does not introduce an automatic rewrite.
 
+The component-name exemption cohort adds upstream's exact `ignores` array for
+`vue/multi-word-component-names`. Authored names extend the built-in `App` and Vue component
+exemptions, PascalCase entries also admit their kebab-case spelling, and near matches remain
+reportable. This brings the audited surface to 25 mapped rules with typed options and leaves 45
+mapped configurable rules without typed options. The upstream rule is not fixable, so configured
+exemptions only select which authored names receive diagnostics.
+
 ## Provider boundary
 
 The executable differential provider remains pinned to 10.9.2. Moving it to 10.11.1 changes

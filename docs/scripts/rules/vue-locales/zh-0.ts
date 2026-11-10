@@ -46,8 +46,8 @@ export const chineseVue0: Record<string, readonly [purpose: string, bad: string,
   ],
   "vue/multi-word-component-names": [
     "要求组件名称由多个单词组成",
-    "Item.vue 使用了单个单词的组件名称。",
-    "TodoItem.vue 为同一模板使用了多个单词组成的组件名称。",
+    "Thing.vue 是单个单词的名称，且不在已配置的忽略列表中。",
+    "Item.vue 由精确配置的 Item 例外允许。",
   ],
   "vue/mustache-interpolation-spacing": [
     "要求双花括号插值内部的空格保持一致",

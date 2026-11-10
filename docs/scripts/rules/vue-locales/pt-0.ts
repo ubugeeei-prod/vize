@@ -47,8 +47,8 @@ export const portugueseVue0: Record<string, readonly [purpose: string, bad: stri
     ],
     "vue/multi-word-component-names": [
       "Exigir nomes de componentes com mais de uma palavra",
-      "Item.vue dá ao componente um nome de uma única palavra.",
-      "TodoItem.vue dá ao mesmo template um nome de componente com mais de uma palavra.",
+      "Thing.vue é um nome de uma palavra que não está na lista de exceções configurada.",
+      "Item.vue é permitido pela exceção exata Item configurada.",
     ],
     "vue/mustache-interpolation-spacing": [
       "Aplicar espaçamento consistente dentro das interpolações com chaves duplas",

@@ -200,6 +200,8 @@ export const portugueseVueNotes = {
     "Veja [o cálculo da complexidade e os limites dos componentes](../../guide/cross-file-complexity.md) para conhecer as contribuições às duas pontuações do exemplo.",
   "The filename is the finding. Rename the same component; changing a child tag does not fix it.":
     "A ocorrência diagnosticada é o nome de arquivo. Renomeie o mesmo componente; alterar uma tag filha não corrige o problema.",
+  "The filename is the finding. The configured exact Item exemption does not allow another single-word name.":
+    "A ocorrência diagnosticada é o nome de arquivo. A exceção exata Item configurada não permite outro nome de uma palavra.",
   "Enable only for a single-root contract. Vue 3 normally supports fragments.":
     "Ative apenas quando houver um contrato de raiz única. O Vue 3 normalmente suporta fragmentos.",
   "This catalog entry does not currently emit its rule-specific finding through SFC lint. The Bad/Good pair describes the intended convention, not an executable finding. Enabling the ID does not supply the missing SFC check.":

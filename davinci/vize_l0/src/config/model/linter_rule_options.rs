@@ -23,6 +23,7 @@ mod html_quotes;
 mod html_self_closing;
 mod hyphenation;
 mod merge;
+mod multi_word_component_names;
 mod mustache_spacing;
 mod no_mutating_props;
 mod no_use_v_if_with_v_for;
@@ -57,6 +58,7 @@ pub use html_self_closing::{
     HtmlSelfClosingHtmlOptions, HtmlSelfClosingOptions, HtmlSelfClosingStyle,
 };
 pub use hyphenation::HyphenationStyle;
+pub use multi_word_component_names::MultiWordComponentNamesOptions;
 pub use mustache_spacing::MustacheInterpolationSpacingStyle;
 pub use no_mutating_props::NoMutatingPropsOptions;
 pub use no_use_v_if_with_v_for::NoUseVIfWithVForOptions;
@@ -146,6 +148,9 @@ pub struct ConfigLintRuleOptions {
     /// Options for `vue/no-mutating-props`.
     #[serde(rename = "vue/no-mutating-props")]
     no_mutating_props: Option<NoMutatingPropsOptions>,
+    /// Component names exempt from `vue/multi-word-component-names`.
+    #[serde(rename = "vue/multi-word-component-names")]
+    multi_word_component_names: Option<MultiWordComponentNamesOptions>,
     /// Button type values accepted by `vue/html-button-has-type`.
     #[serde(rename = "vue/html-button-has-type")]
     html_button_has_type: Option<HtmlButtonHasTypeOptions>,
@@ -246,6 +251,7 @@ impl ConfigLintRuleOptions {
             && self.prop_name_casing.is_none()
             && self.slot_name_casing.is_none()
             && self.no_mutating_props.is_none()
+            && self.multi_word_component_names.is_none()
             && self.html_button_has_type.is_none()
             && self.no_use_v_if_with_v_for.is_none()
             && self.warn_custom_directive.is_none()
@@ -354,6 +360,11 @@ impl ConfigLintRuleOptions {
     #[inline]
     pub fn no_mutating_props(&self) -> Option<NoMutatingPropsOptions> {
         self.no_mutating_props
+    }
+
+    /// Configured component-name exemptions.
+    pub fn multi_word_component_names(&self) -> Option<&MultiWordComponentNamesOptions> {
+        self.multi_word_component_names.as_ref()
     }
 
     /// Configured button type values for `vue/html-button-has-type`.
