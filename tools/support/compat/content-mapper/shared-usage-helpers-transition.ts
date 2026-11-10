@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { beforeClosedEmitFactory } from "./closed-emit-factory-transition.ts";
+import { beforeEmitPropsBlockScope } from "./emit-props-block-scope-transition.ts";
 
 type Identity = { bytes: number; sha256: string };
 type Hunk = { before: string; after: string };
@@ -33,6 +34,7 @@ const identity = (text: string): Identity => ({
 
 /** The pre-helper bytes of a recorded helper asset; other images pass through. */
 export function beforeSharedUsageHelpersSource(file: string, current: string): string {
+  current = beforeEmitPropsBlockScope(file, current);
   const transition = record.files.find((candidate) => candidate.path === file);
   if (!transition) return current;
   // The closed-SFC helpers sit on top of the same declaration and SDK assets.

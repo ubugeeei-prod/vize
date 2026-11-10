@@ -14,6 +14,7 @@ mod emit_member_infer;
 mod emit_overload_stall;
 mod emit_overload_window;
 mod emit_overloads;
+mod emit_props_block_scope;
 mod emit_props_twins;
 mod extra_keys_policy;
 mod generic_event_specialization;

@@ -1,0 +1,6 @@
+<script setup lang="ts">
+defineProps<{ value: number }>();
+defineEmits<{ save: [value: number]; pick: [label: string] }>();
+</script>
+
+<template><div /></template>
