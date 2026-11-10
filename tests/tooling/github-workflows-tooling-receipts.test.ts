@@ -165,6 +165,8 @@ test("affected tooling builds the native addon only for a shard that reads it", 
   const plan = action.runs.steps.find((step) => step.id === "plan");
   assert.match(plan?.run ?? "", /tooling-shard-native-build\.mjs/);
   assert.match(plan?.run ?? "", /native-build=\$native_build/);
+  assert.equal(plan?.env?.TOOLING_SHARD, "${{ inputs.shard }}/${{ inputs.total }}");
+  assert.doesNotMatch(plan?.run ?? "", /\$\{\{\s*inputs\./);
   const native = action.runs.steps.find(
     (step) => step.name === "Build the native addon required by this shard",
   );
