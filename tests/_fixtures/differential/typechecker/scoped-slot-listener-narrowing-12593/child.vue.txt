@@ -1,0 +1,7 @@
+<script setup lang="ts">
+defineProps<{ checked?: boolean }>();
+</script>
+
+<template>
+  <input type="checkbox" :checked="checked" />
+</template>

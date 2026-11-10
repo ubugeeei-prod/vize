@@ -135,12 +135,13 @@ pub(super) fn callback_vif_guard(guard: &str, handler_binding: Option<&str>) -> 
     Some(String::from(guard))
 }
 
-/// Keep only branch terms that narrow immutable aliases introduced by a
-/// `v-for`. Those aliases are emitted as `const` bindings, so TypeScript keeps
-/// their narrowing across an authored callback boundary. Props and other
-/// render-time values are deliberately excluded because they may change before
-/// the listener runs (#11965, #11973).
-pub(super) fn callback_vif_guard_for_v_for_aliases(
+/// Keep only branch terms that narrow immutable callback-local aliases.
+/// `v-for` aliases are emitted as `const` bindings and `v-slot` aliases are
+/// parameters of the generated slot function, so TypeScript keeps their
+/// narrowing across an authored callback boundary. Props and other render-time
+/// values are deliberately excluded because they may change before the
+/// listener runs (#11965, #11973, #12593).
+pub(super) fn callback_vif_guard_for_stable_aliases(
     guard: &str,
     aliases: &[&str],
 ) -> Option<String> {
@@ -309,7 +310,7 @@ fn references_any_alias(term: &str, aliases: &[&str]) -> bool {
 #[cfg(test)]
 mod tests {
     use super::{
-        callback_vif_guard, callback_vif_guard_for_v_for_aliases, guard_on_ignored_line,
+        callback_vif_guard, callback_vif_guard_for_stable_aliases, guard_on_ignored_line,
         remove_enclosing_vif_guard_prefix, split_guard_terms,
     };
 
@@ -403,14 +404,14 @@ mod tests {
     }
 
     #[test]
-    fn callback_guard_replays_only_v_for_alias_terms() {
+    fn callback_guard_replays_only_stable_alias_terms() {
         assert_eq!(
-            callback_vif_guard_for_v_for_aliases("ready && isItem(entry) && handler", &["entry"])
+            callback_vif_guard_for_stable_aliases("ready && isItem(entry) && handler", &["entry"])
                 .as_deref(),
             Some("isItem(entry)")
         );
         assert_eq!(
-            callback_vif_guard_for_v_for_aliases(
+            callback_vif_guard_for_stable_aliases(
                 "isItem(outer) && row.kind === 'item'",
                 &["outer", "row"]
             )
@@ -418,11 +419,11 @@ mod tests {
             Some("isItem(outer) && row.kind === 'item'")
         );
         assert_eq!(
-            callback_vif_guard_for_v_for_aliases("ready && handler", &["entry"]),
+            callback_vif_guard_for_stable_aliases("ready && handler", &["entry"]),
             None
         );
         assert_eq!(
-            callback_vif_guard_for_v_for_aliases("isItem(entry)", &[]),
+            callback_vif_guard_for_stable_aliases("isItem(entry)", &[]),
             None
         );
     }
