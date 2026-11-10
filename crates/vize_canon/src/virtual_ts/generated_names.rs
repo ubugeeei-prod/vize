@@ -24,10 +24,12 @@
 //! every alias. A fragment derived from authored text, such as a prop name,
 //! follows a `$` so the spelling stays injective: `__VProp3$aria_label`.
 //!
-//! The prefix is hygienic the way `__vize_` was: authored code never spells a
-//! name `__V` + PascalCase role + digits. Neighbouring conventions cannot
-//! meet it either; Volar's `__VLS_*` and Vue's `__VUE_*__` flags put `_` or a
-//! second capital where a role starts with one capital and lowercase letters.
+//! The prefix is hygienic the way `__vize_` was: when authored script already
+//! spells an exact compact binding such as `__VProps0`, the projection moves
+//! the whole family to the first free `__V$<N>` namespace. Neighbouring
+//! conventions do not force that fallback; Volar's `__VLS_*` and Vue's
+//! `__VUE_*__` flags put `_` or a second capital where a role starts with one
+//! capital and lowercase letters.
 
 use core::fmt;
 use std::cell::RefCell;
@@ -38,14 +40,27 @@ use vize_l0::ts_emit::{EmitHole, EmitLen, TsBuf};
 use super::generic_parameters::GenericParameters;
 use vize_croquis::Croquis;
 
-#[derive(Default)]
 struct Projection {
     bound: Vec<String>,
     authored: Vec<String>,
+    /// Prefix shared by every compact template-scope contract name.
+    template_prefix: String,
     /// Entries of [`LIB_TYPES`] an authored binding shadows.
     shadowed: Vec<&'static str>,
     /// Helper forwarding aliases `(fresh, helper, constraints)` emitted once.
     forwarded: Vec<(String, &'static str, &'static [&'static str])>,
+}
+
+impl Default for Projection {
+    fn default() -> Self {
+        Self {
+            bound: Vec::new(),
+            authored: Vec::new(),
+            template_prefix: String::const_new("__V"),
+            shadowed: Vec::new(),
+            forwarded: Vec::new(),
+        }
+    }
 }
 
 thread_local! {
@@ -69,13 +84,77 @@ impl Drop for Binding {
 pub(crate) fn bind(parameters: Option<&GenericParameters>, summary: &Croquis) -> Binding {
     let authored = summary.type_exports.iter();
     let binding = bind_names(parameters, authored.map(|export| export.name.as_str()));
+    let template_prefix = compact_template_prefix(parameters, summary);
     let shadowed = LIB_TYPES
         .iter()
         .copied()
         .filter(|name| crate::virtual_ts::helpers::hygiene::authored_binding(summary, name))
         .collect();
-    CURRENT.with_borrow_mut(|projection| projection.shadowed = shadowed);
+    CURRENT.with_borrow_mut(|projection| {
+        projection.template_prefix = template_prefix;
+        projection.shadowed = shadowed;
+    });
     binding
+}
+
+const COMPACT_TEMPLATE_ROLES: &[&str] = &[
+    "Comp",
+    "Props",
+    "ValueProps",
+    "CheckProps",
+    "CheckTail",
+    "Check",
+    "ResolvedProps",
+    "SelectedProps",
+];
+
+fn compact_name_is_authored(
+    parameters: Option<&GenericParameters>,
+    summary: &Croquis,
+    name: &str,
+) -> bool {
+    parameters.is_some_and(|parameters| parameters.parameter_names().any(|bound| bound == name))
+        || crate::virtual_ts::helpers::hygiene::authored_binding(summary, name)
+}
+
+fn compact_template_prefix(parameters: Option<&GenericParameters>, summary: &Croquis) -> String {
+    let available = |prefix: &str| {
+        summary
+            .component_usages
+            .iter()
+            .enumerate()
+            .all(|(idx, usage)| {
+                COMPACT_TEMPLATE_ROLES.iter().all(|role| {
+                    !compact_name_is_authored(
+                        parameters,
+                        summary,
+                        cstr!("{prefix}{role}{idx}").as_str(),
+                    )
+                }) && usage.props.iter().all(|prop| {
+                    let prop =
+                        crate::virtual_ts::helpers::to_safe_identifier_fragment(prop.name.as_str());
+                    ["Prop", "Model"].into_iter().all(|role| {
+                        !compact_name_is_authored(
+                            parameters,
+                            summary,
+                            cstr!("{prefix}{role}{idx}${prop}").as_str(),
+                        )
+                    })
+                })
+            })
+    };
+    if available("__V") {
+        return String::const_new("__V");
+    }
+    (1usize..)
+        .map(|suffix| cstr!("__V${suffix}"))
+        .find(|prefix| available(prefix))
+        .unwrap_or_else(|| unreachable!("an unbounded compact-name namespace must have a gap"))
+}
+
+/// Prefix shared by every compact per-usage contract name in this projection.
+pub(crate) fn template_prefix() -> String {
+    CURRENT.with_borrow(|projection| projection.template_prefix.clone())
 }
 
 fn bind_names<'a>(
@@ -95,6 +174,7 @@ fn bind_names<'a>(
     let projection = Projection {
         bound,
         authored,
+        template_prefix: String::const_new("__V"),
         shadowed: Vec::new(),
         forwarded: Vec::new(),
     };

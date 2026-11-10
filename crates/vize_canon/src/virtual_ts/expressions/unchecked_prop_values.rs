@@ -14,7 +14,7 @@ use super::props_literal::{literal_carries_value, named_entry_marks};
 use crate::virtual_ts::helpers::{
     component_prop_key, push_ts_string_literal, to_safe_identifier_fragment,
 };
-use vize_carton::append;
+use vize_carton::{String, append};
 use vize_croquis::croquis::{ComponentUsage, PassedProp};
 
 /// Opening of every owned per-prop annotation. The content mapper appends
@@ -63,6 +63,7 @@ pub(crate) const fn attr_value_declaration(shared_virtual_module: bool) -> &'sta
 /// The per-prop assignments of one usage whose value the literal carries.
 pub(crate) struct OwnedPropValues<'a> {
     owned: Vec<bool>,
+    contract_prefix: String,
     component_ref: &'a str,
     idx: usize,
     relaxed_required: bool,
@@ -93,6 +94,7 @@ impl<'a> OwnedPropValues<'a> {
         };
         Self {
             owned,
+            contract_prefix: crate::virtual_ts::generated_names::template_prefix(),
             component_ref,
             idx,
             relaxed_required,
@@ -110,9 +112,10 @@ impl<'a> OwnedPropValues<'a> {
         prop: &PassedProp,
         value: &str,
     ) {
-        let (idx, component_ref) = (self.idx, self.component_ref);
+        let (prefix, idx, component_ref) =
+            (self.contract_prefix.as_str(), self.idx, self.component_ref);
         let name = to_safe_identifier_fragment(prop.name.as_str());
-        append!(*ts, ": {ATTR_VALUE_REFERENCE}__VProps{idx}, ");
+        append!(*ts, ": {ATTR_VALUE_REFERENCE}{prefix}Props{idx}, ");
         push_ts_string_literal(ts, component_prop_key(prop.name.as_str()).as_str());
         let explicit_undefined = self.relaxed_required && value.trim() == "undefined";
         if explicit_undefined {
@@ -120,9 +123,12 @@ impl<'a> OwnedPropValues<'a> {
             // the owned form (and its Content Mapper directive), but remove
             // the literal and fallthrough owners so `$AttrValue` selects the
             // per-prop contract `V`.
-            append!(*ts, ", unknown, __VProp{idx}${name}, {{}}> = ");
+            append!(*ts, ", unknown, {prefix}Prop{idx}${name}, {{}}> = ");
         } else {
-            append!(*ts, ", typeof {component_ref}, __VProp{idx}${name}> = ");
+            append!(
+                *ts,
+                ", typeof {component_ref}, {prefix}Prop{idx}${name}> = "
+            );
         }
         if needs_parentheses(value) {
             ts.push('(');
@@ -136,12 +142,12 @@ impl<'a> OwnedPropValues<'a> {
         prop: &PassedProp,
         value: &str,
     ) {
-        let idx = self.idx;
+        let (prefix, idx) = (self.contract_prefix.as_str(), self.idx);
         let name = to_safe_identifier_fragment(prop.name.as_str());
         if needs_parentheses(value) {
             ts.push(')');
         }
-        append!(*ts, " satisfies __VProp{idx}${name}");
+        append!(*ts, " satisfies {prefix}Prop{idx}${name}");
     }
 }
 

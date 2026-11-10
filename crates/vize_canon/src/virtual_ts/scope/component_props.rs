@@ -368,13 +368,14 @@ fn generate_usage_declarations(
     );
     let src_start = (ctx.template_offset + usage.start) as usize;
     let src_end = (ctx.template_offset + usage.end) as usize;
+    let contract_prefix = crate::virtual_ts::generated_names::template_prefix();
     vize_l0::emit_ts!(ts, "  // @vize-map: component -> {src_start}:{src_end}\n",);
     // Prefer the modern static raw-props identity while retaining the
     // instance marker for declarations emitted before #4034.
-    vize_l0::emit_ts!(ts, "  type __VProps{idx} = ",);
+    vize_l0::emit_ts!(ts, "  type {contract_prefix}Props{idx} = ",);
     let shared = shared_contracts.get(&idx);
     if let Some(shared) = shared.filter(|shared| shared.canonical_idx != idx) {
-        append!(*ts, "__VProps{};\n", shared.canonical_idx,);
+        append!(*ts, "{contract_prefix}Props{};\n", shared.canonical_idx,);
     } else {
         let pair = constructor_instance::root_slot_scope(
             &summary.scopes,
@@ -399,6 +400,7 @@ fn generate_usage_declarations(
     append_prop_checker_alias(
         ts,
         usage,
+        contract_prefix.as_str(),
         component_ref.as_str(),
         idx,
         (
@@ -425,6 +427,7 @@ fn generate_usage_declarations(
     append_per_prop_aliases(
         ts,
         usage,
+        contract_prefix.as_str(),
         idx,
         prop_alias_share(summary, idx, ctx.hoist_shared_preamble, shared),
     );

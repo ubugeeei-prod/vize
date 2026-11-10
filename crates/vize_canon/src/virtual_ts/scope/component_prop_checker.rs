@@ -91,6 +91,7 @@ pub(super) fn has_inference_props(usage: &ComponentUsage) -> bool {
 pub(super) fn append_prop_checker_alias(
     ts: &mut crate::virtual_ts::TextBuf,
     usage: &ComponentUsage,
+    prefix: &str,
     component_ref: &str,
     idx: usize,
     (relax_required, hoist_shared_preamble, loose_legacy_attrs): (bool, bool, bool),
@@ -101,15 +102,18 @@ pub(super) fn append_prop_checker_alias(
         // The shared checker already owns its props and tail. Only model
         // writeback and typed spread checks read a per-usage component alias.
         if needs_component_alias {
-            vize_l0::emit_ts!(ts, "  type __VComp{idx} = __VComp{shared_idx};\n",);
+            vize_l0::emit_ts!(ts, "  type {prefix}Comp{idx} = {prefix}Comp{shared_idx};\n",);
         }
         // Per-prop aliases either reuse the canonical prop alias or read its
         // value-props contract directly. Intermediate aliases would be unused
         // whenever every prop was already shared (TS6196 under noUnusedLocals).
-        vize_l0::emit_ts!(ts, "  type __VCheck{idx} = __VCheck{shared_idx};\n",);
+        vize_l0::emit_ts!(
+            ts,
+            "  type {prefix}Check{idx} = {prefix}Check{shared_idx};\n",
+        );
         return;
     }
-    vize_l0::emit_ts!(ts, "  type __VComp{idx} = typeof {component_ref};\n",);
+    vize_l0::emit_ts!(ts, "  type {prefix}Comp{idx} = typeof {component_ref};\n",);
     // The listener props synthesized from the child's `emits` join the check
     // target (#3890): they are part of Vue's public props contract, `vue-tsc`
     // lists them in the displayed parameter type, and their presence is what
@@ -127,9 +131,9 @@ pub(super) fn append_prop_checker_alias(
     // `never` and skip the scan; either branch is the same instantiation the
     // default arguments produce.
     let own_props = if relax_required {
-        cstr!("Partial<__VProps{idx}>")
+        cstr!("Partial<{prefix}Props{idx}>")
     } else {
-        cstr!("__VProps{idx}")
+        cstr!("{prefix}Props{idx}")
     };
     // Keep the standalone/content-mapper path on the original static format
     // strings. Passing the same local helper names through format arguments
@@ -140,28 +144,28 @@ pub(super) fn append_prop_checker_alias(
     if !hoist_shared_preamble {
         vize_l0::emit_ts!(
             ts,
-            "  type __VCheckProps{idx} = {own_props} & $EmitListeners<__VComp{idx}> & ($FallthroughProps<__VComp{idx}> extends infer __F ? [__F extends unknown ? {{}} extends __F ? never : __F : never] extends [never] ? $RequiredFallthroughProps<__VComp{idx}, __F, never> : $RequiredFallthroughProps<__VComp{idx}, __F> : never);\n",
+            "  type {prefix}CheckProps{idx} = {own_props} & $EmitListeners<{prefix}Comp{idx}> & ($FallthroughProps<{prefix}Comp{idx}> extends infer __F ? [__F extends unknown ? {{}} extends __F ? never : __F : never] extends [never] ? $RequiredFallthroughProps<{prefix}Comp{idx}, __F, never> : $RequiredFallthroughProps<{prefix}Comp{idx}, __F> : never);\n",
         );
         if loose_legacy_attrs {
             vize_l0::emit_ts!(
                 ts,
-                "  type __VCheckTail{idx} = {{ [__K in string]: unknown }};\n"
+                "  type {prefix}CheckTail{idx} = {{ [__K in string]: unknown }};\n"
             );
         } else {
             vize_l0::emit_ts!(
                 ts,
-                "  type __VCheckTail{idx} = $ComponentCheckTail<__VComp{idx}>;\n",
+                "  type {prefix}CheckTail{idx} = $ComponentCheckTail<{prefix}Comp{idx}>;\n",
             );
         }
         if force_value_props || usage_needs_per_prop_aliases(usage) {
             vize_l0::emit_ts!(
                 ts,
-                "  type __VValueProps{idx} = $IsLibraryGenericExport<__VComp{idx}> extends true ? Record<string, any> : __VProps{idx} & $EmitListeners<__VComp{idx}> & $PublicComponentAttrs;\n",
+                "  type {prefix}ValueProps{idx} = $IsLibraryGenericExport<{prefix}Comp{idx}> extends true ? Record<string, any> : {prefix}Props{idx} & $EmitListeners<{prefix}Comp{idx}> & $PublicComponentAttrs;\n",
             );
         }
         vize_l0::emit_ts!(
             ts,
-            "  type __VCheck{idx} = $PropChecker<__VComp{idx}, __VCheckProps{idx}, __VCheckTail{idx}>;\n",
+            "  type {prefix}Check{idx} = $PropChecker<{prefix}Comp{idx}, {prefix}CheckProps{idx}, {prefix}CheckTail{idx}>;\n",
         );
         return;
     }
@@ -173,28 +177,28 @@ pub(super) fn append_prop_checker_alias(
     let prop_checker = shared_types::PROP_CHECKER.select(hoist_shared_preamble);
     vize_l0::emit_ts!(
         ts,
-        "  type __VCheckProps{idx} = {own_props} & {emit_listeners}<__VComp{idx}> & ({fallthrough_props}<__VComp{idx}> extends infer __F ? [__F extends unknown ? {{}} extends __F ? never : __F : never] extends [never] ? {required_fallthrough}<__VComp{idx}, __F, never> : {required_fallthrough}<__VComp{idx}, __F> : never);\n",
+        "  type {prefix}CheckProps{idx} = {own_props} & {emit_listeners}<{prefix}Comp{idx}> & ({fallthrough_props}<{prefix}Comp{idx}> extends infer __F ? [__F extends unknown ? {{}} extends __F ? never : __F : never] extends [never] ? {required_fallthrough}<{prefix}Comp{idx}, __F, never> : {required_fallthrough}<{prefix}Comp{idx}, __F> : never);\n",
     );
     if loose_legacy_attrs {
         vize_l0::emit_ts!(
             ts,
-            "  type __VCheckTail{idx} = {{ [__K in string]: unknown }};\n"
+            "  type {prefix}CheckTail{idx} = {{ [__K in string]: unknown }};\n"
         );
     } else {
         vize_l0::emit_ts!(
             ts,
-            "  type __VCheckTail{idx} = $ComponentCheckTail<__VComp{idx}>;\n",
+            "  type {prefix}CheckTail{idx} = $ComponentCheckTail<{prefix}Comp{idx}>;\n",
         );
     }
     if force_value_props || usage_needs_per_prop_aliases(usage) {
         vize_l0::emit_ts!(
             ts,
-            "  type __VValueProps{idx} = {is_library_generic}<__VComp{idx}> extends true ? Record<string, any> : __VProps{idx} & {emit_listeners}<__VComp{idx}> & $PublicComponentAttrs;\n",
+            "  type {prefix}ValueProps{idx} = {is_library_generic}<{prefix}Comp{idx}> extends true ? Record<string, any> : {prefix}Props{idx} & {emit_listeners}<{prefix}Comp{idx}> & $PublicComponentAttrs;\n",
         );
     }
     vize_l0::emit_ts!(
         ts,
-        "  type __VCheck{idx} = {prop_checker}<__VComp{idx}, __VCheckProps{idx}, __VCheckTail{idx}>;\n",
+        "  type {prefix}Check{idx} = {prop_checker}<{prefix}Comp{idx}, {prefix}CheckProps{idx}, {prefix}CheckTail{idx}>;\n",
     );
 }
 
@@ -216,6 +220,7 @@ pub(super) fn usage_needs_per_prop_aliases(usage: &ComponentUsage) -> bool {
 /// it per component and key.
 pub(super) fn prop_alias_type(
     prop: &PassedProp,
+    prefix: &str,
     idx: usize,
     camel_prop_name: &str,
     fallthrough_prop_name: &str,
@@ -225,15 +230,21 @@ pub(super) fn prop_alias_type(
         if prop.name.as_str() == "ref" && is_inline_ref_callback_prop(prop) {
             return String::from("$ComponentRefCallback");
         }
-        let normalized = prop_value_or("$PropValueOr", idx, camel_prop_name, fallthrough_prop_name);
+        let normalized = prop_value_or(
+            "$PropValueOr",
+            prefix,
+            idx,
+            camel_prop_name,
+            fallthrough_prop_name,
+        );
         let raw_aria_prop_name =
             component_aria_prop_keys(fallthrough_prop_name).map(|(raw, _)| raw);
         let resolved = if let Some(raw_prop_name) = raw_aria_prop_name {
-            cstr!("$PropValue<__VProps{idx}, '{raw_prop_name}', {normalized}>")
+            cstr!("$PropValue<{prefix}Props{idx}, '{raw_prop_name}', {normalized}>")
         } else if fallthrough_prop_name == camel_prop_name {
             normalized
         } else {
-            cstr!("$PropValue<__VValueProps{idx}, '{fallthrough_prop_name}', {normalized}>")
+            cstr!("$PropValue<{prefix}ValueProps{idx}, '{fallthrough_prop_name}', {normalized}>")
         };
         return if is_inline_callback_prop(prop) {
             cstr!("$CallableProp<{resolved}>")
@@ -250,6 +261,7 @@ pub(super) fn prop_alias_type(
     }
     let normalized = prop_value_or(
         prop_value_or_ref,
+        prefix,
         idx,
         camel_prop_name,
         fallthrough_prop_name,
@@ -262,11 +274,11 @@ pub(super) fn prop_alias_type(
     // A declared literal key such as `data-owned` is still an owned prop.
     // Try its authored spelling before the normal camelized alias and root.
     let resolved = if let Some(raw_prop_name) = raw_aria_prop_name {
-        cstr!("{prop_value}<__VProps{idx}, '{raw_prop_name}', {normalized}>")
+        cstr!("{prop_value}<{prefix}Props{idx}, '{raw_prop_name}', {normalized}>")
     } else if fallthrough_prop_name == camel_prop_name {
         normalized
     } else {
-        cstr!("{prop_value}<__VValueProps{idx}, '{fallthrough_prop_name}', {normalized}>")
+        cstr!("{prop_value}<{prefix}ValueProps{idx}, '{fallthrough_prop_name}', {normalized}>")
     };
     if is_inline_callback_prop(prop) {
         cstr!("{callable_prop}<{resolved}>")
@@ -277,12 +289,13 @@ pub(super) fn prop_alias_type(
 
 fn prop_value_or(
     helper: &str,
+    prefix: &str,
     idx: usize,
     camel_prop_name: &str,
     fallthrough_prop_name: &str,
 ) -> String {
-    let props = cstr!("__VValueProps{idx}");
-    let component = cstr!("__VComp{idx}");
+    let props = cstr!("{prefix}ValueProps{idx}");
+    let component = cstr!("{prefix}Comp{idx}");
     if fallthrough_prop_name == camel_prop_name {
         cstr!("{helper}<{props}, '{camel_prop_name}', {component}>")
     } else {
@@ -300,6 +313,7 @@ fn prop_value_or(
 pub(super) fn append_per_prop_aliases(
     ts: &mut crate::virtual_ts::TextBuf,
     usage: &ComponentUsage,
+    prefix: &str,
     idx: usize,
     (hoist_shared_preamble, shared): (bool, Option<(usize, &ComponentUsage)>),
 ) {
@@ -319,7 +333,7 @@ pub(super) fn append_per_prop_aliases(
             if same_prop_alias_shape(canonical_prop, prop) {
                 vize_l0::emit_ts!(
                     ts,
-                    "  type __VProp{idx}${safe_prop_name} = __VProp{shared_idx}${safe_prop_name};\n",
+                    "  type {prefix}Prop{idx}${safe_prop_name} = {prefix}Prop{shared_idx}${safe_prop_name};\n",
                 );
                 continue;
             }
@@ -331,7 +345,7 @@ pub(super) fn append_per_prop_aliases(
                 let callable = shared_types::CALLABLE_PROP.select(hoist_shared_preamble);
                 vize_l0::emit_ts!(
                     ts,
-                    "  type __VProp{idx}${safe_prop_name} = {callable}<__VProp{shared_idx}${safe_prop_name}>;\n",
+                    "  type {prefix}Prop{idx}${safe_prop_name} = {callable}<{prefix}Prop{shared_idx}${safe_prop_name}>;\n",
                 );
                 continue;
             }
@@ -339,9 +353,10 @@ pub(super) fn append_per_prop_aliases(
         let camel_prop_name = to_camel_case(prop.name.as_str());
         append!(
             *ts,
-            "  type __VProp{idx}${safe_prop_name} = {};\n",
+            "  type {prefix}Prop{idx}${safe_prop_name} = {};\n",
             prop_alias_type(
                 prop,
+                prefix,
                 shared.map_or(idx, |(shared_idx, _)| shared_idx),
                 &camel_prop_name,
                 prop.name.as_str(),

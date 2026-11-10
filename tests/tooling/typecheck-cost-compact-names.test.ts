@@ -23,6 +23,10 @@ void test("compact generated names fold like the names they replace", () => {
     "  type __VProp0$to = string;",
     "  type __VModel0$value = string;",
     "  (undefined as unknown as __VCheck0)({",
+    "  type __V$1Props1 = {};",
+    "  type __V$1Prop1$to = string;",
+    "  type __V$1Model1$value = string;",
+    "  (undefined as unknown as __V$1Check1)({",
     "",
   ].join("\n");
   const text = sourceText(Buffer.from(compact));
@@ -34,6 +38,10 @@ void test("compact generated names fold like the names they replace", () => {
   assert.equal(family("type __VProp0$to"), "contract-alias");
   assert.equal(family("type __VModel0$value"), "model");
   assert.equal(family("(undefined as unknown as __VCheck0)"), "props-call");
+  assert.equal(family("type __V$1Props1"), "contract-alias");
+  assert.equal(family("type __V$1Prop1$to"), "contract-alias");
+  assert.equal(family("type __V$1Model1$value"), "model");
+  assert.equal(family("(undefined as unknown as __V$1Check1)"), "props-call");
   assert.equal(normalizeAlias("__VProps0"), normalizeAlias("__MkA_Props_0"));
   assert.equal(normalizeAlias("__VComp12"), "__C_Component_N");
   assert.equal(normalizeAlias("__VValueProps3"), "__C_ValueProps_N");
@@ -42,5 +50,8 @@ void test("compact generated names fold like the names they replace", () => {
   assert.equal(normalizeAlias("__VCheck3"), "__C_Check_N");
   assert.equal(normalizeAlias("__VProp4$model_value"), "__C_N_prop_*");
   assert.equal(normalizeAlias("__VModel4$model_value"), "__C_N_model_*");
+  assert.equal(normalizeAlias("__V$1Props0"), normalizeAlias("__MkA_Props_0"));
+  assert.equal(normalizeAlias("__V$1Prop4$model_value"), "__C_N_prop_*");
+  assert.equal(normalizeAlias("__V$1Model4$model_value"), "__C_N_model_*");
   assert.equal(normalizeAlias("__MkSwitch_4_model_model_value"), "__C_N_model_*");
 });
