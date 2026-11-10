@@ -12,6 +12,11 @@ import {
   copyFileSync,
 } from "node:fs";
 import { resolve, join, basename } from "node:path";
+import {
+  certifiedTransition,
+  currentEmbeddedWithDefaults,
+  previousEmbeddedWithDefaults,
+} from "../compat/content-mapper/canonical-helper-transition.ts";
 import { authoredDirectives } from "../compat/content-mapper/producer-unmapped-ignores.ts";
 import { dedentEdits } from "../compat/content-mapper/setup-dedent.ts";
 import { assertTypedContextWrapperMappings } from "./typed-context-wrapper-mappings.ts";
@@ -97,6 +102,15 @@ const certifyMapperTransition = (beforePacket, afterPacket) => {
       label: "embedded helper block",
     },
   ];
+  const withDefaultsTransition = certifiedTransition(
+    before,
+    after,
+    previousEmbeddedWithDefaults,
+    currentEmbeddedWithDefaults,
+    "embedded withDefaults docs return",
+  );
+  if (withDefaultsTransition) primary.push(withDefaultsTransition);
+  primary.push(...dedentEdits(before, after));
   const beforeText = before.toString();
   for (const [oldValue, currentValue, label] of [
     [
