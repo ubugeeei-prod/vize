@@ -5,6 +5,7 @@ use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::{Arc, LazyLock, Mutex, OnceLock, Weak};
 use vize_atelier_sfc::script::SfcTypeProject;
 use vize_canon::{TsconfigOwnershipSnapshot, TsconfigSourceKind};
+use vize_l0::path::{normalize_windows_verbatim_path, sort_dedup_paths};
 use vize_l0::{FxHashMap, String, cstr};
 
 type ProjectCell = Arc<OnceLock<Result<Arc<SfcTypeProject>, String>>>;
@@ -47,14 +48,24 @@ impl CapturedProject {
                 root.display()
             )
         })?;
+        // Hosts watch these and send them back, so they take the plain spelling.
+        let mut inputs: Vec<_> = snapshot
+            .observations()
+            .paths()
+            .into_iter()
+            .map(normalize_windows_verbatim_path)
+            .collect();
+        sort_dedup_paths(&mut inputs);
         let capture = Arc::new(Self {
-            root: snapshot
-                .project_paths()
-                .first()
-                .cloned()
-                .unwrap_or_else(|| root.to_path_buf()),
+            root: normalize_windows_verbatim_path(
+                snapshot
+                    .project_paths()
+                    .first()
+                    .cloned()
+                    .unwrap_or_else(|| root.to_path_buf()),
+            ),
             revision: NEXT_CAPTURE.fetch_add(1, Ordering::Relaxed),
-            inputs: snapshot.observations().paths(),
+            inputs,
             snapshot,
             projects: Mutex::default(),
         });

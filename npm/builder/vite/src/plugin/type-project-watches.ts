@@ -1,6 +1,6 @@
 import * as native from "@vizejs/native";
 import type { TypeProjectContext } from "../sfc-types.ts";
-import { filesystemPathIdentities } from "./path-identity.ts";
+import { filesystemPathIdentities, withoutVerbatimPrefix } from "./path-identity.ts";
 
 interface ProjectWatchApi {
   typeProjectInputs(
@@ -31,7 +31,7 @@ export function watchTypeProject(
   if (!inputs)
     throw new Error("[vize] TypeScript project changed while compiling; reload the component.");
   if (knownRevision === context.revision) return;
-  for (const input of inputs) addWatchFile(input);
+  for (const input of new Set(inputs.map(withoutVerbatimPrefix))) addWatchFile(input);
   if (!projects) {
     projects = new Map();
     watched.set(cache, projects);

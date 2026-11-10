@@ -142,3 +142,22 @@ void test("symlinked monorepo inputs retain every physical TypeScript project ow
   assert(queried.includes(logicalInput));
   assert(queried.includes(physicalIdentity));
 });
+
+void test("verbatim Windows project inputs are watched once in their plain spelling", () => {
+  const watched: string[] = [];
+  const api = {
+    typeProjectInputs(root: string) {
+      return [root, "\\\\?\\C:\\app\\tsconfig.json", "\\\\?\\C:\\app\\src\\tsconfig.json"];
+    },
+    typeProjectOwners() {
+      return [];
+    },
+  };
+  watchTypeProject(
+    new Map(),
+    { root: "C:\\app\\tsconfig.json", revision: "1" },
+    (file) => watched.push(file),
+    api,
+  );
+  assert.deepEqual(watched, ["C:\\app\\tsconfig.json", "C:\\app\\src\\tsconfig.json"]);
+});
