@@ -8,7 +8,7 @@ import { missingFromRegistry } from "../../../tools/support/release/verify_publi
 import { writeFakeCommand } from "../support/fake-command.ts";
 import { fakeNpmArchiveSource } from "../support/fake-npm-registry.ts";
 
-// Serves the exact version with its archive; `latest` comes from TEST_LATEST.
+// Serves the exact version with its archive; the expected channel comes from TEST_TAG.
 function fakeRegistry(bin: string): void {
   writeFakeCommand(
     bin,
@@ -23,22 +23,28 @@ function fakeRegistry(bin: string): void {
       "  process.exit(0);",
       "}",
       "const body = version === undefined",
-      "  ? { name, 'dist-tags': { latest: process.env.TEST_LATEST } }",
+      "  ? { name, 'dist-tags': { [process.env.TEST_TAG]: process.env.TEST_TAG_VERSION } }",
       "  : { name, version, dist: fakeDist(name, version) };",
       "process.stdout.write(`${JSON.stringify(body)}VIZE_HTTP_STATUS:200`);",
     ].join("\n"),
   );
 }
 
-async function missing(published: string, latest: string): Promise<string[]> {
+async function missing(
+  target: string,
+  published: string,
+  tag: string,
+  tagVersion: string,
+): Promise<string[]> {
   const bin = mkdtempSync(path.join(tmpdir(), "vize-verify-published-"));
   const saved = { ...process.env };
   try {
     fakeRegistry(bin);
     process.env.PATH = `${bin}${path.delimiter}${process.env.PATH ?? ""}`;
     process.env.TEST_PUBLISHED = published;
-    process.env.TEST_LATEST = latest;
-    return await missingFromRegistry("0.580.0", ["vize", "@vizejs/native"], 1, 0);
+    process.env.TEST_TAG = tag;
+    process.env.TEST_TAG_VERSION = tagVersion;
+    return await missingFromRegistry(target, ["vize", "@vizejs/native"], 1, 0);
   } finally {
     process.env = saved;
     rmSync(bin, { recursive: true, force: true });
@@ -46,16 +52,34 @@ async function missing(published: string, latest: string): Promise<string[]> {
 }
 
 test("verification accepts a later release's latest tag", async () => {
-  assert.deepEqual(await missing("0.580.0", "0.580.0"), []);
+  assert.deepEqual(await missing("0.580.0", "0.580.0", "latest", "0.580.0"), []);
   // The next release can publish while this one still waits for propagation,
   // and an npm resume of an older version publishes under its backfill tag
   // while `latest` stays on the newer release, exactly as publish-npm checks.
-  assert.deepEqual(await missing("0.580.0", "0.581.0"), []);
-  assert.deepEqual(await missing("0.580.0", "0.582.0"), []);
+  assert.deepEqual(await missing("0.580.0", "0.580.0", "latest", "0.581.0"), []);
+  assert.deepEqual(await missing("0.580.0", "0.580.0", "latest", "0.582.0"), []);
 });
 
 test("verification still requires the exact version and a current latest tag", async () => {
-  assert.deepEqual(await missing("0.579.0", "0.581.0"), ["vize", "@vizejs/native"]);
-  assert.deepEqual(await missing("0.580.0", "0.579.0"), ["vize", "@vizejs/native"]);
-  assert.deepEqual(await missing("0.580.0", "0.581.0-beta.1"), ["vize", "@vizejs/native"]);
+  assert.deepEqual(await missing("0.580.0", "0.579.0", "latest", "0.581.0"), [
+    "vize",
+    "@vizejs/native",
+  ]);
+  assert.deepEqual(await missing("0.580.0", "0.580.0", "latest", "0.579.0"), [
+    "vize",
+    "@vizejs/native",
+  ]);
+  assert.deepEqual(await missing("0.580.0", "0.580.0", "latest", "0.581.0-beta.1"), [
+    "vize",
+    "@vizejs/native",
+  ]);
+});
+
+test("verification follows prerelease dist-tags without moving latest", async () => {
+  assert.deepEqual(await missing("1.0.0-alpha.1", "1.0.0-alpha.1", "alpha", "1.0.0-alpha.1"), []);
+  assert.deepEqual(await missing("1.0.0-alpha.1", "1.0.0-alpha.1", "alpha", "1.0.0-alpha.2"), []);
+  assert.deepEqual(await missing("1.0.0-alpha.1", "1.0.0-alpha.1", "latest", "0.731.0"), [
+    "vize",
+    "@vizejs/native",
+  ]);
 });

@@ -17,6 +17,7 @@ mod component_registration;
 mod content_directives;
 mod define_macros_order;
 mod eslint_vue_compatibility;
+mod html_button_has_type;
 mod html_quotes;
 mod html_self_closing;
 mod hyphenation;
@@ -48,6 +49,7 @@ pub use eslint_vue_compatibility::{
     EnforceStyleAttributeOptions, NoRestrictedSyntaxOptions, QuotePropsStyle, SortKeysOptions,
     SortKeysOrder, StyleAttributeMode,
 };
+pub use html_button_has_type::HtmlButtonHasTypeOptions;
 pub use html_quotes::{HtmlQuoteStyle, HtmlQuotesConfig, HtmlQuotesOptions};
 pub use html_self_closing::{
     HtmlSelfClosingHtmlOptions, HtmlSelfClosingOptions, HtmlSelfClosingStyle,
@@ -141,6 +143,9 @@ pub struct ConfigLintRuleOptions {
     /// Options for `vue/no-mutating-props`.
     #[serde(rename = "vue/no-mutating-props")]
     no_mutating_props: Option<NoMutatingPropsOptions>,
+    /// Button type values accepted by `vue/html-button-has-type`.
+    #[serde(rename = "vue/html-button-has-type")]
+    html_button_has_type: Option<HtmlButtonHasTypeOptions>,
     /// Exact custom directives known to be registered by the application.
     #[serde(rename = "vue/warn-custom-directive")]
     warn_custom_directive: Option<WarnCustomDirectiveOptions>,
@@ -235,6 +240,7 @@ impl ConfigLintRuleOptions {
             && self.prop_name_casing.is_none()
             && self.slot_name_casing.is_none()
             && self.no_mutating_props.is_none()
+            && self.html_button_has_type.is_none()
             && self.warn_custom_directive.is_none()
             && self.no_bare_strings_in_template.is_none()
             && self.anchor_has_content.is_none()
@@ -334,6 +340,12 @@ impl ConfigLintRuleOptions {
     #[inline]
     pub fn no_mutating_props(&self) -> Option<NoMutatingPropsOptions> {
         self.no_mutating_props
+    }
+
+    /// Configured button type values for `vue/html-button-has-type`.
+    #[inline]
+    pub fn html_button_has_type(&self) -> Option<HtmlButtonHasTypeOptions> {
+        self.html_button_has_type
     }
 
     /// Configured custom-directive exemptions.
