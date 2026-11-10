@@ -13,7 +13,7 @@ const helperRoot = "crates/vize_canon/src/virtual_ts/helpers";
 const sources = [
   `${helperRoot}/declarations/core-types.d.ts.txt`,
   `${helperRoot}/declarations/vue3-types.d.ts.txt`,
-  `${helperRoot}/declarations/prop-keys.d.ts.txt`,
+  `${helperRoot}/declarations/shared-prop-keys.d.ts.txt`,
   "crates/vize_canon/src/virtual_ts/component_prop_helpers.txt",
 ];
 const contents = sources.map((source) => readFileSync(path.join(root, source), "utf8"));

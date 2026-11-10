@@ -23,12 +23,16 @@ pub(crate) const SETUP_SCOPE_HELPER_NAMES: &[&str] = &[
 /// bytes can be spliced into both constants at compile time.
 /// Kebab-case conversion accumulates its output before recursing, allowing
 /// TypeScript to eliminate the recursion for long authored prop/event keys.
+/// The shared preamble names its own prop-key text; embedded files keep theirs.
 macro_rules! vue_type_aliases_text {
     () => {
+        vue_type_aliases_text!("declarations/prop-keys.d.ts.txt")
+    };
+    ($prop_keys:literal) => {
         concat!(
             include_str!("declarations/core-types.d.ts.txt"),
             include_str!("declarations/vue3-types.d.ts.txt"),
-            include_str!("declarations/prop-keys.d.ts.txt"),
+            include_str!($prop_keys),
             "\n",
             include_str!("../component_prop_helpers.txt")
         )
@@ -56,8 +60,11 @@ macro_rules! directive_helpers_text {
 // should expand the public shape rather than name a nested implementation alias.
 macro_rules! vue_type_helpers_text {
     () => {
+        vue_type_helpers_text!("declarations/prop-keys.d.ts.txt")
+    };
+    ($prop_keys:literal) => {
         concat!(
-            vue_type_aliases_text!(),
+            vue_type_aliases_text!($prop_keys),
             include_str!("declarations/native-elements.d.ts.txt"),
             include_str!("declarations/component-global-attributes.d.ts.txt"),
             v_for_list_decls_text!(),
@@ -102,7 +109,7 @@ macro_rules! shared_preamble_text {
             include_str!("declarations/shared-header.d.ts.txt"),
             $props_fallback,
             include_str!("declarations/shared-helpers-banner.d.ts.txt"),
-            vue_type_helpers_text!(),
+            vue_type_helpers_text!("declarations/shared-prop-keys.d.ts.txt"),
             include_str!("declarations/shared-template-refs.d.ts.txt"),
             include_str!("declarations/shared-slot-resolver.d.ts.txt"),
             include_str!("declarations/shared-slot-payload.d.ts.txt"),
