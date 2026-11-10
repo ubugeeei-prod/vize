@@ -210,6 +210,7 @@ pub(crate) struct ScopeGenerationOptions<'a, 'template> {
     /// the known bindings then resolve on the public instance (#3888).
     pub(crate) options_api: bool,
     pub(crate) preserve_event_navigation: bool,
+    pub(crate) omit_navigation_references: bool,
     /// Whether the default-export rewrite declared the `__default__` alias. The
     /// public-instance form reads `typeof __default__`, so it stays off for a
     /// shape that never produced one (a re-exported default, no default export
@@ -244,6 +245,7 @@ pub(crate) struct VForPropsContext<'a, 'template> {
     pub(crate) syntactic_type_only_imported_names: &'a FxHashSet<CompactString>,
     pub(crate) source_context: ComponentPropSource<'a>,
     pub(crate) preserve_event_navigation: bool,
+    pub(crate) omit_navigation_references: bool,
     pub(crate) check_unknown_events: bool,
     pub(crate) strict_v_model: bool,
     pub(crate) typed_fallthrough_values: bool,
@@ -310,6 +312,7 @@ pub(super) struct ComponentPropsContext<'a, 'template> {
     pub(super) options: &'a VirtualTsOptions,
     pub(super) hoist_shared_preamble: bool,
     pub(super) preserve_event_navigation: bool,
+    pub(super) omit_navigation_references: bool,
     pub(super) check_unknown_events: bool,
     pub(super) strict_v_model: bool,
     pub(super) component_binding_check: ComponentBindingCheck<'a>,

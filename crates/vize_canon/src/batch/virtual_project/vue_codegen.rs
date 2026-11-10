@@ -306,6 +306,7 @@ pub(super) fn generate_vue_virtual_ts(
         template_use_navigation: codegen_options.template_use_navigation,
         self_component_name: path.file_stem().and_then(|name| name.to_str()),
         preserve_event_navigation: codegen_options.preserve_event_navigation,
+        omit_navigation_references: codegen_options.omit_navigation_references,
         legacy_vue2: vue2_compat,
         template_syntax_quirks: matches!(
             codegen_options.template_syntax,

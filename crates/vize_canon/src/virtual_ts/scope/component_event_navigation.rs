@@ -31,7 +31,7 @@ pub(super) fn emit_event_references(
         template_offset: ctx.template_offset,
         template_binding_access: ctx.template_binding_access,
         preserve_event_navigation: ctx.preserve_event_navigation,
-        omit_navigation_references: ctx.options.omit_navigation_references,
+        omit_navigation_references: ctx.omit_navigation_references,
         check_unknown_events: ctx.check_unknown_events,
         hoist_shared_preamble: ctx.hoist_shared_preamble,
     };
@@ -72,7 +72,7 @@ pub(super) fn emit_scoped_event_references(
         template_offset: ctx.source_context.offset,
         template_binding_access: ctx.template_binding_access,
         preserve_event_navigation: ctx.preserve_event_navigation,
-        omit_navigation_references: ctx.options.omit_navigation_references,
+        omit_navigation_references: ctx.omit_navigation_references,
         check_unknown_events: ctx.check_unknown_events,
         hoist_shared_preamble: ctx.hoist_shared_preamble,
     };

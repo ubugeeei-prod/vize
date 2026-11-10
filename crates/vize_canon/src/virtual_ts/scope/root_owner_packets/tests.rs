@@ -60,6 +60,7 @@ fn render(script: &str, template: &str, packets: bool, navigation: bool) -> Outp
                 legacy_vue2: false,
                 options_api: false,
                 preserve_event_navigation: navigation,
+                omit_navigation_references: false,
                 has_default_alias: false,
                 script_content: Some(script),
                 experimental_strict_slot_children: false,

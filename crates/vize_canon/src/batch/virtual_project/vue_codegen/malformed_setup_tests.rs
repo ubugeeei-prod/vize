@@ -40,6 +40,7 @@ fn options() -> VueCodegenOptions<'static> {
         template_use_navigation: false,
         external_component_attrs_module: None,
         preserve_event_navigation: false,
+        omit_navigation_references: false,
         legacy_vue2: false,
         dialect: Default::default(),
         template_syntax: Default::default(),

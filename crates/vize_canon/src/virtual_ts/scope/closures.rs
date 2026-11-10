@@ -215,6 +215,7 @@ pub(super) fn emit_scope_closures(
         options: virtual_ts_options,
         hoist_shared_preamble: options.hoist_shared_preamble,
         preserve_event_navigation: options.preserve_event_navigation,
+        omit_navigation_references: options.omit_navigation_references,
         check_unknown_events: check_options.check_unknown_events && check_options.check_emits,
         strict_v_model: check_options.strict_v_model && check_options.check_emits,
         component_binding_check: options.component_binding_check,

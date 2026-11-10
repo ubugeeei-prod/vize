@@ -147,6 +147,7 @@ pub(crate) fn generate_vue_document_virtual_ts_with_options_and_alias_resolver(
             template_use_navigation: false,
             external_component_attrs_module: None,
             preserve_event_navigation: document_options.preserve_event_navigation,
+            omit_navigation_references: false,
             legacy_vue2: document_options.legacy_vue2,
             dialect: document_options.dialect,
             template_syntax: TemplateSyntaxMode::default(),

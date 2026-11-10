@@ -9,7 +9,7 @@ use vize_l0::{ToCompactString, config::VueVersion};
 
 use crate::batch::Diagnostic;
 use crate::batch::error::CorsaResult;
-use crate::virtual_ts::{ProjectionFeatures, ProjectionMeta, VizeMapping};
+use crate::virtual_ts::{ProjectionFeatures, ProjectionMeta, VirtualTsOptions, VizeMapping};
 
 mod alias;
 use alias::is_synthetic_content_mapper_identifier;
@@ -150,7 +150,7 @@ fn transform_with_shared_sources(
         !transform_options.check_javascript && descriptor_is_unchecked_javascript(&descriptor);
     let use_tsx = descriptor_uses_jsx_script(&descriptor);
     let component_name = content_mapper_component_name(path);
-    let mut virtual_ts_options = transform_options.virtual_ts_options();
+    let mut virtual_ts_options = VirtualTsOptions::default();
     apply_musea_art_globals(path, &mut virtual_ts_options);
     let GeneratedVueFile {
         mut code,
@@ -185,6 +185,7 @@ fn transform_with_shared_sources(
                     crate::virtual_ts::ComponentHelperModule::Attributes
                 }),
             preserve_event_navigation: !transform_options.diagnostics_only(),
+            omit_navigation_references: transform_options.diagnostics_only(),
             legacy_vue2: false,
             dialect: VueVersion::default(),
             template_syntax: TemplateSyntaxMode::default(),

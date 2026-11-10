@@ -239,6 +239,7 @@ pub(super) fn generate_component_props(
             syntactic_type_only_imported_names: ctx.syntactic_type_only_imported_names,
             source_context: ctx.source_context(),
             preserve_event_navigation: ctx.preserve_event_navigation,
+            omit_navigation_references: ctx.omit_navigation_references,
             check_unknown_events: ctx.check_unknown_events,
             strict_v_model: ctx.strict_v_model,
             typed_fallthrough_values: ctx.typed_fallthrough_values,

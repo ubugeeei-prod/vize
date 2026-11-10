@@ -1,6 +1,6 @@
 //! Content mapper generation options and installed-helper capabilities.
 
-use crate::virtual_ts::{VirtualTsCheckOptions, VirtualTsOptions};
+use crate::virtual_ts::VirtualTsCheckOptions;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[non_exhaustive]
@@ -104,14 +104,5 @@ impl ContentMapperTransformOptions {
     #[must_use]
     pub const fn diagnostics_only(self) -> bool {
         self.diagnostics_only
-    }
-
-    /// Generation options before per-file globals; a diagnostics-only
-    /// projection skips navigation references.
-    pub(super) fn virtual_ts_options(self) -> VirtualTsOptions {
-        VirtualTsOptions {
-            omit_navigation_references: self.diagnostics_only,
-            ..VirtualTsOptions::default()
-        }
     }
 }

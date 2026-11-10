@@ -685,6 +685,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                 legacy_vue2,
                 options_api,
                 preserve_event_navigation: generation_options.preserve_event_navigation,
+                omit_navigation_references: generation_options.omit_navigation_references,
                 has_default_alias: declared_default_alias,
                 script_content,
                 experimental_strict_slot_children: generation_options
