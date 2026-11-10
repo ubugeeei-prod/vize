@@ -31,6 +31,53 @@ jobs:
       affected-tooling-matrix: ${{ steps.tooling-plan.outputs.tooling-matrix }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          fetch-depth: 1
+          # checkout v6 combines sparse input with a blob:none fetch. Keep the
+          # planner's executable/type-project closure and Cargo target entry
+          # points, while Git trees still expose changes outside this worktree.
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /package.json
+            /pnpm-workspace.yaml
+            /Cargo.toml
+            /Cargo.lock
+            /tsconfig.json
+            /**/Cargo.toml
+            /**/package.json
+            /**/src/lib.rs
+            /**/src/main.rs
+            /**/src/bin/*.rs
+            /**/src/bin/**/main.rs
+            /**/tests/*.rs
+            /**/tests/*/main.rs
+            /**/examples/*.rs
+            /**/examples/*/main.rs
+            /**/benches/*.rs
+            /**/benches/*/main.rs
+            /**/build.rs
+            /tests/vize_test_runner/src/coverage.rs
+            /tests/vize_test_runner/src/dump_patches.rs
+            /tools/benchmarks/crates/vize/doctor_tui.rs
+            /.github/
+            /tools/
+            /npm/
+            /tests/tooling/
+            /tests/tsconfig.json
+            /tests/**/*.ts
+            /tests/**/*.mts
+            /tests/**/*.cts
+            /tests/**/*.js
+            /tests/**/*.mjs
+            /tests/**/*.cjs
+            /docs/tsconfig.json
+            /docs/**/*.ts
+            /docs/**/*.mts
+            /docs/**/*.cts
+            /docs/**/*.js
+            /docs/**/*.mjs
+            /docs/**/*.cjs
+            /examples/oxlint-vize/check-configs.ts
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with: { node-version-file: "package.json", package-manager-cache: false }
       - name: Resolve and fetch comparison base
