@@ -66,6 +66,7 @@ pub(crate) struct OwnedPropValues<'a> {
     component: String,
     component_ref: &'a str,
     idx: usize,
+    relaxed_required: bool,
 }
 
 impl<'a> OwnedPropValues<'a> {
@@ -73,6 +74,7 @@ impl<'a> OwnedPropValues<'a> {
     pub(crate) fn new(
         (usage, idx, component_ref): (&ComponentUsage, usize, &'a str),
         source_context: ComponentPropSource<'_>,
+        relaxed_required: bool,
     ) -> Self {
         let owned = if source_context.unchecked_prop_values {
             // Merge flags only change `class`/`style` rows, which never own here.
@@ -95,6 +97,7 @@ impl<'a> OwnedPropValues<'a> {
             component: to_safe_identifier_fragment(usage.name.as_str()),
             component_ref,
             idx,
+            relaxed_required,
         }
     }
 
@@ -114,10 +117,19 @@ impl<'a> OwnedPropValues<'a> {
         let name = to_safe_identifier_fragment(prop.name.as_str());
         append!(*ts, ": {ATTR_VALUE_REFERENCE}__{component}_Props_{idx}, ");
         push_ts_string_literal(ts, component_prop_key(prop.name.as_str()).as_str());
-        append!(
-            *ts,
-            ", typeof {component_ref}, __{component}_{idx}_prop_{name}> = "
-        );
+        let explicit_undefined = self.relaxed_required && value.trim() == "undefined";
+        if explicit_undefined {
+            // `Partial<Props>` admits this one value at a relaxed root. Keep
+            // the owned form (and its Content Mapper directive), but remove
+            // the literal and fallthrough owners so `$AttrValue` selects the
+            // per-prop contract `V`.
+            append!(*ts, ", unknown, __{component}_{idx}_prop_{name}, {{}}> = ");
+        } else {
+            append!(
+                *ts,
+                ", typeof {component_ref}, __{component}_{idx}_prop_{name}> = "
+            );
+        }
         if needs_parentheses(value) {
             ts.push('(');
         }

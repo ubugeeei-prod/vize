@@ -115,6 +115,10 @@ fn slot_payload_type(
         None => resolved,
     };
     let binding = cstr!("{}{}", ctx.binding_prefix, scope.id.as_u32());
+    if data.props_pattern.is_none() && !ctx.reuse_host {
+        let (binding, component) = (binding.as_str(), component_ref.as_str());
+        return payload::unread_slot_types(ts, ctx, scope, host.as_ref(), binding, component);
+    }
     if ctx.reuse_host {
         // Declared by the template pass in this block.
     } else if let Some(usage) = &host {

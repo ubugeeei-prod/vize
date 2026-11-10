@@ -475,6 +475,7 @@ pub(super) fn generate_root_usage_checks(
         )
         .strict_v_model(ctx.strict_v_model)
         .typed_fallthrough_values(ctx.typed_fallthrough_values)
+        .relaxed_required(ctx.relaxed_required_usage_starts.contains(&usage.start))
         .hoist_shared_preamble(ctx.hoist_shared_preamble);
         check_context.inference_prelude = ctx.inference_prelude;
         generate_component_prop_checks(&mut check_context, usage, idx, component_ref.as_str())

@@ -14,6 +14,9 @@ pub(crate) struct ComponentPropCheckContext<'a, 'b> {
     pub(crate) indent: &'b str,
     pub(crate) strict_v_model: bool,
     pub(crate) typed_fallthrough_values: bool,
+    /// The usage forwards its required props to the parent, so its whole-props
+    /// literal checks a relaxed target rather than requiring every key.
+    pub(crate) relaxed_required: bool,
     pub(crate) hoist_shared_preamble: bool,
     /// Supplemental checks never emit the legacy usage's callback indices.
     pub(crate) legacy_scalar_callback_props: Option<&'a FxHashSet<usize>>,
@@ -36,6 +39,7 @@ impl<'a, 'b> ComponentPropCheckContext<'a, 'b> {
             indent,
             strict_v_model: false,
             typed_fallthrough_values: false,
+            relaxed_required: false,
             hoist_shared_preamble: false,
             legacy_scalar_callback_props: None,
         }
@@ -50,6 +54,13 @@ impl<'a, 'b> ComponentPropCheckContext<'a, 'b> {
     /// Also validate values contributed by inherited fallthrough spread keys.
     pub(crate) fn typed_fallthrough_values(mut self, enabled: bool) -> Self {
         self.typed_fallthrough_values = enabled;
+        self
+    }
+
+    /// Keep explicit `undefined` owned by the per-prop contract when the
+    /// relaxed whole-props target cannot reject it.
+    pub(crate) fn relaxed_required(mut self, enabled: bool) -> Self {
+        self.relaxed_required = enabled;
         self
     }
 

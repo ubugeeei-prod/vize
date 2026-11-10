@@ -204,6 +204,13 @@ assert_eq!(outcome.telemetry().finding_count(), 1);
 snapshot identity, output identity, finding count, and invalidation-boundary
 counts for reporters, CI, and editor integrations.
 
+`PersistentCapabilitySnapshot` is the store-neutral boundary for filesystem and
+remote caches. It emits identical versioned JSON bytes for identical validated
+snapshots, binds the complete snapshot payload to a SHA-256 identity, and
+requires both the requested cache key and a pre-deserialization byte ceiling
+when loading untrusted objects. Backend-specific paths, timestamps, hosts,
+credentials, and transport metadata stay outside the envelope.
+
 ## Reporter integrations
 
 External CI, editor, code-hosting, and AI integrations implement the object-safe

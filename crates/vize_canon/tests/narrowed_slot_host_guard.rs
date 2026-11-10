@@ -12,7 +12,11 @@ const SOURCE: &str = include_str!(concat!(
 #[test]
 fn slot_host_calls_keep_each_inference_guard_on_its_own_ignored_line() {
     for newline in ["\n", "\r\n"] {
-        let source = SOURCE.replace('\n', newline);
+        // Only a bound slot reads its payload, so only a bound slot infers
+        // a host; bind the fixture's slot to keep its guarded copies.
+        let bound = SOURCE.replace("<template #default>", "<template #default=\"slotProps\">");
+        assert_ne!(bound, SOURCE, "the fixture slot must be bindable");
+        let source = bound.replace('\n', newline);
         let result = generate_vue_content_mapper_transform(Path::new("Status.vue"), &source)
             .expect("complete mapper projection");
         let lines = result.text.lines().collect::<Vec<_>>();
@@ -21,7 +25,7 @@ fn slot_host_calls_keep_each_inference_guard_on_its_own_ignored_line() {
             .enumerate()
             .filter(|(_, line)| line.contains("(!(status === 'pending')) ? {"))
             .collect::<Vec<_>>();
-        // The props pass skips the host of this unbound slot.
+        // The props pass replays no slot without a component in it.
         assert_eq!(
             guarded_copies.len(),
             2,

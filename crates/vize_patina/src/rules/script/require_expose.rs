@@ -50,27 +50,17 @@ impl ScriptRule for RequireExpose {
     fn check_program<'a>(
         &self,
         program: &'a Program<'a>,
-        _source: &str,
+        source: &str,
         offset: usize,
         result: &mut ScriptLintResult,
     ) {
-        let semantic = SemanticBuilder::new()
-            .with_build_nodes(true)
-            .build(program)
-            .semantic;
-        let mut visitor = Visitor {
-            offset,
-            result,
-            semantic: &semantic,
-            pending: None,
-        };
-        visitor.visit_program(program);
+        self.check_program_with_sfc(program, source, offset, SfcScriptContext::default(), result);
     }
 
     fn check_program_with_sfc<'a>(
         &self,
         program: &'a Program<'a>,
-        source: &str,
+        _source: &str,
         offset: usize,
         sfc: SfcScriptContext<'_>,
         result: &mut ScriptLintResult,
@@ -81,7 +71,18 @@ impl ScriptRule for RequireExpose {
         if sfc.is_sfc && sfc.sibling_program.is_some() {
             return;
         }
-        self.check_program(program, source, offset, result);
+        let semantic = SemanticBuilder::new()
+            .with_build_nodes(true)
+            .build(program)
+            .semantic;
+        let mut visitor = Visitor {
+            offset,
+            result,
+            semantic: &semantic,
+            pending: None,
+            accepts_bare_default: sfc.is_sfc || sfc.is_jsx_file,
+        };
+        visitor.visit_program(program);
     }
 }
 
@@ -96,6 +97,7 @@ struct Visitor<'r, 'a> {
     result: &'r mut ScriptLintResult,
     semantic: &'r Semantic<'a>,
     pending: Option<Kind>,
+    accepts_bare_default: bool,
 }
 
 impl<'r, 'a> Visitor<'r, 'a> {
@@ -141,7 +143,7 @@ impl<'a> Visit<'a> for Visitor<'_, 'a> {
                 Expression::ObjectExpression(_)
             )
         });
-        if marks_object {
+        if marks_object && self.accepts_bare_default {
             self.pending = Some(Kind::Component);
         }
         walk_export_default_declaration(self, it);
@@ -150,18 +152,14 @@ impl<'a> Visit<'a> for Visitor<'_, 'a> {
 
     fn visit_call_expression(&mut self, it: &CallExpression<'a>) {
         self.visit_expression(&it.callee);
-        let kind = it
-            .arguments
-            .last()
-            .filter(|argument| setup::is_object_argument(argument))
-            .and_then(|_| setup::classify(self.semantic, &it.callee));
-        let last = it.arguments.len().saturating_sub(1);
+        let kind = setup::classify(self.semantic, &it.callee);
+        let component_argument = setup::component_argument_index(&it.callee, it.arguments.len());
         for (index, argument) in it.arguments.iter().enumerate() {
-            if index == last {
+            if Some(index) == component_argument && setup::is_object_argument(argument) {
                 self.pending = kind;
             }
             self.visit_argument(argument);
-            if index == last {
+            if Some(index) == component_argument {
                 self.pending = None;
             }
         }

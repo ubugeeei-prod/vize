@@ -1,0 +1,6 @@
+import { createApp } from "vue";
+import App from "./App.vue";
+
+export function mountApp(el: HTMLElement) {
+  return createApp(App, { id: "main" }).mount(el);
+}

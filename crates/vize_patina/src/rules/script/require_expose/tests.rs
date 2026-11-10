@@ -29,17 +29,6 @@ fn assert_clean(source: &str) {
 
 #[test]
 fn reports_components_without_expose() {
-    assert_hits("export default { methods: { foo() {}, bar() {} } }", 1);
-    assert_hits(
-        "export default { setup(_, ctx) { return { foo() {}, bar() {} } } }",
-        1,
-    );
-    assert_hits(
-        "export default { props: ['x'], methods: { foo() {}, bar() {} } }",
-        1,
-    );
-    assert_hits("export default {\n}", 1);
-    assert_hits("export default {}", 1);
     assert_hits(
         r#"
         defineComponent({ methods: { foo() {} } })
@@ -56,6 +45,63 @@ fn reports_components_without_expose() {
         defineComponent({ setup(render) { return render } })
         "#,
         12,
+    );
+}
+
+#[test]
+fn bare_default_objects_are_components_only_in_sfc_and_jsx_hosts() {
+    let linter = Linter::new().with_enabled_rules(Some(vec![RULE.into()]));
+    let source = "export default { methods: { foo() {}, bar() {} } }";
+
+    for filename in ["messages.js", "messages.ts"] {
+        let result = linter.lint_script(source, filename);
+        assert!(
+            result.diagnostics.is_empty(),
+            "{filename}: {:?}",
+            result.diagnostics
+        );
+    }
+    let router_options = r#"
+        import type { RouterConfig } from "@nuxt/schema"
+        export default {
+            scrollBehavior(_to, _from, savedPosition) {
+                return savedPosition ?? { top: 0 }
+            },
+        } satisfies RouterConfig
+    "#;
+    let result = linter.lint_script(router_options, "router.options.ts");
+    assert!(result.diagnostics.is_empty(), "{:?}", result.diagnostics);
+
+    for filename in ["Component.jsx", "Component.tsx"] {
+        let result = linter.lint_script(source, filename);
+        assert_eq!(
+            result.diagnostics.len(),
+            1,
+            "{filename}: {:?}",
+            result.diagnostics
+        );
+        assert_eq!(result.diagnostics[0].message, MESSAGE);
+    }
+
+    let result = linter.lint_sfc("<script>export default {}</script>", "Component.vue");
+    assert_eq!(result.diagnostics.len(), 1, "{:?}", result.diagnostics);
+    assert_eq!(result.diagnostics[0].message, MESSAGE);
+}
+
+#[test]
+fn create_app_checks_the_component_not_root_props() {
+    assert_clean(
+        r##"
+        import { createApp } from "vue"
+        createApp(App, { id: "main" }).mount("#app")
+        "##,
+    );
+    assert_hits(
+        r#"
+        import { createApp } from "vue"
+        createApp({ render() {} }, { id: "main" })
+        "#,
+        1,
     );
 }
 
