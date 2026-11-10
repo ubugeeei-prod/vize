@@ -55,6 +55,8 @@ impl Drop for Binding {
 pub(crate) fn bind(parameters: Option<&GenericParameters>, summary: &Croquis) -> Binding {
     let authored = summary.type_exports.iter();
     let binding = bind_names(parameters, authored.map(|export| export.name.as_str()));
+    // One bindings table for the scan; a batch projection binds uncached.
+    let _bindings = crate::virtual_ts::script_facts::ensure_bindings(summary);
     let shadowed = LIB_TYPES
         .iter()
         .copied()
