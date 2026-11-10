@@ -35,6 +35,7 @@
 
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
+use crate::markup::{MarkupContext, MarkupDirective, MarkupElement, MarkupRule};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_l0::dialect::VueDialect;
 use vize_relief::{DirectiveNode, ElementNode};
@@ -50,9 +51,51 @@ static META: RuleMeta = RuleMeta {
 /// Disallow the deprecated `.sync` modifier on `v-bind`.
 pub struct NoDeprecatedVBindSync;
 
+impl NoDeprecatedVBindSync {
+    fn check(ctx: &mut LintContext<'_>, directive: &MarkupDirective<'_>) {
+        // Only the default Vue 3 dialect removed `.sync`. petite-vue and the
+        // legacy Vue 2 dialect treat `.sync` differently, so leave them alone.
+        if ctx.dialect() != VueDialect::Vue {
+            return;
+        }
+
+        // Only `v-bind` / `:` carries the `.sync` modifier.
+        if !directive.name_eq("bind") || !directive.has_modifier("sync") {
+            return;
+        }
+
+        // The removed binding is the complete directive, including its value.
+        // Keep the same diagnostic target as eslint-plugin-vue.
+        ctx.error_at_with_help(
+            ctx.t("vue/no-deprecated-v-bind-sync.message"),
+            directive.range(),
+            ctx.t("vue/no-deprecated-v-bind-sync.help"),
+        );
+    }
+}
+
+impl MarkupRule for NoDeprecatedVBindSync {
+    fn name(&self) -> &'static str {
+        META.name
+    }
+
+    fn enter_directive<'a>(
+        &self,
+        ctx: &mut MarkupContext<'_, 'a>,
+        _element: &MarkupElement<'a>,
+        directive: &MarkupDirective<'a>,
+    ) {
+        Self::check(ctx.lint(), directive);
+    }
+}
+
 impl Rule for NoDeprecatedVBindSync {
     fn meta(&self) -> &'static RuleMeta {
         &META
+    }
+
+    fn as_markup_rule(&self) -> Option<&dyn MarkupRule> {
+        Some(self)
     }
 
     fn check_directive<'a>(
@@ -61,32 +104,7 @@ impl Rule for NoDeprecatedVBindSync {
         _element: &ElementNode<'a>,
         directive: &DirectiveNode<'a>,
     ) {
-        // Only the default Vue 3 dialect removed `.sync`. petite-vue and the
-        // legacy Vue 2 dialect treat `.sync` differently, so leave them alone.
-        if ctx.dialect() != VueDialect::Vue {
-            return;
-        }
-
-        // Only `v-bind` / `:` carries the `.sync` modifier.
-        if directive.name != "bind" {
-            return;
-        }
-
-        if !directive
-            .modifiers
-            .iter()
-            .any(|modifier| modifier.content == "sync")
-        {
-            return;
-        }
-
-        // The removed binding is the complete directive, including its value.
-        // Keep the same diagnostic target as eslint-plugin-vue.
-        ctx.error_with_help(
-            ctx.t("vue/no-deprecated-v-bind-sync.message"),
-            &directive.loc,
-            ctx.t("vue/no-deprecated-v-bind-sync.help"),
-        );
+        Self::check(ctx, &MarkupDirective::from_relief(directive));
     }
 }
 
