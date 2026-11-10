@@ -55,23 +55,19 @@ fn heading_has_content_template_contract() {
         (r#"<h1><slot></slot></h1>"#, 0, "default slot"),
         (
             r#"<h1 aria-hidden="true"></h1>"#,
-            0,
+            1,
             "static aria-hidden true",
         ),
         (
             r#"<h1 aria-label="Dashboard"></h1>"#,
-            0,
+            1,
             "static aria-label",
         ),
-        (
-            r#"<h1 aria-label=""></h1>"#,
-            0,
-            "empty static aria-label exists",
-        ),
-        (r#"<h1 :aria-label="title"></h1>"#, 0, "bound aria-label"),
+        (r#"<h1 aria-label=""></h1>"#, 1, "empty static aria-label"),
+        (r#"<h1 :aria-label="title"></h1>"#, 1, "bound aria-label"),
         (
             r#"<h1 :aria-labelledby="labelId"></h1>"#,
-            0,
+            1,
             "bound aria-labelledby",
         ),
         (r#"<h1></h1>"#, 1, "empty heading"),
@@ -137,27 +133,27 @@ fn heading_has_content_jsx_direct_matches_lowered_boundaries() {
         ),
         (
             r#"const A = () => <h1 aria-hidden="true" />;"#,
-            0,
+            1,
             "static hidden",
         ),
         (
             r#"const A = () => <h1 aria-label="Dashboard" />;"#,
-            0,
+            1,
             "static aria-label",
         ),
         (
             r#"const A = () => <h1 aria-label="" />;"#,
-            0,
+            1,
             "empty aria-label",
         ),
         (
             r#"const A = () => <h1 aria-label={title} />;"#,
-            0,
+            1,
             "bound aria-label",
         ),
         (
             r#"const A = () => <h1 aria-labelledby={labelId} />;"#,
-            0,
+            1,
             "bound aria-labelledby",
         ),
         (

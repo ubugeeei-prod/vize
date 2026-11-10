@@ -22,15 +22,29 @@ fn complete_catalog_diagnostics_keep_full_authored_attribute_ranges() {
 }
 
 #[test]
-fn positive_i32_values_keep_upstream_parse_semantics() {
-    for value in ["1", "+1", "01", "00099", "2147483647", "+2147483647"] {
+fn positive_values_follow_javascript_numeric_coercion() {
+    for value in [
+        "1",
+        "+1",
+        "01",
+        "00099",
+        "2147483647",
+        "+2147483647",
+        "2147483648",
+        " 1 ",
+        "1.0",
+        "1e1",
+        "0x1",
+        "0b1",
+        "0o1",
+    ] {
         let source = vize_l0::cstr!("<template><div tabindex='{value}' /></template>");
         assert_eq!(parity(&source, Locale::En).len(), 1, "{value}");
     }
 }
 
 #[test]
-fn zero_negative_whitespace_invalid_and_overflow_values_are_not_positive() {
+fn zero_negative_and_invalid_values_are_not_positive() {
     for value in [
         "",
         "0",
@@ -38,18 +52,12 @@ fn zero_negative_whitespace_invalid_and_overflow_values_are_not_positive() {
         "-0",
         "-1",
         "-2147483648",
-        "2147483648",
-        "+2147483648",
         "-2147483649",
-        " 1",
-        "1 ",
-        "\t1",
-        "1\r\n",
-        "1.0",
-        "1e1",
         "++1",
         "--1",
-        "0x1",
+        "0x0",
+        "0b0",
+        "0o0",
         "１",
         "١",
     ] {
@@ -60,7 +68,7 @@ fn zero_negative_whitespace_invalid_and_overflow_values_are_not_positive() {
 }
 
 #[test]
-fn native_attribute_entities_feed_the_same_i32_parse() {
+fn native_attribute_entities_feed_the_same_numeric_coercion() {
     for value in [
         "&#49;",
         "&#x31;",
@@ -68,33 +76,32 @@ fn native_attribute_entities_feed_the_same_i32_parse() {
         "&#x2b;&#49;",
         "&#48;1",
         "2&#49;47483647",
+        "&#32;1",
+        "1&#9;",
+        "&nbsp;1",
+        "2&#49;47483648",
     ] {
         let source = vize_l0::cstr!("<template><div tabindex='{value}' /></template>");
         assert_eq!(parity(&source, Locale::En).len(), 1, "{value}");
     }
-    for value in [
-        "&#32;1",
-        "1&#9;",
-        "&nbsp;1",
-        "&#45;1",
-        "&#0;1",
-        "&amp;1",
-        "&unknown;1",
-        "&fjlig;",
-        "2&#49;47483648",
-    ] {
+    for value in ["&#45;1", "&#0;1", "&amp;1", "&unknown;1", "&fjlig;"] {
         let source = vize_l0::cstr!("<template><div tabindex='{value}' /></template>");
         assert!(parity(&source, Locale::En).is_empty(), "{value}");
     }
 }
 
 #[test]
-fn binding_expressions_are_opaque_and_never_static_integer_values() {
+fn literal_bindings_match_while_other_directives_remain_opaque() {
     for header in [
         ":tabindex='1'",
         ".tabindex='1'",
         "v-bind:tabindex='1'",
         ":tabindex.prop='1'",
+    ] {
+        let source = vize_l0::cstr!("<template><div {header} /></template>");
+        assert_eq!(parity(&source, Locale::En).len(), 1, "{header}");
+    }
+    for header in [
         "@tabindex='1'",
         "v-model:tabindex='value'",
         "data-tabindex='1'",
@@ -181,6 +188,18 @@ fn original_duplicate_case_fixture_refuses_instead_of_losing_parser_advisory() {
             tabindex_warning("tabindex='3'"),
         ]
     );
+}
+
+#[test]
+fn static_and_bound_class_or_style_pairs_preserve_tabindex_findings() {
+    for source in [
+        "<template><div tabindex='1' class='a' :class='b' /></template>",
+        "<template><div tabindex='1' :class='a' class='b' /></template>",
+        "<template><div tabindex='1' style='color:red' :style='theme' /></template>",
+        "<template><div tabindex='1' :style='theme' style='color:red' /></template>",
+    ] {
+        assert_eq!(parity(source, Locale::En).len(), 1, "{source}");
+    }
 }
 
 #[test]

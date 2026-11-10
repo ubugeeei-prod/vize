@@ -5,6 +5,7 @@ import { classifyVitePluginRequest } from "@vizejs/native";
 import { parseCustomBlockQuery } from "../custom-blocks.ts";
 import type { CustomBlockInfo } from "../sfc-types.ts";
 import { getCompiledStyleSource } from "./load-style.ts";
+import { withoutVerbatimPrefix } from "./path-identity.ts";
 import type { VizePluginState } from "./state.ts";
 
 export interface CustomBlockLoadOptions {
@@ -51,7 +52,7 @@ function loadSrcBlock(
   blockType: string,
   addWatchFile: ((file: string) => void) | undefined,
 ): { code: string; map: null } {
-  const blockPath = path.resolve(path.dirname(owner), block.src ?? "");
+  const blockPath = withoutVerbatimPrefix(path.resolve(path.dirname(owner), block.src ?? ""));
   addWatchFile?.(blockPath);
   state.server?.watcher.add(blockPath);
   try {

@@ -235,8 +235,10 @@ export const SHARED_HELPER_IMPORTERS = 10;
 export const dedicatedPrToolingTests = [
   "tests/tooling/content-mapper-instance-globals-10617.test.ts",
 ];
+// An import specifier or a call argument naming the entry: `createRequire(…)(…)`,
+// `path.join(root, …)` and `new URL(…)` load or read it as `require(…)` does.
 const localNativeRuntimeImport =
-  /(?:\b(?:from\s*|import\s*(?:\(\s*)?|require\s*\(\s*)["'][^"']*npm\/native\/index\.js["']|\.artifacts\/native\/)/u;
+  /(?:\b(?:from|import)\s*["'][^"']*npm\/native\/index\.js["']|[(,]\s*["'][^"']*npm\/native\/index\.js["']|\.artifacts\/native\/)/u;
 const workspaceNativePackageImport =
   /\b(?:from\s*|import\s*(?:\(\s*)?|require\s*\(\s*)["']@vizejs\/native["']/u;
 // This contract calls the build coordinator with a fully controlled runner;

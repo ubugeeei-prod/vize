@@ -1,0 +1,43 @@
+<script setup lang="ts">
+const label = "Logo"
+const title = "Title"
+const html = "<b>Title</b>"
+</script>
+
+<template>
+  <img src="/logo.png" alt />
+  <img src="/logo.png" :alt="null" />
+  <object data="/report.pdf">Report</object>
+  <object data="/report.pdf"><p>Report</p></object>
+  <object data="/report.pdf">{{ label }}</object>
+  <object data="/report.pdf" title=""></object>
+  <map name="m"><area href="/a" alt="" /></map>
+  <map name="m"><area href="/a" aria-label="" /></map>
+  <input type="image" src="/go.png" alt="" />
+  <input type="image" src="/go.png" alt />
+  <input :type="'image'" src="/go.png" />
+
+  <div tabindex="1.5">decimal</div>
+  <div tabindex=" 1 ">padded</div>
+  <div :tabindex="2">bound number</div>
+  <div :tabindex="'2'">bound string</div>
+  <div v-bind:tabindex="2">longhand</div>
+  <MyButton :tabindex="2">component</MyButton>
+
+  <h2 v-text="title"></h2>
+  <h2 v-html="html"></h2>
+  <h2><span v-text="title"></span></h2>
+  <h2><span v-html="html"></span></h2>
+  <h2 aria-label="Title"></h2>
+  <h2 :aria-label="title"></h2>
+  <h2 aria-labelledby="other"></h2>
+  <h2 aria-hidden="true"></h2>
+  <h2><MyIcon aria-label="Title" /></h2>
+  <h2><span aria-label="Title"></span></h2>
+  <h2><svg role="img" aria-label="Title"><path d="M0 0h1" /></svg></h2>
+  <h2><span :aria-hidden="true">Title</span></h2>
+  <h2><span :aria-hidden="hidden">Title</span></h2>
+  <h2><span aria-hidden>Title</span></h2>
+  <h2>{{ undefined }}</h2>
+  <component is="h2"></component>
+</template>
