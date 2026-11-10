@@ -4,7 +4,7 @@ use serde_json::{Value, json};
 use std::fs;
 
 const RECORD: &str = "tests/_fixtures/tooling/listener-return-parity-12431.json";
-const RECORD_SHA: &str = "a080316b111b872186a68e2dec2be3521ee73970ca5d65985a92c5038210cfb1";
+const RECORD_SHA: &str = "35c388e27d29d704579e16b2297f1a22319289509445b7dabf75ffd8612a42c2";
 const ASSET: &str =
     "crates/vize_canon/src/virtual_ts/helpers/declarations/shared-listener-args.d.ts.txt";
 

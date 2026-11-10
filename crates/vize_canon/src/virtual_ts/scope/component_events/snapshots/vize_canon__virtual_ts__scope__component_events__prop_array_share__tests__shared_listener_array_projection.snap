@@ -1,5 +1,6 @@
 ---
 source: crates/vize_canon/src/virtual_ts/scope/component_events/prop_array_share.rs
+assertion_line: 127
 expression: code
 ---
 /// <reference lib="es2022" />
@@ -173,7 +174,8 @@ const onOpen = () => undefined
   type __Child_12_select_args = unknown[] extends __Child_12_select_prop_args ? (unknown[] extends __Child_12_select_emit_args ? __Child_12_select_fallthrough_args : __Child_12_select_emit_args) : __Child_12_select_prop_args;
   type __Child_12_select_event = __Child_12_select_args extends infer __A extends unknown[] ? [__A] extends [[]] ? any : unknown[] extends __A ? any : __A[0] : never;
   type __Child_12_select_return_native_fallthrough = __Child_12__fallthrough extends infer __B ? __B extends [infer __F] ? NonNullable<__F> extends { onSelect?: infer __H } ? Extract<NonNullable<__H>, (...args: any[]) => any> extends (...args: any[]) => infer __R ? __R : any : any : any : never;
-  type __Child_12_select_return = unknown[] extends __Child_12_select_prop_args ? __Child_12_select_return_native_fallthrough : __Child_12__props extends infer __B ? __B extends [infer __P] ? (__P extends { onSelect?: (...args: any[]) => infer __R } ? __R : any) : any : never;
+  type __Child_12_select_return_public = unknown[] extends __Child_12_select_prop_args ? __Child_12_select_return_native_fallthrough : __Child_12__props extends infer __B ? __B extends [infer __P] ? (__P extends { onSelect?: (...args: any[]) => infer __R } ? __R : any) : any : never;
+  type __Child_12_select_return = unknown[] extends __Child_12_select_static_emit_args ? __Child_12_select_return_public : 0 extends (1 & __Child_12_select_return_public) ? void : __Child_12_select_return_public;
   type __Child_12__props_members = __Child_12__props extends infer __B ? __B extends [infer __P] ? [__P] : never : never;
   type __Child_12_select_prop_arrays = __Child_12__props_members extends infer __B ? __B extends [infer __P] ? $IsAny<__P> extends true ? never : __P extends { onSelect?: infer __H } ? Extract<NonNullable<__H>, readonly unknown[]> : never : never : never;
   type __Child_12_select_listener = unknown[] extends __Child_12_select_args ? ((...args: any[]) => any) : ((...args: __Child_12_select_args) => __Child_12_select_return);
@@ -193,7 +195,8 @@ const onOpen = () => undefined
   type __Child_13_close_args = unknown[] extends __Child_13_close_prop_args ? (unknown[] extends __Child_13_close_emit_args ? __Child_13_close_fallthrough_args : __Child_13_close_emit_args) : __Child_13_close_prop_args;
   type __Child_13_close_event = __Child_13_close_args extends infer __A extends unknown[] ? [__A] extends [[]] ? any : unknown[] extends __A ? any : __A[0] : never;
   type __Child_13_close_return_native_fallthrough = __Child_12__fallthrough extends infer __B ? __B extends [infer __F] ? NonNullable<__F> extends { onClose?: infer __H } ? Extract<NonNullable<__H>, (...args: any[]) => any> extends (...args: any[]) => infer __R ? __R : any : any : any : never;
-  type __Child_13_close_return = unknown[] extends __Child_13_close_prop_args ? __Child_13_close_return_native_fallthrough : __Child_12__props extends infer __B ? __B extends [infer __P] ? (__P extends { onClose?: (...args: any[]) => infer __R } ? __R : any) : any : never;
+  type __Child_13_close_return_public = unknown[] extends __Child_13_close_prop_args ? __Child_13_close_return_native_fallthrough : __Child_12__props extends infer __B ? __B extends [infer __P] ? (__P extends { onClose?: (...args: any[]) => infer __R } ? __R : any) : any : never;
+  type __Child_13_close_return = unknown[] extends __Child_13_close_static_emit_args ? __Child_13_close_return_public : 0 extends (1 & __Child_13_close_return_public) ? void : __Child_13_close_return_public;
   type __Child_13_close_prop_arrays = __Child_12__props_members extends infer __B ? __B extends [infer __P] ? $IsAny<__P> extends true ? never : __P extends { onClose?: infer __H } ? Extract<NonNullable<__H>, readonly unknown[]> : never : never : never;
   type __Child_13_close_listener = unknown[] extends __Child_13_close_args ? ((...args: any[]) => any) : ((...args: __Child_13_close_args) => __Child_13_close_return);
   type __Child_13_close_handler = unknown[] extends __Child_13_close_args ? ((...args: any[]) => any) : __Child_13_close_listener;
@@ -244,7 +247,8 @@ const onOpen = () => undefined
   type __Other_16_save_args = unknown[] extends __Other_16_save_prop_args ? (unknown[] extends __Other_16_save_emit_args ? __Other_16_save_fallthrough_args : __Other_16_save_emit_args) : __Other_16_save_prop_args;
   type __Other_16_save_event = __Other_16_save_args extends infer __A extends unknown[] ? [__A] extends [[]] ? any : unknown[] extends __A ? any : __A[0] : never;
   type __Other_16_save_return_native_fallthrough = __Other_16__fallthrough extends infer __B ? __B extends [infer __F] ? NonNullable<__F> extends { onSave?: infer __H } ? Extract<NonNullable<__H>, (...args: any[]) => any> extends (...args: any[]) => infer __R ? __R : any : any : any : never;
-  type __Other_16_save_return = unknown[] extends __Other_16_save_prop_args ? __Other_16_save_return_native_fallthrough : __Other_16__props extends infer __B ? __B extends [infer __P] ? (__P extends { onSave?: (...args: any[]) => infer __R } ? __R : any) : any : never;
+  type __Other_16_save_return_public = unknown[] extends __Other_16_save_prop_args ? __Other_16_save_return_native_fallthrough : __Other_16__props extends infer __B ? __B extends [infer __P] ? (__P extends { onSave?: (...args: any[]) => infer __R } ? __R : any) : any : never;
+  type __Other_16_save_return = unknown[] extends __Other_16_save_static_emit_args ? __Other_16_save_return_public : 0 extends (1 & __Other_16_save_return_public) ? void : __Other_16_save_return_public;
   type __Other_16__props_members = __Other_16__props extends infer __B ? __B extends [infer __P] ? [__P] : never : never;
   type __Other_16_save_prop_arrays = __Other_16__props_members extends infer __B ? __B extends [infer __P] ? $IsAny<__P> extends true ? never : __P extends { onSave?: infer __H } ? Extract<NonNullable<__H>, readonly unknown[]> : never : never : never;
   type __Other_16_save_listener = unknown[] extends __Other_16_save_args ? ((...args: any[]) => any) : ((...args: __Other_16_save_args) => __Other_16_save_return);
@@ -264,7 +268,8 @@ const onOpen = () => undefined
   type __Other_17_open_args = unknown[] extends __Other_17_open_prop_args ? (unknown[] extends __Other_17_open_emit_args ? __Other_17_open_fallthrough_args : __Other_17_open_emit_args) : __Other_17_open_prop_args;
   type __Other_17_open_event = __Other_17_open_args extends infer __A extends unknown[] ? [__A] extends [[]] ? any : unknown[] extends __A ? any : __A[0] : never;
   type __Other_17_open_return_native_fallthrough = __Other_16__fallthrough extends infer __B ? __B extends [infer __F] ? NonNullable<__F> extends { onOpen?: infer __H } ? Extract<NonNullable<__H>, (...args: any[]) => any> extends (...args: any[]) => infer __R ? __R : any : any : any : never;
-  type __Other_17_open_return = unknown[] extends __Other_17_open_prop_args ? __Other_17_open_return_native_fallthrough : __Other_16__props extends infer __B ? __B extends [infer __P] ? (__P extends { onOpen?: (...args: any[]) => infer __R } ? __R : any) : any : never;
+  type __Other_17_open_return_public = unknown[] extends __Other_17_open_prop_args ? __Other_17_open_return_native_fallthrough : __Other_16__props extends infer __B ? __B extends [infer __P] ? (__P extends { onOpen?: (...args: any[]) => infer __R } ? __R : any) : any : never;
+  type __Other_17_open_return = unknown[] extends __Other_17_open_static_emit_args ? __Other_17_open_return_public : 0 extends (1 & __Other_17_open_return_public) ? void : __Other_17_open_return_public;
   type __Other_17_open_prop_arrays = __Other_16__props_members extends infer __B ? __B extends [infer __P] ? $IsAny<__P> extends true ? never : __P extends { onOpen?: infer __H } ? Extract<NonNullable<__H>, readonly unknown[]> : never : never : never;
   type __Other_17_open_listener = unknown[] extends __Other_17_open_args ? ((...args: any[]) => any) : ((...args: __Other_17_open_args) => __Other_17_open_return);
   type __Other_17_open_handler = unknown[] extends __Other_17_open_args ? ((...args: any[]) => any) : __Other_17_open_listener;

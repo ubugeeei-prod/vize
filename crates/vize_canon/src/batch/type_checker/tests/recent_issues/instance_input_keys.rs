@@ -161,7 +161,7 @@ fn tsx_input_keys_keep_exact_attribute_checks() {
             row(
                 "src/Probe.tsx",
                 2322,
-                "13:51:error Type '(value: number) => number' is not assignable to type '(value: string) => void'.\nTypes of parameters 'value' and 'value' are incompatible.\nType 'string' is not assignable to type 'number'.",
+                "13:51:error Type '(value: number) => number' is not assignable to type '(value: string) => any'.\nTypes of parameters 'value' and 'value' are incompatible.\nType 'string' is not assignable to type 'number'.",
             ),
             row(
                 "src/Probe.tsx",

@@ -15,8 +15,8 @@
         "sha256": "8e782071a782a4222e51ca36ac6a59f726deaf593cb39eee9733170d282fc94d"
       },
       "after": {
-        "bytes": 23153,
-        "sha256": "88ac3a8716198e8b261ad08aef80ebbb28a696251d93c98019794f2ecd303439"
+        "bytes": 23668,
+        "sha256": "4e4ec6526b22e326887809335ee8f81ecffb1fc97355850ef8a16cb1579c7814"
       },
       "hunks": [
         {
@@ -26,6 +26,10 @@
         {
           "before": "            indent,\n            listener_args_type: listener_args_type.as_str(),\n            args_type: args_type.as_str(),\n            return_type: return_type.as_str(),\n            prop_args: prop_args.as_str(),\n            props_box: props_box.as_str(),\n",
           "after": "            indent,\n            listener_args_type: listener_args_type.as_str(),\n            args_type: args_type.as_str(),\n            static_emit_args: static_emit_args.as_str(),\n            return_type: return_type.as_str(),\n            prop_args: prop_args.as_str(),\n            props_box: props_box.as_str(),\n"
+        },
+        {
+          "before": "        vize_l0::emit_ts!(\n            ts,\n            \"{indent}type {props_box} = typeof {component_ref} extends {{ new (...args: any[]): {{ $props: infer __P }} }} ? [__P] : typeof {component_ref} extends (props: infer __P, ...args: any[]) => any ? [__P] : [];\\n\",\n        );\n",
+          "after": "        // A generated component's public `$props` intersects authored listener\n        // props with synthesized emit listeners. For a same-name listener that\n        // can collapse an authored return (for example `number`) to `any`.\n        // Prefer the component-level raw props marker once here; external and\n        // generic library components keep their public constructor/call path.\n        vize_l0::emit_ts!(\n            ts,\n            \"{indent}type {props_box} = typeof {component_ref} extends {{ readonly __vizeComponentMarker: true; readonly __vizeRawProps?: infer __P }} ? [__P] : typeof {component_ref} extends {{ new (...args: any[]): {{ $props: infer __P }} }} ? [__P] : typeof {component_ref} extends (props: infer __P, ...args: any[]) => any ? [__P] : [];\\n\",\n        );\n"
         }
       ]
     },

@@ -23,7 +23,7 @@ const TEMPLATES = {
   ],
   props: [
     `${events}.rs`,
-    "type {props_box} = typeof {component_ref} extends {{ new (...args: any[]): {{ $props: infer __P }} }} ? [__P] : typeof {component_ref} extends (props: infer __P, ...args: any[]) => any ? [__P] : [];",
+    "type {props_box} = typeof {component_ref} extends {{ readonly __vizeComponentMarker: true; readonly __vizeRawProps?: infer __P }} ? [__P] : typeof {component_ref} extends {{ new (...args: any[]): {{ $props: infer __P }} }} ? [__P] : typeof {component_ref} extends (props: infer __P, ...args: any[]) => any ? [__P] : [];",
   ],
   emitProps: [
     `${events}.rs`,
@@ -331,9 +331,13 @@ void test("the shared contract has exactly the chain's types and printed text", 
 void test("declared emits use void without widening authored listener returns", () => {
   const lines = [
     ...prelude,
+    "type PropsBox<C> = C extends { readonly __vizeComponentMarker: true; readonly __vizeRawProps?: infer P } ? [P] : C extends { new (...args: any[]): { $props: infer P } } ? [P] : C extends (props: infer P, ...args: any[]) => any ? [P] : [];",
+    "type Generated = Sfc<{ onSave?: Fn<[value: string], number> }, { onSave?: Fn<[value: string], any> }>;",
+    "type GeneratedAuthored = $ListenerContract<false, PropsBox<Generated>, [{ onSave?: Fn<[value: string], any> }], [], 'onSave', never, unknown[], false>['listener'];",
     "type Synthesized = $ListenerContract<false, [{ onSave?: Fn<[value: string], any> }], [{ onSave?: Fn<[value: string], any> }], [], 'onSave', never, unknown[], false>['listener'];",
     "type Authored = $ListenerContract<false, [{ onSave?: Fn<[value: string], number> }], [{ onSave?: Fn<[value: string], any> }], [], 'onSave', never, unknown[], false>['listener'];",
     "type Unresolved = $ListenerContract<false, [{ onSave?: Fn<[value: string], any> }], [], [], 'onSave', never, unknown[], false>['listener'];",
+    "type GeneratedAuthoredKeepsNumber = Expect<Equal<GeneratedAuthored, Fn<[value: string], number>>>;",
     "type SynthesizedIsVoid = Expect<Equal<Synthesized, Fn<[value: string], void>>>;",
     "type AuthoredKeepsNumber = Expect<Equal<Authored, Fn<[value: string], number>>>;",
     "type UnresolvedKeepsAny = Expect<Equal<Unresolved, Fn<[value: string], any>>>;",

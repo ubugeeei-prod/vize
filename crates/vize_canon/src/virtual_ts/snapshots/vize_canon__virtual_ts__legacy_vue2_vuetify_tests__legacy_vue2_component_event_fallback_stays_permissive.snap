@@ -1,5 +1,6 @@
 ---
 source: crates/vize_canon/src/virtual_ts/legacy_vue2_vuetify_tests.rs
+assertion_line: 124
 expression: "format!(\"=== standard ===\\n{standard}\\n=== legacy ===\\n{legacy}\")"
 ---
 === standard ===
@@ -165,7 +166,8 @@ function updateDate(newDate: string) {
   type __VDatePicker_8_input_args = unknown[] extends __VDatePicker_8_input_prop_args ? (unknown[] extends __VDatePicker_8_input_emit_args ? __VDatePicker_8_input_fallthrough_args : __VDatePicker_8_input_emit_args) : __VDatePicker_8_input_prop_args;
   type __VDatePicker_8_input_event = __VDatePicker_8_input_args extends infer __A extends unknown[] ? [__A] extends [[]] ? any : unknown[] extends __A ? any : __A[0] : never;
   type __VDatePicker_8_input_return_native_fallthrough = __VDatePicker_8__fallthrough extends infer __B ? __B extends [infer __F] ? NonNullable<__F> extends { onInput?: infer __H } ? Extract<NonNullable<__H>, (...args: any[]) => any> extends (...args: any[]) => infer __R ? __R : any : any : any : never;
-  type __VDatePicker_8_input_return = unknown[] extends __VDatePicker_8_input_prop_args ? __VDatePicker_8_input_return_native_fallthrough : __VDatePicker_8__props extends infer __B ? __B extends [infer __P] ? (__P extends { onInput?: (...args: any[]) => infer __R } ? __R : any) : any : never;
+  type __VDatePicker_8_input_return_public = unknown[] extends __VDatePicker_8_input_prop_args ? __VDatePicker_8_input_return_native_fallthrough : __VDatePicker_8__props extends infer __B ? __B extends [infer __P] ? (__P extends { onInput?: (...args: any[]) => infer __R } ? __R : any) : any : never;
+  type __VDatePicker_8_input_return = unknown[] extends __VDatePicker_8_input_static_emit_args ? __VDatePicker_8_input_return_public : 0 extends (1 & __VDatePicker_8_input_return_public) ? void : __VDatePicker_8_input_return_public;
   type __VDatePicker_8__props_members = __VDatePicker_8__props extends infer __B ? __B extends [infer __P] ? [__P] : never : never;
   type __VDatePicker_8_input_prop_arrays = __VDatePicker_8__props_members extends infer __B ? __B extends [infer __P] ? $IsAny<__P> extends true ? never : __P extends { onInput?: infer __H } ? Extract<NonNullable<__H>, readonly unknown[]> : never : never : never;
   type __VDatePicker_8_input_listener = unknown[] extends __VDatePicker_8_input_args ? ((...args: any[]) => any) : ((...args: __VDatePicker_8_input_args) => __VDatePicker_8_input_return);
