@@ -2,8 +2,7 @@
 #[cfg(all(test, feature = "legacy"))]
 mod dialect_tests;
 mod for_bindings;
-use vize_croquis::reactivity::ReactiveKind;
-use vize_croquis::{BindingType, Croquis, ScopeBinding, ScopeKind, VForScopeData, VSlotScopeData};
+use vize_croquis::{BindingType, ScopeBinding, ScopeKind, VForScopeData, VSlotScopeData};
 use vize_l0::{Allocator, Box, CompactString, String, Vec, interner::Interner};
 
 use crate::errors::{CompilerError, ErrorCode};
@@ -13,7 +12,7 @@ use crate::{
     SourceLocation, TemplateChildNode,
 };
 
-use super::{ParentNode, TransformContext};
+use super::{ParentNode, ReactiveSource, TransformContext};
 
 impl<'a> TransformContext<'a> {
     /// Create a new transform context
@@ -54,7 +53,7 @@ impl<'a> TransformContext<'a> {
             template_syntax_quirks,
             jsx_compat: super::JsxTransformCompat::default(),
             node_removed_from: None,
-            analysis: None,
+            script_tables: None,
             hoisted_scope_id: None,
             frozen_elements: &[],
         }
@@ -71,68 +70,6 @@ impl<'a> TransformContext<'a> {
         Self::new_with_template_syntax_quirks(allocator, source, options, vue_parser_quirks)
     }
 
-    /// Create a new transform context with semantic analysis data
-    pub fn with_analysis(
-        allocator: &'a Allocator,
-        source: &'a str,
-        options: TransformOptions,
-        analysis: &'a Croquis,
-    ) -> Self {
-        Self::with_analysis_and_template_syntax_quirks(allocator, source, options, analysis, false)
-    }
-
-    /// Create a new transform context with semantic analysis data and template syntax quirks.
-    pub fn with_analysis_and_template_syntax_quirks(
-        allocator: &'a Allocator,
-        source: &'a str,
-        options: TransformOptions,
-        analysis: &'a Croquis,
-        template_syntax_quirks: bool,
-    ) -> Self {
-        let mut ctx = Self::new_with_template_syntax_quirks(
-            allocator,
-            source,
-            options,
-            template_syntax_quirks,
-        );
-        ctx.analysis = Some(analysis);
-        ctx
-    }
-
-    /// Create a new transform context with semantic analysis data and Vue parser quirks.
-    #[deprecated(note = "use with_analysis_and_template_syntax_quirks instead")]
-    pub fn with_analysis_and_vue_parser_quirks(
-        allocator: &'a Allocator,
-        source: &'a str,
-        options: TransformOptions,
-        analysis: &'a Croquis,
-        vue_parser_quirks: bool,
-    ) -> Self {
-        Self::with_analysis_and_template_syntax_quirks(
-            allocator,
-            source,
-            options,
-            analysis,
-            vue_parser_quirks,
-        )
-    }
-
-    /// Set the analysis summary
-    pub fn set_analysis(&mut self, analysis: &'a Croquis) {
-        self.analysis = Some(analysis);
-    }
-
-    /// Get the analysis summary if available
-    #[inline]
-    pub fn analysis(&self) -> Option<&Croquis> {
-        self.analysis
-    }
-
-    #[inline]
-    pub fn has_analysis(&self) -> bool {
-        self.analysis.is_some()
-    }
-
     /// Whether template syntax quirk compatibility is enabled.
     #[inline]
     pub fn template_syntax_quirks(&self) -> bool {
@@ -146,18 +83,13 @@ impl<'a> TransformContext<'a> {
         self.template_syntax_quirks()
     }
 
-    /// Check if a variable is defined (from analysis or binding metadata)
+    /// Check if a variable is defined (from scope chain or binding metadata)
     ///
     /// This checks both the scope chain (template-local) and script bindings.
     pub fn is_variable_defined(&self, name: &str) -> bool {
         // First check scope chain (v-for, v-slot variables)
         if self.scope_chain.is_defined(name) {
             return true;
-        }
-
-        // Check analysis summary if available
-        if let Some(analysis) = &self.analysis {
-            return analysis.is_defined(name);
         }
 
         // Fall back to binding metadata from options
@@ -173,11 +105,6 @@ impl<'a> TransformContext<'a> {
         // First check scope chain
         if let Some((_, binding)) = self.scope_chain.lookup(name) {
             return Some(binding.binding_type);
-        }
-
-        // Check analysis summary
-        if let Some(analysis) = &self.analysis {
-            return analysis.get_binding_type(name);
         }
 
         // Fall back to binding metadata
@@ -214,9 +141,7 @@ impl<'a> TransformContext<'a> {
 
     /// Check if a binding is a ref that needs .value in script
     pub fn is_ref(&self, name: &str) -> bool {
-        if let Some(analysis) = &self.analysis {
-            analysis.bindings.is_ref(name)
-        } else if let Some(binding_type) = self.get_binding_type(name) {
+        if let Some(binding_type) = self.get_binding_type(name) {
             matches!(
                 binding_type,
                 BindingType::SetupRef | BindingType::SetupMaybeRef
@@ -228,35 +153,21 @@ impl<'a> TransformContext<'a> {
 
     /// Check if a binding is from props
     pub fn is_prop(&self, name: &str) -> bool {
-        if let Some(analysis) = &self.analysis {
-            analysis.bindings.is_prop(name)
-        } else {
-            matches!(
-                self.get_binding_type(name),
-                Some(BindingType::Props | BindingType::PropsAliased)
-            )
-        }
+        matches!(
+            self.get_binding_type(name),
+            Some(BindingType::Props | BindingType::PropsAliased)
+        )
     }
 
-    /// Get the ReactiveKind for a name (from Croquis ReactivityTracker)
-    pub fn get_reactive_kind(&self, name: &str) -> Option<ReactiveKind> {
-        self.analysis?.reactivity.lookup(name).map(|s| s.kind)
+    /// The reactivity API whose result initializes the setup binding `name`.
+    pub fn reactive_source(&self, name: &str) -> Option<ReactiveSource> {
+        self.script_tables?.reactive_source(name)
     }
 
-    /// Check if a binding is read-only (Computed, Readonly, ShallowReadonly)
-    pub fn is_readonly_binding(&self, name: &str) -> bool {
-        self.get_reactive_kind(name).is_some_and(|k| {
-            matches!(
-                k,
-                ReactiveKind::Computed | ReactiveKind::Readonly | ReactiveKind::ShallowReadonly
-            )
-        })
-    }
-
-    /// Check if a component is registered (from analysis or binding metadata)
+    /// Check if a component is registered (from the script tables or binding metadata)
     pub fn is_component_registered(&self, name: &str) -> bool {
-        if let Some(analysis) = &self.analysis
-            && analysis.is_component_registered(name)
+        if let Some(tables) = self.script_tables
+            && tables.registers_component(name)
         {
             return true;
         }

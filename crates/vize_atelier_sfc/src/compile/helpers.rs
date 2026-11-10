@@ -118,7 +118,6 @@ pub(super) fn demote_v_model_reactive_const_bindings(
     script_content: &str,
     ctx: &mut ScriptCompileContext,
     script_bindings: &mut BindingMetadata,
-    croquis: &mut vize_croquis::croquis::Croquis,
 ) -> Option<(String, Vec<String>, Vec<usize>)> {
     if !template_content.contains("v-model") {
         return None;
@@ -197,7 +196,7 @@ pub(super) fn demote_v_model_reactive_const_bindings(
 
             should_demote = true;
             demoted_ids.push(binding_name.to_compact_string());
-            update_binding_to_setup_let(binding_name, ctx, script_bindings, croquis);
+            update_binding_to_setup_let(binding_name, ctx, script_bindings);
         }
 
         if !should_demote {
@@ -249,16 +248,11 @@ fn update_binding_to_setup_let(
     binding_name: &str,
     ctx: &mut ScriptCompileContext,
     script_bindings: &mut BindingMetadata,
-    croquis: &mut vize_croquis::croquis::Croquis,
 ) {
     script_bindings
         .bindings
         .insert(binding_name.to_compact_string(), BindingType::SetupLet);
     ctx.bindings
-        .bindings
-        .insert(binding_name.to_compact_string(), BindingType::SetupLet);
-    croquis
-        .bindings
         .bindings
         .insert(binding_name.to_compact_string(), BindingType::SetupLet);
 }

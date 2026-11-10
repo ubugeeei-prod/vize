@@ -6,7 +6,6 @@
 //! input selects the legacy AST walker explicitly under a typed reason, and a
 //! stale or inconsistent artifact is rejected rather than guessed around.
 
-mod croquis;
 mod emit;
 mod frozen_slots;
 mod l2_input;
@@ -49,7 +48,7 @@ pub(crate) struct SsrL4Request<'o> {
 pub(crate) enum LegacyReason {
     /// The option surface is outside the L4 lane.
     Options,
-    /// A Croquis summary registers a component the binding metadata does
+    /// The script tables register a component the binding metadata does
     /// not, so the non-inline plan cannot reproduce the legacy transform.
     Croquis,
     /// L2 recorded diagnostics or a lowering rule the lane does not model.
@@ -214,7 +213,7 @@ fn bridge_supported(request: &SsrL4Request<'_>) -> bool {
 
 /// Options whose expression and module semantics the plan emitter owns.
 /// Inline render closures, Vue 2 dialect sugar, and in-tag comments stay
-/// with the legacy walker. A Croquis summary the registration check cannot
+/// with the legacy walker. Script tables the registration check cannot
 /// reproduce is [`LegacyReason::Croquis`], decided before this predicate.
 fn emission_supported(request: &SsrL4Request<'_>) -> bool {
     let options = request.options;

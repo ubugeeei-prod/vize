@@ -70,9 +70,9 @@ pub(crate) fn is_ref_binding_simple(name: &str, ctx: &TransformContext<'_>) -> b
     }
 
     if ctx.options.inline {
-        // Croquis first: use ReactiveKind for precise determination
-        if let Some(kind) = ctx.get_reactive_kind(name) {
-            return kind.needs_value_access();
+        // The reactivity API behind the binding decides first.
+        if let Some(source) = ctx.reactive_source(name) {
+            return source.reads_value();
         }
         // Fallback: binding_metadata
         if let Some(bindings) = &ctx.options.binding_metadata

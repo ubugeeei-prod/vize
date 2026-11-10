@@ -40,7 +40,7 @@ pub(super) enum DomLegacyReason {
     CustomRenderer,
     /// The requested whitespace strategy is not implemented by L2 lowering.
     Whitespace,
-    /// A Croquis summary is attached (the script-setup SFC path).
+    /// Script tables register a component the binding metadata lacks.
     Croquis,
     /// The source text may carry patterned-template directives.
     PatternedSource,
@@ -135,7 +135,7 @@ pub mod differential {
         static EMIT_REFUSAL: Cell<Option<EmitError>> = const { Cell::new(None) };
     }
 
-    /// Historical arm. A projectable Croquis summary is admitted in
+    /// Historical arm. Projectable script tables are admitted in
     /// production, so this no longer changes the selector.
     pub fn with_croquis_projection<R>(f: impl FnOnce() -> R) -> R {
         f()

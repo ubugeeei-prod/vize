@@ -394,7 +394,7 @@ fn compile_sfc_inner(
     setup_exports::validate(setup_program.as_ref(), &script_setup_content, descriptor)?;
 
     // 1. Croquis parser: rich analysis with ReactivityTracker
-    let mut croquis = profile!(
+    let croquis = profile!(
         "atelier.sfc.script_setup.croquis",
         match setup_program.as_ref() {
             Some(program) => crate::script::analyze_script_setup_program_to_summary(
@@ -405,6 +405,7 @@ fn compile_sfc_inner(
         }
     );
     let mut script_bindings = croquis_to_legacy_bindings(&croquis.bindings, setup_program.as_ref());
+    let script_tables = vize_atelier_core::lane::ScriptTables::from_croquis(&croquis);
 
     // 2. ScriptCompileContext: needed for macro span info and TypeScript type resolution
     //    (Croquis doesn't resolve type references like `defineProps<Props>()`)
@@ -491,7 +492,6 @@ fn compile_sfc_inner(
                 &script_setup_content,
                 &mut ctx,
                 &mut script_bindings,
-                &mut croquis,
             )
         );
 
@@ -551,7 +551,7 @@ fn compile_sfc_inner(
                     template_context.block(
                         !script_output.separates_template(),
                         Some(&script_bindings),
-                        Some(croquis),
+                        Some(script_tables),
                     ),
                     template_syntax,
                     &codegen_options,

@@ -184,7 +184,7 @@ pub(super) fn l2_emit_options<'a>(
     })
 }
 
-pub(super) use super::croquis_facts::{l2_binding_table_for, unprojectable_croquis};
+pub(super) use super::script_tables::{l2_binding_table_for, unprojectable_croquis};
 
 pub(super) fn l2_binding_table(metadata: Option<&BindingMetadata>) -> Option<BindingTable> {
     metadata.map(|metadata| {

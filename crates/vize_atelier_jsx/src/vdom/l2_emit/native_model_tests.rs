@@ -1,4 +1,4 @@
-use vize_croquis::Croquis;
+use vize_atelier_core::lane::ScriptTables;
 use vize_l0::Allocator;
 
 use crate::{JsxLang, lower_source};
@@ -135,7 +135,8 @@ fn select_v_model_emits_from_l2() {
 fn compile_native_model_from_l2(source: &str) -> VdomComponent {
     let allocator = Allocator::new();
     let mut lowered = lower_source(&allocator, allocator.as_oxc(), source, JsxLang::Jsx);
-    let analysis: &Croquis = allocator.alloc_owned(lowered.analysis);
+    let script_tables: &ScriptTables =
+        allocator.alloc_owned(ScriptTables::from_croquis(&lowered.analysis));
     let mut root = lowered.roots.pop().expect("one JSX root");
     let l2 = root.l2.as_ref().expect("native v-model projects to L2");
 
@@ -146,7 +147,7 @@ fn compile_native_model_from_l2(source: &str) -> VdomComponent {
     let component = compile_root_to_vdom(
         &allocator,
         root,
-        analysis,
+        script_tables,
         false,
         &VdomCompileOptions::default(),
         VdomCompatOptions::default(),

@@ -77,7 +77,7 @@ pub(crate) struct TemplateBlockCompileContext<'a> {
     pub(crate) component_name: Option<&'a str>,
     pub(crate) experimental_self_component: bool,
     pub(crate) bindings: Option<&'a BindingMetadata>,
-    pub(crate) croquis: Option<vize_croquis::croquis::Croquis>,
+    pub(crate) script_tables: Option<vize_atelier_core::lane::ScriptTables>,
     /// Whether the caller will compose the backend template map into its result.
     pub(crate) collect_map: bool,
     /// The complete authored SFC, used only when a template diagnostic needs
@@ -138,7 +138,7 @@ pub(crate) fn compile_template_block_with_capture(
         component_name,
         experimental_self_component,
         bindings,
-        croquis,
+        script_tables,
         collect_map,
         authored_source,
         pug_source_map,
@@ -169,7 +169,7 @@ pub(crate) fn compile_template_block_with_capture(
             ssr_css_vars: options.ssr_css_vars.clone(),
             dialect: options.dialect,
             binding_metadata: bindings.cloned(),
-            croquis: croquis.map(Box::new),
+            script_tables,
         };
         let ssr_experimental_options = vize_atelier_ssr::SsrCompilerExperimentalOptions {
             component_name: component_name.map(|name| name.to_compact_string()),
@@ -288,10 +288,8 @@ pub(crate) fn compile_template_block_with_capture(
     // Pass binding metadata directly (no string conversion needed)
     dom_opts.binding_metadata = bindings.cloned();
 
-    // Pass Croquis to DOM compiler for enhanced transforms
-    if let Some(c) = croquis {
-        dom_opts.croquis = Some(Box::new(c));
-    }
+    // Reactive sources and component registrations beyond the metadata.
+    dom_opts.script_tables = script_tables;
 
     // SFC assembly consumes diagnostics and emitted render code. The
     // section-only entry selects L2 where it can preserve the full module,

@@ -8,7 +8,10 @@
 mod backend_origin_oracle;
 use backend_origin_oracle::{check_map, rejects_mutations};
 use serde_json::json;
-use vize_atelier_core::{lane::transform_with_source_text, options::TransformOptions};
+use vize_atelier_core::{
+    lane::{ScriptTables, transform_with_source_text},
+    options::TransformOptions,
+};
 use vize_atelier_jsx::{JsxLang, lower_source};
 use vize_atelier_ssr::{
     SsrCompilerExperimentalOptions, SsrCompilerOptions, compile_l2_to_ssr,
@@ -36,7 +39,7 @@ fn caller_built_jsx_roots_keep_real_vapor_and_ssr_origins() {
         assert!(lowered.diagnostics.is_empty());
         assert_eq!(lowered.roots.len(), 1);
         let root = lowered.roots.pop().unwrap();
-        let analysis = allocator.alloc_owned(lowered.analysis);
+        let script_tables = allocator.alloc_owned(ScriptTables::from_croquis(&lowered.analysis));
         let mut transformed = root.root;
         transform_with_source_text(
             &allocator,
@@ -46,7 +49,7 @@ fn caller_built_jsx_roots_keep_real_vapor_and_ssr_origins() {
                 vapor: true,
                 ..Default::default()
             },
-            Some(analysis),
+            Some(script_tables),
             &source,
         );
         let legacy_ir = transform_to_ir(&allocator, &transformed, &source);
