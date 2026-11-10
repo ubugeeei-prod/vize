@@ -5,6 +5,7 @@
  * Kept `@vize-map: a:b -> c:d` comments carry generated UTF-8 byte offsets, so
  * they move exactly as the emitter would place them.
  */
+import assert from "node:assert/strict";
 
 /** Reasons the emitters no longer write; helper declarations keep theirs. */
 const removedReasons = new Set([
@@ -146,4 +147,27 @@ export function generatedCommentBytesCut(previous: string): CommentCut {
         (edit) => !edit.replacement.equals(Buffer.from(previous).subarray(edit.start, edit.end)),
       ),
   };
+}
+
+type CoveredEdit = { start: number; end: number };
+
+/** Keep only standalone comment cuts not already owned by another certified edit. */
+export function generatedCommentCutEdits(previous: Buffer, covered: readonly CoveredEdit[]) {
+  const numericMapPrefix = /^\/\/ @vize-map: \d+:\d+ -> $/u;
+  return generatedCommentBytesCut(previous.toString()).edits.flatMap((edit) => {
+    const existing = covered.filter(
+      (candidate) => edit.start < candidate.end && candidate.start < edit.end,
+    );
+    for (const candidate of existing)
+      assert.ok(
+        candidate.start <= edit.start && edit.end <= candidate.end,
+        "generated comment cut must not cross another certified edit",
+      );
+    if (
+      existing.length > 0 ||
+      numericMapPrefix.test(previous.subarray(edit.start, edit.end).toString())
+    )
+      return [];
+    return [{ ...edit, label: "generated comment byte cut" }];
+  });
 }

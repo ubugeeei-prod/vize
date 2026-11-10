@@ -13,7 +13,7 @@ import {
 } from "node:fs";
 import { resolve, join, basename } from "node:path";
 import { authoredDirectives } from "../compat/content-mapper/producer-unmapped-ignores.ts";
-import { generatedCommentBytesCut } from "../compat/content-mapper/generated-comment-bytes-cut.ts";
+import { generatedCommentCutEdits } from "../compat/content-mapper/generated-comment-bytes-cut.ts";
 import { assertTypedContextWrapperMappings } from "./typed-context-wrapper-mappings.ts";
 const [mode, outArg, phase] = process.argv.slice(2),
   out = resolve(outArg);
@@ -94,25 +94,6 @@ const setupSourceFramingEdits = (before) => {
       label: "setup source suffix framing",
     },
   ];
-};
-const generatedCommentCutEdits = (before, covered) => {
-  const numericMapPrefix = /^\/\/ @vize-map: \d+:\d+ -> $/u;
-  return generatedCommentBytesCut(before.toString()).edits.flatMap((edit) => {
-    const existing = covered.filter((candidate) =>
-      overlap(edit.start, edit.end - edit.start, candidate),
-    );
-    for (const candidate of existing)
-      assert(
-        candidate.start <= edit.start && edit.end <= candidate.end,
-        "generated comment cut must not cross another certified edit",
-      );
-    if (
-      existing.length > 0 ||
-      numericMapPrefix.test(before.subarray(edit.start, edit.end).toString())
-    )
-      return [];
-    return [{ ...edit, label: "generated comment byte cut" }];
-  });
 };
 const certifyMapperTransition = (beforePacket, afterPacket) => {
   const before = Buffer.from(beforePacket.text);
