@@ -106,6 +106,7 @@ function buildApplePackage(
     "cargo",
     [
       "build",
+      "--locked",
       "--release",
       "--manifest-path",
       manifestPath,
@@ -177,6 +178,7 @@ export function main(args: readonly string[]): number {
     target,
   ];
   if (crossCompile) commandArgs.push("--cross-compile");
+  commandArgs.push("--", "--locked");
   const env = nativeBuildEnvironment();
   if (env === undefined) return 1;
   const receipt = beginNativeBuildReceipt(packageDir, target, env);
