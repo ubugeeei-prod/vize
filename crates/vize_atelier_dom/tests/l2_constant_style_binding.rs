@@ -24,7 +24,7 @@ use crate::support;
 use vize_atelier_core::options::{BindingMetadata, BindingType, CodegenMode, CodegenOptions};
 use vize_atelier_dom::DomCompilerOptions;
 use vize_l0::FxHashMap;
-use vize_l1_to_l2::{BindingKind, BindingTable, DomEmitMode, DomEmitOptions};
+use vize_l4::targets::dom::artifact::{BindingKind, BindingTable, DomEmitMode, DomEmitOptions};
 
 const BATTERY: &[(&str, &str)] = &[
     // Constant script bindings: the helper is skipped.
@@ -250,7 +250,7 @@ fn only_a_constant_binding_skips_the_style_helper() {
     let table = table(&metadata);
     let allocator = vize_l0::Allocator::new();
     let style_prop = |src: &str, inline: bool| {
-        vize_l1_to_l2::emit_dom_source_with_options(
+        vize_l4::targets::dom::artifact::emit_dom_source_with_options(
             &allocator,
             src,
             vize_l1_to_l2::LegacyCaps::VUE3,

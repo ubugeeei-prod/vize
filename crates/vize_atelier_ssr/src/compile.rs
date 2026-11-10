@@ -435,7 +435,9 @@ fn compile_ssr_on_lane_with_runtime<'a>(
             source,
             &mut root,
             transform_opts,
-            options.croquis.map(|c| allocator.alloc_owned(*c)),
+            options
+                .script_tables
+                .map(|tables| allocator.alloc_owned(tables)),
             custom_elements,
             template_syntax.is_quirks(),
             None,

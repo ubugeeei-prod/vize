@@ -12,12 +12,12 @@
 //! ([`VaporGenerateOptions::jsx_closure`]): free identifiers stay bare instead
 //! of being `_ctx.`-prefixed, matching `vue-jsx-vapor`.
 
+use vize_atelier_core::lane::ScriptTables;
 use vize_atelier_core::lane::transform_with_source_text;
 use vize_atelier_core::options::TransformOptions;
 use vize_atelier_vapor::{
     VaporGenerateExperimentalOptions, VaporGenerateOptions, generate_vapor_from_transformed_root,
 };
-use vize_croquis::Croquis;
 use vize_l0::{Allocator, String};
 
 use crate::diagnostics::JsxDiagnostic;
@@ -99,8 +99,9 @@ pub fn compile_to_vapor(
     .0;
     let mut diagnostics = lowered.diagnostics;
 
-    // Park the analysis on the allocator so the transform can borrow it.
-    let analysis: &Croquis = allocator.alloc_owned(lowered.analysis);
+    // Park the script tables on the allocator so the transform can borrow them.
+    let script_tables: &ScriptTables =
+        allocator.alloc_owned(ScriptTables::from_croquis(&lowered.analysis));
 
     let mut components = Vec::with_capacity(lowered.roots.len());
     for mut lowered_root in lowered.roots {
@@ -109,7 +110,7 @@ pub fn compile_to_vapor(
         components.push(compile_root_to_vapor(
             allocator,
             lowered_root,
-            analysis,
+            script_tables,
             &options,
             source,
             &mut diagnostics,
@@ -128,7 +129,7 @@ pub fn compile_to_vapor(
 pub(crate) fn compile_root_to_vapor(
     allocator: &Allocator,
     lowered: LoweredRoot,
-    analysis: &Croquis,
+    script_tables: &ScriptTables,
     options: &VaporCompileOptions,
     source: &str,
     diagnostics: &mut Vec<JsxDiagnostic>,
@@ -137,7 +138,7 @@ pub(crate) fn compile_root_to_vapor(
     compile_root_to_vapor_with_origins(
         allocator,
         lowered,
-        analysis,
+        script_tables,
         options,
         source,
         diagnostics,
@@ -155,7 +156,7 @@ pub(crate) fn compile_root_to_vapor(
 pub(crate) fn compile_root_to_vapor_with_origins(
     allocator: &Allocator,
     lowered: LoweredRoot,
-    analysis: &Croquis,
+    script_tables: &ScriptTables,
     options: &VaporCompileOptions,
     source: &str,
     diagnostics: &mut Vec<JsxDiagnostic>,
@@ -167,7 +168,7 @@ pub(crate) fn compile_root_to_vapor_with_origins(
         let ssr = crate::ssr::compile_lowered_root_to_ssr(
             allocator,
             lowered,
-            analysis,
+            script_tables,
             JsxOutputMode::Vapor,
             source,
             diagnostics,
@@ -216,7 +217,13 @@ pub(crate) fn compile_root_to_vapor_with_origins(
         binding_metadata: None,
         ..Default::default()
     };
-    transform_with_source_text(allocator, &mut root, transform_opts, Some(analysis), source);
+    transform_with_source_text(
+        allocator,
+        &mut root,
+        transform_opts,
+        Some(script_tables),
+        source,
+    );
 
     let (generated, errors, warnings) = generate_vapor_from_transformed_root(
         allocator,

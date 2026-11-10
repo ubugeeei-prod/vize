@@ -64,3 +64,18 @@ conversion residue that never leaves the crate: the arena, the minted op
 count, diagnostics, lint-only consumed expressions and Vue capabilities.
 Consumers read `lowered.artifact.*`; there is no second copy and no extra
 walk, so construction cost is unchanged.
+
+## Pass ownership after the DOM move
+
+Backend-neutral pass bodies and every fact schema they publish live in
+`vize_l2`: static-subtree and constant-expression analysis, template
+complexity, compound text, `ui.for` / `ui.if` facts, slot groups, model
+faults, fragment carriers, and the `L2Facts` product
+(`vize_l2::analysis::pass_facts`). Vue 2 filter assets are a neutral
+`FilterAssets` row there, not a legacy table.
+
+`vize_l1_to_l2::pass` keeps only Vue legalization over its own lowering
+result: Vue 2 sugar (`legacy-sugar`), the `v-slot` grouping with Vue's four
+diagnostics, `v-model` scope validation, and the artifact-scoped plan that
+orders them before the L2 analyses. These are the "legalization patterns" the
+issue leaves in the conversion crate; the DOM emitter no longer lives there.

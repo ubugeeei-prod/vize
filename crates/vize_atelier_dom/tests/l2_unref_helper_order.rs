@@ -18,7 +18,7 @@ use crate::support;
 use vize_atelier_core::options::{BindingMetadata, BindingType, CodegenMode, CodegenOptions};
 use vize_atelier_dom::DomCompilerOptions;
 use vize_l0::FxHashMap;
-use vize_l1_to_l2::{BindingKind, BindingTable, DomEmitMode, DomEmitOptions};
+use vize_l4::targets::dom::artifact::{BindingKind, BindingTable, DomEmitMode, DomEmitOptions};
 
 const BATTERY: &[(&str, &str)] = &[
     // The source expression is processed before `renderList` is
@@ -212,7 +212,7 @@ fn the_import_list_places_unref_by_the_node_that_needed_it() {
     let table = table(&metadata);
     let allocator = vize_l0::Allocator::new();
     let imports = |src: &str| {
-        vize_l1_to_l2::emit_dom_source_with_options(
+        vize_l4::targets::dom::artifact::emit_dom_source_with_options(
             &allocator,
             src,
             vize_l1_to_l2::LegacyCaps::VUE3,

@@ -12,11 +12,11 @@ use vize_atelier_core::{
 use vize_l0::{Allocator, String};
 
 mod capture_options;
-mod croquis_facts;
 mod inner;
 #[cfg(feature = "legacy-differential")]
 pub(crate) mod legacy;
 mod pipeline;
+mod script_tables;
 mod selection;
 mod sfc;
 mod source_map;

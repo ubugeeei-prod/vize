@@ -12,6 +12,7 @@ import {
   emitMemberInferPreambleBefore,
 } from "./support/emit-member-infer-source.ts";
 import { beforeSharedListenerRelationSource } from "./support/listener-relation-source-transition.ts";
+import { beforePropValueOr } from "../../tools/support/compat/content-mapper/prop-value-or-transition.ts";
 
 const root = new URL("../../", import.meta.url);
 const read = (path: string) => fs.readFileSync(new URL(path, root), "utf8");
@@ -109,7 +110,8 @@ void test("the complete source preamble reconstructs the unchanged runtime and h
   );
   // This finite expansion is admitted only for the exact macro producer above.
   // Its compiled constant is checked independently by the native tests.
-  const predecessorRead = (path: string) => beforeCanonLeftovers(path, read(path));
+  const predecessorRead = (path: string) =>
+    beforeCanonLeftovers(path, beforePropValueOr(path, read(path)));
   const current = emitMemberInferPreambleBefore(
     read,
     [

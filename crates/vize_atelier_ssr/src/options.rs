@@ -2,12 +2,12 @@
 
 use serde::{Deserialize, Serialize};
 use vize_atelier_core::BindingMetadata;
-use vize_croquis::Croquis;
+use vize_atelier_core::lane::ScriptTables;
 use vize_l0::String;
 use vize_l0::config::VueVersion;
 
 /// SSR compiler options
-#[derive(Debug, Default, Serialize, Deserialize)]
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SsrCompilerOptions {
     /// Scope ID for scoped CSS (data-v-xxx)
@@ -67,30 +67,10 @@ pub struct SsrCompilerOptions {
     #[serde(skip)]
     pub binding_metadata: Option<BindingMetadata>,
 
-    /// Semantic analysis data from Croquis (optional, enhances transforms)
+    /// `<script setup>` reactivity and component registrations beyond the
+    /// binding metadata.
     #[serde(skip)]
-    pub croquis: Option<Box<Croquis>>,
-}
-
-impl Clone for SsrCompilerOptions {
-    fn clone(&self) -> Self {
-        Self {
-            scope_id: self.scope_id.clone(),
-            comments: self.comments,
-            experimental_in_tag_comments: self.experimental_in_tag_comments,
-            experimental_patterned_template: self.experimental_patterned_template,
-            component_name: self.component_name.clone(),
-            inline: self.inline,
-            is_ts: self.is_ts,
-            custom_renderer: self.custom_renderer,
-            vapor: self.vapor,
-            ssr_css_vars: self.ssr_css_vars.clone(),
-            dialect: self.dialect,
-            binding_metadata: self.binding_metadata.clone(),
-            // Croquis is consumed by the compiler; clones intentionally drop it.
-            croquis: None,
-        }
-    }
+    pub script_tables: Option<ScriptTables>,
 }
 
 #[cfg(test)]
@@ -107,7 +87,7 @@ mod tests {
         assert!(!opts.is_ts);
         assert!(opts.ssr_css_vars.is_none());
         assert!(opts.binding_metadata.is_none());
-        assert!(opts.croquis.is_none());
+        assert!(opts.script_tables.is_none());
     }
 }
 

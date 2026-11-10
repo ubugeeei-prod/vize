@@ -14,7 +14,7 @@ use crate::support;
 
 use vize_atelier_core::options::{BindingMetadata, BindingType, CodegenMode, CodegenOptions};
 use vize_atelier_dom::DomCompilerOptions;
-use vize_l1_to_l2::{DomEmitMode, DomEmitOptions};
+use vize_l4::targets::dom::artifact::{DomEmitMode, DomEmitOptions};
 
 const BATTERY: &[(&str, &str)] = &[
     ("setup_ref_read", "<div>{{ count }}</div>"),
@@ -167,7 +167,7 @@ fn inline_spellings_are_pinned() {
         ..DomEmitOptions::DEFAULT
     };
     let body = |src: &str| {
-        vize_l1_to_l2::emit_dom_source_with_options(
+        vize_l4::targets::dom::artifact::emit_dom_source_with_options(
             &allocator,
             src,
             vize_l1_to_l2::LegacyCaps::VUE3,

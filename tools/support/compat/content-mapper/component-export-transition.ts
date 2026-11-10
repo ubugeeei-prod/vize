@@ -2,12 +2,14 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
+import { beforeLibTypeQualification } from "./lib-type-qualification-transition.ts";
 import type { Edit } from "./projection-byte-relocation.ts";
 
-const componentExportSource = readFileSync(
-  new URL(
-    "../../../../crates/vize_canon/src/virtual_ts/generator/component_export.rs",
-    import.meta.url,
+const componentExportPath = "crates/vize_canon/src/virtual_ts/generator/component_export.rs";
+const componentExportSource = Buffer.from(
+  beforeLibTypeQualification(
+    componentExportPath,
+    readFileSync(new URL(`../../../../${componentExportPath}`, import.meta.url), "utf8"),
   ),
 );
 assert.equal(componentExportSource.length, 16143, "certified component export producer size");

@@ -1,5 +1,6 @@
 use super::*;
-use vize_l1_to_l2::{DomEmitOptions, LegacyCaps, emit_dom_source_with_options};
+use vize_l1_to_l2::LegacyCaps;
+use vize_l4::targets::dom::artifact::{DomEmitOptions, emit_dom_source_with_options};
 
 #[test]
 fn a_root_component_matches_the_shipped_snapshot() {

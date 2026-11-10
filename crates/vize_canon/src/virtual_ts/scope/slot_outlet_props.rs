@@ -92,7 +92,10 @@ impl SlotOutletChecks {
                 .flatten()
                 .any(|outlet| outlet.name_is_dynamic)
         {
-            ts.push_str("  function __vizeSlotName<const N extends PropertyKey>(name: N): N { return name; }\n");
+            crate::virtual_ts::generated_names::push_lib_text(
+                ts,
+                "  function __vizeSlotName<const N extends PropertyKey>(name: N): N { return name; }\n",
+            );
         }
     }
 

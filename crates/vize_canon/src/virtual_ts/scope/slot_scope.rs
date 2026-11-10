@@ -81,8 +81,9 @@ impl SlotTypes {
 /// `binding`, under the payload helper's rules for `any` hosts and
 /// `string`-typed names; a missing member is `any`, as the payload is.
 fn slot_member_type(binding: &str, name: &str) -> String {
+    let non_nullable = crate::virtual_ts::generated_names::lib("NonNullable");
     let member = cstr!(
-        "({{ [__K in keyof __H & {name}]-?: NonNullable<__H[__K]> }}[keyof __H & {name}] extends infer __M ? [__M] extends [never] ? any : __M : any)"
+        "({{ [__K in keyof __H & {name}]-?: {non_nullable}<__H[__K]> }}[keyof __H & {name}] extends infer __M ? [__M] extends [never] ? any : __M : any)"
     );
     cstr!(
         "typeof {binding} extends infer __H ? 0 extends (1 & __H) ? any : string extends {name} ? (string extends keyof __H ? {member} : any) : {member} : never"

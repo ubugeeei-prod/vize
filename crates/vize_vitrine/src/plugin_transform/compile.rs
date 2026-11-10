@@ -11,7 +11,7 @@ use vize_atelier_core::{
 };
 use vize_l0::Allocator;
 use vize_l0::pass::NoObserver;
-use vize_l1_to_l2::{DomEmitMode, DomEmitOptions};
+use vize_l4::targets::dom::artifact::{DomEmitMode, DomEmitOptions};
 
 #[derive(Debug, Clone, Copy, Default)]
 pub(crate) struct CompileOptions<'a> {
@@ -146,7 +146,7 @@ pub(crate) fn compile(
     };
     let facts =
         vize_l1_to_l2::pass::run_dom_transform_with_profile(&mut lowered, &mut NoObserver, profile);
-    let emitted = vize_l1_to_l2::emit_dom_with_options(
+    let emitted = vize_l4::targets::dom::artifact::emit_dom_with_options(
         &lowered,
         &facts,
         &DomEmitOptions {

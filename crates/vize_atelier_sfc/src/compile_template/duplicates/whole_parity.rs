@@ -270,7 +270,7 @@ fn actual_post_parse_refusal_preserves_complete_results_and_checks_only_once() {
         differential::{take_emit_refusal, with_legacy_lane},
     };
     use vize_l0::dump::capture::{CaptureOutcome, StageCapture};
-    use vize_l1_to_l2::{EmitError, UnsupportedReason};
+    use vize_l4::targets::dom::artifact::{EmitError, UnsupportedReason};
     let source = LATE_REFUSAL_SFC
         .strip_prefix("<template>")
         .unwrap()

@@ -1,0 +1,44 @@
+{
+  "schema": "vize.libTypeQualificationSource.v1",
+  "credit": {
+    "compiled": false,
+    "native": false,
+    "performance": false
+  },
+  "files": [
+    {
+      "path": "crates/vize_canon/src/virtual_ts/generator/emits.rs",
+      "before": {
+        "bytes": 13916,
+        "sha256": "9128c70796ac59cae49312fa441d2548d412bc90d9a0608b41beb9559e53292b"
+      },
+      "after": {
+        "bytes": 13903,
+        "sha256": "df5d93bdbd6261b6ce720c2295fca6d03031183a62111ee0660c77cd2da3ffc3"
+      },
+      "hunks": [
+        {
+          "before": "    if info.has_runtime_emits && !info.has_model_emits {\n        if info.preserve_event_navigation {\n            ts! { &mut *ts =>\n                #(\"type \") #static_event_map = __EmitOptions<Awaited<ReturnType<typeof __setup>>[\"__vize_emits\"]>;\n            }\n        }\n        ts! { &mut *ts =>\n            type $StaticEmitProps = #emit_props<Awaited<ReturnType<typeof __setup>>[\"__vize_emits\"]>;",
+          "after": "    if info.has_runtime_emits && !info.has_model_emits {\n        let setup = names::setup_return(\"\");\n        if info.preserve_event_navigation {\n            ts! { &mut *ts =>\n                #(\"type \") #static_event_map = __EmitOptions<#setup[\"__vize_emits\"]>;\n            }\n        }\n        ts! { &mut *ts =>\n            type $StaticEmitProps = #emit_props<#setup[\"__vize_emits\"]>;"
+        }
+      ]
+    },
+    {
+      "path": "crates/vize_canon/src/virtual_ts/generator/component_export.rs",
+      "before": {
+        "bytes": 16143,
+        "sha256": "06e5c08eb73702e39e2629fda3253c51b405d5e520cd9d2b8f1d36af01fccebf"
+      },
+      "after": {
+        "bytes": 16180,
+        "sha256": "9f3de3a28596210a1a1243e7180f9baea980ea5c3c29d4dcad01d027e57af2ff"
+      },
+      "hunks": [
+        {
+          "before": "    ts.push_str(\n        \"type $AuthoredComponent = Awaited<ReturnType<typeof __setup>>[\\\"__default__\\\"];\\n\",\n    );",
+          "after": "    append!(\n        *ts,\n        \"type $AuthoredComponent = {}[\\\"__default__\\\"];\\n\",\n        crate::virtual_ts::generated_names::setup_return(\"\")\n    );"
+        }
+      ]
+    }
+  ]
+}

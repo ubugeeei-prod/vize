@@ -115,8 +115,10 @@ impl<'s, 'a> Retained<'s, 'a> {
     }
 
     fn insert(&mut self, expression: ExprRef<'s>, allow_identifier: bool) {
-        let supported_raw =
-            vize_l1_to_l2::emit::parse_rejected_expression_is_raw_js(&expression, allow_identifier);
+        let supported_raw = vize_l4::targets::dom::artifact::parse_rejected_expression_is_raw_js(
+            &expression,
+            allow_identifier,
+        );
         match expression {
             ExprRef::Js(js) => {
                 self.source.insert((js.span.start, js.span.end), js);

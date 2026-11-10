@@ -110,9 +110,8 @@ impl<'a> L2Markup<'a> {
     /// entity-decoded with the L2 decoder when it carries an entity.
     pub(super) fn static_part_text(&self, text: &'a str) -> &'a str {
         match self.allocator {
-            Some(allocator) if text.contains('&') => {
-                allocator.alloc_str(vize_l1_to_l2::emit::decode_html_entities(text).as_str())
-            }
+            Some(allocator) if text.contains('&') => allocator
+                .alloc_str(vize_l4::targets::dom::artifact::decode_html_entities(text).as_str()),
             _ => text,
         }
     }
@@ -121,8 +120,9 @@ impl<'a> L2Markup<'a> {
     /// it: entity-decoded with the tokenizer's attribute-context rules.
     pub(super) fn decode_attribute(&self, value: &'a str) -> &'a str {
         match self.allocator {
-            Some(allocator) if value.contains('&') => allocator
-                .alloc_str(vize_l1_to_l2::emit::decode_html_attribute_entities(value).as_str()),
+            Some(allocator) if value.contains('&') => allocator.alloc_str(
+                vize_l4::targets::dom::artifact::decode_html_attribute_entities(value).as_str(),
+            ),
             _ => value,
         }
     }

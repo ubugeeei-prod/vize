@@ -8,8 +8,8 @@
 
 use vize_atelier_core::RuntimeHelper;
 use vize_l0::{String, ToCompactString, cstr};
-use vize_l1_to_l2::TransformContent;
 use vize_l2::op::{self as l2, DynamicName};
+use vize_l4::targets::dom::artifact::TransformContent;
 
 use super::control::alias;
 use super::slots::{ComponentSlots, SlotSpec, slot_pattern};
@@ -141,7 +141,11 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
     pub(super) fn enter_loop(
         &mut self,
         at: usize,
-    ) -> Result<(String, String, vize_l1_to_l2::TransformScopeMark)> {
+    ) -> Result<(
+        String,
+        String,
+        vize_l4::targets::dom::artifact::TransformScopeMark,
+    )> {
         let Source::For(for_op) = self.segment(at)?.source else {
             return Err(AdmissionFailure::Invalid("createSlots loop is not a v-for"));
         };
@@ -168,7 +172,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
         Ok((source, list.join(", ").to_compact_string(), mark))
     }
 
-    pub(super) fn leave_loop(&mut self, mark: vize_l1_to_l2::TransformScopeMark) {
+    pub(super) fn leave_loop(&mut self, mark: vize_l4::targets::dom::artifact::TransformScopeMark) {
         self.scoped_params.pop();
         self.exprs.leave(mark);
     }

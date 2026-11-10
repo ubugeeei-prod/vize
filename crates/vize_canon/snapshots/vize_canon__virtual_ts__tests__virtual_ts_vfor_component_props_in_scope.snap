@@ -193,6 +193,7 @@ function __setup() {
   type $IsLibraryGenericExport<C> = C extends { __vizeCheck: any } | { readonly __vizeComponentMarker: true } ? false : C extends (...args: any[]) => infer __R ? 0 extends (1 & __R) ? false : '__ctx' extends keyof __R ? true : false : false;
   type $PropChecker<C, P, T = $ComponentCheckTail<C>> = $IsAny<C> extends true ? (props: { readonly [K in keyof P]: P[K] } & Record<string, unknown>) => void : C extends { __vizeCheck: infer __F } ? $IsAny<__F> extends true ? (props: $ComponentCheckProps<P, T>) => void : unknown extends __F ? (props: $ComponentCheckProps<P, T>) => void : __F extends (...args: any[]) => any ? __F : (props: $ComponentCheckProps<P, T>) => void : $IsLibraryGenericExport<C> extends true ? C : (props: $ComponentCheckProps<P, T>) => void;
   type $PropValue<P, K extends PropertyKey, F = unknown, __V = P extends unknown ? (K extends keyof P ? P[K] : never) : never> = [__V] extends [never] ? F : __V;
+  type $PropValueOr<P, K extends PropertyKey, C, FK extends PropertyKey = K, __V = P extends unknown ? (K extends keyof P ? P[K] : never) : never> = [__V] extends [never] ? $FallthroughValue<C, FK> : __V;
   type $StructuralSlots<C> = C extends { readonly __vizeSlots?: infer __S } ? NonNullable<__S> : any;
   type $EmptyVueNavigationSlots<C> = ('__isFragment' | '__isTeleport' | '__isSuspense' | 'slots') extends keyof C ? $IsAny<C[Extract<'__isFragment' | '__isTeleport' | '__isSuspense', keyof C>]> extends true ? any : [NonNullable<C[Extract<'__isFragment' | '__isTeleport' | '__isSuspense', keyof C>]>] extends [never] ? C extends { slots?: infer __S } ? $IsAny<__S> extends true ? any : unknown extends __S ? any : [keyof NonNullable<__S>] extends [never] ? C extends { setup?: (props: infer __P, ...args: any[]) => any } ? string extends keyof __P ? any : {} : {} : any : any : any : any;
   type $NativeNavigationSlots<C> = C extends new (...args: any[]) => { $slots: any } ? $IsAny<InstanceType<C>> extends true ? $EmptyVueNavigationSlots<C> : $IsAny<InstanceType<C>['$slots']> extends true ? any : unknown extends InstanceType<C>['$slots'] ? any : InstanceType<C>['$slots'] : any;
@@ -207,12 +208,13 @@ function __setup() {
   type __TodoItem_CheckTail_0 = $ComponentCheckTail<__TodoItem_Component_0>;
   type __TodoItem_ValueProps_0 = $IsLibraryGenericExport<__TodoItem_Component_0> extends true ? Record<string, any> : __TodoItem_Props_0 & $EmitListeners<__TodoItem_Component_0> & $PublicComponentAttrs;
   type __TodoItem_Check_0 = $PropChecker<__TodoItem_Component_0, __TodoItem_CheckProps_0, __TodoItem_CheckTail_0>;
-  type __TodoItem_0_prop_item = $PropValue<__TodoItem_ValueProps_0, 'item', $FallthroughValue<__TodoItem_Component_0, 'item'>>;
+  type __TodoItem_0_prop_item = $PropValueOr<__TodoItem_ValueProps_0, 'item', __TodoItem_Component_0>;
 
   // Component template navigation references
   void TodoItem;
   const { } = undefined as unknown as $ComponentNavigationProps<__TodoItem_Props_0>;
-  const __vize_props_nav_0 = undefined as unknown as __TodoItem_Props_0 & Record<string, unknown>;
+  const __vize_props_nav_0 = undefined as unknown as __TodoItem_Props_0 & globalThis.Record<string, unknown>;
+  // @ts-ignore Navigation-only references; no diagnostic owner.
   void __vize_props_nav_0.item;
 
   // Component props value checks (template scope)

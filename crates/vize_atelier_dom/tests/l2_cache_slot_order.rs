@@ -21,7 +21,7 @@ use crate::support;
 use vize_atelier_core::options::{BindingMetadata, BindingType, CodegenMode, CodegenOptions};
 use vize_atelier_dom::DomCompilerOptions;
 use vize_l0::FxHashMap;
-use vize_l1_to_l2::{BindingKind, BindingTable, DomEmitMode, DomEmitOptions};
+use vize_l4::targets::dom::artifact::{BindingKind, BindingTable, DomEmitMode, DomEmitOptions};
 
 const BATTERY: &[(&str, &str)] = &[
     // The shape that reorders: the default body is authored first and
@@ -241,7 +241,7 @@ fn a_named_slot_printed_first_takes_the_first_slot() {
     let table = table(&metadata);
     let allocator = vize_l0::Allocator::new();
     let slots = |src: &str| {
-        let assembled = vize_l1_to_l2::emit_dom_source_with_options(
+        let assembled = vize_l4::targets::dom::artifact::emit_dom_source_with_options(
             &allocator,
             src,
             vize_l1_to_l2::LegacyCaps::VUE3,
@@ -256,7 +256,7 @@ fn a_named_slot_printed_first_takes_the_first_slot() {
             .collect::<Vec<_>>()
     };
     let memo_tail = |src: &str| {
-        vize_l1_to_l2::emit_dom_source_with_options(
+        vize_l4::targets::dom::artifact::emit_dom_source_with_options(
             &allocator,
             src,
             vize_l1_to_l2::LegacyCaps::VUE3,

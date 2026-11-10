@@ -358,7 +358,7 @@ pub fn compile_sfc_template_with_preflight<'a>(
     codegen_options: CodegenOptions,
     codegen_experimental_options: CodegenExperimentalOptions,
     no_slotted: bool,
-    preflight: Option<&mut dyn vize_l1_to_l2::SurfacePreflight>,
+    preflight: Option<&mut dyn vize_l4::targets::dom::artifact::SurfacePreflight>,
     capture: Option<&mut StageCapture>,
 ) -> (Vec<CompilerError>, CodegenResultWithSections) {
     compile_sfc_template_with_preflight_and_environment(
@@ -393,7 +393,7 @@ pub fn compile_sfc_template_with_preflight_and_environment<'a>(
     codegen_options: CodegenOptions,
     codegen_experimental_options: CodegenExperimentalOptions,
     no_slotted: bool,
-    preflight: Option<&mut dyn vize_l1_to_l2::SurfacePreflight>,
+    preflight: Option<&mut dyn vize_l4::targets::dom::artifact::SurfacePreflight>,
     capture: Option<&mut StageCapture>,
     development: bool,
 ) -> (Vec<CompilerError>, CodegenResultWithSections) {

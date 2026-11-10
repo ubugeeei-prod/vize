@@ -203,7 +203,7 @@ impl<'t, 'a> Preflight<'t, 'a> {
         }
     }
 }
-impl vize_l1_to_l2::SurfacePreflight for Preflight<'_, '_> {
+impl vize_l4::targets::dom::artifact::SurfacePreflight for Preflight<'_, '_> {
     fn check(
         &mut self,
         surface: Option<(

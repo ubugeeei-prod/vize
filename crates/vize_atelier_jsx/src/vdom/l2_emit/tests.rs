@@ -1,4 +1,4 @@
-use vize_croquis::Croquis;
+use vize_atelier_core::lane::ScriptTables;
 use vize_l0::Allocator;
 
 use crate::{JsxLang, JsxOutputMode, lower_source};
@@ -10,7 +10,8 @@ fn native_vdom_admitted_roots_emit_from_l2() {
     let allocator = Allocator::new();
     let source = "const A = () => <div>{count}</div>;";
     let mut lowered = lower_source(&allocator, allocator.as_oxc(), source, JsxLang::Jsx);
-    let analysis: &Croquis = allocator.alloc_owned(lowered.analysis);
+    let script_tables: &ScriptTables =
+        allocator.alloc_owned(ScriptTables::from_croquis(&lowered.analysis));
     let mut root = lowered.roots.pop().expect("one JSX root");
     root.root.children.clear();
 
@@ -18,7 +19,7 @@ fn native_vdom_admitted_roots_emit_from_l2() {
     let component = compile_root_to_vdom(
         &allocator,
         root,
-        analysis,
+        script_tables,
         false,
         &VdomCompileOptions::default(),
         VdomCompatOptions::default(),
@@ -40,7 +41,8 @@ fn tsx_admitted_roots_emit_from_l2() {
     let allocator = Allocator::new();
     let source = "const A = () => <div>{count as number}</div>;";
     let mut lowered = lower_source(&allocator, allocator.as_oxc(), source, JsxLang::Tsx);
-    let analysis: &Croquis = allocator.alloc_owned(lowered.analysis);
+    let script_tables: &ScriptTables =
+        allocator.alloc_owned(ScriptTables::from_croquis(&lowered.analysis));
     let mut root = lowered.roots.pop().expect("one JSX root");
     let l2 = root.l2.as_ref().expect("TSX root projects to L2");
 
@@ -51,7 +53,7 @@ fn tsx_admitted_roots_emit_from_l2() {
     let component = compile_root_to_vdom(
         &allocator,
         root,
-        analysis,
+        script_tables,
         true,
         &VdomCompileOptions::default(),
         VdomCompatOptions::default(),
@@ -73,7 +75,8 @@ fn component_plain_children_emit_from_l2_with_slot_facts() {
     let allocator = Allocator::new();
     let source = "const A = () => <Card><h1>Title</h1></Card>;";
     let mut lowered = lower_source(&allocator, allocator.as_oxc(), source, JsxLang::Jsx);
-    let analysis: &Croquis = allocator.alloc_owned(lowered.analysis);
+    let script_tables: &ScriptTables =
+        allocator.alloc_owned(ScriptTables::from_croquis(&lowered.analysis));
     let mut root = lowered.roots.pop().expect("one JSX root");
     let l2 = root.l2.as_ref().expect("component child projects to L2");
 
@@ -84,7 +87,7 @@ fn component_plain_children_emit_from_l2_with_slot_facts() {
     let component = compile_root_to_vdom(
         &allocator,
         root,
-        analysis,
+        script_tables,
         false,
         &VdomCompileOptions::default(),
         VdomCompatOptions::default(),
@@ -114,7 +117,8 @@ fn component_paramless_static_slots_emit_from_l2() {
     let source = "const A = () => <Comp>{{ header: () => <h1>Hi</h1>, footer: () => \
                   <p>Bye</p> }}</Comp>;";
     let mut lowered = lower_source(&allocator, allocator.as_oxc(), source, JsxLang::Jsx);
-    let analysis: &Croquis = allocator.alloc_owned(lowered.analysis);
+    let script_tables: &ScriptTables =
+        allocator.alloc_owned(ScriptTables::from_croquis(&lowered.analysis));
     let mut root = lowered.roots.pop().expect("one JSX root");
     let l2 = root.l2.as_ref().expect("paramless slots project to L2");
 
@@ -125,7 +129,7 @@ fn component_paramless_static_slots_emit_from_l2() {
     let component = compile_root_to_vdom(
         &allocator,
         root,
-        analysis,
+        script_tables,
         false,
         &VdomCompileOptions::default(),
         VdomCompatOptions::default(),
@@ -155,7 +159,8 @@ fn component_scoped_slots_emit_from_l2() {
     let allocator = Allocator::new();
     let source = "const A = () => <List>{{ item: (row) => <li>{row}</li> }}</List>;";
     let mut lowered = lower_source(&allocator, allocator.as_oxc(), source, JsxLang::Jsx);
-    let analysis: &Croquis = allocator.alloc_owned(lowered.analysis);
+    let script_tables: &ScriptTables =
+        allocator.alloc_owned(ScriptTables::from_croquis(&lowered.analysis));
     let mut root = lowered.roots.pop().expect("one JSX root");
     let l2 = root.l2.as_ref().expect("scoped slots project to L2");
 
@@ -166,7 +171,7 @@ fn component_scoped_slots_emit_from_l2() {
     let component = compile_root_to_vdom(
         &allocator,
         root,
-        analysis,
+        script_tables,
         false,
         &VdomCompileOptions::default(),
         VdomCompatOptions::default(),
@@ -184,7 +189,8 @@ fn leaf_root_component_with_static_props_emits_from_l2() {
     let allocator = Allocator::new();
     let source = "const A = () => <B foo={f} title=\"ok\" />";
     let mut lowered = lower_source(&allocator, allocator.as_oxc(), source, JsxLang::Jsx);
-    let analysis: &Croquis = allocator.alloc_owned(lowered.analysis);
+    let script_tables: &ScriptTables =
+        allocator.alloc_owned(ScriptTables::from_croquis(&lowered.analysis));
     let mut root = lowered.roots.pop().expect("one JSX root");
     let l2 = root.l2.as_ref().expect("leaf component projects to L2");
 
@@ -195,7 +201,7 @@ fn leaf_root_component_with_static_props_emits_from_l2() {
     let component = compile_root_to_vdom(
         &allocator,
         root,
-        analysis,
+        script_tables,
         false,
         &VdomCompileOptions::default(),
         VdomCompatOptions::default(),
@@ -222,7 +228,8 @@ fn component_spread_props_emit_from_l2() {
     let allocator = Allocator::new();
     let source = "const A = () => <B {...attrs} foo={f} title=\"ok\" />";
     let mut lowered = lower_source(&allocator, allocator.as_oxc(), source, JsxLang::Jsx);
-    let analysis: &Croquis = allocator.alloc_owned(lowered.analysis);
+    let script_tables: &ScriptTables =
+        allocator.alloc_owned(ScriptTables::from_croquis(&lowered.analysis));
     let mut root = lowered.roots.pop().expect("one JSX root");
     let l2 = root.l2.as_ref().expect("component spread projects to L2");
 
@@ -233,7 +240,7 @@ fn component_spread_props_emit_from_l2() {
     let component = compile_root_to_vdom(
         &allocator,
         root,
-        analysis,
+        script_tables,
         false,
         &VdomCompileOptions::default(),
         VdomCompatOptions::default(),
@@ -261,7 +268,8 @@ fn dynamic_component_tags_emit_from_l2() {
     let allocator = Allocator::new();
     let source = "const A = () => <Widget.Panel foo={1} />";
     let mut lowered = lower_source(&allocator, allocator.as_oxc(), source, JsxLang::Jsx);
-    let analysis: &Croquis = allocator.alloc_owned(lowered.analysis);
+    let script_tables: &ScriptTables =
+        allocator.alloc_owned(ScriptTables::from_croquis(&lowered.analysis));
     let mut root = lowered.roots.pop().expect("one JSX root");
     let l2 = root.l2.as_ref().expect("dynamic component projects to L2");
 
@@ -272,7 +280,7 @@ fn dynamic_component_tags_emit_from_l2() {
     let component = compile_root_to_vdom(
         &allocator,
         root,
-        analysis,
+        script_tables,
         false,
         &VdomCompileOptions::default(),
         VdomCompatOptions::default(),
@@ -298,7 +306,8 @@ fn element_v_show_emits_from_l2() {
     let allocator = Allocator::new();
     let source = "const A = () => <div v-show={visible} />";
     let mut lowered = lower_source(&allocator, allocator.as_oxc(), source, JsxLang::Jsx);
-    let analysis: &Croquis = allocator.alloc_owned(lowered.analysis);
+    let script_tables: &ScriptTables =
+        allocator.alloc_owned(ScriptTables::from_croquis(&lowered.analysis));
     let mut root = lowered.roots.pop().expect("one JSX root");
     let l2 = root.l2.as_ref().expect("v-show projects to L2");
 
@@ -309,7 +318,7 @@ fn element_v_show_emits_from_l2() {
     let component = compile_root_to_vdom(
         &allocator,
         root,
-        analysis,
+        script_tables,
         false,
         &VdomCompileOptions::default(),
         VdomCompatOptions::default(),

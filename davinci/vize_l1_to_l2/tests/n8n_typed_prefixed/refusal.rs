@@ -1,7 +1,7 @@
 //! A strict wrong-language refusal control, separate from admitted TS evidence.
 use super::{compile, contract, errors_wire};
 use vize_l0::Span;
-use vize_l1_to_l2::{EmitError, UnsupportedReason};
+use vize_l4::targets::dom::artifact::{EmitError, UnsupportedReason};
 
 pub fn assert_original_js_refusal(name: &str, source: &str) {
     let (_, errors, native) = compile(name, source, false);

@@ -9,7 +9,6 @@ use vize_atelier_core::{
     parser::parse_with_options_custom_elements_and_template_syntax,
     walk_probe::WalkCounts,
 };
-use vize_croquis::Croquis;
 use vize_l0::dump::capture::NoCapture;
 use vize_l0::{Allocator, String, profile, profiler::active_profiler_is_enabled};
 
@@ -144,7 +143,9 @@ pub(super) fn compile_template_inner_with_sections<'a>(
     let experimental_component_name = codegen_experimental_options.component_name.clone();
     let transform_opts = stage_options::transform_options(&options);
     // Park the summary on the allocator so it shares the allocator lifetime.
-    let analysis: Option<&Croquis> = options.croquis.map(|c| allocator.alloc_owned(*c));
+    let script_tables = options
+        .script_tables
+        .map(|tables| allocator.alloc_owned(tables));
     let profiling_l2 = use_l2_emit && active_profiler_is_enabled();
     let template_walk_before = profiling_l2.then(WalkCounts::snapshot);
     let transform_errors = profile!(
@@ -153,7 +154,7 @@ pub(super) fn compile_template_inner_with_sections<'a>(
             allocator,
             &mut root,
             transform_opts,
-            analysis,
+            script_tables,
             custom_elements,
             template_syntax_quirks,
             hoisted_scope_id,

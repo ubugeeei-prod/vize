@@ -4,10 +4,10 @@
 use vize_atelier_core::RuntimeHelper;
 use vize_l0::id::NodeId;
 use vize_l0::{String, ToCompactString, cstr};
-use vize_l1_to_l2::{TransformContent, decode_template_entities};
 use vize_l2::analysis::fragment_facts::FragmentKey;
 use vize_l2::expr::ExprRef;
 use vize_l2::op::{self as l2, DynamicName};
+use vize_l4::targets::dom::artifact::{TransformContent, decode_template_entities};
 
 use super::vnode::array;
 use super::{Emitter, Result};

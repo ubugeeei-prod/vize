@@ -23,7 +23,7 @@ use vize_atelier_core::options::{CodegenMode, CodegenOptions, TransformOptions};
 // for bundlers, and the runtime `Function` (with-block) mode emits an empty
 // body under JSX's no-prefix closure model.
 use vize_atelier_core::CompilerError;
-use vize_croquis::Croquis;
+use vize_atelier_core::lane::ScriptTables;
 use vize_l0::{Allocator, String};
 
 use crate::diagnostics::JsxDiagnostic;
@@ -132,15 +132,16 @@ pub fn compile_to_vdom(
     let mut diagnostics = lowered.diagnostics;
     let is_ts = lang.is_typescript();
 
-    // Park the analysis on the allocator so the transform can borrow it for `'a`.
-    let analysis: &Croquis = allocator.alloc_owned(lowered.analysis);
+    // Park the script tables on the allocator so the transform can borrow them for `'a`.
+    let script_tables: &ScriptTables =
+        allocator.alloc_owned(ScriptTables::from_croquis(&lowered.analysis));
 
     let mut components = Vec::with_capacity(lowered.roots.len());
     for lowered_root in lowered.roots {
         components.push(compile_root_to_vdom(
             allocator,
             lowered_root,
-            analysis,
+            script_tables,
             is_ts,
             &options,
             VdomCompatOptions::default(),
@@ -162,7 +163,7 @@ pub fn compile_to_vdom(
 pub(crate) fn compile_root_to_vdom<'a>(
     allocator: &'a Allocator,
     lowered: LoweredRoot<'a>,
-    analysis: &Croquis,
+    script_tables: &ScriptTables,
     is_ts: bool,
     options: &VdomCompileOptions,
     compat: VdomCompatOptions<'_>,
@@ -214,7 +215,7 @@ pub(crate) fn compile_root_to_vdom<'a>(
         hoist_static: options.hoist_static,
         cache_handlers: options.cache_handlers,
         is_ts,
-        // Binding info is supplied via the `analysis` Croquis below; the
+        // Binding info is supplied via the script tables below; the
         // relief-side `binding_metadata` (a distinct type) is only needed
         // for SFC inline-mode ref unwrapping, which JSX closures don't use.
         binding_metadata: None,
@@ -224,7 +225,7 @@ pub(crate) fn compile_root_to_vdom<'a>(
         allocator,
         &mut root,
         transform_opts,
-        Some(analysis),
+        Some(script_tables),
         compat.allow_static_v_model_arg_on_element,
         compat.custom_element_spans,
         Some(source),

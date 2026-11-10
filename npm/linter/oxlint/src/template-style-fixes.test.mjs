@@ -89,7 +89,7 @@ function publicNativeReport(after) {
   const to = position(source, start + target.length);
   // Opinionated also enables the unchanged, nonfixable accessibility rule.
   // Preserve its complete finding instead of suppressing or fixing reporter input.
-  report[0].messages.splice(after ? 0 : 4, 0, {
+  report[0].messages.splice(after ? 0 : 3, 0, {
     ruleId: "a11y/form-control-has-label",
     ruleDocsPath: "docs/content/rules/reference/a11y-form-control-has-label.md",
     severity: 1,

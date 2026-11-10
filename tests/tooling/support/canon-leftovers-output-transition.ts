@@ -5,6 +5,7 @@ import path from "node:path";
 
 import { instanceInputKeysHelperEdit } from "../../../tools/support/compat/content-mapper/instance-input-keys-transition.ts";
 import { unownedOwnedKeysHelperEdit } from "../../../tools/support/compat/content-mapper/unowned-owned-keys-transition.ts";
+import { beforePropValueOr } from "../../../tools/support/compat/content-mapper/prop-value-or-transition.ts";
 import { repoRoot } from "../_helpers/tool-commands.ts";
 
 type CanonLeftoversReceipt = {
@@ -38,6 +39,7 @@ const identity = (text: string): Identity => ({
 });
 
 export function beforeCanonLeftoversSource(file: string, current: string): string {
+  current = beforePropValueOr(file, current);
   const transition = receipt.files.find((candidate) => candidate.path === file);
   if (!transition) return current;
   assert.deepEqual(identity(current), transition.after);

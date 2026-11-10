@@ -1,0 +1,8 @@
+<script setup lang="ts">
+defineProps<{ items: string[] }>()
+defineSlots<{ default(props: { item: string; index: number }): any }>()
+</script>
+
+<template>
+  <ul><li v-for="(item, index) in items" :key="item"><slot :item="item" :index="index" /></li></ul>
+</template>

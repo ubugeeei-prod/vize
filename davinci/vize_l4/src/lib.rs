@@ -20,13 +20,24 @@
 //! - [`targets`] — the DOM, SSR and Vapor emitters and the type-check
 //!   projection.
 //!
-//! Dependencies are level crates (L0, L2, L3) plus `serde_json` for Source Map
-//! v3 serialization. The production compiler keeps its own emission document
-//! until its fix-history gate closes (#6880).
+//! The production DOM emitter ([`targets::dom::artifact`]) is the exception to
+//! the rules above until the native DOM target replaces it: it reads the
+//! canonical L2 artifact and pass facts, re-parses retained expressions it
+//! cannot reuse, and erases TypeScript through oxc. Its source-level entry
+//! points parse and lower through `vize_l1` and `vize_l1_to_l2`'s public API.
+//!
+//! Dependencies are level crates (L0, L1, L1→L2, L2, L3), oxc for that DOM
+//! emitter, and `serde_json` for Source Map v3 serialization. The production
+//! compiler keeps its own emission document until its fix-history gate closes
+//! (#6880).
 
 #![cfg_attr(not(test), no_std)]
 
 extern crate alloc;
+// The DOM emitter's `typescript` lane reaches oxc's transformer, whose entry
+// point takes a `&std::path::Path`; with the feature off nothing links `std`.
+#[cfg(all(feature = "typescript", not(test)))]
+extern crate std;
 
 pub mod expr;
 pub mod framework;

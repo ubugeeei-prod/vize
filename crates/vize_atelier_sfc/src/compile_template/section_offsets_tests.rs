@@ -75,7 +75,7 @@ fn compile(source: &str, inline: bool, hoist_static: bool) -> TemplateBlockCompi
             component_name: Some("TestComp"),
             experimental_self_component: false,
             bindings: Some(&bindings),
-            croquis: None,
+            script_tables: None,
             collect_map: false,
             authored_source: None,
             pug_source_map: None,

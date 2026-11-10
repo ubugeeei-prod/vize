@@ -10,7 +10,7 @@ use serde_json::{Value, json};
 use sha2::{Digest, Sha256};
 use std::{fs, path::PathBuf, sync::OnceLock};
 use vize_atelier_core::{CodegenResult, CompilerError};
-use vize_l1_to_l2::{DomEmitOptions, EmitError, ObservedPatchFactsEmit};
+use vize_l4::targets::dom::artifact::{DomEmitOptions, EmitError, ObservedPatchFactsEmit};
 
 struct Output {
     root: PathBuf,

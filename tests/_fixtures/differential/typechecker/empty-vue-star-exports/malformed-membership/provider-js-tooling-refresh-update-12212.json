@@ -23,9 +23,9 @@
   },
   "finalQualificationLock": {
     "path": "pnpm-lock.yaml",
-    "bytes": 1089723,
-    "sha256": "cb8542699cbaaad1f5457513d574ef01add5644982683115beae1e140bfc61d7",
-    "gitBlob": "846feaad2a263de2bc6a9bb1aab8a9a342320957"
+    "bytes": 1102641,
+    "sha256": "d02921de92dc00bc1b524695c522922642bcebe09aa5a6478d76c03973de4b62",
+    "gitBlob": "6298e11e391ea0ac9c062bd448dcb231116361b5"
   },
   "finalQualificationPackage": {
     "path": "package.json",
@@ -35,9 +35,9 @@
   },
   "workspaceManifest": {
     "path": "pnpm-workspace.yaml",
-    "bytes": 9383,
-    "sha256": "06c87c57386897704293c9c4b2ca8c8965e00c33d76d24041890e67a6742ecde",
-    "gitBlob": "4c2f815ad9b6433377e1198777c265021fe7d90f"
+    "bytes": 9699,
+    "sha256": "030a08b4a6b0665327cedde929d24f3791799b08ff24ef6d1403845a830b028c",
+    "gitBlob": "ed71f90e0b624564c4ac6d18520ddf09885a60f7"
   },
   "unpluginManifest": {
     "path": "npm/builder/unplugin/package.json",
@@ -53,7 +53,7 @@
   },
   "resolver": {
     "command": "vp install --lockfile-only --no-frozen-lockfile --ignore-scripts",
-    "fixedPointSha256": "cb8542699cbaaad1f5457513d574ef01add5644982683115beae1e140bfc61d7"
+    "fixedPointSha256": "d02921de92dc00bc1b524695c522922642bcebe09aa5a6478d76c03973de4b62"
   },
   "nativeAcceptanceCredit": false,
   "scope": "Bind the executable unplugin example workspace and the complete refreshed JavaScript dependency graph without rewriting any historical qualification predecessor. This record gives source provenance only."
