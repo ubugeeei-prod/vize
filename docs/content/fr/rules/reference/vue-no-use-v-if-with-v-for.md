@@ -63,11 +63,9 @@ export default defineConfig({}).withVue({
 
 Lancez ensuite `vp run lint`.
 
-`allowUsingIterationVar` vaut `false` par défaut. Avec `true`, un `v-if` sur le même élément est
-autorisé seulement si sa condition référence une variable d’itération du `v-for` associé.
-
 ## Voir aussi
 
 - [Règles Vue](../vue.md)
+- [Options des règles](/rules/options.md)
 - [Toutes les règles](../all.md)
 - [Code source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_use_v_if_with_v_for.rs#L35)

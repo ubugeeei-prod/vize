@@ -12,6 +12,7 @@ export const manual8: Record<string, RuleExample> = {
       source:
         '<script setup lang="ts">\nconst visibleItems = computed(() => items.filter((item) => item.visible));\n</script>\n\n<template>\n  <li v-for="item in visibleItems" :key="item.id">\n    {{ item.name }}\n  </li>\n</template>',
     },
+    ruleOptions: { allowUsingIterationVar: true },
     evidence: "docs/content/rules/vue-template-structure.md",
   },
   "vue/no-v-html": {

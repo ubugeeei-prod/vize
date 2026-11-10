@@ -63,11 +63,9 @@ export default defineConfig({}).withVue({
 
 設定したら `vp run lint` を実行します。
 
-`allowUsingIterationVar` の既定値は `false` です。`true` にすると、同じ要素の `v-if` が
-`v-for` の反復変数を参照する場合だけ許可し、無関係な条件は引き続き報告します。
-
 ## 関連ページ
 
 - [Vue ルール](../vue.md)
+- [ルールのオプション](../options.md)
 - [全ルール](../all.md)
 - [ソースコード](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_use_v_if_with_v_for.rs#L35)

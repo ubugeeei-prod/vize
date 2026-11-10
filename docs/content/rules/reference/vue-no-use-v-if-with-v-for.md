@@ -63,11 +63,9 @@ export default defineConfig({}).withVue({
 
 Then run `vp run lint`.
 
-`allowUsingIterationVar` defaults to `false`. Set it to `true` to permit a same-element `v-if`
-when its condition references a sibling `v-for` variable; unrelated conditions are still reported.
-
 ## Related
 
 - [Vue rules](../vue.md)
+- [Rule options](../options.md)
 - [All rules](../all.md)
 - [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_use_v_if_with_v_for.rs#L35)

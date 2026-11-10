@@ -63,11 +63,9 @@ export default defineConfig({}).withVue({
 
 然后运行 `vp run lint`。
 
-`allowUsingIterationVar` 默认为 `false`。设为 `true` 后，仅当同一元素的 `v-if` 条件引用
-对应 `v-for` 的迭代变量时才允许；无关条件仍会报告。
-
 ## 相关页面
 
 - [Vue 规则](../vue.md)
+- [规则选项](/rules/options.md)
 - [全部规则](../all.md)
 - [源代码](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_use_v_if_with_v_for.rs#L35)
