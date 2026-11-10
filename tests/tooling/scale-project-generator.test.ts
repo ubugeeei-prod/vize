@@ -111,7 +111,8 @@ void test("the giant profile keeps all work in one oversized SFC", () => {
 });
 
 void test("fixed model and listener plants stay required", () => {
-  const { plants } = generateScaleProject({ sfcs: minSfcs("vue"), kind: "vue" });
+  const { files, plants } = generateScaleProject({ sfcs: minSfcs("vue"), kind: "vue" });
+  assert.match(files.get("src/features/f0000/Page.vue")!, /const climate = ref\(42\);/u);
   const vModel = (lane: string) =>
     expectedPlants(plants, lane).find((plant) => plant.kind === "v-model")?.count;
   assert.equal(vModel("vue-tsc"), 1);
