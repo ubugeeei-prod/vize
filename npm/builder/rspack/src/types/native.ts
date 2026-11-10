@@ -2,6 +2,7 @@
 
 // Native API Types
 
+/** Native SFC compiler options surfaced through the Rspack adapter. */
 export interface SfcCompileOptionsNapi {
   filename?: string;
   sourceMap?: boolean;
@@ -20,6 +21,7 @@ export interface SfcCompileOptionsNapi {
   scopeId?: string;
 }
 
+/** Style-block metadata returned by the native SFC compiler. */
 export interface StyleBlockNapi {
   content: string;
   src?: string;
@@ -30,11 +32,13 @@ export interface StyleBlockNapi {
   index: number;
 }
 
+/** Attribute attached to a native custom-block record. */
 export interface SfcBlockAttributeNapi {
   name: string;
   value?: string;
 }
 
+/** Custom-block metadata returned by the native SFC compiler. */
 export interface CustomBlockNapi {
   blockType: string;
   content: string;
@@ -43,6 +47,7 @@ export interface CustomBlockNapi {
   index: number;
 }
 
+/** Compile-time macro artifact extracted from an SFC. */
 export interface MacroArtifact {
   kind: string;
   name: string;
@@ -53,6 +58,7 @@ export interface MacroArtifact {
   end: number;
 }
 
+/** Native SFC compiler result consumed by the Rspack adapter. */
 export interface SfcCompileResultNapi {
   code: string;
   css?: string;
@@ -123,6 +129,7 @@ export interface JsxCompileResultNapi {
 
 // CSS Compile API Types
 
+/** Optional browser-version targets for native CSS compilation. */
 export interface CssCompileTargets {
   chrome?: number;
   firefox?: number;
@@ -132,25 +139,28 @@ export interface CssCompileTargets {
   android?: number;
 }
 
+/** Options accepted by the native CSS compiler. */
 export interface CssCompileOptions {
-  /** Filename for error reporting */
+  /** Filename for error reporting. @default undefined */
   filename?: string;
-  /** Whether to apply scoped CSS transformation */
+  /** Whether to apply scoped CSS transformation. @default false */
   scoped?: boolean;
   /**
    * Scope ID for scoped CSS. Must be the full attribute (e.g., "data-v-abc123").
+   * @default undefined
    */
   scopeId?: string;
-  /** Whether to generate source maps */
+  /** Whether to generate source maps. @default false */
   sourceMap?: boolean;
-  /** Whether to minify the output */
+  /** Whether to minify the output. @default false */
   minify?: boolean;
-  /** Whether to enable custom media query resolution */
+  /** Whether to enable custom media query resolution. @default false */
   customMedia?: boolean;
-  /** Browser targets for autoprefixing */
+  /** Browser targets for autoprefixing. @default undefined */
   targets?: CssCompileTargets;
 }
 
+/** Native CSS compiler output and diagnostics. */
 export interface CssCompileResult {
   /** Compiled CSS code */
   code: string;

@@ -19,6 +19,7 @@ import type {
 } from "../types/index.ts";
 import { inlineSrcBlock, MappedModule } from "./source-map.ts";
 
+/** Native style-block metadata normalized by the Rspack adapter. */
 export interface NativeStyleBlock {
   content: string;
   src?: string;
@@ -29,11 +30,13 @@ export interface NativeStyleBlock {
   index: number;
 }
 
+/** Attribute attached to a native custom-block record. */
 export interface NativeBlockAttribute {
   name: string;
   value?: string;
 }
 
+/** Native custom-block metadata normalized by the Rspack adapter. */
 export interface NativeCustomBlock {
   blockType: string;
   content: string;
@@ -169,6 +172,7 @@ function toNativeAssetTagRules(
   return Object.entries(tags).map(([tag, attrs]) => ({ tag, attrs }));
 }
 
+/** Convert native style-block metadata to the public Rspack representation. */
 export function toStyleBlockInfo(block: NativeStyleBlock): StyleBlockInfo {
   return {
     content: block.content,
@@ -180,6 +184,7 @@ export function toStyleBlockInfo(block: NativeStyleBlock): StyleBlockInfo {
   };
 }
 
+/** Convert native custom-block metadata to the public Rspack representation. */
 export function toCustomBlockInfo(block: NativeCustomBlock): CustomBlockInfo {
   const attrs: Record<string, string | true> = {};
   for (const attr of block.attrs) {
