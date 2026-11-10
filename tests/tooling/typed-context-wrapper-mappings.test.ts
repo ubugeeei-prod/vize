@@ -22,13 +22,18 @@ const integratedCapture = (): typeof capture => {
   ]);
   return data;
 };
-const verify = (data = integratedCapture(), bytes = producer) =>
+const verify = (
+  data = integratedCapture(),
+  bytes = producer,
+  projection: "wrapper-successor" | "component-hover-gaps-12461" = "wrapper-successor",
+) =>
   assertTypedContextWrapperMappings(
     data.source,
     data.before,
     data.current,
     data.projectedHistoricalMappings,
     bytes,
+    projection,
   );
 
 void test("actual captured current mapping retains the old packet and adds both authored wrapper atoms", () => {
@@ -57,6 +62,16 @@ void test("a separately certified helper prefix relocation moves both atoms with
   for (const row of data.projectedHistoricalMappings) row[0] += Buffer.byteLength(prefix);
   for (const row of data.current.mappings) row[0] += Buffer.byteLength(prefix);
   verify(data);
+});
+
+void test("component hover props and setup anchors use their finite successor geometry", () => {
+  const data = integratedCapture();
+  const deltas = [6, 6, 6, 2, 2, 2, 2, 2, 0, 0];
+  for (const [index, delta] of deltas.entries()) {
+    data.projectedHistoricalMappings[index][0] += delta;
+    data.current.mappings[index < 9 ? index : 10][0] += delta;
+  }
+  verify(data, producer, "component-hover-gaps-12461");
 });
 
 void test("unknown producer, authored source and opaque packet fields are refused", () => {

@@ -206,6 +206,38 @@ void test("the wrapper admission accepts only exact disjoint slot pattern gaps",
     }
   }
 });
+void test("the wrapper admission removes only duplicate component-prop hover ownership", () => {
+  const text = 'void __vize_props_nav_0.value;\n({ "value": 1 });\n';
+  const navigation = Buffer.from(text).indexOf("value");
+  const check = Buffer.from(text).lastIndexOf("value");
+  const before = {
+    text,
+    rows: [
+      [navigation, 5, 20, 5, 0, 1048575],
+      [check, 5, 20, 5, 0, 1048575],
+    ] as Array<[number, number, number, number, number, number]>,
+  };
+  const current = clone(before);
+  current.rows[1]![5] &= ~1;
+  const producer = fs.readFileSync(
+    new URL("../../crates/vize_canon/src/batch/virtual_project/content_mapper.rs", import.meta.url),
+  );
+  assertConstructorWrapperMappings(before, current, (value) => value, producer);
+
+  for (const mutate of [
+    (image: typeof current) => (image.rows[0]![5] &= ~1),
+    (image: typeof current) => (image.rows[1]![5] &= ~2),
+    (image: typeof current) => (image.rows[1]![2] += 1),
+    (image: typeof current) =>
+      (image.text = image.text.replace("__vize_props_nav_", "__vize_other_nav_")),
+  ]) {
+    const changed = clone(current);
+    mutate(changed);
+    assert.throws(() =>
+      assertConstructorWrapperMappings(before, changed, (value) => value, producer),
+    );
+  }
+});
 void test("the wrapper admission drops only the rows of a removed unchecked slot replay", () => {
   const replay =
     "\n  // Component props in v-slot scope: #default\n  void function _slot_props_default_7({ item }: Payload) {\n    void item;\n  };\n";

@@ -490,6 +490,7 @@ if (mode === "prepare") {
     b,
     mappings,
     readFileSync("source/crates/vize_canon/src/batch/virtual_project/content_mapper.rs"),
+    "component-hover-gaps-12461",
   );
   const links = a.semanticLinks ?? [];
   assert.deepEqual(

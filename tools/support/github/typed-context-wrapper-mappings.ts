@@ -13,6 +13,7 @@ export function assertTypedContextWrapperMappings(
   current: MapperPacket,
   projected: number[][],
   producer: Uint8Array,
+  projection: "wrapper-successor" | "component-hover-gaps-12461" = "wrapper-successor",
 ): void {
   const digest = (bytes: string | Uint8Array) => createHash("sha256").update(bytes).digest("hex");
   const producerText = Buffer.from(producer).toString("utf8");
@@ -109,18 +110,29 @@ export function assertTypedContextWrapperMappings(
   // The preceding whole-text transition has already relocated every old row.
   // A helper prefix change therefore moves this anchor and all ten old rows
   // together; no fixed generated-coordinate or prefix-length adjustment is used.
-  const rows = [
-    [-2754, 2, 37, 2, 0, 1048575],
-    [-2752, 9, 39, 9, 0, 1048575],
-    [-2743, 10, 48, 10, 0, 1048575],
-    [-951, 12, 25, 12, 0, 1048575],
-    [-939, 2, 37, 2, 0, 1048575],
-    [-937, 9, 39, 9, 0, 1048575],
-    [-928, 10, 48, 10, 0, 1048575],
-    [-918, 4, 58, 4, 0, 1048575],
-    [-59, 9, 39, 9, 0, 1048575],
-    [0, 9, 89, 9, 0, 1048575],
-  ].map(([relative, ...fields]) => [start + relative, ...fields]);
+  const historicalRows = {
+    "wrapper-successor": [-2754, -2752, -2743, -951, -939, -937, -928, -918, -59, 0],
+    // Identifier-safe public props re-anchor their three symbol rows by six
+    // bytes. Setup dedent keeps the next five authored spans on their original
+    // identifiers rather than moving them into the removed indentation.
+    "component-hover-gaps-12461": [-2748, -2746, -2737, -949, -937, -935, -926, -916, -59, 0],
+  } as const;
+  const fields = [
+    [2, 37, 2, 0, 1048575],
+    [9, 39, 9, 0, 1048575],
+    [10, 48, 10, 0, 1048575],
+    [12, 25, 12, 0, 1048575],
+    [2, 37, 2, 0, 1048575],
+    [9, 39, 9, 0, 1048575],
+    [10, 48, 10, 0, 1048575],
+    [4, 58, 4, 0, 1048575],
+    [9, 39, 9, 0, 1048575],
+    [9, 89, 9, 0, 1048575],
+  ] as const;
+  const rows = historicalRows[projection].map((relative, index) => [
+    start + relative,
+    ...fields[index],
+  ]);
   assert.deepEqual(projected, rows, "all projected historical tuples must remain exact");
   assert.equal(Buffer.from(source).subarray(89, 98).toString(), "undefined");
   const atom = (at: number) => [at, 1, 89, 9, 1, 0];
