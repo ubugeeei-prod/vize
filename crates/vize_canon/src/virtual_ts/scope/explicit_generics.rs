@@ -3,10 +3,11 @@
 //!
 //! The usage resolves through a synthetic binding: the component instantiated
 //! with the authored arguments (an instantiation expression), reduced to its
-//! call signature. Props, listeners and slots are then checked against that
-//! one signature, exactly like a functional component's, instead of inferring
-//! the type parameters from the usage. The arguments map to the comment, so a
-//! constraint violation reports where it was written.
+//! call signature and marked as an instantiated component. Props, listeners
+//! and slots are then checked against that one signature, exactly like a
+//! functional component's, instead of inferring the type parameters from the
+//! usage. The arguments map to the comment, so a constraint violation reports
+//! where it was written.
 
 use super::dynamic_component::DynamicComponentAliases;
 use crate::virtual_ts::types::VizeMapping;
@@ -89,7 +90,7 @@ impl ExplicitGenerics {
             return;
         };
         ts.push_str(
-            "  // Explicit `@vue-generic` arguments: the instantiated call signature.\n  const __vizeExplicitGeneric = <C,>(component: C) => component as unknown as (C extends (...args: infer __A) => infer __R ? (...args: __A) => __R : C);\n",
+            "  // Explicit `@vue-generic` arguments: the instantiated call signature.\n  const __vizeExplicitGeneric = <C,>(component: C) => component as unknown as (C extends (...args: infer __A) => infer __R ? ((...args: __A) => __R) & { readonly __vizeComponentMarker: true } : C);\n",
         );
         for usage in vize_croquis::facts::component_usage_slice(summary) {
             if !self.by_usage_start.contains_key(&usage.start) || scoped.is_scoped(usage.start) {

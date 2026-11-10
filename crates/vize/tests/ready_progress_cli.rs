@@ -43,7 +43,7 @@ const CHECK: &str =
     "[vize] Skipping check because typeChecker.enabled is false in vite.config.* vue settings.\n";
 const BUILT: &str = "Built: App.vue -> ./dist/App.js\n";
 const BUILD: &str = "\x1b[32m✓ 1 file compiled in <elapsed>s\x1b[0m\n";
-const MISSING: &str = "No .vue, .js, .mjs, .cjs, .ts, .mts, .cts, .jsx, .tsx, .json, .jsonc, .yaml, .yml, .md, or .markdown files found matching the patterns\n";
+const MISSING: &str = "No .vue, .js, .mjs, .cjs, .ts, .mts, .cts, .jsx, .tsx, .tsrx, .json, .jsonc, .yaml, .yml, .md, or .markdown files found matching the patterns\n";
 
 #[test]
 fn redirected_ready_keeps_stage_logs_and_creates_the_real_build_output() {

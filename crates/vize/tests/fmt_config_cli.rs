@@ -250,7 +250,7 @@ fn fmt_check_fails_when_explicit_patterns_match_no_files() {
     let stderr = String::from_utf8_lossy(&output.stderr);
     assert!(
         stderr.contains(
-            "No .vue, .js, .mjs, .cjs, .ts, .mts, .cts, .jsx, .tsx, .json, .jsonc, .yaml, .yml, .md, or .markdown files found"
+            "No .vue, .js, .mjs, .cjs, .ts, .mts, .cts, .jsx, .tsx, .tsrx, .json, .jsonc, .yaml, .yml, .md, or .markdown files found"
         ),
         "{stderr}"
     );

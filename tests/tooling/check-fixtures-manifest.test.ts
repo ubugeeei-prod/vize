@@ -10,7 +10,11 @@ import {
   checkFixturePhases,
 } from "./support/check-fixtures/manifest.ts";
 import { CORSA_BIN, VIZE_BIN } from "../_helpers/apps.ts";
-import { buildVizeCheckArgs, runVizeCheckJson } from "../_helpers/vize-check.ts";
+import {
+  buildVizeCheckArgs,
+  runVizeCheckJson,
+  runVizeCheckJsonWithReceipt,
+} from "../_helpers/vize-check.ts";
 import { readRepoFile, root } from "./support/github-workflows.ts";
 
 /**
@@ -224,4 +228,46 @@ test("the virtual TS helper keeps glob patterns as argv entries", () => {
     CORSA_BIN,
   ]);
   assert.ok(!args.includes("'src/**/*.vue'"), "glob patterns must not be shell-quoted");
+});
+
+test("the virtual TS helper can retain the exact producing process", () => {
+  const stdout = JSON.stringify({
+    errorCount: 1,
+    fileCount: 1,
+    files: [{ diagnostics: ["error:App.vue:1:1 [TS1] bounded"], file: "App.vue" }],
+    programs: [],
+    warningCount: 0,
+  });
+  const receipt = runVizeCheckJsonWithReceipt("/fixture", ["App.vue"], {
+    allowExitCodes: [1],
+    showVirtualTs: true,
+    spawnSync: (_command, _args, _options) =>
+      ({
+        output: ["", stdout, "provider note\n"],
+        pid: 7,
+        signal: null,
+        status: 1,
+        stderr: "provider note\n",
+        stdout,
+      }) as SpawnSyncReturns<string>,
+  });
+
+  assert.deepEqual(receipt.process, {
+    args: [
+      "check",
+      "App.vue",
+      "--format",
+      "json",
+      "--quiet",
+      "--show-virtual-ts",
+      "--corsa-path",
+      CORSA_BIN,
+    ],
+    command: VIZE_BIN,
+    signal: null,
+    status: 1,
+    stderr: "provider note\n",
+    stdout,
+  });
+  assert.equal(receipt.parsed.errorCount, 1);
 });

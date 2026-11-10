@@ -130,7 +130,8 @@ impl<'a> AnyJsxTagWithChildren<'a, '_> {
 
 impl<'a> Format<'a, JsFormatContext<'a>> for AnyJsxTagWithChildren<'a, '_> {
     fn fmt(&self, f: &mut JsFormatter<'_, 'a>) {
-        let is_suppressed = f.comments().is_suppressed(self.span().start);
+        let is_suppressed = f.context().external_callbacks().is_verbatim(self.span())
+            || f.comments().is_suppressed(self.span().start);
 
         let format_tag = format_with(|f| {
             if is_suppressed {
