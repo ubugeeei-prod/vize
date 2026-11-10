@@ -457,8 +457,8 @@ function main(): void {
       const project = projects(corpus, "head");
       const mapper = timed.get(`${corpus.id}-tsc-vize-head`)?.[0]?.diagnostics;
       if (!mapper) throw new Error(`${corpus.id}: no tsc mapper run on head`);
-      const one = runBatchCheck(headBuild, project, corsa);
-      // vize check pins one Corsa checker for determinism (#3905); measure what width changes.
+      const one = runBatchCheck(headBuild, project, corsa, { VIZE_CHECKERS: "1" });
+      // Qualify both batch hosts at the one-checker oracle and measured default width.
       const checkers = 8;
       const wide = runBatchCheck(headBuild, project, corsa, {
         VIZE_CHECKERS: String(checkers),
