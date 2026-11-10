@@ -148,9 +148,7 @@ impl UseUniqueElementIds {
     pub fn is_id_reference_attr(name: &str) -> bool {
         ID_REFERENCE_ATTRIBUTES.contains(&name)
     }
-}
 
-impl UseUniqueElementIds {
     fn check_element(&self, ctx: &mut LintContext<'_>, element: &MarkupElement<'_>) {
         if self.allow_static {
             return;
@@ -163,7 +161,6 @@ impl UseUniqueElementIds {
         element.walk_attributes(&mut |attribute| {
             let name = attribute.name();
 
-            // Check for static id attribute
             if name == "id" {
                 if let Some(value) = attribute.value() {
                     if self.tiered {
@@ -197,9 +194,7 @@ impl UseUniqueElementIds {
                         self.report_static_id(ctx, attribute.range(), value, false);
                     }
                 }
-            }
-            // Check for static ID reference attributes (for, aria-labelledby, etc.)
-            else if Self::is_id_reference_attr(name)
+            } else if Self::is_id_reference_attr(name)
                 && let Some(value) = attribute.value()
             {
                 self.report_static_id(ctx, attribute.range(), value, true);
