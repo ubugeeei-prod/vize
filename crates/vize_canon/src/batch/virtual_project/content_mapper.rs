@@ -428,6 +428,7 @@ fn protocol_spans(
     component_export::insert_spans(&mut spans, mappings, metadata);
     span_features::retain_template_hover_owner(generated, &mut spans);
     span_features::retain_component_prop_hover_owner(generated, &mut spans);
+    span_normalize::join_verbatim_runs(source, generated, &mut spans);
     spans
 }
 

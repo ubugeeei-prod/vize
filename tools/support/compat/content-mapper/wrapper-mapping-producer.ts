@@ -7,10 +7,19 @@ export function assertWrapperMappingProducer(producer: Uint8Array): void {
   const digest = (bytes: string | Uint8Array) => createHash("sha256").update(bytes).digest("hex");
   assert.equal(
     digest(producer),
-    "23000f014edd106b8ffe1cb1ebd9424f783a5cbd879cabf435f4bcfaffd51580",
+    "57780645b2afe83b11407854af43bee9d0f443e9151f72219a662b828627513f",
     "unqualified #11675 wrapper mapping producer",
   );
   let historical = Buffer.from(producer).toString("utf8");
+  const verbatimRunSuccessor =
+    "    span_normalize::join_verbatim_runs(source, generated, &mut spans);\n";
+  assert.equal(historical.split(verbatimRunSuccessor).length, 2);
+  historical = historical.replace(verbatimRunSuccessor, "");
+  assert.equal(
+    digest(historical),
+    "23000f014edd106b8ffe1cb1ebd9424f783a5cbd879cabf435f4bcfaffd51580",
+    "certified verbatim-run wrapper successor",
+  );
   for (const [successor, predecessor] of CHECK_MODE_PRODUCER_SUCCESSORS) {
     assert.equal(historical.split(successor).length, 2);
     historical = historical.replace(successor, predecessor);
