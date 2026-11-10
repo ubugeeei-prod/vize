@@ -46,8 +46,10 @@ pub(super) fn emit(ts: &mut crate::virtual_ts::TextBuf, emit: Emit<'_>) {
     // `any` props infer `__H` as `any`, and `Extract<any, …>` is `any`.
     // Unioning that into the handler annotation would type `(v)` as explicit
     // `any` and hide TS7006 on a loose `:is`.
+    let lib_non_nullable = crate::virtual_ts::generated_names::lib("NonNullable");
+    let lib_extract = crate::virtual_ts::generated_names::lib("Extract");
     let arrays = cstr!(
-        "{is_any}<__P> extends true ? never : __P extends {{ {prop_key}?: infer __H }} ? Extract<NonNullable<__H>, readonly unknown[]> : never"
+        "{is_any}<__P> extends true ? never : __P extends {{ {prop_key}?: infer __H }} ? {lib_extract}<{lib_non_nullable}<__H>, readonly unknown[]> : never"
     );
     if let Some(props) = direct_props {
         append!(

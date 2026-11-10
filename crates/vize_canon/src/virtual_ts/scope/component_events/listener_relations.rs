@@ -42,7 +42,7 @@ impl ListenerRelations {
             .replace("$ListenerMissing", self.missing.as_str());
         for line in declarations.lines() {
             ts.push_str(indent);
-            ts.push_str(line);
+            crate::virtual_ts::generated_names::push_lib_text(ts, line);
             ts.push('\n');
         }
     }

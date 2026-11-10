@@ -25,9 +25,10 @@ pub(super) fn emit_args(
     fallthrough_box: &str,
     prop_listener_args: &str,
 ) {
+    let lib_non_nullable = crate::virtual_ts::generated_names::lib("NonNullable");
     append!(
         *ts,
-        "{indent}type {fallthrough_args} = {fallthrough_box} extends infer __B ? __B extends [infer __F] ? NonNullable<__F> extends infer __P ? ({prop_listener_args}) extends infer __A extends unknown[] ? (__A extends [] ? unknown[] : __A) : unknown[] : unknown[] : unknown[] : never;\n",
+        "{indent}type {fallthrough_args} = {fallthrough_box} extends infer __B ? __B extends [infer __F] ? {lib_non_nullable}<__F> extends infer __P ? ({prop_listener_args}) extends infer __A extends unknown[] ? (__A extends [] ? unknown[] : __A) : unknown[] : unknown[] : unknown[] : never;\n",
     );
 }
 
@@ -38,8 +39,10 @@ pub(super) fn emit_return(
     fallthrough_box: &str,
     prop_key: &str,
 ) {
+    let lib_non_nullable = crate::virtual_ts::generated_names::lib("NonNullable");
+    let lib_extract = crate::virtual_ts::generated_names::lib("Extract");
     append!(
         *ts,
-        "{indent}type {native_return} = {fallthrough_box} extends infer __B ? __B extends [infer __F] ? NonNullable<__F> extends {{ {prop_key}?: infer __H }} ? Extract<NonNullable<__H>, (...args: any[]) => any> extends (...args: any[]) => infer __R ? __R : any : any : any : never;\n",
+        "{indent}type {native_return} = {fallthrough_box} extends infer __B ? __B extends [infer __F] ? {lib_non_nullable}<__F> extends {{ {prop_key}?: infer __H }} ? {lib_extract}<{lib_non_nullable}<__H>, (...args: any[]) => any> extends (...args: any[]) => infer __R ? __R : any : any : any : never;\n",
     );
 }

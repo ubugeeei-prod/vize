@@ -3,13 +3,15 @@ import fs from "node:fs";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
 import ts from "typescript";
+import { beforeListenerLibTypeQualification } from "../../tools/support/compat/content-mapper/lib-type-qualification-listeners-transition.ts";
 
 // The per-event alias chain the generator still emits outside the shared
 // contract is the oracle: `$ListenerContract` must produce exactly the chain's
 // event, listener, handler and array types, printed the same, for every
 // component shape a closed template can bind.
 const repo = new URL("../../", import.meta.url);
-const read = (path: string) => fs.readFileSync(new URL(path, repo), "utf8");
+const read = (path: string) =>
+  beforeListenerLibTypeQualification(path, fs.readFileSync(new URL(path, repo), "utf8"));
 const events = "crates/vize_canon/src/virtual_ts/scope/component_events";
 const declarations = "crates/vize_canon/src/virtual_ts/helpers/declarations/";
 

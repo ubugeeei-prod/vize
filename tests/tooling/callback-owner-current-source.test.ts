@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import { test } from "node:test";
+import { beforeListenerLibTypeQualification } from "../../tools/support/compat/content-mapper/lib-type-qualification-listeners-transition.ts";
 import { assertPreservedCallbackPacket } from "../../tools/support/compat/content-mapper/callback-owner-packet-parity.ts";
 import { guardedInferenceEdits } from "../../tools/support/compat/content-mapper/callback-owner-current-source.ts";
 import { beforeCanonLeftovers } from "../../tools/support/compat/content-mapper/strict-extra-keys-transition.ts";
@@ -11,7 +12,8 @@ import {
   staticListenerSource,
 } from "./support/static-listener-prop-source.ts";
 const root = new URL("../../", import.meta.url);
-const read = (path: string) => fs.readFileSync(new URL(path, root), "utf8");
+const read = (path: string) =>
+  beforeListenerLibTypeQualification(path, fs.readFileSync(new URL(path, root), "utf8"));
 const emitPath = "crates/vize_canon/src/virtual_ts/helpers/declarations/emit-inference.d.ts.txt";
 const canonLeftoversEmitPaths = [
   "crates/vize_canon/src/virtual_ts/helpers/declarations/emit-overloads.d.ts.txt",
