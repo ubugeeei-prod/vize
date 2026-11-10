@@ -13,9 +13,10 @@
 
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
+use crate::markup::{MarkupContext, MarkupElement, MarkupRule, MarkupTraversal};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_l0::dialect::VueDialect;
-use vize_relief::{ElementNode, PropNode};
+use vize_relief::ElementNode;
 
 static META: RuleMeta = RuleMeta {
     name: "vue/no-deprecated-inline-template",
@@ -28,29 +29,51 @@ static META: RuleMeta = RuleMeta {
 /// Disallow the deprecated `inline-template` attribute.
 pub struct NoDeprecatedInlineTemplate;
 
-impl Rule for NoDeprecatedInlineTemplate {
-    fn meta(&self) -> &'static RuleMeta {
-        &META
-    }
-
-    fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
+impl NoDeprecatedInlineTemplate {
+    fn check_element(ctx: &mut LintContext<'_>, element: &MarkupElement<'_>) {
         // Only the default Vue 3 dialect removed inline-template. Non-Vue
         // dialects use their own compatibility rules.
         if ctx.dialect() != VueDialect::Vue {
             return;
         }
 
-        for prop in element.props.iter() {
-            if let PropNode::Attribute(attr) = prop
-                && attr.name.eq_ignore_ascii_case("inline-template")
-            {
-                ctx.error_with_help(
+        element.walk_attributes(&mut |attribute| {
+            if attribute.name_eq("inline-template") {
+                ctx.error_at_with_help(
                     ctx.t("vue/no-deprecated-inline-template.message"),
-                    &attr.loc,
+                    attribute.range(),
                     ctx.t("vue/no-deprecated-inline-template.help"),
                 );
             }
-        }
+        });
+    }
+}
+
+impl MarkupRule for NoDeprecatedInlineTemplate {
+    fn name(&self) -> &'static str {
+        META.name
+    }
+
+    fn traversal(&self) -> MarkupTraversal {
+        MarkupTraversal::Elements
+    }
+
+    fn enter_element<'a>(&self, ctx: &mut MarkupContext<'_, 'a>, element: &MarkupElement<'a>) {
+        Self::check_element(ctx.lint(), element);
+    }
+}
+
+impl Rule for NoDeprecatedInlineTemplate {
+    fn meta(&self) -> &'static RuleMeta {
+        &META
+    }
+
+    fn as_markup_rule(&self) -> Option<&dyn MarkupRule> {
+        Some(self)
+    }
+
+    fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
+        Self::check_element(ctx, &MarkupElement::new(element));
     }
 
     fn as_native_template_rule(&self) -> Option<&dyn crate::native::template::NativeTemplateRule> {

@@ -203,62 +203,60 @@ fn offset(text: &str, line: u32, column: u32) -> Option<usize> {
 
 #[test]
 fn template_only_map_navigates_generated_tokens_to_authored_pug() {
-    let source = concat!(
-        "<template lang=\"pug\">\n",
-        "main\n",
-        "  h1 Café 😀\n",
-        "  p {{ account.name }}\n",
-        "</template>\n",
-    );
-    let filename = "/src/PugMap.vue";
-    let parse = SfcParseOptions {
-        filename: filename.into(),
-        ..Default::default()
-    };
-    let descriptor = parse_sfc(source, parse.clone()).expect("pug fixture parses");
-    let compile = |source_map| {
-        compile_sfc_with_template_syntax_and_codegen_options(
-            &descriptor,
-            SfcCompileOptions {
-                parse: parse.clone(),
-                ..Default::default()
-            },
-            TemplateSyntaxMode::Standard,
-            CodegenOptions {
-                source_map,
-                filename: filename.into(),
-                ..Default::default()
-            },
-        )
-        .expect("pug fixture compiles")
-    };
+    for lang in ["pug", "jade", "JADE"] {
+        let source = format!(
+            "<template lang=\"{lang}\">\nmain\n  h1 Café 😀\n  p {{{{ account.name }}}}\n</template>\n"
+        );
+        let filename = format!("/src/{lang}Map.vue");
+        let parse = SfcParseOptions {
+            filename: filename.as_str().into(),
+            ..Default::default()
+        };
+        let descriptor = parse_sfc(&source, parse.clone()).expect("pug fixture parses");
+        let compile = |source_map| {
+            compile_sfc_with_template_syntax_and_codegen_options(
+                &descriptor,
+                SfcCompileOptions {
+                    parse: parse.clone(),
+                    ..Default::default()
+                },
+                TemplateSyntaxMode::Standard,
+                CodegenOptions {
+                    source_map,
+                    filename: filename.as_str().into(),
+                    ..Default::default()
+                },
+            )
+            .expect("pug fixture compiles")
+        };
 
-    let without = compile(false);
-    let with = compile(true);
-    assert_eq!(with.code, without.code, "source maps must be additive");
-    assert!(without.map.is_none());
-    let map = with.map.expect("mapped template-only module");
-    assert_eq!(map["sources"], serde_json::json!([filename]));
-    assert_eq!(map["sourcesContent"], serde_json::json!([source]));
+        let without = compile(false);
+        let with = compile(true);
+        assert_eq!(with.code, without.code, "{lang}: source maps are additive");
+        assert!(without.map.is_none());
+        let map = with.map.expect("mapped template-only module");
+        assert_eq!(map["sources"], serde_json::json!([filename]));
+        assert_eq!(map["sourcesContent"], serde_json::json!([source]));
 
-    let raw = serde_json::to_string(&map).expect("map JSON");
-    let map = SourceMap::from_json_string(&raw).expect("valid source map");
-    let generated = with
-        .code
-        .find("_ctx.account.name")
-        .expect("generated expression");
-    let authored = source.find("account.name").expect("authored expression");
-    let token = map
-        .get_tokens()
-        .find(|token| {
-            offset(&with.code, token.get_dst_line(), token.get_dst_col()) == Some(generated)
-        })
-        .expect("generated expression has a navigation anchor");
-    assert_eq!(
-        offset(source, token.get_src_line(), token.get_src_col()),
-        Some(authored),
-        "the runtime token must navigate to the Pug expression, not derived HTML",
-    );
+        let raw = serde_json::to_string(&map).expect("map JSON");
+        let map = SourceMap::from_json_string(&raw).expect("valid source map");
+        let generated = with
+            .code
+            .find("_ctx.account.name")
+            .expect("generated expression");
+        let authored = source.find("account.name").expect("authored expression");
+        let token = map
+            .get_tokens()
+            .find(|token| {
+                offset(&with.code, token.get_dst_line(), token.get_dst_col()) == Some(generated)
+            })
+            .expect("generated expression has a navigation anchor");
+        assert_eq!(
+            offset(&source, token.get_src_line(), token.get_src_col()),
+            Some(authored),
+            "{lang}: runtime token must navigate to authored source",
+        );
+    }
 }
 
 #[test]
@@ -327,36 +325,38 @@ fn pug_includes_resolve_against_the_sfc_and_compile_like_their_html() {
         filename: filename.as_str().into(),
         ..SfcParseOptions::default()
     };
-    let pug_sfc = ["<template lang=\"pug\">", &pug, "</template>\n"].concat();
     let html_sfc = ["<template>", &html, "</template>\n"].concat();
-    for (lane, options) in lanes() {
-        let from_pug = parse_sfc(&pug_sfc, parse.clone()).unwrap();
-        let from_html = parse_sfc(&html_sfc, parse.clone()).unwrap();
-        let from_pug = compile_sfc(&from_pug, options.clone()).unwrap();
-        let from_html = compile_sfc(&from_html, options).unwrap();
-        assert_eq!(from_pug.code, from_html.code, "{lane}");
-        let read: Vec<_> = from_pug
-            .dependencies
-            .iter()
-            .map(|file| {
-                std::path::Path::new(file.as_str())
-                    .strip_prefix(&root)
-                    .unwrap()
-                    .to_string_lossy()
-                    .into_owned()
-            })
-            .collect();
-        assert_eq!(
-            read,
-            [
-                "partials/header.pug",
-                "partials/nested/logo.pug",
-                "partials/card.pug",
-                "partials/list.pug",
-                "partials/note.txt",
-            ],
-            "{lane}: includes are dependencies"
-        );
-        assert!(from_html.dependencies.is_empty());
+    for lang in ["pug", "jade", "JADE"] {
+        let pug_sfc = format!("<template lang=\"{lang}\">{pug}</template>\n");
+        for (lane, options) in lanes() {
+            let from_pug = parse_sfc(&pug_sfc, parse.clone()).unwrap();
+            let from_html = parse_sfc(&html_sfc, parse.clone()).unwrap();
+            let from_pug = compile_sfc(&from_pug, options.clone()).unwrap();
+            let from_html = compile_sfc(&from_html, options).unwrap();
+            assert_eq!(from_pug.code, from_html.code, "{lang}/{lane}");
+            let read: Vec<_> = from_pug
+                .dependencies
+                .iter()
+                .map(|file| {
+                    std::path::Path::new(file.as_str())
+                        .strip_prefix(&root)
+                        .unwrap()
+                        .to_string_lossy()
+                        .into_owned()
+                })
+                .collect();
+            assert_eq!(
+                read,
+                [
+                    "partials/header.pug",
+                    "partials/nested/logo.pug",
+                    "partials/card.pug",
+                    "partials/list.pug",
+                    "partials/note.txt",
+                ],
+                "{lang}/{lane}: includes are dependencies"
+            );
+            assert!(from_html.dependencies.is_empty());
+        }
     }
 }

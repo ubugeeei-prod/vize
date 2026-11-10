@@ -59,6 +59,19 @@ void test("a separately certified helper prefix relocation moves both atoms with
   verify(data);
 });
 
+void test("verbatim setup keeps the finite rows exact around its three dedented lines", () => {
+  const data = integratedCapture();
+  data.current.text = data.current.text.replace(
+    "  // User setup code\n  \n  defineProps<{ undefined: string }>();\n  \n",
+    "  // User setup code\n\ndefineProps<{ undefined: string }>();\n\n",
+  );
+  for (const index of [3, 4, 5, 6, 7]) data.projectedHistoricalMappings[index][0] -= 4;
+  for (const index of [8, 9]) data.projectedHistoricalMappings[index][0] -= 6;
+  for (const index of [3, 4, 5, 6, 7]) data.current.mappings[index][0] -= 4;
+  for (const index of [8, 9, 10, 11, 12]) data.current.mappings[index][0] -= 6;
+  verify(data);
+});
+
 void test("unknown producer, authored source and opaque packet fields are refused", () => {
   assert.throws(
     () => verify(capture, Buffer.concat([producer, Buffer.from("\n")])),

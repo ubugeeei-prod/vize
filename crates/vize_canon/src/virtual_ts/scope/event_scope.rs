@@ -180,6 +180,10 @@ pub(super) fn generate_event_handler_scope(
         })
         .flatten()
     {
+        let event_type = crate::virtual_ts::generated_names::lib(event_type);
+        let listener_args = listener_args.replace("Element", event_type.as_str());
+        let event_type = event_type.as_str();
+        let listener_args = listener_args.as_str();
         let listener_type = vize_carton::cstr!("__vize_transition_{}_listener", scope_id);
         let handler_type = vize_carton::cstr!("__vize_transition_{}_handler", scope_id);
         let needs_typed_handler_assignment = needs_typed_handler_assignment(data);
@@ -290,7 +294,9 @@ pub(super) fn generate_event_handler_scope(
 
         vize_l0::emit_ts!(ts, "{indent}}});\n");
     } else {
-        let event_type = get_dom_event_type(data.event_name.as_str());
+        let event_type =
+            crate::virtual_ts::generated_names::lib(get_dom_event_type(data.event_name.as_str()));
+        let event_type = event_type.as_str();
         vize_l0::emit_ts!(ts, "{indent}void (({event_value}: {event_type}) => {{\n");
 
         profile!(

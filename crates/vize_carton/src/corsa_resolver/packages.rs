@@ -36,6 +36,16 @@ pub(super) fn find_node_modules_native(
     Ok(None)
 }
 
+/// Resolve the project's declared tsrs runtime without considering the
+/// TypeScript/Corsa tiers. Batch checking uses this capability probe before
+/// the general resolver because its diagnostic-identity gate qualifies tsrs
+/// as the preferred full-check host; editor and lint callers keep the general
+/// runtime order.
+pub(super) fn find_node_modules_tsrs(dir: &Path) -> Result<Option<PathBuf>, InvalidNativePackage> {
+    let project = read_manifest(dir).unwrap_or_default();
+    find_declared_tsrs(dir, &project)
+}
+
 /// Resolve the native binary selected by the `tsrs` launcher package.
 ///
 /// This avoids making a standalone Vize binary depend on `node` merely to run

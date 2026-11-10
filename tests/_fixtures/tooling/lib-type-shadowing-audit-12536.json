@@ -1,0 +1,81 @@
+{
+  "schema": "vize.libTypeShadowingAuditSource.v1",
+  "credit": {
+    "compiled": false,
+    "native": false,
+    "performance": false
+  },
+  "files": [
+    {
+      "path": "crates/vize_canon/src/virtual_ts/generator/component_constructors.rs",
+      "before": {
+        "bytes": 11555,
+        "sha256": "2b4dc73e687a01f9217935f40250c934aa0766f07803631f4c5e796b891036c6"
+      },
+      "after": {
+        "bytes": 11665,
+        "sha256": "96ec5c7f0064b02b72ab37aefc42caa155ed651db88fa631ae7929ec8f1ebf9a"
+      },
+      "hunks": [
+        {
+          "before": "    let declared = crate::virtual_ts::generated_names::declared;\n    let (props, emits, slots) = (declared(\"Props\"), declared(\"Emits\"), declared(\"$Slots\"));\n",
+          "after": "    let declared = crate::virtual_ts::generated_names::declared;\n    let omit = crate::virtual_ts::generated_names::lib(\"Omit\");\n    let (props, emits, slots) = (declared(\"Props\"), declared(\"Emits\"), declared(\"$Slots\"));\n"
+        },
+        {
+          "before": "    ts.push_str(instance_helper(legacy_vue2, dialect));\n",
+          "after": "    crate::virtual_ts::generated_names::push_lib_text(ts, instance_helper(legacy_vue2, dialect));\n"
+        },
+        {
+          "before": "            \"type $ComponentInstance = Omit<{authored_instance}, '$props' | '$emit' | '$slots'> & \"\n",
+          "after": "            \"type $ComponentInstance = {omit}<{authored_instance}, '$props' | '$emit' | '$slots'> & \"\n"
+        },
+        {
+          "before": "            cstr!(\"Omit<{authored_instance}, '$props' | '$emit' | '$slots'> & {base}\")\n",
+          "after": "            cstr!(\"{omit}<{authored_instance}, '$props' | '$emit' | '$slots'> & {base}\")\n"
+        }
+      ]
+    },
+    {
+      "path": "crates/vize_canon/src/virtual_ts/generator/component_export.rs",
+      "before": {
+        "bytes": 16258,
+        "sha256": "c54563fa90e58e31045008cdea30c5774cd162e54053c74d66164ef0e82c42d1"
+      },
+      "after": {
+        "bytes": 16399,
+        "sha256": "2e70012b05192f7a4661afc223fa7bc2d1e91e3d7dd6ffef663aa8e26c4e0813"
+      },
+      "hunks": [
+        {
+          "before": "    ts.push_str(VUE_COMPONENT_OPTIONS_MEMBERS_AFTER_SETUP);\n",
+          "after": "    crate::virtual_ts::generated_names::push_lib_text(\n        ts,\n        VUE_COMPONENT_OPTIONS_MEMBERS_AFTER_SETUP,\n    );\n"
+        },
+        {
+          "before": "    if let Some(slots_ref) = &static_slots_ref {\n        append!(\n            component_contract_fields,\n            \" readonly __vizeSlots?: Partial<{slots_ref}>;\"\n        );\n",
+          "after": "    if let Some(slots_ref) = &static_slots_ref {\n        let partial = crate::virtual_ts::generated_names::lib(\"Partial\");\n        append!(\n            component_contract_fields,\n            \" readonly __vizeSlots?: {partial}<{slots_ref}>;\"\n        );\n"
+        }
+      ]
+    },
+    {
+      "path": "crates/vize_canon/src/virtual_ts/generator.rs",
+      "before": {
+        "bytes": 37484,
+        "sha256": "062faeb49dd5b3030bb844cc0244aa402c42442ab813996b070f06e380a72f3d"
+      },
+      "after": {
+        "bytes": 37518,
+        "sha256": "3c66ad8205f3239d33e02db8afb792a1d6c194f9956d8b6cb92812787c08b0d6"
+      },
+      "hunks": [
+        {
+          "before": "        ts.push_str(legacy_vue2::define_component_helper(legacy_vue2, dialect));\n",
+          "after": "        ts.push_lib_text(legacy_vue2::define_component_helper(legacy_vue2, dialect));\n"
+        },
+        {
+          "before": "    binding_output::publish(\n        ts.into_compact(),\n",
+          "after": "    binding_output::publish(\n        binding_output::finish(ts, generation_options),\n"
+        }
+      ]
+    }
+  ]
+}

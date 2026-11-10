@@ -227,6 +227,13 @@ ceiling, then independently validates the returned object metadata and complete
 envelope. Existing remote objects win immutable publication races: identical
 output is accepted, while divergent output for one key fails closed.
 
+`LayeredCapabilitySnapshotCache` composes those compatible stores without
+giving either backend authority over snapshot identity. Loads prefer a fast
+front cache, validate and promote durable backing hits, and skip backing work on
+front hits. Misses publish to the durable backing cache before the front cache,
+so a failed front write can be recovered by a later promotion. Every tier's key
+and complete snapshot acknowledgement is validated before it is returned.
+
 ## Reporter integrations
 
 External CI, editor, code-hosting, and AI integrations implement the object-safe

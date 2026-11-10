@@ -93,20 +93,33 @@ export function assertTypedContextWrapperMappings(
   const statement = generated.indexOf(needle);
   assert(statement >= 0 && generated.indexOf(needle, statement + 1) < 0, "unique interpolation");
   const start = statement + Buffer.byteLength("void (");
+  const legacySetup = Buffer.from(
+    "  // User setup code\n  \n  defineProps<{ undefined: string }>();\n  \n",
+  );
+  const verbatimSetup = Buffer.from(
+    "  // User setup code\n\ndefineProps<{ undefined: string }>();\n\n",
+  );
+  const hasLegacySetup = generated.indexOf(legacySetup) >= 0;
+  const hasVerbatimSetup = generated.indexOf(verbatimSetup) >= 0;
+  assert.notEqual(hasLegacySetup, hasVerbatimSetup, "finite setup projection generation");
   // The preceding whole-text transition has already relocated every old row.
-  // A helper prefix change therefore moves this anchor and all ten old rows
-  // together; no fixed generated-coordinate or prefix-length adjustment is used.
+  // Verbatim setup removes six bytes between the prefix rows and this anchor,
+  // and two between the setup rows and the anchor. Keep the immutable captured
+  // predecessor and the exact current successor as two finite offset sets.
+  const offsets = hasVerbatimSetup
+    ? [-2748, -2746, -2737, -949, -937, -935, -926, -916, -59, 0]
+    : [-2754, -2752, -2743, -951, -939, -937, -928, -918, -59, 0];
   const rows = [
-    [-2754, 2, 37, 2, 0, 1048575],
-    [-2752, 9, 39, 9, 0, 1048575],
-    [-2743, 10, 48, 10, 0, 1048575],
-    [-951, 12, 25, 12, 0, 1048575],
-    [-939, 2, 37, 2, 0, 1048575],
-    [-937, 9, 39, 9, 0, 1048575],
-    [-928, 10, 48, 10, 0, 1048575],
-    [-918, 4, 58, 4, 0, 1048575],
-    [-59, 9, 39, 9, 0, 1048575],
-    [0, 9, 89, 9, 0, 1048575],
+    [offsets[0], 2, 37, 2, 0, 1048575],
+    [offsets[1], 9, 39, 9, 0, 1048575],
+    [offsets[2], 10, 48, 10, 0, 1048575],
+    [offsets[3], 12, 25, 12, 0, 1048575],
+    [offsets[4], 2, 37, 2, 0, 1048575],
+    [offsets[5], 9, 39, 9, 0, 1048575],
+    [offsets[6], 10, 48, 10, 0, 1048575],
+    [offsets[7], 4, 58, 4, 0, 1048575],
+    [offsets[8], 9, 39, 9, 0, 1048575],
+    [offsets[9], 9, 89, 9, 0, 1048575],
   ].map(([relative, ...fields]) => [start + relative, ...fields]);
   assert.deepEqual(projected, rows, "all projected historical tuples must remain exact");
   assert.equal(Buffer.from(source).subarray(89, 98).toString(), "undefined");

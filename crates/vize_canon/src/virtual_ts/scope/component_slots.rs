@@ -155,7 +155,10 @@ pub(super) fn generate_component_slot_checks(
 
 fn provided_slots_type(usage: &ComponentUsage) -> String {
     if usage.slots.iter().any(|slot| slot.name_is_dynamic) {
-        return String::from("Record<string, true>");
+        return vize_carton::cstr!(
+            "{}<string, true>",
+            crate::virtual_ts::generated_names::lib("Record")
+        );
     }
     if usage.slots.is_empty() {
         return String::from("{}");

@@ -1,6 +1,7 @@
 //! Cache-backed execution for independently reusable analysis capabilities.
 
 mod filesystem_cache;
+mod layered_cache;
 mod remote_cache;
 mod telemetry;
 #[cfg(test)]
@@ -20,6 +21,10 @@ use crate::{
 pub use filesystem_cache::{
     DOCTOR_FILESYSTEM_CAPABILITY_CACHE_LAYOUT_VERSION, FilesystemCapabilitySnapshotCache,
     FilesystemCapabilitySnapshotCacheError,
+};
+pub use layered_cache::{
+    LayeredCapabilitySnapshotCache, LayeredCapabilitySnapshotCacheError,
+    LayeredCapabilitySnapshotTier,
 };
 pub use remote_cache::{
     RemoteCapabilitySnapshotCache, RemoteCapabilitySnapshotCacheError,

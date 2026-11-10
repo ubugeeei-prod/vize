@@ -155,7 +155,6 @@
       "tests/_helpers/vuefes-failure-json.mjs",
       "tests/_helpers/vuefes-failure-sidecar.mjs",
       "tests/_helpers/vuefes-failure-transport.mjs",
-      "tests/consumers/vitest-project-extends.mjs",
       "tests/differential/acceptance-rates.mjs",
       "tests/differential/browser-origin-current-reference.mjs",
       "tests/differential/check-deletion-readiness.mjs",

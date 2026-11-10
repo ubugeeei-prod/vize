@@ -118,7 +118,11 @@ pub(super) fn generate_component_ref_callback_statement(
     let check_name_start = ts.len();
     append!(*ts, "__vize_component_ref_check_{}", expr.start);
     let check_name_end = ts.len();
-    ts.push_str(": (ref: any, refs: Record<string, any>) => void = (");
+    append!(
+        *ts,
+        ": (ref: any, refs: {}<string, any>) => void = (",
+        crate::virtual_ts::generated_names::lib("Record")
+    );
     let value_gen_start = ts.len();
     ts.push_str(generated_expression);
     let value_full_end = ts.len();

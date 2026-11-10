@@ -322,6 +322,11 @@ pub(super) fn generate_vue_virtual_ts(
         script_syntax_boundaries: &script_diagnostics.boundaries,
         experimental_strict_slot_children: codegen_options.experimental_strict_slot_children,
     };
+    // Keep the authored-name projection active through batch-only suffixes
+    // such as duplicate CSS-module declarations. The nested generator binding
+    // restores this scope before those suffixes are appended.
+    let _generated_names =
+        crate::virtual_ts::generated_names::bind(generic_parameters.as_ref(), &croquis);
     let mut output = if let Some(plan) = generic_parameters
         .as_ref()
         .filter(|plan| !plan.diagnostics.is_empty())
@@ -415,7 +420,6 @@ pub(super) fn generate_vue_virtual_ts(
         descriptor,
         codegen_options.check_options.strict_css_modules,
     );
-
     Ok(GeneratedVueFile {
         diagnostic_route,
         generic_copies,

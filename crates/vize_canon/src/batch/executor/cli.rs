@@ -168,6 +168,7 @@ fn run_cli_command(
 ) -> std::io::Result<Output> {
     profile!("canon.corsa.cli.command", {
         let mut command = Command::new(corsa_path);
+        configure_batch_runtime(&mut command, corsa_path);
         command.current_dir(project.virtual_root());
         // The checker count decides the diagnostic set, so it is always pinned
         // explicitly (see `checker_count`) rather than left to Corsa's default.
@@ -193,6 +194,16 @@ fn run_cli_command(
         cache_custody_receipt::completed(cache_receipt, &output);
         output
     })
+}
+
+/// tsrs's fast mode shares one type graph across workers. The corpus pair gate
+/// qualifies its complete diagnostic fingerprint against tsgo, so a selected
+/// tsrs batch host should not silently fall back to the slower compatibility
+/// mode. Explicit custom launchers retain control of their own environment.
+fn configure_batch_runtime(command: &mut Command, corsa_path: &Path) {
+    if corsa_path.file_stem().and_then(|name| name.to_str()) == Some("tsrs") {
+        command.env("TSRS_FAST", "1");
+    }
 }
 
 fn output_contains_diagnostic_lines(output: &Output) -> bool {

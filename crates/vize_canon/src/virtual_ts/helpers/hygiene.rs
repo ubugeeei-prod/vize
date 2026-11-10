@@ -74,7 +74,7 @@ pub(in crate::virtual_ts) fn emit_helper_text(
     helpers: &str,
 ) {
     if !authored_binding(summary, "Pick") || !helpers.contains("Pick<") {
-        output.push_str(helpers);
+        crate::virtual_ts::generated_names::push_lib_text(output, helpers);
         return;
     }
     let alias = owned_pick_alias(summary);
@@ -82,7 +82,10 @@ pub(in crate::virtual_ts) fn emit_helper_text(
     if !output.contains(declaration.as_str()) {
         output.push_str(&declaration);
     }
-    output.push_str(&helpers.replace("Pick<", &cstr!("{alias}<")));
+    crate::virtual_ts::generated_names::push_lib_text(
+        output,
+        &helpers.replace("Pick<", &cstr!("{alias}<")),
+    );
 }
 
 fn owned_pick_alias(summary: &Croquis) -> String {
@@ -98,15 +101,146 @@ fn owned_pick_alias(summary: &Croquis) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::virtual_ts::helpers::{CONTENT_MAPPER_TYPE_HELPERS, VUE_TYPE_HELPERS};
+    use crate::virtual_ts::helpers::{
+        CONTENT_MAPPER_TYPE_HELPERS, EMIT_OVERLOAD_HELPERS, VUE_TYPE_HELPERS,
+    };
+    use oxc_syntax::identifier::is_identifier_part;
     use vize_croquis::{Analyzer, AnalyzerOptions};
 
     const INFERENCE: &str = include_str!("declarations/emit-inference.d.ts.txt");
+    const LEGACY_TYPE_HELPERS: &str = concat!(
+        include_str!("declarations/core-types.d.ts.txt"),
+        include_str!("declarations/vue2-types.d.ts.txt"),
+        include_str!("declarations/prop-keys.d.ts.txt"),
+        include_str!("declarations/vue2-component-and-list.d.ts.txt")
+    );
+    const RAW_LEGACY_HELPERS: &str = concat!(
+        include_str!("declarations/vue2-define-component.d.ts.txt"),
+        include_str!("declarations/vue2-instance.d.ts.txt")
+    );
+    const INLINE_LIB_TYPES: &[&str] = &[
+        "ArrayConstructor",
+        "BooleanConstructor",
+        "Capitalize",
+        "Date",
+        "DateConstructor",
+        "Element",
+        "Exclude",
+        "Extract",
+        "Function",
+        "FunctionConstructor",
+        "GlobalEventHandlersEventMap",
+        "Iterable",
+        "Lowercase",
+        "NonNullable",
+        "NumberConstructor",
+        "Object",
+        "ObjectConstructor",
+        "Omit",
+        "Parameters",
+        "Partial",
+        "Pick",
+        "PropertyKey",
+        "Readonly",
+        "Record",
+        "Required",
+        "StringConstructor",
+        "ThisType",
+    ];
 
     fn summary(script: &str) -> Croquis {
         let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
         analyzer.analyze_script_setup(script);
         analyzer.finish()
+    }
+
+    fn exact_unqualified_count(source: &str, name: &str) -> usize {
+        source
+            .match_indices(name)
+            .filter(|&(start, matched)| {
+                let before = source
+                    .get(..start)
+                    .and_then(|head| head.chars().next_back());
+                let after = source
+                    .get(start + matched.len()..)
+                    .and_then(|tail| tail.chars().next());
+                before.is_none_or(|c| c != '.' && c != '$' && !is_identifier_part(c))
+                    && after.is_none_or(|c| c != '$' && !is_identifier_part(c))
+            })
+            .count()
+    }
+
+    fn exact_qualified_count(source: &str, name: &str) -> usize {
+        let qualified = format!("globalThis.{name}");
+        source
+            .match_indices(qualified.as_str())
+            .filter(|&(start, matched)| {
+                source
+                    .get(start + matched.len()..)
+                    .and_then(|tail| tail.chars().next())
+                    .is_none_or(|c| c != '$' && !is_identifier_part(c))
+            })
+            .count()
+    }
+
+    #[test]
+    fn every_inline_lib_type_avoids_authored_declarations_and_imports() {
+        let declarations = INLINE_LIB_TYPES
+            .iter()
+            .map(|name| format!("type {name} = never;"))
+            .collect::<Vec<_>>()
+            .join("\n");
+        let imports = format!(
+            "import type {{ {} }} from './lib-types';",
+            INLINE_LIB_TYPES.join(", ")
+        );
+        let helper_chunks = [
+            VUE_TYPE_HELPERS,
+            LEGACY_TYPE_HELPERS,
+            EMIT_OVERLOAD_HELPERS,
+            INFERENCE,
+            include_str!("pattern_matching.d.ts"),
+            include_str!("declarations/slot-resolver.d.ts.txt"),
+            include_str!("declarations/slot-payload.d.ts.txt"),
+        ];
+        let original = helper_chunks
+            .iter()
+            .copied()
+            .chain([RAW_LEGACY_HELPERS])
+            .collect::<std::string::String>();
+
+        for script in [declarations.as_str(), imports.as_str()] {
+            let summary = summary(script);
+            let _binding = crate::virtual_ts::generated_names::bind(None, &summary);
+            let mut output = crate::virtual_ts::TextBuf::default();
+            for helpers in helper_chunks {
+                emit_helper_text(&mut output, &summary, helpers);
+            }
+            crate::virtual_ts::generated_names::push_lib_text(&mut output, RAW_LEGACY_HELPERS);
+
+            for name in INLINE_LIB_TYPES {
+                let original_count = exact_unqualified_count(&original, name);
+                assert_ne!(original_count, 0, "the audit must activate {name}");
+                assert_eq!(
+                    exact_unqualified_count(&output, name),
+                    0,
+                    "authored {name} captured an inline helper:\n{output}"
+                );
+                if *name == "Pick" {
+                    assert_eq!(
+                        output.matches("__vizePick<").count(),
+                        original_count + 1,
+                        "the fresh alias declaration is emitted once beside every rewritten use"
+                    );
+                } else {
+                    assert_eq!(
+                        exact_qualified_count(&output, name),
+                        original_count,
+                        "every generated {name} reference must be qualified"
+                    );
+                }
+            }
+        }
     }
 
     #[test]

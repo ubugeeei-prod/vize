@@ -266,7 +266,12 @@ fn emit_css_module_type(ts: &mut crate::virtual_ts::TextBuf, options: &VirtualTs
                     .filter(|global| global.default_value == CSS_MODULE_GLOBAL_MARKER)
                 {
                     let name = serde_json::to_string(global.name.as_str()).unwrap_or_default();
-                    append!(*__ts, "    {name}: {};\n", global.type_annotation);
+                    append!(*__ts, "    {name}: ");
+                    crate::virtual_ts::generated_names::push_lib_text(
+                        __ts,
+                        global.type_annotation.as_str(),
+                    );
+                    __ts.push_str(";\n");
                     has_default |= global.name == "$style";
                 }
                 let record = crate::virtual_ts::generated_names::lib("Record");
