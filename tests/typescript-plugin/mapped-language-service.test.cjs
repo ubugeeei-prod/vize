@@ -1,4 +1,7 @@
 const assert = require("node:assert/strict");
+const { mkdtempSync, readFileSync, rmSync } = require("node:fs");
+const { tmpdir } = require("node:os");
+const { join } = require("node:path");
 const { test } = require("node:test");
 const { createMappedLanguageService } = require("../../npm/typescript-plugin/language-service.cjs");
 const helper = require("../../npm/native/language-projection.js");
@@ -191,6 +194,80 @@ void test("syntax and semantic packets preserve their channels while EXPECT sees
     service.getSemanticDiagnostics(file).map((value) => value.code),
     [2322],
   );
+});
+
+void test("opt-in diagnostic profiling records raw phase evidence without changing packets", () => {
+  const directory = mkdtempSync(join(tmpdir(), "vize-plugin-diagnostics-"));
+  const output = join(directory, "diagnostics.json");
+  const prior = process.env.VIZE_TYPESCRIPT_PLUGIN_DIAGNOSTIC_PROFILE;
+  process.env.VIZE_TYPESCRIPT_PLUGIN_DIAGNOSTIC_PROFILE = output;
+  try {
+    const file = "/src/Profile.vue";
+    const source = "<script>xy</script>";
+    const syntax = { start: 0, length: 1, code: 1109, category: 1, messageText: "syntax" };
+    const semantic = { start: 1, length: 1, code: 2322, category: 1, messageText: "semantic" };
+    const projection = {
+      text: "xy",
+      mappings: [[0, 2, 8, 2, 0, 0xfffff]],
+      diagnostics: [],
+    };
+    const service = createMappedLanguageService(
+      ts,
+      {
+        getSyntacticDiagnostics: () => [syntax],
+        getSemanticDiagnostics: () => [semantic],
+      },
+      { engine: helper, get: () => ({ source, projection }) },
+    );
+    assert.deepEqual(service.getSyntacticDiagnostics(file).map(({ code }) => code), [1109]);
+    assert.deepEqual(service.getSemanticDiagnostics(file).map(({ code }) => code), [2322]);
+    service.dispose();
+
+    const profile = JSON.parse(readFileSync(output, "utf8"));
+    assert.equal(profile.contract, "vize-typescript-plugin-diagnostics-v1");
+    assert.deepEqual(
+      profile.events.map(({ method, projected, sourceLength, generatedLength, resultCount }) => ({
+        method,
+        projected,
+        sourceLength,
+        generatedLength,
+        resultCount,
+      })),
+      [
+        {
+          method: "getSyntacticDiagnostics",
+          projected: true,
+          sourceLength: source.length,
+          generatedLength: projection.text.length,
+          resultCount: 1,
+        },
+        {
+          method: "getSemanticDiagnostics",
+          projected: true,
+          sourceLength: source.length,
+          generatedLength: projection.text.length,
+          resultCount: 1,
+        },
+      ],
+    );
+    for (const event of profile.events) {
+      assert.deepEqual(Object.keys(event.phasesMs), [
+        "ensure",
+        "projection",
+        "authoredSource",
+        "typescriptSyntactic",
+        "typescriptSemantic",
+        "directives",
+        "mapping",
+      ]);
+      assert.ok(event.totalMs >= 0);
+      assert.ok(Object.values(event.phasesMs).every((value) => value >= 0));
+    }
+  } finally {
+    if (prior === undefined) delete process.env.VIZE_TYPESCRIPT_PLUGIN_DIAGNOSTIC_PROFILE;
+    else process.env.VIZE_TYPESCRIPT_PLUGIN_DIAGNOSTIC_PROFILE = prior;
+    rmSync(directory, { recursive: true, force: true });
+  }
 });
 
 void test("real TypeScript file references return only complete authored Vue spans", () => {

@@ -423,6 +423,20 @@ test("the workflow keeps evidence after failure and measures the checked-out sou
   assert.match(workflow, /export TSRS_FAST=1/);
   assert.match(workflow, /exec "%s" "\$@"/);
   assert.doesNotMatch(workflow, /exec "%s" --fast "\$@"/);
+  assert.match(workflow, /--tsserver-plugin "head=\$RUNNER_TEMP\/tsserver-plugin"/);
+  assert.match(workflow, /--tsserver-plugin "compare=\$RUNNER_TEMP\/tsserver-plugin-compare"/);
+  assert.match(workflow, /\$RUNNER_TEMP\/compare\/npm\/typescript-plugin/);
+  assert.match(workflow, /vize-vitrine-compare\.node/);
+  const tsserver = readFileSync(
+    new URL("../../tools/benchmarks/scripts/lsp-vs-volar-tsserver.ts", import.meta.url),
+    "utf8",
+  );
+  const runner = readFileSync(
+    new URL("../../tools/benchmarks/scripts/lsp-vs-volar.ts", import.meta.url),
+    "utf8",
+  );
+  assert.match(tsserver, /VIZE_TYPESCRIPT_PLUGIN_DIAGNOSTIC_PROFILE/);
+  assert.match(runner, /round\$\{round\}-diagnostic-phases\.json/);
   // Versions come from the workspace catalog, not from the workflow.
   assert.doesNotMatch(workflow, /@vue\/language-server@\d/);
 });
