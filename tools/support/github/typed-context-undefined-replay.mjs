@@ -72,6 +72,18 @@ const applyEdits = (text, edits) => {
   fragments.push(text.subarray(cursor));
   return Buffer.concat(fragments);
 };
+const setupSource = "defineProps<{ undefined: string }>();";
+const setupSourceBefore = `  \n  ${setupSource}\n  \n`;
+const setupSourceAfter = `\n${setupSource}\n\n`;
+const setupSourceEdit = (before) => {
+  const start = uniqueOffset(before, Buffer.from(setupSourceBefore));
+  return {
+    start,
+    end: start + Buffer.byteLength(setupSourceBefore),
+    replacement: Buffer.from(setupSourceAfter),
+    label: "dedented setup source",
+  };
+};
 const certifyMapperTransition = (beforePacket, afterPacket) => {
   const before = Buffer.from(beforePacket.text);
   const after = Buffer.from(afterPacket.text);
@@ -89,12 +101,18 @@ const certifyMapperTransition = (beforePacket, afterPacket) => {
       replacement: afterHelper,
       label: "embedded helper block",
     },
+    setupSourceEdit(before),
   ];
   const beforeText = before.toString();
   for (const [oldValue, currentValue, label] of [
     [
       "type __VizeComponentConstructor = new <__VizeAuthoredProps = unknown>(props?: __VizeAuthoredProps & __VizeComponentInput<Props, {}, __VizeAuthoredProps>, ...args: any[]) => __VizeUsePublicInstance<__VizeAuthoredProps> extends true ? __VizeComponentInstance : __VizeReplaceComponentProps<__VizeComponentInstance, __VizeAuthoredKeyWitness<__VizeAuthoredProps> & __VizeComponentInputProps<Props, {}> & __VizeComponentInputGuard<Props, {}, __VizeAuthoredProps>>;",
-      "type $ComponentConstructor = new <$AuthoredProps = unknown, $JsxProps = unknown>(props?: $AuthoredProps & $ComponentInput<Props, {}, $AuthoredProps>, ...args: any[]) => $ComponentInstanceFor<$ComponentInstance, Props, {}, $AuthoredProps, $JsxProps>;",
+      `type $ComponentConstructor = new <$AuthoredProps = unknown, $JsxProps = unknown>(props?: $AuthoredProps & $ComponentInput<Props, {}, $AuthoredProps>, ...args: any[]) => ($IsAny<$AuthoredProps> extends true ? true : $IsUnknown<$AuthoredProps> extends true ? $UsePublicInstance<$JsxProps> : false) extends true ? $ComponentInstance : NoInfer<$ComponentInstanceFor<$ComponentInstance, {
+  $props: Props;
+  readonly __vizeRawProps?: Props;
+  $emit: $PublicEmit<Emits>;
+  $slots: $PublicSlots<$Slots>;
+}, $ComponentPublicBase, Props, {}, $AuthoredProps, $JsxProps>>;`,
       "integrated generic component constructor",
     ],
     [
@@ -171,8 +189,12 @@ const certifyNativeTransition = (beforeText, afterText) => {
   const source = before.toString();
   const oldConstructor =
     "type __VizeComponentConstructor = new <__VizeAuthoredProps = unknown>(props?: __VizeAuthoredProps & __VizeComponentInput<Props, {}, __VizeAuthoredProps>, ...args: any[]) => __VizeUsePublicInstance<__VizeAuthoredProps> extends true ? __VizeComponentInstance : __VizeReplaceComponentProps<__VizeComponentInstance, __VizeAuthoredKeyWitness<__VizeAuthoredProps> & __VizeComponentInputProps<Props, {}> & __VizeComponentInputGuard<Props, {}, __VizeAuthoredProps>>;";
-  const currentConstructor =
-    "type $ComponentConstructor = new <$AuthoredProps = unknown, $JsxProps = unknown>(props?: $AuthoredProps & $ComponentInput<Props, {}, $AuthoredProps>, ...args: any[]) => $ComponentInstanceFor<$ComponentInstance, Props, {}, $AuthoredProps, $JsxProps>;";
+  const currentConstructor = `type $ComponentConstructor = new <$AuthoredProps = unknown, $JsxProps = unknown>(props?: $AuthoredProps & $ComponentInput<Props, {}, $AuthoredProps>, ...args: any[]) => ($IsAny<$AuthoredProps> extends true ? true : $IsUnknown<$AuthoredProps> extends true ? $UsePublicInstance<$JsxProps> : false) extends true ? $ComponentInstance : NoInfer<$ComponentInstanceFor<$ComponentInstance, {
+  $props: Props;
+  readonly __vizeRawProps?: Props;
+  $emit: $PublicEmit<Emits>;
+  $slots: $PublicSlots<$Slots>;
+}, $ComponentPublicBase, Props, {}, $AuthoredProps, $JsxProps>>;`;
   const constructorStart = uniqueOffset(before, Buffer.from(oldConstructor));
   const constructorEnd = constructorStart + Buffer.byteLength(oldConstructor);
   const primary = [
@@ -182,6 +204,7 @@ const certifyNativeTransition = (beforeText, afterText) => {
       replacement: Buffer.from(currentConstructor),
       label: "integrated generic component constructor",
     },
+    setupSourceEdit(before),
   ];
   for (const match of source.matchAll(/\b__Vize[A-Za-z0-9_]+\b/gu)) {
     const start = Buffer.byteLength(source.slice(0, match.index));
@@ -461,7 +484,20 @@ if (mode === "prepare") {
   assert.equal(a.extension, b.extension);
   assert.deepEqual(a.diagnostics, b.diagnostics);
   assert.deepEqual(authoredDirectives(a), authoredDirectives(b, true));
+  const setupEdit = edits.find((edit) => edit.label === "dedented setup source");
+  assert(setupEdit, "certified setup-source edit");
+  const beforeSetupSource = setupEdit.start + Buffer.byteLength("  \n  ");
+  const afterSetupSource =
+    point(setupEdit.start, edits) + Buffer.byteLength("\n");
   const mappings = a.mappings.map(([start, length, ...rest]) => {
+    if (overlap(start, length, setupEdit)) {
+      assert(
+        beforeSetupSource <= start &&
+          start + length <= beforeSetupSource + Buffer.byteLength(setupSource),
+        "only authored setup atoms may overlap the dedent",
+      );
+      return [afterSetupSource + start - beforeSetupSource, length, ...rest];
+    }
     return [...projectedRange(start, length, edits), ...rest];
   });
   assertTypedContextWrapperMappings(

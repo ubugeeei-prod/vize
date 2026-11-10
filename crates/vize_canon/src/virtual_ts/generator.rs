@@ -458,7 +458,6 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                 }
 
                 props_const_assertions.splice_output_line(&mut output_line, line_start);
-
                 // Strip `export` from non-import lines inside setup scope
                 let trimmed_line = output_line.trim_start();
                 if let Some(default_expr) = trimmed_line
