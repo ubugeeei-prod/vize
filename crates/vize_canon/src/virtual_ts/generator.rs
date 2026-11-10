@@ -106,6 +106,8 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         generation_options.legacy_vue2 || matches!(dialect, VueVersion::V2 | VueVersion::V2_7);
     let _ = generation_options.template_syntax_quirks;
     let options_api = generation_options.options_api || legacy_vue2;
+    let preserve_native_setup_indentation = generation_options.preserve_authored_component
+        && generation_options.component_name.is_none();
     let hoist_shared_preamble = generation_options.hoist_shared_preamble;
     let mut ts = crate::virtual_ts::TextBuf::with_capacity(32 * 1024);
     file_directives::emit(
@@ -567,7 +569,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                         );
                     }
                 }
-                if generation_options.component_name.is_none() {
+                if preserve_native_setup_indentation {
                     ts.push_str("  ");
                 }
                 ref_keys.emit_line(

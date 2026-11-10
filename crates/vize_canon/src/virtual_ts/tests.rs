@@ -1900,7 +1900,10 @@ fn test_editor_projection_alone_dedents_authored_setup_lines() {
         0,
         0,
         &Default::default(),
-        VirtualTsGenerationOptions::default(),
+        VirtualTsGenerationOptions {
+            preserve_authored_component: true,
+            ..Default::default()
+        },
     );
     let editor = generate_virtual_ts_with_offsets_and_checks(
         &summary,
