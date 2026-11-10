@@ -140,6 +140,46 @@ function withProvenListenerAdditionRemoved(
   return { ...actual, exports };
 }
 
+/** `$PropValueOr` (#12431) is an addition; its oracle proves it equals the eager fallback. */
+function withProvenPropValueOrAdditionRemoved(
+  actual: ExportSurface,
+  expected: ExportSurface,
+): ExportSurface {
+  const exports = structuredClone(actual.exports);
+  const name = "$PropValueOr";
+  const index = exports.findIndex((entry) => entry.name === name);
+  if (expected.exports.some((entry) => entry.name === name) || index < 0)
+    return { ...actual, exports };
+  const oracle = new URL("tests/tooling/canon-prop-value-or-equivalence.test.ts", repositoryRoot);
+  assert.ok(fs.existsSync(oracle) && fs.readFileSync(oracle, "utf8").includes(name));
+  const parameter = (name: string, constraint: string | null, fallback: string | null) => ({
+    name,
+    constraint,
+    default: fallback,
+  });
+  assert.deepEqual(exports[index], {
+    name,
+    type: true,
+    value: false,
+    namespace: false,
+    declarations: [
+      {
+        kind: "TypeAliasDeclaration",
+        parameters: [
+          parameter("P", null, null),
+          parameter("K", "PropertyKey", null),
+          parameter("C", null, null),
+          parameter("FK", "PropertyKey", "K"),
+          parameter("__V", null, "P extends unknown ? (K extends keyof P ? P[K] : never) : never"),
+        ],
+        signatures: [],
+      },
+    ],
+  });
+  exports.splice(index, 1);
+  return { ...actual, exports };
+}
+
 export function assertPublicSlotExportSurface(
   actual: ExportSurface,
   expected: ExportSurface,
@@ -151,7 +191,10 @@ export function assertPublicSlotExportSurface(
   assert.deepEqual(
     Object.fromEntries(
       withProvenDefaultsRestored(
-        withProvenListenerAdditionRemoved(actual, expected),
+        withProvenPropValueOrAdditionRemoved(
+          withProvenListenerAdditionRemoved(actual, expected),
+          expected,
+        ),
         changes,
       ).exports.map((entry) => [entry.name, entry]),
     ),

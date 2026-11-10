@@ -274,6 +274,13 @@ export type $PropValue<
   F = unknown,
   __V = P extends unknown ? (K extends keyof P ? P[K] : never) : never,
 > = [__V] extends [never] ? F : __V;
+export type $PropValueOr<
+  P,
+  K extends PropertyKey,
+  C,
+  FK extends PropertyKey = K,
+  __V = P extends unknown ? (K extends keyof P ? P[K] : never) : never,
+> = [__V] extends [never] ? $FallthroughValue<C, FK> : __V;
 type $InvalidFallthroughSpreadKeys<P, F, A> = {
   [K in keyof A]-?: K extends keyof P | keyof $KebabProps<P>
     ? never

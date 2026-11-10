@@ -4,6 +4,7 @@ import { test } from "node:test";
 import {
   certifiedHelperImages,
   navigationBlock,
+  lazyPropValue,
   requiredFallthroughGate,
   withLandedEdits,
 } from "../../tools/support/compat/content-mapper/callback-owner-landed-contracts.ts";
@@ -105,4 +106,24 @@ test("navigation keys move onto one ignored line around their unchanged names", 
   }
   assert.deepEqual(withLandedEdits(before, before, []), []);
   assert.deepEqual(withLandedEdits(before, after.replace(".title", ".other"), []), []);
+});
+
+test("an eager per-prop fallback migrates to the lazy helper around its unchanged key", () => {
+  const vt = 'import("vize:virtual-ts").';
+  const eager = (key: string, fallthrough: string) =>
+    `${vt}$PropValue<__Child_ValueProps_0, '${key}', ${vt}$FallthroughValue<__Child_Component_0, '${fallthrough}'>>`;
+  const before = `  type __Child_0_prop_title = ${eager("title", "title")};\n  type __Child_0_prop_as_child = ${vt}$PropValue<__Child_ValueProps_0, 'as-child', ${eager("asChild", "as-child")}>;\n`;
+  const after = `  type __Child_0_prop_title = ${lazyPropValue(`${vt}$PropValue`, "__Child_ValueProps_0", "title", "__Child_Component_0", "title")};\n  type __Child_0_prop_as_child = ${vt}$PropValue<__Child_ValueProps_0, 'as-child', ${lazyPropValue(`${vt}$PropValue`, "__Child_ValueProps_0", "asChild", "__Child_Component_0", "as-child")}>;\n`;
+  const edits = withLandedEdits(before, after, []);
+  assert.equal(apply(before, edits), after);
+  for (const key of ["'title'", "'asChild'"]) {
+    const at = Buffer.byteLength(before.slice(0, before.indexOf(key) + 1));
+    assert.ok(!edits.some((edit) => edit.start < at + key.length - 2 && at < edit.end), key);
+  }
+  assert.deepEqual(withLandedEdits(before, before, []), []);
+  assert.deepEqual(
+    withLandedEdits(before, after.replace("__Child_Component_0>", "__Other_Component_0>"), [])
+      .length,
+    2,
+  );
 });
