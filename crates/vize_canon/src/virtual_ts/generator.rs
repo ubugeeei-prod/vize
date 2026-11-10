@@ -304,7 +304,11 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         .then(|| script_content.and_then(find_options_api_props))
         .flatten();
     let options_api_slots = options_api
-        .then(|| script_content.and_then(find_options_api_slots_type))
+        .then(|| {
+            script_content.and_then(|script| {
+                find_options_api_slots_type(script, generation_options.component_name.is_some())
+            })
+        })
         .flatten();
     let syntactic_type_only_imported_names = syntactic_type_only_imported_names(
         summary,

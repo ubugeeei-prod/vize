@@ -72,7 +72,10 @@ pub(super) fn find_options_api_props(script: &str) -> Option<OptionsApiPropsSour
 /// that exact type in the component projection preserves member JSDoc and the
 /// authored key spelling for hover instead of rebuilding the same shape from
 /// the component's `<slot>` outlets.
-pub(super) fn find_options_api_slots_type(script: &str) -> Option<String> {
+pub(super) fn find_options_api_slots_type(
+    script: &str,
+    project_public_slot_functions: bool,
+) -> Option<String> {
     if !script.contains("SlotsType") || !script.contains("export default") {
         return None;
     }
@@ -83,30 +86,54 @@ pub(super) fn find_options_api_slots_type(script: &str) -> Option<String> {
     }
     let options = component_options_from_program(&parsed.program)?;
     let slots = option_expression_property(options, "slots")?;
-    slots_type_from_expression(script, slots)
+    slots_type_from_expression(script, slots, project_public_slot_functions)
 }
 
-fn slots_type_from_expression(script: &str, expression: &Expression<'_>) -> Option<String> {
+fn slots_type_from_expression(
+    script: &str,
+    expression: &Expression<'_>,
+    project_public_slot_functions: bool,
+) -> Option<String> {
     match expression {
-        Expression::TSAsExpression(value) => slots_type_argument(script, &value.type_annotation)
-            .or_else(|| slots_type_from_expression(script, &value.expression)),
-        Expression::TSSatisfiesExpression(value) => {
-            slots_type_argument(script, &value.type_annotation)
-                .or_else(|| slots_type_from_expression(script, &value.expression))
-        }
-        Expression::TSTypeAssertion(value) => slots_type_argument(script, &value.type_annotation)
-            .or_else(|| slots_type_from_expression(script, &value.expression)),
+        Expression::TSAsExpression(value) => slots_type_argument(
+            script,
+            &value.type_annotation,
+            project_public_slot_functions,
+        )
+        .or_else(|| {
+            slots_type_from_expression(script, &value.expression, project_public_slot_functions)
+        }),
+        Expression::TSSatisfiesExpression(value) => slots_type_argument(
+            script,
+            &value.type_annotation,
+            project_public_slot_functions,
+        )
+        .or_else(|| {
+            slots_type_from_expression(script, &value.expression, project_public_slot_functions)
+        }),
+        Expression::TSTypeAssertion(value) => slots_type_argument(
+            script,
+            &value.type_annotation,
+            project_public_slot_functions,
+        )
+        .or_else(|| {
+            slots_type_from_expression(script, &value.expression, project_public_slot_functions)
+        }),
         Expression::TSNonNullExpression(value) => {
-            slots_type_from_expression(script, &value.expression)
+            slots_type_from_expression(script, &value.expression, project_public_slot_functions)
         }
         Expression::ParenthesizedExpression(value) => {
-            slots_type_from_expression(script, &value.expression)
+            slots_type_from_expression(script, &value.expression, project_public_slot_functions)
         }
         _ => None,
     }
 }
 
-fn slots_type_argument(script: &str, annotation: &TSType<'_>) -> Option<String> {
+fn slots_type_argument(
+    script: &str,
+    annotation: &TSType<'_>,
+    project_public_slot_functions: bool,
+) -> Option<String> {
     let TSType::TSTypeReference(reference) = annotation else {
         return None;
     };
@@ -117,7 +144,9 @@ fn slots_type_argument(script: &str, annotation: &TSType<'_>) -> Option<String> 
         return None;
     }
     let argument = reference.type_arguments.as_ref()?.params.first()?;
-    options_api_slots_contract(script, argument)
+    project_public_slot_functions
+        .then(|| options_api_slots_contract(script, argument))
+        .flatten()
         .or_else(|| source_slice(script, argument.span()).map(String::from))
 }
 
@@ -247,7 +276,7 @@ mod tests {
     }
 
     #[test]
-    fn keeps_the_authored_slots_type_and_jsdoc() {
+    fn scopes_public_slot_projection_to_editor_generation() {
         let source = r#"
 import { defineComponent, type SlotsType } from 'vue'
 export default defineComponent({
@@ -258,8 +287,12 @@ export default defineComponent({
 })
 "#;
         assert_eq!(
-            find_options_api_slots_type(source).as_deref(),
+            find_options_api_slots_type(source, true).as_deref(),
             Some("{\n  /** Row slot. */\n  item?: (props: { row: number }) => any;\n}")
+        );
+        assert_eq!(
+            find_options_api_slots_type(source, false).as_deref(),
+            Some("{\n    /** Row slot. */\n    item: { row: number }\n  }")
         );
     }
 }
