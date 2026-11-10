@@ -59,6 +59,8 @@ pub(in crate::linter::engine) const RULES: &[&str] = &[
     "vue/v-slot-style",
     "vue/no-custom-modifiers-on-v-model",
     "vue/no-v-text-v-html-on-component",
+    "vue/attribute-hyphenation",
+    "vue/valid-attribute-name",
     "a11y/heading-levels",
     "a11y/placeholder-label-option",
     "a11y/use-list",
