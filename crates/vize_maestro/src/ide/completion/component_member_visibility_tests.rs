@@ -93,6 +93,10 @@ defineProps<{ someMessage: string }>()
             1,
             "the raw template response must contain the generated marker: {raw_labels:?}"
         );
+        assert!(
+            !labels.is_empty(),
+            "the template route must return checker items: {labels:?}"
+        );
         assert_eq!(
             generated_member_labels(&labels),
             Vec::<&str>::new(),
