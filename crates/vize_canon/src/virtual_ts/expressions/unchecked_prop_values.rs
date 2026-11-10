@@ -29,13 +29,11 @@ pub(crate) const ATTR_VALUE_REFERENCE: &str = "$AttrValue<";
 macro_rules! attr_value {
     ($listeners:literal, $fallthrough:literal) => {
         concat!(
-            "type $AttrValue<R, K, C, V, P = R & ",
+            "type $AttrValue<R, K, C, V> = K extends (R extends unknown ? keyof R : never) | keyof ",
             $listeners,
-            " & import(\"vue\").VNodeProps & import(\"vue\").AllowedComponentProps & import(\"vue\").ComponentCustomProps, ",
-            "__V = P extends unknown ? (K extends keyof P ? P[K] : never) : never",
-            "> = [__V] extends [never] ? ",
+            " | keyof import(\"vue\").VNodeProps | keyof import(\"vue\").AllowedComponentProps | keyof import(\"vue\").ComponentCustomProps ? unknown : ",
             $fallthrough,
-            " extends infer F ? K extends keyof F ? {} extends Pick<F, K> ? V : unknown : V : V : unknown;\n"
+            " extends infer F ? K extends keyof F ? {} extends Pick<F, K> ? V : unknown : V : V;\n"
         )
     };
 }
@@ -194,22 +192,7 @@ fn writes_model(usage: &ComponentUsage, prop: &PassedProp) -> bool {
 
 #[cfg(test)]
 mod tests {
-    use super::{attr_value_declaration, needs_parentheses};
-
-    /// `$PropValueOr` takes its fallthrough exactly when this lookup is
-    /// `never`, so both read "declared" from the same expression.
-    #[test]
-    fn declared_lookup_is_the_prop_value_or_one() {
-        let lookup = "__V = P extends unknown ? (K extends keyof P ? P[K] : never) : never>";
-        let prop_value_or = include_str!("../helpers/declarations/component-checks.d.ts.txt")
-            .lines()
-            .find(|line| line.starts_with("export type $PropValueOr<"))
-            .expect("shared $PropValueOr");
-        assert_eq!(prop_value_or.matches(lookup).count(), 1, "{prop_value_or}");
-        for declaration in [attr_value_declaration(true), attr_value_declaration(false)] {
-            assert_eq!(declaration.matches(lookup).count(), 1, "{declaration}");
-        }
-    }
+    use super::needs_parentheses;
 
     #[test]
     fn only_values_satisfies_could_split_are_wrapped() {
