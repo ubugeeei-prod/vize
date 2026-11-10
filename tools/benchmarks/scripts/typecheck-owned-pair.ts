@@ -14,6 +14,7 @@ import {
   assertSameInputs,
   batchCommand,
   diagnosticEvidence,
+  diagnosticFingerprint,
   sha256,
   snapshotInputs,
   writeJson,
@@ -27,6 +28,7 @@ import {
   selectOwnedWorkloads,
 } from "./typecheck-owned-pair-projects.ts";
 import {
+  assertOwnedProjectionBudget,
   compareOwnedProjections,
   ownedProbeRows,
   prepareOwnedProbe,
@@ -339,14 +341,32 @@ async function main() {
     for (const role of ["base", "head"] as const)
       await invoke(role, "tsc", "projection", false, true);
     await invoke("base", "tsc", "projection-reference", false, true, true);
-    writeJson(
-      join(out, `${workload.id}-projection.json`),
-      compareOwnedProjections(
-        projection.get("base")!,
-        projection.get("head")!,
-        projection.get("vue")!,
-      ),
+    const projectionDiagnostics = {
+      base: first.get("base-tsc")!,
+      head: first.get("head-tsc")!,
+      vue: first.get("vue-tsc")!,
+    };
+    assertSameEvidence(projectionDiagnostics.base, projectionDiagnostics.head);
+    const diagnosticFingerprints = {
+      base: diagnosticFingerprint(projectionDiagnostics.base),
+      head: diagnosticFingerprint(projectionDiagnostics.head),
+      vue: diagnosticFingerprint(projectionDiagnostics.vue),
+    };
+    assert.equal(
+      diagnosticFingerprints.head,
+      diagnosticFingerprints.base,
+      "projection probe diagnostic fingerprint changed",
     );
+    const projectionReport = compareOwnedProjections(
+      projection.get("base")!,
+      projection.get("head")!,
+      projection.get("vue")!,
+    );
+    writeJson(join(out, `${workload.id}-projection.json`), {
+      ...projectionReport,
+      diagnosticFingerprints,
+    });
+    assertOwnedProjectionBudget(projectionReport);
     writeJson(join(out, `${workload.id}-checker-traces.json`), {
       policy: tracePolicy,
       ...Object.fromEntries(

@@ -70,6 +70,9 @@ export function diagnosticEvidence(raw: RawRun, project: string, format: "json" 
     format,
   };
 }
+/** Fingerprint the complete canonical diagnostic packet and exit status. */
+export const diagnosticFingerprint = (evidence: ReturnType<typeof diagnosticEvidence>) =>
+  sha256(JSON.stringify(evidence));
 export function assertSameEvidence(
   base: ReturnType<typeof diagnosticEvidence>,
   head: ReturnType<typeof diagnosticEvidence>,
