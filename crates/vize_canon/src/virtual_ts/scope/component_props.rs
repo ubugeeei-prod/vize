@@ -11,12 +11,11 @@ pub(super) use bindings::{
     collect_checkable_usages, component_name_matches_external_template_binding,
     component_usage_has_checkable_binding, has_script_binding,
 };
+pub(super) use closure_scopes::generate_closure_component_props_recursive;
+pub(super) use closure_scopes::recurse_child_closure_scopes;
 use duplicate_listeners::append_duplicate_listener_checks;
 pub(super) use dynamic_reference::{named_dynamic_navigation_reference, named_dynamic_reference};
 use shared_contracts::{SharedComponentContract, prop_alias_share, shared_component_contracts};
-
-pub(super) use closure_scopes::generate_closure_component_props_recursive;
-pub(super) use closure_scopes::recurse_child_closure_scopes;
 use vize_carton::{FxHashMap, FxHashSet, String, append, profile};
 use vize_croquis::{ScopeData, ScopeKind, analysis::ComponentUsage};
 
