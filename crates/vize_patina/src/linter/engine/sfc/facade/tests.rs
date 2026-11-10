@@ -62,6 +62,10 @@ fn migrated_sfc_rules_preserve_diagnostics_and_fixes() {
         r#"<a href="https://example.com" target="_blank" rel="noopener noreferrer">go</a><iframe sandbox=""/><button type="button">go</button><input disabled/>"#,
         r#"<Comp><template #default><textarea>{{ value }}</textarea><button>go</button></template></Comp>"#,
         "<!-- eslint-disable-next-line vue/no-inline-style -->\n<div style=\"color:red\"/>",
+        r#"<MyComponent :foo="foo"/><div :title="'static'" :class="[{ active }, { hidden }]"/>"#,
+        "<!-- eslint-disable-next-line vue/prefer-props-shorthand -->\n<MyComponent :foo=\"foo\"/>",
+        "<!-- eslint-disable-next-line vue/no-useless-v-bind -->\n<div :title=\"'static'\"/>",
+        "<!-- eslint-disable-next-line vue/no-multiple-objects-in-class -->\n<div :class=\"[{ active }, { hidden }]\"/>",
         r#"<div v-pre><textarea>{{ raw }}</textarea></div>"#,
     ] {
         compare_template(source);
