@@ -320,7 +320,10 @@ mod tests {
         let linter = create_linter();
         let result = linter.lint_template(r#"<button :type="">Click</button>"#, "test.vue");
         assert_eq!(result.warning_count, 1);
-        assert!(result.diagnostics[0].message.contains("value"));
+        assert_eq!(
+            result.diagnostics[0].message,
+            "A value must be set for the '<button>' type attribute"
+        );
     }
 
     #[test]
@@ -335,9 +338,17 @@ mod tests {
             "test.vue",
         );
         assert_eq!(result.warning_count, 2, "{:#?}", result.diagnostics);
-        assert!(result.diagnostics.iter().all(|diagnostic| {
-            diagnostic.message.contains("forbidden") && !diagnostic.message.contains("invalid")
-        }));
+        assert_eq!(
+            result
+                .diagnostics
+                .iter()
+                .map(|diagnostic| diagnostic.message.as_str())
+                .collect::<Vec<_>>(),
+            vec![
+                "'button' is forbidden by the configured '<button>' type policy",
+                "'reset' is forbidden by the configured '<button>' type policy",
+            ]
+        );
     }
 
     #[test]
@@ -352,17 +363,16 @@ mod tests {
             "test.vue",
         );
         assert_eq!(result.warning_count, 2, "{:#?}", result.diagnostics);
-        assert!(
+        assert_eq!(
             result
                 .diagnostics
                 .iter()
-                .any(|diagnostic| diagnostic.message.contains("missing"))
-        );
-        assert!(
-            result
-                .diagnostics
-                .iter()
-                .any(|diagnostic| diagnostic.message.contains("not a valid"))
+                .map(|diagnostic| diagnostic.message.as_str())
+                .collect::<Vec<_>>(),
+            vec![
+                "'<button>' is missing a 'type' attribute; add type=\"button\", \"submit\", or \"reset\"",
+                "'menu' is not a valid 'type' for '<button>'; use \"button\", \"submit\", or \"reset\"",
+            ]
         );
     }
 

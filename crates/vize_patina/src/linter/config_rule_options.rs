@@ -358,10 +358,23 @@ mod tests {
             .with_config_rule_options(&options)
             .lint_sfc(source, "App.vue");
         assert_eq!(result.warning_count, 2, "{:#?}", result.diagnostics);
-        assert!(result.diagnostics.iter().all(|diagnostic| {
-            diagnostic.rule_name == "vue/html-button-has-type"
-                && diagnostic.message.contains("forbidden")
-        }));
+        assert_eq!(
+            result
+                .diagnostics
+                .iter()
+                .map(|diagnostic| (diagnostic.rule_name, diagnostic.message.as_str()))
+                .collect::<Vec<_>>(),
+            vec![
+                (
+                    "vue/html-button-has-type",
+                    "'submit' is forbidden by the configured '<button>' type policy",
+                ),
+                (
+                    "vue/html-button-has-type",
+                    "'reset' is forbidden by the configured '<button>' type policy",
+                ),
+            ]
+        );
     }
 
     #[test]
