@@ -175,7 +175,57 @@ fn logical_conditions_only_report_when_truthiness_is_fixed() {
         ),
     );
 
-    assert_eq!(result.warning_count, 3, "{:?}", result.diagnostics);
+    assert_eq!(result.warning_count, 2, "{:?}", result.diagnostics);
+}
+
+#[test]
+fn constant_condition_follows_the_core_rule_truthiness() {
+    let result = reported(
+        Box::new(NoConstantCondition),
+        concat!(
+            "<p v-if=\"0 < 1\" /><p v-if=\"`x${b}`\" /><p v-if=\"typeof a\" />",
+            "<p v-if=\"void a\" /><p v-if=\"(a, 1)\" /><p v-if=\"a === 1 || true || b\" />",
+            "<p v-if=\"new Date()\" /><p v-if=\"+(a || true)\" /><p v-if=\"+[a]\" />",
+            "<p v-if=\"`${[a]}`\" /><p v-if=\"1 ?? a\" /><p v-if=\"true as boolean\" />",
+            "<button @click=\"function* g() { while (1) { yield } while (true) {} do {} while (2) }\" />",
+        ),
+    );
+    assert_eq!(
+        result,
+        [
+            "0 < 1",
+            "`x${b}`",
+            "typeof a",
+            "void a",
+            "a, 1",
+            "a === 1 || true || b",
+            "new Date()",
+            "2"
+        ]
+    );
+}
+
+#[test]
+fn camelcase_follows_the_core_rule_selectors() {
+    let result = reported(
+        Box::new(Camelcase),
+        concat!(
+            "<button @click=\"({ a: s.snake_a } = o); [s.snake_b = 1] = l; ({ ...s.snake_c } = o)\" />",
+            "<button @click=\"() => { class L { snake_d = 1; #snake_e; snake_f() {} } ",
+            "snake_g: for (;;) { break snake_g } }\" />",
+            "<button @click=\"() => import('x', { with_h: { snake_i: 1 } })\" />",
+            "<button @click=\"(snake_j) => { use(snake_j); new S(snake_j); ((v = snake_j) => v); snake_j.x }\" />",
+            "<button @click=\"s['snake_k'] = 1; s.snake_l++; ({ 'snake_m': 1 })\" />",
+            "<button @click=\"() => { snake_n + 1; const snake_n = 1 }\" />",
+        ),
+    );
+    assert_eq!(
+        result,
+        [
+            "snake_a", "snake_b", "snake_c", "snake_d", "#snake_e", "snake_f", "snake_g",
+            "snake_g", "snake_j", "snake_j", "snake_n", "snake_n"
+        ]
+    );
 }
 
 #[test]

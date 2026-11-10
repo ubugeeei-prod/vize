@@ -2,27 +2,31 @@
 
 use super::{
     CoreKind,
+    constant::is_constant,
     precision::numeric_literal_may_lose_precision,
     predicates::{
-        addition_has_string_and_non_string, can_unquote_property, dot_notation_key, is_constant,
-        is_empty_string_like, is_implicit_numeric_coercion, is_index_of_call, is_known_string,
-        is_negated, is_numeric, is_string_like, is_underscored_identifier,
+        addition_has_string_and_non_string, can_unquote_property, collect_nested_addition_spans,
+        dot_notation_key, is_empty_string_like, is_implicit_numeric_coercion, is_index_of_call,
+        is_known_string, is_negated, is_numeric, is_string_like, is_underscored_identifier,
         leftmost_addition_operand, multiplies_by_fraction_of_one, property_name,
         rightmost_addition_operand,
     },
 };
 use crate::{context::LintContext, rules::vue::compatibility_template::origin::Origin};
 use oxc_ast::ast::{
-    ArrayExpression, ArrayExpressionElement, ArrayPattern, AssignmentExpression, AssignmentTarget,
-    BinaryExpression, BindingIdentifier, BindingProperty, ComputedMemberExpression,
-    ConditionalExpression, DoWhileStatement, Expression, ForStatement, IdentifierReference,
-    IfStatement, NumericLiteral, ObjectExpression, ObjectPattern, ObjectProperty,
-    ObjectPropertyKind, PropertyKey, PropertyKind, Statement, StaticMemberExpression,
-    UnaryExpression, WhileStatement,
+    ArrayExpression, ArrayExpressionElement, ArrayPattern, AssignmentExpression, AssignmentPattern,
+    AssignmentTarget, AssignmentTargetPropertyIdentifier, AssignmentTargetWithDefault,
+    BinaryExpression, BindingIdentifier, BindingProperty, CallExpression, ComputedMemberExpression,
+    ConditionalExpression, DoWhileStatement, Expression, ForInStatement, ForOfStatement,
+    ForStatement, FormalParameter, Function, IdentifierReference, IfStatement, ImportExpression,
+    LabelIdentifier, MethodDefinition, NewExpression, NumericLiteral, ObjectExpression,
+    ObjectPattern, ObjectPropertyKind, PropertyDefinition, PropertyKey, PropertyKind, Statement,
+    StaticMemberExpression, UnaryExpression, WhileStatement, YieldExpression,
 };
 use oxc_ast_visit::{Visit, walk};
 use oxc_span::GetSpan;
 use oxc_syntax::operator::{AssignmentOperator, BinaryOperator, UnaryOperator};
+use oxc_syntax::scope::ScopeFlags;
 use vize_l0::{CompactString, FxHashSet};
 
 pub(super) struct CoreVisitor<'ctx, 'source> {
@@ -37,6 +41,10 @@ pub(super) struct CoreVisitor<'ctx, 'source> {
     pub(super) covered_spans: FxHashSet<(u32, u32)>,
     pub(super) camelcase_bindings: bool,
     camelcase_declarations: FxHashSet<CompactString>,
+    /// A collection pass that reports nothing.
+    pub(super) silent: bool,
+    /// Constant loop tests of the current function, cleared by `yield`.
+    pub(super) pending_loops: Vec<bool>,
 }
 
 impl CoreVisitor<'_, '_> {
@@ -56,6 +64,8 @@ impl CoreVisitor<'_, '_> {
             covered_spans: FxHashSet::default(),
             camelcase_bindings,
             camelcase_declarations: FxHashSet::default(),
+            silent: false,
+            pending_loops: Vec::new(),
         }
     }
 }
@@ -66,10 +76,119 @@ impl<'a> Visit<'a> for CoreVisitor<'_, '_> {
             && self
                 .camelcase_declarations
                 .contains(identifier.name.as_str())
+            && !self
+                .covered_spans
+                .contains(&(identifier.span.start, identifier.span.end))
         {
             self.report(identifier.span);
         }
         walk::walk_identifier_reference(self, identifier);
+    }
+
+    fn visit_call_expression(&mut self, call: &CallExpression<'a>) {
+        if self.kind == CoreKind::Camelcase {
+            self.camelcase_skip_call_operands(&call.callee, &call.arguments);
+        }
+        walk::walk_call_expression(self, call);
+    }
+
+    fn visit_new_expression(&mut self, call: &NewExpression<'a>) {
+        if self.kind == CoreKind::Camelcase {
+            self.camelcase_skip_call_operands(&call.callee, &call.arguments);
+        }
+        walk::walk_new_expression(self, call);
+    }
+
+    fn visit_assignment_pattern(&mut self, pattern: &AssignmentPattern<'a>) {
+        if self.kind == CoreKind::Camelcase {
+            self.camelcase_skip_reference(&pattern.right);
+        }
+        walk::walk_assignment_pattern(self, pattern);
+    }
+
+    fn visit_formal_parameter(&mut self, parameter: &FormalParameter<'a>) {
+        if self.kind == CoreKind::Camelcase
+            && let Some(initializer) = &parameter.initializer
+        {
+            self.camelcase_skip_reference(initializer);
+        }
+        walk::walk_formal_parameter(self, parameter);
+    }
+
+    fn visit_assignment_target_with_default(&mut self, target: &AssignmentTargetWithDefault<'a>) {
+        if self.kind == CoreKind::Camelcase {
+            self.camelcase_skip_reference(&target.init);
+        }
+        walk::walk_assignment_target_with_default(self, target);
+    }
+
+    fn visit_assignment_target_property_identifier(
+        &mut self,
+        target: &AssignmentTargetPropertyIdentifier<'a>,
+    ) {
+        if self.kind == CoreKind::Camelcase
+            && let Some(init) = &target.init
+        {
+            self.camelcase_skip_reference(init);
+        }
+        walk::walk_assignment_target_property_identifier(self, target);
+    }
+
+    fn visit_import_expression(&mut self, import: &ImportExpression<'a>) {
+        if self.kind == CoreKind::Camelcase {
+            self.camelcase_import_options(import.options.as_ref());
+        }
+        walk::walk_import_expression(self, import);
+    }
+
+    fn visit_method_definition(&mut self, method: &MethodDefinition<'a>) {
+        if self.kind == CoreKind::Camelcase {
+            self.camelcase_class_key(&method.key, method.computed);
+        }
+        walk::walk_method_definition(self, method);
+    }
+
+    fn visit_property_definition(&mut self, property: &PropertyDefinition<'a>) {
+        if self.kind == CoreKind::Camelcase {
+            self.camelcase_class_key(&property.key, property.computed);
+        }
+        walk::walk_property_definition(self, property);
+    }
+
+    fn visit_label_identifier(&mut self, label: &LabelIdentifier<'a>) {
+        if self.kind == CoreKind::Camelcase && is_underscored_identifier(&label.name) {
+            self.report(label.span);
+        }
+        walk::walk_label_identifier(self, label);
+    }
+
+    fn visit_for_of_statement(&mut self, statement: &ForOfStatement<'a>) {
+        if self.kind == CoreKind::Camelcase
+            && let Some(target) = statement.left.as_assignment_target()
+        {
+            self.camelcase_assignment_target(target, false);
+        }
+        walk::walk_for_of_statement(self, statement);
+    }
+
+    fn visit_for_in_statement(&mut self, statement: &ForInStatement<'a>) {
+        if self.kind == CoreKind::Camelcase
+            && let Some(target) = statement.left.as_assignment_target()
+        {
+            self.camelcase_assignment_target(target, false);
+        }
+        walk::walk_for_in_statement(self, statement);
+    }
+
+    fn visit_function(&mut self, function: &Function<'a>, flags: ScopeFlags) {
+        let outer_loops = std::mem::take(&mut self.pending_loops);
+        walk::walk_function(self, function, flags);
+        self.pending_loops = outer_loops;
+    }
+
+    fn visit_yield_expression(&mut self, expression: &YieldExpression<'a>) {
+        self.pending_loops.fill(false);
+        walk::walk_yield_expression(self, expression);
     }
 
     fn visit_computed_member_expression(&mut self, member: &ComputedMemberExpression<'a>) {
@@ -177,8 +296,8 @@ impl<'a> Visit<'a> for CoreVisitor<'_, '_> {
 
     fn visit_conditional_expression(&mut self, conditional: &ConditionalExpression<'a>) {
         match self.kind {
-            CoreKind::NoConstantCondition if is_constant(&conditional.test) => {
-                self.report(conditional.test.span());
+            CoreKind::NoConstantCondition if is_constant(&conditional.test, true) => {
+                self.report(conditional.test.without_parentheses().span());
             }
             CoreKind::NoNegatedCondition if is_negated(&conditional.test) => {
                 self.report(conditional.test.span());
@@ -190,8 +309,8 @@ impl<'a> Visit<'a> for CoreVisitor<'_, '_> {
 
     fn visit_if_statement(&mut self, statement: &IfStatement<'a>) {
         match self.kind {
-            CoreKind::NoConstantCondition if is_constant(&statement.test) => {
-                self.report(statement.test.span());
+            CoreKind::NoConstantCondition if is_constant(&statement.test, true) => {
+                self.report(statement.test.without_parentheses().span());
             }
             CoreKind::NoNegatedCondition
                 if statement
@@ -208,27 +327,27 @@ impl<'a> Visit<'a> for CoreVisitor<'_, '_> {
     }
 
     fn visit_while_statement(&mut self, statement: &WhileStatement<'a>) {
-        if self.kind == CoreKind::NoConstantCondition && is_constant(&statement.test) {
-            self.report(statement.test.span());
-        }
+        // The default `checkLoops: "allExceptWhileTrue"` leaves `while (true)` alone.
+        let while_true = matches!(
+            statement.test.without_parentheses(),
+            Expression::BooleanLiteral(literal) if literal.value
+        );
+        let test = (!while_true).then_some(&statement.test);
+        self.enter_loop(test);
         walk::walk_while_statement(self, statement);
+        self.exit_loop(test);
     }
 
     fn visit_do_while_statement(&mut self, statement: &DoWhileStatement<'a>) {
-        if self.kind == CoreKind::NoConstantCondition && is_constant(&statement.test) {
-            self.report(statement.test.span());
-        }
+        self.enter_loop(Some(&statement.test));
         walk::walk_do_while_statement(self, statement);
+        self.exit_loop(Some(&statement.test));
     }
 
     fn visit_for_statement(&mut self, statement: &ForStatement<'a>) {
-        if self.kind == CoreKind::NoConstantCondition
-            && let Some(test) = &statement.test
-            && is_constant(test)
-        {
-            self.report(test.span());
-        }
+        self.enter_loop(statement.test.as_ref());
         walk::walk_for_statement(self, statement);
+        self.exit_loop(statement.test.as_ref());
     }
 
     fn visit_array_expression(&mut self, array: &ArrayExpression<'a>) {
@@ -278,21 +397,7 @@ impl<'a> Visit<'a> for CoreVisitor<'_, '_> {
             self.report(assignment.span);
         }
         if self.kind == CoreKind::Camelcase {
-            match &assignment.left {
-                AssignmentTarget::StaticMemberExpression(member)
-                    if is_underscored_identifier(&member.property.name) =>
-                {
-                    self.report(member.property.span);
-                }
-                AssignmentTarget::ComputedMemberExpression(member)
-                    if member
-                        .static_property_name()
-                        .is_some_and(|property| is_underscored_identifier(property.as_str())) =>
-                {
-                    self.report(member.expression.span());
-                }
-                _ => {}
-            }
+            self.camelcase_assignment_target(&assignment.left, true);
         }
         walk::walk_assignment_expression(self, assignment);
     }
@@ -327,6 +432,9 @@ impl<'a> Visit<'a> for CoreVisitor<'_, '_> {
     }
 
     fn visit_object_expression(&mut self, object: &ObjectExpression<'a>) {
+        if self.kind == CoreKind::Camelcase {
+            self.camelcase_object_keys(object);
+        }
         for entry in &object.properties {
             let ObjectPropertyKind::ObjectProperty(property) = entry else {
                 continue;
@@ -369,16 +477,6 @@ impl<'a> Visit<'a> for CoreVisitor<'_, '_> {
         walk::walk_object_expression(self, object);
     }
 
-    fn visit_object_property(&mut self, property: &ObjectProperty<'a>) {
-        if self.kind == CoreKind::Camelcase
-            && !property.computed
-            && property_name(&property.key).is_some_and(is_underscored_identifier)
-        {
-            self.report(property.key.span());
-        }
-        walk::walk_object_property(self, property);
-    }
-
     fn visit_binding_property(&mut self, property: &BindingProperty<'a>) {
         if self.kind == CoreKind::QuoteProps
             && !property.computed
@@ -389,16 +487,4 @@ impl<'a> Visit<'a> for CoreVisitor<'_, '_> {
         }
         walk::walk_binding_property(self, property);
     }
-}
-
-fn collect_nested_addition_spans(expression: &Expression<'_>, spans: &mut FxHashSet<(u32, u32)>) {
-    let Expression::BinaryExpression(binary) = expression.get_inner_expression() else {
-        return;
-    };
-    if binary.operator != BinaryOperator::Addition {
-        return;
-    }
-    spans.insert((binary.span.start, binary.span.end));
-    collect_nested_addition_spans(&binary.left, spans);
-    collect_nested_addition_spans(&binary.right, spans);
 }

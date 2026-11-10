@@ -3,6 +3,7 @@
 use oxc_ast::ast::{BinaryExpression, ChainElement, Expression, PropertyKey};
 use oxc_syntax::number::ToJsString;
 use oxc_syntax::operator::{BinaryOperator, UnaryOperator};
+use vize_l0::FxHashSet;
 
 pub(super) fn is_underscored_identifier(name: &str) -> bool {
     let body = name.trim_matches('_');
@@ -199,94 +200,6 @@ pub(super) fn addition_has_string_and_non_string(binary: &BinaryExpression<'_>) 
     has_string && has_other
 }
 
-pub(super) fn is_constant(expression: &Expression<'_>) -> bool {
-    match expression.get_inner_expression() {
-        Expression::BooleanLiteral(_)
-        | Expression::NullLiteral(_)
-        | Expression::NumericLiteral(_)
-        | Expression::StringLiteral(_)
-        | Expression::ArrayExpression(_)
-        | Expression::ObjectExpression(_)
-        | Expression::FunctionExpression(_)
-        | Expression::ArrowFunctionExpression(_) => true,
-        Expression::TemplateLiteral(template) => template.expressions.iter().all(is_constant),
-        Expression::UnaryExpression(unary) => is_constant(&unary.argument),
-        Expression::LogicalExpression(logical) => match logical.operator {
-            oxc_syntax::operator::LogicalOperator::Or => {
-                is_constant(&logical.left) && is_constant(&logical.right)
-                    || is_truthy_constant(&logical.left)
-                    || is_truthy_constant(&logical.right)
-            }
-            oxc_syntax::operator::LogicalOperator::And => {
-                is_constant(&logical.left) && is_constant(&logical.right)
-                    || is_falsy_constant(&logical.left)
-                    || is_falsy_constant(&logical.right)
-            }
-            oxc_syntax::operator::LogicalOperator::Coalesce => {
-                is_constant(&logical.left)
-                    && (!is_nullish_constant(&logical.left) || is_constant(&logical.right))
-            }
-        },
-        _ => false,
-    }
-}
-
-fn is_truthy_constant(expression: &Expression<'_>) -> bool {
-    match expression.get_inner_expression() {
-        Expression::BooleanLiteral(value) => value.value,
-        Expression::NumericLiteral(value) => value.value != 0.0 && !value.value.is_nan(),
-        Expression::StringLiteral(value) => !value.value.is_empty(),
-        Expression::TemplateLiteral(template) => {
-            template.expressions.is_empty()
-                && template.quasis.first().is_some_and(|quasi| {
-                    quasi
-                        .value
-                        .cooked
-                        .as_ref()
-                        .is_some_and(|text| !text.is_empty())
-                })
-        }
-        Expression::ArrayExpression(_)
-        | Expression::ObjectExpression(_)
-        | Expression::FunctionExpression(_)
-        | Expression::ArrowFunctionExpression(_) => true,
-        Expression::UnaryExpression(unary) if unary.operator == UnaryOperator::LogicalNot => {
-            is_falsy_constant(&unary.argument)
-        }
-        _ => false,
-    }
-}
-
-fn is_falsy_constant(expression: &Expression<'_>) -> bool {
-    match expression.get_inner_expression() {
-        Expression::BooleanLiteral(value) => !value.value,
-        Expression::NullLiteral(_) => true,
-        Expression::NumericLiteral(value) => value.value == 0.0 || value.value.is_nan(),
-        Expression::StringLiteral(value) => value.value.is_empty(),
-        Expression::TemplateLiteral(template) => {
-            template.expressions.is_empty()
-                && template.quasis.first().is_some_and(|quasi| {
-                    quasi
-                        .value
-                        .cooked
-                        .as_ref()
-                        .is_some_and(|text| text.is_empty())
-                })
-        }
-        Expression::UnaryExpression(unary) if unary.operator == UnaryOperator::LogicalNot => {
-            is_truthy_constant(&unary.argument)
-        }
-        _ => false,
-    }
-}
-
-fn is_nullish_constant(expression: &Expression<'_>) -> bool {
-    matches!(
-        expression.get_inner_expression(),
-        Expression::NullLiteral(_)
-    )
-}
-
 pub(super) fn is_negated(expression: &Expression<'_>) -> bool {
     match expression.get_inner_expression() {
         Expression::UnaryExpression(unary) => unary.operator == UnaryOperator::LogicalNot,
@@ -319,4 +232,19 @@ pub(super) fn is_irregular_whitespace(character: char) -> bool {
                 | '\u{3000}'
                 | '\u{FEFF}'
     )
+}
+
+pub(super) fn collect_nested_addition_spans(
+    expression: &Expression<'_>,
+    spans: &mut FxHashSet<(u32, u32)>,
+) {
+    let Expression::BinaryExpression(binary) = expression.get_inner_expression() else {
+        return;
+    };
+    if binary.operator != BinaryOperator::Addition {
+        return;
+    }
+    spans.insert((binary.span.start, binary.span.end));
+    collect_nested_addition_spans(&binary.left, spans);
+    collect_nested_addition_spans(&binary.right, spans);
 }
