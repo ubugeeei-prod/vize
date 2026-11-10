@@ -65,11 +65,17 @@ fn migrated_sfc_rules_preserve_diagnostics_and_fixes() {
         r#"<MyComponent :foo="foo"/><div :title="'static'" :class="[{ active }, { hidden }]"/>"#,
         r#"<MyComponent :foo/><div :title :class/>"#,
         r#"<slot name="my-slot"/><input id="name"/><label for="name">Name</label>"#,
+        r#"<MyComponent :title.sync="title" @click.native="handler"/><input @keyup.13="submit"/>"#,
+        r#"<p>日本語😀</p><MyComponent :title.sync.camel="title" @click.native.stop="handler"/>"#,
+        r#"<p>日本語😀</p><input @keyup.13.27="submit"/><input @keyup.0.13="submit"/><input @keyup.13suffix="submit"/>"#,
         "<!-- eslint-disable-next-line vue/prefer-props-shorthand -->\n<MyComponent :foo=\"foo\"/>",
         "<!-- eslint-disable-next-line vue/no-useless-v-bind -->\n<div :title=\"'static'\"/>",
         "<!-- eslint-disable-next-line vue/no-multiple-objects-in-class -->\n<div :class=\"[{ active }, { hidden }]\"/>",
         "<!-- eslint-disable-next-line vue/slot-name-casing -->\n<slot name=\"my-slot\"/>",
         "<!-- eslint-disable-next-line vue/use-unique-element-ids -->\n<input id=\"name\"/>",
+        "<!-- eslint-disable-next-line vue/no-deprecated-v-bind-sync -->\n<MyComponent :title.sync=\"title\"/>",
+        "<!-- eslint-disable-next-line vue/no-deprecated-v-on-native-modifier -->\n<MyComponent @click.native=\"handler\"/>",
+        "<!-- eslint-disable-next-line vue/no-deprecated-v-on-number-modifiers -->\n<input @keyup.13=\"submit\"/>",
         r#"<div v-pre><textarea>{{ raw }}</textarea></div>"#,
     ] {
         compare_template(source);
