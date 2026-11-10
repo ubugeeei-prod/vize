@@ -1,5 +1,15 @@
 # Current instance-global packet authority
 
+The active expected population is `source-packets-current-67b6fffe3bc8.json`: all 80 whole transform results from [source Actions 42774589490](https://github.com/ubugeeei-prod/vize/actions/runs/42774589490/job/129691996696), synthetic merge producer `67b6fffe3bc88922d9d460b15d76fd7ceb35d06c` for PR head `1b75300829290185308e49e98c2d3b4c3d6c9575`. The source build/use and launch receipts bind the exact source CLI, and the artifact admits the reported beta, official nightly, and pinned source-built TypeScript host.
+
+The original strict comparison remains **unqualified**: 394 of 398 semantic, protocol, geometry, and whole-packet outcomes passed. Only the LF and CRLF/Unicode `slot-shadow` and `mixed-slot-scope` whole packets changed: the diagnostics-only CLI projection omits their wire-only `vueSetupTemplateRefUnwrap` semantic links (#12604). Generated text, mappings, diagnostic directives, diagnostics, and all other fields stayed exact; the other 76 complete results remain byte-identical. Every non-whole-packet outcome and all three real-host controls passed.
+
+`complete: true` records the complete observed successor population. It grants no qualification, public-package, or performance acceptance and does not retroactively qualify the stale-golden capture. `source-packets-current-67b6fffe3bc8-provenance.json` binds the producer, artifact digest, exact evidence members, previous population, failed qualification vector, and explicit credit limits.
+
+## Previous authority (historical)
+
+# Current instance-global packet authority
+
 The active expected population is `source-packets-current-b6b4bbb0a16a.json`: all 80 whole transform results from [source Actions 42736126056](https://github.com/ubugeeei-prod/vize/actions/runs/42736126056/job/129566448378), synthetic merge producer `b6b4bbb0a16ab65e29ef7202b488215d8ea4b9a9` for PR head `8f1d67abf8491620cc642e26537fbf9be74020ab`. The launch receipt binds the exact source CLI, and the artifact admits the reported beta, official nightly, and pinned source-built TypeScript host.
 
 The original strict comparison remains **unqualified**: 419 of 499 semantic, protocol, geometry, and whole-packet outcomes passed. Every whole packet changed, by the canon train's three projection edits only (#12572). Its authored setup lines lost the two-space indentation and the setup map comment moved by the same bytes (#12550). Its component constructor return gained the inline public-instance pick and `NoInfer` wrapper (#12523). The `slot-shadow` and `mixed-slot-scope` packets also dropped their per-file `__U`/`__UN` declarations and name the shared unwrap aliases (#12470). Every diagnostic and opaque field is unchanged; every mapping, directive and semantic link moved only by those edits. Every non-whole-packet outcome and all three real-host controls passed.

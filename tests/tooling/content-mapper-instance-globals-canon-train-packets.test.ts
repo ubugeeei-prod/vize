@@ -85,8 +85,8 @@ test("the canon train population changes each packet only by its three projectio
   const { authority, files, cases } = readGlobalsFixture();
   const name = "source-packets-current-b6b4bbb0a16a.json";
   const previousName = "source-packets-current-cd10508733d6.json";
-  assert.equal(authority.currentSourcePackets, name);
-  const golden = selectPacketGoldens(authority, files, cases)!;
+  assert.equal(authority.currentSourcePackets, "source-packets-current-67b6fffe3bc8.json");
+  const golden = selectPacketGoldens({ ...authority, currentSourcePackets: name }, files, cases)!;
   const previous = selectPacketGoldens(
     { ...authority, currentSourcePackets: previousName },
     files,

@@ -36,22 +36,25 @@ export function assertCurrentPacketProvenance(
 ): void {
   assert.deepEqual(provenance.artifact, {
     repository: "ubugeeei-prod/vize",
-    run: 42736126056,
-    job: 129566448378,
-    id: 13726709260,
-    name: "instance-globals-10617-8f1d67abf8491620cc642e26537fbf9be74020ab-1",
-    digest: "sha256:77d86be670c33cdfbf53852cab06902dad03a5a8ce8ba9af165ff844841688d6",
-    bytes: 18718518,
+    run: 42774589490,
+    job: 129691996696,
+    id: 13743648133,
+    name: "instance-globals-tooling-14-42774589490-1",
+    digest: "sha256:45256d8b1bf1fd62d15d3da613e14ad68f28d345cbf0ffdcc11f147f6e137316",
+    bytes: 392307,
   });
-  // Every whole packet changed (the canon train, #12572); every other outcome passed.
+  const slotPackets = ["slot-shadow", "mixed-slot-scope"];
+  // Check mode omits only the four slot-packet navigation links; every other outcome passed.
   assert.deepEqual(provenance.capturedQualification, {
-    totalOutcomes: 499,
-    passedOutcomes: 419,
-    gapCount: 80,
+    totalOutcomes: 398,
+    passedOutcomes: 394,
+    gapCount: 4,
     status: "unqualified",
     fullPacketQualification: false,
     hostMatrixQualification: false,
-    gapIds: labels.map((label) => `whole-packet/${label}`),
+    gapIds: labels
+      .filter((label) => slotPackets.some((packet) => label.endsWith(`/${packet}`)))
+      .map((label) => `whole-packet/${label}`),
   });
   assert.deepEqual(provenance.review, {
     completePackets: 80,
@@ -61,6 +64,6 @@ export function assertCurrentPacketProvenance(
     publicPackageAcceptanceCredit: false,
     performanceCredit: false,
     reason:
-      "Every whole packet lost the two-space indentation of its authored setup lines and its setup map comment moved by the same bytes (#12550), every component constructor return gained the inline public-instance pick and NoInfer wrapper (#12523), and the slot-shadow and mixed-slot-scope packets dropped their per-file __U/__UN declarations and name the shared unwrap aliases (#12470); every mapping, directive and semantic link moved only by those edits, while all 419 semantic, protocol, mapping-geometry, and real-host controls passed; this record retains the observed postimages without assigning acceptance credit to the stale-golden run.",
+      "Only the LF and CRLF/Unicode slot-shadow and mixed-slot-scope whole packets dropped their wire-only vueSetupTemplateRefUnwrap semanticLinks in the diagnostics-only CLI projection (#12604); their generated text, mappings, diagnostic directives, diagnostics, and all other fields stayed exact, the other 76 complete results were byte-identical, and all 394 semantic, protocol, mapping-geometry, and real-host controls passed; this record retains the observed postimages without assigning acceptance credit to the stale-golden run.",
   });
 }
