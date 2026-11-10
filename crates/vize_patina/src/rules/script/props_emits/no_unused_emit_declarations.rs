@@ -59,14 +59,10 @@ use oxc_ast::ast::{
     Argument, ArrayExpressionElement, BindingPattern, CallExpression, Declaration, Expression,
     IdentifierReference, ObjectExpression, ObjectPropertyKind, Program, Statement,
     TSInterfaceDeclaration, TSLiteral, TSSignature, TSType, TSTypeAliasDeclaration, TSTypeName,
-    TSTypeQueryExprName,
 };
 use oxc_ast_visit::{
     Visit,
-    walk::{
-        walk_call_expression, walk_object_expression, walk_ts_type_query_expr_name,
-        walk_variable_declarator,
-    },
+    walk::{walk_call_expression, walk_object_expression, walk_variable_declarator},
 };
 use oxc_semantic::{Semantic, SemanticBuilder, SymbolId};
 use oxc_span::{GetSpan, Span};
@@ -386,11 +382,13 @@ impl<'a> Visit<'a> for EmittedCollector<'_, '_> {
         self.direct_call_callee = previous_callee;
     }
 
-    fn visit_ts_type_query_expr_name(&mut self, it: &TSTypeQueryExprName<'a>) {
+    fn visit_ts_type_query_expr_name(&mut self, it: &oxc_ast::ast::TSTypeQueryExprName<'a>) {
+        use oxc_ast::ast::TSTypeQueryExprName;
+
         match it {
             TSTypeQueryExprName::IdentifierReference(_) | TSTypeQueryExprName::QualifiedName(_) => {
             }
-            _ => walk_ts_type_query_expr_name(self, it),
+            _ => oxc_ast_visit::walk::walk_ts_type_query_expr_name(self, it),
         }
     }
 
