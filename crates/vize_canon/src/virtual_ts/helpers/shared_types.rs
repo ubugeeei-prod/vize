@@ -74,6 +74,8 @@ shared_type_refs! {
     LISTENER_ARGS => ("$ListenerArgs", "$ListenerArgs"),
     LISTENER_CONTRACT => ("$ListenerContract", "$ListenerContract"),
     EMIT_PROPS_FACTORY => ("$EmitPropsFactory", "$EmitPropsFactory"),
+    CLOSED_EMIT => ("__vize_emit_closed", "$ClosedEmit"),
+    CLOSED_EMIT_FACTORY => ("__vize_emit_closed_factory", "$ClosedEmitFactory"),
     EMIT_PROPS => ("__EmitProps", "__EmitProps"),
     TEMPLATE_REF_UNWRAP => ("__U", "$TemplateRefUnwrap"),
     TEMPLATE_REF_UNWRAP_NARROWED => ("__UN", "$TemplateRefUnwrapNarrowed"),

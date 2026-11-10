@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
+import { beforeClosedEmitFactory } from "./closed-emit-factory-transition.ts";
 
 type Identity = { bytes: number; sha256: string };
 type Hunk = { before: string; after: string };
@@ -32,6 +33,7 @@ const identity = (text: string): Identity => ({
 
 /** The pre-unwrap bytes of a recorded helper asset; other images pass through. */
 export function beforeSharedTemplateRefUnwrapSource(file: string, current: string): string {
+  current = beforeClosedEmitFactory(file, current);
   const transition = record.files.find((candidate) => candidate.path === file);
   if (!transition) return current;
   const now = identity(current);

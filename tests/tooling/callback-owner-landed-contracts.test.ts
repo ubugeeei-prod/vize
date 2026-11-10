@@ -8,6 +8,11 @@ import {
   requiredFallthroughGate,
   withLandedEdits,
 } from "../../tools/support/compat/content-mapper/callback-owner-landed-contracts.ts";
+import {
+  closedEmitGatePath,
+  renderedGateBlock,
+} from "../../tools/support/compat/content-mapper/callback-owner-closed-emit.ts";
+import { beforeClosedEmitFactory } from "../../tools/support/compat/content-mapper/closed-emit-factory-transition.ts";
 import { beforeInstanceInputKeys } from "../../tools/support/compat/content-mapper/instance-input-keys-transition.ts";
 import { beforeUnownedOwnedKeys } from "../../tools/support/compat/content-mapper/unowned-owned-keys-transition.ts";
 
@@ -171,4 +176,27 @@ test("verbatim setup lines (#12481) land as two-byte deletions inside the setup 
   // The map comment's own end moves with them; the packet audit relocates it.
   assert.equal(apply(before, edits), `${head}const a = 1;\n\na;\n${map(62)}`);
   assert.deepEqual(withLandedEdits(after, after, []), []);
+});
+
+test("#12622: a gate block gaining the closed-SFC route is one certified edit", () => {
+  const current = readFileSync(new URL(`../../${closedEmitGatePath}`, import.meta.url), "utf8");
+  const previous = beforeClosedEmitFactory(closedEmitGatePath, current);
+  for (const hoisted of [false, true]) {
+    const old = renderedGateBlock(previous, hoisted);
+    const now = renderedGateBlock(current, hoisted);
+    assert.ok(!old.includes("__vize_emit_closed") && !old.includes("$ClosedEmit"));
+    assert.ok(
+      now.includes(`${hoisted ? "$ClosedEmit" : "__vize_emit_closed"}<C> extends [infer E]`),
+    );
+    assert.equal(now.includes("type __vize_emit_closed<C, A = C> = "), !hoisted);
+    const before = `const head = 0;\n${old}const tail = 1;\n`;
+    const after = `const head = 0;\n${now}const tail = 1;\n`;
+    const edits = withLandedEdits(before, after, []);
+    assert.equal(edits.length, 1);
+    assert.equal(apply(before, edits), after);
+    // Only the block is certified: any other change still differs, and no block, no edit.
+    const other = after.replace("tail = 1", "tail = 2");
+    assert.notEqual(apply(before, withLandedEdits(before, other, [])), other);
+    assert.deepEqual(withLandedEdits(before, before, []), []);
+  }
 });

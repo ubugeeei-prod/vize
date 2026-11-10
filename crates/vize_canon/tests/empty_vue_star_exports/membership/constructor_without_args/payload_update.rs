@@ -6,6 +6,7 @@ use std::fs;
 mod canon_leftovers;
 mod check_mode_generator;
 mod checker_augmentations;
+mod closed_emit_factory;
 mod constructor_emit_export;
 mod constructor_noinfer_return;
 mod current_loose_emit;

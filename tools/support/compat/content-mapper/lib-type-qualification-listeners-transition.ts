@@ -2,6 +2,7 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
+import { beforeClosedEmitFactory } from "./closed-emit-factory-transition.ts";
 import { beforeGuardedInferenceArrow } from "./guarded-inference-arrow-transition.ts";
 import { beforeLibTypeShadowingAudit } from "./lib-type-shadowing-audit-transition.ts";
 import { beforeSharedUsageHelpersSource } from "./shared-usage-helpers-transition.ts";
@@ -9,6 +10,11 @@ import { beforeSharedUsageHelpersSource } from "./shared-usage-helpers-transitio
 export const libTypeListenerRecord =
   "tests/_fixtures/tooling/lib-type-qualification-listeners-12536.json";
 const recordSha256 = "cb1d226754a14ba1a153134c22bbe0f688a7ebf1871202569abe22c2e35c41d3";
+
+const closedEmitListenerFiles = new Set([
+  "crates/vize_canon/src/virtual_ts/helpers/declarations/shared-listener-args.d.ts.txt",
+  "npm/cli/virtual-ts-listeners.d.ts",
+]);
 
 type Identity = { bytes: number; sha256: string };
 interface Transition {
@@ -48,6 +54,8 @@ function load(): Transition {
 
 /** The exact pre-qualification bytes of a recorded producer's current image; older images pass through. */
 export function beforeListenerLibTypeQualification(path: string, current: string): string {
+  // The closed-SFC check sits on top of the shared listener module and its SDK leaf.
+  if (closedEmitListenerFiles.has(path)) current = beforeClosedEmitFactory(path, current);
   current = beforeLibTypeShadowingAudit(path, current);
   current = beforeSharedUsageHelpersSource(path, current);
   current = beforeGuardedInferenceArrow(path, current);
