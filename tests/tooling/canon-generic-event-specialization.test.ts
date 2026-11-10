@@ -33,7 +33,8 @@ assert.ok(gate);
 const gateAliases = gate[1]!
   .replaceAll("\\n", "\n")
   .replaceAll('\\"', '"')
-  .replaceAll("{emit_props_factory}", "$EmitPropsFactory");
+  .replaceAll("{emit_props_factory}", "$EmitPropsFactory")
+  .replaceAll("{emit_props}", "__EmitProps");
 
 // Hand-authored external constructors exercise the actual production mapper.
 // These are structural type-law controls, not generated SFC observations.

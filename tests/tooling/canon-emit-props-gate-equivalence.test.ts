@@ -16,6 +16,7 @@ import {
   gate,
   TEMPLATES,
   GATE_ALIASES,
+  gateAliases,
   format,
   prelude,
   sfc,
@@ -98,12 +99,23 @@ void test("the oracle rejects gates that drop a props-dependent route or the fac
     ],
     [
       "library exports read as props-independent",
-      GATE_ALIASES.replace("[L] extends [true] ? F : true extends", "true extends"),
+      GATE_ALIASES.replace(
+        "[L] extends [true] ? F : __vize_emit_closed<C> extends true ? F : true extends",
+        "__vize_emit_closed<C> extends true ? F : true extends",
+      ),
       "library",
     ],
     [
       "the cheap call drops the factory result",
       GATE_ALIASES.replace("(props: any) => R : F", "(props: any) => {} : F"),
+      "sameEmitUnion",
+    ],
+    [
+      "the closed factory drops the component's emits",
+      GATE_ALIASES.replace(
+        "(props: any) => {emit_props}<__vize_emit_member<C>>",
+        "(props: any) => {}",
+      ),
       "sfc",
     ],
     [
@@ -126,7 +138,7 @@ void test("the historical deferred counter stays frozen and generic templates ke
     [
       ...prelude,
       historical ? oracle.historical.helpers : helpers,
-      GATE_ALIASES.replaceAll("{emit_props_factory}", "$EmitPropsFactory"),
+      gateAliases(),
       `export function template<K extends ${resolvesEmits} | ${sfc}>() {`,
       ...usage(
         "deferred",
@@ -159,17 +171,26 @@ void test("the gate takes the cheap call exactly where the factory ignores the p
   );
 });
 
+void test("only a single non-generic SFC skips the full factory", () => {
+  const closed = ["sfc", "loose", "required"];
+  const lines = [...prelude, helpers, gateAliases()];
+  for (const [name, shape] of Object.entries(shapes)) {
+    lines.push(
+      `type Closed_${name} = Expect<Equal<__vize_emit_closed<${shape}>, ${closed.includes(name)}>>;`,
+    );
+  }
+  for (const exactOptionalPropertyTypes of [false, true]) {
+    assert.deepEqual(diagnostics(lines.join("\n"), exactOptionalPropertyTypes), []);
+  }
+});
+
 function assertRoutes(
   cheap: readonly string[],
   direct: readonly string[],
   helperText: string,
   aliases = GATE_ALIASES,
 ): void {
-  const lines = [
-    ...prelude,
-    helperText,
-    aliases.replaceAll("{emit_props_factory}", "$EmitPropsFactory"),
-  ];
+  const lines = [...prelude, helperText, gateAliases(aliases)];
   for (const name of [...cheap, ...direct]) {
     const component_ref = `C_${name}`;
     const library = `${component_ref}_library`;
@@ -238,11 +259,7 @@ void test("a successor refuses unknown producer bytes and altered historical con
 
 void test("a gated result still feeds the listener args, so the call stays", () => {
   // `_emit_args`/`_args` read `inferred` unless `unknown[] extends inferred`.
-  const lines = [
-    ...prelude,
-    helpers,
-    GATE_ALIASES.replaceAll("{emit_props_factory}", "$EmitPropsFactory"),
-  ];
+  const lines = [...prelude, helpers, gateAliases()];
   const read = {
     sfc: "[value: number]",
     unmarked: "[value: boolean]",

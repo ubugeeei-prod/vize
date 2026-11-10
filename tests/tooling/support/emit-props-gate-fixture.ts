@@ -72,6 +72,11 @@ export const TEMPLATES = {
 export const aliasSource = gate.match(/const GATE_ALIASES: &str = "((?:[^"\\]|\\.)*)";/u);
 assert.ok(aliasSource, "GATE_ALIASES");
 export const GATE_ALIASES = aliasSource[1]!.replaceAll("\\n", "\n").replaceAll('\\"', '"');
+/** Gate alias text with the generator's shared-reference placeholders bound to the local helpers. */
+export const gateAliases = (aliases: string = GATE_ALIASES): string =>
+  aliases
+    .replaceAll("{emit_props_factory}", "$EmitPropsFactory")
+    .replaceAll("{emit_props}", "__EmitProps");
 
 /** Rust `format!` semantics for named placeholders. */
 export function format(template: string, values: Record<string, string>): string {
@@ -292,7 +297,7 @@ export function program(aliases: string, only?: string, historical = false): str
   return [
     ...prelude,
     historical ? oracle.historical.helpers : helpers,
-    aliases.replaceAll("{emit_props_factory}", "$EmitPropsFactory"),
+    gateAliases(aliases),
     ...Object.entries(shapes)
       .filter(([name]) => only === undefined || name === only)
       .flatMap(([name, shape]) =>
