@@ -6,9 +6,12 @@
  */
 
 import assert from "node:assert/strict";
-import { existsSync, readdirSync, readFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join, relative } from "node:path";
-import { assertExactDiagnosticFingerprints } from "./typecheck-corpus-pair-parse.ts";
+import {
+  assertExactDiagnosticFingerprints,
+  exceedsProjectionBudget,
+} from "./typecheck-corpus-pair-parse.ts";
 
 export type ProbeFile = { bytes: number; sourceBytes: number; templateBytes: number };
 export type FileCost = { bytes: number; checkMs: number | null };
@@ -173,7 +176,11 @@ export function projectionReport(
     },
     totals: { base: sum("base"), head: sum("head"), vue: sum("vue") },
     headAtMostVue: rows.filter((row) => row.head.bytes <= row.vue.bytes).length,
-    violations: rows.filter((row) => row.head.bytes > row.vue.bytes).map((row) => row.file),
+    violations: rows
+      .filter(({ base, head, vue }) =>
+        exceedsProjectionBudget({ base: base.bytes, head: head.bytes, vue: vue.bytes }),
+      )
+      .map((row) => row.file),
     checkers: {
       base: sources.base.busy ?? [],
       head: sources.head.busy ?? [],
@@ -183,12 +190,16 @@ export function projectionReport(
   };
 }
 
-/** Fail after reports are persisted if any Vize head projection exceeds Vue. */
+/** Fail if any Vize head projection breaks the ratcheted per-SFC byte budget. */
 export function assertProjectionBudget(reports: ProjectionReport[]): void {
   const violations = reports.flatMap((report) =>
     report.violations.map((file) => `${report.corpus}/${file}`),
   );
-  assert.equal(violations.length, 0, `Vize head exceeds Vue for ${violations.join(", ")}`);
+  assert.equal(
+    violations.length,
+    0,
+    `Vize head exceeds both Vue and Vize base for ${violations.join(", ")}`,
+  );
 }
 
 /** Require exact base/head diagnostic fingerprints for every corpus and host. */
@@ -240,7 +251,7 @@ export function renderProjection(report: ProjectionReport, top = 15): string {
   return [
     `### Projection per SFC: ${report.corpus}`,
     "",
-    `Authored SFCs total ${kb(authored.sourceBytes)} KB, including ${kb(authored.templateBytes)} KB of template content. Vize head projects ${kb(totals.head.bytes)} KB over ${report.files} SFCs (${ratio(totals.head.bytes, totals.vue.bytes)} Vue's ${kb(totals.vue.bytes)} KB; Vize base ${kb(totals.base.bytes)} KB; ${ratio(totals.head.bytes, authored.sourceBytes)} authored SFC bytes). ${report.headAtMostVue} of ${report.files} SFCs are at most Vue's size. tsc spends ${ms(totals.head.checkMs)} ms in checkSourceFile on Vize head projections, ${ms(totals.vue.checkMs)} ms on Vue's and ${ms(totals.base.checkMs)} ms on Vize base's (untimed traced run, summed over checker threads).`,
+    `Authored SFCs total ${kb(authored.sourceBytes)} KB, including ${kb(authored.templateBytes)} KB of template content. Vize head projects ${kb(totals.head.bytes)} KB over ${report.files} SFCs (${ratio(totals.head.bytes, totals.vue.bytes)} Vue's ${kb(totals.vue.bytes)} KB; Vize base ${kb(totals.base.bytes)} KB; ${ratio(totals.head.bytes, authored.sourceBytes)} authored SFC bytes). ${report.headAtMostVue} of ${report.files} SFCs are at most Vue's size; ${report.violations.length} break the budget by exceeding both Vue and Vize base. tsc spends ${ms(totals.head.checkMs)} ms in checkSourceFile on Vize head projections, ${ms(totals.vue.checkMs)} ms on Vue's and ${ms(totals.base.checkMs)} ms on Vize base's (untimed traced run, summed over checker threads).`,
     "",
     `Checker thread busy ms, busiest first: Vize base ${busy(report.checkers.base)}; Vize head ${busy(report.checkers.head)}; Vue ${busy(report.checkers.vue)}.`,
     "",
@@ -257,4 +268,14 @@ export function renderProjection(report: ProjectionReport, top = 15): string {
       by((row) => (row.head.checkMs ?? 0) - (row.base.checkMs ?? 0)),
     ),
   ].join("\n");
+}
+
+/** Persist the per-SFC reports, then fail if any SFC breaks the projection budget. */
+export function persistProjection(out: string, reports: ProjectionReport[]): void {
+  writeFileSync(join(out, "projection.json"), `${JSON.stringify(reports, null, 1)}\n`);
+  writeFileSync(
+    join(out, "projection.md"),
+    reports.map((report) => renderProjection(report)).join("\n"),
+  );
+  assertProjectionBudget(reports);
 }

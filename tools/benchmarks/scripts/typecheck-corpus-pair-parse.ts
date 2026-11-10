@@ -147,6 +147,14 @@ export function assertExactDiagnosticFingerprints(
   }
 }
 
+/**
+ * #11654's per-SFC byte budget, ratcheted from the base: an SFC at most Vue's
+ * size must stay there, and one still over it may only shrink. Once every base
+ * SFC is at most Vue's size, this is exactly `head > vue`.
+ */
+export const exceedsProjectionBudget = (bytes: { base: number; head: number; vue: number }) =>
+  bytes.head > Math.max(bytes.base, bytes.vue);
+
 /** Incremental reader of `Content-Length` framed JSON-RPC messages. */
 export function frameReader(): (chunk: Buffer) => Record<string, unknown>[] {
   let buffer = Buffer.alloc(0);

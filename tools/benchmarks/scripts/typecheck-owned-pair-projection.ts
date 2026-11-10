@@ -4,7 +4,7 @@ import { mkdirSync, readFileSync, realpathSync } from "node:fs";
 import { dirname, join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 import { sha256, writeJson } from "./typecheck-owned-pair-evidence.ts";
-import type { ProbeRecord } from "./typecheck-corpus-pair-parse.ts";
+import { exceedsProjectionBudget, type ProbeRecord } from "./typecheck-corpus-pair-parse.ts";
 
 const script = join(dirname(fileURLToPath(import.meta.url)), "content-mapper-byte-probe.ts");
 // The official Vue mapper retains the project graph while the untimed probe covers every SFC.
@@ -120,18 +120,18 @@ export function compareOwnedProjections(
   }));
   return {
     rows,
-    violations: rows.filter((row) => row.exceedsVue),
+    violations: rows.filter(exceedsProjectionBudget),
     probeScript: { path: script, sha256: sha256(readFileSync(script)) },
   };
 }
 
-/** Refuse evidence unless every Vize head projection fits within Vue's bytes. */
+/** Refuse evidence when a Vize head projection breaks the ratcheted per-SFC byte budget. */
 export function assertOwnedProjectionBudget(
   report: ReturnType<typeof compareOwnedProjections>,
 ): void {
   assert.equal(
     report.violations.length,
     0,
-    `Vize head exceeds Vue for ${report.violations.map((row) => row.file).join(", ")}`,
+    `Vize head exceeds both Vue and Vize base for ${report.violations.map((row) => row.file).join(", ")}`,
   );
 }
