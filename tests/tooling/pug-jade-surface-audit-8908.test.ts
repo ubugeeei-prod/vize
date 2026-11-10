@@ -6,7 +6,9 @@ import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
 type Dialect = "pug" | "jade";
-type State = "partial" | "preservation";
+type State = "supported" | "preservation";
+
+type Witness = { path: string; anchor: string };
 
 type Audit = {
   version: number;
@@ -25,8 +27,16 @@ type Audit = {
     dialectState: Record<Dialect, State>;
     current: string;
     remaining: string;
-    witnesses: Array<{ path: string; anchor: string; dialects: Dialect[] }>;
+    witnesses: Array<Witness & { dialects: Dialect[] }>;
   }>;
+  closure: Record<
+    "realProjects" | "docs",
+    {
+      state: "supported";
+      current: string;
+      witnesses: Witness[];
+    }
+  >;
 };
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
@@ -42,11 +52,23 @@ function sha256(source: string): string {
 }
 
 function displayState(state: State): string {
-  return state === "partial" ? "Partial" : "Preservation";
+  return state === "supported" ? "Supported" : "Preservation";
+}
+
+function readUniqueAnchor(witness: Witness): string {
+  const source = read(witness.path);
+  const first = source.indexOf(witness.anchor);
+  assert.notEqual(first, -1, `missing ${witness.path} anchor`);
+  assert.equal(
+    source.indexOf(witness.anchor, first + witness.anchor.length),
+    -1,
+    `ambiguous ${witness.path} anchor`,
+  );
+  return source;
 }
 
 function validateAudit(audit: Audit, decision: string): void {
-  assert.equal(audit.version, 1);
+  assert.equal(audit.version, 2);
   assert.equal(audit.issue, 8908);
   assert.match(audit.auditedRevision, /^[0-9a-f]{40}$/u);
   assert.deepEqual(audit.dialects, ["pug", "jade"]);
@@ -82,7 +104,7 @@ function validateAudit(audit: Audit, decision: string): void {
   ]);
 
   for (const surface of audit.surfaces) {
-    const expectedState: State = surface.id === "format" ? "preservation" : "partial";
+    const expectedState: State = surface.id === "format" ? "preservation" : "supported";
     assert.deepEqual(surface.dialectState, { pug: expectedState, jade: expectedState });
     assert.ok(surface.current.length > 40, `${surface.id}: current behavior is not explicit`);
     assert.ok(surface.remaining.length > 40, `${surface.id}: remaining boundary is not explicit`);
@@ -90,14 +112,8 @@ function validateAudit(audit: Audit, decision: string): void {
     const covered = new Set<Dialect>();
     for (const witness of surface.witnesses) {
       assert.ok(witness.dialects.length > 0, `${surface.id}: empty witness dialects`);
-      const source = read(witness.path);
+      const source = readUniqueAnchor(witness);
       const first = source.indexOf(witness.anchor);
-      assert.notEqual(first, -1, `${surface.id}: missing ${witness.path} anchor`);
-      assert.equal(
-        source.indexOf(witness.anchor, first + witness.anchor.length),
-        -1,
-        `${surface.id}: ambiguous ${witness.path} anchor`,
-      );
       const isTestFile = /(?:\.test\.[cm]?[jt]s|\/tests\/.*\.rs)$/u.test(witness.path);
       const isInlineRustTest = source.slice(Math.max(0, first - 200), first).includes("#[test]");
       assert.ok(isTestFile || isInlineRustTest, `${witness.path} is not executable evidence`);
@@ -116,6 +132,14 @@ function validateAudit(audit: Audit, decision: string): void {
       ],
       `${surface.id}: decision table drifted from the audit`,
     );
+  }
+
+  assert.deepEqual(Object.keys(audit.closure), ["realProjects", "docs"]);
+  for (const [id, closure] of Object.entries(audit.closure)) {
+    assert.equal(closure.state, "supported", `${id}: closure state must be explicit`);
+    assert.ok(closure.current.length > 40, `${id}: closure behavior is not explicit`);
+    assert.ok(closure.witnesses.length > 0, `${id}: closure has no witnesses`);
+    for (const witness of closure.witnesses) readUniqueAnchor(witness);
   }
 }
 
@@ -161,7 +185,7 @@ void test("#8908 audit fails closed when dialect proof, fixture custody, or the 
   const falseClosure = structuredClone(original) as unknown as {
     surfaces: Array<{ dialectState: Record<Dialect, string> }>;
   };
-  falseClosure.surfaces[0].dialectState.pug = "supported";
+  falseClosure.surfaces[0].dialectState.pug = "partial";
   assert.throws(() => validateAudit(falseClosure as unknown as Audit, decision));
 
   const forgedFixture = structuredClone(original);
@@ -169,7 +193,7 @@ void test("#8908 audit fails closed when dialect proof, fixture custody, or the 
   assert.throws(() => validateAudit(forgedFixture, decision), /bytes drifted/u);
 
   assert.throws(
-    () => validateAudit(original, decision.replace("Real Vite client and SSR", "Vite")),
+    () => validateAudit(original, decision.replace("Vite client and SSR", "Vite")),
     /decision table drifted/u,
   );
 });

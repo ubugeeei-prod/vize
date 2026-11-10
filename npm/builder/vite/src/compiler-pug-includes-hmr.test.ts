@@ -11,26 +11,30 @@ import { vize } from "./plugin/index.ts";
 
 const require = createRequire(import.meta.url);
 
-for (const scenario of [
+const scenarios = [
   { name: "template only", script: "", selfAccepting: false },
   {
     name: "script setup",
     script: "<script setup>const authored = 1;</script>\n",
     selfAccepting: true,
   },
-]) {
+];
+
+for (const { dialect, scenario } of ["pug", "jade", "JADE"].flatMap((dialect) =>
+  scenarios.map((scenario) => ({ dialect, scenario })),
+)) {
   await test(
-    `Pug include edits reach the owning module through the real Vite watcher (${scenario.name})`,
+    `Pug include edits reach the owning module through the real Vite watcher (${dialect}, ${scenario.name})`,
     { timeout: 30_000 },
     async () => {
-      const root = fs.mkdtempSync(path.join(os.tmpdir(), "vize-pug-watch-"));
+      const root = fs.mkdtempSync(path.join(os.tmpdir(), `vize-${dialect}-watch-`));
       const partial = path.join(root, "partials", "body.pug");
       fs.mkdirSync(path.dirname(partial));
       fs.writeFileSync(partial, "p.first First\n");
       fs.writeFileSync(
         path.join(root, "Card.vue"),
         scenario.script +
-          '<template lang="pug">\n.card\n  include partials/body.pug\n</template>\n',
+          `<template lang="${dialect}">\n.card\n  include partials/body.pug\n</template>\n`,
       );
       const server = await createServer({
         root,
