@@ -550,17 +550,14 @@ mod tests {
             Some(winner)
         );
 
-        let parent = reader
-            .object_path(first.cache_key())
-            .parent()
-            .unwrap()
-            .to_path_buf();
+        let object_path = reader.object_path(first.cache_key());
+        let expected_file_name = object_path.file_name().unwrap().to_owned();
+        let parent = object_path.parent().unwrap();
         let entries = fs::read_dir(parent)
             .unwrap()
             .map(|entry| entry.unwrap().file_name())
             .collect::<Vec<_>>();
-        assert_eq!(entries.len(), 1);
-        assert!(entries[0].to_string_lossy().ends_with(".json"));
+        assert_eq!(entries, [expected_file_name]);
     }
 
     #[test]
