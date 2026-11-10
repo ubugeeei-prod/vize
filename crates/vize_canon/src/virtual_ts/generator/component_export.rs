@@ -291,8 +291,13 @@ pub(super) fn emit_default_export_declaration(
         }
         // Only the named Content Mapper type carries the constructor's probe
         // facts; declaration emit and the check server keep their public
-        // surface, and their helpers keep the constructor probes.
-        if let (Some(_), Some(facts)) = (component_type, probe_facts) {
+        // surface, and their helpers keep the constructor probes. The marker
+        // proves the private `__vize` members to editor completion.
+        if let (Some(_), Some(facts), false) = (
+            component_type,
+            probe_facts,
+            component_contract_fields.is_empty(),
+        ) {
             append!(*ts, " & {facts}");
         }
     }
