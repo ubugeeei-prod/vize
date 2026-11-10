@@ -1,5 +1,15 @@
 # Current instance-global packet authority
 
+The active expected population is `source-packets-current-b6b4bbb0a16a.json`: all 80 whole transform results from [source Actions 42736126056](https://github.com/ubugeeei-prod/vize/actions/runs/42736126056/job/129566448378), synthetic merge producer `b6b4bbb0a16ab65e29ef7202b488215d8ea4b9a9` for PR head `8f1d67abf8491620cc642e26537fbf9be74020ab`. The launch receipt binds the exact source CLI, and the artifact admits the reported beta, official nightly, and pinned source-built TypeScript host.
+
+The original strict comparison remains **unqualified**: 419 of 499 semantic, protocol, geometry, and whole-packet outcomes passed. Every whole packet changed, by the canon train's three projection edits only (#12572). Its authored setup lines lost the two-space indentation and the setup map comment moved by the same bytes (#12550). Its component constructor return gained the inline public-instance pick and `NoInfer` wrapper (#12523). The `slot-shadow` and `mixed-slot-scope` packets also dropped their per-file `__U`/`__UN` declarations and name the shared unwrap aliases (#12470). Every diagnostic and opaque field is unchanged; every mapping, directive and semantic link moved only by those edits. Every non-whole-packet outcome and all three real-host controls passed.
+
+`complete: true` records the complete observed successor population. It grants no public-package or performance acceptance and does not retroactively qualify the capture. `source-packets-current-b6b4bbb0a16a-provenance.json` binds the producer, artifact digest, exact evidence members, previous population, failed qualification vector, and explicit credit limits.
+
+## Previous authority (historical)
+
+# Current instance-global packet authority
+
 The active expected population is `source-packets-current-cd10508733d6.json`: all 80 whole transform results from [source Actions 42680895978](https://github.com/ubugeeei-prod/vize/actions/runs/42680895978/job/129375771855), synthetic merge producer `cd10508733d6328e481bea39abad775855d7c7b7` for PR head `a8146816896489c638b4c88c9f1ef31775d5f5a0`. The launch receipt binds the exact source CLI, and the artifact admits the reported beta, official nightly, and pinned source-built TypeScript host.
 
 The original strict comparison remains **unqualified**: 495 of 499 semantic, protocol, geometry, and whole-packet outcomes passed. Only the LF and CRLF/Unicode `slot-shadow` and `mixed-slot-scope` whole packets changed: their slot body checks no component, so the component-props pass no longer replays it (#12479, #12486). Each lost exactly that 214-byte replay (its comment and `_slot_props_default_7` function) with its one mapped `$ghost` binding, the two unmapped-gap ignore rows around that binding merged into one, and every later generated coordinate moved by 214; every diagnostic, other mapping and opaque field is unchanged, and the other 76 complete results remain byte-identical. Every non-whole-packet outcome and all three real-host controls passed.

@@ -326,7 +326,10 @@ test("CURRENT resolves the complete authenticated population in authored case or
   assert.ok(files.has(golden.provenance as string));
   const provenance = JSON.parse(files.get(golden.provenance as string)!);
   assert.equal(provenance.producer.sourceRevision, producer.sourceRevision);
-  assertCurrentPacketProvenance(provenance);
+  assertCurrentPacketProvenance(
+    provenance,
+    golden.packets.map((packet) => packet.label),
+  );
   for (const [index, packet] of golden.packets.entries()) {
     const entry = cases[index % 40]!;
     const source =
