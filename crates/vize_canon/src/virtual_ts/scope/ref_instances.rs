@@ -248,7 +248,8 @@ fn emit_ref_call(
 ) {
     append!(
         *ts,
-        "{indent}// @ts-ignore Inference-only call; the usage's mapped prop checks own diagnostics.\n"
+        // Inference-only call; the usage's mapped prop checks own diagnostics.
+        "{indent}// @ts-ignore\n"
     );
     append!(
         *ts,
@@ -269,7 +270,8 @@ fn emit_ref_call(
         if super::is_inline_callback_prop(prop) {
             append!(
                 *ts,
-                "{indent}  // @ts-ignore Inference-only callback prop; the mapped prop owner checks diagnostics.\n"
+                // Inference-only callback prop; the mapped prop owner checks diagnostics.
+                "{indent}  // @ts-ignore\n"
             );
         }
         append!(*ts, "{indent}  \"{}\": {},\n", prop_name, value.as_str());
@@ -288,7 +290,8 @@ fn with_guard(
     let guard = isolated.as_str();
     append!(
         *ts,
-        "{at}// @ts-ignore Inference-only guard; the authored binding checks own diagnostics.\n"
+        // Inference-only guard; the authored binding checks own diagnostics.
+        "{at}// @ts-ignore\n"
     );
     append!(*ts, "{at}if ({guard}) {{\n");
     indent.push_str("  ");

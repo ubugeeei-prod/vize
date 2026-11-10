@@ -194,16 +194,15 @@ const onOpen = () => undefined
                 .and_then(|rest| rest.split(" | null").next()),
             Some(alias),
         );
-        let maps: Vec<&str> = code
-            .lines()
-            .filter(|line| line.contains("// @vize-map: handler -> "))
-            .collect();
-        let expected = handler_ranges();
-        assert_eq!(maps.len(), expected.len(), "{maps:?}");
-        for (line, range) in maps.iter().zip(expected) {
-            let marked =
-                vize_carton::cstr!("// @vize-map: handler -> {}:{}\n", range.start, range.end);
-            assert_eq!(line.trim(), marked.trim());
+        for range in handler_ranges() {
+            assert!(
+                output
+                    .mapping
+                    .spans()
+                    .iter()
+                    .any(|span| span.src_range == range),
+                "handler {range:?} keeps its mapping"
+            );
         }
         for event in ["select", "close", "save", "open"] {
             let name_ranges = event_name_ranges(event);

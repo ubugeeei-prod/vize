@@ -156,7 +156,7 @@ const activeItem = ref<T | null>(null)
   void props;
   ;(function __template() {
     // Vue template context (delegates to ComponentPublicInstance)
-    // @ts-ignore TS2694/TS2307: a `vue` without `ComponentPublicInstance` must degrade template context extras to unchecked, never error.
+    // @ts-ignore
     type __Ctx = import('vue').ComponentPublicInstance;
     const __ctx = (void 0) as unknown as __Ctx;
     const $attrs = __ctx.$attrs;
@@ -187,7 +187,6 @@ const activeItem = ref<T | null>(null)
     const __vize_native_prop_check_52: $NativeElementProp<$NativeElement<"div">, "key"> = (String(item));
     void __vize_native_prop_check_52; // VBind
     void (item); // Interpolation
-    // @vize-map: expr -> 350:354
   }
   }
 

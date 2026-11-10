@@ -169,7 +169,8 @@ fn append_props_object(
         } else if inline_callback {
             vize_l0::emit_ts!(
                 ts,
-                "{expr_indent}  // @ts-ignore Inference-only callback prop; mapped prop owner checks diagnostics.\n"
+                // Inference-only callback prop; mapped prop owner checks diagnostics.
+                "{expr_indent}  // @ts-ignore\n"
             );
         }
         let name = super::super::helpers::to_camel_case(prop.name.as_str());

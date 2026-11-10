@@ -90,14 +90,18 @@ fn guarded_listener_projection_does_not_own_nested_parameter_diagnostics() {
         .expect("the template should contain one component listener");
     let output = generate_virtual_ts(&summary, Some(script), Some(&root), 0);
 
+    // The inference-only listener value is the `void ((` line its bare
+    // `@ts-ignore` covers.
+    let ignored_listener_values = output
+        .code
+        .lines()
+        .zip(output.code.lines().skip(1))
+        .filter(|(line, next)| {
+            line.trim() == "// @ts-ignore" && next.trim_start().starts_with("void ((")
+        })
+        .count();
     assert_eq!(
-        output
-            .code
-            .matches(
-                "// @ts-ignore Inference-only listener value; the typed event scope owns diagnostics."
-            )
-            .count(),
-        1,
+        ignored_listener_values, 1,
         "the render-time copy must not report nested implicit-any diagnostics:\n{}",
         output.code
     );
@@ -113,10 +117,7 @@ fn guarded_listener_projection_does_not_own_nested_parameter_diagnostics() {
         output.code
     );
     assert_eq!(
-        output
-            .code
-            .matches("// @ts-ignore Inference-only nested callback parameter.")
-            .count(),
+        output.code.matches("\n// @ts-ignore\n").count(),
         1,
         "a later-line nested callback parameter needs its own suppression:\n{}",
         output.code

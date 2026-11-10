@@ -219,7 +219,7 @@ fn declined_plain_and_unadmitted_roots_and_legacy_keep_complete_output() {
 
 #[test]
 fn named_navigation_preserves_authored_expression_diagnostic_authority() {
-    let guard = "  // @ts-ignore Navigation-only reference; the authored v-bind statement owns diagnostics.\n";
+    let guard = "  // @ts-ignore\n";
     for (script, expression, named) in [
         (
             "const registry = { button: 'button' };",
@@ -301,7 +301,8 @@ fn named_navigation_preserves_authored_expression_diagnostic_authority() {
                     Some("component"),
                 );
             } else {
-                assert!(!output.code.contains(guard));
+                let navigation = vize_carton::cstr!("{guard}  void {expression};\n");
+                assert!(!output.code.contains(navigation.as_str()));
             }
         }
     }

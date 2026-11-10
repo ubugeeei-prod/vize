@@ -69,10 +69,8 @@ fn interrupted_sibling_chain_keeps_exclusions_outside_the_remaining_branches() {
         Some(concat!(
             "  if (!(view === 'a')) {\n",
             "    if (view === 'b') {\n",
-            "      // @vize-map: expr -> 80:92\n",
             "    } else {\n",
             "      void (checked); // VModel\n",
-            "      // @vize-map: expr -> 132:139\n",
             "    }\n",
             "  }\n",
         )),
@@ -116,7 +114,7 @@ const navItems: Item[] = []
     assert!(
         output
             .code
-            .contains("if ((isOpen)) {\n    // @vize-map: expr -> 11:17\n\n    // v-for scope")
+            .contains("if ((isOpen)) {\n\n    // v-for scope")
             && output.code.matches("if ((isOpen))").count() == 1,
         "the common outer guard should wrap the complete v-for:\n{}",
         output.code
@@ -369,22 +367,21 @@ const onSubmit = (value: number) => value
         .code
         .find("  // Component props type declarations")
         .unwrap_or(output.code.len());
-    let navigation_start = output
+    // Navigation opens its ignored chain right before the first authored
+    // (single-parenthesized) branch statement.
+    let navigation_end = output
         .code
-        .find("// @ts-ignore Navigation-only guard")
-        .unwrap();
-    let navigation_end = output.code[navigation_start..]
         .find("  if (state.mode === 'edit' && state.kind === 'k0') {")
-        .map(|offset| navigation_start + offset)
+        .unwrap();
+    let navigation_start = output.code[..navigation_end]
+        .rfind("// @ts-ignore\n  if ((state.mode === 'edit' && state.kind === 'k0'))")
         .unwrap();
     let navigation = &output.code[navigation_start..navigation_end];
+    let navigation_guards = ignored_lines(navigation, |next| next.contains("if ("));
     let listeners = &output.code[listener_start..listener_end];
 
     assert_eq!(
-        navigation
-            .matches("// @ts-ignore Navigation-only guard")
-            .count(),
-        4,
+        navigation_guards, 4,
         "one linear branch chain must own all event navigation references: {navigation}"
     );
     for index in 0..4 {
@@ -418,11 +415,12 @@ const onSubmit = (value: number) => value
             "each branch condition is emitted only for the guarded inference calls and listener callbacks: {condition}\n{listeners}"
         );
     }
+    let listener_branch_guards = ignored_lines(listeners, |next| {
+        let next = next.trim();
+        (next.starts_with("if (") || next.starts_with("else if (")) && next.ends_with(") {")
+    });
     assert_eq!(
-        listeners
-            .matches("// @ts-ignore Listener branch guard")
-            .count(),
-        0,
+        listener_branch_guards, 0,
         "bare listener references must keep contracts outside listener branch chains while inference owns its guard: {listeners}"
     );
 }
@@ -466,4 +464,12 @@ const save = () => undefined
         "array-listener aliases must remain visible to sibling bare references: {}",
         output.code
     );
+}
+
+/// Bare `@ts-ignore` lines whose next line satisfies `next`.
+fn ignored_lines(text: &str, next: impl Fn(&str) -> bool) -> usize {
+    text.lines()
+        .zip(text.lines().skip(1))
+        .filter(|(line, following)| line.trim() == "// @ts-ignore" && next(following))
+        .count()
 }

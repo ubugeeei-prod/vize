@@ -14,19 +14,19 @@ use vize_croquis::{
     Scope, ScopeData, TemplateExpression, VForScopeData, drawer::extract_identifiers_oxc,
 };
 
+/// Opens an inference-only guard; the authored v-if checks own its
+/// diagnostics. `_purpose` names the guard's role at the call site: TypeScript
+/// reads only the bare directive, so the generated text carries no reason.
 pub(crate) fn append_ignored_vif_guard_open(
     ts: &mut crate::virtual_ts::TextBuf,
     indent: &str,
     guard: &str,
-    purpose: &str,
+    _purpose: &str,
 ) {
     let isolated = crate::virtual_ts::expressions::isolate_incomplete_expression(guard);
     let one_line = guard_on_ignored_line(isolated.as_str());
     let guard = one_line.as_ref();
-    append!(
-        *ts,
-        "{indent}// @ts-ignore {purpose}; authored v-if checks own diagnostics.\n{indent}if ({guard}) {{\n"
-    );
+    append!(*ts, "{indent}// @ts-ignore\n{indent}if ({guard}) {{\n");
 }
 
 /// Only expression whitespace may move onto the ignored physical line.

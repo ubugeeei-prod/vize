@@ -140,7 +140,7 @@ const handler = () => {}
   // ========== Template Scope (inherits from setup) ==========
   ;(function __template() {
     // Vue template context (delegates to ComponentPublicInstance)
-    // @ts-ignore TS2694/TS2307: a `vue` without `ComponentPublicInstance` must degrade template context extras to unchecked, never error.
+    // @ts-ignore
     type __Ctx = import('vue').ComponentPublicInstance;
     const __ctx = (void 0) as unknown as __Ctx;
     const $attrs = __ctx.$attrs;
@@ -152,12 +152,9 @@ const handler = () => {}
   const __vize_events_nav_0 = undefined as unknown as $ComponentEvents<typeof Child> & Record<string, unknown>;
   void __vize_events_nav_0.save;
   void (staticValue); // VBind
-  // @vize-map: expr -> 21:32
   void ({ [propName]: undefined }); // DynamicDirectiveArgument
   void (dynamicValue); // VBind
-  // @vize-map: expr -> 47:59
   void (eventName); // DynamicEventArgument
-  // @vize-map: expr -> 79:88
 
   // @save handler
   type __Child_8__listener_missing<__P, __Raw extends string | number | symbol> = [__Raw] extends [never] ? unknown[] : __P extends { [__K in __Raw]?: (...args: infer __A) => any } ? __A : unknown[];
@@ -169,7 +166,7 @@ const handler = () => {}
   type __Child_8_save_prop_args = __Child_8__library extends true ? unknown[] : __Child_8__props extends infer __B ? __B extends [infer __P] ? __Child_8__listener_args<__P, "onSave", never> : unknown[] : never;
   type __Child_8_save_fallthrough_args = __Child_8__fallthrough extends infer __B ? __B extends [infer __F] ? NonNullable<__F> extends infer __P ? (__Child_8__listener_args<__P, "onSave", never>) extends infer __A extends unknown[] ? (__A extends [] ? unknown[] : __A) : unknown[] : unknown[] : unknown[] : never;
   const __vize_emit_factory_0 = (undefined as unknown as __vize_emit_resolver<__Child_8__library, typeof Child>)(Child); const __vize_emit_props_0 = (undefined as unknown as __vize_emit_input<__Child_8__library, typeof Child, typeof __vize_emit_factory_0>)({
-    // @ts-ignore Inference-only prop; the canonical component-props call owns diagnostics.
+    // @ts-ignore
     "staticProp": staticValue,
   });
   type __Child_8_save_inferred_emit_args = __Child_8__library extends true ? (typeof __vize_emit_props_0 extends { __ctx?: infer __X } ? NonNullable<__X> extends { props: infer __P } ? __P : {} : {}) extends { onSave?: (...args: infer __A) => any } ? __A : unknown[] : typeof __vize_emit_props_0 extends { readonly __vizeLooseListener: infer __L extends unknown[] } ? unknown[] : typeof __vize_emit_props_0 extends { onSave?: (...args: infer __A) => any } ? __A : unknown[];
@@ -187,7 +184,6 @@ const handler = () => {}
     const __vize_event = (__vize_args as unknown[])[0] as __Child_8_save_event; void __vize_event;
     const __vize_handler_8_68: __Child_8_save_handler | __Child_8_save_prop_arrays | null | undefined = (handler);
     if (typeof __vize_handler_8_68 === "function") (__vize_handler_8_68 as __Child_8_save_listener)(...__vize_args);  // handler expression
-    // @vize-map: handler -> 68:75
   });
 
   // @eventName handler
@@ -196,7 +192,6 @@ const handler = () => {}
     const __vize_event = __vize_args[0] as any; void __vize_event;
     const __vize_handler_9_91: __vize_dynamic_component_9_listener | null | undefined = (handler);
     if (__vize_handler_9_91) __vize_handler_9_91(...__vize_args);  // handler expression
-    // @vize-map: handler -> 91:98
   });
 
   // Component props type declarations
@@ -236,7 +231,6 @@ const handler = () => {}
   type $RequiredSlotKeys<__S> = { [__K in keyof __S]-?: undefined extends __S[__K] ? never : __K }[keyof __S];
   type $MissingRequiredSlots<__S, __P> = Exclude<$RequiredSlotKeys<__S>, keyof __P>;
   type $RequiredSlots<__S, __P> = $IsAny<__S> extends true ? {} : string extends keyof __S ? {} : [keyof __S] extends [never] ? {} : [$MissingRequiredSlots<__S, __P>] extends [never] ? {} : { readonly __vizeMissingSlots: $MissingRequiredSlots<__S, __P> };
-  // @vize-map: component -> 0:102
   type __Child_Props_0 = typeof Child extends { __vizeCheck: infer __F } ? ($IsAny<__F> extends true ? $ComponentRawProps<typeof Child> : Record<string, unknown>) : $ComponentRawProps<typeof Child>;
   type __Child_Component_0 = typeof Child;
   type __Child_CheckProps_0 = __Child_Props_0 & $EmitListeners<__Child_Component_0> & ($FallthroughProps<__Child_Component_0> extends infer __F ? [__F extends unknown ? {} extends __F ? never : __F : never] extends [never] ? $RequiredFallthroughProps<__Child_Component_0, __F, never> : $RequiredFallthroughProps<__Child_Component_0, __F> : never);
@@ -253,7 +247,6 @@ const handler = () => {}
   void __vize_props_nav_0.staticProp;
 
   // Component props value checks (template scope)
-  // @vize-map: prop -> 7:33
   const __vize_prop_check_0_static_prop: __Child_0_prop_static_prop = staticValue;
   void __vize_prop_check_0_static_prop;
   (undefined as unknown as __Child_Check_0)({

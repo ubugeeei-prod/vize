@@ -59,9 +59,22 @@ fn a_listener_block_prefix_is_restated_inside_the_arrow() {
     );
     // The open block enforces the v-for alias term, a strict prefix of the
     // usage guard. The inlined call used to test only the remaining term.
-    let block = code
-        .find("// @ts-ignore Listener branch guard; authored v-if checks own diagnostics.\n")
-        .unwrap_or_else(|| panic!("{code}"));
+    // The listener branch block is the bare `@ts-ignore` above its `if`.
+    let mut block = None;
+    let mut offset = 0;
+    let mut lines = code.split_inclusive('\n').peekable();
+    while let Some(line) = lines.next() {
+        if line.trim() == "// @ts-ignore"
+            && lines
+                .peek()
+                .is_some_and(|next| next.trim() == "if ((row.ready)) {")
+        {
+            block = Some(offset);
+            break;
+        }
+        offset += line.len();
+    }
+    let block = block.unwrap_or_else(|| panic!("{code}"));
     let after_block = code.get(block..).unwrap_or_default();
     assert_eq!(
         after_block.lines().nth(1).map(str::trim_start),
@@ -74,7 +87,7 @@ fn a_listener_block_prefix_is_restated_inside_the_arrow() {
     let mut body = after_block.get(arrow..).unwrap_or_default().lines();
     assert_eq!(
         body.nth(1).map(str::trim_start),
-        Some("// @ts-ignore Inference-only guard; authored binding checks own diagnostics."),
+        Some("// @ts-ignore"),
         "{code}"
     );
     assert_eq!(

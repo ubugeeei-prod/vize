@@ -368,9 +368,6 @@ fn generate_usage_declarations(
     );
     let component_type_name = to_safe_identifier_fragment(usage.name.as_str());
 
-    let src_start = (ctx.template_offset + usage.start) as usize;
-    let src_end = (ctx.template_offset + usage.end) as usize;
-    vize_l0::emit_ts!(ts, "  // @vize-map: component -> {src_start}:{src_end}\n",);
     // Prefer the modern static raw-props identity while retaining the
     // instance marker for declarations emitted before #4034.
     vize_l0::emit_ts!(ts, "  type __{component_type_name}_Props_{idx} = ",);

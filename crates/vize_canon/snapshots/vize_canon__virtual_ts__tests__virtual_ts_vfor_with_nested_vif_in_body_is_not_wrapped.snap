@@ -135,7 +135,7 @@ const show = true;
   // ========== Template Scope (inherits from setup) ==========
   ;(function __template() {
     // Vue template context (delegates to ComponentPublicInstance)
-    // @ts-ignore TS2694/TS2307: a `vue` without `ComponentPublicInstance` must degrade template context extras to unchecked, never error.
+    // @ts-ignore
     type __Ctx = import('vue').ComponentPublicInstance;
     const __ctx = (void 0) as unknown as __Ctx;
     const $attrs = __ctx.$attrs;
@@ -155,9 +155,7 @@ const show = true;
     const __vize_native_prop_check_39: $NativeElementProp<$NativeElement<"li">, "key"> = (item);
     void __vize_native_prop_check_39; // VBind
     if ((show)) {
-      // @vize-map: expr -> 62:66
       void (item); // Interpolation
-      // @vize-map: expr -> 71:75
     }
   }
   }

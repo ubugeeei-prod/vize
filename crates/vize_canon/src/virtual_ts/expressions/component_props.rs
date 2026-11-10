@@ -278,11 +278,6 @@ fn generate_component_prop_checks_inner<const LEGACY_SCALARS: bool>(
                 }
                 .unwrap_or_else(|| PropSpan::plain(String::default()))
             );
-            append!(
-                *ts,
-                "{indent}// @vize-map: prop -> {prop_src_start}:{prop_src_end}\n",
-            );
-
             let safe_prop_name = to_safe_identifier_fragment(prop.name.as_str());
             let expr_indent = if usage.vif_guard.is_some() {
                 cstr!("{indent}  ")

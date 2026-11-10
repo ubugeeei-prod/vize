@@ -101,9 +101,7 @@ function __setup() {
     void $listeners;void $children;void $scopedSlots;void $on;void $off;void $once;void $set;void $delete;void $createElement;void _c;
 
   void ($listeners); // Interpolation
-  // @vize-map: expr -> 8:18
   void ($scopedSlots); // Interpolation
-  // @vize-map: expr -> 25:37
   })();
 }
 
@@ -293,9 +291,7 @@ function __setup() {
     void $listeners;void $children;void $scopedSlots;void $on;void $off;void $once;void $set;void $delete;void $createElement;void _c;
 
   void ($listeners); // Interpolation
-  // @vize-map: expr -> 8:18
   void ($scopedSlots); // Interpolation
-  // @vize-map: expr -> 25:37
   })();
 }
 
@@ -519,7 +515,7 @@ function __setup() {
   // ========== Template Scope (inherits from setup) ==========
   ;(function __template() {
     // Vue template context (delegates to ComponentPublicInstance)
-    // @ts-ignore TS2694/TS2307: a `vue` without `ComponentPublicInstance` must degrade template context extras to unchecked, never error.
+    // @ts-ignore
     type __Ctx = import('vue').ComponentPublicInstance;
     const __ctx = (void 0) as unknown as __Ctx;
     const $attrs = __ctx.$attrs;
@@ -529,9 +525,7 @@ function __setup() {
     void __ctx; void $attrs; void $slots; void $refs; void $emit;
 
   void (__ctx.$listeners); // Interpolation
-  // @vize-map: expr -> 8:18
   void (__ctx.$scopedSlots); // Interpolation
-  // @vize-map: expr -> 25:37
   })();
 }
 

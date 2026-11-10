@@ -135,7 +135,7 @@ function __setup() {
   // ========== Template Scope (inherits from setup) ==========
   ;(function __template() {
     // Vue template context (delegates to ComponentPublicInstance)
-    // @ts-ignore TS2694/TS2307: a `vue` without `ComponentPublicInstance` must degrade template context extras to unchecked, never error.
+    // @ts-ignore
     type __Ctx = import('vue').ComponentPublicInstance;
     const __ctx = (void 0) as unknown as __Ctx;
     const $attrs = __ctx.$attrs;
@@ -158,15 +158,13 @@ function __setup() {
   void width;
 
   void (width); // VBind
-  // @vize-map: expr -> 18:23
   void (hideDetails); // VBind
-  // @vize-map: expr -> 40:51
 
   // Undefined references from template:
   void (__vize_keyed_template_context.width);
-  // @vize-map: 16592:16597 -> 18:23
+  // @vize-map: 16441:16446 -> 18:23
   void (__vize_keyed_template_context.hideDetails);
-  // @vize-map: 16675:16686 -> 40:51
+  // @vize-map: 16494:16505 -> 40:51
 
   // Auto-imported/built-in components (not in script bindings)
   const v_select: any = undefined as any;
@@ -334,15 +332,13 @@ defineProps<Props>()
   void width;
 
   void (width); // VBind
-  // @vize-map: expr -> 18:23
   void (hideDetails); // VBind
-  // @vize-map: expr -> 40:51
 
   // Undefined references from template:
   void (width);
-  // @vize-map: 8300:8305 -> 18:23
+  // @vize-map: 8240:8245 -> 18:23
   void (hideDetails);
-  // @vize-map: 8351:8362 -> 40:51
+  // @vize-map: 8291:8302 -> 40:51
 
   // Auto-imported/built-in components (not in script bindings)
   const v_select: any = undefined as any;

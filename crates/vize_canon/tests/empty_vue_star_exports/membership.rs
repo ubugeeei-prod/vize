@@ -13,6 +13,7 @@ mod constructor_without_args;
 mod controls;
 mod current_generated_constructor;
 mod current_updates;
+mod generated_comment_bytes_generated;
 mod integrated_generated_constructor;
 mod provider_roster;
 mod setup_verbatim_generated;
@@ -251,6 +252,7 @@ fn expected(current_providers: bool) -> (Value, Value) {
     canon_leftovers_generated::apply(&mut manifest, &mut members);
     constructor_noinfer_generated::apply(&mut manifest, &mut members);
     setup_verbatim_generated::apply(&mut manifest, &mut members);
+    generated_comment_bytes_generated::apply(&mut manifest, &mut members);
     (manifest, json!(members))
 }
 

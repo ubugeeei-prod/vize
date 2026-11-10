@@ -151,7 +151,7 @@ const count = defineModel<number>('count', { default: 0 })
     var count: __U<__R_count> = (void 0) as any;
     var model: __U<__R_model> = (void 0) as any;
     // Vue template context (delegates to ComponentPublicInstance)
-    // @ts-ignore TS2694/TS2307: a `vue` without `ComponentPublicInstance` must degrade template context extras to unchecked, never error.
+    // @ts-ignore
     type __Ctx = import('vue').ComponentPublicInstance;
     const __ctx = (void 0) as unknown as __Ctx;
     const $attrs = __ctx.$attrs;
@@ -171,14 +171,11 @@ const count = defineModel<number>('count', { default: 0 })
   void modelValue;
 
   void (model); // VModel
-  // @vize-map: expr -> 178:183
   void (count); // Interpolation
-  // @vize-map: expr -> 243:248
 
   // @click handler
   void (() => {
     $emit('update:count', count + 1);  // handler expression
-    // @vize-map: handler -> 206:238
   });
 
   // Reference setup bindings (used in template/CSS v-bind)
