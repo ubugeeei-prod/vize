@@ -48,9 +48,11 @@ pub(super) fn emit(ts: &mut crate::virtual_ts::TextBuf, ctx: Context<'_>) -> Str
             String::from("any")
         };
         if let Some(props) = contextual_props {
+            let lib_non_nullable = crate::virtual_ts::generated_names::lib("NonNullable");
+            let lib_extract = crate::virtual_ts::generated_names::lib("Extract");
             append!(
                 *ts,
-                "{indent}type {return_type} = unknown[] extends {prop_args} ? any : {props} extends {{ {prop_key}?: infer __H }} ? Extract<NonNullable<__H>, (...args: any[]) => any> extends (...args: any[]) => infer __R ? __R : any : any;\n",
+                "{indent}type {return_type} = unknown[] extends {prop_args} ? any : {props} extends {{ {prop_key}?: infer __H }} ? {lib_extract}<{lib_non_nullable}<__H>, (...args: any[]) => any> extends (...args: any[]) => infer __R ? __R : any : any;\n",
             );
         } else {
             append!(

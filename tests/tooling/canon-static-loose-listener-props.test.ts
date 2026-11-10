@@ -3,6 +3,7 @@ import fs from "node:fs";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
 import ts from "typescript";
+import { beforeListenerLibTypeQualification } from "../../tools/support/compat/content-mapper/lib-type-qualification-listeners-transition.ts";
 import {
   beforeIntegratedStaticListenerSource,
   beforeStaticListenerSource,
@@ -10,9 +11,11 @@ import {
   staticListenerSource,
 } from "./support/static-listener-prop-source.ts";
 const root = new URL("../../", import.meta.url);
-const generator = fs.readFileSync(
-  new URL("crates/vize_canon/src/virtual_ts/scope/component_events/generic_inference.rs", root),
-  "utf8",
+const generatorPath =
+  "crates/vize_canon/src/virtual_ts/scope/component_events/generic_inference.rs";
+const generator = beforeListenerLibTypeQualification(
+  generatorPath,
+  fs.readFileSync(new URL(generatorPath, root), "utf8"),
 );
 const emitted = generator.match(/"\{indent\}type \{inferred_args\} = ([^\n]+);\\n",/u);
 assert.ok(emitted);
@@ -73,7 +76,8 @@ void test("only static loose markers use the certified prop fallback", () => {
     generator,
     /let loose_args = if dynamic_component \|\| !ctx\.contextual_listener \{\s*"__L"\s*\} else \{\s*"unknown\[\]"\s*\};/u,
   );
-  const read = (path: string) => fs.readFileSync(new URL(path, root), "utf8");
+  const read = (path: string) =>
+    beforeListenerLibTypeQualification(path, fs.readFileSync(new URL(path, root), "utf8"));
   const current = read(staticListenerSource);
   const integratedBase = beforeIntegratedStaticListenerSource(read, staticListenerSource, current);
   assert.ok(integratedBase.includes("__vizeLooseListener: {loose_marker}"));

@@ -1,0 +1,141 @@
+{
+  "schema": "vize.libTypeListenerQualificationSource.v1",
+  "credit": {
+    "compiled": false,
+    "native": false,
+    "performance": false
+  },
+  "files": [
+    {
+      "path": "crates/vize_canon/src/virtual_ts/generator/component_export.rs",
+      "before": {
+        "bytes": 16180,
+        "sha256": "9f3de3a28596210a1a1243e7180f9baea980ea5c3c29d4dcad01d027e57af2ff"
+      },
+      "after": {
+        "bytes": 16258,
+        "sha256": "c54563fa90e58e31045008cdea30c5774cd162e54053c74d66164ef0e82c42d1"
+      },
+      "hunks": [
+        {
+          "before": "        // constructor `$props` contract for imported SFCs (#9855).\n        let props_ref = static_raw_props_ref.unwrap_or(\"any\");\n        append!(\n            *ts,\n            \"  setup?: (this: void, props: Readonly<{props_ref}>, ctx: any) => any;\\n\"\n        );\n    }\n",
+          "after": "        // constructor `$props` contract for imported SFCs (#9855).\n        let props_ref = static_raw_props_ref.unwrap_or(\"any\");\n        let readonly = crate::virtual_ts::generated_names::lib(\"Readonly\");\n        append!(\n            *ts,\n            \"  setup?: (this: void, props: {readonly}<{props_ref}>, ctx: any) => any;\\n\"\n        );\n    }\n"
+        }
+      ]
+    },
+    {
+      "path": "crates/vize_canon/src/virtual_ts/scope/component_events.rs",
+      "before": {
+        "bytes": 23235,
+        "sha256": "4c63b1be0fe618c37b665a5f399fe277c5306314e4c26854ca2509797e61b235"
+      },
+      "after": {
+        "bytes": 23339,
+        "sha256": "8e782071a782a4222e51ca36ac6a59f726deaf593cb39eee9733170d282fc94d"
+      },
+      "hunks": [
+        {
+          "before": "        gated_inference,\n    } = ctx;\n    let component_name = data.target_component.as_ref()?;\n    let scope_id = scope.id.as_u32();\n",
+          "after": "        gated_inference,\n    } = ctx;\n    let lib_non_nullable = crate::virtual_ts::generated_names::lib(\"NonNullable\");\n    let component_name = data.target_component.as_ref()?;\n    let scope_id = scope.id.as_u32();\n"
+        },
+        {
+          "before": "            vize_l0::emit_ts!(\n                ts,\n                \"{indent}type {resolved_props} = typeof {component_ref} extends {{ readonly __vizeComponentMarker: true }} ? typeof {component_ref} extends {{ __vizeCheck: unknown }} ? {public_props} : {owned_listener_key} extends {emit_owned_keys}<typeof {component_ref}> ? {public_props} : unknown[] extends {fallthrough_args} ? {public_props} : typeof {component_ref} extends {{ readonly __vizeFallthroughProps?: infer __F }} ? NonNullable<__F> : {public_props} : {public_props};\\n\",\n            );\n        }\n",
+          "after": "            vize_l0::emit_ts!(\n                ts,\n                \"{indent}type {resolved_props} = typeof {component_ref} extends {{ readonly __vizeComponentMarker: true }} ? typeof {component_ref} extends {{ __vizeCheck: unknown }} ? {public_props} : {owned_listener_key} extends {emit_owned_keys}<typeof {component_ref}> ? {public_props} : unknown[] extends {fallthrough_args} ? {public_props} : typeof {component_ref} extends {{ readonly __vizeFallthroughProps?: infer __F }} ? {lib_non_nullable}<__F> : {public_props} : {public_props};\\n\",\n            );\n        }\n"
+        },
+        {
+          "before": "                vize_l0::emit_ts!(\n                    ts,\n                    \"{indent}type {fallthrough_args} = {fallthrough_box} extends infer __B ? __B extends [infer __F] ? NonNullable<__F> extends {{ {prop_key}?: (...args: infer __A) => any }} ? (__A extends [] ? unknown[] : __A) : unknown[] : unknown[] : never;\\n\",\n                );\n            } else {\n                vize_l0::emit_ts!(\n                    ts,\n                    \"{indent}type {fallthrough_args} = {fallthrough_box} extends infer __B ? __B extends [infer __F] ? NonNullable<__F> extends infer __P ? ({prop_listener_args}) extends infer __A extends unknown[] ? (__A extends [] ? unknown[] : __A) : unknown[] : unknown[] : unknown[] : never;\\n\",\n                );\n            }\n",
+          "after": "                vize_l0::emit_ts!(\n                    ts,\n                    \"{indent}type {fallthrough_args} = {fallthrough_box} extends infer __B ? __B extends [infer __F] ? {lib_non_nullable}<__F> extends {{ {prop_key}?: (...args: infer __A) => any }} ? (__A extends [] ? unknown[] : __A) : unknown[] : unknown[] : never;\\n\",\n                );\n            } else {\n                vize_l0::emit_ts!(\n                    ts,\n                    \"{indent}type {fallthrough_args} = {fallthrough_box} extends infer __B ? __B extends [infer __F] ? {lib_non_nullable}<__F> extends infer __P ? ({prop_listener_args}) extends infer __A extends unknown[] ? (__A extends [] ? unknown[] : __A) : unknown[] : unknown[] : unknown[] : never;\\n\",\n                );\n            }\n"
+        }
+      ]
+    },
+    {
+      "path": "crates/vize_canon/src/virtual_ts/scope/component_events/generic_inference.rs",
+      "before": {
+        "bytes": 19200,
+        "sha256": "c0245066c6f61b40fd2cf2c64eaf846fc35504be875f28d0bb802684b7d8bf71"
+      },
+      "after": {
+        "bytes": 19290,
+        "sha256": "08721b15c0bc7b0bc8c93fe14e615a3218326ef8e9896caa4531f46790b5aae2"
+      },
+      "hunks": [
+        {
+          "before": "        \"unknown[]\"\n    };\n    append!(\n        *ts,\n        \"{indent}type {inferred_args} = {library} extends true ? (typeof {emit_props} extends {{ __ctx?: infer __X }} ? NonNullable<__X> extends {{ props: infer __P }} ? __P : {{}} : {{}}) extends {{ {prop_key}?: (...args: infer __A) => any }} ? __A : unknown[] : typeof {emit_props} extends {{ readonly __vizeLooseListener: infer __L extends unknown[] }} ? {loose_args} : typeof {emit_props} extends {{ {prop_key}?: (...args: infer __A) => any }} ? __A : unknown[];\\n\",\n    );\n    let contextless_listener = (ctx.contextual_listener && dynamic_component).then(|| {\n",
+          "after": "        \"unknown[]\"\n    };\n    let lib_non_nullable = crate::virtual_ts::generated_names::lib(\"NonNullable\");\n    append!(\n        *ts,\n        \"{indent}type {inferred_args} = {library} extends true ? (typeof {emit_props} extends {{ __ctx?: infer __X }} ? {lib_non_nullable}<__X> extends {{ props: infer __P }} ? __P : {{}} : {{}}) extends {{ {prop_key}?: (...args: infer __A) => any }} ? __A : unknown[] : typeof {emit_props} extends {{ readonly __vizeLooseListener: infer __L extends unknown[] }} ? {loose_args} : typeof {emit_props} extends {{ {prop_key}?: (...args: infer __A) => any }} ? __A : unknown[];\\n\",\n    );\n    let contextless_listener = (ctx.contextual_listener && dynamic_component).then(|| {\n"
+        }
+      ]
+    },
+    {
+      "path": "crates/vize_canon/src/virtual_ts/scope/component_events/listener_relations.rs",
+      "before": {
+        "bytes": 1838,
+        "sha256": "c95a9944fcc1df946ddcc789ecbb34309f6db9dc22eb99f3a688a5422fe13234"
+      },
+      "after": {
+        "bytes": 1880,
+        "sha256": "2ec50efc62af1f65f4d285a2d4c4b710520b1b094124b86e7f78d7fd7b0e1721"
+      },
+      "hunks": [
+        {
+          "before": "        for line in declarations.lines() {\n            ts.push_str(indent);\n            ts.push_str(line);\n            ts.push('\\n');\n        }\n",
+          "after": "        for line in declarations.lines() {\n            ts.push_str(indent);\n            crate::virtual_ts::generated_names::push_lib_text(ts, line);\n            ts.push('\\n');\n        }\n"
+        }
+      ]
+    },
+    {
+      "path": "crates/vize_canon/src/virtual_ts/scope/component_events/listener_return.rs",
+      "before": {
+        "bytes": 2304,
+        "sha256": "a799560468ad4fd82e8186315914762e1601354367a894949c5caa75a29d5ffe"
+      },
+      "after": {
+        "bytes": 2490,
+        "sha256": "71e6b2f7db4df0f6e372313c4bd1184508f05cdded75f3b58cd857bb016be935"
+      },
+      "hunks": [
+        {
+          "before": "        };\n        if let Some(props) = contextual_props {\n            append!(\n                *ts,\n                \"{indent}type {return_type} = unknown[] extends {prop_args} ? any : {props} extends {{ {prop_key}?: infer __H }} ? Extract<NonNullable<__H>, (...args: any[]) => any> extends (...args: any[]) => infer __R ? __R : any : any;\\n\",\n            );\n        } else {\n",
+          "after": "        };\n        if let Some(props) = contextual_props {\n            let lib_non_nullable = crate::virtual_ts::generated_names::lib(\"NonNullable\");\n            let lib_extract = crate::virtual_ts::generated_names::lib(\"Extract\");\n            append!(\n                *ts,\n                \"{indent}type {return_type} = unknown[] extends {prop_args} ? any : {props} extends {{ {prop_key}?: infer __H }} ? {lib_extract}<{lib_non_nullable}<__H>, (...args: any[]) => any> extends (...args: any[]) => infer __R ? __R : any : any;\\n\",\n            );\n        } else {\n"
+        }
+      ]
+    },
+    {
+      "path": "crates/vize_canon/src/virtual_ts/scope/component_events/native_fallthrough.rs",
+      "before": {
+        "bytes": 1987,
+        "sha256": "464dcde355c98d812c361a1f58c23c213e4bc6d042623225f86d62b74839bc3f"
+      },
+      "after": {
+        "bytes": 2254,
+        "sha256": "10ac1984c92fcd588c533e1eea1b0efd572524e84773ceb479f340cf4e3675c8"
+      },
+      "hunks": [
+        {
+          "before": "    prop_listener_args: &str,\n) {\n    append!(\n        *ts,\n        \"{indent}type {fallthrough_args} = {fallthrough_box} extends infer __B ? __B extends [infer __F] ? NonNullable<__F> extends infer __P ? ({prop_listener_args}) extends infer __A extends unknown[] ? (__A extends [] ? unknown[] : __A) : unknown[] : unknown[] : unknown[] : never;\\n\",\n    );\n}\n",
+          "after": "    prop_listener_args: &str,\n) {\n    let lib_non_nullable = crate::virtual_ts::generated_names::lib(\"NonNullable\");\n    append!(\n        *ts,\n        \"{indent}type {fallthrough_args} = {fallthrough_box} extends infer __B ? __B extends [infer __F] ? {lib_non_nullable}<__F> extends infer __P ? ({prop_listener_args}) extends infer __A extends unknown[] ? (__A extends [] ? unknown[] : __A) : unknown[] : unknown[] : unknown[] : never;\\n\",\n    );\n}\n"
+        },
+        {
+          "before": "    prop_key: &str,\n) {\n    append!(\n        *ts,\n        \"{indent}type {native_return} = {fallthrough_box} extends infer __B ? __B extends [infer __F] ? NonNullable<__F> extends {{ {prop_key}?: infer __H }} ? Extract<NonNullable<__H>, (...args: any[]) => any> extends (...args: any[]) => infer __R ? __R : any : any : any : never;\\n\",\n    );\n}\n",
+          "after": "    prop_key: &str,\n) {\n    let lib_non_nullable = crate::virtual_ts::generated_names::lib(\"NonNullable\");\n    let lib_extract = crate::virtual_ts::generated_names::lib(\"Extract\");\n    append!(\n        *ts,\n        \"{indent}type {native_return} = {fallthrough_box} extends infer __B ? __B extends [infer __F] ? {lib_non_nullable}<__F> extends {{ {prop_key}?: infer __H }} ? {lib_extract}<{lib_non_nullable}<__H>, (...args: any[]) => any> extends (...args: any[]) => infer __R ? __R : any : any : any : never;\\n\",\n    );\n}\n"
+        }
+      ]
+    },
+    {
+      "path": "crates/vize_canon/src/virtual_ts/scope/component_events/prop_array_share.rs",
+      "before": {
+        "bytes": 9084,
+        "sha256": "fefd1b6bced7fb23a37b615475dff7673894733e19e7d4d74c1d1d58ac3e80b9"
+      },
+      "after": {
+        "bytes": 9254,
+        "sha256": "da1e80d5b62ba63032c9e41541b9920fea433f3505fee8c717cada37e6ffcfbb"
+      },
+      "hunks": [
+        {
+          "before": "    // Unioning that into the handler annotation would type `(v)` as explicit\n    // `any` and hide TS7006 on a loose `:is`.\n    let arrays = cstr!(\n        \"{is_any}<__P> extends true ? never : __P extends {{ {prop_key}?: infer __H }} ? Extract<NonNullable<__H>, readonly unknown[]> : never\"\n    );\n    if let Some(props) = direct_props {\n",
+          "after": "    // Unioning that into the handler annotation would type `(v)` as explicit\n    // `any` and hide TS7006 on a loose `:is`.\n    let lib_non_nullable = crate::virtual_ts::generated_names::lib(\"NonNullable\");\n    let lib_extract = crate::virtual_ts::generated_names::lib(\"Extract\");\n    let arrays = cstr!(\n        \"{is_any}<__P> extends true ? never : __P extends {{ {prop_key}?: infer __H }} ? {lib_extract}<{lib_non_nullable}<__H>, readonly unknown[]> : never\"\n    );\n    if let Some(props) = direct_props {\n"
+        }
+      ]
+    }
+  ]
+}

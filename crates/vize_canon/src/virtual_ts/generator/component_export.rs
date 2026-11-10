@@ -94,9 +94,10 @@ fn emit_vue_component_options_type(
         // intersection match `ComponentOptions<any>`, bypassing the precise
         // constructor `$props` contract for imported SFCs (#9855).
         let props_ref = static_raw_props_ref.unwrap_or("any");
+        let readonly = crate::virtual_ts::generated_names::lib("Readonly");
         append!(
             *ts,
-            "  setup?: (this: void, props: Readonly<{props_ref}>, ctx: any) => any;\n"
+            "  setup?: (this: void, props: {readonly}<{props_ref}>, ctx: any) => any;\n"
         );
     }
     ts.push_str(VUE_COMPONENT_OPTIONS_MEMBERS_AFTER_SETUP);
