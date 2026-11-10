@@ -141,6 +141,9 @@ export type $ConstructorEmitPropsFactory<F, O extends PropertyKey> = <P, E>(
 import type * as __vizeEmitTypes from "./virtual-ts-emits.js" with { "resolution-mode": "import" };
 type $NativeEmitPropsFactory<C> = __vizeEmitTypes.$NativeEmitPropsFactory<C>;
 export type $EmitPropsFactory<C> = __vizeEmitTypes.$EmitPropsFactory<C>;
+type $ClosedEmitMember<C> = C extends new (...args: any[]) => { $emit: infer E } ? E : never;
+export type $ClosedEmitTarget<C, A = C> = [C] extends [never] ? false : $IsAny<C> extends true ? false : [C extends { readonly __vizeComponentMarker: true } ? (<G>() => G extends C ? 1 : 2) extends <G>() => G extends A ? 1 : 2 ? C extends { __vizeResolveEmitProps?: infer X } ? X extends (...args: any[]) => any ? false : true : C extends { __vizeResolveProps?: infer X } ? X extends (...args: any[]) => any ? false : true : true : false : false] extends [true] ? [$ClosedEmitMember<C>] extends [never] ? false : true : false;
+export type $ClosedEmitFactory<C> = (component: unknown) => (props: any) => __EmitProps<$ClosedEmitMember<C>>;
 
 // Component usage helpers shared by every generated module in a batch project.
 export type IsAny<T> = $IsAny<T>;
