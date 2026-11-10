@@ -65,7 +65,9 @@ fn authored_names_beside_the_reserved_prefix_keep_their_meaning() {
     // declared a second time.
     for usage in 0..3 {
         assert_eq!(
-            generated.matches(&format!("type __VProps{usage} = ")).count(),
+            generated
+                .matches(&format!("type __VProps{usage} = "))
+                .count(),
             1,
             "usage {usage} declares its contract once:\n{generated}"
         );
