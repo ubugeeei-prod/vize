@@ -153,3 +153,74 @@ const { props, size } = useField()
         "the generated object must not redeclare the authored binding:\n{code}",
     );
 }
+
+/// The template-ref registry targets: hoisted modules name the shared SDK
+/// declarations, whose bodies are byte-for-byte the per-file ones that the
+/// embedded and editor modules keep.
+#[test]
+fn template_ref_registry_targets_name_the_shared_declarations() {
+    let script = r#"import { useTemplateRef } from 'vue'
+import Child from './Child.vue'
+const box = useTemplateRef('box')
+const child = useTemplateRef('child')
+const probe = useTemplateRef('probe')
+"#;
+    let template = r#"<div ref="box" /><Child ref="child" /><Child ref="probe" :label="'x'" />"#;
+    let hoisted = generate_template_code(script, template, true);
+    let embedded = generate_template_code(script, template, false);
+    let editor = generate_template_code_with(script, template, true, true);
+    let names = [
+        "$DomElement",
+        "$TemplateComponentRef",
+        "$RefInstanceFactory",
+        "$TemplateRefInstance",
+    ];
+    for name in names {
+        let declaration = |code: &str| {
+            let prefix = format!("  type {name}<");
+            let lines: Vec<_> = code
+                .lines()
+                .filter(|line| line.starts_with(&prefix))
+                .collect();
+            assert_eq!(lines.len(), 1, "{name} per-file declaration:\n{code}");
+            lines[0].trim_start().to_owned()
+        };
+        let local = declaration(&embedded);
+        assert_eq!(declaration(&editor), local, "editor modules keep {name}");
+        assert_eq!(
+            exact_line_count(SHARED_PREAMBLE_DTS, &format!("export {local}")),
+            1,
+            "the shared {name} must be the exact per-file declaration:\n{SHARED_PREAMBLE_DTS}",
+        );
+        let redeclared = hoisted
+            .lines()
+            .filter(|line| line.trim_start().starts_with(&format!("type {name}<")))
+            .count();
+        assert_eq!(
+            redeclared, 0,
+            "hoisted modules must not redeclare {name}:\n{hoisted}"
+        );
+    }
+    for (code, prefix) in [(&hoisted, "import(\"vize:virtual-ts\")."), (&embedded, "")] {
+        assert_eq!(
+            exact_line_count(
+                code,
+                &format!(
+                    "  type $TemplateRefs = {{ \"box\": {prefix}$DomElement<\"div\">; \"child\": {prefix}$TemplateComponentRef<typeof Child>; \"probe\": {prefix}$TemplateRefInstance<typeof __vize_template.__vizeRefs, \"38\", typeof Child>; }};"
+                ),
+            ),
+            1,
+            "registry targets:\n{code}",
+        );
+        assert_eq!(
+            exact_line_count(
+                code,
+                &format!(
+                    "  var __vize_ref_38 = (undefined as unknown as {prefix}$RefInstanceFactory<typeof Child>)(Child)({{"
+                ),
+            ),
+            1,
+            "ref instance probe:\n{code}",
+        );
+    }
+}

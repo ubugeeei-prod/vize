@@ -38,6 +38,7 @@
     "virtual-ts-listeners.d.ts",
     "virtual-ts-patterns.d.ts",
     "virtual-ts-slots.d.ts",
+    "virtual-ts-refs.d.ts",
     "virtual-ts-emits.d.ts",
     "virtual-ts.d.ts",
     "virtual-ts.d.mts",

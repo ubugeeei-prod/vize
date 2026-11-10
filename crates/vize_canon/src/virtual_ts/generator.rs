@@ -355,6 +355,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         template_ast.filter(|_| has_template_scope && check_options.check_template_bindings),
         generic_param.is_some() && !legacy_vue2,
         setup_helpers.template_refs.needs_registry(),
+        hoist_shared_preamble && !generation_options.local_template_ref_unwrap,
     );
     setup_imports.read_template_slots_from(template_record.slots_value().as_str());
     ts.push_str("// ========== Setup Scope ==========\n");
@@ -688,6 +689,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                     .experimental_strict_slot_children,
                 forwarded_root_starts: template_record.forwarded.starts(),
                 instantiated_ref_starts: template_record.ref_starts(),
+                shared_template_refs: template_record.shares_refs(),
             };
             let template_binding_access = profile!(
                 "canon.virtual_ts.collect_template_prop_names",

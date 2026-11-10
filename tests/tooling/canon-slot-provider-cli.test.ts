@@ -71,6 +71,10 @@ import {
   applySharedKebabCaseIn,
   beforeSharedKebabCaseIn,
 } from "../../tools/support/compat/content-mapper/shared-kebab-case-transition.ts";
+import {
+  applySharedTemplateRefTargetsIn,
+  beforeSharedTemplateRefTargetsIn,
+} from "../../tools/support/compat/content-mapper/shared-template-ref-targets-transition.ts";
 
 test("quiet CLI debug output retains exact helper/file bytes and refuses unrelated stderr", () => {
   const record = JSON.parse(
@@ -206,8 +210,10 @@ test("quiet CLI debug output retains exact helper/file bytes and refuses unrelat
   assert.equal(beforeClosedEmitFactoryIn(closedSourcePreamble), usageSourcePreamble);
   const usageGatesSourcePreamble = applySharedUsageGatesIn(closedSourcePreamble);
   assert.equal(beforeSharedUsageGatesIn(usageGatesSourcePreamble), closedSourcePreamble);
-  const currentSourcePreamble = applySharedKebabCaseIn(usageGatesSourcePreamble);
-  assert.equal(beforeSharedKebabCaseIn(currentSourcePreamble), usageGatesSourcePreamble);
+  const kebabSourcePreamble = applySharedKebabCaseIn(usageGatesSourcePreamble);
+  assert.equal(beforeSharedKebabCaseIn(kebabSourcePreamble), usageGatesSourcePreamble);
+  const currentSourcePreamble = applySharedTemplateRefTargetsIn(kebabSourcePreamble);
+  assert.equal(beforeSharedTemplateRefTargetsIn(currentSourcePreamble), kebabSourcePreamble);
   const canonPredecessor = [...canonLeftoverPreamblePaths]
     .reverse()
     .reduce((current, file) => beforeCanonLeftoversIn(file, current), canonSourcePreamble);

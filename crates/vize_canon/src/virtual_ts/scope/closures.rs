@@ -436,6 +436,7 @@ pub(super) fn emit_scope_closures(
                 template_binding_access,
                 template_offset,
                 vfor_enclosing_guards: &vfor_enclosing_guards,
+                shared: options.shared_template_refs,
             },
             options.instantiated_ref_starts,
         );

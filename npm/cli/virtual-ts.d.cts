@@ -2,10 +2,7 @@ import type {} from "./virtual-ts-globals.js" with { "resolution-mode": "import"
 import type {} from "./virtual-ts-patterns.js" with { "resolution-mode": "import" };
 import type {} from "./virtual-ts-emit-overloads.js" with { "resolution-mode": "import" };
 // Generated from the shared virtual TypeScript helpers. Do not edit.
-// One module for every content-mapper virtual file.
-// Template-ref widening. Hoisted-only, deliberately absent from the per-file
-// preamble: a module-scope copy is dead code (TS6196) in every component whose
-// template scope emits no __U, and only generated template scopes use it.
+// Template-ref helpers, hoisted-only and shared so each instantiation is cached once per program.
 type $IsUnion<T, __U = T> = T extends unknown ? ([__U] extends [T] ? false : true) : false;
 export type $WidenTemplateRef<T> =
   $IsAny<T> extends true
@@ -25,7 +22,6 @@ export type $WidenTemplateRef<T> =
               ? boolean
               : T
             : T;
-// Template ref unwrap, shared so each instantiation is cached once per program.
 export type $TemplateRefUnwrap<T> = T extends { value: unknown }
   ? T extends import("vue").Ref
     ? $WidenTemplateRef<T["value"]>
@@ -36,7 +32,11 @@ export type $TemplateRefUnwrapNarrowed<T> = [T] extends [import("vue").Ref]
   : [Extract<T, import("vue").Ref>] extends [never]
     ? $TemplateRefUnwrap<T>
     : (NonNullable<T> & import("vue").Ref<unknown> & { value: $TemplateRefUnwrap<T> })["value"];
-
+import type * as __vizeRef from "./virtual-ts-refs.js" with { "resolution-mode": "import" };
+export type $DomElement<T extends string, S extends boolean = false> = __vizeRef.$DomElement<T, S>;
+export type $TemplateComponentRef<C> = __vizeRef.$TemplateComponentRef<C>;
+export type $RefInstanceFactory<C> = __vizeRef.$RefInstanceFactory<C>;
+export type $TemplateRefInstance<T, K extends keyof T, C> = __vizeRef.$TemplateRefInstance<T, K, C>;
 import type * as __vizeSlotTypes from "./virtual-ts-slots.js" with { "resolution-mode": "import" };
 export type $SlotHostSlots<C> = __vizeSlotTypes.$SlotHostSlots<C>;
 declare function __vizeFunctionalSlots<P, C, R>(

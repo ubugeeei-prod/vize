@@ -44,6 +44,7 @@ mod shared_kebab_case;
 mod shared_usage_gates;
 mod static_emit_gate;
 mod strict_extra_keys;
+mod template_ref_targets;
 mod template_ref_unwrap;
 mod unowned_owned_keys;
 mod usage_helpers;
