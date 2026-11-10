@@ -14,6 +14,7 @@ import { beforeListenerLibTypeQualification } from "./lib-type-qualification-lis
 import { beforeDiscriminatedJsxUnion } from "./discriminated-jsx-union-transition.ts";
 import { beforeCanonLeftovers, beforeStrictExtraKeys } from "./strict-extra-keys-transition.ts";
 import { certifiedHelperImages, withLandedEdits } from "./callback-owner-landed-contracts.ts";
+import { generatedCommentBytesCut } from "./generated-comment-bytes-cut.ts";
 
 export type CallbackSourceReader = (path: string) => string;
 type Edit = { start: number; end: number; replacement: Buffer };
@@ -317,7 +318,6 @@ function collapseGuardedContractOwnershipEdits(
   }
   return edits;
 }
-
 function invertEdits(source: string, edits: Edit[]): Edit[] {
   const bytes = Buffer.from(source);
   const coalesced: Edit[] = [];
@@ -340,7 +340,6 @@ function invertEdits(source: string, edits: Edit[]): Edit[] {
     return inverse;
   });
 }
-
 function guardedContractOwnershipEdits(
   before: string,
   after: string,
@@ -385,7 +384,8 @@ export function currentCallbackSourceEdits(
     staticListenerSource,
     currentGenerator,
   );
-  const edits: Edit[] = [];
+  const commentCut = generatedCommentBytesCut(before),
+    edits: Edit[] = commentCut.text === after ? [...commentCut.edits] : [];
   const addedMappings: number[][] = [];
   const add = (start: number, length: number, replacement: string) => {
     const offset = Buffer.byteLength(before.slice(0, start));

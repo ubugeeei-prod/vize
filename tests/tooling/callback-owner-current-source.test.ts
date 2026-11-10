@@ -4,6 +4,7 @@ import { test } from "node:test";
 import { beforeListenerLibTypeQualification } from "../../tools/support/compat/content-mapper/lib-type-qualification-listeners-transition.ts";
 import { assertPreservedCallbackPacket } from "../../tools/support/compat/content-mapper/callback-owner-packet-parity.ts";
 import { guardedInferenceEdits } from "../../tools/support/compat/content-mapper/callback-owner-current-source.ts";
+import { generatedCommentBytesCut } from "../../tools/support/compat/content-mapper/generated-comment-bytes-cut.ts";
 import { beforeCanonLeftovers } from "../../tools/support/compat/content-mapper/strict-extra-keys-transition.ts";
 import { beforeEmitMemberInfer } from "./support/emit-member-infer-source.ts";
 import { beforeGenericEventSpecialization } from "./support/generic-event-specialization-source.ts";
@@ -111,6 +112,25 @@ void test("callback history accepts the complete canon leftovers emit transition
     for (const transition of canonLeftoversTransitions)
       assertPreservedCallbackPacket(transition.before, transition.after, source);
   }
+});
+void test("callback history accepts only the exact generated comment cut", () => {
+  const { after, source } = fixture();
+  const before = structuredClone(after);
+  before.text += "// @ts-ignore Inference-only callback branch.\n";
+  before.diagnosticDirectives.directives.at(-1)![3] = Buffer.byteLength(before.text);
+  const cut = generatedCommentBytesCut(before.text);
+  assert.equal(cut.edits.length, 1);
+  const current = structuredClone(before);
+  current.text = cut.text;
+  current.diagnosticDirectives.directives.at(-1)![3] = Buffer.byteLength(cut.text);
+  assertPreservedCallbackPacket(before, current, source);
+  assert.throws(() =>
+    assertPreservedCallbackPacket(
+      before,
+      { ...current, text: `${cut.text}const unrelated = true;\n` },
+      source,
+    ),
+  );
 });
 void test("guarded listener inference is certified as one exact source edit", () => {
   for (const newline of ["\n", "\r\n"]) {
