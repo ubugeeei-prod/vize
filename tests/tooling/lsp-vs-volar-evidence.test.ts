@@ -25,6 +25,7 @@ import {
   percentile,
   psTimeSeconds,
   readTree,
+  reconcilePssSnapshot,
 } from "../../tools/benchmarks/scripts/lsp-vs-volar-metrics.ts";
 import {
   markdown,
@@ -241,6 +242,27 @@ test("statistics use nearest rank and ps CPU time parses every width", () => {
   assert.equal(percentile([], 50), null);
   assert.equal(psTimeSeconds("0:01.50"), 1.5);
   assert.equal(psTimeSeconds("1-02:03:04"), 93784);
+});
+
+test("PSS snapshots drop only members that exited during the memory read", () => {
+  const members = [{ pid: 1 }, { pid: 2 }, { pid: 3 }];
+  const pss = new Map([
+    [1, 10],
+    [2, null],
+    [3, null],
+  ]);
+  const snapshot = reconcilePssSnapshot(
+    members,
+    (pid) => pss.get(pid) ?? null,
+    (pid) => pid !== 2,
+  );
+  assert.deepEqual(snapshot, {
+    members: [
+      { member: { pid: 1 }, pssBytes: 10 },
+      { member: { pid: 3 }, pssBytes: null },
+    ],
+    exited: 1,
+  });
 });
 
 test("reports exclude failed samples from latency and say so", () => {
