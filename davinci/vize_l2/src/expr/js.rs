@@ -26,6 +26,8 @@
 //! file both paths see. The lane's counter story lands with the fused
 //! build path (P2-12b), where the lane *becomes* the compile path.
 
+use oxc_ast::ast::Program;
+use oxc_parser::ParseOptions;
 use oxc_span::{GetSpan, SourceType};
 use vize_l0::expression_guard::{expression_is_safe_to_parse, is_expression_trailing_trivia};
 use vize_l0::{Allocator, Span};
@@ -177,6 +179,32 @@ impl<'a> JsExpr<'a> {
             return Err(OpaqueReason::ParseRejected);
         }
         Ok(parsed)
+    }
+
+    /// Parse one complete inline-handler body into the shared compile arena.
+    ///
+    /// Handler statement lists cannot be represented by [`ExprRef`], so
+    /// consumers that still project the compatibility template view use this
+    /// provider and cache its result for the whole lint pass. Keeping the
+    /// parser here preserves one guarded OXC boundary instead of reintroducing
+    /// rule-local parses.
+    pub fn parse_handler_program_in(
+        allocator: &'a Allocator,
+        source: &'a str,
+    ) -> Result<Program<'a>, OpaqueReason> {
+        if !expression_is_safe_to_parse(source) {
+            return Err(OpaqueReason::NestingRefused);
+        }
+        let parsed = oxc_parser::Parser::new(allocator.as_oxc(), source, EXPR_SOURCE_TYPE)
+            .with_options(ParseOptions {
+                allow_return_outside_function: true,
+                ..ParseOptions::default()
+            })
+            .parse();
+        if parsed.panicked || !parsed.diagnostics.is_empty() {
+            return Err(OpaqueReason::ParseRejected);
+        }
+        Ok(parsed.program)
     }
 }
 

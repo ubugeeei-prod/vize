@@ -1,0 +1,23 @@
+<script setup lang="ts">
+const fooBar = 1
+const foo_bar = 2
+const method = "log"
+const items = [{ foo_bar: 3 }]
+</script>
+
+<template>
+  <section :[foo_bar]="foo_bar == null ? 'missing' : 'ready'">
+    {{ +foo_bar }}
+    <button @click="console[method](foo_bar); foo_bar == 2">run</button>
+    <span v-for="({ foo_bar = fooBar }, index) in items" :key="index">
+      {{ foo_bar }}
+    </span>
+    <Widget v-slot="{ foo_bar = fooBar }">{{ foo_bar }}</Widget>
+  </section>
+</template>
+
+<style>
+.audit {
+  color: v-bind(foo_bar == null ? `rgb(${foo_bar}, 0, 0)` : "red");
+}
+</style>

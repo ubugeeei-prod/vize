@@ -54,4 +54,4 @@ Then run `vp run lint`.
 
 - [Vue rules](../vue.md)
 - [All rules](../all.md)
-- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/compatibility_template/core_rules/no_negated_condition.rs#L10)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/compatibility_template/core_rules/no_negated_condition.rs#L12)

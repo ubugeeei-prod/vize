@@ -19,7 +19,7 @@ description: "要求模板表达式中的标识符使用 camelCase。"
 
 ```vue annotate="remove:2"
 <template>
-  <p>{{ user_name }}</p>
+  <p>{{ { user_name: value } }}</p>
 </template>
 ```
 
@@ -29,7 +29,7 @@ description: "要求模板表达式中的标识符使用 camelCase。"
 
 ```vue annotate="add:2"
 <template>
-  <p>{{ userName }}</p>
+  <p>{{ { userName: value } }}</p>
 </template>
 ```
 
@@ -54,4 +54,4 @@ export default defineConfig({}).withVue({
 
 - [Vue 规则](../vue.md)
 - [全部规则](../all.md)
-- [源代码](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/compatibility_template/core_rules/camelcase.rs#L10)
+- [源代码](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/compatibility_template/core_rules/camelcase.rs#L12)

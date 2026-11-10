@@ -1,0 +1,30 @@
+<script setup lang="ts">
+import * as Vue from "vue"
+import { computed, computed as derive, nextTick as tick, ref } from "vue"
+
+const emit = defineEmits<{ "row-click": [] }>()
+const open = defineModel<boolean>("open")
+const input = Vue.useTemplateRef<HTMLInputElement>("input")
+const pending = ref<Promise<number>>()
+
+tick()
+await (Vue.nextTick())
+emit(("row-click"));
+(emit)(`row-click`)
+
+const aliased = derive(() => {
+  requestAnimationFrame(() => {})
+  return 1
+})
+const namespaced = Vue.computed(() => {
+  setImmediate(() => {})
+  return 1
+})
+const wrapped = computed(() => (pending.value?.then)?.((value) => value))
+const label = open ? "open" : "closed"
+if (!input) console.log(label, aliased, namespaced, wrapped)
+</script>
+
+<template>
+  <button ref="input" @click="emit(('row-click'))">{{ label }}</button>
+</template>

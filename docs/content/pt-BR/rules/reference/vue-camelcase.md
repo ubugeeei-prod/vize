@@ -19,7 +19,7 @@ Aplicável a: Templates e blocos de SFC Vue, com o contexto do script quando exi
 
 ```vue annotate="remove:2"
 <template>
-  <p>{{ user_name }}</p>
+  <p>{{ { user_name: value } }}</p>
 </template>
 ```
 
@@ -29,7 +29,7 @@ Aplicável a: Templates e blocos de SFC Vue, com o contexto do script quando exi
 
 ```vue annotate="add:2"
 <template>
-  <p>{{ userName }}</p>
+  <p>{{ { userName: value } }}</p>
 </template>
 ```
 
@@ -54,4 +54,4 @@ Depois, execute `vp run lint`.
 
 - [Regras Vue](../vue.md)
 - [Todas as regras](../all.md)
-- [Código-fonte](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/compatibility_template/core_rules/camelcase.rs#L10)
+- [Código-fonte](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/compatibility_template/core_rules/camelcase.rs#L12)

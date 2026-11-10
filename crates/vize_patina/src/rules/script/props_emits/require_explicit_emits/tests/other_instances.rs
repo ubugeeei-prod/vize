@@ -68,6 +68,8 @@ fn only_plain_calls_of_the_binding_dispatch() {
     for (expression, expected) in [
         ("emit('cancel')", vec!["'cancel'"]),
         ("(emit)('cancel')", vec!["'cancel'"]),
+        ("emit(('cancel'))", vec!["'cancel'"]),
+        ("(emit)(('cancel'))", vec!["'cancel'"]),
         ("emit?.('cancel')", vec!["'cancel'"]),
         // Upstream does not look through TypeScript wrappers.
         ("(emit as typeof emit)('cancel')", vec![]),

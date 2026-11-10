@@ -4286,6 +4286,43 @@
       }
     },
     {
+      "id": "linter/patina/compat-audit-12669",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "patina-compat-audit-12669",
+        "files": [
+          {
+            "path": "CoreTemplate.vue.txt",
+            "role": "third-party-template-compatibility-reproduction",
+            "sha256": "a17bfaf8257c5f99063c296ecf7440935bdf7ca2cebba83ab08f355c84f3278b"
+          },
+          {
+            "path": "ScriptBindings.vue.txt",
+            "role": "third-party-script-compatibility-reproduction",
+            "sha256": "6d4c60a866f23c7632e3c4de36008c759e7867280e749045d63d44d511847d7c"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/patina/rule-fixes-9872-9873",
       "state": "active",
       "targets": [
