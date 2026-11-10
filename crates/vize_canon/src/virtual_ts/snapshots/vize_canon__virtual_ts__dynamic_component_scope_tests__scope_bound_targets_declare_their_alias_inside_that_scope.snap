@@ -80,7 +80,7 @@ expression: template
     type ____vize_dynamic_is_104_11__emit_props = typeof __vize_dynamic_is_104 extends { __vizeEmitProps?: infer __EP } ? [__EP] : [];
     type ____vize_dynamic_is_104_11_pick_prop_args = ____vize_dynamic_is_104_11__library extends true ? unknown[] : ____vize_dynamic_is_104_11__props extends infer __B ? __B extends [infer __P] ? ____vize_dynamic_is_104_11__listener_args<__P, "onPick", never> : unknown[] : never;
     type ____vize_dynamic_is_104_1_emit_resolver = ____vize_dynamic_is_104_11__library extends true ? (component: typeof __vize_dynamic_is_104) => typeof __vize_dynamic_is_104 : $EmitPropsFactory<typeof __vize_dynamic_is_104>;
-    const __vize_emit_props_1 = (() => {
+    const __vize_emit_props_1 = (void 0, () => {
       // @ts-ignore Inference-only guard; authored binding checks own diagnostics.
       if ((open)) return (undefined as unknown as ____vize_dynamic_is_104_1_emit_resolver)(__vize_dynamic_is_104)({
       });

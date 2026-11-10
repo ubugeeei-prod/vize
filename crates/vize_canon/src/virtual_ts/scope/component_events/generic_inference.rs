@@ -86,22 +86,19 @@ pub(super) fn generate_inferred_emit_args(
     let first_listener = ctx.event_inference_usages.borrow_mut().insert(usage_idx);
     let emit_props_factory = crate::virtual_ts::helpers::shared_types::EMIT_PROPS_FACTORY
         .select(ctx.hoist_shared_preamble);
-    let guard = usage
-        .vif_guard
+    let full_guard = usage.vif_guard.as_ref().map(|guard| {
+        rewrite_reserved_template_binding(guard.as_str(), ctx.template_binding_access)
+            .unwrap_or_else(|| guard.clone())
+    });
+    // An open listener block already enforces a prefix of the guard. When it
+    // enforces all of it, the call stays direct inside that block.
+    let guard = full_guard
         .as_ref()
-        .map(|guard| {
-            rewrite_reserved_template_binding(guard.as_str(), ctx.template_binding_access)
-                .unwrap_or_else(|| guard.clone())
-        })
-        .and_then(|guard| {
-            ctx.enclosing_vif_guard
-                .and_then(|enclosing| {
-                    crate::virtual_ts::scope::remove_enclosing_vif_guard_prefix(
-                        guard.as_str(),
-                        enclosing,
-                    )
-                })
-                .or_else(|| ctx.enclosing_vif_guard.is_none().then_some(guard))
+        .and_then(|guard| match ctx.enclosing_vif_guard {
+            Some(enclosing) => {
+                crate::virtual_ts::scope::remove_enclosing_vif_guard_prefix(guard, enclosing)
+            }
+            None => Some(guard.clone()),
         });
     let guarded_call_indent = guard.as_ref().map(|_| cstr!("{}  ", ctx.indent));
     let call_indent = guarded_call_indent.as_deref().unwrap_or(ctx.indent);
@@ -192,8 +189,17 @@ pub(super) fn generate_inferred_emit_args(
             super::emit_resolver_share::record_inline(&share, resolver_type.as_str());
         }
     }
-    if first_listener && let Some(guard) = guard.as_deref() {
-        let isolated = crate::virtual_ts::expressions::isolate_incomplete_expression(guard);
+    // The guarded call runs in an arrow reached through `void 0,`, so the arrow
+    // is not an immediately invoked function. TypeScript inlines an IIFE into
+    // the enclosing control flow: its guard would add a branch per term, and
+    // every later reference in the template body walks those branches again
+    // to its declaration. The arrow is its own flow container instead and
+    // replays the whole guard: captured `const` bindings keep their outer
+    // narrowing, property paths and mutable bindings do not, so a prefix the
+    // open listener block enforces is restated rather than inherited.
+    if first_listener && guard.is_some() {
+        let replay = full_guard.as_deref().unwrap_or_default();
+        let isolated = crate::virtual_ts::expressions::isolate_incomplete_expression(replay);
         let guard = isolated.as_str();
         if gated {
             super::emit_props_gate::append_guarded_factory(
@@ -204,7 +210,11 @@ pub(super) fn generate_inferred_emit_args(
                 usage_idx,
             );
         }
-        append!(*ts, "{}const {emit_props} = (() => {{\n", ctx.indent);
+        append!(
+            *ts,
+            "{}const {emit_props} = (void 0, () => {{\n",
+            ctx.indent
+        );
         vize_l0::emit_ts!(
             ts,
             "{call_indent}// @ts-ignore Inference-only guard; authored binding checks own diagnostics.\n"
@@ -474,3 +484,6 @@ fn event_matches_scope(
     });
     exact || event_contains_scope || (scope_in_usage && same_handler)
 }
+
+#[cfg(test)]
+mod tests;
