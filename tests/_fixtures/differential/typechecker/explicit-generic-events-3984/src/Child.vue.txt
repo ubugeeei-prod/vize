@@ -1,0 +1,5 @@
+<script setup lang="ts" generic="T extends string | number, K = any">
+defineEmits<{
+  foo: [value: T, flag: K]
+}>()
+</script>

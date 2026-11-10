@@ -2,6 +2,7 @@ use super::{create_project_case, resolve_test_tsgo_binary, snapshot_project_diag
 
 mod declaration_emit;
 mod emit_only;
+mod explicit_generic_events;
 mod generated_name_shadowing;
 mod inherited_boolean;
 mod inline_callback_context_props;
