@@ -16,6 +16,9 @@ use vize_l0::{FxHashMap, String};
 mod captured;
 use captured::CapturedProject;
 
+mod host_path;
+pub use host_path::{plain_windows_path, plain_windows_path_buf};
+
 mod source_facts;
 pub(crate) use source_facts::{Facts, SourceFacts};
 
@@ -209,7 +212,7 @@ pub fn type_project_inputs(
 
 /// Captures index plain spellings; accept a verbatim one from older hosts.
 fn host_path(path: &Path) -> PathBuf {
-    vize_l0::typescript_project::normalize_path_lexically(
-        &vize_l0::path::normalize_windows_verbatim_path(path.to_path_buf()),
-    )
+    vize_l0::typescript_project::normalize_path_lexically(&plain_windows_path_buf(
+        path.to_path_buf(),
+    ))
 }

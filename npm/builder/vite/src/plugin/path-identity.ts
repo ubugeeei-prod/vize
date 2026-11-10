@@ -33,15 +33,10 @@ export function filesystemPathIdentities(file: string): readonly string[] {
   return [...identities];
 }
 
-const DOS_DEVICES = new Set([
-  "CON",
-  "PRN",
-  "AUX",
-  "NUL",
-  "CONIN$",
-  "CONOUT$",
-  ...["COM", "LPT"].flatMap((device) => [..."0123456789¹²³"].map((port) => device + port)),
-]);
+const DOS_DEVICES = new Set(["CON", "PRN", "AUX", "NUL", "CONIN$", "CONOUT$"]);
+for (const device of ["COM", "LPT"]) {
+  for (const port of "0123456789¹²³") DOS_DEVICES.add(device + port);
+}
 
 /**
  * `\\?\C:\x` → `C:\x` and `\\?\UNC\host\share\x` → `\\host\share\x` (also the
@@ -52,11 +47,11 @@ export function withoutVerbatimPrefix(file: string): string {
   const separator = file.startsWith("\\\\?\\") ? "\\" : file.startsWith("//?/") ? "/" : "";
   if (!separator) return file;
   const rest = file.slice(4);
-  const [head = "", ...names] = rest.split(separator);
+  const names = rest.split(separator);
+  const head = names.shift() ?? "";
   let plain = rest;
   if (head.toUpperCase() === "UNC") {
-    const [server = "", share = ""] = names.splice(0, 2);
-    if (!isWin32Name(server) || !isWin32Name(share)) return file;
+    if (!isWin32Name(names.shift() ?? "") || !isWin32Name(names.shift() ?? "")) return file;
     plain = separator + separator + rest.slice(4);
   } else if (!/^[a-z]:$/i.test(head) || names.length === 0) {
     // A bare `C:` is drive-relative.
@@ -71,6 +66,7 @@ function isWin32Name(name: string): boolean {
   for (const character of name) {
     if (character < " " || '<>:"/\\|?*'.includes(character)) return false;
   }
-  const stem = (name.split(".", 1)[0] ?? "").replace(/ +$/, "");
+  const dot = name.indexOf(".");
+  const stem = (dot === -1 ? name : name.slice(0, dot)).replace(/ +$/, "");
   return !DOS_DEVICES.has(stem.toUpperCase());
 }

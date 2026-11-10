@@ -14,7 +14,11 @@ export function createDependencyWatch(
   server: WatchServer | null,
   addWatchFile: ((file: string) => void) | undefined,
 ): ((file: string) => void) | undefined {
-  const watch = server ? (file: string) => void server.watcher.add(file) : addWatchFile;
+  const watch = server
+    ? (file: string) => {
+        server.watcher.add(file);
+      }
+    : addWatchFile;
   if (!watch) return undefined;
   const watched = new Set<string>();
   return (file) => {

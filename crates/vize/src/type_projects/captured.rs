@@ -1,11 +1,12 @@
 //! One immutable ownership capture and lazily derived compiler-option views.
 
+use super::host_path::plain_windows_path_buf;
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::{Arc, LazyLock, Mutex, OnceLock, Weak};
 use vize_atelier_sfc::script::SfcTypeProject;
 use vize_canon::{TsconfigOwnershipSnapshot, TsconfigSourceKind};
-use vize_l0::path::{normalize_windows_verbatim_path, sort_dedup_paths};
+use vize_l0::path::sort_dedup_paths;
 use vize_l0::{FxHashMap, String, cstr};
 
 type ProjectCell = Arc<OnceLock<Result<Arc<SfcTypeProject>, String>>>;
@@ -53,11 +54,11 @@ impl CapturedProject {
             .observations()
             .paths()
             .into_iter()
-            .map(normalize_windows_verbatim_path)
+            .map(plain_windows_path_buf)
             .collect();
         sort_dedup_paths(&mut inputs);
         let capture = Arc::new(Self {
-            root: normalize_windows_verbatim_path(
+            root: plain_windows_path_buf(
                 snapshot
                     .project_paths()
                     .first()

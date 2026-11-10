@@ -16,7 +16,11 @@ pub(crate) fn dependencies_to_napi(dependencies: &[impl AsRef<str>]) -> Option<V
     (!dependencies.is_empty()).then(|| {
         let mut paths: Vec<String> = dependencies
             .iter()
-            .map(|path| vize_l0::path::normalize_windows_verbatim_str(path.as_ref()).into_owned())
+            .map(|path| {
+                let path = path.as_ref();
+                vize::type_projects::plain_windows_path(path)
+                    .map_or_else(|| path.to_owned(), Into::into)
+            })
             .collect();
         paths.sort_unstable();
         paths.dedup();
