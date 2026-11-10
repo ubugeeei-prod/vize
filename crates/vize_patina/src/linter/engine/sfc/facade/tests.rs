@@ -74,6 +74,7 @@ fn migrated_sfc_rules_preserve_diagnostics_and_fixes() {
         r#"<button v-on:click.stop="submit"/><Card><template v-slot:header="props">x</template></Card>"#,
         r#"<MyComponent v-model.custom="value" v-html="content"/><component is="div" v-text="content"/>"#,
         r#"<MyComponent myProp="value" :otherProp="value"/><slot :el$="el$"/><template :bad$="bad$"/>"#,
+        r#"<div v-pre:arg/><div v-pre.mod/><div v-pre="raw"/>"#,
         "<!-- eslint-disable-next-line vue/prefer-props-shorthand -->\n<MyComponent :foo=\"foo\"/>",
         "<!-- eslint-disable-next-line vue/no-useless-v-bind -->\n<div :title=\"'static'\"/>",
         "<!-- eslint-disable-next-line vue/no-multiple-objects-in-class -->\n<div :class=\"[{ active }, { hidden }]\"/>",
@@ -96,6 +97,7 @@ fn migrated_sfc_rules_preserve_diagnostics_and_fixes() {
         "<!-- eslint-disable-next-line vue/no-v-text-v-html-on-component -->\n<MyComponent v-html=\"content\"/>",
         "<!-- eslint-disable-next-line vue/attribute-hyphenation -->\n<MyComponent myProp=\"value\"/>",
         "<!-- eslint-disable-next-line vue/valid-attribute-name -->\n<slot :el$=\"el$\"/>",
+        "<!-- eslint-disable-next-line vue/valid-v-pre -->\n<div v-pre:arg/>",
         r#"<div v-pre><textarea>{{ raw }}</textarea></div>"#,
     ] {
         compare_template(source);
