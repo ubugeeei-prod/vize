@@ -1,5 +1,6 @@
 /** Certified component-contract edits that already landed, so their packets audit exactly. */
 import assert from "node:assert/strict";
+import { closedEmitGateEdits } from "./callback-owner-closed-emit.ts";
 import { beforeInstanceInputKeys } from "./instance-input-keys-transition.ts";
 import { beforeUnownedOwnedKeys } from "./unowned-owned-keys-transition.ts";
 import { propValueOrPreambleEdit } from "./prop-value-or-transition.ts";
@@ -164,6 +165,8 @@ export function withLandedEdits(before: string, after: string, edits: Edit[]): E
     ...localPropValueOrEdits(before, after),
     // #12481: authored setup lines lose the two spaces the old projection prefixed.
     ...dedentEdits(Buffer.from(before), Buffer.from(after)),
+    // #12622: the listener gate block gains the closed-SFC route.
+    ...closedEmitGateEdits(before, after),
   ];
   for (const match of before.matchAll(ungated)) {
     const replacement = requiredFallthroughGate(match[1]!, match[2]!);

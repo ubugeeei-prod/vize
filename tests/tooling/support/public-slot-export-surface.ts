@@ -295,6 +295,37 @@ function withProvenListenerContractRemoved(
   return { ...actual, exports };
 }
 
+/**
+ * The closed-SFC listener helpers are additions; the emit gate oracle proves the
+ * gate that names them keeps the direct call's type.
+ */
+function withProvenClosedEmitAdditionsRemoved(
+  actual: ExportSurface,
+  expected: ExportSurface,
+): ExportSurface {
+  const exports = structuredClone(actual.exports);
+  const oracle = new URL("tests/tooling/canon-emit-props-gate-equivalence.test.ts", repositoryRoot);
+  const component = { name: "C", constraint: null, default: null };
+  for (const [name, parameters] of [
+    // The defaulted second parameter is the whole type the union check compares each member with.
+    ["$ClosedEmit", [component, { name: "A", constraint: null, default: "C" }]],
+    ["$ClosedEmitFactory", [{ name: "E", constraint: null, default: null }]],
+  ] as const) {
+    const index = exports.findIndex((entry) => entry.name === name);
+    if (expected.exports.some((entry) => entry.name === name) || index < 0) continue;
+    assert.ok(fs.existsSync(oracle) && fs.readFileSync(oracle, "utf8").includes(name));
+    assert.deepEqual(exports[index], {
+      name,
+      type: true,
+      value: false,
+      namespace: false,
+      declarations: [{ kind: "TypeAliasDeclaration", parameters, signatures: [] }],
+    });
+    exports.splice(index, 1);
+  }
+  return { ...actual, exports };
+}
+
 export function assertPublicSlotExportSurface(
   actual: ExportSurface,
   expected: ExportSurface,
@@ -306,11 +337,14 @@ export function assertPublicSlotExportSurface(
   assert.deepEqual(
     Object.fromEntries(
       withProvenDefaultsRestored(
-        withProvenUsageHelperAdditionsRemoved(
-          withProvenTemplateRefUnwrapAdditionsRemoved(
-            withProvenPropValueOrAdditionRemoved(
-              withProvenListenerAdditionRemoved(
-                withProvenListenerContractRemoved(actual, expected),
+        withProvenClosedEmitAdditionsRemoved(
+          withProvenUsageHelperAdditionsRemoved(
+            withProvenTemplateRefUnwrapAdditionsRemoved(
+              withProvenPropValueOrAdditionRemoved(
+                withProvenListenerAdditionRemoved(
+                  withProvenListenerContractRemoved(actual, expected),
+                  expected,
+                ),
                 expected,
               ),
               expected,

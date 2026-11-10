@@ -44,9 +44,19 @@ fn generate(template: &str, options: VirtualTsGenerationOptions<'_>) -> vize_car
 
 #[test]
 fn a_computed_is_listener_takes_the_gated_call_in_both_modes() {
-    for (hoist_shared_preamble, factory) in [
-        (false, "$EmitPropsFactory<C>"),
-        (true, "import(\"vize:virtual-ts\").$EmitPropsFactory<C>"),
+    for (hoist_shared_preamble, closed, closed_factory, factory) in [
+        (
+            false,
+            "__vize_emit_closed",
+            "__vize_emit_closed_factory",
+            "$EmitPropsFactory<C>",
+        ),
+        (
+            true,
+            "import(\"vize:virtual-ts\").$ClosedEmit",
+            "import(\"vize:virtual-ts\").$ClosedEmitFactory",
+            "import(\"vize:virtual-ts\").$EmitPropsFactory<C>",
+        ),
     ] {
         let code = generate(
             COMPUTED,
@@ -59,9 +69,19 @@ fn a_computed_is_listener_takes_the_gated_call_in_both_modes() {
         assert_eq!(code.matches(DIRECT).count(), 0, "{code}");
         assert_eq!(code.matches(ALIASES).count(), 1, "{code}");
         assert_eq!(
-            code.matches(vize_carton::cstr!("(component: C) => C : {factory};").as_str())
-                .count(),
+            code.matches(
+                vize_carton::cstr!(
+                    "(component: C) => C : {closed}<C> extends [infer E] ? {closed_factory}<E> : {factory};"
+                )
+                .as_str()
+            )
+            .count(),
             1,
+            "{code}"
+        );
+        assert_eq!(
+            code.matches("type __vize_emit_closed<C, A = C> = ").count(),
+            usize::from(!hoist_shared_preamble),
             "{code}"
         );
         assert_eq!(

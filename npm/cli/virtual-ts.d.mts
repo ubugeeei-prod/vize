@@ -336,6 +336,7 @@ export type $PropValueOr<
   FK extends PropertyKey = K,
   __V = P extends unknown ? (K extends keyof P ? P[K] : never) : never,
 > = [__V] extends [never] ? $FallthroughValue<C, FK> : __V;
+export type $ClosedEmitFactory<E> = (component: unknown) => (props: any) => __EmitProps<E>;
 type $InvalidFallthroughSpreadKeys<P, F, A> = {
   [K in keyof A]-?: K extends keyof P | keyof $KebabProps<P>
     ? never
@@ -496,3 +497,4 @@ export type $ListenerContract<
   __Inferred,
   __Loose,
 > = __vizeListenerTypes.$ListenerContract<__L, __PB, __EB, __FB, __K, __Raw, __Inferred, __Loose>;
+export type $ClosedEmit<C, A = C> = __vizeListenerTypes.$ClosedEmit<C, A>;
