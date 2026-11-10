@@ -29,6 +29,10 @@ impl<'a> MacroTypeMappings<'a> {
         }
     }
 
+    pub(crate) fn script(&self) -> Option<&'a str> {
+        self.script
+    }
+
     pub(crate) fn map_exported_type(
         &mut self,
         ts: &str,

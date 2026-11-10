@@ -250,27 +250,40 @@ interface Props {
 }
 const props = withDefaults(defineProps<Props>(), { label: 'ok' })
 </script>"#;
-        let document = generate_vue_document_virtual_ts_with_options(
-            Path::new("Props.vue"),
-            source,
-            &VirtualTsOptions::default(),
-            &ImportRewriter::new(),
-            false,
-            VueDocumentVirtualTsOptions {
-                preserve_event_navigation: true,
-                ..Default::default()
-            },
-        )
-        .unwrap();
-
-        assert_eq!(
-            document
-                .pre_rewrite_code
-                .matches("): __WithDefaultsResult<_T, _D, _BKeys> & _T;")
+        for hoisted in [false, true] {
+            let document = generate_vue_document_virtual_ts_with_options(
+                Path::new("Props.vue"),
+                source,
+                &VirtualTsOptions::default(),
+                &ImportRewriter::new(),
+                hoisted,
+                VueDocumentVirtualTsOptions {
+                    preserve_event_navigation: true,
+                    ..Default::default()
+                },
+            )
+            .unwrap();
+            let code = &document.pre_rewrite_code;
+            assert_eq!(
+                code.matches(
+                    "): __WithDefaultsResult<_T, _D, _BKeys> & { readonly [K in keyof _T]: unknown };"
+                )
                 .count(),
-            1,
-            "{}",
-            document.pre_rewrite_code,
-        );
+                1,
+                "{code}",
+            );
+            // Without module-local owner aliases both macros name the same
+            // shared `__DefineProps`, so `defineProps` keeps its hoisted alias.
+            assert_eq!(
+                code.contains("const defineProps = __vize_defineProps;"),
+                hoisted,
+                "{code}"
+            );
+            assert_eq!(
+                code.contains("  function defineProps<_T = unknown>(): __DefineProps<"),
+                !hoisted,
+                "{code}"
+            );
+        }
     }
 }

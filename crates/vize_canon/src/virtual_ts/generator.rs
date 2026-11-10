@@ -61,9 +61,9 @@ use self::macro_anchors::emit_setup_scope_macro_anchors;
 use self::options_api::{analyze_options_api_script, emit_options_api_variables};
 use self::options_api_bridge::generate_options_api_bridge;
 use self::options_api_props_identifiers::PropsConstAssertions;
-use self::options_api_support::{find_options_api_props, find_options_api_slots_type};
+use self::options_api_support::find_options_api_props;
 use self::script_blocks::ScriptBlockScopes;
-use self::setup_helpers::{SetupHelperComponentContext, emit_setup_helpers};
+use self::setup_helpers::{SetupHelperComponentContext, SetupHelperPlan, emit_setup_helpers};
 use self::setup_imports::SetupImportPlan;
 use self::setup_props::{emit_template_context, generate_setup_props, prop_source};
 use self::setup_type_exports::SetupTypeExportsPlan;
@@ -233,12 +233,8 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         template_value_usage_names: &template_value_usage_names,
         preserve_unused_diagnostics,
     };
-    let setup_helpers = setup_helpers::SetupHelperPlan::collect(
-        summary,
-        script_content,
-        generation_options.preserve_event_navigation,
-        generation_options.configured_global_template_ref,
-    );
+    let setup_helpers =
+        SetupHelperPlan::for_generation(summary, script_content, generation_options);
     let mut declared_default_alias = false;
     if let Some(script) = script_content {
         profile!("canon.virtual_ts.emit_module_statements", {
@@ -302,11 +298,6 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     );
     let options_api_props = options_api
         .then(|| script_content.and_then(find_options_api_props))
-        .flatten();
-    let editor_component_projection = generation_options.component_name.is_some()
-        || !generation_options.preserve_authored_component;
-    let options_api_slots = (options_api && editor_component_projection)
-        .then(|| script_content.and_then(find_options_api_slots_type))
         .flatten();
     let syntactic_type_only_imported_names = syntactic_type_only_imported_names(
         summary,
@@ -396,9 +387,6 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         script_content,
         generic_parameters,
         hoist_shared_preamble,
-        (generation_options.preserve_event_navigation
-            || generation_options.component_name.is_some())
-            && summary.macros.with_defaults_expression().is_some(),
         template_ast,
     );
     ts.push_str("\n\n");
@@ -803,7 +791,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
             export_slots: !module_plan.exported_types.contains("Slots"),
             authored_slots_binding: module_plan.bound_types.contains("Slots")
                 && component_public_types::uses_module_scoped_authored_slots_binding(summary),
-            options_api_slots: options_api_slots.as_deref(),
+            options_api_slots: options_api && generation_options.projects_editor_component(),
             inferred_slots,
         },
     );

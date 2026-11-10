@@ -1,5 +1,6 @@
 //! Public slot and expose aliases, captured from the setup and template scopes.
 
+use super::options_api_support::find_options_api_slots_type;
 use super::{emits::inner_type_of, generics::module_alias_generic_suffix};
 use crate::virtual_ts::generated_names as names;
 use crate::virtual_ts::macro_type_mappings::MacroTypeMappings;
@@ -11,7 +12,8 @@ pub(super) struct SlotsTypeOptions<'a> {
     pub generic_injection: Option<&'a (String, Vec<String>)>,
     pub export_slots: bool,
     pub authored_slots_binding: bool,
-    pub options_api_slots: Option<&'a str>,
+    /// Keep an Options API `SlotsType<T>` contract (editor projections only).
+    pub options_api_slots: bool,
     pub inferred_slots: bool,
 }
 
@@ -70,7 +72,10 @@ pub(super) fn emit_slots_type(
             mappings.map_slot_keys(start..end, &summary.macros);
             !suffix.is_empty()
         }
-    } else if let Some(options_api_slots) = options_api_slots {
+    } else if let Some(options_api_slots) = options_api_slots
+        .then(|| mappings.script().and_then(find_options_api_slots_type))
+        .flatten()
+    {
         ts! { &mut *ts => #("type ") #slots #(" = ") #options_api_slots #(";") }
         false
     } else if inferred_slots {

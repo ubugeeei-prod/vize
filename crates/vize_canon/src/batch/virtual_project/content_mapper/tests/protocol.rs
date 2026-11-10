@@ -5,7 +5,6 @@ use serde_json::Value;
 
 use super::super::span_features::{
     CONTENT_MAPPER_SPAN_FEATURES_TEMPLATE_HOVER, CONTENT_MAPPER_SPAN_FEATURES_TEMPLATE_USE,
-    retain_component_prop_hover_owner,
 };
 use super::{
     CONTENT_MAPPER_SPAN_FEATURE_BITS, CONTENT_MAPPER_SPAN_FEATURES_ALL,
@@ -15,6 +14,8 @@ use super::{
     generate_vue_content_mapper_transform,
 };
 use crate::batch::{ContentMapperSpan, ContentMapperTransform};
+
+mod component_hover;
 
 /// #10920: `:aria-labelledby` / `:error-message` map the camelized binding onto
 /// the whole attribute. An alias would name the attribute, and a prefix range
@@ -79,83 +80,6 @@ fn keeps_diagnostic_handler_anchors_out_of_editor_features() {
     assert_eq!(
         content_mapper_span_features(generated, start, ContentMapperSpanKind::Verbatim),
         CONTENT_MAPPER_SPAN_FEATURES_ALL
-    );
-}
-
-#[test]
-fn component_prop_navigation_is_the_only_hover_owner() {
-    let generated =
-        "  void __vize_props_nav_0.title;\n  (undefined as Check)({ \"title\": value });";
-    let navigation = generated.find("title").unwrap();
-    let check = generated.rfind("title").unwrap();
-    let authored = 40;
-    let mut spans = [
-        ContentMapperSpan([
-            navigation,
-            "title".len(),
-            authored,
-            "title".len(),
-            ContentMapperSpanKind::Verbatim as usize,
-            CONTENT_MAPPER_SPAN_FEATURES_ALL,
-        ]),
-        ContentMapperSpan([
-            check,
-            "title".len(),
-            authored,
-            "title".len(),
-            ContentMapperSpanKind::Atom as usize,
-            CONTENT_MAPPER_SPAN_FEATURES_ATOM,
-        ]),
-    ];
-
-    retain_component_prop_hover_owner(generated, &mut spans);
-
-    assert_eq!(spans[0].0[5], CONTENT_MAPPER_SPAN_FEATURES_ALL);
-    assert_eq!(
-        spans[1].0[5],
-        CONTENT_MAPPER_SPAN_FEATURES_ATOM & !CONTENT_MAPPER_SPAN_FEATURES_TEMPLATE_HOVER
-    );
-}
-
-#[test]
-fn editor_only_prop_surfaces_preserve_docs_without_changing_value_types() {
-    let authored = r#"<script setup lang="ts">
-interface Props {
-  /** Visible label. */
-  label?: string
-}
-const props = withDefaults(defineProps<Props>(), { label: 'ok' })
-</script>"#;
-    let result = generate_vue_content_mapper_transform(Path::new("Props.vue"), authored)
-        .expect("content mapper transform");
-
-    assert_eq!(
-        result
-            .text
-            .matches(
-                "): __WithDefaultsResult<_T, _D, _BKeys> & { readonly [K in keyof _T]: unknown };"
-            )
-            .count(),
-        1,
-        "{}",
-        result.text,
-    );
-    let runtime = generate_vue_content_mapper_transform(
-        Path::new("Runtime.vue"),
-        "<script setup lang=\"ts\">const props = defineProps({ 'title': String })</script>",
-    )
-    .expect("runtime prop transform");
-    assert_eq!(
-        runtime.text.matches("  title?: string;").count(),
-        1,
-        "{}",
-        runtime.text,
-    );
-    assert_eq!(
-        runtime.text.matches("  \"title\"?: string;").count(),
-        0,
-        "{}",
-        runtime.text,
     );
 }
 

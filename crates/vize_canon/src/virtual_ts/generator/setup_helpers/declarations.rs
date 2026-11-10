@@ -18,6 +18,10 @@ pub(crate) struct SetupHelperPlan {
     pub(super) emit_calls: Vec<super::emit_navigation::OwnedEmitCall>,
     pub(in crate::virtual_ts::generator) template_refs: TemplateRefUsage,
     active_template_ref: bool,
+    /// Editor projections keep authored prop JSDoc on `withDefaults` results.
+    pub(super) with_defaults_docs: bool,
+    /// Hoisted editor modules keep their own `__DefineProps` owner alias.
+    module_local_props: bool,
 }
 
 impl SetupHelperPlan {
@@ -33,6 +37,27 @@ impl SetupHelperPlan {
             preserve_event_navigation,
             configured_global_template_ref,
         )
+    }
+
+    /// The plan for one generated component. Editor projections (navigation
+    /// or a named content-mapper component) also keep authored prop JSDoc on
+    /// `withDefaults` results; batch and native projections keep their bytes.
+    pub(in crate::virtual_ts::generator) fn for_generation(
+        summary: &Croquis,
+        source: Option<&str>,
+        options: crate::virtual_ts::VirtualTsGenerationOptions<'_>,
+    ) -> Self {
+        let mut plan = Self::collect(
+            summary,
+            source,
+            options.preserve_event_navigation,
+            options.configured_global_template_ref,
+        );
+        plan.with_defaults_docs = (options.preserve_event_navigation
+            || options.component_name.is_some())
+            && summary.macros.with_defaults_expression().is_some();
+        plan.module_local_props = options.local_component_ownership_helpers;
+        plan
     }
 
     #[cfg(feature = "native")]
@@ -97,7 +122,7 @@ pub(super) fn emit(
         && !generic_props
         && !typed_refs
         && !plan.active_template_ref
-        && !(preserve_with_defaults_docs && !hoisted)
+        && !preserve_with_defaults_docs
     {
         push_lib_text(
             ts,
@@ -130,15 +155,23 @@ pub(super) fn emit(
                     GENERIC_PROPS_EMBEDDED
                 },
             );
-        } else if helper.name == "withDefaults" && preserve_with_defaults_docs && !hoisted {
+        } else if helper.name == "withDefaults" && preserve_with_defaults_docs {
             push_lib_text(ts, WITH_DEFAULTS_DOCS_EMBEDDED);
         } else {
+            // The documented `withDefaults` infers its boolean keys from the
+            // `__DefineProps` alias. A hoisted `defineProps` returns the shared
+            // alias, so a module that keeps a local owner alias declares both
+            // macros against the alias this scope resolves.
+            let embedded = !hoisted
+                || preserve_with_defaults_docs
+                    && plan.module_local_props
+                    && helper.name == "defineProps";
             push_lib_text(
                 ts,
-                if hoisted {
-                    helper.hoisted
-                } else {
+                if embedded {
                     helper.embedded
+                } else {
+                    helper.hoisted
                 },
             );
         }
@@ -173,6 +206,8 @@ fn shadowed_helpers(
         active_template_ref: source.is_some_and(|source| {
             source.contains("useTemplateRef") || source.as_bytes().contains(&b'\\')
         }),
+        with_defaults_docs: false,
+        module_local_props: false,
     };
     if !SETUP_MACRO_HELPERS
         .iter()

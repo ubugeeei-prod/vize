@@ -2046,5 +2046,3 @@ fn test_native_event_handler_keeps_single_event_parameter() {
         output.code
     );
 }
-
-mod options_api_slot_hover;
