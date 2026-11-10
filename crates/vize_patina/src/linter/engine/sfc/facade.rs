@@ -42,6 +42,8 @@ pub(in crate::linter::engine) const RULES: &[&str] = &[
     "vue/prefer-props-shorthand",
     "vue/no-useless-v-bind",
     "vue/no-multiple-objects-in-class",
+    "vue/slot-name-casing",
+    "vue/use-unique-element-ids",
     "a11y/heading-levels",
     "a11y/placeholder-label-option",
     "a11y/use-list",

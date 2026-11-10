@@ -45,9 +45,11 @@
 
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
+use crate::ir::ByteRange;
+use crate::markup::{MarkupContext, MarkupElement, MarkupRule, MarkupTraversal};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_l0::cstr;
-use vize_relief::{ElementNode, PropNode, SourceLocation};
+use vize_relief::ElementNode;
 
 static META: RuleMeta = RuleMeta {
     name: "vue/use-unique-element-ids",
@@ -113,14 +115,14 @@ fn classify_element(tag: &str) -> IdWarningTier {
 }
 
 /// Check if element has any ARIA reference attribute (static)
-fn has_aria_reference_attr(element: &ElementNode) -> bool {
-    element.props.iter().any(|prop| {
-        if let PropNode::Attribute(attr) = prop {
-            ARIA_REFERENCE_ATTRIBUTES.contains(&attr.name)
-        } else {
-            false
+fn has_aria_reference_attr(element: &MarkupElement<'_>) -> bool {
+    let mut found = false;
+    element.walk_attributes(&mut |attribute| {
+        if !attribute.is_dynamic() && ARIA_REFERENCE_ATTRIBUTES.contains(&attribute.name()) {
+            found = true;
         }
-    })
+    });
+    found
 }
 
 /// Enforce unique element IDs using useId()
@@ -148,67 +150,89 @@ impl UseUniqueElementIds {
     }
 }
 
+impl UseUniqueElementIds {
+    fn check_element(&self, ctx: &mut LintContext<'_>, element: &MarkupElement<'_>) {
+        if self.allow_static {
+            return;
+        }
+
+        let tag = element.tag();
+        let tier = classify_element(tag);
+        let has_aria_reference = tier == IdWarningTier::Other && has_aria_reference_attr(element);
+
+        element.walk_attributes(&mut |attribute| {
+            let name = attribute.name();
+
+            // Check for static id attribute
+            if name == "id" {
+                if let Some(value) = attribute.value() {
+                    if self.tiered {
+                        match tier {
+                            IdWarningTier::Landmark => {
+                                // Skip — landmark/heading IDs for hash navigation
+                            }
+                            IdWarningTier::FormRelated => {
+                                self.report_static_id_tiered(
+                                    ctx,
+                                    attribute.range(),
+                                    value,
+                                    false,
+                                    "message_form",
+                                );
+                            }
+                            IdWarningTier::Other => {
+                                // Only warn if element has ARIA reference attributes
+                                if has_aria_reference {
+                                    self.report_static_id_tiered(
+                                        ctx,
+                                        attribute.range(),
+                                        value,
+                                        false,
+                                        "message_aria_ref",
+                                    );
+                                }
+                            }
+                        }
+                    } else {
+                        self.report_static_id(ctx, attribute.range(), value, false);
+                    }
+                }
+            }
+            // Check for static ID reference attributes (for, aria-labelledby, etc.)
+            else if Self::is_id_reference_attr(name)
+                && let Some(value) = attribute.value()
+            {
+                self.report_static_id(ctx, attribute.range(), value, true);
+            }
+        });
+    }
+}
+
+impl MarkupRule for UseUniqueElementIds {
+    fn name(&self) -> &'static str {
+        META.name
+    }
+
+    fn traversal(&self) -> MarkupTraversal {
+        MarkupTraversal::Elements
+    }
+
+    fn enter_element<'a>(&self, ctx: &mut MarkupContext<'_, 'a>, element: &MarkupElement<'a>) {
+        self.check_element(ctx.lint(), element);
+    }
+}
+
 impl Rule for UseUniqueElementIds {
     fn meta(&self) -> &'static RuleMeta {
         &META
     }
 
+    fn as_markup_rule(&self) -> Option<&dyn MarkupRule> {
+        Some(self)
+    }
+
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
-        if self.allow_static {
-            return;
-        }
-
-        let tag = element.tag;
-        let tier = classify_element(tag);
-
-        for prop in &element.props {
-            if let PropNode::Attribute(attr) = prop {
-                let name = attr.name;
-
-                // Check for static id attribute
-                if name == "id" {
-                    if let Some(value) = &attr.value {
-                        if self.tiered {
-                            match tier {
-                                IdWarningTier::Landmark => {
-                                    // Skip — landmark/heading IDs for hash navigation
-                                    continue;
-                                }
-                                IdWarningTier::FormRelated => {
-                                    self.report_static_id_tiered(
-                                        ctx,
-                                        &attr.loc,
-                                        value.content,
-                                        false,
-                                        "message_form",
-                                    );
-                                }
-                                IdWarningTier::Other => {
-                                    // Only warn if element has ARIA reference attributes
-                                    if has_aria_reference_attr(element) {
-                                        self.report_static_id_tiered(
-                                            ctx,
-                                            &attr.loc,
-                                            value.content,
-                                            false,
-                                            "message_aria_ref",
-                                        );
-                                    }
-                                }
-                            }
-                        } else {
-                            self.report_static_id(ctx, &attr.loc, value.content, false);
-                        }
-                    }
-                }
-                // Check for static ID reference attributes (for, aria-labelledby, etc.)
-                else if Self::is_id_reference_attr(name)
-                    && let Some(value) = &attr.value
-                {
-                    self.report_static_id(ctx, &attr.loc, value.content, true);
-                }
-            }
-        }
+        self.check_element(ctx, &MarkupElement::new(element));
     }
 }
 
@@ -216,7 +240,7 @@ impl UseUniqueElementIds {
     fn report_static_id(
         &self,
         ctx: &mut LintContext<'_>,
-        loc: &SourceLocation,
+        range: ByteRange,
         value: &str,
         is_reference: bool,
     ) {
@@ -240,13 +264,13 @@ impl UseUniqueElementIds {
             ctx.t("vue/use-unique-element-ids.help")
         };
 
-        ctx.warn_with_help(message, loc, help);
+        ctx.warn_at_with_help(message, range, help);
     }
 
     fn report_static_id_tiered(
         &self,
         ctx: &mut LintContext<'_>,
-        loc: &SourceLocation,
+        range: ByteRange,
         value: &str,
         is_reference: bool,
         message_key_suffix: &str,
@@ -272,7 +296,7 @@ impl UseUniqueElementIds {
             ctx.t("vue/use-unique-element-ids.help")
         };
 
-        ctx.warn_with_help(message, loc, help);
+        ctx.warn_at_with_help(message, range, help);
     }
 }
 
