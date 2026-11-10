@@ -1,11 +1,11 @@
 /**
  * `vize check` pair: two `vize` builds check the same generated projects cold.
  *
- * Every timed run gets a fresh, empty cache root (`VIZE_CANON_CACHE_ROOT`,
- * `XDG_CACHE_HOME`), so each run builds and writes the whole mirror and
- * starts the checker from nothing. Runs rotate the build order after one
- * unrecorded warm-up per build fills the page cache. A cell whose builds or
- * runs report different diagnostics publishes no timing unless
+ * Cold timed runs get a fresh, empty cache root (`VIZE_CANON_CACHE_ROOT`,
+ * `XDG_CACHE_HOME`), so each builds and writes the whole mirror and starts the
+ * checker from nothing. A second cohort reuses one cache per build after an
+ * unrecorded seed check. Both cohorts rotate build order. A cell whose builds
+ * or runs report different diagnostics publishes no timing unless
  * `--allow-output-change` is set.
  *
  * Linux and WSL2 report the tree's CPU and largest resident set (GNU time)
@@ -18,7 +18,8 @@
  *   node tools/benchmarks/scripts/typecheck-cold-pair.ts \
  *     --bin base=/tmp/vize-base --bin head=target/ci-opt/vize \
  *     --root /tmp/cold-pair --projects vue:1000,vue:5000,monorepo:5000 \
- *     --runs 5 --label linux-ext4 --out /tmp/cold-pair-out [--strace]
+ *     --runs 5 --runtime tsrs --checkers 8 \
+ *     --label linux-ext4 --out /tmp/cold-pair-out [--strace]
  */
 
 import { spawn, spawnSync } from "node:child_process";
@@ -54,6 +55,8 @@ import { type ScaleKind, generateScaleProject, writeProject } from "./scale-proj
 
 type Build = { id: string; bin: string };
 type Project = { name: string; dir: string; tsconfig: string };
+type Checker = { path: string; root: string };
+type CacheRun = { tag: string; reset: boolean; retain: boolean };
 
 const REPO = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
 const windows = process.platform === "win32";
@@ -83,16 +86,29 @@ function npmInstall(dir: string, dependencies: Record<string, string>): void {
   if (result.status !== 0) throw new Error(`npm install failed in ${dir}\n${result.stderr}`);
 }
 
-/** The pinned tsgo, installed once beside the projects. */
-function installChecker(root: string, workspace: string): string {
-  const platform = `${process.platform}-${process.arch}`;
-  const name = `@typescript/typescript-${platform}`;
+/** The exact selected native checker, installed once beside the projects. */
+function installChecker(root: string, workspace: string, runtime: string): Checker {
   const dir = join(root, "checker");
   mkdirSync(dir, { recursive: true });
+  if (runtime === "tsrs") {
+    const manifest = JSON.parse(
+      readFileSync(join(REPO, "tools/benchmarks/typecheck-hosts/package.json"), "utf8"),
+    ) as { dependencies?: Record<string, string> };
+    const version = manifest.dependencies?.tsrs;
+    if (!version) throw new Error("typecheck host manifest does not pin tsrs");
+    npmInstall(dir, { tsrs: version });
+    const launcher = join(dir, "node_modules", ".bin", windows ? "tsrs.cmd" : "tsrs");
+    if (!existsSync(launcher)) throw new Error(`tsrs missing at ${launcher}`);
+    return { path: launcher, root: dir };
+  }
+  if (runtime !== "tsgo") throw new Error(`--runtime wants tsgo or tsrs, got ${runtime}`);
+
+  const platform = `${process.platform}-${process.arch}`;
+  const name = `@typescript/typescript-${platform}`;
   npmInstall(dir, { [name]: catalogVersion(workspace, "corsa-runtime", name) });
-  const tsgo = join(dir, "node_modules", ...name.split("/"), "lib", windows ? "tsc.exe" : "tsc");
-  if (!existsSync(tsgo)) throw new Error(`tsgo missing at ${tsgo}`);
-  return tsgo;
+  const checker = join(dir, "node_modules", ...name.split("/"), "lib", windows ? "tsc.exe" : "tsc");
+  if (!existsSync(checker)) throw new Error(`tsgo missing at ${checker}`);
+  return { path: checker, root: dir };
 }
 
 function prepareProject(root: string, spec: string, vue: string): Project {
@@ -132,7 +148,7 @@ function treeSize(dir: string): { files: number; bytes: number } {
   return { files, bytes };
 }
 
-const checkArgs = (project: Project, tsgo: string) => [
+const checkArgs = (project: Project, checker: Checker, checkers: number) => [
   "check",
   "--format",
   "json",
@@ -140,12 +156,18 @@ const checkArgs = (project: Project, tsgo: string) => [
   "--tsconfig",
   project.tsconfig,
   "--corsa-path",
-  tsgo,
+  checker.path,
+  "--checkers",
+  String(checkers),
 ];
 
-function freshCache(cacheRoot: string, tag: string): { dir: string; env: NodeJS.ProcessEnv } {
+function checkCache(
+  cacheRoot: string,
+  tag: string,
+  reset: boolean,
+): { dir: string; env: NodeJS.ProcessEnv } {
   const dir = join(cacheRoot, tag);
-  rmSync(dir, { recursive: true, force: true });
+  if (reset) rmSync(dir, { recursive: true, force: true });
   mkdirSync(join(dir, "xdg"), { recursive: true });
   return {
     dir,
@@ -217,12 +239,14 @@ function sampleTree(rootPid: number): { stop: () => { vize?: number; children?: 
 async function runOnce(
   build: Build,
   project: Project,
-  tsgo: string,
+  checker: Checker,
+  checkers: number,
   root: string,
   cacheRoot: string,
-  tag: string,
+  cacheRun: CacheRun,
 ): Promise<CheckSample> {
-  const cache = freshCache(cacheRoot, tag);
+  const { tag } = cacheRun;
+  const cache = checkCache(cacheRoot, tag, cacheRun.reset);
   const scratch = join(root, "scratch");
   mkdirSync(scratch, { recursive: true });
   const output = join(scratch, `${tag}.json`);
@@ -236,7 +260,7 @@ async function runOnce(
   let processWallMs: number | undefined;
   if (windows) {
     const quote = (value: string) => `'${value.replace(/'/gu, "''")}'`;
-    const args = checkArgs(project, tsgo)
+    const args = checkArgs(project, checker, checkers)
       .map((arg) => `"${arg}"`)
       .join(",");
     // The process object's own start and exit times give the wall time, so
@@ -279,11 +303,15 @@ async function runOnce(
     peakMiB = Math.max(vizeHwmMiB, childHwmMiB);
   } else {
     const timer = linux ? ["-f", "%U %S %M", "-o", metrics] : ["-l"];
-    const child = spawn("/usr/bin/time", [...timer, build.bin, ...checkArgs(project, tsgo)], {
-      cwd: project.dir,
-      env: cache.env,
-      stdio: ["ignore", "pipe", "pipe"],
-    });
+    const child = spawn(
+      "/usr/bin/time",
+      [...timer, build.bin, ...checkArgs(project, checker, checkers)],
+      {
+        cwd: project.dir,
+        env: cache.env,
+        stdio: ["ignore", "pipe", "pipe"],
+      },
+    );
     const sampler = linux && child.pid ? sampleTree(child.pid) : undefined;
     const chunks: Buffer[] = [];
     let stderr = "";
@@ -310,7 +338,7 @@ async function runOnce(
   const wallMs = processWallMs ?? performance.now() - start;
   const bytes = readFileSync(output);
   const mirror = treeSize(cache.dir);
-  rmSync(cache.dir, { recursive: true, force: true });
+  if (!cacheRun.retain) rmSync(cache.dir, { recursive: true, force: true });
   return {
     wallMs,
     cpuSeconds: Number.isFinite(cpuSeconds) ? cpuSeconds : undefined,
@@ -329,12 +357,13 @@ async function runOnce(
 async function traceOnce(
   build: Build,
   project: Project,
-  tsgo: string,
+  checker: Checker,
+  checkers: number,
   cacheRoot: string,
   out: string,
 ): Promise<Attribution> {
   const tag = `strace-${project.name}-${build.id}`;
-  const cache = freshCache(cacheRoot, tag);
+  const cache = checkCache(cacheRoot, tag, true);
   const log = join(out, `${tag}.log`);
   // Process creation is traced too, so every thread joins its process.
   const calls = [
@@ -355,7 +384,7 @@ async function traceOnce(
       "-o",
       log,
       build.bin,
-      ...checkArgs(project, tsgo),
+      ...checkArgs(project, checker, checkers),
     ],
     { cwd: project.dir, env: cache.env, stdio: ["ignore", "ignore", "pipe"], encoding: "utf8" },
   );
@@ -366,7 +395,7 @@ async function traceOnce(
     mirror: cache.dir,
     modules: join(project.dir, "node_modules"),
     project: project.dir,
-    checker: dirname(dirname(dirname(dirname(tsgo)))),
+    checker: checker.root,
   };
   // A 5,000-SFC trace outgrows one string; stream it line by line.
   const attribution = new StraceAttribution(roots);
@@ -393,6 +422,8 @@ async function main(): Promise<void> {
       "cache-root": { type: "string" },
       projects: { type: "string", default: "vue:1000,vue:5000,monorepo:5000" },
       runs: { type: "string", default: "5" },
+      runtime: { type: "string", default: "tsgo" },
+      checkers: { type: "string", default: "8" },
       label: { type: "string", default: process.platform },
       out: { type: "string" },
       strace: { type: "boolean", default: false },
@@ -411,46 +442,66 @@ async function main(): Promise<void> {
   const out = resolve(values.out);
   const cacheRoot = resolve(values["cache-root"] ?? join(root, "cache"));
   const runs = Number(values.runs);
+  const checkers = Number(values.checkers);
+  if (!Number.isInteger(checkers) || checkers < 1 || checkers > 64) {
+    throw new Error(`--checkers wants an integer from 1 to 64, got ${values.checkers}`);
+  }
   mkdirSync(root, { recursive: true });
   mkdirSync(out, { recursive: true });
   const workspace = readFileSync(join(REPO, "pnpm-workspace.yaml"), "utf8");
   const vue = catalogVersion(workspace, "vue-beta", "vue");
-  const tsgo = installChecker(root, workspace);
+  const checker = installChecker(root, workspace, values.runtime);
   const cells: Cell[] = [];
   const traces: string[] = [];
   for (const spec of values.projects.split(",")) {
     const project = prepareProject(root, spec, vue);
-    const samples = new Map<string, CheckSample[]>(builds.map((b) => [b.id, []]));
-    for (const build of builds)
-      await runOnce(build, project, tsgo, root, cacheRoot, `warm-${build.id}`);
+    const cold = new Map<string, CheckSample[]>(builds.map((build) => [build.id, []]));
+    const warm = new Map<string, CheckSample[]>(builds.map((build) => [build.id, []]));
+    for (const build of builds) {
+      await runOnce(build, project, checker, checkers, root, cacheRoot, {
+        tag: `warm-${project.name}-${build.id}`,
+        reset: true,
+        retain: true,
+      });
+    }
     for (let run = 0; run < runs; run++) {
       const order = run % 2 === 0 ? builds : [...builds].reverse();
       for (const build of order) {
-        const sample = await runOnce(
-          build,
-          project,
-          tsgo,
-          root,
-          cacheRoot,
-          `${project.name}-${build.id}-${run}`,
+        cold.get(build.id)?.push(
+          await runOnce(build, project, checker, checkers, root, cacheRoot, {
+            tag: `cold-${project.name}-${build.id}-${run}`,
+            reset: true,
+            retain: false,
+          }),
         );
-        samples.get(build.id)?.push(sample);
+        warm.get(build.id)?.push(
+          await runOnce(build, project, checker, checkers, root, cacheRoot, {
+            tag: `warm-${project.name}-${build.id}`,
+            reset: false,
+            retain: true,
+          }),
+        );
       }
     }
-    const cell = summarizeCell({
-      label: values.label,
-      project: project.name,
-      builds: builds.map((b) => b.id),
-      samples,
-      allowOutputChange: values["allow-output-change"],
-    });
-    // Keep every run beside the medians for later inspection.
-    cells.push({ ...cell, samples: Object.fromEntries(samples) });
-    console.log(JSON.stringify(cell));
+    for (const [temperature, samples] of [
+      ["cold", cold],
+      ["warm", warm],
+    ] as const) {
+      const cell = summarizeCell({
+        label: values.label,
+        project: `${project.name}-${temperature}`,
+        builds: builds.map((build) => build.id),
+        samples,
+        allowOutputChange: values["allow-output-change"],
+      });
+      // Keep every run beside the medians for later inspection.
+      cells.push({ ...cell, samples: Object.fromEntries(samples) });
+      console.log(JSON.stringify(cell));
+    }
     if (values.strace && linux) {
       const traced: [string, Attribution][] = [];
       for (const build of builds) {
-        traced.push([build.id, await traceOnce(build, project, tsgo, cacheRoot, out)]);
+        traced.push([build.id, await traceOnce(build, project, checker, checkers, cacheRoot, out)]);
       }
       writeFileSync(
         join(out, `strace-${values.label}-${project.name}.json`),
@@ -460,6 +511,12 @@ async function main(): Promise<void> {
         `#### ${project.name}: filesystem calls per process\n\n${processTotals(traced)}\n` +
           `#### ${project.name}: by syscall and path\n\n${attributionTable(traced)}`,
       );
+    }
+    for (const build of builds) {
+      rmSync(join(cacheRoot, `warm-${project.name}-${build.id}`), {
+        recursive: true,
+        force: true,
+      });
     }
     rmSync(project.dir, { recursive: true, force: true });
     // Publish after every project, so a cell that times out keeps the rest.
