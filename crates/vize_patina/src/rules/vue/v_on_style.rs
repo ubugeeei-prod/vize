@@ -21,6 +21,7 @@
 
 use crate::context::LintContext;
 use crate::diagnostic::{Fix, LintDiagnostic, Severity, TextEdit};
+use crate::markup::{MarkupContext, MarkupDirective, MarkupElement, MarkupRule};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_l0::String;
 use vize_relief::{DirectiveNode, ElementNode};
@@ -49,6 +50,65 @@ pub struct VOnStyle {
     pub style: VOnStyleOption,
 }
 
+impl VOnStyle {
+    fn check(&self, ctx: &mut LintContext<'_>, directive: &MarkupDirective<'_>) {
+        if !directive.name_eq("on") || directive.argument_range().is_none() {
+            return;
+        }
+
+        let range = directive.range();
+        let Some(attribute) = ctx.source.get(range.start as usize..range.end as usize) else {
+            return;
+        };
+        let is_shorthand = attribute.starts_with('@');
+        let should_report = match self.style {
+            VOnStyleOption::Shorthand => !is_shorthand,
+            VOnStyleOption::Longform => is_shorthand,
+        };
+        if !should_report {
+            return;
+        }
+        let Some(new_text) = replacement_text(attribute, self.style) else {
+            return;
+        };
+        let (message, help, fix_message) = match self.style {
+            VOnStyleOption::Shorthand => (
+                "Prefer shorthand `@` over `v-on:`",
+                "Use `@event=\"handler\"` instead of `v-on:event=\"handler\"`",
+                "Use shorthand syntax",
+            ),
+            VOnStyleOption::Longform => (
+                "Prefer `v-on:` over shorthand `@`",
+                "Use `v-on:event=\"handler\"` instead of `@event=\"handler\"`",
+                "Use longform syntax",
+            ),
+        };
+        ctx.report(
+            LintDiagnostic::warn(META.name, message, range.start, range.end)
+                .with_help(help)
+                .with_fix(Fix::new(
+                    fix_message,
+                    TextEdit::replace(range.start, range.end, new_text),
+                )),
+        );
+    }
+}
+
+impl MarkupRule for VOnStyle {
+    fn name(&self) -> &'static str {
+        META.name
+    }
+
+    fn enter_directive<'a>(
+        &self,
+        ctx: &mut MarkupContext<'_, 'a>,
+        _element: &MarkupElement<'a>,
+        directive: &MarkupDirective<'a>,
+    ) {
+        self.check(ctx.lint(), directive);
+    }
+}
+
 impl Default for VOnStyle {
     fn default() -> Self {
         Self {
@@ -62,103 +122,31 @@ impl Rule for VOnStyle {
         &META
     }
 
+    fn as_markup_rule(&self) -> Option<&dyn MarkupRule> {
+        Some(self)
+    }
+
     fn check_directive<'a>(
         &self,
         ctx: &mut LintContext<'a>,
         _element: &ElementNode<'a>,
         directive: &DirectiveNode<'a>,
     ) {
-        if directive.name != "on" {
-            return;
-        }
-
-        // Skip object binding syntax (v-on="...")
-        if directive.arg.is_none() {
-            return;
-        }
-
-        let raw_name = directive.raw_name.unwrap_or("");
-        let is_shorthand = raw_name.starts_with('@');
-
-        match self.style {
-            VOnStyleOption::Shorthand => {
-                if !is_shorthand
-                    && let Some(new_text) =
-                        replacement_text(ctx, directive, VOnStyleOption::Shorthand)
-                {
-                    let fix = Fix::new(
-                        "Use shorthand syntax",
-                        TextEdit::replace(
-                            directive.loc.span.start,
-                            directive.loc.span.end,
-                            new_text,
-                        ),
-                    );
-
-                    ctx.report(
-                        LintDiagnostic::warn(
-                            META.name,
-                            "Prefer shorthand `@` over `v-on:`",
-                            directive.loc.span.start,
-                            directive.loc.span.end,
-                        )
-                        .with_help("Use `@event=\"handler\"` instead of `v-on:event=\"handler\"`")
-                        .with_fix(fix),
-                    );
-                }
-            }
-            VOnStyleOption::Longform => {
-                if is_shorthand
-                    && let Some(new_text) =
-                        replacement_text(ctx, directive, VOnStyleOption::Longform)
-                {
-                    let fix = Fix::new(
-                        "Use longform syntax",
-                        TextEdit::replace(
-                            directive.loc.span.start,
-                            directive.loc.span.end,
-                            new_text,
-                        ),
-                    );
-
-                    ctx.report(
-                        LintDiagnostic::warn(
-                            META.name,
-                            "Prefer `v-on:` over shorthand `@`",
-                            directive.loc.span.start,
-                            directive.loc.span.end,
-                        )
-                        .with_help("Use `v-on:event=\"handler\"` instead of `@event=\"handler\"`")
-                        .with_fix(fix),
-                    );
-                }
-            }
-        }
+        self.check(ctx, &MarkupDirective::from_relief(directive));
     }
 }
 
-fn replacement_text<'a>(
-    ctx: &LintContext<'a>,
-    directive: &DirectiveNode<'a>,
-    target: VOnStyleOption,
-) -> Option<String> {
-    let raw_name = directive.raw_name?;
-    let start = directive.loc.span.start as usize;
-    let end = directive.loc.span.end as usize;
-    let suffix_start = start.checked_add(raw_name.len())?;
-    let rest = ctx.source.get(suffix_start..end)?;
-
+fn replacement_text(attribute: &str, target: VOnStyleOption) -> Option<String> {
     match target {
         VOnStyleOption::Shorthand => {
-            raw_name.strip_prefix("v-on")?;
-            let rest = rest.strip_prefix(':')?;
+            let rest = attribute.strip_prefix("v-on:")?;
             let mut new_text = String::with_capacity(1 + rest.len());
             new_text.push('@');
             new_text.push_str(rest);
             Some(new_text)
         }
         VOnStyleOption::Longform => {
-            raw_name.strip_prefix('@')?;
+            let rest = attribute.strip_prefix('@')?;
             let mut new_text = String::with_capacity(5 + rest.len());
             new_text.push_str("v-on:");
             new_text.push_str(rest);

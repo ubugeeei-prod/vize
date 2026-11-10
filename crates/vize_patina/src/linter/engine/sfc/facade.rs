@@ -55,6 +55,8 @@ pub(in crate::linter::engine) const RULES: &[&str] = &[
     "vue/no-deprecated-html-element-is",
     "vue/require-component-is",
     "vue/no-deprecated-v-is",
+    "vue/v-on-style",
+    "vue/v-slot-style",
     "a11y/heading-levels",
     "a11y/placeholder-label-option",
     "a11y/use-list",
