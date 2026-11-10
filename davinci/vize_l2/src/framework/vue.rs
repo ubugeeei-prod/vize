@@ -171,6 +171,12 @@ pub fn artifact_macro_names() -> impl Iterator<Item = &'static str> {
         .map(|row| row.name)
 }
 
+mod contract;
+pub use contract::{
+    CallContract, ComponentContract, ContractSource, Emit, EmitsContract, ModelContract, ModelName,
+    Prop, PropsContract, SlotsContract,
+};
+
 mod setup;
 pub use setup::{
     MacroCall, PropsDestructure, PropsField, ReactiveSource, SetupBinding, SetupBindingKind,
