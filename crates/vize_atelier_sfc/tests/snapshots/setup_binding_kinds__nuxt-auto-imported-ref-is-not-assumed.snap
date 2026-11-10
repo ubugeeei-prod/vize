@@ -1,0 +1,19 @@
+---
+source: crates/vize_atelier_sfc/tests/setup_binding_kinds.rs
+expression: result.code.as_str()
+---
+const { toDisplayString: _toDisplayString, unref: _unref } = Vue
+
+
+return {
+  __name: 'anonymous',
+  setup(__props) {
+
+const count = ref(0)
+
+return (_ctx, _cache) => {
+  return _toDisplayString(_unref(count))
+}
+}
+
+}

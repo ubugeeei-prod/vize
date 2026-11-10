@@ -6,6 +6,7 @@ import { parse } from "yaml";
 import { checkWorkflowJobSources, readRepoFile } from "./support/github-workflows.ts";
 
 type Step = {
+  id?: string;
   name?: string;
   run?: string;
   uses?: string;
@@ -155,4 +156,23 @@ test("the real tooling report requires the source CLI and every selected worker"
         const key = [selected, cli, workers].join("/");
         assert.equal(result.status === 0, accepted.has(key), `${key}: ${result.stderr}`);
       }
+});
+
+test("affected tooling builds the native addon only for a shard that reads it", () => {
+  const action = parse(
+    readRepoFile(".github", "actions", "test-affected-tooling", "action.yml"),
+  ) as { runs: { steps: Step[] } };
+  const plan = action.runs.steps.find((step) => step.id === "plan");
+  assert.match(plan?.run ?? "", /tooling-shard-native-build\.ts/);
+  assert.match(plan?.run ?? "", /native-build=\$native_build/);
+  assert.equal(plan?.env?.TOOLING_SHARD, "${{ inputs.shard }}/${{ inputs.total }}");
+  assert.doesNotMatch(plan?.run ?? "", /\$\{\{\s*inputs\./);
+  const native = action.runs.steps.find((step) => step.run?.includes("build:native:test"));
+  assert.equal(native?.if, "${{ steps.plan.outputs.native-build == 'true' }}");
+  assert.match(native?.run ?? "", /vp run --workspace-root build:native:test/);
+  const tests = action.runs.steps.find((step) => step.run?.includes("run-tooling-tests.mjs"));
+  const layout = tests?.run?.indexOf("verify-tool-layout.ts") ?? -1;
+  const runner = tests?.run?.indexOf("run-tooling-tests.mjs") ?? -1;
+  assert.ok(layout >= 0 && layout < runner);
+  assert.doesNotMatch(tests?.run ?? "", /build:native:test|test:scripts:pr/);
 });

@@ -1,12 +1,10 @@
 //! How a template reads each top-level `<script setup>` declaration.
 //!
-//! The classification is the compiler's current one: the template lanes
-//! receive it as binding metadata, and the compiler snapshots pin it. It
-//! differs from Vue's `walkDeclaration` (#12404): named imports from `vue`
-//! may hold refs here, the ref family needs no `vue` import, `let x =
-//! reactive()` stays reactive, `readonly`/`toRefs` results are classified,
-//! every literal `const` is a literal constant, `declare const` counts, and a
-//! destructure of a TypeScript-wrapped `defineProps` call is an ordinary one.
+//! The classification follows Vue's `walkDeclaration`: only Vue imports make
+//! the ref/reactive call families authoritative, mutable declarations stay
+//! mutable, and literal constants depend on script-setup static hoisting.
+
+mod pattern;
 
 use super::super::{MacroKind, lookup};
 use super::props::{self, PropsDestructure};
@@ -85,8 +83,8 @@ pub struct SetupBinding {
     pub source: Option<ReactiveSource>,
 }
 
-/// Calls whose result kind the compiler knows, by Vue API name.
-const REACTIVE_CALLS: &[(&str, SetupBindingKind, ReactiveSource)] = &[
+/// Calls whose result kind Vue's `walkDeclaration` knows, by imported API.
+const VUE_SETUP_CALLS: &[(&str, SetupBindingKind, ReactiveSource)] = &[
     ("ref", SetupBindingKind::SetupRef, ReactiveSource::Ref),
     (
         "shallowRef",
@@ -99,7 +97,6 @@ const REACTIVE_CALLS: &[(&str, SetupBindingKind, ReactiveSource)] = &[
         ReactiveSource::Computed,
     ),
     ("toRef", SetupBindingKind::SetupRef, ReactiveSource::ToRef),
-    ("toRefs", SetupBindingKind::SetupRef, ReactiveSource::ToRefs),
     (
         "customRef",
         SetupBindingKind::SetupRef,
@@ -115,29 +112,14 @@ const REACTIVE_CALLS: &[(&str, SetupBindingKind, ReactiveSource)] = &[
         SetupBindingKind::SetupReactiveConst,
         ReactiveSource::Reactive,
     ),
-    (
-        "shallowReactive",
-        SetupBindingKind::SetupReactiveConst,
-        ReactiveSource::ShallowReactive,
-    ),
-    (
-        "readonly",
-        SetupBindingKind::SetupReactiveConst,
-        ReactiveSource::Readonly,
-    ),
-    (
-        "shallowReadonly",
-        SetupBindingKind::SetupReactiveConst,
-        ReactiveSource::ShallowReadonly,
-    ),
 ];
 
-fn reactive_call(name: &str) -> Option<&'static (&'static str, SetupBindingKind, ReactiveSource)> {
-    REACTIVE_CALLS.iter().find(|(api, _, _)| *api == name)
+fn vue_setup_call(name: &str) -> Option<&'static (&'static str, SetupBindingKind, ReactiveSource)> {
+    VUE_SETUP_CALLS.iter().find(|(api, _, _)| *api == name)
 }
 
 /// Binding rows plus the local names that alias a Vue reactivity API.
-#[derive(Debug, Default)]
+#[derive(Debug)]
 pub(super) struct Bindings<'a> {
     pub(super) rows: Vec<SetupBinding>,
     pub(super) props: Option<PropsDestructure>,
@@ -146,10 +128,29 @@ pub(super) struct Bindings<'a> {
     /// The destructure's defaults by prop key.
     pub(super) defaults: Vec<(&'a str, Span)>,
     aliases: Vec<(&'a str, &'static str)>,
+    hoist_static: bool,
     pub(super) overflow: bool,
 }
 
+impl Default for Bindings<'_> {
+    fn default() -> Self {
+        Self {
+            rows: Vec::new(),
+            props: None,
+            unclassified: Vec::new(),
+            defaults: Vec::new(),
+            aliases: Vec::new(),
+            hoist_static: true,
+            overflow: false,
+        }
+    }
+}
+
 impl<'a> Bindings<'a> {
+    pub(super) fn set_hoist_static(&mut self, enabled: bool) {
+        self.hoist_static = enabled;
+    }
+
     fn authored(&mut self, base: u32, span: oxc_span::Span) -> Span {
         match (base.checked_add(span.start), base.checked_add(span.end)) {
             (Some(start), Some(end)) => Span::new(start, end),
@@ -180,29 +181,39 @@ impl<'a> Bindings<'a> {
             Statement::ImportDeclaration(import) if !import.import_kind.is_type() => {
                 self.import(base, import);
             }
-            Statement::VariableDeclaration(declaration) => {
+            Statement::VariableDeclaration(declaration) if !declaration.declare => {
                 for declarator in &declaration.declarations {
                     self.declarator(base, declaration.kind, declarator);
                 }
             }
-            Statement::FunctionDeclaration(function) => {
+            Statement::FunctionDeclaration(function) if !function.declare => {
                 if let Some(id) = &function.id {
                     self.push(base, id.span, SetupBindingKind::SetupConst);
                 }
             }
-            Statement::ClassDeclaration(class) => {
+            Statement::ClassDeclaration(class) if !class.declare => {
                 if let Some(id) = &class.id {
                     self.push(base, id.span, SetupBindingKind::SetupConst);
                 }
             }
             Statement::TSEnumDeclaration(enumeration) if !enumeration.declare => {
-                self.push(base, enumeration.id.span, SetupBindingKind::SetupConst);
+                let kind = if enumeration
+                    .body
+                    .members
+                    .iter()
+                    .all(|member| member.initializer.as_ref().is_none_or(is_static_node))
+                {
+                    SetupBindingKind::LiteralConst
+                } else {
+                    SetupBindingKind::SetupConst
+                };
+                self.push(base, enumeration.id.span, kind);
             }
             _ => {}
         }
     }
 
-    /// A named import may hold a ref; a default or namespace import does not.
+    /// Vue imports are constants; named imports from other modules may be refs.
     fn import(&mut self, base: u32, import: &ImportDeclaration<'a>) {
         let from_vue = import.source.value == "vue";
         for specifier in import.specifiers.iter().flatten() {
@@ -213,16 +224,23 @@ impl<'a> Bindings<'a> {
                     }
                     let local = named.local.name.as_str();
                     let imported = named.imported.name();
-                    if from_vue
-                        && imported != local
-                        && let Some((api, _, _)) = reactive_call(imported.as_str())
-                    {
+                    if from_vue && let Some((api, _, _)) = vue_setup_call(imported.as_str()) {
                         self.aliases.push((local, api));
                     }
-                    self.push(base, named.local.span, SetupBindingKind::SetupMaybeRef);
+                    let kind = if from_vue {
+                        SetupBindingKind::SetupConst
+                    } else {
+                        SetupBindingKind::SetupMaybeRef
+                    };
+                    self.push(base, named.local.span, kind);
                 }
                 ImportDeclarationSpecifier::ImportDefaultSpecifier(default) => {
-                    self.push(base, default.local.span, SetupBindingKind::SetupConst);
+                    let kind = if from_vue || import.source.value.ends_with(".vue") {
+                        SetupBindingKind::SetupConst
+                    } else {
+                        SetupBindingKind::SetupMaybeRef
+                    };
+                    self.push(base, default.local.span, kind);
                 }
                 ImportDeclarationSpecifier::ImportNamespaceSpecifier(namespace) => {
                     self.push(base, namespace.local.span, SetupBindingKind::SetupConst);
@@ -241,77 +259,18 @@ impl<'a> Bindings<'a> {
             self.pattern(base, kind, declarator);
             return;
         };
-        let name = id.name.as_str();
         let by_kind = match kind {
-            VariableDeclarationKind::Let | VariableDeclarationKind::Var => {
-                SetupBindingKind::SetupLet
-            }
-            _ => SetupBindingKind::SetupConst,
+            VariableDeclarationKind::Const => SetupBindingKind::SetupConst,
+            _ => SetupBindingKind::SetupLet,
         };
-        let mut alias = None;
         let (class, source) = match declarator.init.as_ref() {
             None => (by_kind, None),
             Some(init) => match call(init) {
-                Some(call) => self.call_kind(call, by_kind, kind, init),
-                None => {
-                    if let Expression::Identifier(api) = init {
-                        alias = reactive_call(api.name.as_str()).map(|(api, _, _)| *api);
-                    }
-                    (by_initializer(kind, init), None)
-                }
+                Some(call) => self.call_kind(call, kind, init),
+                None => (by_initializer(kind, init, self.hoist_static), None),
             },
         };
-        self.aliases.retain(|(local, _)| *local != name);
-        if let Some(api) = alias {
-            self.aliases.push((name, api));
-        }
         self.push_source(base, id.span, class, source);
-    }
-
-    /// Every identifier of a destructuring pattern shares one kind, except
-    /// in a `defineProps` destructure. The first element of a `defineModel`
-    /// array pattern holds the model ref.
-    fn pattern(
-        &mut self,
-        base: u32,
-        kind: VariableDeclarationKind,
-        declarator: &VariableDeclarator<'a>,
-    ) {
-        let init = declarator.init.as_ref();
-        let mut model = None;
-        let class = match &declarator.id {
-            BindingPattern::ObjectPattern(pattern) if init.is_some_and(destructures_props) => {
-                self.props_destructure(base, pattern);
-                return;
-            }
-            BindingPattern::ArrayPattern(array)
-                if init
-                    .and_then(call)
-                    .is_some_and(|call| is_callee(call, super::super::DEFINE_MODEL)) =>
-            {
-                model =
-                    array
-                        .elements
-                        .first()
-                        .and_then(Option::as_ref)
-                        .and_then(|first| match first {
-                            BindingPattern::BindingIdentifier(id) => Some(id.span),
-                            BindingPattern::AssignmentPattern(assignment) => match &assignment.left
-                            {
-                                BindingPattern::BindingIdentifier(id) => Some(id.span),
-                                _ => None,
-                            },
-                            _ => None,
-                        });
-                SetupBindingKind::SetupMaybeRef
-            }
-            _ => by_destructure(kind, init),
-        };
-        declarator.id.all_binding_identifiers(&mut |id| {
-            let source = (Some(id.span) == model).then_some(ReactiveSource::Model);
-            self.push_source(base, id.span, class, source);
-            true
-        });
     }
 
     /// A second destructure, like a pattern Vue rejects, stays unclassified.
@@ -343,37 +302,47 @@ impl<'a> Bindings<'a> {
     fn call_kind(
         &self,
         call: &CallExpression<'a>,
-        by_kind: SetupBindingKind,
         kind: VariableDeclarationKind,
         init: &Expression<'a>,
     ) -> (SetupBindingKind, Option<ReactiveSource>) {
         let Expression::Identifier(callee) = &call.callee else {
-            return (by_initializer(kind, init), None);
+            return (by_initializer(kind, init, self.hoist_static), None);
         };
         let callee = callee.name.as_str();
-        // The compiler's macro set: Vue's macros and `defineArt`.
-        if let Some(row) =
-            lookup(callee).filter(|row| row.builtin || row.kind == MacroKind::DefineArt)
-        {
-            return match row.kind {
-                MacroKind::DefineProps | MacroKind::WithDefaults => (
+        let is_const = kind == VariableDeclarationKind::Const;
+        if let Some(row) = lookup(callee).filter(|row| row.builtin) {
+            return match (is_const, row.kind) {
+                (true, MacroKind::DefineProps) => (
                     SetupBindingKind::SetupReactiveConst,
                     Some(ReactiveSource::Props),
                 ),
-                MacroKind::DefineModel => (SetupBindingKind::SetupRef, Some(ReactiveSource::Model)),
-                _ => (by_kind, None),
+                (true, MacroKind::DefineModel) => {
+                    (SetupBindingKind::SetupRef, Some(ReactiveSource::Model))
+                }
+                (
+                    true,
+                    MacroKind::WithDefaults | MacroKind::DefineEmits | MacroKind::DefineSlots,
+                ) => (SetupBindingKind::SetupConst, None),
+                (false, _) => (SetupBindingKind::SetupLet, None),
+                _ => (by_initializer(kind, init, self.hoist_static), None),
             };
         }
-        let api = self
+        let Some(api) = self
             .aliases
             .iter()
             .rev()
             .find(|(local, _)| *local == callee)
-            .map_or(callee, |(_, api)| *api);
-        reactive_call(api).map_or_else(
-            || (by_initializer(kind, init), None),
-            |(_, class, source)| (*class, Some(*source)),
-        )
+            .map(|(_, api)| *api)
+        else {
+            return (by_initializer(kind, init, self.hoist_static), None);
+        };
+        let Some((_, class, source)) = vue_setup_call(api) else {
+            return (by_initializer(kind, init, self.hoist_static), None);
+        };
+        if !is_const {
+            return (SetupBindingKind::SetupLet, None);
+        }
+        (*class, Some(*source))
     }
 }
 
@@ -381,9 +350,21 @@ fn is_callee(call: &CallExpression<'_>, name: &str) -> bool {
     matches!(&call.callee, Expression::Identifier(id) if id.name == name)
 }
 
-/// `defineProps()` or `withDefaults(defineProps(), ...)`, unwrapped by nothing.
-fn destructures_props(init: &Expression<'_>) -> bool {
-    let Expression::CallExpression(call) = init else {
+pub(super) fn is_const_macro_call(call: &CallExpression<'_>) -> bool {
+    matches!(&call.callee, Expression::Identifier(id) if matches!(
+        lookup(id.name.as_str()).map(|row| row.kind),
+        Some(
+            MacroKind::DefineProps
+                | MacroKind::DefineEmits
+                | MacroKind::WithDefaults
+                | MacroKind::DefineSlots
+        )
+    ))
+}
+
+/// `defineProps()` or `withDefaults(defineProps(), ...)`, through TS wrappers.
+pub(super) fn destructures_props(init: &Expression<'_>) -> bool {
+    let Expression::CallExpression(call) = transparent(init) else {
         return false;
     };
     is_callee(call, super::super::DEFINE_PROPS)
@@ -395,26 +376,8 @@ fn destructures_props(init: &Expression<'_>) -> bool {
             ))
 }
 
-/// A destructured `const` holds functions only when the initializer is one.
-fn by_destructure(
-    kind: VariableDeclarationKind,
-    init: Option<&Expression<'_>>,
-) -> SetupBindingKind {
-    match (kind, init) {
-        (VariableDeclarationKind::Let | VariableDeclarationKind::Var, _) => {
-            SetupBindingKind::SetupLet
-        }
-        (
-            VariableDeclarationKind::Const,
-            Some(Expression::ArrowFunctionExpression(_) | Expression::FunctionExpression(_)),
-        ) => SetupBindingKind::SetupConst,
-        (VariableDeclarationKind::Const, Some(_)) => SetupBindingKind::SetupMaybeRef,
-        _ => SetupBindingKind::SetupConst,
-    }
-}
-
 /// The call an initializer evaluates to, through TS wrappers and parentheses.
-fn call<'e, 'a>(expression: &'e Expression<'a>) -> Option<&'e CallExpression<'a>> {
+pub(super) fn call<'e, 'a>(expression: &'e Expression<'a>) -> Option<&'e CallExpression<'a>> {
     match transparent(expression) {
         Expression::CallExpression(call) => Some(call),
         _ => None,
@@ -426,41 +389,78 @@ fn transparent<'e, 'a>(expression: &'e Expression<'a>) -> &'e Expression<'a> {
         Expression::ParenthesizedExpression(inner) => transparent(&inner.expression),
         Expression::TSAsExpression(inner) => transparent(&inner.expression),
         Expression::TSSatisfiesExpression(inner) => transparent(&inner.expression),
+        Expression::TSTypeAssertion(inner) => transparent(&inner.expression),
         Expression::TSNonNullExpression(inner) => transparent(&inner.expression),
+        Expression::TSInstantiationExpression(inner) => transparent(&inner.expression),
         other => other,
     }
 }
 
-/// `const` by initializer shape; `let`/`var` stay reassignable.
-fn by_initializer(kind: VariableDeclarationKind, init: &Expression<'_>) -> SetupBindingKind {
-    match kind {
-        VariableDeclarationKind::Const => {}
-        VariableDeclarationKind::Let | VariableDeclarationKind::Var => {
-            return SetupBindingKind::SetupLet;
-        }
-        VariableDeclarationKind::Using | VariableDeclarationKind::AwaitUsing => {
-            return SetupBindingKind::SetupConst;
-        }
+/// A declaration's kind by Vue's static and never-ref tests.
+fn by_initializer(
+    kind: VariableDeclarationKind,
+    init: &Expression<'_>,
+    hoist_static: bool,
+) -> SetupBindingKind {
+    if kind != VariableDeclarationKind::Const {
+        return SetupBindingKind::SetupLet;
     }
+    if hoist_static && is_static_node(init) {
+        return SetupBindingKind::LiteralConst;
+    }
+    if can_never_be_ref(init) {
+        SetupBindingKind::SetupConst
+    } else {
+        SetupBindingKind::SetupMaybeRef
+    }
+}
+
+fn can_never_be_ref(init: &Expression<'_>) -> bool {
     match transparent(init) {
         Expression::StringLiteral(_)
         | Expression::NumericLiteral(_)
         | Expression::BooleanLiteral(_)
         | Expression::NullLiteral(_)
-        | Expression::BigIntLiteral(_) => SetupBindingKind::LiteralConst,
-        Expression::TemplateLiteral(template) if template.expressions.is_empty() => {
-            SetupBindingKind::LiteralConst
-        }
-        Expression::UnaryExpression(unary)
-            if unary.operator == oxc_ast::ast::UnaryOperator::UnaryNegation
-                && matches!(unary.argument, Expression::NumericLiteral(_)) =>
-        {
-            SetupBindingKind::LiteralConst
-        }
-        Expression::ArrowFunctionExpression(_)
+        | Expression::BigIntLiteral(_)
+        | Expression::RegExpLiteral(_)
+        | Expression::TemplateLiteral(_)
+        | Expression::UnaryExpression(_)
+        | Expression::BinaryExpression(_)
+        | Expression::UpdateExpression(_)
         | Expression::FunctionExpression(_)
+        | Expression::ArrowFunctionExpression(_)
+        | Expression::ClassExpression(_)
+        | Expression::TaggedTemplateExpression(_)
         | Expression::ObjectExpression(_)
-        | Expression::ArrayExpression(_) => SetupBindingKind::SetupConst,
-        _ => SetupBindingKind::SetupMaybeRef,
+        | Expression::ArrayExpression(_) => true,
+        Expression::SequenceExpression(sequence) => {
+            sequence.expressions.last().is_some_and(can_never_be_ref)
+        }
+        _ => false,
+    }
+}
+
+fn is_static_node(init: &Expression<'_>) -> bool {
+    match transparent(init) {
+        Expression::StringLiteral(_)
+        | Expression::NumericLiteral(_)
+        | Expression::BooleanLiteral(_)
+        | Expression::NullLiteral(_)
+        | Expression::BigIntLiteral(_) => true,
+        Expression::UnaryExpression(unary) => is_static_node(&unary.argument),
+        Expression::LogicalExpression(logical) => {
+            is_static_node(&logical.left) && is_static_node(&logical.right)
+        }
+        Expression::BinaryExpression(binary) => {
+            is_static_node(&binary.left) && is_static_node(&binary.right)
+        }
+        Expression::ConditionalExpression(conditional) => {
+            is_static_node(&conditional.test)
+                && is_static_node(&conditional.consequent)
+                && is_static_node(&conditional.alternate)
+        }
+        Expression::SequenceExpression(sequence) => sequence.expressions.iter().all(is_static_node),
+        Expression::TemplateLiteral(template) => template.expressions.iter().all(is_static_node),
+        _ => false,
     }
 }

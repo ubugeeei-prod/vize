@@ -5,6 +5,8 @@
 //! a `props.x` read show it. Comments are trivia: types, diagnostics and check
 //! cost are unchanged.
 
+use vize_croquis::macros::{MacroKind, MacroTracker};
+
 /// `(key, JSDoc block)` for every top-level key directly preceded by `/** */`.
 pub(super) fn runtime_prop_docs(object: &str) -> Vec<(&str, &str)> {
     let bytes = object.as_bytes();
@@ -100,6 +102,34 @@ pub(super) fn names_prop(key: &str, prop: &str) -> bool {
     expected.next().is_none()
 }
 
+/// JSDoc directly attached to the variable declaration that owns a
+/// `defineModel` call.
+///
+/// The retained model declaration points at the explicit name literal (or the
+/// macro identifier for an implicit `modelValue`), so recover the containing
+/// call first. Only a direct `const x = defineModel(...)` initializer inherits
+/// the preceding block; wrappers and intervening comments deliberately do not.
+pub(super) fn model_doc<'a>(script: &'a str, macros: &MacroTracker, name: &str) -> Option<&'a str> {
+    let (declaration_start, declaration_end) = macros.model_declaration(name)?;
+    let call = macros.all_calls().iter().find(|call| {
+        call.kind == MacroKind::DefineModel
+            && call.start <= declaration_start
+            && declaration_end <= call.end
+    })?;
+    let before_call = script.get(..call.start as usize)?;
+    let doc_start = before_call.rfind("/**")?;
+    let rest = script.get(doc_start..call.start as usize)?;
+    let doc_end = rest.find("*/")?.checked_add(2)?;
+    let doc = rest.get(..doc_end)?;
+    let declaration_prefix = rest.get(doc_end..)?.trim();
+    let declaration_prefix = declaration_prefix
+        .strip_prefix("const ")
+        .or_else(|| declaration_prefix.strip_prefix("let "))
+        .or_else(|| declaration_prefix.strip_prefix("var "))?;
+    let (_, initializer) = declaration_prefix.split_once('=')?;
+    initializer.trim().is_empty().then_some(doc)
+}
+
 fn string_end(bytes: &[u8], start: usize) -> usize {
     let quote = bytes.get(start).copied();
     let mut index = start + 1;
@@ -126,7 +156,8 @@ fn is_identifier_part(byte: u8) -> bool {
 
 #[cfg(test)]
 mod tests {
-    use super::runtime_prop_docs;
+    use super::{model_doc, runtime_prop_docs};
+    use vize_croquis::script_parser::parse_script_setup;
 
     #[test]
     fn runtime_keys_name_their_camelized_props() {
@@ -159,5 +190,20 @@ mod tests {
                 ("item-kind", "/**\n   * Kebab key.\n   */"),
             ]
         );
+    }
+
+    #[test]
+    fn direct_model_declarations_inherit_their_jsdoc() {
+        let source = r#"/** The edited name. */
+const name = defineModel<string>('name')
+/** Detached. */
+const wrapped = use(defineModel<number>('count'))
+"#;
+        let summary = parse_script_setup(source).into_croquis();
+        assert_eq!(
+            model_doc(source, &summary.macros, "name"),
+            Some("/** The edited name. */")
+        );
+        assert_eq!(model_doc(source, &summary.macros, "count"), None);
     }
 }

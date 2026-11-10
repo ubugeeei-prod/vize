@@ -8,14 +8,13 @@ import { formatLabel } from './format'
 
 export { formatLabel };
 
-const label = "one";
-
 export default {
   __name: 'Layout',
   ssrRender: ssrRender,
   setup(__props, { expose: __expose }) {
   __expose();
 
+const label = "one";
 
 const __returned__ = { label }
 Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })

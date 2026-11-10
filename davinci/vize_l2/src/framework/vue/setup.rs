@@ -138,6 +138,17 @@ impl<'a> SetupObserver<'a> {
         Self::default()
     }
 
+    /// Configure Vue's script-setup static-hoist classification.
+    ///
+    /// Vue enables it for a setup-only SFC and disables it when a normal
+    /// `<script>` block is present. The observer defaults to the setup-only
+    /// behavior because it sees one Program rather than the SFC descriptor.
+    #[must_use]
+    pub fn with_hoist_static(mut self, enabled: bool) -> Self {
+        self.bindings.set_hoist_static(enabled);
+        self
+    }
+
     /// The facts, once every top-level statement was seen.
     pub fn finish(self) -> Result<SetupFacts, SetupFactsIncomplete> {
         let Some(program) = self.program else {

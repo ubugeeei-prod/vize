@@ -241,4 +241,52 @@ mod tests {
             assert_eq!(actual, expected, "{}", document.pre_rewrite_code);
         }
     }
+
+    #[test]
+    fn single_document_with_defaults_preserves_prop_documentation() {
+        let source = r#"<script setup lang="ts">
+interface Props {
+  /** Visible label. */
+  label?: string
+}
+const props = withDefaults(defineProps<Props>(), { label: 'ok' })
+</script>"#;
+        for hoisted in [false, true] {
+            let document = generate_vue_document_virtual_ts_with_options(
+                Path::new("Props.vue"),
+                source,
+                &VirtualTsOptions::default(),
+                &ImportRewriter::new(),
+                hoisted,
+                VueDocumentVirtualTsOptions {
+                    preserve_event_navigation: true,
+                    ..Default::default()
+                },
+            )
+            .unwrap();
+            let code = &document.pre_rewrite_code;
+            assert_eq!(
+                code.matches(
+                    "): __WithDefaultsResult<_T, _D, _BKeys> & { readonly [K in keyof _T]: unknown };"
+                )
+                .count(),
+                1,
+                "{code}",
+            );
+            // Without module-local owner aliases both macros name the same
+            // shared `__DefineProps`, so `defineProps` keeps its hoisted alias.
+            for (needle, count) in [
+                (
+                    "const defineProps = __vize_defineProps;",
+                    usize::from(hoisted),
+                ),
+                (
+                    "  function defineProps<_T = unknown>(): __DefineProps<",
+                    usize::from(!hoisted),
+                ),
+            ] {
+                assert_eq!(code.matches(needle).count(), count, "{needle}\n{code}");
+            }
+        }
+    }
 }

@@ -75,11 +75,17 @@ test("atelier code targets expose VDOM, SSR, and Vapor outputs with stable toggl
   await expect(jsButton).toBeDisabled();
   await expect(page.getByText("SFC Output")).toHaveCount(0);
   await waitForHighlightedOutput(page);
-  await expect.poll(() => getFirstHighlightedTokenStyle(page)).toEqual(initialTokenStyle);
+  // Like Vue, the preset binds its `vue` imports as setup-const and nothing as
+  // setup-maybe-ref, so the SSR render function needs no `_unref` import and
+  // opens with the `function` keyword, styled like the VDOM `import` keyword.
+  await expect
+    .poll(() => getFirstHighlightedTokenStyle(page))
+    .toEqual({ ...initialTokenStyle, text: "function" });
 
   const ssrCode = await getCodeText(page);
   const ssrLines = await getCodeLines(page);
   expect(ssrCode).toContain("ssrRender");
+  expect(ssrCode).not.toContain("_unref");
   expect(ssrCode).not.toContain("_ctx.name");
   expect(ssrCode).not.toContain("_ctx.doubled");
   expect(ssrCode).toMatch(

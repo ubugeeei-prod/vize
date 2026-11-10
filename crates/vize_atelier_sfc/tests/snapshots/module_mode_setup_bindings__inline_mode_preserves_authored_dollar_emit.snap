@@ -1,0 +1,20 @@
+---
+source: crates/vize_atelier_sfc/tests/module_mode_setup_bindings.rs
+expression: code.as_str()
+---
+const { toDisplayString: _toDisplayString } = Vue
+
+
+return {
+  __name: 'anonymous',
+  emits: ['destroy'],
+  setup(__props) {
+
+const $emit = () => 'authored'
+
+return (_ctx, _cache) => {
+  return _toDisplayString($emit())
+}
+}
+
+}

@@ -11,6 +11,8 @@ on:
       - crates/vize_canon/src/virtual_ts/props/template_bindings.rs
       - tools/benchmarks/crates/vize/tests/setup_binding_anchor_profile.rs
       - tools/benchmarks/scripts/setup-binding-anchor-evidence.ts
+      - tools/benchmarks/scripts/setup-binding-constructor-evidence.ts
+      - tools/support/compat/content-mapper/**
       - tests/tooling/setup-binding-anchor-evidence.test.ts
       - .github/workflows/setup-binding-anchor-profile.yml
 permissions: { contents: read }
@@ -103,7 +105,7 @@ jobs:
             if [[ "$role" == base ]]; then source_root="$RUNNER_TEMP/binding-base"; fi
             (cd "$source_root" && CARGO_TARGET_DIR="$RUNNER_TEMP/binding-$role-target" VIZE_CONSTRUCTOR_PROJECTION_CAPTURE="$RUNNER_TEMP/binding-evidence/$role-constructor.json" cargo test --locked --profile ci-opt -p vize_canon --test constructor_emission_projection complete_constructor_projection_packets -- --exact --nocapture) > "$RUNNER_TEMP/binding-evidence/$role-constructor.stdout" 2> "$RUNNER_TEMP/binding-evidence/$role-constructor.stderr"
           done
-          cmp "$RUNNER_TEMP/binding-evidence/base-constructor.json" "$RUNNER_TEMP/binding-evidence/head-constructor.json"
+          node tools/benchmarks/scripts/setup-binding-constructor-evidence.ts "$RUNNER_TEMP/binding-evidence" "$RUNNER_TEMP/binding-base" "$GITHUB_WORKSPACE"
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         if: always()
         with:

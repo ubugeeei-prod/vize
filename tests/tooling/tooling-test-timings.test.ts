@@ -315,7 +315,15 @@ void test("all current descriptive matrix cohorts retain success, failed and can
       merge: { "tests/tooling/a.test.ts": 12, "tests/tooling/b.test.ts": 21 },
     },
   );
-  for (const shard of ["0/1", "2/1", "1/0", "01/2", "1/17", "1/2 extra", "1/9007199254740992"]) {
+  for (const shard of [
+    "0/1",
+    "2/1",
+    "1/0",
+    "01/2",
+    `1/${MAX_TOOLING_SHARDS + 1}`,
+    "1/2 extra",
+    "1/9007199254740992",
+  ]) {
     assert.throws(() => parseToolingTimingLog(raw(shard)), /invalid tooling timing shard/);
     assert.throws(
       () =>

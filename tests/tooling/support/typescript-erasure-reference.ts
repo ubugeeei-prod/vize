@@ -30,14 +30,21 @@ export function typescriptErasureReference<T extends ErasedPacket>(
   preserved: T,
   erased: ErasedPacket,
   parse: ParseModule,
+  assertComparableProgram?: (erasedProgram: unknown, preservedProgram: unknown) => void,
 ): T {
   const out = structuredClone(preserved);
   const parsed = parseModule(erased.code, parse);
-  assert.deepEqual(
-    comparable(parsed.program),
-    comparable(parseModule(preserved.code, parse).program),
-    "the erased module keeps the preserved program",
-  );
+  const erasedProgram = comparable(parsed.program);
+  const preservedProgram = comparable(parseModule(preserved.code, parse).program);
+  if (assertComparableProgram) {
+    assertComparableProgram(erasedProgram, preservedProgram);
+  } else {
+    assert.deepEqual(
+      erasedProgram,
+      preservedProgram,
+      "the erased module keeps the preserved program",
+    );
+  }
   out.code = erased.code;
   if (preserved.moduleShape) {
     out.moduleShape = completeModuleShape(

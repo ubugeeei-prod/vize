@@ -29,6 +29,10 @@ impl<'a> MacroTypeMappings<'a> {
         }
     }
 
+    pub(crate) fn script(&self) -> Option<&'a str> {
+        self.script
+    }
+
     pub(crate) fn map_exported_type(
         &mut self,
         ts: &str,
@@ -166,18 +170,40 @@ impl<'a> MacroTypeMappings<'a> {
             let Some(authored) = declarations.model_declaration(model.name.as_str()) else {
                 continue;
             };
-            let mut needle = crate::virtual_ts::TextBuf::from_text("  ");
-            push_ts_string_literal(&mut needle, model.name.as_str());
-            let Some(start) = generated.find(needle.as_str()) else {
+            let mut quoted = crate::virtual_ts::TextBuf::from_text("  ");
+            push_ts_string_literal(&mut quoted, model.name.as_str());
+            let quoted_start = generated.find(quoted.as_str());
+            let identifier =
+                oxc_syntax::identifier::is_identifier_name(model.name.as_str()).then(|| {
+                    let mut identifier = crate::virtual_ts::TextBuf::from_text("  ");
+                    identifier.push_str(model.name.as_str());
+                    identifier
+                });
+            let identifier_match = identifier.as_ref().and_then(|needle| {
+                generated
+                    .match_indices(needle.as_str())
+                    .find_map(|(start, _)| {
+                        matches!(
+                            generated.as_bytes().get(start + needle.len()),
+                            Some(b'?' | b':')
+                        )
+                        .then_some((start, needle.len() - 2))
+                    })
+            });
+            let Some((start, length)) = (match (quoted_start, identifier_match) {
+                (Some(quoted_start), Some((identifier_start, identifier_length)))
+                    if identifier_start < quoted_start =>
+                {
+                    Some((identifier_start, identifier_length))
+                }
+                (Some(quoted_start), _) => Some((quoted_start, quoted.len() - 2)),
+                (None, Some(identifier_match)) => Some(identifier_match),
+                (None, None) => None,
+            }) else {
                 continue;
             };
             let start = generated_start + start + 2;
-            self.map_model_symbol(
-                ts,
-                start..start + needle.len() - 2,
-                authored,
-                model.name.as_str(),
-            );
+            self.map_model_symbol(ts, start..start + length, authored, model.name.as_str());
         }
     }
 
@@ -193,15 +219,24 @@ impl<'a> MacroTypeMappings<'a> {
     ) {
         let source_name = self.authored_text(authored).and_then(quoted_content);
         let generated_name = ts.get(generated.clone()).and_then(quoted_content);
+        let generated_identifier = ts
+            .get(generated.clone())
+            .filter(|text| oxc_syntax::identifier::is_identifier_name(text));
         let verified = !name.is_empty()
             && source_name == Some(name)
-            && generated_name
-                .is_some_and(|text| text == name || text.strip_prefix("update:") == Some(name));
+            && (generated_identifier == Some(name)
+                || generated_name.is_some_and(|text| {
+                    text == name || text.strip_prefix("update:") == Some(name)
+                }));
         if !verified {
             self.map_whole_symbol(generated, authored);
             return;
         }
         let content = (authored.0 + 1, authored.1 - 1);
+        if generated_identifier == Some(name) {
+            self.map_exact(generated, content);
+            return;
+        }
         let inner = generated.start + 1..generated.end - 1;
         self.map_whole_symbol(generated, content);
         if inner.len() != name.len() {

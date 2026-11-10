@@ -1,3 +1,4 @@
+use oxc_syntax::identifier::is_identifier_name;
 use vize_carton::{FxHashSet, String, append, cstr};
 use vize_croquis::{
     Croquis,
@@ -13,10 +14,36 @@ use crate::virtual_ts::generic_parameters::GenericParameters;
 
 use super::template_model_modifiers::{model_modifier_prop_name, model_modifier_type};
 
-fn emit_type_member(ts: &mut crate::virtual_ts::TextBuf, name: &str, optional: &str, ty: &str) {
+fn emit_type_member(
+    ts: &mut crate::virtual_ts::TextBuf,
+    name: &str,
+    optional: &str,
+    ty: &str,
+    prefer_identifier: bool,
+) {
     ts.push_str("  ");
-    push_ts_string_literal(ts, name);
+    if prefer_identifier && is_identifier_name(name) {
+        ts.push_str(name);
+    } else {
+        push_ts_string_literal(ts, name);
+    }
     append!(*ts, "{optional}: {ty};\n");
+}
+
+fn emit_model_doc(
+    ts: &mut crate::virtual_ts::TextBuf,
+    summary: &Croquis,
+    script: Option<&str>,
+    model: &ModelDefinition,
+) {
+    let Some(doc) = script.and_then(|script| {
+        super::runtime_docs::model_doc(script, &summary.macros, model.name.as_str())
+    }) else {
+        return;
+    };
+    ts.push_str("  ");
+    ts.push_str(doc);
+    ts.push('\n');
 }
 
 /// Vue publishes a runtime prop that carries a `default` (even `undefined`) as
@@ -46,6 +73,7 @@ fn parent_requires_prop(prop: &PropDefinition) -> bool {
 fn emit_model_prop_members(
     ts: &mut crate::virtual_ts::TextBuf,
     summary: &Croquis,
+    script: Option<&str>,
     model: &ModelDefinition,
     generic_parameters: Option<&GenericParameters>,
     emitted_names: &mut FxHashSet<String>,
@@ -54,7 +82,8 @@ fn emit_model_prop_members(
     let name = model.name.as_str();
     let prop_type = model_value_type(generic_parameters, model);
     if emitted_names.insert(name.into()) {
-        emit_type_member(ts, name, optional, prop_type.as_str());
+        emit_model_doc(ts, summary, script, model);
+        emit_type_member(ts, name, optional, prop_type.as_str(), false);
     }
 
     let modifiers_name = model_modifier_prop_name(name);
@@ -66,7 +95,13 @@ fn emit_model_prop_members(
             lib("Partial"),
             lib("Record")
         );
-        emit_type_member(ts, modifiers_name.as_str(), "?", modifier_type.as_str());
+        emit_type_member(
+            ts,
+            modifiers_name.as_str(),
+            "?",
+            modifier_type.as_str(),
+            false,
+        );
     }
 }
 
@@ -93,6 +128,7 @@ pub(crate) fn emitted_model_prop_names(
 pub(super) fn append_model_props_type_literal(
     ts: &mut crate::virtual_ts::TextBuf,
     summary: &Croquis,
+    script: Option<&str>,
     models: &[ModelDefinition],
     generic_parameters: Option<&GenericParameters>,
 ) {
@@ -105,6 +141,7 @@ pub(super) fn append_model_props_type_literal(
                     emit_model_prop_members(
                         __ts,
                         summary,
+                        script,
                         model,
                         generic_parameters,
                         &mut emitted_names,
@@ -118,8 +155,10 @@ pub(super) fn append_model_props_type_literal(
 pub(super) fn append_macro_props_type_literal(
     ts: &mut crate::virtual_ts::TextBuf,
     summary: &Croquis,
+    script: Option<&str>,
     models: &[ModelDefinition],
     generic_parameters: Option<&GenericParameters>,
+    prefer_identifier_props: bool,
 ) {
     ts! { &mut *ts =>
         {
@@ -136,21 +175,29 @@ pub(super) fn append_macro_props_type_literal(
                 for prop in summary.macros.props() {
                     let prop_type = prop.prop_type.as_deref().unwrap_or("unknown");
                     let optional = if parent_requires_prop(prop) { "" } else { "?" };
-                    if let Some((_, doc)) = docs
+                    let doc = docs
                         .iter()
                         .find(|(key, _)| super::runtime_docs::names_prop(key, &prop.name))
-                    {
+                        .map(|(_, doc)| *doc);
+                    if let Some(doc) = doc {
                         __ts.push_str("  ");
                         __ts.push_str(doc);
                         __ts.push('\n');
                     }
-                    emit_type_member(__ts, prop.name.as_str(), optional, prop_type);
+                    emit_type_member(
+                        __ts,
+                        prop.name.as_str(),
+                        optional,
+                        prop_type,
+                        prefer_identifier_props && doc.is_some(),
+                    );
                     emitted_names.insert(prop.name.as_str().into());
                 }
                 for model in models {
                     emit_model_prop_members(
                         __ts,
                         summary,
+                        script,
                         model,
                         generic_parameters,
                         &mut emitted_names,

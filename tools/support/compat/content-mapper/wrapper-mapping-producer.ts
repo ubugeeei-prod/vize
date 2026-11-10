@@ -7,7 +7,7 @@ export function assertWrapperMappingProducer(producer: Uint8Array): void {
   const digest = (bytes: string | Uint8Array) => createHash("sha256").update(bytes).digest("hex");
   assert.equal(
     digest(producer),
-    "b8fc36d05f94fada235e03f97b3db407fd406bb7698b2c547eeac4e899802628",
+    "a2e22c9ee38c9eb77150b805e8e5e09f086f05041940eaaaf0dfea51e1aec6a9",
     "unqualified #11675 wrapper mapping producer",
   );
   let historical = Buffer.from(producer).toString("utf8");
@@ -17,10 +17,15 @@ export function assertWrapperMappingProducer(producer: Uint8Array): void {
   }
   assert.equal(
     digest(historical),
-    "9c3faec15ca7c73c4a8a3f0fd1fcae7bb6f9d70c8e71a7046994d373e8b4e038",
+    "271dfc983bf196cd118b521e7ac401824b19c423d2cacfa32dcfec29bdec922b",
     "certified check-mode wrapper successor",
   );
   for (const [successor, expected, message] of [
+    [
+      "    span_features::retain_component_prop_hover_owner(generated, &mut spans);\n",
+      "9c3faec15ca7c73c4a8a3f0fd1fcae7bb6f9d70c8e71a7046994d373e8b4e038",
+      "certified component-hover owner wrapper successor",
+    ],
     [
       "    span_features::retain_template_hover_owner(generated, &mut spans);\n",
       "6a060e4d0c5d16cd3071f76ca35558abcecde9fcd5458346d54287eacdef03fd",

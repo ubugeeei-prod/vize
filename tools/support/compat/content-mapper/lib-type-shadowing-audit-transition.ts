@@ -2,7 +2,7 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
-import { beforeCheckModeGenerator } from "./check-mode-successor.ts";
+import { beforeComponentHoverGaps } from "./component-hover-gaps-transition.ts";
 
 export const libTypeShadowingAuditRecord =
   "tests/_fixtures/tooling/lib-type-shadowing-audit-12536.json";
@@ -42,7 +42,7 @@ function load(): Transition {
 
 /** The exact pre-audit bytes of a recorded producer; older images pass through. */
 export function beforeLibTypeShadowingAudit(path: string, current: string): string {
-  current = beforeCheckModeGenerator(path, current);
+  current = beforeComponentHoverGaps(path, current);
   const file = load().files.find((entry) => entry.path === path);
   if (!file || identity(current).sha256 !== file.after.sha256) return current;
   assert.equal(Buffer.byteLength(current), file.after.bytes, `lib type audit producer: ${path}`);

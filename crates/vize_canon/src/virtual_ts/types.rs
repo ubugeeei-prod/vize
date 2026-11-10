@@ -329,6 +329,12 @@ impl VirtualTsGenerationOptions<'_> {
             (true, false) => AuthoredDefaultKind::Component,
         }
     }
+
+    /// Editor and content-mapper projections may spell the public component
+    /// surface for hover (#12461); batch checks keep the authored component.
+    pub(crate) fn projects_editor_component(self) -> bool {
+        self.component_name.is_some() || !self.preserve_authored_component
+    }
 }
 
 #[derive(Clone, Copy, PartialEq, Eq)]

@@ -221,7 +221,7 @@ const isRootSelected = ref(false)
     let setup = crate::compile::setup_facts::SetupAnalysis::new(
         &arena,
         script_setup.content.as_ref(),
-        &descriptor,
+        (&descriptor, &crate::TemplateCompileOptions::default()),
     )
     .unwrap();
     let (binding_metadata, script_tables) = setup.tables().unwrap();

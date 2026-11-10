@@ -223,6 +223,36 @@ pub(super) fn retain_template_hover_owner(generated: &str, spans: &mut [ContentM
     }
 }
 
+/// Keep the declared-prop navigation reference as the only hover owner for a
+/// component attribute.
+///
+/// The props-check literal maps its key to the same authored attribute so its
+/// diagnostics stay precise. Letting that key answer hover as well produces a
+/// second, contextualized card beside the child's declared member (notably for
+/// interface-based props). Navigation, rename and diagnostic features remain
+/// on their existing spans; only the duplicate hover bit is removed.
+pub(super) fn retain_component_prop_hover_owner(generated: &str, spans: &mut [ContentMapperSpan]) {
+    let hover = ContentMapperSpanFeature::Hover as usize;
+    let mut owners = FxHashMap::default();
+    for span in spans.iter().filter(|span| {
+        span.0[5] & hover != 0 && is_component_prop_navigation_projection(generated, span.0[0])
+    }) {
+        owners.entry((span.0[2], span.0[3])).or_insert(span.0[0]);
+    }
+    for span in spans {
+        if let Some(owner) = owners.get(&(span.0[2], span.0[3]))
+            && span.0[0] != *owner
+        {
+            span.0[5] &= !hover;
+        }
+    }
+}
+
+fn is_component_prop_navigation_projection(generated: &str, start: usize) -> bool {
+    line_prefix(generated, start)
+        .is_some_and(|prefix| prefix.trim_start().starts_with("void __vize_props_nav_"))
+}
+
 fn is_template_hover_projection(generated: &str, start: usize) -> bool {
     projection_prefix(generated, start).is_some_and(|prefix| {
         prefix.trim_start() == crate::virtual_ts::generated_names::TEMPLATE_HOVER_PREFIX

@@ -81,6 +81,7 @@ pub(super) fn generate_setup_props(
     options_api_props: Option<&OptionsApiPropsSource>,
     type_only_imported_names: &FxHashSet<CompactString>,
     props_is_public_export: bool,
+    prefer_identifier_props: bool,
 ) -> SetupPropsPlan {
     let summary = source.summary;
     let plan = SetupPropsPlan::new(
@@ -89,12 +90,14 @@ pub(super) fn generate_setup_props(
         type_only_imported_names,
         props_is_public_export,
         generic_param,
+        prefer_identifier_props,
     );
     let generated_start = ts.len();
     profile!("canon.virtual_ts.generate_props_type", {
         plan.generate_props_type(
             ts,
             summary,
+            source.script,
             generic_param,
             options_api_props,
             type_only_imported_names,
@@ -121,6 +124,7 @@ pub(super) struct SetupPropsPlan {
     has_inferred_model_defaults: bool,
     generic_fallback: String,
     props_type_ref: String,
+    prefer_identifier_props: bool,
 }
 
 impl SetupPropsPlan {
@@ -130,6 +134,7 @@ impl SetupPropsPlan {
         type_only_imported_names: &FxHashSet<CompactString>,
         props_is_public_export: bool,
         generic_parameters: Option<&GenericParameters>,
+        prefer_identifier_props: bool,
     ) -> Self {
         // A `Props` declaration only lands at module scope when it is hoisted
         // (emitted directly at module level) or when it is a value-dependent
@@ -180,14 +185,15 @@ impl SetupPropsPlan {
             capture_options_api_default: options_api_props
                 .is_some_and(OptionsApiPropsSource::captures_default),
             module_scope_declares_props,
+            prefer_identifier_props,
         }
     }
 
     pub(super) fn props_type_emission(&self) -> PropsTypeEmission {
         if self.defer {
-            PropsTypeEmission::DeferredToSetup
+            PropsTypeEmission::deferred_to_setup(self.prefer_identifier_props)
         } else {
-            PropsTypeEmission::Module
+            PropsTypeEmission::module(self.prefer_identifier_props)
         }
     }
 
@@ -195,6 +201,7 @@ impl SetupPropsPlan {
         &self,
         ts: &mut crate::virtual_ts::TextBuf,
         summary: &Croquis,
+        script: Option<&str>,
         generic_param: Option<&GenericParameters>,
         options_api_props: Option<&OptionsApiPropsSource>,
         type_only_imported_names: &FxHashSet<CompactString>,
@@ -202,6 +209,7 @@ impl SetupPropsPlan {
         generate_props_type(
             ts,
             summary,
+            script,
             generic_param,
             options_api_props,
             type_only_imported_names,
@@ -317,7 +325,12 @@ impl SetupPropsPlan {
         );
         if self.defer {
             let generated_start = ts.len();
-            generate_setup_scoped_props_artifact(ts, source.summary, generic_parameters);
+            generate_setup_scoped_props_artifact(
+                ts,
+                source.summary,
+                source.script,
+                generic_parameters,
+            );
             MacroTypeMappings::new(source.mappings, source.script, source.offset).map_model_props(
                 ts,
                 generated_start,

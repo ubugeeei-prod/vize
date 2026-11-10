@@ -102,7 +102,6 @@ fn sfc(script: &str, template: &str) -> String {
 #[test]
 fn compiler_helper_names_in_non_reference_positions_do_not_keep_imports() {
     const PLAIN: &str = "import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"";
-    const UNREF: &str = "import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock, unref as _unref } from \"vue\"";
     for (script, imports) in [
         (
             "const label = '_createCommentVNode'; const show = true",
@@ -118,7 +117,7 @@ fn compiler_helper_names_in_non_reference_positions_do_not_keep_imports() {
         ),
         (
             "const label = /_createCommentVNode/; const show = true",
-            UNREF,
+            PLAIN,
         ),
         (
             "const label = `_createCommentVNode`; const show = true",

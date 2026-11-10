@@ -3,12 +3,12 @@ use super::support;
 
 const PATH: &str = "crates/vize_canon/src/virtual_ts/generator.rs";
 const AFTER: (usize, &str) = (
-    37608,
-    "72cf3f5f3bb32701820466a39ed5ef4e46516c6872109d806a2aa9e23a8a41aa",
+    37789,
+    "3eb5b8a7c0e30e866a9cafe482955945f50bc35b9ac33396f52d3b97ce33acdf",
 );
 const BEFORE: (usize, &str) = (
-    37518,
-    "3c66ad8205f3239d33e02db8afb792a1d6c194f9956d8b6cb92812787c08b0d6",
+    37699,
+    "31ffef289d05da9ba517f41367ff6d21e46ef76e40b09a26a4389ceb7bdd6655",
 );
 /// Each successor beside its predecessor. The blank line keeps the generator
 /// within its source length budget after the new scope option.

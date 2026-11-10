@@ -15,6 +15,8 @@ use super::{
 };
 use crate::batch::{ContentMapperSpan, ContentMapperTransform};
 
+mod component_hover;
+
 /// #10920: `:aria-labelledby` / `:error-message` map the camelized binding onto
 /// the whole attribute. An alias would name the attribute, and a prefix range
 /// drops the instance read into unmapped virtual code.

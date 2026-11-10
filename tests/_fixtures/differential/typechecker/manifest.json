@@ -13130,6 +13130,60 @@
       }
     },
     {
+      "id": "typechecker/regression/component-hover-gaps-12461",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "component-hover-gaps-12461/InterfaceChild.vue.txt",
+          "sha256": "1c702549b2e8dfbc9da400122d2ad9b536820aa76da8e4605bc820fba531b024",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "component-hover-gaps-12461/OptionsChild.vue.txt",
+          "sha256": "264add2b58904788acd31d2b71582eb8aaed2c363289ab40d6c7170a4f366442",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "component-hover-gaps-12461/Parent.vue.txt",
+          "sha256": "3936f5d7d65a65e905d531ecd53cbd8c81aa5f119985cb7b3eba6c47e66d5bfb",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "component-hover-gaps-12461/RuntimeChild.vue.txt",
+          "sha256": "da69f4dffa6c74641eb40ff12bcf7751b81aa1c26612d98da6a44ad6f838234e",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "component-hover-gaps-12461/tsconfig.json.txt",
+          "sha256": "31e626f6b9d10476ab65fac6f0a58b03ba87e1deeda390b884841b11e398bfda",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "component-hover-gaps-12461/types.ts.txt",
+          "sha256": "fbb7508feb4581576a5412895319d359aadba0bb13bcf87ce0b6bc230a021e5b",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "lsp_component_api_hover_cli::component_api_hovers_show_declared_types_and_jsdoc; pins the interface prop owner, defineModel JSDoc, runtime prop spelling, and Options API event and SlotsType sources changed by #12461. Input-only batch registration for shared Canon generation; hover behavior remains asserted by the LSP oracle."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/regression/component-listener-branch-narrowing-11730",
       "state": "active",
       "targets": [

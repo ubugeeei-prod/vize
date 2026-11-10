@@ -35,7 +35,11 @@ function fixture(root: string) {
               count,
               mode,
               source: `${shape} ${count} 日本 🧭`,
-              packet: { text: "whole packet", mappings: [[0, 1, 0, 1]], diagnostics: [] },
+              packet: {
+                text: "whole packet",
+                mappings: [[0, 1, 0, 1, 0, 1_048_575]],
+                diagnostics: [],
+              },
               pinnedInput: { path: "/same-physical-input/Imports.vue.txt", source: pinnedSource },
               documents: [0, 1, 2, 3].map((index) => ({
                 kind: index < 2 ? "measured" : "pinned",

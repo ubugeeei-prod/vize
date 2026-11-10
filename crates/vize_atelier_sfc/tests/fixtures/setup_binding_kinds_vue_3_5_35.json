@@ -1,0 +1,60 @@
+{
+  "schema": "vize.sfc.setup-binding-kinds-reference.v1",
+  "reference": {
+    "package": "@vue/compiler-sfc",
+    "version": "3.5.35",
+    "api": "compileScript"
+  },
+  "fixtures": [
+    {
+      "id": "vue-walk-declaration-rules",
+      "source": "<script setup lang=\"ts\">\nimport { ref as r, reactive, readonly, shallowReadonly, toRefs, shallowReactive } from \"vue\"\nimport { external } from \"./external\"\nimport store from \"./store\"\nimport Child from \"./Child.vue\"\nconst importedRef = r(0)\nconst unimportedRef = ref(0)\nlet mutableReactive = reactive({})\nconst readonlyValue = readonly({})\nconst shallowReadonlyValue = shallowReadonly({})\nconst refs = toRefs({})\nconst shallow = shallowReactive({})\nconst n = 1 + 2\nconst object = {}\ndeclare const ambient: string\nconst { prop } = defineProps<{ prop: string }>() as any\n</script>\n<template>{{ importedRef }}{{ unimportedRef }}{{ mutableReactive }}{{ prop }}</template>",
+      "referenceBindings": {
+        "r": "setup-const",
+        "reactive": "setup-const",
+        "readonly": "setup-const",
+        "shallowReadonly": "setup-const",
+        "toRefs": "setup-const",
+        "shallowReactive": "setup-const",
+        "external": "setup-maybe-ref",
+        "store": "setup-maybe-ref",
+        "Child": "setup-const",
+        "importedRef": "setup-ref",
+        "unimportedRef": "setup-maybe-ref",
+        "mutableReactive": "setup-let",
+        "readonlyValue": "setup-maybe-ref",
+        "shallowReadonlyValue": "setup-maybe-ref",
+        "refs": "setup-maybe-ref",
+        "shallow": "setup-maybe-ref",
+        "n": "literal-const",
+        "object": "setup-const",
+        "prop": "props"
+      }
+    },
+    {
+      "id": "explicitly-disabled-setup-hoisting",
+      "hoistStatic": false,
+      "source": "<script setup>\nconst n = 1 + 2\nconst text = `plain`\n</script>\n<template>{{ n }}{{ text }}</template>",
+      "referenceBindings": {
+        "n": "setup-const",
+        "text": "setup-const"
+      }
+    },
+    {
+      "id": "normal-script-disables-setup-hoisting",
+      "source": "<script>export const moduleValue = 1</script>\n<script setup>\nconst n = 1 + 2\nconst text = `plain`\n</script>\n<template>{{ n }}{{ text }}</template>",
+      "referenceBindings": {
+        "moduleValue": "literal-const",
+        "n": "setup-const",
+        "text": "setup-const"
+      }
+    },
+    {
+      "id": "nuxt-auto-imported-ref-is-not-assumed",
+      "source": "<script setup>\nconst count = ref(0)\n</script>\n<template>{{ count }}</template>",
+      "referenceBindings": {
+        "count": "setup-maybe-ref"
+      }
+    }
+  ]
+}

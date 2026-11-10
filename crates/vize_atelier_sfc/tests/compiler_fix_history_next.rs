@@ -163,6 +163,8 @@ fn dynamic_loop_ref_keeps_complete_separate_template_result() {
         "  setup(__props) {\n",
         "  setup(__props, { expose: __expose }) {\n    __expose();\n",
     );
+    let expected = support::vue_binding_kinds::advance(expected, &["ref"])
+        .expect("advance archived Vue import bindings");
     let actual = serde_json::to_value(actual).expect("serialize complete public Result");
     let expected = support::typescript_erasure::advance(expected, &actual);
     assert_eq!(
@@ -187,6 +189,8 @@ fn computed_component_unref_keeps_complete_result() {
     let (expected, observed) =
         parse_archive(UNREF_EXPECTED, UNREF_OBSERVED).expect("valid immutable archive");
     assert_eq!(observed.get("result"), Some(&expected));
+    let expected = support::vue_binding_kinds::advance(expected, &["computed", "h", "ref"])
+        .expect("advance archived Vue import bindings");
     assert_eq!(
         serde_json::to_value(compile_sfc(&descriptor, options))
             .expect("serialize complete public Result"),
@@ -211,6 +215,8 @@ fn custom_directive_children_keep_complete_patch_result() {
     let (expected, observed) =
         parse_archive(DIRECTIVE_EXPECTED, DIRECTIVE_OBSERVED).expect("valid immutable archive");
     assert_eq!(observed.get("result"), Some(&expected));
+    let expected = support::vue_binding_kinds::advance(expected, &["ref"])
+        .expect("advance archived Vue import bindings");
     assert_eq!(
         serde_json::to_value(compile_sfc(&descriptor, options))
             .expect("serialize complete public Result"),
