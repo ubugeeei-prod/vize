@@ -57,6 +57,7 @@ pub(super) fn source_before(path: &str, current: String) -> String {
 
 /// A compiled preamble without the shared unwrap aliases.
 pub(super) fn preamble_before(current: &str) -> String {
+    let current = &super::usage_contract::preamble_before(current);
     let record = record();
     match ["compiledPreamble", "compiledStrictPreamble"]
         .into_iter()
@@ -77,7 +78,7 @@ mod tests {
         let record = record();
         for file in record["files"].as_array().unwrap() {
             let path = file["path"].as_str().unwrap();
-            let current = fs::read_to_string(support::repository().join(path)).unwrap();
+            let current = super::super::usage_contract::read_current(path);
             assert!(is_after(&current, file), "{path}");
             let previous = source_before(path, current.clone());
             assert_eq!(support::hash(previous.as_bytes()), file["before"]["sha256"]);
@@ -102,6 +103,7 @@ mod tests {
             ),
         ] {
             let preamble = &record[key];
+            let current = &super::super::usage_contract::preamble_before(current);
             assert!(is_after(current, preamble));
             let previous = preamble_before(current);
             assert_eq!(

@@ -6,10 +6,13 @@ import {
   navigationBlock,
   lazyPropValue,
   requiredFallthroughGate,
+  usageCheckProps,
+  usageProps,
   withLandedEdits,
 } from "../../tools/support/compat/content-mapper/callback-owner-landed-contracts.ts";
 import { beforeInstanceInputKeys } from "../../tools/support/compat/content-mapper/instance-input-keys-transition.ts";
 import { beforeUnownedOwnedKeys } from "../../tools/support/compat/content-mapper/unowned-owned-keys-transition.ts";
+import { usageContractDeclarations } from "../../tools/support/compat/content-mapper/usage-contract-transition.ts";
 
 type Edit = { start: number; end: number; replacement: Buffer };
 const VT = 'import("vize/virtual-ts").';
@@ -171,4 +174,45 @@ test("verbatim setup lines (#12481) land as two-byte deletions inside the setup 
   // The map comment's own end moves with them; the packet audit relocates it.
   assert.equal(apply(before, edits), `${head}const a = 1;\n\na;\n${map(62)}`);
   assert.deepEqual(withLandedEdits(after, after, []), []);
+});
+
+test("per-usage contract aliases move onto the usage contract around the component reference", () => {
+  for (const vt of ["", 'import("vize/virtual-ts").', 'import("vize:virtual-ts").']) {
+    const isAny = vt ? `${vt}IsAny` : "$IsAny";
+    const props = `  type __Child_Props_0 = typeof Child extends { __vizeCheck: infer __F } ? (${isAny}<__F> extends true ? ${vt}$ComponentRawProps<typeof Child> : Record<string, unknown>) : ${vt}$ComponentRawProps<typeof Child>;\n`;
+    const check = `  type __Child_CheckProps_0 = __Child_Props_0 & ${vt}$EmitListeners<__Child_Component_0> & (${vt}$FallthroughProps<__Child_Component_0> extends infer __F ? [__F extends unknown ? {} extends __F ? never : __F : never] extends [never] ? ${vt}$RequiredFallthroughProps<__Child_Component_0, __F, never> : ${vt}$RequiredFallthroughProps<__Child_Component_0, __F> : never);\n`;
+    const before = `x\n${props}  type __Child_Component_0 = typeof Child;\n${check}y\n`;
+    const after = `x\n${usageProps("  type __Child_Props_0 = ", vt, "Child")}\n  type __Child_Component_0 = typeof Child;\n${usageCheckProps("  type __Child_CheckProps_0 = __Child_Props_0 & ", vt, "__Child_Component_0")}\ny\n`;
+    assert.ok(after.includes(`${vt}$UsageProps<typeof Child>;`));
+    const edits = withLandedEdits(before, after, []);
+    assert.equal(apply(before, edits), after, vt);
+    // The kept `typeof Child` is not touched by any edit.
+    const kept = Buffer.byteLength(before.slice(0, before.lastIndexOf("typeof Child>;")));
+    assert.ok(!edits.some((edit) => edit.start < kept + 12 && kept < edit.end), vt);
+    assert.deepEqual(withLandedEdits(before, before, []), []);
+    // Another component in the head packet certifies nothing.
+    assert.deepEqual(
+      withLandedEdits(
+        before,
+        after.replaceAll("Child>", "Other>").replaceAll("Component_0>", "Component_9>"),
+        [],
+      ),
+      [],
+    );
+  }
+});
+
+test("a non-hoisted helper block gains the usage contract right after `$PropValueOr`", () => {
+  const pvo =
+    "  type $PropValueOr<P, K extends PropertyKey, C, FK extends PropertyKey = K, __V = P extends unknown ? (K extends keyof P ? P[K] : never) : never> = [__V] extends [never] ? $FallthroughValue<C, FK> : __V;\n";
+  const added = usageContractDeclarations()
+    .map((line) => `  ${line}\n`)
+    .join("");
+  assert.equal(usageContractDeclarations().length, 2);
+  const before = `x\n${pvo}  type $CallableProp<T> = T;\ny\n`;
+  const after = `x\n${pvo}${added}  type $CallableProp<T> = T;\ny\n`;
+  assert.equal(apply(before, withLandedEdits(before, after, [])), after);
+  assert.deepEqual(withLandedEdits(after, after, []), []);
+  const altered = after.replace("[C] extends", "C extends");
+  assert.notEqual(apply(before, withLandedEdits(before, altered, [])), altered);
 });

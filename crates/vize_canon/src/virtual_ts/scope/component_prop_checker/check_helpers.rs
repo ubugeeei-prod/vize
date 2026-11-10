@@ -249,6 +249,15 @@ pub(in crate::virtual_ts::scope) fn append_prop_check_helpers(
     ts.push_str(
         "  type $PropValueOr<P, K extends PropertyKey, C, FK extends PropertyKey = K, __V = P extends unknown ? (K extends keyof P ? P[K] : never) : never> = [__V] extends [never] ? $FallthroughValue<C, FK> : __V;\n",
     );
+    // A usage's props and the listener and required-fallthrough members it
+    // checks depend only on its component type, so TypeScript instantiates
+    // them once per component rather than per usage.
+    ts.push_str(
+        "  type $UsageProps<C> = 0 extends (1 & C) ? $ComponentRawProps<C> : [C] extends [{ __vizeCheck: infer __F }] ? ($IsAny<__F> extends true ? $ComponentRawProps<C> : Record<string, unknown>) : $ComponentRawProps<C>;\n",
+    );
+    ts.push_str(
+        "  type $UsageCheckExtras<C> = $EmitListeners<C> & ($FallthroughProps<C> extends infer __F ? [__F extends unknown ? {} extends __F ? never : __F : never] extends [never] ? $RequiredFallthroughProps<C, __F, never> : $RequiredFallthroughProps<C, __F> : never);\n",
+    );
     if typed_fallthrough_values
         && usages
             .iter()

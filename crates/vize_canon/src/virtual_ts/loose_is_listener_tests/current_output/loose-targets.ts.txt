@@ -353,6 +353,8 @@ const take = (value: unknown) => value
   type $PropChecker<C, P, T = $ComponentCheckTail<C>> = $IsAny<C> extends true ? (props: { readonly [K in keyof P]: P[K] } & Record<string, unknown>) => void : C extends { __vizeCheck: infer __F } ? $IsAny<__F> extends true ? (props: $ComponentCheckProps<P, T>) => void : unknown extends __F ? (props: $ComponentCheckProps<P, T>) => void : __F extends (...args: any[]) => any ? __F : (props: $ComponentCheckProps<P, T>) => void : $IsLibraryGenericExport<C> extends true ? C : (props: $ComponentCheckProps<P, T>) => void;
   type $PropValue<P, K extends PropertyKey, F = unknown, __V = P extends unknown ? (K extends keyof P ? P[K] : never) : never> = [__V] extends [never] ? F : __V;
   type $PropValueOr<P, K extends PropertyKey, C, FK extends PropertyKey = K, __V = P extends unknown ? (K extends keyof P ? P[K] : never) : never> = [__V] extends [never] ? $FallthroughValue<C, FK> : __V;
+  type $UsageProps<C> = 0 extends (1 & C) ? $ComponentRawProps<C> : [C] extends [{ __vizeCheck: infer __F }] ? ($IsAny<__F> extends true ? $ComponentRawProps<C> : Record<string, unknown>) : $ComponentRawProps<C>;
+  type $UsageCheckExtras<C> = $EmitListeners<C> & ($FallthroughProps<C> extends infer __F ? [__F extends unknown ? {} extends __F ? never : __F : never] extends [never] ? $RequiredFallthroughProps<C, __F, never> : $RequiredFallthroughProps<C, __F> : never);
   type $StructuralSlots<C> = C extends { readonly __vizeSlots?: infer __S } ? NonNullable<__S> : any;
   type $EmptyVueNavigationSlots<C> = ('__isFragment' | '__isTeleport' | '__isSuspense' | 'slots') extends keyof C ? $IsAny<C[Extract<'__isFragment' | '__isTeleport' | '__isSuspense', keyof C>]> extends true ? any : [NonNullable<C[Extract<'__isFragment' | '__isTeleport' | '__isSuspense', keyof C>]>] extends [never] ? C extends { slots?: infer __S } ? $IsAny<__S> extends true ? any : unknown extends __S ? any : [keyof NonNullable<__S>] extends [never] ? C extends { setup?: (props: infer __P, ...args: any[]) => any } ? string extends keyof __P ? any : {} : {} : any : any : any : any;
   type $NativeNavigationSlots<C> = C extends new (...args: any[]) => { $slots: any } ? $IsAny<InstanceType<C>> extends true ? $EmptyVueNavigationSlots<C> : $IsAny<InstanceType<C>['$slots']> extends true ? any : unknown extends InstanceType<C>['$slots'] ? any : InstanceType<C>['$slots'] : any;
@@ -361,27 +363,27 @@ const take = (value: unknown) => value
   type $MissingRequiredSlots<__S, __P> = Exclude<$RequiredSlotKeys<__S>, keyof __P>;
   type $RequiredSlots<__S, __P> = $IsAny<__S> extends true ? {} : string extends keyof __S ? {} : [keyof __S] extends [never] ? {} : [$MissingRequiredSlots<__S, __P>] extends [never] ? {} : { readonly __vizeMissingSlots: $MissingRequiredSlots<__S, __P> };
   // @vize-map: component -> 0:47
-  type __target_Props_0 = typeof target extends { __vizeCheck: infer __F } ? ($IsAny<__F> extends true ? $ComponentRawProps<typeof target> : Record<string, unknown>) : $ComponentRawProps<typeof target>;
+  type __target_Props_0 = $UsageProps<typeof target>;
   type __target_Component_0 = typeof target;
-  type __target_CheckProps_0 = __target_Props_0 & $EmitListeners<__target_Component_0> & ($FallthroughProps<__target_Component_0> extends infer __F ? [__F extends unknown ? {} extends __F ? never : __F : never] extends [never] ? $RequiredFallthroughProps<__target_Component_0, __F, never> : $RequiredFallthroughProps<__target_Component_0, __F> : never);
+  type __target_CheckProps_0 = __target_Props_0 & $UsageCheckExtras<__target_Component_0>;
   type __target_CheckTail_0 = $ComponentCheckTail<__target_Component_0>;
   type __target_Check_0 = $PropChecker<__target_Component_0, __target_CheckProps_0, __target_CheckTail_0>;
   // @vize-map: component -> 59:104
-  type __node_Props_1 = typeof node extends { __vizeCheck: infer __F } ? ($IsAny<__F> extends true ? $ComponentRawProps<typeof node> : Record<string, unknown>) : $ComponentRawProps<typeof node>;
+  type __node_Props_1 = $UsageProps<typeof node>;
   type __node_Component_1 = typeof node;
-  type __node_CheckProps_1 = __node_Props_1 & $EmitListeners<__node_Component_1> & ($FallthroughProps<__node_Component_1> extends infer __F ? [__F extends unknown ? {} extends __F ? never : __F : never] extends [never] ? $RequiredFallthroughProps<__node_Component_1, __F, never> : $RequiredFallthroughProps<__node_Component_1, __F> : never);
+  type __node_CheckProps_1 = __node_Props_1 & $UsageCheckExtras<__node_Component_1>;
   type __node_CheckTail_1 = $ComponentCheckTail<__node_Component_1>;
   type __node_Check_1 = $PropChecker<__node_Component_1, __node_CheckProps_1, __node_CheckTail_1>;
   // @vize-map: component -> 116:162
-  type __loose_Props_2 = typeof loose extends { __vizeCheck: infer __F } ? ($IsAny<__F> extends true ? $ComponentRawProps<typeof loose> : Record<string, unknown>) : $ComponentRawProps<typeof loose>;
+  type __loose_Props_2 = $UsageProps<typeof loose>;
   type __loose_Component_2 = typeof loose;
-  type __loose_CheckProps_2 = __loose_Props_2 & $EmitListeners<__loose_Component_2> & ($FallthroughProps<__loose_Component_2> extends infer __F ? [__F extends unknown ? {} extends __F ? never : __F : never] extends [never] ? $RequiredFallthroughProps<__loose_Component_2, __F, never> : $RequiredFallthroughProps<__loose_Component_2, __F> : never);
+  type __loose_CheckProps_2 = __loose_Props_2 & $UsageCheckExtras<__loose_Component_2>;
   type __loose_CheckTail_2 = $ComponentCheckTail<__loose_Component_2>;
   type __loose_Check_2 = $PropChecker<__loose_Component_2, __loose_CheckProps_2, __loose_CheckTail_2>;
   // @vize-map: component -> 174:218
-  type __tag_Props_3 = typeof tag extends { __vizeCheck: infer __F } ? ($IsAny<__F> extends true ? $ComponentRawProps<typeof tag> : Record<string, unknown>) : $ComponentRawProps<typeof tag>;
+  type __tag_Props_3 = $UsageProps<typeof tag>;
   type __tag_Component_3 = typeof tag;
-  type __tag_CheckProps_3 = __tag_Props_3 & $EmitListeners<__tag_Component_3> & ($FallthroughProps<__tag_Component_3> extends infer __F ? [__F extends unknown ? {} extends __F ? never : __F : never] extends [never] ? $RequiredFallthroughProps<__tag_Component_3, __F, never> : $RequiredFallthroughProps<__tag_Component_3, __F> : never);
+  type __tag_CheckProps_3 = __tag_Props_3 & $UsageCheckExtras<__tag_Component_3>;
   type __tag_CheckTail_3 = $ComponentCheckTail<__tag_Component_3>;
   type __tag_Check_3 = $PropChecker<__tag_Component_3, __tag_CheckProps_3, __tag_CheckTail_3>;
   // @vize-map: component -> 230:277

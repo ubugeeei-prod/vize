@@ -55,6 +55,10 @@ import {
   applySharedTemplateRefUnwrapIn,
   beforeSharedTemplateRefUnwrapIn,
 } from "../../tools/support/compat/content-mapper/shared-template-ref-unwrap-transition.ts";
+import {
+  applyUsageContractIn,
+  beforeUsageContractIn,
+} from "../../tools/support/compat/content-mapper/usage-contract-transition.ts";
 
 test("quiet CLI debug output retains exact helper/file bytes and refuses unrelated stderr", () => {
   const record = JSON.parse(
@@ -182,8 +186,11 @@ test("quiet CLI debug output retains exact helper/file bytes and refuses unrelat
   assert.equal(beforePropValueOrIn(propValueOrSourcePreamble), ownedSourcePreamble);
   assert.throws(() => applyPropValueOrIn(propValueOrSourcePreamble), /PropValueOr/u);
   const listenerSourcePreamble = applyListenerContractIn(propValueOrSourcePreamble);
-  const currentSourcePreamble = applySharedTemplateRefUnwrapIn(listenerSourcePreamble);
-  assert.equal(beforeSharedTemplateRefUnwrapIn(currentSourcePreamble), listenerSourcePreamble);
+  const unwrapSourcePreamble = applySharedTemplateRefUnwrapIn(listenerSourcePreamble);
+  assert.equal(beforeSharedTemplateRefUnwrapIn(unwrapSourcePreamble), listenerSourcePreamble);
+  const currentSourcePreamble = applyUsageContractIn(unwrapSourcePreamble);
+  assert.equal(beforeUsageContractIn(currentSourcePreamble), unwrapSourcePreamble);
+  assert.throws(() => applyUsageContractIn(currentSourcePreamble), /usage contract/u);
   const canonPredecessor = [...canonLeftoverPreamblePaths]
     .reverse()
     .reduce((current, file) => beforeCanonLeftoversIn(file, current), canonSourcePreamble);

@@ -38,6 +38,8 @@
     "$StructuralSlots",
     "$TemplateRefUnwrap",
     "$TemplateRefUnwrapNarrowed",
+    "$UsageCheckExtras",
+    "$UsageProps",
     "IsAny",
     "__EmitProps"
   ],
@@ -114,15 +116,15 @@
         },
         {
           "path": "virtual-ts.d.cts",
-          "sha256": "c1060931833e6664de7c2ab363a000a9ed048a350f6b5330a7cf432d5a211a97"
+          "sha256": "207f60bc5a5a733a8ac08252b77dfc905b1e184b71d5c4278d8871400ebaeb49"
         },
         {
           "path": "virtual-ts.d.mts",
-          "sha256": "c1060931833e6664de7c2ab363a000a9ed048a350f6b5330a7cf432d5a211a97"
+          "sha256": "207f60bc5a5a733a8ac08252b77dfc905b1e184b71d5c4278d8871400ebaeb49"
         },
         {
           "path": "virtual-ts.d.ts",
-          "sha256": "c1060931833e6664de7c2ab363a000a9ed048a350f6b5330a7cf432d5a211a97"
+          "sha256": "207f60bc5a5a733a8ac08252b77dfc905b1e184b71d5c4278d8871400ebaeb49"
         }
       ]
     },
@@ -170,7 +172,7 @@
         },
         {
           "path": "virtual-ts.d.ts",
-          "sha256": "c1060931833e6664de7c2ab363a000a9ed048a350f6b5330a7cf432d5a211a97"
+          "sha256": "207f60bc5a5a733a8ac08252b77dfc905b1e184b71d5c4278d8871400ebaeb49"
         }
       ]
     },
@@ -214,7 +216,7 @@
         },
         {
           "path": "virtual-ts.d.ts",
-          "sha256": "c1060931833e6664de7c2ab363a000a9ed048a350f6b5330a7cf432d5a211a97"
+          "sha256": "207f60bc5a5a733a8ac08252b77dfc905b1e184b71d5c4278d8871400ebaeb49"
         }
       ]
     }

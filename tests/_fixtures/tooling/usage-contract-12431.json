@@ -1,0 +1,79 @@
+{
+  "schema": "vize.usageContractSource.v1",
+  "issue": 12431,
+  "credit": {
+    "compiled": false,
+    "native": false,
+    "performance": false
+  },
+  "files": [
+    {
+      "path": "crates/vize_canon/src/virtual_ts/helpers/declarations/component-checks.d.ts.txt",
+      "before": {
+        "bytes": 8534,
+        "sha256": "8f6b799ca82213141bd449927c5f72cd7bd643debf38d7f128f56aa2148d8abf"
+      },
+      "after": {
+        "bytes": 9015,
+        "sha256": "b593580d4497c1fe04704c1ad06218f165e834cbdf23b2d69dc671f1ac2d0097"
+      },
+      "hunks": [
+        {
+          "before": "export type $PropValueOr<P, K extends PropertyKey, C, FK extends PropertyKey = K, __V = P extends unknown ? (K extends keyof P ? P[K] : never) : never> = [__V] extends [never] ? $FallthroughValue<C, FK> : __V;\n",
+          "after": "export type $PropValueOr<P, K extends PropertyKey, C, FK extends PropertyKey = K, __V = P extends unknown ? (K extends keyof P ? P[K] : never) : never> = [__V] extends [never] ? $FallthroughValue<C, FK> : __V;\nexport type $UsageProps<C> = 0 extends (1 & C) ? $ComponentRawProps<C> : [C] extends [{ __vizeCheck: infer __F }] ? ($IsAny<__F> extends true ? $ComponentRawProps<C> : Record<string, unknown>) : $ComponentRawProps<C>;\nexport type $UsageCheckExtras<C> = $EmitListeners<C> & ($FallthroughProps<C> extends infer __F ? [__F extends unknown ? {} extends __F ? never : __F : never] extends [never] ? $RequiredFallthroughProps<C, __F, never> : $RequiredFallthroughProps<C, __F> : never);\n"
+        }
+      ]
+    },
+    {
+      "path": "npm/cli/virtual-ts.d.ts",
+      "before": {
+        "bytes": 16090,
+        "sha256": "c1060931833e6664de7c2ab363a000a9ed048a350f6b5330a7cf432d5a211a97"
+      },
+      "after": {
+        "bytes": 16615,
+        "sha256": "207f60bc5a5a733a8ac08252b77dfc905b1e184b71d5c4278d8871400ebaeb49"
+      },
+      "hunks": [
+        {
+          "before": "> = [__V] extends [never] ? $FallthroughValue<C, FK> : __V;\n",
+          "after": "> = [__V] extends [never] ? $FallthroughValue<C, FK> : __V;\nexport type $UsageProps<C> = 0 extends 1 & C\n  ? $ComponentRawProps<C>\n  : [C] extends [{ __vizeCheck: infer __F }]\n    ? $IsAny<__F> extends true\n      ? $ComponentRawProps<C>\n      : Record<string, unknown>\n    : $ComponentRawProps<C>;\nexport type $UsageCheckExtras<C> = $EmitListeners<C> &\n  ($FallthroughProps<C> extends infer __F\n    ? [__F extends unknown ? ({} extends __F ? never : __F) : never] extends [never]\n      ? $RequiredFallthroughProps<C, __F, never>\n      : $RequiredFallthroughProps<C, __F>\n    : never);\n"
+        }
+      ]
+    },
+    {
+      "path": "npm/cli/virtual-ts.d.mts",
+      "before": {
+        "bytes": 16090,
+        "sha256": "c1060931833e6664de7c2ab363a000a9ed048a350f6b5330a7cf432d5a211a97"
+      },
+      "after": {
+        "bytes": 16615,
+        "sha256": "207f60bc5a5a733a8ac08252b77dfc905b1e184b71d5c4278d8871400ebaeb49"
+      },
+      "hunks": [
+        {
+          "before": "> = [__V] extends [never] ? $FallthroughValue<C, FK> : __V;\n",
+          "after": "> = [__V] extends [never] ? $FallthroughValue<C, FK> : __V;\nexport type $UsageProps<C> = 0 extends 1 & C\n  ? $ComponentRawProps<C>\n  : [C] extends [{ __vizeCheck: infer __F }]\n    ? $IsAny<__F> extends true\n      ? $ComponentRawProps<C>\n      : Record<string, unknown>\n    : $ComponentRawProps<C>;\nexport type $UsageCheckExtras<C> = $EmitListeners<C> &\n  ($FallthroughProps<C> extends infer __F\n    ? [__F extends unknown ? ({} extends __F ? never : __F) : never] extends [never]\n      ? $RequiredFallthroughProps<C, __F, never>\n      : $RequiredFallthroughProps<C, __F>\n    : never);\n"
+        }
+      ]
+    },
+    {
+      "path": "npm/cli/virtual-ts.d.cts",
+      "before": {
+        "bytes": 16090,
+        "sha256": "c1060931833e6664de7c2ab363a000a9ed048a350f6b5330a7cf432d5a211a97"
+      },
+      "after": {
+        "bytes": 16615,
+        "sha256": "207f60bc5a5a733a8ac08252b77dfc905b1e184b71d5c4278d8871400ebaeb49"
+      },
+      "hunks": [
+        {
+          "before": "> = [__V] extends [never] ? $FallthroughValue<C, FK> : __V;\n",
+          "after": "> = [__V] extends [never] ? $FallthroughValue<C, FK> : __V;\nexport type $UsageProps<C> = 0 extends 1 & C\n  ? $ComponentRawProps<C>\n  : [C] extends [{ __vizeCheck: infer __F }]\n    ? $IsAny<__F> extends true\n      ? $ComponentRawProps<C>\n      : Record<string, unknown>\n    : $ComponentRawProps<C>;\nexport type $UsageCheckExtras<C> = $EmitListeners<C> &\n  ($FallthroughProps<C> extends infer __F\n    ? [__F extends unknown ? ({} extends __F ? never : __F) : never] extends [never]\n      ? $RequiredFallthroughProps<C, __F, never>\n      : $RequiredFallthroughProps<C, __F>\n    : never);\n"
+        }
+      ]
+    }
+  ]
+}

@@ -100,7 +100,7 @@ fn ordinary_namespaced_tags_keep_their_markup_reference() {
     assert!(
         output
             .code
-            .contains("type __Registry_Choice_Props_0 = typeof Registry.Choice extends ")
+            .contains("type __Registry_Choice_Props_0 = $UsageProps<typeof Registry.Choice>;")
     );
     assert!(!output.code.contains("__vize_global_component_"));
     assert!(!output.code.contains("typeof Registry_Choice"));
@@ -210,9 +210,12 @@ fn declined_plain_and_unadmitted_roots_and_legacy_keep_complete_output() {
         let declined = emit(&root);
         assert_eq!(fresh.code, declined.code, "{template}");
         assert_eq!(fresh.mapping, declined.mapping, "{template}");
-        assert!(!fresh.code.contains("typeof registry.Choice extends "));
+        assert!(
+            !fresh.code.contains("typeof registry.Choice extends ")
+                && !fresh.code.contains("$UsageProps<typeof registry.Choice>")
+        );
         if expression == "selected" {
-            assert!(fresh.code.contains("typeof Selected extends "));
+            assert!(fresh.code.contains("$UsageProps<typeof Selected>"));
         }
     }
 }

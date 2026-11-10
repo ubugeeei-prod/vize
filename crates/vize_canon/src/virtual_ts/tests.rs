@@ -599,7 +599,7 @@ fn test_external_template_bindings_do_not_shadow_auto_imported_components() {
     assert!(
         output
             .code
-            .contains("type __auto_card_Props_0 = typeof AutoCard extends { __vizeCheck: infer __F } ? ($IsAny<__F> extends true ? $ComponentRawProps<typeof AutoCard> : Record<string, unknown>) : $ComponentRawProps<typeof AutoCard>;")
+            .contains("type __auto_card_Props_0 = $UsageProps<typeof AutoCard>;")
     );
 }
 

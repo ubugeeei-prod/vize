@@ -292,6 +292,19 @@ export type $PropValueOr<
   FK extends PropertyKey = K,
   __V = P extends unknown ? (K extends keyof P ? P[K] : never) : never,
 > = [__V] extends [never] ? $FallthroughValue<C, FK> : __V;
+export type $UsageProps<C> = 0 extends 1 & C
+  ? $ComponentRawProps<C>
+  : [C] extends [{ __vizeCheck: infer __F }]
+    ? $IsAny<__F> extends true
+      ? $ComponentRawProps<C>
+      : Record<string, unknown>
+    : $ComponentRawProps<C>;
+export type $UsageCheckExtras<C> = $EmitListeners<C> &
+  ($FallthroughProps<C> extends infer __F
+    ? [__F extends unknown ? ({} extends __F ? never : __F) : never] extends [never]
+      ? $RequiredFallthroughProps<C, __F, never>
+      : $RequiredFallthroughProps<C, __F>
+    : never);
 type $InvalidFallthroughSpreadKeys<P, F, A> = {
   [K in keyof A]-?: K extends keyof P | keyof $KebabProps<P>
     ? never

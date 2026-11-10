@@ -248,11 +248,7 @@ fn abstract_component_constructor_extracts_its_actual_instance_props() {
         "{code}"
     );
     assert_eq!(code.matches("\"foo\": \"x\"").count(), 1, "{code}");
-    assert_eq!(
-        code.matches("$ComponentRawProps<typeof is>").count(),
-        2,
-        "{code}"
-    );
+    assert_eq!(code.matches("$UsageProps<typeof is>").count(), 1, "{code}");
 }
 
 #[test]
@@ -274,11 +270,7 @@ fn empty_options_component_does_not_infer_unowned_optional_raw_metadata() {
         1,
         "{code}"
     );
-    assert_eq!(
-        code.matches("$ComponentRawProps<typeof Div>").count(),
-        2,
-        "{code}"
-    );
+    assert_eq!(code.matches("$UsageProps<typeof Div>").count(), 1, "{code}");
 }
 
 /// `aria-*` is both a Vue-camelized declared prop candidate and an HTML
