@@ -3,6 +3,20 @@ import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { readFileSync, writeFileSync } from "node:fs";
 import { isAbsolute, join } from "node:path";
+import {
+  certifiedTransition,
+  currentSetupWithDefaults,
+  previousSetupWithDefaults,
+} from "../../support/compat/content-mapper/canonical-helper-transition.ts";
+import {
+  readAssets,
+  relocatePacket,
+  type Packet,
+} from "../../support/compat/content-mapper/constructor-projection-parity.ts";
+import {
+  range,
+  type Edit,
+} from "../../support/compat/content-mapper/projection-byte-relocation.ts";
 
 const directory = process.argv[2];
 assert.ok(directory);
@@ -13,10 +27,83 @@ const binaries = read("binaries.json");
 assert.notEqual(binaries.base.sha256, binaries.head.sha256, "role-isolated binaries must differ");
 const pinnedSha256 = "73d98e1625eac89e544e822565ea41e066bec3b3f38f747ed3263dda9b02358a";
 let pinnedInput: unknown;
+const projectionAssets = readAssets(process.cwd(), process.cwd());
+
+type CompleteDocument = Record<string, unknown> & {
+  code: string;
+  mappingDebug: string;
+  preRewriteCode: string;
+  source: string;
+};
+
+function relocateMappingDebug(debug: string, edit: Edit, generatedBytes: number) {
+  return debug.replace(
+    /\b(gen_range|source_range|target_range): (\d+)\.\.(\d+)/gu,
+    (whole, label: string, startText: string, endText: string) => {
+      const start = Number(startText),
+        end = Number(endText),
+        [relocated, length] = range(start, end - start, [edit], generatedBytes);
+      return `${label}: ${relocated}..${relocated + length}`;
+    },
+  );
+}
+
+function certifyDocument(before: CompleteDocument, after: CompleteDocument) {
+  const transition = certifiedTransition(
+    Buffer.from(before.code),
+    Buffer.from(after.code),
+    previousSetupWithDefaults,
+    currentSetupWithDefaults,
+    "setup withDefaults authored return",
+  );
+  if (!transition) {
+    assert.deepEqual(after, before);
+    return;
+  }
+  const packet = (text: string): Packet => ({ text, mappings: [], diagnostics: [] });
+  relocatePacket(packet(before.code), packet(after.code), before.source, projectionAssets);
+  relocatePacket(
+    packet(before.preRewriteCode),
+    packet(after.preRewriteCode),
+    before.source,
+    projectionAssets,
+  );
+  const expected = structuredClone(before);
+  expected.code = after.code;
+  expected.preRewriteCode = after.preRewriteCode;
+  expected.mappingDebug = relocateMappingDebug(
+    before.mappingDebug,
+    transition,
+    Buffer.byteLength(before.code),
+  );
+  assert.deepEqual(after, expected, "only the certified withDefaults document shift may differ");
+}
+
+function certifyCompletePacket(
+  before: {
+    source: string;
+    packet: Packet;
+    documents: CompleteDocument[];
+    pinnedInput: unknown;
+  },
+  after: {
+    source: string;
+    packet: Packet;
+    documents: CompleteDocument[];
+    pinnedInput: unknown;
+  },
+) {
+  assert.equal(after.source, before.source);
+  assert.deepEqual(after.pinnedInput, before.pinnedInput);
+  relocatePacket(before.packet, after.packet, before.source, projectionAssets);
+  assert.equal(after.documents.length, before.documents.length);
+  for (const [index, document] of before.documents.entries())
+    certifyDocument(document, after.documents[index]!);
+}
 
 function completeDocuments(row: {
   source: string;
-  documents: Record<string, unknown>[];
+  documents: CompleteDocument[];
   pinnedInput: { path: string; source: string };
 }) {
   assert.ok(isAbsolute(row.pinnedInput.path));
@@ -63,7 +150,12 @@ const summary = [];
 for (const shape of ["locals", "imports"]) {
   for (const count of [32, 128, 512]) {
     let reference:
-      | { source: string; packet: unknown; documents: unknown; pinnedInput: unknown }
+      | {
+          source: string;
+          packet: Packet;
+          documents: CompleteDocument[];
+          pinnedInput: unknown;
+        }
       | undefined;
     const roles = new Map<
       string,
@@ -90,12 +182,8 @@ for (const shape of ["locals", "imports"]) {
           assert.deepEqual([row.shape, row.count, row.mode], [shape, count, mode]);
           assert.deepEqual(row.cold, { generationCalls: 1, warmups: 0, persistentCache: false });
           const packet = { source: row.source, packet: row.packet, ...completeDocuments(row) };
-          reference ??= packet;
-          assert.deepEqual(
-            packet,
-            reference,
-            "complete packet bytes and fields must match across sources, modes and repeats",
-          );
+          if (reference) certifyCompletePacket(reference, packet);
+          else reference = packet;
           if (mode === "runtime-off") {
             assert.equal(row.allocation.calls, 0);
             assert.deepEqual(row.spans, []);
@@ -159,9 +247,13 @@ const receipt = {
   completeObservations: 72,
   completeDocumentObservations: 288,
   pinnedInputSha256: pinnedSha256,
+  certifiedProjectionTransition: {
+    previousSha256: digest(previousSetupWithDefaults),
+    currentSha256: digest(currentSetupWithDefaults),
+  },
   summary,
   scope:
-    "actual single-source generation and allocations; runtime-off timing is a profiling build, not normal release cold-check latency",
+    "actual single-source generation and allocations; complete packets differ only by the certified withDefaults authored-props return; runtime-off timing is a profiling build, not normal release cold-check latency",
 };
 writeFileSync(join(directory, "comparison.json"), JSON.stringify(receipt, null, 2) + "\n");
 console.log(JSON.stringify(receipt));

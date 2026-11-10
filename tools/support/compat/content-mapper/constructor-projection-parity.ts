@@ -10,6 +10,16 @@ import {
   uniqueOffset,
   previousRuntimeProp,
   currentRuntimeProp,
+  previousSetupWithDefaults,
+  currentSetupWithDefaults,
+  previousSharedWithDefaults,
+  currentSharedWithDefaults,
+} from "./canonical-helper-transition.ts";
+export {
+  previousSetupWithDefaults,
+  currentSetupWithDefaults,
+  previousSharedWithDefaults,
+  currentSharedWithDefaults,
 } from "./canonical-helper-transition.ts";
 
 import {
@@ -49,7 +59,7 @@ type Link = {
   targetStart: number;
   targetLength: number;
 };
-type Packet = {
+export type Packet = {
   text: string;
   mappings: number[][];
   semanticLinks?: Link[];
@@ -70,19 +80,6 @@ export const previousSlotsExport = "export type Slots = $Slots;";
 export const currentSlotsExport = "export type { $Slots as Slots };";
 export const previousSlotsMarker = "Partial<Slots>";
 export const currentSlotsMarker = "Partial<$Slots>";
-export const previousSetupWithDefaults =
-  "  function withDefaults<_T, _BKeys extends keyof _T, _D extends __WithDefaultsArgs<_T>>(_props: __DefineProps<_T, _BKeys>, _defaults: _D): __WithDefaultsResult<_T, _D, _BKeys>; function withDefaults(_props: any, _defaults: any) { void _props; void _defaults; return undefined as any; }";
-export const currentSetupWithDefaults = previousSetupWithDefaults.replace(
-  "): __WithDefaultsResult<",
-  "): _T & __WithDefaultsResult<",
-);
-export const previousSharedWithDefaults =
-  "declare function __vize_withDefaults<_T, _BKeys extends keyof _T, _D extends __WithDefaultsArgs<_T>>(_props: __DefineProps<_T, _BKeys>, _defaults: _D): __WithDefaultsResult<_T, _D, _BKeys>;";
-export const currentSharedWithDefaults = previousSharedWithDefaults.replace(
-  "): __WithDefaultsResult<",
-  "): _T & __WithDefaultsResult<",
-);
-
 function relocationEdits(
   before: Buffer,
   after: Buffer,
