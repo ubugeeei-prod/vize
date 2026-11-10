@@ -220,7 +220,7 @@ const item = ref<{ name: string } | undefined>()
       "to": item.name,
     });
     type $SlotContract_0 = __LinkComp_slot_contract;
-    const __vize_required_slots_0: $RequiredSlots<$SlotContract_0, {}> = {};
+    const __vize_required_slots_0: $RequiredSlots<$SlotContract_0, Record<never, true>> = {};
     void __vize_required_slots_0;
   }
   type __LinkComp_slot_contract = $StructuralSlots<typeof LinkComp>;

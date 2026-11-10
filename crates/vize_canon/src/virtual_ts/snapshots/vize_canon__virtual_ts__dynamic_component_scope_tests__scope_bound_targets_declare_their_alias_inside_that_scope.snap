@@ -231,7 +231,7 @@ expression: template
       (undefined as unknown as __Panel_Check_2)({
       });
       type $SlotContract_2 = $StructuralSlots<typeof Panel>;
-      const __vize_required_slots_2: $RequiredSlots<$SlotContract_2, { readonly "qux": true; readonly "default": true; }> = {};
+      const __vize_required_slots_2: $RequiredSlots<$SlotContract_2, Record<"qux" | "default", true>> = {};
       void __vize_required_slots_2;
     },
     () => {
@@ -239,7 +239,7 @@ expression: template
         ...{} as { "onPick": never },
       });
       type $SlotContract_4 = $StructuralSlots<typeof __vize_dynamic_is_274>;
-      const __vize_required_slots_4: $RequiredSlots<$SlotContract_4, {}> = {};
+      const __vize_required_slots_4: $RequiredSlots<$SlotContract_4, Record<never, true>> = {};
       void __vize_required_slots_4;
     },
   ];
@@ -288,7 +288,7 @@ expression: template
       "x": 1,
     });
     type $SlotContract_0 = $StructuralSlots<typeof __vize_dynamic_is_35>;
-    const __vize_required_slots_0: $RequiredSlots<$SlotContract_0, {}> = {};
+    const __vize_required_slots_0: $RequiredSlots<$SlotContract_0, Record<never, true>> = {};
     void __vize_required_slots_0;
     void [
       () => {
@@ -298,7 +298,7 @@ expression: template
             ...{} as { "onPick": never },
           });
           type $SlotContract_1 = $StructuralSlots<typeof __vize_dynamic_is_104>;
-          const __vize_required_slots_1: $RequiredSlots<$SlotContract_1, {}> = {};
+          const __vize_required_slots_1: $RequiredSlots<$SlotContract_1, Record<never, true>> = {};
           void __vize_required_slots_1;
         }
       },
@@ -328,7 +328,7 @@ expression: template
           ...{} as { "onPick": never },
         });
         type $SlotContract_3 = $StructuralSlots<typeof __vize_dynamic_is_185>;
-        const __vize_required_slots_3: $RequiredSlots<$SlotContract_3, {}> = {};
+        const __vize_required_slots_3: $RequiredSlots<$SlotContract_3, Record<never, true>> = {};
         void __vize_required_slots_3;
       },
     ];

@@ -182,7 +182,7 @@ function moveToDetail(item: Manager) {
         ...{} as { "onClick:row": never },
       });
       type $SlotContract_0 = $StructuralSlots<typeof DataTable>;
-      const __vize_required_slots_0: $RequiredSlots<$SlotContract_0, {}> = {};
+      const __vize_required_slots_0: $RequiredSlots<$SlotContract_0, Record<never, true>> = {};
       void __vize_required_slots_0;
     },
   ];

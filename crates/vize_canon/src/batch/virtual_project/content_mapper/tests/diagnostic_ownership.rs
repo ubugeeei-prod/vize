@@ -244,7 +244,7 @@ fn expect_owns_one_late_packet_and_navigation_echoes_do_not_widen_it() {
         let start = text.find("void Child3;").expect("mapped component tag") + "void ".len();
         // Required-slot checks are diagnostics owned by the same opening tag,
         // after its props call. Do not truncate EXPECT at the last prop entry.
-        let required_slot_check = "  const __vize_required_slots_0: $RequiredSlots<$SlotContract_0, { readonly \"header\": true; }> = {};\n  void __vize_required_slots_0;\n";
+        let required_slot_check = "  const __vize_required_slots_0: $RequiredSlots<$SlotContract_0, Record<\"header\", true>> = {};\n  void __vize_required_slots_0;\n";
         let end = text
             .find(required_slot_check)
             .expect("complete independently authored required-slot check")

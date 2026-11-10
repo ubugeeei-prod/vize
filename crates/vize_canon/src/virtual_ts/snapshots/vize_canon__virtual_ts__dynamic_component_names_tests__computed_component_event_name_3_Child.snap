@@ -220,7 +220,7 @@ let pressed = false
       (undefined as unknown as __Child_Check_0)({
       });
       type $SlotContract_0 = $StructuralSlots<typeof Child>;
-      const __vize_required_slots_0: $RequiredSlots<$SlotContract_0, {}> = {};
+      const __vize_required_slots_0: $RequiredSlots<$SlotContract_0, Record<never, true>> = {};
       void __vize_required_slots_0;
     },
   ];

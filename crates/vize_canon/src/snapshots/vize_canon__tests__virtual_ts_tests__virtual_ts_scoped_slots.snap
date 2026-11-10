@@ -285,7 +285,7 @@ const items = ref(['a', 'b', 'c'])
     "items": items,
   });
   type $SlotContract_0 = $StructuralSlots<typeof MyList>;
-  const __vize_required_slots_0: $RequiredSlots<$SlotContract_0, { readonly "default": true; readonly "header": true; }> = {};
+  const __vize_required_slots_0: $RequiredSlots<$SlotContract_0, Record<"default" | "header", true>> = {};
   void __vize_required_slots_0;
 
   // Mark used components as referenced

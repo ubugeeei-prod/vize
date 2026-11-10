@@ -59,7 +59,9 @@ fn required_slot_check_anchors_to_component_name() {
     let output = generate_virtual_ts(&summary, Some(script), Some(&root), 0);
 
     assert!(
-        output.code.contains("$RequiredSlots<$SlotContract_0, {}>"),
+        output
+            .code
+            .contains("$RequiredSlots<$SlotContract_0, Record<never, true>>"),
         "component usages must check required child slots even with no authored slots:\n{}",
         output.code
     );
@@ -98,7 +100,7 @@ fn required_slot_check_records_static_slot_names() {
     assert!(
         output
             .code
-            .contains("$RequiredSlots<$SlotContract_0, { readonly \"header\": true; }>"),
+            .contains("$RequiredSlots<$SlotContract_0, Record<\"header\", true>>"),
         "static slot names must satisfy required child slots:\n{}",
         output.code
     );
@@ -127,7 +129,7 @@ fn required_slot_check_skips_open_index_signature_slot_contracts() {
     assert!(
         output
             .code
-            .contains("$RequiredSlots<$SlotContract_0, { readonly \"header\": true; }>"),
+            .contains("$RequiredSlots<$SlotContract_0, Record<\"header\", true>>"),
         "static parent slot names must still be recorded for finite contracts:\n{}",
         output.code
     );

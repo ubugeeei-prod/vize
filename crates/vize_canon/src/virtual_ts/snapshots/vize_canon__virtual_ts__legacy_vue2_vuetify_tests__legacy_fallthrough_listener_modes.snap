@@ -182,7 +182,7 @@ function onClick(event: string) {
         ...{} as { "onClick": never },
       });
       type $SlotContract_0 = $StructuralSlots<typeof MyItem>;
-      const __vize_required_slots_0: $RequiredSlots<$SlotContract_0, {}> = {};
+      const __vize_required_slots_0: $RequiredSlots<$SlotContract_0, Record<never, true>> = {};
       void __vize_required_slots_0;
     },
   ];
@@ -485,7 +485,7 @@ function onClick(event: string) {
         ...{} as { "onClick": never },
       });
       type $SlotContract_0 = $StructuralSlots<typeof MyItem>;
-      const __vize_required_slots_0: $RequiredSlots<$SlotContract_0, {}> = {};
+      const __vize_required_slots_0: $RequiredSlots<$SlotContract_0, Record<never, true>> = {};
       void __vize_required_slots_0;
     },
   ];
@@ -790,7 +790,7 @@ function onClick(event: string) {
         ...{} as { "onClick": never },
       });
       type $SlotContract_0 = $StructuralSlots<typeof MyItem>;
-      const __vize_required_slots_0: $RequiredSlots<$SlotContract_0, {}> = {};
+      const __vize_required_slots_0: $RequiredSlots<$SlotContract_0, Record<never, true>> = {};
       void __vize_required_slots_0;
     },
   ];

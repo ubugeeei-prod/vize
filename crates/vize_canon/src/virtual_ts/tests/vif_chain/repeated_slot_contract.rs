@@ -131,7 +131,9 @@ fn required_slot_declaration(idx: usize, hoist: bool) -> vize_carton::String {
     } else {
         "$RequiredSlots"
     };
-    cstr!("const __vize_required_slots_{idx}: {helper}<$SlotContract_{idx}, {{}}> = {{}};")
+    cstr!(
+        "const __vize_required_slots_{idx}: {helper}<$SlotContract_{idx}, Record<never, true>> = {{}};"
+    )
 }
 
 fn keypad_ranges(template: &str) -> Vec<std::ops::Range<usize>> {

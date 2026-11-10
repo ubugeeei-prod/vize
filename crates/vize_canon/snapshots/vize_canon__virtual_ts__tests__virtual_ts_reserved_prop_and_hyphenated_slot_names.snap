@@ -266,7 +266,7 @@ defineProps<{
     "class": props["class"],
   });
   type $SlotContract_0 = $StructuralSlots<typeof TrendChart>;
-  const __vize_required_slots_0: $RequiredSlots<$SlotContract_0, { readonly "area-gradient": true; }> = {};
+  const __vize_required_slots_0: $RequiredSlots<$SlotContract_0, Record<"area-gradient", true>> = {};
   void __vize_required_slots_0;
 
   // Mark used components as referenced

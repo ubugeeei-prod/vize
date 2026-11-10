@@ -110,7 +110,7 @@ const props = defineProps<ParentWidgetProps>();
     "asChild": props.asChild,
   });
   type $SlotContract_0 = import("vize:virtual-ts").$StructuralSlots<typeof Child>;
-  const __vize_required_slots_0: import("vize:virtual-ts").$RequiredSlots<$SlotContract_0, {}> = {};
+  const __vize_required_slots_0: import("vize:virtual-ts").$RequiredSlots<$SlotContract_0, Record<never, true>> = {};
   void __vize_required_slots_0;
 
   // Mark used components as referenced
