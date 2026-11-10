@@ -349,7 +349,7 @@ test("workspace package builds do not nest pnpm run commands", () => {
 
   assert.equal(
     museaPackage.scripts?.build,
-    "vp pack && node scripts/assert-root-import-graph.mjs && vp build --config gallery-vite.config.ts",
+    "vp pack && node scripts/assert-root-import-graph.ts && vp build --config gallery-vite.config.ts",
   );
   assert.equal(museaPackage.scripts?.dev, "vp pack --watch");
   assert.doesNotMatch(museaPackage.scripts?.build ?? "", /\bpnpm run\b/);

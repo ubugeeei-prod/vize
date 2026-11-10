@@ -62,7 +62,7 @@
     "access": "public"
   },
   "scripts": {
-    "build": "vp pack && node scripts/assert-root-import-graph.mjs && vp build --config gallery-vite.config.ts",
+    "build": "vp pack && node scripts/assert-root-import-graph.ts && vp build --config gallery-vite.config.ts",
     "build:gallery": "vp build --config gallery-vite.config.ts",
     "dev": "vp pack --watch",
     "test": "pnpm --dir ../vite build && vp exec tsx --test --test-reporter=spec --test-reporter=tap --test-reporter-destination=stdout --test-reporter-destination=stderr src/*.test.ts src/**/*.test.ts gallery/components/*.test.ts",

@@ -6,8 +6,8 @@ import { fileURLToPath } from "node:url";
 const packageRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const entry = path.join(packageRoot, "dist/index.mjs");
 const pending = [entry];
-const visited = new Set();
-const bareImports = new Set();
+const visited = new Set<string>();
+const bareImports = new Set<string>();
 
 const staticImports = [
   /(?:^|\n)\s*import\s+(?!\()(?:(?:[^"'()]*?)\s+from\s+)?["']([^"']+)["']/g,
