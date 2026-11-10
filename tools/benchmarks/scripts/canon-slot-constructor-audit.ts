@@ -2,6 +2,10 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
+import {
+  attrValuePredecessors,
+  linePrefixAt,
+} from "../../support/compat/content-mapper/attr-value-transition.ts";
 import { authoredDirectives } from "../../support/compat/content-mapper/producer-unmapped-ignores.ts";
 import { parenthesisDiagnosticMappings } from "../../../tests/tooling/support/content-mapper-parenthesis-mappings-11675.ts";
 import { isRecord, jsonValue, type PacketObservation } from "./canon-instance-directives-model.ts";
@@ -123,20 +127,28 @@ function certifiedDirectives(result: Record<string, unknown>, requireComplete: b
   return { ...result, diagnosticDirectives: authored };
 }
 
-function directiveContract(result: Record<string, unknown>) {
+function directiveContract(result: Record<string, unknown>, historical?: Set<string>) {
   if (result.diagnosticDirectives === undefined) return null;
   assert.ok(isRecord(result.diagnosticDirectives));
-  const source = text(result);
+  const source = text(result),
+    buffer = Buffer.from(source);
   return {
     unused: result.diagnosticDirectives.unusedExpectDirectiveDiagnostics,
     directives: tuples(result.diagnosticDirectives.directives).map(
-      ([original, originalLength, start, end, policy, unused]) => ({
-        original,
-        originalLength,
-        generated: bytes(source, start, end),
-        policy,
-        unused,
-      }),
+      ([original, originalLength, start, end, policy, unused]) => {
+        const directive = {
+          original,
+          originalLength,
+          generated: bytes(source, start, end),
+          policy,
+          unused,
+        };
+        // #12458: an owned per-prop check keeps its plain predecessor's exact image.
+        const predecessor = attrValuePredecessors(linePrefixAt(buffer, start), directive.generated)
+          .map((generated) => ({ ...directive, generated }))
+          .find((image) => historical?.has(JSON.stringify(image)));
+        return predecessor ?? directive;
+      },
     ),
   };
 }
@@ -271,9 +283,13 @@ export function auditPackets(
     canonicalMappedGenerated,
     producer,
   );
+  const historicalDirectives = directiveContract(certifiedDirectives(before, false));
   assertDirectiveDeduplication(
-    directiveContract(certifiedDirectives(before, false)),
-    directiveContract(certifiedDirectives(after, true)),
+    historicalDirectives,
+    directiveContract(
+      certifiedDirectives(after, true),
+      new Set(historicalDirectives?.directives.map((directive) => JSON.stringify(directive))),
+    ),
   );
   assert.deepEqual(
     semanticLinkContract(after),
