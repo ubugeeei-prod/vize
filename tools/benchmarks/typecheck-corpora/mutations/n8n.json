@@ -365,7 +365,7 @@
       "replacement": ":items=\"groupedExecutionErrors\" :tabindex=\"{}\" />",
       "expect": {
         "line": 148,
-        "column": 61,
+        "column": 94,
         "code": "TS2322",
         "message": "Type '{}' is not assignable to type 'Numberish | undefined'"
       }
