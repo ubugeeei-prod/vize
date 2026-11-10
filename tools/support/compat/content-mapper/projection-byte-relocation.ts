@@ -1,6 +1,10 @@
 /** Exact byte geometry shared by mapper and virtual packet relocation. */
 import assert from "node:assert/strict";
-export type Edit = { start: number; end: number; replacement: Buffer };
+/**
+ * `at` places a replacement whose bytes are not unique in the current text;
+ * `frame` is its start in the self-described frame of `// @vize-map` comments.
+ */
+export type Edit = { start: number; end: number; replacement: Buffer; at?: number; frame?: number };
 export function integer(value: number) {
   assert.ok(Number.isSafeInteger(value) && value >= 0, `invalid byte coordinate: ${value}`);
 }
@@ -12,13 +16,15 @@ export function bounds(start: number, length: number, limit: number) {
 export function overlaps(start: number, length: number, edit: Edit) {
   return start < edit.end && edit.start < start + length;
 }
-export function point(value: number, edits: Edit[]) {
+export function point(value: number, edits: Edit[], selfDescribed = false) {
   integer(value);
   let delta = 0;
   for (const edit of edits) {
-    if (value >= edit.end) delta += edit.replacement.length - (edit.end - edit.start);
+    const start = selfDescribed ? (edit.frame ?? edit.start) : edit.start;
+    if (value >= start + edit.end - edit.start)
+      delta += edit.replacement.length - (edit.end - edit.start);
     else {
-      assert.ok(value <= edit.start, "coordinate enters a certified replacement");
+      assert.ok(value <= start, "coordinate enters a certified replacement");
       break;
     }
   }
