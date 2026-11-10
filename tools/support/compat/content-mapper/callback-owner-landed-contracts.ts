@@ -96,9 +96,50 @@ function navigationEdits(before: string, after: string): Edit[] {
   return edits;
 }
 
-/** Appends the gate and navigation edits for every line `after` replaces with its current form. */
+const vt = String.raw`(?:import\("vize:virtual-ts"\)\.)?`;
+const quoted = String.raw`'((?:[^'\\]|\\.)*)'`;
+const eagerValue = new RegExp(
+  String.raw`(${vt}\$PropValue)<(__[\w$]+_ValueProps_\d+), ${quoted}(, ${vt}\$FallthroughValue<(__[\w$]+_Component_\d+), ${quoted}>>)`,
+  "gu",
+);
+
+/** #12431: a per-prop value alias resolves its fallthrough lazily through `$PropValueOr`. */
+export function lazyPropValue(
+  helper: string,
+  props: string,
+  key: string,
+  component: string,
+  fallthrough: string,
+): string {
+  const tail = key === fallthrough ? "" : `, '${fallthrough}'`;
+  return `${helper}Or<${props}, '${key}', ${component}${tail}>`;
+}
+
+/** Edits around each alias key, so its mapped span relocates instead of being replaced. */
+function lazyPropValueEdits(before: string, after: string): Edit[] {
+  const edits: Edit[] = [];
+  const at = (start: number, end: number, replacement: string) =>
+    edits.push({
+      start: Buffer.byteLength(before.slice(0, start)),
+      end: Buffer.byteLength(before.slice(0, end)),
+      replacement: Buffer.from(replacement),
+    });
+  for (const match of before.matchAll(eagerValue)) {
+    const [whole, helper, props, key, tail, component, fallthrough] = match as unknown as string[];
+    const current = lazyPropValue(helper!, props!, key!, component!, fallthrough!);
+    if (after.split(whole!).length > 1 || after.split(current).length === 1) continue;
+    const helperEnd = match.index + helper!.length;
+    at(helperEnd, helperEnd + 1, "Or<");
+    const tailStart = match.index + whole!.length - tail!.length;
+    const fallthroughKey = key === fallthrough ? "" : `, '${fallthrough}'`;
+    at(tailStart, match.index + whole!.length, `, ${component}${fallthroughKey}>`);
+  }
+  return edits;
+}
+
+/** Appends the landed edits for every line `after` replaces with its current form. */
 export function withLandedEdits(before: string, after: string, edits: Edit[]): Edit[] {
-  const gates: Edit[] = [...navigationEdits(before, after)];
+  const gates: Edit[] = [...navigationEdits(before, after), ...lazyPropValueEdits(before, after)];
   for (const match of before.matchAll(ungated)) {
     const replacement = requiredFallthroughGate(match[1]!, match[2]!);
     if (after.split(match[0]).length > 1 || after.split(replacement).length === 1) continue;

@@ -221,9 +221,9 @@ pub(super) fn usage_needs_per_prop_aliases(usage: &ComponentUsage) -> bool {
 /// check with their instantiated resolver result. Every other prop keeps the
 /// statically extracted type.
 ///
-/// The fallthrough fallback names `$FallthroughValue<C, 'key'>` directly:
-/// TypeScript caches that instantiation per component and key, while a
-/// per-usage generic alias re-instantiates it in every module.
+/// The fallthrough fallback is `$PropValueOr<P, 'key', C>`: TypeScript resolves
+/// `$FallthroughValue<C, 'key'>` only when P declares no such key, and caches
+/// it per component and key.
 pub(super) fn prop_alias_type(
     prop: &PassedProp,
     component_type_name: &str,
@@ -236,8 +236,12 @@ pub(super) fn prop_alias_type(
         if prop.name.as_str() == "ref" && is_inline_ref_callback_prop(prop) {
             return String::from("$ComponentRefCallback");
         }
-        let normalized = cstr!(
-            "$PropValue<__{component_type_name}_ValueProps_{idx}, '{camel_prop_name}', $FallthroughValue<__{component_type_name}_Component_{idx}, '{fallthrough_prop_name}'>>"
+        let normalized = prop_value_or(
+            "$PropValueOr",
+            component_type_name,
+            idx,
+            camel_prop_name,
+            fallthrough_prop_name,
         );
         let raw_aria_prop_name =
             component_aria_prop_keys(fallthrough_prop_name).map(|(raw, _)| raw);
@@ -261,12 +265,16 @@ pub(super) fn prop_alias_type(
     let component_ref_callback = shared_types::COMPONENT_REF_CALLBACK.select(hoist_shared_preamble);
     let prop_value = shared_types::PROP_VALUE.select(hoist_shared_preamble);
     let callable_prop = shared_types::CALLABLE_PROP.select(hoist_shared_preamble);
-    let fallthrough_value = shared_types::FALLTHROUGH_VALUE.select(hoist_shared_preamble);
+    let prop_value_or_ref = shared_types::PROP_VALUE_OR.select(hoist_shared_preamble);
     if prop.name.as_str() == "ref" && is_inline_ref_callback_prop(prop) {
         return String::from(component_ref_callback);
     }
-    let normalized = cstr!(
-        "{prop_value}<__{component_type_name}_ValueProps_{idx}, '{camel_prop_name}', {fallthrough_value}<__{component_type_name}_Component_{idx}, '{fallthrough_prop_name}'>>"
+    let normalized = prop_value_or(
+        prop_value_or_ref,
+        component_type_name,
+        idx,
+        camel_prop_name,
+        fallthrough_prop_name,
     );
     // A declared raw ARIA key is authoritative even when Vue authored the
     // camel alias. Resolve it before the whole-object presence witness removes
@@ -288,6 +296,22 @@ pub(super) fn prop_alias_type(
         cstr!("{callable_prop}<{resolved}>")
     } else {
         resolved
+    }
+}
+
+fn prop_value_or(
+    helper: &str,
+    component_type_name: &str,
+    idx: usize,
+    camel_prop_name: &str,
+    fallthrough_prop_name: &str,
+) -> String {
+    let props = cstr!("__{component_type_name}_ValueProps_{idx}");
+    let component = cstr!("__{component_type_name}_Component_{idx}");
+    if fallthrough_prop_name == camel_prop_name {
+        cstr!("{helper}<{props}, '{camel_prop_name}', {component}>")
+    } else {
+        cstr!("{helper}<{props}, '{camel_prop_name}', {component}, '{fallthrough_prop_name}'>")
     }
 }
 
