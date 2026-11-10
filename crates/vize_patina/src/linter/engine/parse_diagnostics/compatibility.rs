@@ -134,10 +134,14 @@ fn is_quoted_style_expression(style: &SfcStyleBlock<'_>, span: Span) -> bool {
     }
 
     let bytes = content.as_bytes();
-    start > 0
-        && end < bytes.len()
-        && matches!(bytes[start - 1], b'\'' | b'"')
-        && bytes[start - 1] == bytes[end]
+    let Some((open, close)) = start
+        .checked_sub(1)
+        .and_then(|index| bytes.get(index))
+        .zip(bytes.get(end))
+    else {
+        return false;
+    };
+    matches!(*open, b'\'' | b'"') && open == close
 }
 
 impl Linter {

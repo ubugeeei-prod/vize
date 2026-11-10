@@ -60,4 +60,4 @@ Lancez ensuite `vp run lint`.
 - [Règles Vue](../vue.md)
 - [Options des règles](/rules/options.md)
 - [Toutes les règles](../all.md)
-- [Code source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/compatibility_sfc.rs#L37)
+- [Code source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/compatibility_sfc/enforce_style_attribute.rs#L7)
