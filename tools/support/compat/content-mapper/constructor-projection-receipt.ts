@@ -70,6 +70,7 @@ export function writeConstructorProjectionReceipt(
         "component-export-transition.ts",
         "canonical-helper-transition.ts",
         "producer-unmapped-ignores.ts",
+        "setup-dedent.ts",
       ].map((file) => [file, digest(readFileSync(path.join(path.dirname(comparatorPath), file)))]),
     ),
     basePacketSha256: digest(baseBytes),
