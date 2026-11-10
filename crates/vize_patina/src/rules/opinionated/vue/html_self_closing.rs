@@ -152,6 +152,13 @@ fn check_element<'a>(
     options: HtmlSelfClosingOptions,
     allow_vuetify_tags: bool,
 ) {
+    // This rule models Vue template semantics. In a plain HTML document the
+    // slash on a non-void start tag does not close it, and formatters may emit
+    // a slash on void elements, so either diagnostic would be unsafe.
+    if is_plain_html_document(ctx.filename) {
+        return;
+    }
+
     // vue-eslint-parser treats the contents of <noscript> as raw text. Relief
     // retains the authored nodes for editor features, but this compatibility
     // rule must not lint markup that upstream cannot observe.
@@ -212,6 +219,12 @@ fn check_element<'a>(
         }
         _ => {}
     }
+}
+
+fn is_plain_html_document(filename: &str) -> bool {
+    filename.rsplit_once('.').is_some_and(|(_, extension)| {
+        extension.eq_ignore_ascii_case("html") || extension.eq_ignore_ascii_case("htm")
+    })
 }
 
 fn report(
