@@ -494,7 +494,7 @@ fn public_instance_mixed_vue2_packets_remain_authenticated() {
         );
         assert_eq!(
             capture_fixture(fixture).render().as_str(),
-            unowned_successor
+            setup_verbatim_lines::mixed_vue2(unowned_successor)
         );
     }
 }
