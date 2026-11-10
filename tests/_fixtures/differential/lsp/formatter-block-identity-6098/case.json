@@ -1,0 +1,50 @@
+{
+  "version": 1,
+  "id": "lsp/regression/formatter-block-identity-6098",
+  "provenance": {
+    "fixCommit": "88368039393d958941f801d16cf5d422bd46bb54"
+  },
+  "documentVersion": 1,
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": false,
+    "formatting": true
+  },
+  "files": [
+    {
+      "source": "App.vue.txt",
+      "runtimePath": "App.vue",
+      "sha256": "c22a7e2f27a4b8b367cdf9b824f86209cf61279ddd4938ece86fcf0104d632b3"
+    },
+    {
+      "source": "vite.config.mjs.txt",
+      "runtimePath": "vite.config.mjs",
+      "sha256": "101f6e760e2a227112cd3abc963dcff2e53e59163b5527bf45ea4fdbcfee8eec"
+    }
+  ],
+  "entry": "App.vue",
+  "expected": {
+    "source": "response.expected.json",
+    "sha256": "bc0ce5c62e38ef90e1312d8ac970f4ed184f29cfa4dcd111f1c79840f506a6eb"
+  },
+  "method": "textDocument/rangeFormatting",
+  "request": {
+    "params": {
+      "range": {
+        "start": {
+          "line": 3,
+          "character": 22
+        },
+        "end": {
+          "line": 3,
+          "character": 23
+        }
+      },
+      "options": {
+        "tabSize": 2,
+        "insertSpaces": true
+      }
+    }
+  }
+}
