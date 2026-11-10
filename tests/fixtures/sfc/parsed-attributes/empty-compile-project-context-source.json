@@ -6,7 +6,7 @@
     {
       "path": "crates/vize_atelier_sfc/src/compile.rs",
       "referenceBlob": "6856ecc04ae177fe53724a09fbf2c0f5654a1fb7",
-      "currentBlob": "916e5265acc72dd3f347e6009186d580c57d713a",
+      "currentBlob": "5433fd87bd11b144b41a9b7de417ba1faadf366a",
       "replacements": [
         {
           "reference": "mod normal_script;\npub(crate) mod output_module;\nmod props_rest;\nmod setup_exports;\nmod stage_capture;\n#[cfg(test)]\n",
@@ -119,6 +119,22 @@
         {
           "reference": "    }\n    ctx.bindings = script_bindings.clone();\n    // Compile template with bindings (if present) to get the render function\n",
           "current": "    }\n    ctx.bindings = script_bindings.clone();\n    if synthetic_inline_dollar_emit {\n        // `$emit` is a setup-context alias for inline render only. Returning it\n        // as authored setup state would reference an undeclared identifier.\n        ctx.bindings.bindings.remove(\"$emit\");\n    }\n    // Compile template with bindings (if present) to get the render function\n"
+        },
+        {
+          "reference": "use vize_carton::{String, ToCompactString, profile};\n",
+          "current": "use vize_carton::{String, profile};\n"
+        },
+        {
+          "reference": "    // Register defineEmits bindings visible to the template's render scope.\n    let mut synthetic_inline_dollar_emit = false;\n    if let Some(ref emits_macro) = ctx.macros.define_emits {\n        if let Some(ref binding_name) = emits_macro.binding_name {\n            // e.g., const emit = defineEmits([...]) -> emit is setup const\n            script_bindings\n                .bindings\n                .entry(binding_name.clone())\n                .or_insert(BindingType::SetupConst);\n        } else if !script_output.separates_template() {\n            // Bare defineEmits exposes $emit only to inline render; separated render uses _ctx.$emit.\n            if !script_bindings.bindings.contains_key(\"$emit\") {\n                script_bindings\n                    .bindings\n                    .insert(\"$emit\".to_compact_string(), BindingType::SetupConst);\n                synthetic_inline_dollar_emit = true;\n            }\n        }\n    }\n",
+          "current": "    let mut synthetic_inline_dollar_emit = ctx.macros.define_emits.as_ref().is_some_and(|emits| {\n        bindings::register_setup_emit_binding(\n            &mut script_bindings,\n            emits.binding_name.as_deref(),\n            script_output.separates_template(),\n        )\n    });\n"
+        },
+        {
+          "reference": "        if normal_script_bindings.bindings.contains_key(\"$emit\") {\n            synthetic_inline_dollar_emit = false;\n        }\n",
+          "current": "        synthetic_inline_dollar_emit &= !normal_script_bindings.bindings.contains_key(\"$emit\");\n"
+        },
+        {
+          "reference": "    ctx.bindings = script_bindings.clone();\n    if synthetic_inline_dollar_emit {\n        // `$emit` is a setup-context alias for inline render only. Returning it\n        // as authored setup state would reference an undeclared identifier.\n        ctx.bindings.bindings.remove(\"$emit\");\n    }\n",
+          "current": "    bindings::copy_setup_state_bindings(\n        &mut ctx.bindings,\n        &script_bindings,\n        synthetic_inline_dollar_emit,\n    );\n"
         }
       ]
     },
