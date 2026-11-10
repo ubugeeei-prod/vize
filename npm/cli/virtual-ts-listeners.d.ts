@@ -145,3 +145,28 @@ export type $ListenerContract<
   __Inferred,
   __Loose
 >;
+export type $ClosedEmit<C, A = C> = [C] extends [never]
+  ? false
+  : 0 extends 1 & C
+    ? false
+    : [
+          C extends { readonly __vizeComponentMarker: true }
+            ? (<G>() => G extends C ? 1 : 2) extends <G>() => G extends A ? 1 : 2
+              ? C extends { __vizeResolveEmitProps?: infer X }
+                ? X extends (...args: any[]) => any
+                  ? false
+                  : true
+                : C extends { __vizeResolveProps?: infer X }
+                  ? X extends (...args: any[]) => any
+                    ? false
+                    : true
+                  : true
+              : false
+            : false,
+        ] extends [true]
+      ? [C extends new (...args: any[]) => { $emit: infer E } ? E : never] extends [infer E]
+        ? [E] extends [never]
+          ? false
+          : [E]
+        : false
+      : false;

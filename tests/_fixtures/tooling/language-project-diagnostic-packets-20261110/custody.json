@@ -1,0 +1,70 @@
+{
+  "schema": "vize.languageProjectDiagnosticPacketSources.v1",
+  "qualificationCredit": false,
+  "predecessors": [
+    {
+      "path": "tests/_fixtures/tooling/language-project-snapshot-walk-20261109/custody.json",
+      "bytes": 6945,
+      "sha256": "6829d7c2b582eb34b332b288199a1adb6d72a37397ff11940a2905dbe2d17a3e"
+    },
+    {
+      "path": "tests/_fixtures/tooling/language-project-demanded-sfc-20261105/custody.json",
+      "bytes": 15087,
+      "sha256": "bbde8603220e9129436c2999eff4f184034663a652b59a2d950cfd5b066a8a6a"
+    }
+  ],
+  "transitions": [
+    {
+      "path": "npm/typescript-plugin/language-service.cjs",
+      "before": {
+        "bytes": 17055,
+        "sha256": "98463aad4e487a0f48521a0441f935a13a19db7144e310465c122fb5321efbee"
+      },
+      "after": {
+        "bytes": 14394,
+        "sha256": "6245cd30429d0fe2e5b47507703c377cce4a337a6c7626dc8593c34b3dbec72c"
+      },
+      "gzip": {
+        "path": "tests/_fixtures/tooling/language-project-diagnostic-packets-20261110/0.language-service.before.cjs.gz",
+        "bytes": 4540,
+        "sha256": "8c12162285e3f29072a5bc287f5a4844827b808e4cdb73f253c4f846f6155c1b"
+      },
+      "edits": [
+        {
+          "before": "const { isSfc } = require(\"./virtual-modules.cjs\");\n",
+          "after": "const { createMappedDiagnostics } = require(\"./diagnostic-packets.cjs\");\nconst { isSfc } = require(\"./virtual-modules.cjs\");\n"
+        },
+        {
+          "before": "  proxy.dispose = () => {\n    support?.dispose?.();\n",
+          "after": "  const diagnostics = createMappedDiagnostics(ts, service, support, relatedInformation, unique);\n  proxy.dispose = () => {\n    diagnostics.dispose();\n    support?.dispose?.();\n"
+        },
+        {
+          "before": "  });\n  for (const method of [\n    \"getSyntacticDiagnostics\",\n    \"getSemanticDiagnostics\",\n    \"getSuggestionDiagnostics\",\n  ]) {\n    proxy[method] = (file) => {\n      support?.ensure?.(file);\n      const document = get(file);\n      if (!document)\n        return service[method](file).map((value) => ({\n          ...value,\n          ...(value.relatedInformation\n            ? { relatedInformation: relatedInformation(value.relatedInformation) }\n            : {}),\n        }));\n      const sourceFile = ts.createSourceFile(file, document.source, ts.ScriptTarget.Latest);\n      const diagnostic = (value) => ({\n        ...value,\n        file: sourceFile,\n        category: ts.DiagnosticCategory.Error,\n      });\n      if (document.error)\n        return method === \"getSemanticDiagnostics\"\n          ? [\n              diagnostic({\n                start: 0,\n                length: 0,\n                code: 100003,\n                source: \"vize\",\n                messageText: document.error,\n              }),\n            ]\n          : [];\n      let applied, current;\n      // Suggestions bypass directives, so they never pay for another semantic check.\n      if (method === \"getSuggestionDiagnostics\") current = service[method](file);\n      else {\n        // EXPECT applies to the complete syntax+semantic set, never a per-packet subset.\n        const syntax = service.getSyntacticDiagnostics(file);\n        const semantic = service.getSemanticDiagnostics(file);\n        applied = support.engine.applyDiagnosticDirectives(document.projection, [\n          ...syntax,\n          ...semantic,\n        ]);\n        const channel = new Set(method === \"getSyntacticDiagnostics\" ? syntax : semantic);\n        current = applied.diagnostics.filter((value) => channel.has(value));\n      }\n      const mapped = current.flatMap((value) => {\n        const range = support.engine.mapLanguageDiagnosticRange(\n          document.projection,\n          value.start ?? 0,\n          value.length ?? 0,\n        );\n        const textSpan =\n          range.fidelity === \"none\" ? undefined : { start: range.start, length: range.length };\n        if (!textSpan && [6133, 6192, 6196].includes(value.code)) return [];\n        const result = { ...value, file: sourceFile, ...(textSpan || { start: 0, length: 0 }) };\n        if (!textSpan)\n          result.messageText = `In generated Vize code: ${ts.flattenDiagnosticMessageText(value.messageText, \"\\n\")}`;\n        if (value.relatedInformation)\n          result.relatedInformation = relatedInformation(value.relatedInformation);\n        return [result];\n      });\n      const nativeSyntax = new Set(document.projection.diagnostics);\n      const authored = (applied?.sourceDiagnostics ?? []).filter((value) =>\n        method === \"getSyntacticDiagnostics\" ? nativeSyntax.has(value) : !nativeSyntax.has(value),\n      );\n      return unique([...mapped, ...authored.map(diagnostic)]);\n    };\n  }\n",
+          "after": "  });\n  Object.assign(proxy, diagnostics.methods);\n"
+        }
+      ]
+    },
+    {
+      "path": "npm/typescript-plugin/virtual-modules.cjs",
+      "before": {
+        "bytes": 18195,
+        "sha256": "9f497680a9c93895b286658d1690e00daa5add2ff95d9d85a31533788dea7d9b"
+      },
+      "after": {
+        "bytes": 18257,
+        "sha256": "c91aa43f12f2c0ac30a8a4cb553af6b1cfa55692b44983381f20d7f81ded054a"
+      },
+      "gzip": {
+        "path": "tests/_fixtures/tooling/language-project-diagnostic-packets-20261110/1.virtual-modules.before.cjs.gz",
+        "bytes": 5178,
+        "sha256": "8bc35ed619d1d36fecd64963c95e36e3b2a04d7915f7c738c431a518b98f86d9"
+      },
+      "edits": [
+        {
+          "before": "    ensure: lazy.ensure.bind(lazy),\n    readSource,\n",
+          "after": "    ensure: lazy.ensure.bind(lazy),\n    projectVersion: originalProjectVersion && projectVersion,\n    readSource,\n"
+        }
+      ]
+    }
+  ]
+}

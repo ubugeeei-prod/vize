@@ -4,7 +4,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
   helpers,
-  GATE_ALIASES,
+  gateAliases,
   prelude,
   shapes,
   literalsFor,
@@ -16,7 +16,7 @@ void test("a guarded gated call has exactly the guarded direct call's type", () 
   const lines = [
     ...prelude,
     helpers,
-    GATE_ALIASES.replaceAll("{emit_props_factory}", "$EmitPropsFactory"),
+    gateAliases(),
     ...Object.entries(shapes).flatMap(([name, shape]) =>
       literalsFor(name).flatMap((literal, index) => guardedUsage(name, shape, literal, index)),
     ),

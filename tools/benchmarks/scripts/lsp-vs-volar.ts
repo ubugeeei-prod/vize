@@ -93,7 +93,7 @@ async function main() {
       "tsgo-mapper": { type: "string" },
       "tsgo-mapper-version": { type: "string" },
       "mapper-modules": { type: "string" },
-      "tsserver-plugin": { type: "string" },
+      "tsserver-plugin": { type: "string", multiple: true },
       "tsserver-plugin-version": { type: "string" },
       "fixtures-dir": { type: "string" },
       rounds: { type: "string" },
@@ -167,14 +167,17 @@ async function main() {
       setup: (workspace, spec) => installContentMapper(workspace, spec, modules),
     });
   }
-  if (values["tsserver-plugin"]) {
-    const root = resolve(values["tsserver-plugin"]);
+  for (const specification of values["tsserver-plugin"] ?? []) {
+    const separator = specification.indexOf("=");
+    const name = separator > 0 ? specification.slice(0, separator) : undefined;
+    const root = resolve(separator > 0 ? specification.slice(separator + 1) : specification);
     const typescript = (
       JSON.parse(readFileSync(join(root, "node_modules/typescript/package.json"), "utf8")) as {
         version: string;
       }
     ).version;
-    const label = `tsserver ${typescript} + vize ${values["tsserver-plugin-version"] ?? "?"} plugin`;
+    const pluginVersion = name ?? values["tsserver-plugin-version"] ?? "?";
+    const label = `tsserver ${typescript} + vize ${pluginVersion} plugin`;
     const install = { root, plugin: "@vizejs/typescript-vue-plugin" };
     factories.push({
       label,
@@ -280,6 +283,12 @@ async function main() {
         mkdirSync(values.logs, { recursive: true });
         const name = `${spec.id}-${factory.label.replace(/[^a-z0-9.]+/gi, "-")}-round${round}.log`;
         copyFileSync(log, join(values.logs, name));
+      }
+      const diagnosticProfile = join(home, ".cache/vize/bench/tsserver-diagnostic-phases.json");
+      if (values.logs && round > 0 && existsSync(diagnosticProfile)) {
+        mkdirSync(values.logs, { recursive: true });
+        const name = `${spec.id}-${factory.label.replace(/[^a-z0-9.]+/gi, "-")}-round${round}-diagnostic-phases.json`;
+        copyFileSync(diagnosticProfile, join(values.logs, name));
       }
       rmSync(home, { recursive: true, force: true });
     }

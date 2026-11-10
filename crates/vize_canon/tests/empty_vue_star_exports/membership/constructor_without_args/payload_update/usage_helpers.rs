@@ -42,6 +42,7 @@ fn restore(current: &str, transition: &Value) -> String {
 /// The pre-helper bytes of a recorded asset's current image. Older images
 /// pass through; the layers below authenticate them.
 pub(super) fn source_before(path: &str, current: String) -> String {
+    let current = super::closed_emit_factory::source_before(path, current);
     let record = record();
     match record["files"]
         .as_array()
@@ -56,6 +57,7 @@ pub(super) fn source_before(path: &str, current: String) -> String {
 
 /// A compiled preamble without the shared per-usage helpers.
 pub(super) fn preamble_before(current: &str) -> String {
+    let current = &super::closed_emit_factory::preamble_before(current);
     let record = record();
     match ["compiledPreamble", "compiledStrictPreamble"]
         .into_iter()
@@ -76,7 +78,10 @@ mod tests {
         let record = record();
         for file in record["files"].as_array().unwrap() {
             let path = file["path"].as_str().unwrap();
-            let current = fs::read_to_string(support::repository().join(path)).unwrap();
+            let current = super::super::closed_emit_factory::source_before(
+                path,
+                fs::read_to_string(support::repository().join(path)).unwrap(),
+            );
             assert!(is_after(&current, file), "{path}");
             let previous = source_before(path, current.clone());
             assert_eq!(support::hash(previous.as_bytes()), file["before"]["sha256"]);
@@ -90,7 +95,7 @@ mod tests {
                 assert!(std::panic::catch_unwind(|| restore(&mutated, file)).is_err());
             }
         }
-        for (current, key) in [
+        for (physical, key) in [
             (
                 vize_canon::virtual_ts::SHARED_PREAMBLE_DTS,
                 "compiledPreamble",
@@ -100,6 +105,7 @@ mod tests {
                 "compiledStrictPreamble",
             ),
         ] {
+            let current = &super::super::closed_emit_factory::preamble_before(physical);
             let preamble = &record[key];
             assert!(is_after(current, preamble));
             let previous = preamble_before(current);

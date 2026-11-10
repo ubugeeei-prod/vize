@@ -18,6 +18,7 @@ const syncCommand = path.join(
 const pluginFiles = [
   "README.md",
   "component-contracts.cjs",
+  "diagnostic-packets.cjs",
   "import-resolution.cjs",
   "index.cjs",
   "index.d.cts",

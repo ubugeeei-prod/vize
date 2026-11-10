@@ -57,6 +57,9 @@ export class TsServerEditor implements Editor {
 
   async start(): Promise<void> {
     const { workspace, env } = this.environment;
+    const diagnosticProfile = env.XDG_CACHE_HOME
+      ? join(env.XDG_CACHE_HOME, "vize/bench/tsserver-diagnostic-phases.json")
+      : undefined;
     const child = spawn(
       process.execPath,
       [
@@ -72,7 +75,17 @@ export class TsServerEditor implements Editor {
         "--pluginProbeLocations",
         this.install.root,
       ],
-      { cwd: workspace, env: { ...process.env, ...env }, stdio: ["pipe", "pipe", "pipe"] },
+      {
+        cwd: workspace,
+        env: {
+          ...process.env,
+          ...env,
+          ...(diagnosticProfile
+            ? { VIZE_TYPESCRIPT_PLUGIN_DIAGNOSTIC_PROFILE: diagnosticProfile }
+            : {}),
+        },
+        stdio: ["pipe", "pipe", "pipe"],
+      },
     );
     this.ts = new TsServerPeer(child);
     await this.ts.request("configure", {

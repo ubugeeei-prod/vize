@@ -2,6 +2,7 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
+import { beforeClosedEmitFactory } from "./closed-emit-factory-transition.ts";
 import { beforeConstructorNoInferReturn } from "./constructor-noinfer-return-transition.ts";
 import { beforeListenerContract } from "./listener-contract-transition.ts";
 import { beforeStaticEmitGate } from "./static-emit-gate-transition.ts";
@@ -50,7 +51,10 @@ function load(): Transition {
 export function beforeProjectionTextBuffer(path: string, current: string): string {
   current = beforeStaticEmitGate(
     path,
-    beforeListenerContract(path, beforeConstructorNoInferReturn(path, current)),
+    beforeListenerContract(
+      path,
+      beforeConstructorNoInferReturn(path, beforeClosedEmitFactory(path, current)),
+    ),
   );
   const file = load().files.find((entry) => entry.path === path);
   if (!file || identity(current).sha256 !== file.after.sha256) return current;

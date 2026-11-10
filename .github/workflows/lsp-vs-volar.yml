@@ -151,6 +151,8 @@ jobs:
           git worktree add "$RUNNER_TEMP/compare" FETCH_HEAD
           (cd "$RUNNER_TEMP/compare" && CARGO_TARGET_DIR="$GITHUB_WORKSPACE/target" cargo build --profile ci-opt -p vize)
           cp target/ci-opt/vize "$RUNNER_TEMP/vize-compare"
+          (cd "$RUNNER_TEMP/compare" && CARGO_TARGET_DIR="$GITHUB_WORKSPACE/target" cargo build --profile ci-opt -p vize_vitrine --features napi,legacy)
+          cp target/ci-opt/libvize_vitrine.so "$RUNNER_TEMP/vize-vitrine-compare.node"
 
       - name: Install the repository's pinned Vue language tools and Corsa
         run: |
@@ -180,6 +182,16 @@ jobs:
           rm -rf "$root/@vizejs/native/node_modules" "$root/@vizejs/typescript-vue-plugin/node_modules"
           # The project's TypeScript: the same tsserver the Volar row runs.
           ln -s "$RUNNER_TEMP/tools/node_modules/typescript" "$root/typescript"
+
+          if [ -n "$COMPARE_REF" ]; then
+            root="$RUNNER_TEMP/tsserver-plugin-compare/node_modules"
+            mkdir -p "$root/@vizejs"
+            cp -R "$RUNNER_TEMP/compare/npm/native" "$root/@vizejs/native"
+            cp "$RUNNER_TEMP/vize-vitrine-compare.node" "$root/@vizejs/native/vize-vitrine.linux-x64-gnu.node"
+            cp -R "$RUNNER_TEMP/compare/npm/typescript-plugin" "$root/@vizejs/typescript-vue-plugin"
+            rm -rf "$root/@vizejs/native/node_modules" "$root/@vizejs/typescript-vue-plugin/node_modules"
+            ln -s "$RUNNER_TEMP/tools/node_modules/typescript" "$root/typescript"
+          fi
 
       - name: Install the content-mapper row (TypeScript native LSP + published vize mapper)
         if: ${{ env.TSGO_MAPPER != '' }}
@@ -234,7 +246,10 @@ jobs:
             fi
           done
           if [ "$TSSERVER_PLUGIN" = true ]; then
-            args+=(--tsserver-plugin "$RUNNER_TEMP/tsserver-plugin" --tsserver-plugin-version "head")
+            args+=(--tsserver-plugin "head=$RUNNER_TEMP/tsserver-plugin")
+            if [ -n "$COMPARE_REF" ]; then
+              args+=(--tsserver-plugin "compare=$RUNNER_TEMP/tsserver-plugin-compare")
+            fi
           fi
           while read -r name version; do args+=(--meta "$name=$version"); done < "$RUNNER_TEMP/tools/versions.txt"
           # Below 16 GiB available the session is killed and reported, so no server takes the runner down.
