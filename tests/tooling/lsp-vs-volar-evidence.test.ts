@@ -11,6 +11,7 @@ import {
   lspLocations,
   workspaceEditLocations,
 } from "../../tools/benchmarks/scripts/lsp-vs-volar-editors.ts";
+import { diagnosticConvergenceFailures } from "../../tools/benchmarks/scripts/lsp-vs-volar-convergence.ts";
 import {
   FIXTURES,
   SCRIPT_BROKEN,
@@ -258,6 +259,34 @@ test("reports exclude failed samples from latency and say so", () => {
   assert.match(text, /- volar 3, round 1: cycle 1/);
 });
 
+test("the 5k gate requires every Vize diagnostic edit to converge", () => {
+  const complete = session("vize head", 5, true);
+  complete.edits = [
+    { cycle: 0, probe: "script", phase: "repair", ms: 1, ok: true, cpuSeconds: 0 },
+    { cycle: 1, probe: "script", phase: "break", ms: 1, ok: true, cpuSeconds: 0 },
+    { cycle: 1, probe: "script", phase: "repair", ms: 1, ok: true, cpuSeconds: 0 },
+    { cycle: 1, probe: "template", phase: "break", ms: 1, ok: true, cpuSeconds: 0 },
+    { cycle: 1, probe: "template", phase: "repair", ms: 1, ok: true, cpuSeconds: 0 },
+  ];
+  const run = {
+    options: { cycles: 1 },
+    runs: {
+      "scale-5k": {
+        sessions: [complete, { ...complete, editor: "vize compare", edits: [] }],
+        crashes: ["vize compare, round 1: session aborted: expected historical failure"],
+      },
+    },
+  };
+  assert.deepEqual(diagnosticConvergenceFailures(run, "scale-5k"), []);
+
+  complete.edits[3].ok = false;
+  complete.edits.length = 4;
+  assert.deepEqual(diagnosticConvergenceFailures(run, "scale-5k"), [
+    "scale-5k: vize head, round 1: recorded 4/5 required edit samples",
+    "scale-5k: vize head, round 1: cycle 1 template break diagnostics did not converge",
+  ]);
+});
+
 test("performance targets require every correct p50 and p99 plus cold and warm memory", () => {
   const candidate = session("vize head", 1, true);
   const reference = session("volar 3", 10, true);
@@ -311,6 +340,7 @@ test("the workflow keeps evidence after failure and measures the checked-out sou
     /\[ "\$GITHUB_EVENT_NAME" = pull_request \] && \[ "\$JOB" = scale-giant-sfc \]/,
   );
   assert.match(workflow, /--rounds "\$rounds" --cycles "\$cycles"/);
+  assert.match(workflow, /lsp-vs-volar-convergence\.ts/);
   assert.match(workflow, /--vize "head-tsrs-fast=\$RUNNER_TEMP\/vize-head"/);
   assert.match(workflow, /head-tsrs-fast:CORSA_PATH=\$tsrs_fast/);
   assert.match(workflow, /export TSRS_FAST=1/);
