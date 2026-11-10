@@ -63,6 +63,7 @@ function namespaceContainsValue(statement: ts.ModuleDeclaration): boolean {
   const body = statement.body;
   if (body == null) return false;
   if (ts.isModuleDeclaration(body)) return namespaceContainsValue(body);
+  if (!ts.isModuleBlock(body)) return false;
   return body.statements.some(isValueDeclaration);
 }
 
