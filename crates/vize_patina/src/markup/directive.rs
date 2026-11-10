@@ -126,6 +126,26 @@ impl<'a> MarkupDirective<'a> {
             .is_some_and(|arg| arg.eq_ignore_ascii_case(expected))
     }
 
+    /// Whether this directive has a static argument with the exact name.
+    pub fn is_static_arg_exact(&self, expected: &str) -> bool {
+        match self.inner {
+            MarkupDirectiveInner::Relief(node) => match node.arg.as_ref() {
+                Some(ExpressionNode::Simple(argument)) => {
+                    argument.is_static && argument.content == expected
+                }
+                _ => false,
+            },
+            MarkupDirectiveInner::Jsx { node, .. } => {
+                jsx_attribute_arg_name(jsx_attribute_ref(node)) == Some(expected)
+            }
+            MarkupDirectiveInner::L2(binding) => binding
+                .arg()
+                .is_some_and(|(argument, is_static)| is_static && argument == expected),
+            MarkupDirectiveInner::Surface { attr, .. } => Self::surface(attr)
+                .is_some_and(|directive| directive.arg_static && directive.arg == Some(expected)),
+        }
+    }
+
     /// Visit the directive's modifiers (`stop`/`prevent` for `@click.stop`,
     /// `trim` for `v-model.trim`). OXC JSX has no modifier syntax, so this is
     /// empty for directives read straight off the OXC AST.

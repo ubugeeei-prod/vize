@@ -5,7 +5,7 @@ import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 import { parse } from "yaml";
-import "./npm-bootstrap-auth.test.ts";
+import "./npm-trusted-publishing.test.ts";
 import { cadenceDecision } from "../../../tools/support/release/release/cadence.ts";
 import {
   cadenceRegistryDecision,

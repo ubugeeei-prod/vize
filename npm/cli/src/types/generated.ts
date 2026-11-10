@@ -348,6 +348,9 @@ export interface LintRuleOptions {
     submit?: boolean;
     reset?: boolean;
   };
+  "vue/no-use-v-if-with-v-for"?: {
+    allowUsingIterationVar?: boolean;
+  };
   "vue/html-quotes"?:
     | ("double" | "single")
     | {

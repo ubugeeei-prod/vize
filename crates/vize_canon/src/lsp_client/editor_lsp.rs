@@ -44,6 +44,7 @@ mod declaration;
 mod file_rename;
 mod implementation;
 mod inlay_hint;
+mod interrupt;
 #[cfg(test)]
 pub(crate) mod logical_disk_control;
 mod materialized;
@@ -63,6 +64,7 @@ mod tests;
 mod type_definition;
 #[cfg(all(test, unix))]
 mod watch_settle_tests;
+pub(crate) use interrupt::EditorLspInterrupt;
 pub(super) use original_program::OriginalDiagnosingSession;
 use requests::{
     RawDefinitionRequest, RawHoverRequest, RawPrepareRenameRequest, RawReferencesRequest,
@@ -85,6 +87,14 @@ pub(super) struct EditorLspSession {
     shutdown_to_eof: bool,
     /// Last text mirrored into the server, keyed by session document URI.
     documents: DocumentTexts,
+    /// Exact project files read directly from the materialized workspace.
+    ///
+    /// These identities participate in the same request view as open
+    /// overlays, but do not need a `didOpen` copy of bytes already owned by
+    /// the private on-disk project.
+    disk_documents: DocumentTexts,
+    /// Whether exact on-disk project files should stay closed in the editor.
+    prefer_disk_documents: bool,
     /// Protocol version of each open document. The text lives only in
     /// `documents`; notifications are written from it directly.
     versions: FxHashMap<String, i32>,
@@ -137,6 +147,8 @@ impl EditorLspSession {
             closed: false,
             shutdown_to_eof,
             documents: Default::default(),
+            disk_documents: Default::default(),
+            prefer_disk_documents: false,
             versions: Default::default(),
             tracked_documents: None,
             issued_completions: Default::default(),

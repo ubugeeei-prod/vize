@@ -116,8 +116,8 @@ export const chineseVue1: Record<string, readonly [purpose: string, bad: string,
   ],
   "vue/no-use-v-if-with-v-for": [
     "禁止在同一元素上使用 `v-if` 与 `v-for`",
-    "同一个列表元素同时使用 v-if 和 v-for，并通过循环绑定检查可见性。",
-    "计算属性中的集合先筛选出可见项，再由模板进行迭代。",
+    "同一个列表元素同时使用 v-if 和 v-for，但条件没有引用循环变量。",
+    "启用 allowUsingIterationVar 后，条件可以引用同一个 v-for 中的 item。",
   ],
   "vue/no-useless-mustaches": [
     "禁止表达式为常量字符串字面量的双花括号插值",

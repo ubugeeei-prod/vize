@@ -43,80 +43,111 @@ static META: RuleMeta = RuleMeta {
 /// Disallow using v-if with v-for on the same element
 pub struct NoUseVIfWithVFor;
 
+pub(crate) struct ConfiguredNoUseVIfWithVFor {
+    allow_using_iteration_var: bool,
+}
+
+impl NoUseVIfWithVFor {
+    pub(crate) fn configured(allow_using_iteration_var: bool) -> ConfiguredNoUseVIfWithVFor {
+        ConfiguredNoUseVIfWithVFor {
+            allow_using_iteration_var,
+        }
+    }
+}
+
+fn check_element<'a>(
+    ctx: &mut LintContext<'a>,
+    element: &ElementNode<'a>,
+    allow_using_iteration_var: bool,
+) {
+    let mut v_if_info = None;
+    let mut v_for_info = None;
+
+    // Collect v-if and v-for info
+    for prop in element.props.iter() {
+        if let PropNode::Directive(dir) = prop {
+            match dir.name {
+                "if" => {
+                    v_if_info = Some((dir.loc.clone(), dir.exp.as_ref()));
+                }
+                "for" => {
+                    v_for_info = Some((dir.loc.clone(), dir.exp.as_ref()));
+                }
+                _ => {}
+            }
+        }
+    }
+
+    // Check if both exist
+    if let (Some((v_if_loc, v_if_exp)), Some((v_for_loc, v_for_exp))) = (v_if_info, v_for_info) {
+        // Extract v-for variables
+        let v_for_vars: Vec<String> = v_for_exp
+            .map(|exp| {
+                parse_v_for_variables(exp)
+                    .into_iter()
+                    .map(|s| s.to_compact_string())
+                    .collect()
+            })
+            .unwrap_or_default();
+
+        // Check if v-if uses any v-for variables. Match resolved
+        // identifiers, not raw substrings, so `v-for="item in items"`
+        // plus `v-if="itemCount > 0"` does not misclassify `itemCount`
+        // as a reference to `item`. (#968)
+        let v_if_uses_v_for_var = if let Some(exp) = v_if_exp {
+            let v_if_content = match exp {
+                ExpressionNode::Simple(s) => s.content,
+                ExpressionNode::Compound(_) => "",
+            };
+            v_for_vars
+                .iter()
+                .any(|var| expression_references_identifier(v_if_content, var.as_str()))
+        } else {
+            false
+        };
+
+        if allow_using_iteration_var && v_if_uses_v_for_var {
+            return;
+        }
+
+        let message = if v_if_uses_v_for_var {
+            ctx.t("vue/no-use-v-if-with-v-for.message_perf")
+        } else {
+            ctx.t("vue/no-use-v-if-with-v-for.message_access")
+        };
+
+        let help = ctx.t("vue/no-use-v-if-with-v-for.help");
+
+        let diagnostic = LintDiagnostic::warn(
+            META.name,
+            message.as_ref(),
+            v_if_loc.span.start,
+            v_if_loc.span.end,
+        )
+        .with_help(help.as_ref())
+        .with_label("v-for is here", v_for_loc.span.start, v_for_loc.span.end);
+
+        ctx.report(diagnostic);
+    }
+}
+
 impl Rule for NoUseVIfWithVFor {
     fn meta(&self) -> &'static RuleMeta {
         &META
     }
 
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
-        let mut v_if_info = None;
-        let mut v_for_info = None;
+        check_element(ctx, element, false);
+    }
+}
 
-        // Collect v-if and v-for info
-        for prop in element.props.iter() {
-            if let PropNode::Directive(dir) = prop {
-                match dir.name {
-                    "if" => {
-                        v_if_info = Some((dir.loc.clone(), dir.exp.as_ref()));
-                    }
-                    "for" => {
-                        v_for_info = Some((dir.loc.clone(), dir.exp.as_ref()));
-                    }
-                    _ => {}
-                }
-            }
-        }
+impl Rule for ConfiguredNoUseVIfWithVFor {
+    fn meta(&self) -> &'static RuleMeta {
+        &META
+    }
 
-        // Check if both exist
-        if let (Some((v_if_loc, v_if_exp)), Some((v_for_loc, v_for_exp))) = (v_if_info, v_for_info)
-        {
-            // Extract v-for variables
-            let v_for_vars: Vec<String> = v_for_exp
-                .map(|exp| {
-                    parse_v_for_variables(exp)
-                        .into_iter()
-                        .map(|s| s.to_compact_string())
-                        .collect()
-                })
-                .unwrap_or_default();
-
-            // Check if v-if uses any v-for variables. Match resolved
-            // identifiers, not raw substrings, so `v-for="item in items"`
-            // plus `v-if="itemCount > 0"` does not misclassify `itemCount`
-            // as a reference to `item`. (#968)
-            let v_if_uses_v_for_var = if let Some(exp) = v_if_exp {
-                let v_if_content = match exp {
-                    ExpressionNode::Simple(s) => s.content,
-                    ExpressionNode::Compound(_) => "",
-                };
-                v_for_vars
-                    .iter()
-                    .any(|var| expression_references_identifier(v_if_content, var.as_str()))
-            } else {
-                false
-            };
-
-            // If v-if uses v-for variables, it's a filtering pattern which is less problematic
-            // but still not recommended. We warn in both cases.
-            let message = if v_if_uses_v_for_var {
-                ctx.t("vue/no-use-v-if-with-v-for.message_perf")
-            } else {
-                ctx.t("vue/no-use-v-if-with-v-for.message_access")
-            };
-
-            let help = ctx.t("vue/no-use-v-if-with-v-for.help");
-
-            let diagnostic = LintDiagnostic::warn(
-                META.name,
-                message.as_ref(),
-                v_if_loc.span.start,
-                v_if_loc.span.end,
-            )
-            .with_help(help.as_ref())
-            .with_label("v-for is here", v_for_loc.span.start, v_for_loc.span.end);
-
-            ctx.report(diagnostic);
-        }
+    fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
+        check_element(ctx, element, self.allow_using_iteration_var);
     }
 }
 
@@ -129,6 +160,14 @@ mod tests {
     fn create_linter() -> Linter {
         let mut registry = RuleRegistry::new();
         registry.register(Box::new(NoUseVIfWithVFor));
+        Linter::with_registry(registry)
+    }
+
+    fn create_configured_linter(allow_using_iteration_var: bool) -> Linter {
+        let mut registry = RuleRegistry::new();
+        registry.register(Box::new(NoUseVIfWithVFor::configured(
+            allow_using_iteration_var,
+        )));
         Linter::with_registry(registry)
     }
 
@@ -214,6 +253,26 @@ mod tests {
             "test.vue",
         );
         assert_eq!(result.warning_count, 1);
+    }
+
+    #[test]
+    fn configured_policy_allows_iteration_variable_references_only() {
+        let linter = create_configured_linter(true);
+        let allowed = linter.lint_template(
+            r#"<div v-for="item in items" v-if="item.active">{{ item }}</div>"#,
+            "test.vue",
+        );
+        assert_eq!(allowed.warning_count, 0, "{:#?}", allowed.diagnostics);
+
+        let rejected = linter.lint_template(
+            r#"<div v-for="item in items" v-if="showAll">{{ item }}</div>"#,
+            "test.vue",
+        );
+        assert_eq!(rejected.warning_count, 1, "{:#?}", rejected.diagnostics);
+        assert_eq!(
+            rejected.diagnostics[0].message,
+            "Avoid using v-if with v-for on the same element. The v-if condition does not have access to v-for scope variables"
+        );
     }
 }
 

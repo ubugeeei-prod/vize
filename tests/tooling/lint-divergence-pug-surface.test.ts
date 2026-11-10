@@ -5,11 +5,45 @@
 // positives. Findings elsewhere in the same SFC are still compared.
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
+import { createHash } from "node:crypto";
 import fs from "node:fs";
+import { createRequire } from "node:module";
 import path from "node:path";
 import { test } from "node:test";
+import {
+  baselineConfig,
+  resolveBaselineRuntime,
+} from "../../tools/support/compat/fixtures/lint-divergence-baseline.mjs";
 
 const repoRoot = path.resolve(import.meta.dirname, "..", "..");
+const parityRoot = path.join(repoRoot, "tests/_fixtures/pug-jade-surface-audit-8908");
+
+function sha256(source: string): string {
+  return createHash("sha256").update(source).digest("hex");
+}
+
+function gitBlobSha(source: string): string {
+  const body = Buffer.from(source);
+  return createHash("sha1").update(`blob ${body.byteLength}\0`).update(body).digest("hex");
+}
+
+function signature(
+  messages: Array<{ ruleId?: string | null; severity?: number; message?: string }>,
+) {
+  const counts = new Map<string, number>();
+  for (const message of messages) {
+    if (message.ruleId == null || message.message === undefined) continue;
+    const row = JSON.stringify({
+      ruleId: message.ruleId,
+      severity: message.severity === 2 ? "error" : "warning",
+      message: message.message,
+    });
+    counts.set(row, (counts.get(row) ?? 0) + 1);
+  }
+  return [...counts]
+    .map(([row, count]) => ({ ...JSON.parse(row), count }))
+    .sort((left, right) => JSON.stringify(left).localeCompare(JSON.stringify(right)));
+}
 
 test("the TypeScript runner keeps pug template findings out of the scored surface", () => {
   fs.mkdirSync(path.join(repoRoot, "target"), { recursive: true });
@@ -101,4 +135,56 @@ test("the TypeScript runner keeps pug template findings out of the scored surfac
     fs.rmSync(fixtureDir, { recursive: true, force: true });
     fs.rmSync(outputDir, { recursive: true, force: true });
   }
+});
+
+test("a pinned dho Pug project measures eslint-plugin-vue parity through its HTML twin", async () => {
+  const pugPath = path.join(parityRoot, "dho-current-balance.pug.vue.txt");
+  const htmlPath = path.join(parityRoot, "dho-current-balance.html.vue.txt");
+  const evidence = JSON.parse(
+    fs.readFileSync(path.join(parityRoot, "dho-current-balance-lint-parity.json"), "utf8"),
+  );
+  const pugSource = fs.readFileSync(pugPath, "utf8");
+  const htmlSource = fs.readFileSync(htmlPath, "utf8");
+  assert.equal(sha256(pugSource), evidence.source.sha256);
+  assert.equal(gitBlobSha(pugSource), evidence.source.blobSha);
+  assert.equal(sha256(htmlSource), evidence.renderer.htmlTwinSha256);
+
+  const requireFromTests = createRequire(path.join(repoRoot, "tests/package.json"));
+  const pug = requireFromTests("pug") as {
+    render(source: string, options: Record<string, unknown>): string;
+  };
+  const pugVersion = requireFromTests("pug/package.json").version;
+  assert.equal(pugVersion, evidence.renderer.version);
+  const template = /<template lang="pug">\n([\s\S]*?)\n<\/template>/u.exec(pugSource);
+  assert.ok(template);
+  const rendered = pug.render(template[1], {
+    filename: pugPath,
+    doctype: "html",
+    pretty: false,
+  });
+  assert.equal(
+    pugSource.replace(template[0], `<template>${rendered}</template>`),
+    htmlSource,
+    "the ESLint input must be the pinned Pug rendering, not a hand-authored twin",
+  );
+
+  const runtime = resolveBaselineRuntime();
+  assert.equal(runtime.version, evidence.baseline.version);
+  const eslint = new runtime.ESLint({
+    cwd: repoRoot,
+    overrideConfigFile: true,
+    overrideConfig: baselineConfig(runtime, { "vue/require-v-for-key": "error" }),
+  });
+  const [result] = await eslint.lintText(htmlSource, {
+    filePath: path.join(repoRoot, "target/dho-current-balance.vue"),
+  });
+  assert.ok(result);
+  const baselineSignatures = evidence.signatures.map(
+    ({ ruleId, severity, upstreamMessage, patinaMessage, count }: Record<string, unknown>) => {
+      assert.equal(typeof patinaMessage, "string");
+      assert.equal(patinaMessage, `${upstreamMessage as string} Element: <div>`);
+      return { ruleId, severity, message: upstreamMessage, count };
+    },
+  );
+  assert.deepEqual(signature(result.messages), baselineSignatures);
 });
