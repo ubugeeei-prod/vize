@@ -20,9 +20,11 @@
 
 use crate::context::LintContext;
 use crate::diagnostic::{LintDiagnostic, Severity};
+use crate::ir::ByteRange;
+use crate::markup::{MarkupContext, MarkupDirective, MarkupElement, MarkupRule};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_l0::dialect::VueDialect;
-use vize_relief::{DirectiveNode, ElementNode, ExpressionNode};
+use vize_relief::{DirectiveNode, ElementNode};
 
 static META: RuleMeta = RuleMeta {
     name: "vue/no-deprecated-v-is",
@@ -35,9 +37,63 @@ static META: RuleMeta = RuleMeta {
 /// Disallow the deprecated `v-is` directive.
 pub struct NoDeprecatedVIs;
 
+impl NoDeprecatedVIs {
+    fn key_range(directive: &MarkupDirective<'_>) -> ByteRange {
+        let start = directive.range().start;
+        let mut last_modifier = None;
+        directive.walk_modifier_ranges(&mut |_modifier, range| {
+            last_modifier = Some(range);
+        });
+        if let Some(range) = last_modifier {
+            return ByteRange::new(start, range.end);
+        }
+        if let Some(range) = directive.argument_range() {
+            return ByteRange::new(start, range.end);
+        }
+        ByteRange::new(start, start.saturating_add("v-is".len() as u32))
+    }
+
+    fn check(ctx: &mut LintContext<'_>, directive: &MarkupDirective<'_>) {
+        // Only the default Vue 3 dialect ever shipped `v-is` as a built-in.
+        if !directive.name_eq("is") || ctx.dialect() != VueDialect::Vue {
+            return;
+        }
+
+        let range = Self::key_range(directive);
+        ctx.report(
+            LintDiagnostic::warn(
+                META.name,
+                ctx.t("vue/no-deprecated-v-is.message").as_ref(),
+                range.start,
+                range.end,
+            )
+            .with_help(ctx.t("vue/no-deprecated-v-is.help").as_ref()),
+        );
+    }
+}
+
+impl MarkupRule for NoDeprecatedVIs {
+    fn name(&self) -> &'static str {
+        META.name
+    }
+
+    fn enter_directive<'a>(
+        &self,
+        ctx: &mut MarkupContext<'_, 'a>,
+        _element: &MarkupElement<'a>,
+        directive: &MarkupDirective<'a>,
+    ) {
+        Self::check(ctx.lint(), directive);
+    }
+}
+
 impl Rule for NoDeprecatedVIs {
     fn meta(&self) -> &'static RuleMeta {
         &META
+    }
+
+    fn as_markup_rule(&self) -> Option<&dyn MarkupRule> {
+        Some(self)
     }
 
     fn check_directive<'a>(
@@ -46,41 +102,8 @@ impl Rule for NoDeprecatedVIs {
         _element: &ElementNode<'a>,
         directive: &DirectiveNode<'a>,
     ) {
-        // Only the default Vue 3 dialect ever shipped `v-is` as a built-in.
-        if directive.name != "is" || ctx.dialect() != VueDialect::Vue {
-            return;
-        }
-
-        // Report the directive key (`v-is`, with any argument and modifiers)
-        // rather than its value, as eslint-plugin-vue does.
-        let start = directive.loc.span.start;
-        let end = key_end(directive).unwrap_or(directive.loc.span.end);
-        ctx.report(
-            LintDiagnostic::warn(
-                META.name,
-                ctx.t("vue/no-deprecated-v-is.message").as_ref(),
-                start,
-                end,
-            )
-            .with_help(ctx.t("vue/no-deprecated-v-is.help").as_ref()),
-        );
+        Self::check(ctx, &MarkupDirective::from_relief(directive));
     }
-}
-
-/// End offset of the directive key: the last modifier, else the argument,
-/// else the bare `v-is` name.
-fn key_end(directive: &DirectiveNode) -> Option<u32> {
-    if let Some(last) = directive.modifiers.last() {
-        return Some(last.loc.span.end);
-    }
-    if let Some(arg) = &directive.arg {
-        return Some(match arg {
-            ExpressionNode::Simple(simple) => simple.loc.span.end,
-            ExpressionNode::Compound(compound) => compound.loc.span.end,
-        });
-    }
-    let name_len = u32::try_from(directive.raw_name?.len()).ok()?;
-    directive.loc.span.start.checked_add(name_len)
 }
 
 #[cfg(test)]

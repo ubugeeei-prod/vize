@@ -53,6 +53,8 @@ pub(in crate::linter::engine) const RULES: &[&str] = &[
     "vue/no-deprecated-inline-template",
     "vue/no-deprecated-router-link-tag-prop",
     "vue/no-deprecated-html-element-is",
+    "vue/require-component-is",
+    "vue/no-deprecated-v-is",
     "a11y/heading-levels",
     "a11y/placeholder-label-option",
     "a11y/use-list",

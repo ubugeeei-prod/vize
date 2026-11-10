@@ -55,4 +55,4 @@ Depois, execute `vp run lint`.
 
 - [Regras Vue](../vue.md)
 - [Todas as regras](../all.md)
-- [Código-fonte](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_deprecated_v_is.rs#L27)
+- [Código-fonte](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_deprecated_v_is.rs#L29)
