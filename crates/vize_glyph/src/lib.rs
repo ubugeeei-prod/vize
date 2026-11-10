@@ -57,12 +57,14 @@ mod sort_imports;
 pub use sort_imports::{ImportSortOptions, resolve_sort_imports};
 mod style;
 mod template;
+mod tsrx;
 mod vue_version;
 
 pub use error::*;
 pub use formatter::*;
 pub use json::{format_json_source as format_json, format_jsonc_source as format_jsonc};
 pub use options::*;
+pub use tsrx::format_tsrx;
 pub use vize_l0::Allocator;
 use vize_l0::String;
 pub use vue_version::*;

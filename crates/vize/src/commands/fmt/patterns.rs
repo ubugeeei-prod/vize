@@ -5,15 +5,15 @@ use vize_l0::dialect::FileKind;
 /// Data formats the formatter reads beside Vize source kinds.
 const DATA_EXTENSIONS: &[&str] = &["json", "jsonc", "yaml", "yml", "md", "markdown"];
 
-pub(super) const FORMAT_EXTENSIONS_DISPLAY: &str = ".vue, .js, .mjs, .cjs, .ts, .mts, .cts, .jsx, .tsx, .json, .jsonc, .yaml, .yml, .md, or .markdown";
+pub(super) const FORMAT_EXTENSIONS_DISPLAY: &str = ".vue, .js, .mjs, .cjs, .ts, .mts, .cts, .jsx, .tsx, .tsrx, .json, .jsonc, .yaml, .yml, .md, or .markdown";
 
-pub(super) const FORMAT_PATTERN_HELP: &str = "Vue/JS/TS/JSON/JSONC globs; YAML/Markdown formatting is not implemented\n\n[default: ./**/*.vue ./**/*.js ./**/*.mjs ./**/*.cjs ./**/*.ts ./**/*.mts ./**/*.cts ./**/*.jsx ./**/*.tsx ./**/*.json ./**/*.jsonc]";
+pub(super) const FORMAT_PATTERN_HELP: &str = "Vue/JS/TS/TSRX/JSON/JSONC globs; YAML/Markdown formatting is not implemented\n\n[default: ./**/*.vue ./**/*.js ./**/*.mjs ./**/*.cjs ./**/*.ts ./**/*.mts ./**/*.cts ./**/*.jsx ./**/*.tsx ./**/*.tsrx ./**/*.json ./**/*.jsonc]";
 
 /// The source kinds Glyph formats.
 const fn formats_kind(kind: FileKind) -> bool {
     match kind {
-        FileKind::Sfc | FileKind::Script(_) => true,
-        FileKind::Document | FileKind::Tsrx => false,
+        FileKind::Sfc | FileKind::Script(_) | FileKind::Tsrx => true,
+        FileKind::Document => false,
     }
 }
 
@@ -65,7 +65,7 @@ mod tests {
     #[test]
     fn default_patterns_cover_only_implemented_format_extensions() {
         let expected = [
-            "vue", "js", "mjs", "cjs", "ts", "mts", "cts", "jsx", "tsx", "json", "jsonc",
+            "vue", "js", "mjs", "cjs", "ts", "mts", "cts", "jsx", "tsx", "tsrx", "json", "jsonc",
         ]
         .iter()
         .map(|extension| vize_l0::cstr!("./**/*.{extension}"))
@@ -80,11 +80,18 @@ mod tests {
 
     #[test]
     fn format_targets_follow_the_file_kind() {
-        for file in ["App.vue", "main.ts", "env.d.ts", "View.tsx", "a.json"] {
+        for file in [
+            "App.vue",
+            "main.ts",
+            "env.d.ts",
+            "View.tsx",
+            "Counter.tsrx",
+            "a.json",
+        ] {
             assert!(is_format_target(Path::new(file)), "{file}");
             assert!(!is_unimplemented_document(Path::new(file)), "{file}");
         }
-        for file in ["index.html", "Counter.tsrx", "style.css", "App.VUE", ".vue"] {
+        for file in ["index.html", "style.css", "App.VUE", ".vue"] {
             assert!(!is_format_target(Path::new(file)), "{file}");
         }
     }

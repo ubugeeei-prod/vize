@@ -99,11 +99,42 @@ pub(crate) fn format_document_with_context(
         Err(_) => return None,
     };
 
-    if !formatted.changed {
-        return Some(vec![]);
-    }
+    Some(whole_document_edit(
+        content,
+        &formatted.code,
+        formatted.changed,
+    ))
+}
 
-    Some(vec![TextEdit {
+/// Format a TSRX module: the host TypeScript around verbatim markup regions.
+/// `None` when the module has a syntax error.
+#[cfg(feature = "glyph")]
+pub(crate) fn format_tsrx_document_with_context(
+    content: &str,
+    context: &FormatterContext,
+) -> Option<Vec<TextEdit>> {
+    let allocator = vize_glyph::Allocator::with_capacity(content.len());
+    let code = vize_glyph::format_tsrx(
+        content,
+        &context.options,
+        &allocator,
+        context.sorting.as_ref(),
+    )
+    .ok()?;
+    Some(whole_document_edit(
+        content,
+        &code,
+        code.as_str() != content,
+    ))
+}
+
+/// No edit for unchanged text, else one edit replacing the whole document.
+#[cfg(feature = "glyph")]
+fn whole_document_edit(content: &str, code: &str, changed: bool) -> Vec<TextEdit> {
+    if !changed {
+        return vec![];
+    }
+    vec![TextEdit {
         range: Range {
             start: Position::new(0, 0),
             end: eof_position(content),
@@ -112,8 +143,8 @@ pub(crate) fn format_document_with_context(
             clippy::disallowed_methods,
             reason = "lsp_types fields store std String"
         )]
-        new_text: formatted.code.to_string(),
-    }])
+        new_text: code.to_string(),
+    }]
 }
 
 #[cfg(feature = "glyph")]
