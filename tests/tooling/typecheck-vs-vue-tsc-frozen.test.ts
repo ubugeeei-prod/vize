@@ -222,12 +222,12 @@ test("whole provider fixture bytes and immutable source/SDK closure stay pinned"
     providerPins.package,
   );
   assert.equal(source, "20bb9c3d8adadaf541e9986926a0e985a31bdef5");
-  assert.equal(sourceBodies.length, 13);
+  assert.equal(sourceBodies.length, 16);
   assert.equal(
     sourceBodies.filter(
       (row) => row.file.startsWith("npm/cli/") && row.file !== "npm/cli/package.json",
     ).length,
-    10,
+    13,
   );
   for (const row of sourceBodies) {
     assert.equal(hash(execFileSync("git", ["show", source + ":" + row.file])), row.sha256);

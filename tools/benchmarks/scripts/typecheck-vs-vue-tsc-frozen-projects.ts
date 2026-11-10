@@ -56,6 +56,21 @@ export const sourceBodies = [
     sha256: "e42c2c431553563663e28f75b4e68f8728d928a2867c857c76ef8cf30fe0f545",
   },
   {
+    file: "npm/cli/virtual-ts-emit-overloads.d.ts",
+    bytes: 4734,
+    sha256: "0b669c394a0d5c58d90090749321cf650594d6a5be74e72ed7a2797840e49268",
+  },
+  {
+    file: "npm/cli/virtual-ts-emits.d.ts",
+    bytes: 3539,
+    sha256: "870774cb9f53d39bc7f0165695c9c4016cc01d608964a46703a520d5e9d6d5aa",
+  },
+  {
+    file: "npm/cli/virtual-ts-listeners.d.ts",
+    bytes: 4101,
+    sha256: "bef58ac085eda768a4614b7bafa86489732f92e6375d250a442e2d9fec2bb01b",
+  },
+  {
     file: "npm/cli/virtual-ts-slots.d.ts",
     bytes: 4134,
     sha256: "3b2f3387f8e720bdffd4ed864b74af6fa19895a89ba6f2f64151fd8dd98bdf9f",
@@ -187,7 +202,7 @@ export function verifySource(root: string, provider?: string) {
         edges.push({ file: declaration.file, specifier: ref.fileName, target });
       }
     }
-    assert.equal(edges.length, 13);
+    assert.equal(edges.length, 23);
   }
   return {
     source,
@@ -195,7 +210,7 @@ export function verifySource(root: string, provider?: string) {
     sdkRoles,
     edges,
     sdkScope:
-      "whole Cargo files/seven locked SDK4 roles and ten declaration bodies; source identity, not native loaded-library membership",
+      "whole Cargo files/seven locked SDK4 roles and thirteen declaration bodies; source identity, not native loaded-library membership",
   };
 }
 /** Package exports govern imports, not reading our own npm-ci-owned metadata file. */
