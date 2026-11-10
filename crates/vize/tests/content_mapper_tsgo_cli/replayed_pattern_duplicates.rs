@@ -102,7 +102,7 @@ fn standard_tsgo_reports_each_replayed_pattern_diagnostic_once() {
     std::fs::create_dir_all(&parent_dir).unwrap();
     let project = tempfile::Builder::new()
         .prefix("replayed-pattern-duplicates-")
-        .tempdir_in(parent_dir)
+        .tempdir_in(&parent_dir)
         .unwrap();
     let root = project.path();
     install_mapper_manifest(root);
