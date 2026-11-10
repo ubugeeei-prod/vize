@@ -50,7 +50,10 @@ fn known_vue_kind_difference(
             Some(SetupConst),
             Some(SetupMaybeRef | SetupReactiveConst | LiteralConst)
         ) | (Some(LiteralConst), Some(SetupConst))
-            | (Some(SetupMaybeRef), Some(SetupRef | SetupReactiveConst))
+            | (
+                Some(SetupMaybeRef),
+                Some(SetupConst | SetupRef | SetupReactiveConst)
+            )
             | (
                 Some(SetupLet),
                 Some(SetupConst | SetupRef | SetupReactiveConst)
@@ -133,6 +136,19 @@ fn every_corpus_setup_binding_matches_croquis() {
         "compared {bindings} bindings in {compared} setup scripts ({patterns} with unclassified props); intentional Vue differences {intentional:?}"
     );
     assert!(compared > 1000, "corpus shrank to {compared} setup scripts");
+    assert_eq!(
+        intentional,
+        BTreeMap::from([
+            (cstr!("LiteralConst <- Some(SetupConst)"), 4),
+            (cstr!("SetupConst <- Some(SetupMaybeRef)"), 1_947),
+            (cstr!("SetupConst <- Some(SetupReactiveConst)"), 5),
+            (cstr!("SetupMaybeRef <- Some(SetupConst)"), 19),
+            (cstr!("SetupMaybeRef <- Some(SetupReactiveConst)"), 4),
+            (cstr!("SetupMaybeRef <- Some(SetupRef)"), 3),
+            (cstr!("none <- Some(SetupConst)"), 22),
+        ]),
+        "reviewed Vue/Croquis difference inventory changed"
+    );
     assert_eq!(mismatches, Vec::<String>::new());
 }
 
@@ -163,6 +179,7 @@ fn kinds(script: &str) -> Option<Kinds> {
 fn binding_kinds_follow_the_compiler_rules() {
     use SetupBindingKind::{LiteralConst, Props, SetupConst, SetupLet, SetupMaybeRef, SetupRef};
     let script = "import { ref as r, type Ref } from 'vue'\nimport Child from './Child.vue'\n\
+        import store from './store'\n\
         import * as api from './api'\nimport type { T } from './t'\n\
         const props = withDefaults(defineProps<{ a?: number }>(), {})\nconst model = defineModel()\n\
         const emit = defineEmits()\nconst count = r(0)\nlet state = reactive({})\nconst c = ref\n\
@@ -173,6 +190,7 @@ fn binding_kinds_follow_the_compiler_rules() {
     let expected = [
         ("r", SetupConst),
         ("Child", SetupConst),
+        ("store", SetupMaybeRef),
         ("api", SetupConst),
         ("props", SetupConst),
         ("model", SetupRef),
@@ -393,7 +411,7 @@ fn every_corpus_reactive_source_matches_croquis() {
             let expected = oracle
                 .iter()
                 .rev()
-                .find(|(known, _)| known == &name)
+                .find(|(known, _)| known == name)
                 .and_then(|(_, source)| *source);
             if source != expected {
                 let relative = file.strip_prefix(&root).unwrap_or(file).display();
@@ -404,10 +422,7 @@ fn every_corpus_reactive_source_matches_croquis() {
         }
     }
     eprintln!("compared {sources} reactive sources in {compared} setup scripts");
-    assert!(
-        sources > 1000,
-        "corpus shrank to {sources} reactive sources"
-    );
+    assert_eq!(sources, 3_167, "corpus reactive-source inventory changed");
     assert_eq!(mismatches, Vec::<String>::new());
 }
 

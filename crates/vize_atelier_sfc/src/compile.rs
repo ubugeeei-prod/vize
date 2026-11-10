@@ -420,6 +420,7 @@ fn compile_sfc_inner(
     props_rest::merge_props_bindings(&mut script_bindings, &ctx);
 
     // Register defineEmits bindings visible to the template's render scope.
+    let mut synthetic_inline_dollar_emit = false;
     if let Some(ref emits_macro) = ctx.macros.define_emits {
         if let Some(ref binding_name) = emits_macro.binding_name {
             // e.g., const emit = defineEmits([...]) -> emit is setup const
@@ -429,10 +430,12 @@ fn compile_sfc_inner(
                 .or_insert(BindingType::SetupConst);
         } else if !script_output.separates_template() {
             // Bare defineEmits exposes $emit only to inline render; separated render uses _ctx.$emit.
-            script_bindings
-                .bindings
-                .entry("$emit".to_compact_string())
-                .or_insert(BindingType::SetupConst);
+            if !script_bindings.bindings.contains_key("$emit") {
+                script_bindings
+                    .bindings
+                    .insert("$emit".to_compact_string(), BindingType::SetupConst);
+                synthetic_inline_dollar_emit = true;
+            }
         }
     }
 
@@ -448,6 +451,9 @@ fn compile_sfc_inner(
         );
         merge_normal_script_bindings(&mut script_bindings, &normal_script_bindings);
         merge_normal_script_bindings(&mut ctx.bindings, &normal_script_bindings);
+        if normal_script_bindings.bindings.contains_key("$emit") {
+            synthetic_inline_dollar_emit = false;
+        }
     }
 
     let setup_css_module_names = compiled_styles
@@ -497,6 +503,11 @@ fn compile_sfc_inner(
         }
     }
     ctx.bindings = script_bindings.clone();
+    if synthetic_inline_dollar_emit {
+        // `$emit` is a setup-context alias for inline render only. Returning it
+        // as authored setup state would reference an undeclared identifier.
+        ctx.bindings.bindings.remove("$emit");
+    }
     // Compile template with bindings (if present) to get the render function
     let template_result = if let Some(template) = &descriptor.template {
         let template_allocator = vize_carton::pool::acquire();

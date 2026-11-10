@@ -8,7 +8,7 @@
   "fixtures": [
     {
       "id": "vue-walk-declaration-rules",
-      "source": "<script setup lang=\"ts\">\nimport { ref as r, reactive, readonly, shallowReadonly, toRefs, shallowReactive } from \"vue\"\nimport { external } from \"./external\"\nconst importedRef = r(0)\nconst unimportedRef = ref(0)\nlet mutableReactive = reactive({})\nconst readonlyValue = readonly({})\nconst shallowReadonlyValue = shallowReadonly({})\nconst refs = toRefs({})\nconst shallow = shallowReactive({})\nconst n = 1 + 2\nconst object = {}\ndeclare const ambient: string\nconst { prop } = defineProps<{ prop: string }>() as any\n</script>\n<template>{{ importedRef }}{{ unimportedRef }}{{ mutableReactive }}{{ prop }}</template>",
+      "source": "<script setup lang=\"ts\">\nimport { ref as r, reactive, readonly, shallowReadonly, toRefs, shallowReactive } from \"vue\"\nimport { external } from \"./external\"\nimport store from \"./store\"\nimport Child from \"./Child.vue\"\nconst importedRef = r(0)\nconst unimportedRef = ref(0)\nlet mutableReactive = reactive({})\nconst readonlyValue = readonly({})\nconst shallowReadonlyValue = shallowReadonly({})\nconst refs = toRefs({})\nconst shallow = shallowReactive({})\nconst n = 1 + 2\nconst object = {}\ndeclare const ambient: string\nconst { prop } = defineProps<{ prop: string }>() as any\n</script>\n<template>{{ importedRef }}{{ unimportedRef }}{{ mutableReactive }}{{ prop }}</template>",
       "referenceBindings": {
         "r": "setup-const",
         "reactive": "setup-const",
@@ -17,6 +17,8 @@
         "toRefs": "setup-const",
         "shallowReactive": "setup-const",
         "external": "setup-maybe-ref",
+        "store": "setup-maybe-ref",
+        "Child": "setup-const",
         "importedRef": "setup-ref",
         "unimportedRef": "setup-maybe-ref",
         "mutableReactive": "setup-let",

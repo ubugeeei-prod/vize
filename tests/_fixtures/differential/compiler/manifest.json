@@ -3270,7 +3270,7 @@
       "reference": {
         "path": "setup-binding-kinds-12404/module.expected.txt",
         "sha256": "774734972d35c98f97fe1ddf88833e9119dd356d92b7fca8322628f0ebff1401",
-        "source": "Source-built compiler-cli-ssr-v1 at PR head 4ce24ba46b476b6e5bf26933fe013f1af2c319c5; Vue 3.5.35 binding metadata is independently pinned by crates/vize_atelier_sfc/tests/setup_binding_kinds.rs."
+        "source": "Compiler-under-test module bytes from source-built compiler-cli-ssr-v1 at PR head 4ce24ba46b476b6e5bf26933fe013f1af2c319c5; they are regression bytes, not independent Vue-parity evidence. Only binding metadata is independently checked against @vue/compiler-sfc 3.5.35."
       },
       "adapters": {
         "legacy": "compiler-cli-ssr-v1",

@@ -1,0 +1,21 @@
+---
+source: crates/vize_atelier_sfc/tests/module_mode_setup_bindings.rs
+expression: code.as_str()
+---
+const { openBlock: _openBlock, createElementBlock: _createElementBlock } = Vue
+
+
+return {
+  __name: 'anonymous',
+  emits: ['destroy'],
+  setup(__props, { emit: $emit }) {
+
+
+return (_ctx, _cache) => {
+  return (_openBlock(), _createElementBlock("button", {
+    onClick: _cache[0] || (_cache[0] = $event => ($emit('destroy')))
+  }))
+}
+}
+
+}

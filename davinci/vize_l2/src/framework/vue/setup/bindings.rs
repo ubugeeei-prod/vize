@@ -235,7 +235,12 @@ impl<'a> Bindings<'a> {
                     self.push(base, named.local.span, kind);
                 }
                 ImportDeclarationSpecifier::ImportDefaultSpecifier(default) => {
-                    self.push(base, default.local.span, SetupBindingKind::SetupConst);
+                    let kind = if from_vue || import.source.value.ends_with(".vue") {
+                        SetupBindingKind::SetupConst
+                    } else {
+                        SetupBindingKind::SetupMaybeRef
+                    };
+                    self.push(base, default.local.span, kind);
                 }
                 ImportDeclarationSpecifier::ImportNamespaceSpecifier(namespace) => {
                     self.push(base, namespace.local.span, SetupBindingKind::SetupConst);
