@@ -6,7 +6,7 @@
  */
 
 import { createRequire } from "node:module";
-import ts from "typescript";
+import type * as TypeScript from "typescript";
 
 import { extractWithDefaults } from "./with-defaults.js";
 
@@ -129,6 +129,14 @@ export interface NativeBinding {
 
 // Lazy-load native binding
 let native: NativeBinding | null = null;
+let typescript: typeof TypeScript | null = null;
+
+function loadTypeScript(): typeof TypeScript {
+  if (typescript) return typescript;
+  const require = createRequire(import.meta.url);
+  typescript = require("typescript") as typeof TypeScript;
+  return typescript;
+}
 
 export function loadNative(): NativeBinding {
   if (native) return native;
@@ -193,8 +201,9 @@ export function analyzeSfcFallback(source: string, _options?: { filename?: strin
 function directTypeLiteralProps(
   scriptContent: string,
 ): Array<{ name: string; type: string; optional: boolean }> {
+  const ts = loadTypeScript();
   const source = ts.createSourceFile("props.ts", scriptContent, ts.ScriptTarget.Latest, true);
-  const findLiteral = (node: ts.Node): ts.TypeLiteralNode | undefined => {
+  const findLiteral = (node: TypeScript.Node): TypeScript.TypeLiteralNode | undefined => {
     if (
       ts.isCallExpression(node) &&
       ts.isIdentifier(node.expression) &&
@@ -227,6 +236,7 @@ function directTypeLiteralProps(
 function fallbackDefault(
   source: string,
 ): Pick<SfcProp, "default_value" | "default_source" | "unsupported_default"> {
+  const ts = loadTypeScript();
   const file = ts.createSourceFile(
     "default.ts",
     `const value = (${source});`,
