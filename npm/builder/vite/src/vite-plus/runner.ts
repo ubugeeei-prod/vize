@@ -178,7 +178,9 @@ export async function runNative(
     command === "lint" && metadata.lintIgnorePatterns?.length
       ? {
           ...config,
-          ignores: [...new Set([...(config.ignores ?? []), ...metadata.lintIgnorePatterns])],
+          // Native matching is last-match-wins: preserve host exceptions, then
+          // let explicitly authored native ignores remain authoritative.
+          ignores: [...metadata.lintIgnorePatterns, ...(config.ignores ?? [])],
         }
       : config;
   const file = path.join(os.tmpdir(), `.vize-vp-${randomUUID()}.json`);
