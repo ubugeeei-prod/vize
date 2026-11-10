@@ -33,6 +33,7 @@ const importHelper = `const fault = await import(${JSON.stringify(pathToFileURL(
 const unavailable = () => { const error = new Error("typed observation gap"); error.name = "PermissionError"; throw error; };
 fault.observers.privateGuest = () => ({ privateFirecrackerGuest: false });
 fault.observers.sourceSnapshot = unavailable;
+fault.observers.runnerResources = () => ({ syntheticResources: true });
 `;
 const environment = (fixture, id = "123") => ({
   ...process.env,
@@ -113,6 +114,15 @@ else process.exit(Number(result));
       if (outcome.startsWith("SIG")) assert.equal(result.signal, outcome);
       else assert.equal(result.status, Number(outcome));
       const receipt = receiptAt(fixture);
+      assert.deepEqual(receipt.resourcesBefore, { syntheticResources: true });
+      assert.deepEqual(receipt.resourcesAfter, { syntheticResources: true });
+      for (const name of ["resources-before.json", "resources-after.json"])
+        assert.deepEqual(
+          JSON.parse(
+            readFileSync(join(fixture, "js-native-fault-evidence-123-1-law", name), "utf8"),
+          ),
+          { syntheticResources: true },
+        );
       assert.equal(receipt.coreCapture, "unavailable");
       assert.deepEqual(receipt.cores, []);
       assert.equal(receipt.command.length, 5);
@@ -120,7 +130,7 @@ else process.exit(Number(result));
       assert.equal("coreRestore" in receipt, false);
       assert.equal(receipt.observationGaps["source-before"], "PermissionError");
       assert.equal(receipt.observationGaps["source-after"], "PermissionError");
-      assert.equal(receipt.helpers.length, 4);
+      assert.equal(receipt.helpers.length, 5);
       assert.deepEqual(
         receipt.helpers.map((row) => row.path.split("/").at(-1)),
         [
@@ -128,6 +138,7 @@ else process.exit(Number(result));
           "native-fault-core.ts",
           "native-fault-support.ts",
           "native-fault-retention.ts",
+          "native-fault-resources.ts",
         ],
       );
     } finally {
@@ -375,12 +386,18 @@ void test("only an explicit label observes the frozen original failure; mandator
     NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169",
     CARGO_BUILD_JOBS: "12",
   });
-  assert.equal(job.steps[2].with.ref, "a16d50297208eb4635c824449bdbb345c462351d");
+  assert.equal(job.steps[2].with.ref, "0b82a31fc9dd8634786fc17ec3bd3eeb8427ae6e");
   const commands = job.steps.map((step) => step.run ?? "").join("\n");
-  assert.equal((commands.match(/-- vp run --workspace-root test:js/g) ?? []).length, 1);
-  assert.match(commands, /670e62ad66b6ff29b441e887bc7f62abb641c106/);
+  assert.equal((commands.match(/-- vp run --workspace-root test:js:builders/g) ?? []).length, 1);
+  assert.match(commands, /b865787dc492550b568d7cea3bcf458f75b11cfb/);
+  assert.match(commands, /install-js-checks\.ts builders/);
+  assert.equal(
+    job.steps.find((step) => step.uses?.startsWith("voidzero-dev/setup-vp"))?.with.version,
+    "1.4.0",
+  );
   assert.match(commands, /cp \.github\/actions.*native-fault-evidence\.ts/);
   assert.match(commands, /cp \.github\/actions.*native-fault-retention\.ts/);
+  assert.match(commands, /cp \.github\/actions.*native-fault-resources\.ts/);
   assert.doesNotMatch(commands, /continue-on-error|retry|DISABLE_TSGO|test-name-pattern/);
   const upload = job.steps.at(-1);
   assert.equal(upload.if, "${{ always() }}");
