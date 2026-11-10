@@ -107,7 +107,7 @@ jobs:
           test -x "$runtime"
           # Projection parity, memo and adjacent-attribute cases use this qualified published beta.
           # Other conformance roles keep their own checker and companion closure.
-          printf 'VIZE_TEST_CONTENT_MAPPER_TSGO=%s\n' "$runtime" >> "$GITHUB_ENV"
+          printf 'VIZE_TEST_PROJECTION_CONTENT_MAPPER_TSGO=%s\n' "$runtime" >> "$GITHUB_ENV"
           printf 'VIZE_TEST_MEMO_CONTENT_MAPPER_TSGO=%s\n' "$runtime" >> "$GITHUB_ENV"
           printf 'VIZE_TEST_RECOVERED_ATTRIBUTE_CONTENT_MAPPER_TSGO=%s\n' "$runtime" >> "$GITHUB_ENV"
       - name: Install Pkl CLI

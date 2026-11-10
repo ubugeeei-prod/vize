@@ -5,11 +5,16 @@ use super::support::{copy_fixture, install_mapper_manifest, install_vue_package,
 use super::{Command, Output, Path, PathBuf, TSGO_ENV};
 
 const MODE_ENV: &str = "VIZE_CONTENT_MAPPER_MODE";
+/// The projection cohort's own host. The shared conformance host carries
+/// companion requirements (Vue package, JavaScript tsc) this cohort does not.
+const PROJECTION_TSGO_ENV: &str = "VIZE_TEST_PROJECTION_CONTENT_MAPPER_TSGO";
 
 /// A required CI cohort fails closed; an unconfigured local run remains optional.
 fn projection_host() -> Option<PathBuf> {
     select_projection_host(
-        std::env::var_os(TSGO_ENV).map(PathBuf::from),
+        std::env::var_os(PROJECTION_TSGO_ENV)
+            .or_else(|| std::env::var_os(TSGO_ENV))
+            .map(PathBuf::from),
         std::env::var_os("VIZE_TEST_REQUIRE_TSGO").is_some(),
     )
 }
@@ -18,9 +23,11 @@ fn select_projection_host(host: Option<PathBuf>, required: bool) -> Option<PathB
     let Some(host) = host else {
         assert!(
             !required,
-            "unexecuted projection-mode cohort: VIZE_TEST_REQUIRE_TSGO is set and {TSGO_ENV} is absent"
+            "unexecuted projection-mode cohort: VIZE_TEST_REQUIRE_TSGO is set and both {PROJECTION_TSGO_ENV} and {TSGO_ENV} are absent"
         );
-        eprintln!("skipping Content Mapper projection modes: {TSGO_ENV} is not set");
+        eprintln!(
+            "skipping Content Mapper projection modes: neither {PROJECTION_TSGO_ENV} nor {TSGO_ENV} is set"
+        );
         return None;
     };
     assert!(
