@@ -4,10 +4,11 @@ use super::jsx_names::{
     jsx_attribute_name, jsx_attribute_ref, jsx_static_value, jsx_value_is_dynamic,
 };
 use super::l2::L2Markup;
-use super::l2::surface::{attr_span, attr_value};
+use super::l2::surface::{attr_span, attr_value, token_range};
 use super::{l2_range, loc_to_range, span_to_range};
 use crate::ir::ByteRange;
 use oxc_ast::ast::JSXAttribute;
+use oxc_span::GetSpan;
 use std::marker::PhantomData;
 use vize_l2::op::Attribute;
 use vize_relief::AttributeNode;
@@ -130,6 +131,21 @@ impl<'a> MarkupAttribute<'a> {
             MarkupAttributeInner::Surface { attr, doc, .. } => {
                 l2_range(attr_span(doc.source, attr))
             }
+        }
+    }
+
+    /// Byte range of the authored attribute name.
+    pub fn name_range(&self) -> ByteRange {
+        match self.inner {
+            MarkupAttributeInner::Relief(node) => loc_to_range(&node.name_loc),
+            MarkupAttributeInner::Jsx { node, offset } => {
+                span_to_range(jsx_attribute_ref(node).name.span(), offset)
+            }
+            MarkupAttributeInner::L2 { attribute, .. } => ByteRange::new(
+                attribute.span.start,
+                attribute.span.start + attribute.name.len() as u32,
+            ),
+            MarkupAttributeInner::Surface { attr, doc, .. } => token_range(doc.source, &attr.name),
         }
     }
 }
