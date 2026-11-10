@@ -82,7 +82,7 @@ fn remaining_facade_family() -> Vec<Box<dyn Rule>> {
         Box::new(UseList),
         Box::new(NoDupeStyleProperties),
         Box::new(NoDuplicateClass),
-        Box::new(HtmlButtonHasType::default()),
+        Box::new(HtmlButtonHasType),
         Box::new(NoBooleanAttrValue),
         Box::new(NoInlineStyle),
         Box::new(NoBareStringsInTemplate),

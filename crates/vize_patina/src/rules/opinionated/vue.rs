@@ -39,7 +39,7 @@ use crate::rule::RuleRegistry;
 
 pub(crate) use component_name_in_template_casing::ComponentNameInTemplateCasingNuxt;
 pub use component_name_in_template_casing::{ComponentCasing, ComponentNameInTemplateCasing};
-pub use html_button_has_type::{HtmlButtonHasType, HtmlButtonHasTypeOptions};
+pub use html_button_has_type::HtmlButtonHasType;
 pub(crate) use html_self_closing::HtmlSelfClosingNuxt;
 pub use html_self_closing::{
     HtmlSelfClosing, HtmlSelfClosingHtmlOptions, HtmlSelfClosingOptions, HtmlSelfClosingStyle,
@@ -99,7 +99,7 @@ fn register_shared(registry: &mut RuleRegistry, flavor: PresetFlavor) {
         PresetFlavor::Default => registry.register(Box::new(HtmlSelfClosing::default())),
         PresetFlavor::Nuxt => registry.register(Box::new(HtmlSelfClosingNuxt::default())),
     }
-    registry.register(Box::new(HtmlButtonHasType::default()));
+    registry.register(Box::new(HtmlButtonHasType));
     registry.register(Box::new(ScopedEventNames));
     registry.register(Box::new(PreferPropsShorthand));
     registry.register(Box::new(SlotNameCasing));

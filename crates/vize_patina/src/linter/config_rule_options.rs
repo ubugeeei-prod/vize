@@ -85,13 +85,7 @@ impl Linter {
             });
         }
         if let Some(value) = options.html_button_has_type() {
-            self = self.with_html_button_has_type_options(
-                crate::rules::opinionated::vue::HtmlButtonHasTypeOptions {
-                    button: value.button,
-                    submit: value.submit,
-                    reset: value.reset,
-                },
-            );
+            self = self.with_html_button_has_type_options(value.button, value.submit, value.reset);
         }
         if let Some(value) = options.warn_custom_directive() {
             self = self.with_warn_custom_directive_ignore(value.ignore.clone());
