@@ -6,6 +6,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { collectOutput, println, run, runMain, writeStderr } from "../command_io.ts";
 import { cliArgs } from "../command_runtime.ts";
+import { npmTagForVersion } from "../npm-tag.ts";
 import { waitForRegistryVisibility } from "../publish_npm_package/registry.ts";
 import { userChecks, writeProject } from "./user_checks.ts";
 
@@ -43,9 +44,10 @@ export async function missingFromRegistry(
   attempts = 180,
   delaySeconds = 10,
 ): Promise<string[]> {
+  const tag = npmTagForVersion(version);
   const visible = await Promise.all(
     names.map((name) =>
-      waitForRegistryVisibility({ name, version, tag: "latest" }, attempts, delaySeconds, {
+      waitForRegistryVisibility({ name, version, tag }, attempts, delaySeconds, {
         allowNewerTag: true,
       }),
     ),

@@ -29,7 +29,7 @@ surfaces and are not routine CI-refactor targets.
 | Group | Area                                                                                   | Workflows |
 | ----- | -------------------------------------------------------------------------------------- | --------- |
 | 01    | [Pull request orchestration](#01-pull-request-orchestration)                           | 20        |
-| 02    | [Release and public acceptance](#02-release-and-public-acceptance)                     | 32        |
+| 02    | [Release and public acceptance](#02-release-and-public-acceptance)                     | 33        |
 | 03    | [Benchmarks and profiling](#03-benchmarks-and-profiling)                               | 38        |
 | 04    | [Type checking and content mapping](#04-type-checking-and-content-mapping)             | 15        |
 | 05    | [Language services and editors](#05-language-services-and-editors)                     | 23        |
@@ -100,11 +100,12 @@ Publication, registry, and installed-consumer evidence. Trusted-publishing workf
 | 02.25 | Release cadence                           | [`release-cadence.yml`](./release-cadence.yml)                                             |
 | 02.26 | Release contracts                         | [`release-contracts.yml`](./release-contracts.yml)                                         |
 | 02.27 | Release JSR                               | [`release-jsr.yml`](./release-jsr.yml)                                                     |
-| 02.28 | Release smoke contracts                   | [`release-smoke-contracts.yml`](./release-smoke-contracts.yml)                             |
-| 02.29 | Release verify                            | [`release-verify.yml`](./release-verify.yml)                                               |
-| 02.30 | Release Zed host                          | [`release-zed-host.yml`](./release-zed-host.yml)                                           |
-| 02.31 | Release                                   | [`release.yml`](./release.yml)                                                             |
-| 02.32 | Published TypeScript provider acceptance  | [`typescript-provider-public.yml`](./typescript-provider-public.yml)                       |
+| 02.28 | Prepare npm first-publish handoff         | [`release-npm-bootstrap.yml`](./release-npm-bootstrap.yml)                                 |
+| 02.29 | Release smoke contracts                   | [`release-smoke-contracts.yml`](./release-smoke-contracts.yml)                             |
+| 02.30 | Release verify                            | [`release-verify.yml`](./release-verify.yml)                                               |
+| 02.31 | Release Zed host                          | [`release-zed-host.yml`](./release-zed-host.yml)                                           |
+| 02.32 | Release                                   | [`release.yml`](./release.yml)                                                             |
+| 02.33 | Published TypeScript provider acceptance  | [`typescript-provider-public.yml`](./typescript-provider-public.yml)                       |
 
 ## 03 Benchmarks and profiling
 
@@ -238,7 +239,7 @@ SFC compilation, JSX, bindings, templates, Vapor, recovery, and native correctne
 | 06.27 | Provide type assertion whole packets     | [`provide-type-assertion.yml`](./provide-type-assertion.yml)                   |
 | 06.28 | Recovery normal codegen                  | [`recovery-normal-codegen.yml`](./recovery-normal-codegen.yml)                 |
 | 06.29 | Scoped nesting specificity               | [`scoped-nesting-specificity.yml`](./scoped-nesting-specificity.yml)           |
-| 06.30 | Native SFC optional lifecycle diagnostic | [`sfc-optional-lifecycle.yml`](./sfc-optional-lifecycle.yml)                   |
+| 06.30 | Current native SFC lifecycle             | [`sfc-optional-lifecycle.yml`](./sfc-optional-lifecycle.yml)                   |
 | 06.31 | Native parsed SFC attributes             | [`sfc-parse-attributes.yml`](./sfc-parse-attributes.yml)                       |
 | 06.32 | Historical SFC Parse Replay              | [`sfc-parse-replay.yml`](./sfc-parse-replay.yml)                               |
 | 06.33 | Retained source-line replay              | [`source-symbolizer-retained.yml`](./source-symbolizer-retained.yml)           |

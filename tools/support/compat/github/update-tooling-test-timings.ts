@@ -72,7 +72,10 @@ function assertCohort(name: string, records: readonly TimingRecord[]) {
   const primary = files.some(
     (file) => file.replace(/^tests\/tooling\//, "").replace(/\.test\.(?:ts|mjs)$/, "") === match[1],
   );
-  if (!primary || count !== files.length) throw new Error(`Tooling (${name}): cohort mismatch`);
+  // A selected test may start another top-level tooling test as a subprocess.
+  // Its raw timing remains useful, but it is not part of the matrix label's
+  // advertised cohort. Require the named primary and at least that cohort size.
+  if (!primary || files.length < count) throw new Error(`Tooling (${name}): cohort mismatch`);
 }
 
 export function parseToolingTimingLog(log: string): TimingRecord[] {

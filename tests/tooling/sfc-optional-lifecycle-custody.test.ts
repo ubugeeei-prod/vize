@@ -30,6 +30,15 @@ void test("issue 10582 keeps the reported and controlled evidence immutable", ()
   }
   assert.match(driver, /author: "ubugeeei"/u);
   assert.match(driver, /attemptsPerImage: 1/u);
+  assert.match(driver, /scope: "fresh-current-source"/u);
+  assert.match(driver, /originalNativeImageAvailable: false/u);
+  assert.match(driver, /retryPolicy: "none"/u);
+  assert.match(driver, /receipt\.qualification\.reproduction = "not-reproduced"/u);
+  assert.match(driver, /assert\.equal\(sourceSha, process\.env\.GITHUB_SHA/u);
+  assert.doesNotMatch(driver, /"vendor"/u);
+  assert.match(workflow, /ref: "\$\{\{ inputs\.expected-driver-sha \}\}"/u);
+  assert.equal(workflow.includes("ref: 1525ff2f7621e8f0b3053451568bec48ff5b8855"), false);
+  assert.match(workflow, /sfc-optional-lifecycle-receipt-\$\{\{ github\.sha \}\}/u);
 });
 
 void test("each fresh image gets one baseline, allocator, or memcheck attempt", () => {
@@ -47,6 +56,7 @@ void test("each fresh image gets one baseline, allocator, or memcheck attempt", 
   assert.match(driver, /fs\.constants\.COPYFILE_EXCL/u);
   assert.match(worker, /assert\.equal\(identity\.attempt, 1\)/u);
   assert.match(worker, /fileHash\(identity\.retainedBinary\)/u);
+  assert.match(worker, /assert\.equal\(ts\.version, identity\.typescriptVersion\)/u);
   assert.match(worker, /worker process is outside Valgrind memcheck/u);
   assert.match(worker, /malloc debug image is not mapped in the worker/u);
   assert.match(workflow, /install -y --no-install-recommends valgrind/u);

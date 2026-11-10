@@ -3,17 +3,36 @@ name: Consumer instance globals capture
 on:
   pull_request:
     paths:
-      - .github/workflows/content-mapper-instance-globals.yml
-      - .github/workflows/full-source-cli.yml
-      - .github/actions/restore-source-cli/**
-      - crates/vize_canon/src/virtual_ts/**
-      - crates/vize/src/commands/content_mapper.rs
-      - crates/vize/src/commands/content_mapper/**
+      - .github/**
+      - .cargo/**
+      - crates/**
+      - davinci/**
       - tests/fixtures/typechecker/undeclared-instance-globals-10617/**
+      - tests/_helpers/realworld-patch.ts
+      - tests/differential/build-receipt.ts
+      - tests/differential/sha256.ts
       - tests/tooling/content-mapper-instance-globals-10617.test.ts
+      - tests/tooling/content-mapper-instance-globals-packet-authority.test.ts
       - tests/tooling/support/content-mapper-instance-globals*.ts
-      - npm/cli/content-mapper-helpers*
+      - tests/tooling/support/content-mapper-parenthesis-mappings-11675.ts
+      - tests/tooling/support/helper-abi-source-admission-11809.ts
+      - tests/tooling/support/lsp/launch.ts
+      - tests/tooling/support/lsp/paths.ts
+      - tests/tooling/support/vue-config-fixture.ts
+      - npm/cli/**
+      - tools/support/compat/github/plan-tooling-tests.mjs
+      - tools/support/compat/github/source-cli*
+      - tools/support/compat/github/tooling-product-inputs.ts
+      - tools/support/compat/content-mapper/**
+      - tools/support/json-value.ts
+      - tools/support/release/computed_event_custody.ts
+      - vendor/**
+      - Cargo.toml
       - Cargo.lock
+      - rust-toolchain.toml
+      - package.json
+      - pnpm-lock.yaml
+      - pnpm-workspace.yaml
   workflow_dispatch:
     inputs:
       expected-source-sha:

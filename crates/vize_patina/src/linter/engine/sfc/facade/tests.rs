@@ -64,9 +64,12 @@ fn migrated_sfc_rules_preserve_diagnostics_and_fixes() {
         "<!-- eslint-disable-next-line vue/no-inline-style -->\n<div style=\"color:red\"/>",
         r#"<MyComponent :foo="foo"/><div :title="'static'" :class="[{ active }, { hidden }]"/>"#,
         r#"<MyComponent :foo/><div :title :class/>"#,
+        r#"<slot name="my-slot"/><input id="name"/><label for="name">Name</label>"#,
         "<!-- eslint-disable-next-line vue/prefer-props-shorthand -->\n<MyComponent :foo=\"foo\"/>",
         "<!-- eslint-disable-next-line vue/no-useless-v-bind -->\n<div :title=\"'static'\"/>",
         "<!-- eslint-disable-next-line vue/no-multiple-objects-in-class -->\n<div :class=\"[{ active }, { hidden }]\"/>",
+        "<!-- eslint-disable-next-line vue/slot-name-casing -->\n<slot name=\"my-slot\"/>",
+        "<!-- eslint-disable-next-line vue/use-unique-element-ids -->\n<input id=\"name\"/>",
         r#"<div v-pre><textarea>{{ raw }}</textarea></div>"#,
     ] {
         compare_template(source);

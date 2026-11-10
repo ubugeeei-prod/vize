@@ -9,7 +9,7 @@ button に有効な type を明示します。
 
 | 既定の重大度 | プリセット | 自動修正 | オプション |
 | --- | --- | --- | --- |
-| `warning` | `nuxt`, `opinionated` | なし | なし |
+| `warning` | `nuxt`, `opinionated` | なし | [ルールのオプション](../options.md) |
 
 適用範囲：Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。
 
@@ -57,5 +57,6 @@ export default defineConfig({}).withVue({
 ## 関連ページ
 
 - [Vue ルール](../vue.md)
+- [ルールのオプション](../options.md)
 - [全ルール](../all.md)
 - [ソースコード](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/html_button_has_type.rs#L39)

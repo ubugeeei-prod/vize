@@ -6,7 +6,7 @@ import { createRequire } from "node:module";
 import { spawnSync, execFileSync } from "node:child_process";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { artSource, componentSource, runLifecycleWorker } from "./sfc-optional-lifecycle-worker.ts";
-const sourceSha = "1525ff2f7621e8f0b3053451568bec48ff5b8855";
+const reportedSourceSha = "1525ff2f7621e8f0b3053451568bec48ff5b8855";
 const hash = (bytes) => createHash("sha256").update(bytes).digest("hex");
 const fileHash = (file) => hash(fs.readFileSync(file));
 const git = (root, ...args) =>
@@ -120,6 +120,10 @@ async function install(project, output) {
 /** Bind a worker to one exact native image and its actual JS dependency entries. */
 function identity(label, side, mode, root, source, binary, token) {
   const require = createRequire(path.join(root, "package.json"));
+  const typescriptEntry = require.resolve("typescript");
+  const typescriptVersion = JSON.parse(
+    fs.readFileSync(path.join(path.dirname(typescriptEntry), "..", "package.json"), "utf8"),
+  ).version;
   const esmEntry = (name) => {
     const folder = path.join(root, "node_modules", name);
     const manifest = JSON.parse(fs.readFileSync(path.join(folder, "package.json"), "utf8"));
@@ -148,7 +152,8 @@ function identity(label, side, mode, root, source, binary, token) {
     token,
     viteEntry: require.resolve("vite"),
     vueEntry: require.resolve("vue/dist/vue.runtime.esm-bundler.js"),
-    typescriptEntry: require.resolve("typescript"),
+    typescriptEntry,
+    typescriptVersion,
     pluginEntry:
       side === "source"
         ? path.join(source, "npm/builder/vite/src/index.ts")
@@ -179,7 +184,8 @@ async function campaign(source, output) {
   source = fs.realpathSync(source);
   output = path.resolve(output);
   fs.mkdirSync(output, { recursive: true });
-  assert.equal(git(source, "rev-parse", "HEAD"), sourceSha);
+  const sourceSha = git(source, "rev-parse", "HEAD");
+  assert.equal(sourceSha, process.env.GITHUB_SHA, "qualification source must equal its driver");
   assert.equal(git(source, "diff", "--name-only", "HEAD"), "");
   const temporary = fs.mkdtempSync(
     path.join(fs.realpathSync(process.env.RUNNER_TEMP), "sfc-optional-lifecycle-"),
@@ -196,7 +202,7 @@ async function campaign(source, output) {
     sha256: fileHash(libcFiles[0]),
   };
   const receipt = {
-    schemaVersion: 2,
+    schemaVersion: 3,
     issue: {
       number: 10582,
       url: "https://github.com/ubugeeei-prod/vize/issues/10582",
@@ -212,10 +218,11 @@ async function campaign(source, output) {
           size: 62118,
           digest: "sha256:526751a52a8850b3e3e0a968f54df9029e336b72930bea2c7b4975305bb6ff58",
         },
+        nativeImageRetained: false,
       },
       controlled: {
         run: "https://github.com/ubugeeei-prod/vize/actions/runs/40177938970",
-        source: sourceSha,
+        source: reportedSourceSha,
         driver: "879bc5b087b28daecb7bb284aa64630e0fdbc9f3",
         artifact: {
           id: 12592534636,
@@ -229,6 +236,14 @@ async function campaign(source, output) {
         },
       },
     },
+    qualification: {
+      scope: "fresh-current-source",
+      source: sourceSha,
+      originalNativeImageAvailable: false,
+      retryPolicy: "none",
+      reproduction: "pending",
+      allocatorCause: "not-established",
+    },
     source: sourceSha,
     driver: process.env.GITHUB_SHA,
     driverSha256: fileHash(self),
@@ -239,7 +254,7 @@ async function campaign(source, output) {
     fixtureSha256: hash(componentSource),
     artSha256: hash(artSource),
     sourceTrees: Object.fromEntries(
-      ["crates", "davinci", "vendor", "npm/native"].map((name) => [
+      ["crates", "davinci", "npm/native"].map((name) => [
         name,
         git(source, "rev-parse", "HEAD:" + name),
       ]),
@@ -461,8 +476,18 @@ async function campaign(source, output) {
   receipt.observationsComplete = receipt.workers.length === receipt.imageOrder.length;
   retain();
   for (const child of receipt.workers) success(child);
+  receipt.qualification.reproduction = "not-reproduced";
   receipt.qualified = true;
   retain();
+  console.log(
+    JSON.stringify({
+      phase: "current-source-lifecycle-qualified",
+      source: sourceSha,
+      recordedRun: receipt.recordedRun,
+      attemptsPerImage: receipt.attemptsPerImage,
+      images: receipt.workers,
+    }),
+  );
 }
 if (process.argv[2] === "--worker") await runLifecycleWorker(process.argv[3], process.argv[4]);
 else {

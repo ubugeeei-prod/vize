@@ -41,7 +41,7 @@
 
 use tower_lsp::lsp_types::{Position, Range, TextEdit};
 
-use super::blocks::block_spans;
+use super::blocks::{block_spans, same_block_sequence};
 use crate::ide::position_to_offset;
 
 /// Re-indent `position.line` to the indent whole-document formatting gives it.
@@ -107,26 +107,27 @@ pub(crate) fn format_on_type_with_context(
 
     let authored = block_spans(content, filename)?;
     let target = block_spans(&formatted.code, filename)?;
-    // A formatter must not add, drop or reorder blocks. If it did, the two
-    // lists cannot be paired and there is no indent to read.
-    if authored.len() != target.len() {
+    // Discovery order follows block identity rather than source order, so
+    // profiles may reorder blocks. Adding, dropping or changing an identity
+    // still leaves no safe authored line from which to read an indent.
+    if !same_block_sequence(&authored, &target) {
         return Some(Vec::new());
     }
 
     let Some(index) = authored
         .iter()
-        .position(|&(start, end)| (start..=end).contains(&line_start))
+        .position(|block| (block.start..=block.end).contains(&line_start))
     else {
         // Between blocks, or on a block's own tag line. Neither is content the
         // formatter indents.
         return Some(Vec::new());
     };
 
-    let (Some(&(authored_start, authored_end)), Some(&(target_start, target_end))) =
-        (authored.get(index), target.get(index))
-    else {
+    let (Some(authored), Some(target)) = (authored.get(index), target.get(index)) else {
         return Some(Vec::new());
     };
+    let (authored_start, authored_end) = (authored.start, authored.end);
+    let (target_start, target_end) = (target.start, target.end);
     let (Some(authored_block), Some(target_block), Some(block_head)) = (
         content.get(authored_start..authored_end),
         formatted.code.get(target_start..target_end),

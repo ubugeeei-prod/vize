@@ -1,9 +1,4 @@
-function npmTagForVersion(version: string): string {
-  if (version.includes("-alpha")) return "alpha";
-  if (version.includes("-beta")) return "beta";
-  if (version.includes("-rc")) return "rc";
-  return "latest";
-}
+import { npmTagForVersion } from "../../../support/release/npm-tag.ts";
 
 const [version] = process.argv.slice(2);
 if (version === undefined) {
