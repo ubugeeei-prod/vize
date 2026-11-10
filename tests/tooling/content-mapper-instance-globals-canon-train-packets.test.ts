@@ -40,6 +40,7 @@ type Result = Transform & {
     targetStart: number;
     targetLength: number;
   }[];
+  diagnosticDirectives?: { directives: number[][]; unusedExpectDirectiveDiagnostics: unknown[] };
 };
 type Labeled = Edit & { label: string };
 

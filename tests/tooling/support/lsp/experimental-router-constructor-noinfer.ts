@@ -8,7 +8,7 @@ import { verbatimSetupRelocation } from "../../../../tools/support/compat/conten
 type GoldenEntry = { file: string; sha256: string };
 type Identity = { file: string; sha256: string; bytes: number };
 
-const receiptSha256 = "d90da853c8de023286ded5995138a1f37ffa130c70f5d10ab8f09708495429d4";
+const receiptSha256 = "6cd5b174e5dbe5662a4700e9042aac26191efd97eb43d6524d2cbb1e8897f0a6";
 const sha256 = (bytes: Buffer | string) => createHash("sha256").update(bytes).digest("hex");
 
 /**

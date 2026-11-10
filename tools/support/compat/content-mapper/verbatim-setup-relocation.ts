@@ -39,8 +39,17 @@ export function verbatimSetupRelocation(
     }
     const comment = original[event.index]!;
     const [g0, g1, s0, s1] = comment.values as [number, number, number, number];
-    // A setup map comment counts in its own frame; the edits carry that frame.
-    const values = [point(g0, edits, true), point(g1, edits, true), s0, s1];
+    // A setup region's map comment keeps its start and loses exactly the
+    // region's deleted indentation; its units need not be this text's bytes.
+    const previous = event.index > 0 ? original[event.index - 1]!.start : -1;
+    const region = certified.filter(
+      (edit) =>
+        edit.label === "verbatim setup line" && previous < edit.start && edit.start < comment.start,
+    );
+    const values =
+      region.length > 0
+        ? [g0, g1 - region.reduce((sum, edit) => sum + edit.end - edit.start, 0), s0, s1]
+        : [point(g0, edits, true), point(g1, edits, true), s0, s1];
     assert.deepEqual(actual[event.index]!.values, values, "self-described coordinates relocate");
     const text = `${comment.indent}// @vize-map: ${values[0]}:${values[1]} -> ${s0}:${s1}${comment.text.endsWith("\r") ? "\r" : ""}`;
     edits.push({

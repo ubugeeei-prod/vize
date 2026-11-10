@@ -102,7 +102,7 @@ const tags: string[] | undefined = route.params.tags
 const at: Date | undefined = route.params.at
 const heading: string | undefined = route.params.heading
 
-  // @vize-map: 11495:11983 -> 0:588
+  // @vize-map: 11495:11977 -> 0:588
 
   // ========== Template Scope (inherits from setup) ==========
   // Ref type captures (before template scope shadows them)
