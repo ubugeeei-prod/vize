@@ -21,7 +21,13 @@ const qualifiedEmitProps = 'import("vize:virtual-ts").__EmitProps<';
 const qualifiedTemplateRefUnwrap = 'import("vize:virtual-ts").$TemplateRefUnwrap';
 const currentReceipt = {
   diagnosticSha256: "a9f9ae0f2bbee8294ebd92d300895cf772c49b7f62c20d9018a3d3435d2125dc",
-  emitHelperFiles: [],
+  // The listener gate's closed-SFC factory names the shared `__EmitProps` directly.
+  emitHelperFiles: [
+    "src/GraphAnd3D.vue",
+    "src/NaiveUiOptionsApi.vue",
+    "src/PrimeVueOptionsApi.vue",
+    "src/UiLibraries.vue",
+  ],
   errorCount: 2,
   fileCount: 9,
   files: [
@@ -50,7 +56,9 @@ const currentReceipt = {
   // and earlier ffd237083004fd1a5eb9b5c8b517ce16c05de9a211310f6aafdc379f1be97dc3 remain historical.
   // Regenerated at the shared-unwrap head: every diagnostic field is unchanged; only
   // `virtualTs` moved (shared unwrap references and the constructor shape since #12162).
-  snapshotSha256: "ce667c11ac421faafcdfcefb22774ccb6cdd89be27dc8d01023698d786bf6b15",
+  // Advanced by the closed-SFC listener gate: only the four gate alias blocks moved;
+  // every diagnostic field is unchanged. ce667c11ac42… remains historical.
+  snapshotSha256: "aa8594614d39d0e85aaca19f6e849bc0e06a469a3b5f9bbb79841fd1584b73d8",
   warningCount: 0,
   unwrapHelperFiles: [
     "src/ComposablesAndRouting.vue",

@@ -44,9 +44,13 @@ fn generate(template: &str, options: VirtualTsGenerationOptions<'_>) -> vize_car
 
 #[test]
 fn a_computed_is_listener_takes_the_gated_call_in_both_modes() {
-    for (hoist_shared_preamble, factory) in [
-        (false, "$EmitPropsFactory<C>"),
-        (true, "import(\"vize:virtual-ts\").$EmitPropsFactory<C>"),
+    for (hoist_shared_preamble, emit_props, factory) in [
+        (false, "__EmitProps", "$EmitPropsFactory<C>"),
+        (
+            true,
+            "import(\"vize:virtual-ts\").__EmitProps",
+            "import(\"vize:virtual-ts\").$EmitPropsFactory<C>",
+        ),
     ] {
         let code = generate(
             COMPUTED,
@@ -59,8 +63,13 @@ fn a_computed_is_listener_takes_the_gated_call_in_both_modes() {
         assert_eq!(code.matches(DIRECT).count(), 0, "{code}");
         assert_eq!(code.matches(ALIASES).count(), 1, "{code}");
         assert_eq!(
-            code.matches(vize_carton::cstr!("(component: C) => C : {factory};").as_str())
-                .count(),
+            code.matches(
+                vize_carton::cstr!(
+                    "(component: C) => C : __vize_emit_closed<C> extends true ? (component: unknown) => (props: any) => {emit_props}<__vize_emit_member<C>> : {factory};"
+                )
+                .as_str()
+            )
+            .count(),
             1,
             "{code}"
         );
