@@ -1,0 +1,15 @@
+<template>
+  <p>{{ user_name }}</p>
+  <p v-for="row_label in rows">{{ row_label }}</p>
+  <button @click="totals.sub_total = 1" />
+  <p v-if="typeof value === 'string'" />
+  <p v-if="flag === 1" />
+  <p v-while="true" />
+</template>
+<script setup>
+import other from './other'
+function take(value) {
+  return value
+}
+take(user_name)
+</script>

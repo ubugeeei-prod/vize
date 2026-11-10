@@ -4429,6 +4429,38 @@
       }
     },
     {
+      "id": "linter/patina/compat-semantics-12775",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "patina-compat-semantics-12775",
+        "files": [
+          {
+            "path": "Semantics.vue.txt",
+            "role": "third-party-template-semantics-reproduction",
+            "sha256": "7b439900c7f41928482b75138694a217d2098b88bcf55a53e86dcfa186c4014f"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/patina/rule-fixes-9872-9873",
       "state": "active",
       "targets": [
