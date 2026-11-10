@@ -1,0 +1,8 @@
+{
+  "version": 1,
+  "issue": 12593,
+  "reportedVersion": "0.731.0",
+  "reporter": "ubugeeei",
+  "inputs": ["list.vue", "child.vue", "repro.vue", "tsconfig.json"],
+  "expectedStdout": ""
+}
