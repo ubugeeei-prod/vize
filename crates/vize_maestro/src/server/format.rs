@@ -106,7 +106,7 @@ pub(crate) fn format_document_with_context(
     ))
 }
 
-/// Format a TSRX module: the host TypeScript around verbatim markup regions.
+/// Format a TSRX module's host TypeScript and L1 markup regions.
 /// `None` when the module has a syntax error.
 #[cfg(feature = "glyph")]
 pub(crate) fn format_tsrx_document_with_context(
