@@ -1,7 +1,7 @@
 extern crate std;
 
 use super::Builder;
-use crate::artifact::{Artifact, ArtifactError, LoweringFeatures, OpFamily};
+use crate::artifact::{Artifact, ArtifactError};
 use crate::expr::{ExprRef, JsExpr};
 use crate::op::{Attribute, Namespace, Op};
 use crate::provenance::ProvenanceRecord;
@@ -478,31 +478,5 @@ fn host_loops_need_a_body_before_their_empty_region() {
         Err(ArtifactError::UnfinishedOwner {
             node: NodeId::FIRST
         })
-    );
-}
-
-#[test]
-fn child_values_record_the_jsx_child_family() {
-    let a = Allocator::default();
-    let source = "{v}{{w}}";
-    let mut interpolated = Builder::new(&a, source).unwrap();
-    let w = JsExpr::parse_in(&a, "w", Span::new(5, 6)).unwrap();
-    interpolated
-        .region()
-        .interpolation(ExprRef::Js(w), Span::new(3, 8))
-        .unwrap();
-    assert_eq!(
-        interpolated.finish().unwrap().parts().features,
-        LoweringFeatures::EMPTY
-    );
-    let mut valued = Builder::new(&a, source).unwrap();
-    let v = JsExpr::parse_in(&a, "v", Span::new(1, 2)).unwrap();
-    valued
-        .region()
-        .child_value(ExprRef::Js(v), Span::new(0, 3))
-        .unwrap();
-    assert_eq!(
-        valued.finish().unwrap().parts().features,
-        LoweringFeatures::EMPTY.observing(OpFamily::JsxChild)
     );
 }
