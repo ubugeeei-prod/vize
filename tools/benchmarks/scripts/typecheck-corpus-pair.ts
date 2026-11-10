@@ -19,7 +19,11 @@ import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { parseArgs } from "node:util";
 
-import { runOrder, summarizeProbe } from "./typecheck-corpus-pair-parse.ts";
+import {
+  assertExactDiagnosticFingerprints,
+  runOrder,
+  summarizeProbe,
+} from "./typecheck-corpus-pair-parse.ts";
 import {
   type PairResults,
   type ReferenceResult,
@@ -36,6 +40,7 @@ import {
   runBatchCheck,
 } from "./typecheck-corpus-pair-batch.ts";
 import {
+  assertProjectionBudget,
   checkerBusyMs,
   checkMsByFile,
   probeBytesByFile,
@@ -296,6 +301,16 @@ function main(): void {
       `${key}: probe ${probe.files} SFCs, ${probe.bytes} bytes, ${run.diagnostics.length} diagnostics`,
     );
   }
+  assertExactDiagnosticFingerprints(
+    CORPORA.flatMap((corpus) =>
+      MAPPER_HOSTS.map((host) => {
+        const base = probes.get(`${corpus.id}-${host.id}-vize-base`);
+        const head = probes.get(`${corpus.id}-${host.id}-vize-head`);
+        if (!base || !head) throw new Error(`${corpus.id}-${host.id}: missing Vize probe`);
+        return { label: `${corpus.id}-${host.id}`, base: base.fingerprint, head: head.fingerprint };
+      }),
+    ),
+  );
 
   const projections = CORPORA.map((corpus) => {
     const side = (variant: Variant) => {
@@ -318,6 +333,7 @@ function main(): void {
     join(out, "projection.md"),
     projections.map((report) => renderProjection(report)).join("\n"),
   );
+  assertProjectionBudget(projections);
   const shapes = CORPORA.map((corpus) => {
     const dir = (role: string) => join(out, "generated", `${corpus.id}-tsc-vize-${role}`);
     return renderReplyShape(corpus.id, familyShapes(dir("base")), familyShapes(dir("head")));

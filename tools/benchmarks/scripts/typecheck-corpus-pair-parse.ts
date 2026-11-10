@@ -137,6 +137,15 @@ export function runOrder<T>(variants: readonly T[], run: number): T[] {
   return run % 2 === 0 ? [...variants] : [...variants].reverse();
 }
 
+export function assertExactDiagnosticFingerprints(
+  pairs: Array<{ label: string; base: string; head: string }>,
+): void {
+  const changed = pairs.filter((pair) => pair.base !== pair.head).map((pair) => pair.label);
+  if (changed.length > 0) {
+    throw new Error(`base/head diagnostic fingerprint changed: ${changed.join(", ")}`);
+  }
+}
+
 /** Incremental reader of `Content-Length` framed JSON-RPC messages. */
 export function frameReader(): (chunk: Buffer) => Record<string, unknown>[] {
   let buffer = Buffer.alloc(0);
@@ -171,9 +180,15 @@ export type ReplyShape = {
   ignoreGaps: number;
 };
 
-/** One probe line per transform response the mapper returned to the host. */
+/** One probe line per transform, including authored and returned UTF-8 bytes. */
 export type ProbeRecord =
-  | ({ pid: number; fileName: string; bytes: number } & Partial<ReplyShape>)
+  | ({
+      pid: number;
+      fileName: string;
+      bytes: number;
+      sourceBytes: number;
+      templateBytes: number;
+    } & Partial<ReplyShape>)
   | { pid: number; fileName: string; error: string };
 
 const tuples = (value: unknown): unknown[][] =>
@@ -194,6 +209,7 @@ export function replyShape(result: Record<string, unknown>): ReplyShape {
 export function probeRecord(
   pid: number,
   fileName: string,
+  authored: { sourceBytes: number; templateBytes: number },
   response: Record<string, unknown>,
 ): ProbeRecord {
   if (Object.hasOwn(response, "error")) {
@@ -207,6 +223,7 @@ export function probeRecord(
     pid,
     fileName,
     bytes: Buffer.byteLength(result.text, "utf8"),
+    ...authored,
     ...replyShape(result as Record<string, unknown>),
   };
 }
@@ -217,6 +234,8 @@ export function summarizeProbe(text: string): {
   transforms: number;
   processes: number;
   bytes: number;
+  sourceBytes: number;
+  templateBytes: number;
   errors: string[];
 } & ReplyShape {
   const records = text
@@ -236,6 +255,8 @@ export function summarizeProbe(text: string): {
     transforms: records.length,
     processes: new Set(records.map((record) => record.pid)).size,
     bytes: sum((record) => record.bytes),
+    sourceBytes: sum((record) => record.sourceBytes),
+    templateBytes: sum((record) => record.templateBytes),
     replyBytes: sum((record) => record.replyBytes),
     spans: sum((record) => record.spans),
     directives: sum((record) => record.directives),

@@ -5,27 +5,49 @@
  * `--generateTrace`), for Vize base, Vize head and Vue's mapper.
  */
 
+import assert from "node:assert/strict";
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join, relative } from "node:path";
 
+export type ProbeFile = { bytes: number; sourceBytes: number; templateBytes: number };
 export type FileCost = { bytes: number; checkMs: number | null };
-export type ProjectionRow = { file: string; base: FileCost; head: FileCost; vue: FileCost };
+export type ProjectionRow = {
+  file: string;
+  sourceBytes: number;
+  templateBytes: number;
+  base: FileCost;
+  head: FileCost;
+  vue: FileCost;
+};
 export type ProjectionReport = {
   corpus: string;
   files: number;
+  authored: { sourceBytes: number; templateBytes: number };
   totals: { base: FileCost; head: FileCost; vue: FileCost };
   headAtMostVue: number;
+  violations: string[];
   checkers: { base: number[]; head: number[]; vue: number[] };
   rows: ProjectionRow[];
 };
 
 /** Bytes per SFC, relative to `root`: the last response per file wins, as in `summarizeProbe`. */
-export function probeBytesByFile(recordText: string, root: string): Map<string, number> {
-  const bytes = new Map<string, number>();
+export function probeBytesByFile(recordText: string, root: string): Map<string, ProbeFile> {
+  const bytes = new Map<string, ProbeFile>();
   for (const line of recordText.split("\n")) {
     if (!line.trim()) continue;
-    const record = JSON.parse(line) as { fileName: string; bytes?: number };
-    if (record.bytes != null) bytes.set(relative(root, record.fileName), record.bytes);
+    const record = JSON.parse(line) as { fileName: string } & Partial<ProbeFile>;
+    const file = relative(root, record.fileName);
+    assert.ok(!file.startsWith("../") && file.endsWith(".vue"), `unexpected probe file: ${file}`);
+    for (const key of ["bytes", "sourceBytes", "templateBytes"] as const)
+      assert.ok(Number.isSafeInteger(record[key]) && record[key]! >= 0, `${file}: invalid ${key}`);
+    const sizes = {
+      bytes: record.bytes!,
+      sourceBytes: record.sourceBytes!,
+      templateBytes: record.templateBytes!,
+    };
+    if (bytes.has(file))
+      assert.deepEqual(sizes, bytes.get(file), `unstable repeated projection: ${file}`);
+    bytes.set(file, sizes);
   }
   return bytes;
 }
@@ -94,8 +116,12 @@ export function checkerBusyMs(dir: string): number[] {
   return [...busy.values()].sort((a, b) => b - a);
 }
 
-const cost = (bytes: Map<string, number>, check: Map<string, number>, file: string): FileCost => ({
-  bytes: bytes.get(file) ?? 0,
+const cost = (
+  bytes: Map<string, ProbeFile>,
+  check: Map<string, number>,
+  file: string,
+): FileCost => ({
+  bytes: bytes.get(file)!.bytes,
   checkMs: check.size > 0 ? (check.get(file) ?? 0) : null,
 });
 
@@ -103,16 +129,32 @@ export function projectionReport(
   corpus: string,
   sources: Record<
     "base" | "head" | "vue",
-    { bytes: Map<string, number>; check: Map<string, number>; busy?: number[] }
+    { bytes: Map<string, ProbeFile>; check: Map<string, number>; busy?: number[] }
   >,
 ): ProjectionReport {
   const files = [...sources.head.bytes.keys()].sort();
-  const rows = files.map((file) => ({
-    file,
-    base: cost(sources.base.bytes, sources.base.check, file),
-    head: cost(sources.head.bytes, sources.head.check, file),
-    vue: cost(sources.vue.bytes, sources.vue.check, file),
-  }));
+  assert.deepEqual([...sources.base.bytes.keys()].sort(), files, "base/head SFC set differs");
+  assert.deepEqual([...sources.vue.bytes.keys()].sort(), files, "Vue/head SFC set differs");
+  const rows = files.map((file) => {
+    const context = ({ sourceBytes, templateBytes }: ProbeFile) => ({
+      sourceBytes,
+      templateBytes,
+    });
+    const authored = context(sources.head.bytes.get(file)!);
+    assert.deepEqual(
+      context(sources.base.bytes.get(file)!),
+      authored,
+      `${file}: base input differs`,
+    );
+    assert.deepEqual(context(sources.vue.bytes.get(file)!), authored, `${file}: Vue input differs`);
+    return {
+      file,
+      ...authored,
+      base: cost(sources.base.bytes, sources.base.check, file),
+      head: cost(sources.head.bytes, sources.head.check, file),
+      vue: cost(sources.vue.bytes, sources.vue.check, file),
+    };
+  });
   const sum = (side: "base" | "head" | "vue"): FileCost => ({
     bytes: rows.reduce((value, row) => value + row[side].bytes, 0),
     checkMs:
@@ -123,8 +165,13 @@ export function projectionReport(
   return {
     corpus,
     files: rows.length,
+    authored: {
+      sourceBytes: rows.reduce((value, row) => value + row.sourceBytes, 0),
+      templateBytes: rows.reduce((value, row) => value + row.templateBytes, 0),
+    },
     totals: { base: sum("base"), head: sum("head"), vue: sum("vue") },
     headAtMostVue: rows.filter((row) => row.head.bytes <= row.vue.bytes).length,
+    violations: rows.filter((row) => row.head.bytes > row.vue.bytes).map((row) => row.file),
     checkers: {
       base: sources.base.busy ?? [],
       head: sources.head.busy ?? [],
@@ -132,6 +179,13 @@ export function projectionReport(
     },
     rows,
   };
+}
+
+export function assertProjectionBudget(reports: ProjectionReport[]): void {
+  const violations = reports.flatMap((report) =>
+    report.violations.map((file) => `${report.corpus}/${file}`),
+  );
+  assert.equal(violations.length, 0, `Vize head exceeds Vue for ${violations.join(", ")}`);
 }
 
 const kb = (bytes: number) => (bytes / 1024).toFixed(1);
@@ -142,11 +196,11 @@ function table(title: string, rows: ProjectionRow[]): string[] {
   return [
     `#### ${title}`,
     "",
-    "| SFC | Vize head KB | Vue KB | bytes vs Vue | Vize head check ms | Vue check ms | Vize base check ms |",
-    "| --- | ---: | ---: | ---: | ---: | ---: | ---: |",
+    "| SFC | authored SFC KB | template KB | Vize base KB | Vize head KB | Vue KB | head / Vue | head / authored | Vize base check ms | Vize head check ms | Vue check ms |",
+    "| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |",
     ...rows.map(
       (row) =>
-        `| \`${row.file}\` | ${kb(row.head.bytes)} | ${kb(row.vue.bytes)} | ${ratio(row.head.bytes, row.vue.bytes)} | ${ms(row.head.checkMs)} | ${ms(row.vue.checkMs)} | ${ms(row.base.checkMs)} |`,
+        `| \`${row.file}\` | ${kb(row.sourceBytes)} | ${kb(row.templateBytes)} | ${kb(row.base.bytes)} | ${kb(row.head.bytes)} | ${kb(row.vue.bytes)} | ${ratio(row.head.bytes, row.vue.bytes)} | ${ratio(row.head.bytes, row.sourceBytes)} | ${ms(row.base.checkMs)} | ${ms(row.head.checkMs)} | ${ms(row.vue.checkMs)} |`,
     ),
     "",
   ];
@@ -156,13 +210,13 @@ const busy = (threads: number[]) =>
   threads.length > 0 ? threads.map((value) => value.toFixed(0)).join(" / ") : "n/a";
 
 export function renderProjection(report: ProjectionReport, top = 15): string {
-  const { totals } = report;
+  const { authored, totals } = report;
   const by = (key: (row: ProjectionRow) => number) =>
     [...report.rows].sort((a, b) => key(b) - key(a)).slice(0, top);
   return [
     `### Projection per SFC: ${report.corpus}`,
     "",
-    `Vize head projects ${kb(totals.head.bytes)} KB over ${report.files} SFCs (${ratio(totals.head.bytes, totals.vue.bytes)} Vue's ${kb(totals.vue.bytes)} KB; base ${kb(totals.base.bytes)} KB). ${report.headAtMostVue} of ${report.files} SFCs are at most Vue's size. tsc spends ${ms(totals.head.checkMs)} ms in checkSourceFile on Vize head projections, ${ms(totals.vue.checkMs)} ms on Vue's and ${ms(totals.base.checkMs)} ms on Vize base's (untimed traced run, summed over checker threads).`,
+    `Authored SFCs total ${kb(authored.sourceBytes)} KB, including ${kb(authored.templateBytes)} KB of template content. Vize head projects ${kb(totals.head.bytes)} KB over ${report.files} SFCs (${ratio(totals.head.bytes, totals.vue.bytes)} Vue's ${kb(totals.vue.bytes)} KB; Vize base ${kb(totals.base.bytes)} KB; ${ratio(totals.head.bytes, authored.sourceBytes)} authored SFC bytes). ${report.headAtMostVue} of ${report.files} SFCs are at most Vue's size. tsc spends ${ms(totals.head.checkMs)} ms in checkSourceFile on Vize head projections, ${ms(totals.vue.checkMs)} ms on Vue's and ${ms(totals.base.checkMs)} ms on Vize base's (untimed traced run, summed over checker threads).`,
     "",
     `Checker thread busy ms, busiest first: Vize base ${busy(report.checkers.base)}; Vize head ${busy(report.checkers.head)}; Vue ${busy(report.checkers.vue)}.`,
     "",

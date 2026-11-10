@@ -70,6 +70,8 @@ export function diagnosticEvidence(raw: RawRun, project: string, format: "json" 
     format,
   };
 }
+export const diagnosticFingerprint = (evidence: ReturnType<typeof diagnosticEvidence>) =>
+  sha256(JSON.stringify(evidence));
 export function assertSameEvidence(
   base: ReturnType<typeof diagnosticEvidence>,
   head: ReturnType<typeof diagnosticEvidence>,

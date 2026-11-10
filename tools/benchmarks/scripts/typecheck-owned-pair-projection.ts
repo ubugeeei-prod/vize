@@ -40,7 +40,7 @@ export function ownedProbeRows(
   expected: number,
   expectedFiles: string[],
 ) {
-  const byFile = new Map<string, number>();
+  const byFile = new Map<string, { bytes: number; sourceBytes: number; templateBytes: number }>();
   for (const line of text.split("\n").filter(Boolean)) {
     const record = JSON.parse(line) as ProbeRecord;
     assert.ok(!("error" in record), `mapper transform failed: ${line}`);
@@ -49,10 +49,16 @@ export function ownedProbeRows(
       !file.startsWith("../") && file.endsWith(".vue"),
       `unexpected transformed input: ${file}`,
     );
-    assert.ok(Number.isSafeInteger(record.bytes) && record.bytes >= 0);
+    for (const key of ["bytes", "sourceBytes", "templateBytes"] as const)
+      assert.ok(Number.isSafeInteger(record[key]) && record[key] >= 0, `${file}: invalid ${key}`);
+    const sizes = {
+      bytes: record.bytes,
+      sourceBytes: record.sourceBytes,
+      templateBytes: record.templateBytes,
+    };
     if (byFile.has(file))
-      assert.equal(record.bytes, byFile.get(file), `unstable repeated projection: ${file}`);
-    byFile.set(file, record.bytes);
+      assert.deepEqual(sizes, byFile.get(file), `unstable repeated projection: ${file}`);
+    byFile.set(file, sizes);
   }
   assert.equal(byFile.size, expected, "not every expected SFC reached the mapper");
   assert.equal(expectedFiles.length, expected);
@@ -63,7 +69,7 @@ export function ownedProbeRows(
   );
   return [...byFile]
     .sort(([a], [b]) => a.localeCompare(b))
-    .map(([file, bytes]) => ({ file, bytes }));
+    .map(([file, sizes]) => ({ file, ...sizes }));
 }
 export function compareOwnedProjections(
   base: ReturnType<typeof ownedProbeRows>,
@@ -78,8 +84,16 @@ export function compareOwnedProjections(
     head.map((row) => row.file),
     vue.map((row) => row.file),
   );
+  for (const rows of [base, head])
+    assert.deepEqual(
+      rows.map(({ file, sourceBytes, templateBytes }) => ({ file, sourceBytes, templateBytes })),
+      vue.map(({ file, sourceBytes, templateBytes }) => ({ file, sourceBytes, templateBytes })),
+      "authored SFC/template bytes differ between mapper variants",
+    );
   const rows = vue.map((row, index) => ({
     file: row.file,
+    sourceBytes: row.sourceBytes,
+    templateBytes: row.templateBytes,
     base: base[index].bytes,
     head: head[index].bytes,
     vue: row.bytes,
@@ -90,4 +104,14 @@ export function compareOwnedProjections(
     violations: rows.filter((row) => row.exceedsVue),
     probeScript: { path: script, sha256: sha256(readFileSync(script)) },
   };
+}
+
+export function assertOwnedProjectionBudget(
+  report: ReturnType<typeof compareOwnedProjections>,
+): void {
+  assert.equal(
+    report.violations.length,
+    0,
+    `Vize head exceeds Vue for ${report.violations.map((row) => row.file).join(", ")}`,
+  );
 }
