@@ -108,10 +108,6 @@ impl<'a> TestCache<'a> {
         cache.snapshots.insert(requested, snapshot);
         cache
     }
-
-    fn contains(&self, cache_key: CapabilityCacheKey) -> bool {
-        self.snapshots.contains_key(&cache_key)
-    }
 }
 
 impl CapabilitySnapshotCache for TestCache<'_> {
@@ -188,7 +184,7 @@ fn backing_hit_is_promoted_once_and_reused_from_the_front() {
         &*operations.borrow(),
         &["front-load", "backing-load", "front-store"]
     );
-    assert!(cache.front().contains(cache_key));
+    assert_eq!(cache.front().snapshots.get(&cache_key), Some(&expected));
 
     assert_eq!(cache.load_snapshot(cache_key).unwrap(), Some(expected));
     assert_eq!(
@@ -252,7 +248,7 @@ fn rejects_mismatched_backing_key_without_poisoning_the_front() {
         } if actual_requested == requested && actual == wrong.cache_key()
     ));
     assert_eq!(&*operations.borrow(), &["front-load", "backing-load"]);
-    assert!(!cache.front().contains(requested));
+    assert_eq!(cache.front().snapshots.get(&requested), None);
 }
 
 #[test]
@@ -306,12 +302,15 @@ fn failed_front_store_recovers_from_the_durable_winner() {
             source: TestCacheError::Store
         }
     ));
-    assert!(cache.backing().contains(cache_key));
-    assert!(!cache.front().contains(cache_key));
+    assert_eq!(cache.backing().snapshots.get(&cache_key), Some(&expected));
+    assert_eq!(cache.front().snapshots.get(&cache_key), None);
 
     cache.front_mut().store_error = false;
-    assert_eq!(cache.load_snapshot(cache_key).unwrap(), Some(expected));
-    assert!(cache.front().contains(cache_key));
+    assert_eq!(
+        cache.load_snapshot(cache_key).unwrap(),
+        Some(expected.clone())
+    );
+    assert_eq!(cache.front().snapshots.get(&cache_key), Some(&expected));
     assert_eq!(
         &*operations.borrow(),
         &[
