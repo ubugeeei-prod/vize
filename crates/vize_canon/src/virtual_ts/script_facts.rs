@@ -84,6 +84,16 @@ pub(super) fn cache_bindings(summary: &Croquis) -> BindingsScope {
     BindingsScope(previous)
 }
 
+/// [`cache_bindings`] unless this summary's table is already cached.
+pub(super) fn ensure_bindings(summary: &Croquis) -> Option<BindingsScope> {
+    let cached = CACHED_BINDINGS.with_borrow(|cache| {
+        cache
+            .as_ref()
+            .is_some_and(|cached| std::ptr::eq(cached.summary, summary))
+    });
+    (!cached).then(|| cache_bindings(summary))
+}
+
 /// Borrowed `Bindings` table. Methods are inherent so callers do not import the trait.
 ///
 /// `None` only if the fact manager refused the declared demand; every query
@@ -190,6 +200,20 @@ mod tests {
             assert_eq!(binding_type(&outer, "outer"), Some(BindingType::SetupRef));
         }
 
+        assert_eq!(preparation_count(false) - before, 2);
+    }
+
+    #[test]
+    fn binding_generated_names_prepares_one_bindings_table() {
+        let mut summary = Croquis::new();
+        summary.bindings.add("Awaited", BindingType::SetupConst);
+        let before = preparation_count(false);
+        drop(crate::virtual_ts::generated_names::bind(None, &summary));
+        assert_eq!(preparation_count(false) - before, 1);
+        {
+            let _scope = cache_bindings(&summary);
+            drop(crate::virtual_ts::generated_names::bind(None, &summary));
+        }
         assert_eq!(preparation_count(false) - before, 2);
     }
 }
