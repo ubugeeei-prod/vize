@@ -80,4 +80,30 @@ fn next_tick_style_resolves_vue_imports_and_parenthesized_awaits() {
         "<script>import { nextTick } from 'vue'; async function run() { await (nextTick()) }</script><template />",
     );
     assert_eq!(awaited.warning_count, 0, "{:?}", awaited.diagnostics);
+
+    let namespace = lint(
+        Box::new(NextTickStyle),
+        "<script setup>import * as Vue from 'vue'; Vue.nextTick(() => undefined)</script><template />",
+    );
+    assert_eq!(namespace.warning_count, 1, "{:?}", namespace.diagnostics);
+
+    let split_scripts = lint(
+        Box::new(NextTickStyle),
+        "<script>import { nextTick } from 'vue'</script><script setup>nextTick(() => undefined)</script><template />",
+    );
+    assert_eq!(
+        split_scripts.warning_count, 1,
+        "{:?}",
+        split_scripts.diagnostics
+    );
+
+    let identifier_suffix = lint(
+        Box::new(NextTickStyle),
+        "<script>import { nextTick } from 'vue'; myawait(nextTick())</script><template />",
+    );
+    assert_eq!(
+        identifier_suffix.warning_count, 1,
+        "{:?}",
+        identifier_suffix.diagnostics
+    );
 }

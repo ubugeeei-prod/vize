@@ -34,14 +34,14 @@
 //! const { data } = useAsyncData(() => fetch('/api/data'))
 //! ```
 
+mod bindings;
+
 use crate::diagnostic::{LintDiagnostic, Severity};
-use oxc_ast::ast::{
-    CallExpression, Expression, ImportDeclarationSpecifier, MemberExpression, ObjectPropertyKind,
-    Program, Statement,
-};
+use oxc_ast::ast::{CallExpression, Expression, MemberExpression, ObjectPropertyKind, Program};
 use oxc_ast_visit::{Visit, walk::walk_call_expression};
 use oxc_span::{GetSpan, Span};
-use vize_l0::{CompactString, FxHashSet};
+
+use bindings::ComputedBindings;
 
 use super::no_side_effects_in_computed::{
     GetterBody, accessor_object_getter, computed_getter_body, find_component_options,
@@ -142,60 +142,6 @@ impl<'a> Visit<'a> for NoAsyncInComputedVisitor<'_> {
         }
 
         walk_call_expression(self, it);
-    }
-}
-
-#[derive(Default)]
-struct ComputedBindings {
-    named: FxHashSet<CompactString>,
-    namespaces: FxHashSet<CompactString>,
-}
-
-impl ComputedBindings {
-    fn collect(program: &Program<'_>) -> Self {
-        let mut bindings = Self::default();
-        for statement in &program.body {
-            let Statement::ImportDeclaration(import) = statement else {
-                continue;
-            };
-            if import.import_kind.is_type()
-                || !matches!(import.source.value.as_str(), "vue" | "@vue/composition-api")
-            {
-                continue;
-            }
-            for specifier in import.specifiers.iter().flatten() {
-                match specifier {
-                    ImportDeclarationSpecifier::ImportSpecifier(specifier)
-                        if !specifier.import_kind.is_type()
-                            && specifier.imported.name() == "computed" =>
-                    {
-                        bindings
-                            .named
-                            .insert(CompactString::new(specifier.local.name.as_str()));
-                    }
-                    ImportDeclarationSpecifier::ImportNamespaceSpecifier(specifier) => {
-                        bindings
-                            .namespaces
-                            .insert(CompactString::new(specifier.local.name.as_str()));
-                    }
-                    _ => {}
-                }
-            }
-        }
-        bindings
-    }
-
-    fn resolves(&self, callee: &Expression<'_>) -> bool {
-        let callee = callee.get_inner_expression();
-        if let Expression::Identifier(identifier) = callee {
-            return identifier.name == "computed" || self.named.contains(identifier.name.as_str());
-        }
-        let Some(member) = member_expression(callee) else {
-            return false;
-        };
-        member.static_property_name() == Some("computed")
-            && matches!(member.object().get_inner_expression(), Expression::Identifier(identifier)
-                if self.namespaces.contains(identifier.name.as_str()))
     }
 }
 
@@ -495,5 +441,17 @@ const wrapped_timer = computed(() => { (window?.setTimeout)?.(() => {}, 0); retu
 "#;
         let result = create_linter().lint(source, 0);
         assert_eq!(result.error_count, 4, "{:?}", result.diagnostics);
+    }
+
+    #[test]
+    fn resolves_default_vue_import_and_rejects_non_vue_computed_import() {
+        let source = r#"
+import Vue from "vue"
+import computed from "./signals"
+const from_vue = Vue.computed(() => { setTimeout(() => {}, 0); return 1 })
+const unrelated = computed(() => { setTimeout(() => {}, 0); return 1 })
+"#;
+        let result = create_linter().lint(source, 0);
+        assert_eq!(result.error_count, 1, "{:?}", result.diagnostics);
     }
 }

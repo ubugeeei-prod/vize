@@ -94,13 +94,23 @@ fn core_rules_visit_every_template_javascript_goal() {
 fn document_core_rules_visit_style_v_bind_expressions() {
     let source = concat!(
         "<template><p class=\"x\" /></template>",
-        "<style scoped>.x { color: v-bind('a == b ? foo[\"bar\"] : 9007199254740993'); }</style>",
+        "<style scoped>.x { color: v-bind('a == b ? foo[\"bar\"] : 9007199254740993'); ",
+        "width: v-bind('console.log(value)'); height: v-bind('({ value: value })'); ",
+        "margin: v-bind('({ \"quoted\": value })'); }</style>",
     );
 
     for rule in [
         Box::new(Eqeqeq) as Box<dyn Rule>,
         Box::new(DotNotation),
         Box::new(NoLossOfPrecision),
+    ] {
+        let result = lint_sfc(rule, source);
+        assert_eq!(result.warning_count, 1, "{:?}", result.diagnostics);
+    }
+    for rule in [
+        Box::new(NoConsole) as Box<dyn Rule>,
+        Box::new(ObjectShorthand),
+        Box::new(QuoteProps),
     ] {
         let result = lint_sfc(rule, source);
         assert_eq!(result.warning_count, 1, "{:?}", result.diagnostics);
@@ -138,6 +148,24 @@ fn constant_and_negated_conditions_cover_directives_and_handlers() {
         ),
     );
     assert_eq!(negated.warning_count, 2, "{:?}", negated.diagnostics);
+}
+
+#[test]
+fn logical_conditions_only_report_when_truthiness_is_fixed() {
+    let result = lint(
+        Box::new(NoConstantCondition),
+        concat!(
+            "<p v-if=\"loading && true\" />",
+            "<p v-if=\"loading || false\" />",
+            "<p v-if=\"null ?? loading\" />",
+            "<p v-if=\"loading || ``\" />",
+            "<p v-if=\"loading || true\" />",
+            "<p v-if=\"loading && false\" />",
+            "<p v-if=\"loading && ``\" />",
+        ),
+    );
+
+    assert_eq!(result.warning_count, 3, "{:?}", result.diagnostics);
 }
 
 #[test]
@@ -184,9 +212,10 @@ fn concatenation_rules_report_the_same_chain_boundaries_as_eslint() {
             "<p>{{ 'a' + 'b' }}</p>",
             "<p>{{ `a${text}` + text }}</p>",
             "<p>{{ 'a' + text + 'c' }}</p>",
+            "<p>{{ 'x' + f('a' + b) }}</p>",
         ),
     );
-    assert_eq!(preferred.warning_count, 3, "{:?}", preferred.diagnostics);
+    assert_eq!(preferred.warning_count, 5, "{:?}", preferred.diagnostics);
 }
 
 #[test]
@@ -211,18 +240,22 @@ fn object_key_rules_avoid_semantics_changing_suggestions() {
         concat!(
             "<p>{{ fn({ a: a, go: function () {}, [key]: function () {} }) }}</p>",
             "<p>{{ fn({ [key]: key, ['a']: a, __proto__: __proto__, a: a! }) }}</p>",
+            "<p>{{ fn({ get value() {}, set value(next) {}, recurse: function recurse() {}, ",
+            "plain: function () {} }) }}</p>",
         ),
     );
-    assert_eq!(shorthand.warning_count, 3, "{:?}", shorthand.diagnostics);
+    assert_eq!(shorthand.warning_count, 4, "{:?}", shorthand.diagnostics);
 
     let quotes = lint(
         Box::new(QuoteProps),
         concat!(
             "<p>{{ fn({ 'a': a, 'class': a, '0': a, ['b']: a, 'go'() {} }) }}</p>",
             "<p>{{ rows.map(({ 'id': id }) => id) }}</p>",
+            "<p>{{ fn({ '01': a, '-1': a, '+1': a, '.5': a, '5.': a, ",
+            "'1e3': a, '1.0': a, '9007199254740992': a, '9007199254740991': a }) }}</p>",
         ),
     );
-    assert_eq!(quotes.warning_count, 4, "{:?}", quotes.diagnostics);
+    assert_eq!(quotes.warning_count, 5, "{:?}", quotes.diagnostics);
 }
 
 #[test]

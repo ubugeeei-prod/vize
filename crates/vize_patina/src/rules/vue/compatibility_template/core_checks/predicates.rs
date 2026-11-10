@@ -29,7 +29,22 @@ pub(super) fn is_identifier_name(name: &str) -> bool {
 }
 
 pub(super) fn can_unquote_property(name: &str) -> bool {
-    is_identifier_name(name) || name.parse::<f64>().is_ok()
+    is_identifier_name(name) || is_canonical_integer_property(name)
+}
+
+fn is_canonical_integer_property(name: &str) -> bool {
+    const MAX_SAFE_INTEGER: u64 = 9_007_199_254_740_991;
+
+    if name == "0" {
+        return true;
+    }
+    name.as_bytes()
+        .first()
+        .is_some_and(|byte| byte.is_ascii_digit() && *byte != b'0')
+        && name.bytes().all(|byte| byte.is_ascii_digit())
+        && name
+            .parse::<u64>()
+            .is_ok_and(|value| value <= MAX_SAFE_INTEGER)
 }
 
 pub(super) fn is_empty_string_like(expression: &Expression<'_>) -> bool {
@@ -142,12 +157,19 @@ pub(super) fn is_constant(expression: &Expression<'_>) -> bool {
         Expression::UnaryExpression(unary) => is_constant(&unary.argument),
         Expression::LogicalExpression(logical) => match logical.operator {
             oxc_syntax::operator::LogicalOperator::Or => {
-                is_truthy_constant(&logical.left) || is_constant(&logical.right)
+                is_constant(&logical.left) && is_constant(&logical.right)
+                    || is_truthy_constant(&logical.left)
+                    || is_truthy_constant(&logical.right)
             }
             oxc_syntax::operator::LogicalOperator::And => {
-                is_falsy_constant(&logical.left) || is_constant(&logical.right)
+                is_constant(&logical.left) && is_constant(&logical.right)
+                    || is_falsy_constant(&logical.left)
+                    || is_falsy_constant(&logical.right)
             }
-            oxc_syntax::operator::LogicalOperator::Coalesce => is_constant(&logical.left),
+            oxc_syntax::operator::LogicalOperator::Coalesce => {
+                is_constant(&logical.left)
+                    && (!is_nullish_constant(&logical.left) || is_constant(&logical.right))
+            }
         },
         _ => false,
     }
@@ -158,7 +180,16 @@ fn is_truthy_constant(expression: &Expression<'_>) -> bool {
         Expression::BooleanLiteral(value) => value.value,
         Expression::NumericLiteral(value) => value.value != 0.0 && !value.value.is_nan(),
         Expression::StringLiteral(value) => !value.value.is_empty(),
-        Expression::TemplateLiteral(template) => template.expressions.is_empty(),
+        Expression::TemplateLiteral(template) => {
+            template.expressions.is_empty()
+                && template.quasis.first().is_some_and(|quasi| {
+                    quasi
+                        .value
+                        .cooked
+                        .as_ref()
+                        .is_some_and(|text| !text.is_empty())
+                })
+        }
         Expression::ArrayExpression(_)
         | Expression::ObjectExpression(_)
         | Expression::FunctionExpression(_)
@@ -176,11 +207,28 @@ fn is_falsy_constant(expression: &Expression<'_>) -> bool {
         Expression::NullLiteral(_) => true,
         Expression::NumericLiteral(value) => value.value == 0.0 || value.value.is_nan(),
         Expression::StringLiteral(value) => value.value.is_empty(),
+        Expression::TemplateLiteral(template) => {
+            template.expressions.is_empty()
+                && template.quasis.first().is_some_and(|quasi| {
+                    quasi
+                        .value
+                        .cooked
+                        .as_ref()
+                        .is_some_and(|text| text.is_empty())
+                })
+        }
         Expression::UnaryExpression(unary) if unary.operator == UnaryOperator::LogicalNot => {
             is_truthy_constant(&unary.argument)
         }
         _ => false,
     }
+}
+
+fn is_nullish_constant(expression: &Expression<'_>) -> bool {
+    matches!(
+        expression.get_inner_expression(),
+        Expression::NullLiteral(_)
+    )
 }
 
 pub(super) fn is_negated(expression: &Expression<'_>) -> bool {
