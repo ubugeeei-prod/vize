@@ -11,7 +11,7 @@ on:
         required: true
         type: string
       sfc_optional_lifecycle_only:
-        description: Diagnose one frozen public/source native optional-prop lifecycle without timing
+        description: Qualify one historical public and fresh current-source native lifecycle without timing
         required: false
         default: false
         type: boolean

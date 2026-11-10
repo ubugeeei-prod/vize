@@ -238,7 +238,7 @@ SFC compilation, JSX, bindings, templates, Vapor, recovery, and native correctne
 | 06.27 | Provide type assertion whole packets     | [`provide-type-assertion.yml`](./provide-type-assertion.yml)                   |
 | 06.28 | Recovery normal codegen                  | [`recovery-normal-codegen.yml`](./recovery-normal-codegen.yml)                 |
 | 06.29 | Scoped nesting specificity               | [`scoped-nesting-specificity.yml`](./scoped-nesting-specificity.yml)           |
-| 06.30 | Native SFC optional lifecycle diagnostic | [`sfc-optional-lifecycle.yml`](./sfc-optional-lifecycle.yml)                   |
+| 06.30 | Current native SFC lifecycle             | [`sfc-optional-lifecycle.yml`](./sfc-optional-lifecycle.yml)                   |
 | 06.31 | Native parsed SFC attributes             | [`sfc-parse-attributes.yml`](./sfc-parse-attributes.yml)                       |
 | 06.32 | Historical SFC Parse Replay              | [`sfc-parse-replay.yml`](./sfc-parse-replay.yml)                               |
 | 06.33 | Retained source-line replay              | [`source-symbolizer-retained.yml`](./source-symbolizer-retained.yml)           |
