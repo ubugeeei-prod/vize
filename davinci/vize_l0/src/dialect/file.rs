@@ -42,6 +42,19 @@ pub enum ProfileKind {
     Component,
 }
 
+/// Which JSX semantics a JSX/TSX module is compiled with, resolved once per
+/// file from `compiler.jsxCompat`.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
+pub enum JsxSemantics {
+    /// Vize: `&&`, `?:` and `.map()` lower structurally.
+    #[default]
+    Vize,
+    /// `@vue/babel-plugin-jsx`.
+    Babel,
+    /// `vue-jsx-vapor`.
+    VueJsxVapor,
+}
+
 /// Embedded source language selected from the file container.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum Lang {

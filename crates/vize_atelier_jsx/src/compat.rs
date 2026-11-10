@@ -80,6 +80,14 @@ pub enum JsxCompatMode {
 }
 
 impl JsxCompatMode {
+    /// The level-shared semantics this mode selects for a file.
+    pub const fn semantics(self) -> vize_l0::dialect::JsxSemantics {
+        match self {
+            Self::Native => vize_l0::dialect::JsxSemantics::Vize,
+            Self::Babel => vize_l0::dialect::JsxSemantics::Babel,
+        }
+    }
+
     /// The canonical config value for this mode (`"native"` / `"babel"`), as
     /// used by the `compiler.jsxCompat` config key and the native bindings.
     pub const fn as_config_str(self) -> &'static str {

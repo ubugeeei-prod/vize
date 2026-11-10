@@ -295,6 +295,20 @@ impl<'a, 'm, 's: 'a> Lowerer<'a, 'm, 's> {
         };
     }
 
+    /// Whether the shared L1→L2 JSX lowering produces this root's L2: native
+    /// client VDOM, where a sole expression child is a JSX child value.
+    pub(crate) fn admits_level_l2(&self) -> bool {
+        self.owns_native_vdom_child_values() && !self.literal_styles_active
+    }
+
+    pub(crate) fn scoping(&self) -> Option<&Scoping> {
+        self.scoping.as_ref()
+    }
+
+    pub(crate) const fn semantics(&self) -> vize_l0::dialect::JsxSemantics {
+        self.compat.semantics()
+    }
+
     /// Whether Babel's `isCustomElement` predicate selects this JSX tag.
     pub(crate) fn is_babel_custom_element(&self, tag: &str) -> bool {
         tag != "Fragment"
