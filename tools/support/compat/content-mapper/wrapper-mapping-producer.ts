@@ -2,14 +2,43 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 
+/** Each line the check-mode producer changed, beside its predecessor. */
+const CHECK_MODE_SUCCESSOR = [
+  [
+    "use crate::virtual_ts::{ProjectionFeatures, ProjectionMeta, VizeMapping};\n",
+    "use crate::virtual_ts::{ProjectionFeatures, ProjectionMeta, VirtualTsOptions, VizeMapping};\n",
+  ],
+  [
+    "    let mut virtual_ts_options = transform_options.virtual_ts_options();\n",
+    "    let mut virtual_ts_options = VirtualTsOptions::default();\n",
+  ],
+  [
+    "            template_use_navigation: !transform_options.diagnostics_only(),\n",
+    "            template_use_navigation: true,\n",
+  ],
+  [
+    "            preserve_event_navigation: !transform_options.diagnostics_only(),\n",
+    "            preserve_event_navigation: true,\n",
+  ],
+] as const;
+
 export function assertWrapperMappingProducer(producer: Uint8Array): void {
   const digest = (bytes: string | Uint8Array) => createHash("sha256").update(bytes).digest("hex");
   assert.equal(
     digest(producer),
-    "9c3faec15ca7c73c4a8a3f0fd1fcae7bb6f9d70c8e71a7046994d373e8b4e038",
+    "1e4c7df125bece7d5a264b4b321eb932db96d8d036219c627c7d7e0415fe6c60",
     "unqualified #11675 wrapper mapping producer",
   );
   let historical = Buffer.from(producer).toString("utf8");
+  for (const [successor, predecessor] of CHECK_MODE_SUCCESSOR) {
+    assert.equal(historical.split(successor).length, 2);
+    historical = historical.replace(successor, predecessor);
+  }
+  assert.equal(
+    digest(historical),
+    "9c3faec15ca7c73c4a8a3f0fd1fcae7bb6f9d70c8e71a7046994d373e8b4e038",
+    "certified check-mode wrapper successor",
+  );
   for (const [successor, expected, message] of [
     [
       "    span_features::retain_template_hover_owner(generated, &mut spans);\n",

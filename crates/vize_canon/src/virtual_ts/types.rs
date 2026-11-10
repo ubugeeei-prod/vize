@@ -97,6 +97,9 @@ pub struct VirtualTsOptions {
     /// Vue 3 dollar references already read the typed public instance when this
     /// is false; legacy Vue 2 keeps its structural compatibility fallback.
     pub strict_instance_globals: bool,
+    /// Skip the template navigation references to component tags, props,
+    /// slots and events, for a host that only reads diagnostics.
+    pub omit_navigation_references: bool,
 }
 
 impl Default for VirtualTsOptions {
@@ -109,6 +112,7 @@ impl Default for VirtualTsOptions {
             external_template_bindings: Vec::new(),
             reference_paths: Vec::new(),
             strict_instance_globals: false,
+            omit_navigation_references: false,
         }
     }
 }

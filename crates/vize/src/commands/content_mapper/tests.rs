@@ -289,7 +289,7 @@ const count = 1
 }
 
 #[test]
-fn transform_exposes_semantic_links() {
+fn transform_keeps_semantic_links_off_the_wire() {
     let source = r#"<script setup lang="ts">
 import { ref } from 'vue'
 const count = ref(1)
@@ -303,11 +303,12 @@ const count = ref(1)
     ]);
     let responses = exchange(&input);
 
-    assert!(
-        !responses[2]["result"]["semanticLinks"]
-            .as_array()
-            .unwrap()
-            .is_empty(),
+    // Canon still links the ref unwrap (`emits_stable_semantic_links_for_ref_unwraps`);
+    // the protocol has no field for it.
+    assert_eq!(responses[2]["error"], Value::Null, "{}", responses[2]);
+    assert_eq!(
+        responses[2]["result"].get("semanticLinks"),
+        None,
         "{}",
         responses[2]
     );

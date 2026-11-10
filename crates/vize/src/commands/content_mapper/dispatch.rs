@@ -284,7 +284,7 @@ fn read_loop<R: BufRead>(
     inflight_limit: std::num::NonZeroUsize,
 ) -> io::Result<()> {
     let mut initialized = false;
-    let mut projects = ProjectRegistry::default();
+    let mut projects = ProjectRegistry::new(super::mode::ProjectionMode::from_env());
     let mut seq = 0_u64;
     loop {
         // Return admission credit only after the ordered reply is flushed.
@@ -369,7 +369,7 @@ fn open_project(id: Value, params: Value, projects: &mut ProjectRegistry) -> io:
             return encode_error(&id, -32602, &message);
         }
     };
-    match resolve_open_project(&params) {
+    match resolve_open_project(&params, projects.mode()) {
         Ok((settings, result)) => {
             projects.open(params.project_handle, settings);
             encode_result(&id, result)

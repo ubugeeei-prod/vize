@@ -19,7 +19,9 @@ pub(super) fn emit_references(
     ctx: &ComponentPropsContext<'_, '_>,
     checkable_usages: &[(usize, &ComponentUsage)],
 ) {
-    ts.push_str("\n  // Component template navigation references\n");
+    if !ctx.options.omit_navigation_references {
+        ts.push_str("\n  // Component template navigation references\n");
+    }
     for &(idx, usage) in checkable_usages {
         emit_usage_references(ts, mappings, semantic_links, ctx, idx, usage);
     }
@@ -33,6 +35,12 @@ pub(super) fn emit_usage_references(
     idx: usize,
     usage: &ComponentUsage,
 ) {
+    // A slot reference also rejects a slot name the component lacks, so a
+    // diagnostics-only projection keeps it.
+    if ctx.options.omit_navigation_references {
+        emit_slot_references(ts, mappings, ctx, idx, usage);
+        return;
+    }
     let named_dynamic_ref = named_dynamic_navigation_reference(ctx, usage);
     let inference_only = named_dynamic_ref.is_some();
     let component_ref = named_dynamic_ref.unwrap_or_else(|| {

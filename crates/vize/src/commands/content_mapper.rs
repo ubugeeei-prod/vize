@@ -17,6 +17,7 @@ use vize_l0::cstr;
 
 mod dispatch;
 mod helper_abi;
+mod mode;
 mod project;
 
 const MAX_MESSAGE_BYTES: usize = 64 * 1024 * 1024;
