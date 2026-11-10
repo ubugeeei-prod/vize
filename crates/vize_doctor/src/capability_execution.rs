@@ -1,6 +1,7 @@
 //! Cache-backed execution for independently reusable analysis capabilities.
 
 mod filesystem_cache;
+mod remote_cache;
 mod telemetry;
 #[cfg(test)]
 mod tests;
@@ -19,6 +20,10 @@ use crate::{
 pub use filesystem_cache::{
     DOCTOR_FILESYSTEM_CAPABILITY_CACHE_LAYOUT_VERSION, FilesystemCapabilitySnapshotCache,
     FilesystemCapabilitySnapshotCacheError,
+};
+pub use remote_cache::{
+    RemoteCapabilitySnapshotCache, RemoteCapabilitySnapshotCacheError,
+    RemoteCapabilitySnapshotObject, RemoteCapabilitySnapshotStore,
 };
 pub use telemetry::{CapabilityExecutionCacheStatus, CapabilityExecutionTelemetry};
 
