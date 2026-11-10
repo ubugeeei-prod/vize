@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "pullRequest": 12614,
+  "predecessor": {
+    "path": "successor-constructor-noinfer-12431/projection-record.txt",
+    "bytes": 2234,
+    "sha256": "fbb281e17beaf89265a90e4be950dc18eb7d61fe156aba93a29407e3b5a8685e"
+  },
+  "successor": {
+    "path": "successor-with-defaults-docs-12461/projection-record.txt",
+    "bytes": 2234,
+    "sha256": "4a2a4798e664bb74f9c4f568e9a0eb92cc39690727995598a428ec2b14f04c55"
+  },
+  "delta": {
+    "canonGeneratedTextBytes": 0,
+    "contentMapperGeneratedTextBytes": 40,
+    "maestroGeneratedTextBytes": 0,
+    "contentMapperMappings": 0,
+    "contentMapperAuthoredHits": 0
+  },
+  "nativeAcceptanceCredit": false,
+  "scope": "Exact successor for #12461: only the editor content-mapper projection receives the type-neutral withDefaults documentation surface. Canon and Maestro remain byte-identical; mapping and authored-hit counts are unchanged, and the changed coordinate hashes are derived relocation. Native hover fixtures own consumer acceptance."
+}

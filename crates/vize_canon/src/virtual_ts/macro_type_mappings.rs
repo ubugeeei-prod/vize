@@ -175,7 +175,7 @@ impl<'a> MacroTypeMappings<'a> {
                     identifier.push_str(model.name.as_str());
                     identifier
                 });
-            let identifier_start = identifier.as_ref().and_then(|needle| {
+            let identifier_match = identifier.as_ref().and_then(|needle| {
                 generated
                     .match_indices(needle.as_str())
                     .find_map(|(start, _)| {
@@ -183,17 +183,17 @@ impl<'a> MacroTypeMappings<'a> {
                             generated.as_bytes().get(start + needle.len()),
                             Some(b'?' | b':')
                         )
-                        .then_some(start)
+                        .then_some((start, needle.len() - 2))
                     })
             });
-            let Some((start, length)) = (match (quoted_start, identifier_start) {
-                (Some(quoted_start), Some(identifier_start)) if identifier_start < quoted_start => {
-                    Some((identifier_start, identifier.as_ref().unwrap().len() - 2))
+            let Some((start, length)) = (match (quoted_start, identifier_match) {
+                (Some(quoted_start), Some((identifier_start, identifier_length)))
+                    if identifier_start < quoted_start =>
+                {
+                    Some((identifier_start, identifier_length))
                 }
                 (Some(quoted_start), _) => Some((quoted_start, quoted.len() - 2)),
-                (None, Some(identifier_start)) => {
-                    Some((identifier_start, identifier.as_ref().unwrap().len() - 2))
-                }
+                (None, Some(identifier_match)) => Some(identifier_match),
                 (None, None) => None,
             }) else {
                 continue;

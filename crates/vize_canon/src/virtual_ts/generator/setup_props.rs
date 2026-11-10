@@ -191,9 +191,9 @@ impl SetupPropsPlan {
 
     pub(super) fn props_type_emission(&self) -> PropsTypeEmission {
         if self.defer {
-            PropsTypeEmission::DeferredToSetup
+            PropsTypeEmission::deferred_to_setup(self.prefer_identifier_props)
         } else {
-            PropsTypeEmission::Module
+            PropsTypeEmission::module(self.prefer_identifier_props)
         }
     }
 
@@ -214,7 +214,6 @@ impl SetupPropsPlan {
             options_api_props,
             type_only_imported_names,
             self.props_type_emission(),
-            self.prefer_identifier_props,
         );
     }
 

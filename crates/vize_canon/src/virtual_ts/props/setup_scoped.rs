@@ -4,15 +4,35 @@ use vize_croquis::Croquis;
 use super::append_model_props_type_literal;
 use crate::virtual_ts::generic_parameters::GenericParameters;
 
-/// Props type emission mode for `defineProps<T>()`.
+/// Props type emission settings for `defineProps<T>()`.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub(crate) enum PropsTypeEmission {
-    /// Emit `export type Props = ...` in module scope before `__setup()`.
-    Module,
-    /// Keep the concrete props type inside `__setup()` and export it through
-    /// `ReturnType<typeof __setup>`. This is needed when `T` references a
-    /// setup-scope value via `typeof`.
-    DeferredToSetup,
+pub(crate) struct PropsTypeEmission {
+    deferred_to_setup: bool,
+    prefer_identifier_props: bool,
+}
+
+impl PropsTypeEmission {
+    pub(crate) const fn module(prefer_identifier_props: bool) -> Self {
+        Self {
+            deferred_to_setup: false,
+            prefer_identifier_props,
+        }
+    }
+
+    pub(crate) const fn deferred_to_setup(prefer_identifier_props: bool) -> Self {
+        Self {
+            deferred_to_setup: true,
+            prefer_identifier_props,
+        }
+    }
+
+    pub(crate) const fn is_deferred_to_setup(self) -> bool {
+        self.deferred_to_setup
+    }
+
+    pub(crate) const fn prefer_identifier_props(self) -> bool {
+        self.prefer_identifier_props
+    }
 }
 
 /// Emit the setup-local props type artifact used when the `defineProps<T>()`

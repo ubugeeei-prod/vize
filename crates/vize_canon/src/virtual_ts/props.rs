@@ -68,7 +68,6 @@ pub(crate) fn generate_props_type(
     options_api_props: Option<&OptionsApiPropsSource>,
     type_only_imported_names: &FxHashSet<CompactString>,
     emission: PropsTypeEmission,
-    prefer_identifier_props: bool,
 ) {
     let props = summary.macros.props();
     let has_props = !props.is_empty();
@@ -99,7 +98,7 @@ pub(crate) fn generate_props_type(
     let props_head = names::export_type("Props");
     let mut exports_props = false;
 
-    if emission == PropsTypeEmission::DeferredToSetup && define_props_type_args.is_some() {
+    if emission.is_deferred_to_setup() && define_props_type_args.is_some() {
     } else if imported_props_would_collide {
         if let Some(inner_type) = define_props_inner_type {
             append!(*ts, "type {resolved} = {inner_type}");
@@ -116,7 +115,7 @@ pub(crate) fn generate_props_type(
                 script,
                 models,
                 generic_param,
-                prefer_identifier_props,
+                emission.prefer_identifier_props(),
             );
             ts.push_str(";\n");
         } else if let Some(options_api_props) = options_api_props {
@@ -162,7 +161,7 @@ pub(crate) fn generate_props_type(
             script,
             models,
             generic_param,
-            prefer_identifier_props,
+            emission.prefer_identifier_props(),
         );
         ts.push_str(";\n");
     } else if let Some(options_api_props) = options_api_props {
