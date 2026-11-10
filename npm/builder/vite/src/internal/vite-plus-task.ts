@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 import { runTask } from "../vite-plus/runner.ts";
 
 try {
