@@ -265,6 +265,50 @@ export type $IsLibraryGenericExport<C> = C extends
         ? true
         : false
     : false;
+// Per-usage aliases over `typeof Component`; `NoInfer<C>` and `keyof (C & {})` keep them non-distributive.
+export type $UsageProps<C> =
+  NoInfer<C> extends { __vizeCheck: infer __F }
+    ? $IsAny<__F> extends true
+      ? $ComponentRawProps<C>
+      : Record<string, unknown>
+    : $ComponentRawProps<C>;
+export type $UsageRequiredFallthrough<C> =
+  $FallthroughProps<C> extends infer __F
+    ? [__F extends unknown ? ({} extends __F ? never : __F) : never] extends [never]
+      ? $RequiredFallthroughProps<C, __F, never>
+      : $RequiredFallthroughProps<C, __F>
+    : never;
+export type $UsageLibrary<C> =
+  NoInfer<C> extends { __vizeCheck: any } | { readonly __vizeComponentMarker: true }
+    ? false
+    : NoInfer<C> extends (...args: any[]) => infer __R
+      ? 0 extends 1 & __R
+        ? false
+        : "__ctx" extends keyof __R
+          ? true
+          : false
+      : false;
+export type $UsagePropsBox<C> =
+  NoInfer<C> extends { new (...args: any[]): { $props: infer __P } }
+    ? [__P]
+    : NoInfer<C> extends (props: infer __P, ...args: any[]) => any
+      ? [__P]
+      : [];
+export type $UsageEmitPropsBox<C> =
+  NoInfer<C> extends { __vizeEmitProps?: infer __EP } ? [__EP] : [];
+export type $UsageNativeFallthroughBox<C> =
+  NoInfer<C> extends {
+    readonly __vizeNativeFallthroughRoot: true;
+    readonly __vizeFallthroughProps?: infer __F;
+  }
+    ? "__vizeEmitProps" extends keyof {
+        [__K in keyof (C & {}) as string extends __K ? never : __K]: unknown;
+      }
+      ? $IsAny<__F> extends true
+        ? []
+        : [__F]
+      : []
+    : [];
 export type $PropChecker<C, P, T> =
   $IsAny<C> extends true
     ? (props: { readonly [K in keyof P]: P[K] } & Record<string, unknown>) => void
