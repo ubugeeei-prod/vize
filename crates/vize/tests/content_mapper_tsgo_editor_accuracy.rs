@@ -18,6 +18,7 @@ use content_mapper_lsp_support::{
 };
 
 mod component_tags;
+mod prop_values;
 mod template_bindings;
 
 const TSGO_ENV: &str = "VIZE_TEST_CONTENT_MAPPER_TSGO";

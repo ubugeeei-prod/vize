@@ -46,6 +46,8 @@ pub(crate) struct ComponentPropSource<'a> {
     pub(crate) diagnostic_ownership:
         Option<&'a crate::virtual_ts::diagnostic_ownership::DiagnosticOwnershipCollector>,
     pub(crate) aria_value_contract_index: Option<usize>,
+    /// Content Mapper companion checks (#12458).
+    pub(crate) unchecked_prop_values: bool,
     inference_only: bool,
     inert: bool,
     expected_packet: bool,
@@ -65,6 +67,7 @@ impl<'a> ComponentPropSource<'a> {
             model_modifiers: None,
             diagnostic_ownership: None,
             aria_value_contract_index: None,
+            unchecked_prop_values: false,
             inference_only: false,
             inert: false,
             expected_packet: false,
@@ -96,6 +99,7 @@ impl<'a> ComponentPropSource<'a> {
             model_modifiers: self.model_modifiers,
             diagnostic_ownership: ownership,
             aria_value_contract_index: self.aria_value_contract_index,
+            unchecked_prop_values: self.unchecked_prop_values,
             inference_only: self.inference_only,
             inert: self.inert,
             expected_packet: self.expected_packet,
@@ -198,6 +202,12 @@ fn generate_component_prop_checks_inner<const LEGACY_SCALARS: bool>(
             .any(crate::virtual_ts::scope::is_inline_callback_prop);
     let grouped_guard_expr = usage.vif_guard.as_deref().filter(|_| has_inline_callback);
     let grouped_guard = grouped_guard_expr.is_some();
+    let owned_values = (!LEGACY_SCALARS).then(|| {
+        super::unchecked_prop_values::OwnedPropValues::new(
+            (usage, idx, component_ref),
+            source_context,
+        )
+    });
     if let Some(guard) = grouped_guard_expr {
         append_ignored_vif_guard_open(ts, indent, guard, "Inference-only guard");
     }
@@ -304,8 +314,13 @@ fn generate_component_prop_checks_inner<const LEGACY_SCALARS: bool>(
             let check_name_end = ts.len();
             let inline_callback =
                 !LEGACY_SCALARS && crate::virtual_ts::scope::is_inline_callback_prop(prop);
+            let owned = owned_values
+                .as_ref()
+                .filter(|values| values.owns(prop_index));
             if LEGACY_SCALARS {
                 append!(*ts, ": __vize_legacy_prop_{idx}_{prop_index} = ");
+            } else if let Some(values) = owned {
+                values.append_type(ts, prop, generated_value.text.as_str());
             } else {
                 super::callback_prop_resolution::append_prop_check_type(
                     ts,
@@ -324,6 +339,9 @@ fn generate_component_prop_checks_inner<const LEGACY_SCALARS: bool>(
             let value_gen_range = profile!("canon.virtual_ts.prop_check.value_emission", {
                 append_prop_value(ts, generated_value.text.as_str())
             });
+            if let Some(values) = owned {
+                values.append_tail(ts, prop, generated_value.text.as_str());
+            }
             ts.push_str(";\n");
             let statement_end = ts.len();
             let gen_stmt_end = if generated_value.omits_tail() {

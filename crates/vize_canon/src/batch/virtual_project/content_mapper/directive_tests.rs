@@ -8,6 +8,7 @@ mod directive_exact;
 mod disjoint;
 mod inference_copies;
 mod navigation_blocks;
+mod unchecked_prop_values;
 
 /// Explicit directives only; `disjoint.rs` covers the unmapped ignores.
 fn transform(source: &str) -> super::ContentMapperTransform {
@@ -206,13 +207,20 @@ fn component_prop_assignments_are_ignored_only_when_the_literal_owns_them() {
     let check = result
         .text
         .find("const __vize_prop_check_0_count")
-        .expect("per-prop check");
+        .expect("per-prop check")
+        + "const ".len();
+    let tail = result
+        .text
+        .find(": $AttrValue<__Child_Props_0, \"count\", typeof Child, __Child_0_prop_count> = value satisfies __Child_0_prop_count;")
+        .expect("owned per-prop check");
     let literal = result
         .text
         .find("\"count\": value")
         .expect("whole-props entry");
 
-    assert!(covered(&directives.directives, check));
+    // Its name keeps only what the literal leaves unchecked (#12458).
+    assert!(!covered(&directives.directives, check));
+    assert!(covered(&directives.directives, tail));
     assert!(!covered(&directives.directives, literal));
     assert!(directives.unused_expect_directive_diagnostics.is_empty());
 }
