@@ -1,6 +1,7 @@
 //! Vue's const, macro, nested, and rest rules for binding patterns.
 
-use super::{Bindings, SetupBindingKind, call, destructures_props, is_const_macro_call};
+use super::classify::{call, destructures_props, is_const_macro_call};
+use super::{Bindings, SetupBindingKind};
 use oxc_ast::ast::{BindingPattern, VariableDeclarationKind, VariableDeclarator};
 
 impl<'a> Bindings<'a> {

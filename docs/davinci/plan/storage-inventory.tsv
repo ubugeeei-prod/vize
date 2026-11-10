@@ -7,6 +7,7 @@ l2	analysis	davinci/vize_l2/src/framework/vue/contract.rs	1	9	0	0	0	0	0	0
 l2	analysis	davinci/vize_l2/src/framework/vue/contract/events.rs	1	4	0	0	0	0	0	0
 l2	analysis	davinci/vize_l2/src/framework/vue/contract/props.rs	1	9	0	0	0	0	0	0
 l2	analysis	davinci/vize_l2/src/framework/vue/contract/types.rs	1	22	0	0	0	0	0	0
+l2	analysis	davinci/vize_l2/src/framework/vue/ordinary.rs	1	0	0	0	0	0	0	0
 l2	analysis	davinci/vize_l2/src/framework/vue/setup.rs	1	6	0	0	0	0	0	0
 l2	analysis	davinci/vize_l2/src/framework/vue/setup/bindings.rs	1	8	0	0	0	0	0	0
 l2	analysis	davinci/vize_l2/src/framework/vue/setup/props.rs	1	6	0	0	0	0	0	0
