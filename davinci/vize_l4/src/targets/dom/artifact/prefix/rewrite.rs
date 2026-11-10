@@ -23,12 +23,16 @@ mod reparse;
 use reparse::rewrite_reparsed;
 
 /// A retained AST beside the text it describes: `ast` was parsed from
-/// `text[offset..offset + len]`, so its spans shift by `offset`.
+/// `text[offset..offset + len]`, so its spans shift by `offset`. A span of
+/// `ast` minus `base` is a byte position in `source`: `base` is 0 for an
+/// expression parsed alone and the expression's start for one retained from
+/// a whole host program.
 #[derive(Clone, Copy)]
 pub(super) struct Retained<'r, 'a> {
     pub(super) ast: &'r Expression<'a>,
     pub(super) source: &'a str,
     pub(super) offset: usize,
+    pub(super) base: u32,
 }
 
 pub(super) struct RewriteResult {
@@ -132,7 +136,8 @@ fn rewrite_retained(
     retained: Retained<'_, '_>,
     scope: &PrefixScope<'_>,
 ) -> RewriteResult {
-    let mut collector = IdentifierCollector::new_unwrapped(scope, content, retained.offset);
+    let mut collector =
+        IdentifierCollector::new_unwrapped(scope, content, retained.offset, retained.base);
     collector.visit_expression(retained.ast);
     let used_unref = collector.used_unref;
     let used_is_ref = collector.used_is_ref;

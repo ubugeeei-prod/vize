@@ -315,7 +315,7 @@ pub(super) fn prefix_identifiers_with_context_node(
         && retained.offset == 0
         && js_module_compatible(retained.ast, retained.source)
     {
-        return prefix_via_expr(retained.ast, 0, content, scope);
+        return prefix_via_expr(retained.ast, retained.base, content, scope);
     }
     prefix_identifiers_with_context(content, scope)
 }

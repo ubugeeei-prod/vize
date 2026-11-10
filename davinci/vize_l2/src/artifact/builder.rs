@@ -3,7 +3,7 @@
 use alloc::vec::Vec;
 use vize_l0::{Allocator, Box, Span, id::NodeId};
 
-use super::{Artifact, ArtifactError, ArtifactParts, RejectedArtifact, check};
+use super::{Artifact, ArtifactError, ArtifactParts, OpFamily, RejectedArtifact, check};
 use crate::expr::ExprRef;
 use crate::op::{Attribute, BindingOp, CommentOp, InterpolationOp, Namespace, Op, Region};
 use crate::provenance::ProvenanceRecord;
@@ -157,6 +157,8 @@ impl<'a> Builder<'a> {
         let id = self.prepare(span)?;
         check::expression(self.parts.source, id, expression, span)?;
         self.mint();
+        // Raw child values need complete child patching on every target.
+        self.parts.features = self.parts.features.observing(OpFamily::JsxChild);
         self.push(Op::JsxChildValue(Box::new_in(
             InterpolationOp {
                 expression,
