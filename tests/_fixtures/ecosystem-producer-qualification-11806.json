@@ -28,6 +28,19 @@
     "PrimeVueOptionsApi.vue": "6ec0ef530da5c3666e25311ec02d6790d87cd323bacaf1fddea1b281ba1f14ce",
     "UiLibraries.vue": "6c6882959fd28449603ad9d08031137aa0e55d6d4f73c360f6844b299d94522c"
   },
+  "historicalPackets": [
+    {
+      "qualificationRun": "https://github.com/ubugeeei-prod/vize/actions/runs/42774147966",
+      "source": "a4a920e7869428084c62f479d30dc724d394f54b",
+      "supersededBy": "#12602 / 65759c7bb9fd92959632cf7dac698e1547df13dd",
+      "unchanged": "diagnostics, inputSha256, and every generated hash except the three UiLibraries.vue entries",
+      "virtualTsSha256Delta": {
+        "baseline": "b80d731332ea85227df1f8932e870216794fe00bd9a3d17382be1477a9e3b449",
+        "negative": "17068ae182b9c9cc5d16ec59d4f1d6fc8a79d012997c2659538ab3bf938d4f58",
+        "positive": "7b0ac400ae2f6ac6c245224efcd122c1639bc606e105dbf46dfe742de08fcaba"
+      }
+    }
+  ],
   "virtualTsSha256": {
     "baseline": {
       "src/ComposablesAndRouting.vue": "c0dcc90d54930eddac022521b4e69cb1736ae0f6033201c303a7ce4599eaa10b",
@@ -35,7 +48,7 @@
       "src/MediaAndDataViz.vue": "32e6b209ae637ee09c2732946b6855754e5c18966d95d28f83dbbdb13da5ba3b",
       "src/NaiveUiOptionsApi.vue": "256a5c7ed39f18f826ea72f4b5d9077912a97aa5524425ed99a575a15eb75553",
       "src/PrimeVueOptionsApi.vue": "9979307a1d210b04e9fd207103b8ee73e3a9e3171f4380105088ba85ef8b486a",
-      "src/UiLibraries.vue": "b80d731332ea85227df1f8932e870216794fe00bd9a3d17382be1477a9e3b449",
+      "src/UiLibraries.vue": "4c84bdb50e0368f1299c7040a41407eedaa5c74e1b52a7b4e649af71ed1a92b7",
       "src/types.ts": "fd3d5212f52dd73c3ada8bcfd804262bddba7dacf8f9f62e749c4ad072ac773b",
       "src/vendors/nuxt-ui-component.ts": "335393724dae043a042cb96e66622d5b329bb2614bdcda915ca1403e6b4d3429",
       "src/vendors/vue-select.ts": "e2a9154cbef22004c61d9fedb2610eda4842466066b4a20ec8a0933755fc9e57"
@@ -46,7 +59,7 @@
       "src/MediaAndDataViz.vue": "485185cdac4d141d68d93454e7013e4f4024a481d1a4e79dd1a95ea65370708e",
       "src/NaiveUiOptionsApi.vue": "a133417fc0a6e1abf61f253512bbe5ab40eaccd953572908b3a4ac9329c256e6",
       "src/PrimeVueOptionsApi.vue": "cadb193b387808c171a8a73ec1aba9a9ed861462c906fd8cb630932654741e50",
-      "src/UiLibraries.vue": "17068ae182b9c9cc5d16ec59d4f1d6fc8a79d012997c2659538ab3bf938d4f58",
+      "src/UiLibraries.vue": "0a74b27a1be01291a3be48bb8c2a785d5990716036a88798fc9f250b93b070f6",
       "src/types.ts": "fd3d5212f52dd73c3ada8bcfd804262bddba7dacf8f9f62e749c4ad072ac773b",
       "src/vendors/nuxt-ui-component.ts": "335393724dae043a042cb96e66622d5b329bb2614bdcda915ca1403e6b4d3429",
       "src/vendors/vue-select.ts": "e2a9154cbef22004c61d9fedb2610eda4842466066b4a20ec8a0933755fc9e57"
@@ -57,7 +70,7 @@
       "src/MediaAndDataViz.vue": "32e6b209ae637ee09c2732946b6855754e5c18966d95d28f83dbbdb13da5ba3b",
       "src/NaiveUiOptionsApi.vue": "256a5c7ed39f18f826ea72f4b5d9077912a97aa5524425ed99a575a15eb75553",
       "src/PrimeVueOptionsApi.vue": "9979307a1d210b04e9fd207103b8ee73e3a9e3171f4380105088ba85ef8b486a",
-      "src/UiLibraries.vue": "7b0ac400ae2f6ac6c245224efcd122c1639bc606e105dbf46dfe742de08fcaba",
+      "src/UiLibraries.vue": "1ad7450734d9e57be62b5e4da14ed3b35d6ab0f92d88c37f099df26c3cd77e20",
       "src/types.ts": "fd3d5212f52dd73c3ada8bcfd804262bddba7dacf8f9f62e749c4ad072ac773b",
       "src/vendors/nuxt-ui-component.ts": "335393724dae043a042cb96e66622d5b329bb2614bdcda915ca1403e6b4d3429",
       "src/vendors/vue-select.ts": "e2a9154cbef22004c61d9fedb2610eda4842466066b4a20ec8a0933755fc9e57"
