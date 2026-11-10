@@ -6,6 +6,9 @@ use oxc_span::{GetSpan, Span};
 
 impl CoreVisitor<'_, '_> {
     pub(super) fn report(&mut self, span: Span) {
+        if self.silent {
+            return;
+        }
         let span = Span::new(
             span.start.saturating_add(self.parse_offset),
             span.end.saturating_add(self.parse_offset),

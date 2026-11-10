@@ -1,5 +1,7 @@
 //! Shared retained-AST walk for the template core-extension rules.
 
+mod camelcase;
+mod constant;
 mod precision;
 mod predicates;
 mod reporting;
@@ -7,13 +9,15 @@ mod tokens;
 mod visitor;
 
 use super::origin::Origin;
-use crate::context::LintContext;
+use crate::context::{LintContext, RetainedVFor};
+use constant::is_constant;
+use oxc_ast::ast::{Expression, FormalParameters, Program};
 use oxc_ast_visit::Visit;
 use oxc_span::{GetSpan, Span};
-use predicates::{is_constant, is_irregular_whitespace};
+use predicates::is_irregular_whitespace;
 use visitor::CoreVisitor;
 use vize_l1::markup::entity::EntityContext;
-use vize_relief::{DirectiveNode, ExpressionNode};
+use vize_relief::{DirectiveNode, ExpressionNode, SimpleExpressionNode};
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub(super) enum CoreKind {
@@ -94,51 +98,84 @@ fn check_expression_with_directive<'a>(
         return;
     }
 
+    let Some(goal) = template_goal(ctx, simple, directive) else {
+        return;
+    };
+    let bindings = match goal {
+        TemplateGoal::Expression(_) => !matches!(directive, Some("for" | "slot")),
+        TemplateGoal::Handler(_) => true,
+        TemplateGoal::SlotParameters(_) | TemplateGoal::VFor(_) => false,
+    };
+    let mut visitor = CoreVisitor::new(ctx, origin, simple.content, kind, bindings);
+    if kind == CoreKind::Camelcase {
+        // A use reports even before its declaration: collect declarations first.
+        visitor.silent = true;
+        walk_goal(&mut visitor, &goal);
+        visitor.silent = false;
+        visitor.camelcase_bindings = bindings;
+        visitor.set_parse_offset(0);
+    }
+    if kind == CoreKind::NoConstantCondition
+        && matches!(directive, Some("if" | "else-if" | "show"))
+        && let TemplateGoal::Expression(expression) = goal
+        && is_constant(expression, true)
+    {
+        visitor.report(expression.without_parentheses().span());
+    }
+    walk_goal(&mut visitor, &goal);
+}
+
+/// The JavaScript goal a template expression parses as.
+#[derive(Clone, Copy)]
+pub(super) enum TemplateGoal<'a> {
+    Expression(&'a Expression<'a>),
+    SlotParameters(&'a FormalParameters<'a>),
+    VFor(RetainedVFor<'a>),
+    Handler(&'a Program<'a>),
+}
+
+/// The retained AST of an expression, or the handler / `v-for` parse.
+pub(super) fn template_goal<'a>(
+    ctx: &mut LintContext<'a>,
+    simple: &SimpleExpressionNode<'a>,
+    directive: Option<&str>,
+) -> Option<TemplateGoal<'a>> {
     if let Some(retained) = simple
         .js_ast
         .filter(|retained| retained.raw == simple.content)
     {
         if let Some(expression) = retained.as_expression() {
-            let mut visitor = CoreVisitor::new(
-                ctx,
-                origin,
-                simple.content,
-                kind,
-                !matches!(directive, Some("for" | "slot")),
-            );
-            if kind == CoreKind::NoConstantCondition
-                && matches!(directive, Some("if" | "else-if" | "show"))
-                && is_constant(expression.ast)
-            {
-                visitor.report(expression.ast.span());
-            }
-            visitor.visit_expression(expression.ast);
-            return;
+            return Some(TemplateGoal::Expression(expression.ast));
         }
         if let Some(Ok(parameters)) = retained.as_slot_parameters() {
-            let mut visitor = CoreVisitor::new(ctx, origin, simple.content, kind, false);
-            visitor.camelcase_bindings = false;
-            visitor.visit_formal_parameters(parameters);
-            return;
+            return Some(TemplateGoal::SlotParameters(parameters));
         }
     }
-    if directive == Some("for") {
-        let Some(retained) = ctx.compatibility_v_for(simple.loc.span, simple.content) else {
-            return;
-        };
-        check_v_for(
-            CoreVisitor::new(ctx, origin, simple.content, kind, false),
-            retained,
-        );
-        return;
+    match directive {
+        Some("for") => ctx
+            .compatibility_v_for(simple.loc.span, simple.content)
+            .map(TemplateGoal::VFor),
+        Some("on") => ctx
+            .compatibility_handler(simple.loc.span, simple.content)
+            .map(TemplateGoal::Handler),
+        _ => None,
     }
-    if directive != Some("on") {
-        return;
+}
+
+fn walk_goal(visitor: &mut CoreVisitor<'_, '_>, goal: &TemplateGoal<'_>) {
+    match goal {
+        TemplateGoal::Expression(expression) => visitor.visit_expression(expression),
+        TemplateGoal::SlotParameters(parameters) => visitor.visit_formal_parameters(parameters),
+        TemplateGoal::VFor(retained) => {
+            visitor.set_parse_offset(retained.parameters_offset);
+            visitor.camelcase_bindings = false;
+            visitor.visit_formal_parameters(retained.parameters);
+            visitor.set_parse_offset(retained.source_offset);
+            visitor.camelcase_bindings = true;
+            visitor.visit_expression(retained.source);
+        }
+        TemplateGoal::Handler(program) => visitor.visit_program(program),
     }
-    let Some(program) = ctx.compatibility_handler(simple.loc.span, simple.content) else {
-        return;
-    };
-    CoreVisitor::new(ctx, origin, simple.content, kind, true).visit_program(program);
 }
 
 pub(super) fn check_directive<'a>(
@@ -210,15 +247,6 @@ fn style_expression_span(source: &str, start: usize, end: usize) -> Option<(usiz
         expression_end = expression_end.checked_sub(1)?;
     }
     (expression_start < expression_end).then_some((expression_start, expression_end))
-}
-
-fn check_v_for(mut visitor: CoreVisitor<'_, '_>, retained: crate::context::RetainedVFor<'_>) {
-    visitor.set_parse_offset(retained.parameters_offset);
-    visitor.camelcase_bindings = false;
-    visitor.visit_formal_parameters(retained.parameters);
-    visitor.set_parse_offset(retained.source_offset);
-    visitor.camelcase_bindings = true;
-    visitor.visit_expression(retained.source);
 }
 
 fn compatibility_help() -> &'static str {
