@@ -1,5 +1,6 @@
 use super::*;
 use crate::linter::{LintResult, Linter};
+use crate::rule::Rule;
 use crate::rule::RuleRegistry;
 
 fn lint(rule: Box<dyn Rule>, template: &str) -> LintResult {

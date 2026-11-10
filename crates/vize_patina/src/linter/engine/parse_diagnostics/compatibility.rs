@@ -120,13 +120,24 @@ fn is_quoted_style_expression(style: &SfcStyleBlock<'_>, span: Span) -> bool {
     let Some(end) = span.end.checked_sub(offset) else {
         return false;
     };
-    let Some(text) = style.content.as_ref().get(start as usize..end as usize) else {
+    let content = style.content.as_ref();
+    let start = start as usize;
+    let end = end as usize;
+    let Some(text) = content.get(start..end) else {
         return false;
     };
-    matches!(
+    if matches!(
         (text.as_bytes().first(), text.as_bytes().last()),
         (Some(b'\''), Some(b'\'')) | (Some(b'"'), Some(b'"'))
-    )
+    ) {
+        return true;
+    }
+
+    let bytes = content.as_bytes();
+    start > 0
+        && end < bytes.len()
+        && matches!(bytes[start - 1], b'\'' | b'"')
+        && bytes[start - 1] == bytes[end]
 }
 
 impl Linter {

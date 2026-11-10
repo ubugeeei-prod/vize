@@ -46,6 +46,7 @@ export function catalogEntries(): Array<[string, Entry]> {
     "i18n_compiler_template.rs",
     "i18n_compiler_directive.rs",
     "i18n_rules_markup.rs",
+    "i18n_rules_markup_compatibility.rs",
     "i18n_rules_script.rs",
     "i18n_rules_script_more.rs",
     "i18n_rules_ecosystem.rs",

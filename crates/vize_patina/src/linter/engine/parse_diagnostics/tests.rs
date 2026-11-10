@@ -201,6 +201,25 @@ fn reports_invalid_style_v_bind_expression() {
 }
 
 #[test]
+fn quoted_style_v_bind_arguments_are_not_parser_errors() {
+    let source = r#"<template><div /></template>
+<style>
+.a { color: v-bind("theme.color"); --quoted: v-bind('text !important v-bind(fake)'); }
+</style>"#;
+    let result = Linter::default()
+        .with_enabled_rules(Some(vec![TEMPLATE_PARSE_RULE.into()]))
+        .lint_sfc(source, "QuotedStyleBind.vue");
+    assert!(
+        result
+            .diagnostics
+            .iter()
+            .all(|diagnostic| diagnostic.rule_name != TEMPLATE_PARSE_RULE),
+        "{:?}",
+        result.diagnostics
+    );
+}
+
+#[test]
 fn configured_incremental_rules_keep_parser_diagnostics_in_the_baseline() {
     let source = r#"<template><p :title="a +">{{ a b }}</p></template>"#;
     let configured = Linter::with_preset(crate::LintPreset::Incremental)
