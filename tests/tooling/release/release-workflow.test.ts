@@ -29,6 +29,7 @@ type Job = {
   env?: Record<string, string>;
   permissions?: Record<string, string>;
   uses?: string;
+  with?: Record<string, unknown>;
   steps?: Array<{
     env?: Record<string, string>;
     id?: string;
@@ -374,6 +375,14 @@ test("verification runs outside the release concurrency group and gates only JSR
   assert.match(steps, /^\[\[ "\$\(git rev-parse HEAD\)" == "\$RELEASE_SHA" \]\]$/m);
   assert.match(steps, /verify_published\/main\.ts "\$RELEASE_VERSION" "\$\{packages\[@\]\}"/);
   for (const [name, job] of Object.entries(verify.jobs)) {
+    if (name === "verify-fresh-projects") {
+      assert.equal(job.uses, "./.github/workflows/published-fresh-project.yml");
+      assert.deepEqual(job.with, {
+        version: "${{ inputs.version }}",
+        source_ref: "${{ inputs.tag }}",
+      });
+      continue;
+    }
     const checkout = job.steps?.find((step) => step.uses?.startsWith("actions/checkout@"));
     if (name !== "publish-jsr") {
       const expected = name === "quota-dry-run" ? "${{ github.sha }}" : "${{ inputs.tag }}";
@@ -406,6 +415,9 @@ test("post-publish product checks follow npm verification and gate nothing", () 
   const oxlint = command("verify-oxlint-windows-json-config", "windows-json-config.test.ts");
   assert.ok(oxlint);
   assert.equal(oxlint.env?.OXLINT_VIZE_PUBLIC_VERSION, "${{ inputs.version }}");
+  assert.deepEqual(verifyNeeds("verify-fresh-projects"), ["verify-npm"]);
+  for (const name of Object.keys(verify.jobs))
+    assert.ok(!verifyNeeds(name).includes("verify-fresh-projects"));
 });
 
 test("the stamp reaches every tracked non-private npm and editor manifest", async () => {

@@ -1,0 +1,146 @@
+name: Published fresh project
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/published-fresh-project.yml"
+      - ".github/workflows/release-verify.yml"
+      - "tools/support/release/verify_published/fresh_project.ts"
+      - "tools/support/release/verify_published/fresh_project_fixture.ts"
+      - "tools/support/release/verify_published/lsp_client.ts"
+      - "tests/tooling/release/published-fresh-project.test.ts"
+      - "tests/tooling/release/release-workflow.test.ts"
+  workflow_call:
+    inputs:
+      version:
+        description: Exact public npm version to qualify
+        required: true
+        type: string
+      source_ref:
+        description: Source ref containing the matching verifier
+        required: true
+        type: string
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Exact public npm version; blank selects the current latest tag
+        required: false
+        type: string
+      source_ref:
+        description: Source ref containing the verifier
+        required: false
+        default: main
+        type: string
+
+permissions: { contents: read }
+concurrency:
+  group: published-fresh-project-${{ inputs.version || github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  resolve:
+    name: Resolve the public release
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    outputs:
+      version: ${{ steps.release.outputs.version }}
+      source_ref: ${{ steps.release.outputs.source_ref }}
+    steps:
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version: "24", package-manager-cache: false }
+      - name: Select an exact version and verifier source
+        id: release
+        shell: bash
+        env:
+          REQUESTED_VERSION: ${{ inputs.version }}
+          REQUESTED_SOURCE: ${{ inputs.source_ref }}
+          PULL_REQUEST_HEAD: ${{ github.event.pull_request.head.sha }}
+          EVENT_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          version="$REQUESTED_VERSION"
+          if [[ -z "$version" ]]; then
+            version=$(npm view --registry=https://registry.npmjs.org vize dist-tags.latest --json |
+              node -e 'let s="";process.stdin.on("data",c=>s+=c).on("end",()=>process.stdout.write(JSON.parse(s)))')
+          fi
+          [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]
+          source_ref="$REQUESTED_SOURCE"
+          if [[ -z "$source_ref" ]]; then
+            source_ref="${PULL_REQUEST_HEAD:-$EVENT_SHA}"
+          fi
+          [[ -n "$source_ref" ]]
+          printf 'version=%s\nsource_ref=%s\n' "$version" "$source_ref" >> "$GITHUB_OUTPUT"
+
+  public-hosts:
+    name: Public fresh project (${{ matrix.platform }})
+    needs: resolve
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { runner: ubuntu-22.04, platform: linux-x64-gnu }
+          - { runner: ubuntu-22.04-arm, platform: linux-arm64-gnu }
+          - { runner: macos-15-intel, platform: darwin-x64 }
+          - { runner: blacksmith-12vcpu-macos-15, platform: darwin-arm64 }
+          - { runner: blacksmith-32vcpu-windows-2025, platform: win32-x64-msvc }
+          - { runner: windows-11-arm, platform: win32-arm64-msvc }
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { ref: "${{ needs.resolve.outputs.source_ref }}", persist-credentials: false }
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version: "24", package-manager-cache: false }
+      - name: Initialize and exercise the public npm release
+        env:
+          VIZE_PUBLISHED_FRESH_EVIDENCE: ${{ runner.temp }}/published-fresh-project/receipt.json
+        run: >-
+          node tools/support/release/verify_published/fresh_project.ts
+          "${{ needs.resolve.outputs.version }}"
+      - name: Retain the public fresh-project receipt
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: published-fresh-project-${{ matrix.platform }}-${{ needs.resolve.outputs.version }}
+          path: ${{ runner.temp }}/published-fresh-project
+          if-no-files-found: error
+          retention-days: 90
+
+  public-musl:
+    name: Public fresh project (${{ matrix.platform }})
+    needs: resolve
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { runner: ubuntu-22.04, platform: linux-x64-musl }
+          - { runner: ubuntu-22.04-arm, platform: linux-arm64-musl }
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { ref: "${{ needs.resolve.outputs.source_ref }}", persist-credentials: false }
+      - name: Initialize and exercise the public npm release in Alpine
+        shell: bash
+        env:
+          RELEASE_VERSION: ${{ needs.resolve.outputs.version }}
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/published-fresh-project"
+          docker run --rm \
+            --volume "$GITHUB_WORKSPACE:/work:ro" \
+            --volume "$RUNNER_TEMP/published-fresh-project:/evidence" \
+            --workdir /work \
+            --env VIZE_PUBLISHED_FRESH_EVIDENCE=/evidence/receipt.json \
+            node:24-alpine@sha256:a34ab6d7f6f4813f4d0c5469d74685604b962fbdbf5793a7bc7b4998ecb867c8 \
+            node tools/support/release/verify_published/fresh_project.ts "$RELEASE_VERSION"
+      - name: Retain the public fresh-project receipt
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: published-fresh-project-${{ matrix.platform }}-${{ needs.resolve.outputs.version }}
+          path: ${{ runner.temp }}/published-fresh-project
+          if-no-files-found: error
+          retention-days: 90

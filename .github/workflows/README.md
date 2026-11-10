@@ -105,6 +105,7 @@ Publication, registry, and installed-consumer evidence. Trusted-publishing workf
 | 02.30 | Release Zed host                          | [`release-zed-host.yml`](./release-zed-host.yml)                                           |
 | 02.31 | Release                                   | [`release.yml`](./release.yml)                                                             |
 | 02.32 | Published TypeScript provider acceptance  | [`typescript-provider-public.yml`](./typescript-provider-public.yml)                       |
+| 02.33 | Published fresh project                   | [`published-fresh-project.yml`](./published-fresh-project.yml)                             |
 
 ## 03 Benchmarks and profiling
 
