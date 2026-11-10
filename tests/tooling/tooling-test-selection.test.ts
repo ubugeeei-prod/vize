@@ -185,18 +185,15 @@ void test("pure typecheck and LSP helper contracts remain in T0; explicit runtim
     assert.ok(!plan.tests.includes(file), file);
     assert.ok(planToolingTests([file], { includeDedicated: true }).tests.includes(file), file);
   }
-  const nativeRuntime = "tests/tooling/glyph-vue2-native.test.ts";
-  const nativePlan = planToolingTests([nativeRuntime]);
-  assert.ok(nativePlan.tests.includes(nativeRuntime));
-  assert.ok(nativePlan.nativeBuildTests.includes(nativeRuntime));
-  const nativeArtifactConsumer = "tests/tooling/art-lint-public-boundaries.test.mjs";
-  const nativeArtifactPlan = planToolingTests([nativeArtifactConsumer]);
-  assert.ok(nativeArtifactPlan.tests.includes(nativeArtifactConsumer));
-  assert.ok(nativeArtifactPlan.nativeBuildTests.includes(nativeArtifactConsumer));
-  const workflowOnly = "tests/tooling/native-smoke-workflow.test.ts";
-  const workflowPlan = planToolingTests([workflowOnly]);
-  assert.ok(workflowPlan.tests.includes(workflowOnly));
-  assert.ok(!workflowPlan.nativeBuildTests.includes(workflowOnly));
+  for (const [file, nativeBuild] of [
+    ["tests/tooling/glyph-vue2-native.test.ts", true],
+    ["tests/tooling/art-lint-public-boundaries.test.mjs", true],
+    ["tests/tooling/native-smoke-workflow.test.ts", false],
+  ] as const) {
+    const selected = planToolingTests([file]);
+    assert.ok(selected.tests.includes(file));
+    assert.equal(selected.nativeBuildTests.includes(file), nativeBuild);
+  }
 });
 
 void test("the runner keeps shared fixtures serial and rejects unrecognized or duplicate plans", () => {
