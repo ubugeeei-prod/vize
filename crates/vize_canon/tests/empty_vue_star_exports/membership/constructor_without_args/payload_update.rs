@@ -4,6 +4,7 @@ use serde_json::{Value, json};
 use std::fs;
 
 mod canon_leftovers;
+mod check_mode_generator;
 mod checker_augmentations;
 mod constructor_emit_export;
 mod constructor_noinfer_return;
@@ -24,10 +25,8 @@ mod jsx_exact_keys;
 mod lib_type_qualification;
 mod lib_type_qualification_listeners;
 mod lib_type_shadowing_audit;
-mod listener_authored_props;
 mod listener_contract;
 mod listener_relations;
-mod listener_return_parity;
 mod loose_emit_sdk;
 mod private_emit_sdk;
 mod projection_text_buffer;

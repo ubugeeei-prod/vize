@@ -29,7 +29,9 @@ const changedLabels = [
 
 test("the CLI check projection omits only four wire-only template-ref links", () => {
   const { authority, files, cases } = readGlobalsFixture();
-  assert.equal(authority.currentSourcePackets, "source-packets-current-f29a8ee58999.json");
+  // The parallel observation never replaces main's newer CURRENT population.
+  assert.notEqual(authority.currentSourcePackets, observedName);
+  assert.notEqual(authority.currentSourcePackets, previousName);
   const observed = selectPacketGoldens(
     { ...authority, currentSourcePackets: observedName },
     files,

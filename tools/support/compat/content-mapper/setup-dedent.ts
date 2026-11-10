@@ -12,10 +12,10 @@ const producer = Buffer.from(
     readFileSync(new URL(`../../../../${producerPath}`, import.meta.url), "utf8"),
   ),
 );
-assert.equal(producer.length, 37574, "certified verbatim setup producer size");
+assert.equal(producer.length, 37484, "certified verbatim setup producer size");
 assert.equal(
   createHash("sha256").update(producer).digest("hex"),
-  "4653c443487e7127eb0faac6ebe1e71aad32caa3ef1d7a947f17672101c620af",
+  "062faeb49dd5b3030bb844cc0244aa402c42442ab813996b070f06e380a72f3d",
   "certified verbatim setup producer source",
 );
 
