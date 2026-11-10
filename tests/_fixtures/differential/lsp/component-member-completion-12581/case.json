@@ -3,7 +3,7 @@
   "id": "lsp/regression/component-member-completion-12581",
   "provenance": {
     "fixCommit": "c244b05cae3530609245e73c0da3087da74eb70e",
-    "witnessPath": "crates/vize_maestro/src/ide/completion/component_props_tests.rs",
+    "witnessPath": "crates/vize_maestro/src/ide/completion/component_member_visibility_tests.rs",
     "witnessTest": "imported_component_member_completion_hides_generated_contract_fields",
     "inputOrigin": "exact minimal imported component value reproduction from issue 12581",
     "contractOrigin": "complete ordered source-built component member completion response"

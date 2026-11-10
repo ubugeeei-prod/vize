@@ -1607,7 +1607,7 @@
       },
       "case": {
         "path": "component-member-completion-12581/case.json",
-        "sha256": "7a425266596d1798fb5ce81fdc20be1a475eecfe651814bfc50ca823e5a66312"
+        "sha256": "3fd6b1169cc16d627eb4369740f4b8e8ab52267e398d801b4792ef3407123521"
       },
       "requestCount": 1,
       "initializationOptions": {
