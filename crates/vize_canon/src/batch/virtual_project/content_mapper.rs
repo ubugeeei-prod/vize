@@ -176,7 +176,7 @@ fn transform_with_shared_sources(
             preserve_authored_component: true,
             preserve_script_on_template_error: true,
             component_name: Some(component_name.as_str()),
-            template_use_navigation: true,
+            template_use_navigation: false,
             external_component_attrs_module: transform_options
                 .external_component_attrs_module
                 .then_some(if transform_options.external_component_type_helpers {
@@ -184,7 +184,7 @@ fn transform_with_shared_sources(
                 } else {
                     crate::virtual_ts::ComponentHelperModule::Attributes
                 }),
-            preserve_event_navigation: true,
+            preserve_event_navigation: false,
             legacy_vue2: false,
             dialect: VueVersion::default(),
             template_syntax: TemplateSyntaxMode::default(),
