@@ -68,6 +68,7 @@ fn joinable(
         && at >= gap_start
         && original >= original_gap_start
         && at - gap_start == original - original_gap_start
+        && !shared(left_original, left_original_len)
         && !shared(original, original_len)
         && !mapped_inside(original_gap_start, original)
         && generated
