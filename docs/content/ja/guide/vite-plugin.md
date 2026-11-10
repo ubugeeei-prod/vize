@@ -268,6 +268,41 @@ Nuxt と連携できるよう、プラグインは Vite の環境ごとに `defi
 | `vize lint`                                              | テンプレートのルールを適用。スタイルブロックは CSS として lint しない                                                      | テンプレートのルールを適用 |
 | LSP                                                      | CSS の補完とホバー（インデント記法を含む）、`v-bind()` の定義ジャンプ、すべてのプリプロセッサでの CSS Modules クラス名補完 | タグの補完と定義ジャンプ   |
 
+#### 対応する Pug / Jade の範囲
+
+Pug 対応は Vize に組み込まれており、プロジェクトの JavaScript を実行せず、
+ローカルの `pug` パッケージも必要としません。`lang="jade"` は大文字・小文字を
+区別しない同一実装のエイリアスです。決定的に処理できる次の範囲をサポートします。
+
+- 要素、コンポーネント、class / id の短縮記法、属性、Vue ディレクティブ、
+  interpolation、slot、テキストブロック
+- プロジェクトのコードを呼び出さず評価できる `if` / `unless` / `else`、
+  `each` / `for`、リテラル変数と値
+- 入力をビルド時に評価できる mixin 呼び出し、mixin block、`attributes`、
+  `&attributes`
+- 相対 `.pug` include と raw text include。include したファイルは Vite の依存に
+  なり、編集時には HMR で所有元 SFC を無効化します。
+
+コンパイラはこの範囲を Pug が生成する HTML と DOM・SSR・Vapor の各モードで
+照合します。生成 module の source map、diagnostic、type check の結果、editor の
+range は、生成 HTML ではなく書かれた Pug / Jade へ戻ります。linter はその authored
+view に template ルールを適用します。固定した dho-web-client の Pug SFC については、
+pug 3.0.4 が生成した同一 HTML に対する eslint-plugin-vue 10.9.2 と rule・severity・
+count・upstream message prefix が一致することを検証し、Patina の authored element
+context を含む完全な message も別に固定します。formatter は Pug program を意図的に
+opaque として扱い、外側のインデントだけを正規化します。対応する inline template
+内では completion、hover、definition、references、rename を利用できます。
+
+既知の未対応入力は、一部だけをコンパイルせず明示的に拒否します。任意の実行可能
+JavaScript、`while` / `case`、template inheritance、filter、filtered / rooted include、
+外部 `<template src>` の Pug は未対応です。派生 HTML の編集を常に可逆変換できないため、
+Pug template 内の autofix は生成せず、Pug 専用 printer も提供しません。この境界は
+`pug` と `jade` で同一です。
+
+Real Project Matrix では dho-web-client や Wave UI など Pug を多用する application を
+compile・type check・lint・format で検証し、同じ workflow で Pug の LSP / SSR observer
+も実行します。
+
 ## Nuxt との連携
 
 プラグインは、Nuxt などが `@vitejs/plugin-vue` の API を確認する際に使える互換性シムを公開しています。

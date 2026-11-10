@@ -38,7 +38,7 @@ test("Actions retains partial evidence after failure and records the source actu
   assert.match(upload ?? "", /^        if: always\(\)$/m);
   assert.match(workflow, /if: \$\{\{ github.event_name == 'workflow_dispatch' \}\}/);
   assert.match(workflow, /typecheck-vs-vue-tsc-frozen\.ts --source-root/);
-  assert.match(workflow, /33eb41ea8a39d997383e797fea3dca5e482c0a9d/);
+  assert.match(workflow, /ea22f2cd2aa661b9bdab940e25464eff692b935f/);
   assert.match(workflow, /--exclude=provider\/node_modules/);
   assert.doesNotMatch(workflow, /npm install.*latest/);
 });

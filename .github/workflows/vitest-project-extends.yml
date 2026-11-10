@@ -9,7 +9,7 @@ on:
       - "npm/builder/vite/src/config.ts"
       - "npm/builder/vite/src/plugin/shared-config.ts"
       - "npm/builder/vite/src/plugin/host-config-source.ts"
-      - "tests/consumers/vitest-project-extends.mjs"
+      - "tests/consumers/vitest-project-extends.ts"
       - "tests/tooling/vitest-project-extends.test.ts"
       - "tests/_fixtures/_projects/vitest-project-extends/**"
       - ".github/workflows/vitest-project-extends.yml"
@@ -34,7 +34,7 @@ jobs:
         working-directory: tests/_fixtures/_projects/vitest-project-extends
         run: npm ci --prefer-offline --no-audit --no-fund
       - name: Compare published failure and source adapter behavior in real Vitest projects
-        run: node tests/consumers/vitest-project-extends.mjs "$RUNNER_TEMP/vitest-project-extends"
+        run: node tests/consumers/vitest-project-extends.ts "$RUNNER_TEMP/vitest-project-extends"
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always()
         with:

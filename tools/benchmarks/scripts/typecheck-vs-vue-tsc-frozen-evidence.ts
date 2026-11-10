@@ -4,7 +4,7 @@ import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { isDeepStrictEqual } from "node:util";
-export const source = "33eb41ea8a39d997383e797fea3dca5e482c0a9d";
+export const source = "ea22f2cd2aa661b9bdab940e25464eff692b935f";
 export const misskeyRevision = "810faa8e5db4bbf9d6d408a61df148559340ee99";
 export const providerPins = {
   package: "bb62ff5452cbfd7866d232c6e1a78d1d7b6d82ec5f6cbf67e08aa6deff9c324e",
@@ -167,6 +167,77 @@ export function gnuTime(text: string) {
     resolutionMs: 10,
     childHighWaterKiB: Number(rss),
     rssScope: "GNU time child high-water; not process-tree simultaneous peak",
+  };
+}
+
+/** Exact cold-run spans that attribute end-to-end batch-check work. */
+export function profileAttribution(report: unknown) {
+  assert(report && typeof report === "object" && !Array.isArray(report));
+  const value = report as {
+    schema_version?: unknown;
+    truncation?: { dropped_spans?: unknown; dropped_counters?: unknown };
+    spans?: unknown;
+  };
+  assert.equal(value.schema_version, 1);
+  assert.deepEqual(value.truncation, { dropped_spans: 0, dropped_counters: 0 });
+  assert(Array.isArray(value.spans));
+  const selected = value.spans
+    .map((entry) => {
+      assert(entry && typeof entry === "object" && !Array.isArray(entry));
+      const span = entry as {
+        key?: unknown;
+        count?: unknown;
+        wall_ns?: { total?: unknown; self?: unknown; min?: unknown; max?: unknown };
+      };
+      assert.equal(typeof span.key, "string");
+      const key = span.key as string;
+      assert(Number.isSafeInteger(span.count) && Number(span.count) >= 0);
+      assert(span.wall_ns && typeof span.wall_ns === "object");
+      for (const field of ["total", "self", "min", "max"] as const)
+        assert(
+          Number.isSafeInteger(span.wall_ns[field]) && Number(span.wall_ns[field]) >= 0,
+          `${key}.wall_ns.${field}`,
+        );
+      return {
+        key,
+        count: span.count as number,
+        wallNs: {
+          total: span.wall_ns.total as number,
+          self: span.wall_ns.self as number,
+          min: span.wall_ns.min as number,
+          max: span.wall_ns.max as number,
+        },
+      };
+    })
+    .filter(
+      (span) =>
+        span.key.startsWith("cli.check.collect.") ||
+        span.key.startsWith("cli.check.imports.") ||
+        span.key === "canon.vue.virtual_ts" ||
+        span.key.startsWith("canon.executor.") ||
+        span.key.startsWith("canon.corsa."),
+    )
+    .toSorted(
+      (left, right) => right.wallNs.total - left.wallNs.total || left.key.localeCompare(right.key),
+    );
+  for (const key of [
+    "cli.check.collect.imports",
+    "canon.vue.virtual_ts",
+    "canon.executor.materialize",
+    "canon.corsa.cli",
+  ])
+    assert(
+      selected.some((span) => span.key === key),
+      `missing required profile stage ${key}`,
+    );
+  return { schemaVersion: 1, truncation: value.truncation, spans: selected };
+}
+/** The retained raw profile file and its exact batch-stage attribution. */
+export function coldProfile(command: string, file: string) {
+  return {
+    command,
+    raw: identity(file),
+    attribution: profileAttribution(JSON.parse(fs.readFileSync(file, "utf8"))),
   };
 }
 export function inventory(root: string, exclude: string[] = []) {

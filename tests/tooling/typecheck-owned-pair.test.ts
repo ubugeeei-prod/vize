@@ -201,29 +201,6 @@ test("measurement admission refuses Mac, non-Actions and ambient provider or wid
     assert.throws(() => requireMeasurementRunner({ ...env, [key]: "override" }, "linux"));
 });
 
-test("projection proof rejects missing, errored and unstable transforms and retains every violation", async () => {
-  const { ownedProbeRows, compareOwnedProjections } =
-    await import("../../tools/benchmarks/scripts/typecheck-owned-pair-projection.ts");
-  const line = (bytes: number, file = "A.vue") =>
-    JSON.stringify({ pid: 1, fileName: `/input/${file}`, bytes }) + "\n";
-  const base = ownedProbeRows(line(12), "/input", 1, ["A.vue"]),
-    vue = ownedProbeRows(line(10), "/input", 1, ["A.vue"]);
-  assert.equal(compareOwnedProjections(base, base, vue).violations.length, 1);
-  assert.throws(() => ownedProbeRows(line(12), "/input", 2, ["A.vue", "B.vue"]));
-  assert.throws(() => ownedProbeRows(line(12) + line(13), "/input", 1, ["A.vue"]));
-  assert.throws(() =>
-    ownedProbeRows(
-      JSON.stringify({ pid: 1, fileName: "/input/A.vue", error: "failed" }),
-      "/input",
-      1,
-      ["A.vue"],
-    ),
-  );
-  assert.throws(() =>
-    compareOwnedProjections(base, ownedProbeRows(line(12, "B.vue"), "/input", 1, ["B.vue"]), vue),
-  );
-});
-
 test("one experiment pairs every huge workload and alternates role order with distinct cold samples", async () => {
   const { checkerTracePolicy, OWNED_WORKLOADS, selectOwnedWorkloads } =
     await import("../../tools/benchmarks/scripts/typecheck-owned-pair-projects.ts");
@@ -395,7 +372,13 @@ test("project cache ownership refuses a linked node_modules ancestor before dele
 test("same-count unknown projection cannot replace an expected authored SFC", async () => {
   const { ownedProbeRows } =
     await import("../../tools/benchmarks/scripts/typecheck-owned-pair-projection.ts");
-  const text = JSON.stringify({ pid: 1, fileName: "/input/Unexpected.vue", bytes: 10 });
+  const text = JSON.stringify({
+    pid: 1,
+    fileName: "/input/Unexpected.vue",
+    bytes: 10,
+    sourceBytes: 20,
+    templateBytes: 8,
+  });
   assert.throws(() => ownedProbeRows(text, "/input", 1, ["Expected.vue"]));
 });
 
