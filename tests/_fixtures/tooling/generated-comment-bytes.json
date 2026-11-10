@@ -274,12 +274,12 @@
     {
       "path": "crates/vize_canon/src/virtual_ts/scope/component_events/generic_inference.rs",
       "before": {
-        "bytes": 19290,
-        "sha256": "08721b15c0bc7b0bc8c93fe14e615a3218326ef8e9896caa4531f46790b5aae2"
+        "bytes": 20046,
+        "sha256": "954fb675659fb8d9ce96f15726acf9dc9d9612fc1b52c33611538be865ce6549"
       },
       "after": {
-        "bytes": 19393,
-        "sha256": "81047631a100ff8bbac1308cbb4233b0362c72bc59376d60a6ac75b310e92933"
+        "bytes": 20149,
+        "sha256": "349b078e05617fdb5ec5e020d886b5f60395023382fe753cca71c674cb70abb8"
       },
       "hunks": [
         {

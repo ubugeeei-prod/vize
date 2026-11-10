@@ -63,7 +63,10 @@ mod tests {
         let record = record();
         for file in record["files"].as_array().unwrap() {
             let path = file["path"].as_str().unwrap();
-            let current = fs::read_to_string(support::repository().join(path)).unwrap();
+            let current = super::super::generated_comment_bytes::source_before(
+                path,
+                fs::read_to_string(support::repository().join(path)).unwrap(),
+            );
             assert!(is_after(&current, file), "{path}");
             let previous = source_before(path, current.clone());
             assert_eq!(support::hash(previous.as_bytes()), file["before"]["sha256"]);
