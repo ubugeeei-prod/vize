@@ -485,12 +485,7 @@ async function campaign(source, output) {
       source: sourceSha,
       recordedRun: receipt.recordedRun,
       attemptsPerImage: receipt.attemptsPerImage,
-      images: receipt.workers.map(({ label, mode, status, signal }) => ({
-        label,
-        mode,
-        status,
-        signal,
-      })),
+      images: receipt.workers,
     }),
   );
 }
