@@ -1,0 +1,43 @@
+{
+  "schema": "vize.guardedInferenceArrowSource.v1",
+  "credit": {
+    "compiled": false,
+    "native": false,
+    "performance": false
+  },
+  "files": [
+    {
+      "path": "crates/vize_canon/src/virtual_ts/scope/component_events/generic_inference.rs",
+      "before": {
+        "bytes": 19290,
+        "sha256": "08721b15c0bc7b0bc8c93fe14e615a3218326ef8e9896caa4531f46790b5aae2"
+      },
+      "after": {
+        "bytes": 20046,
+        "sha256": "954fb675659fb8d9ce96f15726acf9dc9d9612fc1b52c33611538be865ce6549"
+      },
+      "hunks": [
+        {
+          "before": "    let guard = usage\n        .vif_guard\n",
+          "after": "    let full_guard = usage.vif_guard.as_ref().map(|guard| {\n        rewrite_reserved_template_binding(guard.as_str(), ctx.template_binding_access)\n            .unwrap_or_else(|| guard.clone())\n    });\n    // An open listener block already enforces a prefix of the guard. When it\n    // enforces all of it, the call stays direct inside that block.\n    let guard = full_guard\n"
+        },
+        {
+          "before": "        .map(|guard| {\n            rewrite_reserved_template_binding(guard.as_str(), ctx.template_binding_access)\n                .unwrap_or_else(|| guard.clone())\n        })\n        .and_then(|guard| {\n            ctx.enclosing_vif_guard\n                .and_then(|enclosing| {\n                    crate::virtual_ts::scope::remove_enclosing_vif_guard_prefix(\n                        guard.as_str(),\n                        enclosing,\n                    )\n                })\n                .or_else(|| ctx.enclosing_vif_guard.is_none().then_some(guard))\n",
+          "after": "        .and_then(|guard| match ctx.enclosing_vif_guard {\n            Some(enclosing) => {\n                crate::virtual_ts::scope::remove_enclosing_vif_guard_prefix(guard, enclosing)\n            }\n            None => Some(guard.clone()),\n"
+        },
+        {
+          "before": "    if first_listener && let Some(guard) = guard.as_deref() {\n        let isolated = crate::virtual_ts::expressions::isolate_incomplete_expression(guard);\n",
+          "after": "    // The guarded call runs in an arrow reached through `void 0,`, so the arrow\n    // is not an immediately invoked function. TypeScript inlines an IIFE into\n    // the enclosing control flow: its guard would add a branch per term, and\n    // every later reference in the template body walks those branches again\n    // to its declaration. The arrow is its own flow container instead and\n    // replays the whole guard: captured `const` bindings keep their outer\n    // narrowing, property paths and mutable bindings do not, so a prefix the\n    // open listener block enforces is restated rather than inherited.\n    if first_listener && guard.is_some() {\n        let replay = full_guard.as_deref().unwrap_or_default();\n        let isolated = crate::virtual_ts::expressions::isolate_incomplete_expression(replay);\n"
+        },
+        {
+          "before": "        append!(*ts, \"{}const {emit_props} = (() => {{\\n\", ctx.indent);\n",
+          "after": "        append!(\n            *ts,\n            \"{}const {emit_props} = (void 0, () => {{\\n\",\n            ctx.indent\n        );\n"
+        },
+        {
+          "before": "",
+          "after": "\n#[cfg(test)]\nmod tests;\n"
+        }
+      ]
+    }
+  ]
+}
