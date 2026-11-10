@@ -20,9 +20,7 @@ export function attrValuePredecessors(linePrefix: string, generated: string): st
   const legacy = legacyOwnedTail.exec(generated);
   const compact = compactOwnedTail.exec(generated);
   if (!legacy && !compact) return [];
-  const contract = legacy
-    ? legacy[1]!
-    : `__${compact![3]}_${compact![2]}_prop_${compact![4]}`;
+  const contract = legacy ? legacy[1]! : `__${compact![3]}_${compact![2]}_prop_${compact![4]}`;
   const value = legacy ? legacy[2]! : compact![5]!;
   const images = [`${linePrefix}: ${contract} = ${value};\n`];
   if (value.startsWith("(") && value.endsWith(")"))
