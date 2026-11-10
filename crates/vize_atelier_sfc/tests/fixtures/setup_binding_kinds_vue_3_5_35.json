@@ -27,13 +27,7 @@
         "n": "literal-const",
         "object": "setup-const",
         "prop": "props"
-      },
-      "referenceReads": [
-        "importedRef.value",
-        "_unref(unimportedRef)",
-        "_unref(mutableReactive)",
-        "__props.prop"
-      ]
+      }
     },
     {
       "id": "explicitly-disabled-setup-hoisting",
@@ -42,11 +36,7 @@
       "referenceBindings": {
         "n": "setup-const",
         "text": "setup-const"
-      },
-      "referenceReads": [
-        "_toDisplayString(n)",
-        "_toDisplayString(text)"
-      ]
+      }
     },
     {
       "id": "normal-script-disables-setup-hoisting",
@@ -55,21 +45,14 @@
         "moduleValue": "literal-const",
         "n": "setup-const",
         "text": "setup-const"
-      },
-      "referenceReads": [
-        "_toDisplayString(n)",
-        "_toDisplayString(text)"
-      ]
+      }
     },
     {
       "id": "nuxt-auto-imported-ref-is-not-assumed",
       "source": "<script setup>\nconst count = ref(0)\n</script>\n<template>{{ count }}</template>",
       "referenceBindings": {
         "count": "setup-maybe-ref"
-      },
-      "referenceReads": [
-        "_unref(count)"
-      ]
+      }
     }
   ]
 }

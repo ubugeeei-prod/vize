@@ -1,5 +1,10 @@
 //! `<script setup>` binding metadata pinned to Vue's `walkDeclaration`.
 
+#![expect(
+    clippy::disallowed_macros,
+    reason = "`insta::assert_snapshot!` expands to `format!`"
+)]
+
 use std::collections::BTreeMap;
 
 use serde::Deserialize;
@@ -28,7 +33,6 @@ struct ReferenceFixture {
     hoist_static: Option<bool>,
     source: String,
     reference_bindings: BTreeMap<String, String>,
-    reference_reads: Vec<String>,
 }
 
 fn binding_name(kind: BindingType) -> &'static str {
@@ -91,12 +95,6 @@ fn compiler_bindings_and_inline_reads_match_vue_3_5_35() {
             .collect::<BTreeMap<_, _>>();
 
         assert_eq!(actual, fixture.reference_bindings, "{}", fixture.id);
-        for read in fixture.reference_reads {
-            assert!(
-                result.code.contains(read.as_str()),
-                "{} must contain Vue's inline read `{read}`",
-                fixture.id
-            );
-        }
+        insta::assert_snapshot!(fixture.id.as_str(), result.code.as_str());
     }
 }
