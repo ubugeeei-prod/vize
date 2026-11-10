@@ -80,14 +80,7 @@ pub(crate) fn append_props_literal(
     // satisfy required `onFoo` keys without treating unknown listeners as
     // unknown props (that is controlled by checkUnknownEvents). Emit these
     // witnesses first so they cannot erase any authored prop value checks.
-    for event in &usage.events {
-        if !event.name_is_dynamic && !event.name.is_empty() {
-            let handler = vize_carton::capitalize(&vize_carton::camelize(event.name.as_str()));
-            append!(*ts, "{expr_indent}  ...{{}} as {{ ");
-            super::super::helpers::push_ts_string_literal(ts, &vize_carton::cstr!("on{handler}"));
-            ts.push_str(": never },\n");
-        }
-    }
+    append_listener_witnesses(ts, usage, expr_indent);
 
     let class_bindings = collect_generated_class_bindings(usage, template_binding_access);
     let merge_class_bindings = class_bindings.len() > 1;
@@ -167,6 +160,45 @@ pub(crate) fn append_props_literal(
         }
     }
     literal_gen_start..ts.len()
+}
+
+/// Emit the usage's static listeners as one spread of `never`-typed `onFoo`
+/// keys: `...null! as { "onFoo": never; "onBar": never },`.
+///
+/// A spread keeps its keys out of excess-property checking, and `null!` is
+/// already `never`, so the assertion adds no object type of its own. One
+/// spread per usage, rather than one `...{} as { "onFoo": never }` per
+/// listener, keeps TypeScript from building an `{}` literal, its regular copy
+/// and an intermediate spread object for every listener while producing the
+/// same properties in the same order. Spreading a key again moves it after the
+/// keys spread before it, so a repeated listener keeps its last position.
+fn append_listener_witnesses(
+    ts: &mut crate::virtual_ts::TextBuf,
+    usage: &ComponentUsage,
+    expr_indent: &str,
+) {
+    let mut keys = Vec::new();
+    for event in &usage.events {
+        if event.name_is_dynamic || event.name.is_empty() {
+            continue;
+        }
+        let handler = vize_carton::capitalize(&vize_carton::camelize(event.name.as_str()));
+        let key = vize_carton::cstr!("on{handler}");
+        keys.retain(|seen| *seen != key);
+        keys.push(key);
+    }
+    if keys.is_empty() {
+        return;
+    }
+    append!(*ts, "{expr_indent}  ...null! as {{ ");
+    for (index, key) in keys.iter().enumerate() {
+        if index > 0 {
+            ts.push_str("; ");
+        }
+        super::super::helpers::push_ts_string_literal(ts, key);
+        ts.push_str(": never");
+    }
+    ts.push_str(" },\n");
 }
 
 /// Emit one `...expr` entry of the props literal, mapped back to its own
