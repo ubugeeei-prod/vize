@@ -15961,6 +15961,45 @@
       }
     },
     {
+      "id": "typechecker/regression/setup-verbatim-literals-12481",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "setup-verbatim-literals-12481/Literals.vue.txt",
+          "sha256": "b9aed14804245623c1856b1a7f337c6c94d35c88971e3b6bf66e6e0a40df87a9",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "setup-verbatim-literals-12481/NestedError.vue.txt",
+          "sha256": "39c28b06dc49c717df106e170aa0da0798993af4077c4b66d375e4b7ab7f4462",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "setup-verbatim-literals-12481/tsconfig.json.txt",
+          "sha256": "7825d4814bafac4acf2e7b224723de0d438666e9317d6846b52c4fe85323cb20",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "setup_verbatim_lines::multi_line_setup_literals_keep_their_values_and_errors_keep_their_positions; multi-line template and string literals in script setup keep their exact values, and a nested setup error keeps its authored position. Input-only batch registration for the shared Canon source change; no native parity claim."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/regression/sfc-entry-grammar-11869",
       "state": "active",
       "targets": [
