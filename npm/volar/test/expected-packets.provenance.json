@@ -25,7 +25,7 @@
   "sourceOwnedSuccessor": {
     "issue": 12431,
     "source": "3d4415c20fe99c7e48abe5f005c4bcb3105e651e",
-    "change": "The one synthesized listener return in feature-boundaries.json advances from any to void; listener-return-reference.js restores the exact native predecessor before historical transitions."
+    "change": "The one synthesized listener return in feature-boundaries.json advances from any to void; public-instance-reference.js restores the exact native predecessor before historical transitions."
   },
   "storage": {
     "files": ["basic.json", "updates-and-language.json", "art.json", "feature-boundaries.json"],

@@ -5,8 +5,8 @@ import { listenerWrapperReference } from "./listener-wrapper-reference.js";
 import {
   beforeListenerReturnReference,
   listenerReturnReference,
-} from "./listener-return-reference.js";
-import { publicInstanceReference } from "./public-instance-reference.js";
+  publicInstanceReference,
+} from "./public-instance-reference.js";
 
 const files = ["basic", "updates-and-language", "art", "feature-boundaries"];
 const current = () =>

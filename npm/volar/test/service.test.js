@@ -4,8 +4,7 @@ import path from "node:path";
 import { test } from "node:test";
 import ts from "typescript";
 import { createVizeLanguagePlugin } from "../src/index.js";
-import { publicInstanceReference } from "./public-instance-reference.js";
-import { listenerReturnReference } from "./listener-return-reference.js";
+import { listenerReturnReference, publicInstanceReference } from "./public-instance-reference.js";
 import { assertListenerStarts, listenerWrapperReference } from "./listener-wrapper-reference.js";
 import "./listener-wrapper-reference.test.js";
 import {
