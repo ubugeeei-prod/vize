@@ -10,7 +10,7 @@
 //! shared `$Usage*` helper, so it reads `typeof Component` exactly as the chain
 //! did, including its `any`, `never` and union cases.
 
-use vize_carton::{FxHashSet, String, cstr};
+use vize_carton::{String, cstr};
 use vize_croquis::{Croquis, EventHandlerScopeData, Scope, naming::to_pascal_case};
 
 use super::ComponentEventTypes;
@@ -95,7 +95,7 @@ pub(super) struct Contract<'a, 'template> {
     pub(super) template_ast: Option<&'a vize_relief::RootNode<'template>>,
     pub(super) source_context: ComponentPropSource<'a>,
     pub(super) inference_outer_vif_guard: Option<&'a str>,
-    pub(super) event_inference_usages: &'a std::cell::RefCell<FxHashSet<usize>>,
+    pub(super) event_inference_usages: &'a super::EmitInferenceDeclarations,
     pub(super) indent: &'a str,
     pub(super) needs_typed_handler_assignment: bool,
     pub(super) has_script_component_binding: bool,

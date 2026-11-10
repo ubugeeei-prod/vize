@@ -13725,6 +13725,45 @@
       }
     },
     {
+      "id": "typechecker/regression/emit-props-listener-block-scope",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "emit-props-listener-block-scope/Child.vue.txt",
+          "sha256": "90ad636cef012e1646816ce5f63d576ea41c3b8477be0bd5318cb7d006977cac",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "emit-props-listener-block-scope/GenericChild.vue.txt",
+          "sha256": "e2ab99c01c4b834fbba9e74a18ccb379b463c7d8874cd1a327c00419d99bc295",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "emit-props-listener-block-scope/Probe.vue.txt",
+          "sha256": "b1307ea7eb1fb55308abecc0b1292e8d6aef9fc5fabece7ecd368f059c166039",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch::type_checker::tests::recent_issues::emit_props_listener_block_scope::sibling_listeners_after_a_guarded_callback_keep_their_payload; a guarded v-for callback listener followed by sibling listeners on generic and non-generic children, pinned and physically consumed; expected rows are vue-tsc 3.3.14's four TS2345 payload errors. Input-only registration, no diagnostic pack."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/regression/escaped-reserved-binding-11769",
       "state": "active",
       "targets": [

@@ -28,6 +28,7 @@ mod dynamic_component_index_targets;
 mod dynamic_component_scoped_aliases;
 mod dynamic_component_union_listener;
 mod emit_camel_kebab_twins;
+mod emit_props_listener_block_scope;
 mod empty_required_props;
 mod exact_optional_props;
 mod external_esm_module_augmentation;

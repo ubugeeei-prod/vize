@@ -86,3 +86,45 @@ fn a_listener_block_prefix_is_restated_inside_the_arrow() {
         "{code}"
     );
 }
+
+fn emit_props_declarations(code: &str) -> usize {
+    code.matches("const __vize_emit_props_").count()
+}
+
+/// A callback reading a stable alias is checked in its branch guard block.
+/// The first listener used to declare the usage's emit props there, so every
+/// later sibling outside the block read an undeclared name (TS2304/TS2552 on
+/// an unmapped line) and lost its inferred payload.
+#[test]
+fn a_sibling_after_a_listener_block_declares_its_own_emit_props() {
+    for template in [
+        // `v-for` alias.
+        r#"<template v-for="row in rows"><Child v-if="row.ready" :value="value" @save="(v) => save(row, v)" @close="onSave($event)" /></template>"#,
+        // `v-slot` parameter.
+        r#"<Host><template #content="{ item }"><Child v-if="item.ready" :value="value" @save="(v) => save(item, v)" @close="onSave($event)" /></template></Host>"#,
+        // A slot inside a `v-for`, as n8n's InstanceAiMcpConnectCard.
+        r#"<Host v-for="row in rows" :value="value"><template #content><Child v-if="row.ready" :value="value" @save="(v) => save(row, v)" @close="onSave($event)" @open="() => onSave(1)" /></template></Host>"#,
+    ] {
+        let code = generate(template);
+        crate::virtual_ts::generated_reference_scope_tests::assert_generated_references_in_scope(
+            &code,
+        );
+        assert_eq!(emit_props_declarations(&code), 2, "{template}\n{code}");
+    }
+}
+
+#[test]
+fn listeners_sharing_a_visible_declaration_do_not_redeclare_it() {
+    for template in [
+        // Declared at the listeners' own level, then read inside the block.
+        r#"<template v-for="row in rows"><Child v-if="row.ready" :value="value" @close="onSave($event)" @save="(v) => save(row, v)" /></template>"#,
+        // Two callbacks folded into one block.
+        r#"<template v-for="row in rows"><Child v-if="row.ready" :value="value" @save="(v) => save(row, v)" @close="(v) => save(row, v)" /></template>"#,
+    ] {
+        let code = generate(template);
+        crate::virtual_ts::generated_reference_scope_tests::assert_generated_references_in_scope(
+            &code,
+        );
+        assert_eq!(emit_props_declarations(&code), 1, "{template}\n{code}");
+    }
+}
