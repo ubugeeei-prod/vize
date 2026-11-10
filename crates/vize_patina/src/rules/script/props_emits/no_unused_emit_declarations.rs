@@ -14,11 +14,10 @@
 //! This is intentionally pragmatic. It tracks the captured emit function
 //! (`const emit = defineEmits(...)`) and the string-literal event names passed
 //! as its first argument (`emit('change')`). An event declared but never emitted
-//! through that function is reported. Using the function as a value (for
-//! example, passing, storing, or returning it) escapes it to code this rule
-//! cannot inspect, so all declarations are then treated as potentially used.
-//! Calls are counted from the macro declaration onward, matching
-//! eslint-plugin-vue's source-order visitor. When
+//! through that function is reported. Passing, storing, or returning the
+//! function escapes it to code this rule cannot inspect, so all declarations
+//! are treated as potentially used. Calls are counted from the macro declaration
+//! onward, matching eslint-plugin-vue's source-order visitor. When
 //! the `defineEmits` return value is not assigned to a binding (e.g. a bare
 //! `defineEmits([...])`), only template `$emit(...)` calls can use declarations.
 //!
