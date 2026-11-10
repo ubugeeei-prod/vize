@@ -7,6 +7,7 @@
 
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
+use crate::markup::{MarkupContext, MarkupElement, MarkupRule, MarkupTraversal};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_relief::{DirectiveNode, ElementNode, ExpressionNode, PropNode};
 
@@ -21,9 +22,37 @@ static META: RuleMeta = RuleMeta {
 /// Implements the `ecosystem/void-link-require-href` lint rule.
 pub struct VoidLinkRequireHref;
 
+impl MarkupRule for VoidLinkRequireHref {
+    fn name(&self) -> &'static str {
+        META.name
+    }
+
+    fn traversal(&self) -> MarkupTraversal {
+        MarkupTraversal::Elements
+    }
+
+    fn enter_element<'a>(&self, ctx: &mut MarkupContext<'_, 'a>, element: &MarkupElement<'a>) {
+        if !is_void_link_in_markup_context(ctx, element.tag())
+            || has_named_markup_prop(element, "href")
+        {
+            return;
+        }
+
+        ctx.lint().error_at_with_help(
+            "Void Vue Link components must declare an `href` target",
+            element.range(),
+            "Add `href` or `:href` so Void can type-check the page route and render the correct navigation element.",
+        );
+    }
+}
+
 impl Rule for VoidLinkRequireHref {
     fn meta(&self) -> &'static RuleMeta {
         &META
+    }
+
+    fn as_markup_rule(&self) -> Option<&dyn MarkupRule> {
+        Some(self)
     }
 
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
@@ -49,6 +78,39 @@ pub(super) fn is_void_link_in_context(ctx: &LintContext<'_>, tag: &str) -> bool 
         .map(|descriptor| descriptor.source.as_ref())
         .unwrap_or(ctx.source);
     is_void_link(source, tag)
+}
+
+pub(super) fn is_void_link_in_markup_context(ctx: &mut MarkupContext<'_, '_>, tag: &str) -> bool {
+    let lint = ctx.lint();
+    let source = lint
+        .sfc_descriptor()
+        .map(|descriptor| descriptor.source.as_ref())
+        .unwrap_or(lint.source);
+    is_void_link(source, tag)
+}
+
+pub(super) fn has_named_markup_prop(element: &MarkupElement<'_>, name: &str) -> bool {
+    let mut found = false;
+    element.walk_attributes(&mut |attribute| {
+        found |= attribute.name_eq(name);
+    });
+    element.walk_directives(&mut |directive| {
+        found |= directive.name_eq("bind") && directive.is_static_arg_exact(name);
+    });
+    found
+}
+
+pub(super) fn static_markup_attr_value<'a>(
+    element: &MarkupElement<'a>,
+    name: &str,
+) -> Option<&'a str> {
+    let mut value = None;
+    element.walk_attributes(&mut |attribute| {
+        if attribute.name_eq(name) {
+            value = attribute.value();
+        }
+    });
+    value
 }
 
 pub(super) fn has_named_prop(element: &ElementNode<'_>, name: &str) -> bool {

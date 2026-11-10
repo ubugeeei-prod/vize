@@ -8,6 +8,7 @@
 
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
+use crate::markup::{MarkupContext, MarkupDirective, MarkupElement, MarkupRule, MarkupTraversal};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_relief::{DirectiveNode, ElementNode, ExpressionNode, PropNode};
 
@@ -22,9 +23,39 @@ static META: RuleMeta = RuleMeta {
 /// Implements the `ecosystem/router-link-require-to` lint rule.
 pub struct RouterLinkRequireTo;
 
+impl MarkupRule for RouterLinkRequireTo {
+    fn name(&self) -> &'static str {
+        META.name
+    }
+
+    fn traversal(&self) -> MarkupTraversal {
+        MarkupTraversal::Elements
+    }
+
+    fn enter_element<'a>(&self, ctx: &mut MarkupContext<'_, 'a>, element: &MarkupElement<'a>) {
+        let tag = element.tag();
+        if !is_router_link_tag(tag)
+            || has_markup_navigation_target(element, is_nuxt_link_tag(tag))
+            || can_inherit_markup_root_navigation_target(ctx)
+        {
+            return;
+        }
+
+        ctx.lint().error_at_with_help(
+            "RouterLink components must declare a navigation target",
+            element.range(),
+            "Add `to` or `:to` (`href` or `:href` is also valid on NuxtLink) so navigation is explicit and typed-route tooling can infer the target.",
+        );
+    }
+}
+
 impl Rule for RouterLinkRequireTo {
     fn meta(&self) -> &'static RuleMeta {
         &META
+    }
+
+    fn as_markup_rule(&self) -> Option<&dyn MarkupRule> {
+        Some(self)
     }
 
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
@@ -64,6 +95,40 @@ fn can_inherit_root_navigation_target(ctx: &LintContext<'_>) -> bool {
                         })
                 })
         })
+}
+
+fn can_inherit_markup_root_navigation_target(ctx: &mut MarkupContext<'_, '_>) -> bool {
+    if ctx.parent_element().is_some() || ctx.lint().sfc_descriptor().is_none() {
+        return false;
+    }
+    ctx.analysis().is_some_and(|analysis| {
+        analysis.template_info.root_element_count <= 1
+            && !analysis.macros.all_calls().iter().any(|call| {
+                call.name == "defineOptions"
+                    && call
+                        .runtime_args
+                        .as_ref()
+                        .is_some_and(|args| args.contains("inheritAttrs") && args.contains("false"))
+            })
+    })
+}
+
+fn has_markup_navigation_target(element: &MarkupElement<'_>, allow_href: bool) -> bool {
+    let mut found = false;
+    element.walk_attributes(&mut |attribute| {
+        found |= attribute.name_eq("to") || (allow_href && attribute.name_eq("href"));
+    });
+    element.walk_directives(&mut |directive| {
+        found |= is_markup_navigation_bind_directive(&directive, allow_href);
+    });
+    found
+}
+
+fn is_markup_navigation_bind_directive(directive: &MarkupDirective<'_>, allow_href: bool) -> bool {
+    directive.name_eq("bind")
+        && (directive.arg_name().is_none()
+            || directive.is_static_arg_exact("to")
+            || (allow_href && directive.is_static_arg_exact("href")))
 }
 
 fn has_navigation_target(element: &ElementNode<'_>, allow_href: bool) -> bool {

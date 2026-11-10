@@ -75,6 +75,10 @@ fn migrated_sfc_rules_preserve_diagnostics_and_fixes() {
         r#"<MyComponent v-model.custom="value" v-html="content"/><component is="div" v-text="content"/>"#,
         r#"<MyComponent myProp="value" :otherProp="value"/><slot :el$="el$"/><template :bad$="bad$"/>"#,
         r#"<div v-pre:arg/><div v-pre.mod/><div v-pre="raw"/>"#,
+        r#"<RouterLink/><RouterLink to="/docs"/><NuxtLink href="/guide"/>"#,
+        r#"<RouterLink to="/users"/><RouterLink :to="'/settings'"/><RouterLink :to="{ path: '/account' }"/>"#,
+        r#"<a href="/settings">Settings</a><a href="/report.pdf" download>Report</a>"#,
+        r#"<!-- from "@void/vue" --><Link/><Link href="/posts" method="CREATE"/><Link href="/posts" method="DELETE" prefetch/>"#,
         "<!-- eslint-disable-next-line vue/prefer-props-shorthand -->\n<MyComponent :foo=\"foo\"/>",
         "<!-- eslint-disable-next-line vue/no-useless-v-bind -->\n<div :title=\"'static'\"/>",
         "<!-- eslint-disable-next-line vue/no-multiple-objects-in-class -->\n<div :class=\"[{ active }, { hidden }]\"/>",
@@ -98,6 +102,11 @@ fn migrated_sfc_rules_preserve_diagnostics_and_fixes() {
         "<!-- eslint-disable-next-line vue/attribute-hyphenation -->\n<MyComponent myProp=\"value\"/>",
         "<!-- eslint-disable-next-line vue/valid-attribute-name -->\n<slot :el$=\"el$\"/>",
         "<!-- eslint-disable-next-line vue/valid-v-pre -->\n<div v-pre:arg/>",
+        "<!-- eslint-disable-next-line ecosystem/router-link-require-to -->\n<RouterLink/>",
+        "<!-- eslint-disable-next-line ecosystem/void-link-require-href -->\n<!-- from \"@void/vue\" --><Link/>",
+        "<!-- eslint-disable-next-line ecosystem/void-link-valid-method -->\n<!-- from \"@void/vue\" --><Link href=\"/posts\" method=\"CREATE\"/>",
+        "<!-- eslint-disable-next-line ecosystem/vue-router-prefer-named-link -->\n<RouterLink to=\"/users\"/>",
+        "<!-- eslint-disable-next-line ecosystem/nuxt-prefer-nuxt-link -->\n<a href=\"/settings\">Settings</a>",
         r#"<div v-pre><textarea>{{ raw }}</textarea></div>"#,
     ] {
         compare_template(source);
