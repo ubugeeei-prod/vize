@@ -18,15 +18,15 @@ const declarations = "crates/vize_canon/src/virtual_ts/helpers/declarations/";
 // Format strings exactly as the generator spells them.
 const TEMPLATES = {
   library: [
-    `${events}.rs`,
+    `${events}/usage_boxes.rs`,
     "type {library} = typeof {component_ref} extends {{ __vizeCheck: any }} | {{ readonly __vizeComponentMarker: true }} ? false : typeof {component_ref} extends (...args: any[]) => infer __R ? 0 extends (1 & __R) ? false : '__ctx' extends keyof __R ? true : false : false;",
   ],
   props: [
-    `${events}.rs`,
+    `${events}/usage_boxes.rs`,
     "type {props_box} = typeof {component_ref} extends {{ readonly __vizeComponentMarker: true; readonly __vizeRawProps?: infer __P }} ? [__P] : typeof {component_ref} extends {{ new (...args: any[]): {{ $props: infer __P }} }} ? [__P] : typeof {component_ref} extends (props: infer __P, ...args: any[]) => any ? [__P] : [];",
   ],
   emitProps: [
-    `${events}.rs`,
+    `${events}/usage_boxes.rs`,
     "type {emit_props_box} = typeof {component_ref} extends {{ __vizeEmitProps?: infer __EP }} ? [__EP] : [];",
   ],
   nativeBox: [
@@ -39,7 +39,7 @@ const TEMPLATES = {
   ],
   nativeArgs: [
     `${events}/native_fallthrough.rs`,
-    "type {fallthrough_args} = {fallthrough_box} extends infer __B ? __B extends [infer __F] ? NonNullable<__F> extends infer __P ? ({prop_listener_args}) extends infer __A extends unknown[] ? (__A extends [] ? unknown[] : __A) : unknown[] : unknown[] : unknown[] : never;",
+    "type {fallthrough_args} = {fallthrough_box} extends infer __B ? __B extends [infer __F] ? {lib_non_nullable}<__F> extends infer __P ? ({prop_listener_args}) extends infer __A extends unknown[] ? (__A extends [] ? unknown[] : __A) : unknown[] : unknown[] : unknown[] : never;",
   ],
   staticArgs: [
     `${events}.rs`,
@@ -59,7 +59,7 @@ const TEMPLATES = {
   ],
   nativeReturn: [
     `${events}/native_fallthrough.rs`,
-    "type {native_return} = {fallthrough_box} extends infer __B ? __B extends [infer __F] ? NonNullable<__F> extends {{ {prop_key}?: infer __H }} ? Extract<NonNullable<__H>, (...args: any[]) => any> extends (...args: any[]) => infer __R ? __R : any : any : any : never;",
+    "type {native_return} = {fallthrough_box} extends infer __B ? __B extends [infer __F] ? {lib_non_nullable}<__F> extends {{ {prop_key}?: infer __H }} ? {lib_extract}<{lib_non_nullable}<__H>, (...args: any[]) => any> extends (...args: any[]) => infer __R ? __R : any : any : any : never;",
   ],
   publicReturn: [`${events}/listener_return.rs`, "type {return_type}_public = {public_return};"],
   return: [
@@ -184,6 +184,8 @@ function usage(
     emit_props_box: `${p}_emit_props`,
     fallthrough_box: `${p}_fallthrough`,
     is_any: "$IsAny",
+    lib_extract: "Extract",
+    lib_non_nullable: "NonNullable",
     prop_key,
     prop_listener_args: `$ListenerArgs<__P, ${listener_key}, ${raw_listener_key}>`,
     prop_args: `${p}_prop_args`,

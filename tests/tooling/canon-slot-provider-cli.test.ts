@@ -56,6 +56,14 @@ import {
   applySharedTemplateRefUnwrapIn,
   beforeSharedTemplateRefUnwrapIn,
 } from "../../tools/support/compat/content-mapper/shared-template-ref-unwrap-transition.ts";
+import {
+  applySharedUsageHelpersIn,
+  beforeSharedUsageHelpersIn,
+} from "../../tools/support/compat/content-mapper/shared-usage-helpers-transition.ts";
+import {
+  applyListenerAuthoredPropsIn,
+  beforeListenerAuthoredPropsIn,
+} from "../../tools/support/compat/content-mapper/listener-authored-props-transition.ts";
 
 test("quiet CLI debug output retains exact helper/file bytes and refuses unrelated stderr", () => {
   const record = JSON.parse(
@@ -184,8 +192,12 @@ test("quiet CLI debug output retains exact helper/file bytes and refuses unrelat
   assert.throws(() => applyPropValueOrIn(propValueOrSourcePreamble), /PropValueOr/u);
   const listenerSourcePreamble = applyListenerContractIn(propValueOrSourcePreamble);
   const paritySourcePreamble = applyListenerReturnParityIn(listenerSourcePreamble);
-  const currentSourcePreamble = applySharedTemplateRefUnwrapIn(paritySourcePreamble);
-  assert.equal(beforeSharedTemplateRefUnwrapIn(currentSourcePreamble), paritySourcePreamble);
+  const unwrapSourcePreamble = applySharedTemplateRefUnwrapIn(paritySourcePreamble);
+  assert.equal(beforeSharedTemplateRefUnwrapIn(unwrapSourcePreamble), paritySourcePreamble);
+  const usageSourcePreamble = applySharedUsageHelpersIn(unwrapSourcePreamble);
+  assert.equal(beforeSharedUsageHelpersIn(usageSourcePreamble), unwrapSourcePreamble);
+  const currentSourcePreamble = applyListenerAuthoredPropsIn(usageSourcePreamble);
+  assert.equal(beforeListenerAuthoredPropsIn(currentSourcePreamble), usageSourcePreamble);
   const canonPredecessor = [...canonLeftoverPreamblePaths]
     .reverse()
     .reduce((current, file) => beforeCanonLeftoversIn(file, current), canonSourcePreamble);

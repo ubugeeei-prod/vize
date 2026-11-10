@@ -24,6 +24,8 @@ import { applyPropValueOrIn } from "../../support/compat/content-mapper/prop-val
 import { applyListenerContractIn } from "../../support/compat/content-mapper/listener-contract-transition.ts";
 import { applyListenerReturnParityIn } from "../../support/compat/content-mapper/listener-return-parity-transition.ts";
 import { applySharedTemplateRefUnwrapIn } from "../../support/compat/content-mapper/shared-template-ref-unwrap-transition.ts";
+import { applySharedUsageHelpersIn } from "../../support/compat/content-mapper/shared-usage-helpers-transition.ts";
+import { applyListenerAuthoredPropsIn } from "../../support/compat/content-mapper/listener-authored-props-transition.ts";
 
 export const canonLeftoverPreamblePaths = [
   "crates/vize_canon/src/virtual_ts/component_prop_helpers.txt",
@@ -78,20 +80,16 @@ export function slotCliPacket(
   const certifiedPreamble = applyCurrentSlotPreamble(
     applySourceOwnedPreambleTransitions(applyPreviousOverloadPreamble(text)),
   );
-  const currentPreamble = applySharedTemplateRefUnwrapIn(
-    applyListenerReturnParityIn(
-      applyListenerContractIn(
-        applyPropValueOrIn(
-          applyUnownedOwnedKeysIn(
-            applyInstanceInputKeysIn(
-              applyCanonLeftoverPreamble(
-                applyEmitMemberInferIn(
-                  applyStrictExtraKeysIn(
-                    applyDiscriminatedJsxUnionIn(
-                      applyIntegratedSourcePreambleTransitions(
-                        applyCurrentOverloadPreamble(certifiedPreamble),
-                      ),
-                    ),
+  const listenerPreamble = applyListenerContractIn(
+    applyPropValueOrIn(
+      applyUnownedOwnedKeysIn(
+        applyInstanceInputKeysIn(
+          applyCanonLeftoverPreamble(
+            applyEmitMemberInferIn(
+              applyStrictExtraKeysIn(
+                applyDiscriminatedJsxUnionIn(
+                  applyIntegratedSourcePreambleTransitions(
+                    applyCurrentOverloadPreamble(certifiedPreamble),
                   ),
                 ),
               ),
@@ -101,6 +99,10 @@ export function slotCliPacket(
       ),
     ),
   );
+  const parityPreamble = applyListenerReturnParityIn(listenerPreamble);
+  const unwrapPreamble = applySharedTemplateRefUnwrapIn(parityPreamble);
+  const usagePreamble = applySharedUsageHelpersIn(unwrapPreamble);
+  const currentPreamble = applyListenerAuthoredPropsIn(usagePreamble);
   assert.equal(currentPreamble.split(replacement).length, 2);
   const files = observed.result.files.filter((file) => typeof file.virtualTs === "string");
   assert.ok(files.length > 0, "all actual virtual file bodies must remain in JSON");

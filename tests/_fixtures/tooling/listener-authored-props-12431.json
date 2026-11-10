@@ -1,0 +1,129 @@
+{
+  "schema": "vize.listenerAuthoredPropsSource.v1",
+  "issue": 12431,
+  "credit": {
+    "compiled": false,
+    "native": false,
+    "performance": false
+  },
+  "baseRevision": "8df0af590ee849dd7a273d31ac38c688e6f15532",
+  "files": [
+    {
+      "path": "crates/vize_canon/src/virtual_ts/scope/component_events/usage_boxes.rs",
+      "before": {
+        "bytes": 2286,
+        "sha256": "2ed614b8d4538a9a784f08a4bc4ab56bedcd2c390c60d37614201f9c6d5e79b7"
+      },
+      "after": {
+        "bytes": 2637,
+        "sha256": "525d135534de67e04cbd27dcb7c40a325deed0f8ab6f698d5e22038800904444"
+      },
+      "hunks": [
+        {
+          "before": "    vize_l0::emit_ts!(\n        ts,\n        \"{indent}type {props_box} = typeof {component_ref} extends {{ new (...args: any[]): {{ $props: infer __P }} }} ? [__P] : typeof {component_ref} extends (props: infer __P, ...args: any[]) => any ? [__P] : [];\\n\",\n",
+          "after": "    // A generated component's public `$props` intersects authored listener\n    // props with synthesized emit listeners. Prefer its authored raw props so\n    // a same-name listener return cannot collapse from `number` to `any`.\n    vize_l0::emit_ts!(\n        ts,\n        \"{indent}type {props_box} = typeof {component_ref} extends {{ readonly __vizeComponentMarker: true; readonly __vizeRawProps?: infer __P }} ? [__P] : typeof {component_ref} extends {{ new (...args: any[]): {{ $props: infer __P }} }} ? [__P] : typeof {component_ref} extends (props: infer __P, ...args: any[]) => any ? [__P] : [];\\n\",\n"
+        }
+      ]
+    },
+    {
+      "path": "crates/vize_canon/src/virtual_ts/helpers/declarations/component-checks.d.ts.txt",
+      "before": {
+        "bytes": 9925,
+        "sha256": "01c2edfcc89dd12d7f84715dbb49dfe16dc4e613f84238204c74f5fc2287290a"
+      },
+      "after": {
+        "bytes": 10032,
+        "sha256": "803393b678dd445f1b803bf90d651ffabf7cf033ecceef9913b562633c6120ad"
+      },
+      "hunks": [
+        {
+          "before": "export type $UsagePropsBox<C> = NoInfer<C> extends { new (...args: any[]): { $props: infer __P } } ? [__P] : NoInfer<C> extends (props: infer __P, ...args: any[]) => any ? [__P] : [];\n",
+          "after": "export type $UsagePropsBox<C> = NoInfer<C> extends { readonly __vizeComponentMarker: true; readonly __vizeRawProps?: infer __P } ? [__P] : NoInfer<C> extends { new (...args: any[]): { $props: infer __P } } ? [__P] : NoInfer<C> extends (props: infer __P, ...args: any[]) => any ? [__P] : [];\n"
+        }
+      ]
+    },
+    {
+      "path": "npm/cli/virtual-ts.d.ts",
+      "before": {
+        "bytes": 17669,
+        "sha256": "dcb67b889d553e934ceba9ba18d9e28e94ec2aca3b8a99d9112a54a686ce4fed"
+      },
+      "after": {
+        "bytes": 17803,
+        "sha256": "38420f36b3f44b34801c0501d5a816d8f69c3a68277a636a4dfcb625ea58a0c8"
+      },
+      "hunks": [
+        {
+          "before": "  NoInfer<C> extends { new (...args: any[]): { $props: infer __P } }\n    ? [__P]\n    : NoInfer<C> extends (props: infer __P, ...args: any[]) => any\n      ? [__P]\n      : [];\n",
+          "after": "  NoInfer<C> extends {\n    readonly __vizeComponentMarker: true;\n    readonly __vizeRawProps?: infer __P;\n  }\n    ? [__P]\n    : NoInfer<C> extends { new (...args: any[]): { $props: infer __P } }\n      ? [__P]\n      : NoInfer<C> extends (props: infer __P, ...args: any[]) => any\n        ? [__P]\n        : [];\n"
+        }
+      ]
+    },
+    {
+      "path": "npm/cli/virtual-ts.d.mts",
+      "before": {
+        "bytes": 17669,
+        "sha256": "dcb67b889d553e934ceba9ba18d9e28e94ec2aca3b8a99d9112a54a686ce4fed"
+      },
+      "after": {
+        "bytes": 17803,
+        "sha256": "38420f36b3f44b34801c0501d5a816d8f69c3a68277a636a4dfcb625ea58a0c8"
+      },
+      "hunks": [
+        {
+          "before": "  NoInfer<C> extends { new (...args: any[]): { $props: infer __P } }\n    ? [__P]\n    : NoInfer<C> extends (props: infer __P, ...args: any[]) => any\n      ? [__P]\n      : [];\n",
+          "after": "  NoInfer<C> extends {\n    readonly __vizeComponentMarker: true;\n    readonly __vizeRawProps?: infer __P;\n  }\n    ? [__P]\n    : NoInfer<C> extends { new (...args: any[]): { $props: infer __P } }\n      ? [__P]\n      : NoInfer<C> extends (props: infer __P, ...args: any[]) => any\n        ? [__P]\n        : [];\n"
+        }
+      ]
+    },
+    {
+      "path": "npm/cli/virtual-ts.d.cts",
+      "before": {
+        "bytes": 17669,
+        "sha256": "dcb67b889d553e934ceba9ba18d9e28e94ec2aca3b8a99d9112a54a686ce4fed"
+      },
+      "after": {
+        "bytes": 17803,
+        "sha256": "38420f36b3f44b34801c0501d5a816d8f69c3a68277a636a4dfcb625ea58a0c8"
+      },
+      "hunks": [
+        {
+          "before": "  NoInfer<C> extends { new (...args: any[]): { $props: infer __P } }\n    ? [__P]\n    : NoInfer<C> extends (props: infer __P, ...args: any[]) => any\n      ? [__P]\n      : [];\n",
+          "after": "  NoInfer<C> extends {\n    readonly __vizeComponentMarker: true;\n    readonly __vizeRawProps?: infer __P;\n  }\n    ? [__P]\n    : NoInfer<C> extends { new (...args: any[]): { $props: infer __P } }\n      ? [__P]\n      : NoInfer<C> extends (props: infer __P, ...args: any[]) => any\n        ? [__P]\n        : [];\n"
+        }
+      ]
+    }
+  ],
+  "compiledPreamble": {
+    "before": {
+      "bytes": 54118,
+      "sha256": "817d895dfa5f682680a637e5a9e5cd9ba5942299ea6005e2cb3f35c27a3ff281"
+    },
+    "after": {
+      "bytes": 54225,
+      "sha256": "1791e67a14e8b93e90136ce0cd7fdaf1fc32b4d47ca4d4925c1d9224c392c192"
+    },
+    "hunks": [
+      {
+        "before": "export type $UsagePropsBox<C> = NoInfer<C> extends { new (...args: any[]): { $props: infer __P } } ? [__P] : NoInfer<C> extends (props: infer __P, ...args: any[]) => any ? [__P] : [];\n",
+        "after": "export type $UsagePropsBox<C> = NoInfer<C> extends { readonly __vizeComponentMarker: true; readonly __vizeRawProps?: infer __P } ? [__P] : NoInfer<C> extends { new (...args: any[]): { $props: infer __P } } ? [__P] : NoInfer<C> extends (props: infer __P, ...args: any[]) => any ? [__P] : [];\n"
+      }
+    ]
+  },
+  "compiledStrictPreamble": {
+    "before": {
+      "bytes": 53909,
+      "sha256": "e3dcef5742c11e95197e6c71f0bf0921c648698d2e5cedf846048047623e7f6d"
+    },
+    "after": {
+      "bytes": 54016,
+      "sha256": "e2bd7d6b7576b83e741c7e28c9ab40148f5bdc39e986f2756d885da2972ec717"
+    },
+    "hunks": [
+      {
+        "before": "export type $UsagePropsBox<C> = NoInfer<C> extends { new (...args: any[]): { $props: infer __P } } ? [__P] : NoInfer<C> extends (props: infer __P, ...args: any[]) => any ? [__P] : [];\n",
+        "after": "export type $UsagePropsBox<C> = NoInfer<C> extends { readonly __vizeComponentMarker: true; readonly __vizeRawProps?: infer __P } ? [__P] : NoInfer<C> extends { new (...args: any[]): { $props: infer __P } } ? [__P] : NoInfer<C> extends (props: infer __P, ...args: any[]) => any ? [__P] : [];\n"
+      }
+    ]
+  }
+}

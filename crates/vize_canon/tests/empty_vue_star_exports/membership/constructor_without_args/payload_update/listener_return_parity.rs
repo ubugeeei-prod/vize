@@ -4,7 +4,7 @@ use serde_json::{Value, json};
 use std::fs;
 
 const RECORD: &str = "tests/_fixtures/tooling/listener-return-parity-12431.json";
-const RECORD_SHA: &str = "35c388e27d29d704579e16b2297f1a22319289509445b7dabf75ffd8612a42c2";
+const RECORD_SHA: &str = "5740f760e22bc472de2b7c2631be1b2b8b36b8f5390cd09022310a2af9022f69";
 const ASSET: &str =
     "crates/vize_canon/src/virtual_ts/helpers/declarations/shared-listener-args.d.ts.txt";
 
@@ -58,11 +58,15 @@ pub(super) fn source_before(path: &str, current: String) -> String {
 pub(super) fn read_current(path: &str) -> String {
     source_before(
         path,
-        fs::read_to_string(support::repository().join(path)).unwrap(),
+        super::listener_authored_props::source_before(
+            path,
+            fs::read_to_string(support::repository().join(path)).unwrap(),
+        ),
     )
 }
 
 pub(super) fn preamble_before(current: &str) -> String {
+    let current = super::listener_authored_props::preamble_before(current);
     let record = record();
     let Some(preamble) = record["preambles"]
         .as_array()
@@ -70,7 +74,7 @@ pub(super) fn preamble_before(current: &str) -> String {
         .iter()
         .find(|entry| support::hash(current.as_bytes()) == entry["after"]["sha256"])
     else {
-        return current.to_owned();
+        return current;
     };
     assert_eq!(json!(current.len()), preamble["after"]["bytes"]);
     let asset = record["files"]
@@ -79,7 +83,7 @@ pub(super) fn preamble_before(current: &str) -> String {
         .iter()
         .find(|file| file["path"] == ASSET)
         .unwrap();
-    let mut previous = current.to_owned();
+    let mut previous = current;
     for hunk in asset["hunks"].as_array().unwrap() {
         let after = hunk["after"].as_str().unwrap();
         assert_eq!(previous.matches(after).count(), 1);
@@ -102,7 +106,10 @@ mod tests {
         let record = record();
         for file in record["files"].as_array().unwrap() {
             let path = file["path"].as_str().unwrap();
-            let current = fs::read_to_string(support::repository().join(path)).unwrap();
+            let current = super::super::listener_authored_props::source_before(
+                path,
+                fs::read_to_string(support::repository().join(path)).unwrap(),
+            );
             assert_eq!(support::hash(current.as_bytes()), file["after"]["sha256"]);
             let previous = source_before(path, current.clone());
             assert_eq!(support::hash(previous.as_bytes()), file["before"]["sha256"]);
@@ -115,6 +122,7 @@ mod tests {
         .into_iter()
         .zip(record["preambles"].as_array().unwrap())
         {
+            let current = super::super::listener_authored_props::preamble_before(current);
             assert_eq!(
                 support::hash(current.as_bytes()),
                 expected["after"]["sha256"]

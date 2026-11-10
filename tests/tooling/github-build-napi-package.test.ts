@@ -128,7 +128,7 @@ void test("non-Apple targets run napi through vp with a fresh build token", (t) 
           "vize_vitrine",
           "napi,legacy",
           "x86_64-unknown-linux-gnu",
-        ),
+        ).concat("--", "--locked"),
         cwd: packageDir,
       },
       {
@@ -140,6 +140,8 @@ void test("non-Apple targets run napi through vp with a fresh build token", (t) 
             "aarch64-unknown-linux-gnu",
           ),
           "--cross-compile",
+          "--",
+          "--locked",
         ],
         cwd: packageDir,
       },
@@ -186,6 +188,7 @@ void test("Apple targets report cargo failures, unknown platforms and missing li
   assert.equal(calls.length, 4);
   assert.deepEqual(calls[2]!.argv, [
     "build",
+    "--locked",
     "--release",
     "--manifest-path",
     "m.toml",

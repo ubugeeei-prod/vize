@@ -212,6 +212,42 @@ function withProvenTemplateRefUnwrapAdditionsRemoved(
   return { ...actual, exports };
 }
 
+/** The shared per-usage helpers are additions; their oracle proves each equals its inline form. */
+function withProvenUsageHelperAdditionsRemoved(
+  actual: ExportSurface,
+  expected: ExportSurface,
+): ExportSurface {
+  const exports = structuredClone(actual.exports);
+  const oracle = new URL("tests/tooling/canon-usage-helpers-equivalence.test.ts", repositoryRoot);
+  for (const name of [
+    "$UsageProps",
+    "$UsageRequiredFallthrough",
+    "$UsageLibrary",
+    "$UsagePropsBox",
+    "$UsageEmitPropsBox",
+    "$UsageNativeFallthroughBox",
+  ]) {
+    const index = exports.findIndex((entry) => entry.name === name);
+    if (expected.exports.some((entry) => entry.name === name) || index < 0) continue;
+    assert.ok(fs.existsSync(oracle) && fs.readFileSync(oracle, "utf8").includes(name));
+    assert.deepEqual(exports[index], {
+      name,
+      type: true,
+      value: false,
+      namespace: false,
+      declarations: [
+        {
+          kind: "TypeAliasDeclaration",
+          parameters: [{ name: "C", constraint: null, default: null }],
+          signatures: [],
+        },
+      ],
+    });
+    exports.splice(index, 1);
+  }
+  return { ...actual, exports };
+}
+
 /** `$ListenerContract` is new; its oracle proves it equals the alias chain. */
 function withProvenListenerContractRemoved(
   actual: ExportSurface,
@@ -270,10 +306,13 @@ export function assertPublicSlotExportSurface(
   assert.deepEqual(
     Object.fromEntries(
       withProvenDefaultsRestored(
-        withProvenTemplateRefUnwrapAdditionsRemoved(
-          withProvenPropValueOrAdditionRemoved(
-            withProvenListenerAdditionRemoved(
-              withProvenListenerContractRemoved(actual, expected),
+        withProvenUsageHelperAdditionsRemoved(
+          withProvenTemplateRefUnwrapAdditionsRemoved(
+            withProvenPropValueOrAdditionRemoved(
+              withProvenListenerAdditionRemoved(
+                withProvenListenerContractRemoved(actual, expected),
+                expected,
+              ),
               expected,
             ),
             expected,

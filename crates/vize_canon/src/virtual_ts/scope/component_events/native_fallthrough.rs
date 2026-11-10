@@ -7,11 +7,22 @@ pub(super) fn emit_box(
     fallthrough_box: &str,
     component_ref: &str,
     is_any: &str,
+    hoisted: bool,
 ) {
     // A native root does not close an undeclared component event surface.
     // Test finite keys only after narrowing that root: generated Vue options
     // have a string index, and authored conditional exports need the narrowing.
     // An `any` root has no typed contract, the same as no root.
+    if hoisted {
+        // The same test, evaluated once per component type by the shared helper.
+        let helper =
+            crate::virtual_ts::helpers::shared_types::USAGE_NATIVE_FALLTHROUGH_BOX.select(true);
+        append!(
+            *ts,
+            "{indent}type {fallthrough_box} = {helper}<typeof {component_ref}>;\n",
+        );
+        return;
+    }
     append!(
         *ts,
         "{indent}type {fallthrough_box} = typeof {component_ref} extends {{ readonly __vizeNativeFallthroughRoot: true; readonly __vizeFallthroughProps?: infer __F }} ? \"__vizeEmitProps\" extends keyof {{ [__K in keyof typeof {component_ref} as string extends __K ? never : number extends __K ? never : symbol extends __K ? never : __K]: unknown }} ? {is_any}<__F> extends true ? [] : [__F] : [] : [];\n",

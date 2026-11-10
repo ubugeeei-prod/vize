@@ -117,6 +117,11 @@ pub(crate) fn append_usage_props(
             *ts,
             "typeof {component} extends {{ __vizeCheck: infer __F }} ? ({is_any}<__F> extends true ? {props} : Record<string, unknown>) : {props};\n"
         );
+    } else if hoisted {
+        // The body reads only the component type, so the shared helper is
+        // evaluated once per component type instead of once per usage.
+        let usage_props = shared_types::USAGE_PROPS.select(true);
+        append!(*ts, "{usage_props}<typeof {component}>;\n");
     } else {
         // Preserve the existing allocation-free writer for unrelated usages.
         let raw = shared_types::COMPONENT_RAW_PROPS.select(hoisted);

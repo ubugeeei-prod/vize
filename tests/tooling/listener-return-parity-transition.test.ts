@@ -7,6 +7,7 @@ import {
   beforeListenerReturnParity,
   listenerReturnParityRecord,
 } from "../../tools/support/compat/content-mapper/listener-return-parity-transition.ts";
+import { beforeListenerAuthoredPropsSource } from "../../tools/support/compat/content-mapper/listener-authored-props-transition.ts";
 
 const root = new URL("../../", import.meta.url);
 const hash = (text: string) => createHash("sha256").update(text).digest("hex");
@@ -20,7 +21,10 @@ void test("listener return parity sources restore their exact predecessors", () 
     }>;
   };
   for (const file of record.files) {
-    const current = fs.readFileSync(new URL(file.path, root), "utf8");
+    const current = beforeListenerAuthoredPropsSource(
+      file.path,
+      fs.readFileSync(new URL(file.path, root), "utf8"),
+    );
     assert.equal(hash(current), file.after.sha256, file.path);
     const previous = beforeListenerReturnParity(file.path, current);
     assert.equal(hash(previous), file.before.sha256, file.path);

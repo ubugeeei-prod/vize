@@ -4,6 +4,7 @@ import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { beforeListenerReturnParity } from "./listener-return-parity-transition.ts";
 import { beforeGuardedInferenceArrow } from "./guarded-inference-arrow-transition.ts";
+import { beforeSharedUsageHelpersSource } from "./shared-usage-helpers-transition.ts";
 
 export const libTypeListenerRecord =
   "tests/_fixtures/tooling/lib-type-qualification-listeners-12536.json";
@@ -73,6 +74,7 @@ export function beforeCurrentListenerLibTypeQualification(path: string, current:
 
 /** The exact pre-qualification bytes after restoring newer source transitions. */
 export function beforeListenerLibTypeQualification(path: string, current: string): string {
-  current = beforeGuardedInferenceArrow(path, current);
-  return beforeCurrentListenerLibTypeQualification(path, beforeListenerReturnParity(path, current));
+  current = beforeSharedUsageHelpersSource(path, current);
+  current = beforeListenerReturnParity(path, current);
+  return beforeCurrentListenerLibTypeQualification(path, current);
 }

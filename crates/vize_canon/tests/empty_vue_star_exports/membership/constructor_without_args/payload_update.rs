@@ -23,6 +23,7 @@ mod integrated_source;
 mod jsx_exact_keys;
 mod lib_type_qualification;
 mod lib_type_qualification_listeners;
+mod listener_authored_props;
 mod listener_contract;
 mod listener_relations;
 mod listener_return_parity;
@@ -39,6 +40,7 @@ mod static_emit_gate;
 mod strict_extra_keys;
 mod template_ref_unwrap;
 mod unowned_owned_keys;
+mod usage_helpers;
 
 const RECORD: &str = "malformed-membership/slot-provider-payload-update-11027.json";
 const PATHS: [&str; 11] = [

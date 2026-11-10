@@ -5,9 +5,10 @@
 //! body of `$ListenerContract`, a shared SDK helper. Each use declares one
 //! alias that passes the component's boxes, the event key and its inferred
 //! payload, so TypeScript instantiates the contract once per argument list
-//! across the program instead of once per use. The component boxes and the
-//! inference-only call stay per use: they read `typeof Component` exactly as
-//! the chain did, including its `any` and union cases.
+//! across the program instead of once per use. The component box aliases and
+//! the inference-only call stay per use. Each box names a non-distributive
+//! shared `$Usage*` helper, so it reads `typeof Component` exactly as the chain
+//! did, including its `any`, `never` and union cases.
 
 use vize_carton::{FxHashSet, String, cstr};
 use vize_croquis::{Croquis, EventHandlerScopeData, Scope, naming::to_pascal_case};
