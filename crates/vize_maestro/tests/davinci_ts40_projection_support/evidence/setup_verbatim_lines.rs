@@ -17,3 +17,19 @@ pub(super) fn slots(predecessor: &'static str) -> &'static str {
     );
     successor
 }
+
+pub(super) fn mixed_vue2(predecessor: &'static str) -> &'static str {
+    let successor = include_str!(
+        "../fixtures/public-instance-mixed-vue2/successor-setup-verbatim-12481/projection-record.txt"
+    );
+    authenticate_successor_receipt(
+        include_str!(
+            "../fixtures/public-instance-mixed-vue2/successor-setup-verbatim-12481/receipt.json"
+        ),
+        "bd21f1c43958d6d6c55ed40721783e591e61d687ed30fadbf392528ce621a142",
+        12550,
+        predecessor,
+        successor,
+    );
+    successor
+}
