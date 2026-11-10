@@ -42,11 +42,12 @@ import {
   runBatchCheck,
 } from "./typecheck-corpus-pair-batch.ts";
 import {
+  assertProbeDiagnosticIdentity,
   checkerBusyMs,
   checkMsByFile,
+  persistProjection,
   probeBytesByFile,
   projectionReport,
-  renderProjection,
 } from "./typecheck-corpus-pair-projection.ts";
 import { familyShapes, renderReplyShape } from "./typecheck-reply-shape.ts";
 import {
@@ -285,6 +286,7 @@ function main(): void {
       `${key}: probe ${probe.files} SFCs, ${probe.bytes} bytes, ${run.diagnostics.length} diagnostics`,
     );
   }
+  assertProbeDiagnosticIdentity(probes, CORPORA, MAPPER_HOSTS);
 
   const projections = CORPORA.map((corpus) => {
     const side = (variant: Variant) => {
@@ -302,11 +304,7 @@ function main(): void {
     const [base, head, vue] = VARIANTS.map(side);
     return projectionReport(corpus.id, { base: base!, head: head!, vue: vue! });
   });
-  writeFileSync(join(out, "projection.json"), `${JSON.stringify(projections, null, 1)}\n`);
-  writeFileSync(
-    join(out, "projection.md"),
-    projections.map((report) => renderProjection(report)).join("\n"),
-  );
+  persistProjection(out, projections);
   const shapes = CORPORA.map((corpus) => {
     const dir = (role: string) => join(out, "generated", `${corpus.id}-tsc-vize-${role}`);
     return renderReplyShape(corpus.id, familyShapes(dir("base")), familyShapes(dir("head")));

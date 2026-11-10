@@ -287,6 +287,7 @@ function installVueVirtualModules(ts, info) {
   const support = {
     get,
     ensure: lazy.ensure.bind(lazy),
+    projectVersion: originalProjectVersion && projectVersion,
     readSource,
     engine,
     resolve,

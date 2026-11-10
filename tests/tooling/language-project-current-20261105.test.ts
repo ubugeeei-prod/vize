@@ -5,6 +5,7 @@ import path from "node:path";
 import { test } from "node:test";
 import { gunzipSync } from "node:zlib";
 import { DEMANDED_SFC_CUSTODY } from "../../tools/support/compat/github/language-project-demanded-sfc-20261105.ts";
+import { DIAGNOSTIC_PACKETS_CUSTODY } from "../../tools/support/compat/github/language-project-diagnostic-packets-20261110.ts";
 import { SNAPSHOT_WALK_CUSTODY } from "../../tools/support/compat/github/language-project-snapshot-walk-20261109.ts";
 import { newLanguageProjectCases } from "../../tools/support/compat/github/language-project-fixtures.ts";
 import {
@@ -214,9 +215,13 @@ test("demanded SFC producer mutations and arbitrary manifest repins cannot acqui
   const rows = JSON.parse(
     read("head", "tests/_fixtures/differential/typechecker/manifest.json")!.toString(),
   ).languageProjectCases;
+  // A later successor may rewrite the demanded anchor; mutate the newest live edit instead.
+  const newest = [DIAGNOSTIC_PACKETS_CUSTODY, SNAPSHOT_WALK_CUSTODY].flatMap(
+    (record) => JSON.parse(read("head", record)!.toString()).transitions,
+  );
   for (const entry of successor.transitions) {
     const current = read("head", entry.path)!.toString();
-    const edit = entry.edits[0];
+    const edit = (newest.find((row: any) => row.path === entry.path) ?? entry).edits[0];
     for (const body of [
       null,
       Buffer.from(current + "\n"),
@@ -259,6 +264,53 @@ test("snapshot walk replay rejects every missing or modified record, archive and
   const successor = JSON.parse(read("head", SNAPSHOT_WALK_CUSTODY)!.toString());
   const assets = [
     SNAPSHOT_WALK_CUSTODY,
+    ...successor.predecessors.map((entry: any) => entry.path),
+    ...successor.transitions.map((entry: any) => entry.gzip.path),
+  ];
+  for (const asset of assets) {
+    for (const missing of [false, true]) {
+      const altered = (side: "base" | "head", source: string) =>
+        side === "head" && source === asset
+          ? missing
+            ? null
+            : Buffer.concat([read(side, source)!, Buffer.from("\n")])
+          : read(side, source);
+      assert.throws(
+        () => {
+          const replay = historicalCurrentLanguageProjectSources(altered);
+          for (const entry of successor.transitions) replay("head", entry.path);
+        },
+        { message: "invalid classification successor: current source custody differs" },
+      );
+    }
+  }
+});
+
+test("diagnostic packet sources compose the snapshot walk and demanded SFC producers without replacing their custody", () => {
+  const successor = JSON.parse(read("head", DIAGNOSTIC_PACKETS_CUSTODY)!.toString());
+  const previous = [SNAPSHOT_WALK_CUSTODY, DEMANDED_SFC_CUSTODY].flatMap(
+    (record) => JSON.parse(read("head", record)!.toString()).transitions,
+  );
+  assert.equal(successor.qualificationCredit, false);
+  for (const entry of successor.transitions) {
+    const before = gunzipSync(read("head", entry.gzip.path)!);
+    const prior = previous.find((row: any) => row.path === entry.path).after;
+    assert.deepEqual(entry.before, prior);
+    assert.equal(createHash("sha256").update(before).digest("hex"), prior.sha256);
+    const staged = historicalCurrentLanguageProjectSources((side, source) =>
+      side === "head" && source === entry.path ? before : read(side, source),
+    );
+    const replay = historicalCurrentLanguageProjectSources(read);
+    assert.notDeepEqual(read("head", entry.path), before);
+    assert.deepEqual(replay("head", entry.path), staged("head", entry.path));
+    assert.deepEqual(replay("base", entry.path), read("base", entry.path));
+  }
+});
+
+test("diagnostic packet replay rejects every missing or modified record, archive and predecessor", () => {
+  const successor = JSON.parse(read("head", DIAGNOSTIC_PACKETS_CUSTODY)!.toString());
+  const assets = [
+    DIAGNOSTIC_PACKETS_CUSTODY,
     ...successor.predecessors.map((entry: any) => entry.path),
     ...successor.transitions.map((entry: any) => entry.gzip.path),
   ];
