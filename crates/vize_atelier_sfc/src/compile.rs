@@ -385,13 +385,11 @@ fn compile_sfc_inner(
             codegen_options.runtime_module_name.as_str(),
         );
 
-    // Parse the script setup once and observe its facts natively. The macro
-    // context analysis and (unless v-model demotion rewrites the content
-    // below) the inline compiler's statement sectioning reuse this Program.
     let setup_arena = vize_l0::Allocator::default();
+    let setup_options = (descriptor, &options.template);
     let setup = profile!(
         "atelier.sfc.script_setup.facts",
-        setup_facts::SetupAnalysis::new(&setup_arena, &script_setup_content, descriptor)
+        setup_facts::SetupAnalysis::new(&setup_arena, &script_setup_content, setup_options)
     )?;
     let setup_program = setup.program();
     setup_exports::validate(setup_program, &script_setup_content, descriptor)?;
@@ -498,7 +496,7 @@ fn compile_sfc_inner(
             demoted_setup_content = Some(rewritten);
         }
     }
-
+    ctx.bindings = script_bindings.clone();
     // Compile template with bindings (if present) to get the render function
     let template_result = if let Some(template) = &descriptor.template {
         let template_allocator = vize_carton::pool::acquire();

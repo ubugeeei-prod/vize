@@ -16,7 +16,7 @@ use vize_l1::embed::{
 use vize_l2::framework::vue::{SetupBindingKind, SetupFacts, SetupObserver};
 use vize_l2::lang::js::{FileProducer, ProgramInput, ProgramScope};
 
-use crate::types::{BindingMetadata, BindingType, SfcDescriptor, SfcError};
+use crate::types::{BindingMetadata, BindingType, SfcDescriptor, SfcError, TemplateCompileOptions};
 
 /// The setup content's Program and the facts observed over it.
 pub(crate) struct SetupAnalysis<'a> {
@@ -31,7 +31,7 @@ impl<'a> SetupAnalysis<'a> {
     pub(crate) fn new(
         arena: &'a Allocator,
         content: &'a str,
-        descriptor: &SfcDescriptor<'_>,
+        (descriptor, template): (&SfcDescriptor<'_>, &TemplateCompileOptions),
     ) -> Result<Self, SfcError> {
         let lang = descriptor
             .script_setup
@@ -48,7 +48,12 @@ impl<'a> SetupAnalysis<'a> {
         let block = SourceRoot::new(content).map_err(refused)?.whole_block();
         let input = ProgramInput::checked(admitted, block, 0).map_err(refused)?;
         let mut producer = FileProducer::new(arena, content).map_err(refused)?;
-        let mut observer = SetupObserver::new();
+        let hoist_static = descriptor.script.is_none()
+            && template
+                .compiler_options
+                .as_ref()
+                .is_none_or(|compiler| compiler.hoist_static);
+        let mut observer = SetupObserver::new().with_hoist_static(hoist_static);
         producer
             .program_observed(input, ProgramScope::Nested, &mut observer)
             .map_err(refused)?;

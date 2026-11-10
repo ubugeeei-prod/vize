@@ -1,10 +1,12 @@
-//! Native `<script setup>` binding kinds and `defineProps` destructures
-//! against Croquis' setup bindings on the repository corpus (#6844). Croquis
-//! is only this test's oracle.
+//! Native `<script setup>` binding kinds and `defineProps` destructures.
+//! Croquis remains a corpus regression oracle where its behavior agrees with
+//! Vue; the focused cases pin intentional `walkDeclaration` differences.
 
 mod support {
     pub mod vue_setup;
 }
+
+use std::collections::BTreeMap;
 
 use support::vue_setup::{corpus, observe, slice, text};
 use vize_l0::{String, cstr};
@@ -35,6 +37,29 @@ fn croquis_view(kind: SetupBindingKind) -> SetupBindingKind {
     }
 }
 
+fn known_vue_kind_difference(
+    native: Option<SetupBindingKind>,
+    croquis: Option<SetupBindingKind>,
+) -> bool {
+    use SetupBindingKind::{
+        LiteralConst, Props, SetupConst, SetupLet, SetupMaybeRef, SetupReactiveConst, SetupRef,
+    };
+    matches!(
+        (native, croquis),
+        (
+            Some(SetupConst),
+            Some(SetupMaybeRef | SetupReactiveConst | LiteralConst)
+        ) | (Some(LiteralConst), Some(SetupConst))
+            | (Some(SetupMaybeRef), Some(SetupRef | SetupReactiveConst))
+            | (
+                Some(SetupLet),
+                Some(SetupConst | SetupRef | SetupReactiveConst)
+            )
+            | (Some(Props), Some(SetupMaybeRef))
+            | (None, Some(SetupConst))
+    )
+}
+
 /// Every natively classified binding has Croquis' kind, and in files with no
 /// unclassified pattern Croquis has no other binding except props read
 /// without a local, which belong to the props contract.
@@ -43,6 +68,7 @@ fn every_corpus_setup_binding_matches_croquis() {
     let (root, files) = corpus();
     let (mut compared, mut bindings, mut patterns) = (0usize, 0usize, 0usize);
     let mut mismatches = Vec::new();
+    let mut intentional = BTreeMap::<String, usize>::new();
     for file in &files {
         let Ok(source) = std::fs::read_to_string(file) else {
             continue;
@@ -72,11 +98,17 @@ fn every_corpus_setup_binding_matches_croquis() {
             };
             bindings += 1;
             if expected != Some(kind) {
-                mismatches.push(cstr!(
-                    "{relative}: {name} native {:?} croquis {:?}",
-                    binding.kind,
-                    oracle.get(&name)
-                ));
+                if known_vue_kind_difference(Some(kind), expected) {
+                    *intentional
+                        .entry(cstr!("{kind:?} <- {expected:?}"))
+                        .or_default() += 1;
+                } else {
+                    mismatches.push(cstr!(
+                        "{relative}: {name} native {:?} croquis {:?}",
+                        binding.kind,
+                        oracle.get(&name)
+                    ));
+                }
             }
             native.push(name);
         }
@@ -85,13 +117,20 @@ fn every_corpus_setup_binding_matches_croquis() {
             for (name, kind) in oracle.iter() {
                 let setup = croquis_kind(kind).is_some_and(|kind| kind != SetupBindingKind::Props);
                 if setup && !native.iter().any(|known| known == name) {
-                    mismatches.push(cstr!("{relative}: {name} only croquis {kind:?}"));
+                    let expected = croquis_kind(kind);
+                    if known_vue_kind_difference(None, expected) {
+                        *intentional
+                            .entry(cstr!("none <- {expected:?}"))
+                            .or_default() += 1;
+                    } else {
+                        mismatches.push(cstr!("{relative}: {name} only croquis {kind:?}"));
+                    }
                 }
             }
         }
     }
     eprintln!(
-        "compared {bindings} bindings in {compared} setup scripts ({patterns} with unclassified props)"
+        "compared {bindings} bindings in {compared} setup scripts ({patterns} with unclassified props); intentional Vue differences {intentional:?}"
     );
     assert!(compared > 1000, "corpus shrank to {compared} setup scripts");
     assert_eq!(mismatches, Vec::<String>::new());
@@ -122,9 +161,7 @@ fn kinds(script: &str) -> Option<Kinds> {
 
 #[test]
 fn binding_kinds_follow_the_compiler_rules() {
-    use SetupBindingKind::{
-        LiteralConst, Props, SetupConst, SetupLet, SetupMaybeRef, SetupReactiveConst, SetupRef,
-    };
+    use SetupBindingKind::{LiteralConst, Props, SetupConst, SetupLet, SetupMaybeRef, SetupRef};
     let script = "import { ref as r, type Ref } from 'vue'\nimport Child from './Child.vue'\n\
         import * as api from './api'\nimport type { T } from './t'\n\
         const props = withDefaults(defineProps<{ a?: number }>(), {})\nconst model = defineModel()\n\
@@ -134,16 +171,16 @@ fn binding_kinds_follow_the_compiler_rules() {
         declare enum D { B }\nconst { x, y: [z] } = useX()\nconst [v, mods] = defineModel()\n\
         let { w } = h\nconst { p } = defineProps<{ p: string }>()";
     let expected = [
-        ("r", SetupMaybeRef),
+        ("r", SetupConst),
         ("Child", SetupConst),
         ("api", SetupConst),
-        ("props", SetupReactiveConst),
+        ("props", SetupConst),
         ("model", SetupRef),
         ("emit", SetupConst),
         ("count", SetupRef),
-        ("state", SetupReactiveConst),
+        ("state", SetupLet),
         ("c", SetupMaybeRef),
-        ("d", SetupRef),
+        ("d", SetupMaybeRef),
         ("n", LiteralConst),
         ("s", LiteralConst),
         ("o", SetupConst),
@@ -152,7 +189,7 @@ fn binding_kinds_follow_the_compiler_rules() {
         ("l", SetupLet),
         ("g", SetupConst),
         ("K", SetupConst),
-        ("E", SetupConst),
+        ("E", LiteralConst),
         ("x", SetupMaybeRef),
         ("z", SetupMaybeRef),
         ("v", SetupMaybeRef),
@@ -274,7 +311,7 @@ fn props_destructure_binds_locals_like_vue() {
 }
 
 /// Patterns Vue rejects, escaped keys and a second destructure stay
-/// unclassified; a TypeScript-wrapped call is an ordinary destructure.
+/// unclassified; Vue unwraps a TypeScript-wrapped `defineProps` call.
 #[test]
 fn unsupported_props_destructures_stay_unclassified() {
     for pattern in [
@@ -301,10 +338,7 @@ fn unsupported_props_destructures_stay_unclassified() {
     );
     assert_eq!(
         kinds("const { a } = defineProps() as any"),
-        Some((
-            vec![(text("a"), SetupBindingKind::SetupMaybeRef)],
-            Vec::new()
-        ))
+        Some((vec![(text("a"), SetupBindingKind::Props)], Vec::new()))
     );
 }
 
@@ -325,8 +359,8 @@ fn croquis_reactive(source: ReactiveSource) -> vize_croquis::reactivity::Reactiv
     }
 }
 
-/// Each name's last reactive source equals Croquis' last reactivity
-/// registration, which the template lanes read as `.value` or direct reads.
+/// Every source Vue recognizes agrees with Croquis. Croquis may have extra
+/// registrations for calls Vue deliberately leaves as maybe-ref or mutable.
 #[test]
 fn every_corpus_reactive_source_matches_croquis() {
     let (root, files) = corpus();
@@ -347,7 +381,6 @@ fn every_corpus_reactive_source_matches_croquis() {
             native.push((name, binding.source.map(croquis_reactive)));
         }
         native.retain(|(_, kind)| kind.is_some());
-        native.sort_by(|a, b| a.0.cmp(&b.0));
         let tracker = vize_croquis::script_parser::parse_script_setup(&content).reactivity;
         let mut oracle: Vec<(String, Option<_>)> = Vec::new();
         for registered in tracker.sources() {
@@ -355,13 +388,19 @@ fn every_corpus_reactive_source_matches_croquis() {
             oracle.retain(|(known, _)| *known != name);
             oracle.push((name, Some(registered.kind)));
         }
-        oracle.sort_by(|a, b| a.0.cmp(&b.0));
         sources += native.len();
-        if native != oracle {
-            let relative = file.strip_prefix(&root).unwrap_or(file).display();
-            mismatches.push(cstr!(
-                "{relative}\n  native:  {native:?}\n  croquis: {oracle:?}"
-            ));
+        for (name, source) in native {
+            let expected = oracle
+                .iter()
+                .rev()
+                .find(|(known, _)| known == &name)
+                .and_then(|(_, source)| *source);
+            if source != expected {
+                let relative = file.strip_prefix(&root).unwrap_or(file).display();
+                mismatches.push(cstr!(
+                    "{relative}: {name} native {source:?} croquis {expected:?}"
+                ));
+            }
         }
     }
     eprintln!("compared {sources} reactive sources in {compared} setup scripts");
@@ -374,7 +413,7 @@ fn every_corpus_reactive_source_matches_croquis() {
 
 #[test]
 fn reactive_sources_follow_the_initializing_call() {
-    use ReactiveSource::{Model, Props, Readonly, Ref, TemplateRef, ToRefs};
+    use ReactiveSource::{Model, Props, Ref};
     let script = "import { ref as r } from 'vue'\nconst props = defineProps()\n\
         const [model, mods] = defineModel()\nconst a = r(0)\nconst b = (toRefs(props))!\n\
         const c = readonly({})\nconst d = useTemplateRef('d')\nconst e = useX()\nconst f = ref";
@@ -392,17 +431,17 @@ fn reactive_sources_follow_the_initializing_call() {
     let expected = [
         ("r", None),
         ("props", Some(Props)),
-        ("model", Some(Model)),
+        ("model", None),
         ("mods", None),
         ("a", Some(Ref)),
-        ("b", Some(ToRefs)),
-        ("c", Some(Readonly)),
-        ("d", Some(TemplateRef)),
+        ("b", None),
+        ("c", None),
+        ("d", None),
         ("e", None),
         ("f", None),
     ]
     .map(|(name, source)| (text(name), source));
     assert_eq!(sources, expected.to_vec());
-    assert!(Model.reads_value() && TemplateRef.reads_value());
-    assert!(!Props.reads_value() && !ToRefs.reads_value() && !Readonly.reads_value());
+    assert!(Model.reads_value() && Ref.reads_value());
+    assert!(!Props.reads_value());
 }

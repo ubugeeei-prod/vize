@@ -10,7 +10,13 @@ const EXPECTED: &str =
 
 #[test]
 fn original_map_and_diagnostic_cases_keep_the_complete_measured_results() {
-    let expected: Value = serde_json::from_str(EXPECTED).expect("valid immutable capture");
+    let mut expected: Value = serde_json::from_str(EXPECTED).expect("valid immutable capture");
+    support::vue_binding_kinds::advance_at(
+        &mut expected,
+        "/cases/0/compileResult/Ok/bindings/bindings",
+        &["ref"],
+    )
+    .expect("advance archived Vue import bindings");
     let actual = fixtures::observe().expect("observe original public compiler routes");
     let cases = expected["cases"].as_array().expect("captured case array");
     assert_eq!(cases.len(), fixtures::CASE_IDS.len());

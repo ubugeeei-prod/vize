@@ -99,18 +99,17 @@ const {
         .bindings
         .as_ref()
         .expect("script setup output should include bindings");
-    for name in [
-        "contactFormUrl",
-        "inquiryLabel",
-        "firstUrl",
-        "secondUrl",
-        "runtimeRest",
+    for (name, expected) in [
+        ("contactFormUrl", BindingType::SetupMaybeRef),
+        ("inquiryLabel", BindingType::SetupMaybeRef),
+        ("firstUrl", BindingType::SetupMaybeRef),
+        ("secondUrl", BindingType::SetupMaybeRef),
+        // Vue's `walkObjectPattern` knows a const rest binding cannot be a
+        // ref, even when the other destructured values may be refs.
+        ("runtimeRest", BindingType::SetupConst),
     ] {
         assert!(
-            matches!(
-                bindings.bindings.get(name),
-                Some(BindingType::SetupMaybeRef)
-            ),
+            bindings.bindings.get(name) == Some(&expected),
             "{name} should be collected from the deep destructure pattern"
         );
         assert!(
