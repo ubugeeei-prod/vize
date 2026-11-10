@@ -1,5 +1,6 @@
 //! Authenticate the complete packets behind the reviewed #10933 transition.
 
+mod constructor_noinfer_return;
 mod receipt;
 mod setup_verbatim_lines;
 mod unowned_owned_keys;
@@ -271,7 +272,7 @@ fn public_instance_slot_packets_remain_authenticated() {
         .expect("reviewed Options API slot fixture");
     assert_eq!(
         capture_fixture(fixture).render().as_str(),
-        setup_verbatim_lines::slots(unowned_successor)
+        constructor_noinfer_return::slots(setup_verbatim_lines::slots(unowned_successor))
     );
 }
 #[test]
@@ -494,7 +495,9 @@ fn public_instance_mixed_vue2_packets_remain_authenticated() {
         );
         assert_eq!(
             capture_fixture(fixture).render().as_str(),
-            setup_verbatim_lines::mixed_vue2(unowned_successor)
+            constructor_noinfer_return::mixed_vue2(setup_verbatim_lines::mixed_vue2(
+                unowned_successor
+            ))
         );
     }
 }

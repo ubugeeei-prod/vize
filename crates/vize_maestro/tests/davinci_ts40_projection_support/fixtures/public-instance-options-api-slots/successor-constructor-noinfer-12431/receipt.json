@@ -2,14 +2,14 @@
   "version": 1,
   "pullRequest": 12523,
   "predecessor": {
-    "path": "successor-instance-input-keys-11654/projection-record.txt",
+    "path": "successor-setup-verbatim-12481/projection-record.txt",
     "bytes": 2234,
-    "sha256": "f04110150222566f9a11abdebb75b477add133bae135ef0d2ce148081c7a6632"
+    "sha256": "923819eb3e06eeee954a950ad95fda48626c515f2f78e59db1511111f385b2d0"
   },
   "successor": {
     "path": "successor-constructor-noinfer-12431/projection-record.txt",
     "bytes": 2234,
-    "sha256": "3814e6d3d48b5e3d2530402a5917bff6710734e794a88f87e5e0dd32b3968314"
+    "sha256": "fbb281e17beaf89265a90e4be950dc18eb7d61fe156aba93a29407e3b5a8685e"
   },
   "delta": {
     "canonGeneratedTextBytes": 172,

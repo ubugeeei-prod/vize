@@ -22,7 +22,7 @@ const identity = (bytes: Buffer | string): Identity => ({
 });
 assert.equal(
   identity(receiptBytes).sha256,
-  "caa7512f3ae2869ef054db8d07ce2a8b7ab6c8a89fa53ba798df3e2b4ebfec72",
+  "cae3523093c62212b72e28d3b29dd580bea5305eb7388cba9c5ffe2757c52917",
 );
 const receipt = JSON.parse(receiptBytes.toString("utf8")) as {
   schema: string;
