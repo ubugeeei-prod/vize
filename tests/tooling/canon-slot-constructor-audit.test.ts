@@ -145,6 +145,35 @@ test("native helper display successors preserve the complete diagnostic and exac
   );
 });
 
+test("compact contract display successors change only the owned alias and truncation", () => {
+  const row = slotCases().find((entry) => entry.id === "missing-required"),
+    before = [
+      {
+        file: "src/Tiny.vue",
+        line: 12,
+        column: 4,
+        code: 2345,
+        message:
+          "Argument of type '{}' is not assignable to parameter of type 'ComponentPropsForTemplate<__WitnessChild_CheckProps_0, VueTemplatePublicAttrsType & { ... 677 more ...; }>'.",
+      },
+    ],
+    after = [
+      {
+        ...before[0],
+        message:
+          "Argument of type '{}' is not assignable to parameter of type 'ComponentPropsForTemplate<__VCheckProps0, VueTemplatePublicAttrsType & { ... 675 more ...; }>'.",
+      },
+    ];
+  assert.ok(row);
+  assertAuthoredNativeDiagnostics(row, before, after);
+  assert.throws(() =>
+    assertAuthoredNativeDiagnostics(row, before, [
+      { ...after[0], message: after[0]!.message.replace("675", "676") },
+    ]),
+  );
+  assert.throws(() => assertAuthoredNativeDiagnostics(row, before, [{ ...after[0], column: 5 }]));
+});
+
 test("CLI display successors require exact truncation, duplicate diagnostics and project metadata", () => {
   const row = slotCases().find((entry) => entry.id === "unknown-prop"),
     observed = observedDisplay("unknown-prop", "cli");
