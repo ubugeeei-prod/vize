@@ -257,7 +257,7 @@ const handler = () => {}
   const __vize_prop_check_0_static_prop: __Child_0_prop_static_prop = staticValue;
   void __vize_prop_check_0_static_prop;
   (undefined as unknown as __Child_Check_0)({
-    ...{} as { "onSave": never },
+    ...null! as { "onSave": never },
     "staticProp": staticValue,
   });
   type $SlotContract_0 = $StructuralSlots<typeof Child>;

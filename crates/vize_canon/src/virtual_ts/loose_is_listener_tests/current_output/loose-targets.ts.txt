@@ -407,7 +407,7 @@ const take = (value: unknown) => value
   void [
     () => {
       (undefined as unknown as __target_Check_0)({
-        ...{} as { "onPick": never },
+        ...null! as { "onPick": never },
       });
       type $SlotContract_0 = $StructuralSlots<typeof target>;
       const __vize_required_slots_0: $RequiredSlots<$SlotContract_0, {}> = {};
@@ -415,7 +415,7 @@ const take = (value: unknown) => value
     },
     () => {
       (undefined as unknown as __node_Check_1)({
-        ...{} as { "onPick": never },
+        ...null! as { "onPick": never },
       });
       type $SlotContract_1 = $StructuralSlots<typeof node>;
       const __vize_required_slots_1: $RequiredSlots<$SlotContract_1, {}> = {};
@@ -423,7 +423,7 @@ const take = (value: unknown) => value
     },
     () => {
       (undefined as unknown as __loose_Check_2)({
-        ...{} as { "onPick": never },
+        ...null! as { "onPick": never },
       });
       type $SlotContract_2 = $StructuralSlots<typeof loose>;
       const __vize_required_slots_2: $RequiredSlots<$SlotContract_2, {}> = {};
@@ -431,7 +431,7 @@ const take = (value: unknown) => value
     },
     () => {
       (undefined as unknown as __tag_Check_3)({
-        ...{} as { "onPick": never },
+        ...null! as { "onPick": never },
       });
       type $SlotContract_3 = $StructuralSlots<typeof tag>;
       const __vize_required_slots_3: $RequiredSlots<$SlotContract_3, {}> = {};
@@ -439,7 +439,7 @@ const take = (value: unknown) => value
     },
     () => {
       (undefined as unknown as ____vize_dynamic_is_230_Check_4)({
-        ...{} as { "onPick": never },
+        ...null! as { "onPick": never },
       });
       type $SlotContract_4 = $StructuralSlots<typeof __vize_dynamic_is_230>;
       const __vize_required_slots_4: $RequiredSlots<$SlotContract_4, {}> = {};

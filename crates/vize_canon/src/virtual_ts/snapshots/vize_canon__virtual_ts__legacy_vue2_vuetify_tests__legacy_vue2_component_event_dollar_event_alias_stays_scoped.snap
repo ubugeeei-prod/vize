@@ -177,7 +177,7 @@ function updateDate(newDate: string) {
   void [
     () => {
       (undefined as unknown as __VDatePicker_Check_0)({
-        ...{} as { "onInput": never },
+        ...null! as { "onInput": never },
       });
       type $SlotContract_0 = $StructuralSlots<typeof VDatePicker>;
       const __vize_required_slots_0: $RequiredSlots<$SlotContract_0, {}> = {};

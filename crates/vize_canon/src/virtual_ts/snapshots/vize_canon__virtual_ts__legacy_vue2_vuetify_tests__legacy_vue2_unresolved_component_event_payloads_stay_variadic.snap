@@ -202,8 +202,7 @@ function submitHooks(hooks: { before?: () => void; after?: () => void }) {
   void [
     () => {
       (undefined as unknown as __CalendarRange_Check_0)({
-        ...{} as { "onRangeChange": never },
-        ...{} as { "onSubmit": never },
+        ...null! as { "onRangeChange": never; "onSubmit": never },
       });
       type $SlotContract_0 = $StructuralSlots<typeof CalendarRange>;
       const __vize_required_slots_0: $RequiredSlots<$SlotContract_0, {}> = {};

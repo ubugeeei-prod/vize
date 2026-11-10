@@ -340,8 +340,7 @@ const onOpen = () => undefined
   void [
     () => {
       (undefined as unknown as __Child_Check_0)({
-        ...{} as { "onSelect": never },
-        ...{} as { "onClose": never },
+        ...null! as { "onSelect": never; "onClose": never },
       });
       type $SlotContract_0 = $StructuralSlots<typeof Child>;
       const __vize_required_slots_0: $RequiredSlots<$SlotContract_0, {}> = {};
@@ -349,8 +348,7 @@ const onOpen = () => undefined
     },
     () => {
       (undefined as unknown as __Child_Check_1)({
-        ...{} as { "onSelect": never },
-        ...{} as { "onClose": never },
+        ...null! as { "onSelect": never; "onClose": never },
       });
       type $SlotContract_1 = $StructuralSlots<typeof Child>;
       const __vize_required_slots_1: $RequiredSlots<$SlotContract_1, {}> = {};
@@ -358,8 +356,7 @@ const onOpen = () => undefined
     },
     () => {
       (undefined as unknown as __Other_Check_2)({
-        ...{} as { "onSave": never },
-        ...{} as { "onOpen": never },
+        ...null! as { "onSave": never; "onOpen": never },
       });
       type $SlotContract_2 = $StructuralSlots<typeof Other>;
       const __vize_required_slots_2: $RequiredSlots<$SlotContract_2, {}> = {};

@@ -238,7 +238,7 @@ const handler = (value: string) => value
   void [
     () => {
       (undefined as unknown as __loose_Check_0)({
-        ...{} as { "onPick": never },
+        ...null! as { "onPick": never },
       });
       type $SlotContract_0 = $StructuralSlots<typeof loose>;
       const __vize_required_slots_0: $RequiredSlots<$SlotContract_0, {}> = {};

@@ -222,7 +222,7 @@ const take = (value: string) => value
   void [
     () => {
       (undefined as unknown as __Child_Check_0)({
-        ...{} as { "onPick": never },
+        ...null! as { "onPick": never },
       });
       type $SlotContract_0 = $StructuralSlots<typeof Child>;
       const __vize_required_slots_0: $RequiredSlots<$SlotContract_0, {}> = {};

@@ -240,7 +240,7 @@ function handleUpdate(value: string) {
   const __vize_prop_check_0_label: __my_widget_0_prop_label = value;
   void __vize_prop_check_0_label;
   (undefined as unknown as __my_widget_Check_0)({
-    ...{} as { "onUpdate:modelValue": never },
+    ...null! as { "onUpdate:modelValue": never },
     "label": value,
   });
   type $SlotContract_0 = $StructuralSlots<typeof my_widget>;
