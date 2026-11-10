@@ -241,7 +241,38 @@ defineProps<{ rows: string[] }>();
   <p v-if="rows.fill('x')">filled</p>
 </template>"#;
     let result = lint_sfc(sfc);
-    assert_eq!(result.error_count, 4, "{:?}", result.diagnostics);
+    assert_eq!(
+        result
+            .diagnostics
+            .iter()
+            .map(|diagnostic| (diagnostic.start, diagnostic.end))
+            .collect::<Vec<_>>(),
+        [
+            "rows.sort()",
+            "rows.reverse()",
+            "rows.splice(0, 3)",
+            "rows.fill('x')",
+        ]
+        .map(|expression| span_for(sfc, expression))
+    );
+}
+
+#[test]
+fn ignores_copied_shadowed_and_shallow_template_mutations() {
+    let sfc = r#"<script setup lang="ts">
+defineProps<{ rows: string[]; groups: string[][] }>();
+</script>
+<template>
+  <p>{{ [...rows].sort() }}</p>
+  <p>{{ rows.slice().sort() }}</p>
+  <p>{{ groups.map(rows => rows.sort()) }}</p>
+  <MyList :items="rows.splice(0, 3)" />
+</template>"#;
+    let result = lint_sfc_with_rule(
+        sfc,
+        NoMutatingProps::new(NoMutatingPropsOptions { shallow_only: true }),
+    );
+    assert_eq!(findings(&result), none());
 }
 
 // --- The template does not mutate a prop: exactly zero findings ------------

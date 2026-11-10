@@ -348,6 +348,23 @@ export default {
 }
 
 #[test]
+fn arrow_setup_is_an_explicitly_unchecked_options_api_form() {
+    // Options callbacks are limited to ordinary functions because their
+    // lexical and receiver semantics differ from arrows. Keep that boundary
+    // visible until setup arrows have their own binding-aware walker.
+    let source = r#"<script>
+export default {
+  props: ["items"],
+  setup: (props) => { props.items = []; }
+}
+</script>"#;
+    assert_eq!(
+        packet(&configured(false).lint_sfc(source, "Probe.vue")),
+        expected("Probe.vue", vec![])
+    );
+}
+
+#[test]
 fn configured_namesake_cannot_inherit_the_private_instance_callback() {
     struct Namesake;
     impl crate::Rule for Namesake {
