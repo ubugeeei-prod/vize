@@ -97,6 +97,7 @@ fn spawn_shared_editor_project(
 impl CorsaProjectClient {
     pub(in crate::lsp_client) fn ensure_editor_transport(&mut self) -> Result<(), String> {
         if self.editor_lsp.is_some() {
+            self.configure_editor_disk_documents();
             return Ok(());
         }
         let root = self.editor_lsp_project_root();
@@ -125,8 +126,23 @@ impl CorsaProjectClient {
                 self.explicit_project_config.as_deref(),
             )?);
         }
+        self.configure_editor_disk_documents();
+        self.register_editor_lsp_interrupt();
         self.editor_lsp_documents_dirty = true;
         Ok(())
+    }
+
+    fn configure_editor_disk_documents(&mut self) {
+        // A shared editor already owns the configured on-disk project even
+        // when the outer client does not label that project as a materialized
+        // fallback. Admit exact baseline bytes from either kind of physical
+        // project; synchronize.rs promotes every changed baseline to an
+        // explicit editor overlay.
+        let prefer_disk_documents =
+            self.materialized_project_session || self.shared_editor_transport;
+        if let Some(editor) = self.editor_lsp.as_mut() {
+            self.editor_lsp_documents_dirty |= editor.prefer_disk_documents(prefer_disk_documents);
+        }
     }
 
     pub(in crate::lsp_client) fn replace_project_transport(
@@ -207,6 +223,7 @@ impl CorsaProjectClient {
             self.session = Some(session);
             self.capabilities = capabilities;
             self.editor_lsp = Some(editor);
+            self.register_editor_lsp_interrupt();
             self.project_session_attached_to_editor = true;
             self.shared_editor_transport = true;
             return Ok(true);
@@ -235,6 +252,7 @@ impl CorsaProjectClient {
                 .map_err(|error| cstr!("Cannot drain attached editor snapshot releases: {error}"));
             released.and(drained)
         });
+        self.editor_lsp_interrupt.clear();
         let editor_result = self.editor_lsp.take().map_or(Ok(()), |mut editor| {
             if discard {
                 editor.discard()

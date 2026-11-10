@@ -94,6 +94,7 @@ impl CorsaBridge {
         let config = self.config.clone();
         let initialized = Arc::clone(&self.initialized);
         let operation_epoch = Arc::clone(&self.client_operation_epoch);
+        let editor_lsp_interrupt = Arc::clone(&self.editor_lsp_interrupt);
         let (receipt, cache_len) = self
             .submit_async(move |slot| {
                 let CorsaInitialVueProject {
@@ -119,12 +120,14 @@ impl CorsaBridge {
                     return Err(CorsaBridgeError::ProcessTerminated);
                 }
                 let outcome = (|| {
-                    *slot = Some(build_initial_project_client(
+                    let mut client = build_initial_project_client(
                         &config,
                         &root,
                         &config_path,
                         &materialized_changes,
-                    )?);
+                    )?;
+                    client.bind_editor_lsp_interrupt(editor_lsp_interrupt);
+                    *slot = Some(client);
                     lease.retain();
                     if !current() || !lease.is_current() {
                         return Err(CorsaBridgeError::ProcessTerminated);

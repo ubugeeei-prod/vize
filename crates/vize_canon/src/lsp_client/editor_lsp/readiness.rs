@@ -40,6 +40,7 @@ impl EditorLspSession {
             self.query_barrier_required,
             query_document,
             &self.documents,
+            &self.disk_documents,
         );
         let readiness_uris = readiness_documents
             .iter()
@@ -74,7 +75,9 @@ impl EditorLspSession {
     }
 
     fn document_uri(&self, document_uri: &str) -> Result<Uri, String> {
-        if !self.documents.contains_key(document_uri) {
+        if !self.documents.contains_key(document_uri)
+            && !self.disk_documents.contains_key(document_uri)
+        {
             return Err(cstr!(
                 "Editor LSP virtual project does not contain {document_uri}"
             ));
@@ -84,10 +87,11 @@ impl EditorLspSession {
     }
 
     pub(super) fn has_documents(&self, documents: &DocumentTexts) -> bool {
-        self.documents.len() == documents.len()
+        self.documents.len() + self.disk_documents.len() == documents.len()
             && documents.iter().all(|(uri, text)| {
                 self.documents
                     .get(uri.as_str())
+                    .or_else(|| self.disk_documents.get(uri.as_str()))
                     .is_some_and(|current| current == text)
             })
     }
@@ -98,13 +102,20 @@ fn readiness_documents(
     query_barrier_required: bool,
     query_document: Option<&str>,
     live_documents: &DocumentTexts,
+    disk_documents: &DocumentTexts,
 ) -> Vec<String> {
     let mut documents = dirty_documents.iter().cloned().collect::<Vec<_>>();
     if query_barrier_required {
         let barrier = query_document
-            .filter(|uri| live_documents.contains_key(*uri))
+            .filter(|uri| live_documents.contains_key(*uri) || disk_documents.contains_key(*uri))
             .map(String::from)
-            .or_else(|| live_documents.keys().min().cloned());
+            .or_else(|| {
+                live_documents
+                    .keys()
+                    .chain(disk_documents.keys())
+                    .min()
+                    .cloned()
+            });
         if let Some(barrier) = barrier
             && !dirty_documents.contains(barrier.as_str())
         {
@@ -126,9 +137,16 @@ mod tests {
             "file:///workspace/a.ts".into(),
         ]);
         let live = FxHashMap::default();
+        let disk = FxHashMap::default();
 
         assert_eq!(
-            readiness_documents(&dirty, false, Some("file:///workspace/query.ts"), &live),
+            readiness_documents(
+                &dirty,
+                false,
+                Some("file:///workspace/query.ts"),
+                &live,
+                &disk,
+            ),
             ["file:///workspace/a.ts", "file:///workspace/z.ts"]
         );
     }
@@ -136,12 +154,14 @@ mod tests {
     #[test]
     fn close_requires_the_query_document_as_a_barrier() {
         let live = FxHashMap::from_iter([("file:///workspace/query.ts".into(), "".into())]);
+        let disk = FxHashMap::default();
         assert_eq!(
             readiness_documents(
                 &FxHashSet::default(),
                 true,
                 Some("file:///workspace/query.ts"),
-                &live
+                &live,
+                &disk,
             ),
             ["file:///workspace/query.ts"]
         );
@@ -153,10 +173,29 @@ mod tests {
             ("file:///workspace/z.ts".into(), "".into()),
             ("file:///workspace/a.ts".into(), "".into()),
         ]);
+        let disk = FxHashMap::default();
 
         assert_eq!(
-            readiness_documents(&FxHashSet::default(), true, None, &live),
+            readiness_documents(&FxHashSet::default(), true, None, &live, &disk),
             ["file:///workspace/a.ts"]
+        );
+    }
+
+    #[test]
+    fn disk_document_can_acknowledge_a_watched_file_generation() {
+        let live = FxHashMap::default();
+        let disk =
+            FxHashMap::from_iter([("file:///workspace/query.ts".into(), "export {};".into())]);
+
+        assert_eq!(
+            readiness_documents(
+                &FxHashSet::default(),
+                true,
+                Some("file:///workspace/query.ts"),
+                &live,
+                &disk,
+            ),
+            ["file:///workspace/query.ts"]
         );
     }
 }
