@@ -2,8 +2,8 @@
   "schema": 1,
   "consumers": [
     "$CallableProp",
+    "$ClosedEmit",
     "$ClosedEmitFactory",
-    "$ClosedEmitTarget",
     "$ComponentEvents",
     "$ComponentNavigationProps",
     "$ComponentRawProps",
@@ -109,7 +109,7 @@
         },
         {
           "path": "virtual-ts-listeners.d.ts",
-          "sha256": "bef58ac085eda768a4614b7bafa86489732f92e6375d250a442e2d9fec2bb01b"
+          "sha256": "6f55d3382aecd196390635bd92a5a79efb5ae430dc61e4974b3cef975d2e8fcf"
         },
         {
           "path": "virtual-ts-patterns.d.ts",
@@ -121,15 +121,15 @@
         },
         {
           "path": "virtual-ts.d.cts",
-          "sha256": "7044c53f02f04f1a41025dfa1374929e3092768e242e9c923284316e64e65526"
+          "sha256": "f2d7c9c5befc6f27f8d2c28e5eb2dd38c6d4fb052d4ba4f112c2d3de3df2aac5"
         },
         {
           "path": "virtual-ts.d.mts",
-          "sha256": "7044c53f02f04f1a41025dfa1374929e3092768e242e9c923284316e64e65526"
+          "sha256": "f2d7c9c5befc6f27f8d2c28e5eb2dd38c6d4fb052d4ba4f112c2d3de3df2aac5"
         },
         {
           "path": "virtual-ts.d.ts",
-          "sha256": "7044c53f02f04f1a41025dfa1374929e3092768e242e9c923284316e64e65526"
+          "sha256": "f2d7c9c5befc6f27f8d2c28e5eb2dd38c6d4fb052d4ba4f112c2d3de3df2aac5"
         }
       ]
     },
@@ -165,7 +165,7 @@
         },
         {
           "path": "virtual-ts-listeners.d.ts",
-          "sha256": "bef58ac085eda768a4614b7bafa86489732f92e6375d250a442e2d9fec2bb01b"
+          "sha256": "6f55d3382aecd196390635bd92a5a79efb5ae430dc61e4974b3cef975d2e8fcf"
         },
         {
           "path": "virtual-ts-patterns.d.ts",
@@ -177,7 +177,7 @@
         },
         {
           "path": "virtual-ts.d.ts",
-          "sha256": "7044c53f02f04f1a41025dfa1374929e3092768e242e9c923284316e64e65526"
+          "sha256": "f2d7c9c5befc6f27f8d2c28e5eb2dd38c6d4fb052d4ba4f112c2d3de3df2aac5"
         }
       ]
     },
@@ -209,7 +209,7 @@
         },
         {
           "path": "virtual-ts-listeners.d.ts",
-          "sha256": "bef58ac085eda768a4614b7bafa86489732f92e6375d250a442e2d9fec2bb01b"
+          "sha256": "6f55d3382aecd196390635bd92a5a79efb5ae430dc61e4974b3cef975d2e8fcf"
         },
         {
           "path": "virtual-ts-patterns.d.ts",
@@ -221,7 +221,7 @@
         },
         {
           "path": "virtual-ts.d.ts",
-          "sha256": "7044c53f02f04f1a41025dfa1374929e3092768e242e9c923284316e64e65526"
+          "sha256": "f2d7c9c5befc6f27f8d2c28e5eb2dd38c6d4fb052d4ba4f112c2d3de3df2aac5"
         }
       ]
     }

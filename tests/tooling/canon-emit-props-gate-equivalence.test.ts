@@ -93,10 +93,10 @@ void test("a gated emit-props call has exactly the direct call's type", () => {
 
 void test("the shared closed helpers are the standalone aliases under their SDK names", () => {
   const renamed = CLOSED_EMIT_ALIASES.replace(
-    "type __vize_emit_closed_factory<C>",
-    "type $ClosedEmitFactory<C>",
+    "type __vize_emit_closed_factory<E>",
+    "type $ClosedEmitFactory<E>",
   )
-    .replace("type __vize_emit_closed<C, A = C>", "type $ClosedEmitTarget<C, A = C>")
+    .replace("type __vize_emit_closed<C, A = C>", "type $ClosedEmit<C, A = C>")
     .trimEnd()
     .split("\n");
   assert.deepEqual(SHARED_CLOSED_EMIT.split("\n"), renamed);
@@ -117,8 +117,8 @@ void test("the oracle rejects gates that drop a props-dependent route or the fac
     [
       "library exports read as props-independent",
       GATE_ALIASES.replace(
-        "[L] extends [true] ? F : {closed_target}<C> extends true ? F : true extends",
-        "{closed_target}<C> extends true ? F : true extends",
+        "[L] extends [true] ? F : {closed}<C> extends [unknown] ? F : true extends",
+        "{closed}<C> extends [unknown] ? F : true extends",
       ),
       "library",
     ],
@@ -130,8 +130,8 @@ void test("the oracle rejects gates that drop a props-dependent route or the fac
     [
       "the closed factory drops the component's emits",
       gateAliases().replace(
-        "(props: any) => __EmitProps<C extends new (...args: any[]) => { $emit: infer E } ? E : never>",
-        "(props: any) => {}",
+        "(component: unknown) => (props: any) => __EmitProps<E>",
+        "(component: unknown) => (props: any) => {}",
       ),
       "sfc",
     ],
@@ -193,8 +193,8 @@ void test("only a single non-generic SFC skips the full factory", () => {
   const lines = [...prelude, helpers, gateAliases(), SHARED_CLOSED_EMIT];
   for (const [name, shape] of Object.entries(shapes)) {
     lines.push(
-      `type Closed_${name} = Expect<Equal<__vize_emit_closed<${shape}>, ${closed.includes(name)}>>;`,
-      `type Shared_${name} = Expect<Equal<$ClosedEmitTarget<${shape}>, ${closed.includes(name)}>>;`,
+      `type Closed_${name} = Expect<Equal<__vize_emit_closed<${shape}> extends [unknown] ? true : false, ${closed.includes(name)}>>;`,
+      `type Shared_${name} = Expect<Equal<$ClosedEmit<${shape}> extends [unknown] ? true : false, ${closed.includes(name)}>>;`,
     );
   }
   for (const exactOptionalPropertyTypes of [false, true]) {

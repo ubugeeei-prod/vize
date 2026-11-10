@@ -7,7 +7,7 @@ import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 
 export const closedEmitFactoryRecord = "tests/_fixtures/tooling/closed-emit-factory.json";
-const recordSha256 = "09a50e591040a6d05767ce7aef74f7f5e1dbe549d2796a4f3535047a6207ec76";
+const recordSha256 = "2503466c5be4ebf438a0edee3812d22953e05daa89e99a12e465dc596bd1fbce";
 
 type Identity = { bytes: number; sha256: string };
 type Entry = {

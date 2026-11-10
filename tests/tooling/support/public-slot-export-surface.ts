@@ -308,8 +308,8 @@ function withProvenClosedEmitAdditionsRemoved(
   const component = { name: "C", constraint: null, default: null };
   for (const [name, parameters] of [
     // The defaulted second parameter is the whole type the union check compares each member with.
-    ["$ClosedEmitTarget", [component, { name: "A", constraint: null, default: "C" }]],
-    ["$ClosedEmitFactory", [component]],
+    ["$ClosedEmit", [component, { name: "A", constraint: null, default: "C" }]],
+    ["$ClosedEmitFactory", [{ name: "E", constraint: null, default: null }]],
   ] as const) {
     const index = exports.findIndex((entry) => entry.name === name);
     if (expected.exports.some((entry) => entry.name === name) || index < 0) continue;

@@ -29,24 +29,25 @@ use vize_croquis::{Croquis, ScopeData};
 /// members' returns with subtype reduction, which no type alias can spell, so
 /// the cheap call also requires every member to return the identical type.
 ///
-/// `{closed_target}` selects the commonest route, a single non-generic Vize
-/// SFC, before the factory is built. That route is the factory's marked
-/// constructor member, `(component: unknown) => <A>(props: $EmitInput<…>) =>
-/// __EmitProps<$UnionEmit<C>>`, and its return never reads `A`. For one
-/// member (identical to the whole type, so no union), `$UnionEmit<C>` is the
-/// `$emit` the closed check infers, and `{closed_factory}`, `(component:
-/// unknown) => (props: any) => __EmitProps<E>`, is the same factory minus its
-/// props input. `__vize_emit_input` then returns that call unchanged: its own
-/// branches would make the same `(props: any) => R` of it, and the full
-/// factory's single signature returns the same `R` where they would not.
-/// Unions, `any`, `never`, generic resolvers, unmarked constructors and an
-/// `$emit` of `never` keep the full factory and the full gate.
-const GATE_ALIASES: &str = "type __vize_emit_native_input<C> = C extends new (...args: any[]) => any ? C extends { readonly __vizeComponentMarker: true } ? false : true : false;\n{closed_aliases}type __vize_emit_resolver<L, C> = [L] extends [true] ? (component: C) => C : {closed_target}<C> extends true ? {closed_factory}<C> : {emit_props_factory}<C>;\ntype __vize_emit_input<L, C, F, R = F extends (...args: any) => infer T ? T : any, U = R> = [L] extends [true] ? F : {closed_target}<C> extends true ? F : true extends (0 extends (1 & C) ? false : C extends { __vizeResolveEmitProps?: infer X } ? X extends (...args: any[]) => any ? true : __vize_emit_native_input<C> : C extends { __vizeResolveProps?: infer X } ? X extends (...args: any[]) => any ? true : __vize_emit_native_input<C> : __vize_emit_native_input<C>) ? F : [R] extends [never] ? F : [R extends unknown ? (<G>() => G extends R ? 1 : 2) extends <G>() => G extends U ? 1 : 2 ? true : false : false] extends [true] ? (props: any) => R : F;\n";
+/// `{closed}` selects the commonest route, a single non-generic Vize SFC,
+/// before the factory is built: it is `[E]`, with `E` that SFC's `$emit`, or
+/// `false`. That route is the factory's marked constructor member,
+/// `(component: unknown) => <A>(props: $EmitInput<…>) => __EmitProps<$UnionEmit<C>>`,
+/// and its return never reads `A`. For one member (identical to the whole
+/// type, so no union), `$UnionEmit<C>` is that `E`, and `{closed_factory}<E>`,
+/// `(component: unknown) => (props: any) => __EmitProps<E>`, is the same
+/// factory minus its props input. `__vize_emit_input` then returns that call
+/// unchanged: its own branches would make the same `(props: any) => R` of it,
+/// and the full factory's single signature returns the same `R` where they
+/// would not. Unions, `any`, `never`, generic resolvers, unmarked
+/// constructors and an `$emit` of `never` keep the full factory and the full
+/// gate.
+const GATE_ALIASES: &str = "type __vize_emit_native_input<C> = C extends new (...args: any[]) => any ? C extends { readonly __vizeComponentMarker: true } ? false : true : false;\n{closed_aliases}type __vize_emit_resolver<L, C> = [L] extends [true] ? (component: C) => C : {closed}<C> extends [infer E] ? {closed_factory}<E> : {emit_props_factory}<C>;\ntype __vize_emit_input<L, C, F, R = F extends (...args: any) => infer T ? T : any, U = R> = [L] extends [true] ? F : {closed}<C> extends [unknown] ? F : true extends (0 extends (1 & C) ? false : C extends { __vizeResolveEmitProps?: infer X } ? X extends (...args: any[]) => any ? true : __vize_emit_native_input<C> : C extends { __vizeResolveProps?: infer X } ? X extends (...args: any[]) => any ? true : __vize_emit_native_input<C> : __vize_emit_native_input<C>) ? F : [R] extends [never] ? F : [R extends unknown ? (<G>() => G extends R ? 1 : 2) extends <G>() => G extends U ? 1 : 2 ? true : false : false] extends [true] ? (props: any) => R : F;\n";
 
-/// A hoisted module names the shared `$ClosedEmitTarget`/`$ClosedEmitFactory`,
-/// instantiated once per component for the whole program. A standalone module
-/// declares the same two aliases itself.
-const CLOSED_EMIT_ALIASES: &str = "type __vize_emit_closed<C, A = C> = [C] extends [never] ? false : 0 extends (1 & C) ? false : [C extends { readonly __vizeComponentMarker: true } ? (<G>() => G extends C ? 1 : 2) extends <G>() => G extends A ? 1 : 2 ? C extends { __vizeResolveEmitProps?: infer X } ? X extends (...args: any[]) => any ? false : true : C extends { __vizeResolveProps?: infer X } ? X extends (...args: any[]) => any ? false : true : true : false : false] extends [true] ? [C extends new (...args: any[]) => { $emit: infer E } ? E : never] extends [never] ? false : true : false;\ntype __vize_emit_closed_factory<C> = (component: unknown) => (props: any) => __EmitProps<C extends new (...args: any[]) => { $emit: infer E } ? E : never>;\n";
+/// A hoisted module names the shared `$ClosedEmit`/`$ClosedEmitFactory`,
+/// instantiated once per component (and per `$emit`) for the whole program. A
+/// standalone module declares the same two aliases itself.
+const CLOSED_EMIT_ALIASES: &str = "type __vize_emit_closed<C, A = C> = [C] extends [never] ? false : 0 extends (1 & C) ? false : [C extends { readonly __vizeComponentMarker: true } ? (<G>() => G extends C ? 1 : 2) extends <G>() => G extends A ? 1 : 2 ? C extends { __vizeResolveEmitProps?: infer X } ? X extends (...args: any[]) => any ? false : true : C extends { __vizeResolveProps?: infer X } ? X extends (...args: any[]) => any ? false : true : true : false : false] extends [true] ? [C extends new (...args: any[]) => { $emit: infer E } ? E : never] extends [infer E] ? [E] extends [never] ? false : [E] : false : false;\ntype __vize_emit_closed_factory<E> = (component: unknown) => (props: any) => __EmitProps<E>;\n";
 
 /// Declares the gate aliases once per module that can reach a gated call.
 pub(crate) fn emit_gate_aliases(
@@ -60,7 +61,7 @@ pub(crate) fn emit_gate_aliases(
         return;
     }
     use crate::virtual_ts::helpers::shared_types::{
-        CLOSED_EMIT_FACTORY, CLOSED_EMIT_TARGET, EMIT_PROPS_FACTORY,
+        CLOSED_EMIT, CLOSED_EMIT_FACTORY, EMIT_PROPS_FACTORY,
     };
     ts.push_str(
         &GATE_ALIASES
@@ -72,10 +73,7 @@ pub(crate) fn emit_gate_aliases(
                     CLOSED_EMIT_ALIASES
                 },
             )
-            .replace(
-                "{closed_target}",
-                CLOSED_EMIT_TARGET.select(hoist_shared_preamble),
-            )
+            .replace("{closed}", CLOSED_EMIT.select(hoist_shared_preamble))
             .replace(
                 "{closed_factory}",
                 CLOSED_EMIT_FACTORY.select(hoist_shared_preamble),

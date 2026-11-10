@@ -80,21 +80,24 @@ export const CLOSED_EMIT_ALIASES = closedSource[1]!.replaceAll("\\n", "\n").repl
 export const gateAliases = (aliases: string = GATE_ALIASES): string =>
   aliases
     .replaceAll("{closed_aliases}", CLOSED_EMIT_ALIASES)
-    .replaceAll("{closed_target}", "__vize_emit_closed")
+    .replaceAll("{closed}", "__vize_emit_closed")
     .replaceAll("{closed_factory}", "__vize_emit_closed_factory")
     .replaceAll("{emit_props_factory}", "$EmitPropsFactory");
-/** The shared `vize:virtual-ts` closed-SFC helpers, as `component-checks` declares them. */
-export const SHARED_CLOSED_EMIT = fs
-  .readFileSync(
-    new URL(
-      "crates/vize_canon/src/virtual_ts/helpers/declarations/component-checks.d.ts.txt",
-      repo,
-    ),
-    "utf8",
+/**
+ * The shared `vize:virtual-ts` closed-SFC helpers: the check the listener
+ * module declares and the factory `component-checks` declares.
+ */
+export const SHARED_CLOSED_EMIT = ["shared-listener-args", "component-checks"]
+  .flatMap((name) =>
+    fs
+      .readFileSync(
+        new URL(`crates/vize_canon/src/virtual_ts/helpers/declarations/${name}.d.ts.txt`, repo),
+        "utf8",
+      )
+      .split("\n"),
   )
-  .split("\n")
-  .filter((line) => /^export type \$ClosedEmit(?:Target|Factory)</u.test(line))
-  .map((line) => line.replace(/^export /u, ""))
+  .filter((line) => /^\s*export type \$ClosedEmit(?:Factory)?</u.test(line))
+  .map((line) => line.replace(/^\s*export /u, ""))
   .join("\n");
 /** Gate alias text bound the way a hoisted module binds it, with the shared helpers declared beside it. */
 export const sharedGateAliases = (aliases: string = GATE_ALIASES): string =>
@@ -102,7 +105,7 @@ export const sharedGateAliases = (aliases: string = GATE_ALIASES): string =>
     SHARED_CLOSED_EMIT,
     aliases
       .replaceAll("{closed_aliases}", "")
-      .replaceAll("{closed_target}", "$ClosedEmitTarget")
+      .replaceAll("{closed}", "$ClosedEmit")
       .replaceAll("{closed_factory}", "$ClosedEmitFactory")
       .replaceAll("{emit_props_factory}", "$EmitPropsFactory"),
   ].join("\n");

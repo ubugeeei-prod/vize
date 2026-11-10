@@ -37,7 +37,7 @@ const rustString = (name: string) => {
 // A standalone module's binding: the closed-SFC check is declared beside the gate.
 const gateAliases = rustString("GATE_ALIASES")
   .replaceAll("{closed_aliases}", rustString("CLOSED_EMIT_ALIASES"))
-  .replaceAll("{closed_target}", "__vize_emit_closed")
+  .replaceAll("{closed}", "__vize_emit_closed")
   .replaceAll("{closed_factory}", "__vize_emit_closed_factory")
   .replaceAll("{emit_props_factory}", "$EmitPropsFactory");
 

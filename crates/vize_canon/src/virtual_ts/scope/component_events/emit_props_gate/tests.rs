@@ -53,7 +53,7 @@ fn a_computed_is_listener_takes_the_gated_call_in_both_modes() {
         ),
         (
             true,
-            "import(\"vize:virtual-ts\").$ClosedEmitTarget",
+            "import(\"vize:virtual-ts\").$ClosedEmit",
             "import(\"vize:virtual-ts\").$ClosedEmitFactory",
             "import(\"vize:virtual-ts\").$EmitPropsFactory<C>",
         ),
@@ -71,7 +71,7 @@ fn a_computed_is_listener_takes_the_gated_call_in_both_modes() {
         assert_eq!(
             code.matches(
                 vize_carton::cstr!(
-                    "(component: C) => C : {closed}<C> extends true ? {closed_factory}<C> : {factory};"
+                    "(component: C) => C : {closed}<C> extends [infer E] ? {closed_factory}<E> : {factory};"
                 )
                 .as_str()
             )
