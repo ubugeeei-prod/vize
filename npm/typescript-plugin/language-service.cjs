@@ -91,11 +91,13 @@ function createMappedLanguageService(ts, service, support) {
   };
   const proxy = Object.create(null);
   const recordDiagnostics = createDiagnosticRecorder();
+  const diagnosticPackets = new Map();
   for (const key of Object.keys(service))
     proxy[key] = typeof service[key] === "function" ? service[key].bind(service) : service[key];
   const get = (file) => support?.get(file);
   proxy.dispose = () => {
     recordDiagnostics?.flush();
+    diagnosticPackets.clear();
     support?.dispose?.();
     service.dispose?.();
   };
@@ -271,8 +273,14 @@ function createMappedLanguageService(ts, service, support) {
         timer.finish({ projected: false, resultCount: result.length });
         return result;
       }
-      const sourceFile = timer.measure("authoredSource", () =>
-        ts.createSourceFile(file, document.source, ts.ScriptTarget.Latest),
+      const sourceFile = timer.measure(
+        "authoredSource",
+        () =>
+          (document.authoredFile ??= ts.createSourceFile(
+            file,
+            document.source,
+            ts.ScriptTarget.Latest,
+          )),
       );
       const diagnostic = (value) => ({
         ...value,
@@ -300,25 +308,84 @@ function createMappedLanguageService(ts, service, support) {
         });
         return result;
       }
-      let applied, current;
       // Suggestions bypass directives, so they never pay for another semantic check.
-      if (method === "getSuggestionDiagnostics")
-        current = timer.measure("typescriptSuggestion", () => service[method](file));
-      else {
-        // EXPECT applies to the complete syntax+semantic set, never a per-packet subset.
-        const syntax = timer.measure("typescriptSyntactic", () =>
-          service.getSyntacticDiagnostics(file),
-        );
-        const semantic = timer.measure("typescriptSemantic", () =>
-          service.getSemanticDiagnostics(file),
-        );
-        applied = timer.measure("directives", () =>
-          support.engine.applyDiagnosticDirectives(document.projection, [...syntax, ...semantic]),
-        );
-        const channel = new Set(method === "getSyntacticDiagnostics" ? syntax : semantic);
-        current = applied.diagnostics.filter((value) => channel.has(value));
+      if (method === "getSuggestionDiagnostics") {
+        const current = timer.measure("typescriptSuggestion", () => service[method](file));
+        const result = timer.measure("mapping", () => mapDiagnostics(current, []));
+        timer.finish({
+          projected: true,
+          sourceLength: document.source.length,
+          generatedLength: document.projection.text.length,
+          resultCount: result.length,
+        });
+        return result;
       }
-      const result = timer.measure("mapping", () => {
+
+      const projectVersion = timer.measure("version", () => support?.projectVersion?.());
+      const cached = projectVersion === undefined ? undefined : diagnosticPackets.get(file);
+      if (
+        cached &&
+        cached.projectVersion === projectVersion &&
+        cached.document === document &&
+        cached.packets[method]
+      ) {
+        const result = cached.packets[method];
+        timer.finish({
+          projected: true,
+          cacheHit: true,
+          projectVersion,
+          sourceLength: document.source.length,
+          generatedLength: document.projection.text.length,
+          resultCount: result.length,
+        });
+        return result;
+      }
+
+      // EXPECT applies to the complete syntax+semantic set, never a per-packet subset.
+      const syntax = timer.measure("typescriptSyntactic", () =>
+        service.getSyntacticDiagnostics(file),
+      );
+      const semantic = timer.measure("typescriptSemantic", () =>
+        service.getSemanticDiagnostics(file),
+      );
+      const applied = timer.measure("directives", () =>
+        support.engine.applyDiagnosticDirectives(document.projection, [...syntax, ...semantic]),
+      );
+      const packets = timer.measure("mapping", () => {
+        const nativeSyntax = new Set(document.projection.diagnostics);
+        const sourceDiagnostics = applied.sourceDiagnostics ?? [];
+        const sourceSyntax = sourceDiagnostics.filter((value) => nativeSyntax.has(value));
+        const sourceSemantic = sourceDiagnostics.filter((value) => !nativeSyntax.has(value));
+        const syntaxChannel = new Set(syntax);
+        const semanticChannel = new Set(semantic);
+        return {
+          getSyntacticDiagnostics: mapDiagnostics(
+            applied.diagnostics.filter((value) => syntaxChannel.has(value)),
+            sourceSyntax,
+          ),
+          getSemanticDiagnostics: mapDiagnostics(
+            applied.diagnostics.filter((value) => semanticChannel.has(value)),
+            sourceSemantic,
+          ),
+        };
+      });
+      const completedVersion = timer.measure("completedVersion", () =>
+        support?.projectVersion?.(),
+      );
+      if (completedVersion !== undefined)
+        diagnosticPackets.set(file, { projectVersion: completedVersion, document, packets });
+      const result = packets[method];
+      timer.finish({
+        projected: true,
+        cacheHit: false,
+        projectVersion: completedVersion,
+        sourceLength: document.source.length,
+        generatedLength: document.projection.text.length,
+        resultCount: result.length,
+      });
+      return result;
+
+      function mapDiagnostics(current, authored) {
         const mapped = current.flatMap((value) => {
           const range = support.engine.mapLanguageDiagnosticRange(
             document.projection,
@@ -335,21 +402,8 @@ function createMappedLanguageService(ts, service, support) {
             result.relatedInformation = relatedInformation(value.relatedInformation);
           return [result];
         });
-        const nativeSyntax = new Set(document.projection.diagnostics);
-        const authored = (applied?.sourceDiagnostics ?? []).filter((value) =>
-          method === "getSyntacticDiagnostics"
-            ? nativeSyntax.has(value)
-            : !nativeSyntax.has(value),
-        );
         return unique([...mapped, ...authored.map(diagnostic)]);
-      });
-      timer.finish({
-        projected: true,
-        sourceLength: document.source.length,
-        generatedLength: document.projection.text.length,
-        resultCount: result.length,
-      });
-      return result;
+      }
     };
   }
   // Methods without an authored-range adapter must never expose generated
