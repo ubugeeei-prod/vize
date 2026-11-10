@@ -110,11 +110,14 @@ fn dho_real_project_matches_the_pinned_eslint_plugin_vue_twin() {
             "warning" => "Warning",
             other => panic!("unsupported baseline severity: {other}"),
         };
+        let upstream_message = row["upstreamMessage"].as_str().unwrap();
+        let patina_message = row["patinaMessage"].as_str().unwrap();
+        assert_eq!(patina_message, format!("{upstream_message} Element: <div>"));
         for _ in 0..row["count"].as_u64().unwrap() {
             expected.push((
                 row["ruleId"].as_str().unwrap().to_owned(),
                 severity.to_owned(),
-                row["patinaMessage"].as_str().unwrap().to_owned(),
+                patina_message.to_owned(),
             ));
         }
     }

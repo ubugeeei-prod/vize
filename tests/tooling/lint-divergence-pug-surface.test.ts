@@ -180,10 +180,10 @@ test("a pinned dho Pug project measures eslint-plugin-vue parity through its HTM
   });
   assert.ok(result);
   const baselineSignatures = evidence.signatures.map(
-    ({ ruleId, severity, message, patinaMessage, count }: Record<string, unknown>) => {
+    ({ ruleId, severity, upstreamMessage, patinaMessage, count }: Record<string, unknown>) => {
       assert.equal(typeof patinaMessage, "string");
-      assert.equal(patinaMessage, `${message as string} Element: <div>`);
-      return { ruleId, severity, message, count };
+      assert.equal(patinaMessage, `${upstreamMessage as string} Element: <div>`);
+      return { ruleId, severity, message: upstreamMessage, count };
     },
   );
   assert.deepEqual(signature(result.messages), baselineSignatures);
