@@ -19,14 +19,16 @@ import {
   selectToolingShard,
   toolingLeadSteps,
   toolingShardMatrix,
+  toolingShardNativeBuildRequired,
   toolingShards,
 } from "../../tools/support/compat/github/tooling-test-shards.ts";
 
-const plan = (tests, tier = "pr", leadSteps) => ({
+const plan = (tests, tier = "pr", leadSteps, nativeBuildTests) => ({
   version: 1,
   tier,
   tests,
   ...(leadSteps ? { leadSteps } : {}),
+  ...(nativeBuildTests ? { nativeBuildTests } : {}),
 });
 const allLeadSteps = TOOLING_LEAD_STEPS.map(({ id }) => id);
 
@@ -97,7 +99,7 @@ void test("timed packing uses the fewest runners within the target and bounds th
   }
 });
 
-void test("runner 1 reserves exactly the captures its matrix entry runs", () => {
+void test("runner 1 reserves capture time while preserving the exact partition", () => {
   assert.deepEqual(toolingLeadSteps("pr", {}), ["historical-sfc-documents"]);
   assert.deepEqual(toolingLeadSteps("merge", {}), allLeadSteps);
   assert.deepEqual(toolingLeadSteps("pr", { "native-ssr-capture": true }), [
@@ -118,13 +120,43 @@ void test("runner 1 reserves exactly the captures its matrix entry runs", () => 
   const files = planToolingTests(["Cargo.toml"], { tier: "merge" }).tests;
   const plain = toolingShards(plan(files, "merge"));
   const reserved = toolingShards(plan(files, "merge", allLeadSteps));
-  assert.equal(reserved.length, plain.length);
   assert.ok(reserved[0].testMs < plain[0].testMs);
   assert.deepEqual(reserved.flatMap(({ files }) => files).sort(), files);
   for (const leadSteps of [["unknown"], ["native-ssr", "native-ssr"], "native-ssr"]) {
     assert.throws(() => toolingShardMatrix(plan(files, "merge", leadSteps)), /invalid/);
     assert.throws(() => toolingTestCommand(plan(files, "merge", leadSteps), files, "1/16"));
   }
+});
+
+void test("only shards that own a native runtime consumer build the addon", () => {
+  const files = Array.from({ length: 24 }, (_, index) => `tests/tooling/${index}.test.ts`);
+  const nativeBuildTests = [files[3], files[17]];
+  const input = plan(files, "pr", undefined, nativeBuildTests);
+  const matrix = toolingShardMatrix(input).include;
+  const owners = matrix.filter(({ index, total }) =>
+    toolingShardNativeBuildRequired(input, `${index}/${total}`),
+  );
+  assert.equal(owners.length, 1);
+  assert.deepEqual(
+    owners
+      .flatMap(({ index, total }) => selectToolingShard(input, `${index}/${total}`))
+      .filter((file) => nativeBuildTests.includes(file))
+      .sort(),
+    [...nativeBuildTests].sort(),
+  );
+  const plain = plan(files);
+  const first = toolingShardMatrix(plain).include[0];
+  assert.equal(toolingShardNativeBuildRequired(plain, `${first.index}/${first.total}`), false);
+  const splitNative = files.slice(0, 7);
+  const split = plan(files, "pr", undefined, splitNative);
+  assert.equal(
+    toolingShardMatrix(split).include.filter(({ index, total }) =>
+      toolingShardNativeBuildRequired(split, `${index}/${total}`),
+    ).length,
+    2,
+  );
+  for (const invalid of [[files[0], files[0]], ["tests/tooling/other.test.ts"]])
+    assert.throws(() => toolingShardMatrix(plan(files, "pr", undefined, invalid)), /invalid/);
 });
 
 void test("invalid or incomplete shard coordinates fail closed", () => {

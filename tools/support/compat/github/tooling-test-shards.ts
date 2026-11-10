@@ -15,10 +15,10 @@ export function toolingTestFiles(cwd = fileURLToPath(new URL("../../../../", imp
 // Partition the selected PR files or the complete merge suite. Actions runners own separate
 // checkouts; every runner still executes its own files serially. Measured timings only decide
 // where a file runs and how many runners a plan needs, never whether it runs.
-export const MAX_TOOLING_SHARDS = 16;
-// PR and queue shards start after the source CLI and pay about 80s of setup
-// and native build each. A 60s PR test budget keeps the affected lane below
-// the three-minute PR target without increasing the complete merge cohort.
+export const MAX_TOOLING_SHARDS = 32;
+// PR and queue shards pay the shared checkout/setup cost, while only native
+// consumers build the addon. A 60s PR test budget keeps the affected lane
+// below the three-minute PR target without increasing the merge target.
 export const TOOLING_SHARD_TARGET_MS = Object.freeze({ pr: 60_000, merge: 100_000 });
 export const TOOLING_TIMINGS_SCHEMA = "vize-tooling-test-timings-v1";
 // The table names every tooling test, so it lives beside them.
@@ -30,10 +30,11 @@ export const TOOLING_TIMINGS_PATH = new URL(
 export const TOOLING_TIMINGS_LOG_MARKER = "vize-tooling-test-timings";
 
 type ToolingTier = "pr" | "merge";
-type ToolingShardPlan = {
+export type ToolingShardPlan = {
   tier: ToolingTier;
   tests: readonly string[];
   leadSteps?: readonly string[];
+  nativeBuildTests?: readonly string[];
 };
 export type ToolingTimings = {
   schema: typeof TOOLING_TIMINGS_SCHEMA;
@@ -132,35 +133,62 @@ export function estimateToolingTestMs(tier: ToolingTier, file: string) {
 
 function validatePlan(plan: ToolingShardPlan) {
   const lead = plan.leadSteps ?? [];
+  const nativeBuildTests = plan.nativeBuildTests ?? [];
   const known = new Set<string>(TOOLING_LEAD_STEPS.map(({ id }) => id));
   if (
     !["pr", "merge"].includes(plan.tier) ||
     !Array.isArray(plan.tests) ||
     !Array.isArray(lead) ||
+    !Array.isArray(nativeBuildTests) ||
     new Set(lead).size !== lead.length ||
-    lead.some((id) => !known.has(id))
+    lead.some((id) => !known.has(id)) ||
+    new Set(nativeBuildTests).size !== nativeBuildTests.length ||
+    nativeBuildTests.some((file) => !plan.tests.includes(file))
   ) {
     throw new Error("invalid tooling shard plan");
   }
   return lead.reduce((sum, id) => sum + toolingTimings().leadSteps[id], 0);
 }
 
-// Longest-processing-time packing: heaviest file first onto the least-loaded runner. Ties
+// Native consumers use first-fit-decreasing under the normal test budget. This keeps the
+// expensive per-shard addon build on the fewest owners without extending their test work.
+// Remaining files use longest-processing-time packing onto the least-loaded runner. Ties
 // resolve by plan order and runner index, so every runner derives the same partition.
 // Runner 1 starts with its lead steps' time; it receives files only once the others catch up.
-function pack(plan: ToolingShardPlan, total: number, leadMs: number) {
+function pack(plan: ToolingShardPlan, total: number, leadMs: number, budget: number) {
   const loads = Array.from({ length: total }, (_, index) => (index === 0 ? leadMs : 0));
+  const testLoads = Array.from({ length: total }, () => 0);
   const members: number[][] = Array.from({ length: total }, () => []);
   const order = plan.tests
     .map((file, index) => ({ index, ms: estimateToolingTestMs(plan.tier, file) }))
     .sort((left, right) => right.ms - left.ms || left.index - right.index);
-  for (const { index, ms } of order) {
+  const native = new Set(plan.nativeBuildTests ?? []);
+  const nativeOwners: number[] = [];
+  const assign = ({ index, ms }: (typeof order)[number], target: number) => {
+    testLoads[target] += ms;
+    loads[target] += ms;
+    members[target].push(index);
+  };
+  for (const item of order.filter(({ index }) => native.has(plan.tests[index]))) {
+    const existing = nativeOwners.find((shard) => testLoads[shard] + item.ms <= budget);
+    if (existing !== undefined) {
+      assign(item, existing);
+      continue;
+    }
+    const available = loads
+      .map((load, shard) => ({ load, shard }))
+      .filter(({ shard }) => !nativeOwners.includes(shard))
+      .sort((left, right) => left.load - right.load || left.shard - right.shard)[0]?.shard;
+    const target = available ?? nativeOwners[0] ?? 0;
+    nativeOwners.push(target);
+    assign(item, target);
+  }
+  for (const item of order.filter(({ index }) => !native.has(plan.tests[index]))) {
     let target = 0;
     for (let shard = 1; shard < total; shard += 1) {
       if (loads[shard] < loads[target]) target = shard;
     }
-    loads[target] += ms;
-    members[target].push(index);
+    assign(item, target);
   }
   return members.map((indexes, shard) => ({
     files: indexes.sort((left, right) => left - right).map((index) => plan.tests[index]),
@@ -190,7 +218,7 @@ export function toolingShards(plan: ToolingShardPlan) {
     TOOLING_SHARD_TARGET_MS[plan.tier],
   );
   for (let total = 1; ; total += 1) {
-    const shards = pack(plan, total, leadMs);
+    const shards = pack(plan, total, leadMs, budget);
     if (total === limit || shards.every(({ testMs }) => testMs <= budget)) {
       assertExactPartition(plan, shards);
       return shards;
@@ -240,4 +268,9 @@ export function selectToolingShard(plan: ToolingShardPlan, shard: unknown = "") 
     throw new Error("expected a complete tooling shard index/count from the planned matrix");
   }
   return shards[index - 1].files;
+}
+
+export function toolingShardNativeBuildRequired(plan: ToolingShardPlan, shard: unknown = "") {
+  const selected = new Set(selectToolingShard(plan, shard));
+  return (plan.nativeBuildTests ?? []).some((file) => selected.has(file));
 }

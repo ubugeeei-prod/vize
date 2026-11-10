@@ -235,6 +235,13 @@ export const SHARED_HELPER_IMPORTERS = 10;
 export const dedicatedPrToolingTests = [
   "tests/tooling/content-mapper-instance-globals-10617.test.ts",
 ];
+const localNativeRuntimeImport =
+  /(?:\b(?:from\s*|import\s*(?:\(\s*)?|require\s*\(\s*)["'][^"']*npm\/native\/index\.js["']|\.artifacts\/native\/)/u;
+const workspaceNativePackageImport =
+  /\b(?:from\s*|import\s*(?:\(\s*)?|require\s*\(\s*)["']@vizejs\/native["']/u;
+// This contract calls the build coordinator with a fully controlled runner;
+// it validates commands without consuming the real workspace addon/artifacts.
+const nativeBuildExemptTests = new Set(["tests/tooling/native-smoke-workflow.test.ts"]);
 const topLevelOnly = (reference) => !reference.replace(/\/[*/]*$/, "").includes("/");
 
 export function planToolingTests(
@@ -310,10 +317,28 @@ export function planToolingTests(
     const sources = imports.files.map(references);
     return product.paths.some((path) => readsProse(path, sources));
   });
+  // The native addon is expensive to rebuild in every isolated worker. Keep
+  // the default fail-closed task for full T1, while the PR tier builds it only
+  // in shards whose discovered local import closure names the runtime entry.
+  const nativeBuildTests =
+    tier === "pr"
+      ? tests.filter((file) => {
+          if (nativeBuildExemptTests.has(file)) return false;
+          const imports = closures.get(file);
+          return imports?.files.some((input) => {
+            const source = readFileSync(join(cwd, input), "utf8");
+            return (
+              localNativeRuntimeImport.test(source) ||
+              (!input.startsWith("tests/tooling/") && workspaceNativePackageImport.test(source))
+            );
+          });
+        })
+      : [];
   return {
     version: 1,
     tier,
     tests,
+    nativeBuildTests,
     totalTests: files.length,
     deferredTests: tier === "merge" ? 0 : files.filter((file) => mergeOnly.has(file)).length,
     dedicatedTests: tier === "merge" ? 0 : files.filter((file) => dedicated.has(file)).length,
