@@ -166,6 +166,7 @@ test("github/build-napi-package builds Apple targets with cargo and writes the e
       fs.readFileSync(commandArgsPath, "utf8"),
       [
         "build",
+        "--locked",
         "--release",
         "--manifest-path",
         "../../crates/vize_vitrine/Cargo.toml",

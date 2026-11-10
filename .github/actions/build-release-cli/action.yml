@@ -91,7 +91,7 @@ runs:
         CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER: aarch64-linux-gnu-gcc
         RELEASE_TARGET: ${{ inputs.target }}
         VIZE_RELEASE_VERSION: ${{ inputs.release-version }}
-      run: cargo build --release -p vize --target "$RELEASE_TARGET"
+      run: cargo build --locked --release -p vize --target "$RELEASE_TARGET"
     - name: Create archive (Unix)
       if: runner.os != 'Windows'
       shell: bash
