@@ -150,22 +150,45 @@ function validatePlan(plan: ToolingShardPlan) {
   return lead.reduce((sum, id) => sum + toolingTimings().leadSteps[id], 0);
 }
 
-// Longest-processing-time packing: heaviest file first onto the least-loaded runner. Ties
+// Native consumers use first-fit-decreasing under the normal test budget. This keeps the
+// expensive per-shard addon build on the fewest owners without extending their test work.
+// Remaining files use longest-processing-time packing onto the least-loaded runner. Ties
 // resolve by plan order and runner index, so every runner derives the same partition.
 // Runner 1 starts with its lead steps' time; it receives files only once the others catch up.
-function pack(plan: ToolingShardPlan, total: number, leadMs: number) {
+function pack(plan: ToolingShardPlan, total: number, leadMs: number, budget: number) {
   const loads = Array.from({ length: total }, (_, index) => (index === 0 ? leadMs : 0));
+  const testLoads = Array.from({ length: total }, () => 0);
   const members: number[][] = Array.from({ length: total }, () => []);
   const order = plan.tests
     .map((file, index) => ({ index, ms: estimateToolingTestMs(plan.tier, file) }))
     .sort((left, right) => right.ms - left.ms || left.index - right.index);
-  for (const { index, ms } of order) {
+  const native = new Set(plan.nativeBuildTests ?? []);
+  const nativeOwners: number[] = [];
+  const assign = ({ index, ms }: (typeof order)[number], target: number) => {
+    testLoads[target] += ms;
+    loads[target] += ms;
+    members[target].push(index);
+  };
+  for (const item of order.filter(({ index }) => native.has(plan.tests[index]))) {
+    const existing = nativeOwners.find((shard) => testLoads[shard] + item.ms <= budget);
+    if (existing !== undefined) {
+      assign(item, existing);
+      continue;
+    }
+    const available = loads
+      .map((load, shard) => ({ load, shard }))
+      .filter(({ shard }) => !nativeOwners.includes(shard))
+      .sort((left, right) => left.load - right.load || left.shard - right.shard)[0]?.shard;
+    const target = available ?? nativeOwners[0] ?? 0;
+    nativeOwners.push(target);
+    assign(item, target);
+  }
+  for (const item of order.filter(({ index }) => !native.has(plan.tests[index]))) {
     let target = 0;
     for (let shard = 1; shard < total; shard += 1) {
       if (loads[shard] < loads[target]) target = shard;
     }
-    loads[target] += ms;
-    members[target].push(index);
+    assign(item, target);
   }
   return members.map((indexes, shard) => ({
     files: indexes.sort((left, right) => left - right).map((index) => plan.tests[index]),
@@ -195,7 +218,7 @@ export function toolingShards(plan: ToolingShardPlan) {
     TOOLING_SHARD_TARGET_MS[plan.tier],
   );
   for (let total = 1; ; total += 1) {
-    const shards = pack(plan, total, leadMs);
+    const shards = pack(plan, total, leadMs, budget);
     if (total === limit || shards.every(({ testMs }) => testMs <= budget)) {
       assertExactPartition(plan, shards);
       return shards;

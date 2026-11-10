@@ -136,7 +136,7 @@ void test("only shards that own a native runtime consumer build the addon", () =
   const owners = matrix.filter(({ index, total }) =>
     toolingShardNativeBuildRequired(input, `${index}/${total}`),
   );
-  assert.ok(owners.length >= 1 && owners.length <= nativeBuildTests.length);
+  assert.equal(owners.length, 1);
   assert.deepEqual(
     owners
       .flatMap(({ index, total }) => selectToolingShard(input, `${index}/${total}`))
@@ -147,6 +147,14 @@ void test("only shards that own a native runtime consumer build the addon", () =
   const plain = plan(files);
   const first = toolingShardMatrix(plain).include[0];
   assert.equal(toolingShardNativeBuildRequired(plain, `${first.index}/${first.total}`), false);
+  const splitNative = files.slice(0, 7);
+  const split = plan(files, "pr", undefined, splitNative);
+  assert.equal(
+    toolingShardMatrix(split).include.filter(({ index, total }) =>
+      toolingShardNativeBuildRequired(split, `${index}/${total}`),
+    ).length,
+    2,
+  );
   for (const invalid of [[files[0], files[0]], ["tests/tooling/other.test.ts"]])
     assert.throws(() => toolingShardMatrix(plan(files, "pr", undefined, invalid)), /invalid/);
 });
