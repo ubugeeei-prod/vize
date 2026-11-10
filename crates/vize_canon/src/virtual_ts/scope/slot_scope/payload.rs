@@ -1,5 +1,8 @@
 use vize_croquis::{Croquis, Scope, ScopeData, analysis::ComponentUsage};
 
+use super::{SlotPayloadContext, SlotTypes};
+use crate::virtual_ts::expressions::{constructor_instance, generate_slot_constructor_capture};
+
 /// The resolver lives at module scope so the same host type is used for
 /// named and dynamic slot scopes, including functional components.
 /// An unknown host must retain a regular payload fallback: inventing `any`
@@ -47,14 +50,48 @@ pub(crate) fn emit_slot_payload_helpers(
 /// Whether this unbound slot still writes its usage's constructor-instance
 /// pair, which the usage's props type reads.
 fn captures_root_constructor(summary: &Croquis, scope: &Scope, component: &str) -> bool {
-    find_slot_host(summary, scope, component).is_some_and(|usage| {
-        crate::virtual_ts::expressions::constructor_instance::root_slot_scope(
-            &summary.scopes,
-            &usage,
-            false,
-        )
+    find_slot_host(summary, scope, component)
+        .is_some_and(|usage| is_root_constructor_slot(summary, scope, &usage))
+}
+
+/// Whether `scope` is the slot whose host writes `usage`'s constructor-instance
+/// pair: the one the usage's props type reads.
+fn is_root_constructor_slot(summary: &Croquis, scope: &Scope, usage: &ComponentUsage) -> bool {
+    constructor_instance::root_slot_scope(&summary.scopes, usage, false)
         .is_some_and(|root| root.id == scope.id)
-    })
+}
+
+/// The payload of an unbound slot (`<template #label>`): nothing. Its
+/// parameter is the synthetic `__vize_slot_props_N`, which nothing reads, so
+/// the host inference over the child's constructor and slots factory would only
+/// cost time. The props pass already skips it (#11432). The one statement
+/// another check reads is the root usage's constructor-instance pair, which its
+/// props type takes the actual constructor result from; keep exactly that.
+pub(super) fn unread_slot_types(
+    ts: &mut crate::virtual_ts::TextBuf,
+    ctx: &SlotPayloadContext<'_>,
+    scope: &Scope,
+    host: Option<&ComponentUsage>,
+    binding: &str,
+    component_ref: &str,
+) -> SlotTypes {
+    if let Some(usage) = host
+        && is_root_constructor_slot(ctx.summary, scope, usage)
+    {
+        generate_slot_constructor_capture(
+            ts,
+            usage,
+            binding,
+            component_ref,
+            ctx.template_binding_access,
+            ctx.indent,
+            (ctx.source_context, ctx.hoist_shared_preamble),
+        );
+    }
+    SlotTypes {
+        payload: "unknown".into(),
+        member: "unknown".into(),
+    }
 }
 
 /// The component usage that hosts this `v-slot` scope.
