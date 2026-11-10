@@ -97,7 +97,10 @@ test("CLI, LSP, mapper and syntax-only commands delegate without selecting a sta
   try {
     for (const command of ["check", "lsp", "content-mapper", "lint", "fmt", "--version"]) {
       assert.deepEqual(f.run([command]), {
-        args: command === "content-mapper" ? [command, "--initialized"] : [command],
+        args:
+          command === "content-mapper"
+            ? [command, "--initialized", "--reply-when-ready"]
+            : [command],
         environment: Object.fromEntries(environmentNames.map((name) => [name, null])),
       });
     }
@@ -257,7 +260,10 @@ test(
       );
       assert.deepEqual(await run.reply(), {
         id: 2,
-        result: { args: ["content-mapper", "--initialized"], method: "openProject" },
+        result: {
+          args: ["content-mapper", "--initialized", "--reply-when-ready"],
+          method: "openProject",
+        },
       });
       assert.ok(performance.now() - started >= ADDON_LOAD_MS);
       run.child.stdin.end();

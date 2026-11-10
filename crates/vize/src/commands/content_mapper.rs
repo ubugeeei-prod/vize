@@ -29,13 +29,22 @@ pub struct ContentMapperArgs {
     /// covers that load (#12530).
     #[arg(long, hide = true)]
     initialized: bool,
+    /// Write each reply once it is ready instead of in request order. The
+    /// TypeScript hosts pair replies by id, so their launcher asks for this.
+    #[arg(long, hide = true)]
+    reply_when_ready: bool,
 }
 
 pub fn run(args: ContentMapperArgs) {
     let stdin = io::stdin();
     let mut reader = BufReader::new(stdin.lock());
     let mut writer = BufWriter::new(io::stdout());
-    if let Err(error) = dispatch::serve(&mut reader, &mut writer, args.initialized) {
+    let order = if args.reply_when_ready {
+        dispatch::ReplyOrder::Ready
+    } else {
+        dispatch::ReplyOrder::Request
+    };
+    if let Err(error) = dispatch::serve(&mut reader, &mut writer, args.initialized, order) {
         eprintln!("vize content-mapper: {error}");
         std::process::exit(1);
     }
@@ -69,7 +78,7 @@ struct TransformParams {
 
 #[cfg(test)]
 fn serve<R: BufRead, W: io::Write + Send>(reader: &mut R, writer: &mut W) -> io::Result<()> {
-    dispatch::serve(reader, writer, false)
+    dispatch::serve(reader, writer, false, dispatch::ReplyOrder::Request)
 }
 
 fn read_frame<R: BufRead>(reader: &mut R) -> io::Result<Option<Vec<u8>>> {

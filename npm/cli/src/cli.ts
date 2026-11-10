@@ -29,7 +29,7 @@ try {
     // Reply before the addon loads; the host's `initialize` wait is fixed (#12530).
     if (answerContentMapperInitialize()) {
       const native = require("@vizejs/native") as typeof import("@vizejs/native");
-      native.runCli([...args, "--initialized"]);
+      native.runCli([...args, "--initialized", "--reply-when-ready"]);
     }
   } else {
     assertMatchingNativeVersion();

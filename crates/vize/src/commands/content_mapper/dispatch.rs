@@ -1,11 +1,11 @@
-//! Overlapped content-mapper transforms. Responses stay in request order.
+//! Overlapped content-mapper transforms. Replies go out in request order, or
+//! as each one is ready when the TypeScript launcher asks for that.
 
-use std::collections::BTreeMap;
 use std::io::{self, BufRead, Write};
 use std::panic::{AssertUnwindSafe, catch_unwind};
 use std::path::Path;
 use std::sync::mpsc::{self, Receiver, Sender};
-use std::sync::{Condvar, Mutex, PoisonError};
+use std::sync::{Mutex, PoisonError};
 use std::thread;
 use std::time::{Duration, Instant};
 
@@ -21,7 +21,10 @@ use super::project::{
 };
 use super::{InitializeParams, Request, TransformParams, read_frame};
 
+mod replies;
 mod wire;
+pub(super) use replies::ReplyOrder;
+use replies::{WriteProgress, write_replies};
 #[cfg(all(test, target_os = "linux", target_pointer_width = "64"))]
 use wire::encode_frame;
 #[cfg(test)]
@@ -82,61 +85,13 @@ struct TransformJob {
     settings: ProjectSettings,
 }
 
-struct WriteProgress {
-    state: Mutex<WriteState>,
-    ready: Condvar,
-}
-
-struct WriteState {
-    flushed: u64,
-    failed: bool,
-}
-
-impl WriteProgress {
-    fn new() -> Self {
-        Self {
-            state: Mutex::new(WriteState {
-                flushed: 0,
-                failed: false,
-            }),
-            ready: Condvar::new(),
-        }
-    }
-
-    fn record(&self, flushed: u64) {
-        let mut state = self.state.lock().unwrap_or_else(PoisonError::into_inner);
-        state.flushed = flushed;
-        self.ready.notify_all();
-    }
-
-    fn fail(&self) {
-        let mut state = self.state.lock().unwrap_or_else(PoisonError::into_inner);
-        state.failed = true;
-        self.ready.notify_all();
-    }
-
-    fn wait_until(&self, flushed: u64) -> io::Result<()> {
-        let mut state = self.state.lock().unwrap_or_else(PoisonError::into_inner);
-        while state.flushed < flushed && !state.failed {
-            state = self
-                .ready
-                .wait(state)
-                .unwrap_or_else(PoisonError::into_inner);
-        }
-        if state.failed && state.flushed < flushed {
-            Err(io::Error::other("content-mapper writer stopped"))
-        } else {
-            Ok(())
-        }
-    }
-}
-
 /// Serve the protocol. `initialized` means the launcher already answered
 /// `initialize`, so project and transform requests are accepted at once.
 pub(super) fn serve<R: BufRead, W: Write + Send>(
     reader: &mut R,
     writer: &mut W,
     initialized: bool,
+    order: ReplyOrder,
 ) -> io::Result<()> {
     let workers = thread::available_parallelism()
         .map(std::num::NonZero::get)
@@ -147,6 +102,7 @@ pub(super) fn serve<R: BufRead, W: Write + Send>(
         thread::Builder::new(),
         std::iter::repeat_n(TRANSFORM_WORKER_STACK_BYTES, workers),
         initialized,
+        order,
     )
     .map(|_| ())
 }
@@ -177,7 +133,14 @@ fn serve_with_worker_plan<R: BufRead, W: Write + Send>(
     writer_builder: thread::Builder,
     worker_stacks: impl ExactSizeIterator<Item = usize>,
 ) -> io::Result<WorkerPoolReceipt> {
-    serve_with_plan(reader, writer, writer_builder, worker_stacks, false)
+    serve_with_plan(
+        reader,
+        writer,
+        writer_builder,
+        worker_stacks,
+        false,
+        ReplyOrder::Request,
+    )
 }
 
 fn serve_with_plan<R: BufRead, W: Write + Send>(
@@ -186,6 +149,7 @@ fn serve_with_plan<R: BufRead, W: Write + Send>(
     writer_builder: thread::Builder,
     worker_stacks: impl ExactSizeIterator<Item = usize>,
     initialized: bool,
+    order: ReplyOrder,
 ) -> io::Result<WorkerPoolReceipt> {
     let write_error = Mutex::new(None::<io::Error>);
     let progress = WriteProgress::new();
@@ -202,7 +166,7 @@ fn serve_with_plan<R: BufRead, W: Write + Send>(
         let writer_error = &write_error;
         let writer_progress = &progress;
         writer_builder.spawn_scoped(scope, move || {
-            if let Err(error) = write_ordered(writer, done_rx, writer_progress) {
+            if let Err(error) = write_replies(writer, done_rx, writer_progress, order) {
                 writer_progress.fail();
                 *writer_error.lock().unwrap_or_else(PoisonError::into_inner) = Some(error);
             }
@@ -283,25 +247,6 @@ fn worker(
     }
 }
 
-fn write_ordered<W: Write>(
-    writer: &mut W,
-    done: Receiver<(u64, Vec<u8>)>,
-    progress: &WriteProgress,
-) -> io::Result<()> {
-    let mut next = 0_u64;
-    let mut pending = BTreeMap::<u64, Vec<u8>>::new();
-    while let Ok((seq, bytes)) = done.recv() {
-        pending.insert(seq, bytes);
-        while let Some(frame) = pending.remove(&next) {
-            writer.write_all(&frame)?;
-            writer.flush()?;
-            next += 1;
-            progress.record(next);
-        }
-    }
-    Ok(())
-}
-
 fn read_loop<R: BufRead>(
     reader: &mut R,
     jobs: &Sender<TransformJob>,
@@ -313,7 +258,7 @@ fn read_loop<R: BufRead>(
     let mut projects = ProjectRegistry::default();
     let mut seq = 0_u64;
     loop {
-        // Return admission credit only after the ordered reply is flushed.
+        // Admission credit returns once a reply is flushed.
         progress.wait_until(seq.saturating_sub(inflight_limit.get() as u64 - 1))?;
         let Some(body) = read_frame(reader)? else {
             break;
