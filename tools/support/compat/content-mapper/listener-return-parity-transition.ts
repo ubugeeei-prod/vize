@@ -53,3 +53,17 @@ export function beforeListenerReturnParity(path: string, current: string): strin
   assert.deepEqual(identity(current), file.before, `listener return parity predecessor: ${path}`);
   return current;
 }
+
+const sharedListenerArgs =
+  "crates/vize_canon/src/virtual_ts/helpers/declarations/shared-listener-args.d.ts.txt";
+
+/** Advance a composed helper preamble across the synthesized-return parity layer. */
+export function applyListenerReturnParityIn(previous: string): string {
+  const file = load().files.find((entry) => entry.path === sharedListenerArgs);
+  assert.ok(file, "listener return parity asset");
+  for (const hunk of file.hunks) {
+    assert.equal(previous.split(hunk.before).length, 2, "listener return parity predecessor lines");
+    previous = previous.replace(hunk.before, () => hunk.after);
+  }
+  return previous;
+}

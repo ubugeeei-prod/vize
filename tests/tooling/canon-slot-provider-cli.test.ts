@@ -51,6 +51,7 @@ import {
   beforePropValueOrIn,
 } from "../../tools/support/compat/content-mapper/prop-value-or-transition.ts";
 import { applyListenerContractIn } from "../../tools/support/compat/content-mapper/listener-contract-transition.ts";
+import { applyListenerReturnParityIn } from "../../tools/support/compat/content-mapper/listener-return-parity-transition.ts";
 import {
   applySharedTemplateRefUnwrapIn,
   beforeSharedTemplateRefUnwrapIn,
@@ -182,8 +183,9 @@ test("quiet CLI debug output retains exact helper/file bytes and refuses unrelat
   assert.equal(beforePropValueOrIn(propValueOrSourcePreamble), ownedSourcePreamble);
   assert.throws(() => applyPropValueOrIn(propValueOrSourcePreamble), /PropValueOr/u);
   const listenerSourcePreamble = applyListenerContractIn(propValueOrSourcePreamble);
-  const currentSourcePreamble = applySharedTemplateRefUnwrapIn(listenerSourcePreamble);
-  assert.equal(beforeSharedTemplateRefUnwrapIn(currentSourcePreamble), listenerSourcePreamble);
+  const paritySourcePreamble = applyListenerReturnParityIn(listenerSourcePreamble);
+  const currentSourcePreamble = applySharedTemplateRefUnwrapIn(paritySourcePreamble);
+  assert.equal(beforeSharedTemplateRefUnwrapIn(currentSourcePreamble), paritySourcePreamble);
   const canonPredecessor = [...canonLeftoverPreamblePaths]
     .reverse()
     .reduce((current, file) => beforeCanonLeftoversIn(file, current), canonSourcePreamble);

@@ -22,6 +22,7 @@ import { applyInstanceInputKeysIn } from "../../support/compat/content-mapper/in
 import { applyUnownedOwnedKeysIn } from "../../support/compat/content-mapper/unowned-owned-keys-transition.ts";
 import { applyPropValueOrIn } from "../../support/compat/content-mapper/prop-value-or-transition.ts";
 import { applyListenerContractIn } from "../../support/compat/content-mapper/listener-contract-transition.ts";
+import { applyListenerReturnParityIn } from "../../support/compat/content-mapper/listener-return-parity-transition.ts";
 import { applySharedTemplateRefUnwrapIn } from "../../support/compat/content-mapper/shared-template-ref-unwrap-transition.ts";
 
 export const canonLeftoverPreamblePaths = [
@@ -78,16 +79,18 @@ export function slotCliPacket(
     applySourceOwnedPreambleTransitions(applyPreviousOverloadPreamble(text)),
   );
   const currentPreamble = applySharedTemplateRefUnwrapIn(
-    applyListenerContractIn(
-      applyPropValueOrIn(
-        applyUnownedOwnedKeysIn(
-          applyInstanceInputKeysIn(
-            applyCanonLeftoverPreamble(
-              applyEmitMemberInferIn(
-                applyStrictExtraKeysIn(
-                  applyDiscriminatedJsxUnionIn(
-                    applyIntegratedSourcePreambleTransitions(
-                      applyCurrentOverloadPreamble(certifiedPreamble),
+    applyListenerReturnParityIn(
+      applyListenerContractIn(
+        applyPropValueOrIn(
+          applyUnownedOwnedKeysIn(
+            applyInstanceInputKeysIn(
+              applyCanonLeftoverPreamble(
+                applyEmitMemberInferIn(
+                  applyStrictExtraKeysIn(
+                    applyDiscriminatedJsxUnionIn(
+                      applyIntegratedSourcePreambleTransitions(
+                        applyCurrentOverloadPreamble(certifiedPreamble),
+                      ),
                     ),
                   ),
                 ),
