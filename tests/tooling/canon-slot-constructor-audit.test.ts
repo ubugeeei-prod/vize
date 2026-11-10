@@ -11,6 +11,7 @@ import { slotCases } from "../../tools/benchmarks/scripts/canon-slot-constructor
 import {
   assertAuthoredNativeDiagnostics,
   assertCliDiagnosticContract,
+  compactContractCliDisplaySuccessor,
 } from "../../tools/benchmarks/scripts/canon-slot-constructor-display.ts";
 import { authoredMappings } from "../../tools/benchmarks/scripts/canon-slot-constructor-real-project.ts";
 import {
@@ -178,10 +179,11 @@ test("CLI display successors require exact truncation, duplicate diagnostics and
   const row = slotCases().find((entry) => entry.id === "unknown-prop"),
     observed = observedDisplay("unknown-prop", "cli");
   assert.ok(row);
-  assertCliDiagnosticContract(row, observed.base, observed.head);
   assert.ok(isRecord(observed.head) && isRecord(observed.head.result));
-  const candidate = observed.head;
-  const originalResult = observed.head.result;
+  const candidate = compactContractCliDisplaySuccessor(observed.head);
+  assert.ok(isRecord(candidate) && isRecord(candidate.result));
+  assertCliDiagnosticContract(row, observed.base, candidate);
+  const originalResult = candidate.result;
   for (const result of [
     { ...originalResult, errorCount: 0 },
     { ...originalResult, programs: [] },
@@ -189,7 +191,7 @@ test("CLI display successors require exact truncation, duplicate diagnostics and
   ])
     assert.throws(() => assertCliDiagnosticContract(row, observed.base, { ...candidate, result }));
   const withoutExactTruncation = JSON.parse(
-    JSON.stringify(candidate).replaceAll("676 more", "677 more"),
+    JSON.stringify(candidate).replaceAll("674 more", "675 more"),
   );
   assert.throws(() => assertCliDiagnosticContract(row, observed.base, withoutExactTruncation));
   assert.throws(() => assertCliDiagnosticContract(row, {}, candidate));
