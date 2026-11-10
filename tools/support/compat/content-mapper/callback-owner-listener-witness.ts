@@ -21,7 +21,7 @@ function witnessLines(text: string): WitnessLine[] {
   return [...text.matchAll(witnessLinePattern)].map((match) => {
     assert.ok(match.index != null);
     const keyValue: unknown = JSON.parse(match[2]);
-    assert.equal(typeof keyValue, "string", "listener witness keys are string literals");
+    assert.ok(typeof keyValue === "string", "listener witness keys are string literals");
     const lineEnd = match.index + match[0].length;
     assert.equal(text[lineEnd], "\n", "listener witness lines retain their newline");
     return {
