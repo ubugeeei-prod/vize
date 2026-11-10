@@ -105,7 +105,8 @@ pub(super) fn append_guarded_factory(
 ) {
     append!(
         *ts,
-        "{indent}// @ts-ignore Inference-only factory; called before the guard below.\n{indent}const __vize_emit_factory_{usage_idx} = (undefined as unknown as __vize_emit_resolver<{library}, typeof {component_ref}>)({component_ref});\n",
+        // Inference-only factory; called before the guard below.
+        "{indent}// @ts-ignore\n{indent}const __vize_emit_factory_{usage_idx} = (undefined as unknown as __vize_emit_resolver<{library}, typeof {component_ref}>)({component_ref});\n",
     );
 }
 

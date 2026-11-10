@@ -61,9 +61,8 @@ pub(super) fn observe(root: &Path, source: &str, capture: Option<&Path>) -> Obse
     let child = std::fs::read_to_string(mirror.join("Declared.vue.ts")).unwrap();
     let config = std::fs::read_to_string(mirror.join("tsconfig.json")).unwrap();
     let construct = "\n  void Declared;\n  const { } = undefined as unknown as $ComponentNavigationProps<__Declared_Props_0>;\n";
-    let tag_start = source.find("<Declared").unwrap();
-    let tag_end = tag_start + source[tag_start..].find('>').unwrap() + 1;
-    let mapping = format!("// @vize-map: component -> {tag_start}:{tag_end}\n");
+    // The usage's props alias witnesses the `<Declared>` tag the construct reads.
+    let usage = "\n  type __Declared_Props_0 = ";
     let cursor = generated
         .find(construct)
         .map(|start| start + "\n  void Declared;\n  const { ".len());
@@ -72,7 +71,7 @@ pub(super) fn observe(root: &Path, source: &str, capture: Option<&Path>) -> Obse
         "generated":[{"path":path,"source":generated,"sha256":source_digest(&generated)},
             {"path":mirror.join("Declared.vue.ts"),"source":child,"sha256":source_digest(&child)},
             {"path":mirror.join("tsconfig.json"),"source":config,"sha256":source_digest(&config)}],
-        "mapping":mapping,"construct":construct,"byteCursor":cursor
+        "usage":usage,"construct":construct,"byteCursor":cursor
     });
     if let Some(capture) = capture {
         let name = format!("data-aria-mirror-{}.json", source_digest(source));
@@ -83,9 +82,9 @@ pub(super) fn observe(root: &Path, source: &str, capture: Option<&Path>) -> Obse
         .unwrap();
     }
     assert_eq!(generated.matches(construct).count(), 1, "{receipt:#}");
-    assert_eq!(generated.matches(&mapping).count(), 1, "{receipt:#}");
+    assert_eq!(generated.matches(usage).count(), 1, "{receipt:#}");
     let cursor = cursor.unwrap();
-    assert!(generated.find(&mapping).unwrap() < cursor);
+    assert!(generated.find(usage).unwrap() < cursor);
     // No observed completion item supplies these expected paths or positions.
     Observed {
         path,

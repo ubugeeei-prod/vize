@@ -146,7 +146,7 @@ const emit = defineEmits<Emits>()
   void props;
   ;(function __template() {
     // Vue template context (delegates to ComponentPublicInstance)
-    // @ts-ignore TS2694/TS2307: a `vue` without `ComponentPublicInstance` must degrade template context extras to unchecked, never error.
+    // @ts-ignore
     type __Ctx = import('vue').ComponentPublicInstance;
     const __ctx = (void 0) as unknown as __Ctx;
     const $attrs = __ctx.$attrs;
@@ -167,14 +167,12 @@ const emit = defineEmits<Emits>()
   const __vize_native_key_53: Partial<$NativeElement<"button">> = { "disabled": undefined as never };
   void __vize_native_key_53;
   void (props.title); // Interpolation
-  // @vize-map: expr -> 276:287
   const __vize_native_prop_check_63: $NativeElementProp<$NativeElement<"button">, "disabled"> = (props.disabled);
   void __vize_native_prop_check_63; // VBind
 
   // @click handler
   void (() => {
     emit('submit');  // handler expression
-    // @vize-map: handler -> 343:357
   });
 
   // Reference setup bindings (used in template/CSS v-bind)

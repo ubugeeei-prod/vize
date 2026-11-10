@@ -173,7 +173,7 @@ watch(count, (newVal) => {
     var count: __U<__R_count> = (void 0) as any;
     var doubled: __U<__R_doubled> = (void 0) as any;
     // Vue template context (delegates to ComponentPublicInstance)
-    // @ts-ignore TS2694/TS2307: a `vue` without `ComponentPublicInstance` must degrade template context extras to unchecked, never error.
+    // @ts-ignore
     type __Ctx = import('vue').ComponentPublicInstance;
     const __ctx = (void 0) as unknown as __Ctx;
     const $attrs = __ctx.$attrs;
@@ -194,17 +194,13 @@ watch(count, (newVal) => {
   const __vize_native_key_8: Partial<$NativeElement<"div">> = { "class": undefined as never };
   void __vize_native_key_8;
   void (props.title); // Interpolation
-  // @vize-map: expr -> 582:593
   void (count); // Interpolation
-  // @vize-map: expr -> 619:624
   void (doubled); // Interpolation
-  // @vize-map: expr -> 651:658
 
   // @click handler
   void ((__vize_event: PointerEvent) => {
     const __vize_handler_10_140 = ((__vize_cb: ((_e: PointerEvent) => unknown) | null | undefined) => __vize_cb)((increment));
     if (__vize_handler_10_140) __vize_handler_10_140(__vize_event);  // handler expression
-    // @vize-map: handler -> 686:695
   });
 
   // Reference setup bindings (used in template/CSS v-bind)

@@ -1,0 +1,95 @@
+{
+  "schema": "vize.experimental-router-generated-comment-bytes-transition.v1",
+  "qualificationCredit": false,
+  "sourceReceipt": {
+    "path": "tests/_fixtures/tooling/generated-comment-bytes.json",
+    "sha256": "e425764aa73ab79ec2ad1a1551b65ddffa1d6482362da414e28f4fd065574d7d"
+  },
+  "certifier": "tools/support/compat/content-mapper/generated-comment-bytes-cut.ts",
+  "entries": [
+    {
+      "variant": "lf",
+      "kind": "valid",
+      "previous": {
+        "file": "lf.valid.constructor-noinfer.virtual.ts.txt",
+        "sha256": "c14f740be89a81f924f2fbf4ae0c9fee72471b938b8c9e9bf7f456269c755930",
+        "bytes": 15418
+      },
+      "current": {
+        "file": "lf.valid.generated-comment-bytes.virtual.ts.txt",
+        "sha256": "c3ec88c174b62f4fcc8d0d9c73d944cc73a69e1a7088d52cec77201a5b1132fe",
+        "bytes": 15233
+      }
+    },
+    {
+      "variant": "lf",
+      "kind": "invalid",
+      "previous": {
+        "file": "lf.invalid.constructor-noinfer.virtual.ts.txt",
+        "sha256": "e0f10f666d61671786357e3185830ba52cdbf823006badefa502eb55ccc47e58",
+        "bytes": 15422
+      },
+      "current": {
+        "file": "lf.invalid.generated-comment-bytes.virtual.ts.txt",
+        "sha256": "176fed0fce44a544dadaf0ebc2d7a2f8f2e716387e52eff658d6ac7904e209d4",
+        "bytes": 15237
+      }
+    },
+    {
+      "variant": "crlf",
+      "kind": "valid",
+      "previous": {
+        "file": "crlf.valid.constructor-noinfer.virtual.ts.txt",
+        "sha256": "41972ceb0a81f1df5268fbe244a8d5f1e2d248c3784e60152be658adac2e6344",
+        "bytes": 15418
+      },
+      "current": {
+        "file": "crlf.valid.generated-comment-bytes.virtual.ts.txt",
+        "sha256": "8fa734c693e98c6ebe2dec4a9593a2ad9e2077f37eae570bf9d14be440906618",
+        "bytes": 15233
+      }
+    },
+    {
+      "variant": "crlf",
+      "kind": "invalid",
+      "previous": {
+        "file": "crlf.invalid.constructor-noinfer.virtual.ts.txt",
+        "sha256": "df4ea4734f25b6c8a8a096bdbe860cf608b38cfceca0b8da7976755ba70030e1",
+        "bytes": 15422
+      },
+      "current": {
+        "file": "crlf.invalid.generated-comment-bytes.virtual.ts.txt",
+        "sha256": "0035fc09846ec817229d874504e79e56d7cc802dae3a1de309314c05b535f412",
+        "bytes": 15237
+      }
+    },
+    {
+      "variant": "explicit",
+      "kind": "valid",
+      "previous": {
+        "file": "explicit.valid.constructor-noinfer.virtual.ts.txt",
+        "sha256": "3d88148387581d1483df17913a6920e4b18ccd61d19afa7f958e69f3082b95c3",
+        "bytes": 15346
+      },
+      "current": {
+        "file": "explicit.valid.generated-comment-bytes.virtual.ts.txt",
+        "sha256": "2734d2e38e2b621d7748048ec64af965036fc75257a93e47dd2c213ab0b56cce",
+        "bytes": 15161
+      }
+    },
+    {
+      "variant": "explicit",
+      "kind": "invalid",
+      "previous": {
+        "file": "explicit.invalid.constructor-noinfer.virtual.ts.txt",
+        "sha256": "3d88148387581d1483df17913a6920e4b18ccd61d19afa7f958e69f3082b95c3",
+        "bytes": 15346
+      },
+      "current": {
+        "file": "explicit.invalid.generated-comment-bytes.virtual.ts.txt",
+        "sha256": "2734d2e38e2b621d7748048ec64af965036fc75257a93e47dd2c213ab0b56cce",
+        "bytes": 15161
+      }
+    }
+  ]
+}

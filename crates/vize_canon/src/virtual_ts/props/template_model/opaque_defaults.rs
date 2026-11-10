@@ -65,7 +65,8 @@ pub(super) fn generate_opaque_defaults_capture(
     );
     // An invalid argument is reported once, on the authored call.
     ts.push_str(
-        "  // @ts-ignore TS2345: the authored withDefaults call reports an invalid argument.\n",
+        // TS2345: the authored withDefaults call reports an invalid argument.
+        "  // @ts-ignore\n",
     );
     append!(
         *ts,

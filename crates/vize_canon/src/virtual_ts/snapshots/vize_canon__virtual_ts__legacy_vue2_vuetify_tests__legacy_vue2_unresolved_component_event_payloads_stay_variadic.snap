@@ -132,7 +132,6 @@ function submitHooks(hooks: { before?: () => void; after?: () => void }) {
     const __vize_event = (__vize_args as unknown[])[0] as __CalendarRange_9_range_change_event; void __vize_event;
     const __vize_handler_9_30: __CalendarRange_9_range_change_listener | null | undefined = (updateRange);
     if (__vize_handler_9_30) __vize_handler_9_30(...__vize_args);  // handler expression
-    // @vize-map: handler -> 30:41
   });
 
   // @submit handler
@@ -147,7 +146,6 @@ function submitHooks(hooks: { before?: () => void; after?: () => void }) {
     const __vize_event = (__vize_args as unknown[])[0] as __CalendarRange_10_submit_event; void __vize_event;
     const __vize_handler_10_52: __CalendarRange_10_submit_listener | null | undefined = (submitHooks);
     if (__vize_handler_10_52) __vize_handler_10_52(...__vize_args);  // handler expression
-    // @vize-map: handler -> 52:63
   });
 
   // Component props type declarations
@@ -187,7 +185,6 @@ function submitHooks(hooks: { before?: () => void; after?: () => void }) {
   type $RequiredSlotKeys<__S> = { [__K in keyof __S]-?: undefined extends __S[__K] ? never : __K }[keyof __S];
   type $MissingRequiredSlots<__S, __P> = Exclude<$RequiredSlotKeys<__S>, keyof __P>;
   type $RequiredSlots<__S, __P> = $IsAny<__S> extends true ? {} : string extends keyof __S ? {} : [keyof __S] extends [never] ? {} : [$MissingRequiredSlots<__S, __P>] extends [never] ? {} : { readonly __vizeMissingSlots: $MissingRequiredSlots<__S, __P> };
-  // @vize-map: component -> 0:67
   type __CalendarRange_Props_0 = typeof CalendarRange extends { __vizeCheck: infer __F } ? ($IsAny<__F> extends true ? $ComponentRawProps<typeof CalendarRange> : Record<string, unknown>) : $ComponentRawProps<typeof CalendarRange>;
   type __CalendarRange_Component_0 = typeof CalendarRange;
   type __CalendarRange_CheckProps_0 = __CalendarRange_Props_0 & $EmitListeners<__CalendarRange_Component_0> & ($FallthroughProps<__CalendarRange_Component_0> extends infer __F ? [__F extends unknown ? {} extends __F ? never : __F : never] extends [never] ? $RequiredFallthroughProps<__CalendarRange_Component_0, __F, never> : $RequiredFallthroughProps<__CalendarRange_Component_0, __F> : never);

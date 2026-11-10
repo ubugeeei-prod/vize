@@ -145,7 +145,7 @@ function handleClick() {
   // ========== Template Scope (inherits from setup) ==========
   ;(function __template() {
     // Vue template context (delegates to ComponentPublicInstance)
-    // @ts-ignore TS2694/TS2307: a `vue` without `ComponentPublicInstance` must degrade template context extras to unchecked, never error.
+    // @ts-ignore
     type __Ctx = import('vue').ComponentPublicInstance;
     const __ctx = (void 0) as unknown as __Ctx;
     const $attrs = __ctx.$attrs;
@@ -159,13 +159,11 @@ function handleClick() {
   void ((__vize_event: PointerEvent) => {
     const __vize_handler_7_19 = ((__vize_cb: ((_e: PointerEvent) => unknown) | null | undefined) => __vize_cb)((handleClick));
     if (__vize_handler_7_19) __vize_handler_7_19(__vize_event);  // handler expression
-    // @vize-map: handler -> 227:238
   });
 
   // @click handler
   void (() => {
     emit('close');  // handler expression
-    // @vize-map: handler -> 274:287
   });
 
   // Reference setup bindings (used in template/CSS v-bind)

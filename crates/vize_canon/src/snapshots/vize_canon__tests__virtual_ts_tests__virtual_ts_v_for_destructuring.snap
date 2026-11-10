@@ -150,7 +150,7 @@ const items = ref<Item[]>([])
     type __U<T> = T extends { value: unknown } ? T extends import('vue').Ref ? $WidenTemplateRef<T['value']> : T : T;
     var items: __U<__R_items> = (void 0) as any;
     // Vue template context (delegates to ComponentPublicInstance)
-    // @ts-ignore TS2694/TS2307: a `vue` without `ComponentPublicInstance` must degrade template context extras to unchecked, never error.
+    // @ts-ignore
     type __Ctx = import('vue').ComponentPublicInstance;
     const __ctx = (void 0) as unknown as __Ctx;
     const $attrs = __ctx.$attrs;
@@ -171,9 +171,7 @@ const items = ref<Item[]>([])
     const __vize_native_prop_check_52: $NativeElementProp<$NativeElement<"li">, "key"> = (id);
     void __vize_native_prop_check_52; // VBind
     void (id); // Interpolation
-    // @vize-map: expr -> 217:219
     void (name); // Interpolation
-    // @vize-map: expr -> 227:231
   }
   }
 

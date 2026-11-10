@@ -146,7 +146,7 @@ const message = ref('Hello');
     type __U<T> = T extends { value: unknown } ? T extends import('vue').Ref ? $WidenTemplateRef<T['value']> : T : T;
     var message: __U<__R_message> = (void 0) as any;
     // Vue template context (delegates to ComponentPublicInstance)
-    // @ts-ignore TS2694/TS2307: a `vue` without `ComponentPublicInstance` must degrade template context extras to unchecked, never error.
+    // @ts-ignore
     type __Ctx = import('vue').ComponentPublicInstance;
     const __ctx = (void 0) as unknown as __Ctx;
     const $attrs = __ctx.$attrs;
@@ -163,9 +163,7 @@ const message = ref('Hello');
   void count;
 
   void (props.count); // Interpolation
-  // @vize-map: expr -> 136:147
   void (message); // Interpolation
-  // @vize-map: expr -> 156:163
 
   // Reference setup bindings (used in template/CSS v-bind)
   void count; void message; void props;

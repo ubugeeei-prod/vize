@@ -139,7 +139,7 @@ const x = 1
   // ========== Template Scope (inherits from setup) ==========
   ;(function __template() {
     // Vue template context (delegates to ComponentPublicInstance)
-    // @ts-ignore TS2694/TS2307: a `vue` without `ComponentPublicInstance` must degrade template context extras to unchecked, never error.
+    // @ts-ignore
     type __Ctx = import('vue').ComponentPublicInstance;
     const __ctx = (void 0) as unknown as __Ctx;
     const $attrs = __ctx.$attrs;
@@ -149,7 +149,6 @@ const x = 1
     void __ctx; void $attrs; void $slots; void $refs; void $emit;
 
   void (x); // Interpolation
-  // @vize-map: expr -> 117:118
 
   // Reference setup bindings (used in template/CSS v-bind)
   void x;

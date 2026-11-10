@@ -146,7 +146,7 @@ const message = ref('')
     var message: __U<__R_message> = (void 0) as any;
     var status: __U<__R_status> = (void 0) as any;
     // Vue template context (delegates to ComponentPublicInstance)
-    // @ts-ignore TS2694/TS2307: a `vue` without `ComponentPublicInstance` must degrade template context extras to unchecked, never error.
+    // @ts-ignore
     type __Ctx = import('vue').ComponentPublicInstance;
     const __ctx = (void 0) as unknown as __Ctx;
     const $attrs = __ctx.$attrs;
@@ -156,11 +156,8 @@ const message = ref('')
     void __ctx; void $attrs; void $slots; void $refs; void $emit;
 
   if (status === 'loading') {
-    // @vize-map: expr -> 19:39
   } else if (status === 'error') {
-    // @vize-map: expr -> 73:91
     void (message); // Interpolation
-    // @vize-map: expr -> 96:103
   }
 
   // Reference setup bindings (used in template/CSS v-bind)

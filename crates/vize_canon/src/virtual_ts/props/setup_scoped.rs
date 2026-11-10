@@ -81,7 +81,8 @@ pub(super) fn unused_generic_comment(
     if uses_every_generic {
         ""
     } else {
-        "// @ts-ignore TS6196: SFC generic may be used by emits or slots.\n"
+        // TS6196: SFC generic may be used by emits or slots.
+        "// @ts-ignore\n"
     }
 }
 
@@ -96,22 +97,22 @@ mod tests {
     fn suppresses_only_props_aliases_that_omit_sfc_generics() {
         assert_eq!(
             unused_generic_comment(Some("T"), "ImportedProps"),
-            "// @ts-ignore TS6196: SFC generic may be used by emits or slots.\n"
+            "// @ts-ignore\n"
         );
         assert_eq!(unused_generic_comment(Some("T"), "LocalProps<T>"), "");
         assert_eq!(
             unused_generic_comment(Some("T, U"), "LocalProps<T>"),
-            "// @ts-ignore TS6196: SFC generic may be used by emits or slots.\n"
+            "// @ts-ignore\n"
         );
         assert_eq!(unused_generic_comment(Some("T, U"), "LocalProps<T, U>"), "");
         assert_eq!(
             unused_generic_comment(Some("T"), r#"{ T: string; kind: "T" }"#),
-            "// @ts-ignore TS6196: SFC generic may be used by emits or slots.\n"
+            "// @ts-ignore\n"
         );
         assert_eq!(unused_generic_comment(Some("T"), "{ value: T }"), "");
         assert_eq!(
             unused_generic_comment(Some("T"), "SomeTTProps"),
-            "// @ts-ignore TS6196: SFC generic may be used by emits or slots.\n"
+            "// @ts-ignore\n"
         );
     }
 }

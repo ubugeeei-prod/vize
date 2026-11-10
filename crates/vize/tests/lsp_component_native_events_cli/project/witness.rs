@@ -113,15 +113,16 @@ pub(crate) fn observe(root: &Path, mut record: impl FnMut(Value)) -> Witness {
     assert_eq!(source.matches(tag).count(), 1);
     let source_start = source.find(tag).unwrap();
     let source_end = source_start + tag.len();
-    let mapping = format!("// @vize-map: component -> {source_start}:{source_end}\n");
-    assert_eq!(app.matches(&mapping).count(), 1);
+    // The usage's props alias witnesses the one `<MySwitch>` tag.
+    let usage = "\n  type __MySwitch_Props_0 = ";
+    assert_eq!(app.matches(usage).count(), 1);
     assert_eq!(app.matches(COMPONENT_NAVIGATION_HELPER).count(), 1);
     assert_eq!(app.matches(SLOT_NAVIGATION_PRELUDE).count(), 0);
     assert_eq!(helpers.matches(SHARED_SLOT_NAVIGATION_PRELUDE).count(), 1);
     let construct = "\n  void MySwitch;\n  const { } = undefined as unknown as $ComponentNavigationProps<__MySwitch_Props_0>;\n";
     assert_eq!(app.matches(construct).count(), 1);
     let cursor = app.find(construct).unwrap() + "\n  void MySwitch;\n  const { ".len();
-    assert!(app.find(&mapping).unwrap() < cursor);
+    assert!(app.find(usage).unwrap() < cursor);
     // Native completion data uses a TypeScript UTF-16 file offset. Derive it
     // from this fixture's complete generated binding pattern, never its result.
     let query_position = app[..cursor].encode_utf16().count();

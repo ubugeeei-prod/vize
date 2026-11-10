@@ -80,7 +80,8 @@ pub(super) fn generate_event_handler_expressions(
                     let guard = isolated.as_str();
                     append!(
                         *ts,
-                        "{indent}// @ts-ignore Inference-only guard; authored v-if checks own diagnostics.\n{indent}if (!({guard})) throw 0;\n",
+                        // Inference-only guard; authored v-if checks own diagnostics.
+                        "{indent}// @ts-ignore\n{indent}if (!({guard})) throw 0;\n",
                         indent = ctx.indent,
                     );
                 } else {
@@ -289,11 +290,6 @@ pub(super) fn generate_event_handler_expressions(
                     "{handler_indent}void ({capture}); // Listener capture liveness\n"
                 );
             }
-            append!(
-                *ts,
-                "{indent}// @vize-map: handler -> {src_start}:{src_end}\n",
-                indent = handler_indent,
-            );
             if guard.is_some() && !early_exit_guard {
                 append!(*ts, "{indent}}}\n", indent = ctx.indent);
             }

@@ -137,7 +137,7 @@ defineProps<Props>()
   // ========== Template Scope (inherits from setup) ==========
   ;(function __template() {
     // Vue template context (delegates to ComponentPublicInstance)
-    // @ts-ignore TS2694/TS2307: a `vue` without `ComponentPublicInstance` must degrade template context extras to unchecked, never error.
+    // @ts-ignore
     type __Ctx = import('vue').ComponentPublicInstance;
     const __ctx = (void 0) as unknown as __Ctx;
     const $attrs = __ctx.$attrs;
@@ -164,23 +164,19 @@ defineProps<Props>()
   void width;
 
   void (isMini); // Interpolation
-  // @vize-map: expr -> 8:14
   void (hideDetails); // Interpolation
-  // @vize-map: expr -> 21:32
   void (chips); // Interpolation
-  // @vize-map: expr -> 39:44
   void (width); // Interpolation
-  // @vize-map: expr -> 51:56
 
   // Undefined references from template:
   void (__vize_keyed_template_context.isMini);
-  // @vize-map: 18012:18018 -> 8:14
+  // @vize-map: 17772:17778 -> 8:14
   void (__vize_keyed_template_context.hideDetails);
-  // @vize-map: 18095:18106 -> 21:32
+  // @vize-map: 17855:17866 -> 21:32
   void (__vize_keyed_template_context.chips);
-  // @vize-map: 18184:18189 -> 39:44
+  // @vize-map: 17944:17949 -> 39:44
   void (__vize_keyed_template_context.width);
-  // @vize-map: 18267:18272 -> 51:56
+  // @vize-map: 18027:18032 -> 51:56
 
   // Reference setup bindings (used in template/CSS v-bind)
   void mini;
@@ -351,13 +347,9 @@ defineProps<Props>()
   void width;
 
   void (isMini); // Interpolation
-  // @vize-map: expr -> 8:14
   void (hideDetails); // Interpolation
-  // @vize-map: expr -> 21:32
   void (chips); // Interpolation
-  // @vize-map: expr -> 39:44
   void (width); // Interpolation
-  // @vize-map: expr -> 51:56
 
   // Reference setup bindings (used in template/CSS v-bind)
   void mini;

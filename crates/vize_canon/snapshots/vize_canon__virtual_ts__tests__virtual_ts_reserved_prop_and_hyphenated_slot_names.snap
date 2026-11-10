@@ -171,7 +171,7 @@ defineProps<{
   // ========== Template Scope (inherits from setup) ==========
   ;(function __template() {
     // Vue template context (delegates to ComponentPublicInstance)
-    // @ts-ignore TS2694/TS2307: a `vue` without `ComponentPublicInstance` must degrade template context extras to unchecked, never error.
+    // @ts-ignore
     type __Ctx = import('vue').ComponentPublicInstance;
     const __ctx = (void 0) as unknown as __Ctx;
     const $attrs = __ctx.$attrs;
@@ -188,10 +188,9 @@ defineProps<{
   void _class;
 
   void (props["class"]); // VBind
-  // @vize-map: expr -> 20:25
 
   // v-slot scope: #area-gradient
-  // @ts-ignore Inference-only constructor; authored props checks own diagnostics.
+  // @ts-ignore
   const __vize_slot_host_7_instances = (undefined as unknown as <__Z, __P>(withoutArguments: __Z, withArguments: __P) => { readonly withoutArguments: __Z; readonly withArguments: __P })(new (undefined as unknown as $SlotConstructorWithoutArguments<$SlotConstructor<typeof TrendChart>>)(), new (undefined as unknown as $SlotConstructorWithArguments<$SlotConstructor<typeof TrendChart>>)({
     "class": props["class"],
   }, ...([] as unknown as $SlotConstructorArgs<$SlotConstructor<typeof TrendChart>>)));
@@ -202,7 +201,6 @@ defineProps<{
   void function _slot_area_gradient_7({ id }: $SlotPayload<typeof __vize_slot_host_7, "area-gradient", typeof TrendChart>) {
     void id;
     void (id); // Interpolation
-    // @vize-map: expr -> 72:74
   };
 
   // Component props type declarations
@@ -239,7 +237,6 @@ defineProps<{
   type $RequiredSlotKeys<__S> = { [__K in keyof __S]-?: undefined extends __S[__K] ? never : __K }[keyof __S];
   type $MissingRequiredSlots<__S, __P> = Exclude<$RequiredSlotKeys<__S>, keyof __P>;
   type $RequiredSlots<__S, __P> = $IsAny<__S> extends true ? {} : string extends keyof __S ? {} : [keyof __S] extends [never] ? {} : [$MissingRequiredSlots<__S, __P>] extends [never] ? {} : { readonly __vizeMissingSlots: $MissingRequiredSlots<__S, __P> };
-  // @vize-map: component -> 0:27
   type __TrendChart_Props_0 = typeof TrendChart extends { __vizeCheck: infer __F } ? ($IsAny<__F> extends true ? typeof TrendChart extends { readonly __vizeComponentMarker: true } ? $ComponentRawProps<typeof TrendChart> : 0 extends (1 & (typeof __vize_slot_host_7_instances.withArguments extends { $props: unknown } ? typeof __vize_slot_host_7_instances.withArguments : typeof __vize_slot_host_7_instances.withoutArguments)) ? $ComponentRawProps<typeof TrendChart> : (typeof __vize_slot_host_7_instances.withArguments extends { $props: unknown } ? typeof __vize_slot_host_7_instances.withArguments : typeof __vize_slot_host_7_instances.withoutArguments) extends { $props: infer __P } ? unknown extends __P ? Record<string, unknown> : __P : $ComponentRawProps<typeof TrendChart> : Record<string, unknown>) : typeof TrendChart extends { readonly __vizeComponentMarker: true } ? $ComponentRawProps<typeof TrendChart> : 0 extends (1 & (typeof __vize_slot_host_7_instances.withArguments extends { $props: unknown } ? typeof __vize_slot_host_7_instances.withArguments : typeof __vize_slot_host_7_instances.withoutArguments)) ? $ComponentRawProps<typeof TrendChart> : (typeof __vize_slot_host_7_instances.withArguments extends { $props: unknown } ? typeof __vize_slot_host_7_instances.withArguments : typeof __vize_slot_host_7_instances.withoutArguments) extends { $props: infer __P } ? unknown extends __P ? Record<string, unknown> : __P : $ComponentRawProps<typeof TrendChart>;
   type __TrendChart_Component_0 = typeof TrendChart;
   type __TrendChart_CheckProps_0 = __TrendChart_Props_0 & $EmitListeners<__TrendChart_Component_0> & ($FallthroughProps<__TrendChart_Component_0> extends infer __F ? [__F extends unknown ? {} extends __F ? never : __F : never] extends [never] ? $RequiredFallthroughProps<__TrendChart_Component_0, __F, never> : $RequiredFallthroughProps<__TrendChart_Component_0, __F> : never);
@@ -259,7 +256,6 @@ defineProps<{
   void __vize_slot_nav_0_0;
 
   // Component props value checks (template scope)
-  // @vize-map: prop -> 12:26
   const __vize_prop_check_0_class: __TrendChart_0_prop_class = props["class"];
   void __vize_prop_check_0_class;
   (undefined as unknown as __TrendChart_Check_0)({

@@ -81,3 +81,8 @@ is byte-identical; mapping, diagnostic and authored-hit counts are unchanged.
 lines are copied verbatim instead of being indented by two spaces. Canon, the
 content mapper and Maestro each shrink by the 10 removed indentation bytes;
 mapping, diagnostic and authored-hit counts are unchanged.
+
+`successor-generated-comment-bytes-12621` records #12621: generated TS drops
+its debug-only `@vize-map` lines and the reasons after generated `@ts-ignore`.
+Canon shrinks by 69 removed comment bytes, the content mapper and Maestro by
+190; mapping, diagnostic and authored-hit counts are unchanged.

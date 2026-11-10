@@ -135,7 +135,7 @@ const key = "a" as "a" | "b";
   // ========== Template Scope (inherits from setup) ==========
   ;(function __template() {
     // Vue template context (delegates to ComponentPublicInstance)
-    // @ts-ignore TS2694/TS2307: a `vue` without `ComponentPublicInstance` must degrade template context extras to unchecked, never error.
+    // @ts-ignore
     type __Ctx = import('vue').ComponentPublicInstance;
     const __ctx = (void 0) as unknown as __Ctx;
     const $attrs = __ctx.$attrs;
@@ -147,7 +147,6 @@ const key = "a" as "a" | "b";
   const __vize_native_key_64: Partial<$NativeElement<"button">> = { "key": undefined as never };
   void __vize_native_key_64;
   if ((key === 'b')) {
-    // @vize-map: expr -> 11:22
 
     // v-for scope: value in elems[key]
     {
@@ -157,7 +156,6 @@ const key = "a" as "a" | "b";
       const __vize_native_prop_check_69: $NativeElementProp<$NativeElement<"button">, "key"> = (value);
       void __vize_native_prop_check_69; // VBind
       void (value); // Interpolation
-      // @vize-map: expr -> 79:84
     }
     }
   }

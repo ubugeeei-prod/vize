@@ -139,7 +139,7 @@ const width = 320
   // ========== Template Scope (inherits from setup) ==========
   ;(function __template() {
     // Vue template context (delegates to ComponentPublicInstance)
-    // @ts-ignore TS2694/TS2307: a `vue` without `ComponentPublicInstance` must degrade template context extras to unchecked, never error.
+    // @ts-ignore
     type __Ctx = import('vue').ComponentPublicInstance;
     const __ctx = (void 0) as unknown as __Ctx;
     const $attrs = __ctx.$attrs;
@@ -149,7 +149,6 @@ const width = 320
     void __ctx; void $attrs; void $slots; void $refs; void $emit;
 
   void (width); // VBind
-  // @vize-map: expr -> 21:26
 
   // Component props type declarations
   type $IsAny<T> = 0 extends (1 & T) ? true : false;
@@ -185,7 +184,6 @@ const width = 320
   type $RequiredSlotKeys<__S> = { [__K in keyof __S]-?: undefined extends __S[__K] ? never : __K }[keyof __S];
   type $MissingRequiredSlots<__S, __P> = Exclude<$RequiredSlotKeys<__S>, keyof __P>;
   type $RequiredSlots<__S, __P> = $IsAny<__S> extends true ? {} : string extends keyof __S ? {} : [keyof __S] extends [never] ? {} : [$MissingRequiredSlots<__S, __P>] extends [never] ? {} : { readonly __vizeMissingSlots: $MissingRequiredSlots<__S, __P> };
-  // @vize-map: component -> 0:30
   type __VDatePicker_Props_0 = typeof VDatePicker extends { __vizeCheck: infer __F } ? ($IsAny<__F> extends true ? $ComponentRawProps<typeof VDatePicker> : Record<string, unknown>) : $ComponentRawProps<typeof VDatePicker>;
   type __VDatePicker_Component_0 = typeof VDatePicker;
   type __VDatePicker_CheckProps_0 = __VDatePicker_Props_0 & $EmitListeners<__VDatePicker_Component_0> & ($FallthroughProps<__VDatePicker_Component_0> extends infer __F ? [__F extends unknown ? {} extends __F ? never : __F : never] extends [never] ? $RequiredFallthroughProps<__VDatePicker_Component_0, __F, never> : $RequiredFallthroughProps<__VDatePicker_Component_0, __F> : never);
@@ -202,7 +200,6 @@ const width = 320
   void __vize_props_nav_0.width;
 
   // Component props value checks (template scope)
-  // @vize-map: prop -> 13:27
   const __vize_prop_check_0_width: __VDatePicker_0_prop_width = width;
   void __vize_prop_check_0_width;
   (undefined as unknown as __VDatePicker_Check_0)({
@@ -371,7 +368,6 @@ const width = 320
     void $listeners;void $children;void $scopedSlots;void $on;void $off;void $once;void $set;void $delete;void $createElement;void _c;
 
   void (width); // VBind
-  // @vize-map: expr -> 21:26
 
   // Component props type declarations
   type $IsAny<T> = 0 extends (1 & T) ? true : false;
@@ -407,7 +403,6 @@ const width = 320
   type $RequiredSlotKeys<__S> = { [__K in keyof __S]-?: undefined extends __S[__K] ? never : __K }[keyof __S];
   type $MissingRequiredSlots<__S, __P> = Exclude<$RequiredSlotKeys<__S>, keyof __P>;
   type $RequiredSlots<__S, __P> = $IsAny<__S> extends true ? {} : string extends keyof __S ? {} : [keyof __S] extends [never] ? {} : [$MissingRequiredSlots<__S, __P>] extends [never] ? {} : { readonly __vizeMissingSlots: $MissingRequiredSlots<__S, __P> };
-  // @vize-map: component -> 0:30
   type __VDatePicker_Props_0 = typeof VDatePicker extends { __vizeCheck: infer __F } ? ($IsAny<__F> extends true ? $ComponentRawProps<typeof VDatePicker> : Record<string, unknown>) : $ComponentRawProps<typeof VDatePicker>;
   type __VDatePicker_Component_0 = typeof VDatePicker;
   type __VDatePicker_CheckProps_0 = __VDatePicker_Props_0 & $EmitListeners<__VDatePicker_Component_0> & ($FallthroughProps<__VDatePicker_Component_0> extends infer __F ? [__F extends unknown ? {} extends __F ? never : __F : never] extends [never] ? $RequiredFallthroughProps<__VDatePicker_Component_0, __F, never> : $RequiredFallthroughProps<__VDatePicker_Component_0, __F> : never);
@@ -424,7 +419,6 @@ const width = 320
   void __vize_props_nav_0.width;
 
   // Component props value checks (template scope)
-  // @vize-map: prop -> 13:27
   const __vize_prop_check_0_width: __VDatePicker_0_prop_width = width;
   void __vize_prop_check_0_width;
   (undefined as unknown as __VDatePicker_Check_0)({

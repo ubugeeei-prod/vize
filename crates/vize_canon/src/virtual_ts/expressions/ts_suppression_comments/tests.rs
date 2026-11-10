@@ -67,7 +67,7 @@ fn sequence_and_wrapper_newlines_get_branch_local_suppression() {
         callback_parameters_on_ignored_line("(void 0, <T>(\n value\n) => value)").as_deref(),
         Some(concat!(
             "(void 0, ",
-            "// @ts-ignore Inference-only callback branch.\n",
+            "// @ts-ignore\n",
             "<T>(  value ) => value)",
         ))
     );
@@ -75,7 +75,7 @@ fn sequence_and_wrapper_newlines_get_branch_local_suppression() {
         callback_parameters_on_ignored_line("(\n<T>(\n value\n) => value\n)").as_deref(),
         Some(concat!(
             "(\n",
-            "// @ts-ignore Inference-only callback branch.\n",
+            "// @ts-ignore\n",
             "<T>(  value ) => value\n)",
         ))
     );
@@ -89,7 +89,7 @@ fn ordinary_sequence_siblings_parse_only_when_the_last_branch_needs_it() {
         callback_parameters_on_ignored_line(siblings).as_deref(),
         Some(concat!(
             "((left) => left,\n ",
-            "// @ts-ignore Inference-only callback branch.\n",
+            "// @ts-ignore\n",
             "(right) => right)",
         ))
     );
@@ -120,12 +120,12 @@ body`
         rewritten.as_str(),
         concat!(
             "condition\n ? ",
-            "// @ts-ignore Inference-only callback branch.\n",
+            "// @ts-ignore\n",
             "<T,>(     left   ) => {\n",
             "    const body = `keep\nbody`\n",
             "    return <Comp value={left} />\n",
             "  }\n : ",
-            "// @ts-ignore Inference-only callback branch.\n",
+            "// @ts-ignore\n",
             "<U,>(     right   ) => right",
         )
     );
@@ -140,9 +140,9 @@ fn ordinary_conditional_siblings_use_branch_local_directives() {
         callback_parameters_on_ignored_line(source).as_deref(),
         Some(concat!(
             "condition\n ? ",
-            "// @ts-ignore Inference-only callback branch.\n",
+            "// @ts-ignore\n",
             "(  left) => left\n : ",
-            "// @ts-ignore Inference-only callback branch.\n",
+            "// @ts-ignore\n",
             "(  right) => right",
         ))
     );
@@ -155,9 +155,9 @@ fn function_leaves_get_branch_local_suppression() {
         callback_parameters_on_ignored_line(source).as_deref(),
         Some(concat!(
             "ok ? ",
-            "// @ts-ignore Inference-only callback branch.\n",
+            "// @ts-ignore\n",
             "function named(  left ) { return left } : ",
-            "// @ts-ignore Inference-only callback branch.\n",
+            "// @ts-ignore\n",
             "<T>(  right ) => right",
         ))
     );

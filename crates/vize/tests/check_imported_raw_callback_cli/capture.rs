@@ -180,7 +180,7 @@ const rows=inputs.map(input=>{
   const property=ancestor(node,ts.isPropertyAssignment);
   if(!property||!ts.isStringLiteral(property.name)||property.name.text!=='textConverter')throw new Error('unknown inference property');
   const comments=(ts.getLeadingCommentRanges(input.virtualTs,property.pos)??[]).map(range=>input.virtualTs.slice(range.pos,range.end));
-  if(JSON.stringify(comments)!==JSON.stringify(['// @ts-ignore Inference-only callback prop; mapped prop owner checks diagnostics.']))throw new Error('unguarded inference copy');
+  if(JSON.stringify(comments)!==JSON.stringify(['// @ts-ignore']))throw new Error('unguarded inference copy');
   if(point(property).line!==point(node).line)throw new Error('inference diagnostic escaped the single ignored line');
   return 'inference-only';
  };

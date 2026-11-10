@@ -182,12 +182,14 @@ pub(crate) fn generate_slot_host_binding(
         // props check owns diagnostics; this line only captures real results.
         vize_l0::emit_ts!(
             ts,
-            "{indent}// @ts-ignore Inference-only constructor; authored props checks own diagnostics.\n"
+            // Inference-only constructor; authored props checks own diagnostics.
+            "{indent}// @ts-ignore\n"
         );
     } else if usage.vif_guard.is_some() {
         vize_l0::emit_ts!(
             ts,
-            "{indent}// @ts-ignore Inference-only guard; authored v-if checks own diagnostics.\n"
+            // Inference-only guard; authored v-if checks own diagnostics.
+            "{indent}// @ts-ignore\n"
         );
     }
     if let Some(pair) = &captured {
@@ -271,7 +273,8 @@ pub(crate) fn generate_slot_host_binding(
         // impossible in the already narrowed outer branch (#10660).
         vize_l0::emit_ts!(
             ts,
-            "\n{indent}// @ts-ignore Inference-only guard; authored v-if checks own diagnostics.\n{indent}"
+            // Inference-only guard; authored v-if checks own diagnostics.
+            "\n{indent}// @ts-ignore\n{indent}"
         );
         let guard = guard.as_str();
         vize_l0::emit_ts!(ts, "({guard}) ? ");
@@ -310,10 +313,8 @@ pub(crate) fn generate_slot_constructor_capture(
     (source_context, hoist_shared_preamble): (ComponentPropSource<'_>, bool),
 ) {
     let pair = constructor_instance::instance_pair_name(binding_name, source_context.scopes);
-    vize_l0::emit_ts!(
-        ts,
-        "{indent}// @ts-ignore Inference-only constructor; authored props checks own diagnostics.\n"
-    );
+    // Inference-only constructor; authored props checks own diagnostics.
+    vize_l0::emit_ts!(ts, "{indent}// @ts-ignore\n");
     constructor_instance::append_capture_open(ts, pair.as_str(), indent);
     append_captured_constructors_open(ts, component_ref, hoist_shared_preamble);
     append_props_literal(

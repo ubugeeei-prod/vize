@@ -2,6 +2,7 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
+import { beforeGeneratedCommentBytes } from "./generated-comment-bytes-transition.ts";
 import { beforeGuardedInferenceArrow } from "./guarded-inference-arrow-transition.ts";
 import { beforeSharedUsageHelpersSource } from "./shared-usage-helpers-transition.ts";
 
@@ -47,6 +48,7 @@ function load(): Transition {
 
 /** The exact pre-qualification bytes of a recorded producer's current image; older images pass through. */
 export function beforeListenerLibTypeQualification(path: string, current: string): string {
+  current = beforeGeneratedCommentBytes(path, current);
   current = beforeSharedUsageHelpersSource(path, current);
   current = beforeGuardedInferenceArrow(path, current);
   const file = load().files.find((entry) => entry.path === path);

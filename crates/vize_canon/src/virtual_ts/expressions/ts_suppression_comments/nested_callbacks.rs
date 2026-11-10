@@ -11,7 +11,8 @@ use oxc_parser::Parser;
 use oxc_span::SourceType;
 use vize_carton::String;
 
-const IGNORE: &str = "\n// @ts-ignore Inference-only nested callback parameter.\n";
+/// Ignores an inference-only nested callback parameter.
+const IGNORE: &str = "\n// @ts-ignore\n";
 
 pub(super) fn rewrite(value: &str) -> Option<String> {
     // A new directive must not consume an authored expect-error or turn it
@@ -96,7 +97,8 @@ impl Parameters<'_> {
                 if parenthesized {
                     IGNORE
                 } else {
-                    "(\n// @ts-ignore Inference-only nested callback parameter.\n"
+                    // Inference-only nested callback parameter.
+                    "(\n// @ts-ignore\n"
                 },
             ));
             if !parenthesized {

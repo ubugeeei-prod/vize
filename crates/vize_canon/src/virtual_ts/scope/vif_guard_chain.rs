@@ -282,11 +282,9 @@ fn fold(
         let consumed = sibling.level.len();
         let mapped_here = covered + consumed == terms.len() && sibling.own.is_some();
         let mapped_condition = condition.as_deref_mut().filter(|_| mapped_here);
-        if let (Some(purpose), None) = (purpose, mapped_condition.as_ref()) {
-            append!(
-                *ts,
-                "{indent}// @ts-ignore {purpose}; authored v-if checks own diagnostics.\n"
-            );
+        // Authored v-if checks own this sibling guard's diagnostics.
+        if let (Some(_), None) = (purpose, mapped_condition.as_ref()) {
+            append!(*ts, "{indent}// @ts-ignore\n");
         }
         let start = ts.len();
         match sibling.own.as_deref() {

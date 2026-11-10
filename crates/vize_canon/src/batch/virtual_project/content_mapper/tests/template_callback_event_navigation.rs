@@ -2,7 +2,20 @@ use std::path::Path;
 
 use super::generate_vue_content_mapper_transform;
 
-const BRANCH_IGNORE: &str = "// @ts-ignore Inference-only callback branch.";
+/// A branch-local ignore: each callback branch here opens with its type
+/// parameters on the line the bare directive covers.
+const BRANCH_IGNORE: &str = "// @ts-ignore\n<";
+const DIRECTIVE: &str = "// @ts-ignore";
+
+/// Bare `@ts-ignore` lines directly followed by a line starting with `next`.
+fn ignored_before(text: &str, next: &str) -> usize {
+    text.lines()
+        .zip(text.lines().skip(1))
+        .filter(|(line, following)| {
+            line.trim() == DIRECTIVE && following.trim_start().starts_with(next)
+        })
+        .count()
+}
 
 #[test]
 fn event_navigation_suppresses_its_inference_only_callback_copy() {
@@ -22,7 +35,7 @@ const slots = defineSlots<Partial<Record<"a" | "b", () => VNode>>>();
 "#;
     let result =
         generate_vue_content_mapper_transform(Path::new("parent.vue"), source).expect("transform");
-    let guarded = r#"// @ts-ignore Inference-only callback prop; mapped prop owner checks diagnostics.
+    let guarded = r#"// @ts-ignore
     "bar": (baz) => Boolean(slots[baz]),"#;
 
     assert_eq!(
@@ -32,12 +45,7 @@ const slots = defineSlots<Partial<Record<"a" | "b", () => VNode>>>();
         result.text
     );
     assert_eq!(
-        result
-            .text
-            .matches(
-                "// @ts-ignore Inference-only call; the authored prop checker owns diagnostics."
-            )
-            .count(),
+        ignored_before(&result.text, "const __vize_events_resolved_"),
         1,
         "the outer call still suppresses aggregate assignability errors:\n{}",
         result.text
@@ -73,14 +81,13 @@ const emit = defineEmits<{
 "#;
     let result =
         generate_vue_content_mapper_transform(Path::new("parent.vue"), source).expect("transform");
-    let comment =
-        "// @ts-ignore Inference-only callback prop; mapped prop owner checks diagnostics.";
+    let comment = DIRECTIVE;
     let guarded = "\"apply\": (fn: (value: 'a' | 'b') => boolean,       value) => fn(value),";
     let lines: Vec<_> = result.text.lines().collect();
     let mut generated_copies: Vec<_> = lines
         .windows(3)
         .filter_map(|lines| {
-            (lines[1].trim_start() == comment)
+            (lines[1].trim_start() == comment && lines[2].trim_start() == guarded)
                 .then_some((lines[0].trim_start(), lines[2].trim_start()))
         })
         .collect();
@@ -152,19 +159,19 @@ const emit = defineEmits<{ quit: [] }>();
         generate_vue_content_mapper_transform(Path::new("parent.vue"), source).expect("transform");
 
     let sequence = concat!(
-        "\"apply\": (void 0, // @ts-ignore Inference-only callback branch.\n",
+        "\"apply\": (void 0, // @ts-ignore\n",
         "<T,>(       value) => value),",
     );
     let wrapped = concat!(
-        "\"apply\": (\n      // @ts-ignore Inference-only callback branch.\n",
+        "\"apply\": (\n      // @ts-ignore\n",
         "<T,>(         value) => value\n    ),",
     );
     let conditional = concat!(
-        "\"apply\": condition\n      ? // @ts-ignore Inference-only callback branch.\n",
+        "\"apply\": condition\n      ? // @ts-ignore\n",
         "<T,>(           value) => {\n",
         "          return value\n",
         "        }\n",
-        "      : // @ts-ignore Inference-only callback branch.\n",
+        "      : // @ts-ignore\n",
         "<U,>(           value) => value,",
     );
     for expected in [sequence, wrapped, conditional] {
@@ -185,7 +192,7 @@ const emit = defineEmits<{ quit: [] }>();
     let directive_ranges: Vec<_> = result
         .text
         .match_indices(BRANCH_IGNORE)
-        .map(|(start, _)| start..start + BRANCH_IGNORE.len())
+        .map(|(start, _)| start..start + DIRECTIVE.len())
         .collect();
     assert_eq!(directive_ranges.len(), 12);
     for directive in directive_ranges {

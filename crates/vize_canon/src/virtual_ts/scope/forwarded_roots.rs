@@ -103,13 +103,15 @@ fn emit_probe(
         append!(*ts, "  const {name} = (() => {{\n");
         append!(
             *ts,
-            "{indent}// @ts-ignore Inference-only guard and call; the root's mapped prop checks own diagnostics.\n"
+            // Inference-only guard and call; the root's mapped prop checks own diagnostics.
+            "{indent}// @ts-ignore\n"
         );
         append!(*ts, "{indent}if ({guard}) return {call}\n");
     } else {
         append!(
             *ts,
-            "{indent}// @ts-ignore Inference-only call; the root's mapped prop checks own diagnostics.\n"
+            // Inference-only call; the root's mapped prop checks own diagnostics.
+            "{indent}// @ts-ignore\n"
         );
         append!(*ts, "{indent}const {name} = {call}\n");
     }
@@ -123,7 +125,8 @@ fn emit_probe(
         if super::is_inline_callback_prop(prop) {
             append!(
                 *ts,
-                "{indent}  // @ts-ignore Inference-only callback prop; the mapped prop owner checks diagnostics.\n"
+                // Inference-only callback prop; the mapped prop owner checks diagnostics.
+                "{indent}  // @ts-ignore\n"
             );
         }
         append!(

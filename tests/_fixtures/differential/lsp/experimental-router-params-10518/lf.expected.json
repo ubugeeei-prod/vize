@@ -447,12 +447,12 @@
   },
   "generated": {
     "valid": {
-      "file": "lf.valid.constructor-noinfer.virtual.ts.txt",
-      "sha256": "c14f740be89a81f924f2fbf4ae0c9fee72471b938b8c9e9bf7f456269c755930"
+      "file": "lf.valid.generated-comment-bytes.virtual.ts.txt",
+      "sha256": "c3ec88c174b62f4fcc8d0d9c73d944cc73a69e1a7088d52cec77201a5b1132fe"
     },
     "invalid": {
-      "file": "lf.invalid.constructor-noinfer.virtual.ts.txt",
-      "sha256": "e0f10f666d61671786357e3185830ba52cdbf823006badefa502eb55ccc47e58"
+      "file": "lf.invalid.generated-comment-bytes.virtual.ts.txt",
+      "sha256": "176fed0fce44a544dadaf0ebc2d7a2f8f2e716387e52eff658d6ac7904e209d4"
     }
   }
 }

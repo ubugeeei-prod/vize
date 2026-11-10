@@ -87,3 +87,9 @@ verbatim instead of being indented by two spaces (issue #12481). Canon, the
 content mapper and Maestro each shrink by the 10 removed indentation bytes;
 mapping, diagnostic and authored-hit counts are unchanged, so the changed
 coordinate hashes are derived relocation.
+
+`successor-generated-comment-bytes-12621` records #12621: generated TS drops
+its debug-only `@vize-map` lines and the reasons after generated `@ts-ignore`.
+Canon, the content mapper and Maestro each shrink by the 153 removed comment
+bytes; mapping, diagnostic and authored-hit counts are unchanged, so the
+changed coordinate hashes are derived relocation.

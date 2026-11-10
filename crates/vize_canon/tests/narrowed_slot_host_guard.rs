@@ -37,7 +37,7 @@ fn slot_host_calls_keep_each_inference_guard_on_its_own_ignored_line() {
                     .checked_sub(1)
                     .and_then(|index| lines.get(index))
                     .map(|line| line.trim()),
-                Some("// @ts-ignore Inference-only guard; authored v-if checks own diagnostics."),
+                Some("// @ts-ignore"),
                 "an ignore on a previous props-object line cannot protect this replay"
             );
         }

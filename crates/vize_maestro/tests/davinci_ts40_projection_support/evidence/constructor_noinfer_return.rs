@@ -1,6 +1,7 @@
 //! #12523: the component constructor keeps its bound instance behind `NoInfer`,
 //! on top of the #12481 verbatim setup successor.
 
+mod generated_comment_bytes;
 mod setup_verbatim_lines;
 
 use super::receipt::authenticate_successor_receipt;
@@ -37,4 +38,14 @@ pub(super) fn mixed_vue2(predecessor: &'static str) -> &'static str {
         successor,
     );
     successor
+}
+
+/// The current options-api-slots record: #12621's comment cut on this layer.
+pub(super) fn current_slots(predecessor: &'static str) -> &'static str {
+    generated_comment_bytes::slots(slots(predecessor))
+}
+
+/// The current mixed Vue 2 record: #12621's comment cut on this layer.
+pub(super) fn current_mixed_vue2(predecessor: &'static str) -> &'static str {
+    generated_comment_bytes::mixed_vue2(mixed_vue2(predecessor))
 }

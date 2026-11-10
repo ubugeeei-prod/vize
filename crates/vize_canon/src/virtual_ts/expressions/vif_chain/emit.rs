@@ -83,7 +83,6 @@ fn emit_vif_branch_open(
     ctx: &BranchContext<'_, '_>,
 ) {
     let context = ctx.context;
-    let exprs = ctx.exprs;
     match (first, branch.condition) {
         (true, Some(condition)) => {
             append!(*ts, "{}if (", context.indent);
@@ -99,19 +98,6 @@ fn emit_vif_branch_open(
             append!(*ts, "{}}} else {{\n", context.indent);
         }
         (true, None) => {}
-    }
-
-    if let Some(expr) = branch
-        .condition_expr_index
-        .and_then(|expr_index| exprs.get(expr_index))
-    {
-        let src_start = (context.template_offset + expr.start) as usize;
-        let src_end = (context.template_offset + expr.end) as usize;
-        append!(
-            *ts,
-            "{}  // @vize-map: expr -> {src_start}:{src_end}\n",
-            context.indent,
-        );
     }
 }
 
