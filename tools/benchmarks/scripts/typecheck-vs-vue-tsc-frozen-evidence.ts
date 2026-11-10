@@ -4,7 +4,7 @@ import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { isDeepStrictEqual } from "node:util";
-export const source = "20bb9c3d8adadaf541e9986926a0e985a31bdef5";
+export const source = "ea22f2cd2aa661b9bdab940e25464eff692b935f";
 export const misskeyRevision = "810faa8e5db4bbf9d6d408a61df148559340ee99";
 export const providerPins = {
   package: "bb62ff5452cbfd7866d232c6e1a78d1d7b6d82ec5f6cbf67e08aa6deff9c324e",
@@ -231,6 +231,14 @@ export function profileAttribution(report: unknown) {
       `missing required profile stage ${key}`,
     );
   return { schemaVersion: 1, truncation: value.truncation, spans: selected };
+}
+/** The retained raw profile file and its exact batch-stage attribution. */
+export function coldProfile(command: string, file: string) {
+  return {
+    command,
+    raw: identity(file),
+    attribution: profileAttribution(JSON.parse(fs.readFileSync(file, "utf8"))),
+  };
 }
 export function inventory(root: string, exclude: string[] = []) {
   const rows: Record<string, unknown>[] = [];

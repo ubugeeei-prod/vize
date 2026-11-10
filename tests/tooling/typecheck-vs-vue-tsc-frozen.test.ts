@@ -221,7 +221,7 @@ test("whole provider fixture bytes and immutable source/SDK closure stay pinned"
     hash(fs.readFileSync(new URL("package.json.txt", fixture)).subarray(1)),
     providerPins.package,
   );
-  assert.equal(source, "20bb9c3d8adadaf541e9986926a0e985a31bdef5");
+  assert.equal(source, "ea22f2cd2aa661b9bdab940e25464eff692b935f");
   assert.equal(sourceBodies.length, 16);
   assert.equal(
     sourceBodies.filter(
@@ -332,7 +332,7 @@ test("only manual frontdoor executes the fixed cohort; all failure raw is upload
     "utf8",
   );
   assert.match(workflow, /if: \$\{\{ github.event_name == 'workflow_dispatch' \}\}/u);
-  assert.match(workflow, /git worktree add --detach.*20bb9c3d8adadaf541e9986926a0e985a31bdef5/u);
+  assert.match(workflow, /git worktree add --detach.*ea22f2cd2aa661b9bdab940e25464eff692b935f/u);
   assert.match(workflow, /node-version: "24.14.0"/u);
   assert.match(workflow, /toolchain: "1.99.1"/u);
   assert.match(workflow, /--exclude=target/u);

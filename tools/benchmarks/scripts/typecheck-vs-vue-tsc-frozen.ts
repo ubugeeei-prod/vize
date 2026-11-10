@@ -12,12 +12,12 @@ import {
   type Command,
 } from "./typecheck-vs-vue-tsc-frozen-command.ts";
 import {
+  coldProfile,
   compareFindings,
   diagnostics,
   hash,
   identity,
   orders,
-  profileAttribution,
   save,
   source,
   statusConsistent,
@@ -361,11 +361,7 @@ export async function campaign(options: {
       timed.find((row) => row.tool === "vize")!.measurement.status,
       profiled.measurement.status,
     );
-    const profile = {
-      command: profiled.name,
-      raw: identity(profileFile),
-      attribution: profileAttribution(JSON.parse(fs.readFileSync(profileFile, "utf8"))),
-    };
+    const profile = coldProfile(profiled.name, profileFile);
     const inputsAfter = inputSnapshot(project.root, provider);
     save(path.join(out, prefix + "-inputs-after-timing.json"), inputsAfter);
     assertInputs(inputsBefore, inputsAfter, cache.excludedOwnedOutputs);
