@@ -33,6 +33,13 @@ const published = parse(readRepoFile(".github", "workflows", "published-fresh-pr
 const releaseVerify = parse(readRepoFile(".github", "workflows", "release-verify.yml")) as {
   jobs: Record<string, Job>;
 };
+const verifier = readRepoFile(
+  "tools",
+  "support",
+  "release",
+  "verify_published",
+  "fresh_project.ts",
+);
 
 test("public native selection names every supported package family", () => {
   assert.equal(expectedNativePackage("darwin", "x64"), "@vizejs/native-darwin-x64");
@@ -41,6 +48,13 @@ test("public native selection names every supported package family", () => {
   assert.equal(expectedNativePackage("win32", "arm64"), "@vizejs/native-win32-arm64-msvc");
   assert.equal(expectedNativePackage("linux", "x64", "gnu"), "@vizejs/native-linux-x64-gnu");
   assert.equal(expectedNativePackage("linux", "arm64", "musl"), "@vizejs/native-linux-arm64-musl");
+});
+
+test("the public verifier starts npm without Windows command-shell ambiguity", () => {
+  assert.match(verifier, /node_modules", "npm", "bin", "npm-cli\.js/u);
+  assert.match(verifier, /command\(label, process\.execPath, \[cli, \.\.\.args\], cwd\)/u);
+  assert.doesNotMatch(verifier, /npm\.cmd/u);
+  assert.match(verifier, /failure: error instanceof Error/u);
 });
 
 test("published fresh projects run from exact public versions on every release host", () => {

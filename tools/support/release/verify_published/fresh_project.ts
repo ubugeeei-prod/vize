@@ -40,10 +40,6 @@ interface PackageLock {
   packages?: Record<string, LockPackage>;
 }
 
-function npmBinary(): string {
-  return process.platform === "win32" ? "npm.cmd" : "npm";
-}
-
 async function command(
   label: string,
   executable: string,
@@ -57,6 +53,12 @@ async function command(
     );
   }
   return outcome;
+}
+
+function npmCommand(label: string, args: readonly string[], cwd: string): Promise<CollectedOutput> {
+  if (process.platform !== "win32") return command(label, "npm", args, cwd);
+  const cli = join(dirname(process.execPath), "node_modules", "npm", "bin", "npm-cli.js");
+  return command(label, process.execPath, [cli, ...args], cwd);
 }
 
 function linuxLibc(): "gnu" | "musl" {
@@ -146,16 +148,14 @@ export async function verifyPublishedFreshProject(
   mkdirSync(project);
   try {
     writeJson(join(runner, "package.json"), { private: true });
-    await command(
+    await npmCommand(
       "published CLI install",
-      npmBinary(),
       ["install", "--no-audit", "--no-fund", "--include=optional", `vize@${version}`],
       runner,
     );
     writeProject(project);
-    await command(
+    await npmCommand(
       "fresh project bootstrap",
-      npmBinary(),
       ["install", "--no-audit", "--no-fund", "--include=optional"],
       project,
     );
@@ -186,9 +186,8 @@ export async function verifyPublishedFreshProject(
       runner,
     );
     const plan = PLANNED_DEPENDENCIES.map((name) => `${name}@${version}`);
-    await command(
+    await npmCommand(
       "generated dependency plan",
-      npmBinary(),
       [
         "install",
         "--save-dev",
@@ -233,12 +232,7 @@ export async function verifyPublishedFreshProject(
       ).stdout.trim(),
       `vize ${version}`,
     );
-    const clean = await command(
-      "generated clean check",
-      npmBinary(),
-      ["run", "vize:check"],
-      project,
-    );
+    const clean = await npmCommand("generated clean check", ["run", "vize:check"], project);
     writeFileSync(join(project, "src", "App.vue"), BROKEN_APP);
     const broken = await collectOutput(
       process.execPath,
@@ -250,12 +244,7 @@ export async function verifyPublishedFreshProject(
     assert.notEqual(broken.status, 0, "broken project passed vize check");
     assert.match(broken.stdout, /TS2322/u, "broken project did not report its type error");
     writeFileSync(join(project, "src", "App.vue"), APP);
-    const repaired = await command(
-      "generated repaired check",
-      npmBinary(),
-      ["run", "vize:check"],
-      project,
-    );
+    const repaired = await npmCommand("generated repaired check", ["run", "vize:check"], project);
     const lsp = await watchDiagnostics({
       bin: projectBin,
       root: project,
@@ -302,7 +291,19 @@ if (import.meta.main) {
     const evidence = process.env.VIZE_PUBLISHED_FRESH_EVIDENCE;
     assert.ok(version, "Usage: fresh_project.ts <version>");
     assert.ok(evidence, "VIZE_PUBLISHED_FRESH_EVIDENCE is required");
-    await verifyPublishedFreshProject(version, evidence);
+    try {
+      await verifyPublishedFreshProject(version, evidence);
+    } catch (error) {
+      mkdirSync(dirname(resolve(evidence)), { recursive: true });
+      writeJson(resolve(evidence), {
+        schema: "vize.publishedFreshProject",
+        schemaVersion: 1,
+        version,
+        host: { platform: process.platform, arch: process.arch },
+        failure: error instanceof Error ? (error.stack ?? error.message) : String(error),
+      });
+      throw error;
+    }
     return existsSync(evidence) ? 0 : 1;
   });
 }
