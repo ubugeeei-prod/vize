@@ -1,0 +1,31 @@
+{
+  "version": 1,
+  "id": "lsp/regression/component-member-completion-12581",
+  "provenance": {
+    "fixCommit": "c244b05cae3530609245e73c0da3087da74eb70e",
+    "witnessPath": "crates/vize_maestro/src/ide/completion/component_props_tests.rs",
+    "witnessTest": "imported_component_member_completion_hides_generated_contract_fields",
+    "inputOrigin": "exact minimal imported component value reproduction from issue 12581",
+    "contractOrigin": "the focused Corsa regression validates the public completion response; this row pins the authored SFC bytes"
+  },
+  "files": [
+    {
+      "source": "Parent.vue.txt",
+      "runtimePath": "Parent.vue",
+      "sha256": "61561733db155c2d3ec39cfc60ed6747c8a3ad1ed395b5f4a8ead901568e0636"
+    },
+    {
+      "source": "Child.vue.txt",
+      "runtimePath": "Child.vue",
+      "sha256": "55160b3732f16d4bece8fd92e792d08b8f640d12a1dcb84058f24f41cbaa0f98"
+    }
+  ],
+  "entry": "Parent.vue",
+  "expected": {
+    "source": "response.expected.json",
+    "sha256": "1f5e046f4f5234ee8744458d21c57c689061ce3305629b2ddd8682de9f2fe71b"
+  },
+  "method": "textDocument/foldingRange",
+  "documentVersion": 1,
+  "scope": "exact issue input custody plus focused checker-backed completion witness; no native adapter or acceptance credit"
+}
