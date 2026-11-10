@@ -71,6 +71,14 @@ pub(super) fn exchange(input: &[u8]) -> Vec<Value> {
     decode_frames(&output)
 }
 
+/// Like [`exchange`] after the JS launcher has answered `initialize`.
+pub(super) fn exchange_initialized(input: &[u8]) -> Vec<Value> {
+    let mut reader = BufReader::new(Cursor::new(input));
+    let mut output = Vec::new();
+    super::dispatch::serve(&mut reader, &mut output, true).unwrap();
+    decode_frames(&output)
+}
+
 fn decode_frames(output: &[u8]) -> Vec<Value> {
     let mut reader = BufReader::new(Cursor::new(output));
     let mut values = Vec::new();

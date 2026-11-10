@@ -6,7 +6,7 @@
 //! compiler options, and `transform` projects one Vue SFC into virtual
 //! TypeScript for an opened project handle.
 
-use std::io::{self, BufRead, BufReader, BufWriter, Read, Write};
+use std::io::{self, BufRead, BufReader, BufWriter, Read};
 
 use clap::Args;
 use serde::Deserialize;
@@ -23,13 +23,19 @@ const MAX_MESSAGE_BYTES: usize = 64 * 1024 * 1024;
 const MAX_HEADER_BYTES: usize = 8 * 1024;
 
 #[derive(Args, Default)]
-pub struct ContentMapperArgs {}
+pub struct ContentMapperArgs {
+    /// The JS launcher already answered `initialize` on this stream, before
+    /// loading the native addon, so the host's fixed `initialize` wait never
+    /// covers that load (#12530).
+    #[arg(long, hide = true)]
+    initialized: bool,
+}
 
-pub fn run(_: ContentMapperArgs) {
+pub fn run(args: ContentMapperArgs) {
     let stdin = io::stdin();
     let mut reader = BufReader::new(stdin.lock());
     let mut writer = BufWriter::new(io::stdout());
-    if let Err(error) = serve(&mut reader, &mut writer) {
+    if let Err(error) = dispatch::serve(&mut reader, &mut writer, args.initialized) {
         eprintln!("vize content-mapper: {error}");
         std::process::exit(1);
     }
@@ -61,8 +67,9 @@ struct TransformParams {
     project_handle: CompactString,
 }
 
-fn serve<R: BufRead, W: Write + Send>(reader: &mut R, writer: &mut W) -> io::Result<()> {
-    dispatch::serve(reader, writer)
+#[cfg(test)]
+fn serve<R: BufRead, W: io::Write + Send>(reader: &mut R, writer: &mut W) -> io::Result<()> {
+    dispatch::serve(reader, writer, false)
 }
 
 fn read_frame<R: BufRead>(reader: &mut R) -> io::Result<Option<Vec<u8>>> {
