@@ -52,7 +52,7 @@ vp run --filter './npm/native' build:debug
 ## Release Candidate and Tag Gate
 
 - [ ] Release captain records the latest green `main` source commit, confirms that it still contains
-      every approved alpha change, and dispatches the workflow as an authenticated maintainer: ([RP-1 evidence](./davinci-v1-evidence.md#release-pr-and-promotion-gate))
+      every approved alpha change, and dispatches the workflow as an authenticated maintainer: ([RP-1 evidence](./davinci-v1-evidence.md#release-candidate-and-tag-gate))
 
 ```bash
 git fetch origin main --tags --prune
@@ -62,15 +62,15 @@ gh workflow run release.yml --repo ubugeeei-prod/vize --ref main \
 ```
 
 - [ ] The run records the requested source SHA and creates one version-stamped candidate whose sole
-      parent is that source commit. The source workspace version is not expected to change. ([RP-2 evidence](./davinci-v1-evidence.md#release-pr-and-promotion-gate))
+      parent is that source commit. The source workspace version is not expected to change. ([RP-2 evidence](./davinci-v1-evidence.md#release-candidate-and-tag-gate))
 - [ ] CLI, native, WASM, JavaScript packages, universal editor artifacts, package tarball smoke, and
-      editor-host smoke pass for the exact candidate before tag creation. ([RP-3 evidence](./davinci-v1-evidence.md#release-pr-and-promotion-gate))
+      editor-host smoke pass for the exact candidate before tag creation. ([RP-3 evidence](./davinci-v1-evidence.md#release-candidate-and-tag-gate))
 - [ ] If the selected source commit is no longer the approved alpha source, stop before publication
-      and dispatch a new candidate from the replacement SHA; never move an existing tag. ([RP-4 evidence](./davinci-v1-evidence.md#release-pr-and-promotion-gate))
+      and dispatch a new candidate from the replacement SHA; never move an existing tag. ([RP-4 evidence](./davinci-v1-evidence.md#release-candidate-and-tag-gate))
 - [ ] The workflow creates `v1.0.0-alpha.N` at the validated candidate and removes only its temporary
-      `refs/release-candidates/<source commit>` ref. Do not manually create or force-move the tag. ([RP-5 evidence](./davinci-v1-evidence.md#release-pr-and-promotion-gate))
+      `refs/release-candidates/<source commit>` ref. Do not manually create or force-move the tag. ([RP-5 evidence](./davinci-v1-evidence.md#release-candidate-and-tag-gate))
 - [ ] Record the candidate SHA, its source parent, the immutable tag, and the original Release run ID
-      before monitoring publication and the separately dispatched post-publish verification. ([RP-6 evidence](./davinci-v1-evidence.md#release-pr-and-promotion-gate))
+      before monitoring publication and the separately dispatched post-publish verification. ([RP-6 evidence](./davinci-v1-evidence.md#release-candidate-and-tag-gate))
 
 ## Publish Gate
 

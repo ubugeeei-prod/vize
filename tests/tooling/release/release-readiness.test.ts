@@ -6,12 +6,14 @@ import { fileURLToPath } from "node:url";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
 const checklistPath = path.join(root, "docs", "release", "v1-alpha-go-no-go.md");
+const evidencePath = path.join(root, "docs", "release", "davinci-v1-evidence.md");
 const productionReadinessPath = path.join(root, "docs", "release", "production-readiness.md");
 const supplyChainPath = path.join(root, "docs", "release", "supply-chain.md");
 const vueParityMatrixPath = path.join(root, "docs", "release", "vue-parity-matrix.md");
 
 test("v1 alpha go/no-go checklist covers release gates and rollback", () => {
   const checklist = fs.readFileSync(checklistPath, "utf-8");
+  const evidence = fs.readFileSync(evidencePath, "utf-8");
 
   for (const heading of [
     "## Owners",
@@ -69,7 +71,12 @@ test("v1 alpha go/no-go checklist covers release gates and rollback", () => {
     "release-open-vsx.yml",
   ]) {
     assert.doesNotMatch(checklist, new RegExp(retiredContract));
+    assert.doesNotMatch(evidence, new RegExp(retiredContract));
   }
+
+  assert.match(evidence, /^### Release candidate and tag gate$/m);
+  assert.match(evidence, /refs\/release-candidates\/<source SHA>/);
+  assert.match(evidence, /Automatic Open VSX universal and platform channels/);
 });
 
 test("production-readiness checklist scopes supported and experimental surfaces", () => {
