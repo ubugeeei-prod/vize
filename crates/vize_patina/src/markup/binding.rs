@@ -294,6 +294,38 @@ impl<'a> MarkupBinding<'a> {
         }
     }
 
+    /// Whether this binding has an authored, non-blank value.
+    ///
+    /// L2 expands Vue's valueless same-name shorthand (`:name`) to an
+    /// expression that reads `name`. Rules that distinguish shorthand from
+    /// `:name="name"` must use the authored spelling exposed here instead of
+    /// treating [`Self::expression`] alone as proof that a value was written.
+    pub fn has_value(&self) -> bool {
+        match self.inner {
+            MarkupBindingInner::ReliefAttribute(node) => node
+                .value
+                .as_ref()
+                .is_some_and(|value| !value.content.trim().is_empty()),
+            MarkupBindingInner::ReliefDirective(node) => {
+                !node.shorthand
+                    && match node.exp.as_ref() {
+                        Some(ExpressionNode::Simple(simple)) => !simple.content.trim().is_empty(),
+                        Some(ExpressionNode::Compound(compound)) => !compound.children.is_empty(),
+                        None => false,
+                    }
+            }
+            MarkupBindingInner::Jsx { node, .. } => jsx_attribute_ref(node).value.is_some(),
+            MarkupBindingInner::L2Attribute { attribute, doc } => attribute
+                .value
+                .is_some_and(|value| !doc.decode_attribute(value).trim().is_empty()),
+            MarkupBindingInner::L2Binding(binding) => binding.surface.map_or_else(
+                || binding.expression().is_some(),
+                super::spelling::has_value,
+            ),
+            MarkupBindingInner::Surface { attr, .. } => super::spelling::has_value(attr),
+        }
+    }
+
     /// The retained JavaScript expression and its exact range in the authored
     /// source. Backends without a retained expression return `None` instead of
     /// asking rules to parse the same binding again.

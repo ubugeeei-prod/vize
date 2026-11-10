@@ -53,7 +53,7 @@ pub struct PreferPropsShorthand;
 
 impl PreferPropsShorthand {
     fn check_binding(ctx: &mut LintContext<'_>, binding: &MarkupBinding<'_>) {
-        if binding.kind() != MarkupBindingKind::Bind {
+        if binding.kind() != MarkupBindingKind::Bind || !binding.has_value() {
             return;
         }
         let Some(prop_name) = binding.arg_name() else {
