@@ -10,6 +10,7 @@ type Record = {
   credit: { compiled: boolean; native: boolean; performance: boolean };
   files: FileTransition[];
   compiledPreamble: { before: Identity; after: Identity; hunks: Hunk[] };
+  compiledStrictPreamble: { before: Identity; after: Identity; hunks: Hunk[] };
 };
 
 /** Inverse of the shared template ref unwrap helpers (#12431); mirrors payload_update/template_ref_unwrap.rs. */
@@ -18,7 +19,7 @@ const recordBytes = readFileSync(
 );
 assert.equal(
   createHash("sha256").update(recordBytes).digest("hex"),
-  "a8b671cad3445be177a8bc0ee011f7bc8a9cf4d0a445a8257442998d22389330",
+  "65387e707f6c3dfad315dbaca797dbd36fbe2da5edfaba39321fe37b783151f2",
 );
 const record = JSON.parse(recordBytes.toString("utf8")) as Record;
 assert.equal(record.schema, "vize.sharedTemplateRefUnwrapSource.v1");

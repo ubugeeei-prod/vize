@@ -4,7 +4,7 @@ use serde_json::{Value, json};
 use std::fs;
 
 const RECORD: &str = "tests/_fixtures/tooling/shared-template-ref-unwrap.json";
-const RECORD_SHA: &str = "a8b671cad3445be177a8bc0ee011f7bc8a9cf4d0a445a8257442998d22389330";
+const RECORD_SHA: &str = "65387e707f6c3dfad315dbaca797dbd36fbe2da5edfaba39321fe37b783151f2";
 
 fn record() -> Value {
     let bytes = fs::read(support::repository().join(RECORD)).unwrap();
@@ -55,14 +55,16 @@ pub(super) fn source_before(path: &str, current: String) -> String {
     }
 }
 
-/// The compiled preamble without the shared unwrap aliases.
+/// A compiled preamble without the shared unwrap aliases.
 pub(super) fn preamble_before(current: &str) -> String {
     let record = record();
-    let preamble = &record["compiledPreamble"];
-    if is_after(current, preamble) {
-        restore(current, preamble)
-    } else {
-        current.to_owned()
+    match ["compiledPreamble", "compiledStrictPreamble"]
+        .into_iter()
+        .map(|key| &record[key])
+        .find(|preamble| is_after(current, preamble))
+    {
+        Some(preamble) => restore(current, preamble),
+        None => current.to_owned(),
     }
 }
 
@@ -89,11 +91,27 @@ mod tests {
                 assert!(std::panic::catch_unwind(|| restore(&mutated, file)).is_err());
             }
         }
-        let current = vize_canon::virtual_ts::SHARED_PREAMBLE_DTS;
-        let preamble = &record["compiledPreamble"];
-        assert!(is_after(current, preamble));
-        let previous = preamble_before(current);
-        assert_eq!(preamble_before(&previous), previous);
-        assert!(std::panic::catch_unwind(|| restore(&format!("{current}\n"), preamble)).is_err());
+        for (current, key) in [
+            (
+                vize_canon::virtual_ts::SHARED_PREAMBLE_DTS,
+                "compiledPreamble",
+            ),
+            (
+                vize_canon::virtual_ts::SHARED_PREAMBLE_STRICT_DTS,
+                "compiledStrictPreamble",
+            ),
+        ] {
+            let preamble = &record[key];
+            assert!(is_after(current, preamble));
+            let previous = preamble_before(current);
+            assert_eq!(
+                support::hash(previous.as_bytes()),
+                preamble["before"]["sha256"]
+            );
+            assert_eq!(preamble_before(&previous), previous);
+            assert!(
+                std::panic::catch_unwind(|| restore(&format!("{current}\n"), preamble)).is_err()
+            );
+        }
     }
 }

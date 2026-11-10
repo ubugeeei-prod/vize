@@ -14,8 +14,8 @@ use std::path::Path;
 /// [content mapper, batch] projections generate.
 const SLOT_LIB_TYPES: &[(&str, &str, [usize; 2])] = &[
     ("Exclude", "type Exclude<T, U> = never", [2, 2]),
-    ("Extract", "type Extract<T, U> = never", [3, 3]),
-    ("NonNullable", "type NonNullable<T> = never", [7, 7]),
+    ("Extract", "type Extract<T, U> = never", [2, 2]),
+    ("NonNullable", "type NonNullable<T> = never", [6, 6]),
     ("PropertyKey", "type PropertyKey = never", [6, 6]),
 ];
 const MAPPER: usize = 0;
