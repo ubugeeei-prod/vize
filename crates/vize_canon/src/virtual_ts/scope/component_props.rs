@@ -347,6 +347,7 @@ fn generate_usage_declarations(
 ) {
     let summary = ctx.summary;
     let named_dynamic = named_dynamic_reference(ctx, usage);
+    let member_target = named_dynamic.is_some();
     // Among admitted legacy usages, a non-script/non-dynamic reference is an
     // explicit external binding. Only this validation view keeps loose attrs;
     // it does not widen the actual component or its known property values.
@@ -375,6 +376,10 @@ fn generate_usage_declarations(
     // instance marker for declarations emitted before #4034.
     vize_l0::emit_ts!(ts, "  type __{component_type_name}_Props_{idx} = ",);
     let shared = shared_contracts.get(&idx);
+    // A plain component binding's props and check props depend only on its
+    // type, so they come from shared helpers keyed on that type. Dynamic and
+    // member targets and slot-host instance props keep their own aliases.
+    let mut usage_contract = false;
     if let Some(shared) = shared.filter(|shared| shared.canonical_idx != idx) {
         append!(
             *ts,
@@ -393,12 +398,21 @@ fn generate_usage_declarations(
                 &summary.scopes,
             )
         });
-        constructor_instance::append_usage_props(
-            ts,
-            component_ref.as_str(),
-            pair.as_deref(),
-            ctx.hoist_shared_preamble,
-        );
+        usage_contract = pair.is_none()
+            && !member_target
+            && !vize_croquis::drawer::is_dynamic_component_alias(usage.name.as_str());
+        if usage_contract {
+            let usage_props = crate::virtual_ts::helpers::shared_types::USAGE_PROPS
+                .select(ctx.hoist_shared_preamble);
+            append!(*ts, "{usage_props}<typeof {component_ref}>;\n");
+        } else {
+            constructor_instance::append_usage_props(
+                ts,
+                component_ref.as_str(),
+                pair.as_deref(),
+                ctx.hoist_shared_preamble,
+            );
+        }
     }
 
     // Generic functional prop-checker for this component (#775).
@@ -412,6 +426,7 @@ fn generate_usage_declarations(
             ctx.relaxed_required_usage_starts.contains(&usage.start),
             ctx.hoist_shared_preamble,
             loose_legacy_attrs,
+            usage_contract,
         ),
         (
             shared

@@ -94,7 +94,12 @@ pub(super) fn append_prop_checker_alias(
     component_type_name: &str,
     component_ref: &str,
     idx: usize,
-    (relax_required, hoist_shared_preamble, loose_legacy_attrs): (bool, bool, bool),
+    (relax_required, hoist_shared_preamble, loose_legacy_attrs, usage_contract): (
+        bool,
+        bool,
+        bool,
+        bool,
+    ),
     sharing: (Option<usize>, bool, bool),
 ) {
     let (shared_idx, force_value_props, needs_component_alias) = sharing;
@@ -136,7 +141,14 @@ pub(super) fn append_prop_checker_alias(
     // A surface whose every member admits `{}` has no required key, so pass
     // `never` and skip the scan; either branch is the same instantiation the
     // default arguments produce.
-    let own_props = if relax_required {
+    // A plain binding reads its listener and required-fallthrough members from
+    // `$UsageCheckExtras`, keyed only on its component type, unless this usage
+    // relaxes the required props. The intersection stays per usage, so a
+    // diagnostic still prints `__X_CheckProps_N`.
+    let usage_check_props = usage_contract && !relax_required;
+    let own_props = if usage_check_props {
+        Default::default()
+    } else if relax_required {
         cstr!("Partial<__{component_type_name}_Props_{idx}>")
     } else {
         cstr!("__{component_type_name}_Props_{idx}")
@@ -148,10 +160,17 @@ pub(super) fn append_prop_checker_alias(
     // those requested bytes, so this deliberately duplicated branch is the
     // allocation-free fast path.
     if !hoist_shared_preamble {
-        vize_l0::emit_ts!(
-            ts,
-            "  type __{component_type_name}_CheckProps_{idx} = {own_props} & $EmitListeners<__{component_type_name}_Component_{idx}> & ($FallthroughProps<__{component_type_name}_Component_{idx}> extends infer __F ? [__F extends unknown ? {{}} extends __F ? never : __F : never] extends [never] ? $RequiredFallthroughProps<__{component_type_name}_Component_{idx}, __F, never> : $RequiredFallthroughProps<__{component_type_name}_Component_{idx}, __F> : never);\n",
-        );
+        if usage_check_props {
+            vize_l0::emit_ts!(
+                ts,
+                "  type __{component_type_name}_CheckProps_{idx} = __{component_type_name}_Props_{idx} & $UsageCheckExtras<__{component_type_name}_Component_{idx}>;\n",
+            );
+        } else {
+            vize_l0::emit_ts!(
+                ts,
+                "  type __{component_type_name}_CheckProps_{idx} = {own_props} & $EmitListeners<__{component_type_name}_Component_{idx}> & ($FallthroughProps<__{component_type_name}_Component_{idx}> extends infer __F ? [__F extends unknown ? {{}} extends __F ? never : __F : never] extends [never] ? $RequiredFallthroughProps<__{component_type_name}_Component_{idx}, __F, never> : $RequiredFallthroughProps<__{component_type_name}_Component_{idx}, __F> : never);\n",
+            );
+        }
         if loose_legacy_attrs {
             vize_l0::emit_ts!(
                 ts,
@@ -181,10 +200,18 @@ pub(super) fn append_prop_checker_alias(
     let fallthrough_props = "import(\"vize:virtual-ts\").$FallthroughProps";
     let is_library_generic = shared_types::IS_LIBRARY_GENERIC_EXPORT.select(hoist_shared_preamble);
     let prop_checker = shared_types::PROP_CHECKER.select(hoist_shared_preamble);
-    vize_l0::emit_ts!(
-        ts,
-        "  type __{component_type_name}_CheckProps_{idx} = {own_props} & {emit_listeners}<__{component_type_name}_Component_{idx}> & ({fallthrough_props}<__{component_type_name}_Component_{idx}> extends infer __F ? [__F extends unknown ? {{}} extends __F ? never : __F : never] extends [never] ? {required_fallthrough}<__{component_type_name}_Component_{idx}, __F, never> : {required_fallthrough}<__{component_type_name}_Component_{idx}, __F> : never);\n",
-    );
+    if usage_check_props {
+        let usage_check = shared_types::USAGE_CHECK_EXTRAS.select(hoist_shared_preamble);
+        vize_l0::emit_ts!(
+            ts,
+            "  type __{component_type_name}_CheckProps_{idx} = __{component_type_name}_Props_{idx} & {usage_check}<__{component_type_name}_Component_{idx}>;\n",
+        );
+    } else {
+        vize_l0::emit_ts!(
+            ts,
+            "  type __{component_type_name}_CheckProps_{idx} = {own_props} & {emit_listeners}<__{component_type_name}_Component_{idx}> & ({fallthrough_props}<__{component_type_name}_Component_{idx}> extends infer __F ? [__F extends unknown ? {{}} extends __F ? never : __F : never] extends [never] ? {required_fallthrough}<__{component_type_name}_Component_{idx}, __F, never> : {required_fallthrough}<__{component_type_name}_Component_{idx}, __F> : never);\n",
+        );
+    }
     if loose_legacy_attrs {
         vize_l0::emit_ts!(
             ts,

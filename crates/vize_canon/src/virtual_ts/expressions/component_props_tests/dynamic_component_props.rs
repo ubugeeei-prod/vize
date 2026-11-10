@@ -19,7 +19,9 @@ const count = "nope"
 
     let output = generate_virtual_ts(&summary, Some(script), Some(&root), 0);
     assert!(
-        output.code.contains("type __comp_Props_0 = typeof comp"),
+        output
+            .code
+            .contains("type __comp_Props_0 = $UsageProps<typeof comp>"),
         "dynamic component props should resolve against the :is binding:\n{}",
         output.code
     );
@@ -50,7 +52,9 @@ fn dynamic_component_props_keep_contextual_keyword_setup_binding() {
 
     let output = generate_virtual_ts(&summary, Some(script), Some(&root), 0);
     assert!(
-        output.code.contains("type __as_Props_0 = typeof as"),
+        output
+            .code
+            .contains("type __as_Props_0 = $UsageProps<typeof as>"),
         "dynamic component target should reference the authored setup binding:\n{}",
         output.code
     );
@@ -76,12 +80,16 @@ fn dynamic_component_props_use_safe_alias_for_contextual_keyword_template_prop()
 
     let output = generate_virtual_ts(&summary, Some(script), Some(&root), 0);
     assert!(
-        output.code.contains("type __as_Props_0 = typeof _as"),
+        output
+            .code
+            .contains("type __as_Props_0 = $UsageProps<typeof _as>"),
         "dynamic component target should reference the generated template prop alias:\n{}",
         output.code
     );
     assert!(
-        !output.code.contains("type __as_Props_0 = typeof as"),
+        !output
+            .code
+            .contains("type __as_Props_0 = $UsageProps<typeof as>"),
         "dynamic component target must not reference an undeclared contextual keyword prop:\n{}",
         output.code
     );

@@ -51,6 +51,10 @@ import {
   beforePropValueOrIn,
 } from "../../tools/support/compat/content-mapper/prop-value-or-transition.ts";
 import { applyListenerContractIn } from "../../tools/support/compat/content-mapper/listener-contract-transition.ts";
+import {
+  applyUsageContractIn,
+  beforeUsageContractIn,
+} from "../../tools/support/compat/content-mapper/usage-contract-transition.ts";
 
 test("quiet CLI debug output retains exact helper/file bytes and refuses unrelated stderr", () => {
   const record = JSON.parse(
@@ -177,7 +181,10 @@ test("quiet CLI debug output retains exact helper/file bytes and refuses unrelat
   const propValueOrSourcePreamble = applyPropValueOrIn(ownedSourcePreamble);
   assert.equal(beforePropValueOrIn(propValueOrSourcePreamble), ownedSourcePreamble);
   assert.throws(() => applyPropValueOrIn(propValueOrSourcePreamble), /PropValueOr/u);
-  const currentSourcePreamble = applyListenerContractIn(propValueOrSourcePreamble);
+  const listenerSourcePreamble = applyListenerContractIn(propValueOrSourcePreamble);
+  const currentSourcePreamble = applyUsageContractIn(listenerSourcePreamble);
+  assert.equal(beforeUsageContractIn(currentSourcePreamble), listenerSourcePreamble);
+  assert.throws(() => applyUsageContractIn(currentSourcePreamble), /usage contract/u);
   const canonPredecessor = [...canonLeftoverPreamblePaths]
     .reverse()
     .reduce((current, file) => beforeCanonLeftoversIn(file, current), canonSourcePreamble);

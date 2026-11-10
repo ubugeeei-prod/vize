@@ -2,6 +2,7 @@
 import assert from "node:assert/strict";
 import { beforeInstanceInputKeys } from "./instance-input-keys-transition.ts";
 import { beforeUnownedOwnedKeys } from "./unowned-owned-keys-transition.ts";
+import { usageContractDeclarations } from "./usage-contract-transition.ts";
 
 type Edit = { start: number; end: number; replacement: Buffer };
 
@@ -137,9 +138,90 @@ function lazyPropValueEdits(before: string, after: string): Edit[] {
   return edits;
 }
 
+const usagePrefix = String.raw`(?:import\("vize[:/]virtual-ts"\)\.)?`;
+const usageIsAny = String.raw`(?:import\("vize[:/]virtual-ts"\)\.IsAny|\$IsAny)`;
+const perUsageProps = new RegExp(
+  String.raw`(type (__[\w$]+)_Props_(\d+) = )typeof ([\w$.]+) extends \{ __vizeCheck: infer __F \} \? \(${usageIsAny}<__F> extends true \? (${usagePrefix})\$ComponentRawProps<typeof \4> : Record<string, unknown>\) : \5\$ComponentRawProps<typeof \4>;`,
+  "gu",
+);
+const perUsageCheckProps = new RegExp(
+  String.raw`(type (__[\w$]+)_CheckProps_(\d+) = \2_Props_\3 & )(${usagePrefix})\$EmitListeners<(\2_Component_\3)> & \(${usagePrefix}\$FallthroughProps<\5> extends infer __F \? \[__F extends unknown \? \{\} extends __F \? never : __F : never\] extends \[never\] \? ${usagePrefix}\$RequiredFallthroughProps<\5, __F, never> : ${usagePrefix}\$RequiredFallthroughProps<\5, __F> : never\);`,
+  "gu",
+);
+
+/** #12431: a plain binding's props alias, as the usage contract writes it. */
+export function usageProps(head: string, prefix: string, component: string): string {
+  return `${head}${prefix}$UsageProps<typeof ${component}>;`;
+}
+
+/** #12431: a plain binding's check props, its props and the shared extras. */
+export function usageCheckProps(head: string, prefix: string, component: string): string {
+  return `${head}${prefix}$UsageCheckExtras<${component}>;`;
+}
+
+/** Edits moving each per-usage contract alias onto the usage contract, around its unchanged component reference. */
+function usageContractEdits(before: string, after: string): Edit[] {
+  const edits: Edit[] = [];
+  const at = (start: number, end: number, replacement: string) =>
+    edits.push({
+      start: Buffer.byteLength(before.slice(0, start)),
+      end: Buffer.byteLength(before.slice(0, end)),
+      replacement: Buffer.from(replacement),
+    });
+  for (const match of before.matchAll(perUsageProps)) {
+    const [whole, head, , , component, prefix] = match as unknown as string[];
+    const current = usageProps(head!, prefix!, component!);
+    if (after.split(whole!).length > 1 || after.split(current).length === 1) continue;
+    // Keep the last `typeof X>;`; replace everything between the head and it.
+    const kept = `typeof ${component}>;`;
+    at(
+      match.index + head!.length,
+      match.index + whole!.length - kept.length,
+      `${prefix}$UsageProps<`,
+    );
+  }
+  for (const match of before.matchAll(perUsageCheckProps)) {
+    const [whole, head, , , prefix, component] = match as unknown as string[];
+    const current = usageCheckProps(head!, prefix!, component!);
+    if (after.split(whole!).length > 1 || after.split(current).length === 1) continue;
+    at(
+      match.index + head!.length,
+      match.index + whole!.length - 1,
+      `${prefix}$UsageCheckExtras<${component}>`,
+    );
+  }
+  return edits;
+}
+
+/** #12431: a non-hoisted helper block declares the usage contract right after `$PropValueOr`. */
+function localUsageContractEdits(before: string, after: string): Edit[] {
+  const anchor = before
+    .split("\n")
+    .find((line) => line.startsWith("  type $PropValueOr<P, K extends PropertyKey, C,"));
+  if (anchor === undefined) return [];
+  const value = `${anchor}\n`;
+  const added = usageContractDeclarations()
+    .map((line) => `  ${line}\n`)
+    .join("");
+  const count = (text: string, needle: string) => text.split(needle).length - 1;
+  const blocks = count(before, value);
+  if (count(before, added) > 0 || count(after, value + added) !== blocks) return [];
+  const edits: Edit[] = [];
+  for (let at = before.indexOf(value); at >= 0; at = before.indexOf(value, at + 1)) {
+    const end = Buffer.byteLength(before.slice(0, at + value.length));
+    edits.push({ start: end, end, replacement: Buffer.from(added) });
+  }
+  return edits;
+}
+
 /** Appends the landed edits for every line `after` replaces with its current form. */
 export function withLandedEdits(before: string, after: string, edits: Edit[]): Edit[] {
-  const gates: Edit[] = [...navigationEdits(before, after), ...lazyPropValueEdits(before, after)];
+  const gates: Edit[] = [
+    ...navigationEdits(before, after),
+    ...lazyPropValueEdits(before, after),
+    ...usageContractEdits(before, after),
+    ...localUsageContractEdits(before, after),
+  ];
   for (const match of before.matchAll(ungated)) {
     const replacement = requiredFallthroughGate(match[1]!, match[2]!);
     if (after.split(match[0]).length > 1 || after.split(replacement).length === 1) continue;

@@ -43,6 +43,8 @@ shared_type_refs! {
     PROP_CHECKER => ("$PropChecker", "$PropChecker"),
     PROP_VALUE => ("$PropValue", "$PropValue"),
     PROP_VALUE_OR => ("$PropValueOr", "$PropValueOr"),
+    USAGE_PROPS => ("$UsageProps", "$UsageProps"),
+    USAGE_CHECK_EXTRAS => ("$UsageCheckExtras", "$UsageCheckExtras"),
     FALLTHROUGH_SPREAD_CHECKER => ("$FallthroughSpreadChecker", "$FallthroughSpreadChecker"),
     CALLABLE_PROP => ("$CallableProp", "$CallableProp"),
     PROPS_RESOLVER => ("$PropsResolver", "$PropsResolver"),

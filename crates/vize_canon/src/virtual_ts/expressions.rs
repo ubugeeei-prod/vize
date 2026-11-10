@@ -31,6 +31,8 @@ mod native_props_tests;
 mod prop_name_casing_tests;
 mod prop_sources;
 mod props_literal;
+#[cfg(test)]
+mod usage_contract_tests;
 #[cfg(feature = "native")]
 pub(crate) use props_literal::key_sub_spans;
 pub(crate) use props_literal::{

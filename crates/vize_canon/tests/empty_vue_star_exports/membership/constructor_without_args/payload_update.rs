@@ -34,6 +34,7 @@ mod runtime_prop_call;
 mod static_emit_gate;
 mod strict_extra_keys;
 mod unowned_owned_keys;
+mod usage_contract;
 
 const RECORD: &str = "malformed-membership/slot-provider-payload-update-11027.json";
 const PATHS: [&str; 11] = [

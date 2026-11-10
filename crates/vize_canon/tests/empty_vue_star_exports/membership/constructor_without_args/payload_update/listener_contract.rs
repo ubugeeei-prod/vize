@@ -52,6 +52,7 @@ fn restore(current: String, file: &Value) -> String {
 /// The pre-contract bytes of a recorded source's current image. Older images
 /// pass through; the layers below authenticate them.
 pub(super) fn source_before(path: &str, current: String) -> String {
+    let current = super::usage_contract::source_before(path, current);
     let record = record();
     match record["files"]
         .as_array()
@@ -76,6 +77,7 @@ pub(super) fn read_current(path: &str) -> String {
 
 /// The compiled preamble without the contract lines its asset gained.
 pub(super) fn preamble_before(current: &str) -> String {
+    let current = &super::usage_contract::preamble_before(current);
     let hash = support::hash(current.as_bytes());
     let Some((_, before)) = PREAMBLE.iter().find(|(after, _)| *after == hash) else {
         return current.to_owned();
@@ -101,7 +103,7 @@ mod tests {
         let record = record();
         for file in record["files"].as_array().unwrap() {
             let path = file["path"].as_str().unwrap();
-            let current = fs::read_to_string(support::repository().join(path)).unwrap();
+            let current = super::super::usage_contract::read_current(path);
             assert_eq!(support::hash(current.as_bytes()), file["after"]["sha256"]);
             let previous = source_before(path, current.clone());
             assert_eq!(support::hash(previous.as_bytes()), file["before"]["sha256"]);
@@ -119,9 +121,11 @@ mod tests {
             vize_canon::virtual_ts::SHARED_PREAMBLE_DTS,
             vize_canon::virtual_ts::SHARED_PREAMBLE_STRICT_DTS,
         ]
+        .map(super::super::usage_contract::preamble_before)
         .into_iter()
         .zip(PREAMBLE)
         {
+            let current = current.as_str();
             assert_eq!(support::hash(current.as_bytes()), after);
             let previous = preamble_before(current);
             assert_eq!(support::hash(previous.as_bytes()), before);

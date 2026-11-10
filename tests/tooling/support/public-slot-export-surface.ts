@@ -181,6 +181,35 @@ function withProvenPropValueOrAdditionRemoved(
 }
 
 /** `$ListenerContract` is new; its oracle proves it equals the alias chain. */
+/** `$UsageProps` and `$UsageCheckExtras` (#12431) are additions; their oracle proves them equal to the per-usage aliases. */
+function withProvenUsageContractRemoved(
+  actual: ExportSurface,
+  expected: ExportSurface,
+): ExportSurface {
+  const exports = structuredClone(actual.exports);
+  const oracle = new URL("tests/tooling/canon-usage-contract-equivalence.test.ts", repositoryRoot);
+  for (const name of ["$UsageProps", "$UsageCheckExtras"]) {
+    const index = exports.findIndex((entry) => entry.name === name);
+    if (expected.exports.some((entry) => entry.name === name) || index < 0) continue;
+    assert.ok(fs.existsSync(oracle) && fs.readFileSync(oracle, "utf8").includes(name));
+    assert.deepEqual(exports[index], {
+      name,
+      type: true,
+      value: false,
+      namespace: false,
+      declarations: [
+        {
+          kind: "TypeAliasDeclaration",
+          parameters: [{ name: "C", constraint: null, default: null }],
+          signatures: [],
+        },
+      ],
+    });
+    exports.splice(index, 1);
+  }
+  return { ...actual, exports };
+}
+
 function withProvenListenerContractRemoved(
   actual: ExportSurface,
   expected: ExportSurface,
@@ -240,7 +269,10 @@ export function assertPublicSlotExportSurface(
       withProvenDefaultsRestored(
         withProvenPropValueOrAdditionRemoved(
           withProvenListenerAdditionRemoved(
-            withProvenListenerContractRemoved(actual, expected),
+            withProvenListenerContractRemoved(
+              withProvenUsageContractRemoved(actual, expected),
+              expected,
+            ),
             expected,
           ),
           expected,
