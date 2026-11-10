@@ -163,7 +163,6 @@ void test("compiler fixture pins a real full-module reference without native cre
       "compiler/sfc/compact-scoped-at-rules-10639",
       "compiler/sfc/escaped-for-bindings-10714",
       "compiler/sfc/for-alias-initializers-10746",
-      "compiler/sfc/incomplete-script-setup-recovery-10200",
       "compiler/sfc/jsx-vapor-runtime-slots-6889",
       "compiler/sfc/maybe-ref-authored-handlers-10164",
       "compiler/sfc/maybe-ref-model-parity-10044",
