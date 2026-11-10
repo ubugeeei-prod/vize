@@ -1,4 +1,5 @@
-//! Hide generated lexical bindings by declaration origin, never name prefixes.
+//! Hide generated lexical bindings by declaration origin and private component
+//! contract members only after the contract marker proves their ownership.
 
 use oxc_allocator::Allocator;
 use oxc_parser::Parser;
@@ -10,6 +11,9 @@ use vize_l0::{FxHashSet, String};
 
 use crate::ide::{IdeContext, corsa_support, offset_to_position, position_to_offset};
 
+const GENERATED_COMPONENT_MARKER: &str = "__vizeComponentMarker";
+const GENERATED_MEMBER_PREFIX: &str = "__vize";
+
 pub(super) fn retain_authored_bindings(
     ctx: &IdeContext<'_>,
     document: &corsa_support::CanonicalVirtualDocument,
@@ -17,8 +21,8 @@ pub(super) fn retain_authored_bindings(
     character: u32,
     items: &mut Vec<CompletionItem>,
 ) {
-    // Member names are properties of authored types, not lexical helpers.
     if crate::ide::template_expression::is_at_member_access_position(&ctx.content, ctx.offset) {
+        retain_authored_component_members(items);
         return;
     }
     let code = &document.virtual_result.code;
@@ -82,4 +86,76 @@ pub(super) fn retain_authored_bindings(
         }
     }
     items.retain(|item| !generated.contains(item.label.as_str()));
+}
+
+/// Remove private fields only when the completion list proves that its receiver
+/// carries Vize's generated component contract. Ordinary authored objects may
+/// use the same prefix and must keep those members.
+fn retain_authored_component_members(items: &mut Vec<CompletionItem>) {
+    if items
+        .iter()
+        .any(|item| item.label == GENERATED_COMPONENT_MARKER)
+    {
+        items.retain(|item| !item.label.starts_with(GENERATED_MEMBER_PREFIX));
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use tower_lsp::lsp_types::{CompletionItemKind, Documentation};
+
+    use super::*;
+
+    fn item(label: &str, kind: CompletionItemKind, documentation: &str) -> CompletionItem {
+        CompletionItem {
+            label: label.into(),
+            kind: Some(kind),
+            documentation: Some(Documentation::String(documentation.into())),
+            ..Default::default()
+        }
+    }
+
+    #[test]
+    fn generated_component_contract_members_are_hidden_without_rewriting_public_items() {
+        let title = item("title", CompletionItemKind::PROPERTY, "authored title");
+        let render = item("render", CompletionItemKind::METHOD, "authored render");
+        let mut items = vec![
+            title.clone(),
+            item(
+                GENERATED_COMPONENT_MARKER,
+                CompletionItemKind::PROPERTY,
+                "generated marker",
+            ),
+            render.clone(),
+            item(
+                "__vizeRawProps",
+                CompletionItemKind::PROPERTY,
+                "generated props",
+            ),
+            item(
+                "__vizeSlots",
+                CompletionItemKind::PROPERTY,
+                "generated slots",
+            ),
+        ];
+
+        retain_authored_component_members(&mut items);
+
+        assert_eq!(items, [title, render]);
+    }
+
+    #[test]
+    fn an_authored_prefixed_member_is_preserved_without_the_component_marker() {
+        let authored = item(
+            "__vizeAuthored",
+            CompletionItemKind::PROPERTY,
+            "authored private API",
+        );
+        let public = item("public", CompletionItemKind::PROPERTY, "public API");
+        let mut items = vec![authored.clone(), public.clone()];
+
+        retain_authored_component_members(&mut items);
+
+        assert_eq!(items, [authored, public]);
+    }
 }
