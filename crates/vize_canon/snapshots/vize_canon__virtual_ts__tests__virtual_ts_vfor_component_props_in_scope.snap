@@ -202,18 +202,18 @@ const todos = ref([{ id: 1, text: 'Hello' }])
   type $MissingRequiredSlots<__S, __P> = Exclude<$RequiredSlotKeys<__S>, keyof __P>;
   type $RequiredSlots<__S, __P> = $IsAny<__S> extends true ? {} : string extends keyof __S ? {} : [keyof __S] extends [never] ? {} : [$MissingRequiredSlots<__S, __P>] extends [never] ? {} : { readonly __vizeMissingSlots: $MissingRequiredSlots<__S, __P> };
   // @vize-map: component -> 8:70
-  type __TodoItem_Props_0 = typeof TodoItem extends { __vizeCheck: infer __F } ? ($IsAny<__F> extends true ? $ComponentRawProps<typeof TodoItem> : Record<string, unknown>) : $ComponentRawProps<typeof TodoItem>;
-  type __TodoItem_Component_0 = typeof TodoItem;
-  type __TodoItem_CheckProps_0 = __TodoItem_Props_0 & $EmitListeners<__TodoItem_Component_0> & ($FallthroughProps<__TodoItem_Component_0> extends infer __F ? [__F extends unknown ? {} extends __F ? never : __F : never] extends [never] ? $RequiredFallthroughProps<__TodoItem_Component_0, __F, never> : $RequiredFallthroughProps<__TodoItem_Component_0, __F> : never);
-  type __TodoItem_CheckTail_0 = $ComponentCheckTail<__TodoItem_Component_0>;
-  type __TodoItem_ValueProps_0 = $IsLibraryGenericExport<__TodoItem_Component_0> extends true ? Record<string, any> : __TodoItem_Props_0 & $EmitListeners<__TodoItem_Component_0> & $PublicComponentAttrs;
-  type __TodoItem_Check_0 = $PropChecker<__TodoItem_Component_0, __TodoItem_CheckProps_0, __TodoItem_CheckTail_0>;
-  type __TodoItem_0_prop_item = $PropValueOr<__TodoItem_ValueProps_0, 'item', __TodoItem_Component_0>;
+  type __VProps0 = typeof TodoItem extends { __vizeCheck: infer __F } ? ($IsAny<__F> extends true ? $ComponentRawProps<typeof TodoItem> : Record<string, unknown>) : $ComponentRawProps<typeof TodoItem>;
+  type __VComp0 = typeof TodoItem;
+  type __VCheckProps0 = __VProps0 & $EmitListeners<__VComp0> & ($FallthroughProps<__VComp0> extends infer __F ? [__F extends unknown ? {} extends __F ? never : __F : never] extends [never] ? $RequiredFallthroughProps<__VComp0, __F, never> : $RequiredFallthroughProps<__VComp0, __F> : never);
+  type __VCheckTail0 = $ComponentCheckTail<__VComp0>;
+  type __VValueProps0 = $IsLibraryGenericExport<__VComp0> extends true ? Record<string, any> : __VProps0 & $EmitListeners<__VComp0> & $PublicComponentAttrs;
+  type __VCheck0 = $PropChecker<__VComp0, __VCheckProps0, __VCheckTail0>;
+  type __VProp0$item = $PropValueOr<__VValueProps0, 'item', __VComp0>;
 
   // Component template navigation references
   void TodoItem;
-  const { } = undefined as unknown as $ComponentNavigationProps<__TodoItem_Props_0>;
-  const __vize_props_nav_0 = undefined as unknown as __TodoItem_Props_0 & globalThis.Record<string, unknown>;
+  const { } = undefined as unknown as $ComponentNavigationProps<__VProps0>;
+  const __vize_props_nav_0 = undefined as unknown as __VProps0 & globalThis.Record<string, unknown>;
   // @ts-ignore Navigation-only references; no diagnostic owner.
   void __vize_props_nav_0.item;
 
@@ -225,9 +225,9 @@ const todos = ref([{ id: 1, text: 'Hello' }])
   for (const [todo] of __vize_v_for_source_8) {
     void todo;
     // @vize-map: prop -> 55:67
-    const __vize_prop_check_0_item: __TodoItem_0_prop_item = todo;
+    const __vize_prop_check_0_item: __VProp0$item = todo;
     void __vize_prop_check_0_item;
-    (undefined as unknown as __TodoItem_Check_0)({
+    (undefined as unknown as __VCheck0)({
       "item": todo,
     });
     type $SlotContract_0 = $StructuralSlots<typeof TodoItem>;

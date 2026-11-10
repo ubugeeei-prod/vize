@@ -162,7 +162,7 @@ fn defaulted_required_props_follow_the_published_instance_props() {
             (
                 "src/Invalid.vue".into(),
                 Some(2345),
-                "11:4: Argument of type '{ title: string; }' is not assignable to parameter of type '$ComponentCheckProps<__OptionsChild_CheckProps_0, $PublicComponentAttrs & { [x: string]: unknown; } & { [x: `data${Capitalize<string>}`]: unknown; [x: `data-${string}`]: unknown; } & Record<...>>'.\nProperty 'flag' is missing in type '{ title: string; }' but required in type '{ readonly label?: string | undefined; readonly flag: boolean; readonly title: string; }'.".into()
+                "11:4: Argument of type '{ title: string; }' is not assignable to parameter of type '$ComponentCheckProps<__VCheckProps0, $PublicComponentAttrs & { [x: string]: unknown; } & { [x: `data${Capitalize<string>}`]: unknown; [x: `data-${string}`]: unknown; } & Record<string, unknown>>'.\nProperty 'flag' is missing in type '{ title: string; }' but required in type '{ readonly label?: string | undefined; readonly flag: boolean; readonly title: string; }'.".into()
             ),
             (
                 "src/Invalid.vue".into(),

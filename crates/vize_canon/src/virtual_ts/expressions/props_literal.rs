@@ -130,7 +130,6 @@ pub(crate) fn append_props_literal(
             ts,
             mappings,
             prop,
-            usage.name.as_str(),
             template_binding_access,
             source_context,
             expr_indent,

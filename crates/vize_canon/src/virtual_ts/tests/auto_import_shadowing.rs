@@ -39,7 +39,7 @@ const count = 1
     assert!(
         output
             .code
-            .contains("type __Differences_Props_0 = typeof $Component_Differences"),
+            .contains("type __VProps0 = typeof $Component_Differences"),
         "{}",
         output.code
     );
@@ -84,7 +84,7 @@ const paginatorRef = ref<PaginatorRef>()
     assert!(
         output
             .code
-            .contains("type __CommonPaginator_Props_0 = typeof $Component_CommonPaginator"),
+            .contains("type __VProps0 = typeof $Component_CommonPaginator"),
         "{}",
         output.code
     );

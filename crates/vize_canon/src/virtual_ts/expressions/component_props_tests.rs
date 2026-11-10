@@ -109,14 +109,14 @@ fn static_attribute_values_are_type_checked_like_dynamic_bindings() {
     let output = generate_virtual_ts(&summary, Some(script), Some(&root), 0);
 
     assert!(
-        output.code.contains("type __HelloWorld_0_prop_msg = $PropValueOr<__HelloWorld_ValueProps_0, 'msg', __HelloWorld_Component_0>;"),
+        output
+            .code
+            .contains("type __VProp0$msg = $PropValueOr<__VValueProps0, 'msg', __VComp0>;"),
         "static prop must declare its child prop type alias:\n{}",
         output.code
     );
     assert!(
-        output
-            .code
-            .contains(": __HelloWorld_0_prop_msg = \"You did it!\";"),
+        output.code.contains(": __VProp0$msg = \"You did it!\";"),
         "static prop value must be asserted against the child prop type:\n{}",
         output.code
     );
@@ -167,7 +167,7 @@ fn static_attribute_values_escape_into_exact_string_literals() {
     assert!(
         output
             .code
-            .contains(": __Child_0_prop_label = \"say \\\"hi\\\" \\\\ done\";"),
+            .contains(": __VProp0$label = \"say \\\"hi\\\" \\\\ done\";"),
         "static value must escape quotes and backslashes:\n{}",
         output.code
     );
@@ -188,7 +188,7 @@ fn valueless_static_attributes_stay_out_of_per_prop_checks() {
 
     let output = generate_virtual_ts(&summary, Some(script), Some(&root), 0);
     assert!(
-        !output.code.contains("__Child_0_prop_disabled ="),
+        !output.code.contains("__VProp0$disabled ="),
         "valueless attributes keep their boolean-shorthand semantics:\n{}",
         output.code
     );
@@ -213,7 +213,7 @@ const isLoading = false
     assert_eq!(
         output
             .code
-            .matches("type __Child_0_prop_class = $PropValueOr<__Child_ValueProps_0, 'class', __Child_Component_0>;")
+            .matches("type __VProp0$class = $PropValueOr<__VValueProps0, 'class', __VComp0>;")
             .count(),
         1,
         "the child prop type alias must be declared exactly once:\n{}",
@@ -222,13 +222,13 @@ const isLoading = false
     assert!(
         output
             .code
-            .contains("const __vize_prop_check_0_class: __Child_0_prop_class = \"static-card\";"),
+            .contains("const __vize_prop_check_0_class: __VProp0$class = \"static-card\";"),
         "the static class value keeps the base check name:\n{}",
         output.code
     );
     assert!(
         output.code.contains(
-            "const __vize_prop_check_0_class_2: __Child_0_prop_class = { loading: isLoading };"
+            "const __vize_prop_check_0_class_2: __VProp0$class = { loading: isLoading };"
         ),
         "the bound class value gets a unique check name:\n{}",
         output.code

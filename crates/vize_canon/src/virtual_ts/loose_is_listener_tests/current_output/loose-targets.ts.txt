@@ -361,52 +361,52 @@ const take = (value: unknown) => value
   type $MissingRequiredSlots<__S, __P> = Exclude<$RequiredSlotKeys<__S>, keyof __P>;
   type $RequiredSlots<__S, __P> = $IsAny<__S> extends true ? {} : string extends keyof __S ? {} : [keyof __S] extends [never] ? {} : [$MissingRequiredSlots<__S, __P>] extends [never] ? {} : { readonly __vizeMissingSlots: $MissingRequiredSlots<__S, __P> };
   // @vize-map: component -> 0:47
-  type __target_Props_0 = typeof target extends { __vizeCheck: infer __F } ? ($IsAny<__F> extends true ? $ComponentRawProps<typeof target> : Record<string, unknown>) : $ComponentRawProps<typeof target>;
-  type __target_Component_0 = typeof target;
-  type __target_CheckProps_0 = __target_Props_0 & $EmitListeners<__target_Component_0> & ($FallthroughProps<__target_Component_0> extends infer __F ? [__F extends unknown ? {} extends __F ? never : __F : never] extends [never] ? $RequiredFallthroughProps<__target_Component_0, __F, never> : $RequiredFallthroughProps<__target_Component_0, __F> : never);
-  type __target_CheckTail_0 = $ComponentCheckTail<__target_Component_0>;
-  type __target_Check_0 = $PropChecker<__target_Component_0, __target_CheckProps_0, __target_CheckTail_0>;
+  type __VProps0 = typeof target extends { __vizeCheck: infer __F } ? ($IsAny<__F> extends true ? $ComponentRawProps<typeof target> : Record<string, unknown>) : $ComponentRawProps<typeof target>;
+  type __VComp0 = typeof target;
+  type __VCheckProps0 = __VProps0 & $EmitListeners<__VComp0> & ($FallthroughProps<__VComp0> extends infer __F ? [__F extends unknown ? {} extends __F ? never : __F : never] extends [never] ? $RequiredFallthroughProps<__VComp0, __F, never> : $RequiredFallthroughProps<__VComp0, __F> : never);
+  type __VCheckTail0 = $ComponentCheckTail<__VComp0>;
+  type __VCheck0 = $PropChecker<__VComp0, __VCheckProps0, __VCheckTail0>;
   // @vize-map: component -> 59:104
-  type __node_Props_1 = typeof node extends { __vizeCheck: infer __F } ? ($IsAny<__F> extends true ? $ComponentRawProps<typeof node> : Record<string, unknown>) : $ComponentRawProps<typeof node>;
-  type __node_Component_1 = typeof node;
-  type __node_CheckProps_1 = __node_Props_1 & $EmitListeners<__node_Component_1> & ($FallthroughProps<__node_Component_1> extends infer __F ? [__F extends unknown ? {} extends __F ? never : __F : never] extends [never] ? $RequiredFallthroughProps<__node_Component_1, __F, never> : $RequiredFallthroughProps<__node_Component_1, __F> : never);
-  type __node_CheckTail_1 = $ComponentCheckTail<__node_Component_1>;
-  type __node_Check_1 = $PropChecker<__node_Component_1, __node_CheckProps_1, __node_CheckTail_1>;
+  type __VProps1 = typeof node extends { __vizeCheck: infer __F } ? ($IsAny<__F> extends true ? $ComponentRawProps<typeof node> : Record<string, unknown>) : $ComponentRawProps<typeof node>;
+  type __VComp1 = typeof node;
+  type __VCheckProps1 = __VProps1 & $EmitListeners<__VComp1> & ($FallthroughProps<__VComp1> extends infer __F ? [__F extends unknown ? {} extends __F ? never : __F : never] extends [never] ? $RequiredFallthroughProps<__VComp1, __F, never> : $RequiredFallthroughProps<__VComp1, __F> : never);
+  type __VCheckTail1 = $ComponentCheckTail<__VComp1>;
+  type __VCheck1 = $PropChecker<__VComp1, __VCheckProps1, __VCheckTail1>;
   // @vize-map: component -> 116:162
-  type __loose_Props_2 = typeof loose extends { __vizeCheck: infer __F } ? ($IsAny<__F> extends true ? $ComponentRawProps<typeof loose> : Record<string, unknown>) : $ComponentRawProps<typeof loose>;
-  type __loose_Component_2 = typeof loose;
-  type __loose_CheckProps_2 = __loose_Props_2 & $EmitListeners<__loose_Component_2> & ($FallthroughProps<__loose_Component_2> extends infer __F ? [__F extends unknown ? {} extends __F ? never : __F : never] extends [never] ? $RequiredFallthroughProps<__loose_Component_2, __F, never> : $RequiredFallthroughProps<__loose_Component_2, __F> : never);
-  type __loose_CheckTail_2 = $ComponentCheckTail<__loose_Component_2>;
-  type __loose_Check_2 = $PropChecker<__loose_Component_2, __loose_CheckProps_2, __loose_CheckTail_2>;
+  type __VProps2 = typeof loose extends { __vizeCheck: infer __F } ? ($IsAny<__F> extends true ? $ComponentRawProps<typeof loose> : Record<string, unknown>) : $ComponentRawProps<typeof loose>;
+  type __VComp2 = typeof loose;
+  type __VCheckProps2 = __VProps2 & $EmitListeners<__VComp2> & ($FallthroughProps<__VComp2> extends infer __F ? [__F extends unknown ? {} extends __F ? never : __F : never] extends [never] ? $RequiredFallthroughProps<__VComp2, __F, never> : $RequiredFallthroughProps<__VComp2, __F> : never);
+  type __VCheckTail2 = $ComponentCheckTail<__VComp2>;
+  type __VCheck2 = $PropChecker<__VComp2, __VCheckProps2, __VCheckTail2>;
   // @vize-map: component -> 174:218
-  type __tag_Props_3 = typeof tag extends { __vizeCheck: infer __F } ? ($IsAny<__F> extends true ? $ComponentRawProps<typeof tag> : Record<string, unknown>) : $ComponentRawProps<typeof tag>;
-  type __tag_Component_3 = typeof tag;
-  type __tag_CheckProps_3 = __tag_Props_3 & $EmitListeners<__tag_Component_3> & ($FallthroughProps<__tag_Component_3> extends infer __F ? [__F extends unknown ? {} extends __F ? never : __F : never] extends [never] ? $RequiredFallthroughProps<__tag_Component_3, __F, never> : $RequiredFallthroughProps<__tag_Component_3, __F> : never);
-  type __tag_CheckTail_3 = $ComponentCheckTail<__tag_Component_3>;
-  type __tag_Check_3 = $PropChecker<__tag_Component_3, __tag_CheckProps_3, __tag_CheckTail_3>;
+  type __VProps3 = typeof tag extends { __vizeCheck: infer __F } ? ($IsAny<__F> extends true ? $ComponentRawProps<typeof tag> : Record<string, unknown>) : $ComponentRawProps<typeof tag>;
+  type __VComp3 = typeof tag;
+  type __VCheckProps3 = __VProps3 & $EmitListeners<__VComp3> & ($FallthroughProps<__VComp3> extends infer __F ? [__F extends unknown ? {} extends __F ? never : __F : never] extends [never] ? $RequiredFallthroughProps<__VComp3, __F, never> : $RequiredFallthroughProps<__VComp3, __F> : never);
+  type __VCheckTail3 = $ComponentCheckTail<__VComp3>;
+  type __VCheck3 = $PropChecker<__VComp3, __VCheckProps3, __VCheckTail3>;
   // @vize-map: component -> 230:277
-  type ____vize_dynamic_is_230_Props_4 = typeof __vize_dynamic_is_230 extends { __vizeCheck: infer __F } ? ($IsAny<__F> extends true ? $ComponentRawProps<typeof __vize_dynamic_is_230> : Record<string, unknown>) : $ComponentRawProps<typeof __vize_dynamic_is_230>;
-  type ____vize_dynamic_is_230_Component_4 = typeof __vize_dynamic_is_230;
-  type ____vize_dynamic_is_230_CheckProps_4 = ____vize_dynamic_is_230_Props_4 & $EmitListeners<____vize_dynamic_is_230_Component_4> & ($FallthroughProps<____vize_dynamic_is_230_Component_4> extends infer __F ? [__F extends unknown ? {} extends __F ? never : __F : never] extends [never] ? $RequiredFallthroughProps<____vize_dynamic_is_230_Component_4, __F, never> : $RequiredFallthroughProps<____vize_dynamic_is_230_Component_4, __F> : never);
-  type ____vize_dynamic_is_230_CheckTail_4 = $ComponentCheckTail<____vize_dynamic_is_230_Component_4>;
-  type ____vize_dynamic_is_230_Check_4 = $PropChecker<____vize_dynamic_is_230_Component_4, ____vize_dynamic_is_230_CheckProps_4, ____vize_dynamic_is_230_CheckTail_4>;
+  type __VProps4 = typeof __vize_dynamic_is_230 extends { __vizeCheck: infer __F } ? ($IsAny<__F> extends true ? $ComponentRawProps<typeof __vize_dynamic_is_230> : Record<string, unknown>) : $ComponentRawProps<typeof __vize_dynamic_is_230>;
+  type __VComp4 = typeof __vize_dynamic_is_230;
+  type __VCheckProps4 = __VProps4 & $EmitListeners<__VComp4> & ($FallthroughProps<__VComp4> extends infer __F ? [__F extends unknown ? {} extends __F ? never : __F : never] extends [never] ? $RequiredFallthroughProps<__VComp4, __F, never> : $RequiredFallthroughProps<__VComp4, __F> : never);
+  type __VCheckTail4 = $ComponentCheckTail<__VComp4>;
+  type __VCheck4 = $PropChecker<__VComp4, __VCheckProps4, __VCheckTail4>;
 
   // Component template navigation references
   void target;
-  const { } = undefined as unknown as $ComponentNavigationProps<__target_Props_0>;
+  const { } = undefined as unknown as $ComponentNavigationProps<__VProps0>;
   void node;
-  const { } = undefined as unknown as $ComponentNavigationProps<__node_Props_1>;
+  const { } = undefined as unknown as $ComponentNavigationProps<__VProps1>;
   void loose;
-  const { } = undefined as unknown as $ComponentNavigationProps<__loose_Props_2>;
+  const { } = undefined as unknown as $ComponentNavigationProps<__VProps2>;
   void tag;
-  const { } = undefined as unknown as $ComponentNavigationProps<__tag_Props_3>;
+  const { } = undefined as unknown as $ComponentNavigationProps<__VProps3>;
   void __vize_dynamic_is_230;
-  const { } = undefined as unknown as $ComponentNavigationProps<____vize_dynamic_is_230_Props_4>;
+  const { } = undefined as unknown as $ComponentNavigationProps<__VProps4>;
 
   // Component props value checks (template scope)
   void [
     () => {
-      (undefined as unknown as __target_Check_0)({
+      (undefined as unknown as __VCheck0)({
         ...{} as { "onPick": never },
       });
       type $SlotContract_0 = $StructuralSlots<typeof target>;
@@ -414,7 +414,7 @@ const take = (value: unknown) => value
       void __vize_required_slots_0;
     },
     () => {
-      (undefined as unknown as __node_Check_1)({
+      (undefined as unknown as __VCheck1)({
         ...{} as { "onPick": never },
       });
       type $SlotContract_1 = $StructuralSlots<typeof node>;
@@ -422,7 +422,7 @@ const take = (value: unknown) => value
       void __vize_required_slots_1;
     },
     () => {
-      (undefined as unknown as __loose_Check_2)({
+      (undefined as unknown as __VCheck2)({
         ...{} as { "onPick": never },
       });
       type $SlotContract_2 = $StructuralSlots<typeof loose>;
@@ -430,7 +430,7 @@ const take = (value: unknown) => value
       void __vize_required_slots_2;
     },
     () => {
-      (undefined as unknown as __tag_Check_3)({
+      (undefined as unknown as __VCheck3)({
         ...{} as { "onPick": never },
       });
       type $SlotContract_3 = $StructuralSlots<typeof tag>;
@@ -438,7 +438,7 @@ const take = (value: unknown) => value
       void __vize_required_slots_3;
     },
     () => {
-      (undefined as unknown as ____vize_dynamic_is_230_Check_4)({
+      (undefined as unknown as __VCheck4)({
         ...{} as { "onPick": never },
       });
       type $SlotContract_4 = $StructuralSlots<typeof __vize_dynamic_is_230>;
