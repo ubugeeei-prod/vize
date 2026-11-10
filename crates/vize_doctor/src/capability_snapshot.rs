@@ -1,6 +1,7 @@
 //! Validated, independently reusable output from one analysis capability.
 
 mod error;
+mod persistence;
 #[cfg(test)]
 mod tests;
 
@@ -16,6 +17,11 @@ use crate::{
 };
 
 pub use error::CapabilitySnapshotError;
+pub use persistence::{
+    DOCTOR_PERSISTENT_CAPABILITY_SNAPSHOT_FORMAT_VERSION,
+    DOCTOR_PERSISTENT_CAPABILITY_SNAPSHOT_MEDIA_TYPE, PersistentCapabilitySnapshot,
+    PersistentCapabilitySnapshotError,
+};
 
 /// Current serialized capability snapshot format.
 pub const DOCTOR_CAPABILITY_SNAPSHOT_FORMAT_VERSION: u32 = 1;
