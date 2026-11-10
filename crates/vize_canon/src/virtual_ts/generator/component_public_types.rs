@@ -7,6 +7,14 @@ use vize_carton::{String, append, cstr};
 use vize_croquis::Croquis;
 use vize_l0::ts;
 
+pub(super) struct SlotsTypeOptions<'a> {
+    pub generic_injection: Option<&'a (String, Vec<String>)>,
+    pub export_slots: bool,
+    pub authored_slots_binding: bool,
+    pub options_api_slots: Option<&'a str>,
+    pub inferred_slots: bool,
+}
+
 /// Emit the private slot contract and preserve the public `Slots` export. When the slots type from
 /// `defineSlots` references an SFC generic parameter, the alias re-declares
 /// the parameters (with safe defaults) so declaration emit resolves them
@@ -18,12 +26,15 @@ pub(super) fn emit_slots_type(
     ts: &mut crate::virtual_ts::TextBuf,
     summary: &Croquis,
     mut mappings: MacroTypeMappings<'_>,
-    generic_injection: Option<&(String, Vec<String>)>,
-    export_slots: bool,
-    authored_slots_binding: bool,
-    options_api_slots: Option<&str>,
-    inferred_slots: bool,
+    options: SlotsTypeOptions<'_>,
 ) -> bool {
+    let SlotsTypeOptions {
+        generic_injection,
+        export_slots,
+        authored_slots_binding,
+        options_api_slots,
+        inferred_slots,
+    } = options;
     let slots_type_args = summary
         .macros
         .define_slots()

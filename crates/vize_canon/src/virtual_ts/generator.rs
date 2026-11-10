@@ -43,7 +43,7 @@ use self::anchors::SetupBindingAnchors;
 use self::auto_import_stubs::emit_auto_import_stubs;
 use self::component_constructors::{ComponentInstanceAliases, emit_component_constructors};
 use self::component_export::{emit_authored_component_aliases, emit_default_export_declaration};
-use self::component_public_types::{emit_exposed_type, emit_slots_type};
+use self::component_public_types::{SlotsTypeOptions, emit_exposed_type, emit_slots_type};
 use self::emits::emit_emits_type;
 pub use self::entry::{
     generate_virtual_ts, generate_virtual_ts_with_offsets,
@@ -792,12 +792,14 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         &mut ts,
         summary,
         MacroTypeMappings::new(&mut mappings, script_content, &script_source_offset),
-        generic_injection.as_ref(),
-        !module_plan.exported_types.contains("Slots"),
-        module_plan.bound_types.contains("Slots")
-            && component_public_types::uses_module_scoped_authored_slots_binding(summary),
-        options_api_slots.as_deref(),
-        inferred_slots,
+        SlotsTypeOptions {
+            generic_injection: generic_injection.as_ref(),
+            export_slots: !module_plan.exported_types.contains("Slots"),
+            authored_slots_binding: module_plan.bound_types.contains("Slots")
+                && component_public_types::uses_module_scoped_authored_slots_binding(summary),
+            options_api_slots: options_api_slots.as_deref(),
+            inferred_slots,
+        },
     );
     let (has_exposed_type, exposed_is_generic) =
         emit_exposed_type(&mut ts, summary, generic_injection.as_ref());

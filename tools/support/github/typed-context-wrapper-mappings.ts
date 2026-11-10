@@ -22,17 +22,30 @@ export function assertTypedContextWrapperMappings(
   ];
   assert.equal(
     digest(producer),
-    "9c3faec15ca7c73c4a8a3f0fd1fcae7bb6f9d70c8e71a7046994d373e8b4e038",
+    "271dfc983bf196cd118b521e7ac401824b19c423d2cacfa32dcfec29bdec922b",
     "unqualified content-mapper producer",
+  );
+  const componentHoverOwnerSuccessor =
+    "    span_features::retain_component_prop_hover_owner(generated, &mut spans);\n";
+  assert.equal(
+    producerText.split(componentHoverOwnerSuccessor).length,
+    2,
+    "finite component-hover owner producer successor",
+  );
+  const componentHoverOwnerPredecessor = producerText.replace(componentHoverOwnerSuccessor, "");
+  assert.equal(
+    digest(componentHoverOwnerPredecessor),
+    "9c3faec15ca7c73c4a8a3f0fd1fcae7bb6f9d70c8e71a7046994d373e8b4e038",
+    "finite component-hover owner producer successor",
   );
   const hoverOwnerSuccessor =
     "    span_features::retain_template_hover_owner(generated, &mut spans);\n";
   assert.equal(
-    producerText.split(hoverOwnerSuccessor).length,
+    componentHoverOwnerPredecessor.split(hoverOwnerSuccessor).length,
     2,
     "finite template-hover owner producer successor",
   );
-  const hoverOwnerPredecessor = producerText.replace(hoverOwnerSuccessor, "");
+  const hoverOwnerPredecessor = componentHoverOwnerPredecessor.replace(hoverOwnerSuccessor, "");
   assert.equal(
     digest(hoverOwnerPredecessor),
     "6a060e4d0c5d16cd3071f76ca35558abcecde9fcd5458346d54287eacdef03fd",
