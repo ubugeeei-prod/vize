@@ -1,0 +1,166 @@
+{
+  "schema": "vize.instance-global-current-provenance",
+  "version": 1,
+  "issue": 10617,
+  "pullRequest": 12655,
+  "producer": {
+    "sourceRevision": "4faf0850f21f54b1f453596e3ab03f2b783097ab",
+    "sourceTree": "95af0d8b97194d30f7a1219e17d7f19c7cfc5d92",
+    "pullRequestHead": "a15555ded2f2d44d5ccbfc68cda51d9198175be4",
+    "binarySha256": "b47725b25a058d7843f1abf4f3c1b6437685ce3a2cc9fa9630d08d47d385b1f0",
+    "recipe": "cargo build --profile ci -p vize",
+    "captureRun": 42793104632,
+    "artifactId": 13753414880,
+    "runAttempt": 1,
+    "platform": "linux",
+    "arch": "x64"
+  },
+  "artifact": {
+    "repository": "ubugeeei-prod/vize",
+    "run": 42793104632,
+    "job": 129754946757,
+    "id": 13753414880,
+    "name": "instance-globals-10617-a15555ded2f2d44d5ccbfc68cda51d9198175be4-1",
+    "digest": "sha256:24f8584cf9a65a6fbf1a5ef02b909b12eaab9f8fe36355309d8a685009571b24",
+    "bytes": 18718659
+  },
+  "previousPopulation": {
+    "path": "source-packets-current-c6a6c571b090.json",
+    "bytes": 417627,
+    "sha256": "9e51f91058641c3ef70474e16a1e4c5540d96bba5e2616de192e236c640a14e8"
+  },
+  "successorPopulation": {
+    "path": "source-packets-current-4faf0850f21f.json",
+    "bytes": 404261,
+    "sha256": "914b4c326368654ba74700f9264caa3808aa5972840c38caaefb866260229606"
+  },
+  "sourceReceipt": {
+    "path": "tests/_fixtures/tooling/generated-comment-bytes.json",
+    "sha256": "e0f9efc86d1d2ac94b84bcace95a209b4e0aa0c2d1e3f505fd25d96c010c4381"
+  },
+  "evidence": {
+    "source-build.json": {
+      "bytes": 326,
+      "sha256": "139d8b2d2f4334cb39f663620b7b21eb8ae23fb3113bb164e54b09a8dce612dc"
+    },
+    "source-launch.json": {
+      "bytes": 882,
+      "sha256": "bfd289ab78e055f07a1f6a9b6471cfb669fc2f5264c29901fecdb5cb2bd9c891"
+    },
+    "source-protocol.json": {
+      "bytes": 465714,
+      "sha256": "1fac8e094b3ef5efe65bcc30c99513e8025dbc0350eb26e84f0c3374a68bd69f"
+    },
+    "outcomes.json": {
+      "bytes": 839288,
+      "sha256": "66a9b54f5a658616482d81cc986ddd7b3b1417d160daf3fa4fc39296a68144c7"
+    },
+    "qualification.json": {
+      "bytes": 843589,
+      "sha256": "b14dfd68242089dc80fa3d455b7dba458f399f4a85fad91054c6914489ee6e38"
+    },
+    "host-matrix.json": {
+      "bytes": 4328,
+      "sha256": "5f990e712fdf6a594d7b797a1e9dd835f985b1f8bb91fe2503f4f2d4e0c97e1f"
+    }
+  },
+  "capturedQualification": {
+    "status": "unqualified",
+    "fullPacketQualification": false,
+    "hostMatrixQualification": false,
+    "totalOutcomes": 499,
+    "passedOutcomes": 419,
+    "gapCount": 80,
+    "gapIds": [
+      "whole-packet/lf/original",
+      "whole-packet/lf/valid",
+      "whole-packet/lf/undeclared-only",
+      "whole-packet/lf/repaired",
+      "whole-packet/lf/repeated",
+      "whole-packet/lf/optional",
+      "whole-packet/lf/call",
+      "whole-packet/lf/v-for-source",
+      "whole-packet/lf/intentional-any",
+      "whole-packet/lf/declared-unknown",
+      "whole-packet/lf/plugin-valid",
+      "whole-packet/lf/plugin-invalid",
+      "whole-packet/lf/setup-shadow",
+      "whole-packet/lf/loop-shadow",
+      "whole-packet/lf/slot-shadow",
+      "whole-packet/lf/css-module",
+      "whole-packet/lf/own-props",
+      "whole-packet/lf/options-own-method",
+      "whole-packet/lf/expect-error-opening-child",
+      "whole-packet/lf/ignore-opening-child",
+      "whole-packet/lf/expect-owned-interpolation",
+      "whole-packet/lf/ignore-owned-interpolation",
+      "whole-packet/lf/expect-owned-attribute",
+      "whole-packet/lf/ignore-owned-attribute",
+      "whole-packet/lf/expect-owned-foreign-sibling",
+      "whole-packet/lf/ignore-owned-foreign-sibling",
+      "whole-packet/lf/shorthand-free",
+      "whole-packet/lf/typeof-value-free",
+      "whole-packet/lf/object-key",
+      "whole-packet/lf/member-key",
+      "whole-packet/lf/string-comment-role",
+      "whole-packet/lf/template-literal-raw",
+      "whole-packet/lf/template-literal-value",
+      "whole-packet/lf/callback-shadow",
+      "whole-packet/lf/callback-mixed",
+      "whole-packet/lf/callback-free",
+      "whole-packet/lf/computed-key-free",
+      "whole-packet/lf/mixed-loop-scope",
+      "whole-packet/lf/mixed-slot-scope",
+      "whole-packet/lf/destructured-callback-shadow",
+      "whole-packet/crlf-unicode/original",
+      "whole-packet/crlf-unicode/valid",
+      "whole-packet/crlf-unicode/undeclared-only",
+      "whole-packet/crlf-unicode/repaired",
+      "whole-packet/crlf-unicode/repeated",
+      "whole-packet/crlf-unicode/optional",
+      "whole-packet/crlf-unicode/call",
+      "whole-packet/crlf-unicode/v-for-source",
+      "whole-packet/crlf-unicode/intentional-any",
+      "whole-packet/crlf-unicode/declared-unknown",
+      "whole-packet/crlf-unicode/plugin-valid",
+      "whole-packet/crlf-unicode/plugin-invalid",
+      "whole-packet/crlf-unicode/setup-shadow",
+      "whole-packet/crlf-unicode/loop-shadow",
+      "whole-packet/crlf-unicode/slot-shadow",
+      "whole-packet/crlf-unicode/css-module",
+      "whole-packet/crlf-unicode/own-props",
+      "whole-packet/crlf-unicode/options-own-method",
+      "whole-packet/crlf-unicode/expect-error-opening-child",
+      "whole-packet/crlf-unicode/ignore-opening-child",
+      "whole-packet/crlf-unicode/expect-owned-interpolation",
+      "whole-packet/crlf-unicode/ignore-owned-interpolation",
+      "whole-packet/crlf-unicode/expect-owned-attribute",
+      "whole-packet/crlf-unicode/ignore-owned-attribute",
+      "whole-packet/crlf-unicode/expect-owned-foreign-sibling",
+      "whole-packet/crlf-unicode/ignore-owned-foreign-sibling",
+      "whole-packet/crlf-unicode/shorthand-free",
+      "whole-packet/crlf-unicode/typeof-value-free",
+      "whole-packet/crlf-unicode/object-key",
+      "whole-packet/crlf-unicode/member-key",
+      "whole-packet/crlf-unicode/string-comment-role",
+      "whole-packet/crlf-unicode/template-literal-raw",
+      "whole-packet/crlf-unicode/template-literal-value",
+      "whole-packet/crlf-unicode/callback-shadow",
+      "whole-packet/crlf-unicode/callback-mixed",
+      "whole-packet/crlf-unicode/callback-free",
+      "whole-packet/crlf-unicode/computed-key-free",
+      "whole-packet/crlf-unicode/mixed-loop-scope",
+      "whole-packet/crlf-unicode/mixed-slot-scope",
+      "whole-packet/crlf-unicode/destructured-callback-shadow"
+    ]
+  },
+  "review": {
+    "completePackets": 80,
+    "allNonWholePacketOutcomesPassed": true,
+    "qualificationCredit": false,
+    "nativeAcceptanceCredit": false,
+    "publicPackageAcceptanceCredit": false,
+    "performanceCredit": false,
+    "reason": "Every whole packet lost the debug-only `@vize-map: expr|prop|handler|component` lines and the reasons after its generated `@ts-ignore` directives (the generated comment cut); every mapping, directive and semantic link moved only by those removed bytes, while all 419 semantic, protocol, mapping-geometry, and real-host controls passed; this record retains the observed postimages without assigning acceptance credit to the stale-golden run."
+  }
+}

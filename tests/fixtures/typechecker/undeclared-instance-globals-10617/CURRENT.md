@@ -1,5 +1,15 @@
 # Current instance-global packet authority
 
+The active expected population is `source-packets-current-4faf0850f21f.json`: all 80 whole transform results from [source Actions 42793104632](https://github.com/ubugeeei-prod/vize/actions/runs/42793104632/job/129754946757), synthetic merge producer `4faf0850f21f54b1f453596e3ab03f2b783097ab` for PR head `a15555ded2f2d44d5ccbfc68cda51d9198175be4`. The launch receipt binds the exact source CLI, and the artifact admits the reported beta, official nightly, and pinned source-built TypeScript host.
+
+The original strict comparison remains **unqualified**: 419 of 499 semantic, protocol, geometry, and whole-packet outcomes passed. Every whole packet changed by the generated comment cut only (#12655): its debug-only `@vize-map: expr|prop|handler|component` lines and the reasons after its generated `@ts-ignore` directives left the text. Every diagnostic and opaque field is unchanged; every mapping, directive and semantic link moved only by those removed bytes. Every non-whole-packet outcome and all three real-host controls passed.
+
+`complete: true` records the complete observed successor population. It grants no public-package or performance acceptance and does not retroactively qualify the capture. `source-packets-current-4faf0850f21f-provenance.json` binds the producer, artifact digest, exact evidence members, previous population, failed qualification vector, and explicit credit limits.
+
+## Previous authority (historical)
+
+# Current instance-global packet authority
+
 The active expected population is `source-packets-current-c6a6c571b090.json`: all 80 whole transform results from [source Actions 42781388461](https://github.com/ubugeeei-prod/vize/actions/runs/42781388461/job/129712771074), synthetic merge producer `c6a6c571b090f86cf3c8bff563ed9cb7d1ea7034` for PR head `0c3ae8dc16cec2a240124f550d7ecf7fb159946a`. The launch receipt binds the exact source CLI, and the artifact admits the reported beta, official nightly, and pinned source-built TypeScript host.
 
 The original strict comparison remains **unqualified**: 495 of 499 semantic, protocol, geometry, and whole-packet outcomes passed. Only the LF and CRLF/Unicode `slot-shadow` and `mixed-slot-scope` whole packets changed: their child usage names the shared `$UsageProps` and `$UsageRequiredFallthrough` helpers instead of declaring the inline conditionals on its `__Child_Props_0` and `__Child_CheckProps_0` lines (#12615). Each packet shrank by exactly those two alias bodies and every later generated coordinate moved by the same bytes; every diagnostic, mapping and opaque field is otherwise unchanged, and the other 76 complete results remain byte-identical. Every non-whole-packet outcome and all three real-host controls passed.
