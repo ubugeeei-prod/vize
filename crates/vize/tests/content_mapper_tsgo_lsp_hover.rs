@@ -137,4 +137,10 @@ fn standard_tsgo_lsp_hovers_component_api_with_jsdoc() {
     for (case, _, _) in CASES {
         assert_eq!(actual[case], expected[case], "{case}");
     }
+    // tsgo trims and joins the hovers of every projection a position maps
+    // to. A slot pattern mapped once (#12486) answers exactly like its use.
+    assert_eq!(
+        actual["slot prop pattern"]["contents"],
+        actual["slot prop use"]["contents"],
+    );
 }

@@ -75,3 +75,31 @@ fn jsx_needs_lang_jsx_or_tsx() {
         assert!(result.is_ok(), "{lang}: {result:?}");
     }
 }
+
+/// The #10200 layout (an unclosed `pick(` call) no longer builds from
+/// recovered bindings (#6844); editors and type checks still recover it.
+#[test]
+fn the_incomplete_setup_of_10200_does_not_build() {
+    let source = "<script setup lang=\"ts\">\nimport { ref } from \"vue\";\n\ninterface Item {\n  id: number;\n  label: string;\n}\n\nconst items = ref<Item[]>([]);\nconst selected = ref<Item | null>(null);\npick(\nfunction pick(item: Item): void {\n  selected.value = item;\n}\n</script>\n\n<template>\n  <ul>\n    <li v-for=\"item in items\" :key=\"item.id\" @click=\"pick(item)\">\n      {{ item.label }}\n    </li>\n  </ul>\n</template>\n";
+    let error = syntax_error(source);
+    let loc = error
+        .loc
+        .clone()
+        .expect("the error is located in the .vue file");
+    assert_eq!(
+        (
+            error.message.as_str(),
+            loc.start,
+            loc.end,
+            loc.start_line,
+            loc.start_column
+        ),
+        (
+            "<script setup> does not parse\n  Expected `)` but found `EOF`",
+            243,
+            243,
+            15,
+            1
+        )
+    );
+}

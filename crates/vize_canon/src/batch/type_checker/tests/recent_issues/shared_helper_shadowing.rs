@@ -265,6 +265,8 @@ fn helper_isolation_preserves_the_authored_prop_diagnostic_anchor() {
 /// generate. Only the mapper keeps event navigation (`$StaticEventMap`).
 const QUALIFIED_LIB_TYPES: &[(&str, &str, [usize; 2])] = &[
     ("Awaited", "type Awaited<T> = never", [6, 5]),
+    ("Extract", "type Extract<T, U> = never", [10, 10]),
+    ("NonNullable", "type NonNullable<T> = never", [19, 20]),
     (
         "Parameters",
         "type Parameters<T extends (...args: any) => any> = never",
@@ -275,6 +277,7 @@ const QUALIFIED_LIB_TYPES: &[(&str, &str, [usize; 2])] = &[
         "type ReturnType<T extends (...args: any) => any> = never",
         [7, 6],
     ),
+    ("Readonly", "type Readonly<T> = never", [3, 3]),
 ];
 const MAPPER: usize = 0;
 const BATCH: usize = 1;

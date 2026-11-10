@@ -356,13 +356,17 @@ await test("an actual client startup failure disposes the workspace client befor
     },
   };
   await new vm.Script(`
-    let client, selectedServerCandidate, activeInitializationOptions;
+    let client, selectedServerCandidate, activeInitializationOptions, activeClientInputs;
     async function findServerPath(context, config, generation, reason) {
       selectedServerCandidate = resolve(reason);
       return selectedServerCandidate.path;
     }
     ${start}
-    startClient({ extensionPath: "/extension", globalStorageUri: { fsPath: "/storage" } }, {}, 1);
+    startClient(
+      { extensionPath: "/extension", globalStorageUri: { fsPath: "/storage" } },
+      { inspect: () => undefined },
+      1,
+    );
   `).runInNewContext(dependencies);
   assert.equal(starts, 2);
   assert.ok(operations.indexOf("workspace-disposed") < operations.indexOf("resolve-fallback"));

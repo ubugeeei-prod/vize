@@ -10,6 +10,7 @@ import {
 import { beforeEmitMemberInfer } from "../../../../tests/tooling/support/emit-member-infer-source.ts";
 import { certifyComponentConstructorTransition } from "./component-constructor-transition.ts";
 import { certifyComponentExportTransition } from "./component-export-transition.ts";
+import { beforeListenerLibTypeQualification } from "./lib-type-qualification-listeners-transition.ts";
 import { beforeDiscriminatedJsxUnion } from "./discriminated-jsx-union-transition.ts";
 import { beforeCanonLeftovers, beforeStrictExtraKeys } from "./strict-extra-keys-transition.ts";
 import { certifiedHelperImages, withLandedEdits } from "./callback-owner-landed-contracts.ts";
@@ -375,7 +376,10 @@ export function currentCallbackSourceEdits(
   const currentEmit = readSource(emitSource);
   const memberInferPredecessor = beforeEmitMemberInfer(readSource, emitSource, currentEmit);
   const previousEmit = beforeGenericEventSpecialization(readSource, emitSource, currentEmit);
-  const currentGenerator = readSource(staticListenerSource);
+  const currentGenerator = beforeListenerLibTypeQualification(
+    staticListenerSource,
+    readSource(staticListenerSource),
+  );
   const previousGenerator = beforeIntegratedStaticListenerSource(
     readSource,
     staticListenerSource,

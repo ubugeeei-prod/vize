@@ -84,6 +84,14 @@ const compilerReferenceRepins = new Map([
   ["compiler/sfc/tsx-setup-jsx-bindings", "#11698 erases TypeScript per authored piece"],
 ]);
 
+// Rows a later decision retired from the module-bytes pack; each stays absent.
+const compilerRetiredRows = new Map([
+  [
+    "compiler/sfc/incomplete-script-setup-recovery-10200",
+    "#6844: a <script setup> that does not parse fails to build; editors and type checks keep recovering",
+  ],
+]);
+
 function withoutReferenceHash({ reference, ...row }) {
   const { sha256: _sha256, ...rest } = reference;
   return { ...row, reference: rest };
@@ -108,11 +116,11 @@ await test("binding registration preserves every previous compiler row and pins 
     newCss = current.cssApiCases;
   // Preserve actual existing rows while allowing independent compiler campaigns
   // to append their own genuine cases and runtime packs.
-  for (const row of before.cases)
-    assertPreservedCompilerCase(
-      current.cases.find((candidate) => candidate.id === row.id),
-      row,
-    );
+  for (const row of before.cases) {
+    const currentRow = current.cases.find((candidate) => candidate.id === row.id);
+    if (compilerRetiredRows.has(row.id)) assert.equal(currentRow, undefined);
+    else assertPreservedCompilerCase(currentRow, row);
+  }
   const scoped = structuredClone(
     current.cases.find((row) => row.id === "compiler/sfc/scoped-checkout-stability-10067"),
   );

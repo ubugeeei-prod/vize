@@ -104,6 +104,7 @@ pub(super) fn generate_component_event_types(
         indent,
         gated_inference,
     } = ctx;
+    let lib_non_nullable = crate::virtual_ts::generated_names::lib("NonNullable");
     let component_name = data.target_component.as_ref()?;
     let scope_id = scope.id.as_u32();
     let safe_event_name = to_safe_identifier(data.event_name.as_str());
@@ -276,7 +277,7 @@ pub(super) fn generate_component_event_types(
         if first_contract {
             vize_l0::emit_ts!(
                 ts,
-                "{indent}type {resolved_props} = typeof {component_ref} extends {{ readonly __vizeComponentMarker: true }} ? typeof {component_ref} extends {{ __vizeCheck: unknown }} ? {public_props} : {owned_listener_key} extends {emit_owned_keys}<typeof {component_ref}> ? {public_props} : unknown[] extends {fallthrough_args} ? {public_props} : typeof {component_ref} extends {{ readonly __vizeFallthroughProps?: infer __F }} ? NonNullable<__F> : {public_props} : {public_props};\n",
+                "{indent}type {resolved_props} = typeof {component_ref} extends {{ readonly __vizeComponentMarker: true }} ? typeof {component_ref} extends {{ __vizeCheck: unknown }} ? {public_props} : {owned_listener_key} extends {emit_owned_keys}<typeof {component_ref}> ? {public_props} : unknown[] extends {fallthrough_args} ? {public_props} : typeof {component_ref} extends {{ readonly __vizeFallthroughProps?: infer __F }} ? {lib_non_nullable}<__F> : {public_props} : {public_props};\n",
             );
         }
         resolved_props
@@ -325,12 +326,12 @@ pub(super) fn generate_component_event_types(
             if legacy_vue2 {
                 vize_l0::emit_ts!(
                     ts,
-                    "{indent}type {fallthrough_args} = {fallthrough_box} extends infer __B ? __B extends [infer __F] ? NonNullable<__F> extends {{ {prop_key}?: (...args: infer __A) => any }} ? (__A extends [] ? unknown[] : __A) : unknown[] : unknown[] : never;\n",
+                    "{indent}type {fallthrough_args} = {fallthrough_box} extends infer __B ? __B extends [infer __F] ? {lib_non_nullable}<__F> extends {{ {prop_key}?: (...args: infer __A) => any }} ? (__A extends [] ? unknown[] : __A) : unknown[] : unknown[] : never;\n",
                 );
             } else {
                 vize_l0::emit_ts!(
                     ts,
-                    "{indent}type {fallthrough_args} = {fallthrough_box} extends infer __B ? __B extends [infer __F] ? NonNullable<__F> extends infer __P ? ({prop_listener_args}) extends infer __A extends unknown[] ? (__A extends [] ? unknown[] : __A) : unknown[] : unknown[] : unknown[] : never;\n",
+                    "{indent}type {fallthrough_args} = {fallthrough_box} extends infer __B ? __B extends [infer __F] ? {lib_non_nullable}<__F> extends infer __P ? ({prop_listener_args}) extends infer __A extends unknown[] ? (__A extends [] ? unknown[] : __A) : unknown[] : unknown[] : unknown[] : never;\n",
                 );
             }
         }
