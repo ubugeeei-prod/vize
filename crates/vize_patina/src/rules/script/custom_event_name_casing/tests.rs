@@ -118,6 +118,18 @@ emit(`my-event`)
 }
 
 #[test]
+fn test_parenthesized_emit_calls_and_event_names_are_checked() {
+    let source = r#"
+const emit = defineEmits(['row-click'])
+emit(('row-click'));
+emit((`row-click`));
+(emit)('row-click')
+"#;
+    let result = create_linter().lint(source, 0);
+    assert_eq!(result.error_count, 3, "{:#?}", result.diagnostics);
+}
+
+#[test]
 fn test_configured_kebab_case_allows_kebab_emit() {
     let source = r#"
 const emit = defineEmits(['my-event'])

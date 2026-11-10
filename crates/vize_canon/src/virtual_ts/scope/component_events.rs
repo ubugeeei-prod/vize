@@ -6,6 +6,7 @@ mod emit_props_gate;
 mod emit_resolver_share;
 mod generic_inference;
 mod handler_context;
+mod inference_declarations;
 mod inference_helpers;
 mod listener_contract;
 mod listener_relations;
@@ -17,6 +18,7 @@ pub(crate) use emit_props_gate::{emit_gate_aliases, gates_inference};
 pub(crate) use emit_resolver_share::{
     flush as flush_emit_resolvers, reset as reset_emit_resolvers,
 };
+pub(crate) use inference_declarations::EmitInferenceDeclarations;
 pub(crate) use inference_helpers::emit_event_inference_helpers;
 
 use vize_carton::{CompactString, FxHashMap, FxHashSet, String, cstr};
@@ -70,7 +72,7 @@ pub(super) struct ComponentEventTypeContext<'a, 'template> {
     /// Guard already wrapped around the emitted inference call. Only this may
     /// be subtracted from the call's own `v-if` guard.
     pub(super) inference_outer_vif_guard: Option<&'a str>,
-    pub(super) event_inference_usages: &'a std::cell::RefCell<FxHashSet<usize>>,
+    pub(super) event_inference_usages: &'a EmitInferenceDeclarations,
     pub(super) event_contracts: &'a std::cell::RefCell<FxHashMap<EventContractKey, u32>>,
     pub(super) indent: &'a str,
     /// A props-independent emit-props call checks its literal against `any`.

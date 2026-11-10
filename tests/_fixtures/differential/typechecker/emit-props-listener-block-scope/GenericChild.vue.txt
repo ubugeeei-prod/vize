@@ -1,0 +1,6 @@
+<script setup lang="ts" generic="T">
+defineProps<{ value: T }>();
+defineEmits<{ save: [value: T]; close: [value: T] }>();
+</script>
+
+<template><div /></template>

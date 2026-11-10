@@ -2,6 +2,7 @@
 //! Project policy and semantic facts belong to this lint pass.
 
 mod callback_order;
+mod compatibility_parses;
 mod directives;
 mod eslint_directive;
 mod facts;
@@ -13,6 +14,7 @@ mod state;
 mod template_directives;
 
 pub(crate) use callback_order::CallbackSite;
+pub(crate) use compatibility_parses::RetainedVFor;
 pub use project_directives::ProjectLintDirectives;
 pub(crate) use reporting::{SfcSuppression, offset_diagnostic, retain_unless_source_suppressed};
 pub use state::{DisabledRange, ElementContext, SsrMode};
@@ -73,6 +75,8 @@ pub struct LintContext<'a> {
     pub(crate) error_count: usize,
     /// Cached warning count for fast access.
     pub(crate) warning_count: usize,
+    /// Compatibility-only syntax that L2 cannot yet expose through `ExprRef`.
+    compatibility_parses: compatibility_parses::CompatibilityParses<'a>,
     /// Disabled ranges for all rules.
     disabled_all: Vec<DisabledRange>,
     /// Disabled ranges per rule name.
@@ -160,6 +164,7 @@ impl<'a> LintContext<'a> {
             scope_variables: FxHashSet::default(),
             error_count: 0,
             warning_count: 0,
+            compatibility_parses: compatibility_parses::CompatibilityParses::default(),
             disabled_all: Vec::new(),
             disabled_rules: FxHashMap::default(),
             exact_suppressions: ExactSuppressionState::default(),
@@ -215,6 +220,7 @@ impl<'a> LintContext<'a> {
             scope_variables: FxHashSet::default(),
             error_count: 0,
             warning_count: 0,
+            compatibility_parses: compatibility_parses::CompatibilityParses::default(),
             disabled_all: Vec::new(),
             disabled_rules: FxHashMap::default(),
             exact_suppressions: ExactSuppressionState::default(),
@@ -428,6 +434,36 @@ impl<'a> LintContext<'a> {
     #[inline]
     pub fn allocator(&self) -> &'a Allocator {
         self.allocator
+    }
+
+    /// Retain a complete compatibility expression once for this lint pass.
+    pub(crate) fn compatibility_expression(
+        &mut self,
+        span: vize_l0::Span,
+        source: &'a str,
+    ) -> Option<&'a oxc_ast::ast::Expression<'a>> {
+        self.compatibility_parses
+            .expression(self.allocator, span, source)
+    }
+
+    /// Retain a multi-statement inline handler once for this lint pass.
+    pub(crate) fn compatibility_handler(
+        &mut self,
+        span: vize_l0::Span,
+        source: &'a str,
+    ) -> Option<&'a oxc_ast::ast::Program<'a>> {
+        self.compatibility_parses
+            .handler(self.allocator, span, source)
+    }
+
+    /// Retain both halves of a `v-for` value once for this lint pass.
+    pub(crate) fn compatibility_v_for(
+        &mut self,
+        span: vize_l0::Span,
+        source: &'a str,
+    ) -> Option<RetainedVFor<'a>> {
+        self.compatibility_parses
+            .v_for(self.allocator, span, source)
     }
 
     /// Allocate a string in the arena.

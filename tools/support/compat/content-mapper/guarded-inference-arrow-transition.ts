@@ -2,6 +2,7 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
+import { beforeEmitPropsBlockScope } from "./emit-props-block-scope-transition.ts";
 
 export const guardedInferenceArrowRecord = "tests/_fixtures/tooling/guarded-inference-arrow.json";
 const recordSha256 = "8d296ee5db5d0d4ad0afda82f788593343e19bb663ab0a90af40dc4169425463";
@@ -40,6 +41,7 @@ function load(): Transition {
 
 /** The exact pre-arrow bytes of a recorded producer's current image; older images pass through. */
 export function beforeGuardedInferenceArrow(path: string, current: string): string {
+  current = beforeEmitPropsBlockScope(path, current);
   const file = load().files.find((entry) => entry.path === path);
   if (!file || identity(current).sha256 !== file.after.sha256) return current;
   assert.equal(

@@ -15,7 +15,10 @@ const sfc = (bad: string, good: string, ruleOptions?: JsonValue): RuleExample =>
 });
 
 export const manual11: Record<string, RuleExample> = {
-  "vue/camelcase": template("  <p>{{ user_name }}</p>", "  <p>{{ userName }}</p>"),
+  "vue/camelcase": template(
+    "  <p>{{ { user_name: value } }}</p>",
+    "  <p>{{ { userName: value } }}</p>",
+  ),
   "vue/dot-notation": template('  <p>{{ user["name"] }}</p>', "  <p>{{ user.name }}</p>"),
   "vue/eqeqeq": template("  <p>{{ value == null }}</p>", "  <p>{{ value === null }}</p>"),
   "vue/no-console": template(

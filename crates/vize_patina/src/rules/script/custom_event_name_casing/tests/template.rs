@@ -117,6 +117,29 @@ const a = 1;
     );
 }
 
+#[test]
+fn reports_parenthesized_template_emit_calls_and_event_names() {
+    let sfc = r#"<script setup>
+const emit = defineEmits(['row-click'])
+</script>
+
+<template>
+  <button @click="emit(('row-click'))">one</button>
+  <button @click="(emit)('row-click')">two</button>
+  <button @click="$emit(('row-click'))">three</button>
+  <button @click="($emit)('row-click')">four</button>
+</template>
+"#;
+    let result = lint_sfc(sfc);
+    assert_eq!(result.error_count, 4, "{:#?}", result.diagnostics);
+    assert!(
+        result
+            .diagnostics
+            .iter()
+            .all(|diagnostic| diagnostic.rule_name == "script/custom-event-name-casing")
+    );
+}
+
 // --- Well-named events: exactly zero findings ------------------------------
 
 #[test]

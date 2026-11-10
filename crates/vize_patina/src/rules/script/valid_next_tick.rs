@@ -206,7 +206,7 @@ fn next_tick_callee_span(
     match &call.callee {
         Expression::Identifier(identifier) => {
             let name = identifier.name.as_str();
-            if name == "nextTick" || imported_aliases.contains(name) {
+            if imported_aliases.contains(name) {
                 Some(call.span)
             } else {
                 None
@@ -359,6 +359,12 @@ mod tests {
         // named `tick` is unrelated.
         let result = create_linter().lint("tick()", 0);
         assert_eq!(result.warning_count, 0);
+    }
+
+    #[test]
+    fn test_same_named_non_vue_import_not_flagged() {
+        let result = create_linter().lint("import { nextTick } from './scheduler'; nextTick();", 0);
+        assert_eq!(result.warning_count, 0, "{:#?}", result.diagnostics);
     }
 
     #[test]

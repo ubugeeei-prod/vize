@@ -33,7 +33,7 @@ pub(super) struct EmitInferenceContext<'a, 'template> {
     pub(super) template_ast: Option<&'a vize_relief::RootNode<'template>>,
     pub(super) source_context: ComponentPropSource<'a>,
     pub(super) enclosing_vif_guard: Option<&'a str>,
-    pub(super) event_inference_usages: &'a std::cell::RefCell<FxHashSet<usize>>,
+    pub(super) event_inference_usages: &'a super::EmitInferenceDeclarations,
     pub(super) indent: &'a str,
     pub(super) hoist_shared_preamble: bool,
     /// The module declares the gate aliases and this component's type is closed.
@@ -83,7 +83,8 @@ pub(super) fn generate_inferred_emit_args(
         scope_id,
         ctx.safe_event_name
     );
-    let first_listener = ctx.event_inference_usages.borrow_mut().insert(usage_idx);
+    let first_listener =
+        super::inference_declarations::claim(ctx.event_inference_usages, usage_idx);
     let emit_props_factory = crate::virtual_ts::helpers::shared_types::EMIT_PROPS_FACTORY
         .select(ctx.hoist_shared_preamble);
     let full_guard = usage.vif_guard.as_ref().map(|guard| {

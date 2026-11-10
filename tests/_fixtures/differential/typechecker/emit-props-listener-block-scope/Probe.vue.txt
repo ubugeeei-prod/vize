@@ -1,0 +1,18 @@
+<script setup lang="ts">
+import GenericChild from './GenericChild.vue';
+import Child from './Child.vue';
+const rows = [{ id: 1, ready: true }];
+const value = 1;
+const save = (_row: unknown, _value: number) => {};
+const takeString = (_value: string) => {};
+const takeNumber = (_value: number) => {};
+</script>
+
+<template>
+  <template v-for="row in rows" :key="row.id">
+    <GenericChild v-if="row.ready" :value="value" @save="(v) => save(row, v)" @close="takeString($event)" />
+    <GenericChild v-if="row.ready" :value="value" @save="(v) => save(row, v)" @close="(v) => takeString(v)" />
+    <Child v-if="row.ready" :value="value" @save="(v) => save(row, v)" @pick="takeNumber($event)" />
+    <Child v-if="row.ready" :value="value" @save="(v) => save(row, v)" @pick="(label) => takeNumber(label)" />
+  </template>
+</template>

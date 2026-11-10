@@ -13,6 +13,17 @@ fn keeps_non_async_next_tick_computed_candidates() {
 }
 
 #[test]
+fn keeps_every_supported_computed_timer_candidate() {
+    for timer in ["requestAnimationFrame", "setImmediate"] {
+        let source = format!("const value = computed(() => {{ {timer}(() => {{}}); return 1 }})");
+        assert!(
+            script_rule_may_match(RULE_NO_ASYNC_IN_COMPUTED, &source),
+            "{timer}"
+        );
+    }
+}
+
+#[test]
 fn recognizes_supported_nuxt_config_paths() {
     for extension in [
         "js", "jsx", "ts", "tsx", "cjs", "cjsx", "cts", "ctsx", "mjs", "mjsx", "mts", "mtsx",

@@ -1,0 +1,56 @@
+{
+  "schema": "vize.emitPropsBlockScopeSource.v1",
+  "credit": {
+    "compiled": false,
+    "native": false,
+    "performance": false
+  },
+  "files": [
+    {
+      "path": "crates/vize_canon/src/virtual_ts/scope/component_events/generic_inference.rs",
+      "before": {
+        "bytes": 20046,
+        "sha256": "954fb675659fb8d9ce96f15726acf9dc9d9612fc1b52c33611538be865ce6549"
+      },
+      "after": {
+        "bytes": 20068,
+        "sha256": "c8bfa57aaa5007a7f1511d0fc2ff3c3703857743b0a850bd9a2824e6af8ed2b0"
+      },
+      "hunks": [
+        {
+          "before": "    pub(super) event_inference_usages: &'a std::cell::RefCell<FxHashSet<usize>>,\n",
+          "after": "    pub(super) event_inference_usages: &'a super::EmitInferenceDeclarations,\n"
+        },
+        {
+          "before": "    let first_listener = ctx.event_inference_usages.borrow_mut().insert(usage_idx);\n",
+          "after": "    let first_listener =\n        super::inference_declarations::claim(ctx.event_inference_usages, usage_idx);\n"
+        }
+      ]
+    },
+    {
+      "path": "crates/vize_canon/src/virtual_ts/scope/component_events.rs",
+      "before": {
+        "bytes": 22825,
+        "sha256": "712909d3b8d148b83399eb9579eb6752a9dcdbf8530028ec54c701669575055d"
+      },
+      "after": {
+        "bytes": 22908,
+        "sha256": "d18990600883589a2a00df0408df493ef74d0015a14203c3c72888eba07e325e"
+      },
+      "hunks": [
+        {
+          "before": "",
+          "after": "mod inference_declarations;\n"
+        },
+        {
+          "before": "",
+          "after": "pub(crate) use inference_declarations::EmitInferenceDeclarations;\n"
+        },
+        {
+          "before": "    pub(super) event_inference_usages: &'a std::cell::RefCell<FxHashSet<usize>>,\n",
+          "after": "    pub(super) event_inference_usages: &'a EmitInferenceDeclarations,\n"
+        }
+      ]
+    }
+  ]
+}

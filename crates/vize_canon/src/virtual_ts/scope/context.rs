@@ -174,8 +174,9 @@ pub(crate) struct ScopeGenContext<'a, 'template> {
     pub(crate) explicit_generics: &'a ExplicitGenerics,
     pub(super) dynamic_aliases: &'a DynamicComponentAliases,
     /// Component usages whose props have already been materialized for event
-    /// inference. Every listener on one usage reads the same resolved object.
-    pub(crate) event_inference_usages: &'a RefCell<FxHashSet<usize>>,
+    /// inference, with the guard block that declaration is visible from.
+    /// Every listener on one usage reads the same resolved object.
+    pub(crate) event_inference_usages: &'a super::component_events::EmitInferenceDeclarations,
     /// First scope that resolved each stable component/event listener contract.
     /// Guarded handlers also key by their generated lexical block, because an
     /// alias declared in one sibling `if` is not visible from the next one.
