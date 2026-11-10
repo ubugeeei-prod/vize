@@ -1,11 +1,19 @@
 use super::ValidVOn;
-use crate::linter::Linter;
+use crate::linter::{LintResult, Linter};
 use crate::rule::RuleRegistry;
 
 fn create_linter() -> Linter {
     let mut registry = RuleRegistry::new();
     registry.register(Box::new(ValidVOn));
     Linter::with_registry(registry)
+}
+
+fn rule_error_count(result: &LintResult) -> usize {
+    result
+        .diagnostics
+        .iter()
+        .filter(|diagnostic| diagnostic.rule_name == "vue/valid-v-on")
+        .count()
 }
 
 #[test]
@@ -33,21 +41,21 @@ fn test_valid_v_on_modifier_only() {
 fn test_invalid_v_on_no_handler() {
     let linter = create_linter();
     let result = linter.lint_template(r#"<div @click></div>"#, "test.vue");
-    assert_eq!(result.error_count, 1);
+    assert_eq!(rule_error_count(&result), 1);
 }
 
 #[test]
 fn test_invalid_v_on_keyword_handler() {
     let linter = create_linter();
     let result = linter.lint_template(r#"<div @click="for"></div>"#, "test.vue");
-    assert_eq!(result.error_count, 1);
+    assert_eq!(rule_error_count(&result), 1);
 }
 
 #[test]
 fn test_invalid_v_on_keyword_object_syntax() {
     let linter = create_linter();
     let result = linter.lint_template(r#"<div v-on="class"></div>"#, "test.vue");
-    assert_eq!(result.error_count, 1);
+    assert_eq!(rule_error_count(&result), 1);
 }
 
 #[test]

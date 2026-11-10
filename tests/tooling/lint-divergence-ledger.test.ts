@@ -4,7 +4,13 @@ import { test } from "node:test";
 
 import { compareLintFindings as compareCompatibleLintFindings } from "../../tools/support/compat/fixtures/lint-divergence.ts";
 import { compareLintFindings as compareCurrentLintFindingsRaw } from "../../tools/support/fixtures/lint_divergence/compare.ts";
-import { compare, cwd, eslintResult, span } from "./_helpers/lint-divergence-fixture.ts";
+import {
+  compare,
+  currentContext,
+  cwd,
+  eslintResult,
+  span,
+} from "./_helpers/lint-divergence-fixture.ts";
 
 interface Comparison {
   schema: string;
@@ -138,9 +144,14 @@ test("the stronger direct defineProps policy is intentional on both reporters", 
       message: "Prefer destructuring the return value of defineProps().",
     },
   ];
-  const current = compareCurrent("fixture", cwd, map, findings, [], {
-    files: ["src/BareProps.vue", "src/WrappedProps.vue", "src/ModuleProps.vue"],
-  });
+  const current = compareCurrent(
+    "fixture",
+    cwd,
+    map,
+    findings,
+    [],
+    currentContext(map, ["src/BareProps.vue", "src/WrappedProps.vue", "src/ModuleProps.vue"]),
+  );
   const compatible = compareCompatible({
     projectId: "fixture",
     cwd,
@@ -211,9 +222,14 @@ test("stable defineProps and self-closing anchor differences are not false findi
       },
     ]),
   ];
-  const current = compareCurrent("fixture", cwd, map, findings, baseline, {
-    files: ["src/LocationAnchors.vue"],
-  });
+  const current = compareCurrent(
+    "fixture",
+    cwd,
+    map,
+    findings,
+    baseline,
+    currentContext(map, ["src/LocationAnchors.vue"]),
+  );
   const compatible = compareCompatible({
     projectId: "fixture",
     cwd,
@@ -297,9 +313,14 @@ test("runtime-sensitive ordering, UTS, and proven unused registrations stay inte
       },
     ]),
   ];
-  const current = compareCurrent("fixture", cwd, map, findings, baseline, {
-    files: ["src/MergeOrder.vue", "src/Native.vue", "src/Unused.vue"],
-  });
+  const current = compareCurrent(
+    "fixture",
+    cwd,
+    map,
+    findings,
+    baseline,
+    currentContext(map, ["src/MergeOrder.vue", "src/Native.vue", "src/Unused.vue"]),
+  );
   const compatible = compareCompatible({
     projectId: "fixture",
     cwd,
@@ -360,7 +381,14 @@ test("upstream rule ids classify second-script shifts and resolved default sprea
       },
     ]),
   ];
-  const current = compareCurrent("fixture", cwd, map, [], baseline, {});
+  const current = compareCurrent(
+    "fixture",
+    cwd,
+    map,
+    [],
+    baseline,
+    currentContext(map, ["src/TwoScripts.vue"]),
+  );
   const compatible = compareCompatible({
     projectId: "fixture",
     cwd,

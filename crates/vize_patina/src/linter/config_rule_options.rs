@@ -96,6 +96,42 @@ impl Linter {
         if let Some(value) = options.label_has_for() {
             self = self.with_label_control_components(value.control_components.clone());
         }
+        if let Some(value) = options.enforce_style_attribute() {
+            use crate::rules::vue::StyleAttribute;
+            use vize_l0::config::StyleAttributeMode;
+
+            let allowed = value
+                .allow
+                .iter()
+                .map(|mode| match mode {
+                    StyleAttributeMode::Plain => StyleAttribute::Plain,
+                    StyleAttributeMode::Scoped => StyleAttribute::Scoped,
+                    StyleAttributeMode::Module => StyleAttribute::Module,
+                })
+                .collect::<Vec<_>>();
+            self.registry
+                .replace(Box::new(crate::rules::vue::EnforceStyleAttribute::new(
+                    &allowed,
+                )));
+        }
+        if let Some(value) = options.no_restricted_syntax() {
+            self.registry
+                .replace(Box::new(crate::rules::vue::NoRestrictedSyntax::new(
+                    value.selectors.clone(),
+                )));
+        }
+        if options.quote_props().is_some() {
+            self.registry
+                .replace(Box::new(crate::rules::vue::QuoteProps));
+        }
+        if let Some(value) = options.sort_keys() {
+            self.registry
+                .replace(Box::new(crate::rules::vue::SortKeys::new(
+                    matches!(value.order, vize_l0::config::SortKeysOrder::Desc),
+                    value.case_sensitive,
+                    value.natural,
+                )));
+        }
         if let Some(value) = options.sfc_element_order() {
             self = self.with_sfc_element_order_options(SfcElementOrderOptions {
                 order: value
@@ -357,6 +393,46 @@ const name = "";
                 "vue/warn-custom-directive",
                 "vue/no-bare-strings-in-template"
             ],
+            "{:#?}",
+            result.diagnostics
+        );
+    }
+
+    #[test]
+    fn eslint_vue_compatibility_options_reach_selected_rules() {
+        let source = r#"<script>
+export default { z: 1, a: 2 }
+</script>
+<template>{{ condition ? { "quoted": value }.quoted : fallback }}</template>
+<style>.card { color: red }</style>"#;
+        let options: ConfigLintRuleOptions = serde_json::from_value(serde_json::json!({
+            "vue/enforce-style-attribute": { "allow": ["plain", "scoped"] },
+            "vue/no-restricted-syntax": { "selectors": ["ConditionalExpression"] },
+            "vue/quote-props": "as-needed",
+            "vue/sort-keys": {
+                "order": "desc",
+                "caseSensitive": true,
+                "natural": false
+            }
+        }))
+        .unwrap();
+        let result = Linter::with_preset(LintPreset::Incremental)
+            .with_enabled_rules(Some(vec![
+                "vue/enforce-style-attribute".into(),
+                "vue/no-restricted-syntax".into(),
+                "vue/quote-props".into(),
+                "vue/sort-keys".into(),
+            ]))
+            .with_config_rule_options(&options)
+            .lint_sfc(source, "App.vue");
+        let rules = result
+            .diagnostics
+            .iter()
+            .map(|diagnostic| diagnostic.rule_name)
+            .collect::<Vec<_>>();
+        assert_eq!(
+            rules,
+            ["vue/quote-props", "vue/no-restricted-syntax"],
             "{:#?}",
             result.diagnostics
         );

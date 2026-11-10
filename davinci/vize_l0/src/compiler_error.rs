@@ -77,6 +77,10 @@ pub enum ErrorCode {
     // Extended errors
     UnhandledCodePath = 100,
     ExtendPoint = 1000,
+    /// A named character reference omitted its required trailing semicolon.
+    MissingSemicolonAfterCharacterReference = 1001,
+    /// A semicolon-terminated named character reference is not defined by HTML.
+    UnknownNamedCharacterReference = 1002,
 }
 
 impl ErrorCode {
@@ -156,11 +160,20 @@ impl ErrorCode {
 
             Self::UnhandledCodePath => "Unhandled code path.",
             Self::ExtendPoint => "Extension point.",
+            Self::MissingSemicolonAfterCharacterReference => {
+                "Missing semicolon after character reference."
+            }
+            Self::UnknownNamedCharacterReference => "Unknown named character reference.",
         }
     }
 
     pub fn is_parse_error(&self) -> bool {
         (*self as u16) < (Self::VIfNoExpression as u16)
+            || matches!(
+                self,
+                Self::MissingSemicolonAfterCharacterReference
+                    | Self::UnknownNamedCharacterReference
+            )
     }
 
     pub fn is_transform_error(&self) -> bool {
@@ -233,6 +246,8 @@ pub const RECOVERED_PARSE_CODES: &[ErrorCode] = &[
     ErrorCode::MissingWhitespaceBetweenAttributes,
     ErrorCode::IncorrectlyClosedComment,
     ErrorCode::IncorrectlyOpenedComment,
+    ErrorCode::MissingSemicolonAfterCharacterReference,
+    ErrorCode::UnknownNamedCharacterReference,
 ];
 
 impl ErrorCode {

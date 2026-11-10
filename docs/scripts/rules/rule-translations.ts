@@ -13,19 +13,33 @@ import { portugueseVue2, portugueseVueNotes } from "./vue-locales/pt-2.ts";
 import { commonVueText } from "./rule-phrases.ts";
 import type { RuleLocale } from "./rule-groups.ts";
 import { catalogueAdditionNotes, catalogueAdditionPackets } from "./catalogue-additions-locales.ts";
+import { compatibilityPackets } from "./compatibility-locales.ts";
 
 export type TranslatedLocale = Exclude<RuleLocale, "en" | "ja">;
 type Packet = readonly [purpose: string, bad: string, good: string];
 
 const vuePackets: Record<TranslatedLocale, Record<string, Packet>> = {
-  "zh-CN": { ...chineseVue0, ...chineseVue1, ...chineseVue2, ...catalogueAdditionPackets["zh-CN"] },
+  "zh-CN": {
+    ...chineseVue0,
+    ...chineseVue1,
+    ...chineseVue2,
+    ...catalogueAdditionPackets["zh-CN"],
+    ...compatibilityPackets["zh-CN"],
+  },
   "pt-BR": {
     ...portugueseVue0,
     ...portugueseVue1,
     ...portugueseVue2,
     ...catalogueAdditionPackets["pt-BR"],
+    ...compatibilityPackets["pt-BR"],
   },
-  fr: { ...frenchVue0, ...frenchVue1, ...frenchVue2, ...catalogueAdditionPackets.fr },
+  fr: {
+    ...frenchVue0,
+    ...frenchVue1,
+    ...frenchVue2,
+    ...catalogueAdditionPackets.fr,
+    ...compatibilityPackets.fr,
+  },
 };
 const otherPackets: Record<TranslatedLocale, Record<string, Packet>> = {
   "zh-CN": chinesePackets,

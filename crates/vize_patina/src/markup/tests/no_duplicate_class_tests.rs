@@ -83,13 +83,13 @@ fn no_duplicate_class_template() {
         (r#"<div class="">x</div>"#, 0, "empty class is clean"),
         (
             r#"<div :class="['btn', 'btn']">x</div>"#,
-            0,
-            "dynamic class binding is ignored",
+            1,
+            "dynamic array literals are checked",
         ),
         (
             r#"<div v-bind:class="'btn btn'">x</div>"#,
-            0,
-            "long-form dynamic class binding is ignored",
+            1,
+            "long-form dynamic string literals are checked",
         ),
         (
             r#"<div CLASS="btn btn">x</div>"#,

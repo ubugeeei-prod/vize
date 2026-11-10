@@ -4,7 +4,7 @@ import { test } from "node:test";
 
 import { compareLintFindings as compareCompatibleLintFindings } from "../../tools/support/compat/fixtures/lint-divergence.ts";
 import { compareLintFindings as compareCurrentLintFindingsRaw } from "../../tools/support/fixtures/lint_divergence/compare.ts";
-import { cwd, eslintResult, span } from "./_helpers/lint-divergence-fixture.ts";
+import { currentContext, cwd, eslintResult, span } from "./_helpers/lint-divergence-fixture.ts";
 
 interface Comparison {
   schema: string;
@@ -65,9 +65,14 @@ test("static styles recovered through a TypeScript cast are intentional on both 
       message: "Static inline style attributes are not allowed.",
     },
   ];
-  const current = compareCurrent("fixture", cwd, map, findings, [], {
-    files: ["src/CastStyle.vue"],
-  });
+  const current = compareCurrent(
+    "fixture",
+    cwd,
+    map,
+    findings,
+    [],
+    currentContext(map, ["src/CastStyle.vue"]),
+  );
   const compatible = compareCompatible({
     projectId: "fixture",
     cwd,
@@ -107,7 +112,14 @@ test("native-only dynamic components are intentional on both reporters", () => {
       },
     ]),
   ];
-  const current = compareCurrent("fixture", cwd, map, [], baseline, {});
+  const current = compareCurrent(
+    "fixture",
+    cwd,
+    map,
+    [],
+    baseline,
+    currentContext(map, ["src/NativeDynamic.vue"]),
+  );
   const compatible = compareCompatible({
     projectId: "fixture",
     cwd,
@@ -177,9 +189,14 @@ test("fragment-root foreign elements are intentional on both reporters", () => {
       },
     ]),
   ];
-  const current = compareCurrent("fixture", cwd, map, patina, baseline, {
-    files: ["src/ForeignRoot.vue"],
-  });
+  const current = compareCurrent(
+    "fixture",
+    cwd,
+    map,
+    patina,
+    baseline,
+    currentContext(map, ["src/ForeignRoot.vue"]),
+  );
   const compatible = compareCompatible({
     projectId: "fixture",
     cwd,
@@ -219,9 +236,14 @@ test("references before local ref declarations are intentional on both reporters
       message: "Ref 'palette' must be accessed through .value.",
     },
   ];
-  const current = compareCurrent("fixture", cwd, map, patina, [], {
-    files: ["src/EarlyRef.vue"],
-  });
+  const current = compareCurrent(
+    "fixture",
+    cwd,
+    map,
+    patina,
+    [],
+    currentContext(map, ["src/EarlyRef.vue"]),
+  );
   const compatible = compareCompatible({
     projectId: "fixture",
     cwd,
@@ -286,9 +308,14 @@ test("whitespace mustaches and imported Slot anchors are classified on both repo
       },
     ]),
   ];
-  const current = compareCurrent("fixture", cwd, map, patina, baseline, {
-    files: ["src/Slots.vue"],
-  });
+  const current = compareCurrent(
+    "fixture",
+    cwd,
+    map,
+    patina,
+    baseline,
+    currentContext(map, ["src/Slots.vue"]),
+  );
   const compatible = compareCompatible({
     projectId: "fixture",
     cwd,
@@ -340,9 +367,14 @@ test("formatter-safe quotes and resolved props objects are intentional on both r
       },
     ]),
   ];
-  const current = compareCurrent("fixture", cwd, map, patina, baseline, {
-    files: ["src/Calendar.vue"],
-  });
+  const current = compareCurrent(
+    "fixture",
+    cwd,
+    map,
+    patina,
+    baseline,
+    currentContext(map, ["src/Calendar.vue"]),
+  );
   const compatible = compareCompatible({
     projectId: "fixture",
     cwd,

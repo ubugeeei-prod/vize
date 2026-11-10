@@ -1,8 +1,6 @@
-use super::js_tooling_refresh::{
-    JsToolingRefreshQualificationGraph, update as js_tooling_refresh_update,
-    verify as verify_js_tooling_refresh_update,
-};
+use super::js_tooling_refresh;
 use super::*;
+mod eslint_vue_scorecard_successor;
 
 fn current_binding(path: &str, body: &[u8]) -> Value {
     json!({
@@ -11,7 +9,6 @@ fn current_binding(path: &str, body: &[u8]) -> Value {
         "sha256": support::hash(body),
     })
 }
-
 #[test]
 fn historical_tooling_successor_remains_an_exact_predecessor() {
     let predecessor = tooling_update();
@@ -31,7 +28,6 @@ fn historical_tooling_successor_remains_an_exact_predecessor() {
         predecessor["finalQualificationPackage"]
     );
 }
-
 #[test]
 fn historical_root_dependency_successor_remains_the_exact_predecessor() {
     let predecessor = dependency_ownership_update();
@@ -378,12 +374,18 @@ mod js_tooling_refresh_successor {
     }
 
     fn inputs() -> Inputs {
+        let current_lock = fs::read(support::repository().join("pnpm-lock.yaml")).unwrap();
+        let lock = super::super::eslint_vue_scorecard::reconstruct_predecessor(
+            &super::super::eslint_vue_scorecard::update(),
+            &current_lock,
+        )
+        .unwrap();
         Inputs {
             previous: super::super::super::load(),
             predecessor: docs_metadata_update(),
             predecessor_bytes: fs::read(support::corpus().join(docs_metadata::UPDATE)).unwrap(),
-            update: js_tooling_refresh_update(),
-            lock: fs::read(support::repository().join("pnpm-lock.yaml")).unwrap(),
+            update: js_tooling_refresh::update(),
+            lock,
             package: fs::read(support::repository().join("package.json")).unwrap(),
             workspace: fs::read(support::repository().join(WORKSPACE)).unwrap(),
             unplugin_manifest: fs::read(
@@ -398,14 +400,14 @@ mod js_tooling_refresh_successor {
     }
 
     fn verify(input: &Inputs, predecessor: &Value, update: &Value, lock: &[u8]) -> Checked<()> {
-        let graph = JsToolingRefreshQualificationGraph {
+        let graph = js_tooling_refresh::JsToolingRefreshQualificationGraph {
             lock,
             package: &input.package,
             workspace: &input.workspace,
             unplugin_manifest: &input.unplugin_manifest,
             example_manifest: &input.example_manifest,
         };
-        verify_js_tooling_refresh_update(predecessor, &input.predecessor_bytes, update, &graph)
+        js_tooling_refresh::verify(predecessor, &input.predecessor_bytes, update, &graph)
     }
 
     #[test]

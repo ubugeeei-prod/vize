@@ -1,0 +1,431 @@
+type Locale = "zh-CN" | "pt-BR" | "fr";
+type Packet = readonly [purpose: string, bad: string, good: string];
+
+export const compatibilityPackets: Record<Locale, Record<string, Packet>> = {
+  "zh-CN": {
+    "vue/camelcase": [
+      "要求模板表达式中的标识符使用 camelCase。",
+      "`user_name` 中间含有下划线。",
+      "`userName` 使用 camelCase。",
+    ],
+    "vue/dot-notation": [
+      "对静态属性访问优先使用点号。",
+      "静态的 `name` 属性使用了方括号访问。",
+      "点号直接表达同一个静态属性。",
+    ],
+    "vue/eqeqeq": [
+      "要求模板表达式使用严格相等运算符。",
+      "宽松相等可能转换任一操作数。",
+      "严格相等不进行类型转换。",
+    ],
+    "vue/no-console": [
+      "禁止模板表达式访问 console。",
+      "模板事件表达式调用了 `console.log`。",
+      "模板把日志处理交给脚本绑定。",
+    ],
+    "vue/no-constant-condition": [
+      "禁止模板表达式中的常量条件。",
+      "三元表达式的条件始终为真。",
+      "分支取决于响应式的 `ready` 值。",
+    ],
+    "vue/no-empty-pattern": [
+      "禁止模板表达式中的空解构模式。",
+      "回调解构了一个空对象模式。",
+      "回调明确命名其使用的属性。",
+    ],
+    "vue/no-implicit-coercion": [
+      "禁止模板表达式中的隐式类型转换。",
+      "双重否定隐式转换了值。",
+      "`Boolean` 明确表达转换。",
+    ],
+    "vue/no-irregular-whitespace": [
+      "检测模板表达式中的异常空白字符。",
+      "表达式含有不换行空格。",
+      "表达式使用普通源码空格。",
+    ],
+    "vue/no-loss-of-precision": [
+      "禁止会丢失精度的数字字面量。",
+      "该整数无法用 JavaScript number 精确表示。",
+      "预先计算的精确绑定避免不精确的模板字面量。",
+    ],
+    "vue/no-negated-condition": [
+      "禁止以否定条件开始三元表达式。",
+      "三元表达式以否定条件开始。",
+      "正向条件和分支顺序直接表达选择。",
+    ],
+    "vue/no-sparse-arrays": [
+      "禁止模板表达式中的稀疏数组。",
+      "缺少第二个元素，产生了稀疏数组。",
+      "每个数组位置都有明确的值。",
+    ],
+    "vue/no-useless-concat": [
+      "禁止字符串字面量之间无意义的拼接。",
+      "两个字符串字面量在运行时拼接。",
+      "一个字面量表达相同文本。",
+    ],
+    "vue/object-shorthand": [
+      "要求模板对象使用属性简写。",
+      "对象同时重复了 `value` 键和值。",
+      "属性简写保留同一绑定且不重复。",
+    ],
+    "vue/prefer-template": [
+      "优先使用模板字符串而非字符串拼接。",
+      "字符串字面量与 `name` 被拼接。",
+      "模板字符串把插值保留在一个字符串中。",
+    ],
+    "vue/quote-props": [
+      "禁止不必要的带引号对象属性。",
+      "可作为标识符的 `name` 键被多余地加上引号。",
+      "属性使用无引号的标识符形式。",
+    ],
+    "vue/no-restricted-syntax": [
+      "禁止模板表达式中配置的语法。",
+      "模板中出现了配置限制的 `CallExpression`。",
+      "模板读取已准备的绑定而不调用函数。",
+    ],
+    "vue/no-literals-in-template": [
+      "禁止 v-bind 中的对象、数组和函数字面量。",
+      "对象字面量在渲染时创建新的绑定值。",
+      "稳定的脚本绑定提供 options 对象。",
+    ],
+    "vue/no-restricted-v-bind": [
+      "禁止受限的 v-bind 参数。",
+      "`:v-focus` 把指令形态的参数作为属性绑定。",
+      "`v-focus` 直接使用指令语法。",
+    ],
+    "vue/prefer-v-model": [
+      "用 v-model 代替匹配的 bind 与 update 监听器。",
+      "bind 和 update 监听器手动同步同一个值。",
+      "`v-model` 一次表达相同的双向组件约定。",
+    ],
+    "vue/v-if-else-key": [
+      "要求重复的条件组件具有 key。",
+      "重复的条件 `Panel` 实例没有 key。",
+      "每个条件组件都有稳定且唯一的 key。",
+    ],
+    "vue/enforce-style-attribute": [
+      "将 style 块限制为允许的属性模式。",
+      "module 样式模式不在配置的允许列表中。",
+      "scoped 样式模式符合项目策略。",
+    ],
+    "vue/next-tick-style": [
+      "要求以 Promise 方式使用 nextTick。",
+      "回调被传给了 `nextTick`。",
+      "代码等待 Promise 后再继续。",
+    ],
+    "vue/no-content-outside-block": [
+      "禁止 SFC 顶层块之外的内容。",
+      "开头文本位于所有 SFC 顶层块之外。",
+      "所有编写的内容都在 template 块内。",
+    ],
+    "vue/no-define-model-default": [
+      "禁止 defineModel 中的默认值。",
+      "子 model 声明了可能与父级不同步的默认值。",
+      "初始 model 值由父级提供。",
+    ],
+    "vue/no-props-shadow": [
+      "禁止 script setup 声明遮蔽 prop。",
+      "本地 `value` 声明遮蔽了同名 prop。",
+      "本地绑定使用不同的名称。",
+    ],
+    "vue/no-shadow-native-events": [
+      "禁止组件事件名与原生事件冲突。",
+      "组件声明的 `click` 与原生事件冲突。",
+      "组件专用的 `activate` 事件避免冲突。",
+    ],
+    "vue/require-macro-variable-name": [
+      "要求编译器宏使用约定的变量名。",
+      "`defineProps` 的结果绑定为 `p`。",
+      "约定的 `props` 名称标识宏结果。",
+    ],
+    "vue/sort-keys": [
+      "按配置顺序排列组件选项中的键。",
+      "嵌套的方法键未按升序排列。",
+      "嵌套的方法键遵循配置顺序。",
+    ],
+  },
+  "pt-BR": {
+    "vue/camelcase": [
+      "Exige camelCase nos identificadores de expressões do template.",
+      "`user_name` contém um sublinhado interno.",
+      "`userName` segue camelCase.",
+    ],
+    "vue/dot-notation": [
+      "Prefere notação de ponto para propriedades estáticas.",
+      "A propriedade estática `name` usa colchetes.",
+      "A notação de ponto expressa a mesma propriedade diretamente.",
+    ],
+    "vue/eqeqeq": [
+      "Exige igualdade estrita em expressões do template.",
+      "A igualdade flexível pode converter os operandos.",
+      "A igualdade estrita compara sem conversão.",
+    ],
+    "vue/no-console": [
+      "Proíbe acesso ao console em expressões do template.",
+      "A expressão do evento chama `console.log`.",
+      "O template delega o log a uma referência do script.",
+    ],
+    "vue/no-constant-condition": [
+      "Proíbe condições constantes em expressões do template.",
+      "A condição ternária é sempre verdadeira.",
+      "O ramo depende do valor reativo `ready`.",
+    ],
+    "vue/no-empty-pattern": [
+      "Proíbe padrões de desestruturação vazios no template.",
+      "O callback desestrutura um objeto vazio.",
+      "O callback nomeia a propriedade consumida.",
+    ],
+    "vue/no-implicit-coercion": [
+      "Proíbe coerção implícita em expressões do template.",
+      "A dupla negação converte o valor implicitamente.",
+      "`Boolean` torna a conversão explícita.",
+    ],
+    "vue/no-irregular-whitespace": [
+      "Detecta espaços irregulares em expressões do template.",
+      "A expressão contém um espaço sem quebra.",
+      "A expressão usa espaço comum de código-fonte.",
+    ],
+    "vue/no-loss-of-precision": [
+      "Proíbe literais numéricos que perdem precisão.",
+      "O inteiro não pode ser representado com precisão como number.",
+      "Uma referência precisa evita o literal impreciso no template.",
+    ],
+    "vue/no-negated-condition": [
+      "Proíbe ternários iniciados por uma condição negada.",
+      "O ternário começa com uma condição negada.",
+      "A condição positiva e a ordem dos ramos expressam a escolha diretamente.",
+    ],
+    "vue/no-sparse-arrays": [
+      "Proíbe arrays esparsos em expressões do template.",
+      "A ausência do segundo item cria um array esparso.",
+      "Cada posição do array tem um valor explícito.",
+    ],
+    "vue/no-useless-concat": [
+      "Proíbe concatenação inútil de literais de string.",
+      "Dois literais são concatenados em tempo de execução.",
+      "Um único literal representa o mesmo texto.",
+    ],
+    "vue/object-shorthand": [
+      "Exige propriedades abreviadas nos objetos do template.",
+      "O objeto repete `value` como chave e valor.",
+      "A abreviação preserva a referência sem repetição.",
+    ],
+    "vue/prefer-template": [
+      "Prefere template literals à concatenação de strings.",
+      "Um literal é concatenado com `name`.",
+      "O template literal mantém a interpolação em uma única string.",
+    ],
+    "vue/quote-props": [
+      "Proíbe aspas desnecessárias em propriedades de objetos.",
+      "A chave válida `name` está entre aspas sem necessidade.",
+      "A propriedade usa a forma de identificador sem aspas.",
+    ],
+    "vue/no-restricted-syntax": [
+      "Proíbe sintaxe configurada nas expressões do template.",
+      "O `CallExpression` configurado aparece no template.",
+      "O template lê uma referência preparada sem chamar função.",
+    ],
+    "vue/no-literals-in-template": [
+      "Proíbe literais de objeto, array e função em v-bind.",
+      "O literal de objeto cria um novo valor durante a renderização.",
+      "Uma referência estável do script fornece o objeto de opções.",
+    ],
+    "vue/no-restricted-v-bind": [
+      "Proíbe argumentos restritos de v-bind.",
+      "`:v-focus` vincula um argumento de diretiva como atributo.",
+      "`v-focus` usa diretamente a sintaxe de diretiva.",
+    ],
+    "vue/prefer-v-model": [
+      "Prefere v-model a um bind e listener update equivalentes.",
+      "O bind e o listener sincronizam manualmente o mesmo valor.",
+      "`v-model` expressa uma vez o mesmo contrato bidirecional.",
+    ],
+    "vue/v-if-else-key": [
+      "Exige key em componentes condicionais repetidos.",
+      "As instâncias condicionais repetidas de `Panel` não têm key.",
+      "Cada componente condicional tem uma key estável e única.",
+    ],
+    "vue/enforce-style-attribute": [
+      "Restringe blocos style aos modos permitidos.",
+      "O modo module não está na lista permitida.",
+      "O modo scoped é aceito pela política do projeto.",
+    ],
+    "vue/next-tick-style": [
+      "Exige o estilo Promise no uso de nextTick.",
+      "Um callback é passado a `nextTick`.",
+      "O código aguarda a Promise antes de continuar.",
+    ],
+    "vue/no-content-outside-block": [
+      "Proíbe conteúdo fora dos blocos superiores do SFC.",
+      "O texto inicial está fora de todos os blocos do SFC.",
+      "Todo o conteúdo está dentro do bloco template.",
+    ],
+    "vue/no-define-model-default": [
+      "Proíbe valores padrão em defineModel.",
+      "O model filho declara um padrão que pode dessincronizar o pai.",
+      "O pai fornece o valor inicial do model.",
+    ],
+    "vue/no-props-shadow": [
+      "Proíbe declarações de script setup que ocultam props.",
+      "A declaração local `value` oculta a prop homônima.",
+      "A referência local usa um nome distinto.",
+    ],
+    "vue/no-shadow-native-events": [
+      "Proíbe eventos de componente que colidem com eventos nativos.",
+      "O componente declara `click`, que colide com um evento nativo.",
+      "O evento específico `activate` evita a colisão.",
+    ],
+    "vue/require-macro-variable-name": [
+      "Exige nomes convencionais para variáveis de macros.",
+      "O resultado de `defineProps` é atribuído a `p`.",
+      "O nome convencional `props` identifica o resultado.",
+    ],
+    "vue/sort-keys": [
+      "Ordena as chaves de opções do componente conforme configurado.",
+      "As chaves de métodos aninhadas não estão em ordem crescente.",
+      "As chaves aninhadas seguem a ordem configurada.",
+    ],
+  },
+  fr: {
+    "vue/camelcase": [
+      "Exige camelCase pour les identifiants des expressions du template.",
+      "`user_name` contient un soulignement interne.",
+      "`userName` respecte camelCase.",
+    ],
+    "vue/dot-notation": [
+      "Préfère la notation pointée pour les propriétés statiques.",
+      "La propriété statique `name` est accédée avec des crochets.",
+      "La notation pointée exprime directement la même propriété.",
+    ],
+    "vue/eqeqeq": [
+      "Exige l'égalité stricte dans les expressions du template.",
+      "L'égalité non stricte peut convertir les opérandes.",
+      "L'égalité stricte compare sans conversion.",
+    ],
+    "vue/no-console": [
+      "Interdit l'accès à console dans les expressions du template.",
+      "L'expression d'événement appelle `console.log`.",
+      "Le template délègue le journal à une liaison du script.",
+    ],
+    "vue/no-constant-condition": [
+      "Interdit les conditions constantes dans le template.",
+      "La condition ternaire est toujours vraie.",
+      "La branche dépend de la valeur réactive `ready`.",
+    ],
+    "vue/no-empty-pattern": [
+      "Interdit les motifs de déstructuration vides dans le template.",
+      "Le callback déstructure un objet vide.",
+      "Le callback nomme la propriété utilisée.",
+    ],
+    "vue/no-implicit-coercion": [
+      "Interdit les conversions implicites dans le template.",
+      "La double négation convertit implicitement la valeur.",
+      "`Boolean` rend la conversion explicite.",
+    ],
+    "vue/no-irregular-whitespace": [
+      "Détecte les espaces irréguliers dans les expressions du template.",
+      "L'expression contient une espace insécable.",
+      "L'expression utilise une espace ordinaire du code source.",
+    ],
+    "vue/no-loss-of-precision": [
+      "Interdit les nombres littéraux qui perdent en précision.",
+      "L'entier ne peut pas être représenté précisément comme number.",
+      "Une liaison précise évite le littéral imprécis dans le template.",
+    ],
+    "vue/no-negated-condition": [
+      "Interdit les ternaires commençant par une condition niée.",
+      "Le ternaire commence par une condition niée.",
+      "La condition positive et l'ordre des branches expriment directement le choix.",
+    ],
+    "vue/no-sparse-arrays": [
+      "Interdit les tableaux creux dans les expressions du template.",
+      "L'absence du deuxième élément crée un tableau creux.",
+      "Chaque position du tableau a une valeur explicite.",
+    ],
+    "vue/no-useless-concat": [
+      "Interdit la concaténation inutile de chaînes littérales.",
+      "Deux chaînes littérales sont concaténées à l'exécution.",
+      "Une seule chaîne représente le même texte.",
+    ],
+    "vue/object-shorthand": [
+      "Exige la syntaxe courte des propriétés d'objet dans le template.",
+      "L'objet répète `value` comme clé et valeur.",
+      "La syntaxe courte conserve la liaison sans répétition.",
+    ],
+    "vue/prefer-template": [
+      "Préfère les littéraux de gabarit à la concaténation.",
+      "Une chaîne littérale est concaténée avec `name`.",
+      "Le littéral de gabarit garde l'interpolation dans une seule chaîne.",
+    ],
+    "vue/quote-props": [
+      "Interdit les guillemets inutiles sur les propriétés d'objet.",
+      "La clé valide `name` est inutilement entre guillemets.",
+      "La propriété utilise sa forme d'identifiant sans guillemets.",
+    ],
+    "vue/no-restricted-syntax": [
+      "Interdit la syntaxe configurée dans les expressions du template.",
+      "Le `CallExpression` configuré apparaît dans le template.",
+      "Le template lit une liaison préparée sans appeler de fonction.",
+    ],
+    "vue/no-literals-in-template": [
+      "Interdit les littéraux d'objet, tableau et fonction dans v-bind.",
+      "Le littéral d'objet crée une nouvelle valeur au rendu.",
+      "Une liaison stable du script fournit l'objet d'options.",
+    ],
+    "vue/no-restricted-v-bind": [
+      "Interdit les arguments v-bind restreints.",
+      "`:v-focus` lie un argument de directive comme attribut.",
+      "`v-focus` utilise directement la syntaxe de directive.",
+    ],
+    "vue/prefer-v-model": [
+      "Préfère v-model à une paire bind et update équivalente.",
+      "Le bind et le listener synchronisent manuellement la même valeur.",
+      "`v-model` exprime une fois le même contrat bidirectionnel.",
+    ],
+    "vue/v-if-else-key": [
+      "Exige une key sur les composants conditionnels répétés.",
+      "Les instances conditionnelles répétées de `Panel` n'ont pas de key.",
+      "Chaque composant conditionnel possède une key stable et unique.",
+    ],
+    "vue/enforce-style-attribute": [
+      "Limite les blocs style aux modes autorisés.",
+      "Le mode module n'est pas dans la liste autorisée.",
+      "Le mode scoped est accepté par la politique du projet.",
+    ],
+    "vue/next-tick-style": [
+      "Exige le style Promise pour nextTick.",
+      "Un callback est passé à `nextTick`.",
+      "Le code attend la Promise avant de continuer.",
+    ],
+    "vue/no-content-outside-block": [
+      "Interdit le contenu hors des blocs supérieurs du SFC.",
+      "Le texte initial est hors de tous les blocs du SFC.",
+      "Tout le contenu se trouve dans le bloc template.",
+    ],
+    "vue/no-define-model-default": [
+      "Interdit les valeurs par défaut dans defineModel.",
+      "Le model enfant déclare une valeur pouvant désynchroniser le parent.",
+      "Le parent fournit la valeur initiale du model.",
+    ],
+    "vue/no-props-shadow": [
+      "Interdit aux déclarations de script setup de masquer les props.",
+      "La déclaration locale `value` masque la prop homonyme.",
+      "La liaison locale utilise un nom distinct.",
+    ],
+    "vue/no-shadow-native-events": [
+      "Interdit les événements de composant qui entrent en collision avec les événements natifs.",
+      "Le composant déclare `click`, en collision avec un événement natif.",
+      "L'événement spécifique `activate` évite la collision.",
+    ],
+    "vue/require-macro-variable-name": [
+      "Exige les noms conventionnels des variables de macro.",
+      "Le résultat de `defineProps` est lié à `p`.",
+      "Le nom conventionnel `props` identifie le résultat.",
+    ],
+    "vue/sort-keys": [
+      "Trie les clés des options du composant selon la configuration.",
+      "Les clés des méthodes imbriquées ne sont pas en ordre croissant.",
+      "Les clés imbriquées suivent l'ordre configuré.",
+    ],
+  },
+};

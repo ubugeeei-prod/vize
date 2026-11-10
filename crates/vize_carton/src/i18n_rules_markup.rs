@@ -1,7 +1,6 @@
 //! `<rule>.description` for the lint rules that had none in any locale
 //! (P4-14b): accessibility, CSS, HTML, Musea, Vapor and Vue template rules
-//! here; script and type rules in [`crate::i18n_rules_script`] and
-//! [`crate::i18n_rules_script_more`]; ecosystem and Nuxt rules in
+//! here; script and type rules use dedicated modules; ecosystem and Nuxt rules in
 //! [`crate::i18n_rules_ecosystem`].
 //!
 //! The `en` column is the rule's own `RuleMeta` description, byte for byte —
@@ -21,6 +20,7 @@ pub(crate) fn register(messages: &mut [MessageMap; 3]) {
         crate::i18n_rules_script::ENTRIES,
         crate::i18n_rules_script_more::ENTRIES,
         crate::i18n_rules_ecosystem::ENTRIES,
+        crate::i18n_rules_markup_compatibility::ENTRIES,
     ];
     for &(key, en, ja, zh) in tables.into_iter().flatten() {
         messages[0].insert(key, en);

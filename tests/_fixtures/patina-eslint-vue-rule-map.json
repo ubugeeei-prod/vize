@@ -66,8 +66,10 @@
       "status": "unimplemented"
     },
     "vue/camelcase": {
-      "issue": 3223,
-      "status": "unimplemented"
+      "patinaPresets": [],
+      "patinaRule": "vue/camelcase",
+      "patinaSeverity": "warning",
+      "status": "mapped"
     },
     "vue/comma-dangle": {
       "issue": 3223,
@@ -171,16 +173,22 @@
       "status": "unimplemented"
     },
     "vue/dot-notation": {
-      "issue": 3223,
-      "status": "unimplemented"
+      "patinaPresets": [],
+      "patinaRule": "vue/dot-notation",
+      "patinaSeverity": "warning",
+      "status": "mapped"
     },
     "vue/enforce-style-attribute": {
-      "issue": 3223,
-      "status": "unimplemented"
+      "patinaPresets": [],
+      "patinaRule": "vue/enforce-style-attribute",
+      "patinaSeverity": "warning",
+      "status": "mapped"
     },
     "vue/eqeqeq": {
-      "issue": 3223,
-      "status": "unimplemented"
+      "patinaPresets": [],
+      "patinaRule": "vue/eqeqeq",
+      "patinaSeverity": "warning",
+      "status": "mapped"
     },
     "vue/first-attribute-linebreak": {
       "issue": 3223,
@@ -338,8 +346,10 @@
       "status": "unimplemented"
     },
     "vue/next-tick-style": {
-      "issue": 3223,
-      "status": "unimplemented"
+      "patinaPresets": [],
+      "patinaRule": "vue/next-tick-style",
+      "patinaSeverity": "warning",
+      "status": "mapped"
     },
     "vue/no-arrow-functions-in-watch": {
       "patinaPresets": [
@@ -405,16 +415,32 @@
       "status": "mapped"
     },
     "vue/no-console": {
-      "issue": 3223,
-      "status": "unimplemented"
+      "patinaPresets": [],
+      "patinaRule": "vue/no-console",
+      "patinaSeverity": "warning",
+      "status": "mapped"
     },
     "vue/no-constant-condition": {
-      "issue": 3223,
-      "status": "unimplemented"
+      "patinaPresets": [],
+      "patinaRule": "vue/no-constant-condition",
+      "patinaSeverity": "warning",
+      "status": "mapped"
+    },
+    "vue/no-content-outside-block": {
+      "patinaPresets": [],
+      "patinaRule": "vue/no-content-outside-block",
+      "patinaSeverity": "warning",
+      "status": "mapped"
     },
     "vue/no-custom-modifiers-on-v-model": {
       "patinaPresets": [],
       "patinaRule": "vue/no-custom-modifiers-on-v-model",
+      "patinaSeverity": "warning",
+      "status": "mapped"
+    },
+    "vue/no-define-model-default": {
+      "patinaPresets": [],
+      "patinaRule": "vue/no-define-model-default",
       "patinaSeverity": "warning",
       "status": "mapped"
     },
@@ -719,8 +745,15 @@
       "status": "mapped"
     },
     "vue/no-duplicate-class-names": {
-      "issue": 3223,
-      "status": "unimplemented"
+      "patinaPresets": [
+        "ecosystem",
+        "general-recommended",
+        "nuxt",
+        "opinionated"
+      ],
+      "patinaRule": "html/no-duplicate-class",
+      "patinaSeverity": "warning",
+      "status": "mapped"
     },
     "vue/no-empty-component-block": {
       "patinaPresets": [
@@ -732,8 +765,10 @@
       "status": "mapped"
     },
     "vue/no-empty-pattern": {
-      "issue": 3223,
-      "status": "unimplemented"
+      "patinaPresets": [],
+      "patinaRule": "vue/no-empty-pattern",
+      "patinaSeverity": "warning",
+      "status": "mapped"
     },
     "vue/no-export-in-script-setup": {
       "patinaPresets": [
@@ -764,8 +799,10 @@
       "status": "unimplemented"
     },
     "vue/no-implicit-coercion": {
-      "issue": 3223,
-      "status": "unimplemented"
+      "patinaPresets": [],
+      "patinaRule": "vue/no-implicit-coercion",
+      "patinaSeverity": "warning",
+      "status": "mapped"
     },
     "vue/no-import-compiler-macros": {
       "patinaPresets": [
@@ -780,8 +817,10 @@
       "status": "mapped"
     },
     "vue/no-irregular-whitespace": {
-      "issue": 3223,
-      "status": "unimplemented"
+      "patinaPresets": [],
+      "patinaRule": "vue/no-irregular-whitespace",
+      "patinaSeverity": "warning",
+      "status": "mapped"
     },
     "vue/no-lifecycle-after-await": {
       "patinaPresets": [
@@ -796,8 +835,10 @@
       "status": "mapped"
     },
     "vue/no-literals-in-template": {
-      "issue": 3223,
-      "status": "unimplemented"
+      "patinaPresets": [],
+      "patinaRule": "vue/no-literals-in-template",
+      "patinaSeverity": "warning",
+      "status": "mapped"
     },
     "vue/no-lone-template": {
       "patinaPresets": [
@@ -811,8 +852,10 @@
       "status": "mapped"
     },
     "vue/no-loss-of-precision": {
-      "issue": 3223,
-      "status": "unimplemented"
+      "patinaPresets": [],
+      "patinaRule": "vue/no-loss-of-precision",
+      "patinaSeverity": "warning",
+      "status": "mapped"
     },
     "vue/no-multi-spaces": {
       "patinaPresets": [
@@ -864,8 +907,10 @@
       "status": "mapped"
     },
     "vue/no-negated-condition": {
-      "issue": 3223,
-      "status": "unimplemented"
+      "patinaPresets": [],
+      "patinaRule": "vue/no-negated-condition",
+      "patinaSeverity": "warning",
+      "status": "mapped"
     },
     "vue/no-negated-v-if-condition": {
       "patinaPresets": [
@@ -877,8 +922,10 @@
       "status": "mapped"
     },
     "vue/no-parsing-error": {
-      "issue": 3223,
-      "status": "unimplemented"
+      "patinaPresets": [],
+      "patinaRule": "parser/template",
+      "patinaSeverity": "error",
+      "status": "mapped"
     },
     "vue/no-potential-component-option-typo": {
       "patinaPresets": [
@@ -890,6 +937,12 @@
       ],
       "patinaRule": "script/no-potential-component-option-typo",
       "patinaSeverity": "error",
+      "status": "mapped"
+    },
+    "vue/no-props-shadow": {
+      "patinaPresets": [],
+      "patinaRule": "vue/no-props-shadow",
+      "patinaSeverity": "warning",
       "status": "mapped"
     },
     "vue/no-ref-as-operand": {
@@ -995,12 +1048,16 @@
       "status": "unimplemented"
     },
     "vue/no-restricted-syntax": {
-      "issue": 3223,
-      "status": "unimplemented"
+      "patinaPresets": [],
+      "patinaRule": "vue/no-restricted-syntax",
+      "patinaSeverity": "warning",
+      "status": "mapped"
     },
     "vue/no-restricted-v-bind": {
-      "issue": 3223,
-      "status": "unimplemented"
+      "patinaPresets": [],
+      "patinaRule": "vue/no-restricted-v-bind",
+      "patinaSeverity": "warning",
+      "status": "mapped"
     },
     "vue/no-restricted-v-on": {
       "issue": 3223,
@@ -1021,17 +1078,15 @@
       "patinaSeverity": "warning",
       "status": "mapped"
     },
-    "vue/no-shared-component-data": {
-      "patinaPresets": [
-        "ecosystem",
-        "essential",
-        "general-recommended",
-        "nuxt",
-        "opinionated"
-      ],
-      "patinaRule": "script/no-deprecated-data-object-declaration",
-      "patinaSeverity": "error",
+    "vue/no-shadow-native-events": {
+      "patinaPresets": [],
+      "patinaRule": "vue/no-shadow-native-events",
+      "patinaSeverity": "warning",
       "status": "mapped"
+    },
+    "vue/no-shared-component-data": {
+      "issue": 3223,
+      "status": "unimplemented"
     },
     "vue/no-side-effects-in-computed-properties": {
       "patinaPresets": [
@@ -1050,8 +1105,10 @@
       "status": "unimplemented"
     },
     "vue/no-sparse-arrays": {
-      "issue": 3223,
-      "status": "unimplemented"
+      "patinaPresets": [],
+      "patinaRule": "vue/no-sparse-arrays",
+      "patinaSeverity": "warning",
+      "status": "mapped"
     },
     "vue/no-static-inline-styles": {
       "patinaPresets": [],
@@ -1117,8 +1174,12 @@
       "status": "mapped"
     },
     "vue/no-undef-components": {
-      "issue": 3223,
-      "status": "unimplemented"
+      "patinaPresets": [
+        "opinionated"
+      ],
+      "patinaRule": "vue/require-component-registration",
+      "patinaSeverity": "warning",
+      "status": "mapped"
     },
     "vue/no-undef-directives": {
       "issue": 3223,
@@ -1214,8 +1275,10 @@
       "status": "mapped"
     },
     "vue/no-useless-concat": {
-      "issue": 3223,
-      "status": "unimplemented"
+      "patinaPresets": [],
+      "patinaRule": "vue/no-useless-concat",
+      "patinaSeverity": "warning",
+      "status": "mapped"
     },
     "vue/no-useless-mustaches": {
       "patinaPresets": [
@@ -1327,8 +1390,10 @@
       "status": "unimplemented"
     },
     "vue/object-shorthand": {
-      "issue": 3223,
-      "status": "unimplemented"
+      "patinaPresets": [],
+      "patinaRule": "vue/object-shorthand",
+      "patinaSeverity": "warning",
+      "status": "mapped"
     },
     "vue/one-component-per-file": {
       "patinaPresets": [
@@ -1392,16 +1457,23 @@
       "status": "mapped"
     },
     "vue/prefer-separate-static-class": {
-      "issue": 3223,
-      "status": "unimplemented"
+      "patinaPresets": [
+        "nuxt",
+        "opinionated"
+      ],
+      "patinaRule": "vapor/prefer-static-class",
+      "patinaSeverity": "warning",
+      "status": "mapped"
     },
     "vue/prefer-single-event-payload": {
       "issue": 3223,
       "status": "unimplemented"
     },
     "vue/prefer-template": {
-      "issue": 3223,
-      "status": "unimplemented"
+      "patinaPresets": [],
+      "patinaRule": "vue/prefer-template",
+      "patinaSeverity": "warning",
+      "status": "mapped"
     },
     "vue/prefer-true-attribute-shorthand": {
       "patinaPresets": [
@@ -1422,8 +1494,10 @@
       "status": "mapped"
     },
     "vue/prefer-v-model": {
-      "issue": 3223,
-      "status": "unimplemented"
+      "patinaPresets": [],
+      "patinaRule": "vue/prefer-v-model",
+      "patinaSeverity": "warning",
+      "status": "mapped"
     },
     "vue/prop-name-casing": {
       "patinaPresets": [
@@ -1437,8 +1511,10 @@
       "status": "mapped"
     },
     "vue/quote-props": {
-      "issue": 3223,
-      "status": "unimplemented"
+      "patinaPresets": [],
+      "patinaRule": "vue/quote-props",
+      "patinaSeverity": "warning",
+      "status": "mapped"
     },
     "vue/require-component-is": {
       "patinaPresets": [
@@ -1500,8 +1576,10 @@
       "status": "mapped"
     },
     "vue/require-macro-variable-name": {
-      "issue": 3223,
-      "status": "unimplemented"
+      "patinaPresets": [],
+      "patinaRule": "vue/require-macro-variable-name",
+      "patinaSeverity": "warning",
+      "status": "mapped"
     },
     "vue/require-name-property": {
       "issue": 3223,
@@ -1652,8 +1730,10 @@
       "status": "mapped"
     },
     "vue/sort-keys": {
-      "issue": 3223,
-      "status": "unimplemented"
+      "patinaPresets": [],
+      "patinaRule": "vue/sort-keys",
+      "patinaSeverity": "warning",
+      "status": "mapped"
     },
     "vue/space-in-parens": {
       "issue": 3223,
@@ -1714,8 +1794,10 @@
       "status": "unimplemented"
     },
     "vue/v-if-else-key": {
-      "issue": 3223,
-      "status": "unimplemented"
+      "patinaPresets": [],
+      "patinaRule": "vue/v-if-else-key",
+      "patinaSeverity": "warning",
+      "status": "mapped"
     },
     "vue/v-on-event-hyphenation": {
       "patinaPresets": [
@@ -2032,12 +2114,12 @@
   "schemaVersion": 1,
   "summary": {
     "intentionalDivergence": 3,
-    "mapped": 150,
-    "unimplemented": 99
+    "mapped": 181,
+    "unimplemented": 72
   },
   "upstream": {
     "package": "eslint-plugin-vue",
-    "ruleCount": 252,
-    "version": "10.9.2"
+    "ruleCount": 256,
+    "version": "10.12.0"
   }
 }

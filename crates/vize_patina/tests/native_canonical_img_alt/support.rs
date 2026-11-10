@@ -91,7 +91,9 @@ pub fn source_parity(dialect: Dialect, source: &str, locale: Locale) -> Vec<Valu
     let a = Allocator::default();
     let mut registry = RuleRegistry::new();
     registry.register(Box::new(ImgAlt));
-    let linter = Linter::with_registry(registry).with_locale(locale);
+    let linter = Linter::with_registry(registry)
+        .with_disabled_rules(vec!["parser/template".into()])
+        .with_locale(locale);
     let messages = translator().for_locale(locale);
     let (actual, reference) = match dialect {
         Dialect::Vue => {

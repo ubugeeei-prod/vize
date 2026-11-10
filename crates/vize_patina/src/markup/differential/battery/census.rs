@@ -23,6 +23,12 @@ pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
         + 2
         + 5
         + 3
+        // Dynamic class counterpart coverage adds one literal fixture.
+        + 1
+        // Conditional class branches add one non-colliding control fixture.
+        + 1
+        // Compatibility template rules add two focused literal fixtures.
+        + 2
         // Mapped-rule parity regressions add nine distinct literal fixtures.
         + 9
         // Promise-chain ownership adds one complete script-rule fixture.
@@ -168,6 +174,14 @@ pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
         + 8
         + 4
         + 3
+        // The 28-rule compatibility wave adds one loop-driven call.
+        + 1
+        // Dynamic class counterpart coverage adds one literal call.
+        + 1
+        // Conditional class branches add one non-colliding control call.
+        + 1
+        // Compatibility template rules add two focused literal calls.
+        + 2
         // Mapped-rule parity regressions add thirteen fixture calls.
         + 13
         // Promise-chain ownership adds one complete script-rule call.
@@ -212,6 +226,8 @@ pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
         + 1
         + 3
         + 3
+        // The compatibility scorecard keeps that call scanner-owned.
+        + 1
         // Four helper-driven mapped-rule inputs remain explicit scanner skips.
         + 4
         + 2
@@ -239,6 +255,12 @@ pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
         + 29
         - 4
         + 12
+        // The dynamic class fixture contributes thirteen retained trace lines.
+        + 13
+        // The conditional branch control contributes nine retained trace lines.
+        + 9
+        // Compatibility template rules contribute ten retained trace lines.
+        + 10
         // Complete mapped-rule parity traces add eighty-four retained lines.
         + 84
         // Promise-chain ownership retains seven complete trace lines.

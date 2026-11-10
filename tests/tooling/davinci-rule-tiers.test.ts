@@ -11,17 +11,17 @@ import {
 // table, and generation fails on a rule without a row or a row without a
 // rule — proven here by injection, beside the real table's census.
 
-test("the contract table declares a tier for 281 rules", () => {
+test("the contract table declares a tier for 309 rules", () => {
   const tiers: Map<string, string> = readTierTable();
   const census = new Map<string, number>();
   for (const tier of tiers.values()) census.set(tier, (census.get(tier) ?? 0) + 1);
-  assert.equal(tiers.size, 281);
+  assert.equal(tiers.size, 309);
   assert.deepEqual(
     [...census].sort(([a], [b]) => (a < b ? -1 : 1)),
     [
-      ["complete", 39],
-      ["exact", 224],
-      ["heuristic", 17],
+      ["complete", 62],
+      ["exact", 226],
+      ["heuristic", 20],
       ["sound", 1],
     ],
   );

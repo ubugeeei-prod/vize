@@ -211,6 +211,15 @@ severity: error
 
 help:
   close the interpolation with }}
+=== compiler/missing-semicolon-after-character-reference
+compiler/missing-semicolon-after-character-reference · compiler error
+Missing semicolon after character reference.
+
+stage: surface
+severity: error
+
+help:
+  terminate the character reference with ;, for example &amp;
 === compiler/missing-whitespace-between-attributes
 compiler/missing-whitespace-between-attributes · compiler error
 Whitespace expected between attributes.
@@ -319,6 +328,15 @@ severity: error
 
 help:
   this is a compiler bug; please report it with the template that triggers it
+=== compiler/unknown-named-character-reference
+compiler/unknown-named-character-reference · compiler error
+Unknown named character reference.
+
+stage: surface
+severity: error
+
+help:
+  use a defined HTML character reference, or escape the leading & as &amp;
 === compiler/v-bind-no-expression
 compiler/v-bind-no-expression · compiler error
 v-bind is missing expression.
@@ -3916,6 +3934,16 @@ valid:
 
 help:
   Reorder attributes to follow the recommended order
+=== vue/camelcase
+vue/camelcase · lint rule
+Require camelCase identifiers in template expressions
+
+tier: complete
+domain: simple interpolation and directive expressions with a retained JavaScript AST, using default rule behavior or the typed options Patina exposes; compound expressions and unsupported selector syntax are outside
+severity: warning
+category: recommended
+autofix: no
+docs: docs/content/rules/reference/vue-camelcase.md
 === vue/comment-directive
 vue/comment-directive · lint rule
 Support comment directives in `<template>`
@@ -3971,6 +3999,36 @@ valid:
   <MyComponent />
   <RouterView />
   <slot />
+=== vue/dot-notation
+vue/dot-notation · lint rule
+Prefer dot notation in template expressions
+
+tier: complete
+domain: simple interpolation and directive expressions with a retained JavaScript AST, using default rule behavior or the typed options Patina exposes; compound expressions and unsupported selector syntax are outside
+severity: warning
+category: recommended
+autofix: no
+docs: docs/content/rules/reference/vue-dot-notation.md
+=== vue/enforce-style-attribute
+vue/enforce-style-attribute · lint rule
+Enforce allowed style-block attributes
+
+tier: exact
+domain: the SFC's top-level blocks, their order and their attributes
+severity: warning
+category: recommended
+autofix: no
+docs: docs/content/rules/reference/vue-enforce-style-attribute.md
+=== vue/eqeqeq
+vue/eqeqeq · lint rule
+Require strict equality in template expressions
+
+tier: complete
+domain: simple interpolation and directive expressions with a retained JavaScript AST, using default rule behavior or the typed options Patina exposes; compound expressions and unsupported selector syntax are outside
+severity: warning
+category: recommended
+autofix: no
+docs: docs/content/rules/reference/vue-eqeqeq.md
 === vue/html-button-has-type
 vue/html-button-has-type · lint rule
 Require an explicit valid type on button elements
@@ -4159,6 +4217,16 @@ valid:
   <div>{{ text }}</div>
   <div>{{ foo.bar }}</div>
   <div>{{ foo + bar }}</div>
+=== vue/next-tick-style
+vue/next-tick-style · lint rule
+Enforce Promise-style nextTick usage
+
+tier: complete
+domain: inline SFC scripts and descriptors with lexically unshadowed Vue macros and APIs and structurally recognizable component option objects; external blocks and unresolved aliases are outside
+severity: warning
+category: recommended
+autofix: no
+docs: docs/content/rules/reference/vue-next-tick-style.md
 === vue/no-array-index-key
 vue/no-array-index-key · lint rule
 Disallow using the v-for index variable directly as the :key
@@ -4261,6 +4329,36 @@ help:
 
     <!-- After -->
     <div v-html="content"></div>
+=== vue/no-console
+vue/no-console · lint rule
+Disallow console access in template expressions
+
+tier: complete
+domain: simple interpolation and directive expressions with a retained JavaScript AST, using default rule behavior or the typed options Patina exposes; compound expressions and unsupported selector syntax are outside
+severity: warning
+category: recommended
+autofix: no
+docs: docs/content/rules/reference/vue-no-console.md
+=== vue/no-constant-condition
+vue/no-constant-condition · lint rule
+Disallow constant conditions in template expressions
+
+tier: complete
+domain: simple interpolation and directive expressions with a retained JavaScript AST, using default rule behavior or the typed options Patina exposes; compound expressions and unsupported selector syntax are outside
+severity: warning
+category: recommended
+autofix: no
+docs: docs/content/rules/reference/vue-no-constant-condition.md
+=== vue/no-content-outside-block
+vue/no-content-outside-block · lint rule
+Disallow content outside SFC top-level blocks
+
+tier: exact
+domain: the SFC's top-level blocks, their order and their attributes
+severity: warning
+category: recommended
+autofix: no
+docs: docs/content/rules/reference/vue-no-content-outside-block.md
 === vue/no-custom-modifiers-on-v-model
 vue/no-custom-modifiers-on-v-model · lint rule
 Disallow custom modifiers on `v-model` used on a component
@@ -4271,6 +4369,16 @@ severity: warning
 category: essential
 autofix: no
 docs: docs/content/rules/reference/vue-no-custom-modifiers-on-v-model.md
+=== vue/no-define-model-default
+vue/no-define-model-default · lint rule
+Disallow default values in defineModel
+
+tier: complete
+domain: inline SFC scripts and descriptors with lexically unshadowed Vue macros and APIs and structurally recognizable component option objects; external blocks and unresolved aliases are outside
+severity: warning
+category: recommended
+autofix: no
+docs: docs/content/rules/reference/vue-no-define-model-default.md
 === vue/no-deprecated-filter
 vue/no-deprecated-filter · lint rule
 Disallow deprecated Vue 2 filter syntax using the pipe operator
@@ -4622,6 +4730,26 @@ valid:
 
 help:
   Add meaningful content to the block or remove it entirely.
+=== vue/no-empty-pattern
+vue/no-empty-pattern · lint rule
+Disallow empty destructuring patterns in template expressions
+
+tier: complete
+domain: simple interpolation and directive expressions with a retained JavaScript AST, using default rule behavior or the typed options Patina exposes; compound expressions and unsupported selector syntax are outside
+severity: warning
+category: recommended
+autofix: no
+docs: docs/content/rules/reference/vue-no-empty-pattern.md
+=== vue/no-implicit-coercion
+vue/no-implicit-coercion · lint rule
+Disallow implicit coercion in template expressions
+
+tier: complete
+domain: simple interpolation and directive expressions with a retained JavaScript AST, using default rule behavior or the typed options Patina exposes; compound expressions and unsupported selector syntax are outside
+severity: warning
+category: recommended
+autofix: no
+docs: docs/content/rules/reference/vue-no-implicit-coercion.md
 === vue/no-inline-style
 vue/no-inline-style · lint rule
 Discourage use of inline style attributes
@@ -4656,6 +4784,26 @@ docs: docs/content/rules/reference/vue-no-invalid-html-attribute.md
 
 help:
   Use only standard rel tokens that are allowed for this element, such as noopener noreferrer on links or stylesheet on link elements.
+=== vue/no-irregular-whitespace
+vue/no-irregular-whitespace · lint rule
+Disallow irregular whitespace in template expressions
+
+tier: heuristic
+domain: simple interpolation and directive expressions with a retained JavaScript AST, using default rule behavior or the typed options Patina exposes; compound expressions and unsupported selector syntax are outside
+severity: warning
+category: recommended
+autofix: no
+docs: docs/content/rules/reference/vue-no-irregular-whitespace.md
+=== vue/no-literals-in-template
+vue/no-literals-in-template · lint rule
+Disallow object, array and function literals in v-bind
+
+tier: heuristic
+domain: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+severity: warning
+category: recommended
+autofix: no
+docs: docs/content/rules/reference/vue-no-literals-in-template.md
 === vue/no-lone-template
 vue/no-lone-template · lint rule
 Disallow unnecessary `<template>` elements
@@ -4685,6 +4833,16 @@ valid:
 
 help:
   Remove the <template> wrapper or add a directive (v-if, v-for, v-slot)
+=== vue/no-loss-of-precision
+vue/no-loss-of-precision · lint rule
+Disallow numeric literals that lose precision
+
+tier: heuristic
+domain: simple interpolation and directive expressions with a retained JavaScript AST, using default rule behavior or the typed options Patina exposes; compound expressions and unsupported selector syntax are outside
+severity: warning
+category: recommended
+autofix: no
+docs: docs/content/rules/reference/vue-no-loss-of-precision.md
 === vue/no-multi-spaces
 vue/no-multi-spaces · lint rule
 Disallow multiple consecutive spaces
@@ -4751,6 +4909,16 @@ severity: error
 category: essential
 autofix: no
 docs: docs/content/rules/reference/vue-no-mutating-props.md
+=== vue/no-negated-condition
+vue/no-negated-condition · lint rule
+Disallow negated ternary conditions in template expressions
+
+tier: complete
+domain: simple interpolation and directive expressions with a retained JavaScript AST, using default rule behavior or the typed options Patina exposes; compound expressions and unsupported selector syntax are outside
+severity: warning
+category: recommended
+autofix: no
+docs: docs/content/rules/reference/vue-no-negated-condition.md
 === vue/no-negated-v-if-condition
 vue/no-negated-v-if-condition · lint rule
 Disallow a negated v-if condition when the chain has a v-else
@@ -4800,6 +4968,16 @@ severity: warning
 category: recommended
 autofix: no
 docs: docs/content/rules/reference/vue-no-preprocessor-lang.md
+=== vue/no-props-shadow
+vue/no-props-shadow · lint rule
+Disallow setup declarations that shadow props
+
+tier: complete
+domain: inline SFC scripts and descriptors with lexically unshadowed Vue macros and APIs and structurally recognizable component option objects; external blocks and unresolved aliases are outside
+severity: warning
+category: recommended
+autofix: no
+docs: docs/content/rules/reference/vue-no-props-shadow.md
 === vue/no-ref-object-reactivity-loss
 vue/no-ref-object-reactivity-loss · lint rule
 Disallow copying a ref value in the same scope
@@ -4833,6 +5011,26 @@ valid:
 
 help:
   Rename the component to avoid using reserved names
+=== vue/no-restricted-syntax
+vue/no-restricted-syntax · lint rule
+Disallow configured syntax in template expressions
+
+tier: complete
+domain: simple interpolation and directive expressions with a retained JavaScript AST, using default rule behavior or the typed options Patina exposes; compound expressions and unsupported selector syntax are outside
+severity: warning
+category: recommended
+autofix: no
+docs: docs/content/rules/reference/vue-no-restricted-syntax.md
+=== vue/no-restricted-v-bind
+vue/no-restricted-v-bind · lint rule
+Disallow restricted v-bind arguments
+
+tier: complete
+domain: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+severity: warning
+category: recommended
+autofix: no
+docs: docs/content/rules/reference/vue-no-restricted-v-bind.md
 === vue/no-root-v-if
 vue/no-root-v-if · lint rule
 Disallow v-if on the single root element of a template
@@ -4878,6 +5076,26 @@ severity: warning
 category: script
 autofix: no
 docs: docs/content/rules/reference/vue-no-setup-props-reactivity-loss.md
+=== vue/no-shadow-native-events
+vue/no-shadow-native-events · lint rule
+Disallow component events that shadow native events
+
+tier: complete
+domain: inline SFC scripts and descriptors with lexically unshadowed Vue macros and APIs and structurally recognizable component option objects; external blocks and unresolved aliases are outside
+severity: warning
+category: recommended
+autofix: no
+docs: docs/content/rules/reference/vue-no-shadow-native-events.md
+=== vue/no-sparse-arrays
+vue/no-sparse-arrays · lint rule
+Disallow sparse arrays in template expressions
+
+tier: complete
+domain: simple interpolation and directive expressions with a retained JavaScript AST, using default rule behavior or the typed options Patina exposes; compound expressions and unsupported selector syntax are outside
+severity: warning
+category: recommended
+autofix: no
+docs: docs/content/rules/reference/vue-no-sparse-arrays.md
 === vue/no-src-attribute
 vue/no-src-attribute · lint rule
 Discourage src attribute on SFC blocks
@@ -5234,6 +5452,16 @@ help:
     <template v-for="user in users" :key="user.id">
     <li v-if="user.isActive">{{ user.name }}</li>
     </template>
+=== vue/no-useless-concat
+vue/no-useless-concat · lint rule
+Disallow useless string concatenation in template expressions
+
+tier: complete
+domain: simple interpolation and directive expressions with a retained JavaScript AST, using default rule behavior or the typed options Patina exposes; compound expressions and unsupported selector syntax are outside
+severity: warning
+category: recommended
+autofix: no
+docs: docs/content/rules/reference/vue-no-useless-concat.md
 === vue/no-useless-mustaches
 vue/no-useless-mustaches · lint rule
 Disallow a mustache interpolation whose expression is a constant string literal
@@ -5432,6 +5660,16 @@ help:
 
     <!-- Use slots -->
     <MyComponent><div v-html="content" /></MyComponent>
+=== vue/object-shorthand
+vue/object-shorthand · lint rule
+Require object shorthand in template expressions
+
+tier: complete
+domain: simple interpolation and directive expressions with a retained JavaScript AST, using default rule behavior or the typed options Patina exposes; compound expressions and unsupported selector syntax are outside
+severity: warning
+category: recommended
+autofix: no
+docs: docs/content/rules/reference/vue-object-shorthand.md
 === vue/permitted-contents
 vue/permitted-contents · lint rule
 Enforce HTML content model rules
@@ -5507,6 +5745,16 @@ valid:
 
 help:
   Use shorthand prop syntax
+=== vue/prefer-template
+vue/prefer-template · lint rule
+Prefer template literals in template expressions
+
+tier: complete
+domain: simple interpolation and directive expressions with a retained JavaScript AST, using default rule behavior or the typed options Patina exposes; compound expressions and unsupported selector syntax are outside
+severity: warning
+category: recommended
+autofix: no
+docs: docs/content/rules/reference/vue-prefer-template.md
 === vue/prefer-true-attribute-shorthand
 vue/prefer-true-attribute-shorthand · lint rule
 Prefer the shorthand for a boolean attribute bound to `true`
@@ -5528,6 +5776,16 @@ valid:
 
 help:
   Drop the ='true' binding and write the attribute name on its own.
+=== vue/prefer-v-model
+vue/prefer-v-model · lint rule
+Prefer v-model over matching bind and update listeners
+
+tier: complete
+domain: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+severity: warning
+category: recommended
+autofix: no
+docs: docs/content/rules/reference/vue-prefer-v-model.md
 === vue/prop-name-casing
 vue/prop-name-casing · lint rule
 Enforce a casing for declared prop names
@@ -5556,6 +5814,16 @@ help:
 
     <!-- Good -->
     defineProps({ myProp: String })
+=== vue/quote-props
+vue/quote-props · lint rule
+Disallow unnecessary quoted object properties in template expressions
+
+tier: complete
+domain: simple interpolation and directive expressions with a retained JavaScript AST, using default rule behavior or the typed options Patina exposes; compound expressions and unsupported selector syntax are outside
+severity: warning
+category: recommended
+autofix: no
+docs: docs/content/rules/reference/vue-quote-props.md
 === vue/require-component-is
 vue/require-component-is · lint rule
 Require `v-bind:is` on `<component>` elements
@@ -5600,6 +5868,16 @@ severity: warning
 category: script
 autofix: no
 docs: docs/content/rules/reference/vue-require-expose.md
+=== vue/require-macro-variable-name
+vue/require-macro-variable-name · lint rule
+Require conventional macro variable names
+
+tier: complete
+domain: inline SFC scripts and descriptors with lexically unshadowed Vue macros and APIs and structurally recognizable component option objects; external blocks and unresolved aliases are outside
+severity: warning
+category: recommended
+autofix: no
+docs: docs/content/rules/reference/vue-require-macro-variable-name.md
 === vue/require-scoped-style
 vue/require-scoped-style · lint rule
 Require scoped attribute on style tags
@@ -5749,6 +6027,16 @@ valid:
 
 help:
   Rename the rendered slot outlet to {casing}.
+=== vue/sort-keys
+vue/sort-keys · lint rule
+Require sorted keys in component option objects
+
+tier: complete
+domain: inline SFC scripts and descriptors with lexically unshadowed Vue macros and APIs and structurally recognizable component option objects; external blocks and unresolved aliases are outside
+severity: warning
+category: recommended
+autofix: no
+docs: docs/content/rules/reference/vue-sort-keys.md
 === vue/this-in-template
 vue/this-in-template · lint rule
 Disallow `this.` in template expressions
@@ -5864,6 +6152,16 @@ valid:
 
 help:
   Replace with the preferred style
+=== vue/v-if-else-key
+vue/v-if-else-key · lint rule
+Require keys on repeated conditional components
+
+tier: complete
+domain: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+severity: warning
+category: recommended
+autofix: no
+docs: docs/content/rules/reference/vue-v-if-else-key.md
 === vue/v-on-event-hyphenation
 vue/v-on-event-hyphenation · lint rule
 Enforce hyphenation of custom event names in v-on on components

@@ -6,7 +6,14 @@ import { test } from "node:test";
 import { compareLintFindings } from "../../tools/support/compat/fixtures/lint-divergence.ts";
 import { compareLintFindings as compareSuccessor } from "../../tools/support/fixtures/lint_divergence/compare.ts";
 import { get, list, type Json } from "../../tools/support/fixtures/lint_divergence/value.ts";
-import { compare, cwd, eslintResult, ruleMap, span } from "./_helpers/lint-divergence-fixture.ts";
+import {
+  compare,
+  currentContext,
+  cwd,
+  eslintResult,
+  ruleMap,
+  span,
+} from "./_helpers/lint-divergence-fixture.ts";
 
 test("the divergence ledger keys on the full location tuple, not on counts", () => {
   // Both linters report exactly two findings for the same rule in the same
@@ -166,7 +173,7 @@ test("identical duplicate baseline findings do not become false negatives", () =
       ruleMap,
       patina,
       eslint as Parameters<typeof compareSuccessor>[4],
-      { files: ["src/App.vue"] },
+      currentContext(ruleMap, ["src/App.vue"]),
     ),
     successorSummary = successor.summary as Record<string, unknown>;
 
@@ -217,7 +224,7 @@ test("intentional findings do not dilute the false-positive ratio", () => {
         patinaFindings: findings,
         eslintResults: [],
       }),
-      successor = compareSuccessor("fixture", cwd, map, findings, [], { files: [file] });
+      successor = compareSuccessor("fixture", cwd, map, findings, [], currentContext(map, [file]));
     for (const result of [compatible, successor]) {
       const summary = JSON.parse(JSON.stringify(result.summary)) as Record<string, unknown>;
       assert.equal(summary.falsePositiveCount, 1);
@@ -263,9 +270,14 @@ test("opaque component factories retain template binding uncertainty", () => {
         patinaFindings: [],
         eslintResults: baseline,
       }),
-      successor = compareSuccessor("fixture", cwd, map as Json, [], baseline as unknown as Json[], {
-        files: [file],
-      });
+      successor = compareSuccessor(
+        "fixture",
+        cwd,
+        map as Json,
+        [],
+        baseline as unknown as Json[],
+        currentContext(map, [file]),
+      );
     for (const result of [
       {
         falseNegatives: compatible.falseNegatives,

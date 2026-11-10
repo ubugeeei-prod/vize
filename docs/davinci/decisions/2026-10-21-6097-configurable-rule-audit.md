@@ -40,6 +40,10 @@ rules and leaving 43. The same delivery adds application allowances for the Pati
 `vue/warn-custom-directive` mapping and the accessibility rules `a11y/anchor-has-content` and
 `a11y/label-has-for`; those three do not change this eslint-plugin-vue-only census.
 
+The compatibility-port cohort maps nine more configurable upstream rules. Four of the mapped
+counterparts expose typed options, bringing the audited surface to 70 mapped rules, including 22
+with typed options, and leaving 39 unimplemented configurable rules.
+
 ## Provider boundary
 
 The executable differential provider remains pinned to 10.9.2. Moving it to 10.11.1 changes
@@ -47,3 +51,7 @@ reviewed real-project observations, so that move requires separate corpus review
 metadata-only refresh. The only rule added since the pinned provider is
 `vue/no-shadow-native-events`; it has no options, so it does not change the 112-rule configurable
 surface audited here.
+
+The checked-in compatibility scorecard advances independently to 10.12.0. That metadata advance
+does not move the executable differential provider or rewrite this frozen 10.11.1 configurable
+surface.

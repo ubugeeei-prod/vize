@@ -27,6 +27,14 @@ pub(super) const SEMANTIC_TEMPLATE_RULES: &[&str] = &[
 ];
 
 pub(super) const SHARED_SFC_DESCRIPTOR_RULES: &[&str] = &[
+    "vue/enforce-style-attribute",
+    "vue/next-tick-style",
+    "vue/no-content-outside-block",
+    "vue/no-define-model-default",
+    "vue/no-props-shadow",
+    "vue/no-shadow-native-events",
+    "vue/require-macro-variable-name",
+    "vue/sort-keys",
     "vue/html-quotes",
     "vue/match-component-file-name",
     "vue/multi-word-component-names",

@@ -239,6 +239,7 @@ impl Linter {
     fn needs_sfc_descriptor_for_lint(&self) -> bool {
         // Parse once for consumers that share the descriptor.
         self.has_active_shared_sfc_descriptor_rules()
+            || self.compatibility_template_parse_enabled()
             || super::script_rules::has_active_builtin_script_rules(self)
             || super::css_rules::has_active_builtin_css_rules(self)
             || self.has_active_semantic_template_rules()
@@ -432,10 +433,10 @@ impl Linter {
             "patina.template.l1_parse_lower",
             crate::markup::L2Template::lower(allocator, source)
         );
-        let parse_errors = l2.surface_errors();
-        let has_fatal_parse_errors = Self::has_fatal_l1_template_parse_errors(parse_errors);
+        let has_fatal_parse_errors = self.has_fatal_template_parse_errors(&l2);
 
-        let parse_result = Self::l1_template_parse_lint_result(filename, source, parse_errors);
+        let mut parse_result = Self::l1_template_parse_lint_result(filename, source, &l2);
+        self.append_compatibility_template_parse_diagnostics(&mut parse_result, source, &l2);
         let lint_result = l2.lint_template().with_compatibility_root(|root| {
             self.lint_template_root(
                 template::TemplateExecution {

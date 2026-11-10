@@ -89,6 +89,7 @@ pub fn registered(source: &str, locale: Locale, rule: HeaderRule) -> LintResult 
         HeaderRule::Distracting => registry.register(Box::new(NoDistractingElements)),
     }
     Linter::with_registry(registry)
+        .with_disabled_rules(vec!["parser/template".into()])
         .with_locale(locale)
         .lint_sfc(source, FILENAME)
 }

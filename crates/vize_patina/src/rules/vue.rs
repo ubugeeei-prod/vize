@@ -14,6 +14,8 @@ mod attribute_hyphenation;
 mod attribute_order;
 mod authored_closing;
 mod comment_directive;
+mod compatibility_sfc;
+mod compatibility_template;
 mod directive_shape;
 mod if_chain;
 mod macro_type_argument;
@@ -173,6 +175,16 @@ pub use crate::rules::opinionated::vue::{
 pub use crate::rules::opinionated::vue::{VBindStyle, VBindStyleOption};
 pub use attribute_hyphenation::{AttributeHyphenation, HyphenationStyle};
 pub use comment_directive::CommentDirective;
+pub use compatibility_sfc::{
+    EnforceStyleAttribute, NextTickStyle, NoContentOutsideBlock, NoDefineModelDefault,
+    NoPropsShadow, NoShadowNativeEvents, RequireMacroVariableName, SortKeys, StyleAttribute,
+};
+pub use compatibility_template::{
+    Camelcase, DotNotation, Eqeqeq, NoConsole, NoConstantCondition, NoEmptyPattern,
+    NoImplicitCoercion, NoIrregularWhitespace, NoLiteralsInTemplate, NoLossOfPrecision,
+    NoNegatedCondition, NoRestrictedSyntax, NoRestrictedVBind, NoSparseArrays, NoUselessConcat,
+    ObjectShorthand, PreferTemplate, PreferVModel, QuoteProps, VIfElseKey,
+};
 pub use component_definition_name_casing::ComponentDefinitionNameCasing;
 pub use html_end_tags::HtmlEndTags;
 pub use html_quotes::{HtmlQuotes, HtmlQuotesOption};
@@ -278,7 +290,41 @@ pub(crate) fn register_security(registry: &mut crate::rule::RuleRegistry) {
 /// Rules already enabled by a preset are retained exactly once.
 /// A documented rule still has to be instantiable here: config-enabling a
 /// name that no registry entry owns is a silent false negative (#4636).
+fn register_if_missing(registry: &mut crate::rule::RuleRegistry, rule: Box<dyn crate::rule::Rule>) {
+    if !registry.has_rule(rule.meta().name) {
+        registry.register(rule);
+    }
+}
+
 pub(crate) fn register_opt_in(registry: &mut crate::rule::RuleRegistry) {
+    register_if_missing(registry, Box::new(EnforceStyleAttribute::default()));
+    register_if_missing(registry, Box::new(NextTickStyle));
+    register_if_missing(registry, Box::new(NoContentOutsideBlock));
+    register_if_missing(registry, Box::new(NoDefineModelDefault));
+    register_if_missing(registry, Box::new(NoPropsShadow));
+    register_if_missing(registry, Box::new(NoShadowNativeEvents));
+    register_if_missing(registry, Box::new(RequireMacroVariableName));
+    register_if_missing(registry, Box::new(SortKeys::default()));
+    register_if_missing(registry, Box::new(Camelcase));
+    register_if_missing(registry, Box::new(DotNotation));
+    register_if_missing(registry, Box::new(Eqeqeq));
+    register_if_missing(registry, Box::new(NoConsole));
+    register_if_missing(registry, Box::new(NoConstantCondition));
+    register_if_missing(registry, Box::new(NoEmptyPattern));
+    register_if_missing(registry, Box::new(NoImplicitCoercion));
+    register_if_missing(registry, Box::new(NoIrregularWhitespace));
+    register_if_missing(registry, Box::new(NoLossOfPrecision));
+    register_if_missing(registry, Box::new(NoNegatedCondition));
+    register_if_missing(registry, Box::new(NoSparseArrays));
+    register_if_missing(registry, Box::new(NoUselessConcat));
+    register_if_missing(registry, Box::new(ObjectShorthand));
+    register_if_missing(registry, Box::new(PreferTemplate));
+    register_if_missing(registry, Box::new(QuoteProps));
+    register_if_missing(registry, Box::new(NoRestrictedSyntax::default()));
+    register_if_missing(registry, Box::new(NoLiteralsInTemplate));
+    register_if_missing(registry, Box::new(NoRestrictedVBind));
+    register_if_missing(registry, Box::new(PreferVModel));
+    register_if_missing(registry, Box::new(VIfElseKey));
     if !registry.has_rule("vue/a11y-img-alt") {
         registry.register(Box::new(A11yImgAlt));
     }

@@ -190,6 +190,41 @@ function ruleOptionsSchema(ruleName: string): unknown[] | Record<string, unknown
       return [objectSchema({ accessibleChildren: stringArraySchema() })];
     case "a11y/label-has-for":
       return [objectSchema({ controlComponents: stringArraySchema() })];
+    case "vue/enforce-style-attribute":
+      return [
+        objectSchema({
+          allow: {
+            type: "array",
+            items: { enum: ["plain", "scoped", "module"] },
+            uniqueItems: true,
+          },
+        }),
+      ];
+    case "vue/no-restricted-syntax":
+      return {
+        type: "array",
+        items: {
+          enum: [
+            "ArrayExpression",
+            "BinaryExpression",
+            "CallExpression",
+            "ConditionalExpression",
+            "ObjectExpression",
+            "UnaryExpression",
+          ],
+        },
+        uniqueItems: true,
+      };
+    case "vue/quote-props":
+      return [{ enum: ["as-needed"] }];
+    case "vue/sort-keys":
+      return [
+        { enum: ["asc", "desc"] },
+        objectSchema({
+          caseSensitive: { type: "boolean" },
+          natural: { type: "boolean" },
+        }),
+      ];
     case "script/define-macros-order":
       return [defineMacrosOrderSchema()];
     case "vue/sfc-element-order":

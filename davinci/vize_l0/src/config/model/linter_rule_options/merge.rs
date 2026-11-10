@@ -50,6 +50,18 @@ impl ConfigLintRuleOptions {
         if let Some(options) = &overlay.label_has_for {
             self.label_has_for = Some(options.clone());
         }
+        if let Some(options) = &overlay.enforce_style_attribute {
+            self.enforce_style_attribute = Some(options.clone());
+        }
+        if let Some(options) = &overlay.no_restricted_syntax {
+            self.no_restricted_syntax = Some(options.clone());
+        }
+        if let Some(options) = overlay.quote_props {
+            self.quote_props = Some(options);
+        }
+        if let Some(options) = overlay.sort_keys {
+            self.sort_keys = Some(options);
+        }
         if let Some(options) = &overlay.sfc_element_order {
             self.sfc_element_order = Some(options.clone());
         }

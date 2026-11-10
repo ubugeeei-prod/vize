@@ -13,6 +13,7 @@ const modules = [
   "i18n_render",
   "i18n_rules_ecosystem",
   "i18n_rules_markup",
+  "i18n_rules_markup_compatibility",
   "i18n_rules_script",
   "i18n_rules_script_more",
   "i18n_supplemental",

@@ -7,9 +7,9 @@ const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..", ".
 /**
  * The `eslint-plugin-vue` half of a lint divergence run.
  *
- * The plugin, ESLint, and both parsers are pinned in `tools/benchmarks/scripts/package.json` — the
- * same pin `tools/fixtures/patina-rule-map.mjs` validates the rule map against —
- * so the baseline can never drift from the map that routes its findings.
+ * The plugin, ESLint, and both parsers are pinned in `tools/benchmarks/scripts/package.json`.
+ * The reference corpus deliberately retains its historical provider even when the rule map grows;
+ * `runBaseline` intersects the requested rules with that provider's actual exports.
  *
  * Only rules the map calls `mapped` are enabled, and only when the preset under
  * test actually activates their patina counterpart. A rule patina has but no
@@ -139,6 +139,22 @@ export function retainEnabledFindings(results, rules) {
     return { ...result, messages };
   });
   return { results: retained, droppedConfigMessageCount };
+}
+
+/**
+ * Intersect a reviewed rule-map selection with the frozen reference provider.
+ *
+ * The rule map may advance ahead of the historical provider used for real-project
+ * comparisons. Keep that compatibility decision at the report boundary so
+ * `runBaseline` still asks ESLint to validate every rule supplied by direct
+ * callers instead of silently accepting misspelled or invalid configuration.
+ */
+export function selectAvailableRules(runtime, rules) {
+  return Object.fromEntries(
+    Object.entries(rules).filter(([name]) =>
+      Object.hasOwn(runtime.plugin.rules, name.replace(/^vue\//u, "")),
+    ),
+  );
 }
 
 /**

@@ -16,6 +16,7 @@ mod casing;
 mod component_registration;
 mod content_directives;
 mod define_macros_order;
+mod eslint_vue_compatibility;
 mod html_quotes;
 mod html_self_closing;
 mod hyphenation;
@@ -28,6 +29,7 @@ mod real_project_allowances;
 mod restrictions;
 mod sfc_element_order;
 mod slot_name_casing;
+mod stable;
 mod strict_boolean;
 mod v_bind_style;
 mod v_on_event_hyphenation;
@@ -42,6 +44,10 @@ pub use casing::{
     TemplateComponentNameCasing,
 };
 pub use define_macros_order::DefineMacrosOrderOptions;
+pub use eslint_vue_compatibility::{
+    EnforceStyleAttributeOptions, NoRestrictedSyntaxOptions, QuotePropsStyle, SortKeysOptions,
+    SortKeysOrder, StyleAttributeMode,
+};
 pub use html_quotes::{HtmlQuoteStyle, HtmlQuotesConfig, HtmlQuotesOptions};
 pub use html_self_closing::{
     HtmlSelfClosingHtmlOptions, HtmlSelfClosingOptions, HtmlSelfClosingStyle,
@@ -83,60 +89,6 @@ pub struct LintRuleOptions {
     /// Options for `script/no-restricted-members`.
     #[serde(rename = "script/no-restricted-members")]
     pub no_restricted_members: Option<NoRestrictedMembersOptions>,
-}
-
-impl LintRuleOptions {
-    /// Whether no rule options are configured.
-    #[inline]
-    pub fn is_empty(&self) -> bool {
-        self.no_restricted_globals.is_none() && self.no_restricted_members.is_none()
-    }
-
-    /// Configured deny list for `script/no-restricted-globals` as
-    /// `(name, optional message)` pairs. Empty when unconfigured.
-    pub fn restricted_globals(&self) -> Vec<(String, Option<String>)> {
-        self.no_restricted_globals
-            .as_ref()
-            .map(|options| {
-                options
-                    .globals
-                    .iter()
-                    .map(|global| (global.name.clone(), global.message.clone()))
-                    .collect()
-            })
-            .unwrap_or_default()
-    }
-
-    /// Configured deny list for `script/no-restricted-members` as
-    /// `(object, property, optional message)` tuples. Empty when unconfigured.
-    pub fn restricted_members(&self) -> Vec<(String, String, Option<String>)> {
-        self.no_restricted_members
-            .as_ref()
-            .map(|options| {
-                options
-                    .members
-                    .iter()
-                    .map(|member| {
-                        (
-                            member.object.clone(),
-                            member.property.clone(),
-                            member.message.clone(),
-                        )
-                    })
-                    .collect()
-            })
-            .unwrap_or_default()
-    }
-
-    /// Apply a later config layer to this option set.
-    pub fn merge_from(&mut self, overlay: &Self) {
-        if let Some(options) = &overlay.no_restricted_globals {
-            self.no_restricted_globals = Some(options.clone());
-        }
-        if let Some(options) = &overlay.no_restricted_members {
-            self.no_restricted_members = Some(options.clone());
-        }
-    }
 }
 
 /// Full typed lint rule options parsed from config.
@@ -201,6 +153,18 @@ pub struct ConfigLintRuleOptions {
     /// Custom components that render native label controls.
     #[serde(rename = "a11y/label-has-for")]
     label_has_for: Option<LabelHasForOptions>,
+    /// Style modes accepted by `vue/enforce-style-attribute`.
+    #[serde(rename = "vue/enforce-style-attribute")]
+    enforce_style_attribute: Option<EnforceStyleAttributeOptions>,
+    /// ESTree node selectors rejected by `vue/no-restricted-syntax`.
+    #[serde(rename = "vue/no-restricted-syntax")]
+    no_restricted_syntax: Option<NoRestrictedSyntaxOptions>,
+    /// Property quoting policy for `vue/quote-props`.
+    #[serde(rename = "vue/quote-props")]
+    quote_props: Option<QuotePropsStyle>,
+    /// Ordering policy for `vue/sort-keys`.
+    #[serde(rename = "vue/sort-keys")]
+    sort_keys: Option<SortKeysOptions>,
     /// Options for `vue/sfc-element-order`.
     #[serde(rename = "vue/sfc-element-order")]
     sfc_element_order: Option<SfcElementOrderOptions>,
@@ -275,6 +239,10 @@ impl ConfigLintRuleOptions {
             && self.no_bare_strings_in_template.is_none()
             && self.anchor_has_content.is_none()
             && self.label_has_for.is_none()
+            && self.enforce_style_attribute.is_none()
+            && self.no_restricted_syntax.is_none()
+            && self.quote_props.is_none()
+            && self.sort_keys.is_none()
             && self.sfc_element_order.is_none()
             && self.html_self_closing.is_none()
             && self.html_quotes.is_none()

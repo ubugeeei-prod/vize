@@ -225,6 +225,20 @@ class AttributeHyphenationOptions {
   ignoreTags: Listing<String> = new Listing {}
 }
 
+class EnforceStyleAttributeOptions {
+  allow: Listing<"plain" | "scoped" | "module"> = new Listing { "scoped" }
+}
+
+class NoRestrictedSyntaxOptions {
+  selectors: Listing<"ArrayExpression" | "BinaryExpression" | "CallExpression" | "ConditionalExpression" | "ObjectExpression" | "UnaryExpression"> = new Listing {}
+}
+
+class SortKeysOptions {
+  order: "asc" | "desc" = "asc"
+  caseSensitive: Boolean = true
+  natural: Boolean = false
+}
+
 class LintRuleOptions {
   `script/define-macros-order`: DefineMacrosOrderOptions? = null
   `script/define-props-destructuring`: DefinePropsDestructuringOptions? = null
@@ -241,6 +255,10 @@ class LintRuleOptions {
   `vue/no-bare-strings-in-template`: NoBareStringsInTemplateOptions? = null
   `a11y/anchor-has-content`: AnchorHasContentOptions? = null
   `a11y/label-has-for`: LabelHasForOptions? = null
+  `vue/enforce-style-attribute`: EnforceStyleAttributeOptions? = null
+  `vue/no-restricted-syntax`: NoRestrictedSyntaxOptions? = null
+  `vue/quote-props`: "as-needed"? = null
+  `vue/sort-keys`: SortKeysOptions? = null
   `vue/require-component-registration`: RequireComponentRegistrationOptions? = null
   `vue/sfc-element-order`: SfcElementOrderOptions? = null
   `vue/html-self-closing`: HtmlSelfClosingOptions? = null

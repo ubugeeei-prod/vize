@@ -10,6 +10,7 @@ import { manual7 } from "./manual-7.ts";
 import { manual8 } from "./manual-8.ts";
 import { manual9 } from "./manual-9.ts";
 import { manual10 } from "./manual-10.ts";
+import { manual11 } from "./manual-11.ts";
 export const manualExamples: Record<string, RuleExample> = {
   ...manual0,
   ...manual1,
@@ -22,4 +23,5 @@ export const manualExamples: Record<string, RuleExample> = {
   ...manual8,
   ...manual9,
   ...manual10,
+  ...manual11,
 };

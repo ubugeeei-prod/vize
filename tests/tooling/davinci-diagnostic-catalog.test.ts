@@ -77,8 +77,8 @@ test("TS-53: every renderer phrase is catalogued", () => {
 
 test("TS-53: every compiler error code is named and catalogued, English unchanged", () => {
   const compiler = parseCompilerCodes();
-  assert.equal(compiler.variants.length, 56, "the parser reads the whole ErrorCode enum");
-  assert.equal(compiler.messages.size, 56, "the parser reads every message() arm");
+  assert.equal(compiler.variants.length, 58, "the parser reads the whole ErrorCode enum");
+  assert.equal(compiler.messages.size, 58, "the parser reads every message() arm");
   assert.deepEqual(compilerProblems(compiler, catalogEntries()), []);
 });
 
@@ -101,11 +101,24 @@ test("TS-53: RuleMeta descriptions retain literal and constant-backed Rust strin
         name: "css/final-description",
         description: "A final field needs no trailing comma."
       };
+      static MACRO_META: RuleMeta = meta!(
+        "vue/macro-example",
+        "Macro rule.",
+      );
+      core_rule!(
+        CoreExample,
+        CORE_EXAMPLE_META,
+        "vue/core-example",
+        "Core rule.",
+        CoreExample
+      );
     `),
     [
       ["vue/constant-name", 'Keep "quotes" and 日.'],
       ["script/literal-name", "Keep literal metadata."],
       ["css/final-description", "A final field needs no trailing comma."],
+      ["vue/macro-example", "Macro rule."],
+      ["vue/core-example", "Core rule."],
     ],
   );
 });
@@ -133,9 +146,9 @@ test("TS-53: unresolved metadata constants fail without counting aliases as new 
   );
 });
 
-test("TS-53: every one of the 281 lint rules has a description in every locale", () => {
+test("TS-53: every one of the 309 lint rules has a description in every locale", () => {
   const rules = parseRules();
-  assert.equal(rules.size, 281, "the parser reads every RuleMeta-family declaration");
+  assert.equal(rules.size, 309, "the parser reads every RuleMeta-family declaration");
   assert.deepEqual(ruleProblems(rules, legacyTranslations(), catalogEntries()), []);
 });
 

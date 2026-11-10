@@ -24,7 +24,7 @@ pub(super) fn script_summary(
         .map(|template| crate::markup::L2Template::lower(&allocator, &template.content));
     let admitted = parsed
         .as_ref()
-        .filter(|l2| !Linter::has_fatal_l1_template_parse_errors(l2.surface_errors()));
+        .filter(|l2| !Linter::has_fatal_l1_template_parse_errors(l2));
     let mut summary = super::super::super::analyze_descriptor_for_lint(
         scripts,
         admitted,

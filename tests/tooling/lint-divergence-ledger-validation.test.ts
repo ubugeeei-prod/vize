@@ -7,6 +7,7 @@ import { compareLintFindings as compareCurrentLintFindingsRaw } from "../../tool
 import { readRuleMap } from "../../tools/support/compat/fixtures/patina-rule-map.ts";
 import {
   compare,
+  currentContext,
   cwd,
   eslintResult,
   ledgerPath,
@@ -235,7 +236,14 @@ test("recovered templates remain comparable while conservative legacy surfaces a
       message: "[vize:vue/no-unused-refs] Template ref 'list' is never referenced.",
     },
   ];
-  const current = compareCurrent("fixture", cwd, map, recoveredFindings, baseline, {});
+  const current = compareCurrent(
+    "fixture",
+    cwd,
+    map,
+    recoveredFindings,
+    baseline,
+    currentContext(map, ["src/Emit.vue", "src/Table.vue", "src/Events.vue", "src/Legacy.vue"]),
+  );
   const compatible = compareCompatible({
     projectId: "fixture",
     cwd,
@@ -326,9 +334,19 @@ test("sound Patina-only real-project findings are intentional on both reporters"
         "[vize:vue/no-unused-components] Component 'IpfsImageViewer' is registered but never used in template",
     },
   ];
-  const current = compareCurrent("fixture", cwd, map, findings, [], {
-    files: ["src/TemplateOnly.vue", "src/Props.vue", "src/Mutation.vue", "src/UnusedPug.vue"],
-  });
+  const current = compareCurrent(
+    "fixture",
+    cwd,
+    map,
+    findings,
+    [],
+    currentContext(map, [
+      "src/TemplateOnly.vue",
+      "src/Props.vue",
+      "src/Mutation.vue",
+      "src/UnusedPug.vue",
+    ]),
+  );
   const compatible = compareCompatible({
     projectId: "fixture",
     cwd,

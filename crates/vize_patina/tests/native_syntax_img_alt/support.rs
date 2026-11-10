@@ -123,6 +123,7 @@ pub fn tabindex_reference(source: &str, locale: Locale) -> Vec<Value> {
     let mut registry = RuleRegistry::new();
     registry.register(Box::new(TabindexNoPositive));
     let result = Linter::with_registry(registry)
+        .with_disabled_rules(vec!["parser/template".into()])
         .with_locale(locale)
         .lint_sfc(source, "native.vue");
     assert_eq!(result.error_count, 0);
@@ -144,6 +145,7 @@ fn compare(source: &str, locale: Locale, rule: SyntaxRule) -> Vec<Value> {
         SyntaxRule::Tabindex => registry.register(Box::new(TabindexNoPositive)),
     }
     let reference = Linter::with_registry(registry)
+        .with_disabled_rules(vec!["parser/template".into()])
         .with_locale(locale)
         .lint_sfc(source, "native.vue");
     assert_eq!(reference.error_count, 0);

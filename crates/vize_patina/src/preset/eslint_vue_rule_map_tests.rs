@@ -29,6 +29,7 @@ fn eslint_vue_rule_map_matches_registered_patina_rules() {
             .iter()
             .copied(),
     );
+    available.insert("parser/template");
 
     for (eslint_rule, entry) in mappings {
         if entry["status"] == "mapped" {
@@ -64,6 +65,10 @@ fn eslint_vue_rule_map_matches_registered_patina_rules() {
             "vue/attributes-order" => Some("vue/attribute-order"),
             "vue/block-order" => Some("vue/sfc-element-order"),
             "vue/no-async-in-computed-properties" => Some("script/no-async-in-computed"),
+            "vue/no-duplicate-class-names" => Some("html/no-duplicate-class"),
+            "vue/no-parsing-error" => Some("parser/template"),
+            "vue/no-undef-components" => Some("vue/require-component-registration"),
+            "vue/prefer-separate-static-class" => Some("vapor/prefer-static-class"),
             _ => None,
         };
         let hidden_rule = available.contains(eslint_rule.as_str())
@@ -102,6 +107,7 @@ fn eslint_vue_rule_map_records_current_severity_and_preset_membership() {
             severity_name(script_rule.default_severity),
         );
     }
+    severities.insert("parser/template", "error");
     let presets_by_rule = current_plugin_presets_by_rule();
 
     for (eslint_rule, entry) in rule_map["entries"].as_object().unwrap() {

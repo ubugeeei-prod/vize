@@ -55,6 +55,11 @@ impl Linter {
             names.extend(self.musea_rules.iter().map(|name| String::from(*name)));
             names
         });
+        // Parser diagnostics are an operational baseline for project config,
+        // including the incremental preset. `with_enabled_rules` remains the
+        // lower-level API for callers that deliberately select only named
+        // semantic rules.
+        enabled_rules.insert("parser/template".into());
 
         if matches!(self.preset, Some(LintPreset::Incremental)) {
             self.registry = crate::RuleRegistry::with_preset(LintPreset::Opinionated);

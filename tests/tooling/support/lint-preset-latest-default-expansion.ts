@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
-
 import { canonical, identity, jsonBytes, sha } from "./lint-preset-source-successors.ts";
+import { inverseEslintVueRulePort } from "./lint-preset-eslint-vue-port.ts";
 
 const publicApiDocSuccessors = [
   {
@@ -119,10 +119,12 @@ export function inversePatinaPublicApiDocs(name: string, body: Buffer): Buffer {
 export function inversePatinaCurrentSource(name: string, body: Buffer): Buffer {
   return inverseLatestDefaultExpansion(
     name,
-    inversePatinaPublicApiDocs(name, inverseMappedRuleSource(name, body)),
+    inverseEslintVueRulePort(
+      name,
+      inversePatinaPublicApiDocs(name, inverseMappedRuleSource(name, body)),
+    ),
   );
 }
-
 export function currentPresetCases(body: Buffer, essentialCases: string[], manifest: any): any {
   identity(body, {
     bytes: 12915,

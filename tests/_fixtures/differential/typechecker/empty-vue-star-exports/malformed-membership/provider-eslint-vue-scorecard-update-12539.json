@@ -1,0 +1,60 @@
+{
+  "version": 1,
+  "kind": "exact-provider-qualification-eslint-vue-scorecard-successor",
+  "previousProviderQualificationRecord": {
+    "path": "tests/_fixtures/differential/typechecker/empty-vue-star-exports/malformed-membership/provider-js-tooling-refresh-update-12212.json",
+    "bytes": 2624,
+    "sha256": "33ae8c1b412b57b32ca5671758f08d10cfd4389df8164dd78a9d9edda8259b24",
+    "gitBlob": "4fac0dd0f9598354c3d476f97115a27853682792"
+  },
+  "previousQualificationLock": {
+    "path": "pnpm-lock.yaml",
+    "bytes": 1102641,
+    "sha256": "d02921de92dc00bc1b524695c522922642bcebe09aa5a6478d76c03973de4b62",
+    "gitBlob": "6298e11e391ea0ac9c062bd448dcb231116361b5"
+  },
+  "previousQualificationPackage": {
+    "path": "package.json",
+    "bytes": 1053,
+    "sha256": "52985c3134183a70ebcf42236092cb2fd2dd815cb301b2a23ec74c4cc391de04",
+    "gitBlob": "d09b87f41fd10ff14c122a0e65e8a9d7d03e838a"
+  },
+  "finalQualificationLock": {
+    "path": "pnpm-lock.yaml",
+    "bytes": 1104179,
+    "sha256": "4d7d7e247c9f829178539681f4e48eeff3fc3bc86ed165a044c7d0a051c3fc2e",
+    "gitBlob": "0e2ec5f9baa7f6a46116b43f769593912563f532"
+  },
+  "finalQualificationPackage": {
+    "path": "package.json",
+    "bytes": 1053,
+    "sha256": "52985c3134183a70ebcf42236092cb2fd2dd815cb301b2a23ec74c4cc391de04",
+    "gitBlob": "d09b87f41fd10ff14c122a0e65e8a9d7d03e838a"
+  },
+  "workspaceManifest": {
+    "path": "pnpm-workspace.yaml",
+    "bytes": 9699,
+    "sha256": "030a08b4a6b0665327cedde929d24f3791799b08ff24ef6d1403845a830b028c",
+    "gitBlob": "ed71f90e0b624564c4ac6d18520ddf09885a60f7"
+  },
+  "scorecardManifest": {
+    "path": "tools/benchmarks/scripts/package.json",
+    "bytes": 1231,
+    "sha256": "f421c1c6cdc1e951dfc2dcb1b7fb7bbcf33958c909dcfed0af6e62ecc7dac44e",
+    "gitBlob": "9293093f147b279d080319737dc249be417bfcf1"
+  },
+  "lockInsertions": [
+    {
+      "addedUtf8": "      eslint-plugin-vue-scorecard:\n        specifier: npm:eslint-plugin-vue@10.12.0\n        version: eslint-plugin-vue@10.12.0(@stylistic/eslint-plugin@5.10.0(eslint@10.4.1(jiti@2.7.0)(supports-color@10.2.2)))(@typescript-eslint/parser@8.65.0(eslint@10.4.1(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3))(eslint@10.4.1(jiti@2.7.0)(supports-color@10.2.2))(vue-eslint-parser@10.4.1(eslint@10.4.1(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2))\n"
+    },
+    {
+      "addedUtf8": "  eslint-plugin-vue@10.12.0(@stylistic/eslint-plugin@5.10.0(eslint@10.4.1(jiti@2.7.0)(supports-color@10.2.2)))(@typescript-eslint/parser@8.65.0(eslint@10.4.1(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3))(eslint@10.4.1(jiti@2.7.0)(supports-color@10.2.2))(vue-eslint-parser@10.4.1(eslint@10.4.1(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)):\n    dependencies:\n      '@eslint-community/eslint-utils': 4.10.1(eslint@10.4.1(jiti@2.7.0)(supports-color@10.2.2))\n      eslint: 10.4.1(jiti@2.7.0)(supports-color@10.2.2)\n      natural-compare: 1.4.0\n      nth-check: 2.1.1\n      postcss-selector-parser: 7.1.6\n      semver: 7.8.6\n      vue-eslint-parser: 10.4.1(eslint@10.4.1(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)\n      xml-name-validator: 5.0.0\n    optionalDependencies:\n      '@stylistic/eslint-plugin': 5.10.0(eslint@10.4.1(jiti@2.7.0)(supports-color@10.2.2))\n      '@typescript-eslint/parser': 8.65.0(eslint@10.4.1(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3)\n\n"
+    }
+  ],
+  "verification": {
+    "command": "vp install --frozen-lockfile --ignore-scripts",
+    "lockSha256": "4d7d7e247c9f829178539681f4e48eeff3fc3bc86ed165a044c7d0a051c3fc2e"
+  },
+  "nativeAcceptanceCredit": false,
+  "scope": "Pin the eslint-plugin-vue scorecard independently from the frozen differential provider and authorize only its manifest entry plus the two exact lockfile insertions. This record gives source provenance only."
+}

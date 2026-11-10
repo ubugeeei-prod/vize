@@ -9,7 +9,7 @@ import { loadCompilerManifest, runCompilerPack } from "../differential/compiler.
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 
-void test("ordinary source-built compiler rejects legacy-only Vue 1 rows without credit", (t) => {
+void test("ordinary source-built compiler records intentional syntax failures without credit", (t) => {
   const revision = spawnSync("git", ["rev-parse", "HEAD"], { cwd: root, encoding: "utf8" });
   assert.equal(revision.status, 0, revision.stderr);
   const manifestPath = path.join(root, "tests/_fixtures/differential/compiler/manifest.json");
@@ -42,12 +42,13 @@ void test("ordinary source-built compiler rejects legacy-only Vue 1 rows without
     assert.equal(row.legacy.observation, null);
     assert.match(row.legacy.error, /requires source-build recipe .* --features legacy/);
   }
-  assert.equal(report.summary.legacyMatches, loaded.cases.length - vue1.length);
-  assert.equal(report.summary.legacyFailures, vue1.length);
+  const intentionalFailures = new Set(vue1.map((row) => row.id));
+  assert.equal(report.summary.legacyMatches, loaded.cases.length - intentionalFailures.size);
+  assert.equal(report.summary.legacyFailures, intentionalFailures.size);
   assert.equal(report.summary.baselineDrift, 0);
   assert(
     report.rows
-      .filter((row) => !row.id.startsWith("compiler/dialect/vue1-"))
+      .filter((row) => !intentionalFailures.has(row.id))
       .every((row) => row.legacy.verdict === "matched-reference"),
     JSON.stringify(report.rows, null, 2),
   );

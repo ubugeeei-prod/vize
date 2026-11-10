@@ -163,10 +163,8 @@ mod tests {
         result
             .diagnostics
             .iter()
-            .map(|diagnostic| {
-                assert_eq!(diagnostic.rule_name, "vue/valid-v-else-if");
-                diagnostic.message.as_str()
-            })
+            .filter(|diagnostic| diagnostic.rule_name == "vue/valid-v-else-if")
+            .map(|diagnostic| diagnostic.message.as_str())
             .collect()
     }
 
@@ -174,6 +172,7 @@ mod tests {
         result
             .diagnostics
             .iter()
+            .filter(|diagnostic| diagnostic.rule_name == "vue/valid-v-else-if")
             .map(|diagnostic| {
                 source
                     .get(diagnostic.start as usize..diagnostic.end as usize)

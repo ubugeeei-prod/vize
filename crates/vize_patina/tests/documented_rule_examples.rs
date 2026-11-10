@@ -1,7 +1,7 @@
 //! Execute the published examples through the public linter, including context.
 use serde_json::Value;
 use std::path::{Path, PathBuf};
-use vize_l0::{String, cstr};
+use vize_l0::{String, config::ConfigLintRuleOptions, cstr};
 use vize_patina::{LintPreset, Linter};
 
 mod documented_catalogue_additions;
@@ -41,7 +41,7 @@ fn verify_examples(type_aware: bool) {
     ];
     assert_eq!(
         paths.len(),
-        281 + operational_pages.len(),
+        309 + operational_pages.len(),
         "all current rule implementations and authored operational diagnostics"
     );
     for page in operational_pages {
@@ -53,7 +53,7 @@ fn verify_examples(type_aware: bool) {
     // Parser/project examples have their own full-report and failure controls.
     // Keep the complete registered-rule preset/configuration corpus.
     paths.retain(|path| !operational_pages.contains(&path.file_name().unwrap().to_str().unwrap()));
-    assert_eq!(paths.len(), 281, "all current rule implementations");
+    assert_eq!(paths.len(), 309, "all current rule implementations");
     let mut checked = 0;
     let mut unavailable = 0;
     let mut parser_owned = 0;
@@ -126,7 +126,7 @@ fn verify_examples(type_aware: bool) {
             }
         }
     }
-    assert_eq!(checked, if type_aware { 6 } else { 275 });
+    assert_eq!(checked, if type_aware { 6 } else { 303 });
     assert_eq!(unavailable, if type_aware { 0 } else { 2 });
     assert_eq!(parser_owned, if type_aware { 0 } else { 1 });
     eprintln!(
@@ -305,59 +305,10 @@ fn configure(rule: &str, config: &Value) -> Linter {
                 .collect(),
         );
     }
-    let options = &config["ruleOptions"][rule];
-    if rule == "vue/valid-v-on"
-        && let Some(modifiers) = options["modifiers"].as_array()
-    {
-        linter = linter.with_valid_v_on_modifiers(
-            modifiers
-                .iter()
-                .map(|name| name.as_str().expect("custom modifier name").into())
-                .collect(),
-        );
-    }
-    if rule == "vue/valid-v-slot"
-        && let Some(allow) = options["allowModifiers"].as_bool()
-    {
-        linter = linter.with_valid_v_slot_allow_modifiers(allow);
-    }
-    if let Some(members) = options["members"].as_array() {
-        linter = linter.with_restricted_members(
-            members
-                .iter()
-                .map(|member| {
-                    (
-                        member["object"].as_str().expect("object").into(),
-                        member["property"].as_str().expect("property").into(),
-                        member["message"].as_str().map(String::from),
-                    )
-                })
-                .collect(),
-        );
-    }
-    if rule == "vue/require-component-registration"
-        && let Some(globals) = options["globals"].as_array()
-    {
-        linter = linter.with_component_registration_globals(
-            globals
-                .iter()
-                .map(|name| name.as_str().expect("explicit component name").into())
-                .collect(),
-        );
-    }
-    if let Some(tokens) = options["tokens"].as_array() {
-        linter = linter.with_musea_design_tokens(
-            tokens
-                .iter()
-                .map(|token| {
-                    (
-                        token["value"].as_str().expect("token value").into(),
-                        token["path"].as_str().expect("token path").into(),
-                        token["tier"].as_str().unwrap_or("primitive").into(),
-                    )
-                })
-                .collect(),
-        );
+    if !config["ruleOptions"].is_null() {
+        let options: ConfigLintRuleOptions = serde_json::from_value(config["ruleOptions"].clone())
+            .expect("typed authored rule options");
+        linter = linter.with_config_rule_options(&options);
     }
     linter
 }
