@@ -93,22 +93,22 @@ fn static_and_guarded_listeners_keep_payload_diagnostics() {
             (
                 "src/Wrong.vue".into(),
                 Some(2322),
-                "10:37:error Type '(id: string) => string' is not assignable to type '(id: number, label: string) => void'.\nTypes of parameters 'id' and 'id' are incompatible.\nType 'number' is not assignable to type 'string'.".into(),
+                "10:37:error Type '(id: string) => string' is not assignable to type '(id: number, label: string) => any'.\nTypes of parameters 'id' and 'id' are incompatible.\nType 'number' is not assignable to type 'string'.".into(),
             ),
             (
                 "src/Wrong.vue".into(),
                 Some(2322),
-                "11:46:error Type '(value: string) => string' is not assignable to type '(value: number) => void'.\nTypes of parameters 'value' and 'value' are incompatible.\nType 'number' is not assignable to type 'string'.".into(),
+                "11:46:error Type '(value: string) => string' is not assignable to type '(value: number) => any'.\nTypes of parameters 'value' and 'value' are incompatible.\nType 'number' is not assignable to type 'string'.".into(),
             ),
             (
                 "src/Wrong.vue".into(),
                 Some(2322),
-                "13:45:error Type '(item: number) => number' is not assignable to type '(item: string) => void'.\nTypes of parameters 'item' and 'item' are incompatible.\nType 'string' is not assignable to type 'number'.".into(),
+                "13:45:error Type '(item: number) => number' is not assignable to type '(item: string) => any'.\nTypes of parameters 'item' and 'item' are incompatible.\nType 'string' is not assignable to type 'number'.".into(),
             ),
             (
                 "src/Wrong.vue".into(),
                 Some(2322),
-                "9:25:error Type '(id: string) => string' is not assignable to type '(id: number, label: string) => void'.\nTypes of parameters 'id' and 'id' are incompatible.\nType 'number' is not assignable to type 'string'.".into(),
+                "9:25:error Type '(id: string) => string' is not assignable to type '(id: number, label: string) => any'.\nTypes of parameters 'id' and 'id' are incompatible.\nType 'number' is not assignable to type 'string'.".into(),
             ),
             (
                 "src/Wrong.vue".into(),

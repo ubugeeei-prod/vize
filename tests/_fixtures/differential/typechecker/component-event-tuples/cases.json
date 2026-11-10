@@ -90,7 +90,7 @@
           "column": 24,
           "severity": 1,
           "code": 2322,
-          "message": "Type '(key: number, path: string[]) => void' is not assignable to type '(key: string, path: string[]) => void'.\nTypes of parameters 'key' and 'key' are incompatible.\nType 'string' is not assignable to type 'number'."
+          "message": "Type '(key: number, path: string[]) => void' is not assignable to type '(key: string, path: string[]) => any'.\nTypes of parameters 'key' and 'key' are incompatible.\nType 'string' is not assignable to type 'number'."
         }
       ]
     },
@@ -140,7 +140,7 @@
           "column": 24,
           "severity": 1,
           "code": 2322,
-          "message": "Type '(key: string, path: number[]) => void' is not assignable to type '(key: string, path: string[]) => void'.\nTypes of parameters 'path' and 'path' are incompatible.\nType 'string[]' is not assignable to type 'number[]'.\nType 'string' is not assignable to type 'number'."
+          "message": "Type '(key: string, path: number[]) => void' is not assignable to type '(key: string, path: string[]) => any'.\nTypes of parameters 'path' and 'path' are incompatible.\nType 'string[]' is not assignable to type 'number[]'.\nType 'string' is not assignable to type 'number'."
         }
       ]
     },

@@ -206,7 +206,7 @@ fn dynamic_component_index_targets_keep_props_slots_and_payloads() {
         (
             "src/SlotErrors.vue",
             2322,
-            "15:53:error Type '(value: string) => string' is not assignable to type '(value: number) => void'.\nTypes of parameters 'value' and 'value' are incompatible.\nType 'number' is not assignable to type 'string'.",
+            "15:53:error Type '(value: string) => string' is not assignable to type '(value: number) => any'.\nTypes of parameters 'value' and 'value' are incompatible.\nType 'number' is not assignable to type 'string'.",
         ),
         (
             "src/SlotErrors.vue",

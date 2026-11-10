@@ -3,7 +3,7 @@ import fs from "node:fs";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
 import ts from "typescript";
-import { beforeCurrentListenerLibTypeQualification } from "../../tools/support/compat/content-mapper/lib-type-qualification-listeners-transition.ts";
+import { beforeListenerLibTypeQualification } from "../../tools/support/compat/content-mapper/lib-type-qualification-listeners-transition.ts";
 
 // The per-event alias chain the generator still emits outside the shared
 // contract is the oracle: `$ListenerContract` must produce exactly the chain's
@@ -11,22 +11,22 @@ import { beforeCurrentListenerLibTypeQualification } from "../../tools/support/c
 // component shape a closed template can bind.
 const repo = new URL("../../", import.meta.url);
 const read = (path: string) =>
-  beforeCurrentListenerLibTypeQualification(path, fs.readFileSync(new URL(path, repo), "utf8"));
+  beforeListenerLibTypeQualification(path, fs.readFileSync(new URL(path, repo), "utf8"));
 const events = "crates/vize_canon/src/virtual_ts/scope/component_events";
 const declarations = "crates/vize_canon/src/virtual_ts/helpers/declarations/";
 
 // Format strings exactly as the generator spells them.
 const TEMPLATES = {
   library: [
-    `${events}/usage_boxes.rs`,
+    `${events}.rs`,
     "type {library} = typeof {component_ref} extends {{ __vizeCheck: any }} | {{ readonly __vizeComponentMarker: true }} ? false : typeof {component_ref} extends (...args: any[]) => infer __R ? 0 extends (1 & __R) ? false : '__ctx' extends keyof __R ? true : false : false;",
   ],
   props: [
-    `${events}/usage_boxes.rs`,
-    "type {props_box} = typeof {component_ref} extends {{ readonly __vizeComponentMarker: true; readonly __vizeRawProps?: infer __P }} ? [__P] : typeof {component_ref} extends {{ new (...args: any[]): {{ $props: infer __P }} }} ? [__P] : typeof {component_ref} extends (props: infer __P, ...args: any[]) => any ? [__P] : [];",
+    `${events}.rs`,
+    "type {props_box} = typeof {component_ref} extends {{ new (...args: any[]): {{ $props: infer __P }} }} ? [__P] : typeof {component_ref} extends (props: infer __P, ...args: any[]) => any ? [__P] : [];",
   ],
   emitProps: [
-    `${events}/usage_boxes.rs`,
+    `${events}.rs`,
     "type {emit_props_box} = typeof {component_ref} extends {{ __vizeEmitProps?: infer __EP }} ? [__EP] : [];",
   ],
   nativeBox: [
@@ -39,7 +39,7 @@ const TEMPLATES = {
   ],
   nativeArgs: [
     `${events}/native_fallthrough.rs`,
-    "type {fallthrough_args} = {fallthrough_box} extends infer __B ? __B extends [infer __F] ? {lib_non_nullable}<__F> extends infer __P ? ({prop_listener_args}) extends infer __A extends unknown[] ? (__A extends [] ? unknown[] : __A) : unknown[] : unknown[] : unknown[] : never;",
+    "type {fallthrough_args} = {fallthrough_box} extends infer __B ? __B extends [infer __F] ? NonNullable<__F> extends infer __P ? ({prop_listener_args}) extends infer __A extends unknown[] ? (__A extends [] ? unknown[] : __A) : unknown[] : unknown[] : unknown[] : never;",
   ],
   staticArgs: [
     `${events}.rs`,
@@ -59,12 +59,11 @@ const TEMPLATES = {
   ],
   nativeReturn: [
     `${events}/native_fallthrough.rs`,
-    "type {native_return} = {fallthrough_box} extends infer __B ? __B extends [infer __F] ? {lib_non_nullable}<__F> extends {{ {prop_key}?: infer __H }} ? {lib_extract}<{lib_non_nullable}<__H>, (...args: any[]) => any> extends (...args: any[]) => infer __R ? __R : any : any : any : never;",
+    "type {native_return} = {fallthrough_box} extends infer __B ? __B extends [infer __F] ? NonNullable<__F> extends {{ {prop_key}?: infer __H }} ? Extract<NonNullable<__H>, (...args: any[]) => any> extends (...args: any[]) => infer __R ? __R : any : any : any : never;",
   ],
-  publicReturn: [`${events}/listener_return.rs`, "type {return_type}_public = {public_return};"],
   return: [
     `${events}/listener_return.rs`,
-    "type {return_type} = unknown[] extends {static_emit_args} ? {return_type}_public : 0 extends (1 & {return_type}_public) ? void : {return_type}_public;",
+    "type {return_type} = unknown[] extends {prop_args} ? {unresolved_return} : {props_box} extends infer __B ? __B extends [infer __P] ? (__P extends {{ {prop_key}?: (...args: any[]) => infer __R }} ? __R : any) : any : never;",
   ],
   members: [
     `${events}/prop_array_share.rs`,
@@ -121,18 +120,18 @@ const prelude = [
   "type $IsAny<T> = 0 extends (1 & T) ? true : false;",
   shared("shared-listener-args.d.ts.txt"),
   "type Ctor<P> = new <A = unknown>(props?: A & Partial<P>, ...args: any[]) => { $props: P };",
-  "type Sfc<P, EP, F = never> = { readonly __vizeComponentMarker: true; readonly __vizeRawProps?: P; __vizeEmitProps?: EP } & ([F] extends [never] ? {} : { readonly __vizeNativeFallthroughRoot: true; readonly __vizeFallthroughProps?: F }) & Ctor<P & EP>;",
+  "type Sfc<P, EP, F = never> = { readonly __vizeComponentMarker: true; __vizeEmitProps?: EP } & ([F] extends [never] ? {} : { readonly __vizeNativeFallthroughRoot: true; readonly __vizeFallthroughProps?: F }) & Ctor<P>;",
   "type Fn<A extends unknown[], R = void> = (...args: A) => R;",
 ];
 
 const emitProps =
-  "{ onSelect?: Fn<[id: number, label: string], any>; 'onUpdate:modelValue'?: Fn<[value: string], any>; onRowClick?: Fn<[row: { id: number }], any> }";
+  "{ onSelect?: Fn<[id: number, label: string]>; 'onUpdate:modelValue'?: Fn<[value: string]>; onRowClick?: Fn<[row: { id: number }]> }";
 const shapes: Record<string, string> = {
   any: "any",
   unknown: "unknown",
   never: "never",
   empty: "{}",
-  sfc: `Sfc<{ label: string }, ${emitProps}>`,
+  sfc: `Sfc<{ label: string } & ${emitProps}, ${emitProps}>`,
   propListener:
     "Sfc<{ onSelect?: (id: number) => number; onTap?: Fn<[value: string]> | Fn<[value: string]>[] }, {}>",
   arrayOnly: "Sfc<{ onSelect?: Fn<[id: number]>[] }, {}>",
@@ -184,8 +183,6 @@ function usage(
     emit_props_box: `${p}_emit_props`,
     fallthrough_box: `${p}_fallthrough`,
     is_any: "$IsAny",
-    lib_extract: "Extract",
-    lib_non_nullable: "NonNullable",
     prop_key,
     prop_listener_args: `$ListenerArgs<__P, ${listener_key}, ${raw_listener_key}>`,
     prop_args: `${p}_prop_args`,
@@ -211,7 +208,6 @@ function usage(
     inferred_args: inferredArgs === undefined ? "unknown[]" : `${p}_inferred`,
     loose: looseFlag === undefined ? "false" : `${p}_loose`,
   };
-  values.public_return = `unknown[] extends ${values.prop_args} ? ${values.unresolved_return} : ${values.props_box} extends infer __B ? __B extends [infer __P] ? (__P extends { ${values.prop_key}?: (...args: any[]) => infer __R } ? __R : any) : any : never`;
   values.arrays = format(TEMPLATES.arraysBody[1], values);
   const f = (name: keyof typeof TEMPLATES) => format(TEMPLATES[name][1], values);
   return [
@@ -228,7 +224,6 @@ function usage(
     f("emitArgs"),
     f("args"),
     f("event"),
-    f("publicReturn"),
     f("return"),
     f("members"),
     f("arrays"),
@@ -330,26 +325,6 @@ void test("the shared contract has exactly the chain's types and printed text", 
   }
 });
 
-void test("declared emits use void without widening authored listener returns", () => {
-  const lines = [
-    ...prelude,
-    "type PropsBox<C> = C extends { readonly __vizeComponentMarker: true; readonly __vizeRawProps?: infer P } ? [P] : C extends { new (...args: any[]): { $props: infer P } } ? [P] : C extends (props: infer P, ...args: any[]) => any ? [P] : [];",
-    "type Generated = Sfc<{ onSave?: Fn<[value: string], number> }, { onSave?: Fn<[value: string], any> }>;",
-    "type GeneratedAuthored = $ListenerContract<false, PropsBox<Generated>, [{ onSave?: Fn<[value: string], any> }], [], 'onSave', never, unknown[], false>['listener'];",
-    "type Synthesized = $ListenerContract<false, [{ onSave?: Fn<[value: string], any> }], [{ onSave?: Fn<[value: string], any> }], [], 'onSave', never, unknown[], false>['listener'];",
-    "type Authored = $ListenerContract<false, [{ onSave?: Fn<[value: string], number> }], [{ onSave?: Fn<[value: string], any> }], [], 'onSave', never, unknown[], false>['listener'];",
-    "type Unresolved = $ListenerContract<false, [{ onSave?: Fn<[value: string], any> }], [], [], 'onSave', never, unknown[], false>['listener'];",
-    "type GeneratedAuthoredKeepsNumber = Expect<Equal<GeneratedAuthored, Fn<[value: string], number>>>;",
-    "type SynthesizedIsVoid = Expect<Equal<Synthesized, Fn<[value: string], void>>>;",
-    "type AuthoredKeepsNumber = Expect<Equal<Authored, Fn<[value: string], number>>>;",
-    "type UnresolvedKeepsAny = Expect<Equal<Unresolved, Fn<[value: string], any>>>;",
-  ];
-  for (const exactOptionalPropertyTypes of [false, true]) {
-    const { diagnostics } = check(lines.join("\n"), [], exactOptionalPropertyTypes);
-    assert.deepEqual(diagnostics, [], `exactOptionalPropertyTypes=${exactOptionalPropertyTypes}`);
-  }
-});
-
 void test("the oracle rejects a contract that changes a listener", () => {
   const { lines, pairs } = cases();
   for (const [name, from, to] of [
@@ -364,9 +339,9 @@ void test("the oracle rejects a contract that changes a listener", () => {
       "__Args extends infer __A extends unknown[]",
     ],
     [
-      "widens the authored listener return",
-      "0 extends (1 & __Public) ? void : __Public",
-      "0 extends (1 & __Public) ? any : __Public",
+      "drops the declared listener return",
+      "infer __R } ? __R : any) : any;",
+      "infer __R } ? any : any) : any;",
     ],
   ] as const) {
     const broken = lines.map((line) => line.replace(from, to)).join("\n");

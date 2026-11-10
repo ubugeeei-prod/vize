@@ -1,6 +1,5 @@
 ---
 source: crates/vize_canon/src/virtual_ts/dynamic_component_names_tests.rs
-assertion_line: 72
 expression: output.code
 ---
 /// <reference lib="es2022" />
@@ -179,8 +178,7 @@ const handler = () => {}
   type __Child_8_save_args = unknown[] extends __Child_8_save_inferred_emit_args ? (unknown[] extends __Child_8_save_prop_args ? (unknown[] extends __Child_8_save_emit_args ? __Child_8_save_fallthrough_args : __Child_8_save_emit_args) : __Child_8_save_prop_args) : __Child_8_save_inferred_emit_args;
   type __Child_8_save_event = __Child_8_save_args extends infer __A extends unknown[] ? [__A] extends [[]] ? any : unknown[] extends __A ? any : __A[0] : never;
   type __Child_8_save_return_native_fallthrough = __Child_8__fallthrough extends infer __B ? __B extends [infer __F] ? NonNullable<__F> extends { onSave?: infer __H } ? Extract<NonNullable<__H>, (...args: any[]) => any> extends (...args: any[]) => infer __R ? __R : any : any : any : never;
-  type __Child_8_save_return_public = unknown[] extends __Child_8_save_prop_args ? __Child_8_save_return_native_fallthrough : __Child_8__props extends infer __B ? __B extends [infer __P] ? (__P extends { onSave?: (...args: any[]) => infer __R } ? __R : any) : any : never;
-  type __Child_8_save_return = unknown[] extends __Child_8_save_static_emit_args ? __Child_8_save_return_public : 0 extends (1 & __Child_8_save_return_public) ? void : __Child_8_save_return_public;
+  type __Child_8_save_return = unknown[] extends __Child_8_save_prop_args ? __Child_8_save_return_native_fallthrough : __Child_8__props extends infer __B ? __B extends [infer __P] ? (__P extends { onSave?: (...args: any[]) => infer __R } ? __R : any) : any : never;
   type __Child_8__props_members = __Child_8__props extends infer __B ? __B extends [infer __P] ? [__P] : never : never;
   type __Child_8_save_prop_arrays = __Child_8__props_members extends infer __B ? __B extends [infer __P] ? $IsAny<__P> extends true ? never : __P extends { onSave?: infer __H } ? Extract<NonNullable<__H>, readonly unknown[]> : never : never : never;
   type __Child_8_save_listener = unknown[] extends __Child_8_save_args ? ((...args: any[]) => any) : ((...args: __Child_8_save_args) => __Child_8_save_return);

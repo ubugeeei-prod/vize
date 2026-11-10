@@ -63,7 +63,7 @@ const inline: Record<(typeof usageHelpers)[number], (c: string) => string> = {
   $UsageLibrary: (c) =>
     `typeof ${c} extends { __vizeCheck: any } | { readonly __vizeComponentMarker: true } ? false : typeof ${c} extends (...args: any[]) => infer __R ? 0 extends (1 & __R) ? false : '__ctx' extends keyof __R ? true : false : false`,
   $UsagePropsBox: (c) =>
-    `typeof ${c} extends { readonly __vizeComponentMarker: true; readonly __vizeRawProps?: infer __P } ? [__P] : typeof ${c} extends { new (...args: any[]): { $props: infer __P } } ? [__P] : typeof ${c} extends (props: infer __P, ...args: any[]) => any ? [__P] : []`,
+    `typeof ${c} extends { new (...args: any[]): { $props: infer __P } } ? [__P] : typeof ${c} extends (props: infer __P, ...args: any[]) => any ? [__P] : []`,
   $UsageEmitPropsBox: (c) => `typeof ${c} extends { __vizeEmitProps?: infer __EP } ? [__EP] : []`,
   $UsageNativeFallthroughBox: (c) =>
     `typeof ${c} extends { readonly __vizeNativeFallthroughRoot: true; readonly __vizeFallthroughProps?: infer __F } ? "__vizeEmitProps" extends keyof { [__K in keyof typeof ${c} as string extends __K ? never : number extends __K ? never : symbol extends __K ? never : __K]: unknown } ? $IsAny<__F> extends true ? [] : [__F] : [] : []`,
@@ -77,7 +77,6 @@ const components: Record<string, string> = {
   generated: generated(
     "readonly __vizeFallthroughProps?: { title: string; id?: string }; __vizeEmitProps?: { onSave?: () => void }; readonly __vizeNativeFallthroughRoot: true; __vizeCheck: (props: { a?: string }) => void; readonly __vizeRawProps?: { a?: string; b: number }",
   ),
-  authoredListener: `{ new (...args: any[]): { $props: { onSave?: (value: string) => any } }; readonly __vizeComponentMarker: true; readonly __vizeRawProps?: { onSave?: (value: string) => number }; __vizeEmitProps?: { onSave?: (value: string) => any } }`,
   optionalFallthrough: generated(
     "readonly __vizeFallthroughProps?: { title?: string }; readonly __vizeNativeFallthroughRoot: true; __vizeCheck: any",
   ),

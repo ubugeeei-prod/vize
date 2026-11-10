@@ -46,7 +46,7 @@ fn a_listener_prop_that_admits_arrays_accepts_an_array_of_listeners() {
     assert_eq!(
         rows,
         [
-            "src/Parent.vue(5,19): error TS2322: Type '((event: MouseEvent) => void)[]' is not assignable to type '(event: MouseEvent) => void'.\nType '((event: MouseEvent) => void)[]' provides no match for the signature '(event: MouseEvent): void'.",
+            "src/Parent.vue(5,19): error TS2322: Type '((event: MouseEvent) => void)[]' is not assignable to type '(event: MouseEvent) => any'.\nType '((event: MouseEvent) => void)[]' provides no match for the signature '(event: MouseEvent): any'.",
         ]
     );
 }

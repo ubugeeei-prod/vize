@@ -46,12 +46,9 @@ pub(super) fn emit(
         ts,
         "{indent}type {library} = typeof {component_ref} extends {{ __vizeCheck: any }} | {{ readonly __vizeComponentMarker: true }} ? false : typeof {component_ref} extends (...args: any[]) => infer __R ? 0 extends (1 & __R) ? false : '__ctx' extends keyof __R ? true : false : false;\n",
     );
-    // A generated component's public `$props` intersects authored listener
-    // props with synthesized emit listeners. Prefer its authored raw props so
-    // a same-name listener return cannot collapse from `number` to `any`.
     vize_l0::emit_ts!(
         ts,
-        "{indent}type {props_box} = typeof {component_ref} extends {{ readonly __vizeComponentMarker: true; readonly __vizeRawProps?: infer __P }} ? [__P] : typeof {component_ref} extends {{ new (...args: any[]): {{ $props: infer __P }} }} ? [__P] : typeof {component_ref} extends (props: infer __P, ...args: any[]) => any ? [__P] : [];\n",
+        "{indent}type {props_box} = typeof {component_ref} extends {{ new (...args: any[]): {{ $props: infer __P }} }} ? [__P] : typeof {component_ref} extends (props: infer __P, ...args: any[]) => any ? [__P] : [];\n",
     );
     vize_l0::emit_ts!(
         ts,

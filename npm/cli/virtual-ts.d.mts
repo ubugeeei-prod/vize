@@ -289,16 +289,11 @@ export type $UsageLibrary<C> =
           : false
       : false;
 export type $UsagePropsBox<C> =
-  NoInfer<C> extends {
-    readonly __vizeComponentMarker: true;
-    readonly __vizeRawProps?: infer __P;
-  }
+  NoInfer<C> extends { new (...args: any[]): { $props: infer __P } }
     ? [__P]
-    : NoInfer<C> extends { new (...args: any[]): { $props: infer __P } }
+    : NoInfer<C> extends (props: infer __P, ...args: any[]) => any
       ? [__P]
-      : NoInfer<C> extends (props: infer __P, ...args: any[]) => any
-        ? [__P]
-        : [];
+      : [];
 export type $UsageEmitPropsBox<C> =
   NoInfer<C> extends { __vizeEmitProps?: infer __EP } ? [__EP] : [];
 export type $UsageNativeFallthroughBox<C> =

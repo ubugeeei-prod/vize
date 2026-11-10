@@ -1,6 +1,5 @@
 ---
 source: crates/vize_canon/src/virtual_ts/dynamic_component_scope_tests.rs
-assertion_line: 98
 expression: template
 ---
 ;(function __template() {
@@ -64,8 +63,7 @@ expression: template
     type ____vize_dynamic_is_35_10_pick_emit_args = unknown[] extends ____vize_dynamic_is_35_10_pick_inferred_emit_args ? ____vize_dynamic_is_35_10_pick_static_emit_args : ____vize_dynamic_is_35_10_pick_inferred_emit_args;
     type ____vize_dynamic_is_35_10_pick_args = ____vize_dynamic_is_35_10_pick_contextless_listener extends true ? unknown[] : unknown[] extends ____vize_dynamic_is_35_10_pick_inferred_emit_args ? (unknown[] extends ____vize_dynamic_is_35_10_pick_prop_args ? (unknown[] extends ____vize_dynamic_is_35_10_pick_emit_args ? unknown[] : ____vize_dynamic_is_35_10_pick_emit_args) : ____vize_dynamic_is_35_10_pick_prop_args) : ____vize_dynamic_is_35_10_pick_inferred_emit_args;
     type ____vize_dynamic_is_35_10_pick_event = ____vize_dynamic_is_35_10_pick_args extends infer __A extends unknown[] ? [__A] extends [[]] ? any : unknown[] extends __A ? any : __A[0] : never;
-    type ____vize_dynamic_is_35_10_pick_return_public = unknown[] extends ____vize_dynamic_is_35_10_pick_prop_args ? any : ____vize_dynamic_is_35_10__props extends infer __B ? __B extends [infer __P] ? (__P extends { onPick?: (...args: any[]) => infer __R } ? __R : any) : any : never;
-    type ____vize_dynamic_is_35_10_pick_return = unknown[] extends ____vize_dynamic_is_35_10_pick_static_emit_args ? ____vize_dynamic_is_35_10_pick_return_public : 0 extends (1 & ____vize_dynamic_is_35_10_pick_return_public) ? void : ____vize_dynamic_is_35_10_pick_return_public;
+    type ____vize_dynamic_is_35_10_pick_return = unknown[] extends ____vize_dynamic_is_35_10_pick_prop_args ? any : ____vize_dynamic_is_35_10__props extends infer __B ? __B extends [infer __P] ? (__P extends { onPick?: (...args: any[]) => infer __R } ? __R : any) : any : never;
     type ____vize_dynamic_is_35_10_pick_listener = unknown[] extends ____vize_dynamic_is_35_10_pick_args ? ((...args: any[]) => any) : ((...args: ____vize_dynamic_is_35_10_pick_args) => ____vize_dynamic_is_35_10_pick_return);
     void ((...__vize_args: Parameters<____vize_dynamic_is_35_10_pick_listener>) => {
       const __vize_event = (__vize_args as unknown[])[0] as ____vize_dynamic_is_35_10_pick_event; void __vize_event;
@@ -94,8 +92,7 @@ expression: template
     type ____vize_dynamic_is_104_11_pick_emit_args = unknown[] extends ____vize_dynamic_is_104_11_pick_inferred_emit_args ? ____vize_dynamic_is_104_11_pick_static_emit_args : ____vize_dynamic_is_104_11_pick_inferred_emit_args;
     type ____vize_dynamic_is_104_11_pick_args = ____vize_dynamic_is_104_11_pick_contextless_listener extends true ? unknown[] : unknown[] extends ____vize_dynamic_is_104_11_pick_inferred_emit_args ? (unknown[] extends ____vize_dynamic_is_104_11_pick_prop_args ? (unknown[] extends ____vize_dynamic_is_104_11_pick_emit_args ? unknown[] : ____vize_dynamic_is_104_11_pick_emit_args) : ____vize_dynamic_is_104_11_pick_prop_args) : ____vize_dynamic_is_104_11_pick_inferred_emit_args;
     type ____vize_dynamic_is_104_11_pick_event = ____vize_dynamic_is_104_11_pick_args extends infer __A extends unknown[] ? [__A] extends [[]] ? any : unknown[] extends __A ? any : __A[0] : never;
-    type ____vize_dynamic_is_104_11_pick_return_public = unknown[] extends ____vize_dynamic_is_104_11_pick_prop_args ? any : ____vize_dynamic_is_104_11__props extends infer __B ? __B extends [infer __P] ? (__P extends { onPick?: (...args: any[]) => infer __R } ? __R : any) : any : never;
-    type ____vize_dynamic_is_104_11_pick_return = unknown[] extends ____vize_dynamic_is_104_11_pick_static_emit_args ? ____vize_dynamic_is_104_11_pick_return_public : 0 extends (1 & ____vize_dynamic_is_104_11_pick_return_public) ? void : ____vize_dynamic_is_104_11_pick_return_public;
+    type ____vize_dynamic_is_104_11_pick_return = unknown[] extends ____vize_dynamic_is_104_11_pick_prop_args ? any : ____vize_dynamic_is_104_11__props extends infer __B ? __B extends [infer __P] ? (__P extends { onPick?: (...args: any[]) => infer __R } ? __R : any) : any : never;
     type ____vize_dynamic_is_104_11_pick_listener = unknown[] extends ____vize_dynamic_is_104_11_pick_args ? ((...args: any[]) => any) : ((...args: ____vize_dynamic_is_104_11_pick_args) => ____vize_dynamic_is_104_11_pick_return);
     void ((...__vize_args: Parameters<____vize_dynamic_is_104_11_pick_listener>) => {
       const __vize_event = (__vize_args as unknown[])[0] as ____vize_dynamic_is_104_11_pick_event; void __vize_event;
@@ -132,8 +129,7 @@ expression: template
     type ____vize_dynamic_is_185_13_pick_emit_args = unknown[] extends ____vize_dynamic_is_185_13_pick_inferred_emit_args ? ____vize_dynamic_is_185_13_pick_static_emit_args : ____vize_dynamic_is_185_13_pick_inferred_emit_args;
     type ____vize_dynamic_is_185_13_pick_args = ____vize_dynamic_is_185_13_pick_contextless_listener extends true ? unknown[] : unknown[] extends ____vize_dynamic_is_185_13_pick_inferred_emit_args ? (unknown[] extends ____vize_dynamic_is_185_13_pick_prop_args ? (unknown[] extends ____vize_dynamic_is_185_13_pick_emit_args ? unknown[] : ____vize_dynamic_is_185_13_pick_emit_args) : ____vize_dynamic_is_185_13_pick_prop_args) : ____vize_dynamic_is_185_13_pick_inferred_emit_args;
     type ____vize_dynamic_is_185_13_pick_event = ____vize_dynamic_is_185_13_pick_args extends infer __A extends unknown[] ? [__A] extends [[]] ? any : unknown[] extends __A ? any : __A[0] : never;
-    type ____vize_dynamic_is_185_13_pick_return_public = unknown[] extends ____vize_dynamic_is_185_13_pick_prop_args ? any : ____vize_dynamic_is_185_13__props extends infer __B ? __B extends [infer __P] ? (__P extends { onPick?: (...args: any[]) => infer __R } ? __R : any) : any : never;
-    type ____vize_dynamic_is_185_13_pick_return = unknown[] extends ____vize_dynamic_is_185_13_pick_static_emit_args ? ____vize_dynamic_is_185_13_pick_return_public : 0 extends (1 & ____vize_dynamic_is_185_13_pick_return_public) ? void : ____vize_dynamic_is_185_13_pick_return_public;
+    type ____vize_dynamic_is_185_13_pick_return = unknown[] extends ____vize_dynamic_is_185_13_pick_prop_args ? any : ____vize_dynamic_is_185_13__props extends infer __B ? __B extends [infer __P] ? (__P extends { onPick?: (...args: any[]) => infer __R } ? __R : any) : any : never;
     type ____vize_dynamic_is_185_13_pick_listener = unknown[] extends ____vize_dynamic_is_185_13_pick_args ? ((...args: any[]) => any) : ((...args: ____vize_dynamic_is_185_13_pick_args) => ____vize_dynamic_is_185_13_pick_return);
     void ((...__vize_args: Parameters<____vize_dynamic_is_185_13_pick_listener>) => {
       const __vize_event = (__vize_args as unknown[])[0] as ____vize_dynamic_is_185_13_pick_event; void __vize_event;
@@ -161,8 +157,7 @@ expression: template
   type ____vize_dynamic_is_274_14_pick_emit_args = unknown[] extends ____vize_dynamic_is_274_14_pick_inferred_emit_args ? ____vize_dynamic_is_274_14_pick_static_emit_args : ____vize_dynamic_is_274_14_pick_inferred_emit_args;
   type ____vize_dynamic_is_274_14_pick_args = ____vize_dynamic_is_274_14_pick_contextless_listener extends true ? unknown[] : unknown[] extends ____vize_dynamic_is_274_14_pick_inferred_emit_args ? (unknown[] extends ____vize_dynamic_is_274_14_pick_prop_args ? (unknown[] extends ____vize_dynamic_is_274_14_pick_emit_args ? unknown[] : ____vize_dynamic_is_274_14_pick_emit_args) : ____vize_dynamic_is_274_14_pick_prop_args) : ____vize_dynamic_is_274_14_pick_inferred_emit_args;
   type ____vize_dynamic_is_274_14_pick_event = ____vize_dynamic_is_274_14_pick_args extends infer __A extends unknown[] ? [__A] extends [[]] ? any : unknown[] extends __A ? any : __A[0] : never;
-  type ____vize_dynamic_is_274_14_pick_return_public = unknown[] extends ____vize_dynamic_is_274_14_pick_prop_args ? any : ____vize_dynamic_is_274_14__props extends infer __B ? __B extends [infer __P] ? (__P extends { onPick?: (...args: any[]) => infer __R } ? __R : any) : any : never;
-  type ____vize_dynamic_is_274_14_pick_return = unknown[] extends ____vize_dynamic_is_274_14_pick_static_emit_args ? ____vize_dynamic_is_274_14_pick_return_public : 0 extends (1 & ____vize_dynamic_is_274_14_pick_return_public) ? void : ____vize_dynamic_is_274_14_pick_return_public;
+  type ____vize_dynamic_is_274_14_pick_return = unknown[] extends ____vize_dynamic_is_274_14_pick_prop_args ? any : ____vize_dynamic_is_274_14__props extends infer __B ? __B extends [infer __P] ? (__P extends { onPick?: (...args: any[]) => infer __R } ? __R : any) : any : never;
   type ____vize_dynamic_is_274_14_pick_listener = unknown[] extends ____vize_dynamic_is_274_14_pick_args ? ((...args: any[]) => any) : ((...args: ____vize_dynamic_is_274_14_pick_args) => ____vize_dynamic_is_274_14_pick_return);
   void ((...__vize_args: Parameters<____vize_dynamic_is_274_14_pick_listener>) => {
     const __vize_event = (__vize_args as unknown[])[0] as ____vize_dynamic_is_274_14_pick_event; void __vize_event;

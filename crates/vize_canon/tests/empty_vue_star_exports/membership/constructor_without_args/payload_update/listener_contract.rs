@@ -77,8 +77,7 @@ pub(super) fn read_current(path: &str) -> String {
 
 /// The compiled preamble without the contract lines its asset gained.
 pub(super) fn preamble_before(current: &str) -> String {
-    let current = super::listener_return_parity::preamble_before(current);
-    let current = &super::template_ref_unwrap::preamble_before(&current);
+    let current = &super::template_ref_unwrap::preamble_before(current);
     let hash = support::hash(current.as_bytes());
     let Some((_, before)) = PREAMBLE.iter().find(|(after, _)| *after == hash) else {
         return current.to_owned();
@@ -125,8 +124,7 @@ mod tests {
         .into_iter()
         .zip(PREAMBLE)
         {
-            let current = super::super::listener_return_parity::preamble_before(current);
-            let current = &super::super::template_ref_unwrap::preamble_before(&current);
+            let current = &super::super::template_ref_unwrap::preamble_before(current);
             assert_eq!(support::hash(current.as_bytes()), after);
             let previous = preamble_before(current);
             assert_eq!(support::hash(previous.as_bytes()), before);

@@ -187,7 +187,7 @@ function numberOnly(value: number) { value.toFixed() }
             vize_l0::String::from("src/App.vue"),
             Some(2322),
             vize_l0::String::from(
-                "7:42:error Type '(value: number) => void' is not assignable to type '(value: number | null) => void'.\n\
+                "7:42:error Type '(value: number) => void' is not assignable to type '(value: number | null) => any'.\n\
                  Types of parameters 'value' and '<target>' are incompatible.\n\
                  Type 'number | null' is not assignable to type 'number'.\n\
                  Type 'null' is not assignable to type 'number'.",

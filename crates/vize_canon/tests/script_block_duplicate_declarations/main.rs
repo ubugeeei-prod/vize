@@ -287,7 +287,7 @@ fn a_setup_type_over_a_classic_value_keeps_checking_the_component_contract() {
     assert_eq!(
         diagnostics,
         vec![String::from(
-            "src/ClassicValueConsumer.vue(10,11): error TS2322: Type '(item: string) => void' is not assignable to type '(item: Item) => void'.\nTypes of parameters 'item' and '<target>' are incompatible.\nType 'Item' is not assignable to type 'string'.",
+            "src/ClassicValueConsumer.vue(10,11): error TS2322: Type '(item: string) => void' is not assignable to type '(item: Item) => any'.\nTypes of parameters 'item' and '<target>' are incompatible.\nType 'Item' is not assignable to type 'string'.",
         )]
     );
 }

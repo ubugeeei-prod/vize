@@ -75,18 +75,16 @@ type $ListenerFallthroughReturn<__FB, __K extends string | number | symbol> = __
   : any;
 type $ListenerReturn<
   __Prop,
-  __Static,
   __PB,
   __Unresolved,
   __K extends string | number | symbol,
-  __Public = unknown[] extends __Prop
-    ? __Unresolved
-    : __PB extends [infer __P]
-      ? __P extends { [__Q in __K]?: (...args: any[]) => infer __R }
-        ? __R
-        : any
-      : any,
-> = unknown[] extends __Static ? __Public : 0 extends 1 & __Public ? void : __Public;
+> = unknown[] extends __Prop
+  ? __Unresolved
+  : __PB extends [infer __P]
+    ? __P extends { [__Q in __K]?: (...args: any[]) => infer __R }
+      ? __R
+      : any
+    : any;
 type $ListenerArrays<__PB, __K extends string | number | symbol> = __PB extends [infer __P]
   ? 0 extends 1 & __P
     ? never
@@ -125,7 +123,7 @@ type $ListenerContractOf<
     __Inferred,
     __Loose
   >,
-  $ListenerReturn<__Prop, __Static, __PB, $ListenerFallthroughReturn<__FB, __K>, __K>,
+  $ListenerReturn<__Prop, __PB, $ListenerFallthroughReturn<__FB, __K>, __K>,
   $ListenerArrays<__PB, __K>
 >;
 export type $ListenerContract<

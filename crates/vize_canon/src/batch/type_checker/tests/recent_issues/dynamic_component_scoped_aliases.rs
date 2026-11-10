@@ -46,7 +46,7 @@ fn dynamic_component_targets_follow_the_scope_that_binds_their_names() {
     let _ = std::fs::remove_dir_all(&project_root);
 
     // The same codes and positions as vue-tsc 3.3.11; Clean.vue reports none.
-    let wrong_listener = "Type '(v: number) => number' is not assignable to type '(value: string) => void'.\nTypes of parameters 'v' and 'value' are incompatible.\nType 'string' is not assignable to type 'number'.";
+    let wrong_listener = "Type '(v: number) => number' is not assignable to type '(value: string) => any'.\nTypes of parameters 'v' and 'value' are incompatible.\nType 'string' is not assignable to type 'number'.";
     let expected = [
         (
             2322,

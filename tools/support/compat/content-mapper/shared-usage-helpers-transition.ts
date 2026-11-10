@@ -1,16 +1,6 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
-import {
-  beforeListenerAuthoredPropsIn,
-  beforeListenerAuthoredPropsSource,
-} from "./listener-authored-props-transition.ts";
-import {
-  applyListenerReturnParity,
-  applyListenerReturnParityIn,
-  beforeListenerReturnParity,
-  beforeListenerReturnParityIn,
-} from "./listener-return-parity-transition.ts";
 
 type Identity = { bytes: number; sha256: string };
 type Hunk = { before: string; after: string };
@@ -42,20 +32,18 @@ const identity = (text: string): Identity => ({
 
 /** The pre-helper bytes of a recorded helper asset; other images pass through. */
 export function beforeSharedUsageHelpersSource(file: string, current: string): string {
-  current = beforeListenerAuthoredPropsSource(file, current);
-  const withoutParity = beforeListenerReturnParity(file, current);
   const transition = record.files.find((candidate) => candidate.path === file);
   if (!transition) return current;
-  const now = identity(withoutParity);
+  const now = identity(current);
   if (now.bytes !== transition.after.bytes || now.sha256 !== transition.after.sha256)
     return current;
-  let previous = withoutParity;
+  let previous = current;
   for (const hunk of transition.hunks) {
     assert.equal(previous.split(hunk.after).length - 1, 1);
     previous = previous.replace(hunk.after, () => hunk.before);
   }
   assert.deepEqual(identity(previous), transition.before);
-  return withoutParity === current ? previous : applyListenerReturnParity(file, previous);
+  return previous;
 }
 
 /** Advance a composed shared preamble across the usage-helper layer. */
@@ -71,13 +59,10 @@ export function applySharedUsageHelpersIn(previous: string): string {
 
 /** Inverse of {@link applySharedUsageHelpersIn}. */
 export function beforeSharedUsageHelpersIn(current: string): string {
-  let previous = beforeListenerAuthoredPropsIn(current);
-  const withoutParity = beforeListenerReturnParityIn(previous);
-  const hadParity = withoutParity !== previous;
-  previous = withoutParity;
+  let previous = current;
   for (const hunk of record.compiledPreamble.hunks) {
     assert.equal(previous.split(hunk.after).length, 2, "shared usage helper current lines");
     previous = previous.replace(hunk.after, () => hunk.before);
   }
-  return hadParity ? applyListenerReturnParityIn(previous) : previous;
+  return previous;
 }

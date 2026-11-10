@@ -2,7 +2,6 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
-import { beforeListenerReturnParity } from "./listener-return-parity-transition.ts";
 import { beforeGuardedInferenceArrow } from "./guarded-inference-arrow-transition.ts";
 import { beforeLibTypeShadowingAudit } from "./lib-type-shadowing-audit-transition.ts";
 import { beforeSharedUsageHelpersSource } from "./shared-usage-helpers-transition.ts";
@@ -47,9 +46,10 @@ function load(): Transition {
   return parsed;
 }
 
-/** Remove only lib-name qualification while retaining newer listener semantics. */
-export function beforeCurrentListenerLibTypeQualification(path: string, current: string): string {
+/** The exact pre-qualification bytes of a recorded producer's current image; older images pass through. */
+export function beforeListenerLibTypeQualification(path: string, current: string): string {
   current = beforeLibTypeShadowingAudit(path, current);
+  current = beforeSharedUsageHelpersSource(path, current);
   current = beforeGuardedInferenceArrow(path, current);
   const file = load().files.find((entry) => entry.path === path);
   if (!file || identity(current).sha256 !== file.after.sha256) return current;
@@ -72,11 +72,4 @@ export function beforeCurrentListenerLibTypeQualification(path: string, current:
     `listener lib type qualification predecessor: ${path}`,
   );
   return current;
-}
-
-/** The exact pre-qualification bytes after restoring newer source transitions. */
-export function beforeListenerLibTypeQualification(path: string, current: string): string {
-  current = beforeSharedUsageHelpersSource(path, current);
-  current = beforeListenerReturnParity(path, current);
-  return beforeCurrentListenerLibTypeQualification(path, current);
 }

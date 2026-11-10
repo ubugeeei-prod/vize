@@ -82,7 +82,7 @@ fn camel_and_kebab_event_twins_keep_one_handler_tuple() {
             (
                 "src/WrongHandler.vue".into(),
                 Some(2322),
-                "6:9:error Type '(value: string) => number' is not assignable to type '(value: number) => void'.\nTypes of parameters 'value' and 'value' are incompatible.\nType 'number' is not assignable to type 'string'.".into(),
+                "6:9:error Type '(value: string) => number' is not assignable to type '(value: number) => any'.\nTypes of parameters 'value' and 'value' are incompatible.\nType 'number' is not assignable to type 'string'.".into(),
             ),
             (
                 "src/WrongMember.vue".into(),

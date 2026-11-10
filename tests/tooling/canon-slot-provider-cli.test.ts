@@ -51,7 +51,6 @@ import {
   beforePropValueOrIn,
 } from "../../tools/support/compat/content-mapper/prop-value-or-transition.ts";
 import { applyListenerContractIn } from "../../tools/support/compat/content-mapper/listener-contract-transition.ts";
-import { applyListenerReturnParityIn } from "../../tools/support/compat/content-mapper/listener-return-parity-transition.ts";
 import {
   applySharedTemplateRefUnwrapIn,
   beforeSharedTemplateRefUnwrapIn,
@@ -60,10 +59,6 @@ import {
   applySharedUsageHelpersIn,
   beforeSharedUsageHelpersIn,
 } from "../../tools/support/compat/content-mapper/shared-usage-helpers-transition.ts";
-import {
-  applyListenerAuthoredPropsIn,
-  beforeListenerAuthoredPropsIn,
-} from "../../tools/support/compat/content-mapper/listener-authored-props-transition.ts";
 
 test("quiet CLI debug output retains exact helper/file bytes and refuses unrelated stderr", () => {
   const record = JSON.parse(
@@ -191,13 +186,10 @@ test("quiet CLI debug output retains exact helper/file bytes and refuses unrelat
   assert.equal(beforePropValueOrIn(propValueOrSourcePreamble), ownedSourcePreamble);
   assert.throws(() => applyPropValueOrIn(propValueOrSourcePreamble), /PropValueOr/u);
   const listenerSourcePreamble = applyListenerContractIn(propValueOrSourcePreamble);
-  const paritySourcePreamble = applyListenerReturnParityIn(listenerSourcePreamble);
-  const unwrapSourcePreamble = applySharedTemplateRefUnwrapIn(paritySourcePreamble);
-  assert.equal(beforeSharedTemplateRefUnwrapIn(unwrapSourcePreamble), paritySourcePreamble);
-  const usageSourcePreamble = applySharedUsageHelpersIn(unwrapSourcePreamble);
-  assert.equal(beforeSharedUsageHelpersIn(usageSourcePreamble), unwrapSourcePreamble);
-  const currentSourcePreamble = applyListenerAuthoredPropsIn(usageSourcePreamble);
-  assert.equal(beforeListenerAuthoredPropsIn(currentSourcePreamble), usageSourcePreamble);
+  const unwrapSourcePreamble = applySharedTemplateRefUnwrapIn(listenerSourcePreamble);
+  assert.equal(beforeSharedTemplateRefUnwrapIn(unwrapSourcePreamble), listenerSourcePreamble);
+  const currentSourcePreamble = applySharedUsageHelpersIn(unwrapSourcePreamble);
+  assert.equal(beforeSharedUsageHelpersIn(currentSourcePreamble), unwrapSourcePreamble);
   const canonPredecessor = [...canonLeftoverPreamblePaths]
     .reverse()
     .reduce((current, file) => beforeCanonLeftoversIn(file, current), canonSourcePreamble);

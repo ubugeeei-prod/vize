@@ -43,7 +43,6 @@ fn restore(current: &str, transition: &Value) -> String {
 /// pass through; the layers below authenticate them.
 pub(super) fn source_before(path: &str, current: String) -> String {
     let current = super::usage_helpers::source_before(path, current);
-    let current = super::listener_return_parity::source_before(path, current);
     let current = super::constructor_noinfer_return::source_before(path, current);
     let record = record();
     match record["files"]
@@ -59,16 +58,15 @@ pub(super) fn source_before(path: &str, current: String) -> String {
 
 /// A compiled preamble without the shared unwrap aliases.
 pub(super) fn preamble_before(current: &str) -> String {
-    let current = super::usage_helpers::preamble_before(current);
-    let current = super::listener_return_parity::preamble_before(&current);
+    let current = &super::usage_helpers::preamble_before(current);
     let record = record();
     match ["compiledPreamble", "compiledStrictPreamble"]
         .into_iter()
         .map(|key| &record[key])
-        .find(|preamble| is_after(&current, preamble))
+        .find(|preamble| is_after(current, preamble))
     {
-        Some(preamble) => restore(&current, preamble),
-        None => current,
+        Some(preamble) => restore(current, preamble),
+        None => current.to_owned(),
     }
 }
 
@@ -83,7 +81,6 @@ mod tests {
             let path = file["path"].as_str().unwrap();
             let current = fs::read_to_string(support::repository().join(path)).unwrap();
             let current = super::super::usage_helpers::source_before(path, current);
-            let current = super::super::listener_return_parity::source_before(path, current);
             assert!(is_after(&current, file), "{path}");
             let previous = source_before(path, current.clone());
             assert_eq!(support::hash(previous.as_bytes()), file["before"]["sha256"]);
@@ -107,9 +104,7 @@ mod tests {
                 "compiledStrictPreamble",
             ),
         ] {
-            let current = super::super::usage_helpers::preamble_before(current);
-            let current = super::super::listener_return_parity::preamble_before(&current);
-            let current = current.as_str();
+            let current = &super::super::usage_helpers::preamble_before(current);
             let preamble = &record[key];
             assert!(is_after(current, preamble));
             let previous = preamble_before(current);

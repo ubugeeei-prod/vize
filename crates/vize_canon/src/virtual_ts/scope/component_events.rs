@@ -414,9 +414,12 @@ pub(super) fn generate_component_event_types(
         );
         args_type.clone()
     };
-    // Vue's synthesized listener props return `void`. Keep that diagnostic
-    // surface for declared emits, while preserving the authored return type of
-    // a plain prop such as `onClick?: () => number`.
+    // The modern listener returns what the child's declared listener prop
+    // returns: `any` for the handler props Vue's own `EmitFn`/Volar synthesis
+    // produce (`(user: User) => any`), so an emit-payload mismatch elaborates
+    // with the same expected type `vue-tsc` prints (#3889), and the authored
+    // return type of a prop such as `onClick?: () => number`, so a handler
+    // that returns nothing is rejected as it is under `vue-tsc`.
     let listener_type_expr = listener_return::emit(
         ts,
         listener_return::Context {
@@ -427,7 +430,6 @@ pub(super) fn generate_component_event_types(
             indent,
             listener_args_type: listener_args_type.as_str(),
             args_type: args_type.as_str(),
-            static_emit_args: static_emit_args.as_str(),
             return_type: return_type.as_str(),
             prop_args: prop_args.as_str(),
             props_box: props_box.as_str(),

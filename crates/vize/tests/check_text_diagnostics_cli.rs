@@ -420,7 +420,7 @@ const text = ref("bad");
             "Type '{ kind: \"num\"; s: string; }' is missing the following properties from type '{ readonly modelValue: number; readonly kind: \"num\"; readonly n: number; readonly label?: string | undefined; readonly value?: number | undefined; readonly first?: number | undefined; readonly second?: number | undefined; readonly onSave?: ((id: number) => any) | undefined; }': modelValue, n (source: <Child kind=\"num\" :s=\"'bad'\" />; binding: 's')\n",
             "  error:11:50 [TS2322] Type 'string' is not assignable to type 'number'. (source: <Child label=\"v-model:fake\" kind=\"num\" :n=\"1\" :value=\"'bad'\" />; binding: 'value')\n",
             "  error:12:51 [TS2322] Type 'string' is not assignable to type 'number'. (source: <Child label=\"😀\" kind=\"num\" :n=\"1\" :first=\"1\" :second=\"'bad'\" />; binding: 'second')\n",
-            "  error:13:46 [TS2322] Type '(id: string) => void' is not assignable to type '(id: number) => void'.\n",
+            "  error:13:46 [TS2322] Type '(id: string) => void' is not assignable to type '(id: number) => any'.\n",
             "Types of parameters 'id' and '<target>' are incompatible.\n",
             "Type 'number' is not assignable to type 'string'. (source: <Child :model-value=\"1\" kind=\"num\" :n=\"1\" @save=\"(id: string) => {}\" />; binding: @save)\n",
             "  error:14:73 [TS2339] Property 'toUpperCase' does not exist on type 'number'. (source: <Child :model-value=\"1\" kind=\"num\" :n=\"1\" v-slot=\"{ count }\">{{ count.toUpperCase() }}</Child>)\n",
