@@ -12,6 +12,7 @@ const packagePath = "node_modules/@vizejs/typescript-vue-plugin";
 export const pluginFiles = [
   "README.md",
   "component-contracts.cjs",
+  "diagnostic-packets.cjs",
   "import-resolution.cjs",
   "index.cjs",
   "index.d.cts",

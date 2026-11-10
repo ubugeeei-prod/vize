@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 import { gunzipSync } from "node:zlib";
 import { historicalDemandedSfcSource } from "./language-project-demanded-sfc-20261105.ts";
+import { historicalDiagnosticPacketsSource } from "./language-project-diagnostic-packets-20261110.ts";
 import { historicalSnapshotWalkSource } from "./language-project-snapshot-walk-20261109.ts";
 
 type ReadFile = (side: "base" | "head", path: string) => Buffer | null;
@@ -139,7 +140,12 @@ export function historicalCurrentLanguageProjectSources(read: ReadFile): ReadFil
       read,
       side,
       path,
-      historicalSnapshotWalkSource(read, side, path, read(side, path)),
+      historicalSnapshotWalkSource(
+        read,
+        side,
+        path,
+        historicalDiagnosticPacketsSource(read, side, path, read(side, path)),
+      ),
     );
     const plugin = currentPluginSources.find((entry) => entry.path === path);
     if (side === "head" && body && plugin && digest(body) === plugin.sha256)

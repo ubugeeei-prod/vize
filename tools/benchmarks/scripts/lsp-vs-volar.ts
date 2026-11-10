@@ -284,10 +284,7 @@ async function main() {
         const name = `${spec.id}-${factory.label.replace(/[^a-z0-9.]+/gi, "-")}-round${round}.log`;
         copyFileSync(log, join(values.logs, name));
       }
-      const diagnosticProfile = join(
-        home,
-        ".cache/vize/bench/tsserver-diagnostic-phases.json",
-      );
+      const diagnosticProfile = join(home, ".cache/vize/bench/tsserver-diagnostic-phases.json");
       if (values.logs && round > 0 && existsSync(diagnosticProfile)) {
         mkdirSync(values.logs, { recursive: true });
         const name = `${spec.id}-${factory.label.replace(/[^a-z0-9.]+/gi, "-")}-round${round}-diagnostic-phases.json`;

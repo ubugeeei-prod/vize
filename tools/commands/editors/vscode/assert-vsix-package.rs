@@ -49,6 +49,7 @@ fn run() -> Result<(), String> {
         "extension/language-configuration.json",
         "extension/node_modules/@vizejs/typescript-vue-plugin/README.md",
         "extension/node_modules/@vizejs/typescript-vue-plugin/component-contracts.cjs",
+        "extension/node_modules/@vizejs/typescript-vue-plugin/diagnostic-packets.cjs",
         "extension/node_modules/@vizejs/typescript-vue-plugin/import-resolution.cjs",
         "extension/node_modules/@vizejs/typescript-vue-plugin/index.cjs",
         "extension/node_modules/@vizejs/typescript-vue-plugin/index.d.cts",
@@ -228,6 +229,7 @@ fn assert_allowed_entries(entries: &[String]) -> Result<(), String> {
         "extension/language-configuration.json",
         "extension/node_modules/@vizejs/typescript-vue-plugin/README.md",
         "extension/node_modules/@vizejs/typescript-vue-plugin/component-contracts.cjs",
+        "extension/node_modules/@vizejs/typescript-vue-plugin/diagnostic-packets.cjs",
         "extension/node_modules/@vizejs/typescript-vue-plugin/import-resolution.cjs",
         "extension/node_modules/@vizejs/typescript-vue-plugin/index.cjs",
         "extension/node_modules/@vizejs/typescript-vue-plugin/index.d.cts",
@@ -268,6 +270,7 @@ fn assert_forbidden_entries(entries: &[String]) -> Result<(), String> {
                 && !matches!(
                     name.as_str(),
                     "extension/node_modules/@vizejs/typescript-vue-plugin/component-contracts.cjs"
+                        | "extension/node_modules/@vizejs/typescript-vue-plugin/diagnostic-packets.cjs"
                         | "extension/node_modules/@vizejs/typescript-vue-plugin/import-resolution.cjs"
                         | "extension/node_modules/@vizejs/typescript-vue-plugin/README.md"
                         | "extension/node_modules/@vizejs/typescript-vue-plugin/index.d.cts"

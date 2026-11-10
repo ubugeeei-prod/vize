@@ -66,6 +66,7 @@ test("VSIX TypeScript plugin staging follows the runtime require closure", () =>
   assert.deepEqual([...runtimeFiles].sort(), [
     "README.md",
     "component-contracts.cjs",
+    "diagnostic-packets.cjs",
     "import-resolution.cjs",
     "index.cjs",
     "index.d.cts",
