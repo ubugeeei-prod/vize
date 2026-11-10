@@ -303,12 +303,8 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     let options_api_props = options_api
         .then(|| script_content.and_then(find_options_api_props))
         .flatten();
-    let options_api_slots = options_api
-        .then(|| {
-            script_content.and_then(|script| {
-                find_options_api_slots_type(script, generation_options.component_name.is_some())
-            })
-        })
+    let options_api_slots = (options_api && generation_options.component_name.is_some())
+        .then(|| script_content.and_then(find_options_api_slots_type))
         .flatten();
     let syntactic_type_only_imported_names = syntactic_type_only_imported_names(
         summary,
@@ -570,6 +566,9 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                             cstr!("{leading_ws}const __default__ ={}", default_expr).into(),
                         );
                     }
+                }
+                if generation_options.component_name.is_none() {
+                    ts.push_str("  ");
                 }
                 ref_keys.emit_line(
                     &mut ts,

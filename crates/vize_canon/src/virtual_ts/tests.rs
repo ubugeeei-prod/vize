@@ -1886,6 +1886,107 @@ export default defineComponent({
 }
 
 #[test]
+fn test_editor_projection_alone_dedents_authored_setup_lines() {
+    use vize_croquis::{Analyzer, AnalyzerOptions};
+
+    let script = "const value = 1\n\nvoid value";
+    let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
+    analyzer.analyze_script_setup(script);
+    let summary = analyzer.finish();
+    let native = generate_virtual_ts_with_offsets_and_checks(
+        &summary,
+        Some(script),
+        None,
+        0,
+        0,
+        &Default::default(),
+        VirtualTsGenerationOptions::default(),
+    );
+    let editor = generate_virtual_ts_with_offsets_and_checks(
+        &summary,
+        Some(script),
+        None,
+        0,
+        0,
+        &Default::default(),
+        VirtualTsGenerationOptions {
+            component_name: Some("Probe"),
+            ..Default::default()
+        },
+    );
+
+    assert!(
+        native
+            .code
+            .contains("  // User setup code\n  const value = 1\n  \n  void value\n"),
+        "native projection must retain its setup-scope indentation:\n{}",
+        native.code
+    );
+    assert!(
+        editor
+            .code
+            .contains("  // User setup code\nconst value = 1\n\nvoid value\n"),
+        "editor projection must map authored setup columns directly:\n{}",
+        editor.code
+    );
+}
+
+#[test]
+fn test_options_api_slot_hover_projection_is_editor_only() {
+    use vize_croquis::{Analyzer, AnalyzerOptions};
+
+    let script = r#"import { defineComponent, type SlotsType } from 'vue'
+export default defineComponent({
+  slots: Object as SlotsType<{
+    /** Row slot. */
+    item: { row: number }
+  }>,
+})
+"#;
+    let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
+    analyzer.analyze_script_plain(script);
+    let summary = analyzer.finish();
+    let native = generate_virtual_ts_with_offsets_and_checks(
+        &summary,
+        Some(script),
+        None,
+        0,
+        0,
+        &Default::default(),
+        VirtualTsGenerationOptions {
+            options_api: true,
+            ..Default::default()
+        },
+    );
+    let editor = generate_virtual_ts_with_offsets_and_checks(
+        &summary,
+        Some(script),
+        None,
+        0,
+        0,
+        &Default::default(),
+        VirtualTsGenerationOptions {
+            options_api: true,
+            component_name: Some("OptionsChild"),
+            ..Default::default()
+        },
+    );
+
+    assert!(
+        native.code.contains("type $Slots = {};"),
+        "native projection must retain its inferred slot contract:\n{}",
+        native.code
+    );
+    assert!(
+        editor.code.contains(
+            "type $Slots = {\n  /** Row slot. */\n  item?: (props: { row: number }) => any;\n};"
+        ),
+        "editor projection must expose the authored slot hover contract:\n{}",
+        editor.code
+    );
+}
+
+#[test]
 fn test_non_object_default_export_is_not_wrapped() {
     use vize_croquis::{Analyzer, AnalyzerOptions};
 
