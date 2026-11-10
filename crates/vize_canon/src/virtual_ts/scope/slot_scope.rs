@@ -20,8 +20,8 @@ use vize_carton::profile;
 use vize_croquis::{Croquis, Scope, ScopeKind, VSlotScopeData};
 
 use crate::virtual_ts::expressions::{
-    ComponentPropSource, ExpressionListEmitContext, generate_expressions,
-    generate_slot_host_binding,
+    ComponentPropSource, ExpressionListEmitContext, constructor_instance, generate_expressions,
+    generate_slot_constructor_capture, generate_slot_host_binding,
 };
 use crate::virtual_ts::helpers::to_safe_identifier_fragment;
 use crate::virtual_ts::types::{VirtualTsOptions, VizeMapping};
@@ -75,6 +75,14 @@ impl SlotTypes {
             member: "any".into(),
         }
     }
+
+    /// An unbound slot's synthetic parameter, which nothing reads.
+    fn unread() -> Self {
+        Self {
+            payload: "unknown".into(),
+            member: "unknown".into(),
+        }
+    }
 }
 
 /// The non-nullable slot member `name` (a type) selects from the host
@@ -115,6 +123,34 @@ fn slot_payload_type(
         None => resolved,
     };
     let binding = cstr!("{}{}", ctx.binding_prefix, scope.id.as_u32());
+    if data.props_pattern.is_none() && !ctx.reuse_host {
+        // An unbound slot (`<template #label>`) has no binding to type: its
+        // parameter is the synthetic `__vize_slot_props_N`, which nothing
+        // reads, so the host inference over the child's constructor and slots
+        // factory would only cost time. The props pass already skips it
+        // (#11432). The one statement another check reads is the root usage's
+        // constructor-instance pair, which its props type takes the actual
+        // constructor result from; keep exactly that.
+        if let Some(usage) = &host
+            && constructor_instance::root_slot_scope(
+                &summary.scopes,
+                usage,
+                ctx.hoist_shared_preamble,
+            )
+            .is_some_and(|root| root.id == scope.id)
+        {
+            generate_slot_constructor_capture(
+                ts,
+                usage,
+                binding.as_str(),
+                component_ref.as_str(),
+                ctx.template_binding_access,
+                ctx.indent,
+                (ctx.source_context, ctx.hoist_shared_preamble),
+            );
+        }
+        return SlotTypes::unread();
+    }
     if ctx.reuse_host {
         // Declared by the template pass in this block.
     } else if let Some(usage) = &host {

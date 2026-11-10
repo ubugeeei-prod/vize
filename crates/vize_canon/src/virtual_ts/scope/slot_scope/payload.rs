@@ -33,14 +33,28 @@ pub(crate) fn emit_slot_payload_helpers(
         return;
     }
     ts.push('\n');
-    if summary
-        .scopes
-        .iter()
-        .any(|scope| matches!(scope.data(), ScopeData::VSlot(data) if data.component.is_some()))
-    {
+    if summary.scopes.iter().any(|scope| match scope.data() {
+        ScopeData::VSlot(data) => data.component.as_deref().is_some_and(|component| {
+            data.props_pattern.is_some() || captures_root_constructor(summary, scope, component)
+        }),
+        _ => false,
+    }) {
         ts.push_str(SLOT_RESOLVER_HELPERS);
         ts.push_str(SLOT_PAYLOAD_HELPER);
     }
+}
+
+/// Whether this unbound slot still writes its usage's constructor-instance
+/// pair, which the usage's props type reads.
+fn captures_root_constructor(summary: &Croquis, scope: &Scope, component: &str) -> bool {
+    find_slot_host(summary, scope, component).is_some_and(|usage| {
+        crate::virtual_ts::expressions::constructor_instance::root_slot_scope(
+            &summary.scopes,
+            &usage,
+            false,
+        )
+        .is_some_and(|root| root.id == scope.id)
+    })
 }
 
 /// The component usage that hosts this `v-slot` scope.

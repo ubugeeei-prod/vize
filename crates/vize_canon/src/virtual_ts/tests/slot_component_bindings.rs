@@ -3,6 +3,7 @@ use vize_croquis::{Analyzer, AnalyzerOptions};
 
 mod hoisted_owner;
 mod providers;
+mod unbound_slots;
 
 const TEMPLATE: &str =
     r#"<el-badge><template #content="{ value }">{{ value.missing }}</template></el-badge>"#;
