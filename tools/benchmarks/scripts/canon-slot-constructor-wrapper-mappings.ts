@@ -50,11 +50,7 @@ function wrapped(image: Image, row: Tuple, previous?: Tuple, next?: Tuple) {
     (!next || start + length < next[0])
   );
 }
-function disjointPatternGaps(
-  image: Image,
-  row: Tuple,
-  cursor: number,
-): [Tuple, Tuple] | undefined {
+function disjointPatternGaps(image: Image, row: Tuple, cursor: number): [Tuple, Tuple] | undefined {
   const [start, length, original, originalLength, kind, features] = row;
   if (original < 2 || kind !== 0 || features !== 1048575) return;
   const opening: Tuple = [start - 2, 2, original - 2, 2, kind, features];
@@ -135,11 +131,7 @@ export function assertConstructorWrapperMappings(
       );
       cursor += 3;
     } else if (gaps) {
-      assert.equal(
-        candidateIndex,
-        cursor + 1,
-        "the retained binding stays between its exact gaps",
-      );
+      assert.equal(candidateIndex, cursor + 1, "the retained binding stays between its exact gaps");
       expected.push(
         contract(current, gaps[0], canonical),
         retained,
