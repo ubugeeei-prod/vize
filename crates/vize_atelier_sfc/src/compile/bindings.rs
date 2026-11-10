@@ -272,6 +272,43 @@ pub(super) fn merge_normal_script_bindings(
     }
 }
 
+/// Register the `defineEmits` binding visible to the render scope.
+///
+/// Returns whether `$emit` was synthesized for an inline render and therefore
+/// must stay out of the authored setup-state return.
+pub(super) fn register_setup_emit_binding(
+    bindings: &mut BindingMetadata,
+    binding_name: Option<&str>,
+    separates_template: bool,
+) -> bool {
+    if let Some(binding_name) = binding_name {
+        bindings
+            .bindings
+            .entry(binding_name.into())
+            .or_insert(BindingType::SetupConst);
+        return false;
+    }
+    if separates_template || bindings.bindings.contains_key("$emit") {
+        return false;
+    }
+    bindings
+        .bindings
+        .insert("$emit".into(), BindingType::SetupConst);
+    true
+}
+
+/// Copy render bindings into setup state without an inline-only `$emit` alias.
+pub(super) fn copy_setup_state_bindings(
+    target: &mut BindingMetadata,
+    render_bindings: &BindingMetadata,
+    synthetic_inline_dollar_emit: bool,
+) {
+    *target = render_bindings.clone();
+    if synthetic_inline_dollar_emit {
+        target.bindings.remove("$emit");
+    }
+}
+
 /// Strip type-only wrappers (`as`, `satisfies`, `!`, parentheses), matching
 /// Vue's `unwrapTSNode`: `const HREF = "#main" satisfies Href` is as literal
 /// as `const HREF = "#main"`.

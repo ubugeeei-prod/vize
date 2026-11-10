@@ -34,7 +34,7 @@ import type { Ref } from "vue";
 import { value } from "./external.js";
 </script><template><span></span></template>"#;
     let descriptor = parse_sfc(source, Default::default()).unwrap();
-    for (vapor, vue_binding) in [(false, "setup-maybe-ref"), (true, "setup-const")] {
+    for vapor in [false, true] {
         let result = compile_sfc_for_adapter(
             &descriptor,
             SfcCompileOptions {
@@ -52,7 +52,7 @@ import { value } from "./external.js";
         let bindings = result.bindings.unwrap();
         assert_eq!(
             serde_json::to_value(&bindings.bindings).unwrap(),
-            json!({"makeState": vue_binding, "ref": vue_binding, "value": "setup-maybe-ref"})
+            json!({"makeState": "setup-const", "ref": "setup-const", "value": "setup-maybe-ref"})
         );
         assert!(bindings.props_aliases.is_empty());
         assert!(bindings.is_script_setup);

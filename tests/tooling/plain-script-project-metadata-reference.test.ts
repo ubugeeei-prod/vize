@@ -5,6 +5,7 @@ import { createRequire } from "node:module";
 import path from "node:path";
 import { test } from "node:test";
 import {
+  assertSetupLiteralMovesIntoSetup,
   plainScriptProjectMetadataReference,
   type PlainScriptPacket,
 } from "./support/plain-script-project-metadata-reference.ts";
@@ -39,6 +40,31 @@ const setupComponents: Record<string, string> = {
   "default-unknown": "Child",
   "constant-controls": "DefaultAlias",
 };
+
+test("normal-script setup literals admit only the exact placement advance", () => {
+  const preserved = {
+    code: "const ready = true; export default { setup() { return ready; } };",
+  };
+  const moved = {
+    code: "export default { setup() { const ready = true; return ready; } };",
+  };
+  assert.equal(
+    typescriptErasureReference(preserved, moved, parse, assertSetupLiteralMovesIntoSetup).code,
+    moved.code,
+  );
+  for (const code of [
+    "export default { setup() { return ready; } };",
+    "export default { setup() { const ready = false; return ready; } };",
+    "export default { setup() { const ready = true; return ready; }, setup() { const ready = true; return ready; } };",
+    "export default { setup() { const ready = true; return changed; } };",
+  ]) {
+    assert.throws(
+      () =>
+        typescriptErasureReference(preserved, { code }, parse, assertSetupLiteralMovesIntoSetup),
+      { code: "ERR_ASSERTION" },
+    );
+  }
+});
 
 function comparePackets(priorPackets: PlainScriptPacket[], nextPackets: PlainScriptPacket[]) {
   assert.equal(priorPackets.length, nextPackets.length);

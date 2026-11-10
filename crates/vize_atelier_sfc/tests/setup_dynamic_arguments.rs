@@ -115,7 +115,7 @@ fn original_setup_ref_arguments_use_the_same_bindings_as_their_values() {
         assert_eq!(
             serde_json::to_value(result.bindings).expect("complete actual original setup facts"),
             json!({ "isScriptSetup": true, "propsAliases": {}, "bindings": {
-                "ref": "setup-maybe-ref", "evt": "setup-ref", "attr": "setup-ref", "n": "setup-ref"
+                "ref": "setup-const", "evt": "setup-ref", "attr": "setup-ref", "n": "setup-ref"
             } })
         );
     }

@@ -1,0 +1,34 @@
+---
+source: crates/vize_atelier_sfc/tests/setup_binding_kinds.rs
+expression: result.code.as_str()
+---
+const { toDisplayString: _toDisplayString, openBlock: _openBlock, createElementBlock: _createElementBlock, Fragment: _Fragment, unref: _unref } = Vue
+
+const { ref: r, reactive, readonly, shallowReadonly, toRefs, shallowReactive } = Vue
+
+
+return {
+  __name: 'anonymous',
+  setup(__props) {
+
+const importedRef = r(0);
+const unimportedRef = ref(0);
+let mutableReactive = reactive({});
+const readonlyValue = readonly({});
+const shallowReadonlyValue = shallowReadonly({});
+const refs = toRefs({});
+const shallow = shallowReactive({});
+const n = 1 + 2;
+const object = {};
+
+return (_ctx, _cache) => {
+  return (_openBlock(), _createElementBlock(_Fragment, null, [
+    _toDisplayString(importedRef.value),
+    _toDisplayString(_unref(unimportedRef)),
+    _toDisplayString(_unref(mutableReactive)),
+    _toDisplayString(__props.prop)
+  ], 64 /* STABLE_FRAGMENT */))
+}
+}
+
+}

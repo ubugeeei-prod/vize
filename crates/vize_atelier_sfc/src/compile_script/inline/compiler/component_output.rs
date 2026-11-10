@@ -40,8 +40,10 @@ pub(super) fn emit_component_definition(
     // binding (`const emit = defineEmits(...)`) or when `$emit` is actually
     // referenced by the inline render fn. A bare `defineEmits([...])` whose `$emit`
     // is never used does not add an `emit` parameter (matches @vue/compiler-sfc).
-    let has_emit = ctx.macros.define_emits.is_some()
-        && (has_emit_binding || render_uses_dollar_emit(template));
+    let render_uses_context_emit =
+        render_uses_dollar_emit(template) && !ctx.bindings.bindings.contains_key("$emit");
+    let has_emit =
+        ctx.macros.define_emits.is_some() && (has_emit_binding || render_uses_context_emit);
     let has_expose = ctx.macros.define_expose.is_some();
     // An inline render never returns setup bindings to the public instance.
     // Separate renders do, so register Vue's closed-by-default exposure even

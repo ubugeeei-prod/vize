@@ -7,6 +7,7 @@ import { fileURLToPath } from "node:url";
 
 import { summarizeNativeAcceptance } from "./acceptance-rates.mjs";
 import { LEGACY_BUILD_RECIPE } from "./build-receipt.ts";
+import { COMPILER_DOM_ID } from "./compiler-dom.ts";
 import { loadCompilerManifest, runCompilerPack } from "./compiler.mjs";
 
 interface CompilerRow {
@@ -14,6 +15,7 @@ interface CompilerRow {
   readonly legacy: {
     readonly state: string;
     readonly verdict: string;
+    readonly error?: string;
     readonly requiredBuildRecipe: string | null;
     readonly observation: null | {
       readonly facetError: unknown;
@@ -55,13 +57,25 @@ void test("legacy source-built compiler executes every Vue 1 dialect row", (t) =
   assert(report.buildReceipt, "legacy execution requires an exact build receipt");
   assert(report.summary, "legacy execution requires a complete compiler summary");
   assert.equal(report.buildReceipt.recipe, LEGACY_BUILD_RECIPE);
-  assert.equal(
-    report.summary.legacyMatches,
-    loaded.cases.length,
+  const intentionalFailures = new Set([COMPILER_DOM_ID]);
+  assert.equal(report.summary.legacyMatches, loaded.cases.length - intentionalFailures.size);
+  assert.equal(report.summary.legacyFailures, intentionalFailures.size);
+  assert.equal(report.summary.baselineDrift, 0);
+  assert(
+    report.rows
+      .filter((row) => !intentionalFailures.has(row.id))
+      .every((row) => row.legacy.verdict === "matched-reference"),
     JSON.stringify(report.rows, null, 2),
   );
-  assert.equal(report.summary.legacyFailures, 0);
-  assert.equal(report.summary.baselineDrift, 0);
+
+  const dom = report.rows.find((row) => row.id === COMPILER_DOM_ID);
+  assert(dom);
+  assert.equal(dom.legacy.state, "failed");
+  assert.equal(dom.legacy.observation, null);
+  assert.match(
+    dom.legacy.error ?? "",
+    /requires source-build recipe .* -p vize; observed .* --features legacy$/,
+  );
 
   const vue1 = report.rows.filter((row) => row.id.startsWith("compiler/dialect/vue1-"));
   assert.deepEqual(

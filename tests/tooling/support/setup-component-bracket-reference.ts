@@ -21,6 +21,64 @@ type RuntimeOptionRow = {
   [key: string]: unknown;
 };
 
+type MaybeRefNormalization = { imports: number; reads: number };
+
+function normalizeExternalMaybeRefRead(value: unknown, changed: MaybeRefNormalization): unknown {
+  if (Array.isArray(value)) {
+    return value.map((child) => normalizeExternalMaybeRefRead(child, changed));
+  }
+  if (!value || typeof value !== "object") return value;
+  const node = value as Record<string, unknown>;
+  if (
+    node.type === "CallExpression" &&
+    (node.callee as { type?: unknown; name?: unknown } | undefined)?.type === "Identifier" &&
+    (node.callee as { name?: unknown }).name === "_unref" &&
+    Array.isArray(node.arguments) &&
+    node.arguments.length === 1 &&
+    (node.arguments[0] as { type?: unknown; name?: unknown }).type === "Identifier" &&
+    (node.arguments[0] as { name?: unknown }).name === "n"
+  ) {
+    changed.reads += 1;
+    return {
+      type: "MemberExpression",
+      object: normalizeExternalMaybeRefRead(node.arguments[0], changed),
+      computed: false,
+      property: { type: "Identifier", name: "value" },
+    };
+  }
+  const out = Object.fromEntries(
+    Object.entries(node).map(([key, child]) => [
+      key,
+      normalizeExternalMaybeRefRead(child, changed),
+    ]),
+  );
+  if (
+    node.type === "ImportDeclaration" &&
+    (node.source as { value?: unknown } | undefined)?.value === "vue" &&
+    Array.isArray(out.specifiers)
+  ) {
+    out.specifiers = out.specifiers.filter((specifier) => {
+      const isUnref =
+        (specifier as { type?: unknown }).type === "ImportSpecifier" &&
+        (specifier as { imported?: { name?: unknown } }).imported?.name === "unref" &&
+        (specifier as { local?: { name?: unknown } }).local?.name === "_unref";
+      if (isUnref) changed.imports += 1;
+      return !isUnref;
+    });
+  }
+  return out;
+}
+
+// Vue 3.5 treats a ref factory imported from another module as MaybeRef. The
+// DOM inline renderer therefore adds one `unref` helper and unwraps the one
+// interpolated read, while the authored increment remains `n.value++`.
+function assertExternalMaybeRefReadProgram(actual: unknown, preserved: unknown): void {
+  const changed = { imports: 0, reads: 0 };
+  const normalized = normalizeExternalMaybeRefRead(actual, changed);
+  assert.deepEqual(changed, { imports: 1, reads: 1 });
+  assert.deepEqual(normalized, preserved, "only the external MaybeRef read advances");
+}
+
 // Advance one preserved non-inline setup component read by the independently
 // specified #10877 edit. The reference owns the complete packet: code and each
 // affected byte offset are reconstructed, while maps and all other fields must
@@ -74,7 +132,11 @@ export function advanceRuntimeOptionReference<T extends RuntimeOptionRow>(
         return moduleShapeFactsReference(closed, parse);
       }
       assert.ok(current?.[index], "the current row holds every TypeScript packet");
-      return typescriptErasureReference(closed, current[index], parse);
+      const assertProgram =
+        row.target === "dom" && row.options.inlineTemplate === true && index === 2
+          ? assertExternalMaybeRefReadProgram
+          : undefined;
+      return typescriptErasureReference(closed, current[index], parse, assertProgram);
     });
   if (out.single) out.single = advance(out.single, erased.single);
   if (out.batch) out.batch.results = advance(out.batch.results, erased.batch?.results);

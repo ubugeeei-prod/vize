@@ -56,7 +56,7 @@ use self::styles::compile_styles;
 
 mod public;
 pub use public::*;
-use vize_carton::{String, ToCompactString, profile};
+use vize_carton::{String, profile};
 use vize_l0::dump::capture::StageCapture;
 use vize_l1_to_l2::lower::pug::PugSourceMap;
 use vize_l4::module::RenderFunctionName;
@@ -385,13 +385,11 @@ fn compile_sfc_inner(
             codegen_options.runtime_module_name.as_str(),
         );
 
-    // Parse the script setup once and observe its facts natively. The macro
-    // context analysis and (unless v-model demotion rewrites the content
-    // below) the inline compiler's statement sectioning reuse this Program.
     let setup_arena = vize_l0::Allocator::default();
+    let setup_options = (descriptor, &options.template);
     let setup = profile!(
         "atelier.sfc.script_setup.facts",
-        setup_facts::SetupAnalysis::new(&setup_arena, &script_setup_content, descriptor)
+        setup_facts::SetupAnalysis::new(&setup_arena, &script_setup_content, setup_options)
     )?;
     let setup_program = setup.program();
     setup_exports::validate(setup_program, &script_setup_content, descriptor)?;
@@ -421,22 +419,13 @@ fn compile_sfc_inner(
     }
     props_rest::merge_props_bindings(&mut script_bindings, &ctx);
 
-    // Register defineEmits bindings visible to the template's render scope.
-    if let Some(ref emits_macro) = ctx.macros.define_emits {
-        if let Some(ref binding_name) = emits_macro.binding_name {
-            // e.g., const emit = defineEmits([...]) -> emit is setup const
-            script_bindings
-                .bindings
-                .entry(binding_name.clone())
-                .or_insert(BindingType::SetupConst);
-        } else if !script_output.separates_template() {
-            // Bare defineEmits exposes $emit only to inline render; separated render uses _ctx.$emit.
-            script_bindings
-                .bindings
-                .entry("$emit".to_compact_string())
-                .or_insert(BindingType::SetupConst);
-        }
-    }
+    let mut synthetic_inline_dollar_emit = ctx.macros.define_emits.as_ref().is_some_and(|emits| {
+        bindings::register_setup_emit_binding(
+            &mut script_bindings,
+            emits.binding_name.as_deref(),
+            script_output.separates_template(),
+        )
+    });
 
     // Register bindings from normal <script> block.
     // When both <script> and <script setup> exist, top-level imports and
@@ -450,6 +439,7 @@ fn compile_sfc_inner(
         );
         merge_normal_script_bindings(&mut script_bindings, &normal_script_bindings);
         merge_normal_script_bindings(&mut ctx.bindings, &normal_script_bindings);
+        synthetic_inline_dollar_emit &= !normal_script_bindings.bindings.contains_key("$emit");
     }
 
     let setup_css_module_names = compiled_styles
@@ -498,7 +488,11 @@ fn compile_sfc_inner(
             demoted_setup_content = Some(rewritten);
         }
     }
-
+    bindings::copy_setup_state_bindings(
+        &mut ctx.bindings,
+        &script_bindings,
+        synthetic_inline_dollar_emit,
+    );
     // Compile template with bindings (if present) to get the render function
     let template_result = if let Some(template) = &descriptor.template {
         let template_allocator = vize_carton::pool::acquire();

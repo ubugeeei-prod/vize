@@ -1,0 +1,25 @@
+---
+source: crates/vize_atelier_sfc/tests/setup_binding_kinds.rs
+expression: result.code.as_str()
+---
+const { toDisplayString: _toDisplayString, openBlock: _openBlock, createElementBlock: _createElementBlock, Fragment: _Fragment } = Vue
+
+
+export const moduleValue = 1
+
+return {
+  __name: 'anonymous',
+  setup(__props) {
+
+const n = 1 + 2
+const text = `plain`
+
+return (_ctx, _cache) => {
+  return (_openBlock(), _createElementBlock(_Fragment, null, [
+    _toDisplayString(n),
+    _toDisplayString(text)
+  ], 64 /* STABLE_FRAGMENT */))
+}
+}
+
+}

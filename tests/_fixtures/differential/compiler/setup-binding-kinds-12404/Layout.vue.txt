@@ -1,0 +1,20 @@
+<script setup lang="ts">
+import { reactive, readonly, ref as r, shallowReadonly, shallowReactive, toRefs } from "vue"
+import { external } from "./external"
+
+const importedRef = r(0)
+const unimportedRef = ref(0)
+let mutableReactive = reactive({ value: 0 })
+const readonlyValue = readonly({ value: 0 })
+const shallowReadonlyValue = shallowReadonly({ value: 0 })
+const refs = toRefs({ value: 0 })
+const shallow = shallowReactive({ value: 0 })
+const n = 1 + 2
+const object = {}
+declare const ambient: string
+const { prop } = defineProps<{ prop: string }>() as any
+</script>
+
+<template>
+  <p>{{ importedRef }} {{ unimportedRef }} {{ mutableReactive.value }} {{ prop }}</p>
+</template>
