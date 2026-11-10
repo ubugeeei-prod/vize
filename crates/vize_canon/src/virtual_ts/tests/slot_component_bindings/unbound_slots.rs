@@ -10,6 +10,17 @@ fn count(code: &str, needle: &str) -> usize {
 
 const UNREAD_CONTENT_SLOT: &str = "void function _slot_content_1(__vize_slot_props_1: unknown) {";
 
+fn assert_no_slot_helpers(code: &str) {
+    for helper in [
+        "__vize_slot_host_",
+        "$SlotHostSelector<",
+        "$SlotsFactory<",
+        "$SlotPayload<",
+    ] {
+        assert_eq!(count(code, helper), 0, "unexpected {helper}:\n{code}");
+    }
+}
+
 #[test]
 fn unbound_slot_without_props_infers_no_host() {
     let code = generate(r#"<el-badge><template #content>x</template></el-badge>"#);
@@ -20,6 +31,34 @@ fn unbound_slot_without_props_infers_no_host() {
     assert_eq!(count(&code, "type $SlotsFactory<C>"), 0, "{code}");
     assert_eq!(count(&code, "type $SlotPayload<"), 0, "{code}");
     assert_eq!(count(&code, UNREAD_CONTENT_SLOT), 1, "{code}");
+}
+
+#[test]
+fn guarded_unbound_slot_with_checked_props_emits_no_slot_helpers() {
+    let code = generate(
+        r#"<div><el-badge v-if="enabled" :value="1"><template #content>x</template></el-badge></div>"#,
+    );
+
+    assert_eq!(
+        count(&code, "const __vize_prop_check_0_value:"),
+        1,
+        "{code}"
+    );
+    assert_no_slot_helpers(&code);
+}
+
+#[test]
+fn repeated_unbound_slot_with_checked_props_emits_no_slot_helpers() {
+    let code = generate(
+        r#"<div><el-badge v-for="item in items" :value="item"><template #content>x</template></el-badge></div>"#,
+    );
+
+    assert_eq!(
+        count(&code, "const __vize_prop_check_0_value:"),
+        1,
+        "{code}"
+    );
+    assert_no_slot_helpers(&code);
 }
 
 #[test]
