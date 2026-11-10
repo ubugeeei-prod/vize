@@ -192,18 +192,7 @@ pub(crate) fn generate_slot_host_binding(
     }
     if let Some(pair) = &captured {
         constructor_instance::append_capture_open(ts, pair, indent);
-        let constructor = crate::virtual_ts::helpers::shared_types::SLOT_CONSTRUCTOR
-            .select(hoist_shared_preamble);
-        let without_arguments =
-            crate::virtual_ts::helpers::shared_types::SLOT_CONSTRUCTOR_WITHOUT_ARGUMENTS
-                .select(hoist_shared_preamble);
-        let with_arguments =
-            crate::virtual_ts::helpers::shared_types::SLOT_CONSTRUCTOR_WITH_ARGUMENTS
-                .select(hoist_shared_preamble);
-        vize_l0::emit_ts!(
-            ts,
-            "new (undefined as unknown as {without_arguments}<{constructor}<typeof {component_ref}>>)(), new (undefined as unknown as {with_arguments}<{constructor}<typeof {component_ref}>>)("
-        );
+        append_captured_constructors_open(ts, component_ref, hoist_shared_preamble);
     } else if hoist_shared_preamble {
         let slot_host_selector =
             crate::virtual_ts::helpers::shared_types::SLOT_HOST_SELECTOR.select(true);
@@ -251,14 +240,7 @@ pub(crate) fn generate_slot_host_binding(
         ts.push_str(" : (undefined as unknown as never)");
     }
     if let Some(pair) = &captured {
-        let constructor = crate::virtual_ts::helpers::shared_types::SLOT_CONSTRUCTOR
-            .select(hoist_shared_preamble);
-        let args = crate::virtual_ts::helpers::shared_types::SLOT_CONSTRUCTOR_ARGS
-            .select(hoist_shared_preamble);
-        vize_l0::emit_ts!(
-            ts,
-            ", ...([] as unknown as {args}<{constructor}<typeof {component_ref}>>))"
-        );
+        append_captured_constructors_close(ts, component_ref, hoist_shared_preamble);
         constructor_instance::append_slot_selection(
             ts,
             pair,
@@ -307,4 +289,76 @@ pub(crate) fn generate_slot_host_binding(
     }
     ts.push_str("));\n");
     vize_l0::emit_ts!(ts, "{indent}void {binding_name};\n");
+}
+
+/// Emit only the constructor-instance pair of a slot host, for a slot whose
+/// payload nothing reads.
+///
+/// An unbound slot (`<template #label>`) types its synthetic parameter
+/// `unknown`, so it needs no slot selection. The pair is another matter: the
+/// root usage's props type reads the actual constructor result through it
+/// (see [`constructor_instance::root_slot_scope`]). This writes the same
+/// statement the full host binding writes for it, and stops before the slot
+/// selection that only the payload would read.
+pub(crate) fn generate_slot_constructor_capture(
+    ts: &mut crate::virtual_ts::TextBuf,
+    usage: &ComponentUsage,
+    binding_name: &str,
+    component_ref: &str,
+    template_binding_access: &TemplateBindingAccess,
+    indent: &str,
+    (source_context, hoist_shared_preamble): (ComponentPropSource<'_>, bool),
+) {
+    let pair = constructor_instance::instance_pair_name(binding_name, source_context.scopes);
+    vize_l0::emit_ts!(
+        ts,
+        "{indent}// @ts-ignore Inference-only constructor; authored props checks own diagnostics.\n"
+    );
+    constructor_instance::append_capture_open(ts, pair.as_str(), indent);
+    append_captured_constructors_open(ts, component_ref, hoist_shared_preamble);
+    append_props_literal(
+        ts,
+        &mut Vec::new(),
+        usage,
+        template_binding_access,
+        source_context.inert(),
+        indent,
+    );
+    append_captured_constructors_close(ts, component_ref, hoist_shared_preamble);
+    ts.push_str(");\n");
+}
+
+/// The two constructions a captured pair records, up to the props literal.
+fn append_captured_constructors_open(
+    ts: &mut crate::virtual_ts::TextBuf,
+    component_ref: &str,
+    hoist_shared_preamble: bool,
+) {
+    let constructor =
+        crate::virtual_ts::helpers::shared_types::SLOT_CONSTRUCTOR.select(hoist_shared_preamble);
+    let without_arguments =
+        crate::virtual_ts::helpers::shared_types::SLOT_CONSTRUCTOR_WITHOUT_ARGUMENTS
+            .select(hoist_shared_preamble);
+    let with_arguments = crate::virtual_ts::helpers::shared_types::SLOT_CONSTRUCTOR_WITH_ARGUMENTS
+        .select(hoist_shared_preamble);
+    vize_l0::emit_ts!(
+        ts,
+        "new (undefined as unknown as {without_arguments}<{constructor}<typeof {component_ref}>>)(), new (undefined as unknown as {with_arguments}<{constructor}<typeof {component_ref}>>)("
+    );
+}
+
+/// The constructor tail after the props literal, closing the second `new`.
+fn append_captured_constructors_close(
+    ts: &mut crate::virtual_ts::TextBuf,
+    component_ref: &str,
+    hoist_shared_preamble: bool,
+) {
+    let constructor =
+        crate::virtual_ts::helpers::shared_types::SLOT_CONSTRUCTOR.select(hoist_shared_preamble);
+    let args = crate::virtual_ts::helpers::shared_types::SLOT_CONSTRUCTOR_ARGS
+        .select(hoist_shared_preamble);
+    vize_l0::emit_ts!(
+        ts,
+        ", ...([] as unknown as {args}<{constructor}<typeof {component_ref}>>))"
+    );
 }

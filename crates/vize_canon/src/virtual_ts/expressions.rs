@@ -59,7 +59,9 @@ mod tests;
 pub(crate) use component_props::{
     ComponentPropCheckContext, ComponentPropSource, generate_component_prop_checks,
 };
-pub(crate) use generic_props_call::generate_slot_host_binding;
+pub(crate) use generic_props_call::{
+    generate_slot_constructor_capture, generate_slot_host_binding,
+};
 pub(crate) use incomplete::isolate_incomplete_expression;
 pub(crate) use model_modifiers::ModelModifierBindings;
 pub(crate) use prop_sources::{
