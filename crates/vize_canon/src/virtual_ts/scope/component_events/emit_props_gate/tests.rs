@@ -99,7 +99,9 @@ fn a_guarded_use_calls_the_factory_before_its_guard() {
     assert_eq!(code.matches(call).count(), 1, "{code}");
     assert_eq!(code.matches(DIRECT).count(), 0, "{code}");
     let factory_at = code.find(factory).unwrap();
-    let iife_at = code.find("const __vize_emit_props_0 = (() => {").unwrap();
+    let iife_at = code
+        .find("const __vize_emit_props_0 = (void 0, () => {")
+        .unwrap();
     assert!(factory_at < iife_at, "{code}");
 }
 
