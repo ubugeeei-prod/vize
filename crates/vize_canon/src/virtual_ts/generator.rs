@@ -803,6 +803,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     emits_info.emit(&mut ts, summary, forwards, emit_mode);
     let generic_component_params =
         setup_props_plan.generic_component_params(generic_parameters, authored_generic);
+    let mut probe_facts = None;
     let public_component_type = emit_component_constructors(
         &mut ts,
         &setup_props_plan,
@@ -824,8 +825,8 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
             .map(|plan| plan.authored())
             .or(authored_generic)
             .map(|raw| if raw.trim().is_empty() { "" } else { raw }),
-        legacy_vue2,
-        dialect,
+        (legacy_vue2, dialect),
+        &mut probe_facts,
     );
     let public_names = component_export::names(&ts, summary, generation_options, script_content);
     emit_default_export_declaration(
@@ -849,9 +850,12 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
             check_options,
             hoist_shared_preamble,
         ),
-        public_names
-            .as_ref()
-            .map(component_export::ComponentNames::type_name),
+        (
+            public_names
+                .as_ref()
+                .map(component_export::ComponentNames::type_name),
+            probe_facts.as_deref(),
+        ),
     );
     let export = component_export::default_export(&mut ts, public_names.as_ref());
     binding_output::publish(

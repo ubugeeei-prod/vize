@@ -60,24 +60,39 @@ type $EmitIsWide<C> = C extends new (...args: any[]) => { $emit: infer E }
       : false
   : false;
 type $UnionEmit<All> = (
-  All extends new (...args: any[]) => { $emit: infer E } ? () => E : never
+  All extends { readonly __vizeInstance: { $emit: infer E } }
+    ? () => E
+    : All extends new (...args: any[]) => { $emit: infer E }
+      ? () => E
+      : never
 ) extends () => infer U
   ? U
   : never;
-type $NativeEmitPropsFactory<C, All = C> = C extends new (...args: any[]) => { $emit: any }
-  ? C extends { readonly __vizeComponentMarker: true }
-    ? C extends new (props: infer P, ...args: any[]) => any
-      ? $MemberConstructorEmitPropsFactory<
-          P,
-          $UnionEmit<All>,
-          C extends { readonly __vizeFallthroughProps?: infer F } ? F : {},
-          $EmitOwnedKeys<C>
-        >
-      : never
-    : <P, E>(
-        component: new (props: P, ...args: any[]) => { $emit: E },
-      ) => (props: P) => $DeferredEmitProps<E>
-  : $LooseEmitPropsFactory<C, $UnionEmit<All>>;
+type $NativeEmitPropsFactory<C, All = C> = C extends {
+  readonly __vizeComponentMarker: true;
+  readonly __vizeInstance: { $emit: any };
+  readonly __vizeInput?: infer __In extends [unknown, unknown];
+}
+  ? $MemberConstructorEmitPropsFactory<
+      $ComponentInputProps<__In[0], __In[1]> | undefined,
+      $UnionEmit<All>,
+      C extends { readonly __vizeFallthroughProps?: infer F } ? F : {},
+      $EmitOwnedKeys<C>
+    >
+  : C extends new (...args: any[]) => { $emit: any }
+    ? C extends { readonly __vizeComponentMarker: true }
+      ? C extends new (props: infer P, ...args: any[]) => any
+        ? $MemberConstructorEmitPropsFactory<
+            P,
+            $UnionEmit<All>,
+            C extends { readonly __vizeFallthroughProps?: infer F } ? F : {},
+            $EmitOwnedKeys<C>
+          >
+        : never
+      : <P, E>(
+          component: new (props: P, ...args: any[]) => { $emit: E },
+        ) => (props: P) => $DeferredEmitProps<E>
+    : $LooseEmitPropsFactory<C, $UnionEmit<All>>;
 type $EmitPropsRoutes<C, All> = C extends { __vizeResolveEmitProps?: infer F }
   ? F extends (...args: any[]) => any
     ? (component: C) => F

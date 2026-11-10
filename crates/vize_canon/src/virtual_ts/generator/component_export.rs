@@ -140,7 +140,7 @@ pub(super) fn emit_default_export_declaration(
         VirtualTsCheckOptions,
         bool,
     ),
-    component_type: Option<&str>,
+    (component_type, probe_facts): (Option<&str>, Option<&str>),
 ) {
     emit_vue_component_options_type(ts, generic_component_params.is_some(), static_raw_props_ref);
     let static_slots_ref =
@@ -271,22 +271,30 @@ pub(super) fn emit_default_export_declaration(
             *ts,
             "{{ __vizeCheck: <{generic_decl}>(props: {check_props_param}) => void; __vizeResolveProps?: <{generic_decl}>(props: {check_props_param}) => {props_type}<{generic_names}>; {slot_resolver}{ref_resolver}{emit_props_static}{event_map_separator}{event_map_static}{emit_props_separator}{emit_resolvers} {component_contract_fields} }} & {authored_component}{public_component_type}",
         );
-    } else if emits_info.has_emits_for_props {
-        let event_map_separator = if event_map_static.is_empty() { "" } else { " " };
-        append!(
-            *ts,
-            "{{ {emit_props_static}{event_map_separator}{event_map_static} {component_contract_fields} }} & {authored_component}$ComponentConstructor & $VueComponentOptions",
-        );
-    } else if !component_contract_fields.trim().is_empty() {
-        append!(
-            *ts,
-            "{{ {component_contract_fields} }} & {authored_component}$ComponentConstructor & $VueComponentOptions",
-        );
     } else {
-        append!(
-            *ts,
-            "{authored_component}$ComponentConstructor & $VueComponentOptions",
-        );
+        if emits_info.has_emits_for_props {
+            let event_map_separator = if event_map_static.is_empty() { "" } else { " " };
+            append!(
+                *ts,
+                "{{ {emit_props_static}{event_map_separator}{event_map_static} {component_contract_fields} }} & {authored_component}$ComponentConstructor & $VueComponentOptions",
+            );
+        } else if !component_contract_fields.trim().is_empty() {
+            append!(
+                *ts,
+                "{{ {component_contract_fields} }} & {authored_component}$ComponentConstructor & $VueComponentOptions",
+            );
+        } else {
+            append!(
+                *ts,
+                "{authored_component}$ComponentConstructor & $VueComponentOptions",
+            );
+        }
+        // Only the named Content Mapper type carries the constructor's probe
+        // facts; declaration emit and the check server keep their public
+        // surface, and their helpers keep the constructor probes.
+        if let (Some(_), Some(facts)) = (component_type, probe_facts) {
+            append!(*ts, " & {facts}");
+        }
     }
     if authored_default != AuthoredDefaultKind::None {
         ts.push_str(" : $AuthoredComponent");

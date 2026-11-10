@@ -65,13 +65,37 @@ const LEGACY_VUE2_COMPONENT_CONSTRUCTOR_STATICS: &str = r#"type $Vue2ComponentCo
 };
 "#;
 
+/// The static probe surface of a plain (non-generic, non-legacy, unauthored)
+/// constructor, intersected last into the named component type.
+///
+/// Shared helpers read a component's instance and constructor input through
+/// relations such as `C extends new (props: infer P, ...args: any[]) => any`.
+/// Against the generic constructor each such relation infers
+/// `$AuthoredProps`/`$JsxProps` and instantiates `$ComponentInput` for the
+/// probe's own target signature, and a `props: P` target even evaluates the
+/// authored-input guard over the whole public input. The helpers read these
+/// facts first instead, and every fact is exactly what the constructor probe
+/// returns: any argument list returns `$ComponentInstance`, and the base
+/// signature's optional `props` parameter is `$ComponentInput<P, D, unknown>`,
+/// that is `$ComponentInputProps<P, D>`. `__vizeInstance` is required, so a
+/// value that lacks it (another library's component, or a union member that is
+/// not a plain generated component) keeps the constructor probe. The members
+/// are intersected after the constructor and options, so a relation that fails
+/// still reports the same first failing member.
+fn probe_facts_type(props_ref: &str, emit_props_ref: &str) -> String {
+    cstr!(
+        "{{ readonly __vizeInstance: $ComponentInstance; readonly __vizeInput?: [{props_ref}, {emit_props_ref}]; }}"
+    )
+}
+
+/// `probe_facts` receives [`probe_facts_type`] for a plain constructor.
 pub(super) fn emit_component_constructors<'a>(
     ts: &mut crate::virtual_ts::TextBuf,
     setup_props_plan: &'a SetupPropsPlan,
     aliases: &ComponentInstanceAliases<'a>,
     authored_generic: Option<&'a str>,
-    legacy_vue2: bool,
-    dialect: VueVersion,
+    (legacy_vue2, dialect): (bool, VueVersion),
+    probe_facts: &mut Option<String>,
 ) -> Option<GenericComponentContract<'a>> {
     let _profile = vize_l0::profiler::global_profiler()
         .global_span("canon.virtual_ts.emit_component_constructors");
@@ -207,6 +231,9 @@ pub(super) fn emit_component_constructors<'a>(
             *ts,
             "type $ComponentConstructor = new <$AuthoredProps = unknown, $JsxProps = unknown>(props?: $AuthoredProps & $ComponentInput<{props_ref}, {emit_props_ref}, $AuthoredProps>, ...args: any[]) => ($IsAny<$AuthoredProps> extends true ? true : $IsUnknown<$AuthoredProps> extends true ? $UsePublicInstance<$JsxProps> : false) extends true ? $ComponentInstance : {no_infer}<$ComponentInstanceFor<$ComponentInstance, {own}, {constructor_base}, {props_ref}, {emit_props_ref}, $AuthoredProps, $JsxProps>>;\n"
         );
+        if aliases.generic_params.is_none() && !aliases.has_authored_default {
+            *probe_facts = Some(probe_facts_type(&props_ref, &emit_props_ref));
+        }
     }
 
     let (generic_decl, generic_names) = aliases.generic_params?;

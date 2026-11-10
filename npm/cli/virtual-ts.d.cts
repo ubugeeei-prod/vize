@@ -175,20 +175,28 @@ export type $RequiredFallthroughProps<C, __F = $FallthroughProps<C>, __K = $Requ
   ? {}
   : { [K in keyof __F as K extends __K ? K : never]: __F[K] };
 type $ComponentCheckProps<P, T> = { readonly [K in keyof P]: P[K] } & T;
-type $PublicProps<C> = C extends abstract new (...args: any[]) => infer __I
-  ? $IsAny<__I> extends true
-    ? Record<string, unknown>
-    : __I extends { $props: infer __P }
+type $PublicProps<C> = C extends { readonly __vizeInstance: { $props: infer __P } }
+  ? __P
+  : C extends abstract new (...args: any[]) => infer __I
+    ? $IsAny<__I> extends true
+      ? Record<string, unknown>
+      : __I extends { $props: infer __P }
+        ? __P
+        : {}
+    : C extends (props: infer __P, ...args: any[]) => any
       ? __P
-      : {}
-  : C extends (props: infer __P, ...args: any[]) => any
-    ? __P
-    : {};
-type $InstanceRawProps<C> = C extends { new (): { readonly __vizeRawProps?: infer __P } }
+      : {};
+type $InstanceRawProps<C> = C extends {
+  readonly __vizeInstance: { readonly __vizeRawProps?: infer __P };
+}
   ? $IsAny<__P> extends true
     ? $PublicProps<C>
     : __P
-  : $PublicProps<C>;
+  : C extends { new (): { readonly __vizeRawProps?: infer __P } }
+    ? $IsAny<__P> extends true
+      ? $PublicProps<C>
+      : __P
+    : $PublicProps<C>;
 type $StaticRawProps<C> = C extends { readonly __vizeRawProps?: infer __P }
   ? $IsAny<__P> extends true
     ? $PublicProps<C>
@@ -196,11 +204,15 @@ type $StaticRawProps<C> = C extends { readonly __vizeRawProps?: infer __P }
   : $PublicProps<C>;
 type $HasInstanceRawProps<C> =
   $IsGeneratedComponent<C> extends true
-    ? C extends { new (): { readonly __vizeRawProps?: infer __P } }
+    ? C extends { readonly __vizeInstance: { readonly __vizeRawProps?: infer __P } }
       ? $IsAny<__P> extends true
         ? false
         : true
-      : false
+      : C extends { new (): { readonly __vizeRawProps?: infer __P } }
+        ? $IsAny<__P> extends true
+          ? false
+          : true
+        : false
     : false;
 type $HasStaticRawProps<C> =
   $IsGeneratedComponent<C> extends true

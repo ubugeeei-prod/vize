@@ -37,7 +37,7 @@ type $NativeEmitPropsFactory<C> = C extends new (...args: any[]) => { $emit: any
 export type $EmitPropsFactory<C> = $IsAny<C> extends true ? (component: C) => (props: any) => {} : C extends { __vizeResolveEmitProps?: infer F } ? F extends (...args: any[]) => any ? (component: C) => F : $NativeEmitPropsFactory<C> : C extends { __vizeResolveProps?: infer F } ? F extends (...args: any[]) => any ? (component: C) => F : $NativeEmitPropsFactory<C> : $NativeEmitPropsFactory<C>;
 `;
 const leaf = "npm/cli/virtual-ts-emits.d.ts";
-const previousLeafSha256 = "88aa94a140aff34fa904615d1ca84b3cc70d186ca3209eec3bde3dc34b67c59e";
+const previousLeafSha256 = "870774cb9f53d39bc7f0165695c9c4016cc01d608964a46703a520d5e9d6d5aa";
 const previousNative =
   "type $NativeEmitPropsFactory<C> = C extends new (...args: any[]) => { $emit: any } ? C extends { readonly __vizeComponentMarker: true } ? $ConstructorEmitPropsFactory<C extends { readonly __vizeFallthroughProps?: infer F } ? F : {}, $EmitOwnedKeys<C>> : $EmitIsWide<C> extends true ? $LooseEmitPropsFactory<C> : typeof __vizeConstructorEmitProps : $LooseEmitPropsFactory<C>;";
 const previousFactory =

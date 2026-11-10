@@ -9,10 +9,10 @@ export type $HasFallthroughProps<C> = $IsGeneratedComponent<C> extends true ? C 
 export type $FallthroughProps<C> = $HasFallthroughProps<C> extends true ? C extends { readonly __vizeFallthroughProps?: infer __F } ? $IsAny<__F> extends true ? {} : NonNullable<__F> : {} : {};
 export type $RequiredFallthroughProps<C, __F = $FallthroughProps<C>, __K = $RequiredKeys<__F>> = [__K] extends [never] ? {} : { [K in keyof __F as K extends __K ? K : never]: __F[K] };
 type $ComponentCheckProps<P, T> = { readonly [K in keyof P]: P[K] } & T;
-type $PublicProps<C> = C extends abstract new (...args: any[]) => infer __I ? $IsAny<__I> extends true ? Record<string, unknown> : __I extends { $props: infer __P } ? __P : {} : C extends (props: infer __P, ...args: any[]) => any ? __P : {};
-type $InstanceRawProps<C> = C extends { new (): { readonly __vizeRawProps?: infer __P } } ? $IsAny<__P> extends true ? $PublicProps<C> : __P : $PublicProps<C>;
+type $PublicProps<C> = C extends { readonly __vizeInstance: { $props: infer __P } } ? __P : C extends abstract new (...args: any[]) => infer __I ? $IsAny<__I> extends true ? Record<string, unknown> : __I extends { $props: infer __P } ? __P : {} : C extends (props: infer __P, ...args: any[]) => any ? __P : {};
+type $InstanceRawProps<C> = C extends { readonly __vizeInstance: { readonly __vizeRawProps?: infer __P } } ? $IsAny<__P> extends true ? $PublicProps<C> : __P : C extends { new (): { readonly __vizeRawProps?: infer __P } } ? $IsAny<__P> extends true ? $PublicProps<C> : __P : $PublicProps<C>;
 type $StaticRawProps<C> = C extends { readonly __vizeRawProps?: infer __P } ? $IsAny<__P> extends true ? $PublicProps<C> : __P : $PublicProps<C>;
-type $HasInstanceRawProps<C> = $IsGeneratedComponent<C> extends true ? C extends { new (): { readonly __vizeRawProps?: infer __P } } ? $IsAny<__P> extends true ? false : true : false : false;
+type $HasInstanceRawProps<C> = $IsGeneratedComponent<C> extends true ? C extends { readonly __vizeInstance: { readonly __vizeRawProps?: infer __P } } ? $IsAny<__P> extends true ? false : true : C extends { new (): { readonly __vizeRawProps?: infer __P } } ? $IsAny<__P> extends true ? false : true : false : false;
 type $HasStaticRawProps<C> = $IsGeneratedComponent<C> extends true ? C extends { readonly __vizeRawProps?: infer __P } ? $IsAny<__P> extends true ? false : true : false : false;
 export type $ComponentRawProps<C, __P = $HasInstanceRawProps<C> extends true ? $InstanceRawProps<C> : $HasStaticRawProps<C> extends true ? $StaticRawProps<C> : $PublicProps<C>> = unknown extends __P ? Record<string, unknown> : __P;
 type $HasRawProps<C> = $HasInstanceRawProps<C> extends true ? true : $HasStaticRawProps<C>;
