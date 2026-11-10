@@ -11732,12 +11732,12 @@
         {
           "file": "src/Parent.vue",
           "path": "explicit-generic-events-3984/src/Parent.vue.txt",
-          "sha256": "3c0a03edb366156a1128454c0eae05111149b613b7b0ec44c36445253bfdeac6"
+          "sha256": "2fbc2775da09b5e7535f7cf48c0502a0fcac93d8fbdc734f57a783b785d30e9f"
         },
         {
           "file": "src/shared.d.ts",
           "path": "explicit-generic-events-3984/src/shared.d.ts.txt",
-          "sha256": "d859e0afc0e22a780650260a66ab3197f83f79274d98be49856a2f6a6b6bc1ad"
+          "sha256": "ed803283ffa5a32cb466b8f699e97e57db506417692c60452cb24c1062514ce2"
         }
       ],
       "dialectCoverage": {

@@ -21,7 +21,7 @@ defineEmits<{
                 "src/shared.d.ts",
                 r#"type IfEquals<T, U, Y = unknown, N = never> =
   (<G>() => G extends T ? 1 : 2) extends (<G>() => G extends U ? 1 : 2) ? Y : N
-declare function exactType<T, U>(
+export declare function exactType<T, U>(
   actual: T & IfEquals<T, U>,
   expected: U & IfEquals<T, U>,
 ): IfEquals<T, U>
@@ -31,6 +31,7 @@ declare function exactType<T, U>(
                 "src/Parent.vue",
                 r#"<script setup lang="ts">
 import Child from './Child.vue'
+import { exactType } from './shared'
 </script>
 
 <template>
