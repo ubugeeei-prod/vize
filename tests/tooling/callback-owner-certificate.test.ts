@@ -311,6 +311,36 @@ test("inert navigation copies retain the whole packet and every mapped callback 
   }
 });
 
+test("component prop navigation remains the sole callback hover owner", () => {
+  const text = 'void __vize_props_nav_0.value;\n({ "value": handler });\n';
+  const navigation = Buffer.from(text).indexOf("value");
+  const check = Buffer.from(text).lastIndexOf("value");
+  const before = {
+    text,
+    extension: ".tsx",
+    diagnostics: [],
+    mappings: [
+      [navigation, 5, 20, 5, 0, 1048575],
+      [check, 5, 20, 5, 0, 1048575],
+    ],
+  };
+  const after = structuredClone(before);
+  after.mappings[1]![5]! &= ~1;
+  assertPreservedCallbackPacket(before, after);
+
+  for (const mutate of [
+    (packet: typeof after) => (packet.mappings[0]![5]! &= ~1),
+    (packet: typeof after) => (packet.mappings[1]![5]! &= ~2),
+    (packet: typeof after) => (packet.mappings[1]![2]! += 1),
+    (packet: typeof after) =>
+      (packet.text = packet.text.replace("__vize_props_nav_", "__vize_other_nav_")),
+  ]) {
+    const changed = structuredClone(after);
+    mutate(changed);
+    assert.throws(() => assertPreservedCallbackPacket(before, changed));
+  }
+});
+
 test("the existing getter sibling has only its exact unmapped navigation rows", () => {
   const project = callbackOwnerProjects().find(
     (p) => p.id === "callback-owner-unsupported-sibling-object-getter-literal",

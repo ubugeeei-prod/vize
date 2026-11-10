@@ -1,0 +1,12 @@
+<script setup lang="ts">
+const props = defineProps({
+  /** The title shown above. */
+  title: { type: String, required: true },
+})
+
+console.log(props.title)
+</script>
+
+<template>
+  <div>{{ title }}</div>
+</template>

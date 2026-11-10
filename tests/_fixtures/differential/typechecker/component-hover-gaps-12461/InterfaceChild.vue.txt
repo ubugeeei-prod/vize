@@ -1,0 +1,18 @@
+<script setup lang="ts">
+import type { SharedProps } from './types'
+
+interface Props extends SharedProps {
+  /** Whether the row is active. */
+  active?: boolean
+}
+const props = withDefaults(defineProps<Props>(), { active: false })
+
+/** The edited name. */
+const name = defineModel<string>('name')
+
+console.log(props.itemCount, name.value)
+</script>
+
+<template>
+  <div>{{ title }}</div>
+</template>

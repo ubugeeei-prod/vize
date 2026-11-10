@@ -8,6 +8,7 @@ use crate::virtual_ts::{
 
 mod data_assignment;
 mod reserved_component_collision;
+mod slot_hover;
 mod writable_computed;
 
 #[test]

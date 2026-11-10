@@ -11,6 +11,18 @@ export const currentRuntimeProp =
 const previousSha256 = "1cb95f44b238332378bab53af58bbe0b95ad428d2a846f3136b81bfc3590cb98";
 const currentSha256 = "3767bffe638c34126238eb7122ed70be0c5d1cbc8a79349aa10bdbc08f0820b5";
 const digest = (bytes: Buffer) => createHash("sha256").update(bytes).digest("hex");
+export const previousEmbeddedWithDefaults =
+  "  function withDefaults<_T, _BKeys extends keyof _T, _D extends __WithDefaultsArgs<_T>>(_props: __DefineProps<_T, _BKeys>, _defaults: _D): __WithDefaultsResult<_T, _D, _BKeys>; function withDefaults(_props: any, _defaults: any) { void _props; void _defaults; return undefined as any; }";
+export const currentEmbeddedWithDefaults = previousEmbeddedWithDefaults.replace(
+  "; function withDefaults(_props: any",
+  " & { readonly [K in keyof _T]: unknown }; function withDefaults(_props: any",
+);
+export const previousSharedWithDefaults =
+  "declare function __vize_withDefaults<_T, _BKeys extends keyof _T, _D extends __WithDefaultsArgs<_T>>(_props: __DefineProps<_T, _BKeys>, _defaults: _D): __WithDefaultsResult<_T, _D, _BKeys>;";
+export const currentSharedWithDefaults = previousSharedWithDefaults.replace(
+  ";",
+  " & { readonly [K in keyof _T]: unknown };",
+);
 
 export function certifyCanonicalAssets(
   paths: readonly string[],
@@ -54,6 +66,24 @@ export function uniqueOffset(text: Buffer, needle: Buffer) {
 function occurrences(text: string, needle: string) {
   return text.split(needle).length - 1;
 }
+
+export function applyWithDefaultsDocsIn(input: string) {
+  let output = input;
+  for (const [previous, current, label] of [
+    [previousEmbeddedWithDefaults, currentEmbeddedWithDefaults, "embedded"],
+    [previousSharedWithDefaults, currentSharedWithDefaults, "shared"],
+  ]) {
+    const counts = {
+      previous: occurrences(output, previous),
+      current: occurrences(output, current),
+    };
+    if (counts.previous === 0 && counts.current <= 1) continue;
+    assert.deepEqual(counts, { previous: 1, current: 0 }, `${label} withDefaults inventory`);
+    output = output.replace(previous, current);
+  }
+  return output;
+}
+
 export function certifiedTransition(
   before: Buffer,
   after: Buffer,

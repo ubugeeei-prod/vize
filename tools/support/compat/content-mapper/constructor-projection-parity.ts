@@ -10,6 +10,16 @@ import {
   uniqueOffset,
   previousRuntimeProp,
   currentRuntimeProp,
+  previousEmbeddedWithDefaults,
+  currentEmbeddedWithDefaults,
+  previousSharedWithDefaults,
+  currentSharedWithDefaults,
+} from "./canonical-helper-transition.ts";
+export {
+  previousEmbeddedWithDefaults,
+  currentEmbeddedWithDefaults,
+  previousSharedWithDefaults,
+  currentSharedWithDefaults,
 } from "./canonical-helper-transition.ts";
 
 import {
@@ -49,7 +59,7 @@ type Link = {
   targetStart: number;
   targetLength: number;
 };
-type Packet = {
+export type Packet = {
   text: string;
   mappings: number[][];
   semanticLinks?: Link[];
@@ -70,7 +80,6 @@ export const previousSlotsExport = "export type Slots = $Slots;";
 export const currentSlotsExport = "export type { $Slots as Slots };";
 export const previousSlotsMarker = "Partial<Slots>";
 export const currentSlotsMarker = "Partial<$Slots>";
-
 function relocationEdits(
   before: Buffer,
   after: Buffer,
@@ -165,6 +174,20 @@ function relocationEdits(
   for (const transition of [
     certifiedTransition(before, after, previousSlotsExport, currentSlotsExport, "Slots export"),
     certifiedTransition(before, after, previousSlotsMarker, currentSlotsMarker, "Slots marker"),
+    certifiedTransition(
+      before,
+      after,
+      previousEmbeddedWithDefaults,
+      currentEmbeddedWithDefaults,
+      "embedded withDefaults docs return",
+    ),
+    certifiedTransition(
+      before,
+      after,
+      previousSharedWithDefaults,
+      currentSharedWithDefaults,
+      "shared withDefaults authored return",
+    ),
   ])
     if (transition) certifiedEdits.push(transition);
   const emitTransition = certifyEmitOverloadInventory(before, after, assets.emitOverloads);

@@ -1,0 +1,43 @@
+{
+  "schema": "vize.componentHoverGapsSource.v1",
+  "credit": {
+    "compiled": false,
+    "native": false,
+    "performance": false
+  },
+  "files": [
+    {
+      "path": "crates/vize_canon/src/virtual_ts/generator.rs",
+      "before": {
+        "bytes": 37518,
+        "sha256": "3c66ad8205f3239d33e02db8afb792a1d6c194f9956d8b6cb92812787c08b0d6"
+      },
+      "after": {
+        "bytes": 37699,
+        "sha256": "31ffef289d05da9ba517f41367ff6d21e46ef76e40b09a26a4389ceb7bdd6655"
+      },
+      "hunks": [
+        {
+          "before": "use self::component_public_types::{emit_exposed_type, emit_slots_type};\n",
+          "after": "use self::component_public_types::{SlotsTypeOptions, emit_exposed_type, emit_slots_type};\n"
+        },
+        {
+          "before": "use self::setup_helpers::{SetupHelperComponentContext, emit_setup_helpers};\n",
+          "after": "use self::setup_helpers::{SetupHelperComponentContext, SetupHelperPlan, emit_setup_helpers};\n"
+        },
+        {
+          "before": "    let setup_helpers = setup_helpers::SetupHelperPlan::collect(\n        summary,\n        script_content,\n        generation_options.preserve_event_navigation,\n        generation_options.configured_global_template_ref,\n    );\n",
+          "after": "    let setup_helpers =\n        SetupHelperPlan::for_generation(summary, script_content, generation_options);\n"
+        },
+        {
+          "before": "    );\n    let fallthrough_scope = self::fallthrough::FallthroughComponentScope::new(\n",
+          "after": "        generation_options.component_name.is_some(),\n    );\n    let fallthrough_scope = self::fallthrough::FallthroughComponentScope::new(\n"
+        },
+        {
+          "before": "        generic_injection.as_ref(),\n        !module_plan.exported_types.contains(\"Slots\"),\n        module_plan.bound_types.contains(\"Slots\")\n            && component_public_types::uses_module_scoped_authored_slots_binding(summary),\n        inferred_slots,\n",
+          "after": "        SlotsTypeOptions {\n            generic_injection: generic_injection.as_ref(),\n            export_slots: !module_plan.exported_types.contains(\"Slots\"),\n            authored_slots_binding: module_plan.bound_types.contains(\"Slots\")\n                && component_public_types::uses_module_scoped_authored_slots_binding(summary),\n            options_api_slots: options_api && generation_options.projects_editor_component(),\n            inferred_slots,\n        },\n"
+        }
+      ]
+    }
+  ]
+}

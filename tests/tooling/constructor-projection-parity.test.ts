@@ -7,11 +7,15 @@ import { test } from "node:test";
 import {
   canonicalPaths,
   comparePackets,
+  currentEmbeddedWithDefaults,
+  currentSharedWithDefaults,
   currentSlotsExport,
   currentSlotsMarker,
   currentNativeAttributeAliases,
   nativeAttributesPath,
+  previousEmbeddedWithDefaults,
   previousNativeAttributeAliases,
+  previousSharedWithDefaults,
   previousSlotsExport,
   previousSlotsMarker,
   readAssets,
@@ -239,6 +243,28 @@ test("slot-only packets do not invent a helper relocation", () => {
     () => relocatePacket(base, packet("export type Slots = unknown;\n"), "", assets),
     /Slots export/,
   );
+});
+
+test("withDefaults docs returns are exact certified replacements", () => {
+  const packet = (text: string) => ({ text, mappings: [], diagnostics: [] });
+  for (const [before, after, label] of [
+    [previousEmbeddedWithDefaults, currentEmbeddedWithDefaults, "embedded"],
+    [previousSharedWithDefaults, currentSharedWithDefaults, "shared"],
+  ]) {
+    const proof = relocatePacket(packet(`${before}\n`), packet(`${after}\n`), "", assets);
+    assert.equal(proof.helperStart, null, label);
+    assert.equal(proof.edits.length, 1, label);
+    assert.throws(
+      () =>
+        relocatePacket(
+          packet(`${before}\n`),
+          packet(`${after.replace("unknown", "never")}\n`),
+          "",
+          assets,
+        ),
+      new RegExp(`${label} withDefaults`),
+    );
+  }
 });
 
 test("an authored range crossing the helper prefix boundary is refused", () => {

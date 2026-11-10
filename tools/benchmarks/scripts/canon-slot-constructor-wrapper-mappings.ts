@@ -29,6 +29,37 @@ function contract(image: Image, row: Tuple, canonical: (text: string) => string)
     features,
   };
 }
+const HOVER_FEATURE = 1;
+function linePrefix(image: Image, row: Tuple) {
+  const start = row[0];
+  const line = image.text.lastIndexOf("\n", start - 1) + 1;
+  return image.text.slice(line, start);
+}
+function componentPropHoverSuccessor(
+  image: Image,
+  row: Tuple,
+  retained: Contract,
+  canonical: (text: string) => string,
+) {
+  const candidate = contract(image, row, canonical);
+  if (
+    candidate.generated !== retained.generated ||
+    candidate.original !== retained.original ||
+    candidate.originalLength !== retained.originalLength ||
+    candidate.kind !== retained.kind ||
+    (retained.features & HOVER_FEATURE) === 0 ||
+    candidate.features !== (retained.features & ~HOVER_FEATURE)
+  ) {
+    return false;
+  }
+  return image.rows.some(
+    (owner) =>
+      owner[2] === retained.original &&
+      owner[3] === retained.originalLength &&
+      (owner[5] & HOVER_FEATURE) !== 0 &&
+      linePrefix(image, owner).trimStart().startsWith("void __vize_props_nav_"),
+  );
+}
 function ordered(image: Image) {
   let end = 0;
   for (const [generated, length] of image.rows) {
@@ -93,16 +124,20 @@ export function assertConstructorWrapperMappings(
     const retained = contract(before, old, canonical);
     // Relocate an old row only by its complete existing contract and order.
     // A possible preceding atom is not itself accepted until expected comparison.
-    const candidateIndex = [cursor, cursor + 1].find(
-      (at) =>
-        current.rows[at] &&
-        isDeepStrictEqual(contract(current, current.rows[at]!, canonical), retained),
-    );
+    const candidateIndex = [cursor, cursor + 1].find((at) => {
+      const candidate = current.rows[at];
+      return (
+        candidate &&
+        (isDeepStrictEqual(contract(current, candidate, canonical), retained) ||
+          componentPropHoverSuccessor(current, candidate, retained, canonical))
+      );
+    });
     assert.ok(
       candidateIndex !== undefined,
       "every historical mapping contract must remain ordered and exact",
     );
     const candidate = current.rows[candidateIndex]!;
+    const accepted = contract(current, candidate, canonical);
     const add = wrapped(before, old, before.rows[index - 1], before.rows[index + 1]);
     const gaps = disjointPatternGaps(current, candidate, cursor);
     if (add) {
@@ -117,7 +152,7 @@ export function assertConstructorWrapperMappings(
         kind: 1,
         features: 0,
       });
-      expected.push(atom("("), retained, atom(")"));
+      expected.push(atom("("), accepted, atom(")"));
       // Require exact byte adjacency as well as whole ordered contracts.
       assert.deepEqual(
         current.rows[cursor],
@@ -134,13 +169,13 @@ export function assertConstructorWrapperMappings(
       assert.equal(candidateIndex, cursor + 1, "the retained binding stays between its exact gaps");
       expected.push(
         contract(current, gaps[0], canonical),
-        retained,
+        accepted,
         contract(current, gaps[1], canonical),
       );
       cursor += 3;
     } else {
       assert.equal(candidateIndex, cursor, "no foreign mapping may precede an existing row");
-      expected.push(retained);
+      expected.push(accepted);
       cursor++;
     }
   }

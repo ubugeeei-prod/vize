@@ -63,6 +63,7 @@ fn inner_macro_type(type_args: &str) -> &str {
 pub(crate) fn generate_props_type(
     ts: &mut crate::virtual_ts::TextBuf,
     summary: &Croquis,
+    script: Option<&str>,
     generic_param: Option<&GenericParameters>,
     options_api_props: Option<&OptionsApiPropsSource>,
     type_only_imported_names: &FxHashSet<CompactString>,
@@ -97,18 +98,25 @@ pub(crate) fn generate_props_type(
     let props_head = names::export_type("Props");
     let mut exports_props = false;
 
-    if emission == PropsTypeEmission::DeferredToSetup && define_props_type_args.is_some() {
+    if emission.is_deferred_to_setup() && define_props_type_args.is_some() {
     } else if imported_props_would_collide {
         if let Some(inner_type) = define_props_inner_type {
             append!(*ts, "type {resolved} = {inner_type}");
             if has_models {
                 ts.push_str(" & ");
-                append_model_props_type_literal(ts, summary, models, generic_param);
+                append_model_props_type_literal(ts, summary, script, models, generic_param);
             }
             ts.push_str(";\n");
         } else if has_props || has_models {
             append!(*ts, "type {resolved} = ");
-            append_macro_props_type_literal(ts, summary, models, generic_param);
+            append_macro_props_type_literal(
+                ts,
+                summary,
+                script,
+                models,
+                generic_param,
+                emission.prefer_identifier_props(),
+            );
             ts.push_str(";\n");
         } else if let Some(options_api_props) = options_api_props {
             emit_options_api_props_type(
@@ -126,12 +134,12 @@ pub(crate) fn generate_props_type(
             append!(*ts, "type {resolved}{generic_decl} = {inner_type}");
             if has_models {
                 ts.push_str(" & ");
-                append_model_props_type_literal(ts, summary, models, generic_param);
+                append_model_props_type_literal(ts, summary, script, models, generic_param);
             }
             ts.push_str(";\n");
         } else if has_models {
             append!(*ts, "type {resolved} = Props & ");
-            append_model_props_type_literal(ts, summary, models, generic_param);
+            append_model_props_type_literal(ts, summary, script, models, generic_param);
             ts.push_str(";\n");
         }
     } else if let Some(inner_type) = define_props_inner_type {
@@ -139,7 +147,7 @@ pub(crate) fn generate_props_type(
         ts.push_str(unused_generic_comment(generic_param, inner_type));
         if has_models {
             append!(*ts, "{props_head}{generic_decl} = {inner_type} & ");
-            append_model_props_type_literal(ts, summary, models, generic_param);
+            append_model_props_type_literal(ts, summary, script, models, generic_param);
             ts.push_str(";\n");
         } else {
             append!(*ts, "{props_head}{generic_decl} = {inner_type};\n");
@@ -147,7 +155,14 @@ pub(crate) fn generate_props_type(
     } else if has_props || has_models {
         exports_props = true;
         append!(*ts, "{props_head}{generic_decl} = ");
-        append_macro_props_type_literal(ts, summary, models, generic_param);
+        append_macro_props_type_literal(
+            ts,
+            summary,
+            script,
+            models,
+            generic_param,
+            emission.prefer_identifier_props(),
+        );
         ts.push_str(";\n");
     } else if let Some(options_api_props) = options_api_props {
         exports_props = true;

@@ -43,7 +43,7 @@ use self::anchors::SetupBindingAnchors;
 use self::auto_import_stubs::emit_auto_import_stubs;
 use self::component_constructors::{ComponentInstanceAliases, emit_component_constructors};
 use self::component_export::{emit_authored_component_aliases, emit_default_export_declaration};
-use self::component_public_types::{emit_exposed_type, emit_slots_type};
+use self::component_public_types::{SlotsTypeOptions, emit_exposed_type, emit_slots_type};
 use self::emits::emit_emits_type;
 pub use self::entry::{
     generate_virtual_ts, generate_virtual_ts_with_offsets,
@@ -63,7 +63,7 @@ use self::options_api_bridge::generate_options_api_bridge;
 use self::options_api_props_identifiers::PropsConstAssertions;
 use self::options_api_support::find_options_api_props;
 use self::script_blocks::ScriptBlockScopes;
-use self::setup_helpers::{SetupHelperComponentContext, emit_setup_helpers};
+use self::setup_helpers::{SetupHelperComponentContext, SetupHelperPlan, emit_setup_helpers};
 use self::setup_imports::SetupImportPlan;
 use self::setup_props::{emit_template_context, generate_setup_props, prop_source};
 use self::setup_type_exports::SetupTypeExportsPlan;
@@ -233,12 +233,8 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         template_value_usage_names: &template_value_usage_names,
         preserve_unused_diagnostics,
     };
-    let setup_helpers = setup_helpers::SetupHelperPlan::collect(
-        summary,
-        script_content,
-        generation_options.preserve_event_navigation,
-        generation_options.configured_global_template_ref,
-    );
+    let setup_helpers =
+        SetupHelperPlan::for_generation(summary, script_content, generation_options);
     let mut declared_default_alias = false;
     if let Some(script) = script_content {
         profile!("canon.virtual_ts.emit_module_statements", {
@@ -346,6 +342,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         options_api_props.as_ref(),
         &syntactic_type_only_imported_names,
         setup_type_exports.exports_public_type("Props"),
+        generation_options.component_name.is_some(),
     );
     let fallthrough_scope = self::fallthrough::FallthroughComponentScope::new(
         summary,
@@ -789,11 +786,14 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         &mut ts,
         summary,
         MacroTypeMappings::new(&mut mappings, script_content, &script_source_offset),
-        generic_injection.as_ref(),
-        !module_plan.exported_types.contains("Slots"),
-        module_plan.bound_types.contains("Slots")
-            && component_public_types::uses_module_scoped_authored_slots_binding(summary),
-        inferred_slots,
+        SlotsTypeOptions {
+            generic_injection: generic_injection.as_ref(),
+            export_slots: !module_plan.exported_types.contains("Slots"),
+            authored_slots_binding: module_plan.bound_types.contains("Slots")
+                && component_public_types::uses_module_scoped_authored_slots_binding(summary),
+            options_api_slots: options_api && generation_options.projects_editor_component(),
+            inferred_slots,
+        },
     );
     let (has_exposed_type, exposed_is_generic) =
         emit_exposed_type(&mut ts, summary, generic_injection.as_ref());
