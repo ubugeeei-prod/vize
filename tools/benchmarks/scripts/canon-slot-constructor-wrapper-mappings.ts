@@ -106,11 +106,76 @@ function uncheckedReplays(image: Image): Array<[number, number]> {
     return [start, start + Buffer.byteLength(match[0])];
   });
 }
+function joinedVerbatimSuccessor(
+  before: Image,
+  current: Image,
+  source: string | undefined,
+  index: number,
+  cursor: number,
+): number {
+  if (source === undefined) return 0;
+  const candidate = current.rows[cursor];
+  if (!candidate) return 0;
+  const [generated, length, original, originalLength, kind, features] = candidate;
+  if (kind !== 0 || length !== originalLength) return 0;
+  const sourceBytes = Buffer.from(source);
+  if (
+    !Buffer.from(current.text)
+      .subarray(generated, generated + length)
+      .equals(sourceBytes.subarray(original, original + originalLength))
+  ) {
+    return 0;
+  }
+  const originalRanges = before.rows.map((row) => [row[2], row[3]] as const);
+  const shared = (start: number, span: number) =>
+    originalRanges.filter(([candidateStart, candidateLength]) => {
+      return candidateStart === start && candidateLength === span;
+    }).length > 1;
+  const mappedInside = (start: number, end: number) =>
+    originalRanges.some(([candidateStart]) => candidateStart >= start && candidateStart < end);
+  let end = original;
+  for (let at = index; at < before.rows.length; at++) {
+    const row = before.rows[at]!;
+    const [oldGenerated, oldLength, oldOriginal, oldOriginalLength, oldKind, oldFeatures] = row;
+    if (
+      oldKind !== kind ||
+      oldFeatures !== features ||
+      oldLength !== oldOriginalLength ||
+      (at === index && oldOriginal !== original) ||
+      oldOriginal < end ||
+      shared(oldOriginal, oldOriginalLength)
+    ) {
+      return 0;
+    }
+    const gap = sourceBytes.subarray(end, oldOriginal);
+    if (
+      at > index &&
+      (mappedInside(end, oldOriginal) ||
+        !gap.includes(0x0a) ||
+        !gap.every((byte) => byte === 0x20 || byte === 0x09 || byte === 0x0a))
+    ) {
+      return 0;
+    }
+    if (
+      !Buffer.from(before.text)
+        .subarray(oldGenerated, oldGenerated + oldLength)
+        .equals(sourceBytes.subarray(oldOriginal, oldOriginal + oldOriginalLength))
+    ) {
+      return 0;
+    }
+    end = oldOriginal + oldOriginalLength;
+    const count = at - index + 1;
+    if (end === original + originalLength) return count > 1 ? count : 0;
+    if (end > original + originalLength) return 0;
+  }
+  return 0;
+}
 export function assertConstructorWrapperMappings(
   before: Image,
   current: Image,
   canonical: (text: string) => string,
   producer: Uint8Array,
+  source?: string,
 ): void {
   assertWrapperMappingProducer(producer);
   ordered(before);
@@ -119,8 +184,13 @@ export function assertConstructorWrapperMappings(
   const removed = uncheckedReplays(before);
   const expected: Contract[] = [];
   let cursor = 0;
-  for (const [index, old] of before.rows.entries()) {
-    if (removed.some(([start, end]) => start <= old[0] && old[0] + old[1] <= end)) continue;
+  let index = 0;
+  while (index < before.rows.length) {
+    const old = before.rows[index]!;
+    if (removed.some(([start, end]) => start <= old[0] && old[0] + old[1] <= end)) {
+      index++;
+      continue;
+    }
     const retained = contract(before, old, canonical);
     // Relocate an old row only by its complete existing contract and order.
     // A possible preceding atom is not itself accepted until expected comparison.
@@ -132,10 +202,14 @@ export function assertConstructorWrapperMappings(
           componentPropHoverSuccessor(current, candidate, retained, canonical))
       );
     });
-    assert.ok(
-      candidateIndex !== undefined,
-      "every historical mapping contract must remain ordered and exact",
-    );
+    if (candidateIndex === undefined) {
+      const joined = joinedVerbatimSuccessor(before, current, source, index, cursor);
+      assert.ok(joined > 0, "every historical mapping contract must remain ordered and exact");
+      expected.push(contract(current, current.rows[cursor]!, canonical));
+      cursor++;
+      index += joined;
+      continue;
+    }
     const candidate = current.rows[candidateIndex]!;
     const accepted = contract(current, candidate, canonical);
     const add = wrapped(before, old, before.rows[index - 1], before.rows[index + 1]);
@@ -178,6 +252,7 @@ export function assertConstructorWrapperMappings(
       expected.push(accepted);
       cursor++;
     }
+    index++;
   }
   const declarations = [
     ...current.text.matchAll(/^declare const ([A-Za-z_$][\w$]*): typeof __vize_component__;$/gmu),

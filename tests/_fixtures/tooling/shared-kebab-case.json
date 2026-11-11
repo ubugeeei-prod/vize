@@ -1,0 +1,122 @@
+{
+  "schema": "vize.sharedKebabCaseSource.v1",
+  "credit": {
+    "compiled": false,
+    "native": false,
+    "performance": false
+  },
+  "files": [
+    {
+      "path": "crates/vize_canon/src/virtual_ts/helpers/preamble.rs",
+      "before": {
+        "bytes": 5816,
+        "sha256": "a8ef812b81fda63ef7d2f9104cccffaa5330df2ab5ea4e49360410536f0e4464"
+      },
+      "after": {
+        "bytes": 6130,
+        "sha256": "6594462c0c1e163fde882056a484c0d5edc9e65d45d5f65494c2319975e2e62d"
+      },
+      "hunks": [
+        {
+          "before": "macro_rules! vue_type_aliases_text {\n    () => {\n",
+          "after": "/// The shared preamble names its own prop-key text; embedded files keep theirs.\nmacro_rules! vue_type_aliases_text {\n    () => {\n        vue_type_aliases_text!(\"declarations/prop-keys.d.ts.txt\")\n    };\n    ($prop_keys:literal) => {\n"
+        },
+        {
+          "before": "            include_str!(\"declarations/prop-keys.d.ts.txt\"),\n",
+          "after": "            include_str!($prop_keys),\n"
+        },
+        {
+          "before": "        concat!(\n            vue_type_aliases_text!(),\n",
+          "after": "        vue_type_helpers_text!(\"declarations/prop-keys.d.ts.txt\")\n    };\n    ($prop_keys:literal) => {\n        concat!(\n            vue_type_aliases_text!($prop_keys),\n"
+        },
+        {
+          "before": "            vue_type_helpers_text!(),\n",
+          "after": "            vue_type_helpers_text!(\"declarations/shared-prop-keys.d.ts.txt\"),\n"
+        }
+      ]
+    },
+    {
+      "path": "npm/cli/scripts/generate-content-mapper-types.ts",
+      "before": {
+        "bytes": 19518,
+        "sha256": "3816091bdfc175db35e85f570095f792bfcf4c4decec9881d3440b429a63d1ce"
+      },
+      "after": {
+        "bytes": 19525,
+        "sha256": "613bc1ee53ab7272f68510dc194db36039839e99eb0b463c224535fa9b3db81b"
+      },
+      "hunks": [
+        {
+          "before": "  `${helperRoot}/declarations/prop-keys.d.ts.txt`,\n",
+          "after": "  `${helperRoot}/declarations/shared-prop-keys.d.ts.txt`,\n"
+        }
+      ]
+    },
+    {
+      "path": "npm/cli/generated/content-mapper-types.d.ts",
+      "before": {
+        "bytes": 12864,
+        "sha256": "6ca30ff161868951fce4151a1ff072646a98c11b45667b09f00fab3c2dce081b"
+      },
+      "after": {
+        "bytes": 12930,
+        "sha256": "cd112792a23ef7ec9f586927c0b5e723d8c5bb2d1bdd52cc65b6838d5f93a7e5"
+      },
+      "hunks": [
+        {
+          "before": "type $KebabCase<S extends string, Acc extends string = \"\"> = S extends `${infer Head}${infer Tail}`\n  ? Head extends Lowercase<Head>\n    ? $KebabCase<Tail, `${Acc}${Head}`>\n    : $KebabCase<Tail, `${Acc}-${Lowercase<Head>}`>\n  : `${Acc}${S}`;\n",
+          "after": "type $KebabCase<S extends string, Acc extends string = \"\"> =\n  S extends Lowercase<S>\n    ? `${Acc}${S}`\n    : S extends `${infer Head}${infer Tail}`\n      ? Head extends Lowercase<Head>\n        ? $KebabCase<Tail, `${Acc}${Head}`>\n        : $KebabCase<Tail, `${Acc}-${Lowercase<Head>}`>\n      : `${Acc}${S}`;\n"
+        }
+      ]
+    },
+    {
+      "path": "npm/cli/virtual-ts-globals.d.ts",
+      "before": {
+        "bytes": 17952,
+        "sha256": "2a5c1fa16a59f9f27e360ca70a7fbdbd301911dd390f9e21aa62b636bb6b7fc7"
+      },
+      "after": {
+        "bytes": 18011,
+        "sha256": "00dc77f586c4ea5d1692bf3715fde7407ed46abcc2b1bcf748fb0b50d3921177"
+      },
+      "hunks": [
+        {
+          "before": "  type $KebabCase<\n    S extends string,\n    Acc extends string = \"\",\n  > = S extends `${infer Head}${infer Tail}`\n    ? Head extends Lowercase<Head>\n      ? $KebabCase<Tail, `${Acc}${Head}`>\n      : $KebabCase<Tail, `${Acc}-${Lowercase<Head>}`>\n    : `${Acc}${S}`;\n",
+          "after": "  type $KebabCase<S extends string, Acc extends string = \"\"> =\n    S extends Lowercase<S>\n      ? `${Acc}${S}`\n      : S extends `${infer Head}${infer Tail}`\n        ? Head extends Lowercase<Head>\n          ? $KebabCase<Tail, `${Acc}${Head}`>\n          : $KebabCase<Tail, `${Acc}-${Lowercase<Head>}`>\n        : `${Acc}${S}`;\n"
+        }
+      ]
+    }
+  ],
+  "compiledPreamble": {
+    "before": {
+      "bytes": 56532,
+      "sha256": "1e115a83915a5e7e7f5bdcf82ce33c98fcf57e2a97618aad84c83a2870fbc3bc"
+    },
+    "after": {
+      "bytes": 56572,
+      "sha256": "101ae06644c80ffb5f55ad87a1a41870a5cddd82d82739be84f3a139d2d67772"
+    },
+    "hunks": [
+      {
+        "before": "type $KebabCase<S extends string, Acc extends string = \"\"> = S extends `${infer Head}${infer Tail}` ? Head extends Lowercase<Head> ? $KebabCase<Tail, `${Acc}${Head}`> : $KebabCase<Tail, `${Acc}-${Lowercase<Head>}`> : `${Acc}${S}`;\n",
+        "after": "type $KebabCase<S extends string, Acc extends string = \"\"> = S extends Lowercase<S> ? `${Acc}${S}` : S extends `${infer Head}${infer Tail}` ? Head extends Lowercase<Head> ? $KebabCase<Tail, `${Acc}${Head}`> : $KebabCase<Tail, `${Acc}-${Lowercase<Head>}`> : `${Acc}${S}`;\n"
+      }
+    ]
+  },
+  "compiledStrictPreamble": {
+    "before": {
+      "bytes": 56323,
+      "sha256": "f7fedc63d1501402bda9a834663c1a2f30e0f20518f7fb6c959cf53fc07bc0bf"
+    },
+    "after": {
+      "bytes": 56363,
+      "sha256": "6719f76be603588930cc76c10421a1a64eddcfd0bde6e487619de65c0e9894d9"
+    },
+    "hunks": [
+      {
+        "before": "type $KebabCase<S extends string, Acc extends string = \"\"> = S extends `${infer Head}${infer Tail}` ? Head extends Lowercase<Head> ? $KebabCase<Tail, `${Acc}${Head}`> : $KebabCase<Tail, `${Acc}-${Lowercase<Head>}`> : `${Acc}${S}`;\n",
+        "after": "type $KebabCase<S extends string, Acc extends string = \"\"> = S extends Lowercase<S> ? `${Acc}${S}` : S extends `${infer Head}${infer Tail}` ? Head extends Lowercase<Head> ? $KebabCase<Tail, `${Acc}${Head}`> : $KebabCase<Tail, `${Acc}-${Lowercase<Head>}`> : `${Acc}${S}`;\n"
+      }
+    ]
+  }
+}

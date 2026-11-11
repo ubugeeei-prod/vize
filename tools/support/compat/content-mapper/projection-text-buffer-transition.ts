@@ -6,6 +6,7 @@ import { beforeClosedEmitFactory } from "./closed-emit-factory-transition.ts";
 import { beforeConstructorNoInferReturn } from "./constructor-noinfer-return-transition.ts";
 import { beforeListenerContract } from "./listener-contract-transition.ts";
 import { beforeStaticEmitGate } from "./static-emit-gate-transition.ts";
+import { beforeSharedUsageGates } from "./shared-usage-gates-transition.ts";
 
 export const projectionTextBufferRecord =
   "tests/_fixtures/tooling/projection-text-buffer-12341.json";
@@ -49,6 +50,7 @@ function load(): Transition {
  * images pass through; the layers below authenticate them.
  */
 export function beforeProjectionTextBuffer(path: string, current: string): string {
+  current = beforeSharedUsageGates(path, current);
   current = beforeStaticEmitGate(
     path,
     beforeListenerContract(

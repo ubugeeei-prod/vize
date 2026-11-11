@@ -52,6 +52,7 @@ fn restore(current: String, file: &Value) -> String {
 /// The pre-contract bytes of a recorded source's current image. Older images
 /// pass through; the layers below authenticate them.
 pub(super) fn source_before(path: &str, current: String) -> String {
+    let current = super::shared_usage_gates::source_before(path, current);
     let current = super::lib_type_qualification_listeners::source_before(path, current);
     let record = record();
     match record["files"]
@@ -77,6 +78,7 @@ pub(super) fn read_current(path: &str) -> String {
 
 /// The compiled preamble without the contract lines its asset gained.
 pub(super) fn preamble_before(current: &str) -> String {
+    let current = &super::shared_usage_gates::preamble_before(current);
     let current = &super::template_ref_unwrap::preamble_before(current);
     let hash = support::hash(current.as_bytes());
     let Some((_, before)) = PREAMBLE.iter().find(|(after, _)| *after == hash) else {

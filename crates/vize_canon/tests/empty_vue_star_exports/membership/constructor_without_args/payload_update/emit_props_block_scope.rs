@@ -43,6 +43,7 @@ fn restore(current: &str, transition: &Value) -> String {
 /// The pre-block-key bytes of a recorded producer's current image. Older
 /// images pass through; the layers below authenticate them.
 pub(super) fn source_before(path: &str, current: String) -> String {
+    let current = super::shared_usage_gates::source_before(path, current);
     let record = record();
     match record["files"]
         .as_array()
@@ -64,7 +65,10 @@ mod tests {
         let record = record();
         for file in record["files"].as_array().unwrap() {
             let path = file["path"].as_str().unwrap();
-            let current = fs::read_to_string(support::repository().join(path)).unwrap();
+            let current = super::super::shared_usage_gates::source_before(
+                path,
+                fs::read_to_string(support::repository().join(path)).unwrap(),
+            );
             assert!(is_after(&current, file), "{path}");
             let previous = source_before(path, current.clone());
             assert_eq!(support::hash(previous.as_bytes()), file["before"]["sha256"]);

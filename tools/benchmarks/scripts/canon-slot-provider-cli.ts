@@ -25,6 +25,8 @@ import { applyListenerContractIn } from "../../support/compat/content-mapper/lis
 import { applySharedTemplateRefUnwrapIn } from "../../support/compat/content-mapper/shared-template-ref-unwrap-transition.ts";
 import { applySharedUsageHelpersIn } from "../../support/compat/content-mapper/shared-usage-helpers-transition.ts";
 import { applyClosedEmitFactoryIn } from "../../support/compat/content-mapper/closed-emit-factory-transition.ts";
+import { applySharedUsageGatesIn } from "../../support/compat/content-mapper/shared-usage-gates-transition.ts";
+import { applySharedKebabCaseIn } from "../../support/compat/content-mapper/shared-kebab-case-transition.ts";
 
 export const canonLeftoverPreamblePaths = [
   "crates/vize_canon/src/virtual_ts/component_prop_helpers.txt",
@@ -79,31 +81,21 @@ export function slotCliPacket(
   const certifiedPreamble = applyCurrentSlotPreamble(
     applySourceOwnedPreambleTransitions(applyPreviousOverloadPreamble(text)),
   );
-  const currentPreamble = applyClosedEmitFactoryIn(
-    applySharedUsageHelpersIn(
-      applySharedTemplateRefUnwrapIn(
-        applyListenerContractIn(
-          applyPropValueOrIn(
-            applyUnownedOwnedKeysIn(
-              applyInstanceInputKeysIn(
-                applyCanonLeftoverPreamble(
-                  applyEmitMemberInferIn(
-                    applyStrictExtraKeysIn(
-                      applyDiscriminatedJsxUnionIn(
-                        applyIntegratedSourcePreambleTransitions(
-                          applyCurrentOverloadPreamble(certifiedPreamble),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ),
-      ),
-    ),
-  );
+  const currentOverload = applyCurrentOverloadPreamble(certifiedPreamble);
+  const integrated = applyIntegratedSourcePreambleTransitions(currentOverload);
+  const discriminated = applyDiscriminatedJsxUnionIn(integrated);
+  const strictKeys = applyStrictExtraKeysIn(discriminated);
+  const emitMember = applyEmitMemberInferIn(strictKeys);
+  const leftovers = applyCanonLeftoverPreamble(emitMember);
+  const inputKeys = applyInstanceInputKeysIn(leftovers);
+  const ownedKeys = applyUnownedOwnedKeysIn(inputKeys);
+  const propValue = applyPropValueOrIn(ownedKeys);
+  const listeners = applyListenerContractIn(propValue);
+  const templateRefs = applySharedTemplateRefUnwrapIn(listeners);
+  const usageHelpers = applySharedUsageHelpersIn(templateRefs);
+  const closedEmit = applyClosedEmitFactoryIn(usageHelpers);
+  const usageGates = applySharedUsageGatesIn(closedEmit);
+  const currentPreamble = applySharedKebabCaseIn(usageGates);
   assert.equal(currentPreamble.split(replacement).length, 2);
   const files = observed.result.files.filter((file) => typeof file.virtualTs === "string");
   assert.ok(files.length > 0, "all actual virtual file bodies must remain in JSON");

@@ -49,7 +49,9 @@ const GATE_ALIASES: &str = "type __vize_emit_native_input<C> = C extends new (..
 /// standalone module declares the same two aliases itself.
 const CLOSED_EMIT_ALIASES: &str = "type __vize_emit_closed<C, A = C> = [C] extends [never] ? false : 0 extends (1 & C) ? false : [C extends { readonly __vizeComponentMarker: true } ? (<G>() => G extends C ? 1 : 2) extends <G>() => G extends A ? 1 : 2 ? C extends { __vizeResolveEmitProps?: infer X } ? X extends (...args: any[]) => any ? false : true : C extends { __vizeResolveProps?: infer X } ? X extends (...args: any[]) => any ? false : true : true : false : false] extends [true] ? [C extends new (...args: any[]) => { $emit: infer E } ? E : never] extends [infer E] ? [E] extends [never] ? false : [E] : false : false;\ntype __vize_emit_closed_factory<E> = (component: unknown) => (props: any) => __EmitProps<E>;\n";
 
-/// Declares the gate aliases once per module that can reach a gated call.
+/// Declares the gate aliases once per module that can reach a gated call. A
+/// hoisted module names the shared `$EmitGateResolver`/`$EmitGateInput`
+/// instead, so each component resolves its gate once per program.
 pub(crate) fn emit_gate_aliases(
     ts: &mut crate::virtual_ts::TextBuf,
     summary: &Croquis,
@@ -57,7 +59,10 @@ pub(crate) fn emit_gate_aliases(
     legacy_vue2: bool,
     hoist_shared_preamble: bool,
 ) {
-    if !gates_inference(generic_component, legacy_vue2) || !has_gated_candidate(summary) {
+    if hoist_shared_preamble
+        || !gates_inference(generic_component, legacy_vue2)
+        || !has_gated_candidate(summary)
+    {
         return;
     }
     use crate::virtual_ts::helpers::shared_types::{
@@ -83,6 +88,15 @@ pub(crate) fn emit_gate_aliases(
                 EMIT_PROPS_FACTORY.select(hoist_shared_preamble),
             ),
     );
+}
+
+/// The gate resolver and input: the shared SDK aliases when hoisted.
+fn gate_names(hoisted: bool) -> (&'static str, &'static str) {
+    use crate::virtual_ts::helpers::shared_types::{EMIT_GATE_INPUT, EMIT_GATE_RESOLVER};
+    (
+        EMIT_GATE_RESOLVER.select(hoisted),
+        EMIT_GATE_INPUT.select(hoisted),
+    )
 }
 
 /// The template's component types are closed and Vue 3 owns the factory.
@@ -125,11 +139,12 @@ pub(super) fn append_gated_call(
     library: &str,
     component_ref: &str,
     emit_props: &str,
-    usage_idx: usize,
+    (usage_idx, hoisted): (usize, bool),
 ) {
+    let (resolver, input) = gate_names(hoisted);
     append!(
         *ts,
-        "{indent}const __vize_emit_factory_{usage_idx} = (undefined as unknown as __vize_emit_resolver<{library}, typeof {component_ref}>)({component_ref}); const {emit_props} = (undefined as unknown as __vize_emit_input<{library}, typeof {component_ref}, typeof __vize_emit_factory_{usage_idx}>)(",
+        "{indent}const __vize_emit_factory_{usage_idx} = (undefined as unknown as {resolver}<{library}, typeof {component_ref}>)({component_ref}); const {emit_props} = (undefined as unknown as {input}<{library}, typeof {component_ref}, typeof __vize_emit_factory_{usage_idx}>)(",
     );
 }
 
@@ -140,11 +155,12 @@ pub(super) fn append_guarded_factory(
     indent: &str,
     library: &str,
     component_ref: &str,
-    usage_idx: usize,
+    (usage_idx, hoisted): (usize, bool),
 ) {
+    let (resolver, _) = gate_names(hoisted);
     append!(
         *ts,
-        "{indent}// @ts-ignore Inference-only factory; called before the guard below.\n{indent}const __vize_emit_factory_{usage_idx} = (undefined as unknown as __vize_emit_resolver<{library}, typeof {component_ref}>)({component_ref});\n",
+        "{indent}// @ts-ignore Inference-only factory; called before the guard below.\n{indent}const __vize_emit_factory_{usage_idx} = (undefined as unknown as {resolver}<{library}, typeof {component_ref}>)({component_ref});\n",
     );
 }
 
@@ -155,11 +171,12 @@ pub(super) fn append_guarded_input(
     guard: &str,
     library: &str,
     component_ref: &str,
-    usage_idx: usize,
+    (usage_idx, hoisted): (usize, bool),
 ) {
+    let (_, input) = gate_names(hoisted);
     append!(
         *ts,
-        "{indent}if ({guard}) return (undefined as unknown as __vize_emit_input<{library}, typeof {component_ref}, typeof __vize_emit_factory_{usage_idx}>)(",
+        "{indent}if ({guard}) return (undefined as unknown as {input}<{library}, typeof {component_ref}, typeof __vize_emit_factory_{usage_idx}>)(",
     );
 }
 

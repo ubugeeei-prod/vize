@@ -43,6 +43,7 @@ fn restore_if_current(current: String, file: &Value) -> String {
 /// The pre-rewrite bytes of a recorded helper's current image. Older images
 /// pass through; the layers below authenticate them.
 pub(super) fn source_before(path: &str, current: String) -> String {
+    let current = super::shared_usage_gates::source_before(path, current);
     let current = super::listener_contract::source_before(path, current);
     let record = record();
     match record["files"]
@@ -58,6 +59,7 @@ pub(super) fn source_before(path: &str, current: String) -> String {
 
 /// The compiled shared preamble with this layer removed.
 pub(super) fn preamble_before(current: &str) -> String {
+    let current = &super::shared_usage_gates::preamble_before(current);
     let current = super::listener_contract::preamble_before(current);
     restore_if_current(current, &record()["compiledPreamble"])
 }

@@ -63,6 +63,14 @@ import {
   applyClosedEmitFactoryIn,
   beforeClosedEmitFactoryIn,
 } from "../../tools/support/compat/content-mapper/closed-emit-factory-transition.ts";
+import {
+  applySharedUsageGatesIn,
+  beforeSharedUsageGatesIn,
+} from "../../tools/support/compat/content-mapper/shared-usage-gates-transition.ts";
+import {
+  applySharedKebabCaseIn,
+  beforeSharedKebabCaseIn,
+} from "../../tools/support/compat/content-mapper/shared-kebab-case-transition.ts";
 
 test("quiet CLI debug output retains exact helper/file bytes and refuses unrelated stderr", () => {
   const record = JSON.parse(
@@ -194,8 +202,12 @@ test("quiet CLI debug output retains exact helper/file bytes and refuses unrelat
   assert.equal(beforeSharedTemplateRefUnwrapIn(unwrapSourcePreamble), listenerSourcePreamble);
   const usageSourcePreamble = applySharedUsageHelpersIn(unwrapSourcePreamble);
   assert.equal(beforeSharedUsageHelpersIn(usageSourcePreamble), unwrapSourcePreamble);
-  const currentSourcePreamble = applyClosedEmitFactoryIn(usageSourcePreamble);
-  assert.equal(beforeClosedEmitFactoryIn(currentSourcePreamble), usageSourcePreamble);
+  const closedSourcePreamble = applyClosedEmitFactoryIn(usageSourcePreamble);
+  assert.equal(beforeClosedEmitFactoryIn(closedSourcePreamble), usageSourcePreamble);
+  const usageGatesSourcePreamble = applySharedUsageGatesIn(closedSourcePreamble);
+  assert.equal(beforeSharedUsageGatesIn(usageGatesSourcePreamble), closedSourcePreamble);
+  const currentSourcePreamble = applySharedKebabCaseIn(usageGatesSourcePreamble);
+  assert.equal(beforeSharedKebabCaseIn(currentSourcePreamble), usageGatesSourcePreamble);
   const canonPredecessor = [...canonLeftoverPreamblePaths]
     .reverse()
     .reduce((current, file) => beforeCanonLeftoversIn(file, current), canonSourcePreamble);

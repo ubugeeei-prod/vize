@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
+import { beforeSharedKebabCaseSource } from "../../../tools/support/compat/content-mapper/shared-kebab-case-transition.ts";
 import { emitMemberInferEditsBefore, readRepository } from "./emit-member-infer-source.ts";
 
 type Identity = { bytes: number; sha256: string };
@@ -355,6 +356,7 @@ function inverse(current: string, transition: Transition, context: string): stri
 
 /** Restore only the authenticated pre-listener-relation source image. */
 export function beforeSharedListenerRelationSource(path: string, current: string): string {
+  current = beforeSharedKebabCaseSource(path, current);
   current = emitMemberInferEditsBefore(readRepository, path, current);
   const propsFallbackTransition = propsFallbackSourceTransitions.get(path);
   if (

@@ -9,13 +9,17 @@ import ts from "typescript";
 // inline forms are the oracle: every helper must be `Equal` to its form for
 // any component type, including unions, `never`, `any` and string-indexed
 // roots, whose results a naked (distributive) helper would change.
-const declarations = fs.readFileSync(
-  new URL(
-    "../../crates/vize_canon/src/virtual_ts/helpers/declarations/component-checks.d.ts.txt",
-    import.meta.url,
-  ),
-  "utf8",
-);
+const declarations = ["component-checks.d.ts.txt", "shared-listener-args.d.ts.txt"]
+  .map((file) =>
+    fs.readFileSync(
+      new URL(
+        `../../crates/vize_canon/src/virtual_ts/helpers/declarations/${file}`,
+        import.meta.url,
+      ),
+      "utf8",
+    ),
+  )
+  .join("\n");
 const propHelpers = fs.readFileSync(
   new URL("../../crates/vize_canon/src/virtual_ts/component_prop_helpers.txt", import.meta.url),
   "utf8",
@@ -23,7 +27,7 @@ const propHelpers = fs.readFileSync(
 const line = (source: string, name: string): string => {
   const found = source
     .split("\n")
-    .map((text) => text.replace(/^export /u, ""))
+    .map((text) => text.trim().replace(/^export /u, ""))
     .find((text) => text.startsWith(`type ${name}<`));
   assert.ok(found, name);
   return found;
@@ -50,6 +54,8 @@ const helpers = [
     "$HasInstanceRawProps",
     "$HasStaticRawProps",
     "$ComponentRawProps",
+    "$FallthroughSourceMember",
+    "$FallthroughSourceAdmitsEmpty",
   ].map((name) => line(declarations, name)),
   ...usageHelpers.map((name) => line(declarations, name)),
 ];
@@ -91,6 +97,27 @@ const components: Record<string, string> = {
   indexedRootUnion: `{ [key: string]: unknown; ${nativeRoot("{ title: string }").slice(1)} | ${nativeRoot("{ id: string }", "__vizeEmitProps?: {}")}`,
   intersectedRoot: `(${nativeRoot("{ title: string }")} & { __vizeEmitProps?: {} } & { [key: string]: unknown })`,
   rootWithoutEmits: nativeRoot("{ title: string }"),
+  // The raw source beside the owned-key map: the shortcut must equal the map.
+  sourceOptional: generated(
+    "readonly __vizeFallthroughSource?: { title?: string; a?: string }; readonly __vizeFallthroughProps?: { title?: string }",
+  ),
+  sourceRequired: generated(
+    "readonly __vizeFallthroughSource?: { title: string; id?: string }; readonly __vizeFallthroughProps?: { title: string; id?: string }",
+  ),
+  sourceOwnedRequired: generated(
+    "readonly __vizeFallthroughSource?: { b: number; title?: string }; readonly __vizeFallthroughProps?: { title?: string }",
+  ),
+  sourceAny: generated(
+    "readonly __vizeFallthroughSource?: any; readonly __vizeFallthroughProps?: any",
+  ),
+  sourceUnknown: generated(
+    "readonly __vizeFallthroughSource?: unknown; readonly __vizeFallthroughProps?: { title: string }",
+  ),
+  sourceUnion: `${generated("readonly __vizeFallthroughSource?: { title?: string }; readonly __vizeFallthroughProps?: { title?: string }")} | ${generated("readonly __vizeFallthroughSource?: { id: number }; readonly __vizeFallthroughProps?: { id: number }")}`,
+  sourceOptionalUnion: `${generated("readonly __vizeFallthroughSource?: { title?: string }; readonly __vizeFallthroughProps?: { title?: string }")} | ${generated("readonly __vizeFallthroughSource?: { id?: number }; readonly __vizeFallthroughProps?: { id?: number }")}`,
+  sourceBesideOldChild: `${generated("readonly __vizeFallthroughSource?: { title?: string }; readonly __vizeFallthroughProps?: { title?: string }")} | ${generated("readonly __vizeFallthroughProps?: { id: number }")}`,
+  sourceWithoutFallthrough:
+    "{ new (...args: any[]): { $props: {} }; readonly __vizeComponentMarker: true; readonly __vizeFallthroughSource?: { title: string } }",
   anyRoot: nativeRoot("any", "__vizeEmitProps?: {}"),
   libraryGeneric: "(props: { x: string }, ctx: any) => { __ctx?: { props: { x: string } } }",
   anyReturn: "(props: { x: string }) => any",
@@ -163,4 +190,21 @@ test("a distributive candidate is caught on unions, never and indexed roots", ()
     assert.equal(found.length, failing.length, `${helper}: ${found.join("\n")}`);
     for (const diagnostic of found) assert.match(diagnostic, /TS2344/u);
   }
+});
+
+test("the fallthrough source shortcut refuses a child that names no source", () => {
+  // Without the `unknown` guard a child without the member (an older
+  // declaration) infers `unknown`, admits `{}` and loses its required keys.
+  const unguarded =
+    "type $FallthroughSourceMember<C> = C extends { readonly __vizeHasFallthroughProps: true; readonly __vizeFallthroughSource?: infer __S } ? [NonNullable<__S> extends infer __N ? __N extends unknown ? {} extends __N ? never : __N : never : never] extends [never] ? true : false : false;";
+  const replaced = helpers.map((text) =>
+    text.startsWith("type $FallthroughSourceMember<") ? unguarded : text,
+  );
+  assert.notDeepEqual(replaced, helpers);
+  const failing = ["generated"];
+  const found = diagnostics(
+    [...prelude(replaced), ...rows("$UsageRequiredFallthrough", failing)].join("\n"),
+  );
+  assert.equal(found.length, failing.length, found.join("\n"));
+  for (const diagnostic of found) assert.match(diagnostic, /TS2344/u);
 });

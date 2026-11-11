@@ -6,6 +6,7 @@ import { beforeClosedEmitFactory } from "./closed-emit-factory-transition.ts";
 import { beforeGuardedInferenceArrow } from "./guarded-inference-arrow-transition.ts";
 import { beforeLibTypeShadowingAudit } from "./lib-type-shadowing-audit-transition.ts";
 import { beforeSharedUsageHelpersSource } from "./shared-usage-helpers-transition.ts";
+import { beforeSharedUsageGates } from "./shared-usage-gates-transition.ts";
 
 export const libTypeListenerRecord =
   "tests/_fixtures/tooling/lib-type-qualification-listeners-12536.json";
@@ -54,6 +55,7 @@ function load(): Transition {
 
 /** The exact pre-qualification bytes of a recorded producer's current image; older images pass through. */
 export function beforeListenerLibTypeQualification(path: string, current: string): string {
+  current = beforeSharedUsageGates(path, current);
   // The closed-SFC check sits on top of the shared listener module and its SDK leaf.
   if (closedEmitListenerFiles.has(path)) current = beforeClosedEmitFactory(path, current);
   current = beforeLibTypeShadowingAudit(path, current);

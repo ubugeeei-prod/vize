@@ -6,6 +6,7 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 import { certifiedTransition } from "./canonical-helper-transition.ts";
 import { beforeLibTypeQualification } from "./lib-type-qualification-transition.ts";
+import { beforeSharedKebabCaseSource } from "./shared-kebab-case-transition.ts";
 import { beforeCanonLeftovers, canonLeftoversSha256 } from "./strict-extra-keys-transition.ts";
 
 export const emitOverloadsPath =
@@ -118,7 +119,8 @@ export function certifyEmitOverloadAssets(
         ["-C", sources.repository, "show", `${revision}:${file}`],
         { stdio: ["ignore", "pipe", "pipe"] },
       );
-      const certified = Buffer.from(beforeLibTypeQualification(file, source.toString("utf8")));
+      const beforeKebabCase = beforeSharedKebabCaseSource(file, source.toString("utf8"));
+      const certified = Buffer.from(beforeLibTypeQualification(file, beforeKebabCase));
       assert.equal(digest(certified), expectedHash, `uncertified emit producer source: ${file}`);
       assert.deepEqual(
         readFileSync(path.join(root, file)),

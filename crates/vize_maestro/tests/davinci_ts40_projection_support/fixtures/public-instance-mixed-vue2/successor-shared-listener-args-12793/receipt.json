@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "pullRequest": 12793,
+  "predecessor": {
+    "path": "successor-verbatim-runs-12789/projection-record.txt",
+    "bytes": 2326,
+    "sha256": "c3c6307af835c7e882509c1d687541af0547e5bdbaf1f19f1c98d95905242584"
+  },
+  "successor": {
+    "path": "successor-shared-listener-args-12793/projection-record.txt",
+    "bytes": 2326,
+    "sha256": "a358177da15dbfd50f75149d03159cf871e940c1efa89b8cefeca3fc15a94406"
+  },
+  "delta": {
+    "canonGeneratedTextBytes": 0,
+    "contentMapperGeneratedTextBytes": 70,
+    "maestroGeneratedTextBytes": 70,
+    "contentMapperMappings": 0,
+    "contentMapperAuthoredHits": 0
+  },
+  "nativeAcceptanceCredit": false,
+  "scope": "Exact mixed Vue 2 successor for #12793. The content mapper and Maestro add the same 70-byte shared listener-argument declaration; Canon's legacy projection and every mapping, diagnostic, semantic link and authored hit remain exact. No native TypeScript consumer acceptance credit."
+}

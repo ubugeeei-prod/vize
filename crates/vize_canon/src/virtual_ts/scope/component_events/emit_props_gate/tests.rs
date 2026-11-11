@@ -44,53 +44,64 @@ fn generate(template: &str, options: VirtualTsGenerationOptions<'_>) -> vize_car
 
 #[test]
 fn a_computed_is_listener_takes_the_gated_call_in_both_modes() {
-    for (hoist_shared_preamble, closed, closed_factory, factory) in [
-        (
-            false,
-            "__vize_emit_closed",
-            "__vize_emit_closed_factory",
-            "$EmitPropsFactory<C>",
-        ),
-        (
-            true,
-            "import(\"vize:virtual-ts\").$ClosedEmit",
-            "import(\"vize:virtual-ts\").$ClosedEmitFactory",
-            "import(\"vize:virtual-ts\").$EmitPropsFactory<C>",
-        ),
-    ] {
-        let code = generate(
-            COMPUTED,
-            VirtualTsGenerationOptions {
-                hoist_shared_preamble,
-                ..Default::default()
-            },
-        );
-        assert_eq!(code.matches(GATED).count(), 1, "{code}");
-        assert_eq!(code.matches(DIRECT).count(), 0, "{code}");
-        assert_eq!(code.matches(ALIASES).count(), 1, "{code}");
-        assert_eq!(
-            code.matches(
-                vize_carton::cstr!(
-                    "(component: C) => C : {closed}<C> extends [infer E] ? {closed_factory}<E> : {factory};"
-                )
-                .as_str()
+    // A standalone module declares the gate aliases with its local closed-SFC
+    // helpers. A hoisted module declares none and names the shared SDK gate.
+    let standalone = generate(COMPUTED, VirtualTsGenerationOptions::default());
+    assert_eq!(standalone.matches(GATED).count(), 1, "{standalone}");
+    assert_eq!(standalone.matches(DIRECT).count(), 0, "{standalone}");
+    assert_eq!(standalone.matches(ALIASES).count(), 1, "{standalone}");
+    assert_eq!(
+        standalone
+            .matches(
+                "(component: C) => C : __vize_emit_closed<C> extends [infer E] ? __vize_emit_closed_factory<E> : $EmitPropsFactory<C>;"
             )
             .count(),
-            1,
-            "{code}"
-        );
-        assert_eq!(
-            code.matches("type __vize_emit_closed<C, A = C> = ").count(),
-            usize::from(!hoist_shared_preamble),
-            "{code}"
-        );
-        assert_eq!(
-            code.matches("const __vize_emit_props_0 = (undefined as unknown as __vize_emit_input<")
-                .count(),
-            1,
-            "{code}"
-        );
+        1,
+        "{standalone}"
+    );
+    assert_eq!(
+        standalone
+            .matches("type __vize_emit_closed<C, A = C> = ")
+            .count(),
+        1,
+        "{standalone}"
+    );
+    assert_eq!(
+        standalone
+            .matches("const __vize_emit_props_0 = (undefined as unknown as __vize_emit_input<")
+            .count(),
+        1,
+        "{standalone}"
+    );
+    let hoisted = generate(
+        COMPUTED,
+        VirtualTsGenerationOptions {
+            hoist_shared_preamble: true,
+            ..Default::default()
+        },
+    );
+    assert_eq!(hoisted.matches(DIRECT).count(), 0, "{hoisted}");
+    for alias in [
+        ALIASES,
+        "type __vize_emit_resolver<",
+        "type __vize_emit_native_input<",
+    ] {
+        assert_eq!(hoisted.matches(alias).count(), 0, "{hoisted}");
     }
+    assert_eq!(
+        hoisted
+            .matches("const __vize_emit_factory_0 = (undefined as unknown as import(\"vize:virtual-ts\").$EmitGateResolver<")
+            .count(),
+        1,
+        "{hoisted}"
+    );
+    assert_eq!(
+        hoisted
+            .matches("const __vize_emit_props_0 = (undefined as unknown as import(\"vize:virtual-ts\").$EmitGateInput<")
+            .count(),
+        1,
+        "{hoisted}"
+    );
 }
 
 #[test]

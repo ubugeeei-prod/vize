@@ -206,6 +206,50 @@ void test("the wrapper admission accepts only exact disjoint slot pattern gaps",
     }
   }
 });
+void test("the wrapper admission accepts only an exact joined verbatim source successor", () => {
+  const source = "const left = 1;\n  const right = 2;";
+  const beforeText = "const left = 1;\n    const right = 2;";
+  const currentText = `prefix\n${source}\nsuffix`;
+  const leftLength = Buffer.byteLength("const left = 1;"),
+    rightLength = Buffer.byteLength("const right = 2;"),
+    rightOriginal = Buffer.from(source).indexOf("const right"),
+    rightGenerated = Buffer.from(beforeText).indexOf("const right"),
+    currentStart = Buffer.from(currentText).indexOf("const left");
+  const before = {
+    text: beforeText,
+    rows: [
+      [0, leftLength, 0, leftLength, 0, 1048575],
+      [rightGenerated, rightLength, rightOriginal, rightLength, 0, 1048575],
+    ] as Array<[number, number, number, number, number, number]>,
+  };
+  const current = {
+    text: currentText,
+    rows: [
+      [currentStart, Buffer.byteLength(source), 0, Buffer.byteLength(source), 0, 1048575],
+    ] as Array<[number, number, number, number, number, number]>,
+  };
+  const producer = fs.readFileSync(
+    new URL("../../crates/vize_canon/src/batch/virtual_project/content_mapper.rs", import.meta.url),
+  );
+  assertConstructorWrapperMappings(before, current, (value) => value, producer, source);
+
+  for (const mutate of [
+    (image: typeof current) => (image.text = image.text.replace("right", "wrong")),
+    (image: typeof current) => image.rows[0]!.splice(3, 1, image.rows[0]![3]! - 1),
+    (image: typeof current) => image.rows[0]!.splice(5, 1, 1),
+  ]) {
+    const changed = clone(current);
+    mutate(changed);
+    assert.throws(() =>
+      assertConstructorWrapperMappings(before, changed, (value) => value, producer, source),
+    );
+  }
+  const shared = clone(before);
+  shared.rows.push([...shared.rows[1]!] as (typeof shared.rows)[number]);
+  assert.throws(() =>
+    assertConstructorWrapperMappings(shared, current, (value) => value, producer, source),
+  );
+});
 void test("the wrapper admission removes only duplicate component-prop hover ownership", () => {
   const text = 'void __vize_props_nav_0.value;\n({ "value": 1 });\n';
   const navigation = Buffer.from(text).indexOf("value");
