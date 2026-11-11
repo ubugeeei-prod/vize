@@ -214,6 +214,7 @@ fn check_use(
         AstKind::CallExpression(call) if call.callee.without_parentheses().span() == callee => call,
         AstKind::CallExpression(_)
         | AstKind::VariableDeclarator(_)
+        | AstKind::ObjectProperty(_)
         | AstKind::AssignmentExpression(_) => return,
         _ => {
             reports.push((span, NOT_CALLED));
@@ -445,7 +446,7 @@ mod tests {
 
     #[test]
     fn test_promise_consumers_and_value_passing_are_valid() {
-        let source = "import { nextTick } from \"vue\";\nasync function f(done) {\n  const p = nextTick();\n  done(nextTick);\n  await Promise.all([nextTick(), p]);\n  nextTick().then(done).catch(done);\n  const pick = done ? nextTick : done;\n  return [p, pick];\n}";
+        let source = "import { nextTick } from \"vue\";\nasync function f(done) {\n  const p = nextTick();\n  done(nextTick);\n  done({ nextTick });\n  await Promise.all([nextTick(), p]);\n  nextTick().then(done).catch(done);\n  const pick = done ? nextTick : done;\n  return [p, pick];\n}";
         assert!(messages(source).is_empty(), "{:?}", messages(source));
     }
 
