@@ -30,6 +30,7 @@ mod process;
 mod recovery;
 mod reexecution;
 mod result;
+mod shared;
 mod ssr_calls;
 mod ssr_functions;
 mod ssr_guards;
@@ -66,9 +67,11 @@ pub use parse_plain::{
 pub use process::{collect_options_descriptor, collect_options_object, process_statement};
 pub use recovery::{
     parse_original_for_analysis, parse_program_for_analysis, recover_program_for_analysis,
+    with_shared_program_for_analysis,
 };
 pub(crate) use result::{ReactiveGetterContext, ReactiveValueOrigin, RuntimeObjectLiteral};
 pub use result::{ScriptParseResult, ScriptParserOptions};
+pub use shared::{SharedParseScope, with_shared_parse};
 pub(crate) use typeof_refs::{
     annotation_has_value_reads, arguments_have_value_reads, has_value_type_reads,
     parameters_have_value_reads,

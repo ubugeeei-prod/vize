@@ -1,10 +1,9 @@
 //! Default-export span classification for Options API virtual TypeScript.
 
-use oxc_allocator::Allocator;
 use oxc_ast::ast::{ExportDefaultDeclarationKind, Program, Statement};
-use oxc_parser::Parser;
 use oxc_span::{GetSpan, SourceType};
 use vize_carton::{FxHashSet, String};
+use vize_croquis::script_parser::with_shared_parse;
 
 use super::{
     component_options_from_program, computed::writable_computed_names, has_unresolved_extends,
@@ -29,19 +28,19 @@ pub(in crate::virtual_ts::generator) fn analyze_options_api_script(
     if !options_api && !script.contains("export default") {
         return facts;
     }
-    let allocator = Allocator::default();
-    let parsed = Parser::new(&allocator, script, SourceType::ts()).parse();
-    if parsed.panicked {
-        return facts;
-    }
-    if classify_default_export {
-        facts.default_export = default_export_targets(script, &parsed.program);
-    }
-    if options_api && let Some(options) = component_options_from_program(&parsed.program) {
-        facts.writable_computed = writable_computed_names(&parsed.program, options);
-        facts.has_unresolved_extends = has_unresolved_extends(script, &parsed.program, options);
-    }
-    facts
+    with_shared_parse(script, SourceType::ts(), |parsed| {
+        if parsed.panicked {
+            return facts;
+        }
+        if classify_default_export {
+            facts.default_export = default_export_targets(script, &parsed.program);
+        }
+        if options_api && let Some(options) = component_options_from_program(&parsed.program) {
+            facts.writable_computed = writable_computed_names(&parsed.program, options);
+            facts.has_unresolved_extends = has_unresolved_extends(script, &parsed.program, options);
+        }
+        facts
+    })
 }
 
 /// Byte offsets locating the rewriteable shape of a `<script>` default export.

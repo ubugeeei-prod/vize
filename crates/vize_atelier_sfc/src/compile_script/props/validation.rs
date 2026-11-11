@@ -5,6 +5,7 @@ use oxc_ast::ast::{Expression, PropertyKey, Statement};
 use oxc_parser::Parser;
 use oxc_span::{GetSpan, SourceType};
 use vize_carton::String;
+use vize_croquis::script_parser::with_shared_parse;
 
 use crate::script::ScriptCompileContext;
 use crate::types::SfcError;
@@ -49,12 +50,12 @@ pub fn validate_script_setup_semantics_located(
     if script_setup_content.is_empty() {
         return Ok(());
     }
-    let allocator = Allocator::default();
-    let parsed = Parser::new(&allocator, script_setup_content, SourceType::ts()).parse();
-    let mut ctx = ScriptCompileContext::new(script_setup_content);
-    ctx.analyze_program(&parsed.program, script_setup_content);
-    validate_macro_scope_references_in_program(&ctx, &parsed.program, block_start, sfc_source)?;
-    validate_props_destructure_default_types(&ctx, block_start, sfc_source)
+    with_shared_parse(script_setup_content, SourceType::ts(), |parsed| {
+        let mut ctx = ScriptCompileContext::new(script_setup_content);
+        ctx.analyze_program(&parsed.program, script_setup_content);
+        validate_macro_scope_references_in_program(&ctx, &parsed.program, block_start, sfc_source)?;
+        validate_props_destructure_default_types(&ctx, block_start, sfc_source)
+    })
 }
 
 /// Build a 1-based [`BlockLocation`] for an absolute byte span in `source`.

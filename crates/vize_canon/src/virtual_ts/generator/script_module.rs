@@ -7,13 +7,13 @@ mod plain_exports;
 pub(super) mod tsx_arrows;
 
 use super::imports::{IdentifierUsage, collect_identifier_usage};
-use oxc_allocator::Allocator;
 use oxc_ast::ast::{
     Declaration, ExportDefaultDeclarationKind, ImportDeclarationSpecifier, Statement,
 };
+use oxc_parser::ParserReturn;
 use oxc_span::{GetSpan, SourceType};
 use vize_carton::{CompactString, FxHashSet};
-use vize_croquis::script_parser::parse_program_for_analysis;
+use vize_croquis::script_parser::with_shared_program_for_analysis;
 
 pub(super) use namespace_hoist::NamespaceHoistPlan;
 pub(super) use navigation::mapped_binding_range;
@@ -98,32 +98,40 @@ pub(super) fn collect_script_module_plan(
     script: &str,
     recover_lone_setup: bool,
 ) -> ScriptModulePlan {
+    with_shared_program_for_analysis(script, SourceType::ts().with_module(true), |parsed| {
+        let tsx_arrows = if !parsed.panicked && parsed.diagnostics.is_empty() {
+            tsx_arrows::collect(&parsed.program, script)
+        } else {
+            Vec::new()
+        };
+        // Recovery may parse only a terminated import prefix. Its facts still
+        // support existing projection, but cannot prove the full script unbound.
+        let original_parse_complete = !parsed.panicked && parsed.diagnostics.is_empty();
+        if parsed.panicked {
+            let retry_source = recover_lone_setup
+                .then(|| super::glued_import::terminated_lone_import_prefix(script))
+                .flatten()
+                .unwrap_or(script);
+            with_shared_program_for_analysis(
+                retry_source,
+                SourceType::tsx().with_module(true),
+                |parsed| plan_from_parse(script, parsed, tsx_arrows, original_parse_complete),
+            )
+        } else {
+            plan_from_parse(script, parsed, tsx_arrows, original_parse_complete)
+        }
+    })
+}
+
+fn plan_from_parse(
+    script: &str,
+    parsed: &ParserReturn<'_>,
+    tsx_arrows: Vec<tsx_arrows::ArrowComma>,
+    original_parse_complete: bool,
+) -> ScriptModulePlan {
     let mut spans = Vec::new();
     let mut exported_types = FxHashSet::default();
     let mut bound_types = FxHashSet::default();
-    let allocator = Allocator::default();
-    let parsed = parse_program_for_analysis(&allocator, script, SourceType::ts().with_module(true));
-    let tsx_arrows = if !parsed.panicked && parsed.diagnostics.is_empty() {
-        tsx_arrows::collect(&parsed.program, script)
-    } else {
-        Vec::new()
-    };
-    // Recovery may parse only a terminated import prefix. Its facts still
-    // support existing projection, but cannot prove the full script unbound.
-    let original_parse_complete = !parsed.panicked && parsed.diagnostics.is_empty();
-    let parsed = if parsed.panicked {
-        let retry_source = recover_lone_setup
-            .then(|| super::glued_import::terminated_lone_import_prefix(script))
-            .flatten()
-            .unwrap_or(script);
-        parse_program_for_analysis(
-            &allocator,
-            retry_source,
-            SourceType::tsx().with_module(true),
-        )
-    } else {
-        parsed
-    };
     if parsed.panicked {
         return ScriptModulePlan::default();
     }
@@ -252,13 +260,20 @@ pub(super) fn collect_named_value_export_starts(script: &str) -> Vec<u32> {
     if !script.contains("export") {
         return Vec::new();
     }
-    let allocator = Allocator::default();
-    let parsed = parse_program_for_analysis(&allocator, script, SourceType::ts().with_module(true));
-    let parsed = if parsed.panicked || !parsed.diagnostics.is_empty() {
-        parse_program_for_analysis(&allocator, script, SourceType::tsx().with_module(true))
-    } else {
-        parsed
-    };
+    with_shared_program_for_analysis(script, SourceType::ts().with_module(true), |parsed| {
+        if parsed.panicked || !parsed.diagnostics.is_empty() {
+            with_shared_program_for_analysis(
+                script,
+                SourceType::tsx().with_module(true),
+                named_value_export_starts,
+            )
+        } else {
+            named_value_export_starts(parsed)
+        }
+    })
+}
+
+fn named_value_export_starts(parsed: &ParserReturn<'_>) -> Vec<u32> {
     if parsed.panicked {
         return Vec::new();
     }
