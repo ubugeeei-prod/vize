@@ -95,12 +95,16 @@ function producerRows(packet: Packet, explicit: Tuple[], navigation: boolean): T
   }
   // A navigation block and the gaps it touches form one interval.
   rows.sort((a, b) => a[2] - b[2]);
-  return rows.reduce<Tuple[]>((merged, row) => {
-    const previous = merged.at(-1);
-    if (previous && previous[3] === row[2]) previous[3] = row[3];
-    else merged.push(row);
-    return merged;
-  }, []);
+  return rows
+    .reduce<Tuple[]>((merged, row) => {
+      const previous = merged.at(-1);
+      if (previous && previous[3] === row[2]) previous[3] = row[3];
+      else merged.push(row);
+      return merged;
+    }, [])
+    .filter(([, , start, end]) =>
+      text.subarray(start, end).some((byte) => ![9, 10, 13, 32].includes(byte)),
+    );
 }
 
 export function withoutProducerUnmappedIgnores<T extends Packet>(
