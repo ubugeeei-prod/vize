@@ -64,7 +64,7 @@ use oxc_span::GetSpan;
 
 use vize_l0::CompactString;
 
-use super::super::{ScriptLintResult, ScriptRule, ScriptRuleMeta};
+use super::super::{ScriptLintResult, ScriptRule, ScriptRuleMeta, SfcScriptContext};
 use super::props_source::{PropDescriptor, collect_runtime_props};
 use crate::diagnostic::{LintDiagnostic, Severity};
 
@@ -102,16 +102,27 @@ impl ScriptRule for RequireValidDefaultProp {
     fn check_program<'a>(
         &self,
         program: &'a Program<'a>,
-        _source: &str,
+        source: &str,
         offset: usize,
         result: &mut ScriptLintResult,
     ) {
-        for source in collect_runtime_props(program) {
-            for prop in source.object_props() {
+        self.check_program_with_sfc(program, source, offset, SfcScriptContext::default(), result);
+    }
+
+    fn check_program_with_sfc<'a>(
+        &self,
+        program: &'a Program<'a>,
+        source: &str,
+        offset: usize,
+        sfc: SfcScriptContext<'_>,
+        result: &mut ScriptLintResult,
+    ) {
+        for props in collect_runtime_props(program) {
+            for prop in props.object_props() {
                 check_prop(prop, offset, result);
             }
         }
-        macros::check_setup_defaults(program, offset, result);
+        macros::check_setup_defaults(program, source, offset, sfc.resolved_type_world, result);
     }
 }
 

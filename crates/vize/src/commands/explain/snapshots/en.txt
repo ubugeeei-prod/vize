@@ -43,6 +43,15 @@ severity: error
 
 help:
   use a code point no greater than &#x10FFFF;
+=== compiler/control-character-in-input-stream
+compiler/control-character-in-input-stream · compiler error
+Control character in input stream.
+
+stage: surface
+severity: error
+
+help:
+  remove the control character; it is not visible and is not valid HTML text
 === compiler/control-character-reference
 compiler/control-character-reference · compiler error
 Control character reference.
@@ -283,6 +292,15 @@ severity: error
 
 help:
   remove the reference; noncharacters are not for interchange
+=== compiler/noncharacter-in-input-stream
+compiler/noncharacter-in-input-stream · compiler error
+Noncharacter in input stream.
+
+stage: surface
+severity: error
+
+help:
+  remove the noncharacter; Unicode noncharacters are not for interchange
 === compiler/null-character-reference
 compiler/null-character-reference · compiler error
 Null character reference.
