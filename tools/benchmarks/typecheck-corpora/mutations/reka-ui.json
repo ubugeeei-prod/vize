@@ -1,0 +1,492 @@
+{
+  "corpus": "reka-ui",
+  "submodule": "tests/_fixtures/_git/reka-ui",
+  "revision": "c23e0ed8a38c66cd4f9350e7a46c6b502a8491c2",
+  "absent": {
+    "prop-unknown": "the corpus tsconfig leaves vueCompilerOptions.strictTemplates off, as reka-ui's own tsconfig.app.json does, so Vize, like vue-tsc, accepts undeclared attributes on every component.",
+    "fallthrough": "reka-ui components render their root through Primitive's dynamic `as` element, and its two native-root components (ListboxVirtualizer, PopperArrow) are generic or inheritAttrs: false, so Vize, like vue-tsc, has no root element type to check an undeclared attribute against."
+  },
+  "mutations": [
+    {
+      "id": "interp-stepper-model",
+      "family": "interpolation-identifier",
+      "file": "src/Stepper/StepperRoot.vue",
+      "anchor": "Step {{ modelValue }} of {{ totalStepperItems.size }}",
+      "replacement": "Step {{ modelVlaue }} of {{ totalStepperItems.size }}",
+      "expect": {
+        "line": 215,
+        "column": 15,
+        "code": "TS2551",
+        "message": "'modelVlaue'"
+      }
+    },
+    {
+      "id": "interp-switch-checked",
+      "family": "interpolation-identifier",
+      "file": "src/Switch/_Switch.vue",
+      "anchor": "<p>{{ checked ? \"checked\" : \"unchecked\" }}</p>",
+      "replacement": "<p>{{ chekced ? \"checked\" : \"unchecked\" }}</p>",
+      "expect": {
+        "line": 10,
+        "column": 9,
+        "code": "TS2339",
+        "message": "'chekced'"
+      }
+    },
+    {
+      "id": "member-stepper-indicator-step",
+      "family": "typed-member",
+      "file": "src/Stepper/StepperIndicator.vue",
+      "anchor": "Step {{ itemContext.step.value }}",
+      "replacement": "Step {{ itemContext.stpe.value }}",
+      "expect": {
+        "line": 30,
+        "column": 27,
+        "code": "TS2339",
+        "message": "'stpe' does not exist on type 'StepperItemContext'"
+      }
+    },
+    {
+      "id": "member-calendar-heading",
+      "family": "typed-member",
+      "file": "src/Calendar/CalendarHeading.vue",
+      "anchor": "{{ rootContext.headingValue.value }}",
+      "replacement": "{{ rootContext.headingValeu.value }}",
+      "expect": {
+        "line": 29,
+        "column": 22,
+        "code": "TS2551",
+        "message": "'headingValeu' does not exist on type 'CalendarRootContext'"
+      }
+    },
+    {
+      "id": "member-editable-preview",
+      "family": "typed-member",
+      "file": "src/Editable/EditablePreview.vue",
+      "anchor": "{{ context.modelValue.value || placeholder }}",
+      "replacement": "{{ context.modelValue.vlaue || placeholder }}",
+      "expect": {
+        "line": 46,
+        "column": 29,
+        "code": "TS2551",
+        "message": "'vlaue'"
+      }
+    },
+    {
+      "id": "prop-static-select-position",
+      "family": "prop-static",
+      "file": "src/Select/__test__/SelectUnmountCleanup.vue",
+      "anchor": "<SelectContent position=\"popper\">",
+      "replacement": "<SelectContent position=\"poppr\">",
+      "expect": {
+        "line": 34,
+        "column": 22,
+        "code": "TS2820",
+        "message": "Type '\"poppr\"' is not assignable"
+      }
+    },
+    {
+      "id": "prop-static-menubar-orientation",
+      "family": "prop-static",
+      "file": "src/Menubar/MenubarRoot.vue",
+      "anchor": "orientation=\"horizontal\"",
+      "replacement": "orientation=\"horizontl\"",
+      "expect": {
+        "line": 93,
+        "column": 7,
+        "code": "TS2820",
+        "message": "Type '\"horizontl\"' is not assignable to type 'Orientation | undefined'"
+      }
+    },
+    {
+      "id": "prop-bound-nav-unmount",
+      "family": "prop-bound",
+      "file": "src/NavigationMenu/__test__/NavigationMenuUnmountOnHideFalse.vue",
+      "anchor": ":unmount-on-hide=\"false\"",
+      "replacement": ":unmount-on-hide=\"'false'\"",
+      "expect": {
+        "line": 17,
+        "column": 6,
+        "code": "TS2322",
+        "message": "Type 'string' is not assignable to type 'boolean | undefined'"
+      }
+    },
+    {
+      "id": "prop-bound-stepper-as-child",
+      "family": "prop-bound",
+      "file": "src/Stepper/StepperRoot.vue",
+      "anchor": ":as-child=\"asChild\"",
+      "replacement": ":as-child=\"as\"",
+      "expect": {
+        "line": 185,
+        "column": 6,
+        "code": "TS2322",
+        "message": "Type 'AsTag | Component | undefined' is not assignable to type 'boolean | undefined'"
+      }
+    },
+    {
+      "id": "prop-bound-menubar-loop",
+      "family": "prop-bound",
+      "file": "src/Menubar/MenubarRoot.vue",
+      "anchor": ":loop=\"loop\"",
+      "replacement": ":loop=\"dir\"",
+      "expect": {
+        "line": 94,
+        "column": 8,
+        "code": "TS2322",
+        "message": "Type 'Direction' is not assignable to type 'boolean | undefined'"
+      }
+    },
+    {
+      "id": "prop-missing-select-item-value",
+      "family": "prop-missing",
+      "file": "src/Select/__test__/SelectUnmountCleanup.vue",
+      "anchor": "<SelectItem value=\"apple\">",
+      "replacement": "<SelectItem>",
+      "expect": {
+        "line": 36,
+        "column": 12,
+        "code": "TS2345",
+        "message": "Property 'value' is missing"
+      }
+    },
+    {
+      "id": "prop-missing-hidden-input-name",
+      "family": "prop-missing",
+      "file": "src/Checkbox/CheckboxGroupRoot.vue",
+      "anchor": "    <VisuallyHiddenInput\n      v-if=\"isFormControl && name\"\n      :name=\"name\"",
+      "replacement": "    <VisuallyHiddenInput\n      v-if=\"isFormControl && name\"\n      :key=\"name\"",
+      "expect": {
+        "line": 77,
+        "column": 6,
+        "code": "TS2345",
+        "message": "Property 'name' is missing"
+      }
+    },
+    {
+      "id": "listener-handler-color-slider-commit",
+      "family": "listener-handler",
+      "file": "src/ColorSlider/ColorSliderRoot.vue",
+      "anchor": "@value-commit=\"handleValueCommit\"",
+      "replacement": "@value-commit=\"(values: string[]) => values\"",
+      "expect": {
+        "line": 211,
+        "column": 6,
+        "code": "TS2322",
+        "message": "Type '(values: string[]) => string[]' is not assignable to type '(payload: number[]) => any'"
+      }
+    },
+    {
+      "id": "listener-inline-combobox-escape",
+      "family": "listener-inline",
+      "file": "src/Combobox/ComboboxContentImpl.vue",
+      "anchor": "@escape-key-down=\"emits('escapeKeyDown', $event)\"",
+      "replacement": "@escape-key-down=\"emits('escapeKeyDown', $event.keyy)\"",
+      "expect": {
+        "line": 132,
+        "column": 57,
+        "code": "TS2551",
+        "message": "'keyy' does not exist on type 'KeyboardEvent'"
+      }
+    },
+    {
+      "id": "emit-call-dialog-forward",
+      "family": "emit-call",
+      "file": "src/Dialog/DialogContentImpl.vue",
+      "anchor": "@escape-key-down=\"emits('escapeKeyDown', $event)\"",
+      "replacement": "@escape-key-down=\"emits('focusOutside', $event)\"",
+      "expect": {
+        "line": 100,
+        "column": 31,
+        "code": "TS2769",
+        "message": "No overload matches this call"
+      }
+    },
+    {
+      "id": "emit-call-color-slider-end",
+      "family": "emit-call",
+      "file": "src/ColorSlider/ColorSliderRoot.vue",
+      "anchor": "emits('changeEnd', colorToString(color.value, 'hex'))",
+      "replacement": "emits('changeEnd', color.value)",
+      "expect": {
+        "line": 180,
+        "column": 9,
+        "code": "TS2769",
+        "message": "No overload matches this call"
+      }
+    },
+    {
+      "id": "slot-missing-dialog-present",
+      "family": "slot-prop-missing",
+      "file": "src/Dialog/DialogContent.vue",
+      "anchor": "v-slot=\"{ present }\"\n    :present=\"forceMount || rootContext.open.value\"",
+      "replacement": "v-slot=\"{ present, presnt }\"\n    :present=\"forceMount || rootContext.open.value\"",
+      "expect": {
+        "line": 42,
+        "column": 24,
+        "code": "TS2339",
+        "message": "'presnt' does not exist on type '{ present: boolean; }'"
+      }
+    },
+    {
+      "id": "slot-missing-date-picker-heading",
+      "family": "slot-prop-missing",
+      "file": "src/DatePicker/DatePickerHeading.vue",
+      "anchor": "v-slot=\"{ headingValue }\"",
+      "replacement": "v-slot=\"{ headingValue, headingVal }\"",
+      "expect": {
+        "line": 20,
+        "column": 29,
+        "code": "TS2339",
+        "message": "'headingVal' does not exist on type '{ headingValue: string; }'"
+      }
+    },
+    {
+      "id": "slot-type-date-picker-heading",
+      "family": "slot-prop-type",
+      "file": "src/DatePicker/DatePickerHeading.vue",
+      "anchor": "<slot :heading-value=\"headingValue\">",
+      "replacement": "<slot :heading-value=\"headingValue.length\">",
+      "expect": {
+        "line": 23,
+        "column": 12,
+        "code": "TS2322",
+        "message": "Type 'number' is not assignable to type 'string'"
+      }
+    },
+    {
+      "id": "slot-type-stepper-indicator-step",
+      "family": "slot-prop-type",
+      "file": "src/Stepper/StepperIndicator.vue",
+      "anchor": "<slot :step=\"itemContext.step.value\">",
+      "replacement": "<slot :step=\"itemContext.step\">",
+      "expect": {
+        "line": 29,
+        "column": 12,
+        "code": "TS2322",
+        "message": "Type 'Ref<number, number>' is not assignable to type 'number'"
+      }
+    },
+    {
+      "id": "slot-type-menubar-sub-open",
+      "family": "slot-prop-type",
+      "file": "src/Menubar/MenubarSub.vue",
+      "anchor": "<slot :open=\"open\" />",
+      "replacement": "<slot :open=\"emit\" />",
+      "expect": {
+        "line": 38,
+        "column": 12,
+        "code": "TS2322",
+        "message": "is not assignable to type 'boolean'"
+      }
+    },
+    {
+      "id": "vmodel-menubar-tab-stop",
+      "family": "v-model",
+      "file": "src/Menubar/MenubarRoot.vue",
+      "anchor": "v-model:current-tab-stop-id=\"currentTabStopId\"",
+      "replacement": "v-model:current-tab-stop-id=\"loop\"",
+      "expect": {
+        "line": 92,
+        "column": 15,
+        "code": "TS2322",
+        "message": "Type 'boolean' is not assignable to type 'string'"
+      }
+    },
+    {
+      "id": "vfor-hidden-input-parsed",
+      "family": "v-for-member",
+      "file": "src/VisuallyHidden/VisuallyHiddenInput.vue",
+      "anchor": ":key=\"parsed.name\"",
+      "replacement": ":key=\"parsed.nmae\"",
+      "expect": {
+        "line": 62,
+        "column": 18,
+        "code": "TS2339",
+        "message": "'nmae' does not exist on type '{ name: string; value: any; }'"
+      }
+    },
+    {
+      "id": "vfor-toast-announce-text",
+      "family": "v-for-member",
+      "file": "src/Toast/ToastRootImpl.vue",
+      "anchor": "      {{ text }}\n    </template>",
+      "replacement": "      {{ text.lenght }}\n    </template>",
+      "expect": {
+        "line": 198,
+        "column": 15,
+        "code": "TS2551",
+        "message": "'lenght' does not exist on type 'string'"
+      }
+    },
+    {
+      "id": "vfor-listbox-virtualizer-item",
+      "family": "v-for-member",
+      "file": "src/Listbox/ListboxVirtualizer.vue",
+      "anchor": ":key=\"item.index\"",
+      "replacement": ":key=\"item.indx\"",
+      "expect": {
+        "line": 267,
+        "column": 18,
+        "code": "TS2551",
+        "message": "'indx' does not exist on type 'VirtualItem'"
+      }
+    },
+    {
+      "id": "vif-scrollbar-type-chain",
+      "family": "v-if-narrowing",
+      "file": "src/ScrollArea/ScrollAreaScrollbar.vue",
+      "anchor": "v-else-if=\"rootContext.type.value === 'glimpse'\"",
+      "replacement": "v-else-if=\"rootContext.type.value === 'scroll'\"",
+      "expect": {
+        "line": 99,
+        "column": 16,
+        "code": "TS2367",
+        "message": "and '\"scroll\"' have no overlap"
+      }
+    },
+    {
+      "id": "tref-collapsible-presence",
+      "family": "template-ref",
+      "file": "src/Collapsible/CollapsibleContent.vue",
+      "anchor": "presentRef.value?.present]",
+      "replacement": "presentRef.value?.presnet]",
+      "expect": {
+        "line": 50,
+        "column": 42,
+        "code": "TS2551",
+        "message": "Property 'presnet' does not exist"
+      }
+    },
+    {
+      "id": "tref-tree-roving-group",
+      "family": "template-ref",
+      "file": "src/Tree/TreeRoot.vue",
+      "anchor": "const collections = rovingFocusGroupRef.value?.getItems() ?? []",
+      "replacement": "const collections = rovingFocusGroupRef.value?.getItem() ?? []",
+      "expect": {
+        "line": 175,
+        "column": 52,
+        "code": "TS2551",
+        "message": "Property 'getItem' does not exist"
+      }
+    },
+    {
+      "id": "generic-switch-true-value",
+      "family": "generic",
+      "file": "src/Switch/_Switch.vue",
+      "anchor": "      value=\"true\"",
+      "replacement": "      :true-value=\"1\"",
+      "expect": {
+        "line": 19,
+        "column": 8,
+        "code": "TS2322",
+        "message": "Type 'number' is not assignable to type 'boolean | undefined'"
+      }
+    },
+    {
+      "id": "generic-combobox-listbox-by",
+      "family": "generic",
+      "file": "src/Combobox/ComboboxRoot.vue",
+      "anchor": ":by=\"props.by as any\"",
+      "replacement": ":by=\"(a: number, b: number) => a === b\"",
+      "expect": {
+        "line": 266,
+        "column": 8,
+        "code": "TS2322",
+        "message": "Type '(a: number, b: number) => boolean' is not assignable to type"
+      }
+    },
+    {
+      "id": "script-dropdown-trigger-id",
+      "family": "script-setup",
+      "file": "src/DropdownMenu/DropdownMenuRoot.vue",
+      "anchor": "  triggerId: '',",
+      "replacement": "  triggerId: 0,",
+      "expect": {
+        "line": 64,
+        "column": 3,
+        "code": "TS2322",
+        "message": "Type 'number' is not assignable to type 'string'"
+      }
+    },
+    {
+      "id": "script-dropdown-open-toggle",
+      "family": "script-setup",
+      "file": "src/DropdownMenu/DropdownMenuRoot.vue",
+      "anchor": "    open.value = !open.value",
+      "replacement": "    open.value = 'toggle'",
+      "expect": {
+        "line": 62,
+        "column": 5,
+        "code": "TS2322",
+        "message": "Type 'string' is not assignable to type 'boolean'"
+      }
+    },
+    {
+      "id": "with-defaults-dropdown-modal",
+      "family": "with-defaults",
+      "file": "src/DropdownMenu/DropdownMenuRoot.vue",
+      "anchor": "  modal: true,",
+      "replacement": "  modal: 'yes',",
+      "expect": {
+        "line": 34,
+        "column": 3,
+        "code": "TS2322",
+        "message": "Type 'string' is not assignable to type"
+      }
+    },
+    {
+      "id": "with-defaults-stepper-indicator-as",
+      "family": "with-defaults",
+      "file": "src/Stepper/StepperIndicator.vue",
+      "anchor": "{ as: 'span' })",
+      "replacement": "{ as: 1 })",
+      "expect": {
+        "line": 12,
+        "column": 68,
+        "code": "TS2322",
+        "message": "Type 'number' is not assignable to type"
+      }
+    },
+    {
+      "id": "define-model-switch-harness",
+      "family": "define-model",
+      "file": "src/Switch/_Switch.vue",
+      "anchor": "const checked = ref(false)",
+      "replacement": "const checked = defineModel<boolean>(); checked.value = 'on'",
+      "expect": {
+        "line": 6,
+        "column": 41,
+        "code": "TS2322",
+        "message": "Type '\"on\"' is not assignable to type 'boolean | undefined'"
+      }
+    },
+    {
+      "id": "tpl-literal-color-swatch-warning",
+      "family": "template-literal",
+      "file": "src/ColorSwatch/ColorSwatch.vue",
+      "anchor": "for \"${colorString.value}\".",
+      "replacement": "for \"${colorString.valeu}\".",
+      "expect": {
+        "line": 70,
+        "column": 82,
+        "code": "TS2551",
+        "message": "'valeu' does not exist on type 'ComputedRef<string>'"
+      }
+    },
+    {
+      "id": "compile-error-popper-duplicate-attr",
+      "family": "compile-error",
+      "file": "src/Popper/_Popper.vue",
+      "anchor": "    <PopperContent>",
+      "replacement": "    <PopperContent data-state=\"a\" data-state=\"b\">",
+      "expect": {
+        "line": 14,
+        "column": 35,
+        "code": "vize100002",
+        "message": "Duplicate attribute `data-state`"
+      }
+    }
+  ]
+}

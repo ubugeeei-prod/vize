@@ -50,8 +50,8 @@ const tsc = MAPPER_HOSTS.find((host) => host.id === "tsc")!;
 
 /** The gitlink the driver checkout pins; the set must name the same commit. */
 function checkRevision(set: MutationSet, corpus: Corpus): void {
-  if (!corpus.source.startsWith(`${set.submodule}/`)) {
-    throw new Error(`${set.corpus}: ${corpus.source} is not inside ${set.submodule}`);
+  if (corpus.submodule !== set.submodule) {
+    throw new Error(`${set.corpus}: the corpus is ${corpus.submodule}, the set ${set.submodule}`);
   }
   const tree = spawnSync("git", ["-C", repoRoot, "ls-tree", "HEAD", set.submodule], {
     encoding: "utf8",

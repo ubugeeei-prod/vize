@@ -12,7 +12,7 @@ import {
 } from "node:fs";
 import { dirname, join, matchesGlob, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { CORPORA } from "./typecheck-corpus-pair.ts";
+import { BASE_PACKAGES, CORPORA, corpusPackageNames } from "./typecheck-corpus-pair-corpora.ts";
 import { generateScaleProject, PLANT_CODES, type ScaleProject } from "./scale-project-generator.ts";
 import { prepareMapperPackages, type MapperHosts } from "./typecheck-mapper-hosts.ts";
 import { linkPackage } from "./install-package-files.ts";
@@ -242,12 +242,18 @@ export function prepareOwnedWorkload(
   );
   const modules = join(directory, "node_modules");
   mkdirSync(modules);
-  for (const name of readdirSync(packages).sort()) {
-    if (name.startsWith(".")) continue;
-    if (name.startsWith("@")) {
-      for (const child of readdirSync(join(packages, name)).sort())
-        linkPackage(realpathSync(join(packages, name, child)), join(modules, name, child));
-    } else linkPackage(realpathSync(join(packages, name)), join(modules, name));
+  if (kind === "nuxt" && !real) {
+    for (const name of readdirSync(packages).sort()) {
+      if (name.startsWith(".")) continue;
+      if (name.startsWith("@")) {
+        for (const child of readdirSync(join(packages, name)).sort())
+          linkPackage(realpathSync(join(packages, name, child)), join(modules, name, child));
+      } else linkPackage(realpathSync(join(packages, name)), join(modules, name));
+    }
+  } else {
+    // Each corpus resolves only its own closure of the shared corpus packages, as in the corpus pair.
+    for (const name of corpusPackageNames(real?.packages ?? BASE_PACKAGES))
+      linkPackage(realpathSync(join(packages, name)), join(modules, name));
   }
   if (kind === "nuxt" && generated) {
     const command = [join(packages, "nuxt/bin/nuxt.mjs"), "prepare", directory];

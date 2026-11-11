@@ -34,7 +34,7 @@ function scratch(t: TestContext): string {
   return dir;
 }
 
-void test("the pair checks four pinned corpora cold, and plants only where a set exists", () => {
+void test("the pair checks four pinned corpora cold and plants every one", () => {
   assert.deepEqual(
     CORPORA.map((corpus) => [corpus.id, corpus.sfcs]),
     [
@@ -62,7 +62,7 @@ void test("the pair checks four pinned corpora cold, and plants only where a set
   assert.throws(() => selectCorpora("misskey,vuetify"), /unknown corpus: vuetify/u);
   assert.deepEqual(
     CORPORA.map((corpus) => hasMutationSet(corpus.id)),
-    [true, true, false, false],
+    [true, true, true, true],
   );
   assert.deepEqual(hostArgs({ id: "tsrs-default" }, "/p", "t.json"), [
     "--noEmit",
