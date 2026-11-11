@@ -88,6 +88,7 @@ pub(crate) fn has_resolved_macro_type_demand(linter: &Linter) -> bool {
         RULE_NO_REQUIRED_PROP_WITH_DEFAULT,
         "script/no-boolean-default",
         "script/require-default-prop",
+        "script/no-reserved-keys",
         "script/no-unused-emit-declarations",
         "script/require-explicit-emits",
     ];

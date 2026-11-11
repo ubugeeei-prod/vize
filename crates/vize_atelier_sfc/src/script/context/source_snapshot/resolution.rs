@@ -3,7 +3,9 @@ use vize_carton::ToCompactString;
 
 use super::directory_index::Probe;
 use super::{ResolutionScope, TypeSourceSnapshot, lexical_path, source_path};
-use crate::script::context::external_types::resolution::resolve_import_path_with_project;
+use crate::script::context::external_types::resolution::{
+    project, resolve_import_path_with_project,
+};
 
 const EXTENSIONS: &[&str] = &[
     ".ts", ".tsx", ".d.ts", ".mts", ".cts", ".js", ".jsx", ".vue",
@@ -49,9 +51,11 @@ impl TypeSourceSnapshot {
             }
             _ => ResolutionScope::File(current_file.to_path_buf()),
         };
-        // This resolver uses only the importer directory and exact specifier,
-        // including for package ancestry and @/ aliases. It has no module-mode
-        // input; Canon's contextual package route resolver remains separate.
+        // The cache key is the importer directory and the exact specifier.
+        // A bare specifier also reads the nearest tsconfig `paths` when this
+        // snapshot was not already bound to a project. Relative imports stay
+        // directory-local. Canon's contextual package route resolver remains
+        // separate.
         let key = (scope, specifier.to_compact_string());
         let entry = self
             .resolutions
@@ -68,9 +72,21 @@ impl TypeSourceSnapshot {
     }
 
     fn resolve_uncached(&self, current_file: &Path, specifier: &str) -> Option<PathBuf> {
+        // A lint snapshot is not given a project up front. Discover the same
+        // tsconfig the compiler uses, so `paths` and package conditions apply
+        // to bare specifiers. Relative imports do not consult it.
+        let discovered = if self.project.is_none()
+            && !specifier.starts_with('.')
+            && !Path::new(specifier).is_absolute()
+        {
+            project::for_file(current_file).ok().flatten()
+        } else {
+            None
+        };
+        let project = self.project.as_deref().or(discovered.as_deref());
         if !specifier.starts_with('.')
             && !Path::new(specifier).is_absolute()
-            && let Some(project) = self.project.as_ref()
+            && let Some(project) = project
             && let Some(path) =
                 project.resolve(specifier, |candidate| self.resolve_candidate(&candidate))
         {
@@ -80,7 +96,7 @@ impl TypeSourceSnapshot {
             Some(current_file.parent()?.join(specifier))
         } else if specifier.starts_with('/') {
             Some(PathBuf::from(specifier))
-        } else if self.project.is_none()
+        } else if project.is_none()
             && let Some(rest) = specifier.strip_prefix("@/")
         {
             current_file
@@ -96,7 +112,7 @@ impl TypeSourceSnapshot {
         }
         // Package exports are handled by the existing package resolver. Source
         // reads still go through this snapshot once the module is identified.
-        resolve_import_path_with_project(current_file, specifier, self.project.as_deref())
+        resolve_import_path_with_project(current_file, specifier, project)
     }
 
     fn exists(&self, candidate: &Path) -> Option<PathBuf> {

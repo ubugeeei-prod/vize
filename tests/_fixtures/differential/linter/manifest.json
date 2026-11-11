@@ -4508,6 +4508,48 @@
       }
     },
     {
+      "id": "linter/patina/compat-paths-alias-12802",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "patina-compat-paths-alias-12802",
+        "files": [
+          {
+            "path": "tsconfig.json",
+            "role": "third-party-paths-alias-reproduction",
+            "sha256": "f464fba9bd3a192e9e5d1ec7242782d53745fd3cc91421956e6e5a415ef9b324"
+          },
+          {
+            "path": "lib/types.ts",
+            "role": "third-party-paths-alias-reproduction",
+            "sha256": "f87dbb7afe1fbf2df3a7f4a9d26c49df4c7b2c8271c10ede746dc1ab44c9b0cf"
+          },
+          {
+            "path": "src/Alias.vue",
+            "role": "third-party-paths-alias-reproduction",
+            "sha256": "8c938bc0af4aa4af942b3859756a35ed90ee1a71ca677909feb9d52ca5364025"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/patina/compat-prop-casing-12687",
       "state": "active",
       "targets": [
