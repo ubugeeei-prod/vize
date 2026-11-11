@@ -30,6 +30,31 @@ test("the producer's unmapped IGNORE rows are accepted", () => {
   );
 });
 
+test("whitespace-only producer gaps stay absent from the CLI wire", () => {
+  const whitespace = {
+    text: "a \n\tb",
+    mappings: [
+      [0, 1, 0, 1, 1, 0],
+      [4, 1, 4, 1, 1, 0],
+    ],
+  };
+  assert.equal(authoredDirectives(whitespace, true), null);
+  assert.throws(
+    () =>
+      authoredDirectives(
+        {
+          ...whitespace,
+          diagnosticDirectives: {
+            directives: [[0, 0, 1, 4, 0, 0]],
+            unusedExpectDirectiveDiagnostics: [],
+          },
+        },
+        true,
+      ),
+    /unmapped gaps/,
+  );
+});
+
 test("an IGNORE over a mapped range is rejected", () => {
   assert.throws(() => authoredDirectives(packet([[0, 0, 0, 2, 0, 0]]), true), /unmapped gaps/);
 });
