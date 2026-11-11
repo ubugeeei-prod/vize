@@ -33,7 +33,7 @@ use oxc_ast::ast::Expression;
 use oxc_parser::{Parser, ParserReturn};
 use oxc_span::SourceType;
 use rustc_hash::FxBuildHasher;
-use vize_carton::FxHashMap;
+use vize_carton::{FxHashMap, SmallVec};
 
 /// The text a shared parse borrows, with the arena its tree lives in.
 struct Source {
@@ -134,7 +134,7 @@ owned_parse!(
 );
 
 /// Parses by the hash of their text and source type.
-struct Shelf<T>(FxHashMap<u64, Vec<Rc<T>>>);
+struct Shelf<T>(FxHashMap<u64, SmallVec<[Rc<T>; 1]>>);
 
 impl<T> Default for Shelf<T> {
     fn default() -> Self {
@@ -364,8 +364,13 @@ mod tests {
         PARSES.with_borrow(|parses| {
             let parses = parses.as_ref().map(|parses| {
                 (
-                    parses.programs.0.values().map(Vec::len).sum::<usize>(),
-                    parses.expressions.0.values().map(Vec::len).sum::<usize>(),
+                    parses.programs.0.values().map(SmallVec::len).sum::<usize>(),
+                    parses
+                        .expressions
+                        .0
+                        .values()
+                        .map(SmallVec::len)
+                        .sum::<usize>(),
                 )
             });
             assert_eq!(parses, Some((1, 3)));
