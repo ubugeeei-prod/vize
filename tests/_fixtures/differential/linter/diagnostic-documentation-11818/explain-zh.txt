@@ -1209,6 +1209,16 @@ a11y/role-has-required-aria-props · lint 规则
     <div role="{role}" {props}="...">
     内容
     </div>
+=== a11y/role-img-has-name
+a11y/role-img-has-name · lint 规则
+要求 role="img" 的元素具有无障碍名称
+
+精度层级: exact
+适用范围: native elements with static attributes and roles in SFC templates; components and dynamic bindings are outside
+严重级别: 警告
+类别: accessibility
+自动修复: 不支持
+文档: docs/content/rules/reference/a11y-role-img-has-name.md
 === a11y/tabindex-no-positive
 a11y/tabindex-no-positive · lint 规则
 禁止正数tabindex值

@@ -90,6 +90,7 @@ pub static RULE_CONTRACTS: &[RuleEntry] = &[
     row!("a11y/no-static-element-interactions", Exact, A11Y, Warning),
     row!("a11y/placeholder-label-option", Exact, A11Y, Warning),
     row!("a11y/role-has-required-aria-props", Exact, A11Y, Warning),
+    row!("a11y/role-img-has-name", Exact, A11Y, Warning),
     row!("a11y/tabindex-no-positive", Exact, A11Y, Warning),
     row!("a11y/use-list", Heuristic, A11Y, Warning),
     row!("css/no-display-none", Heuristic, CSS_TEXT, Warning),

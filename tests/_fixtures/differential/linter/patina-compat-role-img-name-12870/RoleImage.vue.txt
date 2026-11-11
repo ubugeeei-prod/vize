@@ -1,0 +1,11 @@
+<script setup lang="ts">
+const source = "/a.png";
+</script>
+
+<template>
+  <div>
+    <img :src="source" alt="" role="img" />
+    <img :src="source" role="img" />
+    <img :src="source" alt="" />
+  </div>
+</template>

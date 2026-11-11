@@ -94,6 +94,23 @@ export const manual2: Record<string, RuleExample> = {
     },
     evidence: "docs/content/rules/accessibility-integrity.md",
   },
+  "a11y/role-img-has-name": {
+    bad: {
+      language: "vue",
+      source: '<template>\n  <img src="/a.png" alt="" role="img" />\n</template>',
+    },
+    good: {
+      language: "vue",
+      source: '<template>\n  <img src="/a.png" alt="Network diagram" role="img" />\n</template>',
+    },
+    evidence: "docs/content/rules/accessibility-integrity.md",
+    eslintDifferenceHeading: {
+      en: "Differences from eslint-plugin-vuejs-accessibility",
+    },
+    eslintDifference: {
+      en: 'This rule reports an element whose explicit role is `img` when that element has no accessible name. `a11y/no-redundant-roles` keeps `role="img"` on `<img alt="">` because an empty `alt` makes the implicit role `presentation` under HTML-ARIA, so the explicit role is not redundant. eslint-plugin-vuejs-accessibility still reports that attribute as a redundant `img` role. WAI-ARIA 1.2 requires an accessible name for the `img` role. A non-empty `alt` on `<img>`, or `aria-label`, `aria-labelledby`, or `title`, supplies that name.',
+    },
+  },
   "a11y/tabindex-no-positive": {
     bad: {
       language: "vue",

@@ -305,6 +305,7 @@
   "a11y/interactive-supports-focus.message": "role=\"{role}\"を持つ要素はフォーカス可能でなければなりません（tabindex=\"0\"を追加）",
   "a11y/interactive-supports-focus.help": "**理由:** インタラクティブロールはキーボードユーザーが操作できることを意味します。\n\n**修正:**\n```vue\n<div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  クリック\n</div>\n```\n\n**より良い方法:** ネイティブのインタラクティブ要素を使用:\n```vue\n<button @click=\"handle\">クリック</button>\n```",
   "a11y/role-has-required-aria-props.description": "ARIAロールに必須プロパティを要求する",
+  "a11y/role-img-has-name.description": "role=\"img\" の要素にアクセシブルな名前を要求する",
   "a11y/role-has-required-aria-props.message": "role=\"{role}\"を持つ要素には'{prop}'属性が必要です",
   "a11y/role-has-required-aria-props.help": "**ロール`{role}`の必須属性:** {props}\n\n**例:**\n```vue\n<div role=\"{role}\" {props}=\"...\">\n  コンテンツ\n</div>\n```",
   "a11y/media-has-caption.description": "メディア要素にキャプションを要求する",

@@ -35,6 +35,7 @@ mod no_role_presentation_on_focusable;
 mod no_static_element_interactions;
 pub(crate) mod reference_values;
 mod role_has_required_aria_props;
+mod role_img_has_name;
 mod tabindex_no_positive;
 mod vuejs_accessibility;
 
@@ -74,6 +75,9 @@ pub use tabindex_no_positive::TabindexNoPositive;
 pub(crate) fn register_opt_in(registry: &mut crate::rule::RuleRegistry) {
     if !registry.has_rule("a11y/img-alt") {
         registry.register(Box::new(ImgAlt));
+    }
+    if !registry.has_rule("a11y/role-img-has-name") {
+        registry.register(Box::new(role_img_has_name::RoleImgHasName));
     }
 }
 

@@ -1156,6 +1156,16 @@ ARIAロールに必須プロパティを要求する
     <div role="{role}" {props}="...">
     コンテンツ
     </div>
+=== a11y/role-img-has-name
+a11y/role-img-has-name · lint ルール
+role="img" の要素にアクセシブルな名前を要求する
+
+精度: exact
+対象: native elements with static attributes and roles in SFC templates; components and dynamic bindings are outside
+重大度: 警告
+カテゴリー: accessibility
+自動修正: なし
+ドキュメント: docs/content/rules/reference/a11y-role-img-has-name.md
 === a11y/tabindex-no-positive
 a11y/tabindex-no-positive · lint ルール
 正のtabindex値を禁止する

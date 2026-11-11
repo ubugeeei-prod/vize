@@ -198,6 +198,13 @@ export const accessibilityExplanations: readonly ExplanationRecord[] = [
     '`aria-checked="false"` を追加し、checkbox に必要な状態を指定します。',
   ],
   [
+    "a11y/role-img-has-name",
+    'The image sets `role="img"` after an empty `alt`, so it is exposed as an image with no accessible name.',
+    '`alt="Network diagram"` names the image, so `role="img"` has an accessible name.',
+    '空の `alt` のあとに `role="img"` を指定しているため、名前のない画像として公開されます。',
+    '`alt="Network diagram"` が画像の名前になるため、`role="img"` にアクセシブルな名前があります。',
+  ],
+  [
     "a11y/tabindex-no-positive",
     "A positive tabindex of 3 creates a custom focus order ahead of ordinary controls.",
     "The button uses its native focus order without a positive tabindex.",

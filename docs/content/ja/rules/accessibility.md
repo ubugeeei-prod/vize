@@ -53,12 +53,13 @@ ARIA、キーボード操作、ラベル、ランドマーク、メディアの�
 | <span id="a11y-use-list"></span>[`a11y/use-list`](./reference/a11y-use-list.md) | 箇条書きに見えるテキストをリスト要素で表現します。 | `nuxt`, `opinionated` |  |
 | <span id="vue-use-unique-element-ids"></span>[`vue/use-unique-element-ids`](./reference/vue-use-unique-element-ids.md) | 静的 ID の代わりに useId() で一意な ID を生成します。 | `nuxt`, `opinionated` |  |
 
-## 個別に有効化 (1)
+## 個別に有効化 (2)
 
 どのプリセットにも含まれません。`withVue` に渡す `linter.rules` でルール名を指定して有効にします。
 
 | ルール | 検出する内容 | 自動修正 |
 | --- | --- | --- |
 | <span id="a11y-img-alt"></span>[`a11y/img-alt`](./reference/a11y-img-alt.md) | 画像に alt 属性を指定します。装飾画像は空の alt を使います。 |  |
+| <span id="a11y-role-img-has-name"></span>[`a11y/role-img-has-name`](./reference/a11y-role-img-has-name.md) | role="img" の要素にアクセシブルな名前を要求します。 |  |
 
 [ルールの概要](../rules/index.md) · [ルールのオプション](./options.md) · [ESLint からの移行](./migration.md)

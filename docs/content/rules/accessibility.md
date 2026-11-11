@@ -53,12 +53,13 @@ Only in `opinionated`, `nuxt` or `ecosystem`. The Presets column lists which.
 | <span id="a11y-use-list"></span>[`a11y/use-list`](./reference/a11y-use-list.md) | Suggest using list elements for bullet-like text. | `nuxt`, `opinionated` |  |
 | <span id="vue-use-unique-element-ids"></span>[`vue/use-unique-element-ids`](./reference/vue-use-unique-element-ids.md) | Enforce unique element IDs using useId() instead of static literals. | `nuxt`, `opinionated` |  |
 
-## Opt-in (1)
+## Opt-in (2)
 
 Not in any preset. Turn them on by name in the `linter.rules` passed to `withVue`.
 
 | Rule | What it checks | Auto-fix |
 | --- | --- | --- |
 | <span id="a11y-img-alt"></span>[`a11y/img-alt`](./reference/a11y-img-alt.md) | Require alt attribute on images for accessibility. |  |
+| <span id="a11y-role-img-has-name"></span>[`a11y/role-img-has-name`](./reference/a11y-role-img-has-name.md) | Require an accessible name on elements with role="img". |  |
 
 [Rules overview](../rules/index.md) · [Rule options](./options.md) · [Migrating from ESLint](./migration.md)

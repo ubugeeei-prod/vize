@@ -139,6 +139,11 @@ export const portugueseRules0: Record<string, readonly [string, string, string]>
     "O papel de caixa de seleção omite `aria-checked`, que informa o estado da caixa de seleção.",
     '`aria-checked="false"` fornece o estado exigido pelo papel de caixa de seleção.',
   ],
+  "a11y/role-img-has-name": [
+    'Exigir um nome acessível nos elementos com role="img"',
+    'A imagem define `role="img"` depois de um `alt` vazio, então fica exposta como uma imagem sem nome acessível.',
+    '`alt="Network diagram"` nomeia a imagem, então `role="img"` tem um nome acessível.',
+  ],
   "a11y/tabindex-no-positive": [
     "Proibir valores positivos de tabindex",
     "Um tabindex positivo de 3 cria uma ordem de foco personalizada antes dos controles comuns.",
