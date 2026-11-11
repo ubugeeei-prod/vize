@@ -5,33 +5,43 @@ use vize_atelier_core::{ParseMode, ParserOptions, parser::parse_with_options};
 use vize_carton::Allocator;
 use vize_relief::TemplateChildNode;
 
+/// Comment options, each read only when its `@name` occurs in the source.
+const COMMENT_OPTIONS: [&str; 19] = [
+    "@strictTemplates",
+    "@checkUnknownProps",
+    "@checkUnknownComponents",
+    "@checkUnknownEvents",
+    "@checkUnknownDirectives",
+    "@strictCssModules",
+    "@inferComponentDollarEl",
+    "@inferTemplateDollarEl",
+    "@inferComponentDollarRefs",
+    "@inferTemplateDollarRefs",
+    "@inferTemplateDollarSlots",
+    "@inferTemplateDollarAttrs",
+    "@fallthroughAttributes",
+    "@checkRequiredFallthroughAttributes",
+    "@resolveStyleClassNames",
+    "@resolveStyleImports",
+    "@jsxSlots",
+    "@strictVModel",
+    "@vapor",
+];
+
+/// Whether `source` names a comment option or a ` vapor` attribute: one
+/// SIMD pass over the `@`s instead of a substring search per option.
+fn mentions_compiler_options(source: &str) -> bool {
+    let bytes = source.as_bytes();
+    memchr::memchr_iter(b'@', bytes).any(|at| {
+        let rest = bytes.get(at..).unwrap_or_default();
+        COMMENT_OPTIONS
+            .iter()
+            .any(|option| rest.starts_with(option.as_bytes()))
+    }) || memchr::memmem::find(bytes, b" vapor").is_some()
+}
+
 pub(super) fn apply(source: &str, mut options: VirtualTsCheckOptions) -> VirtualTsCheckOptions {
-    if ![
-        "@strictTemplates",
-        "@checkUnknownProps",
-        "@checkUnknownComponents",
-        "@checkUnknownEvents",
-        "@checkUnknownDirectives",
-        "@strictCssModules",
-        "@inferComponentDollarEl",
-        "@inferTemplateDollarEl",
-        "@inferComponentDollarRefs",
-        "@inferTemplateDollarRefs",
-        "@inferTemplateDollarSlots",
-        "@inferTemplateDollarAttrs",
-        "@fallthroughAttributes",
-        "@checkRequiredFallthroughAttributes",
-        "@resolveStyleClassNames",
-        "@resolveStyleImports",
-        "@jsxSlots",
-        "@strictVModel",
-        "@vapor",
-        // The `vapor` attribute of `<script setup>` / `<template>`.
-        " vapor",
-    ]
-    .iter()
-    .any(|option| source.contains(option))
-    {
+    if !mentions_compiler_options(source) {
         return options;
     }
     let allocator = Allocator::new();

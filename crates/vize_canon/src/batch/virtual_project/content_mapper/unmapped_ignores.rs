@@ -131,7 +131,7 @@ const NAVIGATION_IGNORE: &str = "// @ts-ignore Navigation-only references; no di
 fn navigation_blocks(generated: &str) -> Vec<std::ops::Range<usize>> {
     const DECLARATION: &str = "const __vize_props_nav_";
     let mut blocks = Vec::new();
-    for (start, _) in generated.match_indices(DECLARATION) {
+    for start in memchr::memmem::find_iter(generated.as_bytes(), DECLARATION.as_bytes()) {
         let (Some(before), Some(rest)) = (generated.get(..start), generated.get(start..)) else {
             continue;
         };
