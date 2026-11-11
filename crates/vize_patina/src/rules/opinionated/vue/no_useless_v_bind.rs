@@ -212,4 +212,22 @@ mod tests {
         let unterminated = linter.lint_template(r#"<div :id="'\'" />"#, "App.vue");
         assert_eq!(unterminated.warning_count, 0);
     }
+
+    #[test]
+    fn reports_literals_beside_comments_or_in_parentheses() {
+        let linter = create_linter();
+        for source in [
+            r#"<p :id="'d' /* note */">x</p>"#,
+            r#"<p :id="/* note */ 'e'">x</p>"#,
+            r#"<p :id="('f')">x</p>"#,
+        ] {
+            assert_eq!(
+                linter.lint_template(source, "App.vue").warning_count,
+                1,
+                "{source}"
+            );
+        }
+        let cast = linter.lint_template(r#"<p :id="'m' as string">x</p>"#, "App.vue");
+        assert_eq!(cast.warning_count, 0);
+    }
 }

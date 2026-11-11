@@ -4461,6 +4461,98 @@
       }
     },
     {
+      "id": "linter/patina/directive-parity-12723",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "patina-directive-parity-12723",
+        "files": [
+          {
+            "path": "DynamicArgumentLabel.vue.txt",
+            "role": "issue-authored-reproduction",
+            "sha256": "75542576c13488359e9ec372ead701131585c86b55d84e14f077a75fccac3b29"
+          },
+          {
+            "path": "DynamicArgumentTemplate.vue.txt",
+            "role": "issue-authored-reproduction",
+            "sha256": "841afff523dd0bb9e33865d9b67fa58ebedaca104be040afb077b7f91d9121ed"
+          },
+          {
+            "path": "NoDupeVElseIf.vue.txt",
+            "role": "issue-authored-reproduction",
+            "sha256": "97bc69aa8ca9040d69952ad534d6dca97432683b6fb2eaa3305ad64e0565ffd4"
+          },
+          {
+            "path": "NoLiteralsInTemplate.vue.txt",
+            "role": "issue-authored-reproduction",
+            "sha256": "a6bf944788ef7f8f582bd7ca5cc7820d85708f1d595d8dea7e216f096ab822a4"
+          },
+          {
+            "path": "NoUselessStringLiteral.vue.txt",
+            "role": "issue-authored-reproduction",
+            "sha256": "cf6924110867e2f79c425c34bd4b8d6e6637d1a9559786408215ad3c10da1db1"
+          },
+          {
+            "path": "PreferVModel.vue.txt",
+            "role": "issue-authored-reproduction",
+            "sha256": "cfd40d3c1198389ac5014f5cd0c2a9c9ee788d7f89db16617b4855bd633e2931"
+          },
+          {
+            "path": "RequireVForKey.vue.txt",
+            "role": "issue-authored-reproduction",
+            "sha256": "381ae49471d633fd3339c03b411ccf64950fdead0d922ede7a174ccbc63d195a"
+          },
+          {
+            "path": "VIfElseKey.vue.txt",
+            "role": "issue-authored-reproduction",
+            "sha256": "1669a49cd1f9699fef6a4b7fb01d926abfbdc4d8413f85bebde6fd41a9f7260b"
+          },
+          {
+            "path": "VIfElseKeyIssue.vue.txt",
+            "role": "issue-authored-reproduction",
+            "sha256": "ec07bce5cd7e912399968ec46bff4e9556abde5fc1c1be130907bfedeea1d3f7"
+          },
+          {
+            "path": "ValidVFor.vue.txt",
+            "role": "issue-authored-reproduction",
+            "sha256": "4196989aae19aba65289ec41ba812bbee9d0c835b17ea7e3fe46bba9fcbde578"
+          },
+          {
+            "path": "ValidVMemo.vue.txt",
+            "role": "issue-authored-reproduction",
+            "sha256": "c4572c023e31c22ffbe8fffea548b1d853d4ad322fed989976cc9036414f244a"
+          },
+          {
+            "path": "ValidVSlotDistribution.vue.txt",
+            "role": "issue-authored-reproduction",
+            "sha256": "57eb069a3b9798ee17e37d9cb16de3f9fa1e9203d0501a770bc45b62d0fe35e1"
+          },
+          {
+            "path": "ValidVSlotValue.vue.txt",
+            "role": "issue-authored-reproduction",
+            "sha256": "a21be50ee31b0efa7607ba0b0ff13d6bf853d4827091b0900af822eedb18e4eb"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/patina/rule-fixes-9872-9873",
       "state": "active",
       "targets": [

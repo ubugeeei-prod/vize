@@ -1,0 +1,43 @@
+<script setup lang="ts">
+const { a, b, s, typeofa } = defineProps<{ a: unknown; b: boolean; s: string; typeofa: string }>();
+</script>
+
+<template>
+  <p v-if="s === `row-${a}`">one</p>
+  <p v-else-if="s === `row-${ a }`">two</p>
+  <p v-if="/'/.test(s)">three</p>
+  <p v-else-if="/'/.test( s )">four</p>
+  <p v-if="typeof a === 'string'">five</p>
+  <p v-else-if="typeofa === 'string'">six</p>
+  <p v-if="s === 'a b'">x</p>
+  <p v-else-if="s === 'ab'">x</p>
+  <p v-if="s === `a ${ b } c`">x</p>
+  <p v-else-if="s === `a ${b} c`">x</p>
+  <p v-if="s === `a ${b}  c`">x</p>
+  <p v-else-if="s === `a ${b} c`">x</p>
+  <p v-if="a /* c */ === 1">x</p>
+  <p v-else-if="a === 1">x</p>
+  <p v-if="(a)">x</p>
+  <p v-else-if="a">x</p>
+  <p v-if="(a as boolean)">x</p>
+  <p v-else-if="a">x</p>
+  <p v-if="a!">x</p>
+  <p v-else-if="a">x</p>
+  <p v-if="a + +b">x</p>
+  <p v-else-if="a++ + b">x</p>
+  <p v-if="a && !b">x</p>
+  <p v-else-if="a&&!b">x</p>
+  <p v-if="b instanceof Object">x</p>
+  <p v-if="a / 2 / s">x</p>
+  <p v-else-if="a/2/s">x</p>
+  <p v-if="s.match(/ a /)">x</p>
+  <p v-else-if="s.match(/a/)">x</p>
+  <p v-if="s === `x`">x</p>
+  <p v-else-if="s === 'x'">x</p>
+  <p v-if="a?.b">x</p>
+  <p v-else-if="a ?. b">x</p>
+  <p v-if="s === `${`${ a }`}`">x</p>
+  <p v-else-if="s === `${`${a}`}`">x</p>
+  <p v-if="s === &quot;a&quot;">x</p>
+  <p v-else-if="s === 'a'">x</p>
+</template>

@@ -1,45 +1,26 @@
 //! The relief-AST form of the rule, used where the markup facade is not.
 
 use super::components::relief_element_is_custom_component;
-use super::object_has_static_key;
 use crate::context::LintContext;
 use crate::markup::MarkupElement;
 use vize_l0::ensure_sufficient_stack;
 use vize_relief::{DirectiveNode, ElementNode, ExpressionNode, PropNode, TemplateChildNode};
 
-fn relief_element_has_key(element: &ElementNode<'_>) -> bool {
-    element.props.iter().any(|prop| match prop {
-        PropNode::Attribute(_) => false,
-        PropNode::Directive(dir) => {
-            if relief_directive_is_bound_key(dir) {
-                return true;
-            }
-            dir.name == "bind"
-                && dir.arg.is_none()
-                && matches!(&dir.exp, Some(ExpressionNode::Simple(expression)) if object_has_static_key(expression.content))
-        }
-    })
-}
-
 fn relief_directive_is_bound_key(directive: &DirectiveNode<'_>) -> bool {
     directive.name == "bind"
         && matches!(
             directive.arg.as_ref(),
-            Some(ExpressionNode::Simple(arg)) if arg.content == "key"
+            Some(ExpressionNode::Simple(arg)) if arg.is_static && arg.content == "key"
         )
 }
 
 /// The relief form of [`RequireVForKey::check_keyed_element`].
-pub(super) fn relief_check(ctx: &mut LintContext<'_>, element: &ElementNode<'_>, root: bool) {
-    let keyed = if root {
-        relief_element_has_key(element)
-    } else {
-        element
-            .props
-            .iter()
-            .any(|prop| matches!(prop, PropNode::Directive(directive) if relief_directive_is_bound_key(directive)))
-    };
-    if keyed {
+pub(super) fn relief_check(ctx: &mut LintContext<'_>, element: &ElementNode<'_>) {
+    if element
+        .props
+        .iter()
+        .any(|prop| matches!(prop, PropNode::Directive(directive) if relief_directive_is_bound_key(directive)))
+    {
         return;
     }
     if matches!(element.tag, "template" | "slot") {
@@ -49,7 +30,7 @@ pub(super) fn relief_check(ctx: &mut LintContext<'_>, element: &ElementNode<'_>,
                     matches!(prop, PropNode::Directive(directive) if directive.name == "for")
                 })
             {
-                ensure_sufficient_stack(|| relief_check(ctx, child, false));
+                ensure_sufficient_stack(|| relief_check(ctx, child));
             }
         }
         return;

@@ -173,3 +173,18 @@ fn nested_template_scopes_keep_native_v_for_checks() {
     );
     assert!(result.error_count >= 1, "{:?}", result.diagnostics);
 }
+
+#[test]
+fn object_spread_and_dynamic_key_arguments_do_not_key_the_loop() {
+    let linter = create_linter();
+    for source in [
+        r#"<ul><li v-for="item in items" v-bind="{ key: item.id }" /></ul>"#,
+        r#"<ul><li v-for="item in items" v-bind="({ key: item.id })" /></ul>"#,
+        r#"<ul><li v-for="item in items" :[key]="item.id" /></ul>"#,
+        r#"<ul><template v-for="item in items" :[key]="item.id"><li /></template></ul>"#,
+        r#"<ul><template v-for="item in items"><li :[key]="item.id" /></template></ul>"#,
+    ] {
+        let result = linter.lint_template(source, "test.vue");
+        assert_eq!(result.error_count, 1, "{source}: {:?}", result.diagnostics);
+    }
+}

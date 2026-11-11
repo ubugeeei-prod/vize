@@ -210,3 +210,31 @@ fn property_names_and_literals_do_not_impersonate_iteration_bindings() {
         assert_eq!(result.error_count, 3, "{source}");
     }
 }
+
+#[test]
+fn loop_scoped_names_differ_from_the_same_text_outside_the_loop() {
+    let linter = create_linter();
+    for source in [
+        r#"<MyTable><template #[name]>a</template><template v-for="name in names" :key="name" #[name]>b</template></MyTable>"#,
+        r#"<MyTable><template v-for="name in names" :key="name" #[name]>b</template><template #[name]>a</template></MyTable>"#,
+        r#"<MyTable><template v-for="(key, value) in rows" :key="key" #[key]>b</template><template #[key]>a</template></MyTable>"#,
+    ] {
+        let result = linter.lint_template(source, "test.vue");
+        assert_eq!(result.error_count, 0, "{source}: {:?}", result.diagnostics);
+    }
+}
+
+#[test]
+fn comment_only_default_slot_value_declares_no_parameter() {
+    let linter = create_linter();
+    for source in [
+        r#"<MyTable v-slot="/* no parameters */">a</MyTable>"#,
+        r#"<MyTable #default="/* none */">a</MyTable>"#,
+        r#"<MyTable v-slot="/**/ /* */">a</MyTable>"#,
+    ] {
+        let result = linter.lint_template(source, "test.vue");
+        assert_eq!(result.error_count, 1, "{source}: {:?}", result.diagnostics);
+    }
+    let result = linter.lint_template(r#"<MyTable v-slot="/* a */ props">a</MyTable>"#, "test.vue");
+    assert_eq!(result.error_count, 0, "{:?}", result.diagnostics);
+}

@@ -35,9 +35,10 @@ impl ValidVSlot {
                     &directive.loc,
                     ctx.t("vue/valid-v-slot.help"),
                 );
-            } else if directive.exp.as_ref().is_none_or(
-                |exp| matches!(exp, ExpressionNode::Simple(value) if value.content.is_empty()),
-            ) {
+            } else if directive.exp.as_ref().is_none_or(|exp| {
+                matches!(exp, ExpressionNode::Simple(value)
+                    if value.content.is_empty() || is_block_comment_only(value.content))
+            }) {
                 ctx.error_with_help(
                     ctx.t("vue/valid-v-slot.missing_value"),
                     &directive.loc,
@@ -108,6 +109,24 @@ impl ValidVSlot {
             );
         }
     }
+}
+
+/// `/* ... */` declares no slot parameter, like an empty value.
+fn is_block_comment_only(value: &str) -> bool {
+    let mut rest = value.trim_start();
+    if rest.is_empty() {
+        return false;
+    }
+    while !rest.is_empty() {
+        let Some((_, after)) = rest
+            .strip_prefix("/*")
+            .and_then(|comment| comment.split_once("*/"))
+        else {
+            return false;
+        };
+        rest = after.trim_start();
+    }
+    true
 }
 
 /// The span from the first modifier to the last (`name` in `#item.name`),

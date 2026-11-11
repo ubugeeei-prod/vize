@@ -1,0 +1,38 @@
+<script setup lang="ts">
+interface Icon {
+  tag: string;
+  key?: string;
+}
+
+const tabs = [{ id: "a", icon: "home" }];
+const select = (id: string) => id;
+</script>
+
+<template>
+  <MyTab
+    v-for="tab in tabs"
+    :key="tab.id"
+    :icon="{ tag: 'Shared', key: tab.icon }"
+    :select="() => select(tab.id)"
+  />
+  <MyList>
+    <template #default="{ entry }">
+      <MyKeys :keys="[entry.keys]" />
+    </template>
+  </MyList>
+  <MyTab :icon="{ tag: 'Shared' } as Icon" />
+  <MyTab :icon="{ tag: 'Shared' }" />
+  <MyTab :icon="({ tag: 'Shared' })" />
+  <MyTab v-for="tab in tabs" :key="tab.id" :select="(tab) => select(tab.id)" />
+  <MyTab v-for="tab in tabs" :key="tab.id" :select="() => select('x')" />
+  <div v-for="tab in tabs" :key="tab.id">
+    <MyTab :icon="{ id: tab.id }" />
+    <MyTab :icon="[1, 2]" />
+  </div>
+  <MyList v-slot="{ row }">
+    <MyTab :icon="{ row }" />
+    <MyTab :fn="function () { return row }" />
+  </MyList>
+  <MyTab :items="[tabs]" />
+  <MyTab :class="{ a: true }" :style="[tabs]" />
+</template>

@@ -1,0 +1,28 @@
+<script setup lang="ts">
+const { items } = defineProps<{ items: { id: string }[] }>();
+</script>
+
+<template>
+  <ul>
+    <li v-for="item in items" :key="items.map((item) => item.id).length">{{ item.id }}</li>
+    <li v-for="item in items" :key="items.length">{{ item.id }}</li>
+    <li
+      v-for="item in
+        items"
+      :key="item.id"
+    >
+      {{ item.id }}
+    </li>
+    <li
+      v-for="item
+        in
+        items"
+      :key="item.id"
+    >
+      {{ item.id }}
+    </li>
+    <li v-for="item in items" :key="item.id">{{ item.id }}</li>
+    <li v-for="(item, index = 1) in items" :key="item.id">{{ index }}</li>
+    <li v-for="(item, { length }) in items" :key="item.id">{{ length }}</li>
+  </ul>
+</template>

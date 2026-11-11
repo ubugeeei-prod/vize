@@ -4,10 +4,34 @@
 //! introduce into the template scope, so downstream rules can distinguish
 //! template-local bindings from unresolved identifiers.
 
+use oxc_allocator::Allocator as OxcAllocator;
 use oxc_ast::ast::BindingPattern;
+use oxc_parser::Parser;
+use oxc_semantic::SemanticBuilder;
+use oxc_span::SourceType;
 use vize_croquis::drawer::parse_v_for_expression;
-use vize_l0::CompactString;
+use vize_l0::{CompactString, cstr};
 use vize_relief::ExpressionNode;
+
+/// Whether a reference that leaves `expression` satisfies `is_target`.
+///
+/// Bindings declared inside the expression (arrow parameters and the like)
+/// shadow outer names, so their uses are not counted. `false` when the
+/// expression does not parse.
+pub fn has_free_reference(expression: &str, is_target: impl Fn(&str) -> bool) -> bool {
+    let allocator = OxcAllocator::default();
+    let wrapped = cstr!("(\n{expression}\n)");
+    let parsed = Parser::new(&allocator, &wrapped, SourceType::ts()).parse();
+    if parsed.panicked || !parsed.diagnostics.is_empty() {
+        return false;
+    }
+    let semantic = SemanticBuilder::new().build(&parsed.program).semantic;
+    semantic
+        .scoping()
+        .root_unresolved_references()
+        .keys()
+        .any(|reference| is_target(reference.as_str()))
+}
 
 /// Parse v-for expression to extract variable names.
 ///

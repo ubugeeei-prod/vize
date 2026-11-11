@@ -24,7 +24,8 @@
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use oxc_ast::ast::Expression;
+use oxc_ast::ast::{Expression, RegExpLiteral, StringLiteral, TemplateElement};
+use oxc_ast_visit::Visit;
 use oxc_span::GetSpan;
 use oxc_syntax::operator::LogicalOperator;
 use vize_l0::FxHashSet;
@@ -175,7 +176,7 @@ fn condition_clauses(condition: JsExpression<'_>) -> Option<Vec<FxHashSet<String
 const MAX_CLAUSES: usize = 256;
 
 fn clauses(expression: &Expression<'_>, source: &str) -> Option<Vec<FxHashSet<String>>> {
-    match expression.get_inner_expression() {
+    match expression.without_parentheses() {
         Expression::LogicalExpression(logical) if logical.operator == LogicalOperator::Or => {
             let mut left = clauses(&logical.left, source)?;
             left.extend(clauses(&logical.right, source)?);
@@ -199,9 +200,7 @@ fn clauses(expression: &Expression<'_>, source: &str) -> Option<Vec<FxHashSet<St
             Some(product)
         }
         atom => {
-            let span = atom.span();
-            let raw = source.get(span.start as usize..span.end as usize)?;
-            let key = strip_trivia(raw)?;
+            let key = token_key(atom, source)?;
             let mut clause = FxHashSet::default();
             clause.insert(key);
             Some(vec![clause])
@@ -209,31 +208,64 @@ fn clauses(expression: &Expression<'_>, source: &str) -> Option<Vec<FxHashSet<St
     }
 }
 
-fn strip_trivia(source: &str) -> Option<String> {
-    let bytes = source.as_bytes();
-    let mut output = Vec::with_capacity(bytes.len());
+/// Spans copied verbatim: the inside of a literal is one token.
+#[derive(Default)]
+struct LiteralSpans(Vec<(usize, usize)>);
+
+impl<'a> Visit<'a> for LiteralSpans {
+    fn visit_string_literal(&mut self, literal: &StringLiteral<'a>) {
+        self.0
+            .push((literal.span.start as usize, literal.span.end as usize));
+    }
+
+    fn visit_template_element(&mut self, element: &TemplateElement<'a>) {
+        self.0
+            .push((element.span.start as usize, element.span.end as usize));
+    }
+
+    fn visit_reg_exp_literal(&mut self, literal: &RegExpLiteral<'a>) {
+        self.0
+            .push((literal.span.start as usize, literal.span.end as usize));
+    }
+}
+
+/// The operand's tokens joined into one string, like eslint-plugin-vue's
+/// `equalTokens`: comments and whitespace between tokens are dropped, except
+/// where dropping them would merge two tokens (`typeof a` vs `typeofa`).
+fn token_key(atom: &Expression<'_>, source: &str) -> Option<String> {
+    let span = atom.span();
+    let (start, end) = (span.start as usize, span.end as usize);
+    let bytes = source.as_bytes().get(start..end)?;
+    let mut literals = LiteralSpans::default();
+    literals.visit_expression(atom);
+    literals.0.sort_unstable();
+    let mut literals = literals.0.into_iter().peekable();
+    let mut output: Vec<u8> = Vec::with_capacity(bytes.len());
+    let mut gap = false;
     let mut index = 0;
-    let mut quote = None;
-    let mut escaped = false;
     while let Some(&byte) = bytes.get(index) {
-        if let Some(delimiter) = quote {
-            output.push(byte);
-            if escaped {
-                escaped = false;
-            } else if byte == b'\\' {
-                escaped = true;
-            } else if byte == delimiter {
-                quote = None;
+        while literals
+            .peek()
+            .is_some_and(|&(literal_start, _)| literal_start < start + index)
+        {
+            literals.next();
+        }
+        if let Some(&(literal_start, literal_end)) = literals.peek()
+            && literal_start == start + index
+        {
+            let literal = bytes.get(index..literal_end.checked_sub(start)?)?;
+            literals.next();
+            if !literal.is_empty() {
+                push_token(&mut output, literal, &mut gap);
+                index += literal.len();
             }
-            index += 1;
             continue;
         }
-        if matches!(byte, b'\'' | b'"' | b'`') {
-            quote = Some(byte);
-            output.push(byte);
+        if byte.is_ascii_whitespace() {
+            gap = true;
             index += 1;
         } else if bytes.get(index..index + 2) == Some(b"//") {
-            index += 2;
+            gap = true;
             while bytes
                 .get(index)
                 .is_some_and(|byte| !matches!(*byte, b'\n' | b'\r'))
@@ -241,22 +273,51 @@ fn strip_trivia(source: &str) -> Option<String> {
                 index += 1;
             }
         } else if bytes.get(index..index + 2) == Some(b"/*") {
+            gap = true;
             index += 2;
-            while index + 1 < bytes.len() && bytes.get(index..index + 2) != Some(b"*/") {
+            while index < bytes.len() && bytes.get(index..index + 2) != Some(b"*/") {
                 index += 1;
-            }
-            if index + 1 >= bytes.len() {
-                return None;
             }
             index += 2;
         } else {
-            if !byte.is_ascii_whitespace() {
-                output.push(byte);
-            }
+            push_token(&mut output, &[byte], &mut gap);
             index += 1;
         }
     }
     std::str::from_utf8(&output).ok().map(Into::into)
+}
+
+fn push_token(output: &mut Vec<u8>, token: &[u8], gap: &mut bool) {
+    if std::mem::take(gap)
+        && let (Some(&left), Some(&right)) = (output.last(), token.first())
+        && tokens_merge(left, right)
+    {
+        output.push(b' ');
+    }
+    output.extend_from_slice(token);
+}
+
+/// Whether `left` and `right` written without whitespace lex as one token.
+fn tokens_merge(left: u8, right: u8) -> bool {
+    let word = |byte: u8| {
+        byte.is_ascii_alphanumeric() || matches!(byte, b'_' | b'$' | b'\\') || byte >= 0x80
+    };
+    (word(left) && word(right))
+        || (right == b'=' && b"<>=!+-*/%&|^?".contains(&left))
+        || matches!(
+            (left, right),
+            (b'.', b'.')
+                | (b'=', b'>')
+                | (b'+', b'+')
+                | (b'-', b'-')
+                | (b'*', b'*')
+                | (b'<', b'<')
+                | (b'>', b'>')
+                | (b'&', b'&')
+                | (b'|', b'|')
+                | (b'?', b'?' | b'.')
+                | (b'/', b'/' | b'*')
+        )
 }
 
 #[cfg(test)]
@@ -311,6 +372,29 @@ mod tests {
             "test.vue",
         );
         assert_eq!(result.error_count, 4, "{:?}", result.diagnostics);
+    }
+
+    #[test]
+    fn compares_operands_by_tokens() {
+        let linter = create_linter();
+        for source in [
+            r#"<p v-if="s === `row-${a}`"/><p v-else-if="s === `row-${ a }`"/>"#,
+            r#"<p v-if="/'/.test(s)"/><p v-else-if="/'/.test( s )"/>"#,
+            r#"<p v-if="a /* note */ === 1"/><p v-else-if="a === 1"/>"#,
+        ] {
+            let result = linter.lint_template(source, "test.vue");
+            assert_eq!(result.error_count, 1, "{source}: {:?}", result.diagnostics);
+        }
+        for source in [
+            r#"<p v-if="typeof a === 'string'"/><p v-else-if="typeofa === 'string'"/>"#,
+            r#"<p v-if="s === 'a b'"/><p v-else-if="s === 'ab'"/>"#,
+            r#"<p v-if="s.match(/ a /)"/><p v-else-if="s.match(/a/)"/>"#,
+            r#"<p v-if="a + +b"/><p v-else-if="a++ + b"/>"#,
+            r#"<p v-if="(a as boolean)"/><p v-else-if="a"/>"#,
+        ] {
+            let result = linter.lint_template(source, "test.vue");
+            assert_eq!(result.error_count, 0, "{source}: {:?}", result.diagnostics);
+        }
     }
 
     #[test]

@@ -24,8 +24,6 @@
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use vize_l0::String;
-use vize_l0::ToCompactString;
 use vize_relief::{ElementNode, PropNode};
 
 static META: RuleMeta = RuleMeta {
@@ -69,8 +67,9 @@ impl Rule for NoTemplateKey {
                 }
                 PropNode::Directive(dir) => {
                     if dir.name == "bind"
-                        && let Some(ref arg) = dir.arg
-                        && get_expression_content(arg) == "key"
+                        && let Some(vize_relief::ExpressionNode::Simple(arg)) = &dir.arg
+                        && arg.is_static
+                        && arg.content == "key"
                         && !has_v_for
                     {
                         ctx.error_with_help(
@@ -82,14 +81,6 @@ impl Rule for NoTemplateKey {
                 }
             }
         }
-    }
-}
-
-/// Get content from ExpressionNode
-fn get_expression_content(expr: &vize_relief::ExpressionNode) -> String {
-    match expr {
-        vize_relief::ExpressionNode::Simple(s) => s.content.to_compact_string(),
-        vize_relief::ExpressionNode::Compound(_) => String::default(),
     }
 }
 
@@ -143,5 +134,14 @@ mod tests {
             "test.vue",
         );
         assert_eq!(result.error_count, 0);
+    }
+
+    #[test]
+    fn dynamic_argument_is_not_a_key() {
+        let result = create_linter().lint_template(
+            r#"<div><template v-if="show" :[key]="value"><p /></template></div>"#,
+            "test.vue",
+        );
+        assert_eq!(result.error_count, 0, "{:?}", result.diagnostics);
     }
 }

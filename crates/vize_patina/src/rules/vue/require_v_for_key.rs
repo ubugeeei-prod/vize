@@ -134,7 +134,7 @@ fn has_markup_bound_key(element: &MarkupElement<'_>, exact: bool) -> bool {
     element.walk_bindings(&mut |binding| {
         found |= binding.kind() == MarkupBindingKind::Bind
             && if exact {
-                binding.is_unqualified_arg_exact("key")
+                binding.is_static_unqualified_arg_exact("key")
             } else {
                 binding.arg_name_eq("key")
             };
@@ -143,7 +143,8 @@ fn has_markup_bound_key(element: &MarkupElement<'_>, exact: bool) -> bool {
 }
 
 fn has_markup_key(element: &MarkupElement<'_>, exact: bool) -> bool {
-    has_markup_bound_key(element, exact) || has_object_bound_key(element)
+    // A template `v-bind="{ key }"` leaves the loop unkeyed; JSX spreads pass it on.
+    has_markup_bound_key(element, exact) || (!exact && has_object_bound_key(element))
 }
 
 fn has_object_bound_key(element: &MarkupElement<'_>) -> bool {
@@ -160,7 +161,7 @@ fn has_object_bound_key(element: &MarkupElement<'_>) -> bool {
     found
 }
 
-pub(super) fn object_has_static_key(source: &str) -> bool {
+fn object_has_static_key(source: &str) -> bool {
     let source = source.trim();
     if !matches!(source.as_bytes().first(), Some(b'{') | Some(b'(')) {
         return false;
@@ -300,7 +301,7 @@ impl Rule for RequireVForKey {
             return;
         }
 
-        relief_check(ctx, element, true);
+        relief_check(ctx, element);
     }
 }
 

@@ -26,37 +26,37 @@
   {
     "id": "static-object-key",
     "eslintDiagnostics": 1,
-    "patinaDiagnostics": 0,
+    "patinaDiagnostics": 1,
     "source": "<template><div v-for=\"item in items\" v-bind=\"{ key: item.id }\" /></template>"
   },
   {
     "id": "string-literal-object-key",
     "eslintDiagnostics": 1,
-    "patinaDiagnostics": 0,
+    "patinaDiagnostics": 1,
     "source": "<template><div v-for=\"item in items\" v-bind=\"{ 'key': item.id }\" /></template>"
   },
   {
     "id": "shorthand-object-key",
     "eslintDiagnostics": 1,
-    "patinaDiagnostics": 0,
+    "patinaDiagnostics": 1,
     "source": "<template><div v-for=\"item in items\" v-bind=\"{ key }\" /></template>"
   },
   {
     "id": "computed-static-object-key",
     "eslintDiagnostics": 1,
-    "patinaDiagnostics": 0,
+    "patinaDiagnostics": 1,
     "source": "<template><div v-for=\"item in items\" v-bind=\"{ ['key']: item.id }\" /></template>"
   },
   {
     "id": "nested-static-spread-key",
     "eslintDiagnostics": 1,
-    "patinaDiagnostics": 0,
+    "patinaDiagnostics": 1,
     "source": "<template><div v-for=\"item in items\" v-bind=\"{ ...{ key: item.id } }\" /></template>"
   },
   {
     "id": "explicit-key-after-dynamic-spread",
     "eslintDiagnostics": 1,
-    "patinaDiagnostics": 0,
+    "patinaDiagnostics": 1,
     "source": "<template><div v-for=\"item in items\" v-bind=\"{ ...attrs, key: item.id }\" /></template>"
   },
   {

@@ -221,4 +221,20 @@ mod tests {
         let unterminated = linter.lint_template(r#"<div>{{ '\' }}</div>"#, "App.vue");
         assert_eq!(unterminated.warning_count, 0);
     }
+
+    #[test]
+    fn reports_literals_beside_comments_or_in_parentheses() {
+        let linter = create_linter();
+        for source in [
+            "<p>{{ 'a' /* note */ }}</p>",
+            "<p>{{ /* note */ 'b' }}</p>",
+            "<p>{{ ('c') }}</p>",
+        ] {
+            assert_eq!(
+                linter.lint_template(source, "App.vue").warning_count,
+                1,
+                "{source}"
+            );
+        }
+    }
 }

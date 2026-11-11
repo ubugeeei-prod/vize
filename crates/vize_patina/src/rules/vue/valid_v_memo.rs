@@ -22,7 +22,10 @@
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
+use oxc_allocator::Allocator;
 use oxc_ast::ast::Expression;
+use oxc_parser::Parser;
+use oxc_span::SourceType;
 use oxc_syntax::operator::LogicalOperator;
 use vize_relief::{DirectiveNode, ElementNode, ExpressionNode};
 
@@ -113,14 +116,18 @@ fn is_definitely_non_array_expression(exp: &ExpressionNode) -> bool {
     let ExpressionNode::Simple(simple) = exp else {
         return false;
     };
-    let Some(expression) = simple
+    if let Some(expression) = simple
         .js_ast
         .filter(|retained| retained.raw == simple.content)
         .and_then(|retained| retained.as_expression())
-    else {
-        return false;
-    };
-    expression_is_definitely_non_array(expression.ast)
+    {
+        return expression_is_definitely_non_array(expression.ast);
+    }
+    // `<template>` and `<slot>` values carry no retained AST.
+    let allocator = Allocator::default();
+    Parser::new(&allocator, simple.content, SourceType::ts())
+        .parse_expression()
+        .is_ok_and(|expression| expression_is_definitely_non_array(&expression))
 }
 
 fn expression_is_definitely_non_array(expression: &Expression<'_>) -> bool {
@@ -263,6 +270,24 @@ mod tests {
             let source = format!(r#"<div v-memo="{expression}" />"#);
             assert_eq!(linter.lint_template(&source, "test.vue").error_count, 1);
         }
+    }
+
+    #[test]
+    fn checks_the_value_on_template_and_slot_elements() {
+        let linter = create_linter();
+        for source in [
+            r#"<ul><template v-for="item in items" :key="item" v-memo="item === selected"><li /></template></ul>"#,
+            r#"<template v-if="selected" v-memo="items.length + 1"><p /></template>"#,
+            r#"<slot v-memo="items.length + 1" />"#,
+        ] {
+            let result = linter.lint_template(source, "test.vue");
+            assert_eq!(result.error_count, 1, "{source}: {:?}", result.diagnostics);
+        }
+        let result = linter.lint_template(
+            r#"<template v-for="item in items" :key="item" v-memo="[item === selected]"><li /></template>"#,
+            "test.vue",
+        );
+        assert_eq!(result.error_count, 0, "{:?}", result.diagnostics);
     }
 
     #[test]

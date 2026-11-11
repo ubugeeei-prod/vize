@@ -1,0 +1,17 @@
+<script setup lang="ts">
+defineProps<{ external: boolean; chevron: boolean }>();
+</script>
+
+<template>
+  <button type="button">
+    <MyIcon v-if="external" name="a" />
+    <MyIcon v-if="chevron" key="my-icon-2" name="b" />
+  </button>
+  <button type="button">
+    <span v-if="external">a</span>
+    <MyIcon v-else name="a" />
+    <MyIcon v-if="chevron" key="my-icon-2" name="b" />
+  </button>
+  <MyIcon v-if="external" name="a" />
+  <MyIcon v-else name="b" />
+</template>

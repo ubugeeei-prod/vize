@@ -70,3 +70,28 @@ fn invalid_v_for_key_does_not_match_substring() {
     );
     assert_eq!(result.error_count, 1);
 }
+
+#[test]
+fn key_reading_only_a_shadowing_parameter_does_not_use_the_alias() {
+    let linter = create_linter();
+    for key in [
+        "items.map((item) => item.id).length",
+        "items.find(function (item) { return item.id })?.id",
+        "items.map(({ item }) => item).length",
+        "(item, index) => index",
+        "{ item: 1 }.item",
+    ] {
+        let source = format!(r#"<div v-for="item in items" :key="{key}"></div>"#);
+        let result = linter.lint_template(&source, "test.vue");
+        assert_eq!(result.error_count, 1, "{key}: {:?}", result.diagnostics);
+    }
+    for key in [
+        "items.map((x) => item.id).length",
+        "{ item }.item.id",
+        "items.map((item) => item).length + item.id",
+    ] {
+        let source = format!(r#"<div v-for="item in items" :key="{key}"></div>"#);
+        let result = linter.lint_template(&source, "test.vue");
+        assert_eq!(result.error_count, 0, "{key}: {:?}", result.diagnostics);
+    }
+}

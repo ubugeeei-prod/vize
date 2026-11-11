@@ -1,0 +1,19 @@
+<template>
+  <p>{{ 'a' /* note */ }}</p>
+  <p>{{ /* note */ 'b' }}</p>
+  <p>{{ ('c') }}</p>
+  <p :id="'d' /* note */">x</p>
+  <p :id="/* note */ 'e'">x</p>
+  <p :id="('f')">x</p>
+  <p>{{ 'g' }}</p>
+  <p :id="'h'">x</p>
+  <p>{{ ( ('i') ) }}</p>
+  <p :id="(('j'))">x</p>
+  <p>{{ ('k') + ('l') }}</p>
+  <p :id="'m' as string">x</p>
+  <p>{{ `n` /* c */ }}</p>
+  <p :id="(`o`)">x</p>
+  <p :id="(`p${q}`)">x</p>
+  <p>{{ ("a')('a") }}</p>
+  <p :id.prop="('r')">x</p>
+</template>

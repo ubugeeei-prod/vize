@@ -51,12 +51,14 @@ impl MarkupRule for ImgAlt {
         // An `alt` exists if there is any binding whose argument is `alt`,
         // whether it is a plain attribute (`alt="x"`), a `v-bind`/`:alt`, or a
         // JSX `alt={…}`.
+        let template = ctx.is_template();
         let mut has_alt = false;
         element.walk_bindings(&mut |binding| {
             if matches!(
                 binding.kind(),
                 MarkupBindingKind::Attribute | MarkupBindingKind::Bind
             ) && binding.arg_name_eq("alt")
+                && (!template || binding.is_static_unqualified_arg_eq_ignore_ascii_case("alt"))
             {
                 has_alt = true;
             }
@@ -91,7 +93,7 @@ impl Rule for ImgAlt {
                 if dir.name == "bind" {
                     matches!(
                         &dir.arg,
-                        Some(vize_relief::ExpressionNode::Simple(s)) if s.content == "alt"
+                        Some(vize_relief::ExpressionNode::Simple(s)) if s.is_static && s.content == "alt"
                     )
                 } else {
                     false
@@ -137,5 +139,12 @@ mod tests {
         let linter = create_linter();
         let result = linter.lint_template(r#"<img src="/photo.jpg" />"#, "test.vue");
         assert_eq!(result.warning_count, 1);
+    }
+
+    #[test]
+    fn dynamic_argument_is_not_an_alt_attribute() {
+        let result =
+            create_linter().lint_template(r#"<img src="/a.png" :[alt]="text" />"#, "test.vue");
+        assert_eq!(result.warning_count, 1, "{:?}", result.diagnostics);
     }
 }

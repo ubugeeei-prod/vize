@@ -54,4 +54,4 @@ export default defineConfig({}).withVue({
 
 - [Vue 规则](../vue.md)
 - [全部规则](../all.md)
-- [源代码](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/compatibility_template/template_rules/prefer_v_model.rs#L10)
+- [源代码](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/compatibility_template/template_rules/prefer_v_model.rs#L21)

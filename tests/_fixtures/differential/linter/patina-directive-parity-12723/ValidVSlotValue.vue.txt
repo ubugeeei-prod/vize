@@ -1,0 +1,21 @@
+<script setup lang="ts">
+import MyTable from "./MyTable.vue";
+</script>
+
+<template>
+  <MyTable v-slot="/* no parameters */">a</MyTable>
+  <MyTable v-slot>b</MyTable>
+  <MyTable #default="/* none */">c</MyTable>
+  <MyTable v-slot="/**/">d</MyTable>
+  <MyTable v-slot=/**/>e</MyTable>
+  <MyTable v-slot="">f</MyTable>
+  <MyTable v-slot=" ">g</MyTable>
+  <MyTable v-slot="// line">h</MyTable>
+  <MyTable v-slot="/* a */ props">i</MyTable>
+  <MyTable v-slot="props /* b */">j</MyTable>
+  <MyTable #default>k</MyTable>
+  <MyTable v-slot:default="/* x */">l</MyTable>
+  <MyTable>
+    <template #default="/* none */">m</template>
+  </MyTable>
+</template>

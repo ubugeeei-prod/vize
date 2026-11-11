@@ -54,4 +54,4 @@ Lancez ensuite `vp run lint`.
 
 - [Règles Vue](../vue.md)
 - [Toutes les règles](../all.md)
-- [Code source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/compatibility_template/template_rules/no_literals_in_template.rs#L10)
+- [Code source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/compatibility_template/template_rules/no_literals_in_template.rs#L11)

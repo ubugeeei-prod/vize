@@ -397,3 +397,87 @@ fn camelcase_reports_owned_declarations_keys_and_assigned_members() {
 
     assert_eq!(result.warning_count, 4, "{:?}", result.diagnostics);
 }
+
+#[test]
+fn literals_reading_template_variables_are_allowed() {
+    for (template, expected) in [
+        (
+            r#"<Tab v-for="tab in tabs" :key="tab.id" :icon="{ key: tab.icon }" />"#,
+            0,
+        ),
+        (
+            r#"<Tab v-for="tab in tabs" :key="tab.id" :select="() => select(tab.id)" />"#,
+            0,
+        ),
+        (
+            r#"<List><template #default="{ entry }"><Keys :keys="[entry.keys]" /></template></List>"#,
+            0,
+        ),
+        (
+            r#"<Tab v-for="tab in tabs" :key="tab.id" :select="(tab) => select(tab.id)" />"#,
+            1,
+        ),
+        (r#"<Tab :icon="{ tag: 'Shared' } as Icon" />"#, 0),
+        (r#"<Tab :icon="({ tag: 'Shared' })" />"#, 1),
+    ] {
+        let result = lint(Box::new(NoLiteralsInTemplate), template);
+        assert_eq!(
+            result.warning_count, expected,
+            "{template}: {:?}",
+            result.diagnostics
+        );
+    }
+}
+
+#[test]
+fn prefer_v_model_pairs_camelized_names_and_mirror_handlers() {
+    for (template, expected) in [
+        (
+            r#"<MyInput :model-value="x" @update:modelValue="x = $event" />"#,
+            1,
+        ),
+        (
+            r#"<MyInput :page-size="x" @update:pageSize="x = $event" />"#,
+            1,
+        ),
+        (
+            r#"<MyInput :model-value="x" @update:model-value="(v) => (x = v)" />"#,
+            1,
+        ),
+        (
+            r#"<MyInput :model-value="x" @update:model-value="(v: string) => x = v" />"#,
+            1,
+        ),
+        (
+            r#"<MyInput :model-value="x" @update:model-value="x = $event;" />"#,
+            1,
+        ),
+        (
+            r#"<div is="vue:my-input" :model-value="x" @update:model-value="x = $event" />"#,
+            1,
+        ),
+        (
+            r#"<MyInput :model-value="map['a b']" @update:model-value="map['ab'] = $event" />"#,
+            0,
+        ),
+        (
+            r#"<slot :model-value="x" @update:model-value="x = $event" />"#,
+            0,
+        ),
+        (
+            r#"<MyInput :model-value="x" @update:model-value="(v) => { x = v }" />"#,
+            0,
+        ),
+        (
+            r#"<MyInput :model-value="x" @update:model-value="x = $event; y()" />"#,
+            0,
+        ),
+    ] {
+        let result = lint(Box::new(PreferVModel), template);
+        assert_eq!(
+            result.warning_count, expected,
+            "{template}: {:?}",
+            result.diagnostics
+        );
+    }
+}

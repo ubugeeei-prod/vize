@@ -111,8 +111,16 @@ impl Rule for ValidVSlot {
 }
 
 struct ChildSlot {
-    loop_scope: Option<LoopScopedSlot>,
+    loop_scope: LoopScope,
     name: String,
+}
+
+enum LoopScope {
+    /// The slot name reads no alias of a `v-for` on its own template.
+    Independent,
+    Scoped(LoopScopedSlot),
+    /// The argument or the loop could not be read.
+    Unknown,
 }
 
 struct LoopScopedSlot {
@@ -247,31 +255,41 @@ fn same_distributed_slot(left: &ChildSlot, right: &ChildSlot) -> bool {
     }
 
     match (&left.loop_scope, &right.loop_scope) {
-        (Some(left), Some(right)) => same_loop_scope(left, right),
-        // Suppress an existing duplicate only when both slot names are proven
-        // to depend on their own loops. An incomplete parse, a property name,
-        // or an outer binding must retain the conservative duplicate finding.
+        (LoopScope::Scoped(left), LoopScope::Scoped(right)) => same_loop_scope(left, right),
+        // A name read from its own loop is never the same text written outside it.
+        (LoopScope::Scoped(_), LoopScope::Independent)
+        | (LoopScope::Independent, LoopScope::Scoped(_)) => false,
+        // Unreadable arguments or loops keep the conservative duplicate finding.
         _ => true,
     }
 }
 
-fn loop_scoped_slot(element: &ElementNode<'_>, slot: &DirectiveNode<'_>) -> Option<LoopScopedSlot> {
-    let ExpressionNode::Simple(argument) = slot.arg.as_ref()? else {
-        return None;
+fn loop_scoped_slot(element: &ElementNode<'_>, slot: &DirectiveNode<'_>) -> LoopScope {
+    let argument = match slot.arg.as_ref() {
+        None => return LoopScope::Independent,
+        Some(ExpressionNode::Simple(argument)) if argument.is_static => {
+            return LoopScope::Independent;
+        }
+        Some(ExpressionNode::Simple(argument)) => argument,
+        Some(ExpressionNode::Compound(_)) => return LoopScope::Unknown,
     };
-    if argument.is_static {
-        return None;
-    }
-    let argument_ast = argument.js_ast?.as_expression()?;
-    let reads = extract_identifier_refs_retained_only(argument.content, &argument_ast)?;
-    let for_expression = element.props.iter().find_map(|prop| match prop {
-        PropNode::Directive(directive) if directive.name == "for" => match directive.exp.as_ref() {
-            Some(ExpressionNode::Simple(expression)) => Some(expression.content),
-            _ => None,
-        },
+    let Some(reads) = argument.js_ast.and_then(|retained| {
+        extract_identifier_refs_retained_only(argument.content, &retained.as_expression()?)
+    }) else {
+        return LoopScope::Unknown;
+    };
+    let Some(for_expression) = element.props.iter().find_map(|prop| match prop {
+        PropNode::Directive(directive) if directive.name == "for" => Some(directive.exp.as_ref()),
         _ => None,
-    })?;
-    let aliases = parse_v_for_scope_expression(for_expression)?;
+    }) else {
+        return LoopScope::Independent;
+    };
+    let Some(aliases) = for_expression.and_then(|expression| match expression {
+        ExpressionNode::Simple(expression) => parse_v_for_scope_expression(expression.content),
+        ExpressionNode::Compound(_) => None,
+    }) else {
+        return LoopScope::Unknown;
+    };
     let uses = |name: &str| reads.iter().any(|read| read.name == name);
     let uses_value = aliases
         .value_bindings
@@ -286,10 +304,10 @@ fn loop_scoped_slot(element: &ElementNode<'_>, slot: &DirectiveNode<'_>) -> Opti
         .as_ref()
         .is_some_and(|binding| uses(binding.as_str()));
     if !uses_value && !uses_key && !uses_index {
-        return None;
+        return LoopScope::Independent;
     }
 
-    Some(LoopScopedSlot {
+    LoopScope::Scoped(LoopScopedSlot {
         source: aliases.source,
         value_pattern: aliases.value_pattern,
         key_alias: aliases.key_alias,
