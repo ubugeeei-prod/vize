@@ -137,13 +137,14 @@ SFC のテンプレート・ディレクティブ・コンポーネント・各�
 | <span id="vue-warn-custom-block"></span>[`vue/warn-custom-block`](./reference/vue-warn-custom-block.md) | SFC のカスタムブロックを検出します。 | `nuxt`, `opinionated` |  |
 | <span id="vue-warn-custom-directive"></span>[`vue/warn-custom-directive`](./reference/vue-warn-custom-directive.md) | 登録が必要なカスタムディレクティブを検出します。 | `nuxt`, `opinionated` |  |
 
-## 個別に有効化 (41)
+## 個別に有効化 (44)
 
 どのプリセットにも含まれません。`withVue` に渡す `linter.rules` でルール名を指定して有効にします。
 
 | ルール | 検出する内容 | 自動修正 |
 | --- | --- | --- |
 | <span id="vue-a11y-img-alt"></span>[`vue/a11y-img-alt`](./reference/vue-a11y-img-alt.md) | 画像に代替テキストの alt 属性を指定します。 |  |
+| <span id="vue-block-lang"></span>[`vue/block-lang`](./reference/vue-block-lang.md) | SFC ブロックの lang を設定した言語に揃えます。 |  |
 | <span id="vue-camelcase"></span>[`vue/camelcase`](./reference/vue-camelcase.md) | テンプレート式の識別子を camelCase に揃えます。 |  |
 | <span id="vue-dot-notation"></span>[`vue/dot-notation`](./reference/vue-dot-notation.md) | テンプレート式で静的なプロパティ参照にドット記法を使います。 |  |
 | <span id="vue-enforce-style-attribute"></span>[`vue/enforce-style-attribute`](./reference/vue-enforce-style-attribute.md) | style ブロックを許可した属性モードに揃えます。 |  |
@@ -179,8 +180,10 @@ SFC のテンプレート・ディレクティブ・コンポーネント・各�
 | <span id="vue-prefer-template"></span>[`vue/prefer-template`](./reference/vue-prefer-template.md) | 文字列連結の代わりにテンプレートリテラルを使います。 |  |
 | <span id="vue-prefer-v-model"></span>[`vue/prefer-v-model`](./reference/vue-prefer-v-model.md) | 対応する bind と update リスナーを v-model にまとめます。 |  |
 | <span id="vue-quote-props"></span>[`vue/quote-props`](./reference/vue-quote-props.md) | 不要な引用符付きオブジェクトプロパティを検出します。 |  |
+| <span id="vue-require-default-export"></span>[`vue/require-default-export`](./reference/vue-require-default-export.md) | コンポーネントの script をデフォルトエクスポートにします。 |  |
 | <span id="vue-require-expose"></span>[`vue/require-expose`](./reference/vue-require-expose.md) | Options API のコンポーネントが公開するプロパティを expose で明示します。 |  |
 | <span id="vue-require-macro-variable-name"></span>[`vue/require-macro-variable-name`](./reference/vue-require-macro-variable-name.md) | コンパイラーマクロの変数名を既定の名前に揃えます。 |  |
+| <span id="vue-require-prop-comment"></span>[`vue/require-prop-comment`](./reference/vue-require-prop-comment.md) | 宣言した各 prop に JSDoc コメントを付けます。 |  |
 | <span id="vue-sort-keys"></span>[`vue/sort-keys`](./reference/vue-sort-keys.md) | コンポーネントオプション内のキーを設定した順序に並べます。 |  |
 | <span id="vue-v-if-else-key"></span>[`vue/v-if-else-key`](./reference/vue-v-if-else-key.md) | 条件分岐で繰り返すコンポーネントに key を指定します。 |  |
 | <span id="vue-valid-model-definition"></span>[`vue/valid-model-definition`](./reference/vue-valid-model-definition.md) | Vue 2 の model オプションに有効なキーを指定します。 |  |

@@ -27,6 +27,7 @@ pub(super) const SEMANTIC_TEMPLATE_RULES: &[&str] = &[
 ];
 
 pub(super) const SHARED_SFC_DESCRIPTOR_RULES: &[&str] = &[
+    "vue/block-lang",
     "vue/dot-notation",
     "vue/eqeqeq",
     "vue/no-console",
@@ -44,7 +45,9 @@ pub(super) const SHARED_SFC_DESCRIPTOR_RULES: &[&str] = &[
     "vue/no-define-model-default",
     "vue/no-props-shadow",
     "vue/no-shadow-native-events",
+    "vue/require-default-export",
     "vue/require-macro-variable-name",
+    "vue/require-prop-comment",
     "vue/sort-keys",
     "vue/html-quotes",
     "vue/match-component-file-name",

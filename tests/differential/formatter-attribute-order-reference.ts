@@ -8,7 +8,16 @@ import { sha256 } from "./manifest.mjs";
 import { assertClosedFormatterManifest } from "./formatter-sole-child-width-reference.mjs";
 
 const DIRECTORY = "tests/_fixtures/differential/formatter-regressions/attribute-order-12826";
-const REFERENCES = new Map([
+type Pinned = { input: string; historical: string; current: string };
+type Fixture = {
+  id: string;
+  input: Buffer;
+  expected: Buffer;
+  argv: string[];
+  config: { length: number };
+};
+
+const REFERENCES = new Map<string, Pinned>([
   [
     "formatter/sfc/directive-expression-indent-width",
     {
@@ -27,7 +36,7 @@ const REFERENCES = new Map([
   ],
 ]);
 
-export function attributeOrderCurrentReference(root, fixture) {
+export function attributeOrderCurrentReference(root: string, fixture: Fixture) {
   const pinned = REFERENCES.get(fixture.id);
   if (!pinned) return {};
   assertClosedFormatterManifest(root);

@@ -7,11 +7,11 @@ pub use crate::dialect::VueDialect;
 pub use document::ConfigDocument;
 pub use model::{
     AnchorHasContentOptions, ArrowParens, AttributeHyphenationConfig, AttributeHyphenationOptions,
-    AttributeSortOrder, CompilerConfigEntry, ComponentNameInTemplateCasingOptions,
-    ConfigEntryFiles, ConfigEntryIgnore, ConfigExperimentalVueFlags, ConfigFeatureFlags,
-    ConfigLintRuleOptions, CustomEventNameCasing, CustomEventNameCasingOptions,
-    DefineMacrosOrderOptions, DefinePropsDestructuringOptions, EndOfLine,
-    EnforceStyleAttributeOptions, FormatterConfig, FormatterPreset, FormatterProfile,
+    AttributeSortOrder, BlockLangBlock, BlockLangNames, BlockLangOptions, CompilerConfigEntry,
+    ComponentNameInTemplateCasingOptions, ConfigEntryFiles, ConfigEntryIgnore,
+    ConfigExperimentalVueFlags, ConfigFeatureFlags, ConfigLintRuleOptions, CustomEventNameCasing,
+    CustomEventNameCasingOptions, DefineMacrosOrderOptions, DefinePropsDestructuringOptions,
+    EndOfLine, EnforceStyleAttributeOptions, FormatterConfig, FormatterPreset, FormatterProfile,
     GlobalTypeDeclaration, GlobalTypesConfig, HtmlButtonHasTypeOptions, HtmlQuoteStyle,
     HtmlQuotesConfig, HtmlQuotesOptions, HtmlSelfClosingHtmlOptions, HtmlSelfClosingOptions,
     HtmlSelfClosingStyle, HyphenationStyle, ImportSortCustomGroup, ImportSortGroup, JsxCompat,

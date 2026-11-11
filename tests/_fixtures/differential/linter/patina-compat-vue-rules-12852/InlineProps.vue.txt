@@ -1,0 +1,7 @@
+<script setup lang="ts">
+const { size } = defineProps<{ size: string }>();
+</script>
+
+<template>
+  <p>{{ size }}</p>
+</template>

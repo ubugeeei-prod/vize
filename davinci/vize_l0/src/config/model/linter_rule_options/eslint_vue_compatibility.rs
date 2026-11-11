@@ -137,6 +137,40 @@ const fn default_true() -> bool {
     true
 }
 
+/// Languages accepted by one block of `vue/block-lang`.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum BlockLangNames {
+    /// A single language, as `lang: "ts"`.
+    One(String),
+    /// Several languages, in config order.
+    Many(Vec<String>),
+}
+
+/// Options for one SFC block tag of `vue/block-lang`.
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(default, deny_unknown_fields, rename_all = "camelCase")]
+pub struct BlockLangBlock {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub lang: Option<BlockLangNames>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub allow_no_lang: Option<bool>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub required: Option<bool>,
+}
+
+/// `linter.ruleOptions["vue/block-lang"]`.
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(default, deny_unknown_fields)]
+pub struct BlockLangOptions {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub script: Option<BlockLangBlock>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub template: Option<BlockLangBlock>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub style: Option<BlockLangBlock>,
+}
+
 impl ConfigLintRuleOptions {
     /// Configured style modes accepted by `vue/enforce-style-attribute`.
     pub fn enforce_style_attribute(&self) -> Option<&EnforceStyleAttributeOptions> {
@@ -156,6 +190,11 @@ impl ConfigLintRuleOptions {
     /// Configured key ordering for `vue/sort-keys`.
     pub fn sort_keys(&self) -> Option<SortKeysOptions> {
         self.sort_keys
+    }
+
+    /// Configured block languages for `vue/block-lang`.
+    pub fn block_lang(&self) -> Option<&BlockLangOptions> {
+        self.block_lang.as_ref()
     }
 }
 
