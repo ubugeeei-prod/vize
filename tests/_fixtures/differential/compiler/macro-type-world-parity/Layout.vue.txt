@@ -1,0 +1,13 @@
+<script setup>
+const disabled = 'disabled'
+const include = 'include'
+const timeout = 'timeout'
+const value = true
+const names = ['Panel']
+const limit = 0
+</script>
+<template>
+  <Teleport to="body" :[disabled]="value"><span>content</span></Teleport>
+  <KeepAlive :[include]="names"><Panel /></KeepAlive>
+  <Suspense :[timeout]="limit"><AsyncPanel /></Suspense>
+</template>

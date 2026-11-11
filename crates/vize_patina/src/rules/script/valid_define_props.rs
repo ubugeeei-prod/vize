@@ -83,7 +83,7 @@ impl ScriptRule for ValidDefineProps {
         if sfc.is_sfc && !sfc.is_script_setup {
             return;
         }
-        for finding in check(program, sfc.sibling_program, "defineProps", "props") {
+        for finding in check(program, sfc, "defineProps", "props") {
             let (span, message, help) = match finding {
                 Finding::Multiple(span) => (
                     span,

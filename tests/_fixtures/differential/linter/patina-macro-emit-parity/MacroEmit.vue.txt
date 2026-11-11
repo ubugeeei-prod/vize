@@ -1,0 +1,11 @@
+<script>
+export default { emits: [] }
+</script>
+<script setup>
+function defineEmits() {}
+defineEmits()
+defineEmits(['a'])
+</script>
+<template>
+  <p />
+</template>

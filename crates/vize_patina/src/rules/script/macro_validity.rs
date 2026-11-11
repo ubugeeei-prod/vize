@@ -17,6 +17,7 @@ use oxc_semantic::{Semantic, SemanticBuilder};
 use oxc_span::{GetSpan, Span};
 
 use super::setup_macros::setup_macros;
+use super::SfcScriptContext;
 
 /// One finding, at the span upstream reports.
 pub(super) enum Finding {
@@ -31,13 +32,22 @@ pub(super) enum Finding {
 }
 
 /// Check the `macro_name` macros of `program`; `option` is the Options API
-/// counterpart (`emits` / `props`) looked up in `sibling`.
+/// counterpart (`emits` / `props`) looked up in the sibling block.
+///
+/// eslint-plugin-vue's `<script setup>` visitor treats a top-level identifier
+/// call as the macro even when that name is locally bound, and it settles an
+/// empty call or a duplicated option from the inline text of a `src` block.
+/// A standalone module has no compiler macro, so a same-named binding there
+/// is the module's own function.
 pub(super) fn check(
     program: &Program<'_>,
-    sibling: Option<&Program<'_>>,
+    sfc: SfcScriptContext<'_>,
     macro_name: &str,
     option: &str,
 ) -> Vec<Finding> {
+    if !sfc.is_script_setup && super::props_emits::compiler_macro_is_shadowed(program, macro_name) {
+        return Vec::new();
+    }
     let calls: Vec<&CallExpression<'_>> = setup_macros(program)
         .into_iter()
         .filter(|found| found.name == macro_name)
@@ -76,7 +86,9 @@ pub(super) fn check(
         findings.extend(calls.iter().map(|call| Finding::Multiple(call.span)));
         return findings;
     }
-    let declared_in_options = sibling.is_some_and(|sibling| exports_option(sibling, option));
+    let declared_in_options = sfc
+        .sibling_program
+        .is_some_and(|sibling| exports_option(sibling, option));
     match (empty, declared_in_options) {
         (Some(span), false) => findings.push(Finding::NotDefined(span)),
         (None, true) => findings.push(Finding::DefinedInBoth(first.span)),
@@ -206,5 +218,58 @@ mod tests {
         assert_eq!(reported("script/valid-define-emits", twice).len(), 2);
         let plain = "<script>\nconst x = 1\ndefineEmits([x])\ndefineEmits()\n</script>";
         assert!(reported("script/valid-define-emits", plain).is_empty());
+        // A local binding in `<script setup>` is still the macro upstream.
+        let shadowed = "<script setup>\nfunction defineProps() {}\ndefineProps()\n</script>";
+        assert_eq!(
+            reported("script/valid-define-props", shadowed),
+            ["defineProps() does not define any props.: defineProps()"]
+        );
+        let shadowed_twice = "<script setup>\nfunction defineEmits() {}\ndefineEmits()\ndefineEmits(['a'])\n</script>";
+        assert_eq!(
+            reported("script/valid-define-emits", shadowed_twice).len(),
+            2
+        );
+        // A nested binding does not shadow the top-level macro.
+        let nested = "<script setup>\ndefineEmits(['a'])\ndefineEmits(['b'])\nfunction inner() { var defineEmits = () => {} }\n</script>";
+        assert_eq!(reported("script/valid-define-emits", nested).len(), 2);
+        // `src` does not hide an empty call or a duplicated option.
+        let external = "<script>\nexport default { emits: [] }\n</script>\n<script setup src=\"./x.ts\">\ndefineEmits(['a'])\n</script>";
+        assert_eq!(
+            reported("script/valid-define-emits", external),
+            ["Custom events are defined in both defineEmits() and export default {}.: defineEmits(['a'])"]
+        );
+        let external_empty =
+            "<script src=\"./opt.ts\"></script>\n<script setup>\ndefineEmits()\n</script>";
+        assert_eq!(
+            reported("script/valid-define-emits", external_empty),
+            ["defineEmits() does not define any custom events.: defineEmits()"]
+        );
+        let module_source =
+            "function defineProps() {}\ndefineProps()\ndefineProps({ a: String })\n";
+        assert!(reported_script("script/valid-define-props", module_source).is_empty());
+        let module_macro = "defineProps()\ndefineProps({ a: String })\n";
+        assert_eq!(
+            reported_script("script/valid-define-props", module_macro).len(),
+            2
+        );
+    }
+
+    fn reported_script(rule: &str, source: &str) -> Vec<String> {
+        let mut result = Linter::new()
+            .with_enabled_rules(Some(vec![rule.into()]))
+            .lint_script(source, "probe.ts");
+        result
+            .diagnostics
+            .sort_by_key(|diagnostic| diagnostic.start);
+        result
+            .diagnostics
+            .iter()
+            .map(|diagnostic| {
+                let text = source
+                    .get(diagnostic.start as usize..diagnostic.end as usize)
+                    .unwrap_or_default();
+                format!("{}: {text}", diagnostic.message)
+            })
+            .collect()
     }
 }

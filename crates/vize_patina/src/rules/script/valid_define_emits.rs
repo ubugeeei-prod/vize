@@ -84,7 +84,7 @@ impl ScriptRule for ValidDefineEmits {
         if sfc.is_sfc && !sfc.is_script_setup {
             return;
         }
-        for finding in check(program, sfc.sibling_program, "defineEmits", "emits") {
+        for finding in check(program, sfc, "defineEmits", "emits") {
             let (span, message, help) = match finding {
                 Finding::Multiple(span) => (
                     span,
