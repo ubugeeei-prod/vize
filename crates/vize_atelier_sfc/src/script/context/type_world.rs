@@ -105,7 +105,8 @@ impl ScriptCompileContext {
             // snapshot dependencies share one resolved module per snapshot.
             let resolved = match source {
                 Some((source, is_tsx)) => {
-                    let (module, needed_imports) = parse_source(&source, is_tsx);
+                    let (module, needed_imports) =
+                        parse::parse_shared_module(&source, source_type(is_tsx));
                     Arc::new(resolve_module_targets(
                         module,
                         &needed_imports,
@@ -205,12 +206,15 @@ fn read_resolved_dependency(
 }
 
 fn parse_source(source: &str, is_tsx: bool) -> ParsedTypeModule {
-    let source_type = if is_tsx {
+    parse::parse_module(source, source_type(is_tsx))
+}
+
+fn source_type(is_tsx: bool) -> SourceType {
+    if is_tsx {
         SourceType::tsx()
     } else {
         SourceType::ts()
-    };
-    parse::parse_module(source, source_type)
+    }
 }
 
 fn resolve_target(

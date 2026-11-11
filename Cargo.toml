@@ -177,6 +177,8 @@ thiserror = "=2.0.21"
 rustc-hash = "=2.1.3"
 bitflags = { version = "=2.13.2", features = ["serde"] }
 once_cell = "=1.21.4"
+# Owns an arena with the parse that borrows it (as oxc_semantic does).
+self_cell = "=1.3.0"
 compact_str = { version = "=0.10.0", features = ["serde"] }
 lasso = "=0.7.3"
 ecow = "=0.3.1"

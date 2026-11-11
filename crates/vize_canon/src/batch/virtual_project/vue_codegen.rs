@@ -53,6 +53,8 @@ pub(super) fn generate_vue_virtual_ts(
     options: &VirtualTsOptions,
     mut codegen_options: VueCodegenOptions<'_>,
 ) -> CorsaResult<GeneratedVueFile> {
+    // Analyses reading the same script text in the same dialect share one parse.
+    let _shared_parses = vize_croquis::script_parser::SharedParseScope::enter();
     crate::virtual_ts::validate_reference_paths(&options.reference_paths).map_err(|error| {
         crate::batch::error::CorsaError::Configuration(vize_carton::cstr!(
             "Invalid declaration reference path {:?}: {}",

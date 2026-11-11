@@ -4670,6 +4670,7 @@ dependencies = [
  "phf 0.13.1",
  "regex",
  "rustc-hash",
+ "self_cell",
  "serde",
  "serde_json",
  "tempfile",
