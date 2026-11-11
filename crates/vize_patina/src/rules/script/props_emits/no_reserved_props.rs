@@ -4,14 +4,15 @@
 //!
 //! Vue reserves a handful of attribute names for its own runtime use, so a prop
 //! declared with one of these names is shadowed by Vue's handling and never
-//! receives the value the parent passed. The reserved names are `key`, `ref`,
-//! `ref_for`, `ref_key`, and `is`, plus any name beginning with `$` (reserved
-//! for Vue's internal instance properties).
+//! receives the value the parent passed. The Vue 3 names are `key`, `ref`,
+//! `ref_for`, and `ref_key`, plus any name beginning with `$` (reserved for
+//! Vue's internal instance properties). Vue 3 accepts a prop named `is`.
 //!
-//! Covers both prop shapes — the object form (`{ key: ... }`) and the array
-//! form (`['key']`) — across the Options API `props` option (including
-//! `defineComponent({...})` and same-file identifier-bound objects) and the
-//! `<script setup>` runtime `defineProps(...)`.
+//! Covers the object form (`{ key: ... }`), the array form (`['key']`,
+//! including a static template-literal element), and a same-file type argument
+//! of `defineProps` / `withDefaults`. The declarations may come from the
+//! Options API `props` option (including `defineComponent({...})` and a
+//! same-file identifier-bound object) or from `<script setup>`.
 //!
 //! Port of [`vue/no-reserved-props`](https://eslint.vuejs.org/rules/no-reserved-props.html).
 //!
@@ -41,13 +42,14 @@
 //! }
 //! ```
 
-use oxc_ast::ast::Program;
+use oxc_ast::ast::{Expression, Program};
 use oxc_span::GetSpan;
 
 use vize_l0::CompactString;
 
 use super::super::{ScriptLintResult, ScriptRule, ScriptRuleMeta};
-use super::props_source::collect_runtime_props;
+use super::props_source::{PropsSource, collect_runtime_props};
+use super::type_prop_names::same_file_type_prop_names;
 use crate::diagnostic::{LintDiagnostic, Severity};
 
 static META: ScriptRuleMeta = ScriptRuleMeta {
@@ -56,8 +58,8 @@ static META: ScriptRuleMeta = ScriptRuleMeta {
     default_severity: Severity::Error,
 };
 
-/// Names Vue reserves for its own use; a prop must not be declared with one.
-const RESERVED_PROP_NAMES: &[&str] = &["key", "ref", "ref_for", "ref_key", "is"];
+/// Names Vue 3 reserves for its own use; a prop must not be declared with one.
+const RESERVED_PROP_NAMES: &[&str] = &["key", "ref", "ref_for", "ref_key"];
 
 /// Disallow reserved prop names.
 pub struct NoReservedProps;
@@ -90,6 +92,28 @@ impl ScriptRule for NoReservedProps {
                     report(literal.value.as_str(), literal.span, offset, result);
                 }
             }
+            if let PropsSource::Array(array) = source {
+                for element in &array.elements {
+                    let Some(expression) = element.as_expression() else {
+                        continue;
+                    };
+                    let Expression::TemplateLiteral(template) = expression.get_inner_expression()
+                    else {
+                        continue;
+                    };
+                    let Some(name) = template.single_quasi() else {
+                        continue;
+                    };
+                    if is_reserved(name.as_str()) {
+                        report(name.as_str(), template.span(), offset, result);
+                    }
+                }
+            }
+        }
+        for (name, span) in same_file_type_prop_names(program) {
+            if is_reserved(name.as_str()) {
+                report(name.as_str(), span, offset, result);
+            }
         }
     }
 }
@@ -111,7 +135,7 @@ fn report(name: &str, span: oxc_span::Span, offset: usize, result: &mut ScriptLi
     let diagnostic = LintDiagnostic::error(META.name, message, start, end)
         .with_label("reserved prop name", start, end)
         .with_help(
-            "Vue reserves `key`, `ref`, `ref_for`, `ref_key`, `is`, and any `$`-prefixed name. \
+            "Vue reserves `key`, `ref`, `ref_for`, `ref_key`, and any `$`-prefixed name. \
              Rename this prop to something else.",
         );
     result.add_diagnostic(diagnostic);
