@@ -15,7 +15,7 @@ use vize_l0::FxHashSet;
 use vize_relief::{ElementNode, ElementType, PropNode};
 
 use super::helpers::{
-    AuthoredAttr, get_implicit_role, get_implicit_role_by_attr, get_static_attribute_value,
+    AuthoredAttr, get_implicit_role, get_implicit_role_by_attr,
     get_static_or_bound_literal_attribute_value,
 };
 use crate::rules::a11y::helpers::string_literal_value;
@@ -28,16 +28,34 @@ impl NoRedundantRoles {
     fn first_static_attribute_value<'a>(
         element: &MarkupElement<'a>,
         name: &str,
+        literal_bind: bool,
     ) -> Option<&'a str> {
         let mut found = false;
         let mut value = None;
         element.walk_bindings(&mut |binding| {
-            if !found
-                && binding.kind() == MarkupBindingKind::Attribute
-                && binding.is_static_unqualified_arg_exact(name)
-            {
-                found = true;
-                value = binding.static_value();
+            if found {
+                return;
+            }
+            match binding.kind() {
+                MarkupBindingKind::Attribute if binding.is_static_unqualified_arg_exact(name) => {
+                    found = true;
+                    value = binding.static_value();
+                }
+                // Vue renders a string-literal bind as the static attribute value.
+                // JSX `role={"button"}` stays outside that boundary.
+                MarkupBindingKind::Bind
+                    if literal_bind && binding.is_static_unqualified_arg_exact(name) =>
+                {
+                    let Some(expression) = binding.expression() else {
+                        return;
+                    };
+                    let Some(literal) = string_literal_value(expression) else {
+                        return;
+                    };
+                    found = true;
+                    value = Some(literal);
+                }
+                _ => {}
             }
         });
         value
@@ -53,20 +71,35 @@ impl NoRedundantRoles {
     }
 
     /// Range of the first static `role` attribute, matching the value probe.
-    fn redundant_role_attribute_range(element: &MarkupElement<'_>) -> Option<crate::ir::ByteRange> {
+    fn redundant_role_attribute_range(
+        element: &MarkupElement<'_>,
+        literal_bind: bool,
+    ) -> Option<crate::ir::ByteRange> {
         let mut seen = false;
         let mut range = None;
         element.walk_bindings(&mut |binding| {
             if seen {
                 return;
             }
-            if binding.kind() == MarkupBindingKind::Attribute
-                && binding.is_static_unqualified_arg_exact("role")
-            {
-                seen = true;
-                if binding.static_value().is_some() {
-                    range = Some(binding.range());
+            match binding.kind() {
+                MarkupBindingKind::Attribute if binding.is_static_unqualified_arg_exact("role") => {
+                    seen = true;
+                    if binding.static_value().is_some() {
+                        range = Some(binding.range());
+                    }
                 }
+                MarkupBindingKind::Bind
+                    if literal_bind && binding.is_static_unqualified_arg_exact("role") =>
+                {
+                    let Some(expression) = binding.expression() else {
+                        return;
+                    };
+                    if string_literal_value(expression).is_some() {
+                        seen = true;
+                        range = Some(binding.range());
+                    }
+                }
+                _ => {}
             }
         });
         range
@@ -378,8 +411,10 @@ mod tests {
             (r#"<div role="generic">x</div>"#, 1),
             (r#"<span role="generic">x</span>"#, 1),
             (r#"<p role="paragraph">x</p>"#, 1),
-            // A bound role is not a static role value.
-            (r#"<button type="button" :role="'button'">x</button>"#, 0),
+            // A string-literal bind renders as the static role.
+            (r#"<button type="button" :role="'button'">x</button>"#, 1),
+            (r#"<button type="button" :role="kind">x</button>"#, 0),
+            (r#"<img src="/a.png" alt="" :role="'img'" />"#, 0),
         ];
         for (source, warnings) in cases {
             let result = create_linter().lint_template(source, "test.vue");
