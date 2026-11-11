@@ -309,6 +309,28 @@ impl BatchTypeChecker {
         self.project.emitted_mirror_declarations(out_dir)
     }
 
+    /// For a process that exits right after: release what outlives it (native
+    /// sessions, installed storage, leases and the cache usage lock) in the
+    /// order a drop would, and leave the in-memory project unfreed. Freeing a
+    /// large project is a measurable part of a one-shot check's tail, and the
+    /// exit returns its memory anyway. A host that keeps running must drop
+    /// the checker instead.
+    pub fn release_for_exit(self) {
+        let Self {
+            project,
+            executor,
+            owned_storage,
+            persistent_storage_owner,
+            _persistent_storage_leases: persistent_storage_leases,
+            ..
+        } = self;
+        drop(executor);
+        drop(owned_storage);
+        drop(persistent_storage_owner);
+        drop(persistent_storage_leases);
+        project.release_for_exit();
+    }
+
     /// The directory this checker materializes into.
     pub fn virtual_root(&self) -> &Path {
         self.project.virtual_root()

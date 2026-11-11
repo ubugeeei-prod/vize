@@ -6,7 +6,7 @@ use vize_canon::{
     BatchTypeCheckResult, BatchTypeChecker, BatchTypeCheckerOptions,
     batch::TypeChecker as BatchTypeCheckerTrait,
 };
-use vize_l0::{FxHashSet, String, config::VueVersion, cstr};
+use vize_l0::{FxHashMap, FxHashSet, String, config::VueVersion, cstr};
 
 use super::nuxt_tsconfig::{
     PreparedCheckerTsconfig, wait_for_active_config_test_barrier,
@@ -50,6 +50,25 @@ pub(super) struct ProgramExecution {
     pub(super) gen_time: Duration,
     pub(super) check_time: Duration,
     _checker_tsconfig: PreparedCheckerTsconfig,
+}
+
+impl ProgramExecution {
+    /// For a process that exits right after: release the checker's sessions,
+    /// storage and leases and then the prepared config's lease, as a drop
+    /// would, without freeing the generated project or its results.
+    pub(super) fn release_for_exit(self) {
+        let Self {
+            checker,
+            result,
+            input_files,
+            reported_files,
+            _checker_tsconfig: checker_tsconfig,
+            ..
+        } = self;
+        checker.release_for_exit();
+        drop(checker_tsconfig);
+        std::mem::forget((result, input_files, reported_files));
+    }
 }
 
 /// A generated program whose native check has not run yet.
@@ -281,8 +300,15 @@ impl PendingProgram {
         if let (Some(authored), Some(prepared)) = (tsconfig_path.as_ref(), checker_tsconfig.path())
         {
             let prepared = vize_carton::path::canonicalize_non_verbatim(prepared);
+            // Diagnostics share files, and each comparison is a `realpath`.
+            let mut is_prepared = FxHashMap::<PathBuf, bool>::default();
             for diagnostic in &mut result.diagnostics {
-                if vize_carton::path::canonicalize_non_verbatim(&diagnostic.file) == prepared {
+                let matches = *is_prepared
+                    .entry(diagnostic.file.clone())
+                    .or_insert_with_key(|file| {
+                        vize_carton::path::canonicalize_non_verbatim(file) == prepared
+                    });
+                if matches {
                     diagnostic.file = authored.clone();
                 }
             }
