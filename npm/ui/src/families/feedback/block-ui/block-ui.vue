@@ -75,7 +75,6 @@ const {
    *
    * @default undefined
    */
-  // eslint-disable-next-line vue/no-unused-properties -- consume the native attribute so only BlockUI state controls inert, rather than fallthrough attrs
   readonly "inert"?: boolean | "";
   /* eslint-enable vue/prop-name-casing, vue/no-unused-properties */
 }>();
