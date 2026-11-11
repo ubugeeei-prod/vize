@@ -2,6 +2,8 @@
 
 use std::path::{Path, PathBuf};
 
+use rayon::prelude::*;
+
 use super::import_resolution::resolve_virtual_import;
 use super::union_find::UnionFind;
 use super::{ShardPlan, declares_program_wide_types, is_ambient_declaration};
@@ -96,8 +98,9 @@ fn partition(project: &VirtualProject, servers: usize, allow_leaves: bool) -> Sh
         .enumerate()
         .map(|(index, file)| (file.virtual_path.as_path(), index))
         .collect();
+    // Each file's scan is independent; the native check waits for the plan.
     let imports: Vec<_> = partitioned
-        .iter()
+        .par_iter()
         .map(|file| import_specifiers(&file.content))
         .collect();
     let leaves = if allow_leaves {
