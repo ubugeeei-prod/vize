@@ -1,7 +1,5 @@
 use vize_carton::String;
 
-use super::{EmptyVueStar, RewriteResult};
-
 #[derive(Debug, PartialEq, Eq)]
 pub(in crate::batch) struct ModuleSpecifierSpan {
     start: u32,
@@ -42,8 +40,3 @@ impl ModuleSpecifierSpan {
 }
 
 pub(in crate::batch) type ModuleSpecifierSpans = Vec<ModuleSpecifierSpan>;
-pub(in crate::batch) type VirtualProjectRewriteCapture = (
-    RewriteResult,
-    Vec<EmptyVueStar>,
-    Option<ModuleSpecifierSpans>,
-);

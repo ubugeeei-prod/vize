@@ -5,7 +5,9 @@ use oxc_span::SourceType;
 use vize_carton::profile;
 
 use crate::batch::error::CorsaResult;
-use crate::batch::import_rewriter::VirtualProjectRewriteOptions;
+use crate::batch::import_rewriter::{
+    RewriteSyntaxMode, SyntaxRewrite, VirtualProjectRewriteOptions,
+};
 use crate::batch::source_map::CompositeSourceMap;
 
 use super::super::VirtualFile;
@@ -20,10 +22,15 @@ pub(in crate::batch::virtual_project) fn build_script_registered_file(
     context: ScriptBuildContext<'_>,
 ) -> CorsaResult<RegisteredFile> {
     let content = source.as_ref();
-    let (rewritten, stars, occurrences) = profile!("canon.import.rewrite.script", {
+    let SyntaxRewrite {
+        result: rewritten,
+        stars,
+        syntax: rewrite_syntax,
+        ..
+    } = profile!("canon.import.rewrite.script", {
         context
             .rewriter
-            .rewrite_for_virtual_project_with_captured_stars_and_occurrences(
+            .rewrite_for_virtual_project_with_captured_stars(
                 content,
                 source_type,
                 context.roots,
@@ -36,6 +43,7 @@ pub(in crate::batch::virtual_project) fn build_script_registered_file(
                     alias_rewrite_policy: context.alias_rewrite_policy,
                     module_resolver: None,
                 },
+                RewriteSyntaxMode::Retain,
             )
     });
     let preserve_declaration_spelling = context.preserve_declaration_spelling
@@ -52,9 +60,9 @@ pub(in crate::batch::virtual_project) fn build_script_registered_file(
         vize_carton::micro_count!("canon.source.identity_shared.bytes", content.len());
     }
     let dependency_syntax_facts = if authored_identity {
-        occurrences.map(|occurrences| DependencySyntaxFacts {
+        rewrite_syntax.as_ref().map(|syntax| DependencySyntaxFacts {
             source_bytes: content.len(),
-            occurrences: occurrences.into_boxed_slice(),
+            occurrences: syntax.first_occurrences(content).into_boxed_slice(),
             references: super::super::dependency_scan::path_references(content).into_boxed_slice(),
         })
     } else {
@@ -90,5 +98,6 @@ pub(in crate::batch::virtual_project) fn build_script_registered_file(
         module_exports: None,
         original_content: (!authored_identity).then(|| retain_source_content(source)),
         dependency_syntax_facts,
+        rewrite_syntax,
     })
 }

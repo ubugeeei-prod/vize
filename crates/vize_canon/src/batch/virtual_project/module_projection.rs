@@ -7,7 +7,9 @@ use rayon::prelude::*;
 use vize_carton::FxHashSet;
 
 use super::{VirtualFile, VirtualProject};
-use crate::batch::import_rewriter::{VirtualProjectRewriteOptions, apply_captured_vue_stars};
+use crate::batch::import_rewriter::{
+    RewriteSyntaxMode, SyntaxRewrite, VirtualProjectRewriteOptions, apply_captured_vue_stars,
+};
 use crate::{PackageResolutionContext, PackageResolutionMode};
 
 impl VirtualProject {
@@ -43,6 +45,15 @@ impl VirtualProject {
     }
 
     pub(super) fn finalize_module_imports(&mut self) {
+        self.rewrite_final_module_imports();
+        // The graph is final: no later pass reads a registration's parse, so
+        // none outlives the preparation that made it.
+        for artifacts in self.source_artifacts.values_mut() {
+            artifacts.rewrite_syntax = None;
+        }
+    }
+
+    fn rewrite_final_module_imports(&mut self) {
         if self.editor_document_options.is_some() {
             self.finalize_editor_imports();
             return;
@@ -126,7 +137,17 @@ impl VirtualProject {
                 };
                 let source_type = super::build::source_type_for_path(&file.virtual_path)?;
                 let roots = (self.project_root.as_path(), self.virtual_root.as_path());
-                let (rewritten, stars) = if file.source_map.sfc_map.is_some() {
+                // Replay the registration's parse when it read these exact bytes.
+                let syntax = RewriteSyntaxMode::Reuse(
+                    self.source_artifacts
+                        .get(&file.original_path)
+                        .and_then(|artifacts| artifacts.rewrite_syntax.as_ref()),
+                );
+                let SyntaxRewrite {
+                    result: rewritten,
+                    stars,
+                    ..
+                } = if file.source_map.sfc_map.is_some() {
                     self.rewriter
                         .rewrite_generated_for_virtual_project_with_captured_stars(
                             &source,
@@ -134,6 +155,7 @@ impl VirtualProject {
                             roots,
                             file.original_path.parent(),
                             options,
+                            syntax,
                         )
                 } else {
                     self.rewriter
@@ -143,6 +165,7 @@ impl VirtualProject {
                             roots,
                             file.original_path.parent(),
                             options,
+                            syntax,
                         )
                 };
                 let rewritten = apply_captured_vue_stars(
@@ -221,7 +244,11 @@ impl VirtualProject {
                 }
                 let source_type = super::build::source_type_for_path(&file.virtual_path)?;
                 let roots = (self.project_root.as_path(), self.virtual_root.as_path());
-                let (rewritten, stars) = self
+                let SyntaxRewrite {
+                    result: rewritten,
+                    stars,
+                    ..
+                } = self
                     .rewriter
                     .rewrite_for_virtual_project_with_captured_stars(
                         source,
@@ -236,6 +263,11 @@ impl VirtualProject {
                             alias_rewrite_policy: Some(self.alias_rewrite_policy()),
                             module_resolver: None,
                         },
+                        RewriteSyntaxMode::Reuse(
+                            self.source_artifacts
+                                .get(&file.original_path)
+                                .and_then(|artifacts| artifacts.rewrite_syntax.as_ref()),
+                        ),
                     );
                 let rewritten = apply_captured_vue_stars(
                     &rewritten.code,
@@ -316,3 +348,6 @@ fn requires_explicit_extension(
                 )
             })
 }
+
+#[cfg(test)]
+mod rewrite_syntax_tests;

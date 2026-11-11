@@ -12,6 +12,9 @@ use vize_atelier_sfc::{SfcParseOptions, parse_sfc};
 use crate::batch::Diagnostic;
 use crate::batch::declaration_path::is_declaration_file;
 use crate::batch::error::{CorsaError, CorsaResult};
+use crate::batch::import_rewriter::{
+    ImportRewriter, ModuleRewriteSyntax, ReplacedLiterals, RewriteSyntaxMode, SyntaxRewrite,
+};
 use crate::batch::source_map::{CompositeSourceMap, SfcSourceMap};
 use crate::virtual_ts::VizeMapping;
 
@@ -69,6 +72,10 @@ pub(super) struct RegisteredFile {
     /// rewrite parse. Reachability consumes this once instead of cloning and
     /// parsing the same source again.
     pub(super) dependency_syntax_facts: Option<DependencySyntaxFacts>,
+    /// The batch registration's import-rewrite parse of the text module
+    /// resolution reads. Reachability and the final import rewrite replay it
+    /// for byte-identical text instead of parsing the projection again.
+    pub(super) rewrite_syntax: Option<ModuleRewriteSyntax>,
     /// A template that leaves `checkUnknownProps` off: vue-tsc declares its
     /// props fallback for such a file (#11628).
     pub(super) props_fallback: bool,
@@ -241,7 +248,13 @@ pub(super) fn build_vue_registered_file(
             block_type: Some(crate::batch::SfcBlockType::Template),
         });
     }
-    let (rewritten, stars) = profile!(
+    let SyntaxRewrite {
+        result: rewritten,
+        stars,
+        syntax: rewrite_syntax,
+        replaced,
+        ..
+    } = profile!(
         "canon.import.rewrite.vue",
         context
             .rewriter
@@ -256,21 +269,29 @@ pub(super) fn build_vue_registered_file(
                     alias_rewrite_policy: context.alias_rewrite_policy,
                     module_resolver: None,
                 },
+                RewriteSyntaxMode::Retain,
             )
     );
-    let authored_vue_ts_specifiers = context
-        .rewriter
-        .collect_all_specifiers(&rewritten.code, source_type)
-        .into_iter()
-        .filter_map(|specifier| {
-            specifier
-                .strip_suffix(crate::batch::AUTHORED_VUE_TS_ALIAS_SENTINEL)
-                .map(CompactString::from)
-        })
-        .collect();
+    let authored_vue_ts_specifiers = authored_vue_ts_alias_specifiers(
+        context.rewriter,
+        &code,
+        &rewritten.code,
+        source_type,
+        rewrite_syntax.as_ref(),
+        &replaced,
+    );
     let star_projection = super::star_exports::StarProjection::from_rewrite(&rewritten, stars);
-    let preserve_module_source = !context.allow_javascript
-        && rewritten.source_map != crate::batch::import_rewriter::ImportSourceMap::empty();
+    let rewrote_literals =
+        rewritten.source_map != crate::batch::import_rewriter::ImportSourceMap::empty();
+    let preserve_module_source = !context.allow_javascript && rewrote_literals;
+    let pre_rewrite_code = context.editor_document_options.is_some()
+        || context.jsx_typecheck
+        || preserve_module_source;
+    // Later passes read the pre-rewrite text, or the materialized text when it
+    // is the same bytes; only a batch registration keeps the parse for them.
+    let rewrite_syntax = rewrite_syntax.filter(|_| {
+        context.editor_document_options.is_none() && (pre_rewrite_code || !rewrote_literals)
+    });
     let mut projection = crate::virtual_ts::ProjectionMapping::from_parts(mappings, semantic_links);
     projection.restore_row_metadata(mapping_meta);
     projection.set_prop_default_key_links(prop_default_key_links);
@@ -314,9 +335,7 @@ pub(super) fn build_vue_registered_file(
             virtual_path,
         },
         extra_virtual_files,
-        pre_rewrite_code: context.editor_document_options.is_some()
-            || context.jsx_typecheck
-            || preserve_module_source,
+        pre_rewrite_code,
         authored_vue_ts_specifiers,
         passthrough_files: collect_passthrough_modules(
             path,
@@ -332,7 +351,36 @@ pub(super) fn build_vue_registered_file(
         module_exports: module_exports.filter(|_| module_sources_known),
         original_content: Some(retain_source_content(source)),
         dependency_syntax_facts: None,
+        rewrite_syntax,
     })
+}
+
+/// Authored `.vue.ts` literals whose rewrite carries the alias sentinel: the
+/// specifiers of the rewritten projection that end with it. The rewrite's own
+/// parse and the literals it replaced name them exactly; the rewritten text
+/// is parsed only when that parse recovered from a fatal error.
+fn authored_vue_ts_alias_specifiers(
+    rewriter: &ImportRewriter,
+    code: &str,
+    rewritten: &str,
+    source_type: SourceType,
+    syntax: Option<&ModuleRewriteSyntax>,
+    replaced: &ReplacedLiterals,
+) -> FxHashSet<CompactString> {
+    let alias = |specifier: &str| {
+        specifier
+            .strip_suffix(crate::batch::AUTHORED_VUE_TS_ALIAS_SENTINEL)
+            .map(CompactString::from)
+    };
+    if let Some(specifiers) = syntax.and_then(|syntax| syntax.rewritten_specifiers(code, replaced))
+    {
+        return specifiers.filter_map(alias).collect();
+    }
+    rewriter
+        .collect_all_specifiers(rewritten, source_type)
+        .iter()
+        .filter_map(|specifier| alias(specifier))
+        .collect()
 }
 
 pub(super) fn prepend_vue_jsx_reference(

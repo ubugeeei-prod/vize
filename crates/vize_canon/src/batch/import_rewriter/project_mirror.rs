@@ -3,7 +3,7 @@
 use std::path::{Path, PathBuf};
 
 use oxc_span::SourceType;
-use vize_carton::{FxHashSet, String, ToCompactString, cstr};
+use vize_carton::{FxHashSet, String, cstr};
 
 use super::dts_rewrite::rewrite_relative_dts_specifier;
 use super::policy::rewrite_vue_mirror_specifier;
@@ -12,9 +12,8 @@ use super::virtual_rewrite::{
     is_rewritable_vue_specifier, resolve_source_path,
 };
 use super::{
-    EmptyVueStar, ImportRewriter, ImportSourceMap, RewriteResult, VirtualAliasRewritePolicy,
-    VirtualProjectRewriteCapture, authored_vue_ts, rewrite_relative_vue_specifier,
-    source_may_contain_relative_specifier,
+    ImportRewriter, RewriteResult, RewriteSyntaxMode, SyntaxRewrite, VirtualAliasRewritePolicy,
+    authored_vue_ts, rewrite_relative_vue_specifier, source_may_contain_relative_specifier,
 };
 
 #[derive(Clone, Copy)]
@@ -34,8 +33,8 @@ impl ImportRewriter {
         roots: (&Path, &Path),
         source_dir: Option<&Path>,
         options: VirtualProjectRewriteOptions<'_>,
-        capture_stars: bool,
-    ) -> (RewriteResult, Vec<EmptyVueStar>) {
+        capture: Option<RewriteSyntaxMode<'_>>,
+    ) -> SyntaxRewrite {
         let VirtualProjectRewriteOptions {
             preserve_relative_declarations,
             mirrorable_project_files,
@@ -53,31 +52,25 @@ impl ImportRewriter {
             && !alias_candidate
             && options.module_resolver.is_none()
         {
-            return (
-                RewriteResult {
-                    code: source.to_compact_string(),
-                    source_map: ImportSourceMap::empty(),
-                },
-                Vec::new(),
-            );
+            // No literal can change here, but the registration's later passes
+            // read this projection's literals all the same: parse it once now.
+            if matches!(capture, Some(RewriteSyntaxMode::Retain)) {
+                return SyntaxRewrite::unchanged_with_syntax(source, source_type);
+            }
+            return SyntaxRewrite::unchanged(source);
         }
 
         vize_carton::micro_count!("canon.source_census.producer.calls", 1);
         vize_carton::micro_count!("canon.source_census.producer.source_bytes", source.len());
         #[cfg(feature = "profiling")]
         crate::profiling::observe_rewrite_input(source, source_type);
-        let (rewritten, stars, _) = self.rewrite_with_star_capture(
-            source,
-            source_type,
-            |path, mode| {
-                if let Some(rewritten) = module_resolver.and_then(|resolve| resolve(path, mode)) {
-                    return Some(rewritten.into());
-                }
-                // A declaration keeps its authored identity before a `.vue`
-                // spelling is sent to an SFC mirror.
-                authored_vue_ts::rewrite_authored_or_missing_vue_import(
-                    path, source_dir, true, true,
-                )
+        let rewrite_specifier = |path: &str, mode| {
+            if let Some(rewritten) = module_resolver.and_then(|resolve| resolve(path, mode)) {
+                return Some(rewritten.into());
+            }
+            // A declaration keeps its authored identity before a `.vue`
+            // spelling is sent to an SFC mirror.
+            authored_vue_ts::rewrite_authored_or_missing_vue_import(path, source_dir, true, true)
                 .or_else(|| {
                     (!preserve_relative_declarations)
                         .then(|| {
@@ -101,10 +94,15 @@ impl ImportRewriter {
                         mirrorable_project_files,
                     )
                 })
-            },
-            capture_stars,
-        );
-        (rewritten, stars)
+        };
+        match capture {
+            Some(mode) => self.rewrite_with_syntax(source, source_type, rewrite_specifier, mode),
+            None => {
+                let (result, stars, _) =
+                    self.rewrite_with_star_capture(source, source_type, rewrite_specifier, false);
+                SyntaxRewrite::without_syntax(result, stars)
+            }
+        }
     }
 
     /// Rewrite a script's module specifiers for the canon virtual project.
@@ -184,8 +182,8 @@ impl ImportRewriter {
         roots: (&Path, &Path),
         source_dir: Option<&Path>,
         options: VirtualProjectRewriteOptions<'_>,
-        capture_stars: bool,
-    ) -> VirtualProjectRewriteCapture {
+        capture: Option<RewriteSyntaxMode<'_>>,
+    ) -> SyntaxRewrite {
         let project_root = roots.0.to_string_lossy();
         let dts_candidate = source_dir.is_some() && source_may_contain_relative_specifier(source);
         let alias_candidate = options
@@ -197,38 +195,33 @@ impl ImportRewriter {
             && !alias_candidate
             && options.module_resolver.is_none()
         {
-            return (
-                RewriteResult {
-                    code: source.to_compact_string(),
-                    source_map: ImportSourceMap::empty(),
-                },
-                Vec::new(),
-                None,
-            );
+            return SyntaxRewrite::unchanged(source);
         }
 
-        let (rewritten, stars, occurrences) = self.rewrite_with_star_capture(
-            source,
-            source_type,
-            |path, mode| {
-                if let Some(rewritten) = options
-                    .module_resolver
-                    .and_then(|resolve| resolve(path, mode))
-                {
-                    return Some(rewritten.into());
-                }
-                self.rewrite_virtual_project_specifier(
-                    path,
-                    roots,
-                    source_dir,
-                    options.preserve_relative_declarations,
-                    options.mirrorable_project_files,
-                    options.alias_rewrite_policy,
-                )
-            },
-            capture_stars,
-        );
-        (rewritten, stars, Some(occurrences))
+        let rewrite_specifier = |path: &str, mode| {
+            if let Some(rewritten) = options
+                .module_resolver
+                .and_then(|resolve| resolve(path, mode))
+            {
+                return Some(rewritten.into());
+            }
+            self.rewrite_virtual_project_specifier(
+                path,
+                roots,
+                source_dir,
+                options.preserve_relative_declarations,
+                options.mirrorable_project_files,
+                options.alias_rewrite_policy,
+            )
+        };
+        match capture {
+            Some(mode) => self.rewrite_with_syntax(source, source_type, rewrite_specifier, mode),
+            None => {
+                let (result, stars, _) =
+                    self.rewrite_with_star_capture(source, source_type, rewrite_specifier, false);
+                SyntaxRewrite::without_syntax(result, stars)
+            }
+        }
     }
 
     fn rewrite_virtual_project_specifier(

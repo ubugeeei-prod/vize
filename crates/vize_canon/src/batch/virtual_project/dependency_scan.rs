@@ -260,8 +260,21 @@ impl VirtualProject {
                 let Some(virtual_content) = virtual_content.as_deref() else {
                     continue;
                 };
-                parsed_occurrences = match facts.as_deref_mut() {
-                    Some(facts) => {
+                // The registration already parsed these exact bytes to rewrite them.
+                let registered_syntax = self
+                    .source_artifacts
+                    .get(&original_path)
+                    .and_then(|artifacts| artifacts.rewrite_syntax.as_ref())
+                    .filter(|syntax| syntax.reusable_for(virtual_content, source_type));
+                parsed_occurrences = match (registered_syntax, facts.as_deref_mut()) {
+                    (Some(syntax), _) => {
+                        vize_carton::micro_count!(
+                            "canon.dependency_scan.occurrences.registered.calls",
+                            1
+                        );
+                        syntax.dependency_occurrences(virtual_content)
+                    }
+                    (None, Some(facts)) => {
                         vize_carton::micro_count!(
                             "canon.dependency_scan.occurrences.cached.calls",
                             1
@@ -275,7 +288,7 @@ impl VirtualProject {
                             facts.collect_occurrences(virtual_content, source_type)
                         )
                     }
-                    None => {
+                    (None, None) => {
                         vize_carton::micro_count!(
                             "canon.dependency_scan.occurrences.uncached.calls",
                             1
