@@ -30,9 +30,9 @@ use std::sync::{Arc, Mutex, OnceLock};
 use vize_carton::{FxHashMap, FxHashSet, String};
 
 use super::external_types::FileTypeSummary;
-use super::type_world::ResolvedDependency;
+use super::type_world::{ResolvedSlot, Wanted};
 
-type ResolvedCell = Arc<OnceLock<Option<Arc<ResolvedDependency>>>>;
+type ResolvedCell = Arc<ResolvedSlot>;
 type ResolutionCell = Arc<OnceLock<Option<PathBuf>>>;
 type DirectoryCell = Arc<directory_index::ProbedDirectory>;
 type PhysicalDirectoryCell = Arc<OnceLock<Option<PathBuf>>>;
@@ -73,6 +73,10 @@ pub struct TypeSourceSnapshot {
     /// Every world built from this snapshot shares them by `Arc`; root text
     /// never enters this cache.
     pub(super) resolved: Mutex<FxHashMap<PathBuf, ResolvedCell>>,
+    /// Dependencies walks have queued that nobody has started resolving. A
+    /// walk whose next module another walk is resolving takes one instead of
+    /// waiting.
+    pub(super) wanted: Mutex<Wanted>,
 }
 
 impl TypeSourceSnapshot {

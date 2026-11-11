@@ -5,6 +5,9 @@
     reason = "source snapshots lend shared immutable Arc module text to the parser"
 )]
 
+mod cells;
+#[cfg(test)]
+mod concurrent_walk_tests;
 #[cfg(test)]
 mod overlay_tests;
 mod parse;
@@ -22,12 +25,14 @@ mod with_defaults_tests;
 use oxc_span::SourceType;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
+use std::sync::atomic::{AtomicBool, Ordering};
 use vize_carton::{FxHashSet, cstr};
 use vize_croquis::types::ResolvedTypeWorld;
 use vize_croquis::types::world::{TypeExportBinding, TypeModule, TypeModuleReference};
 
 use super::external_types::resolution::path_key;
 use super::{ScriptCompileContext, TypeSourceSnapshot};
+pub(super) use cells::{ResolvedSlot, Wanted};
 
 const MAX_MODULES: usize = 512;
 type ModuleSource = (Arc<str>, bool);
@@ -42,6 +47,22 @@ type ParsedTypeModule = (TypeModule, FxHashSet<vize_carton::CompactString>);
 pub(super) struct ResolvedDependency {
     module: Arc<TypeModule>,
     follow: Vec<PathBuf>,
+    /// Whether a walk has offered `follow` to walks that would otherwise wait.
+    offered: AtomicBool,
+}
+
+impl ResolvedDependency {
+    /// Offer `follow` the first time a walk queues it with room to visit it
+    /// all. A walk this close to its module cap may stop before the modules it
+    /// queued, so it leaves them to whichever walk visits them.
+    fn offer(&self, visited: usize, queued: usize, sources: &TypeSourceSnapshot) {
+        if !self.follow.is_empty()
+            && visited.saturating_add(queued) <= MAX_MODULES
+            && !self.offered.swap(true, Ordering::AcqRel)
+        {
+            cells::want(&self.follow, sources);
+        }
+    }
 }
 
 impl ScriptCompileContext {
@@ -125,6 +146,7 @@ impl ScriptCompileContext {
             };
             pending.extend(resolved.follow.iter().cloned().map(|path| (path, None)));
             world.modules.insert(identity, Arc::clone(&resolved.module));
+            resolved.offer(world.modules.len(), pending.len(), sources);
         }
         world
     }
@@ -173,6 +195,7 @@ fn resolve_module_targets(
     ResolvedDependency {
         module: Arc::new(module),
         follow,
+        offered: AtomicBool::new(false),
     }
 }
 
@@ -181,27 +204,21 @@ fn read_resolved_dependency(
     path: &Path,
     sources: &TypeSourceSnapshot,
 ) -> Option<Arc<ResolvedDependency>> {
-    // Single-flight per dependency: the map lock is released before any read,
-    // parse or resolution work, so unrelated dependencies proceed in parallel.
-    let entry = sources
-        .resolved
-        .lock()
-        .ok()?
-        .entry(path.to_path_buf())
-        .or_default()
-        .clone();
-    entry
-        .get_or_init(|| {
-            let (module, needed_imports) = read_module_source(path, sources)
-                .map(|(source, is_tsx)| parse_source(&source, is_tsx))?;
-            Some(Arc::new(resolve_module_targets(
-                module,
-                &needed_imports,
-                path,
-                sources,
-            )))
-        })
-        .clone()
+    cells::read(path, sources, resolve_dependency)
+}
+
+fn resolve_dependency(
+    path: &Path,
+    sources: &TypeSourceSnapshot,
+) -> Option<Arc<ResolvedDependency>> {
+    let (module, needed_imports) =
+        read_module_source(path, sources).map(|(source, is_tsx)| parse_source(&source, is_tsx))?;
+    Some(Arc::new(resolve_module_targets(
+        module,
+        &needed_imports,
+        path,
+        sources,
+    )))
 }
 
 fn parse_source(source: &str, is_tsx: bool) -> ParsedTypeModule {
