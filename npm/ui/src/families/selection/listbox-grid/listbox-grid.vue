@@ -43,6 +43,7 @@ const {
   ariaLabel = undefined,
   ariaLabelledby = undefined,
   ariaDescribedby = undefined,
+  // eslint-disable-next-line vue/no-unused-properties -- items is a public generic-inference anchor; registered options own runtime navigation
 } = defineProps<ListboxGridProps<T, Multiple>>();
 
 const emit = defineEmits<{
