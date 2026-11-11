@@ -27,11 +27,17 @@ use crate::markup::{
 };
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use crate::rules::a11y::helpers::{
-    canonical_component_name, is_aria_hidden_true, matches_configured_component,
-    string_literal_value,
+    canonical_component_name, matches_configured_component, string_literal_value,
 };
-use crate::rules::a11y::markup_helpers;
 use vize_relief::{ElementNode, ElementType, ExpressionNode, PropNode, TemplateChildNode};
+
+#[path = "label_has_for_control.rs"]
+mod control;
+
+use control::{
+    is_for_name, is_native_control_tag, markup_hides_control, markup_is_control,
+    relief_component_is_control, relief_hides_control,
+};
 
 static META: RuleMeta = RuleMeta {
     name: "a11y/label-has-for",
@@ -72,8 +78,6 @@ impl LabelHasFor {
     }
 }
 
-const FORM_CONTROL_TAGS: &[&str] = &["input", "select", "textarea", "meter", "progress"];
-
 fn nonempty_expression(value: &str) -> bool {
     let value = value.trim();
     if value.is_empty() || matches!(value, "null" | "undefined") {
@@ -85,7 +89,7 @@ fn nonempty_expression(value: &str) -> bool {
 fn has_for_attribute(element: &ElementNode) -> bool {
     element.props.iter().any(|prop| match prop {
         PropNode::Attribute(attr) => {
-            (attr.name == "for" || attr.name == "htmlFor")
+            is_for_name(attr.name)
                 && attr
                     .value
                     .as_ref()
@@ -96,9 +100,7 @@ fn has_for_attribute(element: &ElementNode) -> bool {
             dir.name == "bind"
                 && !dir.shorthand
                 && match &dir.arg {
-                    Some(ExpressionNode::Simple(s))
-                        if s.is_static && (s.content == "for" || s.content == "htmlFor") =>
-                    {
+                    Some(ExpressionNode::Simple(s)) if s.is_static && is_for_name(s.content) => {
                         dir.exp.as_ref().is_some_and(|expression| match expression {
                             ExpressionNode::Simple(simple) => nonempty_expression(simple.content),
                             ExpressionNode::Compound(compound) => !compound.children.is_empty(),
@@ -118,10 +120,11 @@ fn has_nested_form_control(
     for child in children {
         match child {
             TemplateChildNode::Element(el) => {
-                if is_aria_hidden_true(el) {
+                if el.tag_type == ElementType::Slot || relief_hides_control(el) {
                     continue;
                 }
-                if FORM_CONTROL_TAGS.contains(&el.tag)
+                if (el.tag_type == ElementType::Element && is_native_control_tag(el.tag))
+                    || relief_component_is_control(el)
                     || matches_configured_component(el.tag, control_components)
                 {
                     return true;
@@ -153,8 +156,8 @@ fn has_markup_for(element: &MarkupElement<'_>, source: &str, template: bool) -> 
     element.walk_bindings(&mut |binding| {
         found |= match binding.kind() {
             MarkupBindingKind::Attribute => {
-                (binding.is_unqualified_arg_exact("for")
-                    || binding.is_unqualified_arg_exact("htmlFor"))
+                (binding.is_unqualified_arg_eq_ignore_ascii_case("for")
+                    || binding.is_unqualified_arg_eq_ignore_ascii_case("htmlFor"))
                     && binding
                         .static_value()
                         .is_some_and(|value| !value.is_empty())
@@ -163,9 +166,9 @@ fn has_markup_for(element: &MarkupElement<'_>, source: &str, template: bool) -> 
                 // A template's dynamic `:[htmlFor]` names whatever it evaluates to.
                 let names = |name| {
                     if template {
-                        binding.is_static_unqualified_arg_exact(name)
+                        binding.is_static_unqualified_arg_eq_ignore_ascii_case(name)
                     } else {
-                        binding.is_unqualified_arg_exact(name)
+                        binding.is_unqualified_arg_eq_ignore_ascii_case(name)
                     }
                 };
                 if binding.arg_name().is_none() {
@@ -194,14 +197,11 @@ fn has_nested_markup_control(
     let mut found = false;
     element.walk_rendered_children(&mut |child| {
         if let MarkupNode::Element(child) = child {
-            if markup_helpers::is_aria_hidden_true_markup(&child) {
+            if child.kind() == MarkupElementKind::Slot || markup_hides_control(&child) {
                 return;
             }
             found = found
-                || FORM_CONTROL_TAGS
-                    .iter()
-                    .any(|tag| child.is_unqualified_tag_exact(tag))
-                || matches_configured_component(child.tag(), control_components)
+                || markup_is_control(&child, control_components)
                 || has_nested_markup_control(&child, control_components);
         }
     });
@@ -397,6 +397,56 @@ mod tests {
         ] {
             let result = linter.lint_jsx(source, "test.jsx", vize_atelier_jsx::JsxLang::Jsx);
             assert_eq!(result.warning_count, expected, "{source}: {result:?}");
+        }
+    }
+
+    #[test]
+    fn third_party_shapes_follow_vue_rendering() {
+        let cases: [(&str, usize); 11] = [
+            (r#"<label>Name <input :aria-hidden="hidden" /></label>"#, 1),
+            (r#"<label><slot><input /></slot></label>"#, 1),
+            (r#"<label>Name <component is="input" /></label>"#, 0),
+            (r#"<label>Name <component :is="'input'" /></label>"#, 0),
+            (r#"<label FOR="name">Name</label>"#, 0),
+            // `<Input>` is a component in an SFC, not a native input.
+            (r#"<label>Name <Input /></label>"#, 1),
+            // Vue omits a binding whose value is `undefined`.
+            (r#"<label :for="undefined">Name</label>"#, 1),
+            (r#"<label>Name <input aria-hidden /></label>"#, 1),
+            (r#"<label>Name <input :aria-hidden="false" /></label>"#, 0),
+            (
+                r#"<label>Name <span :aria-hidden="hidden"><input /></span></label>"#,
+                1,
+            ),
+            // A bare `v-bind` can still carry `for` (#8961).
+            (r#"<label v-bind="attrs">Name</label>"#, 0),
+        ];
+        for (source, warnings) in cases {
+            let template = create_linter().lint_template(source, "test.vue");
+            assert_eq!(
+                template.warning_count, warnings,
+                "template {source}: {:?}",
+                template.diagnostics
+            );
+            let relief = create_linter().lint_template_relief(source, "test.vue");
+            let relief_count = relief
+                .diagnostics
+                .iter()
+                .filter(|diagnostic| diagnostic.rule_name == "a11y/label-has-for")
+                .count();
+            assert_eq!(
+                relief_count, warnings,
+                "relief {source}: {:?}",
+                relief.diagnostics
+            );
+            let sfc = format!("<template>{source}</template>");
+            let file = create_linter().lint_sfc(&sfc, "App.vue");
+            let count = file
+                .diagnostics
+                .iter()
+                .filter(|diagnostic| diagnostic.rule_name == "a11y/label-has-for")
+                .count();
+            assert_eq!(count, warnings, "sfc {source}: {:?}", file.diagnostics);
         }
     }
 

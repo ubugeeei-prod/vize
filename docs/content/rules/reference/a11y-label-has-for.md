@@ -59,6 +59,16 @@ export default defineConfig({}).withVue({
 
 Then run `vp run lint`.
 
+## Differences from eslint-plugin-vuejs-accessibility
+
+These shapes stay different because they follow what Vue renders:
+
+- `<label>Name <Input /></label>` is reported. In an SFC, `<Input>` is a component, not a native `<input>`. List it in `controlComponents` when that component renders a control.
+- `<label :for="undefined">` is reported. Vue omits a binding whose value is `undefined`, so the label has no `for`.
+- `<label v-bind="attrs">` is not reported. The spread can carry `for` at runtime.
+
+`FOR`, `<component is="input">`, a boolean `aria-hidden`, and a bound `aria-hidden` other than `false` match the plugin. A control that exists only as `<slot>` fallback content does not satisfy the label.
+
 ## Related
 
 - [Accessibility rules](../accessibility.md)
