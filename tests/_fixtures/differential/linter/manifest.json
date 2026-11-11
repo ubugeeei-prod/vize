@@ -4507,6 +4507,58 @@
       }
     },
     {
+      "id": "linter/patina/compat-explicit-slots-12751",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "patina-compat-explicit-slots-12751",
+        "files": [
+          {
+            "path": "Bare.vue.txt",
+            "role": "third-party-explicit-slots-reproduction",
+            "sha256": "2b91cf96c0cf308fd3f799838f311b8edd93e3dbafcac50aa9f812472afc339d"
+          },
+          {
+            "path": "Duplicate.vue.txt",
+            "role": "third-party-explicit-slots-reproduction",
+            "sha256": "1acc305bdf114cddcfd3acaa257f3a5121e0d69335e935cdb5fe38ad6ce8d3d8"
+          },
+          {
+            "path": "Imported.vue.txt",
+            "role": "third-party-explicit-slots-reproduction",
+            "sha256": "e08b500c636158c29b4d1da0e7b77984e07413f778a01a453635af28a473e638"
+          },
+          {
+            "path": "Utility.vue.txt",
+            "role": "third-party-explicit-slots-reproduction",
+            "sha256": "044f985afb109bf60aa7a1cfc12d9c1535f5b49b5ca1d99fb64d36a34bb723c3"
+          },
+          {
+            "path": "types.ts",
+            "role": "third-party-explicit-slots-reproduction",
+            "sha256": "7b930647d3b56bce4490181e96196403bcfd8bfc2aebcade08e8a21fd0d947b3"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/patina/compat-interaction-12760",
       "state": "active",
       "targets": [

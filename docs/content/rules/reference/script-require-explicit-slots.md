@@ -54,6 +54,12 @@ export default defineConfig({}).withVue({
 
 Then run `vp run lint`.
 
+## Differences from eslint-plugin-vue
+
+`defineSlots()` with no type argument declares no slots. `Readonly`, `Partial`, and `Required` keep the inner names, and `Record` with a union of string-literal keys uses those keys. An imported type is enumerated when the cross-file type world can resolve it. A type that still cannot be enumerated stays unchecked, so an unresolved import is not treated as an empty declaration.
+
+A repeated name inside one type literal, interface, or alias is reported. The same name on both sides of an intersection is not. An index signature does not name a slot, so a rendered outlet next to only an index signature is reported.
+
 ## Related
 
 - [Type and script rules](../type-and-script.md)

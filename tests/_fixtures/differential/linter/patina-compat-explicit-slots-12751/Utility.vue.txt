@@ -1,0 +1,16 @@
+<script setup lang="ts">
+interface CardSlots {
+  default(): unknown;
+  footer(props: { count: number }): unknown;
+}
+
+defineSlots<Readonly<CardSlots>>();
+</script>
+
+<template>
+  <div>
+    <slot />
+    <slot name="footer" :count="1" />
+    <slot name="extra" />
+  </div>
+</template>
