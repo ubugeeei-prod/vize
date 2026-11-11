@@ -21,6 +21,12 @@ pub(super) fn source_needs_virtual_registration(
     let mut needs_registration = false;
     let alias_scope = AliasScope::new(aliases, options);
     while let Some(file) = frontier.queue.pop() {
+        // A pure alias walk answers only whether its closure reaches Vue: it
+        // finds no package routes, and only a negative answer keeps what it
+        // visited (`negative_alias_sources`). The first hit settles it.
+        if needs_registration && packages.is_none() {
+            break;
+        }
         if !frontier.visited.insert(file.clone()) {
             continue;
         }
