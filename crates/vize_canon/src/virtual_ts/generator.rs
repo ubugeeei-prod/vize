@@ -391,7 +391,6 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         template_ast,
     );
     ts.push_str("\n\n");
-
     if let Some(script) = script_content {
         profile!("canon.virtual_ts.emit_script_body", {
             ts.push_str("  // User setup code\n");
@@ -407,7 +406,6 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
             // Deferred class-component alias: `(class_end, name)`.
             let mut pending_class_alias: Option<(usize, &str)> = None;
             let mut emitted_default_alias = false;
-
             for (src_byte_offset, raw_line) in ambient.script_lines(script) {
                 boundaries.emit_through(src_byte_offset, &mut ts, &mut mappings, source_offset);
                 ambient.emit_setup_captures(
