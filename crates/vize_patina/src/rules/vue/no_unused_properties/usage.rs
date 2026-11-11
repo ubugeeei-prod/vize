@@ -346,13 +346,20 @@ fn scan_binding_defaults(
     let bytes = pattern.as_bytes();
     let mut index = 0;
     while index < bytes.len() {
-        match bytes[index] {
+        let Some(byte) = bytes.get(index).copied() else {
+            break;
+        };
+        match byte {
             b'\'' | b'"' | b'`' => index = skip_quoted(bytes, index),
             b'=' => {
                 let next = bytes.get(index + 1).copied();
                 let operator = next == Some(b'=')
                     || next == Some(b'>')
-                    || (index > 0 && matches!(bytes[index - 1], b'!' | b'<' | b'>'));
+                    || (index > 0
+                        && bytes
+                            .get(index - 1)
+                            .copied()
+                            .is_some_and(|byte| matches!(byte, b'!' | b'<' | b'>')));
                 if operator {
                     index += if next == Some(b'=') { 2 } else { 1 };
                     if next == Some(b'=') && bytes.get(index).copied() == Some(b'=') {
@@ -376,7 +383,10 @@ fn end_of_default(bytes: &[u8], start: usize) -> usize {
     let mut index = start;
     let mut depth = 0i32;
     while index < bytes.len() {
-        match bytes[index] {
+        let Some(byte) = bytes.get(index).copied() else {
+            break;
+        };
+        match byte {
             b'\'' | b'"' | b'`' => index = skip_quoted(bytes, index),
             b'(' | b'[' | b'{' => {
                 depth += 1;
@@ -395,14 +405,19 @@ fn end_of_default(bytes: &[u8], start: usize) -> usize {
 }
 
 fn skip_quoted(bytes: &[u8], start: usize) -> usize {
-    let quote = bytes[start];
+    let Some(quote) = bytes.get(start).copied() else {
+        return bytes.len();
+    };
     let mut index = start + 1;
     while index < bytes.len() {
-        if bytes[index] == b'\\' {
+        let Some(byte) = bytes.get(index).copied() else {
+            break;
+        };
+        if byte == b'\\' {
             index += 2;
             continue;
         }
-        if bytes[index] == quote {
+        if byte == quote {
             return index + 1;
         }
         index += 1;
