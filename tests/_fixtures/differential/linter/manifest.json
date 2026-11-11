@@ -4869,6 +4869,37 @@
       }
     },
     {
+      "id": "linter/patina/compat-redundant-roles-12854",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "patina-compat-redundant-roles-12854",
+        "files": [
+          {
+            "path": "Roles.vue.txt",
+            "role": "third-party-redundant-roles-reproduction",
+            "sha256": "0f29cdeca4e8258fc2998f1018e11336c7fbbf26238d5d6b2e339fc523a086f2"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/patina/compat-restricted-syntax-12741",
       "state": "active",
       "targets": [

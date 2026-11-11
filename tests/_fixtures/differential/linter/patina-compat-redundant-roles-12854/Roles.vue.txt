@@ -1,0 +1,7 @@
+<template>
+  <div>
+    <img src="/a.png" alt="" role="img" />
+    <button type="button" :role="'button'">x</button>
+    <button type="button" role="button">y</button>
+  </div>
+</template>
