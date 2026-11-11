@@ -16,7 +16,7 @@
  * (typecheck-command.mjs); max RSS is GNU time's %M.
  */
 
-import { cpSync, mkdirSync, readFileSync, realpathSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, realpathSync, writeFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -24,7 +24,12 @@ import { parseArgs } from "node:util";
 
 import { coldRunner, startupRuns } from "./typecheck-corpus-pair-cold.ts";
 import { writeCold } from "./typecheck-corpus-pair-cold-report.ts";
-import { type Corpus, CORPORA, selectCorpora } from "./typecheck-corpus-pair-corpora.ts";
+import {
+  type Corpus,
+  CORPORA,
+  prepareCorpus,
+  selectCorpora,
+} from "./typecheck-corpus-pair-corpora.ts";
 import {
   FLOOR_VARIANTS,
   type FloorRecordings,
@@ -72,7 +77,6 @@ import {
 } from "./typecheck-mapper-hosts.ts";
 
 const scriptsDir = dirname(fileURLToPath(import.meta.url));
-const repoRoot = resolve(scriptsDir, "..", "..", "..");
 const CORPUS_PACKAGES_DIR = resolve(scriptsDir, "..", "typecheck-corpora");
 const PROBE_SCRIPT = join(scriptsDir, "content-mapper-byte-probe.ts");
 const VUE_TSC_DIR = join(scriptsDir, "node_modules", "vue-tsc");
@@ -121,19 +125,7 @@ function writeProbePackage(project: string, mapper: Mapper): void {
 
 /** Corpus sources and pinned packages as real files; mappers as typecheck-mapper-hosts installs them. */
 export function prepareProject(dir: string, corpus: Corpus, hosts: MapperHosts): void {
-  rmSync(dir, { recursive: true, force: true });
-  mkdirSync(dir, { recursive: true });
-  for (const entry of corpus.copy) {
-    cpSync(join(repoRoot, corpus.source, entry), join(dir, entry), {
-      recursive: true,
-      verbatimSymlinks: true,
-    });
-  }
-  writeFileSync(join(dir, "tsconfig.json"), `${JSON.stringify(corpus.tsconfig, null, 2)}\n`);
-  cpSync(join(CORPUS_PACKAGES_DIR, "node_modules"), join(dir, "node_modules"), {
-    recursive: true,
-    verbatimSymlinks: true,
-  });
+  prepareCorpus(dir, corpus);
   prepareMapperPackages(dir, hosts);
   for (const mapper of CONTENT_MAPPERS) writeProbePackage(dir, mapper);
 }

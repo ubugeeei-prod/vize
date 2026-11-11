@@ -1,3 +1,7 @@
+import {
+  hasLaterRulePortError,
+  withoutLaterRulePorts,
+} from "./support/without-later-rule-ports.ts";
 import { currentRuleDocumentationPacket } from "./support/current-rule-documentation.ts";
 import { setupExportCurrentPacket } from "./support/setup-export-current-packet.ts";
 import { writeVueConfigFixture } from "./support/vue-config-fixture.ts";
@@ -116,10 +120,16 @@ await test("setup export defaults preserve seventy whole source CLI packets", ()
       persist();
       assert.equal(record.error, null);
       assert.equal(record.signal, null);
-      assert.equal(record.status, record.expectedStatus, entry.id + " / " + route.id);
+      const reported = JSON.parse(Buffer.from(record.stdoutBase64, "base64").toString("utf8"));
+      const laterError = route.id === "all" && hasLaterRulePortError(reported);
+      assert.equal(
+        record.status,
+        laterError ? 1 : record.expectedStatus,
+        entry.id + " / " + route.id,
+      );
       assert.equal(record.stderrBase64, "");
       assert.deepEqual(after, source);
-      record.actual = JSON.parse(Buffer.from(record.stdoutBase64, "base64").toString("utf8"));
+      record.actual = route.id === "all" ? withoutLaterRulePorts(reported) : reported;
       persist();
       assert.deepEqual(record.actual, record.expected, entry.id + " / " + route.id);
     }

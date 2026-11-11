@@ -53,11 +53,14 @@ fn text_and_interpolation_boundaries_do_not_gain_runtime_whitespace() {
 }
 
 #[test]
-fn dynamic_attribute_groups_remain_as_authored() {
+fn runtime_bindings_and_custom_directives_remain_in_authored_order() {
+    // Static argument names do not make binding expressions or custom
+    // directive hooks independent. Preserve their authored evaluation order.
     let source = concat!(
         r#"<Widget :z="first()" :a="second()" "#,
         r#":getter="observed" :assigned="value = next" :updated="count++" "#,
-        r#"v-model="model" @z="onZ()" @a="onA()" />"#,
+        r#"v-model="model" @z="onZ()" @a="onA()" "#,
+        r#"v-observe:z="third()" v-observe:a="fourth()" />"#,
     );
     let formatted = format(source);
     snapshot_bytes(
@@ -65,18 +68,12 @@ fn dynamic_attribute_groups_remain_as_authored() {
         &formatted,
     );
     assert_eq!(format(&formatted), formatted);
-    let names = [
-        ":z=",
-        ":a=",
-        ":getter=",
-        ":assigned=",
-        ":updated=",
-        "v-model=",
-        "@z=",
-        "@a=",
-    ];
-    let positions = names.map(|name| formatted.find(name).unwrap());
-    assert!(positions.windows(2).all(|pair| pair[0] < pair[1]));
+    let bindings = [":z=", ":a=", ":getter=", ":assigned=", ":updated="];
+    let binding_positions = bindings.map(|name| formatted.find(name).unwrap());
+    assert!(binding_positions.windows(2).all(|pair| pair[0] < pair[1]));
+    let custom_directives = ["v-observe:z=", "v-observe:a="];
+    let custom_positions = custom_directives.map(|name| formatted.find(name).unwrap());
+    assert!(custom_positions.windows(2).all(|pair| pair[0] < pair[1]));
 }
 
 #[test]

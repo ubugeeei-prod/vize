@@ -69,6 +69,10 @@ const VUE_COMPONENT_OPTIONS_MEMBERS_AFTER_SETUP: &str = "  render?: Function;
 };
 ";
 
+/// Holds the common raw-source and forwarded-attrs contract without growing
+/// the compact string through another heap allocation.
+const FALLTHROUGH_COMPONENT_CONTRACT_CAPACITY: usize = 384;
+
 /// Emit the `$VueComponentOptions` alias the default export references.
 ///
 /// A generic SFC is *not* a `DefineComponent` for `vue-tsc`: it compiles to a
@@ -168,7 +172,11 @@ pub(super) fn emit_default_export_declaration(
     // settle only the first of multiple consumers of the same changed SFC.
     // Leading with the direct `Props` identity makes every dependent program
     // observe the edit while the last construct signature remains unchanged.
-    let mut component_contract_fields = String::default();
+    let mut component_contract_fields = String::with_capacity(if fallthrough_props_ref.is_some() {
+        FALLTHROUGH_COMPONENT_CONTRACT_CAPACITY
+    } else {
+        0
+    });
     if static_raw_props_ref.is_some()
         || static_slots_ref.is_some()
         || fallthrough_props_ref.is_some()
@@ -212,9 +220,11 @@ pub(super) fn emit_default_export_declaration(
             forwarded =
                 vize_carton::cstr!("$UnownedComponentAttrs<{fallthrough_ref}, {props}, {emits}>");
         }
+        // The raw surface, before owned keys are removed: removing keys cannot
+        // add a required one, so a parent finds none here without the map.
         append!(
             component_contract_fields,
-            " readonly __vizeHasFallthroughProps: true; readonly __vizeFallthroughProps?: {forwarded};"
+            " readonly __vizeFallthroughSource?: {fallthrough_ref}; readonly __vizeHasFallthroughProps: true; readonly __vizeFallthroughProps?: {forwarded};"
         );
     }
     // A named type prints as the component, not as its generated members.

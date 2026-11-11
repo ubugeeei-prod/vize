@@ -118,7 +118,13 @@ function captureRealProject(provider: string, head: string, checker: string, out
       ),
       headPacket = captureSlotPacket(head, project, source, headRoot, projectName),
       span = authoredSpan(source),
-      packetAudit = auditPackets(publishedPacket.result, headPacket.result, "QSplitter"),
+      packetAudit = auditPackets(
+        publishedPacket.result,
+        headPacket.result,
+        "QSplitter",
+        undefined,
+        source,
+      ),
       publishedText = virtualText(publishedPacket.result),
       headText = virtualText(headPacket.result),
       legacyCall = "new (undefined as unknown as __VizeSlotConstructor<typeof QSplitter>)({";
@@ -314,7 +320,13 @@ async function main() {
         row.source,
         path.join(root, "head-packet"),
       );
-      const packetAudit = auditPackets(basePacket.result, headPacket.result);
+      const packetAudit = auditPackets(
+        basePacket.result,
+        headPacket.result,
+        "WitnessChild",
+        undefined,
+        row.source,
+      );
       const observed = new Map<string, { native: Row[]; cli: ReturnType<typeof packet> }>();
       for (const [role, binary] of [
         ["base", base],

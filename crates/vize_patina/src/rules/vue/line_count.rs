@@ -15,14 +15,14 @@ pub(super) fn file_lines(source: &str) -> Vec<FileLine<'_>> {
     for (index, _) in source.match_indices('\n') {
         lines.push(FileLine {
             start: start as u32,
-            text: trim_cr(&source[start..index]),
+            text: trim_cr(source.get(start..index).unwrap_or("")),
         });
         start = index + 1;
     }
     if start < source.len() || lines.is_empty() {
         lines.push(FileLine {
             start: start as u32,
-            text: trim_cr(&source[start..]),
+            text: trim_cr(source.get(start..).unwrap_or("")),
         });
     }
     lines
@@ -32,13 +32,16 @@ pub(super) fn empty_line_count(text: &str) -> usize {
     let mut count = 0usize;
     let mut start = 0usize;
     for (index, _) in text.match_indices('\n') {
-        if trim_cr(&text[start..index]).trim().is_empty() {
+        if trim_cr(text.get(start..index).unwrap_or(""))
+            .trim()
+            .is_empty()
+        {
             count += 1;
         }
         start = index + 1;
     }
     if start < text.len() {
-        if trim_cr(&text[start..]).trim().is_empty() {
+        if trim_cr(text.get(start..).unwrap_or("")).trim().is_empty() {
             count += 1;
         }
     } else if text.ends_with('\n') {
@@ -51,50 +54,58 @@ fn trim_cr(text: &str) -> &str {
     text.strip_suffix('\r').unwrap_or(text)
 }
 
+fn at(bytes: &[u8], index: usize) -> Option<u8> {
+    bytes.get(index).copied()
+}
+
+fn mark(mask: &mut [bool], index: usize) {
+    if let Some(slot) = mask.get_mut(index) {
+        *slot = true;
+    }
+}
+
 /// Byte mask of `//`, `/* */`, and `<!-- -->` comments outside strings.
 pub(super) fn comment_mask(source: &str) -> Vec<bool> {
     let bytes = source.as_bytes();
     let mut mask = vec![false; bytes.len()];
     let mut index = 0usize;
-    while index < bytes.len() {
-        let byte = bytes[index];
+    while let Some(byte) = at(bytes, index) {
         if byte == b'"' || byte == b'\'' || byte == b'`' {
             index = skip_string(bytes, index);
             continue;
         }
-        if byte == b'/' && bytes.get(index + 1) == Some(&b'/') {
-            while index < bytes.len() && bytes[index] != b'\n' {
-                mask[index] = true;
+        if byte == b'/' && at(bytes, index + 1) == Some(b'/') {
+            while at(bytes, index).is_some_and(|byte| byte != b'\n') {
+                mark(&mut mask, index);
                 index += 1;
             }
             continue;
         }
-        if byte == b'/' && bytes.get(index + 1) == Some(&b'*') {
-            mask[index] = true;
-            mask[index + 1] = true;
+        if byte == b'/' && at(bytes, index + 1) == Some(b'*') {
+            mark(&mut mask, index);
+            mark(&mut mask, index + 1);
             index += 2;
-            while index < bytes.len() {
-                mask[index] = true;
-                if bytes[index] == b'/' && index > 0 && bytes[index - 1] == b'*' {
-                    index += 1;
+            while let Some(byte) = at(bytes, index) {
+                mark(&mut mask, index);
+                let closes = byte == b'/' && index > 0 && at(bytes, index - 1) == Some(b'*');
+                index += 1;
+                if closes {
                     break;
                 }
-                index += 1;
             }
             continue;
         }
         if bytes.get(index..index + 4) == Some(b"<!--") {
-            while index < bytes.len() {
-                mask[index] = true;
-                if bytes[index] == b'>'
+            while let Some(byte) = at(bytes, index) {
+                mark(&mut mask, index);
+                let closes = byte == b'>'
                     && index >= 2
-                    && bytes[index - 1] == b'-'
-                    && bytes[index - 2] == b'-'
-                {
-                    index += 1;
+                    && at(bytes, index - 1) == Some(b'-')
+                    && at(bytes, index - 2) == Some(b'-');
+                index += 1;
+                if closes {
                     break;
                 }
-                index += 1;
             }
             continue;
         }
@@ -107,7 +118,8 @@ pub(super) fn comment_only(source: &str, line: &FileLine<'_>, mask: &[bool]) -> 
     let start = line.start as usize;
     let end = start + line.text.len();
     let mut saw_comment = false;
-    for (offset, byte) in source.as_bytes()[start..end].iter().copied().enumerate() {
+    let bytes = source.as_bytes().get(start..end).unwrap_or(&[]);
+    for (offset, byte) in bytes.iter().copied().enumerate() {
         if byte.is_ascii_whitespace() {
             continue;
         }
@@ -121,10 +133,11 @@ pub(super) fn comment_only(source: &str, line: &FileLine<'_>, mask: &[bool]) -> 
 }
 
 fn skip_string(bytes: &[u8], start: usize) -> usize {
-    let quote = bytes[start];
+    let Some(quote) = at(bytes, start) else {
+        return bytes.len();
+    };
     let mut index = start + 1;
-    while index < bytes.len() {
-        let byte = bytes[index];
+    while let Some(byte) = at(bytes, index) {
         if byte == b'\\' {
             index = index.saturating_add(2).min(bytes.len());
             continue;

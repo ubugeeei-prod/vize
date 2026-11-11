@@ -5,6 +5,12 @@ import { createHash, type BinaryLike } from "node:crypto";
 import { copyFileSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
+import {
+  readAssets,
+  relocatePacket,
+  type Assets,
+  type Packet,
+} from "../../support/compat/content-mapper/constructor-projection-parity.ts";
 
 export const families = [
   "script-only",
@@ -98,7 +104,11 @@ function run(
 }
 const git = (cwd: string, ...args: string[]) => run("git", ["-C", cwd, ...args]).trim();
 
-export function summarize(rows: readonly Sample[], binaries: Record<Role, { source: string }>) {
+export function summarize(
+  rows: readonly Sample[],
+  binaries: Record<Role, { source: string }>,
+  transitionAssets?: Assets,
+) {
   assert.equal(
     rows.length,
     families.length * counts.length * roles.length * modes.length * rounds.length,
@@ -108,7 +118,7 @@ export function summarize(rows: readonly Sample[], binaries: Record<Role, { sour
   const summaries: Summary[] = [];
   for (const family of families)
     for (const count of counts) {
-      let reference: { source: string; packet: string } | undefined;
+      const references: Partial<Record<Role, { source: string; packet: string }>> = {};
       const metrics: Partial<Record<Role, Metrics>> = {};
       for (const role of roles) {
         const samples: Sample[] = [];
@@ -122,11 +132,11 @@ export function summarize(rows: readonly Sample[], binaries: Record<Role, { sour
             assert.equal(typeof row.packet, "string");
             assert.equal(typeof row.source, "string");
             const whole = { source: row.source, packet: row.packet };
-            reference ??= whole;
+            references[role] ??= whole;
             assert.deepEqual(
               whole,
-              reference,
-              "complete packet bytes differ across sources, modes or repeats",
+              references[role],
+              "complete packet bytes differ across modes or repeats within one source role",
             );
             assert.ok(Number.isSafeInteger(row.elapsedNanoseconds) && row.elapsedNanoseconds > 0);
             assert.ok(Number.isSafeInteger(row.peakRssKiB) && row.peakRssKiB > 0);
@@ -155,7 +165,19 @@ export function summarize(rows: readonly Sample[], binaries: Record<Role, { sour
           requestedBytes: median(allocated.map((row) => row.allocation.requestedBytes)),
         };
       }
-      assert.ok(reference);
+      const baseReference = references.base;
+      const headReference = references.head;
+      assert.ok(baseReference);
+      assert.ok(headReference);
+      assert.equal(headReference.source, baseReference.source);
+      if (transitionAssets)
+        relocatePacket(
+          JSON.parse(baseReference.packet) as Packet,
+          JSON.parse(headReference.packet) as Packet,
+          baseReference.source,
+          transitionAssets,
+        );
+      else assert.deepEqual(headReference, baseReference);
       assert.ok(metrics.base);
       assert.ok(metrics.head);
       const result = {
@@ -163,8 +185,8 @@ export function summarize(rows: readonly Sample[], binaries: Record<Role, { sour
         count,
         base: metrics.base,
         head: metrics.head,
-        sourceSha256: hash(reference.source),
-        packetSha256: hash(reference.packet),
+        sourceSha256: hash(headReference.source),
+        packetSha256: hash(headReference.packet),
       };
       const headOverBase = Object.fromEntries(
         (Object.keys(result.base) as Array<keyof Metrics>).map((field) => [
@@ -366,12 +388,16 @@ function measure(directory: string) {
             writeFileSync(join(directory, family + "-" + count + ".vue"), row.source);
             rows.push(row);
           }
-  const summary = summarize(rows, binaries);
+  const summary = summarize(
+    rows,
+    binaries,
+    readAssets(binaries.base.sourceRoot, binaries.head.sourceRoot),
+  );
   write(join(directory, "samples.json"), rows);
   write(join(directory, "summary.json"), summary);
   writeFileSync(
     join(directory, "summary.md"),
-    "Fresh profiling binaries; zero warmups or persisted mapper state. Runtime-off generation timing excludes fixtures and serialization. RSS is the whole process peak. All complete packet bytes match; every family remains separate. No release throughput claim or regression threshold.\n\n| Family | Count | Generation ms base → head | Allocations base → head | Requested bytes base → head | Process RSS KiB base → head |\n| --- | ---: | ---: | ---: | ---: | ---: |\n" +
+    "Fresh profiling binaries; zero warmups or persisted mapper state. Runtime-off generation timing excludes fixtures and serialization. RSS is the whole process peak. Complete packets are byte-exact within each source role; cross-role differences are limited to certified generated-code relocations. Every family remains separate. No release throughput claim or regression threshold.\n\n| Family | Count | Generation ms base → head | Allocations base → head | Requested bytes base → head | Process RSS KiB base → head |\n| --- | ---: | ---: | ---: | ---: | ---: |\n" +
       summary
         .map(
           (row) =>

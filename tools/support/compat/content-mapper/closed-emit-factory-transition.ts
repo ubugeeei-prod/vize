@@ -5,6 +5,8 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
+import { beforeSharedUsageGates } from "./shared-usage-gates-transition.ts";
+import { beforeSharedTemplateRefTargetsSource } from "./shared-template-ref-targets-transition.ts";
 
 export const closedEmitFactoryRecord = "tests/_fixtures/tooling/closed-emit-factory.json";
 const recordSha256 = "2503466c5be4ebf438a0edee3812d22953e05daa89e99a12e465dc596bd1fbce";
@@ -46,6 +48,8 @@ function load(): Transition {
 
 /** The pre-closed-factory bytes of a recorded producer's current image; older images pass through. */
 export function beforeClosedEmitFactory(path: string, current: string): string {
+  current = beforeSharedTemplateRefTargetsSource(path, current);
+  current = beforeSharedUsageGates(path, current);
   const file = load().files.find((entry) => entry.path === path);
   if (!file) return current;
   const now = identity(current);

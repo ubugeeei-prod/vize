@@ -229,6 +229,8 @@ pub(crate) struct ScopeGenerationOptions<'a, 'template> {
     /// Template-relative starts of the component refs the template
     /// instantiates. Non-empty, the template scope returns their instances.
     pub(crate) instantiated_ref_starts: &'a [u32],
+    /// Ref instance probes name the shared SDK factory instead of a per-file alias.
+    pub(crate) shared_template_refs: bool,
 }
 
 /// Context for recursive component prop checks inside v-for scopes.

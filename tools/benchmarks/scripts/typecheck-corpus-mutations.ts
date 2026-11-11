@@ -74,7 +74,7 @@ export type MutationSet = {
 type Position = { line: number; column: number };
 export type Region = { file: string; start: Position; end: Position };
 
-/** Corpora without a set (nuxt/ui, reka-ui so far) are measured but not planted. */
+/** A corpus without a set is measured but not planted. */
 export const hasMutationSet = (corpus: string, dir = MUTATIONS_DIR): boolean =>
   existsSync(join(dir, `${corpus}.json`));
 

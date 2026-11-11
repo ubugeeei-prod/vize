@@ -76,6 +76,7 @@ fn render_projection(
                 experimental_strict_slot_children: false,
                 forwarded_root_starts: &[],
                 instantiated_ref_starts: &[],
+                shared_template_refs: false,
             },
             packets,
         ),

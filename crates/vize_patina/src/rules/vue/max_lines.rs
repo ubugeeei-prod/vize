@@ -8,6 +8,7 @@ use crate::context::LintContext;
 use crate::diagnostic::{LintDiagnostic, Severity};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_l0::config::MaxLinesOptions;
+use vize_l0::cstr;
 
 use super::line_count::{comment_mask, comment_only, file_lines};
 
@@ -75,10 +76,13 @@ impl Rule for MaxLines {
         if actual <= self.max as usize {
             return;
         }
-        let start = lines[self.max as usize].start;
+        let Some(first_over) = lines.get(self.max as usize) else {
+            return;
+        };
+        let start = first_over.start;
         ctx.report_in_sfc(LintDiagnostic::warn(
             META.name,
-            format!(
+            cstr!(
                 "File has too many lines ({actual}). Maximum allowed is {}.",
                 self.max
             ),

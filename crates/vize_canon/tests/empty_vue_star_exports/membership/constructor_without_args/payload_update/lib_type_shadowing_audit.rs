@@ -33,6 +33,7 @@ fn restore(current: String, file: &Value) -> String {
 
 /// The exact pre-audit bytes of a recorded producer. Older images pass through.
 pub(super) fn source_before(path: &str, current: String) -> String {
+    let current = super::shared_usage_gates::source_before(path, current);
     let current = super::component_hover_gaps::source_before(path, current);
     let record = record();
     match record["files"]

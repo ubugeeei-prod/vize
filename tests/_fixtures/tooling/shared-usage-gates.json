@@ -1,0 +1,320 @@
+{
+  "schema": "vize.sharedUsageGatesSource.v1",
+  "credit": {
+    "compiled": false,
+    "native": false,
+    "performance": false
+  },
+  "files": [
+    {
+      "path": "crates/vize_canon/src/virtual_ts/expressions/unchecked_prop_values.rs",
+      "before": {
+        "bytes": 10303,
+        "sha256": "ce1d19b17c24f5ebbf3ffb420bfd9369e0cced2db640f370a9ffdd87e466a0f2"
+      },
+      "after": {
+        "bytes": 10255,
+        "sha256": "6acfd2e5ad8e4e869d0ba72052dbcbbc9290627f61bb67782c1e3e505c6e38c0"
+      },
+      "hunks": [
+        {
+          "before": "/// `$AttrValue<R, K, C, V>` is the per-prop contract `V` unless the literal\n/// types `K`. `P` is the child's value props as the contract alias reads\n/// them: props `R`, emitted listeners and Vue's public attrs. Of the\n/// fallthrough props, the literal types only a required one; testing the one\n/// key avoids resolving every required key of the root's attrs per prop.\nmacro_rules! attr_value {\n    ($listeners:literal, $fallthrough:literal) => {\n        concat!(\n            \"type $AttrValue<R, K, C, V, P = R & \",\n            $listeners,\n            \" & import(\\\"vue\\\").VNodeProps & import(\\\"vue\\\").AllowedComponentProps & import(\\\"vue\\\").ComponentCustomProps, \",\n            \"__V = P extends unknown ? (K extends keyof P ? P[K] : never) : never\",\n            \"> = [__V] extends [never] ? \",\n            $fallthrough,\n            \" extends infer F ? K extends keyof F ? {} extends Pick<F, K> ? V : unknown : V : V : unknown;\\n\"\n",
+          "after": "/// `$AttrValue<R, K, C, V>` is the per-prop contract `V` unless the literal\n/// types `K`: a key of props `R` (of any union member), of the emitted\n/// listeners or of Vue's public attrs. Only the key set is read, never the\n/// key's type. A non-`never` `P` replaces that key set with `keyof P`. Of\n/// the fallthrough props, the literal types only a required one; testing the\n/// one key avoids resolving every required key of the root's attrs per prop.\nmacro_rules! attr_value {\n    ($listeners:literal, $fallthrough:literal) => {\n        concat!(\n            \"type $AttrValue<R, K, C, V, P = never> = K extends ([P] extends [never] ? (R extends unknown ? keyof R : never) | keyof \",\n            $listeners,\n            \" | keyof import(\\\"vue\\\").VNodeProps | keyof import(\\\"vue\\\").AllowedComponentProps | keyof import(\\\"vue\\\").ComponentCustomProps : keyof P) ? unknown : \",\n            $fallthrough,\n            \" extends infer F ? K extends keyof F ? {} extends Pick<F, K> ? V : unknown : V : V;\\n\"\n"
+        },
+        {
+          "before": "\n    /// `$PropValueOr` takes its fallthrough exactly when this lookup is\n    /// `never`, so both read \"declared\" from the same expression.\n    #[test]\n    fn declared_lookup_is_the_prop_value_or_one() {\n        let lookup = \"__V = P extends unknown ? (K extends keyof P ? P[K] : never) : never>\";\n        let prop_value_or = include_str!(\"../helpers/declarations/component-checks.d.ts.txt\")\n            .lines()\n            .find(|line| line.starts_with(\"export type $PropValueOr<\"))\n            .expect(\"shared $PropValueOr\");\n        assert_eq!(prop_value_or.matches(lookup).count(), 1, \"{prop_value_or}\");\n        for declaration in [attr_value_declaration(true), attr_value_declaration(false)] {\n            assert_eq!(declaration.matches(lookup).count(), 1, \"{declaration}\");\n",
+          "after": "\n    /// Ownership reads the key set the literal types, never a key's type.\n    #[test]\n    fn ownership_reads_only_the_typed_key_set() {\n        let keys =\n            \"K extends ([P] extends [never] ? (R extends unknown ? keyof R : never) | keyof \";\n        for declaration in [attr_value_declaration(true), attr_value_declaration(false)] {\n            assert_eq!(declaration.matches(keys).count(), 1, \"{declaration}\");\n            assert_eq!(declaration.matches(\"P[K]\").count(), 0, \"{declaration}\");\n            assert_eq!(\n                declaration.matches(\" : keyof P) ? unknown : \").count(),\n                1,\n                \"{declaration}\"\n            );\n"
+        }
+      ]
+    },
+    {
+      "path": "crates/vize_canon/src/virtual_ts/generator/component_export.rs",
+      "before": {
+        "bytes": 16723,
+        "sha256": "85e4d61720c39671fde71629c504dbe2277d11b23eb7c263d6a358c0de3c7e2b"
+      },
+      "after": {
+      "bytes": 17246,
+      "sha256": "816f52f22d490d3828ce2a9d50db0cee843c19d76f67ac087d8345dff409d2c3"
+      },
+      "hunks": [
+      {
+        "before": "};\n\";\n\n/// Emit the `$VueComponentOptions` alias the default export references.\n",
+        "after": "};\n\";\n\n/// Holds the common raw-source and forwarded-attrs contract without growing\n/// the compact string through another heap allocation.\nconst FALLTHROUGH_COMPONENT_CONTRACT_CAPACITY: usize = 384;\n\n/// Emit the `$VueComponentOptions` alias the default export references.\n"
+      },
+      {
+        "before": "    let mut component_contract_fields = String::default();\n",
+        "after": "    let mut component_contract_fields = String::with_capacity(if fallthrough_props_ref.is_some() {\n        FALLTHROUGH_COMPONENT_CONTRACT_CAPACITY\n    } else {\n        0\n    });\n"
+      },
+        {
+          "before": "        }\n        append!(\n            component_contract_fields,\n            \" readonly __vizeHasFallthroughProps: true; readonly __vizeFallthroughProps?: {forwarded};\"\n",
+          "after": "        }\n        // The raw surface, before owned keys are removed: removing keys cannot\n        // add a required one, so a parent finds none here without the map.\n        append!(\n            component_contract_fields,\n            \" readonly __vizeFallthroughSource?: {fallthrough_ref}; readonly __vizeHasFallthroughProps: true; readonly __vizeFallthroughProps?: {forwarded};\"\n"
+        }
+      ]
+    },
+    {
+      "path": "crates/vize_canon/src/batch/executor/declaration_outputs/fields.rs",
+      "before": {
+        "bytes": 3490,
+        "sha256": "ae77fbb524891aa93d258b6d5b81080d9b1e1845537c069fbd41513ef7c93bf3"
+      },
+      "after": {
+        "bytes": 3546,
+        "sha256": "fda2a94add22bf13b1b1b743befde68f7c5eba8943dba821645298b65156cc28"
+      },
+      "hunks": [
+        {
+          "before": "                            | \"__vizeNativeFallthroughRoot\"\n",
+          "after": "                            | \"__vizeNativeFallthroughRoot\"\n                            | \"__vizeFallthroughSource\"\n"
+        }
+      ]
+    },
+    {
+      "path": "crates/vize_canon/src/virtual_ts/helpers/declarations/component-checks.d.ts.txt",
+      "before": {
+        "bytes": 10017,
+        "sha256": "b19a99e4ecea04b4527f97922e51122d28d4b64b234687ec10626efeadf9de2f"
+      },
+      "after": {
+        "bytes": 9690,
+        "sha256": "7632b2ed72c6ce9048446b9c91e9b4518167528fc4b85a974cafecf6904991f4"
+      },
+      "hunks": [
+        {
+          "before": "export type $UsageProps<C> = NoInfer<C> extends { __vizeCheck: infer __F } ? ($IsAny<__F> extends true ? $ComponentRawProps<C> : Record<string, unknown>) : $ComponentRawProps<C>;\nexport type $UsageRequiredFallthrough<C> = $FallthroughProps<C> extends infer __F ? [__F extends unknown ? {} extends __F ? never : __F : never] extends [never] ? $RequiredFallthroughProps<C, __F, never> : $RequiredFallthroughProps<C, __F> : never;\nexport type $UsageLibrary<C> = NoInfer<C> extends { __vizeCheck: any } | { readonly __vizeComponentMarker: true } ? false : NoInfer<C> extends (...args: any[]) => infer __R ? 0 extends (1 & __R) ? false : '__ctx' extends keyof __R ? true : false : false;\nexport type $UsagePropsBox<C> = NoInfer<C> extends { new (...args: any[]): { $props: infer __P } } ? [__P] : NoInfer<C> extends (props: infer __P, ...args: any[]) => any ? [__P] : [];\nexport type $UsageEmitPropsBox<C> = NoInfer<C> extends { __vizeEmitProps?: infer __EP } ? [__EP] : [];\nexport type $UsageNativeFallthroughBox<C> = NoInfer<C> extends { readonly __vizeNativeFallthroughRoot: true; readonly __vizeFallthroughProps?: infer __F } ? \"__vizeEmitProps\" extends keyof { [__K in keyof (C & {}) as string extends __K ? never : __K]: unknown } ? $IsAny<__F> extends true ? [] : [__F] : [] : [];\nexport type $PropChecker<C, P, T> = $IsAny<C> extends true ? (props: { readonly [K in keyof P]: P[K] } & Record<string, unknown>) => void : C extends { __vizeCheck: infer __F } ? $IsAny<__F> extends true ? (props: $ComponentCheckProps<P, T>) => void : unknown extends __F ? (props: $ComponentCheckProps<P, T>) => void : __F extends (...args: any[]) => any ? __F : (props: $ComponentCheckProps<P, T>) => void : $IsLibraryGenericExport<C> extends true ? C : (props: $ComponentCheckProps<P, T>) => void;\nexport type $PropValue<P, K extends PropertyKey, F = unknown, __V = P extends unknown ? (K extends keyof P ? P[K] : never) : never> = [__V] extends [never] ? F : __V;\nexport type $PropValueOr<P, K extends PropertyKey, C, FK extends PropertyKey = K, __V = P extends unknown ? (K extends keyof P ? P[K] : never) : never> = [__V] extends [never] ? $FallthroughValue<C, FK> : __V;\nexport type $ClosedEmitFactory<E> = (component: unknown) => (props: any) => __EmitProps<E>;\n",
+          "after": "export type $UsageProps<C> = NoInfer<C> extends { __vizeCheck: infer __F } ? ($IsAny<__F> extends true ? $ComponentRawProps<C> : Record<string, unknown>) : $ComponentRawProps<C>;\nexport type $UsageRequiredFallthrough<C> = $FallthroughSourceAdmitsEmpty<C> extends true ? {} : $FallthroughProps<C> extends infer __F ? [__F extends unknown ? {} extends __F ? never : __F : never] extends [never] ? $RequiredFallthroughProps<C, __F, never> : $RequiredFallthroughProps<C, __F> : never;\nexport type $UsageNativeFallthroughBox<C> = NoInfer<C> extends { readonly __vizeNativeFallthroughRoot: true; readonly __vizeFallthroughProps?: infer __F } ? \"__vizeEmitProps\" extends keyof { [__K in keyof (C & {}) as string extends __K ? never : __K]: unknown } ? $IsAny<__F> extends true ? [] : [__F] : [] : [];\nexport type $PropChecker<C, P, T> = $IsAny<C> extends true ? (props: { readonly [K in keyof P]: P[K] } & Record<string, unknown>) => void : C extends { __vizeCheck: infer __F } ? $IsAny<__F> extends true ? (props: $ComponentCheckProps<P, T>) => void : unknown extends __F ? (props: $ComponentCheckProps<P, T>) => void : __F extends (...args: any[]) => any ? __F : (props: $ComponentCheckProps<P, T>) => void : $IsLibraryGenericExport<C> extends true ? C : (props: $ComponentCheckProps<P, T>) => void;\nexport type $PropValue<P, K extends PropertyKey, F = unknown, __V = P extends unknown ? (K extends keyof P ? P[K] : never) : never> = [__V] extends [never] ? F : __V;\nexport type $PropValueOr<P, K extends PropertyKey, C, FK extends PropertyKey = K, __V = P extends unknown ? (K extends keyof P ? P[K] : never) : never> = [__V] extends [never] ? $FallthroughValue<C, FK> : __V;\nexport type $ClosedEmitFactory<E> = (component: unknown) => (props: any) => __EmitProps<E>;\nexport type $EmitGateResolver<L, C> = [L] extends [true] ? (component: C) => C : $ClosedEmit<C> extends [infer E] ? $ClosedEmitFactory<E> : $EmitPropsFactory<C>;\n"
+        }
+      ]
+    },
+    {
+      "path": "crates/vize_canon/src/virtual_ts/helpers/declarations/shared-listener-args.d.ts.txt",
+      "before": {
+        "bytes": 4278,
+        "sha256": "8b503327ffa98667461f213646b986d4535891a3a270076620bc6ddf580c812d"
+      },
+      "after": {
+        "bytes": 6449,
+        "sha256": "0f2810ab12c4476e7ca6b77d329a15009e221961ab3eaee4b8785bbb46dee7ae"
+      },
+      "hunks": [
+        {
+          "before": "  export type $ClosedEmit<C, A = C> = [C] extends [never] ? false : 0 extends (1 & C) ? false : [C extends { readonly __vizeComponentMarker: true } ? (<G>() => G extends C ? 1 : 2) extends <G>() => G extends A ? 1 : 2 ? C extends { __vizeResolveEmitProps?: infer X } ? X extends (...args: any[]) => any ? false : true : C extends { __vizeResolveProps?: infer X } ? X extends (...args: any[]) => any ? false : true : true : false : false] extends [true] ? [C extends new (...args: any[]) => { $emit: infer E } ? E : never] extends [infer E] ? [E] extends [never] ? false : [E] : false : false;\n",
+          "after": "  export type $ClosedEmit<C, A = C> = [C] extends [never] ? false : 0 extends (1 & C) ? false : [C extends { readonly __vizeComponentMarker: true } ? (<G>() => G extends C ? 1 : 2) extends <G>() => G extends A ? 1 : 2 ? C extends { __vizeResolveEmitProps?: infer X } ? X extends (...args: any[]) => any ? false : true : C extends { __vizeResolveProps?: infer X } ? X extends (...args: any[]) => any ? false : true : true : false : false] extends [true] ? [C extends new (...args: any[]) => { $emit: infer E } ? E : never] extends [infer E] ? [E] extends [never] ? false : [E] : false : false;\n  // Per-usage listener boxes over `typeof Component`; `NoInfer<C>` keeps them non-distributive.\n  export type $UsageLibrary<C> = NoInfer<C> extends { __vizeCheck: any } | { readonly __vizeComponentMarker: true } ? false : NoInfer<C> extends (...args: any[]) => infer __R ? 0 extends (1 & __R) ? false : '__ctx' extends keyof __R ? true : false : false;\n  export type $UsagePropsBox<C> = NoInfer<C> extends { new (...args: any[]): { $props: infer __P } } ? [__P] : NoInfer<C> extends (props: infer __P, ...args: any[]) => any ? [__P] : [];\n  export type $UsageEmitPropsBox<C> = NoInfer<C> extends { __vizeEmitProps?: infer __EP } ? [__EP] : [];\n  // A component whose raw fallthrough source admits `{}` has no required fallthrough key: removing owned keys adds none.\n  type $FallthroughSourceMember<C> = C extends { readonly __vizeHasFallthroughProps: true; readonly __vizeFallthroughSource?: infer __S } ? unknown extends __S ? false : [NonNullable<__S> extends infer __N ? __N extends unknown ? {} extends __N ? never : __N : never : never] extends [never] ? true : false : false;\n  export type $FallthroughSourceAdmitsEmpty<C> = [C] extends [never] ? false : [$FallthroughSourceMember<C>] extends [true] ? true : false;\n  // The per-module emit gate input, shared so each component resolves it once per program.\n  type $EmitGateNativeInput<C> = C extends new (...args: any[]) => any ? C extends { readonly __vizeComponentMarker: true } ? false : true : false;\n  type $EmitGateInputOf<L, C, F, R = F extends (...args: any) => infer T ? T : any, U = R> = [L] extends [true] ? F : $ClosedEmit<C> extends [unknown] ? F : true extends (0 extends (1 & C) ? false : C extends { __vizeResolveEmitProps?: infer X } ? X extends (...args: any[]) => any ? true : $EmitGateNativeInput<C> : C extends { __vizeResolveProps?: infer X } ? X extends (...args: any[]) => any ? true : $EmitGateNativeInput<C> : $EmitGateNativeInput<C>) ? F : [R] extends [never] ? F : [R extends unknown ? (<G>() => G extends R ? 1 : 2) extends <G>() => G extends U ? 1 : 2 ? true : false : false] extends [true] ? (props: any) => R : F;\n  export type $EmitGateInput<L, C, F> = $EmitGateInputOf<L, C, F>;\n"
+        }
+      ]
+    },
+    {
+      "path": "crates/vize_canon/src/virtual_ts/helpers/shared_types.rs",
+      "before": {
+        "bytes": 4528,
+        "sha256": "a87371ba3ab2fc981399a9b33c401ec9ddc7641d91c53d8840157b57c25e2098"
+      },
+      "after": {
+        "bytes": 4665,
+        "sha256": "460798f74160021f6397b4cdb196a2b3cd1839c0dc5baab648ee60f3c7b3d4f7"
+      },
+      "hunks": [
+        {
+          "before": "    CLOSED_EMIT_FACTORY => (\"__vize_emit_closed_factory\", \"$ClosedEmitFactory\"),\n",
+          "after": "    CLOSED_EMIT_FACTORY => (\"__vize_emit_closed_factory\", \"$ClosedEmitFactory\"),\n    EMIT_GATE_RESOLVER => (\"__vize_emit_resolver\", \"$EmitGateResolver\"),\n    EMIT_GATE_INPUT => (\"__vize_emit_input\", \"$EmitGateInput\"),\n"
+        }
+      ]
+    },
+    {
+      "path": "crates/vize_canon/src/virtual_ts/scope/component_events/emit_props_gate.rs",
+      "before": {
+        "bytes": 9640,
+        "sha256": "583cc0cc59b0c8ef22a9f776138c461543a2ebf6803fb905e9a3d4f30216f611"
+      },
+      "after": {
+        "bytes": 10302,
+        "sha256": "228f341b2bcacbb9a9f6e5b715f86b803d6a977a12392bbaa29f0123b285471f"
+      },
+      "hunks": [
+        {
+          "before": "\n/// Declares the gate aliases once per module that can reach a gated call.\n",
+          "after": "\n/// Declares the gate aliases once per module that can reach a gated call. A\n/// hoisted module names the shared `$EmitGateResolver`/`$EmitGateInput`\n/// instead, so each component resolves its gate once per program.\n"
+        },
+        {
+          "before": ") {\n    if !gates_inference(generic_component, legacy_vue2) || !has_gated_candidate(summary) {\n",
+          "after": ") {\n    if hoist_shared_preamble\n        || !gates_inference(generic_component, legacy_vue2)\n        || !has_gated_candidate(summary)\n    {\n"
+        },
+        {
+          "before": "\n",
+          "after": "\n/// The gate resolver and input: the shared SDK aliases when hoisted.\nfn gate_names(hoisted: bool) -> (&'static str, &'static str) {\n    use crate::virtual_ts::helpers::shared_types::{EMIT_GATE_INPUT, EMIT_GATE_RESOLVER};\n    (\n        EMIT_GATE_RESOLVER.select(hoisted),\n        EMIT_GATE_INPUT.select(hoisted),\n    )\n}\n\n"
+        },
+        {
+          "before": "    emit_props: &str,\n    usage_idx: usize,\n) {\n    append!(\n        *ts,\n        \"{indent}const __vize_emit_factory_{usage_idx} = (undefined as unknown as __vize_emit_resolver<{library}, typeof {component_ref}>)({component_ref}); const {emit_props} = (undefined as unknown as __vize_emit_input<{library}, typeof {component_ref}, typeof __vize_emit_factory_{usage_idx}>)(\",\n",
+          "after": "    emit_props: &str,\n    (usage_idx, hoisted): (usize, bool),\n) {\n    let (resolver, input) = gate_names(hoisted);\n    append!(\n        *ts,\n        \"{indent}const __vize_emit_factory_{usage_idx} = (undefined as unknown as {resolver}<{library}, typeof {component_ref}>)({component_ref}); const {emit_props} = (undefined as unknown as {input}<{library}, typeof {component_ref}, typeof __vize_emit_factory_{usage_idx}>)(\",\n"
+        },
+        {
+          "before": "    component_ref: &str,\n    usage_idx: usize,\n) {\n    append!(\n        *ts,\n        \"{indent}// @ts-ignore Inference-only factory; called before the guard below.\\n{indent}const __vize_emit_factory_{usage_idx} = (undefined as unknown as __vize_emit_resolver<{library}, typeof {component_ref}>)({component_ref});\\n\",\n",
+          "after": "    component_ref: &str,\n    (usage_idx, hoisted): (usize, bool),\n) {\n    let (resolver, _) = gate_names(hoisted);\n    append!(\n        *ts,\n        \"{indent}// @ts-ignore Inference-only factory; called before the guard below.\\n{indent}const __vize_emit_factory_{usage_idx} = (undefined as unknown as {resolver}<{library}, typeof {component_ref}>)({component_ref});\\n\",\n"
+        },
+        {
+          "before": "    component_ref: &str,\n    usage_idx: usize,\n) {\n    append!(\n        *ts,\n        \"{indent}if ({guard}) return (undefined as unknown as __vize_emit_input<{library}, typeof {component_ref}, typeof __vize_emit_factory_{usage_idx}>)(\",\n",
+          "after": "    component_ref: &str,\n    (usage_idx, hoisted): (usize, bool),\n) {\n    let (_, input) = gate_names(hoisted);\n    append!(\n        *ts,\n        \"{indent}if ({guard}) return (undefined as unknown as {input}<{library}, typeof {component_ref}, typeof __vize_emit_factory_{usage_idx}>)(\",\n"
+        }
+      ]
+    },
+    {
+      "path": "crates/vize_canon/src/virtual_ts/scope/component_events/generic_inference.rs",
+      "before": {
+        "bytes": 20068,
+        "sha256": "c8bfa57aaa5007a7f1511d0fc2ff3c3703857743b0a850bd9a2824e6af8ed2b0"
+      },
+      "after": {
+        "bytes": 20155,
+        "sha256": "9423a52f0760614d8f9d0af1c41af8d6f9a76feedbceaf839dcd2a389461567f"
+      },
+      "hunks": [
+        {
+          "before": "                indent,\n                library,\n                component_ref,\n                usage_idx,\n",
+          "after": "                indent,\n                library,\n                component_ref,\n                (usage_idx, ctx.hoist_shared_preamble),\n"
+        },
+        {
+          "before": "                component_ref,\n                usage_idx,\n",
+          "after": "                component_ref,\n                (usage_idx, ctx.hoist_shared_preamble),\n"
+        },
+        {
+          "before": "                &emit_props,\n                usage_idx,\n",
+          "after": "                &emit_props,\n                (usage_idx, ctx.hoist_shared_preamble),\n"
+        }
+      ]
+    },
+    {
+      "path": "npm/cli/virtual-ts.d.ts",
+      "before": {
+        "bytes": 17836,
+        "sha256": "f2d7c9c5befc6f27f8d2c28e5eb2dd38c6d4fb052d4ba4f112c2d3de3df2aac5"
+      },
+      "after": {
+        "bytes": 17860,
+        "sha256": "63b5f81f2e720a0960b4240b40f37cef05b4077855bb69086a8e90610e2345a6"
+      },
+      "hunks": [
+        {
+          "before": "export type $UsageRequiredFallthrough<C> =\n  $FallthroughProps<C> extends infer __F\n    ? [__F extends unknown ? ({} extends __F ? never : __F) : never] extends [never]\n      ? $RequiredFallthroughProps<C, __F, never>\n      : $RequiredFallthroughProps<C, __F>\n    : never;\nexport type $UsageLibrary<C> =\n  NoInfer<C> extends { __vizeCheck: any } | { readonly __vizeComponentMarker: true }\n    ? false\n    : NoInfer<C> extends (...args: any[]) => infer __R\n      ? 0 extends 1 & __R\n        ? false\n        : \"__ctx\" extends keyof __R\n          ? true\n          : false\n      : false;\nexport type $UsagePropsBox<C> =\n  NoInfer<C> extends { new (...args: any[]): { $props: infer __P } }\n    ? [__P]\n    : NoInfer<C> extends (props: infer __P, ...args: any[]) => any\n      ? [__P]\n      : [];\nexport type $UsageEmitPropsBox<C> =\n  NoInfer<C> extends { __vizeEmitProps?: infer __EP } ? [__EP] : [];\n",
+          "after": "export type $UsageRequiredFallthrough<C> =\n  $FallthroughSourceAdmitsEmpty<C> extends true\n    ? {}\n    : $FallthroughProps<C> extends infer __F\n      ? [__F extends unknown ? ({} extends __F ? never : __F) : never] extends [never]\n        ? $RequiredFallthroughProps<C, __F, never>\n        : $RequiredFallthroughProps<C, __F>\n      : never;\n"
+        },
+        {
+          "before": "export type $ClosedEmitFactory<E> = (component: unknown) => (props: any) => __EmitProps<E>;\n",
+          "after": "export type $ClosedEmitFactory<E> = (component: unknown) => (props: any) => __EmitProps<E>;\nexport type $EmitGateResolver<L, C> = [L] extends [true]\n  ? (component: C) => C\n  : $ClosedEmit<C> extends [infer E]\n    ? $ClosedEmitFactory<E>\n    : $EmitPropsFactory<C>;\n"
+        },
+        {
+          "before": "export type $ClosedEmit<C, A = C> = __vizeListenerTypes.$ClosedEmit<C, A>;\n",
+          "after": "export type $ClosedEmit<C, A = C> = __vizeListenerTypes.$ClosedEmit<C, A>;\nexport type $UsageLibrary<C> = __vizeListenerTypes.$UsageLibrary<C>;\nexport type $UsagePropsBox<C> = __vizeListenerTypes.$UsagePropsBox<C>;\nexport type $UsageEmitPropsBox<C> = __vizeListenerTypes.$UsageEmitPropsBox<C>;\nexport type $FallthroughSourceAdmitsEmpty<C> = __vizeListenerTypes.$FallthroughSourceAdmitsEmpty<C>;\nexport type $EmitGateInput<L, C, F> = __vizeListenerTypes.$EmitGateInput<L, C, F>;\n"
+        }
+      ]
+    },
+    {
+      "path": "npm/cli/virtual-ts.d.mts",
+      "before": {
+        "bytes": 17836,
+        "sha256": "f2d7c9c5befc6f27f8d2c28e5eb2dd38c6d4fb052d4ba4f112c2d3de3df2aac5"
+      },
+      "after": {
+        "bytes": 17860,
+        "sha256": "63b5f81f2e720a0960b4240b40f37cef05b4077855bb69086a8e90610e2345a6"
+      },
+      "hunks": [
+        {
+          "before": "export type $UsageRequiredFallthrough<C> =\n  $FallthroughProps<C> extends infer __F\n    ? [__F extends unknown ? ({} extends __F ? never : __F) : never] extends [never]\n      ? $RequiredFallthroughProps<C, __F, never>\n      : $RequiredFallthroughProps<C, __F>\n    : never;\nexport type $UsageLibrary<C> =\n  NoInfer<C> extends { __vizeCheck: any } | { readonly __vizeComponentMarker: true }\n    ? false\n    : NoInfer<C> extends (...args: any[]) => infer __R\n      ? 0 extends 1 & __R\n        ? false\n        : \"__ctx\" extends keyof __R\n          ? true\n          : false\n      : false;\nexport type $UsagePropsBox<C> =\n  NoInfer<C> extends { new (...args: any[]): { $props: infer __P } }\n    ? [__P]\n    : NoInfer<C> extends (props: infer __P, ...args: any[]) => any\n      ? [__P]\n      : [];\nexport type $UsageEmitPropsBox<C> =\n  NoInfer<C> extends { __vizeEmitProps?: infer __EP } ? [__EP] : [];\n",
+          "after": "export type $UsageRequiredFallthrough<C> =\n  $FallthroughSourceAdmitsEmpty<C> extends true\n    ? {}\n    : $FallthroughProps<C> extends infer __F\n      ? [__F extends unknown ? ({} extends __F ? never : __F) : never] extends [never]\n        ? $RequiredFallthroughProps<C, __F, never>\n        : $RequiredFallthroughProps<C, __F>\n      : never;\n"
+        },
+        {
+          "before": "export type $ClosedEmitFactory<E> = (component: unknown) => (props: any) => __EmitProps<E>;\n",
+          "after": "export type $ClosedEmitFactory<E> = (component: unknown) => (props: any) => __EmitProps<E>;\nexport type $EmitGateResolver<L, C> = [L] extends [true]\n  ? (component: C) => C\n  : $ClosedEmit<C> extends [infer E]\n    ? $ClosedEmitFactory<E>\n    : $EmitPropsFactory<C>;\n"
+        },
+        {
+          "before": "export type $ClosedEmit<C, A = C> = __vizeListenerTypes.$ClosedEmit<C, A>;\n",
+          "after": "export type $ClosedEmit<C, A = C> = __vizeListenerTypes.$ClosedEmit<C, A>;\nexport type $UsageLibrary<C> = __vizeListenerTypes.$UsageLibrary<C>;\nexport type $UsagePropsBox<C> = __vizeListenerTypes.$UsagePropsBox<C>;\nexport type $UsageEmitPropsBox<C> = __vizeListenerTypes.$UsageEmitPropsBox<C>;\nexport type $FallthroughSourceAdmitsEmpty<C> = __vizeListenerTypes.$FallthroughSourceAdmitsEmpty<C>;\nexport type $EmitGateInput<L, C, F> = __vizeListenerTypes.$EmitGateInput<L, C, F>;\n"
+        }
+      ]
+    },
+    {
+      "path": "npm/cli/virtual-ts.d.cts",
+      "before": {
+        "bytes": 17836,
+        "sha256": "f2d7c9c5befc6f27f8d2c28e5eb2dd38c6d4fb052d4ba4f112c2d3de3df2aac5"
+      },
+      "after": {
+        "bytes": 17860,
+        "sha256": "63b5f81f2e720a0960b4240b40f37cef05b4077855bb69086a8e90610e2345a6"
+      },
+      "hunks": [
+        {
+          "before": "export type $UsageRequiredFallthrough<C> =\n  $FallthroughProps<C> extends infer __F\n    ? [__F extends unknown ? ({} extends __F ? never : __F) : never] extends [never]\n      ? $RequiredFallthroughProps<C, __F, never>\n      : $RequiredFallthroughProps<C, __F>\n    : never;\nexport type $UsageLibrary<C> =\n  NoInfer<C> extends { __vizeCheck: any } | { readonly __vizeComponentMarker: true }\n    ? false\n    : NoInfer<C> extends (...args: any[]) => infer __R\n      ? 0 extends 1 & __R\n        ? false\n        : \"__ctx\" extends keyof __R\n          ? true\n          : false\n      : false;\nexport type $UsagePropsBox<C> =\n  NoInfer<C> extends { new (...args: any[]): { $props: infer __P } }\n    ? [__P]\n    : NoInfer<C> extends (props: infer __P, ...args: any[]) => any\n      ? [__P]\n      : [];\nexport type $UsageEmitPropsBox<C> =\n  NoInfer<C> extends { __vizeEmitProps?: infer __EP } ? [__EP] : [];\n",
+          "after": "export type $UsageRequiredFallthrough<C> =\n  $FallthroughSourceAdmitsEmpty<C> extends true\n    ? {}\n    : $FallthroughProps<C> extends infer __F\n      ? [__F extends unknown ? ({} extends __F ? never : __F) : never] extends [never]\n        ? $RequiredFallthroughProps<C, __F, never>\n        : $RequiredFallthroughProps<C, __F>\n      : never;\n"
+        },
+        {
+          "before": "export type $ClosedEmitFactory<E> = (component: unknown) => (props: any) => __EmitProps<E>;\n",
+          "after": "export type $ClosedEmitFactory<E> = (component: unknown) => (props: any) => __EmitProps<E>;\nexport type $EmitGateResolver<L, C> = [L] extends [true]\n  ? (component: C) => C\n  : $ClosedEmit<C> extends [infer E]\n    ? $ClosedEmitFactory<E>\n    : $EmitPropsFactory<C>;\n"
+        },
+        {
+          "before": "export type $ClosedEmit<C, A = C> = __vizeListenerTypes.$ClosedEmit<C, A>;\n",
+          "after": "export type $ClosedEmit<C, A = C> = __vizeListenerTypes.$ClosedEmit<C, A>;\nexport type $UsageLibrary<C> = __vizeListenerTypes.$UsageLibrary<C>;\nexport type $UsagePropsBox<C> = __vizeListenerTypes.$UsagePropsBox<C>;\nexport type $UsageEmitPropsBox<C> = __vizeListenerTypes.$UsageEmitPropsBox<C>;\nexport type $FallthroughSourceAdmitsEmpty<C> = __vizeListenerTypes.$FallthroughSourceAdmitsEmpty<C>;\nexport type $EmitGateInput<L, C, F> = __vizeListenerTypes.$EmitGateInput<L, C, F>;\n"
+        }
+      ]
+    },
+    {
+      "path": "npm/cli/virtual-ts-listeners.d.ts",
+      "before": {
+        "bytes": 4967,
+        "sha256": "6f55d3382aecd196390635bd92a5a79efb5ae430dc61e4974b3cef975d2e8fcf"
+      },
+      "after": {
+        "bytes": 7686,
+        "sha256": "3b7c607e4e610ee416dbb80bbbd1409ca90ab695d8be5ad61ce86993f43cde1e"
+      },
+      "hunks": [
+        {
+          "before": "      : false;\n",
+          "after": "      : false;\n// Per-usage listener boxes over `typeof Component`; `NoInfer<C>` keeps them non-distributive.\nexport type $UsageLibrary<C> =\n  NoInfer<C> extends { __vizeCheck: any } | { readonly __vizeComponentMarker: true }\n    ? false\n    : NoInfer<C> extends (...args: any[]) => infer __R\n      ? 0 extends 1 & __R\n        ? false\n        : \"__ctx\" extends keyof __R\n          ? true\n          : false\n      : false;\nexport type $UsagePropsBox<C> =\n  NoInfer<C> extends { new (...args: any[]): { $props: infer __P } }\n    ? [__P]\n    : NoInfer<C> extends (props: infer __P, ...args: any[]) => any\n      ? [__P]\n      : [];\nexport type $UsageEmitPropsBox<C> =\n  NoInfer<C> extends { __vizeEmitProps?: infer __EP } ? [__EP] : [];\n// A component whose raw fallthrough source admits `{}` has no required fallthrough key: removing owned keys adds none.\ntype $FallthroughSourceMember<C> = C extends {\n  readonly __vizeHasFallthroughProps: true;\n  readonly __vizeFallthroughSource?: infer __S;\n}\n  ? unknown extends __S\n    ? false\n    : [\n          NonNullable<__S> extends infer __N\n            ? __N extends unknown\n              ? {} extends __N\n                ? never\n                : __N\n              : never\n            : never,\n        ] extends [never]\n      ? true\n      : false\n  : false;\nexport type $FallthroughSourceAdmitsEmpty<C> = [C] extends [never]\n  ? false\n  : [$FallthroughSourceMember<C>] extends [true]\n    ? true\n    : false;\n// The per-module emit gate input, shared so each component resolves it once per program.\ntype $EmitGateNativeInput<C> = C extends new (...args: any[]) => any\n  ? C extends { readonly __vizeComponentMarker: true }\n    ? false\n    : true\n  : false;\ntype $EmitGateInputOf<L, C, F, R = F extends (...args: any) => infer T ? T : any, U = R> = [\n  L,\n] extends [true]\n  ? F\n  : $ClosedEmit<C> extends [unknown]\n    ? F\n    : true extends (\n          0 extends 1 & C\n            ? false\n            : C extends { __vizeResolveEmitProps?: infer X }\n              ? X extends (...args: any[]) => any\n                ? true\n                : $EmitGateNativeInput<C>\n              : C extends { __vizeResolveProps?: infer X }\n                ? X extends (...args: any[]) => any\n                  ? true\n                  : $EmitGateNativeInput<C>\n                : $EmitGateNativeInput<C>\n        )\n      ? F\n      : [R] extends [never]\n        ? F\n        : [\n              R extends unknown\n                ? (<G>() => G extends R ? 1 : 2) extends <G>() => G extends U ? 1 : 2\n                  ? true\n                  : false\n                : false,\n            ] extends [true]\n          ? (props: any) => R\n          : F;\nexport type $EmitGateInput<L, C, F> = $EmitGateInputOf<L, C, F>;\n"
+        }
+      ]
+    }
+  ],
+  "compiledPreamble": {
+    "path": "vize_canon::virtual_ts::SHARED_PREAMBLE_DTS",
+    "before": {
+      "bytes": 54688,
+      "sha256": "449fcfdae8ddbe751f101952201ed8cfad3a8dc3b4e90f899aa70eaf53040257"
+    },
+    "after": {
+      "bytes": 56532,
+      "sha256": "1e115a83915a5e7e7f5bdcf82ce33c98fcf57e2a97618aad84c83a2870fbc3bc"
+    },
+    "hunks": [
+      {
+        "before": "  export type $ClosedEmit<C, A = C> = [C] extends [never] ? false : 0 extends (1 & C) ? false : [C extends { readonly __vizeComponentMarker: true } ? (<G>() => G extends C ? 1 : 2) extends <G>() => G extends A ? 1 : 2 ? C extends { __vizeResolveEmitProps?: infer X } ? X extends (...args: any[]) => any ? false : true : C extends { __vizeResolveProps?: infer X } ? X extends (...args: any[]) => any ? false : true : true : false : false] extends [true] ? [C extends new (...args: any[]) => { $emit: infer E } ? E : never] extends [infer E] ? [E] extends [never] ? false : [E] : false : false;\n",
+        "after": "  export type $ClosedEmit<C, A = C> = [C] extends [never] ? false : 0 extends (1 & C) ? false : [C extends { readonly __vizeComponentMarker: true } ? (<G>() => G extends C ? 1 : 2) extends <G>() => G extends A ? 1 : 2 ? C extends { __vizeResolveEmitProps?: infer X } ? X extends (...args: any[]) => any ? false : true : C extends { __vizeResolveProps?: infer X } ? X extends (...args: any[]) => any ? false : true : true : false : false] extends [true] ? [C extends new (...args: any[]) => { $emit: infer E } ? E : never] extends [infer E] ? [E] extends [never] ? false : [E] : false : false;\n  // Per-usage listener boxes over `typeof Component`; `NoInfer<C>` keeps them non-distributive.\n  export type $UsageLibrary<C> = NoInfer<C> extends { __vizeCheck: any } | { readonly __vizeComponentMarker: true } ? false : NoInfer<C> extends (...args: any[]) => infer __R ? 0 extends (1 & __R) ? false : '__ctx' extends keyof __R ? true : false : false;\n  export type $UsagePropsBox<C> = NoInfer<C> extends { new (...args: any[]): { $props: infer __P } } ? [__P] : NoInfer<C> extends (props: infer __P, ...args: any[]) => any ? [__P] : [];\n  export type $UsageEmitPropsBox<C> = NoInfer<C> extends { __vizeEmitProps?: infer __EP } ? [__EP] : [];\n  // A component whose raw fallthrough source admits `{}` has no required fallthrough key: removing owned keys adds none.\n  type $FallthroughSourceMember<C> = C extends { readonly __vizeHasFallthroughProps: true; readonly __vizeFallthroughSource?: infer __S } ? unknown extends __S ? false : [NonNullable<__S> extends infer __N ? __N extends unknown ? {} extends __N ? never : __N : never : never] extends [never] ? true : false : false;\n  export type $FallthroughSourceAdmitsEmpty<C> = [C] extends [never] ? false : [$FallthroughSourceMember<C>] extends [true] ? true : false;\n  // The per-module emit gate input, shared so each component resolves it once per program.\n  type $EmitGateNativeInput<C> = C extends new (...args: any[]) => any ? C extends { readonly __vizeComponentMarker: true } ? false : true : false;\n  type $EmitGateInputOf<L, C, F, R = F extends (...args: any) => infer T ? T : any, U = R> = [L] extends [true] ? F : $ClosedEmit<C> extends [unknown] ? F : true extends (0 extends (1 & C) ? false : C extends { __vizeResolveEmitProps?: infer X } ? X extends (...args: any[]) => any ? true : $EmitGateNativeInput<C> : C extends { __vizeResolveProps?: infer X } ? X extends (...args: any[]) => any ? true : $EmitGateNativeInput<C> : $EmitGateNativeInput<C>) ? F : [R] extends [never] ? F : [R extends unknown ? (<G>() => G extends R ? 1 : 2) extends <G>() => G extends U ? 1 : 2 ? true : false : false] extends [true] ? (props: any) => R : F;\n  export type $EmitGateInput<L, C, F> = $EmitGateInputOf<L, C, F>;\n"
+      },
+      {
+        "before": "export type $UsageProps<C> = NoInfer<C> extends { __vizeCheck: infer __F } ? ($IsAny<__F> extends true ? $ComponentRawProps<C> : Record<string, unknown>) : $ComponentRawProps<C>;\nexport type $UsageRequiredFallthrough<C> = $FallthroughProps<C> extends infer __F ? [__F extends unknown ? {} extends __F ? never : __F : never] extends [never] ? $RequiredFallthroughProps<C, __F, never> : $RequiredFallthroughProps<C, __F> : never;\nexport type $UsageLibrary<C> = NoInfer<C> extends { __vizeCheck: any } | { readonly __vizeComponentMarker: true } ? false : NoInfer<C> extends (...args: any[]) => infer __R ? 0 extends (1 & __R) ? false : '__ctx' extends keyof __R ? true : false : false;\nexport type $UsagePropsBox<C> = NoInfer<C> extends { new (...args: any[]): { $props: infer __P } } ? [__P] : NoInfer<C> extends (props: infer __P, ...args: any[]) => any ? [__P] : [];\nexport type $UsageEmitPropsBox<C> = NoInfer<C> extends { __vizeEmitProps?: infer __EP } ? [__EP] : [];\nexport type $UsageNativeFallthroughBox<C> = NoInfer<C> extends { readonly __vizeNativeFallthroughRoot: true; readonly __vizeFallthroughProps?: infer __F } ? \"__vizeEmitProps\" extends keyof { [__K in keyof (C & {}) as string extends __K ? never : __K]: unknown } ? $IsAny<__F> extends true ? [] : [__F] : [] : [];\nexport type $PropChecker<C, P, T> = $IsAny<C> extends true ? (props: { readonly [K in keyof P]: P[K] } & Record<string, unknown>) => void : C extends { __vizeCheck: infer __F } ? $IsAny<__F> extends true ? (props: $ComponentCheckProps<P, T>) => void : unknown extends __F ? (props: $ComponentCheckProps<P, T>) => void : __F extends (...args: any[]) => any ? __F : (props: $ComponentCheckProps<P, T>) => void : $IsLibraryGenericExport<C> extends true ? C : (props: $ComponentCheckProps<P, T>) => void;\nexport type $PropValue<P, K extends PropertyKey, F = unknown, __V = P extends unknown ? (K extends keyof P ? P[K] : never) : never> = [__V] extends [never] ? F : __V;\nexport type $PropValueOr<P, K extends PropertyKey, C, FK extends PropertyKey = K, __V = P extends unknown ? (K extends keyof P ? P[K] : never) : never> = [__V] extends [never] ? $FallthroughValue<C, FK> : __V;\nexport type $ClosedEmitFactory<E> = (component: unknown) => (props: any) => __EmitProps<E>;\n",
+        "after": "export type $UsageProps<C> = NoInfer<C> extends { __vizeCheck: infer __F } ? ($IsAny<__F> extends true ? $ComponentRawProps<C> : Record<string, unknown>) : $ComponentRawProps<C>;\nexport type $UsageRequiredFallthrough<C> = $FallthroughSourceAdmitsEmpty<C> extends true ? {} : $FallthroughProps<C> extends infer __F ? [__F extends unknown ? {} extends __F ? never : __F : never] extends [never] ? $RequiredFallthroughProps<C, __F, never> : $RequiredFallthroughProps<C, __F> : never;\nexport type $UsageNativeFallthroughBox<C> = NoInfer<C> extends { readonly __vizeNativeFallthroughRoot: true; readonly __vizeFallthroughProps?: infer __F } ? \"__vizeEmitProps\" extends keyof { [__K in keyof (C & {}) as string extends __K ? never : __K]: unknown } ? $IsAny<__F> extends true ? [] : [__F] : [] : [];\nexport type $PropChecker<C, P, T> = $IsAny<C> extends true ? (props: { readonly [K in keyof P]: P[K] } & Record<string, unknown>) => void : C extends { __vizeCheck: infer __F } ? $IsAny<__F> extends true ? (props: $ComponentCheckProps<P, T>) => void : unknown extends __F ? (props: $ComponentCheckProps<P, T>) => void : __F extends (...args: any[]) => any ? __F : (props: $ComponentCheckProps<P, T>) => void : $IsLibraryGenericExport<C> extends true ? C : (props: $ComponentCheckProps<P, T>) => void;\nexport type $PropValue<P, K extends PropertyKey, F = unknown, __V = P extends unknown ? (K extends keyof P ? P[K] : never) : never> = [__V] extends [never] ? F : __V;\nexport type $PropValueOr<P, K extends PropertyKey, C, FK extends PropertyKey = K, __V = P extends unknown ? (K extends keyof P ? P[K] : never) : never> = [__V] extends [never] ? $FallthroughValue<C, FK> : __V;\nexport type $ClosedEmitFactory<E> = (component: unknown) => (props: any) => __EmitProps<E>;\nexport type $EmitGateResolver<L, C> = [L] extends [true] ? (component: C) => C : $ClosedEmit<C> extends [infer E] ? $ClosedEmitFactory<E> : $EmitPropsFactory<C>;\n"
+      }
+    ]
+  },
+  "compiledStrictPreamble": {
+    "path": "vize_canon::virtual_ts::SHARED_PREAMBLE_STRICT_DTS",
+    "before": {
+      "bytes": 54479,
+      "sha256": "0258cc1331d3957d875125117f3e279f97f10e9704e1e27f2c9d194bd8680214"
+    },
+    "after": {
+      "bytes": 56323,
+      "sha256": "f7fedc63d1501402bda9a834663c1a2f30e0f20518f7fb6c959cf53fc07bc0bf"
+    },
+    "hunks": [
+      {
+        "before": "  export type $ClosedEmit<C, A = C> = [C] extends [never] ? false : 0 extends (1 & C) ? false : [C extends { readonly __vizeComponentMarker: true } ? (<G>() => G extends C ? 1 : 2) extends <G>() => G extends A ? 1 : 2 ? C extends { __vizeResolveEmitProps?: infer X } ? X extends (...args: any[]) => any ? false : true : C extends { __vizeResolveProps?: infer X } ? X extends (...args: any[]) => any ? false : true : true : false : false] extends [true] ? [C extends new (...args: any[]) => { $emit: infer E } ? E : never] extends [infer E] ? [E] extends [never] ? false : [E] : false : false;\n",
+        "after": "  export type $ClosedEmit<C, A = C> = [C] extends [never] ? false : 0 extends (1 & C) ? false : [C extends { readonly __vizeComponentMarker: true } ? (<G>() => G extends C ? 1 : 2) extends <G>() => G extends A ? 1 : 2 ? C extends { __vizeResolveEmitProps?: infer X } ? X extends (...args: any[]) => any ? false : true : C extends { __vizeResolveProps?: infer X } ? X extends (...args: any[]) => any ? false : true : true : false : false] extends [true] ? [C extends new (...args: any[]) => { $emit: infer E } ? E : never] extends [infer E] ? [E] extends [never] ? false : [E] : false : false;\n  // Per-usage listener boxes over `typeof Component`; `NoInfer<C>` keeps them non-distributive.\n  export type $UsageLibrary<C> = NoInfer<C> extends { __vizeCheck: any } | { readonly __vizeComponentMarker: true } ? false : NoInfer<C> extends (...args: any[]) => infer __R ? 0 extends (1 & __R) ? false : '__ctx' extends keyof __R ? true : false : false;\n  export type $UsagePropsBox<C> = NoInfer<C> extends { new (...args: any[]): { $props: infer __P } } ? [__P] : NoInfer<C> extends (props: infer __P, ...args: any[]) => any ? [__P] : [];\n  export type $UsageEmitPropsBox<C> = NoInfer<C> extends { __vizeEmitProps?: infer __EP } ? [__EP] : [];\n  // A component whose raw fallthrough source admits `{}` has no required fallthrough key: removing owned keys adds none.\n  type $FallthroughSourceMember<C> = C extends { readonly __vizeHasFallthroughProps: true; readonly __vizeFallthroughSource?: infer __S } ? unknown extends __S ? false : [NonNullable<__S> extends infer __N ? __N extends unknown ? {} extends __N ? never : __N : never : never] extends [never] ? true : false : false;\n  export type $FallthroughSourceAdmitsEmpty<C> = [C] extends [never] ? false : [$FallthroughSourceMember<C>] extends [true] ? true : false;\n  // The per-module emit gate input, shared so each component resolves it once per program.\n  type $EmitGateNativeInput<C> = C extends new (...args: any[]) => any ? C extends { readonly __vizeComponentMarker: true } ? false : true : false;\n  type $EmitGateInputOf<L, C, F, R = F extends (...args: any) => infer T ? T : any, U = R> = [L] extends [true] ? F : $ClosedEmit<C> extends [unknown] ? F : true extends (0 extends (1 & C) ? false : C extends { __vizeResolveEmitProps?: infer X } ? X extends (...args: any[]) => any ? true : $EmitGateNativeInput<C> : C extends { __vizeResolveProps?: infer X } ? X extends (...args: any[]) => any ? true : $EmitGateNativeInput<C> : $EmitGateNativeInput<C>) ? F : [R] extends [never] ? F : [R extends unknown ? (<G>() => G extends R ? 1 : 2) extends <G>() => G extends U ? 1 : 2 ? true : false : false] extends [true] ? (props: any) => R : F;\n  export type $EmitGateInput<L, C, F> = $EmitGateInputOf<L, C, F>;\n"
+      },
+      {
+        "before": "export type $UsageProps<C> = NoInfer<C> extends { __vizeCheck: infer __F } ? ($IsAny<__F> extends true ? $ComponentRawProps<C> : Record<string, unknown>) : $ComponentRawProps<C>;\nexport type $UsageRequiredFallthrough<C> = $FallthroughProps<C> extends infer __F ? [__F extends unknown ? {} extends __F ? never : __F : never] extends [never] ? $RequiredFallthroughProps<C, __F, never> : $RequiredFallthroughProps<C, __F> : never;\nexport type $UsageLibrary<C> = NoInfer<C> extends { __vizeCheck: any } | { readonly __vizeComponentMarker: true } ? false : NoInfer<C> extends (...args: any[]) => infer __R ? 0 extends (1 & __R) ? false : '__ctx' extends keyof __R ? true : false : false;\nexport type $UsagePropsBox<C> = NoInfer<C> extends { new (...args: any[]): { $props: infer __P } } ? [__P] : NoInfer<C> extends (props: infer __P, ...args: any[]) => any ? [__P] : [];\nexport type $UsageEmitPropsBox<C> = NoInfer<C> extends { __vizeEmitProps?: infer __EP } ? [__EP] : [];\nexport type $UsageNativeFallthroughBox<C> = NoInfer<C> extends { readonly __vizeNativeFallthroughRoot: true; readonly __vizeFallthroughProps?: infer __F } ? \"__vizeEmitProps\" extends keyof { [__K in keyof (C & {}) as string extends __K ? never : __K]: unknown } ? $IsAny<__F> extends true ? [] : [__F] : [] : [];\nexport type $PropChecker<C, P, T> = $IsAny<C> extends true ? (props: { readonly [K in keyof P]: P[K] } & Record<string, unknown>) => void : C extends { __vizeCheck: infer __F } ? $IsAny<__F> extends true ? (props: $ComponentCheckProps<P, T>) => void : unknown extends __F ? (props: $ComponentCheckProps<P, T>) => void : __F extends (...args: any[]) => any ? __F : (props: $ComponentCheckProps<P, T>) => void : $IsLibraryGenericExport<C> extends true ? C : (props: $ComponentCheckProps<P, T>) => void;\nexport type $PropValue<P, K extends PropertyKey, F = unknown, __V = P extends unknown ? (K extends keyof P ? P[K] : never) : never> = [__V] extends [never] ? F : __V;\nexport type $PropValueOr<P, K extends PropertyKey, C, FK extends PropertyKey = K, __V = P extends unknown ? (K extends keyof P ? P[K] : never) : never> = [__V] extends [never] ? $FallthroughValue<C, FK> : __V;\nexport type $ClosedEmitFactory<E> = (component: unknown) => (props: any) => __EmitProps<E>;\n",
+        "after": "export type $UsageProps<C> = NoInfer<C> extends { __vizeCheck: infer __F } ? ($IsAny<__F> extends true ? $ComponentRawProps<C> : Record<string, unknown>) : $ComponentRawProps<C>;\nexport type $UsageRequiredFallthrough<C> = $FallthroughSourceAdmitsEmpty<C> extends true ? {} : $FallthroughProps<C> extends infer __F ? [__F extends unknown ? {} extends __F ? never : __F : never] extends [never] ? $RequiredFallthroughProps<C, __F, never> : $RequiredFallthroughProps<C, __F> : never;\nexport type $UsageNativeFallthroughBox<C> = NoInfer<C> extends { readonly __vizeNativeFallthroughRoot: true; readonly __vizeFallthroughProps?: infer __F } ? \"__vizeEmitProps\" extends keyof { [__K in keyof (C & {}) as string extends __K ? never : __K]: unknown } ? $IsAny<__F> extends true ? [] : [__F] : [] : [];\nexport type $PropChecker<C, P, T> = $IsAny<C> extends true ? (props: { readonly [K in keyof P]: P[K] } & Record<string, unknown>) => void : C extends { __vizeCheck: infer __F } ? $IsAny<__F> extends true ? (props: $ComponentCheckProps<P, T>) => void : unknown extends __F ? (props: $ComponentCheckProps<P, T>) => void : __F extends (...args: any[]) => any ? __F : (props: $ComponentCheckProps<P, T>) => void : $IsLibraryGenericExport<C> extends true ? C : (props: $ComponentCheckProps<P, T>) => void;\nexport type $PropValue<P, K extends PropertyKey, F = unknown, __V = P extends unknown ? (K extends keyof P ? P[K] : never) : never> = [__V] extends [never] ? F : __V;\nexport type $PropValueOr<P, K extends PropertyKey, C, FK extends PropertyKey = K, __V = P extends unknown ? (K extends keyof P ? P[K] : never) : never> = [__V] extends [never] ? $FallthroughValue<C, FK> : __V;\nexport type $ClosedEmitFactory<E> = (component: unknown) => (props: any) => __EmitProps<E>;\nexport type $EmitGateResolver<L, C> = [L] extends [true] ? (component: C) => C : $ClosedEmit<C> extends [infer E] ? $ClosedEmitFactory<E> : $EmitPropsFactory<C>;\n"
+      }
+    ]
+  }
+}

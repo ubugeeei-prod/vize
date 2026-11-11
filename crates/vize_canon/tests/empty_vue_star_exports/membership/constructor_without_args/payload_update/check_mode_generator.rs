@@ -36,6 +36,7 @@ fn restore(mut current: String) -> String {
 
 /// The exact pre-check-mode generator bytes; other paths and images pass through.
 pub(super) fn source_before(path: &str, current: String) -> String {
+    let current = super::template_ref_targets::source_before(path, current);
     if path == PATH && support::hash(current.as_bytes()) == AFTER.1 {
         restore(current)
     } else {
@@ -51,12 +52,14 @@ mod tests {
     #[test]
     fn check_mode_generator_restores_its_exact_predecessor() {
         let current = fs::read_to_string(support::repository().join(PATH)).unwrap();
-        assert_eq!(support::hash(current.as_bytes()), AFTER.1);
+        let after_template_refs =
+            super::super::template_ref_targets::source_before(PATH, current.clone());
+        assert_eq!(support::hash(after_template_refs.as_bytes()), AFTER.1);
         let previous = source_before(PATH, current.clone());
         assert_eq!(support::hash(previous.as_bytes()), BEFORE.1);
         assert_eq!(source_before(PATH, previous.clone()), previous);
         assert_eq!(source_before("other.rs", current.clone()), current);
-        let mutated = current.replacen(SUCCESSORS[1].0, "", 1);
+        let mutated = after_template_refs.replacen(SUCCESSORS[1].0, "", 1);
         assert_eq!(source_before(PATH, mutated.clone()), mutated);
         assert!(std::panic::catch_unwind(|| restore(mutated)).is_err());
     }

@@ -21,11 +21,11 @@ fn complete_product_sources_and_native_assembly_keep_their_exact_postimages() {
     );
     assert_eq!(
         digest(super::super::VITE_RUNTIME.as_bytes()),
-        "da63470bd358b290de4201cc1e2757fd9790a72814318761ea156d00daa63059"
+        "1f5e124a1992cad7d618d6631b84db48d24a67de8ee50120c6a93b6cf41b7609"
     );
     assert_eq!(
         digest(vite_runtime().unwrap().as_bytes()),
-        "3cc17383ce49c07dbefbeb4aef0d5353a0c72a3df7be191a32dbc42166937543"
+        "abbe02771476ee217b6f13442efa28828487cc511f776ae736ce7f6227d15409"
     );
 }
 

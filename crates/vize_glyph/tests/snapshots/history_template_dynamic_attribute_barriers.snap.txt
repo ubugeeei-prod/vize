@@ -5,6 +5,8 @@
   :assigned="value = next"
   :updated="count++"
   v-model="model"
-  @z="onZ()"
   @a="onA()"
+  @z="onZ()"
+  v-observe:z="third()"
+  v-observe:a="fourth()"
 />

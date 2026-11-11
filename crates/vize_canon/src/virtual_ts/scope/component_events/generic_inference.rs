@@ -208,7 +208,7 @@ pub(super) fn generate_inferred_emit_args(
                 indent,
                 library,
                 component_ref,
-                usage_idx,
+                (usage_idx, ctx.hoist_shared_preamble),
             );
         }
         append!(
@@ -227,7 +227,7 @@ pub(super) fn generate_inferred_emit_args(
                 guard,
                 library,
                 component_ref,
-                usage_idx,
+                (usage_idx, ctx.hoist_shared_preamble),
             );
         } else {
             append!(
@@ -251,7 +251,7 @@ pub(super) fn generate_inferred_emit_args(
                 library,
                 component_ref,
                 &emit_props,
-                usage_idx,
+                (usage_idx, ctx.hoist_shared_preamble),
             );
         } else {
             vize_l0::emit_ts!(

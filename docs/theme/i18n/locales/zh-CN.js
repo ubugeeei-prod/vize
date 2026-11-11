@@ -72,6 +72,7 @@
       "/rules/options-events": "事件",
       "/rules/options-attributes": "属性",
       "/rules/options-props": "Props",
+      "/rules/reference/max-lines": "max-lines",
       "/rules/options-script": "脚本",
       "/rules/options-type": "类型",
       "/rules/options-musea": "Musea",

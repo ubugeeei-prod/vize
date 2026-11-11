@@ -2,10 +2,7 @@ import type {} from "./virtual-ts-globals.js" with { "resolution-mode": "import"
 import type {} from "./virtual-ts-patterns.js" with { "resolution-mode": "import" };
 import type {} from "./virtual-ts-emit-overloads.js" with { "resolution-mode": "import" };
 // Generated from the shared virtual TypeScript helpers. Do not edit.
-// One module for every content-mapper virtual file.
-// Template-ref widening. Hoisted-only, deliberately absent from the per-file
-// preamble: a module-scope copy is dead code (TS6196) in every component whose
-// template scope emits no __U, and only generated template scopes use it.
+// Template-ref helpers, hoisted-only and shared so each instantiation is cached once per program.
 type $IsUnion<T, __U = T> = T extends unknown ? ([__U] extends [T] ? false : true) : false;
 export type $WidenTemplateRef<T> =
   $IsAny<T> extends true
@@ -25,7 +22,6 @@ export type $WidenTemplateRef<T> =
               ? boolean
               : T
             : T;
-// Template ref unwrap, shared so each instantiation is cached once per program.
 export type $TemplateRefUnwrap<T> = T extends { value: unknown }
   ? T extends import("vue").Ref
     ? $WidenTemplateRef<T["value"]>
@@ -36,7 +32,11 @@ export type $TemplateRefUnwrapNarrowed<T> = [T] extends [import("vue").Ref]
   : [Extract<T, import("vue").Ref>] extends [never]
     ? $TemplateRefUnwrap<T>
     : (NonNullable<T> & import("vue").Ref<unknown> & { value: $TemplateRefUnwrap<T> })["value"];
-
+import type * as __vizeRef from "./virtual-ts-refs.js" with { "resolution-mode": "import" };
+export type $DomElement<T extends string, S extends boolean = false> = __vizeRef.$DomElement<T, S>;
+export type $TemplateComponentRef<C> = __vizeRef.$TemplateComponentRef<C>;
+export type $RefInstanceFactory<C> = __vizeRef.$RefInstanceFactory<C>;
+export type $TemplateRefInstance<T, K extends keyof T, C> = __vizeRef.$TemplateRefInstance<T, K, C>;
 import type * as __vizeSlotTypes from "./virtual-ts-slots.js" with { "resolution-mode": "import" };
 export type $SlotHostSlots<C> = __vizeSlotTypes.$SlotHostSlots<C>;
 declare function __vizeFunctionalSlots<P, C, R>(
@@ -273,29 +273,13 @@ export type $UsageProps<C> =
       : Record<string, unknown>
     : $ComponentRawProps<C>;
 export type $UsageRequiredFallthrough<C> =
-  $FallthroughProps<C> extends infer __F
-    ? [__F extends unknown ? ({} extends __F ? never : __F) : never] extends [never]
-      ? $RequiredFallthroughProps<C, __F, never>
-      : $RequiredFallthroughProps<C, __F>
-    : never;
-export type $UsageLibrary<C> =
-  NoInfer<C> extends { __vizeCheck: any } | { readonly __vizeComponentMarker: true }
-    ? false
-    : NoInfer<C> extends (...args: any[]) => infer __R
-      ? 0 extends 1 & __R
-        ? false
-        : "__ctx" extends keyof __R
-          ? true
-          : false
-      : false;
-export type $UsagePropsBox<C> =
-  NoInfer<C> extends { new (...args: any[]): { $props: infer __P } }
-    ? [__P]
-    : NoInfer<C> extends (props: infer __P, ...args: any[]) => any
-      ? [__P]
-      : [];
-export type $UsageEmitPropsBox<C> =
-  NoInfer<C> extends { __vizeEmitProps?: infer __EP } ? [__EP] : [];
+  $FallthroughSourceAdmitsEmpty<C> extends true
+    ? {}
+    : $FallthroughProps<C> extends infer __F
+      ? [__F extends unknown ? ({} extends __F ? never : __F) : never] extends [never]
+        ? $RequiredFallthroughProps<C, __F, never>
+        : $RequiredFallthroughProps<C, __F>
+      : never;
 export type $UsageNativeFallthroughBox<C> =
   NoInfer<C> extends {
     readonly __vizeNativeFallthroughRoot: true;
@@ -337,6 +321,11 @@ export type $PropValueOr<
   __V = P extends unknown ? (K extends keyof P ? P[K] : never) : never,
 > = [__V] extends [never] ? $FallthroughValue<C, FK> : __V;
 export type $ClosedEmitFactory<E> = (component: unknown) => (props: any) => __EmitProps<E>;
+export type $EmitGateResolver<L, C> = [L] extends [true]
+  ? (component: C) => C
+  : $ClosedEmit<C> extends [infer E]
+    ? $ClosedEmitFactory<E>
+    : $EmitPropsFactory<C>;
 type $InvalidFallthroughSpreadKeys<P, F, A> = {
   [K in keyof A]-?: K extends keyof P | keyof $KebabProps<P>
     ? never
@@ -498,3 +487,8 @@ export type $ListenerContract<
   __Loose,
 > = __vizeListenerTypes.$ListenerContract<__L, __PB, __EB, __FB, __K, __Raw, __Inferred, __Loose>;
 export type $ClosedEmit<C, A = C> = __vizeListenerTypes.$ClosedEmit<C, A>;
+export type $UsageLibrary<C> = __vizeListenerTypes.$UsageLibrary<C>;
+export type $UsagePropsBox<C> = __vizeListenerTypes.$UsagePropsBox<C>;
+export type $UsageEmitPropsBox<C> = __vizeListenerTypes.$UsageEmitPropsBox<C>;
+export type $FallthroughSourceAdmitsEmpty<C> = __vizeListenerTypes.$FallthroughSourceAdmitsEmpty<C>;
+export type $EmitGateInput<L, C, F> = __vizeListenerTypes.$EmitGateInput<L, C, F>;

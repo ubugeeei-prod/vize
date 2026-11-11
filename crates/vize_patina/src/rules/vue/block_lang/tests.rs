@@ -30,10 +30,13 @@ fn configured_script_lang_matches_the_issue_messages() {
         configured(no_lang),
         vec![format!("0:The 'lang' attribute of '<script>' is missing.")]
     );
-    let js = configured(js_lang);
-    assert_eq!(js.len(), 1, "{js:?}");
-    assert!(js[0].ends_with("Only 'ts' can be used for the 'lang' attribute of '<script>'."));
-    assert!(js[0].starts_with(&format!("{}:", js_lang.find("lang").unwrap())));
+    let lang_start = js_lang.find("lang").unwrap();
+    assert_eq!(
+        configured(js_lang),
+        vec![format!(
+            "{lang_start}:Only 'ts' can be used for the 'lang' attribute of '<script>'."
+        )]
+    );
     assert!(configured(ts_lang).is_empty(), "{ts_lang}");
 }
 

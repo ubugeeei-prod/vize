@@ -22,6 +22,7 @@ fn render_attribute_uses_single_quotes_when_value_contains_double_quotes() {
         original_index: 0,
         indent_multiline_value: false,
         owns_value_lines: false,
+        order_sensitive: false,
     };
 
     assert_eq!(render_attribute(&attr).as_str(), r#"title='say "hello"'"#);
@@ -36,6 +37,7 @@ fn render_attribute_escapes_double_quotes_when_value_contains_both_quote_styles(
         original_index: 0,
         indent_multiline_value: false,
         owns_value_lines: false,
+        order_sensitive: false,
     };
 
     assert_eq!(
@@ -75,4 +77,22 @@ fn write_rendered_attribute_leaves_template_literal_lines_verbatim() {
         write(":class='[`\n  w-full\n  `,\n  x]'", 2, true),
         ":class='[`\n  w-full\n  `,\n      x]'"
     );
+}
+
+#[test]
+fn opens_mustache_finds_only_adjacent_braces() {
+    for (value, expected) in [
+        ("", false),
+        ("{", false),
+        ("{{", true),
+        ("a{b{c", false),
+        ("a{{b", true),
+        ("{a{{", true),
+        ("}}{", false),
+        ("{ a: { b: 1 } }", false),
+        ("x{", false),
+        ("日本{{語", true),
+    ] {
+        assert_eq!(super::opens_mustache(value), expected, "{value}");
+    }
 }

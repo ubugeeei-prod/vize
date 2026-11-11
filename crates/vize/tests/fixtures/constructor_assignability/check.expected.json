@@ -62,7 +62,7 @@
       },
       {
         "diagnostics": [
-          "error:2:14 [TS2322] Type '{ readonly __vizeComponentMarker: true; readonly __vizeRawProps?: Props | undefined; readonly __vizeNativeFallthroughRoot: true; readonly __vizeHasFallthroughProps: true; readonly __vizeFallthroughProps?: { ...; } | undefined; } & $ComponentConstructor & $VueComponentOptions' is not assignable to type 'new () => { $props: { label: string; missing: string; }; }'.\nType '$ComponentInstance' is not assignable to type '{ $props: { label: string; missing: string; }; }'.\nTypes of property '$props' are incompatible.\nProperty 'missing' is missing in type 'Props' but required in type '{ label: string; missing: string; }'."
+          "error:2:14 [TS2322] Type '{ readonly __vizeComponentMarker: true; readonly __vizeRawProps?: Props | undefined; readonly __vizeNativeFallthroughRoot: true; readonly __vizeFallthroughSource?: Partial<HTMLAttributes & ReservedProps> | undefined; readonly __vizeHasFallthroughProps: true; readonly __vizeFallthroughProps?: { ...; } | undefined; } ...' is not assignable to type 'new () => { $props: { label: string; missing: string; }; }'.\nType '$ComponentInstance' is not assignable to type '{ $props: { label: string; missing: string; }; }'.\nTypes of property '$props' are incompatible.\nProperty 'missing' is missing in type 'Props' but required in type '{ label: string; missing: string; }'."
         ],
         "file": "src/Consumer.tsx"
       },
@@ -81,7 +81,7 @@
       },
       {
         "diagnostics": [
-          "error:2:14 [TS2322] Type '{ readonly __vizeComponentMarker: true; readonly __vizeRawProps?: Props | undefined; readonly __vizeNativeFallthroughRoot: true; readonly __vizeHasFallthroughProps: true; readonly __vizeFallthroughProps?: { ...; } | undefined; } & $ComponentConstructor & $VueComponentOptions' is not assignable to type 'new () => { $props: { label: number; }; }'.\nType '$ComponentInstance' is not assignable to type '{ $props: { label: number; }; }'.\nThe types of '$props.label' are incompatible between these types.\nType 'string' is not assignable to type 'number'."
+          "error:2:14 [TS2322] Type '{ readonly __vizeComponentMarker: true; readonly __vizeRawProps?: Props | undefined; readonly __vizeNativeFallthroughRoot: true; readonly __vizeFallthroughSource?: Partial<HTMLAttributes & ReservedProps> | undefined; readonly __vizeHasFallthroughProps: true; readonly __vizeFallthroughProps?: { ...; } | undefined; } ...' is not assignable to type 'new () => { $props: { label: number; }; }'.\nType '$ComponentInstance' is not assignable to type '{ $props: { label: number; }; }'.\nThe types of '$props.label' are incompatible between these types.\nType 'string' is not assignable to type 'number'."
         ],
         "file": "src/Consumer.tsx"
       },

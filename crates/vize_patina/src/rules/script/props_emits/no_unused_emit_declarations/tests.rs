@@ -279,13 +279,15 @@ const { close } = useClose(emit);
 }
 
 #[test]
-fn test_calls_before_define_emits_do_not_count_as_usage() {
+fn test_function_declared_before_define_emits_counts_as_usage() {
+    // #12829: like eslint-plugin-vue, an emit inside a function declared
+    // above `defineEmits` uses the declaration.
     let source = r#"
 function save() { emit('save') }
 const emit = defineEmits(['save'])
 "#;
     let result = create_linter().lint(source, 0);
-    assert_eq!(result.warning_count, 1);
+    assert_eq!(result.warning_count, 0);
 }
 
 #[test]

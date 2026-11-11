@@ -22,20 +22,19 @@ use vize_croquis::croquis::{ComponentUsage, PassedProp};
 pub(crate) const ATTR_VALUE_REFERENCE: &str = "$AttrValue<";
 
 /// `$AttrValue<R, K, C, V>` is the per-prop contract `V` unless the literal
-/// types `K`. `P` is the child's value props as the contract alias reads
-/// them: props `R`, emitted listeners and Vue's public attrs. Of the
-/// fallthrough props, the literal types only a required one; testing the one
-/// key avoids resolving every required key of the root's attrs per prop.
+/// types `K`: a key of props `R` (of any union member), of the emitted
+/// listeners or of Vue's public attrs. Only the key set is read, never the
+/// key's type. A non-`never` `P` replaces that key set with `keyof P`. Of
+/// the fallthrough props, the literal types only a required one; testing the
+/// one key avoids resolving every required key of the root's attrs per prop.
 macro_rules! attr_value {
     ($listeners:literal, $fallthrough:literal) => {
         concat!(
-            "type $AttrValue<R, K, C, V, P = R & ",
+            "type $AttrValue<R, K, C, V, P = never> = K extends ([P] extends [never] ? (R extends unknown ? keyof R : never) | keyof ",
             $listeners,
-            " & import(\"vue\").VNodeProps & import(\"vue\").AllowedComponentProps & import(\"vue\").ComponentCustomProps, ",
-            "__V = P extends unknown ? (K extends keyof P ? P[K] : never) : never",
-            "> = [__V] extends [never] ? ",
+            " | keyof import(\"vue\").VNodeProps | keyof import(\"vue\").AllowedComponentProps | keyof import(\"vue\").ComponentCustomProps : keyof P) ? unknown : ",
             $fallthrough,
-            " extends infer F ? K extends keyof F ? {} extends Pick<F, K> ? V : unknown : V : V : unknown;\n"
+            " extends infer F ? K extends keyof F ? {} extends Pick<F, K> ? V : unknown : V : V;\n"
         )
     };
 }
@@ -208,18 +207,19 @@ fn writes_model(usage: &ComponentUsage, prop: &PassedProp) -> bool {
 mod tests {
     use super::{attr_value_declaration, needs_parentheses};
 
-    /// `$PropValueOr` takes its fallthrough exactly when this lookup is
-    /// `never`, so both read "declared" from the same expression.
+    /// Ownership reads the key set the literal types, never a key's type.
     #[test]
-    fn declared_lookup_is_the_prop_value_or_one() {
-        let lookup = "__V = P extends unknown ? (K extends keyof P ? P[K] : never) : never>";
-        let prop_value_or = include_str!("../helpers/declarations/component-checks.d.ts.txt")
-            .lines()
-            .find(|line| line.starts_with("export type $PropValueOr<"))
-            .expect("shared $PropValueOr");
-        assert_eq!(prop_value_or.matches(lookup).count(), 1, "{prop_value_or}");
+    fn ownership_reads_only_the_typed_key_set() {
+        let keys =
+            "K extends ([P] extends [never] ? (R extends unknown ? keyof R : never) | keyof ";
         for declaration in [attr_value_declaration(true), attr_value_declaration(false)] {
-            assert_eq!(declaration.matches(lookup).count(), 1, "{declaration}");
+            assert_eq!(declaration.matches(keys).count(), 1, "{declaration}");
+            assert_eq!(declaration.matches("P[K]").count(), 0, "{declaration}");
+            assert_eq!(
+                declaration.matches(" : keyof P) ? unknown : ").count(),
+                1,
+                "{declaration}"
+            );
         }
     }
 

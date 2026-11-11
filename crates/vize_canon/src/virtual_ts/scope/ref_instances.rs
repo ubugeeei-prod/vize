@@ -18,7 +18,7 @@ use vize_l0::ts;
 use crate::virtual_ts::{
     component_reference::resolved_component_binding_reference,
     expressions::{generated_prop_value, rewrite_reserved_template_binding},
-    helpers::to_camel_case,
+    helpers::{shared_types::REF_INSTANCE_FACTORY, to_camel_case},
     template_binding_access::TemplateBindingAccess,
     types::VirtualTsOptions,
 };
@@ -84,6 +84,8 @@ pub(super) struct RefInstanceContext<'a> {
     pub(super) template_offset: u32,
     /// The `v-if` guards that narrow a `v-for` source from outside its loop.
     pub(super) vfor_enclosing_guards: &'a FxHashMap<u32, String>,
+    /// Name the shared SDK factory instead of the per-file alias.
+    pub(super) shared: bool,
 }
 
 /// Emit one probe per instantiated ref and return the record the template
@@ -250,9 +252,10 @@ fn emit_ref_call(
         *ts,
         "{indent}// @ts-ignore Inference-only call; the usage's mapped prop checks own diagnostics.\n"
     );
+    let factory = REF_INSTANCE_FACTORY.select(ctx.shared);
     append!(
         *ts,
-        "{indent}var {name} = (undefined as unknown as $RefInstanceFactory<typeof {component}>)({component})({{\n"
+        "{indent}var {name} = (undefined as unknown as {factory}<typeof {component}>)({component})({{\n"
     );
     let mut emitted = FxHashSet::default();
     for prop in &usage.props {

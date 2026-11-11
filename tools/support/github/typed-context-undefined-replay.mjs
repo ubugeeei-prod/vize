@@ -120,7 +120,7 @@ const certifyMapperTransition = (beforePacket, afterPacket) => {
     ],
     [
       'declare const __vize_component__: { readonly __vizeComponentMarker: true; readonly __vizeRawProps?: Props; readonly __vizeHasFallthroughProps: true; readonly __vizeFallthroughProps?: __VizeUnownedComponentAttrs<Partial<__VizeNativeElement<"p">>, Props, {}>; } & __VizeComponentConstructor & __VizeVueComponentOptions;',
-      'type RouteComponent = { readonly __vizeComponentMarker: true; readonly __vizeRawProps?: Props; readonly __vizeNativeFallthroughRoot: true; readonly __vizeHasFallthroughProps: true; readonly __vizeFallthroughProps?: $UnownedComponentAttrs<Partial<$NativeElement<"p">>, Props, {}>; } & $ComponentConstructor & $VueComponentOptions;\ndeclare const __vize_component__: RouteComponent;',
+      'type RouteComponent = { readonly __vizeComponentMarker: true; readonly __vizeRawProps?: Props; readonly __vizeNativeFallthroughRoot: true; readonly __vizeFallthroughSource?: Partial<$NativeElement<"p">>; readonly __vizeHasFallthroughProps: true; readonly __vizeFallthroughProps?: $UnownedComponentAttrs<Partial<$NativeElement<"p">>, Props, {}>; } & $ComponentConstructor & $VueComponentOptions;\ndeclare const __vize_component__: RouteComponent;',
       "integrated named component surface",
     ],
   ]) {
@@ -230,8 +230,10 @@ const certifyNativeTransition = (beforeText, afterText) => {
   primary.push({
     start: markerStart,
     end: markerStart,
-    replacement: Buffer.from("readonly __vizeNativeFallthroughRoot: true; "),
-    label: "native fallthrough ownership marker",
+    replacement: Buffer.from(
+      'readonly __vizeNativeFallthroughRoot: true; readonly __vizeFallthroughSource?: Partial<$NativeElement<"p">>; ',
+    ),
+    label: "native fallthrough ownership and source markers",
   });
   primary.sort((left, right) => left.start - right.start || left.end - right.end);
   for (let index = 1; index < primary.length; index++)

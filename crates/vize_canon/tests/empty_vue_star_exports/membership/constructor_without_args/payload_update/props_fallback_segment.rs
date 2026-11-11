@@ -152,6 +152,7 @@ fn invert(current: &str, file: &File) -> String {
 }
 
 pub(super) fn source_before(path: &str, current: String) -> String {
+    let current = super::shared_usage_gates::source_before(path, current);
     match FILES.iter().find(|file| file.path == path) {
         Some(file) => invert(&current, file),
         None => current,
@@ -181,8 +182,10 @@ mod tests {
     use super::{FILES, invert, retain_provenance, source_before};
     use serde_json::json;
 
+    /// The physical image with only the newer template-ref target layer removed.
     fn current(path: &str) -> String {
-        std::fs::read_to_string(super::support::repository().join(path)).unwrap()
+        let body = std::fs::read_to_string(super::support::repository().join(path)).unwrap();
+        super::super::shared_kebab_case::source_before(path, body)
     }
 
     fn redo(mut previous: String, edits: &[(&str, &str)]) -> String {

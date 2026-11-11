@@ -8,22 +8,24 @@ use oxc_syntax::identifier::is_identifier_part;
 use std::path::Path;
 
 /// A same-arity `never` poison, and how many references the host's
-/// [content mapper, batch] projections generate.
+/// [content mapper, batch] projections generate. The template-ref registry
+/// targets name the shared SDK declarations, whose DOM lib references
+/// resolve outside every authored scope, so the host spells none of those.
 const SETUP_LIB_TYPES: &[(&str, &str, [usize; 2])] = &[
-    ("Element", "type Element = never", [3, 3]),
+    ("Element", "type Element = never", [0, 0]),
     ("Exclude", "type Exclude<T, U> = never", [1, 1]),
     ("Extract", "type Extract<T, U> = never", [1, 1]),
     (
         "HTMLElementTagNameMap",
         "type HTMLElementTagNameMap = never",
-        [4, 4],
+        [0, 0],
     ),
-    ("NonNullable", "type NonNullable<T> = never", [3, 4]),
+    ("NonNullable", "type NonNullable<T> = never", [0, 1]),
     ("Readonly", "type Readonly<T> = never", [2, 2]),
     (
         "SVGElementTagNameMap",
         "type SVGElementTagNameMap = never",
-        [4, 4],
+        [0, 0],
     ),
 ];
 const MAPPER: usize = 0;

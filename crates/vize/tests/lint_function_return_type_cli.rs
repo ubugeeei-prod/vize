@@ -47,11 +47,22 @@ fn preset_all_keeps_contextually_typed_object_callbacks_clean() {
     let actual: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
     assert_eq!(
         actual,
+        // The return-type rules stay quiet; preset all also enables
+        // vue/block-lang (#12866), whose default policy reports `lang="ts"`.
         serde_json::json!([{
             "file": FILENAME,
-            "messages": [],
+            "messages": [{
+                "ruleId": "vue/block-lang",
+                "ruleDocsPath": "docs/content/rules/reference/vue-block-lang.md",
+                "severity": 1,
+                "message": "[vize:vue/block-lang] Do not specify the 'lang' attribute of '<script>'.",
+                "line": 1,
+                "column": 15,
+                "endLine": 1,
+                "endColumn": 24
+            }],
             "errorCount": 0,
-            "warningCount": 0
+            "warningCount": 1
         }]),
         "{}",
         output_details(&output)

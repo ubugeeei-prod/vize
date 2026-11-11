@@ -430,12 +430,9 @@ fn test_as_written_sort_within_group() {
 
 #[test]
 fn test_merge_bind_and_non_bind_false() {
-    // Dynamic bindings are evaluation-order barriers; static attributes
-    // cannot move across them even when grouping is enabled.
+    // Runtime bindings bound each sortable literal run.
     let source = r#"<div :class="cls" class="base" :style="s" style="color:red"></div>"#;
-    let options = FormatOptions::default();
-    let result = format_template_content(source, &options).unwrap();
-
+    let result = format_template_content(source, &FormatOptions::default()).unwrap();
     assert_eq!(result.as_str(), source);
 }
 

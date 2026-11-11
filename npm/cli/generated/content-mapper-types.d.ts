@@ -107,11 +107,14 @@ type __WithDefaultsResult<T, D, __BKeys extends keyof T = never> = T extends unk
 type __Ref<T> = import("vue").Ref<T>;
 type __ShallowRef<T> = import("vue").ShallowRef<T>;
 
-type $KebabCase<S extends string, Acc extends string = ""> = S extends `${infer Head}${infer Tail}`
-  ? Head extends Lowercase<Head>
-    ? $KebabCase<Tail, `${Acc}${Head}`>
-    : $KebabCase<Tail, `${Acc}-${Lowercase<Head>}`>
-  : `${Acc}${S}`;
+type $KebabCase<S extends string, Acc extends string = ""> =
+  S extends Lowercase<S>
+    ? `${Acc}${S}`
+    : S extends `${infer Head}${infer Tail}`
+      ? Head extends Lowercase<Head>
+        ? $KebabCase<Tail, `${Acc}${Head}`>
+        : $KebabCase<Tail, `${Acc}-${Lowercase<Head>}`>
+      : `${Acc}${S}`;
 type $KebabProps<T> = { [K in keyof T & string as $KebabCase<K>]: T[K] };
 type $RequiredKeys<T> = { [K in keyof T]-?: {} extends Pick<T, K> ? never : K }[keyof T];
 type $DomListenerProps = {

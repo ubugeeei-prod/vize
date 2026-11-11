@@ -58,7 +58,7 @@ fn object_v_on_stays_between_independently_sorted_event_groups() {
 
     assert_eq!(
         first.as_str(),
-        r#"<button @keyup="up" @click="click" v-on="listeners" @mouseup="up" @mousedown="down"></button>"#
+        r#"<button @click="click" @keyup="up" v-on="listeners" @mousedown="down" @mouseup="up"></button>"#
     );
     assert_eq!(first, second);
 }
@@ -98,7 +98,6 @@ fn custom_directive_prefixes_remain_opaque() {
 
     let first = format_template(source, &options).unwrap();
     let second = format_template(&first, &options).unwrap();
-
     assert_eq!(first.as_str(), source);
     assert_eq!(first, second);
 }

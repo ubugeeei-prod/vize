@@ -9,6 +9,7 @@ import {
   nativeAttributesPath,
 } from "../../tools/support/compat/content-mapper/constructor-projection-parity.ts";
 import { beforeCanonLeftovers } from "../../tools/support/compat/content-mapper/strict-extra-keys-transition.ts";
+import { beforeSharedKebabCaseSource } from "../../tools/support/compat/content-mapper/shared-kebab-case-transition.ts";
 
 export const root = fileURLToPath(new URL("../..", import.meta.url));
 export const emitPath =
@@ -46,7 +47,9 @@ export function sourcePair() {
     writeFileSync(path.join(destination, emitPath), before);
     writeFileSync(path.join(destination, ownerPath), beforeOwner);
   }
-  const currentPreamble = readFileSync(path.join(root, preamblePath));
+  const currentPreamble = Buffer.from(
+    beforeSharedKebabCaseSource(preamblePath, readFileSync(path.join(root, preamblePath), "utf8")),
+  );
   const listenerInclude =
     '            include_str!("declarations/shared-listener-args.d.ts.txt"),\n';
   assert.equal(currentPreamble.toString().split(listenerInclude).length, 2);

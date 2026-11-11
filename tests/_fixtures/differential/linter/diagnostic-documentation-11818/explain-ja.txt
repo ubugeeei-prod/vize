@@ -43,15 +43,6 @@ compiler/character-reference-outside-unicode-range · コンパイラーエラ�
 
 ヒント:
   &#x10FFFF; 以下のコードポイントを使ってください
-=== compiler/control-character-in-input-stream
-compiler/control-character-in-input-stream · コンパイラーエラー
-入力ストリームに制御文字があります。
-
-ステージ: surface
-重大度: エラー
-
-ヒント:
-  制御文字を削除してください。表示されず、HTML のテキストとしても不正です
 === compiler/control-character-reference
 compiler/control-character-reference · コンパイラーエラー
 制御文字の文字参照です。
@@ -292,15 +283,6 @@ compiler/noncharacter-character-reference · コンパイラーエラー
 
 ヒント:
   参照を削除してください。非文字は交換用ではありません
-=== compiler/noncharacter-in-input-stream
-compiler/noncharacter-in-input-stream · コンパイラーエラー
-入力ストリームに非文字があります。
-
-ステージ: surface
-重大度: エラー
-
-ヒント:
-  非文字を削除してください。Unicode の非文字は交換用ではありません
 === compiler/null-character-reference
 compiler/null-character-reference · コンパイラーエラー
 NUL 文字の文字参照です。

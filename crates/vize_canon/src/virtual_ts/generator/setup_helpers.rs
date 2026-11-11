@@ -126,12 +126,15 @@ pub(super) fn emit_setup_helpers(
     );
     let template_refs = registry.as_ref().map(|registry| registry.body.as_str());
     if let Some(registry) = registry.as_ref() {
-        let dom_ref_helper = if registry.includes_dom_element {
+        // Hoisted batch and content-mapper modules name the shared SDK
+        // declarations instead, so each target is evaluated once per program.
+        let local = !record.shares_refs();
+        let dom_ref_helper = if local && registry.includes_dom_element {
             "  type $DomElement<_Tag extends string, _Svg extends boolean = false> = _Svg extends true ? (_Tag extends keyof SVGElementTagNameMap ? SVGElementTagNameMap[_Tag] : Element) : (_Tag extends keyof HTMLElementTagNameMap ? HTMLElementTagNameMap[_Tag] : Element);\n"
         } else {
             ""
         };
-        let component_ref_helper = if registry.includes_component {
+        let component_ref_helper = if local && registry.includes_component {
             "  type $TemplateComponentRef<_C> = _C extends string ? (_C extends keyof HTMLElementTagNameMap ? HTMLElementTagNameMap[_C] : _C extends keyof SVGElementTagNameMap ? SVGElementTagNameMap[_C] : Element) : _C extends abstract new (...args: any[]) => infer _I ? _I : _C extends (props: any, ctx: any, expose: (exposed: infer _E) => any, ...args: any[]) => any ? NonNullable<_E> : any;\n"
         } else {
             ""
@@ -150,7 +153,7 @@ pub(super) fn emit_setup_helpers(
         // HTML even for SVG tag names). A tag missing from its own map stops at
         // `Element`, which is what a custom element resolves to.
         let registry_body = registry.body.as_str();
-        let instance_helpers = if registry.includes_instantiated {
+        let instance_helpers = if local && registry.includes_instantiated {
             crate::virtual_ts::scope::REF_INSTANCE_HELPERS
         } else {
             ""

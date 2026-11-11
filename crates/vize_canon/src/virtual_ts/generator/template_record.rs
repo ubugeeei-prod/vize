@@ -7,6 +7,7 @@
 //! there is, and a record of all three once there is more.
 
 use super::fallthrough::{FallthroughComponentScope, ForwardedRoots};
+use crate::virtual_ts::helpers::shared_types::TEMPLATE_REF_INSTANCE;
 use crate::virtual_ts::scope::{REFS_RETURN_KEY, SLOTS_RETURN_KEY, instantiated_ref_starts};
 use vize_carton::{String, append};
 use vize_relief::RootNode;
@@ -23,6 +24,8 @@ pub(super) struct TemplateRecord {
     template_dollar_refs: bool,
     /// `inferComponentDollarRefs`: so is the public instance's.
     component_dollar_refs: bool,
+    /// Registry targets name the shared SDK helpers instead of per-file aliases.
+    shared_refs: bool,
 }
 
 impl TemplateRecord {
@@ -34,6 +37,7 @@ impl TemplateRecord {
         template_ast: Option<&RootNode<'_>>,
         generic: bool,
         infer_template_refs: bool,
+        shared_refs: bool,
     ) -> Self {
         let registers_refs =
             super::setup_helpers::registers_template_refs(infer_template_refs, scope.checks);
@@ -46,6 +50,7 @@ impl TemplateRecord {
             },
             template_dollar_refs: scope.checks.infer_template_dollar_refs,
             component_dollar_refs: scope.checks.infer_component_dollar_refs,
+            shared_refs,
         }
     }
 
@@ -65,6 +70,11 @@ impl TemplateRecord {
 
     pub(super) fn ref_starts(&self) -> &[u32] {
         &self.ref_starts
+    }
+
+    /// Whether registry targets name the shared SDK helpers.
+    pub(super) fn shares_refs(&self) -> bool {
+        self.shared_refs
     }
 
     /// Whether the public instance holds the template's refs.
@@ -97,9 +107,10 @@ impl TemplateRecord {
             return declared.into();
         }
         let mut instance = String::default();
+        let helper = TEMPLATE_REF_INSTANCE.select(self.shared_refs);
         append!(
             instance,
-            "$TemplateRefInstance<typeof __vize_template.{REFS_RETURN_KEY}, \"{start}\", {component_type}>"
+            "{helper}<typeof __vize_template.{REFS_RETURN_KEY}, \"{start}\", {component_type}>"
         );
         instance
     }

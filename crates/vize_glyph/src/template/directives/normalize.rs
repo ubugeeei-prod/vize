@@ -1,6 +1,6 @@
 //! Directive shorthand and sort-priority normalization.
 
-use super::super::attributes::attribute_priority_with_head;
+use super::super::attributes::{attribute_priority_with_head, is_order_sensitive_attribute};
 use super::{
     custom_attribute_priority, directive_head, format_directive_value,
     should_format_expression_with_head,
@@ -16,7 +16,7 @@ pub(crate) fn normalize_attribute_with_vue_version(
     options: &FormatOptions,
     vue_version: crate::VueVersion,
     attribute_depth: usize,
-) -> (String, Option<String>, usize, bool, bool) {
+) -> (String, Option<String>, usize, bool, bool, bool) {
     // Normalize directive shorthands (only if enabled)
     let head = directive_head(name);
     let normalized_shorthand: Option<String> = head
@@ -57,14 +57,22 @@ pub(crate) fn normalize_attribute_with_vue_version(
         }
     });
 
+    // The priority group and the run boundary read the same directive kind.
+    let kind = normalized_head
+        .as_ref()
+        .map(|head| DirectiveKind::of(head, &normalized_name));
     let priority = if let Some(ref groups) = options.attribute_groups {
         custom_attribute_priority(&normalized_name, groups)
     } else {
         usize::from(attribute_priority_with_head(
             &normalized_name,
             normalized_head.as_ref(),
+            kind,
         ))
     };
+
+    let order_sensitive =
+        is_order_sensitive_attribute(normalized_head.as_ref(), kind, formatted_value.as_deref());
 
     (
         normalized_name,
@@ -72,5 +80,6 @@ pub(crate) fn normalize_attribute_with_vue_version(
         priority,
         indent_multiline_value,
         owns_value_lines,
+        order_sensitive,
     )
 }

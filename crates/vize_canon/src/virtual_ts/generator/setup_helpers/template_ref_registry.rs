@@ -18,6 +18,7 @@ use vize_relief::{ElementNode, ElementType, Namespace, PropNode, RootNode, Templ
 
 use crate::virtual_ts::{
     component_reference::{component_binding_reference, resolved_component_binding_reference},
+    helpers::shared_types::{DOM_ELEMENT, TEMPLATE_COMPONENT_REF},
     types::{VirtualTsCheckOptions, VirtualTsOptions},
 };
 
@@ -136,7 +137,8 @@ pub(super) fn template_ref_registry(
                     let mut tag_literal = crate::virtual_ts::TextBuf::default();
                     push_ts_string_literal(&mut tag_literal, tag.as_str());
                     let svg_argument = if *is_svg { ", true" } else { "" };
-                    append!(target, "$DomElement<{tag_literal}{svg_argument}>");
+                    let helper = DOM_ELEMENT.select(record.shares_refs());
+                    append!(target, "{helper}<{tag_literal}{svg_argument}>");
                     false
                 }
                 RegisteredRefKind::Component {
@@ -144,7 +146,8 @@ pub(super) fn template_ref_registry(
                     start,
                 } => {
                     includes_component = true;
-                    let declared = vize_carton::cstr!("$TemplateComponentRef<{reference_type}>");
+                    let helper = TEMPLATE_COMPONENT_REF.select(record.shares_refs());
+                    let declared = vize_carton::cstr!("{helper}<{reference_type}>");
                     target =
                         record.ref_instance(*start, declared.as_str(), reference_type.as_str());
                     includes_instantiated |= target != declared;

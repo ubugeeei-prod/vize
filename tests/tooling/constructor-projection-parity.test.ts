@@ -24,6 +24,7 @@ import {
   type Assets,
   type Row,
 } from "../../tools/support/compat/content-mapper/constructor-projection-parity.ts";
+import { registerSharedUsageGateChecks } from "./support/shared-usage-gates-parity.ts";
 
 const root = fileURLToPath(new URL("../..", import.meta.url));
 const assets = readAssets(root, root);
@@ -207,6 +208,8 @@ test("certified helper and self-described coordinates preserve complete packets"
   assert.equal(proof.edits[0].start, base.text.indexOf(assets.embedded.toString()));
   assert.equal(proof.edits[1].replacementBytes < proof.edits[1].end - proof.edits[1].start, true);
 });
+
+registerSharedUsageGateChecks(assets);
 
 test("certified packets join only safe verbatim lines", () => {
   const source = "first\nsecond\nthird";
