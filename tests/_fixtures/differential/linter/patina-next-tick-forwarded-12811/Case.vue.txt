@@ -1,0 +1,16 @@
+<script setup>
+import { nextTick, ref } from "vue";
+import { createVariantNavigation } from "./variant-navigation";
+
+const sections = ref(new Map());
+const ready = ref(false);
+
+createVariantNavigation({ sections, nextTick });
+createVariantNavigation({ sections, schedule: ready.value ? nextTick : undefined });
+createVariantNavigation({ [nextTick]: sections });
+createVariantNavigation({ sections, eager: nextTick ? ready : sections });
+</script>
+
+<template>
+  <p>{{ sections.size }}</p>
+</template>
