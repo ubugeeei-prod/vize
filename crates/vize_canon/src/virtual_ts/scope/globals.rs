@@ -1,12 +1,11 @@
 //! Generation of undefined-reference checks and instance-global declarations.
 
 use crate::virtual_ts::template_binding_access::TemplateBindingAccess;
-use oxc_allocator::Allocator;
-use oxc_parser::Parser;
 use oxc_semantic::SemanticBuilder;
 use oxc_span::SourceType;
 use std::borrow::Cow;
 use vize_carton::{FxHashSet, String, append, cstr};
+use vize_croquis::script_parser::with_shared_parse;
 
 use vize_croquis::{Croquis, ScopeKind};
 
@@ -425,21 +424,22 @@ fn has_script_setup(summary: &Croquis) -> bool {
 /// the script cleanly: its top-level names are then unknown, and no template
 /// name may be classified against the public instance on a partial program.
 pub(crate) fn script_top_level_binding_names(script: &str) -> Option<FxHashSet<String>> {
-    for source_type in [SourceType::ts(), SourceType::tsx()] {
-        let allocator = Allocator::default();
-        let parsed = Parser::new(&allocator, script, source_type.with_module(true)).parse();
-        if parsed.panicked || !parsed.diagnostics.is_empty() {
-            continue;
-        }
-        let semantic = SemanticBuilder::new().build(&parsed.program).semantic;
-        let scoping = semantic.scoping();
-        let mut names = FxHashSet::default();
-        for (name, _) in scoping.get_bindings(scoping.root_scope_id()) {
-            names.insert(String::from(name.as_str()));
-        }
-        return Some(names);
-    }
-    None
+    [SourceType::ts(), SourceType::tsx()]
+        .into_iter()
+        .find_map(|source_type| {
+            with_shared_parse(script, source_type.with_module(true), |parsed| {
+                if parsed.panicked || !parsed.diagnostics.is_empty() {
+                    return None;
+                }
+                let semantic = SemanticBuilder::new().build(&parsed.program).semantic;
+                let scoping = semantic.scoping();
+                let mut names = FxHashSet::default();
+                for (name, _) in scoping.get_bindings(scoping.root_scope_id()) {
+                    names.insert(String::from(name.as_str()));
+                }
+                Some(names)
+            })
+        })
 }
 
 pub(crate) fn is_template_instance_global_name(name: &str) -> bool {

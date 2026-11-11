@@ -1,14 +1,14 @@
-use oxc_allocator::Allocator;
 use oxc_ast::ast::{
     CallExpression, Declaration, Expression, PropertyKey, Statement, TSInterfaceBody,
     TSInterfaceDeclaration, TSLiteral, TSSignature, TSType, TSTypeAliasDeclaration, TSTypeLiteral,
     TSTypeName,
 };
 use oxc_ast_visit::{Visit, walk};
-use oxc_parser::Parser;
+use oxc_parser::ParserReturn;
 use oxc_span::SourceType;
 use vize_carton::{FxHashMap, FxHashSet, String, ToCompactString};
 use vize_croquis::macros::DEFINE_PROPS;
+use vize_croquis::script_parser::with_shared_parse;
 
 pub(super) struct DefinePropsBooleanKeys {
     pub(super) keys: Vec<String>,
@@ -16,8 +16,10 @@ pub(super) struct DefinePropsBooleanKeys {
 }
 
 pub(super) fn collect_define_props_boolean_keys(script: &str) -> Option<DefinePropsBooleanKeys> {
-    let allocator = Allocator::default();
-    let parsed = Parser::new(&allocator, script, SourceType::ts()).parse();
+    with_shared_parse(script, SourceType::ts(), define_props_boolean_keys)
+}
+
+fn define_props_boolean_keys(parsed: &ParserReturn<'_>) -> Option<DefinePropsBooleanKeys> {
     if parsed.panicked {
         return None;
     }

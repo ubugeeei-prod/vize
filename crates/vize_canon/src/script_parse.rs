@@ -1,7 +1,6 @@
-use oxc_allocator::Allocator as OxcAllocator;
-use oxc_parser::Parser as OxcParser;
 use oxc_span::SourceType;
 use vize_carton::{String, ToCompactString, profile};
+use vize_croquis::script_parser::with_shared_parse;
 
 pub(crate) fn is_typescript_lang(lang: &str) -> bool {
     matches!(lang, "ts" | "tsx" | "mts" | "cts")
@@ -30,27 +29,27 @@ pub(crate) fn collect_script_parse_diagnostics(
     source_offset: u32,
     lang: Option<&str>,
 ) -> Vec<ScriptParseDiagnostic> {
-    let allocator = OxcAllocator::default();
     let source_type = script_source_type(lang);
-    let parsed = profile!(
+    let (mut diagnostics, panicked) = profile!(
         "canon.script.parse_errors",
-        OxcParser::new(&allocator, source, source_type).parse()
+        with_shared_parse(source, source_type, |parsed| {
+            let diagnostics: Vec<ScriptParseDiagnostic> = parsed
+                .diagnostics
+                .iter()
+                .map(|error| {
+                    let (local_start, local_end) = diagnostic_span(error, source.len());
+                    ScriptParseDiagnostic {
+                        message: error.to_compact_string(),
+                        start: source_offset + local_start,
+                        end: source_offset + local_end,
+                    }
+                })
+                .collect();
+            (diagnostics, parsed.panicked)
+        })
     );
 
-    let mut diagnostics: Vec<ScriptParseDiagnostic> = parsed
-        .diagnostics
-        .iter()
-        .map(|error| {
-            let (local_start, local_end) = diagnostic_span(error, source.len());
-            ScriptParseDiagnostic {
-                message: error.to_compact_string(),
-                start: source_offset + local_start,
-                end: source_offset + local_end,
-            }
-        })
-        .collect();
-
-    if parsed.panicked && diagnostics.is_empty() {
+    if panicked && diagnostics.is_empty() {
         let fallback_end = source_offset + (source.len() as u32).max(1);
         diagnostics.push(ScriptParseDiagnostic {
             message: "Parser panicked while parsing script".into(),
