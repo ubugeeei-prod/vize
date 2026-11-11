@@ -10,8 +10,8 @@ use vize_croquis::{Croquis, macros::MacroKind};
 use super::{
     RuntimePropResolveCache,
     imports::{
-        RuntimeImport, RuntimePropVisitSet, collect_imports, collect_top_level_values, parse_ts,
-        resolve_runtime_import_path,
+        RuntimeImport, RuntimePropVisitSet, collect_imports, collect_top_level_values,
+        parse_shared_ts, parse_ts, resolve_runtime_import_path,
     },
     syntax::call_expression_name,
 };
@@ -112,7 +112,8 @@ fn collect_default_names_with_script_context(
     names: &mut FxHashSet<CompactString>,
     cache: &RuntimePropResolveCache,
 ) {
-    parse_ts(context_source, "script.ts", |program| {
+    // The SFC's own script: croquis reads the same text in the same dialect.
+    parse_shared_ts(context_source, "script.ts", |program| {
         let imports = collect_imports(program);
         let local_values = collect_top_level_values(program);
         collect_default_names_from_argument(
