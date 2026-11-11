@@ -13,7 +13,7 @@ use super::ErrorCode;
 
 impl ErrorCode {
     /// Every code, in declaration order.
-    pub const ALL: [Self; 58] = [
+    pub const ALL: [Self; 64] = [
         Self::AbruptClosingOfEmptyComment,
         Self::CdataInHtmlContent,
         Self::DuplicateAttribute,
@@ -72,6 +72,12 @@ impl ErrorCode {
         Self::ExtendPoint,
         Self::MissingSemicolonAfterCharacterReference,
         Self::UnknownNamedCharacterReference,
+        Self::AbsenceOfDigitsInNumericCharacterReference,
+        Self::CharacterReferenceOutsideUnicodeRange,
+        Self::NullCharacterReference,
+        Self::ControlCharacterReference,
+        Self::SurrogateCharacterReference,
+        Self::NoncharacterCharacterReference,
     ];
 
     /// The code a diagnostic shows and `vize explain` accepts.
@@ -154,6 +160,16 @@ impl ErrorCode {
                 "compiler/missing-semicolon-after-character-reference"
             }
             Self::UnknownNamedCharacterReference => "compiler/unknown-named-character-reference",
+            Self::AbsenceOfDigitsInNumericCharacterReference => {
+                "compiler/absence-of-digits-in-numeric-character-reference"
+            }
+            Self::CharacterReferenceOutsideUnicodeRange => {
+                "compiler/character-reference-outside-unicode-range"
+            }
+            Self::NullCharacterReference => "compiler/null-character-reference",
+            Self::ControlCharacterReference => "compiler/control-character-reference",
+            Self::SurrogateCharacterReference => "compiler/surrogate-character-reference",
+            Self::NoncharacterCharacterReference => "compiler/noncharacter-character-reference",
         }
     }
 

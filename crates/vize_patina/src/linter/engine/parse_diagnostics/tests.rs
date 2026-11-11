@@ -72,7 +72,6 @@ fn l1_parser_template_diagnostics_match_the_preserved_parser() {
         "<",
         "<div",
         "<!-- unfinished",
-        "<1>",
         "<div answer=>",
         "<div :[answer>",
         "{{ answer",
@@ -147,6 +146,78 @@ fn l1_parser_template_diagnostics_match_the_preserved_parser() {
         })
         .collect::<std::vec::Vec<_>>();
     assert!(mismatches.is_empty(), "{}", mismatches.join("\n"));
+}
+
+#[test]
+fn reports_tag_open_errors_the_preserved_parser_recovers_silently() {
+    let invalid_first = |start| Observed {
+        message: "Invalid first character of tag name.".into(),
+        severity: Severity::Error,
+        start,
+        end: start + 1,
+    };
+    let mut expected = legacy("<1>");
+    expected.push(invalid_first(0));
+    assert_eq!(l1("<1>"), expected);
+
+    let source = "<p>a < b</p><p>a <= b</p><!- note --><p>x</p><textarea>a < b</textarea><p>{{ a < b }}</p><p v-pre>a <- b</p>";
+    let actual = l1(source);
+    let opened = |text: &str| {
+        let start = source.find(text).unwrap() as u32;
+        Observed {
+            message: "Incorrectly opened comment.".into(),
+            severity: Severity::Error,
+            start,
+            end: start + text.len() as u32,
+        }
+    };
+    assert_eq!(
+        actual,
+        vec![
+            invalid_first(5),
+            invalid_first(17),
+            opened("<!- note -->"),
+            invalid_first(source.find("a <- b").unwrap() as u32 + 2),
+        ]
+    );
+}
+
+#[test]
+fn reports_invalid_numeric_character_references() {
+    let source = "<p>&#; &#x; &#1234567; &#0; &#3; &#xD800; &#xFFFE; &#65 &#9; &#x41;</p><p title=\"&#0;\">x</p>";
+    let actual = l1(source);
+    assert_eq!(
+        actual
+            .iter()
+            .map(|diagnostic| (
+                diagnostic.message.as_str(),
+                &source[diagnostic.start as usize..diagnostic.end as usize]
+            ))
+            .collect::<Vec<_>>(),
+        vec![
+            ("Numeric character reference has no digits.", "&#"),
+            ("Numeric character reference has no digits.", "&#x"),
+            (
+                "Character reference outside the Unicode range.",
+                "&#1234567;"
+            ),
+            ("Null character reference.", "&#0;"),
+            ("Control character reference.", "&#3;"),
+            ("Surrogate character reference.", "&#xD800;"),
+            ("Noncharacter character reference.", "&#xFFFE;"),
+            ("Missing semicolon after character reference.", "&#65"),
+            ("Null character reference.", "&#0;"),
+        ]
+    );
+}
+
+#[test]
+fn accepts_empty_interpolations_and_line_comments_vue_compiles() {
+    let accepted = "<p>{{ }}</p><p>{{}}</p><p :id=\"\n  id // the id\n\">x</p><p v-if=\"ok // loaded\n\">y</p><p>{{ a // c\n + 1 }}</p>";
+    assert_eq!(l1(accepted), Vec::<Observed>::new());
+
+    let rejected = "<p :id=\"id // same line\">x</p><p>{{ id // c\n}}</p><p>{{ /* c */ }}</p>";
+    assert_eq!(l1(rejected).len(), 3, "{:?}", l1(rejected));
 }
 
 #[test]
