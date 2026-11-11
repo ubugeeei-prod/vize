@@ -1,0 +1,31 @@
+<template>
+  <div>
+    <div>
+      <div>
+        <div>
+          <div
+            v-if="
+              modeStore.get() ===
+              DisplayMode.BulkUpdateOfTheSelectedRowsInTheCurrentViewWithArchivedRows
+            "
+            v-show="
+              isTheSelectedRowVisibleInTheCurrentWorkspace &&
+              isTheOtherRowVisibleInTheCurrentView &&
+              true
+            "
+            class="row"
+            :data-index="
+              store.progressOfTheView
+                .selectedIndexOfThePaginationInTheCurrentWorkspaceForArchivedRows.value
+            "
+            :title="
+              selectedRowOwner?.displayName ??
+              fallbackOwnerDisplayNameForRowsInTheCurrentWorkspace ??
+              '-'
+            "
+          />
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
