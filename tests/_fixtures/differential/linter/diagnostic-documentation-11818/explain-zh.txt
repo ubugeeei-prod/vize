@@ -7,6 +7,15 @@ compiler/abrupt-closing-of-empty-comment · 编译器错误
 
 帮助:
   注释必须写成 <!-- … -->；<!--> 和 <!---> 会过早结束注释
+=== compiler/absence-of-digits-in-numeric-character-reference
+compiler/absence-of-digits-in-numeric-character-reference · 编译器错误
+数字字符引用缺少数字。
+
+阶段: surface
+严重级别: 错误
+
+帮助:
+  请写出码点的数字，例如 &#38; 或 &#x26;，或将开头的 & 转义为 &amp;
 === compiler/cache-handler-not-supported
 compiler/cache-handler-not-supported · 编译器错误
 此模式不支持 cacheHandlers 选项。
@@ -25,6 +34,24 @@ CDATA 区块只能在 XML 上下文中使用。
 
 帮助:
   <![CDATA[ … ]]> 只能用在 <svg> 或 <math> 内部；请改为转义文本
+=== compiler/character-reference-outside-unicode-range
+compiler/character-reference-outside-unicode-range · 编译器错误
+字符引用超出 Unicode 范围。
+
+阶段: surface
+严重级别: 错误
+
+帮助:
+  请使用不大于 &#x10FFFF; 的码点
+=== compiler/control-character-reference
+compiler/control-character-reference · 编译器错误
+控制字符引用。
+
+阶段: surface
+严重级别: 错误
+
+帮助:
+  请删除该引用，或写出想要显示的字符
 === compiler/duplicate-attribute
 compiler/duplicate-attribute · 编译器错误
 属性重复。
@@ -247,6 +274,24 @@ compiler/nested-comment · 编译器错误
 
 帮助:
   注释中不能包含 <!--；请先闭合外层注释
+=== compiler/noncharacter-character-reference
+compiler/noncharacter-character-reference · 编译器错误
+非字符字符引用。
+
+阶段: surface
+严重级别: 错误
+
+帮助:
+  请删除该引用；非字符不用于交换
+=== compiler/null-character-reference
+compiler/null-character-reference · 编译器错误
+空字符引用。
+
+阶段: surface
+严重级别: 错误
+
+帮助:
+  请删除该引用；U+0000 会显示为 U+FFFD
 === compiler/prefix-id-not-supported
 compiler/prefix-id-not-supported · 编译器错误
 此模式不支持 prefixIdentifiers 选项。
@@ -265,6 +310,15 @@ compiler/scope-id-not-supported · 编译器错误
 
 帮助:
   作用域样式需要模块模式；请去掉 scopeId 选项或切换模式
+=== compiler/surrogate-character-reference
+compiler/surrogate-character-reference · 编译器错误
+代理项字符引用。
+
+阶段: surface
+严重级别: 错误
+
+帮助:
+  请引用完整的码点（例如 &#x1F600;），而不是代理项的一半
 === compiler/unexpected-character-in-attribute-name
 compiler/unexpected-character-in-attribute-name · 编译器错误
 属性名中出现了意外的字符。
@@ -3714,8 +3768,11 @@ script/valid-next-tick · lint 规则
 错误示例:
   import { nextTick } from 'vue'
   
-  nextTick()          // result ignored
-  this.$nextTick()    // result ignored
+  nextTick()               // result ignored
+  nextTick().catch(fail)   // still not awaited
+  await nextTick(focus)    // callback and await
+  nextTick(focus, other)   // too many arguments
+  await Promise.all([nextTick])
 
 正确示例:
   import { nextTick } from 'vue'
