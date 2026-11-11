@@ -85,6 +85,7 @@ export async function runTools(
           "**/.git/**",
           "**/.vize/**",
           ...(metadata.fmtIgnorePatterns ?? []),
+          ...(metadata.vueFmtIgnorePatterns ?? []),
         ],
       });
       const vue = files.filter((file) => file.endsWith(".vue"));

@@ -75,13 +75,18 @@ pub(super) fn parse(resolver: &TypeResolver, content: &str) -> Vec<TypeProperty>
                 if in_line_comment {
                     if character == '\n' {
                         in_line_comment = false;
-                        push_newline(
-                            resolver,
-                            &mut current,
-                            &mut properties,
-                            template_braces,
-                            depth,
-                        );
+                        // The newline belongs to the comment. It separates
+                        // members only when the property's type is already
+                        // complete and the next token does not continue a
+                        // union. `| // cats \n Cat` is still one member.
+                        let keep = comment_keeps_member(template_braces, depth, &current, &chars);
+                        if keep {
+                            if !current.ends_with(|ch: char| ch.is_whitespace()) {
+                                current.push(' ');
+                            }
+                        } else {
+                            push_property(resolver, &mut current, &mut properties);
+                        }
                     }
                     continue;
                 }
@@ -90,14 +95,6 @@ pub(super) fn parse(resolver: &TypeResolver, content: &str) -> Vec<TypeProperty>
                         chars.next();
                         in_block_comment = false;
                         current.push(' ');
-                    } else if character == '\n' {
-                        push_newline(
-                            resolver,
-                            &mut current,
-                            &mut properties,
-                            template_braces,
-                            depth,
-                        );
                     }
                     continue;
                 }
@@ -184,18 +181,20 @@ pub(super) fn parse(resolver: &TypeResolver, content: &str) -> Vec<TypeProperty>
     properties
 }
 
-fn push_newline(
-    resolver: &TypeResolver,
-    current: &mut String,
-    properties: &mut Vec<TypeProperty>,
+fn comment_keeps_member(
     template_braces: Option<usize>,
     depth: i32,
-) {
-    if template_braces.is_none() && depth == 0 {
-        push_property(resolver, current, properties);
-    } else {
-        current.push('\n');
-    }
+    current: &str,
+    chars: &std::iter::Peekable<std::str::Chars<'_>>,
+) -> bool {
+    template_braces.is_some() || depth != 0 || member_awaits_type(current) || union_continues(chars)
+}
+
+/// A comment newline is not a member separator while the property is still
+/// waiting for its type, including the operand of a trailing `|` or `&`.
+fn member_awaits_type(current: &str) -> bool {
+    let trimmed = current.trim_end();
+    trimmed.is_empty() || trimmed.ends_with(['|', '&', ':', '?'])
 }
 
 fn union_continues(chars: &std::iter::Peekable<std::str::Chars<'_>>) -> bool {

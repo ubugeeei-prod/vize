@@ -173,6 +173,30 @@ void test("fmt.ignorePatterns excludes Vue files from check and write, even for 
   });
 });
 
+void test("vue.ignores excludes Vue files before native fmt can warn about them", async () => {
+  await project(async () => {
+    const calls: string[][] = [];
+    const execute = async (_: string, args: string[]) => {
+      calls.push(args);
+      return 0;
+    };
+    mkdirSync("legacy");
+    writeFileSync("legacy/Old.vue", "<template><div /></template>\n");
+    writeFileSync("legacy/Older.vue", "<template><div /></template>\n");
+    const metadata: VizeTaskConfig = {
+      config: {},
+      options: {},
+      vueFmtIgnorePatterns: ["legacy/**"],
+    };
+    await runTools("fmt:check", [], metadata, "vp", "native", execute);
+    assert.deepEqual(calls[0].slice(4), ["--check", "App.vue"]);
+    assert.ok(!calls.some((args) => args.some((arg) => arg.includes("legacy/"))));
+    calls.length = 0;
+    await runTools("check", [], metadata, "vp", "native", execute);
+    assert.ok(!calls.some((args) => args.some((arg) => arg.includes("legacy/"))));
+  });
+});
+
 void test("lint presentation and ordered host ignores reach only the native linter", async () => {
   await project(async () => {
     const calls: string[][] = [];

@@ -42,7 +42,7 @@ Options:
           Report `eslint-disable` template comments that suppressed nothing
 
   -q, --quiet
-          Quiet mode - only show summary
+          Report errors only
 
       --help-level <HELP_LEVEL>
           Help display level: full (default), short, none
