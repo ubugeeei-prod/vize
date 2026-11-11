@@ -121,9 +121,12 @@ pub(super) fn script_rule_may_match(rule_name: &str, source: &str) -> bool {
                 || (source_may_declare_emits(bytes) && contains(bytes, b"{"))
         }
         RULE_REQUIRE_VALID_DEFAULT_PROP => {
-            source_may_declare_props(bytes)
-                && contains(bytes, b"type")
-                && contains(bytes, b"default")
+            // `withDefaults` and `defineModel<T>` carry a default without the
+            // words `type` and `default` both appearing in the script.
+            contains(bytes, b"defineModel")
+                || contains(bytes, b"withDefaults")
+                || contains(bytes, b"defineProps")
+                || (source_may_declare_props(bytes) && contains(bytes, b"default"))
         }
         // A sibling `export default { props }` decides whether an empty macro
         // declares nothing, so that block is parsed too.

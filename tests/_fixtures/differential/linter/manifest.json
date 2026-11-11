@@ -4695,6 +4695,48 @@
       }
     },
     {
+      "id": "linter/patina/compat-valid-default-12744",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "patina-compat-valid-default-12744",
+        "files": [
+          {
+            "path": "App.vue.txt",
+            "role": "third-party-valid-default-reproduction",
+            "sha256": "04e88939ff1a88341407d578ee5e120624a9fc59d61985efe13e275db2e2edcd"
+          },
+          {
+            "path": "Destructure.vue.txt",
+            "role": "third-party-valid-default-reproduction",
+            "sha256": "1b37bd834544a4deefbf295342cb7dad6912b40390669a6f53f87a268ebcbbcf"
+          },
+          {
+            "path": "WithDefaults.vue.txt",
+            "role": "third-party-valid-default-reproduction",
+            "sha256": "cc527e5ac5b4e44fe5f0144817f8bf4c1917d9753bd148c58e36401996bd2b8c"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/patina/directive-parity-12723",
       "state": "active",
       "targets": [
