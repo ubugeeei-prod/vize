@@ -403,28 +403,4 @@ static ENTRIES: &[(&str, &str, &str, &str)] = &[
         "参照を削除してください。非文字は交換用ではありません",
         "请删除该引用；非字符不用于交换",
     ),
-    (
-        "compiler/control-character-in-input-stream.message",
-        "Control character in input stream.",
-        "入力ストリームに制御文字があります。",
-        "输入流中有控制字符。",
-    ),
-    (
-        "compiler/control-character-in-input-stream.help",
-        "remove the control character; it is not visible and is not valid HTML text",
-        "制御文字を削除してください。表示されず、HTML のテキストとしても不正です",
-        "请删除该控制字符；它不可见，也不是合法的 HTML 文本",
-    ),
-    (
-        "compiler/noncharacter-in-input-stream.message",
-        "Noncharacter in input stream.",
-        "入力ストリームに非文字があります。",
-        "输入流中有非字符。",
-    ),
-    (
-        "compiler/noncharacter-in-input-stream.help",
-        "remove the noncharacter; Unicode noncharacters are not for interchange",
-        "非文字を削除してください。Unicode の非文字は交換用ではありません",
-        "请删除该非字符；Unicode 非字符不用于交换",
-    ),
 ];
