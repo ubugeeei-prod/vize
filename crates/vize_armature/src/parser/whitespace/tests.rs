@@ -355,11 +355,18 @@ fn comment_adjacent_condense_removes_spaces_but_preserve_keeps_them() {
 
 #[test]
 fn comment_adjacency_keeps_meaningful_unicode_text_and_pre_content() {
-    for text in ["hello", "\u{00a0}", "\u{0085}", "\u{2003}"] {
+    for (text, expected_errors) in [
+        ("hello", &[][..]),
+        ("\u{00a0}", &[][..]),
+        // NEL is a C1 control: reported (#12860) yet kept as text.
+        ("\u{0085}", &[crate::ErrorCode::ControlCharacterInInputStream][..]),
+        ("\u{2003}", &[][..]),
+    ] {
         let arena = Allocator::new();
         let source = vize_l0::cstr!("<!--a-->{text}<div></div>");
         let (root, errors) = crate::parse_with_options(&arena, &source, ParserOptions::default());
-        assert!(errors.is_empty(), "{errors:?}");
+        let codes: Vec<_> = errors.iter().map(|error| error.code).collect();
+        assert_eq!(codes, expected_errors, "{errors:?}");
         assert_eq!(root.children.len(), 3);
         let TemplateChildNode::Text(node) = &root.children[1] else {
             panic!("meaningful text must remain a real sibling");

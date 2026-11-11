@@ -58,7 +58,7 @@ fn object_v_on_stays_between_independently_sorted_event_groups() {
 
     assert_eq!(
         first.as_str(),
-        r#"<button @keyup="up" @click="click" v-on="listeners" @mouseup="up" @mousedown="down"></button>"#
+        r#"<button @click="click" @keyup="up" v-on="listeners" @mousedown="down" @mouseup="up"></button>"#
     );
     assert_eq!(first, second);
 }
@@ -99,7 +99,12 @@ fn custom_directive_prefixes_remain_opaque() {
     let first = format_template(source, &options).unwrap();
     let second = format_template(&first, &options).unwrap();
 
-    assert_eq!(first.as_str(), source);
+    // Opaque custom directives keep their values unformatted and, being
+    // static directives, sort by name within their group (#12826).
+    assert_eq!(
+        first.as_str(),
+        r#"<Comp v-binding="a+b" v-forge="a+b" v-iffoo="a+b" v-models="a+b" v-onboarding="a+b" v-showcase="a+b" />"#
+    );
     assert_eq!(first, second);
 }
 
