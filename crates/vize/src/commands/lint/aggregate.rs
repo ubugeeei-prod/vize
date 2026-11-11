@@ -125,9 +125,20 @@ pub(super) fn should_retain_file_results(render_details: bool, cross_file_enable
     render_details || cross_file_enabled
 }
 
+/// `--quiet` drops warnings and still prints the remaining errors in every format.
 #[inline]
-pub(super) fn should_render_details(format: OutputFormat, quiet: bool) -> bool {
-    format.renders_details_when_quiet() || !quiet
+pub(super) fn should_render_details(_format: OutputFormat, _quiet: bool) -> bool {
+    true
+}
+
+pub(super) fn retain_quiet_errors(results: &mut [CliLintFileResult]) {
+    for (_, _, _, result) in results {
+        result
+            .diagnostics
+            .retain(|diagnostic| diagnostic.severity == Severity::Error);
+        result.error_count = result.diagnostics.len();
+        result.warning_count = 0;
+    }
 }
 
 #[expect(clippy::disallowed_macros, reason = "fixtures use std strings")]

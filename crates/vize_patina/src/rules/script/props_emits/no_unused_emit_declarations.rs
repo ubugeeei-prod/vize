@@ -349,7 +349,8 @@ enum LocalType<'a> {
 
 include!("no_unused_emit_declarations/type_events.rs");
 /// Walks the program collecting the first string-literal argument of every call
-/// to the captured emit function (`emit('change')`) after its declaration.
+/// to the captured emit function (`emit('change')`). A call inside a function
+/// declared above `defineEmits` still counts: the function runs after setup.
 struct EmittedCollector<'a, 'set> {
     emit_name: &'a str,
     used: &'set mut FxHashSet<CompactString>,
@@ -368,7 +369,7 @@ impl<'a> Visit<'a> for EmittedCollector<'_, '_> {
             }
             _ => None,
         };
-        if direct_emit_callee.is_some_and(|span| span.start > self.after)
+        if direct_emit_callee.is_some()
             && let Some(Argument::StringLiteral(literal)) = it.arguments.first()
         {
             self.used.insert(CompactString::new(literal.value.as_str()));

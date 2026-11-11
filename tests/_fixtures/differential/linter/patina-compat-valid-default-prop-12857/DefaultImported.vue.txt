@@ -1,0 +1,9 @@
+<script setup lang="ts">
+import type { CardProps } from "./types";
+
+const { count = "many", label = 3, size } = defineProps<CardProps>();
+</script>
+
+<template>
+  <p>{{ count }} {{ label }} {{ size }}</p>
+</template>
