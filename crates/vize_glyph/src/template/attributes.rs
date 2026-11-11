@@ -68,21 +68,28 @@ fn sort_attribute_segment(tag_name: &str, attrs: &mut [ParsedAttribute], options
             // attributes. The tag-aware rank deliberately does not apply to
             // PascalCase Vue components.
             let merge_bind = options.merge_bind_and_non_bind_attrs;
+            let ranked = has_native_attribute_semantic_ranks(tag_name);
             attrs.sort_unstable_by(|a, b| {
-                let (a_group, a_base) = attr_sort_key(&a.name, merge_bind);
-                let (b_group, b_base) = attr_sort_key(&b.name, merge_bind);
+                // Most comparisons end at the priority group, so the name
+                // keys are derived only when it ties.
                 a.priority
                     .cmp(&b.priority)
                     .then_with(|| {
+                        if !ranked {
+                            return std::cmp::Ordering::Equal;
+                        }
                         native_attribute_semantic_rank(tag_name, &a.name)
                             .cmp(&native_attribute_semantic_rank(tag_name, &b.name))
                     })
-                    .then(a_group.cmp(&b_group))
                     .then_with(|| {
-                        a_base
-                            .bytes()
-                            .map(|byte| byte.to_ascii_lowercase())
-                            .cmp(b_base.bytes().map(|byte| byte.to_ascii_lowercase()))
+                        let (a_group, a_base) = attr_sort_key(&a.name, merge_bind);
+                        let (b_group, b_base) = attr_sort_key(&b.name, merge_bind);
+                        a_group.cmp(&b_group).then_with(|| {
+                            a_base
+                                .bytes()
+                                .map(|byte| byte.to_ascii_lowercase())
+                                .cmp(b_base.bytes().map(|byte| byte.to_ascii_lowercase()))
+                        })
                     })
                     .then(a.original_index.cmp(&b.original_index))
             });
@@ -110,31 +117,34 @@ fn native_attribute_semantic_rank(tag_name: &str, attr_name: &str) -> u8 {
     }
 }
 
+/// Whether [`native_attribute_semantic_rank`] ranks any attribute of this tag.
+fn has_native_attribute_semantic_ranks(tag_name: &str) -> bool {
+    matches!(tag_name, "button")
+}
+
 /// A runtime binding, custom directive, dynamic argument, or mustache-backed
 /// attribute can observe authored order or expand to runtime names, so each
 /// bounds a sortable run.
 pub(crate) fn is_order_sensitive_attribute(
-    name: &str,
     head: Option<&DirectiveName>,
+    kind: Option<DirectiveKind>,
     value: Option<&str>,
 ) -> bool {
-    if value.is_some_and(|value| value.contains("{{")) {
-        return true;
-    }
-    let Some(head) = head else {
-        return false;
+    let bounds_by_directive = match (head, kind) {
+        (Some(head), Some(kind)) => match head.arg {
+            Some(ArgSyntax::Dynamic(_)) => true,
+            None => matches!(
+                kind,
+                DirectiveKind::Bind | DirectiveKind::On | DirectiveKind::Custom
+            ),
+            Some(ArgSyntax::Static(_)) => {
+                matches!(kind, DirectiveKind::Bind | DirectiveKind::Custom)
+            }
+        },
+        _ => false,
     };
-    let kind = DirectiveKind::of(head, name);
-    match head.arg {
-        Some(ArgSyntax::Dynamic(_)) => true,
-        None => matches!(
-            kind,
-            DirectiveKind::Bind | DirectiveKind::On | DirectiveKind::Custom
-        ),
-        Some(ArgSyntax::Static(_)) => {
-            matches!(kind, DirectiveKind::Bind | DirectiveKind::Custom)
-        }
-    }
+    // The value is scanned only when the directive itself does not decide.
+    bounds_by_directive || value.is_some_and(|value| value.contains("{{"))
 }
 
 fn has_duplicate_static_names(attrs: &[ParsedAttribute]) -> bool {
@@ -184,10 +194,15 @@ fn attr_sort_key(name: &str, merge_bind: bool) -> (u8, &str) {
 #[cfg(test)]
 pub(crate) fn attribute_priority(name: &str) -> u8 {
     let head = directive_head(name);
-    attribute_priority_with_head(name, head.as_ref())
+    let kind = head.as_ref().map(|head| DirectiveKind::of(head, name));
+    attribute_priority_with_head(name, head.as_ref(), kind)
 }
 
-pub(crate) fn attribute_priority_with_head(name: &str, head: Option<&DirectiveName>) -> u8 {
+pub(crate) fn attribute_priority_with_head(
+    name: &str,
+    head: Option<&DirectiveName>,
+    kind: Option<DirectiveKind>,
+) -> u8 {
     if name == "is" {
         return 0;
     }
@@ -197,10 +212,10 @@ pub(crate) fn attribute_priority_with_head(name: &str, head: Option<&DirectiveNa
     if matches!(name, "ref" | "key" | "slot" | "slot-scope") {
         return 5;
     }
-    let Some(head) = head else {
+    let (Some(head), Some(kind)) = (head, kind) else {
         return 8;
     };
-    match DirectiveKind::of(head, name) {
+    match kind {
         // Patina currently keeps property shorthand in OtherAttrs.
         DirectiveKind::Bind if head.prefix == DirectivePrefix::Prop => 8,
         DirectiveKind::Bind => match static_directive_argument(name, head) {

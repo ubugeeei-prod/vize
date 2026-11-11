@@ -57,20 +57,22 @@ pub(crate) fn normalize_attribute_with_vue_version(
         }
     });
 
+    // The priority group and the run boundary read the same directive kind.
+    let kind = normalized_head
+        .as_ref()
+        .map(|head| DirectiveKind::of(head, &normalized_name));
     let priority = if let Some(ref groups) = options.attribute_groups {
         custom_attribute_priority(&normalized_name, groups)
     } else {
         usize::from(attribute_priority_with_head(
             &normalized_name,
             normalized_head.as_ref(),
+            kind,
         ))
     };
 
-    let order_sensitive = is_order_sensitive_attribute(
-        &normalized_name,
-        normalized_head.as_ref(),
-        formatted_value.as_deref(),
-    );
+    let order_sensitive =
+        is_order_sensitive_attribute(normalized_head.as_ref(), kind, formatted_value.as_deref());
 
     (
         normalized_name,
