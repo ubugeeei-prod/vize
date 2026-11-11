@@ -2996,7 +2996,7 @@
           {
             "path": "explain-en.txt",
             "role": "whole-current-explain-oracle",
-            "sha256": "6a29105bdcdd9f8e4a188613ed7b11b4f63bec3ac80dcbbc98af75982a035b05"
+            "sha256": "7013bf1c83b557198277ba3ff257b3f5944187bce7c6a4f5fe8e47407f6486a0"
           },
           {
             "path": "explain-ja.txt",

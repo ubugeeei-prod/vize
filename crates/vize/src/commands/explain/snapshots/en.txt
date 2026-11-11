@@ -5070,7 +5070,7 @@ help:
   Rename the component to avoid using reserved names
 === vue/no-restricted-syntax
 vue/no-restricted-syntax · lint rule
-Disallow configured syntax in template expressions
+Disallow configured syntax in the template
 
 tier: complete
 domain: simple interpolation and directive expressions with a retained JavaScript AST, using default rule behavior or the typed options Patina exposes; compound expressions and unsupported selector syntax are outside

@@ -154,7 +154,7 @@ pub(crate) static ENTRIES: &[(&str, &str, &str, &str)] = &[
     ),
     (
         "vue/no-restricted-syntax.description",
-        "Disallow configured syntax in template expressions",
+        "Disallow configured syntax in the template",
         "テンプレート式で設定された構文を禁止する",
         "禁止在模板表达式中使用配置的语法",
     ),

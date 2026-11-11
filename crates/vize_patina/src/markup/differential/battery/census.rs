@@ -235,7 +235,9 @@ pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
         // Label association parity adds one helper-driven call.
         + 1
         // Accessibility and explicit-slot parity add three fixture calls.
-        + 3,
+        + 3
+        // Whole-template esquery matching adds one helper-driven fixture call.
+        + 1,
     rule_fixture_skipped: 87
         + 4
         + 3
@@ -287,6 +289,8 @@ pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
         // The missing end-tag parser observation remains an explicit skip.
         + 1
         // The label association observation remains an explicit skip.
+        + 1
+        // The whole-template esquery observation remains a scanner skip.
         + 1
         // Two new parity observations remain helper-driven scanner skips.
         + 2,
