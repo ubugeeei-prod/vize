@@ -53,13 +53,14 @@ fn text_and_interpolation_boundaries_do_not_gain_runtime_whitespace() {
 }
 
 #[test]
-fn static_argument_bindings_sort_by_group_and_name() {
-    // Static-argument bindings, models and listeners commute (#12826): they
-    // sort into `vue/attribute-order` groups and by name within each group.
+fn runtime_bindings_and_custom_directives_remain_in_authored_order() {
+    // Static argument names do not make binding expressions or custom
+    // directive hooks independent. Preserve their authored evaluation order.
     let source = concat!(
         r#"<Widget :z="first()" :a="second()" "#,
         r#":getter="observed" :assigned="value = next" :updated="count++" "#,
-        r#"v-model="model" @z="onZ()" @a="onA()" />"#,
+        r#"v-model="model" @z="onZ()" @a="onA()" "#,
+        r#"v-observe:z="third()" v-observe:a="fourth()" />"#,
     );
     let formatted = format(source);
     snapshot_bytes(
@@ -67,28 +68,19 @@ fn static_argument_bindings_sort_by_group_and_name() {
         &formatted,
     );
     assert_eq!(format(&formatted), formatted);
-    assert_eq!(
-        formatted,
-        concat!(
-            "<Widget\n",
-            "  v-model=\"model\"\n",
-            "  :a=\"second()\"\n",
-            "  :assigned=\"value = next\"\n",
-            "  :getter=\"observed\"\n",
-            "  :updated=\"count++\"\n",
-            "  :z=\"first()\"\n",
-            "  @a=\"onA()\"\n",
-            "  @z=\"onZ()\"\n",
-            "/>",
-        )
-    );
+    let bindings = [":z=", ":a=", ":getter=", ":assigned=", ":updated="];
+    let binding_positions = bindings.map(|name| formatted.find(name).unwrap());
+    assert!(binding_positions.windows(2).all(|pair| pair[0] < pair[1]));
+    let custom_directives = ["v-observe:z=", "v-observe:a="];
+    let custom_positions = custom_directives.map(|name| formatted.find(name).unwrap());
+    assert!(custom_positions.windows(2).all(|pair| pair[0] < pair[1]));
 }
 
 #[test]
 fn literal_attributes_sort_only_inside_safe_unique_runs() {
     assert_fixed_point(
         r#"<Widget :value="read()" class="box" id="root" :next="write()" />"#,
-        r#"<Widget id="root" class="box" :next="write()" :value="read()" />"#,
+        r#"<Widget :value="read()" id="root" class="box" :next="write()" />"#,
     );
     assert_fixed_point(
         r#"<Widget class="first" class="second" :value="read()" />"#,

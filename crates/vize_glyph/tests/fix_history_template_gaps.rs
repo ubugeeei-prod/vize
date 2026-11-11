@@ -48,22 +48,22 @@ fn legacy_bound_slots_keep_their_public_ordering_boundaries() {
         (
             "history_template_bound_slot.txt",
             r#"<Comp class="box" :slot="slotName" id="after"></Comp>"#,
-            r#"<Comp id="after" :slot="slotName" class="box"></Comp>"#,
+            r#"<Comp class="box" :slot="slotName" id="after"></Comp>"#,
         ),
         (
             "history_template_longhand_bound_slot.txt",
             r#"<Comp class="box" v-bind:slot="slotName" id="after"></Comp>"#,
-            r#"<Comp id="after" :slot="slotName" class="box"></Comp>"#,
+            r#"<Comp class="box" :slot="slotName" id="after"></Comp>"#,
         ),
         (
             "history_template_bound_slot_scope.txt",
             r#"<Comp class="box" :slot-scope="scope" id="after"></Comp>"#,
-            r#"<Comp id="after" :slot-scope="scope" class="box"></Comp>"#,
+            r#"<Comp class="box" :slot-scope="scope" id="after"></Comp>"#,
         ),
         (
             "history_template_longhand_bound_slot_scope.txt",
             r#"<Comp class="box" v-bind:slot-scope="scope" id="after"></Comp>"#,
-            r#"<Comp id="after" :slot-scope="scope" class="box"></Comp>"#,
+            r#"<Comp class="box" :slot-scope="scope" id="after"></Comp>"#,
         ),
     ] {
         assert_eq!(template(name, source, &options).as_str(), expected);

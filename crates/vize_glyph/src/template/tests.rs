@@ -430,11 +430,10 @@ fn test_as_written_sort_within_group() {
 
 #[test]
 fn test_merge_bind_and_non_bind_false() {
-    // Static-argument bindings commute (#12826): static attributes come first.
+    // Runtime bindings bound each sortable literal run.
     let source = r#"<div :class="cls" class="base" :style="s" style="color:red"></div>"#;
-    let expected = r#"<div class="base" style="color:red" :class="cls" :style="s"></div>"#;
     let result = format_template_content(source, &FormatOptions::default()).unwrap();
-    assert_eq!(result.as_str(), expected);
+    assert_eq!(result.as_str(), source);
 }
 
 #[test]

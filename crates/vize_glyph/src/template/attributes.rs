@@ -39,9 +39,10 @@ pub(crate) fn sort_attributes(
     attrs: &mut [ParsedAttribute],
     options: &FormatOptions,
 ) {
-    // A bare `v-bind`/`v-on` object or a dynamic argument merges with its
-    // neighbors, so those stay put. Static directives and static arguments
-    // commute and follow `vue/attribute-order` inside each run (#12826).
+    // Runtime bindings and custom directive hooks can observe authored order,
+    // while a bare `v-bind`/`v-on` object or a dynamic argument can also merge
+    // with its neighbors. Keep each boundary fixed and sort only the literal
+    // runs between them.
     for segment in attrs.split_mut(|attr| attr.order_sensitive) {
         // Empty and singleton groups already have their only possible order.
         if segment.len() < 2 {
@@ -109,9 +110,9 @@ fn native_attribute_semantic_rank(tag_name: &str, attr_name: &str) -> u8 {
     }
 }
 
-/// A bare `v-bind`/`v-on` object or a dynamic argument merges with its
-/// neighbors, and a mustache in a static attribute can expand to any name at
-/// runtime, so each bounds a sortable run.
+/// A runtime binding, custom directive, dynamic argument, or mustache-backed
+/// attribute can observe authored order or expand to runtime names, so each
+/// bounds a sortable run.
 pub(crate) fn is_order_sensitive_attribute(
     name: &str,
     head: Option<&DirectiveName>,
@@ -123,13 +124,16 @@ pub(crate) fn is_order_sensitive_attribute(
     let Some(head) = head else {
         return false;
     };
+    let kind = DirectiveKind::of(head, name);
     match head.arg {
         Some(ArgSyntax::Dynamic(_)) => true,
         None => matches!(
-            DirectiveKind::of(head, name),
-            DirectiveKind::Bind | DirectiveKind::On
+            kind,
+            DirectiveKind::Bind | DirectiveKind::On | DirectiveKind::Custom
         ),
-        Some(ArgSyntax::Static(_)) => false,
+        Some(ArgSyntax::Static(_)) => {
+            matches!(kind, DirectiveKind::Bind | DirectiveKind::Custom)
+        }
     }
 }
 

@@ -99,14 +99,55 @@ void test("listbox roving focus preserves whole CLI packets across Vue, HTML, JS
   try {
     // The pinned argv passes `--quiet`, which reports errors only (#12824):
     // the listbox warning and every other warning leave the packet.
-    const expectedOriginal = [{ ...before.packet[0], messages: [], warningCount: 0 }];
+    const expectedVisible = [
+      {
+        ...before.packet[0],
+        messages: [
+          {
+            ruleId: "vue/v-on-handler-style",
+            ruleDocsPath: "docs/content/rules/vue.md",
+            severity: 1,
+            message:
+              "[vize:vue/v-on-handler-style] Prefer a method reference over an inline function or statement for this v-on handler",
+            line: 16,
+            column: 15,
+            endLine: 16,
+            endColumn: 38,
+            help: 'Write the handler as a method reference (e.g. @click="handler") instead of an inline function or statement.',
+          },
+          {
+            ruleId: "vue/v-on-handler-style",
+            ruleDocsPath: "docs/content/rules/vue.md",
+            severity: 1,
+            message:
+              "[vize:vue/v-on-handler-style] Prefer a method reference over an inline function or statement for this v-on handler",
+            line: 17,
+            column: 23,
+            endLine: 17,
+            endColumn: 46,
+            help: 'Write the handler as a method reference (e.g. @click="handler") instead of an inline function or statement.',
+          },
+        ],
+        warningCount: 2,
+      },
+    ];
+    const expectedQuiet = [{ ...before.packet[0], messages: [], warningCount: 0 }];
+    run(
+      "original-issue",
+      "opinionated-visible",
+      "CompositeWidgets.vue",
+      originalBytes,
+      before.argv.filter((argument: string) => argument !== "--quiet"),
+      expectedVisible,
+      0,
+    );
     run(
       "original-issue",
       "opinionated",
       "CompositeWidgets.vue",
       originalBytes,
       before.argv,
-      expectedOriginal,
+      expectedQuiet,
       0,
     );
     writeVueConfigFixture(temporary, {
@@ -170,7 +211,7 @@ void test("listbox roving focus preserves whole CLI packets across Vue, HTML, JS
         );
       }
     }
-    assert.equal(runs.length, 298);
+    assert.equal(runs.length, 300);
     console.log(JSON.stringify(evidence));
     for (const observed of runs) {
       const label = `${observed.id}/${observed.route}/${observed.repetition}`;

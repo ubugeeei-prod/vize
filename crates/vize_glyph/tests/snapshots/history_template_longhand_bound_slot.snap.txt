@@ -1,1 +1,1 @@
-<Comp id="after" :slot="slotName" class="box"></Comp>
+<Comp class="box" :slot="slotName" id="after"></Comp>

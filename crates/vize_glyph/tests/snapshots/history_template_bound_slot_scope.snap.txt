@@ -1,1 +1,1 @@
-<Comp id="after" :slot-scope="scope" class="box"></Comp>
+<Comp class="box" :slot-scope="scope" id="after"></Comp>
