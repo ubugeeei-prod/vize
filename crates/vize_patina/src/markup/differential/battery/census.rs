@@ -237,7 +237,9 @@ pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
         // Accessibility and explicit-slot parity add three fixture calls.
         + 3
         // Whole-template esquery matching adds one helper-driven fixture call.
-        + 1,
+        + 1
+        // Configurable component-name exemptions add four exact-name calls.
+        + 4,
     rule_fixture_skipped: 87
         + 4
         + 3

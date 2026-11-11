@@ -66,10 +66,10 @@ export const vue0Explanations: readonly ExplanationRecord[] = [
   ],
   [
     "vue/multi-word-component-names",
-    "Item.vue gives the component a single-word name.",
-    "TodoItem.vue gives the same template a multi-word component name.",
-    "Item.vue は一つの語だけのコンポーネント名です。",
-    "同じコンポーネントのファイル名を、複数の単語からなる TodoItem.vue に変更します。",
+    "Thing.vue is a single-word name and is not in the configured ignores list.",
+    "Item.vue is permitted by the exact configured Item exemption.",
+    "Thing.vue は一語の名前で、設定した除外リストにも含まれていません。",
+    "Item.vue は完全一致で設定した Item の除外により許可されます。",
   ],
   [
     "vue/mustache-interpolation-spacing",

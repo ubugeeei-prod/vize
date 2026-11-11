@@ -620,6 +620,20 @@
           },
           "additionalProperties": false
         },
+        "vue/multi-word-component-names": {
+          "type": "object",
+          "properties": {
+            "ignores": {
+              "default": [],
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "uniqueItems": true
+            }
+          },
+          "additionalProperties": false
+        },
         "vue/warn-custom-directive": {
           "type": "object",
           "properties": {

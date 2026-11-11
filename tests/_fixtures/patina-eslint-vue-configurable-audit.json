@@ -24,8 +24,8 @@
     "mapped": 70,
     "unimplemented": 39,
     "intentionalDivergence": 3,
-    "mappedWithTypedOptions": 24,
-    "mappedWithoutTypedOptions": 46
+    "mappedWithTypedOptions": 25,
+    "mappedWithoutTypedOptions": 45
   },
   "mappedWithTypedOptions": [
     ["vue/attribute-hyphenation", "vue/attribute-hyphenation"],
@@ -38,6 +38,7 @@
     ["vue/html-button-has-type", "vue/html-button-has-type"],
     ["vue/html-self-closing", "vue/html-self-closing"],
     ["vue/html-quotes", "vue/html-quotes"],
+    ["vue/multi-word-component-names", "vue/multi-word-component-names"],
     ["vue/mustache-interpolation-spacing", "vue/mustache-interpolation-spacing"],
     ["vue/no-bare-strings-in-template", "vue/no-bare-strings-in-template"],
     ["vue/no-mutating-props", "vue/no-mutating-props"],

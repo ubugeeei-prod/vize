@@ -38,6 +38,9 @@ impl ConfigLintRuleOptions {
         if let Some(options) = &overlay.no_mutating_props {
             self.no_mutating_props = Some(*options);
         }
+        if let Some(options) = &overlay.multi_word_component_names {
+            self.multi_word_component_names = Some(options.clone());
+        }
         if let Some(options) = overlay.html_button_has_type {
             self.html_button_has_type = Some(options);
         }

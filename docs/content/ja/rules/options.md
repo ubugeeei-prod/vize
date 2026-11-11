@@ -77,6 +77,7 @@ export default defineConfig({}).withVue({
 | `vue/slot-name-casing` | `"camelCase" \| "kebab-case" \| "singleword"` | 既定は `camelCase` です。描画される `<slot>` outlet の静的な名前を検査します。提供側の `v-slot` と `#name` 構文はこのルールの対象外です。 |
 | `script/define-props-destructuring` | `{ destructure?: "only-when-assigned" \| "always" \| "never" }` | 既定は `always` で、代入した呼び出しと型付きの単独呼び出しを検査します。`only-when-assigned` は単独呼び出しを除外し、`never` は props オブジェクトでの参照を要求します。Vue 3.5 の分割代入はリアクティビティを保ちます。 |
 | `vue/no-mutating-props` | `{ shallowOnly?: boolean }` | 既定は `false` です。`true` では、プロパティ自体の再代入を禁止したまま、入れ子のプロパティの変更を許可します。 |
+| `vue/multi-word-component-names` | `{ ignores?: string[] }` | 組み込みの `App` と Vue コンポーネントの除外に加えるリストで、既定は空です。重複のない名前を完全一致で指定し、PascalCase の項目は kebab-case 表記も許可します。 |
 | `vue/no-use-v-if-with-v-for` | `{ allowUsingIterationVar?: boolean }` | 既定は `false` です。`true` では、同じ要素の `v-if` が `v-for` の反復変数を参照する場合だけ許可し、無関係な条件は引き続き報告します。 |
 | `vue/enforce-style-attribute` | `{ allow?: Array<"plain" \| "scoped" \| "module"> }` | 既定は `["scoped"]` です。許可する style ブロックのモードを指定します。 |
 | `vue/no-restricted-syntax` | `Array<string \| { selector: string, message?: string }>` または `{ selectors?: Array<string \| { selector: string, message?: string }> }` | 既定は `[]` です。eslint-plugin-vue 形式で、vue-eslint-parser のテンプレート AST と各式の TS-ESTree ノードに対する esquery セレクターを、任意のメッセージとともに指定します。[対応するセレクターのサブセット](#vue-no-restricted-syntax-selectors)を参照してください。範囲外のセレクターは設定エラーになります。 |
@@ -186,6 +187,38 @@ export default defineConfig({}).withVue({
 
 ```vue
 <button type="button">Cancel</button>
+```
+
+## `vue/multi-word-component-names`
+
+プロジェクトの公開用語として意図的に使う一語のコンポーネント名を指定します。このリストは
+組み込みの `App` と Vue コンポーネントの除外に追加され、ルール自体は有効にしません。
+名前は完全一致で、PascalCase の項目は kebab-case 表記も許可します。upstream のルールは
+自動修正に対応していないため、除外していない名前は変更するか、明示的に設定します。
+
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({}).withVue({
+  linter: {
+    rules: { "vue/multi-word-component-names": "error" },
+    ruleOptions: {
+      "vue/multi-word-component-names": { ignores: ["Item"] },
+    },
+  },
+});
+```
+
+この設定で報告される例：`Thing.vue`
+
+```vue
+<template><p>Thing</p></template>
+```
+
+この設定で許可される例：`Item.vue`
+
+```vue
+<template><p>Item</p></template>
 ```
 
 ## `vue/no-use-v-if-with-v-for`

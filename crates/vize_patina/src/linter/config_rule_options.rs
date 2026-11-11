@@ -87,6 +87,9 @@ impl Linter {
                 shallow_only: value.shallow_only,
             });
         }
+        if let Some(value) = options.multi_word_component_names() {
+            self = self.with_multi_word_component_name_ignores(value.ignores.clone());
+        }
         if let Some(value) = options.html_button_has_type() {
             self = self.with_html_button_has_type_options(value.button, value.submit, value.reset);
         }
@@ -277,6 +280,9 @@ fn self_closing_style(value: ConfigSelfClosingStyle) -> HtmlSelfClosingStyle {
 
 #[cfg(test)]
 mod macro_order;
+
+#[cfg(test)]
+mod multi_word_component_names;
 
 #[cfg(test)]
 mod no_use_v_if_with_v_for;

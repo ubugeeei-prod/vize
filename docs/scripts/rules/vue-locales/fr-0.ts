@@ -46,8 +46,8 @@ export const frenchVue0 = {
   ],
   "vue/multi-word-component-names": [
     "Exiger des noms de composants composés de plusieurs mots",
-    "Item.vue donne au composant un nom composé d’un seul mot.",
-    "TodoItem.vue donne au même template un nom de composant composé de plusieurs mots.",
+    "Thing.vue est un nom composé d’un seul mot absent de la liste d’exceptions configurée.",
+    "Item.vue est autorisé par l’exception exacte Item configurée.",
   ],
   "vue/mustache-interpolation-spacing": [
     "Imposer un espacement cohérent dans les interpolations à doubles accolades",
