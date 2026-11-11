@@ -154,5 +154,29 @@ fn is_ecmascript_whitespace(character: char) -> bool {
     )
 }
 
+impl super::ConfigLintRuleOptions {
+    /// Configured style for `vue/attribute-hyphenation`.
+    #[inline]
+    pub fn attribute_hyphenation(&self) -> Option<super::HyphenationStyle> {
+        self.attribute_hyphenation
+            .as_ref()
+            .map(AttributeHyphenationConfig::style)
+    }
+
+    /// Additional literal attribute-name substrings; an empty object resets the custom list.
+    pub fn attribute_hyphenation_ignore(&self) -> Option<&[String]> {
+        self.attribute_hyphenation
+            .as_ref()
+            .and_then(AttributeHyphenationConfig::ignore)
+    }
+
+    /// Exact authored tag exemptions; an empty object resets this custom list.
+    pub fn attribute_hyphenation_ignore_tags(&self) -> Option<&[String]> {
+        self.attribute_hyphenation
+            .as_ref()
+            .and_then(AttributeHyphenationConfig::ignore_tags)
+    }
+}
+
 #[cfg(test)]
 mod tests;

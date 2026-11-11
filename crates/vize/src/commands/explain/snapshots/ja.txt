@@ -4198,6 +4198,16 @@ Vue SFC の各ブロックの最大行数を適用する
 カテゴリー: recommended
 自動修正: なし
 ドキュメント: docs/content/rules/reference/vue-max-lines-per-block.md
+=== vue/max-props
+vue/max-props · lint ルール
+Vue コンポーネントの props 数の上限を適用する
+
+精度: exact
+対象: Vue compiler macro calls in <script setup> (defineProps, defineEmits, defineOptions, defineSlots)
+重大度: 警告
+カテゴリー: recommended
+自動修正: なし
+ドキュメント: docs/content/rules/reference/vue-max-props.md
 === vue/max-template-complexity
 vue/max-template-complexity · lint ルール
 コンポーネント自身のテンプレート複雑度（循環的複雑度と認知的複雑度）に上限を設ける
@@ -4223,6 +4233,16 @@ vue/max-template-complexity · lint ルール
   <template>
     <RowList v-if="a && b" :rows="rows" />
   </template>
+=== vue/max-template-depth
+vue/max-template-depth · lint ルール
+テンプレートの最大の深さを適用する
+
+精度: exact
+対象: control flow of HTML SFC templates as lowered to L2: branches, loops, scoped slots and the operators of parsed expressions; pug and src templates are outside
+重大度: 警告
+カテゴリー: recommended
+自動修正: なし
+ドキュメント: docs/content/rules/reference/vue-max-template-depth.md
 === vue/multi-word-component-names
 vue/multi-word-component-names · lint ルール
 コンポーネント名を複数単語にすることを要求する
@@ -5053,6 +5073,96 @@ vue/no-reserved-component-names · lint ルール
 
 ヒント:
   予約名を避けるためにコンポーネント名を変更してください
+=== vue/no-restricted-block
+vue/no-restricted-block · lint ルール
+特定のブロックを禁止する
+
+精度: exact
+対象: the SFC's top-level blocks, their order and their attributes
+重大度: 警告
+カテゴリー: recommended
+自動修正: なし
+ドキュメント: docs/content/rules/reference/vue-no-restricted-block.md
+=== vue/no-restricted-call-after-await
+vue/no-restricted-call-after-await · lint ルール
+await の後に呼ぶ制限されたメソッドを禁止する
+
+精度: exact
+対象: inline SFC scripts and descriptors with lexically unshadowed Vue macros and APIs and structurally recognizable component option objects; external blocks and unresolved aliases are outside
+重大度: 警告
+カテゴリー: recommended
+自動修正: なし
+ドキュメント: docs/content/rules/reference/vue-no-restricted-call-after-await.md
+=== vue/no-restricted-class
+vue/no-restricted-class · lint ルール
+Vue コンポーネントの特定の class を禁止する
+
+精度: exact
+対象: the authored text of SFC templates and declarations: casing, quoting, spacing, order and shorthand
+重大度: 警告
+カテゴリー: recommended
+自動修正: なし
+ドキュメント: docs/content/rules/reference/vue-no-restricted-class.md
+=== vue/no-restricted-component-names
+vue/no-restricted-component-names · lint ルール
+特定のコンポーネント名を禁止する
+
+精度: exact
+対象: the syntax of <script> and <script setup> programs, without type information
+重大度: 警告
+カテゴリー: recommended
+自動修正: なし
+ドキュメント: docs/content/rules/reference/vue-no-restricted-component-names.md
+=== vue/no-restricted-component-options
+vue/no-restricted-component-options · lint ルール
+特定のコンポーネントオプションを禁止する
+
+精度: exact
+対象: the syntax of <script> and <script setup> programs, without type information
+重大度: 警告
+カテゴリー: recommended
+自動修正: なし
+ドキュメント: docs/content/rules/reference/vue-no-restricted-component-options.md
+=== vue/no-restricted-custom-event
+vue/no-restricted-custom-event · lint ルール
+特定のカスタムイベントを禁止する
+
+精度: exact
+対象: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+重大度: 警告
+カテゴリー: recommended
+自動修正: なし
+ドキュメント: docs/content/rules/reference/vue-no-restricted-custom-event.md
+=== vue/no-restricted-html-elements
+vue/no-restricted-html-elements · lint ルール
+特定の要素を禁止する
+
+精度: exact
+対象: HTML conformance of native elements with static attributes in SFC templates
+重大度: 警告
+カテゴリー: recommended
+自動修正: なし
+ドキュメント: docs/content/rules/reference/vue-no-restricted-html-elements.md
+=== vue/no-restricted-props
+vue/no-restricted-props · lint ルール
+特定の props を禁止する
+
+精度: exact
+対象: Vue compiler macro calls in <script setup> (defineProps, defineEmits, defineOptions, defineSlots)
+重大度: 警告
+カテゴリー: recommended
+自動修正: なし
+ドキュメント: docs/content/rules/reference/vue-no-restricted-props.md
+=== vue/no-restricted-static-attribute
+vue/no-restricted-static-attribute · lint ルール
+特定の属性を禁止する
+
+精度: exact
+対象: HTML conformance of native elements with static attributes in SFC templates
+重大度: 警告
+カテゴリー: recommended
+自動修正: なし
+ドキュメント: docs/content/rules/reference/vue-no-restricted-static-attribute.md
 === vue/no-restricted-syntax
 vue/no-restricted-syntax · lint ルール
 テンプレート式で設定された構文を禁止する
@@ -5073,6 +5183,16 @@ vue/no-restricted-v-bind · lint ルール
 カテゴリー: recommended
 自動修正: なし
 ドキュメント: docs/content/rules/reference/vue-no-restricted-v-bind.md
+=== vue/no-restricted-v-on
+vue/no-restricted-v-on · lint ルール
+v-on の特定の引数を禁止する
+
+精度: exact
+対象: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+重大度: 警告
+カテゴリー: recommended
+自動修正: なし
+ドキュメント: docs/content/rules/reference/vue-no-restricted-v-on.md
 === vue/no-root-v-if
 vue/no-root-v-if · lint ルール
 テンプレートの唯一のルート要素への v-if を禁止する
@@ -5309,6 +5429,16 @@ iframe要素にsandbox属性を必須にする
 
 ヒント:
   sandbox属性（最も制限的にするにはsandbox=""）を追加し、埋め込みコンテンツに必要な権限だけを再付与してください
+=== vue/no-unsupported-features
+vue/no-unsupported-features · lint ルール
+指定した版で未対応の Vue.js 構文を禁止する
+
+精度: exact
+対象: Vue compiler macro calls in <script setup> (defineProps, defineEmits, defineOptions, defineSlots)
+重大度: 警告
+カテゴリー: recommended
+自動修正: なし
+ドキュメント: docs/content/rules/reference/vue-no-unsupported-features.md
 === vue/no-unused-components
 vue/no-unused-components · lint ルール
 テンプレートで使われないコンポーネントの登録を禁止する

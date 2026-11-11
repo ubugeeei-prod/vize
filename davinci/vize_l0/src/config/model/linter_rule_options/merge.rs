@@ -107,5 +107,6 @@ impl ConfigLintRuleOptions {
         if let Some(options) = &overlay.block_lang {
             self.block_lang = Some(options.clone());
         }
+        self.configured.merge_from(&overlay.configured);
     }
 }

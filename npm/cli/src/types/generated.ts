@@ -346,6 +346,36 @@ export interface LintRuleOptions {
     script?: number;
     skipBlankLines?: boolean;
   };
+  "vue/max-props"?: {
+    maxProps?: number;
+  };
+  "vue/max-template-depth"?: {
+    maxDepth?: number;
+  };
+  "vue/no-restricted-block"?: string | string[];
+  "vue/no-restricted-call-after-await"?:
+    | {
+        module: string;
+        path?: string | string[];
+        message?: string;
+      }
+    | {
+        module: string;
+        path?: string | string[];
+        message?: string;
+      }[];
+  "vue/no-restricted-class"?: string | string[];
+  "vue/no-restricted-component-names"?: string | string[];
+  "vue/no-restricted-component-options"?: string | string[];
+  "vue/no-restricted-custom-event"?: string | string[];
+  "vue/no-restricted-html-elements"?: string | string[];
+  "vue/no-restricted-props"?: string | string[];
+  "vue/no-restricted-static-attribute"?: string | string[];
+  "vue/no-restricted-v-on"?: string | string[];
+  "vue/no-unsupported-features"?: {
+    version?: string;
+    ignores?: string[];
+  };
   "vue/enforce-style-attribute"?: {
     allow?: ("plain" | "scoped" | "module")[];
   };

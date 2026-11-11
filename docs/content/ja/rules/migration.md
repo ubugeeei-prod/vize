@@ -4,7 +4,7 @@ title: ESLint ルール移行対応表
 
 # ESLint ルール移行対応表
 
-コミットされた対応記録は 256 件で、対応付け 185 件、意図的な差異 3 件、未実装 68 件です。「対応」はルール名の対応を示し、オプション・検出・修正・適用範囲の完全な一致を保証しません。
+コミットされた対応記録は 256 件で、対応付け 198 件、意図的な差異 3 件、未実装 55 件です。「対応」はルール名の対応を示し、オプション・検出・修正・適用範囲の完全な一致を保証しません。
 
 ESLint を実行基盤として残す場合は、[`eslint.config.mjs` の flat config 連携](../guide/tool-integrations.md#eslint-の-flat-config)を優先してください。以下の Vite+ 設定は、ネイティブタスクを使う場合の代替です。
 
@@ -78,8 +78,8 @@ Vite+ の設定では Vize のルールを `withVue` の `linter.rules` に指�
 | `vue/max-attributes-per-line` | — | 未実装 |
 | `vue/max-len` | — | 未実装 |
 | `vue/max-lines-per-block` | [`vue/max-lines-per-block`](./reference/vue-max-lines-per-block.md) | 対応付け |
-| `vue/max-props` | — | 未実装 |
-| `vue/max-template-depth` | — | 未実装 |
+| `vue/max-props` | [`vue/max-props`](./reference/vue-max-props.md) | 対応付け |
+| `vue/max-template-depth` | [`vue/max-template-depth`](./reference/vue-max-template-depth.md) | 対応付け |
 | `vue/multi-word-component-names` | [`vue/multi-word-component-names`](./reference/vue-multi-word-component-names.md) | 対応付け |
 | `vue/multiline-html-element-content-newline` | — | 未実装 |
 | `vue/multiline-ternary` | — | 未実装 |
@@ -151,18 +151,18 @@ Vite+ の設定では Vize のルールを `withVue` の `linter.rules` に指�
 | `vue/no-reserved-component-names` | [`vue/no-reserved-component-names`](./reference/vue-no-reserved-component-names.md) | 対応付け |
 | `vue/no-reserved-keys` | [`script/no-reserved-keys`](./reference/script-no-reserved-keys.md) | 対応付け |
 | `vue/no-reserved-props` | [`script/no-reserved-props`](./reference/script-no-reserved-props.md) | 対応付け |
-| `vue/no-restricted-block` | — | 未実装 |
-| `vue/no-restricted-call-after-await` | — | 未実装 |
-| `vue/no-restricted-class` | — | 未実装 |
-| `vue/no-restricted-component-names` | — | 未実装 |
-| `vue/no-restricted-component-options` | — | 未実装 |
-| `vue/no-restricted-custom-event` | — | 未実装 |
-| `vue/no-restricted-html-elements` | — | 未実装 |
-| `vue/no-restricted-props` | — | 未実装 |
-| `vue/no-restricted-static-attribute` | — | 未実装 |
+| `vue/no-restricted-block` | [`vue/no-restricted-block`](./reference/vue-no-restricted-block.md) | 対応付け |
+| `vue/no-restricted-call-after-await` | [`vue/no-restricted-call-after-await`](./reference/vue-no-restricted-call-after-await.md) | 対応付け |
+| `vue/no-restricted-class` | [`vue/no-restricted-class`](./reference/vue-no-restricted-class.md) | 対応付け |
+| `vue/no-restricted-component-names` | [`vue/no-restricted-component-names`](./reference/vue-no-restricted-component-names.md) | 対応付け |
+| `vue/no-restricted-component-options` | [`vue/no-restricted-component-options`](./reference/vue-no-restricted-component-options.md) | 対応付け |
+| `vue/no-restricted-custom-event` | [`vue/no-restricted-custom-event`](./reference/vue-no-restricted-custom-event.md) | 対応付け |
+| `vue/no-restricted-html-elements` | [`vue/no-restricted-html-elements`](./reference/vue-no-restricted-html-elements.md) | 対応付け |
+| `vue/no-restricted-props` | [`vue/no-restricted-props`](./reference/vue-no-restricted-props.md) | 対応付け |
+| `vue/no-restricted-static-attribute` | [`vue/no-restricted-static-attribute`](./reference/vue-no-restricted-static-attribute.md) | 対応付け |
 | `vue/no-restricted-syntax` | [`vue/no-restricted-syntax`](./reference/vue-no-restricted-syntax.md) | 対応付け |
 | `vue/no-restricted-v-bind` | [`vue/no-restricted-v-bind`](./reference/vue-no-restricted-v-bind.md) | 対応付け |
-| `vue/no-restricted-v-on` | — | 未実装 |
+| `vue/no-restricted-v-on` | [`vue/no-restricted-v-on`](./reference/vue-no-restricted-v-on.md) | 対応付け |
 | `vue/no-root-v-if` | [`vue/no-root-v-if`](./reference/vue-no-root-v-if.md) | 対応付け |
 | `vue/no-setup-props-reactivity-loss` | [`vue/no-setup-props-reactivity-loss`](./reference/vue-no-setup-props-reactivity-loss.md) | 対応付け |
 | `vue/no-shadow-native-events` | [`vue/no-shadow-native-events`](./reference/vue-no-shadow-native-events.md) | 対応付け |
@@ -179,7 +179,7 @@ Vite+ の設定では Vize のルールを `withVue` の `linter.rules` に指�
 | `vue/no-undef-components` | [`vue/require-component-registration`](./reference/vue-require-component-registration.md) | 対応付け |
 | `vue/no-undef-directives` | — | 未実装 |
 | `vue/no-undef-properties` | — | 未実装 |
-| `vue/no-unsupported-features` | — | 未実装 |
+| `vue/no-unsupported-features` | [`vue/no-unsupported-features`](./reference/vue-no-unsupported-features.md) | 対応付け |
 | `vue/no-unused-components` | [`vue/no-unused-components`](./reference/vue-no-unused-components.md) | 対応付け |
 | `vue/no-unused-emit-declarations` | [`script/no-unused-emit-declarations`](./reference/script-no-unused-emit-declarations.md) | 対応付け |
 | `vue/no-unused-properties` | — | 意図的な差異 |

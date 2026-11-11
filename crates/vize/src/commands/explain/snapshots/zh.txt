@@ -4358,6 +4358,16 @@ vue/max-lines-per-block · lint 规则
 类别: recommended
 自动修复: 不支持
 文档: docs/content/rules/reference/vue-max-lines-per-block.md
+=== vue/max-props
+vue/max-props · lint 规则
+限制 Vue 组件的 props 数量
+
+精度层级: exact
+适用范围: Vue compiler macro calls in <script setup> (defineProps, defineEmits, defineOptions, defineSlots)
+严重级别: 警告
+类别: recommended
+自动修复: 不支持
+文档: docs/content/rules/reference/vue-max-props.md
 === vue/max-template-complexity
 vue/max-template-complexity · lint 规则
 限制组件自身模板的复杂度（圈复杂度与认知复杂度）
@@ -4383,6 +4393,16 @@ vue/max-template-complexity · lint 规则
   <template>
     <RowList v-if="a && b" :rows="rows" />
   </template>
+=== vue/max-template-depth
+vue/max-template-depth · lint 规则
+限制模板的最大深度
+
+精度层级: exact
+适用范围: control flow of HTML SFC templates as lowered to L2: branches, loops, scoped slots and the operators of parsed expressions; pug and src templates are outside
+严重级别: 警告
+类别: recommended
+自动修复: 不支持
+文档: docs/content/rules/reference/vue-max-template-depth.md
 === vue/multi-word-component-names
 vue/multi-word-component-names · lint 规则
 要求组件名为多个单词
@@ -5262,6 +5282,96 @@ vue/no-reserved-component-names · lint 规则
     <script setup>
     // 组件名为 "AppButton" 或 "CustomButton"
     </script>
+=== vue/no-restricted-block
+vue/no-restricted-block · lint 规则
+禁止特定的块
+
+精度层级: exact
+适用范围: the SFC's top-level blocks, their order and their attributes
+严重级别: 警告
+类别: recommended
+自动修复: 不支持
+文档: docs/content/rules/reference/vue-no-restricted-block.md
+=== vue/no-restricted-call-after-await
+vue/no-restricted-call-after-await · lint 规则
+禁止在 await 之后调用受限制的方法
+
+精度层级: exact
+适用范围: inline SFC scripts and descriptors with lexically unshadowed Vue macros and APIs and structurally recognizable component option objects; external blocks and unresolved aliases are outside
+严重级别: 警告
+类别: recommended
+自动修复: 不支持
+文档: docs/content/rules/reference/vue-no-restricted-call-after-await.md
+=== vue/no-restricted-class
+vue/no-restricted-class · lint 规则
+禁止 Vue 组件中的特定 class
+
+精度层级: exact
+适用范围: the authored text of SFC templates and declarations: casing, quoting, spacing, order and shorthand
+严重级别: 警告
+类别: recommended
+自动修复: 不支持
+文档: docs/content/rules/reference/vue-no-restricted-class.md
+=== vue/no-restricted-component-names
+vue/no-restricted-component-names · lint 规则
+禁止特定的组件名
+
+精度层级: exact
+适用范围: the syntax of <script> and <script setup> programs, without type information
+严重级别: 警告
+类别: recommended
+自动修复: 不支持
+文档: docs/content/rules/reference/vue-no-restricted-component-names.md
+=== vue/no-restricted-component-options
+vue/no-restricted-component-options · lint 规则
+禁止特定的组件选项
+
+精度层级: exact
+适用范围: the syntax of <script> and <script setup> programs, without type information
+严重级别: 警告
+类别: recommended
+自动修复: 不支持
+文档: docs/content/rules/reference/vue-no-restricted-component-options.md
+=== vue/no-restricted-custom-event
+vue/no-restricted-custom-event · lint 规则
+禁止特定的自定义事件
+
+精度层级: exact
+适用范围: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+严重级别: 警告
+类别: recommended
+自动修复: 不支持
+文档: docs/content/rules/reference/vue-no-restricted-custom-event.md
+=== vue/no-restricted-html-elements
+vue/no-restricted-html-elements · lint 规则
+禁止特定的元素
+
+精度层级: exact
+适用范围: HTML conformance of native elements with static attributes in SFC templates
+严重级别: 警告
+类别: recommended
+自动修复: 不支持
+文档: docs/content/rules/reference/vue-no-restricted-html-elements.md
+=== vue/no-restricted-props
+vue/no-restricted-props · lint 规则
+禁止特定的 props
+
+精度层级: exact
+适用范围: Vue compiler macro calls in <script setup> (defineProps, defineEmits, defineOptions, defineSlots)
+严重级别: 警告
+类别: recommended
+自动修复: 不支持
+文档: docs/content/rules/reference/vue-no-restricted-props.md
+=== vue/no-restricted-static-attribute
+vue/no-restricted-static-attribute · lint 规则
+禁止特定的属性
+
+精度层级: exact
+适用范围: HTML conformance of native elements with static attributes in SFC templates
+严重级别: 警告
+类别: recommended
+自动修复: 不支持
+文档: docs/content/rules/reference/vue-no-restricted-static-attribute.md
 === vue/no-restricted-syntax
 vue/no-restricted-syntax · lint 规则
 禁止在模板表达式中使用配置的语法
@@ -5282,6 +5392,16 @@ vue/no-restricted-v-bind · lint 规则
 类别: recommended
 自动修复: 不支持
 文档: docs/content/rules/reference/vue-no-restricted-v-bind.md
+=== vue/no-restricted-v-on
+vue/no-restricted-v-on · lint 规则
+禁止 `v-on` 的特定参数
+
+精度层级: exact
+适用范围: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+严重级别: 警告
+类别: recommended
+自动修复: 不支持
+文档: docs/content/rules/reference/vue-no-restricted-v-on.md
 === vue/no-root-v-if
 vue/no-root-v-if · lint 规则
 禁止在模板的唯一根元素上使用 v-if
@@ -5543,6 +5663,16 @@ vue/no-unsandboxed-iframe · lint 规则
 
 帮助:
   添加sandbox属性（最严格可用sandbox=""），并仅重新授予嵌入内容所需的能力
+=== vue/no-unsupported-features
+vue/no-unsupported-features · lint 规则
+禁止在指定版本上使用不受支持的 Vue.js 语法
+
+精度层级: exact
+适用范围: Vue compiler macro calls in <script setup> (defineProps, defineEmits, defineOptions, defineSlots)
+严重级别: 警告
+类别: recommended
+自动修复: 不支持
+文档: docs/content/rules/reference/vue-no-unsupported-features.md
 === vue/no-unused-components
 vue/no-unused-components · lint 规则
 禁止注册模板中未使用的组件

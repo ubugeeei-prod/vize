@@ -137,7 +137,7 @@ Only in `opinionated`, `nuxt` or `ecosystem`. The Presets column lists which.
 | <span id="vue-warn-custom-block"></span>[`vue/warn-custom-block`](./reference/vue-warn-custom-block.md) | Warn about custom blocks in SFC files. | `nuxt`, `opinionated` |  |
 | <span id="vue-warn-custom-directive"></span>[`vue/warn-custom-directive`](./reference/vue-warn-custom-directive.md) | Warn about custom directives that need registration. | `nuxt`, `opinionated` |  |
 
-## Opt-in (46)
+## Opt-in (59)
 
 Not in any preset. Turn them on by name in the `linter.rules` passed to `withVue`.
 
@@ -152,7 +152,9 @@ Not in any preset. Turn them on by name in the `linter.rules` passed to `withVue
 | <span id="vue-eqeqeq"></span>[`vue/eqeqeq`](./reference/vue-eqeqeq.md) | Require strict equality in template expressions. |  |
 | <span id="vue-match-component-file-name"></span>[`vue/match-component-file-name`](./reference/vue-match-component-file-name.md) | Require a component name to match its file name. |  |
 | <span id="vue-max-lines-per-block"></span>[`vue/max-lines-per-block`](./reference/vue-max-lines-per-block.md) | Enforce a maximum number of lines in each Vue SFC block. |  |
+| <span id="vue-max-props"></span>[`vue/max-props`](./reference/vue-max-props.md) | enforce maximum number of props in Vue component. |  |
 | <span id="vue-max-template-complexity"></span>[`vue/max-template-complexity`](./reference/vue-max-template-complexity.md) | Limit a component's own template complexity (cyclomatic and cognitive). |  |
+| <span id="vue-max-template-depth"></span>[`vue/max-template-depth`](./reference/vue-max-template-depth.md) | enforce maximum depth of template. |  |
 | <span id="vue-next-tick-style"></span>[`vue/next-tick-style`](./reference/vue-next-tick-style.md) | Enforce Promise-style nextTick usage. |  |
 | <span id="vue-no-bare-strings-in-template"></span>[`vue/no-bare-strings-in-template`](./reference/vue-no-bare-strings-in-template.md) | Disallow raw human-readable text in the template that should be internationalized. |  |
 | <span id="vue-no-console"></span>[`vue/no-console`](./reference/vue-no-console.md) | Disallow console access in template expressions. |  |
@@ -169,12 +171,23 @@ Not in any preset. Turn them on by name in the `linter.rules` passed to `withVue
 | <span id="vue-no-negated-condition"></span>[`vue/no-negated-condition`](./reference/vue-no-negated-condition.md) | Disallow negated ternary conditions in template expressions. |  |
 | <span id="vue-no-props-shadow"></span>[`vue/no-props-shadow`](./reference/vue-no-props-shadow.md) | Disallow setup declarations that shadow props. |  |
 | <span id="vue-no-ref-object-reactivity-loss"></span>[`vue/no-ref-object-reactivity-loss`](./reference/vue-no-ref-object-reactivity-loss.md) | Disallow copying a ref value in the same scope. |  |
+| <span id="vue-no-restricted-block"></span>[`vue/no-restricted-block`](./reference/vue-no-restricted-block.md) | disallow specific block. |  |
+| <span id="vue-no-restricted-call-after-await"></span>[`vue/no-restricted-call-after-await`](./reference/vue-no-restricted-call-after-await.md) | disallow asynchronously called restricted methods. |  |
+| <span id="vue-no-restricted-class"></span>[`vue/no-restricted-class`](./reference/vue-no-restricted-class.md) | disallow specific classes in Vue components. |  |
+| <span id="vue-no-restricted-component-names"></span>[`vue/no-restricted-component-names`](./reference/vue-no-restricted-component-names.md) | disallow specific component names. |  |
+| <span id="vue-no-restricted-component-options"></span>[`vue/no-restricted-component-options`](./reference/vue-no-restricted-component-options.md) | disallow specific component option. |  |
+| <span id="vue-no-restricted-custom-event"></span>[`vue/no-restricted-custom-event`](./reference/vue-no-restricted-custom-event.md) | disallow specific custom event. |  |
+| <span id="vue-no-restricted-html-elements"></span>[`vue/no-restricted-html-elements`](./reference/vue-no-restricted-html-elements.md) | disallow specific elements. |  |
+| <span id="vue-no-restricted-props"></span>[`vue/no-restricted-props`](./reference/vue-no-restricted-props.md) | disallow specific props. |  |
+| <span id="vue-no-restricted-static-attribute"></span>[`vue/no-restricted-static-attribute`](./reference/vue-no-restricted-static-attribute.md) | disallow specific attribute. |  |
 | <span id="vue-no-restricted-syntax"></span>[`vue/no-restricted-syntax`](./reference/vue-no-restricted-syntax.md) | Disallow configured syntax in the template. |  |
 | <span id="vue-no-restricted-v-bind"></span>[`vue/no-restricted-v-bind`](./reference/vue-no-restricted-v-bind.md) | Disallow restricted v-bind arguments. |  |
+| <span id="vue-no-restricted-v-on"></span>[`vue/no-restricted-v-on`](./reference/vue-no-restricted-v-on.md) | disallow specific argument in `v-on`. |  |
 | <span id="vue-no-setup-props-reactivity-loss"></span>[`vue/no-setup-props-reactivity-loss`](./reference/vue-no-setup-props-reactivity-loss.md) | Disallow setup prop reads that lose reactivity. |  |
 | <span id="vue-no-shadow-native-events"></span>[`vue/no-shadow-native-events`](./reference/vue-no-shadow-native-events.md) | Disallow component events that shadow native events. |  |
 | <span id="vue-no-sparse-arrays"></span>[`vue/no-sparse-arrays`](./reference/vue-no-sparse-arrays.md) | Disallow sparse arrays in template expressions. |  |
 | <span id="vue-no-static-inline-styles"></span>[`vue/no-static-inline-styles`](./reference/vue-no-static-inline-styles.md) | Disallow static inline style attributes. |  |
+| <span id="vue-no-unsupported-features"></span>[`vue/no-unsupported-features`](./reference/vue-no-unsupported-features.md) | disallow unsupported Vue.js syntax on the specified version. |  |
 | <span id="vue-no-useless-concat"></span>[`vue/no-useless-concat`](./reference/vue-no-useless-concat.md) | Disallow useless string concatenation in template expressions. |  |
 | <span id="vue-no-v-for-template-key"></span>[`vue/no-v-for-template-key`](./reference/vue-no-v-for-template-key.md) | Disallow `key` on `<template v-for>`. |  |
 | <span id="vue-object-shorthand"></span>[`vue/object-shorthand`](./reference/vue-object-shorthand.md) | Require object shorthand in template expressions. |  |

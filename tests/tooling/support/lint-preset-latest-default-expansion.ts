@@ -165,8 +165,8 @@ function inverseFormatterCompatibility(name: string, body: Buffer): Buffer {
       `${text.slice(0, opinionated)}    "script/consistent-props-emits-key-quotes",\n${text.slice(opinionated)}`,
     );
     identity(predecessor, {
-      bytes: 36357,
-      sha256: "b4343efc09307900863d5b395bb0f8a55fa7fa43d58527ff1a56b1f46c620205",
+      bytes: 36793,
+      sha256: "8ef85bb196ae091afca89dd548ac9fa8e04e7233ff5f41c2e411cb36adebe711",
     });
     return predecessor;
   }

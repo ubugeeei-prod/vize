@@ -137,7 +137,7 @@ Seulement dans `opinionated`, `nuxt` ou `ecosystem`. La colonne Préréglages in
 | <span id="vue-warn-custom-block"></span>[`vue/warn-custom-block`](./reference/vue-warn-custom-block.md) | Signaler les blocs personnalisés dans les fichiers SFC. | `nuxt`, `opinionated` |  |
 | <span id="vue-warn-custom-directive"></span>[`vue/warn-custom-directive`](./reference/vue-warn-custom-directive.md) | Signaler les directives personnalisées nécessitant un enregistrement. | `nuxt`, `opinionated` |  |
 
-## À activer (46)
+## À activer (59)
 
 Dans aucun préréglage. Activez-les par leur nom dans `linter.rules`, passé à `withVue`.
 
@@ -152,7 +152,9 @@ Dans aucun préréglage. Activez-les par leur nom dans `linter.rules`, passé à
 | <span id="vue-eqeqeq"></span>[`vue/eqeqeq`](./reference/vue-eqeqeq.md) | Exige l'égalité stricte dans les expressions du template. |  |
 | <span id="vue-match-component-file-name"></span>[`vue/match-component-file-name`](./reference/vue-match-component-file-name.md) | Exige que le nom déclaré du composant corresponde au nom du fichier. |  |
 | <span id="vue-max-lines-per-block"></span>[`vue/max-lines-per-block`](./reference/vue-max-lines-per-block.md) | Limite le nombre de lignes de chaque bloc SFC. |  |
+| <span id="vue-max-props"></span>[`vue/max-props`](./reference/vue-max-props.md) | Limite le nombre de props d'un composant Vue. |  |
 | <span id="vue-max-template-complexity"></span>[`vue/max-template-complexity`](./reference/vue-max-template-complexity.md) | Limiter la complexité propre du template d’un composant, cyclomatique et cognitive. |  |
+| <span id="vue-max-template-depth"></span>[`vue/max-template-depth`](./reference/vue-max-template-depth.md) | Limite la profondeur du template. |  |
 | <span id="vue-next-tick-style"></span>[`vue/next-tick-style`](./reference/vue-next-tick-style.md) | Exige le style Promise pour nextTick. |  |
 | <span id="vue-no-bare-strings-in-template"></span>[`vue/no-bare-strings-in-template`](./reference/vue-no-bare-strings-in-template.md) | Interdire le texte brut destiné aux utilisateurs dans les templates lorsqu’il devrait être internationalisé. |  |
 | <span id="vue-no-console"></span>[`vue/no-console`](./reference/vue-no-console.md) | Interdit l'accès à console dans les expressions du template. |  |
@@ -169,12 +171,23 @@ Dans aucun préréglage. Activez-les par leur nom dans `linter.rules`, passé à
 | <span id="vue-no-negated-condition"></span>[`vue/no-negated-condition`](./reference/vue-no-negated-condition.md) | Interdit les ternaires commençant par une condition niée. |  |
 | <span id="vue-no-props-shadow"></span>[`vue/no-props-shadow`](./reference/vue-no-props-shadow.md) | Interdit aux déclarations de script setup de masquer les props. |  |
 | <span id="vue-no-ref-object-reactivity-loss"></span>[`vue/no-ref-object-reactivity-loss`](./reference/vue-no-ref-object-reactivity-loss.md) | Interdit de copier la valeur d'une ref dans la même portée en perdant ses mises à jour réactives. |  |
+| <span id="vue-no-restricted-block"></span>[`vue/no-restricted-block`](./reference/vue-no-restricted-block.md) | Interdit le bloc configuré. |  |
+| <span id="vue-no-restricted-call-after-await"></span>[`vue/no-restricted-call-after-await`](./reference/vue-no-restricted-call-after-await.md) | Interdit d'appeler une méthode restreinte après await. |  |
+| <span id="vue-no-restricted-class"></span>[`vue/no-restricted-class`](./reference/vue-no-restricted-class.md) | Interdit la class configurée. |  |
+| <span id="vue-no-restricted-component-names"></span>[`vue/no-restricted-component-names`](./reference/vue-no-restricted-component-names.md) | Interdit le nom de composant configuré. |  |
+| <span id="vue-no-restricted-component-options"></span>[`vue/no-restricted-component-options`](./reference/vue-no-restricted-component-options.md) | Interdit l'option de composant configurée. |  |
+| <span id="vue-no-restricted-custom-event"></span>[`vue/no-restricted-custom-event`](./reference/vue-no-restricted-custom-event.md) | Interdit l'événement personnalisé configuré. |  |
+| <span id="vue-no-restricted-html-elements"></span>[`vue/no-restricted-html-elements`](./reference/vue-no-restricted-html-elements.md) | Interdit l'élément configuré. |  |
+| <span id="vue-no-restricted-props"></span>[`vue/no-restricted-props`](./reference/vue-no-restricted-props.md) | Interdit la prop configurée. |  |
+| <span id="vue-no-restricted-static-attribute"></span>[`vue/no-restricted-static-attribute`](./reference/vue-no-restricted-static-attribute.md) | Interdit l'attribut statique configuré. |  |
 | <span id="vue-no-restricted-syntax"></span>[`vue/no-restricted-syntax`](./reference/vue-no-restricted-syntax.md) | Interdit la syntaxe configurée dans les expressions du template. |  |
 | <span id="vue-no-restricted-v-bind"></span>[`vue/no-restricted-v-bind`](./reference/vue-no-restricted-v-bind.md) | Interdit les arguments v-bind restreints. |  |
+| <span id="vue-no-restricted-v-on"></span>[`vue/no-restricted-v-on`](./reference/vue-no-restricted-v-on.md) | Interdit l'argument v-on configuré. |  |
 | <span id="vue-no-setup-props-reactivity-loss"></span>[`vue/no-setup-props-reactivity-loss`](./reference/vue-no-setup-props-reactivity-loss.md) | Interdit les copies des valeurs des props de setup qui perdent leurs mises à jour réactives. |  |
 | <span id="vue-no-shadow-native-events"></span>[`vue/no-shadow-native-events`](./reference/vue-no-shadow-native-events.md) | Interdit les événements de composant qui entrent en collision avec les événements natifs. |  |
 | <span id="vue-no-sparse-arrays"></span>[`vue/no-sparse-arrays`](./reference/vue-no-sparse-arrays.md) | Interdit les tableaux creux dans les expressions du template. |  |
 | <span id="vue-no-static-inline-styles"></span>[`vue/no-static-inline-styles`](./reference/vue-no-static-inline-styles.md) | Interdire les attributs de style en ligne statiques. |  |
+| <span id="vue-no-unsupported-features"></span>[`vue/no-unsupported-features`](./reference/vue-no-unsupported-features.md) | Interdit une syntaxe encore non prise en charge sur la version Vue.js configurée. |  |
 | <span id="vue-no-useless-concat"></span>[`vue/no-useless-concat`](./reference/vue-no-useless-concat.md) | Interdit la concaténation inutile de chaînes littérales. |  |
 | <span id="vue-no-v-for-template-key"></span>[`vue/no-v-for-template-key`](./reference/vue-no-v-for-template-key.md) | Exige de placer la key de `template v-for` sur un enfant réel pour assurer la compatibilité avec Vue 2. |  |
 | <span id="vue-object-shorthand"></span>[`vue/object-shorthand`](./reference/vue-object-shorthand.md) | Exige la syntaxe courte des propriétés d'objet dans le template. |  |

@@ -14,6 +14,7 @@ use crate::String;
 mod attribute_hyphenation;
 mod casing;
 mod component_registration;
+mod configured_vue;
 mod content_directives;
 mod define_macros_order;
 mod eslint_vue_compatibility;
@@ -47,6 +48,10 @@ pub use attribute_hyphenation::{AttributeHyphenationConfig, AttributeHyphenation
 pub use casing::{
     ComponentNameInTemplateCasingOptions, CustomEventNameCasing, CustomEventNameCasingOptions,
     TemplateComponentNameCasing,
+};
+pub use configured_vue::{
+    CallAfterAwaitOptions, CallAfterAwaitSpec, ConfiguredVueRuleOptions, MaxPropsOptions,
+    MaxTemplateDepthOptions, RestrictedNames, UnsupportedFeaturesOptions,
 };
 pub use define_macros_order::DefineMacrosOrderOptions;
 pub use eslint_vue_compatibility::{
@@ -227,6 +232,9 @@ pub struct ConfigLintRuleOptions {
         skip_serializing_if = "Option::is_none"
     )]
     max_lines_per_block: Option<MaxLinesPerBlockOptions>,
+    /// Configurable Vue rules that check nothing until a project names a limit.
+    #[serde(flatten)]
+    configured: configured_vue::ConfiguredVueRuleOptions,
 }
 impl ConfigLintRuleOptions {
     /// Build full config options from the stable public subset.
@@ -289,6 +297,7 @@ impl ConfigLintRuleOptions {
             && self.block_lang.is_none()
             && self.max_lines.is_none()
             && self.max_lines_per_block.is_none()
+            && self.configured.is_empty()
     }
 
     /// Globally registered components permitted by the registration rule.
@@ -464,28 +473,6 @@ impl ConfigLintRuleOptions {
     #[inline]
     pub fn v_slot_style(&self) -> Option<VSlotStyle> {
         self.v_slot_style
-    }
-
-    /// Configured style for `vue/attribute-hyphenation`.
-    #[inline]
-    pub fn attribute_hyphenation(&self) -> Option<HyphenationStyle> {
-        self.attribute_hyphenation
-            .as_ref()
-            .map(AttributeHyphenationConfig::style)
-    }
-
-    /// Additional literal attribute-name substrings; an empty object resets the custom list.
-    pub fn attribute_hyphenation_ignore(&self) -> Option<&[String]> {
-        self.attribute_hyphenation
-            .as_ref()
-            .and_then(AttributeHyphenationConfig::ignore)
-    }
-
-    /// Exact authored tag exemptions; an empty object resets this custom list.
-    pub fn attribute_hyphenation_ignore_tags(&self) -> Option<&[String]> {
-        self.attribute_hyphenation
-            .as_ref()
-            .and_then(AttributeHyphenationConfig::ignore_tags)
     }
 }
 

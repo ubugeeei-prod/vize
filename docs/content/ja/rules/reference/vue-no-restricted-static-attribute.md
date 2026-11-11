@@ -1,0 +1,62 @@
+---
+title: "vue/no-restricted-static-attribute"
+description: "設定した属性を使う箇所を検出します。"
+---
+
+# `vue/no-restricted-static-attribute`
+
+設定した属性を使う箇所を検出します。
+
+| 既定の重大度 | プリセット | 自動修正 | オプション |
+| --- | --- | --- | --- |
+| `warning` | なし | なし | なし |
+
+適用範囲：Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。
+
+## 悪い例
+
+ボタンに禁止された data-legacy 属性があります。
+
+```vue annotate="remove:2"
+<template>
+  <button type="button" data-legacy="x">x</button>
+</template>
+```
+
+## 良い例
+
+ボタンは type だけを残します。
+
+```vue annotate="add:2"
+<template>
+  <button type="button">x</button>
+</template>
+```
+
+## 設定（Vite+）
+
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/no-restricted-static-attribute": "warn"
+    },
+    "ruleOptions": {
+      "vue/no-restricted-static-attribute": [
+        "data-legacy"
+      ]
+    }
+  },
+});
+```
+
+設定したら `vp run lint` を実行します。
+
+## 関連ページ
+
+- [Vue ルール](../vue.md)
+- [全ルール](../all.md)
+- [ソースコード](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/configured/restricted_static_attribute.rs#L13)

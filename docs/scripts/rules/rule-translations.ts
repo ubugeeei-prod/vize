@@ -14,6 +14,7 @@ import { commonVueText } from "./rule-phrases.ts";
 import type { RuleLocale } from "./rule-groups.ts";
 import { catalogueAdditionNotes, catalogueAdditionPackets } from "./catalogue-additions-locales.ts";
 import { compatibilityPackets } from "./compatibility-locales.ts";
+import { configuredPackets } from "./compatibility-configured-locales.ts";
 
 export type TranslatedLocale = Exclude<RuleLocale, "en" | "ja">;
 type Packet = readonly [purpose: string, bad: string, good: string];
@@ -25,6 +26,7 @@ const vuePackets: Record<TranslatedLocale, Record<string, Packet>> = {
     ...chineseVue2,
     ...catalogueAdditionPackets["zh-CN"],
     ...compatibilityPackets["zh-CN"],
+    ...configuredPackets["zh-CN"],
   },
   "pt-BR": {
     ...portugueseVue0,
@@ -32,6 +34,7 @@ const vuePackets: Record<TranslatedLocale, Record<string, Packet>> = {
     ...portugueseVue2,
     ...catalogueAdditionPackets["pt-BR"],
     ...compatibilityPackets["pt-BR"],
+    ...configuredPackets["pt-BR"],
   },
   fr: {
     ...frenchVue0,
@@ -39,6 +42,7 @@ const vuePackets: Record<TranslatedLocale, Record<string, Packet>> = {
     ...frenchVue2,
     ...catalogueAdditionPackets.fr,
     ...compatibilityPackets.fr,
+    ...configuredPackets.fr,
   },
 };
 const otherPackets: Record<TranslatedLocale, Record<string, Packet>> = {

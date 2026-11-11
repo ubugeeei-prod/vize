@@ -29,6 +29,13 @@ pub(super) const SEMANTIC_TEMPLATE_RULES: &[&str] = &[
 pub(super) const SHARED_SFC_DESCRIPTOR_RULES: &[&str] = &[
     "vue/block-lang",
     "vue/max-lines-per-block",
+    "vue/max-props",
+    "vue/no-restricted-block",
+    "vue/no-restricted-call-after-await",
+    "vue/no-restricted-component-names",
+    "vue/no-restricted-component-options",
+    "vue/no-restricted-props",
+    "vue/no-unsupported-features",
     "vue/dot-notation",
     "vue/eqeqeq",
     "vue/no-console",

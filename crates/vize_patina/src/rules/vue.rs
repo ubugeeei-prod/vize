@@ -106,6 +106,7 @@ mod permitted_contents;
 
 // Style rules
 mod block_lang;
+pub(crate) mod configured;
 mod line_count;
 mod match_component_file_name;
 mod max_lines;
@@ -402,4 +403,5 @@ pub(crate) fn register_opt_in(registry: &mut crate::rule::RuleRegistry) {
     register_if_missing(registry, Box::new(RequirePropComment));
     register_if_missing(registry, Box::new(MaxLines::default()));
     register_if_missing(registry, Box::new(MaxLinesPerBlock::default()));
+    configured::register_opt_in(registry);
 }
