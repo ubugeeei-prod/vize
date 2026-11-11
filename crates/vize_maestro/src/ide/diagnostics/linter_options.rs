@@ -8,9 +8,6 @@ use vize_patina::{
     rules::musea::{MuseaLintResult, MuseaLinter, PreferDesignTokensConfig},
 };
 
-mod v_slot_style;
-use self::v_slot_style::v_slot_style;
-
 const MUSEA_PREFER_DESIGN_TOKENS: &str = "musea/prefer-design-tokens";
 const SCRIPT_NO_RESTRICTED_MEMBERS: &str = "script/no-restricted-members";
 const PINIA_PREFER_STORE_TO_REFS: &str = "ecosystem/pinia-prefer-store-to-refs";
@@ -153,102 +150,40 @@ pub(super) fn musea_linter_for_uri(
     })
 }
 
+/// The typed per-rule options of the CLI and native binding, plus the
+/// components an installed vue-router or Nuxt registers globally.
 pub(super) fn apply_rule_options(
-    mut linter: vize_patina::Linter,
+    linter: vize_patina::Linter,
     options: &vize_l0::config::ConfigLintRuleOptions,
     vue_router_installed: bool,
     nuxt_installed: bool,
 ) -> vize_patina::Linter {
-    let configured = options.component_registration_globals();
-    if configured.is_some() || vue_router_installed || nuxt_installed {
-        let mut globals = configured.map(<[String]>::to_vec).unwrap_or_default();
-        if vue_router_installed {
-            globals.extend(
-                vize_patina::VUE_ROUTER_COMPONENTS
-                    .iter()
-                    .map(|name| String::from(*name)),
-            );
-        }
-        if nuxt_installed {
-            globals.extend(
-                vize_patina::NUXT_BUILTIN_COMPONENTS
-                    .iter()
-                    .map(|name| String::from(*name)),
-            );
-        }
-        linter = linter.with_component_registration_globals(globals);
+    let linter = linter.with_config_rule_options(options);
+    if !vue_router_installed && !nuxt_installed {
+        return linter;
     }
-    if let Some(names) = options.palpable_content_directives() {
-        linter = linter.with_palpable_content_directives(names.to_vec());
-    }
-    if let Some(options) = options.strict_boolean_expressions() {
-        linter = linter.with_strict_boolean_expressions_options(options);
-    }
-    if let Some(mode) = options.define_props_destructuring() {
-        linter = linter.with_define_props_destructuring(mode);
-    }
-    if let Some(options) = options.define_macros_order() {
-        linter = linter.with_define_macros_order(options);
-    }
-    if let Some(options) = options.component_name_in_template_casing_options() {
-        linter = linter.with_component_name_in_template_casing_policy(
-            component_casing(options.casing),
-            options.registered_components_only,
-            options.globals.clone(),
+    let mut globals = options
+        .component_registration_globals()
+        .map(<[String]>::to_vec)
+        .unwrap_or_default();
+    if vue_router_installed {
+        globals.extend(
+            vize_patina::VUE_ROUTER_COMPONENTS
+                .iter()
+                .map(|name| String::from(*name)),
         );
     }
-    if let Some(casing) = options.custom_event_name_casing() {
-        linter = linter.with_custom_event_name_casing(event_name_casing(casing));
+    if nuxt_installed {
+        globals.extend(
+            vize_patina::NUXT_BUILTIN_COMPONENTS
+                .iter()
+                .map(|name| String::from(*name)),
+        );
     }
-    if let Some(options) = options.no_mutating_props() {
-        linter = linter.with_no_mutating_props_options(no_mutating_props_options(options));
-    }
-    if let Some(options) = options.warn_custom_directive() {
-        linter = linter.with_warn_custom_directive_ignore(options.ignore.clone());
-    }
-    if let Some(options) = options.no_bare_strings_in_template() {
-        linter = linter.with_no_bare_strings_allowlist(options.allowlist.clone());
-    }
-    if let Some(options) = options.anchor_has_content() {
-        linter = linter.with_anchor_accessible_children(options.accessible_children.clone());
-    }
-    if let Some(options) = options.label_has_for() {
-        linter = linter.with_label_control_components(options.control_components.clone());
-    }
-    if let Some(options) = options.sfc_element_order() {
-        linter = linter.with_sfc_element_order_options(sfc_element_order_options(options));
-    }
-    if let Some(options) = options.html_self_closing() {
-        linter = linter.with_html_self_closing_options(html_self_closing_options(options));
-    }
-    if let Some(options) = options.html_quotes() {
-        linter = linter.with_html_quotes(html_quotes(options));
-    }
-    if let Some(style) = options.mustache_interpolation_spacing() {
-        linter = linter.with_mustache_interpolation_spacing(mustache_interpolation_spacing(style));
-    }
-    if let Some(style) = options.v_on_event_hyphenation() {
-        linter = linter.with_v_on_event_hyphenation(v_on_event_hyphenation_style(style));
-    }
-    if let Some(style) = options.v_on_style() {
-        linter = linter.with_v_on_style(v_on_style(style));
-    }
-    if let Some(style) = options.v_slot_style() {
-        linter = linter.with_v_slot_style(v_slot_style(style));
-    }
-    if let Some(style) = options.v_bind_style() {
-        linter = linter.with_v_bind_style(v_bind_style(style));
-    }
-    if let Some(style) = options.attribute_hyphenation() {
-        linter = linter.with_attribute_hyphenation(attribute_hyphenation_style(style));
-    }
-    if let Some(modifiers) = options.valid_v_on_modifiers() {
-        linter = linter.with_valid_v_on_modifiers(modifiers.to_vec());
-    }
-    if let Some(allow) = options.valid_v_slot_allow_modifiers() {
-        linter = linter.with_valid_v_slot_allow_modifiers(allow);
-    }
-    linter
+    linter.with_component_registration_options(
+        globals,
+        options.component_registration_ignore_patterns(),
+    )
 }
 
 fn add_project_local_rule(
@@ -278,148 +213,6 @@ fn severity_overrides(entries: Vec<(String, LintRuleSeverity)>) -> Vec<(String, 
         .collect()
 }
 
-fn component_casing(
-    casing: vize_l0::config::TemplateComponentNameCasing,
-) -> vize_patina::rules::ComponentCasing {
-    match casing {
-        vize_l0::config::TemplateComponentNameCasing::PascalCase => {
-            vize_patina::rules::ComponentCasing::PascalCase
-        }
-        vize_l0::config::TemplateComponentNameCasing::KebabCase => {
-            vize_patina::rules::ComponentCasing::KebabCase
-        }
-    }
-}
-
-fn event_name_casing(
-    casing: vize_l0::config::CustomEventNameCasing,
-) -> vize_patina::rules::script::EventNameCasing {
-    use vize_l0::config::CustomEventNameCasing as Config;
-    use vize_patina::rules::script::EventNameCasing as Patina;
-
-    match casing {
-        Config::CamelCase => Patina::CamelCase,
-        Config::Lowercase => Patina::Lowercase,
-        Config::KebabCase => Patina::KebabCase,
-    }
-}
-
-fn html_quotes(options: vize_l0::config::HtmlQuotesConfig) -> vize_patina::rules::vue::HtmlQuotes {
-    vize_patina::rules::vue::HtmlQuotes {
-        style: match options.style() {
-            vize_l0::config::HtmlQuoteStyle::Double => {
-                vize_patina::rules::vue::HtmlQuotesOption::Double
-            }
-            vize_l0::config::HtmlQuoteStyle::Single => {
-                vize_patina::rules::vue::HtmlQuotesOption::Single
-            }
-        },
-        avoid_escape: options.avoid_escape(),
-    }
-}
-
-fn mustache_interpolation_spacing(
-    style: vize_l0::config::MustacheInterpolationSpacingStyle,
-) -> vize_patina::rules::vue::MustacheInterpolationSpacingStyle {
-    match style {
-        vize_l0::config::MustacheInterpolationSpacingStyle::Always => {
-            vize_patina::rules::vue::MustacheInterpolationSpacingStyle::Always
-        }
-        vize_l0::config::MustacheInterpolationSpacingStyle::Never => {
-            vize_patina::rules::vue::MustacheInterpolationSpacingStyle::Never
-        }
-    }
-}
-
-fn no_mutating_props_options(
-    options: vize_l0::config::NoMutatingPropsOptions,
-) -> vize_patina::rules::NoMutatingPropsOptions {
-    vize_patina::rules::NoMutatingPropsOptions {
-        shallow_only: options.shallow_only,
-    }
-}
-
-fn sfc_element_order_options(
-    options: vize_l0::config::SfcElementOrderOptions,
-) -> vize_patina::rules::SfcElementOrderOptions {
-    vize_patina::rules::SfcElementOrderOptions {
-        order: options
-            .order
-            .into_iter()
-            .map(|group| vize_patina::rules::SfcElementOrderGroup::new(group.selectors()))
-            .collect(),
-    }
-}
-
-fn html_self_closing_options(
-    options: vize_l0::config::HtmlSelfClosingOptions,
-) -> vize_patina::rules::HtmlSelfClosingOptions {
-    vize_patina::rules::HtmlSelfClosingOptions {
-        html: vize_patina::rules::HtmlSelfClosingHtmlOptions {
-            void: html_self_closing_style(options.html.void_elements),
-            normal: html_self_closing_style(options.html.normal),
-            component: html_self_closing_style(options.html.component),
-        },
-        svg: html_self_closing_style(options.svg),
-        math: html_self_closing_style(options.math),
-    }
-}
-
-fn html_self_closing_style(
-    style: vize_l0::config::HtmlSelfClosingStyle,
-) -> vize_patina::rules::HtmlSelfClosingStyle {
-    match style {
-        vize_l0::config::HtmlSelfClosingStyle::Always => {
-            vize_patina::rules::HtmlSelfClosingStyle::Always
-        }
-        vize_l0::config::HtmlSelfClosingStyle::Never => {
-            vize_patina::rules::HtmlSelfClosingStyle::Never
-        }
-        vize_l0::config::HtmlSelfClosingStyle::Any => vize_patina::rules::HtmlSelfClosingStyle::Any,
-    }
-}
-
-fn v_on_event_hyphenation_style(
-    style: vize_l0::config::HyphenationStyle,
-) -> vize_patina::rules::VOnEventHyphenationStyle {
-    match style {
-        vize_l0::config::HyphenationStyle::Always => {
-            vize_patina::rules::VOnEventHyphenationStyle::Always
-        }
-        vize_l0::config::HyphenationStyle::Never => {
-            vize_patina::rules::VOnEventHyphenationStyle::Never
-        }
-    }
-}
-
-fn v_on_style(style: vize_l0::config::VOnStyle) -> vize_patina::rules::vue::VOnStyleOption {
-    match style {
-        vize_l0::config::VOnStyle::Shorthand => vize_patina::rules::vue::VOnStyleOption::Shorthand,
-        vize_l0::config::VOnStyle::Longform => vize_patina::rules::vue::VOnStyleOption::Longform,
-    }
-}
-
-fn v_bind_style(style: vize_l0::config::VBindStyle) -> vize_patina::rules::vue::VBindStyleOption {
-    match style {
-        vize_l0::config::VBindStyle::Shorthand => {
-            vize_patina::rules::vue::VBindStyleOption::Shorthand
-        }
-        vize_l0::config::VBindStyle::Longform => {
-            vize_patina::rules::vue::VBindStyleOption::Longform
-        }
-    }
-}
-
-fn attribute_hyphenation_style(
-    style: vize_l0::config::HyphenationStyle,
-) -> vize_patina::rules::HyphenationStyle {
-    match style {
-        vize_l0::config::HyphenationStyle::Always => vize_patina::rules::HyphenationStyle::Always,
-        vize_l0::config::HyphenationStyle::Never => vize_patina::rules::HyphenationStyle::Never,
-    }
-}
-
-/// Point the new native type rule at its actual Vize reference.
 pub(super) fn rule_docs_url(rule_name: &str) -> Option<Url> {
     if rule_name == "type/strict-boolean-expressions" {
         return Url::parse(

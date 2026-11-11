@@ -5,6 +5,7 @@
 use crate::support::vite_config;
 use std::{fs, path::Path, process::Command};
 
+mod compatibility_options;
 mod macro_groups;
 mod v_bind_prop;
 

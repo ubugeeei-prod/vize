@@ -1,11 +1,11 @@
 ---
 title: "vue/sort-keys"
-description: "Require sorted keys in component option objects."
+description: "Require sorted object keys, compatible with component option order."
 ---
 
 # `vue/sort-keys`
 
-Require sorted keys in component option objects.
+Require sorted object keys, compatible with component option order.
 
 | Default severity | Presets | Automatic fix | Options |
 | --- | --- | --- | --- |
@@ -59,9 +59,13 @@ export default defineConfig({}).withVue({
 
 Then run `vp run lint`.
 
+## Differences from eslint-plugin-vue
+
+Every object literal in a `<script>` or `<script setup>` block is checked. The component options object itself is not, nor are the children of `model`, nor the grandchildren of `computed`, `directives`, `inject`, `props`, and `watch`. Those are the plugin defaults for `ignoreChildrenOf` and `ignoreGrandchildrenOf`. A spread starts a new sequence, so keys on either side of `...` are not compared. Objects written in the template are not checked. `natural: true` uses the same `natural-compare` order as the plugin.
+
 ## Related
 
 - [Vue rules](../vue.md)
 - [Rule options](../options.md)
 - [All rules](../all.md)
-- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/compatibility_sfc/sort_keys.rs#L13)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/compatibility_sfc/sort_keys.rs#L22)

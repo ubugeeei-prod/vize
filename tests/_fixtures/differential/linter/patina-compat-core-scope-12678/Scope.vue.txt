@@ -1,0 +1,12 @@
+<script setup lang="ts">
+defineOptions({ name: "App", inheritAttrs: false });
+const state = { zeta: 1, alpha: 2 };
+const labels = { b10: "x", b2: "y" };
+const a = 1; //  note
+const s = "x y";
+</script>
+
+<template>
+  <p>{{  a + 1 }}x y</p>
+  <p title="x y">{{ "x y" }}</p>
+</template>
