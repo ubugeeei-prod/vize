@@ -4627,6 +4627,38 @@
       }
     },
     {
+      "id": "linter/patina/compat-getter-prop-default-12868",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "patina-compat-getter-prop-default-12868",
+        "files": [
+          {
+            "path": "Accessor.vue.txt",
+            "role": "third-party-getter-prop-default-reproduction",
+            "sha256": "fb8ca5524d3a33e316529d772bbf3445a63ab3c2998f4f40191bc5e502772aa4"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/patina/compat-interaction-12760",
       "state": "active",
       "targets": [
