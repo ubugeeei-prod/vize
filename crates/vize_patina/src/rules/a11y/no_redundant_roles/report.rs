@@ -9,7 +9,7 @@
 //!
 //! ### Invalid
 //! ```vue
-//! <nav role="navigation">...</nav>
+//! <nav aria-label="Primary" role="navigation">...</nav>
 //! <button role="button">...</button>
 //! ```
 //!

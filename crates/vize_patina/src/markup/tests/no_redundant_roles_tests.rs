@@ -49,9 +49,12 @@ fn run_over_jsx_oxc<R: MarkupRule>(rule: &R, source: &str) -> usize {
 fn no_redundant_roles_template() {
     let rule = NoRedundantRoles;
     assert_eq!(
-        run_over_template(&rule, r#"<nav role="navigation">Navigation</nav>"#),
+        run_over_template(
+            &rule,
+            r#"<nav aria-label="Primary" role="navigation">Navigation</nav>"#,
+        ),
         1,
-        "template nav/navigation must warn through markup IR"
+        "a named nav/navigation must warn through markup IR"
     );
     assert_eq!(
         run_over_template(&rule, r#"<div role="navigation">Navigation</div>"#),
@@ -139,9 +142,9 @@ fn no_redundant_roles_jsx_direct_matches_lowered_boundaries() {
     let rule = NoRedundantRoles;
     for (source, expected, label) in [
         (
-            r#"const A = () => <nav role="navigation" />;"#,
+            r#"const A = () => <nav aria-label="Primary" role="navigation" />;"#,
             1,
-            "nav/navigation",
+            "named nav/navigation",
         ),
         (
             r#"const A = () => <div role="navigation" />;"#,

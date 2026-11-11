@@ -114,7 +114,9 @@ impl NativeTemplateRule for FormControlHasLabel {
                 }
                 Kind::Bind { name, .. } => {
                     unknown_hidden |= name == "hidden";
-                    labelled |= matches!(name, "id" | "aria-label" | "aria-labelledby");
+                    // A title binding is an accessible name on the markup walk.
+                    // The expression stays opaque here, so the name is accepted.
+                    labelled |= matches!(name, "id" | "aria-label" | "aria-labelledby" | "title");
                 }
                 // Dynamic argument expressions have no authenticated label
                 // name here; do not turn an unknown runtime binding clean.

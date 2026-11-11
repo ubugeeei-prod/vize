@@ -1,0 +1,52 @@
+<template>
+  <div>
+    <a href="/a"><svg role="img" aria-label="Settings"><path d="M0 0h1" /></svg></a>
+    <a href="/b"><slot aria-hidden="true" /></a>
+    <a href="/c" v-text="label"></a>
+    <a href="/d" v-html="html"></a>
+    <a href="/e">{{ undefined }}</a>
+    <a href="/f"><span :aria-hidden="hidden">Settings</span></a>
+    <a href="/g"><span aria-hidden>Settings</span></a>
+    <a href="/h" aria-hidden>Settings</a>
+    <a href="/i" :aria-hidden="hidden">Settings</a>
+    <a href="/j"><img aria-hidden alt="foo" /></a>
+    <a href="/k"><MyIcon aria-label="Settings" /></a>
+    <a href="/l" :aria-label="undefined"></a>
+    <a href="/m" :aria-hidden="false"></a>
+
+    <nav role="navigation">Primary</nav>
+    <nav aria-label="Primary" role="navigation">Primary</nav>
+    <section role="region">Body</section>
+    <form role="form"></form>
+    <select role="listbox"></select>
+    <select role="combobox"></select>
+    <select multiple role="listbox"></select>
+    <select size="3" role="listbox"></select>
+    <a :href="href" role="link">Go</a>
+    <img alt="" role="presentation" />
+    <img alt="" role="img" />
+    <input type="text" list="l" role="combobox" />
+    <input :type="kind" role="textbox" />
+    <summary role="button">Details</summary>
+    <div role="generic"></div>
+    <span role="generic"></span>
+    <p role="paragraph"></p>
+    <button :role="'button'">Ok</button>
+
+    <input />
+    <input v-model="value" />
+    <input :title="label" />
+    <textarea :title="label"></textarea>
+    <select :title="label"></select>
+    <input :title="undefined" />
+    <input v-bind="attrs" />
+    <input hidden />
+    <input aria-hidden="true" />
+    <div aria-hidden="true"><input /></div>
+    <input :aria-hidden="show" />
+    <input :aria-hidden="false" />
+    <meter></meter>
+    <progress></progress>
+    <output>1</output>
+  </div>
+</template>
