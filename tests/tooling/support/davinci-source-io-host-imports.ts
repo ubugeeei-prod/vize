@@ -9,7 +9,7 @@ export const sourceIoDirectReads: Record<string, number> = {
 
 export const sourceIoAliasReads = [
   "crates/vize/src/commands/fmt.rs",
-  "crates/vize/src/commands/lint.rs",
+  "crates/vize/src/commands/lint/read_source.rs",
   "crates/vize_maestro/src/server/state/global_tag_names.rs",
 ];
 

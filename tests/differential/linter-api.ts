@@ -55,6 +55,7 @@ function snapshotBody(bytes: Buffer) {
 }
 
 const CURRENT_REPORT_SOURCES = new Set([
+  "a7ce0e286f170bc397974ac2900a5bbdf4ec7e15feb614132d6c633e36b9e85f",
   "5d3ea2929558085dffa8d1cec43d3ba8677cd72ab648fba13535214ade5c7493",
   "3669701b338f2143de056d6d456697e57b7fd6efc8e0a3b478af6811ef1dff58",
   "903c64528a6b6ac65e4a65c1cc8e17de3a997eda605255c6e0d0864bc715cfd1",

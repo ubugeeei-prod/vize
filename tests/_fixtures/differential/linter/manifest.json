@@ -5028,8 +5028,7 @@
             "kind": "source-inspection",
             "dialects": [
               "vue3-sfc",
-              "html-template",
-              "ts"
+              "html-template"
             ],
             "selector": "linter manifest pinned authored sources"
           }
