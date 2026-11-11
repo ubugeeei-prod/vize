@@ -5,21 +5,21 @@
 //! template-local bindings from unresolved identifiers.
 
 use oxc_ast::ast::BindingPattern;
-use vize_croquis::drawer::{extract_identifier_refs_retained_only, parse_v_for_expression};
+use vize_croquis::drawer::{extract_identifier_refs_retained_with_witness, parse_v_for_expression};
 use vize_l0::CompactString;
 use vize_relief::{ExpressionNode, JsExpression, SimpleExpressionNode};
 
 /// Whether a reference that leaves `expression` satisfies `is_target`.
 ///
 /// Bindings declared inside the expression (arrow parameters and the like)
-/// shadow outer names, so their uses are not counted. `false` when the
-/// expression does not parse.
+/// shadow outer names, so their uses are not counted. An unavailable or
+/// incomplete retained walk is conservatively treated as a possible match.
 pub fn has_free_reference(
     expression: &SimpleExpressionNode<'_>,
     is_target: impl Fn(&str) -> bool,
 ) -> bool {
     let Some(retained) = expression.js_ast.and_then(|ast| ast.as_expression()) else {
-        return false;
+        return true;
     };
     has_free_reference_retained(expression.content, &retained, is_target)
 }
@@ -29,11 +29,15 @@ pub fn has_free_reference_retained(
     retained: &JsExpression<'_>,
     is_target: impl Fn(&str) -> bool,
 ) -> bool {
-    extract_identifier_refs_retained_only(source, retained).is_some_and(|references| {
-        references
+    let Some((references, complete)) =
+        extract_identifier_refs_retained_with_witness(source, retained)
+    else {
+        return true;
+    };
+    !complete
+        || references
             .iter()
             .any(|reference| is_target(reference.name.as_str()))
-    })
 }
 
 /// Parse v-for expression to extract variable names.
@@ -109,9 +113,14 @@ fn collect_slot_bindings(pattern: &BindingPattern<'_>, names: &mut Vec<CompactSt
 
 #[cfg(test)]
 mod tests {
-    use super::{CompactString, ExpressionNode, parse_slot_scope_variables, parse_v_for_variables};
+    use super::{
+        CompactString, ExpressionNode, has_free_reference_retained, parse_slot_scope_variables,
+        parse_v_for_variables,
+    };
+    use oxc_parser::Parser;
+    use oxc_span::SourceType;
     use vize_l0::Allocator;
-    use vize_relief::SimpleExpressionNode;
+    use vize_relief::{JsExpression, SimpleExpressionNode};
 
     fn make_simple_exp<'a>(allocator: &'a Allocator, content: &'a str) -> ExpressionNode<'a> {
         ExpressionNode::Simple(vize_l0::Box::new_in(
@@ -132,6 +141,22 @@ mod tests {
             panic!("original slot directive");
         };
         directive.exp.take().expect("original slot value")
+    }
+
+    #[test]
+    fn incomplete_retained_walk_is_not_a_definite_negative() {
+        let allocator = Allocator::default();
+        let source = "make(item, ...args)";
+        let ast = Parser::new(allocator.as_oxc(), source, SourceType::ts())
+            .parse_expression()
+            .unwrap();
+        let retained = JsExpression {
+            ast: &ast,
+            raw: source,
+        };
+
+        assert!(has_free_reference_retained(source, &retained, |name| name == "item"));
+        assert!(has_free_reference_retained(source, &retained, |name| name == "missing"));
     }
 
     #[test]

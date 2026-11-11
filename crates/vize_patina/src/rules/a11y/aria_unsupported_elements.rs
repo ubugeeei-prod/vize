@@ -14,6 +14,7 @@ use crate::markup::{
     MarkupBindingKind, MarkupContext, MarkupElement, MarkupElementKind, MarkupRule, MarkupTraversal,
 };
 use crate::rule::{Rule, RuleCategory, RuleMeta};
+use vize_l0::SmallVec;
 use vize_relief::{ElementNode, ElementType, ExpressionNode, PropNode, SourceLocation};
 
 use super::helpers;
@@ -49,9 +50,23 @@ impl MarkupRule for AriaUnsupportedElements {
         {
             return;
         }
+        let mut static_names = SmallVec::<[&str; 8]>::new();
         element.walk_bindings(&mut |binding| {
             let attr = match binding.kind() {
-                MarkupBindingKind::Attribute => binding.arg_name(),
+                MarkupBindingKind::Attribute => {
+                    let attr = binding.arg_name();
+                    if attr.is_some_and(|name| {
+                        static_names
+                            .iter()
+                            .any(|seen| seen.eq_ignore_ascii_case(name))
+                    }) {
+                        return;
+                    }
+                    if let Some(name) = attr {
+                        static_names.push(name);
+                    }
+                    attr
+                }
                 MarkupBindingKind::Bind => binding
                     .arg_name()
                     .filter(|arg| binding.is_static_unqualified_arg_eq_ignore_ascii_case(arg)),

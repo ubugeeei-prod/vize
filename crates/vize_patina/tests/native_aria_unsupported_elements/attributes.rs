@@ -55,7 +55,7 @@ fn all_four_original_lowercase_tags_and_raw_text_children_keep_complete_register
 }
 
 #[test]
-fn uppercase_components_custom_names_and_exact_uppercase_attribute_controls_are_exempt() {
+fn uppercase_components_and_custom_names_are_exempt() {
     for tag in [
         "Meta",
         "META",
@@ -75,10 +75,18 @@ fn uppercase_components_custom_names_and_exact_uppercase_attribute_controls_are_
             assert_eq!(parity(&source, locale), expected(vec![]));
         }
     }
-    for source in [
-        "<template><meta ROLE ARIA-hidden :ROLE='x' /></template>",
-        "<template><meta @role='x' v-model:role='x' title='ok' /></template>",
-    ] {
+    let source = "<template><meta ROLE ARIA-hidden :ROLE='x' /></template>";
+    for locale in LOCALES {
+        assert_eq!(
+            parity(source, locale),
+            expected(vec![
+                error(locale, span(source, "ROLE"), "meta", "ROLE"),
+                error(locale, span(source, "ARIA-hidden"), "meta", "ARIA-hidden"),
+                error(locale, span(source, ":ROLE='x'"), "meta", "ROLE"),
+            ])
+        );
+    }
+    for source in ["<template><meta @role='x' v-model:role='x' title='ok' /></template>"] {
         for locale in LOCALES {
             assert_eq!(parity(source, locale), expected(vec![]));
         }
@@ -114,12 +122,6 @@ fn original_foreign_namespaces_integration_points_and_is_heads_keep_authored_pre
             parity(source, locale),
             expected(vec![
                 error(locale, span(source, "role='svg'"), "meta", "role"),
-                error(
-                    locale,
-                    span(source, "aria-hidden='html'"),
-                    "meta",
-                    "aria-hidden"
-                ),
                 error(locale, span(source, ":role='math'"), "meta", "role"),
                 error(
                     locale,
