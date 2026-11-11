@@ -1,22 +1,21 @@
 //! script/valid-next-tick
 //!
-//! Require the result of a `nextTick()` call to be used.
+//! Enforce valid `nextTick` calls.
 //!
-//! `nextTick()` (the function imported from `vue`) and `this.$nextTick()` return
-//! a promise that resolves after the next DOM flush. A bare call whose result is
-//! ignored — not `await`ed, not chained with `.then(...)`, and given no callback
-//! argument — schedules nothing observable and is almost always a mistake: the
-//! code that was meant to run after the flush never does.
-//!
-//! A call is considered *used* when any of the following holds:
-//! - it is passed a callback argument: `nextTick(() => {})`;
-//! - its result is `await`ed: `await nextTick()`;
-//! - its result is chained: `nextTick().then(() => {})`;
-//! - its result is assigned/returned/otherwise consumed (it is then not the whole
-//!   expression of an `ExpressionStatement`).
-//!
-//! Only a bare `nextTick()` / `this.$nextTick()` standing alone as an expression
-//! statement with no callback argument is flagged.
+//! `nextTick()` (the function imported from `vue`), `Vue.nextTick()` and
+//! `this.$nextTick()` either take one callback or return a Promise that
+//! resolves after the next DOM flush. Port of
+//! [`vue/valid-next-tick`](https://eslint.vuejs.org/rules/valid-next-tick.html),
+//! applied to `<script setup>` and plain scripts as well as component options.
+//! For compatibility, the `Vue.nextTick` spelling is recognized syntactically,
+//! even when `Vue` is a local binding.
+//! It reports:
+//! - a call without a callback whose Promise is not awaited, returned,
+//!   assigned, chained with `.then()` or passed to `Promise.*([...])`
+//!   (`.catch()` and `.finally()` do not wait for the flush);
+//! - a call with more than one argument;
+//! - a call with a callback whose Promise is also awaited or chained;
+//! - `nextTick` used as a value where it is neither called nor passed on.
 //!
 //! ## Examples
 //!
@@ -24,8 +23,11 @@
 //! ```ts
 //! import { nextTick } from 'vue'
 //!
-//! nextTick()          // result ignored
-//! this.$nextTick()    // result ignored
+//! nextTick()               // result ignored
+//! nextTick().catch(fail)   // still not awaited
+//! await nextTick(focus)    // callback and await
+//! nextTick(focus, other)   // too many arguments
+//! await Promise.all([nextTick])
 //! ```
 //!
 //! ### Valid
@@ -41,16 +43,13 @@
 
 use super::{ScriptLintResult, ScriptRule, ScriptRuleMeta};
 use crate::diagnostic::{LintDiagnostic, Severity};
-use oxc_ast::ast::{
-    ArrowFunctionExpression, CallExpression, Expression, ImportDeclarationSpecifier, Program,
-    Statement,
+use oxc_ast::{
+    AstKind,
+    ast::{Expression, ImportDeclarationSpecifier, Program, Statement},
 };
-use oxc_ast_visit::{
-    Visit,
-    walk::{walk_arrow_function_expression, walk_statement},
-};
-use oxc_span::Span;
-use vize_l0::{CompactString, FxHashSet};
+use oxc_semantic::{AstNodes, Semantic, SemanticBuilder};
+use oxc_span::{GetSpan, Span};
+use oxc_syntax::{node::NodeId, symbol::SymbolId};
 
 static META: ScriptRuleMeta = ScriptRuleMeta {
     name: "script/valid-next-tick",
@@ -58,11 +57,15 @@ static META: ScriptRuleMeta = ScriptRuleMeta {
     default_severity: Severity::Warning,
 };
 
-const MESSAGE: &str = "The result of this nextTick() call is ignored.";
+const NOT_AWAITED: &str = "Await the Promise returned by `nextTick()` or pass a callback function.";
+const TOO_MANY_ARGUMENTS: &str = "`nextTick()` expects zero or one argument.";
+const AWAITED_CALLBACK: &str =
+    "Either await the Promise or pass a callback function to `nextTick()`, not both.";
+const NOT_CALLED: &str = "`nextTick` is a function; call it instead of using it as a value.";
 const HELP: &str = "nextTick() returns a promise that resolves after the DOM updates. \
-     `await` it, chain `.then(...)`, or pass a callback (`nextTick(() => {})`); a bare call does nothing useful.";
+     `await` it, chain `.then(...)`, or pass a single callback (`nextTick(() => {})`).";
 
-/// Require the result of a `nextTick()` call to be used.
+/// Enforce valid `nextTick` calls.
 pub struct ValidNextTick;
 
 impl ScriptRule for ValidNextTick {
@@ -79,173 +82,177 @@ impl ScriptRule for ValidNextTick {
     fn check_program<'a>(
         &self,
         program: &'a Program<'a>,
-        _source: &str,
+        source: &str,
         offset: usize,
         result: &mut ScriptLintResult,
     ) {
-        let bindings = NextTickBindings::collect(program);
-        let mut visitor = ValidNextTickVisitor {
-            offset,
-            result,
-            bindings,
-            returned_arrow_statement: None,
-        };
-        visitor.visit_program(program);
-    }
-}
-
-struct ValidNextTickVisitor<'result> {
-    offset: usize,
-    result: &'result mut ScriptLintResult,
-    bindings: NextTickBindings,
-    returned_arrow_statement: Option<Span>,
-}
-
-#[derive(Default)]
-struct NextTickBindings {
-    named: FxHashSet<CompactString>,
-    namespaces: FxHashSet<CompactString>,
-}
-
-impl NextTickBindings {
-    fn collect(program: &Program<'_>) -> Self {
-        let mut bindings = Self::default();
-        for statement in &program.body {
-            let Statement::ImportDeclaration(import) = statement else {
-                continue;
-            };
-            if import.import_kind.is_type() || import.source.value.as_str() != "vue" {
-                continue;
-            }
-            for specifier in import.specifiers.iter().flatten() {
-                match specifier {
-                    ImportDeclarationSpecifier::ImportSpecifier(specifier)
-                        if !specifier.import_kind.is_type()
-                            && specifier.imported.name() == "nextTick" =>
-                    {
-                        bindings
-                            .named
-                            .insert(CompactString::new(specifier.local.name.as_str()));
-                    }
-                    ImportDeclarationSpecifier::ImportNamespaceSpecifier(specifier) => {
-                        bindings
-                            .namespaces
-                            .insert(CompactString::new(specifier.local.name.as_str()));
-                    }
-                    _ => {}
+        if !source.contains("nextTick") {
+            return;
+        }
+        let semantic = SemanticBuilder::new()
+            .with_build_nodes(true)
+            .build(program)
+            .semantic;
+        let (named, namespaces) = vue_imports(program);
+        let mut reports = Vec::new();
+        for &symbol in &named {
+            for reference in semantic.symbol_references(symbol) {
+                let node = reference.node_id();
+                if reference.is_read()
+                    && !matches!(
+                        semantic.nodes().parent_kind(node),
+                        AstKind::ExportSpecifier(_) | AstKind::TSTypeQuery(_)
+                    )
+                {
+                    let span = semantic.nodes().kind(node).span();
+                    check_use(semantic.nodes(), node, span, &mut reports);
                 }
             }
         }
-        bindings
-    }
-}
-
-impl<'a> Visit<'a> for ValidNextTickVisitor<'_> {
-    fn visit_statement(&mut self, it: &Statement<'a>) {
-        // A bare `nextTick()` whose value is discarded surfaces as the whole
-        // expression of an `ExpressionStatement`. When it is awaited, chained,
-        // or assigned, the statement's expression is something else (an
-        // `AwaitExpression`, a `.then(...)` member call, a declaration, ...), so
-        // those forms are never reached here.
-        if let Statement::ExpressionStatement(statement) = it
-            && (self.returned_arrow_statement != Some(statement.span)
-                || !returns_call(&statement.expression))
-            && let Some(span) = bare_next_tick_call(&statement.expression, &self.bindings)
-        {
-            let start = self.offset as u32 + span.start;
-            let end = self.offset as u32 + span.end;
-            self.result.add_diagnostic(
-                LintDiagnostic::warn(META.name, MESSAGE, start, end)
-                    .with_label("ignored nextTick() result", start, end)
+        for node in semantic.nodes().iter() {
+            let AstKind::StaticMemberExpression(member) = node.kind() else {
+                continue;
+            };
+            let next_tick = match member.property.name.as_str() {
+                "$nextTick" => matches!(
+                    member.object.without_parentheses(),
+                    Expression::ThisExpression(_)
+                ),
+                "nextTick" => match member.object.without_parentheses() {
+                    Expression::Identifier(object) => {
+                        object.name == "Vue"
+                            || resolves_to(&semantic, object.reference_id.get(), &namespaces)
+                    }
+                    _ => false,
+                },
+                _ => false,
+            };
+            if next_tick {
+                check_use(
+                    semantic.nodes(),
+                    node.id(),
+                    member.property.span,
+                    &mut reports,
+                );
+            }
+        }
+        reports.sort_by_key(|(span, _)| span.start);
+        for (span, message) in reports {
+            let start = offset as u32 + span.start;
+            let end = offset as u32 + span.end;
+            result.add_diagnostic(
+                LintDiagnostic::warn(META.name, message, start, end)
+                    .with_label("invalid nextTick usage", start, end)
                     .with_help(HELP),
             );
         }
-        walk_statement(self, it);
     }
+}
 
-    fn visit_arrow_function_expression(&mut self, arrow: &ArrowFunctionExpression<'a>) {
-        // Oxc represents an expression-bodied arrow as a FunctionBody with an
-        // ExpressionStatement. Its value is returned, unlike a block body's
-        // ordinary expression statement.
-        let previous = self.returned_arrow_statement;
-        self.returned_arrow_statement = if arrow.expression {
-            match arrow.body.statements.first() {
-                Some(Statement::ExpressionStatement(statement)) => Some(statement.span),
-                _ => None,
-            }
-        } else {
-            None
+fn vue_imports(program: &Program<'_>) -> (Vec<SymbolId>, Vec<SymbolId>) {
+    let mut named = Vec::new();
+    let mut namespaces = Vec::new();
+    for statement in &program.body {
+        let Statement::ImportDeclaration(import) = statement else {
+            continue;
         };
-        walk_arrow_function_expression(self, arrow);
-        self.returned_arrow_statement = previous;
-    }
-}
-
-/// Parentheses preserve the arrow's returned value; `void` discards it.
-fn returns_call(expression: &Expression<'_>) -> bool {
-    match expression {
-        Expression::CallExpression(_) => true,
-        Expression::ParenthesizedExpression(paren) => returns_call(&paren.expression),
-        _ => false,
-    }
-}
-
-/// If `expression` (a statement's whole expression) is a bare `nextTick()` /
-/// `this.$nextTick()` call with no callback argument, return its span.
-fn bare_next_tick_call(expression: &Expression<'_>, bindings: &NextTickBindings) -> Option<Span> {
-    let call = unwrap_to_call(expression)?;
-    if !call.arguments.is_empty() {
-        // A callback argument (or any argument) means the caller is scheduling
-        // work; that form is allowed.
-        return None;
-    }
-    next_tick_callee_span(call, bindings)
-}
-
-/// Strip parentheses / `void` to reach a `CallExpression`, if the expression is
-/// (or wraps) one. A `void nextTick()` still discards the result.
-fn unwrap_to_call<'a, 'b>(expression: &'b Expression<'a>) -> Option<&'b CallExpression<'a>> {
-    match expression {
-        Expression::CallExpression(call) => Some(call),
-        Expression::ParenthesizedExpression(paren) => unwrap_to_call(&paren.expression),
-        Expression::UnaryExpression(unary)
-            if unary.operator == oxc_syntax::operator::UnaryOperator::Void =>
-        {
-            unwrap_to_call(&unary.argument)
+        if import.import_kind.is_type() || import.source.value.as_str() != "vue" {
+            continue;
         }
-        _ => None,
-    }
-}
-
-/// The span of the callee when this call is `nextTick(...)` (a vue import alias)
-/// or `<expr>.$nextTick(...)`.
-fn next_tick_callee_span(call: &CallExpression<'_>, bindings: &NextTickBindings) -> Option<Span> {
-    match call.callee.get_inner_expression() {
-        Expression::Identifier(identifier) => {
-            let name = identifier.name.as_str();
-            if bindings.named.contains(name) {
-                Some(call.span)
-            } else {
-                None
-            }
-        }
-        callee if callee.is_member_expression() => {
-            let member = callee.as_member_expression()?;
-            match member.static_property_name()? {
-                "$nextTick" => Some(call.span),
-                "nextTick"
-                    if matches!(
-                        member.object().get_inner_expression(),
-                        Expression::Identifier(identifier)
-                            if bindings.namespaces.contains(identifier.name.as_str())
-                    ) =>
+        for specifier in import.specifiers.iter().flatten() {
+            match specifier {
+                ImportDeclarationSpecifier::ImportSpecifier(specifier)
+                    if !specifier.import_kind.is_type()
+                        && specifier.imported.name() == "nextTick" =>
                 {
-                    Some(call.span)
+                    named.extend(specifier.local.symbol_id.get());
                 }
-                _ => None,
+                ImportDeclarationSpecifier::ImportNamespaceSpecifier(specifier) => {
+                    namespaces.extend(specifier.local.symbol_id.get());
+                }
+                _ => {}
             }
         }
-        _ => None,
+    }
+    (named, namespaces)
+}
+
+fn resolves_to(
+    semantic: &Semantic<'_>,
+    reference: Option<oxc_syntax::reference::ReferenceId>,
+    symbols: &[SymbolId],
+) -> bool {
+    reference
+        .and_then(|reference| semantic.scoping().get_reference(reference).symbol_id())
+        .is_some_and(|symbol| symbols.contains(&symbol))
+}
+
+/// The nearest ancestor that is not a parenthesized expression; ESTree, which
+/// the reference rule walks, has no parentheses.
+fn parent(nodes: &AstNodes<'_>, node: NodeId) -> NodeId {
+    let mut parent = nodes.parent_id(node);
+    while matches!(nodes.kind(parent), AstKind::ParenthesizedExpression(_)) {
+        parent = nodes.parent_id(parent);
+    }
+    parent
+}
+
+/// Check one `nextTick` reference: `node` is the identifier or member
+/// expression, `span` is where the report goes.
+fn check_use(
+    nodes: &AstNodes<'_>,
+    node: NodeId,
+    span: Span,
+    reports: &mut Vec<(Span, &'static str)>,
+) {
+    let callee = nodes.kind(node).span();
+    let mut parent_id = parent(nodes, node);
+    if matches!(nodes.kind(parent_id), AstKind::ConditionalExpression(_)) {
+        parent_id = parent(nodes, parent_id);
+    }
+    let call = match nodes.kind(parent_id) {
+        AstKind::CallExpression(call) if call.callee.without_parentheses().span() == callee => call,
+        AstKind::CallExpression(_)
+        | AstKind::VariableDeclarator(_)
+        | AstKind::AssignmentExpression(_) => return,
+        _ => {
+            reports.push((span, NOT_CALLED));
+            return;
+        }
+    };
+    let message = match call.arguments.len() {
+        0 if !promise_consumed(nodes, parent_id) => NOT_AWAITED,
+        0 => return,
+        1 if promise_consumed(nodes, parent_id) => AWAITED_CALLBACK,
+        1 => return,
+        _ => TOO_MANY_ARGUMENTS,
+    };
+    reports.push((span, message));
+}
+
+/// `isAwaitedPromise` of eslint-plugin-vue: whether the call's Promise is waited
+/// on or handed to code that can wait on it.
+fn promise_consumed(nodes: &AstNodes<'_>, call: NodeId) -> bool {
+    let parent_id = parent(nodes, call);
+    match nodes.kind(parent_id) {
+        AstKind::AwaitExpression(_)
+        | AstKind::ReturnStatement(_)
+        | AstKind::VariableDeclarator(_)
+        | AstKind::AssignmentExpression(_) => true,
+        // An expression-bodied arrow returns its single expression statement.
+        AstKind::ExpressionStatement(_) => {
+            let body = nodes.parent_id(parent_id);
+            matches!(nodes.kind(body), AstKind::FunctionBody(_))
+                && matches!(nodes.parent_kind(body), AstKind::ArrowFunctionExpression(arrow) if arrow.expression)
+        }
+        AstKind::StaticMemberExpression(member) => member.property.name == "then",
+        AstKind::ArrayExpression(_) => matches!(
+            nodes.kind(parent(nodes, parent_id)),
+            AstKind::CallExpression(call)
+                if matches!(call.callee.without_parentheses(), Expression::StaticMemberExpression(callee)
+                    if matches!(&callee.object, Expression::Identifier(object) if object.name == "Promise"))
+        ),
+        _ => false,
     }
 }
 
@@ -370,6 +377,12 @@ mod tests {
     }
 
     #[test]
+    fn test_unrelated_next_tick_receiver_is_not_flagged() {
+        let result = create_linter().lint("vm.$nextTick()", 0);
+        assert_eq!(result.warning_count, 0, "{:#?}", result.diagnostics);
+    }
+
+    #[test]
     fn test_invalid_aliased_bare_call() {
         let result = create_linter().lint("import { nextTick as tick } from 'vue'\ntick()", 0);
         assert_eq!(result.warning_count, 1);
@@ -401,11 +414,68 @@ mod tests {
         assert_eq!(result.warning_count, 0, "{:#?}", result.diagnostics);
     }
 
+    fn messages(source: &str) -> Vec<(u32, std::string::String)> {
+        create_linter()
+            .lint(source, 0)
+            .diagnostics
+            .into_iter()
+            .map(|diagnostic| (diagnostic.start, diagnostic.message.to_string()))
+            .collect()
+    }
+
+    #[test]
+    fn test_reports_eslint_plugin_vue_shapes() {
+        let source = "import { nextTick } from \"vue\";\nasync function f(done) {\n  nextTick().catch(done);\n  nextTick().finally(done);\n  nextTick(done, done);\n  await nextTick(done);\n  nextTick(done).then(done);\n  const reference = nextTick;\n  await Promise.all([nextTick, reference]);\n}";
+        let found: Vec<_> = messages(source)
+            .into_iter()
+            .map(|(_, message)| message)
+            .collect();
+        assert_eq!(
+            found,
+            [
+                super::NOT_AWAITED,
+                super::NOT_AWAITED,
+                super::TOO_MANY_ARGUMENTS,
+                super::AWAITED_CALLBACK,
+                super::AWAITED_CALLBACK,
+                super::NOT_CALLED,
+            ]
+        );
+    }
+
+    #[test]
+    fn test_promise_consumers_and_value_passing_are_valid() {
+        let source = "import { nextTick } from \"vue\";\nasync function f(done) {\n  const p = nextTick();\n  done(nextTick);\n  await Promise.all([nextTick(), p]);\n  nextTick().then(done).catch(done);\n  const pick = done ? nextTick : done;\n  return [p, pick];\n}";
+        assert!(messages(source).is_empty(), "{:?}", messages(source));
+    }
+
+    #[test]
+    fn test_shadowed_parameter_is_not_next_tick() {
+        let source =
+            "import { nextTick } from \"vue\";\nfunction f(nextTick) { nextTick(); [nextTick]; }";
+        assert!(messages(source).is_empty(), "{:?}", messages(source));
+    }
+
+    #[test]
+    fn test_reports_at_the_next_tick_identifier() {
+        let source = "import { nextTick } from \"vue\";\nasync function f() { await nextTick(() => {}); this.$nextTick(); }";
+        let starts: Vec<_> = messages(source)
+            .into_iter()
+            .map(|(start, _)| start)
+            .collect();
+        let first = source.find("nextTick(() =>").map(|index| index as u32);
+        let second = source.find("$nextTick").map(|index| index as u32);
+        assert_eq!(
+            starts,
+            [first, second].into_iter().flatten().collect::<Vec<_>>()
+        );
+    }
+
     #[test]
     fn test_offset_applied() {
         let source = "this.$nextTick()";
         let result = create_linter().lint(source, 50);
         assert_eq!(result.warning_count, 1);
-        assert_eq!(result.diagnostics[0].start, 50);
+        assert_eq!(result.diagnostics[0].start, 55);
     }
 }

@@ -196,15 +196,26 @@ const assign = 'assign';
 }
 
 #[test]
-fn ignores_copies_nested_callbacks_and_shallow_nested_mutations() {
+fn ignores_copies_and_shallow_nested_mutations() {
     let copied = r#"<script setup lang="ts">
 const props = defineProps<{ items: string[] }>();
 const copy = [...props.items];
 </script>
 <template>
   <button @click="copy.push('x'); (() => props.items.push('y'))()">go</button>
+  <button @click="props.items.slice().sort(); (items) => items.push('z')">copy</button>
 </template>"#;
-    assert_eq!(findings(&lint_sfc(copied)), none());
+    let (start, end) = span_for(copied, "props.items.push('y')");
+    assert_eq!(
+        findings(&lint_sfc(copied)),
+        vec![(
+            "vue/no-mutating-props",
+            Severity::Error,
+            start,
+            end,
+            "Unexpected mutation of prop 'props.items' in an inline handler",
+        )]
+    );
 
     let shallow = r#"<script setup lang="ts">
 const props = defineProps<{ items: string[] }>();

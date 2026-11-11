@@ -1,13 +1,13 @@
 use super::{Kind, Visitor};
 use oxc_ast::ast::{
-    AssignmentTarget, CallExpression, Expression, Function, Program, Statement, TSAsExpression,
-    VariableDeclarator,
+    AssignmentTarget, AssignmentTargetMaybeDefault, AssignmentTargetProperty, CallExpression,
+    Expression, Function, MemberExpression, Program, Statement, VariableDeclarator,
 };
 use oxc_ast_visit::Visit;
 use oxc_ast_visit::walk::{
     walk_arrow_function_expression, walk_binding_pattern, walk_block_statement,
     walk_call_expression, walk_computed_member_expression, walk_function, walk_function_body,
-    walk_program, walk_static_member_expression, walk_ts_as_expression,
+    walk_program, walk_static_member_expression,
 };
 use oxc_span::GetSpan;
 use oxc_syntax::scope::ScopeFlags;
@@ -105,28 +105,8 @@ impl<'a> Visit<'a> for Visitor<'_, 'a> {
         walk_call_expression(self, it);
     }
 
-    fn visit_ts_as_expression(&mut self, it: &TSAsExpression<'a>) {
-        if let Expression::CallExpression(call) = it.expression.get_inner_expression()
-            && (self.is_ref_factory(&call.callee) || self.is_define_model(&call.callee))
-        {
-            self.visit_expression(&call.callee);
-            for argument in &call.arguments {
-                let previous = self.suppress_reads;
-                self.suppress_reads = argument.as_expression().is_some_and(direct_value_read);
-                self.visit_argument(argument);
-                self.suppress_reads = previous;
-            }
-            return;
-        }
-        walk_ts_as_expression(self, it);
-    }
-
     fn visit_static_member_expression(&mut self, it: &oxc_ast::ast::StaticMemberExpression<'a>) {
-        if !self.writing
-            && !self.suppress_reads
-            && it.property.name == "value"
-            && self.same_scope_ref(&it.object)
-        {
+        if it.property.name == "value" && self.same_scope_ref(&it.object) {
             self.report(it.object.span());
         }
         walk_static_member_expression(self, it);
@@ -136,10 +116,7 @@ impl<'a> Visit<'a> for Visitor<'_, 'a> {
         &mut self,
         it: &oxc_ast::ast::ComputedMemberExpression<'a>,
     ) {
-        if !self.writing
-            && !self.suppress_reads
-            && it.static_property_name().as_deref() == Some("value")
-            && self.same_scope_ref(&it.object)
+        if it.static_property_name().as_deref() == Some("value") && self.same_scope_ref(&it.object)
         {
             self.report(it.object.span());
         }
@@ -147,11 +124,14 @@ impl<'a> Visit<'a> for Visitor<'_, 'a> {
     }
 
     fn visit_assignment_expression(&mut self, it: &oxc_ast::ast::AssignmentExpression<'a>) {
-        let writing = self.writing;
-        self.writing = true;
-        self.visit_assignment_target(&it.left);
-        self.writing = writing;
+        self.write_target(&it.left);
         self.visit_expression(&it.right);
+        if let AssignmentTarget::ObjectAssignmentTarget(object) = &it.left
+            && object.properties.iter().any(copies_value)
+            && self.same_scope_ref(&it.right)
+        {
+            self.report(object.span);
+        }
         if let AssignmentTarget::AssignmentTargetIdentifier(identifier) = &it.left
             && let Some(kind) = self.assigned_kind(&it.right)
         {
@@ -160,17 +140,125 @@ impl<'a> Visit<'a> for Visitor<'_, 'a> {
     }
 
     fn visit_update_expression(&mut self, it: &oxc_ast::ast::UpdateExpression<'a>) {
-        let writing = self.writing;
-        self.writing = true;
-        self.visit_simple_assignment_target(&it.argument);
-        self.writing = writing;
+        if let Some(member) = it.argument.as_member_expression() {
+            self.write_member(member);
+        } else {
+            self.visit_simple_assignment_target(&it.argument);
+        }
     }
 }
 
-fn direct_value_read(expression: &Expression<'_>) -> bool {
-    expression
-        .get_inner_expression()
-        .as_member_expression()
-        .and_then(|member| member.static_property_name())
-        == Some("value")
+impl<'a> Visitor<'_, 'a> {
+    /// Visit a write target: the written member chain is not a read, while
+    /// computed keys, call arguments and defaults inside it still are.
+    fn write_target(&mut self, target: &AssignmentTarget<'a>) {
+        if let Some(member) = target.as_member_expression() {
+            self.write_member(member);
+            return;
+        }
+        match target {
+            AssignmentTarget::ArrayAssignmentTarget(array) => {
+                for element in array.elements.iter().flatten() {
+                    self.write_maybe_default(element);
+                }
+                if let Some(rest) = &array.rest {
+                    self.write_target(&rest.target);
+                }
+            }
+            AssignmentTarget::ObjectAssignmentTarget(object) => {
+                for property in &object.properties {
+                    match property {
+                        AssignmentTargetProperty::AssignmentTargetPropertyIdentifier(property) => {
+                            if let Some(init) = &property.init {
+                                self.visit_expression(init);
+                            }
+                        }
+                        AssignmentTargetProperty::AssignmentTargetPropertyProperty(property) => {
+                            self.visit_property_key(&property.name);
+                            self.write_maybe_default(&property.binding);
+                        }
+                    }
+                }
+                if let Some(rest) = &object.rest {
+                    self.write_target(&rest.target);
+                }
+            }
+            AssignmentTarget::TSAsExpression(expression) => {
+                self.write_expression_target(&expression.expression)
+            }
+            AssignmentTarget::TSSatisfiesExpression(expression) => {
+                self.write_expression_target(&expression.expression)
+            }
+            AssignmentTarget::TSNonNullExpression(expression) => {
+                self.write_expression_target(&expression.expression)
+            }
+            AssignmentTarget::TSTypeAssertion(expression) => {
+                self.write_expression_target(&expression.expression)
+            }
+            other => self.visit_assignment_target(other),
+        }
+    }
+
+    /// Visit a write target hidden by a TypeScript expression wrapper.
+    fn write_expression_target(&mut self, target: &Expression<'a>) {
+        let target = target.without_parentheses();
+        if let Some(member) = target.as_member_expression() {
+            self.write_member(member);
+            return;
+        }
+        match target {
+            Expression::TSAsExpression(expression) => {
+                self.write_expression_target(&expression.expression)
+            }
+            Expression::TSSatisfiesExpression(expression) => {
+                self.write_expression_target(&expression.expression)
+            }
+            Expression::TSNonNullExpression(expression) => {
+                self.write_expression_target(&expression.expression)
+            }
+            Expression::TSTypeAssertion(expression) => {
+                self.write_expression_target(&expression.expression)
+            }
+            Expression::Identifier(_) => {}
+            target => self.visit_expression(target),
+        }
+    }
+
+    fn write_maybe_default(&mut self, target: &AssignmentTargetMaybeDefault<'a>) {
+        match target {
+            AssignmentTargetMaybeDefault::AssignmentTargetWithDefault(target) => {
+                self.write_target(&target.binding);
+                self.visit_expression(&target.init);
+            }
+            other => {
+                if let Some(target) = other.as_assignment_target() {
+                    self.write_target(target);
+                }
+            }
+        }
+    }
+
+    fn write_member(&mut self, member: &MemberExpression<'a>) {
+        // ESTree has no parentheses; a type assertion ends the written chain.
+        let object = member.object().without_parentheses();
+        if let Some(object) = object.as_member_expression() {
+            self.write_member(object);
+        } else {
+            self.visit_expression(object);
+        }
+        if let MemberExpression::ComputedMemberExpression(computed) = member {
+            self.visit_expression(&computed.expression);
+        }
+    }
+}
+
+fn copies_value(property: &AssignmentTargetProperty<'_>) -> bool {
+    match property {
+        AssignmentTargetProperty::AssignmentTargetPropertyIdentifier(property) => {
+            property.binding.name == "value"
+        }
+        AssignmentTargetProperty::AssignmentTargetPropertyProperty(property) => {
+            property.name.static_name().as_deref() == Some("value")
+        }
+    }
 }

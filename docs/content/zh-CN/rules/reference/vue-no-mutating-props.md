@@ -13,6 +13,8 @@ description: "禁止修改组件 props。"
 
 适用范围：Vue SFC 模板和代码块，包括规则所需的脚本上下文。
 
+类型断言不会改变它包裹的值，因此模板中的 `(rows as string[]).push(x)` 和 `rows!.push(x)` 也会作为对 prop `rows` 的修改报告；eslint-plugin-vue 会在断言处停止追踪。
+
 ## 错误示例
 
 递增 props.count 会直接写入父组件提供的值。

@@ -13,6 +13,8 @@ description: "親から受け取った prop を子コンポーネントで変更
 
 適用範囲：Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。
 
+型アサーションは包んだ値を変えないため、テンプレートの `(rows as string[]).push(x)` や `rows!.push(x)` も prop `rows` の変更として報告します。eslint-plugin-vue はアサーションで追跡を止めます。
+
 ## 悪い例
 
 props.count の加算で、親から受け取った値を直接変更しています。

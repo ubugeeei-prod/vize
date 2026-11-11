@@ -1,6 +1,6 @@
 use oxc_ast::ast::{
     BindingPattern, Expression, ImportDeclarationSpecifier, Statement, TSType, TSTypeName,
-    VariableDeclaration,
+    VariableDeclaration, VariableDeclarationKind,
 };
 use vize_l0::{CompactString, FxHashMap};
 
@@ -26,6 +26,14 @@ pub(super) enum Binding {
     Namespace,
     RefNamespace,
     Ref,
+    /// A ref bound by `let`/`var`: a logical operand may be reassigned.
+    MutableRef,
+}
+
+impl Binding {
+    pub(super) fn is_ref(self) -> bool {
+        matches!(self, Self::Ref | Self::MutableRef)
+    }
 }
 
 pub(super) type Frame = FxHashMap<CompactString, Binding>;
@@ -75,18 +83,42 @@ pub(super) fn record_declaration(
     for declarator in &declaration.declarations {
         record_binding_names(&declarator.id, Binding::Other, frame);
     }
+    let ref_kind = if declaration.kind == VariableDeclarationKind::Const {
+        Binding::Ref
+    } else {
+        Binding::MutableRef
+    };
     for declarator in &declaration.declarations {
-        let binding = declarator
+        let mut binding = declarator
             .init
             .as_ref()
             .map(|init| expression_binding(init, frame, outer))
             .unwrap_or(Binding::Other);
-        if matches!(binding, Binding::Namespace | Binding::RefNamespace)
+        if binding.is_ref() {
+            binding = ref_kind;
+        }
+        if let BindingPattern::ArrayPattern(array) = &declarator.id
+            && declarator
+                .init
+                .as_ref()
+                .is_some_and(|init| is_define_model_call(init, frame, outer))
+        {
+            // `const [model, modifiers] = defineModel()`: only the first element is the ref.
+            for (index, element) in array.elements.iter().enumerate() {
+                if let Some(element) = element {
+                    let kind = if index == 0 { ref_kind } else { Binding::Other };
+                    record_binding_names(element, kind, frame);
+                }
+            }
+            if let Some(rest) = &array.rest {
+                record_binding_names(&rest.argument, Binding::Other, frame);
+            }
+        } else if matches!(binding, Binding::Namespace | Binding::RefNamespace)
             && let BindingPattern::ObjectPattern(object) = &declarator.id
         {
             for property in &object.properties {
                 let kind = match binding {
-                    Binding::RefNamespace => Binding::Ref,
+                    Binding::RefNamespace => ref_kind,
                     Binding::Namespace
                         if property
                             .key
@@ -114,6 +146,18 @@ pub(super) fn record_declaration(
             record_binding_names(&declarator.id, binding, frame);
         }
     }
+}
+
+/// Whether an initializer calls the unshadowed Vue compiler macro.
+fn is_define_model_call(expression: &Expression<'_>, local: &Frame, outer: &[Frame]) -> bool {
+    matches!(expression.without_parentheses(), Expression::CallExpression(call)
+        if matches!(&call.callee, Expression::Identifier(callee)
+            if callee.name == "defineModel" && !is_bound("defineModel", local, outer)))
+}
+
+/// Whether a lexical binding shadows a compiler macro name.
+fn is_bound(name: &str, local: &Frame, outer: &[Frame]) -> bool {
+    local.contains_key(name) || outer.iter().rev().any(|frame| frame.contains_key(name))
 }
 
 pub(super) fn record_binding_names(
@@ -155,7 +199,8 @@ pub(super) fn expression_binding(
     match expression {
         Expression::Identifier(id) => resolve(id.name.as_str(), local, outer),
         Expression::CallExpression(call) => {
-            if matches!(&call.callee, Expression::Identifier(identifier) if identifier.name == "defineModel")
+            if matches!(&call.callee, Expression::Identifier(identifier)
+                if identifier.name == "defineModel" && !is_bound("defineModel", local, outer))
                 || expression_binding(&call.callee, local, outer) == Binding::Factory
             {
                 Binding::Ref

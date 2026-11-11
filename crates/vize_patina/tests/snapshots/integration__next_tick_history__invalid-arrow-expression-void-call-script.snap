@@ -21,17 +21,17 @@ Observation {
             LintDiagnostic {
                 rule_name: "script/valid-next-tick",
                 severity: Warning,
-                message: "The result of this nextTick() call is ignored.",
+                message: "Await the Promise returned by `nextTick()` or pass a callback function.",
                 start: 56,
-                end: 66,
+                end: 64,
                 help: Some(
-                    "nextTick() returns a promise that resolves after the DOM updates. `await` it, chain `.then(...)`, or pass a callback (`nextTick(() => {})`); a bare call does nothing useful.",
+                    "nextTick() returns a promise that resolves after the DOM updates. `await` it, chain `.then(...)`, or pass a single callback (`nextTick(() => {})`).",
                 ),
                 labels: [
                     Label {
-                        message: "ignored nextTick() result",
+                        message: "invalid nextTick usage",
                         start: 56,
-                        end: 66,
+                        end: 64,
                     },
                 ],
                 fix: None,
@@ -48,17 +48,17 @@ Observation {
                 LintDiagnostic {
                     rule_name: "script/valid-next-tick",
                     severity: Warning,
-                    message: "The result of this nextTick() call is ignored.",
+                    message: "Await the Promise returned by `nextTick()` or pass a callback function.",
                     start: 56,
-                    end: 66,
+                    end: 64,
                     help: Some(
-                        "nextTick() returns a promise that resolves after the DOM updates. `await` it, chain `.then(...)`, or pass a callback (`nextTick(() => {})`); a bare call does nothing useful.",
+                        "nextTick() returns a promise that resolves after the DOM updates. `await` it, chain `.then(...)`, or pass a single callback (`nextTick(() => {})`).",
                     ),
                     labels: [
                         Label {
-                            message: "ignored nextTick() result",
+                            message: "invalid nextTick usage",
                             start: 56,
-                            end: 66,
+                            end: 64,
                         },
                     ],
                     fix: None,

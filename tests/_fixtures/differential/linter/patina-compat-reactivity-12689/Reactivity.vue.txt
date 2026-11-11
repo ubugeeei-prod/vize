@@ -1,0 +1,22 @@
+<script setup>
+import { computed, nextTick, ref } from 'vue'
+const count = ref(0)
+const model = defineModel()
+const [open] = defineModel()
+const total = computed(() => count.value + imported())
+function imported() {
+  return 1
+}
+nextTick(console.log).catch(() => {})
+nextTick(async () => {
+  await Promise.resolve()
+})
+const later = nextTick
+void (count ?? 0)
+void (0 || count)
+const copy = ref(count.value)
+copy.value = count.value
+</script>
+<template>
+  <button @click="count++" />
+</template>

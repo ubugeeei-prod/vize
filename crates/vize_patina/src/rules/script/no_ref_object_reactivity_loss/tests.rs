@@ -104,13 +104,61 @@ const watched = computed(() => item.value)
 const refs = toRefs(foo)
 const watchedBag = computed(() => refs.item.value)
 const [a] = ref(0)
-const copiedIntoAnotherRef = ref(count.value) as Ref<number>
 foo.bar = ref(0)
+const list = ref([])
+list.value[0] = 1
+list.value.item.name = 1
+;[count.value, other] = pair
 let alias = ref(0)
 alias = alias
 unknown.value
 "#;
     assert!(messages(source).is_empty(), "{:?}", messages(source));
+}
+
+#[test]
+fn reports_reads_nested_in_write_targets_and_destructuring_assignments() {
+    assert_copies(
+        r#"
+import { ref } from 'vue'
+const list = ref([])
+const index = ref(0)
+const count = ref(0)
+let late = 0
+list.value[index.value] = 1
+list.value[index.value]++
+slot(index.value).n = 2
+;({ value: late } = count)
+const draft = ref(count.value) as Ref<number>
+;(list.value as any).length = 0
+;({ foo: late = count.value } = bar)
+"#,
+        7,
+    );
+}
+
+#[test]
+fn covers_destructuring_copy_and_write_target_shapes() {
+    assert_copies(
+        "import { ref } from 'vue'; const count = ref(0); let value; ({ value } = count);",
+        1,
+    );
+    assert_copies(
+        "import { ref } from 'vue'; const count = ref(0); let value; ({ value = 1 } = count);",
+        1,
+    );
+    assert_copies(
+        "import { ref } from 'vue'; const count = ref(0); let x; ({ ['value']: x } = count);",
+        1,
+    );
+    assert_copies(
+        "import { ref } from 'vue'; const pair = ref([]); const bar = ref({}); let rest; [...rest] = pair; ({ ...rest } = bar);",
+        0,
+    );
+    assert_copies(
+        "import { ref } from 'vue'; const count = ref(0); (count.value as any) = 1;",
+        0,
+    );
 }
 
 #[test]

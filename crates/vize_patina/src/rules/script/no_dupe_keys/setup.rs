@@ -67,6 +67,9 @@ pub(super) fn check<'a>(
     };
     let mut setup_result = ScriptLintResult::default();
     let mut declared_props = FxHashSet::default();
+    // Every props-object reference and `defineProps` call also derives a model binding.
+    let mut model_sources = Vec::new();
+    let mut model_calls = Vec::new();
     for candidate in candidates(program) {
         if macro_shadowed(program, &semantic, "defineProps")
             || (candidate.wrapped && macro_shadowed(program, &semantic, "withDefaults"))
@@ -95,6 +98,8 @@ pub(super) fn check<'a>(
             .flat_map(BindingPattern::get_binding_identifiers)
             .filter_map(|id| id.symbol_id.get())
             .collect();
+        model_sources.extend_from_slice(&prop_symbols);
+        model_calls.push(candidate.call.span);
         for name in prop_names {
             declared_props.insert(name.clone());
             if renamed(candidate.pattern, &name) {
@@ -115,14 +120,24 @@ pub(super) fn check<'a>(
         }
     }
     if !macro_shadowed(program, &semantic, "defineModel") {
-        for model in model_candidates(program) {
+        for (model, pattern) in model_candidates(program) {
             let (name, name_span) = model_name(model);
             if !declared_props.insert(name.clone()) {
                 report_span(&name, name_span, offset, &mut setup_result);
                 continue;
             }
             if let Some(symbol) = root_value(&semantic, &name) {
-                if !model_owns_binding(&semantic, symbol, model.span) {
+                let mut sources = model_sources.clone();
+                sources.extend(
+                    pattern
+                        .filter(|pattern| !matches!(pattern, BindingPattern::ArrayPattern(_)))
+                        .into_iter()
+                        .flat_map(BindingPattern::get_binding_identifiers)
+                        .filter_map(|id| id.symbol_id.get()),
+                );
+                let mut calls = model_calls.clone();
+                calls.push(model.span);
+                if !model_owns_binding(&semantic, symbol, &sources, &calls) {
                     report(&semantic, symbol, &name, offset, &mut setup_result);
                 }
             } else if let (Some(semantic), NoDupeKeysModuleScript::Parsed { offset, .. }) =
@@ -141,18 +156,26 @@ pub(super) fn check<'a>(
     }
 }
 
-fn model_owns_binding(semantic: &Semantic<'_>, symbol: SymbolId, call: Span) -> bool {
+/// A model-named binding computed from the model, the props object or a macro
+/// call is derived from the model, as in eslint-plugin-vue.
+fn model_owns_binding(
+    semantic: &Semantic<'_>,
+    symbol: SymbolId,
+    sources: &[SymbolId],
+    calls: &[Span],
+) -> bool {
     let AstKind::VariableDeclarator(declaration) = semantic.symbol_declaration(symbol).kind()
     else {
         return false;
     };
-    declaration
-        .init
-        .as_ref()
-        .is_some_and(|initializer| initializer.span().contains_inclusive(call))
+    declaration.init.as_ref().is_some_and(|initializer| {
+        derivation::initializer_references(initializer, semantic, sources, calls)
+    })
 }
 
-fn model_candidates<'a>(program: &'a Program<'a>) -> impl Iterator<Item = &'a CallExpression<'a>> {
+fn model_candidates<'a>(
+    program: &'a Program<'a>,
+) -> impl Iterator<Item = (&'a CallExpression<'a>, Option<&'a BindingPattern<'a>>)> {
     program.body.iter().flat_map(|statement| {
         let mut calls = Vec::new();
         match statement {
@@ -161,7 +184,7 @@ fn model_candidates<'a>(program: &'a Program<'a>) -> impl Iterator<Item = &'a Ca
                     statement.expression.get_inner_expression()
                     && named(call, "defineModel")
                 {
-                    calls.push(call.as_ref());
+                    calls.push((call.as_ref(), None));
                 }
             }
             Statement::VariableDeclaration(declaration) if !declaration.declare => {
@@ -172,7 +195,11 @@ fn model_candidates<'a>(program: &'a Program<'a>) -> impl Iterator<Item = &'a Ca
                         .map(Expression::get_inner_expression)
                         && named(call, "defineModel")
                     {
-                        calls.push(call.as_ref());
+                        // Only a direct initializer owns the declared pattern.
+                        let direct = declarator.init.as_ref().is_some_and(|init| {
+                            matches!(init.without_parentheses(), Expression::CallExpression(_))
+                        });
+                        calls.push((call.as_ref(), direct.then_some(&declarator.id)));
                     }
                 }
             }
@@ -304,102 +331,8 @@ fn derived_from_props(
     let Some(initializer) = &declaration.init else {
         return false;
     };
-    let span = initializer.span();
-    if span.contains_inclusive(call) {
-        return true;
-    }
-    if matches!(declaration.id, BindingPattern::ObjectPattern(_))
-        && (identifier_is_props(initializer, semantic, props)
-            || to_refs_reads_props(initializer, semantic, props))
-    {
-        return pattern_maps_prop(&declaration.id, symbol, name);
-    }
-    if derivation::initializer_reads_prop(initializer, semantic, props, name)
-        || member_reads_prop(initializer, semantic, props, name)
-        || to_ref_reads_prop(initializer, semantic, props, name)
-    {
-        return true;
-    }
-    false
-}
-
-fn member_reads_prop(
-    expression: &Expression<'_>,
-    semantic: &Semantic<'_>,
-    props: &[SymbolId],
-    name: &str,
-) -> bool {
-    let expression = expression.get_inner_expression();
-    let Some(member) = expression.as_member_expression() else {
-        return false;
-    };
-    member.static_property_name() == Some(name)
-        && identifier_is_props(member.object(), semantic, props)
-}
-
-fn identifier_is_props(
-    expression: &Expression<'_>,
-    semantic: &Semantic<'_>,
-    props: &[SymbolId],
-) -> bool {
-    let Expression::Identifier(identifier) = expression.get_inner_expression() else {
-        return false;
-    };
-    identifier
-        .reference_id
-        .get()
-        .and_then(|reference| semantic.scoping().get_reference(reference).symbol_id())
-        .is_some_and(|symbol| props.contains(&symbol))
-}
-
-fn to_ref_reads_prop(
-    expression: &Expression<'_>,
-    semantic: &Semantic<'_>,
-    props: &[SymbolId],
-    name: &str,
-) -> bool {
-    let Expression::CallExpression(call) = expression.get_inner_expression() else {
-        return false;
-    };
-    named(call, "toRef")
-        && call
-            .arguments
-            .first()
-            .and_then(Argument::as_expression)
-            .is_some_and(|argument| identifier_is_props(argument, semantic, props))
-        && call.arguments.get(1).is_some_and(|argument| {
-            matches!(argument, Argument::StringLiteral(literal) if literal.value == name)
-        })
-}
-
-fn to_refs_reads_props(
-    expression: &Expression<'_>,
-    semantic: &Semantic<'_>,
-    props: &[SymbolId],
-) -> bool {
-    let Expression::CallExpression(call) = expression.get_inner_expression() else {
-        return false;
-    };
-    named(call, "toRefs")
-        && call
-            .arguments
-            .first()
-            .and_then(Argument::as_expression)
-            .is_some_and(|argument| identifier_is_props(argument, semantic, props))
-}
-
-fn pattern_maps_prop(pattern: &BindingPattern<'_>, symbol: SymbolId, name: &str) -> bool {
-    let BindingPattern::ObjectPattern(pattern) = pattern else {
-        return false;
-    };
-    pattern.properties.iter().any(|property| {
-        property.key.static_name().as_deref() == Some(name)
-            && property
-                .value
-                .get_binding_identifiers()
-                .into_iter()
-                .any(|identifier| identifier.symbol_id.get() == Some(symbol))
-    })
+    !derivation::aliases_other_prop(declaration, semantic, props, name)
+        && derivation::initializer_references(initializer, semantic, props, &[call])
 }
 
 fn renamed(pattern: Option<&BindingPattern<'_>>, name: &str) -> bool {

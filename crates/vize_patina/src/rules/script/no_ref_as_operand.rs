@@ -145,7 +145,7 @@ impl RefOperandVisitor<'_> {
     /// for both operator operands and condition positions (`if`, `while`,
     /// ternary test, ...), where a ref object is always truthy.
     fn check_operand(&mut self, expression: &Expression<'_>) {
-        if let Expression::Identifier(id) = expression
+        if let Expression::Identifier(id) = expression.without_parentheses()
             && self.is_ref(&id.name)
         {
             self.report(id.span, &id.name);
@@ -155,12 +155,15 @@ impl RefOperandVisitor<'_> {
     /// Resolve `name` against the scope stack, innermost-first. Returns `true`
     /// only when the nearest binding of that name is a ref factory result.
     fn is_ref(&self, name: &str) -> bool {
-        for frame in self.scopes.iter().rev() {
-            if let Some(&binding) = frame.get(name) {
-                return binding == Binding::Ref;
-            }
-        }
-        false
+        self.binding(name).is_ref()
+    }
+
+    fn binding(&self, name: &str) -> Binding {
+        self.scopes
+            .iter()
+            .rev()
+            .find_map(|frame| frame.get(name).copied())
+            .unwrap_or(Binding::Other)
     }
 
     fn report(&mut self, span: Span, name: &str) {

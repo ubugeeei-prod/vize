@@ -19,7 +19,7 @@ impl NoMutatingProps {
         &self,
         ctx: &mut LintContext<'a>,
         directive: &DirectiveNode<'a>,
-        scope: &PropScope<'_>,
+        scope: &mut PropScope<'_>,
     ) {
         let binding = if directive.name == "model" {
             "v-model"
@@ -38,6 +38,7 @@ impl NoMutatingProps {
             return;
         };
         let content = expression_source(exp, ctx.source);
+        scope.two_way_starts.push(exp.loc().span.start);
         if !self.should_report_template_mutation(scope.mutation_kind(content)) {
             return;
         }

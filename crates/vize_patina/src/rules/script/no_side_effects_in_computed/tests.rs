@@ -358,3 +358,22 @@ export default {
     let result = create_linter().lint(source, 0);
     assert_eq!(result.error_count, 2, "{:?}", result.diagnostics);
 }
+
+#[test]
+fn import_bindings_are_not_external_state() {
+    let source = r#"
+import { computed, ref } from 'vue'
+import * as arrays from './arrays'
+import { helpers } from './arrays'
+const list = ref([3, 1, 2])
+const reversed = computed(() => arrays.reverse(list.value))
+const sorted = computed(() => helpers.sort(list.value))
+const mutated = computed(() => list.value.reverse())
+"#;
+    let result = create_linter().lint(source, 0);
+    assert_eq!(result.error_count, 1, "{:#?}", result.diagnostics);
+    let start = source
+        .find("list.value.reverse()")
+        .map(|start| start as u32);
+    assert_eq!(result.diagnostics.first().map(|d| d.start), start);
+}

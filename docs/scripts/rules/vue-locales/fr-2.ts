@@ -187,6 +187,8 @@ export const frenchVue2 = {
 } satisfies Record<string, readonly [purpose: string, bad: string, good: string]>;
 
 export const frenchVueNotes = {
+  "A type assertion does not change the value it wraps, so `(rows as string[]).push(x)` and `rows!.push(x)` in a template are reported as mutations of the prop `rows`; eslint-plugin-vue stops at the assertion.":
+    "Une assertion de type ne change pas la valeur qu’elle encadre : dans un template, `(rows as string[]).push(x)` et `rows!.push(x)` sont donc signalés comme des mutations de la prop `rows`, alors qu’eslint-plugin-vue s’arrête à l’assertion.",
   "Checks the static name of a rendered slot outlet. The parent-side v-slot and #name provider syntax is outside this rule.":
     "Contrôle le nom statique d’un point d’insertion de slot rendu. La syntaxe de fourniture v-slot et #name côté parent est hors du champ de cette règle.",
   "The rule compares listeners for the same event on a native element. It ignores custom component events unless both listeners use `.native`. Different event names and disjoint keyboard filters do not conflict.":

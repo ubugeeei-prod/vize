@@ -41,14 +41,15 @@
 
 use oxc_allocator::Allocator;
 use oxc_ast::ast::{
-    Argument, ArrowFunctionExpression, AssignmentExpression, AssignmentTarget, CallExpression,
-    Expression, Function, SimpleAssignmentTarget, UnaryExpression, UpdateExpression,
+    Argument, ArrowFunctionExpression, AssignmentExpression, AssignmentTarget, BindingIdentifier,
+    CallExpression, Class, Expression, Function, MemberExpression, SimpleAssignmentTarget,
+    UnaryExpression, UpdateExpression,
 };
 use oxc_ast_visit::{
     Visit,
     walk::{
-        walk_assignment_expression, walk_call_expression, walk_unary_expression,
-        walk_update_expression,
+        walk_arrow_function_expression, walk_assignment_expression, walk_call_expression,
+        walk_function, walk_unary_expression, walk_update_expression,
     },
 };
 use oxc_parser::Parser;
@@ -90,10 +91,14 @@ pub(super) fn for_each_mutation_target(
     if !may_mutate(source) {
         return;
     }
+    // `@click="function () { ... }"` is a function expression, which a
+    // statement list only accepts inside parentheses.
+    let wrapped = is_function_expression_handler(source).then(|| vize_l0::cstr!("({source})"));
+    let shift = u32::from(wrapped.is_some());
     let allocator = Allocator::default();
     let parsed = Parser::new(
         &allocator,
-        source,
+        wrapped.as_deref().unwrap_or(source),
         SourceType::default().with_typescript(true),
     )
     .parse();
@@ -102,21 +107,45 @@ pub(super) fn for_each_mutation_target(
     }
     let mut collector = MutationTargetCollector {
         targets: Vec::new(),
+        shadowed: Vec::new(),
     };
     collector.visit_program(&parsed.program);
     for target in collector.targets {
-        if let Some(text) = source.get(target.target.start as usize..target.target.end as usize) {
+        let start = target.target.start.saturating_sub(shift) as usize;
+        let end = target.target.end.saturating_sub(shift) as usize;
+        if let Some(text) = source.get(start..end) {
             visit(HandlerMutationTarget {
                 target: text,
-                span: target.mutation,
+                span: Span::new(
+                    target.mutation.start.saturating_sub(shift),
+                    target.mutation.end.saturating_sub(shift),
+                ),
                 deep: target.deep,
             });
         }
     }
 }
 
-struct MutationTargetCollector {
+/// Whether the handler starts with a function-expression token sequence.
+fn is_function_expression_handler(source: &str) -> bool {
+    let rest = source.trim_start();
+    let rest = rest
+        .strip_prefix("async")
+        .filter(|after| after.chars().next().is_some_and(char::is_whitespace))
+        .map_or(rest, str::trim_start);
+    let Some(after) = rest.strip_prefix("function") else {
+        return false;
+    };
+    match after.chars().next() {
+        None => true,
+        Some(character) => character.is_whitespace() || matches!(character, '(' | '*'),
+    }
+}
+
+struct MutationTargetCollector<'a> {
     targets: Vec<MutationTargetSpan>,
+    /// Names bound by enclosing handler functions (parameters and locals).
+    shadowed: Vec<&'a str>,
 }
 
 struct MutationTargetSpan {
@@ -125,13 +154,31 @@ struct MutationTargetSpan {
     deep: bool,
 }
 
-impl<'a> Visit<'a> for MutationTargetCollector {
-    fn visit_function(&mut self, _: &Function<'a>, _: ScopeFlags) {}
+impl<'a> Visit<'a> for MutationTargetCollector<'a> {
+    // A function handler (`@click="() => rows.pop()"`) runs the same mutations;
+    // its parameters and locals shadow props of the same name.
+    fn visit_function(&mut self, it: &Function<'a>, flags: ScopeFlags) {
+        let depth = self.shadowed.len();
+        DeclaredNames(&mut self.shadowed).visit_formal_parameters(&it.params);
+        if let Some(body) = &it.body {
+            DeclaredNames(&mut self.shadowed).visit_function_body(body);
+        }
+        walk_function(self, it, flags);
+        self.shadowed.truncate(depth);
+    }
 
-    fn visit_arrow_function_expression(&mut self, _: &ArrowFunctionExpression<'a>) {}
+    fn visit_arrow_function_expression(&mut self, it: &ArrowFunctionExpression<'a>) {
+        let depth = self.shadowed.len();
+        DeclaredNames(&mut self.shadowed).visit_formal_parameters(&it.params);
+        DeclaredNames(&mut self.shadowed).visit_function_body(&it.body);
+        walk_arrow_function_expression(self, it);
+        self.shadowed.truncate(depth);
+    }
 
     fn visit_assignment_expression(&mut self, it: &AssignmentExpression<'a>) {
-        if let Some(span) = assignment_target_span(&it.left) {
+        if let Some((root, span)) = assignment_target(&it.left)
+            && !self.is_shadowed(root)
+        {
             self.push(span, it.span, false);
         }
         // Keep walking: the right-hand side can hold further assignments
@@ -140,28 +187,40 @@ impl<'a> Visit<'a> for MutationTargetCollector {
     }
 
     fn visit_update_expression(&mut self, it: &UpdateExpression<'a>) {
-        if let Some(span) = simple_assignment_target_span(&it.argument) {
+        if let Some((root, span)) = simple_assignment_target(&it.argument)
+            && !self.is_shadowed(root)
+        {
             self.push(span, it.span, false);
         }
         walk_update_expression(self, it);
     }
 
     fn visit_unary_expression(&mut self, it: &UnaryExpression<'a>) {
-        if it.operator == UnaryOperator::Delete {
+        if it.operator == UnaryOperator::Delete
+            && let Some(root) = member_chain_root(&it.argument)
+            && !self.is_shadowed(root)
+        {
             self.push(it.argument.get_inner_expression().span(), it.span, false);
         }
         walk_unary_expression(self, it);
     }
 
     fn visit_call_expression(&mut self, it: &CallExpression<'a>) {
-        if let Some(target) = mutating_call_target(it) {
+        if let Some(target) = mutating_call_target(it)
+            && let Some(root) = member_chain_root(target)
+            && !self.is_shadowed(root)
+        {
             self.push(target.get_inner_expression().span(), it.span, true);
         }
         walk_call_expression(self, it);
     }
 }
 
-impl MutationTargetCollector {
+impl MutationTargetCollector<'_> {
+    fn is_shadowed(&self, root: &str) -> bool {
+        self.shadowed.contains(&root)
+    }
+
     fn push(&mut self, target: Span, mutation: Span, deep: bool) {
         self.targets.push(MutationTargetSpan {
             target,
@@ -171,16 +230,60 @@ impl MutationTargetCollector {
     }
 }
 
+/// Collects the names a function binds, without entering nested functions.
+struct DeclaredNames<'s, 'a>(&'s mut Vec<&'a str>);
+
+impl<'a> Visit<'a> for DeclaredNames<'_, 'a> {
+    fn visit_binding_identifier(&mut self, it: &BindingIdentifier<'a>) {
+        self.0.push(it.name.as_str());
+    }
+
+    fn visit_function(&mut self, it: &Function<'a>, _: ScopeFlags) {
+        if let Some(id) = &it.id {
+            self.0.push(id.name.as_str());
+        }
+    }
+
+    fn visit_arrow_function_expression(&mut self, _: &ArrowFunctionExpression<'a>) {}
+
+    fn visit_class(&mut self, it: &Class<'a>) {
+        if let Some(id) = &it.id {
+            self.0.push(id.name.as_str());
+        }
+    }
+}
+
+/// The root identifier of a plain member chain (`rows`, `item.list[0]`,
+/// `(rows?.shift)`). A call result such as `rows.slice()` is a fresh value.
+fn member_chain_root<'t>(expression: &'t Expression<'_>) -> Option<&'t str> {
+    match expression.get_inner_expression() {
+        Expression::Identifier(identifier) => Some(identifier.name.as_str()),
+        Expression::ChainExpression(chain) => chain
+            .expression
+            .as_member_expression()
+            .and_then(|member| member_chain_root(member.object())),
+        expression => expression
+            .as_member_expression()
+            .and_then(|member| member_chain_root(member.object())),
+    }
+}
+
 /// The span of an assignment target, when it is a plain identifier or a member
 /// access.
 ///
 /// Destructuring targets are deliberately not resolved; see the module-level
 /// note on under-matching.
-fn assignment_target_span(target: &AssignmentTarget<'_>) -> Option<Span> {
+fn assignment_target<'t>(target: &'t AssignmentTarget<'_>) -> Option<(&'t str, Span)> {
     match target {
-        AssignmentTarget::AssignmentTargetIdentifier(identifier) => Some(identifier.span),
-        other => other.as_member_expression().map(GetSpan::span),
+        AssignmentTarget::AssignmentTargetIdentifier(identifier) => {
+            Some((identifier.name.as_str(), identifier.span))
+        }
+        other => other.as_member_expression().and_then(member_target),
     }
+}
+
+fn member_target<'t>(member: &'t MemberExpression<'_>) -> Option<(&'t str, Span)> {
+    Some((member_chain_root(member.object())?, member.span()))
 }
 
 fn mutating_call_target<'a>(call: &'a CallExpression<'a>) -> Option<&'a Expression<'a>> {
@@ -201,18 +304,23 @@ fn mutating_call_target<'a>(call: &'a CallExpression<'a>) -> Option<&'a Expressi
 }
 
 fn static_call_member<'a>(callee: &'a Expression<'a>) -> Option<(&'a Expression<'a>, &'a str)> {
-    match callee.get_inner_expression() {
-        Expression::StaticMemberExpression(member) => {
+    // `(rows?.shift)?.()` wraps the member in a chain.
+    let member = match callee.get_inner_expression() {
+        Expression::ChainExpression(chain) => chain.expression.as_member_expression(),
+        callee => callee.as_member_expression(),
+    }?;
+    match member {
+        MemberExpression::StaticMemberExpression(member) => {
             Some((&member.object, member.property.name.as_str()))
         }
-        Expression::ComputedMemberExpression(member) => match member
+        MemberExpression::ComputedMemberExpression(member) => match member
             .expression
             .get_inner_expression()
         {
             Expression::StringLiteral(property) => Some((&member.object, property.value.as_str())),
             _ => None,
         },
-        _ => None,
+        MemberExpression::PrivateFieldExpression(_) => None,
     }
 }
 
@@ -235,9 +343,11 @@ fn may_mutate(source: &str) -> bool {
             .any(|method| source.contains(method))
 }
 
-fn simple_assignment_target_span(target: &SimpleAssignmentTarget<'_>) -> Option<Span> {
+fn simple_assignment_target<'t>(target: &'t SimpleAssignmentTarget<'_>) -> Option<(&'t str, Span)> {
     match target {
-        SimpleAssignmentTarget::AssignmentTargetIdentifier(identifier) => Some(identifier.span),
-        other => other.as_member_expression().map(GetSpan::span),
+        SimpleAssignmentTarget::AssignmentTargetIdentifier(identifier) => {
+            Some((identifier.name.as_str(), identifier.span))
+        }
+        other => other.as_member_expression().and_then(member_target),
     }
 }

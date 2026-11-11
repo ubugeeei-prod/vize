@@ -151,6 +151,13 @@ const label = "Name"
     );
     assert!(
         collisions(
+            "const props = defineProps<{foo: string}>(); defineModel('bar'); const bar = props.foo;",
+            None,
+        )
+        .is_empty()
+    );
+    assert!(
+        collisions(
             "const props = defineProps<{value: number}>(); const value = props.value;",
             None,
         )
@@ -183,5 +190,43 @@ const label = "Name"
             None,
         )
         .is_empty()
+    );
+}
+
+#[test]
+fn bindings_derived_from_props_or_the_model_are_not_duplicates() {
+    let setup = r#"import { computed, ref, toRef } from "vue";
+const props = defineProps<{ foo: string; bar: string; label: string; size: number }>();
+const model = defineModel<boolean>("open");
+const key = "bar";
+const foo = toRef(props, key);
+const label = ref(props.size);
+const open = computed(() => model.value);
+const bar = "x";"#;
+    assert_eq!(collisions(setup, None), ["Duplicated key 'bar'"]);
+
+    let rest = r#"const props = defineProps<{ id: string; label: string }>();
+const model = defineModel<string>();
+const { modelValue, ...others } = props as { modelValue?: string; id: string; label: string };"#;
+    assert!(collisions(rest, None).is_empty());
+}
+
+#[test]
+fn a_direct_alias_of_another_prop_is_still_a_duplicate() {
+    let setup = r#"import { toRef, toRefs } from "vue";
+const props = defineProps<{ a: string; b: string; c: string; d: string; e: string }>();
+const a = props.b;
+const b = toRef(props, "c");
+const { e: c } = props;
+const { a: d } = toRefs(props);
+const e = props.e;"#;
+    assert_eq!(
+        collisions(setup, None),
+        [
+            "Duplicated key 'a'",
+            "Duplicated key 'b'",
+            "Duplicated key 'c'",
+            "Duplicated key 'd'"
+        ]
     );
 }
