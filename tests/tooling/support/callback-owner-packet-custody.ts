@@ -9,8 +9,20 @@ export function assertJoinedVerbatimRunCustody(): void {
       [0, 5, 0, 5, 0, 7],
       [6, 4, 6, 4, 0, 7],
     ],
+    diagnosticDirectives: {
+      directives: [[0, 0, 5, 6, 0, 0]],
+      unusedExpectDirectiveDiagnostics: [],
+    },
   };
-  assertPreservedCallbackPacket(before, { ...before, mappings: [[0, 10, 0, 10, 0, 7]] }, source);
+  assertPreservedCallbackPacket(
+    before,
+    {
+      ...before,
+      mappings: [[0, 10, 0, 10, 0, 7]],
+      diagnosticDirectives: { ...before.diagnosticDirectives, directives: [] },
+    },
+    source,
+  );
   assert.throws(
     () =>
       assertPreservedCallbackPacket(
@@ -28,6 +40,10 @@ export function assertJoinedVerbatimRunCustody(): void {
       [0, 5, 0, 5, 0, 7],
       [7, 4, 7, 4, 0, 7],
     ],
+    diagnosticDirectives: {
+      directives: [[0, 0, 5, 7, 0, 0]],
+      unusedExpectDirectiveDiagnostics: [],
+    },
   };
   assertPreservedCallbackPacket(crlf, structuredClone(crlf), crlfSource);
   assert.throws(

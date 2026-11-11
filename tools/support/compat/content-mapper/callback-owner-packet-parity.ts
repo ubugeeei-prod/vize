@@ -7,7 +7,6 @@ import {
   currentNativeAttributeAliases,
   currentSlotsExport,
   currentSlotsMarker,
-  joinVerbatimRuns,
   nativeAttributesPath,
   previousNativeAttributeAliases,
   previousSlotsExport,
@@ -21,6 +20,7 @@ import {
 } from "./callback-owner-current-source.ts";
 import { withInertCallbackRows, type InertCallbackBinding } from "./callback-owner-inert-packet.ts";
 import { withoutReplayAliasRows } from "./callback-owner-replay-aliases.ts";
+import { withJoinedVerbatimRuns } from "./callback-owner-verbatim-runs.ts";
 
 type Edit = { start: number; end: number; replacement: Buffer };
 const nativeRoot =
@@ -438,15 +438,8 @@ export function assertPreservedCallbackPacket(
   assert.equal(typeof before.text, "string");
   assert.equal(typeof after.text, "string");
   if (before.text === after.text) {
-    const joinedSuccessor = structuredClone(before);
-    if (authoredSource !== undefined) {
-      assert.ok(Array.isArray(joinedSuccessor.mappings));
-      joinedSuccessor.mappings = joinVerbatimRuns(
-        joinedSuccessor.mappings,
-        authoredSource,
-        joinedSuccessor.text as string,
-      );
-    }
+    const joinedSuccessor =
+      authoredSource === undefined ? structuredClone(before) : withJoinedVerbatimRuns(before, authoredSource);
     if (isDeepStrictEqual(after, joinedSuccessor)) return;
     const hoverSuccessor = withComponentPropHoverOwnership(joinedSuccessor, after);
     if (isDeepStrictEqual(after, hoverSuccessor)) return;
