@@ -7,7 +7,7 @@ use vize_l2::provenance::ProvenanceSink;
 use super::lane::{RunShape, TextRun};
 use super::{TextAction, TextParts, rebuild_source};
 use crate::lower::cx::Cx;
-use crate::lower::expr::{desc, interpolation_expr_at, opaque_at};
+use crate::lower::expr::{desc, filter_expr_at, opaque_at};
 
 /// Record what a run consumed without lowering it, in scan order.
 fn record_consumed(cx: &mut Cx<'_, impl ProvenanceSink>, run: &TextRun<'_>) {
@@ -116,7 +116,7 @@ pub(crate) fn lower_text_run<'a>(
                 if cx.retain_consumed_expressions {
                     for child in children.get(start..end).unwrap_or_default() {
                         if let SurfaceChild::Interpolation(interpolation) = child {
-                            let expression = interpolation_expr_at(cx, interpolation.content.text);
+                            let expression = filter_expr_at(cx, interpolation.content.text);
                             cx.consumed_expressions.push(expression);
                         }
                     }

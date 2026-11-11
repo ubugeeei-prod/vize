@@ -13,24 +13,9 @@ use vize_l2::provenance::ProvenanceSink;
 use super::cx::Cx;
 
 /// Trim `text` and return the trimmed slice with its authored span.
-///
-/// A possible trailing line comment keeps its authored terminator. The shared
-/// parser remains the authority for whether the complete slice is one
-/// expression, while preserving the terminator prevents the comment from
-/// swallowing tokens an emitter appends later.
+/// Trimming keeps the slice a source slice, so spans stay exact.
 pub(crate) fn trimmed<'a>(cx: &Cx<'a, impl ProvenanceSink>, text: &'a str) -> (&'a str, Span) {
-    let start_trimmed = text.trim_start();
-    let end_trimmed = start_trimmed.trim_end();
-    let trailing = start_trimmed.get(end_trimmed.len()..).unwrap_or_default();
-    let terminates_line_comment = end_trimmed.contains("//")
-        && trailing
-            .chars()
-            .any(|ch| matches!(ch, '\n' | '\r' | '\u{2028}' | '\u{2029}'));
-    let slice = if terminates_line_comment {
-        start_trimmed
-    } else {
-        end_trimmed
-    };
+    let slice = text.trim();
     (slice, cx.span_of(slice))
 }
 
@@ -208,20 +193,6 @@ pub(crate) fn interpolation_expr_at<'a>(
     }
     let (slice, span) = trimmed(cx, text);
     coordinates::expression(cx, slice, span, cx.caps.supports_filters)
-}
-
-/// Interpolations are trimmed before Vue parses them, so a final line break
-/// cannot terminate a `//` comment there. Keep that position distinct from
-/// directive values, which retain an authored terminator inside the value.
-pub(crate) fn interpolation_expr_at<'a>(
-    cx: &Cx<'a, impl ProvenanceSink>,
-    text: &'a str,
-) -> ExprRef<'a> {
-    if cx.foreign_dialect.is_some() {
-        return expr_at(cx, text);
-    }
-    let slice = text.trim();
-    coordinates::expression(cx, slice, cx.span_of(slice), cx.caps.supports_filters)
 }
 
 /// A position-classified escape at an exact place: the reasons only the
