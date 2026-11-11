@@ -23,9 +23,10 @@
 //!
 //! Covers the Options API object form (`props: { x: { type, default } }`),
 //! including `defineComponent({...})` and same-file identifier-bound
-//! options/props objects, and the `<script setup>` runtime form
-//! `defineProps({ ... })`. The array shorthand and the type-based
-//! `defineProps<{...}>()` form carry no runtime `default` and are not checked.
+//! options/props objects, the `<script setup>` runtime form
+//! `defineProps({ ... })`, `defineModel` options, `withDefaults(...)`, and
+//! defaults written in a props destructure. The array shorthand carries no
+//! default and is not checked.
 //!
 //! Port of [`vue/require-valid-default-prop`](https://eslint.vuejs.org/rules/require-valid-default-prop.html).
 //!
@@ -66,6 +67,8 @@ use vize_l0::CompactString;
 use super::super::{ScriptLintResult, ScriptRule, ScriptRuleMeta};
 use super::props_source::{PropDescriptor, collect_runtime_props};
 use crate::diagnostic::{LintDiagnostic, Severity};
+
+mod macros;
 
 static META: ScriptRuleMeta = ScriptRuleMeta {
     name: "script/require-valid-default-prop",
@@ -108,6 +111,7 @@ impl ScriptRule for RequireValidDefaultProp {
                 check_prop(prop, offset, result);
             }
         }
+        macros::check_setup_defaults(program, offset, result);
     }
 }
 
@@ -123,6 +127,14 @@ enum DefaultKind {
     Function(Option<&'static str>),
 }
 
+/// Where a default expression is written. Destructuring initializers are not
+/// factories: a function there is the value, and an object or array literal
+/// that matches the type is accepted.
+enum DefaultSite {
+    Property,
+    Assignment,
+}
+
 /// Validate the `default` of a single object-descriptor prop against its `type`.
 fn check_prop(prop: PropDescriptor<'_>, offset: usize, result: &mut ScriptLintResult) {
     // Only an object descriptor can carry both `type` and `default`. A shorthand
@@ -130,30 +142,53 @@ fn check_prop(prop: PropDescriptor<'_>, offset: usize, result: &mut ScriptLintRe
     let Expression::ObjectExpression(descriptor) = prop.value.get_inner_expression() else {
         return;
     };
+    validate_descriptor(prop.name, descriptor, offset, result);
+}
+
+fn validate_descriptor(
+    name: &str,
+    descriptor: &ObjectExpression<'_>,
+    offset: usize,
+    result: &mut ScriptLintResult,
+) {
     let Some(default_value) = descriptor_member(descriptor, "default") else {
         return;
     };
     let Some(type_value) = descriptor_member(descriptor, "type") else {
         return;
     };
-
-    // The declared native types; non-native types (imported `PropType`, custom
-    // classes) cannot be validated and are skipped.
     let type_names = native_type_names(type_value);
+    validate_default(
+        name,
+        &type_names,
+        default_value,
+        DefaultSite::Property,
+        offset,
+        result,
+    );
+}
+
+fn validate_default(
+    name: &str,
+    type_names: &[&'static str],
+    default_value: &Expression<'_>,
+    site: DefaultSite,
+    offset: usize,
+    result: &mut ScriptLintResult,
+) {
     if type_names.is_empty() {
         return;
     }
-
     let Some(default_kind) = default_kind(default_value) else {
-        // Identifier, call expression, etc. — kind unknown, do not guess.
         return;
     };
-
     match default_kind {
-        // A function default is the factory Vue invokes per instance; accept it
-        // for every declared type (its return value is not checked statically).
         DefaultKind::Function(return_type) => {
-            if type_names.contains(&"Function") || return_type.is_none() {
+            if type_names.contains(&"Function") {
+                return;
+            }
+            if matches!(site, DefaultSite::Assignment) {
+                report(name, default_value, type_names, true, offset, result);
                 return;
             }
             let Some(return_type) = return_type else {
@@ -162,17 +197,22 @@ fn check_prop(prop: PropDescriptor<'_>, offset: usize, result: &mut ScriptLintRe
             if type_names.contains(&return_type) {
                 return;
             }
-            report(prop.name, default_value, &type_names, true, offset, result);
+            report(name, default_value, type_names, true, offset, result);
         }
         DefaultKind::Value(value_type) => {
-            if type_names.contains(&value_type) && !FUNCTION_VALUE_TYPES.contains(&value_type) {
-                // A scalar literal matching a declared scalar type is valid.
+            let matches_type = type_names.contains(&value_type);
+            let factory_only = FUNCTION_VALUE_TYPES.contains(&value_type);
+            if matches_type && (matches!(site, DefaultSite::Assignment) || !factory_only) {
                 return;
             }
-            // Either a type mismatch, or an `Object`/`Array` literal that must be
-            // a factory function. The expected-type wording maps the
-            // factory-only types to "function".
-            report(prop.name, default_value, &type_names, false, offset, result);
+            report(
+                name,
+                default_value,
+                type_names,
+                matches!(site, DefaultSite::Assignment),
+                offset,
+                result,
+            );
         }
     }
 }
