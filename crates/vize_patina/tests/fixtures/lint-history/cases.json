@@ -620,7 +620,7 @@
     "rule": "a11y/no-static-element-interactions",
     "vue_version": null,
     "vapor": null,
-    "diagnostics": 0,
+    "diagnostics": 4,
     "fixes": 0
   },
   {

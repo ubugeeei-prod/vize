@@ -11,15 +11,17 @@ use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::markup::{MarkupBindingKind, MarkupContext, MarkupElement, MarkupRule, MarkupTraversal};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use vize_relief::{ElementNode, PropNode};
+use vize_relief::{ElementNode, Namespace};
 
-use super::helpers::{
-    has_event_handler, is_aria_hidden_true, is_component_like_element, is_interactive_element,
-    is_interactive_role, is_presentation_role,
-};
+use super::helpers;
 use super::markup_helpers::{
     has_static_markup_event, is_aria_hidden_true_markup, is_component_like_markup_element,
     is_presentation_markup_role,
+};
+use super::reference_values::is_hidden_from_screen_reader;
+use super::vuejs_accessibility::{
+    has_on_directive, has_on_directives, is_custom_component, is_html_namespace,
+    is_interactive_element, is_jsx_filename, is_presentation_role, is_vue_template,
 };
 
 static META: RuleMeta = RuleMeta {
@@ -34,45 +36,24 @@ static META: RuleMeta = RuleMeta {
 #[derive(Default)]
 pub struct ClickEventsHaveKeyEvents;
 
-impl ClickEventsHaveKeyEvents {
-    /// The first valued static `role` decides, as on the template path.
-    fn has_interactive_markup_role(element: &MarkupElement<'_>) -> bool {
-        let mut role = None;
-        element.walk_bindings(&mut |binding| {
-            if role.is_none()
-                && binding.kind() == MarkupBindingKind::Attribute
-                && binding.is_unqualified_arg_exact("role")
-            {
-                role = binding.static_value();
-            }
-        });
-        role.is_some_and(is_interactive_role)
-    }
-
-    /// Check if element has a role that makes it interactive
-    fn has_interactive_role(element: &ElementNode) -> bool {
-        for prop in &element.props {
-            if let PropNode::Attribute(attr) = prop
-                && attr.name == "role"
-                && let Some(value) = &attr.value
-            {
-                return is_interactive_role(value.content);
-            }
+/// JSX keeps its exact static attribute and handler lookups.
+fn legacy_jsx_reports(element: &MarkupElement<'_>) -> bool {
+    let mut role = None;
+    element.walk_bindings(&mut |binding| {
+        if role.is_none()
+            && binding.kind() == MarkupBindingKind::Attribute
+            && binding.is_unqualified_arg_exact("role")
+        {
+            role = binding.static_value();
         }
-        false
-    }
-
-    /// Check if element has a click handler
-    fn has_click_handler(element: &ElementNode) -> bool {
-        has_event_handler(element, "click")
-    }
-
-    /// Check if element has a keyboard event handler
-    fn has_keyboard_handler(element: &ElementNode) -> bool {
-        ["keydown", "keyup", "keypress"]
-            .iter()
-            .any(|event| has_event_handler(element, event))
-    }
+    });
+    !is_component_like_markup_element(element)
+        && !helpers::is_interactive_element(element.tag())
+        && has_static_markup_event(element, &["click"])
+        && !is_aria_hidden_true_markup(element)
+        && !is_presentation_markup_role(element)
+        && !role.is_some_and(helpers::is_interactive_role)
+        && !has_static_markup_event(element, &["keydown", "keyup", "keypress"])
 }
 
 impl MarkupRule for ClickEventsHaveKeyEvents {
@@ -85,21 +66,37 @@ impl MarkupRule for ClickEventsHaveKeyEvents {
     }
 
     fn enter_element<'a>(&self, ctx: &mut MarkupContext<'_, 'a>, element: &MarkupElement<'a>) {
-        // Cheap tag checks, then the click handler, before any other binding walk.
-        if is_component_like_markup_element(element)
-            || is_interactive_element(element.tag())
-            || !has_static_markup_event(element, &["click"])
-            || is_aria_hidden_true_markup(element)
-            || is_presentation_markup_role(element)
-            || Self::has_interactive_markup_role(element)
-        {
-            return;
+        let template = is_vue_template(ctx);
+        if Self::reports(element, template, || is_html_namespace(ctx, element)) {
+            Self::report(ctx.lint(), element);
         }
-        if !has_static_markup_event(element, &["keydown", "keyup", "keypress"]) {
-            let message = ctx.lint().t("a11y/click-events-have-key-events.message");
-            let help = ctx.lint().t("a11y/click-events-have-key-events.help");
-            ctx.lint().warn_at_with_help(message, element.range(), help);
+    }
+}
+
+impl ClickEventsHaveKeyEvents {
+    fn reports(
+        element: &MarkupElement<'_>,
+        template: bool,
+        html_namespace: impl FnOnce() -> bool,
+    ) -> bool {
+        if !template {
+            return legacy_jsx_reports(element);
         }
+        // The handler first: most elements have none.
+        has_on_directive(element, "click", true)
+            && !is_custom_component(element, html_namespace)
+            && !is_hidden_from_screen_reader(element)
+            && !is_presentation_role(element)
+            && !is_interactive_element(element)
+            && !has_on_directives(element, &["keydown", "keyup", "keypress"], true)
+    }
+
+    fn report(ctx: &mut LintContext<'_>, element: &MarkupElement<'_>) {
+        ctx.warn_at_with_help(
+            ctx.t("a11y/click-events-have-key-events.message"),
+            element.range(),
+            ctx.t("a11y/click-events-have-key-events.help"),
+        );
     }
 }
 
@@ -113,33 +110,10 @@ impl Rule for ClickEventsHaveKeyEvents {
     }
 
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
-        // Skip Vue custom components - they handle their own a11y internally
-        // Components like <MkButton>, <NuxtLink> may render as interactive elements
-        if is_component_like_element(element) {
-            return;
-        }
-
-        if is_aria_hidden_true(element) || is_presentation_role(element) {
-            return;
-        }
-
-        // Skip interactive elements - they have native keyboard support
-        if is_interactive_element(element.tag) {
-            return;
-        }
-
-        // Skip elements with interactive roles - they should have keyboard support
-        if Self::has_interactive_role(element) {
-            return;
-        }
-
-        // Check if has click but no keyboard handler
-        if Self::has_click_handler(element) && !Self::has_keyboard_handler(element) {
-            ctx.warn_with_help(
-                ctx.t("a11y/click-events-have-key-events.message"),
-                &element.loc,
-                ctx.t("a11y/click-events-have-key-events.help"),
-            );
+        let template = !is_jsx_filename(ctx.filename);
+        let markup = MarkupElement::new(element);
+        if Self::reports(&markup, template, || element.ns == Namespace::Html) {
+            Self::report(ctx, &markup);
         }
     }
 }
@@ -175,13 +149,13 @@ mod tests {
     }
 
     #[test]
-    fn test_valid_div_with_role_button() {
+    fn an_interactive_role_still_needs_a_key_handler() {
         let linter = create_linter();
         let result = linter.lint_template(
             r#"<div role="button" @click="handleClick">Click</div>"#,
             "test.vue",
         );
-        assert_eq!(result.warning_count, 0);
+        assert_eq!(result.warning_count, 1);
     }
 
     #[test]
@@ -268,6 +242,85 @@ mod tests {
         assert_eq!(
             result.warning_count, 0,
             "Should not flag kebab-case Vue components with @click"
+        );
+    }
+
+    fn reported_lines(source: &str, result: &crate::linter::LintResult) -> Vec<usize> {
+        result
+            .diagnostics
+            .iter()
+            .map(|diagnostic| {
+                source
+                    .get(..diagnostic.start as usize)
+                    .map_or(0, |prefix| prefix.matches('\n').count())
+                    + 1
+            })
+            .collect()
+    }
+
+    #[test]
+    fn matches_the_plugin_on_issue_12760() {
+        // eslint-plugin-vuejs-accessibility 2.6.3 reports exactly these lines.
+        let source = r#"<script setup lang="ts">
+const onEvent = (): void => undefined;
+const keys = {
+  onKeydown: (): void => undefined,
+  tabindex: (option: string): number => (option === "a" ? 0 : -1),
+};
+const role = "button";
+const hidden = true;
+const label = "Options";
+const select = (option: string): void => void option;
+</script>
+
+<template>
+  <div role="button" tabindex="0" @click="onEvent">x</div>
+  <div role="checkbox" tabindex="0" @click="onEvent">x</div>
+  <div role="columnheader" tabindex="0" @click="onEvent">x</div>
+  <div role="combobox" tabindex="0" @click="onEvent">x</div>
+  <div role="gridcell" tabindex="0" @click="onEvent">x</div>
+  <div role="link" tabindex="0" @click="onEvent">x</div>
+  <div role="listbox" tabindex="0" @click="onEvent">x</div>
+  <div role="menu" tabindex="0" @click="onEvent">x</div>
+  <div role="menuitem" tabindex="0" @click="onEvent">x</div>
+  <div role="menuitemcheckbox" tabindex="0" @click="onEvent">x</div>
+  <div role="menuitemradio" tabindex="0" @click="onEvent">x</div>
+  <div role="option" tabindex="0" @click="onEvent">x</div>
+  <div role="radio" tabindex="0" @click="onEvent">x</div>
+  <div role="row" tabindex="0" @click="onEvent">x</div>
+  <div role="scrollbar" tabindex="0" @click="onEvent">x</div>
+  <div role="searchbox" tabindex="0" @click="onEvent">x</div>
+  <div role="slider" tabindex="0" @click="onEvent">x</div>
+  <div role="spinbutton" tabindex="0" @click="onEvent">x</div>
+  <div role="switch" tabindex="0" @click="onEvent">x</div>
+  <div role="tab" tabindex="0" @click="onEvent">x</div>
+  <div role="tablist" tabindex="0" @click="onEvent">x</div>
+  <div role="textbox" tabindex="0" @click="onEvent">x</div>
+  <div role="tree" tabindex="0" @click="onEvent">x</div>
+  <div role="treeitem" tabindex="0" @click="onEvent">x</div>
+  <div @click="onEvent" @keydown="keys.onKeydown">x</div>
+  <div @click="keys.onKeydown">x</div>
+  <div aria-hidden @click="onEvent">x</div>
+  <div :aria-hidden="hidden" @click="onEvent">x</div>
+  <a @click="onEvent">x</a>
+  <a tabindex="0" @click="onEvent">x</a>
+  <div :role="'presentation'" @click="onEvent">x</div>
+  <select aria-label="s"><option @click="onEvent">a</option></select>
+  <details @click="onEvent"><summary>s</summary>x</details>
+  <details><summary @click="onEvent">s</summary>x</details>
+  <video src="/v.mp4" @click="onEvent"><track kind="captions" /></video>
+  <audio src="/a.mp3" @click="onEvent"><track kind="captions" /></audio>
+</template>
+"#;
+        let result = create_linter().lint_sfc(source, "App.vue");
+        assert_eq!(
+            reported_lines(source, &result),
+            vec![
+                14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34,
+                35, 36, 37, 38, 42, 43, 46, 47, 48, 49
+            ],
+            "{:?}",
+            result.diagnostics
         );
     }
 }

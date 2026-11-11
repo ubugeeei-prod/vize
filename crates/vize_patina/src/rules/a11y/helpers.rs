@@ -3,7 +3,6 @@
 //! These helpers are extracted from common patterns used across a11y rules
 //! to avoid code duplication.
 
-use vize_l0::is_native_tag;
 use vize_relief::{ElementNode, ElementType, ExpressionNode, PropNode};
 
 /// Normalize a configured component name once, outside template traversal.
@@ -31,19 +30,6 @@ fn tag_matches_canonical_component(tag: &str, canonical: &str) -> bool {
     expected.next().is_none()
 }
 
-/// Check if an element should be treated as a component or custom element.
-///
-/// Lint rules run on the parsed template before compiler transforms promote
-/// kebab-case component tags such as `<a-button>` to `ElementType::Component`.
-/// Accessibility rules cannot know what those tags render to, so they should
-/// avoid DOM-specific diagnostics for non-native tags.
-pub fn is_component_like_element(element: &ElementNode) -> bool {
-    matches!(
-        element.tag_type,
-        ElementType::Component | ElementType::Slot | ElementType::Template
-    ) || !is_native_tag(element.tag)
-}
-
 /// Check if an element represents a Vue slot outlet.
 pub fn is_slot_element(element: &ElementNode) -> bool {
     matches!(element.tag_type, ElementType::Slot) || element.tag == "slot"
@@ -62,14 +48,6 @@ pub fn is_interactive_element(tag: &str) -> bool {
             | "video"
             | "audio"
     )
-}
-
-/// Check if element has an ARIA role that makes it interactive
-pub fn has_interactive_role(element: &ElementNode) -> bool {
-    if let Some(role) = get_static_attribute_value(element, "role") {
-        return is_interactive_role(role);
-    }
-    false
 }
 
 /// Check if a role name is an interactive ARIA role
@@ -160,15 +138,6 @@ pub fn get_static_or_bound_literal_attribute_value<'a>(
     None
 }
 
-/// `role="presentation"` / `role="none"` is an author opt-out: the element is
-/// not meant to be perceived (a scrim, a decorative row).
-pub fn is_presentation_role(element: &ElementNode) -> bool {
-    matches!(
-        get_static_attribute_value(element, "role"),
-        Some("presentation" | "none")
-    )
-}
-
 /// Whether the element is explicitly hidden from the accessibility tree.
 pub fn is_aria_hidden_true(element: &ElementNode) -> bool {
     if get_static_or_bound_literal_attribute_value(element, "aria-hidden") == Some("true") {
@@ -234,30 +203,6 @@ fn is_single_literal_body(inner: &str, quote: u8) -> bool {
     }
 
     true
-}
-
-/// Check if an element has a specific event handler (v-on directive)
-pub fn has_event_handler(element: &ElementNode, event_name: &str) -> bool {
-    for prop in &element.props {
-        if let PropNode::Directive(dir) = prop
-            && dir.name == "on"
-            && let Some(ExpressionNode::Simple(arg)) = &dir.arg
-            && arg.is_static
-            && arg.content == event_name
-            && dir.exp.as_ref().is_some_and(|expression| match expression {
-                ExpressionNode::Simple(simple) => !simple.content.trim().is_empty(),
-                ExpressionNode::Compound(compound) => !compound.children.is_empty(),
-            })
-        {
-            return true;
-        }
-    }
-    false
-}
-
-/// Check if an element has a real handler for any of the supplied events.
-pub(crate) fn has_any_event_handler(element: &ElementNode, events: &[&str]) -> bool {
-    events.iter().any(|event| has_event_handler(element, event))
 }
 
 /// Elements that do not support ARIA attributes

@@ -13,6 +13,8 @@ Require interactive role elements to be focusable.
 
 Applies to: Vue SFC templates and blocks, with script context where the rule requires it.
 
+Unlike eslint-plugin-vuejs-accessibility, a listbox that owns a focusable option (roving tabindex) or that a combobox controls through `aria-activedescendant` needs no tab stop of its own, a bound `tabindex` whose conditional branches are all integers (`:tabindex="active ? 0 : -1"`) counts as a tab index, and `:aria-hidden="false"` does not hide the element.
+
 ## Bad
 
 Giving a `span` the button role and a click handler does not make the element keyboard-focusable.
@@ -54,4 +56,4 @@ Then run `vp run lint`.
 
 - [Accessibility rules](../accessibility.md)
 - [All rules](../all.md)
-- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/interactive_supports_focus.rs#L42)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/interactive_supports_focus.rs#L46)

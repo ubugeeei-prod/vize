@@ -75,9 +75,9 @@ export const runtimeOverrides: Record<string, RuleExample> = {
     template('<button @click="activate">Activate</button>'),
     "crates/vize_patina/src/rules/a11y/click_events_have_key_events.rs",
     {
-      note: "Checks non-interactive elements without an interactive role. Native buttons and elements with an interactive ARIA role are outside this rule's finding.",
+      note: 'Checks native elements with a click handler, including those with an interactive ARIA role. Natively interactive elements such as buttons, inputs and links with `href` are outside this rule\'s finding. `:aria-hidden="false"` does not hide the element.',
       noteJa:
-        "対話的な役割を持たない通常要素が対象です。button や対話的な ARIA role を持つ要素はこの検出の対象外です。",
+        'クリックハンドラーを持つ通常要素が対象で、対話的な ARIA role を持つ要素も含みます。button、input、href を持つリンクなど本来操作できる要素は対象外です。`:aria-hidden="false"` は要素を隠しません。',
     },
   ),
   "css/prefer-slotted": pair(

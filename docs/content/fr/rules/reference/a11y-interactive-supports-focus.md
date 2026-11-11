@@ -13,6 +13,8 @@ Exiger que les éléments possédant un rôle interactif puissent recevoir le fo
 
 Champ d’application : Templates et blocs des SFC Vue, avec le contexte du script requis par la règle.
 
+Contrairement à eslint-plugin-vuejs-accessibility, une listbox qui contient une option focalisable (roving tabindex) ou qu’une combobox contrôle par `aria-activedescendant` n’a pas besoin de son propre arrêt de tabulation, un `tabindex` lié dont toutes les branches conditionnelles sont des entiers (`:tabindex="active ? 0 : -1"`) compte comme tabindex, et `:aria-hidden="false"` ne masque pas l’élément.
+
 ## Mauvais
 
 Donner à un `span` le rôle button et un gestionnaire de clic ne rend pas l’élément accessible au focus clavier.
@@ -54,4 +56,4 @@ Lancez ensuite `vp run lint`.
 
 - [Règles d’accessibilité](../accessibility.md)
 - [Toutes les règles](../all.md)
-- [Code source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/interactive_supports_focus.rs#L42)
+- [Code source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/interactive_supports_focus.rs#L46)

@@ -13,6 +13,8 @@ description: "操作部品ではない要素へのイベント指定を検出し
 
 適用範囲：Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。
 
+eslint-plugin-vuejs-accessibility と異なり、`:role="clickable ? 'button' : undefined"` のように条件分岐に対話的な role を含む束縛は静的要素として扱わず、`:aria-hidden="false"` は要素を隠しません。
+
 ## 悪い例
 
 操作の役割がない section に Enter キーの操作を指定しています。
@@ -54,4 +56,4 @@ export default defineConfig({}).withVue({
 
 - [アクセシビリティのルール](../accessibility.md)
 - [全ルール](../all.md)
-- [ソースコード](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/no_static_element_interactions.rs#L37)
+- [ソースコード](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/no_static_element_interactions.rs#L39)

@@ -13,6 +13,8 @@ Interdire les gestionnaires d’événements sur les éléments statiques.
 
 Champ d’application : Templates et blocs des SFC Vue, avec le contexte du script requis par la règle.
 
+Contrairement à eslint-plugin-vuejs-accessibility, un `role` lié dont une branche conditionnelle est interactive, comme `:role="clickable ? 'button' : undefined"`, n’est pas statique, et `:aria-hidden="false"` ne masque pas l’élément.
+
 ## Mauvais
 
 Une section statique reçoit une action liée à la touche Entrée sans posséder de rôle interactif.
@@ -54,4 +56,4 @@ Lancez ensuite `vp run lint`.
 
 - [Règles d’accessibilité](../accessibility.md)
 - [Toutes les règles](../all.md)
-- [Code source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/no_static_element_interactions.rs#L37)
+- [Code source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/no_static_element_interactions.rs#L39)

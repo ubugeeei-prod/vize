@@ -11,23 +11,121 @@ Case {
     rule: "a11y/no-static-element-interactions",
     vue_version: None,
     vapor: None,
-    diagnostics: 0,
+    diagnostics: 4,
     fixes: 0,
 }
 Observation {
     initial: LintResult {
         filename: "History.vue",
-        diagnostics: [],
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "a11y/no-static-element-interactions",
+                severity: Warning,
+                message: "<div> is a static element and should not have interactive event handlers",
+                start: 0,
+                end: 34,
+                help: Some(
+                    "**Why:** Non-interactive elements (div, span, etc.) should not have click/keyboard handlers without a role.\n\n**Fix options:**\n\n1. Use a native interactive element:\n```vue\n<button @click=\"handle\">Click me</button>\n```\n\n2. Add role and tabindex:\n```vue\n<div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n</div>\n```",
+                ),
+                labels: [],
+                fix: None,
+            },
+            LintDiagnostic {
+                rule_name: "a11y/no-static-element-interactions",
+                severity: Warning,
+                message: "<div> is a static element and should not have interactive event handlers",
+                start: 45,
+                end: 85,
+                help: Some(
+                    "**Why:** Non-interactive elements (div, span, etc.) should not have click/keyboard handlers without a role.\n\n**Fix options:**\n\n1. Use a native interactive element:\n```vue\n<button @click=\"handle\">Click me</button>\n```\n\n2. Add role and tabindex:\n```vue\n<div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n</div>\n```",
+                ),
+                labels: [],
+                fix: None,
+            },
+            LintDiagnostic {
+                rule_name: "a11y/no-static-element-interactions",
+                severity: Warning,
+                message: "<div> is a static element and should not have interactive event handlers",
+                start: 96,
+                end: 135,
+                help: Some(
+                    "**Why:** Non-interactive elements (div, span, etc.) should not have click/keyboard handlers without a role.\n\n**Fix options:**\n\n1. Use a native interactive element:\n```vue\n<button @click=\"handle\">Click me</button>\n```\n\n2. Add role and tabindex:\n```vue\n<div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n</div>\n```",
+                ),
+                labels: [],
+                fix: None,
+            },
+            LintDiagnostic {
+                rule_name: "a11y/no-static-element-interactions",
+                severity: Warning,
+                message: "<dialog> is a static element and should not have interactive event handlers",
+                start: 146,
+                end: 169,
+                help: Some(
+                    "**Why:** Non-interactive elements (div, span, etc.) should not have click/keyboard handlers without a role.\n\n**Fix options:**\n\n1. Use a native interactive element:\n```vue\n<button @click=\"handle\">Click me</button>\n```\n\n2. Add role and tabindex:\n```vue\n<div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n</div>\n```",
+                ),
+                labels: [],
+                fix: None,
+            },
+        ],
         error_count: 0,
-        warning_count: 0,
+        warning_count: 4,
     },
     applications: [],
     unchanged_requery: Some(
         LintResult {
             filename: "History.vue",
-            diagnostics: [],
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "a11y/no-static-element-interactions",
+                    severity: Warning,
+                    message: "<div> is a static element and should not have interactive event handlers",
+                    start: 0,
+                    end: 34,
+                    help: Some(
+                        "**Why:** Non-interactive elements (div, span, etc.) should not have click/keyboard handlers without a role.\n\n**Fix options:**\n\n1. Use a native interactive element:\n```vue\n<button @click=\"handle\">Click me</button>\n```\n\n2. Add role and tabindex:\n```vue\n<div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n</div>\n```",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+                LintDiagnostic {
+                    rule_name: "a11y/no-static-element-interactions",
+                    severity: Warning,
+                    message: "<div> is a static element and should not have interactive event handlers",
+                    start: 45,
+                    end: 85,
+                    help: Some(
+                        "**Why:** Non-interactive elements (div, span, etc.) should not have click/keyboard handlers without a role.\n\n**Fix options:**\n\n1. Use a native interactive element:\n```vue\n<button @click=\"handle\">Click me</button>\n```\n\n2. Add role and tabindex:\n```vue\n<div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n</div>\n```",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+                LintDiagnostic {
+                    rule_name: "a11y/no-static-element-interactions",
+                    severity: Warning,
+                    message: "<div> is a static element and should not have interactive event handlers",
+                    start: 96,
+                    end: 135,
+                    help: Some(
+                        "**Why:** Non-interactive elements (div, span, etc.) should not have click/keyboard handlers without a role.\n\n**Fix options:**\n\n1. Use a native interactive element:\n```vue\n<button @click=\"handle\">Click me</button>\n```\n\n2. Add role and tabindex:\n```vue\n<div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n</div>\n```",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+                LintDiagnostic {
+                    rule_name: "a11y/no-static-element-interactions",
+                    severity: Warning,
+                    message: "<dialog> is a static element and should not have interactive event handlers",
+                    start: 146,
+                    end: 169,
+                    help: Some(
+                        "**Why:** Non-interactive elements (div, span, etc.) should not have click/keyboard handlers without a role.\n\n**Fix options:**\n\n1. Use a native interactive element:\n```vue\n<button @click=\"handle\">Click me</button>\n```\n\n2. Add role and tabindex:\n```vue\n<div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n</div>\n```",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+            ],
             error_count: 0,
-            warning_count: 0,
+            warning_count: 4,
         },
     ),
 }

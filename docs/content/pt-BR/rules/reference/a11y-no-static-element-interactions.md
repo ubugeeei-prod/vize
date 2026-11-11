@@ -13,6 +13,8 @@ Proibir manipuladores de eventos em elementos estáticos.
 
 Aplicável a: Templates e blocos de SFC Vue, com o contexto do script quando exigido pela regra.
 
+Diferentemente do eslint-plugin-vuejs-accessibility, um `role` vinculado com um ramo condicional interativo, como `:role="clickable ? 'button' : undefined"`, não é estático, e `:aria-hidden="false"` não oculta o elemento.
+
 ## Incorreto
 
 Uma seção estática recebe uma ação da tecla Enter sem ter um papel interativo.
@@ -54,4 +56,4 @@ Depois, execute `vp run lint`.
 
 - [Regras de acessibilidade](../accessibility.md)
 - [Todas as regras](../all.md)
-- [Código-fonte](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/no_static_element_interactions.rs#L37)
+- [Código-fonte](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/no_static_element_interactions.rs#L39)

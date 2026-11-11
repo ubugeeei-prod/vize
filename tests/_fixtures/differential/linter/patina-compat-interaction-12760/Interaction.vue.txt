@@ -1,0 +1,12 @@
+<template>
+  <div @click="select" />
+  <div role="button" @click="select" />
+  <div @click="select" @keydown="select" />
+  <div @mouseenter="show" />
+  <div @mouseenter="show" @focus="show" />
+  <button />
+  <div role="button" />
+  <div tabindex="0" @click="select" />
+  <span :aria-hidden="false" @click="select" />
+  <MyButton @mouseover="show" />
+</template>

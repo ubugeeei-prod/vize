@@ -13,7 +13,7 @@ description: "要求点击事件配有键盘事件处理器。"
 
 适用范围：Vue SFC 模板和代码块，包括规则所需的脚本上下文。
 
-检查没有交互角色的非交互式元素。原生按钮和具有交互式 ARIA 角色的元素不在此规则诊断范围内。
+检查带有点击处理器的原生元素，包括具有交互式 ARIA 角色的元素。按钮、输入框和带 `href` 的链接等原生交互元素不在此规则诊断范围内。`:aria-hidden="false"` 不会隐藏元素。
 
 ## 错误示例
 
@@ -56,4 +56,4 @@ export default defineConfig({}).withVue({
 
 - [无障碍规则](../accessibility.md)
 - [全部规则](../all.md)
-- [源代码](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/click_events_have_key_events.rs#L25)
+- [源代码](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/click_events_have_key_events.rs#L27)

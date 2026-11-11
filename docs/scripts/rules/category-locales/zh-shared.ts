@@ -52,8 +52,12 @@ export const chineseShared: Record<string, string> = {
   "crossFile; rule severity (off/warn/error)": "crossFile；规则严重程度（off/warn/error）",
   "A single SFC root link may inherit its target from parent attributes. This example uses a nested link, whose target must be explicit.":
     "SFC 的唯一根链接可能从父组件属性继承目标。此示例使用嵌套链接，必须显式提供目标。",
-  "Checks non-interactive elements without an interactive role. Native buttons and elements with an interactive ARIA role are outside this rule's finding.":
-    "检查没有交互角色的非交互式元素。原生按钮和具有交互式 ARIA 角色的元素不在此规则诊断范围内。",
+  'Checks native elements with a click handler, including those with an interactive ARIA role. Natively interactive elements such as buttons, inputs and links with `href` are outside this rule\'s finding. `:aria-hidden="false"` does not hide the element.':
+    '检查带有点击处理器的原生元素，包括具有交互式 ARIA 角色的元素。按钮、输入框和带 `href` 的链接等原生交互元素不在此规则诊断范围内。`:aria-hidden="false"` 不会隐藏元素。',
+  'Unlike eslint-plugin-vuejs-accessibility, a listbox that owns a focusable option (roving tabindex) or that a combobox controls through `aria-activedescendant` needs no tab stop of its own, a bound `tabindex` whose conditional branches are all integers (`:tabindex="active ? 0 : -1"`) counts as a tab index, and `:aria-hidden="false"` does not hide the element.':
+    '与 eslint-plugin-vuejs-accessibility 不同，拥有可聚焦 option 的 listbox（roving tabindex）或由 combobox 通过 `aria-activedescendant` 控制的 listbox 本身不需要 Tab 停靠点；所有条件分支都是整数的 `tabindex` 绑定（`:tabindex="active ? 0 : -1"`）视为 tabindex；`:aria-hidden="false"` 不会隐藏元素。',
+  'Unlike eslint-plugin-vuejs-accessibility, a bound `role` with an interactive conditional branch, such as `:role="clickable ? \'button\' : undefined"`, is not static, and `:aria-hidden="false"` does not hide the element.':
+    '与 eslint-plugin-vuejs-accessibility 不同，条件分支中含有交互式角色的 `role` 绑定（例如 `:role="clickable ? \'button\' : undefined"`）不视为静态元素；`:aria-hidden="false"` 不会隐藏元素。',
   "Enable typeAware and this rule explicitly. The default disallows nullable numbers, while non-null numbers are allowed.":
     "显式启用 typeAware 和此规则。默认不允许可空数字，允许非空数字。",
   "Historical Vue 2.7 only: use matching Vue 2.7 and SFC compiler dependencies for this scenario. Vue 3 proxies track array index assignment, so `items[0] = next` is reactive in Vue 3 and is not a Vue 3 defect. This published code has no current producer.":

@@ -13,7 +13,7 @@ Exigir manipuladores de eventos de teclado junto aos eventos de clique.
 
 Aplicável a: Templates e blocos de SFC Vue, com o contexto do script quando exigido pela regra.
 
-Verifica elementos não interativos sem uma função interativa. Botões nativos e elementos com uma função ARIA interativa ficam fora dos diagnósticos desta regra.
+Verifica elementos nativos com um manipulador de clique, inclusive os que têm uma função ARIA interativa. Elementos nativamente interativos, como botões, campos e links com `href`, ficam fora dos diagnósticos desta regra. `:aria-hidden="false"` não oculta o elemento.
 
 ## Incorreto
 
@@ -56,4 +56,4 @@ Depois, execute `vp run lint`.
 
 - [Regras de acessibilidade](../accessibility.md)
 - [Todas as regras](../all.md)
-- [Código-fonte](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/click_events_have_key_events.rs#L25)
+- [Código-fonte](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/click_events_have_key_events.rs#L27)

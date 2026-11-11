@@ -32,10 +32,8 @@ fn family() -> Vec<Box<dyn Rule>> {
             ignore_non_dom: true,
         }),
         Box::new(AriaUnsupportedElements),
-        Box::new(ClickEventsHaveKeyEvents),
         Box::new(LabelHasFor),
         Box::new(NoReferToNonExistentId),
-        Box::new(NoStaticElementInteractions),
         Box::new(RoleHasRequiredAriaProps),
     ]
 }
@@ -43,6 +41,7 @@ fn family() -> Vec<Box<dyn Rule>> {
 fn existing_family() -> Vec<Box<dyn Rule>> {
     vec![
         Box::new(AnchorIsValid),
+        Box::new(ClickEventsHaveKeyEvents),
         Box::new(FormControlHasLabel),
         Box::new(HeadingHasContent),
         Box::new(IframeHasTitle),
@@ -57,6 +56,7 @@ fn existing_family() -> Vec<Box<dyn Rule>> {
         Box::new(NoIForIcon),
         Box::new(NoRedundantRoles),
         Box::new(NoRolePresentationOnFocusable),
+        Box::new(NoStaticElementInteractions),
         Box::new(PlaceholderLabelOption),
         Box::new(TabindexNoPositive),
     ]

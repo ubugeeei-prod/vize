@@ -34,9 +34,13 @@ use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_l0::FxHashSet;
 use vize_relief::RootNode;
 
-use super::{
-    helpers::{INTERACTIVE_HANDLER_EVENTS, is_interactive_role},
-    markup_helpers,
+use super::helpers::{INTERACTIVE_HANDLER_EVENTS, is_interactive_role as is_interactive_role_name};
+use super::markup_helpers;
+use super::reference_values::is_hidden_from_screen_reader;
+use super::vuejs_accessibility::{
+    AttrValue, INTERACTIVE_HANDLERS, attribute, bound_branches, has_on_directives, is_dom_element,
+    is_interactive_element, is_interactive_role, is_jsx_filename, is_presentation_role,
+    js_string_to_number,
 };
 
 static META: RuleMeta = RuleMeta {
@@ -56,32 +60,16 @@ impl InteractiveSupportsFocus {
         ctx: &mut LintContext<'_>,
         element: &MarkupElement<'_>,
         exempt: &FxHashSet<u32>,
+        template: bool,
     ) {
-        if element.is_component() {
-            return;
-        }
-
-        // Skip natively interactive elements - they're already focusable
-        if markup_helpers::is_interactive_markup_element(element) {
-            return;
-        }
-
-        // Check if element has an interactive role
-        let role = match markup_helpers::get_static_markup_attribute_value(element, "role") {
-            Some(r) => r,
-            None => return,
+        let role = if template {
+            Self::unfocusable_template_role(element)
+        } else {
+            Self::unfocusable_jsx_role(element)
         };
-
-        if !is_interactive_role(role) {
+        let Some(role) = role else {
             return;
-        }
-
-        // A role describes semantics; this rule is concerned with elements
-        // that also behave interactively. Handler-less role owners are often
-        // controlled or focused by another component.
-        if !markup_helpers::has_static_markup_handler(element, INTERACTIVE_HANDLER_EVENTS) {
-            return;
-        }
+        };
 
         // APG combobox: focus stays on the combobox, which points at the active
         // option with `aria-activedescendant`, so its listbox and options need
@@ -96,17 +84,40 @@ impl InteractiveSupportsFocus {
             return;
         }
 
-        // Element has interactive role but is not natively interactive
-        // Check if it's focusable
-        if !markup_helpers::is_focusable_markup_element(element)
-            && !Self::has_bound_tabindex(element)
-        {
-            ctx.warn_at_with_help(
-                ctx.t_fmt("a11y/interactive-supports-focus.message", &[("role", role)]),
-                element.range(),
-                ctx.t("a11y/interactive-supports-focus.help"),
-            );
+        ctx.warn_at_with_help(
+            ctx.t_fmt("a11y/interactive-supports-focus.message", &[("role", role)]),
+            element.range(),
+            ctx.t("a11y/interactive-supports-focus.help"),
+        );
+    }
+
+    /// The plugin's condition, on a DOM element of any authored case.
+    fn unfocusable_template_role<'a>(element: &MarkupElement<'a>) -> Option<&'a str> {
+        let role_value = attribute(element, "role");
+        let role = role_value.and_then(AttrValue::as_str)?;
+        (is_interactive_role(role_value)
+            && has_on_directives(element, INTERACTIVE_HANDLERS, true)
+            && is_dom_element(element)
+            && !has_tab_index(element)
+            && !is_disabled_element(element)
+            && !is_hidden_from_screen_reader(element)
+            && !is_presentation_role(element)
+            && !is_interactive_element(element)
+            && !has_focusable_contenteditable(element))
+        .then_some(role)
+    }
+
+    /// JSX keeps its exact static attribute and handler lookups.
+    fn unfocusable_jsx_role<'a>(element: &MarkupElement<'a>) -> Option<&'a str> {
+        if element.is_component() || markup_helpers::is_interactive_markup_element(element) {
+            return None;
         }
+        let role = markup_helpers::get_static_markup_attribute_value(element, "role")?;
+        (is_interactive_role_name(role)
+            && markup_helpers::has_static_markup_handler(element, INTERACTIVE_HANDLER_EVENTS)
+            && !markup_helpers::is_focusable_markup_element(element)
+            && !Self::has_bound_tabindex(element))
+        .then_some(role)
     }
 
     fn has_bound_tabindex(element: &MarkupElement<'_>) -> bool {
@@ -159,9 +170,10 @@ impl InteractiveSupportsFocus {
     }
 
     fn check_document(ctx: &mut LintContext<'_>, document: &MarkupDocument<'_>) {
+        let template = !is_jsx_filename(ctx.filename);
         let exempt = Self::activedescendant_listboxes(document);
         document.walk_elements(&mut |element| {
-            Self::check_element(ctx, &element, &exempt);
+            Self::check_element(ctx, &element, &exempt, template);
         });
     }
 
@@ -191,6 +203,48 @@ impl InteractiveSupportsFocus {
             }
         });
         listboxes
+    }
+}
+
+/// The plugin's `hasTabIndex`. A conditional whose every branch is an
+/// integer is a tab index too; the plugin reads it as one opaque value.
+fn has_tab_index(element: &MarkupElement<'_>) -> bool {
+    let is_integer = |value: AttrValue<'_>| match value {
+        AttrValue::Str(value) => !value.is_empty() && is_integer_number(js_string_to_number(value)),
+        AttrValue::Num(value) => is_integer_number(value),
+        _ => false,
+    };
+    match attribute(element, "tabindex") {
+        None | Some(AttrValue::Bool(_)) => false,
+        Some(AttrValue::Null) => true,
+        Some(AttrValue::Expr) => {
+            let mut all = true;
+            bound_branches(element, "tabindex", &mut |value| all &= is_integer(value)) && all
+        }
+        Some(value) => is_integer(value),
+    }
+}
+
+fn is_integer_number(value: f64) -> bool {
+    value.is_finite() && value.trunc() == value
+}
+
+/// The plugin's `isDisabledElement`.
+fn is_disabled_element(element: &MarkupElement<'_>) -> bool {
+    attribute(element, "disabled").is_some_and(AttrValue::is_truthy)
+        || matches!(
+            attribute(element, "aria-disabled"),
+            Some(AttrValue::Str("true") | AttrValue::Bool(true))
+        )
+}
+
+/// A present `contenteditable` value is focusable unless it is exactly the
+/// static false value. Unknown bound values retain the diagnostic.
+fn has_focusable_contenteditable(element: &MarkupElement<'_>) -> bool {
+    match attribute(element, "contenteditable") {
+        Some(AttrValue::Null | AttrValue::Bool(true)) => true,
+        Some(AttrValue::Str(value)) => value != "false",
+        Some(AttrValue::Num(_) | AttrValue::Bool(false) | AttrValue::Expr) | None => false,
     }
 }
 
@@ -260,7 +314,7 @@ impl MarkupRule for InteractiveSupportsFocus {
 
     fn enter_element<'a>(&self, ctx: &mut MarkupContext<'_, 'a>, element: &MarkupElement<'a>) {
         if ctx.is_jsx() {
-            Self::check_element(ctx.lint(), element, &FxHashSet::default());
+            Self::check_element(ctx.lint(), element, &FxHashSet::default(), false);
         }
     }
 }
@@ -347,16 +401,16 @@ mod tests {
     }
 
     #[test]
-    fn test_invalid_tabindex_below_minus_one() {
+    fn any_integer_tabindex_is_a_tab_index() {
         let linter = create_linter();
         let source = r#"<div role="button" tabindex="-2" @click="handle"></div>"#;
         let template = linter.lint_template(source, "test.vue");
-        assert_eq!(template.warning_count, 1);
+        assert_eq!(template.warning_count, 0);
         let sfc = linter.lint_sfc(
             &format!("<template>\n  {source}\n</template>\n"),
             "Widget.vue",
         );
-        assert_eq!(sfc.warning_count, 1);
+        assert_eq!(sfc.warning_count, 0);
     }
 
     #[test]
@@ -394,92 +448,6 @@ mod tests {
             "test.vue",
         );
         assert_eq!(result.warning_count, 1);
-    }
-
-    #[test]
-    fn test_valid_activedescendant_listbox() {
-        let linter = create_linter();
-        let result = linter.lint_template(
-            r#"<div>
-  <button
-    type="button"
-    role="combobox"
-    aria-controls="lb"
-    :aria-activedescendant="`lb-option-${focused}`"
-  >Select</button>
-  <div id="lb" role="listbox">
-    <button role="option" tabindex="-1">A</button>
-  </div>
-</div>"#,
-            "test.vue",
-        );
-        assert_eq!(result.warning_count, 0);
-    }
-
-    #[test]
-    fn combobox_listbox_and_options_need_no_focus() {
-        let linter = create_linter();
-        for ids in [
-            r#"aria-controls="fruits" | id="fruits""#,
-            r#":aria-controls="listId" | :id="listId""#,
-            r#":aria-controls="'fruits'" | id="fruits""#,
-            r#"aria-controls="other fruits" | :id="`fruits`""#,
-        ] {
-            let (controls, id) = ids.split_once(" | ").unwrap_or_default();
-            let source = format!(
-                r#"<input aria-activedescendant="fruit-0" {controls} aria-expanded="true" aria-label="Fruit" role="combobox" />
-<ul {id} role="listbox">
-  <li id="fruit-0" aria-selected="true" role="option">Apple</li>
-  <li role="option"><span>Banana</span></li>
-</ul>"#
-            );
-            let result = linter.lint_template(&source, "test.vue");
-            assert_eq!(result.warning_count, 0, "{ids}: {:?}", result.diagnostics);
-        }
-    }
-
-    #[test]
-    fn combobox_with_bound_ids_in_an_sfc() {
-        let source = r#"<script setup lang="ts">
-const listId = "fruits";
-</script>
-
-<template>
-  <input
-    aria-activedescendant="fruit-0"
-    :aria-controls="listId"
-    aria-expanded="true"
-    aria-label="Fruit"
-    role="combobox"
-  />
-  <ul :id="listId" role="listbox">
-    <li id="fruit-0" aria-selected="true" role="option">Apple</li>
-  </ul>
-</template>
-"#;
-        let result = create_linter().lint_sfc(source, "BoundIds.vue");
-        assert_eq!(result.warning_count, 0, "{:?}", result.diagnostics);
-    }
-
-    #[test]
-    fn handlerless_listboxes_and_options_do_not_need_focus() {
-        let linter = create_linter();
-        for source in [
-            // No aria-activedescendant on the controlling element.
-            r#"<input :aria-controls="listId" role="combobox" /><ul :id="listId" role="listbox"><li role="option">A</li></ul>"#,
-            // A different expression is a different id.
-            r#"<input aria-activedescendant="a" :aria-controls="listId" role="combobox" /><ul :id="otherId" role="listbox"><li role="option">A</li></ul>"#,
-        ] {
-            let result = linter.lint_template(source, "test.vue");
-            assert_eq!(
-                result.warning_count, 0,
-                "{source}: {:?}",
-                result.diagnostics
-            );
-        }
-        // Options outside the controlled listbox are still checked.
-        let outside = r#"<input aria-activedescendant="a" aria-controls="lb" role="combobox" /><ul id="lb" role="listbox"><li role="option">A</li></ul><div role="option">B</div>"#;
-        assert_eq!(linter.lint_template(outside, "test.vue").warning_count, 0);
     }
 
     #[test]
