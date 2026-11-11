@@ -15,13 +15,16 @@ struct Inputs {
 }
 
 fn inputs() -> Inputs {
+    let current_lock = fs::read(support::repository().join("pnpm-lock.yaml")).unwrap();
+    let current_workspace = fs::read(support::repository().join(WORKSPACE)).unwrap();
     Inputs {
         predecessor: js_tooling_refresh::update(),
         predecessor_bytes: fs::read(support::corpus().join(js_tooling_refresh::UPDATE)).unwrap(),
         update: eslint_vue_scorecard_update(),
-        lock: fs::read(support::repository().join("pnpm-lock.yaml")).unwrap(),
+        lock: node_forge_security::reconstruct_lock_predecessor(&current_lock).unwrap(),
         package: fs::read(support::repository().join("package.json")).unwrap(),
-        workspace: fs::read(support::repository().join(WORKSPACE)).unwrap(),
+        workspace: node_forge_security::reconstruct_workspace_predecessor(&current_workspace)
+            .unwrap(),
         manifest: fs::read(support::repository().join(eslint_vue_scorecard::MANIFEST)).unwrap(),
     }
 }

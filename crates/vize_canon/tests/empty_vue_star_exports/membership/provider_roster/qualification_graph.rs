@@ -23,6 +23,7 @@ use fixture_updates::{
     parcel_update,
 };
 mod js_tooling_refresh;
+mod node_forge_security;
 mod strict_checker;
 use strict_checker::{authorize as authorize_strict_checker, update as strict_checker_update};
 mod fresco;
@@ -332,8 +333,10 @@ pub(super) fn authorize(previous: &Value, lock: &[u8], package: &[u8]) -> Checke
     let predecessor_bytes = fs::read(support::corpus().join(ORACLE_UPDATE))
         .map_err(|_| "complete qualification predecessor")?;
     let predecessor = lockfile_update();
-    let workspace = fs::read(support::repository().join(WORKSPACE))
+    let current_workspace = fs::read(support::repository().join(WORKSPACE))
         .map_err(|_| "complete workspace manifest")?;
+    let workspace = node_forge_security::reconstruct_workspace_predecessor(&current_workspace)
+        .unwrap_or_else(|_| current_workspace.clone());
     let tests_package = fs::read(support::repository().join(TESTS_PACKAGE))
         .map_err(|_| "complete tests manifest")?;
     let oracle = fs::read(support::repository().join(SETUP_AWAIT_ORACLE))
@@ -383,8 +386,6 @@ pub(super) fn authorize(previous: &Value, lock: &[u8], package: &[u8]) -> Checke
     let predecessor_bytes = fs::read(support::corpus().join(PARCEL_UPDATE))
         .map_err(|_| "complete JavaScript tooling qualification predecessor")?;
     let update = tooling_update();
-    let workspace = fs::read(support::repository().join(WORKSPACE))
-        .map_err(|_| "complete workspace manifest")?;
     let babel_manifest = fs::read(support::repository().join(BABEL_MANIFEST))
         .map_err(|_| "complete Babel manifest")?;
     let eslint_manifest = fs::read(support::repository().join(ESLINT_MANIFEST))
@@ -465,6 +466,10 @@ pub(super) fn authorize(previous: &Value, lock: &[u8], package: &[u8]) -> Checke
         return Ok(Some(update));
     }
 
+    if let Ok(update) = node_forge_security::authorize_successor(lock, package, &current_workspace)
+    {
+        return Ok(Some(update));
+    }
     eslint_vue_scorecard::authorize_successor(lock, package, &workspace).map(Some)
 }
 
