@@ -48,6 +48,15 @@ export const withoutPerfNoise = (result: RunResult): RunResult => ({
     .join("\n"),
 });
 
+/** tsgo's `--pprofDir` closing lines, which follow the `--extendedDiagnostics` block. */
+export const withoutPprofLines = (result: RunResult): RunResult => ({
+  ...result,
+  stdout: result.stdout
+    .split("\n")
+    .filter((line) => !/^(?:CPU|Memory) profile: /u.test(line))
+    .join("\n"),
+});
+
 /** Stat events this perf and kernel accept; unsupported hardware events still read `<not supported>`. */
 export function statEvents(perf: string): string[] {
   return STAT_EVENTS.filter(

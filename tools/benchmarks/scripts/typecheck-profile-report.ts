@@ -331,7 +331,19 @@ export function renderLane(head: LaneResult, base: LaneResult | null, top = 20):
   const unresolved = Object.entries(p.unresolved).sort((a, b) => b[1] - a[1]);
   if (unresolved.length) {
     lines.push(
-      `Unresolved frames (period-weighted): ${unresolved.map(([dso, value]) => `${dso} ${pct(value, p.period)}`).join(", ")}`,
+      `Samples with unnamed frames, by DSO: ${unresolved.map(([dso, value]) => `${dso} ${pct(value, p.period)}`).join(", ")}`,
+      "",
+    );
+  }
+  const { resolved, missed, examples } = p.symbolization ?? {
+    resolved: {},
+    missed: 0,
+    examples: [],
+  };
+  const named = Object.entries(resolved);
+  if (named.length || missed) {
+    lines.push(
+      `Stripped-binary frames named from their own tables: ${named.map(([how, count]) => `${count} via ${how}`).join(", ") || "none"}; ${missed} missed${examples.length ? ` (${examples.slice(0, 3).join("; ")})` : ""}.`,
       "",
     );
   }

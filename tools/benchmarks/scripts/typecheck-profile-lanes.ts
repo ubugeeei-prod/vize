@@ -75,9 +75,11 @@ export const LANES: Record<string, Lane> = {
     diagnostics: hostDiagnostics,
     stats: hostStats,
   },
-  // tsrs ships stripped and without frame pointers: dwarf unwinds it, fp shows what breaks.
-  tsrs: tsrsLane("dwarf", "tsrs --fast + Vize mapper (dwarf unwinding)"),
-  "tsrs-fp": tsrsLane("fp", "tsrs --fast + Vize mapper (frame-pointer unwinding)"),
+  // tsrs ships stripped, BOLT-laid-out and without frame pointers. Frame
+  // pointers still name every leaf (self time per function) and keep the
+  // mapper's stacks whole; dwarf is the variant that tries to unwind tsrs.
+  tsrs: tsrsLane("fp", "tsrs --fast + Vize mapper"),
+  "tsrs-dwarf": tsrsLane("dwarf", "tsrs --fast + Vize mapper (dwarf unwinding)"),
   check: {
     label: "vize check (Corsa/tsgo)",
     shape: "check",

@@ -37,6 +37,7 @@ import {
   perfMaps,
   statEvents,
   withoutPerfNoise,
+  withoutPprofLines,
   writeGzip,
 } from "./typecheck-profile-perf.ts";
 import { readPprofTop } from "./typecheck-profile-pprof.ts";
@@ -113,10 +114,8 @@ async function profileLane(
   const pprofDir = join(work, "pprof", key);
   rmSync(pprofDir, { recursive: true, force: true });
   mkdirSync(pprofDir, { recursive: true });
-  const warm = run(
-    lane.command(context, lane.pprof ? ["--pprofDir", pprofDir] : []),
-    context.project,
-    env(),
+  const warm = withoutPprofLines(
+    run(lane.command(context, lane.pprof ? ["--pprofDir", pprofDir] : []), context.project, env()),
   );
   const diagnostics = lane.diagnostics(warm, context.project);
   let pprof = null;

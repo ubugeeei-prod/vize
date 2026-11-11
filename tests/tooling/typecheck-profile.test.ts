@@ -186,6 +186,7 @@ void test("the folder splits a lane tree by process, DSO, cost kind, phase and f
   assert.equal(profile.quality.tsgo?.complete, 2_000_000);
   assert.deepEqual(profile.quality.tsgo?.roots, [["runtime.futex", 1_000_000]]);
   assert.equal(profile.symbolizers[TSGO], "gopclntab");
+  assert.deepEqual(profile.symbolization, { resolved: { mapping: 5 }, missed: 0, examples: [] });
   const folded = [...folder.folded()];
   assert.equal(
     folded[0],
@@ -238,7 +239,26 @@ void test("rules name DSOs, roles, cost kinds and phases", () => {
       ["vize_canon::batch::x", "vize::commands::content_mapper::dispatch::transform_frame"],
       "vize mapper (node)",
     ),
-    "vize: generate (mapper)",
+    "vize: virtual TS generation",
+  );
+  // Parsing inside generation is its own phase, wherever the generator runs.
+  assert.equal(
+    phaseOf(
+      [
+        "<oxc_parser::ParserImpl<oxc_parser::config::NoTokensParserConfig>>::parse_program",
+        "vize_canon::batch::virtual_project::vue_codegen::generate_vue_virtual_ts",
+        "vize_canon::corsa_bridge::session::check",
+      ],
+      "vize check (node)",
+    ),
+    "vize: script parse (oxc)",
+  );
+  assert.equal(
+    phaseOf(
+      ["<vize_canon::batch::executor::CorsaExecutor>::check_with_servers"],
+      "vize check (node)",
+    ),
+    "vize: Corsa client",
   );
   assert.equal(phaseOf(["uv_run"], "host launcher (node)"), "host launcher (node): other");
 });

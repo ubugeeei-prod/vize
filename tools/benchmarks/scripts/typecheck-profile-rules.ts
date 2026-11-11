@@ -100,7 +100,8 @@ const KINDS: Array<{ kind: string; leaf?: RegExp; group?: string; stack?: RegExp
   {
     kind: "Go: GC",
     group: "tsgo",
-    leaf: /^runtime\.(?:gc|scanobject|scanblock|scanstack|scanframe|markroot|greyobject|findObject|wbBuf|bulkBarrierPreWrite|typePointers|\(\*gcWork\)|\(\*gcBits\)|\(\*mspan\)\.(?:sweep|typePointers|heapBits)|\(\*sweepLocked\)|sweepone|bgsweep|bgscavenge|\(\*pageAlloc\)|\(\*scavenger)|^internal\/runtime\/gc/u,
+    // Go 1.27's span-scanning collector: scanSpan, scanObject, tryDeferToSpanScan, ...
+    leaf: /^runtime\.(?:gc|scan|markroot|greyobject|findObject|wbBuf|bulkBarrier|typePointers|tryDeferToSpanScan|extractHeapBits|\(\*spanInlineMarkBits\)|\(\*gcWork\)|\(\*gcBits\)|\(\*mspan\)\.(?:sweep|typePointers|heapBits|markBitsForIndex)|\(\*sweepLocked\)|sweepone|bgsweep|bgscavenge|\(\*pageAlloc\)|\(\*scavenger)|^internal\/runtime\/gc/u,
   },
   {
     kind: "Go: scheduler",
@@ -177,7 +178,8 @@ export const PHASE_RULES: PhaseRule[] = [
     phase: "host: Go GC (background)",
     all: [/^runtime\.(?:gcBgMarkWorker|bgsweep|bgscavenge|gcDrain)/u],
   },
-  // Vize: generation, the reply wire format, the request side and the writer.
+  // Vize, mapper and `vize check`: the parsers it calls first, then the
+  // generation that calls them, then the wire, the batch project and Corsa.
   {
     phase: "vize: reply encode",
     all: [
@@ -185,8 +187,19 @@ export const PHASE_RULES: PhaseRule[] = [
     ],
   },
   {
-    phase: "vize: generate (mapper)",
-    all: [/generate_vue_content_mapper_transform|content_mapper::dispatch::transform_frame/u],
+    phase: "vize: script parse (oxc)",
+    all: [/\boxc_parser::|\bvize_croquis::script_parser|\bvize_canon::script_parse/u],
+  },
+  {
+    phase: "vize: SFC parse/analysis",
+    all: [/\bvize_(?:armature|relief|atelier_sfc|croquis)\w*::/u],
+  },
+  { phase: "vize: import rewrite", all: [/\bvize_canon::batch::import_rewriter/u] },
+  {
+    phase: "vize: virtual TS generation",
+    all: [
+      /generate_vue_content_mapper_transform|content_mapper::dispatch::transform_frame|\bvize_canon::(?:virtual_ts|projection)::|vue_codegen|generate_vue_virtual_ts|build_vue_registered_file/u,
+    ],
   },
   {
     phase: "vize: request decode",
@@ -198,13 +211,16 @@ export const PHASE_RULES: PhaseRule[] = [
     phase: "vize: reply write",
     all: [/content_mapper::dispatch::replies|std::io::Write::write_all|BufWriter/u],
   },
-  { phase: "vize: Corsa client", all: [/corsa|typecheck_service/iu] },
-  { phase: "vize: Canon", all: [/^(?:<)?vize_canon::/u] },
   {
-    phase: "vize: SFC compile/parse",
-    all: [/^(?:<)?vize_(?:atelier|armature|croquis|relief|glyph|l\d)\w*::/u],
+    phase: "vize: virtual project build/resolve",
+    all: [/\bvize_canon::(?:batch::virtual_project|package_route)|\bvize_l0::path::/u],
   },
-  { phase: "vize: other", all: [/^(?:<)?vize\w*::/u] },
+  {
+    phase: "vize: Corsa client",
+    all: [/corsa|typecheck_service|\bvize_canon::batch::(?:executor|type_checker)/iu],
+  },
+  { phase: "vize: Canon other", all: [/\bvize_canon::/u] },
+  { phase: "vize: other", all: [/\bvize\w*::/u] },
   { phase: "node: addon load", all: [/^(?:dlopen|_dl_|dl_open_worker)/u] },
 ];
 

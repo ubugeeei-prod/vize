@@ -38,8 +38,11 @@ export type Profile = {
   syscalls: Record<string, number>;
   functions: FunctionCost[];
   quality: Record<string, { samples: number; complete: number; roots: Array<[string, number]> }>;
+  /** Period of samples with at least one unnamed frame in each DSO group. */
   unresolved: Record<string, number>;
   symbolizers: Record<string, FunctionTable["kind"]>;
+  /** Frames named from stripped binaries' tables, by route, and the misses. */
+  symbolization: { resolved: Record<string, number>; missed: number; examples: string[] };
 };
 
 type Mapping = { start: number; end: number; pgoff: number; path: string };
@@ -131,6 +134,7 @@ export class ProfileFolder {
     quality: {},
     unresolved: {},
     symbolizers: {},
+    symbolization: { resolved: {}, missed: 0, examples: [] },
   };
 
   private readonly shape: LaneShape;
@@ -222,19 +226,42 @@ export class ProfileFolder {
     return this.tables.get(path) ?? null;
   }
 
-  /** Name a frame perf could not, from the stripped binary's own tables. */
+  /**
+   * Name a frame perf could not, from the stripped binary's own tables: through
+   * the pid's mapping of that file, else (a fixed-address executable) the
+   * address itself. Misses are counted with a few examples.
+   */
   private symbolize(pid: number, frame: Frame, group: string): string {
     if (frame.sym !== "[unknown]" || !SYMBOLIZED_GROUPS.has(group)) return frame.sym;
     const table = this.table(frame.dso);
     if (!table || table.kind === "symtab" || table.kind === "none") return frame.sym;
-    const mapping = this.maps
-      .get(pid)
-      ?.find((map) => map.path === frame.dso && frame.ip >= map.start && frame.ip < map.end);
+    const inFile = (map: Mapping) =>
+      map.path === frame.dso && frame.ip >= map.start && frame.ip < map.end;
+    const mapping = this.maps.get(pid)?.find(inFile);
     let vaddr: number | null = null;
+    let how = "mapping";
     if (mapping) vaddr = vaddrOf(table, frame.ip - mapping.start + mapping.pgoff);
-    // A fixed-address executable needs no mapping: its runtime address is the vaddr.
-    else if ((table.loads[0]?.vaddr ?? 0) > 0) vaddr = frame.ip;
-    return (vaddr !== null && functionAt(table, vaddr)) || frame.sym;
+    else if ((table.loads[0]?.vaddr ?? 0) > 0) {
+      // A fixed-address executable needs no mapping: its runtime address is the vaddr.
+      vaddr = frame.ip;
+      how = "fixed";
+    }
+    const name = vaddr === null ? null : functionAt(table, vaddr);
+    const stats = this.profile.symbolization;
+    if (name) {
+      stats.resolved[how] = (stats.resolved[how] ?? 0) + 1;
+      return name;
+    }
+    stats.missed++;
+    if (stats.examples.length < 12) {
+      const maps = (this.maps.get(pid) ?? [])
+        .filter((map) => map.path === frame.dso)
+        .map(
+          (map) => `${map.start.toString(16)}-${map.end.toString(16)}@${map.pgoff.toString(16)}`,
+        );
+      stats.examples.push(`pid ${pid} ip ${frame.ip.toString(16)} maps [${maps.join(" ")}]`);
+    }
+    return frame.sym;
   }
 
   private frameId(name: string): number {
@@ -273,14 +300,16 @@ export class ProfileFolder {
     const image = this.images.get(sample.pid) ?? sample.comm;
     const role = processRole(image, sample.pid === this.root, this.shape);
     const groups = sample.frames.map((frame) => dsoGroup(frame.dso));
+    const unnamed = new Set<string>();
     const names = sample.frames.map((frame, index) => {
       const symbol = this.symbolize(sample.pid, frame, groups[index]!);
       if (symbol === "[unknown]") {
-        add(p.unresolved, groups[index]!, period);
+        unnamed.add(groups[index]!);
         return `[unknown ${groups[index]}]`;
       }
       return cleanSymbol(symbol);
     });
+    for (const group of unnamed) add(p.unresolved, group, period);
     const leafGroup = groups[0] ?? "unknown";
     add(p.roles, role, period);
     add(p.dsos, leafGroup, period);
