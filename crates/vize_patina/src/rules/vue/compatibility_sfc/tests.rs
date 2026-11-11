@@ -216,3 +216,32 @@ fn setup_macros_ignore_member_calls() {
         ["default: 1"]
     );
 }
+
+#[test]
+fn sort_keys_checks_script_objects_outside_component_option_shapes() {
+    let result = lint(
+        Box::new(SortKeys::new(false, false, true)),
+        concat!(
+            "<script>export default { props: { b: String, a: { type: String, required: true, default: '' } }, ",
+            "model: { prop: 'b', event: 'a' }, name: 'x' }</script>",
+            "<script setup>defineOptions({ name: 'App', inheritAttrs: false }); ",
+            "const state = reactive({ zeta: 1, alpha: 2 }); ",
+            "const labels = { b10: 'x', b2: 'y' }; const spread = { b: 1, ...labels, a: 2 }</script>",
+            "<template><p :class=\"{ b: 1, a: 2 }\" /></template>",
+        ),
+    );
+    let names = result
+        .diagnostics
+        .iter()
+        .map(|diagnostic| diagnostic.message.as_str())
+        .collect::<Vec<_>>();
+    assert_eq!(
+        names,
+        [
+            "`a` should be before `b`",
+            "`inheritAttrs` should be before `name`",
+            "`alpha` should be before `zeta`",
+            "`b2` should be before `b10`"
+        ]
+    );
+}

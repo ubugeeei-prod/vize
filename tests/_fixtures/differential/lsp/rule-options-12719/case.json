@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "id": "lsp/fix-history/rule-options-12719",
+  "provenance": {
+    "fixCommit": "4fc7b33aeba97b769dd0e51ef0e55dc442fecb8a",
+    "issue": 12719,
+    "witnessPath": "crates/vize_maestro/src/ide/diagnostics/linter_options.rs",
+    "witnessTest": "lsp_custom_macro_order_reaches_the_configured_rule",
+    "inputOrigin": "same authored SFC bytes as lsp/fix-history/folding-multi-block",
+    "contractOrigin": "folding is the structural control for the shared linter.ruleOptions path"
+  },
+  "input": {
+    "source": "Case.vue.txt",
+    "runtimePath": "Case.vue",
+    "sha256": "cd404728c92e2d7ffe6b1a931b32ba64cda9a08e5dc54e2641f8fd0a9b861f2a"
+  },
+  "expected": {
+    "source": "response.expected.json",
+    "sha256": "277e45ce4b7371086cefc352638cbc28de0027dc0fc97d31450f3667b2601629"
+  },
+  "method": "textDocument/foldingRange",
+  "documentVersion": 1,
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": false
+  },
+  "scope": "Pins the language-server linter option path. Folding ranges are the structural control and match the multi-block SFC the server already admits."
+}

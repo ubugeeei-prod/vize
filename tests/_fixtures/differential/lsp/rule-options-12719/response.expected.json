@@ -1,0 +1,34 @@
+[
+  {
+    "startLine": 4,
+    "endLine": 5,
+    "kind": "region",
+    "collapsedText": "template"
+  },
+  {
+    "startLine": 0,
+    "endLine": 1,
+    "kind": "region",
+    "collapsedText": "script setup"
+  },
+  {
+    "startLine": 8,
+    "endLine": 11,
+    "kind": "region",
+    "collapsedText": "style"
+  },
+  {
+    "startLine": 14,
+    "endLine": 17,
+    "kind": "region",
+    "collapsedText": "style"
+  },
+  {
+    "startLine": 9,
+    "endLine": 10
+  },
+  {
+    "startLine": 15,
+    "endLine": 16
+  }
+]

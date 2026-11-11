@@ -3,6 +3,7 @@ use crate::linter::{LintResult, Linter};
 use crate::rule::Rule;
 use crate::rule::RuleRegistry;
 
+mod irregular_whitespace;
 mod template_wrapper_key;
 
 fn lint(rule: Box<dyn Rule>, template: &str) -> LintResult {
