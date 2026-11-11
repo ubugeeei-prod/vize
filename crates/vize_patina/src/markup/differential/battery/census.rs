@@ -229,6 +229,8 @@ pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
         // Default-prop and ARIA role compatibility add nine literal calls.
         + 9
         // Missing end-tag parser custody adds one helper-driven call.
+        + 1
+        // Label association parity adds one helper-driven call.
         + 1,
     rule_fixture_skipped: 87
         + 4
@@ -279,6 +281,8 @@ pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
         // Three macro validity controls remain helper-driven scanner skips.
         + 3
         // The missing end-tag parser observation remains an explicit skip.
+        + 1
+        // The label association observation remains an explicit skip.
         + 1,
     matrix: 90,
     template_lines: 6316 + 233 + 5 + 10 + 25 + 7 - 49

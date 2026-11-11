@@ -5,6 +5,7 @@ use oxc_ast::ast::Statement;
 use oxc_parser::Parser;
 use oxc_semantic::SemanticBuilder;
 use oxc_span::SourceType;
+use vize_l0::expression_guard::scan::line_comment_terminator;
 use vize_l0::{Span, String, cstr};
 use vize_l2::expr::{ExprRef, ForeignExpr, OpaqueExpr, OpaqueReason, VueFilterExpr};
 use vize_l2::provenance::ProvenanceSink;
@@ -18,10 +19,56 @@ pub(crate) fn trimmed<'a>(cx: &Cx<'a, impl ProvenanceSink>, text: &'a str) -> (&
     (slice, cx.span_of(slice))
 }
 
+fn trimmed_attribute<'a>(cx: &Cx<'a, impl ProvenanceSink>, text: &'a str) -> (&'a str, Span) {
+    let slice = trimmed_attribute_expression_text(text);
+    (slice, cx.span_of(slice))
+}
+
+/// Trim expression trivia without discarding the line break that terminates a
+/// trailing line comment. The retained break is part of Vue's expression
+/// grammar and keeps the shared L2 parse authoritative for lint diagnostics.
+fn trimmed_attribute_expression_text(text: &str) -> &str {
+    let text = text.trim_start();
+    let trimmed = text.trim_end();
+    if !trimmed.contains("//") {
+        return trimmed;
+    }
+    let suffix = text.get(trimmed.len()..).unwrap_or_default();
+    let terminator = line_comment_terminator(suffix.as_bytes(), 0);
+    if terminator.is_empty() {
+        trimmed
+    } else {
+        text.get(..trimmed.len() + terminator.end)
+            .unwrap_or(trimmed)
+    }
+}
+
+#[cfg(test)]
+mod trim_tests {
+    use super::trimmed_attribute_expression_text;
+
+    #[test]
+    fn trailing_line_comments_keep_exactly_their_authored_terminator() {
+        assert_eq!(
+            trimmed_attribute_expression_text("  id // note\n  "),
+            "id // note\n"
+        );
+        assert_eq!(
+            trimmed_attribute_expression_text("id // note\r\n\t"),
+            "id // note\r\n"
+        );
+        assert_eq!(
+            trimmed_attribute_expression_text("id // note"),
+            "id // note"
+        );
+        assert_eq!(trimmed_attribute_expression_text("a + 1\n  "), "a + 1");
+    }
+}
+
 /// Lower one expression position: trim, then admit through the shared
 /// JS rule. Total — refused text comes back as the classified escape.
 pub(crate) fn expr_at<'a>(cx: &Cx<'a, impl ProvenanceSink>, text: &'a str) -> ExprRef<'a> {
-    let (slice, span) = trimmed(cx, text);
+    let (slice, span) = trimmed_attribute(cx, text);
     coordinates::expression(cx, slice, span, false)
 }
 
@@ -105,6 +152,19 @@ fn contains_module_declaration(cx: &Cx<'_, impl ProvenanceSink>, source: &str) -
 pub(crate) fn filter_expr_at<'a>(cx: &Cx<'a, impl ProvenanceSink>, text: &'a str) -> ExprRef<'a> {
     if cx.foreign_dialect.is_some() {
         return expr_at(cx, text);
+    }
+    let (slice, span) = trimmed_attribute(cx, text);
+    coordinates::expression(cx, slice, span, cx.caps.supports_filters)
+}
+
+/// Interpolations are trimmed by Vue before it wraps and parses them, so a
+/// final line break cannot terminate a trailing `//` comment there.
+pub(crate) fn interpolation_expr_at<'a>(
+    cx: &Cx<'a, impl ProvenanceSink>,
+    text: &'a str,
+) -> ExprRef<'a> {
+    if cx.foreign_dialect.is_some() {
+        return expression_in(cx, text.trim(), cx.span_of(text.trim()));
     }
     let (slice, span) = trimmed(cx, text);
     coordinates::expression(cx, slice, span, cx.caps.supports_filters)
