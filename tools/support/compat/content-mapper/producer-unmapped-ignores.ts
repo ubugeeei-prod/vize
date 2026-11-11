@@ -95,16 +95,20 @@ function producerRows(packet: Packet, explicit: Tuple[], navigation: boolean): T
   }
   // A navigation block and the gaps it touches form one interval.
   rows.sort((a, b) => a[2] - b[2]);
-  return rows
-    .reduce<Tuple[]>((merged, row) => {
-      const previous = merged.at(-1);
-      if (previous && previous[3] === row[2]) previous[3] = row[3];
-      else merged.push(row);
-      return merged;
-    }, [])
-    .filter(([, , start, end]) =>
-      text.subarray(start, end).some((byte) => ![9, 10, 13, 32].includes(byte)),
-    );
+  return rows.reduce<Tuple[]>((merged, row) => {
+    const previous = merged.at(-1);
+    if (previous && previous[3] === row[2]) previous[3] = row[3];
+    else merged.push(row);
+    return merged;
+  }, []);
+}
+
+/** The CLI wire omits IGNORE tuples that cannot suppress a diagnostic, while
+ * internal transform packets retain the complete producer table. */
+function withoutWhitespaceOnlyRows(text: Buffer, rows: Tuple[]): Tuple[] {
+  return rows.filter(([, , start, end]) =>
+    text.subarray(start, end).some((byte) => ![9, 10, 13, 32].includes(byte)),
+  );
 }
 
 export function withoutProducerUnmappedIgnores<T extends Packet>(
@@ -114,12 +118,14 @@ export function withoutProducerUnmappedIgnores<T extends Packet>(
   const result = { ...packet };
   const table = packet.diagnosticDirectives;
   if (table === undefined) {
-    if (requireComplete)
+    if (requireComplete) {
+      const text = Buffer.from(packet.text);
       assert.deepEqual(
         [],
-        producerRows(packet, [], true),
+        withoutWhitespaceOnlyRows(text, producerRows(packet, [], true)),
         "synthetic ignores must retain every producer gap",
       );
+    }
     return result;
   }
   assert.ok(table !== null && typeof table === "object" && !Array.isArray(table));
@@ -135,10 +141,21 @@ export function withoutProducerUnmappedIgnores<T extends Packet>(
   // Historical packets may predate producer rows; authenticated current heads may not omit them.
   if (requireComplete || generated.length > 0) {
     // Producers before #12531's blocks ignore each gap; both forms ignore only unowned text.
+    // Internal packets retain whitespace-only rows; the CLI wire intentionally drops them.
+    const text = Buffer.from(packet.text);
     const legacy = producerRows(packet, explicit, false);
+    const current = producerRows(packet, explicit, true);
+    const candidates = [
+      legacy,
+      withoutWhitespaceOnlyRows(text, legacy),
+      current,
+      withoutWhitespaceOnlyRows(text, current),
+    ];
+    const expected =
+      candidates.find((candidate) => isDeepStrictEqual(generated, candidate)) ?? candidates.at(-1);
     assert.deepEqual(
       generated,
-      isDeepStrictEqual(generated, legacy) ? legacy : producerRows(packet, explicit, true),
+      expected,
       "synthetic ignores must equal exactly the producer's unmapped gaps",
     );
   }
