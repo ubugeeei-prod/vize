@@ -253,18 +253,17 @@ impl VirtualProject {
         changed: &[PathBuf],
     ) -> FxHashSet<crate::package_route::PackageRouteKey> {
         let mut affected = FxHashSet::default();
+        let reverse = self.package_route_reverse.index(&self.package_routes);
         for path in changed {
             let logical = if path.is_absolute() {
                 path.clone()
             } else {
                 self.project_root.join(path)
             };
-            self.package_route_reverse
-                .extend_keys_for(&logical, &mut affected);
+            reverse.extend_keys_for(&logical, &mut affected);
             let canonical = crate::package_route::stamp::canonicalize_changed_path(&logical);
             if canonical != logical {
-                self.package_route_reverse
-                    .extend_keys_for(&canonical, &mut affected);
+                reverse.extend_keys_for(&canonical, &mut affected);
             }
             if let Some(keys) = self.package_route_importers.get(&canonical) {
                 affected.extend(keys.iter().cloned());

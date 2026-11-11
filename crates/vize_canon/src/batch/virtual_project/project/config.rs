@@ -139,7 +139,7 @@ impl VirtualProject {
             .package_route_resolver
             .lock()
             .unwrap_or_else(std::sync::PoisonError::into_inner);
-        let bindings = routes
+        let contexts = routes
             .into_iter()
             .map(|mut binding| {
                 let (context, context_inputs) = resolution.context(
@@ -148,6 +148,15 @@ impl VirtualProject {
                     binding.occurrence_mode,
                 );
                 binding.context = context;
+                (binding, context_inputs)
+            })
+            .collect::<Vec<_>>();
+        drop(resolver);
+        // Each binding carries every input its lookup consulted; sorting them
+        // is independent per binding, in binding order.
+        let bindings = contexts
+            .into_par_iter()
+            .map(|(mut binding, context_inputs)| {
                 binding
                     .invalidation_paths
                     .extend(resolution.input_paths().iter().cloned());
@@ -159,7 +168,6 @@ impl VirtualProject {
                 binding
             })
             .collect::<Vec<_>>();
-        drop(resolver);
         self.replace_package_route_bindings(bindings);
         self.package_routes_need_refresh = false;
         self.package_route_refresh_keys.clear();
