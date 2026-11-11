@@ -8,6 +8,7 @@ use crate::context::LintContext;
 use crate::diagnostic::{LintDiagnostic, Severity};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_l0::config::MaxLinesPerBlockOptions;
+use vize_l0::cstr;
 
 use super::line_count::empty_line_count;
 
@@ -20,22 +21,12 @@ static META: RuleMeta = RuleMeta {
 };
 
 /// `vue/max-lines-per-block`.
+#[derive(Default)]
 pub struct MaxLinesPerBlock {
     script: Option<u32>,
     template: Option<u32>,
     style: Option<u32>,
     skip_blank_lines: bool,
-}
-
-impl Default for MaxLinesPerBlock {
-    fn default() -> Self {
-        Self {
-            script: None,
-            template: None,
-            style: None,
-            skip_blank_lines: false,
-        }
-    }
 }
 
 impl MaxLinesPerBlock {
@@ -92,7 +83,7 @@ impl Rule for MaxLinesPerBlock {
             let end_line = ctx.offset_to_line(tag_end as u32 - 1);
             let mut line_count = i64::from(end_line) - i64::from(start_line) - 1;
             if skip_blank_lines {
-                line_count -= empty_line_count(&source[tag_start..tag_end]) as i64;
+                line_count -= empty_line_count(source.get(tag_start..tag_end).unwrap_or("")) as i64;
             }
             if line_count > i64::from(limit) {
                 findings.push((tag_start, tag_end, line_count, limit));
@@ -101,7 +92,7 @@ impl Rule for MaxLinesPerBlock {
         for (start, end, line_count, limit) in findings {
             ctx.report_in_sfc(LintDiagnostic::warn(
                 META.name,
-                format!("Block has too many lines ({line_count}). Maximum allowed is {limit}."),
+                cstr!("Block has too many lines ({line_count}). Maximum allowed is {limit}."),
                 start as u32,
                 end as u32,
             ));
