@@ -64,7 +64,16 @@ export function statEvents(perf: string): string[] {
   );
 }
 
-/** `perf stat -x,` rows (value, unit, event, ...); unsupported or uncounted values are null. */
+const TIME_EVENTS = new Set([
+  "task-clock",
+  "cpu-clock",
+  "duration_time",
+  "user_time",
+  "system_time",
+]);
+const TIME_UNITS: Record<string, number> = { msec: 1, usec: 1e3, ns: 1e6 };
+
+/** `perf stat -x,` rows (value, unit, event, ...); unsupported or uncounted values are null, times are msec. */
 export function parseStatCsv(text: string): Record<string, Counter> {
   const out: Record<string, Counter> = {};
   for (const line of text.split("\n")) {
@@ -73,7 +82,13 @@ export function parseStatCsv(text: string): Record<string, Counter> {
     const name = event.replace(/:[a-zA-Z]+$/u, "").replace(/^cpu(?:_core|_atom)?\/(.+)\/$/u, "$1");
     if (!name) continue;
     const number = Number(value);
-    out[name] = { value: value.startsWith("<") || !Number.isFinite(number) ? null : number, unit };
+    const counted = !value.startsWith("<") && Number.isFinite(number);
+    // Time events come in msec from older perf and in unitless ns from newer.
+    const divisor = TIME_UNITS[unit] ?? (TIME_EVENTS.has(name) ? 1e6 : null);
+    out[name] =
+      divisor === null
+        ? { value: counted ? number : null, unit }
+        : { value: counted ? number / divisor : null, unit: "msec" };
   }
   return out;
 }

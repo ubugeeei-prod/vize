@@ -272,12 +272,15 @@ void test("perf stat CSV, corpus submodules and id selection", () => {
       "<not supported>,,cycles:u,0,100.00,,",
       "42,,context-switches,1234500000,100.00,34.02,/sec",
       "7,,cpu_core/cache-misses/,1,100.00,,",
+      "1456903608,,duration_time,1,100.00,120.123,M/sec",
     ].join("\n"),
   );
   assert.deepEqual(stat["task-clock"], { value: 1234.5, unit: "msec" });
   assert.deepEqual(stat.cycles, { value: null, unit: "" });
   assert.equal(stat["context-switches"]?.value, 42);
   assert.equal(stat["cache-misses"]?.value, 7);
+  // perf 6.17 writes tool time events as unitless nanoseconds.
+  assert.deepEqual(stat.duration_time, { value: 1456.903608, unit: "msec" });
   const gitmodules =
     '[submodule "a"]\n\tpath = tests/_fixtures/_git/misskey\n[submodule "b"]\n\tpath = tests/_fixtures/_git/n8n\n';
   assert.deepEqual(
