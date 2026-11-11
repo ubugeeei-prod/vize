@@ -29,11 +29,15 @@ fn native_button_semantics_do_not_reorder_component_props() {
 
 #[test]
 fn native_button_semantics_preserve_dynamic_barriers() {
-    let source = r#"<button class="primary" :type="kind" disabled>Save</button>"#;
+    // Only an object bind or a dynamic argument is a barrier (#12826); a
+    // static `:type` bind sorts with its neighbors.
+    let source = r#"<button class="primary" :[kind]="value" disabled type="button">Save</button>"#;
     let result = format_template_content(source, &FormatOptions::default()).unwrap();
 
-    assert!(result.find("class=").unwrap() < result.find(":type=").unwrap());
-    assert!(result.find(":type=").unwrap() < result.find("disabled").unwrap());
+    assert_eq!(
+        result.as_str(),
+        r#"<button class="primary" :[kind]="value" type="button" disabled>Save</button>"#
+    );
 }
 
 #[test]

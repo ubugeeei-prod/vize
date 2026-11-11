@@ -175,7 +175,6 @@ impl<P: Profile, S: Sink> Lexer<'_, P, S> {
     }
 
     pub(super) fn state_text(&mut self, c: u8) {
-        self.note_input_stream_character(c);
         if c == LT {
             if self.index > self.section_start {
                 self.sink.on_text(self.section_start, self.index);
@@ -268,77 +267,4 @@ impl<P: Profile, S: Sink> Lexer<'_, P, S> {
             self.state_interpolation(c);
         }
     }
-
-    /// HTML reports a raw control, NUL, or noncharacter where it is consumed.
-    /// Continuation bytes belong to a code point already classified.
-    pub(super) fn note_input_stream_character(&mut self, c: u8) {
-        if (c & 0b1100_0000) == 0b1000_0000 {
-            return;
-        }
-        let Some(cp) = code_point_at(self.input, self.index) else {
-            return;
-        };
-        let code = if cp == 0 {
-            LexErrorCode::UnexpectedNullCharacter
-        } else if is_input_control(cp) {
-            LexErrorCode::ControlCharacterInInputStream
-        } else if is_noncharacter(cp) {
-            LexErrorCode::NoncharacterInInputStream
-        } else {
-            return;
-        };
-        self.sink.on_error(code, self.index);
-    }
-}
-
-/// One UTF-8 code point at `index`, or `None` for an invalid sequence.
-/// A surrogate encoding is invalid UTF-8 and is left unreported.
-fn code_point_at(input: &[u8], index: usize) -> Option<u32> {
-    let b0 = *input.get(index)?;
-    if b0 < 0x80 {
-        return Some(u32::from(b0));
-    }
-    if (0xC2..=0xDF).contains(&b0) {
-        let b1 = *input.get(index + 1)?;
-        if (b1 & 0xC0) != 0x80 {
-            return None;
-        }
-        return Some((u32::from(b0 & 0x1F) << 6) | u32::from(b1 & 0x3F));
-    }
-    if (0xE0..=0xEF).contains(&b0) {
-        let b1 = *input.get(index + 1)?;
-        let b2 = *input.get(index + 2)?;
-        if (b1 & 0xC0) != 0x80 || (b2 & 0xC0) != 0x80 {
-            return None;
-        }
-        let cp = (u32::from(b0 & 0x0F) << 12) | (u32::from(b1 & 0x3F) << 6) | u32::from(b2 & 0x3F);
-        if cp < 0x800 || (0xD800..=0xDFFF).contains(&cp) {
-            return None;
-        }
-        return Some(cp);
-    }
-    if (0xF0..=0xF4).contains(&b0) {
-        let b1 = *input.get(index + 1)?;
-        let b2 = *input.get(index + 2)?;
-        let b3 = *input.get(index + 3)?;
-        if (b1 & 0xC0) != 0x80 || (b2 & 0xC0) != 0x80 || (b3 & 0xC0) != 0x80 {
-            return None;
-        }
-        let cp = (u32::from(b0 & 0x07) << 18)
-            | (u32::from(b1 & 0x3F) << 12)
-            | (u32::from(b2 & 0x3F) << 6)
-            | u32::from(b3 & 0x3F);
-        if (0x10000..=0x10FFFF).contains(&cp) {
-            return Some(cp);
-        }
-    }
-    None
-}
-
-fn is_input_control(cp: u32) -> bool {
-    matches!(cp, 0x01..=0x08 | 0x0B | 0x0E..=0x1F | 0x7F..=0x9F)
-}
-
-fn is_noncharacter(cp: u32) -> bool {
-    (0xFDD0..=0xFDEF).contains(&cp) || ((cp & 0xFFFE) == 0xFFFE && cp <= 0x10FFFF)
 }
