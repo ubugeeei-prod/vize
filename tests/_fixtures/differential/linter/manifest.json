@@ -4590,6 +4590,43 @@
       }
     },
     {
+      "id": "linter/patina/compat-explicit-slots-import-12853",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "patina-compat-explicit-slots-import-12853",
+        "files": [
+          {
+            "path": "Imported.vue.txt",
+            "role": "third-party-explicit-slots-import-reproduction",
+            "sha256": "e08b500c636158c29b4d1da0e7b77984e07413f778a01a453635af28a473e638"
+          },
+          {
+            "path": "types.ts",
+            "role": "third-party-explicit-slots-import-reproduction",
+            "sha256": "ceb889382e06ac3b049648380047d9e1b6be72aacb5d9954e640cd2b00a53642"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/patina/compat-interaction-12760",
       "state": "active",
       "targets": [
