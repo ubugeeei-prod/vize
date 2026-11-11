@@ -77,8 +77,8 @@ test("TS-53: every renderer phrase is catalogued", () => {
 
 test("TS-53: every compiler error code is named and catalogued, English unchanged", () => {
   const compiler = parseCompilerCodes();
-  assert.equal(compiler.variants.length, 58, "the parser reads the whole ErrorCode enum");
-  assert.equal(compiler.messages.size, 58, "the parser reads every message() arm");
+  assert.equal(compiler.variants.length, 64, "the parser reads the whole ErrorCode enum");
+  assert.equal(compiler.messages.size, 64, "the parser reads every message() arm");
   assert.deepEqual(compilerProblems(compiler, catalogEntries()), []);
 });
 

@@ -59,7 +59,7 @@ pub(super) fn relief_component_is_control(element: &ElementNode) -> bool {
         PropNode::Attribute(attr) if attr.name.eq_ignore_ascii_case("is") => attr
             .value
             .as_ref()
-            .is_some_and(|value| is_native_control_tag(&value.content)),
+            .is_some_and(|value| is_native_control_tag(value.content)),
         PropNode::Directive(dir) if dir.name == "bind" => {
             let Some(ExpressionNode::Simple(arg)) = &dir.arg else {
                 return false;
@@ -129,9 +129,7 @@ pub(super) fn markup_is_control(
         control |= match binding.kind() {
             MarkupBindingKind::Attribute => {
                 binding.is_unqualified_arg_eq_ignore_ascii_case("is")
-                    && binding
-                        .static_value()
-                        .is_some_and(|value| is_native_control_tag(value))
+                    && binding.static_value().is_some_and(is_native_control_tag)
             }
             MarkupBindingKind::Bind => {
                 binding.is_static_unqualified_arg_eq_ignore_ascii_case("is")

@@ -35,6 +35,9 @@ const runtimeFiles = [
   sparseCheckoutPath,
   "Cargo.lock",
   "package.json",
+  "crates/vize_carton/src/config/loader/module-runtime.mjs",
+  "crates/vize_carton/src/config/loader/vite-runtime-validation.js",
+  "crates/vize_carton/src/config/loader/vite-runtime.mjs",
   comparisonPath,
   sourcePath,
 ].sort();

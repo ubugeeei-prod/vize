@@ -79,7 +79,7 @@ export default defineConfig({}).withVue({
 | `vue/no-mutating-props` | `{ shallowOnly?: boolean }` | 既定は `false` です。`true` では、プロパティ自体の再代入を禁止したまま、入れ子のプロパティの変更を許可します。 |
 | `vue/no-use-v-if-with-v-for` | `{ allowUsingIterationVar?: boolean }` | 既定は `false` です。`true` では、同じ要素の `v-if` が `v-for` の反復変数を参照する場合だけ許可し、無関係な条件は引き続き報告します。 |
 | `vue/enforce-style-attribute` | `{ allow?: Array<"plain" \| "scoped" \| "module"> }` | 既定は `["scoped"]` です。許可する style ブロックのモードを指定します。 |
-| `vue/no-restricted-syntax` | `{ selectors?: Array<"ArrayExpression" \| "BinaryExpression" \| "CallExpression" \| "ConditionalExpression" \| "ObjectExpression" \| "UnaryExpression"> }` | 既定は `[]` です。対応する ESTree ノード型の完全一致だけを受け付け、複合 esquery セレクターは設定エラーにします。 |
+| `vue/no-restricted-syntax` | `Array<string \| { selector: string, message?: string }>` または `{ selectors?: Array<string \| { selector: string, message?: string }> }` | 既定は `[]` です。eslint-plugin-vue 形式で、vue-eslint-parser のテンプレート AST と各式の TS-ESTree ノードに対する esquery セレクターを、任意のメッセージとともに指定します。[対応するセレクターのサブセット](#vue-no-restricted-syntax-selectors)を参照してください。範囲外のセレクターは設定エラーになります。 |
 | `vue/quote-props` | `"as-needed"` | 保持されたテンプレート式にある不要な引用符付きオブジェクトキーを禁止します。 |
 | `vue/sort-keys` | `{ order?: "asc" \| "desc"; caseSensitive?: boolean; natural?: boolean }` | 既定は昇順・大文字小文字を区別する辞書順です。対応するコンポーネントオプション内のオブジェクトキーを検査します。 |
 | `vue/warn-custom-directive` | `{ ignore?: string[] }` | 既定は空のリストです。`ignore` の正確なディレクティブ名を登録済みとして扱います。 |
@@ -261,3 +261,15 @@ export default defineConfig({}).withVue({
 ```vue
 <MyButton />
 ```
+
+## `vue/no-restricted-syntax` のセレクター {#vue-no-restricted-syntax-selectors}
+
+Patina は [esquery](https://github.com/estools/esquery) の次のサブセットに対応します。
+
+- ノード型（大文字・小文字を区別しません）と `*`
+- 属性：`[attr]`、`[a.b.c=value]`、`!=`、`<`、`<=`、`>`、`>=`。値には引用符付き文字列、数値、引用符なし文字列、`/regex/flags` を指定できます（`i`、`m`、`s`、`u` フラグ、Rust の正規表現構文）
+- フィールド：`.left`、`.a.b`
+- 結合子：子孫（空白）、`>`、`~`、`+`、カンマ区切りのリスト
+- `:matches()`、`:is()`、`:not()`、`:has()`（子孫）、`:first-child`、`:last-child`、`:nth-child(n)`、`:nth-last-child(n)`、`:statement`、`:expression`、`:declaration`、`:function`、`:pattern`
+
+`:nth-child(an+b)` 形式、`:has(> …)` の相対セレクター、`[attr=type(...)]`、`:exit` 接尾辞には対応しません。テンプレートは vue-eslint-parser と同様に、`VStartTag`、`VAttribute`、`VDirectiveKey`、`VIdentifier`、`VLiteral`、`VExpressionContainer`、`VText` を子に持つ `VElement[name='template']` として扱います。`VText` は要素や補間の間に書かれたテキストを保持し、要素名は小文字に正規化されます（`rawName` は元の表記を保持します）。式は括弧を除いた TS-ESTree で、vue-eslint-parser が使用する `VOnExpression`、`VForExpression`、`VSlotScopeExpression` の内側にあります。

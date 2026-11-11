@@ -934,6 +934,16 @@
             }
           ],
           "fix": null
+        },
+        {
+          "rule_name": "script/valid-define-emits",
+          "severity": "error",
+          "message": "Custom events are defined in both defineEmits() and export default {}.",
+          "start": 140,
+          "end": 189,
+          "help": null,
+          "labels": [],
+          "fix": null
         }
       ],
       "beforeDiagnostics": [
@@ -954,7 +964,18 @@
           "fix": null
         }
       ],
-      "disabledDiagnostics": [],
+      "disabledDiagnostics": [
+        {
+          "rule_name": "script/valid-define-emits",
+          "severity": "error",
+          "message": "Custom events are defined in both defineEmits() and export default {}.",
+          "start": 140,
+          "end": 189,
+          "help": null,
+          "labels": [],
+          "fix": null
+        }
+      ],
       "projectionDiagnostics": []
     },
     {

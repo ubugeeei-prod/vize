@@ -9,12 +9,12 @@
 > [remarks-format.md](./remarks-format.md)), ranked by corpus hits: the
 > optimization backlog the P3-13 remarks mine for continuous task C-13.
 
-Corpus: 561 files, 1300 remarks (244 applied, 1056 missed), 29 missed reasons.
+Corpus: 562 files, 1302 remarks (244 applied, 1058 missed), 29 missed reasons.
 
 1. `s2.hoist-static static-subtree` `blocker="child" op="ui.interpolation"` - 193 hits in 88 files; first at `tests/_fixtures/_projects/class-component/src/App.vue` @354:376
-2. `s2.hoist-static static-props` `blocker="binding" op="ui.on"` - 161 hits in 64 files; first at `tests/_fixtures/_projects/class-component/src/HelloDecorator.vue` @544:608
+2. `s2.hoist-static static-props` `blocker="binding" op="ui.on"` - 162 hits in 65 files; first at `tests/_fixtures/_projects/class-component/src/HelloDecorator.vue` @544:608
 3. `s2.hoist-static static-props` `blocker="binding" op="ui.bind" rule="non-constant"` - 116 hits in 70 files; first at `tests/_fixtures/_projects/compiler-macros/src/DefineModelType.vue` @179:208
-4. `s2.hoist-static static-subtree` `blocker="binding" op="ui.on"` - 96 hits in 36 files; first at `tests/_fixtures/_projects/class-component/src/HelloDecorator.vue` @544:608
+4. `s2.hoist-static static-subtree` `blocker="binding" op="ui.on"` - 97 hits in 37 files; first at `tests/_fixtures/_projects/class-component/src/HelloDecorator.vue` @544:608
 5. `s2.hoist-static static-props` `blocker="binding" op="ui.slot-content"` - 57 hits in 32 files; first at `tests/_fixtures/_projects/ecosystem-products/src/UiLibraries.vue` @3108:3144
 6. `s2.hoist-static static-subtree` `blocker="binding" op="ui.bind" rule="non-constant"` - 51 hits in 31 files; first at `tests/_fixtures/_projects/compiler-macros/src/DefineModelType.vue` @179:208
 7. `s2.hoist-static static-props` `blocker="binding" op="ui.model"` - 48 hits in 19 files; first at `tests/_fixtures/_projects/ecosystem-products/src/ComposablesAndRouting.vue` @3622:3772

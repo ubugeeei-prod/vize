@@ -76,7 +76,6 @@ const fieldProps = computed(() => ({
   },
   "aria-activedescendant": context.activeDescendant.value,
   "aria-autocomplete": "list" as const,
-  "aria-controls": context.open.value ? context.listboxId.value : undefined,
   "aria-describedby": ariaDescribedby,
   "aria-label": ariaLabel,
   "aria-labelledby": ariaLabelledby,
@@ -106,6 +105,7 @@ defineExpose({ element, focus: (options?: FocusOptions) => element()?.focus(opti
     type="text"
     role="combobox"
     autocomplete="off"
+    :aria-controls="context.open.value ? context.listboxId.value : undefined"
     :aria-expanded="context.open.value ? 'true' : 'false'"
     :name
     :placeholder
@@ -121,6 +121,7 @@ defineExpose({ element, focus: (options?: FocusOptions) => element()?.focus(opti
     ref="textarea"
     v-bind="fieldProps"
     aria-haspopup="listbox"
+    :aria-controls="context.open.value ? context.listboxId.value : undefined"
     :name
     :rows
     :placeholder

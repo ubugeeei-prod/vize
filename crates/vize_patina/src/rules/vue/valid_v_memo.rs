@@ -22,10 +22,7 @@
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use oxc_allocator::Allocator;
 use oxc_ast::ast::Expression;
-use oxc_parser::Parser;
-use oxc_span::SourceType;
 use oxc_syntax::operator::LogicalOperator;
 use vize_relief::{DirectiveNode, ElementNode, ExpressionNode};
 
@@ -83,7 +80,7 @@ impl Rule for ValidVMemo {
         }
 
         if let Some(exp) = &directive.exp
-            && is_definitely_non_array_expression(exp)
+            && is_definitely_non_array_expression(ctx, exp)
         {
             ctx.error_with_help(
                 ctx.t("vue/valid-v-memo.expected_array"),
@@ -112,22 +109,20 @@ impl Rule for ValidVMemo {
     }
 }
 
-fn is_definitely_non_array_expression(exp: &ExpressionNode) -> bool {
+fn is_definitely_non_array_expression<'a>(
+    ctx: &mut LintContext<'a>,
+    exp: &ExpressionNode<'a>,
+) -> bool {
     let ExpressionNode::Simple(simple) = exp else {
         return false;
     };
-    if let Some(expression) = simple
+    let expression = simple
         .js_ast
         .filter(|retained| retained.raw == simple.content)
         .and_then(|retained| retained.as_expression())
-    {
-        return expression_is_definitely_non_array(expression.ast);
-    }
-    // `<template>` and `<slot>` values carry no retained AST.
-    let allocator = Allocator::default();
-    Parser::new(&allocator, simple.content, SourceType::ts())
-        .parse_expression()
-        .is_ok_and(|expression| expression_is_definitely_non_array(&expression))
+        .map(|expression| expression.ast)
+        .or_else(|| ctx.compatibility_expression(simple.loc.span, simple.content));
+    expression.is_some_and(expression_is_definitely_non_array)
 }
 
 fn expression_is_definitely_non_array(expression: &Expression<'_>) -> bool {

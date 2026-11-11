@@ -83,14 +83,20 @@ impl<'o, 'a> NativeHeaderFacts<'o, 'a> {
                 bad_ordinal = true;
                 return;
             };
-            let (kind, name, span) = match binding {
-                header::Binding::Static { name, range, .. } => {
-                    (NativeBindingKind::Static, name, range)
+            let (kind, name, value, span) = match binding {
+                header::Binding::Static { name, value, range } => (
+                    NativeBindingKind::Static,
+                    name,
+                    value.map(String::new),
+                    range,
+                ),
+                header::Binding::Bind { name, range, .. } => {
+                    (NativeBindingKind::Bind, name, None, range)
                 }
-                header::Binding::Bind { name, range, .. } => (NativeBindingKind::Bind, name, range),
                 header::Binding::Other { range, .. } => (
                     NativeBindingKind::Other,
                     original.surface().name.text,
+                    None,
                     range,
                 ),
             };
@@ -98,6 +104,7 @@ impl<'o, 'a> NativeHeaderFacts<'o, 'a> {
                 key,
                 NativeAttributeFact {
                     name: String::new(name),
+                    value,
                     span,
                     kind,
                 },

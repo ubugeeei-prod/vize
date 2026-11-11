@@ -25,14 +25,14 @@
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use crate::visitor::{has_free_reference, parse_v_for_variables};
+use crate::visitor::{has_free_reference, has_free_reference_retained, parse_v_for_variables};
 use oxc_ast::ast::BindingPattern;
 use oxc_span::GetSpan;
-use vize_croquis::drawer::{
-    retain_v_for_binding_parameters, retain_v_for_binding_parameters_with_source,
-};
+use vize_croquis::drawer::retain_v_for_binding_parameters;
 use vize_l0::{Allocator, CompactString, ensure_sufficient_stack};
-use vize_relief::{DirectiveNode, ElementNode, ExpressionNode, PropNode, TemplateChildNode};
+use vize_relief::{
+    DirectiveNode, ElementNode, ExpressionNode, JsExpression, PropNode, TemplateChildNode,
+};
 
 use super::require_v_for_key::relief_element_is_custom_component;
 
@@ -199,10 +199,10 @@ fn separator_count(gap: &str) -> usize {
     count
 }
 
-fn check_iteration_keys(
-    ctx: &mut LintContext<'_>,
-    element: &ElementNode<'_>,
-    v_for_exp: Option<&ExpressionNode<'_>>,
+fn check_iteration_keys<'a>(
+    ctx: &mut LintContext<'a>,
+    element: &ElementNode<'a>,
+    v_for_exp: Option<&ExpressionNode<'a>>,
     inherited_iteration: bool,
 ) {
     // A template that combines v-for with v-slot creates one slot function per
@@ -233,9 +233,25 @@ fn check_iteration_keys(
                     let Some(ExpressionNode::Simple(expression)) = &directive.exp else {
                         return false;
                     };
-                    let allocator = Allocator::default();
-                    retain_v_for_binding_parameters_with_source(&allocator, expression.content)
-                        .is_some_and(|(_, source)| expression_references_any(source, &variables))
+                    let Some(retained) =
+                        ctx.compatibility_v_for(expression.loc.span, expression.content)
+                    else {
+                        return false;
+                    };
+                    let span = retained.source.span();
+                    let start = retained.source_offset as usize + span.start as usize;
+                    let end = retained.source_offset as usize + span.end as usize;
+                    let Some(source) = expression.content.get(start..end) else {
+                        return false;
+                    };
+                    has_free_reference_retained(
+                        source,
+                        &JsExpression {
+                            ast: retained.source,
+                            raw: source,
+                        },
+                        |reference| variables.iter().any(|name| name.as_str() == reference),
+                    )
                 });
                 if !depends_on_parent {
                     ensure_sufficient_stack(|| check_iteration_keys(ctx, child, v_for_exp, true));
@@ -300,7 +316,7 @@ fn check_key_uses_v_for_variables(
     if vars.is_empty() {
         return;
     }
-    if expression_references_any(key_expression.content, &vars) {
+    if expression_references_any(key_expression, &vars) {
         return;
     }
 
@@ -326,7 +342,10 @@ fn bound_key_directive<'a>(element: &'a ElementNode<'a>) -> Option<&'a Directive
     })
 }
 
-fn expression_references_any(expression: &str, names: &[CompactString]) -> bool {
+fn expression_references_any(
+    expression: &vize_relief::SimpleExpressionNode<'_>,
+    names: &[CompactString],
+) -> bool {
     has_free_reference(expression, |reference| {
         names.iter().any(|name| name.as_str() == reference)
     })

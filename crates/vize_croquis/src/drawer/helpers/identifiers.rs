@@ -122,11 +122,24 @@ pub fn extract_identifier_refs_retained_only(
     source: &str,
     retained: &JsExpression<'_>,
 ) -> Option<Vec<IdentifierRef>> {
+    let (references, complete) = extract_identifier_refs_retained_with_witness(source, retained)?;
+    complete.then_some(references)
+}
+
+/// Read the retained AST's references together with its traversal witness.
+///
+/// The references may be partial when `complete` is false. This is useful to
+/// conservative boolean consumers that must treat an incomplete walk as a
+/// possible match instead of converting it into a definite negative answer.
+#[doc(hidden)]
+pub fn extract_identifier_refs_retained_with_witness(
+    source: &str,
+    retained: &JsExpression<'_>,
+) -> Option<(Vec<IdentifierRef>, bool)> {
     if retained.raw != source {
         return None;
     }
-    let (references, complete) = ast::retained_references(retained.ast, true);
-    complete.then_some(references)
+    Some(ast::retained_references(retained.ast, true))
 }
 
 #[cfg(test)]

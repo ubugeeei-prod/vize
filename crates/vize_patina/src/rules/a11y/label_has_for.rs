@@ -31,7 +31,6 @@ use crate::rules::a11y::helpers::{
 };
 use vize_relief::{ElementNode, ElementType, ExpressionNode, PropNode, TemplateChildNode};
 
-#[path = "label_has_for_control.rs"]
 mod control;
 
 use control::{

@@ -16,7 +16,7 @@
       "api": "--current-api",
       "cases": {
         "path": "crates/vize_patina/tests/fixtures/lint-history/cases.json",
-        "sha256": "d333944d98d9aeb0396ddeecd4b82c7a33fcfd0151ad8165b91998084bdd84f3"
+        "sha256": "a26abe911e088ed1cc8fa5d2503349cdafc328bca984ab77927c085364f3424d"
       }
     },
     {
@@ -54,7 +54,7 @@
   ],
   "oracles": {
     "path": "tests/_fixtures/differential/linter/oracle-index.json",
-    "sha256": "9e0b76753d7db6bb77e572ef0d5e0f45d2f35216e612aa70714890c37b3ea893"
+    "sha256": "30b412c524d9ce9bd775aec7cb9a74375c2d6c78773fafab7070177f508a5c64"
   },
   "cases": [
     {
@@ -2996,17 +2996,17 @@
           {
             "path": "explain-en.txt",
             "role": "whole-current-explain-oracle",
-            "sha256": "34396b1602ebf2e4f07fc63653668ae59716801d95b6b518c9968f6b0d46cd76"
+            "sha256": "7013bf1c83b557198277ba3ff257b3f5944187bce7c6a4f5fe8e47407f6486a0"
           },
           {
             "path": "explain-ja.txt",
             "role": "whole-current-explain-oracle",
-            "sha256": "d2d467006ffdb4bae2d35e0a4735275ecfb08b0cc91777de0261af96ba77a30c"
+            "sha256": "dbae7d2050e351f4dca16df433f71a9e205ee2bcd5dbca0e3bff00d09b842587"
           },
           {
             "path": "explain-zh.txt",
             "role": "whole-current-explain-oracle",
-            "sha256": "1589819e29097c9e32cdcdfce42073a133a0188c31e9ecd9a1c63d84a585cb57"
+            "sha256": "c6b155c97ff839a1eb3167acdd3e81093d3e0a4599ba21049edf738d6a14e11a"
           }
         ]
       },
@@ -4466,8 +4466,7 @@
             "kind": "source-inspection",
             "dialects": [
               "vue3-sfc",
-              "html-template",
-              "ts"
+              "html-template"
             ],
             "selector": "linter manifest pinned authored sources"
           }
@@ -4614,8 +4613,7 @@
             "kind": "source-inspection",
             "dialects": [
               "vue3-sfc",
-              "html-template",
-              "ts"
+              "html-template"
             ],
             "selector": "linter manifest pinned authored sources"
           }
@@ -4826,7 +4824,7 @@
             "dialects": [
               "vue3-sfc",
               "html-template",
-              "ts"
+              "js"
             ],
             "selector": "linter manifest pinned authored sources"
           }
@@ -4927,7 +4925,7 @@
             "dialects": [
               "vue3-sfc",
               "html-template",
-              "ts"
+              "js"
             ],
             "selector": "linter manifest pinned authored sources"
           }
@@ -4958,8 +4956,7 @@
             "kind": "source-inspection",
             "dialects": [
               "vue3-sfc",
-              "html-template",
-              "ts"
+              "html-template"
             ],
             "selector": "linter manifest pinned authored sources"
           }
@@ -5031,8 +5028,7 @@
             "kind": "source-inspection",
             "dialects": [
               "vue3-sfc",
-              "html-template",
-              "ts"
+              "html-template"
             ],
             "selector": "linter manifest pinned authored sources"
           }

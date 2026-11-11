@@ -165,7 +165,7 @@ fn return_type_after_params(trimmed: &str, open: usize) -> Option<&str> {
     let mut depth = 0i32;
     let mut index = open;
     while index < bytes.len() {
-        match bytes[index] {
+        match bytes.get(index).copied()? {
             b'(' => depth += 1,
             b')' => {
                 depth -= 1;

@@ -186,7 +186,7 @@
           "message": "Prop name '$props' is reserved.",
           "start": 45,
           "end": 51,
-          "help": "Vue reserves `key`, `ref`, `ref_for`, `ref_key`, `is`, and any `$`-prefixed name. Rename this prop to something else.",
+          "help": "Vue reserves `key`, `ref`, `ref_for`, `ref_key`, and any `$`-prefixed name. Rename this prop to something else.",
           "labels": [
             {
               "message": "reserved prop name",
@@ -202,7 +202,7 @@
           "message": "Prop name '$custom' is reserved.",
           "start": 78,
           "end": 85,
-          "help": "Vue reserves `key`, `ref`, `ref_for`, `ref_key`, `is`, and any `$`-prefixed name. Rename this prop to something else.",
+          "help": "Vue reserves `key`, `ref`, `ref_for`, `ref_key`, and any `$`-prefixed name. Rename this prop to something else.",
           "labels": [
             {
               "message": "reserved prop name",

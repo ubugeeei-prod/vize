@@ -50,20 +50,6 @@ export default defineConfig({}).withVue({
 
 Then run `vp run lint`.
 
-## Differences from eslint-plugin-vuejs-accessibility
-
-These shapes follow the HTML-ARIA mapping, or an existing static-role boundary:
-
-- `<img alt="" role="presentation">` is reported. An empty `alt` is `presentation`.
-- `<img alt="" role="img">` is not reported. `role="img"` overrides that presentation role.
-- `<summary role="button">` is reported. `summary` already has the `button` role.
-- `<select multiple role="listbox">` and `<select size="3" role="listbox">` are reported. `multiple`, or a static `size` greater than 1, is a listbox.
-- `<a :href="href" role="link">` is not reported. A dynamic `href` is not a static link. A static `href`, including `href=""`, is.
-- A bound role such as `<button :role="'button'">` is not reported. Only a static `role` attribute is compared, and the comparison is exact.
-- `<ul>` and `<ol>` stay lists, including a list whose markers are removed with `list-style: none`.
-
-An unnamed `<nav>`, `<section>`, or `<form>` has no corresponding landmark role, so `role="navigation"`, `role="region"`, or `role="form"` on that element is not redundant. A name is `aria-label`, `aria-labelledby`, or `title`. A default `<select>` is a combobox. `div` and `span` are `generic`. `p` is `paragraph`.
-
 ## Related
 
 - [Accessibility rules](../accessibility.md)

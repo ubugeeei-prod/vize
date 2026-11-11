@@ -64,11 +64,14 @@ export const manual11: Record<string, RuleExample> = {
     '  <Widget :options="{ name: value }" />',
     "as-needed",
   ),
-  "vue/no-restricted-syntax": template(
-    "  <p>{{ format(value) }}</p>",
-    "  <p>{{ formattedValue }}</p>",
-    { selectors: ["CallExpression"] },
-  ),
+  "vue/no-restricted-syntax": {
+    ...template("  <p>{{ format(value) }}</p>", "  <p>{{ formattedValue }}</p>", {
+      selectors: ["CallExpression"],
+    }),
+    eslintDifference: {
+      en: "The option value may be the ESLint array of selector strings and `{ selector, message }` objects, or `{ selectors: [...] }`. Selectors are a subset of esquery, listed under [rule options](../options.md#vue-no-restricted-syntax-selectors). A selector outside that subset fails configuration. `:nth-child(an+b)` formulas, relative `:has(> …)` selectors, `[attr=type(...)]`, and the `:exit` suffix are outside the subset.",
+    },
+  },
   "vue/no-literals-in-template": template(
     '  <Widget :options="{ eager: true }" />',
     '  <Widget :options="options" />',

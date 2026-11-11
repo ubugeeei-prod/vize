@@ -59,19 +59,9 @@ export default defineConfig({}).withVue({
 
 Then run `vp run lint`.
 
-## Differences from eslint-plugin-vuejs-accessibility
-
-These shapes stay different because they follow what Vue renders, or because a descendant accessible name is already content:
-
-- `<a><svg role="img" aria-label="Settings">…</svg></a>` is not reported. The nested `aria-label` names the link.
-- `<a><MyIcon aria-label="Settings"></MyIcon></a>` is not reported for the same reason.
-- `<a :aria-label="undefined">` is reported. Vue omits a binding whose value is `undefined`.
-
-A `<slot>` is a content hole, so `aria-hidden` on the slot itself does not hide the slotted nodes. `v-text` and `v-html` on the anchor count when the expression is not `null`, `undefined`, or `""`. `{{ undefined }}` is empty. Boolean `aria-hidden`, and a binding other than `false`, hides that element. An anchor that is itself hidden needs no content. `:aria-hidden="false"` still does.
-
 ## Related
 
 - [Accessibility rules](../accessibility.md)
 - [Rule options](../options.md)
 - [All rules](../all.md)
-- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/anchor_has_content.rs#L24)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/anchor_has_content.rs#L31)

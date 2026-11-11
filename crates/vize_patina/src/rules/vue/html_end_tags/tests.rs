@@ -146,7 +146,7 @@ fn a_button_or_anchor_without_an_end_tag_stays_with_the_parser() {
         assert!(
             result.diagnostics.iter().any(|diagnostic| {
                 diagnostic.rule_name == "parser/template"
-                    && diagnostic.message.contains("missing end tag")
+                    && diagnostic.message == "Element is missing end tag."
             }),
             "{source}: {:?}",
             result.diagnostics

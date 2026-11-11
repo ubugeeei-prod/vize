@@ -216,15 +216,22 @@ fn is_ecmascript_whitespace(c: char) -> bool {
 
 /// Returns true when `content` contains no live tokens after an expression.
 ///
-/// This is intentionally narrower than all ECMAScript trivia: trailing line
-/// comments are valid JS trivia, but raw expression emitters often append their
-/// own delimiters on the same generated line. Admitting a line comment here
-/// would let authored source swallow those generated tokens.
+/// This is intentionally narrower than all ECMAScript trivia: a trailing line
+/// comment is admitted only when its terminator is part of `content`. Raw
+/// expression emitters may append delimiters on the generated line, so an
+/// unterminated comment at EOF must remain refused.
 pub fn is_expression_trailing_trivia(content: &str) -> bool {
     let bytes = content.as_bytes();
     let mut i = 0;
     loop {
         match bytes.get(i) {
+            Some(b'/') if bytes.get(i + 1) == Some(&b'/') => {
+                let terminator = line_comment_terminator(bytes, i + 2);
+                if terminator.is_empty() {
+                    return false;
+                }
+                i = terminator.end;
+            }
             Some(b'/') if bytes.get(i + 1) == Some(&b'*') => {
                 let Some(next) = skip_closed_block_comment(bytes, i + 2) else {
                     return false;

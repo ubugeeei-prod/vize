@@ -86,6 +86,14 @@ impl FactProducer<Evidence> for NativeUnsupportedAria {
         // a DOM/runtime classification or a legacy semantic helper invocation.
         if header.kind == NativeLintTagKind::Component
             || !ARIA_UNSUPPORTED_ELEMENTS.contains(&header.tag.as_str())
+            || attributes.iter().any(|(_, attr)| {
+                attr.kind == NativeBindingKind::Static
+                    && attr.name.eq_ignore_ascii_case("is")
+                    && attr
+                        .value
+                        .as_deref()
+                        .is_some_and(|value| value.starts_with("vue:"))
+            })
         {
             return FactTable::default();
         }
@@ -93,7 +101,11 @@ impl FactProducer<Evidence> for NativeUnsupportedAria {
             .iter()
             .filter(|(_, attr)| {
                 attr.kind != NativeBindingKind::Other
-                    && (attr.name.starts_with("aria-") || attr.name.as_str() == "role")
+                    && (attr
+                        .name
+                        .get(..5)
+                        .is_some_and(|prefix| prefix.eq_ignore_ascii_case("aria-"))
+                        || attr.name.eq_ignore_ascii_case("role"))
             })
             .map(|(key, attr)| {
                 (

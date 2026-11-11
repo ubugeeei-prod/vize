@@ -29,9 +29,10 @@ impl<'a> CompatibilityParses<'a> {
         &mut self,
         allocator: &'a Allocator,
         span: Span,
-        source: &'a str,
+        source: &str,
     ) -> Option<&'a Expression<'a>> {
         *self.expressions.entry(key(span)).or_insert_with(|| {
+            let source = allocator.alloc_str(source);
             vize_l2::expr::JsExpr::parse_ast_in(allocator, source)
                 .ok()
                 .map(|expression| &*allocator.as_oxc().alloc(expression))
@@ -42,9 +43,10 @@ impl<'a> CompatibilityParses<'a> {
         &mut self,
         allocator: &'a Allocator,
         span: Span,
-        source: &'a str,
+        source: &str,
     ) -> Option<&'a Program<'a>> {
         *self.handlers.entry(key(span)).or_insert_with(|| {
+            let source = allocator.alloc_str(source);
             vize_l2::expr::JsExpr::parse_handler_program_in(allocator, source)
                 .ok()
                 .map(|program| &*allocator.as_oxc().alloc(program))
@@ -55,9 +57,10 @@ impl<'a> CompatibilityParses<'a> {
         &mut self,
         allocator: &'a Allocator,
         span: Span,
-        source: &'a str,
+        source: &str,
     ) -> Option<RetainedVFor<'a>> {
         *self.v_for.entry(key(span)).or_insert_with(|| {
+            let source = allocator.alloc_str(source);
             let (parameters, iterable) =
                 vize_croquis::drawer::retain_v_for_binding_parameters_with_source(
                     allocator, source,

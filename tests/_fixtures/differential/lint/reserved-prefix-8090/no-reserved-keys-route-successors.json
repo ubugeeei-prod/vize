@@ -6,15 +6,15 @@
   "bases": {
     "core": {
       "path": "default-route-companions.json",
-      "sha256": "694f72191c8a0d0fe70870198ab2ebc22ed17083e28c51e896c8e749783558c7"
+      "sha256": "d47d3d63759173cd7449706cc7fef15751b71254216d596cb36f23ffa66c7f7a"
     },
     "bare": {
       "path": "bare-parent-route-successors.json",
-      "sha256": "d6f177c108ec9494f24d5dc5a7d70ea0433e0aa0c69242db53f0760f51e00a4e"
+      "sha256": "cf239376277d467af1028b881edaa810342f64134d3bfb62242525f32983e315"
     },
     "producer": {
       "path": "../../../../../crates/vize_patina/src/rules/script/no_reserved_keys.rs",
-      "sha256": "ef78ddf2f9ecd5db19ab271e8d4339727f6c67d4e9cbef7e894964e8b76bac90"
+      "sha256": "663923d54c47e1708ce26a8ede98bce7a54d86fddd564764a6e3628372a4b7c0"
     }
   },
   "routes": {

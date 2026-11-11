@@ -445,7 +445,7 @@ impl<'a> LintContext<'a> {
     pub(crate) fn compatibility_expression(
         &mut self,
         span: vize_l0::Span,
-        source: &'a str,
+        source: &str,
     ) -> Option<&'a oxc_ast::ast::Expression<'a>> {
         self.compatibility_parses
             .expression(self.allocator, span, source)
@@ -455,7 +455,7 @@ impl<'a> LintContext<'a> {
     pub(crate) fn compatibility_handler(
         &mut self,
         span: vize_l0::Span,
-        source: &'a str,
+        source: &str,
     ) -> Option<&'a oxc_ast::ast::Program<'a>> {
         self.compatibility_parses
             .handler(self.allocator, span, source)
@@ -465,7 +465,7 @@ impl<'a> LintContext<'a> {
     pub(crate) fn compatibility_v_for(
         &mut self,
         span: vize_l0::Span,
-        source: &'a str,
+        source: &str,
     ) -> Option<RetainedVFor<'a>> {
         self.compatibility_parses
             .v_for(self.allocator, span, source)

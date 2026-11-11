@@ -7,6 +7,15 @@ compiler/abrupt-closing-of-empty-comment · コンパイラーエラー
 
 ヒント:
   コメントは <!-- … --> の形で書いてください。<!--> や <!---> ではコメントが途中で閉じてしまいます
+=== compiler/absence-of-digits-in-numeric-character-reference
+compiler/absence-of-digits-in-numeric-character-reference · コンパイラーエラー
+数値文字参照に数字がありません。
+
+ステージ: surface
+重大度: エラー
+
+ヒント:
+  &#38; や &#x26; のようにコードポイントの数字を書くか、先頭の & を &amp; としてエスケープしてください
 === compiler/cache-handler-not-supported
 compiler/cache-handler-not-supported · コンパイラーエラー
 このモードでは cacheHandlers オプションを使えません。
@@ -25,6 +34,24 @@ CDATA セクションは XML コンテキストでのみ使用できます。
 
 ヒント:
   <![CDATA[ … ]]> は <svg> や <math> の中でしか使えません。代わりにテキストをエスケープしてください
+=== compiler/character-reference-outside-unicode-range
+compiler/character-reference-outside-unicode-range · コンパイラーエラー
+文字参照が Unicode の範囲外です。
+
+ステージ: surface
+重大度: エラー
+
+ヒント:
+  &#x10FFFF; 以下のコードポイントを使ってください
+=== compiler/control-character-reference
+compiler/control-character-reference · コンパイラーエラー
+制御文字の文字参照です。
+
+ステージ: surface
+重大度: エラー
+
+ヒント:
+  参照を削除するか、意図した表示文字を書いてください
 === compiler/duplicate-attribute
 compiler/duplicate-attribute · コンパイラーエラー
 属性が重複しています。
@@ -247,6 +274,24 @@ compiler/nested-comment · コンパイラーエラー
 
 ヒント:
   コメントの中に <!-- は書けません。外側のコメントを先に閉じてください
+=== compiler/noncharacter-character-reference
+compiler/noncharacter-character-reference · コンパイラーエラー
+非文字の文字参照です。
+
+ステージ: surface
+重大度: エラー
+
+ヒント:
+  参照を削除してください。非文字は交換用ではありません
+=== compiler/null-character-reference
+compiler/null-character-reference · コンパイラーエラー
+NUL 文字の文字参照です。
+
+ステージ: surface
+重大度: エラー
+
+ヒント:
+  参照を削除してください。U+0000 は U+FFFD として描画されます
 === compiler/prefix-id-not-supported
 compiler/prefix-id-not-supported · コンパイラーエラー
 このモードでは prefixIdentifiers オプションを使えません。
@@ -265,6 +310,15 @@ compiler/scope-id-not-supported · コンパイラーエラー
 
 ヒント:
   スコープ付きスタイルにはモジュールモードが必要です。scopeId オプションを外すか、モードを切り替えてください
+=== compiler/surrogate-character-reference
+compiler/surrogate-character-reference · コンパイラーエラー
+サロゲートの文字参照です。
+
+ステージ: surface
+重大度: エラー
+
+ヒント:
+  サロゲートの片方ではなく、&#x1F600; のようにコードポイント全体を参照してください
 === compiler/unexpected-character-in-attribute-name
 compiler/unexpected-character-in-attribute-name · コンパイラーエラー
 属性名に使えない文字が含まれています。
@@ -969,7 +1023,7 @@ a11y/no-redundant-roles · lint ルール
 ドキュメント: docs/content/rules/reference/a11y-no-redundant-roles.md
 
 不正な例:
-  <nav role="navigation">...</nav>
+  <nav aria-label="Primary" role="navigation">...</nav>
   <button role="button">...</button>
 
 正しい例:
@@ -3607,8 +3661,11 @@ nextTick() の結果を await するか、チェーンするか、コールバ�
 不正な例:
   import { nextTick } from 'vue'
   
-  nextTick()          // result ignored
-  this.$nextTick()    // result ignored
+  nextTick()               // result ignored
+  nextTick().catch(fail)   // still not awaited
+  await nextTick(focus)    // callback and await
+  nextTick(focus, other)   // too many arguments
+  await Promise.all([nextTick])
 
 正しい例:
   import { nextTick } from 'vue'

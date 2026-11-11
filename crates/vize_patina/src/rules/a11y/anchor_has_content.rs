@@ -21,7 +21,6 @@ use crate::rules::a11y::helpers::{
 use crate::rules::a11y::markup_helpers;
 use vize_relief::{ElementNode, ExpressionNode, PropNode, TemplateChildNode};
 
-#[path = "anchor_has_content_access.rs"]
 mod access;
 
 use access::{
