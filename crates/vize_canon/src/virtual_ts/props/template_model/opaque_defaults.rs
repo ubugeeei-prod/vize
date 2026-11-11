@@ -9,12 +9,11 @@
 //! type of the same macro call repeated in a setup-scope capture, which is how
 //! `vue-tsc` types the template: from the macro call itself.
 
-use oxc_allocator::Allocator;
 use oxc_ast::ast::{Expression, ObjectPropertyKind};
-use oxc_parser::Parser;
 use oxc_span::SourceType;
 use vize_carton::{String, append, cstr};
 use vize_croquis::Croquis;
+use vize_croquis::script_parser::with_shared_expression;
 
 /// Setup-scope binding typed by the macro call over the authored argument.
 const CAPTURE: &str = "__vize_with_defaults_props";
@@ -28,18 +27,18 @@ fn opaque_defaults_expression(summary: &Croquis) -> Option<&str> {
 
 fn is_opaque(expression: &str) -> bool {
     let source = cstr!("({expression})");
-    let allocator = Allocator::default();
-    let Ok(parsed) = Parser::new(&allocator, source.as_str(), SourceType::ts()).parse_expression()
-    else {
-        return false;
-    };
-    match parsed.get_inner_expression() {
-        Expression::ObjectExpression(object) => object
-            .properties
-            .iter()
-            .any(|property| matches!(property, ObjectPropertyKind::SpreadProperty(_))),
-        _ => true,
-    }
+    with_shared_expression(source.as_str(), SourceType::ts(), |parsed| {
+        let Some(parsed) = parsed else {
+            return false;
+        };
+        match parsed.get_inner_expression() {
+            Expression::ObjectExpression(object) => object
+                .properties
+                .iter()
+                .any(|property| matches!(property, ObjectPropertyKind::SpreadProperty(_))),
+            _ => true,
+        }
+    })
 }
 
 /// The template's prop contract when the defaults are opaque: the type the
