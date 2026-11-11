@@ -4,7 +4,6 @@ use vize_l0::ErrorCode;
 
 use super::{EventKind, Recorder};
 use crate::markup::entity::DecodedEntity;
-use crate::markup::parse::SurfaceError;
 use crate::markup::token::{LexErrorCode, QuoteType, Sink};
 
 impl Sink for Recorder<'_, '_> {
@@ -95,7 +94,7 @@ impl Sink for Recorder<'_, '_> {
     fn on_end(&mut self) {}
 
     fn on_error(&mut self, code: LexErrorCode, index: usize) {
-        self.errors.push(SurfaceError::tokenizer(
+        self.errors.push(super::surface_error_for(
             surface_error_code(code),
             index as u32,
         ));
@@ -140,5 +139,8 @@ fn surface_error_code(code: LexErrorCode) -> ErrorCode {
             ErrorCode::UnexpectedQuestionMarkInsteadOfTagName
         }
         LexErrorCode::UnexpectedSolidusInTag => ErrorCode::UnexpectedSolidusInTag,
+        LexErrorCode::UnexpectedNullCharacter => ErrorCode::UnexpectedNullCharacter,
+        LexErrorCode::ControlCharacterInInputStream => ErrorCode::ControlCharacterInInputStream,
+        LexErrorCode::NoncharacterInInputStream => ErrorCode::NoncharacterInInputStream,
     }
 }

@@ -175,6 +175,44 @@ const label = defineModel<Label>({ default: 123 })
 }
 
 #[test]
+fn an_imported_props_type_checks_destructure_defaults() {
+    let dir = tempfile::tempdir().unwrap();
+    std::fs::write(
+        dir.path().join("types.ts"),
+        "export interface CardProps {\n  size: string;\n  label?: string;\n  count?: number;\n}\n",
+    )
+    .unwrap();
+    let source = r#"<script setup lang="ts">
+import type { CardProps } from "./types";
+
+const { count = "many", label = 3, size } = defineProps<CardProps>();
+</script>
+
+<template>
+  <p>{{ count }} {{ label }} {{ size }}</p>
+</template>
+"#;
+    let filename = dir.path().join("DefaultImported.vue");
+    let result = Linter::new()
+        .with_enabled_rules(Some(vec![RULE.into()]))
+        .lint_sfc(source, filename.to_str().unwrap());
+    let mut messages: Vec<_> = result
+        .diagnostics
+        .iter()
+        .filter(|diagnostic| diagnostic.rule_name == RULE)
+        .map(|diagnostic| diagnostic.message.as_str())
+        .collect();
+    messages.sort_unstable();
+    assert_eq!(
+        messages,
+        [
+            "Type of the default value for 'count' prop must be a number.",
+            "Type of the default value for 'label' prop must be a string.",
+        ]
+    );
+}
+
+#[test]
 fn a_shadowed_define_model_is_not_a_compiler_macro() {
     let sfc = r#"<script setup lang="ts">
 const defineModel = <T,>(_options: { default: T }) => "x"

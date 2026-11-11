@@ -92,6 +92,7 @@ pub(crate) fn has_resolved_macro_type_demand(linter: &Linter) -> bool {
         "script/no-unused-emit-declarations",
         "script/require-explicit-emits",
         "script/require-explicit-slots",
+        "script/require-valid-default-prop",
     ];
     active_builtin_script_rule_entries(linter, true).any(|entry| RULES.contains(&entry.rule_name))
 }

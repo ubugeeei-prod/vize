@@ -281,7 +281,19 @@ impl Callbacks for Recorder<'_, '_> {
     fn on_end(&mut self) {}
 
     fn on_error(&mut self, code: ErrorCode, index: usize) {
-        self.errors
-            .push(SurfaceError::tokenizer(code, index as u32));
+        self.errors.push(surface_error_for(code, index as u32));
+    }
+}
+
+pub(super) fn surface_error_for(code: ErrorCode, index: u32) -> SurfaceError {
+    if matches!(
+        code,
+        ErrorCode::UnexpectedNullCharacter
+            | ErrorCode::ControlCharacterInInputStream
+            | ErrorCode::NoncharacterInInputStream
+    ) {
+        SurfaceError::input_stream(code, index)
+    } else {
+        SurfaceError::tokenizer(code, index)
     }
 }
