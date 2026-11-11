@@ -38,6 +38,67 @@ function blob(bytes: Uint8Array): string {
 
 function supportingSourceForReference(file: string, bytes: Uint8Array): Uint8Array {
   if (
+    file === "crates/vize_vitrine/src/napi/sfc/types/conversions.rs" &&
+    blob(bytes) === "c3a1d0e4cfffa709e5512252701cd1385b597d1b"
+  ) {
+    const current = `/// Watch inputs for the host: one file can be reached both canonically
+/// (\\\\?\\C:\\… on Windows) and as authored, so list its plain spelling once.
+pub(crate) fn dependencies_to_napi(dependencies: &[impl AsRef<str>]) -> Option<Vec<String>> {
+    (!dependencies.is_empty()).then(|| {
+        let mut paths: Vec<String> = dependencies
+            .iter()
+            .map(|path| {
+                let path = path.as_ref();
+                vize::type_projects::plain_windows_path(path)
+                    .map_or_else(|| path.to_owned(), Into::into)
+            })
+            .collect();
+        paths.sort_unstable();
+        paths.dedup();
+        paths
+    })
+}`;
+    const reference = `pub(crate) fn dependencies_to_napi(dependencies: &[impl AsRef<str>]) -> Option<Vec<String>> {
+    (!dependencies.is_empty()).then(|| {
+        dependencies
+            .iter()
+            .map(|path| path.as_ref().to_owned())
+            .collect()
+    })
+}`;
+    const text = Buffer.from(bytes).toString("utf8");
+    assert(current.includes("plain_windows_path"), "complete reviewed N-API host-path edit");
+    const start = text.indexOf("/// Watch inputs for the host:");
+    const end = text.indexOf("\n\npub(crate) fn macro_artifacts_to_napi", start);
+    assert(start >= 0 && end > start, "unique reviewed N-API host-path boundary");
+    const restored = Buffer.from(text.slice(0, start) + reference + text.slice(end));
+    assert.equal(blob(restored), "5c313a0057306e74f031e7232f33472e86799e7a");
+    return restored;
+  }
+  if (
+    file === "crates/vize/src/type_projects.rs" &&
+    blob(bytes) === "4d567c1bf5eff482c9ce78d02d30761514973cc1"
+  ) {
+    let text = Buffer.from(bytes).toString("utf8");
+    for (const [current, reference] of [
+      ["mod host_path;\npub use host_path::{plain_windows_path, plain_windows_path_buf};\n\n", ""],
+      [
+        "    captured::owners(&host_path(path))",
+        "    captured::owners(&vize_l0::typescript_project::normalize_path_lexically(path))",
+      ],
+      [
+        "    captured::inputs(&host_path(root), revision, known_revision)\n}\n\n/// Captures index plain spellings; accept a verbatim one from older hosts.\nfn host_path(path: &Path) -> PathBuf {\n    vize_l0::typescript_project::normalize_path_lexically(&plain_windows_path_buf(\n        path.to_path_buf(),\n    ))\n}",
+        "    captured::inputs(\n        &vize_l0::typescript_project::normalize_path_lexically(root),\n        revision,\n        known_revision,\n    )\n}",
+      ],
+    ]) {
+      assert.equal(text.split(current!).length, 2, "unique reviewed host-path edit");
+      text = text.replace(current!, reference!);
+    }
+    const reference = Buffer.from(text);
+    assert.equal(blob(reference), "96073dbb55954781d825974cb3beff77b3fb9085");
+    return reference;
+  }
+  if (
     file !== "crates/vize_atelier_sfc/src/compile/entry/root_match.rs" ||
     blob(bytes) !== "ebff50833e6b9b5fb2998bc7adf8a3874160eaf3"
   )

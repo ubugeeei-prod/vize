@@ -1,6 +1,7 @@
 use super::js_tooling_refresh;
 use super::*;
 mod eslint_vue_scorecard_successor;
+mod node_forge_security_successor;
 
 fn current_binding(path: &str, body: &[u8]) -> Value {
     json!({
@@ -375,9 +376,12 @@ mod js_tooling_refresh_successor {
 
     fn inputs() -> Inputs {
         let current_lock = fs::read(support::repository().join("pnpm-lock.yaml")).unwrap();
+        let current_workspace = fs::read(support::repository().join(WORKSPACE)).unwrap();
+        let scorecard_lock =
+            node_forge_security::reconstruct_lock_predecessor(&current_lock).unwrap();
         let lock = super::super::eslint_vue_scorecard::reconstruct_predecessor(
             &super::super::eslint_vue_scorecard::update(),
-            &current_lock,
+            &scorecard_lock,
         )
         .unwrap();
         Inputs {
@@ -387,7 +391,8 @@ mod js_tooling_refresh_successor {
             update: js_tooling_refresh::update(),
             lock,
             package: fs::read(support::repository().join("package.json")).unwrap(),
-            workspace: fs::read(support::repository().join(WORKSPACE)).unwrap(),
+            workspace: node_forge_security::reconstruct_workspace_predecessor(&current_workspace)
+                .unwrap(),
             unplugin_manifest: fs::read(
                 support::repository().join("npm/builder/unplugin/package.json"),
             )
