@@ -36,9 +36,9 @@ export const scopedOverrides: Record<string, RuleExample> = {
       badFilename: "Thing.vue",
       goodFilename: "Item.vue",
       ruleOptions: { ignores: ["Item"] },
-      note: "The filename is the finding. The configured exact Item exemption does not allow another single-word name.",
+      note: "In this template-only example, the filename is the finding. A component that declares a static name is checked by that name instead of its filename. The configured exact Item exemption does not allow another single-word name.",
       noteJa:
-        "検出対象はファイル名です。完全一致で設定した Item の除外は、別の一語名を許可しません。",
+        "このテンプレートだけの例では、検出対象はファイル名です。静的な name を宣言したコンポーネントは、ファイル名ではなくその name で検査します。完全一致で設定した Item の除外は、別の一語名を許可しません。",
     },
   ),
   "script/prefer-computed": pair(

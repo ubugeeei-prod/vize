@@ -13,7 +13,7 @@ Exiger des noms de composants composés de plusieurs mots.
 
 Champ d’application : Templates et blocs des SFC Vue, avec le contexte du script requis par la règle.
 
-Le diagnostic concerne le nom de fichier. L’exception exacte Item configurée n’autorise pas un autre nom composé d’un seul mot.
+Dans cet exemple limité au template, le diagnostic concerne le nom de fichier. Un composant qui déclare un nom statique est vérifié par ce nom plutôt que par son nom de fichier. L’exception exacte Item configurée n’autorise pas un autre nom composé d’un seul mot.
 
 ## Mauvais
 

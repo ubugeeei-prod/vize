@@ -13,7 +13,7 @@ Require component names to be multi-word.
 
 Applies to: Vue SFC templates and blocks, with script context where the rule requires it.
 
-The filename is the finding. The configured exact Item exemption does not allow another single-word name.
+In this template-only example, the filename is the finding. A component that declares a static name is checked by that name instead of its filename. The configured exact Item exemption does not allow another single-word name.
 
 ## Bad
 

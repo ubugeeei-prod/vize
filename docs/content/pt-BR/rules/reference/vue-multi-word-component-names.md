@@ -13,7 +13,7 @@ Exigir nomes de componentes com mais de uma palavra.
 
 Aplicável a: Templates e blocos de SFC Vue, com o contexto do script quando exigido pela regra.
 
-A ocorrência diagnosticada é o nome de arquivo. A exceção exata Item configurada não permite outro nome de uma palavra.
+Neste exemplo só com template, a ocorrência diagnosticada é o nome de arquivo. Um componente que declara um nome estático é verificado por esse nome em vez do nome de arquivo. A exceção exata Item configurada não permite outro nome de uma palavra.
 
 ## Incorreto
 

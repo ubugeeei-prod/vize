@@ -215,8 +215,8 @@ export const frenchVueNotes = {
     "Consultez [le calcul de la complexité et les limites des composants](../../guide/cross-file-complexity.md) pour connaître les contributions aux deux scores de l’exemple.",
   "The filename is the finding. Rename the same component; changing a child tag does not fix it.":
     "Le diagnostic concerne le nom de fichier. Renommez ce même composant ; modifier une balise enfant ne corrige pas le problème.",
-  "The filename is the finding. The configured exact Item exemption does not allow another single-word name.":
-    "Le diagnostic concerne le nom de fichier. L’exception exacte Item configurée n’autorise pas un autre nom composé d’un seul mot.",
+  "In this template-only example, the filename is the finding. A component that declares a static name is checked by that name instead of its filename. The configured exact Item exemption does not allow another single-word name.":
+    "Dans cet exemple limité au template, le diagnostic concerne le nom de fichier. Un composant qui déclare un nom statique est vérifié par ce nom plutôt que par son nom de fichier. L’exception exacte Item configurée n’autorise pas un autre nom composé d’un seul mot.",
   "Enable only for a single-root contract. Vue 3 normally supports fragments.":
     "Activez cette règle uniquement pour un contrat à racine unique. Vue 3 prend normalement en charge les fragments.",
   "This catalog entry does not currently emit its rule-specific finding through SFC lint. The Bad/Good pair describes the intended convention, not an executable finding. Enabling the ID does not supply the missing SFC check.":
