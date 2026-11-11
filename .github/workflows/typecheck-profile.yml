@@ -1,0 +1,185 @@
+name: Type-check profile
+run-name: "Type-check profile ${{ inputs.head_sha || github.sha }}${{ inputs.base_sha && format(' vs {0}', inputs.base_sha) || '' }}"
+# Whole-process-tree perf profiles of tsc + Vize mapper, tsrs + Vize mapper
+# and `vize check` on the corpus-pair corpora: per process, DSO (tsgo, tsrs,
+# node, Vize native, libc, kernel), phase and function, with folded stacks,
+# flame graphs, tsgo's own pprof profile and perf stat counters, base vs head.
+# Vize is built in the ci-opt profile with frame pointers and its symbols.
+# A push to bench/typecheck-profile/** profiles the pushed commit; trailers in
+# the last paragraph of its message stand in for the inputs: Profile-Base (a
+# full SHA), Profile-Corpora, Profile-Lanes and Profile-Frequency. The
+# "Validate inputs" step prints what it read.
+on:
+  push:
+    branches: ["bench/typecheck-profile/**"]
+  workflow_dispatch:
+    inputs:
+      head_sha:
+        description: Full 40-hex commit to profile
+        type: string
+        required: true
+      base_sha:
+        description: Optional full 40-hex baseline commit for the function-level diff
+        type: string
+        default: ""
+      corpora:
+        description: Optional comma-separated corpus ids from the corpus pair (default all)
+        type: string
+        default: ""
+      lanes:
+        description: Comma-separated lanes (tsc, tsrs, tsrs-dwarf, check)
+        type: string
+        default: "tsc,tsrs,check"
+      frequency:
+        description: perf record sampling frequency (Hz)
+        type: string
+        default: "999"
+permissions: { contents: read }
+concurrency:
+  group: typecheck-profile-${{ github.ref }}-${{ inputs.base_sha }}-${{ inputs.head_sha }}
+  cancel-in-progress: true
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  CARGO_TERM_COLOR: always
+  CARGO_INCREMENTAL: "0"
+jobs:
+  profile:
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 150
+    env:
+      BASE_SHA: ${{ inputs.base_sha }}
+      HEAD_SHA: ${{ inputs.head_sha || github.sha }}
+      CORPORA: ${{ inputs.corpora }}
+      LANES: ${{ inputs.lanes || 'tsc,tsrs,check' }}
+      FREQUENCY: ${{ inputs.frequency || '999' }}
+      # FlameGraph's flamegraph.pl and difffolded.pl at a fixed commit.
+      FLAMEGRAPH_SHA: 41fee1f99f9276008b7cd112fca19dc3ea84ac32
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { persist-credentials: false }
+      - name: Read the pushed commit's profile trailers
+        if: github.event_name == 'push'
+        run: |
+          set -euo pipefail
+          trailer() { git show -s --format="%(trailers:key=$1,valueonly,separator=%x2C)" HEAD | tr -d '[:space:]'; }
+          for pair in BASE_SHA:Profile-Base CORPORA:Profile-Corpora LANES:Profile-Lanes FREQUENCY:Profile-Frequency; do
+            value="$(trailer "${pair#*:}")"
+            if [[ -n "$value" ]]; then echo "${pair%%:*}=$value" >> "$GITHUB_ENV"; fi
+          done
+      - name: Validate inputs
+        run: |
+          set -euo pipefail
+          echo "head=$HEAD_SHA base=${BASE_SHA:-none} corpora=${CORPORA:-all} lanes=$LANES frequency=$FREQUENCY"
+          fail() { echo "::error::$1"; exit 1; }
+          [[ "$HEAD_SHA" =~ ^[0-9a-f]{40}$ ]] || fail "head must be a full 40-hex SHA: $HEAD_SHA"
+          if [[ -n "$BASE_SHA" ]]; then
+            [[ "$BASE_SHA" =~ ^[0-9a-f]{40}$ ]] || fail "Profile-Base / base_sha must be a full 40-hex SHA: $BASE_SHA"
+            [[ "$BASE_SHA" != "$HEAD_SHA" ]] || fail "base and head are the same commit"
+          fi
+          [[ "$CORPORA" =~ ^[a-z0-9,-]*$ ]] || fail "corpora must be comma-separated ids: $CORPORA"
+          [[ "$LANES" =~ ^[a-z,-]+$ ]] || fail "lanes must be comma-separated ids: $LANES"
+          [[ "$FREQUENCY" =~ ^[1-9][0-9]{1,4}$ ]] || fail "frequency must be 10..99999 Hz: $FREQUENCY"
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with:
+          node-version-file: package.json
+          cache: true
+          run-install: false
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with: { toolchain: "1.99.1" }
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with: { wild-version: "0.9.0" }
+      - uses: ./.github/actions/setup-rust-script
+      - name: Check out the profiled commits beside the driver
+        run: |
+          set -euo pipefail
+          git fetch --no-tags --depth=1 "https://github.com/$GITHUB_REPOSITORY.git" $HEAD_SHA $BASE_SHA
+          git worktree add --detach "$RUNNER_TEMP/profile-head" "$HEAD_SHA"
+          if [[ -n "$BASE_SHA" ]]; then git worktree add --detach "$RUNNER_TEMP/profile-base" "$BASE_SHA"; fi
+      - name: Install perf, glibc symbols and FlameGraph
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends linux-tools-generic libc6-dbg
+          # Kernel frames and symbols, and call chains deep enough for checker recursion.
+          sudo sysctl -w kernel.perf_event_paranoid=-1 kernel.kptr_restrict=0 kernel.perf_event_max_stack=1024
+          perf_bin=""
+          for candidate in /usr/lib/linux-tools/*/perf /usr/lib/linux-tools-*/perf; do
+            if [[ -x "$candidate" ]]; then perf_bin="$candidate"; break; fi
+          done
+          test -n "$perf_bin"
+          "$perf_bin" --version
+          echo "PERF_BIN=$perf_bin" >> "$GITHUB_ENV"
+          mkdir -p "$RUNNER_TEMP/flamegraph"
+          for script in flamegraph.pl difffolded.pl; do
+            curl -fsSL "https://raw.githubusercontent.com/brendangregg/FlameGraph/$FLAMEGRAPH_SHA/$script" -o "$RUNNER_TEMP/flamegraph/$script"
+          done
+      - name: Install the locked hosts and corpus packages and hydrate the corpora
+        run: |
+          set -euo pipefail
+          npm ci --prefix tools/benchmarks/typecheck-hosts --ignore-scripts --no-audit --no-fund
+          npm ci --prefix tools/benchmarks/typecheck-corpora --ignore-scripts --no-audit --no-fund
+          read -ra submodules <<< "$(node tools/benchmarks/scripts/typecheck-profile.ts --print-submodules --corpora "$CORPORA")"
+          git submodule update --init --depth 1 -- "${submodules[@]}"
+      - name: Test the profile folder and parsers
+        run: node --test tests/tooling/typecheck-profile.test.ts
+      # ci-opt (thin LTO) with frame pointers and an unstripped symbol table, so
+      # perf unwinds and names Vize's Rust frames inside node.
+      - name: Build the native binding with frame pointers and the vize package
+        run: |
+          set -euo pipefail
+          roles=(head)
+          if [[ -n "$BASE_SHA" ]]; then roles+=(base); fi
+          for role in "${roles[@]}"; do
+            (
+              cd "$RUNNER_TEMP/profile-$role"
+              vp install --frozen-lockfile --prefer-offline --filter './npm/cli...' --filter './npm/native...'
+              cargo --version
+            )
+          done
+          export RUSTFLAGS="${RUSTFLAGS:-} -C force-frame-pointers=yes"
+          export CARGO_PROFILE_CI_OPT_STRIP=none
+          pids=()
+          for role in "${roles[@]}"; do
+            (
+              cd "$RUNNER_TEMP/profile-$role/npm/native"
+              rm -rf .artifacts/native
+              VIZE_NATIVE_BUILD_TOKEN="$(openssl rand -hex 16)" CARGO_TARGET_DIR="$RUNNER_TEMP/profile-$role/target" \
+                node_modules/.bin/napi build --platform --profile ci-opt \
+                  --manifest-path ../../crates/vize_vitrine/Cargo.toml -p vize_vitrine \
+                  --features napi,legacy --output-dir .artifacts/native --no-js > "$RUNNER_TEMP/build-$role.log" 2>&1
+              cp .artifacts/native/*.node .
+            ) &
+            pids+=("$!")
+          done
+          status=0
+          for pid in "${pids[@]}"; do wait "$pid" || status=1; done
+          for role in "${roles[@]}"; do echo "::group::native build $role"; tail -n 40 "$RUNNER_TEMP/build-$role.log"; echo "::endgroup::"; done
+          [[ "$status" == 0 ]]
+          for role in "${roles[@]}"; do
+            (cd "$RUNNER_TEMP/profile-$role" && vp run --filter './npm/cli' build)
+            file "$RUNNER_TEMP/profile-$role"/npm/native/*.node
+          done
+      - name: Profile the lanes
+        run: |
+          set -euo pipefail
+          args=(--head "$RUNNER_TEMP/profile-head" --head-sha "$HEAD_SHA")
+          if [[ -n "$BASE_SHA" ]]; then args+=(--base "$RUNNER_TEMP/profile-base" --base-sha "$BASE_SHA"); fi
+          node tools/benchmarks/scripts/typecheck-profile.ts "${args[@]}" \
+            --corpora "$CORPORA" --lanes "$LANES" --frequency "$FREQUENCY" \
+            --perf "$PERF_BIN" --flamegraph "$RUNNER_TEMP/flamegraph" \
+            --work "$RUNNER_TEMP/profile-work" --out "$RUNNER_TEMP/profile-out"
+      - name: Write job summary
+        if: always()
+        run: |
+          if [[ -f "$RUNNER_TEMP/profile-out/summary.md" ]]; then
+            head -c 900000 "$RUNNER_TEMP/profile-out/summary.md" >> "$GITHUB_STEP_SUMMARY"
+          fi
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: always()
+        with:
+          name: typecheck-profile-${{ github.run_id }}
+          path: |
+            ${{ runner.temp }}/profile-out/
+            ${{ runner.temp }}/build-*.log
+          if-no-files-found: warn
+          retention-days: 30
