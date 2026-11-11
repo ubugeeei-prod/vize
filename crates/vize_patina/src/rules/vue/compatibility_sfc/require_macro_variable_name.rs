@@ -1,11 +1,11 @@
 //! Conventional bindings for compiler macros.
 
-use super::{absolute_range, callee_name, setup_program};
+use super::{absolute_range, setup_program};
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::ir::ByteRange;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use oxc_ast::ast::{Argument, BindingPattern, Expression, VariableDeclarator};
+use oxc_ast::ast::{BindingPattern, Expression, VariableDeclarator};
 use oxc_ast_visit::{Visit, walk};
 use vize_l0::cstr;
 
@@ -78,23 +78,15 @@ impl<'a> Visit<'a> for MacroVariableNames {
 }
 
 fn macro_binding(expression: &Expression<'_>) -> Option<(&'static str, &'static str)> {
-    let Expression::CallExpression(call) = expression.get_inner_expression() else {
+    // Upstream reads the initializer as is: a cast or a member callee is not a macro.
+    let Expression::CallExpression(call) = expression.without_parentheses() else {
         return None;
     };
-    let name = callee_name(call)?;
-    let name = if name == "withDefaults" {
-        call.arguments
-            .first()
-            .and_then(Argument::as_expression)
-            .and_then(|argument| match argument.get_inner_expression() {
-                Expression::CallExpression(inner) => callee_name(inner),
-                _ => None,
-            })?
-    } else {
-        name
+    let Expression::Identifier(callee) = &call.callee else {
+        return None;
     };
-    match name {
-        "defineProps" => Some(("defineProps", "props")),
+    match callee.name.as_str() {
+        "defineProps" | "withDefaults" => Some(("defineProps", "props")),
         "defineEmits" => Some(("defineEmits", "emit")),
         "defineSlots" => Some(("defineSlots", "slots")),
         "useSlots" => Some(("useSlots", "slots")),

@@ -125,8 +125,10 @@ pub(super) fn script_rule_may_match(rule_name: &str, source: &str) -> bool {
                 && contains(bytes, b"type")
                 && contains(bytes, b"default")
         }
-        RULE_VALID_DEFINE_PROPS => contains(bytes, b"defineProps"),
-        RULE_VALID_DEFINE_EMITS => contains(bytes, b"defineEmits"),
+        // A sibling `export default { props }` decides whether an empty macro
+        // declares nothing, so that block is parsed too.
+        RULE_VALID_DEFINE_PROPS => contains(bytes, b"defineProps") || contains(bytes, b"props"),
+        RULE_VALID_DEFINE_EMITS => contains(bytes, b"defineEmits") || contains(bytes, b"emits"),
         RULE_PREFER_DEFINE_EMITS_BINDING => {
             contains(bytes, b"defineEmits") || contains(bytes, b"\\u")
         }

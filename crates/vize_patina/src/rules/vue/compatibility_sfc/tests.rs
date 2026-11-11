@@ -107,3 +107,57 @@ fn next_tick_style_resolves_vue_imports_and_parenthesized_awaits() {
         identifier_suffix.diagnostics
     );
 }
+
+fn reported<'s>(rule: Box<dyn Rule>, source: &'s str) -> Vec<&'s str> {
+    let mut result = lint(rule, source);
+    result
+        .diagnostics
+        .sort_by_key(|diagnostic| diagnostic.start);
+    result
+        .diagnostics
+        .iter()
+        .filter_map(|diagnostic| source.get(diagnostic.start as usize..diagnostic.end as usize))
+        .collect()
+}
+
+#[test]
+fn native_events_read_type_declarations() {
+    let source = "<script setup lang=\"ts\">\ninterface Base { keydown: [] }\nconst emit = defineEmits<Base & { click: []; saved: [] } & { (e: 'focus' | 'x'): void }>()\n</script>";
+    assert_eq!(
+        reported(Box::new(NoShadowNativeEvents), source),
+        ["keydown: []", "click: [];", "(e: 'focus' | 'x'): void"]
+    );
+    let function =
+        "<script setup lang=\"ts\">defineEmits<(e: 'blur' | 'Input') => void>()</script>";
+    assert_eq!(reported(Box::new(NoShadowNativeEvents), function).len(), 2);
+}
+
+#[test]
+fn native_events_track_the_emit_binding_and_the_template() {
+    let source = "<script setup lang=\"ts\">\nimport { bus, emit } from './bus'\nconst notify = defineEmits(['saved'])\nbus.emit('click'); bus.$emit('change'); emit('input'); notify('click'); notify(`focus`)\n</script>\n<template><button @click=\"notify('keydown')\" @focus=\"$emit('blur')\" @input=\"emit('input')\" /></template>";
+    assert_eq!(
+        reported(Box::new(NoShadowNativeEvents), source),
+        ["'click'", "`focus`", "'keydown'", "'blur'"]
+    );
+}
+
+#[test]
+fn native_events_read_options_components() {
+    let source = "<script>\nexport default {\n  emits: ['click'],\n  setup(props, { emit }) { emit('focus') },\n  methods: { go() { this.$emit('blur') } },\n}\n</script>\n<template><button @click=\"$emit('input')\" /></template>";
+    assert_eq!(
+        reported(Box::new(NoShadowNativeEvents), source),
+        ["'click'", "'focus'", "'blur'", "'input'"]
+    );
+}
+
+#[test]
+fn setup_macros_ignore_member_calls() {
+    let source = "<script setup lang=\"ts\">\nconst form = { defineModel: (o: unknown) => o, useSlots: () => [] }\nconst initial = form.defineModel({ default: 0 })\nconst names = form.useSlots()\nconst cast = defineModel({ default: 1 }) as unknown\nconst props = withDefaults(defineProps<{ a?: string }>(), {})\n</script>";
+    assert!(reported(Box::new(NoDefineModelDefault), source).is_empty());
+    assert!(reported(Box::new(RequireMacroVariableName), source).is_empty());
+    let model = "<script setup>const m = defineModel('m', { default: 1 }); const n = defineModel(name, { default: 1 })</script>";
+    assert_eq!(
+        reported(Box::new(NoDefineModelDefault), model),
+        ["default: 1"]
+    );
+}

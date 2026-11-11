@@ -1,5 +1,5 @@
 //! Script-side cases. Every expectation was checked against eslint-plugin-vue
-//! 10.9.2's `vue/require-explicit-emits`.
+//! 10.9.2's `vue/require-explicit-emits`; the `defineModel()` case against 10.12.1.
 
 use crate::linter::{LintResult, Linter};
 
@@ -129,13 +129,6 @@ fn script_setup_without_a_macro_is_not_checked() {
     ] {
         assert_eq!(reported(&setup(body)), Vec::<&str>::new(), "{body}");
     }
-}
-
-#[test]
-fn define_model_does_not_declare_update_events() {
-    let body =
-        "const model = defineModel(); const emit = defineEmits([]); emit('update:modelValue')";
-    assert_eq!(reported(&setup(body)), vec!["'update:modelValue'"]);
 }
 
 // --- Options API -----------------------------------------------------------
@@ -288,4 +281,19 @@ fn setup_names_resolve_into_the_sibling_script() {
     let runtime = "<script>\nconst list = ['b']\n</script>\n\
         <script setup>\nconst emit = defineEmits(list); emit('b'); emit('c')\n</script>\n";
     assert_eq!(reported(runtime), vec!["'c'"]);
+}
+
+#[test]
+fn define_model_declares_its_update_event() {
+    let sfc = setup(
+        "const emit = defineEmits(['change']); defineModel<string>(); defineModel('visible'); defineModel(`title`)\n\
+         emit('update:modelValue'); emit('update:visible'); emit('update:title'); emit('update:other')",
+    ) + "<template><input @input=\"$emit('update:modelValue')\" @change=\"$emit('update:other')\" /></template>";
+    assert_eq!(
+        reported(&sfc),
+        ["'update:title'", "'update:other'", "'update:other'"]
+    );
+    // A model declared later does not cover an earlier script call.
+    let later = setup("const emit = defineEmits([]); emit('update:late'); defineModel('late')");
+    assert_eq!(reported(&later), ["'update:late'"]);
 }

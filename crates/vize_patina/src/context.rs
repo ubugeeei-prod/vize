@@ -7,6 +7,7 @@ mod directives;
 mod eslint_directive;
 mod facts;
 mod helpers;
+mod macro_facts;
 mod project_directives;
 mod reporting;
 mod sfc_directives;
@@ -104,6 +105,8 @@ pub struct LintContext<'a> {
     pub(crate) art_script_analysis: Option<&'a Croquis>,
     /// One lazy fact manager per drawn artifact for this lint pass.
     facts: Option<vize_croquis::facts::CroquisFacts<'a>>,
+    /// Template surface and lazily resolved macro types.
+    macro_facts: macro_facts::MacroFacts<'a>,
     /// Optional parsed SFC descriptor shared by SFC-level rules.
     sfc_descriptor: Option<&'a SfcDescriptor<'a>>,
     /// The descriptor's script blocks, each parsed once for every rule.
@@ -191,6 +194,7 @@ impl<'a> LintContext<'a> {
             severity_overrides: FxHashMap::default(),
             sfc_directives: None,
             sfc_directives_scanned: false,
+            macro_facts: macro_facts::MacroFacts::default(),
         };
         if filename.ends_with(".jsx") || filename.ends_with(".tsx") {
             ctx.prescan_eslint_disable_comments();
@@ -247,6 +251,7 @@ impl<'a> LintContext<'a> {
             severity_overrides: FxHashMap::default(),
             sfc_directives: None,
             sfc_directives_scanned: false,
+            macro_facts: macro_facts::MacroFacts::default(),
         };
         if filename.ends_with(".jsx") || filename.ends_with(".tsx") {
             ctx.prescan_eslint_disable_comments();

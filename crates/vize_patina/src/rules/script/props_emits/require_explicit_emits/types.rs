@@ -22,7 +22,7 @@ use oxc_span::{GetSpan, Span};
 use oxc_syntax::symbol::SymbolId;
 use vize_l0::{CompactString, ToCompactString};
 
-use super::declared::{Collect, Emits, define_value};
+use super::declared::{Collect, Emits, define_value_into};
 
 /// Which parse a node belongs to.
 #[derive(Clone, Copy, PartialEq, Eq)]
@@ -47,11 +47,25 @@ impl Resolver<'_, '_, '_> {
         block: Block,
         depth: u8,
     ) -> Option<Emits> {
+        let mut collect = Collect::default();
+        self.object_or_array_into(expression, block, depth, &mut collect)
+            .then(|| collect.finish())
+    }
+
+    /// [`Self::object_or_array`] into `collect`; `false` when unresolved.
+    pub(super) fn object_or_array_into(
+        &self,
+        expression: &Expression<'_>,
+        block: Block,
+        depth: u8,
+        collect: &mut Collect,
+    ) -> bool {
         let Expression::Identifier(identifier) = expression.without_parentheses() else {
-            return define_value(expression);
+            collect.sibling = block == Block::Sibling;
+            return define_value_into(expression, collect);
         };
         if depth > 8 {
-            return None;
+            return false;
         }
         if block == Block::Own
             && let Some(symbol) = self.symbol(identifier)
@@ -62,63 +76,77 @@ impl Resolver<'_, '_, '_> {
                 .symbol_redeclarations(symbol)
                 .is_empty()
             {
-                return None;
+                return false;
             }
             let AstKind::VariableDeclarator(declarator) =
                 self.semantic.symbol_declaration(symbol).kind()
             else {
-                return None;
+                return false;
             };
             if declarator.kind != VariableDeclarationKind::Const
                 || !matches!(declarator.id, BindingPattern::BindingIdentifier(_))
             {
-                return None;
+                return false;
             }
-            return self.object_or_array(declarator.init.as_ref()?, Block::Own, depth + 1);
+            let Some(init) = declarator.init.as_ref() else {
+                return false;
+            };
+            return self.object_or_array_into(init, Block::Own, depth + 1, collect);
         }
         let name = identifier.name.as_str();
         if let Some(init) = self
             .sibling
             .and_then(|sibling| top_level_const(sibling, name))
         {
-            return self.object_or_array(init, Block::Sibling, depth + 1);
+            return self.object_or_array_into(init, Block::Sibling, depth + 1, collect);
         }
         match block {
-            Block::Sibling => {
-                let init = top_level_const(self.program, name)?;
-                self.object_or_array(init, Block::Own, depth + 1)
-            }
-            Block::Own => None,
+            Block::Sibling => match top_level_const(self.program, name) {
+                Some(init) => self.object_or_array_into(init, Block::Own, depth + 1, collect),
+                None => false,
+            },
+            Block::Own => false,
         }
     }
 
     /// The events a `defineEmits<T>()` type declares.
     pub(super) fn type_emits(&self, ty: &TSType<'_>) -> Emits {
+        self.type_collect(ty).finish()
+    }
+
+    /// [`Self::type_emits`] with each declaring node.
+    pub(super) fn type_collect(&self, ty: &TSType<'_>) -> Collect {
         let mut collect = Collect::default();
         self.collect_type(ty, Block::Own, &mut collect, &mut Vec::new());
-        let local = collect.finish();
-        if matches!(local, Emits::Unknown)
+        if collect.unknown
             && let Some(world) = self.resolved_type_world
             && let Some(type_source) = self
                 .source
                 .get(ty.span().start as usize..ty.span().end as usize)
         {
+            // Upstream reports a type it resolves through TypeScript at the
+            // type argument node.
             let resolved_events = world.resolve_events(type_source);
-            if resolved_events.complete && !resolved_events.events.is_empty() {
-                return Emits::Known(resolved_events.events.into_iter().collect());
+            let names = if resolved_events.complete && !resolved_events.events.is_empty() {
+                resolved_events.events
+            } else {
+                let resolved = world.resolve_properties(type_source);
+                if !resolved.complete || resolved.properties.is_empty() {
+                    return collect;
+                }
+                resolved
+                    .properties
+                    .into_iter()
+                    .map(|property| property.name)
+                    .collect()
+            };
+            let mut resolved = Collect::default();
+            for name in names {
+                resolved.push(Some(name), ty.span());
             }
-            let resolved = world.resolve_properties(type_source);
-            if resolved.complete && !resolved.properties.is_empty() {
-                return Emits::Known(
-                    resolved
-                        .properties
-                        .into_iter()
-                        .map(|property| property.name)
-                        .collect(),
-                );
-            }
+            return resolved;
         }
-        local
+        collect
     }
 
     fn collect_type(
@@ -142,10 +170,14 @@ impl Resolver<'_, '_, '_> {
             TSType::TSParenthesizedType(paren) => {
                 self.collect_type(&paren.type_annotation, block, collect, aliases);
             }
-            TSType::TSTypeLiteral(literal) => collect_members(&literal.members, collect),
+            TSType::TSTypeLiteral(literal) => {
+                collect.sibling = block == Block::Sibling;
+                collect_members(&literal.members, collect);
+            }
             TSType::TSFunctionType(function) => {
                 if function.this_param.is_none() {
-                    event_names(&function.params, collect);
+                    collect.sibling = block == Block::Sibling;
+                    event_names(&function.params, function.span, collect);
                 }
             }
             TSType::TSTypeReference(reference) => match &reference.type_name {
@@ -179,6 +211,7 @@ impl Resolver<'_, '_, '_> {
             }
             match self.semantic.symbol_declaration(symbol).kind() {
                 AstKind::TSInterfaceDeclaration(interface) => {
+                    collect.sibling = false;
                     collect_members(&interface.body.body, collect);
                 }
                 AstKind::TSTypeAliasDeclaration(alias) => {
@@ -211,7 +244,10 @@ impl Resolver<'_, '_, '_> {
         aliases: &mut Vec<(bool, Span)>,
     ) {
         match declaration {
-            TypeDeclaration::Interface(interface) => collect_members(&interface.body.body, collect),
+            TypeDeclaration::Interface(interface) => {
+                collect.sibling = block == Block::Sibling;
+                collect_members(&interface.body.body, collect);
+            }
             TypeDeclaration::Alias(alias) => self.collect_alias(alias, block, collect, aliases),
         }
     }
@@ -307,11 +343,15 @@ fn collect_members(members: &[TSSignature<'_>], collect: &mut Collect) {
         match member {
             TSSignature::TSCallSignatureDeclaration(signature) => {
                 if signature.this_param.is_none() {
-                    event_names(&signature.params, collect);
+                    event_names(&signature.params, signature.span, collect);
                 }
             }
-            TSSignature::TSPropertySignature(property) => collect.push(type_key(&property.key)),
-            TSSignature::TSMethodSignature(method) => collect.push(type_key(&method.key)),
+            TSSignature::TSPropertySignature(property) => {
+                collect.push(type_key(&property.key), property.span);
+            }
+            TSSignature::TSMethodSignature(method) => {
+                collect.push(type_key(&method.key), method.span)
+            }
             _ => {}
         }
     }
@@ -334,7 +374,7 @@ fn type_key(key: &PropertyKey<'_>) -> Option<CompactString> {
 
 /// Upstream's `extractEventNames`: literal types of the first parameter. Any
 /// other parameter type declares nothing, and is not unknown.
-fn event_names(params: &FormalParameters<'_>, collect: &mut Collect) {
+fn event_names(params: &FormalParameters<'_>, span: Span, collect: &mut Collect) {
     let Some(first) = params.items.first() else {
         return;
     };
@@ -354,7 +394,7 @@ fn event_names(params: &FormalParameters<'_>, collect: &mut Collect) {
     };
     for ty in types {
         if let Some(name) = literal_type(ty) {
-            collect.push(Some(name));
+            collect.push(Some(name), span);
         }
     }
 }

@@ -2,16 +2,22 @@
 //!
 //! Enforce valid usage of the `defineProps` compiler macro in `<script setup>`.
 //!
-//! `defineProps` declares a component's props. It has three constraints, each
-//! enforced here:
+//! `defineProps` declares a component's props. Its constraints, each enforced
+//! here:
 //!
-//! 1. It may be called **at most once** per `<script setup>` block.
+//! 1. It may be called **at most once** per `<script setup>` block; every call
+//!    is reported otherwise.
 //! 2. It must **not** be given both a type argument and a runtime argument
 //!    (`defineProps<{ ... }>({ ... })`): props are declared either by type *or*
 //!    by runtime object, never both.
 //! 3. Its runtime argument must **not** reference locally-declared variables:
 //!    `defineProps` is hoisted by the compiler, so referencing module-local
-//!    bindings is unsafe.
+//!    bindings (an `enum` included) is unsafe. References are resolved through
+//!    scope: a type position and a parameter of a function inside the argument
+//!    are not local references.
+//! 4. A call with neither declares no prop, unless the plain `<script>`'s
+//!    `export default {}` has a `props` option; a call next to such an option
+//!    declares the props twice.
 //!
 //! Mirrors [`vue/valid-define-props`](https://eslint.vuejs.org/rules/valid-define-props.html).
 //!
@@ -32,14 +38,10 @@
 //! defineProps({ foo: String })
 //! ```
 
-use super::{ScriptLintResult, ScriptRule, ScriptRuleMeta};
+use super::macro_validity::{Finding, check};
+use super::{ScriptLintResult, ScriptRule, ScriptRuleMeta, SfcScriptContext};
 use crate::diagnostic::{LintDiagnostic, Severity};
-use oxc_ast::ast::{
-    Argument, BindingPattern, CallExpression, Expression, IdentifierReference, Program, Statement,
-};
-use oxc_ast_visit::{Visit, walk::walk_call_expression};
-use oxc_span::{GetSpan, Span};
-use vize_l0::{CompactString, FxHashSet};
+use oxc_ast::ast::Program;
 
 static META: ScriptRuleMeta = ScriptRuleMeta {
     name: "script/valid-define-props",
@@ -60,170 +62,65 @@ impl ScriptRule for ValidDefineProps {
         true
     }
 
-    #[inline]
     fn check_program<'a>(
+        &self,
+        program: &'a Program<'a>,
+        source: &str,
+        offset: usize,
+        result: &mut ScriptLintResult,
+    ) {
+        self.check_program_with_sfc(program, source, offset, SfcScriptContext::default(), result);
+    }
+
+    fn check_program_with_sfc<'a>(
         &self,
         program: &'a Program<'a>,
         _source: &str,
         offset: usize,
+        sfc: SfcScriptContext<'_>,
         result: &mut ScriptLintResult,
     ) {
-        let mut visitor = ValidDefinePropsVisitor {
-            offset,
-            result,
-            seen_call: false,
-            local_bindings: collect_top_level_bindings(program),
-        };
-        visitor.visit_program(program);
-    }
-}
-
-struct ValidDefinePropsVisitor<'result> {
-    offset: usize,
-    result: &'result mut ScriptLintResult,
-    seen_call: bool,
-    local_bindings: FxHashSet<CompactString>,
-}
-
-impl<'a> Visit<'a> for ValidDefinePropsVisitor<'_> {
-    fn visit_call_expression(&mut self, it: &CallExpression<'a>) {
-        if is_define_props_call(it) {
-            self.check_call(it);
-        }
-        walk_call_expression(self, it);
-    }
-}
-
-impl ValidDefinePropsVisitor<'_> {
-    fn check_call(&mut self, call: &CallExpression<'_>) {
-        // (a) at most one call.
-        if self.seen_call {
-            self.report(
-                call.span,
-                "defineProps() has been called multiple times.",
-                "Merge all props into a single defineProps() call; only one is \
-                 allowed per <script setup> block.",
-            );
+        if sfc.is_sfc && !sfc.is_script_setup {
             return;
         }
-        self.seen_call = true;
-
-        let runtime_arg = call.arguments.first();
-
-        // (b) not both a type argument and a runtime argument.
-        if call.type_arguments.is_some()
-            && let Some(argument) = runtime_arg
-        {
-            self.report(
-                argument.span(),
-                "defineProps() has both a type argument and a runtime argument.",
-                "Declare props with either a type argument (`defineProps<{ ... }>()`) \
-                 or a runtime argument (`defineProps({ ... })`), not both.",
-            );
-            return;
-        }
-
-        // (c) runtime argument must not reference locally-declared variables.
-        if let Some(Argument::ObjectExpression(object)) = runtime_arg {
-            let hit = {
-                let mut finder = LocalReferenceFinder {
-                    local_bindings: &self.local_bindings,
-                    offset: self.offset,
-                    hit: None,
-                };
-                finder.visit_object_expression(object);
-                finder.hit
-            };
-            if let Some((start, end)) = hit {
-                self.report_raw(
-                    start,
-                    end,
+        for finding in check(program, sfc, "defineProps", "props") {
+            let (span, message, help) = match finding {
+                Finding::Multiple(span) => (
+                    span,
+                    "defineProps() has been called multiple times.",
+                    "Merge all props into a single defineProps() call; only one is \
+                     allowed per <script setup> block.",
+                ),
+                Finding::HasTypeAndArg(span) => (
+                    span,
+                    "defineProps() has both a type argument and a runtime argument.",
+                    "Declare props with either a type argument (`defineProps<{ ... }>()`) \
+                     or a runtime argument (`defineProps({ ... })`), not both.",
+                ),
+                Finding::ReferencingLocally(span) => (
+                    span,
                     "defineProps() is referencing locally declared variables.",
                     "Inline the value or move the declaration out of <script setup>; \
                      defineProps() is hoisted and cannot reference module-local bindings.",
-                );
-            }
+                ),
+                Finding::NotDefined(span) => (
+                    span,
+                    "defineProps() does not define any props.",
+                    "Declare the props with a type argument or a runtime argument.",
+                ),
+                Finding::DefinedInBoth(span) => (
+                    span,
+                    "Props are defined in both defineProps() and export default {}.",
+                    "Declare the props in one place.",
+                ),
+            };
+            let start = offset as u32 + span.start;
+            let end = offset as u32 + span.end;
+            result.add_diagnostic(
+                LintDiagnostic::error(META.name, message, start, end).with_help(help),
+            );
         }
     }
-
-    /// Report a diagnostic for a span relative to the script block (the
-    /// `offset` is added to translate it into the original file).
-    fn report(&mut self, span: Span, message: &'static str, help: &'static str) {
-        let start = self.offset as u32 + span.start;
-        let end = self.offset as u32 + span.end;
-        self.report_raw(start, end, message, help);
-    }
-
-    /// Report a diagnostic for an already-absolute `start`/`end` span.
-    fn report_raw(&mut self, start: u32, end: u32, message: &'static str, help: &'static str) {
-        self.result
-            .add_diagnostic(LintDiagnostic::error(META.name, message, start, end).with_help(help));
-    }
-}
-
-/// Locates the first reference to a locally-declared binding inside a
-/// `defineProps` runtime argument, recording its **absolute** span.
-struct LocalReferenceFinder<'b> {
-    local_bindings: &'b FxHashSet<CompactString>,
-    offset: usize,
-    hit: Option<(u32, u32)>,
-}
-
-impl<'a> Visit<'a> for LocalReferenceFinder<'_> {
-    fn visit_identifier_reference(&mut self, it: &IdentifierReference<'a>) {
-        if self.hit.is_some() {
-            return;
-        }
-        if self.local_bindings.contains(it.name.as_str()) {
-            let start = self.offset as u32 + it.span.start;
-            let end = self.offset as u32 + it.span.end;
-            self.hit = Some((start, end));
-        }
-    }
-}
-
-/// Collect the names bound by top-level (module-scope) declarations: `const` /
-/// `let` / `var`, function, and class declarations. These are the bindings a
-/// hoisted `defineProps()` must not reference.
-fn collect_top_level_bindings(program: &Program<'_>) -> FxHashSet<CompactString> {
-    let mut bindings = FxHashSet::default();
-    for statement in &program.body {
-        match statement {
-            Statement::VariableDeclaration(declaration) => {
-                for declarator in &declaration.declarations {
-                    collect_binding_names(&declarator.id, &mut bindings);
-                }
-            }
-            Statement::FunctionDeclaration(function) => {
-                if let Some(id) = &function.id {
-                    bindings.insert(CompactString::new(id.name.as_str()));
-                }
-            }
-            Statement::ClassDeclaration(class) => {
-                if let Some(id) = &class.id {
-                    bindings.insert(CompactString::new(id.name.as_str()));
-                }
-            }
-            _ => {}
-        }
-    }
-    bindings
-}
-
-/// Add every identifier bound by a binding pattern (including destructured
-/// bindings) to `bindings`.
-fn collect_binding_names(pattern: &BindingPattern<'_>, bindings: &mut FxHashSet<CompactString>) {
-    for id in pattern.get_binding_identifiers() {
-        bindings.insert(CompactString::new(id.name.as_str()));
-    }
-}
-
-/// Whether the callee is the bare `defineProps` compiler macro.
-fn is_define_props_call(call: &CallExpression<'_>) -> bool {
-    matches!(
-        &call.callee,
-        Expression::Identifier(identifier) if identifier.name.as_str() == "defineProps"
-    )
 }
 
 #[cfg(test)]
@@ -315,7 +212,7 @@ mod tests {
             "defineProps({ foo: String })\ndefineProps({ bar: Number })",
             0,
         );
-        assert_eq!(result.error_count, 1);
+        assert_eq!(result.error_count, 2);
         insta::assert_debug_snapshot!(result.diagnostics);
     }
 
@@ -325,7 +222,7 @@ mod tests {
             "defineProps<{ foo: string }>()\ndefineProps<{ bar: number }>()",
             0,
         );
-        assert_eq!(result.error_count, 1);
+        assert_eq!(result.error_count, 2);
     }
 
     #[test]

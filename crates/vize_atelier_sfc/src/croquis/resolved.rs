@@ -28,6 +28,49 @@ pub fn merge_resolved_props_into_croquis_with_sources(
     merge_resolved(croquis, descriptor, filename, Some(sources));
 }
 
+/// The scoped type world of a descriptor's scripts, read from disk, without
+/// building a Croquis summary.
+pub fn resolve_descriptor_type_world(
+    descriptor: &SfcDescriptor<'_>,
+    filename: &str,
+) -> Option<vize_croquis::types::ResolvedTypeWorld> {
+    descriptor_world(descriptor, filename, &TypeSourceSnapshot::default())
+}
+
+// The scoped world reads the current setup/normal text directly. The
+// compatibility collector and context analysis do not contribute to it.
+fn descriptor_world(
+    descriptor: &SfcDescriptor<'_>,
+    filename: &str,
+    sources: &TypeSourceSnapshot,
+) -> Option<vize_croquis::types::ResolvedTypeWorld> {
+    let tsx = |block: Option<&crate::types::SfcScriptBlock<'_>>| {
+        block.is_some_and(|block| block.lang.as_deref() == Some("tsx"))
+    };
+    let Some(script_setup) = descriptor.script_setup.as_ref() else {
+        let script = descriptor.script.as_ref()?;
+        return Some(
+            ScriptCompileContext::new(&script.content).resolve_type_world_with_sources(
+                filename,
+                None,
+                tsx(Some(script)),
+                sources,
+            ),
+        );
+    };
+    Some(
+        ScriptCompileContext::new(&script_setup.content).resolve_type_world_with_sources(
+            filename,
+            descriptor
+                .script
+                .as_ref()
+                .map(|script| script.content.as_ref()),
+            tsx(Some(script_setup)) || tsx(descriptor.script.as_ref()),
+            sources,
+        ),
+    )
+}
+
 fn merge_resolved(
     croquis: &mut Croquis,
     descriptor: &SfcDescriptor<'_>,
@@ -38,39 +81,12 @@ fn merge_resolved(
     let disk_sources = TypeSourceSnapshot::default();
     let world_sources = sources.unwrap_or(&disk_sources);
 
-    let Some(script_setup) = descriptor.script_setup.as_ref() else {
-        if let Some(script) = descriptor.script.as_ref() {
-            let ctx = ScriptCompileContext::new(&script.content);
-            croquis
-                .types
-                .set_resolved_world(ctx.resolve_type_world_with_sources(
-                    filename,
-                    None,
-                    script.lang.as_deref() == Some("tsx"),
-                    world_sources,
-                ));
-        }
+    if let Some(world) = descriptor_world(descriptor, filename, world_sources) {
+        croquis.types.set_resolved_world(world);
+    }
+    if descriptor.script_setup.is_none() {
         return;
-    };
-
-    // The scoped world reads the current setup/normal text directly. The
-    // compatibility collector and context analysis do not contribute to it.
-    let ctx = ScriptCompileContext::new(&script_setup.content);
-    croquis.types.set_resolved_world(
-        ctx.resolve_type_world_with_sources(
-            filename,
-            descriptor
-                .script
-                .as_ref()
-                .map(|script| script.content.as_ref()),
-            script_setup.lang.as_deref() == Some("tsx")
-                || descriptor
-                    .script
-                    .as_ref()
-                    .is_some_and(|script| script.lang.as_deref() == Some("tsx")),
-            world_sources,
-        ),
-    );
+    }
 
     let Some(type_args) = croquis
         .macros

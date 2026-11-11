@@ -7,8 +7,8 @@ expression: result.diagnostics
         rule_name: "script/valid-define-props",
         severity: Error,
         message: "defineProps() has both a type argument and a runtime argument.",
-        start: 29,
-        end: 44,
+        start: 0,
+        end: 45,
         help: Some(
             "Declare props with either a type argument (`defineProps<{ ... }>()`) or a runtime argument (`defineProps({ ... })`), not both.",
         ),

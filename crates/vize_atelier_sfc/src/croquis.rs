@@ -30,6 +30,7 @@ pub use occurrences::{
 };
 pub use resolved::{
     merge_resolved_props_into_croquis, merge_resolved_props_into_croquis_with_sources,
+    resolve_descriptor_type_world,
 };
 pub use script_parses::SfcScriptParses;
 use vize_atelier_core::RootNode;
