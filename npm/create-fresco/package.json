@@ -1,6 +1,6 @@
 {
   "name": "@vizejs/create-fresco",
-  "version": "0.474.0",
+  "version": "0.740.0",
   "description": "Create a Vue-native Fresco terminal application",
   "keywords": [
     "create",
