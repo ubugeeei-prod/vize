@@ -50,7 +50,7 @@ export default defineConfig({}).withVue({
 
 Then run `vp run lint`.
 
-## Differences from eslint-plugin-vuejs-accessibility
+## Differences from eslint-plugin-vue
 
 An `img` with an empty `alt` has the implicit role `presentation` in HTML-ARIA, so `role="img"` on that image is kept. eslint-plugin-vuejs-accessibility treats the implicit role of `img` as `img` regardless of `alt` and reports that attribute. A `:role` binding whose expression is a string literal is read as that static role. A binding that is not a string literal stays unreported.
 

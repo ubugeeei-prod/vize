@@ -280,8 +280,11 @@ fn native_types_from_annotation(annotation: &str) -> Vec<&'static str> {
 
 fn native_type_from_annotation(part: &str) -> Option<&'static str> {
     let mut text = part.trim();
-    while text.len() >= 2 && text.starts_with('(') && text.ends_with(')') {
-        text = text[1..text.len() - 1].trim();
+    while let Some(inner) = text
+        .strip_prefix('(')
+        .and_then(|text| text.strip_suffix(')'))
+    {
+        text = inner.trim();
     }
     match text {
         "string" | "String" => Some("String"),

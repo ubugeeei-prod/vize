@@ -98,13 +98,8 @@ fn custom_directive_prefixes_remain_opaque() {
 
     let first = format_template(source, &options).unwrap();
     let second = format_template(&first, &options).unwrap();
-
-    // Opaque custom directives keep their values unformatted and, being
-    // static directives, sort by name within their group (#12826).
-    assert_eq!(
-        first.as_str(),
-        r#"<Comp v-binding="a+b" v-forge="a+b" v-iffoo="a+b" v-models="a+b" v-onboarding="a+b" v-showcase="a+b" />"#
-    );
+    let expected = r#"<Comp v-binding="a+b" v-forge="a+b" v-iffoo="a+b" v-models="a+b" v-onboarding="a+b" v-showcase="a+b" />"#;
+    assert_eq!(first.as_str(), expected);
     assert_eq!(first, second);
 }
 
