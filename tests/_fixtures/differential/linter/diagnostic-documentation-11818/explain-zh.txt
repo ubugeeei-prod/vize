@@ -43,15 +43,6 @@ compiler/character-reference-outside-unicode-range · 编译器错误
 
 帮助:
   请使用不大于 &#x10FFFF; 的码点
-=== compiler/control-character-in-input-stream
-compiler/control-character-in-input-stream · 编译器错误
-输入流中有控制字符。
-
-阶段: surface
-严重级别: 错误
-
-帮助:
-  请删除该控制字符；它不可见，也不是合法的 HTML 文本
 === compiler/control-character-reference
 compiler/control-character-reference · 编译器错误
 控制字符引用。
@@ -292,15 +283,6 @@ compiler/noncharacter-character-reference · 编译器错误
 
 帮助:
   请删除该引用；非字符不用于交换
-=== compiler/noncharacter-in-input-stream
-compiler/noncharacter-in-input-stream · 编译器错误
-输入流中有非字符。
-
-阶段: surface
-严重级别: 错误
-
-帮助:
-  请删除该非字符；Unicode 非字符不用于交换
 === compiler/null-character-reference
 compiler/null-character-reference · 编译器错误
 空字符引用。
