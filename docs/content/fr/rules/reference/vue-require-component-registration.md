@@ -13,7 +13,7 @@ Exiger un import ou un enregistrement explicite des composants.
 
 Champ d’application : Templates et blocs des SFC Vue, avec le contexte du script requis par la règle.
 
-Listez les noms explicites des composants fournis par les plugins de l’application ou par previewSetup de Musea. Les graphies PascalCase et kebab-case sont acceptées ; les expressions régulières ne sont pas interprétées. Les options n’activent pas la règle. Les couches suivantes remplacent la liste ; une liste vide efface les noms hérités.
+Listez les noms explicites des composants fournis par les plugins de l’application ou par previewSetup de Musea. Les graphies PascalCase et kebab-case sont acceptées ; globals contient des noms, pas des expressions régulières. ignorePatterns prend des expressions régulières, comme vue/no-undef-components d’eslint-plugin-vue. Un attribut `is` statique nomme un composant sur `<component>` ou avec le préfixe `vue:` ; sur un autre élément, c’est un élément natif personnalisé et il n’est pas vérifié. Les options n’activent pas la règle. Les couches suivantes remplacent la liste ; une liste vide efface les noms hérités.
 
 ## Mauvais
 

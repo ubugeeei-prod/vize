@@ -54,4 +54,4 @@ Then run `vp run lint`.
 
 - [Vapor rules](../vapor.md)
 - [All rules](../all.md)
-- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vapor/prefer_static_class.rs#L34)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vapor/prefer_static_class.rs#L35)

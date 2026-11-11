@@ -130,7 +130,10 @@ impl ResolvedLinterRuleGroups {
                     *vue_router_available,
                     *nuxt_available,
                 ) {
-                    linter = linter.with_component_registration_globals(globals);
+                    linter = linter.with_component_registration_options(
+                        globals,
+                        rule_options.component_registration_ignore_patterns(),
+                    );
                 }
                 if let Some(names) = rule_options.palpable_content_directives() {
                     linter = linter.with_palpable_content_directives(names.to_vec());

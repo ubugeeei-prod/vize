@@ -21,6 +21,16 @@ fn reports_style_mode_and_content_outside_blocks() {
         "stray<!-- kept --><template><div /></template>",
     );
     assert_eq!(outside.warning_count, 1);
+    let bom = lint(
+        Box::new(NoContentOutsideBlock),
+        "\u{feff}<template><div /></template>\n",
+    );
+    assert_eq!(bom.warning_count, 0, "{:?}", bom.diagnostics);
+    let chunks = lint(
+        Box::new(NoContentOutsideBlock),
+        "<template><div /></template>\nfirst\n<!-- note -->\nsecond\n",
+    );
+    assert_eq!(chunks.warning_count, 2, "{:?}", chunks.diagnostics);
 }
 
 #[test]

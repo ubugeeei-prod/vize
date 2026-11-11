@@ -6,6 +6,9 @@ use serde::{Deserialize, Serialize};
 #[serde(default, rename_all = "camelCase", deny_unknown_fields)]
 pub(super) struct ComponentRegistrationOptions {
     pub globals: Vec<String>,
+    /// Regular expressions for globally registered component families, as in
+    /// eslint-plugin-vue `vue/no-undef-components`.
+    pub ignore_patterns: Vec<String>,
 }
 
 #[cfg(test)]
@@ -48,6 +51,24 @@ mod tests {
                 r#"{"vue/require-component-registration":{"globalz":[]}}"#,
             )
             .is_err()
+        );
+    }
+
+    #[test]
+    fn ignore_patterns_are_read_next_to_globals() {
+        let options: ConfigLintRuleOptions = serde_json::from_str(
+            r#"{"vue/require-component-registration":{"ignorePatterns":["^C[A-Z]"]}}"#,
+        )
+        .unwrap();
+        assert_eq!(
+            options.component_registration_ignore_patterns(),
+            &["^C[A-Z]"]
+        );
+        assert_eq!(options.component_registration_globals().unwrap().len(), 0);
+        assert!(
+            ConfigLintRuleOptions::default()
+                .component_registration_ignore_patterns()
+                .is_empty()
         );
     }
 }

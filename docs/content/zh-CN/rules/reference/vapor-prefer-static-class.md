@@ -54,4 +54,4 @@ export default defineConfig({}).withVue({
 
 - [Vapor 规则](../vapor.md)
 - [全部规则](../all.md)
-- [源代码](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vapor/prefer_static_class.rs#L34)
+- [源代码](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vapor/prefer_static_class.rs#L35)

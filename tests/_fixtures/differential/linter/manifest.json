@@ -5912,6 +5912,39 @@
       }
     },
     {
+      "id": "linter/third-party-parser-lint-parity-12698",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "third-party-parser-lint-parity-12698",
+        "files": [
+          {
+            "path": "ParserLintParity.vue.txt",
+            "role": "third-party-lint-compatibility-reproduction",
+            "sha256": "792309e7b3b1ca0543f249e8f34a487b3aefb6e13d61160d14f172e0bf1c1b89"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "js",
+              "ts"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/type-aware-runtime-initialization-11147",
       "state": "active",
       "targets": [

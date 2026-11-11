@@ -364,3 +364,73 @@ defineOptions({ name: "TreeItem" });
 
     assert_eq!(result.warning_count, 1);
 }
+
+#[test]
+fn snake_case_tags_do_not_resolve_to_pascal_case_imports() {
+    let linter = create_linter();
+    let sfc = r#"<script setup lang="ts">
+import MyButton from './MyButton.vue'
+</script>
+<template><MyButton /><my-button /><myButton /><my_button /></template>"#;
+    let result = linter.lint_sfc(sfc, "App.vue");
+    assert_eq!(result.warning_count, 1, "{:?}", result.diagnostics);
+    let diagnostic = &result.diagnostics[0];
+    assert_eq!(
+        &sfc[diagnostic.start as usize..diagnostic.end as usize],
+        "my_button"
+    );
+
+    let result = linter.lint_sfc(
+        "<template><TreeItem /><tree_item /></template>",
+        "tree_item.vue",
+    );
+    assert_eq!(result.warning_count, 1, "{:?}", result.diagnostics);
+}
+
+#[test]
+fn checks_a_static_is_on_component_and_vue_prefixed_values() {
+    let linter = create_linter();
+    let sfc = r#"<script setup lang="ts">
+import Known from './Known.vue'
+</script>
+<template>
+  <component is="MissingWidget" />
+  <Component is="vue:Other" />
+  <div is="vue:Third" />
+  <component is="Known" />
+  <button is="plain-button" />
+</template>"#;
+    let result = linter.lint_sfc(sfc, "App.vue");
+    let reported = result
+        .diagnostics
+        .iter()
+        .map(|diagnostic| &sfc[diagnostic.start as usize..diagnostic.end as usize])
+        .collect::<Vec<_>>();
+    assert_eq!(
+        reported,
+        [
+            r#"is="MissingWidget""#,
+            r#"is="vue:Other""#,
+            r#"is="vue:Third""#
+        ]
+    );
+}
+
+#[test]
+fn ignore_patterns_skip_globally_registered_families() {
+    let linter = create_linter()
+        .with_component_registration_options(Vec::new(), &["^C[A-Z]".into(), "(".into()]);
+    let sfc = r#"<template>
+  <CButton />
+  <c-toast />
+  <component is="CThing" />
+  <Card />
+</template>"#;
+    let result = linter.lint_sfc(sfc, "App.vue");
+    let reported = result
+        .diagnostics
+        .iter()
+        .map(|diagnostic| &sfc[diagnostic.start as usize..diagnostic.end as usize])
+        .collect::<Vec<_>>();
+    assert_eq!(reported, ["Card"]);
+}

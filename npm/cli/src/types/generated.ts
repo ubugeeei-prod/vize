@@ -330,6 +330,7 @@ export interface LintRuleOptions {
   };
   "vue/require-component-registration"?: {
     globals?: string[];
+    ignorePatterns?: string[];
   };
   "vue/sfc-element-order"?: {
     order?: (string | string[])[];

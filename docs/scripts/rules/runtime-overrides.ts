@@ -43,9 +43,9 @@ export const runtimeOverrides: Record<string, RuleExample> = {
     "crates/vize_patina/tests/global_component_registration.rs",
     {
       ruleOptions: { globals: ["MyButton", "MyIcon"] },
-      note: "List explicit component names supplied by application plugins or Musea previewSetup. PascalCase and kebab-case spellings are accepted; regular expressions are not interpreted. Options do not enable the rule. Later layers replace the list; an empty list clears inherited names.",
+      note: "List explicit component names supplied by application plugins or Musea previewSetup. PascalCase and kebab-case spellings are accepted; globals are names, not regular expressions. ignorePatterns takes regular expressions, as eslint-plugin-vue vue/no-undef-components does. A static `is` attribute names a component on `<component>` or with a `vue:` prefix; on another element it is a customized built-in element and is not checked. Options do not enable the rule. Later layers replace the list; an empty list clears inherited names.",
       noteJa:
-        "アプリケーションのプラグインや Musea の previewSetup が登録するコンポーネント名を明示します。PascalCase と kebab-case を許可し、正規表現は解釈しません。オプションだけではルールは有効になりません。後の設定は一覧全体を置き換え、空の一覧は継承した名前を消します。",
+        "アプリケーションのプラグインや Musea の previewSetup が登録するコンポーネント名を明示します。PascalCase と kebab-case を許可します。globals は名前で、正規表現は解釈しません。ignorePatterns には eslint-plugin-vue の vue/no-undef-components と同じく正規表現を指定します。静的な `is` 属性は `<component>` 上か `vue:` 接頭辞付きのときだけコンポーネント名として扱い、ほかの要素ではカスタマイズド組み込み要素なので検査しません。オプションだけではルールは有効になりません。後の設定は一覧全体を置き換え、空の一覧は継承した名前を消します。",
     },
   ),
   "vue/no-bare-strings-in-template": pair(

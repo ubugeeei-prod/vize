@@ -105,3 +105,41 @@ fn uses_the_javascript_trim_set_and_reads_parenthesized_v_text_literals() {
         1
     );
 }
+
+#[test]
+fn v_text_literals_are_compared_by_their_decoded_value() {
+    let linter = configured(vec!["-"]);
+    for (source, expected) in [
+        (r#"<p v-text="'-'" />"#, 0),
+        (r#"<p v-text="'\x2D'" />"#, 0),
+        (r#"<p v-text="'-'" />"#, 0),
+        (r#"<p v-text="('\x2D')" />"#, 0),
+        (r#"<p v-text="'Save'" />"#, 1),
+        (r#"<p v-text="`Save`" />"#, 0),
+    ] {
+        let result = linter.lint_template(source, "App.vue");
+        assert_eq!(
+            result.warning_count, expected,
+            "{source}: {:?}",
+            result.diagnostics
+        );
+    }
+}
+
+#[test]
+fn raw_text_elements_keep_character_references_as_written() {
+    let linter = configured(vec!["&"]);
+    for (source, expected) in [
+        ("<div><style>&amp;</style></div>", 1),
+        ("<div><script>&amp;</script></div>", 1),
+        ("<div><p>&amp;</p></div>", 0),
+        ("<div><textarea>&amp;</textarea></div>", 0),
+    ] {
+        let result = linter.lint_template(source, "App.vue");
+        assert_eq!(
+            result.warning_count, expected,
+            "{source}: {:?}",
+            result.diagnostics
+        );
+    }
+}

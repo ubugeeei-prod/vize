@@ -1,0 +1,38 @@
+﻿<script setup lang="ts">
+import MyButton from './MyButton.vue'
+const id = 'element'
+const ready = true
+const a = 1
+const b = 2
+const size = 'lg'
+</script>
+
+<template>
+  <div>
+    <span>{{ a }} < {{ b }}</span>
+    <span>{{ }}</span>
+    <span>{{}}</span>
+    <p
+      :id="
+        id // the element id
+      "
+    >a</p>
+    <p v-if="ready // loaded
+    ">b</p>
+    <p>&#; &#x; &#0; &#3; &#xD800; &#xFFFE;</p>
+    <p>intro <details><summary>more</summary>text</details></p>
+    <p v-text="'\x2D'" />
+    <p v-text="'Save'" />
+    <style>&amp;</style>
+    <script>&amp;</script>
+    <p :class.attr="'a'" />
+    <p :class.prop="'a'" />
+    <p .class="'a'" />
+    <p :class="'a-' + size + '-b'" />
+    <p :class="{ ['a']: true, on: ready }" />
+    <MyButton />
+    <my_button />
+    <component is="MissingWidget" />
+    <CButton />
+  </div>
+</template>

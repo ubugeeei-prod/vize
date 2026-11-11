@@ -86,7 +86,7 @@ export default defineConfig({}).withVue({
 | `vue/no-bare-strings-in-template` | `{ allowlist?: string[] }` | 省略時は上流の既定 allowlist を使い、明示したリストはそれを置き換えます。リテラルまたは Rust の正規表現構文を使う `/pattern/flags` を指定でき、無効なパターンはリテラルのまま扱います。 |
 | `a11y/anchor-has-content` | `{ accessibleChildren?: string[] }` | 既定は空のリストです。指定したコンポーネントをアクセシブルなリンク内容として扱います。 |
 | `a11y/label-has-for` | `{ controlComponents?: string[] }` | 既定は空のリストです。指定したコンポーネントをラベルのコントロールとして扱います。 |
-| `vue/require-component-registration` | `{ globals?: string[] }` | アプリケーションのプラグインやプレビューのセットアップで登録するコンポーネント名を指定します。PascalCase と kebab-case の表記を許可します。ルールは別に有効にしてください。 |
+| `vue/require-component-registration` | `{ globals?: string[]; ignorePatterns?: string[] }` | アプリケーションのプラグインやプレビューのセットアップで登録するコンポーネント名を指定します。PascalCase と kebab-case の表記を許可します。`ignorePatterns` には eslint-plugin-vue の `vue/no-undef-components` と同じく正規表現を指定します。ルールは別に有効にしてください。 |
 | `vue/sfc-element-order` | `{ order?: Array<string \| string[]> }` | 既定は `[["script", "template"], "style"]` です。入れ子の配列は、その位置に配列内のどのブロックが現れてもよいことを表します。 |
 | `vue/html-self-closing` | `{ html?: { void?: Style; normal?: Style; component?: Style }; svg?: Style; math?: Style }`。`Style` は `"always"`、`"never"`、`"any"` のいずれか | 既定は eslint-plugin-vue と同じ `html.void: "never"`、`html.normal: "always"`、`html.component: "always"`、`svg: "always"`、`math: "always"` です。 |
 | `vue/html-button-has-type` | `{ button?: boolean; submit?: boolean; reset?: boolean }` | 3 つとも既定値は `true` です。`false` にした静的な button type は、値自体が有効でも禁止として報告します。 |
@@ -227,6 +227,11 @@ export default defineConfig({}).withVue({
 アプリケーションのプラグインや Musea `previewSetup` が登録するコンポーネント名を指定します。
 PascalCase と kebab-case の表記を許可し、正規表現は解釈しません。オプションだけでは
 ルールは有効になりません。ファイルごとの設定はリスト全体を置き換え、空のリストで引き継いだ値を消去します。
+
+まとめてグローバル登録されるコンポーネントには、eslint-plugin-vue の `vue/no-undef-components` と同じく
+`ignorePatterns` に正規表現を指定します。書かれたタグ名、その kebab-case 形、PascalCase 形のいずれかに
+一致したタグを報告しません。`ignorePatterns: ["^C[A-Z]"]` は `<CButton>` と `<c-toast>` を除外し、`<Card>` は
+報告します。パターンは Rust の `regex` 構文で、コンパイルできないパターンはどのタグにも一致しません。
 
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";

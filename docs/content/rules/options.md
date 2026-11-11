@@ -83,7 +83,7 @@ export default defineConfig({}).withVue({
 | `vue/no-bare-strings-in-template` | `{ allowlist?: string[] }` | Omitted uses the upstream default allowlist; an explicit list replaces it. Entries are literals or `/pattern/flags` values using Rust regex syntax; invalid patterns remain literals. |
 | `a11y/anchor-has-content` | `{ accessibleChildren?: string[] }` | Defaults to an empty list. Named components count as accessible anchor content. |
 | `a11y/label-has-for` | `{ controlComponents?: string[] }` | Defaults to an empty list. Named components count as label controls. |
-| `vue/require-component-registration` | `{ globals?: string[] }` | Explicit application/preview component names; accepts PascalCase and kebab-case spellings. Options do not enable the rule. |
+| `vue/require-component-registration` | `{ globals?: string[]; ignorePatterns?: string[] }` | Explicit application/preview component names; accepts PascalCase and kebab-case spellings. `ignorePatterns` takes regular expressions, as in eslint-plugin-vue `vue/no-undef-components`. Options do not enable the rule. |
 | `vue/sfc-element-order` | `{ order?: Array<string \| string[]> }` | Defaults to `[["script", "template"], "style"]`. A nested array means any of those block selectors may appear at that rank. |
 | `vue/html-self-closing` | `{ html?: { void?: Style; normal?: Style; component?: Style }; svg?: Style; math?: Style }`, where `Style` is `"always"`, `"never"`, or `"any"` | Defaults match eslint-plugin-vue: `html.void: "never"`, `html.normal: "always"`, `html.component: "always"`, `svg: "always"`, and `math: "always"`. |
 | `vue/html-button-has-type` | `{ button?: boolean; submit?: boolean; reset?: boolean }` | All three values default to `true`. Setting one to `false` reports that otherwise valid static button type as forbidden. |
@@ -247,6 +247,13 @@ component names; regular expressions are not interpreted. The same options apply
 to regular SFCs and Musea Art variants. Options alone do not enable the rule, and
 unknown components continue to be reported. A later config layer replaces the
 list; an empty list clears an inherited list.
+
+For a family of globally registered components, `ignorePatterns` takes regular
+expressions, as eslint-plugin-vue `vue/no-undef-components` does: a tag is skipped
+when a pattern matches its authored name, its kebab-case form or its PascalCase
+form. `ignorePatterns: ["^C[A-Z]"]` skips `<CButton>` and `<c-toast>` and still
+reports `<Card>`. Patterns use Rust `regex` syntax; one that does not compile
+matches nothing.
 
 Bad (unlisted component):
 

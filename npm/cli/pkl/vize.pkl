@@ -126,6 +126,7 @@ class PropNameCasingOptions {
 
 class RequireComponentRegistrationOptions {
   globals: Listing<String> = new Listing {}
+  ignorePatterns: Listing<String> = new Listing {}
 }
 
 class NoMutatingPropsOptions {

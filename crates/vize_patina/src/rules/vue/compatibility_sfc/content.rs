@@ -58,50 +58,72 @@ impl Rule for NoContentOutsideBlock {
             ranges
         };
 
+        let mut gaps = Vec::with_capacity(ranges.len() + 1);
         let mut cursor = 0;
         for (start, end) in ranges {
-            if let Some(range) = visible_text_range(ctx.source, cursor, start) {
-                report_outside_content(ctx, range);
-            }
+            gaps.push((cursor, start));
             cursor = cursor.max(end);
         }
-        if let Some(range) = visible_text_range(ctx.source, cursor, ctx.source.len()) {
-            report_outside_content(ctx, range);
+        gaps.push((cursor, ctx.source.len()));
+        for (start, end) in gaps {
+            for range in visible_text_ranges(ctx.source, start, end) {
+                report_outside_content(ctx, range);
+            }
         }
     }
 }
 
-fn visible_text_range(source: &str, start: usize, end: usize) -> Option<ByteRange> {
-    let slice = source.get(start..end)?;
-    let bytes = slice.as_bytes();
+/// Each text run between comments, trimmed the way JavaScript trims: like
+/// eslint-plugin-vue, one report per text node, and a byte order mark is
+/// whitespace (ESLint also strips a leading one before parsing).
+fn visible_text_ranges(source: &str, start: usize, end: usize) -> Vec<ByteRange> {
+    let mut ranges = Vec::new();
+    let Some(slice) = source.get(start..end) else {
+        return ranges;
+    };
     let mut cursor = 0;
-    while cursor < bytes.len() {
-        if slice
-            .get(cursor..)
-            .is_some_and(|tail| tail.starts_with("<!--"))
-        {
+    while cursor < slice.len() {
+        let Some(tail) = slice.get(cursor..) else {
+            break;
+        };
+        let text_len = tail.find("<!--").unwrap_or(tail.len());
+        let text = tail.get(..text_len).unwrap_or_default();
+        let trimmed = text.trim_start_matches(is_javascript_whitespace);
+        let leading = text.len() - trimmed.len();
+        let content = trimmed.trim_end_matches(is_javascript_whitespace);
+        if !content.is_empty() {
+            let content_start = start + cursor + leading;
+            ranges.push(ByteRange {
+                start: content_start as u32,
+                end: (content_start + content.len()) as u32,
+            });
+        }
+        cursor += text_len;
+        if cursor < slice.len() {
             cursor += slice
                 .get(cursor + 4..)
                 .and_then(|tail| tail.find("-->"))
-                .map_or(bytes.len() - cursor, |length| length + 7);
-            continue;
+                .map_or(slice.len() - cursor, |length| length + 7);
         }
-        let character = slice.get(cursor..)?.chars().next()?;
-        if !character.is_whitespace() {
-            let content_start = cursor;
-            let content_end = slice
-                .get(content_start..)?
-                .find("<!--")
-                .map_or(bytes.len(), |length| content_start + length);
-            let trimmed = slice.get(content_start..content_end)?.trim_end();
-            return Some(ByteRange {
-                start: (start + content_start) as u32,
-                end: (start + content_start + trimmed.len()) as u32,
-            });
-        }
-        cursor += character.len_utf8();
     }
-    None
+    ranges
+}
+
+fn is_javascript_whitespace(character: char) -> bool {
+    matches!(
+        character,
+        '\u{0009}'..='\u{000d}'
+            | '\u{0020}'
+            | '\u{00a0}'
+            | '\u{1680}'
+            | '\u{2000}'..='\u{200a}'
+            | '\u{2028}'
+            | '\u{2029}'
+            | '\u{202f}'
+            | '\u{205f}'
+            | '\u{3000}'
+            | '\u{feff}'
+    )
 }
 
 fn report_outside_content(ctx: &mut LintContext<'_>, range: ByteRange) {

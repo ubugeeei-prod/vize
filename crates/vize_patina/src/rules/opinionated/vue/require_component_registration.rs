@@ -46,7 +46,7 @@ use crate::diagnostic::{LintDiagnostic, Severity};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_croquis::builtins::is_builtin_component;
 use vize_croquis::is_native_tag;
-use vize_croquis::naming::{names_match, to_pascal_case};
+use vize_croquis::naming::{camelize, capitalize, names_match, to_pascal_case};
 use vize_croquis::script_parser::parse_script_setup;
 use vize_croquis::{Croquis, Scope, ScopeData, ScopeKind};
 use vize_l0::String;
@@ -94,14 +94,29 @@ pub struct RequireComponentRegistration {
     pub ignore_globals: Vec<String>,
     /// Whether to check Nuxt auto-imports
     pub nuxt_mode: bool,
+    /// Compiled `ignorePatterns`.
+    ignore_patterns: Vec<regex::Regex>,
 }
 
 impl RequireComponentRegistration {
     /// Create rule with Nuxt mode enabled
     pub fn nuxt() -> Self {
         Self {
-            ignore_globals: Vec::new(),
             nuxt_mode: true,
+            ..Self::default()
+        }
+    }
+
+    /// Configure project globals and eslint-plugin-vue style `ignorePatterns`.
+    pub fn configured(
+        ignore_globals: Vec<String>,
+        ignore_patterns: &[String],
+        nuxt_mode: bool,
+    ) -> Self {
+        Self {
+            ignore_globals,
+            nuxt_mode,
+            ignore_patterns: patterns::compile(ignore_patterns),
         }
     }
 
@@ -129,7 +144,7 @@ impl RequireComponentRegistration {
             g.eq_ignore_ascii_case(tag)
                 || g.eq_ignore_ascii_case(&kebab)
                 || component_name_matches(tag, g)
-        })
+        }) || patterns::matches_any(&self.ignore_patterns, tag)
     }
 
     /// Whether `tag` refers to the component itself.
@@ -141,15 +156,13 @@ impl RequireComponentRegistration {
     /// without an alias).
     fn is_self_reference(&self, ctx: &LintContext<'_>, tag: &str) -> bool {
         let stem = file_stem(ctx.filename);
-        if !stem.is_empty() {
-            let self_name = to_pascal_case(stem);
-            if component_name_matches(tag, self_name.as_str()) {
-                return true;
-            }
+        if !stem.is_empty() && setup_name_matches(tag, capitalize(camelize(stem).as_str()).as_str())
+        {
+            return true;
         }
         ctx.analysis()
             .and_then(define_options_name)
-            .is_some_and(|name| component_name_matches(tag, name))
+            .is_some_and(|name| setup_name_matches(tag, name))
     }
 
     fn is_template_visible_imported_component(
@@ -251,7 +264,7 @@ impl Rule for RequireComponentRegistration {
                 }) || options_api_registers(ctx, &tag)
                     || async_components
                         .iter()
-                        .any(|name| component_name_matches(&tag, name))
+                        .any(|name| setup_name_matches(&tag, name))
                     || setup_bindings
                         .iter()
                         .any(|name| template_binding_matches(&tag, name))
@@ -289,6 +302,9 @@ fn collect_components<'a>(root: &RootNode<'a>, result: &mut Vec<(String, u32, u3
             start + tag_str.len() as u32,
         ));
 
+        // A static `is` names a component on `<component>`; elsewhere only a
+        // `vue:` value does, the rest is a customized built-in element.
+        let dynamic_component = matches!(tag_str, "component" | "Component");
         for prop in element.props.iter() {
             let PropNode::Attribute(attribute) = prop else {
                 continue;
@@ -296,21 +312,19 @@ fn collect_components<'a>(root: &RootNode<'a>, result: &mut Vec<(String, u32, u3
             if !attribute.name.eq_ignore_ascii_case("is") {
                 continue;
             }
-            let Some(value) = attribute
-                .value
-                .as_ref()
-                .and_then(|value| value.content.strip_prefix("vue:"))
+            let Some(content) = attribute.value.as_ref().map(|value| value.content) else {
+                continue;
+            };
+            let Some(value) = content
+                .strip_prefix("vue:")
+                .or(dynamic_component.then_some(content))
             else {
                 continue;
             };
-            let value_start = attribute
-                .value
-                .as_ref()
-                .map_or(attribute.loc.span.start, |text| text.loc.span.start);
             result.push((
                 value.to_compact_string(),
-                value_start,
-                value_start + value.len() as u32,
+                attribute.loc.span.start,
+                attribute.loc.span.end,
             ));
         }
 
@@ -350,15 +364,27 @@ fn component_name_matches(used: &str, registered: &str) -> bool {
         || to_pascal_case(used).as_str() == registered
 }
 
+/// Vue's `resolveSetupReference`: the tag as written, camelized, or
+/// capitalized after camelizing. Only `-` separates words, so `<my_button>`
+/// does not resolve to `MyButton`.
+pub(super) fn setup_name_matches(tag: &str, binding: &str) -> bool {
+    if tag == binding {
+        return true;
+    }
+    let camel = camelize(tag);
+    camel.as_str() == binding || capitalize(camel.as_str()).as_str() == binding
+}
+
 fn template_binding_matches(tag: &str, binding: &str) -> bool {
-    component_name_matches(tag, binding)
+    setup_name_matches(tag, binding)
         || tag
             .split_once('.')
-            .is_some_and(|(namespace, _)| component_name_matches(namespace, binding))
+            .is_some_and(|(namespace, _)| setup_name_matches(namespace, binding))
 }
 
 mod art;
 mod async_setup;
+mod patterns;
 mod self_name;
 
 #[cfg(test)]
