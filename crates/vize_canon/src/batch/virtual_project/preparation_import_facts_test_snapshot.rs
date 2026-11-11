@@ -82,7 +82,10 @@ impl VirtualProject {
                 .iter()
                 .map(|(path, count)| (path.clone(), *count))
                 .collect(),
-            reverse_routes: self.package_route_reverse.flattened(),
+            reverse_routes: self
+                .package_route_reverse
+                .index(&self.package_routes)
+                .flattened(),
             artifacts: self
                 .source_artifacts
                 .iter()

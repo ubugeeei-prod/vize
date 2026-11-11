@@ -285,6 +285,7 @@ pub struct VirtualProject {
     /// Reverse invalidation and importer indexes for persistent refreshes.
     /// These live beside the authoritative bindings so a warm check never has
     /// to clone/sort the whole workspace route set merely to find one package.
+    /// The invalidation index is built on the first refresh that asks.
     package_route_reverse: package_route_reverse::PackageRouteReverse,
     package_route_importers: FxHashMap<PathBuf, FxHashSet<crate::package_route::PackageRouteKey>>,
     package_route_source_owners: FxHashMap<PathBuf, usize>,
