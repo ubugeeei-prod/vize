@@ -139,7 +139,8 @@ pub(super) fn native_calls(directory: &Path) -> Value {
         if request["kind"]=="main-cli" {
             let config_path=Path::new(request["config"].as_str().unwrap());
             let config=read("config.bytes");
-            for entry in config["include"].as_array().unwrap() {
+            let roots=config.get("files").unwrap_or(&config["include"]);
+            for entry in roots.as_array().unwrap() {
                 let physical=fs::canonicalize(config_path.parent().unwrap().join(entry.as_str().unwrap())).unwrap();
                 let body=fs::read_to_string(&physical).unwrap();
                 included.push(json!({"literal":entry,"physical":physical,"sha256":digest(body.as_bytes()),"body":body}));

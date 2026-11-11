@@ -146,8 +146,10 @@ fn update_path_digest(digest: &mut Sha256, path: &Path) {
 }
 
 fn reanchor_config(config: &mut Value, prefix: &str) {
-    if let Some(entries) = config.get_mut("include").and_then(Value::as_array_mut) {
-        reanchor_entries(entries, prefix);
+    for key in ["files", "include"] {
+        if let Some(entries) = config.get_mut(key).and_then(Value::as_array_mut) {
+            reanchor_entries(entries, prefix);
+        }
     }
     let Some(options) = config
         .get_mut("compilerOptions")
@@ -197,6 +199,7 @@ mod tests {
         let outside_src = outside.join("src/*").to_string_lossy().into_owned();
         let outside_types = outside.join("types").to_string_lossy().into_owned();
         let mut config = json!({
+            "files": ["app/src/b.ts", "__vize_vue_modules.d.ts"],
             "include": ["app/src/a.ts", "shared/data.ts", "__vize_helpers.d.ts"],
             "compilerOptions": {
                 "paths": {"@/*": ["./app/src/*", outside_src]},
@@ -210,6 +213,7 @@ mod tests {
         assert_eq!(
             config,
             json!({
+                "files": ["../app/src/b.ts", "../__vize_vue_modules.d.ts"],
                 "include": ["../app/src/a.ts", "../shared/data.ts", "../__vize_helpers.d.ts"],
                 "compilerOptions": {
                 "paths": {"@/*": [".././app/src/*", outside_src]},

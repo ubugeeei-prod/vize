@@ -30,8 +30,27 @@ impl VirtualProject {
     /// rewrite entirely, which avoids needless write IO and keeps mtimes stable
     /// so TypeScript's own filesystem caches are not invalidated.
     pub fn materialize(&self) -> CorsaResult<()> {
-        self.materialize_snapshot(&FxHashSet::default(), &Default::default(), None, false)
-            .map(|_| ())
+        self.materialize_snapshot(
+            &FxHashSet::default(),
+            &Default::default(),
+            None,
+            false,
+            false,
+        )
+        .map(|_| ())
+    }
+
+    /// [`Self::materialize`] for one CLI check that runs right after it, with
+    /// the program roots listed literally (see `write_literal_tsconfig_file`).
+    pub(crate) fn materialize_for_cli(&self) -> CorsaResult<()> {
+        self.materialize_snapshot(
+            &FxHashSet::default(),
+            &Default::default(),
+            None,
+            false,
+            true,
+        )
+        .map(|_| ())
     }
 
     pub(crate) fn materialize_editor_union(
@@ -48,6 +67,7 @@ impl VirtualProject {
             preserved_package_links,
             Some(query_paths),
             preserved_arbitrary_extensions,
+            false,
         )?;
         let mut expected_files = self.expected_materialized_files();
         expected_files.extend(preserved_files.iter().cloned());
@@ -66,6 +86,7 @@ impl VirtualProject {
         preserved_package_links: &vize_carton::FxHashMap<PathBuf, PathBuf>,
         query_paths: Option<&[PathBuf]>,
         preserved_arbitrary_extensions: bool,
+        literal_roots: bool,
     ) -> CorsaResult<vize_carton::FxHashMap<PathBuf, PathBuf>> {
         // A checkout owns one durable mirror, but deleted worktrees otherwise
         // leave their full mirrors in the user cache forever. Maintenance is
@@ -276,6 +297,8 @@ impl VirtualProject {
                     preserved_arbitrary_extensions,
                     false,
                 )
+            } else if literal_roots {
+                self.write_literal_tsconfig_file(&path, None)
             } else {
                 self.write_tsconfig_file(&path, None, false)
             }

@@ -130,7 +130,7 @@ impl CorsaExecutor {
         servers: Option<usize>,
     ) -> CorsaResult<TypeCheckResult> {
         let _materialize_lock = MaterializeLock::acquire(project.virtual_root())?;
-        profile!("canon.executor.materialize", project.materialize())?;
+        profile!("canon.executor.materialize", project.materialize_for_cli())?;
 
         let mut result = self.check_program(project, servers)?;
         // The generated config is sanitized, so it cannot carry the user's own

@@ -178,8 +178,9 @@ fn nested_config_owns_the_same_helpers_in_cold_sharded_and_incremental_views() {
         .unwrap();
     let shard_config: serde_json::Value =
         serde_json::from_slice(&std::fs::read(shard).unwrap()).unwrap();
+    // A CLI shard config lists its existing roots as `files`.
     assert_eq!(
-        shard_config["include"],
+        shard_config["files"],
         serde_json::json!([
             "../../__vize_vue_modules.d.ts",
             "../../apps/web/Counter.vue.ts",
