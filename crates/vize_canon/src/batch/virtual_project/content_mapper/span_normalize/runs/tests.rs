@@ -141,6 +141,12 @@ fn unsafe_join_guards_keep_verbatim_pieces_split() {
         feature_mismatch
     );
 
+    let unordered = vec![verbatim(3, 2, 3, 7), verbatim(0, 2, 0, 7)];
+    assert_eq!(
+        super::join_verbatim_runs(text, text, unordered.clone()),
+        unordered
+    );
+
     let wide_features = vec![verbatim(0, 2, 0, 1_048_575), verbatim(3, 2, 3, 1_048_575)];
     assert_eq!(
         super::join_verbatim_runs(text, text, wide_features),

@@ -11,14 +11,9 @@
 
 use super::super::{ContentMapperSpan, ContentMapperSpanKind};
 
-#[derive(Clone, Copy)]
-struct JoinMetadata {
-    input_index: usize,
-    original_at: usize,
-    original_len: usize,
-    group: usize,
-    shared_original: bool,
-}
+const KIND_BITS: u32 = 2;
+const KIND_MASK: usize = (1 << KIND_BITS) - 1;
+const SHARED_ORIGINAL: usize = 1;
 
 pub(in super::super) fn join_verbatim_runs(
     source: &str,
@@ -29,60 +24,58 @@ pub(in super::super) fn join_verbatim_runs(
         return spans;
     }
 
-    // Keep temporary ownership data outside the public mapping protocol. In
-    // particular, feature masks may use more than half of a wasm32 `usize`.
-    let mut metadata: Vec<_> = spans
-        .iter()
-        .enumerate()
-        .map(|(input_index, span)| JoinMetadata {
-            input_index,
-            original_at: span.0[2],
-            original_len: span.0[3],
-            group: 0,
-            shared_original: false,
+    // Generated starts are normally strictly increasing. That lets the same
+    // allocation serve as both the original-range index and the output: sort
+    // by authored range, annotate the finite kind field, then restore the
+    // exact input order by generated start. Feature masks stay untouched on
+    // every target, including wasm32. If an unusual producer does not provide
+    // that order, retain its valid spans without joining them.
+    let metadata_fits = spans
+        .len()
+        .checked_mul(2)
+        .and_then(|value| value.checked_add(SHARED_ORIGINAL))
+        .and_then(|value| value.checked_shl(KIND_BITS))
+        .is_some();
+    if !metadata_fits
+        || spans
+            .iter()
+            .any(|span| span.0[4] > ContentMapperSpanKind::Alias as usize)
+        || !spans.windows(2).all(|pair| {
+            let [left, right] = pair else {
+                return false;
+            };
+            left.0[0] < right.0[0]
         })
-        .collect();
-    metadata
-        .sort_unstable_by_key(|entry| (entry.original_at, entry.original_len, entry.input_index));
+    {
+        return spans;
+    }
 
-    for (group, original_group) in metadata
-        .chunk_by_mut(|left, right| {
-            (left.original_at, left.original_len) == (right.original_at, right.original_len)
-        })
+    spans.sort_unstable_by_key(|span| (span.0[2], span.0[3], span.0[0]));
+    for (group, original_group) in spans
+        .chunk_by_mut(|left, right| (left.0[2], left.0[3]) == (right.0[2], right.0[3]))
         .enumerate()
     {
-        let shared_original = original_group.len() > 1;
-        for entry in original_group {
-            entry.group = group;
-            entry.shared_original = shared_original;
+        let shared_original = usize::from(original_group.len() > 1);
+        let metadata = ((group * 2) | shared_original) << KIND_BITS;
+        for span in original_group {
+            span.0[4] |= metadata;
         }
     }
 
-    metadata.sort_unstable_by_key(|entry| entry.input_index);
-    let mut metadata = metadata.into_iter();
-    let Some(mut previous_metadata) = metadata.next() else {
-        return spans;
-    };
+    spans.sort_unstable_by_key(|span| span.0[0]);
     spans.dedup_by(|next, previous| {
-        let Some(next_metadata) = metadata.next() else {
-            return false;
-        };
-        let joined = joinable(
-            source,
-            generated,
-            previous,
-            next,
-            (previous_metadata.group, previous_metadata.shared_original),
-            (next_metadata.group, next_metadata.shared_original),
-        );
-        previous_metadata = next_metadata;
+        let joined = joinable(source, generated, previous, next);
         if joined {
             let end = next.0[0] + next.0[1];
             previous.0[1] = end - previous.0[0];
             previous.0[3] = previous.0[1];
+            previous.0[4] = (previous.0[4] & KIND_MASK) | (next.0[4] & !KIND_MASK);
         }
         joined
     });
+    for span in &mut spans {
+        span.0[4] &= KIND_MASK;
+    }
     spans
 }
 
@@ -91,8 +84,6 @@ fn joinable(
     generated: &str,
     previous: &ContentMapperSpan,
     next: &ContentMapperSpan,
-    previous_metadata: (usize, bool),
-    next_metadata: (usize, bool),
 ) -> bool {
     let [
         left_at,
@@ -103,21 +94,23 @@ fn joinable(
         left_features,
     ] = previous.0;
     let [at, len, original, original_len, kind, features] = next.0;
-    let (left_group, left_shared_original) = previous_metadata;
-    let (group, shared_original) = next_metadata;
+    let left_metadata = left_kind >> KIND_BITS;
+    let metadata = kind >> KIND_BITS;
+    let left_group = left_metadata >> 1;
+    let group = metadata >> 1;
     let verbatim = ContentMapperSpanKind::Verbatim as usize;
     let (gap_start, original_gap_start) = (left_at + left_len, left_original + left_original_len);
-    left_kind == verbatim
-        && kind == verbatim
+    (left_kind & KIND_MASK) == verbatim
+        && (kind & KIND_MASK) == verbatim
         && left_features == features
         && left_len == left_original_len
         && len == original_len
         && at >= gap_start
         && original >= original_gap_start
         && at - gap_start == original - original_gap_start
-        && !left_shared_original
-        && !shared_original
-        && group <= left_group + 1
+        && left_metadata & SHARED_ORIGINAL == 0
+        && metadata & SHARED_ORIGINAL == 0
+        && group <= left_group.saturating_add(1)
         && generated
             .get(gap_start..at)
             .zip(source.get(original_gap_start..original))
