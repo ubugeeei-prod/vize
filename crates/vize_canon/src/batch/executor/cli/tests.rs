@@ -4,12 +4,13 @@ mod shared_leaves;
 mod typed_router;
 mod workspace_roots;
 use super::{
-    configure_batch_runtime, is_cli_diagnostic_line, is_global_diagnostic_line,
-    parse_cli_diagnostics,
+    BATCH_GOGC, batch_gc_percent, configure_batch_runtime, is_cli_diagnostic_line,
+    is_global_diagnostic_line, parse_cli_diagnostics,
 };
 use crate::batch::VirtualProject;
 use crate::batch::executor::diagnostics::DiagnosticMapper;
 use std::{
+    ffi::OsStr,
     fs,
     path::{Path, PathBuf},
     process::Command,
@@ -28,9 +29,33 @@ fn selected_tsrs_batch_runtime_enables_the_qualified_fast_mode() {
         .and_then(|value| value.to_str());
     assert_eq!(fast, Some("1"));
 
+    // tsrs is not a Go program.
+    assert!(command.get_envs().all(|(name, _)| name != "GOGC"));
+
     let mut typescript = Command::new("tsgo");
     configure_batch_runtime(&mut typescript, Path::new("/runtime/tsgo"));
-    assert!(typescript.get_envs().next().is_none());
+    let envs = typescript
+        .get_envs()
+        .map(|(name, value)| (name.to_str(), value.and_then(OsStr::to_str)))
+        .collect::<Vec<_>>();
+    let gogc = batch_gc_percent(
+        std::env::var_os("GOGC").as_deref(),
+        std::env::var_os("GOMEMLIMIT").as_deref(),
+    );
+    let expected = gogc.map(|percent| vec![(Some("GOGC"), Some(percent))]);
+    assert_eq!(envs, expected.unwrap_or_default());
+}
+
+#[test]
+fn batch_tsgo_collects_less_often_unless_the_user_tuned_its_collector() {
+    assert_eq!(batch_gc_percent(None, None), Some(BATCH_GOGC));
+    assert_eq!(batch_gc_percent(Some(OsStr::new("100")), None), None);
+    assert_eq!(batch_gc_percent(Some(OsStr::new("off")), None), None);
+    assert_eq!(batch_gc_percent(None, Some(OsStr::new("4GiB"))), None);
+    assert_eq!(
+        batch_gc_percent(Some(OsStr::new("off")), Some(OsStr::new("4GiB"))),
+        None
+    );
 }
 
 fn unique_case_dir(name: &str) -> PathBuf {
