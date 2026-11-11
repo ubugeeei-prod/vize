@@ -2,6 +2,8 @@
 //! with the byte-fidelity verifier asserted on every construction.
 
 mod error;
+#[cfg(test)]
+mod input_stream_tests;
 mod namespace;
 
 pub use error::SurfaceError;
