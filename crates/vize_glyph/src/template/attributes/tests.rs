@@ -80,23 +80,19 @@ fn write_rendered_attribute_leaves_template_literal_lines_verbatim() {
 }
 
 #[test]
-fn opens_mustache_matches_the_substring_search() {
-    for value in [
-        "",
-        "{",
-        "{{",
-        "a{b{c",
-        "a{{b",
-        "{a{{",
-        "}}{",
-        "{ a: { b: 1 } }",
-        "x{",
-        "日本{{語",
+fn opens_mustache_finds_only_adjacent_braces() {
+    for (value, expected) in [
+        ("", false),
+        ("{", false),
+        ("{{", true),
+        ("a{b{c", false),
+        ("a{{b", true),
+        ("{a{{", true),
+        ("}}{", false),
+        ("{ a: { b: 1 } }", false),
+        ("x{", false),
+        ("日本{{語", true),
     ] {
-        assert_eq!(
-            super::opens_mustache(value),
-            value.contains("{{"),
-            "{value}"
-        );
+        assert_eq!(super::opens_mustache(value), expected, "{value}");
     }
 }
