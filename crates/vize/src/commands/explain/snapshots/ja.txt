@@ -3721,6 +3721,66 @@ ssr/no-hydration-mismatch · lint ルール
 
 ヒント:
   一意のIDにはuseId()を使用するか、クライアント専用の値には<ClientOnly>でラップしてください
+=== type/await-thenable
+type/await-thenable · lint ルール
+thenable でない値の await を禁止する
+
+精度: complete
+対象: types the Corsa session resolves for the component; unresolved types are outside
+重大度: 警告
+カテゴリー: type-aware
+自動修正: なし
+ドキュメント: docs/content/rules/reference/type-await-thenable.md
+=== type/no-array-delete
+type/no-array-delete · lint ルール
+配列風の値から要素を delete することを禁止する
+
+精度: complete
+対象: types the Corsa session resolves for the component; unresolved types are outside
+重大度: 警告
+カテゴリー: type-aware
+自動修正: なし
+ドキュメント: docs/content/rules/reference/type-no-array-delete.md
+=== type/no-base-to-string
+type/no-base-to-string · lint ルール
+Object.prototype.toString() に落ちる値の文字列化を禁止する
+
+精度: complete
+対象: types the Corsa session resolves for the component; unresolved types are outside
+重大度: 警告
+カテゴリー: type-aware
+自動修正: なし
+ドキュメント: docs/content/rules/reference/type-no-base-to-string.md
+=== type/no-confusing-void-expression
+type/no-confusing-void-expression · lint ルール
+値として紛らわしい位置にある void 型の式を禁止する
+
+精度: complete
+対象: types the Corsa session resolves for the component; unresolved types are outside
+重大度: 警告
+カテゴリー: type-aware
+自動修正: なし
+ドキュメント: docs/content/rules/reference/type-no-confusing-void-expression.md
+=== type/no-deprecated
+type/no-deprecated · lint ルール
+非推奨の宣言の使用を禁止する
+
+精度: complete
+対象: types the Corsa session resolves for the component; unresolved types are outside
+重大度: 警告
+カテゴリー: type-aware
+自動修正: なし
+ドキュメント: docs/content/rules/reference/type-no-deprecated.md
+=== type/no-duplicate-type-constituents
+type/no-duplicate-type-constituents · lint ルール
+共用体や交差型で重複する構成要素を禁止する
+
+精度: complete
+対象: types the Corsa session resolves for the component; unresolved types are outside
+重大度: 警告
+カテゴリー: type-aware
+自動修正: なし
+ドキュメント: docs/content/rules/reference/type-no-duplicate-type-constituents.md
 === type/no-floating-promises
 type/no-floating-promises · lint ルール
 処理されないまま放置された Promise を禁止する
@@ -3731,6 +3791,76 @@ type/no-floating-promises · lint ルール
 カテゴリー: type-aware
 自動修正: なし
 ドキュメント: docs/content/rules/reference/type-no-floating-promises.md
+=== type/no-for-in-array
+type/no-for-in-array · lint ルール
+配列風の値に対する for-in を禁止する
+
+精度: complete
+対象: types the Corsa session resolves for the component; unresolved types are outside
+重大度: 警告
+カテゴリー: type-aware
+自動修正: なし
+ドキュメント: docs/content/rules/reference/type-no-for-in-array.md
+=== type/no-generated-empty-object-type
+type/no-generated-empty-object-type · lint ルール
+型操作によって生成される空のオブジェクト型を禁止する
+
+精度: complete
+対象: types the Corsa session resolves for the component; unresolved types are outside
+重大度: 警告
+カテゴリー: type-aware
+自動修正: なし
+ドキュメント: docs/content/rules/reference/type-no-generated-empty-object-type.md
+=== type/no-implied-eval
+type/no-implied-eval · lint ルール
+文字列による動的なコード実行 API を禁止する
+
+精度: complete
+対象: types the Corsa session resolves for the component; unresolved types are outside
+重大度: 警告
+カテゴリー: type-aware
+自動修正: なし
+ドキュメント: docs/content/rules/reference/type-no-implied-eval.md
+=== type/no-meaningless-void-operator
+type/no-meaningless-void-operator · lint ルール
+すでに void 相当の式に対する void 演算子を禁止する
+
+精度: complete
+対象: types the Corsa session resolves for the component; unresolved types are outside
+重大度: 警告
+カテゴリー: type-aware
+自動修正: なし
+ドキュメント: docs/content/rules/reference/type-no-meaningless-void-operator.md
+=== type/no-misused-promises
+type/no-misused-promises · lint ルール
+Promise を扱わない場所での Promise の使用を禁止する
+
+精度: complete
+対象: types the Corsa session resolves for the component; unresolved types are outside
+重大度: 警告
+カテゴリー: type-aware
+自動修正: なし
+ドキュメント: docs/content/rules/reference/type-no-misused-promises.md
+=== type/no-misused-spread
+type/no-misused-spread · lint ルール
+互換性のない位置への値のスプレッドを禁止する
+
+精度: complete
+対象: types the Corsa session resolves for the component; unresolved types are outside
+重大度: 警告
+カテゴリー: type-aware
+自動修正: なし
+ドキュメント: docs/content/rules/reference/type-no-misused-spread.md
+=== type/no-mixed-enums
+type/no-mixed-enums · lint ルール
+文字列と数値の列挙メンバーの混在を禁止する
+
+精度: complete
+対象: types the Corsa session resolves for the component; unresolved types are outside
+重大度: 警告
+カテゴリー: type-aware
+自動修正: なし
+ドキュメント: docs/content/rules/reference/type-no-mixed-enums.md
 === type/no-reactivity-loss
 type/no-reactivity-loss · lint ルール
 代入や関数呼び出しでリアクティブな値がただのスナップショットになることを禁止する
@@ -3741,6 +3871,146 @@ type/no-reactivity-loss · lint ルール
 カテゴリー: type-aware
 自動修正: なし
 ドキュメント: docs/content/rules/reference/type-no-reactivity-loss.md
+=== type/no-redundant-type-constituents
+type/no-redundant-type-constituents · lint ルール
+効果がない、または型情報を上書きする共用体・交差型のメンバーを禁止する
+
+精度: complete
+対象: types the Corsa session resolves for the component; unresolved types are outside
+重大度: 警告
+カテゴリー: type-aware
+自動修正: なし
+ドキュメント: docs/content/rules/reference/type-no-redundant-type-constituents.md
+=== type/no-unnecessary-boolean-literal-compare
+type/no-unnecessary-boolean-literal-compare · lint ルール
+真偽値リテラルとの不要な比較を禁止する
+
+精度: complete
+対象: types the Corsa session resolves for the component; unresolved types are outside
+重大度: 警告
+カテゴリー: type-aware
+自動修正: なし
+ドキュメント: docs/content/rules/reference/type-no-unnecessary-boolean-literal-compare.md
+=== type/no-unnecessary-condition
+type/no-unnecessary-condition · lint ルール
+常に真、常に偽、never、または常に nullish な条件を禁止する
+
+精度: complete
+対象: types the Corsa session resolves for the component; unresolved types are outside
+重大度: 警告
+カテゴリー: type-aware
+自動修正: なし
+ドキュメント: docs/content/rules/reference/type-no-unnecessary-condition.md
+=== type/no-unnecessary-template-expression
+type/no-unnecessary-template-expression · lint ルール
+単一の式を不要に包むテンプレートリテラルを禁止する
+
+精度: complete
+対象: types the Corsa session resolves for the component; unresolved types are outside
+重大度: 警告
+カテゴリー: type-aware
+自動修正: なし
+ドキュメント: docs/content/rules/reference/type-no-unnecessary-template-expression.md
+=== type/no-unnecessary-type-arguments
+type/no-unnecessary-type-arguments · lint ルール
+既定値と同じ型引数を禁止する
+
+精度: complete
+対象: types the Corsa session resolves for the component; unresolved types are outside
+重大度: 警告
+カテゴリー: type-aware
+自動修正: なし
+ドキュメント: docs/content/rules/reference/type-no-unnecessary-type-arguments.md
+=== type/no-unnecessary-type-assertion
+type/no-unnecessary-type-assertion · lint ルール
+式の型を変えない型アサーションを禁止する
+
+精度: complete
+対象: types the Corsa session resolves for the component; unresolved types are outside
+重大度: 警告
+カテゴリー: type-aware
+自動修正: なし
+ドキュメント: docs/content/rules/reference/type-no-unnecessary-type-assertion.md
+=== type/no-unnecessary-type-conversion
+type/no-unnecessary-type-conversion · lint ルール
+式の型も値も変えない変換を禁止する
+
+精度: complete
+対象: types the Corsa session resolves for the component; unresolved types are outside
+重大度: 警告
+カテゴリー: type-aware
+自動修正: なし
+ドキュメント: docs/content/rules/reference/type-no-unnecessary-type-conversion.md
+=== type/no-unsafe-argument
+type/no-unsafe-argument · lint ルール
+`any` 型の値を関数に渡すことを禁止する
+
+精度: complete
+対象: types the Corsa session resolves for the component; unresolved types are outside
+重大度: 警告
+カテゴリー: type-aware
+自動修正: なし
+ドキュメント: docs/content/rules/reference/type-no-unsafe-argument.md
+=== type/no-unsafe-assignment
+type/no-unsafe-assignment · lint ルール
+any 型の値をより具体的な対象へ代入することを禁止する
+
+精度: complete
+対象: types the Corsa session resolves for the component; unresolved types are outside
+重大度: 警告
+カテゴリー: type-aware
+自動修正: なし
+ドキュメント: docs/content/rules/reference/type-no-unsafe-assignment.md
+=== type/no-unsafe-call
+type/no-unsafe-call · lint ルール
+any 型の値の呼び出しを禁止する
+
+精度: complete
+対象: types the Corsa session resolves for the component; unresolved types are outside
+重大度: 警告
+カテゴリー: type-aware
+自動修正: なし
+ドキュメント: docs/content/rules/reference/type-no-unsafe-call.md
+=== type/no-unsafe-enum-assignment
+type/no-unsafe-enum-assignment · lint ルール
+列挙型以外の値を列挙型へ代入することを禁止する
+
+精度: complete
+対象: types the Corsa session resolves for the component; unresolved types are outside
+重大度: 警告
+カテゴリー: type-aware
+自動修正: なし
+ドキュメント: docs/content/rules/reference/type-no-unsafe-enum-assignment.md
+=== type/no-unsafe-enum-comparison
+type/no-unsafe-enum-comparison · lint ルール
+列挙値を別の列挙領域の値と比較することを禁止する
+
+精度: complete
+対象: types the Corsa session resolves for the component; unresolved types are outside
+重大度: 警告
+カテゴリー: type-aware
+自動修正: なし
+ドキュメント: docs/content/rules/reference/type-no-unsafe-enum-comparison.md
+=== type/no-unsafe-member-access
+type/no-unsafe-member-access · lint ルール
+any 型の値のメンバーアクセスを禁止する
+
+精度: complete
+対象: types the Corsa session resolves for the component; unresolved types are outside
+重大度: 警告
+カテゴリー: type-aware
+自動修正: なし
+ドキュメント: docs/content/rules/reference/type-no-unsafe-member-access.md
+=== type/no-unsafe-return
+type/no-unsafe-return · lint ルール
+関数から any 型の値を返すことを禁止する
+
+精度: complete
+対象: types the Corsa session resolves for the component; unresolved types are outside
+重大度: 警告
+カテゴリー: type-aware
+自動修正: なし
+ドキュメント: docs/content/rules/reference/type-no-unsafe-return.md
 === type/no-unsafe-template-binding
 type/no-unsafe-template-binding · lint ルール
 安全でない型に解決されるテンプレートのバインディングを禁止する
@@ -3751,6 +4021,76 @@ type/no-unsafe-template-binding · lint ルール
 カテゴリー: type-aware
 自動修正: なし
 ドキュメント: docs/content/rules/reference/type-no-unsafe-template-binding.md
+=== type/no-unsafe-unary-minus
+type/no-unsafe-unary-minus · lint ルール
+number でも bigint でもない値の単項マイナスを禁止する
+
+精度: complete
+対象: types the Corsa session resolves for the component; unresolved types are outside
+重大度: 警告
+カテゴリー: type-aware
+自動修正: なし
+ドキュメント: docs/content/rules/reference/type-no-unsafe-unary-minus.md
+=== type/only-throw-error
+type/only-throw-error · lint ルール
+throw する値を Error 相当にすることを必須にする
+
+精度: complete
+対象: types the Corsa session resolves for the component; unresolved types are outside
+重大度: 警告
+カテゴリー: type-aware
+自動修正: なし
+ドキュメント: docs/content/rules/reference/type-only-throw-error.md
+=== type/prefer-promise-reject-errors
+type/prefer-promise-reject-errors · lint ルール
+Promise の拒否理由を Error 相当の値にすることを必須にする
+
+精度: complete
+対象: types the Corsa session resolves for the component; unresolved types are outside
+重大度: 警告
+カテゴリー: type-aware
+自動修正: なし
+ドキュメント: docs/content/rules/reference/type-prefer-promise-reject-errors.md
+=== type/prefer-reduce-type-parameter
+type/prefer-reduce-type-parameter · lint ルール
+初期値のアサーションより Array#reduce の型引数を推奨する
+
+精度: complete
+対象: types the Corsa session resolves for the component; unresolved types are outside
+重大度: 警告
+カテゴリー: type-aware
+自動修正: なし
+ドキュメント: docs/content/rules/reference/type-prefer-reduce-type-parameter.md
+=== type/prefer-return-this-type
+type/prefer-return-this-type · lint ルール
+返す型が `this` だけのときに `this` 型を使うことを必須にする
+
+精度: complete
+対象: types the Corsa session resolves for the component; unresolved types are outside
+重大度: 警告
+カテゴリー: type-aware
+自動修正: なし
+ドキュメント: docs/content/rules/reference/type-prefer-return-this-type.md
+=== type/related-getter-setter-pairs
+type/related-getter-setter-pairs · lint ルール
+対になる getter と setter の型を互換にすることを必須にする
+
+精度: complete
+対象: types the Corsa session resolves for the component; unresolved types are outside
+重大度: 警告
+カテゴリー: type-aware
+自動修正: なし
+ドキュメント: docs/content/rules/reference/type-related-getter-setter-pairs.md
+=== type/require-await
+type/require-await · lint ルール
+await 式を含まない async 関数を禁止する
+
+精度: complete
+対象: types the Corsa session resolves for the component; unresolved types are outside
+重大度: 警告
+カテゴリー: type-aware
+自動修正: なし
+ドキュメント: docs/content/rules/reference/type-require-await.md
 === type/require-typed-emits
 type/require-typed-emits · lint ルール
 defineEmits に型定義を必須にする
@@ -3801,6 +4141,36 @@ defineProps に型定義を必須にする
   }
   const props = defineProps<Props>()
   </script>
+=== type/restrict-plus-operands
+type/restrict-plus-operands · lint ルール
+加算のオペランドを明示的に互換にすることを必須にする
+
+精度: complete
+対象: types the Corsa session resolves for the component; unresolved types are outside
+重大度: 警告
+カテゴリー: type-aware
+自動修正: なし
+ドキュメント: docs/content/rules/reference/type-restrict-plus-operands.md
+=== type/restrict-template-expressions
+type/restrict-template-expressions · lint ルール
+テンプレートリテラルの式を文字列と互換にすることを必須にする
+
+精度: complete
+対象: types the Corsa session resolves for the component; unresolved types are outside
+重大度: 警告
+カテゴリー: type-aware
+自動修正: なし
+ドキュメント: docs/content/rules/reference/type-restrict-template-expressions.md
+=== type/return-await
+type/return-await · lint ルール
+文脈と設定に基づいて `return await` の使い方を揃えることを必須にする
+
+精度: complete
+対象: types the Corsa session resolves for the component; unresolved types are outside
+重大度: 警告
+カテゴリー: type-aware
+自動修正: なし
+ドキュメント: docs/content/rules/reference/type-return-await.md
 === type/strict-boolean-expressions
 type/strict-boolean-expressions · lint ルール
 スクリプトとテンプレートの条件式に安全な真偽値を必須にする
@@ -3811,6 +4181,26 @@ type/strict-boolean-expressions · lint ルール
 カテゴリー: type-aware
 自動修正: なし
 ドキュメント: docs/content/rules/reference/type-strict-boolean-expressions.md
+=== type/unbound-method
+type/unbound-method · lint ルール
+レシーバー（`this`）なしのメソッド参照を禁止する
+
+精度: complete
+対象: types the Corsa session resolves for the component; unresolved types are outside
+重大度: 警告
+カテゴリー: type-aware
+自動修正: なし
+ドキュメント: docs/content/rules/reference/type-unbound-method.md
+=== type/use-unknown-in-catch-callback-variable
+type/use-unknown-in-catch-callback-variable · lint ルール
+Promise の catch コールバック引数に明示的な unknown 注釈を必須にする
+
+精度: complete
+対象: types the Corsa session resolves for the component; unresolved types are outside
+重大度: 警告
+カテゴリー: type-aware
+自動修正: なし
+ドキュメント: docs/content/rules/reference/type-use-unknown-in-catch-callback-variable.md
 === vapor/no-inline-template
 vapor/no-inline-template · lint ルール
 非推奨のinline-template属性を禁止する

@@ -3853,6 +3853,66 @@ ssr/no-hydration-mismatch · lint 规则
     <ClientOnly>
     <span>{{ Date.now() }}</span>
     </ClientOnly>
+=== type/await-thenable
+type/await-thenable · lint 规则
+禁止 await 非 thenable 的值
+
+精度层级: complete
+适用范围: types the Corsa session resolves for the component; unresolved types are outside
+严重级别: 警告
+类别: type-aware
+自动修复: 不支持
+文档: docs/content/rules/reference/type-await-thenable.md
+=== type/no-array-delete
+type/no-array-delete · lint 规则
+禁止对类数组值使用 delete 删除元素
+
+精度层级: complete
+适用范围: types the Corsa session resolves for the component; unresolved types are outside
+严重级别: 警告
+类别: type-aware
+自动修复: 不支持
+文档: docs/content/rules/reference/type-no-array-delete.md
+=== type/no-base-to-string
+type/no-base-to-string · lint 规则
+禁止把会回退到 Object.prototype.toString() 的值转换成字符串
+
+精度层级: complete
+适用范围: types the Corsa session resolves for the component; unresolved types are outside
+严重级别: 警告
+类别: type-aware
+自动修复: 不支持
+文档: docs/content/rules/reference/type-no-base-to-string.md
+=== type/no-confusing-void-expression
+type/no-confusing-void-expression · lint 规则
+禁止在容易混淆的值位置使用 void 类型的表达式
+
+精度层级: complete
+适用范围: types the Corsa session resolves for the component; unresolved types are outside
+严重级别: 警告
+类别: type-aware
+自动修复: 不支持
+文档: docs/content/rules/reference/type-no-confusing-void-expression.md
+=== type/no-deprecated
+type/no-deprecated · lint 规则
+禁止使用已弃用的声明
+
+精度层级: complete
+适用范围: types the Corsa session resolves for the component; unresolved types are outside
+严重级别: 警告
+类别: type-aware
+自动修复: 不支持
+文档: docs/content/rules/reference/type-no-deprecated.md
+=== type/no-duplicate-type-constituents
+type/no-duplicate-type-constituents · lint 规则
+禁止联合类型或交叉类型中的重复成员
+
+精度层级: complete
+适用范围: types the Corsa session resolves for the component; unresolved types are outside
+严重级别: 警告
+类别: type-aware
+自动修复: 不支持
+文档: docs/content/rules/reference/type-no-duplicate-type-constituents.md
 === type/no-floating-promises
 type/no-floating-promises · lint 规则
 禁止悬空（未处理）的 Promise
@@ -3863,6 +3923,76 @@ type/no-floating-promises · lint 规则
 类别: type-aware
 自动修复: 不支持
 文档: docs/content/rules/reference/type-no-floating-promises.md
+=== type/no-for-in-array
+type/no-for-in-array · lint 规则
+禁止对类数组值使用 for-in 遍历
+
+精度层级: complete
+适用范围: types the Corsa session resolves for the component; unresolved types are outside
+严重级别: 警告
+类别: type-aware
+自动修复: 不支持
+文档: docs/content/rules/reference/type-no-for-in-array.md
+=== type/no-generated-empty-object-type
+type/no-generated-empty-object-type · lint 规则
+禁止由类型运算生成的空对象类型
+
+精度层级: complete
+适用范围: types the Corsa session resolves for the component; unresolved types are outside
+严重级别: 警告
+类别: type-aware
+自动修复: 不支持
+文档: docs/content/rules/reference/type-no-generated-empty-object-type.md
+=== type/no-implied-eval
+type/no-implied-eval · lint 规则
+禁止基于字符串的动态代码执行 API
+
+精度层级: complete
+适用范围: types the Corsa session resolves for the component; unresolved types are outside
+严重级别: 警告
+类别: type-aware
+自动修复: 不支持
+文档: docs/content/rules/reference/type-no-implied-eval.md
+=== type/no-meaningless-void-operator
+type/no-meaningless-void-operator · lint 规则
+禁止对已经是 void 的表达式使用 void 运算符
+
+精度层级: complete
+适用范围: types the Corsa session resolves for the component; unresolved types are outside
+严重级别: 警告
+类别: type-aware
+自动修复: 不支持
+文档: docs/content/rules/reference/type-no-meaningless-void-operator.md
+=== type/no-misused-promises
+type/no-misused-promises · lint 规则
+禁止在并非为处理 Promise 而设计的位置使用 Promise
+
+精度层级: complete
+适用范围: types the Corsa session resolves for the component; unresolved types are outside
+严重级别: 警告
+类别: type-aware
+自动修复: 不支持
+文档: docs/content/rules/reference/type-no-misused-promises.md
+=== type/no-misused-spread
+type/no-misused-spread · lint 规则
+禁止把值展开到不兼容的位置
+
+精度层级: complete
+适用范围: types the Corsa session resolves for the component; unresolved types are outside
+严重级别: 警告
+类别: type-aware
+自动修复: 不支持
+文档: docs/content/rules/reference/type-no-misused-spread.md
+=== type/no-mixed-enums
+type/no-mixed-enums · lint 规则
+禁止在枚举中混用字符串成员和数值成员
+
+精度层级: complete
+适用范围: types the Corsa session resolves for the component; unresolved types are outside
+严重级别: 警告
+类别: type-aware
+自动修复: 不支持
+文档: docs/content/rules/reference/type-no-mixed-enums.md
 === type/no-reactivity-loss
 type/no-reactivity-loss · lint 规则
 禁止在赋值和调用中把响应式值变成普通快照
@@ -3873,6 +4003,146 @@ type/no-reactivity-loss · lint 规则
 类别: type-aware
 自动修复: 不支持
 文档: docs/content/rules/reference/type-no-reactivity-loss.md
+=== type/no-redundant-type-constituents
+type/no-redundant-type-constituents · lint 规则
+禁止联合类型和交叉类型中不起作用或覆盖类型信息的成员
+
+精度层级: complete
+适用范围: types the Corsa session resolves for the component; unresolved types are outside
+严重级别: 警告
+类别: type-aware
+自动修复: 不支持
+文档: docs/content/rules/reference/type-no-redundant-type-constituents.md
+=== type/no-unnecessary-boolean-literal-compare
+type/no-unnecessary-boolean-literal-compare · lint 规则
+禁止与布尔字面量进行不必要的比较
+
+精度层级: complete
+适用范围: types the Corsa session resolves for the component; unresolved types are outside
+严重级别: 警告
+类别: type-aware
+自动修复: 不支持
+文档: docs/content/rules/reference/type-no-unnecessary-boolean-literal-compare.md
+=== type/no-unnecessary-condition
+type/no-unnecessary-condition · lint 规则
+禁止始终为真、始终为假、never 或始终为 nullish 的条件
+
+精度层级: complete
+适用范围: types the Corsa session resolves for the component; unresolved types are outside
+严重级别: 警告
+类别: type-aware
+自动修复: 不支持
+文档: docs/content/rules/reference/type-no-unnecessary-condition.md
+=== type/no-unnecessary-template-expression
+type/no-unnecessary-template-expression · lint 规则
+禁止用不必要的模板字符串只包裹一个表达式
+
+精度层级: complete
+适用范围: types the Corsa session resolves for the component; unresolved types are outside
+严重级别: 警告
+类别: type-aware
+自动修复: 不支持
+文档: docs/content/rules/reference/type-no-unnecessary-template-expression.md
+=== type/no-unnecessary-type-arguments
+type/no-unnecessary-type-arguments · lint 规则
+禁止与默认值相同的类型参数
+
+精度层级: complete
+适用范围: types the Corsa session resolves for the component; unresolved types are outside
+严重级别: 警告
+类别: type-aware
+自动修复: 不支持
+文档: docs/content/rules/reference/type-no-unnecessary-type-arguments.md
+=== type/no-unnecessary-type-assertion
+type/no-unnecessary-type-assertion · lint 规则
+禁止不改变表达式类型的类型断言
+
+精度层级: complete
+适用范围: types the Corsa session resolves for the component; unresolved types are outside
+严重级别: 警告
+类别: type-aware
+自动修复: 不支持
+文档: docs/content/rules/reference/type-no-unnecessary-type-assertion.md
+=== type/no-unnecessary-type-conversion
+type/no-unnecessary-type-conversion · lint 规则
+禁止不改变表达式类型或值的转换
+
+精度层级: complete
+适用范围: types the Corsa session resolves for the component; unresolved types are outside
+严重级别: 警告
+类别: type-aware
+自动修复: 不支持
+文档: docs/content/rules/reference/type-no-unnecessary-type-conversion.md
+=== type/no-unsafe-argument
+type/no-unsafe-argument · lint 规则
+禁止用 `any` 类型的值调用函数
+
+精度层级: complete
+适用范围: types the Corsa session resolves for the component; unresolved types are outside
+严重级别: 警告
+类别: type-aware
+自动修复: 不支持
+文档: docs/content/rules/reference/type-no-unsafe-argument.md
+=== type/no-unsafe-assignment
+type/no-unsafe-assignment · lint 规则
+禁止把 any 类型的值赋给更具体的目标
+
+精度层级: complete
+适用范围: types the Corsa session resolves for the component; unresolved types are outside
+严重级别: 警告
+类别: type-aware
+自动修复: 不支持
+文档: docs/content/rules/reference/type-no-unsafe-assignment.md
+=== type/no-unsafe-call
+type/no-unsafe-call · lint 规则
+禁止调用类型为 any 的值
+
+精度层级: complete
+适用范围: types the Corsa session resolves for the component; unresolved types are outside
+严重级别: 警告
+类别: type-aware
+自动修复: 不支持
+文档: docs/content/rules/reference/type-no-unsafe-call.md
+=== type/no-unsafe-enum-assignment
+type/no-unsafe-enum-assignment · lint 规则
+禁止把非枚举值赋给枚举
+
+精度层级: complete
+适用范围: types the Corsa session resolves for the component; unresolved types are outside
+严重级别: 警告
+类别: type-aware
+自动修复: 不支持
+文档: docs/content/rules/reference/type-no-unsafe-enum-assignment.md
+=== type/no-unsafe-enum-comparison
+type/no-unsafe-enum-comparison · lint 规则
+禁止把枚举值与另一枚举域的值比较
+
+精度层级: complete
+适用范围: types the Corsa session resolves for the component; unresolved types are outside
+严重级别: 警告
+类别: type-aware
+自动修复: 不支持
+文档: docs/content/rules/reference/type-no-unsafe-enum-comparison.md
+=== type/no-unsafe-member-access
+type/no-unsafe-member-access · lint 规则
+禁止访问类型为 any 的值的成员
+
+精度层级: complete
+适用范围: types the Corsa session resolves for the component; unresolved types are outside
+严重级别: 警告
+类别: type-aware
+自动修复: 不支持
+文档: docs/content/rules/reference/type-no-unsafe-member-access.md
+=== type/no-unsafe-return
+type/no-unsafe-return · lint 规则
+禁止从函数返回 any 类型的值
+
+精度层级: complete
+适用范围: types the Corsa session resolves for the component; unresolved types are outside
+严重级别: 警告
+类别: type-aware
+自动修复: 不支持
+文档: docs/content/rules/reference/type-no-unsafe-return.md
 === type/no-unsafe-template-binding
 type/no-unsafe-template-binding · lint 规则
 禁止解析为不安全类型的模板绑定
@@ -3883,6 +4153,76 @@ type/no-unsafe-template-binding · lint 规则
 类别: type-aware
 自动修复: 不支持
 文档: docs/content/rules/reference/type-no-unsafe-template-binding.md
+=== type/no-unsafe-unary-minus
+type/no-unsafe-unary-minus · lint 规则
+禁止对非 number 且非 bigint 的值使用一元负号
+
+精度层级: complete
+适用范围: types the Corsa session resolves for the component; unresolved types are outside
+严重级别: 警告
+类别: type-aware
+自动修复: 不支持
+文档: docs/content/rules/reference/type-no-unsafe-unary-minus.md
+=== type/only-throw-error
+type/only-throw-error · lint 规则
+要求抛出的值是 Error 一类的值
+
+精度层级: complete
+适用范围: types the Corsa session resolves for the component; unresolved types are outside
+严重级别: 警告
+类别: type-aware
+自动修复: 不支持
+文档: docs/content/rules/reference/type-only-throw-error.md
+=== type/prefer-promise-reject-errors
+type/prefer-promise-reject-errors · lint 规则
+要求 Promise 的拒绝原因是 Error 一类的值
+
+精度层级: complete
+适用范围: types the Corsa session resolves for the component; unresolved types are outside
+严重级别: 警告
+类别: type-aware
+自动修复: 不支持
+文档: docs/content/rules/reference/type-prefer-promise-reject-errors.md
+=== type/prefer-reduce-type-parameter
+type/prefer-reduce-type-parameter · lint 规则
+推荐使用 Array#reduce 的类型参数，而不是对初始值做断言
+
+精度层级: complete
+适用范围: types the Corsa session resolves for the component; unresolved types are outside
+严重级别: 警告
+类别: type-aware
+自动修复: 不支持
+文档: docs/content/rules/reference/type-prefer-reduce-type-parameter.md
+=== type/prefer-return-this-type
+type/prefer-return-this-type · lint 规则
+要求在只返回 `this` 类型时使用 `this`
+
+精度层级: complete
+适用范围: types the Corsa session resolves for the component; unresolved types are outside
+严重级别: 警告
+类别: type-aware
+自动修复: 不支持
+文档: docs/content/rules/reference/type-prefer-return-this-type.md
+=== type/related-getter-setter-pairs
+type/related-getter-setter-pairs · lint 规则
+要求成对的 getter 和 setter 使用兼容的类型
+
+精度层级: complete
+适用范围: types the Corsa session resolves for the component; unresolved types are outside
+严重级别: 警告
+类别: type-aware
+自动修复: 不支持
+文档: docs/content/rules/reference/type-related-getter-setter-pairs.md
+=== type/require-await
+type/require-await · lint 规则
+禁止不包含 await 表达式的 async 函数
+
+精度层级: complete
+适用范围: types the Corsa session resolves for the component; unresolved types are outside
+严重级别: 警告
+类别: type-aware
+自动修复: 不支持
+文档: docs/content/rules/reference/type-require-await.md
 === type/require-typed-emits
 type/require-typed-emits · lint 规则
 要求 defineEmits 带有类型定义
@@ -3933,6 +4273,36 @@ type/require-typed-props · lint 规则
   }
   const props = defineProps<Props>()
   </script>
+=== type/restrict-plus-operands
+type/restrict-plus-operands · lint 规则
+要求加号的操作数明确兼容
+
+精度层级: complete
+适用范围: types the Corsa session resolves for the component; unresolved types are outside
+严重级别: 警告
+类别: type-aware
+自动修复: 不支持
+文档: docs/content/rules/reference/type-restrict-plus-operands.md
+=== type/restrict-template-expressions
+type/restrict-template-expressions · lint 规则
+要求模板字符串中的表达式与字符串兼容
+
+精度层级: complete
+适用范围: types the Corsa session resolves for the component; unresolved types are outside
+严重级别: 警告
+类别: type-aware
+自动修复: 不支持
+文档: docs/content/rules/reference/type-restrict-template-expressions.md
+=== type/return-await
+type/return-await · lint 规则
+要求根据上下文和配置一致地使用 `return await`
+
+精度层级: complete
+适用范围: types the Corsa session resolves for the component; unresolved types are outside
+严重级别: 警告
+类别: type-aware
+自动修复: 不支持
+文档: docs/content/rules/reference/type-return-await.md
 === type/strict-boolean-expressions
 type/strict-boolean-expressions · lint 规则
 要求脚本和模板条件使用安全的布尔表达式
@@ -3943,6 +4313,26 @@ type/strict-boolean-expressions · lint 规则
 类别: type-aware
 自动修复: 不支持
 文档: docs/content/rules/reference/type-strict-boolean-expressions.md
+=== type/unbound-method
+type/unbound-method · lint 规则
+禁止在没有接收者（`this`）的情况下引用方法
+
+精度层级: complete
+适用范围: types the Corsa session resolves for the component; unresolved types are outside
+严重级别: 警告
+类别: type-aware
+自动修复: 不支持
+文档: docs/content/rules/reference/type-unbound-method.md
+=== type/use-unknown-in-catch-callback-variable
+type/use-unknown-in-catch-callback-variable · lint 规则
+要求 Promise 的 catch 回调参数使用显式的 unknown 注解
+
+精度层级: complete
+适用范围: types the Corsa session resolves for the component; unresolved types are outside
+严重级别: 警告
+类别: type-aware
+自动修复: 不支持
+文档: docs/content/rules/reference/type-use-unknown-in-catch-callback-variable.md
 === vapor/no-inline-template
 vapor/no-inline-template · lint 规则
 禁止已弃用的inline-template属性

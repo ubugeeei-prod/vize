@@ -82,7 +82,7 @@ const projectLayout: Record<(typeof locales)[number], readonly [string, string, 
 
 await test("every implemented rule has one readable page per locale with the executed examples inline", () => {
   const names = [...implementations()].sort((a, b) => a.localeCompare(b));
-  assert.equal(names.length, 330);
+  assert.equal(names.length, 369);
   for (const locale of locales) {
     const { bad, good } = ruleHeadings[locale];
     for (const name of names) {

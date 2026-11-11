@@ -4,6 +4,9 @@ use vize_l0::String;
 
 mod batch;
 mod boolean;
+mod expression_facts;
+
+pub(in crate::linter) use expression_facts::{ExpressionFact, ExpressionQuery};
 mod errors;
 mod paths;
 mod probe;

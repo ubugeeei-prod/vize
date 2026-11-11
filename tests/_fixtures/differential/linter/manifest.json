@@ -5224,6 +5224,38 @@
       }
     },
     {
+      "id": "linter/patina/compat-type-aware-ts-eslint-12875",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "patina-compat-type-aware-ts-eslint-12875",
+        "files": [
+          {
+            "path": "TypedShapes.vue.txt",
+            "role": "third-party-type-aware-reproduction",
+            "sha256": "55974dd54e1563dabaf02fdfbfadb3bd48a5f0971ee5732b09a7b15b039d6f60"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/patina/compat-unclosed-interactive-12803",
       "state": "active",
       "targets": [

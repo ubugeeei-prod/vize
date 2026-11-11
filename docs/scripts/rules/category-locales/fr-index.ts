@@ -5,6 +5,7 @@ import { frenchRules3 } from "./fr-3.ts";
 import { frenchRules4 } from "./fr-4.ts";
 import { frenchRules5 } from "./fr-5.ts";
 import { frenchRules6 } from "./fr-6.ts";
+import { frenchRules7 } from "./fr-7.ts";
 
 export const frenchPackets = {
   ...frenchRules0,
@@ -14,6 +15,7 @@ export const frenchPackets = {
   ...frenchRules4,
   ...frenchRules5,
   ...frenchRules6,
+  ...frenchRules7,
 } satisfies Record<string, readonly [string, string, string]>;
 
 export { frenchShared } from "./fr-shared.ts";

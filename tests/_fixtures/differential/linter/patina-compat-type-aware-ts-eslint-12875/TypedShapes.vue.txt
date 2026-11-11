@@ -1,0 +1,125 @@
+<script setup lang="ts">
+declare const anyValue: any;
+
+/** @deprecated use current() */
+function legacy(): number {
+  return 1;
+}
+function getNumber(): Promise<number> {
+  return Promise.resolve(1);
+}
+function plainNumber(): number {
+  return 1;
+}
+function logVoid(): void {}
+function takesNumber(value: number): number {
+  return value;
+}
+function identity<T = number>(value: T): T {
+  return value;
+}
+
+enum Color {
+  Red = 0,
+  Green = 1,
+}
+enum Mixed {
+  A = 0,
+  B = "b",
+}
+type Dup = string | string;
+type Redundant = unknown | string;
+type Emptied = Omit<{ a: number }, "a">;
+interface Box {
+  get size(): string;
+  set size(value: number);
+}
+class Builder {
+  setValue(): Builder {
+    return this;
+  }
+}
+class Counter {
+  value = 0;
+  increment(): void {
+    this.value += 1;
+  }
+}
+
+const numbers = [1, 2, 3];
+const label = "a";
+const plain = { a: 1 };
+const known: number = 1;
+const counter = new Counter();
+
+async function awaitsNumber(): Promise<number> {
+  const result = await plainNumber();
+  return result;
+}
+function deletesItem(): void {
+  delete numbers[0];
+}
+const plainText = plain.toString();
+const voidValue = logVoid();
+const legacyValue = legacy();
+function loopsKeys(): void {
+  for (const key in numbers) {
+    console.log(key);
+  }
+}
+setTimeout("logVoid()", 10);
+void logVoid();
+numbers.forEach(async (n) => {
+  console.log(await getNumber(), n);
+});
+const chars = [...label];
+function isFlag(flag: boolean): boolean {
+  return flag === true;
+}
+function orDefault(value: string): string {
+  return value ?? "x";
+}
+const wrapped = `${label}`;
+const fromIdentity = identity<number>(1);
+const same = String(label);
+const color: Color = 1;
+function isRed(value: number): boolean {
+  return value === Color.Red;
+}
+const negated = -label;
+function fail(): never {
+  throw "failure";
+}
+const rejected = Promise.reject("failure");
+const collected = numbers.reduce((all, n) => [...all, n], [] as number[]);
+async function noAwait(): Promise<number> {
+  return 1;
+}
+const mixedSum = label + numbers;
+const listText = `${numbers}`;
+async function returnsInTry(): Promise<number> {
+  await Promise.resolve();
+  try {
+    return getNumber();
+  } catch {
+    return 0;
+  }
+}
+const unbound = counter.increment;
+getNumber().catch((error) => {
+  console.log(error);
+});
+const asserted = known as number;
+takesNumber(anyValue);
+const assigned: number = anyValue;
+anyValue();
+console.log(anyValue.member);
+function returnsAny(): number {
+  return anyValue;
+}
+getNumber();
+</script>
+
+<template>
+  <p>{{ label }}</p>
+</template>

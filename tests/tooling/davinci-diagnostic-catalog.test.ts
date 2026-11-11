@@ -146,9 +146,9 @@ test("TS-53: unresolved metadata constants fail without counting aliases as new 
   );
 });
 
-test("TS-53: every one of the 314 lint rules has a description in every locale", () => {
+test("TS-53: every one of the 369 lint rules has a description in every locale", () => {
   const rules = parseRules();
-  assert.equal(rules.size, 330, "the parser reads every RuleMeta-family declaration");
+  assert.equal(rules.size, 369, "the parser reads every RuleMeta-family declaration");
   assert.deepEqual(ruleProblems(rules, legacyTranslations(), catalogEntries()), []);
 });
 

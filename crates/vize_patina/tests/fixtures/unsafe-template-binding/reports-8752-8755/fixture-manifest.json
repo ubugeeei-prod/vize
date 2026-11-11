@@ -159,8 +159,8 @@
     },
     {
       "path": "original-config-oracles.json",
-      "bytes": 99590,
-      "sha256": "bacc9a6c64903cdc45ff29d0522dad4c2c85c1b4f9b47dab6e939290dcde895d"
+      "bytes": 100392,
+      "sha256": "4b1ec5671c22bb1a99c52a2517871834b226076214fdeacd3a94ccbf80285456"
     },
     {
       "path": "original-reports/8752.json",
@@ -295,7 +295,7 @@
   },
   "originalConfigPreparation": {
     "path": "original-config-oracles.json",
-    "sha256": "bacc9a6c64903cdc45ff29d0522dad4c2c85c1b4f9b47dab6e939290dcde895d",
+    "sha256": "4b1ec5671c22bb1a99c52a2517871834b226076214fdeacd3a94ccbf80285456",
     "cases": 4,
     "status": "Normal required-Corsa full Opinionated test before any candidate execution; all actual packets printed before final full equality. Scoped 25 oracle bodies remain unchanged."
   }

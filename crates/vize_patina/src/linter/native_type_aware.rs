@@ -36,6 +36,7 @@ mod script_options;
 mod slot_binding_tests;
 mod source_path;
 mod strict_boolean;
+mod typescript_eslint;
 #[cfg(test)]
 mod template_component_tests;
 mod template_queries;
@@ -76,6 +77,7 @@ pub(crate) fn has_active_type_aware_rules(linter: &Linter) -> bool {
         .iter()
         .copied()
         .any(|rule_name| linter.registry.has_rule(rule_name) && linter.is_rule_enabled(rule_name))
+        || typescript_eslint::is_active(linter)
 }
 
 #[cfg(test)]

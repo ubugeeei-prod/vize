@@ -112,7 +112,7 @@ impl<'a> Tree<'a> {
     }
 }
 
-pub(super) fn locations(
+pub(in crate::linter) fn locations(
     data: &[u8],
     source: &str,
     ranges: &[(u32, u32)],

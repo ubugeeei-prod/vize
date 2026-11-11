@@ -2315,15 +2315,37 @@
       "afterApi": {
         "filename": "MultilineTernary.vue",
         "error_count": 0,
-        "warning_count": 0,
-        "diagnostics": []
+        "warning_count": 1,
+        "diagnostics": [
+          {
+            "rule_name": "vue/no-unused-script-vars",
+            "severity": "warning",
+            "message": "'params' is defined but never used. Allowed unused args must match /^_/u",
+            "start": 48,
+            "end": 54,
+            "help": null,
+            "fix": null,
+            "labels": []
+          }
+        ]
       },
       "afterFormatter": [
         {
           "file": "MultilineTernary.vue",
-          "messages": [],
+          "messages": [
+            {
+              "column": 24,
+              "endColumn": 30,
+              "endLine": 2,
+              "line": 2,
+              "message": "[vize:vue/no-unused-script-vars] 'params' is defined but never used. Allowed unused args must match /^_/u",
+              "ruleDocsPath": "docs/content/rules/reference/vue-no-unused-script-vars.md",
+              "ruleId": "vue/no-unused-script-vars",
+              "severity": 1
+            }
+          ],
           "errorCount": 0,
-          "warningCount": 0
+          "warningCount": 1
         }
       ],
       "afterStatus": 0,
