@@ -111,7 +111,8 @@ impl Rule for AriaUnsupportedElements {
 
 impl AriaUnsupportedElements {
     fn is_aria_or_role(name: &str) -> bool {
-        name.len() >= 5 && name[..5].eq_ignore_ascii_case("aria-")
+        name.get(..5)
+            .is_some_and(|prefix| prefix.eq_ignore_ascii_case("aria-"))
             || name.eq_ignore_ascii_case("role")
     }
 

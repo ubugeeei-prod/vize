@@ -137,7 +137,7 @@ impl MarkupRule for RoleHasRequiredAriaProps {
         let mut seen = Vec::new();
         for token in role.split_whitespace() {
             let token = token.to_ascii_lowercase();
-            if token.is_empty() || seen.iter().any(|seen: &String| seen == &token) {
+            if token.is_empty() || seen.iter().any(|seen| seen == &token) {
                 continue;
             }
             seen.push(token.clone());
@@ -214,7 +214,7 @@ impl Rule for RoleHasRequiredAriaProps {
         let mut seen = Vec::new();
         for token in role.split_whitespace() {
             let token = token.to_ascii_lowercase();
-            if token.is_empty() || seen.iter().any(|seen: &String| seen == &token) {
+            if token.is_empty() || seen.iter().any(|seen| seen == &token) {
                 continue;
             }
             seen.push(token.clone());
