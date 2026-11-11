@@ -3,6 +3,7 @@ use crate::rules::script::NoUnusedEmitDeclarations;
 use crate::rules::script::ScriptLinter;
 
 // Template-usage tests (#3209) live in the `template` submodule.
+mod above_declaration;
 mod options_api;
 mod template;
 

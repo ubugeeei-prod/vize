@@ -104,6 +104,8 @@ export interface VizeTaskConfig {
   lintHelpLevel?: VizeLintOptions["helpLevel"];
   lintIgnorePatterns?: string[];
   fmtIgnorePatterns?: string[];
+  /** `vue.ignores` and `vue.formatter.ignorePatterns`, applied before native fmt sees an explicit path. */
+  vueFmtIgnorePatterns?: string[];
 }
 export interface VizePlusConfigFactory {
   (env: ConfigEnv): Promise<ConfigWithVizeTasks>;

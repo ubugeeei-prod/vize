@@ -141,7 +141,7 @@ fn lint_config_category_severity_applies_to_builtin_script_rules() {
 }
 
 #[test]
-fn quiet_lint_reduces_warning_totals_and_preserves_max_warnings_exit() {
+fn quiet_lint_drops_warnings_from_the_report_and_the_exit_code() {
     let project_root = tempfile::tempdir().unwrap();
     write_file(
         project_root.path(),
@@ -179,12 +179,78 @@ emit("step-changed", 1)
         .output()
         .unwrap();
 
-    assert_eq!(output.status.code(), Some(1), "{}", output_details(&output));
+    assert_eq!(output.status.code(), Some(0), "{}", output_details(&output));
     let stdout = std::str::from_utf8(&output.stdout).unwrap();
-    assert!(stdout.contains("2 warnings in 2 files"), "{stdout}");
+    assert!(stdout.contains("No problems found in 2 file"), "{stdout}");
     assert!(!stdout.contains("custom-event-name-casing"), "{stdout}");
+    assert!(!stdout.contains("warning"), "{stdout}");
     let stderr = std::str::from_utf8(&output.stderr).unwrap();
-    assert!(stderr.contains("Too many warnings (2 > max 0)"), "{stderr}");
+    assert!(!stderr.contains("Too many warnings"), "{stderr}");
+}
+
+#[test]
+fn quiet_lint_reports_errors_only_in_text_stylish_and_json() {
+    let project_root = tempfile::tempdir().unwrap();
+    write_file(
+        project_root.path(),
+        "src/App.vue",
+        r#"<script setup lang="ts">
+const items = [1, 2];
+</script>
+<template>
+  <ul>
+    <li v-for="item in items">{{ item }}</li>
+  </ul>
+  <div v-html="'<b>x</b>'" />
+  <img src="/a.png" />
+</template>
+"#,
+    );
+
+    for args in [
+        vec!["lint", "--no-config", "--quiet", "src/App.vue"],
+        vec![
+            "lint",
+            "--no-config",
+            "-f",
+            "stylish",
+            "--quiet",
+            "src/App.vue",
+        ],
+        vec![
+            "lint",
+            "--no-config",
+            "-f",
+            "json",
+            "--quiet",
+            "src/App.vue",
+        ],
+    ] {
+        let output = Command::new(env!("CARGO_BIN_EXE_vize"))
+            .current_dir(project_root.path())
+            .args(&args)
+            .output()
+            .unwrap();
+        assert_eq!(
+            output.status.code(),
+            Some(1),
+            "{} {}",
+            args.join(" "),
+            output_details(&output)
+        );
+        let stdout = std::str::from_utf8(&output.stdout).unwrap();
+        assert!(
+            stdout.contains("require-v-for-key"),
+            "{} {stdout}",
+            args.join(" ")
+        );
+        assert!(!stdout.contains("no-v-html"), "{stdout}");
+        assert!(!stdout.contains("alt-text"), "{stdout}");
+        if !args.contains(&"-f") {
+            assert!(stdout.contains("1 error in 1 file"), "{stdout}");
+            assert!(!stdout.contains("warning"), "{stdout}");
+        }
+    }
 }
 
 #[test]

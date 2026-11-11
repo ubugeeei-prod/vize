@@ -5,6 +5,7 @@ use crate::rule::{Rule, RuleCategory};
 
 // The positive direction (a prop that must be reported) lives in the `reports`
 // submodule; this file keeps the helpers and the silent-direction cases.
+mod commented_union;
 mod directive_lexer_reports;
 mod directive_lexer_statement_blocks;
 mod directive_lexer_tsx_multiline;
