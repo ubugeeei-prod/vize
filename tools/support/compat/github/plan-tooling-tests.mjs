@@ -239,6 +239,11 @@ export const dedicatedPrToolingTests = [
 // `path.join(root, …)` and `new URL(…)` load or read it as `require(…)` does.
 const localNativeRuntimeImport =
   /(?:\b(?:from|import)\s*["'][^"']*npm\/native\/index\.js["']|[(,]\s*["'][^"']*npm\/native\/index\.js["']|\.artifacts\/native\/)/u;
+// Without `nativePath`, the TypeScript plugin's provider resolves `@vizejs/native`, so
+// importing or requiring its entry loads the addon. Its CJS chain is outside the import
+// closure; only a load counts, not the path listed as data.
+const typescriptPluginRuntimeLoad =
+  /(?:\b(?:from|import)\s*\(?\s*|(?:\brequire|\))\s*\(\s*(?:[\w$.]+\s*\([^"'()]*)?)["'][^"']*npm\/typescript-plugin\/index\.cjs["']/u;
 const workspaceNativePackageImport =
   /\b(?:from\s*|import\s*(?:\(\s*)?|require\s*\(\s*)["']@vizejs\/native["']/u;
 // This contract calls the build coordinator with a fully controlled runner;
@@ -331,6 +336,7 @@ export function planToolingTests(
             const source = readFileSync(join(cwd, input), "utf8");
             return (
               localNativeRuntimeImport.test(source) ||
+              typescriptPluginRuntimeLoad.test(source) ||
               (!input.startsWith("tests/tooling/") && workspaceNativePackageImport.test(source))
             );
           });

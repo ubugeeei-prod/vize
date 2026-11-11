@@ -116,6 +116,27 @@ test("native build planning follows runtime imports without fixture source false
   }
   writeFileSync(path.join(cwd, testFile), 'planAffectedJs(packages, ["npm/native/index.js"]);');
   assert.deepEqual(selected(), []);
+  // The TypeScript plugin's default provider loads the addon through its own CJS chain.
+  for (const plugin of [
+    "tests/tooling/vscode-typescript-vue-plugin.test.ts",
+    "tests/tooling/vscode-typescript-vue-plugin-module-resolution.test.ts",
+  ])
+    assert.ok(planToolingTests([plugin]).nativeBuildTests.includes(plugin), plugin);
+  for (const load of [
+    'require(path.join(root, "npm/typescript-plugin/index.cjs"));',
+    'createRequire(import.meta.url)("../../npm/typescript-plugin/index.cjs");',
+    'await import("../../npm/typescript-plugin/index.cjs");',
+  ]) {
+    writeFileSync(path.join(cwd, testFile), load);
+    assert.deepEqual(selected(), [testFile], load);
+  }
+  for (const data of [
+    'const tsserver = ["init", "npm/typescript-plugin/index.cjs"];',
+    'fs.existsSync(path.join(root, "npm/typescript-plugin/index.cjs"));',
+  ]) {
+    writeFileSync(path.join(cwd, testFile), data);
+    assert.deepEqual(selected(), [], data);
+  }
   mkdirSync(path.join(cwd, "npm/builder/vite/src"), { recursive: true });
   writeFileSync(path.join(cwd, testFile), 'import "../../npm/builder/vite/src/virtual.ts";');
   writeFileSync(
