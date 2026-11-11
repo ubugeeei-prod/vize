@@ -18,7 +18,8 @@ it("projects eslint-plugin-vue compatibility options into typed Patina options",
     },
   });
   const messaged = {
-    selector: "LogicalExpression[operator='??'] > MemberExpression.left:matches([object.name='ts'])",
+    selector:
+      "LogicalExpression[operator='??'] > MemberExpression.left:matches([object.name='ts'])",
     message: "No fallback.",
   };
   assert.deepEqual(getRuleOptions("vue/no-restricted-syntax", ["TSAsExpression", messaged]), {
@@ -40,10 +41,7 @@ it("projects eslint-plugin-vue compatibility options into typed Patina options",
 });
 
 it("rejects compatibility options that Patina cannot preserve", () => {
-  assert.equal(
-    getRuleOptions("vue/no-restricted-syntax", ["VElement:nth-of-type(1)"]),
-    undefined,
-  );
+  assert.equal(getRuleOptions("vue/no-restricted-syntax", ["VElement:nth-of-type(1)"]), undefined);
   assert.equal(
     getRuleOptions("vue/sort-keys", ["asc", { ignoreChildrenOf: ["methods"] }]),
     undefined,
