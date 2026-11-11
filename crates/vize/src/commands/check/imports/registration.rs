@@ -203,9 +203,12 @@ pub(super) fn non_relative_import_needs_virtual_registration(
             .negative_alias_sources
             .extend(frontier.visited.iter().cloned());
     }
+    // Only a package route reads the sources its walk visited (as the
+    // route's dependency paths); a pure alias walk stops at its first Vue
+    // hit and reports none.
     let resolved_discovery = VirtualRegistrationDiscovery {
         package_routes: discovered,
-        package_sources: if needs_registration {
+        package_sources: if needs_registration && !pure_alias {
             frontier.visited.into_iter().collect()
         } else {
             Vec::new()
