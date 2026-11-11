@@ -12,6 +12,7 @@ import {
   previousSlotsExport,
   previousSlotsMarker,
 } from "../../tools/support/compat/content-mapper/constructor-projection-parity.ts";
+import { assertJoinedVerbatimRunCustody } from "./support/callback-owner-packet-custody.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const historicalBefore = "78719553cf550bcffbf1d0fb891fda642f42de3a";
@@ -60,43 +61,7 @@ test("the comparator dependencies and packed-consumer refusal test remain select
 });
 
 test("callback packets certify only the exact joined verbatim run", () => {
-  const source = "alpha\nbeta";
-  const before = {
-    text: source,
-    mappings: [
-      [0, 5, 0, 5, 0, 7],
-      [6, 4, 6, 4, 0, 7],
-    ],
-  };
-  assertPreservedCallbackPacket(before, { ...before, mappings: [[0, 10, 0, 10, 0, 7]] }, source);
-  assert.throws(
-    () =>
-      assertPreservedCallbackPacket(
-        before,
-        { ...before, mappings: [[0, 10, 0, 10, 0, 5]] },
-        source,
-      ),
-    assert.AssertionError,
-  );
-
-  const crlfSource = "alpha\r\nbeta";
-  const crlf = {
-    text: crlfSource,
-    mappings: [
-      [0, 5, 0, 5, 0, 7],
-      [7, 4, 7, 4, 0, 7],
-    ],
-  };
-  assertPreservedCallbackPacket(crlf, structuredClone(crlf), crlfSource);
-  assert.throws(
-    () =>
-      assertPreservedCallbackPacket(
-        crlf,
-        { ...crlf, mappings: [[0, crlfSource.length, 0, crlfSource.length, 0, 7]] },
-        crlfSource,
-      ),
-    assert.AssertionError,
-  );
+  assertJoinedVerbatimRunCustody();
 });
 
 test("callback packets certify only the unmapped public Slots re-export", () => {
