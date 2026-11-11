@@ -223,6 +223,7 @@ export function auditPackets(
       import.meta.url,
     ),
   ),
+  source?: string,
 ) {
   const fields = new Set([
     "text",
@@ -282,6 +283,7 @@ export function auditPackets(
     { text: headText, rows: tuples(after.mappings) },
     canonicalMappedGenerated,
     producer,
+    source,
   );
   const historicalDirectives = directiveContract(certifiedDirectives(before, false));
   assertDirectiveDeduplication(

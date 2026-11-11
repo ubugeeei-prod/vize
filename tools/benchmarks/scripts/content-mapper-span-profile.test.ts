@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
+import { readAssets } from "../../support/compat/content-mapper/constructor-projection-parity.ts";
 import { counts, families, summarize, type Sample } from "./content-mapper-span-profile.ts";
 
 const binaries = { base: { source: "a".repeat(40) }, head: { source: "b".repeat(40) } };
@@ -23,8 +24,13 @@ function samples(): Sample[] {
                 text: "generated",
                 extension: ".tsx",
                 mappings: [[1, 2, 3, 4, 0, 63]],
-                semanticLinks: [{ sourceStart: 1, targetStart: 2 }],
-                diagnosticDirectives: { directives: [[1, 2, 3, 4, 0, 0]] },
+                semanticLinks: [
+                  { sourceStart: 1, sourceLength: 1, targetStart: 2, targetLength: 1 },
+                ],
+                diagnosticDirectives: {
+                  directives: [[1, 2, 3, 4, 0, 0]],
+                  unusedExpectDirectiveDiagnostics: [],
+                },
                 diagnostics: [
                   { code: 100001, start: 1, length: 2, messageText: "whole diagnostic" },
                 ],
@@ -56,6 +62,35 @@ void test("whole matrix preserves every family and median", () => {
     allocationCalls: 4,
     requestedBytes: 160,
   });
+});
+void test("certified generated field relocation preserves cross-role packets", () => {
+  const rows = samples();
+  const marker = " readonly __vizeHasFallthroughProps: true;";
+  const prefix = " readonly __vizeComponentMarker: true; readonly __vizeRawProps?: Props;";
+  const field = ' readonly __vizeFallthroughSource?: Partial<$NativeElement<"main">>;';
+  for (const row of rows) {
+    const packet = JSON.parse(row.packet) as {
+      text: string;
+      mappings: unknown[];
+      semanticLinks: unknown[];
+      diagnosticDirectives: { directives: unknown[] };
+      diagnostics: unknown[];
+    };
+    packet.text = prefix + marker;
+    packet.mappings = [];
+    packet.semanticLinks = [];
+    packet.diagnosticDirectives.directives = [];
+    packet.diagnostics = [];
+    if (row.role === "head") packet.text = prefix + field + marker;
+    row.packet = JSON.stringify(packet);
+  }
+  assert.doesNotThrow(() => summarize(rows, binaries, readAssets(process.cwd(), process.cwd())));
+  const head = rows.find((row) => row.role === "head");
+  assert.ok(head);
+  const packet = JSON.parse(head.packet) as { text: string };
+  packet.text = packet.text.replace("main", "button");
+  head.packet = JSON.stringify(packet);
+  assert.throws(() => summarize(rows, binaries, readAssets(process.cwd(), process.cwd())));
 });
 for (const field of [
   "text",

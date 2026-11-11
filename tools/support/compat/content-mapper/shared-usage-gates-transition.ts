@@ -10,6 +10,9 @@ import { readFileSync } from "node:fs";
 export const sharedUsageGatesRecord = "tests/_fixtures/tooling/shared-usage-gates.json";
 const recordSha256 = "a4ec4599ec136412e1a3995a314eeb4341614d75f3b15803db9209184acf6568";
 
+export const previousAttrValueKeySet = `type $AttrValue<R, K, C, V, P = R & (C extends { __vizeEmitProps?: infer E } ? 0 extends (1 & E) ? {} : NonNullable<E> : {}) & import("vue").VNodeProps & import("vue").AllowedComponentProps & import("vue").ComponentCustomProps, __V = P extends unknown ? (K extends keyof P ? P[K] : never) : never> = [__V] extends [never] ? (C extends { readonly __vizeComponentMarker: true; readonly __vizeHasFallthroughProps: true; readonly __vizeFallthroughProps?: infer A } ? 0 extends (1 & A) ? {} : NonNullable<A> : {}) extends infer F ? K extends keyof F ? {} extends Pick<F, K> ? V : unknown : V : V : unknown;\n`;
+export const currentAttrValueKeySet = `type $AttrValue<R, K, C, V, P = never> = K extends ([P] extends [never] ? (R extends unknown ? keyof R : never) | keyof (C extends { __vizeEmitProps?: infer E } ? 0 extends (1 & E) ? {} : NonNullable<E> : {}) | keyof import("vue").VNodeProps | keyof import("vue").AllowedComponentProps | keyof import("vue").ComponentCustomProps : keyof P) ? unknown : (C extends { readonly __vizeComponentMarker: true; readonly __vizeHasFallthroughProps: true; readonly __vizeFallthroughProps?: infer A } ? 0 extends (1 & A) ? {} : NonNullable<A> : {}) extends infer F ? K extends keyof F ? {} extends Pick<F, K> ? V : unknown : V : V;\n`;
+
 type Identity = { bytes: number; sha256: string };
 type Entry = {
   path: string;
@@ -97,9 +100,17 @@ export function certifyFallthroughSourceFields(
   const afterFields = [...afterText.matchAll(field)];
   if (beforeFields.length === afterFields.length) return [];
   assert.equal(beforeFields.length, 0, "fallthrough-source predecessor fields");
-  const markerOffsets = [...beforeText.matchAll(new RegExp(marker, "gu"))].map((match) =>
-    Buffer.byteLength(beforeText.slice(0, match.index)),
-  );
+  const markerOffsets = [...beforeText.matchAll(new RegExp(marker, "gu"))]
+    .filter((match) => {
+      assert.ok(match.index != null);
+      const lineStart = beforeText.lastIndexOf("\n", match.index) + 1;
+      const prefix = beforeText.slice(lineStart, match.index);
+      return (
+        prefix.includes(" readonly __vizeComponentMarker: true;") &&
+        prefix.includes(" readonly __vizeRawProps?: ")
+      );
+    })
+    .map((match) => Buffer.byteLength(beforeText.slice(0, match.index)));
   assert.equal(
     afterFields.length,
     markerOffsets.length,

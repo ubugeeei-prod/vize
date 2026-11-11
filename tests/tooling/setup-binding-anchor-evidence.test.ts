@@ -101,6 +101,7 @@ test("comparison retains all72 full observations and independent binary identiti
 test("the raw fallthrough source field is an exact certified document shift", () => {
   const root = mkdtempSync(join(tmpdir(), "anchor-fallthrough-source-"));
   const marker = " readonly __vizeHasFallthroughProps: true;";
+  const prefix = " readonly __vizeComponentMarker: true; readonly __vizeRawProps?: Props;";
   const field = " readonly __vizeFallthroughSource?: Record<string, unknown>;";
   try {
     fixture(root);
@@ -112,7 +113,7 @@ test("the raw fallthrough source field is an exact certified document shift", ()
               const path = join(root, `${role}-${shape}-${count}-${mode}-${round}.json`);
               const row = JSON.parse(readFileSync(path, "utf8"));
               for (const document of row.documents) {
-                const suffix = role === "head" ? field + marker : marker;
+                const suffix = role === "head" ? prefix + field + marker : prefix + marker;
                 document.code += suffix;
                 document.preRewriteCode += suffix;
               }
