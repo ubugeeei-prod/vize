@@ -132,11 +132,18 @@ impl CorsaExecutor {
         let _materialize_lock = MaterializeLock::acquire(project.virtual_root())?;
         profile!("canon.executor.materialize", project.materialize())?;
 
-        let mut result = self.check_program(project, servers)?;
         // The generated config is sanitized, so it cannot carry the user's own
         // `compilerOptions` diagnostics; a separate input-less program does
         // (#3448). Errors it finds must fail the check exactly as `tsc`'s do.
-        let options = option_probe::option_diagnostics(&self.corsa_path, project);
+        // It reads only the materialized config, so it runs beside the check
+        // instead of after it.
+        let (result, options) = std::thread::scope(|scope| {
+            let probe = scope.spawn(|| option_probe::option_diagnostics(&self.corsa_path, project));
+            let result = self.check_program(project, servers);
+            (result, probe.join())
+        });
+        let mut result = result?;
+        let options = options.unwrap_or_else(|panic| std::panic::resume_unwind(panic));
         if options.iter().any(|diagnostic| diagnostic.severity == 1) {
             result.success = false;
             result.exit_code = result.exit_code.max(1);

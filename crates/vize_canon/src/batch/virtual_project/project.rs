@@ -125,6 +125,13 @@ impl VirtualProject {
         Ok(project)
     }
 
+    /// See `BatchTypeChecker::release_for_exit`: release the cache usage lock
+    /// and leave the rest unfreed, for a process that exits right after.
+    pub(crate) fn release_for_exit(mut self) {
+        drop(self._cache_usage_lock.take());
+        std::mem::forget(self);
+    }
+
     pub(crate) fn configured_global_template_ref(&self) -> bool {
         self.configured_global_template_ref
     }

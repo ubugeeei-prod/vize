@@ -54,12 +54,21 @@ pub(super) fn finish_executions(
     executions: Vec<ProgramExecution>,
     canonical_paths: &mut CanonicalPathCache,
 ) {
-    let exit_code = report_executions(args, cwd, start, collect_time, executions, canonical_paths)
+    let exit_code = report_executions(args, cwd, start, collect_time, &executions, canonical_paths)
         .unwrap_or_else(|error| {
             let style = super::text_style::TextStyle::stderr();
             eprintln!("{} {error}", style.red("Error:"));
             1
         });
+    if exit_code == 0 {
+        drop(executions);
+    } else {
+        // The process exits below: release what outlives it, but leave the
+        // generated projects to the exit instead of freeing them first.
+        for execution in executions {
+            execution.release_for_exit();
+        }
+    }
     // Machine-readable profile export: written after every reporting path
     // (including diagnostics failures) so the collected spans always land.
     args.profile_export.write_or_exit("check");
@@ -86,7 +95,7 @@ fn report_executions(
     cwd: &Path,
     start: Instant,
     collect_time: Duration,
-    executions: Vec<ProgramExecution>,
+    executions: &[ProgramExecution],
     canonical_paths: &mut CanonicalPathCache,
 ) -> Result<i32, String> {
     let virtual_files = executions
@@ -147,7 +156,7 @@ fn report_executions(
 
     let diagnostics_render_start = Instant::now();
     let mut reported_raw = Vec::new();
-    for execution in &executions {
+    for execution in executions {
         for diagnostic in &execution.result.diagnostics {
             if is_reported(&execution.reported_files, &diagnostic.file, canonical_paths)
                 && !is_suppressed_false_positive(diagnostic)
@@ -166,7 +175,7 @@ fn report_executions(
         .iter()
         .filter(|diagnostic| diagnostic.severity == 2)
         .count();
-    let emitted = emit_declarations(args, &executions, total_errors)?;
+    let emitted = emit_declarations(args, executions, total_errors)?;
     let total_time = start.elapsed();
     let import_time = executions
         .iter()
@@ -180,7 +189,7 @@ fn report_executions(
 
     if args.profile {
         print_profile(
-            &executions,
+            executions,
             &virtual_files,
             total_errors,
             total_time,
@@ -198,7 +207,7 @@ fn report_executions(
         emit_json(
             args,
             cwd,
-            &executions,
+            executions,
             &diagnostics,
             total_errors,
             total_warnings,
