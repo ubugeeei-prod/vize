@@ -182,11 +182,17 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
         }
 
         // Build element context with CompactString tag (efficient for small strings)
+        let vue_is_component = el.props.iter().any(|prop| {
+            matches!(prop, PropNode::Attribute(attr)
+                if attr.name.eq_ignore_ascii_case("is")
+                    && attr.value.as_ref().is_some_and(|value| value.content.starts_with("vue:")))
+        });
         let elem_ctx = ElementContext {
             tag: CompactString::from(el.tag),
             has_v_for,
             has_v_if,
             v_for_vars,
+            vue_is_component,
         };
 
         self.ctx.push_element(elem_ctx);

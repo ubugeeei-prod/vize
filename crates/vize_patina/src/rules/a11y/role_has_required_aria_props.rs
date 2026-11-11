@@ -32,6 +32,7 @@ use vize_relief::{ElementNode, ElementType, ExpressionNode, PropNode};
 use super::helpers::{get_required_aria_props, get_static_or_bound_literal_attribute_value};
 use super::markup_helpers::{
     get_static_markup_attribute_value, get_static_or_bound_literal_markup_value,
+    get_static_or_bound_literal_markup_value_ignore_ascii_case, is_vue_is_component,
 };
 
 static META: RuleMeta = RuleMeta {
@@ -48,17 +49,14 @@ pub struct RoleHasRequiredAriaProps;
 
 fn has_aria_attribute_or_binding(element: &ElementNode, name: &str) -> bool {
     element.props.iter().any(|prop| match prop {
-        PropNode::Attribute(attr) => attr.name == name,
+        PropNode::Attribute(attr) => attr.name.eq_ignore_ascii_case(name),
         PropNode::Directive(dir) => {
-            if dir.name == "bind" {
-                dir.arg.is_none()
-                    || matches!(
-                        &dir.arg,
-                        Some(ExpressionNode::Simple(s)) if s.content == name
-                    )
-            } else {
-                false
-            }
+            dir.name == "bind"
+                && matches!(
+                    &dir.arg,
+                    Some(ExpressionNode::Simple(s))
+                        if s.is_static && s.content.eq_ignore_ascii_case(name)
+                )
         }
     })
 }
@@ -90,9 +88,7 @@ fn has_markup_attribute_or_binding(element: &MarkupElement<'_>, name: &str) -> b
         found |= matches!(
             binding.kind(),
             MarkupBindingKind::Attribute | MarkupBindingKind::Bind
-        ) && (binding.is_unqualified_arg_exact(name)
-            // `v-bind="attrs"` may provide any required ARIA state at runtime.
-            || (binding.kind() == MarkupBindingKind::Bind && binding.arg_name().is_none()));
+        ) && binding.is_unqualified_arg_eq_ignore_ascii_case(name);
     });
     found
 }
@@ -121,23 +117,41 @@ impl MarkupRule for RoleHasRequiredAriaProps {
     }
 
     fn enter_element<'a>(&self, ctx: &mut MarkupContext<'_, 'a>, element: &MarkupElement<'a>) {
-        if element.kind() == MarkupElementKind::Component {
+        if matches!(
+            element.kind(),
+            MarkupElementKind::Component | MarkupElementKind::Slot | MarkupElementKind::Template
+        ) || is_vue_is_component(element)
+        {
             return;
         }
-        let Some(role) = get_static_or_bound_literal_markup_value(element, "role") else {
+        let Some(role) =
+            get_static_or_bound_literal_markup_value_ignore_ascii_case(element, "role")
+        else {
             return;
         };
-        if role == "separator" && !is_focusable_markup_separator(element) {
-            return;
-        }
         let native_checked = element.is_unqualified_tag_exact("input")
             && matches!(
                 get_static_or_bound_literal_markup_value(element, "type"),
                 Some("checkbox" | "radio")
             );
-        report_missing(ctx.lint(), role, element.range(), native_checked, |prop| {
-            has_markup_attribute_or_binding(element, prop)
-        });
+        let mut seen = Vec::new();
+        for token in role.split_whitespace() {
+            let token = token.to_ascii_lowercase();
+            if token.is_empty() || seen.iter().any(|seen: &String| seen == &token) {
+                continue;
+            }
+            seen.push(token.clone());
+            if token == "separator" && !is_focusable_markup_separator(element) {
+                continue;
+            }
+            report_missing(
+                ctx.lint(),
+                &token,
+                element.range(),
+                native_checked,
+                |prop| has_markup_attribute_or_binding(element, prop),
+            );
+        }
     }
 }
 
@@ -177,49 +191,39 @@ impl Rule for RoleHasRequiredAriaProps {
     }
 
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
-        if element.tag_type == ElementType::Component {
+        if element.tag_type == ElementType::Component
+            || matches!(element.tag_type, ElementType::Slot | ElementType::Template)
+            || element.props.iter().any(|prop| {
+                matches!(prop, PropNode::Attribute(attr)
+                    if attr.name.eq_ignore_ascii_case("is")
+                        && attr.value.as_ref().is_some_and(|value| value.content.starts_with("vue:")))
+            })
+        {
             return;
         }
 
-        let role = match get_static_or_bound_literal_attribute_value(element, "role") {
-            Some(r) => r,
-            None => return,
+        let Some(role) = get_static_or_bound_literal_attribute_value(element, "role") else {
+            return;
         };
-
-        if role == "separator" && !is_focusable_separator(element) {
-            return;
-        }
-
-        let required_props = get_required_aria_props(role);
-        if required_props.is_empty() {
-            return;
-        }
-
-        for &required_prop in required_props {
-            // ARIA in HTML forbids aria-checked on native checkbox/radio inputs:
-            // their checked state already supplies the required role state.
-            if required_prop == "aria-checked"
-                && element.tag == "input"
-                && matches!(
-                    get_static_or_bound_literal_attribute_value(element, "type"),
-                    Some("checkbox" | "radio")
-                )
-            {
+        let native_checked = element.tag == "input"
+            && matches!(
+                get_static_or_bound_literal_attribute_value(element, "type"),
+                Some("checkbox" | "radio")
+            );
+        let range = crate::ir::ByteRange::new(element.loc.span.start, element.loc.span.end);
+        let mut seen = Vec::new();
+        for token in role.split_whitespace() {
+            let token = token.to_ascii_lowercase();
+            if token.is_empty() || seen.iter().any(|seen: &String| seen == &token) {
                 continue;
             }
-            if !has_aria_attribute_or_binding(element, required_prop) {
-                ctx.warn_with_help(
-                    ctx.t_fmt(
-                        "a11y/role-has-required-aria-props.message",
-                        &[("role", role), ("prop", required_prop)],
-                    ),
-                    &element.loc,
-                    ctx.t_fmt(
-                        "a11y/role-has-required-aria-props.help",
-                        &[("role", role), ("props", &required_props.join(", "))],
-                    ),
-                );
+            seen.push(token.clone());
+            if token == "separator" && !is_focusable_separator(element) {
+                continue;
             }
+            report_missing(ctx, &token, range, native_checked, |prop| {
+                has_aria_attribute_or_binding(element, prop)
+            });
         }
     }
 }
@@ -257,13 +261,13 @@ mod tests {
     }
 
     #[test]
-    fn object_binding_can_supply_required_aria_properties() {
+    fn object_binding_does_not_hide_a_missing_required_property() {
         let linter = create_linter();
         let result = linter.lint_template(
             r#"<input role="combobox" aria-expanded="false" v-bind="fieldProps" />"#,
             "test.vue",
         );
-        assert_eq!(result.warning_count, 0);
+        assert_eq!(result.warning_count, 1);
     }
 
     #[test]
@@ -359,6 +363,62 @@ mod tests {
         let linter = create_linter();
         let result = linter.lint_template(
             r#"<hr role="separator" /><div role="separator"></div>"#,
+            "test.vue",
+        );
+        assert_eq!(result.warning_count, 0);
+    }
+
+    #[test]
+    fn a_slot_outlet_is_not_an_element_with_a_role() {
+        let linter = create_linter();
+        let result = linter.lint_template(
+            r#"<slot role="checkbox" /><slot :role="'checkbox'" /><slot name="item" role="switch" /><div role="checkbox">fallback</div>"#,
+            "test.vue",
+        );
+        assert_eq!(result.warning_count, 1);
+    }
+
+    #[test]
+    fn role_tokens_are_split_trimmed_and_lowercased() {
+        let linter = create_linter();
+        let result = linter.lint_template(
+            r#"<div role="switch checkbox">a</div><div role="SLIDER">b</div><div role=" checkbox ">c</div>"#,
+            "test.vue",
+        );
+        assert_eq!(result.warning_count, 4);
+        assert!(
+            result
+                .diagnostics
+                .iter()
+                .any(|diagnostic| diagnostic.message.contains("role=\"slider\""))
+        );
+    }
+
+    #[test]
+    fn an_object_bind_does_not_supply_a_missing_aria_property() {
+        let linter = create_linter();
+        let result = linter.lint_template(
+            r#"<div role="checkbox" v-bind="attrs"></div><div role="slider" v-bind="$attrs"></div><div role="option" v-bind="{ id: 'x' }"></div>"#,
+            "test.vue",
+        );
+        assert_eq!(result.warning_count, 3);
+    }
+
+    #[test]
+    fn an_uppercase_aria_attribute_satisfies_the_role() {
+        let linter = create_linter();
+        let result = linter.lint_template(
+            r#"<div ROLE="checkbox" ARIA-CHECKED="false">a</div>"#,
+            "test.vue",
+        );
+        assert_eq!(result.warning_count, 0);
+    }
+
+    #[test]
+    fn vue_is_substitution_is_not_a_native_role_host() {
+        let linter = create_linter();
+        let result = linter.lint_template(
+            r#"<div is="vue:my-item" role="checkbox">b</div><template v-if="ok" role="checkbox">x</template>"#,
             "test.vue",
         );
         assert_eq!(result.warning_count, 0);

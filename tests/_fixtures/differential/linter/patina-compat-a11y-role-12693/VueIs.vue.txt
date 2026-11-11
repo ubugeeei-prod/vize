@@ -1,0 +1,6 @@
+<template>
+  <div is="vue:my-list">
+    <template #item>a</template>
+  </div>
+  <div is="vue:my-item" role="checkbox">b</div>
+</template>

@@ -163,6 +163,21 @@ pub fn get_static_markup_attribute_value<'a>(
     value
 }
 
+/// HTML attribute names are ASCII case-insensitive. `ARIA-CHECKED` is
+/// `aria-checked`, and `ROLE` is `role`.
+pub fn get_static_or_bound_literal_markup_value_ignore_ascii_case<'a>(
+    element: &MarkupElement<'a>,
+    name: &str,
+) -> Option<&'a str> {
+    literal_markup_value(element, name, true)
+}
+
+/// `<div is="vue:name">` renders that component, not the native tag.
+pub(crate) fn is_vue_is_component(element: &MarkupElement<'_>) -> bool {
+    get_static_or_bound_literal_markup_value_ignore_ascii_case(element, "is")
+        .is_some_and(|value| value.starts_with("vue:"))
+}
+
 /// First exact attribute or literal-valued bind, preserving authored order.
 /// As on the template path, a matching static attribute ends the search even
 /// when valueless; a nonliteral bind does not hide a later literal binding.
@@ -170,10 +185,23 @@ pub fn get_static_or_bound_literal_markup_value<'a>(
     element: &MarkupElement<'a>,
     name: &str,
 ) -> Option<&'a str> {
+    literal_markup_value(element, name, false)
+}
+
+fn literal_markup_value<'a>(
+    element: &MarkupElement<'a>,
+    name: &str,
+    ignore_ascii_case: bool,
+) -> Option<&'a str> {
     let mut seen = false;
     let mut value = None;
     element.walk_bindings(&mut |binding| {
-        if seen || !binding.is_unqualified_arg_exact(name) {
+        let matches_name = if ignore_ascii_case {
+            binding.is_unqualified_arg_eq_ignore_ascii_case(name)
+        } else {
+            binding.is_unqualified_arg_exact(name)
+        };
+        if seen || !matches_name {
             return;
         }
         match binding.kind() {

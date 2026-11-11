@@ -63,6 +63,18 @@ fn test_valid_dynamic_component_slot() {
 }
 
 #[test]
+fn vue_is_substitution_accepts_a_slot_template() {
+    let linter = create_linter();
+    let result = linter.lint_template(
+        r#"<div is="vue:my-list"><template #item>a</template></div>"#,
+        "test.vue",
+    );
+    assert_eq!(result.error_count, 0);
+    let native = linter.lint_template(r#"<div><template #item>a</template></div>"#, "test.vue");
+    assert_eq!(native.error_count, 1);
+}
+
+#[test]
 fn test_invalid_on_html_element() {
     let linter = create_linter();
     let result = linter.lint_template(r#"<div v-slot:header></div>"#, "test.vue");
