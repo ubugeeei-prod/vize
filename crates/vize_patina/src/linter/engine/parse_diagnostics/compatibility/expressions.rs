@@ -6,10 +6,7 @@
 //! `//` comment that a line break ends inside the value, and it renders an
 //! empty interpolation as an empty string.
 
-use oxc_span::{GetSpan, SourceType};
 use vize_l0::Span;
-use vize_l0::expression_guard::expression_is_safe_to_parse;
-use vize_l0::expression_guard::scan::line_comment_terminator;
 use vize_l1::markup::{SurfaceChild, SurfaceTree};
 
 pub(super) fn is_accepted_by_vue(tree: &SurfaceTree<'_>, span: Span) -> bool {
@@ -30,55 +27,7 @@ pub(super) fn is_accepted_by_vue(tree: &SurfaceTree<'_>, span: Span) -> bool {
     } else {
         text
     };
-    if text.trim().is_empty() {
-        return interpolation;
-    }
-    text.contains("//") && parses_with_terminated_line_comments(text)
-}
-
-fn parses_with_terminated_line_comments(text: &str) -> bool {
-    if !expression_is_safe_to_parse(text) {
-        return false;
-    }
-    let allocator = oxc_allocator::Allocator::default();
-    let Ok(expression) =
-        oxc_parser::Parser::new(&allocator, text, SourceType::ts()).parse_expression()
-    else {
-        return false;
-    };
-    text.get(expression.span().end as usize..)
-        .is_some_and(is_wrapped_trailing_trivia)
-}
-
-/// Whitespace and comments that `(value)` still closes: a block comment, or a
-/// line comment ended by a line break.
-fn is_wrapped_trailing_trivia(rest: &str) -> bool {
-    let bytes = rest.as_bytes();
-    let mut index = 0;
-    loop {
-        let Some(tail) = rest.get(index..) else {
-            return false;
-        };
-        let trimmed = tail.trim_start();
-        index += tail.len() - trimmed.len();
-        if trimmed.is_empty() {
-            return true;
-        }
-        if trimmed.starts_with("/*") {
-            let Some(close) = trimmed.get(2..).and_then(|body| body.find("*/")) else {
-                return false;
-            };
-            index += close + 4;
-        } else if trimmed.starts_with("//") {
-            let terminator = line_comment_terminator(bytes, index + 2);
-            if terminator.is_empty() {
-                return false;
-            }
-            index = terminator.end;
-        } else {
-            return false;
-        }
-    }
+    interpolation && text.trim().is_empty()
 }
 
 fn in_interpolation(source: &str, children: &[SurfaceChild<'_>], span: Span) -> bool {
@@ -95,25 +44,4 @@ fn in_interpolation(source: &str, children: &[SurfaceChild<'_>], span: Span) -> 
         }),
         _ => false,
     })
-}
-
-#[cfg(test)]
-mod tests {
-    use super::{is_wrapped_trailing_trivia, parses_with_terminated_line_comments};
-
-    #[test]
-    fn line_comments_need_a_line_break_inside_the_value() {
-        assert!(parses_with_terminated_line_comments(
-            "\n  id // the element id\n"
-        ));
-        assert!(parses_with_terminated_line_comments(
-            "id // a\r\n /* b */ // c\u{2028}"
-        ));
-        assert!(!parses_with_terminated_line_comments(
-            "id // the element id"
-        ));
-        assert!(!parses_with_terminated_line_comments("a b // c\n"));
-        assert!(is_wrapped_trailing_trivia(" /* // */ "));
-        assert!(!is_wrapped_trailing_trivia(" /* open"));
-    }
 }

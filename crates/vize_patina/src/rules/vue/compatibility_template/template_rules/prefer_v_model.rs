@@ -4,19 +4,17 @@
 //! `@update:` listener whose camelized name matches, and the listener must
 //! assign its value to the exact bound text (`x = $event` or `(v) => x = v`).
 
-use super::shared::{simple_expression, static_argument};
+use super::shared::static_argument;
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use oxc_allocator::Allocator;
 use oxc_ast::ast::{
     AssignmentOperator, AssignmentTarget, BindingPattern, Expression, SimpleAssignmentTarget,
     Statement,
 };
-use oxc_parser::Parser;
-use oxc_span::{GetSpan, SourceType};
+use oxc_span::GetSpan;
 use vize_l0::{String, cstr, is_native_tag};
-use vize_relief::{DirectiveNode, ElementNode, ExpressionNode, PropNode};
+use vize_relief::{DirectiveNode, ElementNode, ExpressionNode, PropNode, SimpleExpressionNode};
 
 static META: RuleMeta = RuleMeta {
     name: "vue/prefer-v-model",
@@ -57,13 +55,12 @@ impl Rule for PreferVModel {
             }) else {
                 continue;
             };
-            let (Some(bound), Some(handler)) = (
-                simple_expression(bind.exp.as_ref()),
-                simple_expression(listener.exp.as_ref()),
-            ) else {
+            let (Some(ExpressionNode::Simple(bound)), Some(ExpressionNode::Simple(handler))) =
+                (bind.exp.as_ref(), listener.exp.as_ref())
+            else {
                 continue;
             };
-            if !mirrors_assignment(bound, handler) {
+            if !mirrors_assignment(ctx, bound, handler) {
                 continue;
             }
             let v_model = if model_name == "modelValue" {
@@ -136,22 +133,30 @@ fn camel_case(name: &str) -> String {
 
 /// `x = $event` as the only statement, or `(v) => x = v`, where the assigned
 /// target has the same text as the bound expression.
-fn mirrors_assignment(bound: &str, handler: &str) -> bool {
-    let allocator = Allocator::default();
-    let Ok(bound_expression) = Parser::new(&allocator, bound, SourceType::ts()).parse_expression()
+fn mirrors_assignment<'a>(
+    ctx: &mut LintContext<'a>,
+    bound: &SimpleExpressionNode<'a>,
+    handler: &SimpleExpressionNode<'a>,
+) -> bool {
+    let bound_expression = bound
+        .js_ast
+        .filter(|ast| ast.raw == bound.content)
+        .and_then(|ast| ast.as_expression())
+        .map(|expression| expression.ast)
+        .or_else(|| ctx.compatibility_expression(bound.loc.span, bound.content));
+    let Some(bound_expression) = bound_expression else {
+        return false;
+    };
+    let Some(bound_text) = text(bound.content, bound_expression.without_parentheses().span())
     else {
         return false;
     };
-    let Some(bound_text) = text(bound, bound_expression.without_parentheses().span()) else {
+    let Some(handler_program) = ctx.compatibility_handler(handler.loc.span, handler.content) else {
         return false;
     };
-    let parsed = Parser::new(&allocator, handler, SourceType::ts()).parse();
-    let [Statement::ExpressionStatement(statement)] = parsed.program.body.as_slice() else {
+    let [Statement::ExpressionStatement(statement)] = handler_program.body.as_slice() else {
         return false;
     };
-    if parsed.panicked || !parsed.diagnostics.is_empty() {
-        return false;
-    }
     let (assignment, value_name) = match statement.expression.without_parentheses() {
         Expression::ArrowFunctionExpression(arrow) => {
             let [parameter] = arrow.params.items.as_slice() else {
@@ -176,7 +181,7 @@ fn mirrors_assignment(bound: &str, handler: &str) -> bool {
     };
     assignment.operator == AssignmentOperator::Assign
         && matches!(assignment.right.without_parentheses(), Expression::Identifier(value) if value.name == value_name)
-        && target_text(handler, &assignment.left) == Some(bound_text)
+        && target_text(handler.content, &assignment.left) == Some(bound_text)
 }
 
 fn target_text<'s>(source: &'s str, target: &AssignmentTarget<'_>) -> Option<&'s str> {

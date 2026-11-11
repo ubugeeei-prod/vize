@@ -147,7 +147,6 @@ const {
   // eslint-disable-next-line script/valid-next-tick -- forwarded as a scheduler callback; PR #12811 replaces this temporary compatibility annotation
   nextTick,
 });
-
 function setVariantSectionRef(variantName: string, el: unknown) {
   if (typeof Element !== "undefined" && el instanceof Element) {
     variantSectionElements.set(variantName, el);

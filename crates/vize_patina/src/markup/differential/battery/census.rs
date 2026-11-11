@@ -50,7 +50,11 @@ pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
         // Directive parity regressions add 7 literal fixtures.
         + 7
         // Plugin-faithful a11y handler fixtures add one literal fixture.
-        + 1,
+        + 1
+        // Script setup macro validity adds three literal fixtures.
+        + 3
+        // Default-prop and ARIA role compatibility add nine literal fixtures.
+        + 9,
     // Original 1057/87 census plus non-literal calls in valid_v_slot (3 + 1),
     // require_toggle_inside_transition (3), the v-else-if/v-is/v-pre rules (38
     // templates over 42 calls, one `v-pre` helper, #8856) and v_bind_style (one
@@ -219,7 +223,11 @@ pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
         // Directive parity regressions add 20 fixture calls.
         + 20
         // Plugin-faithful a11y handler fixtures add one literal call.
-        + 1,
+        + 1
+        // Script setup macro validity adds six complete fixture calls.
+        + 6
+        // Default-prop and ARIA role compatibility add nine literal calls.
+        + 9,
     rule_fixture_skipped: 87
         + 4
         + 3
@@ -265,7 +273,9 @@ pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
         // Five review inputs are intentionally helper-driven scanner skips.
         + 5
         // Directive parity regressions keep 12 loop-driven inputs as scanner skips.
-        + 12,
+        + 12
+        // Three macro validity controls remain helper-driven scanner skips.
+        + 3,
     matrix: 90,
     template_lines: 6316 + 233 + 5 + 10 + 25 + 7 - 49
         + 31
@@ -314,7 +324,11 @@ pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
         // Directive parity regressions retain 48 complete trace lines.
         + 48
         // Plugin-faithful a11y handler fixtures retain fifty-four trace lines.
-        + 54,
+        + 54
+        // Script setup macro validity retains forty-nine complete trace lines.
+        + 49
+        // Default-prop and ARIA role compatibility retain eighty-eight trace lines.
+        + 88,
     restructured: 0,
     jsx: JsxComparison {
         roots: 14,

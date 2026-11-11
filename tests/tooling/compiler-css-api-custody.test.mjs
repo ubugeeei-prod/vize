@@ -42,7 +42,7 @@ await test("closed actual CSS API inputs remain separate from compiler execution
     [{ id: domId, targets: ["dom"] }],
   );
   const ssrCases = loaded.cases.filter((row) => row.id !== domId);
-  assert.equal(ssrCases.length, 96);
+  assert.equal(ssrCases.length, 97);
   assert.ok(ssrCases.every((row) => row.targets.length === 1 && row.targets[0] === "ssr"));
   const report = compilerCssApiReport(loaded.cssApiCases);
   assert.deepEqual(
