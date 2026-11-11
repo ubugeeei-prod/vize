@@ -331,6 +331,7 @@ export const purposeJa: Readonly<Record<string, string>> = {
     "prop の型コンストラクター配列で Boolean を先頭に置きます。",
   "vue/require-expose": "Options API のコンポーネントが公開するプロパティを expose で明示します。",
   "vue/valid-model-definition": "Vue 2 の model オプションに有効なキーを指定します。",
+  "vue/block-lang": "SFC ブロックの lang を設定した言語に揃えます。",
   "vue/camelcase": "テンプレート式の識別子を camelCase に揃えます。",
   "vue/dot-notation": "テンプレート式で静的なプロパティ参照にドット記法を使います。",
   "vue/enforce-style-attribute": "style ブロックを許可した属性モードに揃えます。",
@@ -357,7 +358,9 @@ export const purposeJa: Readonly<Record<string, string>> = {
   "vue/prefer-template": "文字列連結の代わりにテンプレートリテラルを使います。",
   "vue/prefer-v-model": "対応する bind と update リスナーを v-model にまとめます。",
   "vue/quote-props": "不要な引用符付きオブジェクトプロパティを検出します。",
+  "vue/require-default-export": "コンポーネントの script をデフォルトエクスポートにします。",
   "vue/require-macro-variable-name": "コンパイラーマクロの変数名を既定の名前に揃えます。",
+  "vue/require-prop-comment": "宣言した各 prop に JSDoc コメントを付けます。",
   "vue/sort-keys": "コンポーネントオプション内のキーを設定した順序に並べます。",
   "vue/v-if-else-key": "条件分岐で繰り返すコンポーネントに key を指定します。",
 };

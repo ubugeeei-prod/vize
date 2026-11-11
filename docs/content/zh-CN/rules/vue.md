@@ -137,13 +137,14 @@ description: "针对 SFC 模板、指令、组件和代码块的正确性、写�
 | <span id="vue-warn-custom-block"></span>[`vue/warn-custom-block`](./reference/vue-warn-custom-block.md) | 警告 SFC 文件中的自定义块。 | `nuxt`, `opinionated` |  |
 | <span id="vue-warn-custom-directive"></span>[`vue/warn-custom-directive`](./reference/vue-warn-custom-directive.md) | 警告需要注册的自定义指令。 | `nuxt`, `opinionated` |  |
 
-## 按需启用 (41)
+## 按需启用 (44)
 
 不属于任何预设。在传给 `withVue` 的 `linter.rules` 中按名称启用。
 
 | 规则 | 检查内容 | 自动修复 |
 | --- | --- | --- |
 | <span id="vue-a11y-img-alt"></span>[`vue/a11y-img-alt`](./reference/vue-a11y-img-alt.md) | 要求图片提供 alt 属性，以支持无障碍访问。 |  |
+| <span id="vue-block-lang"></span>[`vue/block-lang`](./reference/vue-block-lang.md) | 将 SFC 块的 lang 限制为配置的语言。 |  |
 | <span id="vue-camelcase"></span>[`vue/camelcase`](./reference/vue-camelcase.md) | 要求模板表达式中的标识符使用 camelCase。 |  |
 | <span id="vue-dot-notation"></span>[`vue/dot-notation`](./reference/vue-dot-notation.md) | 对静态属性访问优先使用点号。 |  |
 | <span id="vue-enforce-style-attribute"></span>[`vue/enforce-style-attribute`](./reference/vue-enforce-style-attribute.md) | 将 style 块限制为允许的属性模式。 |  |
@@ -179,8 +180,10 @@ description: "针对 SFC 模板、指令、组件和代码块的正确性、写�
 | <span id="vue-prefer-template"></span>[`vue/prefer-template`](./reference/vue-prefer-template.md) | 优先使用模板字符串而非字符串拼接。 |  |
 | <span id="vue-prefer-v-model"></span>[`vue/prefer-v-model`](./reference/vue-prefer-v-model.md) | 用 v-model 代替匹配的 bind 与 update 监听器。 |  |
 | <span id="vue-quote-props"></span>[`vue/quote-props`](./reference/vue-quote-props.md) | 禁止不必要的带引号对象属性。 |  |
+| <span id="vue-require-default-export"></span>[`vue/require-default-export`](./reference/vue-require-default-export.md) | 要求组件的 script 作为默认导出。 |  |
 | <span id="vue-require-expose"></span>[`vue/require-expose`](./reference/vue-require-expose.md) | 要求 Options API 组件通过 `expose` 显式声明公开属性。 |  |
 | <span id="vue-require-macro-variable-name"></span>[`vue/require-macro-variable-name`](./reference/vue-require-macro-variable-name.md) | 要求编译器宏使用约定的变量名。 |  |
+| <span id="vue-require-prop-comment"></span>[`vue/require-prop-comment`](./reference/vue-require-prop-comment.md) | 要求每个声明的 prop 都有 JSDoc 注释。 |  |
 | <span id="vue-sort-keys"></span>[`vue/sort-keys`](./reference/vue-sort-keys.md) | 按配置顺序排列组件选项中的键。 |  |
 | <span id="vue-v-if-else-key"></span>[`vue/v-if-else-key`](./reference/vue-v-if-else-key.md) | 要求重复的条件组件具有 key。 |  |
 | <span id="vue-valid-model-definition"></span>[`vue/valid-model-definition`](./reference/vue-valid-model-definition.md) | 要求 Vue 2 的 `model` 选项使用有效的键。 |  |

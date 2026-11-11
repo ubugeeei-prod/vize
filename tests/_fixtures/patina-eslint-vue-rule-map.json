@@ -39,8 +39,10 @@
       "status": "mapped"
     },
     "vue/block-lang": {
-      "issue": 3223,
-      "status": "unimplemented"
+      "patinaPresets": [],
+      "patinaRule": "vue/block-lang",
+      "patinaSeverity": "warning",
+      "status": "mapped"
     },
     "vue/block-order": {
       "patinaPresets": [
@@ -1529,8 +1531,10 @@
       "status": "mapped"
     },
     "vue/require-default-export": {
-      "issue": 3223,
-      "status": "unimplemented"
+      "patinaPresets": [],
+      "patinaRule": "vue/require-default-export",
+      "patinaSeverity": "error",
+      "status": "mapped"
     },
     "vue/require-default-prop": {
       "patinaPresets": [
@@ -1586,8 +1590,10 @@
       "status": "unimplemented"
     },
     "vue/require-prop-comment": {
-      "issue": 3223,
-      "status": "unimplemented"
+      "patinaPresets": [],
+      "patinaRule": "vue/require-prop-comment",
+      "patinaSeverity": "warning",
+      "status": "mapped"
     },
     "vue/require-prop-type-constructor": {
       "patinaPresets": [
@@ -2114,8 +2120,8 @@
   "schemaVersion": 1,
   "summary": {
     "intentionalDivergence": 3,
-    "mapped": 181,
-    "unimplemented": 72
+    "mapped": 184,
+    "unimplemented": 69
   },
   "upstream": {
     "package": "eslint-plugin-vue",

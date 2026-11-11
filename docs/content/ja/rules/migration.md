@@ -4,7 +4,7 @@ title: ESLint ルール移行対応表
 
 # ESLint ルール移行対応表
 
-コミットされた対応記録は 256 件で、対応付け 181 件、意図的な差異 3 件、未実装 72 件です。「対応」はルール名の対応を示し、オプション・検出・修正・適用範囲の完全な一致を保証しません。
+コミットされた対応記録は 256 件で、対応付け 184 件、意図的な差異 3 件、未実装 69 件です。「対応」はルール名の対応を示し、オプション・検出・修正・適用範囲の完全な一致を保証しません。
 
 ESLint を実行基盤として残す場合は、[`eslint.config.mjs` の flat config 連携](../guide/tool-integrations.md#eslint-の-flat-config)を優先してください。以下の Vite+ 設定は、ネイティブタスクを使う場合の代替です。
 
@@ -35,7 +35,7 @@ Vite+ の設定では Vize のルールを `withVue` の `linter.rules` に指�
 | `vue/arrow-spacing` | — | 未実装 |
 | `vue/attribute-hyphenation` | [`vue/attribute-hyphenation`](./reference/vue-attribute-hyphenation.md) | 対応付け |
 | `vue/attributes-order` | [`vue/attribute-order`](./reference/vue-attribute-order.md) | 対応付け |
-| `vue/block-lang` | — | 未実装 |
+| `vue/block-lang` | [`vue/block-lang`](./reference/vue-block-lang.md) | 対応付け |
 | `vue/block-order` | [`vue/sfc-element-order`](./reference/vue-sfc-element-order.md) | 対応付け |
 | `vue/block-spacing` | — | 未実装 |
 | `vue/block-tag-newline` | — | 未実装 |
@@ -221,7 +221,7 @@ Vite+ の設定では Vize のルールを `withVue` の `linter.rules` に指�
 | `vue/prop-name-casing` | [`vue/prop-name-casing`](./reference/vue-prop-name-casing.md) | 対応付け |
 | `vue/quote-props` | [`vue/quote-props`](./reference/vue-quote-props.md) | 対応付け |
 | `vue/require-component-is` | [`vue/require-component-is`](./reference/vue-require-component-is.md) | 対応付け |
-| `vue/require-default-export` | — | 未実装 |
+| `vue/require-default-export` | [`vue/require-default-export`](./reference/vue-require-default-export.md) | 対応付け |
 | `vue/require-default-prop` | [`script/require-default-prop`](./reference/script-require-default-prop.md) | 対応付け |
 | `vue/require-direct-export` | — | 未実装 |
 | `vue/require-emit-validator` | — | 未実装 |
@@ -230,7 +230,7 @@ Vite+ の設定では Vize のルールを `withVue` の `linter.rules` に指�
 | `vue/require-expose` | [`vue/require-expose`](./reference/vue-require-expose.md) | 対応付け |
 | `vue/require-macro-variable-name` | [`vue/require-macro-variable-name`](./reference/vue-require-macro-variable-name.md) | 対応付け |
 | `vue/require-name-property` | — | 未実装 |
-| `vue/require-prop-comment` | — | 未実装 |
+| `vue/require-prop-comment` | [`vue/require-prop-comment`](./reference/vue-require-prop-comment.md) | 対応付け |
 | `vue/require-prop-type-constructor` | [`script/require-prop-type-constructor`](./reference/script-require-prop-type-constructor.md) | 対応付け |
 | `vue/require-prop-types` | [`script/require-prop-types`](./reference/script-require-prop-types.md) | 対応付け |
 | `vue/require-render-return` | [`script/require-render-return`](./reference/script-require-render-return.md) | 対応付け |

@@ -137,13 +137,14 @@ Só em `opinionated`, `nuxt` ou `ecosystem`. A coluna Predefinições mostra qua
 | <span id="vue-warn-custom-block"></span>[`vue/warn-custom-block`](./reference/vue-warn-custom-block.md) | Alertar sobre blocos personalizados em arquivos SFC. | `nuxt`, `opinionated` |  |
 | <span id="vue-warn-custom-directive"></span>[`vue/warn-custom-directive`](./reference/vue-warn-custom-directive.md) | Alertar sobre diretivas personalizadas que precisam de registro. | `nuxt`, `opinionated` |  |
 
-## Opcionais (41)
+## Opcionais (44)
 
 Não fazem parte de nenhuma predefinição. Ative pelo nome em `linter.rules`, passado a `withVue`.
 
 | Regra | O que verifica | Correção automática |
 | --- | --- | --- |
 | <span id="vue-a11y-img-alt"></span>[`vue/a11y-img-alt`](./reference/vue-a11y-img-alt.md) | Exigir o atributo alt nas imagens para garantir acessibilidade. |  |
+| <span id="vue-block-lang"></span>[`vue/block-lang`](./reference/vue-block-lang.md) | Restringe o lang do bloco SFC ao idioma configurado. |  |
 | <span id="vue-camelcase"></span>[`vue/camelcase`](./reference/vue-camelcase.md) | Exige camelCase nos identificadores de expressões do template. |  |
 | <span id="vue-dot-notation"></span>[`vue/dot-notation`](./reference/vue-dot-notation.md) | Prefere notação de ponto para propriedades estáticas. |  |
 | <span id="vue-enforce-style-attribute"></span>[`vue/enforce-style-attribute`](./reference/vue-enforce-style-attribute.md) | Restringe blocos style aos modos permitidos. |  |
@@ -179,8 +180,10 @@ Não fazem parte de nenhuma predefinição. Ative pelo nome em `linter.rules`, p
 | <span id="vue-prefer-template"></span>[`vue/prefer-template`](./reference/vue-prefer-template.md) | Prefere template literals à concatenação de strings. |  |
 | <span id="vue-prefer-v-model"></span>[`vue/prefer-v-model`](./reference/vue-prefer-v-model.md) | Prefere v-model a um bind e listener update equivalentes. |  |
 | <span id="vue-quote-props"></span>[`vue/quote-props`](./reference/vue-quote-props.md) | Proíbe aspas desnecessárias em propriedades de objetos. |  |
+| <span id="vue-require-default-export"></span>[`vue/require-default-export`](./reference/vue-require-default-export.md) | Exige que o script do componente seja o export padrão. |  |
 | <span id="vue-require-expose"></span>[`vue/require-expose`](./reference/vue-require-expose.md) | Exige que componentes da Options API declarem explicitamente suas propriedades públicas com `expose`. |  |
 | <span id="vue-require-macro-variable-name"></span>[`vue/require-macro-variable-name`](./reference/vue-require-macro-variable-name.md) | Exige nomes convencionais para variáveis de macros. |  |
+| <span id="vue-require-prop-comment"></span>[`vue/require-prop-comment`](./reference/vue-require-prop-comment.md) | Exige um comentário JSDoc em cada prop declarada. |  |
 | <span id="vue-sort-keys"></span>[`vue/sort-keys`](./reference/vue-sort-keys.md) | Ordena as chaves de opções do componente conforme configurado. |  |
 | <span id="vue-v-if-else-key"></span>[`vue/v-if-else-key`](./reference/vue-v-if-else-key.md) | Exige key em componentes condicionais repetidos. |  |
 | <span id="vue-valid-model-definition"></span>[`vue/valid-model-definition`](./reference/vue-valid-model-definition.md) | Exige chaves válidas na opção `model` do Vue 2. |  |
