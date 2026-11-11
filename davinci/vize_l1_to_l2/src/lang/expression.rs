@@ -6,7 +6,7 @@ use oxc_parser::Parser;
 use oxc_semantic::SemanticBuilder;
 use oxc_span::SourceType;
 use vize_l0::expression_guard::scan::line_comment_terminator;
-use vize_l0::{Span, String, cstr};
+use vize_l0::{Allocator, Span, String, cstr};
 use vize_l2::expr::{ExprRef, ForeignExpr, OpaqueExpr, OpaqueReason, VueFilterExpr};
 use vize_l2::provenance::ProvenanceSink;
 
@@ -20,14 +20,16 @@ pub(crate) fn trimmed<'a>(cx: &Cx<'a, impl ProvenanceSink>, text: &'a str) -> (&
 }
 
 fn trimmed_attribute<'a>(cx: &Cx<'a, impl ProvenanceSink>, text: &'a str) -> (&'a str, Span) {
-    let slice = trimmed_attribute_expression_text(text);
+    let slice = trimmed_attribute_expression_text(cx.allocator, text);
     (slice, cx.span_of(slice))
 }
 
 /// Trim expression trivia without discarding the line break that terminates a
 /// trailing line comment. The retained break is part of Vue's expression
 /// grammar and keeps the shared L2 parse authoritative for lint diagnostics.
-fn trimmed_attribute_expression_text(text: &str) -> &str {
+/// Only an expression that ends inside a `//` comment keeps it; a `//` on an
+/// earlier line, in a string or in a block comment leaves plain trimming.
+fn trimmed_attribute_expression_text<'t>(allocator: &Allocator, text: &'t str) -> &'t str {
     let text = text.trim_start();
     let trimmed = text.trim_end();
     if !trimmed.contains("//") {
@@ -35,7 +37,7 @@ fn trimmed_attribute_expression_text(text: &str) -> &str {
     }
     let suffix = text.get(trimmed.len()..).unwrap_or_default();
     let terminator = line_comment_terminator(suffix.as_bytes(), 0);
-    if terminator.is_empty() {
+    if terminator.is_empty() || !ends_in_line_comment(allocator, trimmed) {
         trimmed
     } else {
         text.get(..trimmed.len() + terminator.end)
@@ -43,25 +45,50 @@ fn trimmed_attribute_expression_text(text: &str) -> &str {
     }
 }
 
+/// Whether `source` ends inside a `//` comment, decided by the OXC lexer so
+/// strings, templates, regexes and block comments never count.
+fn ends_in_line_comment(allocator: &Allocator, source: &str) -> bool {
+    let mut wrapped = String::with_capacity(source.len() + 3);
+    wrapped.push('(');
+    wrapped.push_str(source);
+    wrapped.push_str("\n)");
+    let parsed = Parser::new(allocator.as_oxc(), wrapped.as_str(), SourceType::ts()).parse();
+    parsed
+        .program
+        .comments
+        .last()
+        .is_some_and(|comment| comment.is_line() && comment.span.end as usize == source.len() + 1)
+}
+
 #[cfg(test)]
 mod trim_tests {
     use super::trimmed_attribute_expression_text;
+    use vize_l0::Allocator;
 
     #[test]
     fn trailing_line_comments_keep_exactly_their_authored_terminator() {
+        let allocator = Allocator::new();
+        let trim = |text| trimmed_attribute_expression_text(&allocator, text);
+        assert_eq!(trim("  id // note\n  "), "id // note\n");
+        assert_eq!(trim("id // note\r\n\t"), "id // note\r\n");
+        assert_eq!(trim("id // note"), "id // note");
+        assert_eq!(trim("a + 1\n  "), "a + 1");
+    }
+
+    #[test]
+    fn line_comments_before_the_last_token_keep_plain_trimming() {
+        let allocator = Allocator::new();
+        let trim = |text| trimmed_attribute_expression_text(&allocator, text);
         assert_eq!(
-            trimmed_attribute_expression_text("  id // note\n  "),
-            "id // note\n"
+            trim("\n  // https://example.com/a\n  $attrs.style as CSSProperties\n"),
+            "// https://example.com/a\n  $attrs.style as CSSProperties"
         );
         assert_eq!(
-            trimmed_attribute_expression_text("id // note\r\n\t"),
-            "id // note\r\n"
+            trim("cn(\n  // @ts-ignore\n  a?.[b],\n)\n  "),
+            "cn(\n  // @ts-ignore\n  a?.[b],\n)"
         );
-        assert_eq!(
-            trimmed_attribute_expression_text("id // note"),
-            "id // note"
-        );
-        assert_eq!(trimmed_attribute_expression_text("a + 1\n  "), "a + 1");
+        assert_eq!(trim("'http://x'\n"), "'http://x'");
+        assert_eq!(trim("a /* // b */\n"), "a /* // b */");
     }
 }
 
