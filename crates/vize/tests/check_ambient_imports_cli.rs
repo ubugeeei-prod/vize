@@ -143,7 +143,12 @@ const result: string = window.welcomeRuntime.ping();
         .unwrap(),
     )
     .unwrap();
-    let includes = generated["include"].as_array().unwrap();
+    // A one-shot check lists its existing roots as `files`.
+    let includes = generated
+        .get("files")
+        .unwrap_or(&generated["include"])
+        .as_array()
+        .unwrap();
     // The declaration keeps its `.d.ts` spelling: only a CommonJS-only form
     // (`export =`, `import x = require(...)`) is mirrored as `.d.cts`, because
     // the `.cts` extension also switches the file's specifiers to the `require`

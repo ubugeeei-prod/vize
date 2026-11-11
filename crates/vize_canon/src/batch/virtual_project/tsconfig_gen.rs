@@ -19,6 +19,7 @@ pub use references::{
     TsconfigSourceKind, TsconfigWildcard, TsconfigWildcardUsage,
 };
 mod jsx_files;
+mod literal_roots;
 mod remap;
 mod vue_alias;
 pub(in crate::batch::virtual_project) mod vue_compiler_options;
@@ -93,15 +94,23 @@ impl VirtualProject {
         let config_path = self
             .generated_tsconfig_path()
             .with_file_name(cstr!("tsconfig.shard{shard_index}.json").as_str());
-        self.write_tsconfig_file_with_includes(
-            &config_path,
-            None,
-            false,
-            Some(include_virtual_paths),
-            false,
-            false,
-        )?;
+        self.write_literal_tsconfig_file(&config_path, Some(include_virtual_paths))?;
         Ok(config_path)
+    }
+
+    /// Write the check config of a one-shot CLI run, naming its roots in
+    /// `files` where that selects the same program (see `literal_roots`).
+    /// Only a fully materialized mirror that nothing edits before the run
+    /// may list its roots literally: a later delta would leave a `files`
+    /// entry that `include` tolerates going missing.
+    pub(super) fn write_literal_tsconfig_file(
+        &self,
+        path: &Path,
+        include_virtual_paths: Option<&[&Path]>,
+    ) -> CorsaResult<()> {
+        let mut tsconfig =
+            self.generate_tsconfig_value(None, false, include_virtual_paths, false, false, true)?;
+        self.write_generated_config(path, &mut tsconfig)
     }
 
     pub(super) fn write_tsconfig_file_with_includes(
@@ -119,6 +128,7 @@ impl VirtualProject {
             include_virtual_paths,
             preserved_arbitrary_extensions,
             mirror_layout,
+            false,
         )?;
         self.write_generated_config(path, &mut tsconfig)
     }
@@ -130,6 +140,7 @@ impl VirtualProject {
         include_virtual_paths: Option<&[&Path]>,
         preserved_arbitrary_extensions: bool,
         mirror_layout: bool,
+        literal_roots: bool,
     ) -> CorsaResult<Value> {
         let mut config = Map::new();
         let original_tsconfig = self.resolved_tsconfig_path();
@@ -274,16 +285,21 @@ impl VirtualProject {
         let include_js =
             SourceFilePolicy::from_compiler_options(&compiler_options).allows_javascript();
         config.insert("compilerOptions".into(), Value::Object(compiler_options));
-        config.insert(
-            "include".into(),
-            Value::Array(
-                self.include_paths(include_virtual_paths, include_js)
-                    .into_iter()
-                    .map(|path| Value::String(path.into()))
-                    .collect(),
-            ),
+        let roots = self.include_paths(include_virtual_paths, include_js);
+        let literal = literal_roots
+            && literal_roots::files_select_include_roots(&self.virtual_root, &roots, include_js);
+        let roots = Value::Array(
+            roots
+                .into_iter()
+                .map(|path| Value::String(path.into()))
+                .collect(),
         );
-        config.insert("exclude".into(), Value::Array(Vec::new()));
+        if literal {
+            config.insert("files".into(), roots);
+        } else {
+            config.insert("include".into(), roots);
+            config.insert("exclude".into(), Value::Array(Vec::new()));
+        }
 
         Ok(Value::Object(config))
     }
