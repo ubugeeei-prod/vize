@@ -113,7 +113,11 @@ pub(super) fn deny_warnings(root: &Value) -> Result<bool, String> {
     let Some(options) = options.as_object() else {
         return Err("/options must be an object".into());
     };
-    for key in ["maxWarnings", "reportUnusedDisableDirectives"] {
+    for key in [
+        "maxWarnings",
+        "noInlineConfig",
+        "reportUnusedDisableDirectives",
+    ] {
         if options.contains_key(key) {
             return Err(cstr!("/options/{key} is unqualified"));
         }

@@ -7,6 +7,7 @@ use super::linter_rule_options::ConfigLintRuleOptions;
 use crate::{FxHashMap, String};
 
 const CATEGORY_LINT_MARKER_PREFIX: &str = "__vize_internal/category/";
+const NO_INLINE_CONFIG_MARKER: &str = "__vize_internal/no-inline-config";
 const REPORT_UNUSED_DISABLE_MARKER: &str = "__vize_internal/report-unused-disable-directives";
 const TYPE_AWARE_LINT_MARKER: &str = "__vize_internal/type-aware-lint";
 
@@ -40,6 +41,7 @@ pub(crate) struct RawLinterConfig {
     config: LinterConfig,
     type_aware: bool,
     strict_reactivity: bool,
+    no_inline_config: Option<bool>,
     report_unused_disable_directives: Option<bool>,
     #[serde(flatten)]
     execution: LinterExecutionOptions,
@@ -91,6 +93,13 @@ impl LinterConfig {
     fn enable_type_aware_lint(&mut self) {
         self.rules
             .insert(TYPE_AWARE_LINT_MARKER.into(), LintRuleSeverity::Warn);
+    }
+
+    /// Whether source comments must not suppress diagnostics.
+    pub fn no_inline_config(&self) -> bool {
+        self.rules
+            .get(NO_INLINE_CONFIG_MARKER)
+            .is_some_and(|severity| !matches!(severity, LintRuleSeverity::Off))
     }
 
     /// Whether to report accepted suppressions that match no final diagnostic.
@@ -191,6 +200,16 @@ impl From<RawLinterConfig> for LinterConfig {
                 .entry("type/no-reactivity-loss".into())
                 .or_insert(LintRuleSeverity::Warn);
         }
+        if let Some(ignore) = raw.no_inline_config {
+            config.rules.insert(
+                NO_INLINE_CONFIG_MARKER.into(),
+                if ignore {
+                    LintRuleSeverity::Warn
+                } else {
+                    LintRuleSeverity::Off
+                },
+            );
+        }
         if let Some(report) = raw.report_unused_disable_directives {
             config.rules.insert(
                 REPORT_UNUSED_DISABLE_MARKER.into(),
@@ -216,6 +235,7 @@ impl From<RawLinterConfig> for LinterConfig {
 
 fn is_public_rule(rule: &str) -> bool {
     rule != TYPE_AWARE_LINT_MARKER
+        && rule != NO_INLINE_CONFIG_MARKER
         && rule != REPORT_UNUSED_DISABLE_MARKER
         && category_marker_name(rule).is_none()
 }
@@ -247,6 +267,23 @@ mod tests {
             serde_json::from_str::<RawLinterConfig>(r#"{"reportUnusedDisableDirectives":"true"}"#)
                 .is_err()
         );
+    }
+
+    #[test]
+    fn no_inline_config_defaults_and_explicit_values_are_internal_policy() {
+        for (json, enabled) in [
+            ("{}", false),
+            (r#"{"noInlineConfig":false}"#, false),
+            (r#"{"noInlineConfig":true}"#, true),
+        ] {
+            let raw = serde_json::from_str::<RawLinterConfig>(json).unwrap();
+            let config = LinterConfig::from(raw);
+            assert_eq!(config.no_inline_config(), enabled);
+            assert!(config.enabled_rules().is_empty());
+            assert!(config.disabled_rules().is_empty());
+            assert!(config.rule_severity_overrides().is_empty());
+        }
+        assert!(serde_json::from_str::<RawLinterConfig>(r#"{"noInlineConfig":"true"}"#).is_err());
     }
 
     #[test]

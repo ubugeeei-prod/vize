@@ -36,6 +36,7 @@ mod jsx_streaming;
 mod jsx_use_list;
 mod markup_entry;
 mod musea;
+mod no_inline_config;
 mod no_mutating_props;
 mod no_top_level_ref;
 mod no_unused_components;

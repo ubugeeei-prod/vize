@@ -73,6 +73,10 @@ pub struct LintArgs {
     #[arg(long)]
     pub no_warn_ignored: bool,
 
+    /// Ignore `eslint-disable` comments in source files
+    #[arg(long)]
+    pub no_inline_config: bool,
+
     /// Report `eslint-disable` template comments that suppressed nothing
     #[arg(long)]
     pub report_unused_disable_directives: bool,

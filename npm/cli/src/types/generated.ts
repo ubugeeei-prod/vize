@@ -237,6 +237,10 @@ export interface LinterConfig {
    */
   maxWarnings?: number;
   /**
+   * Ignore eslint-disable comments in source files; defaults to false
+   */
+  noInlineConfig?: boolean;
+  /**
    * Report template eslint/oxlint disable comments that suppress no active rule; defaults to false
    */
   reportUnusedDisableDirectives?: boolean;

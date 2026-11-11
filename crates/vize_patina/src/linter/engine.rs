@@ -157,6 +157,7 @@ impl Linter {
         ctx.set_config_disabled_rules(self.disabled_rules.clone());
         ctx.set_config_rule_severities(self.severity_overrides.clone());
         ctx.set_help_level(self.help_level);
+        ctx.set_no_inline_config(self.no_inline_config);
 
         // SFC-level rules reuse the pipeline's descriptor and script parses; a
         // caller without them gets one parse here.

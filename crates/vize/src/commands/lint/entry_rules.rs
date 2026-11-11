@@ -102,6 +102,7 @@ impl ResolvedLinterRuleGroups {
                         config.rule_severity_overrides(),
                     ))
                     .with_help_level(help_level)
+                    .with_no_inline_config(args.no_inline_config || config.no_inline_config())
                     .with_report_unused_disable_directives(
                         args.report_unused_disable_directives
                             || config.report_unused_disable_directives(),

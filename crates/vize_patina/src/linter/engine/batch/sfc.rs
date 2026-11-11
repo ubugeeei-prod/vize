@@ -29,14 +29,15 @@ impl SfcTail {
         result.warning_count += self.musea.warning_count;
         result.diagnostics.extend(self.musea.diagnostics);
         result = Linter::merge_lint_results(result, self.art);
-        let suppression_changed = self.suppressions.as_ref().is_some_and(|state| {
-            let retained = state.retain(&mut result.diagnostics);
-            let reported = linter.can_report_unused_directives()
-                && state.append_unused(&mut result.diagnostics, |rule| {
-                    linter.can_report_suppression_rule(rule)
-                });
-            retained || reported
-        });
+        let suppression_changed = !linter.no_inline_config
+            && self.suppressions.as_ref().is_some_and(|state| {
+                let retained = state.retain(&mut result.diagnostics);
+                let reported = linter.can_report_unused_directives()
+                    && state.append_unused(&mut result.diagnostics, |rule| {
+                        linter.can_report_suppression_rule(rule)
+                    });
+                retained || reported
+            });
         if suppression_changed {
             result.error_count = result
                 .diagnostics
@@ -108,11 +109,12 @@ impl Linter {
         );
         let mut art = empty_lint_result(filename);
         self.append_art_variant_template_diagnostics(source, filename, &mut art, Some(&descriptor));
-        let suppressions = (source.contains("eslint-")
-            || source.contains("oxlint-")
-            || source.contains("vize-disable")
-            || source.contains("vize-enable")
-            || source.contains("@vize:"))
+        let suppressions = (!self.no_inline_config
+            && (source.contains("eslint-")
+                || source.contains("oxlint-")
+                || source.contains("vize-disable")
+                || source.contains("vize-enable")
+                || source.contains("@vize:")))
         .then(|| SfcSuppression::new(&descriptor))
         .flatten();
         PreparedLint {

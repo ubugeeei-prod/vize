@@ -154,17 +154,21 @@ impl<'a> LintContext<'a> {
             // SFC-absolute range without resolving directives first still
             // honours full-document comments.
             DirectiveDomain::Sfc => {
-                let rule_name = diagnostic.rule_name;
-                let defer_suppression = self.defer_exact_suppressions;
-                self.sfc_directives()
-                    .map_or((false, false, None), |directives| {
-                        (
-                            !defer_suppression
-                                && directives.is_disabled_at(rule_name, line, diagnostic.start),
-                            directives.is_expected_at(line, diagnostic.start),
-                            directives.severity_at(line, diagnostic.start),
-                        )
-                    })
+                if self.no_inline_config {
+                    (false, false, None)
+                } else {
+                    let rule_name = diagnostic.rule_name;
+                    let defer_suppression = self.defer_exact_suppressions;
+                    self.sfc_directives()
+                        .map_or((false, false, None), |directives| {
+                            (
+                                !defer_suppression
+                                    && directives.is_disabled_at(rule_name, line, diagnostic.start),
+                                directives.is_expected_at(line, diagnostic.start),
+                                directives.severity_at(line, diagnostic.start),
+                            )
+                        })
+                }
             }
         };
         if disabled || expected {

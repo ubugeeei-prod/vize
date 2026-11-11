@@ -1,0 +1,9 @@
+<script setup lang="ts">
+const count = 1;
+</script>
+
+<template>
+  <!-- eslint-disable-next-line vue/eqeqeq -->
+  <p v-if="count == 1">one</p>
+  <p v-if="count == 2">two</p>
+</template>
