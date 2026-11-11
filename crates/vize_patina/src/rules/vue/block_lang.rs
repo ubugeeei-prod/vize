@@ -8,6 +8,7 @@ use crate::context::LintContext;
 use crate::diagnostic::{LintDiagnostic, Severity};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_l0::config::BlockLangOptions;
+use vize_l0::{String, cstr};
 
 static META: RuleMeta = RuleMeta {
     name: "vue/block-lang",
@@ -84,10 +85,11 @@ impl BlockLang {
 
 fn normalize(tag: &str, block: &vize_l0::config::BlockLangBlock) -> Policy {
     let mut langs = match &block.lang {
-        Some(vize_l0::config::BlockLangNames::One(lang)) => vec![lang.as_str().to_owned()],
-        Some(vize_l0::config::BlockLangNames::Many(langs)) => {
-            langs.iter().map(|lang| lang.as_str().to_owned()).collect()
-        }
+        Some(vize_l0::config::BlockLangNames::One(lang)) => vec![String::from(lang.as_str())],
+        Some(vize_l0::config::BlockLangNames::Many(langs)) => langs
+            .iter()
+            .map(|lang| String::from(lang.as_str()))
+            .collect(),
         None => Vec::new(),
     };
     let mut seen = Vec::new();
@@ -133,12 +135,20 @@ fn defaults_for(tag: &str) -> &'static [&'static str] {
 }
 
 fn allows_phrase(langs: &[String]) -> String {
-    let quoted: Vec<String> = langs.iter().map(|lang| format!("'{lang}'")).collect();
-    match quoted.as_slice() {
-        [] => String::new(),
-        [one] => one.clone(),
-        [rest @ .., last] => format!("{}, and {last}", rest.join(", ")),
+    let mut phrase = String::default();
+    for (index, lang) in langs.iter().enumerate() {
+        if index > 0 {
+            phrase.push_str(if index + 1 == langs.len() {
+                ", and "
+            } else {
+                ", "
+            });
+        }
+        phrase.push('\'');
+        phrase.push_str(lang);
+        phrase.push('\'');
     }
+    phrase
 }
 
 impl Rule for BlockLang {
@@ -216,7 +226,7 @@ impl Rule for BlockLang {
         for tag in missing {
             ctx.report_in_sfc(LintDiagnostic::warn(
                 META.name,
-                format!("The '<{tag}>' block is missing."),
+                cstr!("The '<{tag}>' block is missing."),
                 0,
                 0,
             ));
@@ -235,7 +245,7 @@ fn note_block(
     present.push(tag);
     seen.push(SeenBlock {
         tag,
-        lang: lang.map(str::to_owned),
+        lang: lang.map(String::from),
         tag_start,
         content_start,
     });
@@ -264,7 +274,7 @@ fn check_lang(
         if !policy.allow_no_lang {
             ctx.report_in_sfc(LintDiagnostic::warn(
                 META.name,
-                format!("The 'lang' attribute of '<{tag}>' is missing."),
+                cstr!("The 'lang' attribute of '<{tag}>' is missing."),
                 tag_start as u32,
                 content_start as u32,
             ));
@@ -276,15 +286,15 @@ fn check_lang(
     }
     let allows = allows_phrase(&policy.langs);
     let message = if !policy.allow_no_lang {
-        format!("Only {allows} can be used for the 'lang' attribute of '<{tag}>'.")
+        cstr!("Only {allows} can be used for the 'lang' attribute of '<{tag}>'.")
     } else if policy.langs.is_empty() && defaults_for(tag).contains(&lang) {
-        format!(
+        cstr!(
             "Do not explicitly specify the default language for the 'lang' attribute of '<{tag}>'."
         )
     } else if policy.langs.is_empty() {
-        format!("Do not specify the 'lang' attribute of '<{tag}>'.")
+        cstr!("Do not specify the 'lang' attribute of '<{tag}>'.")
     } else {
-        format!(
+        cstr!(
             "Only {allows} can be used for the 'lang' attribute of '<{tag}>'. Or, not specifying the 'lang' attribute is allowed."
         )
     };
@@ -301,28 +311,25 @@ fn lang_attribute_span(source: &str, tag_start: usize, content_start: usize) -> 
     };
     let mut cursor = index + "lang".len();
     let bytes = opening.as_bytes();
-    while cursor < bytes.len() && bytes[cursor].is_ascii_whitespace() {
+    let at = |cursor: usize| bytes.get(cursor).copied();
+    while at(cursor).is_some_and(|byte| byte.is_ascii_whitespace()) {
         cursor += 1;
     }
-    if cursor < bytes.len() && bytes[cursor] == b'=' {
+    if at(cursor) == Some(b'=') {
         cursor += 1;
-        while cursor < bytes.len() && bytes[cursor].is_ascii_whitespace() {
+        while at(cursor).is_some_and(|byte| byte.is_ascii_whitespace()) {
             cursor += 1;
         }
-        if cursor < bytes.len() && (bytes[cursor] == b'"' || bytes[cursor] == b'\'') {
-            let quote = bytes[cursor];
+        if let Some(quote @ (b'"' | b'\'')) = at(cursor) {
             cursor += 1;
-            while cursor < bytes.len() && bytes[cursor] != quote {
+            while at(cursor).is_some_and(|byte| byte != quote) {
                 cursor += 1;
             }
             if cursor < bytes.len() {
                 cursor += 1;
             }
         } else {
-            while cursor < bytes.len()
-                && !bytes[cursor].is_ascii_whitespace()
-                && bytes[cursor] != b'>'
-            {
+            while at(cursor).is_some_and(|byte| !byte.is_ascii_whitespace() && byte != b'>') {
                 cursor += 1;
             }
         }
