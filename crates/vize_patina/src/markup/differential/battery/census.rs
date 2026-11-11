@@ -227,7 +227,9 @@ pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
         // Script setup macro validity adds six complete fixture calls.
         + 6
         // Default-prop and ARIA role compatibility add nine literal calls.
-        + 9,
+        + 9
+        // Missing end-tag parser custody adds one helper-driven call.
+        + 1,
     rule_fixture_skipped: 87
         + 4
         + 3
@@ -275,7 +277,9 @@ pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
         // Directive parity regressions keep 12 loop-driven inputs as scanner skips.
         + 12
         // Three macro validity controls remain helper-driven scanner skips.
-        + 3,
+        + 3
+        // The missing end-tag parser observation remains an explicit skip.
+        + 1,
     matrix: 90,
     template_lines: 6316 + 233 + 5 + 10 + 25 + 7 - 49
         + 31
