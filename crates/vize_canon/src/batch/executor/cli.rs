@@ -200,11 +200,37 @@ fn run_cli_command(
 /// qualifies its complete diagnostic fingerprint against tsgo, so a selected
 /// tsrs batch host should not silently fall back to the slower compatibility
 /// mode. Explicit custom launchers retain control of their own environment.
+///
+/// Every other runtime is tsgo, a Go program: see [`batch_gc_percent`].
 fn configure_batch_runtime(command: &mut Command, corsa_path: &Path) {
     if corsa_path.file_stem().and_then(|name| name.to_str()) == Some("tsrs") {
         command.env("TSRS_FAST", "1");
+    } else if let Some(percent) = batch_gc_percent(
+        std::env::var_os("GOGC").as_deref(),
+        std::env::var_os("GOMEMLIMIT").as_deref(),
+    ) {
+        command.env("GOGC", percent);
     }
 }
+
+/// The `GOGC` a batch Corsa (tsgo) process runs with, unless the user tuned
+/// the Go collector themselves with `GOGC` or `GOMEMLIMIT`.
+///
+/// tsgo only reads `GOGC`. At Go's default of 100 a batch check spends 17–24%
+/// of its process tree's CPU in background marking of a heap that it mostly
+/// keeps until it exits. On the corpus-pair corpora, 200 cut that tree's CPU
+/// 5–14% and its wall time 1.5–4.6% for 0.5–8.5% more peak memory, on 8 and
+/// 32 cores alike. 400 cut more but grew peak memory up to 20%, and turning
+/// the collector off under a memory limit thrashed once the live heap reached
+/// the limit, so the batch keeps a plain multiplier.
+fn batch_gc_percent(
+    user_gogc: Option<&std::ffi::OsStr>,
+    user_memory_limit: Option<&std::ffi::OsStr>,
+) -> Option<&'static str> {
+    (user_gogc.is_none() && user_memory_limit.is_none()).then_some(BATCH_GOGC)
+}
+
+const BATCH_GOGC: &str = "200";
 
 fn output_contains_diagnostic_lines(output: &Output) -> bool {
     [&output.stdout, &output.stderr].into_iter().any(|stream| {
