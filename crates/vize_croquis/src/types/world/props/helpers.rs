@@ -15,6 +15,22 @@ pub(super) fn text(source: &str, span: Span) -> CompactString {
     )
 }
 
+fn signature_name(key: &PropertyKey<'_>, computed: bool) -> Option<CompactString> {
+    if computed {
+        return None;
+    }
+    match key {
+        PropertyKey::StaticIdentifier(identifier) => {
+            Some(CompactString::new(identifier.name.as_str()))
+        }
+        PropertyKey::StringLiteral(literal) => Some(CompactString::new(literal.value.as_str())),
+        PropertyKey::NumericLiteral(literal) => {
+            Some(CompactString::new(literal.value.to_js_string()))
+        }
+        _ => None,
+    }
+}
+
 pub(super) fn members(
     module: &str,
     source: &str,
@@ -25,6 +41,24 @@ pub(super) fn members(
         ..ScopedTypeProperties::default()
     };
     for member in members {
+        // A method signature names a member the same way a property does.
+        // Slot contracts are written as `footer(props: { count: number }): unknown`.
+        if let TSSignature::TSMethodSignature(method) = member {
+            let Some(name) = signature_name(&method.key, method.computed) else {
+                output.complete = false;
+                continue;
+            };
+            output.properties.push(ScopedTypeProperty {
+                name,
+                prop_type: method
+                    .return_type
+                    .as_ref()
+                    .map(|annotation| text(source, annotation.type_annotation.span())),
+                optional: method.optional,
+                module: CompactString::new(module),
+            });
+            continue;
+        }
         let TSSignature::TSPropertySignature(property) = member else {
             output.complete = false;
             continue;

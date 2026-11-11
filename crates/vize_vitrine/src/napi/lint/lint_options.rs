@@ -17,7 +17,7 @@ pub struct LintOptionsNapi {
     pub format: Option<String>,
     /// Maximum number of warnings before failing
     pub max_warnings: Option<u32>,
-    /// Quiet mode - only show summary
+    /// Report errors only
     pub quiet: Option<bool>,
     /// Automatically fix problems when diagnostics provide safe text edits
     pub fix: Option<bool>,
