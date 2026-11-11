@@ -18,14 +18,48 @@ const shared = read("shared-prop-keys.d.ts.txt").split("\n");
 const kebab = (lines: string[]) => lines.find((line) => line.startsWith("type $KebabCase<"))!;
 
 const shapes = [
-  '""', '"a"', '"abc"', '"aB"', '"fooBar"', '"FooBar"', '"ABC"', '"onUpdate:modelValue"',
-  '"update:model-value"', '"data-fooBar"', '"aria-label"', '"x1Y"', '"ÄbC"', '"émile"',
-  '"İstanbul"', '"ΣΑΣ"', '"ß"', '"a😀B"', '"123"', '"a-B-c"', '"--x"', '"onClick"',
-  '"aVeryLongCamelCasedPropertyNameWithManyWords"', "`data-${string}`", "`aria${Capitalize<string>}`",
-  "`on${Capitalize<string>}`", "`${number}`", "`a${number}B`", "`ab${Lowercase<string>}`",
-  "`aB${string}`", "`${string}Foo`", "`${bigint}`", "`x${Uppercase<string>}`", "string", "never",
-  "any", '"aB" | "c"', '"x" | "yZ" | `data-${string}`', "Uppercase<string>", "Lowercase<string>",
-  "Capitalize<string>", "Uncapitalize<string>",
+  '""',
+  '"a"',
+  '"abc"',
+  '"aB"',
+  '"fooBar"',
+  '"FooBar"',
+  '"ABC"',
+  '"onUpdate:modelValue"',
+  '"update:model-value"',
+  '"data-fooBar"',
+  '"aria-label"',
+  '"x1Y"',
+  '"ÄbC"',
+  '"émile"',
+  '"İstanbul"',
+  '"ΣΑΣ"',
+  '"ß"',
+  '"a😀B"',
+  '"123"',
+  '"a-B-c"',
+  '"--x"',
+  '"onClick"',
+  '"aVeryLongCamelCasedPropertyNameWithManyWords"',
+  "`data-${string}`",
+  "`aria${Capitalize<string>}`",
+  "`on${Capitalize<string>}`",
+  "`${number}`",
+  "`a${number}B`",
+  "`ab${Lowercase<string>}`",
+  "`aB${string}`",
+  "`${string}Foo`",
+  "`${bigint}`",
+  "`x${Uppercase<string>}`",
+  "string",
+  "never",
+  "any",
+  '"aB" | "c"',
+  '"x" | "yZ" | `data-${string}`',
+  "Uppercase<string>",
+  "Lowercase<string>",
+  "Capitalize<string>",
+  "Uncapitalize<string>",
 ];
 
 function diagnostics(content: string): string[] {
@@ -79,7 +113,8 @@ test("the shared kebab-case step equals the embedded char-by-char form", () => {
 });
 
 test("a fast path that lowercases a mixed key is caught", () => {
-  const wrong = 'type $KebabCase<S extends string, Acc extends string = ""> = S extends Lowercase<S> ? `${Acc}${S}` : `${Acc}${Lowercase<S>}`;';
+  const wrong =
+    'type $KebabCase<S extends string, Acc extends string = ""> = S extends Lowercase<S> ? `${Acc}${S}` : `${Acc}${Lowercase<S>}`;';
   const found = diagnostics(program(wrong, rows));
   assert.ok(found.length > 0);
   for (const diagnostic of found) assert.match(diagnostic, /TS2344/u);
