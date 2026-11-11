@@ -217,11 +217,14 @@ function counterTable(head: LaneResult, base: LaneResult | null): string[] {
   if (head.counters.cycles?.value) {
     rows.push(base ? `| IPC | ${ipc(base)} | ${ipc(head)} | |` : `| IPC | ${ipc(head)} |`);
   }
+  // Some runner VMs accept hardware events but never count them.
+  const noPmu = head.counters.cycles?.value === 0;
   return [
     base ? "| perf stat | base | head | Δ |" : "| perf stat | head |",
     base ? "| --- | ---: | ---: | ---: |" : "| --- | ---: |",
     ...rows,
     "",
+    ...(noPmu ? ["> Hardware counters read 0: this runner does not expose its PMU.", ""] : []),
   ];
 }
 

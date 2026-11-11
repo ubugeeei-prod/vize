@@ -395,4 +395,7 @@ void test("the report renders a lane against its base and ranks function moves",
     renderOverview([base, head]),
     /\| n8n \| tsc \(tsgo\) \+ Vize mapper \| 6 ms \| -2 ms \(-25\.0%\)/u,
   );
+  assert.doesNotMatch(text, /does not expose its PMU/u);
+  const silent = { ...head, counters: { ...head.counters, cycles: { value: 0, unit: "" } } };
+  assert.match(renderLane(silent, null), /Hardware counters read 0: this runner does not expose/u);
 });
