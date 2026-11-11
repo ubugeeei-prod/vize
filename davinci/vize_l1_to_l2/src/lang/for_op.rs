@@ -20,7 +20,7 @@ use super::element::{Analyzed, attr_text, element_core, template_unwraps};
 use super::expr::{desc, expr_at, opaque_at, trimmed};
 use super::structural::{
     capture_wrapper_attrs, capture_wrapper_key, lower_children, record_template_drops_except,
-    runtime_directive,
+    retain_dynamic_wrapper_key, runtime_directive,
 };
 use super::vfor::{split_aliases, split_for};
 
@@ -168,7 +168,10 @@ pub(crate) fn lower_for<'a>(
             cx.report_missing_close(element);
             let captured = capture_wrapper_key(cx, element, analyzed);
             let (skip, key) = match captured {
-                Some((index, key)) => (Some(index), Some(key)),
+                Some((index, key)) => {
+                    retain_dynamic_wrapper_key(cx, element, index, &key);
+                    (Some(index), Some(key))
+                }
                 None => (None, None),
             };
             let (attr_indexes, attributes, class) =

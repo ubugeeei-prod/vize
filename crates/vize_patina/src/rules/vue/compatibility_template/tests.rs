@@ -3,6 +3,8 @@ use crate::linter::{LintResult, Linter};
 use crate::rule::Rule;
 use crate::rule::RuleRegistry;
 
+mod template_wrapper_key;
+
 fn lint(rule: Box<dyn Rule>, template: &str) -> LintResult {
     let mut registry = RuleRegistry::new();
     registry.register(rule);
