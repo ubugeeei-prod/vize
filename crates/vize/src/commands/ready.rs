@@ -123,6 +123,7 @@ pub fn run(args: ReadyArgs) {
             locale: "en".into(),
             max_warnings: None,
             no_warn_ignored: false,
+            no_inline_config: false,
             report_unused_disable_directives: false,
             quiet: false,
             help_level: "full".into(),

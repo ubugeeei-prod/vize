@@ -325,6 +325,9 @@ class LinterConfig {
   /// Report template eslint/oxlint disable comments that suppress no active rule
   reportUnusedDisableDirectives: Boolean? = null
 
+  /// Ignore eslint-disable comments in source files
+  noInlineConfig: Boolean? = null
+
   /// Rules to enable/disable.
   rules: Mapping<String, RuleSeverity> = new Mapping {}
 

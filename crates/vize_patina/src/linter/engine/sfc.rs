@@ -339,11 +339,12 @@ impl Linter {
         // `<variant>` markup is not an SFC `<template>`, so the template lane
         // never sees it. Gallery variants are real components.
         self.append_art_variant_template_diagnostics(source, filename, &mut result, descriptor);
-        if source.contains("eslint-")
-            || source.contains("oxlint-")
-            || source.contains("vize-disable")
-            || source.contains("vize-enable")
-            || source.contains("@vize:")
+        if !self.no_inline_config
+            && (source.contains("eslint-")
+                || source.contains("oxlint-")
+                || source.contains("vize-disable")
+                || source.contains("vize-enable")
+                || source.contains("@vize:"))
         {
             let parsed = descriptor
                 .is_none()

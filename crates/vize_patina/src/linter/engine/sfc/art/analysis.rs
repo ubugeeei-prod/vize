@@ -89,6 +89,7 @@ pub(super) fn report_unused(
     ctx.set_config_disabled_rules(linter.disabled_rules.clone());
     ctx.set_config_rule_severities(linter.severity_overrides.clone());
     ctx.set_help_level(linter.help_level);
+    ctx.set_no_inline_config(linter.no_inline_config);
     ctx.set_sfc_descriptor(descriptor);
     ctx.set_analysis(summary);
     NoUnusedSetupBindings::report(&mut ctx, None);

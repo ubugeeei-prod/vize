@@ -45,6 +45,12 @@ impl LintContext<'_> {
         self.inline_suppressions.is_disabled_at(rule_name, line)
     }
 
+    /// Ignore eslint/oxlint/vize disable comments for later suppression checks.
+    #[inline]
+    pub fn set_no_inline_config(&mut self, enabled: bool) {
+        self.no_inline_config = enabled;
+    }
+
     /// Returns true if `rule_name` is disabled at the line containing
     /// `offset`.
     ///
@@ -54,6 +60,9 @@ impl LintContext<'_> {
     /// onto a different line. (#3252)
     #[inline]
     pub fn is_rule_disabled_at_offset(&self, rule_name: &str, offset: u32) -> bool {
+        if self.no_inline_config {
+            return false;
+        }
         if !self.defer_exact_suppressions
             && self.exact_suppressions.is_disabled_at(rule_name, offset)
         {
@@ -139,6 +148,9 @@ impl LintContext<'_> {
         &self,
         is_active: impl Fn(&str) -> bool,
     ) -> Vec<super::eslint_directive::UnusedDirective> {
+        if self.no_inline_config {
+            return Vec::new();
+        }
         let mut unused = self.inline_suppressions.unused(&is_active);
         // Complete SFCs defer exact-node accounting until script, style and
         // type-aware diagnostics have joined the final diagnostic stream.

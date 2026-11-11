@@ -7,7 +7,7 @@ mod fallthrough;
 mod nuxt_scope;
 mod sfc;
 
-use super::routes::config::{CrossFileRuleSettings, RuleSetting, setting};
+use super::routes::config::{self, CrossFileRuleSettings, RuleSetting, setting};
 pub(super) use component::RULE as CROSS_COMPONENT_RULE;
 pub(super) use fallthrough::RULE as FALLTHROUGH_RULE;
 mod uses_attrs;
@@ -137,6 +137,9 @@ pub(super) fn build_cross_file_lint_output_with_report<S: AsRef<str>>(
     let directive_states: Vec<_> = files
         .iter()
         .map(|(path, source)| {
+            if config::no_inline_config(settings, path) {
+                return None;
+            }
             is_sfc_cross_file_target(path)
                 .then(|| {
                     ProjectLintDirectives::from_sfc(

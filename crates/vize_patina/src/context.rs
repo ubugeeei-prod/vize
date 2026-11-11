@@ -88,6 +88,8 @@ pub struct LintContext<'a> {
     defer_exact_suppressions: bool,
     /// ESLint/Oxlint comments, ordered so named enables can override disable-all.
     inline_suppressions: InlineSuppressionState,
+    /// When set, recorded inline comments do not suppress diagnostics.
+    no_inline_config: bool,
     /// Late template capabilities that actually ran in this context.
     executed_template_rules: Vec<&'static str>,
     /// Line offsets for fast line number lookup.
@@ -173,6 +175,7 @@ impl<'a> LintContext<'a> {
             exact_suppressions: ExactSuppressionState::default(),
             defer_exact_suppressions: false,
             inline_suppressions: InlineSuppressionState::default(),
+            no_inline_config: false,
             executed_template_rules: Vec::new(),
             line_offsets: Self::compute_line_offsets(source),
             enabled_rules: None,
@@ -230,6 +233,7 @@ impl<'a> LintContext<'a> {
             exact_suppressions: ExactSuppressionState::default(),
             defer_exact_suppressions: false,
             inline_suppressions: InlineSuppressionState::default(),
+            no_inline_config: false,
             executed_template_rules: Vec::new(),
             line_offsets: Self::compute_line_offsets(source),
             enabled_rules: None,

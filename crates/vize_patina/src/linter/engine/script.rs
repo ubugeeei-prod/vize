@@ -30,13 +30,15 @@ impl Linter {
     }
 
     pub(super) fn finish_script_result(&self, source: &str, mut result: LintResult) -> LintResult {
-        crate::context::retain_unless_source_suppressed(
-            source,
-            &result.filename,
-            &mut result.diagnostics,
-            self.can_report_unused_directives(),
-            |rule| self.can_report_suppression_rule(rule),
-        );
+        if !self.no_inline_config {
+            crate::context::retain_unless_source_suppressed(
+                source,
+                &result.filename,
+                &mut result.diagnostics,
+                self.can_report_unused_directives(),
+                |rule| self.can_report_suppression_rule(rule),
+            );
+        }
         result.error_count = result
             .diagnostics
             .iter()

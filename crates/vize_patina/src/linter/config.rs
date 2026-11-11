@@ -71,6 +71,8 @@ pub struct Linter {
     pub(crate) help_level: HelpLevel,
     /// The same declarative or static custom-element policy used by the compiler.
     pub(crate) custom_elements: CustomElementMatcher,
+    /// Source comments must not suppress diagnostics.
+    pub(crate) no_inline_config: bool,
     /// Report template disable pragmas that suppressed nothing.
     pub(crate) report_unused_disable_directives: bool,
     /// Built-in script rules enabled for this linter.
@@ -184,6 +186,13 @@ impl Linter {
     #[inline]
     pub fn with_help_level(mut self, level: HelpLevel) -> Self {
         self.help_level = level;
+        self
+    }
+
+    /// Ignore `eslint-disable` comments in the files this linter checks.
+    #[inline]
+    pub fn with_no_inline_config(mut self, enabled: bool) -> Self {
+        self.no_inline_config = enabled;
         self
     }
 
