@@ -447,8 +447,8 @@
   },
   "generated": {
     "valid": {
-      "file": "explicit.valid.constructor-noinfer.virtual.ts.txt",
-      "sha256": "3d88148387581d1483df17913a6920e4b18ccd61d19afa7f958e69f3082b95c3"
+      "file": "explicit.valid.shared-usage-gates.virtual.ts.txt",
+      "sha256": "802520c4209756f8ff045fb20ddbe71da2369099202fb089e98cb6fa7990fa56"
     },
     "invalid": {
       "file": "explicit.invalid.constructor-noinfer.virtual.ts.txt",
