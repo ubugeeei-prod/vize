@@ -1,0 +1,78 @@
+{
+  "version": 1,
+  "kind": "exact-provider-qualification-node-forge-security-successor",
+  "previousProviderQualificationRecord": {
+    "path": "tests/_fixtures/differential/typechecker/empty-vue-star-exports/malformed-membership/provider-eslint-vue-scorecard-update-12539.json",
+    "bytes": 3903,
+    "sha256": "a06cdc218872597a518bffb4d61bfc5aa2824ac2b4b50e7f6ab1d860899b2094",
+    "gitBlob": "913d7ca7048d7e803ae836655c7c4b374a454141"
+  },
+  "previousQualificationLock": {
+    "path": "pnpm-lock.yaml",
+    "bytes": 1104179,
+    "sha256": "4d7d7e247c9f829178539681f4e48eeff3fc3bc86ed165a044c7d0a051c3fc2e",
+    "gitBlob": "0e2ec5f9baa7f6a46116b43f769593912563f532"
+  },
+  "previousQualificationPackage": {
+    "path": "package.json",
+    "bytes": 1053,
+    "sha256": "52985c3134183a70ebcf42236092cb2fd2dd815cb301b2a23ec74c4cc391de04",
+    "gitBlob": "d09b87f41fd10ff14c122a0e65e8a9d7d03e838a"
+  },
+  "previousWorkspaceManifest": {
+    "path": "pnpm-workspace.yaml",
+    "bytes": 9699,
+    "sha256": "030a08b4a6b0665327cedde929d24f3791799b08ff24ef6d1403845a830b028c",
+    "gitBlob": "ed71f90e0b624564c4ac6d18520ddf09885a60f7"
+  },
+  "finalQualificationLock": {
+    "path": "pnpm-lock.yaml",
+    "bytes": 1104179,
+    "sha256": "ffa18f0925bc973e782baebed652b3c728f6de632a52a08877bd07fb763283a6",
+    "gitBlob": "b13065a422a70cc2f5f0744d7777901a73ac60c0"
+  },
+  "finalQualificationPackage": {
+    "path": "package.json",
+    "bytes": 1053,
+    "sha256": "52985c3134183a70ebcf42236092cb2fd2dd815cb301b2a23ec74c4cc391de04",
+    "gitBlob": "d09b87f41fd10ff14c122a0e65e8a9d7d03e838a"
+  },
+  "workspaceManifest": {
+    "path": "pnpm-workspace.yaml",
+    "bytes": 9699,
+    "sha256": "b08cf3269dfdc86c0f950f1f6161f3bf7638e85d1bfde7b1a9da098b6c29e477",
+    "gitBlob": "cbb441afa6d6efc64a4f6456bd6c756b1fd50c65"
+  },
+  "lockReplacements": [
+    {
+      "before": "  node-forge: 1.4.1\n",
+      "after": "  node-forge: 1.4.3\n"
+    },
+    {
+      "before": "  node-forge@1.4.1:\n    resolution: {integrity: sha512-w5/MfWaeMrpR/5ba6fZyAUTLSuE6aYz7H/3cYrqwZEmf5eQS3IaaLgJt4MBv7HglGFWmV22K8h4U18RJQmw/ow==}\n",
+      "after": "  node-forge@1.4.3:\n    resolution: {integrity: sha512-P6wzfh6t70avmV8FrVEAd/36sOPJQ+hkaJVX1Laap9J/77m7M0eyozDvc8SwnDf4P7MP94gwbAAo0rg3YVXT+g==}\n"
+    },
+    {
+      "before": "      node-forge: 1.4.1\n",
+      "after": "      node-forge: 1.4.3\n"
+    },
+    {
+      "before": "  node-forge@1.4.1: {}\n",
+      "after": "  node-forge@1.4.3: {}\n"
+    }
+  ],
+  "workspaceReplacements": [
+    {
+      "before": "  node-forge: \"1.4.1\"\n",
+      "after": "  node-forge: \"1.4.3\"\n"
+    }
+  ],
+  "verification": {
+    "command": "vp install --frozen-lockfile --lockfile-only",
+    "package": "node-forge@1.4.3",
+    "packageSha256": "9b6be415be2445073b7c08e1ebcfdbcee25de2a48d89ff3b98f92a33867ad96f",
+    "advisoriesClosed": ["GHSA-w4xr-hqv8-ch44", "GHSA-6cv4-p8m7-4r25", "GHSA-j8rw-jp99-435v"]
+  },
+  "nativeAcceptanceCredit": false,
+  "scope": "Authorize only the exact node-forge 1.4.1 to 1.4.3 security replacement in the workspace override and four lockfile locations. The predecessor remains reconstructible byte for byte."
+}
