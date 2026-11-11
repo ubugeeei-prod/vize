@@ -386,17 +386,24 @@ pub(super) fn default_export(
 }
 
 fn module_scope_contains_identifier(ts: &str, name: &str) -> bool {
-    const SETUP: &str = "// ========== Setup Scope ==========";
-    const AFTER_SETUP: &str = "// Invoke setup to verify types";
-    let before_setup = ts.split_once(SETUP).map_or(ts, |(before, _)| before);
-    let after_setup = ts.rsplit_once(AFTER_SETUP).map_or("", |(_, after)| after);
+    const SETUP: &[u8] = b"// ========== Setup Scope ==========";
+    const AFTER_SETUP: &[u8] = b"// Invoke setup to verify types";
+    let bytes = ts.as_bytes();
+    let before_setup = memchr::memmem::find(bytes, SETUP)
+        .and_then(|at| ts.get(..at))
+        .unwrap_or(ts);
+    let after_setup = memchr::memmem::rfind(bytes, AFTER_SETUP)
+        .and_then(|at| ts.get(at + AFTER_SETUP.len()..))
+        .unwrap_or_default();
     [before_setup, after_setup]
         .into_iter()
         .any(|source| contains_identifier(source, name))
 }
 
+/// `name` as a whole identifier. A projection is long, so the scan uses
+/// memchr's SIMD finder; matches stay non-overlapping, as `match_indices`.
 fn contains_identifier(source: &str, name: &str) -> bool {
-    source.match_indices(name).any(|(start, _)| {
+    memchr::memmem::find_iter(source.as_bytes(), name.as_bytes()).any(|start| {
         let end = start + name.len();
         let boundary = |byte: u8| !byte.is_ascii_alphanumeric() && !matches!(byte, b'_' | b'$');
         source

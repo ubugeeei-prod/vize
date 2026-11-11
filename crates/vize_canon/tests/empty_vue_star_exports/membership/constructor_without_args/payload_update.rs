@@ -7,6 +7,7 @@ mod canon_leftovers;
 mod check_mode_generator;
 mod checker_augmentations;
 mod closed_emit_factory;
+mod component_export_memmem;
 mod component_hover_gaps;
 mod constructor_emit_export;
 mod constructor_noinfer_return;
