@@ -22,7 +22,7 @@
     reason = "a lent parse outlives the scope's borrow of its list, so a nested read can add one"
 )]
 
-use std::cell::RefCell;
+use std::cell::{Cell, RefCell};
 use std::hash::BuildHasher;
 use std::mem::ManuallyDrop;
 use std::ptr::NonNull;
@@ -152,6 +152,9 @@ thread_local! {
     /// The current projection's parses. Projections are synchronous on their
     /// thread, like the bindings table in Canon's script facts.
     static PARSES: RefCell<Option<Parses>> = const { RefCell::new(None) };
+    /// Whether `PARSES` holds a scope. A plain flag without a destructor, so
+    /// a read outside every scope (compilation, lint) costs one load.
+    static ACTIVE: Cell<bool> = const { Cell::new(false) };
 }
 
 /// Shares parses until dropped. A scope opened inside another one joins it.
@@ -170,6 +173,9 @@ impl SharedParseScope {
             *parses = Some(Parses::default());
             true
         });
+        if owns {
+            ACTIVE.set(true);
+        }
         Self { owns }
     }
 }
@@ -177,6 +183,7 @@ impl SharedParseScope {
 impl Drop for SharedParseScope {
     fn drop(&mut self) {
         if self.owns {
+            ACTIVE.set(false);
             let parses = PARSES.with_borrow_mut(Option::take);
             drop(parses);
         }
@@ -191,9 +198,14 @@ fn share<T: Shared>(
     shelf: fn(&mut Parses) -> &mut Shelf<T>,
     parse: impl FnOnce(Source) -> T,
 ) -> Option<Rc<T>> {
-    let key = FxBuildHasher.hash_one((text, source_type));
+    // Outside a scope the read parses privately; do nothing else on that path.
+    if !ACTIVE.get() {
+        return None;
+    }
+    let mut key = 0;
     let found = PARSES.with_borrow_mut(|parses| {
         let parses = parses.as_mut()?;
+        key = FxBuildHasher.hash_one((text, source_type));
         Some(shelf(parses).0.get(&key).and_then(|entries| {
             entries
                 .iter()
