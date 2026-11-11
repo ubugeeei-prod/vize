@@ -36,7 +36,8 @@ use super::text;
 mod wrapper;
 
 pub(crate) use wrapper::{
-    capture_wrapper_attrs, capture_wrapper_key, record_template_drops_except, runtime_directive,
+    capture_wrapper_attrs, capture_wrapper_key, record_template_drops_except,
+    retain_dynamic_wrapper_key, runtime_directive,
 };
 use wrapper::{chain_once_attr, record_wrapper_key};
 
@@ -357,7 +358,10 @@ fn branch_body<'a>(
         cx.report_missing_close(element);
         let captured = capture_wrapper_key(cx, element, analyzed);
         let (skip, key) = match captured {
-            Some((index, key)) => (Some(index), Some(key)),
+            Some((index, key)) => {
+                retain_dynamic_wrapper_key(cx, element, index, &key);
+                (Some(index), Some(key))
+            }
             None => (None, None),
         };
         let once = chain_once_attr(element, analyzed);

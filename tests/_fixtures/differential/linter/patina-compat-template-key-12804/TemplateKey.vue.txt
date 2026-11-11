@@ -1,0 +1,9 @@
+<template>
+  <template v-for="row in rows" :key="row['id'] + '-' + 'x' + (row.kind == 1)">
+    <span :title="row['id'] + '-' + 'x' + (row.kind == 1)" />
+  </template>
+  <li v-for="row in rows" :key="row['id'] + '-' + 'x' + (row.kind == 1)" />
+  <template v-if="ready" :key="row.kind == 1">
+    <span />
+  </template>
+</template>

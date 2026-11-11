@@ -17,6 +17,7 @@ use vize_l1::markup::Element;
 use super::super::cx::{Cx, attr_slice, attr_span};
 use super::super::directive::{Arg, AttrForm, Head};
 use super::super::element::{Analyzed, BranchKind, attr_text};
+use super::super::expr::expr_at;
 
 /// The first key-ish attribute of a `<template v-if>` wrapper: a static
 /// `key` attribute or a static-argument `:key` binding, in authored
@@ -64,6 +65,29 @@ pub(crate) fn capture_wrapper_key<'a>(
         }
     }
     None
+}
+
+/// Keep a dynamic wrapper `:key` on the lint expression index.
+///
+/// Unwrapping stores the key as an owned fragment fact, so template
+/// expression rules never see it. The attribute value is still a source
+/// slice here. Static keys and a valueless `:key` are not expressions.
+pub(crate) fn retain_dynamic_wrapper_key<'a>(
+    cx: &mut Cx<'a, impl ProvenanceSink>,
+    element: &Element<'a>,
+    index: usize,
+    key: &FragmentKey,
+) {
+    if !cx.retain_consumed_expressions {
+        return;
+    }
+    if !matches!(key, FragmentKey::Dynamic { .. }) {
+        return;
+    }
+    let Some(text) = element.open.attrs.get(index).and_then(attr_text) else {
+        return;
+    };
+    cx.consumed_expressions.push(expr_at(cx, text));
 }
 
 /// Static attributes that ride on a lowered `<template v-for>` fragment.

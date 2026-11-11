@@ -1,8 +1,9 @@
 //! Original native source laws for exceptional binding declarations.
 
 use super::{ForName, ForParts};
-use crate::lower::{Lowered, lower, lower_source_block};
+use crate::lower::{Lowered, lower, lower_preserving_comments, lower_source_block};
 use vize_l0::{Allocator, SourceRoot, Span, cstr};
+use vize_l2::expr::ExprRef;
 use vize_l2::op::{ForOp, Op};
 use vize_l2::scope::{ScopeFacts, ScopeOrigin};
 
@@ -197,5 +198,56 @@ fn source_block_origins_stay_file_absolute_after_unicode_and_crlf() {
         ScopeOrigin::Authored {
             span: Span::new(start, start + 9)
         }
+    );
+}
+
+fn retained_sources(source: &str) -> alloc::vec::Vec<alloc::string::String> {
+    let arena = Allocator::new();
+    let (tree, errors) = vize_l1::markup::parse(&arena, source);
+    assert!(errors.is_empty(), "{errors:?}");
+    let lowered = lower_preserving_comments(&arena, &tree, &errors);
+    lowered
+        .consumed_expressions
+        .iter()
+        .map(|expression| match expression {
+            ExprRef::Js(expression) => alloc::string::String::from(expression.source),
+            other => panic!("wrapper key stayed unparsed: {other:?}"),
+        })
+        .collect()
+}
+
+#[test]
+fn lint_lowering_retains_dynamic_template_wrapper_keys() {
+    let source = concat!(
+        r#"<template v-for="row in rows" :key=" row['id'] "><i /></template>"#,
+        r#"<template v-if="ready" :key="row.kind == 1"><i /></template>"#,
+    );
+    let retained = retained_sources(source);
+    assert_eq!(retained.len(), 2);
+    assert_eq!(retained[0], "row['id']");
+    assert_eq!(retained[1], "row.kind == 1");
+
+    let arena = Allocator::new();
+    let (tree, errors) = vize_l1::markup::parse(&arena, source);
+    let lowered = lower_preserving_comments(&arena, &tree, &errors);
+    let ExprRef::Js(key) = &lowered.consumed_expressions[0] else {
+        panic!("dynamic :key was not retained");
+    };
+    let start = source.find("row['id']").unwrap() as u32;
+    assert_eq!(key.span, Span::new(start, start + 9));
+
+    let compiled = lower(&arena, &tree, &errors);
+    assert!(compiled.consumed_expressions.is_empty());
+}
+
+#[test]
+fn static_and_unindexed_wrapper_keys_stay_off_the_lint_index() {
+    assert!(
+        retained_sources(r#"<template v-for="row in rows" key="id"><i /></template>"#).is_empty()
+    );
+    assert!(retained_sources(r#"<template v-for="row in rows" :key><i /></template>"#).is_empty());
+    assert!(
+        retained_sources(r#"<template v-for="row in rows" :[name]="row.id"><i /></template>"#)
+            .is_empty()
     );
 }
