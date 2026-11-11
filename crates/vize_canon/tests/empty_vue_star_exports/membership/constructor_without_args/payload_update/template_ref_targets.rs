@@ -4,7 +4,7 @@ use serde_json::{Value, json};
 use std::fs;
 
 const RECORD: &str = "tests/_fixtures/tooling/shared-template-ref-targets.json";
-const RECORD_SHA: &str = "b4069a73277d3cf4ee824305db87889d9af4aa56ffec0ea24e35962eff6c73bf";
+const RECORD_SHA: &str = "d92978d537c3565bb977852212856ff475306ec80dec601b9d15b9e2e0776dcd";
 
 fn record() -> Value {
     let bytes = fs::read(support::repository().join(RECORD)).unwrap();

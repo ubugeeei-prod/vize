@@ -122,10 +122,18 @@
         "sha256": "3eb5b8a7c0e30e866a9cafe482955945f50bc35b9ac33396f52d3b97ce33acdf"
       },
       "after": {
-        "bytes": 37938,
-        "sha256": "72c4bf98066da0acc68fe73d6e9aba486f8628cb0447a1c5f875931d8ed43cd0"
+        "bytes": 37936,
+        "sha256": "96863ed850e4905ad266c48594969e8752297048a073fa9feeba62e29a5074f1"
       },
       "hunks": [
+        {
+          "before": "    );\n    ts.push_str(\"\\n\\n\");\n\n    if let Some(script) = script_content {\n        profile!(\"canon.virtual_ts.emit_script_body\", {\n",
+          "after": "    );\n    ts.push_str(\"\\n\\n\");\n    if let Some(script) = script_content {\n        profile!(\"canon.virtual_ts.emit_script_body\", {\n"
+        },
+        {
+          "before": "            let mut pending_class_alias: Option<(usize, &str)> = None;\n            let mut emitted_default_alias = false;\n\n            for (src_byte_offset, raw_line) in ambient.script_lines(script) {\n                boundaries.emit_through(src_byte_offset, &mut ts, &mut mappings, source_offset);\n",
+          "after": "            let mut pending_class_alias: Option<(usize, &str)> = None;\n            let mut emitted_default_alias = false;\n            for (src_byte_offset, raw_line) in ambient.script_lines(script) {\n                boundaries.emit_through(src_byte_offset, &mut ts, &mut mappings, source_offset);\n"
+        },
         {
           "before": "        setup_helpers.template_refs.needs_registry(),\n    );\n",
           "after": "        setup_helpers.template_refs.needs_registry(),\n        hoist_shared_preamble && !generation_options.local_template_ref_unwrap,\n    );\n"
