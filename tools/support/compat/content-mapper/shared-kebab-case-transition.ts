@@ -44,3 +44,23 @@ export function beforeSharedKebabCaseSource(file: string, current: string): stri
   assert.deepEqual(identity(previous), transition.before, `shared kebab-case predecessor: ${file}`);
   return previous;
 }
+
+/** Advance a composed shared preamble through the recorded kebab-case fast path. */
+export function applySharedKebabCaseIn(previous: string): string {
+  let current = previous;
+  for (const hunk of record.compiledPreamble.hunks) {
+    assert.equal(current.split(hunk.before).length, 2, "shared kebab-case predecessor line");
+    current = current.replace(hunk.before, () => hunk.after);
+  }
+  return current;
+}
+
+/** Inverse of {@link applySharedKebabCaseIn}. */
+export function beforeSharedKebabCaseIn(current: string): string {
+  let previous = current;
+  for (const hunk of record.compiledPreamble.hunks) {
+    assert.equal(previous.split(hunk.after).length, 2, "shared kebab-case current line");
+    previous = previous.replace(hunk.after, () => hunk.before);
+  }
+  return previous;
+}
