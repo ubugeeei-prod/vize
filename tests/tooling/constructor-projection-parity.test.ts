@@ -220,7 +220,43 @@ test("certified packets join only safe verbatim lines", () => {
   relocatePacket(separate, joined, source, assets);
 
   const shared = packet([...separate.mappings, [13, 5, 0, 5, 0, 7]]);
+  const sharedHead = packet([
+    [0, 5, 0, 5, 0, 7],
+    [6, 12, 6, 12, 0, 7],
+    [13, 5, 0, 5, 0, 7],
+  ]);
+  relocatePacket(shared, sharedHead, source, assets);
   assert.throws(() => relocatePacket(shared, joined, source, assets), /complete packet/);
+
+  const featureMismatch = packet([
+    [0, 5, 0, 5, 0, 7],
+    [6, 6, 6, 6, 0, 5],
+  ]);
+  relocatePacket(featureMismatch, structuredClone(featureMismatch), source, assets);
+  assert.throws(() => relocatePacket(featureMismatch, joined, source, assets), /complete packet/);
+
+  for (const splitSource of ["first\tsecond", "first\r\nsecond"]) {
+    const secondAt = splitSource.indexOf("second");
+    const split = {
+      text: splitSource,
+      mappings: [
+        [0, 5, 0, 5, 0, 7],
+        [secondAt, 6, secondAt, 6, 0, 7],
+      ],
+      diagnostics: [],
+    };
+    relocatePacket(split, structuredClone(split), splitSource, assets);
+    assert.throws(
+      () =>
+        relocatePacket(
+          split,
+          { ...split, mappings: [[0, splitSource.length, 0, splitSource.length, 0, 7]] },
+          splitSource,
+          assets,
+        ),
+      /complete packet/,
+    );
+  }
 });
 
 test("collision-safe slot exports and markers are exact certified replacements", () => {

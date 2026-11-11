@@ -141,6 +141,12 @@ fn unsafe_join_guards_keep_verbatim_pieces_split() {
         feature_mismatch
     );
 
+    let wide_features = vec![verbatim(0, 2, 0, 1_048_575), verbatim(3, 2, 3, 1_048_575)];
+    assert_eq!(
+        super::join_verbatim_runs(text, text, wide_features),
+        vec![verbatim(0, 5, 0, 1_048_575)]
+    );
+
     let gap_mismatch = vec![verbatim(0, 2, 0, 7), verbatim(3, 2, 3, 7)];
     assert_eq!(
         super::join_verbatim_runs(text, "ab\tcd", gap_mismatch.clone()),
@@ -151,6 +157,12 @@ fn unsafe_join_guards_keep_verbatim_pieces_split() {
     assert_eq!(
         super::join_verbatim_runs("ab\tcd", "ab\tcd", tab_gap.clone()),
         tab_gap
+    );
+
+    let crlf_gap = vec![verbatim(0, 2, 0, 7), verbatim(4, 2, 4, 7)];
+    assert_eq!(
+        super::join_verbatim_runs("ab\r\ncd", "ab\r\ncd", crlf_gap.clone()),
+        crlf_gap
     );
 
     let shared_original = vec![
