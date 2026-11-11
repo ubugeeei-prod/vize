@@ -208,6 +208,21 @@ test("certified helper and self-described coordinates preserve complete packets"
   assert.equal(proof.edits[1].replacementBytes < proof.edits[1].end - proof.edits[1].start, true);
 });
 
+test("certified packets join only safe verbatim lines", () => {
+  const source = "first\nsecond\nthird";
+  const packet = (mappings: number[][]) => ({ text: source, mappings, diagnostics: [] });
+  const separate = packet([
+    [0, 5, 0, 5, 0, 7],
+    [6, 6, 6, 6, 0, 7],
+    [13, 5, 13, 5, 0, 7],
+  ]);
+  const joined = packet([[0, 18, 0, 18, 0, 7]]);
+  relocatePacket(separate, joined, source, assets);
+
+  const shared = packet([...separate.mappings, [13, 5, 0, 5, 0, 7]]);
+  assert.throws(() => relocatePacket(shared, joined, source, assets), /complete packet/);
+});
+
 test("collision-safe slot exports and markers are exact certified replacements", () => {
   const { source, base, head } = fixture();
   base.text += `\n${previousSlotsExport}\ntype Marker = ${previousSlotsMarker};\n`;
