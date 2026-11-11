@@ -48,11 +48,9 @@ fn trimmed_attribute_expression_text<'t>(allocator: &Allocator, text: &'t str) -
 /// Whether `source` ends inside a `//` comment, decided by the OXC lexer so
 /// strings, templates, regexes and block comments never count.
 fn ends_in_line_comment(allocator: &Allocator, source: &str) -> bool {
-    let mut wrapped = String::with_capacity(source.len() + 3);
-    wrapped.push('(');
-    wrapped.push_str(source);
-    wrapped.push_str("\n)");
-    let parsed = Parser::new(allocator.as_oxc(), wrapped.as_str(), SourceType::ts()).parse();
+    let oxc = allocator.as_oxc();
+    let wrapped = oxc.alloc_concat_strs_array(["(", source, "\n)"]);
+    let parsed = Parser::new(oxc, wrapped, SourceType::ts()).parse();
     parsed
         .program
         .comments
