@@ -261,6 +261,20 @@ void test("legacy vize config keys report an explicit Vue migration", async () =
   }
 });
 
+void test("vue ignores and formatter exclusions reach the native fmt file list", async () => {
+  const result = await defineConfig(
+    {
+      vue: {
+        ignores: ["legacy/**"],
+        formatter: { ignorePatterns: ["vendor/**"] },
+      },
+    },
+    { plugin: false, tasks: false },
+  )(env);
+  const metadata = (result as ConfigWithVizeTasks)[taskConfigKey]!;
+  assert.deepEqual(metadata.vueFmtIgnorePatterns, ["legacy/**", "vendor/**"]);
+});
+
 void test("lint.vize migration keeps task opt-out separate from shared CLI lint settings", async () => {
   await assert.rejects(
     defineConfig({ lint: { vize: false } } as VueConfigObject, { tasks: false })(env),

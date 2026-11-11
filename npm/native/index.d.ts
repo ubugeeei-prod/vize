@@ -890,7 +890,7 @@ export interface LintOptionsNapi {
   format?: string;
   /** Maximum number of warnings before failing */
   maxWarnings?: number;
-  /** Quiet mode - only show summary */
+  /** Report errors only */
   quiet?: boolean;
   /** Automatically fix problems when diagnostics provide safe text edits */
   fix?: boolean;

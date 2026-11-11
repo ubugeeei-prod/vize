@@ -27,6 +27,8 @@ enum SurfaceErrorDetail {
     IgnoredRepeatedForm,
     FosterParenting,
     NestingTooDeep,
+    /// A raw input-stream character. Parsing keeps the character and the tree.
+    InputStream,
 }
 
 impl SurfaceError {
@@ -37,6 +39,18 @@ impl SurfaceError {
             end: offset.saturating_add(1),
             encounter: offset,
             detail: SurfaceErrorDetail::Default,
+        }
+    }
+
+    /// An input-stream character error. The character stays in the tree, so
+    /// later rules still see the template.
+    pub(crate) const fn input_stream(code: ErrorCode, offset: u32) -> Self {
+        Self {
+            code,
+            offset,
+            end: offset.saturating_add(1),
+            encounter: offset,
+            detail: SurfaceErrorDetail::InputStream,
         }
     }
 
@@ -212,8 +226,9 @@ impl SurfaceError {
             SurfaceErrorDetail::NestingTooDeep => {
                 "Element nesting is too deep.".to_compact_string()
             }
-            SurfaceErrorDetail::Default => recovery_message(self.code)
-                .unwrap_or_else(|| self.code.message().to_compact_string()),
+            SurfaceErrorDetail::InputStream | SurfaceErrorDetail::Default => {
+                recovery_message(self.code).unwrap_or_else(|| self.code.message().to_compact_string())
+            }
         }
     }
 
@@ -234,6 +249,7 @@ impl SurfaceError {
                     | SurfaceErrorDetail::AdoptionAgency
                     | SurfaceErrorDetail::IgnoredRepeatedForm
                     | SurfaceErrorDetail::FosterParenting
+                    | SurfaceErrorDetail::InputStream
             )
     }
 }

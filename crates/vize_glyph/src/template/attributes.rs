@@ -5,9 +5,7 @@ use crate::{
 use unicode_width::UnicodeWidthStr;
 use vize_l0::String;
 
-#[cfg(test)]
-use super::directives::directive_head;
-use super::directives::{should_format_expression, static_directive_argument};
+use super::directives::{directive_head, should_format_expression, static_directive_argument};
 use vize_l1::dialect::vue3::DirectiveKind;
 use vize_l1::markup::{DirectiveName, DirectivePrefix};
 mod render;
@@ -36,11 +34,9 @@ pub(crate) fn sort_attributes(
     attrs: &mut [ParsedAttribute],
     options: &FormatOptions,
 ) {
-    // Bindings and directives can execute Vue instance getters, calls,
-    // assignments, or updates while the render data object is constructed.
-    // Keep them fixed and sort only unique, literal HTML attributes between
-    // those barriers. This also subsumes the no-argument v-bind/v-on spread
-    // boundary: no dynamic attribute may cross another one.
+    // A bare `v-bind`/`v-on` object or a dynamic argument merges with its
+    // neighbors, so those stay put. Static directives and static arguments
+    // commute and follow `vue/attribute-order` inside each run (#12826).
     for segment in attrs.split_mut(is_order_sensitive_attribute) {
         // Empty and singleton groups already have their only possible order.
         if segment.len() < 2 {
@@ -101,13 +97,25 @@ fn native_attribute_semantic_rank(tag_name: &str, attr_name: &str) -> u8 {
 }
 
 fn is_order_sensitive_attribute(attr: &ParsedAttribute) -> bool {
-    let name = attr.name.as_str();
-    name.starts_with([':', '@', '#', '.'])
-        || name.starts_with("v-")
-        || attr
-            .value
-            .as_deref()
-            .is_some_and(|value| value.contains("{{"))
+    // A mustache in a static attribute can expand to any name at runtime.
+    if attr
+        .value
+        .as_deref()
+        .is_some_and(|value| value.contains("{{"))
+    {
+        return true;
+    }
+    let Some(head) = directive_head(attr.name.as_str()) else {
+        return false;
+    };
+    match head.arg {
+        Some(vize_l1::markup::ArgSyntax::Dynamic(_)) => true,
+        None => matches!(
+            DirectiveKind::of(&head, attr.name.as_str()),
+            DirectiveKind::Bind | DirectiveKind::On
+        ),
+        Some(vize_l1::markup::ArgSyntax::Static(_)) => false,
+    }
 }
 
 fn has_duplicate_static_names(attrs: &[ParsedAttribute]) -> bool {

@@ -77,7 +77,7 @@ pub struct LintArgs {
     #[arg(long)]
     pub report_unused_disable_directives: bool,
 
-    /// Quiet mode - only show summary
+    /// Report errors only
     #[arg(short, long)]
     pub quiet: bool,
 

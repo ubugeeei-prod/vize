@@ -1,0 +1,13 @@
+<script setup lang="ts">
+import type { CardSlots } from "./types";
+
+defineSlots<CardSlots>();
+</script>
+
+<template>
+  <div>
+    <slot />
+    <slot name="footer" :count="1" />
+    <slot name="extra" />
+  </div>
+</template>

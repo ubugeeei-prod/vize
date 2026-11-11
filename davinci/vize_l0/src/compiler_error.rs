@@ -93,6 +93,10 @@ pub enum ErrorCode {
     SurrogateCharacterReference = 1007,
     /// A numeric character reference names a Unicode noncharacter.
     NoncharacterCharacterReference = 1008,
+    /// A control character other than ASCII whitespace is in the input stream.
+    ControlCharacterInInputStream = 1009,
+    /// A Unicode noncharacter is in the input stream.
+    NoncharacterInInputStream = 1010,
 }
 
 impl ErrorCode {
@@ -186,6 +190,8 @@ impl ErrorCode {
             Self::ControlCharacterReference => "Control character reference.",
             Self::SurrogateCharacterReference => "Surrogate character reference.",
             Self::NoncharacterCharacterReference => "Noncharacter character reference.",
+            Self::ControlCharacterInInputStream => "Control character in input stream.",
+            Self::NoncharacterInInputStream => "Noncharacter in input stream.",
         }
     }
 
@@ -201,6 +207,8 @@ impl ErrorCode {
                     | Self::ControlCharacterReference
                     | Self::SurrogateCharacterReference
                     | Self::NoncharacterCharacterReference
+                    | Self::ControlCharacterInInputStream
+                    | Self::NoncharacterInInputStream
             )
     }
 
