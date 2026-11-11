@@ -4,7 +4,7 @@ use super::{
     LintArgs, LintRunAccumulator,
     collect::{is_plain_script_path, is_standalone_html_path},
     fix::{is_storybook_csf_path, jsx_lang_for_path},
-    fs,
+    read_source::read_lint_source,
 };
 use rayon::prelude::*;
 use std::{
@@ -13,7 +13,7 @@ use std::{
     time::{Duration, Instant},
 };
 use vize_curator::profile::ProfileFileRow;
-use vize_l0::{String, ToCompactString, cstr, profile, profiler::global_profiler};
+use vize_l0::{String, ToCompactString, cstr, profile};
 use vize_patina::{LintResult, Linter, PreparedLint};
 
 struct File {
@@ -37,15 +37,18 @@ pub(super) fn run(
         .filter_map(|(path, config_index)| {
             let linter = linters.get(*config_index)?;
             let start = args.profile.then(Instant::now);
-            let source: String = match profile!("cli.lint.file.read", fs::read_to_string(path)) {
-                Ok(source) => {
-                    global_profiler().record_fs_read_to_string(source.len());
-                    source.into()
-                }
-                Err(error) => {
-                    global_profiler().record_fs_read_to_string_failure();
-                    eprintln!("Failed to read {}: {}", path.display(), error);
-                    return None;
+            let source = match read_lint_source(path) {
+                Ok(source) => source,
+                Err(result) => {
+                    return Some((
+                        File {
+                            path: path.clone(),
+                            filename: result.filename.clone(),
+                            source: String::default(),
+                            times: None,
+                        },
+                        (linter, PreparedLint::complete(result)),
+                    ));
                 }
             };
             let read = start.map(|start| start.elapsed()).unwrap_or(Duration::ZERO);
