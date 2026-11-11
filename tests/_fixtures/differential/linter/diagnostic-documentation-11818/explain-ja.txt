@@ -43,6 +43,15 @@ compiler/character-reference-outside-unicode-range · コンパイラーエラ�
 
 ヒント:
   &#x10FFFF; 以下のコードポイントを使ってください
+=== compiler/control-character-in-input-stream
+compiler/control-character-in-input-stream · コンパイラーエラー
+入力ストリームに制御文字があります。
+
+ステージ: surface
+重大度: エラー
+
+ヒント:
+  制御文字を削除してください。表示されず、HTML のテキストとしても不正です
 === compiler/control-character-reference
 compiler/control-character-reference · コンパイラーエラー
 制御文字の文字参照です。
@@ -283,6 +292,15 @@ compiler/noncharacter-character-reference · コンパイラーエラー
 
 ヒント:
   参照を削除してください。非文字は交換用ではありません
+=== compiler/noncharacter-in-input-stream
+compiler/noncharacter-in-input-stream · コンパイラーエラー
+入力ストリームに非文字があります。
+
+ステージ: surface
+重大度: エラー
+
+ヒント:
+  非文字を削除してください。Unicode の非文字は交換用ではありません
 === compiler/null-character-reference
 compiler/null-character-reference · コンパイラーエラー
 NUL 文字の文字参照です。
@@ -3942,6 +3960,16 @@ vue/attribute-order · lint ルール
 
 ヒント:
   推奨される順序に属性を並び替えてください
+=== vue/block-lang
+vue/block-lang · lint ルール
+SFC ブロックで設定された lang 以外の言語を禁止する
+
+精度: exact
+対象: the SFC's top-level blocks, their order and their attributes
+重大度: 警告
+カテゴリー: recommended
+自動修正: なし
+ドキュメント: docs/content/rules/reference/vue-block-lang.md
 === vue/camelcase
 vue/camelcase · lint ルール
 テンプレート式の識別子に camelCase を必須にする
@@ -5818,6 +5846,16 @@ vue/require-component-registration · lint ルール
 カテゴリー: recommended
 自動修正: なし
 ドキュメント: docs/content/rules/reference/vue-require-component-registration.md
+=== vue/require-default-export
+vue/require-default-export · lint ルール
+コンポーネントの script をデフォルトエクスポートにすることを必須にする
+
+精度: exact
+対象: the syntax of <script> and <script setup> programs, without type information
+重大度: エラー
+カテゴリー: essential
+自動修正: なし
+ドキュメント: docs/content/rules/reference/vue-require-default-export.md
 === vue/require-expose
 vue/require-expose · lint ルール
 `expose` を使って公開プロパティを宣言することを必須にする
@@ -5838,6 +5876,16 @@ vue/require-macro-variable-name · lint ルール
 カテゴリー: recommended
 自動修正: なし
 ドキュメント: docs/content/rules/reference/vue-require-macro-variable-name.md
+=== vue/require-prop-comment
+vue/require-prop-comment · lint ルール
+宣言された各 prop に JSDoc コメントを必須にする
+
+精度: complete
+対象: inline SFC scripts and descriptors with lexically unshadowed Vue macros and APIs and structurally recognizable component option objects; external blocks and unresolved aliases are outside
+重大度: 警告
+カテゴリー: recommended
+自動修正: なし
+ドキュメント: docs/content/rules/reference/vue-require-prop-comment.md
 === vue/require-scoped-style
 vue/require-scoped-style · lint ルール
 styleブロックにscoped属性またはmodule属性を必須にする

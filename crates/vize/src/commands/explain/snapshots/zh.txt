@@ -4102,6 +4102,16 @@ vue/attribute-order · lint 规则
 
 帮助:
   按推荐顺序重新排列属性
+=== vue/block-lang
+vue/block-lang · lint 规则
+禁止在 SFC 块上使用配置的 lang 以外的语言
+
+精度层级: exact
+适用范围: the SFC's top-level blocks, their order and their attributes
+严重级别: 警告
+类别: recommended
+自动修复: 不支持
+文档: docs/content/rules/reference/vue-block-lang.md
 === vue/camelcase
 vue/camelcase · lint 规则
 要求模板表达式中的标识符使用 camelCase
@@ -6084,6 +6094,16 @@ vue/require-component-registration · lint 规则
 类别: recommended
 自动修复: 不支持
 文档: docs/content/rules/reference/vue-require-component-registration.md
+=== vue/require-default-export
+vue/require-default-export · lint 规则
+要求组件的 script 作为默认导出
+
+精度层级: exact
+适用范围: the syntax of <script> and <script setup> programs, without type information
+严重级别: 错误
+类别: essential
+自动修复: 不支持
+文档: docs/content/rules/reference/vue-require-default-export.md
 === vue/require-expose
 vue/require-expose · lint 规则
 要求使用 `expose` 声明公共属性
@@ -6104,6 +6124,16 @@ vue/require-macro-variable-name · lint 规则
 类别: recommended
 自动修复: 不支持
 文档: docs/content/rules/reference/vue-require-macro-variable-name.md
+=== vue/require-prop-comment
+vue/require-prop-comment · lint 规则
+要求每个声明的 prop 都有 JSDoc 注释
+
+精度层级: complete
+适用范围: inline SFC scripts and descriptors with lexically unshadowed Vue macros and APIs and structurally recognizable component option objects; external blocks and unresolved aliases are outside
+严重级别: 警告
+类别: recommended
+自动修复: 不支持
+文档: docs/content/rules/reference/vue-require-prop-comment.md
 === vue/require-scoped-style
 vue/require-scoped-style · lint 规则
 要求style块使用scoped或module属性

@@ -1,0 +1,7 @@
+<script lang="ts">
+const label = "a";
+</script>
+
+<template>
+  <p>label</p>
+</template>

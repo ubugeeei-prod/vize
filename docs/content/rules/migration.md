@@ -4,7 +4,7 @@ title: ESLint rule migration map
 
 # ESLint rule migration map
 
-The committed ESLint mapping records 256 rule IDs: 181 mapped, 3 intentional divergences, and 72 unimplemented. A mapped ID identifies a Vize rule; it does not guarantee identical options, findings, fixes, or coverage.
+The committed ESLint mapping records 256 rule IDs: 184 mapped, 3 intentional divergences, and 69 unimplemented. A mapped ID identifies a Vize rule; it does not guarantee identical options, findings, fixes, or coverage.
 
 When ESLint remains the host, prefer the [`eslint.config.mjs` flat-config integration](../guide/tool-integrations.md#eslint-flat-config). The Vite+ configuration below is the native-task alternative.
 
@@ -35,7 +35,7 @@ For option conversion, see [Rule Options](./options.md) and [props destructuring
 | `vue/arrow-spacing` | — | unimplemented |
 | `vue/attribute-hyphenation` | [`vue/attribute-hyphenation`](./reference/vue-attribute-hyphenation.md) | mapped |
 | `vue/attributes-order` | [`vue/attribute-order`](./reference/vue-attribute-order.md) | mapped |
-| `vue/block-lang` | — | unimplemented |
+| `vue/block-lang` | [`vue/block-lang`](./reference/vue-block-lang.md) | mapped |
 | `vue/block-order` | [`vue/sfc-element-order`](./reference/vue-sfc-element-order.md) | mapped |
 | `vue/block-spacing` | — | unimplemented |
 | `vue/block-tag-newline` | — | unimplemented |
@@ -221,7 +221,7 @@ For option conversion, see [Rule Options](./options.md) and [props destructuring
 | `vue/prop-name-casing` | [`vue/prop-name-casing`](./reference/vue-prop-name-casing.md) | mapped |
 | `vue/quote-props` | [`vue/quote-props`](./reference/vue-quote-props.md) | mapped |
 | `vue/require-component-is` | [`vue/require-component-is`](./reference/vue-require-component-is.md) | mapped |
-| `vue/require-default-export` | — | unimplemented |
+| `vue/require-default-export` | [`vue/require-default-export`](./reference/vue-require-default-export.md) | mapped |
 | `vue/require-default-prop` | [`script/require-default-prop`](./reference/script-require-default-prop.md) | mapped |
 | `vue/require-direct-export` | — | unimplemented |
 | `vue/require-emit-validator` | — | unimplemented |
@@ -230,7 +230,7 @@ For option conversion, see [Rule Options](./options.md) and [props destructuring
 | `vue/require-expose` | [`vue/require-expose`](./reference/vue-require-expose.md) | mapped |
 | `vue/require-macro-variable-name` | [`vue/require-macro-variable-name`](./reference/vue-require-macro-variable-name.md) | mapped |
 | `vue/require-name-property` | — | unimplemented |
-| `vue/require-prop-comment` | — | unimplemented |
+| `vue/require-prop-comment` | [`vue/require-prop-comment`](./reference/vue-require-prop-comment.md) | mapped |
 | `vue/require-prop-type-constructor` | [`script/require-prop-type-constructor`](./reference/script-require-prop-type-constructor.md) | mapped |
 | `vue/require-prop-types` | [`script/require-prop-types`](./reference/script-require-prop-types.md) | mapped |
 | `vue/require-render-return` | [`script/require-render-return`](./reference/script-require-render-return.md) | mapped |

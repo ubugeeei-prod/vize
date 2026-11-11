@@ -9,7 +9,7 @@ import { expectedBuildIdentity, validateBuildReceipt } from "./build-receipt.ts"
 import { runPlannedCases, validateResultEnvelope } from "./harness.mjs";
 import { expressionWidthReference } from "./formatter-expression-width-reference.mjs";
 import { soleChildWidthCliReference } from "./formatter-sole-child-width-reference.mjs";
-import { attributeOrderCurrentReference } from "./formatter-attribute-order-reference.mjs";
+import { attributeOrderCurrentReference } from "./formatter-attribute-order-reference.ts";
 
 /** Keep archived roles immutable while declaring the exact current CLI transport. */
 export function formatterInvocation(fixture) {
