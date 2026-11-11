@@ -1,5 +1,5 @@
 ---
-source: crates/vize_patina/src/rules/script/valid_next_tick.rs
+source: crates/vize_patina/src/rules/script/valid_next_tick/tests.rs
 expression: result.diagnostics
 ---
 [
