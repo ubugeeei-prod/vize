@@ -20,6 +20,7 @@ mod require_typed_object_prop;
 mod require_valid_default_prop;
 mod return_in_emits_validator;
 mod template_emits;
+pub(crate) mod type_prop_names;
 pub(crate) mod typed_prop_defaults;
 
 pub(crate) use props_source::collect_options_props;

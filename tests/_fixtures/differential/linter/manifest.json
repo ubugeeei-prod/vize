@@ -4424,6 +4424,38 @@
       }
     },
     {
+      "id": "linter/patina/compat-prop-shadow-12737",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "patina-compat-prop-shadow-12737",
+        "files": [
+          {
+            "path": "PropShadow.vue.txt",
+            "role": "third-party-prop-shadow-reproduction",
+            "sha256": "4b4869a50c366c98ad56217af8dac7ce1682225dc5e9677842087c7276fc8d09"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/patina/compat-prop-uses-12805",
       "state": "active",
       "targets": [
