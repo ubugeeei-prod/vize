@@ -122,6 +122,8 @@ test("native build planning follows runtime imports without fixture source false
     "tests/tooling/vscode-typescript-vue-plugin-module-resolution.test.ts",
   ])
     assert.ok(planToolingTests([plugin]).nativeBuildTests.includes(plugin), plugin);
+  const fixtureProvider = "tests/tooling/vscode-typescript-vue-plugin-types.test.ts";
+  assert.ok(!planToolingTests([fixtureProvider]).nativeBuildTests.includes(fixtureProvider));
   for (const load of [
     'require(path.join(root, "npm/typescript-plugin/index.cjs"));',
     'createRequire(import.meta.url)("../../npm/typescript-plugin/index.cjs");',

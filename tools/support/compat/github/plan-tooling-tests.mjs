@@ -246,9 +246,13 @@ const typescriptPluginRuntimeLoad =
   /(?:\b(?:from|import)\s*\(?\s*|(?:\brequire|\))\s*\(\s*(?:[\w$.]+\s*\([^"'()]*)?)["'][^"']*npm\/typescript-plugin\/index\.cjs["']/u;
 const workspaceNativePackageImport =
   /\b(?:from\s*|import\s*(?:\(\s*)?|require\s*\(\s*)["']@vizejs\/native["']/u;
-// This contract calls the build coordinator with a fully controlled runner;
-// it validates commands without consuming the real workspace addon/artifacts.
-const nativeBuildExemptTests = new Set(["tests/tooling/native-smoke-workflow.test.ts"]);
+const nativeBuildExemptTests = new Set([
+  // Calls the build coordinator with a fully controlled runner; it validates
+  // commands without consuming the real workspace addon/artifacts.
+  "tests/tooling/native-smoke-workflow.test.ts",
+  // Creates the TypeScript plugin only with a fixture `nativePath` provider.
+  "tests/tooling/vscode-typescript-vue-plugin-types.test.ts",
+]);
 const topLevelOnly = (reference) => !reference.replace(/\/[*/]*$/, "").includes("/");
 
 export function planToolingTests(
