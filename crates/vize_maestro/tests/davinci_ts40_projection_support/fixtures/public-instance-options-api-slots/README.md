@@ -87,3 +87,9 @@ verbatim instead of being indented by two spaces (issue #12481). Canon, the
 content mapper and Maestro each shrink by the 10 removed indentation bytes;
 mapping, diagnostic and authored-hit counts are unchanged, so the changed
 coordinate hashes are derived relocation.
+
+`successor-verbatim-runs-12789` records #12789, on top of
+`successor-constructor-noinfer-12431`: the content mapper joins a setup block's
+verbatim lines across their shared line breaks into one span per run (issue
+#12431). Every generated text is unchanged; the content mapper reports one
+mapping fewer, so only its mapping count and coordinate hashes move.

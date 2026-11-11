@@ -322,6 +322,7 @@ export function relocatePacket(
     );
     expected.mappings.push(componentExportTransition.addedMapping);
   }
+  expected.mappings = joinVerbatimRuns(expected.mappings, source, expected.text);
   if (expected.semanticLinks)
     expected.semanticLinks = expected.semanticLinks.map((link) => {
       const [sourceStart, sourceLength] = range(
@@ -363,6 +364,57 @@ export function relocatePacket(
   return componentExportTransition?.addedMapping
     ? { ...proof, componentExportMapping: componentExportTransition.addedMapping }
     : proof;
+}
+
+export function joinVerbatimRuns(mappings: number[][], source: string, generated: string) {
+  const originalRanges = mappings
+    .map(([, , start, length]) => [start, length] as const)
+    .sort(([leftStart, leftLength], [rightStart, rightLength]) =>
+      leftStart === rightStart ? leftLength - rightLength : leftStart - rightStart,
+    );
+  const shared = (start: number, length: number) =>
+    originalRanges.filter(
+      ([candidateStart, candidateLength]) => candidateStart === start && candidateLength === length,
+    ).length > 1;
+  const mappedInside = (start: number, end: number) =>
+    originalRanges.some(([candidateStart]) => candidateStart >= start && candidateStart < end);
+  const sourceBytes = Buffer.from(source);
+  const generatedBytes = Buffer.from(generated);
+  const joined: number[][] = [];
+  for (const mapping of mappings) {
+    const previous = joined.at(-1);
+    if (previous && verbatimMappingsJoin(previous, mapping)) {
+      const end = mapping[0] + mapping[1];
+      previous[1] = end - previous[0];
+      previous[3] = previous[1];
+    } else joined.push([...mapping]);
+  }
+  return joined;
+
+  function verbatimMappingsJoin(previous: number[], next: number[]) {
+    const [leftAt, leftLength, leftOriginal, leftOriginalLength, leftKind, leftFeatures] = previous;
+    const [at, length, original, originalLength, kind, features] = next;
+    const gapStart = leftAt + leftLength;
+    const originalGapStart = leftOriginal + leftOriginalLength;
+    const gap = generatedBytes.subarray(gapStart, at);
+    const originalGap = sourceBytes.subarray(originalGapStart, original);
+    return (
+      leftKind === 0 &&
+      kind === 0 &&
+      leftFeatures === features &&
+      leftLength === leftOriginalLength &&
+      length === originalLength &&
+      at >= gapStart &&
+      original >= originalGapStart &&
+      at - gapStart === original - originalGapStart &&
+      !shared(leftOriginal, leftOriginalLength) &&
+      !shared(original, originalLength) &&
+      !mappedInside(originalGapStart, original) &&
+      gap.equals(originalGap) &&
+      gap.includes(0x0a) &&
+      gap.every((byte) => byte === 0x20 || byte === 0x09 || byte === 0x0a)
+    );
+  }
 }
 
 type VirtualPacket = {

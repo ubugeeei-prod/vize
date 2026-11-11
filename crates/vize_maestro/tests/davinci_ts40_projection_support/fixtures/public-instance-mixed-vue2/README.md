@@ -81,3 +81,9 @@ is byte-identical; mapping, diagnostic and authored-hit counts are unchanged.
 lines are copied verbatim instead of being indented by two spaces. Canon, the
 content mapper and Maestro each shrink by the 10 removed indentation bytes;
 mapping, diagnostic and authored-hit counts are unchanged.
+
+`successor-verbatim-runs-12789` records #12789 on top of
+`successor-constructor-noinfer-12431`: the content mapper joins the setup
+block's verbatim lines across their shared line breaks. Generated text is
+unchanged; only the content-mapper mapping count and coordinate hash move from
+12 rows to 11.

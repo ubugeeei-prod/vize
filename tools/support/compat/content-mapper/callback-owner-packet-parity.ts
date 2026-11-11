@@ -20,6 +20,7 @@ import {
 } from "./callback-owner-current-source.ts";
 import { withInertCallbackRows, type InertCallbackBinding } from "./callback-owner-inert-packet.ts";
 import { withoutReplayAliasRows } from "./callback-owner-replay-aliases.ts";
+import { withJoinedVerbatimRuns } from "./callback-owner-verbatim-runs.ts";
 
 type Edit = { start: number; end: number; replacement: Buffer };
 const nativeRoot =
@@ -437,16 +438,20 @@ export function assertPreservedCallbackPacket(
   assert.equal(typeof before.text, "string");
   assert.equal(typeof after.text, "string");
   if (before.text === after.text) {
-    if (isDeepStrictEqual(after, before)) return;
-    const hoverSuccessor = withComponentPropHoverOwnership(before, after);
+    const joinedSuccessor =
+      authoredSource === undefined
+        ? structuredClone(before)
+        : withJoinedVerbatimRuns(before, authoredSource);
+    if (isDeepStrictEqual(after, joinedSuccessor)) return;
+    const hoverSuccessor = withComponentPropHoverOwnership(joinedSuccessor, after);
     if (isDeepStrictEqual(after, hoverSuccessor)) return;
     // #12520: the only certified mapping-only change unmaps loop replay aliases.
-    const replaySuccessor = withoutReplayAliasRows(before);
+    const replaySuccessor = withoutReplayAliasRows(joinedSuccessor);
     if (isDeepStrictEqual(after, replaySuccessor)) return;
     const expected =
       inertBindings && authoredSource !== undefined
-        ? withInertCallbackRows(before, after, authoredSource, inertBindings)
-        : (replaySuccessor ?? before);
+        ? withInertCallbackRows(joinedSuccessor, after, authoredSource, inertBindings)
+        : (replaySuccessor ?? joinedSuccessor);
     assert.deepEqual(
       after,
       withComponentPropHoverOwnership(expected, after),
