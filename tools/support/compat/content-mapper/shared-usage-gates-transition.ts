@@ -8,7 +8,7 @@ import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 
 export const sharedUsageGatesRecord = "tests/_fixtures/tooling/shared-usage-gates.json";
-const recordSha256 = "06099f9bf5eee765b161d63ae32e8d59f8cc37e20a70dfbb3625d4e2f629578d";
+const recordSha256 = "a4ec4599ec136412e1a3995a314eeb4341614d75f3b15803db9209184acf6568";
 
 type Identity = { bytes: number; sha256: string };
 type Entry = {

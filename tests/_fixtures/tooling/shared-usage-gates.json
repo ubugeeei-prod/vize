@@ -34,10 +34,18 @@
         "sha256": "2e70012b05192f7a4661afc223fa7bc2d1e91e3d7dd6ffef663aa8e26c4e0813"
       },
       "after": {
-        "bytes": 16609,
-        "sha256": "300c1aad339333ea6d4cfab305335ac4c66a33554633350658a7a1d08ddd90ae"
+      "bytes": 16922,
+      "sha256": "b79c3dbe4b9c61b0bb9c47dbc39599ee7237fe4467ddb771568dce66c3034ca0"
       },
       "hunks": [
+      {
+        "before": "};\n\";\n\n/// Emit the `$VueComponentOptions` alias the default export references.\n",
+        "after": "};\n\";\n\n/// Holds the common raw-source and forwarded-attrs contract without growing\n/// the compact string through another heap allocation.\nconst FALLTHROUGH_COMPONENT_CONTRACT_CAPACITY: usize = 384;\n\n/// Emit the `$VueComponentOptions` alias the default export references.\n"
+      },
+      {
+        "before": "    let mut component_contract_fields = String::default();\n",
+        "after": "    let mut component_contract_fields = String::with_capacity(if fallthrough_props_ref.is_some() {\n        FALLTHROUGH_COMPONENT_CONTRACT_CAPACITY\n    } else {\n        0\n    });\n"
+      },
         {
           "before": "        }\n        append!(\n            component_contract_fields,\n            \" readonly __vizeHasFallthroughProps: true; readonly __vizeFallthroughProps?: {forwarded};\"\n",
           "after": "        }\n        // The raw surface, before owned keys are removed: removing keys cannot\n        // add a required one, so a parent finds none here without the map.\n        append!(\n            component_contract_fields,\n            \" readonly __vizeFallthroughSource?: {fallthrough_ref}; readonly __vizeHasFallthroughProps: true; readonly __vizeFallthroughProps?: {forwarded};\"\n"

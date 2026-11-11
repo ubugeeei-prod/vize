@@ -98,6 +98,35 @@ test("comparison retains all72 full observations and independent binary identiti
   }
 });
 
+test("the raw fallthrough source field is an exact certified document shift", () => {
+  const root = mkdtempSync(join(tmpdir(), "anchor-fallthrough-source-"));
+  const marker = " readonly __vizeHasFallthroughProps: true;";
+  const field = " readonly __vizeFallthroughSource?: Record<string, unknown>;";
+  try {
+    fixture(root);
+    for (const role of ["base", "head"])
+      for (const shape of ["locals", "imports"])
+        for (const count of [32, 128, 512])
+          for (const round of [1, 2, 3])
+            for (const mode of ["runtime-off", "allocation"]) {
+              const path = join(root, `${role}-${shape}-${count}-${mode}-${round}.json`);
+              const row = JSON.parse(readFileSync(path, "utf8"));
+              for (const document of row.documents) {
+                const suffix = role === "head" ? field + marker : marker;
+                document.code += suffix;
+                document.preRewriteCode += suffix;
+              }
+              writeFileSync(path, JSON.stringify(row));
+            }
+    const result = run(root);
+    assert.equal(result.status, 0, result.stderr);
+    const receipt = JSON.parse(readFileSync(join(root, "comparison.json"), "utf8"));
+    assert.equal(receipt.certifiedProjectionTransition.fallthroughSourceFields, true);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
 test("whole document geometry, order, fields and the physical pinned input are strict", () => {
   for (const control of [
     "code",

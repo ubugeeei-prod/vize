@@ -17,6 +17,7 @@ import {
   range,
   type Edit,
 } from "../../support/compat/content-mapper/projection-byte-relocation.ts";
+import { certifyFallthroughSourceFields } from "../../support/compat/content-mapper/shared-usage-gates-transition.ts";
 
 const directory = process.argv[2];
 assert.ok(directory);
@@ -36,27 +37,31 @@ type CompleteDocument = Record<string, unknown> & {
   source: string;
 };
 
-function relocateMappingDebug(debug: string, edit: Edit, generatedBytes: number) {
+function relocateMappingDebug(debug: string, edits: Edit[], generatedBytes: number) {
   return debug.replace(
     /\b(gen_range|source_range|target_range): (\d+)\.\.(\d+)/gu,
     (whole, label: string, startText: string, endText: string) => {
       const start = Number(startText),
         end = Number(endText),
-        [relocated, length] = range(start, end - start, [edit], generatedBytes);
+        [relocated, length] = range(start, end - start, edits, generatedBytes);
       return `${label}: ${relocated}..${relocated + length}`;
     },
   );
 }
 
 function certifyDocument(before: CompleteDocument, after: CompleteDocument) {
-  const transition = certifiedTransition(
+  const withDefaults = certifiedTransition(
     Buffer.from(before.code),
     Buffer.from(after.code),
     previousEmbeddedWithDefaults,
     currentEmbeddedWithDefaults,
     "embedded withDefaults docs return",
   );
-  if (!transition) {
+  const edits: Edit[] = [
+    ...(withDefaults ? [withDefaults] : []),
+    ...certifyFallthroughSourceFields(Buffer.from(before.code), Buffer.from(after.code)),
+  ].sort((left, right) => left.start - right.start);
+  if (edits.length === 0) {
     assert.deepEqual(after, before);
     return;
   }
@@ -73,10 +78,14 @@ function certifyDocument(before: CompleteDocument, after: CompleteDocument) {
   expected.preRewriteCode = after.preRewriteCode;
   expected.mappingDebug = relocateMappingDebug(
     before.mappingDebug,
-    transition,
+    edits,
     Buffer.byteLength(before.code),
   );
-  assert.deepEqual(after, expected, "only the certified withDefaults document shift may differ");
+  assert.deepEqual(
+    after,
+    expected,
+    "only certified withDefaults and fallthrough-source document shifts may differ",
+  );
 }
 
 function certifyCompletePacket(
@@ -250,10 +259,11 @@ const receipt = {
   certifiedProjectionTransition: {
     previousSha256: digest(previousEmbeddedWithDefaults),
     currentSha256: digest(currentEmbeddedWithDefaults),
+    fallthroughSourceFields: true,
   },
   summary,
   scope:
-    "actual single-source generation and allocations; complete packets differ only by the certified editor-only withDefaults documentation return; runtime-off timing is a profiling build, not normal release cold-check latency",
+    "actual single-source generation and allocations; complete packets differ only by the certified editor-only withDefaults documentation return and raw fallthrough-source fields; runtime-off timing is a profiling build, not normal release cold-check latency",
 };
 writeFileSync(join(directory, "comparison.json"), JSON.stringify(receipt, null, 2) + "\n");
 console.log(JSON.stringify(receipt));
