@@ -4,12 +4,7 @@
 #![expect(clippy::disallowed_types, reason = "subprocess fixture sources")]
 
 use serde_json::Value;
-use std::{
-    collections::{BTreeMap, BTreeSet},
-    fs,
-    path::Path,
-    process::Command,
-};
+use std::{collections::BTreeSet, fs, path::Path, process::Command};
 
 fn write(root: &Path, path: &str, source: &str) {
     let path = root.join(path);
@@ -113,33 +108,33 @@ const extra = ref(1);
         String::from_utf8_lossy(&output.stdout)
     );
     assert_eq!(report["warningCount"], 0);
-    let actual: BTreeMap<_, _> = report["messages"]
+    let mut actual: Vec<_> = report["messages"]
         .as_array()
         .unwrap()
         .iter()
         .map(|message| {
             (
                 message["ruleId"].as_str().unwrap(),
-                (
-                    message["line"].as_u64().unwrap(),
-                    message["column"].as_u64().unwrap(),
-                ),
+                message["line"].as_u64().unwrap(),
+                message["column"].as_u64().unwrap(),
             )
         })
         .collect();
+    actual.sort();
     assert_eq!(
         actual,
-        BTreeMap::from([
-            ("script/no-dupe-keys", (7, 7)),
-            ("script/no-required-prop-with-default", (5, 43)),
-            ("script/no-unused-emit-declarations", (6, 26)),
-            ("script/require-explicit-emits", (13, 39)),
-            ("vue/no-mutating-props", (11, 33)),
-            ("vue/no-template-shadow", (14, 18)),
-            ("vue/no-undefined-refs", (11, 72)),
-            ("vue/no-unused-properties", (5, 43)),
-            ("vue/prop-name-casing", (5, 43)),
-        ])
+        [
+            ("script/no-dupe-keys", 7, 7),
+            ("script/no-required-prop-with-default", 5, 43),
+            ("script/no-unused-emit-declarations", 6, 26),
+            ("script/require-explicit-emits", 13, 39),
+            ("vue/no-mutating-props", 11, 33),
+            ("vue/no-template-shadow", 14, 18),
+            ("vue/no-undefined-refs", 11, 72),
+            ("vue/no-unused-properties", 5, 43),
+            ("vue/no-unused-properties", 5, 43),
+            ("vue/prop-name-casing", 5, 43),
+        ]
     );
 
     // Cross-file resolution is script-rule demand, not an accidental side
