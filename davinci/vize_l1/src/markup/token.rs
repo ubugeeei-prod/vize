@@ -54,9 +54,6 @@ pub enum LexErrorCode {
     UnexpectedEqualsSignBeforeAttributeName,
     UnexpectedQuestionMarkInsteadOfTagName,
     UnexpectedSolidusInTag,
-    UnexpectedNullCharacter,
-    ControlCharacterInInputStream,
-    NoncharacterInInputStream,
 }
 
 /// Receiver of lexer events. `start..end` ranges are half-open byte ranges.

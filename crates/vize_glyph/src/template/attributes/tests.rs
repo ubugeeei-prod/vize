@@ -22,6 +22,7 @@ fn render_attribute_uses_single_quotes_when_value_contains_double_quotes() {
         original_index: 0,
         indent_multiline_value: false,
         owns_value_lines: false,
+        order_sensitive: false,
     };
 
     assert_eq!(render_attribute(&attr).as_str(), r#"title='say "hello"'"#);
@@ -36,6 +37,7 @@ fn render_attribute_escapes_double_quotes_when_value_contains_both_quote_styles(
         original_index: 0,
         indent_multiline_value: false,
         owns_value_lines: false,
+        order_sensitive: false,
     };
 
     assert_eq!(

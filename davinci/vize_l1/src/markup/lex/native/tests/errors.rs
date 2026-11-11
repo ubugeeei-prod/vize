@@ -9,40 +9,6 @@ fn test_comment() {
 }
 
 #[test]
-fn input_stream_characters_are_parse_errors() {
-    let control = tokenize("<p>a\u{0001}b</p>");
-    assert!(
-        control
-            .errors
-            .contains(&(LexErrorCode::ControlCharacterInInputStream, 4)),
-        "{:?}",
-        control.errors
-    );
-    let null = tokenize("<p>a\u{0000}b</p>");
-    assert!(
-        null.errors
-            .contains(&(LexErrorCode::UnexpectedNullCharacter, 4)),
-        "{:?}",
-        null.errors
-    );
-    let noncharacter = tokenize("<p>a\u{FFFE}b</p>");
-    let at = noncharacter
-        .errors
-        .iter()
-        .find(|(code, _)| *code == LexErrorCode::NoncharacterInInputStream);
-    assert_eq!(
-        at.map(|(_, index)| *index),
-        Some(4),
-        "{:?}",
-        noncharacter.errors
-    );
-    let clean = tokenize("<p>ab</p>");
-    assert!(clean.errors.is_empty(), "{:?}", clean.errors);
-    let text = tokenize("<p>あ</p>");
-    assert!(text.errors.is_empty(), "{:?}", text.errors);
-}
-
-#[test]
 fn test_comment_abrupt_empty_close_reports_error() {
     let cb = tokenize("<!-->");
     assert!(
