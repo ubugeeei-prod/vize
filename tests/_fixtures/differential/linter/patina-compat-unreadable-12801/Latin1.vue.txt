@@ -1,0 +1,3 @@
+<template>
+  <img src="/a.png" title="café" />
+</template>
