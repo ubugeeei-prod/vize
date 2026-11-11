@@ -1,10 +1,11 @@
-//! Overlapped content-mapper transforms. Replies go out in request order, or
-//! as each one is ready when the TypeScript launcher asks for that.
+//! Overlapped content-mapper transforms. Replies go out in request order
+//! through a writer thread, or, when the TypeScript launcher asks for that,
+//! each from the thread that finished it, as soon as it is ready.
 
 use std::io::{self, BufRead, Write};
 use std::panic::{AssertUnwindSafe, catch_unwind};
 use std::path::Path;
-use std::sync::mpsc::{self, Receiver, Sender};
+use std::sync::mpsc::{self, Receiver};
 use std::sync::{Mutex, PoisonError};
 use std::thread;
 use std::time::{Duration, Instant};
@@ -24,12 +25,12 @@ use super::{InitializeParams, Request, TransformParams, read_frame};
 mod replies;
 mod wire;
 pub(super) use replies::ReplyOrder;
-use replies::{WriteProgress, write_replies};
+use replies::{DirectReplies, Replies, WriteProgress, write_replies};
 #[cfg(all(test, target_os = "linux", target_pointer_width = "64"))]
 use wire::encode_frame;
 #[cfg(test)]
 pub(super) use wire::wire_value;
-use wire::{encode_error, encode_result, encode_transform};
+use wire::{Frame, encode_error, encode_result, encode_transform};
 
 // Actions measured both closure shapes at 4,094 levels in the optimized
 // ci-opt profile with 32 MiB and an independent 64 MiB output control.
@@ -155,8 +156,21 @@ fn serve_with_plan<R: BufRead, W: Write + Send>(
     let progress = WriteProgress::new();
     let (job_tx, job_rx) = mpsc::channel::<TransformJob>();
     let job_rx = Mutex::new(job_rx);
-    let (done_tx, done_rx) = mpsc::channel::<(u64, Vec<u8>)>();
+    let (done_tx, done_rx) = mpsc::channel::<(u64, Frame)>();
     let type_sources = SharedTypeSources::default();
+    // Ready order writes from the answering thread; request order hands each
+    // frame to the writer thread, which holds it until its turn.
+    let (direct, ordered_writer) = match order {
+        ReplyOrder::Ready => (
+            Some(DirectReplies::new(writer, &progress, &write_error)),
+            None,
+        ),
+        ReplyOrder::Request => (None, Some(writer)),
+    };
+    let replies = match &direct {
+        Some(direct) => Replies::Direct(direct),
+        None => Replies::Ordered(done_tx),
+    };
     let mut receipt = WorkerPoolReceipt {
         requested_workers: worker_stacks.len(),
         effective_workers: 0,
@@ -165,15 +179,17 @@ fn serve_with_plan<R: BufRead, W: Write + Send>(
     let read_result = thread::scope(|scope| {
         let writer_error = &write_error;
         let writer_progress = &progress;
-        writer_builder.spawn_scoped(scope, move || {
-            if let Err(error) = write_replies(writer, done_rx, writer_progress, order) {
-                writer_progress.fail();
-                *writer_error.lock().unwrap_or_else(PoisonError::into_inner) = Some(error);
-            }
-        })?;
+        if let Some(writer) = ordered_writer {
+            writer_builder.spawn_scoped(scope, move || {
+                if let Err(error) = write_replies(writer, done_rx, writer_progress) {
+                    writer_progress.fail();
+                    *writer_error.lock().unwrap_or_else(PoisonError::into_inner) = Some(error);
+                }
+            })?;
+        }
         for stack_bytes in worker_stacks {
             let jobs = &job_rx;
-            let done = done_tx.clone();
+            let done = replies.clone();
             let type_sources = &type_sources;
             if let Err(error) = thread::Builder::new()
                 .stack_size(stack_bytes)
@@ -187,7 +203,7 @@ fn serve_with_plan<R: BufRead, W: Write + Send>(
                 // Returning early with these senders alive deadlocks both
                 // the writer and any workers that were already started.
                 drop(job_tx);
-                drop(done_tx);
+                drop(replies);
                 return Err(error);
             }
             receipt.effective_workers += 1;
@@ -198,7 +214,7 @@ fn serve_with_plan<R: BufRead, W: Write + Send>(
                 read_loop(
                     reader,
                     &job_tx,
-                    &done_tx,
+                    &replies,
                     &progress,
                     inflight_limit,
                     initialized,
@@ -206,7 +222,7 @@ fn serve_with_plan<R: BufRead, W: Write + Send>(
             }),
         };
         drop(job_tx);
-        drop(done_tx);
+        drop(replies);
         read
     });
     if let Some(error) = write_error
@@ -219,9 +235,9 @@ fn serve_with_plan<R: BufRead, W: Write + Send>(
     read_result.map(|()| receipt)
 }
 
-fn worker(
+fn worker<W: Write>(
     jobs: &Mutex<Receiver<TransformJob>>,
-    done: Sender<(u64, Vec<u8>)>,
+    done: Replies<'_, W>,
     type_sources: &SharedTypeSources,
 ) {
     loop {
@@ -232,12 +248,12 @@ fn worker(
         let Ok(job) = job else { break };
         let seq = job.seq;
         let sources = type_sources.acquire();
-        let bytes = match catch_unwind(AssertUnwindSafe(|| transform_frame(&job, &sources))) {
-            Ok(Ok(bytes)) => bytes,
+        let frame = match catch_unwind(AssertUnwindSafe(|| transform_frame(&job, &sources))) {
+            Ok(Ok(frame)) => frame,
             Ok(Err(error)) => encode_error(&job.id, -32603, &cstr!("{error}")).unwrap_or_default(),
             Err(_) => encode_error(&job.id, -32603, "Transform failed").unwrap_or_default(),
         };
-        let sent = done.send((seq, bytes));
+        let sent = done.send(seq, frame);
         // Release after the reply: the last holder frees the snapshot.
         type_sources.release();
         drop(sources);
@@ -247,10 +263,10 @@ fn worker(
     }
 }
 
-fn read_loop<R: BufRead>(
+fn read_loop<R: BufRead, W: Write>(
     reader: &mut R,
-    jobs: &Sender<TransformJob>,
-    done: &Sender<(u64, Vec<u8>)>,
+    jobs: &mpsc::Sender<TransformJob>,
+    done: &Replies<'_, W>,
     progress: &WriteProgress,
     inflight_limit: std::num::NonZeroUsize,
     mut initialized: bool,
@@ -268,7 +284,7 @@ fn read_loop<R: BufRead>(
             Err(error) => {
                 let message = cstr!("Parse error: {error}");
                 let frame = encode_error(&Value::Null, -32700, &message)?;
-                reply(done, &mut seq, &frame)?;
+                reply(done, &mut seq, frame)?;
                 continue;
             }
         };
@@ -277,41 +293,40 @@ fn read_loop<R: BufRead>(
             "initialize" => {
                 progress.wait_until(seq)?;
                 let frame = initialize(id, request.params, &mut initialized)?;
-                reply(done, &mut seq, &frame)?;
+                reply(done, &mut seq, frame)?;
             }
             "openProject" | "closeProject" | "transform" if !initialized => {
                 let frame = encode_error(&id, -32002, "Content mapper is not initialized")?;
-                reply(done, &mut seq, &frame)?;
+                reply(done, &mut seq, frame)?;
             }
             "openProject" => {
                 progress.wait_until(seq)?;
                 let frame = open_project(id, request.params, &mut projects)?;
-                reply(done, &mut seq, &frame)?;
+                reply(done, &mut seq, frame)?;
             }
             "closeProject" => {
                 progress.wait_until(seq)?;
                 let frame = close_project(id, request.params, &mut projects)?;
-                reply(done, &mut seq, &frame)?;
+                reply(done, &mut seq, frame)?;
             }
             "transform" => dispatch_transform(id, request.params, &projects, jobs, done, &mut seq)?,
             _ => {
                 let message = cstr!("Method not found: {}", request.method);
                 let frame = encode_error(&id, -32601, &message)?;
-                reply(done, &mut seq, &frame)?;
+                reply(done, &mut seq, frame)?;
             }
         }
     }
     Ok(())
 }
 
-fn reply(done: &Sender<(u64, Vec<u8>)>, seq: &mut u64, frame: &[u8]) -> io::Result<()> {
-    done.send((*seq, frame.to_vec()))
-        .map_err(|_| io::Error::other("content-mapper writer stopped"))?;
+fn reply<W: Write>(done: &Replies<'_, W>, seq: &mut u64, frame: Frame) -> io::Result<()> {
+    done.send(*seq, frame)?;
     *seq += 1;
     Ok(())
 }
 
-fn initialize(id: Value, params: Value, initialized: &mut bool) -> io::Result<Vec<u8>> {
+fn initialize(id: Value, params: Value, initialized: &mut bool) -> io::Result<Frame> {
     let params = match serde_json::from_value::<InitializeParams>(params) {
         Ok(params) => params,
         Err(error) => {
@@ -332,7 +347,7 @@ fn initialize(id: Value, params: Value, initialized: &mut bool) -> io::Result<Ve
     )
 }
 
-fn open_project(id: Value, params: Value, projects: &mut ProjectRegistry) -> io::Result<Vec<u8>> {
+fn open_project(id: Value, params: Value, projects: &mut ProjectRegistry) -> io::Result<Frame> {
     let params = match serde_json::from_value::<OpenProjectParams>(params) {
         Ok(params) => params,
         Err(error) => {
@@ -353,7 +368,7 @@ fn open_project(id: Value, params: Value, projects: &mut ProjectRegistry) -> io:
     }
 }
 
-fn close_project(id: Value, params: Value, projects: &mut ProjectRegistry) -> io::Result<Vec<u8>> {
+fn close_project(id: Value, params: Value, projects: &mut ProjectRegistry) -> io::Result<Frame> {
     let params = match serde_json::from_value::<CloseProjectParams>(params) {
         Ok(params) => params,
         Err(error) => {
@@ -365,24 +380,24 @@ fn close_project(id: Value, params: Value, projects: &mut ProjectRegistry) -> io
     encode_result(&id, Value::Null)
 }
 
-fn dispatch_transform(
+fn dispatch_transform<W: Write>(
     id: Value,
     params: Value,
     projects: &ProjectRegistry,
-    jobs: &Sender<TransformJob>,
-    done: &Sender<(u64, Vec<u8>)>,
+    jobs: &mpsc::Sender<TransformJob>,
+    done: &Replies<'_, W>,
     seq: &mut u64,
 ) -> io::Result<()> {
     let params = match serde_json::from_value::<TransformParams>(params) {
         Ok(params) => params,
         Err(error) => {
             let message = cstr!("Invalid transform params: {error}");
-            return reply(done, seq, &encode_error(&id, -32602, &message)?);
+            return reply(done, seq, encode_error(&id, -32602, &message)?);
         }
     };
     let Some(settings) = projects.settings(params.project_handle.as_str()).cloned() else {
         let message = cstr!("Unknown content mapper project: {}", params.project_handle);
-        return reply(done, seq, &encode_error(&id, -32602, &message)?);
+        return reply(done, seq, encode_error(&id, -32602, &message)?);
     };
     let job = TransformJob {
         seq: *seq,
@@ -396,7 +411,7 @@ fn dispatch_transform(
         .map_err(|_| io::Error::other("content-mapper workers stopped"))
 }
 
-fn transform_frame(job: &TransformJob, sources: &ContentMapperTypeSources) -> io::Result<Vec<u8>> {
+fn transform_frame(job: &TransformJob, sources: &ContentMapperTypeSources) -> io::Result<Frame> {
     match generate_vue_content_mapper_transform_with_type_sources(
         Path::new(job.file_name.as_str()),
         job.content.as_str(),

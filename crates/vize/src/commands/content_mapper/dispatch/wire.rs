@@ -19,7 +19,58 @@ const SPAN_FEATURES_ALL: usize = (1 << 20) - 1;
 /// Ignore directive policy; the host reads a tuple's sixth element only for expect.
 const DIRECTIVE_POLICY_IGNORE: usize = 0;
 
-pub(super) fn encode_result(id: &Value, result: impl Serialize) -> io::Result<Vec<u8>> {
+/// One reply frame. The body is serialized once behind room for its
+/// `Content-Length` header, which is written in place; the frame starts
+/// where the header does, so no byte of a large body is moved to send it.
+#[derive(Debug, Default)]
+pub(super) struct Frame {
+    bytes: Vec<u8>,
+    start: usize,
+}
+
+impl Frame {
+    pub(super) fn as_bytes(&self) -> &[u8] {
+        self.bytes.get(self.start..).unwrap_or_default()
+    }
+
+    #[cfg(all(test, target_os = "linux", target_pointer_width = "64"))]
+    fn into_vec(mut self) -> Vec<u8> {
+        self.bytes.drain(..self.start);
+        self.bytes
+    }
+}
+
+impl std::ops::Deref for Frame {
+    type Target = [u8];
+
+    fn deref(&self) -> &[u8] {
+        self.as_bytes()
+    }
+}
+
+impl PartialEq for Frame {
+    fn eq(&self, other: &Self) -> bool {
+        self.as_bytes() == other.as_bytes()
+    }
+}
+
+impl PartialEq<Vec<u8>> for Frame {
+    fn eq(&self, other: &Vec<u8>) -> bool {
+        self.as_bytes() == other.as_slice()
+    }
+}
+
+#[cfg(test)]
+impl From<&[u8]> for Frame {
+    fn from(bytes: &[u8]) -> Self {
+        Self {
+            bytes: bytes.to_vec(),
+            start: 0,
+        }
+    }
+}
+
+pub(super) fn encode_result(id: &Value, result: impl Serialize) -> io::Result<Frame> {
     // The original server's json! envelope recursively ordered every object
     // through Value. Preserve opaque nested fields as well as envelope keys.
     // Consume the original packet so its large text/maps are dropped by
@@ -31,11 +82,14 @@ pub(super) fn encode_result(id: &Value, result: impl Serialize) -> io::Result<Ve
         jsonrpc: &'static str,
         result: &'a Value,
     }
-    encode_frame(&Envelope {
-        id,
-        jsonrpc: "2.0",
-        result: &result,
-    })
+    frame_of(
+        &Envelope {
+            id,
+            jsonrpc: "2.0",
+            result: &result,
+        },
+        0,
+    )
 }
 
 /// [`encode_result`] for a transform, without copying its text and mappings
@@ -44,7 +98,7 @@ pub(super) fn encode_result(id: &Value, result: impl Serialize) -> io::Result<Ve
 pub(super) fn encode_transform(
     id: &Value,
     transform: &ContentMapperTransform,
-) -> io::Result<Vec<u8>> {
+) -> io::Result<Frame> {
     let ContentMapperTransform {
         text,
         extension,
@@ -217,21 +271,26 @@ fn push_usize(out: &mut Vec<u8>, mut value: usize) {
     out.extend_from_slice(digits.get(start..).unwrap_or_default());
 }
 
-pub(super) fn encode_error(id: &Value, code: i32, message: &str) -> io::Result<Vec<u8>> {
-    encode_frame(&json!({
-        "jsonrpc": "2.0",
-        "id": id,
-        "error": {"code": code, "message": message},
-    }))
+pub(super) fn encode_error(id: &Value, code: i32, message: &str) -> io::Result<Frame> {
+    frame_of(
+        &json!({
+            "jsonrpc": "2.0",
+            "id": id,
+            "error": {"code": code, "message": message},
+        }),
+        0,
+    )
+}
+
+/// A frame's bytes, for tests that build a request stream.
+#[cfg(all(test, target_os = "linux", target_pointer_width = "64"))]
+pub(super) fn encode_frame(value: &impl Serialize) -> io::Result<Vec<u8>> {
+    frame_of(value, 0).map(Frame::into_vec)
 }
 
 /// Serialize the body once, behind reserved header room, instead of copying
 /// it into a second frame buffer.
-pub(super) fn encode_frame(value: &impl Serialize) -> io::Result<Vec<u8>> {
-    encode_frame_with_capacity(value, 0)
-}
-
-fn encode_frame_with_capacity(value: &impl Serialize, capacity: usize) -> io::Result<Vec<u8>> {
+fn frame_of(value: &impl Serialize, capacity: usize) -> io::Result<Frame> {
     let mut frame = Vec::with_capacity(HEADER_ROOM + capacity);
     frame.resize(HEADER_ROOM, 0);
     serde_json::to_writer(&mut frame, value).map_err(io::Error::other)?;
@@ -239,7 +298,7 @@ fn encode_frame_with_capacity(value: &impl Serialize, capacity: usize) -> io::Re
 }
 
 /// Writes the header into the room reserved ahead of the body.
-fn finish_frame(mut frame: Vec<u8>) -> io::Result<Vec<u8>> {
+fn finish_frame(mut frame: Vec<u8>) -> io::Result<Frame> {
     let mut header = Vec::with_capacity(HEADER_ROOM);
     write!(
         &mut header,
@@ -251,8 +310,10 @@ fn finish_frame(mut frame: Vec<u8>) -> io::Result<Vec<u8>> {
         .get_mut(start..HEADER_ROOM)
         .ok_or_else(|| io::Error::other("content-mapper frame header overflow"))?
         .copy_from_slice(&header);
-    frame.drain(..start);
-    Ok(frame)
+    Ok(Frame {
+        bytes: frame,
+        start,
+    })
 }
 
 /// A protocol value serialized with lexicographically sorted keys.

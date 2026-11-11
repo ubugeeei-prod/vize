@@ -1,9 +1,11 @@
-//! The reply writer, and the admission credit it hands back to the reader.
+//! Reply writing, and the admission credit it hands back to the reader.
 
 use std::collections::BTreeMap;
 use std::io::{self, Write};
-use std::sync::mpsc::Receiver;
+use std::sync::mpsc::{Receiver, Sender};
 use std::sync::{Condvar, Mutex, PoisonError};
+
+use super::wire::Frame;
 
 /// When a finished reply may go out.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
@@ -68,49 +70,109 @@ impl WriteProgress {
     }
 }
 
-/// Write `(seq, frame)` replies until every sender is gone.
-pub(super) fn write_replies<W: Write>(
-    writer: &mut W,
-    done: Receiver<(u64, Vec<u8>)>,
-    progress: &WriteProgress,
-    order: ReplyOrder,
-) -> io::Result<()> {
-    match order {
-        ReplyOrder::Request => write_in_request_order(writer, done, progress),
-        ReplyOrder::Ready => write_when_ready(writer, done, progress),
+/// Where a finished reply goes.
+pub(super) enum Replies<'a, W> {
+    /// Written by the thread that finished it ([`ReplyOrder::Ready`]): no
+    /// hand-off to a writer thread, one wake-up fewer per reply.
+    Direct(&'a DirectReplies<'a, W>),
+    /// To the writer thread, which restores request order.
+    Ordered(Sender<(u64, Frame)>),
+}
+
+impl<W> Clone for Replies<'_, W> {
+    fn clone(&self) -> Self {
+        match self {
+            Self::Direct(direct) => Self::Direct(direct),
+            Self::Ordered(sender) => Self::Ordered(sender.clone()),
+        }
     }
 }
 
-fn write_in_request_order<W: Write>(
+impl<W: Write> Replies<'_, W> {
+    pub(super) fn send(&self, seq: u64, frame: Frame) -> io::Result<()> {
+        match self {
+            Self::Direct(direct) => direct.write(&frame),
+            Self::Ordered(sender) => sender
+                .send((seq, frame))
+                .map_err(|_| io::Error::other("content-mapper writer stopped")),
+        }
+    }
+}
+
+/// The output for [`ReplyOrder::Ready`], shared by every thread that answers.
+pub(super) struct DirectReplies<'a, W> {
+    output: Mutex<DirectOutput<'a, W>>,
+    progress: &'a WriteProgress,
+    error: &'a Mutex<Option<io::Error>>,
+}
+
+struct DirectOutput<'a, W> {
+    writer: &'a mut W,
+    written: u64,
+    failed: bool,
+}
+
+impl<'a, W: Write> DirectReplies<'a, W> {
+    pub(super) fn new(
+        writer: &'a mut W,
+        progress: &'a WriteProgress,
+        error: &'a Mutex<Option<io::Error>>,
+    ) -> Self {
+        Self {
+            output: Mutex::new(DirectOutput {
+                writer,
+                written: 0,
+                failed: false,
+            }),
+            progress,
+            error,
+        }
+    }
+
+    /// Write one frame whole and count it, as the writer thread would. The
+    /// first failure is kept for the caller and stops every later write.
+    fn write(&self, frame: &Frame) -> io::Result<()> {
+        let mut output = self.output.lock().unwrap_or_else(PoisonError::into_inner);
+        let output = &mut *output;
+        if output.failed {
+            return Err(io::Error::other("content-mapper writer stopped"));
+        }
+        match output
+            .writer
+            .write_all(frame)
+            .and_then(|()| output.writer.flush())
+        {
+            Ok(()) => {
+                output.written += 1;
+                self.progress.record(output.written);
+                Ok(())
+            }
+            Err(error) => {
+                output.failed = true;
+                self.progress.fail();
+                *self.error.lock().unwrap_or_else(PoisonError::into_inner) = Some(error);
+                Err(io::Error::other("content-mapper writer stopped"))
+            }
+        }
+    }
+}
+
+/// Write `(seq, frame)` replies in request order until every sender is gone.
+pub(super) fn write_replies<W: Write>(
     writer: &mut W,
-    done: Receiver<(u64, Vec<u8>)>,
+    done: Receiver<(u64, Frame)>,
     progress: &WriteProgress,
 ) -> io::Result<()> {
     let mut next = 0_u64;
-    let mut pending = BTreeMap::<u64, Vec<u8>>::new();
-    while let Ok((seq, bytes)) = done.recv() {
-        pending.insert(seq, bytes);
+    let mut pending = BTreeMap::<u64, Frame>::new();
+    while let Ok((seq, frame)) = done.recv() {
+        pending.insert(seq, frame);
         while let Some(frame) = pending.remove(&next) {
             writer.write_all(&frame)?;
             writer.flush()?;
             next += 1;
             progress.record(next);
         }
-    }
-    Ok(())
-}
-
-fn write_when_ready<W: Write>(
-    writer: &mut W,
-    done: Receiver<(u64, Vec<u8>)>,
-    progress: &WriteProgress,
-) -> io::Result<()> {
-    let mut written = 0_u64;
-    while let Ok((_, frame)) = done.recv() {
-        writer.write_all(&frame)?;
-        writer.flush()?;
-        written += 1;
-        progress.record(written);
     }
     Ok(())
 }
@@ -122,37 +184,77 @@ mod tests {
 
     use serde_json::Value;
 
-    use super::{ReplyOrder, WriteProgress, write_replies};
+    use super::{DirectReplies, Replies, ReplyOrder, WriteProgress, write_replies};
     use crate::commands::content_mapper::read_frame;
     use crate::commands::content_mapper::test_support::{
         close_project_request, frames, initialize_request, open_project_request, transform_request,
     };
 
-    fn written(order: ReplyOrder) -> (Vec<u8>, u64) {
-        let (done, replies) = mpsc::channel();
-        // The second request finished first.
-        done.send((1, b"second".to_vec())).unwrap();
-        done.send((0, b"first".to_vec())).unwrap();
-        drop(done);
-        let progress = WriteProgress::new();
-        let mut out = Vec::new();
-        write_replies(&mut out, replies, &progress, order).unwrap();
-        let flushed = progress
+    fn flushed(progress: &WriteProgress) -> u64 {
+        progress
             .state
             .lock()
             .unwrap_or_else(std::sync::PoisonError::into_inner)
-            .flushed;
-        (out, flushed)
+            .flushed
     }
 
     #[test]
     fn request_order_holds_a_finished_reply_behind_an_earlier_one() {
-        assert_eq!(written(ReplyOrder::Request), (b"firstsecond".to_vec(), 2));
+        let (done, replies) = mpsc::channel();
+        // The second request finished first.
+        done.send((1, b"second".as_slice().into())).unwrap();
+        done.send((0, b"first".as_slice().into())).unwrap();
+        drop(done);
+        let progress = WriteProgress::new();
+        let mut out = Vec::new();
+        write_replies(&mut out, replies, &progress).unwrap();
+        assert_eq!((out, flushed(&progress)), (b"firstsecond".to_vec(), 2));
     }
 
     #[test]
     fn ready_order_writes_a_finished_reply_at_once() {
-        assert_eq!(written(ReplyOrder::Ready), (b"secondfirst".to_vec(), 2));
+        let progress = WriteProgress::new();
+        let error = std::sync::Mutex::new(None);
+        let mut out = Vec::new();
+        {
+            let direct = DirectReplies::new(&mut out, &progress, &error);
+            let replies = Replies::Direct(&direct);
+            replies.send(1, b"second".as_slice().into()).unwrap();
+            replies.send(0, b"first".as_slice().into()).unwrap();
+        }
+        assert_eq!(flushed(&progress), 2);
+        assert_eq!(out, b"secondfirst".to_vec());
+    }
+
+    struct Broken;
+
+    impl std::io::Write for Broken {
+        fn write(&mut self, _: &[u8]) -> std::io::Result<usize> {
+            Err(std::io::Error::other("pipe closed"))
+        }
+
+        fn flush(&mut self) -> std::io::Result<()> {
+            Ok(())
+        }
+    }
+
+    #[test]
+    fn a_failed_direct_write_wakes_admission_and_stops_later_writes() {
+        let progress = WriteProgress::new();
+        let error = std::sync::Mutex::new(None);
+        let mut broken = Broken;
+        let direct = DirectReplies::new(&mut broken, &progress, &error);
+        assert!(direct.write(&b"a".as_slice().into()).is_err());
+        assert!(progress.wait_until(1).is_err());
+        assert!(direct.write(&b"b".as_slice().into()).is_err());
+        // The writer's own error is kept for `serve` to return.
+        assert!(
+            error
+                .lock()
+                .unwrap()
+                .as_ref()
+                .is_some_and(|error| error.kind() == std::io::ErrorKind::Other)
+        );
     }
 
     fn serve(input: &[u8], order: ReplyOrder) -> Vec<Vec<u8>> {

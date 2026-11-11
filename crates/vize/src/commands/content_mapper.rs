@@ -39,7 +39,7 @@ pub struct ContentMapperArgs {
 pub fn run(args: ContentMapperArgs) {
     let stdin = io::stdin();
     let mut reader = BufReader::new(stdin.lock());
-    let mut writer = BufWriter::new(io::stdout());
+    let mut writer = reply_output();
     let order = if args.reply_when_ready {
         dispatch::ReplyOrder::Ready
     } else {
@@ -49,6 +49,28 @@ pub fn run(args: ContentMapperArgs) {
         eprintln!("vize content-mapper: {error}");
         std::process::exit(1);
     }
+}
+
+/// Replies are whole frames, each written with one call. std's `Stdout` is
+/// line-buffered: it scans every frame back to its last newline, which is
+/// the header's, and writes the header and the body with separate calls. A
+/// handle of its own on the same descriptor writes each frame at once.
+fn reply_output() -> Box<dyn io::Write + Send> {
+    #[cfg(unix)]
+    {
+        use std::os::fd::AsFd;
+        if let Ok(fd) = io::stdout().as_fd().try_clone_to_owned() {
+            return Box::new(std::fs::File::from(fd));
+        }
+    }
+    #[cfg(windows)]
+    {
+        use std::os::windows::io::AsHandle;
+        if let Ok(handle) = io::stdout().as_handle().try_clone_to_owned() {
+            return Box::new(std::fs::File::from(handle));
+        }
+    }
+    Box::new(BufWriter::new(io::stdout()))
 }
 
 #[derive(Deserialize)]
