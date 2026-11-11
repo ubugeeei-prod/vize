@@ -100,6 +100,24 @@ fn structural_diagnostics_are_an_explicit_product_opt_in() {
 }
 
 #[test]
+fn an_interactive_element_without_an_end_tag_is_missing_one() {
+    let allocator = Allocator::new();
+    for source in [
+        "<div><button type=\"button\"><span>one</span><button type=\"button\">two</button></div>",
+        "<div><a href=\"/one\"><span>one</span><a href=\"/two\">two</a></div>",
+        "<button><button>x</button></button>",
+    ] {
+        let (_, _, errors) = parse_with_authored_diagnostics(&allocator, source);
+        let missing = errors
+            .iter()
+            .filter(|error| matches!(error.code, ErrorCode::MissingEndTag))
+            .count();
+        let expect = usize::from(!source.ends_with("</button></button>"));
+        assert_eq!(missing, expect, "{source}: {errors:?}");
+    }
+}
+
+#[test]
 fn stray_close_tag_is_a_verbatim_unexpected_node() {
     let allocator = Allocator::new();
     let (tree, _errors) = parse(&allocator, "</div>");

@@ -1,0 +1,7 @@
+<template>
+  <div>
+    <a href="/one">
+      <span>one</span>
+    <a href="/two">two</a>
+  </div>
+</template>

@@ -24,6 +24,9 @@ pub(crate) trait Frame<'a> {
 struct Closed<'a> {
     tag: &'a str,
     depth: usize,
+    /// `u32::MAX` until the builder stamps the open-tag span.
+    start: u32,
+    end: u32,
 }
 
 /// Open frames the start-tag rules search for, by depth. Searches start at
@@ -148,6 +151,29 @@ impl<'a> Recovery<'a> {
         core::mem::take(&mut self.consumed_implicit_close)
     }
 
+    /// Pair an implicitly closed frame with the open-tag span the builder just popped.
+    pub(crate) fn stamp_closed(&mut self, tag: &str, start: u32, end: u32) {
+        if let Some(closed) = self
+            .closed
+            .iter_mut()
+            .rev()
+            .find(|closed| closed.start == u32::MAX && closed.tag.eq_ignore_ascii_case(tag))
+        {
+            closed.start = start;
+            closed.end = end;
+        }
+    }
+
+    /// Button and anchor recoveries that never saw an end tag. Optional end
+    /// tags stay silent here; `vue/html-end-tags` owns those.
+    pub(crate) fn for_each_unconsumed_end_tag(&self, mut visit: impl FnMut(u32, u32)) {
+        for closed in &self.closed {
+            if closed.start != u32::MAX && !can_omit_end_tag(closed.tag) {
+                visit(closed.start, closed.end);
+            }
+        }
+    }
+
     /// Record the formatting elements the browser-style adoption agency
     /// reopens after closing a misnested formatting ancestor. The surface
     /// tree remains authored-order; this evidence is only needed to keep the
@@ -253,6 +279,8 @@ impl<'a> Recovery<'a> {
             self.closed.push(Closed {
                 tag: frame.tag(),
                 depth,
+                start: u32::MAX,
+                end: u32::MAX,
             });
         }
         Some(depth)
