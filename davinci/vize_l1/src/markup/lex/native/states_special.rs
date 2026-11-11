@@ -236,6 +236,7 @@ impl<P: Profile, S: Sink> Lexer<'_, P, S> {
             self.state_text(c);
             return;
         };
+        self.note_input_stream_character(c);
 
         if self.sequence_index == sequence_bytes.len() {
             if c == GT || is_whitespace(c) {
