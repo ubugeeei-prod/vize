@@ -8,6 +8,7 @@
     "$ComponentNavigationProps",
     "$ComponentRawProps",
     "$ComponentRefCallback",
+    "$DomElement",
     "$EmitGateInput",
     "$EmitGateResolver",
     "$EmitListeners",
@@ -24,6 +25,7 @@
     "$PropsResolver",
     "$PropsSelector",
     "$ProvidedSlotChildren",
+    "$RefInstanceFactory",
     "$RegisteredSlotProvider",
     "$RequiredSlots",
     "$ResolvedContextProps",
@@ -39,6 +41,8 @@
     "$SlotPayload",
     "$SlotsFactory",
     "$StructuralSlots",
+    "$TemplateComponentRef",
+    "$TemplateRefInstance",
     "$TemplateRefUnwrap",
     "$TemplateRefUnwrapNarrowed",
     "$UsageEmitPropsBox",
@@ -118,20 +122,24 @@
           "sha256": "e42c2c431553563663e28f75b4e68f8728d928a2867c857c76ef8cf30fe0f545"
         },
         {
+          "path": "virtual-ts-refs.d.ts",
+          "sha256": "34da3a2e4158669ba81c3ad0aecc2de58ca9b59ee4558a73939b224d16fa2356"
+        },
+        {
           "path": "virtual-ts-slots.d.ts",
           "sha256": "3b2f3387f8e720bdffd4ed864b74af6fa19895a89ba6f2f64151fd8dd98bdf9f"
         },
         {
           "path": "virtual-ts.d.cts",
-          "sha256": "63b5f81f2e720a0960b4240b40f37cef05b4077855bb69086a8e90610e2345a6"
+          "sha256": "cc4a986fd39fcaa231495e885fd5ebda53575b22ae961023d4e59332dafce19b"
         },
         {
           "path": "virtual-ts.d.mts",
-          "sha256": "63b5f81f2e720a0960b4240b40f37cef05b4077855bb69086a8e90610e2345a6"
+          "sha256": "cc4a986fd39fcaa231495e885fd5ebda53575b22ae961023d4e59332dafce19b"
         },
         {
           "path": "virtual-ts.d.ts",
-          "sha256": "63b5f81f2e720a0960b4240b40f37cef05b4077855bb69086a8e90610e2345a6"
+          "sha256": "cc4a986fd39fcaa231495e885fd5ebda53575b22ae961023d4e59332dafce19b"
         }
       ]
     },
@@ -174,12 +182,16 @@
           "sha256": "e42c2c431553563663e28f75b4e68f8728d928a2867c857c76ef8cf30fe0f545"
         },
         {
+          "path": "virtual-ts-refs.d.ts",
+          "sha256": "34da3a2e4158669ba81c3ad0aecc2de58ca9b59ee4558a73939b224d16fa2356"
+        },
+        {
           "path": "virtual-ts-slots.d.ts",
           "sha256": "3b2f3387f8e720bdffd4ed864b74af6fa19895a89ba6f2f64151fd8dd98bdf9f"
         },
         {
           "path": "virtual-ts.d.ts",
-          "sha256": "63b5f81f2e720a0960b4240b40f37cef05b4077855bb69086a8e90610e2345a6"
+          "sha256": "cc4a986fd39fcaa231495e885fd5ebda53575b22ae961023d4e59332dafce19b"
         }
       ]
     },
@@ -218,12 +230,16 @@
           "sha256": "e42c2c431553563663e28f75b4e68f8728d928a2867c857c76ef8cf30fe0f545"
         },
         {
+          "path": "virtual-ts-refs.d.ts",
+          "sha256": "34da3a2e4158669ba81c3ad0aecc2de58ca9b59ee4558a73939b224d16fa2356"
+        },
+        {
           "path": "virtual-ts-slots.d.ts",
           "sha256": "3b2f3387f8e720bdffd4ed864b74af6fa19895a89ba6f2f64151fd8dd98bdf9f"
         },
         {
           "path": "virtual-ts.d.ts",
-          "sha256": "63b5f81f2e720a0960b4240b40f37cef05b4077855bb69086a8e90610e2345a6"
+          "sha256": "cc4a986fd39fcaa231495e885fd5ebda53575b22ae961023d4e59332dafce19b"
         }
       ]
     }

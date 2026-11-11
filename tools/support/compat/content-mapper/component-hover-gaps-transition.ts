@@ -4,6 +4,7 @@ import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { beforeCheckModeGenerator } from "./check-mode-successor.ts";
 import { beforeComponentExportMemmem } from "./component-export-memmem-transition.ts";
+import { beforeSharedTemplateRefTargetsSource } from "./shared-template-ref-targets-transition.ts";
 
 export const componentHoverGapsRecord = "tests/_fixtures/tooling/component-hover-gaps-12461.json";
 const recordSha256 = "c8ccbc39b13f6b947115e56be72bceed09592662f4fa6cb0f08751bbe51634ee";
@@ -42,7 +43,9 @@ function load(): Transition {
 
 /** The exact pre-#12461 bytes of a recorded producer; older images pass through. */
 export function beforeComponentHoverGaps(path: string, current: string): string {
-  current = beforeCheckModeGenerator(path, beforeComponentExportMemmem(path, current));
+  current = beforeSharedTemplateRefTargetsSource(path, current);
+  current = beforeComponentExportMemmem(path, current);
+  current = beforeCheckModeGenerator(path, current);
   const file = load().files.find((entry) => entry.path === path);
   if (!file || identity(current).sha256 !== file.after.sha256) return current;
   assert.equal(Buffer.byteLength(current), file.after.bytes, `component hover producer: ${path}`);

@@ -27,6 +27,7 @@ import { applySharedUsageHelpersIn } from "../../support/compat/content-mapper/s
 import { applyClosedEmitFactoryIn } from "../../support/compat/content-mapper/closed-emit-factory-transition.ts";
 import { applySharedUsageGatesIn } from "../../support/compat/content-mapper/shared-usage-gates-transition.ts";
 import { applySharedKebabCaseIn } from "../../support/compat/content-mapper/shared-kebab-case-transition.ts";
+import { applySharedTemplateRefTargetsIn } from "../../support/compat/content-mapper/shared-template-ref-targets-transition.ts";
 
 export const canonLeftoverPreamblePaths = [
   "crates/vize_canon/src/virtual_ts/component_prop_helpers.txt",
@@ -95,7 +96,8 @@ export function slotCliPacket(
   const usageHelpers = applySharedUsageHelpersIn(templateRefs);
   const closedEmit = applyClosedEmitFactoryIn(usageHelpers);
   const usageGates = applySharedUsageGatesIn(closedEmit);
-  const currentPreamble = applySharedKebabCaseIn(usageGates);
+  const kebabCase = applySharedKebabCaseIn(usageGates);
+  const currentPreamble = applySharedTemplateRefTargetsIn(kebabCase);
   assert.equal(currentPreamble.split(replacement).length, 2);
   const files = observed.result.files.filter((file) => typeof file.virtualTs === "string");
   assert.ok(files.length > 0, "all actual virtual file bodies must remain in JSON");

@@ -357,6 +357,43 @@ function withProvenUsageGateAdditionsRemoved(
   return { ...actual, exports };
 }
 
+/** The shared template-ref registry targets are additions; their oracle proves each is the per-file declaration. */
+function withProvenTemplateRefTargetAdditionsRemoved(
+  actual: ExportSurface,
+  expected: ExportSurface,
+): ExportSurface {
+  const exports = structuredClone(actual.exports);
+  const oracle = new URL("tests/tooling/canon-template-ref-targets-sdk.test.ts", repositoryRoot);
+  const parameter = (
+    name: string,
+    constraint: string | null = null,
+    fallback: string | null = null,
+  ) => ({
+    name,
+    constraint,
+    default: fallback,
+  });
+  for (const [name, parameters] of [
+    ["$DomElement", [parameter("T", "string"), parameter("S", "boolean", "false")]],
+    ["$TemplateComponentRef", [parameter("C")]],
+    ["$RefInstanceFactory", [parameter("C")]],
+    ["$TemplateRefInstance", [parameter("T"), parameter("K", "keyof T"), parameter("C")]],
+  ] as const) {
+    const index = exports.findIndex((entry) => entry.name === name);
+    if (expected.exports.some((entry) => entry.name === name) || index < 0) continue;
+    assert.ok(fs.existsSync(oracle) && fs.readFileSync(oracle, "utf8").includes(name));
+    assert.deepEqual(exports[index], {
+      name,
+      type: true,
+      value: false,
+      namespace: false,
+      declarations: [{ kind: "TypeAliasDeclaration", parameters, signatures: [] }],
+    });
+    exports.splice(index, 1);
+  }
+  return { ...actual, exports };
+}
+
 export function assertPublicSlotExportSurface(
   actual: ExportSurface,
   expected: ExportSurface,
@@ -368,13 +405,16 @@ export function assertPublicSlotExportSurface(
   assert.deepEqual(
     Object.fromEntries(
       withProvenDefaultsRestored(
-        withProvenUsageGateAdditionsRemoved(
-          withProvenClosedEmitAdditionsRemoved(
-            withProvenUsageHelperAdditionsRemoved(
-              withProvenTemplateRefUnwrapAdditionsRemoved(
-                withProvenPropValueOrAdditionRemoved(
-                  withProvenListenerAdditionRemoved(
-                    withProvenListenerContractRemoved(actual, expected),
+        withProvenTemplateRefTargetAdditionsRemoved(
+          withProvenUsageGateAdditionsRemoved(
+            withProvenClosedEmitAdditionsRemoved(
+              withProvenUsageHelperAdditionsRemoved(
+                withProvenTemplateRefUnwrapAdditionsRemoved(
+                  withProvenPropValueOrAdditionRemoved(
+                    withProvenListenerAdditionRemoved(
+                      withProvenListenerContractRemoved(actual, expected),
+                      expected,
+                    ),
                     expected,
                   ),
                   expected,

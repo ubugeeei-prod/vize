@@ -42,6 +42,7 @@ fn restore(current: &str, transition: &Value) -> String {
 /// The pre-helper bytes of a recorded asset's current image. Older images
 /// pass through; the layers below authenticate them.
 pub(super) fn source_before(path: &str, current: String) -> String {
+    let current = super::template_ref_targets::source_before(path, current);
     let current = super::emit_props_block_scope::source_before(path, current);
     let current = super::closed_emit_factory::source_before(path, current);
     let record = record();
@@ -58,6 +59,7 @@ pub(super) fn source_before(path: &str, current: String) -> String {
 
 /// A compiled preamble without the shared per-usage helpers.
 pub(super) fn preamble_before(current: &str) -> String {
+    let current = &super::template_ref_targets::preamble_before(current);
     let current = &super::closed_emit_factory::preamble_before(current);
     let record = record();
     match ["compiledPreamble", "compiledStrictPreamble"]
@@ -80,6 +82,7 @@ mod tests {
         for file in record["files"].as_array().unwrap() {
             let path = file["path"].as_str().unwrap();
             let current = fs::read_to_string(support::repository().join(path)).unwrap();
+            let current = super::super::template_ref_targets::source_before(path, current);
             let current = super::super::emit_props_block_scope::source_before(path, current);
             let current = super::super::closed_emit_factory::source_before(path, current);
             assert!(is_after(&current, file), "{path}");
@@ -105,7 +108,8 @@ mod tests {
                 "compiledStrictPreamble",
             ),
         ] {
-            let current = &super::super::closed_emit_factory::preamble_before(physical);
+            let current = &super::super::template_ref_targets::preamble_before(physical);
+            let current = &super::super::closed_emit_factory::preamble_before(current);
             let preamble = &record[key];
             assert!(is_after(current, preamble));
             let previous = preamble_before(current);

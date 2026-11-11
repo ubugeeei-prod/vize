@@ -1,0 +1,197 @@
+{
+  "schema": "vize.sharedTemplateRefTargetsSource.v1",
+  "credit": {
+    "compiled": false,
+    "native": false,
+    "performance": false
+  },
+  "files": [
+    {
+      "path": "crates/vize_canon/src/virtual_ts/helpers/declarations/shared-template-refs.d.ts.txt",
+      "before": {
+        "bytes": 1173,
+        "sha256": "884d01698e2a360f0e15cfce4a06830b28e35a3cc95004ccbae1899465f28546"
+      },
+      "after": {
+        "bytes": 2764,
+        "sha256": "0661bb42d29c073776b740335f9f99d7d41c9362880b2da9da47017d0077bdc0"
+      },
+      "hunks": [
+        {
+          "before": "export type $TemplateRefUnwrapNarrowed<T> = [T] extends [import('vue').Ref] ? $TemplateRefUnwrap<T> : [Extract<T, import('vue').Ref>] extends [never] ? $TemplateRefUnwrap<T> : (NonNullable<T> & import('vue').Ref<unknown> & { value: $TemplateRefUnwrap<T> })['value'];\n",
+          "after": "export type $TemplateRefUnwrapNarrowed<T> = [T] extends [import('vue').Ref] ? $TemplateRefUnwrap<T> : [Extract<T, import('vue').Ref>] extends [never] ? $TemplateRefUnwrap<T> : (NonNullable<T> & import('vue').Ref<unknown> & { value: $TemplateRefUnwrap<T> })['value'];\n// Template-ref registry targets, shared so each instantiation is cached once per program.\nexport type $DomElement<_Tag extends string, _Svg extends boolean = false> = _Svg extends true ? (_Tag extends keyof SVGElementTagNameMap ? SVGElementTagNameMap[_Tag] : Element) : (_Tag extends keyof HTMLElementTagNameMap ? HTMLElementTagNameMap[_Tag] : Element);\nexport type $TemplateComponentRef<_C> = _C extends string ? (_C extends keyof HTMLElementTagNameMap ? HTMLElementTagNameMap[_C] : _C extends keyof SVGElementTagNameMap ? SVGElementTagNameMap[_C] : Element) : _C extends abstract new (...args: any[]) => infer _I ? _I : _C extends (props: any, ctx: any, expose: (exposed: infer _E) => any, ...args: any[]) => any ? NonNullable<_E> : any;\nexport type $RefInstanceFactory<_C> = 0 extends (1 & _C) ? (component: _C) => (props: any) => undefined : _C extends { __vizeResolveRef?: infer _F } ? _F extends (...args: any[]) => any ? (component: _C) => _F : (component: _C) => (props: any) => undefined : _C extends (props: any, ctx?: any, expose?: any, ...args: any[]) => any ? (component: _C) => _C : (component: _C) => (props: any) => undefined;\nexport type $TemplateRefInstance<_T, _K extends keyof _T, _C> = 0 extends (1 & _C) ? $TemplateComponentRef<_C> : _C extends (props: any, ctx?: any, expose?: any, ...args: any[]) => any ? _T[_K] extends () => infer _R ? _R extends { __ctx?: infer _X } ? NonNullable<_X> extends { expose: (exposed: infer _E) => any } ? NonNullable<_E> : $TemplateComponentRef<_C> : $TemplateComponentRef<_C> : $TemplateComponentRef<_C> : $TemplateComponentRef<_C>;\n"
+        }
+      ]
+    },
+    {
+      "path": "npm/cli/virtual-ts.d.ts",
+      "before": {
+        "bytes": 17860,
+        "sha256": "63b5f81f2e720a0960b4240b40f37cef05b4077855bb69086a8e90610e2345a6"
+      },
+      "after": {
+        "bytes": 18031,
+        "sha256": "cc4a986fd39fcaa231495e885fd5ebda53575b22ae961023d4e59332dafce19b"
+      },
+      "hunks": [
+        {
+          "before": "// One module for every content-mapper virtual file.\n// Template-ref widening. Hoisted-only, deliberately absent from the per-file\n// preamble: a module-scope copy is dead code (TS6196) in every component whose\n// template scope emits no __U, and only generated template scopes use it.\n",
+          "after": "// Template-ref helpers, hoisted-only and shared so each instantiation is cached once per program.\n"
+        },
+        {
+          "before": "// Template ref unwrap, shared so each instantiation is cached once per program.\nexport type $TemplateRefUnwrap<T>",
+          "after": "export type $TemplateRefUnwrap<T>"
+        },
+        {
+          "before": "[\"value\"];\n\nimport type * as __vizeSlotTypes",
+          "after": "[\"value\"];\nimport type * as __vizeRef from \"./virtual-ts-refs.js\" with { \"resolution-mode\": \"import\" };\nexport type $DomElement<T extends string, S extends boolean = false> = __vizeRef.$DomElement<T, S>;\nexport type $TemplateComponentRef<C> = __vizeRef.$TemplateComponentRef<C>;\nexport type $RefInstanceFactory<C> = __vizeRef.$RefInstanceFactory<C>;\nexport type $TemplateRefInstance<T, K extends keyof T, C> = __vizeRef.$TemplateRefInstance<T, K, C>;\nimport type * as __vizeSlotTypes"
+        }
+      ]
+    },
+    {
+      "path": "crates/vize_canon/src/virtual_ts/helpers/shared_types.rs",
+      "before": {
+        "bytes": 4665,
+        "sha256": "460798f74160021f6397b4cdb196a2b3cd1839c0dc5baab648ee60f3c7b3d4f7"
+      },
+      "after": {
+        "bytes": 4953,
+        "sha256": "d29c24aeb9fca4b3e2c129c7c0c80bf4d04c2ee388a1d1a86f9ef7b49b485529"
+      },
+      "hunks": [
+        {
+          "before": "",
+          "after": "    DOM_ELEMENT => (\"$DomElement\", \"$DomElement\"),\n    TEMPLATE_COMPONENT_REF => (\"$TemplateComponentRef\", \"$TemplateComponentRef\"),\n    REF_INSTANCE_FACTORY => (\"$RefInstanceFactory\", \"$RefInstanceFactory\"),\n    TEMPLATE_REF_INSTANCE => (\"$TemplateRefInstance\", \"$TemplateRefInstance\"),\n"
+        }
+      ]
+    },
+    {
+      "path": "npm/cli/virtual-ts.d.mts",
+      "before": {
+        "bytes": 17860,
+        "sha256": "63b5f81f2e720a0960b4240b40f37cef05b4077855bb69086a8e90610e2345a6"
+      },
+      "after": {
+        "bytes": 18031,
+        "sha256": "cc4a986fd39fcaa231495e885fd5ebda53575b22ae961023d4e59332dafce19b"
+      },
+      "hunks": [
+        {
+          "before": "// One module for every content-mapper virtual file.\n// Template-ref widening. Hoisted-only, deliberately absent from the per-file\n// preamble: a module-scope copy is dead code (TS6196) in every component whose\n// template scope emits no __U, and only generated template scopes use it.\n",
+          "after": "// Template-ref helpers, hoisted-only and shared so each instantiation is cached once per program.\n"
+        },
+        {
+          "before": "// Template ref unwrap, shared so each instantiation is cached once per program.\nexport type $TemplateRefUnwrap<T>",
+          "after": "export type $TemplateRefUnwrap<T>"
+        },
+        {
+          "before": "[\"value\"];\n\nimport type * as __vizeSlotTypes",
+          "after": "[\"value\"];\nimport type * as __vizeRef from \"./virtual-ts-refs.js\" with { \"resolution-mode\": \"import\" };\nexport type $DomElement<T extends string, S extends boolean = false> = __vizeRef.$DomElement<T, S>;\nexport type $TemplateComponentRef<C> = __vizeRef.$TemplateComponentRef<C>;\nexport type $RefInstanceFactory<C> = __vizeRef.$RefInstanceFactory<C>;\nexport type $TemplateRefInstance<T, K extends keyof T, C> = __vizeRef.$TemplateRefInstance<T, K, C>;\nimport type * as __vizeSlotTypes"
+        }
+      ]
+    },
+    {
+      "path": "npm/cli/virtual-ts.d.cts",
+      "before": {
+        "bytes": 17860,
+        "sha256": "63b5f81f2e720a0960b4240b40f37cef05b4077855bb69086a8e90610e2345a6"
+      },
+      "after": {
+        "bytes": 18031,
+        "sha256": "cc4a986fd39fcaa231495e885fd5ebda53575b22ae961023d4e59332dafce19b"
+      },
+      "hunks": [
+        {
+          "before": "// One module for every content-mapper virtual file.\n// Template-ref widening. Hoisted-only, deliberately absent from the per-file\n// preamble: a module-scope copy is dead code (TS6196) in every component whose\n// template scope emits no __U, and only generated template scopes use it.\n",
+          "after": "// Template-ref helpers, hoisted-only and shared so each instantiation is cached once per program.\n"
+        },
+        {
+          "before": "// Template ref unwrap, shared so each instantiation is cached once per program.\nexport type $TemplateRefUnwrap<T>",
+          "after": "export type $TemplateRefUnwrap<T>"
+        },
+        {
+          "before": "[\"value\"];\n\nimport type * as __vizeSlotTypes",
+          "after": "[\"value\"];\nimport type * as __vizeRef from \"./virtual-ts-refs.js\" with { \"resolution-mode\": \"import\" };\nexport type $DomElement<T extends string, S extends boolean = false> = __vizeRef.$DomElement<T, S>;\nexport type $TemplateComponentRef<C> = __vizeRef.$TemplateComponentRef<C>;\nexport type $RefInstanceFactory<C> = __vizeRef.$RefInstanceFactory<C>;\nexport type $TemplateRefInstance<T, K extends keyof T, C> = __vizeRef.$TemplateRefInstance<T, K, C>;\nimport type * as __vizeSlotTypes"
+        }
+      ]
+    },
+    {
+      "path": "crates/vize_canon/src/virtual_ts/generator.rs",
+      "before": {
+        "bytes": 37789,
+        "sha256": "3eb5b8a7c0e30e866a9cafe482955945f50bc35b9ac33396f52d3b97ce33acdf"
+      },
+      "after": {
+        "bytes": 37936,
+        "sha256": "96863ed850e4905ad266c48594969e8752297048a073fa9feeba62e29a5074f1"
+      },
+      "hunks": [
+        {
+          "before": "    );\n    ts.push_str(\"\\n\\n\");\n\n    if let Some(script) = script_content {\n        profile!(\"canon.virtual_ts.emit_script_body\", {\n",
+          "after": "    );\n    ts.push_str(\"\\n\\n\");\n    if let Some(script) = script_content {\n        profile!(\"canon.virtual_ts.emit_script_body\", {\n"
+        },
+        {
+          "before": "            let mut pending_class_alias: Option<(usize, &str)> = None;\n            let mut emitted_default_alias = false;\n\n            for (src_byte_offset, raw_line) in ambient.script_lines(script) {\n                boundaries.emit_through(src_byte_offset, &mut ts, &mut mappings, source_offset);\n",
+          "after": "            let mut pending_class_alias: Option<(usize, &str)> = None;\n            let mut emitted_default_alias = false;\n            for (src_byte_offset, raw_line) in ambient.script_lines(script) {\n                boundaries.emit_through(src_byte_offset, &mut ts, &mut mappings, source_offset);\n"
+        },
+        {
+          "before": "        setup_helpers.template_refs.needs_registry(),\n    );\n",
+          "after": "        setup_helpers.template_refs.needs_registry(),\n        hoist_shared_preamble && !generation_options.local_template_ref_unwrap,\n    );\n"
+        },
+        {
+          "before": "                instantiated_ref_starts: template_record.ref_starts(),\n",
+          "after": "                instantiated_ref_starts: template_record.ref_starts(),\n                shared_template_refs: template_record.shares_refs(),\n"
+        }
+      ]
+    },
+    {
+      "path": "npm/cli/package.json",
+      "before": {
+        "bytes": 4494,
+        "sha256": "e4fa0c743fbc3fe1efec08f09ee72c38b2faa476e831f0233ea05efea63644a1"
+      },
+      "after": {
+        "bytes": 4522,
+        "sha256": "54f3c69dcae1a2a2263bd599fa3057ddf2eea6adab125c66ecbb59476130e87b"
+      },
+      "hunks": [
+        {
+          "before": "    \"virtual-ts-slots.d.ts\",\n",
+          "after": "    \"virtual-ts-slots.d.ts\",\n    \"virtual-ts-refs.d.ts\",\n"
+        }
+      ]
+    }
+  ],
+  "compiledPreamble": {
+    "before": {
+      "bytes": 56572,
+      "sha256": "101ae06644c80ffb5f55ad87a1a41870a5cddd82d82739be84f3a139d2d67772"
+    },
+    "after": {
+      "bytes": 58163,
+      "sha256": "cf659c06c0ac9228aea29c0720b33cd6d854d15a9f5ec9977bc609c9fa472405"
+    },
+    "hunks": [
+      {
+        "before": "export type $TemplateRefUnwrapNarrowed<T> = [T] extends [import('vue').Ref] ? $TemplateRefUnwrap<T> : [Extract<T, import('vue').Ref>] extends [never] ? $TemplateRefUnwrap<T> : (NonNullable<T> & import('vue').Ref<unknown> & { value: $TemplateRefUnwrap<T> })['value'];\n",
+        "after": "export type $TemplateRefUnwrapNarrowed<T> = [T] extends [import('vue').Ref] ? $TemplateRefUnwrap<T> : [Extract<T, import('vue').Ref>] extends [never] ? $TemplateRefUnwrap<T> : (NonNullable<T> & import('vue').Ref<unknown> & { value: $TemplateRefUnwrap<T> })['value'];\n// Template-ref registry targets, shared so each instantiation is cached once per program.\nexport type $DomElement<_Tag extends string, _Svg extends boolean = false> = _Svg extends true ? (_Tag extends keyof SVGElementTagNameMap ? SVGElementTagNameMap[_Tag] : Element) : (_Tag extends keyof HTMLElementTagNameMap ? HTMLElementTagNameMap[_Tag] : Element);\nexport type $TemplateComponentRef<_C> = _C extends string ? (_C extends keyof HTMLElementTagNameMap ? HTMLElementTagNameMap[_C] : _C extends keyof SVGElementTagNameMap ? SVGElementTagNameMap[_C] : Element) : _C extends abstract new (...args: any[]) => infer _I ? _I : _C extends (props: any, ctx: any, expose: (exposed: infer _E) => any, ...args: any[]) => any ? NonNullable<_E> : any;\nexport type $RefInstanceFactory<_C> = 0 extends (1 & _C) ? (component: _C) => (props: any) => undefined : _C extends { __vizeResolveRef?: infer _F } ? _F extends (...args: any[]) => any ? (component: _C) => _F : (component: _C) => (props: any) => undefined : _C extends (props: any, ctx?: any, expose?: any, ...args: any[]) => any ? (component: _C) => _C : (component: _C) => (props: any) => undefined;\nexport type $TemplateRefInstance<_T, _K extends keyof _T, _C> = 0 extends (1 & _C) ? $TemplateComponentRef<_C> : _C extends (props: any, ctx?: any, expose?: any, ...args: any[]) => any ? _T[_K] extends () => infer _R ? _R extends { __ctx?: infer _X } ? NonNullable<_X> extends { expose: (exposed: infer _E) => any } ? NonNullable<_E> : $TemplateComponentRef<_C> : $TemplateComponentRef<_C> : $TemplateComponentRef<_C> : $TemplateComponentRef<_C>;\n"
+      }
+    ]
+  },
+  "compiledStrictPreamble": {
+    "before": {
+      "bytes": 56363,
+      "sha256": "6719f76be603588930cc76c10421a1a64eddcfd0bde6e487619de65c0e9894d9"
+    },
+    "after": {
+      "bytes": 57954,
+      "sha256": "3748c9b6116a91de1494edf8fc4a7e91520ffb9effa16c5ab8b1dc5d7d03e499"
+    },
+    "hunks": [
+      {
+        "before": "export type $TemplateRefUnwrapNarrowed<T> = [T] extends [import('vue').Ref] ? $TemplateRefUnwrap<T> : [Extract<T, import('vue').Ref>] extends [never] ? $TemplateRefUnwrap<T> : (NonNullable<T> & import('vue').Ref<unknown> & { value: $TemplateRefUnwrap<T> })['value'];\n",
+        "after": "export type $TemplateRefUnwrapNarrowed<T> = [T] extends [import('vue').Ref] ? $TemplateRefUnwrap<T> : [Extract<T, import('vue').Ref>] extends [never] ? $TemplateRefUnwrap<T> : (NonNullable<T> & import('vue').Ref<unknown> & { value: $TemplateRefUnwrap<T> })['value'];\n// Template-ref registry targets, shared so each instantiation is cached once per program.\nexport type $DomElement<_Tag extends string, _Svg extends boolean = false> = _Svg extends true ? (_Tag extends keyof SVGElementTagNameMap ? SVGElementTagNameMap[_Tag] : Element) : (_Tag extends keyof HTMLElementTagNameMap ? HTMLElementTagNameMap[_Tag] : Element);\nexport type $TemplateComponentRef<_C> = _C extends string ? (_C extends keyof HTMLElementTagNameMap ? HTMLElementTagNameMap[_C] : _C extends keyof SVGElementTagNameMap ? SVGElementTagNameMap[_C] : Element) : _C extends abstract new (...args: any[]) => infer _I ? _I : _C extends (props: any, ctx: any, expose: (exposed: infer _E) => any, ...args: any[]) => any ? NonNullable<_E> : any;\nexport type $RefInstanceFactory<_C> = 0 extends (1 & _C) ? (component: _C) => (props: any) => undefined : _C extends { __vizeResolveRef?: infer _F } ? _F extends (...args: any[]) => any ? (component: _C) => _F : (component: _C) => (props: any) => undefined : _C extends (props: any, ctx?: any, expose?: any, ...args: any[]) => any ? (component: _C) => _C : (component: _C) => (props: any) => undefined;\nexport type $TemplateRefInstance<_T, _K extends keyof _T, _C> = 0 extends (1 & _C) ? $TemplateComponentRef<_C> : _C extends (props: any, ctx?: any, expose?: any, ...args: any[]) => any ? _T[_K] extends () => infer _R ? _R extends { __ctx?: infer _X } ? NonNullable<_X> extends { expose: (exposed: infer _E) => any } ? NonNullable<_E> : $TemplateComponentRef<_C> : $TemplateComponentRef<_C> : $TemplateComponentRef<_C> : $TemplateComponentRef<_C>;\n"
+      }
+    ]
+  }
+}

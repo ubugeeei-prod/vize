@@ -355,6 +355,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         template_ast.filter(|_| has_template_scope && check_options.check_template_bindings),
         generic_param.is_some() && !legacy_vue2,
         setup_helpers.template_refs.needs_registry(),
+        hoist_shared_preamble && !generation_options.local_template_ref_unwrap,
     );
     setup_imports.read_template_slots_from(template_record.slots_value().as_str());
     ts.push_str("// ========== Setup Scope ==========\n");
@@ -390,7 +391,6 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         template_ast,
     );
     ts.push_str("\n\n");
-
     if let Some(script) = script_content {
         profile!("canon.virtual_ts.emit_script_body", {
             ts.push_str("  // User setup code\n");
@@ -406,7 +406,6 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
             // Deferred class-component alias: `(class_end, name)`.
             let mut pending_class_alias: Option<(usize, &str)> = None;
             let mut emitted_default_alias = false;
-
             for (src_byte_offset, raw_line) in ambient.script_lines(script) {
                 boundaries.emit_through(src_byte_offset, &mut ts, &mut mappings, source_offset);
                 ambient.emit_setup_captures(
@@ -688,6 +687,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                     .experimental_strict_slot_children,
                 forwarded_root_starts: template_record.forwarded.starts(),
                 instantiated_ref_starts: template_record.ref_starts(),
+                shared_template_refs: template_record.shares_refs(),
             };
             let template_binding_access = profile!(
                 "canon.virtual_ts.collect_template_prop_names",

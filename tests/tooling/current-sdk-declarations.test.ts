@@ -10,11 +10,20 @@ const source = fileURLToPath(new URL("../../npm/cli", import.meta.url));
 
 void test("the current manifest and actual declaration graph cover mapper and checker consumers", () => {
   const closure = captureCurrentSdkDeclarations(source);
-  assert.equal(closure.files.length, 15);
-  assert.equal(closure.graph.files.length, 15);
-  assert.equal(closure.graph.edges.length, 25);
-  assert.equal(closure.mapperGraph.files.length, 13);
-  assert.equal(closure.mapperGraph.edges.length, 23);
+  assert.equal(closure.files.length, 16);
+  assert.equal(closure.graph.files.length, 16);
+  assert.equal(closure.graph.edges.length, 28);
+  assert.equal(closure.mapperGraph.files.length, 14);
+  assert.equal(closure.mapperGraph.edges.length, 26);
+  // Each virtual-ts entry imports the template-ref targets it forwards.
+  assert.deepEqual(
+    closure.graph.edges
+      .filter((edge) => edge.specifier === "./virtual-ts-refs.js")
+      .map((edge) => path.basename(edge.from))
+      .sort(),
+    ["virtual-ts.d.cts", "virtual-ts.d.mts", "virtual-ts.d.ts"],
+  );
+  assert.ok(closure.files.includes("virtual-ts-refs.d.ts"));
   assert.ok(closure.files.includes("virtual-ts-emits.d.ts"));
   assert.ok(closure.files.includes("virtual-ts-listeners.d.ts"));
   assert.ok(closure.files.includes("virtual-ts-checker.d.ts"));

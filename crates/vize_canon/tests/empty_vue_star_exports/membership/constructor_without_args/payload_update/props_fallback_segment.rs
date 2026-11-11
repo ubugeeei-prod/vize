@@ -182,6 +182,7 @@ mod tests {
     use super::{FILES, invert, retain_provenance, source_before};
     use serde_json::json;
 
+    /// The physical image with only the newer template-ref target layer removed.
     fn current(path: &str) -> String {
         let body = std::fs::read_to_string(super::support::repository().join(path)).unwrap();
         super::super::shared_kebab_case::source_before(path, body)
