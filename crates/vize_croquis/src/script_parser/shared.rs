@@ -29,8 +29,9 @@ use std::ptr::NonNull;
 use std::rc::Rc;
 
 use oxc_allocator::Allocator;
+use oxc_ast::ast::Statement;
 use oxc_parser::{Parser, ParserReturn};
-use oxc_span::{FileExtension, ModuleKind, SourceType};
+use oxc_span::{FileExtension, GetSpan, ModuleKind, SourceType};
 
 /// The text a shared parse borrows, with the arena its tree lives in.
 struct Source {
@@ -187,19 +188,11 @@ impl SharedProgram {
 /// Sharing follows [`with_shared_parse`].
 pub fn shared_program(text: &str, source_type: SourceType) -> Option<SharedProgram> {
     let source_type = program_source_type(source_type);
-    let found = PARSES.with_borrow(|parses| {
-        parses.as_ref()?.iter().find_map(|parse| {
-            let source = parse.source();
-            (source.source_type == source_type && *source.text == *text)
-                .then(|| SharedProgram(Rc::clone(parse)))
-        })
-    });
-    if found.is_some() {
-        return found;
+    if let Some(parse) = module_goal_from_unambiguous(text, source_type) {
+        return Some(SharedProgram(parse));
     }
-    let enabled = PARSES.with_borrow(Option::is_some);
-    if !enabled {
-        return None;
+    if let Some(parse) = find_program(text, source_type)? {
+        return Some(SharedProgram(parse));
     }
 
     // No borrow is held while parsing: a reader of another shared parse may
@@ -218,6 +211,71 @@ pub fn shared_program(text: &str, source_type: SourceType) -> Option<SharedProgr
         }
     });
     Some(SharedProgram(parse))
+}
+
+/// The scope's existing parse of `text` as `source_type`: `None` outside a
+/// scope, `Some(None)` when the scope has not parsed it.
+fn find_program(text: &str, source_type: SourceType) -> Option<Option<Rc<SharedParse>>> {
+    PARSES.with_borrow(|parses| {
+        let parses = parses.as_ref()?;
+        Some(
+            parses
+                .iter()
+                .find(|parse| {
+                    let source = parse.source();
+                    source.source_type == source_type && *source.text == *text
+                })
+                .cloned(),
+        )
+    })
+}
+
+/// The scope's unambiguous parse of `text`, when it is exactly the parse of
+/// the module goal `source_type` asks for.
+///
+/// An unambiguous TypeScript parse that finds an `import` or `export`
+/// resolves to the module goal, and from the statement after the first such
+/// one on it parses exactly as the module goal does. The goals differ only in
+/// three places: whether a top-level `await` is a keyword before that point,
+/// HTML-like comments (`<!--`, `-->`), and the order of the errors those
+/// produce. So the unambiguous parse is reused only when it resolved to a
+/// module through an `import`/`export` statement, no `await` appears in the
+/// text up to the end of the first one, and the text has no `<!--` or `-->`.
+/// Any other script keeps its own module-goal parse.
+fn module_goal_from_unambiguous(text: &str, source_type: SourceType) -> Option<Rc<SharedParse>> {
+    if source_type.module_kind() != ModuleKind::Module
+        || !source_type.is_typescript()
+        || source_type.is_typescript_definition()
+        || source_type.extension().is_some()
+    {
+        return None;
+    }
+    let parse = find_program(text, source_type.with_unambiguous(true))??;
+    parses_as_module_goal(parse.parsed(), text).then_some(parse)
+}
+
+/// Whether an unambiguous parse of `text` is exactly its module-goal parse.
+fn parses_as_module_goal(parsed: &ParserReturn<'_>, text: &str) -> bool {
+    if parsed.panicked
+        || !parsed.program.source_type.is_module()
+        || text.contains("<!--")
+        || text.contains("-->")
+    {
+        return false;
+    }
+    let Some(first) = parsed.program.body.iter().find(|statement| {
+        matches!(
+            statement,
+            Statement::ImportDeclaration(_)
+                | Statement::ExportAllDeclaration(_)
+                | Statement::ExportDefaultDeclaration(_)
+                | Statement::ExportNamedDeclaration(_)
+        )
+    }) else {
+        return false;
+    };
+    text.get(..first.span().end as usize)
+        .is_some_and(|prefix| !prefix.contains("await"))
 }
 
 #[cfg(test)]
@@ -332,6 +390,67 @@ mod tests {
             program_source_type(from_path("script.ts").with_module(true)),
             SourceType::ts().with_module(true)
         );
+    }
+
+    fn parse_debug(text: &str, source_type: SourceType) -> vize_carton::String {
+        use vize_carton::ToCompactString;
+        let allocator = Allocator::default();
+        let parsed = Parser::new(&allocator, text, source_type).parse();
+        let diagnostics: Vec<vize_carton::String> = parsed
+            .diagnostics
+            .iter()
+            .map(ToCompactString::to_compact_string)
+            .collect();
+        vize_carton::cstr!(
+            "{:?}\n{:?}\n{}",
+            parsed.program,
+            diagnostics,
+            parsed.panicked
+        )
+    }
+
+    #[test]
+    fn a_module_goal_reuses_the_unambiguous_parse_only_where_they_are_identical() {
+        let reused = [
+            "import { ref } from 'vue'\nconst count = ref(0)\nawait load()\n",
+            "// leading comment\nimport type { A } from './a'\nlet a: A\nfor await (const x of y) {}\n",
+            "import x from 'x'\nconst f = (a) => a <\n  b\nconst g = async () => { await x }\n",
+            "import { h } from 'vue'\nexport default { render: () => h('div') }\n",
+        ];
+        let separate = [
+            "const value = await load()\nimport x from 'x'\n",
+            "import await from 'x'\n",
+            "const ready = true\n",
+            "console.log(import.meta.url)\n",
+            "import x from 'x'\nconst y = 1 <!-- 2\n",
+            "import x from 'x'\n--> comment\n",
+            "await x\n",
+            "export const value = await fetch(url)\n",
+            "import x from 'x'\nconst broken = (\n",
+        ];
+        for (text, expect) in reused
+            .iter()
+            .map(|text| (text, true))
+            .chain(separate.iter().map(|text| (text, false)))
+        {
+            for dialect in [SourceType::ts(), SourceType::tsx()] {
+                let _scope = SharedParseScope::enter();
+                let unambiguous = tree_address(text, dialect);
+                let module = tree_address(text, dialect.with_module(true));
+                assert_eq!(module == unambiguous, expect, "{text:?} {dialect:?}");
+                if expect {
+                    assert_eq!(
+                        parse_debug(text, dialect.with_module(true)),
+                        parse_debug(text, dialect),
+                        "{text:?} {dialect:?}"
+                    );
+                }
+            }
+        }
+        let _scope = SharedParseScope::enter();
+        let text = "import x from 'x'\n";
+        let module = tree_address(text, SourceType::ts().with_module(true));
+        assert_ne!(tree_address(text, SourceType::ts()), module);
     }
 
     #[test]
