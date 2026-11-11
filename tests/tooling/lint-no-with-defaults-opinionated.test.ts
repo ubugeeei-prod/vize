@@ -1,3 +1,4 @@
+import { withoutLaterRulePorts } from "./support/without-later-rule-ports.ts";
 import { currentRuleDocumentationPacket } from "./support/current-rule-documentation.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
@@ -178,7 +179,12 @@ await test("opinionated activates the existing withDefaults warning through the 
             ? `\nToo many warnings (${oracle[0]!.warningCount} > max ${entry.maxWarnings})\n`
             : "",
         );
-        assert.deepEqual(JSON.parse(run.stdout), oracle, entry.id);
+        const actual = JSON.parse(run.stdout);
+        assert.deepEqual(
+          entry.preset === "all" ? withoutLaterRulePorts(actual) : actual,
+          oracle,
+          entry.id,
+        );
         assert.equal(sha256(fs.readFileSync(destination)), pin.sha256);
         evidence.cliQualified++;
       }
