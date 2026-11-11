@@ -70,7 +70,7 @@ pub(crate) static ENTRIES: &[(&str, &str, &str, &str)] = &[
     ),
     (
         "vue/no-irregular-whitespace.description",
-        "Disallow irregular whitespace in template expressions",
+        "Disallow irregular whitespace in script blocks and templates",
         "テンプレート式の不規則な空白文字を禁止する",
         "禁止模板表达式中的异常空白字符",
     ),
@@ -166,7 +166,7 @@ pub(crate) static ENTRIES: &[(&str, &str, &str, &str)] = &[
     ),
     (
         "vue/sort-keys.description",
-        "Require sorted keys in component option objects",
+        "Require sorted object keys, compatible with component option order",
         "コンポーネントオプションオブジェクトのキーを並べ替える",
         "要求组件选项对象中的键保持排序",
     ),

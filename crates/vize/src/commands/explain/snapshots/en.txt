@@ -4843,7 +4843,7 @@ help:
   Use only standard rel tokens that are allowed for this element, such as noopener noreferrer on links or stylesheet on link elements.
 === vue/no-irregular-whitespace
 vue/no-irregular-whitespace · lint rule
-Disallow irregular whitespace in template expressions
+Disallow irregular whitespace in script blocks and templates
 
 tier: heuristic
 domain: simple interpolation and directive expressions with a retained JavaScript AST, using default rule behavior or the typed options Patina exposes; compound expressions and unsupported selector syntax are outside
@@ -6086,7 +6086,7 @@ help:
   Rename the rendered slot outlet to {casing}.
 === vue/sort-keys
 vue/sort-keys · lint rule
-Require sorted keys in component option objects
+Require sorted object keys, compatible with component option order
 
 tier: complete
 domain: inline SFC scripts and descriptors with lexically unshadowed Vue macros and APIs and structurally recognizable component option objects; external blocks and unresolved aliases are outside

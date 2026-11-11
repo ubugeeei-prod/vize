@@ -28,7 +28,7 @@ fn number(text: &[u16], start: usize) -> (f64, usize) {
     while is_digit(code(text, end)) {
         end += 1;
     }
-    let digits: vize_carton::String = text
+    let digits: vize_l0::String = text
         .get(start.saturating_sub(1)..end)
         .unwrap_or_default()
         .iter()
