@@ -5,12 +5,12 @@ use crate::virtual_ts::generated_names::push_lib_text;
 use crate::virtual_ts::helpers::setup_macros::{
     SETUP_MACRO_HELPERS, VUE_SETUP_HELPERS, VUE_SETUP_HELPERS_HOISTED, WITH_DEFAULTS_DOCS_EMBEDDED,
 };
-use oxc_allocator::Allocator;
-use oxc_parser::Parser;
+use oxc_parser::ParserReturn;
 use oxc_semantic::SemanticBuilder;
 use oxc_span::SourceType;
 use vize_carton::{CompactString, FxHashSet, String, append};
 use vize_croquis::Croquis;
+use vize_croquis::script_parser::with_shared_parse;
 
 pub(crate) struct SetupHelperPlan {
     shadowed: FxHashSet<CompactString>,
@@ -227,13 +227,33 @@ fn shadowed_helpers(
     if plan.active_template_ref {
         plan.shadowed.insert(CompactString::from("useTemplateRef"));
     }
-    let allocator = Allocator::default();
-    let parsed = Parser::new(&allocator, source, SourceType::ts()).parse();
-    let parsed = if parsed.panicked || !parsed.diagnostics.is_empty() {
-        Parser::new(&allocator, source, SourceType::tsx()).parse()
-    } else {
-        parsed
+    let read = |parsed: &ParserReturn<'_>| {
+        read_helpers(
+            plan,
+            parsed,
+            summary,
+            source,
+            preserve_event_navigation,
+            configured_global_template_ref,
+        )
     };
+    with_shared_parse(source, SourceType::ts(), |parsed| {
+        if parsed.panicked || !parsed.diagnostics.is_empty() {
+            with_shared_parse(source, SourceType::tsx(), read)
+        } else {
+            read(parsed)
+        }
+    })
+}
+
+fn read_helpers(
+    mut plan: SetupHelperPlan,
+    parsed: &ParserReturn<'_>,
+    summary: &Croquis,
+    source: &str,
+    preserve_event_navigation: bool,
+    configured_global_template_ref: bool,
+) -> SetupHelperPlan {
     if parsed.panicked {
         return plan;
     }

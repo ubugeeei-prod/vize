@@ -32,12 +32,12 @@
 //! no diagnostic is filtered. Setup-body reads are untouched, so genuinely
 //! conditional or asynchronous assignment still reports TS2454 there.
 
-use oxc_allocator::Allocator;
 use oxc_ast::ast::{BindingPattern, Statement, VariableDeclarationKind};
-use oxc_parser::{Parser, ParserReturn};
+use oxc_parser::ParserReturn;
 use oxc_span::SourceType;
 use std::ops::Range;
 
+use vize_croquis::script_parser::with_shared_parse;
 use vize_croquis::{BindingType, Croquis};
 use vize_l0::{FxHashMap, FxHashSet, String, append};
 
@@ -130,8 +130,10 @@ pub(super) fn emit_template_variables(
 /// declared inside a nested block or function is never in scope for the
 /// template, so it can never be the one TypeScript flags.
 fn collect_uninitialized_bindings(script: &str) -> Vec<String> {
-    let allocator = Allocator::default();
-    let parsed = parse_script(&allocator, script);
+    with_setup_parse(script, uninitialized_bindings)
+}
+
+fn uninitialized_bindings(parsed: &ParserReturn<'_>) -> Vec<String> {
     if parsed.panicked {
         return Vec::new();
     }
@@ -168,15 +170,18 @@ fn collect_uninitialized_bindings(script: &str) -> Vec<String> {
 /// kept only when it parses strictly better; a TS parse that merely recovered
 /// would otherwise drop the declarations after the error and leave the deferred
 /// set incomplete, re-exposing those template reads to TS2454.
-fn parse_script<'a>(allocator: &'a Allocator, script: &'a str) -> ParserReturn<'a> {
-    let as_ts = Parser::new(allocator, script, SourceType::ts()).parse();
-    if !as_ts.panicked && as_ts.diagnostics.is_empty() {
-        return as_ts;
-    }
-    let as_tsx = Parser::new(allocator, script, SourceType::tsx()).parse();
-    if (as_tsx.panicked, as_tsx.diagnostics.len()) < (as_ts.panicked, as_ts.diagnostics.len()) {
-        as_tsx
-    } else {
-        as_ts
-    }
+fn with_setup_parse<R>(script: &str, read: impl for<'a> FnOnce(&ParserReturn<'a>) -> R) -> R {
+    with_shared_parse(script, SourceType::ts(), |as_ts| {
+        if !as_ts.panicked && as_ts.diagnostics.is_empty() {
+            return read(as_ts);
+        }
+        let ts_failures = (as_ts.panicked, as_ts.diagnostics.len());
+        with_shared_parse(script, SourceType::tsx(), |as_tsx| {
+            if (as_tsx.panicked, as_tsx.diagnostics.len()) < ts_failures {
+                read(as_tsx)
+            } else {
+                read(as_ts)
+            }
+        })
+    })
 }

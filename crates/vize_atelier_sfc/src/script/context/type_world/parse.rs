@@ -4,9 +4,10 @@ use oxc_ast::ast::{
     TSInterfaceDeclaration, TSTypeAliasDeclaration, TSTypeName, TSTypeReference,
 };
 use oxc_ast_visit::{Visit, walk};
-use oxc_parser::Parser;
+use oxc_parser::{Parser, ParserReturn};
 use oxc_span::{GetSpan, SourceType, Span};
 use vize_carton::{CompactString, FxHashSet};
+use vize_croquis::script_parser::with_shared_parse;
 use vize_croquis::types::world::{
     TypeDeclaration, TypeDeclarationKind, TypeExportBinding, TypeImport, TypeModule,
     TypeModuleReference,
@@ -18,6 +19,23 @@ pub(super) fn parse_module(
 ) -> (TypeModule, FxHashSet<CompactString>) {
     let allocator = Allocator::default();
     let parsed = Parser::new(&allocator, source, source_type).parse();
+    module_from_parse(source, &parsed)
+}
+
+/// [`parse_module`] of the SFC's own script, whose parse its other analyses share.
+pub(super) fn parse_shared_module(
+    source: &str,
+    source_type: SourceType,
+) -> (TypeModule, FxHashSet<CompactString>) {
+    with_shared_parse(source, source_type, |parsed| {
+        module_from_parse(source, parsed)
+    })
+}
+
+fn module_from_parse(
+    source: &str,
+    parsed: &ParserReturn<'_>,
+) -> (TypeModule, FxHashSet<CompactString>) {
     let mut module = TypeModule {
         complete: !parsed.panicked && parsed.diagnostics.is_empty(),
         ..TypeModule::default()
