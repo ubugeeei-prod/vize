@@ -168,19 +168,29 @@ fn declaration_from_expression<'a>(
     let mut defaults = Vec::new();
     let mut has_unknown_defaults = false;
     if let Some(wrapper) = with_defaults
-        && let Some(Argument::ObjectExpression(object)) = wrapper.arguments.get(1)
+        && let Some(argument) = wrapper.arguments.get(1)
     {
-        let sources = sibling.map_or_else(
-            || vec![(program, offset)],
-            |(sibling, sibling_offset)| vec![(program, offset), (sibling, sibling_offset)],
-        );
-        has_unknown_defaults = collect_object_defaults(
-            object,
-            offset,
-            &sources,
-            &mut FxHashSet::default(),
-            &mut defaults,
-        );
+        // Not an object literal: eslint-plugin-vue treats the defaults as unknown.
+        // Parentheses still expose the literal inside them.
+        let mut expression = argument.as_expression();
+        while let Some(Expression::ParenthesizedExpression(parenthesized)) = expression {
+            expression = Some(&parenthesized.expression);
+        }
+        if let Some(Expression::ObjectExpression(object)) = expression {
+            let sources = sibling.map_or_else(
+                || vec![(program, offset)],
+                |(sibling, sibling_offset)| vec![(program, offset), (sibling, sibling_offset)],
+            );
+            has_unknown_defaults = collect_object_defaults(
+                object,
+                offset,
+                &sources,
+                &mut FxHashSet::default(),
+                &mut defaults,
+            );
+        } else {
+            has_unknown_defaults = true;
+        }
     }
     let uses_destructure = matches!(binding, Some(BindingPattern::ObjectPattern(_)));
     if let Some(BindingPattern::ObjectPattern(pattern)) = binding {
