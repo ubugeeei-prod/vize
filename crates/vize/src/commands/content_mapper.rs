@@ -45,9 +45,52 @@ pub fn run(args: ContentMapperArgs) {
     } else {
         dispatch::ReplyOrder::Request
     };
-    if let Err(error) = dispatch::serve(&mut reader, &mut writer, args.initialized, order) {
+    #[cfg(feature = "profiling")]
+    let allocation_report = allocation_report::start();
+    let served = dispatch::serve(&mut reader, &mut writer, args.initialized, order);
+    #[cfg(feature = "profiling")]
+    allocation_report::finish(allocation_report);
+    if let Err(error) = served {
         eprintln!("vize content-mapper: {error}");
         std::process::exit(1);
+    }
+}
+
+/// `--features profiling` builds count every allocation of a session and
+/// write the totals to `$VIZE_CONTENT_MAPPER_ALLOC_REPORT` at EOF, for
+/// tools/benchmarks/scripts/content-mapper-replay.ts.
+#[cfg(feature = "profiling")]
+mod allocation_report {
+    use std::ffi::OsString;
+
+    use vize_l0::profiler::{
+        allocation_snapshot, reset_allocation_counters, set_allocation_tracking_enabled,
+    };
+
+    pub(super) fn start() -> Option<OsString> {
+        let path = std::env::var_os("VIZE_CONTENT_MAPPER_ALLOC_REPORT")?;
+        reset_allocation_counters();
+        set_allocation_tracking_enabled(true);
+        Some(path)
+    }
+
+    pub(super) fn finish(path: Option<OsString>) {
+        let Some(path) = path else { return };
+        set_allocation_tracking_enabled(false);
+        let snapshot = allocation_snapshot();
+        let report = serde_json::json!({
+            "allocationCalls": snapshot.allocation_calls(),
+            "allocatedBytes": snapshot.requested_bytes(),
+            "allocCalls": snapshot.alloc_calls,
+            "allocZeroedCalls": snapshot.alloc_zeroed_calls,
+            "reallocCalls": snapshot.realloc_calls,
+            "reallocOldBytes": snapshot.realloc_old_bytes,
+            "reallocNewBytes": snapshot.realloc_new_bytes,
+            "deallocCalls": snapshot.dealloc_calls,
+        });
+        if let Err(error) = std::fs::write(&path, report.to_string()) {
+            eprintln!("vize content-mapper: allocation report: {error}");
+        }
     }
 }
 
