@@ -881,6 +881,47 @@
       }
     },
     {
+      "id": "lsp/fix-history/rule-options-12719",
+      "state": "active",
+      "targets": [
+        "stdio"
+      ],
+      "inputs": {
+        "root": "rule-options-12719",
+        "files": [
+          {
+            "path": "Case.vue.txt",
+            "sha256": "cd404728c92e2d7ffe6b1a931b32ba64cda9a08e5dc54e2641f8fd0a9b861f2a"
+          }
+        ]
+      },
+      "case": {
+        "path": "rule-options-12719/case.json",
+        "sha256": "d0399885e75ed65390ce94cda2dd88b4d2d097f5f791fa9e8aa76d762ed7e612"
+      },
+      "requestCount": 1,
+      "initializationOptions": {
+        "editor": true,
+        "lint": false,
+        "typecheck": false
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "lsp/fix-history/template-colon-props-12068",
       "state": "active",
       "targets": [
