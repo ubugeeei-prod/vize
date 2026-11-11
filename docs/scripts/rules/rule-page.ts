@@ -395,7 +395,10 @@ export function renderRulePage(rule: RuleMetadata, example: RuleExample, locale:
     "",
   );
   const eslintDifference = example.eslintDifference?.[locale];
-  if (eslintDifference) lines.push(`## ${text.eslintDifference}`, "", eslintDifference, "");
+  if (eslintDifference) {
+    const heading = example.eslintDifferenceHeading?.[locale] ?? text.eslintDifference;
+    lines.push(`## ${heading}`, "", eslintDifference, "");
+  }
   lines.push(
     `## ${text.related}`,
     "",

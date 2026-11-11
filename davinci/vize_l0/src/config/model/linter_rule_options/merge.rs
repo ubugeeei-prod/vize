@@ -104,5 +104,8 @@ impl ConfigLintRuleOptions {
         if let Some(options) = &overlay.require_component_registration {
             self.require_component_registration = Some(options.clone());
         }
+        if let Some(options) = &overlay.block_lang {
+            self.block_lang = Some(options.clone());
+        }
     }
 }
