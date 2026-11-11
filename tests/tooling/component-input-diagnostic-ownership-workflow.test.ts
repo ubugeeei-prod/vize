@@ -59,6 +59,27 @@ test("the comparator dependencies and packed-consumer refusal test remain select
   }
 });
 
+test("callback packets certify only the exact joined verbatim run", () => {
+  const source = "alpha\nbeta";
+  const before = {
+    text: source,
+    mappings: [
+      [0, 5, 0, 5, 0, 7],
+      [6, 4, 6, 4, 0, 7],
+    ],
+  };
+  assertPreservedCallbackPacket(before, { ...before, mappings: [[0, 10, 0, 10, 0, 7]] }, source);
+  assert.throws(
+    () =>
+      assertPreservedCallbackPacket(
+        before,
+        { ...before, mappings: [[0, 10, 0, 10, 0, 6]] },
+        source,
+      ),
+    assert.AssertionError,
+  );
+});
+
 test("callback packets certify only the unmapped public Slots re-export", () => {
   const before = {
     extension: ".tsx",

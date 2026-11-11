@@ -7,6 +7,7 @@ import {
   currentNativeAttributeAliases,
   currentSlotsExport,
   currentSlotsMarker,
+  joinVerbatimRuns,
   nativeAttributesPath,
   previousNativeAttributeAliases,
   previousSlotsExport,
@@ -437,16 +438,25 @@ export function assertPreservedCallbackPacket(
   assert.equal(typeof before.text, "string");
   assert.equal(typeof after.text, "string");
   if (before.text === after.text) {
-    if (isDeepStrictEqual(after, before)) return;
-    const hoverSuccessor = withComponentPropHoverOwnership(before, after);
+    const joinedSuccessor = structuredClone(before);
+    if (authoredSource !== undefined) {
+      assert.ok(Array.isArray(joinedSuccessor.mappings));
+      joinedSuccessor.mappings = joinVerbatimRuns(
+        joinedSuccessor.mappings,
+        authoredSource,
+        joinedSuccessor.text as string,
+      );
+    }
+    if (isDeepStrictEqual(after, joinedSuccessor)) return;
+    const hoverSuccessor = withComponentPropHoverOwnership(joinedSuccessor, after);
     if (isDeepStrictEqual(after, hoverSuccessor)) return;
     // #12520: the only certified mapping-only change unmaps loop replay aliases.
-    const replaySuccessor = withoutReplayAliasRows(before);
+    const replaySuccessor = withoutReplayAliasRows(joinedSuccessor);
     if (isDeepStrictEqual(after, replaySuccessor)) return;
     const expected =
       inertBindings && authoredSource !== undefined
-        ? withInertCallbackRows(before, after, authoredSource, inertBindings)
-        : (replaySuccessor ?? before);
+        ? withInertCallbackRows(joinedSuccessor, after, authoredSource, inertBindings)
+        : (replaySuccessor ?? joinedSuccessor);
     assert.deepEqual(
       after,
       withComponentPropHoverOwnership(expected, after),

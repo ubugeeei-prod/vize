@@ -41,49 +41,36 @@ pub(in super::super) fn join_verbatim_runs(
     }
     spans.sort_unstable_by_key(|span| (span.0[2], span.0[3], span.0[5] >> META_SHIFT));
 
-    let mut group = 0;
-    let mut group_start = 0;
-    for index in 1..=spans.len() {
-        let group_ended = index == spans.len()
-            || (spans[index].0[2], spans[index].0[3])
-                != (spans[group_start].0[2], spans[group_start].0[3]);
-        if !group_ended {
-            continue;
-        }
-        let duplicate = (index - group_start > 1).then_some(SHARED_ORIGINAL);
+    for (group, original_group) in spans
+        .chunk_by_mut(|left, right| (left.0[2], left.0[3]) == (right.0[2], right.0[3]))
+        .enumerate()
+    {
+        let duplicate = (original_group.len() > 1).then_some(SHARED_ORIGINAL);
         let metadata = group | duplicate.unwrap_or_default();
-        for span in &mut spans[group_start..index] {
+        for span in original_group {
             span.0[4] |= metadata << META_SHIFT;
         }
-        group += 1;
-        group_start = index;
     }
 
     spans.sort_unstable_by_key(|span| span.0[5] >> META_SHIFT);
-    let mut written = 0;
-    for read in 0..spans.len() {
-        let span = spans[read];
-        if written > 0
-            && joinable(
-                source,
-                generated,
-                &spans[written - 1],
-                &span,
-                VALUE_MASK,
-                SHARED_ORIGINAL,
-            )
-        {
-            let previous = &mut spans[written - 1];
-            let end = span.0[0] + span.0[1];
+    spans.dedup_by(|next, previous| {
+        if joinable(
+            source,
+            generated,
+            previous,
+            next,
+            VALUE_MASK,
+            SHARED_ORIGINAL,
+        ) {
+            let end = next.0[0] + next.0[1];
             previous.0[1] = end - previous.0[0];
             previous.0[3] = previous.0[1];
-            previous.0[4] = (previous.0[4] & VALUE_MASK) | (span.0[4] & !VALUE_MASK);
-            continue;
+            previous.0[4] = (previous.0[4] & VALUE_MASK) | (next.0[4] & !VALUE_MASK);
+            true
+        } else {
+            false
         }
-        spans[written] = span;
-        written += 1;
-    }
-    spans.truncate(written);
+    });
     for span in &mut spans {
         span.0[4] &= VALUE_MASK;
         span.0[5] &= VALUE_MASK;

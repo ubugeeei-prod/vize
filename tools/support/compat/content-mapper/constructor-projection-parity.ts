@@ -366,7 +366,7 @@ export function relocatePacket(
     : proof;
 }
 
-function joinVerbatimRuns(mappings: number[][], source: string, generated: string) {
+export function joinVerbatimRuns(mappings: number[][], source: string, generated: string) {
   const originalRanges = mappings
     .map(([, , start, length]) => [start, length] as const)
     .sort(([leftStart, leftLength], [rightStart, rightLength]) =>
