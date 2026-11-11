@@ -28,7 +28,7 @@ export const manual2: Record<string, RuleExample> = {
       en: "Differences from eslint-plugin-vuejs-accessibility",
     },
     eslintDifference: {
-      en: 'An `img` with an empty `alt` has the implicit role `presentation` in HTML-ARIA, so `role="img"` on that image is kept. eslint-plugin-vuejs-accessibility treats the implicit role of `img` as `img` regardless of `alt` and reports that attribute. A `:role` binding whose expression is a string literal is read as that static role. A binding that is not a string literal stays unreported.',
+      en: 'Under HTML-ARIA, an `img` with an empty `alt` and no other accessible name has the implicit role `presentation`; another accessible name can preserve its `img` role. This rule keeps an explicit `role="img"` when `alt` is empty, which describes the rule behavior rather than asserting HTML-ARIA conformance. eslint-plugin-vuejs-accessibility treats the implicit role as `img` regardless of `alt` and reports that attribute. A `:role` binding whose expression is a string literal is read as that static role. A binding that is not a string literal stays unreported.',
     },
   },
   "a11y/no-refer-to-non-existent-id": {
