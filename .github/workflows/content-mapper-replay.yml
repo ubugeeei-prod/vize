@@ -1,0 +1,330 @@
+name: Content mapper replay
+run-name: "Content mapper replay ${{ inputs.head || github.sha }} vs ${{ inputs.base || 'merge base' }}"
+# Two commits answer the request streams tsc sends for real corpora. Replies
+# must match byte for byte; the report times the native CLI and the npm
+# launcher, counts allocations and syscalls, and profiles the head CLI with perf.
+# A push to bench/content-mapper-replay/** measures the pushed commit against
+# its merge base with main, or against the commit a `Replay-Base: <sha>`
+# trailer of the pushed commit names, on every corpus with every option on.
+on:
+  push:
+    branches: ["bench/content-mapper-replay/**"]
+  workflow_dispatch:
+    inputs:
+      base:
+        description: Full 40-hex commit measured first (the "before")
+        type: string
+        required: true
+      head:
+        description: Full 40-hex commit compared against it
+        type: string
+        required: true
+      corpora:
+        description: Comma-separated corpora (misskey, n8n, reka-ui, nuxt-ui)
+        type: string
+        default: "misskey,n8n,reka-ui,nuxt-ui"
+      runs:
+        description: Alternating timed runs per mapper and mode
+        type: string
+        default: "5"
+      launcher:
+        description: Also replay through the npm launcher and a release build of @vizejs/native
+        type: boolean
+        default: true
+      profile:
+        description: Also perf-profile the head CLI and count allocations (--features profiling) and syscalls
+        type: boolean
+        default: true
+      allow_output_change:
+        description: Publish timing even when the builds answer differently
+        type: boolean
+        default: false
+      host_runs:
+        description: Alternating tsc and tsrs --fast runs per mapper through a timing proxy (0 skips)
+        type: string
+        default: "3"
+  # Registers the dispatch-only workflow from its PR; only the tests run there.
+  pull_request:
+    paths:
+      - .github/workflows/content-mapper-replay.yml
+      - tools/benchmarks/scripts/content-mapper-replay*.ts
+      - tests/tooling/content-mapper-replay*.test.ts
+permissions: { contents: read }
+concurrency:
+  group: content-mapper-replay-${{ github.event.pull_request.number || github.ref }}-${{ inputs.head }}-${{ inputs.base }}
+  cancel-in-progress: true
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  CARGO_TERM_COLOR: always
+  CARGO_INCREMENTAL: "0"
+jobs:
+  test:
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { persist-credentials: false }
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version-file: package.json, package-manager-cache: false }
+      - run: node --test tests/tooling/content-mapper-replay.test.ts
+
+  resolve:
+    if: github.event_name != 'pull_request'
+    needs: test
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 10
+    outputs:
+      base: ${{ steps.shas.outputs.base }}
+      head: ${{ steps.shas.outputs.head }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { persist-credentials: false, fetch-depth: 0 }
+      - id: shas
+        env:
+          BASE: ${{ inputs.base }}
+          HEAD: ${{ inputs.head || github.sha }}
+        run: |
+          set -euo pipefail
+          if [[ -z "$BASE" ]]; then
+            BASE=$(git log -1 --format='%(trailers:key=Replay-Base,valueonly)' "$HEAD" | head -1 | tr -d '[:space:]')
+          fi
+          [[ -n "$BASE" ]] || BASE=$(git merge-base origin/main "$HEAD")
+          [[ "$BASE" =~ ^[0-9a-f]{40}$ && "$HEAD" =~ ^[0-9a-f]{40}$ ]]
+          echo "base=$BASE" >> "$GITHUB_OUTPUT"
+          echo "head=$HEAD" >> "$GITHUB_OUTPUT"
+          echo "base $BASE, head $HEAD"
+
+  # cli: the shipped CLI profile. alloc: the same with --features profiling,
+  # which counts allocations. perf: head only, with line tables, symbols and
+  # frame pointers (C dependencies included) for perf's frame-pointer unwinder.
+  build:
+    needs: resolve
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 90
+    strategy:
+      matrix:
+        variant: [cli, alloc, perf]
+    env:
+      BASE: ${{ needs.resolve.outputs.base }}
+      HEAD: ${{ needs.resolve.outputs.head }}
+      VARIANT: ${{ matrix.variant }}
+      PROFILE_INPUT: ${{ github.event_name == 'push' || inputs.profile }}
+    steps:
+      - name: Validate inputs
+        run: |
+          [[ "$BASE" =~ ^[0-9a-f]{40}$ ]]
+          [[ "$HEAD" =~ ^[0-9a-f]{40}$ ]]
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        if: env.VARIANT == 'cli' || env.PROFILE_INPUT == 'true'
+        with: { persist-credentials: false }
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        if: env.VARIANT == 'cli' || env.PROFILE_INPUT == 'true'
+        with: { toolchain: "1.99.1" }
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        if: env.VARIANT == 'cli' || env.PROFILE_INPUT == 'true'
+        with: { wild-version: "0.9.0" }
+      - name: Build
+        if: env.VARIANT == 'cli' || env.PROFILE_INPUT == 'true'
+        run: |
+          set -euo pipefail
+          target="$RUNNER_TEMP/replay-target"
+          args=(--profile ci-opt -p vize --bin vize)
+          sides=(base head)
+          case "$VARIANT" in
+            alloc) args+=(--features profiling) ;;
+            perf)
+              sides=(head)
+              export CARGO_PROFILE_CI_OPT_DEBUG=line-tables-only
+              export CARGO_PROFILE_CI_OPT_STRIP=none
+              args+=(--config 'profile.ci-opt.package.vize.strip="none"')
+              export RUSTFLAGS="${RUSTFLAGS:-} -C force-frame-pointers=yes"
+              export CFLAGS="${CFLAGS:-} -fno-omit-frame-pointer"
+              ;;
+          esac
+          for side in "${sides[@]}"; do
+            sha=$BASE; [[ $side == head ]] && sha=$HEAD
+            git fetch --no-tags --depth=1 "https://github.com/$GITHUB_REPOSITORY.git" "$sha"
+            git worktree add --detach "$RUNNER_TEMP/src-$side" "$sha"
+            # One target directory: the second build recompiles only what differs.
+            (cd "$RUNNER_TEMP/src-$side" && CARGO_TARGET_DIR="$target" cargo build "${args[@]}")
+            mkdir -p "replay-bin/$VARIANT/$side"
+            cp "$target/ci-opt/vize" "replay-bin/$VARIANT/$side/"
+          done
+          ls -l replay-bin/*/*
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: env.VARIANT == 'cli' || env.PROFILE_INPUT == 'true'
+        with:
+          name: replay-bin-${{ matrix.variant }}
+          path: replay-bin/
+          retention-days: 7
+
+  replay:
+    needs: [resolve, build]
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 120
+    env:
+      BASE: ${{ needs.resolve.outputs.base }}
+      HEAD: ${{ needs.resolve.outputs.head }}
+      CORPORA: ${{ inputs.corpora || 'misskey,n8n,reka-ui,nuxt-ui' }}
+      RUNS: ${{ inputs.runs || '5' }}
+      LAUNCHER: ${{ github.event_name == 'push' || inputs.launcher }}
+      PROFILE: ${{ github.event_name == 'push' || inputs.profile }}
+      ALLOW: ${{ inputs.allow_output_change && '--allow-output-change' || '' }}
+      HOST_RUNS: ${{ inputs.host_runs || '3' }}
+    steps:
+      - name: Validate inputs
+        run: |
+          [[ "$BASE" =~ ^[0-9a-f]{40}$ && "$HEAD" =~ ^[0-9a-f]{40}$ && "$HOST_RUNS" =~ ^[0-9][0-9]?$ ]]
+          [[ "$CORPORA" =~ ^[a-z0-9-]+(,[a-z0-9-]+)*$ && "$RUNS" =~ ^[0-9][0-9]?$ ]]
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { persist-credentials: false }
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with:
+          node-version-file: package.json
+          cache: true
+          run-install: false
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        if: env.LAUNCHER == 'true'
+        with: { toolchain: "1.99.1" }
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        if: env.LAUNCHER == 'true'
+        with: { wild-version: "0.9.0" }
+      - uses: ./.github/actions/setup-rust-script
+        if: env.LAUNCHER == 'true'
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with: { pattern: replay-bin-*, path: replay-bin, merge-multiple: true }
+      - name: Hydrate the corpora and install the locked hosts and corpus packages
+        run: |
+          set -euo pipefail
+          chmod +x replay-bin/*/*/vize
+          modules=()
+          for corpus in ${CORPORA//,/ }; do modules+=("tests/_fixtures/_git/$corpus"); done
+          git submodule update --init --depth 1 -- "${modules[@]}"
+          npm ci --prefix tools/benchmarks/typecheck-hosts --ignore-scripts --no-audit --no-fund
+          npm ci --prefix tools/benchmarks/typecheck-corpora --ignore-scripts --no-audit --no-fund
+          packages=(time)
+          [[ "$PROFILE" == true ]] && packages+=(strace linux-tools-generic)
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends "${packages[@]}" > /dev/null
+      - name: Build the npm launcher and the native binding for base and head
+        if: env.LAUNCHER == 'true'
+        run: |
+          set -euo pipefail
+          for side in base head; do
+            sha=$BASE; [[ $side == head ]] && sha=$HEAD
+            git fetch --no-tags --depth=1 "https://github.com/$GITHUB_REPOSITORY.git" "$sha"
+            git worktree add --detach "$RUNNER_TEMP/npm-$side" "$sha"
+            (cd "$RUNNER_TEMP/npm-$side" && vp install --frozen-lockfile --prefer-offline --filter './npm/cli...' --filter './npm/native...' > /dev/null && cargo --version)
+          done
+          pids=()
+          for side in base head; do
+            (cd "$RUNNER_TEMP/npm-$side" && vp run --workspace-root build:native > "$RUNNER_TEMP/native-$side.log" 2>&1) &
+            pids+=("$!")
+          done
+          status=0
+          for pid in "${pids[@]}"; do wait "$pid" || status=1; done
+          for side in base head; do tail -n 5 "$RUNNER_TEMP/native-$side.log"; done
+          [[ "$status" == 0 ]]
+          for side in base head; do (cd "$RUNNER_TEMP/npm-$side" && vp run --filter './npm/cli' build > /dev/null); done
+      - name: Record tsc's request streams
+        run: |
+          set -euo pipefail
+          node tools/benchmarks/scripts/content-mapper-replay-record.ts \
+            --bin replay-bin/cli/base/vize --tsc tools/benchmarks/typecheck-hosts/node_modules/.bin/tsc \
+            --corpora "$CORPORA" --work "$RUNNER_TEMP/replay" > "$RUNNER_TEMP/streams.args"
+          cat "$RUNNER_TEMP/streams.args"
+      - name: Replay
+        run: |
+          set -euo pipefail
+          read -ra streams < "$RUNNER_TEMP/streams.args"
+          mappers=(--mapper "base=replay-bin/cli/base/vize" --mapper "head=replay-bin/cli/head/vize")
+          if [[ "$LAUNCHER" == true ]]; then
+            mappers+=(--mapper "base-npm=node:$RUNNER_TEMP/npm-base/npm/cli/bin/vize")
+            mappers+=(--mapper "head-npm=node:$RUNNER_TEMP/npm-head/npm/cli/bin/vize")
+          fi
+          node tools/benchmarks/scripts/content-mapper-replay.ts "${streams[@]}" "${mappers[@]}" \
+            --ready --runs "$RUNS" $ALLOW --out "$RUNNER_TEMP/replay-out" > /dev/null
+          {
+            echo "## Content mapper replay: head \`${HEAD::12}\` vs base \`${BASE::12}\` ($(nproc) vCPUs)"
+            echo ""
+            echo "Wall is the whole mapper process (spawn to exit) for burst, and request write to reply for serial. CPU is user+sys of the mapper process tree."
+            echo ""
+            cat "$RUNNER_TEMP/replay-out/replay.md"
+          } >> "$GITHUB_STEP_SUMMARY"
+      - name: Host runs through a timing proxy
+        if: env.HOST_RUNS != '0'
+        run: |
+          set -euo pipefail
+          hosts=tools/benchmarks/typecheck-hosts/node_modules/.bin
+          mappers=(--mapper "base=replay-bin/cli/base/vize" --mapper "head=replay-bin/cli/head/vize")
+          node tools/benchmarks/scripts/content-mapper-replay-hosts.ts --work "$RUNNER_TEMP/replay" \
+            --corpora "$CORPORA" --tsc "$hosts/tsc" --tsrs "$hosts/tsrs" "${mappers[@]}" --ready \
+            --runs "$HOST_RUNS" --out "$RUNNER_TEMP/replay-out" > /dev/null
+          cat "$RUNNER_TEMP/replay-out/hosts.md" >> "$GITHUB_STEP_SUMMARY"
+      - name: Count allocations
+        if: env.PROFILE == 'true'
+        run: |
+          set -euo pipefail
+          read -ra streams < "$RUNNER_TEMP/streams.args"
+          node tools/benchmarks/scripts/content-mapper-replay.ts "${streams[@]}" \
+            --mapper "base=replay-bin/alloc/base/vize" --mapper "head=replay-bin/alloc/head/vize" \
+            --ready --runs 0 --slowest 0 $ALLOW --out "$RUNNER_TEMP/replay-out/alloc" > /dev/null
+          { echo "## Allocation counts (--features profiling, one burst)"; echo ""; cat "$RUNNER_TEMP/replay-out/alloc/replay.md"; } >> "$GITHUB_STEP_SUMMARY"
+      - name: Profile the head CLI and count syscalls
+        if: env.PROFILE == 'true'
+        run: |
+          set -euo pipefail
+          sudo sysctl -w kernel.perf_event_paranoid=-1 kernel.kptr_restrict=0
+          perf_bin=""
+          for candidate in /usr/lib/linux-tools/*/perf /usr/lib/linux-tools-*/perf; do
+            if [[ -x "$candidate" ]]; then perf_bin="$candidate"; break; fi
+          done
+          test -n "$perf_bin"
+          out="$RUNNER_TEMP/replay-out/profiles"
+          mkdir -p "$out"
+          read -ra streams < "$RUNNER_TEMP/streams.args"
+          for ((i = 1; i < ${#streams[@]}; i += 2)); do
+            spec=${streams[$i]}
+            corpus=${spec%%=*}; rest=${spec#*=}; stream=${rest%@*}; project=${rest##*@}
+            bin="$PWD/replay-bin/perf/head/vize"
+            (cd "$project" && "$perf_bin" stat -e task-clock,cycles,instructions,cache-misses,page-faults,context-switches,cpu-migrations \
+              -o "$out/$corpus.stat.txt" -- "$bin" content-mapper --reply-when-ready < "$stream" > /dev/null)
+            # Five fresh mapper processes, so short corpora still collect enough samples.
+            (cd "$project" && "$perf_bin" record -F 2999 --call-graph fp -o "$out/$corpus.perf.data" \
+              -- bash -c 'for _ in 1 2 3 4 5; do "$0" content-mapper --reply-when-ready < "$1" > /dev/null; done' "$bin" "$stream" 2> /dev/null)
+            "$perf_bin" report -i "$out/$corpus.perf.data" --no-children --sort dso,symbol --stdio -g none --percent-limit 0.2 > "$out/$corpus.self.txt" 2> /dev/null
+            "$perf_bin" report -i "$out/$corpus.perf.data" --children --sort symbol --stdio -g none --percent-limit 0.5 > "$out/$corpus.children.txt" 2> /dev/null
+            "$perf_bin" report -i "$out/$corpus.perf.data" --no-children --sort dso --stdio -g none > "$out/$corpus.dso.txt" 2> /dev/null
+            "$perf_bin" script -i "$out/$corpus.perf.data" 2> /dev/null | gzip > "$out/$corpus.perf-script.txt.gz"
+            rm "$out/$corpus.perf.data"
+            for side in base head; do
+              sbin="$PWD/replay-bin/cli/$side/vize"
+              (cd "$project" && strace -f -qq -c -o "$out/$corpus.$side.strace-c.txt" "$sbin" content-mapper < "$stream" > /dev/null)
+              # One file per thread (-ff), so no call is split into unfinished/resumed halves.
+              mkdir -p "$out/io"
+              (cd "$project" && strace -ff -qq -e trace=read,write,writev -e signal=none -o "$out/io/$corpus.$side" "$sbin" content-mapper < "$stream" > /dev/null)
+              # fd 0 reads and fd 1 writes: calls, bytes, and calls under 4 KiB.
+              cat "$out/io/$corpus.$side".* | awk -v side="$side" -v corpus="$corpus" '
+                match($0, /^(read|write|writev)\([01],/) { op = substr($0, RSTART, RLENGTH - 1) ")"; n = $NF + 0; calls[op]++; bytes[op] += n; if (n < 4096) small[op]++ }
+                END { for (op in calls) printf "| %s | %s | %s | %d | %.1f | %d |\n", corpus, side, op, calls[op], bytes[op] / 1048576, small[op] }
+              ' >> "$out/io.md"
+              rm -r "$out/io"
+            done
+          done
+          {
+            echo "## Syscalls on stdin/stdout"
+            echo ""
+            echo "| corpus | build | call | count | MiB | under 4 KiB |"
+            echo "|---|---|---|---|---|---|"
+            sort "$out/io.md"
+            echo ""
+            for f in "$out"/*.strace-c.txt; do echo "<details><summary>$(basename "$f")</summary>"; echo ""; echo '```'; awk 'n++ < 30' "$f"; echo '```'; echo "</details>"; done
+            echo ""
+            echo "## perf (head CLI, frame pointers)"
+            for f in "$out"/*.stat.txt; do echo '```'; awk 'NF && !/^#/' "$f"; echo '```'; done
+            for f in "$out"/*.self.txt; do echo "<details><summary>$(basename "$f") (self, dso and symbol)</summary>"; echo ""; echo '```'; awk 'NF && !/^#/ && n++ < 60' "$f"; echo '```'; echo "</details>"; done
+            for f in "$out"/*.children.txt; do echo "<details><summary>$(basename "$f") (inclusive)</summary>"; echo ""; echo '```'; awk 'NF && !/^#/ && n++ < 80' "$f"; echo '```'; echo "</details>"; done
+          } >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: always()
+        with: { name: replay-out, path: "${{ runner.temp }}/replay-out/", if-no-files-found: warn }
