@@ -20,7 +20,7 @@ fn diagnostic_rules(result: &LintResult) -> Vec<&str> {
 #[test]
 fn no_redundant_roles_fires_on_jsx_and_tsx_ir() {
     let linter = linter_with(Box::new(NoRedundantRoles));
-    let source = r#"const A = () => <nav role="navigation" />;"#;
+    let source = r#"const A = () => <nav aria-label="Primary" role="navigation" />;"#;
     let result = linter.lint_jsx(source, "test.jsx", JsxLang::Jsx);
     assert_eq!(
         result.warning_count, 1,

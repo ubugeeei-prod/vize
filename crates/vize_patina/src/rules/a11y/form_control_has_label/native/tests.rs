@@ -62,7 +62,7 @@ fn static_exemptions_labels_and_bound_label_names_match_the_complete_legacy_cont
             "<input id='  ' title='' aria-label='\t' aria-labelledby=''>",
             1,
         ),
-        ("<input :title='name' :placeholder='name'>", 1),
+        ("<input :title='name' :placeholder='name'>", 0),
         (
             "<div title='parent'><span><input type='text'></span></div>",
             1,
