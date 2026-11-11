@@ -87,7 +87,7 @@ function generatorFixture() {
     "npm/cli/package.json",
     "crates/vize_canon/src/virtual_ts/helpers/declarations/core-types.d.ts.txt",
     "crates/vize_canon/src/virtual_ts/helpers/declarations/vue3-types.d.ts.txt",
-    "crates/vize_canon/src/virtual_ts/helpers/declarations/prop-keys.d.ts.txt",
+    "crates/vize_canon/src/virtual_ts/helpers/declarations/shared-prop-keys.d.ts.txt",
     "crates/vize_canon/src/virtual_ts/component_prop_helpers.txt",
     "crates/vize_canon/src/virtual_ts/helpers/declarations/content-mapper-type-imports.d.ts.txt",
     "npm/cli/generated/content-mapper-types.d.ts",
