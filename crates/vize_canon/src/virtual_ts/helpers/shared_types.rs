@@ -76,6 +76,8 @@ shared_type_refs! {
     EMIT_PROPS_FACTORY => ("$EmitPropsFactory", "$EmitPropsFactory"),
     CLOSED_EMIT => ("__vize_emit_closed", "$ClosedEmit"),
     CLOSED_EMIT_FACTORY => ("__vize_emit_closed_factory", "$ClosedEmitFactory"),
+    EMIT_GATE_RESOLVER => ("__vize_emit_resolver", "$EmitGateResolver"),
+    EMIT_GATE_INPUT => ("__vize_emit_input", "$EmitGateInput"),
     EMIT_PROPS => ("__EmitProps", "__EmitProps"),
     TEMPLATE_REF_UNWRAP => ("__U", "$TemplateRefUnwrap"),
     TEMPLATE_REF_UNWRAP_NARROWED => ("__UN", "$TemplateRefUnwrapNarrowed"),

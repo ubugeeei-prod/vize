@@ -38,6 +38,7 @@ fn restore(current: String, file: &Value) -> String {
 /// The pre-qualification bytes of a recorded producer's current image. Older images
 /// pass through; the layers below authenticate them.
 pub(super) fn source_before(path: &str, current: String) -> String {
+    let current = super::shared_usage_gates::source_before(path, current);
     let current = super::lib_type_shadowing_audit::source_before(path, current);
     let current = super::template_ref_unwrap::source_before(path, current);
     let record = record();

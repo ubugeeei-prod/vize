@@ -212,9 +212,11 @@ pub(super) fn emit_default_export_declaration(
             forwarded =
                 vize_carton::cstr!("$UnownedComponentAttrs<{fallthrough_ref}, {props}, {emits}>");
         }
+        // The raw surface, before owned keys are removed: removing keys cannot
+        // add a required one, so a parent finds none here without the map.
         append!(
             component_contract_fields,
-            " readonly __vizeHasFallthroughProps: true; readonly __vizeFallthroughProps?: {forwarded};"
+            " readonly __vizeFallthroughSource?: {fallthrough_ref}; readonly __vizeHasFallthroughProps: true; readonly __vizeFallthroughProps?: {forwarded};"
         );
     }
     // A named type prints as the component, not as its generated members.

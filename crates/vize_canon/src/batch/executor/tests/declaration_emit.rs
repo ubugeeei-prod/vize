@@ -7,6 +7,7 @@ declare const __vize_component__: {
     readonly __vizeComponentMarker: true;
     readonly __vizeRawProps?: Props;
     readonly __vizeNativeFallthroughRoot: true;
+    readonly __vizeFallthroughSource?: Partial<$NativeElement<\"button\">>;
     readonly __vizeHasFallthroughProps: true;
     readonly __vizeFallthroughProps?: Partial<$NativeElement<\"button\">>;
 } & $ComponentConstructor;

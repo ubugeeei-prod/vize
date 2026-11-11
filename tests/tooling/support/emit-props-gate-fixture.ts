@@ -99,15 +99,34 @@ export const SHARED_CLOSED_EMIT = ["shared-listener-args", "component-checks"]
   .filter((line) => /^\s*export type \$ClosedEmit(?:Factory)?</u.test(line))
   .map((line) => line.replace(/^\s*export /u, ""))
   .join("\n");
-/** Gate alias text bound the way a hoisted module binds it, with the shared helpers declared beside it. */
-export const sharedGateAliases = (aliases: string = GATE_ALIASES): string =>
+/**
+ * The shared `vize:virtual-ts` emit gate a hoisted module calls: the resolver
+ * `component-checks` declares and the input the listener module declares.
+ */
+export const SHARED_EMIT_GATE = ["shared-listener-args", "component-checks"]
+  .flatMap((name) =>
+    fs
+      .readFileSync(
+        new URL(`crates/vize_canon/src/virtual_ts/helpers/declarations/${name}.d.ts.txt`, repo),
+        "utf8",
+      )
+      .split("\n"),
+  )
+  .filter((line) =>
+    /^\s*(?:export )?type \$EmitGate(?:NativeInput|InputOf|Input|Resolver)</u.test(line),
+  )
+  .map((line) => line.replace(/^\s*(?:export )?/u, ""))
+  .join("\n");
+/**
+ * The hoisted binding: no module aliases, only the SDK gate. The local names
+ * forward to it so the same call templates exercise the shared copies.
+ */
+export const sharedGateAliases = (): string =>
   [
     SHARED_CLOSED_EMIT,
-    aliases
-      .replaceAll("{closed_aliases}", "")
-      .replaceAll("{closed}", "$ClosedEmit")
-      .replaceAll("{closed_factory}", "$ClosedEmitFactory")
-      .replaceAll("{emit_props_factory}", "$EmitPropsFactory"),
+    SHARED_EMIT_GATE,
+    "type __vize_emit_resolver<L, C> = $EmitGateResolver<L, C>;",
+    "type __vize_emit_input<L, C, F> = $EmitGateInput<L, C, F>;",
   ].join("\n");
 
 /** Rust `format!` semantics for named placeholders. */

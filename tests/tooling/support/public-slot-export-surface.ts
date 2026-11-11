@@ -326,6 +326,37 @@ function withProvenClosedEmitAdditionsRemoved(
   return { ...actual, exports };
 }
 
+/**
+ * The fallthrough source check and the shared emit gate are additions; their
+ * oracles prove the helpers that name them equal the forms they replace.
+ */
+function withProvenUsageGateAdditionsRemoved(
+  actual: ExportSurface,
+  expected: ExportSurface,
+): ExportSurface {
+  const exports = structuredClone(actual.exports);
+  const param = (name: string) => ({ name, constraint: null, default: null });
+  for (const [oracle, name, parameters] of [
+    ["canon-usage-helpers-equivalence", "$FallthroughSourceAdmitsEmpty", [param("C")]],
+    ["canon-emit-props-gate-equivalence", "$EmitGateResolver", [param("L"), param("C")]],
+    ["canon-emit-props-gate-equivalence", "$EmitGateInput", [param("L"), param("C"), param("F")]],
+  ] as const) {
+    const index = exports.findIndex((entry) => entry.name === name);
+    if (expected.exports.some((entry) => entry.name === name) || index < 0) continue;
+    const file = new URL(`tests/tooling/${oracle}.test.ts`, repositoryRoot);
+    assert.ok(fs.existsSync(file) && fs.readFileSync(file, "utf8").includes(name.slice(1)));
+    assert.deepEqual(exports[index], {
+      name,
+      type: true,
+      value: false,
+      namespace: false,
+      declarations: [{ kind: "TypeAliasDeclaration", parameters, signatures: [] }],
+    });
+    exports.splice(index, 1);
+  }
+  return { ...actual, exports };
+}
+
 export function assertPublicSlotExportSurface(
   actual: ExportSurface,
   expected: ExportSurface,
@@ -337,12 +368,15 @@ export function assertPublicSlotExportSurface(
   assert.deepEqual(
     Object.fromEntries(
       withProvenDefaultsRestored(
-        withProvenClosedEmitAdditionsRemoved(
-          withProvenUsageHelperAdditionsRemoved(
-            withProvenTemplateRefUnwrapAdditionsRemoved(
-              withProvenPropValueOrAdditionRemoved(
-                withProvenListenerAdditionRemoved(
-                  withProvenListenerContractRemoved(actual, expected),
+        withProvenUsageGateAdditionsRemoved(
+          withProvenClosedEmitAdditionsRemoved(
+            withProvenUsageHelperAdditionsRemoved(
+              withProvenTemplateRefUnwrapAdditionsRemoved(
+                withProvenPropValueOrAdditionRemoved(
+                  withProvenListenerAdditionRemoved(
+                    withProvenListenerContractRemoved(actual, expected),
+                    expected,
+                  ),
                   expected,
                 ),
                 expected,

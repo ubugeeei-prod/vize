@@ -248,5 +248,5 @@ type $VueComponentOptions = {
   __isKeepAlive?: boolean;
   __isBuiltIn?: boolean;
 };
-declare const __vize_component__: { __vizeEmitProps?: $StaticEmitProps; readonly __vizeComponentMarker: true; readonly __vizeRawProps?: Props; readonly __vizeNativeFallthroughRoot: true; readonly __vizeHasFallthroughProps: true; readonly __vizeFallthroughProps?: $UnownedComponentAttrs<Partial<$NativeElement<"div">>, Props, $StaticEmitProps>; } & $ComponentConstructor & $VueComponentOptions;
+declare const __vize_component__: { __vizeEmitProps?: $StaticEmitProps; readonly __vizeComponentMarker: true; readonly __vizeRawProps?: Props; readonly __vizeNativeFallthroughRoot: true; readonly __vizeFallthroughSource?: Partial<$NativeElement<"div">>; readonly __vizeHasFallthroughProps: true; readonly __vizeFallthroughProps?: $UnownedComponentAttrs<Partial<$NativeElement<"div">>, Props, $StaticEmitProps>; } & $ComponentConstructor & $VueComponentOptions;
 export default __vize_component__;

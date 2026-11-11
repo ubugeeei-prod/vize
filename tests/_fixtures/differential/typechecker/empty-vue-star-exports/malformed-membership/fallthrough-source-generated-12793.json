@@ -1,0 +1,37 @@
+{
+  "version": 1,
+  "kind": "exact-fallthrough-source-generated-successor",
+  "issue": 12431,
+  "pullRequest": 12793,
+  "nativeAcceptanceCredit": false,
+  "entries": [
+    {
+      "entry": 74,
+      "before": [
+        "project/A.vue.ts",
+        4152,
+        "585cf725dd3ba55362fc685169f9927b4d586fbe8cc1c0714aa42fe12b0cc311"
+      ],
+      "after": [
+        "project/A.vue.ts",
+        4212,
+        "f15bc1dec67e2e279facff35e3285129f8028a9ec05e63021e6cfbe5e2c6050d"
+      ],
+      "deltaBytes": 60
+    },
+    {
+      "entry": 75,
+      "before": [
+        "project/B.vue.ts",
+        4374,
+        "c71fd1e13b882cf48929e8c8bddd1872ca2cef1e2df2c86dca2cafa1df55e909"
+      ],
+      "after": [
+        "project/B.vue.ts",
+        4434,
+        "93c246f44efc8e876710632da8996d54bf2e24deeebde602ebbdc8428dc26ba5"
+      ],
+      "deltaBytes": 60
+    }
+  ]
+}

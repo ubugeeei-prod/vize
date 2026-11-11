@@ -55,6 +55,17 @@ fn successor_body(current: &str, entry: &Value) -> String {
     successor
 }
 
+/// The authenticated successor bodies, for the next layer's reconstruction.
+#[cfg(test)]
+pub(super) fn current_bodies() -> Vec<String> {
+    let record = record();
+    super::constructor_noinfer_generated::current_bodies()
+        .iter()
+        .zip(record["entries"].as_array().unwrap())
+        .map(|(body, entry)| successor_body(body, entry))
+        .collect()
+}
+
 pub(super) fn apply(manifest: &mut Value, members: &mut [Value]) {
     let record = record();
     let entries = record["entries"].as_array().unwrap();

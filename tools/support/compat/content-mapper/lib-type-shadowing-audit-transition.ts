@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { beforeComponentHoverGaps } from "./component-hover-gaps-transition.ts";
+import { beforeSharedUsageGates } from "./shared-usage-gates-transition.ts";
 
 export const libTypeShadowingAuditRecord =
   "tests/_fixtures/tooling/lib-type-shadowing-audit-12536.json";
@@ -42,6 +43,7 @@ function load(): Transition {
 
 /** The exact pre-audit bytes of a recorded producer; older images pass through. */
 export function beforeLibTypeShadowingAudit(path: string, current: string): string {
+  current = beforeSharedUsageGates(path, current);
   current = beforeComponentHoverGaps(path, current);
   const file = load().files.find((entry) => entry.path === path);
   if (!file || identity(current).sha256 !== file.after.sha256) return current;

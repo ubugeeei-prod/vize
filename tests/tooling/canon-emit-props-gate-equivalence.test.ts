@@ -20,6 +20,7 @@ import {
   SHARED_CLOSED_EMIT,
   gateAliases,
   sharedGateAliases,
+  SHARED_EMIT_GATE,
   format,
   prelude,
   sfc,
@@ -100,6 +101,24 @@ void test("the shared closed helpers are the standalone aliases under their SDK 
     .trimEnd()
     .split("\n");
   assert.deepEqual(SHARED_CLOSED_EMIT.split("\n"), renamed);
+});
+
+void test("the shared emit gate is the module aliases under their SDK names", () => {
+  const module = GATE_ALIASES.replaceAll("{closed_aliases}", "")
+    .replaceAll("{closed}", "$ClosedEmit")
+    .replaceAll("{closed_factory}", "$ClosedEmitFactory")
+    .replaceAll("{emit_props_factory}", "$EmitPropsFactory")
+    .replaceAll("__vize_emit_native_input", "$EmitGateNativeInput")
+    .replace("type __vize_emit_resolver<L, C>", "type $EmitGateResolver<L, C>")
+    .replace("type __vize_emit_input<L, C, F,", "type $EmitGateInputOf<L, C, F,")
+    .trimEnd()
+    .split("\n");
+  const shared = SHARED_EMIT_GATE.split("\n");
+  assert.deepEqual(
+    shared.filter((line) => !line.startsWith("type $EmitGateInput<")).toSorted(),
+    module.toSorted(),
+  );
+  assert.ok(shared.includes("type $EmitGateInput<L, C, F> = $EmitGateInputOf<L, C, F>;"));
 });
 
 void test("the oracle rejects gates that drop a props-dependent route or the factory result", () => {
