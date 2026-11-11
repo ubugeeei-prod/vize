@@ -24,6 +24,9 @@ export const manual2: Record<string, RuleExample> = {
       source: "<template>\n  <button>Save</button>\n</template>",
     },
     evidence: "docs/content/rules/accessibility-interactions.md",
+    eslintDifference: {
+      en: 'An `img` with an empty `alt` has the implicit role `presentation` in HTML-ARIA, so `role="img"` on that image is kept. eslint-plugin-vuejs-accessibility treats the implicit role of `img` as `img` regardless of `alt` and reports that attribute. A `:role` binding whose expression is a string literal is read as that static role. A binding that is not a string literal stays unreported.',
+    },
   },
   "a11y/no-refer-to-non-existent-id": {
     bad: {

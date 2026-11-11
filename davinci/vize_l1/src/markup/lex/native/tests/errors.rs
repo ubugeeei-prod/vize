@@ -5,36 +5,28 @@ use super::{LexErrorCode, TokenEvent, tokenize};
 #[test]
 fn test_comment() {
     let cb = tokenize("<!-- comment -->");
-    assert!(cb.events.contains(&TokenEvent::Comment(4, 13)));
+    assert_eq!(
+        cb.events.as_slice(),
+        &[TokenEvent::Comment(4, 13), TokenEvent::End]
+    );
 }
 
 #[test]
 fn input_stream_characters_are_parse_errors() {
     let control = tokenize("<p>a\u{0001}b</p>");
-    assert!(
-        control
-            .errors
-            .contains(&(LexErrorCode::ControlCharacterInInputStream, 4)),
-        "{:?}",
-        control.errors
+    assert_eq!(
+        control.errors.as_slice(),
+        &[(LexErrorCode::ControlCharacterInInputStream, 4)]
     );
     let null = tokenize("<p>a\u{0000}b</p>");
-    assert!(
-        null.errors
-            .contains(&(LexErrorCode::UnexpectedNullCharacter, 4)),
-        "{:?}",
-        null.errors
+    assert_eq!(
+        null.errors.as_slice(),
+        &[(LexErrorCode::UnexpectedNullCharacter, 4)]
     );
     let noncharacter = tokenize("<p>a\u{FFFE}b</p>");
-    let at = noncharacter
-        .errors
-        .iter()
-        .find(|(code, _)| *code == LexErrorCode::NoncharacterInInputStream);
     assert_eq!(
-        at.map(|(_, index)| *index),
-        Some(4),
-        "{:?}",
-        noncharacter.errors
+        noncharacter.errors.as_slice(),
+        &[(LexErrorCode::NoncharacterInInputStream, 4)]
     );
     let clean = tokenize("<p>ab</p>");
     assert!(clean.errors.is_empty(), "{:?}", clean.errors);
@@ -45,21 +37,27 @@ fn input_stream_characters_are_parse_errors() {
 #[test]
 fn test_comment_abrupt_empty_close_reports_error() {
     let cb = tokenize("<!-->");
-    assert!(
-        cb.errors
-            .contains(&(LexErrorCode::AbruptClosingOfEmptyComment, 4))
+    assert_eq!(
+        cb.errors.as_slice(),
+        &[(LexErrorCode::AbruptClosingOfEmptyComment, 4)]
     );
-    assert!(cb.events.contains(&TokenEvent::Comment(4, 4)));
+    assert_eq!(
+        cb.events.as_slice(),
+        &[TokenEvent::Comment(4, 4), TokenEvent::End]
+    );
 }
 
 #[test]
 fn test_comment_abrupt_empty_close_after_dash_reports_error() {
     let cb = tokenize("<!--->");
-    assert!(
-        cb.errors
-            .contains(&(LexErrorCode::AbruptClosingOfEmptyComment, 5))
+    assert_eq!(
+        cb.errors.as_slice(),
+        &[(LexErrorCode::AbruptClosingOfEmptyComment, 5)]
     );
-    assert!(cb.events.contains(&TokenEvent::Comment(4, 4)));
+    assert_eq!(
+        cb.events.as_slice(),
+        &[TokenEvent::Comment(4, 4), TokenEvent::End]
+    );
 }
 
 // ========================================================================
@@ -69,51 +67,82 @@ fn test_comment_abrupt_empty_close_after_dash_reports_error() {
 #[test]
 fn test_cdata_basic() {
     let cb = tokenize("<![CDATA[hi]]>");
-    assert!(cb.events.contains(&TokenEvent::Cdata(9, 11)));
+    assert_eq!(
+        cb.events.as_slice(),
+        &[TokenEvent::Cdata(9, 11), TokenEvent::End]
+    );
 }
 
 #[test]
 fn test_cdata_with_angle_brackets() {
     let cb = tokenize("<![CDATA[<a>]]>");
     // content `<a>` is [9, 12)
-    assert!(cb.events.contains(&TokenEvent::Cdata(9, 12)));
+    assert_eq!(
+        cb.events.as_slice(),
+        &[TokenEvent::Cdata(9, 12), TokenEvent::End]
+    );
 }
 
 #[test]
 fn test_cdata_empty() {
     let cb = tokenize("<![CDATA[]]>");
-    assert!(cb.events.contains(&TokenEvent::Cdata(9, 9)));
+    assert_eq!(
+        cb.events.as_slice(),
+        &[TokenEvent::Cdata(9, 9), TokenEvent::End]
+    );
 }
 
 #[test]
 fn test_cdata_then_text() {
     let cb = tokenize("<![CDATA[x]]>after");
-    assert!(cb.events.contains(&TokenEvent::Cdata(9, 10)));
-    assert!(cb.events.contains(&TokenEvent::Text(13, 18)));
+    assert_eq!(
+        cb.events.as_slice(),
+        &[
+            TokenEvent::Cdata(9, 10),
+            TokenEvent::Text(13, 18),
+            TokenEvent::End
+        ]
+    );
 }
 
 #[test]
 fn test_cdata_then_comment() {
     let cb = tokenize("<![CDATA[x]]><!-- comment -->");
-    assert!(cb.events.contains(&TokenEvent::Cdata(9, 10)));
+    assert_eq!(
+        cb.events.as_slice(),
+        &[
+            TokenEvent::Cdata(9, 10),
+            TokenEvent::Comment(17, 26),
+            TokenEvent::End
+        ]
+    );
 }
 
 #[test]
 fn test_cdata_partial_close_resets_then_finds_close() {
     let cb = tokenize("<![CDATA[x]y]]>");
-    assert!(cb.events.contains(&TokenEvent::Cdata(9, 12)));
+    assert_eq!(
+        cb.events.as_slice(),
+        &[TokenEvent::Cdata(9, 12), TokenEvent::End]
+    );
 }
 
 #[test]
 fn test_cdata_extra_bracket_before_close() {
     let cb = tokenize("<![CDATA[a]]]>");
-    assert!(cb.events.contains(&TokenEvent::Cdata(9, 11)));
+    assert_eq!(
+        cb.events.as_slice(),
+        &[TokenEvent::Cdata(9, 11), TokenEvent::End]
+    );
 }
 
 #[test]
 fn test_comment_extra_hyphens_before_close() {
     let cb = tokenize("<!-- z ---->");
-    assert!(cb.events.contains(&TokenEvent::Comment(4, 9)));
+    assert_eq!(
+        cb.events.as_slice(),
+        &[TokenEvent::Comment(4, 9), TokenEvent::End]
+    );
 }
 
 #[test]
@@ -124,8 +153,14 @@ fn test_comment_nested_opener_reports_error_and_closes_at_first_end() {
             .iter()
             .any(|(code, _)| *code == LexErrorCode::NestedComment)
     );
-    assert!(cb.events.contains(&TokenEvent::Comment(4, 17)));
-    assert!(cb.events.contains(&TokenEvent::Text(20, 24)));
+    assert_eq!(
+        cb.events.as_slice(),
+        &[
+            TokenEvent::Comment(4, 17),
+            TokenEvent::Text(20, 24),
+            TokenEvent::End
+        ]
+    );
 }
 
 // ========================================================================
@@ -160,7 +195,10 @@ fn test_error_eof_in_empty_comment() {
             .iter()
             .any(|(code, _)| *code == LexErrorCode::EofInComment)
     );
-    assert!(cb.events.contains(&TokenEvent::Comment(4, 4)));
+    assert_eq!(
+        cb.events.as_slice(),
+        &[TokenEvent::Comment(4, 4), TokenEvent::End]
+    );
 }
 
 #[test]
@@ -171,7 +209,10 @@ fn test_error_eof_in_empty_cdata() {
             .iter()
             .any(|(code, _)| *code == LexErrorCode::EofInCdata)
     );
-    assert!(cb.events.contains(&TokenEvent::Cdata(9, 9)));
+    assert_eq!(
+        cb.events.as_slice(),
+        &[TokenEvent::Cdata(9, 9), TokenEvent::End]
+    );
 }
 
 #[test]
@@ -182,7 +223,15 @@ fn test_error_processing_instruction_reports_question_mark() {
             .iter()
             .any(|(code, _)| *code == LexErrorCode::UnexpectedQuestionMarkInsteadOfTagName)
     );
-    assert!(cb.events.contains(&TokenEvent::OpenTagName(22, 25)));
+    assert_eq!(
+        cb.events.as_slice(),
+        &[
+            TokenEvent::OpenTagName(22, 25),
+            TokenEvent::OpenTagEnd(25),
+            TokenEvent::CloseTag(28, 31),
+            TokenEvent::End,
+        ]
+    );
 }
 
 #[test]
@@ -193,6 +242,16 @@ fn test_error_unexpected_solidus_before_attribute() {
             .iter()
             .any(|(code, _)| *code == LexErrorCode::UnexpectedSolidusInTag)
     );
-    assert!(cb.events.contains(&TokenEvent::AttribName(7, 9)));
-    assert!(cb.events.contains(&TokenEvent::AttribData(10, 13)));
+    assert_eq!(
+        cb.events.as_slice(),
+        &[
+            TokenEvent::OpenTagName(1, 4),
+            TokenEvent::AttribName(7, 9),
+            TokenEvent::AttribData(10, 13),
+            TokenEvent::AttribEnd(crate::markup::token::QuoteType::Unquoted, 13),
+            TokenEvent::OpenTagEnd(13),
+            TokenEvent::CloseTag(16, 19),
+            TokenEvent::End,
+        ]
+    );
 }
