@@ -94,7 +94,14 @@ impl VirtualProject {
         plan: &WorkspaceShadowPlan,
     ) -> CorsaResult<()> {
         self.remove_package_shadow_owner(key);
-        let Some(binding) = self.package_routes.get(key).cloned() else {
+        // A negative binding has no shadow, and its consulted inputs are the
+        // bulk of what a copy would duplicate.
+        let Some(binding) = self
+            .package_routes
+            .get(key)
+            .filter(|binding| binding.route.is_some())
+            .cloned()
+        else {
             return Ok(());
         };
         let Some(route) = binding.route.as_ref() else {

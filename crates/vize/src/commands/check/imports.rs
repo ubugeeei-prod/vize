@@ -235,14 +235,18 @@ pub(super) fn collect_transitive_local_imports_with_session(
                     }
                 }
             };
-            if let Some((None, invalidation_paths, mode, context, true)) = package_lookup.as_ref() {
+            // A negative lookup resolves nothing, so the walk moves on below;
+            // its binding takes the consulted inputs instead of a copy.
+            if matches!(package_lookup, Some((None, _, _, _, true)))
+                && let Some((_, invalidation_paths, mode, context, _)) = package_lookup.take()
+            {
                 package_routes.push(PackageRouteBinding {
                     importer_path: file.clone(),
                     specifier: specifier.clone(),
-                    occurrence_mode: *mode,
-                    context: context.clone(),
+                    occurrence_mode: mode,
+                    context,
                     route: None,
-                    invalidation_paths: invalidation_paths.clone(),
+                    invalidation_paths,
                     shared_invalidation_paths: Vec::new(),
                 });
             }
