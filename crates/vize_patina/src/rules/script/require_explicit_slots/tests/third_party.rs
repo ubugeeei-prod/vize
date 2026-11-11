@@ -1,6 +1,44 @@
 //! Imported wrappers, repeated names, and a bare `defineSlots()`.
 
 use super::{lint_sfc, owned, undeclared};
+use crate::linter::Linter;
+
+#[test]
+fn an_imported_method_interface_reports_the_undeclared_outlet() {
+    let dir = tempfile::tempdir().unwrap();
+    std::fs::write(
+        dir.path().join("types.ts"),
+        "export interface CardSlots {\n  default(): unknown;\n  footer(props: { count: number }): unknown;\n}\n",
+    )
+    .unwrap();
+    let source = r#"<script setup lang="ts">
+import type { CardSlots } from "./types";
+
+defineSlots<CardSlots>();
+</script>
+
+<template>
+  <div>
+    <slot />
+    <slot name="footer" :count="1" />
+    <slot name="extra" />
+  </div>
+</template>
+"#;
+    let filename = dir.path().join("Imported.vue");
+    let result = Linter::new()
+        .with_enabled_rules(Some(vec!["script/require-explicit-slots".into()]))
+        .lint_sfc(source, filename.to_str().unwrap());
+    let messages: Vec<_> = result
+        .diagnostics
+        .iter()
+        .map(|diagnostic| diagnostic.message.as_str())
+        .collect();
+    assert_eq!(
+        messages,
+        ["Slot 'extra' is rendered in the template but not declared in defineSlots<...>()."]
+    );
+}
 
 #[test]
 fn a_bare_define_slots_declares_no_slots() {
