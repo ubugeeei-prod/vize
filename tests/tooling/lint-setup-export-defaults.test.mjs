@@ -1,4 +1,7 @@
-import { hasLaterRulePortError, withoutLaterRulePorts } from "./support/without-later-rule-ports.ts";
+import {
+  hasLaterRulePortError,
+  withoutLaterRulePorts,
+} from "./support/without-later-rule-ports.ts";
 import { currentRuleDocumentationPacket } from "./support/current-rule-documentation.ts";
 import { setupExportCurrentPacket } from "./support/setup-export-current-packet.ts";
 import { writeVueConfigFixture } from "./support/vue-config-fixture.ts";
