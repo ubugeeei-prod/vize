@@ -1,7 +1,6 @@
 /* eslint-disable */
 // @ts-nocheck
 
-const { randomUUID } = require("node:crypto");
 const { extname } = require("node:path");
 const registry = Symbol.for("@vizejs/native/binding-identities/v1");
 const shared = globalThis[registry];
@@ -30,7 +29,9 @@ function remember(binding, isNative = false) {
     Object.freeze(
       typeof token === "string" && /^[0-9a-f]{32}$/.test(token)
         ? { kind: "native", token }
-        : { kind: "process", nonce: randomUUID() },
+        : // Loaded only here: requiring node:crypto costs 2-3 ms of every
+          // addon load, and builds that carry a token never need it.
+          { kind: "process", nonce: require("node:crypto").randomUUID() },
     ),
   );
 }
