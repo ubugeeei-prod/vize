@@ -12,8 +12,8 @@ use napi::bindgen_prelude::{Error, Result, Status};
 use napi_derive::napi;
 use rayon::prelude::{IntoParallelRefIterator, ParallelIterator};
 use serde_json::{Value, json};
-use std::sync::atomic::{AtomicUsize, Ordering};
 use vize_l0::append;
+use vize_patina::Severity;
 
 use super::lint_fix::{lint_file_with_optional_fix, lint_source};
 mod empty_result;
@@ -296,29 +296,34 @@ pub fn lint(patterns: Vec<String>, options: Option<LintOptionsNapi>) -> Result<L
         opts.type_aware,
         opts.corsa_path,
     );
-    let error_count = AtomicUsize::new(0);
-    let warning_count = AtomicUsize::new(0);
-
     // Lint all files in parallel and collect results
     let should_fix = opts.fix.unwrap_or(false);
-    let results: Vec<_> = files
-        .par_iter()
-        .filter_map(|path| {
-            let item = lint_file_with_optional_fix(&linter, path, should_fix)?;
-            error_count.fetch_add(item.2.error_count, Ordering::Relaxed);
-            warning_count.fetch_add(item.2.warning_count, Ordering::Relaxed);
-            Some(item)
-        })
-        .collect();
-
-    let total_errors = error_count.load(Ordering::Relaxed);
-    let total_warnings = warning_count.load(Ordering::Relaxed);
-
     let quiet = opts.quiet.unwrap_or(false);
+    let mut results: Vec<_> = files
+        .par_iter()
+        .filter_map(|path| lint_file_with_optional_fix(&linter, path, should_fix))
+        .collect();
+    if quiet {
+        for (_, _, result) in &mut results {
+            result
+                .diagnostics
+                .retain(|diagnostic| diagnostic.severity == Severity::Error);
+            result.error_count = result.diagnostics.len();
+            result.warning_count = 0;
+        }
+    }
+    let total_errors: usize = results
+        .iter()
+        .map(|(_, _, result)| result.error_count)
+        .sum();
+    let total_warnings: usize = results
+        .iter()
+        .map(|(_, _, result)| result.warning_count)
+        .sum();
 
     // Format output
     let mut output = vize_l0::CompactString::default();
-    if format.renders_details_when_quiet() || !quiet || total_errors > 0 || total_warnings > 0 {
+    {
         let lint_results: Vec<_> = results.iter().map(|(_, _, r)| r).cloned().collect();
         let sources: Vec<_> = results
             .iter()
