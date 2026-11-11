@@ -74,51 +74,88 @@ pub(super) fn declarations(ctx: &LintContext<'_>) -> Vec<Declaration> {
         _ => 0,
     };
 
-    let Some(analysis) = ctx.analysis() else {
-        if let (Some(block), Some(scripts)) = (script_setup, ctx.sfc_scripts())
-            && let Some(parsed) = scripts.script_setup()
-            && !parsed.panicked
-            && parsed.diagnostics.is_empty()
+    if let Some(analysis) = ctx.analysis() {
+        append_analyzed_props(
+            &mut declarations,
+            analysis,
+            declaring_block.content.as_ref(),
+            declaring_offset,
+            setup_shift,
+        );
+        return declarations;
+    }
+    // A template-less SFC never receives croquis on the SFC pass. Build the
+    // same filename-aware summary the template pass would, so `import type`
+    // props resolve. A local croquis cannot be stored on the context: its
+    // analysis borrow is tied to the source lifetime.
+    if script_setup.is_some() {
+        let allocator = Allocator::default();
+        let scripts = crate::linter::sfc_scripts::lint_scripts(&allocator, descriptor);
+        let owned = crate::linter::analyze_descriptor_for_lint(
+            &scripts,
+            None,
+            Some(ctx.filename),
+            false,
+            false,
+        );
+        if append_analyzed_props(
+            &mut declarations,
+            &owned,
+            declaring_block.content.as_ref(),
+            declaring_offset,
+            setup_shift,
+        ) {
+            return declarations;
+        }
+    }
+    if let (Some(block), Some(scripts)) = (script_setup, ctx.sfc_scripts())
+        && let Some(parsed) = scripts.script_setup()
+        && !parsed.panicked
+        && parsed.diagnostics.is_empty()
+    {
+        let built = SemanticBuilder::new()
+            .with_build_nodes(true)
+            .build(&parsed.program);
+        if built.diagnostics.is_empty()
+            && !no_dupe_keys::setup::macro_shadowed(&parsed.program, &built.semantic, "defineProps")
         {
-            let built = SemanticBuilder::new()
-                .with_build_nodes(true)
-                .build(&parsed.program);
-            if built.diagnostics.is_empty()
-                && !no_dupe_keys::setup::macro_shadowed(
+            for candidate in no_dupe_keys::setup::candidates(&parsed.program) {
+                for name in no_dupe_keys::setup::props::names(
+                    candidate.call,
                     &parsed.program,
                     &built.semantic,
-                    "defineProps",
-                )
-            {
-                for candidate in no_dupe_keys::setup::candidates(&parsed.program) {
-                    for name in no_dupe_keys::setup::props::names(
-                        candidate.call,
-                        &parsed.program,
-                        &built.semantic,
-                        NoDupeKeysModuleScript::Absent,
-                        None,
-                        block.content.as_ref(),
-                        None,
-                    ) {
-                        let span =
-                            no_dupe_keys::setup::props::declaration_span(candidate.call, &name)
-                                .unwrap_or(candidate.call.span);
-                        declarations.push(Declaration {
-                            name,
-                            start: block.loc.start as u32 + span.start,
-                            end: block.loc.start as u32 + span.end,
-                        });
-                    }
+                    NoDupeKeysModuleScript::Absent,
+                    None,
+                    block.content.as_ref(),
+                    None,
+                ) {
+                    let span = no_dupe_keys::setup::props::declaration_span(candidate.call, &name)
+                        .unwrap_or(candidate.call.span);
+                    declarations.push(Declaration {
+                        name,
+                        start: block.loc.start as u32 + span.start,
+                        end: block.loc.start as u32 + span.end,
+                    });
                 }
             }
         }
-        return declarations;
-    };
+    }
+    declarations
+}
+
+/// Record props from a resolved `defineProps` call. Returns false when that
+/// call is absent, so the same-file walk can still see a parse the summary missed.
+fn append_analyzed_props(
+    declarations: &mut Vec<Declaration>,
+    analysis: &vize_croquis::Croquis,
+    declaring_content: &str,
+    declaring_offset: u32,
+    setup_shift: u32,
+) -> bool {
     let Some(call) = analysis.macros.define_props() else {
-        return declarations;
+        return false;
     };
-    let type_argument_span =
-        macro_type_argument_span(declaring_block.content.as_ref(), call, setup_shift);
+    let type_argument_span = macro_type_argument_span(declaring_content, call, setup_shift);
     declarations.extend(analysis.macros.props().iter().map(|prop| {
         let (start, end) = analysis
             .macros
@@ -131,5 +168,5 @@ pub(super) fn declarations(ctx: &LintContext<'_>) -> Vec<Declaration> {
             end: declaring_offset + end.saturating_sub(setup_shift),
         }
     }));
-    declarations
+    true
 }

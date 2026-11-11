@@ -402,4 +402,29 @@ export default {
             assert_eq!(result.error_count, 1, "{sfc}: {:?}", result.diagnostics);
         }
     }
+
+    #[test]
+    fn setup_template_literal_names_are_reserved_keys() {
+        let array = "<script setup lang=\"ts\">\ndefineProps([`$el`, \"$data\", `snake_case`, \"other_name\"]);\n</script>\n";
+        let array_result = Linter::new()
+            .with_enabled_rules(Some(vec!["script/no-reserved-keys".into()]))
+            .lint_sfc(array, "ArrayNames.vue");
+        let array_spans: Vec<&str> = array_result
+            .diagnostics
+            .iter()
+            .map(|diagnostic| &array[diagnostic.start as usize..diagnostic.end as usize])
+            .collect();
+        assert_eq!(array_spans, vec!["`$el`", "\"$data\""]);
+
+        let object = "<script setup lang=\"ts\">\ndefineProps({\n  [`$el`]: String,\n  $data: String,\n});\n</script>\n";
+        let object_result = Linter::new()
+            .with_enabled_rules(Some(vec!["script/no-reserved-keys".into()]))
+            .lint_sfc(object, "ObjectNames.vue");
+        let object_spans: Vec<&str> = object_result
+            .diagnostics
+            .iter()
+            .map(|diagnostic| &object[diagnostic.start as usize..diagnostic.end as usize])
+            .collect();
+        assert_eq!(object_spans, vec!["[`$el`]: String", "$data: String"]);
+    }
 }

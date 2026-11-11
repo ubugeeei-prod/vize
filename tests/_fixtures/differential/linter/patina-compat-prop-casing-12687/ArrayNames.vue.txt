@@ -1,0 +1,7 @@
+<script setup lang="ts">
+defineProps([`$el`, "$data", `snake_case`, "other_name"]);
+</script>
+
+<template>
+  <div />
+</template>
