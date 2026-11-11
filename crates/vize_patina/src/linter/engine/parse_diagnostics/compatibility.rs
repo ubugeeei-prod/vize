@@ -10,6 +10,10 @@ use vize_l1_to_l2::lower_style_block;
 use vize_l2::expr::{ExprRef, OpaqueReason};
 use vize_l2::op::{BindingOp, Op};
 
+mod expressions;
+mod markup;
+mod references;
+
 fn append_entity_diagnostics(
     diagnostics: &mut Vec<LintDiagnostic>,
     error_count: &mut usize,
@@ -59,6 +63,20 @@ fn append_entity_diagnostics(
         let Some(candidate) = bytes.get(index..) else {
             break;
         };
+        if candidate.get(1) == Some(&b'#') {
+            let (consumed, errors) = references::numeric_reference(candidate);
+            for code in errors.into_iter().flatten() {
+                *error_count += 1;
+                diagnostics.push(LintDiagnostic::error(
+                    TEMPLATE_PARSE_RULE,
+                    code.message(),
+                    index as u32,
+                    (index + consumed) as u32,
+                ));
+            }
+            index += consumed;
+            continue;
+        }
         if let Some((_, consumed)) = decode_one(candidate, context) {
             if candidate
                 .get(..consumed)
@@ -104,6 +122,7 @@ fn invalid_expression_spans(template: &L2Template<'_>) -> Vec<Span> {
     template.for_each_invalid_expression(|span, reason| {
         if reason == OpaqueReason::ParseRejected
             && !template.is_vue_binding_pattern_span(span)
+            && !expressions::is_accepted_by_vue(template.surface(), span)
             && seen.insert((span.start, span.end))
         {
             rejected.push(span);
@@ -164,6 +183,15 @@ impl Linter {
             source,
             template,
         );
+        markup::tag_open_errors(template.surface(), &mut |code, span| {
+            result.error_count += 1;
+            result.diagnostics.push(LintDiagnostic::error(
+                TEMPLATE_PARSE_RULE,
+                code.message(),
+                span.start,
+                span.end,
+            ));
+        });
         for span in invalid_expression_spans(template) {
             result.error_count += 1;
             result.diagnostics.push(LintDiagnostic::error(

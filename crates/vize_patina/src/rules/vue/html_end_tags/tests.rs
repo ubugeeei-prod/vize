@@ -124,3 +124,33 @@ fn reports_inside_an_sfc_template() {
         .collect();
     assert_eq!(found, ["'<li>' should have end tag."]);
 }
+
+#[test]
+fn reports_a_paragraph_that_vue_eslint_parser_ends_at_a_block_start_tag() {
+    for source in [
+        "<p>intro <div>block</div></p>",
+        "<p>intro <details><summary>more</summary>text</details></p>",
+        "<p>intro <figure><figcaption>caption</figcaption></figure></p>",
+        "<p>intro <dialog>text</dialog></p>",
+        "<p>intro <h1>x</h1></p>",
+        "<p>intro <legend>x</legend></p>",
+        "<p>a<p>b</p>",
+    ] {
+        assert_eq!(warnings(source), ["'<p>' should have end tag."], "{source}");
+    }
+    for source in [
+        "<p>intro <ul><li>x</li></ul></p>",
+        "<p>intro <section>x</section></p>",
+        "<p>intro <span><div>x</div></span></p>",
+        "<p>intro <MyComp>x</MyComp></p>",
+    ] {
+        assert_eq!(warnings(source), Vec::<String>::new(), "{source}");
+    }
+    let source = "<p>intro <dialog>text</dialog></p>";
+    let result = linter().lint_template(source, "test.vue");
+    let fix = result.diagnostics[0].fix.as_ref().expect("fix");
+    assert_eq!(
+        fix.apply(source).as_str(),
+        "<p>intro </p><dialog>text</dialog></p>"
+    );
+}

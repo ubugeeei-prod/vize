@@ -81,6 +81,18 @@ pub enum ErrorCode {
     MissingSemicolonAfterCharacterReference = 1001,
     /// A semicolon-terminated named character reference is not defined by HTML.
     UnknownNamedCharacterReference = 1002,
+    /// A numeric character reference has no digits.
+    AbsenceOfDigitsInNumericCharacterReference = 1003,
+    /// A numeric character reference is above U+10FFFF.
+    CharacterReferenceOutsideUnicodeRange = 1004,
+    /// A numeric character reference names U+0000.
+    NullCharacterReference = 1005,
+    /// A numeric character reference names a control character other than ASCII whitespace.
+    ControlCharacterReference = 1006,
+    /// A numeric character reference names a surrogate code point.
+    SurrogateCharacterReference = 1007,
+    /// A numeric character reference names a Unicode noncharacter.
+    NoncharacterCharacterReference = 1008,
 }
 
 impl ErrorCode {
@@ -164,6 +176,16 @@ impl ErrorCode {
                 "Missing semicolon after character reference."
             }
             Self::UnknownNamedCharacterReference => "Unknown named character reference.",
+            Self::AbsenceOfDigitsInNumericCharacterReference => {
+                "Numeric character reference has no digits."
+            }
+            Self::CharacterReferenceOutsideUnicodeRange => {
+                "Character reference outside the Unicode range."
+            }
+            Self::NullCharacterReference => "Null character reference.",
+            Self::ControlCharacterReference => "Control character reference.",
+            Self::SurrogateCharacterReference => "Surrogate character reference.",
+            Self::NoncharacterCharacterReference => "Noncharacter character reference.",
         }
     }
 
@@ -173,6 +195,12 @@ impl ErrorCode {
                 self,
                 Self::MissingSemicolonAfterCharacterReference
                     | Self::UnknownNamedCharacterReference
+                    | Self::AbsenceOfDigitsInNumericCharacterReference
+                    | Self::CharacterReferenceOutsideUnicodeRange
+                    | Self::NullCharacterReference
+                    | Self::ControlCharacterReference
+                    | Self::SurrogateCharacterReference
+                    | Self::NoncharacterCharacterReference
             )
     }
 

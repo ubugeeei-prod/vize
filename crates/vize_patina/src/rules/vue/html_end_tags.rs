@@ -44,6 +44,62 @@ const OPTIONAL_END_TAGS: &[&str] = &[
     "th",
 ];
 
+/// Start tags that end an open `<p>` in vue-eslint-parser (Vue 2's
+/// non-phrasing list), including the ones this tree keeps inside it.
+const CLOSES_PARAGRAPH: &[&str] = &[
+    "address",
+    "article",
+    "aside",
+    "base",
+    "blockquote",
+    "body",
+    "caption",
+    "col",
+    "colgroup",
+    "dd",
+    "details",
+    "dialog",
+    "div",
+    "dl",
+    "dt",
+    "fieldset",
+    "figcaption",
+    "figure",
+    "footer",
+    "form",
+    "h1",
+    "h2",
+    "h3",
+    "h4",
+    "h5",
+    "h6",
+    "head",
+    "header",
+    "hgroup",
+    "hr",
+    "html",
+    "legend",
+    "li",
+    "menuitem",
+    "meta",
+    "optgroup",
+    "option",
+    "param",
+    "rp",
+    "rt",
+    "source",
+    "style",
+    "summary",
+    "tbody",
+    "td",
+    "tfoot",
+    "th",
+    "thead",
+    "title",
+    "tr",
+    "track",
+];
+
 #[derive(Default)]
 /// Implements the `vue/html-end-tags` lint rule.
 pub struct HtmlEndTags;
@@ -172,13 +228,17 @@ fn element_extent(
     if !inner.reliable {
         return inner;
     }
+    let closer = paragraph_closer(ctx.source, element, inner.end);
+    if let Some(at) = closer {
+        report_missing(ctx, element, at);
+    }
     if let Some(end) = closing_end(ctx.source, inner.end, limit, element.tag) {
         return Extent {
             end,
             reliable: true,
         };
     }
-    if can_omit_end_tag(element.tag) {
+    if closer.is_none() && can_omit_end_tag(element.tag) {
         // Parser recovery may auto-close `<p>` before a custom component even
         // when the source later carries a real `</p>`. Trust authored evidence.
         if authored_closing::find(ctx.source, element.loc.span.end, element.tag).is_none() {
@@ -206,6 +266,54 @@ fn report_missing(ctx: &mut LintContext<'_>, element: &ElementNode<'_>, insert_a
         .with_help(help)
         .with_fix(Fix::new("Add the end tag", edit)),
     );
+}
+
+/// Where a start tag ends this `<p>` for vue-eslint-parser: a direct child
+/// this tree keeps inside the paragraph, or the start tag (another `<p>`
+/// included) at which the tree already ended it, even with a later `</p>`.
+fn paragraph_closer(source: &str, element: &ElementNode<'_>, inner_end: u32) -> Option<u32> {
+    if element.tag != "p" || element.tag_type != ElementType::Element {
+        return None;
+    }
+    let child = element.children.iter().find_map(|child| match child {
+        TemplateChildNode::Element(child)
+            if CLOSES_PARAGRAPH.contains(&child.tag) && authored_open(source, child) =>
+        {
+            Some(child.loc.span.start)
+        }
+        _ => None,
+    });
+    child.or_else(|| {
+        // A child the tree left open was the current node, not the `<p>`.
+        if let Some(TemplateChildNode::Element(last)) = element.children.last()
+            && !last.is_self_closing
+            && !is_void_element(last.tag)
+            && !closes_at(source, inner_end, last.tag)
+        {
+            return None;
+        }
+        let rest = source.get(inner_end as usize..)?.strip_prefix('<')?;
+        let name_len = rest
+            .bytes()
+            .take_while(|byte| !byte.is_ascii_whitespace() && !matches!(byte, b'/' | b'>'))
+            .count();
+        let name = rest.get(..name_len)?;
+        (name == "p" || CLOSES_PARAGRAPH.contains(&name)).then_some(inner_end)
+    })
+}
+
+/// Whether `</tag>` ends right at `end`.
+fn closes_at(source: &str, end: u32, tag: &str) -> bool {
+    let Some(before) = source.get(..end as usize) else {
+        return false;
+    };
+    before.strip_suffix('>').is_some_and(|before| {
+        before.rfind("</").is_some_and(|open| {
+            before
+                .get(open + 2..)
+                .is_some_and(|name| name.trim_end().eq_ignore_ascii_case(tag))
+        })
+    })
 }
 
 fn authored_open(source: &str, element: &ElementNode<'_>) -> bool {

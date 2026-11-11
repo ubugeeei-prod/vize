@@ -13,7 +13,7 @@ Exigir importação ou registro explícito de componentes.
 
 Aplicável a: Templates e blocos de SFC Vue, com o contexto do script quando exigido pela regra.
 
-Liste nomes explícitos de componentes fornecidos por plugins da aplicação ou pelo previewSetup do Musea. Grafias PascalCase e kebab-case são aceitas; expressões regulares não são interpretadas. As opções não ativam a regra. Camadas posteriores substituem a lista; uma lista vazia remove os nomes herdados.
+Liste nomes explícitos de componentes fornecidos por plugins da aplicação ou pelo previewSetup do Musea. Grafias PascalCase e kebab-case são aceitas; globals contém nomes, não expressões regulares. ignorePatterns recebe expressões regulares, como vue/no-undef-components do eslint-plugin-vue. Um atributo `is` estático nomeia um componente em `<component>` ou com o prefixo `vue:`; em outro elemento, é um elemento nativo personalizado e não é verificado. As opções não ativam a regra. Camadas posteriores substituem a lista; uma lista vazia remove os nomes herdados.
 
 ## Incorreto
 

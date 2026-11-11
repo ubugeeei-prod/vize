@@ -16,6 +16,24 @@ pub(super) struct LintIgnoreSet {
 pub(super) struct LintFileCollection {
     pub(super) files: Vec<PathBuf>,
     pub(super) unmatched_patterns: Vec<String>,
+    /// Existing explicit files that only the config's `ignores` excludes.
+    pub(super) ignored_files: Vec<String>,
+}
+
+/// The selected inputs plus the input warnings already written.
+pub(super) struct LintInputs {
+    pub(super) files: Vec<PathBuf>,
+    pub(super) warnings: usize,
+    /// Every input was an explicit file that `ignores` excludes; like ESLint,
+    /// this is a warning, not a pattern that matched nothing.
+    pub(super) ignored_only: bool,
+}
+
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum LintFileOutcome {
+    Added,
+    Ignored,
+    NotLintable,
 }
 
 impl LintIgnoreSet {
@@ -55,14 +73,17 @@ pub(super) fn collect_lint_file_collection(
 ) -> LintFileCollection {
     let mut files = Vec::new();
     let mut unmatched_patterns = Vec::new();
+    let mut ignored_files = Vec::new();
     let mut seen = FxHashSet::default();
 
     for pattern in patterns {
         let candidate = PathBuf::from(pattern);
         if candidate.exists() {
             if candidate.is_file() {
-                if !add_lint_file(&candidate, ignore_set, &mut files, &mut seen) {
-                    unmatched_patterns.push(pattern.clone());
+                match add_lint_file(&candidate, ignore_set, &mut files, &mut seen) {
+                    LintFileOutcome::Added => {}
+                    LintFileOutcome::Ignored => ignored_files.push(pattern.clone()),
+                    LintFileOutcome::NotLintable => unmatched_patterns.push(pattern.clone()),
                 }
                 continue;
             }
@@ -94,6 +115,7 @@ pub(super) fn collect_lint_file_collection(
     LintFileCollection {
         files,
         unmatched_patterns,
+        ignored_files,
     }
 }
 
@@ -116,17 +138,27 @@ pub(super) fn collect_default_lint_files(
 pub(super) fn collect_lint_inputs(
     patterns: &[String],
     ignore_set: Option<&LintIgnoreSet>,
-) -> (Vec<PathBuf>, usize) {
+    warn_ignored: bool,
+) -> LintInputs {
     let LintFileCollection {
         files,
         unmatched_patterns,
+        ignored_files,
     } = collect_lint_file_collection(patterns, ignore_set);
-    let warning_count = if files.is_empty() {
-        0
-    } else {
-        super::patterns::write_unmatched_explicit_patterns(patterns, &unmatched_patterns)
-    };
-    (files, warning_count)
+    let ignored_only = files.is_empty() && unmatched_patterns.is_empty();
+    let mut warnings = 0;
+    if !files.is_empty() {
+        warnings +=
+            super::patterns::write_unmatched_explicit_patterns(patterns, &unmatched_patterns);
+    }
+    if warn_ignored && (ignored_only || !files.is_empty()) {
+        warnings += super::patterns::write_ignored_files(&ignored_files);
+    }
+    LintInputs {
+        files,
+        warnings,
+        ignored_only: ignored_only && !ignored_files.is_empty(),
+    }
 }
 
 fn collect_lint_files_from_dir(
@@ -158,7 +190,7 @@ fn collect_lint_files_from_dir(
         };
         let path = entry.path();
         if path.is_file() && matcher.is_none_or(|matcher| matcher.matches(path)) {
-            matched |= add_lint_file(path, ignore_set, files, seen);
+            matched |= add_lint_file(path, ignore_set, files, seen) == LintFileOutcome::Added;
         }
     }
     matched
@@ -183,21 +215,21 @@ fn add_lint_file(
     ignore_set: Option<&LintIgnoreSet>,
     files: &mut Vec<PathBuf>,
     seen: &mut FxHashSet<PathBuf>,
-) -> bool {
+) -> LintFileOutcome {
     if vize_carton::path::is_git_metadata_path(path) || !is_lintable_path(path) {
-        return false;
+        return LintFileOutcome::NotLintable;
     }
     let normalized = normalize_lint_input_path(path);
     if vize_carton::path::is_git_metadata_path(&normalized) {
-        return false;
+        return LintFileOutcome::NotLintable;
     }
     if ignore_set.is_some_and(|ignore_set| ignore_set.is_ignored(&normalized)) {
-        return false;
+        return LintFileOutcome::Ignored;
     }
     if seen.insert(normalized.clone()) {
         files.push(normalized);
     }
-    true
+    LintFileOutcome::Added
 }
 
 fn is_lintable_path(path: &Path) -> bool {

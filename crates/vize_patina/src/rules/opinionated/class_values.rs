@@ -80,7 +80,8 @@ fn collect_possible_static_parts<'a>(
                 let ObjectPropertyKind::ObjectProperty(property) = entry else {
                     continue;
                 };
-                if let Some(mut part) = static_property_key(&property.key, property.computed) {
+                if let Some(mut part) = static_property_key(&property.key, property.computed, false)
+                {
                     part.unconditional = false;
                     parts.push(part);
                 }
@@ -150,7 +151,8 @@ pub(crate) fn unconditional_static_parts<'a>(
                     continue;
                 };
                 if value.value
-                    && let Some(mut part) = static_property_key(&property.key, property.computed)
+                    && let Some(mut part) =
+                        static_property_key(&property.key, property.computed, true)
                 {
                     part.unconditional = true;
                     parts.push(part);
@@ -205,20 +207,31 @@ fn complete_template_segment(text: &str, left_bounded: bool, right_bounded: bool
     (!segment.is_empty()).then_some(segment)
 }
 
+/// A key that names one class: an identifier, a string, or a computed string
+/// literal (`['a']`). `computed_template` also admits `` [`a`] ``, which
+/// `vue/prefer-separate-static-class` counts and `vue/no-duplicate-class-names`
+/// does not.
 fn static_property_key<'a>(
     key: &'a PropertyKey<'a>,
     computed: bool,
+    computed_template: bool,
 ) -> Option<StaticClassPart<'a>> {
-    if computed {
-        return None;
-    }
-    let (text, span) = match key {
-        PropertyKey::StaticIdentifier(identifier) => (identifier.name.as_str(), identifier.span),
-        PropertyKey::StringLiteral(literal) => (literal.value.as_str(), literal.span),
-        PropertyKey::TemplateLiteral(template) => {
-            (template.single_quasi()?.as_str(), template.span())
+    let (text, span) = if computed {
+        match key.as_expression()?.without_parentheses() {
+            Expression::StringLiteral(literal) => (literal.value.as_str(), literal.span),
+            Expression::TemplateLiteral(template) if computed_template => {
+                (template.single_quasi()?.as_str(), template.span)
+            }
+            _ => return None,
         }
-        _ => return None,
+    } else {
+        match key {
+            PropertyKey::StaticIdentifier(identifier) => {
+                (identifier.name.as_str(), identifier.span)
+            }
+            PropertyKey::StringLiteral(literal) => (literal.value.as_str(), literal.span),
+            _ => return None,
+        }
     };
     Some(StaticClassPart {
         text,

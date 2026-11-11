@@ -27,6 +27,7 @@ use crate::ir::ByteRange;
 use crate::markup::{MarkupBinding, MarkupBindingKind, MarkupContext, MarkupElement, MarkupRule};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use crate::rules::opinionated::class_values::unconditional_static_parts;
+use oxc_ast::ast::Expression;
 use vize_armature::patterns::attribute_source_span;
 use vize_l0::String;
 use vize_relief::{DirectiveNode, ElementNode, ExpressionNode, PropNode};
@@ -74,9 +75,16 @@ impl MarkupRule for PreferStaticClass {
         {
             return;
         }
+        // `.attr` / `.prop` (and `.class`) pick how Vue sets the value, so the
+        // binding is not interchangeable with a static attribute.
+        if binding.has_modifier("attr") || binding.has_modifier("prop") {
+            return;
+        }
         let Some(expression) = binding.expression() else {
             return;
         };
+        let retained = binding.retained_expression();
+        let literal = whole_literal_value(expression.trim(), retained.as_ref().map(|r| r.ast));
         // If a static `class` attribute is already present, the dynamic one is
         // redundant but cannot simply be folded in; just flag it.
         let mut has_static_class = false;
@@ -87,10 +95,12 @@ impl MarkupRule for PreferStaticClass {
         });
 
         let message = ctx.lint().t("vapor/prefer-static-class.message");
-        if is_string_literal(expression.trim()) && has_static_class {
+        if literal.is_some() && has_static_class {
             let help = ctx.lint().t("vapor/prefer-static-class.help");
             ctx.lint().warn_at_with_help(message, binding.range(), help);
-        } else if is_string_literal(expression.trim()) && ctx.is_template() {
+        } else if let Some(value) = literal
+            && ctx.is_template()
+        {
             let Some(argument) = binding.argument_range() else {
                 return;
             };
@@ -98,14 +108,14 @@ impl MarkupRule for PreferStaticClass {
             report_static_class(
                 ctx.lint(),
                 message.as_ref(),
-                expression.trim(),
+                value,
                 argument.start,
                 range.start,
                 range.end,
             );
-        } else if is_string_literal(expression.trim()) {
+        } else if literal.is_some() {
             ctx.lint().warn_at(message, binding.range());
-        } else if let Some(retained) = binding.retained_expression() {
+        } else if let Some(retained) = retained {
             let mut parts = Vec::new();
             unconditional_static_parts(retained.ast, &mut parts);
             for part in parts
@@ -146,6 +156,13 @@ impl Rule for PreferStaticClass {
             Some(ExpressionNode::Simple(s)) if s.content == "class" => s,
             _ => return,
         };
+        if directive
+            .modifiers
+            .iter()
+            .any(|modifier| matches!(modifier.content, "attr" | "prop"))
+        {
+            return;
+        }
 
         // Check if the expression is a string literal
         let Some(ref exp) = directive.exp else {
@@ -157,9 +174,8 @@ impl Rule for PreferStaticClass {
             _ => return,
         };
 
-        // Check if it's a simple string literal like "'foo'" or "`foo`" or "\"foo\""
-        let trimmed = simple.content.trim();
-        if is_string_literal(trimmed) {
+        let parsed = simple.js_ast.and_then(|ast| ast.as_expression());
+        if let Some(value) = whole_literal_value(simple.content.trim(), parsed.map(|p| p.ast)) {
             // Check if element already has a static class attribute
             let has_static_class = element.props.iter().any(|p| {
                 matches!(p, PropNode::Attribute(attr) if attr.name.eq_ignore_ascii_case("class"))
@@ -172,7 +188,7 @@ impl Rule for PreferStaticClass {
                 report_static_class(
                     ctx,
                     message.as_ref(),
-                    trimmed,
+                    value,
                     arg.loc.span.start,
                     directive.loc.span.start,
                     directive.loc.span.end,
@@ -184,7 +200,7 @@ impl Rule for PreferStaticClass {
                     ctx.t("vapor/prefer-static-class.help"),
                 );
             }
-        } else if let Some(parsed) = simple.js_ast.and_then(|ast| ast.as_expression()) {
+        } else if let Some(parsed) = parsed {
             let mut parts = Vec::new();
             unconditional_static_parts(parsed.ast, &mut parts);
             let start = simple.loc.span.start as usize;
@@ -213,42 +229,62 @@ impl Rule for PreferStaticClass {
 fn report_static_class(
     ctx: &mut LintContext<'_>,
     message: &str,
-    expression: &str,
+    value: &str,
     argument_start: u32,
     binding_start: u32,
     binding_end: u32,
 ) {
-    let inner = expression.get(1..expression.len() - 1).unwrap_or_default();
-    let mut replacement = String::from("class=\"");
-    replacement.push_str(inner);
-    replacement.push('"');
-    let fix = Fix::new(
-        "Replace with static class attribute",
-        TextEdit::replace(binding_start, binding_end, replacement),
-    );
-    ctx.report(
-        crate::diagnostic::LintDiagnostic::warn(META.name, message, argument_start, binding_end)
-            .with_fix(fix),
-    );
+    let mut diagnostic =
+        crate::diagnostic::LintDiagnostic::warn(META.name, message, argument_start, binding_end);
+    // A double quote cannot be written into the double-quoted attribute.
+    if !value.contains('"') {
+        let mut replacement = String::from("class=\"");
+        replacement.push_str(value);
+        replacement.push('"');
+        diagnostic = diagnostic.with_fix(Fix::new(
+            "Replace with static class attribute",
+            TextEdit::replace(binding_start, binding_end, replacement),
+        ));
+    }
+    ctx.report(diagnostic);
 }
 
-/// Check if a string is a simple string literal
-fn is_string_literal(s: &str) -> bool {
-    let bytes = s.as_bytes();
-    let (Some(&first), Some(&last)) = (bytes.first(), bytes.last()) else {
+/// The value of a binding that is one string literal or a template literal
+/// without substitutions. Without a parsed expression, the source must be
+/// one literal: `'a' + b + 'c'` starts and ends with a quote but is not.
+fn whole_literal_value<'a>(source: &'a str, parsed: Option<&'a Expression<'a>>) -> Option<&'a str> {
+    let Some(parsed) = parsed else {
+        return is_single_string_literal(source)
+            .then(|| source.get(1..source.len() - 1))
+            .flatten();
+    };
+    match parsed.without_parentheses() {
+        Expression::StringLiteral(literal) => Some(literal.value.as_str()),
+        Expression::TemplateLiteral(template) => template.single_quasi().map(|text| text.as_str()),
+        _ => None,
+    }
+}
+
+fn is_single_string_literal(source: &str) -> bool {
+    let [quote @ (b'\'' | b'"' | b'`'), body @ .., last] = source.as_bytes() else {
         return false;
     };
-    if bytes.len() < 2 {
+    if last != quote {
         return false;
     }
-
-    // Check for 'string', "string", or `string`
-    // But not template literals with expressions like `${foo}`
-    match (first, last) {
-        (b'\'', b'\'') | (b'"', b'"') => true,
-        (b'`', b'`') => !s.contains("${"),
-        _ => false,
+    let mut escaped = false;
+    for (index, byte) in body.iter().enumerate() {
+        if escaped {
+            escaped = false;
+        } else if byte == &b'\\' {
+            escaped = true;
+        } else if byte == quote
+            || (*quote == b'`' && *byte == b'$' && body.get(index + 1) == Some(&b'{'))
+        {
+            return false;
+        }
     }
+    !escaped
 }
 
 #[cfg(test)]
@@ -312,6 +348,36 @@ mod tests {
         let linter = create_linter();
         let result = linter.lint_template(
             r#"<div :class="['f', { g: true, conditional: active }]" />"#,
+            "test.vue",
+        );
+        assert_eq!(result.warning_count, 2, "{:?}", result.diagnostics);
+    }
+
+    #[test]
+    fn test_skips_attr_and_prop_modifiers() {
+        let linter = create_linter();
+        let result = linter.lint_template(
+            r#"<div><p :class.attr="'a'" /><p :class.prop="'a'" /><p .class="'a'" /><p :class.attr="['a', b]" /><p :class.camel="'a'" /></div>"#,
+            "test.vue",
+        );
+        assert_eq!(result.warning_count, 1, "{:?}", result.diagnostics);
+    }
+
+    #[test]
+    fn test_skips_expressions_that_only_start_and_end_with_quotes() {
+        let linter = create_linter();
+        let result = linter.lint_template(
+            r#"<div><p :class="'a-' + size + '-b'" /><p :class="'lg' === size ? 'big' : 'small'" /></div>"#,
+            "test.vue",
+        );
+        assert_eq!(result.warning_count, 0, "{:?}", result.diagnostics);
+    }
+
+    #[test]
+    fn test_reports_computed_literal_keys_set_to_true() {
+        let linter = create_linter();
+        let result = linter.lint_template(
+            r#"<div><p :class="{ ['a']: true, on: b }" /><p :class="{ [`a`]: true }" /><p :class="{ [a]: true }" /></div>"#,
             "test.vue",
         );
         assert_eq!(result.warning_count, 2, "{:?}", result.diagnostics);

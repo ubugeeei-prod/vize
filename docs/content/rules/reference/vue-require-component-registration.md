@@ -13,7 +13,7 @@ Require explicit import or registration for components.
 
 Applies to: Vue SFC templates and blocks, with script context where the rule requires it.
 
-List explicit component names supplied by application plugins or Musea previewSetup. PascalCase and kebab-case spellings are accepted; regular expressions are not interpreted. Options do not enable the rule. Later layers replace the list; an empty list clears inherited names.
+List explicit component names supplied by application plugins or Musea previewSetup. PascalCase and kebab-case spellings are accepted; globals are names, not regular expressions. ignorePatterns takes regular expressions, as eslint-plugin-vue vue/no-undef-components does. A static `is` attribute names a component on `<component>` or with a `vue:` prefix; on another element it is a customized built-in element and is not checked. Options do not enable the rule. Later layers replace the list; an empty list clears inherited names.
 
 ## Bad
 

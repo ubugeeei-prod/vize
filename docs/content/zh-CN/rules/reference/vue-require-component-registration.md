@@ -13,7 +13,7 @@ description: "要求显式导入或注册组件。"
 
 适用范围：Vue SFC 模板和代码块，包括规则所需的脚本上下文。
 
-列出由应用插件或 Musea previewSetup 提供的明确组件名称。接受 PascalCase 和 kebab-case 写法；不解析正则表达式。设置选项不会启用规则。后面的配置层会替换列表；空列表会清除继承的名称。
+列出由应用插件或 Musea previewSetup 提供的明确组件名称。接受 PascalCase 和 kebab-case 写法；globals 是名称，不解析正则表达式。ignorePatterns 接受正则表达式，与 eslint-plugin-vue 的 vue/no-undef-components 相同。静态 `is` 属性只在 `<component>` 上或带 `vue:` 前缀时表示组件；在其他元素上它是自定义内置元素，不做检查。设置选项不会启用规则。后面的配置层会替换列表；空列表会清除继承的名称。
 
 ## 错误示例
 

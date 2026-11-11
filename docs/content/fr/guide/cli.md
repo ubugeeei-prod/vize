@@ -162,6 +162,7 @@ Options clés :
 | `--fix`               | Appliquez des correctifs automatiques sûrs issus des règles qui fournissent des modifications de texte, puis signalez les diagnostics restants |
 | `-f, --format`        | Format de sortie : `text`, `ansi`, `plain`, `json`, `stylish`, `markdown`, `html`ou `agent`                                                    |
 | `--max-warnings`      | Échec lorsque les avertissements dépassent la limite                                                                                           |
+| `--no-warn-ignored`   | Ne pas avertir pour les fichiers nommés que `ignores` exclut, comme `--no-warn-ignored` d'ESLint                                               |
 | `-q, --quiet`         | Résumé de l’émission uniquement                                                                                                                |
 | `--help-level`        | `full`, `short`, ou `none`                                                                                                                     |
 | `--preset`            | `happy-path`, `opinionated`, `essential`, `incremental`ou `nuxt`                                                                               |

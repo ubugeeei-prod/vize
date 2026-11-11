@@ -22,7 +22,10 @@ impl Linter {
             .with_restricted_members(options.restricted_members())
             .with_musea_design_tokens(options.musea_design_tokens());
         if let Some(globals) = options.component_registration_globals() {
-            self = self.with_component_registration_globals(globals.to_vec());
+            self = self.with_component_registration_options(
+                globals.to_vec(),
+                options.component_registration_ignore_patterns(),
+            );
         }
         if let Some(names) = options.palpable_content_directives() {
             self = self.with_palpable_content_directives(names.to_vec());

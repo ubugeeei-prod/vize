@@ -13,7 +13,9 @@
 //! non-whitespace text (including numbers) is reported. Mustache interpolations
 //! `{{ }}` (already dynamic) and bound attributes (`:title="..."`) are skipped.
 //! Text nodes inside `<script>` / `<style>` elements are checked just like the
-//! upstream rule's unqualified `VText` visitor.
+//! upstream rule's unqualified `VText` visitor, as written: character references
+//! in raw text are not decoded. A `v-text` string literal is compared by its
+//! value, with escapes decoded.
 //!
 //! Mirrors eslint's `vue/no-bare-strings-in-template` (with its default target
 //! attributes). It is opt-in: it only runs when a project explicitly enables the
@@ -45,8 +47,9 @@ use crate::markup::{
     MarkupText, MarkupTraversal,
 };
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use crate::rules::a11y::helpers::string_literal_value;
+use oxc_ast::ast::Expression;
 use regex::Regex;
+use vize_l0::expression_guard::expression_is_safe_to_parse;
 use vize_l0::{String, cstr};
 use vize_relief::{ElementNode, RootNode, TemplateChildNode};
 
@@ -123,12 +126,8 @@ impl NoBareStringsInTemplate {
                 );
             } else if binding.kind() == MarkupBindingKind::Custom
                 && binding.is_unqualified_arg_exact("text")
-                && let Some(value) = binding.literal_string_value().or_else(|| {
-                    binding
-                        .expression()
-                        .and_then(parenthesized_string_literal_value)
-                })
-                && self.has_bare_string(value)
+                && let Some(value) = v_text_string(&binding)
+                && self.has_bare_string(&value)
             {
                 ctx.warn_at_with_help(
                     ctx.t("vue/no-bare-strings-in-template.message"),
@@ -139,8 +138,14 @@ impl NoBareStringsInTemplate {
         });
     }
 
-    fn check_text(&self, ctx: &mut LintContext<'_>, text: &MarkupText<'_>) {
-        if self.has_bare_string(text.content()) {
+    fn check_text(&self, ctx: &mut LintContext<'_>, text: &MarkupText<'_>, raw: bool) {
+        // Raw text elements keep character references as written.
+        let range = text.range();
+        let content = raw
+            .then(|| ctx.source.get(range.start as usize..range.end as usize))
+            .flatten()
+            .unwrap_or(text.content());
+        if self.has_bare_string(content) {
             ctx.warn_at_with_help(
                 ctx.t("vue/no-bare-strings-in-template.message"),
                 text.range(),
@@ -152,9 +157,10 @@ impl NoBareStringsInTemplate {
     fn check_element_legacy(&self, ctx: &mut LintContext<'_>, element: &MarkupElement<'_>) {
         // The legacy Relief visitor has no text callback. Keep its direct-child
         // projection here while the unified markup lane uses `enter_text`.
+        let raw = RAW_TEXT_ELEMENTS.contains(&element.tag());
         element.walk_children(&mut |child| {
             if let MarkupNode::Text(text) = child {
-                self.check_text(ctx, &text);
+                self.check_text(ctx, &text, raw);
             }
         });
         self.check_bindings(ctx, element);
@@ -203,7 +209,7 @@ impl MarkupRule for NoBareStringsInTemplate {
 
     fn enter_text<'a>(&self, ctx: &mut MarkupContext<'_, 'a>, text: &MarkupText<'a>) {
         if ctx.is_jsx() || ctx.current_element().is_none() {
-            self.check_text(ctx.lint(), text);
+            self.check_text(ctx.lint(), text, false);
         }
     }
 }
@@ -244,6 +250,32 @@ impl Rule for NoBareStringsInTemplate {
             }
         }
     }
+}
+
+/// vue-eslint-parser's RAWTEXT elements.
+const RAW_TEXT_ELEMENTS: &[&str] = &[
+    "style", "xmp", "iframe", "noembed", "noframes", "noscript", "script",
+];
+
+/// A `v-text` value eslint-plugin-vue checks: a string literal, compared by
+/// its value with escapes decoded.
+fn v_text_string(binding: &MarkupBinding<'_>) -> Option<String> {
+    let string = |expression: &Expression<'_>| match expression.without_parentheses() {
+        Expression::StringLiteral(literal) => Some(String::from(literal.value.as_str())),
+        _ => None,
+    };
+    if let Some(retained) = binding.retained_expression() {
+        return string(retained.ast);
+    }
+    let source = binding.expression()?;
+    if !source.starts_with(['\'', '"', '(']) || !expression_is_safe_to_parse(source) {
+        return None;
+    }
+    let allocator = oxc_allocator::Allocator::default();
+    let parsed = oxc_parser::Parser::new(&allocator, source, oxc_span::SourceType::ts())
+        .parse_expression()
+        .ok()?;
+    string(&parsed)
 }
 
 fn is_target_attribute(tag: &str, binding: &MarkupBinding<'_>) -> bool {
@@ -324,14 +356,6 @@ fn is_javascript_whitespace(character: char) -> bool {
             | '\u{3000}'
             | '\u{feff}'
     )
-}
-
-fn parenthesized_string_literal_value(mut value: &str) -> Option<&str> {
-    value = value.trim();
-    while value.starts_with('(') && value.ends_with(')') {
-        value = value.get(1..value.len() - 1)?.trim();
-    }
-    string_literal_value(value)
 }
 
 fn javascript_regex(value: &str) -> Option<(&str, &str)> {

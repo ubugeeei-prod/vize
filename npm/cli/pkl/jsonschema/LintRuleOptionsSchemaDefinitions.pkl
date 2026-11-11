@@ -171,6 +171,10 @@ lintRuleOptionsDef: JsonSchema = new JsonSchema {
           type = "array"
           items = new JsonSchema { type = "string" }
         }
+        ["ignorePatterns"] = new JsonSchema {
+          type = "array"
+          items = new JsonSchema { type = "string" }
+        }
       }
       additionalProperties = false
     }

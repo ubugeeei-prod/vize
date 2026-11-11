@@ -303,13 +303,24 @@ impl Linter {
     }
 
     /// Configure global component names without enabling the rule.
-    pub fn with_component_registration_globals(mut self, globals: Vec<String>) -> Self {
+    pub fn with_component_registration_globals(self, globals: Vec<String>) -> Self {
+        self.with_component_registration_options(globals, &[])
+    }
+
+    /// Configure global component names and `ignorePatterns` without enabling
+    /// the rule.
+    pub fn with_component_registration_options(
+        mut self,
+        globals: Vec<String>,
+        ignore_patterns: &[String],
+    ) -> Self {
         if self.registry.has_rule("vue/require-component-registration") {
             self.registry.replace(Box::new(
-                crate::rules::opinionated::vue::RequireComponentRegistration {
-                    ignore_globals: globals,
-                    nuxt_mode: matches!(self.preset, Some(LintPreset::Nuxt)),
-                },
+                crate::rules::opinionated::vue::RequireComponentRegistration::configured(
+                    globals,
+                    ignore_patterns,
+                    matches!(self.preset, Some(LintPreset::Nuxt)),
+                ),
             ));
         }
         self

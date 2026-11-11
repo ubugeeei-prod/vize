@@ -277,6 +277,13 @@ impl ConfigLintRuleOptions {
             .map(|options| options.globals.as_slice())
     }
 
+    /// `ignorePatterns` of the registration rule; empty when unconfigured.
+    pub fn component_registration_ignore_patterns(&self) -> &[String] {
+        self.require_component_registration
+            .as_ref()
+            .map_or(&[], |options| options.ignore_patterns.as_slice())
+    }
+
     /// Configured deny list for `script/no-restricted-globals`.
     #[inline]
     pub fn restricted_globals(&self) -> Vec<(String, Option<String>)> {

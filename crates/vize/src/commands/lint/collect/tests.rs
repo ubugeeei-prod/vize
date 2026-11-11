@@ -295,7 +295,7 @@ fn collection_does_not_report_overlapping_patterns_as_empty() {
 }
 
 #[test]
-fn collection_reports_ignored_only_patterns_as_empty() {
+fn collection_reports_ignored_explicit_files_apart_from_unmatched_patterns() {
     let dir = tempfile::tempdir().unwrap();
     let src = dir.path().join("src");
     fs::create_dir_all(&src).unwrap();
@@ -312,8 +312,17 @@ fn collection_reports_ignored_only_patterns_as_empty() {
     let collection = collect_lint_file_collection(&[pattern.clone().into()], ignore_set.as_ref());
 
     assert_eq!(collection.files, Vec::<std::path::PathBuf>::new());
+    assert_eq!(collection.unmatched_patterns, Vec::<vize_l0::String>::new());
     assert_eq!(
-        collection.unmatched_patterns,
+        collection.ignored_files,
         vec![vize_l0::String::from(pattern)]
     );
+
+    let glob = src.join("*.vue").display().to_string();
+    let collection = collect_lint_file_collection(&[glob.clone().into()], ignore_set.as_ref());
+    assert_eq!(
+        collection.unmatched_patterns,
+        vec![vize_l0::String::from(glob)]
+    );
+    assert!(collection.ignored_files.is_empty());
 }

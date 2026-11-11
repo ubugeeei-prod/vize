@@ -86,6 +86,7 @@ class PropNameCasingOptions {
 
 class RequireComponentRegistrationOptions {
   globals: Listing<String> = new Listing {}
+  ignorePatterns: Listing<String> = new Listing {}
 }
 
 /// Options for `vue/no-mutating-props`.
