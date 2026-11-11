@@ -29,49 +29,70 @@ impl Default for EnforceStyleAttributeOptions {
     }
 }
 
-/// Simple ESTree node selectors rejected by `vue/no-restricted-syntax`.
+/// esquery selectors rejected by `vue/no-restricted-syntax`, each with an
+/// optional message. Accepts the ESLint form (an array of strings and
+/// `{ selector, message }` objects) and `{ selectors: [...] }`.
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(try_from = "RawNoRestrictedSyntaxOptions")]
 pub struct NoRestrictedSyntaxOptions {
-    pub selectors: Vec<String>,
+    pub selectors: Vec<RestrictedSyntaxSelector>,
 }
 
-#[derive(Debug, Default, Deserialize)]
-#[serde(default, deny_unknown_fields, rename_all = "camelCase")]
-struct RawNoRestrictedSyntaxOptions {
-    selectors: Vec<String>,
+/// One restricted selector of `vue/no-restricted-syntax`.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct RestrictedSyntaxSelector {
+    pub selector: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub message: Option<String>,
+}
+
+#[derive(Deserialize)]
+#[serde(untagged)]
+enum RawNoRestrictedSyntaxOptions {
+    List(Vec<RawRestrictedSyntaxSelector>),
+    Object(RawRestrictedSyntaxObject),
+}
+
+#[derive(Default, Deserialize)]
+#[serde(default, deny_unknown_fields)]
+struct RawRestrictedSyntaxObject {
+    selectors: Vec<RawRestrictedSyntaxSelector>,
+}
+
+#[derive(Deserialize)]
+#[serde(untagged)]
+enum RawRestrictedSyntaxSelector {
+    Selector(String),
+    WithMessage(RestrictedSyntaxSelector),
 }
 
 impl TryFrom<RawNoRestrictedSyntaxOptions> for NoRestrictedSyntaxOptions {
-    type Error = &'static str;
+    type Error = String;
 
     fn try_from(raw: RawNoRestrictedSyntaxOptions) -> Result<Self, Self::Error> {
-        for (index, selector) in raw.selectors.iter().enumerate() {
-            if !matches!(
-                selector.as_str(),
-                "ArrayExpression"
-                    | "BinaryExpression"
-                    | "CallExpression"
-                    | "ConditionalExpression"
-                    | "ObjectExpression"
-                    | "UnaryExpression"
-            ) {
-                return Err(
-                    "selectors must be supported simple ESTree node types; compound esquery selectors are unsupported",
-                );
+        let entries = match raw {
+            RawNoRestrictedSyntaxOptions::List(entries) => entries,
+            RawNoRestrictedSyntaxOptions::Object(object) => object.selectors,
+        };
+        let mut selectors = Vec::with_capacity(entries.len());
+        for entry in entries {
+            let entry = match entry {
+                RawRestrictedSyntaxSelector::Selector(selector) => RestrictedSyntaxSelector {
+                    selector,
+                    message: None,
+                },
+                RawRestrictedSyntaxSelector::WithMessage(entry) => entry,
+            };
+            if super::esquery::parse(&entry.selector).is_none() {
+                return Err(crate::cstr!(
+                    "unsupported esquery selector `{}`; see the supported subset in docs/content/rules/options.md",
+                    entry.selector
+                ));
             }
-            if raw
-                .selectors
-                .iter()
-                .take(index)
-                .any(|previous| previous == selector)
-            {
-                return Err("selectors must be unique");
-            }
+            selectors.push(entry);
         }
-        Ok(Self {
-            selectors: raw.selectors,
-        })
+        Ok(Self { selectors })
     }
 }
 
@@ -143,11 +164,24 @@ mod tests {
     use super::*;
 
     #[test]
-    fn rejects_unsupported_or_duplicate_restricted_syntax_selectors() {
+    fn accepts_both_option_forms_and_rejects_unsupported_selectors() {
+        let list = serde_json::json!([
+            "TSAsExpression",
+            { "selector": "LogicalExpression[operator='??'] > MemberExpression.left", "message": "No fallback." },
+        ]);
+        let object = serde_json::json!({ "selectors": list.clone() });
+        for value in [list, object] {
+            let options = serde_json::from_value::<NoRestrictedSyntaxOptions>(value).unwrap();
+            assert_eq!(options.selectors.len(), 2);
+            assert_eq!(
+                options.selectors[1].message.as_deref(),
+                Some("No fallback.")
+            );
+        }
         for value in [
-            serde_json::json!({ "selectors": ["Identifier"] }),
-            serde_json::json!({ "selectors": ["CallExpression[callee.name='fetch']"] }),
-            serde_json::json!({ "selectors": ["CallExpression", "CallExpression"] }),
+            serde_json::json!({ "selectors": ["Identifier >"] }),
+            serde_json::json!(["CallExpression:unknown"]),
+            serde_json::json!([{ "selector": "X", "extra": 1 }]),
         ] {
             assert!(serde_json::from_value::<NoRestrictedSyntaxOptions>(value).is_err());
         }

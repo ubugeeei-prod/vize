@@ -5187,6 +5187,7 @@ dependencies = [
  "oxc_ast_visit",
  "oxc_diagnostics",
  "oxc_ecmascript",
+ "oxc_estree",
  "oxc_semantic",
  "oxc_span",
  "oxc_syntax",

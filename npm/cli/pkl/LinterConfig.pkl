@@ -213,8 +213,18 @@ class EnforceStyleAttributeOptions {
   allow: Listing<"plain" | "scoped" | "module"> = new Listing { "scoped" }
 }
 
+class RestrictedSyntaxSelector {
+  /// esquery selector from the supported subset (see the rule options docs).
+  selector: String
+
+  /// Message reported instead of the default one.
+  message: String?
+}
+
+typealias RestrictedSyntaxEntry = String | RestrictedSyntaxSelector
+
 class NoRestrictedSyntaxOptions {
-  selectors: Listing<"ArrayExpression" | "BinaryExpression" | "CallExpression" | "ConditionalExpression" | "ObjectExpression" | "UnaryExpression"> = new Listing {}
+  selectors: Listing<RestrictedSyntaxEntry> = new Listing {}
 }
 
 class SortKeysOptions {
@@ -239,7 +249,7 @@ class LintRuleOptions {
   `a11y/anchor-has-content`: AnchorHasContentOptions? = null
   `a11y/label-has-for`: LabelHasForOptions? = null
   `vue/enforce-style-attribute`: EnforceStyleAttributeOptions? = null
-  `vue/no-restricted-syntax`: NoRestrictedSyntaxOptions? = null
+  `vue/no-restricted-syntax`: (Listing<RestrictedSyntaxEntry> | NoRestrictedSyntaxOptions)? = null
   `vue/quote-props`: "as-needed"? = null
   `vue/sort-keys`: SortKeysOptions? = null
   `vue/require-component-registration`: RequireComponentRegistrationOptions? = null

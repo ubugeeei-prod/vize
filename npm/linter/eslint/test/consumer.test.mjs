@@ -122,13 +122,14 @@ void test("the standalone public plugin shares rules and complete flat presets",
       "vue/no-restricted-syntax": {
         type: "array",
         items: {
-          enum: [
-            "ArrayExpression",
-            "BinaryExpression",
-            "CallExpression",
-            "ConditionalExpression",
-            "ObjectExpression",
-            "UnaryExpression",
+          oneOf: [
+            { type: "string" },
+            {
+              type: "object",
+              properties: { selector: { type: "string" }, message: { type: "string" } },
+              required: ["selector"],
+              additionalProperties: false,
+            },
           ],
         },
         uniqueItems: true,

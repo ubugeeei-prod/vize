@@ -4834,6 +4834,38 @@
       }
     },
     {
+      "id": "linter/patina/compat-restricted-syntax-12741",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "patina-compat-restricted-syntax-12741",
+        "files": [
+          {
+            "path": "Case.vue.txt",
+            "role": "third-party-restricted-syntax-reproduction",
+            "sha256": "2ac4b7b83f8b3cda0fa94819c30d0fab2b38e1a0632ee85a32a85568455e7152"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/patina/compat-review-12768",
       "state": "active",
       "targets": [

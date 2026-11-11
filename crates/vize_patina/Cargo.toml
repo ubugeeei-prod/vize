@@ -39,7 +39,9 @@ vize_l2.workspace = true
 oxc_allocator.workspace = true
 oxc_parser.workspace = true
 oxc_semantic.workspace = true
-oxc_ast.workspace = true
+# `serialize` gives `vue/no-restricted-syntax` the ESTree shape its selectors match.
+oxc_ast = { workspace = true, features = ["serialize"] }
+oxc_estree.workspace = true
 oxc_ast_visit.workspace = true
 oxc_diagnostics.workspace = true
 oxc_ecmascript.workspace = true

@@ -171,14 +171,7 @@ export interface VizeRuleOptions {
   "a11y/label-has-for"?: { controlComponents?: string[] };
   "vue/enforce-style-attribute"?: { allow?: Array<"plain" | "scoped" | "module"> };
   "vue/no-restricted-syntax"?: {
-    selectors?: Array<
-      | "ArrayExpression"
-      | "BinaryExpression"
-      | "CallExpression"
-      | "ConditionalExpression"
-      | "ObjectExpression"
-      | "UnaryExpression"
-    >;
+    selectors?: Array<string | { selector: string; message?: string }>;
   };
   "vue/quote-props"?: "as-needed";
   "vue/sort-keys"?: {
