@@ -15,7 +15,7 @@ use vize_l2::op::{CommentOp, InterpolationOp, Op, TextOp};
 use vize_l2::provenance::ProvenanceSink;
 
 use super::cx::Cx;
-use super::expr::{desc, filter_expr_at};
+use super::expr::{desc, interpolation_expr_at};
 
 /// Lower one non-element child.
 pub(crate) fn lower_leaf<'a>(
@@ -92,7 +92,7 @@ fn lower_interpolation<'a>(
 ) {
     let id = cx.mint_op();
     let span = Span::new(cx.offset(node.open.text), cx.token_span(&node.close).end);
-    let expression = filter_expr_at(cx, node.content.text);
+    let expression = interpolation_expr_at(cx, node.content.text);
     cx.record(
         "lower.interpolation",
         id,

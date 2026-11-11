@@ -28,10 +28,12 @@ fn number(text: &[u16], start: usize) -> (f64, usize) {
     while is_digit(code(text, end)) {
         end += 1;
     }
-    let digits = text
+    let digits: vize_l0::String = text
         .get(start.saturating_sub(1)..end)
-        .map(String::from_utf16_lossy)
-        .unwrap_or_default();
+        .unwrap_or_default()
+        .iter()
+        .map(|unit| char::from_u32(u32::from(*unit)).unwrap_or(char::REPLACEMENT_CHARACTER))
+        .collect();
     (digits.parse::<f64>().unwrap_or(f64::NAN), end)
 }
 

@@ -108,7 +108,7 @@ const extra = ref(1);
     let report = &reports.as_array().unwrap()[0];
     assert_eq!(
         report["errorCount"],
-        9,
+        10,
         "{}",
         String::from_utf8_lossy(&output.stdout)
     );

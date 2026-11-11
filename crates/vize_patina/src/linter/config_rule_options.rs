@@ -483,7 +483,7 @@ export default { z: 1, a: 2 }
             .collect::<Vec<_>>();
         assert_eq!(
             rules,
-            ["vue/quote-props", "vue/no-restricted-syntax"],
+            ["vue/no-restricted-syntax", "vue/quote-props"],
             "{:#?}",
             result.diagnostics
         );

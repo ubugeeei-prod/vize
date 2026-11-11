@@ -340,14 +340,23 @@ const emit = defineEmits<PickEmits>();
             .with_enabled_rules(Some(rules.iter().copied().map(Into::into).collect()))
             .lint_sfc(&source, path.to_str().expect("utf-8"));
         for (rule, message) in [
-            ("vue/prop-name-casing", "row_id"),
-            ("vue/no-unused-properties", "unused"),
-            ("script/require-explicit-emits", "pik"),
-            ("script/no-reserved-keys", "$el"),
+            (
+                "vue/prop-name-casing",
+                "Prop \"row_id\" is not in camelCase",
+            ),
+            (
+                "vue/no-unused-properties",
+                "Prop 'unused' is defined but never used",
+            ),
+            (
+                "script/require-explicit-emits",
+                "The emitted event 'pik' is not declared in defineEmits or the emits option.",
+            ),
+            ("script/no-reserved-keys", "Reserved key '$el'"),
         ] {
             assert!(
                 result.diagnostics.iter().any(|diagnostic| {
-                    diagnostic.rule_name == rule && diagnostic.message.contains(message)
+                    diagnostic.rule_name == rule && diagnostic.message == message
                 }),
                 "{path:?} missing {rule} {message}: {:?}",
                 result
@@ -371,7 +380,7 @@ const emit = defineEmits<PickEmits>();
     assert!(
         defaults_result.diagnostics.iter().any(|diagnostic| {
             diagnostic.rule_name == "script/require-default-prop"
-                && diagnostic.message.contains("unused")
+                && diagnostic.message == "Prop 'unused' requires a default value."
         }),
         "{:?}",
         defaults_result.diagnostics
@@ -382,7 +391,8 @@ const emit = defineEmits<PickEmits>();
         .lint_sfc(&package_source, package.to_str().expect("utf-8"));
     assert!(
         package_result.diagnostics.iter().any(|diagnostic| {
-            diagnostic.rule_name == "vue/prop-name-casing" && diagnostic.message.contains("row_id")
+            diagnostic.rule_name == "vue/prop-name-casing"
+                && diagnostic.message == "Prop \"row_id\" is not in camelCase"
         }),
         "{:?}",
         package_result.diagnostics

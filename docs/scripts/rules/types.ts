@@ -43,6 +43,7 @@ export interface RuleExample {
   ruleOptions?: JsonValue;
   note?: string;
   noteJa?: string;
+  eslintDifference?: Partial<Record<"en" | "ja" | "zh-CN" | "pt-BR" | "fr", string>>;
   filename?: string;
   badFilename?: string;
   goodFilename?: string;

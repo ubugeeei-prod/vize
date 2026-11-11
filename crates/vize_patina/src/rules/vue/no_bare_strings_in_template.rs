@@ -49,8 +49,7 @@ use crate::markup::{
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use oxc_ast::ast::Expression;
 use regex::Regex;
-use vize_l0::expression_guard::expression_is_safe_to_parse;
-use vize_l0::{String, cstr};
+use vize_l0::{Span, String, cstr};
 use vize_relief::{ElementNode, RootNode, TemplateChildNode};
 
 static META: RuleMeta = RuleMeta {
@@ -126,7 +125,7 @@ impl NoBareStringsInTemplate {
                 );
             } else if binding.kind() == MarkupBindingKind::Custom
                 && binding.is_unqualified_arg_exact("text")
-                && let Some(value) = v_text_string(&binding)
+                && let Some(value) = v_text_string(ctx, &binding)
                 && self.has_bare_string(&value)
             {
                 ctx.warn_at_with_help(
@@ -259,7 +258,7 @@ const RAW_TEXT_ELEMENTS: &[&str] = &[
 
 /// A `v-text` value eslint-plugin-vue checks: a string literal, compared by
 /// its value with escapes decoded.
-fn v_text_string(binding: &MarkupBinding<'_>) -> Option<String> {
+fn v_text_string(ctx: &mut LintContext<'_>, binding: &MarkupBinding<'_>) -> Option<String> {
     let string = |expression: &Expression<'_>| match expression.without_parentheses() {
         Expression::StringLiteral(literal) => Some(String::from(literal.value.as_str())),
         _ => None,
@@ -268,14 +267,8 @@ fn v_text_string(binding: &MarkupBinding<'_>) -> Option<String> {
         return string(retained.ast);
     }
     let source = binding.expression()?;
-    if !source.starts_with(['\'', '"', '(']) || !expression_is_safe_to_parse(source) {
-        return None;
-    }
-    let allocator = oxc_allocator::Allocator::default();
-    let parsed = oxc_parser::Parser::new(&allocator, source, oxc_span::SourceType::ts())
-        .parse_expression()
-        .ok()?;
-    string(&parsed)
+    let range = binding.range();
+    string(ctx.compatibility_expression(Span::new(range.start, range.end), source)?)
 }
 
 fn is_target_attribute(tag: &str, binding: &MarkupBinding<'_>) -> bool {

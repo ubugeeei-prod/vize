@@ -221,7 +221,7 @@ fn test_template_literal_array_element() {
     assert_eq!(reserved_names(&result), ["ref"]);
     let diagnostic = &result.diagnostics[0];
     let text = &source[diagnostic.start as usize..diagnostic.end as usize];
-    assert!(text.contains("ref"), "{text}");
+    assert_eq!(text, "`ref`");
 }
 
 #[test]

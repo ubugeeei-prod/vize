@@ -48,7 +48,6 @@ const LEDGER: Readonly<Record<string, number>> = {
   "rules/vue/no_unused_properties/usage.rs": 1,
   "rules/vue/prop_name_casing/declarations.rs": 1,
   "rules/vue/require_v_for_key.rs": 1,
-  "rules/vue/valid_v_for.rs": 1,
   "rules/vue/valid_v_model.rs": 1,
 };
 

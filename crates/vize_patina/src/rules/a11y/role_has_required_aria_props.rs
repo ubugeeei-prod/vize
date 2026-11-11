@@ -81,14 +81,15 @@ fn is_focusable_separator(element: &ElementNode) -> bool {
     false
 }
 
-/// A static attribute, or a bind with a static or dynamic argument.
+/// A static attribute, or a bind with a static argument.
 fn has_markup_attribute_or_binding(element: &MarkupElement<'_>, name: &str) -> bool {
     let mut found = false;
     element.walk_bindings(&mut |binding| {
-        found |= matches!(
-            binding.kind(),
-            MarkupBindingKind::Attribute | MarkupBindingKind::Bind
-        ) && binding.is_unqualified_arg_eq_ignore_ascii_case(name);
+        found |= match binding.kind() {
+            MarkupBindingKind::Attribute => binding.is_unqualified_arg_eq_ignore_ascii_case(name),
+            MarkupBindingKind::Bind => binding.is_static_unqualified_arg_eq_ignore_ascii_case(name),
+            _ => false,
+        };
     });
     found
 }
@@ -137,7 +138,7 @@ impl MarkupRule for RoleHasRequiredAriaProps {
         let mut seen = Vec::new();
         for token in role.split_whitespace() {
             let token = token.to_ascii_lowercase();
-            if token.is_empty() || seen.iter().any(|seen: &String| seen == &token) {
+            if token.is_empty() || seen.iter().any(|seen| seen == &token) {
                 continue;
             }
             seen.push(token.clone());
@@ -214,7 +215,7 @@ impl Rule for RoleHasRequiredAriaProps {
         let mut seen = Vec::new();
         for token in role.split_whitespace() {
             let token = token.to_ascii_lowercase();
-            if token.is_empty() || seen.iter().any(|seen: &String| seen == &token) {
+            if token.is_empty() || seen.iter().any(|seen| seen == &token) {
                 continue;
             }
             seen.push(token.clone());
@@ -386,11 +387,18 @@ mod tests {
             "test.vue",
         );
         assert_eq!(result.warning_count, 4);
-        assert!(
+        assert_eq!(
             result
                 .diagnostics
                 .iter()
-                .any(|diagnostic| diagnostic.message.contains("role=\"slider\""))
+                .map(|diagnostic| diagnostic.message.as_str())
+                .collect::<Vec<_>>(),
+            [
+                "Elements with role=\"switch\" must have the 'aria-checked' attribute",
+                "Elements with role=\"checkbox\" must have the 'aria-checked' attribute",
+                "Elements with role=\"slider\" must have the 'aria-valuenow' attribute",
+                "Elements with role=\"checkbox\" must have the 'aria-checked' attribute",
+            ]
         );
     }
 

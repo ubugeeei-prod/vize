@@ -178,7 +178,9 @@ function isSupportedRestrictedSyntaxEntry(
   return (
     selector !== undefined &&
     selector.trim() !== "" &&
-    !UNSUPPORTED_PSEUDO_CLASS.test(selector.replace(/(["'])(?:\\.|(?!\1).)*\1|\/(?:\\.|[^/])*\//gu, ""))
+    !UNSUPPORTED_PSEUDO_CLASS.test(
+      selector.replace(/(["'])(?:\\.|(?!\1).)*\1|\/(?:\\.|[^/])*\//gu, ""),
+    )
   );
 }
 

@@ -50,8 +50,11 @@ fn actual_original_ordinals_ranges_and_opaque_values_are_retained_in_sdk_tables(
         assert_eq!(fact.span(), span(source, spelling));
     }
     assert_eq!(attributes.get(&0).unwrap().name(), "title");
+    assert_eq!(attributes.get(&0).unwrap().value(), Some("字"));
     assert_eq!(attributes.get(&1).unwrap().name(), "aria-hidden");
+    assert_eq!(attributes.get(&1).unwrap().value(), Some("&amp;"));
     assert_eq!(attributes.get(&2).unwrap().name(), "role");
+    assert_eq!(attributes.get(&2).unwrap().value(), None);
     assert_eq!(attributes.get(&2).unwrap().kind(), NativeBindingKind::Bind);
     assert_eq!(attributes.get(&3).unwrap().kind(), NativeBindingKind::Other);
     let counterexamples = facts.get::<NativeUnsupportedAria>().unwrap();
@@ -85,10 +88,10 @@ fn actual_original_ordinals_ranges_and_opaque_values_are_retained_in_sdk_tables(
 #[test]
 fn exact_authored_tag_and_attribute_grammar_determine_counterexamples() {
     for (tag, count) in [
-        ("meta", 5),
-        ("html", 5),
-        ("script", 5),
-        ("style", 5),
+        ("meta", 6),
+        ("html", 6),
+        ("script", 6),
+        ("style", 6),
         ("META", 0),
         ("Meta", 0),
         ("div", 0),

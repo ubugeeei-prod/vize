@@ -16,6 +16,7 @@ const pages = new Map<string, readonly [string, string]>([
   ["script/no-reserved-props", ["type-and-script", "script-no-reserved-props"]],
   ["script/return-in-emits-validator", ["type-and-script", "script-return-in-emits-validator"]],
   ["script/valid-define-emits", ["type-and-script", "script-valid-define-emits"]],
+  ["script/valid-define-props", ["type-and-script", "script-valid-define-props"]],
   ["vue/no-deprecated-scope-attribute", ["vue", "vue-no-deprecated-scope-attribute"]],
   ["vue/no-deprecated-slot-scope-attribute", ["vue", "vue-no-deprecated-slot-scope-attribute"]],
   ["vue/no-deprecated-v-bind-sync", ["vue", "vue-no-deprecated-v-bind-sync"]],

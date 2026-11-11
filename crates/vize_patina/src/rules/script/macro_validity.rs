@@ -16,8 +16,8 @@ use oxc_ast_visit::Visit;
 use oxc_semantic::{Semantic, SemanticBuilder};
 use oxc_span::{GetSpan, Span};
 
-use super::setup_macros::setup_macros;
 use super::SfcScriptContext;
+use super::setup_macros::setup_macros;
 
 /// One finding, at the span upstream reports.
 pub(super) enum Finding {
@@ -236,7 +236,9 @@ mod tests {
         let external = "<script>\nexport default { emits: [] }\n</script>\n<script setup src=\"./x.ts\">\ndefineEmits(['a'])\n</script>";
         assert_eq!(
             reported("script/valid-define-emits", external),
-            ["Custom events are defined in both defineEmits() and export default {}.: defineEmits(['a'])"]
+            [
+                "Custom events are defined in both defineEmits() and export default {}.: defineEmits(['a'])"
+            ]
         );
         let external_empty =
             "<script src=\"./opt.ts\"></script>\n<script setup>\ndefineEmits()\n</script>";

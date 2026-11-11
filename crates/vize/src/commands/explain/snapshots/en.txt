@@ -7,6 +7,15 @@ severity: error
 
 help:
   write a comment as <!-- … -->; <!--> and <!---> end it too early
+=== compiler/absence-of-digits-in-numeric-character-reference
+compiler/absence-of-digits-in-numeric-character-reference · compiler error
+Numeric character reference has no digits.
+
+stage: surface
+severity: error
+
+help:
+  add the code point's digits, as in &#38; or &#x26;, or escape the leading & as &amp;
 === compiler/cache-handler-not-supported
 compiler/cache-handler-not-supported · compiler error
 cacheHandlers option is not supported in this mode.
@@ -25,6 +34,24 @@ severity: error
 
 help:
   <![CDATA[ … ]]> only works inside <svg> or <math>; escape the text instead
+=== compiler/character-reference-outside-unicode-range
+compiler/character-reference-outside-unicode-range · compiler error
+Character reference outside the Unicode range.
+
+stage: surface
+severity: error
+
+help:
+  use a code point no greater than &#x10FFFF;
+=== compiler/control-character-reference
+compiler/control-character-reference · compiler error
+Control character reference.
+
+stage: surface
+severity: error
+
+help:
+  remove the reference, or write the intended visible character
 === compiler/duplicate-attribute
 compiler/duplicate-attribute · compiler error
 Duplicate attribute.
@@ -247,6 +274,24 @@ severity: error
 
 help:
   a comment cannot contain <!--; close the outer comment first
+=== compiler/noncharacter-character-reference
+compiler/noncharacter-character-reference · compiler error
+Noncharacter character reference.
+
+stage: surface
+severity: error
+
+help:
+  remove the reference; noncharacters are not for interchange
+=== compiler/null-character-reference
+compiler/null-character-reference · compiler error
+Null character reference.
+
+stage: surface
+severity: error
+
+help:
+  remove the reference; U+0000 renders as U+FFFD
 === compiler/prefix-id-not-supported
 compiler/prefix-id-not-supported · compiler error
 prefixIdentifiers option is not supported in this mode.
@@ -265,6 +310,15 @@ severity: error
 
 help:
   scoped styles need the module mode; remove the scopeId option or switch modes
+=== compiler/surrogate-character-reference
+compiler/surrogate-character-reference · compiler error
+Surrogate character reference.
+
+stage: surface
+severity: error
+
+help:
+  reference the whole code point, as in &#x1F600;, instead of one surrogate half
 === compiler/unexpected-character-in-attribute-name
 compiler/unexpected-character-in-attribute-name · compiler error
 Unexpected character in attribute name.
@@ -1018,7 +1072,7 @@ autofix: yes
 docs: docs/content/rules/reference/a11y-no-redundant-roles.md
 
 invalid:
-  <nav role="navigation">...</nav>
+  <nav aria-label="Primary" role="navigation">...</nav>
   <button role="button">...</button>
 
 valid:
@@ -3656,8 +3710,11 @@ docs: docs/content/rules/reference/script-valid-next-tick.md
 invalid:
   import { nextTick } from 'vue'
   
-  nextTick()          // result ignored
-  this.$nextTick()    // result ignored
+  nextTick()               // result ignored
+  nextTick().catch(fail)   // still not awaited
+  await nextTick(focus)    // callback and await
+  nextTick(focus, other)   // too many arguments
+  await Promise.all([nextTick])
 
 valid:
   import { nextTick } from 'vue'
@@ -4786,7 +4843,7 @@ help:
   Use only standard rel tokens that are allowed for this element, such as noopener noreferrer on links or stylesheet on link elements.
 === vue/no-irregular-whitespace
 vue/no-irregular-whitespace · lint rule
-Disallow irregular whitespace in template expressions
+Disallow irregular whitespace in script blocks and templates
 
 tier: heuristic
 domain: simple interpolation and directive expressions with a retained JavaScript AST, using default rule behavior or the typed options Patina exposes; compound expressions and unsupported selector syntax are outside
@@ -5013,7 +5070,7 @@ help:
   Rename the component to avoid using reserved names
 === vue/no-restricted-syntax
 vue/no-restricted-syntax · lint rule
-Disallow configured syntax in template expressions
+Disallow configured syntax in the template
 
 tier: complete
 domain: simple interpolation and directive expressions with a retained JavaScript AST, using default rule behavior or the typed options Patina exposes; compound expressions and unsupported selector syntax are outside
@@ -6029,7 +6086,7 @@ help:
   Rename the rendered slot outlet to {casing}.
 === vue/sort-keys
 vue/sort-keys · lint rule
-Require sorted keys in component option objects
+Require sorted object keys, compatible with component option order
 
 tier: complete
 domain: inline SFC scripts and descriptors with lexically unshadowed Vue macros and APIs and structurally recognizable component option objects; external blocks and unresolved aliases are outside

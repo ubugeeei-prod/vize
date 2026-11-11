@@ -51,7 +51,7 @@ impl Rule for NoLiteralsInTemplate {
                 | Expression::FunctionExpression(_)
                 | Expression::ArrowFunctionExpression(_)
         ) && !(ctx.v_for_vars().next().is_some()
-            && has_free_reference(expression.content, |name| ctx.is_v_for_var(name)))
+            && has_free_reference(expression, |name| ctx.is_v_for_var(name)))
         {
             ctx.warn_with_help(
                 "Unexpected literal in a template binding",

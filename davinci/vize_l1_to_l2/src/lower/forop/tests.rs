@@ -2,7 +2,7 @@
 
 use super::{ForName, ForParts};
 use crate::lower::{Lowered, lower, lower_preserving_comments, lower_source_block};
-use vize_l0::{Allocator, SourceRoot, Span, cstr};
+use vize_l0::{Allocator, SourceRoot, Span, String, cstr};
 use vize_l2::expr::ExprRef;
 use vize_l2::op::{ForOp, Op};
 use vize_l2::scope::{ScopeFacts, ScopeOrigin};
@@ -201,7 +201,7 @@ fn source_block_origins_stay_file_absolute_after_unicode_and_crlf() {
     );
 }
 
-fn retained_sources(source: &str) -> alloc::vec::Vec<alloc::string::String> {
+fn retained_sources(source: &str) -> alloc::vec::Vec<String> {
     let arena = Allocator::new();
     let (tree, errors) = vize_l1::markup::parse(&arena, source);
     assert!(errors.is_empty(), "{errors:?}");
@@ -210,7 +210,7 @@ fn retained_sources(source: &str) -> alloc::vec::Vec<alloc::string::String> {
         .consumed_expressions
         .iter()
         .map(|expression| match expression {
-            ExprRef::Js(expression) => alloc::string::String::from(expression.source),
+            ExprRef::Js(expression) => String::new(expression.source),
             other => panic!("wrapper key stayed unparsed: {other:?}"),
         })
         .collect()

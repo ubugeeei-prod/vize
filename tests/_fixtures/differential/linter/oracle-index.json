@@ -69,27 +69,27 @@
   },
   "linter/next-tick/invalid-arrow-block-bare-call-script": {
     "path": "crates/vize_patina/tests/snapshots/integration__next_tick_history__invalid-arrow-block-bare-call-script.snap",
-    "sha256": "48c5023ff062a9dc91a5ca9b5ec547cbd952829064b7ad7ca23dbee70a1108f9"
+    "sha256": "5fee7af1cb78f5b0e55c4da36f5fcbf6b54317653119a601d1b05643d516972b"
   },
   "linter/next-tick/invalid-arrow-block-bare-call-sfc": {
     "path": "crates/vize_patina/tests/snapshots/integration__next_tick_history__invalid-arrow-block-bare-call-sfc.snap",
-    "sha256": "8a65baa88ab186f52eeb7ea09b90bc41b10b3780140d94d60d90ecb4a1ca398f"
+    "sha256": "b8df8ec96d70de85bb92baff4861599a44879994499c8fcf58a84bb857fb5f7d"
   },
   "linter/next-tick/invalid-arrow-expression-void-call-script": {
     "path": "crates/vize_patina/tests/snapshots/integration__next_tick_history__invalid-arrow-expression-void-call-script.snap",
-    "sha256": "d6e23f3cf37dff302f41f9f840e27bd71d5af4ce79ec96b0c7f1eae4031e67ef"
+    "sha256": "887eb9bfe761021aad7df6188d3950981f8a332fe7ddec7764636181e6087acd"
   },
   "linter/next-tick/invalid-arrow-expression-void-call-sfc": {
     "path": "crates/vize_patina/tests/snapshots/integration__next_tick_history__invalid-arrow-expression-void-call-sfc.snap",
-    "sha256": "ffa47bcc78c0b54a9eddb126ced828f0c87609eaaa3238d376a0adb0926d3640"
+    "sha256": "8a32a41989698087044a90c37ba087f765a0e3242befe408388b80e9ebf77adf"
   },
   "linter/next-tick/nested-arrow-restores-statement-context-script": {
     "path": "crates/vize_patina/tests/snapshots/integration__next_tick_history__nested-arrow-restores-statement-context-script.snap",
-    "sha256": "b2c0b7f3dbf8264530b9faba0da252330276b67cdb4774966e01b2e4e50b7d3d"
+    "sha256": "cb94837aba1b2eeee8c4598ac827947d8c21e671dd4ecb1215ea63bd41c6c011"
   },
   "linter/next-tick/nested-arrow-restores-statement-context-sfc": {
     "path": "crates/vize_patina/tests/snapshots/integration__next_tick_history__nested-arrow-restores-statement-context-sfc.snap",
-    "sha256": "8c6cd22ab8bf1eb62b01d6858cb7531231a15de8a7d0adef66a370b6a149d60b"
+    "sha256": "6c4acf13edc22ea12fcae78bb0f21819c3acfe1a9d26fc6a382e747494c93a68"
   },
   "linter/report/original-line-columns": {
     "path": "crates/vize_patina/tests/snapshots/integration__report_history__original-line-columns.snap",
@@ -329,7 +329,7 @@
   },
   "linter/current-api/static-composite-widgets": {
     "path": "crates/vize_patina/tests/snapshots/integration__lint_history__static-composite-widgets.snap",
-    "sha256": "d8fac49fad476b1cbf2c6872e3312fb0a5229008e4a79cda831f4f9fea115f5c"
+    "sha256": "0a4d3cb99d3eb8871ef543fd7f8e0a6d7294e2078b6e18c9b3efc5e6abd529f0"
   },
   "linter/current-api/static-presentation-opt-out": {
     "path": "crates/vize_patina/tests/snapshots/integration__lint_history__static-presentation-opt-out.snap",

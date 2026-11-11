@@ -7,7 +7,7 @@ function useField(options: { value: () => number; clear: () => void }): void {
 
 const count = computed(() => 1);
 
-useField({ value: () => count.value, clear: () => {} });
+useField({ clear: () => {}, value: () => count.value });
 
 function declared(): number {
   return 1;

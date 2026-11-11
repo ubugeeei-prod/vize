@@ -44,6 +44,7 @@ fn unreadable_result(path: &Path, error: &io::Error) -> LintResult {
 mod tests {
     use super::read_lint_source;
     use crate::commands::lint::aggregate::LintRunAccumulator;
+    use serde_json::json;
     use std::path::Path;
     use vize_l0::String;
     use vize_patina::OutputFormat;
@@ -64,22 +65,38 @@ mod tests {
         assert_eq!(result.error_count, 1);
         assert_eq!(result.warning_count, 0);
         assert_eq!(result.diagnostics[0].rule_name, "lint/unreadable");
-        assert!(result.diagnostics[0].message.contains("Failed to read"));
-        assert!(
-            result.diagnostics[0]
-                .message
-                .contains("stream did not contain valid UTF-8")
+        assert_eq!(
+            result.diagnostics[0].message,
+            format!(
+                "Failed to read {}: stream did not contain valid UTF-8",
+                path.display()
+            )
         );
         let json = vize_patina::format_results(
             std::slice::from_ref(&result),
             &[(result.filename.clone(), String::default())],
             OutputFormat::Json,
         );
-        assert!(json.contains("Latin1.vue"), "{json}");
-        assert!(json.contains("\"errorCount\": 1"), "{json}");
-        assert!(
-            json.contains("docs/content/guide/lint-execution.md"),
-            "{json}"
+        assert_eq!(
+            serde_json::from_str::<serde_json::Value>(&json).unwrap(),
+            json!([{
+                "file": path.to_string_lossy(),
+                "messages": [{
+                    "ruleId": "lint/unreadable",
+                    "ruleDocsPath": "docs/content/guide/lint-execution.md",
+                    "severity": 2,
+                    "message": format!(
+                        "[vize:lint/unreadable] Failed to read {}: stream did not contain valid UTF-8",
+                        path.display()
+                    ),
+                    "line": 1,
+                    "column": 1,
+                    "endLine": 1,
+                    "endColumn": 1
+                }],
+                "errorCount": 1,
+                "warningCount": 0
+            }])
         );
         let quiet = LintRunAccumulator::new(false).push((
             path,
@@ -96,10 +113,13 @@ mod tests {
     fn a_file_that_disappears_after_selection_is_an_error() {
         let directory = tempfile::tempdir().unwrap();
         let path = directory.path().join("Gone.vue");
+        let error = std::fs::read_to_string(&path).unwrap_err();
         let result = read_lint_source(&path).unwrap_err();
         assert_eq!(result.error_count, 1);
-        assert!(result.diagnostics[0].message.contains("Failed to read"));
-        assert!(result.diagnostics[0].message.contains("Gone.vue"));
+        assert_eq!(
+            result.diagnostics[0].message,
+            format!("Failed to read {}: {error}", path.display())
+        );
     }
 
     #[test]
@@ -108,6 +128,6 @@ mod tests {
         let path = directory.path().join("Clean.vue");
         write_bytes(&path, b"<template><img alt=\"\" /></template>\n");
         let source = read_lint_source(&path).unwrap();
-        assert!(source.contains("<img alt=\"\" />"));
+        assert_eq!(source, "<template><img alt=\"\" /></template>\n");
     }
 }

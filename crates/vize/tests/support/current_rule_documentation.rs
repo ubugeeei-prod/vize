@@ -66,6 +66,10 @@ fn reference(rule: &str, before: &str) -> &'static str {
             "docs/content/rules/type-and-script.md",
             "docs/content/rules/reference/script-no-export-in-script-setup.md",
         ),
+        "script/valid-define-props" => (
+            "docs/content/rules/type-and-script.md",
+            "docs/content/rules/reference/script-valid-define-props.md",
+        ),
         "script/require-define-component" => (
             "docs/content/rules/reference/script-require-define-component.md",
             "docs/content/rules/reference/script-require-define-component.md",

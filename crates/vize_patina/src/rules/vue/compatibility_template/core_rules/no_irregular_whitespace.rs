@@ -53,8 +53,10 @@ impl Rule for NoIrregularWhitespace {
             else {
                 continue;
             };
-            let mut strings = StringLiterals::default();
-            strings.offset = block.loc.start as u32;
+            let mut strings = StringLiterals {
+                offset: block.loc.start as u32,
+                ..StringLiterals::default()
+            };
             strings.visit_program(&parsed.program);
             scans.push((block.loc.start, block.loc.end, strings.ranges));
         }

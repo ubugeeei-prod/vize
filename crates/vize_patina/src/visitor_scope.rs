@@ -4,33 +4,40 @@
 //! introduce into the template scope, so downstream rules can distinguish
 //! template-local bindings from unresolved identifiers.
 
-use oxc_allocator::Allocator as OxcAllocator;
 use oxc_ast::ast::BindingPattern;
-use oxc_parser::Parser;
-use oxc_semantic::SemanticBuilder;
-use oxc_span::SourceType;
-use vize_croquis::drawer::parse_v_for_expression;
-use vize_l0::{CompactString, cstr};
-use vize_relief::ExpressionNode;
+use vize_croquis::drawer::{extract_identifier_refs_retained_with_witness, parse_v_for_expression};
+use vize_l0::CompactString;
+use vize_relief::{ExpressionNode, JsExpression, SimpleExpressionNode};
 
 /// Whether a reference that leaves `expression` satisfies `is_target`.
 ///
 /// Bindings declared inside the expression (arrow parameters and the like)
-/// shadow outer names, so their uses are not counted. `false` when the
-/// expression does not parse.
-pub fn has_free_reference(expression: &str, is_target: impl Fn(&str) -> bool) -> bool {
-    let allocator = OxcAllocator::default();
-    let wrapped = cstr!("(\n{expression}\n)");
-    let parsed = Parser::new(&allocator, &wrapped, SourceType::ts()).parse();
-    if parsed.panicked || !parsed.diagnostics.is_empty() {
-        return false;
-    }
-    let semantic = SemanticBuilder::new().build(&parsed.program).semantic;
-    semantic
-        .scoping()
-        .root_unresolved_references()
-        .keys()
-        .any(|reference| is_target(reference.as_str()))
+/// shadow outer names, so their uses are not counted. An unavailable or
+/// incomplete retained walk is conservatively treated as a possible match.
+pub fn has_free_reference(
+    expression: &SimpleExpressionNode<'_>,
+    is_target: impl Fn(&str) -> bool,
+) -> bool {
+    let Some(retained) = expression.js_ast.and_then(|ast| ast.as_expression()) else {
+        return true;
+    };
+    has_free_reference_retained(expression.content, &retained, is_target)
+}
+
+pub fn has_free_reference_retained(
+    source: &str,
+    retained: &JsExpression<'_>,
+    is_target: impl Fn(&str) -> bool,
+) -> bool {
+    let Some((references, complete)) =
+        extract_identifier_refs_retained_with_witness(source, retained)
+    else {
+        return true;
+    };
+    !complete
+        || references
+            .iter()
+            .any(|reference| is_target(reference.name.as_str()))
 }
 
 /// Parse v-for expression to extract variable names.
@@ -106,7 +113,10 @@ fn collect_slot_bindings(pattern: &BindingPattern<'_>, names: &mut Vec<CompactSt
 
 #[cfg(test)]
 mod tests {
-    use super::{CompactString, ExpressionNode, parse_slot_scope_variables, parse_v_for_variables};
+    use super::{
+        CompactString, ExpressionNode, has_free_reference_retained, parse_slot_scope_variables,
+        parse_v_for_variables,
+    };
     use vize_l0::Allocator;
     use vize_relief::SimpleExpressionNode;
 
@@ -129,6 +139,40 @@ mod tests {
             panic!("original slot directive");
         };
         directive.exp.take().expect("original slot value")
+    }
+
+    #[test]
+    fn incomplete_retained_walk_is_not_a_definite_negative() {
+        let allocator = Allocator::default();
+        let template = allocator
+            .as_oxc()
+            .alloc_str("<div :data-value=\"make(item, ...args)\"></div>");
+        let (root, errors) = vize_armature::parse(&allocator, template);
+        assert!(errors.is_empty(), "{errors:?}");
+        let vize_relief::TemplateChildNode::Element(element) = &root.children[0] else {
+            panic!("original element")
+        };
+        let vize_relief::PropNode::Directive(directive) = &element.props[0] else {
+            panic!("original binding")
+        };
+        let Some(ExpressionNode::Simple(expression)) = &directive.exp else {
+            panic!("original binding expression")
+        };
+        let retained = expression
+            .js_ast
+            .and_then(|ast| ast.as_expression())
+            .expect("retained binding expression");
+
+        assert!(has_free_reference_retained(
+            expression.content,
+            &retained,
+            |name| name == "item"
+        ));
+        assert!(has_free_reference_retained(
+            expression.content,
+            &retained,
+            |name| name == "missing"
+        ));
     }
 
     #[test]

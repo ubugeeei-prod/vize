@@ -4,7 +4,7 @@
   "authority": "Complete current full-route vectors source-authored independently from the frozen target9 successor and unchanged parent no-reserved-props companion2. Original target17 and parent combined19 remain byte-exact; no runtime filtering or observed-output recapture.",
   "parentCompanions": {
     "path": "../bare-reserved-8090/default-route-companions.json",
-    "sha256": "9099e764f108551270406eae4794746754aba43b4aff33128e24f070004b9be9"
+    "sha256": "5a2b782ff12cca2f67344658d3ba9d9e0c1f25ae27d1debb3484062254558173"
   },
   "targetSuccessors": {
     "path": "bare-parent-successors.json",
@@ -272,7 +272,7 @@
           "message": "Prop name '$props' is reserved.",
           "start": 45,
           "end": 51,
-          "help": "Vue reserves `key`, `ref`, `ref_for`, `ref_key`, `is`, and any `$`-prefixed name. Rename this prop to something else.",
+          "help": "Vue reserves `key`, `ref`, `ref_for`, `ref_key`, and any `$`-prefixed name. Rename this prop to something else.",
           "labels": [
             {
               "message": "reserved prop name",
@@ -298,7 +298,7 @@
           "message": "Prop name '$custom' is reserved.",
           "start": 78,
           "end": 85,
-          "help": "Vue reserves `key`, `ref`, `ref_for`, `ref_key`, `is`, and any `$`-prefixed name. Rename this prop to something else.",
+          "help": "Vue reserves `key`, `ref`, `ref_for`, `ref_key`, and any `$`-prefixed name. Rename this prop to something else.",
           "labels": [
             {
               "message": "reserved prop name",
@@ -350,7 +350,7 @@
           "message": "Prop name '$props' is reserved.",
           "start": 45,
           "end": 51,
-          "help": "Vue reserves `key`, `ref`, `ref_for`, `ref_key`, `is`, and any `$`-prefixed name. Rename this prop to something else.",
+          "help": "Vue reserves `key`, `ref`, `ref_for`, `ref_key`, and any `$`-prefixed name. Rename this prop to something else.",
           "labels": [
             {
               "message": "reserved prop name",
@@ -376,7 +376,7 @@
           "message": "Prop name '$custom' is reserved.",
           "start": 78,
           "end": 85,
-          "help": "Vue reserves `key`, `ref`, `ref_for`, `ref_key`, `is`, and any `$`-prefixed name. Rename this prop to something else.",
+          "help": "Vue reserves `key`, `ref`, `ref_for`, `ref_key`, and any `$`-prefixed name. Rename this prop to something else.",
           "labels": [
             {
               "message": "reserved prop name",
@@ -410,7 +410,7 @@
           "message": "Prop name '$props' is reserved.",
           "start": 45,
           "end": 51,
-          "help": "Vue reserves `key`, `ref`, `ref_for`, `ref_key`, `is`, and any `$`-prefixed name. Rename this prop to something else.",
+          "help": "Vue reserves `key`, `ref`, `ref_for`, `ref_key`, and any `$`-prefixed name. Rename this prop to something else.",
           "labels": [
             {
               "message": "reserved prop name",
@@ -436,7 +436,7 @@
           "message": "Prop name '$custom' is reserved.",
           "start": 78,
           "end": 85,
-          "help": "Vue reserves `key`, `ref`, `ref_for`, `ref_key`, `is`, and any `$`-prefixed name. Rename this prop to something else.",
+          "help": "Vue reserves `key`, `ref`, `ref_for`, `ref_key`, and any `$`-prefixed name. Rename this prop to something else.",
           "labels": [
             {
               "message": "reserved prop name",

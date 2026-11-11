@@ -62,12 +62,12 @@ const {
    */
   readonly "label"?: string;
 
+  /* eslint-disable vue/prop-name-casing, vue/no-unused-properties -- BlockUI consumes these native attributes so only its state controls their rendered values */
   /**
    * Consumed so BlockUI state owns `aria-busy` instead of fallthrough attrs.
    *
    * @default undefined
    */
-  // eslint-disable-next-line vue/prop-name-casing, vue/no-unused-properties -- consume the native attribute so only BlockUI state controls aria-busy, rather than fallthrough attrs
   readonly "aria-busy"?: string | boolean;
 
   /**
@@ -76,6 +76,7 @@ const {
    * @default undefined
    */
   readonly "inert"?: boolean | "";
+  /* eslint-enable vue/prop-name-casing, vue/no-unused-properties */
 }>();
 
 defineSlots<{

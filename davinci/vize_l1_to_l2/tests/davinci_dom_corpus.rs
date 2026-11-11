@@ -175,6 +175,12 @@ const BATTERY: &[(&str, &str)] = &[
         "v_for_alias_shadowing_global_lanes_agree",
         r#"<template><div><NodeListInline v-for="document of filteredNodes" :key="document.id" :document="document" class="line-item" /><NodeCard v-for="document in filteredNodes" :key="document.id" :node="document" /><Foo v-for="window in wins" :w="window" /></div></template>"#,
     ),
+    // A `//` comment on an earlier line of a bound value (element-plus
+    // picker-range-trigger, vue-sonner Toast) keeps plain trimming on L2.
+    (
+        "line_comment_before_last_token_lanes_agree",
+        "<template><div :style=\"\n      // https://example.com/issues/1#c2\n      $attrs.style\n    \" :class=\"\n      cn(\n        // @ts-ignore\n        classes?.[type],\n      )\n    \">x</div></template>",
+    ),
 ];
 
 #[test]

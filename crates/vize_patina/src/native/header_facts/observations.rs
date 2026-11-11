@@ -53,6 +53,7 @@ impl NativeHeaderFact {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct NativeAttributeFact {
     pub(super) name: String,
+    pub(super) value: Option<String>,
     pub(super) span: Span,
     pub(super) kind: NativeBindingKind,
 }
@@ -61,6 +62,11 @@ impl NativeAttributeFact {
     #[must_use]
     pub fn name(&self) -> &str {
         self.name.as_str()
+    }
+    /// Returns the original literal value for a static attribute.
+    #[must_use]
+    pub fn value(&self) -> Option<&str> {
+        self.value.as_deref()
     }
     /// Returns the original full attribute range.
     #[must_use]

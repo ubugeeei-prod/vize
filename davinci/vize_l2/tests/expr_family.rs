@@ -106,6 +106,15 @@ fn js_expression_admits_trailing_block_comment_trivia_only() {
         .unwrap_err(),
         OpaqueReason::ParseRejected
     );
+
+    let with_terminated_line_comment = "i % 3 === 0 // perf optimization\n";
+    let js = JsExpr::parse_in(
+        allocator,
+        with_terminated_line_comment,
+        Span::new(0, with_terminated_line_comment.len() as u32),
+    )
+    .expect("a terminated line comment cannot swallow generated tokens");
+    assert_eq!(js.source, with_terminated_line_comment);
 }
 
 #[test]
