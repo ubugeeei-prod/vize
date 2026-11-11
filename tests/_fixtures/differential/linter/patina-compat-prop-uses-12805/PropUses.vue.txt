@@ -1,0 +1,27 @@
+<script setup lang="ts">
+import { ref } from "vue";
+
+interface Props {
+  title: string;
+  id?: string;
+  label?: string;
+  row?: string;
+  value?: number;
+  unused?: string;
+  on_open?: () => void;
+  on_select?(): void;
+}
+
+const { title } = defineProps<Props>();
+const count = ref(0);
+
+function bump() {
+  count.value += 1;
+}
+</script>
+
+<template>
+  <ul :id="title" :aria-label="title" @click="bump">
+    <li v-for="row in [title]" :key="row">{{ row }}</li>
+  </ul>
+</template>

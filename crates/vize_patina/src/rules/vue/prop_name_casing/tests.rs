@@ -128,6 +128,24 @@ fn a_script_only_options_component_is_checked() {
 }
 
 #[test]
+fn a_method_signature_prop_is_checked_with_the_property_form() {
+    let sfc = r#"<script setup lang="ts">
+defineProps<{
+  on_open?: () => void;
+  on_select?(): void;
+}>();
+</script>
+"#;
+    assert_eq!(
+        findings(sfc),
+        vec![
+            reported(sfc, "on_open", "on_open?: () => void;"),
+            reported(sfc, "on_select", "on_select?(): void;"),
+        ]
+    );
+}
+
+#[test]
 fn template_less_setup_and_computed_options_keys_are_checked() {
     let setup = "<script setup lang=\"ts\">defineProps<{ greeting_text: number }>()</script>";
     assert_eq!(

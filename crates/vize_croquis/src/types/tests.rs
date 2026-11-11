@@ -19,6 +19,34 @@ fn literal_members_preserve_cooked_names_and_demand_only_exotic_parses() {
 }
 
 #[test]
+fn extract_properties_keeps_method_signature_props() {
+    let resolver = TypeResolver::new();
+    let props = resolver.extract_properties(
+        "{ on_open?: () => void; on_select?(): void; readonly on_reset?(): void; title: string }",
+    );
+
+    assert_eq!(
+        props
+            .iter()
+            .map(|prop| (prop.name.as_str(), prop.optional, prop.prop_type.as_deref()))
+            .collect::<Vec<_>>(),
+        vec![
+            ("on_open", true, Some("() => void")),
+            ("on_select", true, Some("void")),
+            ("on_reset", true, Some("void")),
+            ("title", false, Some("string")),
+        ]
+    );
+
+    let mut resolver = TypeResolver::new();
+    resolver.add_interface("Props", "{ on_select?(): void }");
+    let props = resolver.extract_properties("Props");
+    assert_eq!(props.len(), 1);
+    assert_eq!(props[0].name.as_str(), "on_select");
+    assert!(props[0].optional);
+}
+
+#[test]
 fn test_extract_inline_props() {
     let resolver = TypeResolver::new();
     let props = resolver.extract_properties("{ msg: string, count?: number }");
