@@ -17,6 +17,7 @@ use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_relief::{ElementNode, ElementType, ExpressionNode, PropNode, SourceLocation};
 
 use super::helpers;
+use super::markup_helpers::is_vue_is_component;
 
 static META: RuleMeta = RuleMeta {
     name: "a11y/aria-unsupported-elements",
@@ -41,6 +42,7 @@ impl MarkupRule for AriaUnsupportedElements {
 
     fn enter_element<'a>(&self, ctx: &mut MarkupContext<'_, 'a>, element: &MarkupElement<'a>) {
         if element.kind() == MarkupElementKind::Component
+            || is_vue_is_component(element)
             || !helpers::ARIA_UNSUPPORTED_ELEMENTS
                 .iter()
                 .any(|tag| element.is_unqualified_tag_exact(tag))
@@ -52,7 +54,7 @@ impl MarkupRule for AriaUnsupportedElements {
                 MarkupBindingKind::Attribute => binding.arg_name(),
                 MarkupBindingKind::Bind => binding
                     .arg_name()
-                    .filter(|arg| binding.is_static_unqualified_arg_exact(arg)),
+                    .filter(|arg| binding.is_static_unqualified_arg_eq_ignore_ascii_case(arg)),
                 _ => None,
             };
             if let Some(attr) = attr
@@ -74,7 +76,13 @@ impl Rule for AriaUnsupportedElements {
     }
 
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
-        if element.tag_type == ElementType::Component {
+        if element.tag_type == ElementType::Component
+            || element.props.iter().any(|prop| {
+                matches!(prop, PropNode::Attribute(attr)
+                    if attr.name.eq_ignore_ascii_case("is")
+                        && attr.value.as_ref().is_some_and(|value| value.content.starts_with("vue:")))
+            })
+        {
             return;
         }
 
@@ -103,7 +111,8 @@ impl Rule for AriaUnsupportedElements {
 
 impl AriaUnsupportedElements {
     fn is_aria_or_role(name: &str) -> bool {
-        name.starts_with("aria-") || name == "role"
+        name.len() >= 5 && name[..5].eq_ignore_ascii_case("aria-")
+            || name.eq_ignore_ascii_case("role")
     }
 
     fn report_unsupported_attr(
@@ -190,6 +199,21 @@ mod tests {
                 assert_eq!(result.error_count, 1, "{source}");
             }
         }
+    }
+
+    #[test]
+    fn uppercase_aria_on_a_reserved_element_is_reported() {
+        let linter = create_linter();
+        let result = linter.lint_template(r#"<meta ARIA-HIDDEN="true" />"#, "test.vue");
+        assert_eq!(result.error_count, 1);
+    }
+
+    #[test]
+    fn vue_is_substitution_is_not_a_reserved_element() {
+        let linter = create_linter();
+        let result =
+            linter.lint_template(r#"<meta is="vue:c-meta" aria-hidden="true" />"#, "test.vue");
+        assert_eq!(result.error_count, 0);
     }
 
     #[test]

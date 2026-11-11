@@ -1,0 +1,10 @@
+<script setup lang="ts">
+const attrs = { id: "field" };
+</script>
+
+<template>
+  <div role="checkbox" v-bind="attrs">a</div>
+  <div role="slider" v-bind="$attrs">b</div>
+  <div role="option" v-bind="{ id: 'x' }">c</div>
+  <div role="checkbox">d</div>
+</template>

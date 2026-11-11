@@ -1,0 +1,5 @@
+<template>
+  <meta ARIA-HIDDEN="true" />
+  <div role="checkbox" ARIA-CHECKED="false">a</div>
+  <div role="checkbox" aria-checked="false">b</div>
+</template>

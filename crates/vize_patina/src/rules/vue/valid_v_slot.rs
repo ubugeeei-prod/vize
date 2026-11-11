@@ -44,7 +44,8 @@ pub struct ValidVSlot;
 
 impl ValidVSlot {
     fn is_custom_component(element: &ElementNode) -> bool {
-        Self::is_custom_component_tag(element.tag, Some(element.tag_type))
+        vue_is_attribute(element)
+            || Self::is_custom_component_tag(element.tag, Some(element.tag_type))
     }
 
     fn is_custom_component_tag(tag: &str, tag_type: Option<ElementType>) -> bool {
@@ -368,8 +369,19 @@ fn has_component_parent(ctx: &LintContext) -> bool {
 }
 
 fn is_component_parent_context(parent: &ElementContext) -> bool {
+    if parent.vue_is_component {
+        return true;
+    }
     let tag = parent.tag.as_str();
     !matches!(tag, "slot" | "template") && (tag == "component" || !is_native_tag(tag))
+}
+
+fn vue_is_attribute(element: &ElementNode) -> bool {
+    element.props.iter().any(|prop| {
+        matches!(prop, PropNode::Attribute(attr)
+            if attr.name.eq_ignore_ascii_case("is")
+                && attr.value.as_ref().is_some_and(|value| value.content.starts_with("vue:")))
+    })
 }
 
 fn static_slot_name(directive: &DirectiveNode) -> Option<String> {

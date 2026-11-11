@@ -1,0 +1,8 @@
+<script setup lang="ts">
+const { checked } = defineProps<{ checked: boolean }>();
+</script>
+
+<template>
+  <slot role="checkbox" :checked="checked" />
+  <div role="checkbox">fallback</div>
+</template>
