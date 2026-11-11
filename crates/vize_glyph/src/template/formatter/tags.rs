@@ -215,7 +215,7 @@ impl TemplateFormatter<'_> {
         };
 
         // Normalize directives and determine priority
-        let (name, value, priority, indent_multiline_value, owns_value_lines) =
+        let (name, value, priority, indent_multiline_value, owns_value_lines, order_sensitive) =
             normalize_attribute_with_vue_version(
                 &raw_name,
                 value,
@@ -232,6 +232,7 @@ impl TemplateFormatter<'_> {
                 original_index: index,
                 indent_multiline_value,
                 owns_value_lines,
+                order_sensitive,
             }),
             pos,
         )

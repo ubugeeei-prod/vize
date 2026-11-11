@@ -5,9 +5,11 @@ use crate::{
 use unicode_width::UnicodeWidthStr;
 use vize_l0::String;
 
-use super::directives::{directive_head, should_format_expression, static_directive_argument};
+#[cfg(test)]
+use super::directives::directive_head;
+use super::directives::{should_format_expression, static_directive_argument};
 use vize_l1::dialect::vue3::DirectiveKind;
-use vize_l1::markup::{DirectiveName, DirectivePrefix};
+use vize_l1::markup::{ArgSyntax, DirectiveName, DirectivePrefix};
 mod render;
 #[cfg(test)]
 use render::write_rendered_attribute;
@@ -26,6 +28,9 @@ pub(crate) struct ParsedAttribute {
     pub(crate) original_index: usize,
     pub(crate) indent_multiline_value: bool,
     pub(crate) owns_value_lines: bool,
+    /// Whether the attribute bounds a sortable run, decided once from the
+    /// directive head parsed during normalization.
+    pub(crate) order_sensitive: bool,
 }
 
 /// Sort attributes based on the configured options.
@@ -37,7 +42,7 @@ pub(crate) fn sort_attributes(
     // A bare `v-bind`/`v-on` object or a dynamic argument merges with its
     // neighbors, so those stay put. Static directives and static arguments
     // commute and follow `vue/attribute-order` inside each run (#12826).
-    for segment in attrs.split_mut(is_order_sensitive_attribute) {
+    for segment in attrs.split_mut(|attr| attr.order_sensitive) {
         // Empty and singleton groups already have their only possible order.
         if segment.len() < 2 {
             continue;
@@ -53,24 +58,32 @@ pub(crate) fn sort_attributes(
 fn sort_attribute_segment(tag_name: &str, attrs: &mut [ParsedAttribute], options: &FormatOptions) {
     match options.attribute_sort_order {
         AttributeSortOrder::Alphabetical => {
-            // Decorate-sort-undecorate: `attr_sort_key` lowercases the name,
-            // so computing it inside a comparator re-allocates O(n log n)
-            // times. `sort_by_cached_key` evaluates the key closure exactly
-            // once per attribute and caches it, then sorts on the cached
-            // tuples. Native elements may nominate a behavior-defining
+            // Compare borrowed names case-insensitively instead of caching
+            // lowercased keys: segments now span directives, so a cached key
+            // would allocate for most attributes of most elements. The order
+            // is total (`original_index` is unique), so an unstable sort is
+            // exact. Native elements may nominate a behavior-defining
             // attribute before the alphabetical tail of their ordinary
             // attributes. The tag-aware rank deliberately does not apply to
             // PascalCase Vue components.
             let merge_bind = options.merge_bind_and_non_bind_attrs;
-            attrs.sort_by_cached_key(|attr| {
-                let (group, base) = attr_sort_key(&attr.name, merge_bind);
-                (
-                    attr.priority,
-                    native_attribute_semantic_rank(tag_name, &attr.name),
-                    group,
-                    base,
-                    attr.original_index,
-                )
+            attrs.sort_unstable_by(|a, b| {
+                let (a_group, a_base) = attr_sort_key(&a.name, merge_bind);
+                let (b_group, b_base) = attr_sort_key(&b.name, merge_bind);
+                a.priority
+                    .cmp(&b.priority)
+                    .then_with(|| {
+                        native_attribute_semantic_rank(tag_name, &a.name)
+                            .cmp(&native_attribute_semantic_rank(tag_name, &b.name))
+                    })
+                    .then(a_group.cmp(&b_group))
+                    .then_with(|| {
+                        a_base
+                            .bytes()
+                            .map(|byte| byte.to_ascii_lowercase())
+                            .cmp(b_base.bytes().map(|byte| byte.to_ascii_lowercase()))
+                    })
+                    .then(a.original_index.cmp(&b.original_index))
             });
         }
         AttributeSortOrder::AsWritten => {
@@ -96,25 +109,27 @@ fn native_attribute_semantic_rank(tag_name: &str, attr_name: &str) -> u8 {
     }
 }
 
-fn is_order_sensitive_attribute(attr: &ParsedAttribute) -> bool {
-    // A mustache in a static attribute can expand to any name at runtime.
-    if attr
-        .value
-        .as_deref()
-        .is_some_and(|value| value.contains("{{"))
-    {
+/// A bare `v-bind`/`v-on` object or a dynamic argument merges with its
+/// neighbors, and a mustache in a static attribute can expand to any name at
+/// runtime, so each bounds a sortable run.
+pub(crate) fn is_order_sensitive_attribute(
+    name: &str,
+    head: Option<&DirectiveName>,
+    value: Option<&str>,
+) -> bool {
+    if value.is_some_and(|value| value.contains("{{")) {
         return true;
     }
-    let Some(head) = directive_head(attr.name.as_str()) else {
+    let Some(head) = head else {
         return false;
     };
     match head.arg {
-        Some(vize_l1::markup::ArgSyntax::Dynamic(_)) => true,
+        Some(ArgSyntax::Dynamic(_)) => true,
         None => matches!(
-            DirectiveKind::of(&head, attr.name.as_str()),
+            DirectiveKind::of(head, name),
             DirectiveKind::Bind | DirectiveKind::On
         ),
-        Some(vize_l1::markup::ArgSyntax::Static(_)) => false,
+        Some(ArgSyntax::Static(_)) => false,
     }
 }
 
@@ -137,23 +152,17 @@ fn has_duplicate_static_names(attrs: &[ParsedAttribute]) -> bool {
 /// When `merge_bind` is true, bind prefix is stripped so `:class` and
 /// `class` are sorted together:
 ///   `class`, `:class`, `id`, `:id`
-fn attr_sort_key(name: &str, merge_bind: bool) -> (u8, String) {
-    if merge_bind {
+fn attr_sort_key(name: &str, merge_bind: bool) -> (u8, &str) {
+    // The base is compared ASCII-case-insensitively by the caller.
+    let base = name
+        .strip_prefix(':')
+        .or_else(|| name.strip_prefix("v-bind:"));
+    match base {
         // Strip bind prefix for comparison
-        let base = name
-            .strip_prefix(':')
-            .or_else(|| name.strip_prefix("v-bind:"))
-            .unwrap_or(name);
-        (0, base.to_ascii_lowercase().into())
-    } else {
+        Some(base) if merge_bind => (0, base),
         // Non-bind first (0), then bind (1)
-        let is_bind = name.starts_with(':') || name.starts_with("v-bind:");
-        let base = name
-            .strip_prefix(':')
-            .or_else(|| name.strip_prefix("v-bind:"))
-            .unwrap_or(name);
-        let group = if is_bind { 1 } else { 0 };
-        (group, base.to_ascii_lowercase().into())
+        Some(base) => (1, base),
+        None => (0, name),
     }
 }
 
