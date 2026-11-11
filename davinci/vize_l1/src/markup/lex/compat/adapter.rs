@@ -174,9 +174,6 @@ impl<C: Callbacks> Sink for CompatSink<C> {
                 ErrorCode::UnexpectedQuestionMarkInsteadOfTagName
             }
             LexErrorCode::UnexpectedSolidusInTag => ErrorCode::UnexpectedSolidusInTag,
-            LexErrorCode::UnexpectedNullCharacter => ErrorCode::UnexpectedNullCharacter,
-            LexErrorCode::ControlCharacterInInputStream => ErrorCode::ControlCharacterInInputStream,
-            LexErrorCode::NoncharacterInInputStream => ErrorCode::NoncharacterInInputStream,
         };
         self.callbacks.on_error(code, index);
     }
