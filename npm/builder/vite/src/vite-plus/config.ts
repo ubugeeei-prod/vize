@@ -115,6 +115,7 @@ export function normalizeConfig(source: VueConfigObject, integration: VizePlusOp
           : undefined,
     lintIgnorePatterns: resolvedHostLint?.ignorePatterns,
     fmtIgnorePatterns: oxfmt.ignorePatterns,
+    vueFmtIgnorePatterns: vueFileIgnores(vue),
   };
   const vp: UserConfig = {
     ...rest,
@@ -159,6 +160,23 @@ function mergeUnique<T>(
   vue: readonly T[] | null | undefined,
 ): T[] {
   return [...new Set([...(base ?? []), ...(vue ?? [])])];
+}
+
+function vueFileIgnores(vue: unknown): string[] {
+  if (typeof vue !== "object" || vue === null) return [];
+  const record = vue as { ignores?: unknown; formatter?: unknown; fmt?: unknown };
+  const formatter = record.formatter ?? record.fmt;
+  const ignorePatterns =
+    typeof formatter === "object" && formatter !== null
+      ? (formatter as { ignorePatterns?: unknown }).ignorePatterns
+      : undefined;
+  return [...stringList(record.ignores), ...stringList(ignorePatterns)];
+}
+
+function stringList(value: unknown): string[] {
+  return Array.isArray(value)
+    ? value.filter((item): item is string => typeof item === "string")
+    : [];
 }
 
 function recordValue(value: unknown): Record<string, unknown> {

@@ -15,13 +15,15 @@ export function registerSharedUsageGateChecks(assets: Assets): void {
   test("raw fallthrough source fields cover generated components and ignore helper patterns", () => {
     const marker = " readonly __vizeHasFallthroughProps: true;";
     const prefix = " readonly __vizeComponentMarker: true; readonly __vizeRawProps?: Props;";
+    const forwarded = (source: string) =>
+      `${marker} readonly __vizeFallthroughProps?: $UnownedComponentAttrs<${source}, Props, {}>;`;
     const helper = `type Helper<C> = C extends { readonly __vizeComponentMarker: true;${marker} } ? C : never;`;
     const before = Buffer.from(
-      `type A = {${prefix}${marker} };\n${helper}\ntype B = {${prefix}${marker} };`,
+      `type A = {${prefix}${forwarded("AProps")} };\n${helper}\ntype B = {${prefix}${forwarded("BProps")} };`,
     );
     const after = Buffer.from(
-      `type A = {${prefix} readonly __vizeFallthroughSource?: AProps;${marker} };\n` +
-        `${helper}\ntype B = {${prefix} readonly __vizeFallthroughSource?: BProps;${marker} };`,
+      `type A = {${prefix} readonly __vizeFallthroughSource?: AProps;${forwarded("AProps")} };\n` +
+        `${helper}\ntype B = {${prefix} readonly __vizeFallthroughSource?: BProps;${forwarded("BProps")} };`,
     );
     const edits = certifyFallthroughSourceFields(before, after);
     assert.equal(edits.length, 2);
@@ -41,6 +43,32 @@ export function registerSharedUsageGateChecks(assets: Assets): void {
         ),
       /each fallthrough marker/,
     );
+    assert.throws(
+      () =>
+        certifyFallthroughSourceFields(
+          before,
+          Buffer.from(
+            after
+              .toString()
+              .replace("$UnownedComponentAttrs<AProps,", "$UnownedComponentAttrs<OtherProps,"),
+          ),
+        ),
+      /fallthrough source must match/,
+    );
+    for (const unsafe of ["any", "never", "unknown"])
+      assert.throws(
+        () =>
+          certifyFallthroughSourceFields(
+            before,
+            Buffer.from(
+              after
+                .toString()
+                .replace("AProps", unsafe)
+                .replace("$UnownedComponentAttrs<AProps,", `$UnownedComponentAttrs<${unsafe},`),
+            ),
+          ),
+        /safe fallthrough-source type/,
+      );
   });
 
   test("key-set attr value helper is one exact certified replacement", () => {

@@ -132,3 +132,6 @@ mod value_binding_origins_tests;
 
 #[cfg(test)]
 mod value_binding_origins_callable_tests;
+
+#[cfg(test)]
+mod commented_union_props_tests;

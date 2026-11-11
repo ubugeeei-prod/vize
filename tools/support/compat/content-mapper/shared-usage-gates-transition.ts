@@ -93,7 +93,7 @@ export function certifyFallthroughSourceFields(
 ): Array<{ start: number; end: number; replacement: Buffer; at: number; label: string }> {
   const marker = " readonly __vizeHasFallthroughProps: true;";
   const field =
-    / readonly __vizeFallthroughSource\?: [^;\r\n]+;(?= readonly __vizeHasFallthroughProps: true;)/gu;
+    / readonly __vizeFallthroughSource\?: ([^;\r\n]+);(?= readonly __vizeHasFallthroughProps: true;)/gu;
   const beforeText = before.toString();
   const afterText = after.toString();
   const beforeFields = [...beforeText.matchAll(field)];
@@ -118,6 +118,18 @@ export function certifyFallthroughSourceFields(
   );
   return afterFields.map((match, index) => {
     assert.ok(match.index != null && match[0].length > 0, "bounded fallthrough-source field");
+    const source = match[1]?.trim();
+    assert.ok(source, "non-empty fallthrough-source type");
+    assert.doesNotMatch(source, /^(?:any|never|unknown)$/u, "safe fallthrough-source type");
+    const contract = afterText.slice(match.index + match[0].length).split(/\r?\n/u, 1)[0];
+    const forwarded = `${marker} readonly __vizeFallthroughProps?: `;
+    assert.ok(contract.startsWith(forwarded), "adjacent fallthrough forwarding contract");
+    const forwardedSource = contract.slice(forwarded.length);
+    assert.ok(
+      forwardedSource.startsWith(`${source};`) ||
+        forwardedSource.startsWith(`$UnownedComponentAttrs<${source}, `),
+      "fallthrough source must match its generated forwarding contract",
+    );
     const replacement = Buffer.from(match[0]);
     const start = markerOffsets[index];
     return {

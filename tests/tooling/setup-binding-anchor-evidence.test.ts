@@ -103,6 +103,8 @@ test("the raw fallthrough source field is an exact certified document shift", ()
   const marker = " readonly __vizeHasFallthroughProps: true;";
   const prefix = " readonly __vizeComponentMarker: true; readonly __vizeRawProps?: Props;";
   const field = " readonly __vizeFallthroughSource?: Record<string, unknown>;";
+  const forwarded =
+    " readonly __vizeFallthroughProps?: $UnownedComponentAttrs<Record<string, unknown>, Props, {}>;";
   try {
     fixture(root);
     for (const role of ["base", "head"])
@@ -113,7 +115,10 @@ test("the raw fallthrough source field is an exact certified document shift", ()
               const path = join(root, `${role}-${shape}-${count}-${mode}-${round}.json`);
               const row = JSON.parse(readFileSync(path, "utf8"));
               for (const document of row.documents) {
-                const suffix = role === "head" ? prefix + field + marker : prefix + marker;
+                const suffix =
+                  role === "head"
+                    ? prefix + field + marker + forwarded
+                    : prefix + marker + forwarded;
                 document.code += suffix;
                 document.preRewriteCode += suffix;
               }

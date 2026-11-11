@@ -22,11 +22,11 @@
 use super::{
     ElementNode, ElementType, Fix, LintContext, LintDiagnostic, ListStyleType, MarkupContext,
     MarkupElement, MarkupRule, NoRedundantRoles, PropNode, Property, PropertyId, Rule, RuleMeta,
-    TextEdit, get_implicit_role, get_static_attribute_value,
-    get_static_or_bound_literal_attribute_value,
+    TextEdit, get_implicit_role, get_static_or_bound_literal_attribute_value,
 };
 use crate::diagnostic::Severity;
 use crate::rule::RuleCategory;
+use vize_relief::ExpressionNode;
 
 static META: RuleMeta = RuleMeta {
     name: "a11y/no-redundant-roles",
@@ -38,16 +38,29 @@ static META: RuleMeta = RuleMeta {
 
 fn relief_role_attribute_span(element: &ElementNode<'_>) -> Option<(u32, u32)> {
     for prop in &element.props {
-        let PropNode::Attribute(attr) = prop else {
-            continue;
-        };
-        if attr.name != "role" {
-            continue;
+        match prop {
+            PropNode::Attribute(attr) if attr.name == "role" => {
+                return attr
+                    .value
+                    .as_ref()
+                    .map(|_| (attr.loc.span.start, attr.loc.span.end));
+            }
+            PropNode::Directive(dir) if dir.name == "bind" => {
+                let Some(ExpressionNode::Simple(arg)) = &dir.arg else {
+                    continue;
+                };
+                if arg.content != "role" {
+                    continue;
+                }
+                let Some(ExpressionNode::Simple(exp)) = &dir.exp else {
+                    continue;
+                };
+                if crate::rules::a11y::helpers::string_literal_value(exp.content).is_some() {
+                    return Some((dir.loc.span.start, dir.loc.span.end));
+                }
+            }
+            _ => {}
         }
-        return attr
-            .value
-            .as_ref()
-            .map(|_| (attr.loc.span.start, attr.loc.span.end));
     }
     None
 }
@@ -122,7 +135,9 @@ impl MarkupRule for NoRedundantRoles {
             return;
         }
 
-        let Some(role_value) = Self::first_static_attribute_value(element, "role") else {
+        let literal_bind = ctx.is_template();
+        let Some(role_value) = Self::first_static_attribute_value(element, "role", literal_bind)
+        else {
             return;
         };
 
@@ -144,7 +159,8 @@ impl MarkupRule for NoRedundantRoles {
         }
 
         let diagnostic_range = element.range();
-        let Some(attribute_range) = Self::redundant_role_attribute_range(element) else {
+        let Some(attribute_range) = Self::redundant_role_attribute_range(element, literal_bind)
+        else {
             let message = ctx.lint().t_fmt(
                 "a11y/no-redundant-roles.message",
                 &[("tag", element.tag()), ("role", role_value)],
@@ -180,7 +196,7 @@ impl Rule for NoRedundantRoles {
             return;
         }
 
-        let role_value = match get_static_attribute_value(element, "role") {
+        let role_value = match get_static_or_bound_literal_attribute_value(element, "role") {
             Some(r) => r,
             None => return,
         };

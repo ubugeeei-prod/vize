@@ -68,6 +68,8 @@ void test("certified generated field relocation preserves cross-role packets", (
   const marker = " readonly __vizeHasFallthroughProps: true;";
   const prefix = " readonly __vizeComponentMarker: true; readonly __vizeRawProps?: Props;";
   const field = ' readonly __vizeFallthroughSource?: Partial<$NativeElement<"main">>;';
+  const forwarded =
+    ' readonly __vizeFallthroughProps?: $UnownedComponentAttrs<Partial<$NativeElement<"main">>, Props, {}>;';
   for (const row of rows) {
     const packet = JSON.parse(row.packet) as {
       text: string;
@@ -76,20 +78,24 @@ void test("certified generated field relocation preserves cross-role packets", (
       diagnosticDirectives: { directives: unknown[] };
       diagnostics: unknown[];
     };
-    packet.text = prefix + marker;
+    packet.text = prefix + marker + forwarded;
     packet.mappings = [];
     packet.semanticLinks = [];
     packet.diagnosticDirectives.directives = [];
     packet.diagnostics = [];
-    if (row.role === "head") packet.text = prefix + field + marker;
+    if (row.role === "head") packet.text = prefix + field + marker + forwarded;
     row.packet = JSON.stringify(packet);
   }
   assert.doesNotThrow(() => summarize(rows, binaries, readAssets(process.cwd(), process.cwd())));
-  const head = rows.find((row) => row.role === "head");
-  assert.ok(head);
-  const packet = JSON.parse(head.packet) as { text: string };
-  packet.text = packet.text.replace("main", "button");
-  head.packet = JSON.stringify(packet);
+  const chosen = rows.find((row) => row.role === "head");
+  assert.ok(chosen);
+  for (const head of rows.filter(
+    (row) => row.role === "head" && row.family === chosen.family && row.count === chosen.count,
+  )) {
+    const packet = JSON.parse(head.packet) as { text: string };
+    packet.text = packet.text.replace("__vizeFallthroughSource?", "__vizeFallthroughSourceOther?");
+    head.packet = JSON.stringify(packet);
+  }
   assert.throws(() => summarize(rows, binaries, readAssets(process.cwd(), process.cwd())));
 });
 for (const field of [
