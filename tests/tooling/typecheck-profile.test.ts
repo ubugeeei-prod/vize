@@ -80,7 +80,7 @@ void test("Go pclntab functab and eh_frame_hdr tables name stripped functions", 
 const SCRIPT = [
   "node 100/100 PERF_RECORD_COMM exec: node:100/100",
   "node 100/100 PERF_RECORD_MMAP2 100/100: [0x400000(0x2000000) @ 0 08:01 7 0]: r-xp /usr/bin/node",
-  "node 100/100     1000000 cpu-clock:u: ",
+  "node 100/100 10.000000:     1000000 cpu-clock:u: ",
   "\t          401000 uv_run (/usr/bin/node)",
   "\t          400100 _start (/usr/bin/node)",
   "",
@@ -89,18 +89,18 @@ const SCRIPT = [
   "tsc 100/105 PERF_RECORD_FORK(105:105):(100:100)",
   "node 105/105 PERF_RECORD_COMM exec: node:105/105",
   `node 105/107 PERF_RECORD_MMAP2 105/107: [0x7f0000000000(0x100000) @ 0x2000 08:01 11 0]: r-xp ${VIZE}`,
-  "tsc 100/101     2000000 cpu-clock:u: ",
+  "tsc 100/101 10.005000:     2000000 cpu-clock:u: ",
   `\t          401150 [unknown] (${TSGO})`,
   `\t          401050 [unknown] (${TSGO})`,
   `\t          401010 [unknown] (${TSGO})`,
   "",
-  "tsc 100/102     1000000 cpu-clock:u: ",
+  "tsc 100/102 10.012000:     1000000 cpu-clock:u: ",
   "\tffffffff81000010 futex_wait_queue ([kernel.kallsyms])",
   "\tffffffff81000020 __x64_sys_futex ([kernel.kallsyms])",
   "\tffffffff81000030 entry_SYSCALL_64_after_hwframe ([kernel.kallsyms])",
   `\t          401200 [unknown] (${TSGO})`,
   "",
-  "node 105/107     3000000 cpu-clock:u: ",
+  "node 105/107 10.025000:     3000000 cpu-clock:u: ",
   "\t    7f00000fe000 malloc (/usr/lib/x86_64-linux-gnu/libc.so.6)",
   `\t    7f0000001000 vize::commands::content_mapper::dispatch::wire::encode_transform::h0123456789abcdef (${VIZE})`,
   `\t    7f0000000800 vize::commands::content_mapper::dispatch::worker (${VIZE})`,
@@ -110,7 +110,7 @@ const SCRIPT = [
   // The loader's whole-image reservation comes first; the code segment is mapped over it.
   `tsrs 200/200 PERF_RECORD_MMAP2 200/200: [0x555555400000(0x2800000) @ 0 08:01 13 0]: r--p ${TSRS}`,
   `tsrs 200/200 PERF_RECORD_MMAP2 200/200: [0x555557a00000(0x100000) @ 0x200000 08:01 13 0]: r-xp ${TSRS}`,
-  "tsrs 200/200     1000000 cpu-clock:u: ",
+  "tsrs 200/200 10.031000:     1000000 cpu-clock:u: ",
   `\t    555557a04010 [unknown] (${TSRS})`,
   "",
 ];
@@ -190,6 +190,10 @@ void test("the folder splits a lane tree by process, DSO, cost kind, phase and f
   assert.deepEqual(profile.quality.tsgo?.roots, [["runtime.futex", 1_000_000]]);
   assert.equal(profile.symbolizers[TSGO], "gopclntab");
   assert.deepEqual(profile.symbolization, { resolved: { mapping: 5 }, missed: 0, examples: [] });
+  // 10 ms buckets from the first sample.
+  assert.deepEqual(profile.timeline.roles.tsgo, [2_000_000, 1_000_000]);
+  assert.deepEqual(profile.timeline.roles["vize mapper (node)"], [0, 0, 3_000_000]);
+  assert.deepEqual(profile.timeline.phases["host: check"], [2_000_000]);
   const folded = [...folder.folded()];
   assert.equal(
     folded[0],
@@ -385,6 +389,8 @@ void test("the report renders a lane against its base and ranks function moves",
   assert.match(text, /\| vize mapper \(node\) \| 3 ms \| 1 ms \| -2 ms \(-66\.7%\) \| 16\.7% \|/u);
   assert.match(text, /\| Check time \| 1\.20s \| 1\.20s \|/u);
   assert.match(text, /Largest self-time moves/u);
+  // Busy cores: 1 ms of the mapper in the 20–30 ms slice is 0.1 cores.
+  assert.match(text, /\| 20–30 \| 0\.0 \| 0\.0 \| 0\.1 \| 0\.0 \| vize: reply encode 0\.1 \|/u);
   assert.match(
     renderOverview([base, head]),
     /\| n8n \| tsc \(tsgo\) \+ Vize mapper \| 6 ms \| -2 ms \(-25\.0%\)/u,

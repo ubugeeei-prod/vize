@@ -107,7 +107,7 @@ export async function foldPerfData(
       "-i",
       data,
       "-F",
-      "comm,pid,tid,period,event,ip,sym,dso",
+      "comm,pid,tid,time,period,event,ip,sym,dso",
       "--show-task-events",
       "--show-mmap-events",
       "--no-inline",

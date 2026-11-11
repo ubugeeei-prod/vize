@@ -1,7 +1,7 @@
 /**
  * One pass over `perf script` text of a whole lane process tree:
  *
- *   perf script -F comm,pid,tid,period,event,ip,sym,dso \
+ *   perf script -F comm,pid,tid,time,period,event,ip,sym,dso \
  *     --show-task-events --show-mmap-events --no-inline
  *
  * Task events give each pid the image it executed (so the node launcher that
@@ -43,13 +43,30 @@ export type Profile = {
   symbolizers: Record<string, FunctionTable["kind"]>;
   /** Frames named from stripped binaries' tables, by route, and the misses. */
   symbolization: { resolved: Record<string, number>; missed: number; examples: string[] };
+  /** Period per `bucketMs` slice of the run, per role and per phase (needs `time` in -F). */
+  timeline: {
+    bucketMs: number;
+    roles: Record<string, number[]>;
+    phases: Record<string, number[]>;
+  };
 };
+
+/** Timeline resolution: fine enough to see the mapper burst inside the host's parse phase. */
+export const TIMELINE_BUCKET_MS = 10;
 
 type Mapping = { start: number; end: number; pgoff: number; path: string };
 type Frame = { ip: number; sym: string; dso: string };
-type Sample = { comm: string; pid: number; period: number; event: string; frames: Frame[] };
+type Sample = {
+  comm: string;
+  pid: number;
+  time: number | null;
+  period: number;
+  event: string;
+  frames: Frame[];
+};
 
-const SAMPLE = /^(.+?)\s+(-?\d+)\/(-?\d+)\s+(?:\[\d+\]\s+)?(?:\d+\.\d+:\s+)?(\d+)\s+(\S+?):?\s*$/u;
+const SAMPLE =
+  /^(.+?)\s+(-?\d+)\/(-?\d+)\s+(?:\[\d+\]\s+)?(?:(\d+\.\d+):\s+)?(\d+)\s+(\S+?):?\s*$/u;
 const FRAME = /^\s+([0-9a-f]+)\s+(.*?)\s*\(([^()]*)\)$/u;
 const EXEC = /PERF_RECORD_COMM exec: (.+):(-?\d+)\/(-?\d+)$/u;
 const FORK = /PERF_RECORD_FORK\((-?\d+):(-?\d+)\):\((-?\d+):(-?\d+)\)/u;
@@ -135,7 +152,9 @@ export class ProfileFolder {
     unresolved: {},
     symbolizers: {},
     symbolization: { resolved: {}, missed: 0, examples: [] },
+    timeline: { bucketMs: TIMELINE_BUCKET_MS, roles: {}, phases: {} },
   };
+  private start: number | null = null;
 
   private readonly shape: LaneShape;
   private readonly loadTable: (path: string) => FunctionTable;
@@ -171,8 +190,9 @@ export class ProfileFolder {
     this.current = {
       comm: match[1]!.trim(),
       pid: Number(match[2]),
-      period: Number(match[4]),
-      event: match[5]!,
+      time: match[4] === undefined ? null : Number(match[4]),
+      period: Number(match[5]),
+      event: match[6]!,
       frames: [],
     };
   }
@@ -321,6 +341,22 @@ export class ProfileFolder {
     add(p.kinds, kind, period);
     const phase = this.phases.phase(names, role);
     add(((p.phases[role] ??= {})[phase] ??= {}), kind, period);
+    if (sample.time !== null) {
+      // perf script emits in time order, so the first sample opens the timeline.
+      this.start ??= sample.time;
+      const bucket = Math.max(
+        0,
+        Math.floor(((sample.time - this.start) * 1000) / TIMELINE_BUCKET_MS),
+      );
+      for (const [series, key] of [
+        [p.timeline.roles, role],
+        [p.timeline.phases, phase],
+      ] as const) {
+        const values = (series[key] ??= []);
+        while (values.length <= bucket) values.push(0);
+        values[bucket]! += period;
+      }
+    }
 
     const seen = new Set<string>();
     const syscalls = new Set<string>();

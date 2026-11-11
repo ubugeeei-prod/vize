@@ -225,6 +225,45 @@ function counterTable(head: LaneResult, base: LaneResult | null): string[] {
   ];
 }
 
+/**
+ * Busy cores per process role over the run, in at most `slices` rows, with
+ * the phase that held the most cores in each: where the mapper overlaps the
+ * host's parse, and where GC or one checker runs alone.
+ */
+export function timelineTable(result: LaneResult, slices = 16): string[] {
+  const { timeline, event } = result.profile;
+  if (!timeline || !CLOCK_EVENTS.test(event)) return [];
+  const length = Math.max(0, ...Object.values(timeline.roles).map((values) => values.length));
+  if (length === 0) return [];
+  const per = Math.max(1, Math.ceil(length / slices));
+  const roles = Object.entries(result.profile.roles)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 4)
+    .map(([role]) => role);
+  const sum = (values: number[] | undefined, from: number) =>
+    (values ?? []).slice(from, from + per).reduce((a, b) => a + b, 0);
+  const rows: string[] = [];
+  for (let from = 0; from < length; from += per) {
+    const width = Math.min(per, length - from) * timeline.bucketMs * 1e6;
+    const cores = (period: number) => (period / width).toFixed(1);
+    const top = Object.entries(timeline.phases)
+      .map(([phase, values]) => [phase, sum(values, from)] as const)
+      .sort((a, b) => b[1] - a[1])[0];
+    const start = from * timeline.bucketMs;
+    rows.push(
+      `| ${start}–${start + per * timeline.bucketMs} | ${roles.map((role) => cores(sum(timeline.roles[role], from))).join(" | ")} | ${top && top[1] > 0 ? `${cell(top[0])} ${cores(top[1])}` : ""} |`,
+    );
+  }
+  return [
+    "Busy cores over the run (from the first sample):",
+    "",
+    `| ms | ${roles.map(cell).join(" | ")} | busiest phase |`,
+    `| --- | ${roles.map(() => "---:").join(" | ")} | --- |`,
+    ...rows,
+    "",
+  ];
+}
+
 function qualityLines(result: LaneResult): string[] {
   return Object.entries(result.profile.quality).map(([role, quality]) => {
     const roots = quality.roots
@@ -289,6 +328,7 @@ export function renderLane(head: LaneResult, base: LaneResult | null, top = 20):
     "Process roles:",
     "",
     ...keyedTable("Process", head, p.roles, base, base?.profile.roles ?? null),
+    ...timelineTable(head),
     "Self time by DSO:",
     "",
     ...keyedTable("DSO", head, p.dsos, base, base?.profile.dsos ?? null),
