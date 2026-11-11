@@ -9,13 +9,14 @@ Toutes les règles du linter de Vize, regroupées par catégorie. Ouvrez une rè
 
 La colonne Préréglage indique le plus petit préréglage qui active la règle ; la page de chaque règle les liste tous. Voir [préréglages](../rules/index.md#préréglages) pour le contenu de chacun.
 
-## Règles Vue (148)
+## Règles Vue (151)
 
 | Règle | Ce qu’elle vérifie | Préréglage | Correction automatique |
 | --- | --- | --- | --- |
 | <span id="vue-a11y-img-alt"></span>[`vue/a11y-img-alt`](./reference/vue-a11y-img-alt.md) | Exiger un attribut alt sur les images pour les rendre accessibles. | — |  |
 | <span id="vue-attribute-hyphenation"></span>[`vue/attribute-hyphenation`](./reference/vue-attribute-hyphenation.md) | Imposer un style de nommage des attributs sur les composants personnalisés. | `happy-path` | ✓ |
 | <span id="vue-attribute-order"></span>[`vue/attribute-order`](./reference/vue-attribute-order.md) | Imposer un ordre cohérent des attributs. | `happy-path` |  |
+| <span id="vue-block-lang"></span>[`vue/block-lang`](./reference/vue-block-lang.md) | Limite le lang d'un bloc SFC à la langue configurée. | — |  |
 | <span id="vue-camelcase"></span>[`vue/camelcase`](./reference/vue-camelcase.md) | Exige camelCase pour les identifiants des expressions du template. | — |  |
 | <span id="vue-comment-directive"></span>[`vue/comment-directive`](./reference/vue-comment-directive.md) | Prend en charge les commentaires de contrôle des diagnostics dans `<template>`. | `essential` |  |
 | <span id="vue-component-definition-name-casing"></span>[`vue/component-definition-name-casing`](./reference/vue-component-definition-name-casing.md) | Imposer PascalCase ou kebab-case aux noms de définition des composants. | `happy-path` |  |
@@ -121,8 +122,10 @@ La colonne Préréglage indique le plus petit préréglage qui active la règle 
 | <span id="vue-quote-props"></span>[`vue/quote-props`](./reference/vue-quote-props.md) | Interdit les guillemets inutiles sur les propriétés d'objet. | — |  |
 | <span id="vue-require-component-is"></span>[`vue/require-component-is`](./reference/vue-require-component-is.md) | Exiger `v-bind:is` sur les éléments `<component>`. | `essential` |  |
 | <span id="vue-require-component-registration"></span>[`vue/require-component-registration`](./reference/vue-require-component-registration.md) | Exiger un import ou un enregistrement explicite des composants. | `opinionated` |  |
+| <span id="vue-require-default-export"></span>[`vue/require-default-export`](./reference/vue-require-default-export.md) | Exige que le script du composant soit l'export par défaut. | — |  |
 | <span id="vue-require-expose"></span>[`vue/require-expose`](./reference/vue-require-expose.md) | Exige que les composants de l'Options API déclarent explicitement leurs propriétés publiques avec `expose`. | — |  |
 | <span id="vue-require-macro-variable-name"></span>[`vue/require-macro-variable-name`](./reference/vue-require-macro-variable-name.md) | Exige les noms conventionnels des variables de macro. | — |  |
+| <span id="vue-require-prop-comment"></span>[`vue/require-prop-comment`](./reference/vue-require-prop-comment.md) | Exige un commentaire JSDoc sur chaque prop déclarée. | — |  |
 | <span id="vue-require-scoped-style"></span>[`vue/require-scoped-style`](./reference/vue-require-scoped-style.md) | Exiger l’attribut scoped sur les balises style. | `happy-path` |  |
 | <span id="vue-require-toggle-inside-transition"></span>[`vue/require-toggle-inside-transition`](./reference/vue-require-toggle-inside-transition.md) | Exiger un mécanisme de bascule sur l’élément enveloppé par `<transition>`. | `essential` |  |
 | <span id="vue-require-v-for-key"></span>[`vue/require-v-for-key`](./reference/vue-require-v-for-key.md) | Exiger `v-bind:key` avec les directives `v-for`. | `essential` |  |

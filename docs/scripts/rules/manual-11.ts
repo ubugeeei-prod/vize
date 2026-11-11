@@ -122,4 +122,17 @@ export const manual11: Record<string, RuleExample> = {
     "<script>\nexport default { methods: { alpha() {}, zebra() {} } }\n</script>\n<template />",
     { order: "asc", caseSensitive: true, natural: false },
   ),
+  "vue/block-lang": sfc(
+    '<script setup>\nconst label = "a";\n</script>\n<template>\n  <p>{{ label }}</p>\n</template>',
+    '<script setup lang="ts">\nconst label = "a";\n</script>\n<template>\n  <p>{{ label }}</p>\n</template>',
+    { script: { lang: "ts", allowNoLang: false } },
+  ),
+  "vue/require-default-export": sfc(
+    '<script lang="ts">\nconst label = "a";\n</script>\n<template>\n  <p>label</p>\n</template>',
+    '<script lang="ts">\nconst label = "a";\nexport default { name: "Label" };\n</script>\n<template>\n  <p>label</p>\n</template>',
+  ),
+  "vue/require-prop-comment": sfc(
+    '<script setup lang="ts">\nconst { size } = defineProps<{ size: string }>();\n</script>\n<template>\n  <p>{{ size }}</p>\n</template>',
+    '<script setup lang="ts">\nconst { size } = defineProps<{\n  /** The rendered size. */\n  size: string;\n}>();\n</script>\n<template>\n  <p>{{ size }}</p>\n</template>',
+  ),
 };
