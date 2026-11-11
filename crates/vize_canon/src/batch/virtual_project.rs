@@ -444,6 +444,9 @@ struct SourceArtifacts {
     star_projection: Option<star_exports::StarProjection>,
     authored_vue_ts_specifiers: FxHashSet<CompactString>,
     dependency_syntax_facts: Option<build::DependencySyntaxFacts>,
+    /// The registration's import-rewrite parse, kept only until the import
+    /// graph is final (see [`build::RegisteredFile::rewrite_syntax`]).
+    rewrite_syntax: Option<crate::batch::import_rewriter::ModuleRewriteSyntax>,
 }
 
 #[cfg(test)]

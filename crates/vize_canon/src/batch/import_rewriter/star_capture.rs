@@ -1,7 +1,7 @@
 //! Compatibility wrappers over the same initial module-rewrite parse.
 
 use super::{
-    ImportRewriter, RewriteResult, VirtualProjectRewriteCapture, VirtualProjectRewriteOptions,
+    ImportRewriter, RewriteResult, RewriteSyntaxMode, SyntaxRewrite, VirtualProjectRewriteOptions,
 };
 use oxc_span::SourceType;
 use std::path::Path;
@@ -24,9 +24,9 @@ impl ImportRewriter {
             roots,
             source_dir,
             options,
-            false,
+            None,
         )
-        .0
+        .result
     }
 
     pub(in crate::batch) fn rewrite_for_virtual_project_with_policy(
@@ -43,10 +43,13 @@ impl ImportRewriter {
             roots,
             source_dir,
             options,
-            false,
+            None,
         )
-        .0
+        .result
     }
+
+    /// Rewrite a generated projection and capture its bare stars from the
+    /// same parse; `syntax` retains that parse or replays an earlier one.
     pub(in crate::batch) fn rewrite_generated_for_virtual_project_with_captured_stars(
         &self,
         source: &str,
@@ -54,17 +57,20 @@ impl ImportRewriter {
         roots: (&Path, &Path),
         source_dir: Option<&Path>,
         options: VirtualProjectRewriteOptions<'_>,
-    ) -> (RewriteResult, Vec<super::EmptyVueStar>) {
+        syntax: RewriteSyntaxMode<'_>,
+    ) -> SyntaxRewrite {
         self.rewrite_generated_for_virtual_project_with_star_capture(
             source,
             source_type,
             roots,
             source_dir,
             options,
-            true,
+            Some(syntax),
         )
     }
 
+    /// Rewrite an authored script and capture its bare stars from the same
+    /// parse; `syntax` retains that parse or replays an earlier one.
     pub(in crate::batch) fn rewrite_for_virtual_project_with_captured_stars(
         &self,
         source: &str,
@@ -72,33 +78,15 @@ impl ImportRewriter {
         roots: (&Path, &Path),
         source_dir: Option<&Path>,
         options: VirtualProjectRewriteOptions<'_>,
-    ) -> (RewriteResult, Vec<super::EmptyVueStar>) {
-        let (rewritten, stars, _) = self.rewrite_for_virtual_project_with_star_capture(
-            source,
-            source_type,
-            roots,
-            source_dir,
-            options,
-            true,
-        );
-        (rewritten, stars)
-    }
-
-    pub(in crate::batch) fn rewrite_for_virtual_project_with_captured_stars_and_occurrences(
-        &self,
-        source: &str,
-        source_type: SourceType,
-        roots: (&Path, &Path),
-        source_dir: Option<&Path>,
-        options: VirtualProjectRewriteOptions<'_>,
-    ) -> VirtualProjectRewriteCapture {
+        syntax: RewriteSyntaxMode<'_>,
+    ) -> SyntaxRewrite {
         self.rewrite_for_virtual_project_with_star_capture(
             source,
             source_type,
             roots,
             source_dir,
             options,
-            true,
+            Some(syntax),
         )
     }
 }

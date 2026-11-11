@@ -93,6 +93,7 @@ pub(super) fn build_jsx_registered_file(
         module_exports: None,
         original_content: Some(retain_source_content(source)),
         dependency_syntax_facts: None,
+        rewrite_syntax: None,
     })
 }
 

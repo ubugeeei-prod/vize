@@ -62,6 +62,10 @@ impl VirtualProject {
             star_projection: registered.star_projection,
             authored_vue_ts_specifiers: registered.authored_vue_ts_specifiers,
             dependency_syntax_facts: registered.dependency_syntax_facts,
+            // Only a batch keeps a registration's parse for its later passes.
+            rewrite_syntax: registered
+                .rewrite_syntax
+                .filter(|_| self.editor_document_options.is_none()),
             ..Default::default()
         };
         apply_musea_art_globals(&registered.file.original_path, &mut self.virtual_ts_options);

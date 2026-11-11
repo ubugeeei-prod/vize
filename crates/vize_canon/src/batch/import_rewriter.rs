@@ -46,11 +46,15 @@ mod source_map;
 pub use source_map::{ImportSourceMap, OffsetAdjustment, RewriteResult};
 
 mod specifier_span;
-pub(in crate::batch) use specifier_span::{
-    ModuleSpecifierSpan, ModuleSpecifierSpans, VirtualProjectRewriteCapture,
-};
+pub(in crate::batch) use specifier_span::{ModuleSpecifierSpan, ModuleSpecifierSpans};
 
 mod literal_rewrite;
+
+mod rewrite_syntax;
+use rewrite_syntax::parse_rewrite_syntax;
+pub(in crate::batch) use rewrite_syntax::{
+    ModuleRewriteSyntax, ReplacedLiterals, RewriteSyntaxMode, SyntaxRewrite,
+};
 
 #[cfg(test)]
 mod literal_geometry_tests;
@@ -262,62 +266,10 @@ impl ImportRewriter {
     where
         F: Fn(&str, crate::PackageResolutionMode) -> Option<String>,
     {
-        let allocator = Allocator::default();
-        vize_carton::micro_count!("canon.import_rewriter.rewrite_parse.calls", 1);
-        vize_carton::micro_count!(
-            "canon.import_rewriter.rewrite_parse.source_bytes",
-            source.len()
-        );
-        let result = vize_carton::micro_span!(
-            "canon.import_rewriter.rewrite_parse",
-            vize_croquis::script_parser::parse_program_for_analysis(
-                &allocator,
-                source,
-                source_type
-            )
-        );
-
-        if result.panicked {
-            let spans = collect_specifier_spans(source, source_type);
-            let rewritten = self.rewrite_occurrences(source, &spans, rewrite_specifier);
-            let specifier_spans = into_deduplicated_specifier_spans(source, spans);
-            return (rewritten, Vec::new(), specifier_spans);
-        }
-
-        self.rewrite_parsed(
-            source,
-            &result.program,
-            rewrite_specifier,
-            capture_stars && !result.panicked && result.diagnostics.is_empty(),
-        )
-    }
-
-    fn rewrite_parsed<F>(
-        &self,
-        source: &str,
-        program: &Program<'_>,
-        rewrite_specifier: F,
-        capture_stars: bool,
-    ) -> (RewriteResult, Vec<EmptyVueStar>, ModuleSpecifierSpans)
-    where
-        F: Fn(&str, crate::PackageResolutionMode) -> Option<String>,
-    {
-        let mut collector = if capture_stars {
-            ModuleSpecifierCollector::with_stars()
-        } else {
-            ModuleSpecifierCollector::new()
-        };
-        collector.visit_program(program);
-
-        let stars = collector
-            .empty_stars
-            .into_iter()
-            .filter_map(|candidate| EmptyVueStar::capture(source, &program.comments, candidate))
-            .collect();
-
-        let rewritten = self.rewrite_occurrences(source, &collector.specifiers, rewrite_specifier);
-        let specifier_spans = into_deduplicated_specifier_spans(source, collector.specifiers);
-        (rewritten, stars, specifier_spans)
+        let parsed = parse_rewrite_syntax(source, source_type, capture_stars);
+        let rewritten = self.rewrite_occurrences(source, &parsed.occurrences, rewrite_specifier);
+        let specifier_spans = into_deduplicated_specifier_spans(source, parsed.occurrences);
+        (rewritten, parsed.stars, specifier_spans)
     }
 
     fn rewrite_occurrences<F>(
@@ -343,13 +295,35 @@ impl ImportRewriter {
     where
         F: Fn(u32, u32, &str, crate::PackageResolutionMode) -> Option<String>,
     {
+        self.rewrite_literals(
+            source,
+            occurrences
+                .iter()
+                .map(|(start, end, path, mode)| (*start, *end, path.as_str(), *mode)),
+            rewrite_specifier,
+            None,
+        )
+    }
+
+    /// Replace each literal the policy rewrites. `replaced`, when given,
+    /// receives the value of every literal actually replaced.
+    fn rewrite_literals<'s, F>(
+        &self,
+        source: &str,
+        occurrences: impl IntoIterator<Item = (u32, u32, &'s str, crate::PackageResolutionMode)>,
+        rewrite_specifier: F,
+        mut replaced: Option<&mut ReplacedLiterals>,
+    ) -> RewriteResult
+    where
+        F: Fn(u32, u32, &str, crate::PackageResolutionMode) -> Option<String>,
+    {
         let mut rewrites: Vec<(u32, u32, String)> = Vec::new();
         for (start, end, path, mode) in occurrences {
-            if let Some(rewrite) = rewrite_specifier(*start, *end, path, *mode) {
-                if source.get(*start as usize..*end as usize) == Some(rewrite.as_str()) {
+            if let Some(rewrite) = rewrite_specifier(start, end, path, mode) {
+                if source.get(start as usize..end as usize) == Some(rewrite.as_str()) {
                     continue;
                 }
-                rewrites.push((*start, *end, rewrite));
+                rewrites.push((start, end, rewrite));
             }
         }
         rewrites.sort_by_key(|rewrite| std::cmp::Reverse(rewrite.0));
@@ -375,9 +349,15 @@ impl ImportRewriter {
                     .get((start as usize).saturating_sub(1)..=end as usize)
                     .unwrap_or_default();
                 source_map.record_replacement(start, end, length, literal);
+                if let Some(replaced) = replaced.as_deref_mut() {
+                    replaced.push(start, new_path);
+                }
             }
         }
         source_map.finish_descending_replacements();
+        if let Some(replaced) = replaced {
+            replaced.finish();
+        }
 
         RewriteResult {
             code: output,
