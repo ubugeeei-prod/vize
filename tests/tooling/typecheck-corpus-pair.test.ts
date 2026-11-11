@@ -27,6 +27,7 @@ import {
 import {
   hostArgs,
   PAIR_HOST_ARGS,
+  PAIR_HOSTS,
 } from "../../tools/benchmarks/scripts/typecheck-corpus-pair-host.ts";
 import { MAPPER_HOSTS } from "../../tools/benchmarks/scripts/typecheck-mapper-hosts.ts";
 import { root } from "./support/github-workflows.ts";
@@ -368,10 +369,16 @@ void test("the byte probe forwards the mapper's bytes unchanged and records each
   assert.equal(missing.status, 2);
 });
 
-void test("the pair runs tsc at its default and tsrs at --fast, each a published host setting", () => {
-  assert.deepEqual(PAIR_HOST_ARGS, { tsc: [], tsrs: ["--fast"] });
-  for (const host of MAPPER_HOSTS) {
-    const published = host.settings.map((setting) => setting.args(32));
+void test("the pair runs tsc at its default and both tsrs releases at --fast, each a published host setting", () => {
+  assert.deepEqual(PAIR_HOST_ARGS, {
+    tsc: [],
+    tsrs: ["--fast"],
+    "tsrs-default": [],
+    "tsrs-0.23-fast": ["--fast"],
+  });
+  for (const host of PAIR_HOSTS) {
+    const mapperHost = MAPPER_HOSTS.find((entry) => host.bin.startsWith(entry.id));
+    const published = mapperHost?.settings.map((setting) => setting.args(32)) ?? [];
     assert.ok(
       published.some((args) => args.join(" ") === PAIR_HOST_ARGS[host.id].join(" ")),
       host.id,
@@ -380,7 +387,7 @@ void test("the pair runs tsc at its default and tsrs at --fast, each a published
 });
 
 void test("mapper commands preserve the pair settings and projection trace arguments", () => {
-  for (const host of MAPPER_HOSTS) {
+  for (const host of PAIR_HOSTS) {
     const extraArgs = host.id === "tsc" ? ["--generateTrace", "/work/traces"] : [];
     assert.deepEqual(hostArgs(host, "/work/project", "tsconfig.mapper.json", extraArgs), [
       "--noEmit",

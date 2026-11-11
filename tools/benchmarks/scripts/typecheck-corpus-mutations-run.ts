@@ -1,13 +1,13 @@
 /**
- * Planted-diagnostic gate of the real-corpus type-check pair. Copies misskey
- * and n8n once per build, applies every mutation of
- * tools/benchmarks/typecheck-corpora/mutations, checks the copies with tsc
+ * Planted-diagnostic gate of the real-corpus type-check pair. Copies each
+ * selected corpus with a mutation set once per build, applies every mutation
+ * of tools/benchmarks/typecheck-corpora/mutations, checks the copies with tsc
  * and tsrs through that build's Vize mapper, and judges each run against the
  * unmutated diagnostics the measure step wrote to <out>/diagnostics. Vue's
  * mapper under tsc and vue-tsc check the mutated base copy as references.
  *
  *   node typecheck-corpus-mutations-run.ts --base <worktree> --head <worktree> \
- *     --work <dir> --out <dir>
+ *     --work <dir> --out <dir> [--corpora misskey,n8n]
  *
  * Writes mutations.json and mutations.md, appends the table to summary.md,
  * and exits 1 when the head gate fails.
@@ -20,7 +20,8 @@ import { fileURLToPath } from "node:url";
 import { parseArgs } from "node:util";
 
 import { runTypecheckCommand } from "./typecheck-command.mjs";
-import { CORPORA, prepareProject, resolveVueTsc } from "./typecheck-corpus-pair.ts";
+import { type Corpus, selectCorpora } from "./typecheck-corpus-pair-corpora.ts";
+import { prepareProject, resolveVueTsc } from "./typecheck-corpus-pair.ts";
 import { type Diagnostic, parseHostRun } from "./typecheck-corpus-pair-parse.ts";
 import { hostArgs } from "./typecheck-corpus-pair-host.ts";
 import {
@@ -29,6 +30,7 @@ import {
   type MutationSet,
   type Region,
   gateMutations,
+  hasMutationSet,
   judgeLane,
   loadMutationSet,
   mutateSources,
@@ -43,7 +45,6 @@ import {
 } from "./typecheck-mapper-hosts.ts";
 
 const repoRoot = resolve(fileURLToPath(import.meta.url), "..", "..", "..", "..");
-type Corpus = (typeof CORPORA)[number];
 const mapper = (id: string) => CONTENT_MAPPERS.find((entry) => entry.id === id)!;
 const tsc = MAPPER_HOSTS.find((host) => host.id === "tsc")!;
 
@@ -95,6 +96,7 @@ function main(): void {
       head: { type: "string" },
       work: { type: "string" },
       out: { type: "string" },
+      corpora: { type: "string", default: "" },
     },
   });
   if (!values.base || !values.head || !values.work || !values.out) {
@@ -132,7 +134,11 @@ function main(): void {
   const reports: CorpusMutationReport[] = [];
   const failures: string[] = [];
   const flips: string[] = [];
-  for (const corpus of CORPORA) {
+  for (const corpus of selectCorpora(values.corpora)) {
+    if (!hasMutationSet(corpus.id)) {
+      console.log(`${corpus.id}: no mutation set, not planted`);
+      continue;
+    }
     const set = loadMutationSet(corpus.id);
     checkRevision(set, corpus);
     const vize: CorpusMutationReport["vize"] = { base: {}, head: {} };
