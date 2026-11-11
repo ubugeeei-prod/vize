@@ -181,6 +181,33 @@ fn malformed_utf8_recovery_keeps_diagnostics_and_checks_point_boundaries() {
 }
 
 #[test]
+fn input_stream_character_diagnostics_retain_normal_completion() {
+    let allocator = Allocator::default();
+    for (source, code) in [
+        (
+            "<p>a\u{0001}b</p>",
+            LexErrorCode::ControlCharacterInInputStream,
+        ),
+        ("<p>a\u{0000}b</p>", LexErrorCode::UnexpectedNullCharacter),
+        ("<p>a\u{FFFE}b</p>", LexErrorCode::NoncharacterInInputStream),
+    ] {
+        let document = NativeDocument::lex_in(&allocator, root(source));
+        assert_eq!(
+            document
+                .errors()
+                .iter()
+                .map(|error| error.code)
+                .collect::<Vec<_>>(),
+            [code]
+        );
+        assert_eq!(
+            document.normal_completion().expect(source).profile(),
+            ProfileKind::Document
+        );
+    }
+}
+
+#[test]
 fn lexical_completion_never_certifies_browser_tree_policies() {
     let allocator = Allocator::default();
     for source in [

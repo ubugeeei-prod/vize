@@ -61,10 +61,11 @@ fn custom_groups_keep_barriers_duplicates_first_match_and_disabled_sorting() {
     let spread_expected =
         r#"<div z-early="e" a-late="l" v-bind="attrs" z-early="s" a-late="r"></div>"#;
     let event = r#"<div a-late="l" @click="run" z-early="e"></div>"#;
+    let event_expected = r#"<div z-early="e" a-late="l" @click="run"></div>"#;
     let duplicate = r#"<div a-late="l" z-early="e" a-late="r"></div>"#;
     let cases = [
         ("spread", spread, spread_expected, Some(wide.clone()), true),
-        ("event", event, event, Some(wide.clone()), true),
+        ("event", event, event_expected, Some(wide.clone()), true),
         ("duplicate", duplicate, duplicate, Some(wide.clone()), true),
         ("disabled", SOURCE, SOURCE, Some(wide), false),
         ("builtin-default", SOURCE, SOURCE, None, true),

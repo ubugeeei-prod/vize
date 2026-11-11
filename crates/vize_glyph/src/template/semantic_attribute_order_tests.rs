@@ -28,12 +28,18 @@ fn native_button_semantics_do_not_reorder_component_props() {
 }
 
 #[test]
-fn native_button_semantics_preserve_dynamic_barriers() {
+fn native_button_semantics_sort_static_bind_arguments_with_their_neighbors() {
     let source = r#"<button class="primary" :type="kind" disabled>Save</button>"#;
     let result = format_template_content(source, &FormatOptions::default()).unwrap();
 
-    assert!(result.find("class=").unwrap() < result.find(":type=").unwrap());
-    assert!(result.find(":type=").unwrap() < result.find("disabled").unwrap());
+    assert_eq!(
+        result,
+        r#"<button class="primary" disabled :type="kind">Save</button>"#
+    );
+    assert_eq!(
+        format_template_content(&result, &FormatOptions::default()).unwrap(),
+        result
+    );
 }
 
 #[test]

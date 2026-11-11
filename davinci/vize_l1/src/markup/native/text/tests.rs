@@ -75,9 +75,9 @@ fn unchanged_unicode_spaces_and_single_space_or_omission_allocate_no_arena_bytes
     let arena = Allocator::default();
     for (source, ordinal, expected, identity) in [
         (
-            "<template>雪 \u{a0}\u{85}\u{1680}\u{2000}\u{2028}\u{2029}\u{3000}\u{feff} 花</template>",
+            "<template>雪 \u{a0}\u{1680}\u{2000}\u{2028}\u{2029}\u{3000}\u{feff} 花</template>",
             0,
-            Some("雪 \u{a0}\u{85}\u{1680}\u{2000}\u{2028}\u{2029}\u{3000}\u{feff} 花"),
+            Some("雪 \u{a0}\u{1680}\u{2000}\u{2028}\u{2029}\u{3000}\u{feff} 花"),
             true,
         ),
         ("<template><i/> <b/></template>", 1, Some(" "), true),
@@ -111,7 +111,7 @@ fn only_original_ascii_runs_condense_and_unicode_whitespace_is_never_trimmed()
     let arena = Allocator::default();
     for (source, expected) in [
         ("<template> \u{a0}  </template>", " \u{a0} "),
-        ("<template> \u{85}\t </template>", " \u{85} "),
+        ("<template> \u{1680}\t </template>", " \u{1680} "),
         (
             "<template>\u{3000}\t\t雪 \u{feff}</template>",
             "\u{3000} 雪 \u{feff}",

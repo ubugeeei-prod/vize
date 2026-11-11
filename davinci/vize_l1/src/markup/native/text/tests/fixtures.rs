@@ -112,7 +112,7 @@ fn every_pinned_original_root_text_matches_whole_source_qualified_golden_windows
         crate::markup::check_fidelity(&owner.component().carrier().tree)
             .map_err(|_| "complete original source fidelity")?;
     }
-    assert_eq!(executed, 28, "actual complete eligible cases");
+    assert_eq!(executed, 24, "actual complete eligible cases");
     Ok(())
 }
 

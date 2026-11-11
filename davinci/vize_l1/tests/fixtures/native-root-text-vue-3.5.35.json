@@ -484,7 +484,7 @@
       "source": "<template>   </template>",
       "template": "   ",
       "templateSpan": [10, 15],
-      "nativeEligible": true,
+      "nativeEligible": false,
       "rootSlots": [
         {
           "ordinal": 0,
@@ -551,7 +551,7 @@
       "source": "<template>\u000b    　﻿</template>",
       "template": "\u000b    　﻿",
       "templateSpan": [10, 29],
-      "nativeEligible": true,
+      "nativeEligible": false,
       "rootSlots": [
         {
           "ordinal": 0,
@@ -618,7 +618,7 @@
       "source": "<template>   \t   </template>",
       "template": "   \t   ",
       "templateSpan": [10, 20],
-      "nativeEligible": true,
+      "nativeEligible": false,
       "rootSlots": [
         {
           "ordinal": 0,
@@ -2382,7 +2382,7 @@
       "source": "<template><!--a-->\n\t<!--b--></template>",
       "template": "<!--a-->\n\t<!--b-->",
       "templateSpan": [10, 30],
-      "nativeEligible": true,
+      "nativeEligible": false,
       "rootSlots": [
         {
           "ordinal": 0,

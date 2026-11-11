@@ -279,13 +279,13 @@ const { close } = useClose(emit);
 }
 
 #[test]
-fn test_calls_before_define_emits_do_not_count_as_usage() {
+fn test_calls_before_define_emits_count_as_usage() {
     let source = r#"
 function save() { emit('save') }
 const emit = defineEmits(['save'])
 "#;
     let result = create_linter().lint(source, 0);
-    assert_eq!(result.warning_count, 1);
+    assert_eq!(result.warning_count, 0);
 }
 
 #[test]

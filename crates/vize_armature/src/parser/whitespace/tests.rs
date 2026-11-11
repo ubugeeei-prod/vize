@@ -1,6 +1,7 @@
 use super::is_whitespace_text;
 use crate::{
-    Allocator, ParserOptions, SourceLocation, TemplateChildNode, TextNode, WhitespaceStrategy,
+    Allocator, ErrorCode, ParserOptions, SourceLocation, TemplateChildNode, TextNode,
+    WhitespaceStrategy,
 };
 
 #[test]
@@ -359,7 +360,15 @@ fn comment_adjacency_keeps_meaningful_unicode_text_and_pre_content() {
         let arena = Allocator::new();
         let source = vize_l0::cstr!("<!--a-->{text}<div></div>");
         let (root, errors) = crate::parse_with_options(&arena, &source, ParserOptions::default());
-        assert!(errors.is_empty(), "{errors:?}");
+        let expected = if text == "\u{0085}" {
+            vec![ErrorCode::ControlCharacterInInputStream]
+        } else {
+            vec![]
+        };
+        assert_eq!(
+            errors.iter().map(|error| error.code).collect::<Vec<_>>(),
+            expected
+        );
         assert_eq!(root.children.len(), 3);
         let TemplateChildNode::Text(node) = &root.children[1] else {
             panic!("meaningful text must remain a real sibling");

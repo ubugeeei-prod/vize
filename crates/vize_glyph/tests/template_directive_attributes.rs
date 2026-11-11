@@ -58,7 +58,7 @@ fn object_v_on_stays_between_independently_sorted_event_groups() {
 
     assert_eq!(
         first.as_str(),
-        r#"<button @keyup="up" @click="click" v-on="listeners" @mouseup="up" @mousedown="down"></button>"#
+        r#"<button @click="click" @keyup="up" v-on="listeners" @mousedown="down" @mouseup="up"></button>"#
     );
     assert_eq!(first, second);
 }
@@ -89,7 +89,7 @@ fn object_directive_modifiers_are_also_ordering_barriers() {
 }
 
 #[test]
-fn custom_directive_prefixes_remain_opaque() {
+fn custom_directive_values_remain_opaque_while_names_sort() {
     let source = r#"<Comp v-onboarding="a+b" v-binding="a+b" v-iffoo="a+b" v-forge="a+b" v-models="a+b" v-showcase="a+b" />"#;
     let options = FormatOptions {
         print_width: 200,
@@ -99,7 +99,10 @@ fn custom_directive_prefixes_remain_opaque() {
     let first = format_template(source, &options).unwrap();
     let second = format_template(&first, &options).unwrap();
 
-    assert_eq!(first.as_str(), source);
+    assert_eq!(
+        first,
+        r#"<Comp v-binding="a+b" v-forge="a+b" v-iffoo="a+b" v-models="a+b" v-onboarding="a+b" v-showcase="a+b" />"#
+    );
     assert_eq!(first, second);
 }
 

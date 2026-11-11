@@ -9,6 +9,7 @@ import { expectedBuildIdentity, validateBuildReceipt } from "./build-receipt.ts"
 import { runPlannedCases, validateResultEnvelope } from "./harness.mjs";
 import { expressionWidthReference } from "./formatter-expression-width-reference.mjs";
 import { soleChildWidthCliReference } from "./formatter-sole-child-width-reference.mjs";
+import { attributeOrderReference } from "./formatter-attribute-order-reference.mjs";
 
 /** Keep archived roles immutable while declaring the exact current CLI transport. */
 export function formatterInvocation(fixture) {
@@ -295,6 +296,7 @@ export function runFormatterPack({ manifestPath, binaryPath, sourceRevision, rep
       ...fixture,
       ...expressionWidthReference(repoRoot, fixture),
       ...soleChildWidthCliReference(repoRoot, fixture),
+      ...attributeOrderReference(repoRoot, fixture),
     }));
     report.binary = {
       path: build.binaryPath,

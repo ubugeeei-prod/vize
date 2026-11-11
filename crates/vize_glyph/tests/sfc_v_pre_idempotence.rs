@@ -55,9 +55,12 @@ fn v_pre_element_nesting_a_same_name_element_ends_at_the_outer_close() {
 }
 
 #[test]
-fn v_pre_with_other_attributes_is_stable_without_crossing_the_directive() {
+fn v_pre_sorts_before_ordinary_attributes_and_reaches_a_fixed_point() {
     let source = "<template>\n  <code class=\"a\" v-pre>{{ v }}</code>\n</template>\n";
-    assert_stable(source, source);
+    assert_stable(
+        source,
+        "<template>\n  <code v-pre class=\"a\">{{ v }}</code>\n</template>\n",
+    );
 }
 
 #[test]

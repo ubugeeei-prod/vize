@@ -53,7 +53,7 @@ fn text_and_interpolation_boundaries_do_not_gain_runtime_whitespace() {
 }
 
 #[test]
-fn dynamic_attribute_groups_remain_as_authored() {
+fn static_argument_directives_sort_by_group_and_name() {
     let source = concat!(
         r#"<Widget :z="first()" :a="second()" "#,
         r#":getter="observed" :assigned="value = next" :updated="count++" "#,
@@ -65,25 +65,28 @@ fn dynamic_attribute_groups_remain_as_authored() {
         &formatted,
     );
     assert_eq!(format(&formatted), formatted);
-    let names = [
-        ":z=",
-        ":a=",
-        ":getter=",
-        ":assigned=",
-        ":updated=",
-        "v-model=",
-        "@z=",
-        "@a=",
-    ];
-    let positions = names.map(|name| formatted.find(name).unwrap());
-    assert!(positions.windows(2).all(|pair| pair[0] < pair[1]));
+    assert_eq!(
+        formatted,
+        concat!(
+            "<Widget\n",
+            "  v-model=\"model\"\n",
+            "  :a=\"second()\"\n",
+            "  :assigned=\"value = next\"\n",
+            "  :getter=\"observed\"\n",
+            "  :updated=\"count++\"\n",
+            "  :z=\"first()\"\n",
+            "  @a=\"onA()\"\n",
+            "  @z=\"onZ()\"\n",
+            "/>"
+        )
+    );
 }
 
 #[test]
 fn literal_attributes_sort_only_inside_safe_unique_runs() {
     assert_fixed_point(
         r#"<Widget :value="read()" class="box" id="root" :next="write()" />"#,
-        r#"<Widget :value="read()" id="root" class="box" :next="write()" />"#,
+        r#"<Widget id="root" class="box" :next="write()" :value="read()" />"#,
     );
     assert_fixed_point(
         r#"<Widget class="first" class="second" :value="read()" />"#,

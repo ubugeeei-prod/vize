@@ -233,12 +233,22 @@ impl<'a> NativeDocument<'a> {
     }
 
     /// Certify only a normal complete lexical run of this original source.
-    /// Recoverable errors, declaration recovery and silent pending EOF states
+    /// Structural recovery, declaration recovery and silent pending EOF states
     /// retain their owner and observations but cannot mint this readonly view.
+    /// Input-stream character diagnostics are observational: their original
+    /// characters stay in the completed token stream and remain available to
+    /// later rules.
     pub fn normal_completion(
         &self,
     ) -> Result<DocumentLexicalCompletion<'_, 'a>, DocumentLexicalRefusal> {
-        if !self.errors.is_empty() {
+        if self.errors.iter().any(|error| {
+            !matches!(
+                error.code,
+                LexErrorCode::UnexpectedNullCharacter
+                    | LexErrorCode::ControlCharacterInInputStream
+                    | LexErrorCode::NoncharacterInInputStream
+            )
+        }) {
             return Err(DocumentLexicalRefusal::RecoveredSyntax);
         }
         if let Some(refusal) = self.declaration_refusal {

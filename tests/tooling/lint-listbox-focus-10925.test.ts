@@ -14,6 +14,19 @@ const directory = path.join(root, "tests/_fixtures/differential/linter/a11y-list
 const read = (name: string) => JSON.parse(fs.readFileSync(path.join(directory, name), "utf8"));
 const hash = (bytes: string | Buffer) => createHash("sha256").update(bytes).digest("hex");
 const rule = "a11y/interactive-supports-focus";
+const quietPacket = (
+  packet: {
+    file: string;
+    messages: { severity: number }[];
+    errorCount: number;
+    warningCount: number;
+  }[],
+) =>
+  packet.map((row) => ({
+    ...row,
+    messages: row.messages.filter((message) => message.severity === 2),
+    warningCount: 0,
+  }));
 
 void test("listbox roving focus preserves whole CLI packets across Vue, HTML, JSX and TSX", () => {
   const corpus = read("cases.json");
@@ -97,7 +110,7 @@ void test("listbox roving focus preserves whole CLI packets across Vue, HTML, JS
     }
   };
   try {
-    const expectedOriginal = [
+    const expectedOriginal = quietPacket([
       {
         ...before.packet[0],
         messages: [
@@ -128,7 +141,7 @@ void test("listbox roving focus preserves whole CLI packets across Vue, HTML, JS
         ],
         warningCount: 2,
       },
-    ];
+    ]);
     run(
       "original-issue",
       "opinionated",
@@ -150,13 +163,13 @@ void test("listbox roving focus preserves whole CLI packets across Vue, HTML, JS
           beforeStdout: string;
           beforePacket: {
             file: string;
-            messages: unknown[];
+            messages: { severity: number }[];
             errorCount: number;
             warningCount: number;
           }[];
           afterPacket: {
             file: string;
-            messages: unknown[];
+            messages: { severity: number }[];
             errorCount: number;
             warningCount: number;
           }[];
@@ -194,7 +207,7 @@ void test("listbox roving focus preserves whole CLI packets across Vue, HTML, JS
             "en",
             "--quiet",
           ],
-          route.afterPacket,
+          quietPacket(route.afterPacket),
           route.afterStatus,
         );
       }

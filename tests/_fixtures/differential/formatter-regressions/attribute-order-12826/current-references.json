@@ -1,0 +1,29 @@
+{
+  "schema": "vize.formatter-attribute-order-current-references",
+  "version": 1,
+  "issue": 12826,
+  "records": [
+    {
+      "id": "formatter/sfc/button-type-semantic-order-12030",
+      "inputSha256": "13eef35ae7d728586f2f4c558d7d7284c2ce044e27d037ea0021544c04aa6749",
+      "historicalExpectedSha256": "7d6d0d87d4920a5cfc789f170246d88457ebb56b7c3abeea351f01c45b3d2dee",
+      "currentPath": "tests/_fixtures/differential/formatter-regressions/attribute-order-12826/button-type-semantic-order.current.expected.txt",
+      "currentExpectedSha256": "9f00f3e78eff48715970d3b40662da22bad7bdd811da40292dcec7316c7bd7ca"
+    },
+    {
+      "id": "formatter/sfc/directive-expression-indent-width",
+      "inputSha256": "5f18216d74943dd4c4363314554031701b69082214b1aa79a376dd2083266e59",
+      "historicalExpectedSha256": "5f18216d74943dd4c4363314554031701b69082214b1aa79a376dd2083266e59",
+      "currentPath": "tests/_fixtures/differential/formatter-regressions/attribute-order-12826/directive-expression-indent-width.current.expected.txt",
+      "currentExpectedSha256": "431c344fddc54f613cccedd98d324453b7d65b9c80e6017c91ed8bf6d2b72b9e"
+    },
+    {
+      "id": "formatter/sfc/l1-directive-classification",
+      "inputSha256": "cdbdabcd8e44d223982c2834c197623715f1b2f9d5c7d53652499df92807abc5",
+      "historicalExpectedSha256": "dc7abe7c89c59653f849b7f474bc849d4a2a91a6a6e2363247fde47d3087b98d",
+      "currentPath": "tests/_fixtures/differential/formatter-regressions/attribute-order-12826/l1-directive-classification.current.expected.txt",
+      "currentExpectedSha256": "e0113fce08cff23ba57ea650741fd7864b15469253ff346b0259942ebbe0c7a4"
+    }
+  ],
+  "justification": "Static directives now sort with neighboring attributes while order-sensitive boundaries remain intact. Historical whole-output references stay immutable."
+}

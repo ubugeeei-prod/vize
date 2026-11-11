@@ -155,6 +155,7 @@ export function assertMetadata(metadata, fixture, row) {
     lintHelpLevel: undefined,
     lintIgnorePatterns: undefined,
     fmtIgnorePatterns: undefined,
+    vueFmtIgnorePatterns: [],
   };
   row.metadataComparison = { actual: completeConfig(actual), expected: completeConfig(expected) };
   assert.deepEqual(actual, expected);
