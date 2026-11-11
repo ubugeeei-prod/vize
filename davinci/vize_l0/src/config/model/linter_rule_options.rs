@@ -49,8 +49,9 @@ pub use casing::{
 };
 pub use define_macros_order::DefineMacrosOrderOptions;
 pub use eslint_vue_compatibility::{
-    EnforceStyleAttributeOptions, NoRestrictedSyntaxOptions, QuotePropsStyle,
-    RestrictedSyntaxSelector, SortKeysOptions, SortKeysOrder, StyleAttributeMode,
+    BlockLangBlock, BlockLangNames, BlockLangOptions, EnforceStyleAttributeOptions,
+    NoRestrictedSyntaxOptions, QuotePropsStyle, RestrictedSyntaxSelector, SortKeysOptions,
+    SortKeysOrder, StyleAttributeMode,
 };
 pub use html_button_has_type::HtmlButtonHasTypeOptions;
 pub use html_quotes::{HtmlQuoteStyle, HtmlQuotesConfig, HtmlQuotesOptions};
@@ -215,8 +216,9 @@ pub struct ConfigLintRuleOptions {
     /// Options for `musea/prefer-design-tokens`.
     #[serde(rename = "musea/prefer-design-tokens")]
     musea_prefer_design_tokens: Option<MuseaPreferDesignTokensOptions>,
+    #[serde(rename = "vue/block-lang", skip_serializing_if = "Option::is_none")]
+    block_lang: Option<BlockLangOptions>,
 }
-
 impl ConfigLintRuleOptions {
     /// Build full config options from the stable public subset.
     #[inline]
@@ -275,6 +277,7 @@ impl ConfigLintRuleOptions {
             && self.valid_v_slot.is_none()
             && self.musea_prefer_design_tokens.is_none()
             && self.require_component_registration.is_none()
+            && self.block_lang.is_none()
     }
 
     /// Globally registered components permitted by the registration rule.
