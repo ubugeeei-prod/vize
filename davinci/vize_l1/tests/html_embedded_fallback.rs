@@ -2,7 +2,9 @@
 
 use serde_json::{Value, json};
 use vize_l0::{Allocator, Namespace, SourceRoot, String};
-use vize_l1::markup::document::{DocumentHtmlNode, DocumentHtmlRefusal as Refusal, NativeDocument};
+use vize_l1::markup::document::{
+    DocumentHtmlNode, DocumentHtmlRefusal as Refusal, DocumentLexicalRefusal, NativeDocument,
+};
 
 const CORPUS: &str = include_str!("fixtures/document/html-embedded-fallback.json");
 
@@ -106,5 +108,8 @@ fn iframe_raw_text_disagreements_keep_typed_fallbacks() {
     let source = "<!DOCTYPE html><html><head></head><body><iframe>\0</iframe></body></html>";
     let arena = Allocator::default();
     let owner = NativeDocument::lex_in(&arena, SourceRoot::new(source).unwrap());
-    assert_eq!(owner.html_structure().unwrap_err(), Refusal::NonHtmlToken);
+    assert_eq!(
+        owner.html_structure().unwrap_err(),
+        Refusal::Lexical(DocumentLexicalRefusal::RecoveredSyntax)
+    );
 }
