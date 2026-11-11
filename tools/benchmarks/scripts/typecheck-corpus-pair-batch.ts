@@ -12,6 +12,7 @@ import { join } from "node:path";
 
 import { normalizeTypecheckResult } from "./typecheck-command.mjs";
 import type { Diagnostic } from "./typecheck-corpus-pair-parse.ts";
+import { TYPECHECK_HOSTS_DIR } from "./typecheck-mapper-hosts.ts";
 
 /** The native tsgo that the hosts' TypeScript ships, also given to `vize check`. */
 export function hostCorsaPath(hostsDir: string): string {
@@ -151,4 +152,34 @@ export function renderBatchDiff(diffs: BatchMapperDiff[]): string {
       ),
     ])
     .join("\n");
+}
+
+/** The head build's `vize check` on both batch hosts against its tsc mapper diagnostics. */
+export function batchVsMapper(
+  corpus: string,
+  headBuild: string,
+  project: string,
+  mapper: Diagnostic[],
+) {
+  const corsa = hostCorsaPath(TYPECHECK_HOSTS_DIR);
+  const tsrs = hostTsrsPath(TYPECHECK_HOSTS_DIR);
+  const one = runBatchCheck(headBuild, project, corsa, { VIZE_CHECKERS: "1" });
+  // Qualify both batch hosts at the one-checker oracle and measured default width.
+  const checkers = 8;
+  const wide = runBatchCheck(headBuild, project, corsa, { VIZE_CHECKERS: String(checkers) });
+  const widened = diffBatchMapper(corpus, wide, one);
+  const tsrsOne = runBatchCheck(headBuild, project, tsrs, { VIZE_CHECKERS: "1" });
+  const tsrsWide = runBatchCheck(headBuild, project, tsrs, { VIZE_CHECKERS: String(checkers) });
+  const tsrsVsTsgo = diffBatchMapper(corpus, tsrsOne, one);
+  const tsrsWidened = diffBatchMapper(corpus, tsrsWide, tsrsOne);
+  return {
+    ...diffBatchMapper(corpus, one, mapper),
+    wide: { checkers, added: widened.batchOnly, removed: widened.mapperOnly },
+    tsrs: {
+      diagnostics: tsrsOne.length,
+      only: tsrsVsTsgo.batchOnly,
+      missing: tsrsVsTsgo.mapperOnly,
+      wide: { checkers, added: tsrsWidened.batchOnly, removed: tsrsWidened.mapperOnly },
+    },
+  };
 }

@@ -7,7 +7,7 @@
  * and are pinned to the corpus revisions the lane checks out.
  */
 
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -73,6 +73,10 @@ export type MutationSet = {
 
 type Position = { line: number; column: number };
 export type Region = { file: string; start: Position; end: Position };
+
+/** Corpora without a set (nuxt/ui, reka-ui so far) are measured but not planted. */
+export const hasMutationSet = (corpus: string, dir = MUTATIONS_DIR): boolean =>
+  existsSync(join(dir, `${corpus}.json`));
 
 export function loadMutationSet(corpus: string, dir = MUTATIONS_DIR): MutationSet {
   const set = JSON.parse(readFileSync(join(dir, `${corpus}.json`), "utf8")) as MutationSet;
