@@ -1,5 +1,6 @@
 use std::{cmp::Ordering, path::PathBuf};
 
+use rayon::prelude::*;
 use vize_canon::{PackageResolutionContext, PackageRouteBinding};
 
 /// Byte-order sort and dedup. It avoids `PathBuf`'s component-wise compare and
@@ -41,9 +42,10 @@ pub(super) fn sort_package_route_bindings(bindings: &mut Vec<PackageRouteBinding
         deduped.push(binding);
     }
     if merged {
-        for binding in &mut deduped {
-            dedup_paths_sorted(&mut binding.invalidation_paths);
-        }
+        // Independent per binding, and tens of thousands of inputs in all.
+        deduped
+            .par_iter_mut()
+            .for_each(|binding| dedup_paths_sorted(&mut binding.invalidation_paths));
     }
     *bindings = deduped;
 }
