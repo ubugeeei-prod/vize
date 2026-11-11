@@ -9,6 +9,7 @@ mod directive_lexer_reports;
 mod directive_lexer_statement_blocks;
 mod directive_lexer_tsx_multiline;
 mod model_modifiers;
+mod prop_uses;
 mod reports;
 
 /// Lint a full SFC with only this rule enabled.
@@ -280,9 +281,8 @@ defineProps<{ msg: string }>();
 }
 
 #[test]
-fn ignores_a_prop_whose_name_a_v_for_alias_reuses() {
-    // Shadowing is deliberately not honoured: treating the alias as a
-    // reference only suppresses.
+fn reports_a_prop_shadowed_by_its_v_for_alias() {
+    // The alias is not a read of the prop. The loop source still is.
     let sfc = r#"<script setup lang="ts">
 defineProps<{ msg: string; rows: string[] }>();
 </script>
@@ -291,7 +291,40 @@ defineProps<{ msg: string; rows: string[] }>();
   <ul><li v-for="msg in rows" :key="msg">{{ msg }}</li></ul>
 </template>
 "#;
+    assert_eq!(
+        owned(&lint_sfc(sfc)),
+        vec![unused(sfc, "msg", "msg: string;")]
+    );
+}
+
+#[test]
+fn ignores_a_prop_read_as_the_source_of_a_same_named_v_for() {
+    let sfc = r#"<script setup lang="ts">
+defineProps<{ row: { list: string[] } }>();
+</script>
+
+<template>
+  <ul><li v-for="row in row.list" :key="row">{{ row }}</li></ul>
+</template>
+"#;
     assert_eq!(findings(&lint_sfc(sfc)), none());
+}
+
+#[test]
+fn reports_a_prop_shadowed_by_a_slot_binding() {
+    // The default reads `title`. The slot binding `row` does not read the prop.
+    let sfc = r#"<script setup lang="ts">
+defineProps<{ title: string; row: string }>();
+</script>
+
+<template>
+  <Child v-slot="{ row = title }">{{ row }}</Child>
+</template>
+"#;
+    assert_eq!(
+        owned(&lint_sfc(sfc)),
+        vec![unused(sfc, "row", "row: string")]
+    );
 }
 
 #[test]

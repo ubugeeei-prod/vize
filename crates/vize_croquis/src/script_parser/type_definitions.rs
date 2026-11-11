@@ -128,19 +128,23 @@ fn literal_declarations(ty: &TSType<'_>) -> PropertyDeclarations {
 fn member_declarations(members: &[TSSignature<'_>]) -> PropertyDeclarations {
     let mut declarations = PropertyDeclarations::default();
     for member in members {
-        if let TSSignature::TSPropertySignature(property) = member
-            && let Some(name) = match &property.key {
-                PropertyKey::StaticIdentifier(identifier) => Some(identifier.name.as_str()),
-                PropertyKey::StringLiteral(literal) => Some(literal.value.as_str()),
-                _ => None,
-            }
-        {
-            let range = (property.key.span().start, property.span.end);
-            declarations
-                .entry(CompactString::new(name))
-                .and_modify(|previous| *previous = None)
-                .or_insert(Some(range));
-        }
+        let (key, end) = match member {
+            TSSignature::TSPropertySignature(property) => (&property.key, property.span.end),
+            TSSignature::TSMethodSignature(method) => (&method.key, method.span.end),
+            _ => continue,
+        };
+        let Some(name) = (match key {
+            PropertyKey::StaticIdentifier(identifier) => Some(identifier.name.as_str()),
+            PropertyKey::StringLiteral(literal) => Some(literal.value.as_str()),
+            _ => None,
+        }) else {
+            continue;
+        };
+        let range = (key.span().start, end);
+        declarations
+            .entry(CompactString::new(name))
+            .and_modify(|previous| *previous = None)
+            .or_insert(Some(range));
     }
     declarations
 }

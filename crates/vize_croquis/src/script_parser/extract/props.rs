@@ -161,11 +161,12 @@ fn type_prop_declaration(type_param: &TSType<'_>, name: &str) -> Option<(u32, u3
         return None;
     };
     literal.members.iter().find_map(|member| {
-        let TSSignature::TSPropertySignature(property) = member else {
-            return None;
+        let (key, end) = match member {
+            TSSignature::TSPropertySignature(property) => (&property.key, property.span.end),
+            TSSignature::TSMethodSignature(method) => (&method.key, method.span.end),
+            _ => return None,
         };
-        (runtime_object_property_name(&property.key) == Some(name))
-            .then(|| (property.key.span().start, property.span.end))
+        (runtime_object_property_name(key) == Some(name)).then(|| (key.span().start, end))
     })
 }
 
