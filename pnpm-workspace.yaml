@@ -78,7 +78,7 @@ overrides:
   "nanoid@>=3.0.0 <3.3.17": "3.3.17"
   nanotar: "0.3.0"
   nitropack: "2.13.4"
-  node-forge: "1.4.1"
+  node-forge: "1.4.3"
   "postcss@>=8.0.0 <8.5.26": "8.5.26"
   nuxt: "4.6.3"
   qs: "6.16.1"

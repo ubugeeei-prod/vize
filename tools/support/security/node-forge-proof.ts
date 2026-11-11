@@ -11,13 +11,13 @@ import { assertNoPackageConsumers, protectedModule } from "./node-forge-consumer
 
 export const advisoryId = "GHSA-86w9-cpqp-85rv";
 export const rsaHash = "6632e195295ce76f6bb9131ee770dcd6cc1ee4ffac7906302208b00faf95a87f";
-const forgeHash = "e14fd9f01d2b55c47c76db2c790f5396e6c737a066baf02cdaabfc179b8c3413";
+const forgeHash = "9b6be415be2445073b7c08e1ebcfdbcee25de2a48d89ff3b98f92a33867ad96f";
 const listhenHash = "9e1fc5a27ba0c408bad0ec59d376ba8bb1b7b27ff2cd451ed437b69331b84979";
 const forgeIntegrity =
-  "sha512-w5/MfWaeMrpR/5ba6fZyAUTLSuE6aYz7H/3cYrqwZEmf5eQS3IaaLgJt4MBv7HglGFWmV22K8h4U18RJQmw/ow==";
+  "sha512-P6wzfh6t70avmV8FrVEAd/36sOPJQ+hkaJVX1Laap9J/77m7M0eyozDvc8SwnDf4P7MP94gwbAAo0rg3YVXT+g==";
 const listhenIntegrity =
   "sha512-6nt/86SkqUQSLW1ofz8MxC6RhRMqOl3ONISe6qqvJ3xj09aJWQx6DhgSZpugs3PX4PXdOas/WD6A9jx6J2N19A==";
-const forgeRef = "1.4.1";
+const forgeRef = "1.4.3";
 const listhenRef = "1.10.1(srvx@0.11.15)";
 
 function record(value: unknown): Record<string, unknown> {

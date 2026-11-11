@@ -33,22 +33,22 @@ test("the lock binds the upstream registry identity without a local patch", () =
 test("changed registry, version, graph, aliases or direct importer reject recognition", () => {
   for (const mutate of [
     (next: typeof lock) => {
-      next.packages["node-forge@1.4.1"].resolution.integrity += "x";
+      next.packages["node-forge@1.4.3"].resolution.integrity += "x";
     },
     (next: typeof lock) => {
       next.overrides["node-forge"] = "1.4.0";
     },
     (next: typeof lock) => {
-      next.snapshots["unreviewed@1.0.0"] = { dependencies: { "node-forge": "1.4.1" } };
+      next.snapshots["unreviewed@1.0.0"] = { dependencies: { "node-forge": "1.4.3" } };
     },
     (next: typeof lock) => {
-      next.snapshots["unreviewed@1.0.0"] = { dependencies: { renamed: "node-forge@1.4.1" } };
+      next.snapshots["unreviewed@1.0.0"] = { dependencies: { renamed: "node-forge@1.4.3" } };
     },
     (next: typeof lock) => {
       next.snapshots["unreviewed@1.0.0"] = { dependencies: { renamed: "listhen@1.10.1" } };
     },
     (next: typeof lock) => {
-      next.importers["."].dependencies = { "node-forge": { specifier: "1.4.1", version: "1.4.1" } };
+      next.importers["."].dependencies = { "node-forge": { specifier: "1.4.3", version: "1.4.3" } };
     },
     (next: typeof lock) => {
       next.importers["."].dependencies = { listhen: { specifier: "1.10.1", version: "1.10.1" } };
@@ -65,19 +65,19 @@ test("changed registry, version, graph, aliases or direct importer reject recogn
     },
     (next: typeof lock) => {
       next.importers["."].dependencies = {
-        renamed: { specifier: "npm:node-forge", version: "node-forge@1.4.1" },
+        renamed: { specifier: "npm:node-forge", version: "node-forge@1.4.3" },
       };
     },
     (next: typeof lock) => {
       next.importers["."].dependencies = {
-        renamed: { specifier: "*", version: "node-forge@1.4.1" },
+        renamed: { specifier: "*", version: "node-forge@1.4.3" },
       };
     },
     (next: typeof lock) => {
-      next.packages["node-forge@1.4.0"] = next.packages["node-forge@1.4.1"];
+      next.packages["node-forge@1.4.0"] = next.packages["node-forge@1.4.3"];
     },
     (next: typeof lock) => {
-      next.snapshots["node-forge@1.4.1(patch_hash=unexpected)"] = {};
+      next.snapshots["node-forge@1.4.3(patch_hash=unexpected)"] = {};
     },
   ]) {
     const next = structuredClone(lock);
@@ -92,7 +92,7 @@ test("changed registry, version, graph, aliases or direct importer reject recogn
 
 test("no old or new Forge patch registration can inherit the upstream proof", () => {
   const forgePatchPrefix = "patches/" + "node-" + "forge@";
-  for (const version of ["1.4.0", "1.4.1", "1.4.2"]) {
+  for (const version of ["1.4.0", "1.4.1", "1.4.2", "1.4.3"]) {
     for (const patch of [
       "unexpected-patch-hash",
       { hash: "unexpected-patch-hash", path: forgePatchPrefix + version + ".patch" },
@@ -186,7 +186,7 @@ test("a direct or browser-distribution consumer does not inherit the Node listhe
 
 function installedForge(): string {
   const store = path.join(root, "node_modules/.pnpm");
-  const entry = fs.readdirSync(store).find((name) => name.startsWith("node-forge@1.4.1"));
+  const entry = fs.readdirSync(store).find((name) => name.startsWith("node-forge@1.4.3"));
   assert.ok(entry, "real installed Forge required");
   return fs.realpathSync(path.join(store, entry, "node_modules/node-forge"));
 }
