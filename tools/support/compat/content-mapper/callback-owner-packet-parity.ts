@@ -439,7 +439,9 @@ export function assertPreservedCallbackPacket(
   assert.equal(typeof after.text, "string");
   if (before.text === after.text) {
     const joinedSuccessor =
-      authoredSource === undefined ? structuredClone(before) : withJoinedVerbatimRuns(before, authoredSource);
+      authoredSource === undefined
+        ? structuredClone(before)
+        : withJoinedVerbatimRuns(before, authoredSource);
     if (isDeepStrictEqual(after, joinedSuccessor)) return;
     const hoverSuccessor = withComponentPropHoverOwnership(joinedSuccessor, after);
     if (isDeepStrictEqual(after, hoverSuccessor)) return;
