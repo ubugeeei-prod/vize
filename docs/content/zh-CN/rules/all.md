@@ -9,13 +9,14 @@ Vize linter 提供的全部规则，按类别分组。打开规则页面即可�
 
 “预设”列给出启用该规则的最小预设，规则页面列出全部预设。各预设包含的内容见[预设](../rules/index.md#预设)。
 
-## Vue 规则 (148)
+## Vue 规则 (151)
 
 | 规则 | 检查内容 | 预设 | 自动修复 |
 | --- | --- | --- | --- |
 | <span id="vue-a11y-img-alt"></span>[`vue/a11y-img-alt`](./reference/vue-a11y-img-alt.md) | 要求图片提供 alt 属性，以支持无障碍访问。 | — |  |
 | <span id="vue-attribute-hyphenation"></span>[`vue/attribute-hyphenation`](./reference/vue-attribute-hyphenation.md) | 规范自定义组件的属性命名风格。 | `happy-path` | ✓ |
 | <span id="vue-attribute-order"></span>[`vue/attribute-order`](./reference/vue-attribute-order.md) | 要求属性保持一致的排列顺序。 | `happy-path` |  |
+| <span id="vue-block-lang"></span>[`vue/block-lang`](./reference/vue-block-lang.md) | 将 SFC 块的 lang 限制为配置的语言。 | — |  |
 | <span id="vue-camelcase"></span>[`vue/camelcase`](./reference/vue-camelcase.md) | 要求模板表达式中的标识符使用 camelCase。 | — |  |
 | <span id="vue-comment-directive"></span>[`vue/comment-directive`](./reference/vue-comment-directive.md) | 支持 `<template>` 中的诊断控制注释。 | `essential` |  |
 | <span id="vue-component-definition-name-casing"></span>[`vue/component-definition-name-casing`](./reference/vue-component-definition-name-casing.md) | 要求组件定义名称使用 PascalCase 或 kebab-case。 | `happy-path` |  |
@@ -121,8 +122,10 @@ Vize linter 提供的全部规则，按类别分组。打开规则页面即可�
 | <span id="vue-quote-props"></span>[`vue/quote-props`](./reference/vue-quote-props.md) | 禁止不必要的带引号对象属性。 | — |  |
 | <span id="vue-require-component-is"></span>[`vue/require-component-is`](./reference/vue-require-component-is.md) | 要求 `<component>` 元素具有 `v-bind:is`。 | `essential` |  |
 | <span id="vue-require-component-registration"></span>[`vue/require-component-registration`](./reference/vue-require-component-registration.md) | 要求显式导入或注册组件。 | `opinionated` |  |
+| <span id="vue-require-default-export"></span>[`vue/require-default-export`](./reference/vue-require-default-export.md) | 要求组件的 script 作为默认导出。 | — |  |
 | <span id="vue-require-expose"></span>[`vue/require-expose`](./reference/vue-require-expose.md) | 要求 Options API 组件通过 `expose` 显式声明公开属性。 | — |  |
 | <span id="vue-require-macro-variable-name"></span>[`vue/require-macro-variable-name`](./reference/vue-require-macro-variable-name.md) | 要求编译器宏使用约定的变量名。 | — |  |
+| <span id="vue-require-prop-comment"></span>[`vue/require-prop-comment`](./reference/vue-require-prop-comment.md) | 要求每个声明的 prop 都有 JSDoc 注释。 | — |  |
 | <span id="vue-require-scoped-style"></span>[`vue/require-scoped-style`](./reference/vue-require-scoped-style.md) | 要求 style 标签具有 scoped 属性。 | `happy-path` |  |
 | <span id="vue-require-toggle-inside-transition"></span>[`vue/require-toggle-inside-transition`](./reference/vue-require-toggle-inside-transition.md) | 要求 `<transition>` 包裹的元素具有切换条件。 | `essential` |  |
 | <span id="vue-require-v-for-key"></span>[`vue/require-v-for-key`](./reference/vue-require-v-for-key.md) | 要求 `v-for` 指令搭配 `v-bind:key`。 | `essential` |  |

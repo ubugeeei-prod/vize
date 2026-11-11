@@ -244,6 +244,18 @@ class NoRestrictedSyntaxOptions {
   selectors: Listing<RestrictedSyntaxEntry> = new Listing {}
 }
 
+class BlockLangBlock {
+  lang: (String | Listing<String>)? = null
+  allowNoLang: Boolean? = null
+  required: Boolean? = null
+}
+
+class BlockLangOptions {
+  script: BlockLangBlock? = null
+  template: BlockLangBlock? = null
+  style: BlockLangBlock? = null
+}
+
 class SortKeysOptions {
   order: "asc" | "desc" = "asc"
   caseSensitive: Boolean = true
@@ -266,6 +278,7 @@ class LintRuleOptions {
   `vue/no-bare-strings-in-template`: NoBareStringsInTemplateOptions? = null
   `a11y/anchor-has-content`: AnchorHasContentOptions? = null
   `a11y/label-has-for`: LabelHasForOptions? = null
+  `vue/block-lang`: BlockLangOptions? = null
   `vue/enforce-style-attribute`: EnforceStyleAttributeOptions? = null
   `vue/no-restricted-syntax`: (Listing<RestrictedSyntaxEntry> | NoRestrictedSyntaxOptions)? = null
   `vue/quote-props`: "as-needed"? = null

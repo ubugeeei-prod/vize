@@ -30,6 +30,27 @@ defineMacrosOrderOptionsDef: JsonSchema = new JsonSchema {
   additionalProperties = false
 }
 
+blockLangNamesDef: JsonSchema = new JsonSchema {
+  oneOf = new Listing {
+    new JsonSchema { type = "string" }
+    new JsonSchema {
+      type = "array"
+      items = new JsonSchema { type = "string" }
+      uniqueItems = true
+    }
+  }
+}
+
+blockLangBlockDef: JsonSchema = new JsonSchema {
+  type = "object"
+  properties {
+    ["lang"] = blockLangNamesDef
+    ["allowNoLang"] = new JsonSchema { type = "boolean" }
+    ["required"] = new JsonSchema { type = "boolean" }
+  }
+  additionalProperties = false
+}
+
 lintRuleOptionsDef: JsonSchema = new JsonSchema {
   type = "object"
   properties {
@@ -119,6 +140,15 @@ lintRuleOptionsDef: JsonSchema = new JsonSchema {
           items = new JsonSchema { type = "string" }
           default = new Listing {}
         }
+      }
+      additionalProperties = false
+    }
+    ["vue/block-lang"] = new JsonSchema {
+      type = "object"
+      properties {
+        ["script"] = blockLangBlockDef
+        ["template"] = blockLangBlockDef
+        ["style"] = blockLangBlockDef
       }
       additionalProperties = false
     }

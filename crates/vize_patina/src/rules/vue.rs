@@ -105,7 +105,10 @@ mod permitted_contents;
 // `use_unique_element_ids` implementation lives under rules::opinionated::vue.
 
 // Style rules
+mod block_lang;
 mod match_component_file_name;
+mod require_default_export;
+mod require_prop_comment;
 mod single_style_block;
 // Opinionated style rules live under rules::opinionated::vue.
 
@@ -174,6 +177,7 @@ pub use crate::rules::opinionated::vue::{
 };
 pub use crate::rules::opinionated::vue::{VBindStyle, VBindStyleOption};
 pub use attribute_hyphenation::{AttributeHyphenation, HyphenationStyle};
+pub use block_lang::BlockLang;
 pub use comment_directive::CommentDirective;
 pub use compatibility_sfc::{
     EnforceStyleAttribute, NextTickStyle, NoContentOutsideBlock, NoDefineModelDefault,
@@ -195,6 +199,8 @@ pub use no_multi_spaces::NoMultiSpaces;
 pub use no_multiple_template_root::NoMultipleTemplateRoot;
 pub use no_static_inline_styles::NoStaticInlineStyles;
 pub use prop_name_casing::{PropNameCasing, PropNameCasingOption};
+pub use require_default_export::RequireDefaultExport;
+pub use require_prop_comment::RequirePropComment;
 pub use slot_name_casing_option::SlotNameCasingStyle;
 pub use v_on_style::{VOnStyle, VOnStyleOption};
 pub use v_slot_style::{VSlotStyle, VSlotStyleOption};
@@ -386,4 +392,7 @@ pub(crate) fn register_opt_in(registry: &mut crate::rule::RuleRegistry) {
     if !registry.has_rule("vue/match-component-file-name") {
         registry.register(Box::new(MatchComponentFileName));
     }
+    register_if_missing(registry, Box::new(BlockLang::default()));
+    register_if_missing(registry, Box::new(RequireDefaultExport));
+    register_if_missing(registry, Box::new(RequirePropComment));
 }
