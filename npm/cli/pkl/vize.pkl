@@ -244,39 +244,6 @@ class NoRestrictedSyntaxOptions {
   selectors: Listing<RestrictedSyntaxEntry> = new Listing {}
 }
 
-class BlockLangBlock {
-  lang: (String | Listing<String>)? = null
-  allowNoLang: Boolean? = null
-  required: Boolean? = null
-}
-
-class BlockLangOptions {
-  script: BlockLangBlock? = null
-  template: BlockLangBlock? = null
-  style: BlockLangBlock? = null
-}
-
-class MaxLinesObject {
-  max: Int? = null
-  skipComments: Boolean? = null
-  skipBlankLines: Boolean? = null
-}
-
-typealias MaxLinesOptions = Int | MaxLinesObject
-
-class MaxLinesPerBlockOptions {
-  style: Int? = null
-  template: Int? = null
-  script: Int? = null
-  skipBlankLines: Boolean? = null
-}
-
-class SortKeysOptions {
-  order: "asc" | "desc" = "asc"
-  caseSensitive: Boolean = true
-  natural: Boolean = false
-}
-
 class LintRuleOptions {
   `script/define-macros-order`: DefineMacrosOrderOptions? = null
   `script/define-props-destructuring`: DefinePropsDestructuringOptions? = null
@@ -293,13 +260,26 @@ class LintRuleOptions {
   `vue/no-bare-strings-in-template`: NoBareStringsInTemplateOptions? = null
   `a11y/anchor-has-content`: AnchorHasContentOptions? = null
   `a11y/label-has-for`: LabelHasForOptions? = null
-  `vue/block-lang`: BlockLangOptions? = null
-  `max-lines`: MaxLinesOptions? = null
-  `vue/max-lines-per-block`: MaxLinesPerBlockOptions? = null
+  `vue/block-lang`: LintRuleOptionTypes.BlockLangOptions? = null
+  `max-lines`: LintRuleOptionTypes.MaxLinesOptions? = null
+  `vue/max-lines-per-block`: LintRuleOptionTypes.MaxLinesPerBlockOptions? = null
+  `vue/max-props`: LintRuleOptionTypes.MaxPropsOptions? = null
+  `vue/max-template-depth`: LintRuleOptionTypes.MaxTemplateDepthOptions? = null
+  `vue/no-restricted-block`: LintRuleOptionTypes.RestrictedNames? = null
+  `vue/no-restricted-call-after-await`: LintRuleOptionTypes.CallAfterAwaitOptions? = null
+  `vue/no-restricted-class`: LintRuleOptionTypes.RestrictedNames? = null
+  `vue/no-restricted-component-names`: LintRuleOptionTypes.RestrictedNames? = null
+  `vue/no-restricted-component-options`: LintRuleOptionTypes.RestrictedNames? = null
+  `vue/no-restricted-custom-event`: LintRuleOptionTypes.RestrictedNames? = null
+  `vue/no-restricted-html-elements`: LintRuleOptionTypes.RestrictedNames? = null
+  `vue/no-restricted-props`: LintRuleOptionTypes.RestrictedNames? = null
+  `vue/no-restricted-static-attribute`: LintRuleOptionTypes.RestrictedNames? = null
+  `vue/no-restricted-v-on`: LintRuleOptionTypes.RestrictedNames? = null
+  `vue/no-unsupported-features`: LintRuleOptionTypes.UnsupportedFeaturesOptions? = null
   `vue/enforce-style-attribute`: EnforceStyleAttributeOptions? = null
   `vue/no-restricted-syntax`: (Listing<RestrictedSyntaxEntry> | NoRestrictedSyntaxOptions)? = null
   `vue/quote-props`: "as-needed"? = null
-  `vue/sort-keys`: SortKeysOptions? = null
+  `vue/sort-keys`: LintRuleOptionTypes.SortKeysOptions? = null
   `vue/require-component-registration`: RequireComponentRegistrationOptions? = null
   `vue/sfc-element-order`: SfcElementOrderOptions? = null
   `vue/html-self-closing`: HtmlSelfClosingOptions? = null

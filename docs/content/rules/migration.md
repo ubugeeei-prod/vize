@@ -4,7 +4,7 @@ title: ESLint rule migration map
 
 # ESLint rule migration map
 
-The committed ESLint mapping records 256 rule IDs: 185 mapped, 3 intentional divergences, and 68 unimplemented. A mapped ID identifies a Vize rule; it does not guarantee identical options, findings, fixes, or coverage.
+The committed ESLint mapping records 256 rule IDs: 198 mapped, 3 intentional divergences, and 55 unimplemented. A mapped ID identifies a Vize rule; it does not guarantee identical options, findings, fixes, or coverage.
 
 When ESLint remains the host, prefer the [`eslint.config.mjs` flat-config integration](../guide/tool-integrations.md#eslint-flat-config). The Vite+ configuration below is the native-task alternative.
 
@@ -78,8 +78,8 @@ For option conversion, see [Rule Options](./options.md) and [props destructuring
 | `vue/max-attributes-per-line` | — | unimplemented |
 | `vue/max-len` | — | unimplemented |
 | `vue/max-lines-per-block` | [`vue/max-lines-per-block`](./reference/vue-max-lines-per-block.md) | mapped |
-| `vue/max-props` | — | unimplemented |
-| `vue/max-template-depth` | — | unimplemented |
+| `vue/max-props` | [`vue/max-props`](./reference/vue-max-props.md) | mapped |
+| `vue/max-template-depth` | [`vue/max-template-depth`](./reference/vue-max-template-depth.md) | mapped |
 | `vue/multi-word-component-names` | [`vue/multi-word-component-names`](./reference/vue-multi-word-component-names.md) | mapped |
 | `vue/multiline-html-element-content-newline` | — | unimplemented |
 | `vue/multiline-ternary` | — | unimplemented |
@@ -151,18 +151,18 @@ For option conversion, see [Rule Options](./options.md) and [props destructuring
 | `vue/no-reserved-component-names` | [`vue/no-reserved-component-names`](./reference/vue-no-reserved-component-names.md) | mapped |
 | `vue/no-reserved-keys` | [`script/no-reserved-keys`](./reference/script-no-reserved-keys.md) | mapped |
 | `vue/no-reserved-props` | [`script/no-reserved-props`](./reference/script-no-reserved-props.md) | mapped |
-| `vue/no-restricted-block` | — | unimplemented |
-| `vue/no-restricted-call-after-await` | — | unimplemented |
-| `vue/no-restricted-class` | — | unimplemented |
-| `vue/no-restricted-component-names` | — | unimplemented |
-| `vue/no-restricted-component-options` | — | unimplemented |
-| `vue/no-restricted-custom-event` | — | unimplemented |
-| `vue/no-restricted-html-elements` | — | unimplemented |
-| `vue/no-restricted-props` | — | unimplemented |
-| `vue/no-restricted-static-attribute` | — | unimplemented |
+| `vue/no-restricted-block` | [`vue/no-restricted-block`](./reference/vue-no-restricted-block.md) | mapped |
+| `vue/no-restricted-call-after-await` | [`vue/no-restricted-call-after-await`](./reference/vue-no-restricted-call-after-await.md) | mapped |
+| `vue/no-restricted-class` | [`vue/no-restricted-class`](./reference/vue-no-restricted-class.md) | mapped |
+| `vue/no-restricted-component-names` | [`vue/no-restricted-component-names`](./reference/vue-no-restricted-component-names.md) | mapped |
+| `vue/no-restricted-component-options` | [`vue/no-restricted-component-options`](./reference/vue-no-restricted-component-options.md) | mapped |
+| `vue/no-restricted-custom-event` | [`vue/no-restricted-custom-event`](./reference/vue-no-restricted-custom-event.md) | mapped |
+| `vue/no-restricted-html-elements` | [`vue/no-restricted-html-elements`](./reference/vue-no-restricted-html-elements.md) | mapped |
+| `vue/no-restricted-props` | [`vue/no-restricted-props`](./reference/vue-no-restricted-props.md) | mapped |
+| `vue/no-restricted-static-attribute` | [`vue/no-restricted-static-attribute`](./reference/vue-no-restricted-static-attribute.md) | mapped |
 | `vue/no-restricted-syntax` | [`vue/no-restricted-syntax`](./reference/vue-no-restricted-syntax.md) | mapped |
 | `vue/no-restricted-v-bind` | [`vue/no-restricted-v-bind`](./reference/vue-no-restricted-v-bind.md) | mapped |
-| `vue/no-restricted-v-on` | — | unimplemented |
+| `vue/no-restricted-v-on` | [`vue/no-restricted-v-on`](./reference/vue-no-restricted-v-on.md) | mapped |
 | `vue/no-root-v-if` | [`vue/no-root-v-if`](./reference/vue-no-root-v-if.md) | mapped |
 | `vue/no-setup-props-reactivity-loss` | [`vue/no-setup-props-reactivity-loss`](./reference/vue-no-setup-props-reactivity-loss.md) | mapped |
 | `vue/no-shadow-native-events` | [`vue/no-shadow-native-events`](./reference/vue-no-shadow-native-events.md) | mapped |
@@ -179,7 +179,7 @@ For option conversion, see [Rule Options](./options.md) and [props destructuring
 | `vue/no-undef-components` | [`vue/require-component-registration`](./reference/vue-require-component-registration.md) | mapped |
 | `vue/no-undef-directives` | — | unimplemented |
 | `vue/no-undef-properties` | — | unimplemented |
-| `vue/no-unsupported-features` | — | unimplemented |
+| `vue/no-unsupported-features` | [`vue/no-unsupported-features`](./reference/vue-no-unsupported-features.md) | mapped |
 | `vue/no-unused-components` | [`vue/no-unused-components`](./reference/vue-no-unused-components.md) | mapped |
 | `vue/no-unused-emit-declarations` | [`script/no-unused-emit-declarations`](./reference/script-no-unused-emit-declarations.md) | mapped |
 | `vue/no-unused-properties` | — | intentional-divergence |

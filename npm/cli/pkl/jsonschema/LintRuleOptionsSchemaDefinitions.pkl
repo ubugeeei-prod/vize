@@ -3,6 +3,7 @@ module vize.jsonschema.LintRuleOptionsSchemaDefinitions
 
 import "@json_schema/JsonSchema.pkl"
 import "ConfigArtifactDefinitions.pkl"
+import "ConfiguredVueRuleOptions.pkl"
 
 definePropsDestructuringOptionsDef: JsonSchema = new JsonSchema {
   type = "object"
@@ -182,6 +183,19 @@ lintRuleOptionsDef: JsonSchema = new JsonSchema {
     }
     ["max-lines"] = maxLinesDef
     ["vue/max-lines-per-block"] = maxLinesPerBlockDef
+    ["vue/max-props"] = ConfiguredVueRuleOptions.maxPropsDef
+    ["vue/max-template-depth"] = ConfiguredVueRuleOptions.maxTemplateDepthDef
+    ["vue/no-restricted-block"] = ConfiguredVueRuleOptions.restrictedNamesDef
+    ["vue/no-restricted-call-after-await"] = ConfiguredVueRuleOptions.callAfterAwaitDef
+    ["vue/no-restricted-class"] = ConfiguredVueRuleOptions.restrictedNamesDef
+    ["vue/no-restricted-component-names"] = ConfiguredVueRuleOptions.restrictedNamesDef
+    ["vue/no-restricted-component-options"] = ConfiguredVueRuleOptions.restrictedNamesDef
+    ["vue/no-restricted-custom-event"] = ConfiguredVueRuleOptions.restrictedNamesDef
+    ["vue/no-restricted-html-elements"] = ConfiguredVueRuleOptions.restrictedNamesDef
+    ["vue/no-restricted-props"] = ConfiguredVueRuleOptions.restrictedNamesDef
+    ["vue/no-restricted-static-attribute"] = ConfiguredVueRuleOptions.restrictedNamesDef
+    ["vue/no-restricted-v-on"] = ConfiguredVueRuleOptions.restrictedNamesDef
+    ["vue/no-unsupported-features"] = ConfiguredVueRuleOptions.unsupportedFeaturesDef
     ["vue/enforce-style-attribute"] = new JsonSchema {
       type = "object"
       properties {

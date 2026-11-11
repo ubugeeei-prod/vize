@@ -4247,6 +4247,16 @@ severity: warning
 category: recommended
 autofix: no
 docs: docs/content/rules/reference/vue-max-lines-per-block.md
+=== vue/max-props
+vue/max-props · lint rule
+enforce maximum number of props in Vue component
+
+tier: exact
+domain: Vue compiler macro calls in <script setup> (defineProps, defineEmits, defineOptions, defineSlots)
+severity: warning
+category: recommended
+autofix: no
+docs: docs/content/rules/reference/vue-max-props.md
 === vue/max-template-complexity
 vue/max-template-complexity · lint rule
 Limit a component's own template complexity (cyclomatic and cognitive)
@@ -4272,6 +4282,16 @@ valid:
   <template>
     <RowList v-if="a && b" :rows="rows" />
   </template>
+=== vue/max-template-depth
+vue/max-template-depth · lint rule
+enforce maximum depth of template
+
+tier: exact
+domain: control flow of HTML SFC templates as lowered to L2: branches, loops, scoped slots and the operators of parsed expressions; pug and src templates are outside
+severity: warning
+category: recommended
+autofix: no
+docs: docs/content/rules/reference/vue-max-template-depth.md
 === vue/multi-word-component-names
 vue/multi-word-component-names · lint rule
 Require component names to be multi-word
@@ -5108,6 +5128,96 @@ valid:
 
 help:
   Rename the component to avoid using reserved names
+=== vue/no-restricted-block
+vue/no-restricted-block · lint rule
+disallow specific block
+
+tier: exact
+domain: the SFC's top-level blocks, their order and their attributes
+severity: warning
+category: recommended
+autofix: no
+docs: docs/content/rules/reference/vue-no-restricted-block.md
+=== vue/no-restricted-call-after-await
+vue/no-restricted-call-after-await · lint rule
+disallow asynchronously called restricted methods
+
+tier: exact
+domain: inline SFC scripts and descriptors with lexically unshadowed Vue macros and APIs and structurally recognizable component option objects; external blocks and unresolved aliases are outside
+severity: warning
+category: recommended
+autofix: no
+docs: docs/content/rules/reference/vue-no-restricted-call-after-await.md
+=== vue/no-restricted-class
+vue/no-restricted-class · lint rule
+disallow specific classes in Vue components
+
+tier: exact
+domain: the authored text of SFC templates and declarations: casing, quoting, spacing, order and shorthand
+severity: warning
+category: recommended
+autofix: no
+docs: docs/content/rules/reference/vue-no-restricted-class.md
+=== vue/no-restricted-component-names
+vue/no-restricted-component-names · lint rule
+disallow specific component names
+
+tier: exact
+domain: the syntax of <script> and <script setup> programs, without type information
+severity: warning
+category: recommended
+autofix: no
+docs: docs/content/rules/reference/vue-no-restricted-component-names.md
+=== vue/no-restricted-component-options
+vue/no-restricted-component-options · lint rule
+disallow specific component option
+
+tier: exact
+domain: the syntax of <script> and <script setup> programs, without type information
+severity: warning
+category: recommended
+autofix: no
+docs: docs/content/rules/reference/vue-no-restricted-component-options.md
+=== vue/no-restricted-custom-event
+vue/no-restricted-custom-event · lint rule
+disallow specific custom event
+
+tier: exact
+domain: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+severity: warning
+category: recommended
+autofix: no
+docs: docs/content/rules/reference/vue-no-restricted-custom-event.md
+=== vue/no-restricted-html-elements
+vue/no-restricted-html-elements · lint rule
+disallow specific elements
+
+tier: exact
+domain: HTML conformance of native elements with static attributes in SFC templates
+severity: warning
+category: recommended
+autofix: no
+docs: docs/content/rules/reference/vue-no-restricted-html-elements.md
+=== vue/no-restricted-props
+vue/no-restricted-props · lint rule
+disallow specific props
+
+tier: exact
+domain: Vue compiler macro calls in <script setup> (defineProps, defineEmits, defineOptions, defineSlots)
+severity: warning
+category: recommended
+autofix: no
+docs: docs/content/rules/reference/vue-no-restricted-props.md
+=== vue/no-restricted-static-attribute
+vue/no-restricted-static-attribute · lint rule
+disallow specific attribute
+
+tier: exact
+domain: HTML conformance of native elements with static attributes in SFC templates
+severity: warning
+category: recommended
+autofix: no
+docs: docs/content/rules/reference/vue-no-restricted-static-attribute.md
 === vue/no-restricted-syntax
 vue/no-restricted-syntax · lint rule
 Disallow configured syntax in the template
@@ -5128,6 +5238,16 @@ severity: warning
 category: recommended
 autofix: no
 docs: docs/content/rules/reference/vue-no-restricted-v-bind.md
+=== vue/no-restricted-v-on
+vue/no-restricted-v-on · lint rule
+disallow specific argument in `v-on`
+
+tier: exact
+domain: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+severity: warning
+category: recommended
+autofix: no
+docs: docs/content/rules/reference/vue-no-restricted-v-on.md
 === vue/no-root-v-if
 vue/no-root-v-if · lint rule
 Disallow v-if on the single root element of a template
@@ -5364,6 +5484,16 @@ valid:
 
 help:
   Add a sandbox attribute (e.g. sandbox="" for the most restrictive policy) and re-grant only the capabilities the embedded content needs
+=== vue/no-unsupported-features
+vue/no-unsupported-features · lint rule
+disallow unsupported Vue.js syntax on the specified version
+
+tier: exact
+domain: Vue compiler macro calls in <script setup> (defineProps, defineEmits, defineOptions, defineSlots)
+severity: warning
+category: recommended
+autofix: no
+docs: docs/content/rules/reference/vue-no-unsupported-features.md
 === vue/no-unused-components
 vue/no-unused-components · lint rule
 Disallow registering components that are not used inside templates

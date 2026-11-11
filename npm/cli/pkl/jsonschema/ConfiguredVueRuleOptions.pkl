@@ -1,0 +1,63 @@
+/// JSON Schema for configurable eslint-plugin-vue rule options.
+module vize.jsonschema.ConfiguredVueRuleOptions
+
+import "@json_schema/JsonSchema.pkl"
+
+restrictedNamesDef: JsonSchema = new JsonSchema {
+  oneOf = new Listing {
+    new JsonSchema { type = "string" }
+    new JsonSchema {
+      type = "array"
+      items = new JsonSchema { type = "string" }
+    }
+  }
+}
+
+maxPropsDef: JsonSchema = new JsonSchema {
+  type = "object"
+  properties {
+    ["maxProps"] = new JsonSchema { type = "integer" }
+  }
+  additionalProperties = false
+}
+
+maxTemplateDepthDef: JsonSchema = new JsonSchema {
+  type = "object"
+  properties {
+    ["maxDepth"] = new JsonSchema { type = "integer" }
+  }
+  additionalProperties = false
+}
+
+callAfterAwaitSpecDef: JsonSchema = new JsonSchema {
+  type = "object"
+  properties {
+    ["module"] = new JsonSchema { type = "string" }
+    ["path"] = restrictedNamesDef
+    ["message"] = new JsonSchema { type = "string" }
+  }
+  required = new Listing { "module" }
+  additionalProperties = false
+}
+
+callAfterAwaitDef: JsonSchema = new JsonSchema {
+  oneOf = new Listing {
+    callAfterAwaitSpecDef
+    new JsonSchema {
+      type = "array"
+      items = callAfterAwaitSpecDef
+    }
+  }
+}
+
+unsupportedFeaturesDef: JsonSchema = new JsonSchema {
+  type = "object"
+  properties {
+    ["version"] = new JsonSchema { type = "string" }
+    ["ignores"] = new JsonSchema {
+      type = "array"
+      items = new JsonSchema { type = "string" }
+    }
+  }
+  additionalProperties = false
+}

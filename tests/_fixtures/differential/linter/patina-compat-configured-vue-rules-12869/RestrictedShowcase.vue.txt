@@ -1,0 +1,32 @@
+<script setup lang="ts">
+import { onMounted } from "vue";
+
+defineOptions({ inheritAttrs: false, name: "RestrictedShowcase" });
+
+const { first = 1, second = 2, third = 3 } = defineProps<{
+  first?: number;
+  second?: number;
+  third?: number;
+}>();
+const emit = defineEmits<{ legacyEvent: [] }>();
+const model = defineModel<string>();
+
+await Promise.resolve();
+onMounted(() => {
+  emit("legacyEvent");
+});
+</script>
+
+<template>
+  <div class="legacy">
+    <marquee>{{ first }}</marquee>
+    <section>
+      <div>
+        <span>{{ second }} {{ model }}</span>
+      </div>
+    </section>
+    <button type="button" data-legacy="x" @legacy-click="$emit('legacyEvent')">{{ third }}</button>
+  </div>
+</template>
+
+<i18n lang="json">{}</i18n>

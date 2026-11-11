@@ -39,6 +39,19 @@ const portedEslintVueRules = [
   "vue/require-default-export",
   "vue/require-prop-comment",
   "vue/max-lines-per-block",
+  "vue/max-props",
+  "vue/max-template-depth",
+  "vue/no-restricted-block",
+  "vue/no-restricted-call-after-await",
+  "vue/no-restricted-class",
+  "vue/no-restricted-component-names",
+  "vue/no-restricted-component-options",
+  "vue/no-restricted-custom-event",
+  "vue/no-restricted-html-elements",
+  "vue/no-restricted-props",
+  "vue/no-restricted-static-attribute",
+  "vue/no-restricted-v-on",
+  "vue/no-unsupported-features",
 ] as const;
 
 const newlyTrackedEslintVueRules = [
@@ -79,6 +92,19 @@ const optInEslintVueRules = [
   "vue/require-prop-comment",
   "max-lines",
   "vue/max-lines-per-block",
+  "vue/max-props",
+  "vue/max-template-depth",
+  "vue/no-restricted-block",
+  "vue/no-restricted-call-after-await",
+  "vue/no-restricted-class",
+  "vue/no-restricted-component-names",
+  "vue/no-restricted-component-options",
+  "vue/no-restricted-custom-event",
+  "vue/no-restricted-html-elements",
+  "vue/no-restricted-props",
+  "vue/no-restricted-static-attribute",
+  "vue/no-restricted-v-on",
+  "vue/no-unsupported-features",
 ] as const;
 
 // Remove only the exact eslint-plugin-vue compatibility port before the
@@ -87,8 +113,8 @@ const optInEslintVueRules = [
 export function inverseEslintVueRulePort(name: string, body: Buffer): Buffer {
   if (name === eslintVueRuleMapPath) {
     identity(body, {
-      bytes: 54206,
-      sha256: "a7517b553be4cee1a7a2f61c4bb882ce97a734bafc1919742fd2983882843cfb",
+      bytes: 55310,
+      sha256: "819787315f085049e4185333df685e950bb7fcdd94c1e1e0a99b556890f6be33",
     });
     const value = canonical(body);
     assert.deepEqual(value.upstream, {
@@ -98,8 +124,8 @@ export function inverseEslintVueRulePort(name: string, body: Buffer): Buffer {
     });
     assert.deepEqual(value.summary, {
       intentionalDivergence: 3,
-      mapped: 185,
-      unimplemented: 68,
+      mapped: 198,
+      unimplemented: 55,
     });
     for (const rule of [...portedEslintVueRules, ...newlyTrackedEslintVueRules]) {
       assert.equal(value.entries[rule].status, "mapped", rule);
@@ -129,8 +155,8 @@ export function inverseEslintVueRulePort(name: string, body: Buffer): Buffer {
   }
   if (name === eslintVueMembershipPath) {
     identity(body, {
-      bytes: 36357,
-      sha256: "b4343efc09307900863d5b395bb0f8a55fa7fa43d58527ff1a56b1f46c620205",
+      bytes: 36793,
+      sha256: "8ef85bb196ae091afca89dd548ac9fa8e04e7233ff5f41c2e411cb36adebe711",
     });
     const text = body.toString();
     const at = text.indexOf("{");

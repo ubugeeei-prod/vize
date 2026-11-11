@@ -241,6 +241,9 @@ impl Linter {
         if let Some(value) = options.valid_v_slot_allow_modifiers() {
             self = self.with_valid_v_slot_allow_modifiers(value);
         }
+        if !options.configured_vue().is_empty() {
+            self = configured_vue::apply(self, options.configured_vue());
+        }
         self
     }
 }
@@ -287,6 +290,7 @@ fn self_closing_style(value: ConfigSelfClosingStyle) -> HtmlSelfClosingStyle {
     }
 }
 mod block_lang;
+mod configured_vue;
 #[cfg(test)]
 mod macro_order;
 mod max_lines;

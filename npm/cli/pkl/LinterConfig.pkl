@@ -1,5 +1,6 @@
 /// Linter configuration for Vize.
 module vize.LinterConfig
+import "LintRuleOptionTypes.pkl"
 
 typealias RuleSeverity = "off" | "warn" | "error"
 
@@ -278,6 +279,19 @@ class LintRuleOptions {
   `vue/block-lang`: BlockLangOptions? = null
   `max-lines`: MaxLinesOptions? = null
   `vue/max-lines-per-block`: MaxLinesPerBlockOptions? = null
+  `vue/max-props`: LintRuleOptionTypes.MaxPropsOptions? = null
+  `vue/max-template-depth`: LintRuleOptionTypes.MaxTemplateDepthOptions? = null
+  `vue/no-restricted-block`: LintRuleOptionTypes.RestrictedNames? = null
+  `vue/no-restricted-call-after-await`: LintRuleOptionTypes.CallAfterAwaitOptions? = null
+  `vue/no-restricted-class`: LintRuleOptionTypes.RestrictedNames? = null
+  `vue/no-restricted-component-names`: LintRuleOptionTypes.RestrictedNames? = null
+  `vue/no-restricted-component-options`: LintRuleOptionTypes.RestrictedNames? = null
+  `vue/no-restricted-custom-event`: LintRuleOptionTypes.RestrictedNames? = null
+  `vue/no-restricted-html-elements`: LintRuleOptionTypes.RestrictedNames? = null
+  `vue/no-restricted-props`: LintRuleOptionTypes.RestrictedNames? = null
+  `vue/no-restricted-static-attribute`: LintRuleOptionTypes.RestrictedNames? = null
+  `vue/no-restricted-v-on`: LintRuleOptionTypes.RestrictedNames? = null
+  `vue/no-unsupported-features`: LintRuleOptionTypes.UnsupportedFeaturesOptions? = null
   `vue/enforce-style-attribute`: EnforceStyleAttributeOptions? = null
   `vue/no-restricted-syntax`: (Listing<RestrictedSyntaxEntry> | NoRestrictedSyntaxOptions)? = null
   `vue/quote-props`: "as-needed"? = null

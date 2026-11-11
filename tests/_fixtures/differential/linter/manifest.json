@@ -2996,17 +2996,17 @@
           {
             "path": "explain-en.txt",
             "role": "whole-current-explain-oracle",
-            "sha256": "046f3914b9a54d63510d34d66d5864903468f56a09b632cf8de1490ec71da0ee"
+            "sha256": "ccf264cdcc295733cf31356fb5de8ec7a62848426c80abc5887a0a3c99b76028"
           },
           {
             "path": "explain-ja.txt",
             "role": "whole-current-explain-oracle",
-            "sha256": "8dfd5330480a76075104acf256a6bb20005d1a112205edfc481506e93e997083"
+            "sha256": "327a82acc4a578b0517f532842d949e0b94170c295b013fa9873c999f7a10398"
           },
           {
             "path": "explain-zh.txt",
             "role": "whole-current-explain-oracle",
-            "sha256": "f01cd8756eb58e8d3c69587f58fd307ea795f80ae5bf7f6cbdde1626a6b8b066"
+            "sha256": "397699032067360b47bbbf1d236394e99923fadddb20469443eb44ca8b3dc30e"
           }
         ]
       },
@@ -4423,6 +4423,38 @@
             "path": "ScriptBindings.vue.txt",
             "role": "third-party-script-compatibility-reproduction",
             "sha256": "6d4c60a866f23c7632e3c4de36008c759e7867280e749045d63d44d511847d7c"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "linter/patina/compat-configured-vue-rules-12869",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "patina-compat-configured-vue-rules-12869",
+        "files": [
+          {
+            "path": "RestrictedShowcase.vue.txt",
+            "role": "third-party-configured-vue-rules-reproduction",
+            "sha256": "ce4bea753acc166ab1fa2415de0d0e8b69c536e930876b4beca828e893e7a7c6"
           }
         ]
       },

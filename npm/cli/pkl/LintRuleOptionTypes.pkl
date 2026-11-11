@@ -12,3 +12,59 @@ class ValidVOnOptions {
 class ValidVSlotOptions {
   allowModifiers: Boolean = false
 }
+
+class BlockLangBlock {
+  lang: (String | Listing<String>)? = null
+  allowNoLang: Boolean? = null
+  required: Boolean? = null
+}
+
+class BlockLangOptions {
+  script: BlockLangBlock? = null
+  template: BlockLangBlock? = null
+  style: BlockLangBlock? = null
+}
+
+class MaxLinesObject {
+  max: Int? = null
+  skipComments: Boolean? = null
+  skipBlankLines: Boolean? = null
+}
+
+typealias MaxLinesOptions = Int | MaxLinesObject
+
+class MaxLinesPerBlockOptions {
+  style: Int? = null
+  template: Int? = null
+  script: Int? = null
+  skipBlankLines: Boolean? = null
+}
+
+class SortKeysOptions {
+  order: "asc" | "desc" = "asc"
+  caseSensitive: Boolean = true
+  natural: Boolean = false
+}
+
+class MaxPropsOptions {
+  maxProps: Int? = null
+}
+
+class MaxTemplateDepthOptions {
+  maxDepth: Int? = null
+}
+
+typealias RestrictedNames = String | Listing<String>
+
+class CallAfterAwaitSpec {
+  module: String
+  path: (String | Listing<String>)? = null
+  message: String? = null
+}
+
+typealias CallAfterAwaitOptions = CallAfterAwaitSpec | Listing<CallAfterAwaitSpec>
+
+class UnsupportedFeaturesOptions {
+  version: String? = null
+  ignores: Listing<String>? = null
+}
