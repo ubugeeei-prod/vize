@@ -1,11 +1,15 @@
 /**
- * Real-corpus type-check pair: misskey and n8n checked by tsc and tsrs
- * (TypeScript 7.1 hosts) through the base and head Vize mappers, with Vue's
- * mapper as the reference. vue-tsc (TypeScript 6, the benchmark workspace's
- * pin) checks the same tsconfig once per corpus as a second reference.
+ * Real-corpus type-check pair: misskey, n8n, nuxt/ui and reka-ui checked by
+ * tsc, tsrs --fast and tsrs (TypeScript 7.1 hosts) through the base and head
+ * Vize mappers, with Vue's mapper as the reference. vue-tsc (TypeScript 6,
+ * the benchmark workspace's pin) checks the same tsconfig once per corpus as
+ * a second reference. Every timed run is cold (typecheck-corpus-pair-cold.ts);
+ * `--floors` adds the head build's floors (typecheck-corpus-pair-floors.ts).
+ * Base and head may be the same build: the pair is then an A/A noise check.
  *
  *   node typecheck-corpus-pair.ts --base <worktree> --head <worktree> \
- *     --base-sha <sha> --head-sha <sha> --runs 5 --work <dir> --out <dir>
+ *     --base-sha <sha> --head-sha <sha> --runs 5 --work <dir> --out <dir> \
+ *     [--corpora misskey,n8n,nuxt-ui,reka-ui] [--floors]
  *
  * Each worktree's `npm/cli` (and the `@vizejs/native` it links) must be built.
  * CPU is user+sys of the whole host process tree, mapper included
@@ -18,6 +22,16 @@ import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { parseArgs } from "node:util";
 
+import { coldRunner, startupRuns } from "./typecheck-corpus-pair-cold.ts";
+import { writeCold } from "./typecheck-corpus-pair-cold-report.ts";
+import { type Corpus, CORPORA, selectCorpora } from "./typecheck-corpus-pair-corpora.ts";
+import {
+  FLOOR_VARIANTS,
+  type FloorRecordings,
+  floorRun,
+  prepareFloorPackages,
+  recordFloors,
+} from "./typecheck-corpus-pair-floors.ts";
 import { runOrder, summarizeProbe } from "./typecheck-corpus-pair-parse.ts";
 import {
   type PairResults,
@@ -29,18 +43,16 @@ import {
 } from "./typecheck-corpus-pair-report.ts";
 import {
   type HostRun,
+  PAIR_HOSTS,
+  type PairHost,
+  TSRS_023_DIR,
   hostArgs,
   hostRun,
   packageVersion,
+  pairHostBins,
   requireGnuTime,
 } from "./typecheck-corpus-pair-host.ts";
-import {
-  diffBatchMapper,
-  hostCorsaPath,
-  hostTsrsPath,
-  renderBatchDiff,
-  runBatchCheck,
-} from "./typecheck-corpus-pair-batch.ts";
+import { batchVsMapper, renderBatchDiff } from "./typecheck-corpus-pair-batch.ts";
 import {
   assertProbeDiagnosticIdentity,
   checkerBusyMs,
@@ -52,7 +64,6 @@ import {
 import { familyShapes, renderReplyShape } from "./typecheck-reply-shape.ts";
 import {
   CONTENT_MAPPERS,
-  MAPPER_HOSTS,
   type MapperHosts,
   TYPECHECK_HOSTS_DIR,
   mapperTsconfigName,
@@ -66,61 +77,9 @@ const CORPUS_PACKAGES_DIR = resolve(scriptsDir, "..", "typecheck-corpora");
 const PROBE_SCRIPT = join(scriptsDir, "content-mapper-byte-probe.ts");
 const VUE_TSC_DIR = join(scriptsDir, "node_modules", "vue-tsc");
 
-type Host = (typeof MAPPER_HOSTS)[number];
 type Mapper = (typeof CONTENT_MAPPERS)[number];
 
-const shared = {
-  strict: true,
-  target: "ES2022",
-  module: "esnext",
-  moduleResolution: "Bundler",
-  resolveJsonModule: true,
-  isolatedModules: true,
-  useDefineForClassFields: true,
-  skipLibCheck: true,
-  noEmit: true,
-  incremental: false,
-  allowJs: true,
-  paths: { "@/*": ["./src/*"] },
-  types: ["node"],
-  lib: ["esnext", "dom", "dom.iterable"],
-  jsx: "preserve",
-};
-
-/** Pinned submodule sources; `sfcs` is what the host must hand the mapper. */
-export const CORPORA = [
-  {
-    id: "misskey",
-    label: "misskey frontend",
-    source: "tests/_fixtures/_git/misskey/packages/frontend",
-    copy: ["src", "@types"],
-    sfcs: 583,
-    tsconfig: {
-      compilerOptions: {
-        ...shared,
-        noImplicitAny: true,
-        noImplicitReturns: true,
-        experimentalDecorators: true,
-        verbatimModuleSyntax: true,
-      },
-      include: ["./src/**/*.ts", "./src/**/*.vue", "./@types/**/*.ts"],
-      exclude: ["./src/**/*.stories.ts"],
-    },
-  },
-  {
-    id: "n8n",
-    label: "n8n editor-ui",
-    source: "tests/_fixtures/_git/n8n/packages/frontend/editor-ui",
-    copy: ["src"],
-    sfcs: 1113,
-    tsconfig: {
-      compilerOptions: shared,
-      include: ["./src/**/*.ts", "./src/**/*.vue"],
-      exclude: ["./src/**/*.test.ts", "./src/**/*.spec.ts", "./src/**/__tests__/**"],
-    },
-  },
-] as const;
-type Corpus = (typeof CORPORA)[number];
+export { CORPORA };
 
 /** Vize from the base and the head build, and Vue's mapper beside the base build. */
 export const VARIANTS = [
@@ -204,6 +163,9 @@ function main(): void {
       runs: { type: "string", default: "5" },
       // Also diff the head build's `vize check` against its mapper under tsc.
       batch: { type: "boolean", default: false },
+      // Comma-separated corpus ids; all four by default.
+      corpora: { type: "string", default: "" },
+      floors: { type: "boolean", default: false },
       work: { type: "string" },
       out: { type: "string" },
     },
@@ -227,18 +189,22 @@ function main(): void {
   const out = resolve(values.out);
   mkdirSync(join(out, "diagnostics"), { recursive: true });
   mkdirSync(join(work, "time"), { recursive: true });
+  const corpora = selectCorpora(values.corpora);
   const projects = (corpus: Corpus, role: "base" | "head") => join(work, `${corpus.id}-${role}`);
-  for (const corpus of CORPORA) {
+  for (const corpus of corpora) {
     for (const role of ["base", "head"] as const)
       prepareProject(projects(corpus, role), corpus, builds[role]);
+    if (values.floors) prepareFloorPackages(projects(corpus, "head"));
   }
 
-  const lanes = CORPORA.flatMap((corpus) =>
-    MAPPER_HOSTS.flatMap((host) => VARIANTS.map((variant) => ({ corpus, host, variant }))),
+  const lanes = corpora.flatMap((corpus) =>
+    PAIR_HOSTS.flatMap((host) => VARIANTS.map((variant) => ({ corpus, host, variant }))),
   );
   type Lane = (typeof lanes)[number];
   const laneKey = ({ corpus, host, variant }: Lane) => `${corpus.id}-${host.id}-${variant.id}`;
-  const bin = (host: Host) => builds.base[host.id];
+  const bins = pairHostBins(builds.base);
+  const bin = (host: PairHost) => bins[host.bin];
+  const tsc = PAIR_HOSTS[0];
   const cwd = ({ corpus, variant }: Lane) => projects(corpus, variant.project);
 
   // Untimed probe first: generated bytes through the proxy, and a warm cache for the timed runs.
@@ -286,11 +252,11 @@ function main(): void {
       `${key}: probe ${probe.files} SFCs, ${probe.bytes} bytes, ${run.diagnostics.length} diagnostics`,
     );
   }
-  assertProbeDiagnosticIdentity(probes, CORPORA, MAPPER_HOSTS);
+  assertProbeDiagnosticIdentity(probes, corpora, PAIR_HOSTS);
 
-  const projections = CORPORA.map((corpus) => {
+  const projections = corpora.map((corpus) => {
     const side = (variant: Variant) => {
-      const lane = { corpus, host: MAPPER_HOSTS.find((host) => host.id === "tsc")!, variant };
+      const lane = { corpus, host: tsc, variant };
       const key = laneKey(lane);
       return {
         bytes: probeBytesByFile(
@@ -305,38 +271,73 @@ function main(): void {
     return projectionReport(corpus.id, { base: base!, head: head!, vue: vue! });
   });
   persistProjection(out, projections);
-  const shapes = CORPORA.map((corpus) => {
+  const shapes = corpora.map((corpus) => {
     const dir = (role: string) => join(out, "generated", `${corpus.id}-tsc-vize-${role}`);
     return renderReplyShape(corpus.id, familyShapes(dir("base")), familyShapes(dir("head")));
   });
   writeFileSync(join(out, "reply-shape.md"), `### Reply shape\n\n${shapes.join("\n")}`);
 
-  const timed = new Map<string, HostRun[]>();
+  // Untimed: the head projection recorded once per corpus for the zero-wait floors.
+  const recordings = new Map<string, FloorRecordings>();
+  for (const corpus of values.floors ? corpora : []) {
+    const dir = projects(corpus, "head");
+    const recorded = recordFloors(join(work, "floors", corpus.id), (tsconfig, env) => {
+      hostRun(
+        [bin(tsc), ...hostArgs(tsc, dir, tsconfig)],
+        dir,
+        tsconfig,
+        join(work, "time", `${corpus.id}-floor-record.time`),
+        env,
+      );
+    });
+    recordings.set(corpus.id, recorded);
+    console.log(`${corpus.id}: floors recorded, ablation ${JSON.stringify(recorded.ablation)}`);
+  }
+
+  // Timed, cold: pair lanes and floors alternate their order run by run.
+  const cold = coldRunner(work);
+  const timed = new Map<string, ReturnType<typeof cold.run>[]>();
+  type Timed = { key: string; dir: string; tsconfig: string; env?: Record<string, string> };
   for (let run = 0; run < runs; run++) {
-    for (const corpus of CORPORA) {
-      for (const host of MAPPER_HOSTS) {
-        for (const variant of runOrder(VARIANTS, run)) {
+    for (const corpus of corpora) {
+      for (const host of PAIR_HOSTS) {
+        const pair = VARIANTS.map((variant): Timed => {
           const lane = { corpus, host, variant };
-          const key = laneKey(lane);
-          const tsconfig = mapperTsconfigName(mapperOf(variant));
-          const result = hostRun(
-            [bin(host), ...hostArgs(host, cwd(lane), tsconfig)],
-            cwd(lane),
+          return {
+            key: laneKey(lane),
+            dir: cwd(lane),
+            tsconfig: mapperTsconfigName(mapperOf(variant)),
+          };
+        });
+        const recorded = recordings.get(corpus.id);
+        const floors = recorded
+          ? FLOOR_VARIANTS.map((variant): Timed => ({
+              key: `${corpus.id}-${host.id}-${variant.id}`,
+              dir: projects(corpus, "head"),
+              ...floorRun(variant, recorded),
+            }))
+          : [];
+        for (const { key, dir, tsconfig, env } of runOrder([...pair, ...floors], run)) {
+          const result = cold.run(
+            [bin(host), ...hostArgs(host, dir, tsconfig)],
+            dir,
             tsconfig,
             join(work, "time", `${key}.${run}.time`),
+            env,
           );
           timed.set(key, [...(timed.get(key) ?? []), result]);
           console.log(
-            `${key} run ${run + 1}/${runs}: cpu ${(result.cpuMs / 1000).toFixed(2)}s rss ${result.time.maxRssKb}K`,
+            `${key} run ${run + 1}/${runs}: wall ${result.wallMs.toFixed(0)}ms tree ${result.rss?.treePeakKb ?? "n/a"}K`,
           );
         }
       }
     }
   }
+  const startup = startupRuns(bins, PAIR_HOSTS, runs, work);
+  cold.stop();
 
   // Untimed: one checker splits no files, so its counts move only with the text's meaning.
-  const tsc = MAPPER_HOSTS.find((host) => host.id === "tsc")!;
-  const singleChecker = CORPORA.flatMap((corpus) =>
+  const singleChecker = corpora.flatMap((corpus) =>
     VARIANTS.filter((variant) => variant.mapper === "vize").map((variant): SingleCheckerResult => {
       const lane = { corpus, host: tsc, variant };
       const key = laneKey(lane);
@@ -354,7 +355,7 @@ function main(): void {
   );
 
   // One untimed vue-tsc run per corpus on the tsconfig both mapper configs extend.
-  const references: ReferenceResult[] = CORPORA.map((corpus) => {
+  const references: ReferenceResult[] = corpora.map((corpus) => {
     const dir = projects(corpus, "base");
     const run = hostRun(
       [
@@ -404,6 +405,7 @@ function main(): void {
       packages: {
         typescript: packageVersion(TYPECHECK_HOSTS_DIR, "typescript"),
         tsrs: packageVersion(TYPECHECK_HOSTS_DIR, "tsrs"),
+        "tsrs 0.23": packageVersion(TSRS_023_DIR, "tsrs"),
         "@vue/content-mapper": packageVersion(TYPECHECK_HOSTS_DIR, "@vue/content-mapper"),
         vue: packageVersion(CORPUS_PACKAGES_DIR, "vue"),
         "@types/node": packageVersion(CORPUS_PACKAGES_DIR, "@types/node"),
@@ -436,45 +438,33 @@ function main(): void {
     }),
   };
   if (values.batch) {
-    const corsa = hostCorsaPath(TYPECHECK_HOSTS_DIR);
-    const tsrs = hostTsrsPath(TYPECHECK_HOSTS_DIR);
     const headBuild = resolve(values.head);
-    const diffs = CORPORA.map((corpus) => {
-      const project = projects(corpus, "head");
+    const diffs = corpora.map((corpus) => {
       const mapper = timed.get(`${corpus.id}-tsc-vize-head`)?.[0]?.diagnostics;
       if (!mapper) throw new Error(`${corpus.id}: no tsc mapper run on head`);
-      const one = runBatchCheck(headBuild, project, corsa, { VIZE_CHECKERS: "1" });
-      // Qualify both batch hosts at the one-checker oracle and measured default width.
-      const checkers = 8;
-      const wide = runBatchCheck(headBuild, project, corsa, {
-        VIZE_CHECKERS: String(checkers),
-      });
-      const widened = diffBatchMapper(corpus.id, wide, one);
-      const tsrsOne = runBatchCheck(headBuild, project, tsrs, { VIZE_CHECKERS: "1" });
-      const tsrsWide = runBatchCheck(headBuild, project, tsrs, {
-        VIZE_CHECKERS: String(checkers),
-      });
-      const tsrsVsTsgo = diffBatchMapper(corpus.id, tsrsOne, one);
-      const tsrsWidened = diffBatchMapper(corpus.id, tsrsWide, tsrsOne);
-      return {
-        ...diffBatchMapper(corpus.id, one, mapper),
-        wide: { checkers, added: widened.batchOnly, removed: widened.mapperOnly },
-        tsrs: {
-          diagnostics: tsrsOne.length,
-          only: tsrsVsTsgo.batchOnly,
-          missing: tsrsVsTsgo.mapperOnly,
-          wide: {
-            checkers,
-            added: tsrsWidened.batchOnly,
-            removed: tsrsWidened.mapperOnly,
-          },
-        },
-      };
+      return batchVsMapper(corpus.id, headBuild, projects(corpus, "head"), mapper);
     });
     writeFileSync(join(out, "batch-vs-mapper.json"), `${JSON.stringify(diffs, null, 1)}\n`);
     writeFileSync(join(out, "batch-vs-mapper.md"), renderBatchDiff(diffs));
   }
   const summary = summarizePair(results);
+  const coldLanes = corpora.flatMap((corpus) =>
+    PAIR_HOSTS.flatMap((host) =>
+      [...VARIANTS, ...(recordings.has(corpus.id) ? FLOOR_VARIANTS : [])].map(({ id }) => {
+        const runsOf = timed.get(`${corpus.id}-${host.id}-${id}`) ?? [];
+        return { corpus: corpus.id, host: host.id, variant: id, runs: runsOf };
+      }),
+    ),
+  );
+  writeCold(out, {
+    runs,
+    runner: results.measurement.runner,
+    corpora,
+    lanes: coldLanes,
+    startup,
+    summary: summary.lanes,
+    recordings,
+  });
   // Full diagnostic lists live in diagnostics/<lane>.json.
   const lean = results.lanes.map(({ diagnostics, ...lane }) => ({
     ...lane,

@@ -1,0 +1,8 @@
+{
+  "name": "vize-benchmark-typecheck-hosts-tsrs-0-23",
+  "private": true,
+  "description": "tsrs 0.23 beside the 0.20.1 host of typecheck-hosts: the corpus pair's tsrs-0.23-fast target lane.",
+  "dependencies": {
+    "tsrs": "0.23.0-ts7.1.0-beta"
+  }
+}
