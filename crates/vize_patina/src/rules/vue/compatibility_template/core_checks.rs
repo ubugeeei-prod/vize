@@ -13,8 +13,7 @@ use crate::context::{LintContext, RetainedVFor};
 use constant::is_constant;
 use oxc_ast::ast::{Expression, FormalParameters, Program};
 use oxc_ast_visit::Visit;
-use oxc_span::{GetSpan, Span};
-use predicates::is_irregular_whitespace;
+use oxc_span::GetSpan;
 use visitor::CoreVisitor;
 use vize_l1::markup::entity::EntityContext;
 use vize_relief::{DirectiveNode, ExpressionNode, SimpleExpressionNode};
@@ -28,7 +27,6 @@ pub(super) enum CoreKind {
     NoConstantCondition,
     NoEmptyPattern,
     NoImplicitCoercion,
-    NoIrregularWhitespace,
     NoLossOfPrecision,
     NoNegatedCondition,
     NoSparseArrays,
@@ -48,7 +46,6 @@ impl CoreKind {
             Self::NoConstantCondition => "Unexpected constant condition",
             Self::NoEmptyPattern => "Unexpected empty destructuring pattern",
             Self::NoImplicitCoercion => "Use an explicit type conversion",
-            Self::NoIrregularWhitespace => "Unexpected irregular whitespace",
             Self::NoLossOfPrecision => "This numeric literal loses precision",
             Self::NoNegatedCondition => "Unexpected negated ternary condition",
             Self::NoSparseArrays => "Unexpected sparse array",
@@ -83,20 +80,6 @@ fn check_expression_with_directive<'a>(
     else {
         return;
     };
-
-    if kind == CoreKind::NoIrregularWhitespace {
-        for (index, character) in simple.content.char_indices() {
-            if is_irregular_whitespace(character)
-                && let Some(range) = origin.range(Span::new(
-                    index as u32,
-                    (index + character.len_utf8()) as u32,
-                ))
-            {
-                ctx.warn_at_with_help(kind.message(), range, compatibility_help());
-            }
-        }
-        return;
-    }
 
     let Some(goal) = template_goal(ctx, simple, directive) else {
         return;

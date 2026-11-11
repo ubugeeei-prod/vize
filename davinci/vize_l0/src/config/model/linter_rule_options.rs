@@ -17,6 +17,7 @@ mod component_registration;
 mod content_directives;
 mod define_macros_order;
 mod eslint_vue_compatibility;
+pub mod esquery;
 mod html_button_has_type;
 mod html_quotes;
 mod html_self_closing;
@@ -47,8 +48,8 @@ pub use casing::{
 };
 pub use define_macros_order::DefineMacrosOrderOptions;
 pub use eslint_vue_compatibility::{
-    EnforceStyleAttributeOptions, NoRestrictedSyntaxOptions, QuotePropsStyle, SortKeysOptions,
-    SortKeysOrder, StyleAttributeMode,
+    EnforceStyleAttributeOptions, NoRestrictedSyntaxOptions, QuotePropsStyle,
+    RestrictedSyntaxSelector, SortKeysOptions, SortKeysOrder, StyleAttributeMode,
 };
 pub use html_button_has_type::HtmlButtonHasTypeOptions;
 pub use html_quotes::{HtmlQuoteStyle, HtmlQuotesConfig, HtmlQuotesOptions};

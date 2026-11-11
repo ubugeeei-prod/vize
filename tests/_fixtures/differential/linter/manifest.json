@@ -4323,6 +4323,89 @@
       }
     },
     {
+      "id": "linter/patina/compat-a11y-content-12759",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "patina-compat-a11y-content-12759",
+        "files": [
+          {
+            "path": "Content.vue.txt",
+            "role": "third-party-a11y-content-reproduction",
+            "sha256": "d7f687665aaf96a4b2856ede8cb999eeaaf3bc7d8acd3a38ff90f2d90e38a620"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "linter/patina/compat-a11y-role-12693",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "patina-compat-a11y-role-12693",
+        "files": [
+          {
+            "path": "Bind.vue.txt",
+            "role": "third-party-a11y-role-reproduction",
+            "sha256": "89fbaed1af30fb1d5386ea0aa2428dd25542280c11e4a9cbcbe6ca9e54f6054d"
+          },
+          {
+            "path": "Case.vue.txt",
+            "role": "third-party-a11y-role-reproduction",
+            "sha256": "8de07436979988b416308971596bad2ec7ae0feaf3d58a13918df3249aaa7220"
+          },
+          {
+            "path": "Roles.vue.txt",
+            "role": "third-party-a11y-role-reproduction",
+            "sha256": "7fcbe5ac065b45f72576b8b33720aecf216349bee1f0a2a7b5048d7706ea9673"
+          },
+          {
+            "path": "Slot.vue.txt",
+            "role": "third-party-a11y-role-reproduction",
+            "sha256": "e070eb53cb97c74be7af6c2e0ee2d799380d812ba7a97c874e47390276ee5f1c"
+          },
+          {
+            "path": "VueIs.vue.txt",
+            "role": "third-party-a11y-role-reproduction",
+            "sha256": "44c41863259441278bab25bc7cbf9d2ff7ebbe92b9c661d34f8f56b3448422d1"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/patina/compat-audit-12669",
       "state": "active",
       "targets": [
@@ -4392,6 +4475,122 @@
       }
     },
     {
+      "id": "linter/patina/compat-core-scope-12678",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "patina-compat-core-scope-12678",
+        "files": [
+          {
+            "path": "Scope.vue.txt",
+            "role": "third-party-core-scope-reproduction",
+            "sha256": "43dd82c91110b21b59cb0aa188c30183a3e9f31e2b4605ede5aef5c0fe509a86"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "linter/patina/compat-default-prop-12722",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "patina-compat-default-prop-12722",
+        "files": [
+          {
+            "path": "Case.vue.txt",
+            "role": "third-party-default-prop-reproduction",
+            "sha256": "35198320d9a4d4a19b9632df19efbdc25078a9ba4f520514d79926f02dfc9518"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "linter/patina/compat-explicit-slots-12751",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "patina-compat-explicit-slots-12751",
+        "files": [
+          {
+            "path": "Bare.vue.txt",
+            "role": "third-party-explicit-slots-reproduction",
+            "sha256": "2b91cf96c0cf308fd3f799838f311b8edd93e3dbafcac50aa9f812472afc339d"
+          },
+          {
+            "path": "Duplicate.vue.txt",
+            "role": "third-party-explicit-slots-reproduction",
+            "sha256": "1acc305bdf114cddcfd3acaa257f3a5121e0d69335e935cdb5fe38ad6ce8d3d8"
+          },
+          {
+            "path": "Imported.vue.txt",
+            "role": "third-party-explicit-slots-reproduction",
+            "sha256": "e08b500c636158c29b4d1da0e7b77984e07413f778a01a453635af28a473e638"
+          },
+          {
+            "path": "Utility.vue.txt",
+            "role": "third-party-explicit-slots-reproduction",
+            "sha256": "044f985afb109bf60aa7a1cfc12d9c1535f5b49b5ca1d99fb64d36a34bb723c3"
+          },
+          {
+            "path": "types.ts",
+            "role": "third-party-explicit-slots-reproduction",
+            "sha256": "7b930647d3b56bce4490181e96196403bcfd8bfc2aebcade08e8a21fd0d947b3"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/patina/compat-interaction-12760",
       "state": "active",
       "targets": [
@@ -4424,6 +4623,185 @@
       }
     },
     {
+      "id": "linter/patina/compat-label-has-for-12763",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "patina-compat-label-has-for-12763",
+        "files": [
+          {
+            "path": "Labels.vue.txt",
+            "role": "third-party-label-has-for-reproduction",
+            "sha256": "e3ccc623c5bdfe1402ac7d050b69170a7595cdaf1e84d46d03bce8798a5acc5b"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "linter/patina/compat-paths-alias-12802",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "patina-compat-paths-alias-12802",
+        "files": [
+          {
+            "path": "tsconfig.json",
+            "role": "third-party-paths-alias-reproduction",
+            "sha256": "f464fba9bd3a192e9e5d1ec7242782d53745fd3cc91421956e6e5a415ef9b324"
+          },
+          {
+            "path": "lib/types.ts",
+            "role": "third-party-paths-alias-reproduction",
+            "sha256": "f87dbb7afe1fbf2df3a7f4a9d26c49df4c7b2c8271c10ede746dc1ab44c9b0cf"
+          },
+          {
+            "path": "src/Alias.vue",
+            "role": "third-party-paths-alias-reproduction",
+            "sha256": "8c938bc0af4aa4af942b3859756a35ed90ee1a71ca677909feb9d52ca5364025"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "linter/patina/compat-prop-casing-12687",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "patina-compat-prop-casing-12687",
+        "files": [
+          {
+            "path": "ArrayNames.vue.txt",
+            "role": "third-party-prop-casing-reproduction",
+            "sha256": "26769effad6c8ee99cc986175a6f8f4248bd721afa344a4f28d08407d5127a65"
+          },
+          {
+            "path": "Imported.vue.txt",
+            "role": "third-party-prop-casing-reproduction",
+            "sha256": "46094b270b580c37b847fff9c07077833c227ca1087291b2bed04ca55c4c5735"
+          },
+          {
+            "path": "props.ts.txt",
+            "role": "third-party-prop-casing-type",
+            "sha256": "2aeaf647c975563b1c66a0fba7ce9c755839e609e656378867514f6425a04849"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "linter/patina/compat-prop-shadow-12737",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "patina-compat-prop-shadow-12737",
+        "files": [
+          {
+            "path": "PropShadow.vue.txt",
+            "role": "third-party-prop-shadow-reproduction",
+            "sha256": "4b4869a50c366c98ad56217af8dac7ce1682225dc5e9677842087c7276fc8d09"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "linter/patina/compat-prop-uses-12805",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "patina-compat-prop-uses-12805",
+        "files": [
+          {
+            "path": "PropUses.vue.txt",
+            "role": "third-party-prop-use-reproduction",
+            "sha256": "b91d1f748f8dcb619c771ebcfee97a315b282b1cc7481a83f9de9f923c879226"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/patina/compat-reactivity-12689",
       "state": "active",
       "targets": [
@@ -4436,6 +4814,38 @@
             "path": "Reactivity.vue.txt",
             "role": "third-party-reactivity-rule-reproduction",
             "sha256": "6d93b511070107b680518c69de0fc8c8b4d3dd0e24b5c3e8326f5c81993ba402"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "linter/patina/compat-restricted-syntax-12741",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "patina-compat-restricted-syntax-12741",
+        "files": [
+          {
+            "path": "Case.vue.txt",
+            "role": "third-party-restricted-syntax-reproduction",
+            "sha256": "2ac4b7b83f8b3cda0fa94819c30d0fab2b38e1a0632ee85a32a85568455e7152"
           }
         ]
       },
@@ -4537,6 +4947,121 @@
             "path": "TemplateKey.vue.txt",
             "role": "issue-authored-reproduction",
             "sha256": "a46c298c8422d5c63ca8af49e8c6a29fc0f5bd3c6ff2b9b0bd8a76eca7c690b3"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "linter/patina/compat-unclosed-interactive-12803",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "patina-compat-unclosed-interactive-12803",
+        "files": [
+          {
+            "path": "Anchors.vue.txt",
+            "role": "third-party-unclosed-interactive-reproduction",
+            "sha256": "73e5a029ffc0fd7d4a91fc1cc1931757c3f8f8dfcb9dff59aa4a2f70677c84aa"
+          },
+          {
+            "path": "Buttons.vue.txt",
+            "role": "third-party-unclosed-interactive-reproduction",
+            "sha256": "505d417b34513e05d8542d59d46391ef66f1707466cbaff7e45f85956f767dab"
+          },
+          {
+            "path": "NestedList.vue.txt",
+            "role": "third-party-unclosed-interactive-reproduction",
+            "sha256": "0028da0c1c8fa449342883b637910aab73002ddac428b16198c0c31a99fb9cca"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "linter/patina/compat-unreadable-12801",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "patina-compat-unreadable-12801",
+        "files": [
+          {
+            "path": "Latin1.vue.txt",
+            "role": "third-party-unreadable-reproduction",
+            "sha256": "1bd4be2c0986d383eb5623d27e536f662d2cca4bb4fbe110f20269bfcaa23af0"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "linter/patina/compat-valid-default-12744",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "patina-compat-valid-default-12744",
+        "files": [
+          {
+            "path": "App.vue.txt",
+            "role": "third-party-valid-default-reproduction",
+            "sha256": "04e88939ff1a88341407d578ee5e120624a9fc59d61985efe13e275db2e2edcd"
+          },
+          {
+            "path": "Destructure.vue.txt",
+            "role": "third-party-valid-default-reproduction",
+            "sha256": "1b37bd834544a4deefbf295342cb7dad6912b40390669a6f53f87a268ebcbbcf"
+          },
+          {
+            "path": "WithDefaults.vue.txt",
+            "role": "third-party-valid-default-reproduction",
+            "sha256": "cc527e5ac5b4e44fe5f0144817f8bf4c1917d9753bd148c58e36401996bd2b8c"
           }
         ]
       },

@@ -310,6 +310,48 @@ const props = withDefaults(defineProps<Props>(), {
 }
 
 #[test]
+fn non_literal_with_defaults_are_unknown_and_not_reported() {
+    for defaults in ["{ hint: '' } as const", "defaults", "makeDefaults()"] {
+        let source = format!(
+            "<script setup lang=\"ts\">\nconst props = withDefaults(defineProps<{{\n  title: string;\n  hint?: string;\n}}>(), {defaults});\n</script>\n"
+        );
+        let result = Linter::new()
+            .with_enabled_rules(Some(vec!["script/require-default-prop".into()]))
+            .lint_sfc(&source, "Case.vue");
+        assert_eq!(
+            result.error_count, 0,
+            "{defaults}: {:?}",
+            result.diagnostics
+        );
+    }
+
+    let literal = "<script setup lang=\"ts\">\nconst props = withDefaults(defineProps<{\n  title: string;\n  hint?: string;\n}>(), { hint: '' });\n</script>\n";
+    assert_eq!(
+        Linter::new()
+            .with_enabled_rules(Some(vec!["script/require-default-prop".into()]))
+            .lint_sfc(literal, "Literal.vue")
+            .error_count,
+        0
+    );
+
+    let missing = "<script setup lang=\"ts\">\nconst props = withDefaults(defineProps<{\n  hint?: string;\n}>(), {});\n</script>\n";
+    let result = Linter::new()
+        .with_enabled_rules(Some(vec!["script/require-default-prop".into()]))
+        .lint_sfc(missing, "Missing.vue");
+    assert_eq!(result.error_count, 1, "{:?}", result.diagnostics);
+    assert_eq!(
+        &missing[result.diagnostics[0].start as usize..result.diagnostics[0].end as usize],
+        "hint?: string;"
+    );
+
+    let parenthesized = "<script setup lang=\"ts\">\nconst props = withDefaults(defineProps<{\n  hint?: string;\n}>(), ({ title: '' }));\n</script>\n";
+    let result = Linter::new()
+        .with_enabled_rules(Some(vec!["script/require-default-prop".into()]))
+        .lint_sfc(parenthesized, "Paren.vue");
+    assert_eq!(result.error_count, 1, "{:?}", result.diagnostics);
+}
+
+#[test]
 fn union_props_report_each_shared_missing_default_once() {
     let source = r#"
 type Base = { label?: string; enabled?: boolean }

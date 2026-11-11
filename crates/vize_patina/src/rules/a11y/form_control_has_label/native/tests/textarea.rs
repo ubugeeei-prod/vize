@@ -17,7 +17,7 @@ fn closed_plain_textarea_headers_match_every_legacy_field_and_unchanged_requery(
         ("<textarea :id='name'>plain</textarea>", 0),
         ("<textarea :aria-label='name'>plain</textarea>", 0),
         ("<textarea :aria-labelledby='name'>plain</textarea>", 0),
-        ("<textarea :title='name'>plain</textarea>", 1),
+        ("<textarea :title='name'>plain</textarea>", 0),
         ("<textarea aria-label='  ' title=''>\nplain</textarea>", 1),
         (
             "<input><select><option>A</option></select><textarea>plain</textarea>",

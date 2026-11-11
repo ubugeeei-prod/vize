@@ -10,6 +10,7 @@ mod entry_rules;
 mod fix;
 mod patterns;
 mod profile;
+mod read_source;
 mod rich;
 mod routes;
 mod stdout;
@@ -29,13 +30,13 @@ use collect::{
 use entry_rules::{LintProjectContext, LinterRuleResolver};
 use fix::lint_source_with_optional_fix;
 use rayon::prelude::*;
+use read_source::read_lint_source;
 use routes::apply_cross_file_lint;
 use std::io::Write;
 use std::path::{Path, PathBuf};
 use std::sync::Mutex;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::time::{Duration, Instant};
-use vize_carton::source_io as fs;
 use vize_curator::profile::ProfileFileRow;
 use vize_l0::{String, ToCompactString, cstr, profile, profiler::global_profiler};
 use vize_patina::{HelpLevel, LintPreset, OutputFormat};
@@ -176,16 +177,15 @@ pub fn run(mut args: LintArgs) {
                 let linter = linters.get(*config_index)?;
                 let file_start = args.profile.then(Instant::now);
                 let read_start = args.profile.then(Instant::now);
-                let source: String = match profile!("cli.lint.file.read", fs::read_to_string(path))
-                {
-                    Ok(source) => {
-                        global_profiler().record_fs_read_to_string(source.len());
-                        source.into()
-                    }
-                    Err(e) => {
-                        global_profiler().record_fs_read_to_string_failure();
-                        eprintln!("Failed to read {}: {}", path.display(), e);
-                        return None;
+                let source = match read_lint_source(path) {
+                    Ok(source) => source,
+                    Err(result) => {
+                        return Some((
+                            path.clone(),
+                            result.filename.clone(),
+                            String::default(),
+                            result,
+                        ));
                     }
                 };
                 let read_time = read_start

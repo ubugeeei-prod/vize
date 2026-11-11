@@ -312,16 +312,23 @@ export interface LintRuleOptions {
   "vue/enforce-style-attribute"?: {
     allow?: ("plain" | "scoped" | "module")[];
   };
-  "vue/no-restricted-syntax"?: {
-    selectors?: (
-      | "ArrayExpression"
-      | "BinaryExpression"
-      | "CallExpression"
-      | "ConditionalExpression"
-      | "ObjectExpression"
-      | "UnaryExpression"
-    )[];
-  };
+  "vue/no-restricted-syntax"?:
+    | (
+        | string
+        | {
+            selector: string;
+            message?: string;
+          }
+      )[]
+    | {
+        selectors?: (
+          | string
+          | {
+              selector: string;
+              message?: string;
+            }
+        )[];
+      };
   "vue/quote-props"?: "as-needed";
   "vue/sort-keys"?: {
     order?: "asc" | "desc";

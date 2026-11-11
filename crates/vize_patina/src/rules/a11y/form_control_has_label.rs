@@ -2,10 +2,11 @@
 //!
 //! Require form controls to have associated labels.
 //!
-//! Form controls (input, select, textarea) must have associated labels
-//! for screen reader users. This can be via `<label>`, `aria-label`, or
-//! aria-labelledby. A control with the `hidden` attribute is not rendered or
-//! exposed to assistive technology, so it needs no label.
+//! Form controls (`input`, `select`, `textarea`, `meter`, `progress`, and
+//! `output`) must have associated labels for screen reader users. This can be
+//! via `<label>`, `aria-label`, or `aria-labelledby`. A control with the
+//! `hidden` attribute, or `aria-hidden` other than `false`, is not exposed to
+//! assistive technology, so it needs no label.
 //!
 //! Based on eslint-plugin-vuejs-accessibility form-control-has-label rule.
 
@@ -38,6 +39,9 @@ impl FormControlHasLabel {
         element.is_unqualified_tag_exact("input")
             || element.is_unqualified_tag_exact("select")
             || element.is_unqualified_tag_exact("textarea")
+            || element.is_unqualified_tag_exact("meter")
+            || element.is_unqualified_tag_exact("progress")
+            || element.is_unqualified_tag_exact("output")
     }
 
     /// Check if the input type doesn't need a label (hidden, submit, etc.)
@@ -76,9 +80,43 @@ impl FormControlHasLabel {
         Self::has_non_empty_static_attribute(element, "placeholder")
     }
 
-    /// Check if element has a title attribute
-    fn has_title(element: &MarkupElement<'_>) -> bool {
+    /// A static title, or a Vue binding Vue will actually render.
+    ///
+    /// JSX `title={title}` stays unlabeled. Vue omits `null`, `undefined`, and
+    /// `""`, and keeps every other expression, including an identifier.
+    fn has_title(element: &MarkupElement<'_>, template: bool) -> bool {
         Self::has_non_empty_static_attribute(element, "title")
+            || (template && Self::has_useful_bound_title(element))
+    }
+
+    fn has_useful_bound_title(element: &MarkupElement<'_>) -> bool {
+        let mut found = false;
+        element.walk_bindings(&mut |binding| {
+            if binding.kind() == MarkupBindingKind::Bind
+                && binding.is_static_unqualified_arg_exact("title")
+                && binding.expression().is_some_and(useful_accessible_name)
+            {
+                found = true;
+            }
+        });
+        found
+    }
+
+    /// Boolean `aria-hidden`, and any bind other than literal `false`.
+    fn aria_hides(element: &MarkupElement<'_>) -> bool {
+        let mut hidden = false;
+        element.walk_bindings(&mut |binding| {
+            let aria = match binding.kind() {
+                MarkupBindingKind::Attribute => binding.is_unqualified_arg_exact("aria-hidden"),
+                MarkupBindingKind::Bind => binding.is_static_unqualified_arg_exact("aria-hidden"),
+                _ => false,
+            };
+            if !aria || binding_is_literal_false(binding.static_value(), binding.expression()) {
+                return;
+            }
+            hidden = true;
+        });
+        hidden
     }
 
     fn has_bound_attribute(element: &MarkupElement<'_>, name: &str) -> bool {
@@ -149,14 +187,20 @@ impl FormControlHasLabel {
         ctx: &mut LintContext<'_>,
         element: &MarkupElement<'_>,
         has_label_ancestor: bool,
+        hidden_ancestor: bool,
+        template: bool,
     ) {
         if !Self::is_form_control(element) {
             return;
         }
 
-        // Skip inputs that don't need labels, and controls the `hidden`
-        // attribute keeps out of rendering and the accessibility tree.
-        if Self::is_exempt_input_type(element) || has_static_hidden(element) {
+        // Skip inputs that don't need labels, and controls kept out of the
+        // accessibility tree by `hidden` or `aria-hidden`.
+        if hidden_ancestor
+            || Self::aria_hides(element)
+            || Self::is_exempt_input_type(element)
+            || has_static_hidden(element)
+        {
             return;
         }
 
@@ -164,7 +208,7 @@ impl FormControlHasLabel {
         let has_label = Self::has_aria_label(element)
             || Self::has_attribute_spread(element)
             || Self::has_id(element)
-            || Self::has_title(element)
+            || Self::has_title(element, template)
             || has_label_ancestor;
 
         if !has_label {
@@ -196,10 +240,36 @@ impl MarkupRule for FormControlHasLabel {
     }
 
     fn enter_element<'a>(&self, ctx: &mut MarkupContext<'_, 'a>, element: &MarkupElement<'a>) {
+        let template = ctx.is_template();
         let has_label_ancestor =
             ctx.has_ancestor(|parent| parent.is_unqualified_tag_exact("label"));
-        Self::check_element(ctx.lint(), element, has_label_ancestor);
+        let hidden_ancestor = ctx.has_ancestor(|parent| Self::aria_hides(&parent));
+        Self::check_element(
+            ctx.lint(),
+            element,
+            has_label_ancestor,
+            hidden_ancestor,
+            template,
+        );
     }
+}
+
+fn useful_accessible_name(value: &str) -> bool {
+    let value = value.trim();
+    if value.is_empty() || matches!(value, "null" | "undefined") {
+        return false;
+    }
+    string_literal_value(value).is_none_or(|literal| !literal.is_empty())
+}
+
+fn binding_is_literal_false(static_value: Option<&str>, expression: Option<&str>) -> bool {
+    static_value.is_some_and(|value| value.eq_ignore_ascii_case("false"))
+        || expression.is_some_and(|value| {
+            let value = value.trim();
+            value == "false"
+                || string_literal_value(value)
+                    .is_some_and(|literal| literal.eq_ignore_ascii_case("false"))
+        })
 }
 
 impl Rule for FormControlHasLabel {
@@ -221,7 +291,15 @@ impl Rule for FormControlHasLabel {
 
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
         let has_label_ancestor = ctx.has_ancestor(|parent| parent.tag.as_str() == "label");
-        Self::check_element(ctx, &MarkupElement::new(element), has_label_ancestor);
+        // Relief element context has no props, so an ancestor `aria-hidden`
+        // is visible only on the markup walk. Vue templates use that walk.
+        Self::check_element(
+            ctx,
+            &MarkupElement::new(element),
+            has_label_ancestor,
+            false,
+            true,
+        );
     }
 }
 
@@ -370,5 +448,34 @@ mod tests {
             r#"const Field = () => <input type="text" title={title} />;"#,
             1,
         );
+    }
+
+    #[test]
+    fn third_party_shapes_follow_vue_rendering() {
+        let cases = [
+            (r#"<input />"#, 1),
+            (r#"<input v-model="value" />"#, 1),
+            (r#"<input :title="label" />"#, 0),
+            (r#"<textarea :title="label"></textarea>"#, 0),
+            (r#"<select :title="label"></select>"#, 0),
+            (r#"<input :title="undefined" />"#, 1),
+            (r#"<input :title="''" />"#, 1),
+            (r#"<input v-bind="attrs" />"#, 0),
+            (r#"<input hidden />"#, 0),
+            (r#"<input aria-hidden="true" />"#, 0),
+            (r#"<input aria-hidden />"#, 0),
+            (r#"<div aria-hidden="true"><input /></div>"#, 0),
+            (r#"<span :aria-hidden="hidden"><input /></span>"#, 0),
+            (r#"<input :aria-hidden="show" />"#, 0),
+            (r#"<input :aria-hidden="false" />"#, 1),
+            (r#"<meter></meter>"#, 1),
+            (r#"<progress></progress>"#, 1),
+            (r#"<output>1</output>"#, 1),
+            (r#"<label><meter></meter></label>"#, 0),
+            (r#"<label><output>1</output></label>"#, 0),
+        ];
+        for (source, expected) in cases {
+            assert_template_warnings(source, expected);
+        }
     }
 }

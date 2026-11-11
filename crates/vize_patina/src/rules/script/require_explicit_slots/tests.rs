@@ -7,6 +7,7 @@ use oxc_parser::Parser;
 
 // Template-half tests (#3414 B) live in the `template` submodule.
 mod template;
+mod third_party;
 
 fn lint_setup_script(source: &str, offset: usize) -> ScriptLintResult {
     let allocator = Allocator::default();

@@ -27,7 +27,7 @@ pub fn rule_docs_path(rule_name: &str) -> String {
     match rule_name {
         "cross-file" => return String::from("docs/content/rules/cross-file.md"),
         "type/corsa-runtime" => return String::from("docs/content/rules/type-and-script.md"),
-        "vue/comment-directive" => {
+        "lint/unreadable" | "vue/comment-directive" => {
             return String::from("docs/content/guide/lint-execution.md");
         }
         _ => {}
@@ -49,6 +49,7 @@ mod documentation_authority_tests {
         let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
         for (rule, page) in [
             ("cross-file", "docs/content/rules/cross-file.md"),
+            ("lint/unreadable", "docs/content/guide/lint-execution.md"),
             (
                 "type/corsa-runtime",
                 "docs/content/rules/type-and-script.md",

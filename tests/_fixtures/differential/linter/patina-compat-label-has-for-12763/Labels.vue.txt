@@ -1,0 +1,15 @@
+<template>
+  <div>
+    <label>Name <input :aria-hidden="hidden" /></label>
+    <label><slot><input /></slot></label>
+    <label>Name <component is="input" /></label>
+    <label>Name <component :is="'input'" /></label>
+    <label FOR="name">Name</label>
+    <label>Name <Input /></label>
+    <label :for="undefined">Name</label>
+    <label>Name <input aria-hidden /></label>
+    <label>Name <input :aria-hidden="false" /></label>
+    <label>Name <span :aria-hidden="hidden"><input /></span></label>
+    <label v-bind="attrs">Name</label>
+  </div>
+</template>

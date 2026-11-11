@@ -95,7 +95,7 @@ impl ScriptRule for RequireExplicitSlots {
     fn check_program_with_sfc<'a>(
         &self,
         program: &'a Program<'a>,
-        _source: &str,
+        source: &str,
         _offset: usize,
         sfc: SfcScriptContext<'_>,
         result: &mut ScriptLintResult,
@@ -112,7 +112,15 @@ impl ScriptRule for RequireExplicitSlots {
         if !sfc.sole_script_block && !sfc.is_script_setup {
             return;
         }
-        let slots = declared::collect(program, sfc.sibling_program);
+        let slots = declared::collect(
+            program,
+            sfc.sibling_program,
+            source,
+            sfc.resolved_type_world,
+        );
+        for duplicate in &slots.duplicates {
+            report_duplicate_slot(duplicate, _offset, sfc.sibling_offset, result);
+        }
         match &slots.declared {
             DeclaredSlots::Absent => {
                 check_template(&vize_l0::FxHashSet::default(), sfc, result);
@@ -142,6 +150,32 @@ fn check_template(
             report_undeclared_slot(&slot, template_offset, result);
         }
     }
+}
+
+fn report_duplicate_slot(
+    slot: &declared::DuplicateSlot,
+    offset: usize,
+    sibling_offset: Option<usize>,
+    result: &mut ScriptLintResult,
+) {
+    let Some(base) = (if slot.sibling {
+        sibling_offset
+    } else {
+        Some(offset)
+    }) else {
+        return;
+    };
+    let start = base as u32 + slot.start;
+    let end = base as u32 + slot.end;
+    let mut message = CompactString::with_capacity(slot.name.len() + 32);
+    message.push_str("Slot '");
+    message.push_str(&slot.name);
+    message.push_str("' is already defined.");
+    result.add_diagnostic(
+        LintDiagnostic::warn(META.name, message, start, end)
+            .with_label("repeated slot", start, end)
+            .with_help("Remove the repeated slot declaration."),
+    );
 }
 
 fn report_undeclared_slot(

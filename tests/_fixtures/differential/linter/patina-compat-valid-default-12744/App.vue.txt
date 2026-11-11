@@ -1,0 +1,9 @@
+<script setup lang="ts">
+const label = defineModel<string>({ default: 123 })
+const page = defineModel<number>("page", { default: "one" })
+const open = defineModel("open", { type: Boolean, default: "no" })
+</script>
+
+<template>
+  <p>{{ label }} {{ page }} {{ open }}</p>
+</template>

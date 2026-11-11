@@ -1,0 +1,1 @@
+<script>export// note default { label: '雪' };</script>

@@ -3688,6 +3688,59 @@
       }
     },
     {
+      "id": "compiler/sfc/snapshot-paths-witness-12802",
+      "state": "active",
+      "targets": [
+        "ssr"
+      ],
+      "inputs": {
+        "root": "snapshot-paths-witness-12802",
+        "files": [
+          {
+            "path": "Layout.vue.txt",
+            "sha256": "81229cbe71cd36b86576fb66b011f93d91da54087fa1c5c671ac470a6b4f6cb3",
+            "role": "entry"
+          }
+        ]
+      },
+      "reference": {
+        "path": "snapshot-paths-witness-12802/module.expected.txt",
+        "sha256": "7158113bffc492ee142391b5a01fe2a71bdaf59cf530b135b70a9322364817c8",
+        "source": "crates/vize_atelier_sfc/src/script/context/source_snapshot/resolution_tests.rs:a_default_snapshot_resolves_tsconfig_paths; this witness reuses the pinned script-only SSR module of unicode-script-line-comments-11798"
+      },
+      "adapters": {
+        "legacy": "compiler-cli-ssr-v1",
+        "native": null,
+        "reasons": {
+          "native": "No full native compiler differential adapter is registered for this case; the path-alias behavior is covered by the snapshot and linter tests."
+        }
+      },
+      "comparison": {
+        "contract": "compiler-ssr-module-bytes-v1",
+        "requiredFacets": [
+          "code",
+          "css",
+          "errors",
+          "warnings",
+          "macro_artifacts"
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
+            "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
+          }
+        ]
+      }
+    },
+    {
       "id": "compiler/sfc/ssr-component-scope-attrs-11921",
       "state": "active",
       "targets": [
@@ -5103,6 +5156,59 @@
               "vue3-sfc",
               "html-template",
               "tsx"
+            ],
+            "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
+          }
+        ]
+      }
+    },
+    {
+      "id": "compiler/sfc/unclosed-interactive-witness-12803",
+      "state": "active",
+      "targets": [
+        "ssr"
+      ],
+      "inputs": {
+        "root": "unclosed-interactive-witness-12803",
+        "files": [
+          {
+            "path": "Layout.vue.txt",
+            "sha256": "81229cbe71cd36b86576fb66b011f93d91da54087fa1c5c671ac470a6b4f6cb3",
+            "role": "entry"
+          }
+        ]
+      },
+      "reference": {
+        "path": "unclosed-interactive-witness-12803/module.expected.txt",
+        "sha256": "7158113bffc492ee142391b5a01fe2a71bdaf59cf530b135b70a9322364817c8",
+        "source": "crates/vize_armature/tests/nested_interactive_recovery.rs:a_sibling_start_tag_does_not_invent_an_end_tag; this witness reuses the pinned script-only SSR module of unicode-script-line-comments-11798"
+      },
+      "adapters": {
+        "legacy": "compiler-cli-ssr-v1",
+        "native": null,
+        "reasons": {
+          "native": "No full native compiler differential adapter is registered for this case; the missing end tag behavior is covered by the parser and linter tests."
+        }
+      },
+      "comparison": {
+        "contract": "compiler-ssr-module-bytes-v1",
+        "requiredFacets": [
+          "code",
+          "css",
+          "errors",
+          "warnings",
+          "macro_artifacts"
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
             ],
             "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
           }

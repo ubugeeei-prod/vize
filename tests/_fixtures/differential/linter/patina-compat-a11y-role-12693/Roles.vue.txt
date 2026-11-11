@@ -1,0 +1,6 @@
+<template>
+  <div role="switch checkbox">a</div>
+  <div role="SLIDER">b</div>
+  <div role=" checkbox ">c</div>
+  <div role="checkbox">d</div>
+</template>

@@ -1,0 +1,7 @@
+<template>
+  <div>
+    <button type="button">
+      <span>one</span>
+    <button type="button">two</button>
+  </div>
+</template>

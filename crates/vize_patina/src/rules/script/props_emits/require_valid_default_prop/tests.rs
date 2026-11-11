@@ -1,6 +1,8 @@
 use crate::rules::script::RequireValidDefaultProp;
 use crate::rules::script::ScriptLinter;
 
+mod setup;
+
 fn create_linter() -> ScriptLinter {
     let mut linter = ScriptLinter::new();
     linter.add_rule(Box::new(RequireValidDefaultProp));

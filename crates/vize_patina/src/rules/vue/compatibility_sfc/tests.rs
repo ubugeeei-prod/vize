@@ -161,6 +161,51 @@ fn native_events_read_options_components() {
 }
 
 #[test]
+fn props_shadow_reads_type_props_and_value_bindings() {
+    let typed = "<script setup lang=\"ts\">\ndefineProps<{ label: string; size: number }>()\nconst label = 'fixed'\nconst size = 4\n</script>\n<template><p>{{ label }} {{ size }}</p></template>";
+    assert_eq!(reported(Box::new(NoPropsShadow), typed), ["label", "size"]);
+
+    let interface = "<script setup lang=\"ts\">\ninterface Props { label: string }\ndefineProps<Props>()\nconst label = 'x'\n</script>\n<template />";
+    assert_eq!(reported(Box::new(NoPropsShadow), interface), ["label"]);
+
+    let defaults = "<script setup lang=\"ts\">\nconst props = withDefaults(defineProps<{ label?: string }>(), { label: 'a' })\nconst label = props.label\n</script>\n<template />";
+    assert_eq!(reported(Box::new(NoPropsShadow), defaults), ["label"]);
+
+    let intersection = "<script setup lang=\"ts\">\ninterface Base { label: string }\ndefineProps<Base & { size: number }>()\nconst size = 4\n</script>\n<template />";
+    assert_eq!(reported(Box::new(NoPropsShadow), intersection), ["size"]);
+
+    let generic = "<script setup lang=\"ts\" generic=\"T extends string\">\ndefineProps<{ label: T }>()\nconst label = 'fixed'\n</script>\n<template />";
+    assert_eq!(reported(Box::new(NoPropsShadow), generic), ["label"]);
+
+    let destructure = "<script setup lang=\"ts\">\nconst { label = 'a' } = defineProps<{ label?: string; size?: number }>()\nconst size = 4\n</script>\n<template />";
+    assert_eq!(reported(Box::new(NoPropsShadow), destructure), ["size"]);
+
+    let bindings = "<script setup lang=\"ts\">\nimport label from './label'\nimport { icon } from './label'\nimport { text as toneAlias } from './label'\nimport * as modeNs from './label'\ndefineProps({ label: String, icon: String, size: String, mode: String, tone: String, toneAlias: String, modeNs: String })\nconst size = 'm'\nconst tone = 'set next to defineProps'\nenum mode {\n  Dark = 'dark',\n}\ndeclare const extra: string\n</script>\n<template />";
+    assert_eq!(
+        reported(Box::new(NoPropsShadow), bindings),
+        [
+            "label",
+            "icon",
+            "toneAlias",
+            "modeNs",
+            "size",
+            "tone",
+            "mode"
+        ]
+    );
+
+    let declare = "<script setup lang=\"ts\">\ndefineProps({ label: String })\ndeclare const label: string\n</script>\n<template />";
+    assert_eq!(reported(Box::new(NoPropsShadow), declare), ["label"]);
+
+    let type_only = "<script setup lang=\"ts\">\nimport type { label } from './label'\ntype tone = string\ninterface mode { Dark: string }\ndefineProps({ label: String, tone: String, mode: String })\n</script>\n<template />";
+    assert!(
+        reported(Box::new(NoPropsShadow), type_only).is_empty(),
+        "{:?}",
+        reported(Box::new(NoPropsShadow), type_only)
+    );
+}
+
+#[test]
 fn setup_macros_ignore_member_calls() {
     let source = "<script setup lang=\"ts\">\nconst form = { defineModel: (o: unknown) => o, useSlots: () => [] }\nconst initial = form.defineModel({ default: 0 })\nconst names = form.useSlots()\nconst cast = defineModel({ default: 1 }) as unknown\nconst props = withDefaults(defineProps<{ a?: string }>(), {})\n</script>";
     assert!(reported(Box::new(NoDefineModelDefault), source).is_empty());
@@ -169,5 +214,34 @@ fn setup_macros_ignore_member_calls() {
     assert_eq!(
         reported(Box::new(NoDefineModelDefault), model),
         ["default: 1"]
+    );
+}
+
+#[test]
+fn sort_keys_checks_script_objects_outside_component_option_shapes() {
+    let result = lint(
+        Box::new(SortKeys::new(false, false, true)),
+        concat!(
+            "<script>export default { props: { b: String, a: { type: String, required: true, default: '' } }, ",
+            "model: { prop: 'b', event: 'a' }, name: 'x' }</script>",
+            "<script setup>defineOptions({ name: 'App', inheritAttrs: false }); ",
+            "const state = reactive({ zeta: 1, alpha: 2 }); ",
+            "const labels = { b10: 'x', b2: 'y' }; const spread = { b: 1, ...labels, a: 2 }</script>",
+            "<template><p :class=\"{ b: 1, a: 2 }\" /></template>",
+        ),
+    );
+    let names = result
+        .diagnostics
+        .iter()
+        .map(|diagnostic| diagnostic.message.as_str())
+        .collect::<Vec<_>>();
+    assert_eq!(
+        names,
+        [
+            "`a` should be before `b`",
+            "`inheritAttrs` should be before `name`",
+            "`alpha` should be before `zeta`",
+            "`b2` should be before `b10`"
+        ]
     );
 }

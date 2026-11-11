@@ -126,7 +126,11 @@ impl Linter {
         if let Some(value) = options.no_restricted_syntax() {
             self.registry
                 .replace(Box::new(crate::rules::vue::NoRestrictedSyntax::new(
-                    value.selectors.clone(),
+                    value
+                        .selectors
+                        .iter()
+                        .map(|entry| (entry.selector.clone(), entry.message.clone()))
+                        .collect(),
                 )));
         }
         if options.quote_props().is_some() {

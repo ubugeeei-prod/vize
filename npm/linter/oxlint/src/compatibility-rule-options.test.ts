@@ -17,6 +17,15 @@ it("projects eslint-plugin-vue compatibility options into typed Patina options",
       "vue/no-restricted-syntax": { selectors: ["CallExpression"] },
     },
   });
+  const messaged = {
+    selector: "LogicalExpression[operator='??'] > MemberExpression.left:matches([object.name='ts'])",
+    message: "No fallback.",
+  };
+  assert.deepEqual(getRuleOptions("vue/no-restricted-syntax", ["TSAsExpression", messaged]), {
+    ruleOptions: {
+      "vue/no-restricted-syntax": { selectors: ["TSAsExpression", messaged] },
+    },
+  });
   assert.deepEqual(getRuleOptions("vue/quote-props", ["as-needed"]), {
     ruleOptions: { "vue/quote-props": "as-needed" },
   });
@@ -32,7 +41,7 @@ it("projects eslint-plugin-vue compatibility options into typed Patina options",
 
 it("rejects compatibility options that Patina cannot preserve", () => {
   assert.equal(
-    getRuleOptions("vue/no-restricted-syntax", ["CallExpression[callee.name='fetch']"]),
+    getRuleOptions("vue/no-restricted-syntax", ["VElement:nth-of-type(1)"]),
     undefined,
   );
   assert.equal(

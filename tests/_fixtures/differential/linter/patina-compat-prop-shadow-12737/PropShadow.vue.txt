@@ -1,0 +1,27 @@
+<script setup lang="ts">
+import label from "./label";
+import { icon } from "./label";
+
+interface Props {
+  ref: string;
+  key: string;
+  label: string;
+  icon: string;
+  size: string;
+  mode: string;
+  tone: string;
+  is: string;
+}
+
+defineProps<Props>();
+
+const size = "m";
+const tone = "set next to defineProps";
+enum mode {
+  Dark = "dark",
+}
+</script>
+
+<template>
+  <p>{{ label }} {{ icon }} {{ size }} {{ mode.Dark }} {{ tone }} {{ is }}</p>
+</template>

@@ -1,0 +1,9 @@
+<template>
+  <ul>
+    <li>
+      <ul>
+        <li>inner
+      </ul>
+    </li>
+  </ul>
+</template>

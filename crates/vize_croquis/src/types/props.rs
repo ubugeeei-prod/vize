@@ -91,6 +91,11 @@ impl TypeResolver {
         if trimmed.is_empty() {
             return None;
         }
+        // `on_select?(): void` is a prop. `on_open?: () => void` keeps the
+        // property path because its colon comes before the parameter list.
+        if let Some(property) = method_signature_property(trimmed) {
+            return Some(property);
+        }
 
         let Some(colon_pos) = trimmed.find(':') else {
             // TypeScript accepts an unannotated property signature (`{ value }`)
@@ -126,6 +131,57 @@ impl TypeResolver {
             optional,
         })
     }
+}
+
+/// A method signature (`on_select?(): void`) names a prop. A property whose
+/// type is a function (`on_open?: () => void`) has its colon first and is not
+/// handled here.
+fn method_signature_property(trimmed: &str) -> Option<TypeProperty> {
+    let open = trimmed.find('(')?;
+    if trimmed.find(':').is_some_and(|colon| colon < open) {
+        return None;
+    }
+    let mut head = trimmed.get(..open)?.trim_end();
+    if let Some(suffix) = head.strip_prefix("readonly") {
+        let member = suffix.trim_ascii_start();
+        if suffix.len() != member.len() {
+            head = member;
+        }
+    }
+    let optional = head.ends_with('?');
+    let name = head.trim_end_matches('?').trim();
+    if !is_valid_identifier(name) {
+        return None;
+    }
+    Some(TypeProperty {
+        name: CompactString::new(name),
+        prop_type: return_type_after_params(trimmed, open).map(CompactString::new),
+        optional,
+    })
+}
+
+fn return_type_after_params(trimmed: &str, open: usize) -> Option<&str> {
+    let bytes = trimmed.as_bytes();
+    let mut depth = 0i32;
+    let mut index = open;
+    while index < bytes.len() {
+        match bytes[index] {
+            b'(' => depth += 1,
+            b')' => {
+                depth -= 1;
+                if depth == 0 {
+                    let rest = trimmed.get(index + 1..)?.trim_start();
+                    return rest
+                        .strip_prefix(':')
+                        .map(str::trim)
+                        .filter(|ty| !ty.is_empty());
+                }
+            }
+            _ => {}
+        }
+        index += 1;
+    }
+    None
 }
 
 /// Only a closed, proven member grammar can skip whole-member validation.

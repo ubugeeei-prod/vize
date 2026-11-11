@@ -1,0 +1,7 @@
+<script setup lang="ts">
+const props = withDefaults(defineProps<{ label?: string }>(), { label: 123 })
+</script>
+
+<template>
+  <p>{{ props.label }}</p>
+</template>

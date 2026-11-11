@@ -1,0 +1,13 @@
+<script setup lang="ts">
+const props = withDefaults(
+  defineProps<{
+    title: string;
+    hint?: string;
+  }>(),
+  { hint: "" } as const,
+);
+</script>
+
+<template>
+  <p>{{ props.title }} {{ props.hint }}</p>
+</template>

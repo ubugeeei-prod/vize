@@ -12,14 +12,6 @@ use vize_patina::{
     HelpLevel, Linter, Locale, NUXT_BUILTIN_COMPONENTS, Severity, VUE_ROUTER_COMPONENTS,
 };
 
-mod rule_option_mapping;
-
-use self::rule_option_mapping::{
-    attribute_hyphenation_style, component_casing, event_name_casing, html_quotes,
-    html_self_closing_options, mustache_interpolation_spacing, no_mutating_props_options,
-    prop_name_casing, sfc_element_order_options, slot_name_casing, v_bind_style,
-    v_on_event_hyphenation_style, v_on_style, v_slot_style,
-};
 use super::{LintArgs, ResolvedLintPreset};
 #[cfg(test)]
 use crate::lint_plan::matcher::GlobSequence;
@@ -75,10 +67,7 @@ impl ResolvedLinterRuleGroups {
                         "ssr/no-hydration-mismatch".into(),
                     ]);
                 }
-                let restricted_globals = rule_options.restricted_globals();
-                let restricted_members = rule_options.restricted_members();
-                let musea_design_tokens = rule_options.musea_design_tokens();
-                if !musea_design_tokens.is_empty()
+                if !rule_options.musea_design_tokens().is_empty()
                     && !disabled_rules
                         .iter()
                         .any(|rule| rule.as_str() == MUSEA_PREFER_DESIGN_TOKENS)
@@ -88,7 +77,7 @@ impl ResolvedLinterRuleGroups {
                 {
                     additional_rules.push(MUSEA_PREFER_DESIGN_TOKENS.into());
                 }
-                if !restricted_members.is_empty()
+                if !rule_options.restricted_members().is_empty()
                     && !disabled_rules
                         .iter()
                         .any(|rule| rule.as_str() == SCRIPT_NO_RESTRICTED_MEMBERS)
@@ -122,9 +111,7 @@ impl ResolvedLinterRuleGroups {
                     .with_vue_version(features.vue_version)
                     .with_vapor_mode(features.vapor)
                     .with_custom_elements(custom_elements.clone())
-                    .with_restricted_globals(restricted_globals)
-                    .with_restricted_members(restricted_members)
-                    .with_musea_design_tokens(musea_design_tokens);
+                    .with_config_rule_options(rule_options);
                 if let Some(globals) = component_registration_globals(
                     rule_options.component_registration_globals(),
                     *vue_router_available,
@@ -134,103 +121,6 @@ impl ResolvedLinterRuleGroups {
                         globals,
                         rule_options.component_registration_ignore_patterns(),
                     );
-                }
-                if let Some(names) = rule_options.palpable_content_directives() {
-                    linter = linter.with_palpable_content_directives(names.to_vec());
-                }
-                if let Some(options) = rule_options.strict_boolean_expressions() {
-                    linter = linter.with_strict_boolean_expressions_options(options);
-                }
-                if let Some(mode) = rule_options.define_props_destructuring() {
-                    linter = linter.with_define_props_destructuring(mode);
-                }
-                if let Some(options) = rule_options.define_macros_order() {
-                    linter = linter.with_define_macros_order(options);
-                }
-                if let Some(options) = rule_options.component_name_in_template_casing_options() {
-                    linter = linter.with_component_name_in_template_casing_policy(
-                        component_casing(options.casing),
-                        options.registered_components_only,
-                        options.globals.clone(),
-                    );
-                }
-                if let Some(casing) = rule_options.custom_event_name_casing() {
-                    linter = linter.with_custom_event_name_casing(event_name_casing(casing));
-                }
-                if let Some(casing) = rule_options.prop_name_casing() {
-                    linter = linter.with_prop_name_casing(prop_name_casing(casing));
-                }
-                if let Some(style) = rule_options.slot_name_casing() {
-                    linter = linter.with_slot_name_casing(slot_name_casing(style));
-                }
-                if let Some(options) = rule_options.no_mutating_props() {
-                    linter =
-                        linter.with_no_mutating_props_options(no_mutating_props_options(options));
-                }
-                if let Some(options) = rule_options.warn_custom_directive() {
-                    linter = linter.with_warn_custom_directive_ignore(options.ignore.clone());
-                }
-                if let Some(options) = rule_options.no_bare_strings_in_template() {
-                    linter = linter.with_no_bare_strings_allowlist(options.allowlist.clone());
-                }
-                if let Some(options) = rule_options.anchor_has_content() {
-                    linter =
-                        linter.with_anchor_accessible_children(options.accessible_children.clone());
-                }
-                if let Some(options) = rule_options.label_has_for() {
-                    linter =
-                        linter.with_label_control_components(options.control_components.clone());
-                }
-                if let Some(options) = rule_options.sfc_element_order() {
-                    linter =
-                        linter.with_sfc_element_order_options(sfc_element_order_options(options));
-                }
-                if let Some(options) = rule_options.html_self_closing() {
-                    linter =
-                        linter.with_html_self_closing_options(html_self_closing_options(options));
-                }
-                if let Some(options) = rule_options.html_quotes() {
-                    linter = linter.with_html_quotes(html_quotes(options));
-                }
-                if let Some(style) = rule_options.mustache_interpolation_spacing() {
-                    linter = linter
-                        .with_mustache_interpolation_spacing(mustache_interpolation_spacing(style));
-                }
-                if let Some(options) = rule_options.v_on_event_hyphenation_options() {
-                    linter = linter.with_v_on_event_hyphenation_policy(
-                        v_on_event_hyphenation_style(options.style),
-                        options.ignore,
-                        options.autofix,
-                    );
-                }
-                if let Some(style) = rule_options.v_on_style() {
-                    linter = linter.with_v_on_style(v_on_style(style));
-                }
-                if let Some(style) = rule_options.v_slot_style() {
-                    linter = linter.with_v_slot_style(v_slot_style(style));
-                }
-                if let Some(style) = rule_options.v_bind_style() {
-                    linter = linter.with_v_bind_style(v_bind_style(style));
-                }
-                if let Some(style) = rule_options.attribute_hyphenation() {
-                    let style = attribute_hyphenation_style(style);
-                    linter = match rule_options.attribute_hyphenation_ignore() {
-                        Some(ignore) => linter.with_attribute_hyphenation_policy(
-                            style,
-                            ignore.to_vec(),
-                            rule_options
-                                .attribute_hyphenation_ignore_tags()
-                                .unwrap_or_default()
-                                .to_vec(),
-                        ),
-                        None => linter.with_attribute_hyphenation(style),
-                    };
-                }
-                if let Some(modifiers) = rule_options.valid_v_on_modifiers() {
-                    linter = linter.with_valid_v_on_modifiers(modifiers.to_vec());
-                }
-                if let Some(allow) = rule_options.valid_v_slot_allow_modifiers() {
-                    linter = linter.with_valid_v_slot_allow_modifiers(allow);
                 }
                 #[cfg(not(target_arch = "wasm32"))]
                 {

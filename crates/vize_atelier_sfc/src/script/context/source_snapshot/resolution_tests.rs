@@ -328,3 +328,24 @@ fn lexical_parent_fallback_survives_the_physical_miss_probe() {
     );
     assert_eq!(sources.resolve_import(&importer, "./link/../missing"), None);
 }
+
+#[test]
+fn a_default_snapshot_resolves_tsconfig_paths() {
+    let dir = tempfile::tempdir().unwrap();
+    let root = dir.path().canonicalize().unwrap();
+    fs::write(
+        root.join("tsconfig.json"),
+        r#"{"compilerOptions":{"paths":{"lib/*":["./lib/*"]}}}"#,
+    )
+    .unwrap();
+    fs::create_dir_all(root.join("lib")).unwrap();
+    let types = root.join("lib/types.ts");
+    fs::write(&types, "export interface PickProps { row_id: string }\n").unwrap();
+    let importer = root.join("src/Alias.vue");
+    fs::create_dir_all(importer.parent().unwrap()).unwrap();
+    let sources = TypeSourceSnapshot::default();
+    assert_eq!(
+        sources.resolve_import(&importer, "lib/types"),
+        Some(types.canonicalize().unwrap())
+    );
+}

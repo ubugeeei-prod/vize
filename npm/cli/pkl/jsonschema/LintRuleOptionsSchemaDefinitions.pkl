@@ -126,26 +126,16 @@ lintRuleOptionsDef: JsonSchema = new JsonSchema {
       additionalProperties = false
     }
     ["vue/no-restricted-syntax"] = new JsonSchema {
-      type = "object"
-      properties {
-        ["selectors"] = new JsonSchema {
-          type = "array"
-          items = new JsonSchema {
-            type = "string"
-            enum = new Listing {
-              "ArrayExpression"
-              "BinaryExpression"
-              "CallExpression"
-              "ConditionalExpression"
-              "ObjectExpression"
-              "UnaryExpression"
-            }
+      oneOf = new Listing {
+        restrictedSyntaxSelectors
+        new JsonSchema {
+          type = "object"
+          properties {
+            ["selectors"] = restrictedSyntaxSelectors
           }
-          uniqueItems = true
-          default = new Listing {}
+          additionalProperties = false
         }
       }
-      additionalProperties = false
     }
     ["vue/quote-props"] = new JsonSchema {
       type = "string"
@@ -367,4 +357,23 @@ componentNameInTemplateCasingOptionsDef: JsonSchema = new JsonSchema {
     }
   }
   additionalProperties = false
+}
+
+restrictedSyntaxSelectors: JsonSchema = new JsonSchema {
+  type = "array"
+  items = new JsonSchema {
+    oneOf = new Listing {
+      new JsonSchema { type = "string"; minLength = 1 }
+      new JsonSchema {
+        type = "object"
+        properties {
+          ["selector"] = new JsonSchema { type = "string"; minLength = 1 }
+          ["message"] = new JsonSchema { type = "string" }
+        }
+        required = new Listing { "selector" }
+        additionalProperties = false
+      }
+    }
+  }
+  default = new Listing {}
 }

@@ -76,9 +76,9 @@ export default defineConfig({}).withVue({
 | `vue/no-mutating-props` | `{ shallowOnly?: boolean }` | Defaults to `false`; `true` allows nested mutation while still disallowing direct prop reassignment. |
 | `vue/no-use-v-if-with-v-for` | `{ allowUsingIterationVar?: boolean }` | Defaults to `false`. `true` permits `v-if` only when its condition references a sibling `v-for` iteration variable; unrelated conditions are still reported. |
 | `vue/enforce-style-attribute` | `{ allow?: Array<"plain" \| "scoped" \| "module"> }` | Defaults to `["scoped"]`. Lists the accepted style-block modes. |
-| `vue/no-restricted-syntax` | `{ selectors?: Array<"ArrayExpression" \| "BinaryExpression" \| "CallExpression" \| "ConditionalExpression" \| "ObjectExpression" \| "UnaryExpression"> }` | Defaults to `[]`. Only exact supported ESTree node types are accepted; compound esquery selectors fail configuration. |
+| `vue/no-restricted-syntax` | `Array<string \| { selector: string, message?: string }>` or `{ selectors?: ... }` | Defaults to `[]`. The eslint-plugin-vue option form: esquery selectors over the vue-eslint-parser template AST (`VElement`, `VText`, `VExpressionContainer`, `VAttribute`, … and the TS-ESTree nodes of every expression), each with an optional message. See [the supported selector subset](#vue-no-restricted-syntax-selectors); a selector outside it fails configuration. |
 | `vue/quote-props` | `"as-needed"` | Rejects unnecessary quoted object keys in retained template expressions. |
-| `vue/sort-keys` | `{ order?: "asc" \| "desc"; caseSensitive?: boolean; natural?: boolean }` | Defaults to ascending, case-sensitive lexical order for supported nested component option objects. |
+| `vue/sort-keys` | `{ order?: "asc" \| "desc"; caseSensitive?: boolean; natural?: boolean }` | Defaults to ascending, case-sensitive lexical order. Checks every object literal of the script blocks except a component options object itself, the children of `model` and the grandchildren of `computed`, `directives`, `inject`, `props` and `watch`, as eslint-plugin-vue does by default; `natural` uses its natural-compare order. |
 | `vue/warn-custom-directive` | `{ ignore?: string[] }` | Defaults to an empty list. Exact directive names in `ignore` are treated as registered. |
 | `vue/no-bare-strings-in-template` | `{ allowlist?: string[] }` | Omitted uses the upstream default allowlist; an explicit list replaces it. Entries are literals or `/pattern/flags` values using Rust regex syntax; invalid patterns remain literals. |
 | `a11y/anchor-has-content` | `{ accessibleChildren?: string[] }` | Defaults to an empty list. Named components count as accessible anchor content. |
@@ -266,3 +266,15 @@ Good (a configured global):
 ```vue
 <MyButton />
 ```
+
+## `vue/no-restricted-syntax` selectors {#vue-no-restricted-syntax-selectors}
+
+Patina matches a subset of [esquery](https://github.com/estools/esquery):
+
+- node types (case-insensitive) and `*`;
+- attributes: `[attr]`, `[a.b.c=value]`, `!=`, `<`, `<=`, `>`, `>=`, with quoted, numeric, bare or `/regex/flags` values (`i`, `m`, `s`, `u` flags; Rust regex syntax);
+- fields: `.left`, `.a.b`;
+- combinators: descendant (space), `>`, `~`, `+`, and comma-separated lists;
+- `:matches()`, `:is()`, `:not()`, `:has()` (descendants), `:first-child`, `:last-child`, `:nth-child(n)`, `:nth-last-child(n)`, `:statement`, `:expression`, `:declaration`, `:function` and `:pattern`.
+
+Not supported: `:nth-child(an+b)` formulas, `:has(> …)` relative selectors, `[attr=type(...)]` and the `:exit` suffix. The template is `VElement[name='template']` with `VStartTag` / `VAttribute` / `VDirectiveKey` / `VIdentifier` / `VLiteral` / `VExpressionContainer` / `VText` children as vue-eslint-parser builds them; `VText` holds the authored text between elements and interpolations, and element names are lowercased (`rawName` keeps the authored case). Expressions are TS-ESTree without parentheses, inside `VOnExpression`, `VForExpression` or `VSlotScopeExpression` where vue-eslint-parser uses them.

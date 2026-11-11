@@ -83,6 +83,19 @@ pub(crate) fn build<'a, const RAW: bool, const LINT: bool, const STRUCTURAL_DIAG
     // (`</` at EOF, an unterminated bogus construct) become a typed
     // `Unexpected` hole at the innermost open level…
     b.flush_gap(src.len());
+    if STRUCTURAL_DIAGNOSTICS {
+        let mut pending = alloc::vec::Vec::new();
+        b.recovery
+            .for_each_unconsumed_end_tag(|start, end| pending.push((start, end)));
+        let encounter = src.len() as u32;
+        for (start, end) in pending {
+            b.errors.push(crate::markup::SurfaceError::at_encounter(
+                vize_l0::ErrorCode::MissingEndTag,
+                vize_l0::Span::new(start, end),
+                encounter,
+            ));
+        }
+    }
     // …then every still-open element gets its node-level `Missing` hole.
     while let Some(frame) = b.stack.pop() {
         b.missing_end_tag(&frame);

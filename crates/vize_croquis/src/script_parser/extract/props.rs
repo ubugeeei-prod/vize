@@ -94,20 +94,38 @@ fn extract_props_from_runtime_expression(
 
 fn extract_props_from_array(result: &mut ScriptParseResult, arr: &ArrayExpression<'_>) {
     for elem in arr.elements.iter() {
-        if let oxc_ast::ast::ArrayExpressionElement::StringLiteral(s) = elem {
-            let name = s.value.as_str();
-            result.macros.add_prop_with_declaration(
-                PropDefinition {
-                    name: CompactString::new(name),
-                    required: false,
-                    prop_type: None,
-                    default_value: None,
-                },
-                s.span.start,
-                s.span.end,
-            );
-            record_prop_binding(result, name);
+        let Some((name, start, end)) = static_array_element(elem) else {
+            continue;
+        };
+        result.macros.add_prop_with_declaration(
+            PropDefinition {
+                name: CompactString::new(name),
+                required: false,
+                prop_type: None,
+                default_value: None,
+            },
+            start,
+            end,
+        );
+        record_prop_binding(result, name);
+    }
+}
+
+/// A string, or a template literal with no expressions. The span is that element.
+fn static_array_element<'a>(
+    element: &'a oxc_ast::ast::ArrayExpressionElement<'a>,
+) -> Option<(&'a str, u32, u32)> {
+    let expression = element.as_expression()?.get_inner_expression();
+    match expression {
+        Expression::StringLiteral(literal) => {
+            Some((literal.value.as_str(), literal.span.start, literal.span.end))
         }
+        Expression::TemplateLiteral(template) => {
+            let name = template.single_quasi()?;
+            let span = template.span();
+            Some((name.as_str(), span.start, span.end))
+        }
+        _ => None,
     }
 }
 
@@ -130,7 +148,7 @@ fn extract_props_from_object(
                         prop_type: extract_runtime_prop_type(&p.value, source),
                         default_value: extract_runtime_prop_default(&p.value, source),
                     },
-                    p.key.span().start,
+                    p.span.start,
                     p.span.end,
                 );
             }
@@ -161,11 +179,12 @@ fn type_prop_declaration(type_param: &TSType<'_>, name: &str) -> Option<(u32, u3
         return None;
     };
     literal.members.iter().find_map(|member| {
-        let TSSignature::TSPropertySignature(property) = member else {
-            return None;
+        let (key, end) = match member {
+            TSSignature::TSPropertySignature(property) => (&property.key, property.span.end),
+            TSSignature::TSMethodSignature(method) => (&method.key, method.span.end),
+            _ => return None,
         };
-        (runtime_object_property_name(&property.key) == Some(name))
-            .then(|| (property.key.span().start, property.span.end))
+        (runtime_object_property_name(key) == Some(name)).then(|| (key.span().start, end))
     })
 }
 
@@ -188,6 +207,9 @@ pub(super) fn runtime_object_property_name<'a>(key: &'a PropertyKey<'a>) -> Opti
     match key {
         PropertyKey::StaticIdentifier(id) => Some(id.name.as_str()),
         PropertyKey::StringLiteral(s) => Some(s.value.as_str()),
+        PropertyKey::TemplateLiteral(template) => {
+            template.single_quasi().map(|value| value.as_str())
+        }
         _ => None,
     }
 }

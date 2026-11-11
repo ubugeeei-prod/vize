@@ -21,8 +21,7 @@ pub use sort_keys::SortKeys;
 use crate::context::LintContext;
 use crate::ir::ByteRange;
 use oxc_ast::ast::{
-    Argument, CallExpression, Expression, ObjectExpression, ObjectPropertyKind, Program,
-    PropertyKey,
+    CallExpression, Expression, ObjectExpression, ObjectPropertyKind, Program, PropertyKey,
 };
 use oxc_span::{GetSpan, Span};
 
@@ -86,13 +85,6 @@ pub(super) fn callee_name<'a>(call: &'a CallExpression<'a>) -> Option<&'a str> {
     match call.callee.get_inner_expression() {
         Expression::Identifier(identifier) => Some(identifier.name.as_str()),
         Expression::StaticMemberExpression(member) => Some(member.property.name.as_str()),
-        _ => None,
-    }
-}
-
-pub(super) fn object_argument<'a>(argument: &'a Argument<'a>) -> Option<&'a ObjectExpression<'a>> {
-    match argument.as_expression()?.get_inner_expression() {
-        Expression::ObjectExpression(object) => Some(object),
         _ => None,
     }
 }

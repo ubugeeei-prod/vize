@@ -113,6 +113,48 @@ fn fix_inserts_the_end_tag_after_the_content() {
 }
 
 #[test]
+fn reports_a_nested_list_item_closed_only_by_its_parent_list() {
+    for source in [
+        "<ul><li><ul><li>inner</ul></li></ul>",
+        "<ol><li><ol><li>inner</ol></li></ol>",
+        "<ul>\n  <li>\n    <ul>\n      <li>inner\n    </ul>\n  </li>\n</ul>",
+    ] {
+        assert_eq!(
+            warnings(source),
+            ["'<li>' should have end tag."],
+            "{source}"
+        );
+    }
+}
+
+#[test]
+fn a_button_or_anchor_without_an_end_tag_stays_with_the_parser() {
+    let full = Linter::new();
+    for source in [
+        "<div><button type=\"button\"><span>one</span><button type=\"button\">two</button></div>",
+        "<div><a href=\"/one\"><span>one</span><a href=\"/two\">two</a></div>",
+    ] {
+        let result = full.lint_template(source, "test.vue");
+        assert!(
+            result
+                .diagnostics
+                .iter()
+                .all(|diagnostic| diagnostic.rule_name != "vue/html-end-tags"),
+            "{source}: {:?}",
+            result.diagnostics
+        );
+        assert!(
+            result.diagnostics.iter().any(|diagnostic| {
+                diagnostic.rule_name == "parser/template"
+                    && diagnostic.message.contains("missing end tag")
+            }),
+            "{source}: {:?}",
+            result.diagnostics
+        );
+    }
+}
+
+#[test]
 fn reports_inside_an_sfc_template() {
     let source = "<template><ul><li>a</ul></template>";
     let result = linter().lint_sfc(source, "test.vue");

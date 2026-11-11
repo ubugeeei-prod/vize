@@ -1,11 +1,11 @@
 ---
 title: "vue/no-irregular-whitespace"
-description: "Disallow irregular whitespace in template expressions."
+description: "Disallow irregular whitespace in script blocks and templates."
 ---
 
 # `vue/no-irregular-whitespace`
 
-Disallow irregular whitespace in template expressions.
+Disallow irregular whitespace in script blocks and templates.
 
 | Default severity | Presets | Automatic fix | Options |
 | --- | --- | --- | --- |
@@ -50,8 +50,12 @@ export default defineConfig({}).withVue({
 
 Then run `vp run lint`.
 
+## Differences from eslint-plugin-vue
+
+The script blocks and the template are scanned, including template text, comments, and attribute values. `<style>` is not scanned. A run of irregular spaces is one report. String literals are skipped. Comments, regular expressions, template literals, HTML attribute values, and HTML text are checked. The plugin options `skipStrings`, `skipComments`, `skipRegExps`, `skipTemplates`, `skipHTMLAttributeValues`, and `skipHTMLTextContents` are not configurable; the rule always uses those defaults, which skip only string literals.
+
 ## Related
 
 - [Vue rules](../vue.md)
 - [All rules](../all.md)
-- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/compatibility_template/core_rules/no_irregular_whitespace.rs#L12)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/compatibility_template/core_rules/no_irregular_whitespace.rs#L20)

@@ -8,29 +8,29 @@
 //! positive** (a reference this misses becomes an "unused" report on a prop the
 //! component does use), and an over-match only costs a missed finding.
 //!
-//! Every step therefore over-approximates on purpose:
+//! Inside an expression the scan still collects identifier-shaped tokens, so a
+//! string such as `'msg'` counts. These lookalikes are not references:
 //!
-//! * Identifier-shaped **tokens** are collected, not resolved references. So
-//!   `props.msg`, `msg.length` and even `'msg'` inside a template expression all
-//!   count as a reference to `msg`.
-//! * Shadowing is **not** honoured. `v-for="msg in rows"` binds an iteration
-//!   variable rather than the prop, but treating it as a reference only
-//!   suppresses a report.
-//! * Script references are read from the JavaScript/TypeScript AST, minus the
+//! * A member name, except `this.name` and `$props.name`.
+//! * A `v-for` alias or `v-slot` binding. It shadows the prop on that element,
+//!   including its `:key` and children. The loop source and a pattern default
+//!   stay outside that alias.
+//! * A static directive argument (`:id`, `:aria-label`). A dynamic argument is
+//!   an expression and is scanned.
+//! * Script references come from the JavaScript/TypeScript AST, minus the
 //!   `defineProps` call itself. Comments, strings and import paths cannot be
 //!   mistaken for references.
 //!
-//! The one place precision is used is the template *AST*: a name that appears
-//! only in an HTML comment, a text node or a plain attribute is genuinely not a
-//! reference, and Vue never compiles a `v-pre` region. Every position Vue does
-//! compile is scanned — a directive's expression *and* its argument, an
-//! interpolation's content, and a `v-for`'s source and aliases.
+//! A name that appears only in an HTML comment, a text node or a plain
+//! attribute is genuinely not a reference, and Vue never compiles a `v-pre`
+//! region.
 
 use oxc_allocator::Allocator;
-use oxc_ast::ast::{IdentifierReference, StaticMemberExpression};
+use oxc_ast::ast::{Expression, IdentifierReference, StaticMemberExpression};
 use oxc_ast_visit::{Visit, walk::walk_static_member_expression};
 use oxc_parser::Parser;
 use oxc_span::SourceType;
+use vize_croquis::drawer::{extract_slot_props, parse_v_for_scope_expression};
 use vize_l0::{CompactString, FxHashSet};
 use vize_relief::{ExpressionNode, PropNode, RootNode, TemplateChildNode};
 
@@ -82,7 +82,12 @@ pub(super) fn classify_props_access(script: &str, span: (u32, u32)) -> PropsAcce
 /// Every identifier-shaped token referenced by a compiled template expression.
 pub(super) fn template_references(root: &RootNode<'_>) -> FxHashSet<CompactString> {
     let mut names = FxHashSet::default();
-    collect_children(&root.children, &mut names, root.source);
+    collect_children(
+        &root.children,
+        &mut names,
+        root.source,
+        &FxHashSet::default(),
+    );
     names
 }
 
@@ -90,27 +95,67 @@ fn collect_children(
     children: &[TemplateChildNode<'_>],
     names: &mut FxHashSet<CompactString>,
     source: &str,
+    shadowed: &FxHashSet<CompactString>,
 ) {
     for child in children {
         match child {
             TemplateChildNode::Element(element) => {
+                let mut local = shadowed.clone();
                 for prop in element.props.iter() {
-                    if let PropNode::Directive(directive) = prop {
-                        // A directive's argument is an expression too when it is
-                        // dynamic (`:[key]="x"`); a static one is a plain name
-                        // and contributes nothing harmful.
-                        for exp in [directive.exp.as_ref(), directive.arg.as_ref()]
-                            .into_iter()
-                            .flatten()
-                        {
-                            push_identifier_tokens(expression_source(exp, source), names);
+                    let PropNode::Directive(directive) = prop else {
+                        continue;
+                    };
+                    let Some(exp) = directive.exp.as_ref() else {
+                        continue;
+                    };
+                    let content = expression_source(exp, source);
+                    if directive.name == "for" {
+                        if let Some(parsed) = parse_v_for_scope_expression(content) {
+                            push_identifier_tokens(parsed.source.as_str(), names, shadowed);
+                            scan_binding_defaults(content, names, shadowed);
+                            for alias in parsed.value_bindings {
+                                local.insert(alias);
+                            }
+                            if let Some(alias) = parsed.key_alias {
+                                local.insert(alias);
+                            }
+                            if let Some(alias) = parsed.index_alias {
+                                local.insert(alias);
+                            }
+                        } else {
+                            push_identifier_tokens(content, names, shadowed);
                         }
+                    } else if directive.name == "slot" {
+                        for alias in extract_slot_props(content) {
+                            local.insert(alias);
+                        }
+                        scan_binding_defaults(content, names, shadowed);
                     }
                 }
-                collect_children(&element.children, names, source);
+                for prop in element.props.iter() {
+                    let PropNode::Directive(directive) = prop else {
+                        continue;
+                    };
+                    if let Some(argument) = directive.arg.as_ref()
+                        && !is_static_expression(argument)
+                    {
+                        push_identifier_tokens(expression_source(argument, source), names, &local);
+                    }
+                    if matches!(directive.name, "for" | "slot") {
+                        continue;
+                    }
+                    if let Some(exp) = directive.exp.as_ref() {
+                        push_identifier_tokens(expression_source(exp, source), names, &local);
+                    }
+                }
+                collect_children(&element.children, names, source, &local);
             }
             TemplateChildNode::Interpolation(interpolation) => {
-                push_identifier_tokens(expression_source(&interpolation.content, source), names);
+                push_identifier_tokens(
+                    expression_source(&interpolation.content, source),
+                    names,
+                    shadowed,
+                );
             }
             // `v-if` / `v-for` are still plain directives in the parse this
             // reads, so these arms only matter if a transformed AST is ever
@@ -118,14 +163,37 @@ fn collect_children(
             TemplateChildNode::If(if_node) => {
                 for branch in if_node.branches.iter() {
                     if let Some(condition) = branch.condition.as_ref() {
-                        push_identifier_tokens(expression_source(condition, source), names);
+                        push_identifier_tokens(
+                            expression_source(condition, source),
+                            names,
+                            shadowed,
+                        );
                     }
-                    collect_children(&branch.children, names, source);
+                    collect_children(&branch.children, names, source, shadowed);
                 }
             }
             TemplateChildNode::For(for_node) => {
-                push_identifier_tokens(expression_source(&for_node.source, source), names);
-                collect_children(&for_node.children, names, source);
+                push_identifier_tokens(
+                    expression_source(&for_node.source, source),
+                    names,
+                    shadowed,
+                );
+                let mut local = shadowed.clone();
+                for alias in [
+                    for_node.value_alias.as_ref(),
+                    for_node.key_alias.as_ref(),
+                    for_node.object_index_alias.as_ref(),
+                ]
+                .into_iter()
+                .flatten()
+                {
+                    push_identifier_tokens(
+                        expression_source(alias, source),
+                        &mut local,
+                        &FxHashSet::default(),
+                    );
+                }
+                collect_children(&for_node.children, names, source, &local);
             }
             _ => {}
         }
@@ -160,10 +228,10 @@ pub(super) fn push_script_references(
     if parsed.panicked || !parsed.diagnostics.is_empty() {
         let (start, end) = excluded.unwrap_or((script.len() as u32, script.len() as u32));
         if let Some(before) = script.get(..start as usize) {
-            push_identifier_tokens(before, names);
+            push_identifier_tokens(before, names, &FxHashSet::default());
         }
         if let Some(after) = script.get(end as usize..) {
-            push_identifier_tokens(after, names);
+            push_identifier_tokens(after, names, &FxHashSet::default());
         }
         return;
     }
@@ -192,9 +260,11 @@ impl<'a> Visit<'a> for ScriptReferenceVisitor<'_> {
     }
 
     fn visit_static_member_expression(&mut self, it: &StaticMemberExpression<'a>) {
-        // `this.msg` in a sibling Options API block can read a prop. Treat
-        // static members conservatively, just as the previous token scan did.
-        if self.outside_excluded(it.property.span.start, it.property.span.end) {
+        // `count.value` names a member of another object. Only `this.msg` and
+        // `$props.msg` read a prop.
+        if self.outside_excluded(it.property.span.start, it.property.span.end)
+            && is_prop_member_object(&it.object)
+        {
             self.names
                 .insert(CompactString::new(it.property.name.as_str()));
         }
@@ -202,9 +272,30 @@ impl<'a> Visit<'a> for ScriptReferenceVisitor<'_> {
     }
 }
 
-/// Push every identifier-shaped token of `source` onto `names`.
-pub(super) fn push_identifier_tokens(source: &str, names: &mut FxHashSet<CompactString>) {
+fn is_prop_member_object(object: &Expression<'_>) -> bool {
+    match object {
+        Expression::ThisExpression(_) => true,
+        Expression::Identifier(identifier) => identifier.name == "$props",
+        Expression::StaticMemberExpression(member) => {
+            member.property.name == "$props"
+                && matches!(member.object, Expression::ThisExpression(_))
+        }
+        Expression::ParenthesizedExpression(parenthesized) => {
+            is_prop_member_object(&parenthesized.expression)
+        }
+        _ => false,
+    }
+}
+
+/// Push identifier tokens from `source`, skipping `shadowed` names and member
+/// names other than `this.name` / `$props.name`.
+pub(super) fn push_identifier_tokens(
+    source: &str,
+    names: &mut FxHashSet<CompactString>,
+    shadowed: &FxHashSet<CompactString>,
+) {
     let mut chars = source.char_indices().peekable();
+    let mut previous: Option<(&str, usize)> = None;
     while let Some((offset, ch)) = chars.next() {
         if !is_identifier_start(ch) {
             continue;
@@ -217,10 +308,110 @@ pub(super) fn push_identifier_tokens(source: &str, names: &mut FxHashSet<Compact
             end = next_offset + next_ch.len_utf8();
             chars.next();
         }
-        if let Some(name) = source.get(offset..end) {
+        let Some(name) = source.get(offset..end) else {
+            continue;
+        };
+        let member_of = previous.and_then(|(object, object_end)| {
+            let between = source.get(object_end..offset)?.trim();
+            ((between == "." || between == "?.") && (object == "this" || object == "$props"))
+                .then_some(object)
+        });
+        if member_of.is_some()
+            || (!is_member_name(source, previous, offset) && !shadowed.contains(name))
+        {
             names.insert(CompactString::new(name));
         }
+        previous = Some((name, end));
     }
+}
+
+fn is_member_name(source: &str, previous: Option<(&str, usize)>, offset: usize) -> bool {
+    let Some((_, object_end)) = previous else {
+        return false;
+    };
+    let Some(between) = source.get(object_end..offset) else {
+        return false;
+    };
+    let between = between.trim();
+    between == "." || between == "?."
+}
+
+/// Identifiers on the right of `=` inside a `v-for` or `v-slot` pattern are
+/// evaluated outside the alias. `==`, `===` and `=>` are not defaults.
+fn scan_binding_defaults(
+    pattern: &str,
+    names: &mut FxHashSet<CompactString>,
+    shadowed: &FxHashSet<CompactString>,
+) {
+    let bytes = pattern.as_bytes();
+    let mut index = 0;
+    while index < bytes.len() {
+        match bytes[index] {
+            b'\'' | b'"' | b'`' => index = skip_quoted(bytes, index),
+            b'=' => {
+                let next = bytes.get(index + 1).copied();
+                let operator = next == Some(b'=')
+                    || next == Some(b'>')
+                    || (index > 0 && matches!(bytes[index - 1], b'!' | b'<' | b'>'));
+                if operator {
+                    index += if next == Some(b'=') { 2 } else { 1 };
+                    if next == Some(b'=') && bytes.get(index).copied() == Some(b'=') {
+                        index += 1;
+                    }
+                    continue;
+                }
+                let start = index + 1;
+                let end = end_of_default(bytes, start);
+                if let Some(value) = pattern.get(start..end) {
+                    push_identifier_tokens(value, names, shadowed);
+                }
+                index = end;
+            }
+            _ => index += 1,
+        }
+    }
+}
+
+fn end_of_default(bytes: &[u8], start: usize) -> usize {
+    let mut index = start;
+    let mut depth = 0i32;
+    while index < bytes.len() {
+        match bytes[index] {
+            b'\'' | b'"' | b'`' => index = skip_quoted(bytes, index),
+            b'(' | b'[' | b'{' => {
+                depth += 1;
+                index += 1;
+            }
+            b')' | b']' | b'}' if depth == 0 => return index,
+            b')' | b']' | b'}' => {
+                depth -= 1;
+                index += 1;
+            }
+            b',' if depth == 0 => return index,
+            _ => index += 1,
+        }
+    }
+    bytes.len()
+}
+
+fn skip_quoted(bytes: &[u8], start: usize) -> usize {
+    let quote = bytes[start];
+    let mut index = start + 1;
+    while index < bytes.len() {
+        if bytes[index] == b'\\' {
+            index += 2;
+            continue;
+        }
+        if bytes[index] == quote {
+            return index + 1;
+        }
+        index += 1;
+    }
+    bytes.len()
+}
+
+fn is_static_expression(exp: &ExpressionNode<'_>) -> bool {
+    matches!(exp, ExpressionNode::Simple(simple) if simple.is_static)
 }
 
 /// Identifiers may be non-ASCII (`ラベル`, `día`), so scan by character rather

@@ -4,8 +4,9 @@ use super::NoDupeKeysModuleScript;
 use oxc_ast::{
     AstKind,
     ast::{
-        BindingPattern, CallExpression, Declaration, Expression, ObjectPropertyKind, Program,
-        PropertyKey, Statement, TSInterfaceDeclaration, TSSignature, TSType, TSTypeName,
+        ArrayExpressionElement, BindingPattern, CallExpression, Declaration, Expression,
+        ObjectPropertyKind, Program, PropertyKey, Statement, TSInterfaceDeclaration, TSSignature,
+        TSType, TSTypeName,
     },
 };
 use oxc_semantic::Semantic;
@@ -97,10 +98,8 @@ pub(crate) fn declaration_span(call: &CallExpression<'_>, name: &str) -> Option<
             }
             Expression::ArrayExpression(array) => {
                 return array.elements.iter().find_map(|element| {
-                    let Some(Expression::StringLiteral(literal)) = element.as_expression() else {
-                        return None;
-                    };
-                    (literal.value == name).then_some(literal.span)
+                    let (element_name, span) = static_array_element_name(element)?;
+                    (element_name == name).then_some(span)
                 });
             }
             _ => {}
@@ -132,6 +131,21 @@ fn type_property_span(ty: &TSType<'_>, name: &str) -> Option<Span> {
             .find_map(|ty| type_property_span(ty, name)),
         TSType::TSParenthesizedType(parenthesized) => {
             type_property_span(&parenthesized.type_annotation, name)
+        }
+        _ => None,
+    }
+}
+
+/// A prop name written as a string or as a template literal with no expressions.
+fn static_array_element_name<'a>(
+    element: &'a ArrayExpressionElement<'a>,
+) -> Option<(&'a str, Span)> {
+    let expression = element.as_expression()?.get_inner_expression();
+    match expression {
+        Expression::StringLiteral(literal) => Some((literal.value.as_str(), literal.span)),
+        Expression::TemplateLiteral(template) => {
+            let name = template.single_quasi()?;
+            Some((name.as_str(), template.span()))
         }
         _ => None,
     }
@@ -169,8 +183,8 @@ fn runtime_names<'s, 'a>(
     match expression.get_inner_expression() {
         Expression::ArrayExpression(array) => {
             for element in &array.elements {
-                if let Some(Expression::StringLiteral(string)) = element.as_expression() {
-                    names.push(CompactString::new(string.value.as_str()));
+                if let Some((name, _)) = static_array_element_name(element) {
+                    names.push(CompactString::new(name));
                 }
             }
         }

@@ -10,7 +10,7 @@ expression: result.diagnostics
         start: 33,
         end: 36,
         help: Some(
-            "Vue reserves `key`, `ref`, `ref_for`, `ref_key`, `is`, and any `$`-prefixed name. Rename this prop to something else.",
+            "Vue reserves `key`, `ref`, `ref_for`, `ref_key`, and any `$`-prefixed name. Rename this prop to something else.",
         ),
         labels: [
             Label {

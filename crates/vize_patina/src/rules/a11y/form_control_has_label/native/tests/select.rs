@@ -24,7 +24,7 @@ fn closed_select_options_preserve_all_legacy_fields_and_unchanged_requeries() {
             0,
         ),
         ("<select title='Name'><option>A</option></select>", 0),
-        ("<select :title='name'><option>A</option></select>", 1),
+        ("<select :title='name'><option>A</option></select>", 0),
         (
             "<select placeholder='Name'><option>A</option><option>B</option></select>",
             1,

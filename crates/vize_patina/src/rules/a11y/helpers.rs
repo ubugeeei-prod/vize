@@ -211,53 +211,105 @@ pub const ARIA_UNSUPPORTED_ELEMENTS: &[&str] = &[
     "picture", "script", "source", "style", "title", "track",
 ];
 
-/// Mapping of elements to their implicit ARIA roles
+/// A static attribute, a string-literal binding, or some other present binding.
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub(super) enum AuthoredAttr<'a> {
+    Missing,
+    Static(&'a str),
+    /// Present, and not a string literal. `null` and `undefined` stay [`Missing`].
+    Dynamic,
+}
+
+/// Mapping of elements to their implicit ARIA roles.
+///
+/// `nav`, `section`, and `form` are landmarks only when they have an accessible
+/// name. A `select` is a combobox until `multiple` or `size` greater than 1
+/// makes it a listbox. An `<input>` with a dynamic `type` has no static role.
 pub fn get_implicit_role(tag: &str, element: &ElementNode) -> Option<&'static str> {
-    get_implicit_role_by_attr(tag, |name| get_static_attribute_value(element, name))
+    get_implicit_role_by_attr(tag, |name| relief_authored_attr(element, name))
+}
+
+pub(super) fn relief_authored_attr<'a>(element: &'a ElementNode, name: &str) -> AuthoredAttr<'a> {
+    for prop in &element.props {
+        match prop {
+            PropNode::Attribute(attr) if attr.name == name => {
+                return AuthoredAttr::Static(
+                    attr.value.as_ref().map(|value| value.content).unwrap_or(""),
+                );
+            }
+            PropNode::Directive(dir) if dir.name == "bind" => {
+                let Some(ExpressionNode::Simple(arg)) = &dir.arg else {
+                    continue;
+                };
+                if !arg.is_static || arg.content != name {
+                    continue;
+                }
+                return match &dir.exp {
+                    Some(ExpressionNode::Simple(simple)) => authored_expression(simple.content),
+                    Some(ExpressionNode::Compound(_)) | None => AuthoredAttr::Dynamic,
+                };
+            }
+            _ => {}
+        }
+    }
+    AuthoredAttr::Missing
+}
+
+fn authored_expression(content: &str) -> AuthoredAttr<'_> {
+    let content = content.trim();
+    if content.is_empty() || matches!(content, "null" | "undefined") {
+        return AuthoredAttr::Missing;
+    }
+    match string_literal_value(content) {
+        Some(literal) => AuthoredAttr::Static(literal),
+        None => AuthoredAttr::Dynamic,
+    }
+}
+
+fn has_accessible_name<'a>(mut attr: impl FnMut(&str) -> AuthoredAttr<'a>) -> bool {
+    ["aria-label", "aria-labelledby", "title"]
+        .into_iter()
+        .any(|name| match attr(name) {
+            AuthoredAttr::Static(value) => !value.trim().is_empty(),
+            AuthoredAttr::Dynamic => true,
+            AuthoredAttr::Missing => false,
+        })
 }
 
 pub(super) fn get_implicit_role_by_attr<'a>(
     tag: &str,
-    mut static_attribute_value: impl FnMut(&str) -> Option<&'a str>,
+    mut attr: impl FnMut(&str) -> AuthoredAttr<'a>,
 ) -> Option<&'static str> {
     match tag {
-        "a" => {
-            if static_attribute_value("href").is_some() {
-                Some("link")
-            } else {
-                None
-            }
-        }
-        "area" => {
-            if static_attribute_value("href").is_some() {
-                Some("link")
-            } else {
-                None
-            }
-        }
+        "a" | "area" => match attr("href") {
+            AuthoredAttr::Static(_) => Some("link"),
+            AuthoredAttr::Missing | AuthoredAttr::Dynamic => None,
+        },
         "article" => Some("article"),
         "aside" => Some("complementary"),
         "button" => Some("button"),
         "datalist" => Some("listbox"),
         "details" => Some("group"),
         "dialog" => Some("dialog"),
+        "div" | "span" => Some("generic"),
         "fieldset" => Some("group"),
         "figure" => Some("figure"),
         "footer" => Some("contentinfo"),
-        "form" => Some("form"),
+        "form" => has_accessible_name(&mut attr).then_some("form"),
         "h1" | "h2" | "h3" | "h4" | "h5" | "h6" => Some("heading"),
         "header" => Some("banner"),
         "hr" => Some("separator"),
-        "img" => {
-            let alt = static_attribute_value("alt");
-            match alt {
-                Some("") => Some("presentation"),
-                _ => Some("img"),
-            }
-        }
+        "img" => match attr("alt") {
+            AuthoredAttr::Static("") => Some("presentation"),
+            _ => Some("img"),
+        },
         "input" => {
-            let input_type = static_attribute_value("type").unwrap_or("text");
-            match input_type {
+            let input_type = match attr("type") {
+                AuthoredAttr::Missing => "text",
+                AuthoredAttr::Static(value) => value,
+                AuthoredAttr::Dynamic => return None,
+            };
+            let role = match input_type {
                 "button" | "image" | "reset" | "submit" => Some("button"),
                 "checkbox" => Some("checkbox"),
                 "radio" => Some("radio"),
@@ -266,20 +318,34 @@ pub(super) fn get_implicit_role_by_attr<'a>(
                 "email" | "tel" | "text" | "url" | "" => Some("textbox"),
                 "number" => Some("spinbutton"),
                 _ => None,
+            };
+            if role == Some("textbox") && !matches!(attr("list"), AuthoredAttr::Missing) {
+                Some("combobox")
+            } else {
+                role
             }
         }
         "li" => Some("listitem"),
         "main" => Some("main"),
         "menu" => Some("list"),
         "meter" => Some("meter"),
-        "nav" => Some("navigation"),
+        "nav" => has_accessible_name(&mut attr).then_some("navigation"),
         "ol" | "ul" => Some("list"),
         "optgroup" => Some("group"),
         "option" => Some("option"),
         "output" => Some("status"),
+        "p" => Some("paragraph"),
         "progress" => Some("progressbar"),
-        "section" => Some("region"),
-        "select" => Some("listbox"),
+        "section" => has_accessible_name(&mut attr).then_some("region"),
+        "select" => {
+            let multiple = !matches!(attr("multiple"), AuthoredAttr::Missing);
+            let sized = matches!(attr("size"), AuthoredAttr::Static(value) if value.parse::<u32>().ok().is_some_and(|size| size > 1));
+            if multiple || sized {
+                Some("listbox")
+            } else {
+                Some("combobox")
+            }
+        }
         "summary" => Some("button"),
         "table" => Some("table"),
         "tbody" | "tfoot" | "thead" => Some("rowgroup"),

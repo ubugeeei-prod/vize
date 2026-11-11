@@ -106,7 +106,7 @@ export function getRuleOptions(
     case "vue/attribute-hyphenation":
       return getAttributeHyphenationOptions(options);
     case "vue/no-restricted-syntax":
-      if (options.every(isSupportedRestrictedSyntaxSelector)) {
+      if (options.every(isSupportedRestrictedSyntaxEntry)) {
         return {
           ruleOptions: {
             "vue/no-restricted-syntax": { selectors: [...options] },
@@ -160,17 +160,25 @@ export function getRuleOptions(
   return undefined;
 }
 
-function isSupportedRestrictedSyntaxSelector(value: unknown): value is string {
+const UNSUPPORTED_PSEUDO_CLASS =
+  /:(?!(?:matches|is|not|has|nth-child|nth-last-child)\(|(?:first-child|last-child|statement|expression|declaration|function|pattern)\b)/u;
+
+/** A string or `{ selector, message }` entry within Patina's esquery subset. */
+function isSupportedRestrictedSyntaxEntry(
+  value: unknown,
+): value is string | { selector: string; message?: string } {
+  const selector = isString(value)
+    ? value
+    : isRecord(value) &&
+        hasOnlyKeys(value, ["selector", "message"]) &&
+        isString(value.selector) &&
+        (value.message === undefined || isString(value.message))
+      ? value.selector
+      : undefined;
   return (
-    isString(value) &&
-    [
-      "ArrayExpression",
-      "BinaryExpression",
-      "CallExpression",
-      "ConditionalExpression",
-      "ObjectExpression",
-      "UnaryExpression",
-    ].includes(value)
+    selector !== undefined &&
+    selector.trim() !== "" &&
+    !UNSUPPORTED_PSEUDO_CLASS.test(selector.replace(/(["'])(?:\\.|(?!\1).)*\1|\/(?:\\.|[^/])*\//gu, ""))
   );
 }
 

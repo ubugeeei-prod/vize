@@ -220,20 +220,6 @@ pub(super) fn property_name<'a>(key: &'a PropertyKey<'a>) -> Option<&'a str> {
     }
 }
 
-pub(super) fn is_irregular_whitespace(character: char) -> bool {
-    matches!(
-        character,
-        '\u{000B}' | '\u{000C}' | '\u{00A0}' | '\u{0085}' | '\u{1680}' | '\u{180E}' | '\u{2000}'
-            ..='\u{200B}'
-                | '\u{2028}'
-                | '\u{2029}'
-                | '\u{202F}'
-                | '\u{205F}'
-                | '\u{3000}'
-                | '\u{FEFF}'
-    )
-}
-
 pub(super) fn collect_nested_addition_spans(
     expression: &Expression<'_>,
     spans: &mut FxHashSet<(u32, u32)>,

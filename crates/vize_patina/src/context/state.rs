@@ -38,6 +38,8 @@ pub struct ElementContext {
     pub has_v_if: bool,
     /// Variables defined by v-for on this element.
     pub v_for_vars: Vec<CompactString>,
+    /// `is="vue:name"` renders a component in place of this tag.
+    pub vue_is_component: bool,
 }
 
 impl ElementContext {
@@ -49,6 +51,7 @@ impl ElementContext {
             has_v_for: false,
             has_v_if: false,
             v_for_vars: Vec::new(),
+            vue_is_component: false,
         }
     }
 
@@ -60,6 +63,7 @@ impl ElementContext {
             has_v_for: true,
             has_v_if: false,
             v_for_vars: vars,
+            vue_is_component: false,
         }
     }
 }
