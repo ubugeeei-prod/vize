@@ -5,9 +5,10 @@ run-name: "Type-check profile ${{ inputs.head_sha || github.sha }}${{ inputs.bas
 # node, Vize native, libc, kernel), phase and function, with folded stacks,
 # flame graphs, tsgo's own pprof profile and perf stat counters, base vs head.
 # Vize is built in the ci-opt profile with frame pointers and its symbols.
-# A push to bench/typecheck-profile/** profiles the pushed commit; trailers of
-# its message stand in for the inputs: Profile-Base, Profile-Corpora,
-# Profile-Lanes and Profile-Frequency.
+# A push to bench/typecheck-profile/** profiles the pushed commit; trailers in
+# the last paragraph of its message stand in for the inputs: Profile-Base (a
+# full SHA), Profile-Corpora, Profile-Lanes and Profile-Frequency. The
+# "Validate inputs" step prints what it read.
 on:
   push:
     branches: ["bench/typecheck-profile/**"]
@@ -68,9 +69,16 @@ jobs:
       - name: Validate inputs
         run: |
           set -euo pipefail
-          [[ "$HEAD_SHA" =~ ^[0-9a-f]{40}$ ]]
-          [[ -z "$BASE_SHA" || ( "$BASE_SHA" =~ ^[0-9a-f]{40}$ && "$BASE_SHA" != "$HEAD_SHA" ) ]]
-          [[ "$CORPORA" =~ ^[a-z0-9,-]*$ && "$LANES" =~ ^[a-z,-]+$ && "$FREQUENCY" =~ ^[1-9][0-9]{1,4}$ ]]
+          echo "head=$HEAD_SHA base=${BASE_SHA:-none} corpora=${CORPORA:-all} lanes=$LANES frequency=$FREQUENCY"
+          fail() { echo "::error::$1"; exit 1; }
+          [[ "$HEAD_SHA" =~ ^[0-9a-f]{40}$ ]] || fail "head must be a full 40-hex SHA: $HEAD_SHA"
+          if [[ -n "$BASE_SHA" ]]; then
+            [[ "$BASE_SHA" =~ ^[0-9a-f]{40}$ ]] || fail "Profile-Base / base_sha must be a full 40-hex SHA: $BASE_SHA"
+            [[ "$BASE_SHA" != "$HEAD_SHA" ]] || fail "base and head are the same commit"
+          fi
+          [[ "$CORPORA" =~ ^[a-z0-9,-]*$ ]] || fail "corpora must be comma-separated ids: $CORPORA"
+          [[ "$LANES" =~ ^[a-z,-]+$ ]] || fail "lanes must be comma-separated ids: $LANES"
+          [[ "$FREQUENCY" =~ ^[1-9][0-9]{1,4}$ ]] || fail "frequency must be 10..99999 Hz: $FREQUENCY"
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with:
           node-version-file: package.json
