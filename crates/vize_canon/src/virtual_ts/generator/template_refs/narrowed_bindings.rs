@@ -7,14 +7,13 @@
 //! `value` absorbs the nullish member: `number`, not `number | undefined`.
 //! Only maybe-ref bindings can carry such a union, so only those are analysed.
 
-use oxc_allocator::Allocator;
 use oxc_ast::ast::{
     Argument, AssignmentTarget, BinaryOperator, ChainElement, Expression, SimpleAssignmentTarget,
     UnaryOperator,
 };
-use oxc_parser::Parser;
 use oxc_span::SourceType;
 use vize_carton::{FxHashSet, String};
+use vize_croquis::script_parser::with_shared_expression;
 use vize_croquis::{Croquis, ScopeData, TemplateExpressionKind};
 
 /// The subset of `candidates` some template expression narrows.
@@ -69,15 +68,15 @@ fn collect_expression(
     candidates: &[&str],
     narrowed: &mut FxHashSet<String>,
 ) {
-    let allocator = Allocator::default();
-    let Ok(expression) = Parser::new(&allocator, source, SourceType::ts()).parse_expression()
-    else {
-        return;
-    };
-    walk(&expression, narrowing, &mut |name| {
-        if candidates.contains(&name) {
-            narrowed.insert(name.into());
-        }
+    with_shared_expression(source, SourceType::ts(), |expression| {
+        let Some(expression) = expression else {
+            return;
+        };
+        walk(expression, narrowing, &mut |name| {
+            if candidates.contains(&name) {
+                narrowed.insert(name.into());
+            }
+        });
     });
 }
 

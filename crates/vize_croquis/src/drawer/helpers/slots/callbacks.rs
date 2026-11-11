@@ -2,9 +2,9 @@
 //! callbacks, destructuring and comments. Inline statements alone bind `$event`.
 
 use super::slot_props::extract_slot_binding_names;
-use oxc_allocator::Allocator;
+use crate::script_parser::with_shared_parse;
 use oxc_ast::ast::{ChainElement, Expression, Statement};
-use oxc_parser::Parser;
+use oxc_parser::ParserReturn;
 use oxc_span::SourceType;
 use vize_carton::{CompactString, SmallVec, cstr};
 
@@ -26,16 +26,21 @@ pub fn classify_event_handler(source: &str) -> EventHandlerExpression {
 pub fn classify_event_handler_with_identifier(
     source: &str,
 ) -> (EventHandlerExpression, Option<CompactString>) {
-    let allocator = Allocator::default();
     // Parsing the entire wrapped program rejects valid expression prefixes
     // followed by statements, which must retain their implicit event scope.
     let wrapped = cstr!("({source}\n)");
-    let parsed = Parser::new(&allocator, &wrapped, SourceType::ts()).parse();
-    let parsed = if parsed.panicked || !parsed.diagnostics.is_empty() {
-        Parser::new(&allocator, &wrapped, SourceType::tsx()).parse()
-    } else {
-        parsed
-    };
+    with_shared_parse(&wrapped, SourceType::ts(), |parsed| {
+        if parsed.panicked || !parsed.diagnostics.is_empty() {
+            with_shared_parse(&wrapped, SourceType::tsx(), classify_wrapped_handler)
+        } else {
+            classify_wrapped_handler(parsed)
+        }
+    })
+}
+
+fn classify_wrapped_handler(
+    parsed: &ParserReturn<'_>,
+) -> (EventHandlerExpression, Option<CompactString>) {
     if parsed.panicked || !parsed.diagnostics.is_empty() {
         return (EventHandlerExpression::Inline, None);
     }

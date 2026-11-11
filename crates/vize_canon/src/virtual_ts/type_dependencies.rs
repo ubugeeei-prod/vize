@@ -1,11 +1,11 @@
 //! Free names in a type expression, respecting TypeScript lexical scopes.
 
-use oxc_allocator::Allocator;
 use oxc_ast::ast::{Declaration, Statement};
-use oxc_parser::Parser;
+use oxc_parser::ParserReturn;
 use oxc_semantic::SemanticBuilder;
 use oxc_span::{GetSpan, SourceType};
 use vize_carton::{CompactString, FxHashSet, cstr};
+use vize_croquis::script_parser::with_shared_parse;
 
 pub(super) fn free_names(source: &str) -> Option<FxHashSet<CompactString>> {
     // An assertion gives the parser a type context without introducing a
@@ -30,8 +30,12 @@ pub(super) fn local_type_declaration(source: &str) -> Option<(&str, FxHashSet<Co
 fn analyze_declaration(
     source: &str,
 ) -> Option<(FxHashSet<CompactString>, Option<std::ops::Range<usize>>)> {
-    let allocator = Allocator::default();
-    let parsed = Parser::new(&allocator, source, SourceType::ts()).parse();
+    with_shared_parse(source, SourceType::ts(), analyze_parsed_declaration)
+}
+
+fn analyze_parsed_declaration(
+    parsed: &ParserReturn<'_>,
+) -> Option<(FxHashSet<CompactString>, Option<std::ops::Range<usize>>)> {
     if parsed.panicked || !parsed.diagnostics.is_empty() {
         return None;
     }

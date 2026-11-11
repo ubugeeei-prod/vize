@@ -10,6 +10,7 @@ use oxc_parser::Parser;
 use oxc_span::{GetSpan, SourceType};
 use oxc_syntax::scope::ScopeFlags;
 use vize_carton::{String, append};
+use vize_croquis::script_parser::with_shared_expression;
 use vize_croquis::{
     Scope, ScopeData, TemplateExpression, VForScopeData, drawer::extract_identifiers_oxc,
 };
@@ -119,17 +120,18 @@ pub(super) fn common_vif_guard_prefix_for_guards(guards: &[&str]) -> Option<Stri
 /// Generated-only comparison diagnostics belong to the existing guard ignores.
 pub(super) fn callback_vif_guard(guard: &str, handler_binding: Option<&str>) -> Option<String> {
     if let Some(name) = handler_binding {
-        let allocator = Allocator::default();
-        if let Ok(expression) = Parser::new(&allocator, guard, SourceType::ts()).parse_expression()
-        {
+        let unused = with_shared_expression(guard, SourceType::ts(), |expression| {
+            let expression = expression?;
             let span = expression.span();
-            if guard.get(span.start as usize..span.end as usize) == Some(guard.trim()) {
-                let mut reference = GuardReference { name, used: false };
-                reference.visit_expression(&expression);
-                if !reference.used {
-                    return None;
-                }
+            if guard.get(span.start as usize..span.end as usize) != Some(guard.trim()) {
+                return None;
             }
+            let mut reference = GuardReference { name, used: false };
+            reference.visit_expression(expression);
+            Some(!reference.used)
+        });
+        if unused == Some(true) {
+            return None;
         }
     }
     Some(String::from(guard))
@@ -255,19 +257,20 @@ pub(super) fn split_guard_terms(guard: &str) -> Vec<&str> {
     // Generated guards wrap each authored condition in parentheses. Preserve
     // those nodes: only the outer generated conjunction joins branch terms.
     // A byte-depth scan can split inside strings, comments, regexes or templates.
-    let allocator = Allocator::default();
-    let Ok(expression) = Parser::new(&allocator, guard, SourceType::ts()).parse_expression() else {
-        return vec![guard];
-    };
-    // This parser API can accept a valid prefix without consuming trailing
-    // tokens. Never discard them (or outside comments) when opening guards.
-    let span = expression.span();
-    if guard.get(span.start as usize..span.end as usize) != Some(guard.trim()) {
-        return vec![guard];
-    }
-    let mut terms = Vec::new();
-    collect_guard_terms(&expression, guard, &mut terms);
-    terms
+    with_shared_expression(guard, SourceType::ts(), |expression| {
+        let Some(expression) = expression else {
+            return vec![guard];
+        };
+        // This parser API can accept a valid prefix without consuming trailing
+        // tokens. Never discard them (or outside comments) when opening guards.
+        let span = expression.span();
+        if guard.get(span.start as usize..span.end as usize) != Some(guard.trim()) {
+            return vec![guard];
+        }
+        let mut terms = Vec::new();
+        collect_guard_terms(expression, guard, &mut terms);
+        terms
+    })
 }
 
 fn collect_guard_terms<'s>(expression: &Expression<'_>, source: &'s str, terms: &mut Vec<&'s str>) {
