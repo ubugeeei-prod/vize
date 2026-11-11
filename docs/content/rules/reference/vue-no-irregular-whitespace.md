@@ -50,10 +50,6 @@ export default defineConfig({}).withVue({
 
 Then run `vp run lint`.
 
-## Differences from eslint-plugin-vue
-
-The script blocks and the template are scanned, including template text, comments, and attribute values. `<style>` is not scanned. A run of irregular spaces is one report. String literals are skipped. Comments, regular expressions, template literals, HTML attribute values, and HTML text are checked. The plugin options `skipStrings`, `skipComments`, `skipRegExps`, `skipTemplates`, `skipHTMLAttributeValues`, and `skipHTMLTextContents` are not configurable; the rule always uses those defaults, which skip only string literals.
-
 ## Related
 
 - [Vue rules](../vue.md)

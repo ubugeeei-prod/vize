@@ -64,4 +64,4 @@ export default defineConfig({}).withVue({
 - [Vue 规则](../vue.md)
 - [规则选项](/rules/options.md)
 - [全部规则](../all.md)
-- [源代码](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/compatibility_sfc/sort_keys.rs#L13)
+- [源代码](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/compatibility_sfc/sort_keys.rs#L22)
