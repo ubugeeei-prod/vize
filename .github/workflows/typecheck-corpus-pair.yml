@@ -114,7 +114,7 @@ jobs:
           fi
           /usr/bin/time --version
       - name: Test the pair parsers and the byte probe
-        run: node --test tests/tooling/typecheck-corpus-pair.test.ts tests/tooling/typecheck-corpus-pair-cold.test.ts tests/tooling/typecheck-corpus-pair-floors.test.ts tests/tooling/typecheck-owned-pair.test.ts tests/tooling/typecheck-corpus-mutations.test.ts
+        run: node --test tests/tooling/typecheck-corpus-pair.test.ts tests/tooling/typecheck-corpus-pair-corpora.test.ts tests/tooling/typecheck-corpus-pair-cold.test.ts tests/tooling/typecheck-corpus-pair-floors.test.ts tests/tooling/typecheck-owned-pair.test.ts tests/tooling/typecheck-corpus-mutations.test.ts
       - name: Test the opt-in Linux raw runner
         if: inputs.owned_pair
         env:

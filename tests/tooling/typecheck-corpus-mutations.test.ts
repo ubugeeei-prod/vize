@@ -240,15 +240,15 @@ void test("the summary table lists every plant per lane and the gate verdict", (
 });
 
 void test("each corpus set covers every family, pins the checked-out gitlink and names its issues", () => {
-  // nuxt/ui and reka-ui are measured without plants for now.
+  // Every corpus of the pair is planted.
   const planted = CORPORA.filter((corpus) => hasMutationSet(corpus.id));
   assert.deepEqual(
     planted.map((corpus) => corpus.id),
-    ["misskey", "n8n"],
+    CORPORA.map((corpus) => corpus.id),
   );
   for (const corpus of planted) {
     const mutations = loadMutationSet(corpus.id);
-    assert.ok(corpus.source.startsWith(`${mutations.submodule}/`));
+    assert.equal(corpus.submodule, mutations.submodule);
     const tree = spawnSync("git", ["-C", root, "ls-tree", "HEAD", mutations.submodule], {
       encoding: "utf8",
     });

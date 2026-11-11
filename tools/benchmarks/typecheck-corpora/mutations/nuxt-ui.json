@@ -1,0 +1,479 @@
+{
+  "corpus": "nuxt-ui",
+  "submodule": "tests/_fixtures/_git/nuxt-ui",
+  "revision": "3dbca020969582d577c7df9698dc8cd484f76dc1",
+  "absent": {
+    "fallthrough": "nuxt-ui components render their root through reka-ui's Primitive (a dynamic `as` element), and the runtime never uses its native-root components (prose, ChatMessages, editor menus) itself, so Vize, like vue-tsc, has no root element type to check an undeclared attribute against.",
+    "prop-unknown": "the corpus tsconfig leaves vueCompilerOptions.strictTemplates off, as Nuxt's generated tsconfig does, so Vize, like vue-tsc, accepts undeclared attributes on every component."
+  },
+  "mutations": [
+    {
+      "id": "interp-alert-title",
+      "family": "interpolation-identifier",
+      "file": "src/runtime/components/Alert.vue",
+      "anchor": "          {{ props.title }}",
+      "replacement": "          {{ prosp.title }}",
+      "expect": {
+        "line": 117,
+        "column": 14,
+        "code": "TS2339",
+        "message": "'prosp'"
+      }
+    },
+    {
+      "id": "interp-banner-title",
+      "family": "interpolation-identifier",
+      "file": "src/runtime/components/Banner.vue",
+      "anchor": "            {{ props.title }}",
+      "replacement": "            {{ prpos.title }}",
+      "expect": {
+        "line": 183,
+        "column": 16,
+        "code": "TS2339",
+        "message": "'prpos'"
+      }
+    },
+    {
+      "id": "member-color-mode-app-config-icons",
+      "family": "typed-member",
+      "file": "src/runtime/components/color-mode/ColorModeButton.vue",
+      "anchor": ":name=\"appConfig.ui.icons.dark\"",
+      "replacement": ":name=\"appConfig.ui.icon.dark\"",
+      "expect": {
+        "line": 64,
+        "column": 130,
+        "code": "TS2551",
+        "message": "Property 'icon' does not exist"
+      }
+    },
+    {
+      "id": "member-alert-app-config-icons",
+      "family": "typed-member",
+      "file": "src/runtime/components/Alert.vue",
+      "anchor": ":icon=\"props.closeIcon || appConfig.ui.icons.close\"",
+      "replacement": ":icon=\"props.closeIcon || appConfig.ui.icon.close\"",
+      "expect": {
+        "line": 143,
+        "column": 50,
+        "code": "TS2551",
+        "message": "Property 'icon' does not exist"
+      }
+    },
+    {
+      "id": "member-alert-tv-slot",
+      "family": "typed-member",
+      "file": "src/runtime/components/Alert.vue",
+      "anchor": ":class=\"ui.close({ class: props.ui?.close })\"",
+      "replacement": ":class=\"ui.clse({ class: props.ui?.close })\"",
+      "expect": {
+        "line": 149,
+        "column": 22,
+        "code": "TS2551",
+        "message": "Property 'clse' does not exist"
+      }
+    },
+    {
+      "id": "prop-static-alert-close-color",
+      "family": "prop-static",
+      "file": "src/runtime/components/Alert.vue",
+      "anchor": "          color=\"neutral\"",
+      "replacement": "          color=\"nuetral\"",
+      "expect": {
+        "line": 144,
+        "column": 11,
+        "code": "TS2820",
+        "message": "Type '\"nuetral\"' is not assignable"
+      }
+    },
+    {
+      "id": "prop-static-banner-close-size",
+      "family": "prop-static",
+      "file": "src/runtime/components/Banner.vue",
+      "anchor": "            size=\"md\"",
+      "replacement": "            size=\"medium\"",
+      "expect": {
+        "line": 199,
+        "column": 13,
+        "code": "TS2322",
+        "message": "Type '\"medium\"' is not assignable"
+      }
+    },
+    {
+      "id": "prop-bound-command-palette-as-child",
+      "family": "prop-bound",
+      "file": "src/runtime/components/CommandPalette.vue",
+      "anchor": "<ListboxFilter v-if=\"props.input\" v-model=\"searchTerm\" as-child>",
+      "replacement": "<ListboxFilter v-if=\"props.input\" v-model=\"searchTerm\" :as-child=\"'yes'\">",
+      "expect": {
+        "line": 593,
+        "column": 61,
+        "code": "TS2322",
+        "message": "Type 'string' is not assignable to type 'boolean | undefined'"
+      }
+    },
+    {
+      "id": "prop-bound-modal-close-as-child",
+      "family": "prop-bound",
+      "file": "src/runtime/components/Modal.vue",
+      "anchor": "<DialogClose v-if=\"props.close || !!slots.close\" as-child>",
+      "replacement": "<DialogClose v-if=\"props.close || !!slots.close\" :as-child=\"1\">",
+      "expect": {
+        "line": 197,
+        "column": 65,
+        "code": "TS2322",
+        "message": "Type 'number' is not assignable to type 'boolean | undefined'"
+      }
+    },
+    {
+      "id": "prop-missing-alert-icon-name",
+      "family": "prop-missing",
+      "file": "src/runtime/components/Alert.vue",
+      "anchor": "<UIcon v-else-if=\"props.icon\" :name=\"props.icon\"",
+      "replacement": "<UIcon v-else-if=\"props.icon\"",
+      "expect": {
+        "line": 111,
+        "column": 8,
+        "code": "TS2345",
+        "message": "Property 'name' is missing"
+      }
+    },
+    {
+      "id": "prop-missing-checkbox-icon-name",
+      "family": "prop-missing",
+      "file": "src/runtime/components/Checkbox.vue",
+      "anchor": "<UIcon v-else :name=\"props.icon || appConfig.ui.icons.check\"",
+      "replacement": "<UIcon v-else",
+      "expect": {
+        "line": 134,
+        "column": 14,
+        "code": "TS2345",
+        "message": "Property 'name' is missing"
+      }
+    },
+    {
+      "id": "listener-handler-banner-close",
+      "family": "listener-handler",
+      "file": "src/runtime/components/Banner.vue",
+      "anchor": "            @click=\"onClose\"",
+      "replacement": "            @click=\"(event: KeyboardEvent) => event\"",
+      "expect": {
+        "line": 206,
+        "column": 14,
+        "code": "TS2322",
+        "message": "Type '(event: KeyboardEvent) => KeyboardEvent' is not assignable"
+      }
+    },
+    {
+      "id": "listener-handler-calendar-view",
+      "family": "listener-handler",
+      "file": "src/runtime/components/Calendar.vue",
+      "anchor": "            @click=\"cycleView\"",
+      "replacement": "            @click=\"setView\"",
+      "expect": {
+        "line": 345,
+        "column": 14,
+        "code": "TS2322",
+        "message": "Type '(value: CalendarView) => void' is not assignable"
+      }
+    },
+    {
+      "id": "listener-inline-color-mode-toggle",
+      "family": "listener-inline",
+      "file": "src/runtime/components/color-mode/ColorModeButton.vue",
+      "anchor": "@click=\"isDark = !isDark\"",
+      "replacement": "@click=\"isDark = 'dark'\"",
+      "expect": {
+        "line": 61,
+        "column": 13,
+        "code": "TS2322",
+        "message": "Type 'string' is not assignable to type 'boolean'"
+      }
+    },
+    {
+      "id": "emit-call-alert-close",
+      "family": "emit-call",
+      "file": "src/runtime/components/Alert.vue",
+      "anchor": "@click=\"emits('update:open', false)\"",
+      "replacement": "@click=\"emits('update:open', 'no')\"",
+      "expect": {
+        "line": 150,
+        "column": 40,
+        "code": "TS2345",
+        "message": "Argument of type 'string' is not assignable to parameter of type 'boolean'"
+      }
+    },
+    {
+      "id": "emit-call-calendar-forward",
+      "family": "emit-call",
+      "file": "src/runtime/components/Calendar.vue",
+      "anchor": "emits('update:startValue', value)",
+      "replacement": "emits('update:startValue', value?.day)",
+      "expect": {
+        "line": 318,
+        "column": 66,
+        "code": "TS2769",
+        "message": "No overload matches this call"
+      }
+    },
+    {
+      "id": "slot-missing-color-mode-leading",
+      "family": "slot-prop-missing",
+      "file": "src/runtime/components/color-mode/ColorModeButton.vue",
+      "anchor": "<template #leading=\"{ ui }\">",
+      "replacement": "<template #leading=\"{ ui, iu }\">",
+      "expect": {
+        "line": 63,
+        "column": 31,
+        "code": "TS2339",
+        "message": "Property 'iu' does not exist"
+      }
+    },
+    {
+      "id": "slot-missing-checkbox-state",
+      "family": "slot-prop-missing",
+      "file": "src/runtime/components/Checkbox.vue",
+      "anchor": "<template #default=\"{ state }\">",
+      "replacement": "<template #default=\"{ state, sate }\">",
+      "expect": {
+        "line": 131,
+        "column": 38,
+        "code": "TS2339",
+        "message": "Property 'sate' does not exist"
+      }
+    },
+    {
+      "id": "slot-type-alert-leading-ui",
+      "family": "slot-prop-type",
+      "file": "src/runtime/components/Alert.vue",
+      "anchor": "<slot name=\"leading\" :ui=\"ui\">",
+      "replacement": "<slot name=\"leading\" :ui=\"1\">",
+      "expect": {
+        "line": 109,
+        "column": 27,
+        "code": "TS2322",
+        "message": "Type 'number' is not assignable to type"
+      }
+    },
+    {
+      "id": "slot-type-modal-content-close",
+      "family": "slot-prop-type",
+      "file": "src/runtime/components/Modal.vue",
+      "anchor": "<slot name=\"content\" :close=\"close\">",
+      "replacement": "<slot name=\"content\" :close=\"1\">",
+      "expect": {
+        "line": 178,
+        "column": 31,
+        "code": "TS2322",
+        "message": "Type 'number' is not assignable to type '() => void'"
+      }
+    },
+    {
+      "id": "vmodel-dashboard-search-open",
+      "family": "v-model",
+      "file": "src/runtime/components/DashboardSearch.vue",
+      "anchor": "    v-model:open=\"open\"",
+      "replacement": "    v-model:open=\"searchTerm\"",
+      "expect": {
+        "line": 199,
+        "column": 13,
+        "code": "TS2322",
+        "message": "Type 'string' is not assignable to type 'boolean | undefined'"
+      }
+    },
+    {
+      "id": "vfor-banner-action",
+      "family": "v-for-member",
+      "file": "src/runtime/components/Banner.vue",
+      "anchor": ":key=\"index\" color=\"neutral\" size=\"xs\" v-bind=\"action\"",
+      "replacement": ":key=\"action.kye\" color=\"neutral\" size=\"xs\" v-bind=\"action\"",
+      "expect": {
+        "line": 189,
+        "column": 76,
+        "code": "TS2339",
+        "message": "'kye' does not exist on type 'ButtonProps'"
+      }
+    },
+    {
+      "id": "vfor-chat-message-action",
+      "family": "v-for-member",
+      "file": "src/runtime/components/ChatMessage.vue",
+      "anchor": ":key=\"index\" :text=\"action.label\"",
+      "replacement": ":key=\"index\" :text=\"action.labl\"",
+      "expect": {
+        "line": 139,
+        "column": 93,
+        "code": "TS2551",
+        "message": "Property 'labl' does not exist"
+      }
+    },
+    {
+      "id": "vfor-auth-form-field",
+      "family": "v-for-member",
+      "file": "src/runtime/components/AuthForm.vue",
+      "anchor": "          :key=\"field.name\"",
+      "replacement": "          :key=\"field.nmae\"",
+      "expect": {
+        "line": 272,
+        "column": 23,
+        "code": "TS2339",
+        "message": "'nmae' does not exist on type 'AuthFormField'"
+      }
+    },
+    {
+      "id": "vif-checkbox-state",
+      "family": "v-if-narrowing",
+      "file": "src/runtime/components/Checkbox.vue",
+      "anchor": "<UIcon v-if=\"state === 'indeterminate'\"",
+      "replacement": "<UIcon v-if=\"state === 'indeterminat'\"",
+      "expect": {
+        "line": 133,
+        "column": 26,
+        "code": "TS2367",
+        "message": "and '\"indeterminat\"' have no overlap"
+      }
+    },
+    {
+      "id": "vif-calendar-view-chain",
+      "family": "v-if-narrowing",
+      "file": "src/runtime/components/Calendar.vue",
+      "anchor": "<slot v-else-if=\"view === 'month'\"",
+      "replacement": "<slot v-else-if=\"view === 'day'\"",
+      "expect": {
+        "line": 409,
+        "column": 34,
+        "code": "TS2367",
+        "message": "and '\"day\"' have no overlap"
+      }
+    },
+    {
+      "id": "tref-chat-prompt-textarea",
+      "family": "template-ref",
+      "file": "src/runtime/components/ChatPrompt.vue",
+      "anchor": "  textareaRef.value?.textareaRef?.blur()",
+      "replacement": "  textareaRef.value?.textareRef?.blur()",
+      "expect": {
+        "line": 108,
+        "column": 22,
+        "code": "TS2551",
+        "message": "Property 'textareRef' does not exist"
+      }
+    },
+    {
+      "id": "generic-prose-accordion-item",
+      "family": "generic",
+      "file": "src/runtime/components/prose/Accordion.vue",
+      "anchor": "<component :is=\"item.component\" />",
+      "replacement": "<component :is=\"item.componnt\" />",
+      "expect": {
+        "line": 74,
+        "column": 28,
+        "code": "TS2551",
+        "message": "Property 'componnt' does not exist"
+      }
+    },
+    {
+      "id": "generic-locale-select-item",
+      "family": "generic",
+      "file": "src/runtime/components/locale/LocaleSelect.vue",
+      "anchor": "{{ getEmojiFlag(item.code) }}",
+      "replacement": "{{ getEmojiFlag(item.cod) }}",
+      "expect": {
+        "line": 99,
+        "column": 30,
+        "code": "TS2551",
+        "message": "'cod' does not exist on type 'Locale<any>'"
+      }
+    },
+    {
+      "id": "script-banner-visible",
+      "family": "script-setup",
+      "file": "src/runtime/components/Banner.vue",
+      "anchor": "    isVisible.value = !isClosed",
+      "replacement": "    isVisible.value = isClosed ? 'no' : 'yes'",
+      "expect": {
+        "line": 113,
+        "column": 5,
+        "code": "TS2322",
+        "message": "Type 'string' is not assignable to type 'boolean'"
+      }
+    },
+    {
+      "id": "with-defaults-chip-inset",
+      "family": "with-defaults",
+      "file": "src/runtime/components/Chip.vue",
+      "anchor": "  inset: false,",
+      "replacement": "  inset: 'no',",
+      "expect": {
+        "line": 59,
+        "column": 3,
+        "code": "TS2322",
+        "message": "Type 'string' is not assignable to type"
+      }
+    },
+    {
+      "id": "with-defaults-separator-orientation",
+      "family": "with-defaults",
+      "file": "src/runtime/components/Separator.vue",
+      "anchor": "  orientation: 'horizontal',",
+      "replacement": "  orientation: 'sideways',",
+      "expect": {
+        "line": 72,
+        "column": 3,
+        "code": "TS2322",
+        "message": "Type '\"sideways\"' is not assignable to type"
+      }
+    },
+    {
+      "id": "define-model-header-open",
+      "family": "define-model",
+      "file": "src/runtime/components/Header.vue",
+      "anchor": "  open.value = !open.value",
+      "replacement": "  open.value = 'toggle'",
+      "expect": {
+        "line": 131,
+        "column": 3,
+        "code": "TS2322",
+        "message": "Type 'string' is not assignable to type 'boolean'"
+      }
+    },
+    {
+      "id": "define-model-stepper-value",
+      "family": "define-model",
+      "file": "src/runtime/components/Stepper.vue",
+      "anchor": "    modelValue.value = get(props.items?.[value], props.valueKey as string) ?? value",
+      "replacement": "    modelValue.value = props.items?.[value]",
+      "expect": {
+        "line": 123,
+        "column": 5,
+        "code": "TS2322",
+        "message": "is not assignable to type 'string | number | undefined'"
+      }
+    },
+    {
+      "id": "tpl-literal-banner-prehydrate",
+      "family": "template-literal",
+      "file": "src/runtime/components/Banner.vue",
+      "anchor": "localStorage.getItem(${JSON.stringify(id.value)})",
+      "replacement": "localStorage.getItem(${JSON.stringify(id.valeu)})",
+      "expect": {
+        "line": 126,
+        "column": 58,
+        "code": "TS2551",
+        "message": "'valeu' does not exist on type 'ComputedRef<string>'"
+      }
+    },
+    {
+      "id": "compile-error-chip-model-default",
+      "family": "compile-error",
+      "file": "src/runtime/components/Chip.vue",
+      "anchor": "const show = defineModel<boolean>('show', { default: true })",
+      "replacement": "const show = defineModel<boolean>('show', { default: _props.standalone })",
+      "expect": {
+        "line": 66,
+        "column": 54,
+        "code": "vize100002",
+        "message": "[SCRIPT_SETUP_MACRO_SCOPE]: `defineModel()` in <script setup> cannot reference locally declared variable `_props`"
+      }
+    }
+  ]
+}
