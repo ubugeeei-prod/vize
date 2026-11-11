@@ -155,6 +155,25 @@ fn nested_interactive_recovery_keeps_out_of_order_end_tag_hard() {
     );
 }
 
+#[test]
+fn a_sibling_start_tag_does_not_invent_an_end_tag() {
+    let allocator = Allocator::new();
+    for source in [
+        "<div><button type=\"button\"><span>one</span><button type=\"button\">two</button></div>",
+        "<div><a href=\"/one\"><span>one</span><a href=\"/two\">two</a></div>",
+    ] {
+        let (_, errors) = parse(&allocator, source);
+        assert_eq!(
+            errors
+                .iter()
+                .filter(|error| error.code == ErrorCode::MissingEndTag)
+                .count(),
+            1,
+            "{source}: the first interactive element has no end tag in the source: {errors:?}"
+        );
+    }
+}
+
 fn invalid_end_tag_count(errors: &[CompilerError]) -> usize {
     errors
         .iter()

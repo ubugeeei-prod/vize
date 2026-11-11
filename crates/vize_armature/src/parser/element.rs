@@ -40,6 +40,8 @@ impl<'a> Parser<'a> {
                 self.implicitly_closed_tags.push(ImplicitlyClosedTag {
                     tag: entry.element.tag,
                     depth,
+                    loc_start: entry.element.loc.span.start,
+                    loc_end: entry.element.loc.span.end,
                 });
             }
         }
@@ -63,6 +65,22 @@ impl<'a> Parser<'a> {
         }
         self.implicitly_closed_tags.pop();
         true
+    }
+
+    /// A button or anchor closed by a later start tag of the same name still
+    /// has no end tag when that recovery never consumes one. Optional-end-tag
+    /// elements stay with `vue/html-end-tags`.
+    pub(super) fn report_unconsumed_implicit_end_tags(&mut self) {
+        let pending: Vec<_> = self.implicitly_closed_tags.iter().copied().collect();
+        self.implicitly_closed_tags.clear();
+        for closed in pending {
+            if Self::can_omit_end_tag(closed.tag) {
+                continue;
+            }
+            let loc = SourceLocation::new(closed.loc_start, closed.loc_end);
+            self.errors
+                .push(CompilerError::new(ErrorCode::MissingEndTag, Some(loc)));
+        }
     }
 }
 

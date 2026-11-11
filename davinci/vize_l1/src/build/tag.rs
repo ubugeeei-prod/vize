@@ -355,6 +355,11 @@ impl<'a, const RAW: bool, const LINT: bool, const STRUCTURAL_DIAGNOSTICS: bool>
             let Some(frame) = self.stack.pop() else {
                 break;
             };
+            if STRUCTURAL_DIAGNOSTICS {
+                let span = self.open_span(&frame.open);
+                self.recovery
+                    .stamp_closed(super::scope::Frame::tag(&frame), span.start, span.end);
+            }
             let mut children = frame.children;
             if let Some(element) = child.take() {
                 children.push(SurfaceChild::Element(Box::new_in(element, &self.allocator)));

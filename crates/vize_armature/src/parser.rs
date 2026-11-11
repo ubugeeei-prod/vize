@@ -161,6 +161,8 @@ pub(super) struct ParserStackEntry<'a> {
 pub(super) struct ImplicitlyClosedTag<'a> {
     pub(super) tag: &'a str,
     pub(super) depth: usize,
+    pub(super) loc_start: u32,
+    pub(super) loc_end: u32,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -316,6 +318,7 @@ impl<'a> Parser<'a> {
 
     /// Handle unclosed elements at end of parsing
     fn handle_unclosed_elements(&mut self) {
+        self.report_unconsumed_implicit_end_tags();
         while let Some(entry) = self.pop_stack_entry() {
             if !entry.implicit && !Self::can_omit_end_tag(entry.element.tag) {
                 let loc = entry.element.loc.clone();
