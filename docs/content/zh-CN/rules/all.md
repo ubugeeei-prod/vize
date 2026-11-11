@@ -270,7 +270,7 @@ Vize linter 提供的全部规则，按类别分组。打开规则页面即可�
 | <span id="html-no-empty-palpable-content"></span>[`html/no-empty-palpable-content`](./reference/html-no-empty-palpable-content.md) | 禁止预期具有可见内容的空元素。 | `happy-path` |  |
 | <span id="html-require-datetime"></span>[`html/require-datetime`](./reference/html-require-datetime.md) | 要求 &lt;time&gt; 元素具有 datetime 属性。 | `happy-path` |  |
 
-## 无障碍规则 (30)
+## 无障碍规则 (31)
 
 | 规则 | 检查内容 | 预设 | 自动修复 |
 | --- | --- | --- | --- |
@@ -302,6 +302,7 @@ Vize linter 提供的全部规则，按类别分组。打开规则页面即可�
 | <span id="a11y-no-static-element-interactions"></span>[`a11y/no-static-element-interactions`](./reference/a11y-no-static-element-interactions.md) | 禁止在静态元素上设置事件处理器。 | `happy-path` |  |
 | <span id="a11y-placeholder-label-option"></span>[`a11y/placeholder-label-option`](./reference/a11y-placeholder-label-option.md) | 要求 required 的 select 带有占位选项。 | `nuxt`, `opinionated` |  |
 | <span id="a11y-role-has-required-aria-props"></span>[`a11y/role-has-required-aria-props`](./reference/a11y-role-has-required-aria-props.md) | 要求 ARIA 角色具有必需属性。 | `happy-path` |  |
+| <span id="a11y-role-img-has-name"></span>[`a11y/role-img-has-name`](./reference/a11y-role-img-has-name.md) | 要求 role="img" 的元素具有无障碍名称。 | — |  |
 | <span id="a11y-tabindex-no-positive"></span>[`a11y/tabindex-no-positive`](./reference/a11y-tabindex-no-positive.md) | 禁止正数 tabindex 值。 | `happy-path` |  |
 | <span id="a11y-use-list"></span>[`a11y/use-list`](./reference/a11y-use-list.md) | 建议为类似项目符号的文本使用列表元素。 | `nuxt`, `opinionated` |  |
 

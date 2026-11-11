@@ -53,12 +53,13 @@ Seulement dans `opinionated`, `nuxt` ou `ecosystem`. La colonne Préréglages in
 | <span id="a11y-use-list"></span>[`a11y/use-list`](./reference/a11y-use-list.md) | Suggérer des éléments de liste pour les textes ressemblant à des listes à puces. | `nuxt`, `opinionated` |  |
 | <span id="vue-use-unique-element-ids"></span>[`vue/use-unique-element-ids`](./reference/vue-use-unique-element-ids.md) | Imposer des identifiants d’éléments uniques avec useId() plutôt que des littéraux statiques. | `nuxt`, `opinionated` |  |
 
-## À activer (1)
+## À activer (2)
 
 Dans aucun préréglage. Activez-les par leur nom dans `linter.rules`, passé à `withVue`.
 
 | Règle | Ce qu’elle vérifie | Correction automatique |
 | --- | --- | --- |
 | <span id="a11y-img-alt"></span>[`a11y/img-alt`](./reference/a11y-img-alt.md) | Exiger un attribut alt sur les images pour les rendre accessibles. |  |
+| <span id="a11y-role-img-has-name"></span>[`a11y/role-img-has-name`](./reference/a11y-role-img-has-name.md) | Exiger un nom accessible pour les éléments dont le rôle est « img ». |  |
 
 [Vue d’ensemble des règles](../rules/index.md) · [Options des règles](/rules/options.md) · [Migrer depuis ESLint](/rules/migration.md)

@@ -305,6 +305,7 @@
   "a11y/interactive-supports-focus.message": "Element with role=\"{role}\" must be focusable (add tabindex=\"0\")",
   "a11y/interactive-supports-focus.help": "**Why:** Interactive roles imply the element can be activated by keyboard users.\n\n**Fix:**\n```vue\n<div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n</div>\n```\n\n**Better:** Use native interactive elements:\n```vue\n<button @click=\"handle\">Click me</button>\n```",
   "a11y/role-has-required-aria-props.description": "Require ARIA roles to have required properties",
+  "a11y/role-img-has-name.description": "Require an accessible name on elements with role=\"img\"",
   "a11y/role-has-required-aria-props.message": "Elements with role=\"{role}\" must have the '{prop}' attribute",
   "a11y/role-has-required-aria-props.help": "**Role `{role}` requires:** {props}\n\n**Example:**\n```vue\n<div role=\"{role}\" {props}=\"...\">\n  Content\n</div>\n```",
   "a11y/media-has-caption.description": "Require media elements to have captions",

@@ -270,7 +270,7 @@ A coluna Predefinição indica a menor predefinição que ativa a regra; a pági
 | <span id="html-no-empty-palpable-content"></span>[`html/no-empty-palpable-content`](./reference/html-no-empty-palpable-content.md) | Proibir elementos vazios que esperam conteúdo visível. | `happy-path` |  |
 | <span id="html-require-datetime"></span>[`html/require-datetime`](./reference/html-require-datetime.md) | Exigir o atributo datetime no elemento &lt;time&gt;. | `happy-path` |  |
 
-## Regras de acessibilidade (30)
+## Regras de acessibilidade (31)
 
 | Regra | O que verifica | Predefinição | Correção automática |
 | --- | --- | --- | --- |
@@ -302,6 +302,7 @@ A coluna Predefinição indica a menor predefinição que ativa a regra; a pági
 | <span id="a11y-no-static-element-interactions"></span>[`a11y/no-static-element-interactions`](./reference/a11y-no-static-element-interactions.md) | Proibir manipuladores de eventos em elementos estáticos. | `happy-path` |  |
 | <span id="a11y-placeholder-label-option"></span>[`a11y/placeholder-label-option`](./reference/a11y-placeholder-label-option.md) | Exigir uma opção de orientação em um select required. | `nuxt`, `opinionated` |  |
 | <span id="a11y-role-has-required-aria-props"></span>[`a11y/role-has-required-aria-props`](./reference/a11y-role-has-required-aria-props.md) | Exigir as propriedades obrigatórias dos papéis ARIA. | `happy-path` |  |
+| <span id="a11y-role-img-has-name"></span>[`a11y/role-img-has-name`](./reference/a11y-role-img-has-name.md) | Exigir um nome acessível nos elementos com role="img". | — |  |
 | <span id="a11y-tabindex-no-positive"></span>[`a11y/tabindex-no-positive`](./reference/a11y-tabindex-no-positive.md) | Proibir valores positivos de tabindex. | `happy-path` |  |
 | <span id="a11y-use-list"></span>[`a11y/use-list`](./reference/a11y-use-list.md) | Sugerir elementos de lista para textos que parecem itens de lista. | `nuxt`, `opinionated` |  |
 

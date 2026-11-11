@@ -53,12 +53,13 @@ description: "检查 ARIA、键盘交互、标签、地标和媒体替代内容�
 | <span id="a11y-use-list"></span>[`a11y/use-list`](./reference/a11y-use-list.md) | 建议为类似项目符号的文本使用列表元素。 | `nuxt`, `opinionated` |  |
 | <span id="vue-use-unique-element-ids"></span>[`vue/use-unique-element-ids`](./reference/vue-use-unique-element-ids.md) | 要求使用 useId() 生成唯一元素 ID，而不是静态字面量。 | `nuxt`, `opinionated` |  |
 
-## 按需启用 (1)
+## 按需启用 (2)
 
 不属于任何预设。在传给 `withVue` 的 `linter.rules` 中按名称启用。
 
 | 规则 | 检查内容 | 自动修复 |
 | --- | --- | --- |
 | <span id="a11y-img-alt"></span>[`a11y/img-alt`](./reference/a11y-img-alt.md) | 要求图片提供 alt 属性，以支持无障碍访问。 |  |
+| <span id="a11y-role-img-has-name"></span>[`a11y/role-img-has-name`](./reference/a11y-role-img-has-name.md) | 要求 role="img" 的元素具有无障碍名称。 |  |
 
 [规则概览](../rules/index.md) · [规则选项](/rules/options.md) · [从 ESLint 迁移](/rules/migration.md)

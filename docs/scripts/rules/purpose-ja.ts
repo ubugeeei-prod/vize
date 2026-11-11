@@ -30,6 +30,7 @@ export const purposeJa: Readonly<Record<string, string>> = {
   "a11y/placeholder-label-option":
     "required の select を値が空のプレースホルダー option から始めます。",
   "a11y/role-has-required-aria-props": "ARIA role が必要とする属性を指定します。",
+  "a11y/role-img-has-name": 'role="img" の要素にアクセシブルな名前を要求します。',
   "a11y/tabindex-no-positive": "通常のフォーカス順序を変える正の tabindex を検出します。",
   "a11y/use-list": "箇条書きに見えるテキストをリスト要素で表現します。",
   "css/no-display-none": "表示切り替えに display: none を使う箇所で v-show を検討します。",

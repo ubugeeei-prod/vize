@@ -1205,6 +1205,16 @@ help:
     <div role="{role}" {props}="...">
     Content
     </div>
+=== a11y/role-img-has-name
+a11y/role-img-has-name · lint rule
+Require an accessible name on elements with role="img"
+
+tier: exact
+domain: native elements with static attributes and roles in SFC templates; components and dynamic bindings are outside
+severity: warning
+category: accessibility
+autofix: no
+docs: docs/content/rules/reference/a11y-role-img-has-name.md
 === a11y/tabindex-no-positive
 a11y/tabindex-no-positive · lint rule
 Disallow positive tabindex values

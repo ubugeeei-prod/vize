@@ -305,6 +305,7 @@
   "a11y/interactive-supports-focus.message": "具有role=\"{role}\"的元素必须可聚焦（添加tabindex=\"0\"）",
   "a11y/interactive-supports-focus.help": "**原因:** 交互角色意味着键盘用户可以操作该元素。\n\n**修复:**\n```vue\n<div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  点击\n</div>\n```\n\n**更好的方式:** 使用原生交互元素:\n```vue\n<button @click=\"handle\">点击</button>\n```",
   "a11y/role-has-required-aria-props.description": "要求ARIA角色具有必需的属性",
+  "a11y/role-img-has-name.description": "要求 role=\"img\" 的元素具有无障碍名称",
   "a11y/role-has-required-aria-props.message": "具有role=\"{role}\"的元素必须有'{prop}'属性",
   "a11y/role-has-required-aria-props.help": "**角色`{role}`需要:** {props}\n\n**示例:**\n```vue\n<div role=\"{role}\" {props}=\"...\">\n  内容\n</div>\n```",
   "a11y/media-has-caption.description": "要求媒体元素提供字幕",

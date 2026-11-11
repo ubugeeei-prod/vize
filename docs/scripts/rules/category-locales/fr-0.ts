@@ -139,6 +139,11 @@ export const frenchRules0 = {
     "Le rôle checkbox omet `aria-checked`, qui communique l’état de la case à cocher.",
     '`aria-checked="false"` fournit l’état exigé par le rôle checkbox.',
   ],
+  "a11y/role-img-has-name": [
+    "Exiger un nom accessible pour les éléments dont le rôle est « img »",
+    'L’image définit `role="img"` après un `alt` vide, elle est donc exposée comme une image sans nom accessible.',
+    '`alt="Network diagram"` nomme l’image, donc `role="img"` a un nom accessible.',
+  ],
   "a11y/tabindex-no-positive": [
     "Interdire les valeurs positives de tabindex",
     "Un tabindex positif de 3 crée un ordre de focus personnalisé avant les contrôles ordinaires.",

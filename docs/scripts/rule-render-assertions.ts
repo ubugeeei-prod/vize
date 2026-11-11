@@ -101,7 +101,7 @@ export function expectedRulePages(locale: Locale) {
         };
       }),
   );
-  assert.equal(pages.length, 380, "314 rule references plus 66 project rules per locale");
+  assert.equal(pages.length, 381, "315 rule references plus 66 project rules per locale");
   return pages;
 }
 

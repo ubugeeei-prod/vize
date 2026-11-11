@@ -53,12 +53,13 @@ Só em `opinionated`, `nuxt` ou `ecosystem`. A coluna Predefinições mostra qua
 | <span id="a11y-use-list"></span>[`a11y/use-list`](./reference/a11y-use-list.md) | Sugerir elementos de lista para textos que parecem itens de lista. | `nuxt`, `opinionated` |  |
 | <span id="vue-use-unique-element-ids"></span>[`vue/use-unique-element-ids`](./reference/vue-use-unique-element-ids.md) | Exigir IDs de elementos únicos por meio de useId(), em vez de literais estáticos. | `nuxt`, `opinionated` |  |
 
-## Opcionais (1)
+## Opcionais (2)
 
 Não fazem parte de nenhuma predefinição. Ative pelo nome em `linter.rules`, passado a `withVue`.
 
 | Regra | O que verifica | Correção automática |
 | --- | --- | --- |
 | <span id="a11y-img-alt"></span>[`a11y/img-alt`](./reference/a11y-img-alt.md) | Exigir o atributo alt nas imagens para garantir acessibilidade. |  |
+| <span id="a11y-role-img-has-name"></span>[`a11y/role-img-has-name`](./reference/a11y-role-img-has-name.md) | Exigir um nome acessível nos elementos com role="img". |  |
 
 [Visão geral das regras](../rules/index.md) · [Opções das regras](/rules/options.md) · [Migração do ESLint](/rules/migration.md)

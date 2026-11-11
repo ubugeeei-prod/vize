@@ -139,6 +139,11 @@ export const chineseRules0: Record<string, readonly [string, string, string]> = 
     "checkbox 角色省略了表达复选框状态的 `aria-checked`。",
     '`aria-checked="false"` 提供 checkbox 角色所需的状态。',
   ],
+  "a11y/role-img-has-name": [
+    '要求 role="img" 的元素具有无障碍名称',
+    '图片在空的 `alt` 之后设置了 `role="img"`，因此会作为没有无障碍名称的图像公开。',
+    '`alt="Network diagram"` 为图片提供名称，因此 `role="img"` 具有无障碍名称。',
+  ],
   "a11y/tabindex-no-positive": [
     "禁止正数 tabindex 值",
     "正数 tabindex 3 建立了位于普通控件之前的自定义焦点顺序。",

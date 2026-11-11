@@ -270,7 +270,7 @@ La colonne Préréglage indique le plus petit préréglage qui active la règle 
 | <span id="html-no-empty-palpable-content"></span>[`html/no-empty-palpable-content`](./reference/html-no-empty-palpable-content.md) | Interdire les éléments vides qui attendent un contenu visible. | `happy-path` |  |
 | <span id="html-require-datetime"></span>[`html/require-datetime`](./reference/html-require-datetime.md) | Exiger l’attribut datetime sur l’élément &lt;time&gt;. | `happy-path` |  |
 
-## Règles d’accessibilité (30)
+## Règles d’accessibilité (31)
 
 | Règle | Ce qu’elle vérifie | Préréglage | Correction automatique |
 | --- | --- | --- | --- |
@@ -302,6 +302,7 @@ La colonne Préréglage indique le plus petit préréglage qui active la règle 
 | <span id="a11y-no-static-element-interactions"></span>[`a11y/no-static-element-interactions`](./reference/a11y-no-static-element-interactions.md) | Interdire les gestionnaires d’événements sur les éléments statiques. | `happy-path` |  |
 | <span id="a11y-placeholder-label-option"></span>[`a11y/placeholder-label-option`](./reference/a11y-placeholder-label-option.md) | Exiger une option d’invite dans un select required. | `nuxt`, `opinionated` |  |
 | <span id="a11y-role-has-required-aria-props"></span>[`a11y/role-has-required-aria-props`](./reference/a11y-role-has-required-aria-props.md) | Exiger les propriétés obligatoires des rôles ARIA. | `happy-path` |  |
+| <span id="a11y-role-img-has-name"></span>[`a11y/role-img-has-name`](./reference/a11y-role-img-has-name.md) | Exiger un nom accessible pour les éléments dont le rôle est « img ». | — |  |
 | <span id="a11y-tabindex-no-positive"></span>[`a11y/tabindex-no-positive`](./reference/a11y-tabindex-no-positive.md) | Interdire les valeurs positives de tabindex. | `happy-path` |  |
 | <span id="a11y-use-list"></span>[`a11y/use-list`](./reference/a11y-use-list.md) | Suggérer des éléments de liste pour les textes ressemblant à des listes à puces. | `nuxt`, `opinionated` |  |
 

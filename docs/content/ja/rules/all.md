@@ -270,7 +270,7 @@ Vize のリンターに含まれるすべてのルールを、カテゴリごと
 | <span id="html-no-empty-palpable-content"></span>[`html/no-empty-palpable-content`](./reference/html-no-empty-palpable-content.md) | 可視コンテンツを期待する要素が空の場合に検出します。 | `happy-path` |  |
 | <span id="html-require-datetime"></span>[`html/require-datetime`](./reference/html-require-datetime.md) | time 要素に機械可読の datetime を指定します。 | `happy-path` |  |
 
-## アクセシビリティのルール (30)
+## アクセシビリティのルール (31)
 
 | ルール | 検出する内容 | プリセット | 自動修正 |
 | --- | --- | --- | --- |
@@ -302,6 +302,7 @@ Vize のリンターに含まれるすべてのルールを、カテゴリごと
 | <span id="a11y-no-static-element-interactions"></span>[`a11y/no-static-element-interactions`](./reference/a11y-no-static-element-interactions.md) | 操作部品ではない要素へのイベント指定を検出します。 | `happy-path` |  |
 | <span id="a11y-placeholder-label-option"></span>[`a11y/placeholder-label-option`](./reference/a11y-placeholder-label-option.md) | required の select を値が空のプレースホルダー option から始めます。 | `nuxt`, `opinionated` |  |
 | <span id="a11y-role-has-required-aria-props"></span>[`a11y/role-has-required-aria-props`](./reference/a11y-role-has-required-aria-props.md) | ARIA role が必要とする属性を指定します。 | `happy-path` |  |
+| <span id="a11y-role-img-has-name"></span>[`a11y/role-img-has-name`](./reference/a11y-role-img-has-name.md) | role="img" の要素にアクセシブルな名前を要求します。 | — |  |
 | <span id="a11y-tabindex-no-positive"></span>[`a11y/tabindex-no-positive`](./reference/a11y-tabindex-no-positive.md) | 通常のフォーカス順序を変える正の tabindex を検出します。 | `happy-path` |  |
 | <span id="a11y-use-list"></span>[`a11y/use-list`](./reference/a11y-use-list.md) | 箇条書きに見えるテキストをリスト要素で表現します。 | `nuxt`, `opinionated` |  |
 

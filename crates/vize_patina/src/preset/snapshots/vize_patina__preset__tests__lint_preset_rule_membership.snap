@@ -898,6 +898,7 @@ expression: "serde_json::to_string_pretty(&snapshot).unwrap()"
   "opt_in": [
     "type/strict-boolean-expressions",
     "a11y/img-alt",
+    "a11y/role-img-has-name",
     "ecosystem/router-link-require-to",
     "ecosystem/vue-router-prefer-named-link",
     "ecosystem/vue-i18n-no-missing-key",

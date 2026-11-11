@@ -270,7 +270,7 @@ The Preset column names the smallest preset that turns a rule on. Rule pages lis
 | <span id="html-no-empty-palpable-content"></span>[`html/no-empty-palpable-content`](./reference/html-no-empty-palpable-content.md) | Disallow empty elements that expect visible content. | `happy-path` |  |
 | <span id="html-require-datetime"></span>[`html/require-datetime`](./reference/html-require-datetime.md) | Require datetime attribute on &lt;time&gt; element. | `happy-path` |  |
 
-## Accessibility rules (30)
+## Accessibility rules (31)
 
 | Rule | What it checks | Preset | Auto-fix |
 | --- | --- | --- | --- |
@@ -302,6 +302,7 @@ The Preset column names the smallest preset that turns a rule on. Rule pages lis
 | <span id="a11y-no-static-element-interactions"></span>[`a11y/no-static-element-interactions`](./reference/a11y-no-static-element-interactions.md) | Disallow event handlers on static elements. | `happy-path` |  |
 | <span id="a11y-placeholder-label-option"></span>[`a11y/placeholder-label-option`](./reference/a11y-placeholder-label-option.md) | Require a placeholder label option in a required select. | `nuxt`, `opinionated` |  |
 | <span id="a11y-role-has-required-aria-props"></span>[`a11y/role-has-required-aria-props`](./reference/a11y-role-has-required-aria-props.md) | Require ARIA roles to have required properties. | `happy-path` |  |
+| <span id="a11y-role-img-has-name"></span>[`a11y/role-img-has-name`](./reference/a11y-role-img-has-name.md) | Require an accessible name on elements with role="img". | — |  |
 | <span id="a11y-tabindex-no-positive"></span>[`a11y/tabindex-no-positive`](./reference/a11y-tabindex-no-positive.md) | Disallow positive tabindex values. | `happy-path` |  |
 | <span id="a11y-use-list"></span>[`a11y/use-list`](./reference/a11y-use-list.md) | Suggest using list elements for bullet-like text. | `nuxt`, `opinionated` |  |
 
