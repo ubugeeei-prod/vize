@@ -256,6 +256,21 @@ class BlockLangOptions {
   style: BlockLangBlock? = null
 }
 
+class MaxLinesObject {
+  max: Int? = null
+  skipComments: Boolean? = null
+  skipBlankLines: Boolean? = null
+}
+
+typealias MaxLinesOptions = Int | MaxLinesObject
+
+class MaxLinesPerBlockOptions {
+  style: Int? = null
+  template: Int? = null
+  script: Int? = null
+  skipBlankLines: Boolean? = null
+}
+
 class SortKeysOptions {
   order: "asc" | "desc" = "asc"
   caseSensitive: Boolean = true
@@ -279,6 +294,8 @@ class LintRuleOptions {
   `a11y/anchor-has-content`: AnchorHasContentOptions? = null
   `a11y/label-has-for`: LabelHasForOptions? = null
   `vue/block-lang`: BlockLangOptions? = null
+  `max-lines`: MaxLinesOptions? = null
+  `vue/max-lines-per-block`: MaxLinesPerBlockOptions? = null
   `vue/enforce-style-attribute`: EnforceStyleAttributeOptions? = null
   `vue/no-restricted-syntax`: (Listing<RestrictedSyntaxEntry> | NoRestrictedSyntaxOptions)? = null
   `vue/quote-props`: "as-needed"? = null

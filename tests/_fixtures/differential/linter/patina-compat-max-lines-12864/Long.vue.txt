@@ -1,0 +1,18 @@
+<script setup lang="ts">
+const label = "a";
+</script>
+
+<template>
+  <ul>
+    <li>{{ label }}</li>
+    <li>{{ label }}</li>
+    <li>{{ label }}</li>
+    <li>{{ label }}</li>
+    <li>{{ label }}</li>
+    <li>{{ label }}</li>
+    <li>{{ label }}</li>
+    <li>{{ label }}</li>
+    <li>{{ label }}</li>
+    <li>{{ label }}</li>
+  </ul>
+</template>

@@ -148,6 +148,11 @@ export const compatibilityPackets: Record<Locale, Record<string, Packet>> = {
       "script 块缺少配置的 lang 属性。",
       "script 块把 lang 设为配置的语言。",
     ],
+    "vue/max-lines-per-block": [
+      "限制每个 SFC 块的行数。",
+      "template 块的行数超过配置的上限。",
+      "template 块的行数保持在配置的上限以内。",
+    ],
     "vue/require-default-export": [
       "要求组件的 script 作为默认导出。",
       "组件 script 没有默认导出。",
@@ -305,6 +310,11 @@ export const compatibilityPackets: Record<Locale, Record<string, Packet>> = {
       "O bloco script omite o atributo lang configurado.",
       "O bloco script define lang como o idioma configurado.",
     ],
+    "vue/max-lines-per-block": [
+      "Limita o número de linhas de cada bloco SFC.",
+      "O bloco template tem mais linhas do que o máximo configurado.",
+      "O bloco template permanece dentro do máximo configurado.",
+    ],
     "vue/require-default-export": [
       "Exige que o script do componente seja o export padrão.",
       "O script do componente não tem export padrão.",
@@ -461,6 +471,11 @@ export const compatibilityPackets: Record<Locale, Record<string, Packet>> = {
       "Limite le lang d'un bloc SFC à la langue configurée.",
       "Le bloc script omet l'attribut lang configuré.",
       "Le bloc script définit lang sur la langue configurée.",
+    ],
+    "vue/max-lines-per-block": [
+      "Limite le nombre de lignes de chaque bloc SFC.",
+      "Le bloc template dépasse le maximum configuré.",
+      "Le bloc template reste dans le maximum configuré.",
     ],
     "vue/require-default-export": [
       "Exige que le script du composant soit l'export par défaut.",

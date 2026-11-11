@@ -9,10 +9,11 @@ Vize linter 提供的全部规则，按类别分组。打开规则页面即可�
 
 “预设”列给出启用该规则的最小预设，规则页面列出全部预设。各预设包含的内容见[预设](../rules/index.md#预设)。
 
-## Vue 规则 (151)
+## Vue 规则 (153)
 
 | 规则 | 检查内容 | 预设 | 自动修复 |
 | --- | --- | --- | --- |
+| <span id="max-lines"></span>[`max-lines`](./reference/max-lines.md) | 限制文件的行数。 | — |  |
 | <span id="vue-a11y-img-alt"></span>[`vue/a11y-img-alt`](./reference/vue-a11y-img-alt.md) | 要求图片提供 alt 属性，以支持无障碍访问。 | — |  |
 | <span id="vue-attribute-hyphenation"></span>[`vue/attribute-hyphenation`](./reference/vue-attribute-hyphenation.md) | 规范自定义组件的属性命名风格。 | `happy-path` | ✓ |
 | <span id="vue-attribute-order"></span>[`vue/attribute-order`](./reference/vue-attribute-order.md) | 要求属性保持一致的排列顺序。 | `happy-path` |  |
@@ -30,6 +31,7 @@ Vize linter 提供的全部规则，按类别分组。打开规则页面即可�
 | <span id="vue-html-self-closing"></span>[`vue/html-self-closing`](./reference/vue-html-self-closing.md) | 规范自闭合标签风格。 | `nuxt`, `opinionated` | ✓ |
 | <span id="vue-jsx-uses-vars"></span>[`vue/jsx-uses-vars`](./reference/vue-jsx-uses-vars.md) | 将 JSX 元素名称中引用的变量视为已使用。 | `essential` |  |
 | <span id="vue-match-component-file-name"></span>[`vue/match-component-file-name`](./reference/vue-match-component-file-name.md) | 要求声明的组件名称与文件名匹配。 | — |  |
+| <span id="vue-max-lines-per-block"></span>[`vue/max-lines-per-block`](./reference/vue-max-lines-per-block.md) | 限制每个 SFC 块的行数。 | — |  |
 | <span id="vue-max-template-complexity"></span>[`vue/max-template-complexity`](./reference/vue-max-template-complexity.md) | 限制组件自身模板的复杂度（圈复杂度和认知复杂度）。 | — |  |
 | <span id="vue-multi-word-component-names"></span>[`vue/multi-word-component-names`](./reference/vue-multi-word-component-names.md) | 要求组件名称由多个单词组成。 | `essential` |  |
 | <span id="vue-mustache-interpolation-spacing"></span>[`vue/mustache-interpolation-spacing`](./reference/vue-mustache-interpolation-spacing.md) | 要求双花括号插值内部的空格保持一致。 | `happy-path` | ✓ |

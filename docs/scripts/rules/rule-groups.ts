@@ -23,6 +23,8 @@ export type RulePage = string;
 /** The category whose namespace owns a rule ID; its page and sidebar section list it. */
 export function owningRuleGroup(id: string, project: boolean): RuleGroup {
   if (project) return "cross-file";
+  // ESLint core `max-lines` has no slash. It counts a whole SFC, so it is listed with the Vue rules.
+  if (id === "max-lines") return "vue";
   const namespace = id.split("/")[0];
   const section = sections!.find((candidate) => candidate.namespaces?.includes(namespace));
   if (!section) throw new Error(`No rule category owns the ${namespace}/ namespace: ${id}`);

@@ -958,6 +958,8 @@ expression: "serde_json::to_string_pretty(&snapshot).unwrap()"
     "vue/block-lang",
     "vue/require-default-export",
     "vue/require-prop-comment",
+    "max-lines",
+    "vue/max-lines-per-block",
     "vue/no-unused-setup-bindings",
     "vue/max-template-complexity",
     "script/no-next-tick",

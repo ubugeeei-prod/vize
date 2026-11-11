@@ -332,6 +332,8 @@ export const purposeJa: Readonly<Record<string, string>> = {
   "vue/require-expose": "Options API のコンポーネントが公開するプロパティを expose で明示します。",
   "vue/valid-model-definition": "Vue 2 の model オプションに有効なキーを指定します。",
   "vue/block-lang": "SFC ブロックの lang を設定した言語に揃えます。",
+  "max-lines": "ファイルの行数が上限を超えた箇所を検出します。",
+  "vue/max-lines-per-block": "SFC ブロックの行数が上限を超えた箇所を検出します。",
   "vue/camelcase": "テンプレート式の識別子を camelCase に揃えます。",
   "vue/dot-notation": "テンプレート式で静的なプロパティ参照にドット記法を使います。",
   "vue/enforce-style-attribute": "style ブロックを許可した属性モードに揃えます。",

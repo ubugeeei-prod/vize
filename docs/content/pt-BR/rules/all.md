@@ -9,10 +9,11 @@ Todas as regras do linter do Vize, agrupadas por categoria. Abra uma regra para 
 
 A coluna Predefinição indica a menor predefinição que ativa a regra; a página de cada regra lista todas. Veja em [predefinições](../rules/index.md#predefinições) o que cada uma contém.
 
-## Regras Vue (151)
+## Regras Vue (153)
 
 | Regra | O que verifica | Predefinição | Correção automática |
 | --- | --- | --- | --- |
+| <span id="max-lines"></span>[`max-lines`](./reference/max-lines.md) | Limita o número de linhas de um arquivo. | — |  |
 | <span id="vue-a11y-img-alt"></span>[`vue/a11y-img-alt`](./reference/vue-a11y-img-alt.md) | Exigir o atributo alt nas imagens para garantir acessibilidade. | — |  |
 | <span id="vue-attribute-hyphenation"></span>[`vue/attribute-hyphenation`](./reference/vue-attribute-hyphenation.md) | Aplicar um padrão de nomes de atributos em componentes personalizados. | `happy-path` | ✓ |
 | <span id="vue-attribute-order"></span>[`vue/attribute-order`](./reference/vue-attribute-order.md) | Aplicar uma ordem consistente aos atributos. | `happy-path` |  |
@@ -30,6 +31,7 @@ A coluna Predefinição indica a menor predefinição que ativa a regra; a pági
 | <span id="vue-html-self-closing"></span>[`vue/html-self-closing`](./reference/vue-html-self-closing.md) | Aplicar um padrão de tags com fechamento automático. | `nuxt`, `opinionated` | ✓ |
 | <span id="vue-jsx-uses-vars"></span>[`vue/jsx-uses-vars`](./reference/vue-jsx-uses-vars.md) | Considera usadas as variáveis referenciadas nos nomes dos elementos JSX. | `essential` |  |
 | <span id="vue-match-component-file-name"></span>[`vue/match-component-file-name`](./reference/vue-match-component-file-name.md) | Exige que o nome declarado do componente corresponda ao nome do arquivo. | — |  |
+| <span id="vue-max-lines-per-block"></span>[`vue/max-lines-per-block`](./reference/vue-max-lines-per-block.md) | Limita o número de linhas de cada bloco SFC. | — |  |
 | <span id="vue-max-template-complexity"></span>[`vue/max-template-complexity`](./reference/vue-max-template-complexity.md) | Limitar a complexidade do próprio template de um componente, tanto ciclomática quanto cognitiva. | — |  |
 | <span id="vue-multi-word-component-names"></span>[`vue/multi-word-component-names`](./reference/vue-multi-word-component-names.md) | Exigir nomes de componentes com mais de uma palavra. | `essential` |  |
 | <span id="vue-mustache-interpolation-spacing"></span>[`vue/mustache-interpolation-spacing`](./reference/vue-mustache-interpolation-spacing.md) | Aplicar espaçamento consistente dentro das interpolações com chaves duplas. | `happy-path` | ✓ |

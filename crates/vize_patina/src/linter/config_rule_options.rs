@@ -111,6 +111,12 @@ impl Linter {
         if let Some(value) = options.block_lang() {
             self = block_lang::apply(self, value);
         }
+        if let Some(value) = options.max_lines() {
+            self = max_lines::apply(self, value);
+        }
+        if let Some(value) = options.max_lines_per_block() {
+            self = max_lines_per_block::apply(self, value);
+        }
         if let Some(value) = options.enforce_style_attribute() {
             use crate::rules::vue::StyleAttribute;
             use vize_l0::config::StyleAttributeMode;
@@ -283,12 +289,17 @@ fn self_closing_style(value: ConfigSelfClosingStyle) -> HtmlSelfClosingStyle {
 mod block_lang;
 #[cfg(test)]
 mod macro_order;
+mod max_lines;
+mod max_lines_per_block;
 
 #[cfg(test)]
 mod multi_word_component_names;
 
 #[cfg(test)]
 mod no_use_v_if_with_v_for;
+
+#[cfg(test)]
+mod eslint_vue_options_tests;
 
 #[cfg(test)]
 mod tests {
@@ -453,46 +464,6 @@ const name = "";
                 "vue/warn-custom-directive",
                 "vue/no-bare-strings-in-template"
             ],
-            "{:#?}",
-            result.diagnostics
-        );
-    }
-
-    #[test]
-    fn eslint_vue_compatibility_options_reach_selected_rules() {
-        let source = r#"<script>
-export default { z: 1, a: 2 }
-</script>
-<template>{{ condition ? { "quoted": value }.quoted : fallback }}</template>
-<style>.card { color: red }</style>"#;
-        let options: ConfigLintRuleOptions = serde_json::from_value(serde_json::json!({
-            "vue/enforce-style-attribute": { "allow": ["plain", "scoped"] },
-            "vue/no-restricted-syntax": { "selectors": ["ConditionalExpression"] },
-            "vue/quote-props": "as-needed",
-            "vue/sort-keys": {
-                "order": "desc",
-                "caseSensitive": true,
-                "natural": false
-            }
-        }))
-        .unwrap();
-        let result = Linter::with_preset(LintPreset::Incremental)
-            .with_enabled_rules(Some(vec![
-                "vue/enforce-style-attribute".into(),
-                "vue/no-restricted-syntax".into(),
-                "vue/quote-props".into(),
-                "vue/sort-keys".into(),
-            ]))
-            .with_config_rule_options(&options)
-            .lint_sfc(source, "App.vue");
-        let rules = result
-            .diagnostics
-            .iter()
-            .map(|diagnostic| diagnostic.rule_name)
-            .collect::<Vec<_>>();
-        assert_eq!(
-            rules,
-            ["vue/no-restricted-syntax", "vue/quote-props"],
             "{:#?}",
             result.diagnostics
         );

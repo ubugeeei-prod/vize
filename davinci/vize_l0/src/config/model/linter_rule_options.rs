@@ -22,6 +22,7 @@ mod html_button_has_type;
 mod html_quotes;
 mod html_self_closing;
 mod hyphenation;
+mod line_limits;
 mod merge;
 mod multi_word_component_names;
 mod mustache_spacing;
@@ -59,6 +60,7 @@ pub use html_self_closing::{
     HtmlSelfClosingHtmlOptions, HtmlSelfClosingOptions, HtmlSelfClosingStyle,
 };
 pub use hyphenation::HyphenationStyle;
+pub use line_limits::{MaxLinesOptions, MaxLinesPerBlockOptions};
 pub use multi_word_component_names::MultiWordComponentNamesOptions;
 pub use mustache_spacing::MustacheInterpolationSpacingStyle;
 pub use no_mutating_props::NoMutatingPropsOptions;
@@ -218,6 +220,13 @@ pub struct ConfigLintRuleOptions {
     musea_prefer_design_tokens: Option<MuseaPreferDesignTokensOptions>,
     #[serde(rename = "vue/block-lang", skip_serializing_if = "Option::is_none")]
     block_lang: Option<BlockLangOptions>,
+    #[serde(rename = "max-lines", skip_serializing_if = "Option::is_none")]
+    max_lines: Option<MaxLinesOptions>,
+    #[serde(
+        rename = "vue/max-lines-per-block",
+        skip_serializing_if = "Option::is_none"
+    )]
+    max_lines_per_block: Option<MaxLinesPerBlockOptions>,
 }
 impl ConfigLintRuleOptions {
     /// Build full config options from the stable public subset.
@@ -278,6 +287,8 @@ impl ConfigLintRuleOptions {
             && self.musea_prefer_design_tokens.is_none()
             && self.require_component_registration.is_none()
             && self.block_lang.is_none()
+            && self.max_lines.is_none()
+            && self.max_lines_per_block.is_none()
     }
 
     /// Globally registered components permitted by the registration rule.
@@ -475,22 +486,6 @@ impl ConfigLintRuleOptions {
         self.attribute_hyphenation
             .as_ref()
             .and_then(AttributeHyphenationConfig::ignore_tags)
-    }
-
-    /// Configured design-token primitive values for
-    /// `musea/prefer-design-tokens` as `(value, path, tier)` tuples. Empty
-    /// when unconfigured.
-    pub fn musea_design_tokens(&self) -> Vec<(String, String, String)> {
-        self.musea_prefer_design_tokens
-            .as_ref()
-            .map(|options| {
-                options
-                    .tokens
-                    .iter()
-                    .map(|token| (token.value.clone(), token.path.clone(), token.tier.clone()))
-                    .collect()
-            })
-            .unwrap_or_default()
     }
 }
 
