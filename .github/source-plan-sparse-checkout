@@ -21,6 +21,10 @@
 /tests/vize_test_runner/src/coverage.rs
 /tests/vize_test_runner/src/dump_patches.rs
 /tools/benchmarks/crates/vize/doctor_tui.rs
+# Literal runtime imports used while selecting affected tooling tests.
+/crates/vize_carton/src/config/loader/module-runtime.mjs
+/crates/vize_carton/src/config/loader/vite-runtime.mjs
+/crates/vize_carton/src/config/loader/vite-runtime-validation.js
 /.github/
 /tools/
 /npm/
