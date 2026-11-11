@@ -96,10 +96,10 @@ mod tests {
     #[test]
     fn exact_generated_successors_reconstruct_from_the_authenticated_predecessors() {
         let record = record();
-        for (body, entry) in super::super::setup_verbatim_generated::current_bodies()
-            .iter()
-            .zip(record["entries"].as_array().unwrap())
-        {
+        let bodies = super::super::setup_verbatim_generated::current_bodies();
+        let entries = record["entries"].as_array().unwrap();
+        assert_eq!(bodies.len(), entries.len());
+        for (body, entry) in bodies.iter().zip(entries) {
             successor_body(body, entry);
             for changed in [format!("{body}\n"), body.replacen(MARKER, "", 1)] {
                 assert!(std::panic::catch_unwind(|| successor_body(&changed, entry)).is_err());
