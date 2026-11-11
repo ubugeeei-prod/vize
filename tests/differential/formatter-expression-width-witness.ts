@@ -23,8 +23,12 @@ function ownedBytes(root: string, relative: string) {
   return fs.readFileSync(real);
 }
 
-// The two original struct literals require one new false field. Every other
-// authored byte of all five original laws, including their assertions, stays exact.
+// The two original struct literals each require the new false fields below. Every
+// other authored byte of all five original laws, including their assertions, stays exact.
+const REQUIRED_FALSE_FIELDS = [
+  "        owns_value_lines: false,\n",
+  "        order_sensitive: false,\n",
+];
 export function validateExpressionWidthWitness(root: string, entry: any, name: string) {
   if (entry.path !== OWNER) return false;
   assert.equal(entry.sha256, ORIGINAL, "original attribute owner pin changed");
@@ -41,9 +45,12 @@ export function validateExpressionWidthWitness(root: string, entry: any, name: s
     const before = retainedFormatterFunction(original, registered).toString();
     const after = retainedFormatterFunction(current, registered).toString();
     if (index < 2) {
-      const field = "        owns_value_lines: false,\n";
-      assert.equal(after.split(field).length, 2, "required false field changed");
-      assert.equal(after.replace(field, ""), before, "original complete attribute law changed");
+      let stripped = after;
+      for (const field of REQUIRED_FALSE_FIELDS) {
+        assert.equal(stripped.split(field).length, 2, "required false field changed");
+        stripped = stripped.replace(field, "");
+      }
+      assert.equal(stripped, before, "original complete attribute law changed");
     } else assert.equal(after, before, "original complete attribute law changed");
   }
   return true;
