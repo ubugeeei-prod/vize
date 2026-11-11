@@ -69,7 +69,7 @@ Ajoutées par `happy-path`, le préréglage par défaut.
 | <span id="type-require-typed-emits"></span>[`type/require-typed-emits`](./reference/type-require-typed-emits.md) | Exiger une définition de type pour defineEmits. |  |
 | <span id="type-require-typed-props"></span>[`type/require-typed-props`](./reference/type-require-typed-props.md) | Exiger une définition de type pour defineProps. |  |
 
-## Préréglages plus stricts (22)
+## Préréglages plus stricts (61)
 
 Seulement dans `opinionated`, `nuxt` ou `ecosystem`. La colonne Préréglages indique lesquels.
 
@@ -94,9 +94,48 @@ Seulement dans `opinionated`, `nuxt` ou `ecosystem`. La colonne Préréglages in
 | <span id="script-require-explicit-slots"></span>[`script/require-explicit-slots`](./reference/script-require-explicit-slots.md) | Exiger que les slots utilisés via useSlots() soient explicitement typés avec defineSlots&lt;...&gt;(). | `opinionated`, `nuxt` |  |
 | <span id="script-require-prop-types"></span>[`script/require-prop-types`](./reference/script-require-prop-types.md) | Exiger que chaque prop déclare un type. | `opinionated` |  |
 | <span id="script-require-typed-object-prop"></span>[`script/require-typed-object-prop`](./reference/script-require-typed-object-prop.md) | Exiger un type explicite sur une prop dont le type à l’exécution est `Object` ou `Array`. | `opinionated`, `nuxt` |  |
+| <span id="type-await-thenable"></span>[`type/await-thenable`](./reference/type-await-thenable.md) | Interdire d’await une valeur qui n’est pas thenable. | `nuxt`, `opinionated` |  |
+| <span id="type-no-array-delete"></span>[`type/no-array-delete`](./reference/type-no-array-delete.md) | Interdire delete sur un élément d’une valeur de type tableau. | `nuxt`, `opinionated` |  |
+| <span id="type-no-base-to-string"></span>[`type/no-base-to-string`](./reference/type-no-base-to-string.md) | Interdire la conversion en chaîne des valeurs qui retombent sur Object.prototype.toString(). | `nuxt`, `opinionated` |  |
+| <span id="type-no-confusing-void-expression"></span>[`type/no-confusing-void-expression`](./reference/type-no-confusing-void-expression.md) | Interdire une expression de type void là où une valeur est attendue. | `nuxt`, `opinionated` |  |
+| <span id="type-no-deprecated"></span>[`type/no-deprecated`](./reference/type-no-deprecated.md) | Interdire l’usage d’une déclaration obsolète. | `nuxt`, `opinionated` |  |
+| <span id="type-no-duplicate-type-constituents"></span>[`type/no-duplicate-type-constituents`](./reference/type-no-duplicate-type-constituents.md) | Interdire un constituant dupliqué dans une union ou une intersection. | `nuxt`, `opinionated` |  |
 | <span id="type-no-floating-promises"></span>[`type/no-floating-promises`](./reference/type-no-floating-promises.md) | Interdire les Promises laissées sans traitement. | `nuxt`, `opinionated` |  |
+| <span id="type-no-for-in-array"></span>[`type/no-for-in-array`](./reference/type-no-for-in-array.md) | Interdire for-in sur une valeur de type tableau. | `nuxt`, `opinionated` |  |
+| <span id="type-no-generated-empty-object-type"></span>[`type/no-generated-empty-object-type`](./reference/type-no-generated-empty-object-type.md) | Interdire un type d’objet vide produit par une opération de type. | `nuxt`, `opinionated` |  |
+| <span id="type-no-implied-eval"></span>[`type/no-implied-eval`](./reference/type-no-implied-eval.md) | Interdire une API d’exécution dynamique à partir d’une chaîne. | `nuxt`, `opinionated` |  |
+| <span id="type-no-meaningless-void-operator"></span>[`type/no-meaningless-void-operator`](./reference/type-no-meaningless-void-operator.md) | Interdire l’opérateur void sur une expression qui est déjà void. | `nuxt`, `opinionated` |  |
+| <span id="type-no-misused-promises"></span>[`type/no-misused-promises`](./reference/type-no-misused-promises.md) | Interdire une Promise là où elle n’est pas prise en charge. | `nuxt`, `opinionated` |  |
+| <span id="type-no-misused-spread"></span>[`type/no-misused-spread`](./reference/type-no-misused-spread.md) | Interdire d’étaler une valeur dans une position incompatible. | `nuxt`, `opinionated` |  |
+| <span id="type-no-mixed-enums"></span>[`type/no-mixed-enums`](./reference/type-no-mixed-enums.md) | Interdire de mélanger des membres chaîne et numériques dans un enum. | `nuxt`, `opinionated` |  |
 | <span id="type-no-reactivity-loss"></span>[`type/no-reactivity-loss`](./reference/type-no-reactivity-loss.md) | Interdire les instantanés ordinaires de valeurs réactives lors des affectations et des appels. | `nuxt`, `opinionated` |  |
+| <span id="type-no-redundant-type-constituents"></span>[`type/no-redundant-type-constituents`](./reference/type-no-redundant-type-constituents.md) | Interdire un membre d’union ou d’intersection qui n’apporte rien ou écrase l’information de type. | `nuxt`, `opinionated` |  |
+| <span id="type-no-unnecessary-boolean-literal-compare"></span>[`type/no-unnecessary-boolean-literal-compare`](./reference/type-no-unnecessary-boolean-literal-compare.md) | Interdire une comparaison inutile avec un littéral booléen. | `nuxt`, `opinionated` |  |
+| <span id="type-no-unnecessary-condition"></span>[`type/no-unnecessary-condition`](./reference/type-no-unnecessary-condition.md) | Interdire une condition toujours vraie, toujours fausse, never ou toujours nullish. | `nuxt`, `opinionated` |  |
+| <span id="type-no-unnecessary-template-expression"></span>[`type/no-unnecessary-template-expression`](./reference/type-no-unnecessary-template-expression.md) | Interdire un littéral de gabarit qui n’enveloppe qu’une expression. | `nuxt`, `opinionated` |  |
+| <span id="type-no-unnecessary-type-arguments"></span>[`type/no-unnecessary-type-arguments`](./reference/type-no-unnecessary-type-arguments.md) | Interdire un argument de type égal à la valeur par défaut. | `nuxt`, `opinionated` |  |
+| <span id="type-no-unnecessary-type-assertion"></span>[`type/no-unnecessary-type-assertion`](./reference/type-no-unnecessary-type-assertion.md) | Interdire une assertion de type qui ne change pas le type de l’expression. | `nuxt`, `opinionated` |  |
+| <span id="type-no-unnecessary-type-conversion"></span>[`type/no-unnecessary-type-conversion`](./reference/type-no-unnecessary-type-conversion.md) | Interdire une conversion qui ne change ni le type ni la valeur de l’expression. | `nuxt`, `opinionated` |  |
+| <span id="type-no-unsafe-argument"></span>[`type/no-unsafe-argument`](./reference/type-no-unsafe-argument.md) | Interdire de passer une valeur de type `any` à une fonction. | `nuxt`, `opinionated` |  |
+| <span id="type-no-unsafe-assignment"></span>[`type/no-unsafe-assignment`](./reference/type-no-unsafe-assignment.md) | Interdire d’affecter une valeur any à une cible plus précise. | `nuxt`, `opinionated` |  |
+| <span id="type-no-unsafe-call"></span>[`type/no-unsafe-call`](./reference/type-no-unsafe-call.md) | Interdire d’appeler une valeur typée any. | `nuxt`, `opinionated` |  |
+| <span id="type-no-unsafe-enum-assignment"></span>[`type/no-unsafe-enum-assignment`](./reference/type-no-unsafe-enum-assignment.md) | Interdire d’affecter une valeur étrangère à un enum. | `nuxt`, `opinionated` |  |
+| <span id="type-no-unsafe-enum-comparison"></span>[`type/no-unsafe-enum-comparison`](./reference/type-no-unsafe-enum-comparison.md) | Interdire de comparer une valeur d’enum avec une valeur d’un autre domaine. | `nuxt`, `opinionated` |  |
+| <span id="type-no-unsafe-member-access"></span>[`type/no-unsafe-member-access`](./reference/type-no-unsafe-member-access.md) | Interdire l’accès à un membre d’une valeur typée any. | `nuxt`, `opinionated` |  |
+| <span id="type-no-unsafe-return"></span>[`type/no-unsafe-return`](./reference/type-no-unsafe-return.md) | Interdire de renvoyer une valeur any depuis une fonction. | `nuxt`, `opinionated` |  |
 | <span id="type-no-unsafe-template-binding"></span>[`type/no-unsafe-template-binding`](./reference/type-no-unsafe-template-binding.md) | Interdire les liaisons de template dont le type résolu est non sûr. | `nuxt`, `opinionated` |  |
+| <span id="type-no-unsafe-unary-minus"></span>[`type/no-unsafe-unary-minus`](./reference/type-no-unsafe-unary-minus.md) | Interdire le moins unaire sur une valeur qui n’est ni number ni bigint. | `nuxt`, `opinionated` |  |
+| <span id="type-only-throw-error"></span>[`type/only-throw-error`](./reference/type-only-throw-error.md) | Exiger que la valeur lancée soit de type Error. | `nuxt`, `opinionated` |  |
+| <span id="type-prefer-promise-reject-errors"></span>[`type/prefer-promise-reject-errors`](./reference/type-prefer-promise-reject-errors.md) | Exiger qu’une raison de rejet de Promise soit une Error. | `nuxt`, `opinionated` |  |
+| <span id="type-prefer-reduce-type-parameter"></span>[`type/prefer-reduce-type-parameter`](./reference/type-prefer-reduce-type-parameter.md) | Préférer le paramètre de type de Array#reduce à une assertion de la valeur initiale. | `nuxt`, `opinionated` |  |
+| <span id="type-prefer-return-this-type"></span>[`type/prefer-return-this-type`](./reference/type-prefer-return-this-type.md) | Exiger le type `this` lorsqu’une méthode ne renvoie que `this`. | `nuxt`, `opinionated` |  |
+| <span id="type-related-getter-setter-pairs"></span>[`type/related-getter-setter-pairs`](./reference/type-related-getter-setter-pairs.md) | Exiger que les getter et setter appariés utilisent des types compatibles. | `nuxt`, `opinionated` |  |
+| <span id="type-require-await"></span>[`type/require-await`](./reference/type-require-await.md) | Interdire une fonction async qui ne contient aucun await. | `nuxt`, `opinionated` |  |
+| <span id="type-restrict-plus-operands"></span>[`type/restrict-plus-operands`](./reference/type-restrict-plus-operands.md) | Exiger que les opérandes de + soient explicitement compatibles. | `nuxt`, `opinionated` |  |
+| <span id="type-restrict-template-expressions"></span>[`type/restrict-template-expressions`](./reference/type-restrict-template-expressions.md) | Exiger que les expressions d’un littéral de gabarit soient compatibles avec une chaîne. | `nuxt`, `opinionated` |  |
+| <span id="type-return-await"></span>[`type/return-await`](./reference/type-return-await.md) | Exiger un usage cohérent de `return await` selon le contexte et la configuration. | `nuxt`, `opinionated` |  |
+| <span id="type-unbound-method"></span>[`type/unbound-method`](./reference/type-unbound-method.md) | Interdire une référence à une méthode sans son receveur (`this`). | `nuxt`, `opinionated` |  |
+| <span id="type-use-unknown-in-catch-callback-variable"></span>[`type/use-unknown-in-catch-callback-variable`](./reference/type-use-unknown-in-catch-callback-variable.md) | Exiger une annotation unknown explicite pour la variable du callback catch d’une Promise. | `nuxt`, `opinionated` |  |
 
 ## À activer (16)
 

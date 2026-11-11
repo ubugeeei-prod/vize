@@ -6,7 +6,7 @@ use super::super::{
     markers::{MacroQuery, QueryKind},
     reactivity_loss::ReactivityLossQuery,
     rule_queries::{MacroWarning, push_macro_warning},
-    strict_boolean,
+    strict_boolean, typescript_eslint,
     template_queries::{TemplatePromiseQuery, TemplateQuery},
 };
 use super::probes::{self, ProbeBatch};
@@ -21,6 +21,7 @@ pub(super) struct SfcQueryPlan {
     pub promises: Vec<TemplatePromiseQuery>,
     pub reactivities: Vec<ReactivityLossQuery>,
     pub boolean: Option<strict_boolean::Plan>,
+    pub typescript: Option<typescript_eslint::Plan>,
 }
 
 /// A complete preparation retains no descriptor, AST or allocator references.
@@ -78,6 +79,15 @@ impl PreparedSfc {
                 &plan.content,
                 boolean,
                 linter.strict_boolean_options,
+                &mut self.result,
+            )?;
+        }
+        if let Some(typescript) = &plan.typescript {
+            typescript_eslint::evaluate(
+                session,
+                typescript,
+                &plan.content,
+                linter,
                 &mut self.result,
             )?;
         }

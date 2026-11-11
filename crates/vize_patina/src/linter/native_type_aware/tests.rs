@@ -1,6 +1,6 @@
 pub(in crate::linter::native_type_aware) mod assertion;
 mod severity;
-
+mod typescript_shapes;
 mod opt_in;
 mod options_api;
 use super::{

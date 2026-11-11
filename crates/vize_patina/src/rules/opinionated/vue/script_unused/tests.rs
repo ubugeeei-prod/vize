@@ -159,6 +159,34 @@ fn script_only_sfc_still_reports_both_rules() {
     );
 }
 
+#[test]
+fn template_component_tags_count_as_script_reads() {
+    let source = r#"<script setup>
+import Used from "./used.vue";
+import RouterView from "vue-router";
+import Unused from "./unused.vue";
+</script>
+<template>
+  <Used />
+  <RouterView />
+  <router-view />
+</template>
+"#;
+    let result = Linter::with_preset(LintPreset::Opinionated).lint_sfc(source, "Tags.vue");
+    let found: Vec<_> = result
+        .diagnostics
+        .iter()
+        .filter(|diagnostic| diagnostic.rule_name == "vue/no-unused-script-vars")
+        .map(|diagnostic| diagnostic.message.as_str().to_string())
+        .collect();
+    assert_eq!(
+        found,
+        vec![
+            "'Unused' is defined but never used. Allowed unused vars must match /^_/u".to_string()
+        ]
+    );
+}
+
 fn line_col(source: &str, offset: u32) -> (usize, usize) {
     let mut line = 1usize;
     let mut column = 1usize;

@@ -21,6 +21,7 @@ pub(crate) fn register(messages: &mut [MessageMap; 3]) {
         crate::i18n_rules_script_more::ENTRIES,
         crate::i18n_rules_ecosystem::ENTRIES,
         crate::i18n_rules_markup_compatibility::ENTRIES,
+        crate::i18n_rules_type_aware::ENTRIES,
     ];
     for &(key, en, ja, zh) in tables.into_iter().flatten() {
         messages[0].insert(key, en);

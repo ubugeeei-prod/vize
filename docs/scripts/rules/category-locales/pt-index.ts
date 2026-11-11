@@ -4,6 +4,7 @@ import { portugueseRules2 } from "./pt-2.ts";
 import { portugueseRules3 } from "./pt-3.ts";
 import { portugueseRules4 } from "./pt-4.ts";
 import { portugueseRules5 } from "./pt-5.ts";
+import { portugueseRules6 } from "./pt-6.ts";
 
 export const portuguesePackets: Record<string, readonly [string, string, string]> = {
   ...portugueseRules0,
@@ -12,6 +13,7 @@ export const portuguesePackets: Record<string, readonly [string, string, string]
   ...portugueseRules3,
   ...portugueseRules4,
   ...portugueseRules5,
+  ...portugueseRules6,
 };
 
 export { portugueseShared } from "./pt-shared.ts";

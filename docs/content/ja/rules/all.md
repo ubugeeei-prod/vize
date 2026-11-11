@@ -1,13 +1,9 @@
 ---
 title: "全 lint ルール"
-description: "Vize のリンターに含まれるすべてのルールを、カテゴリごとにまとめています。各ルールのページで、検出内容・悪い例と良い例・有効にする設定を確認できます。"
+description: "Vize のリンターに含まれるすべてのルールを、カテゴリごとにまとめています。各ルールのページで、検出内容・悪い例と良い例・有効にする設定を確認できます。 プリセット列は、そのルールを有効にする最小のプリセットです。すべてのプリセットは各ルールのページに載っています。各プリセットの内容は[プリセット](../rules/index.md#プリセット)を参照してください。"
 ---
 
 # 全 lint ルール
-
-Vize のリンターに含まれるすべてのルールを、カテゴリごとにまとめています。各ルールのページで、検出内容・悪い例と良い例・有効にする設定を確認できます。
-
-プリセット列は、そのルールを有効にする最小のプリセットです。すべてのプリセットは各ルールのページに載っています。各プリセットの内容は[プリセット](../rules/index.md#プリセット)を参照してください。
 
 ## Vue ルール (168)
 
@@ -182,7 +178,7 @@ Vize のリンターに含まれるすべてのルールを、カテゴリごと
 | <span id="vue-warn-custom-block"></span>[`vue/warn-custom-block`](./reference/vue-warn-custom-block.md) | SFC のカスタムブロックを検出します。 | `nuxt`, `opinionated` |  |
 | <span id="vue-warn-custom-directive"></span>[`vue/warn-custom-directive`](./reference/vue-warn-custom-directive.md) | 登録が必要なカスタムディレクティブを検出します。 | `nuxt`, `opinionated` |  |
 
-## 型と script のルール (84)
+## 型と script のルール (123)
 
 | ルール | 検出する内容 | プリセット | 自動修正 |
 | --- | --- | --- | --- |
@@ -264,12 +260,51 @@ Vize のリンターに含まれるすべてのルールを、カテゴリごと
 | <span id="script-valid-define-options"></span>[`script/valid-define-options`](./reference/script-valid-define-options.md) | defineOptions の引数と使用回数を検査します。 | `essential` |  |
 | <span id="script-valid-define-props"></span>[`script/valid-define-props`](./reference/script-valid-define-props.md) | defineProps の重複や型と実行時引数の併用を検出します。 | `essential` |  |
 | <span id="script-valid-next-tick"></span>[`script/valid-next-tick`](./reference/script-valid-next-tick.md) | nextTick() の完了を await、then、またはコールバックで扱います。 | `essential` |  |
+| <span id="type-await-thenable"></span>[`type/await-thenable`](./reference/type-await-thenable.md) | thenable でない値を await している箇所を検出します。 | `nuxt`, `opinionated` |  |
+| <span id="type-no-array-delete"></span>[`type/no-array-delete`](./reference/type-no-array-delete.md) | 配列から要素を delete している箇所を検出します。 | `nuxt`, `opinionated` |  |
+| <span id="type-no-base-to-string"></span>[`type/no-base-to-string`](./reference/type-no-base-to-string.md) | Object.prototype.toString() に落ちる値の文字列化を検出します。 | `nuxt`, `opinionated` |  |
+| <span id="type-no-confusing-void-expression"></span>[`type/no-confusing-void-expression`](./reference/type-no-confusing-void-expression.md) | 値として使われている void 型の式を検出します。 | `nuxt`, `opinionated` |  |
+| <span id="type-no-deprecated"></span>[`type/no-deprecated`](./reference/type-no-deprecated.md) | 非推奨の宣言を使っている箇所を検出します。 | `nuxt`, `opinionated` |  |
+| <span id="type-no-duplicate-type-constituents"></span>[`type/no-duplicate-type-constituents`](./reference/type-no-duplicate-type-constituents.md) | 共用体や交差型で重複する構成要素を検出します。 | `nuxt`, `opinionated` |  |
 | <span id="type-no-floating-promises"></span>[`type/no-floating-promises`](./reference/type-no-floating-promises.md) | 処理しないまま放置された Promise を検出します。 | `nuxt`, `opinionated` |  |
+| <span id="type-no-for-in-array"></span>[`type/no-for-in-array`](./reference/type-no-for-in-array.md) | 配列に対する for-in を検出します。 | `nuxt`, `opinionated` |  |
+| <span id="type-no-generated-empty-object-type"></span>[`type/no-generated-empty-object-type`](./reference/type-no-generated-empty-object-type.md) | 型操作で空のオブジェクト型が生成される箇所を検出します。 | `nuxt`, `opinionated` |  |
+| <span id="type-no-implied-eval"></span>[`type/no-implied-eval`](./reference/type-no-implied-eval.md) | 文字列を渡す動的なコード実行を検出します。 | `nuxt`, `opinionated` |  |
+| <span id="type-no-meaningless-void-operator"></span>[`type/no-meaningless-void-operator`](./reference/type-no-meaningless-void-operator.md) | すでに void 相当の式に付いた void 演算子を検出します。 | `nuxt`, `opinionated` |  |
+| <span id="type-no-misused-promises"></span>[`type/no-misused-promises`](./reference/type-no-misused-promises.md) | Promise を扱わない場所に Promise を渡している箇所を検出します。 | `nuxt`, `opinionated` |  |
+| <span id="type-no-misused-spread"></span>[`type/no-misused-spread`](./reference/type-no-misused-spread.md) | 互換性のない位置へのスプレッドを検出します。 | `nuxt`, `opinionated` |  |
+| <span id="type-no-mixed-enums"></span>[`type/no-mixed-enums`](./reference/type-no-mixed-enums.md) | 文字列と数値の列挙メンバーが混在する箇所を検出します。 | `nuxt`, `opinionated` |  |
 | <span id="type-no-reactivity-loss"></span>[`type/no-reactivity-loss`](./reference/type-no-reactivity-loss.md) | リアクティブな値を代入や呼び出しで取り出し、元の更新に追従しないスナップショットになる箇所を検出します。 | `nuxt`, `opinionated` |  |
+| <span id="type-no-redundant-type-constituents"></span>[`type/no-redundant-type-constituents`](./reference/type-no-redundant-type-constituents.md) | 効果がない共用体や交差型のメンバーを検出します。 | `nuxt`, `opinionated` |  |
+| <span id="type-no-unnecessary-boolean-literal-compare"></span>[`type/no-unnecessary-boolean-literal-compare`](./reference/type-no-unnecessary-boolean-literal-compare.md) | 真偽値リテラルとの不要な比較を検出します。 | `nuxt`, `opinionated` |  |
+| <span id="type-no-unnecessary-condition"></span>[`type/no-unnecessary-condition`](./reference/type-no-unnecessary-condition.md) | 常に真、常に偽、または常に nullish な条件を検出します。 | `nuxt`, `opinionated` |  |
+| <span id="type-no-unnecessary-template-expression"></span>[`type/no-unnecessary-template-expression`](./reference/type-no-unnecessary-template-expression.md) | 単一の式を不要に包むテンプレートリテラルを検出します。 | `nuxt`, `opinionated` |  |
+| <span id="type-no-unnecessary-type-arguments"></span>[`type/no-unnecessary-type-arguments`](./reference/type-no-unnecessary-type-arguments.md) | 既定値と同じ型引数を検出します。 | `nuxt`, `opinionated` |  |
+| <span id="type-no-unnecessary-type-assertion"></span>[`type/no-unnecessary-type-assertion`](./reference/type-no-unnecessary-type-assertion.md) | 式の型を変えない型アサーションを検出します。 | `nuxt`, `opinionated` |  |
+| <span id="type-no-unnecessary-type-conversion"></span>[`type/no-unnecessary-type-conversion`](./reference/type-no-unnecessary-type-conversion.md) | 型も値も変えない変換を検出します。 | `nuxt`, `opinionated` |  |
+| <span id="type-no-unsafe-argument"></span>[`type/no-unsafe-argument`](./reference/type-no-unsafe-argument.md) | `any` 型の値を関数引数に渡している箇所を検出します。 | `nuxt`, `opinionated` |  |
+| <span id="type-no-unsafe-assignment"></span>[`type/no-unsafe-assignment`](./reference/type-no-unsafe-assignment.md) | any 型の値をより具体的な型へ代入している箇所を検出します。 | `nuxt`, `opinionated` |  |
+| <span id="type-no-unsafe-call"></span>[`type/no-unsafe-call`](./reference/type-no-unsafe-call.md) | any 型の値を呼び出している箇所を検出します。 | `nuxt`, `opinionated` |  |
+| <span id="type-no-unsafe-enum-assignment"></span>[`type/no-unsafe-enum-assignment`](./reference/type-no-unsafe-enum-assignment.md) | 列挙型以外の値を列挙型へ代入している箇所を検出します。 | `nuxt`, `opinionated` |  |
+| <span id="type-no-unsafe-enum-comparison"></span>[`type/no-unsafe-enum-comparison`](./reference/type-no-unsafe-enum-comparison.md) | 列挙値を別の値域と比較している箇所を検出します。 | `nuxt`, `opinionated` |  |
+| <span id="type-no-unsafe-member-access"></span>[`type/no-unsafe-member-access`](./reference/type-no-unsafe-member-access.md) | any 型の値のメンバーアクセスを検出します。 | `nuxt`, `opinionated` |  |
+| <span id="type-no-unsafe-return"></span>[`type/no-unsafe-return`](./reference/type-no-unsafe-return.md) | 関数から any 型の値を返している箇所を検出します。 | `nuxt`, `opinionated` |  |
 | <span id="type-no-unsafe-template-binding"></span>[`type/no-unsafe-template-binding`](./reference/type-no-unsafe-template-binding.md) | テンプレートで安全でない型の値を使用する箇所を検出します。 | `nuxt`, `opinionated` |  |
+| <span id="type-no-unsafe-unary-minus"></span>[`type/no-unsafe-unary-minus`](./reference/type-no-unsafe-unary-minus.md) | number でも bigint でもない値の単項マイナスを検出します。 | `nuxt`, `opinionated` |  |
+| <span id="type-only-throw-error"></span>[`type/only-throw-error`](./reference/type-only-throw-error.md) | throw する値が Error 相当であることを必須にします。 | `nuxt`, `opinionated` |  |
+| <span id="type-prefer-promise-reject-errors"></span>[`type/prefer-promise-reject-errors`](./reference/type-prefer-promise-reject-errors.md) | Promise の拒否理由を Error 相当の値にすることを必須にします。 | `nuxt`, `opinionated` |  |
+| <span id="type-prefer-reduce-type-parameter"></span>[`type/prefer-reduce-type-parameter`](./reference/type-prefer-reduce-type-parameter.md) | Array#reduce の初期値アサーションより型引数を推奨します。 | `nuxt`, `opinionated` |  |
+| <span id="type-prefer-return-this-type"></span>[`type/prefer-return-this-type`](./reference/type-prefer-return-this-type.md) | 返す値が `this` だけのメソッドでは戻り値の型に `this` を使います。 | `nuxt`, `opinionated` |  |
+| <span id="type-related-getter-setter-pairs"></span>[`type/related-getter-setter-pairs`](./reference/type-related-getter-setter-pairs.md) | 対になる getter と setter の型が互換であることを必須にします。 | `nuxt`, `opinionated` |  |
+| <span id="type-require-await"></span>[`type/require-await`](./reference/type-require-await.md) | await を含まない async 関数を検出します。 | `nuxt`, `opinionated` |  |
 | <span id="type-require-typed-emits"></span>[`type/require-typed-emits`](./reference/type-require-typed-emits.md) | defineEmits に型定義を指定します。 | `happy-path` |  |
 | <span id="type-require-typed-props"></span>[`type/require-typed-props`](./reference/type-require-typed-props.md) | defineProps に型定義を指定します。 | `happy-path` |  |
+| <span id="type-restrict-plus-operands"></span>[`type/restrict-plus-operands`](./reference/type-restrict-plus-operands.md) | 加算の両辺が明示的に互換であることを必須にします。 | `nuxt`, `opinionated` |  |
+| <span id="type-restrict-template-expressions"></span>[`type/restrict-template-expressions`](./reference/type-restrict-template-expressions.md) | テンプレートリテラルの式を文字列と互換にすることを必須にします。 | `nuxt`, `opinionated` |  |
+| <span id="type-return-await"></span>[`type/return-await`](./reference/type-return-await.md) | try の中で Promise を返すときは `return await` を使います。 | `nuxt`, `opinionated` |  |
 | <span id="type-strict-boolean-expressions"></span>[`type/strict-boolean-expressions`](./reference/type-strict-boolean-expressions.md) | script とテンプレートの条件式で安全な真偽判定を使います。 | — |  |
+| <span id="type-unbound-method"></span>[`type/unbound-method`](./reference/type-unbound-method.md) | レシーバーから切り離したメソッド参照を検出します。 | `nuxt`, `opinionated` |  |
+| <span id="type-use-unknown-in-catch-callback-variable"></span>[`type/use-unknown-in-catch-callback-variable`](./reference/type-use-unknown-in-catch-callback-variable.md) | Promise の catch コールバック引数に unknown 注釈を必須にします。 | `nuxt`, `opinionated` |  |
 
 ## HTML ルール (9)
 

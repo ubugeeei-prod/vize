@@ -308,13 +308,11 @@ function crossFilePage(rules: readonly IndexedRule[], locale: RuleLocale) {
 function allRulesPage(rules: readonly IndexedRule[], locale: RuleLocale) {
   const t = text[locale];
   const title = categoryTitle("all", locale);
+  // The purpose and preset legend stay in frontmatter. Repeating them in the
+  // body pushes the English index over the 500-line source limit.
   const lines = [
-    ...frontmatter(title, categoryPurpose[locale].all),
+    ...frontmatter(title, `${categoryPurpose[locale].all} ${t.allLegend}`),
     `# ${title}`,
-    "",
-    categoryPurpose[locale].all,
-    "",
-    t.allLegend,
     "",
   ];
   for (const group of ruleGroups) {

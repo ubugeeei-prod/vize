@@ -1,4 +1,6 @@
 import type { CodeExample, RuleExample, RuleExampleOptions } from "./types.ts";
+import { typescriptEslintExamplesA } from "./scoped-examples-type-a.ts";
+import { typescriptEslintExamplesB } from "./scoped-examples-type-b.ts";
 const vue = (source: string): CodeExample => ({ language: "vue", source });
 const script = (source: string) => vue(`<script setup lang="ts">\n${source}\n</script>`);
 const pair = (
@@ -9,6 +11,8 @@ const pair = (
 ): RuleExample => ({ bad, good, evidence, ...extra });
 
 export const scopedOverrides: Record<string, RuleExample> = {
+  ...typescriptEslintExamplesA,
+  ...typescriptEslintExamplesB,
   "vue/no-negated-v-if-condition": pair(
     vue('<template>\n<div v-if="!ok">A</div>\n<div v-else>B</div>\n</template>'),
     vue(

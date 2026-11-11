@@ -6,6 +6,7 @@ import { scriptType0Explanations } from "./explanations-script-type-0.ts";
 import { scriptType1Explanations } from "./explanations-script-type-1.ts";
 import { scriptType2Explanations } from "./explanations-script-type-2.ts";
 import { scriptType3Explanations } from "./explanations-script-type-3.ts";
+import { scriptType4Explanations } from "./explanations-script-type-4.ts";
 import { vue0Explanations } from "./explanations-vue-0.ts";
 import { vue1Explanations } from "./explanations-vue-1.ts";
 import { vue2Explanations } from "./explanations-vue-2.ts";
@@ -20,6 +21,7 @@ const records = [
   ...scriptType1Explanations,
   ...scriptType2Explanations,
   ...scriptType3Explanations,
+  ...scriptType4Explanations,
   ...vue0Explanations,
   ...vue1Explanations,
   ...vue2Explanations,

@@ -10,7 +10,9 @@ use oxc_semantic::SemanticBuilder;
 use oxc_span::SourceType;
 use vize_croquis::drawer::{extract_slot_props, parse_v_for_scope_expression};
 use vize_l0::{CompactString, FxHashSet};
-use vize_relief::{ElementNode, ExpressionNode, PropNode, RootNode, TemplateChildNode};
+use vize_relief::{
+    ElementNode, ElementType, ExpressionNode, PropNode, RootNode, TemplateChildNode,
+};
 
 pub(super) struct TemplateUse {
     pub(super) reads: FxHashSet<CompactString>,
@@ -87,6 +89,11 @@ fn walk_element(
     if has_v_pre(element) {
         return;
     }
+    // A script-setup component is used when the template names it as a tag.
+    // `<router-view>` resolves the same binding as `<RouterView>`.
+    if element.tag_type == ElementType::Component {
+        note_component_tag(element.tag, uses);
+    }
     let mark = shadow.len();
     for prop in element.props.iter() {
         let PropNode::Directive(directive) = prop else {
@@ -135,6 +142,44 @@ fn walk_element(
     }
     walk_children(&element.children, source, shadow, uses);
     shadow.truncate(mark);
+}
+
+fn note_component_tag(tag: &str, uses: &mut TemplateUse) {
+    if tag.is_empty() {
+        return;
+    }
+    // Vue resolves a tag through the raw name, its camelCase form, and the
+    // capitalized form. `<kebab>` and `<router-view>` both use `Kebab` / `RouterView`.
+    let mut names = vec![tag.to_string()];
+    let mut camel = std::string::String::new();
+    let mut upper = false;
+    for ch in tag.chars() {
+        if ch == '-' {
+            upper = true;
+            continue;
+        }
+        if upper {
+            camel.extend(ch.to_uppercase());
+            upper = false;
+        } else {
+            camel.push(ch);
+        }
+    }
+    if camel != tag {
+        names.push(camel.clone());
+    }
+    let mut chars = camel.chars();
+    if let Some(first) = chars.next() {
+        let mut pascal = String::new();
+        pascal.extend(first.to_uppercase());
+        pascal.push_str(chars.as_str());
+        if pascal != tag && pascal != camel {
+            names.push(pascal);
+        }
+    }
+    for name in names {
+        uses.reads.insert(CompactString::new(&name));
+    }
 }
 
 fn has_v_pre(element: &ElementNode<'_>) -> bool {
