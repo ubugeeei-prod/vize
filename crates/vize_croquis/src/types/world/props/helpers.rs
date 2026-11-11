@@ -1,5 +1,5 @@
 use oxc_allocator::Allocator;
-use oxc_ast::ast::{PropertyKey, Statement, TSLiteral, TSSignature, TSType};
+use oxc_ast::ast::{PropertyKey, Statement, TSLiteral, TSMethodSignatureKind, TSSignature, TSType};
 use oxc_parser::Parser;
 use oxc_span::{GetSpan, SourceType, Span};
 use oxc_syntax::number::ToJsString;
@@ -43,7 +43,12 @@ pub(super) fn members(
     for member in members {
         // A method signature names a member the same way a property does.
         // Slot contracts are written as `footer(props: { count: number }): unknown`.
+        // Get and set accessors are not props. eslint-plugin-vue skips them
+        // in vue/no-required-prop-with-default (#12868).
         if let TSSignature::TSMethodSignature(method) = member {
+            if method.kind != TSMethodSignatureKind::Method {
+                continue;
+            }
             let Some(name) = signature_name(&method.key, method.computed) else {
                 output.complete = false;
                 continue;

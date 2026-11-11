@@ -149,3 +149,39 @@ const { value = 1 } = defineProps<Props>()
         "value: number"
     );
 }
+
+#[test]
+fn getter_props_with_defaults_are_not_required() {
+    for source in [
+        r#"<script setup lang="ts">
+interface TestPropType {
+  get name(): string
+  set name(a: string)
+  age?: number
+}
+const props = withDefaults(defineProps<TestPropType>(), {
+  name: "World",
+});
+</script>
+<template><p>{{ props.name }}</p></template>"#,
+        r#"<script setup lang="ts">
+interface TestPropType {
+  get name(): void
+}
+const props = withDefaults(defineProps<TestPropType>(), {
+  name: "World",
+});
+</script>
+<template><p>{{ props.name }}</p></template>"#,
+    ] {
+        let result = Linter::new()
+            .with_enabled_rules(Some(vec!["script/no-required-prop-with-default".into()]))
+            .lint_sfc(source, "Accessor.vue");
+        let diagnostics: Vec<_> = result
+            .diagnostics
+            .iter()
+            .filter(|diagnostic| diagnostic.rule_name == "script/no-required-prop-with-default")
+            .collect();
+        assert!(diagnostics.is_empty(), "{source}\n{diagnostics:?}");
+    }
+}

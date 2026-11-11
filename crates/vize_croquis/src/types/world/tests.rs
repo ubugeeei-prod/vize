@@ -208,3 +208,37 @@ fn imported_call_signatures_resolve_event_names() {
     assert!(!partial.complete);
     assert_eq!(partial.events, ["open"]);
 }
+
+#[test]
+fn accessor_members_are_not_props() {
+    let mut root = module();
+    declaration(
+        &mut root,
+        "TestPropType",
+        "{ get name(): string; set name(value: string); age?: number; footer(props: { count: number }): unknown }",
+    );
+    let world = ResolvedTypeWorld {
+        root_module: CompactString::new("root"),
+        modules: FxHashMap::from_iter([(CompactString::new("root"), Arc::new(root))]),
+    };
+    let resolved = world.resolve_properties("TestPropType");
+    assert!(resolved.complete);
+    assert_eq!(
+        resolved
+            .properties
+            .iter()
+            .map(|prop| (prop.name.as_str(), prop.optional))
+            .collect::<Vec<_>>(),
+        [("age", true), ("footer", false)]
+    );
+
+    let mut getter_only = module();
+    declaration(&mut getter_only, "GetterOnly", "{ get name(): void }");
+    let world = ResolvedTypeWorld {
+        root_module: CompactString::new("root"),
+        modules: FxHashMap::from_iter([(CompactString::new("root"), Arc::new(getter_only))]),
+    };
+    let resolved = world.resolve_properties("GetterOnly");
+    assert!(resolved.complete);
+    assert!(resolved.properties.is_empty());
+}
