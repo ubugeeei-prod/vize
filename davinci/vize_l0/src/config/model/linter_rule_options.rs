@@ -362,11 +362,6 @@ impl ConfigLintRuleOptions {
         self.no_mutating_props
     }
 
-    /// Configured component-name exemptions.
-    pub fn multi_word_component_names(&self) -> Option<&MultiWordComponentNamesOptions> {
-        self.multi_word_component_names.as_ref()
-    }
-
     /// Configured button type values for `vue/html-button-has-type`.
     #[inline]
     pub fn html_button_has_type(&self) -> Option<HtmlButtonHasTypeOptions> {

@@ -1,5 +1,6 @@
 use serde::{Deserialize, Deserializer, Serialize, de::Error};
 
+use super::ConfigLintRuleOptions;
 use crate::String;
 
 /// Options for `vue/multi-word-component-names`.
@@ -8,6 +9,13 @@ use crate::String;
 pub struct MultiWordComponentNamesOptions {
     #[serde(deserialize_with = "deserialize_unique_ignores")]
     pub ignores: Vec<String>,
+}
+
+impl ConfigLintRuleOptions {
+    /// Configured component-name exemptions.
+    pub fn multi_word_component_names(&self) -> Option<&MultiWordComponentNamesOptions> {
+        self.multi_word_component_names.as_ref()
+    }
 }
 
 fn deserialize_unique_ignores<'de, D>(deserializer: D) -> Result<Vec<String>, D::Error>
