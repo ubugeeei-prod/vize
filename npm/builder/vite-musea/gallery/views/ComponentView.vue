@@ -144,6 +144,7 @@ const {
   selectedVariantName,
   variantSectionIds,
   variantSectionElements,
+  // eslint-disable-next-line script/valid-next-tick -- forwarded as a scheduler callback; PR #12811 replaces this temporary compatibility annotation
   nextTick,
 });
 
